@@ -93,7 +93,7 @@ C     But is vectorized by using matrix multiplies where ever possible
 C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCINPT (IN,IW,MIOBUF)
+      SUBROUTINE CCINPT (IN,IW,IMIOBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -153,6 +153,7 @@ C
       TIMING = .FALSE.
       MWORD = 0
       READ (IN,RELCCSD,END=1,ERR=1)
+      IMIOBUF = MIOBUF
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
     2 CONTINUE
