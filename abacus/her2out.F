@@ -665,7 +665,7 @@ C
           IX = (IFCTYP(K)-IY)/10
           IC = MOD(IY,2)
           IE = IY - IC
-          IF (IX.EQ.2) IC = 0
+CTROND          IF (IX.EQ.2) IC = 0
 C         ... no Coulomb term for antisymmetric density matrix
           IF (HFXFAC.EQ.D0) IE = 0
 C         check if Coulomb contribution zero by symmetry
