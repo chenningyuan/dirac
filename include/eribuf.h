@@ -1,3 +1,0 @@
-      LOGICAL NEWDIS
-      COMMON /ERIBUF/ LBUF, NBUFS, NIBUF, NBITS, NBUF,
-     &                LUINTR, LUAORC, NEWDIS

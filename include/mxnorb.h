@@ -1,1 +1,0 @@
-      PARAMETER (MXNORB = 100)

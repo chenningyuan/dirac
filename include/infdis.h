@@ -1,2 +1,0 @@
-      COMMON /INFDIS/ INFDIS(2)
-C

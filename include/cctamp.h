@@ -1,2 +1,0 @@
-      COMMON /CCTAMP/ NTINT, NT1AM, INTBUF, NO2, NT2, NV2, NT2IND,
-     *                NT2AM
