@@ -482,6 +482,7 @@ C
       CPUS = 0
       CPUE = 0
       CPUFO = 0
+      CPUFS = 0
       CPUSO = 0
       CPUTOT = 0
       WALL1 = WALL0
@@ -489,6 +490,7 @@ C
       WALLS = 0
       WALLE = 0
       WALLFO = 0
+      WALLFS = 0
       WALLSO = 0
       WALLTOT = 0
 C
