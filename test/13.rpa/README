@@ -1,0 +1,6 @@
+!
+! This test calculates the dipole polarizability
+| of the water molecule at various frequencies
+| using the linear response module.
+!
+
