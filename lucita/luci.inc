@@ -9,6 +9,6 @@ C
       character*3 CALSIZ
       common/LUCIIF/TITLE,TYPE,WAFFCT,PRILUC,CALSIZ
       integer        IRREP,NROOT,NACTEL,MULTIP,MXHOL1,MXELR3,INACOB,
-     &               IDEMOL
+     &               IDEMOL,IRSTRT
       common/iLUCIIF/IRREP,NROOT,NACTEL,MULTIP,MXHOL1,MXELR3,INACOB,
-     &               IDEMOL
+     &               IDEMOL,IRSTRT

@@ -1744,7 +1744,7 @@ C
      &             '*OPTIMI','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.XXXXXX',
      &             '.XXXXXX','.RELCCS','.DIRRCI','.MVO   ',
-     &             '.RESOLV','.LUCITA','.LUCIAR','.KRMCSC'/
+     &             '.RESOLV','.XXXXXX','.LUCIAR','.KRMCSC'/
 C
       NJOBS = 0
 C
@@ -1823,6 +1823,7 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
             GO TO 100
 C&&&& LUCITA: Perform spinfree CI calculation
   103    CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
@@ -1855,10 +1856,7 @@ C&&&& RESOLVE: Resolve open-shell states
             NJOBS = NJOBS + 1
             GO TO 100
   110    CONTINUE
-C&&&& LUCITA: Perform spinfree CI calculation
-            IF (.NOT.NOTRA) DOTRA = .TRUE.
-            DOLUCT = .TRUE.
-            NJOBS = NJOBS + 1
+C&&&& XXXXXX: Empty space for new option (removed surplus LUCITA entry!)
             GO TO 100
   111    CONTINUE
 C&&&& LUCIAREL: Call LUCIAREL
@@ -2129,7 +2127,7 @@ C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
-     &            '.RAS2  ','.RAS3  ','.DENSI '/
+     &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2142,7 +2140,8 @@ C
          SET = .TRUE.
       END IF
 C
-C     Initialize keyword status flags
+C     Initialize keyword status flags driving interface.
+C     (Therefore local keywords do not have to be initialized!)
 C
       DO IKW = 1,NTABLE
          IMOKW(IKW) = 0
@@ -2166,7 +2165,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18), I
+     &                     11,12,13,14,15,16,17,18,19), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2276,6 +2275,14 @@ C&&& RAS3  : RAS3 function space
 C&&& DENSI : Level of density matrix calculation (1-,1- and 2-particle)
                   READ(LUCMD,*) IDENSD
                   IMOKW(18) = 1
+               GO TO 100
+   19          CONTINUE
+C&&& RSTRCI: Restart option from CI vector
+                  READ(LUCMD,*) IRSTLT
+                  IMOKW(19) = 1
+               GO TO 100
+   20          CONTINUE
+C&&& XXXXXX: Free space for additional flag
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

@@ -414,6 +414,15 @@
          IDEMOL = IDENSD
       end if
 *
+* 19: Restart option from CI vector(s)
+*
+      if (IMOKW(19).eq.0) then
+         IRSTRT = 0
+         IMOKW(19) = 2
+      else if (IMOKW(19).eq.1) then
+         IRSTRT = IRSTLT
+      end if
+*
 *
 *-----------------------------------------------------------------*
 *  Print section
@@ -529,7 +538,15 @@
 *
       if (IDEMOL.ge.1) then
         write(6,'(A42,1I3)')
-     &    ' Calculating density matrices at level. ',IDEMOL
+     &    ' Calculating density matrices at level  ',IDEMOL
+        write(6,*)
+      end if
+*
+* 19: Restart option activated
+*
+      if (IRSTRT.eq.1) then
+        write(6,'(A42,A3)')
+     &    ' Restarted calculation from file ...... ','YES'
         write(6,*)
       end if
 *
@@ -1573,6 +1590,7 @@ C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
 *. Lucia : core energy is obtained from 2-e file
         CALL GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
       else if (ENVIRO(1:5).eq.'DIRAC') then
+        write(6,*)
         write(6,*) 'Integral import from DIRAC.'
         write(6,*) 'No checking of environment dims.'
       ELSE IF(ENVIRO(1:4).EQ.'NONE') THEN
@@ -4007,7 +4025,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &                   IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &                   IUSE_PH,IDEMOL,IDBGRP,
+     &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
      &                   IPRXT,IPRRSP,IPRDEN,IPROCC)
 *
@@ -4024,7 +4042,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       data KOMMA /1H,/
 *
 *-----------------------------------------------------------------*
-*  Write to LUCITA input file (called LUCIAIN)
+*  Print input for LUCITA input file           
 *-----------------------------------------------------------------*
 *
       if (IPLOCAL.ge.5) then
@@ -4096,6 +4114,9 @@ CTF      write(*,'(X,A6)') MACHINE
                end if
             end do
          end do
+*
+         write(*,'(A6)') 'RESTRT'
+         write(*,'(X,I3)') IRSTRT
 *
          write(*,'(A5)') 'MULTS'
          write(*,'(X,I3)') MULTIP
@@ -4222,6 +4243,10 @@ CTF      write(LUINP,'(X,A6)') MACHINE
                end if
             end do
          end do
+*
+         if (IRSTRT.eq.1) then
+           write(LUINP,'(A6)') 'RESTRT'
+         end if
 *
          write(LUINP,'(A5)') 'MULTS'
          write(LUINP,'(X,I3)') MULTIP
@@ -5665,7 +5690,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             MXSEQ,IRESDIM,LCSBLK,NACTEL,MSCOMB,SCOMB,
      &             IRREP,NROOT,MULTIP,MS2,NELGS,MACHINE,
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
-     &             IUSE_PH,IDEMOL,IDBGRP,
+     &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
      &             IPRDEN,IPROCC)
 *
