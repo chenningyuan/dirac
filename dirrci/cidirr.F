@@ -1061,10 +1061,12 @@ C
       DIMENSION IVWU(16,0:NORB,0:NELEC)
 C
 C
-CRAY  IAND (I, J) = AND (I, J)
-CRAY  IOR (I, J) = OR (I, J)
-CRAY  NOT(I) = COMPL (I)
-CRAY  ISHFT (I, J) = SHIFT (I, J)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      IAND (I, J) = AND (I, J)
+      IOR (I, J) = OR (I, J)
+      NOT(I) = COMPL (I)
+      ISHFT (I, J) = SHIFT (I, J)
+#endif
 C
       DO 10 ID = 1, ND
       JELEC(ID) = NORBR(1)
