@@ -450,7 +450,6 @@ c     CALL SRTT1T2(BUF2,BUF1)
 c     print*,'jvs: T-dependent part of Lagrangian'
 C     deactivated because checking in to trunk
 c     LFREE=NBUF3*RCW
-c     CALL DZERO(XMO,NORBT*NORBT*NZ)
 c     CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
 C
 C     Solve Z-vector equations by calling the RPA routine

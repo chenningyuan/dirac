@@ -1036,7 +1036,7 @@ C     --------------------------------------------
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
                   CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,0),
      &                       WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                       'N','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
+     &                       'C','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
      &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF      
                 ENDIF
@@ -2153,11 +2153,11 @@ C
         IOFF = IOFF + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
-      print*,'voor het schalen van xmo2'
-      print*,'norbt=,navirt=,nz=',norbt,navirt,nz
-      do i = 1, norbt*navirt*nz
-         print*,'i=,xmo2=',i,xmo2(i)
-      enddo
+c     print*,'voor het schalen van xmo2'
+c     print*,'norbt=,navirt=,nz=',norbt,navirt,nz
+c     do i = 1, norbt*navirt*nz
+c        print*,'i=,xmo2=',i,xmo2(i)
+c     enddo
 C
 C     +-----------------------------------------+
 C     | The L_ab' part has to be scaled by -1   |
