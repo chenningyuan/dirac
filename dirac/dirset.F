@@ -190,6 +190,9 @@ C
       IBASI    = 0
       NBRP     = 4/NZ
 C
+      N2BAST  = 0
+      N2BASTQ = 0
+C
       IF(NFSYM.EQ.1)     THEN
         IBAS(1)    = IBASI
         DO IC = 1,2
