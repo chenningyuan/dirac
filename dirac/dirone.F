@@ -727,6 +727,7 @@ C
 #include <dgroup.h>
 #include <pgroup.h>
 #include <dcbbas.h>
+#include <dcbham.h>
       CHARACTER COMP(2)*1
       DIMENSION VMAT(*),SMAT(*),EIG(*),CSPH(*),ICSP(*),WORK(LWORK)
       LOGICAL LBIT
@@ -739,7 +740,11 @@ C
 C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
-      CALL GTOVLT(SMAT,D1,WORK,LWORK)
+       IF (ZORAFC) THEN
+          CALL GTOVLT(SMAT,SSMTRC,WORK,LWORK)
+       ELSE
+          CALL GTOVLT(SMAT,D1,WORK,LWORK)
+       ENDIF
 C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
@@ -1450,6 +1455,11 @@ C
               ENDDO
               IZOFF = IZOFF + NFORB(I,0) * NFORB(I,0)
            ENDDO
+C          Finish by adjusting the number of positron solutions to zero
+           DO ISYM = 1, NBRP
+              NBORB(ISYM,I,2) = 0
+              NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+           ENDDO
         ELSE IF (SPINFR) THEN
 C
 C          Basis as in Levy-Leblond but without fixed ratio
@@ -1496,6 +1506,7 @@ C
               IF (NEFFI.LT.NBORB(ISYM,I,1)) WRITE(LUPRI,'(A)') 
      &            '*** WARNING *** Linear dependence in RKB basis'
               NBORB(ISYM,I,2) = NEFFI
+              NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
               NEFF = NEFF + NEFFI
            ENDDO
            IF (IPRHAM.GE.5) THEN

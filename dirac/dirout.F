@@ -32,7 +32,7 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfout */
-      SUBROUTINE DHFOUT(CMO,EIG,WORK,LWORK,IPRINT)
+      SUBROUTINE DHFOUT(CMO,EIG,IBEIG,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Output module for DIRAC
@@ -56,7 +56,7 @@ C
 #include <dcbpsi.h>
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
-      DIMENSION CMO(*),EIG(*),WORK(LWORK)
+      DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
 #include <memint.h>
 C
 C     Summary of calculation
@@ -153,8 +153,13 @@ C
       IF(LBIT(IPREIG,1).AND.NESH(IFRP).NE.0) THEN
         CALL HEADER('ELECTRON STATES - eigenvalues',-1)
         IVAL = NPSH(IFRP)
-        CALL PREIGV(EIG(IORB(IFRP)+1),NESH(IFRP),IVAL,
-     &              WORK,LWORK)
+        IF (SPINFR.OR.LEVYLE) THEN
+           CALL PREIGB(EIG(IORB(IFRP)+1),IBEIG(IORB(IFRP)+1),
+     &                 IVAL,NESH(IFRP))
+        ELSE
+           CALL PREIGV(EIG(IORB(IFRP)+1),NESH(IFRP),IVAL,
+     &                 WORK,LWORK)
+        ENDIF
       ENDIF
 C
 C      Positron states - eigenvalues
@@ -163,8 +168,13 @@ C
       IF(LBIT(IPREIG,2).AND.NPSH(IFRP).NE.0) THEN
         CALL HEADER('POSITRON STATES - eigenvalues',-1)
         IVAL = 0
-        CALL PREIGV(EIG(IORB(IFRP)+1),NPSH(IFRP),IVAL,
-     &              WORK,LWORK)
+        IF (SPINFR.OR.LEVYLE) THEN
+           CALL PREIGB(EIG(IORB(IFRP)+1),IBEIG(IORB(IFRP)+1),
+     &                 IVAL,NESH(IFRP))
+        ELSE
+           CALL PREIGV(EIG(IORB(IFRP)+1),NPSH(IFRP),IVAL,
+     &                 WORK,LWORK)
+        ENDIF
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap
@@ -967,3 +977,72 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SELIBEIG(IBEIG,IOFF,IFRP,IBBUF,JOFF,JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of integers from IBEIG according to array JVEC
+C
+C     Written by L. Visscher 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      DIMENSION IBEIG(*),
+     &          IBBUF(*),
+     &          JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+C
+C     Positronic eigenvalues
+C
+      DO I = 1,NPVEC
+        II = NPSH(IFRP)+1+JVEC(I)
+        IBBUF(I+JOFF) = IBEIG(IOFF+II)
+      ENDDO
+C
+C     Electronic eigenvalues
+C
+      DO I = NPVEC+1,NVEC
+        II = NPSH(IFRP)+JVEC(I)
+        IBBUF(I+JOFF) = IBEIG(IOFF+II)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preigb */
+      SUBROUTINE PREIGB(EIG,IBEIG,NVAL,IVAL)
+C*****************************************************************************
+C
+C     Prints eigenvalues and their degeneracies
+C
+C     Written by T. Saue
+C     LAST VERSION: July 23 1994
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <pgroup.h>
+C
+      DIMENSION EIG(*),IBEIG(*)
+      CHARACTER FMT*6,MXFORM*6
+C
+      EIGMAX = D0
+      DO J = IVAL+1,IVAL+NVAL
+        EIGMAX = MAX(EIGMAX,ABS(EIG(J)))
+      ENDDO
+      FMT = MXFORM(EIGMAX,18)
+C
+C     Print section
+C     =============
+C
+      WRITE(LUPRI,'(5('//FMT//',1X,A1,A3,A1,2X))')
+     &(EIG(J),'(',REP(IBEIG(J)),')',J=IVAL+1,IVAL+NVAL)
+C
+      RETURN
+      END
+C
