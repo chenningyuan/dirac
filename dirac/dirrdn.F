@@ -65,8 +65,6 @@ C
 C     Integral and basis input
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
-CTROND
-      WRITE(0,*) 'Calling HERINP'
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
