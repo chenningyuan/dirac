@@ -161,7 +161,7 @@ C
       LOGICAL REWINP,DOEA,DOIE,DOEA2,DOIE2,DOEXC
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
 C
-      NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
+      NAMELIST/RELCCSD/ NELEC,NELEC_F1,NELEC_F2,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
       NAMELIST/CCSORT/ USEOE,NORECMP
@@ -188,6 +188,8 @@ C
       REWIND (IN)
       DO I = 1, 16
          NFROZ(I) = 0
+         NELEC_F1(I) = 0
+         NELEC_F2(I) = 0
       ENDDO
       IPRNT = 0
       DOSORT  = .TRUE.
@@ -560,8 +562,9 @@ C
 C     Set up symmetry tables and parallel distribution arrays
 C     -------------------------------------------------------
 C
-      CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
-     &             .FALSE.,.TRUE.)
+C
+      CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
+     &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
 C
       NELECT = 0
       DO I = 1, 16
@@ -804,7 +807,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SYMTAB (NELEC,NFROZ,NINACT,NACT,
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
-     &                   FOCKSP,REPORT)
+     &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -828,11 +831,11 @@ C
 #include "complex.inc"
 #include "ihm.inc"
 #include "ccpar.inc"
-C
 C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
-      INTEGER NELEC(16),NFROZ(16),NINACT(16),NACT(16)
+      INTEGER NELEC(16),NELEC_F1(16), NELEC_F2(16)
+      INTEGER NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
       LOGICAL FOCKSP,REPORT
 C
@@ -845,6 +848,7 @@ C
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
+      LOGICAL ASSREP
 C
 C---------------Executable code--------------------------------------
 C
@@ -893,36 +897,101 @@ C
 C     Single reference calculation : we need only to distinguish
 C     between occupied and virtual, no active orbitals.
 C
-         NFROZEN = 0
-         DO IRP = 1, NSYMRP
-            NVIRT(IRP) = 0
-            IN  = 0
-            DO I = 1, NSP
-               IF (IREPSP(I,1).EQ.IRP) THEN
-                  IN = IN + 1
-                  IREP = IREPSP(I,2)
-                  IF (IN.LE.NELEC(IRP)) THEN
-                     NO(IREP) = NO(IREP) + 1
-                     IREPSP(I,3) = NO(IREP)
-                     IREPSPI(NO(IREP),IREP,1) = I
-                     IF (NO(IREP).GT.MAXFROZ) 
-     &                  CALL QUIT("INCREASE MAXFROZ")
-                     IF (IN.LE.NFROZ(IRP)) THEN
-                        NC(IREP) = NC(IREP) + 1
-                        IFROZ(NO(IREP),IREP) =  NC(IREP)
-                        NFROZEN = NFROZEN + 1
-                     ELSE
-                        IFROZ(NO(IREP),IREP) =  0
-                     ENDIF
-                  ELSE
-                     NVIRT(IRP) = NVIRT(IRP) + 1
-                     NV(IREP) = NV(IREP) + 1
-                     IREPSP(I,3) = - NV(IREP)
-                     IREPSPI(NV(IREP),IREP,2) = I
-                  ENDIF
-               ENDIF
-            ENDDO
+C     Check if we go through a manual or automatic assignment
+C    
+C
+         DO I = 1, 16
+            IF (NELEC_F1(I).NE.0.OR.NELEC_F2(I).NE.0) THEN
+               ASSREP = .TRUE.
+            ENDIF
          ENDDO
+         IF (ASSREP) THEN
+C
+C     Manual assignment for each abelian subgroup (Ivan Infante jan04)
+C    
+C
+            DO IRP = 1, NSYMRP
+               NELEC(IRP) = 0
+               NVIRT(IRP) = 0
+               DO IREP = 1, NREP
+                  IN = 0
+                  DO I = 1, NSP
+                     IF (IREPSP(I,2).EQ.IREP
+     &                   .AND.IREPSP(I,1).EQ.IRP) THEN
+                        IN = IN + 1
+                        IF (IREP.LE.(NREP/2)) THEN
+C
+C     In the case of a molecule with an inversion center (NFSYM=2), 
+C     we perform two separate assignments according to the gerade
+C     (NELEC_F1) and ungerade symmetry (NELEC_F2).
+C     For a molecule without inversion centre, we performe one single  
+C     assignment (NELEC_F1).
+C
+                           IF (IN.LE.NELEC_F1(IREP)) THEN 
+                              NELEC(IRP) = NELEC(IRP) + 1
+                              NO(IREP) = NO(IREP) + 1
+                              IREPSP(I,3) = NO(IREP)
+                              IREPSPI(NO(IREP),IREP,1) = I
+                           ELSE
+                              NVIRT(IRP) = NVIRT(IRP) + 1
+                              NV(IREP) = NV(IREP) + 1
+                              IREPSP(I,3) = -NV(IREP)
+                              IREPSPI(NV(IREP),IREP,2) = I
+                           ENDIF
+                        ELSE
+C
+C     Assignment for the ungerade symmetry (only if NFSYM=2)
+C
+                           IF (IN.LE.NELEC_F2(IREP-(NREP/2))) THEN
+                              NELEC(IRP) = NELEC(IRP) + 1
+                              NO(IREP) = NO(IREP) + 1
+                              IREPSP(I,3) = NO(IREP)
+                              IREPSPI(NO(IREP),IREP,1) = I
+                           ELSE
+                              NVIRT(IRP) = NVIRT(IRP) + 1
+                              NV(IREP) = NV(IREP) + 1
+                              IREPSP(I,3) = -NV(IREP)
+                              IREPSPI(NV(IREP),IREP,2) = I
+                           ENDIF
+                        ENDIF
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+C
+         ELSE ! Automatic assigment for each abelian subgroup
+C
+            NFROZEN = 0
+            DO IRP = 1, NSYMRP
+               NVIRT(IRP) = 0
+               IN  = 0
+               DO I = 1, NSP
+                  IF (IREPSP(I,1).EQ.IRP) THEN
+                     IN = IN + 1
+                     IREP = IREPSP(I,2)
+                     IF (IN.LE.NELEC(IRP)) THEN
+                        NO(IREP) = NO(IREP) + 1
+                        IREPSP(I,3) = NO(IREP)
+                        IREPSPI(NO(IREP),IREP,1) = I
+                        IF (NO(IREP).GT.MAXFROZ) 
+     &                     CALL QUIT("INCREASE MAXFROZ")
+                        IF (IN.LE.NFROZ(IRP)) THEN
+                           NC(IREP) = NC(IREP) + 1
+                           IFROZ(NO(IREP),IREP) =  NC(IREP)
+                           NFROZEN = NFROZEN + 1
+                        ELSE
+                           IFROZ(NO(IREP),IREP) =  0
+                        ENDIF
+                     ELSE
+                        NVIRT(IRP) = NVIRT(IRP) + 1
+                        NV(IREP) = NV(IREP) + 1
+                        IREPSP(I,3) = - NV(IREP)
+                        IREPSPI(NV(IREP),IREP,2) = I
+                     ENDIF
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDIF 
 C
          DO IREP = 1, NREP
 C           The number of electrons is now identical to NO, but we need
@@ -1055,9 +1124,9 @@ C
       ENDIF
 C
       IF (REPORT.AND.(.NOT.FOCKSP)) THEN
-         WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
-         WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
-         WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
+            WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
+            WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
+            WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
          IF (NREP.GT.8) THEN
 C           Write only active irreps (NO or NV > 0)
             NACT_REP = 0
@@ -2689,7 +2758,7 @@ C
          EQNS = '      '
          FOCKSP = .FALSE.
          CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,
-     &                IREPSP,IREPSPI,FOCKSP,REPORT)
+     &                IREPSP,IREPSPI,FOCKSP,REPORT,NELEC_F1,NELEC_F2)
          RETURN
       ENDIF
 C
