@@ -4,6 +4,20 @@ C
 C   (the size of CCFTCH can be reduced by storing only 
 C    the unique contraction coefficients )
 C
+C   EXPBTCH  - exponents
+C   CCFBTCH  - contraction coefficients
+C   INDXBTCH - shell indices for AO-batches
+C   KNDXBTCH(1,IBATCH) - start adress for orbital of IBATCH
+C   KNDXBTCH(2,IBATCH) - to be used for p with identical exponent
+C   IAOCLS
+C   NHKTBCH
+C   NPRFBTCH
+C   NCTFBTCH
+C   KEXPBTCH
+C   KCCFBCTH
+C   NTYPBTCH
+C   NCNTBTCH
+C   
 C      PARAMETER (MXAOBTCH=MXSHEL)
       PARAMETER (MXAOBTCH=MXSHEL*MXCONT)
 C

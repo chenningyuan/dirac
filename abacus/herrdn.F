@@ -2242,6 +2242,12 @@ C     ***** Determine IAOAO *****
 C     ***************************
 C
       CALL AOTOAO(IAOAO,IPREAD)
+C
+C     **************************
+C     **** Determine ICNTAO ****
+C     **************************
+C
+      CALL CNTAO(IPREAD)
       END
 C  /* Deck bastyp */
       SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NPRIM,NBAS,TSTRING)
@@ -4613,6 +4619,44 @@ C
          DO 600 I = 1, IAO
             WRITE (LUPRI,'(4X,I5,1X,I5)') I, IAOAO(I)
   600    CONTINUE
+      END IF
+      RETURN
+      END
+C/* Deck cntao */
+      SUBROUTINE CNTAO(IPRINT)
+C 
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+#include <shells.h>
+C
+#include <ibtfun.h>
+C
+      IORB = 0
+      DO 100 LA = 0, MAXREP
+      DO 200 IA = 1, KMAX
+         DO 300 NA = 1, KHKT(IA)
+            IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
+            IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
+               IORB = IORB + 1
+               ICNTAO(IORB)  = NCENT(IA)
+            END IF
+  300    CONTINUE
+  200 CONTINUE
+  100 CONTINUE
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('ICNTAO',-1)
+         DO 400 I = 1, IORB
+            WRITE (LUPRI,'(4X,I5,1X,I5)') I, ICNTAO(I)
+  400    CONTINUE
       END IF
       RETURN
       END

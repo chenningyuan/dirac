@@ -1085,7 +1085,7 @@ C
 #else
     6   CONTINUE
 #if defined (MOD_ERI)
-        CALL ER2INP(WORD)
+CTROND        CALL ER2INP(WORD)
 #endif
       GO TO 201
 #endif
@@ -1098,7 +1098,7 @@ C
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
 #if defined (MOD_ERI)
-      CALL ER2INP(WORD)
+CTROND      CALL ER2INP(WORD)
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
@@ -2369,9 +2369,9 @@ C
             CALL TIMER('START ',TIMSTR,TIMEND)
             IRNTYP = 0
             IF (DISTST) THEN
-               CALL ER2DIS(WORK,LWORK)
+CTROND               CALL ER2DIS(WORK,LWORK)
             ELSE
-               CALL ER2INT(WORK,LWORK)
+CTROND               CALL ER2INT(WORK,LWORK)
             END IF
             CALL TIMER('ERIDRV',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)

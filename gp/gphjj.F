@@ -1880,3 +1880,41 @@ C
   140 CONTINUE
       RETURN
       END
+C  /* Deck rewmot */
+      SUBROUTINE REWSPL(LU)
+C
+C     Short interface routine for rewinding a file that may have been 
+C     split, to ensure that we search for labels on the first of the split
+C     files. This routines preserves the UNIT number.
+C
+C     K.Ruud, April 19 (2000)
+C
+#if !defined (VAR_SPLITFILES)
+      REWIND (LU)
+#else
+#include "implicit.h"
+#include "dummy.h"
+      CHARACTER FNNAME*80
+C
+      INQUIRE (UNIT=LU,NAME=FNNAME)
+      LN = 1
+ 14   CONTINUE
+      IF (FNNAME(LN:LN) .EQ. '-') THEN
+         LN = LN - 1
+         LUBKP = LU
+         CALL GPCLOSE(LU,'KEEP')
+         LU = LUBKP
+         CALL GPOPEN(LU,FNNAME(1:LN),'OLD','SEQUENTIAL',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+         INQUIRE (UNIT=LU,NAME=FNNAME)
+         GOTO 15
+      ELSE IF (FNNAME(LN:LN) .EQ. ' ') THEN
+         GOTO 15
+      END IF
+      LN = LN + 1
+      GOTO 14
+ 15   CONTINUE
+      REWIND (LU)
+#endif
+      RETURN
+      END

@@ -512,11 +512,12 @@ if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
 ERIOBJS = \\
-eri/fck3aob.o eri/fck3drv.o eri/fck3ftuv.o eri/fck3mom.o eri/fck3odb.o 
-#eri/eri2aob.o eri/eri2ave.o eri/eri2car1.o eri/eri2car2.o eri/eri2cft.o \
-#eri/eri2dis.o eri/eri2drv.o eri/eri2fck.o eri/eri2her.o eri/eri2odb.o  \
-#eri/eri2out.o eri/eri2par.o eri/eri2pro.o eri/eri2sph.o eri/eri2sym.o \
-#eri/eri2vec.o eri/eriprg.o  eri/erisph.o 
+eri/fck3aob.o eri/fck3drv.o eri/fck3ftuv.o eri/fck3mom.o eri/fck3odb.o \
+eri/eri2aob.o  eri/erisph.o eri/eri2ave.o eri/eri2car1.o eri/eri2car2.o \
+eri/eri2cft.o eri/eri2dis.o eri/eri2drv.o eri/eri2fck.o eri/eri2her.o \
+eri/eri2odb.o  eri/eri2out.o eri/eri2pro.o eri/eri2sph.o eri/eri2sym.o \
+eri/eri2vec.o eri/eri2r12.o
+#eri/eriprg.o  eri/eri2par.o 
 EOF
 fi
 #

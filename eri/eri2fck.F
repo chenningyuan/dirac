@@ -586,8 +586,8 @@ C NECgh980505  FAC = DP5
              WRITE(LUPRI,*) '*** WARNING!!! This value for IFCTYP is '//
      &               'probably not correctly implemented! ***'
          END IF
-	 CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
-     &               IY,FAC)
+Cdirac	 CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
+Cdirac     &               IY,FAC)
       END DO
       RETURN
       END

@@ -9,7 +9,7 @@ C     Keep parameters with length of common block up to date !
      &                IPTCOR(3*MXCENT,2), NAXREP(0:7,2), IPTAX(3,2),
      &                IPTXYZ(3,0:7,2), IPTNUC(MXCENT,0:7),ISOP(0:7),
      &                NROTS,NINVC,NREFL,IXVAL(0:7,0:7),NCOS(8,2),
-     &                ICLASS(MXCORB),IPAR(0:7),JSOP(0:7),ICOS(8,2),
-     &                I2COSX(8,8,2,2)
+     &                ICLASS(MXCORB),ICNTAO(MXCORB),
+     &                IPAR(0:7),JSOP(0:7),ICOS(8,2),I2COSX(8,8,2,2)
       PARAMETER (NSYMMTR=16)
       COMMON /SYMMTR/ FMULT(0:7), PT(0:7)

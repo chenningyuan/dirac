@@ -609,18 +609,18 @@ C
      &       CALL STOPIT('ODCDRV','ERI_NODDRV',KLAST,LWORK)
          LWRK = LWORK - KLAST + 1
 C
-         CALL ERI_NODDRV(IODCL1,IODCL2,
-     &                   IODBC1,IODBC2,RODBC1,RODBC2,
-     &                   IODPP1,IODPP2,RODPP1,RODPP2,
-     &                   FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
-     &                   WORK(KACTAB),WORK(KACTCD),
-     &                   WORK(KSCRAB),WORK(KSCRCD),
-     &                   WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &                   WORK(KLMNVL),WORK(KLMNSM),WORK(KPNTUV),
-     &                   WORK(KRBUF), WORK(KIBUF),
-     &                   WORK(KCLCPU),WORK(KWHICH),WORK(KIJS),MXCLS2,
-     &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
-     &                   WORK(KLAST),LWRK,IPRINT)
+Cdiracn         CALL ERI_NODDRV(IODCL1,IODCL2,
+Cdirac     &                   IODBC1,IODBC2,RODBC1,RODBC2,
+Cdirac     &                   IODPP1,IODPP2,RODPP1,RODPP2,
+Cdirac     &                   FMAT, DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,
+Cdirac     &                   WORK(KACTAB),WORK(KACTCD),
+Cdirac     &                   WORK(KSCRAB),WORK(KSCRCD),
+Cdirac     &                   WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
+Cdirac     &                   WORK(KLMNVL),WORK(KLMNSM),WORK(KPNTUV),
+Cdirac     &                   WORK(KRBUF), WORK(KIBUF),
+Cdirac     &                   WORK(KCLCPU),WORK(KWHICH),WORK(KIJS),MXCLS2,
+Cdirac     &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
+Cdirac     &                   WORK(KLAST),LWRK,IPRINT)
       ELSE
          CALL ODCDR1(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
@@ -3034,3 +3034,16 @@ C
      &                      )
       RETURN
       END
+C  /* Deck erfciv */
+      FUNCTION ERFCIV(THR)
+#include <implicit.h>
+      PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
+      DIMENSION ERFCI(0:15)
+      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
+     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0, 
+     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0, 
+     &                       5.04203D0, 5.26151D0, 5.47248D0, 5.67585D0/
+      ARG = MAX(MAX(ABS(THR),THRMAX),D0)
+      ERFCIV = ERFCI(-NINT(DLOG10(ARG)))
+      RETURN
+      END 

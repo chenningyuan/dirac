@@ -3114,6 +3114,9 @@ C
 #ifdef MOD_KRMC
       CALL OPTINI()
 #endif
+#ifdef MOD_ERI
+      CALL FCK3INI
+#endif
 C
       RETURN
       END

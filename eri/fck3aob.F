@@ -93,11 +93,14 @@ C
 C     AO batches
 C     ==========
 C
-
+C.....Smallest exponent
       EXPAOMIN = 1.0D10
+C.....Largest contraction coefficient
       CCFAOMAX = 0.0D0
 
+C.....Largest number of primitives in AO-batch
       MAXAOPRF = 1 
+C.....Largest number of contracted functions in AO-batch
       MAXAOCTF = 1 
       IORB = 1
       NB = 0
@@ -245,6 +248,13 @@ C
 
       SUBROUTINE AOBTCH2(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,
      &                   NDIMC,IPNTC,IPNTP,ISHELL,IORB,IPRINT)
+C***********************************************************************
+C     
+C     Exctract minimal non-zero blocks from a contraction matrix for a
+C     given block. This defines an AO-batch. In the completely uncontracted
+C     case, the batch is 1 x 1.
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -265,7 +275,7 @@ C
       SAVE IADRP, IADRC, IADRO, NBTCH
 C
 C     Construct matrix MAT containing 1 and 0 only, then fill
-C     out all elements within each contraction matrix
+C     out all elements within each contraction matrix.
 C
       CALL IZERO(MAT,NUCA*NRCA)
 C
@@ -429,6 +439,8 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETAOCLS(IPRINT)
+C
+C     Group AO-bacthes into classes having the same center
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -475,6 +487,12 @@ C ---------------------------------------------------------------
 C
 
       SUBROUTINE SETSPEXP(IPRINT)
+C
+C     Look for batches with identical s and p exponents
+C     NTYP = 1 single batch
+C     NTYP = 2 combined batch of s and p
+C     Combined batches give considerable speedups because
+C     the incomplete gamma function is calculated only once.
 #include"implicit.h"
 #include"priunit.h"
 #include "mxcent.h"
