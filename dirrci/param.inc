@@ -16,4 +16,4 @@ C
       PARAMETER (N2=100)
       PARAMETER (N3=200)
       PARAMETER (N4=50)
-      PARAMETER (N8=5)
+      PARAMETER (N8=10)
