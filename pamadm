@@ -165,6 +165,7 @@ endif
 if($GENTAR) then
   mv Makefile Makefile.buf
   mv DIRAC.new.tar.gz tarbuf.gz 
+  mv configure configure.buf
 endif
 #
 #  Write active modules
@@ -499,6 +500,7 @@ if($GENTAR) then
 #
   mv -f Makefile.buf Makefile
   mv -f tarbuf.gz DIRAC.new.tar.gz 
+  mv -f configure.buf configure
 endif
 exit 0 
 
