@@ -1,0 +1,905 @@
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dhfout */
+      SUBROUTINE DHFOUT(CMO,EIG,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Output module for DIRAC
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxorb.h>
+#include <mxcent.h>
+C
+#include <nuclei.h>
+#include <frame.h>
+#include <dcblab.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+#include <dcbdhf.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <dcbpsi.h>
+      LOGICAL LBIT,LVCON
+      CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
+      DIMENSION CMO(*),EIG(*),WORK(LWORK)
+#include <memint.h>
+C
+C     Summary of calculation
+C     ======================
+C
+      LVCON = DOLVC.AND.(INTFLG.EQ.3)
+      IF(.NOT.ONESYS) THEN
+        CALL HEADER('SCF - CYCLE',-1)
+        IF(ERGCNV) THEN
+          WRITE(LUPRI,'(A,A,1P,E9.3)')
+     &      '* Convergence on total energy.',
+     &      ' Convergence threshold:',SCFCNV
+        ELSEIF(FCKCNV) THEN
+        WRITE(LUPRI,'(A,A,1P,E9.3)')
+     &      '* Convergence on total Fock matrix.',
+     &      ' Convergence threshold:',SCFCNV
+        ELSEIF(EVCCNV) THEN
+        WRITE(LUPRI,'(A,A,1P,E9.3)')
+     &  '* Convergence on norm of error vector(approximate gradient).',
+     &   ' Convergence threshold:',SCFCNV
+        ENDIF
+        WRITE(LUPRI,'(A,A)')
+     &   '* ERGVAL - convergence',
+     &   ' on total energy',
+     &   '* FCKVAL - convergence',
+     &   ' on maximum change in total Fock matrix',
+     &   '* EVCVAL - convergence',
+     &   ' on error vector (approximate gradient)'
+        CALL PRSYMB(LUPRI,'-',128,0)
+        WRITE(LUPRI,1000)
+        CALL PRSYMB(LUPRI,'-',128,0)
+        OPEN(LUCYCL,FILE ='DFCYCL',STATUS='OLD',ACCESS='SEQUENTIAL',
+     &              FORM = 'FORMATTED')
+        REWIND LUCYCL
+        DO 10 I = 1,NITER
+          READ(LUCYCL,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
+     &                 CACC,CPUTID,INTTYP,DAYTID
+          WRITE(LUPRI,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
+     &                CACC,CPUTID,INTTYP,DAYTID
+   10   CONTINUE
+        CLOSE(LUCYCL,STATUS='KEEP')
+        CALL PRSYMB(LUPRI,'-',128,0)
+        IF(SUCCES) THEN
+          WRITE(LUPRI,'(A,I5,A)')
+     +       '* Convergence after ',NITER,' iterations'
+        ELSE
+          WRITE(LUPRI,'(A,I5,A)')
+     +       '* No convergence after ',NITER,' iterations'
+        ENDIF
+        WRITE(LUPRI,'(A)') '* Average CPU-time per iteration: '
+        INTTYP = 'No 2-ints'
+        IF(ITRSCF(0).GT.0) THEN
+          SCFTID(0) = SCFTID(0)/ITRSCF(0)
+          CPUTID    = SECTID(SCFTID(0))
+          WRITE(LUPRI,'(6X,A,A,3X,A12)') INTTYP,' :',CPUTID
+        ENDIF
+        DO I = 1,7
+        IF(ITRSCF(I).GT.0) THEN
+          SCFTID(I) = SCFTID(I)/ITRSCF(I)
+          CPUTID    = SECTID(SCFTID(I))
+          INTTYP    = '         '
+          IF(LBIT(I,1)) INTTYP(1:2) = 'LL'
+          IF(LBIT(I,2)) INTTYP(4:5) = 'SL'
+          IF(LBIT(I,3)) INTTYP(7:8) = 'SS'
+          WRITE(LUPRI,'(6X,A,A,3X,A12)') INTTYP,' :',CPUTID
+        ENDIF
+        ENDDO
+        CALL HEADER('TOTAL ENERGY',-1)
+        ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
+        FMT = MXFORM(ERGMAX,20)
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +     'Electronic energy       :   ',ELERGY
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +     'Nuclear repulsion energy:   ',POTNUC
+        IF(LVCON) THEN
+          WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +       'SS Coulombic correction:    ',CORRLV
+        ENDIF
+        WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +     'Total energy            :   ',DHFERG
+      ENDIF
+      DO 100 IFRP = 1,NFSYM
+        IF(NORB(IFRP).EQ.0) GOTO 100
+        CALL HEADER('Fermion corep '//FREP(IFRP),-1)
+C
+C      Electron states - eigenvalues
+C      =============================
+C
+      IF(LBIT(IPREIG,1).AND.NESH(IFRP).NE.0) THEN
+        CALL HEADER('ELECTRON STATES - eigenvalues',-1)
+        IVAL = NPSH(IFRP)
+        CALL PREIGV(EIG(IORB(IFRP)+1),NESH(IFRP),IVAL,
+     &              WORK,LWORK)
+      ENDIF
+C
+C      Positron states - eigenvalues
+C      =============================
+C
+      IF(LBIT(IPREIG,2).AND.NPSH(IFRP).NE.0) THEN
+        CALL HEADER('POSITRON STATES - eigenvalues',-1)
+        IVAL = 0
+        CALL PREIGV(EIG(IORB(IFRP)+1),NPSH(IFRP),IVAL,
+     &              WORK,LWORK)
+      ENDIF
+C
+C     Check that there are no eigenvalues in the gap
+C
+      CALL EIGCHK(EIG(IORB(IFRP)+1),NPSH(IFRP))
+  100 CONTINUE
+C
+
+      RETURN
+C
+ 1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
+     &       'Conv.acc',4X,'CPU',10X,'Integrals',3X,'Time stamp')
+ 1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
+     &       3X,A10)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prcoef */
+      SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPRCMP,ILABDF,IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Print coefficients in 
+C       AO-basis  (ILABDF = 1)
+C       SO-basis  (ILABDF = 2)
+C     VECPRI is an character array that contains information about what
+C     vectors to print.
+C
+C     Written by T.Saue 1996
+C     Last revision Jan 9 1997
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      CHARACTER VECPRI*72
+      DIMENSION CMO(*),EIG(*),VECPRI(NFSYM),WORK(LWORK)
+C
+      CALL QENTER('PRCOEF')
+#include <memint.h>
+C
+C     Loop over fermion ircops
+C     ========================
+C
+      DO 10 IFRP = 1,NFSYM
+C
+C       Find number of electronic/positronic vectors
+C       ============================================
+C
+        NVEC = 1
+        CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL  NUMLST(VECPRI(IFRP),WORK(KJVEC),NORB(IFRP),
+     &             -NPSH(IFRP),NESH(IFRP),NVEC,WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
+        IF(NVEC.EQ.0) GOTO 20
+C
+        CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
+        IF(ILABDF.EQ.1) THEN
+C
+C       Extract/expand coefficients in AO-basis
+C       =======================================
+C
+          NCBAS = NTBAS(0)
+          IF(NVEC.EQ.NORB(IFRP)) THEN
+            IF(NBSYM.EQ.1) THEN
+              NCBF1 = NTBAS(0)*NVEC*4
+              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KCBF2,NCBF1,WORK,KFREE,LFREE)
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+            ELSE
+              NCBF1 = NTBAS(0)*NVEC*4
+              NCBF2 = NFBAS(IFRP,0)*NVEC*4
+              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRINT)
+              CALL MEMREL('PRCOEF.AO',WORK,1,KCBF2,KFREE,LFREE)
+            ENDIF
+          ELSE
+            NCBF1 = NTBAS(0)*NVEC*4
+            NCBF2 = NTBAS(0)*NVEC*4
+            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+            IF(NBSYM.EQ.1) THEN
+              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
+     &                    WORK(KJVEC),NPVEC,NEVEC)
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+            ELSE
+              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
+     &                    WORK(KJVEC),NPVEC,NEVEC)
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP)
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRINT)
+            ENDIF
+          ENDIF
+        ELSE
+C
+C       Extract/expand coefficients in SO-basis
+C       =======================================
+C
+          NCBAS = NFBAS(IFRP,0)
+          IF(NVEC.EQ.NORB(IFRP)) THEN
+            NCBF  = NFBAS(IFRP,0)*NVEC
+            NCBF1 = NCBF*4
+            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+          ELSE
+            NCBF  = NFBAS(IFRP,0)*NVEC
+            NCBF1 = NCBF*4
+            NCBF2 = NCBF*NZ
+            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+            CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
+     &                  WORK(KJVEC),NPVEC,NEVEC)
+            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+            CALL MEMREL('PRCOEF.SO',WORK,1,KCBF2,KFREE,LFREE)
+          ENDIF
+        ENDIF
+C
+C       Print coefficients
+C       ==================
+C
+        CALL PRCOE1(WORK(KCBF1),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
+     &              NPVEC,NEVEC,NCBAS,IPRCMP,ILABDF)
+ 20     CONTINUE
+        CALL MEMREL('PRCOEF',WORK,1,KWORK,KFREE,LFREE)
+ 10   CONTINUE
+C
+C       Memory deallocation
+C
+      CALL MEMREL('PRCOEF.PRCOE1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('PRCOEF')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prcoe1 */
+      SUBROUTINE PRCOE1(CMO,EIG,IFRP,JVEC,NPVEC,NEVEC,NCBAS,
+     &                  IPRCMP,ILABDF)
+C*****************************************************************************
+C
+C     Print vectors (AO/SO-basis)
+C     Written by T.Saue May 6 1996
+C     Last revision: May 6 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
+#include <priunit.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+C
+#include <dcblab.h>
+#include <dgroup.h>
+#include <symmet.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      LOGICAL LBIT
+      CHARACTER FMT*6,MXFORM*6
+      DIMENSION CMO(NCBAS,NPVEC+NEVEC,4),EIG(*),JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+C
+C     Print vectors in AO-basis
+C     =========================
+C
+      IF(ILABDF.EQ.1) THEN
+        DO I = 1,NVEC
+          IF(I.GT.NPVEC) THEN
+            II = NPSH(IFRP)+JVEC(I)
+            FMT = MXFORM(EIG(II),16)
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+     +         '* Electronic eigenvalue nr.',JVEC(I),': ',
+     &         EIG(II)
+          ELSE
+            II = NPSH(IFRP)+1+JVEC(I)
+            FMT = MXFORM(EIG(II),16)
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+     +         '* Positronic eigenvalue nr.',II,': ',
+     &         EIG(II)
+          ENDIF
+          CALL PRSYMB(LUPRI,'=',52,0)
+          IOFF = 0
+          DO IC = 1,2
+          IF(LBIT(IPRCMP,IC)) THEN
+            DO J = 1,NTBAS(IC)
+              JJ  = IOFF + J
+              DVEC = ABS(CMO(JJ,I,1)) + ABS(CMO(JJ,I,2)) 
+     &             + ABS(CMO(JJ,I,3)) + ABS(CMO(JJ,I,4))
+              IF(DVEC.GT.DM10) WRITE(LUPRI,100) 
+     &          JJ,PLABEL(IPLAB(JJ,1),1),(CMO(JJ,I,IZ),IZ = 1,4)
+            ENDDO
+          ENDIF
+          IOFF = IOFF + NTBAS(IC)
+          ENDDO
+        ENDDO
+C
+C     Print vectors in SO-basis
+C     =========================
+C
+      ELSEIF(ILABDF.EQ.2) THEN
+        NVEC = NPVEC+NEVEC
+        NBRP = 4/NZ
+        DO I = 1,NVEC
+          IF(I.GT.NPVEC) THEN
+            II = NPSH(IFRP)+JVEC(I)
+            FMT = MXFORM(EIG(II),16)
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+     +         '* Electronic eigenvalue nr.',JVEC(I),': ',
+     &         EIG(II)
+          ELSE
+            II = NPSH(IFRP)+1+JVEC(I)
+            FMT = MXFORM(EIG(II),16)
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+     +         '* Positronic eigenvalue nr.',II,': ',
+     &         EIG(II)
+          ENDIF
+          CALL PRSYMB(LUPRI,'=',52,0)
+          DO IC = 1,2
+          IF(LBIT(IPRCMP,IC)) THEN
+C           IP is gerade(1)/ungerade(2) !
+            IP    = MOD(IFRP+IC,2) + 1
+            DO ISYM = 1,NBRP
+              IBSYM = JFSYM(ISYM,IP)
+              IBREP = IBSYM - 1
+              DO J = 1,NBBAS(IBREP,IC)
+                JU    = ICOS(IBSYM,IC)  + J
+                JS    = IBBAS(IBREP,IC) - IBAS(IFRP) + J
+                DVEC = ABS(CMO(JS,I,1)) + ABS(CMO(JS,I,2)) 
+     &               + ABS(CMO(JS,I,3)) + ABS(CMO(JS,I,4))
+                IF(DVEC.GT.DM10) WRITE(LUPRI,100) 
+     &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
+     &               (CMO(JS,I,IZ),IZ = 1,4)
+              ENDDO
+            ENDDO
+          ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
+C
+      RETURN
+ 100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cfsort */
+      SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP)
+C*****************************************************************************
+C
+C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
+C     to quaternionic
+C
+C     Written by T.Saue November 1994
+C     Last revision: Nov 16 1994
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(DM1 = -1.0D0)
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+C
+#include <dcblab.h>
+#include <symmet.h>
+#include <dgroup.h>
+#include <dcbqal.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      DIMENSION CMO(NFBAS(IFRP,0),NVEC,NZ),
+     &          CBUF(NFBAS(IFRP,0),NVEC,4)
+      EXTERNAL BDQALGEBRA
+#include <dcbibt.h>
+C
+      IXYZ  = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      NDIM  = NFBAS(IFRP,0)
+      NTOT  = NVEC*NDIM
+      NTOTZ = NTOT*NZ
+      IF(NZ.NE.4) CALL DZERO(CBUF,NTOT*4)
+      NBRP = 4/NZ
+      DO IC = 1,2
+        DO ISYM = 1,NBRP
+          IP    = MOD(IFRP+IC,2) + 1
+          IBRP = JFSYM(ISYM,IP) - 1
+          IOFF = IBBAS(IBRP,IC) - IBAS(IFRP)
+          DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IBRP)
+            DO I = 1,NBBAS(IBRP,IC)
+              CALL DCOPY(NVEC,CMO (I+IOFF,1,IZ),NFBAS(IFRP,0),
+     &                        CBUF(I+IOFF,1,IQ),NFBAS(IFRP,0))
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      CALL DSCAL(NTOT,DM1,CBUF(1,1,3),1)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preigv */
+      SUBROUTINE PREIGV(EIG,NVAL,IVAL,WORK,LWORK)
+C*****************************************************************************
+C
+C     Prints eigenvalues and their degeneracies
+C
+C     Written by T. Saue
+C     LAST VERSION: July 23 1994
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION EIG(*),WORK(LWORK)
+C
+      CALL QENTER('PREIGV')
+#include <memint.h>
+C
+      IF(IVAL.LT.0) IVAL = 0
+C
+C     Memory allocation
+      CALL MEMGET('INTE',KFIRST,NVAL,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNMULT ,NVAL,WORK,KFREE,LFREE)
+      CALL PREIG1(EIG(IVAL+1),NVAL,WORK(KFIRST),WORK(KNMULT))
+C
+C     Memory deallocation
+      CALL MEMREL('PREIGV.PREIG1',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('PREIGV')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck preig1 */
+      SUBROUTINE PREIG1(EIG,NVAL,IFIRST,NMULT)
+C*****************************************************************************
+C
+C     Prints eigenvalues and their degeneracies
+C
+C     Written by T. Saue
+C     LAST VERSION: July 23 1994
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER(D0 = 0.0D0)
+      CHARACTER FMT*6,MXFORM*6
+      DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
+C
+      CALL QENTER('PREIG1')
+C
+C     Find max value
+C     ==============
+C
+      EIGMAX = D0
+      DO J = 1,NVAL
+        EIGMAX = MAX(EIGMAX,ABS(EIG(J)))
+      ENDDO
+      FMT = MXFORM(EIGMAX,18)
+C
+C     Find degeneracies
+C     =================
+C
+      CALL DEGANA(NDEG,NVAL,EIG,IFIRST,NMULT)
+C
+C     Print section
+C     =============
+C
+      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
+     &     (EIG(IFIRST(I)),'(',2*NMULT(I),')',I=1,NDEG)
+C
+      CALL QEXIT('PREIG1')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck degana */
+      SUBROUTINE DEGANA(NDEG,NVAL,EIG,IFIRST,NMULT)
+C*****************************************************************************
+C
+C     Given a list EIG of ordered eigenvalues, this routine
+C     finds degeneracies. For each disctinct value, it will list
+C     its degeneracy(NMULT) and first occurrence(IFIRST)
+C
+C     Written by T. Saue
+C     LAST VERSION: July 23 1994
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(DEGTOL = 1.0D-6)
+      DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
+C
+      CALL QENTER('DEGANA')
+C
+      NDEG = 1
+      DEGVAL    = EIG(1)
+      IFIRST(1) = 1
+      NMULT(1)  = 1
+      DO 10 I = 2,NVAL
+        DEGTST = ABS(EIG(I)-DEGVAL)
+C
+C       Degeneracy
+C       ==========
+C
+        IF(DEGTST.LT.DEGTOL) THEN
+          NMULT(NDEG) = NMULT(NDEG)+1
+        ELSE
+C
+C       First distinct value
+C       ====================
+C
+          NDEG         = NDEG + 1
+          DEGVAL       = EIG(I)
+          IFIRST(NDEG) = I
+          NMULT(NDEG)  = 1
+        ENDIF
+   10 CONTINUE
+C
+      CALL QEXIT('DEGANA')
+      RETURN
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck eigchk */
+      SUBROUTINE EIGCHK(EIG,NVAL)
+C*****************************************************************************
+C
+C     This routine checks for intruder states
+C
+C     Written by T.Saue - November 1994
+C     Last revision : Nov 15 1994 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbgen.h>
+      DIMENSION EIG(NVAL)
+C
+      NGAP = 0
+      GAP = -2*CVAL*CVAL
+      DO 10 I = NVAL,1,-1
+        IF(EIG(I).LE.GAP) GOTO 20
+        NGAP = NGAP + 1
+   10 CONTINUE
+   20 CONTINUE
+      IF(NGAP.GT.0) THEN
+        CALL HEADER('WARNING from EIGCHK',-1)
+        WRITE(LUPRI,'(3X,I5,A)') NGAP,' positron states intruding'
+        WRITE(LUPRI,'(6X,I5,F18.8)') ((NVAL-I),EIG(NVAL-I),I=0,(NGAP-1))
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck caosrt */
+      SUBROUTINE CAOSRT(CAO,CMO,JVEC,NPVEC,NEVEC,IFRP,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Expand coefficients to unsorted quaternion matrix
+C
+C     Written by T.Saue May 1996
+C     Last revision: Jan 7 1997
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+      DIMENSION CMO(*),CAO(*),JVEC(NPVEC+NEVEC),WORK(LWORK)
+      CALL QENTER('CAOSRT')
+#include <memint.h>
+      NDIM  = NTBAS(0)
+      NVEC  = NPVEC + NEVEC
+      NTOT  = NVEC*NDIM
+      NTOTZ = NTOT*NZ
+      CALL MEMGET('REAL',KCBUF,NTOTZ,WORK,KFREE,LFREE)
+      CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,IPRINT)
+      CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)      
+      CALL QEXIT('CAOSRT')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck caosr1 */
+      SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,IPRINT)
+C*****************************************************************************
+C
+C     Expand coefficients to unsorted quaternion matrix
+C
+C     Written by T.Saue May 1996
+C     Last revision: May 6 1996
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(DM1 = -1.0D0)
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+C
+#include <dcblab.h>
+#include <dgroup.h>
+#include <symmet.h>
+#include <dcbqal.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      DIMENSION CMO(NFBAS(IFRP,0),NORB(IFRP),NZ),
+     &          CBUF(NTBAS(0),NVEC,NZ),CAO(NTBAS(0),NVEC,4)
+      EXTERNAL BDQALGEBRA
+#include <dcbibt.h>
+C
+      NTOT = NVEC*NTBAS(0)
+      NTOTZ = NTOT*4
+      IF(NBSYM.EQ.1) THEN
+        DO IZ = 1,4
+          CALL DCOPY(NTOT,CMO(1,IVEC+1,IZ),1,CAO(1,1,IZ),1)
+        ENDDO
+      ELSE
+        CALL DZERO(CBUF,NTOTZ)
+        DO IZ = 1,NZ
+          IQ = IPQTOQ(IZ,0)
+C
+C         IS - index of sorted basis
+C         IU - index of unsorted basis
+C
+          NBRP     = 4/NZ
+          DO IC = 1,2
+C           IP is gerade(1)/ungerade(2) !
+            IP    = MOD(IFRP+IC,2) + 1
+            DO ISYM = 1,NBRP
+              IBSYM = JFSYM(ISYM,IP)
+              IBREP = IBSYM - 1
+              DO I = 1,NBBAS(IBREP,IC)
+                IU    = ICOS(IBSYM,IC)  + I
+                IS    = IBBAS(IBREP,IC) - IBAS(IFRP) + I
+                CALL DCOPY(NVEC,CMO(IS,IVEC+1,IZ),NFBAS(IFRP,0),
+     &                    CBUF(IU,1,IQ),NTBAS(0))
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+C
+C     Transform to AO basis
+C
+        DO IZ = 1,4
+          CALL VTSOAO(CBUF(1,1,IZ),CAO(1,1,IZ),NTBAS(0),
+     &              NVEC,IPRINT)
+        ENDDO
+      ENDIF
+      CALL DSCAL(NTOT,DM1,CAO(1,1,3),1)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ORBCNT(JVEC,NVEC,IFRP,NPVEC,NEVEC)
+C*****************************************************************************
+C     Find number of electronic/positronic vectors
+C     
+C     Written by T.Saue Jan 7 1996
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION JVEC(NVEC)
+#include <dcborb.h>
+C
+      NPVEC = 0
+      NEVEC = 0
+      II = 0
+      DO 10 I = 1,NVEC
+        J = JVEC(I)
+C
+C       Positronic orbital in range [-NPSH(IFRP),-1]
+C
+        IF    (J.LT.0.AND.J.GE.(-NPSH(IFRP))) THEN
+          II       = II + 1
+          JVEC(II) = J
+          NPVEC    = NPVEC + 1
+C 
+C       Electronic orbital in range [1,NESH(IFRP)]
+C
+        ELSEIF (J.GT.0.AND.J.LE.NESH(IFRP)) THEN
+          II       = II + 1
+          JVEC(II) = J
+          NEVEC    = NEVEC + 1
+        ENDIF
+ 10   CONTINUE
+C
+      NVEC = NPVEC+NEVEC
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SELCFS(CMO,IFRP,CBUF,JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of vectors from CMO according to array JVEC
+C
+C     Written by T.Saue 1997
+C     Last revision Jan 8 1997
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      DIMENSION CMO(NFBAS(IFRP,0),NORB(IFRP),NZ),
+     &          CBUF(NFBAS(IFRP,0),NPVEC+NEVEC,NZ),
+     &          JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+      DO IZ = 1,NZ
+C
+C       Positronic vectors
+C
+        DO I = 1,NPVEC
+          II = NPSH(IFRP)+1+JVEC(I)
+          CALL DCOPY(NFBAS(IFRP,0),CMO(1,II,IZ),1,CBUF(1,I,IZ),1)
+        ENDDO
+C
+C       Electronic vectors
+C
+        DO I = NPVEC+1,NVEC
+          II = NPSH(IFRP)+JVEC(I)
+          CALL DCOPY(NFBAS(IFRP,0),CMO(1,II,IZ),1,CBUF(1,I,IZ),1)
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PHATRA */
+      SUBROUTINE PHATRA(VEC,NDIM,NVEC,NZ)
+C***********************************************************************
+C
+C     Phase transform of vectors
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0, DM1 = -1.0D0)
+      DIMENSION VEC(NDIM,NVEC,NZ),A(4),B(4)
+C
+      IF    (NZ.EQ.1) THEN
+C
+C     Real vectors
+C     ============
+C
+        DO J = 1,NVEC
+C
+C         Find largest absolute value
+C
+          IB = 1
+          DB = ABS(VEC(1,J,1))
+          DO I = 2,NDIM
+            DM = ABS(VEC(I,J,1))
+            IF(DM.GT.DB) THEN
+              DB = DM
+              IB = I
+            ENDIF
+          ENDDO
+C
+C         Scale with minus one if largest element is negative
+C
+          IF(DM.LT.D0) CALL DSCAL(NVEC,DM1,VEC,1)
+        ENDDO
+      ELSEIF(NZ.EQ.2) THEN
+C
+C     Complex vectors
+C     ===============
+C
+        DO J = 1,NVEC
+C
+C         Find largest absolute value
+C
+          IB = 1
+          DB = PYTHAG(VEC(1,J,1),VEC(1,J,2))
+          DO I = 2,NDIM
+            DM = PYTHAG(VEC(I,J,1),VEC(I,J,2))
+            IF(DM.GT.DB) THEN
+              DB = DM
+              IB = I
+            ENDIF
+          ENDDO
+C
+          DO IZ = 1,NZ
+            A(IZ) =  VEC(IB,J,IZ)/DB
+          ENDDO
+          DO I = 1,NDIM
+            B(1)       = VEC(I,J,2)*A(1) - VEC(I,J,1)*A(2)
+            VEC(I,J,1) = VEC(I,J,1)*A(1) + VEC(I,J,2)*A(2)            
+            VEC(I,J,2) = B(1)
+          ENDDO
+        ENDDO
+      ELSEIF(NZ.EQ.4) THEN
+C
+C     Quaternion vectors
+C     ==================
+C
+        DO J = 1,NVEC
+C
+C         Find largest absolute value
+C
+          IB = 1
+          DB = PYTHAG(PYTHAG(VEC(1,J,1),VEC(1,J,2)),
+     &                PYTHAG(VEC(1,J,3),VEC(1,J,4)))
+          DO I = 2,NDIM
+            DM = PYTHAG(PYTHAG(VEC(I,J,1),VEC(I,J,2)),
+     &                  PYTHAG(VEC(I,J,3),VEC(I,J,4)))
+            IF(DM.GT.DB) THEN
+              DB = DM
+              IB = I
+            ENDIF
+          ENDDO
+C
+          DO IZ = 1,NZ
+            A(IZ) =  VEC(IB,J,IZ)/DB
+          ENDDO
+CTROND
+          WRITE(LUPRI,'(A,5(5X,E12.6))') '* PHATRA:',DB,(A(K),K=1,4)
+CTROND
+          DO I = 1,NDIM
+            B(1)       = VEC(I,J,2)*A(1) - VEC(I,J,1)*A(2)
+     &                 + VEC(I,J,4)*A(3) - VEC(I,J,3)*A(4)
+            B(2)       = VEC(I,J,3)*A(1) - VEC(I,J,4)*A(2)
+     &                 - VEC(I,J,1)*A(3) + VEC(I,J,2)*A(4)
+            B(3)       = VEC(I,J,4)*A(1) + VEC(I,J,3)*A(2)
+     &                 - VEC(I,J,2)*A(3) - VEC(I,J,1)*A(4)
+            VEC(I,J,1) = VEC(I,J,1)*A(1) + VEC(I,J,2)*A(2)
+     &                 + VEC(I,J,3)*A(3) + VEC(I,J,4)*A(4)
+            VEC(I,J,2) = B(1)
+            VEC(I,J,3) = B(2)
+            VEC(I,J,4) = B(3)
+          ENDDO
+        ENDDO
+      ELSE
+        WRITE(LUPRI,'(A,I5)') 'PHATRA: * Unknown NZ = ',NZ
+        CALL QUIT('PHATRA: Unknown NZ !')
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SELEIG(EIG,IFRP,EBUF,JVEC,NPVEC,NEVEC)
+C***********************************************************************
+C     Pick out a set of eigenvalues from EIG according to array JVEC
+C
+C     Written by L. Visscher 1997
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+      DIMENSION EIG(NFBAS(IFRP,0)),
+     &          EBUF(NPVEC+NEVEC),
+     &          JVEC(*)
+C
+      NVEC = NPVEC + NEVEC
+C
+C     Positronic eigenvalues
+C
+      DO I = 1,NPVEC
+        II = NPSH(IFRP)+1+JVEC(I)
+        EBUF(I) = EIG(II)
+      ENDDO
+C
+C     Electronic eigenvalues
+C
+      DO I = NPVEC+1,NVEC
+        II = NPSH(IFRP)+JVEC(I)
+        EBUF(I) = EIG(II)
+      ENDDO
+C
+      RETURN
+      END
