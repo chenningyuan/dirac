@@ -137,9 +137,10 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcborb.h"
+#include "dcbbas.h"
 #include "dcbham.h"
 #endif
-#include "inforb.h"
+C#include "inforb.h"
 #include "nuclei.h"
 #include "dfterg.h"
 #include "dftcom.h"
@@ -149,10 +150,15 @@ C
 #include "dgroup.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
+#else
+      DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
+#endif
       DIMENSION DMAT(*),DTRMAT(*),
      &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
-     &          WORK(LWORK),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
-     &          NCNT(*), DST(*),BUF(*)
+     &          WORK(LWORK), NCNT(*), DST(*),BUF(*)
 C
 CTROND
       TIMSTR = SECOND()
@@ -160,7 +166,8 @@ CTROND
 C
       IF (IPRINT .GE. 100) THEN
          CALL HEADER('DMAT in DFTDRV ',-1)
-         CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DMAT,1,NTBAS(0),1,NTBAS(0),
+     &               NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
 C
       IF (DOGRD) THEN
@@ -259,7 +266,7 @@ C
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,WORK(KFREE),LFREE,IPRINT)
 #endif
       IF (DOERG) THEN
-        DO I = 1, NBAST
+        DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
             AVERAG = DP5*(EXCMAT(I,J,1,1) + EXCMAT(J,I,1,1))
             EXCMAT(I,J,1,1) = AVERAG 
@@ -269,7 +276,7 @@ C
       END IF 
 CTROND      IF (DOATR) THEN
 CTROND        DO K = 1,NXCMAT
-CTROND          DO I = 1, NBAST
+CTROND          DO I = 1, NTBAS(0)
 CTROND            DO J = 1, I - 1 
 CTROND              AVERAG = EXCMAT(I,J,1,K) + EXCMAT(J,I,1,K)
 CTROND              EXCMAT(I,J,1,K) = AVERAG 
@@ -279,7 +286,7 @@ CTROND          ENDDO
 CTROND        ENDDO
 CTROND      END IF 
       IF (DOLND) THEN
-        DO I = 1, NBAST
+        DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
             AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
             EXCMAT(I,J,1,1) =   AVERAG 
@@ -321,18 +328,19 @@ CPAWSA            CALL DFT_ENE_REPORT()
       IF (IPRINT .GE. 100) THEN
          IF (DOERG) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+            CALL OUTPUT(EXCMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),1,LUPRI)
          END IF
          IF (DOLND) THEN
             CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
             CALL OUTPUT(EXCMAT(1,1,1,1),
-     &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
             CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
             CALL OUTPUT(EXCMAT(1,1,1,2),
-     &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
             CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
             CALL OUTPUT(EXCMAT(1,1,1,3),
-     &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
          END IF
          IF (DOGRD) THEN
             CALL HEADER('GRADFT in DFTDRV ',-1)
@@ -341,7 +349,7 @@ CPAWSA            CALL DFT_ENE_REPORT()
          IF (DOATR) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
             CALL OUTPUT(EXCMAT(1,1,1,1),
-     &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+     &                  1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),1,LUPRI)
          END IF
       END IF
       TIMDRV = SECOND() - TIMSTR
