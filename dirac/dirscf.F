@@ -2982,16 +2982,6 @@ C
      &                 NORB(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
-C         Do an approximate identification of the spinors by their
-C         boson character for use in the CI.
-C
-          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
-          CALL APPBOS (I,NORB(I),WORK(KINDX),
-     &                 IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
-     &                 WORK(KRDUM))
-          CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
-
 C
 C       2 : Levy-Leblond or spinfree, use matrix as supplied by dfsolv,
 C           but diagonalize blockwise
@@ -3223,6 +3213,18 @@ C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
+C
+C       Do an approximate identification of the spinors by their
+C       boson character for use in the CI.
+C
+        IF (.NOT.SPINFR .AND. .NOT.LEVYLE) THEN
+           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
+           CALL APPBOS (I,NORB(I),WORK(KINDX),
+     &                  IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                  WORK(KRDUM))
+           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
+        END IF
 C
  30   CONTINUE
 C

@@ -30,16 +30,16 @@ C DATE    : $Date$
 C FILE    : dirrdn.F
 C SOURCE  : $Source$
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
       SUBROUTINE PAMINP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Driver for input module of DIRAC
 C     Written by T.Saue April 26 1996
 C     Last revision: 260496 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbgen.h>
@@ -140,10 +140,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck geninp */
       SUBROUTINE GENINP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< General Input for DIRAC >>>
 C
@@ -153,7 +153,7 @@ C
 C       Written by Trond Saue, Tromsoe October 1993
 C       Last revision: Nov 14 1994 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <alphac.h>
@@ -498,17 +498,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck jobinp */
       SUBROUTINE JOBINP
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< Job input for DIRAC >>>
 C
 C     Written by Trond Saue May 1996
 C     Last revision: 1997/09/15 - jth (OPTIMIZE added)
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (NTABLE = 12, NDIR = 4)
@@ -606,7 +606,8 @@ C&&&& PROPERTIES:  Call property module
             NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
-C&&& HEINZ: Solve one-electronsystems using free-particle projection operators
+C&&& HEINZ: Solve one-electronsystems using free-particle 
+C           projection operators
             DOHEINZ = .TRUE.
             GO TO 100
   109    CONTINUE
@@ -697,17 +698,17 @@ Ctsaue: for backwards compatibility
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfinp */
       SUBROUTINE DHFINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for DHF-module
 C
 C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -724,8 +725,8 @@ C
 #include <dcbpsi.h>
 #include <dcbdhf.h>
 #include <dcbham.h>
-#include <dcborb.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dgroup.h>
 #include <dcbreo.h>
 C
@@ -1435,17 +1436,17 @@ C
      &          'and active shells!')
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck idnnuc */
       SUBROUTINE IDNNUC(IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C       Count number of nuclei with identical coordinates
 C
 C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0 = 1.0D0)
@@ -1500,12 +1501,12 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fldinp */
       SUBROUTINE FLDINP(WORD,INPERR)
-C*****************************************************************************
+C***********************************************************************
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       CHARACTER WORD*7
@@ -1513,10 +1514,10 @@ C
       WRITE(LUPRI,'(A)') 'FLDINP: Sorry, not yet written !'
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiinp */
       SUBROUTINE PSIINP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< Wave function Input for DIRAC >>>
 C
@@ -1524,7 +1525,7 @@ C
 C       Written by Trond Saue, Tromsoe April 1996
 C       Last revision: April 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -1539,10 +1540,10 @@ C
 #include <dcbham.h>
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','xXXXXXX',
-     &             '*MVOCAL','*RESOLV','xXXXXXX','xXXXXXX'/
+     &             '*MVOCAL','*RESOLV','*LUCITA','xXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.XXXXXX','.LVCORR',
      &             '.TSCORR','.RELCCS','.DIRRCI','.MVO   ',
-     &             '.RESOLV','xXXXXXX','xXXXXXX','xXXXXXX'/
+     &             '.RESOLV','.LUCITA','xXXXXXX','xXXXXXX'/
 C
       NJOBS = 0
 C
@@ -1557,6 +1558,7 @@ C
 C     next two in dcbgen.h -- inconsistent ? hjaaj Apr 2002 TODO
       DOCCM   = .FALSE.
       DOCIM   = .FALSE.
+      DOLUCT  = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -1653,6 +1655,9 @@ C&&&& RESOLVE: Resolve open-shell states
             NJOBS = NJOBS + 1
             GO TO 100
   110    CONTINUE
+C&&&& LUCITA: Perform spinfree CI calculation
+            DOLUCT = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
   111    CONTINUE
             GO TO 100
@@ -1690,6 +1695,24 @@ C
      &   '* Generate modified virtual orbitals'
       IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
+      IF(DOLUCT)WRITE(LUPRI,'(1X,A)') '* Run LUCITA code'
+      IF(DOLVC) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &   '* SS integrals neglected: ',
+     &   '  Interatomic Coulombic SS-contributions modelled ',
+     &   '  by  classical repulsion of small component atomic charges.'
+C
+C        Calculate LV-correction
+C        (SS integrals modelled by Coulombic correction)
+C        ===============================================
+C
+CTROND         CALL LVCORR(WORK,LWORK,IPRGEN)
+      END IF
+      IF(DOTSC) WRITE(LUPRI,'(1X,A)')
+     &   '* SS integrals neglected: ',
+     &   '  Interatomic Coulombic SS-contributions modelled ',
+     &   '  by  nuclear attraction integrals using ',
+     &   '  small component atomic charges.'
 C
 C     Process input for various program sections
 C     ==========================================
@@ -1731,6 +1754,7 @@ CTROND        CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
         CALL RESINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
+        CALL LUCTINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     8 CONTINUE
         GO TO 200
@@ -1751,6 +1775,7 @@ C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
+      CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
 C
 C     Input of relccsd module
 C
@@ -1772,10 +1797,197 @@ C      CALL DFTINP(WORD)
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LUCTINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C       Input section for LUCITA module
+C
+C       Written by Timo Fleig, December 2001
+C       (modified DHFINP routine)
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <luctinp.h>
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+      LOGICAL   SET,RESET,NEWDEF
+      CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
+C
+      DIMENSION WORK(LWORK)
+      DIMENSION IMOKW(NTABLE)
+C
+C
+      DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
+     &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
+     &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
+     &            '.RAS2  ','.RAS3  ','.DENSI '/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C     Initialize keyword status flags
+C
+      DO IKW = 1,NTABLE
+         IMOKW(IKW) = 0
+      END DO
+C
+C
+C     Process input for LUCITA
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*LUCITA')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     &            '" not recognized in LUCITA.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in LUCTINP.')
+C
+C&&& TITLE : One title line for CI specification
+    1          CONTINUE
+                  READ(LUCMD,'(A)') TITLUC
+                  IMOKW(1) = 1
+               GO TO 100
+    2          CONTINUE
+C&&& INIWFC: Initial DHF wave function (closed- or open-shell)
+                  READ(LUCMD,'(A)') WAFFCD
+                  IMOKW(2) = 1
+               GO TO 100
+    3          CONTINUE
+C&&& CITYPE: Type of CI calculation (FCI, SD, SDTQ, RAS, GAS)
+                  READ(LUCMD,'(A)') CALCTP
+                  IMOKW(3) = 1
+               GO TO 100
+    4          CONTINUE
+C&&& NROOTS: Number of eigenvalues
+                  READ(LUCMD,*) NROOTD
+                  IMOKW(4) = 1
+               GO TO 100
+    5          CONTINUE
+C&&& SYMMET: State symmetry
+                  READ(LUCMD,*) ISSYMD
+                  IMOKW(5) = 1
+               GO TO 100
+    6          CONTINUE
+C&&& NACTEL: Number of active electrons
+                  READ(LUCMD,*) NACTED
+                  IMOKW(6) = 1
+               GO TO 100
+    7          CONTINUE
+C&&& MULTIP: State spin multiplicity
+                  READ(LUCMD,*) IMULTD
+                  IMOKW(7) = 1
+               GO TO 100
+    8          CONTINUE
+C&&& PRINTG: Global LUCIA print flag
+                  READ(LUCMD,*) IPRNGD
+                  IMOKW(8) = 1
+               GO TO 100
+    9          CONTINUE
+C&&& PRINTL: Local print flag DIRLUC
+                  READ(LUCMD,*) IPRNLD
+                  IMOKW(9) = 1
+               GO TO 100
+   10          CONTINUE
+C&&& SZCALC: Rough size of calculation
+                  READ(LUCMD,'(A)') SZCALD
+                  IMOKW(10) = 1
+               GO TO 100
+   11          CONTINUE
+C&&& INACTI: Inactive function space
+                  READ(LUCMD,'(A)') CRDINA
+                  IMOKW(11) = 1
+               GO TO 100
+   12          CONTINUE
+C&&& GASSHE: Number of GAS and distribution
+                  READ(LUCMD,*) INGASD
+                  DO IR = 1,INGASD,1
+                    READ(LUCMD,'(A)') CRDGAS(IR)
+                  END DO
+                  IMOKW(12) = 1
+               GO TO 100
+   13          CONTINUE
+C&&& GASSPC: Cumulated max. and min. GAS occupations
+                  READ(LUCMD,*) NSEQCD
+                  DO IR = 1,INGASD,1
+                    READ(LUCMD,'(A)') CRDGOC(IR)
+                  END DO
+                  IMOKW(13) = 1
+               GO TO 100
+   14          CONTINUE
+C&&& FROORB: Frozen orbital function space
+                  READ(LUCMD,'(A)') CRDFRO
+                  write(6,'(6A,1A72)') 'CRDFRO',CRDFRO
+                  IMOKW(14) = 1
+               GO TO 100
+   15          CONTINUE
+C&&& RAS1  : RAS1 function space
+                  READ(LUCMD,'(A)') CRDRS1
+                  READ(LUCMD,*) MXHL1D
+                  IMOKW(15) = 1
+               GO TO 100
+   16          CONTINUE
+C&&& RAS2  : RAS2 function space
+                  READ(LUCMD,'(A)') CRDRS2
+                  IMOKW(16) = 1
+               GO TO 100
+   17          CONTINUE
+C&&& RAS3  : RAS3 function space
+                  READ(LUCMD,'(A)') CRDRS3
+                  READ(LUCMD,*) MXEL3D
+                  IMOKW(17) = 1
+               GO TO 100
+   18          CONTINUE
+C&&& DENSI : Level of density matrix calculation (1-,1- and 2-particle)
+                  READ(LUCMD,*) IDENSD
+                  IMOKW(18) = 1
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in DHFINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in DHFINP.')
+            END IF
+      END IF
+  300 CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ANWINP */
       SUBROUTINE ANWINP(WRDSRC,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< Analysis Input for DIRAC >>>
 C
@@ -1783,7 +1995,7 @@ C
 C       Written by Trond Saue, April 1996
 C       Last revision: April 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -1969,17 +2181,17 @@ C
 C
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popinp */
       SUBROUTINE POPINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for Mulliken population analysis
 C
 C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -1989,8 +2201,8 @@ C
 #include <dcbgen.h>
 #include <dcbana.h>
 #include <dcbpop.h>
-#include <dcborb.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dgroup.h>
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
@@ -2145,17 +2357,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjinp */
       SUBROUTINE PRJINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for module for wavefunction projection
 C
 C     Written by T.Saue - April 1996
 C     Last revision: Apr 26 - 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -2165,8 +2377,8 @@ C
 #include <dcbgen.h>
 #include <dcbana.h>
 #include <dcbprj.h>
-#include <dcborb.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dgroup.h>
 #include <nuclei.h>
 C
@@ -2361,17 +2573,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vecinp */
       SUBROUTINE VECINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for vector print
 C
 C     Written by T.Saue - May 1996
 C     Last revision: May 2 - 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -2380,8 +2592,8 @@ C
 #include <dcbgen.h>
 #include <dcbana.h>
 #include <dcbvec.h>
-#include <dcborb.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dgroup.h>
 C
       LOGICAL SET, NEWDEF, RESET
@@ -2520,16 +2732,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamini */
       SUBROUTINE PAMINI(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Initialize data in DIRAC
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
@@ -2625,17 +2837,17 @@ C     ======================================
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for modification of Dirac-Coulomb Hamiltonian
 C
 C     Written by T.Saue - May 1996
 C     Last revision: May 27 1998 - tsaue and kmi
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -3176,17 +3388,18 @@ C
 C
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1ini */
       SUBROUTINE OP1INI(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
-C     Initialize one-electron integrals for standard Dirac-Coulomb Hamiltonian
+C     Initialize one-electron integrals for standard 
+C     Dirac-Coulomb Hamiltonian
 C
 C     Written by T.Saue May 21 1996
 C     Last reviosn : may 21 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
@@ -3323,9 +3536,9 @@ C
          CALL ANWINP('**ANA F',WORK,LWORK)
          CLOSE(LUCMD)
 C
-C*****************************************************************************
-C*****  A N A L Y S I S    M O D U L E  **************************************
-C*****************************************************************************
+C***********************************************************************
+C*****  A N A L Y S I S    M O D U L E  ********************************
+C***********************************************************************
 C
          IF(DOANA) CALL PAMANA(WORK,LWORK)
 C
@@ -3335,10 +3548,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prolab */
       SUBROUTINE PROLAB(ILAB,LAB,NDIM,NLAB,LINE,IUNIT,IBUF,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Process labels:
 C       Read a string of new label name and list of primitive
@@ -3370,16 +3583,16 @@ C
       RETURN
       END
 #ifdef NOT_USED
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck READREORDER*/
       SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Read in new order of orbitals
 C
 C     Written by J. Thyssen, Sep 1 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION IMOORD(MXREORD)
@@ -3390,17 +3603,17 @@ C*****************************************************************************
       RETURN
       END
 #endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mvoinp */
       SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for generation of modified virtual orbitals
 C
 C     Written by T.Saue - June 1998
 C     Last revision: June 16 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
@@ -3408,8 +3621,8 @@ C*****************************************************************************
 C
 #include <dcbgen.h>
 #include <dcbpsi.h>
-#include <dcborb.h>
 #include <dcbbas.h>
+#include <dcborb.h>
 #include <dgroup.h>
 #include <dcbmvo.h>
 C
@@ -3575,16 +3788,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck coninp */
       SUBROUTINE CONINP
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< Check concistency of the specified input >>>
 C
 C     Written by Luuk Visscher may 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -3609,16 +3822,16 @@ C
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck procc */
       SUBROUTINE PROCC
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print DHF occupation information
 C
 C     Written by J. Thyssen Aug 12 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -3684,16 +3897,16 @@ C
  1031 FORMAT(3X,'Total',19X,I4,7X,I4)
  1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rho1in */
       SUBROUTINE RHO1IN(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for 1-dimensional density plot
 C
 C     Written by T.Saue - May 9 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
