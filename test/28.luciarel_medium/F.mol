@@ -1,7 +1,7 @@
 INTGRL
  F atom in 10s6p3d basis
  LUCIAREL test basis set
-C   1    1XY           .10D-12
+C   1    2  ZXYZ       .10D-12
         9.    1
 F  1           .00000000           .00000000           .00000000
 LARGE    3    1    1    1

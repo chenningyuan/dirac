@@ -10,7 +10,7 @@
      &           RK2,NSSOA,NSSOB,LUDIA,ECORE,
      &           PLSIGN,PSSIGN,IPRNT,NTOOB,ICISTR,RJKAA,IHAM12,
      &           IBLTP,NBLOCK,IBLKFO,IASPGPTP,IBSPGPTP,
-     &           IREOTS,NGAS,NIRR_PN,MXTSOB,ISPINFREE)
+     &           ISPINFREE)
 *
 * Calculate determinant diagonal
 * Turbo-ras version
@@ -40,7 +40,6 @@
 *. Specific input
       DIMENSION IBLTP(*),IBLKFO(8,NBLOCK)
       dimension MS2VAL(NMS2VAL)
-      dimension IREOTS(NORB)
 *. Scratch
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
       DIMENSION RK2(NTOOB,NTOOB)
@@ -81,9 +80,6 @@
               CALL WRTMAT(RK2,NTOOB,NTOOB,NTOOB,NTOOB)
             end if
           END IF
-          write(6,*)
-          write(6,*) 'IREOTS (T-S --> S-T) array'
-          call iwrtma(IREOTS,1,NORB,1,NORB)
         end if
 *
         WRITE(6,*) ' TTSS for Blocks '
@@ -162,41 +158,41 @@ C?          WRITE(6,*)  ' IA = ', IA
 *
             DO IEL = 1, NAEL
 * Occupation of alpha spinors
-              X = X + H1A(IREOTS(IASTR(IEL,IA)))
+              X = X + H1A(IASTR(IEL,IA))
               if (NTEST.ge.1000) then
                  write(6,'(A,I3,A,2X,1F18.10)') 
-     &               'Adding H1A(',IREOTS(IASTR(IEL,IA)),')',
-     &                       H1A(IREOTS(IASTR(IEL,IA)))
+     &               'Adding H1A(',IASTR(IEL,IA),')',
+     &                       H1A(IASTR(IEL,IA))
               end if
             END DO
 *
             DO IEL = 1, NBEL
 * Occupation of beta spinors
-              X = X + H1B(IREOTS(IBSTR(IEL,IB)))
+              X = X + H1B(IBSTR(IEL,IB))
               if (NTEST.ge.1000) then
                  write(6,'(A,I3,A,2X,1F18.10)') 
-     &               'Adding H1B(',IREOTS(IBSTR(IEL,IB)),')',
-     &                       H1B(IREOTS(IBSTR(IEL,IB)))
+     &               'Adding H1B(',IBSTR(IEL,IB),')',
+     &                       H1B(IBSTR(IEL,IB))
               end if
             END DO
 *
             DO IEL = 1, NAEL
               DO JEL = 1, NAEL
                 X = X + 0.5*
-     &            RJ(IREOTS(IASTR(IEL,IA)),IREOTS(IASTR(JEL,IA)))
+     &            RJ(IASTR(IEL,IA),IASTR(JEL,IA))
      &                - 0.5*
-     &            RK(IREOTS(IASTR(IEL,IA)),IREOTS(IASTR(JEL,IA)))
+     &            RK(IASTR(IEL,IA),IASTR(JEL,IA))
                   if (NTEST.ge.1000) then
                      write(6,'(2X,A,2I3,A,1F18.10,3X,A,2I3,A,1F18.10)') 
      &                          'Adding 0.5 J(',
-     &                          IREOTS(IASTR(IEL,IA)),
-     &                          IREOTS(IASTR(JEL,IA)),
+     &                          IASTR(IEL,IA),
+     &                          IASTR(JEL,IA),
      &                          ') = ',
-     &            0.5*RJ(IREOTS(IASTR(IEL,IA)),IREOTS(IASTR(JEL,IA))),
+     &            0.5*RJ(IASTR(IEL,IA),IASTR(JEL,IA)),
      &                          '- 0.5 K (',
-     &                          IREOTS(IASTR(IEL,IA)),
-     &                          IREOTS(IASTR(JEL,IA)),') =',
-     &            0.5*RK(IREOTS(IASTR(IEL,IA)),IREOTS(IASTR(JEL,IA)))
+     &                          IASTR(IEL,IA),
+     &                          IASTR(JEL,IA),') =',
+     &            0.5*RK(IASTR(IEL,IA),IASTR(JEL,IA))
                   end if
               END DO
             END DO
@@ -204,20 +200,20 @@ C?          WRITE(6,*)  ' IA = ', IA
             DO IEL = 1, NBEL
               DO JEL = 1, NBEL
                X = X + 0.5*
-     &            RJ(IREOTS(IBSTR(IEL,IB)),IREOTS(IBSTR(JEL,IB)))
+     &            RJ(IBSTR(IEL,IB),IBSTR(JEL,IB))
      &               - 0.5*
-     &            RK(IREOTS(IBSTR(IEL,IB)),IREOTS(IBSTR(JEL,IB)))
+     &            RK(IBSTR(IEL,IB),IBSTR(JEL,IB))
                   if (NTEST.ge.1000) then
                      write(6,'(2X,A,2I3,A,1F18.10,3X,A,2I3,A,1F18.10)') 
      &                          'Adding 0.5 J(',
-     &                          IREOTS(IBSTR(IEL,IB)),
-     &                          IREOTS(IBSTR(JEL,IB)),
+     &                          IBSTR(IEL,IB),
+     &                          IBSTR(JEL,IB),
      &                          ') = ',
-     &            0.5*RJ(IREOTS(IBSTR(IEL,IB)),IREOTS(IBSTR(JEL,IB))),
+     &            0.5*RJ(IBSTR(IEL,IB),IBSTR(JEL,IB)),
      &                          '- 0.5 K (',
-     &                          IREOTS(IBSTR(IEL,IB)),
-     &                          IREOTS(IBSTR(JEL,IB)),') =',
-     &            0.5*RK(IREOTS(IBSTR(IEL,IB)),IREOTS(IBSTR(JEL,IB)))
+     &                          IBSTR(IEL,IB),
+     &                          IBSTR(JEL,IB),') =',
+     &            0.5*RK(IBSTR(IEL,IB),IBSTR(JEL,IB))
                   end if
               END DO
             END DO
@@ -225,21 +221,21 @@ C?          WRITE(6,*)  ' IA = ', IA
             DO IEL = 1, NAEL
               DO JEL = 1, NBEL
                 X = X + 
-     &            RJ(IREOTS(IASTR(IEL,IA)),IREOTS(IBSTR(JEL,IB)))
+     &            RJ(IASTR(IEL,IA),IBSTR(JEL,IB))
                 if (IDENSI.ge.1.or.ISPINFREE.eq.0) then
                   X = X - 
-     &            RK2(IREOTS(IASTR(IEL,IA)),IREOTS(IBSTR(JEL,IB)))
+     &            RK2(IASTR(IEL,IA),IBSTR(JEL,IB))
                   if (NTEST.ge.1000) then
                      write(6,'(2X,A,2I3,A,1F18.10,3X,A,2I3,A,1F18.10)') 
      &                          'Adding J(',
-     &                          IREOTS(IASTR(IEL,IA)),
-     &                          -IREOTS(IBSTR(JEL,IB)),
+     &                          IASTR(IEL,IA),
+     &                          -IBSTR(JEL,IB),
      &                          ') = ',
-     &            RJ(IREOTS(IASTR(IEL,IA)),IREOTS(IBSTR(JEL,IB))),
+     &            RJ(IASTR(IEL,IA),IBSTR(JEL,IB)),
      &                          '- K2 (',
-     &                          IREOTS(IASTR(IEL,IA)),
-     &                          -IREOTS(IBSTR(JEL,IB)),') =',
-     &            RK2(IREOTS(IASTR(IEL,IA)),IREOTS(IBSTR(JEL,IB)))
+     &                          IASTR(IEL,IA),
+     &                          -IBSTR(JEL,IB),') =',
+     &            RK2(IASTR(IEL,IA),IBSTR(JEL,IB))
                   end if
                 end if
               END DO
@@ -378,10 +374,11 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
 *. Obtain 2e integrals needed for diagonal
         if (IHAM12.EQ.2.or.IHAM12.eq.3) then
           call get_dia_2e(WORK(KLJ),WORK(KLK),WORK(KLK2),IDENSI,
-     &                    ISPINFREE,
-     &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,NIRR_PN,IPRDIA)
+     &                    ISPINFREE,NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
+     &                    ISPSF_MO,ENVIRO,SIGDEN_ROUTE,IPRDIA)
         end if
       end if
+C     stop 'after setting up diagonal integrals.'
 *
       DO IMK2 = 1, NMS2VAL
         if (NTEST.ge.10) then
@@ -434,7 +431,7 @@ C     CALL MEMMAR(KLH1D ,NACOBTOT, 'ADDL  ',2,'KLH1D ')
      &         WORK(KNSTSO(IATP)),WORK(KNSTSO2(IBTP)),
      &         LUDIA,ECORE,PLSIGN,PSSIGN,IPRDIA,NTOOB,ICISTR,
      &         WORK(KLRJKA),IHAM12,IBLTP,NNBLK,IBLKFO(1,IBOFF),
-     &         IASPGPTP,IBSPGPTP,IREOTS,NGAS,NIRR_PN,MXTSOB,ISPINFREE)
+     &         IASPGPTP,IBSPGPTP,ISPINFREE)
 *
       END DO
 *     ^End of loop over MK2 spaces
@@ -451,8 +448,8 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_DIA_2E(UUUUC,UUUUE,UBBUE,IDENSI,ISPINFREE,
-     &                      ISPSF_MO,
-     &                      ENVIRO,SIGDEN_ROUTE,NIRR_PN,IPRNT)
+     &                      NGAS,NGSOB,NGSOB2,NGSOBT,NGSOBT2,ISPSF_MO,
+     &                      ENVIRO,SIGDEN_ROUTE,IPRNT)
 *
 * Obtain 2electron integrals needed for
 * constructing the determinant diagonal
@@ -480,7 +477,9 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
 #include "lucinp.inc"
 #include "ctcc.inc"
 *
-      dimension INDGATH(MXPORB),ISPSF_MO(MXNDGIRR,2),IKPERM(4)
+      dimension INDGATH(MXPORB),ISPSF_MO(MXNDGIRR,2),IKPERM(4),
+     &          NGSOB(MXPOBS,MXPNGAS),NGSOB2(MXPOBS,MXPNGAS),
+     &          NGSOBT(MXPNGAS),NGSOBT2(MXPNGAS)
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
@@ -555,30 +554,43 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
           IKPERM(4) = 3
         end if  
         N12INTS = N1ELINT + N2ELINT
-        do ISM = NSMOB/2+1, NSMOB
-          do JSM = NSMOB/2+1, NSMOB
-            NI = NTOOBS(ISM)
-            NJ = NTOOBS(JSM)
-            IOFF = IBSO(ISM)
-            JOFF = IBSO(JSM)
-            ISM_B = ISPSF_MO(ISM,1)
-            JSM_B = ISPSF_MO(JSM,1)
-            call orbind_gssm(ISM_B,NIRR_PN,INDGATH,NI,IPRNT)
-            call orbind_gssm(JSM_B,NIRR_PN,INDGATH(1+NI),NJ,IPRNT)
-            do I = 1,NI,1
-              do J = 1,NJ,1
-                if (INDGATH(I).ne.0.and.INDGATH(J+NI).ne.0) then
-                  call geth2dia_sigden(UUUUC(I-1+IOFF,J-1+JOFF),
-     &                                 WORK(KT_CC),WORK(KINDEX),
-     &                                 INDGATH(I),INDGATH(J+NI),
-     &                                 'COUL',WORK(KLIBSOBEX),N12INTS,
-     &                                 I2DIATP,IKFAC,IKPERM,NTEST)
-                else
-                  UUUUC(I-1+IOFF,J-1+JOFF) = ZERO
+        IGSOFF = 0
+        JGSOFF = 0
+        ISMOFF = 0
+        JSMOFF = 0
+        do IGS = 1,NGAS,1
+          if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
+          do JGS = 1,NGAS,1
+            if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT(JGS-1)
+            do ISM = NSMOB/2+1, NSMOB
+              if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
+              do JSM = NSMOB/2+1, NSMOB
+                if (JSM.gt.NSMOB/2+1) JSMOFF = JSMOFF + NGSOB(JSM-1,JGS)
+                NI = NGSOB(ISM,IGS)
+                NJ = NGSOB(JSM,JGS)
+                IOFF = IGSOFF + ISMOFF
+                JOFF = JGSOFF + JSMOFF
+                if (NTEST.ge.10) then
+                  write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
+                  write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
+                  write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
                 end if
+                do I = 1+IOFF,NI+IOFF,1
+                  do J = 1+JOFF,NJ+JOFF,1
+                    call geth2dia_sigden(UUUUC(I,J),
+     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   I,J,
+     &                                   'COUL',WORK(KLIBSOBEX),N12INTS,
+     &                                   I2DIATP,IKFAC,IKPERM,
+     &                                   IREOTS,IREOTS,NTEST)
+                  end do
+                end do
               end do
+              JSMOFF = 0
             end do
+            ISMOFF = 0
           end do
+          JGSOFF = 0
         end do
       end if
 *
@@ -639,32 +651,46 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
           IKPERM(3) = 4
           IKPERM(4) = 3
         end if  
-        do ISM = NSMOB/2+1, NSMOB
-          do JSM = NSMOB/2+1, NSMOB
-            NI = NTOOBS(ISM)
-            NJ = NTOOBS(JSM)
-            IOFF = IBSO(ISM)
-            JOFF = IBSO(JSM)
-            ISM_B = ISPSF_MO(ISM,1)
-            JSM_B = ISPSF_MO(JSM,1)
-            call orbind_gssm(ISM_B,NIRR_PN,INDGATH,NI,IPRNT)
-            call orbind_gssm(JSM_B,NIRR_PN,INDGATH(1+NI),NJ,IPRNT)
-            do I = 1,NI,1
-              do J = 1,NJ,1
-                if (INDGATH(I).ne.0.and.INDGATH(J+NI).ne.0) then
-                  call geth2dia_sigden(UUUUE(I-1+IOFF,J-1+JOFF),
-     &                                 WORK(KT_CC),WORK(KINDEX),
-     &                                 INDGATH(I),INDGATH(J+NI),
-     &                                 'EXC1',WORK(KLIBSOBEX),N12INTS,
-     &                                 I2DIATP,IKFAC,IKPERM,NTEST)
-                else
-                  UUUUE(I-1+IOFF,J-1+JOFF) = ZERO
+        IGSOFF = 0
+        JGSOFF = 0
+        ISMOFF = 0
+        JSMOFF = 0
+        do IGS = 1,NGAS,1
+          if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
+          do JGS = 1,NGAS,1
+            if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT(JGS-1)
+            do ISM = NSMOB/2+1, NSMOB
+              if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
+              do JSM = NSMOB/2+1, NSMOB
+                if (JSM.gt.NSMOB/2+1) JSMOFF = JSMOFF + NGSOB(JSM-1,JGS)
+                NI = NGSOB(ISM,IGS)
+                NJ = NGSOB(JSM,JGS)
+                IOFF = IGSOFF + ISMOFF
+                JOFF = JGSOFF + JSMOFF
+                if (NTEST.ge.10) then
+                  write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
+                  write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
+                  write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
                 end if
+                do I = 1+IOFF,NI+IOFF,1
+                  do J = 1+JOFF,NJ+JOFF,1
+                    call geth2dia_sigden(UUUUE(I,J),
+     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   I,J,
+     &                                   'EXC1',WORK(KLIBSOBEX),N12INTS,
+     &                                   I2DIATP,IKFAC,IKPERM,
+     &                                   IREOTS,IREOTS,NTEST)
+                  end do
+                end do
               end do
+              JSMOFF = 0
             end do
+            ISMOFF = 0
           end do
+          JGSOFF = 0
         end do
       end if
+c     stop 'After 1st exchange type diagonal 2-particle integrals.'
 *
 * ( I J_ ! J_ I)
       if (NTEST.ge.2) then
@@ -725,30 +751,44 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
             IKPERM(3) = 3
             IKPERM(4) = 4
           end if  
-          do ISM = NSMOB/2+1, NSMOB
-            do JSM = NSMOB/2+1, NSMOB
-              NI = NTOOBS(ISM)
-              NJ = NTOOBS2(JSM)
-              IOFF = IBSO(ISM)
-              JOFF = IBSO2(JSM)
-              ISM_B = ISPSF_MO(ISM,1)
-              JSM_B = ISPSF_MO(JSM,2)
-              call orbind_gssm(ISM_B,NIRR_PN,INDGATH,NI,IPRNT)
-              call orbind_gssm(JSM_B,NIRR_PN,INDGATH(1+NI),NJ,IPRNT)
-              do I = 1,NI,1
-                do J = 1,NJ,1
-                  if (INDGATH(I).ne.0.and.INDGATH(J+NI).ne.0) then
-                    call geth2dia_sigden(UBBUE(I-1+IOFF,J-1+JOFF),
-     &                                   WORK(KT_CC),WORK(KINDEX),
-     &                                   INDGATH(I),INDGATH(J+NI),
-     &                                   'EXC2',WORK(KLIBSOBEX),N12INTS,
-     &                                   I2DIATP,IKFAC,IKPERM,NTEST)
-                  else
-                    UBBUE(I-1+IOFF,J-1+JOFF) = ZERO
+          IGSOFF = 0
+          JGSOFF = 0
+          ISMOFF = 0
+          JSMOFF = 0
+          do IGS = 1,NGAS,1
+            if (IGS.gt.1) IGSOFF = IGSOFF + NGSOBT(IGS-1)
+            do JGS = 1,NGAS,1
+              if (JGS.gt.1) JGSOFF = JGSOFF + NGSOBT2(JGS-1)
+              do ISM = NSMOB/2+1, NSMOB
+                if (ISM.gt.NSMOB/2+1) ISMOFF = ISMOFF + NGSOB(ISM-1,IGS)
+                do JSM = NSMOB/2+1, NSMOB
+                  if (JSM.gt.NSMOB/2+1) 
+     &                       JSMOFF = JSMOFF + NGSOB2(JSM-1,JGS)
+                  NI = NGSOB(ISM,IGS)
+                  NJ = NGSOB2(JSM,JGS)
+                  IOFF = IGSOFF + ISMOFF
+                  JOFF = JGSOFF + JSMOFF
+                  if (NTEST.ge.10) then
+                    write(6,*) 'IGS,JGS,ISM,JSM ',IGS,JGS,ISM,JSM
+                    write(6,*) ' Index range :',1+IOFF,'...',NI+IOFF
+                    write(6,*) ' Index range :',1+JOFF,'...',NJ+JOFF
                   end if
+                  do I = 1+IOFF,NI+IOFF,1
+                    do J = 1+JOFF,NJ+JOFF,1
+                      call geth2dia_sigden(UBBUE(I,J),
+     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   I,J,
+     &                                   'EXC2',WORK(KLIBSOBEX),N12INTS,
+     &                                   I2DIATP,IKFAC,IKPERM,
+     &                                   IREOTS,IREOTS2,NTEST)
+                    end do
+                  end do
                 end do
+                JSMOFF = 0
               end do
+              ISMOFF = 0
             end do
+            JGSOFF = 0
           end do
         end if
       end if
@@ -895,8 +935,10 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 *
       else if (SIGDEN_ROUTE.eq.'SIGDEN') then
         IOFFSD = 1
-        do ISMOB=1,NSMOB/2,1
-          do IGAS=1,NGAS,1
+*
+* GAS-SYMM ordering (GAS is outer loop!)
+        do IGAS=1,NGAS,1
+          do ISMOB=1,NSMOB/2,1
 * Determine index range for this symmetry/GAS block:
             NORBSM = 0
             do IGASS=1,IGAS-1,1
@@ -919,13 +961,13 @@ C                COPDIA(A,VEC,NDIM,IPACK)
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
      &                             WORK(KINDEX),
      &                             N1ELINT,NGSSH(ISMOB,IGAS),
-     &                             ISTART,IEND,NTEST)
+     &                             ISTART,IEND,IREOTS,NTEST)
               call copvec(WORK(KLH1),H1DIA_U(IOFFSD),NGSSH(ISMOB,IGAS))
               IUB = 2
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
      &                             WORK(KINDEX),
      &                             N1ELINT,NGSSH(ISMOB,IGAS),
-     &                             ISTART,IEND,NTEST)
+     &                             ISTART,IEND,IREOTS2,NTEST)
               call copvec(WORK(KLH1),H1DIA_B(IOFFSD),NGSSH(ISMOB,IGAS))
             else
               call setvec(H1DIA_U(IOFFSD),ZERO,NGSSH(ISMOB,IGAS))
@@ -959,11 +1001,11 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 * Get diagonal one-electron integrals in SIGDEN formalism.
 *
       subroutine geth1dia_sigden(IUB,XOUT,XINT,INDEX,N1E,NUMINT,
-     &                           ISTART,IEND,IPRNT)
+     &                           ISTART,IEND,IREOTS,IPRNT)
 *
 #include "implicit.inc"
 *
-      dimension INDEX(4,N1E)
+      dimension INDEX(4,N1E),IREOTS(*)
       dimension XINT(N1E),XOUT(*)
 *
       NTESTL = 000
@@ -973,12 +1015,16 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       ZERO = 0.D0
       ICT = 1
       do ISEA=ISTART,IEND,1
+*
+* Rename to SYMM-TYPE ordering on external list:
+        ISEA_REO = IREOTS(ISEA)
         do INT=1,N1E,1
-          if (INDEX(IUB,INT).eq.ISEA.and.INDEX(IUB+2,INT).eq.ISEA.
-     &        and.INDEX(IUB+1,INT).eq.IZERO) then
+          if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
+     &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
             if (NTEST.ge.100) then
-              write(6,'(A,I5,A,I5)') 
-     &                'Writing integral no. ',INT,'to ',ICT
+              write(6,'(A,I5,A,I5,A,1F18.12)') 
+     &                'Writing integral no. ',INT,'to ',ICT,
+     &                '  Integral ',XINT(INT)
             end if
             XOUT(ICT) = XINT(INT)
             ICT = ICT + 1
@@ -986,7 +1032,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
           end if
         end do
         write(6,*) 'No integral found in geth1dia_sigden.'
-        write(6,*) 'Index pair ',ISEA,ISEA
+        write(6,*) 'Index pair ',ISEA_REO,ISEA_REO
         stop 'Quitting.'
   10    continue
       end do
@@ -1012,13 +1058,15 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 *   Timo Fleig, February 2002
 *
       subroutine geth2dia_sigden(XOUT,XINT,INDEX,ISEA,JSEA,TYPE,
-     &                           IOFF2,N12,I2DIATP,IKFAC,IKPERM,IPRNT)
+     &                           IOFF2,N12,I2DIATP,IKFAC,IKPERM,
+     &                           IREOTS,IREOTS2,IPRNT)
 *
 #include "implicit.inc"
 *
       character*4 TYPE
 *
-      dimension INDEX(4,N12),IAC(2),JAC(2),IOFF2(*),IKPERM(4)
+      dimension INDEX(4,N12),IAC(2),JAC(2),IOFF2(*),IKPERM(4),
+     &          IREOTS(*),IREOTS2(*)
       dimension XINT(N12)
 *
       NTESTL = 000
@@ -1044,10 +1092,11 @@ C                COPDIA(A,VEC,NDIM,IPACK)
           L = INDEX(IKPERM(3),INT) * IKFAC
         end if
 *
-        if (I.eq.ISEA.and.
-     &      J.eq.ISEA.and.
-     &      K.eq.JSEA.and.
-     &      L.eq.JSEA) then
+* Rename: External ST ordering, internal TS ordering:
+        if (I.eq.IREOTS(ISEA).and.
+     &      J.eq.IREOTS(ISEA).and.
+     &      K.eq.IREOTS2(JSEA).and.
+     &      L.eq.IREOTS2(JSEA)) then
           if (NTEST.ge.100) then
             write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
      &            'Diagonal int type ',TYPE,
@@ -1063,7 +1112,7 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       if (IERROR.eq.1) then
         write(6,*) 'No integral found in geth2dia_sigden.'
         write(6,*) 'N2B,N12 = ',N2B,N12
-        write(6,*) 'Index pair ',ISEA,JSEA
+        write(6,*) 'Index pair ',IREOTS(ISEA),IREOTS2(JSEA)
         write(6,*) 'Indices ',I,J,K,L
         stop 'Quitting.'
       end if

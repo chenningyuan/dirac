@@ -1241,6 +1241,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 01
       NTEST = max(NTESTL,IPRNT)
+      IZERO = 0
 *
 * Double group type
       if (DOUGRP.le.3) IDGTYP = 1
@@ -1294,9 +1295,9 @@ C       call reo_info_molcas()
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
             write(6,*)
-            if (IRI.eq.1) write(6,*) 'REAL LOOP'
+            if (IRI.eq.1.and.NTEST.ge.2) write(6,*) 'REAL LOOP'
             if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
-            if (IRI.eq.2) write(6,*) 'IMAG LOOP'
+            if (IRI.eq.2.and.NTEST.ge.2) write(6,*) 'IMAG LOOP'
             if (IRI.eq.2) write(LUINGR,'(A)') 'Imag. integrals.'
           end if
         end if
@@ -1390,7 +1391,7 @@ C       call reo_info_molcas()
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-                if (NTEST.ge.10.and.IRI.eq.1) then
+                if (NTEST.ge.20.and.IRI.eq.1) then
                   write(6,*)
                   write(6,*)
                   write(6,*) 'Printing symmetries:'
@@ -1616,6 +1617,25 @@ C       call reo_info_molcas()
                             call abend2('Quitting.')
                           end if
 *
+*  Stored integrals (DIRAC) refer to symmetry-type ordering.
+*  Internal ordering is type-symmetry, so rename:
+                          IR_IND = 0
+                          JR_IND = 0
+                          KR_IND = 0
+                          LR_IND = 0
+                          if (INDEX(1,ICOUNT).ne.IZERO) 
+     &                              IR_IND = IREOTS(INDEX(1,ICOUNT))
+                          if (INDEX(2,ICOUNT).ne.IZERO) 
+     &                              JR_IND = IREOTS(INDEX(2,ICOUNT))
+                          if (INDEX(3,ICOUNT).ne.IZERO) 
+     &                              KR_IND = IREOTS(INDEX(3,ICOUNT))
+                          if (INDEX(4,ICOUNT).ne.IZERO) 
+     &                              LR_IND = IREOTS(INDEX(4,ICOUNT))
+                          INDEX(1,ICOUNT) = IR_IND
+                          INDEX(2,ICOUNT) = JR_IND
+                          INDEX(3,ICOUNT) = KR_IND
+                          INDEX(4,ICOUNT) = LR_IND
+*
 * Index reordering and second integral in exchange case:
 * (Reason: CACA string generated e.g. for two alpha excitations,
 *          but this does not correspond to index ordering in integral!)
@@ -1691,7 +1711,10 @@ C       call reo_info_molcas()
 *
 *                           write integral to file (for debugging):
                             if (NTEST.ge.10 ) 
-     &                          write(6,*) 'INTEGRAL no. ',ICOUNT
+     &                          write(6,'(A,I4,A,4I3,A,1F18.12)') 
+     &                                'INTEGRAL no. ',ICOUNT,'(',
+     &                                 (INDEX(M,ICOUNT),M=1,4),
+     &                                ') Value: ',T(ICOUNT)
                             if (NTEST.ge.1) then
                               if (IXCH.eq.0) then
                                 write(LUINGR,'(I4,4X,4I3,1F18.10)') 
@@ -1730,7 +1753,7 @@ C       call reo_info_molcas()
 *         ^ End loop over creation part symmetry
         end do
 *       ^ End loop over excitation types
-        print*,'ICOUNT=',ICOUNT
+C       print*,'ICOUNT=',ICOUNT
       end do
 *     ^ End loop over real/imaginary
       if (NTEST.ge.1) close(LUINGR)
