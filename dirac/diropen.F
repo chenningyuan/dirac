@@ -13,7 +13,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
-     &            DM1 = -1.00D00, D2 = 2.00D00)
+     &            DM1 = -1.00D00, D2 = 2.00D00, DFTHR = 1.0D-12)
 #include <dcbgen.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
@@ -28,6 +28,9 @@ C
 C
       CALL QENTER('MKMOFK')
 C
+C     One or more open shells that do NOT couple:
+C     -------------------------------------------
+C
 C     Note: t stands for hermitian conjungation
 C     Fmo      = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
 C              = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
@@ -37,6 +40,13 @@ C
 C     Eg. for a single open shell (NACSH = 1, NAELEC = 1)
 C        beta  = 1 and 
 C        gamma = -1
+C
+C     Open shells that do couple:
+C     ---------------------------
+C
+C     See paper by J. Thyssen
+C     (reference: manuscript)
+C     
 C     
       DO I = 1,NFSYM
 C
@@ -77,9 +87,8 @@ C
       END IF
 C
 C
-C        
-C     Fmo = Fmo + 
-C           \sum_o Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
+C     Construct coupling operator L
+C
 C
       DO 10 IOPEN = 1,NOPEN
 C
@@ -115,28 +124,80 @@ C
 C
             IF (NACSH(I,IOPEN).GT.0) THEN
 C
-C              DVao FVao (store in DTEMP1(1,2))
+C              QVao (beta DCao + gamma DSao) (store in DTEMP1(1,2))
 C
                CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &            'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+IOPEN),
-     &            NTBAS(0),NTBAS(0),NZ,
      &            'N','N',IPQTOQ(1,0),FAO(1+I2BASX(I,I),1+IOPEN),
+     &            NTBAS(0),NTBAS(0),NZ,
+     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
      &            NTBAS(0),NTBAS(0),NZ,
      &            D0,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
      &            NTBAS(0),NTBAS(0),NZ)
 C
-C              DVao FVao (DCao - DSao) (store in DTEMP2)
+C              Active-Active elements
+C
+               DO 25 JOPEN = IOPEN+1,NOPEN
+                  IF (NACSH(I,JOPEN).EQ.0) GOTO 25
+C
+C                 fi = fj?
+C
+                  CALL DZERO(DTEMP1,N2BBASXQ)
+C
+                  IF (ABS(DF(IOPEN)-DF(JOPEN)).LE.DFTHR) THEN
+C
+C                    This is a tough case...
+C                    The gradient is correct, but there might
+C                    be serious trouble converging the wave-function,
+C                    because differences of diagonal elements are not
+C                    propertional to the orbital hessian.
+C
+C                    If fi = fj = 1 then it corresponds to inactive shells
+C                    so don't make the correction below.
+C
+                     IF (ABS(DF(IOPEN)-D1).LE.DFTHR) THEN
+C
+                        CALL DAXPY(N2BBASXQ,-D1,FAO,1,DTEMP1,1)
+C
+                     END IF
+C           
+                  ELSE
+C
+C                    ( + (ai-1)/(fi-fj) fi QViao
+C                      - (aj-1)/(fi-fj) fj QVjao ) DVjao
+C
+                     DSCALE = DF(IOPEN)*
+     &                        (DA(IOPEN)-D1)/(DF(IOPEN)-DF(JOPEN))
+                     CALL DAXPY(N2BBASXQ,DSCALE,
+     &                  FAO(1,1+IOPEN),1,DTEMP1,1)
+                     DSCALE = -DF(JOPEN)*
+     &                        (DA(JOPEN)-D1)/(DF(IOPEN)-DF(JOPEN))
+                     CALL DAXPY(N2BBASXQ,DSCALE,
+     &                  FAO(1,1+JOPEN),1,DTEMP1,1)
+                     CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
+     &                  'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
+     &                  NTBAS(0),NTBAS(0),NZ,
+     &                  'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+JOPEN),
+     &                  NTBAS(0),NTBAS(0),NZ,
+     &                  D0,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
+     &                  NTBAS(0),NTBAS(0),NZ)
+C
+                  END IF
+ 25            CONTINUE
+C
+C              Multiply the lot with DViao (store in DTEMP2)
+C
 C
                CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
+     &            'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+IOPEN),
      &            NTBAS(0),NTBAS(0),NZ,
-     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
+     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
      &            NTBAS(0),NTBAS(0),NZ,
      &            D0,IPQTOQ(1,0),DTEMP2(1+I2BASX(I,I)),
      &            NTBAS(0),NTBAS(0),NZ)
+C              
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in AO-basis'//
+                  CALL HEADER('DFSOLV: coupling operator in AO-basis'//
      &               ', corep '//CTMP,-1)
                   CALL PRQMAT(DTEMP2(1+I2BASX(I,I)),
      &               NFBAS(I,0),NFBAS(I,0),
