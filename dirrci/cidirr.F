@@ -2131,7 +2131,8 @@ C----------------------------------------------------
                Work1(I) = Work3(Ioff4+I-1)
             ENDDO
          ELSE
-CTROND: TOL is not defined !
+CTROND: TOL is not defined ! now it is /hjaaj June 2001
+            TOL = 1.0D-14
             CALL F01BCF(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
 C64B        CALL F01BCE(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
      &                  Work3(Ioff2),Work3(Ioff3),Work3(Ioff4))
