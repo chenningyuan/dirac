@@ -853,7 +853,7 @@ C           read old density matrix in FOCK before saving new density matrix/hj
      &            DCOVLP
                IF (DCOVLP .LT. D0 .OR. DCOVLP .GT. D2) THEN
                   WRITE(LUPRI,'(A)') ' INFO: Useless value for DCOVLP,'
-     &               //' value reset to: 1.0D0'')
+     &               //' value reset to: 1.0D0'
                   DCOVLP = D1
                END IF
                CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
@@ -873,6 +873,13 @@ C           read old density matrix in FOCK before saving new density matrix/hj
                   WRITE(LUPRI,'(I5,A,I2,A,F7.4)') NITER,
      &               ' *** Differential density matrix. DVOVLP(',
      &               IOPEN,') =',DVOVLP(IOPEN)
+                  IF (DVOVLP(IOPEN) .LT. D0 
+     &                  .OR. DVOVLP(IOPEN) .GT. D2) THEN
+                     WRITE(LUPRI,'(A,I2,A)') 
+     &                  ' INFO: Useless value for DVOVLP(',IOPEN,'),'
+     &                  //' value reset to: 1.0D0'
+                     DVOVLP(IOPEN) = D1
+                  END IF
                   CALL DAXPY(N2BBASXQ,(-DVOVLP(IOPEN)),
      &               FOCK(1+N2BBASXQ*IOPEN),1,DMAT(1+N2BBASXQ*IOPEN),1)
                END DO
