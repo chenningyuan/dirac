@@ -22,4 +22,5 @@ C     Length of common block : keep up to date !!
      +              NAELEC,NELECT,
      +              IORB(2),I2ORBT(2),I2ORBX(2,2),
      +              NCMO(2),NCMOQ(2),NCMOT,NCMOTQ,ICMO(2),ICMOQ(2),
-     +              NACSH(2,MXOPEN),NOPEN
+     +              NACSH(2,MXOPEN),NOPEN,
+     +              IASH(2),I2ASHT(2),I2ASHX(2,2)

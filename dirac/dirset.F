@@ -412,6 +412,7 @@ C
       N2TMT  = 0
       DO 100 IFRP = 1,NFSYM
         IORB(IFRP)  = NORBT
+        IASH(IFRP)  = NASHT
         NESH(IFRP)  = NFORB(IFRP,1)
         IF(URKBAL) THEN
           NZT         = 1
@@ -434,6 +435,7 @@ C
         N2ISHT      = N2ISHT + N2ISH(IFRP)
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
         NASHT       = NASHT  + NASH(IFRP)
+        I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
         N2OCC(IFRP) = NOCC(IFRP)*NOCC(IFRP)
         NOCCT       = NOCCT  + NOCC(IFRP)
@@ -465,6 +467,13 @@ C
  300    CONTINUE
         IOFF = IOFF + NORB(J)*NORBT
  200  CONTINUE
+      IOFF = 0
+      DO J = 1,NFSYM
+         DO I = 1,NFSYM
+            I2ASHX(I,J) = IOFF + IASH(I)
+         END DO
+         IOFF = IOFF + NASH(J)*NASHT
+      END DO
       N2ORBX  = NORBT*NORBT
       N2ORBXQ = NZ*N2ORBX
       N2ISHX  = NISHT*NISHT
@@ -532,7 +541,6 @@ C
       LUSMOS    = 24
       N2EVECTQ  = 0
       NSMOTQ    = 0
-C
       DO IFRP = 1,NFSYM
          ISMOQ(IFRP) = NSMOTQ
          N2EVECTQ = N2EVECTQ + N2ORB(IFRP)*NZ
