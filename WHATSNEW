@@ -1,3 +1,8 @@
+* August 29 2003
+
+  - KRMC-LUCIAREL working in general and also for real matrix groups
+  - KR-MCSCF merged into main trunk.
+
 * February 17 2003
 
   - KR-MCSCF branch krmc-work-branch with current version of program

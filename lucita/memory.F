@@ -165,6 +165,19 @@ CADDE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
+      SUBROUTINE LMEMCHK
+*
+* Check memory allocated  with the memory manager
+*
+      CALL MEMMAN(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
+*
+      RETURN
+      END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
 *
 * Memory manager routine

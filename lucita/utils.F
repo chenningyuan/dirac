@@ -523,16 +523,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine sqfile
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
       SUBROUTINE SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
 *
 * Calculate square root of positive definite symmetric matrix A

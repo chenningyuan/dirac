@@ -2759,26 +2759,3 @@ C          COPVCDP(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 *
       RETURN
       END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-      SUBROUTINE ZERORC(MBLOCK,IFIL,IAMPACKED)
-*
-* A record was known to be identical  zero
-*
-* Write corresponding info to file IFIL
-*
-* IAMPACKED added Oct. 98 / Jeppe Olsen
-      IMPLICIT REAL*8 (A-H,O-Z)
-      INTEGER ISCR(2)
-* Zero record
-      ISCR(1) = 1
-*. Packed form
-      ISCR(2) = IAMPACKED
-*
-      CALL ITODS(ISCR,2,2,IFIL)
-*
-      RETURN
-      END
