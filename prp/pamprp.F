@@ -4337,7 +4337,7 @@ C
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
-                  IF (DOATOM(IATOM)) THEN
+                  IF (DOATOM(I)) THEN
                      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
      &                 PMAT(1,1,IATOM),TISO(IATOM),DISO(IATOM),
      &                 PISO(IATOM),ANIS(IATOM),ASYM(IATOM),SKEW(IATOM),
@@ -4365,7 +4365,7 @@ C
             DO 400 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
-                  IF (DOATOM(IATOM)) THEN
+                  IF (DOATOM(I)) THEN
                       WRITE (LUPRI,'(A,A,7F10.4)') '@',
      &                 NAMDEP(IATOM),TISO(IATOM),DISO(IATOM),PISO(IATOM)
      &                 ,SKEW(IATOM),SPAN(IATOM),ANIS(IATOM),ASYM(IATOM)
