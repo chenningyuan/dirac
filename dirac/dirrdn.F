@@ -817,7 +817,10 @@ C
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-      NOQCDHF   = .FALSE.
+Ctsaue..Setting NOQCDHF true for the moment; otherwise the program tries
+C       second-order optimization when no Roothan SCF convergence and then
+C       crashed in RSETCI(krmcop.F) since no CI-part was spcified....
+      NOQCDHF   = .TRUE.
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
 C
