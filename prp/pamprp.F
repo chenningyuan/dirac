@@ -75,16 +75,15 @@ C*****  L I N E A R   R E S P O N S E  ***************************************
 C*****************************************************************************
 C
 #if defined (MOD_RSP)
-      NRSPF  = NLRBPT*NBFREQ
-      IF(ORBXLR) THEN
-        N2LRF  = NLRAPT*NRSPF*(NORBT+1)
+      IF(DOXLR) THEN
+        CALL PRPXLR(WORK,KLRF,KCNV,KLRO,KFREE,LFREE)
       ELSE
-        N2LRF  = NLRAPT*NRSPF
+        KLRO = KFREE
+        KLRF = KFREE
+        KCNV = KFREE
       ENDIF
-      CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
-      IF(DOXLR) CALL PRPXLR(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
 #else
+      KLRO = KFREE
       KLRF = KFREE
       KCNV = KFREE
 #endif
@@ -931,7 +930,8 @@ C
 #include <nqcc.h>
 #include <ibtfun.h>
       CALL DZERO(EFGEL,9*MXCENT)
-      ITYP = 0
+C     Is ITYP used anywhere? /  Feb 25 1998 - jth
+C     ITYP = 0
       DO IATOM = 1, NUCIND
          DO ICOOR1 = 1, 3
             DO ICOOR2 = ICOOR1, 3
@@ -939,7 +939,7 @@ C
                DO IREPC = 0, MAXREP
                   IF (IBTAND(ISTBNU(IATOM),
      &                 IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-                     ITYP = ITYP + 1
+C                    ITYP = ITYP + 1
                      EFGEL(ICOOR1,ICOOR2,IATOM) =
      &                    EFGEL(ICOOR1,ICOOR2,IATOM) -
      *                    EXPVAL(IPEFG(ITYP))/NUCDEG(IATOM)*
@@ -1084,37 +1084,33 @@ C
       ELSE
         IC = 1
       ENDIF
-      NSCOOR = NUCDEP*3
-      NCHES = NSCOOR*NSCOOR
-      CALL MEMGET('REAL',KSMAT,IC*NCHES  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCHES,IC*NCHES  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KISOT,IC*NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KANIS,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KASYM,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSPAR,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAPAR,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NSCOOR*2,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+C
+C     Allocate memory
+C
+      NSCOOR  = NUCDEP*3
+      N2SCOR  = NSCOOR*NSCOOR
+      NNDEP   = NUCDEP*(NUCDEP+1)/2
+      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT,IC*N2SCOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCHES,IC*N2SCOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,29)
-      CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,WORK(KSMAT),WORK(KCHES),
-     &                WORK(KISOT),WORK(KANIS),WORK(KASYM),
-     &                WORK(KSPAR),WORK(KAPAR),
-     &                WORK(KIBUF),WORK(KATOM),WORK,KFREE,LFREE)      
+      CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
+     &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
+     &                WORK(KIBUF),WORK,KFREE,LFREE)      
       CALL MEMREL('PRP_SPNSPN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Prp_SPNSP1 */
-      SUBROUTINE PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,SPNMAT,CHESS,AVEISO,
-     &                      ANISO,ASYM,SPAR,APAR,
-     &                      IBUF,DOATOM,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,DOATOM,IATINF,RATINF,
+     &                      SPNMAT,CHESS,SPNPAR,IBUF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Output routine for NMR indirect spin-spin coupling
@@ -1143,18 +1139,14 @@ C
 #include <dcbxlr.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <dgroup.h>
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),
-     &          SPNMAT(3*NUCDEP,3*NUCDEP,*),
-     &          CHESS(3*NUCDEP,3*NUCDEP,*),
-     &          AVEISO(NUCDEP*(NUCDEP + 1)/2,*),
-     &          ANISO (NUCDEP*(NUCDEP + 1)/2),
-     &          ASYM (NUCDEP*(NUCDEP + 1)/2),
-     &          SPAR (NUCDEP*(NUCDEP + 1)/2),
-     &          APAR (NUCDEP*(NUCDEP + 1)/2),
-     &          COUPLM(3,3),
-     &          IBUF(3*NUCDEP,2),WORK(*)
+     &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
+     &          SPNMAT(3*NUCDEP,3*NUCDEP),
+     &          CHESS(3*NUCDEP,3*NUCDEP),
+     &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
 #include <ibtfun.h>
       CALL QENTER('PRP_SPNSP1')
@@ -1163,54 +1155,71 @@ C
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
-      NCHES = NSCOOR*NSCOOR
+      NCHES  = NSCOOR*NSCOOR
 C
-C     Extract DSO if e-p rotations are not included
-C    
-        WRITE(6,*) 'jth',KFREE,LFREE
-      IF(SKIPEP) THEN
-        CALL DZERO(SPNMAT(1,1,2),NCHES)
-        DO I = 1,NDSOIN
-          IOP = IPDSO(I)
-          IPL = IPRPLBL(1,LEXPP(IOP))
-          READ(PRPLBL(IPL)(5:6),'(I2)') IA
-          READ(PRPLBL(IPL)(7:8),'(I2)') IB
-          SPNMAT(IA,IB,2) = EXPVAL(IOP)
-          IF(TRIANG) SPNMAT(IB,IA,2) = EXPVAL(IOP)
+C     ***************************************
+C     ***** Extract nuclear information *****
+C    ****************************************
+C
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',61,0)
+      WRITE(LUPRI,'(A)')
+     &  '@ name  charge  isotope   mass         abundance     g factor'
+      CALL PRSYMB(LUPRI,'-',61,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+      IDEG = NUCDEG(INUC)
+      IF(DOATOM(INUC)) THEN
+        TEST = .FALSE.
+        IZ   = NINT(CHARGE(INUC))
+        NISO = 0
+        DO ISO = 1,5
+          GVAL = DISOTP(IZ,ISO,'GVAL')
+          IF(GVAL.NE.0) THEN
+            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = GVAL
+            ENDIF
+          ENDIF
         ENDDO
-        IF (IPRPRP.GE.4) THEN
-          CALL HEADER('DSO part of coupling constants',1)
-          CALL PRIH2S(SPNMAT(1,1,2),'SPNSPN',WORK,KFREE,LFREE)
-        ENDIF
-        CALL DZERO(CHESS(1,1,2),NCHES)
-Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
-        WRITE(6,*) 'jth',KFREE,LFREE
-        CALL TRAHES2(SPNMAT(1,1,2),NSCOOR,CHESS(1,1,2),NSCOOR,NSCOOR,2,
-     &               WORK(KFREE),LFREE)
-Cold code        CALL TRAHES(SPNMAT(1,1,2),NSCOOR,CHESS(1,1,2),NSCOOR,NSCOOR,2)
-        CALL DZERO(AVEISO(1,2),NUCDEP*(NUCDEP + 1)/2)
-        IATIJ = 0
-        DO IATOM1 = 1, NUCDEP
-          DO IATOM2 = 1, IATOM1
-            IATIJ = IATIJ + 1
-            IF (IATOM1 .GT. IATOM2) THEN
-              CALL DZERO(COUPLM,9)
-              DO ICOOR1 = 1, 3
-                DO ICOOR2 = 1, 3
-                  IADR1 = 3*(IATOM1 - 1) + ICOOR1
-                  IADR2 = 3*(IATOM2 - 1) + ICOOR2
-                  COUPLM(ICOOR1,ICOOR2) = CHESS(IADR1,IADR2,2)
-                ENDDO
-              ENDDO
-              AVEISO(IATIJ,2) = (COUPLM(1,1) + COUPLM(2,2)
-     &                           + COUPLM(3,3))/D3
-            ELSE
-              AVEISO(IATIJ,2) = D0
-            END IF
+        IF(NISO.GT.0) THEN
+          IATINF(1,NSPEC+1) = IDEP + 1
+          IATINF(2,NSPEC+1) = IZ
+          IATINF(3,NSPEC+1) = NISO
+          WRITE(LUPRI,'
+     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+          DO J = 2,NISO
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
           ENDDO
-        ENDDO
+          DO K = 2,IDEG
+            IATINF(1,NSPEC+K) = IDEP + K
+            IATINF(2,NSPEC+K) = IZ
+            IATINF(3,NSPEC+K) = NISO
+            DO L = 1,NISO
+              RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+              RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+              RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+            ENDDO
+          ENDDO
+          NSPEC = NSPEC + IDEG
+        ENDIF
       ENDIF
-C     
+      IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_SPNSP1')
+        RETURN
+      ENDIF
+C
 C     *** Extract spin-spin couplings ***
 C
       NA = 0
@@ -1233,7 +1242,6 @@ C
 #endif
       DO IFREQ = 1,NBFREQ
 C
-        CALL PRSYMB(LUPRI,'-',72,2)
         IF(BFREQ(IFREQ).EQ.D0) THEN
 C          WRITE(LUPRI,'(A)') '*** Static values:'
         ELSE
@@ -1250,256 +1258,164 @@ C
           DO IA = 1,NA
             JA = IBUF(IA,1)
             KA = IPSPNSPN(1,JA)
-            SPNMAT(JA,JB,1) = ABLRF(IFREQ,KA,KB) 
-            IF(TRIAB) SPNMAT(JB,JA,1) = ABLRF(IFREQ,KA,KB) 
+            SPNMAT(JA,JB) = ABLRF(IFREQ,KA,KB) 
+            IF(TRIAB) SPNMAT(JB,JA) = ABLRF(IFREQ,KA,KB) 
           ENDDO
         ENDDO
 #if defined (XH4)
-      SPNMAT( 6, 4,1)   = SPNMAT(4,6,1)
-      SPNMAT( 5, 4,1)   = SPNMAT(4,5,1)
-      SPNMAT( 2, 2,1)   = SPNMAT(1,1,1)
-      SPNMAT( 3, 3,1)   = SPNMAT(1,1,1)
-      SPNMAT(14,12,1)   = SPNMAT(4,5,1)
-      SPNMAT(12,14,1)   = SPNMAT(4,5,1)
-      SPNMAT(11, 8,1)   = SPNMAT(4,5,1)
-      SPNMAT( 8,11,1)   = SPNMAT(4,5,1)
-      SPNMAT(14,13,1)   = SPNMAT(6,5,1)
-      SPNMAT(13,14,1)   = SPNMAT(6,5,1)
-      SPNMAT(11,10,1)   = SPNMAT(6,5,1)
-      SPNMAT(10,11,1)   = SPNMAT(6,5,1)
-      SPNMAT(11, 9,1)   = SPNMAT(6,5,1)
-      SPNMAT( 9,11,1)   = SPNMAT(6,5,1)
-      SPNMAT(15,14,1)   = SPNMAT(6,5,1)
-      SPNMAT(14,15,1)   = SPNMAT(6,5,1)
-      SPNMAT( 7, 4,1)   = SPNMAT(4,6,1)
-      SPNMAT( 4, 7,1)   = SPNMAT(4,6,1)
-      SPNMAT(13,12,1)   = SPNMAT(4,6,1)
-      SPNMAT(12,13,1)   = SPNMAT(4,6,1)
-      SPNMAT( 9, 8,1)   = SPNMAT(4,6,1)
-      SPNMAT( 8, 9,1)   = SPNMAT(4,6,1)
-      SPNMAT(15,12,1)   = SPNMAT(4,6,1)
-      SPNMAT(12,15,1)   = SPNMAT(4,6,1)
-      SPNMAT(10, 8,1)   = SPNMAT(4,6,1)
-      SPNMAT( 8,10,1)   = SPNMAT(4,6,1)
-      SPNMAT( 7, 7,1)   = SPNMAT(6,6,1)
-      SPNMAT( 9, 9,1)   = SPNMAT(6,6,1)
-      SPNMAT(10,10,1)   = SPNMAT(6,6,1)
-      SPNMAT(15,15,1)   = SPNMAT(6,6,1)
-      SPNMAT(13,13,1)   = SPNMAT(6,6,1)
-      SPNMAT(15,13,1)   = SPNMAT(7,6,1)
-      SPNMAT(13,15,1)   = SPNMAT(7,6,1)
-      SPNMAT(10, 9,1)   = SPNMAT(7,6,1)
-      SPNMAT( 9,10,1)   = SPNMAT(7,6,1)
-      SPNMAT(14,14,1)   = SPNMAT(5,5,1)
-      SPNMAT(11,11,1)   = SPNMAT(5,5,1)
+      SPNMAT( 6, 4)   = SPNMAT(4,6)
+      SPNMAT( 5, 4)   = SPNMAT(4,5)
+      SPNMAT( 2, 2)   = SPNMAT(1,1)
+      SPNMAT( 3, 3)   = SPNMAT(1,1)
+      SPNMAT(14,12)   = SPNMAT(4,5)
+      SPNMAT(12,14)   = SPNMAT(4,5)
+      SPNMAT(11, 8)   = SPNMAT(4,5)
+      SPNMAT( 8,11)   = SPNMAT(4,5)
+      SPNMAT(14,13)   = SPNMAT(6,5)
+      SPNMAT(13,14)   = SPNMAT(6,5)
+      SPNMAT(11,10)   = SPNMAT(6,5)
+      SPNMAT(10,11)   = SPNMAT(6,5)
+      SPNMAT(11, 9)   = SPNMAT(6,5)
+      SPNMAT( 9,11)   = SPNMAT(6,5)
+      SPNMAT(15,14)   = SPNMAT(6,5)
+      SPNMAT(14,15)   = SPNMAT(6,5)
+      SPNMAT( 7, 4)   = SPNMAT(4,6)
+      SPNMAT( 4, 7)   = SPNMAT(4,6)
+      SPNMAT(13,12)   = SPNMAT(4,6)
+      SPNMAT(12,13)   = SPNMAT(4,6)
+      SPNMAT( 9, 8)   = SPNMAT(4,6)
+      SPNMAT( 8, 9)   = SPNMAT(4,6)
+      SPNMAT(15,12)   = SPNMAT(4,6)
+      SPNMAT(12,15)   = SPNMAT(4,6)
+      SPNMAT(10, 8)   = SPNMAT(4,6)
+      SPNMAT( 8,10)   = SPNMAT(4,6)
+      SPNMAT( 7, 7)   = SPNMAT(6,6)
+      SPNMAT( 9, 9)   = SPNMAT(6,6)
+      SPNMAT(10,10)   = SPNMAT(6,6)
+      SPNMAT(15,15)   = SPNMAT(6,6)
+      SPNMAT(13,13)   = SPNMAT(6,6)
+      SPNMAT(15,13)   = SPNMAT(7,6)
+      SPNMAT(13,15)   = SPNMAT(7,6)
+      SPNMAT(10, 9)   = SPNMAT(7,6)
+      SPNMAT( 9,10)   = SPNMAT(7,6)
+      SPNMAT(14,14)   = SPNMAT(5,5)
+      SPNMAT(11,11)   = SPNMAT(5,5)
 #endif 
         IF (IPRPRP.GE.4) THEN
           CALL HEADER('Raw coupling constants',1)
           CALL PRIH2S (SPNMAT,'SPNSPN',WORK,KFREE,LFREE)
+          CALL PRQMAT(SPNMAT,NSCOOR,NSCOOR,
+     &                NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
         ENDIF
 C
 C       Transform to non-symmetry basis
 C
-        CALL DZERO(CHESS(1,1,1),NCHES)
-        WRITE(6,*) 'jth',KFREE,LFREE
+        CALL DZERO(CHESS,NCHES)
 Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
-        CALL TRAHES2(SPNMAT,NSCOOR,CHESS(1,1,1),NSCOOR,NSCOOR,2,
+        CALL TRAHES2(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2,
      &               WORK(KFREE),LFREE)
-Cold code        CALL TRAHES(SPNMAT,NSCOOR,CHESS(1,1,1),NSCOOR,NSCOOR,2)
+        IF (IPRPRP.GE.4) THEN
+          CALL HEADER('Nsym coupling constants',1)
+          CALL PRIH2S (CHESS,'SPNSPN',WORK,KFREE,LFREE)
+          CALL PRQMAT(CHESS,NSCOOR,NSCOOR,
+     &                NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
+        ENDIF
+Cold code        CALL TRAHES(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2)
 C
 C       Analyze results
 C
-        CALL SPIANA(CHESS(1,1,1),AVEISO(1,1),ANISO,
-     &                  ASYM,SPAR,APAR)
-C
-C       Print section
-C
-        IF(IPRPRP.GE.4) THEN
-          CALL HEADER('Total spin-spin-couplings',-1)
-          CALL HEADER('Isotropic couplings',-1)
-          CALL PRIDIS(NAMDPX,AVEISO,NUCDEP)
-          CALL HEADER('Asymmetric part of couplings',-1)
-          CALL PRIDIS(NAMDPX,ASYM,NUCDEP)
-          CALL HEADER('S-parameter of couplings',-1)
-          CALL PRIDIS(NAMDPX,APAR,NUCDEP)
-          CALL HEADER('A-parameter of couplings',-1)
-          CALL PRIDIS(NAMDPX,SPAR,NUCDEP)
-        ENDIF
-C
         CALL AROUND('DIRAC - Final spin-spin-couplings')
-        IATOM1 = 0
-        DO 80 I1 = 1, NUCIND
-          DO 82 ISYM1 = 0, MAXOPR
-          IF(IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
-            IATOM1 = IATOM1 + 1
-            IF (DOATOM(I1)) THEN
-            IATOM2 = 0
-            DO 85 I2 = 1, I1
-              IF(I2 .EQ. I1) THEN
-                MAXSYM = ISYM1 - 1
-              ELSE
-                MAXSYM = MAXOPR
-              END IF
-              DO 87 ISYM2 = 0, MAXSYM
-              IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
-                IATOM2 = IATOM2 + 1
-                IF (DOATOM(I2)) THEN
-                  IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
-                  NZ1 = NINT(CHARGE(I1))
-                  NZ2 = NINT(CHARGE(I2))
-                  CALL TITLER('Indirect spin-spin-coupling between '//
-     &               NAMDEP(IATOM1)//' and '//
-     &               NAMDEP(IATOM2)//':','=',-1)
-                  TEST = .FALSE.
-                  DO 90 ISO1 = 1, 5
-                    GVAL1 = DISOTP(NZ1,ISO1,'GVAL')
-                    IF (GVAL1 .NE. 0) THEN
-                       IF (IATOM1 .EQ. IATOM2) THEN
-                          ISOMAX = ISO1
-                       ELSE
-                          ISOMAX = 5
-                       END IF
-                       DO 100 ISO2 = 1, ISOMAX
-                         GVAL2 = DISOTP(NZ2,ISO2,'GVAL')
-                         IF (GVAL2 .NE. 0) THEN
-                            ABUND1 = DISOTP(NZ1,ISO1,'ABUNDANCE')
-                            ABUND2 = DISOTP(NZ2,ISO2,'ABUNDANCE')
-                            IF (     ((ABUND1 .GE. ABUND)
-     &                          .AND. (ABUND2 .GE. ABUND))
-     &                          .OR.  (.NOT. TEST)) THEN
-                              TEST = .TRUE.
-                              NA1    = NINT(DISOTP(NZ1,ISO1,'A'))
-                              NA2    = NINT(DISOTP(NZ2,ISO2,'A'))
-                              FACTOR = AUTOHZ*GVAL1*GVAL2
-                              WRITE(LUPRI
-     *                         ,'(/,2(2X,A,I3),3X,A,F8.3,/17X,A,F10.6)'
-     *                             )'Atom number 1, mass: ',NA1,
-     *                              'charge: ',NZ1
-     *                             ,'abundance: ',ABUND1,'g factor: '
-     *                             ,GVAL1
-                              WRITE(LUPRI
-     *                         ,'(/,2(2X,A,I3),3X,A,F8.3,/17X,A,F10.6)'
-     *                             )'Atom number 2, mass: ',NA2,
-     *                              'charge: ',NZ2
-     *                             ,'abundance: ',ABUND2,'g factor: '
-     *                             ,GVAL2
-                              AVETOT = AVEISO(IATIJ,1)*FACTOR
-                              ANIS   = ANISO(IATIJ)*FACTOR
-                              ASYMM  = ASYM(IATIJ)
-                              SPARA  = SPAR(IATIJ)*FACTOR
-                              APARA  = APAR(IATIJ)*FACTOR
-                           WRITE(LUPRI,'(5(/,2X,A,F12.4,A),/,/)')
-     &                    'Isotropic coupling        :',AVETOT,' Hz',
-     &                    'Anistropic coupling       :',ANIS  ,' Hz',
-     &                    'Asymmetry                 :',ASYMM ,'   ',
-     &                    'S parameter               :',SPARA ,' Hz',
-     &                    'A parameter               :',APARA ,' Hz'
-                           IF(SKIPEP) THEN
-                              AVEDSO    = AVEISO(IATIJ,2)*FACTOR
-                              AVETOT = AVETOT + AVEDSO
-                           WRITE(LUPRI,'(2X,A)')         
-     &                      '*SKIPEP: Sternheim approximation:'
-                           WRITE(LUPRI,'(2(/,2X,A,F12.4,A),/)')
-     &                  'Isotropic DSO contribution   :',AVEDSO,' Hz',
-     &                  'Adjusted isotropic coupling  :',AVETOT,' Hz'
-                           ENDIF
-                           END IF
-                           END IF
- 100                    CONTINUE
-                     END IF
- 90               CONTINUE
-               END IF
-            END IF
- 87      CONTINUE
- 85   CONTINUE
-               END IF
-            END IF
- 82      CONTINUE
- 80   CONTINUE
+CTROND  Insert dimensions !!
+        WRITE(LUPRI,'(2A15,5(2X,A12))')
+     &  'At1  #  iso  : ','At2  #  iso  : ',
+     &  'Isotropic   ','Anisotropic ','Asymmetry   ',
+     &  'S parameter ','A parameter '
+        CALL PRSYMB(LUPRI,'-',100,0)
+        DO I = 1,NSPEC
+          IISO   = IATINF(3,I)
+          IATOM1 = IATINF(1,I)
+          DO J = 1,(I-1)
+            JISO   = IATINF(3,J)
+            IATOM2 = IATINF(1,J)
+            IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+            CALL SPIANA(CHESS,SPNPAR(1,IATIJ),IATOM1,IATOM2,
+     &                      WORK,KFREE,LFREE)
+            DO I3 = 1,IISO
+              IF(IATOM1.EQ.IATOM2) THEN
+                J3END = I3 - 1
+              ELSE 
+                J3END = JISO
+              ENDIF
+              DO J3 = 1,J3END
+                FACTOR = AUTOHZ*RATINF(3,I3,I)*RATINF(3,J3,J)
+                WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
+     &                NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
+     &                FACTOR*SPNPAR(1,IATIJ),
+     &                FACTOR*SPNPAR(2,IATIJ),
+     &                       SPNPAR(3,IATIJ),
+     &                FACTOR*SPNPAR(4,IATIJ),
+     &                FACTOR*SPNPAR(5,IATIJ)
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',100,0)
 C        
       ENDDO
-      CALL PRSYMB(LUPRI,'-',72,2)      
       CALL QEXIT('PRP_SPNSP1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
-      SUBROUTINE SPIANA(PRIBAS,AVEISO,ANISO,ASYM,SPAR,APAR)
+      SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
+     &                  WORK,KFREE,LFREE)
 #include <implicit.h>
+#include <priunit.h>
 #include <units.h>
 #include <alphac.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
 #include <mxcent.h>
 #include <nuclei.h>
-      DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),
-     &          AVEISO(NUCDEP*(NUCDEP + 1)/2),
-     &          ANISO(NUCDEP*(NUCDEP + 1)/2),
-     &          ASYM(NUCDEP*(NUCDEP + 1)/2),
-     &          SPAR(NUCDEP*(NUCDEP + 1)/2),
-     &          APAR(NUCDEP*(NUCDEP + 1)/2), COUPLM(3,3),
-     &          PVAL(6), AXES(3,3), WRK(3), IWRK(3), SYM(3,3),
-     &          ANTI(3,3)
+      DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),SPNPAR(5),COUPLM(3,3),
+     &          PVAL(3), AXES(3,3), SYM(3,3), ANTI(3,3),WORK(*)
 C
-      CALL DZERO(AVEISO,NUCDEP*(NUCDEP + 1)/2)
-      IATIJ = 0
-      DO 10 IATOM1 = 1, NUCDEP
-         DO 20 IATOM2 = 1, IATOM1
-            IATIJ = IATIJ + 1
-            IF (IATOM1 .GT. IATOM2) THEN
-               DO 30 ICOOR1 = 1, 3
-                  DO 30 ICOOR2 = 1, 3
-                     IADR1 = 3*(IATOM1 - 1) + ICOOR1
-                     IADR2 = 3*(IATOM2 - 1) + ICOOR2
-                     COUPLM(ICOOR1,ICOOR2) = PRIBAS(IADR1,IADR2)
- 30            CONTINUE
-               AVETOT = (COUPLM(1,1) + COUPLM(2,2) + COUPLM(3,3))/D3
-               DO 40 I = 1, 3
-                  DO 50 J = 1, 3
-                     ANTI(I,J) = (COUPLM(I,J) - COUPLM(J,I))/D2
-                     SYM (I,J) = (COUPLM(I,J) + COUPLM(J,I))/D2
- 50               CONTINUE
-                  SYM(I,I) = SYM(I,I) - AVETOT
- 40            CONTINUE
+      CALL DZERO(SPNPAR,5)
 C
-               CALL DUNIT(AXES,3)
-               IJ = 1
-               DO 60 I = 1, 3
-                  DO 70 J = 1, I
-                     PVAL(IJ) = SYM(I,J)
-                     IJ = IJ + 1
- 70               CONTINUE
- 60            CONTINUE
-               CALL JACO(PVAL,AXES,3,3,3,WRK,IWRK)
-               PVAL(1) = PVAL(1)
-               PVAL(2) = PVAL(3)
-               PVAL(3) = PVAL(6)
+C     Extract coupling information for the atomic centers
 C
-               IZ = IDAMAX(3,PVAL,1)
-               CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-               CALL DSWAP(3,AXES(1,3),1,AXES(1,IZ),1)
-               IY = IDAMIN(3,PVAL,1)
-               CALL DSWAP(1,PVAL(2),1,PVAL(IY),1)
-               CALL DSWAP(3,AXES(1,2),1,AXES(1,IY),1)
+      IOFF1 = 3*(IATOM1 - 1)
+      IOFF2 = 3*(IATOM2 - 1)
+      DO ICOOR2 = 1, 3
+        DO ICOOR1 = 1, 3
+          COUPLM(ICOOR1,ICOOR2) = PRIBAS(IOFF1+ICOOR1,IOFF2+ICOOR2)
+        ENDDO
+      ENDDO
 C
-               ANISO(IATIJ) = PVAL(3) - (PVAL(2) + PVAL(1))/2
-               IF (PVAL(3) .EQ. 0) THEN
-                  ASYM(IATIJ) = D0
-               ELSE
-                  ASYM(IATIJ) = ABS(PVAL(2) - PVAL(1))/PVAL(3)
-               END IF
-               APAR(IATIJ) = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
-               SPAR(IATIJ) =
-     &             ABS(ANISO(IATIJ))*SQRT(D1+(ASYM(IATIJ)**2)/D3)
-               AVEISO(IATIJ) = AVETOT
-            ELSE
-               ANISO(IATIJ)  = D0
-               ASYM(IATIJ)   = D0
-               APAR(IATIJ)   = D0
-               SPAR(IATIJ)   = D0
-               AVEISO(IATIJ) = D0
-            END IF
- 20      CONTINUE
- 10   CONTINUE
+C     Extract symmetric and anti-symmetric parts
+C
+      SPNPAR(1) = (COUPLM(1,1) + COUPLM(2,2) + COUPLM(3,3))/D3
+      DO I = 1, 3
+        DO J = 1, 3
+          ANTI(I,J) = (COUPLM(I,J) - COUPLM(J,I))/D2
+          SYM (I,J) = (COUPLM(I,J) + COUPLM(J,I))/D2
+        ENDDO
+        SYM(I,I) = SYM(I,I) - SPNPAR(1)
+      ENDDO
+C
+C     Diagonalize symmetric part to determine principal axis system
+C     IZ(1) is largest absolute eigenvalue, IY(3) smallest, IX
+C
+      CALL RSJACO(3,3,3,SYM,PVAL,1,-2,0,AXES,WORK(KFREE),LFREE)
+C
+      SPNPAR(2) = PVAL(1) - (PVAL(2) + PVAL(3))/D2
+      IF (PVAL(1) .EQ. 0) THEN
+        SPNPAR(3) = D0
+      ELSE
+        SPNPAR(3) = (PVAL(2) - PVAL(3))/PVAL(1)
+      END IF
+      SPNPAR(5) = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
+      SPNPAR(4) = ABS(SPNPAR(2))*SQRT(D1+(SPNPAR(3)*SPNPAR(3))/D3)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1780,37 +1696,30 @@ C
 #include <nuclei.h>
       DIMENSION EXPVAL(*),WORK(*)
       KFRSAV = KFREE
-      NSCOOR = NUCDEP*3
-      NCHES  = NSCOOR*NSCOOR
-      CALL MEMGET('REAL',KSMAT,NCHES  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCHES,NCHES  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KISOT,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KANIS,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KASYM,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSPAR,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAPAR,NUCDEP*(NUCDEP + 1)/2,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NSCOOR*2,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      NSCOOR  = NUCDEP*3
+      N2SCOR  = NSCOOR*NSCOOR
+      NNDEP   = NUCDEP*(NUCDEP+1)/2
+      CALL MEMGET('LOGI',KATOM,NUCIND   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT,N2SCOR   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCHES,N2SCOR   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,12)
-      CALL PRP_DSO1(EXPVAL,WORK(KSMAT),WORK(KCHES),
-     &                WORK(KISOT),WORK(KANIS),WORK(KASYM),
-     &                WORK(KSPAR),WORK(KAPAR),
-     &                WORK(KIBUF),WORK(KATOM),WORK,KFREE,LFREE)      
+      CALL PRP_DSO1(EXPVAL,
+     &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
+     &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
+     &              WORK(KIBUF),WORK,KFREE,LFREE)      
       CALL MEMREL('PRP_DSO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Prp_DSO1 */
-      SUBROUTINE PRP_DSO1(EXPVAL,SPNMAT,CHESS,AVEISO,
-     &                      ANISO,ASYM,SPAR,APAR,
-     &                      IBUF,DOATOM,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_DSO1(EXPVAL,DOATOM,IATINF,RATINF,
+     &              SPNMAT,CHESS,SPNPAR,IBUF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Output routine for NMR indirect spin-spin coupling
@@ -1818,6 +1727,7 @@ C     This routine is modelled after corresponding
 C     non-relativistic routine , so thanks to Kenneth Ruud !
 C
 C     Written by T.Saue Feb 19 1997
+C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
 #include <implicit.h>
@@ -1838,25 +1748,90 @@ C
 #include <dcbexp.h>
 #include <nuclei.h>
 #include <symmet.h>
+#include <dgroup.h>
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
+     &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
      &          SPNMAT(3*NUCDEP,3*NUCDEP),
      &          CHESS(3*NUCDEP,3*NUCDEP),
-     &          AVEISO(NUCDEP*(NUCDEP + 1)/2),
-     &          ANISO (NUCDEP*(NUCDEP + 1)/2),
-     &          ASYM (NUCDEP*(NUCDEP + 1)/2),
-     &          SPAR (NUCDEP*(NUCDEP + 1)/2),
-     &          APAR (NUCDEP*(NUCDEP + 1)/2),
-     &          COUPLM(3,3),
-     &          IBUF(3*NUCDEP,2),WORK(*)
+     &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
 #include <ibtfun.h>
-      CALL TITLER
-     &    ('DIRAC  - DSO CONTRIBUTIONS','*',116)
 C
       KFRSAV = KFREE
+      CALL QENTER('PRP_DSO1')
+      CALL TITLER
+     &    ('DIRAC  - DSO CONTRIBUTIONS','*',116)
       NSCOOR = 3*NUCDEP
-      NCHES = NSCOOR*NSCOOR
+      NCHES  = NSCOOR*NSCOOR
+C
+C
+C     ***************************************
+C     ***** Extract nuclear information *****
+C    ****************************************
+C
+      WRITE(LUPRI,'(A)') '@ Nuclear species:'
+      CALL PRSYMB(LUPRI,'=',61,0)
+      WRITE(LUPRI,'(A)')
+     &  '@ name  charge  isotope   mass         abundance     g factor'
+      CALL PRSYMB(LUPRI,'-',61,0)
+      NSPEC = 0
+      IDEP  = 0
+      DO INUC = 1,NUCIND
+      IDEG = NUCDEG(INUC)
+      IF(DOATOM(INUC)) THEN
+        TEST = .FALSE.
+        IZ   = NINT(CHARGE(INUC))
+        NISO = 0
+        DO ISO = 1,5
+          GVAL = DISOTP(IZ,ISO,'GVAL')
+          IF(GVAL.NE.0) THEN
+            ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+            IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+              TEST = .TRUE.
+              NISO = NISO + 1
+              RATINF(1,NISO,NSPEC+1) = DISOTP(IZ,ISO,'A')
+              RATINF(2,NISO,NSPEC+1) = ABND
+              RATINF(3,NISO,NSPEC+1) = GVAL
+            ENDIF
+          ENDIF
+        ENDDO
+        IF(NISO.GT.0) THEN
+          IATINF(1,NSPEC+1) = IDEP + 1
+          IATINF(2,NSPEC+1) = IZ
+          IATINF(3,NSPEC+1) = NISO
+          WRITE(LUPRI,'
+     &      (A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
+          DO J = 2,NISO
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
+          ENDDO
+          DO K = 2,IDEG
+            IATINF(1,NSPEC+K) = IDEP + K
+            IATINF(2,NSPEC+K) = IZ
+            IATINF(3,NSPEC+K) = NISO
+            DO L = 1,NISO
+              RATINF(1,L,NSPEC+K) = RATINF(1,L,NSPEC+1)
+              RATINF(2,L,NSPEC+K) = RATINF(2,L,NSPEC+1)
+              RATINF(3,L,NSPEC+K) = RATINF(3,L,NSPEC+1)
+            ENDDO
+          ENDDO
+          NSPEC = NSPEC + IDEG
+        ENDIF
+      ENDIF
+      IDEP = IDEP + IDEG
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',61,0)
+      IF(NSPEC.EQ.0) THEN
+        WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
+        CALL QEXIT('PRP_DSO1')
+        RETURN
+      ENDIF
+C
+C
+C     Fill spin-spin matrices
+C
       CALL DZERO(SPNMAT(1,1),NCHES)
       DO I = 1,NDSOIN
         IOP = IPDSO(I)
@@ -1867,120 +1842,67 @@ C
         SPNMAT(IB,IA) = EXPVAL(IOP)
       ENDDO
       IF (IPRPRP.GE.4) THEN
-        CALL HEADER('DSO part of coupling constants',1)
-        CALL PRIH2S(SPNMAT,'SPNSPN',WORK,KFREE,LFREE)
+        CALL HEADER('Raw DSO coupling constants',1)
+        CALL PRIH2S (SPNMAT,'SPNSPN',WORK,KFREE,LFREE)
+        CALL PRQMAT(SPNMAT,NSCOOR,NSCOOR,
+     &              NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
       ENDIF
+C
+C     Transform to non-symmetry basis
+C
       CALL DZERO(CHESS,NCHES)
+Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
       CALL TRAHES2(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2,
-     &             WORK(KFREE),LFREE)
-Cold code      CALL TRAHES(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2)
-C
-C     Analyze results
-C
-      CALL SPIANA(CHESS,AVEISO,ANISO,ASYM,SPAR,APAR)
-C
-C    Print section
-C
-      IF(IPRPRP.GE.4) THEN
-        CALL HEADER('Total spin-spin-couplings',-1)
-        CALL HEADER('Isotropic couplings',-1)
-        CALL PRIDIS(NAMDPX,AVEISO,NUCDEP)
-        CALL HEADER('Asymmetric part of couplings',-1)
-        CALL PRIDIS(NAMDPX,ASYM,NUCDEP)
-        CALL HEADER('S-parameter of couplings',-1)
-        CALL PRIDIS(NAMDPX,APAR,NUCDEP)
-        CALL HEADER('A-parameter of couplings',-1)
-        CALL PRIDIS(NAMDPX,SPAR,NUCDEP)
+     &               WORK(KFREE),LFREE)
+      IF (IPRPRP.GE.4) THEN
+        CALL HEADER('Nsym coupling constants',1)
+        CALL PRIH2S (CHESS,'SPNSPN',WORK,KFREE,LFREE)
+        CALL PRQMAT(CHESS,NSCOOR,NSCOOR,
+     &              NSCOOR,NSCOOR,1,IPQTOQ(1,0),LUPRI)
       ENDIF
+C
+C       Analyze results
 C
       CALL AROUND('DIRAC - DSO contribution to spin-spin-couplings')
-      IATOM1 = 0
-      DO 80 I1 = 1, NUCIND
-        DO 82 ISYM1 = 0, MAXOPR
-        IF(IBTAND(ISTBNU(I1),ISYM1) .EQ. 0) THEN
-          IATOM1 = IATOM1 + 1
-          IF (DOATOM(I1)) THEN
-          IATOM2 = 0
-          DO 85 I2 = 1, I1
-            IF(I2 .EQ. I1) THEN
-              MAXSYM = ISYM1 - 1
-            ELSE
-              MAXSYM = MAXOPR
-            END IF
-            DO 87 ISYM2 = 0, MAXSYM
-            IF (IBTAND(ISTBNU(I2),ISYM2) .EQ. 0) THEN
-              IATOM2 = IATOM2 + 1
-              IF (DOATOM(I2)) THEN
-                IATIJ = IATOM1*(IATOM1 -1 )/2 + IATOM2
-                NZ1 = NINT(CHARGE(I1))
-                NZ2 = NINT(CHARGE(I2))
-                CALL TITLER('Indirect spin-spin-coupling between '//
-     &             NAMDEP(IATOM1)//' and '//
-     &             NAMDEP(IATOM2)//':','=',-1)
-                TEST = .FALSE.
-                DO 90 ISO1 = 1, 5
-                  GVAL1 = DISOTP(NZ1,ISO1,'GVAL')
-                  IF (GVAL1 .NE. 0) THEN
-                     IF (IATOM1 .EQ. IATOM2) THEN
-                        ISOMAX = ISO1
-                     ELSE
-                        ISOMAX = 5
-                     END IF
-                     DO 100 ISO2 = 1, ISOMAX
-                       GVAL2 = DISOTP(NZ2,ISO2,'GVAL')
-                       IF (GVAL2 .NE. 0) THEN
-                          ABUND1 = DISOTP(NZ1,ISO1,'ABUNDANCE')
-                          ABUND2 = DISOTP(NZ2,ISO2,'ABUNDANCE')
-                          IF (     ((ABUND1 .GE. ABUND)
-     &                        .AND. (ABUND2 .GE. ABUND))
-     &                        .OR.  (.NOT. TEST)) THEN
-                            TEST = .TRUE.
-                            NA1    = NINT(DISOTP(NZ1,ISO1,'A'))
-                            NA2    = NINT(DISOTP(NZ2,ISO2,'A'))
-                            FACTOR = AUTOHZ*GVAL1*GVAL2
-                            WRITE(LUPRI
-     *                       ,'(/,2(2X,A,I3),3X,A,F8.3,/17X,A,F10.6)'
-     *                           )'Atom number 1, mass: ',NA1,
-     *                            'charge: ',NZ1
-     *                           ,'abundance: ',ABUND1,'g factor: '
-     *                           ,GVAL1
-                            WRITE(LUPRI
-     *                       ,'(/,2(2X,A,I3),3X,A,F8.3,/17X,A,F10.6)'
-     *                           )'Atom number 2, mass: ',NA2,
-     *                            'charge: ',NZ2
-     *                           ,'abundance: ',ABUND2,'g factor: '
-     *                           ,GVAL2
-                            AVETOT = AVEISO(IATIJ)*FACTOR
-                            ANIS   = ANISO(IATIJ)*FACTOR
-                            ASYMM  = ASYM(IATIJ)
-                            SPARA  = SPAR(IATIJ)*FACTOR
-                            APARA  = APAR(IATIJ)*FACTOR
-                         WRITE(LUPRI,'(5(/,2X,A,F12.4,A),/,/)')
-     &                  'Isotropic coupling        :',AVETOT,' Hz',
-     &                  'Anistropic coupling       :',ANIS  ,' Hz',
-     &                  'Asymmetry                 :',ASYMM ,'   ',
-     &                  'S parameter               :',SPARA ,' Hz',
-     &                  'A parameter               :',APARA ,' Hz'
-                           END IF
-                           END IF
- 100                    CONTINUE
-                     END IF
- 90               CONTINUE
-               END IF
-            END IF
- 87      CONTINUE
- 85   CONTINUE
-               END IF
-            END IF
- 82      CONTINUE
- 80   CONTINUE
-      CALL PRSYMB(LUPRI,'-',72,2)      
+CTROND  Insert dimensions !!
+      WRITE(LUPRI,'(2A15,5(2X,A12))')
+     &  'At1  #  iso  : ','At2  #  iso  : ',
+     &  'Isotropic   ','Anisotropic ','Asymmetry   ',
+     &  'S parameter ','A parameter '
+      CALL PRSYMB(LUPRI,'-',100,0)
+      DO I = 1,NSPEC
+        IISO   = IATINF(3,I)
+        IATOM1 = IATINF(1,I)
+        DO J = 1,(I-1)
+          JISO   = IATINF(3,J)
+          IATOM2 = IATINF(1,J)
+          IATIJ = IATOM1*(IATOM1 -1)/2 + IATOM2
+          CALL SPIANA(CHESS,SPNPAR(1,IATIJ),IATOM1,IATOM2,
+     &                    WORK,KFREE,LFREE)
+          DO I3 = 1,IISO
+            IF(IATOM1.EQ.IATOM2) THEN
+              J3END = I3 - 1
+            ELSE 
+              J3END = JISO
+            ENDIF
+            DO J3 = 1,J3END
+              FACTOR = AUTOHZ*RATINF(3,I3,I)*RATINF(3,J3,J)
+              WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
+     &              NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
+     &              FACTOR*SPNPAR(1,IATIJ),
+     &              FACTOR*SPNPAR(2,IATIJ),
+     &                     SPNPAR(3,IATIJ),
+     &              FACTOR*SPNPAR(4,IATIJ),
+     &              FACTOR*SPNPAR(5,IATIJ)
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',100,0)
 C        
+      CALL QEXIT('PRP_DSO1')
       RETURN
       END
-C
-C
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck trahes2 */
       SUBROUTINE TRAHES2(SHESS,NDIMS,CHESS,NDIMC,NCOOR,ITYPE,
@@ -2102,8 +2024,7 @@ C
           DO 300 ICOOR1 = 1, 3
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GT. 0) THEN
-C Is ITYP used anywhere? /  Feb 25 1998 - jth
-C             ITYP = ITYP + 1
+              ITYP = ITYP + 1
               PNAME    = 'NUCSPI'//CHRNOS(ISCOR1/10)
      &                         //CHRNOS(MOD(ISCOR1,10))
      &                //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)

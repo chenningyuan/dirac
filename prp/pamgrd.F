@@ -184,9 +184,6 @@ C
 C     Construct gradient - electronic part
 C     ====================================
 C
-CTROND
-      WRITE(LUPRI,'(A)') 'Gee'
-CTROND
       IF(NXOPE.GT.0) THEN
         CALL XOPGAT(GPOE,JXOPE,NXOPE,PRPMO,NORBT,NZ)
         CALL DSCAL(NZ*NXOPE,DM1,GPOE,1)
