@@ -7,8 +7,7 @@
 
 include ../Makefile.config
 
-OBJS =	dirac.o  \
-	dircnv.o \
+OBJS =	dircnv.o \
 	dirone.o \
 	dirout.o \
 	dirana.o \
@@ -23,9 +22,7 @@ OBJS =	dirac.o  \
 	dirden.o \
 	dirsol.o 
 
-LINUX_OBJS = dirac_linux.o
-
-all:	$(OBJS) $(LINUX_OBJS)
+all:	$(OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -40,6 +37,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(LINUX_OBJS:.o=.c)
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
