@@ -1805,24 +1805,19 @@ C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,ECORE,
      &               CIRUN)
 C
-      IF (MAXCIT.LT.0) THEN
-        CALL QUIT (' Normal STOP after LUCIAREL CI.')
-      ELSE
-        IF (NCIROOT.GE.2)
-     &  CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
-      END IF
-C
 C     Read CI vector from LUCIARELs file
-      IO_RCIST_OUT = 1
+      IF (MAXCIT.GE.0.AND.NCIROOT.EQ.1) THEN
+        IO_RCIST_OUT = 1
 * FIXME: Future use of file names instead of the primitive fortran
 *        files. Activation flags (IO_RCIST_OUT) should be controlled
 *        from the outside, not hardwired.
-      IF (IO_RCIST_OUT.EQ.1) THEN
-        CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
-        CALL KR_LUCI_IO(1,0,0,CREF,2*NZCONF,DUMMY,1,
-     &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),DUMMY,1,IRIQ,
-     &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        IF (IO_RCIST_OUT.EQ.1) THEN
+          CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
+          CALL KR_LUCI_IO(1,0,0,CREF,2*NZCONF,DUMMY,1,
+     &                    DUMMY,1,DUMMY,1,
+     &                    WORK(KRSCR),DUMMY,1,IRIQ,
+     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        END IF
       END IF
 C
       CALL MEMREL('LUCI_RCIST',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2149,7 +2144,7 @@ C
 C
 #include "../luciarel/cstate.inc"
 C
-      CIRUN = 'CIINII'
+      CIRUN = 'RSTRMC'
 C
 C     Introduce LUCIAREL action
       CALL LUCI_TASK(CIRUN)

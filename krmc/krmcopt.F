@@ -346,10 +346,15 @@ C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
 C     Check if only do CI (no MCSCF iterations)
 C
-      IF (MOPT_MXMACRO .LE. 0) THEN
-         WRITE(LUPRI,'(/A)')
-     &      ' Stop after initial CI in KR-MCSCF as requested'//
-     &      ' with .MAX MACRO'
+      IF (MOPT_MXMACRO.LE.0.OR.NCIROOT.GE.2) THEN
+         IF (MOPT_MXMACRO.LE.0) THEN
+            WRITE(LUPRI,'(/A)')
+     &         ' Stop after initial CI in KR-MCSCF as requested'//
+     &         ' with .MAX MACRO'
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A)')
+     &              ' (ROPTST)  Requested multi-root MCSCF aborted.'
+         END IF
          GO TO 3000
       END IF
 C
@@ -2635,8 +2640,9 @@ C                     RESTART from KRMCOLD in MCSCF run
 C                     Generate restart and vector blocking information
 C                     for LUCIAREL CI vectors:
 C
-c                     CALL QUIT(
-c    &                   ' Restart with LUCIAREL not yet working ')
+                      WRITE(LUPRI,'(/A)')
+     &                      ' (ROPTST)  Restarting KRMC with' //
+     &                      ' LUCIAREL CI module'
                       CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
 C
                     ELSE IF (IRESTRK.EQ.1) THEN

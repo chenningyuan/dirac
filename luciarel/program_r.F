@@ -421,7 +421,7 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
       write(6,*) 
-      write(6,'(A24,A6)') ' I have completed task  ',CIRUN
+      write(6,'(A25,A6)') '  I have completed task  ',CIRUN
       write(6,*) ' Returning to KRMC.'
       write(6,*) 
 *

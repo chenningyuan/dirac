@@ -2349,12 +2349,15 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
 10        continue
         end if
         if (ENVIRO(1:6).eq.'DIRAC ') then
-          write(6,*)
-          write(6,*) '********************************************'
-          write(6,*) '* Distributing MOLTRA transformed          *'
-          write(6,*) '* dirac one- (and two-) electron integrals *'
-          write(6,*) '* using input integral reordering          *'
-          write(6,*) '********************************************'
+          if (NTEST.ge.1) then
+            write(6,*)
+            write(6,*) '********************************************'
+            write(6,*) '* Distributing MOLTRA transformed          *'
+            write(6,*) '* dirac one- (and two-) electron integrals *'
+            write(6,*) '* using input integral reordering          *'
+            write(6,*) '********************************************'
+          end if
+*
           IRIOFF = (2*NDIM_TOT)**2
           NDIM_TOT2 = NDIM_TOT*2
           if (SIGDEN_ROUTE.eq.'TRADIT') then
