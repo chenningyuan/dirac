@@ -27,9 +27,6 @@ C*****************************************************************************
 #include <maxaqn.h>
 #include <aovec.h>
 #include <mxorb.h>
-#if defined (VAR_MPI) || defined (VAR_PVM)
-#include <infpar.h>
-#endif
 C
 #include <ccom.h>
 #include <dcbgen.h>
@@ -38,6 +35,11 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <blocks.h>
+C
+#if defined (VAR_MPI) || defined (VAR_PVM)
+#include <infpar.h>
+#endif
+C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PSIDHF')
