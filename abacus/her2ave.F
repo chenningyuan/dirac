@@ -1707,10 +1707,16 @@ C
 C     *******************************************
 C     ***** Two-electron Fock London matrix *****
 C     *******************************************
-CMI ... this part is modified for the relativistic NMR-LAO implementation !
 C     
-
+CMI/Dec 6 2004 Added comments to be clear how 
+C             relativistic terms were derived 
+C             based on DALTON integrals formalism
+C
+CMI TODO: Carefully analyze these formulas ! 
+C
                         DFAC = -DP125*FAB*FCD*FCABCD
+CMI DALTON COUNTERPART  DFAC =  DP125*FAB*FCD*FCABCD
+
                         EFAC = DP5*DFAC
 C     
 C     Total Fock matrix
@@ -1725,50 +1731,44 @@ C
                            DO IXYZ = 1, 3
                               ABCD = PINT(INT,IXYZ)
                               ABDC = QINT(INT,IXYZ)
-CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisym!!!!
-                              IF (IMAT.EQ.1) THEN ! Real part
+CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisymmetric
+C        ===================================================================
+                              IF (IMAT.EQ.1) THEN 
+CMI                       .... real part
                                  FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
      &                                + (ABCD+ABDC)*DCD
+CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
+
                                  FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
      &                                + (ABCD-ABDC)*DAB
-                              ELSE ! Quaternion imaginary part
+CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                               ELSE  
+CMI                       .... quaternion imaginary part
                                  FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
      &                                - (ABCD-ABDC)*DCD
+CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
+
                                  FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
      &                                - (ABCD+ABDC)*DAB
+CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
                               END IF
-                              FT(C,A,IMAT,IXYZ) = FT(C,A,IMAT,IXYZ)
-     &                             - ABDC*DBD
-                              FT(D,A,IMAT,IXYZ) = FT(D,A,IMAT,IXYZ)
-     &                             - ABCD*DBC
-                              FT(C,B,IMAT,IXYZ) = FT(C,B,IMAT,IXYZ)
-     &                             + ABCD*DAD
-                              FT(D,B,IMAT,IXYZ) = FT(D,B,IMAT,IXYZ)
-     &                             + ABDC*DAC
 
-CMI .... dalton implementation -
-CMI     modified for the relativistic manner with negative DFAC 
-CMI see dalton/abacus/her2ave.F, line around 489
-C     tec                                    ELSE
-C     tec                                       FT(B,A,I,N) = FT(B,A,I,N
-c     )
-C     tec     &                                      + (ABCD-ABDC)*DCD
-C     tec                                       FT(D,C,I,N) = FT(D,C,I,N
-c     )
-C     tec     &                                      - (ABCD+ABDC)*DAB
-C     tec                                       FT(C,A,I,N) = FT(C,A,I,N
-c     )
-C     tec     &                                      + ABDC*DBD
-C     tec                                       FT(D,A,I,N) = FT(D,A,I,N
-c     )
-C     tec     &                                      - ABCD*DBC
-C     tec                                       FT(C,B,I,N) = FT(C,B,I,N
-c     )
-C     tec     &                                      - ABCD*DAD
-C     tec                                       FT(D,B,I,N) = FT(D,B,I,N
-c     )
-C     tec     &                                      - ABDC*DAC
-C     tec                                    END IF
+                              FT(C,A,IMAT,IXYZ) = FT(C,A,IMAT,IXYZ)
+     &                                - ABDC*DBD
+CMI DALTON  Re  FT(C,A,N) = FT(C,A,N) + ABDC*DBD
+
+                              FT(D,A,IMAT,IXYZ) = FT(D,A,IMAT,IXYZ)
+     &                                - ABCD*DBC
+CMI DALTON  Re  FT(D,A,N) = FT(D,A,N) + ABCD*DBC 
+
+                              FT(C,B,IMAT,IXYZ) = FT(C,B,IMAT,IXYZ)
+     &                                + ABCD*DAD
+CMI DALTON  Re  FT(C,B,N) = FT(C,B,N) - ABCD*DAD
+
+                              FT(D,B,IMAT,IXYZ) = FT(D,B,IMAT,IXYZ)
+     &                                + ABDC*DAC
+CMI DALTON  Re  FT(D,B,N) = FT(D,B,N) - ABDC*DAC
+
                            END DO
                         END DO
                         INT = INT + 1
@@ -1779,6 +1779,7 @@ C     tec                                    END IF
  300        CONTINUE
  200     CONTINUE
  100  CONTINUE
+
       RETURN
       END
 
