@@ -7,9 +7,9 @@ C
 C*** Dimensions for MO-basis ***
 Cjth: Due to bug MXOPEN reset to one      PARAMETER( MXOPEN = 10 )
       PARAMETER( MXOPEN = 1 )
+C     Length of common block : keep up to date !!
+      PARAMETER (NDCBORB=79+5*MXOPEN)
       COMMON/DCBORB/
-     +              DF(0:MXOPEN),DA(0:MXOPEN),DALPHA(0:MXOPEN),
-     +              NACSH(2,MXOPEN),NOPEN,
      +              NORB(2),N2ORB(2),NORBT,N2ORBT,N2ORBX,
      +              N2ORBTQ,N2ORBXQ,
      +              NISH(2),N2ISH(2),NISHT,N2ISHT,N2ISHX,
@@ -21,4 +21,6 @@ Cjth: Due to bug MXOPEN reset to one      PARAMETER( MXOPEN = 10 )
      +              NFRO(2),NFROT,NELEC(2),
      +              NAELEC(2),
      +              IORB(2),I2ORBT(2),I2ORBX(2,2),
-     +              NCMO(2),NCMOQ(2),NCMOT,NCMOTQ,ICMO(2),ICMOQ(2)
+     +              NCMO(2),NCMOQ(2),NCMOT,NCMOTQ,ICMO(2),ICMOQ(2),
+     +              DF(0:MXOPEN),DA(0:MXOPEN),DALPHA(0:MXOPEN),
+     +              NACSH(2,MXOPEN),NOPEN

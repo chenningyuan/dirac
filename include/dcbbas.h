@@ -1,4 +1,6 @@
 C*** Dimensions for AO/SO (non-orthomormal) basis ***
+C     Length of common block : keep up to date !!
+      PARAMETER (NDCBBAS=347)
       COMMON/DCBBAS/NBBAS(0:7,0:2),NFBAS(2,0:2),NTBAS(0:2),
      +              NFORB(2,0:2),NTORB(0:2),
      +              NNBBAST,N2BBAST,NNBBASX,N2BBASX,N2BBASXQ,

@@ -15,6 +15,7 @@ C     IRQMAT(4,IBRP)    - irrep of matrix
 C
       CHARACTER FREP*3
       COMMON/DNAME/FREP(2)
+      PARAMETER (NDGROUP=192)
       COMMON/DGROUP/NZ,NFSYM,NBSYM,IFDIRP(4,2),JBTOF(0:7,2),
      &              JMROI(4),JSPINR(4,2,2),JQBAS(0:7,2),JFSYM(4,2),
      &              IPQTOQ(4,0:7),IQTOPQ(4,0:7),IQPH(4,2),
