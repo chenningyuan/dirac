@@ -1245,7 +1245,7 @@ C
                    CALL PCKEIG(EIG,
      &                  IOFF(IFSYM)+1,IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
      &                  IBEIG,ID,NEIG,EIGBUF)
-                        ISHEL_SUB(1+IOPEN,ISUB,IFSYM) = NEIG
+                   ISHEL_SUB(1+IOPEN,ISUB,IFSYM) = NEIG
 C
                    IF (NEIG .GT. 0) THEN
                       NTOT = NTOT + NEIG
@@ -1283,7 +1283,7 @@ C
      &                        IORB(IFSYM)+1,
      &                        IORB(IFSYM)+NPSH(IFSYM),
      &                        IBEIG,ID,NEIG,EIGBUF)
-                   ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = NEIG
+                  ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = NEIG
 C
                   IF (NEIG .GT. 0) THEN
                      NTOT = NTOT + NEIG
@@ -1341,6 +1341,7 @@ C
 
 
 CMI ... print out occupation of m_j subblocks
+      IF (SUB_BL) THEN
       WRITE(LUPRI,'(/A)') '  Occupation of subblocks' 
       DO IFSYM=1, NFSYM
         TLINE = ' '
@@ -1413,6 +1414,7 @@ C       ... note: IC=0 when print of positr. shells desired
        ENDIF
       ENDDO
       ENDDO
+      ENDIF
 
       RETURN
       END
