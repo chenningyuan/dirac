@@ -67,7 +67,7 @@ C
       allcmb    = .false.       !generate all operator combinations
       xlr_skipep= .false.       !do include e-p orbital rotations
       xlr_skipee= .false.       !do include e-e orbital rotations
-      qedrun    = .TRUE.       !this isn't a QED run
+c     qedrun    = .TRUE.        !not implemented
       xlr_lsfg(1) = .true.        !Generate G-matrix in MO basis
       xlr_lsfg(2) = .true.        !Generate G-matrix in MO basis
       xlrnrm    = .true.        !normalize solutionvector
@@ -77,7 +77,7 @@ C
       orbdef(2) = .true.
       orbdef(3) = .true.
       triab     = .false.       !force triangularity
-      xvcfil    = 'NORXVC'
+      XLR_XVCFIL    = 'NORXVC'
       orbxlr    = .false.       !is this an orbital response problem
       xstern    = .false.
 C
