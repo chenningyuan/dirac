@@ -376,7 +376,11 @@ C
 C
 #include "ibtfun.h"
 C
+      NEWDEF = (WORD .EQ. '*LINEAR')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*LINEAR" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -452,7 +456,6 @@ C
 C     Process input from CBIXLR
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*LINEAR')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
@@ -839,7 +842,11 @@ C
      &            'xXXXXXX','xXXXXXX','xXXXXXX','xXXXXXX'/
       DATA SET/.FALSE./
 C
+      NEWDEF = (WORD .EQ. '*NMR')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*NMR" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -859,7 +866,6 @@ C
 C     Process input
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*NMR')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD

@@ -392,7 +392,11 @@ C
 C
 #include "ibtfun.h"
 C
+      NEWDEF = (WORD .EQ. '*EXCITA')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*EXCITA" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -460,7 +464,6 @@ C
 C     Process input
 C     =============
 C
-      NEWDEF = (WORD .EQ. '*EXCITA')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN

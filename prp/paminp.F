@@ -356,6 +356,7 @@ C
         GO TO 200
 C
     1 CONTINUE
+      WORD = 'INITLZE'
       IF(DOEXP) CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
       CALL NMRINP(WORD,.TRUE.)
@@ -413,7 +414,11 @@ C
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
+      NEWDEF = (WORD .EQ. '*EXPECT')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*EXPECT" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -422,7 +427,6 @@ C
       ELSE
          SET = .TRUE.
       END IF
-C
 C
 C     Initialize /DCBEXP/
 C     ===================
@@ -435,7 +439,6 @@ C
 C     Process input for DCBEXP
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*EXPECT')
       INPERR = 0
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -2202,7 +2205,11 @@ C
       DATA TABLE /'.PRINT ','.INTFLG','.TRICK ','.SCREEN','.NUMGRA'/
       DATA SET/.FALSE./
 C
+      NEWDEF = (WORD .EQ. '*MOLGRD')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*MOLGRD" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -2218,7 +2225,6 @@ C
 C     Process input for DCBEXP
 C     ========================
 C
-      NEWDEF = (WORD .EQ. '*MOLGRD')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD

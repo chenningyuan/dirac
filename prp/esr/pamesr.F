@@ -57,7 +57,11 @@ C
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
+      NEWDEF = (WORD .EQ. '*ESR   ')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*ESR" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -84,7 +88,6 @@ C
 C     Process input 
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*ESR   ')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN

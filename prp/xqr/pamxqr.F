@@ -42,7 +42,11 @@ C
 C
 #include "ibtfun.h"
 C
+      NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
+         IF (NEWDEF)
+     &      CALL QUIT('Only one "*QUADRA" input section allowed')
+C        hjaaj: repeated input sections give infinite loop ...
          IF (RESET) SET = .FALSE.
          RETURN
       END IF
@@ -93,7 +97,6 @@ C
 C
 C     Process input from CBIXQR
 C
-      NEWDEF = (WORD .EQ. '*QUADRA')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
