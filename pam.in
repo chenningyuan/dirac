@@ -189,7 +189,11 @@ endif
 # The -p switch makes all parent directories first
 #
 if ( ! -d $WRK ) then
-   mkdir -p $WRK || echo "MKDIR error\!" ; goto exit1
+   mkdir -p $WRK || echo "   MKDIR error\!" 
+   if ( ! -d $WRK ) then
+      echo "   Could not create work directory"
+      goto exit1
+   endif
 endif
 #
 # Remove contents for $WRK if requested ( RMSCR )
