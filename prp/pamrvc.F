@@ -1396,6 +1396,9 @@ C
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcborb.h"
+#if defined (MOD_DFT)
+#include "dftcom.h"
+#endif
 C
       DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
@@ -1416,6 +1419,10 @@ C
          IS = IBCVC(NCRED+I)
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
+#if defined (MOD_DFT)
+C        For anti-Hermitian trial vectors turn off exchange !
+         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+#endif
          ISYMOP(IM) = JSYMOP
       END DO
 C
@@ -1428,6 +1435,10 @@ C
            IS = IBEVC(NERED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
+#if defined (MOD_DFT)
+C        For anti-Hermitian trial vectors turn off exchange !
+         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
@@ -1443,6 +1454,10 @@ C
            IS = IBPVC(NPRED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
+#if defined (MOD_DFT)
+C        For anti-Hermitian trial vectors turn off exchange !
+         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
+#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
