@@ -247,7 +247,7 @@ C&&&& CVALUE: Set a different value of light
             GO TO 100
   103    CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
-            READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+            READ(LUCMD,*) ILLINT,ILSINT,ISSINT
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
