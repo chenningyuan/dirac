@@ -175,7 +175,7 @@ C                 fi = fj?
 C
                   CALL DZERO(DTEMP1,N2BBASXQ)
 C
-                  IF (ABS(DF(IOPEN)-DF(JOPEN)).LE.DFTHR) THEN
+                  IF (ABS(DF(IOPEN)-DF(JOPEN)).GT.DFTHR) THEN
 C
 C                    This is a tough case...
 C                    The gradient is correct, but there might
