@@ -2488,8 +2488,8 @@ C
             IF (JRDMO .EQ. 0) THEN
                IF (IPRINT .GE. 0) THEN
                   WRITE(LUPRI,'(/A)')
-     $                 ' (ROPTST)  Start orbitals read from' //
-     $                 ' label NEWORB on file KRMCSCF'
+     &                 ' (ROPTST)  Start orbitals read from' //
+     &                 ' label NEWORB on file KRMCSCF'
                END IF
                GO TO 1000
             END IF
@@ -2506,8 +2506,8 @@ C
             IF (JRDMO .EQ. 0) THEN
                IF (IPRINT .GE. 0) THEN
                   WRITE(LUPRI,'(/A)')
-     $                 ' (ROPTST)  Start orbitals read from' //
-     $                 ' label OLDORB on file KRMCSCF'
+     &                 ' (ROPTST)  Start orbitals read from' //
+     &                 ' label OLDORB on file KRMCSCF'
                END IF
                GO TO 1000
             END IF
@@ -2526,8 +2526,8 @@ C
             CLOSE(LUCOEF,STATUS='KEEP')
             IF (IPRINT .GE. 0) THEN
                WRITE(LUPRI,'(/A)')
-     $              ' (ROPTST)  Start orbitals read from' //
-     $              ' file DFCOEF'
+     &              ' (ROPTST)  Start orbitals read from' //
+     &              ' file DFCOEF'
             END IF
             GO TO 1000
          END IF
@@ -2540,8 +2540,8 @@ C
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
             WRITE(LUPRI,'(/A)')
-     $           ' (ROPTST)  Start orbitals from' //
-     $           ' diagonalization of H1'
+     &           ' (ROPTST)  Start orbitals from' //
+     &           ' diagonalization of H1'
          END IF
          GOTO 1000
       END IF
@@ -2549,9 +2549,9 @@ C
 C     Oops, nothing worked:
 C
       WRITE(LUPRI,'(//3A,I3)')
-     $     '*** ERROR in ROPTST *** ',
-     $     'Failed to generate orbital start guess; ',
-     $     'value of IROST is ',IROST
+     &     '*** ERROR in ROPTST *** ',
+     &     'Failed to generate orbital start guess; ',
+     &     'value of IROST is ',IROST
       CALL QUIT('*** ERROR in ROPTST *** No orbital start guess')
 CC
  1000 CONTINUE
@@ -2595,11 +2595,13 @@ C
             IF ( EX ) THEN
                REWIND(LUKRM5)
                IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
-                  CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
-                  IF (IPRINT .GE. 0) THEN
-                     WRITE(LUPRI,'(/A)')
-     &                    ' (ROPTST)  CI start vector read from' //
-     &                    ' label CREF on file KRMCSCF'
+                  IF (MOPT_MXMACRO.GT.0) THEN
+                     CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
+                     IF (IPRINT .GE. 0) THEN
+                        WRITE(LUPRI,'(/A)')
+     &                       ' (ROPTST)  CI start vector read from' //
+     &                       ' label CREF on file KRMCSCF'
+                     END IF
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
 C
@@ -2614,6 +2616,8 @@ C
      &                      ' LUCIAREL CI module'
                       CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
                     ELSE IF (MOPT_MXMACRO.EQ.0) THEN                    
+                      WRITE(LUPRI,*) 
+     &                '  Starting CI calculation from MC orbitals or '
                       WRITE(LUPRI,*) 
      &                '  Restarting CI calculation from vector. '
                       IOPT_INTFLG = IOPT_INTDEF
