@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : eqns.inc
-C SOURCE  : $Source$
 C
       COMMON/CCEQNS/EQNS
       CHARACTER*6 EQNS

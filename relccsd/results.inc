@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : results.inc
-C SOURCE  : $Source$
 C
 C     Register the status of the independent parts of the code
 C

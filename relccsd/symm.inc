@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : symm.inc
-C SOURCE  : $Source$
 C
 C     The essential double group symmetry information.
 C

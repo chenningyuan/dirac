@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : files.F
-C SOURCE  : $Source$
+C FILE    : files.inc
 C
 C     Files to be used in RELCCSD
       PARAMETER (NCCFIL=11) ! Number of word addressable files
