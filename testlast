@@ -8,6 +8,7 @@
 # Set defaults
 pampath=`pwd`
 dirac=`pwd`/dirac.x
+testdir=`pwd`/test
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -61,6 +62,11 @@ while [ $# != 0 ]; do
          $echo $usage
          exit
          ;;
+      "testdir")
+         if [ "${valomitted}" = "no" ]; then
+            testdir="$val"
+         fi
+         ;;
       "branch")
          if [ "${valomitted}" = "no" ]; then
             branch="$val"
@@ -101,7 +107,7 @@ fi
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
-cd test/logs;
+cd ${testdir}/logs;
 for i in $makelog $cvslog $txtlog $htmlog ; do
     if [ -f "${i}" ]; then
         if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
@@ -114,20 +120,32 @@ for i in $makelog $cvslog $txtlog $htmlog ; do
         if [ -f "${i}" ]; then mv -f "${i}" "${i}.0" ; fi
     fi
 done
-cd ../..;
+cd ${pampath};
 #
 if [  -z "$branch" ]; then
    echo ' Starting CVS Update ... '
-cvs update -P -d >& test/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+   cvs update -P -d >& ${testdir}/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
 else
    echo " Switching working copy to branch $branch and updating ..."
-   cvs update -P -d -r $branch >& test/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+   cvs update -P -d -r $branch >& ${testdir}/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
 fi
 #
 echo ' Recompiling ... '
-make >& test/logs/$makelog || { echo " Make failed"; exit 1 } ;
+make >& ${testdir}/logs/$makelog || { echo " Make failed"; exit 1 } ;
 echo ' Starting test calculations ... '
-cd test;
-#./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run || { echo " runtest failed"; exit 1 ; } ;
+cd ${testdir};
 ./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run || { echo " runtest failed"; exit 1 ; } ;
+#
+# The tests are default run interactively on the same machine as the cvs and make command is run. I have not
+# attempted to make a generic batch script as batch environments vary wildly. The lines below work on
+# our Linux clusters that used the pbs batch system. When using this one should of course comment the line
+# directly above this comment block. (LV, May 22, 2002)
+#
+#errfile=das500:${testdir}/logs/errfile
+#cat <<EOF >job
+#cd ${testdir};
+#./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run ;
+#EOF
+#qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:das5c -q das5cq -V job
+#rm job
 #
