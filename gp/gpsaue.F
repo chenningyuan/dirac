@@ -3149,7 +3149,7 @@ C...generate elements of Cholesky matrix
               A(J,I,IZ) = -A(II,JJ,IZ)/D(J)
             ENDDO
           ELSE
-            A(J,I,1) = A(JJ,II,IZ)/D(J)
+            A(J,I,1) = A(JJ,II,1)/D(J)
             DO IZ = 2,NZ
               A(J,I,IZ) = A(JJ,II,IZ)/D(J)
             ENDDO
