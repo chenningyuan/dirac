@@ -179,8 +179,12 @@ dftenergy_(const real* rho, const real* grad)
 {
     DftDensProp dp;
     /* HP does not grok { *rho*0.5, *rho*0.5, *grad*0.5, *grad*0.5 }; */
-    dp.rhoa  = dp.rhob  = *rho *0.5;
-    dp.grada = dp.gradb = *grad*0.5; 
+    if (*rho > 1e-20)	
+        dp.rhoa  = dp.rhob  = *rho *0.5;
+    else dp.rhoa = dp.rhob = 1e-20;
+    if (*grad > 1e-20) 
+        dp.grada = dp.gradb = *grad*0.5;
+    else dp.grada = dp.gradb = 1e-20; 
     dp.gradab= dp.grada * dp.gradb;
     dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     return selected_func->func(&dp);
