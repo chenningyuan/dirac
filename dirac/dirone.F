@@ -3263,6 +3263,8 @@ C
      &       'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
      &         SMAT,NVDIM)
         VNRM=SQRT(VNRM)
+        IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+     &      'Vector no.',IVEC,' Norm: ',VNRM
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
           IF(IPRINT.GE.1) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')

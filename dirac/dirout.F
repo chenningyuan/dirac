@@ -1409,8 +1409,11 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <mxcent.h>
+C
 #include <dgroup.h>
 #include <dcbbas.h>
+#include <nuclei.h>
       DIMENSION EIG(*),CMO(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          NQ(2),NE(2),WORK(*)
 C     Local variables
@@ -1450,7 +1453,18 @@ C     Read eigenvalues
         NVEC = IDIM(1,IFRP)+IDIM(2,IFRP)
 C       Generate pointer array for bases
         CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
-        CALL SELOW4(INUC,IFRP,WORK(KBAS))
+        CALL SELOW4(INUC,IFRP,WORK(KBAS),NSBAS)
+        IF(NSBAS.NE.IDIM(3,IFRP)) THEN
+          WRITE(LUPRI,'(A,I3/A,A4,A,I3)') 
+     &      'SELOWN: Error in selection of coefficients in ircop ',
+     &      IFRP,
+     &      'for symmetry independent center ',NAMN(INUC),' no. ',INUC
+          WRITE(LUPRI,'(A,I8)') 
+     &      'Number of basis functions for this center is:',NSBAS,
+     &      'Number of basis functions in coeffcient file:',
+     &       IDIM(3,IFRP)
+           CALL QUIT('SELOWN: Error in cf.selection !')
+        ENDIF
 C       Select coefficients
         CALL SELOW2(INUC,CMO(ICMO),IDIM(3,IFRP),NVEC,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
@@ -1561,7 +1575,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selow4 */
-      SUBROUTINE SELOW4(INUC,IFRP,JBAS)
+      SUBROUTINE SELOW4(INUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C
 C     Make index array pointing from basis functions of
