@@ -119,8 +119,7 @@ C     Memory allocation
       CALL MEMGET('REAL',KTLMN,LMNTOT,WORK,KFREE,LFREE)
 C     Calculate TLMN = RNUC in Cartesian basis
       CALL SOLNUC(.FALSE.,0,WORK(KTLMN),DUMMY,WORK,KFREE,LFREE,IPRINT)
-C     Transform TLMN to RNUC(l,m) in spherical basis and
-C     write nuclear contribution, RNUC(l,m) on LUSOL
+C     Transform TLMN to RNUC(l,m) in spherical basis 
       LMTOT4 = MAX(4,LMTOT)
       CALL MEMGET('REAL',KRNUC,LMTOT4,WORK,KFREE,LFREE)
       CALL TLMTRA(1,WORK(KTLMN),WORK(KRNUC),WORK(KFREE),LFREE,IPRINT)
