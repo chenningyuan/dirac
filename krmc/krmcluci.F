@@ -1735,12 +1735,11 @@ C
 C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,CIRUN)
 C
-      IF (NCIROOT.GE.2) THEN
-         IF (MAXCIT.GT.4.OR.MAXCIT.LT.0) THEN
-           CALL QUIT (' Normal STOP after LUCIAREL CI.')
-         ELSE
-           CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
-         END IF
+      IF (MAXCIT.GT.4.OR.MAXCIT.LT.0) THEN
+        CALL QUIT (' Normal STOP after LUCIAREL CI.')
+      ELSE
+        IF (NCIROOT.GE.2) 
+     &  CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
       END IF
 C
 C     Read CI vector from LUCIARELs file
