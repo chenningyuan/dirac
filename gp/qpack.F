@@ -155,7 +155,6 @@ C
 C     reinitalize Q package:
       LEVELQ = 0
       LQTREE = 0
-      FIRST  = .FALSE.
       DO I = 1,MXQLVL
          QNAMES(I) = '-noname-'
       END DO
