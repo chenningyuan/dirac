@@ -1530,10 +1530,18 @@ C
 #if defined (MOD_CI)
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
 #endif
-      IF(DOLVC) WRITE(LUPRI,'(1X,A)')
+      IF(DOLVC) THEN
+         WRITE(LUPRI,'(1X,A)')
      &   '* SS integrals neglected: ',
      &   '  Interatomic Coulombic SS-contributions modelled ',
      &   '  by  classical repulsion of small component atomic charges.'
+C
+C        Calculate LV-correction
+C        (SS integrals modelled by Coulombic correction)
+C        ===============================================
+C
+         CALL LVCORR(WORK,LWORK,IPRGEN)
+      END IF
       IF(DOTSC) WRITE(LUPRI,'(1X,A)')
      &   '* SS integrals neglected: ',
      &   '  Interatomic Coulombic SS-contributions modelled ',
@@ -2594,7 +2602,8 @@ C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              SSMTRC = D0
              IF (NPRPS.GT.4) 
      &          CALL QUIT ('give .LEVY-LE option before .OPERAT')
-             ICHANG = ICHANG + 1
+C            No modifications of Hamiltonian, only new definition
+C            ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
 C&&& SPINFREE : Zero out spin-orbit terms
@@ -2700,7 +2709,7 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Levy-Leblond Hamiltonian'
       ENDIF
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
+      IF(ICHANG.GT.0) WRITE(LUPRI,'(/1X,A)') 
      &    'with the following modifications:'
       IF(SPINFR) THEN
          WRITE(LUPRI,'(1X,A,A)') '* Spin-orbit terms zeroed out ',
@@ -2806,12 +2815,7 @@ C
     1 CONTINUE
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 C
-C
-C     Calculate LV-correction
-C     (SS integrals modelled by Coulombic correction)
-C     ===============================================
-C
- 500  CALL LVCORR(WORK,LWORK,IPRHAM)
+ 500  CONTINUE
 C
       IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
 C
