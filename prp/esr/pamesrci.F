@@ -121,6 +121,7 @@ C
 #include <dcbgen.h>
 #include <dcborb.h>
 #include <dcbopt.h>
+#include <dgroup.h>
 C
       DIMENSION CMO(*), WORK(*)
       CHARACTER SZTRA(2,4)*200
