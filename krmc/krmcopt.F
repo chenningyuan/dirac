@@ -246,8 +246,8 @@ C  /* Deck psiopt */
      &                  WFCONV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Get second order optimized wave function.
-C     Either DHF or KR-MCSCF...
+C     Get second-order optimized wave function.
+C     Either DF or KR-MCSCF...
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
@@ -2017,7 +2017,8 @@ C
 Chj   IF ( NASHT .GT. 1 ) THEN
 C
 C        A non-trivial number of CI rotations.
-C        hjaaj July 2002: also include NASHT .eq. 1 (giving 1-2 determinants)
+C        hjaaj July 2002: also include NASHT .eq. 1 
+C                         (giving 1-2 determinants)
 C         for debug
 C
          IF ( USE_CIPROGRAM .EQ. 'GOSCI' ) THEN
@@ -2634,7 +2635,7 @@ C
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
 C
-                    IF (IRESTRK.EQ.0) THEN
+                    IF (MOPT_MXMACRO.GT.0) THEN
 C
 C                     RESTART from KRMCOLD in MCSCF run
 C                     Generate restart and vector blocking information
@@ -2644,8 +2645,7 @@ C
      &                      ' (ROPTST)  Restarting KRMC with' //
      &                      ' LUCIAREL CI module'
                       CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
-C
-                    ELSE IF (IRESTRK.EQ.1) THEN
+                    ELSE IF (MOPT_MXMACRO.EQ.0) THEN                    
                       WRITE(LUPRI,*) 
      &                '  Restarting CI calculation from vector. '
                       IOPT_INTFLG = IOPT_INTDEF
@@ -2653,6 +2653,8 @@ C
                       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
                       CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
                       CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+                    ELSE
+                      CALL QUIT(' MOPT_MXMACRO .LT. 0, Stopping. ')
                     END IF
                   END IF
                   GO TO 2000

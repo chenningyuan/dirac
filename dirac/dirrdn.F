@@ -1474,14 +1474,14 @@ C
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',
      &     '   Weight of old matrix    : ',DAMPFC
-         ENDIF
-      ELSEIF(DODAMP) THEN
+         END IF
+      ELSE IF(DODAMP) THEN
          WRITE(LUPRI,'(A,F5.3)')
      &     ' * Damping of Fock matrix. Weight of old matrix    : ',
      &     DAMPFC
-      E NDIF
+      END IF
       WRITE(LUPRI,'(A,I4)')
-     +   ' * Maximum number of SCF iterations  : ',MAXITR
+     &   ' * Maximum number of SCF iterations  : ',MAXITR
 C
 C     Quadratic convergent DHF?
 C
@@ -1498,9 +1498,9 @@ C
 #endif
 C
 C     Reordering
-c
+C
       IF (LMOORD) THEN
-         WRITE(LUPRI,'(A)') ' * Reorder start orbitals rbitals...'
+         WRITE(LUPRI,'(A)') ' * Reorder start orbitals '
          WRITE(LUPRI,'(3X,A)') '- new ordering of start orbitals...'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
