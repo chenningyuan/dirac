@@ -242,7 +242,7 @@ C
      & F20.15)
  6071 FORMAT(//,'  RPA results',//3X,'Propagator',12X,'Frequency',13X,
      & 'Real part',8X,'Imaginary part')
- 6072 FORMAT(' <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)
+ 6072 FORMAT('@ <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)
  7000 FORMAT(//' Timing of routine RPAA :'
      &/' Before RPAA :',T30,F12.3,' seconds'
      &/' A & B multiplications :',T30,F12.3,' seconds'
