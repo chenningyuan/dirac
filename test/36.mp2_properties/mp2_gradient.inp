@@ -4,7 +4,7 @@ Analytical first-order MP2 properties
 .WAVE F
 .PROPER
 .4INDEX
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
 .DHF

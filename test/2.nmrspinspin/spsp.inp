@@ -3,7 +3,7 @@
 ! The no-pair approach is used, so that we calculate the DSO term via the
 ! Sternheimer approximation. The same calculation can then also be done 
 ! via the RELCCSD code and serves as an extra check.
-! Note that we consistently leave out the SS integrals by specifying .INTFLGi under general.
+! Note that we consistently leave out the SS integrals by specifying .INTFLG under Hamiltonian.
 !
 **DIRAC
 .TITLE
@@ -11,7 +11,7 @@ Water molecule. Restricted kinetic balance. Spin-spin couplings
 .WAVE F
 .PROPER
 .4INDEX
-**GENERAL
+**HAMILTONIAN
 .INTFLG
  1 1 0
 **WAVE FUNCTIONS

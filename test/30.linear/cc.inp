@@ -2,7 +2,7 @@
 .TITLE
  Coupled cluster to test linear symmetry
 .WAVE FUNCTION
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **WAVE FUNCTION
 .DHF

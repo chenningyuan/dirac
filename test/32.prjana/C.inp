@@ -3,13 +3,12 @@
 Fragment C
 .WAVE FUNCTION
 .ANALYZE
-**GENERAL
-.LVCORR
 **INTEGRALS
 *TWOINT
 .SCREEN
 1.0D-11
 **HAMILTONIAN
+.LVCORR
 ! We add a small electric field to split degeneracy
 ! and get well-characterized atomic orbitals
 .OPERATOR

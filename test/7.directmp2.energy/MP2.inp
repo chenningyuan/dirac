@@ -2,7 +2,7 @@
 .TITLE
  MP2 energy using the direct MP2 module
 .WAVE FUNCTION
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
 .DHF

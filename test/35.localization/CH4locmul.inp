@@ -2,7 +2,7 @@
 .TITLE
 Projection CH4 pour diff. bases
 .ANALYZE
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **INTEGRALS
 *TWOINT

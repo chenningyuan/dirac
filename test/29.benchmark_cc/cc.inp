@@ -9,7 +9,7 @@
 1,2-dichloroethane. Restricted kinetic balance. Energies, properties.
 .WAVE F
 .PROPER
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
 .DHF

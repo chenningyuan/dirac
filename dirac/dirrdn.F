@@ -44,7 +44,6 @@ C***********************************************************************
 #include "dgroup.h"
 #include "cbirea.h"
       DIMENSION WORK(*)
-C    
 C
 C     Initializations
 C
@@ -168,7 +167,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -176,7 +174,7 @@ C***********************************************************************
 C
       LOGICAL LBIT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7,FMT*6,MXFORM*6
+     &          WORD1*7
       DIMENSION WORK(LWORK)
       LOGICAL   NOGENINP
 C
@@ -186,10 +184,10 @@ C
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.CVALUE','.INTFLG','.DOJACO',
+      DATA TABLE  /'.DIRECT','.XXXXXX','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
-     &             '.SPHTRA','.LVCORR','.LVNEW ','.TSCORR',
-     &             '.ACMOUT','.VACUUM','.NUCVAC','.FAMILY',
+     &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
      &             '.DENSFI','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -197,16 +195,6 @@ C     Initialise NOGENINP
 C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP = .FALSE.
-      ILLINT = 1
-      ILSINT = 1
-      ISSINT = 1
-      IGTINT = 0
-C     TODO : this disables Gaunt integrals completely
-C            reset IGTINT to 1 when Gaunt implemented /hjaaj
-      DOLVC  = .FALSE.
-      LVNEW  = .FALSE.
-      DOTSC  = .FALSE.
-      DENSFIT = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -268,16 +256,8 @@ C&&&& DIRECT: Direct calculation
                  ENDIF
             GO TO 100
   102    CONTINUE
-C&&&& CVALUE: Set a different value of light
-            READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
-C&&& INTFLG: Specify what two-integrals should be included in this run
-            IF (IGTINT .EQ. 1) THEN
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
-            ELSE
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-            END IF
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -313,31 +293,18 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-C&&&& LVCORR: Model interatomic SS-integral contribution by classical
-C             repulsion of small component atomic charges
-            DOLVC = .TRUE.
             GO TO 100
   111     CONTINUE
-C&&&& LVNEW: Get Small component charge via Mulliken analysis
-            DOLVC = .TRUE.
-            LVNEW = .TRUE.
             GO TO 100
   112     CONTINUE
-C&&&& TSCORR: Model SS-integrals by SS nuclear attraction integrals
-C             using small component atomic charges
-            DOTSC = .TRUE.
             GO TO 100
   113    CONTINUE
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
             DOACUT = .TRUE.    
             GO TO 100
   114    CONTINUE
-C&&&& VACUUM:QED-Fock (vacuum polarization included)
-            VACUUM = .TRUE.
             GO TO 100
   115    CONTINUE
-C&&&& NUCVAC: Uehling - potential
-            NUCVAC = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& FAMILY: Family basis (Not yet implemented)
@@ -376,29 +343,16 @@ ctec we require that it is a direct calculation
          ILLDIR = 1
          ISLDIR = 1
          ISSDIR = 1
+         IGTDIR = 0
          IDFLAG = 7
       ENDIF
 C
-      IF(DOLVC) ISSINT = 0
-      IF(DOTSC) ISSINT = 0
-C
-C     Set integral flags
-C
-      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
 C
 C
 C     Print section
 C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
-      WRITE(LUPRI,'(1X,A,F18.7)')
-     +   '* The speed of light : ',CVEL
-      IF(CVAL.NE.CVEL) THEN
-        FMT = MXFORM(CVAL,14)
-        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
-     +   '* The speed of light scaled by ',(CVAL/CVEL),
-     +   ' to : ',CVAL
-      ENDIF
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -406,47 +360,11 @@ C
         IF(ILLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
         IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+        IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
 C
       IF(DENSFIT) 
      &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
-C
-C     Write info about the modelling of SS interactions
-C
-      IF(DOLVC) THEN
-C
-C        Calculate LV-correction
-C        (SS integrals modelled by Coulombic correction)
-C        ===============================================
-C
-         WRITE(LUPRI,'(A)')
-     &   ' * SS integrals neglected:',
-     &   '   Interatomic Coulombic SS-contributions modelled by',
-     &   '   classical repulsion of small component atomic charges'
-         IF (LVNEW) THEN
-            WRITE(LUPRI,'(A)')
-     &   '   found from Mulliken population analysis.'
-         ELSE
-            WRITE(LUPRI,'(A)')
-     &   '   using tabulated charges.'
-         END IF
-      END IF
-C
-      IF(DOTSC) WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  nuclear attraction integrals using ',
-     &   '  small component atomic charges.'
-C
-C     Write information about default integrals flags
-C
-      WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
-      WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
-      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
-      WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
-      WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
- 9001 FORMAT(1X,A)
- 9002 FORMAT(3X,A,L1)
 C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -3054,6 +2972,11 @@ C
       ILLDIR = 1
       ISLDIR = 1
       ISSDIR = 1
+      IGTDIR = 0
+      ILLINT = 1
+      ISLINT = 1
+      ISSINT = 1
+      IGTINT = 0
 C
 C     Initialize /DCBGEN/
 C     ===================
@@ -3075,9 +2998,11 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
+      DENSFIT  = .FALSE.
       IPRGEN   = 0
       ISPHTR   = ILSPH+2*ISSPH
-      IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR
+      IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+4*IGTDIR
+      INTGEN   = ILLINT+2*ISLINT+4*ISSINT+4*IGTINT
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -3103,7 +3028,6 @@ C <---
       NEWBAS = .TRUE.
       NEWPRP = .TRUE.
       RELCAL = .TRUE.
-      INTGEN = 7
 C
 C     Initialize SIRIPC from DALTON
 C
@@ -3153,13 +3077,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 24,NDIR = 8)
+      PARAMETER (NTABLE = 28,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
+#include "codata.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -3178,18 +3103,19 @@ Cdirac#include "functionals.h"
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
-     &          WORD1*7, LINE*80
+     &          WORD1*7, LINE*80, MXFORM*6, FMT*6
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
-     &            '.XXXXXX','.XXXXXX','.SOLVEN','.FREEPJ',
+     &            '.LVCORR','.LVNEW ','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.SPINF2','.NOSPIN','XXXXXXX'/
+     &            '.ONECAP','.SPINF2','.NOSPIN','.CVALUE',
+     &            '.INTFLG','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3213,6 +3139,8 @@ C
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
+      DOLVC   = .FALSE.
+      LVNEW   = .FALSE.
       DFTHAM  = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
@@ -3281,7 +3209,7 @@ C     Keep track of number of changes and added finite field operators
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
-     &                121,122,123,124),I
+     &                121,122,123,124,125,126,127,128),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3323,8 +3251,14 @@ CTROND          Must be implemented......
             CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
+C&&&& LVCORR: Model interatomic SS-integral contribution by classical
+C             repulsion of small component atomic charges
+            DOLVC = .TRUE.
             GO TO 100
   106     CONTINUE
+C&&&& LVNEW: Get Small component charge via Mulliken analysis
+            DOLVC = .TRUE.
+            LVNEW = .TRUE.
             GO TO 100
   107     CONTINUE
 C&&& SOLVENT: Solvent effects modelled by spherical cavity in dielectric medium
@@ -3468,6 +3402,22 @@ C&&& NOSPIN: Take out all spin-interactions
              ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
+C&&&& CVALUE: Set a different value of light
+            READ(LUCMD,*) CVAL
+            GO TO 100
+  125     CONTINUE
+C&&& INTFLG: Specify what two-integrals should be included in this run
+            IF (IGTINT .EQ. 1) THEN
+               READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+            ELSE
+               READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+            END IF
+            GO TO 100
+  126     CONTINUE
+            GO TO 100
+  127     CONTINUE
+            GO TO 100
+  128     CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -3518,6 +3468,15 @@ C
  400  CONTINUE
       WRITE(LUPRI,'(A,I5)') ' * Print level :',IPRHAM
 C
+      WRITE(LUPRI,'(1X,A,F18.7)')
+     +   '* The speed of light : ',CVEL
+      IF(CVAL.NE.CVEL) THEN
+        FMT = MXFORM(CVAL,14)
+        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
+     +   '* The speed of light scaled by ',(CVAL/CVEL),
+     +   ' to : ',CVAL
+      ENDIF
+
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (IGTINT .NE. 0) THEN
@@ -3536,6 +3495,42 @@ C
 #if defined (MOD_DFT)
       IF(DFTHAM) CALL DFTREPORT()
 #endif
+      IF(DOLVC) ISSINT = 0
+C
+C     Set integral flags
+C
+      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
+C
+C     Write info about the modelling of SS interactions
+C
+      IF(DOLVC) THEN
+C
+C        Calculate LV-correction
+C        (SS integrals modelled by Coulombic correction)
+C        ===============================================
+C
+         WRITE(LUPRI,'(A)')
+     &   ' * SS integrals neglected:',
+     &   '   Interatomic Coulombic SS-contributions modelled by',
+     &   '   classical repulsion of small component atomic charges'
+         IF (LVNEW) THEN
+            WRITE(LUPRI,'(A)')
+     &   '   found from Mulliken population analysis.'
+         ELSE
+            WRITE(LUPRI,'(A)')
+     &   '   using tabulated charges.'
+         END IF
+      END IF
+C
+C     Write information about default integrals flags
+C
+      WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
+      WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
+      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
+      WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
+      WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
+ 9001 FORMAT(1X,A)
+ 9002 FORMAT(3X,A,L1)
 C
       WRITE(LUPRI,'(A)') ' * Basis set:'
       IF ( DIRCON(1) ) THEN

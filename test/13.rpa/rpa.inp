@@ -8,7 +8,7 @@
 Water molecule. Dynamic polarizabilities
 .WAVE F
 .PROPER
-**GENERAL
+**HAMILTONIAN
 .LVCORR
 **INTEGRALS
 *TWOINT

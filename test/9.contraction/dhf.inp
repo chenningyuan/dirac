@@ -7,9 +7,9 @@ Water molecule. Unrestricted kinetic balance because of contracted basis sets
 **GENERAL
 .SPHTRA
  1 0
+**HAMILTONIAN
 .INTFLG
 1 1 0
-**HAMILTONIAN
 .URKBAL
 **WAVE FUNCTIONS
 .DHF

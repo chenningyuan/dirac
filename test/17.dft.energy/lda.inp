@@ -6,9 +6,8 @@
 .TITLE
 Water molecule. LDA energy
 .WAVE F
-**GENERAL
-.LVCORR
 **HAMILTONIAN
+.LVCORR
 .DFT
 LDA
 *DFT
