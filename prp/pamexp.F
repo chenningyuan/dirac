@@ -631,15 +631,15 @@ C
         TMP = D2*FMAT(J,J)
         TOT = TOT + TMP
         FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(I5,2X,A6,16X,E16.8,F10.4)') 
+        WRITE(LUPRI,'(I5,2X,A6,16X,E16.8,E16.5)') 
      &    J,REFFIL(J),TMP,FAC
-        WRITE(LUPRI,'(9X,A,E16.8,F10.4)')
+        WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
      &    '- principal moment: ',PM(J),PM(J)/EXPVAL
         TMP = TMP - D2*PM(J)
-        WRITE(LUPRI,'(9X,A,E16.8,F10.4)')
+        WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
      &    '- hybridization   : ',TMP,TMP/EXPVAL
       ENDDO
-      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
       WRITE(LUPRI,'(A)') ' * Interatomic contributions:'
       TOT = D0
       DO J = 1,NREFS
@@ -647,11 +647,11 @@ C
           TMP = D2*(FMAT(I,J)+FMAT(J,I))
           TOT = TOT + TMP
           FAC = TMP/EXPVAL
-          WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+          WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
      &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
         ENDDO
       ENDDO
-      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
       WRITE(LUPRI,'(A)') ' * Polarization contributions:'
       J = NREFS+1
       TOT = D0
@@ -659,15 +659,15 @@ C
         TMP = D2*(FMAT(I,J)+FMAT(J,I))
         TOT = TOT + TMP
         FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
      &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
       ENDDO
       TMP = D2*FMAT(J,J)
       TOT = TOT + TMP
       FAC = TMP/EXPVAL
-      WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+      WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
      &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
-      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1230,7 +1230,7 @@ C
           II = INDX(2,I)
           TMP = TMP + PTRI(IJ)
           FAC = TMP/EXPVAL
-          WRITE(LUPRI,'(2(A6,I5,3X),2E16.8,F10.4)') 
+          WRITE(LUPRI,'(2(A6,I5,3X),2E16.8,E16.5)') 
      &          REFFIL(JR),JJ,REFFIL(IR),II,PTRI(IJ),TMP,FAC
         ENDDO
  10     CONTINUE
