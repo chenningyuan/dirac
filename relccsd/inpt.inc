@@ -40,5 +40,5 @@ C-----For the excitation energy module
       COMMON/CCEXCI/NEXC(16),NEOPER,NTOLEX,MXDIMEX,MXITEX
       COMMON/CCEXCC/NAMEE(MAXOP)
 C-----For the Fock space module
-      COMMON/CCFSPI/FSSECT(6),NINACT(16),NACT(16),NHOLE(16),NPART(16),
+      COMMON/CCFSPI/FSSECT(6),NINACT(16),NACT(16),
      &              NTOLFS,MXDIMFS,MXITFS

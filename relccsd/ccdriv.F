@@ -58,7 +58,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE (IW,1000) "2.1 beta","July 1999"
+      WRITE (IW,1000) "2.2 ","September 2001"
       CALL DAYTIME (DATEX,TIMEX)
       WRITE (IW,1001) DATEX,TIMEX
 C
@@ -69,7 +69,7 @@ C
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-1999)")
+     &/" Vrije Universiteit Amsterdam (1998-2001)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
 C
       RETURN
@@ -146,7 +146,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL REWINP
+      LOGICAL REWINP,DOEA,DOIE
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
@@ -159,7 +159,8 @@ C
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFSPC/ FSSECT,NACTH,NACTP,NHOLE,NPART,MAXIT,MAXDIM,NTOL
+      NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
+     &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -276,10 +277,11 @@ C
       DO I = 1, 16
          NACTH(I) = 0
          NACTP(I) = 0
-         NHOLE(I) = 0
-         NPART(I) = 0
       ENDDO
-      DO ISECT = 1, 6
+      DOEA = .FALSE.
+      DOIE = .FALSE.
+      FSSECT(1) = 1
+      DO ISECT = 2, 6
          FSSECT(ISECT) = 0
       ENDDO
       REWIND (IN)
@@ -294,6 +296,18 @@ C
          NINACT(I) = NELEC(I) - NACTH(I)
          NACT(I) = NACTH(I) + NACTP(I)
       ENDDO
+C
+C     Translate easy input to FSSECT type input
+C
+      IF (DOEA) THEN
+         FSSECT(1) = 1
+         FSSECT(2) = 1
+      ENDIF
+C
+      IF (DOIE) THEN
+         FSSECT(1) = 1
+         FSSECT(3) = 1
+      ENDIF
 C
 C     Input for the sorting routine.
 C
