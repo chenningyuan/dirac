@@ -1,0 +1,20 @@
+include ../Makefile.config
+
+OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
+	qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
+	gpjth.o
+
+MXM_OBJS = mxmpack.o
+
+all:	$(OBJS)
+
+mxm:	$(MXM_OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

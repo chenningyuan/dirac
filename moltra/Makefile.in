@@ -1,0 +1,15 @@
+include ../Makefile.config
+
+OBJS =  trainp.o trapam.o tradr1.o tradr2.o tradr3.o traone.o \
+        traout.o traprp.o tradr4.o
+
+all:	$(OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

@@ -1,0 +1,18 @@
+include ../Makefile.config
+
+OBJS =paminp.o \
+        pamprp.o \
+	pamexp.o \
+        pamgrd.o \
+        pamset.o 
+
+all:	$(OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

@@ -1,0 +1,31 @@
+include ../Makefile.config
+
+OBJS =	dirac.o  \
+	dircnv.o \
+	dirone.o \
+	dirout.o \
+	dirana.o \
+	dirrdn.o \
+	dirscf.o \
+	dirset.o \
+	dirtra.o \
+	dirtwo.o \
+	dirgp.o\
+	dirgeo.o\
+	dirgrd.o\
+	dirden.o
+
+LINUX_OBJS = dirac_linux.o 
+
+all:	$(OBJS)
+
+linux:	$(LINUX_OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

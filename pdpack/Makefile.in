@@ -1,0 +1,18 @@
+include ../Makefile.config
+
+OBJS=	arhpack.o  dge.o      dsp.o         fastio_g07.o\
+linextra.o printpkg.o gpblas.o gp_dblas3.o eispack.o
+
+all :	pdpack.a
+
+pdpack.a: $(OBJS)
+	ar r pdlib.a $(OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
