@@ -2811,6 +2811,8 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 #include "cstate.inc"
 *
       CALL QENTER('SIGDC')
+      IDUM = -1107
+      CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'SIGDC ')
       IDUM = 0
 *
 *. Arrays for partitioning of sigma
@@ -2825,6 +2827,7 @@ C    &           N1ELINT,N2ELINT,IPRCC)
      &                WORK(KLSI1BT),WORK(KLSIBT),LUC,LUHC,T,ISIGDEN)
 *
       CALL QEXIT('SIGDC')
+      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'SIGDC ')
 *
       RETURN
       END

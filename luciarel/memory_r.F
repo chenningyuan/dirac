@@ -310,13 +310,14 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
 #if defined (IA64)
       integer*8 KBASE,KFREES,KFREEL,IBASE,NWORD,JBASE,JBASEN,IMARK
 #endif
-      CHARACTER*6 TASK,IDENT,IIDENT,MARKC
+      CHARACTER*6 TASK,IDENT,IIDENT,MARKC,MARK_ACT
       PARAMETER(NPAD = 1 )
       PARAMETER(MAXLVL = 4096 )
       PARAMETER(MAXMRK = 1024)
       COMMON/CMEMOR/NWORD,KFREES,KFREEL,IBASE(MAXLVL),IMARK(MAXMRK),
      &              LENGTH(MAXLVL),IIDENT(MAXLVL),NS,NL,NM,
-     &              MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK)
+     &              MARKL(MAXMRK),MARKS(MAXMRK),MARKC(MAXMRK),
+     &              MARK_ACT
 *. Two real*8 words, one added NPAD times before each array, another
 *. added NPAD times after each array
       DATA PAD1/0.123456789D0/
@@ -467,14 +468,25 @@ CTF     CALL MEMMAR(KISPSAOUT,4,'ADDS  ',1,'ISPOAU')
           Call Abend1( 11 )
         END IF
         MARKC(NM) = IDENT
+        MARK_ACT = IDENT 
         IMARK(NM) = KFREEL
         MARKL(NM) = NL
         MARKS(NM) = NS
         NSNLI = NS + NL
       ELSE IF (TASK(1:5).EQ.'FLUSM') THEN
+        I_AM_INTOLERANT = 1
+        IF(I_AM_INTOLERANT.EQ.1.AND.IDENT(1:6).NE.MARK_ACT(1:6)) THEN
+          WRITE(6,*) ' Error in Flushing :  MARKS not consistent '
+          WRITE(6,'(A,A,A,A)')
+     &    ' Actual MARK and MARK to be flushed ',
+     &     IDENT,' versus ',MARK_ACT
+          STOP ' Error in memory flushing '
+        END IF
+*
         NSNLI = NS+NL
         KFREEL = IMARK(NM)
         IF(KFREES.GT.IMARK(NM)) KFREES = IMARK(NM)
+        IF(NM.GT.1) MARK_ACT = MARKC(NM-1)
         NL = MARKL(NM)
         NS = MARKS(NM)
         NM = NM - 1

@@ -459,7 +459,7 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
       write(6,*) ' Returning to KRMC.'
       write(6,*) 
 *
-      call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
+      call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI ')
       RETURN
       END
 ***********************************************************************
