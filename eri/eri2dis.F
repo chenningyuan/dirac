@@ -461,7 +461,11 @@ C  /* Deck pickao */
 C
       DO J = 1, 4
       DO I = 1, NAOBCH
-         ACTVBT(I,J) = .TRUE.
+         IF (KCLSBT(I).EQ.1) THEN
+             ACTVBT(I,J) = .TRUE.
+          ELSE
+             ACTVBT(I,J) = .FALSE.
+          ENDIF
       END DO
       END DO
 C
@@ -479,7 +483,21 @@ C
          END IF
       END DO
 C
-CTOND      IF (LMULBS .AND. LOOPDP) THEN
+#ifndef PRG_DIRAC
+      IF (LMULBS .AND. LOOPDP) THEN
+         DO I = 1, NAOBCH
+            IF (MBIDBT(I) .GT. 1) THEN
+               DO J = 2, 4
+                  ACTVBT(I,J) = .FALSE.
+               END DO
+            END IF
+            IF (MBIDBT(I) .EQ. 1) THEN
+               ACTVBT(I,1) = .FALSE.
+            END IF
+         END DO
+      ELSE IF (LMULBS .AND. .NOT. R12TRA) THEN
+#else /* PRG_DIRAC */
+CTROND      IF (LMULBS .AND. LOOPDP) THEN
 CTROND         DO I = 1, NAOBCH
 CTROND            IF (MBIDBT(I) .GT. 1) THEN
 CTROND               DO J = 2, 4
@@ -491,8 +509,19 @@ CTROND               ACTVBT(I,1) = .FALSE.
 CTROND            END IF
 CTROND         END DO
 CTROND      ELSE IF (LMULBS .AND. .NOT. R12TRA) THEN
+#endif /* PRG_DIRAC */
 C        Do not compute integrals that involve auxiliary
 C        basis functions (WK/UniKA/04-11-2002).
+#ifndef PRG_DIRAC
+         DO I = 1, NAOBCH
+            IF (MBIDBT(I) .GT. 1) THEN
+               DO J = 1, 4
+                  ACTVBT(I,J) = .FALSE.
+               END DO
+            END IF
+         END DO
+      END IF
+#else /* PRG_DIRAC */
 CTROND         DO I = 1, NAOBCH
 CTROND            IF (MBIDBT(I) .GT. 1) THEN
 CTROND               DO J = 1, 4
@@ -501,6 +530,7 @@ CTROND               END DO
 CTROND            END IF
 CTROND         END DO
 CTROND      END IF
+#endif /* PRG_DIRAC */
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)

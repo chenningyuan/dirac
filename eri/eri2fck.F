@@ -61,9 +61,13 @@ C
 #include "erithr.h"
 #include "erimem.h"
 #include "aobtch.h"
+#ifdef PRG_DIRAC
 #if defined (VAR_VECTOR)
+#endif /* PRG_DIRAC */
 #include "veclen.h"
+#ifdef PRG_DIRAC
 #endif
+#endif /* PRG_DIRAC */
 #include "odbtch.h"
 #include "symmet.h"
 #include "infpar.h"
@@ -327,7 +331,12 @@ C
 C     Construct Fock matrix contribution
 C     ==================================
 C
+#ifndef PRG_DIRAC
+      CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,
+     &            ABS(IFITDM),IPRINT)
+#else /* PRG_DIRAC */
       CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,IPRINT)
+#endif /* PRG_DIRAC */
 C
       RETURN
       END
@@ -552,7 +561,11 @@ C
       END
 C  /* Deck fokdi1 */
       SUBROUTINE FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BUF,IBUF,
+#ifndef PRG_DIRAC
+     &                  LBIN,LENGTH,IFIT_DMAT,IPRINT)
+#else /* PRG_DIRAC */
      &                  LBIN,LENGTH,IPRINT)
+#endif /* PRG_DIRAC */
 C
 C     Henrik Koch and Trygve Helgaker 18-NOV-1991.
 C
@@ -588,8 +601,20 @@ C NECgh980505  FAC = DP5
              WRITE(LUPRI,*) '*** WARNING!!! This value for IFCTYP is '//
      &               'probably not correctly implemented! ***'
          END IF
+#ifndef PRG_DIRAC
+         IF (IFIT_DMAT.EQ.0) THEN
+C...........Ordinary Fock matrix with exact density
+            CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
+     &                  IY,FAC)
+         ELSE
+C...........Construction of special Fock matrix for density fitting
+            CALL DF_FCKCON (FMAT,DMAT,FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,
+     &                      LBIN,LENGTH,IX,IY,FAC,IFIT_DMAT)
+         ENDIF
+#else /* PRG_DIRAC */
 Cdirac	 CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
 Cdirac     &               IY,FAC)
+#endif /* PRG_DIRAC */
       END DO
       RETURN
       END

@@ -147,7 +147,11 @@ C
 #include "symmet.h"
 #include "nuclei.h"
       INTEGER A, B, C, E, F, G, EE, FF, GG, P, Q, R,
+#ifndef PRG_DIRAC
+     &        T, U, V, X, Y, Z, V0, ALPHA, TOT, POS, PX, PY, PZ,
+#else /* PRG_DIRAC */
      &        T, U, V, X, Y, Z, V0, TOT, POS, PX, PY, PZ,
+#endif /* PRG_DIRAC */
      &        BX, BY, BZ
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
@@ -214,13 +218,24 @@ C
                      TOT = X + Y + Z
                      IADR = IOFF + NSPHAD(L,TOT-L,NDER) +
      &                      (2*L+1)*(NCRT(X,Y,Z)-1) + L + MADR
+#ifndef PRG_DIRAC
+C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
+#endif /* ! PRG_DIRAC */
                      IF (NCOLS.EQ.1) THEN
                         CSQ(IADR,1) = CSQ(IADR,1) + FACTOR 
                         IF (IPRINT.GT.20) THEN
                            WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
+#ifndef PRG_DIRAC
+     &                               F10.5,I4,2X,2(3I3,2X),4I3)') 
+#else /* PRG_DIRAC */
      &                               F10.5,2X,2(3I3,2X),4I3)') 
+#endif /* PRG_DIRAC */
      &                               L,M,I,J,K,E,F,G,
+#ifndef PRG_DIRAC
+     &                               IATOM,BFAC,ALPHA,
+#else /* PRG_DIRAC */
      &                               IATOM,BFAC,
+#endif /* PRG_DIRAC */
      &                               PX,PY,PZ,X,Y,Z,
      &                               TOT,NCRT(X,Y,Z),IADR
                         END IF
@@ -240,9 +255,17 @@ C
                               CSQ(IADR,IA) = CSQ(IADR,IA) + BFAC
                               IF (IPRINT.GT.20) THEN
                                  WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
+#ifndef PRG_DIRAC
+     &                                     F10.5,I4,2X,2(3I3,2X),3I3)') 
+#else /* PRG_DIRAC */
      &                                     F10.5,2X,2(3I3,2X),3I3)') 
+#endif /* PRG_DIRAC */
      &                                     L,M,I,J,K,E,F,G,
+#ifndef PRG_DIRAC
+     &                                     IA,BFAC,ALPHA,
+#else /* PRG_DIRAC */
      &                                     IA,BFAC,
+#endif /* PRG_DIRAC */
      &                                     PX,PY,PZ,X,Y,Z,
      &                                     TOT,NCRT(X,Y,Z),IADR
                               END IF

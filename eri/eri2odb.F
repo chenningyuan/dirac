@@ -461,7 +461,11 @@ C
                IF (DOSORT(7)) NSORT(7,IBATCH) = ICMATA
                IF (DOSORT(8)) NSORT(8,IBATCH) = ICMATB 
 C              Sort for basis-set identifiers (WK/UniKA/04-11-2002).
+#ifndef PRG_DIRAC
+               IF (DOSORT(9)) NSORT(9,IBATCH) = MBIDAB(IA,IB)
+#else /* PRG_DIRAC */
 CTROND               IF (DOSORT(9)) NSORT(9,IBATCH) = MBIDAB(IA,IB)
+#endif /* PRG_DIRAC */
                IPRADR = IPRADR + NPRFAB
                IF (IPRINT .GT. 5) THEN
                   WRITE (LUPRI,'(2X,A, I5)') ' IBATCH ', IBATCH
@@ -752,8 +756,13 @@ C
          IODCLS(19,I) = KCCFBT(IA)
          IODCLS(20,I) = KCCFBT(IB)
 C        Basis-set identifiers (WK/UniKA/04-11-2002).
+#ifndef PRG_DIRAC
+         IODCLS(21,I) = MBIDBT(IA)
+         IODCLS(22,I) = MBIDBT(IB)
+#else /* PRG_DIRAC */
 CTROND         IODCLS(21,I) = MBIDBT(IA)
 CTROND         IODCLS(22,I) = MBIDBT(IB)
+#endif /* PRG_DIRAC */
   300 CONTINUE
 C
       IF (IPRINT .GT. 3) THEN
@@ -869,8 +878,23 @@ C
       RETURN
       END
 C  /* Deck MBIDAB */
+#ifndef PRG_DIRAC
+      INTEGER FUNCTION MBIDAB(I,J)
+#else /* PRG_DIRAC */
 CTROND      INTEGER FUNCTION MBIDAB(I,J)
+#endif /* PRG_DIRAC */
 C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
+#ifndef PRG_DIRAC
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "shells.h"
+      MBIDAB = MBIDBT(I) + MBIDBT(J) * 2
+      RETURN
+      END
+#else /* PRG_DIRAC */
 CTROND#include "implicit.h"
 CTROND#include "maxaqn.h"
 CTROND#include "mxcent.h"
@@ -880,3 +904,4 @@ CTROND#include "shells.h"
 CTROND      MBIDAB = MBIDBT(I) + MBIDBT(J) * 2
 CTROND      RETURN
 CTROND      END
+#endif /* PRG_DIRAC */
