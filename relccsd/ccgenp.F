@@ -82,7 +82,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 
       REAL*8 A
-C     REAL*8 SUMT
+      REAL*8 SUMT
 
 C ** check requested function
 
@@ -167,7 +167,7 @@ C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
         DO I=1,MXTIMF
           IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
         ENDDO
-        WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+C       WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
 #endif
       ELSE
         WRITE(IW,135)
@@ -236,6 +236,7 @@ C
 C
       CHARACTER*4 DN, FNAM*8, FTFILN*9
       INTEGER FTFILL,IZLL
+      INTEGER*8 SIZE,POS
 C
       COMMON /POINTR/ POS(100)
       COMMON /SECT/ SECTOR,MAXLN
@@ -328,11 +329,13 @@ C
       COMMON /POINTR/ POS(100)
       COMMON /SECT/ SECTOR,MAXLN
       COMMON /IOBUFF/ BUFF(1024)
+      INTEGER*8 OFF,FWORD,FWD,IPT,POS
 C
       DIMENSION ARRAY(NLEN)
 C
       IF (NLEN.EQ.0) RETURN
-      FWORD = (IREC-1)*SECTOR + 1
+      FWORD = (IREC-1)
+      FWORD = FWORD*SECTOR + 1
       NGRP = NLEN/MAXLN
       IF(MAXLN*NGRP.NE.NLEN) NGRP = NGRP + 1
 C
@@ -378,7 +381,8 @@ C
       FWD = FWORD
 C
       DO 11 IGRP = 1,NGRP-1
-      IPT = (IGRP-1)*MAXLN + 1
+      IPT = (IGRP-1)
+      IPT = IPT*MAXLN + 1
       OFF = FWD - 1
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL GETWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
@@ -394,7 +398,8 @@ C
   11  CONTINUE
 C
       NW = (LLEN/SECTOR)*SECTOR
-      IPT = (NGRP-1)*MAXLN + 1
+      IPT = (NGRP-1)
+      IPT = IPT*MAXLN + 1
       OFF = FWD - 1
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
@@ -449,11 +454,13 @@ C
       COMMON /POINTR/ POS(100)
       COMMON /SECT/ SECTOR,MAXLN
       COMMON /IOBUFF/ BUFF(1024)
+      INTEGER*8 OFF,FWORD,FWD,IPT,POS
 C
       DIMENSION ARRAY(NLEN)
 C
       IF (NLEN.EQ.0) RETURN
-      FWORD = (IREC-1)*SECTOR + 1
+      FWORD = (IREC-1)
+      FWORD = FWORD*SECTOR + 1
       NGRP = NLEN/MAXLN
       IF(MAXLN*NGRP.NE.NLEN) NGRP = NGRP + 1
 C
@@ -498,7 +505,8 @@ C
       FWD = FWORD
 C
       DO 11 IGRP = 1,NGRP-1
-      IPT = (IGRP-1)*MAXLN + 1
+      IPT = (IGRP-1)
+      IPT = IPT*MAXLN + 1
       OFF = FWD - 1
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL PUTWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
@@ -573,6 +581,7 @@ C
 C
       COMMON /POINTR/ POS(100)
       common /flname/ dn(100)
+      INTEGER*8 POS,STAT
 C
 C JCODE = 4     CLOSE AND DELETE FILE
 C JCODE = 3     CLOSE AND SAVE FILE

@@ -1,4 +1,4 @@
-/* Utility routines for molpro88 unix version
+ /*
  *
  * VERSION : $Revision$
  * DATE    : $Date$
@@ -7,6 +7,7 @@
  *
         Coded by U. Welz, Universitaet Bielefeld, January 1988
         Further information from Peter Knowles or Joachim Werner
+        Stripped and revised for RELCCSD Luuk Visscher
 
 I/O routines:   openc(unit,fname,size,status)
                 character*(*) fname
@@ -24,18 +25,6 @@ I/O routines:   openc(unit,fname,size,status)
                         offset p words relative to beginning of file
                         all counting done in double words
 
-Timing routines:second()
-                        return cpu time in seconds
-                timing(cpu,sys,io)
-                double precision cpu,sys,io
-                        return cpu, system, i/o time (all seconds)
-                        the i/o time is computed by couning disk transfers in
-                        rdabsf, wrabsf assuming SEEK and SPEED parameters given
-                        below.
-
-Bit routines:   popcnt(pat)
-                leadz(pat)
-                        as documented for cray, except operating on 32 bit word
         */
 #include <unistd.h>
 #include <stdio.h>
@@ -50,8 +39,6 @@ Bit routines:   popcnt(pat)
 #include <sys/param.h>
 
 extern char  *getenv(); 
-#define SEEK            0.015           /* average seektime in seconds */
-#define SPEED           307250          /* speed in words per second */
 
 #define MAXLENGTH       15
 #define MAXUNIT         99
@@ -63,14 +50,21 @@ extern char  *getenv();
 #endif
 
 #define PATHMAX         512 
-#define UNKNOWN         1
 #define SCRATCH         0
+#define UNKNOWN         1
 #define NEW             2
 #define OLD             3
 
+/* Check that the large file option is enabled, if not use normal lseek */
+
+#ifndef off64_t 
+typedef off_t off64_t;
+#define lseek64 lseek
+#endif
+
 typedef struct
 { int  fd, size;
-  off_t addr;
+  off64_t addr;
   char fname[15];
 } FILE_DEFINITION;
 
@@ -106,11 +100,11 @@ void closec();
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
     defined (SYS_SUN) || defined (SYS_DARWIN)
-void openc_(unit,fname,size,status) int *unit, *size, *status; char *fname;
+void openc_(unit,fname,size,status) off64_t *size; int *unit, *status; char *fname;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void openc(unit,fcd,size,status) int *unit, *status, *size; _fcd fcd;
+void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
-void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
+void openc(unit,fname,size,status) off64_t *size; int *unit, *status; char *fname;
 #else
 ????
 #endif
@@ -166,23 +160,23 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
 }
   files[*unit].size= *size;
   strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;
-  *size=(lseek(files[*unit].fd,0L,2)+511)/512;
+  *size=(lseek64(files[*unit].fd,0L,2)+511)/512;
   files[*unit].addr= -1;
 
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
     defined (SYS_SUN) || defined (SYS_DARWIN)
-void wrabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
+void wrabsf_(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void wrabsf(unit,fcd,l,p) int *unit,*p, *l; _fcd fcd;
+void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX) 
-void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
+void wrabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
 #else
 ???
 #endif
 
-{ off_t addr; int  m, n;
+{ off64_t addr; int  m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -203,8 +197,8 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
   m= *l * WORT;
 
   if (addr!=files[*unit].addr)
-        if (lseek(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"wrabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
+        if (lseek64(files[*unit].fd,addr,0)==-1)
+        { fprintf(stderr,"wrabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
@@ -220,16 +214,16 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
     defined (SYS_SUN) || defined (SYS_DARWIN)
-void rdabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
+void rdabsf_(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void rdabsf(unit,fcd,l,p) int *unit, *p, *l; _fcd fcd;
+void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
-void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
+void rdabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
 #else
 ????
 #endif
 
-{ off_t addr; int m, n;
+{ off64_t addr; int m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -250,8 +244,8 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
   m= *l *WORT;
 
   if (addr!=files[*unit].addr)
-        if (lseek(files[*unit].fd,addr,0)==-1)
-        { fprintf(stderr,"rdabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
+        if (lseek64(files[*unit].fd,addr,0)==-1)
+        { fprintf(stderr,"rdabs: Error in lseek64 of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
           MACRO_QUIT();
           return;
