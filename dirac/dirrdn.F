@@ -2171,9 +2171,9 @@ C
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*XXXXXX','*XXXXXX','*XXXXXX'/
+     &             '*RHO1  ','*DENSIT','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.DENSIT','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2186,7 +2186,8 @@ C
       DOVEC   = .FALSE.
       DOPOP   = .FALSE.
       DOPRJ   = .FALSE.
-      DORHO1  = .FALSE.
+      DO1RHO  = .FALSE.
+      DO3RHO  = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -2253,10 +2254,12 @@ C&&&& PRIVEC: Print vectors
             GO TO 100
   104    CONTINUE
 C&&&& RHO1: Punch density along the lines between centers
-            DORHO1 = .TRUE.
+            DO1RHO = .TRUE.
             NJOBS = NJOBS +1
             GO TO 100
   105    CONTINUE
+C&&&& DENSITY: Write density to unformatted file (Gaussian cube format)
+            DO3RHO = .TRUE.
             GO TO 100
   106    CONTINUE
             GO TO 100
@@ -2285,7 +2288,9 @@ C
      &     '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)') 
      &     '* Projection onto another solution '
-      IF(DORHO1) WRITE(LUPRI,'(1X,A)') 
+      IF(DO3RHO) WRITE(LUPRI,'(1X,A)') 
+     &    '* Write out density for visualization (Gaussian cube format)'
+      IF(DO1RHO) WRITE(LUPRI,'(1X,A)') 
      &     '* Punch density along lines between nuclear centers'
 C
 C
@@ -2325,6 +2330,7 @@ C
         CALL RHO1IN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     6 CONTINUE
+        CALL DENSIN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -2335,7 +2341,8 @@ C
       IF(DOPOP) CALL POPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOPRJ) CALL PRJINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
-      IF(DORHO1) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
+      IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
+      IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -4220,7 +4227,7 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DORHO1) GOTO 999
+      IF(.NOT.DO1RHO) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'RHO1IN: 1-dimensional density plot:'
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -4228,6 +4235,123 @@ C
       WRITE(LUPRI,'(1X,A,F7.4)') '* Grid mesh (in Angstroms): ',DSTEP
       WRITE(LUPRI,'(1X,A)') 
      &    '(Remember that lines can be defined by ghost centers)'
+  999 CONTINUE
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck densin */
+      SUBROUTINE DENSIN(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Input section for 3-dimensional density plot
+C
+C     Written by T.Saue - Nov 5 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      PARAMETER (NTABLE = 8)
+C
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbrho.h"
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.NCUBE ','.PRINT ','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /DCBRHO1/
+C     ===================
+C
+      IPRRHO = 0
+      NCUBE(1) = 80
+      NCUBE(2) = 80
+      NCUBE(3) = 80
+C
+C     Process input from DCBRHO
+C     =========================
+C
+      NEWDEF = (WORD .EQ. '*DENSIT')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in DENSIN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in DENSIN.')
+    1          CONTINUE
+C&&&& NCUBE: Number of points along the sides of the cube
+               READ(LUCMD,*) NCUBE(1),NCUBE(2),NCUBE(3)
+               GO TO 100
+    2          CONTINUE
+C&&&& PRINT: Print level
+                  READ(LUCMD,*) IPRRHO
+               GO TO 100
+    3          CONTINUE
+               GO TO 100
+    4          CONTINUE
+               GO TO 100
+    5          CONTINUE
+               GO TO 100
+    6          CONTINUE
+               GO TO 100
+    7          CONTINUE
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in DENSIN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in DENSIN.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DO3RHO) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'DENSITY: 3-dimensional density plot:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A,I4)') '* Print level: ',IPRRHO
   999 CONTINUE
       RETURN
 C

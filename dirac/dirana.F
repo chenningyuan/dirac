@@ -71,7 +71,13 @@ C*****************************************************************************
 C*****  P L O T   1 - D I M E N S I O N A L     D E N S I T Y   **************
 C*****************************************************************************
 C
-      IF(DORHO1) CALL GT1RHO(WORK,LWORK)
+      IF(DO1RHO) CALL GT1RHO(WORK,LWORK)
+C
+C*****************************************************************************
+C*****  P L O T   3 - D I M E N S I O N A L     D E N S I T Y   **************
+C*****************************************************************************
+C
+      IF(DO3RHO) CALL GT3RHO(WORK,LWORK)
 C
 C*****************************************************************************
 C*****  P R O J E C T I O N   O N T O    A N O T H E R   S O L U T I O N *****
@@ -1858,4 +1864,255 @@ C       Get density in this point
         WRITE(LURHO,'(F10.6,3E20.10)') PP,(RHO(I),I=0,MC)
       ENDDO
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt3rho  */
+      SUBROUTINE GT3RHO(WORK,LWORK)
+C***********************************************************************
+C
+C     Prepare for 3-dimensional density plot
+C
+C     Written by Trond Saue Nov 5 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
+#include "dcbgen.h"
+#include "dcbrho.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+C
+      CALL QENTER('GT3RHO')
+#include "memint.h"
+C
+      CALL TITLER('3-dimensional density plot','*',122)
+C
+      LUCUBE(1) = 11
+      OPEN(LUCUBE(1),FILE='rhoL.cube',STATUS='NEW',
+     &     ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      IF(LEVYLE) THEN
+        MC = 1      
+      ELSE
+        MC = 2
+        LUCUBE(2) = 12
+        OPEN(LUCUBE(2),FILE='rhoS.cube',STATUS='NEW',
+     &       ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+      CALL MEMGET('REAL',KATOM,4*NUCDEP,WORK,KFREE,LFREE)
+C     Get cube parameters
+      CALL CUBPAR(CUBE,WORK(KATOM))
+C     Write header for cube file
+      DO IC = 1,MC
+        CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
+      ENDDO
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+CTROND: Consider open shell ! (NFMAT...)
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAOS ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+C
+C     Read coefficients
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
+     &            TOTERG,4,WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Generate density matrix
+C     Be aware: Both density matrices are normed to 1
+      CALL GENDEN(WORK(KDMAT),WORK(KCMO),1,IPRHO1)
+CTROND      DO IOPEN = 1,NOPEN
+CTROND        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
+CTROND      END DO
+C     Coeffients may now be deallocated.....
+      CALL MEMREL('GT3RHO.cmo',WORK,KCMO,KCMO,KFREE,LFREE)
+      CALL MEMGET('REAL',KRHO,NCUBE(3)*MC,WORK,KFREE,LFREE)
+      CALL GT3RH1(LUCUBE,CUBE,WORK(KRHO),
+     &            WORK(KDMAT),WORK(KGAOS),WORK(KBUF),
+     &            WORK,KFREE,LFREE)
+C
+      DO IC = 1,MC
+        CLOSE(LUCUBE(IC),STATUS='KEEP')
+      ENDDO
+C     Memory deallocation
+      CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('GT3RHO')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'GT3RHO: Coefficient file not found !'
+      CALL QUIT('GT1RHO: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Gt3rh1 */
+      SUBROUTINE GT3RH1(LUCUBE,CUBE,RHO,DMAT,GAO,BUF,
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     3-dimensional plot of density
+C
+C     Written by Trond Saue Nov 5 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)
+C
+      DIMENSION LUCUBE(*),CUBE(3,0:3),RHO(2,*),DMAT(*),GAO(*),
+     &          BUF(*),WORK(*)
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbrho.h"
+C
+#include "sdpre.h"
+      MC = 2
+      IF(LEVYLE) MC = 1      
+C     
+      
+      DO I1 = 1,NCUBE(1)
+        DO I2 = 1,NCUBE(2)
+          DO I3 = 1,NCUBE(3)
+            PX = CUBE(1,0)+(I1-1)*CUBE(1,1)
+     &                    +(I2-1)*CUBE(1,2)
+     &                    +(I3-1)*CUBE(1,3)
+            PY = CUBE(2,0)+(I1-1)*CUBE(2,1)
+     &                    +(I2-1)*CUBE(2,2)
+     &                    +(I3-1)*CUBE(2,3)
+            PZ = CUBE(3,0)+(I1-1)*CUBE(3,1)
+     &                    +(I2-1)*CUBE(3,2)
+     &                    +(I3-1)*CUBE(3,3)
+C           Get value of SOs at (PX,PY,PZ)
+            CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRRHO)
+C           Get density in this point
+            DO IC = 1,MC
+              RHO(IC,I3) = D0
+              CALL GETRH1(RHO(IC,I3),IC,0,GAO,DMAT,BUF)
+            ENDDO
+          ENDDO
+C         Write buffer
+          DO IC = 1,MC
+            WRITE(LUCUBE(IC),'(6E13.5)') (RHO(IC,I),I=1,NCUBE(3))
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Cubpar */
+      SUBROUTINE CUBPAR(CUBE,ATOMS)
+C***********************************************************************
+C
+C     Generate parameters for the cube. All coordinates in Angstroms.
+C
+C     NCUBE(0) - Number of atoms
+C     NCUBE(1) - Number of points in the "X"-direction
+C     NCUBE(2) - Number of points in the "Y"-direction
+C     NCUBE(3) - Number of points in the "Z"-direction
+C
+C     CUBE(*,0) - Coordinates of initial point
+C     CUBE(*,1) - Step vector for the "X"-direction
+C     CUBE(*,2) - Step vector for the "Y"-direction
+C     CUBE(*,3) - Step vector for the "Z"-direction
+C
+C     ATOMS(1,I) - x-coordinate of atom I
+C     ATOMS(2,I) - y-coordinate of atom I
+C     ATOMS(3,I) - z-coordinate of atom I
+C     ATOMS(4,I) - Charge of atom I
+C
+C     Written by Trond Saue Nov 6 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "codata.h"
+C
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbrho.h"
+      DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
+C
+#include "ibtfun.h"
+C
+      NCUBE(0) = NUCDEP
+C     Initialize
+      CALL DZERO(CUBE,12)
+      DO I = 1,3
+        TEMP = XTANG*CORD(I,1)
+        CUBE(I,0) = TEMP
+        CUBE(I,I) = TEMP
+      ENDDO
+C     Loop over all centers
+      JCENT = 0
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+C        Loop over all centers
+         DO ISYMOP = 0, MAXOPR
+         IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+           JCENT = JCENT + 1
+           DO I = 1,3
+             ATOMS(I,JCENT) = 
+     &         XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+             CUBE(I,0) = MIN(CUBE(I,0),ATOMS(I,JCENT))
+             CUBE(I,I) = MAX(CUBE(I,I),ATOMS(I,JCENT))
+           ENDDO
+           ATOMS(4,JCENT)=CHARGE(ICENT)
+         ENDIF
+         ENDDO
+      ENDDO      
+C     Add some space and calculate step sizes
+      DO I = 1,3
+        CUBE(I,0) = CUBE(I,0) - 5.0D0
+        CUBE(I,I) = CUBE(I,I) + 5.0D0
+        CUBE(I,I) = (CUBE(I,I)-CUBE(I,0))/(NCUBE(I)-1)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Cubhed */
+      SUBROUTINE CUBHED(LUCUBE,CUBE,ATOMS)
+C***********************************************************************
+C
+C     Write header for formatted Gaussian cube file
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbgen.h"
+#include "nuclei.h"
+#include "dcbrho.h"
+C
+      DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
+      WRITE(LUCUBE,10) TITLE
+      WRITE(LUCUBE,10) 'Total density'
+      DO I = 0,3
+        WRITE(LUCUBE,20) NCUBE(I),(CUBE(J,I),J=1,3)
+      ENDDO      
+      DO I = 1,NUCDEP
+        WRITE(LUCUBE,20) NINT(ATOMS(4,I)),ATOMS(4,I),
+     &                   (ATOMS(J,I),J=1,3)
+      ENDDO
+C
+      RETURN
+   10 FORMAT(1X,A)
+   20 FORMAT(I5,4F12.6)
       END
