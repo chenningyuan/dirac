@@ -408,8 +408,8 @@ C      (to be able to run tests with memory < 1 mio DP words)
       LWRK   = LWORK  -  KLAST + 1
       LBLOCK = 6 + 2*KPRIM + 4*KCMAT
 C      (we reserve size of one block for later allocations)
-      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB) + 20000
-C                          ^- for sympro
+      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB, 2*MXCOOR*MXCOOR) + 10000
+C                          ^- for sympro   ^-- for nucpro, pricar
       KBLOCK = (LWRK-LRESRV)/LBLOCK
       KBLOCK = MAX(KBLOCK,10)
 C              ... minimum 10 blocks
