@@ -398,10 +398,13 @@ C
          IF (NDT.GT.NDIMH) CALL QUIT ('Increase NDIMH in HEFF1')
          NDT2=NDT*NDT
          IF  (CARITH) THEN
-            CALL XCOPY (NDT2,H(IOFF),2,HR,1)
-            CALL XCOPY (NDT2,H(IOFF+1),2,HI,1)
+            CALL DCOPY (NDT2,H(IOFF),2,HR,1)
+            CALL DCOPY (NDT2,H(IOFF+1),2,HI,1)
             CALL CG(NDT,NDT,HR,HI,EV,EVI,1,VEC,VECI,
      &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
+Cluuk       uncomment when debugging, gives huge output
+Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
+Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
          ELSE
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
