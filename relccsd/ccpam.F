@@ -53,7 +53,6 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)

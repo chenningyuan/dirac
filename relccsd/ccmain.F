@@ -53,7 +53,6 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include "infmpi.h"
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
