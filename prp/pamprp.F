@@ -2161,14 +2161,14 @@ C
             KB = IPEPOLAR(B,1)
 C
 C           e-e
-            TMPMAT(A,B) = ABLRF(IFREQ,KA,KB,2)
+            TMPMAT(A,B) = -D1*ABLRF(IFREQ,KA,KB,2)
 C
 C           don't look for e-p in case of XLR_SKIPEP
             IF(.NOT.XLR_SKIPEP) THEN
 C
 C             e-p
               TMPMAT(A,B) = TMPMAT(A,B)
-     &                    + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+     &                    + -D1*ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
             ENDIF
           ENDDO
         ENDDO
