@@ -18,7 +18,12 @@ OBJS =paminp.o \
 	pamrvc.o \
 	pamrsp.o
 
+NOCPPFS = $(OBJS:.o=.i)
+
 all:	$(OBJS)
+
+ftnchek: $(NOCPPFS)
+	ftnchek $(CHEKFLAGS) $(NOCPPFS) */*.i > prp.ftnchek
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
