@@ -258,7 +258,7 @@ C
 #include "files.inc"
 C
 C---------------Local variables -----------------------------------
-      PARAMETER (NDIMH=30,NDIMH2=NDIMH*NDIMH)
+      PARAMETER (NDIMH=300,NDIMH2=NDIMH*NDIMH)
       REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
       REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
       REAL*8 EV_ALL(NDIMH*MXREP)
@@ -395,7 +395,7 @@ C
 C
 C....... Diagonalize effective Hamiltonian.
 C
-         IF (NDT.GT.NDIMH) CALL QUIT ('Increase NHDIM in HEFF1')
+         IF (NDT.GT.NDIMH) CALL QUIT ('Increase NDIMH in HEFF1')
          NDT2=NDT*NDT
          IF  (CARITH) THEN
             CALL XCOPY (NDT2,H(IOFF),2,HR,1)

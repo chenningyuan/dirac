@@ -159,7 +159,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL REWINP,DOEA,DOIE
-      REAL*8 SHIFT,EIMIN,EIMAX
+      REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
