@@ -373,8 +373,6 @@ C.......Average of Configuration
       ELSE
 C.......Fractional Occupation
         DO IOPEN = 1,NOPEN
-CTROND
-          WRITE(LUPRI,*) 'focc..',DF(IOPEN)
           CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
         END DO
       ENDIF
