@@ -643,7 +643,7 @@ dftsyncfunc_(int* amImaster)
     int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
-    if(infpar_.nodes==1||Initialized) return;
+    if(infpar_.nodes==0||Initialized) return;
 
     MPI_Bcast(&do_alda,      1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
