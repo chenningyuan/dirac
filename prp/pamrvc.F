@@ -69,7 +69,9 @@ C
 C
 C
       CALL QENTER('XRSSVC')
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,18)
+#endif /* MOD_KRMC */
 C
 C     Initialize sigma vectors
 C     ========================
@@ -92,17 +94,20 @@ C     Construct configurational part of sigma vectors
 C     for the configurational trial vectors
 C     ===============================================
 C
+#ifdef MOD_KRMC
       IF (NCSIM.GT.0) THEN
          CALL XRSSCI(BCVEC,SCVEC,IBCVC,WORK,KFREE,LFREE)
       END IF
 C
       CALL RTKTIME(.FALSE.,18)
+#endif /* MOD_KRMC */
       CALL QEXIT('XRSSVC')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssci */
+#ifdef MOD_KRMC
       SUBROUTINE XRSSCI(BCVEC,SCVEC,IBCVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -266,6 +271,7 @@ C
       CALL QEXIT ('XRSSCIM')
       RETURN
       END
+#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsphp */
       SUBROUTINE XRSPHP(SCVEC,WORK,LWORK)
@@ -473,7 +479,9 @@ C
 #include "dcbxrs.h"
 C
       CALL QENTER('XRSSEP')
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,13)
+#endif /* MOD_KRMC */
 C
       KFRSAV = KFREE
 C
@@ -494,10 +502,12 @@ C
       CALL MEMGET('REAL',KDVT,NCSIM * N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPVT,
      &     NCSIM * NASHT * NASHT * N2ASHX * NZ * 3,WORK,KFREE,LFREE)
+#ifdef MOD_KRMC
       IF ( NCSIM .GT. 0 ) THEN
          CALL XRSTDM(WORK(KCREF),BCVEC,WORK(KDVT),WORK(KPVT),
      &        WORK,KFREE,LFREE)
       END IF
+#endif /* MOD_KRMC */
 C
 C     Wf. densities
 C     -------------
@@ -588,9 +598,11 @@ C     *******************************************************
 C
 C
       IF ( NCSIM .GT. 0 ) THEN
+#ifdef MOD_KRMC
          CALL RSIGOC(SEVEC,SPVEC,WORK(KDVT),WORK(KF),WORK(KFQT),
      &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &        IBCVC,IBTYP,WORK(KFREE),LFREE)
+#endif /* MOD_KRMC */
       END IF
 C
 C
@@ -604,12 +616,14 @@ C
      &        WORK(KFQX),WORK(KDV),
      &        WORK(KZXOPE),NZXOPE,WORK(KZXOPP),NZXOPP,
      &        IBEVC,IBPVC,IBTYP,WORK(KFREE),LFREE)
+#ifdef MOD_KRMC
          IF (FKRMC) THEN
             CALL RSIGOOGB(SEVEC,SPVEC,
      &           GPOE,GPOP,BEVEC,BPVEC,
      &           WORK(KZXOPE),WORK(KZXOPP),
      &           WORK(KFREE),LFREE)
          END IF
+#endif /* MOD_KRMC */
       END IF
 C
 C
@@ -618,14 +632,18 @@ C     *** Calculate conf. part of orbital sigma vector(s) ***
 C     *******************************************************
 C
 C
+#ifdef MOD_KRMC
       IF ( NOSIM .GT. 0 .AND. NZCONF .GT. 0) THEN
          CALL RSIGCO(SCVEC,IBCVC,WORK(KF),WORK(KH2ACX),
      &        WORK,KFREE,LFREE)
       END IF
+#endif /* MOD_KRMC */
 C
       CALL MEMREL('XRSSEP',WORK,1,KFRSAV,KFREE,LFREE)
 C
+#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,13)
+#endif /* MOD_KRMC */
       CALL QEXIT ('XRSSEP')
       RETURN
       END
@@ -825,7 +843,9 @@ C
      &          IBEVC(*),IBPVC(*),WORK(*)
 C
       CALL QENTER('FMOLI')
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,6)
+#endif /* MOD_KRMC */
       KFRSAV = KFREE
       CALL MEMGET('REAL',KBMAT,N2BBASXQ,WORK,KFREE,LFREE)
       IFAC = 1
@@ -849,7 +869,9 @@ C
      &            IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
 C
       CALL MEMREL('FMOLI',WORK,1,KFRSAV,KFREE,LFREE)
+#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,6)
+#endif /* MOD_KRMC */
       CALL QEXIT('FMOLI')
       RETURN
       END
@@ -1183,7 +1205,9 @@ C
 C
       EXTERNAL BDQALGEBRA
 C
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,15)
+#endif /* MOD_KRMC */
 C
 C     Generate one-index transformed Fock matrix
 C     ------------------------------------------
@@ -1229,7 +1253,9 @@ C
          CALL PRQMAT(H1X,NORBT,NORBT,NORBT,
      &        NORBT,NZ,IPH1X,LUPRI)
       ENDIF
+#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,15)
+#endif /* MOD_KRMC */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3134,6 +3160,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrstdm */
+#ifdef MOD_KRMC
       SUBROUTINE XRSTDM(CREF,BCVEC,DVT,PVT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3297,6 +3324,7 @@ C
       CALL QEXIT('XRSDM')
       RETURN
       END
+#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx */
       SUBROUTINE GMOLITX(FMO,DVT,DV,
@@ -3343,7 +3371,9 @@ C
 C
 C
       CALL QENTER('GMOLITX')
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,5)
+#endif /* MOD_KRMC */
       KFRSAV = KFREE
 C
 C
@@ -3411,7 +3441,9 @@ C
      &     WORK,KFREE,LFREE)
 C
       CALL MEMREL('GMOLITX',WORK,1,KFRSAV,KFREE,LFREE)
+#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,5)
+#endif /* MOD_KRMC */
       CALL QEXIT('GMOLITX')
       RETURN
       END
@@ -4233,6 +4265,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoc */
+#ifdef MOD_KRMC
       SUBROUTINE RSIGOC(SEVEC,SPVEC,DVT,FVT,FQT,
      &     JXOPE,NXOPE,JXOPP,NXOPP,
      &     IBCVC,IBTYP,WORK,LWORK)
@@ -4355,6 +4388,7 @@ C
 C
       RETURN
       END
+#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoo */
       SUBROUTINE RSIGOO(SEVEC,SPVEC,FX,FQX,DV,
@@ -4387,7 +4421,9 @@ C
 #include "memint.h"
 C
       CALL QENTER('RSIGOO')
+#ifdef MOD_KRMC
       CALL RTKTIME(.TRUE.,16)
+#endif /* MOD_KRMC */
       CALL MEMGET('REAL',KFPV,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
 C
 C
@@ -4503,12 +4539,15 @@ C
         ENDIF
       ENDIF
 C
+#ifdef MOD_KRMC
       CALL RTKTIME(.FALSE.,16)
+#endif /* MOD_KRMC */
       CALL QEXIT('RSIGOO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rsigoogb */
+#ifdef MOD_KRMC
       SUBROUTINE RSIGOOGB(SEVEC,SPVEC,GPOE,GPOP,BEVEC,BPVEC,
      &     JXOPE,JXOPP,WORK,LWORK)
 C***********************************************************************
@@ -4944,6 +4983,7 @@ C
       CALL QEXIT ('RSIGCOM')
       RETURN
       END
+#endif /* MOD_KRMC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Fmoli3 */
       SUBROUTINE FMOLI3(ITYP,FMO,BMAT,FBUF,WORK,KFREE,LFREE)
@@ -5145,7 +5185,7 @@ C
 C
 C        Approximate positronic part of FQX matrices.
 C
-         write(6,*) 'approximating...'
+         write(lupri,*) 'approximating...'
          DO I = 1, NOSIM
             CALL APPFQ('P',FQX(1,I),DV,FX(1,2*I),WORK,LWORK)
          END DO

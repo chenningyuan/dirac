@@ -150,6 +150,7 @@ C
                CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
             END DO
          END IF
+#ifdef MOD_KRMC
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
          IF (ORBANA) 
@@ -193,6 +194,7 @@ C        Result is scaled by 2 in PRPEX2...
 C
          CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
 C
+#endif
       ELSE
          WRITE(LUPRI,'(1X,2A)')
      &        '*** ERROR in PRPEX1 *** Unknown wave function: ',WF

@@ -19,10 +19,10 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence. 
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
 C
 C VERSION : $Revision$
@@ -389,7 +389,9 @@ C     ***************************
 C     *** I n i t i a l i z e ***
 C     ***************************
 C
+#if MOD_KRMC
       IF ( FKRMC ) CALL GETTIM(CPUTOT1,CPUWALL1)
+#endif
 C
       CALL XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,RNORM,
      &            WORK,KFREE,LFREE)
@@ -744,6 +746,7 @@ C
 C     For KR-MCSCF iterations, calculate predicted energy
 C     change and update some info elements.
 C
+#ifdef MOD_KRMC
       IF ( FKRMC ) THEN
 C
 C        Calculate predicted energy change
@@ -766,6 +769,7 @@ C
          IINFO(5) = NERED
          IINFO(6) = NPRED
       END IF
+#endif
 C
 C
 C
@@ -1568,16 +1572,20 @@ C
 Chj debug option
 C
       IF (IPRXRS .GE. 15) THEN
-         WRITE(LUPRI,'(1X,A)') '(XRSRED) Sigma vectors'
-         WRITE(LUPRI,'(/1X,I5,A)')
-     &        NTSIM,' conf. sigma vectors'
+         CALL HEADER('(XRSRED) Sigma vectors',-1)
+#ifdef MOD_KRMC
+         IF (NZCONF .GT. 1) THEN
          DO I = 1, NTSIM
+            WRITE(LUPRI,'(/I5,A,I5)')
+     &        I,'. conf. sigma vector out of',NTSIM
             CALL RPRCI(SCVEC(1,I),NZCONF,NZ,
      &           XRS_CIPROGRAM,THRZER,LUPRI)
          END DO
-         WRITE(LUPRI,'(/1X,I5,A)') NTSIM,' orbital e-e sigma vectors'
+         END IF
+#endif
+         WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-e sigma vectors'
          CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
-         WRITE(LUPRI,'(/1X,I5,A)') NTSIM,' orbital e-p sigma vectors'
+         WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-p sigma vectors'
          CALL PRBVEC(LUPRI,SPVEC,NTSIM,NZXOPP)
       END IF
 C
@@ -1639,11 +1647,13 @@ C
                DAHS = DAHS + AH
             END DO
          END DO
-         WRITE(LUPRI,'(/1X,A,1P,D20.12)')
-     &        '(XRSRED) 1-norm of anti-symmetry of REDE  = ',DAHS
-         WRITE(LUPRI,'(1X,A,1P,D20.12,/,10X,A,0P,I3,A,I3,A,/)')
+         IF (DAHS .GT. 1.0D-14 .OR. IPRXRS.GE.4) THEN
+            WRITE(LUPRI,'(/A,1P,D10.2)')
+     &        '(XRSRED)  1-norm of anti-symmetry of REDE = ',DAHS
+            WRITE(LUPRI,'(A,1P,D10.2,/,10X,A,0P,I3,A,I3,A,/)')
      &        '(XRSRED) oo-norm of anti-symmetry of REDE = ',
      &        DMAH,' (element (',MAHI,',',MAHJ,'))'
+         END IF
       END IF
 C
 CTROND      CALL EXTRMT(1,REDE,IBTYP,IBCVC,IBEVC,IBPVC,
@@ -2406,10 +2416,14 @@ C
         ENDIF
       ENDIF
 C
+#ifdef MOD_KRMC
       IF (FKRMC) THEN
          CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
       ELSE IF (LINEQ) THEN
+#else
+      IF (LINEQ) THEN
+#endif
 C
 C     Solve reduced linear response problem in subspace
 C     =================================================
