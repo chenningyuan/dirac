@@ -404,7 +404,7 @@ C
      &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
          ELSE
 Cluuk       uncomment when debugging, gives huge output
-            call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
+Cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
             CALL RG(NDT,NDT,H(IOFF),EV,EVI,1,VEC,SCR,SCR(NDT+1),IERR)
          ENDIF
 C
