@@ -3612,11 +3612,12 @@ C      XNY = XNY + XNYBUF
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLVAL(NORDER,B,XVAL)
 #include <implicit.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION B(NORDER+1)
       POLVAL = B(1)
-      DO 10 I = 1,NORDER
-        POLVAL = POLVAL + (XVAL**I)*B(I+1)
+      XBUF = 1
+      DO 10 I = 2,(NORDER+1)
+        XBUF = XBUF*XVAL
+        POLVAL = POLVAL + XBUF*B(I)
    10 CONTINUE     
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
