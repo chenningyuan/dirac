@@ -1,3 +1,8 @@
+* August 11 1999
+
+  - Added new code for reordering of converged orbitals. New keyword
+    is '.POST D' with the same syntax as '.REORD' (jth)
+
 * July 19 1999
 
   - Bugfix for allocation of memory in Relccsd (Luuk)
