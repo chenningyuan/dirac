@@ -201,8 +201,8 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
          FOCKSP = .FALSE.
-#ifdef MOD_FOCKSPCC
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
+#ifdef MOD_FOCKSPCC
          TEQ = .TRUE.
          FOCKSP = .TRUE.
          CALL PUTAMPT (T1,T2)
@@ -221,6 +221,8 @@ C
          CALL DELFCK ('VO',DELS1,T1)
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
+#else
+         CALL QUIT('FOCKSP keyword disabled in this version of CCEQNS')
 #endif
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
@@ -717,8 +719,11 @@ C
          TEQ = .FALSE.
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
          TEQ = .TRUE.
+#ifndef MOD_FOCKSPCC
+        CALL QUIT('FOCKSP keyword disabled in this version of T1EQNS')
+#endif
       ELSE
-         CALL QUIT('Wrong keyword in call to L1EQNS')
+         CALL QUIT('Wrong keyword in call to T1EQNS')
       ENDIF
 
 C------------------------------------------------------------------
@@ -738,7 +743,9 @@ C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
 C
+#ifdef MOD_FOCKSPCC
         IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
+#endif
       ENDIF
 
 
@@ -1006,8 +1013,11 @@ C
          TEQ = .FALSE.
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
          TEQ = .TRUE.
+#ifndef MOD_FOCKSPCC
+        CALL QUIT('FOCKSP keyword disabled in this version of T2EQNS')
+#endif
       ELSE
-         CALL QUIT('Wrong keyword in call to L1EQNS')
+         CALL QUIT('Wrong keyword in call to T2EQNS')
       ENDIF
 
 C---- fill arrays according to node...
@@ -1023,7 +1033,9 @@ C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
 C
+#ifdef MOD_FOCKSPCC
         IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,BUF1,S2,BUF1,S2,2)
+#endif
       ENDIF
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
