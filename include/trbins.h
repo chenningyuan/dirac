@@ -1,0 +1,1 @@
+      COMMON /TRBINS/ LMSBIN

@@ -1,0 +1,2 @@
+      LOGICAL         SKIP, CUT
+      COMMON /CBINUC/ IPRINT, SKIP, MAXDIF, CUT

@@ -1,0 +1,5 @@
+#if defined (VAR_TESTIBM)
+      PARAMETER (MXAOVC = 10, MXCONT = MXAOVC)
+#else
+      PARAMETER (MXAOVC = 40, MXCONT = MXAOVC)
+#endif

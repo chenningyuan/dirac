@@ -1,0 +1,2 @@
+      COMMON /ORGCOM/ CMXYZ(3), ORIGIN(3), DIPORG(3), GAGORG(3),
+     &                CAVORG(3)

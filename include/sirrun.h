@@ -1,0 +1,3 @@
+      LOGICAL SIRRUN
+      COMMON /SIRRUN/ SIRRUN
+
