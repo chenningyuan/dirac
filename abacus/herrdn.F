@@ -779,8 +779,8 @@ C*****************************************************************************
 #include <cbisol.h>
 #include <huckel.h>
 #include <aosotr.h>
-#include <ibtfun.h>
 #include <gencon.h>
+#include <ibtfun.h>
 C
       CNTBAS = .FALSE.
       NUCIND = 0
@@ -5488,10 +5488,10 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(MXPRIM),CPRIN(MXPRIM*MXCORB)
-#include <ibtfun.h>
 #include <cbirea.h>
 #include <ccom.h>
 #include <gencon.h>
+#include <ibtfun.h>
       PARAMETER (DSM=1.0D-30)
 C     
       LUBFIL = 55
