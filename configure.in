@@ -1353,6 +1353,13 @@ for link in $dirs; do
    fi
    ln -sf ../include $link/include
 done
+#
+#  Move write-protection if super-user (pamadm)
+#
+if [ $PAMADM = 1 ]; then
+   echo "You're a Dirac superuser, so I'll remove write proctection..."
+   chmod -R u+w *
+fi
 echo
 
 
