@@ -159,12 +159,14 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-      LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC,TEST
+      LOGICAL TOBE,DOSEL,DSCFON,BARNUC,TEST,DIISAO_SAVE
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
+C
+      CALL QENTER('PREDHF')
 C
 #include "memint.h"
 C
@@ -174,7 +176,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
-      CALL DHFTST(BARNUC,DSCFON,CHKCNV,BMAT,IPRINT)
+      CALL DHFTST(BARNUC,DSCFON,ICHKCNV,BMAT,IPRINT)
       IF(.NOT.ONESYS) THEN
 C
 C       Initiate SCF cycle
@@ -213,7 +215,11 @@ C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
       IF(TRIVEC) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
+C
+C       We calculate a regular Fock matrix so we can check convergence ...
+C
+        IF (ICHKCNV.EQ.0) ICHKCNV = -1
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &              WORK,KFREE,LFREE)
 C
 C       Reorder orbitals if requested
@@ -298,7 +304,7 @@ C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             DO IOPEN = 1,NOPEN
               CALL DAXPY(N2BBASXQ,DVOVLP(IOPEN),
      &                   DMAT(1+N2BBASXQ*IOPEN),1,
-     &                  FOCK(1+N2BBASXQ*IOPEN),1)
+     &                   FOCK(1+N2BBASXQ*IOPEN),1)
             END DO
           END IF
 C         restore density matrix in DMAT/tsaue
@@ -416,8 +422,12 @@ C     *************************************************
 C     *****   SOLVE  DHF  EIGENVALUE  PROBLEM    ******
 C     *************************************************
 C
-      CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,CHKCNV,
+      DIISAO_SAVE = DIISAO
+      DIISAO = .TRUE.
+C     ... only DIISAO works in PREDHF because no MOs on LUCMOS yet ...
+      CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &            DOSEL,WORK(KFREE),LFREE)
+      DIISAO = DIISAO_SAVE
 C
       IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
 C
@@ -478,13 +488,14 @@ C
       CALL MEMREL('PREDHF',WORK,KWORK,KWORK,KFREE,LFREE)
 C
  666  CONTINUE
+      CALL QEXIT('PREDHF')
       RETURN
  1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfsolv */
-      SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,CHKCNV,DOSEL,
+      SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,ICHKCNV,DOSEL,
      &                  WORK,LWORK)
 C*****************************************************************************
 C
@@ -513,7 +524,7 @@ C
 #include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL CHKCNV,DOSEL,TEST
+      LOGICAL DOSEL,TEST
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
@@ -565,9 +576,9 @@ C     ================================
 C
       IF(TEST) THEN
         CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
-     &              BMAT,CHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
+     &              BMAT,ICHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
       ELSE
-        CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,CHKCNV,
+        CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,ICHKCNV,
      &              DUM,WORK(KFREE),LFREE)
       ENDIF
 C
@@ -815,8 +826,9 @@ C     ***********************************
 C
 C     Initiate/restart SCF cycle
 C
-      CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
-     &            NPOS,WORK,LWORK)
+      CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+C     ... this is a restarted calculation we might already be converged
+      IF(DHFEXIT) GOTO 30
 C
 C     Start cycle
 C
@@ -1034,7 +1046,8 @@ C                DMAT - Density matrix
 C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-         CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,.TRUE.,
+         ICHKCNV = 1
+         CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &               OVLSEL,WORK(KFREE),LFREE)
         IF (ONECOFF) THEN
           WRITE(LUPRI,'(/A,1P,D15.6,/2A/)') 
@@ -1177,7 +1190,7 @@ C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
 C
-	  LVCON = DOLVC.AND.
+      LVCON = DOLVC.AND.
      &        ( (INTFLG.EQ.3) .OR. (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
@@ -2672,7 +2685,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Dhftst */
-      SUBROUTINE DHFTST(BARNUC,DSCFON,CHKCNV,BMAT,IPRINT)
+      SUBROUTINE DHFTST(BARNUC,DSCFON,ICHKCNV,BMAT,IPRINT)
 C***********************************************************************
 C
 C     Restart checks etc. for DHF-cycle
@@ -2691,12 +2704,13 @@ C
 #include "dftcom.h"
 C
       DIMENSION BMAT(MXDIIS*MXDIIS)
-      LOGICAL TOBE,CHKCNV,DSCFON,BARNUC
+      LOGICAL TOBE,OLDFMO,DSCFON,BARNUC
 C
       BARNUC  = .TRUE.
       CACC    = '        '
       DSCFON  = .FALSE.
-      CHKCNV  = .FALSE.
+      OLDFMO  = .FALSE.
+      ICHKCNV = 0
       KITER   = 1
 
 C
@@ -2801,10 +2815,10 @@ C
 C       * Check on convergence acceleration
 C       -----------------------------------
 C
-        INQUIRE(FILE='DFFOCK',EXIST=CHKCNV)
-        CHKCNV = CHKCNV.AND.(DODIIS.OR.DODAMP)
+        INQUIRE(FILE='DFFOCK',EXIST=OLDFMO)
+        OLDFMO = OLDFMO.AND.(DODIIS.OR.DODAMP)
         IF(DODIIS) THEN
-          DIISON = CHKCNV.AND.INTFLG.EQ.INTBUF.AND.NITER.GT.1
+          DIISON = OLDFMO.AND.INTFLG.EQ.INTBUF.AND.NITER.GT.1
           INQUIRE(FILE='DFDIIS',EXIST=TOBE)
           DIISON = DIISON.AND.TOBE
           INQUIRE(FILE='DFCMOS',EXIST=TOBE)
@@ -2815,7 +2829,7 @@ C
             CALL OPNFIL(LUDIIS,'DFDIIS','OLD','SCFINT')
             READ(LUDIIS) ITDIIS,MDIIS2,NELMBM,BMAT
             IF(MDIIS2.EQ.MXDIIS) THEN
-              CHKCNV = .TRUE.
+              OLDFMO = .TRUE.
               WRITE(LUPRI,'(A)') '*** WARNING *** : DIIS RESTART'
               WRITE(LUPRI,'(3X,A,I5)')
      &        '* Previous DIIS iteration        :', ITDIIS,
@@ -2854,6 +2868,9 @@ C
      &      'Currently AUTOCC does not work with restart.')
       END IF
 C
+C     If (oldfmo) we can check all convergence criteria
+C
+      IF (OLDFMO) ICHKCNV = 1
       RETURN
  1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
  1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)

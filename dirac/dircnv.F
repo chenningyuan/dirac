@@ -32,7 +32,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfcnv */
       SUBROUTINE DHFCNV(FMO,FAO,DMAT,EVEC,FBUF,TMAT,BMAT,
-     &                  CHKCNV,SAOMO,WORK,LWORK)
+     &                  ICHKCNV,SAOMO,WORK,LWORK)
 C*****************************************************************************
 C     Driver routine for checking convergence etc.
 C
@@ -56,7 +56,7 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAl CHKCNV
+      LOGICAL OLDFMO
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),SAOMO(*),WORK(LWORK), FAO(*)
 C
@@ -69,20 +69,24 @@ C             TMAT  - MO-transformation matrix
 C             SAOMO - Right index transformed overlap matrix
 C             FBUF  - work area
 C
-      IF(CHKCNV) CALL DIISER(EVEC,FMO,FAO,DMAT,SAOMO,
-     &                       FBUF,TMAT,WORK,LWORK)
+      IF (ICHKCNV .NE. 0)
+     &   CALL DIISER(EVEC,FMO,FAO,DMAT,SAOMO,FBUF,TMAT,WORK,LWORK)
 C
 C
 C     Read MO Fock matrix from previous cycle into FBUF...
+C     Calculate largest change in AO Fock matrix for this iteration
 C     =================================================
 C
-      IF(CHKCNV) THEN
+      OLDFMO = ICHKCNV .GT. 0
+      IF(OLDFMO) THEN
         IF(MXDIIS.EQ.0) THEN
           IREC = 1
         ELSE
           IREC = MOD(NITER-2,MXDIIS-1) + 1
         ENDIF
         CALL READAC(LUFOCK,N2ORBTQ,FBUF,IREC)
+C
+        CALL FCKCMP(FMO,FBUF,WORK,LWORK)
       ENDIF
 
 C     ...and write current MO Fock matrix to file
@@ -96,25 +100,23 @@ C
         CALL WRTDAC(LUFOCK,N2ORBTQ,FMO,IREC)
       ENDIF
 C
-C     If no check on convergence, then return here...
-C
-      IF(.NOT.CHKCNV) RETURN
-C
-C     Calculate largest change in AO Fock matrix for this iteration
-C     =============================================================
-C
-      CALL FCKCMP(FMO,FBUF,WORK,LWORK)
+      IF (ICHKCNV .EQ. 0) RETURN
 C
 C     Check convergence
 C     =================
 C
       ERGVAL  = ERGBUF - DHFERG
-      IF    (ERGCNV) THEN
+      IF    (ERGCNV .AND. OLDFMO) THEN
         CONVRG = ERGVAL
-      ELSEIF(FCKCNV) THEN
+      ELSEIF(FCKCNV .AND. OLDFMO) THEN
         CONVRG = FCKVAL
       ELSEIF(EVCCNV) THEN
         CONVRG = EVCVAL
+      ELSE
+C       no check on convergence possible this time
+C       (must be called from PREDHF)
+        IF (.NOT.OLDFMO) RETURN
+        CALL QUIT('DHFCNV ERROR: no DHF convergence criterium defined!')
       ENDIF
 c     ... check if One-center app. should be turned off     /jkp
       IF(ONECAP.AND.(ABS(CONVRG).LT.ONECNV)) THEN
@@ -146,8 +148,11 @@ C
 C     If wave function converged or DHFEXIT is true, then
 C     return to avoid an extra diagonalization of the Fock matrix.
 C
+C     IF  (not old FMO matrix) exit,
+C     because then neither DIIS nor DAMP possible
+C     (OLDFMO can be false when called from PREDHF)
 C
-      IF ( DHFEXIT ) RETURN
+      IF ( DHFEXIT .OR. .NOT. OLDFMO) RETURN
 C
 C
 C     Convergence acceleration
