@@ -414,7 +414,7 @@ C
             CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
             CALL DZERO (WORK(KHMAT),NSIZH*NZ)
 C
-c           IF (IPRINT .GE. 3) THEN
+            IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
      &              '(//,1X,A,2I8/,2(1X,A,I8/),2(1X,A,I8,F10.3/))')
      &         ' Calculation of integral distribution set:',
@@ -426,7 +426,7 @@ c           IF (IPRINT .GE. 3) THEN
      &         ' Size of half-transformed integral batch: ',NSIZH,
      &              NSIZH*8./(1024.*1024.)
                CALL FLSHFO(LUPRI)
-c           END IF
+            END IF
 C
          IF (NPASS.GT.1) THEN
 C
@@ -982,7 +982,15 @@ C     --------------------------------------------
                   IOFFA = IPTQLAG(IREPCI,IREPRS,IREPS,IC)
                   IOFFB = IOFFTM1(IREPI,IREPRS,IREPCI) + 1
                   IOFFC = ILTMOFF(IREPS,IREPI)
-c
+C
+C  ####################################################################
+C  #  REAL groups:
+C  #  Because we don't get the phase factors appearing in equation ...
+C  #  from QGEMM because we use packed quaternions we have to scale
+C  #  'by hand' by determining what the phase would be in case of the
+C  #  unpacked quatnerion multiplication 
+C  ####################################################################
+C
                   IF(NZ.EQ.1) THEN
                     IREPR = IBTXOR(IREPRS,IREPS)
                     IF (IC.EQ.1) THEN
@@ -995,7 +1003,19 @@ c
                     DPHASE = IQMULPH(IQ1,IQ2)*D1
                     IF(IQ2.GT.1) DPHASE = -DPHASE
                   ENDIF
-c
+C
+C  ####################################################################
+C  #  COMPLEX groups:           
+C  #  Because we don't get all the phase factors appearing in equation
+C  #  ... from QGEMM because we use packed quaternions we have to scale
+C  #  'by hand'.
+C  #  This case is more complicated than the real groups because some 
+C  #  of the terms where the unpacked quaternion unit > 2 is scaled 
+C  #  correct because we have complex terms, that's why we scale
+C  #  particular 3/4 transf. integrals instead of applying a scaling
+C  #  factor to QGEMM
+C  ####################################################################
+C
                   IF(NZ.EQ.2) THEN
                     IREPR = IBTXOR(IREPRS,IREPS)
                     IF (IC.EQ.1) THEN
@@ -1054,7 +1074,12 @@ C     --------------------------------------------
                   IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
                   IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
                   IOFFC = ILTMOFF(IREPS,IREPA)
-c                     
+C                     
+C  ####################################################################
+C  #  REAL groups:
+C  #  See comment for 1st T dependent part
+C  ####################################################################
+C
                   IF(NZ.EQ.1) THEN 
                     IREPR = IBTXOR(IREPRS,IREPS)
                     IF (IC.EQ.1) THEN
@@ -1067,7 +1092,12 @@ c
                     DPHASE = IQMULPH(IQ1,IQ2)*D1
                     IF(IQ2.GT.1) DPHASE = -DPHASE
                   ENDIF      
-c                 
+C                 
+C  ####################################################################
+C  #  COMPLEX groups:
+C  #  See comment for 1st T dependent part
+C  ####################################################################
+C
                   IF(NZ.EQ.2) THEN
                     IREPR = IBTXOR(IREPRS,IREPS)
                     IF (IC.EQ.1) THEN

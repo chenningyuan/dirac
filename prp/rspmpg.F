@@ -278,7 +278,7 @@ C     Initialize orbital parameters
 C     =============================
 C
                call xrspar(xlr_indstr,xlr_skipee,xlr_skipep,
-     &                     work,kfree,lfree,IPRINT)
+     &                     work,kfree,lfree,IPRXLR)
 C
 C     Property gradient
 C     =================
