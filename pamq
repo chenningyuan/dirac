@@ -92,16 +92,25 @@ case $TIME in
   *m)
    wallt_ll="0:`basename $TIME m`:0"
    wallt_bsub="0:`basename $TIME m`"
+   wallt_qsub="0:`basename $TIME m`:0"
   ;;
   *h)
    wallt_ll="`basename $TIME h`:0:0"
    wallt_bsub="`basename $TIME h`:0:0"
+   wallt_qsub="`basename $TIME h`:0:0"
   ;;
   *)
    echo "Wallclock time incorrect; specify in minutes or hours as 15m or 6h.";
    exit 1
   ;;
 esac
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Set queue name
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+QUEUEQ="-q $QUEUE"
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -133,6 +142,25 @@ $PAMDIR/pam $all_arguments
 EOJ
 bsub -M $MEM_IN_KBYTES -n $MPI_NPROC -o $jobout -J $jobname -W $wallt_bsub $QUEUEQ < $jobinp
 #################### End of bsub code #####
+;;
+#### Linux PBS ########
+  pbs)
+# 
+#  Create jobinp file
+#  
+cat <<EOJ >$jobinp
+#
+# change to original directory
+# 
+cd $LOC
+#
+# execute pam shell script
+#
+$PAMDIR/pam $all_arguments
+EOJ
+SHORT=`echo $jobname | cut -c1-10`
+qsub -j oe -N $SHORT -o $jobout -l walltime=$wallt_qsub,nodes=$MPI_NPROC:$QUEUE -V $QUEUEQ $jobinp
+#################### End of pbs code #####
 ;;
 #### IBM's LoadLeveler ########
   LoadLeveler)
@@ -218,5 +246,5 @@ esac
 #
 # Clean up : remove the job
 #
-/usr/bin/rm -f $jobinp
+rm -f $jobinp
 
