@@ -1220,7 +1220,7 @@ C
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                 ALPHA(1,IBLOCK(J),J),
      &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                 NBLOCK,KAOVEC,KPRIM,Q)
+     &                 NBLOCK,KAOVEC,KPRIM)
 C
 C              Get basis set from basis set library
 C              ===================================
@@ -1231,7 +1231,7 @@ C
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,KAOVEC,KPRIM,Q,J,DSM)
+     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,J,DSM)
 C
                ELSE
 C
@@ -1290,7 +1290,7 @@ C
       WRITE(LUPRI,'(A,/,A,I3,/,A)')
      $     '*** ERROR in READIN ***',
      &     'Error reading line ',NMLINE,
-     &     MLINE(LINE)
+     &     MLINE(NMLINE)
          CALL QUIT('*** ERROR in READIN ***')
       END
 C  /* Deck cntinp */
