@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : her2gab.F
+C SOURCE  : $Source$
+C
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,
      &                  MAXDIF,JATOM,NOCONT,IPRINT)
@@ -709,7 +715,7 @@ C
               ISYMTS = IBTXOR(ISYMT,ISYMS)
               IF(NCENTC.GT.0) ICENTC = NUCNUM(NCNTSH(ISHELC),
      &            IBTAXO(ISYMT,MULC)+1)
-              IF(ICENTD.GT.0) ICENTD = NUCNUM(NCNTSH(ISHELD),
+              IF(NCENTD.GT.0) ICENTD = NUCNUM(NCNTSH(ISHELD),
      &            IBTAXO(ISYMTS,MULD)+1)
 C
 C             ****************************************************
