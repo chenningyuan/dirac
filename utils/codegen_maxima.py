@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 #----------------------------------
 # generate dft(gga) code for dirac
 # Andreas Hesselmann <andreas@theochem.uni-duesseldorf.de>, 2003
@@ -214,6 +214,7 @@ def f2c(expr):
 def read_maximaout(outfil):
     f=open(outfil,'r')
     block=0
+    simple=0
     for line in f.readlines():
         data=string.split(line)
         if len(data)==0: continue
@@ -223,6 +224,10 @@ def read_maximaout(outfil):
                 if data[1][0:5]=="BLOCK":
                     block=1
                     expr=""
+            elif data[1]=="zk" and data[2]=="=":
+                block=1
+                expr=""
+                simple=1
         if block==1:
             if data[0][0:2]!="(C":
                 line=string.strip(line)
@@ -231,7 +236,11 @@ def read_maximaout(outfil):
                 expr=expr+line
             else:
                 block=0
-    nvars,cexpr=f2c(expr)
+    if simple==1:
+        nvars=0
+        cexpr=[expr[string.find(expr,")")+2:]]
+    else:
+        nvars,cexpr=f2c(expr)
     return nvars,cexpr
 
 def make_stdefs(f):
