@@ -288,7 +288,7 @@ case $machine in
    *apple*)
       liblist="$liblist libesslp2 libessl"
       complist='xlf g77'
-      cclist='xlc cc gcc'
+      cclist='xlc gcc cc'
       debug='gdb';;
 
    sparc-sun|m68k-sun)  
@@ -1441,6 +1441,10 @@ case $machine in
       g77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
 	 c_opt='-O3'
+# the following line is needed for g77 on the Mac to force linking with
+# Apple's libgcc and not the g77 version. 
+# Otherwise there are undefined symbols restFP and saveFP
+         LIB="-L/usr/lib -lgcc $LIB"
          ;;
       esac
       inc="-I$INCLUDE_DIR";;
