@@ -595,7 +595,7 @@ if [ -z "$memdef" ]; then
    echo 'How many words to use as default for scratch memory ?'
    echo '(we do not recommend going below 1000000 words)'
    $echo 'Note that scratch memory can be changed' \
-	 'through the shell variable WRKMEM\n'
+         'through the shell variable WRKMEM\n'
    if [ $quick = 0 ]; then
       $echo 'Memory size ['$memdef'] \c'
       read memsiz
@@ -682,10 +682,10 @@ if [ -z "$worksp" ]; then
          worksp=
       fi
       if [ $guess = 0 ]; then
-	 $echo 'Default scratch space in script ['$worksp'] \c'
-	 read answer
+         $echo 'Default scratch space in script ['$worksp'] \c'
+         read answer
       else
-	 answer=
+         answer=
       fi
       if [ ! -z "$answer" ]; then
          worksp=$answer
@@ -1259,7 +1259,32 @@ $tab\$(AR) \$(ARFLAGS) \$@ \$*.o
 $tab@ rm -f \$*.o
 EOF
 #
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Make dhf shell script
+#
+#
+$echo 'Copying dhf shell script to '$INSTALL_DIR' : \c'
+cat <<EOF > $INSTALL_DIR/dhf
+#!/bin/csh -f
+#
+set SCR_DEFAULT = $worksp
+set BIN_DIR     = $INSTALL_DIR
+set SRC_DIR     = `pwd`
+EOF
+cat ./dhf.in >> $INSTALL_DIR/dhf
+chmod a+rx $INSTALL_DIR/dhf
+echo "ok"
+echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
 # Make makefile in all directories
+#
 #
 echo
 echo "Making Makefiles..."
