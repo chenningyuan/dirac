@@ -188,7 +188,7 @@ C
 C
 C     Generate integrals
 C
-      CALL GETINT('OVERLAP',WORK(KONEIN),DOINT,NCOMP,IDUMMY,IDUMMY,
+      CALL RGETINT('OVERLAP',WORK(KONEIN),DOINT,NCOMP,IDUMMY,IDUMMY,
      &            'TRIANG',.FALSE.,IPRINT,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.6) THEN
@@ -876,8 +876,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck getint */
-      SUBROUTINE GETINT(WORD,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
+C  /* Deck rgetint */
+      SUBROUTINE RGETINT(WORD,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
      &                  MXFORM,TOFILE,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -898,7 +898,7 @@ C
       CHARACTER WORD*7,MXFORM*6,LABINT(3*MXCOOR)*8
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
 C
-      CALL QENTER('GETINT')
+      CALL QENTER('RGETINT')
 #include <memint.h>
 C
       MAXTYP = 3*MXCOOR
@@ -923,9 +923,9 @@ C
 C
 C     Memory deallocation
 C
-      CALL MEMREL('GETINT.PR1IN1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RGETINT.PR1IN1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('GETINT')
+      CALL QEXIT('RGETINT')
       RETURN
 C
       END
