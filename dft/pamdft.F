@@ -27,8 +27,6 @@ C
 #include <dfterg.h>
 #include <dftcom.h>
 #include <functionals.h>
-#include <gridtest.h>
-#include <prune.h>
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',

@@ -15,8 +15,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <mxorb.h>
 #include <nuclei.h>
 #include <dftcom.h>
-#include <prune.h>
-#include <gridtest.h>
 #include <symmet.h>
 #include <ccom.h>
 
@@ -639,7 +637,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include <implicit.h> 
 #include <priunit.h> 
-#include <prune.h>
+#include <dftcom.h>
 #include <pi.h>
 
       PARAMETER (MAXNUM=1455)
@@ -656,8 +654,6 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
-      WRITE(6,*) 'NSCHEME1 = ', NSCHEME
-      WRITE(6,*) 'NTOT1 = ', NTOT
       NOLD=NSCHEME
       IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
@@ -675,9 +671,6 @@ C
             NSCHEME = NLEBSET(NTOT)
          END IF 
       ENDIF
-
-      WRITE(6,*) 'NSCHEME2 = ', NSCHEME
-      WRITE(6,*) 'NTOT2 = ', NTOT
 
       DO K=1,NTOT
          X(K)=0.0D0

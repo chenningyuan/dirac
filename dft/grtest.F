@@ -21,7 +21,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <inforb.h>
 #include <nuclei.h>
 #include <dftcom.h>
-#include <gridtest.h>
 #include <memint.h>
 
 CTROND      LUQUAD = 29
@@ -64,6 +63,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
+      CHARACTER*12 MXLB1,MXLB2,RMXLB1,RMXLB2
+      INTEGER MAXI, MAXJ, MAXIR, MAXJR, NLSOS, NSSOS        
+      DOUBLE PRECISION ERRAV, ERRAB, ERRMX, RERRAV, RERRAB, RERRMX,
+     &                 SMATDF, SMATAN, SMATFR
+
 #include <dcbgen.h>
 #include <dcbham.h>
 #include <dcbbas.h>
@@ -75,7 +79,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <nuclei.h>
 #include <dfterg.h>
 #include <dftcom.h>
-#include <gridtest.h>
 #include <orgcom.h>
 #include <dftbuf.h>
 #include <functionals.h>
@@ -306,7 +309,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <inforb.h>
 #include <orgcom.h>
 #include <dftbuf.h>
-#include <gridtest.h>
 #include <dfterg.h>
 #include <functionals.h>
       
