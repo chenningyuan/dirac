@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dcbgen.h
+C SOURCE  : $Source$
+C
 C*** General information in DIRAC ***
 C  DOPIN - read MO-coefficients from formatted file and write them to
 C          unformatted
@@ -14,7 +20,7 @@ C
      &              DOCCM,DOCIM,MINIMI,
      &              HRINPC, RDINPC, PARCAL, DIRCAL,SEGBAS,
      &              NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN
-      COMMON/GNIPAM/IPRGEN,ISPHTR,IDFLAG,LENBAS
+      COMMON/GNIPAM/IPRGEN,ISPHTR,IDFLAG,LENBAS,IPRUSR
       COMMON/GNRPAM/CVAL,STOL(2),PANAS
       COMMON/PAMIOU/LUCOEF,LUOVLP,LUTMAT,LU1INT
       CHARACTER*60 BASDIR
