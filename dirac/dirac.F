@@ -722,17 +722,6 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pamcim */
-      SUBROUTINE PAMCIM(WORK,LWORK)
-C*****************************************************************************
-C
-C     Dummy routine while the interface is being implemented
-C
-      CALL QUIT('*** DIRRCI interface not implemented **')
-C
-      RETURN
-      END
 #if defined (VAR_MPI) || defined (VAR_PVM)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnod */
@@ -820,12 +809,20 @@ C
 C
 C        Start calculating integrals.
 C
-C         CALL TRANOD(WORK,LWORK)
+#ifdef MOD_TRA
+          CALL TRANOD(WORK,LWORK)
+#else
+          CALL QUIT('*** MOLTRA is not in this version')
+#endif
       ELSE IF (ITASK .EQ. 3) THEN
 C
 C        Start coupled cluster calculation.
 C
+#ifdef MOD_CC
          CALL CCNOD(WORK,LWORK)
+#else
+          CALL QUIT('*** RELCCSD is not in this version')
+#endif
       ELSE
 C
 C        Unknown task. Abort execution.
