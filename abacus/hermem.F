@@ -61,7 +61,6 @@ C
 C
 C
       LOGICAL DIRFCK,SOFOCK,DPATH1,DPATH2
-C     For contracted integrals define NUCR1, NORR1 etc. !!!!
 C for now we assume ITYPE = 0
       MAXDER = 0
       MULE   = 0
@@ -374,6 +373,28 @@ C     ********** Cartesian Integrals **********
 C     *****************************************
 C..assuming DPATH1  
 C     For contracted integrals define NUCR1, NORR1 etc. !!!!
+C  hjaaj: NPCO[ABCD] not defined yet !!!
+C         use instead NUC[ABCD] and NORB[ABCD] / July 2000
+        IF (GENAB) THEN
+c           NUCR1  = ISUM(NSETA,NPCOA(1,1),1)
+c           NUCR2  = ISUM(NSETB,NPCOB(1,1),1)
+c           NORR1  = ISUM(NSETA,NPCOA(1,2),1)
+c           NORR2  = ISUM(NSETB,NPCOB(1,2),1)
+            NUCR1  = NUCA
+            NUCR2  = NUCB
+            NORR1  = NORBA
+            NORR2  = NORBB
+        END IF
+        IF (GENCD) THEN
+c           NUCR3  = ISUM(NSETC,NPCOC(1,1),1)
+c           NUCR4  = ISUM(NSETD,NPCOD(1,1),1)
+c           NORR3  = ISUM(NSETC,NPCOC(1,2),1)
+c           NORR4  = ISUM(NSETD,NPCOD(1,2),1)
+            NUCR3  = NUCC
+            NUCR4  = NUCD
+            NORR3  = NORBC
+            NORR4  = NORBD
+        END IF
       KCC = KFREE    
         NCCPP = NORBAB*NUCCD
         NTUVCD = (MAXCD + 1)*(MAXCD + 2)*(MAXCD + 3)/6
