@@ -354,7 +354,11 @@ C        Construct left index transformed density matrix: Smoao = Ct Sao
 C        This matrix is used in DIIS and in the construction of the MO
 C        Fock matrix in case of some open shells.
 C
+#ifdef OPEN_MOD
          CALL MKSMOAO(SMOAO,TMAT,IPRSCF,WORK(KFREE),LFREE)
+#else
+         CALL QUIT('ROUTINE NOT IN THIS DISTRIBUTION!')
+#endif
 C
       END IF
 C
@@ -584,8 +588,13 @@ C
          CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
          CALL DCOPY(NCMOTQ,FMO,1,WORK(KCMOSAV),1)
       END IF
+#ifdef OPEN_MOD
       CALL MKMOFK(FMO,FAO,DMAT,TMAT,WORK(KCMOSAV),SMOAO,
      &            WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
+#else
+      IF (NASHT .GT. 0) CALL QUIT('ROUTINE NOT IN THIS DISTRIBUTION')
+      CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
+#endif
 C
 C     Convergence control/acceleration
 C     ================================
@@ -1783,11 +1792,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
-      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SMOAO,DTEMP1,DTEMP2,
-     &                  WORK,LWORK)
+      SUBROUTINE MKMOFK2(FMO,FAO,TMAT,WORK,LWORK)
 C****************************************************************************
 C     PURPOSE:
 C        Construct MO Fock matrix from Fock matrices in AO-basis
+C     WARNING:
+C        This is a small part of the routine MKMOFK distributed
+C           with the open shell code.
 C
 C        Written by J. Thyssen
 C        Last revision: Dec 30 1997
@@ -1802,25 +1813,13 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
-     &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
-     &          DMAT(N2BBASXQ,NFMAT),SMOAO(*),WORK(*)
+      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
 #include <memint.h>
 C
       CALL QENTER('MKMOFK')
 C
-C     Note: t stands for hermitian conjungation
-C     Fmo      = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
-C              = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
-C     where beta  = alpha*f
-C     and   gamma = a-1
-C
-C     Eg. for a single open shell (NACSH = 1, NAELEC = 1)
-C        beta  = 1 and 
-C        gamma = -1
-C     
       DO I = 1,NFSYM
 C
 C        Transform FD to MO-basis
@@ -1847,197 +1846,6 @@ C
             END IF
          END IF
       END DO
-C
-C        
-C     Fmo = Fmo + 
-C           \sum_o Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
-C
-      DO 10 IOPEN = 1,NOPEN
-C
-         BETA  = DALPHA(IOPEN)*DF(IOPEN)
-         GAMMA = DA(IOPEN)-D1
-         IF (IPRSCF.GE.5) THEN
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'DFSOLV: BETA  factor, open shell ',IOPEN,' : ',BETA
-            WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'DFSOLV: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
-         END IF
-C
-C
-C        Get secondary density matrices as projection operator
-C           in AO-basis
-C
-         CALL GENDEN(DTEMP1,CMO,12,IPRSCF)
-C
-C        Construct total secondary density matrix DSao
-C
-         CALL DAXPY(N2BBASXQ,D1,DTEMP1(1,2),1,DTEMP1(1,1),1)
-C
-C        Construct the projection operator:
-C         BETA DCao + GAMMA DSao
-C           = alpha*f DCao + (a_o-1)*DSao
-C
-         CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1)
-         CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
-C
-C
-         IOFFSMOAO = 1
-         DO 20 I = 1,NFSYM
-C
-            IF (NACSH(I,IOPEN).GT.0) THEN
-C
-C              DVao FVao (store in DTEMP1(1,2))
-C
-               CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &            'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+IOPEN),
-     &            NTBAS(0),NTBAS(0),NZ,
-     &            'N','N',IPQTOQ(1,0),FAO(1+I2BASX(I,I),1+IOPEN),
-     &            NTBAS(0),NTBAS(0),NZ,
-     &            D0,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
-     &            NTBAS(0),NTBAS(0),NZ)
-C
-C              DVao FVao (DCao - DSao) (store in DTEMP2)
-C
-               CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
-     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
-     &            NTBAS(0),NTBAS(0),NZ,
-     &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
-     &            NTBAS(0),NTBAS(0),NZ,
-     &            D0,IPQTOQ(1,0),DTEMP2(1+I2BASX(I,I)),
-     &            NTBAS(0),NTBAS(0),NZ)
-               IF ( IPRSCF .GE. 15 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in AO-basis'//
-     &               ', corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP2(1+I2BASX(I,I)),
-     &               NFBAS(I,0),NFBAS(I,0),
-     &               NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
-C
-C              Transform with halftransformed Smoao from left and right
-C              Please note I'm using the MOAO transformation type, since I want
-C              to perform Smoao * A * Smoao(t), and since Smoao = Ct Sao
-C              this is equivalent to Ct Sao A Sao C which is precisely
-C              what I want.
-C              Store the result in DTEMP1(1,1)
-C
-               CALL QTRANS('MOAO','S',D0,
-     &            NORB(I),NORB(I),NFBAS(I,0),NFBAS(I,0),
-     &            DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NBF,IQBF,
-     &            DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,
-     &            IPQTOQ(1,0),
-     &            SMOAO(IOFFSMOAO),NORB(I),NFBAS(I,0),
-     &            NZT,IPQTOQ(1,0),
-     &            SMOAO(IOFFSMOAO),NORB(I),NFBAS(I,0),
-     &            NZT,IPQTOQ(1,0),
-     &            WORK(KFREE),LFREE,IPRSCF)
-               IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &            '*** WARNING *** DFSOLV: NBF.NE.NZ !'
-               IF ( IPRSCF .GE. 15 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
-     &               ' step 1, corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP2(1+I2ORBT(I)),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
-C
-C              Calculate A + At
-C
-               CALL SUMMMH(DTEMP1(1+I2ORBT(I),1),NORB(I),NZ,
-     &                  NORB(I),NORB(I))
-               IF ( IPRSCF .GE. 10 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
-     &               ' step 2, corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
-C
-C              Sum up FD + A
-C              Remember to divide by D2 (from TWOFCK)
-C
-               CALL QAXPY(N2ORB(I),'N','N',DP5,IPQTOQ(1,0),1,
-     &            DTEMP1(1+I2ORBT(I),1),N2ORB(I),1,
-     &            IPQTOQ(1,0),NZ,
-     &            FMO(1+I2ORBT(I)),N2ORB(I),1,
-     &            IPQTOQ(1,0),NZ)
-               IF ( IPRSCF .GE. 10 ) THEN
-                  WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Total Fock matrix in MO-basis'//
-     &               ', corep '//CTMP,-1)
-                  CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
-            END IF
-            IOFFSMOAO = IOFFSMOAO + NZ*NORB(I)*NFBAS(I,0)
- 20      CONTINUE
- 10   CONTINUE
-C
       CALL QEXIT('MKMOFK')
-      CALL FLSHFO(LUPRI)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck MKSMOAO */
-      SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
-C****************************************************************************
-C     PURPOSE:
-C        Construct half transformed overlap matrix, Smoao = Ct Sao
-C
-C        Written by J. Thyssen
-C        Last revision: Jan 2 1998
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER ( D1 = 1.00D00 )
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-C
-      DIMENSION SMOAO(*),TMAT(*),WORK(*)
-C
-#include <memint.h>
-C
-      CALL QENTER('MKSMOAO')
-C
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
-      END DO
-      CALL DZERO(SMOAO,ISIZE)
-C
-C     Get AO overlap matrix
-C
-      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLP(WORK(KSAO),WORK(KFREE),LFREE)
-C
-      IOFF = 1
-      DO I = 1,NFSYM
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QGEMM(NORB(I),NFBAS(I,0),NFBAS(I,0),D1,
-     &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NORB(I),NZT,
-     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
-     &         NTBAS(0),NTBAS(0),1,
-     &         D0,IPQTOQ(1,0),SMOAO(IOFF),
-     &         NORB(I),NFBAS(I,0),NZ)
-C
-            IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Left index transf. overlap'//
-     &            ' matrix Smoao',-1)
-               CALL PRQMAT(SMOAO(IOFF),NORB(I),NFBAS(I,0),
-     &            NORB(I),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
-               CALL FLSHFO(LUPRI)
-            END IF
-         END IF
-      IOFF = IOFF + NZ*NORB(I)*NFBAS(I,0)
-      END DO
-C
-      CALL MEMREL('SMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('MKSMOAO')
       RETURN
       END
