@@ -1619,7 +1619,7 @@ C
           IOFF = IEIG + NFORB(I,1)
           NDIM = MIN(NFORB(I,1),NFORB(I,2))
           NDEL = NFORB(I,2) - NDIM
-          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion corep ',I,
+          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion corep',I,
      &         ', Number of spinors deleted: ',NDEL
           IF(IPRGEN.GE.0) THEN
              IF(((DABS(EIG(IOFF+1)-FAC)).GT.1D-07).
@@ -1890,7 +1890,7 @@ C  /* Deck heinz */
       SUBROUTINE HEINZ(WORK,LWORK)
 C*****************************************************************************
 C
-C     Solve one-electron systems with finite nuclei and projecting
+C     Solve one-electron systems with finite nuclei and project
 C     out all free positronic solutions
 C
 C*****************************************************************************
@@ -1929,7 +1929,7 @@ C  /* Deck heinz2 */
      &                  FTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C     Solve one-electron systems with finite nuclei and projecting
+C     Solve one-electron systems with finite nuclei and project
 C     out all free positronic solutions
 C
 C*****************************************************************************
@@ -2489,14 +2489,17 @@ C
       ICOL = 0
       JP1_TEST = 0
       DO 10 JA = JA1,JA2
-         JNUC = NCENT(JA)
          JP1  = JSTRT(JA) + 1
-         JP2  = JSTRT(JA) + NUCO(JA)
 C
 C        Skip allready processed primitives.
 C
          IF ( JP1_TEST .EQ. JP1 ) GO TO 10
          JP1_TEST = JP1
+         JP2  = JSTRT(JA) + NUCO(JA)
+c        write(6,'(A,6I3)')
+c    $        '10 ja ja1 ja2 jp1 jp2',ja,ja1,ja2,jp1,jp2
+C
+         JNUC = NCENT(JA)
 C
 C        New center; check out allowed symmetries
 C        ----------------------------------------
@@ -2507,90 +2510,87 @@ C        ----------------------------------------
             IOFF = 0
          ENDIF
          LL  = NHKT(JA)
-c         write(6,'(A,6I3)')
-c     $        '10 ja ja1 ja2 jp jp1 jp2',ja,ja1,ja2,jp,jp1,jp2
+C
+C        New L-value; extract relevant transformation matrix
+C        ---------------------------------------------------
+         IF(LL.NE.ILL) THEN
+            ILL  = LL
+            JRKB = 0
+            L    = LL - 1
+            NLM  = 2*L + 1
+            NXYZ = (LL*(LL+1))/2
+            LOFF = NHKOFF(LL)
+C
+C           Cartesian functions
+C
+            KXYZ = 0
+            DO ICMP = 1,NXYZ
+               IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+               IF(IBTAND(MULA,IVARB).EQ.0) THEN
+                  KXYZ              = KXYZ + 1
+                  IFUN(LOFF+KXYZ,1) = ICMP
+                  IFUN(LOFF+ICMP,3) = KXYZ
+               ENDIF
+               IRED(1,LL) = KXYZ
+            ENDDO
+C
+C           Solid harmonic functions
+C
+            KLM = 0
+            DO ICMP = 1,NLM
+               IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
+               IF(IBTAND(MULA,IVARB).EQ.0) THEN
+                  KLM               = KLM + 1
+                  IFUN(LOFF+KLM,2)  = ICMP
+               ENDIF
+               IRED(2,LL) = KLM
+            ENDDO
+C
+C           Extract spherical transformation matrix
+C
+            IRED(3,LL) = IOFF
+            IF(KLM.GT.0) THEN
+               JOFF = ICSP(LL)
+               CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+     &              CRED(IOFF+1),KXYZ,KXYZ,KLM,
+     &              IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+               JOFF = IOFF
+               DO J = 1,KLM
+                  FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
+                  CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
+                  JOFF = JOFF + KXYZ
+               ENDDO
+               IOFF = IOFF + KXYZ*KLM
+C
+            ENDIF
+            IF(IPRINT.GE.4) THEN
+               KOFF = IRED(3,LL)
+               WRITE(LUPRI,'(A,I3)')
+     &              ' * Center : ',JNUC,
+     &              ' * L-value: ',L
+               IF(KLM.GT.0) THEN
+                 CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+               ELSE
+                 WRITE(LUPRI,'(A)') ' - no functions - '
+               ENDIF
+            ENDIF
+         ENDIF
+C
+C        Expand transformation matrix
+C        ============================
+C
+         IF(KLM.EQ.0) GOTO 10
 C
 C        Loop over primitives
 C      
          DO 15 JP = JP1, JP2
 C
-C           New L-value; extract relevant transformation matrix
-C           ---------------------------------------------------
-            IF(LL.NE.ILL) THEN
-               ILL  = LL
-               JRKB = 0
-               L    = LL - 1
-               NLM  = 2*L + 1
-               NXYZ = (LL*(LL+1))/2
-               LOFF = NHKOFF(LL)
-C
-C              Cartesian functions
-C
-               KXYZ = 0
-               DO ICMP = 1,NXYZ
-                  IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
-                  IF(IBTAND(MULA,IVARB).EQ.0) THEN
-                     KXYZ              = KXYZ + 1
-                     IFUN(LOFF+KXYZ,1) = ICMP
-                     IFUN(LOFF+ICMP,3) = KXYZ
-                  ENDIF
-                  IRED(1,LL) = KXYZ
-               ENDDO
-C
-C              Solid harmonic functions
-C
-               KLM = 0
-               DO ICMP = 1,NLM
-                  IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
-                  IF(IBTAND(MULA,IVARB).EQ.0) THEN
-                     KLM               = KLM + 1
-                     IFUN(LOFF+KLM,2)  = ICMP
-                  ENDIF
-                  IRED(2,LL) = KLM
-               ENDDO
-C
-C              Extract spherical transformation matrix
-C
-               IRED(3,LL) = IOFF
-               IF(KLM.GT.0) THEN
-                  JOFF = ICSP(LL)
-                  CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
-     &                 CRED(IOFF+1),KXYZ,KXYZ,KLM,
-     &                 IFUN(LOFF+1,1),IFUN(LOFF+1,2))
-                  JOFF = IOFF
-                  DO J = 1,KLM
-                     FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
-                     CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
-                     JOFF = JOFF + KXYZ
-                  ENDDO
-                  IOFF = IOFF + KXYZ*KLM
-C     
-               ENDIF
-               IF(IPRINT.GE.4) THEN
-                  KOFF = IRED(3,LL)
-                  WRITE(LUPRI,'(A,I3)')
-     &                 ' * Center : ',JNUC,
-     &                 ' * L-value: ',L
-                  IF(KLM.GT.0) THEN
-                     CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,
-     $                    KXYZ,KLM,1,LUPRI)
-                  ELSE
-                     WRITE(LUPRI,'(A)') ' - no functions - '
-                  ENDIF
-               ENDIF
-            ENDIF
-C
-C           Expand transformation matrix
-C           ============================
-C
-            IF(KLM.EQ.0) GOTO 10
-C
 C           Look for (L-1) large function;
 C           skip if no partner found
 C
             JL = IRKB(JP)
-            IF(JL.EQ.0) GOTO 10
-            IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
+            IF(JL.EQ.0) GOTO 15
+            IROW = NSTRT(JP) + IFUN(LOFF+1,1)
             IROW = IPTSYM(IROW,IREP) - ISOFF
 C
 C           Fill in standard spherical transformation matrix
