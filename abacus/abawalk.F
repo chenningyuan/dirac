@@ -1,4 +1,3 @@
-#ifndef PRG_DIRAC
 C
 C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -35,6 +34,10 @@ C
 C#include "single.h"
 #ifdef REVLOG
 $Log$
+Revision 1.14  2003/12/10 08:41:01  luuk
+LV: Bugfixes related to the renaming of common blocks that was done yesterday.
+Mainly insertion of the renamed block mx2orb.h in places where MAXORB is required.
+
 Revision 1.13  2003/12/09 16:07:58  tsaue
 tsaue: NB ! NB!
 The COMMON mxorb.h has been renamed maxorb.h consistent with DALTON.
@@ -1854,6 +1857,7 @@ C
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
+#include "mx2orb.h"
 #include "infinp.h"
 #include "cbiwlk.h"
 C
@@ -2077,6 +2081,7 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
+#include "mx2orb.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
@@ -5976,6 +5981,7 @@ C
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
+#include "mx2orb.h"
 #include "infinp.h"
       flag(15) = .false.
 C

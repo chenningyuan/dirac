@@ -190,7 +190,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
 #include "dcbidx.h"
 C
       CHARACTER C*4
@@ -454,7 +453,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "mx2orb.h"
 C
 #include "mx2orb.h"
 #include "dcbidx.h"

@@ -870,6 +870,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "../luciarel/mxpdim.inc"
 C
+#include "mx2orb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1220,6 +1221,7 @@ C***********************************************************************
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
+#include "mx2orb.h"
 #include "dcbbos.h"
 *.Memory
 #include "../luciarel/wrkspc.inc"

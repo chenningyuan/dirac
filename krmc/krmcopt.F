@@ -228,6 +228,7 @@ C
 #include "consts.h"
 #include "thrzer.h"
 C
+#include "mx2orb.h"
 #include "dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
@@ -1701,7 +1702,6 @@ C
 #include "dgroup.h"
 #include "dcbbos.h"
 #include "dcbnrt.h"
-#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION WORK(*), ILIST(MAXORB)
@@ -2202,12 +2202,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
+#include "mx2orb.h"
 C
 #include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
@@ -2414,6 +2414,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "mx2orb.h"
 #include "dcbbos.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2815,6 +2816,7 @@ C***********************************************************************
 C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
 C
+#include "mx2orb.h"
 #include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -4657,6 +4659,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "mx2orb.h"
 #include "dcbnrt.h"
 #include "dcbgen.h"
 #include "dcborb.h"

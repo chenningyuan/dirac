@@ -48,6 +48,7 @@ C  /* Deck opinpu */
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #else
+#include "mx2orb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #endif
@@ -2193,6 +2194,7 @@ C
 #include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
+#include "mx2orb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
@@ -2347,6 +2349,7 @@ CTROND#include "pario.h"
 #include "optinf.h"
 #ifndef PRG_DIRAC
 #  include "gnrinf.h"
+#  include "mx2orb.h"
 #  include "infinp.h"
 #  include "inftap.h"
 #else
@@ -5143,6 +5146,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
+#include "mx2orb.h"
 #include "infinp.h"
 #include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)

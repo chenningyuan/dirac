@@ -190,6 +190,7 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "infdim.h"
+#include "mx2orb.h"
 #include "infvar.h"
 #include "exeinf.h"
 #include "trkoor.h"
@@ -1696,6 +1697,7 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
+#include "mx2orb.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"

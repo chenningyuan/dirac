@@ -1270,7 +1270,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "mx2orb.h"
-#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1336,7 +1335,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
 #include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
