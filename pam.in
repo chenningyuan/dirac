@@ -177,7 +177,7 @@ execute_dirac()
    fi
    echo "   Executing: $NICE_CMD $DIRAC_CMD"
    if [ -n "$DEBUG"  ]; then
-      $NICE_CMD $DIRAC_CMD
+      $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
       $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
          ( \
