@@ -68,12 +68,15 @@ C
      &          WORD1*7
       DIMENSION WORK(LWORK)
 C
-#ifdef PRG_DIRAC
+<#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
 #include "cbiher.h"
+#if defined (MOD_ERI)
+#include "cbieri.h"
+#endif
 #include "cbihr1.h"
 #include "cbisol.h"
 #include "nuclei.h"
@@ -103,7 +106,7 @@ C
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.XXXXXX'/
+     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.RUNERI'/
 C
 C     Check if input has been processed earlier.
 C
@@ -113,7 +116,6 @@ C
 C
 C     Initialize /CBIHER/
 C
-CTSAUE
       IF(RELCAL) THEN
         HAMILT = .FALSE.
         ONEPRP = .FALSE.
@@ -240,6 +242,7 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
+         CALL ER2INI
          WORD = '*END OF'
          GOTO 1
   930 CONTINUE
@@ -638,6 +641,9 @@ C&&& JENGIN - activate J-engine
 #endif
             GO TO 100
  180     CONTINUE
+#if defined (MOD_ERI)
+            RUNERI=.TRUE.
+#endif
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
@@ -650,6 +656,13 @@ C&&& JENGIN - activate J-engine
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
+      IF (RUNERI) THEN
+         WRITE (LUPRI,'(3X,A)')
+     &     ' Integrals are calculated using ERI '//
+     &     'instead of HERMIT (where possible)'
+CTROND
+         STOP 'End of ERI test..'
+      ENDIF
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
@@ -906,6 +919,7 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
+      CALL ER2INI
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -943,7 +957,7 @@ C
 #else
     6   CONTINUE
 #if defined (MOD_ERI)
-CTROND        CALL ER2INP(WORD)
+        CALL ER2INP(WORD)
 #endif
       GO TO 201
 #endif
@@ -963,11 +977,8 @@ C
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
 #ifdef MOD_ERI
-CTROND      CALL ER2INP(WORD)
-CTROND
-      WRITE(0,*) 'Calling FCK3INP..'
+      CALL ER2INP(WORD)
       CALL FCK3INP(WORD)
-      STOP 'End of test II'
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
