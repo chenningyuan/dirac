@@ -2206,7 +2206,7 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.NELECT','.OPEN S','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.SPINFR','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       SYMSTP = .FALSE.
       CALL TITLER('Hamiltonian defined','*',127)      
@@ -2222,6 +2222,7 @@ C
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
+      SPINFR  = .FALSE.
       SOLVEN  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
@@ -2383,7 +2384,14 @@ C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
-               GOTO 100
+C&&& SPINFREE : Zero out spin-orbit terms
+#ifdef MOD_SPF
+             SPINFR = .TRUE.
+             ICHANG = ICHANG + 1
+#else
+             CALL QUIT ('SPINFR option not active in this release')
+#endif
+             GO TO 100
   114      CONTINUE
               GOTO 100
   115      CONTINUE
@@ -2573,6 +2581,10 @@ C
       ENDIF
       IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
      &    'with the following modifications:'
+      IF(SPINFR) THEN
+        WRITE(LUPRI,'(1X,A,A)') '* Spin-orbit terms zeroed out ',
+     &    '(NB : ONLY in the DHF calculation !!)'
+      ENDIF
       IF(N1OPER.GT.0) THEN
         WRITE(LUPRI,'(1X,A,A)') '* The following one-electron ',
      &    'operators have been added:'

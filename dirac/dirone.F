@@ -738,6 +738,7 @@ C
         NFORB(IFRP,IC) = 0
         IP    = MOD(IFRP+IC,NFSYM) + 1
         DO JSYM = 1,NBRP
+          NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
           IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
@@ -749,6 +750,7 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                     STOL(IC),IPRINT,EIG,WORK,LWORK)
             ENDIF
+            NBORB(JSYM,IFRP,IC) = NEFF
             NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
             JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
             JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
@@ -765,6 +767,7 @@ C
         NFORB(IFRP,IC) = 0
         IP    = MOD(IFRP+IC,NFSYM) + 1
         DO JSYM = 1,NBRP
+          NBORB(JSYM,IFRP,IC) = 0
           IREP = JFSYM(JSYM,IP) - 1
           IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
@@ -776,6 +779,7 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
             ENDIF
+            NBORB(JSYM,IFRP,IC) = NEFF
             NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
             JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
             JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
@@ -783,6 +787,7 @@ C
             WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
      &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
           ENDIF
+          NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
         IF ( IPRINT .GE. 5) THEN
@@ -1326,7 +1331,8 @@ C  DGROUP:
 #include <cbihr1.h>
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      DIMENSION IQBF(4)
+      DIMENSION IQBF(4),IQW(4)
+#include <memint.h> 
 C
       FAC = DM2*CVAL*CVAL
 C
@@ -1363,6 +1369,7 @@ C
       IOFT = 1
       IEIG = 1
       FACSL = - D1 / FAC
+      NBRP = 4 / NZ
       DO 20 I = 1,NFSYM
 C
         IF(NFORB(I,0).EQ.0) GOTO 20
@@ -1395,6 +1402,64 @@ C
               ENDDO
               IZOFF = IZOFF + NFORB(I,0) * NFORB(I,0)
            ENDDO
+        ELSE IF (SPINFR) THEN
+C
+C          Basis as in Levy-Leblond but without fixed ratio
+C          Psi = (Psi(L), (2mc)^-1 sigma.p Psi(L) )
+C          =========================================
+C
+           CALL DCOPY (NFORB(I,0)*NFORB(I,0)*NZ,D0,0,TBUF(IOFT),1)
+           JJ = IOFT + NFORB(I,0) * NFORB(I,2)
+           DO J = 1, NFORB(I,1)
+              TBUF(JJ) = D1
+              JJ = JJ + NFORB(I,0) + 1
+           ENDDO
+C
+C          Make (sigma.p)(sigma.p) = p2
+C
+           CALL IQPACK(IQBF,NBF,IQBF,NBF,IQW,NZW)
+           LWRK = NFORB(I,1) * NFORB(I,1)  * NZW
+           CALL MEMGET('REAL',KSMT,LWRK,WORK,KFREE,LFREE)
+           LWRK = NFORB(I,1) * NFORB(I,1)
+           CALL MEMGET('REAL',KVMT,LWRK,WORK,KFREE,LFREE)
+           JJ = IOFT + NFORB(I,1)
+           JSL = IOFT + NFORB(I,1)
+           JLS = IOFT + NFORB(I,1) * NFORB(I,0)
+           CALL QGEMM(NFORB(I,1),NFORB(I,1),NFORB(I,2),D1,
+     &                'N','N',IQBF,TMAT(JLS),NFORB(I,0),NFORB(I,0),NBF,
+     &                'N','N',IQBF,TMAT(JSL),NFORB(I,0),NFORB(I,0),NBF,
+     &                 D0,IQW,WORK(KSMT),NFORB(I,1),NFORB(I,1),NZW)
+           IF (IPRHAM.GE.5) THEN
+              CALL HEADER('Kinetic energy matrix in orthon. basis',-1)
+              CALL PRQMAT(WORK(KSMT),NFORB(I,1),NFORB(I,1),NFORB(I,1),
+     &                    NFORB(I,1),NZW,IPQTOQ(1,0),LUPRI)
+           ENDIF
+           CALL DCOPY (NFORB(I,1)*NFORB(I,1),D0,0,WORK(KVMT),1)
+           NEFF = 0
+           IOFF = 0
+           JOFF = 0
+           DO ISYM = 1, NBRP
+              CALL LOWGEN(WORK(KSMT+IOFF),NBORB(ISYM,I,1),
+     &                    WORK(KVMT+JOFF),NEFFI,
+     &                    NFORB(I,1),STOL(2),IPRHAM,EIG(IEIG),
+     &                    WORK(KFREE),LFREE)
+              IOFF = IOFF + (NFORB(I,1) + 1) * NBORB(ISYM,I,1)
+              JOFF = JOFF + NFORB(I,1) * NEFFI + NBORB(ISYM,I,1)
+              IF (NEFFI.LT.NBORB(ISYM,I,1)) WRITE(LUPRI,'(A)') 
+     &            '*** WARNING *** Linear dependence in RKB basis'
+              NBORB(ISYM,I,2) = NEFFI
+              NEFF = NEFF + NEFFI
+           ENDDO
+           IF (IPRHAM.GE.5) THEN
+              CALL HEADER('Transformation matrix in orthon. basis',-1)
+              CALL PRQMAT(WORK(KVMT),NFORB(I,1),NFORB(I,1),NFORB(I,1),
+     &                    NFORB(I,1),1,IPQTOQ(1,0),LUPRI)
+           ENDIF
+           CALL QGEMM(NFORB(I,2),NFORB(I,1),NFORB(I,1),D1,
+     &           'N','N',IQBF,TMAT(JSL),NFORB(I,0),NFORB(I,0),NBF,
+     &           'N','N',IPQTOQ(1,0),WORK(KVMT),NFORB(I,1),NFORB(I,1),1,
+     &            D0,IQBF,TBUF(JJ),NFORB(I,0),NFORB(I,0),NBF)
+           CALL MEMREL('DELPOS',WORK,KSMT,KSMT,KFREE,LFREE)
         ELSE
 C
 C          Diagonalize Fock-matrix in MO-basis
@@ -1425,7 +1490,7 @@ C
         IF(NFORB(I,0).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
            CALL HEADER('Transformation matrix in orthon. basis',-1)
-           CALL PRQMAT(TBUF(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
+           CALL PRQMAT(TBUF(IOFU),NFORB(I,0),NFORB(I,0),NFORB(I,0),
      &                 NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
         NTDIM = NFAC*NFORB(I,1)
@@ -1466,6 +1531,8 @@ C
       CALL HEADER('Output from DELPOS',-1)
       IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) THEN
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
+      ELSE IF (SPINFR) THEN
+        WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ELSE
         IEIG = 0
         DO I = 1,NFSYM

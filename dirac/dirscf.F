@@ -600,6 +600,7 @@ C*****************************************************************************
 C
 #include <dcbgen.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
@@ -643,6 +644,9 @@ C        read LUTMAT rec#2 with SMOAO
       KSMOAO = KFREE
       CALL MKMOFK2(FMO,FAO,WORK(KTMAT),WORK(KFREE),LFREE)
 #endif
+#ifdef MOD_SPF
+      IF (SPINFR) CALL SPFSCF(FMO,WORK,LWORK)
+#endif
       CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Convergence control/acceleration
@@ -664,7 +668,16 @@ C       Diagonalize Fock-matrix in MO-basis
 C         - store coefficients in FAO
 C       ===================================
 C
-        IF(DOJACO) THEN
+        IF(DOJACO.OR.SPINFR) THEN
+C
+C       Spinfree calculations use the Jacobi method to
+C       prevent mixing of symmetries (the matrix is always real)
+C       --------------------------------------------------------
+C
+          IF (SPINFR) THEN
+            NORB2 = NORB(I)*NORB(I)
+            CALL DZERO(FAO(1+I2ORBT(I)+NORB2),NORB2*(NZ-1))
+          ENDIF
           CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
      &                EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
      &                WORK(KFREE),LFREE)
