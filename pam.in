@@ -730,6 +730,9 @@ while [ -n "$1" ]; do
          shift
          ALT_DIRAC=$1
          ;;
+      -t)
+         shift
+         ;;
       -q)
          shift
          ;;
