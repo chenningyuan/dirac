@@ -1,0 +1,13 @@
+      SUBROUTINE IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
+*
+*  Write matrix of integers
+*
+      DIMENSION IMAT(MAXROW,MAXCOL)
+C
+      DO 100 I = 1, NROW
+        WRITE(6,1110) (IMAT(I,J),J= 1,NCOL)
+  100 CONTINUE
+ 1110 FORMAT(/,1X,10I8,/,(1X,10I8))
+C
+      RETURN
+      END

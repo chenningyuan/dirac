@@ -1,0 +1,29 @@
+      SUBROUTINE NEXREC(LU,LBLK,REC,IEND,LENGTH)
+*
+* OBTAIN NEXT RECORD ON FILE LU, IF
+* AN END OF FILE IS ISSUED THE RECORD IS EMPTY
+* AND IEND IS SET TO 1
+*
+      IMPLICIT REAL*8           (A-H,O-Z)
+      DIMENSION REC(*)
+*
+      IF(LBLK .GT. 0 ) THEN
+        IEND = 0
+        LENGTH = LBLK
+COLD    CALL FRMDSC(REC,LENGTH,LBLK,LU)
+        CALL FRMDSC(REC,LENGTH,-1,LU,IMZERO,IAMPACK)
+      ELSE
+        CALL IFRMDS(LENGTH,1,LBLK,LU)
+      write(6,*) ' Length in NEXREC ',LENGTH
+        IF(LENGTH.GE.0) THEN
+          IEND = 0
+          CALL FRMDSC(REC,LENGTH,LBLK,LU,IMZERO,IAMPACK)
+       write(6,*) ' Record read in '
+       CALL WRTMAT(REC,1,LENGTH,1,LENGTH)
+        ELSE
+          IEND = 1
+        END IF
+      END IF
+*
+      RETURN
+      END

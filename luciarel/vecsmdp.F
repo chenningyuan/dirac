@@ -1,0 +1,76 @@
+      SUBROUTINE VECSMDP(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
+C
+C DISC VERSION OF VECSUM :
+C
+C      ADD BLOCKED VECTORS ON FILES LU1 AND LU2
+C      AND STORE ON LU3
+*
+* Packed version, May 1996
+C
+C LBLK DEFINES STRUCTURE OF FILE
+C
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION VEC1(*),VEC2(*)
+C
+      IF(IREW .NE. 0 ) THEN
+        CALL REWINE( LU1,LBLK)
+        CALL REWINE( LU2,LBLK)
+        CALL REWINE( LU3,LBLK)
+      END IF
+C
+C LOOP OVER BLOCKS OF VECTOR
+C
+ 1000 CONTINUE
+C
+        IF( LBLK .GT. 0 ) THEN
+          NBL1 = LBLK
+          NBL2 = LBLK
+        ELSE IF(LBLK .EQ. 0 ) THEN
+          READ(LU1) NBL1
+          READ(LU2) NBL2
+          WRITE(LU3) NBL1
+        ELSE IF (LBLK .LT. 0 ) THEN
+          CALL IFRMDS( NBL1,1,-1,LU1)
+          CALL IFRMDS( NBL2,1,-1,LU2)
+          CALL ITODS ( NBL1,1,-1,LU3)
+        END IF
+        IF( NBL1 .NE. NBL2 ) THEN
+        WRITE(6,'(A,2I5)') 'DIFFERENT BLOCKSIZES IN VECSMD ',
+     &  NBL1,NBL2
+        Call Abend2( ' INCOMPATIBLE BLOCKSIZES IN VECSMF ' )
+      END IF
+C
+      IF(NBL1 .GE. 0 ) THEN
+          IF(LBLK .GE.0 ) THEN
+            KBLK = NBL1
+          ELSE
+            KBLK = -1
+          END IF
+        NO_ZEROING = 1
+        CALL FRMDSC2(VEC1,NBL1,KBLK,LU1,IMZERO1,IAMPACK,NO_ZEROING)
+        CALL FRMDSC2(VEC2,NBL1,KBLK,LU2,IMZERO2,IAMPACK,NO_ZEROING)
+        IF( NBL1 .GT. 0 ) THEN
+          IF(IMZERO1.EQ.1.AND.IMZERO2.EQ.1) THEN
+*. Simple zero record
+            CALL ZERORC(NBL1,LU3)
+          ELSE
+*. Nonvanishing record
+            ZERO = 0.0D0
+            IF(IMZERO1.EQ.1) THEN
+              CALL VECSUM(VEC1,VEC1,VEC2,ZERO,FAC2,NBL1)
+            ELSE IF(IMZERO2.EQ.1) THEN
+              CALL VECSUM(VEC1,VEC1,VEC2,FAC1,ZERO,NBL1)
+            ELSE
+              CALL VECSUM(VEC1,VEC1,VEC2,FAC1,FAC2,NBL1)
+            END IF
+            CALL TODSCP(VEC1,NBL1,KBLK,LU3)
+          END IF
+        ELSE IF (NBL1.EQ.0) THEN
+          CALL TODSCP(VEC1,NBL1,KBLK,LU3)
+        END IF
+      END IF
+C
+      IF(NBL1.GE. 0 .AND. LBLK .LE. 0) GOTO 1000
+C
+      RETURN
+      END
