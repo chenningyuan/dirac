@@ -1658,7 +1658,7 @@ C        Calculate LV-correction
 C        (SS integrals modelled by Coulombic correction)
 C        ===============================================
 C
-         CALL LVCORR(WORK,LWORK,IPRGEN)
+CTROND         CALL LVCORR(WORK,LWORK,IPRGEN)
       END IF
       IF(DOTSC) WRITE(LUPRI,'(1X,A)')
      &   '* SS integrals neglected: ',

@@ -259,7 +259,7 @@ C
 C     4. Calculate core-core interaction.
 C     ===================================
 C
-      CALL ERGCAL(FAO,FMO,DMAT)
+      CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 C
 C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================

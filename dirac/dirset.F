@@ -563,8 +563,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck SCDENS */
-      SUBROUTINE SCDENS(Q,SCQ,N,IPRINT)
+C/* Deck SCDEN2 */
+      SUBROUTINE SCDEN2(Q,SCQ,N,IPRINT)
 C***********************************************************************
 C
 C     INPUT:  Charge of atom
@@ -670,34 +670,124 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Lvcorr */
-      SUBROUTINE LVCORR(WORK,LWORK,IPRINT)
+      SUBROUTINE LVCORR(DMAT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Calculate classic repulsive potential of 
 C     small component charges
 C
-C     Written by T.Saue June 1997
+C     Written by O. Fossgaard July 2000     
 C
+C***********************************************************************
+
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <frame.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <dcbbas.h>
+#include <dcborb.h>     
+#include <dcbham.h>
+      DIMENSION DMAT(N2BBASXQ,*),WORK(*)
+#include <memint.h>
+      IF(LEVYLE) THEN
+        CORRLV = D0
+      ELSE
+        CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
+C
+C     Get small component charges
+C
+        IF(NOPEN.GT.1) THEN
+          CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+          CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)           
+          DO ISHELL = 1, NOPEN
+            CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,(ISHELL+1)),1,
+     &                 WORK(KBUF),1)
+          ENDDO
+          CALL SCDENS(WORK(KSCQ),WORK(KBUF),WORK(KFREE),LFREE,IPRINT)
+        ELSE
+          CALL SCDENS(WORK(KSCQ),DMAT,WORK(KFREE),LFREE,IPRINT)
+        ENDIF
+C
+C       Calculate nuclear repulsion energy
+C     
+        CORRLV = GETPOT(WORK(KSCQ))      
+        CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
+      ENDIF
+C
+C     Print section
+C      
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Output from LVCORR',-1)
+        WRITE(LUPRI,'(1X,A,F18.12)')
+     &    '* Classical repulsion of small component atomic charges:',
+     &    CORRLV
+      ENDIF
+C
+      RETURN
+      
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck scdens */
+      SUBROUTINE SCDENS(SCQ,DMAT,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Using density matrix, compute small component charges
+C     based on a Mulliken population analysis
+C
+C     Written by O. Fossgaard July 2000     
+C     
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
 C
+#include <symmet.h>
 #include <nuclei.h>
-      DIMENSION WORK(LWORK)
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dcbham.h>
+#include <dcbdhf.h>
+      DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
 #include <memint.h>
-      CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
-      CALL LVCOR1(WORK(KSCQ),IPRINT)
-      CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL DZERO(SCQ,NUCIND)
+      IF(.NOT.LEVYLE) THEN
+        CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
+        CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+        CALL MEMGET('INTE',KICLAB,NTBAS(2),WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGROSS,NTBAS(2),WORK,KFREE,LFREE)
+        CALL SCDEN1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
+     &              WORK(KICLAB),WORK(KFREE),LFREE)
+C       Adjust for nuclear multiplicities
+        DO I = 1,NUCIND
+          SCQ(I) = D2*SCQ(I)/FMULT(ISTBNU(I))
+        ENDDO
+        CALL MEMREL('SCDENS',WORK,KWORK,KWORK,KFREE,LFREE)  
+      ENDIF
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Output from SCDENS',-1)
+        WRITE(LUPRI,'(1X,A)')
+     &    '* Small component atomic charges:'
+        WRITE(LUPRI,'(4X,A4,F10.4)') (NAMN(I),SCQ(I),I = 1,NUCIND)
+      ENDIF
 C
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Lvcor1 */
-      SUBROUTINE LVCOR1(SCQ,IPRINT)
+C/* Deck Lvcor3 */
+      SUBROUTINE LVCOR3(SCQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate classic repulsive potential of 
@@ -717,7 +807,7 @@ C
 C
 C     Get small component charges
 C
-      CALL SCDENS(CHARGE,SCQ,NUCIND,IPRINT)
+      CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
 C
 C     Calculate nuclear repulsion energy
 C
@@ -734,5 +824,81 @@ C
      &  CORRLV
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck scden1 */
+      SUBROUTINE SCDEN1(SCQ,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
+C***********************************************************************
+C
+C Calculate classic repulsive potential of 
+C     small component charges
+C
+C     Written by O. Fossgaard July 2000     
+C
+C***********************************************************************
+
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <frame.h>
+C
+#include <dcblab.h>
+#include <symmet.h>
+#include <aosotr.h>
+#include <dgroup.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <dcbbas.h>
+#include <ccom.h>
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
+#else
+      DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION ICLAB(*),GROSS(*),SCQ(*)
+#include <dcbibt.h>
+
+C
+C     Get array ICLAB which maps small component basis functions onto
+C     atomic centers.
+C      
+      IOFF = NTBAS(1)
+      DO ISBAS  = 1,NTBAS(2)
+         JSBAS  = ISBAS + IOFF
+         IOLAV  = IATTR(IPLAB(JSBAS,2),2)
+         ICENT  = JGET(IOLAV)
+         ICLAB(ISBAS) = ICENT
+      ENDDO   
+C
+C     Calculate the gross population of each small component basis
+C     function
+C
+      IC = 2      
+      DO IBRP = 0,MAXREP
+         IFRP = JBTOF(IBRP,IC)
+         DO I = 1,NBBAS(IBRP,IC)
+            IOFF = IBBAS(IBRP,IC) + I
+            JOFF = IOFF
+            DO J = 1,IFRP
+               JOFF = JOFF - NFBAS(J,1)
+            ENDDO
+            GROSS(JOFF) = DDOT(NBBAS(IBRP,IC),
+     &         SMAT(IBBAS(IBRP,IC) + 1,IOFF),1 ,
+     &         DMAT(IBBAS(IBRP,IC) + 1,IOFF),1)              
+         ENDDO
+      ENDDO  
+C
+C     Calculate the small component charge density on each atom
+C
+      DO I = 1, NTBAS(2)
+         SCQ(ICLAB(I)) = SCQ(ICLAB(I)) - GROSS(I)
+      ENDDO
+C
+      RETURN
+C      
       END
 

@@ -474,6 +474,12 @@ C
      &                          WORK(KDCAO),1)
       END IF
 C
+C
+C     "SS-integral contribution by classical repulsion of 
+C      small component atomic charges"-gradient
+C
+      CALL LVCGRD(IPRINT,WORK(KDCAO),WORK(KFREE),LFREE)
+C
 C     Since Trond insists in DC_ij = \sum_a C_ia C_ja^*
 C     and .NOT. DC_ij = 2 \sum C_ia C_ja^*, we multiply with 2.0
 C
@@ -889,12 +895,6 @@ C        Density matrix 2-4: Only Exchange
          IFCTYP(4+IOFF) = 22
          IOFF = IOFF + 4
       END DO
-C
-C
-C     "SS-integral contribution by classical repulsion of 
-C      small component atomic charges"-gradient
-C
-      CALL LVCGRD(IPRINT,WORK(KFREE),LFREE)
 C    
 C     One electron part of gradient
 C     =============================
@@ -2001,7 +2001,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcgrd */
-      SUBROUTINE LVCGRD(IPRINT,WORK,LWORK)
+      SUBROUTINE LVCGRD(IPRINT,DMAT,WORK,LWORK)
 C*****************************************************************************
 C
 C     (c) 1997/09/23 by J. Thyssen
@@ -2019,14 +2019,14 @@ C
 C
 #include <nuclei.h>
 #include <frame.h>
-      DIMENSION WORK(LWORK)
+      DIMENSION DMAT(*),WORK(LWORK)
 C
 #include <memint.h>
 C
       CALL QENTER('LVCGRD')
 C
-      CALL MEMGET('REAL',KSQC,NUCIND,WORK,KFREE,LFREE)
-      CALL LVCGR1(WORK(KSQC),IPRINT)
+      CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
+      CALL LVCGR1(WORK(KSCQ),DMAT,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('LVCGRD')
@@ -2035,7 +2035,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcgr1 */
-      SUBROUTINE LVCGR1(SQC,IPRINT)
+      SUBROUTINE LVCGR1(SCQ,DMAT,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     (c) 1997/09/23 by J. Thyssen
@@ -2059,7 +2059,7 @@ C
 #include <dorps.h>
 #include <symmet.h>
 C
-      DIMENSION SQC(NUCIND)
+      DIMENSION SCQ(NUCIND),DMAT(*),WORK(LWORK)
 #include <dcbgrd.h>
 #include <ibtfun.h>
 C
@@ -2069,7 +2069,7 @@ C
 C     Get small component charges
 C
       CALL FLSHFO(LUPRI)
-      CALL SCDENS(CHARGE,SQC,NUCIND,IPRINT)
+      CALL SCDENS(SCQ,DMAT,WORK,LWORK,IPRINT)
 C
 C     This is copied from ABACUS/NUCREP
 C
@@ -2080,7 +2080,7 @@ C
 C     Run over symmetry-independent nuclei A
 C
       DO 200 NCENTA = 1, NUCIND
-         CHARGA = SQC(NCENTA)
+         CHARGA = SCQ(NCENTA)
          IF (ABS(CHARGA) .GT. ZERO) THEN
             NAX    = 3*NCENTA - 2
             NAY    = 3*NCENTA - 1
@@ -2093,7 +2093,7 @@ C
 C           Run over symmetry-independent nuclei B
 C
             DO 300 NCENTB =  1, NCENTA
-               CHARGB = SQC(NCENTB)
+               CHARGB = SCQ(NCENTB)
                IF (ABS(CHARGB) .GT. ZERO) THEN
                   NBX    = 3*NCENTB - 2
                   NBY    = 3*NCENTB - 1

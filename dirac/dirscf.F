@@ -369,7 +369,7 @@ C
         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)        
       ELSE
         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-        IF(TRIVEC) CALL ERGCAL(CMO,FOCK,DMAT)
+        IF(TRIVEC) CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
 C
 C       Add active two-electron Fock matrices
@@ -1009,7 +1009,7 @@ C
 C        Calculate total energy
 C        ======================
 C
-         CALL ERGCAL(CMO,FOCK,DMAT)
+         CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
@@ -1143,7 +1143,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ergcal */
-      SUBROUTINE ERGCAL(F1,F2,DMAT)
+      SUBROUTINE ERGCAL(F1,F2,DMAT,WORK,LWORK)
 C****************************************************************************
 C     PURPOSE:
 C        Calculate Dirac-Hartree-Fock energy
@@ -1174,7 +1174,7 @@ C
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
-     &          E(4,2,0:MXOPEN)
+     &          E(4,2,0:MXOPEN),WORK(LWORK)
       DATA M/'AR','AI','BR','BI'/
       DATA INUM /0/
       SAVE INUM
@@ -1236,7 +1236,10 @@ C
         ERGSOL = ESOLVE + ESOLVN
         DHFERG = DHFERG + ERGSOL
       ENDIF
-      IF(LVCON)  DHFERG = DHFERG + CORRLV
+      IF(LVCON) THEN
+         CALL LVCORR(DMAT,WORK,LWORK,IPRSCF)
+         DHFERG = DHFERG + CORRLV
+      ENDIF
       ELERGY = E1PART + E2PART
       IF(DODFT) THEN
         ELERGY = ELERGY + EDFTY
