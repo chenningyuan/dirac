@@ -823,10 +823,8 @@ C
       INIOCC    = .TRUE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
-Ctsaue..Setting NOQCDHF true for the moment; otherwise the program tries
-C       second-order optimization when no Roothan SCF convergence and then
-C       crashed in RSETCI(krmcop.F) since no CI-part was spcified....
-      NOQCDHF   = .TRUE.
+      NOQCDHF   = .FALSE.
+C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
 C
@@ -1542,17 +1540,17 @@ C
 C
 C     Quadratic convergent DHF?
 C
+#ifdef MOD_KRMC
       IF (NOQCDHF) THEN
          WRITE(LUPRI,'(A)')
      &   ' * No quadratic convergent Hartree-Fock'
       ELSE
-         WRITE(LUPRI,'(A)')
-     &   ' * Quadratic convergent Hartree-Fock'
-         WRITE(LUPRI,'(A,I4)')
-     +   ' * Maximum number of macro iterations: ',MXMACRO
-         WRITE(LUPRI,'(A,I4)')
-     +   ' * Maximum number of micro iterations: ',MXMICRO
+         WRITE(LUPRI,'(A,2(/A,I3))')
+     &   ' * Quadratic convergent Hartree-Fock',
+     &   '   - Maximum number of macro iterations:',MXMACRO,
+     &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#endif
 C
 C     Reordering
 c
