@@ -37,6 +37,7 @@ fi
 usage='Usage: '$0'\n'\
 '--help\n'\
 '\tPrint this\n'\
+'\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run (default: --tests=short)\n'\
 '\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
@@ -46,8 +47,8 @@ usage='Usage: '$0'\n'\
 '\tRun cvs prior to compilation (default: --cvs=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
-'--queue=QUEUE\n'\
-'\tQueue to be used in qsub (default: --queue=none meaning run interactively)\n'
+'--q=QUEUE\n'\
+'\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -94,6 +95,11 @@ while [ $# != 0 ]; do
             mpi="--mpi=$nodes"
          fi
          ;;
+      "q")
+         if [ "${valomitted}" = "no" ]; then
+            queue="$val"
+         fi
+         ;;
       "queue")
          if [ "${valomitted}" = "no" ]; then
             queue="$val"
@@ -110,7 +116,7 @@ done
 # Define the output and log files
 #
 errfile=${testdir}/logs/lastrun
-if [ -e $errfile ]; then
+if [ -f $errfile ]; then
    rm $errfile
 fi
 if [  -z "$tests" ]; then
@@ -146,7 +152,7 @@ htmlog=${run}_dif.htm;
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
-if [ ! -e "${testdir}/logs" ]; then
+if [ ! -d "${testdir}/logs" ]; then
    mkdir ${testdir}/logs;
 fi
 cd ${testdir}/logs;
@@ -210,7 +216,7 @@ cd ${testdir};
   cat ${testdir}/logs/$runlog ; \
   exit 1 ;\
 }
-if [ -e logs/$txtlog ]; then
+if [ -f logs/$txtlog ]; then
    if [ -s logs/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
       echo " Below follows the list of tests that failed :"
