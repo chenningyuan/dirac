@@ -1294,7 +1294,7 @@ C
          ENDIF
          IF (DIISMO) WRITE(LUPRI,'(1X,A)') '* DIIS (dirac-like)'
          IF (DIISAO) WRITE(LUPRI,'(1X,A)') '* DIIS (dalton-like)'
-        WRITE(LUPRI,'(1X,A,D8.2)')
+        WRITE(LUPRI,'(1X,A,1P,D8.2)')
      &      '* DIIS will be activated when convergence reaches : ',
      &      DIISTH
         WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
