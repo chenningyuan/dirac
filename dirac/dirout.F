@@ -133,33 +133,33 @@ C
         FMT = MXFORM(ERGMAX,20)
 C       Start by writing the computed electronic energy
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Electronic energy            :   ',ELERGY
+     +      'Electronic energy                        :   ',ELERGY
 C       The total energy consists of the electronic energy plus additional terms
         WRITE(LUPRI,'(/3X,A)') 'Other contributions to the total energy'
 C       We will always want to add the repulsion between the nuclei
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Nuclear repulsion energy     :   ',POTNUC
+     +      'Nuclear repulsion energy                 :   ',POTNUC
 C       In case we invoked a solvent model we need to add the solvation energy as well
 C       (LV: I have not changed the name into solvation energy but think this would be
 C        more appropriate than solvent energy, leave this to authors of this part)
         IF(SOLVEN) THEN
           ERGSOL = ESOLVN + ESOLVE
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Solvent energy               :   ',ERGSOL
+     +      'Solvent energy                           :   ',ERGSOL
         ENDIF
 C       A one-center approximation may be used that gives a correction to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'ONECAP model 1 SS correction :   ',CORRLV
+     +      'ONECAP model 2 SS correction             :   ',CORRLV
 C       The SCC model may be used in cases where no SS integrals were computed
         ELSE IF(LVCON) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'SS Coulombic correction      :   ',CORRLV
+     +      'SS Coulombic correction                  :   ',CORRLV
         ENDIF
 C       We now write the sum, the actual summation is done in the ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Total energy                 :   ',DHFERG
+     +      'Total energy                             :   ',DHFERG
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap

@@ -3059,8 +3059,15 @@ C  /* Deck bncorr */
 C*****************************************************************************
 C
 C     BNCORR: Generate screened bare nucleus matrix
-C     Aug 2001 Hans Joergen Aa. Jensen (based on TSCORR)
-C     Last revision: Sep 17 2002 - jkp (added timings, adapted for CATDR1)
+C     Jun 2003 Jesper Kielberg Pedersen (based on OLDBNCR)
+C
+C     Description : 
+C     Extension of BNCORR that in a simple way takes the shell-structure
+C     into account. For each center in a molecule we estimate the screening
+C     neglected in the bare nucleus approximation by a sum of the 
+C     contributions from each shells (n) in the atoms :
+C           sum_(n) <X_A|(-Z(n)*G(n,a,r_C))/r_C|X_B> 
+C           X=L,S ; G(a,r)=exp(-a*r^2)
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -3069,15 +3076,11 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
-      LOGICAL DOINT(2,2)
+      LOGICAL DOINT(2,2), FINISH
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK),FMAT(*)
-      DIMENSION GNUTAB(103)
-      SAVE GNUTAB
-      DATA GNUTAB /2*0.1D0, 8*0.7D0, 8*1.0D0, 18*1.1D0, 18*1.2D0,
-     &             49*2.0D0/
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -3107,6 +3110,492 @@ C     Memory allocation
       CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
+      LWRK   = LWORK - KFREE + 1
+      CALL DZERO(WORK(KCHRG),NUCIND)
+      CALL DZERO(WORK(KONEMT),N2BBASX)
+      CALL DZERO(WORK(KESHEL),NUCIND)
+C
+C     Initialization (calculate LL and SS)
+C
+      DOINT(1,1) = .TRUE.
+      IF (NOSMLV) THEN
+         DOINT(2,2) = .FALSE.
+      ELSE
+         DOINT(2,2) = .TRUE.
+      END IF
+      DOINT(1,2) = .FALSE.
+      DOINT(2,1) = .FALSE.
+c
+c   ... find number of occupied shells
+c
+      Z = D0
+      DO I = 1,NUCIND
+         Z = MAX(Z,CHARGE(I))
+      ENDDO
+      CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
+c
+c   ... loop over shells
+c       in the first shell (N=1) we only place one electron to avoid
+c       self-interaction. This electron is delocalized (to some degree)
+c       in the zeroth run (N=0) by using a diffuse Gaussian (see BNCOR1)
+c
+      DO N = 0,NSHELL
+c     ... In Slater's rules we write the electron configuration as
+c         [1s] [2s2p] [3s3p][3d] [4s4p][4d][4f]... so for each shell we have
+c          1     1        2            3           loops
+         IF (N.LE.1) THEN
+	    NSLOOP = 1
+         ELSE
+	    NSLOOP = N - 1
+         ENDIF
+c        ... we will not go beyond f-orbitals
+         NSLOOP = MIN(NSLOOP,3)
+         DO J = 1,NSLOOP
+         ZTEST = D0
+         DO I = 1,NUCIND
+c      ... Get charges and exponents for the electrons in this group
+           CALL BNCOR1(GNU,ZEFF,N,CHARGE(I),J,I,WORK(KESHEL),
+     &          NUCIND,.FALSE.)
+           ZTEST = MAX(ZTEST,ZEFF)
+           WORK(KXGEXP-1+I) =  GNU
+           WORK(KCHRG -1+I) = -ZEFF
+         ENDDO
+         IF(ZTEST.EQ.D0) GOTO 20
+c
+         IF(IPRINT .GE. 3) THEN
+            IF(N.EQ.0) THEN
+            WRITE(LUPRI,5) 
+     &' *** Entering BNCORR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
+     &'     X=L,S ; G(a,r)=exp(-a*r^2)'
+            WRITE(LUPRI,'(14X,A)')
+     &      ' Nuclei      Charge(-Z)       Exponent(a)',
+     &      '-----------------------------------------'
+            ENDIF
+            WRITE(LUPRI,'(14X,A,I2,A)')'(Loop over ',N,' . shell)'
+            DO I = 1,NUCIND
+               IF(WORK(KCHRG-1+I).LT.D0)
+     &         WRITE(LUPRI,'(15X,A5,F15.2,F15.2)')
+     &         NAMN(I),WORK(KCHRG-1+I),WORK(KXGEXP-1+I)
+            ENDDO
+            IF (N.EQ.NSHELL)
+     &      WRITE(LUPRI,'(14X,A/)')
+     &      '-----------------------------------------'
+5        FORMAT(/,2(/,4X,A))
+         ENDIF
+C
+C     Omit selected terms depending on OMITVNUC (See CATNUC for details)
+C     In this version one-center terms are calculated with the same
+C     charges/exponents as multi-center terms.
+C
+         OMITVNUC = 'FFFF'
+c
+c     ... Make list of nuclei.
+c
+         CALL CATNUC(NUCDEP,NCENTC,WORK(KCHRG),WORK(KFCBA),WORK(KGEXP),
+     &            WORK(KXGEXP),WORK(KCOORC), WORK(KSIGNC),WORK(KJSYMC),
+     &            WORK(KJCENT),OMITVNUC,IPRINT)
+c
+c    ... Calculate integrals (both LL and SS)
+c
+         CALL CATDR1(WORK(KONEMT),DUMMY,NCENTC,WORK(KFCBA),
+     &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
+     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRINT,
+     &            .FALSE.,0,NNBBASX,DOINT)
+c  ... end loop within shells
+20    CONTINUE
+         ENDDO
+c  ... end loop over shells
+      ENDDO
+10    CONTINUE
+C
+C     Symmetry unpack integrals
+C
+      CALL SYMUPK(WORK(KONEMT),WORK(KONEIN),1,NNBBASX)
+      CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
+      CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
+C
+      IF(IPRINT.GE.5) THEN
+         CALL HEADER('BNCORR correction FMAT',-1)
+         CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
+     &        NTBAS(0),NTBAS(0),1,LUPRI)
+      END IF
+C
+C     Add correction to Fock-matrix
+C
+      CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,FMAT,1)
+      IF(IPRINT.GE.5) THEN
+         CALL HEADER('BNCORR: screening corrected bare nucleus FMAT',-1)
+         CALL PRQMAT(FMAT,NTBAS(0),NTBAS(0),
+     &               NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     Memory deallocation
+      CALL MEMREL('BNCORR',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C
+c     Stop timer
+c
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      IF (IPRINT.GE.2)
+     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+      CALL QEXIT('BNCORR')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bncor1 */
+      SUBROUTINE BNCOR1(GNU,ZEFF,N,Z,J,INUC,SHELE,NNUC,MAXSHELL)
+C*****************************************************************************
+C
+C     BNCOR1 :  Find effektive charges and Gaussian exponent 
+C               (from Slater rules) for a given shell (N) for
+C               a given atom (Z)
+C
+C     Jun 2003 Jesper Kielberg Pedersen (used for BNCORR)
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
+     &          D6 = 6.0D0, D8 = 8.0D0, D10=10.0D0, D14=14.0D0,
+     &          D18=18.0D0)
+      LOGICAL MAXSHELL
+      DIMENSION STO1G(7), SHELE(NNUC,7)
+      SAVE STO1G
+C     STO1G(n) is the exponent of the 1s-Gaussian that
+C     best fits the ns Slater-type atomic orbitals of exponent 1.
+C     (Robert F. Stewart, JCP 52(1),431 (Jan 1970))
+C     This article provides exponent up to the n=5 shell. The exponents
+C     for the last two shells have been generated from a fit :
+C     (y = 0.28196 x^-1.5532)
+      DATA STO1G /0.2709,0.1012,0.05297,0.03265,0.02217,0.01744,
+     &            0.01373/
+C
+C     Table of s,p,d,f orbital occupations of the elements
+C     (from which the electron-configuration can be deduced)
+      DIMENSION NOCC(109*4)
+      SAVE NOCC
+      DATA NOCC 
+C     Periode 1
+     &          / 1, 0, 0, 0,
+     &            2, 0, 0, 0,
+C     Periode 2
+     &            3, 0, 0, 0,
+     &            4, 0, 0, 0,
+     &            4, 1, 0, 0,
+     &            4, 2, 0, 0,
+     &            4, 3, 0, 0,
+     &            4, 4, 0, 0,
+     &            4, 5, 0, 0,
+     &            4, 6, 0, 0,
+C     Periode 3
+     &            5, 6, 0, 0,
+     &            6, 6, 0, 0,
+     &            6, 7, 0, 0,
+     &            6, 8, 0, 0,
+     &            6, 9, 0, 0,
+     &            6,10, 0, 0,
+     &            6,11, 0, 0,
+     &            6,12, 0, 0,
+C     Periode 4
+     &            7,12, 0, 0,
+     &            8,12, 0, 0,
+     &            8,12, 1, 0,
+     &            8,12, 2, 0,
+     &            8,12, 3, 0,
+     &            8,12, 4, 0,
+     &            8,12, 5, 0,
+     &            8,12, 6, 0,
+     &            8,12, 7, 0,
+     &            8,12, 8, 0,
+     &            8,12, 9, 0,
+     &            8,12,10, 0,
+     &            8,13,10, 0,
+     &            8,14,10, 0,
+     &            8,15,10, 0,
+     &            8,16,10, 0,
+     &            8,17,10, 0,
+     &            8,18,10, 0,
+C     Periode 5
+     &            9,18,10, 0,
+     &           10,18,10, 0,
+     &           10,18,11, 0,
+     &           10,18,12, 0,
+     &           10,18,13, 0,
+     &           10,18,14, 0,
+     &           10,18,15, 0,
+     &           10,18,16, 0,
+     &           10,18,17, 0,
+     &           10,18,18, 0,
+     &           10,18,19, 0,
+     &           10,18,20, 0,
+     &           10,19,20, 0,
+     &           10,20,20, 0,
+     &           10,21,20, 0,
+     &           10,22,20, 0,
+     &           10,23,20, 0,
+     &           10,24,20, 0,
+C     Periode 6
+     &           11,24,20, 0,
+     &           12,24,20, 0,
+     &           12,24,21, 0,
+C    --> Lanthanides & actinides
+     &           12,24,21, 1,
+     &           12,24,20, 3,
+     &           12,24,20, 4,
+     &           12,24,20, 5,
+     &           12,24,20, 6,
+     &           12,24,20, 7,
+     &           12,24,20, 8,
+     &           12,24,20, 9,
+     &           12,24,20,10,
+     &           12,24,20,11,
+     &           12,24,20,12,
+     &           12,24,20,13,
+     &           12,24,20,14,
+     &           12,24,21,14,
+C    <-- Lanthanides & actinides
+     &           12,24,22,14,
+     &           12,24,23,14,
+     &           12,24,24,14,
+     &           12,24,25,14,
+     &           12,24,26,14,
+     &           12,24,27,14,
+     &           12,24,28,14,
+     &           12,24,29,14,
+     &           12,24,30,14,
+     &           12,25,30,14,
+     &           12,26,30,14,
+     &           12,27,30,14,
+     &           12,28,30,14,
+     &           12,29,30,14,
+     &           12,30,30,14,
+C     Periode 7
+     &           13,30,30,14,
+     &           14,30,30,14,
+     &           14,30,31,14,
+C    --> Lanthanides & actinides
+     &           14,30,32,14,
+     &           14,30,31,16,
+     &           14,30,31,17,
+     &           14,30,31,18,
+     &           14,30,30,20,
+     &           14,30,30,21,
+     &           14,30,31,21,
+     &           14,30,30,23,
+     &           14,30,30,24,
+     &           14,30,30,25,
+     &           14,30,30,26,
+     &           14,30,30,27,
+     &           14,30,30,28,
+     &           14,30,31,28,
+C    <-- Lanthanides & actinides
+     &           14,30,32,28,
+     &           14,30,33,28,
+     &           14,30,34,28,
+     &           14,30,35,28,
+     &           14,30,36,28,
+     &           14,30,37,28/
+      CALL QENTER('BNCOR1')
+c
+      IF (MAXSHELL) THEN
+c    ... just find maximum number of shells we need to run over 
+c        and return number in J-variable (used in BNCORR)
+         NST = NOCC((NINT(Z)-1)*4 + 1)
+         J = NST/2
+         IF(MOD(NST,2).NE.0) J = J + 1
+         GOTO 10
+      ENDIF
+C
+      ZEFF = D0
+c     ... If this is a ghost-atom (f.ex for Counter-Poise 
+c         correction) we return (charge is zero in BNCORR)
+      IF (Z .EQ. D0) GOTO 10
+      IF (N.EQ.0) THEN
+c     ...Always make 1 electron delocalized
+         ZEFF = D1
+         GNU  = 0.1D0
+         SHELE(INUC,1) = SHELE(INUC,1) + D1
+         GOTO 10
+      ENDIF
+c     ... If Hydrogen we are done
+      IF (Z.EQ.D1) GOTO 10
+c     ... special case case for the (2-1) 1s electron
+      IF (N.EQ.1) THEN
+         ZEFF = D1
+         SEXP = Z - 0.35
+         IF (Z.EQ.2) SEXP = SEXP + 0.05
+         SHELE(INUC,1) = SHELE(INUC,1) + D1
+         GOTO 20
+      ENDIF
+c     ... Generel case. We are past H and He and have thus accounted 
+c         for two electron.
+c     ... Find number of s-electrons for element (Z)
+      NST = NOCC((NINT(Z)-1)*4 + 1)
+      NPT = NOCC((NINT(Z)-1)*4 + 2)
+      NDT = NOCC((NINT(Z)-1)*4 + 3)
+      NFT = NOCC((NINT(Z)-1)*4 + 4)
+c
+c     ... Now figure out the occupation used for the Slater rules (N >= 2) :
+c      [1s][2s2p][3s3p][3d][4s4p][4d][4f]...
+c
+c     =================================
+c     How many s-electron in this shell
+c     =================================
+c
+      NS = NST
+      DO I  = 1,N-1
+         NS = NS - D2
+      ENDDO
+c
+      IF (NS .LE. D0) THEN
+         NS = D0
+      ELSEIF (NS.GE.D2) THEN
+         NS = D2
+      ELSE
+         NS = NST - (N-1)*D2
+      ENDIF
+c
+c     =================================
+c     How many p-electron in this shell
+c     =================================
+c
+      NP = NPT
+      DO I  = 1,N-2
+         NP = NP - D6
+      ENDDO
+c
+      IF (NP .LE. D0) THEN
+         NP = D0
+      ELSEIF (NP.GE.D6) THEN
+         NP = D6
+      ELSE
+         NP = NPT - (N-2)*D6
+      ENDIF
+c
+c     =================================
+c     How many d-electron in this shell
+c     =================================
+c
+      ND = NDT
+      DO I  = 1,N-3
+         ND = ND - D10
+      ENDDO
+c
+      IF (ND .LE. D0) THEN
+         ND = D0
+      ELSEIF (ND.GE.D10) THEN
+         ND = D10
+      ELSE
+         ND = NDT - (N-3)*D10
+      ENDIF
+c
+c     =================================
+c     How many f-electron in this shell
+c     =================================
+c
+      NF = NFT
+      DO I  = 1,N-4
+         NF = NF - D14
+      ENDDO
+c
+      IF (NF .LE. D0) THEN
+         NF = D0
+      ELSEIF (NF.GE.D14) THEN
+         NF = D14
+      ELSE
+         NF = NFT - (N-4)*D14
+      ENDIF
+      IF (J.EQ.1) ZEFF = NS + NP
+      IF (J.EQ.2) ZEFF = ND
+      IF (J.EQ.3) ZEFF = NF
+      SHELE(INUC,N) = SHELE(INUC,N) + ZEFF
+      IF (ZEFF.EQ.D0) THEN
+         GNU  = D0
+         GOTO 10
+      ENDIF
+C
+C     ... Finally use Slater's rules to extimate screening 
+C         (and orbital exponent)
+C
+      IF (J.EQ.1) THEN
+c        [nsnp]
+         EMN = D0
+         DO I = 1,N-2
+            EMN = EMN + SHELE(INUC,I)
+         ENDDO
+         SEXP = (Z - ((ZEFF-1.0)*0.35 + SHELE(INUC,N-1)*0.85 + EMN))/N
+      ELSE
+c        [nd],[nf]
+         EMN = D0
+         DO I = 1,N-1
+            EMN = EMN + SHELE(INUC,I)
+         ENDDO
+         SEXP = (Z - ((ZEFF-1.0)*0.35 + EMN))/N
+      ENDIF
+c
+20    CONTINUE
+c     ... Convert STO to GTO using 1 Gaussian (STO1G)
+      GNU = D2*SEXP*SEXP*STO1G(N)
+10    CONTINUE
+      CALL QEXIT ('BNCOR1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck oldbncr */
+      SUBROUTINE OLDBNCR(FMAT,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     OLDBNCR: Generate screened bare nucleus matrix
+C     Aug 2001 Hans Joergen Aa. Jensen (based on TSCORR)
+C     Last revision: Sep 17 2002 - jkp (added timings, adapted for CATDR1)
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+      PARAMETER(D1 = 1.0D0)
+C
+      LOGICAL DOINT(2,2)
+      CHARACTER*4 OMITVNUC
+      DIMENSION WORK(LWORK),FMAT(*)
+      DIMENSION GNUTAB(103)
+      SAVE GNUTAB
+      DATA GNUTAB /2*0.1D0, 8*0.7D0, 8*1.0D0, 18*1.1D0, 18*1.2D0,
+     &             49*2.0D0/
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+C
+      CALL QENTER('OLDBNCR')
+c
+c     Start timer
+c
+      TIMSTR = SECOND() 
+c
+#include "memint.h"
+C     Memory allocation
+      CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN, NNBBASX,WORK,KFREE,LFREE)
+      LFCBA = NUCDEP**3
+      CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
       LWRK   = LWORK - KFREE + 1
       CALL DZERO(WORK(KCHRG),NUCIND)
 c
@@ -3117,7 +3606,7 @@ C       for now we correct them as well
 c
       IF(IPRINT .GE. 2) THEN
          WRITE(LUPRI,'(/,2(4X,A/))') 
-     &' *** Entering BNCORR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
+     &' *** Entering OLDBNCR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
      &'     X=L,S ; G(a,r)=exp(-a*r^2)'
 C
          WRITE(LUPRI,'(14X,A)')
@@ -3176,7 +3665,7 @@ C
       CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.5) THEN
-         CALL HEADER('BNCORR correction FMAT',-1)
+         CALL HEADER('OLDBNCR correction FMAT',-1)
          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
      &        NTBAS(0),NTBAS(0),1,LUPRI)
       END IF
@@ -3185,13 +3674,13 @@ C     Add correction to Fock-matrix
 C
       CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,FMAT,1)
       IF(IPRINT.GE.5) THEN
-         CALL HEADER('BNCORR: screening corrected bare nucleus FMAT',-1)
+         CALL HEADER('OLDBNCR: screened corrected bare nucleus FMAT',-1)
          CALL PRQMAT(FMAT,NTBAS(0),NTBAS(0),
      &               NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
       END IF
 C
 C     Memory deallocation
-      CALL MEMREL('BNCORR',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('OLDBNCR',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C
 c     Stop timer
@@ -3199,8 +3688,8 @@ c
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
       IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
-      CALL QEXIT('BNCORR')
+     &  CALL TIMTXT('>>> Time used in OLDBNCR is',TIME,LUPRI)
+      CALL QEXIT('OLDBNCR')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
