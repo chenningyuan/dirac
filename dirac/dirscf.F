@@ -247,18 +247,6 @@ C
      &              WORK,KFREE,LFREE)
         ENDIF
 C
-C       Reorder orbitals if requested
-C
-        IF (LMOORD) THEN
-          CALL REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,
-     &         WORK(KFREE),LFREE)
-C
-C         Make sure that reordered coefficients are written back
-C         to file.
-C
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-        END IF
-C
 C       Determine occupation if this was not given in input
 C
         IF (INIOCC) THEN
