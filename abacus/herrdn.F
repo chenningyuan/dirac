@@ -891,6 +891,7 @@ C
       CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
+      NHTYPF = 0
       IBLOCK(1) = 1
       IBLOCK(2) = 1
       IBLOCK(3) = 1
@@ -5071,6 +5072,7 @@ C     ==========================
 C
       REWIND LUONEL
       WRITE (LUONEL) RTITLE,MAXREP+1,(NAOS(I),I=1,MAXREP+1), POTNUC
+#ifndef PRG_DIRAC
 C
 C     1 - ISORDK
 C     ==========
@@ -5096,6 +5098,7 @@ C
      &               NUCDEP, ((COOO(I,J),J=1,3),I=1,NUCDEP),
 CTROND: JFXYZ, QPOL and QQ is not defined !!!
      &               IFXYZ, DUMMY, QPOL, QQ, JFXYZ
+#endif
 C
 C     3 - SYMINPUT
 C     ============
@@ -6186,7 +6189,7 @@ C
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), NONCH(MXCENT)
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
       CHARACTER*80 BASREF(10,KATOM)
 #include "nuclei.h"
@@ -6198,14 +6201,14 @@ C
 #include "ccom.h"
 #include "molinp.h"
 #include "cbisol.h"
-    1 FORMAT(/,2X,' INTERNAL COORDINATES'/)
-    2 FORMAT(2X,I3,67X,F15.5)
-    3 FORMAT(2X,I3,I5,F14.7,48X,F15.5)
-    4 FORMAT(2X,I3,I5,F14.7,I5,F14.7,29X,F15.5)
-    5 FORMAT(2X,I3,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
+    1 FORMAT(/'   INTERNAL COORDINATES'/)
+    2 FORMAT(I5,62X,F15.5)
+    3 FORMAT(I5,I5,F14.7,43X,F15.5)
+    4 FORMAT(I5,I5,F14.7,I5,F14.7,24X,F15.5)
+    5 FORMAT(I5,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
 C    6 FORMAT(//,25X,' CARTESIAN COORDINATES in Angstrom',
 C     $      /,14X,'X',24X,'Y',24X,'Z'/)
-    7 FORMAT(2X,I3,3(F20.10,5X))
+    7 FORMAT(I5,3(F20.10,5X),F15.5)
     8 FORMAT(//,25X,' CARTESIAN COORDINATES in bohr',
      $      /,14X,'X',24X,'Y',24X,'Z'/)
     9 format(3f20.10)
@@ -6243,7 +6246,7 @@ C
             CZ(3,3) = CZ(2,3)-BL(3)*DCOS(ALP(3))
          END IF
          DO 80 I = 4,NUCIND
-            IF((DABS(CZ(I-1,1))-1.0D-6) .LT. D0) THEN
+            IF((ABS(CZ(I-1,1))-1.0D-6) .LT. D0) THEN
                CZ(I,1) = BL(I)*DSIN(ALP(I))
                ITEMP = IZ(I,1)
                JTEMP = IZ(I,2)
@@ -6265,7 +6268,7 @@ C
                   CALL VEC(U1,CZ,IZ(J,2),IZ(J,3))
                   CALL VEC(U2,CZ,IZ(J,1),IZ(J,2))
                   CALL VPROD(VP,U1,U2)
-                  R = DSQRT(D1 - (U1(1)*U2(1) + U1(2)*U2(2)
+                  R = SQRT(D1 - (U1(1)*U2(1) + U1(2)*U2(2)
      &                 + U1(3)*U2(3))**2)
                   DO 120 I = 1,3
                      U3(I) = VP(I)/R
@@ -6278,7 +6281,7 @@ C
                      CZ(J,I)=VJ(I)+CZ(ITEMP,I)
  130              CONTINUE
                ELSE
-                  IF (IABS(IZ(J,4)-1) .EQ. 0) THEN
+                  IF (IABS(IZ(J,4)) .EQ. 1) THEN
                      CALL VEC(U1,CZ,IZ(J,1),IZ(J,3))
                      CALL VEC(U2,CZ,IZ(J,2),IZ(J,1))
                      ZETA = -(U1(1)*U2(1) + U1(2)*U2(2) +U1(3)*U2(3))
@@ -6288,15 +6291,15 @@ C
                      GAMMA=PI/D2
                      IF (ZETA .LT. D0) THEN
                         R=PI
-                        GAMMA = DATAN(DSQRT(D1-ZETA*ZETA)/ZETA)+R
+                        GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
                      ELSE IF (ZETA .GT. D0) THEN
-                        GAMMA = DATAN(DSQRT(D1-ZETA*ZETA)/ZETA)+R
+                        GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
                      END IF
                      D(J) = D0
-                     IF ((DABS(GAMMA+ALP(J)+BET(J)-D2*PI)-1.0D-6)
+                     IF ((ABS(GAMMA+ALP(J)+BET(J)-D2*PI)-1.0D-6)
      &                    .GE. D0) THEN
-                        D(J) = IZ(J,4)*(DSQRT(D1+A(J)*CBJ-B(J)*CAJ))
-     &                       /DSQRT(D1-ZETA*ZETA)
+                        D(J) = IZ(J,4)*(SQRT(D1+A(J)*CBJ-B(J)*CAJ))
+     &                       /SQRT(D1-ZETA*ZETA)
                      END IF
                      CALL VPROD(V3,U1,U2)
                      DO 200 I = 1,3
@@ -6310,10 +6313,10 @@ C
                      CALL VEC(U2,CZ,IZ(J,2),IZ(J,1))
                      ZETA = -(U1(1)*U2(1)+U1(2)*U2(2)+U1(3)*U2(3))
                      CALL VPROD(V3,U1,U2)
-                     V3MAG = DSQRT(V3(1)*V3(1)+V3(2)*V3(2)
+                     V3MAG = SQRT(V3(1)*V3(1)+V3(2)*V3(2)
      &                    + V3(3)*V3(3))
                      A(J) = V3MAG*CBJ/(D1-ZETA*ZETA)
-                     B(J) = DSQRT((D1-CAJ*CAJ-A(J)*CBJ*V3MAG)
+                     B(J) = SQRT((D1-CAJ*CAJ-A(J)*CBJ*V3MAG)
      &                    /(D1-ZETA*ZETA))
                      IF((IZ(J,4)-2) .NE. 0) THEN
                         B(J)=-B(J)
@@ -6352,7 +6355,7 @@ C
       IF (IPRINT .GT. 2) THEN
          WRITE(LUPRI,8)
          DO 305 I=1,NUCIND
-            WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3)
+            WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3),CHARGE(I)
  305     CONTINUE
       END IF
 C
@@ -6370,13 +6373,14 @@ C     detection routines we need to sort atoms with similar charge
 C     together in a block.
 C
       ITYP = 1
-      DO 600 I = 1, NUCIND
-         DO 601 J = 1, I - 1
+      NONT(ITYP) = 1
+      CHNON(ITYP) = CHARGE(1)
+      DO 600 I = 2, NUCIND
+         DO 601 J = I-1, 1, -1
             IF (CHARGE(I) .EQ. CHARGE(J)) THEN
                NONTYP = NONTYP - 1
                DO 603 L = 1, ITYP
-                  IF (CHARGE(I) .EQ. NONCH(L))
-     &                   NONT(L) = NONT(L) + 1
+                  IF (CHARGE(I) .EQ. CHNON(L)) NONT(L) = NONT(L) + 1
  603           CONTINUE
                CHARGK = CHARGE(I)
                XCORD  = CORD(1,I)
@@ -6398,14 +6402,19 @@ C
                GOTO 600
             END IF
  601     CONTINUE
-         NONT(ITYP) = 1
-         NONCH(ITYP) = CHARGE(I)
          ITYP = ITYP + 1
+         NONT(ITYP) = 1
+         CHNON(ITYP) = CHARGE(I)
  600  CONTINUE
-      IF (DOCART) CRT = 'C'
-      IF (DOOWN)  CRT = 'X'
-      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,D10.2)') CRT,NONTYP,KCHARG,
-     &                                          NSYMOP,THRS
+      IF (DOCART) THEN
+         CRT = 'C'
+      ELSE IF (DOOWN) THEN
+         CRT = 'X'
+      ELSE
+         CRT = ' '
+      END IF
+      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
+     &     CRT,NONTYP,KCHARG,NSYMOP,THRS
       NMLINE = 6
       NHTYP = 0
       IBLOCK = 1
@@ -6476,7 +6485,7 @@ C
          R(I)=C(J,I)-C(K,I)
          R2=R2+R(I)*R(I)
  101  CONTINUE
-      R2=DSQRT(R2)
+      R2=SQRT(R2)
       DO 102 I=1,3
          U(I)=R(I)/R2
   102 CONTINUE
