@@ -59,11 +59,12 @@ C*              as IQM                                       *
 C*     KAOVEC, KPRIM, Q, DSM are max (angular quantumnumber  *
 C*             + 1), max number of primitives, nuclear       *
 C*             charge, highest number to be accepted as zero *
+C*     BASREF - documentation lines for basis set            *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, Q,
-     &                   ISET, DSM)
+     &                   ISET, DSM, BASREF)
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SEG
@@ -90,6 +91,7 @@ C*              -coeffecients                                *
 C*************************************************************
 C
       CHARACTER BASTMP*80, BASSAV*80
+      CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
 C
       BASTMP = '                                        '//
@@ -333,6 +335,10 @@ C
       DO I = 1, IQM
          JCO(I) = 1
       END DO
+C      
+C Find reference information for the basis set. 
+C
+      CALL FINREF (BASREF,LUBAS)
 C
 C Closing file
 C
@@ -1006,8 +1012,77 @@ C
      &     ' is an unsupported element for basis ',BASNAM
       CALL QUIT('Unsupported element in HERBAS')
       END 
-C               
+C*********************************************************
+C* This is the subroutine that searches through the file *
+C* and finds reference info if available.                *
+C* Based on FINPOS, LV, 14-5-2003                         *
+C*********************************************************
+C/* Deck finref */
+      SUBROUTINE FINREF(BASREF, LUBAS)
+#include "implicit.h"
+#include "priunit.h"
+      CHARACTER*80 LINE,BASREF(10)
+C*********************************************************
+C* Variable declarations:                                *
+C*     SIGN - The first sign in a sentence, to find out  *
+C*            what kind of sentence it is.               *
+C*     STRING - A character string to help bulletproofing*
+C*              the subroutine.                          *
+C*********************************************************
+      CHARACTER SIGN
+      CHARACTER*88 STRING
+      LOGICAL BLANK
 C
+      REWIND (LUBAS)
+C
+C Initialising IREF (number of documentation lines), set to one
+C once we find a line containing the string REFERENCE
+C
+      IREF = 0
+C
+C     The loops are written f77 style since f90 may still not be
+C     available everywhere, better to use while loops here..
+C
+ 20   CONTINUE
+      READ (LUBAS, '(A88)', IOSTAT = IOERR, ERR = 1000, END = 200)
+     +     STRING
+      READ (STRING, '(A1)') SIGN
+C
+      IF (SIGN .EQ. '$') THEN
+         IF (IREF.EQ.0) THEN
+C           Check for start of documentation 
+            DO I = 4, 80
+               IF (STRING(I:I+8).EQ.'REFERENCE') IREF = 1
+            ENDDO
+         ELSE
+C           We have documentation, omit blank lines and store in BASREF
+            CALL CHBLANK(BLANK, STRING(2:81))
+            IF (.NOT.BLANK) THEN
+               BASREF(IREF) = STRING(2:81)
+               IREF = IREF + 1
+            ENDIF
+         END IF
+C
+C        Maximum number of documentation lines is 10
+C
+         IF (IREF.GT.10) RETURN
+      ELSE 
+C        We return if we found a REFERENCE line but no more $ lines.
+         IF (IREF.GT.0) RETURN
+      END IF
+C
+      GOTO 20
+C
+      RETURN
+C
+C No documentation when end of file is found
+C
+ 200  CONTINUE
+ 1000 CONTINUE
+      WRITE (LUPRI,'(/A,I5)') 'Error in reading file, your basis '//
+     &     'has no documentation. IOSTAT code:',IOERR
+      CALL QUIT('Incomplete basis set file in HERBAS')
+      END
 C*********************************************************	
 C* This is the subroutine that finds out wheter it is a  *
 C* new block with primitives and contraction-            *

@@ -421,7 +421,10 @@ C
       KBLCK  = KIQM   +  KATOM*2
       KJCO   = KBLCK  +  KATOM*2
       KJCO2  = KJCO   +  KATOM*KANG*2
-      KLAST  = KJCO2  +  KATOM*KANG
+      KBASRF = KJCO2  +  KATOM*KANG
+C     The BASREF array is a character array but we use the integer
+C     length to avoid alignment problems
+      KLAST = KBASRF  +  KATOM*10*80
 C hjj: take as many blocks as fit in memory
 C      (to be able to run tests with memory < 1 mio DP words)
       LWRK   = LWORK  -  KLAST + 1
@@ -452,8 +455,8 @@ C     ***** Read input file and process data *****
 C     ********************************************
 C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
-     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KNUC),
-     &            WORK(KNRC),WORK(KSEG),WORK(KA),
+     &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KBASRF),
+     &            WORK(KNUC),WORK(KNRC),WORK(KSEG),WORK(KA),
      &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM, HERMIT)
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
@@ -474,9 +477,9 @@ C5030 CONTINUE
       CALL QUIT('Wrong keyword. Expecting FINISH')
       END
 C  /* Deck readi1 */
-      SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,NUC,
-     &           NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &           KPRIM,HERMIT)
+      SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,
+     &          BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
+     &          KPRIM,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -529,6 +532,7 @@ C******************************************************************************
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),
      &          WORK(LWORK)
+      CHARACTER*80 BASREF(10,KATOM)
 C
 C       Local variables
 C
@@ -659,7 +663,7 @@ C
       KLAST  = KISGEN + KBLOCK
       LWRK   = LWORK  -  KLAST + 1
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NSYMOP,NONT,
-     &            IQM,NBLCK,JCO,
+     &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
      &            KATOM,KANG,KBLOCK,KPRIM,ANG,ZMAT)
 C
@@ -667,9 +671,9 @@ C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
 C     *************************************************
 C
-      IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
-     &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &                  KBLOCK,KPRIM,DOOWN)
+      IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,
+     &                  BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,
+     &                  KANG,KBLOCK,KPRIM,DOOWN)
 
 C
 C     *************************************************
@@ -707,8 +711,8 @@ C     *************************************************
 C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
-      CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &            ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+      CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &            KBLOCK,KPRIM,HERMIT)
 C
       IF (IPREAD .GE. 2) THEN
@@ -799,7 +803,7 @@ C
       END
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
-     &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
+     &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KBLOCK,KPRIM,ANG,ZMTTST)
 C*****************************************************************************
 C
@@ -825,6 +829,7 @@ C*****************************************************************************
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
+      CHARACTER*80 BASREF(10,KATOM)
       DIMENSION IBLOCK(2)
 #include "molinp.h"
 #include "ccom.h"
@@ -1029,6 +1034,13 @@ C                 Assume it is 'LARGE   2    1....'
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                END IF
 C
+C              Initialize reference strings for this basis set.
+C
+               BASREF(1,I) = ' Reference not found in input'
+               DO IREF = 2, 10
+                  BASREF(IREF,I) = ' Not initialized'
+               ENDDO
+C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
 C                 Read explicitly given basis set.
@@ -1041,6 +1053,8 @@ C
      &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,1) = NBLOCK
+                  BASREF(1,I) = 
+     &            "Basis set typed explicitly in input file "
 C
                ELSE IF ( IBSFLAG .EQ. 2 ) THEN
 C
@@ -1053,8 +1067,8 @@ C
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   DIRCON(1) = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
-     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
+     &                IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,BASREF)
                ELSE IF ( IBSFLAG .EQ. 3 ) THEN
 C
                   BASNAM = BASFIL
@@ -1064,7 +1078,8 @@ C
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
-     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM)
+     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM,
+     &                 BASREF(1,I))
                   NBLCK(I,1) = NBLOCK
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -1079,6 +1094,8 @@ C
      &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,1) = NBLOCK
+                  BASREF(1,I) = 
+     &   "Well-tempered basis set typed explicitly in input file "
 C
                ENDIF
 C
@@ -1196,8 +1213,8 @@ C
                   IF (KLAST.GT.LWORK)
      &                 CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),WORK(KBFCO),
-     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
+     &                IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,BASREF)
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
@@ -1266,7 +1283,8 @@ C
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,J,DSM)
+     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,J,DSM,
+     &                  BASREF(1,I))
 C
                ELSE
 C
@@ -1628,8 +1646,8 @@ C
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
       END
 C  /* Deck basout */
-      SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+      SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,BASREF,
+     &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &                  KBLOCK,KPRIM,HERMIT)
 C*****************************************************************************
 C
@@ -1653,6 +1671,7 @@ C*****************************************************************************
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
       CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRIN2*(6*MXQN+3)
+      CHARACTER*80 BASREF(10,KATOM)
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -1672,6 +1691,7 @@ C
          WRITE (66,'(1X,A,I5  )') ' Number of atom types: ',NONTYP
          WRITE (66,'(1X,A,I5,/)') ' Total number of atoms:',NUCDEP
       END IF
+C
       IBLOCK = 1
       IBLCKS = 1
       ICENT  = 0
@@ -1757,6 +1777,10 @@ C
          WRITE (LUPRI,'(1X,A,1P,D10.2)') ' Threshold for integrals:',
      &                                   THRS
       END IF
+C
+C     Print the references to the basis sets
+C
+      CALL PRBASREF(LUPRI,NONTYP,BASREF)
 C
 C     ******************************************
 C     ***** Printing of atomic coordinates *****
@@ -5558,9 +5582,9 @@ C
         CALL QUIT('*** ERROR *** MXCENT exceeded in ZMAT')
       END
 C  /* Deck buildz */
-      SUBROUTINE BUILDZ(IPRINT,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &                  KPRIM,DOOWN)
+      SUBROUTINE BUILDZ(IPRINT,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,BASREF,
+     &                NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
+     &                KPRIM,DOOWN)
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
@@ -5583,6 +5607,7 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), NONCH(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
+      CHARACTER*80 BASREF(10,KATOM)
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -5826,7 +5851,8 @@ C
      &               NRC(IBLOCK,1),SEG(IBLOCK,1),
      &               ALPHA(1,IBLOCK,1),
      &               CPRIM(1,1,IBLOCK,1),CPRIMU(1,1,IBLOCK,1),
-     &               NBLOCK,ISGEN,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM)
+     &               NBLOCK,ISGEN,KAOVEC,KPRIM,CHARGE(IATOM - 1),J,DSM,
+     &               BASREF(1,I))
          NBLCK(I,1) = NBLOCK
          IBLOCK = IBLOCK + NBLCK(I,1)
          NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0
@@ -5889,7 +5915,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bfginp */
       SUBROUTINE BFGINP(IAT,IBLCK,ICP,ALPIN,CPRIN,
      &              IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM)
+     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM,BASREF)
 C***********************************************************************
 C
 C      Read contracted basis set from a MOLFDIR type basis set file
@@ -5916,6 +5942,7 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
+      CHARACTER*80 BASREF(10,KATOM)
 #include "dcbgen.h"
 #include "cbirea.h"
 #include "ccom.h"
@@ -5996,19 +6023,34 @@ C
          IF (.NOT.TOBE) GOTO 10
          OPEN (LUBFIL,FILE=STRING,FORM='FORMATTED',STATUS='OLD')
          REWIND (LUBFIL)
-C
-C        Tell the user where his basis set comes from
-C
-         WRITE(LUPRI,'(3A/2A)')
-     &   ' The ', SZ(ICP),' component basis for this atom is read from',
-     &   ' the MOLFDIR-type file : ',STRING(1:IEND)
       ENDIF
 C
-C     Read two line header of basis set file
-C     ======================================
+C     Read info line of basis set file, copy this to BASREF array
+C     ===========================================================
 C
       CALL RDLINE(LUBFIL)
       READ (MLINE(NMLINE),'(A80)',END=5020) TEXT
+C
+      IF (ICP.EQ.1) THEN
+C
+C        We report the name of the file and the text line as both may give useful information
+C
+         BASREF(1,IAT) = "Basis set read from MOLFDIR file : "//FILNAM
+         BASREF(2,IAT) = TEXT
+      ELSE
+C
+C        Usually the small component comes from the same source as the LC, if not add additional info
+C
+         IF (BASREF(2,IAT).NE.TEXT) THEN
+            BASREF(3,IAT) = 
+     &   " Small component basis set read from MOLFDIR file : "//FILNAM
+            BASREF(4,IAT) = TEXT
+         ENDIF
+      ENDIF
+C
+C     Read technical info line of basis set file
+C     ==========================================
+C
       CALL RDLINE(LUBFIL)
       READ (MLINE(NMLINE),'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
      &      DATE1,TIME1,FORMATE,NE,FORMATC,NC,DCHRG,DEXPO
@@ -6785,4 +6827,64 @@ C
      &     'Delta = ',FAMPAR(4)
       CALL QUIT('Illegal value for parameter in ' //
      $     'well-tempered progression')
+      END
+C  /* Deck PRBASREF */
+      SUBROUTINE  PRBASREF (LUPRI,NONTYP,BASREF)
+C***********************************************************************
+C
+C     Print out the reference information for basis sets
+C     Sets that are used for more than one atom type are printed
+C     only once.
+C
+C     Written by L. Visscher -  May 14, 2003
+C
+C***********************************************************************
+#include "mxcent.h"
+      DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
+      LOGICAL FIRST(MXCENT)
+      CHARACTER*80 BASREF(10,*)
+C
+C     Check for common sets, the first set is always unique
+C
+      FIRST(1) = .TRUE.
+      DO I = 2, NONTYP
+         FIRST(I) = .TRUE.
+         DO J = 1, I - 1
+            IF (BASREF(1,I).EQ.BASREF(1,J)) THEN
+               FIRST(I) = .FALSE.
+               I_SET(I) = J
+               GOTO 1
+            ENDIF
+         ENDDO
+   1     CONTINUE
+      ENDDO
+C
+      WRITE (LUPRI,1000)
+      DO I = 1, NONTYP
+C        We will print the information only once
+         IF (FIRST(I)) THEN
+C           Find out which other types also use the same basis set
+            N = 1
+            I_EQUAL(N) = I
+            DO J = I+1, NONTYP
+               IF (I_SET(J).EQ.I) THEN
+                  N = N + 1
+                  I_EQUAL(N) = J
+               ENDIF
+            ENDDO
+C           print line with info about the equal sets
+            WRITE (LUPRI,1001) (I_EQUAL(J),J=1,N)
+C           print basis set information
+            DO ILINE = 1, 10
+               IF (BASREF(ILINE,I)(1:16).NE.' Not initialized')
+     &         WRITE (LUPRI,1002) BASREF(ILINE,I)
+            ENDDO
+         ENDIF
+      ENDDO
+C
+ 1000 FORMAT (//"  References for the basis sets"/
+     &          "  -----------------------------")
+ 1001 FORMAT (/"  Atom type",16I4,(/11X,16I4))
+ 1002 FORMAT (2X,A80)
+      RETURN
       END
