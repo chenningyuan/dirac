@@ -228,10 +228,11 @@ C
           CALL MEMGET('REAL',KPFMT,NPFMT,WORK,KFREE,LFREE)       
           CALL MEMGET('REAL',KDFMT,NPFMT,WORK,KFREE,LFREE)       
           CALL MEMGET('INTE',KIBUF,NN,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KINDX,NBMAX,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KINDX,NBMAX*2,WORK,KFREE,LFREE)
           NTOT = NREFS + 1
           NFDIM = NTOT*NTOT
           CALL MEMGET('REAL',KFMAT,NFDIM,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KPM  ,NTOT,WORK,KFREE,LFREE)
 C.........Calculate density matrix in fragment basis
           CALL PRJEX4(WORK(KDFMT),WORK(KBVEC),NP(1,0),NP(1,2),IPREXP)
         ENDIF
@@ -261,10 +262,6 @@ C.............calculate expectation value
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
      &        WORK(KFREE),LFREE,IPREXP)
           IF(PRJANA) THEN
-CTROND            CALL PRJEXP(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
-CTROND     &                  WORK(KDFMT),INDXPR,IREP,ITIM,FIRST,
-CTROND     &                  NP(1,0),NP(1,2),NTOT,IPREXP,
-CTROND     &                  WORK,KFREE,LFREE)
 C.........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
      &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
@@ -277,9 +274,11 @@ C.........Transform property matrix to fragment orbital basis
      &       LEXPST(1,I),LEXPST(2,I)
           CALL FLSHFO(LUPRI)
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
-            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+            CALL PRJEX2(EXPVAL(I),PTRI,WORK(KPFMT),WORK(KDFMT),
+     &                  WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
+     &                  WORK(KINDX),
      &                  IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
@@ -340,10 +339,11 @@ C...........Transform property matrix to fragment orbital basis
      &     LEXPST(1,I),LEXPST(2,I)
           CALL PRSYMB(LUPRI,'-',60,4)
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
-            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+            CALL PRJEX2(EXPVAL(I),PTRI,WORK(KPFMT),WORK(KDFMT),
+     &                  WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
-     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
-     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
+     &                  WORK(KINDX),IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
         ENDDO
@@ -555,8 +555,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
-      SUBROUTINE PRJEX2(PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NCNT,NMO,
-     &                  NR,NTOT,FMAT,INDX,
+      SUBROUTINE PRJEX2(EXPVAL,PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NCNT,NMO,
+     &                  NR,NTOT,PM,FMAT,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -579,10 +579,12 @@ C
 C
       DIMENSION PFO(*),DFO(*),PAO(N2BBASX),NCNT(*),NMO(*),
      &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
-     &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),INDX(*),WORK(*)
+     &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*),
+     &          WORK(*)
 C
       N2TOT = NTOT*NTOT
       CALL DZERO(FMAT,N2TOT)
+      CALL DZERO(PM,NTOT)
 C
 C     Make density matrix in fragment orbitals
 C
@@ -593,45 +595,68 @@ C
         DO I = 1,NREFS
           DO J = 1,NR(I,IFRP)
             II = II + 1
-            INDX(II) = I
+            INDX(1,II) = I
+            INDX(2,II) = J
           ENDDO
         ENDDO
         I = NREFS + 1
         DO J = 1,NMO(IFRP)
           II = II + 1
-          INDX(II) = I
+          INDX(1,II) = I
+          INDX(2,II) = J
         ENDDO
-        CALL PRJEX3(EXPVAL,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
-     &              IBUF,PBUF,FMAT,INDX,NTOT,INDXPR,IPRINT)
+        CALL PRJEX3(EXPVL2,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
+     &              NR(1,IFRP),NMO(IFRP),IBUF,PBUF,FMAT,PM,INDX,
+     &              NTOT,INDXPR,IPRINT)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
  10   CONTINUE
 C
 C     Give fragment contributions
 C
       CALL HEADER('* Total fragment contributions',-1)
+      WRITE(LUPRI,'(A)') ' * Intraatomic contributions:'
+      TOT = D0
+      DO J = 1,NREFS
+        TMP = D2*FMAT(J,J)
+        TOT = TOT + TMP
+        FAC = TMP/EXPVAL
+        WRITE(LUPRI,'(I5,2X,A6,16X,E16.8,F10.4)') 
+     &    J,REFFIL(J),TMP,FAC
+        WRITE(LUPRI,'(9X,A,E16.8,F10.4)')
+     &    '- principal moment: ',PM(J),PM(J)/EXPVAL
+        TMP = TMP - D2*PM(J)
+        WRITE(LUPRI,'(9X,A,E16.8,F10.4)')
+     &    '- hybridization   : ',TMP,TMP/EXPVAL
+      ENDDO
+      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(A)') ' * Interatomic contributions:'
+      TOT = D0
       DO J = 1,NREFS
         DO I = 1,(J-1)
           TMP = D2*(FMAT(I,J)+FMAT(J,I))
+          TOT = TOT + TMP
           FAC = TMP/EXPVAL
           WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
      &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
         ENDDO
-        TMP = D2*FMAT(J,J)
-        FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
-     &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
       ENDDO
-      j = NREFS+1
+      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
+      WRITE(LUPRI,'(A)') ' * Polarization contributions:'
+      J = NREFS+1
+      TOT = D0
       DO I = 1,NREFS
         TMP = D2*(FMAT(I,J)+FMAT(J,I))
+        TOT = TOT + TMP
         FAC = TMP/EXPVAL
         WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
-     &      J,'Polari',I,REFFIL(I),TMP,FAC
+     &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
       ENDDO
       TMP = D2*FMAT(J,J)
+      TOT = TOT + TMP
       FAC = TMP/EXPVAL
       WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
-     &    J,'Polari',J,'Polari',TMP,FAC
+     &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
+      WRITE(LUPRI,'(3X,A,19X,E16.8,F10.4)') 'Total: ',TOT,TOT/EXPVAL
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1113,8 +1138,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck prjex3 */
-      SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NCNT,IBUF,PBUF,
-     &                  FMAT,INDX,NTOT,INDXPR,IPRINT)
+      SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NCNT,NR,NMO,IBUF,PBUF,
+     &                  FMAT,PM,INDX,NTOT,INDXPR,IPRINT)
 C***********************************************************************
 C
 C     Calculate generalized population matrix
@@ -1124,22 +1149,26 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D2=2.0D0,D0=0.0D0)
+      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-4)
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
+#include "dcbprj.h"
       DIMENSION PTRI(*),PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),
-     &          PBUF(*),IBUF(*),FMAT(NTOT,NTOT),INDX(*)
-#include "sdpre.h"
+     &          NR(*),PBUF(*),IBUF(*),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*)
 C
+#include "sdpre.h"
       NTRI = NCNT*(NCNT+1)/2
+C
+C     Make population matrix
+C
       CALL DZERO(PTRI,NTRI)
       DO IZ = 1,NZ
         IJ = 0
         DO J = 1,NCNT
-          JR = INDX(J)
+          JR = INDX(1,J)
           DO I = 1,(J-1)
-            IR = INDX(I)
+            IR = INDX(1,I)
             IJ = IJ + 1
             TMP = D2*PFO(I,J,IZ)*DFO(I,J,IZ)
             FMAT(IR,JR) = FMAT(IR,JR) + TMP
@@ -1148,6 +1177,7 @@ C
           IJ = IJ + 1
           TMP = PFO(J,J,IZ)*DFO(J,J,IZ)
           PTRI(IJ) = PTRI(IJ) + TMP
+          PM(JR) = PM(JR) + TMP
           FMAT(JR,JR) = FMAT(JR,JR) + TMP
         ENDDO
       ENDDO      
@@ -1161,22 +1191,32 @@ C
 C
 C     Make ordered list of contributions
 C
-      CALL HEADER('Ordered list of contributions',-1)            
-      DO IJ = 1,NTRI
-        PBUF(IJ) = -ABS(PTRI(IJ))
-      ENDDO
-      CALL INDEXX (NTRI,PBUF,IBUF)
-      TMP = D0      
-      WRITE(LUPRI,'(A)')
-     &  ' Ind1 Ind2  Contribution    Accumulated       Fraction'
-      DO M = 1,NTRI
-        IJ = IBUF(M)
-        J  = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
-        I  = IJ - J*(J-1)/2
-        TMP = TMP + PTRI(IJ)
-        FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(2I5,2E16.8,F10.4)') I,J,PTRI(IJ),TMP,FAC
-      ENDDO
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Ordered list of contributions',-1)            
+        DO IJ = 1,NTRI
+          PBUF(IJ) = -ABS(PTRI(IJ))
+        ENDDO
+        CALL INDEXX (NTRI,PBUF,IBUF)
+        TMP = D0      
+        WRITE(LUPRI,'(2(A4,10X),2A16,A10)')
+     &    'Ind1','Ind2','Contribution','Accumulated','Fraction'
+        DO M = 1,NTRI
+          IJ = IBUF(M)
+          IF(ABS(PTRI(IJ)/EXPVAL).LT.DTOL) GOTO 10
+          J  = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+          I  = IJ - J*(J-1)/2
+          JR = INDX(1,J)
+          JJ = INDX(2,J)
+          IR = INDX(1,I)
+          II = INDX(2,I)
+          TMP = TMP + PTRI(IJ)
+          FAC = TMP/EXPVAL
+          WRITE(LUPRI,'(2(A6,I5,3X),2E16.8,F10.4)') 
+     &          REFFIL(JR),JJ,REFFIL(IR),II,PTRI(IJ),TMP,FAC
+        ENDDO
+ 10     CONTINUE
+      ENDIF
+C      
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
