@@ -843,6 +843,7 @@ C
       N2BASX = NBAST*NBAST
       DO I = 1,NSYM
         NBAS(I) = NAOS(I)
+        IBAS(I) = ICOS(I,1)
       ENDDO
 C
       RETURN
