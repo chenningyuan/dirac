@@ -4232,7 +4232,10 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
+      LOGICAL SS_COR, SS_COR_NEEDED
+#include "ibtfun.h"
 C
+      CALL TITLER('Input consistency checks','*',127)
       IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)
@@ -4245,6 +4248,23 @@ C     for DOCCM or DOCIM as integrals on disk now cannot be correct.
 Chj   IF (DORES.AND.DOTRA)
       IF ( (DORES.OR.DOMP2) .AND. ((DOCCM.OR.DOCIM) .AND. .NOT.DOTRA) )
      &CALL QUIT('4INDEX for CI/CC must be specified when RESOLV or MP2')
+C
+C     Correct input from the naive user who neglects the SS without applying a correction.
+C     The experienced user may subtract the LVCOR later on.
+C
+C     Check for Hamiltonians were SS do not appear anyway..
+      SS_COR_NEEDED = .NOT.(LEVYLE.OR.(ZORA.AND..NOT.ZORA4))
+C     .. or are computed exactly
+      SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
+C     Check for possible ways of correcting..
+      SS_COR = DOLVC.OR.DOTSC
+      IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
+         DOLVC = .TRUE.
+         WRITE (LUPRI,'(A/A)') 
+     &     " * User asked for neglect of SS-integrals without "//
+     &     "invoking a correction.",
+     &     "   Activated SCC method, see L. Visscher TCA 98 (1997) 68."
+      ENDIF
 C
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
