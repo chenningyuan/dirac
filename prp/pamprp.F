@@ -1557,6 +1557,7 @@ C***********************************************************************
 #include <mxorb.h>
       PARAMETER (D0=0.D00, KCOL=6)
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
+      DIMENSION WORK(LWORK)
 #include <abainf.h>
 #include <nuclei.h>
 #include <symmet.h>
