@@ -87,7 +87,7 @@ done
 #
 # Define the logfiles
 #
-if [  -z "$testsh" ]; then
+if [  -z "$tests" ]; then
    run=default_test;
 else
    run=user_test;
@@ -122,19 +122,19 @@ for i in $makelog $cvslog $txtlog $htmlog ; do
 done
 cd ${pampath};
 #
-if [  -z "$branch" ]; then
-   echo ' Starting CVS Update ... '
-   cvs update -P -d >& ${testdir}/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+if [  -z "$branch" ]; then 
+   echo ' Starting CVS Update ... ' ;
+   cvs update -P -d >& ${testdir}/logs/$cvslog || ( echo " CVS update failed"; exit 1 ) ;
 else
    echo " Switching working copy to branch $branch and updating ..."
-   cvs update -P -d -r $branch >& ${testdir}/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+   cvs update -P -d -r $branch >& ${testdir}/logs/$cvslog || ( echo " CVS update failed"; exit 1 ) ;
 fi
 #
 echo ' Recompiling ... '
-make >& ${testdir}/logs/$makelog || { echo " Make failed"; exit 1 } ;
+make >& ${testdir}/logs/$makelog || ( echo " Make failed"; exit 1 ) ;
 echo ' Starting test calculations ... '
 cd ${testdir};
-./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run || { echo " runtest failed"; exit 1 ; } ;
+./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run || ( echo " runtest failed"; exit 1 ; ) ;
 #
 # The tests are default run interactively on the same machine as the cvs and make command is run. I have not
 # attempted to make a generic batch script as batch environments vary wildly. The lines below work on
