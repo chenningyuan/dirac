@@ -3343,9 +3343,9 @@ C     Initialize /CBIMVO/
 C     ===================
 C
       IPRMVO = 0
-      ILLINT = 1
-      ISLINT = 1
-      ISSINT = 1
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
       IFCMVO = 1
       IFEMVO = 1
       ADDREP = .FALSE.
