@@ -316,7 +316,7 @@ C
             IF (ICOUNT .GT. 0) WRITE (LUINTA) BUF,IBUF,ICOUNT
             WRITE (LUINTA) BUF,IBUF,-1
             REWIND LUINTA
-            CLOSE (UNIT=LUINTA)
+            CALL GPCLOSE(LUINTA,'KEEP')
          END IF
 C
          IF (IPRINT .GE. 6) THEN
