@@ -127,6 +127,7 @@ C
 C
 C     Get the boson symmetries of the transformed spinors
 C
+      CALL DCOPY(4,KFREE,0,KIBE,1)
       DO I = 1,2
        DO IFRP = 1, NFSYM
         CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
