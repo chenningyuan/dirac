@@ -2815,12 +2815,8 @@ C
          WRITE(LUPRI,'(1X,A)') '* Contracted basis set'
          IF (.NOT. URKBAL) THEN
             WRITE(LUPRI,'(A)')
-     $           'WARNING: contracted basis set'//
+     $           'WARNING: contracted basis set '//
      $           'without .URKBAL is not tested'
-         END IF
-         IF (.NOT. (ISPHTR .EQ. 1)) THEN
-            CALL QUIT('Contracted type basis sets require'
-     &           //'SPHTRA = 1 0')
          END IF
       ELSE
          WRITE(LUPRI,'(1X,A)') '* Uncontracted basis set'

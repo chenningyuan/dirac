@@ -2449,7 +2449,7 @@ C     =====================
 C
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A,A3,2X,A1)') 
-     &    'SPHLOW: Transformation matrix for ',REP(IREP),COMP(IC)
+     &    'RKBLOW: Transformation matrix for ',REP(IREP),COMP(IC)
       ENDIF
 C
 C     Loop over shells
@@ -2462,208 +2462,224 @@ C     Offset in AO-basis:
 C
       INUC = 0
       ICOL = 0
+      JP1_TEST = 0
       DO 10 JA = JA1,JA2
-        JNUC = NCENT(JA)
+         JNUC = NCENT(JA)
+         JP1  = JSTRT(JA) + 1
+         JP2  = JSTRT(JA) + NUCO(JA)
 C
-C       New center; check out allowed symmetries
-C       ----------------------------------------
-        IF(JNUC.NE.INUC) THEN
-          MULA = ISTBNU(JNUC)
-          INUC = JNUC
-          ILL  = 0
-          IOFF = 0
-        ENDIF
-        LL  = NHKT(JA)
+C        Skip allready processed primitives.
 C
-C       New L-value; extract relevant transformation matrix
-C       ---------------------------------------------------
-        IF(LL.NE.ILL) THEN
-          ILL  = LL
-          JRKB = 0
-          L    = LL - 1
-          NLM  = 2*L + 1
-          NXYZ = (LL*(LL+1))/2
-          LOFF = NHKOFF(LL)
+         IF ( JP1_TEST .EQ. JP1 ) GO TO 10
+         JP1_TEST = JP1
 C
-C         Cartesian functions
+C        New center; check out allowed symmetries
+C        ----------------------------------------
+         IF(JNUC.NE.INUC) THEN
+            MULA = ISTBNU(JNUC)
+            INUC = JNUC
+            ILL  = 0
+            IOFF = 0
+         ENDIF
+         LL  = NHKT(JA)
+c         write(6,'(A,6I3)')
+c     $        '10 ja ja1 ja2 jp jp1 jp2',ja,ja1,ja2,jp,jp1,jp2
 C
-          KXYZ = 0
-          DO ICMP = 1,NXYZ
-            IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KXYZ              = KXYZ + 1
-              IFUN(LOFF+KXYZ,1) = ICMP
-              IFUN(LOFF+ICMP,3) = KXYZ
+C        Loop over primitives
+C      
+         DO 15 JP = JP1, JP2
+C
+C           New L-value; extract relevant transformation matrix
+C           ---------------------------------------------------
+            IF(LL.NE.ILL) THEN
+               ILL  = LL
+               JRKB = 0
+               L    = LL - 1
+               NLM  = 2*L + 1
+               NXYZ = (LL*(LL+1))/2
+               LOFF = NHKOFF(LL)
+C
+C              Cartesian functions
+C
+               KXYZ = 0
+               DO ICMP = 1,NXYZ
+                  IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
+                  IF(IBTAND(MULA,IVARB).EQ.0) THEN
+                     KXYZ              = KXYZ + 1
+                     IFUN(LOFF+KXYZ,1) = ICMP
+                     IFUN(LOFF+ICMP,3) = KXYZ
+                  ENDIF
+                  IRED(1,LL) = KXYZ
+               ENDDO
+C
+C              Solid harmonic functions
+C
+               KLM = 0
+               DO ICMP = 1,NLM
+                  IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
+                  IF(IBTAND(MULA,IVARB).EQ.0) THEN
+                     KLM               = KLM + 1
+                     IFUN(LOFF+KLM,2)  = ICMP
+                  ENDIF
+                  IRED(2,LL) = KLM
+               ENDDO
+C
+C              Extract spherical transformation matrix
+C
+               IRED(3,LL) = IOFF
+               IF(KLM.GT.0) THEN
+                  JOFF = ICSP(LL)
+                  CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
+     &                 CRED(IOFF+1),KXYZ,KXYZ,KLM,
+     &                 IFUN(LOFF+1,1),IFUN(LOFF+1,2))
+                  JOFF = IOFF
+                  DO J = 1,KLM
+                     FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
+                     CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
+                     JOFF = JOFF + KXYZ
+                  ENDDO
+                  IOFF = IOFF + KXYZ*KLM
+C     
+               ENDIF
+               IF(IPRINT.GE.4) THEN
+                  KOFF = IRED(3,LL)
+                  WRITE(LUPRI,'(A,I3)')
+     &                 ' * Center : ',JNUC,
+     &                 ' * L-value: ',L
+                  IF(KLM.GT.0) THEN
+                     CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,
+     $                    KXYZ,KLM,1,LUPRI)
+                  ELSE
+                     WRITE(LUPRI,'(A)') ' - no functions - '
+                  ENDIF
+               ENDIF
             ENDIF
-            IRED(1,LL) = KXYZ
-          ENDDO
 C
-C         Solid harmonic functions
+C           Expand transformation matrix
+C           ============================
 C
-          KLM = 0
-          DO ICMP = 1,NLM
-            IVARB = IBTXOR(IREP,IREPLM(L,ICMP-LL))
-            IF(IBTAND(MULA,IVARB).EQ.0) THEN
-              KLM               = KLM + 1
-              IFUN(LOFF+KLM,2)  = ICMP
-            ENDIF
-            IRED(2,LL) = KLM
-          ENDDO
+            IF(KLM.EQ.0) GOTO 10
 C
-C         Extract spherical transformation matrix
+C           Look for (L-1) large function;
+C           skip if no partner found
 C
-          IRED(3,LL) = IOFF
-          IF(KLM.GT.0) THEN
-            JOFF = ICSP(LL)
-            CALL EXTELM('N',CSPH(JOFF+1),NXYZ,NLM,
-     &                      CRED(IOFF+1),KXYZ,KXYZ,KLM,
-     &                      IFUN(LOFF+1,1),IFUN(LOFF+1,2))
-            JOFF = IOFF
+            JL = IRKB(JP)
+            IF(JL.EQ.0) GOTO 10
+            IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
+            IROW = IPTSYM(IROW,IREP) - ISOFF
+C
+C           Fill in standard spherical transformation matrix
+C
+            KOFF = IRED(3,LL)+1
             DO J = 1,KLM
-              FAC = D1/DNRM2(KXYZ,CRED(JOFF+1),1)
-              CALL DSCAL(KXYZ,FAC,CRED(JOFF+1),1)
-              JOFF = JOFF + KXYZ
+               CALL DCOPY(KXYZ,CRED(KOFF),1,
+     &              TMAT(IROW,ICOL+J),1)   
+               KOFF = KOFF + KXYZ
             ENDDO
-            IOFF = IOFF + KXYZ*KLM
+            ICOL = ICOL + KLM
 C
-          ENDIF
-          IF(IPRINT.GE.4) THEN
-            KOFF = IRED(3,LL)
-            WRITE(LUPRI,'(A,I3)')
-     &       ' * Center : ',JNUC,
-     &       ' * L-value: ',L
-            IF(KLM.GT.0) THEN
-              CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
-            ELSE
-              WRITE(LUPRI,'(A)') ' - no functions - '
+C           Possibly add RKB part
+C
+            LRKB = L.GE.2
+            IF(LRKB) THEN
+               LLM2   = LL-2
+               KLMM2  = IRED(2,LLM2)
+               LRKB   = KLMM2.GT.0
             ENDIF
-          ENDIF
-        ENDIF
+            IF(LRKB) THEN
 C
-C       Expand transformation matrix
-C       ============================
+C           Possibly generate RKB matrix
 C
-        IF(KLM.EQ.0) GOTO 10
+               IF(JRKB.EQ.0) THEN
+                  JRKB = 1
+                  NXYZM2 = (LLM2*(LLM2+1))/2
+                  NLMM2  = 2*LLM2-1
+                  KXYZM2 = IRED(1,LLM2)                            
+                  KRKB   = KXYZ + KXYZM2
+                  IM2    = IOFF + KXYZ
+                  LM2F   = NHKOFF(LLM2)
+                  CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
 C
-C       Look for (L-1) large function;
-C       skip if no partner found
+C                 First extract spherical transformation matrix 
+C                 for L-2 partner
+                  JM2    = ICSP(LLM2)
+                  CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
+     &                 CRED(IM2+1),KRKB,KXYZM2,KLMM2,
+     &                 IFUN(LM2F+1,1),IFUN(LM2F+1,2))
 C
-        JL = IRKB(JA)
-        IF(JL.EQ.0) GOTO 10
-        IROW = NSTRT(JA) + IFUN(LOFF+1,1)
-        IROW = IPTSYM(IROW,IREP) - ISOFF
+C                 Then fill in corresponding number for r**2
 C
-C       Fill in standard spherical transformation matrix
+                  DO K = 1,KXYZM2
+                     IJ = IFUN(LM2F+K,1)
+                     IA = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
+                     IB = IJ - IA*(IA-1)/2
+C**               x**2: (ia  ,ib  )
+                     IJX  = (IA*(IA-1))/2 + IB
+                     KOFF = IOFF + IFUN(LOFF+IJX,3)
+                     CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+C**               y**2: (ia+2,ib  )
+                     IJY = ((IA+2)*(IA+1))/2 + IB
+                     KOFF = IOFF + IFUN(LOFF+IJY,3)
+                     CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+C**               z**2: (ia+2,ib+2)
+                     IJZ = ((IA+2)*(IA+1))/2 + IB + 2
+                     KOFF = IOFF + IFUN(LOFF+IJZ,3)
+                     CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
+     &                    CRED(KOFF),KRKB)
+                  ENDDO
 C
-        KOFF = IRED(3,LL)+1
-        DO J = 1,KLM
-          CALL DCOPY(KXYZ,CRED(KOFF),1,
-     &               TMAT(IROW,ICOL+J),1)   
-          KOFF = KOFF + KXYZ
-        ENDDO
-        ICOL = ICOL + KLM
+C                 Scale matrix for L-2 partner
 C
-C       Possibly add RKB part
+                  FAC =  D6-D4*SDPRE(LL)
+                  KOFF = IM2+1
+                  DO K = 1,KLMM2
+                     CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
+                     KOFF = KOFF + KRKB
+                  ENDDO
 C
-        LRKB = L.GE.2
-        IF(LRKB) THEN
-          LLM2   = LL-2
-          KLMM2  = IRED(2,LLM2)
-          LRKB   = KLMM2.GT.0
-        ENDIF
-        IF(LRKB) THEN
+C                 Normalize...
 C
-C         Possibly generate RKB matrix
+                  KOFF = IOFF+1
+                  DO J = 1,KLMM2
+                     FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
+                     CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
+                     KOFF = KOFF + KRKB
+                  ENDDO
+                  IF(IPRINT.GE.4) THEN
+                     WRITE(LUPRI,'(A)') '* RKB part:'
+                     CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
+     &                    KRKB,KLMM2,1,LUPRI)
+                  ENDIF
+                  IOFF = IOFF + KRKB*KLMM2
+               ENDIF
+               JB = IRKB(JL)
 C
-          IF(JRKB.EQ.0) THEN
-            JRKB = 1
-            NXYZM2 = (LLM2*(LLM2+1))/2
-            NLMM2  = 2*LLM2-1
-            KXYZM2 = IRED(1,LLM2)                            
-            KRKB   = KXYZ + KXYZM2
-            IM2    = IOFF + KXYZ
-            LM2F   = NHKOFF(LLM2)
-            CALL DZERO(CRED(IOFF+1),KRKB*KLMM2)
-C
-C           First extract spherical transformation matrix 
-C           for L-2 partner
-            JM2    = ICSP(LLM2)
-            CALL EXTELM('N',CSPH(JM2+1) ,NXYZM2,NLMM2,
-     &                      CRED(IM2+1),KRKB,KXYZM2,KLMM2,
-     &                      IFUN(LM2F+1,1),IFUN(LM2F+1,2))
-C
-C           Then fill in corresponding number for r**2
-C
-            DO K = 1,KXYZM2
-              IJ = IFUN(LM2F+K,1)
-              IA = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
-              IB = IJ - IA*(IA-1)/2
-C**           x**2: (ia  ,ib  )
-              IJX  = (IA*(IA-1))/2 + IB
-              KOFF = IOFF + IFUN(LOFF+IJX,3)
-              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                            CRED(KOFF),KRKB)
-C**           y**2: (ia+2,ib  )
-              IJY = ((IA+2)*(IA+1))/2 + IB
-              KOFF = IOFF + IFUN(LOFF+IJY,3)
-              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                            CRED(KOFF),KRKB)
-C**           z**2: (ia+2,ib+2)
-              IJZ = ((IA+2)*(IA+1))/2 + IB + 2
-              KOFF = IOFF + IFUN(LOFF+IJZ,3)
-              CALL DAXPY(KLMM2,D1,CRED(IM2+K),KRKB,
-     &                            CRED(KOFF),KRKB)
-            ENDDO
-C
-C           Scale matrix for L-2 partner
-C
-            FAC =  D6-D4*SDPRE(LL)
-            KOFF = IM2+1
-            DO K = 1,KLMM2
-              CALL DSCAL(KXYZM2,FAC,CRED(KOFF),1)
-              KOFF = KOFF + KRKB
-            ENDDO
-C
-C           Normalize...
-C
-            KOFF = IOFF+1
-            DO J = 1,KLMM2
-              FAC = D1/DNRM2(KRKB,CRED(KOFF),1)
-              CALL DSCAL(KRKB,FAC,CRED(KOFF),1)
-              KOFF = KOFF + KRKB
-            ENDDO
-            IF(IPRINT.GE.4) THEN
-              WRITE(LUPRI,'(A)') '* RKB part:'
-              CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
-     &                                   KRKB,KLMM2,1,LUPRI)
-            ENDIF
-            IOFF = IOFF + KRKB*KLMM2
-          ENDIF
-          JB = IRKB(JL)
-C
-C         Copy extra functions for L
+C              Copy extra functions for L
 C            
-          IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
-          IRM2 = IPTSYM(IRM2,IREP) - ISOFF
-          KOFF = IRED(3,LL)+KXYZ*KLM+1
-          DO J = 1,KLMM2
-            CALL DCOPY(KXYZ,CRED(KOFF),1,
+               IRM2 = NSTRT(JB) + IFUN(LM2F+1,1)
+               IRM2 = IPTSYM(IRM2,IREP) - ISOFF
+               KOFF = IRED(3,LL)+KXYZ*KLM+1
+               DO J = 1,KLMM2
+                  CALL DCOPY(KXYZ,CRED(KOFF),1,
      &                 TMAT(IROW,ICOL+J),1)   
-            KOFF = KOFF + KXYZ
-            CALL DCOPY(KXYZM2,CRED(KOFF),1,
+                  KOFF = KOFF + KXYZ
+                  CALL DCOPY(KXYZM2,CRED(KOFF),1,
      &                 TMAT(IRM2,ICOL+J),1)   
-            KOFF = KOFF + KXYZM2
-          ENDDO
-          IROW = IROW + KXYZ
-          ICOL = ICOL + KLMM2
-        ENDIF
-   10 CONTINUE
+                  KOFF = KOFF + KXYZM2
+               ENDDO
+               IROW = IROW + KXYZ
+               ICOL = ICOL + KLMM2
+            ENDIF
+ 15      CONTINUE
+ 10   CONTINUE
 C
 C     Final print section
 C
       IF(IPRINT.GE.3) THEN
-        CALL PRSYMB(LUPRI,'-',40,0)
-        CALL OUTPUT(TMAT,1,NCAR,1,ICOL,NCAR,ICOL,1,LUPRI)
+         CALL PRSYMB(LUPRI,'-',40,0)
+         CALL OUTPUT(TMAT,1,NCAR,1,ICOL,NCAR,ICOL,1,LUPRI)
       ENDIF
 C
 C*********************************************************
@@ -2677,22 +2693,22 @@ C
       NZC = 1
       NZD = 1
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
-     &            SMAT,LDM ,NCAR,NZA,IPQTOQ(1,0),
-     &            VMAT,LDM ,NSPH,NZB,IQBF,
-     &            TMAT,NCAR,NSPH,NZC,IPQTOQ(1,0),
-     &            TMAT,NCAR,NSPH,NZD,IPQTOQ(1,0),
-     &            WORK,LWORK,IPRINT)
+     &     SMAT,LDM ,NCAR,NZA,IPQTOQ(1,0),
+     &     VMAT,LDM ,NSPH,NZB,IQBF,
+     &     TMAT,NCAR,NSPH,NZC,IPQTOQ(1,0),
+     &     TMAT,NCAR,NSPH,NZD,IPQTOQ(1,0),
+     &     WORK,LWORK,IPRINT)
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
-     &            EIG,WORK,LWORK)
+     &     EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
-     &           SMAT,LDM,D0,VMAT,LDM)
+     &     SMAT,LDM,D0,VMAT,LDM)
       NA = NCAR - NSPH
       NB = NSPH - NEFF 
       ND = NA + NB
       WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A)') 
-     &           COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &           '(Proj: ',NA,', Lindep: ',NB,')'
-C
+     &     COMP(IC),REP(IREP),'* Deleted: ',ND,
+     &     '(Proj: ',NA,', Lindep: ',NB,')'
+C     
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

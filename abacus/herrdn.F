@@ -515,6 +515,7 @@ C
 #include <symmet.h>
 #include <aosotr.h>
 #include <infpar.h>
+#include <dcbrkb.h>
 #ifdef PRG_DIRAC
 #include <dcbgen.h>
 #else
@@ -522,6 +523,7 @@ C
 #endif
 #include <ibtfun.h>
       ZMAT = .FALSE.
+      CALL IZERO(IRKB,MXPRIM)
 C
 C*****************************************************************************
 C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
@@ -1483,7 +1485,7 @@ C
      &            DOOWN)
 C
       WRITE(6,*) 'jth: ',dirac,isphtr,dircon,molfcon
-      IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT. DIRCON )
+      IF (DIRAC.AND.ISPHTR.EQ.3)
      $     CALL RKBREL(IPREAD)
 C
       RETURN
@@ -3230,7 +3232,9 @@ C*****************************************************************************
      *      'No orbitals in symmetry',REP(LA-1),'(',LA,')'
         END IF
   10  CONTINUE
-      IF (IPREAD .GT. 10) THEN
+      write(6,*) 'ipread',ipread
+      IF (.true.) THEN
+c      IF (IPREAD .GT. 10) THEN
          WRITE(LUPRI,'(10X,A,/)') 'Symmetry pointer indices'
          WRITE(LUPRI,'(4X,8I4)')
      &      ((IPTSYM(I,J),J = 0,MAXREP),I=1,NORBS)
@@ -5878,8 +5882,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
       SUBROUTINE KINBAL(I,IBLL,IBLS,
-     &              IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+     &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
 C*****************************************************************************
 C
 C      Generate small component functions from large using the
@@ -6053,57 +6057,118 @@ C******************************************************************************
 C
       IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)') 
      &   'RKBREL: Constructing relations for scalar RKB transformation'
-      CALL IZERO(IRKB,KMAX)
-      NRKB  = 0
-      NXYZ  = 0
-      INUM1 = 0
-      DO ISHL = 1, NLRGSH 
+      CALL IZERO(IRKB,MXPRIM)
 C
-C     Search for S component functions that matches this
-C     L component function.
-C         
+C     New code for generating RKBREL.
+C     This should also work for contracted large component basis set.
+C
+C     Loop over large component shells.
+C     For contracted basis sets, the same primitives are present in many
+C     shells, and we skip shells with the same primitives.
+C     A potential problem arises if you block a contracted basis set.
+C
+C
+      iPrimSmallTest = 0
+      iPrimLargeTest = 0
+C
+      DO 100 ISHL = 1, NLRGSH 
+C
         NCENTL = NCENT(ISHL)
         NHKTL  = NHKT(ISHL)
-        PRIEXL = PRIEXP(ISHL)
-        ISH2M = 0
-        DO ISHS = NLRGSH+1, KMAX
-        IF(NCENT(ISHS).EQ.NCENTL) THEN
-          IF(DABS(PRIEXP(ISHS)-PRIEXL).LT.SML) THEN
 C
-C           L-1 small function....
+        iPrimLargeStart = JSTRT(ISHL) + 1
+        iPrimLargeEnd   = JSTRT(ISHL) + NUCO(ISHL)
 C
-            IF(NHKT(ISHS).EQ.NHKTL-1) THEN
-              IF(ISH2M.NE.0) CALL QUIT
-     &          ('RKBREL:Error, two identical functions')
-              ISH2M = ISHS
-            ENDIF
+C       Skip primitives we've already processed.
 C
-C           L+1 small function....
+        IF (iPrimLargeStart .EQ. iPrimLargeTest) GO TO 100
+        iPrimLargeTest = iPrimLargeStart
 C
-            IF(NHKT(ISHS).EQ.NHKTL+1) THEN
-              IRKB(ISHL) = ISH2M
-              IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
-                WRITE(LUPRI,'(A)') 
-     &      'S Component Function with no Partner at L-2'
-                CALL QUIT('S Component Function'// 
-     &                    ' with no Partner at L-2')
-              ELSE
-                IRKB(ISHS) = ISHL
-              ENDIF
-            ENDIF
-          ENDIF
-        ENDIF
-        ENDDO
-CTROND        IF (IRKB(ISHL).EQ.0) THEN
-CTROND          WRITE(LUPRI,'(A)') 
-CTROND     &        'Error, No partner for this function.'
-CTROND          CALL QUIT('Error, No partner for this function.')
-CTROND        ENDIF
-      ENDDO
-CTROND      IF (IPRINT.GE.3) THEN
-CTROND         WRITE(LUPRI,'(A8,3A5)') 'RKBREL: ',' L sh',' S-sh',' S+sh'
-CTROND         WRITE(LUPRI,'(8X,3I5)') (I,IRKB(I),IRKB(IRKB(I)),I=1,NLRGSH)
-CTROND      ENDIF
+C       Loop over primitives in this shell.
+C
+        DO 200 IPRIML = iPrimLargeStart, iPrimLargeEnd
+           PRIEXL = PRIEXP(IPRIML)
+           write(6,*) ' 200    : L prim',PRIEXL,NHKTL
+C
+           ISH2M = 0
+C
+C          Loop over small component shells
+C          Find matching small component basis functions.
+C
+           DO 300 ISHS = NLRGSH+1, KMAX
+              NCENTS = NCENT(ISHS)
+              NHKTS  = NHKT(ISHS)
+C
+C             Must be on same atomic center.
+C
+              IF ( NCENTS .NE. NCENTL ) GO TO 300
+C
+              iPrimSmallStart = JSTRT(ISHS) + 1
+              iPrimSmallEnd   = JSTRT(ISHS) + NUCO(ISHS)
+C
+C             Skip primitives we've already processed.
+C
+              IF ( iPrimSmallStart .EQ. iPrimSmallTest) GO TO 300
+              iPrimSmallTest = iPrimSmallStart
+C
+C             Loop over primitives.
+C
+              DO 400 IPRIMS = iPrimSmallStart, iPrimSmallEnd
+C
+                 PRIEXS = PRIEXP(IPRIMS)
+                 write(6,*) '   400  : S prim',PRIEXS,NHKTS
+C
+                 IF ( ABS ( PRIEXS - PRIEXL ) .LT. SML ) THEN
+C
+C
+C                   We've got a match: same center, same exponent
+C
+C
+C                   L-1 small function....
+C
+                    IF(NHKTS.EQ.NHKTL-1) THEN
+C
+C                      Check for two identical functions.
+C                      This should never happen, since GENSML deletes
+C                      functions it already know.
+C
+                       IF(ISH2M.NE.0) CALL QUIT
+     &                      ('RKBREL:Error, two identical functions')
+C
+C                      Note that we use ISHS and not IPRIMS, since RKBLOW
+C                      in dirone.F wants shell number, and not primitive
+C                      number.
+C
+                       ISH2M = ISHS + (IPRIMS - iPrimSmallStart)
+                    ENDIF
+C
+C                   L+1 small function....
+C
+                    IF(NHKTS.EQ.NHKTL+1) THEN
+                       write(6,*) '     hit...',IPRIML,IPRIMS,ISH2M
+                       IRKB(IPRIML) = ISH2M
+                       IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
+                          WRITE(LUPRI,'(A)') 
+     &                         'S Component Function with' //
+     $                         'no Partner at L-2'
+                          CALL QUIT('S Component Function'// 
+     &                         ' with no Partner at L-2')
+                       ELSE
+                          IRKB(IPRIMS) = IPRIML
+                       ENDIF
+                    ENDIF
+                 ENDIF
+ 400          CONTINUE
+ 300       CONTINUE
+ 200    CONTINUE
+ 100  CONTINUE
+C
+      write(6,*) 'new code'
+      DO I = 1,NPSHEL
+         WRITE(6,'(A,I3,A,I3)') 'IRKB(',I,') = ',IRKB(I)
+      END DO
+C
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
