@@ -2958,6 +2958,7 @@ CTROND
         GBUF(I) = GNUEXP(I)
         GNUEXP(I) = 0.0D0
       ENDDO
+      call quit('TSCORR not properly implemented in this version')
       CHARGE(1) = -0.1812D0
       CHARGE(2) = -0.0832D0
 C
@@ -3847,7 +3848,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PR1CEX2 */
       SUBROUTINE PR1CEX2 (NB,IREP,FOCK,PROJ,BUF1,IPRINT)
 C***********************************************************************
-******
 C     Correct for neglect of multicenter integrals in SO matrix
 C
 C     A basis function |q> can be projected on the set of functions
@@ -3951,7 +3951,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PR1CEX3 */
       SUBROUTINE PR1CEX3 (NB,IREP,DENS,PROJ,BUF1,IPRINT)
 C***********************************************************************
-******
 C     Correct for neglect of multicenter integrals in SO matrix
 C     Note that this routines resembles PR1CEX2 that is used for
 C     Fock matrix (contributions). This one is good for densities
