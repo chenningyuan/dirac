@@ -281,6 +281,14 @@ C
          NAOCC(IFRP) = NOCC(IFRP) - NSPC(IFRP,0)
          NAOCCT = NAOCCT + NAOCC(IFRP)
       ENDDO
+C        
+C     number of inactive occupied
+C    
+      NIOCCT=0
+      DO IFRP = 1, NFSYM
+         NIOCC(IFRP) = NOCC(IFRP) - NAOCC(IFRP)
+         NIOCCT = NIOCCT + NIOCC(IFRP)
+      ENDDO
 C
 C     number of active virtuals
 C     
