@@ -1355,10 +1355,10 @@ C     respect to a set of reference orbitals
 C
       IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
-        N2TMOT = 0
+        N2TMOTQ = 0
         DO IFRP = 1,NFSYM
-          I2TMOT(IFRP) = N2TMOT
-          N2TMOT = N2TMOT + NTMO(IFRP)*NTMO(IFRP)*NZ
+          I2TMOT(IFRP) = N2TMOTQ
+          N2TMOTQ = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
           NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
         ENDDO
         CALL SETDC2(0)
