@@ -39,6 +39,10 @@ usage () {
    $echo '\tChoose which tests to run'
    $echo '--pampath="path to pam script"'
    $echo '\tSet path to pam script'
+   $echo '--dirac="executable"'
+   $echo '\tSpecify which dirac.x should be used'
+   $echo '--run="tag"'
+   $echo '\tLabel the output (default out)'
    $echo '--mpi="number of slaves"'
    $echo '\tRun test in parallell under MPI'
    $echo
@@ -47,6 +51,8 @@ usage () {
 arg_quick=0
 arg_tests=
 arg_pampath=
+arg_dirac=
+arg_tag=
 arg_mpi=
 
 while [ $# != 0 ]; do
@@ -98,6 +104,22 @@ while [ $# != 0 ]; do
          fi
          arg_mpi="-mpi $val"
          ;;
+      "dirac")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_dirac="$val"
+         ;;
+      "run")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_tag="$val"
+         ;;
       "pampath")
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
@@ -136,6 +158,25 @@ echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# CREATE HTML HEADER IF NCESSARY
+#
+if [ ! -f ${arg_tag}_dif.htm ]; then
+   cat <<\eor > ${arg_tag}_dif.htm
+<HTML>
+<TITLE> Error report for DIRAC test runs </TITLE>
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
+<PRE>
+<H1>drep output by color</H1>
+
+<p>The colors are determined using relative errors for numbers larger than 0.001, and absolute errors otherwise.</p>
+<p>Only those digits that actually differ are yellow or red, the others are white.</p>
+<p>The coloring scheme used:</P>
+1.23456789  white: difference can be neglected (less than 1e-12)
+1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
+1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
+
+eor
+fi
 #
 #
 # RUN THE REQUESTED TESTS
@@ -165,5 +206,13 @@ for tt in $tests; do
    ( cd $tt; \
      PAM_PATH=$arg_pampath; export PAM_PATH; \
      MPIARG=$arg_mpi; export MPIARG; \
+     DIRAC=$arg_dirac; export DIRAC; \
+     TAG=$arg_tag; export TAG; \
      ./run.sh)  
 done
+#
+if [ ! -z $htmsetup ]; then
+   cat <<\eor >> ${arg_tag}_dif.htm
+
+eor
+fi

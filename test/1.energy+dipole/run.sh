@@ -1,4 +1,9 @@
 #!/bin/ksh
+#
+# Set up calculation
+#
+MENU=ccsd
+MOL=H2O
 if [ -z "$PAM_PATH" ]; then
    PAM_PATH=`which pam`
    if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
@@ -8,4 +13,30 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG H2O ccsd
+if [ -z "$DIRAC" ]; then
+   DIRAC=`which dirac.x`
+fi
+if [ -z "$TAG" ]; then
+   TAG=out
+fi
+NEWOUT=${MENU}_${MOL}.${TAG}
+OLDOUT=${MENU}_${MOL}.out 
+#
+# Run calculation
+#
+time $PAM_PATH/pam -dirac $DIRAC -run $TAG -rmwrk -rmscr $MPIARG $MOL $MENU
+#
+# Generate reports
+#
+../crep  result/$OLDOUT result/filter >result/$OLDOUT.rep
+../crep  $NEWOUT result/filter >$NEWOUT.rep
+#
+# Generate differences
+#
+../bdrep $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.txt
+../drep  $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.htm
+#
+# Add on to grand total of differences
+#
+../hdrep  $NEWOUT.rep result/$OLDOUT.rep >>../${TAG}_dif.htm
+cat ${NEWOUT}_dif.txt >>../${TAG}_dif.txt
