@@ -245,7 +245,7 @@ C
          JMAXM = 1
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.29) THEN
+      ELSE IF (INTTYP .EQ.29 .OR. INTTYP.EQ.58) THEN
          JMAXD = 0
          JMAXM = 0
          DONUC1= .FALSE.
@@ -325,6 +325,7 @@ C
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
+C     type 45 already defined
       ELSE IF (INTTYP .EQ.46) THEN
          JMAXD  = 0
          JMAXM  = 1 + IORDER
@@ -366,21 +367,16 @@ C
          DONUC1 = .TRUE.
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.54) THEN
+      ELSE IF (INTTYP .EQ. 54) THEN
          JMAXD  = 0
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.55) THEN
+      ELSE IF (INTTYP .EQ. 55) THEN
          JMAXD = 0
          JMAXM = 1
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.62) THEN
-         JMAXD = 0
-         JMAXM = 0
-         DONUC1 = .FALSE.
-         DOMOM1 = .FALSE.
       ELSE IF (INTTYP .EQ.56) THEN
          JMAXD = 0
          JMAXM = 0
@@ -391,6 +387,14 @@ C
          JMAXM = 0
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
+C     type 58 already defined (NUCFIEL)
+      ELSE IF (INTTYP .EQ. 62) THEN
+         JMAXD = 0
+         JMAXM = 0
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
+      ELSE
+         CALL QUIT('PR1DR1: Unknown INTTYP')
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -677,7 +681,7 @@ C
      &                    .OR. (INTTYP .EQ. 26)
      &                    .OR. (INTTYP .EQ. 27)
      &                    .OR. (INTTYP .EQ. 28)
-     &                    .OR. (INTTYP .EQ. 29)
+     &                    .OR. (INTTYP .EQ. 29) .OR. (INTTYP .EQ. 58)
      &                    .OR. (INTTYP .EQ. 30)
      &                    .OR. (INTTYP .EQ. 31)
      &                    .OR. (INTTYP .EQ. 35)
@@ -712,11 +716,13 @@ C
          IF (INTTYP .EQ. 55) JMAX = JMAX + 2
          IF (INTTYP .EQ. 56) JMAX = JMAX + 4
          IF (INTTYP .EQ. 57) JMAX = JMAX + 4
+         IF (INTTYP .EQ. 58) JMAX = JMAX + 1
          MULCHA = (INTTYP .EQ. 5) .OR. (INTTYP .EQ. 19)
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
      &                            .OR. (INTTYP .EQ. 25)
      &                            .OR. (INTTYP .EQ. 54)
+     &                            .OR. (INTTYP .EQ. 58)
          ISTEPU = JMAX + 1
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
@@ -746,7 +752,6 @@ C
             END IF
   300       CONTINUE
          END IF
-      ELSE
       END IF
 C
 C     *****************************************
@@ -832,7 +837,7 @@ C
      &                  IPRINT,INTADR)
          ELSE IF (INTTYP .EQ. 29) THEN
             CALL EFTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
-     &                  NELMNT,NOPTYP,ANTI,IPRINT)
+     &                  NELMNT,NOPTYP,ANTI,IPRINT,INTTYP)
          ELSE IF (INTTYP .EQ. 30 .OR. INTTYP .EQ. 31) THEN
             CALL EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
@@ -962,7 +967,7 @@ C
      &    .OR. (INTTYP.EQ.51) .OR. (INTTYP.EQ.52)
       ADDNAI = (INTTYP.EQ. 5) .OR. (INTTYP.EQ.19) .OR. (INTTYP.EQ.20)
      &     .OR. (INTTYP.EQ.24) .OR. (INTTYP.EQ.25) .OR. (INTTYP.EQ.51)
-     &     .OR. (INTTYP.EQ.54)
+     &     .OR. (INTTYP.EQ.54) .OR. (INTTYP.EQ.58)
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -1018,7 +1023,8 @@ C
      &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
      &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
-     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57)) THEN
+     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57) .OR.
+     &            (INTTYP .EQ. 58)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -1078,7 +1084,7 @@ C
      &                       .OR. (INTTYP .EQ. 26)
      &                       .OR. (INTTYP .EQ. 27)
      &                       .OR. (INTTYP .EQ. 28)
-     &                       .OR. (INTTYP .EQ. 29)
+     &                       .OR. (INTTYP .EQ. 29) .OR. (INTTYP .EQ. 58)
      &                       .OR. (INTTYP .EQ. 30)
      &                       .OR. (INTTYP .EQ. 31)
      &                       .OR. (INTTYP .EQ. 35)
@@ -1102,7 +1108,9 @@ C
                DIFCPX = CORCX(IATOMC) - CORPX
                DIFCPY = CORCY(IATOMC) - CORPY
                DIFCPZ = CORCZ(IATOMC) - CORPZ
-               IF((INTTYP.EQ.54).AND.(ABS(GEXP(IATOMC)).GT.GNUTHR)) THEN
+               IF((INTTYP.EQ.54 .OR. INTTYP.EQ.58)
+     &            .AND.(ABS(GEXP(IATOMC)).GT.GNUTHR)) THEN
+C                 58: NUCFIEL
                   EXPFAC = GEXP(IATOMC)
                   EXPFAC = EXPFAC/(EXPFAC + EXPP)
                   EXPPGN = EXPP*EXPFAC
@@ -1328,12 +1336,13 @@ C
             CALL NSNLIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
 C
-C        Electric field from the individual nuclei
-C        -----------------------------------------
+C        Electric field from the individual nuclei (type 29)
+C        or from all nuclei (type 58)
+C        ---------------------------------------------------
 C
-         ELSE IF (INTTYP .EQ. 29) THEN
+         ELSE IF (INTTYP .EQ. 29 .OR. INTTYP .EQ. 58) THEN
             CALL EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
-     &                  SHLINT,NOPTYP,NATOMC)
+     &                  SHLINT,NOPTYP,NATOMC,INTTYP)
 C
 C        Electric field gradient from the individual nuclei
 C        --------------------------------------------------
@@ -3318,7 +3327,7 @@ c     CALL OUTPUT(SHLINT,1,KCKTAB,1,NOPTYP,KCKTAB,NOPTYP,1,6)
       END
 C  /* Deck ef1int */
       SUBROUTINE EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
-     &                  NOPTYP,NATOMC)
+     &                  NOPTYP,NATOMC,INTTYP)
 C
 C     Nuclear electric field integrals
 C
@@ -3353,8 +3362,18 @@ C
                DO 400 IT = 0, MAXT
                   ET = ODC(LVALA,LVALB,IT,0,0,1)
                   EEE = ET*EU*EV
-                  IOFF = 0
-                  DO 500 IATOM = 1, NATOMC
+                  IF (INTTYP .EQ. 58) THEN
+C                 ... total field from all nuclei
+                     AH0T = AHGTF(IADRAU + IT + 1)
+                     AH0U = AHGTF(IADRAU + IT + ISTEPU)
+                     AH0V = AHGTF(IADRAU + IT + ISTEPV)
+                     SHLINT(INT,1) = SHLINT(INT,1) - EEE*AH0T
+                     SHLINT(INT,2) = SHLINT(INT,2) - EEE*AH0U
+                     SHLINT(INT,3) = SHLINT(INT,3) - EEE*AH0V
+                  ELSE
+C                 ... (INTTYP 29): field from individual nuclei
+                    IOFF = 0
+                    DO 500 IATOM = 1, NATOMC
                      IX = 3*(IATOM - 1) + 1
                      IY = 3*(IATOM - 1) + 2
                      IZ = 3*(IATOM - 1) + 3
@@ -3365,7 +3384,8 @@ C
                      SHLINT(INT,IY) = SHLINT(INT,IY) - EEE*AH0U
                      SHLINT(INT,IZ) = SHLINT(INT,IZ) - EEE*AH0V
                      IOFF = IOFF + NAHGTF
- 500              CONTINUE
+ 500                CONTINUE
+                  END IF
  400           CONTINUE
                IADRAU = IADRAU + ISTEPU
  300        CONTINUE

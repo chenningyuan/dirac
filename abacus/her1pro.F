@@ -271,7 +271,7 @@ C
 #include "mxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 57)
+      PARAMETER (NTABLE = 58)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -299,7 +299,7 @@ C
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
      &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
-     &            'EFTNTL '/
+     &            'EFTNTL ', 'NUCFIEL'/
 C
 #include "ibtfun.h"
 C
@@ -316,7 +316,7 @@ C
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57), I
+     &             49,50,51,52,53,54,55,56,57,58), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1388,6 +1388,28 @@ C
          NOPTYP = 15
          CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL EFTTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM,.FALSE.)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C     NUCFIEL: Total electric field from POTNUC
+C     -----------------------------------------
+C     (compare type 29, NEFIELD)
+C
+ 58   CONTINUE
+         INTTYP = 58
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &        'Calculation of total electric field strength'
+         NOPTYP = 3
+         CALL NTYPTS(NOPTYP)
+         DO I = 1,NUCIND
+            DOATOM(I) = .TRUE.
+         END DO
+         LABINT(1) = 'XNUCFIEL'
+         LABINT(2) = 'YNUCFIEL'
+         LABINT(3) = 'ZNUCFIEL'
+         INTREP(1) = ISYMAX(1,1)
+         INTREP(2) = ISYMAX(2,1)
+         INTREP(3) = ISYMAX(3,1)
          ANTI = .FALSE.
       GOTO 200
 C
