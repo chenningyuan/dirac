@@ -51,10 +51,10 @@
 
 {
 
+#if defined (VAR_MPI)
+
    int len;
    char *errorstring;
-
-#if defined (VAR_MPI)
 
 #if defined (SYS_AIX)
 
