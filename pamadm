@@ -1,5 +1,11 @@
 #! /bin/csh -f
 #
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : pamadm
+# SOURCE  : $Source$
+#
+#
 #   $Id$
 #
 #   Master script for administrator of DIRAC
@@ -158,6 +164,7 @@ echo PARFLG=$PARTAR >> configure
 #
 #
 cat configure.in >> configure
+chmod +x configure
 set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ"
 set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK"
 #
