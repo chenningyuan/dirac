@@ -290,7 +290,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pretwo */
+C  /* Deck Twoprp */
       SUBROUTINE TWOPRP(WORK,LWORK)
 C*****************************************************************************
 C
@@ -304,23 +304,24 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
+#if defined (MOD_ERI)
+#include "cbieri.h"
+#endif
 #include "dcbind.h"
 #include "dcbbas.h"
 #include "hrunit.h"
       DIMENSION WORK(LWORK)
-C
-C     Initialize COMMON BLOCKS
-C     ========================
-C
-      CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-C
-C     Initialize HRUNIT
-C     =================
-C
       LUINTA = 11
-      LUSUPM = 17
-      LUDASP = 24
-      LUSOL  = 49
+#if defined (MOD_ERI)
+      IF(.NOT.RUNERI) THEN
+#endif
+        LUSUPM = 17
+        LUDASP = 24
+        LUSOL  = 49
+        CALL PAOVEC(WORK,LWORK,0,IPRTWO)
+#if defined (MOD_ERI)
+      ENDIF
+#endif
 C
 C     Define bit packing
 C     ==================
@@ -1532,12 +1533,9 @@ C
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
       DIMENSION IREPA(*),WORK(LWORK)
-C
+C     Undifferentiated integrals written on file
+      INTTYP = 0
       NCHUNK = 600
-      IRNTYP = 0
-      MAXDIS = 1
-      MAXDIF = 0
-      JATOM  = 0
 C
 C     Make array of boson irrep for each basis function
 C
@@ -1565,16 +1563,10 @@ C
 C       Generate integrals
 C
         I2TYP = 1
-        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
-        IF(IPRTWO.GE.2)
-     +     WRITE(LUPRI,'(1P,A,D9.2)') 'LL-int - threshhold:',THRS
+CTROND        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWLL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
@@ -1612,21 +1604,13 @@ C
 C       Generate integrals
 C
         I2TYP  = 2
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(1)
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
-        CALL OPNFIL(LUINTA,'DFTWSL','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWSL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
-        THRS = THRBUF
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
 C
@@ -1666,21 +1650,13 @@ C
 C       Generate integrals
 C
         I2TYP  = 3
-        THRBUF = THRS
-        THRS   = THRS*THRFAC(2)
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
-        CALL OPNFIL(LUINTA,'DFTWSS','UNKNOWN','TWOGE1')          
+        CALL GPOPEN(LUINTA,'DFTWSS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
         CALL TIMER('START ',TIMSTR,TIMEND)
-        CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
-     &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
-     &              .TRUE.,.TRUE.,.FALSE.,TKTIME,IPRTWO,
-     &              IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,IDUM,I2TYP,
-     &              IDUM,IDUM,DUM,DUM,DUM,IDUM,.TRUE.,
-     &              IDUM,DUM)
+        CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
         CALL TIMER('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
-        THRS = THRBUF
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
  40   CONTINUE
@@ -4320,5 +4296,87 @@ C
 C
       CALL MEMREL('MKDRQO',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('MKDRQO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Twodrv */
+      SUBROUTINE TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     General driver for the calculation of two-electron integrals
+C     by either the ERI or the HERMIT code
+C
+C     INTTYP:
+C        0 - Undifferentiated integrals written on file
+C
+C     Written by T. Saue, Nov 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "aovec.h"
+C
+#if defined (MOD_ERI)
+#include "cbieri.h"
+#endif
+#include "cbihr2.h"
+#include "ccom.h"
+#include "dgroup.h"
+C
+      LOGICAL NODV,NOPV,NOCONT,RELCAL
+      DIMENSION WORK(LWORK)
+      CHARACTER CINT(3)*2
+      DATA CINT/'LL','SL','SS'/
+C      DIMENSION WORK(LWORK),FMAT(*),DMAT(*),IREPDM(*),IFCTYP(*),
+C     &          INDX(2,*),INDXAB(*),DINTSKP(*),GABRAO(*),
+C     &          DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
+C
+#include "memint.h"
+C
+#if defined (MOD_ERI)
+      IF(RUNERI) THEN
+C.......Allocate:
+C       CCFBT - normalized contractin coefficients
+        CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
+C       INDXBT - orbital indices for AO batches
+        CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
+        CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+#endif
+C.......Undifferentiated integrals written on file
+        IF(INTTYP.EQ.0) THEN
+          NDMAT  = 1
+          THRBUF = THRS
+          IF(I2TYP.EQ.2) THRS = THRS*THRFAC(1)
+          IF(I2TYP.EQ.3) THRS = THRS*THRFAC(2)
+          IF(IPRINT.GE.2) THEN
+            WRITE(LUPRI,'(1P,A2,A,D9.2)') 
+     &         CINT(I2TYP),'-int - threshhold:',THRS
+          ENDIF
+        ENDIF
+        MAXDIS = 1
+        MAXDIF = 0
+        JATOM  = 0
+        NODV   = .TRUE.
+        NOPV   = .TRUE.
+        NOCONT = .FALSE.
+        RELCAL = .TRUE.
+        ISHLA  = 0
+        CALL TWOINT(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,GMAT,
+     &               INDX,INDXAB,INTTYP,MAXDIF,JATOM,NODV,
+     &               NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
+     &               IPRNTD,RTNTWO,ISHLA,I2TYP,ICEDIF,SCREEN,
+     &               GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,
+     &               INDEX,TIMES)
+        IF(INTTYP.EQ.0) THEN
+          THRS = THRBUF 
+        ENDIF
+#if defined (MOD_ERI)
+      ENDIF
+#endif
+C
       RETURN
       END
