@@ -1,0 +1,694 @@
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mp2inp */
+      SUBROUTINE MP2INP(WORD,WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for MP2-module
+C
+C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxorb.h>
+      PARAMETER (NTABLE = 15)
+C
+      LOGICAL SET, NEWDEF
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*2 WS
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbmp2.h>
+#include <dcbmpt.h>
+      DIMENSION WORK(LWORK),IR(2,2)
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','.MSOUT ',
+     &            '.POSITR','.SCHEME','.THROUT','.SPECIA','.VIRTHR',
+     &            '.IJTSK ','.SCLMEM','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+#include <memint.h>
+C
+      IF (SET) RETURN
+      SET = .TRUE.
+CTROND
+      WRITE(LUPRI,'(A)') '* Inside MP2'
+CTROND
+C
+C     Initialize /DCBTRA/
+C     ===================
+C
+      ISTRMP2 = 2
+      IPRMP2 = 0
+      ILLINT = 1
+      ILSINT = 1
+      ISSINT = 1
+      THROUT = 1.D-16
+C     Default orbital strings is all occupied and all virtuals 
+      DO I = 1,NFSYM
+        MP2_INDSTR(1,I) = ' '
+        MP2_INDSTR(2,I) = ' '
+        IF(NOCC(I).GT.0) THEN
+          WRITE(MP2_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NOCC(I)
+        ENDIF
+        WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
+      ENDDO
+      MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+      MP2_ANTIS  = .TRUE.
+      MP2_MSOUT  = .FALSE.
+      NOPAIR = .TRUE.
+      TESTLS = .FALSE.
+      TESTSL = .FALSE.
+      DMP2_VIRTHR = -1d20
+      IJTSK = 0
+      MAXSCL = 0
+C
+C     Process input for MP2CAL
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*MP2CAL')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                    11,12,13,14,15), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in MP2INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in MP2INP.')
+    1          CONTINUE
+C&&&& PRINT - print level in MP2 module
+                  READ(LUCMD,*) IPRMP2
+               GO TO 100
+    2          CONTINUE
+C&&&& String of active occupied pairs in MP2 module
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') MP2_INDSTR(1,I)
+                  ENDDO
+               GO TO 100
+    3          CONTINUE
+C&&&& String of active virtual pairs in MP2 module
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') MP2_INDSTR(2,I)
+                  ENDDO
+               GO TO 100
+    4          CONTINUE
+C&&&& Integral classes not included in 4-index transformation
+                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+               GO TO 100
+    5          CONTINUE
+C&&&& Write 4-index transformed integrals to file
+                  MP2_MSOUT = .TRUE.
+               GO TO 100
+    6          CONTINUE
+C&&&& POSITR: Allow positronic orbitals
+                  NOPAIR = .FALSE.
+               GO TO 100
+    7          CONTINUE
+C&&&& SCHEME - Choose transformation scheme
+                  READ(LUCMD,*) ISTRMP2
+               GO TO 100
+    8          CONTINUE
+C&&&& THROUT - Treshold for output integrals
+                  READ(LUCMD,*) THROUT
+               GO TO 100
+    9          CONTINUE
+C&&&& SPECIAL: Mostly for testing
+C
+C   'LS' gives the (LL|SS) contribution to the MP2 energy
+C   'SL' gives the (SS|LL) contribution to the MP2 energy
+C
+                  READ(LUCMD,'(A2)') WS
+                  IF (WS.EQ.'LS') THEN
+                     TESTLS = .TRUE.
+                  ELSEIF (WS.EQ.'SL') THEN
+                     TESTSL = .TRUE.
+                  ELSE
+                     CALL QUIT('Unrecognized in .SPECIAL, MP2...')
+                  ENDIF
+               GO TO 100
+   10          CONTINUE
+C&&&& VIRTHR: Only include Kramers pairs with energy below
+C     threshold in Virtual space.
+               READ(LUCMD,'(F20.5)') DMP2_VIRTHR
+               GO TO 100
+   11          CONTINUE
+C&&&& IJTSK: Max number of active I (and J) Kramers
+C     pairs in each task.
+               READ(LUCMD,*) IJTSK
+               GO TO 100
+   12          CONTINUE
+C&&&& SCLMEM: Max internal memory available for scalar integrals
+               READ(LUCMD,*) MAXSCL
+               GO TO 100
+   13          CONTINUE
+               GO TO 100
+   14          CONTINUE
+               GO TO 100
+   15          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in MP2INP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in MP2INP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DOMP2) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 
+     &   'MP2INP: Set-up for RMP2 calculation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRMP2
+      IF(TESTLS) THEN
+         ILLINT = 0
+         ISSINT = 0
+         ILSINT = 1
+         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+         WRITE(LUPRI,'(1X,A)') 
+     +     '* Testing (LL|SS) ONLY in MP2.'
+      ENDIF
+      IF(TESTSL) THEN
+         ILLINT = 0
+         ISSINT = 0
+         ILSINT = 1
+         MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+         WRITE(LUPRI,'(1X,A)') 
+     +     '* Testing (SS|LL) ONLY in MP2.'
+      ENDIF
+C
+      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LL Integrals Not included.'
+      IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LS Integrals Not included.'
+      IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* SS Integrals Not included.'
+      IF (IJTSK.GT.0) WRITE(LUPRI,'(1X,A,I4)') 
+     +     '* Max number of Kramers pairs I (J) in task: ', IJTSK
+      IF (MP2_MSOUT) WRITE(LUPRI,'(1X,A)') 
+     +     '* 4-index transformed integrals written to file.'
+C     Active occupied and virtual space: only electrons allowed
+      WRITE(LUPRI,'(1X,A)') '* Active spaces:'
+      IF(NOPAIR) THEN
+        WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
+        IC   = 1
+        DO I = 1,NFSYM
+          IR(1,I) = 1
+          IR(2,I) = NFBAS(I,1)
+        ENDDO
+      ELSE
+        IC   = 0
+        DO I = 1,NFSYM
+          IR(1,I) = -NFBAS(I,2)
+          IR(2,I) =  NFBAS(I,1)
+        ENDDO
+      ENDIF
+      DO I = 1,NFSYM
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        NVEC = 0
+        CALL  NUMLST(MP2_INDSTR(1,I),IDUMMY,NFBAS(I,IC),
+     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Occupied space : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A72)') 
+     &       '- Occupied space : ', MP2_INDSTR(1,I)
+        ENDIF
+        IF(DMP2_VIRTHR.GT.-1d10) MP2_INDSTR(2,I) = 'all '
+        NVEC = 0
+        CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
+     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Active   space : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A72)') 
+     &       '- Active   space : ', MP2_INDSTR(2,I)
+        ENDIF
+      ENDDO
+C
+      IF(DMP2_VIRTHR.GT.-1d10) WRITE(LUPRI,'(1X,A,F7.2,A)') 
+     &     '* Only virtuals with energy below ', DMP2_VIRTHR,
+     &     ' a.u. included in active space.'
+      IF(MAXSCL.NE.0) WRITE(LUPRI,'(2(1X,A),I10,F10.3,A)') 
+     &     '* Max memory available for scalar two electron',
+     &     'integrals:',MAXSCL,MAXSCL*8./(1024.*1024.),' Mb' 
+C
+      IF (ISTRMP2.NE.2) 
+     &     CALL QUIT('Cannot do MP2 with .SCHEME NE 2')
+C     
+ 999  CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck trainp */
+      SUBROUTINE TRAINP(WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for module for 4-index transformation
+C
+C     Written by Jon K. Laerdahl, T. Saue and L. Visscher (Dec 1996)
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <mxorb.h>
+      PARAMETER (NTABLE = 20)
+C
+      LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER*7 LINE
+      DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbtra.h>
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
+     &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+     &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
+     &            '.PRPTRA','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+#include <memint.h>
+      IF (SET) RETURN
+      SET = .TRUE.
+C
+C     Local variables
+C
+      LSPES  = .FALSE.
+      LSPES2 = .FALSE.
+      LSPES4 = .FALSE.
+C
+C     Initialize /DCBTRA/
+C     ===================
+C
+      IPRTRA  = 0
+      ISTRTRA = 1
+      ITRA_INTFLG = 7
+      ITRA_INTFL2 = -8
+      ITRA_INTFL4 = -8
+      DO I = 1,NFSYM
+        TRA_CORSTR(I) = ' '
+        WRITE(TRA_INDSTR(I),'(A)') 'all allowed orbitals'
+        DO J = 1,2
+          WRITE(TRA2_INDSTR(J,I),'(A)') 'all allowed orbitals'
+        ENDDO
+        DO J = 1,4
+          WRITE(TRA4_INDSTR(J,I),'(A)') 'all allowed orbitals'
+        ENDDO
+      ENDDO
+      TRA_ANTIS  = .FALSE.
+      TRA_MSOUT  = .FALSE.
+      NO2IND = .FALSE.
+      NO4IND = .FALSE.
+      NOPAIR = .TRUE.
+      PRPTRA = .FALSE.
+      THROUT = 1.D-16
+C
+C     Process input for MOLTRA
+C     ========================
+C
+C
+C     Read menu file
+C     ==============
+C
+      REWIND (LUCMD,IOSTAT=IOS)
+C     ... IOSTAT to avoid program abort on some systems
+C         if reading input from a terminal
+  900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD
+      NEWDEF = (WORD .EQ. '**MOLTR')
+      IF (NEWDEF) THEN
+         GO TO 930
+      ELSE
+         GO TO 900
+      END IF
+  910 CONTINUE
+        CALL QUIT('Error reading LUCMD, no transformation input found')
+  920 CONTINUE
+        WRITE (LUPRI,'(/A)') 'End-of-file in input, using defaults'//
+     &            ' for the integral transformation'
+  930 CONTINUE
+      WORD1 = WORD
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+     &                      16,17,18,19,20), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in TRAINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in TRAINP.')
+    1          CONTINUE
+C&&&& PRINT - print level in 4-index transformation module
+                  READ(LUCMD,*) IPRTRA
+               GO TO 100
+    2          CONTINUE
+C&&&& Range of ACTIVE orbitals in 4-index transformation module
+                  IF (LSPES) THEN
+                     WRITE (LUPRI,*) ' Warning : encountered .ACTIVE '//
+     &                               'block twice , using first block'
+                     GO TO 100
+                  ENDIF
+                  LSPES = .TRUE.
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') TRA_INDSTR(I)
+                  ENDDO
+               GO TO 100
+    3          CONTINUE
+C&&&& INTFLG - Integral classes not included in transformation
+                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+               GO TO 100
+    4          CONTINUE
+C&&&& Anti-Symmetrize integrals 
+                  TRA_ANTIS = .TRUE.
+               GO TO 100
+    5          CONTINUE
+C&&&& 4INDEX
+C     Ranges of active orbitals in 4-index transformation module
+C     specified for index 1 to 4 and Fermion irrep 1 and 2
+C
+C     FORMAT:
+C             INDEX1:
+C             1..4, 6..9, 5,73..111
+C             1..5, 6..11, 73..11
+C             INDEX2:
+C             1..9
+C             5..111
+C             etc....
+C
+                  IF (LSPES4) THEN
+                     WRITE (LUPRI,*) ' Warning : encountered .4INDEX '//
+     &                               'block twice , using first block'
+                     GO TO 100
+                  ENDIF
+                  LSPES4 = .TRUE.
+                  DO J=1,4
+                     READ(LUCMD,'(A7)') LINE
+                     IF(LINE(1:5).NE.'INDEX') GOTO 1010
+                     DO I=1,NFSYM
+                        READ(LUCMD,'(A)') TRA4_INDSTR(J,I)
+                     ENDDO
+                  ENDDO
+               GO TO 100
+    6          CONTINUE
+C&&&& Write 4-index transformed integrals to file
+                  TRA_MSOUT = .TRUE.
+               GO TO 100
+    7          CONTINUE
+C&&&& POSITRONS - allow positronic solutions
+                  NOPAIR = .FALSE.
+               GO TO 100
+    8          CONTINUE
+C&&&& Range of CORE orbitals in 2-index transformation module
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') TRA_CORSTR(I)
+                  ENDDO
+               GO TO 100
+    9          CONTINUE
+C&&&& SCHEME - choose method in 4-index transformation
+                  READ(LUCMD,*) ISTRTRA
+               GO TO 100
+   10          CONTINUE
+C&&&& THROUT - Treshold for output integrals
+                  READ(LUCMD,*) THROUT
+               GO TO 100
+   11          CONTINUE
+C&&&& NO2IND - Skip 2-index transformation of effective Fock matrix
+                  NO2IND = .TRUE.
+               GO TO 100
+   12          CONTINUE
+C&&&& NO4IND - Skip 4-index transformation 2-electron integrals
+                  NO4IND = .TRUE.
+               GO TO 100
+   13          CONTINUE
+C&&&& 2INDEX
+C     Ranges of active orbitals in 2-index transformation module
+C     specified for index 1 to 2 and Fermion irrep 1 and 2
+C
+C     FORMAT:
+C             INDEX1:
+C             1..4, 6..9, 5,73..111
+C             1..5, 6..11, 73..11
+C             INDEX2:
+C             1..9
+C             5..111
+C
+                  IF (LSPES2) THEN
+                     WRITE (LUPRI,*) ' Warning : encountered .2INDEX '//
+     &                               'block twice , using first block'
+                     GO TO 100
+                  ENDIF
+                  LSPES2 = .TRUE.
+                  DO J=1,2
+                     READ(LUCMD,'(A7)') LINE
+                     IF(LINE(1:5).NE.'INDEX') GOTO 1010
+                     DO I=1,NFSYM
+                        READ(LUCMD,'(A)') TRA2_INDSTR(J,I)
+                     ENDDO
+                  ENDDO
+               GO TO 100
+   14          CONTINUE
+C&&&& INTFL2 - Integral classes not included in 2-index transformation
+                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT
+               GO TO 100
+   15          CONTINUE
+C&&&& INTFL4 - Integral classes not included in 4-index transformation
+                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT
+               GO TO 100
+   16          CONTINUE
+C&&&& PRPTRA - Transform property integrals to MO basis
+                  PRPTRA = .TRUE.
+               GO TO 100
+   17          CONTINUE
+               GO TO 100
+   18          CONTINUE
+               GO TO 100
+   19          CONTINUE
+               GO TO 100
+   20          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in TRAINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in TRAINP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Process defaults for 2- and 4-index transformations
+C
+      IF (LSPES.AND..NOT.LSPES2) THEN
+        DO I = 1, NFSYM
+           DO J = 1, 2
+             TRA2_INDSTR(J,I) = TRA_INDSTR(I)
+           ENDDO
+        ENDDO
+      ENDIF
+C
+      IF (LSPES.AND..NOT.LSPES4) THEN
+        DO I = 1, NFSYM
+           DO J = 1, 4
+             TRA4_INDSTR(J,I) = TRA_INDSTR(I)
+           ENDDO
+        ENDDO
+      ENDIF
+C
+      IF (ITRA_INTFL2.EQ.-8) THEN
+         ITRA_INTFL2 = ITRA_INTFLG
+      ENDIF
+C
+      IF (ITRA_INTFL4.EQ.-8) THEN
+         ITRA_INTFL4 = ITRA_INTFLG
+      ENDIF
+C
+      IF(NOPAIR) THEN
+        IC   = 1
+        DO I = 1,NFSYM
+          IR(1,I) = 1
+          IR(2,I) = NFBAS(I,1)
+        ENDDO
+      ELSE
+        IC   = 0
+        DO I = 1,NFSYM
+          IR(1,I) = -NFBAS(I,2)
+          IR(2,I) =  NFBAS(I,1)
+        ENDDO
+      ENDIF
+C
+C     Print section
+C     =============
+C
+      WRITE (LUPRI,'(//)')
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 
+     &   'TRAINP: Set-up for index transformation'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',IPRTRA
+      IF(NOPAIR) WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
+      IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
+      IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
+      WRITE(LUPRI,'(1X,A)') '* Total active space.'
+      NTVEC(1) = 0
+      DO I = 1,NFSYM
+        NVEC = 0
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        CALL  NUMLST(TRA_INDSTR(I),IDUMMY,NFBAS(I,IC),
+     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') ' No orbitals specified '
+        ELSE
+          WRITE(LUPRI,'(4X,A72)') TRA_INDSTR(I)
+        ENDIF
+        NTVEC(1) = NTVEC(1) + NVEC
+      ENDDO
+      IF (NTVEC(1).EQ.0) THEN
+         CALL QUIT('TRAINP: Error defining active orbitals')
+      ENDIF
+C
+      WRITE(LUPRI,'(/1X,A)') 
+     &   '* Set-up for 2-index transformation'
+      IF (MOD(ITRA_INTFL2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LL Integrals not included in core Fock-matrix'
+      IF (MOD(ITRA_INTFL2/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LS Integrals not included in core Fock-matrix'
+      IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* SS Integrals not included in core Fock-matrix'
+C
+      WRITE(LUPRI,'(1X,A)') '* Core orbitals:'
+      DO I = 1,NFSYM
+        NVEC = 0
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        CALL  NUMLST(TRA_CORSTR(I),IDUMMY,NFBAS(I,IC),
+     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') ' No orbitals specified '
+        ELSE
+          WRITE(LUPRI,'(4X,A72)') TRA_CORSTR(I)
+        ENDIF
+      ENDDO
+C
+      WRITE(LUPRI,'(1X,A)') '* Active spaces:'
+      CALL IZERO (NTVEC,2)
+      DO I = 1,NFSYM
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        DO J = 1,2
+          NVEC = 0
+          CALL  NUMLST(TRA2_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
+     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A,I2)') 
+     &      ' No orbitals specified for index ',J
+          ELSE
+            WRITE(LUPRI,'(4X,A,I2,A,A72)') 
+     &      '- Index ',J,':  ',TRA2_INDSTR(J,I)
+          ENDIF
+          NTVEC(J) = NTVEC(J) + NVEC
+        ENDDO
+      ENDDO
+      DO J = 1, 2
+         IF (NTVEC(J).EQ.0) THEN
+            CALL QUIT('TRAINP: Error defining active orbitals')
+         ENDIF
+      ENDDO
+C
+      WRITE(LUPRI,'(/1X,A)') 
+     &   '* Set-up for 4-index transformation'
+      WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRTRA
+      IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LL Integrals not transformed'
+      IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* LS Integrals not transformed.'
+      IF (MOD(ITRA_INTFL4/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+     +     '* SS Integrals not transformed.'
+      IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)') 
+     +     '* Calculating Anti-symmetrized integrals.'
+      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)') 
+     +     '* 4-index transformed integrals written to file.'
+      WRITE(LUPRI,'(1X,A)') '* Active spaces:'
+      CALL IZERO (NTVEC,4)
+      DO I = 1,NFSYM
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        DO J = 1,4
+          NVEC = 0
+          CALL  NUMLST(TRA4_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
+     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A,I2)') 
+     &      ' No orbitals specified for index ',J
+          ELSE
+            WRITE(LUPRI,'(4X,A,I2,A,A72)') 
+     &      '- Index ',J,':  ',TRA4_INDSTR(J,I)
+          ENDIF
+          NTVEC(J) = NTVEC(J) + NVEC
+        ENDDO
+      ENDDO
+      DO J = 1, 4
+         IF (NTVEC(J).EQ.0) THEN
+            CALL QUIT('TRAINP: Error defining active orbitals')
+         ENDIF
+      ENDDO
+C
+  999 CONTINUE
+      RETURN
+ 1010 CONTINUE
+      WRITE(LUPRI,'(A)') 'TRAINP: Error in reading .INDEX'
+      WRITE(LUPRI,'(A,A)') 'Read: ',LINE
+      CALL QUIT('TRAINP: Error in reading .INDEX')
+C
+      END
