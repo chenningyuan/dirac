@@ -23,6 +23,7 @@ if ($#argv == 0) then
       echo '     -cc           : Include CCSD module'
       echo '     -tra          : Include 4-index transformation module'
       echo '     -open         : Include open shell module'
+      echo '     -spinfree     : Include spinfree modifications'
       echo '     -ci          : Include DIRRCI module'
       echo '     tarfile=make  : only generate new Makefile'
       exit 0
@@ -70,6 +71,12 @@ set OPENTAR = 0
 set OPENFLG =
 set OPENOBJ =
 set OPENMAK =
+# spinfree modification
+set SPFMOD = 0
+set SPFTAR = 0
+set SPFFLG =
+set SPFOBJ =
+set SPFMAK =
 # DIRRCI module
 set CIMOD = 0
 set CITAR = 0
@@ -101,6 +108,9 @@ while($#argv)
      case -open
         set OPENMOD = 1
         breaksw
+     case -spinfree
+        set SPFMOD = 1
+        breaksw
       case -ci
          set CIMOD
          breaksw
@@ -129,6 +139,7 @@ if($PAMADM) then
   set PARMOD = 1
   set PARTAR = 1
   set OPENMOD = 1
+  set SPFMOD = 1
   set CIMOD = 1
 endif
 #
@@ -177,6 +188,15 @@ if($OPENMOD) then
         set OPENTAR = 1
 endif
 #
+# Spinfree modifications
+#
+if($SPFMOD) then
+        set SPFFLG = '-DMOD_SPF'
+        set SPFOBJ = '$(SPFOBJS)'
+        set SPFMAK = SPF_OBJ
+        set SPFTAR = 1
+endif
+#
 # DIRRCI Module
 #
 if($CIMOD) then
@@ -197,21 +217,22 @@ endif
 #  Write active modules
 #
 echo "#\!/bin/sh" > configure
-echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG $CIFLG\" >> configure
+echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG $SPFFLG $CIFLG\" >> configure
 echo ERIFLG=$ERITAR >> configure
 echo CCFLG=$CCTAR   >> configure
 echo RSPFLG=$RSPTAR >> configure
 echo TRAFLG=$TRATAR >> configure
 echo PARFLG=$PARTAR >> configure
 echo OPENFLG=$OPENTAR >> configure
+echo SPFFLG=$SPFTAR >> configure
 echo PAMADM=$PAMADM >> configure
 echo CIFLG=$CITAR >> configure
 #
 #
 cat configure.in >> configure
 chmod +x configure
-set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $CIOBJ"
-set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $CIMAK"
+set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $SPFOBJ $CIOBJ"
+set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $SPFMAK $CIMAK"
 #
 #  Write current Makefile
 #
@@ -307,6 +328,16 @@ dirac/open/diropen.o
 EOF
 endif
 #
+#  Object files for spinfree equation
+#
+if ($SPFMOD) then
+cat <<EOF>> Makefile
+
+SPFOBJS = \
+dirac/spinfree/dirspf.o
+EOF
+endif
+#
 #  Object files for DIRRCI module
 #
 if ($CIMOD) then
@@ -376,6 +407,9 @@ endif
 if($OPENMOD) then
 echo '	cd dirac/open ; $(MAKE) clean' >> Makefile
 endif
+if($SPFMOD) then
+echo '	cd dirac/spinfree ; $(MAKE) clean' >> Makefile
+endif
 if($CIMOD) then
 echo '	cd dirrci ; $(MAKE) clean' >> Makefile
 endif
@@ -387,8 +421,8 @@ cat <<EOF>> Makefile
 export:
 	-rm -f DIRAC.new.tar.gz
 	tar cvf DIRAC.new.tar \
-	configure config.sub config.guess config.status \
-	doc/doc.html crilib.cld C90lib.cld \
+	configure config.sub config.guess config.status doc/doc.html \
+	C90lib.cld crilib.cld \
 	include/*.h Makefile Makefile.config \
 	dirac/*.F dirac/Makefile.in \
 	prp/*.F prp/Makefile.in \
@@ -410,6 +444,9 @@ echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
 endif
 if($OPENTAR) then
 echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in ' >> Makefile
+endif
+if($SPFTAR) then
+echo '	tar rvf DIRAC.new.tar dirac/spinfree/*.F dirac/spinfree/Makefile.in ' >> Makefile
 endif
 if($TRATAR) then
 echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
@@ -515,6 +552,13 @@ OPEN_OBJ:
 	cd dirac/open ; \$(MAKE) all
 EOF
 endif
+#
+if ($SPFMOD) then
+cat <<EOF>> Makefile
+SPF_OBJ:
+	cd dirac/spinfree ; \$(MAKE) all
+EOF
+endif
 #if($ERIMOD) then
 #cat <<EOF>> Makefile
 #       cd eri/par ; \$(MAKE) slave
@@ -546,6 +590,9 @@ if ($ERIMOD) then
 endif
 if ($OPENMOD) then
    set TEMP = ($TEMP 'dirac/open')
+endif
+if ($SPFMOD) then
+   set TEMP = ($TEMP 'dirac/spinfree')
 endif
 if ($CIMOD) then
    set TEMP = ($TEMP 'dirrci')
