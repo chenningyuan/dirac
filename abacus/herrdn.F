@@ -924,13 +924,17 @@ C              ==========================
 C
 C              The following seven possibilities exist:
 C
-C              LARGE INTGRL     2    1    1  (IBSFLAG = 1)
+C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
+C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
 C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
+C              LARGE EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
+c               (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
+C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
@@ -952,6 +956,10 @@ C
                   IBSFLAG = 1
                   READ (MLINE(NMLINE),'(12X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+               ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE),'(14X,12I5)')
+     &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                ELSE IF ( BSKEYWORD(1:7) .EQ. 'MOLFBAS') THEN
                   IBSFLAG = 2
                   READ (MLINE(NMLINE),'(14X,A20)') BASFIL
@@ -961,13 +969,19 @@ C
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
                   IBSFLAG = 4
                   READ (MLINE(NMLINE)(16:),*,ERR=9000)
-     $                 (FAMPAR(K),K=1,4),NFAMEXP,
+     $                 (FAMPAR(K),K=1,4),NFAMEXP(1),
+     $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+                  CALL GENFAMEXP(LUINFO,0)
+               ELSE IF ( BSKEYWORD(1:8) .EQ. 'EVENTEMP' ) THEN
+                  IBSFLAG = 4
+                  READ (MLINE(NMLINE)(16:),*,ERR=9000)
+     $                 (FAMPAR(K),K=1,2),NFAMEXP(1),
      $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   CALL GENFAMEXP(LUINFO,0)
                ELSE IF ( BSKEYWORD(1:4) .EQ. 'GEOM' ) THEN
                   IBSFLAG = 4
                   READ (MLINE(NMLINE)(11:),*,ERR=9000)
-     $                 (FAMPAR(K),K=1,2),NFAMEXP,
+     $                 (FAMPAR(K),K=1,2),NFAMEXP(1),
      $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   FAMPAR(3) = D0
                   FAMPAR(4) = D0
@@ -975,8 +989,14 @@ C
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'FAMILY') THEN
                   IBSFLAG = 4
                   READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)
-     $                 NFAMEXP, IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+     $                 NFAMEXP(1), IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   CALL GENFAMEXP(LUINFO,1)
+               ELSE IF ( BSKEYWORD(1:10) .EQ. 'DUALFAMILY') THEN
+                  IBSFLAG = 4
+                  READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)
+     $                 NFAMEXP(1), NFAMEXP(2),
+     &                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+                  CALL GENFAMEXP(LUINFO,2)
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
@@ -2067,8 +2087,9 @@ C
 C
 C           Get exponents
 C     
+            IC = MOD(I + 1, 2) + 1
             CALL FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
-     &           CPRIMU(1,1,NBLOCK),KPRIM,WORK,LWORK)
+     &           CPRIMU(1,1,NBLOCK),KPRIM,IC)
 C
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
@@ -2128,7 +2149,7 @@ C
         CALL QUIT('Too many contracted functions')
       END
 C  /* Deck famcopy */
-      SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+      SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2151,11 +2172,11 @@ C     Eg.: 1..20
 C
       CALL RDLINE(LUINFO)
       NUCIJ = 1
-      CALL NUMLST(MLINE(NMLINE)(1:72),ILIST,NFAMEXP,1,NFAMEXP,NUCIJ,
-     &     TMP,MXFAMEXP)
+      CALL NUMLST(MLINE(NMLINE)(1:72),ILIST,NFAMEXP(IC),1,NFAMEXP(IC),
+     &     NUCIJ,TMP,MXFAMEXP)
       NRCIJ = NUCIJ
       DO 300 L = 1, NUCIJ
-         ALPHA(L) = FAMEXP(ILIST(L))
+         ALPHA(L) = FAMEXP(ILIST(L), IC)
          CPRIMU(L,L) = D1
   300 CONTINUE
 C
@@ -6501,7 +6522,7 @@ C        with gamma = 0 and delta = 0.
 C        
 C        See Huzinaga and Klobukowski, CPL 212, 260 (1993). 
 C
-         IF (NFAMEXP .LT. 1 .OR. NFAMEXP .GT. MXFAMEXP) GOTO 5000
+         IF (NFAMEXP(1) .LT. 1 .OR. NFAMEXP(1) .GT. MXFAMEXP) GOTO 5000
          IF (FAMPAR(1) .LE. D0) GOTO 5010
          IF (FAMPAR(2) .LE. D1) GOTO 5010
          IF (FAMPAR(3) .LT. D0) GOTO 5010
@@ -6514,7 +6535,7 @@ C
      $           'beta  = ',FAMPAR(2),
      $           'gamma = ',FAMPAR(3),
      $           'delta = ',FAMPAR(4),
-     $           'N     = ',NFAMEXP
+     $           'N     = ',NFAMEXP(1)
          END IF
 C
 C        Formula is:
@@ -6523,40 +6544,72 @@ C        zeta_N = alpha,
 C
 C        zeta_N-k+1 = zeta_N-k+2 beta ( 1 + gamma (k/N)^delta), k = 2,N
 C
-         FAMEXP(NFAMEXP) = FAMPAR(1)
-         DO K = 2,NFAMEXP
-            FAMEXP(NFAMEXP - K + 1) =
-     $           FAMEXP(NFAMEXP - K + 2) * FAMPAR(2) *
+         FAMEXP(NFAMEXP(1), 1) = FAMPAR(1)
+         DO K = 2,NFAMEXP(1)
+            FAMEXP(NFAMEXP(1) - K + 1, 1) =
+     $           FAMEXP(NFAMEXP(1) - K + 2, 1) * FAMPAR(2) *
      $           ( D1 + FAMPAR(3) *
-     $           ( ( SDPRE(K) / SDPRE(NFAMEXP) ) ** FAMPAR(4) ) )
+     $           ( ( SDPRE(K) / SDPRE(NFAMEXP(1)) ) ** FAMPAR(4) ) )
          END DO
-            
+C
+C        Copy into set 2.
+C
+         NFAMEXP(2) = NFAMEXP(1)
+         DO K = 1, NFAMEXP(1)
+            FAMEXP( K, 2 ) = FAMEXP( K, 1 )
+         END DO
 C
       ELSE IF ( IFLAG .EQ. 1 ) THEN
 C
 C        Read exponents from file
 C
-         DO I = 1,NFAMEXP
+         DO I = 1,NFAMEXP(1)
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),*) FAMEXP(I)
+            READ (MLINE(NMLINE),*) FAMEXP(I, 1)
+         END DO
+C
+C        Copy into set 2.
+C
+         NFAMEXP(2) = NFAMEXP(1)
+         DO K = 1, NFAMEXP(1)
+            FAMEXP( K, 2 ) = FAMEXP( K, 1 )
+         END DO
+C
+      ELSE IF ( IFLAG .EQ. 2 ) THEN
+C
+C        Read dual set of exponents from file
+C
+         DO I = 1,NFAMEXP(1)
+            CALL RDLINE(LUINFO)
+            READ (MLINE(NMLINE),*) FAMEXP(I, 1)
+         END DO
+         DO I = 1,NFAMEXP(2)
+            CALL RDLINE(LUINFO)
+            READ (MLINE(NMLINE),*) FAMEXP(I, 2)
          END DO
 C
       ELSE
-         WRITE(LUPRI,'(A,I3)')
-     $        '*** ERROR ***: Unknown IFLAG in GENFAMEXP: ',IFLAG
+         WRITE(LUPRI,'(/,A,/,A,I3)')
+     $        '*** ERROR in GENFAMEXP ***:',
+     &        'Unknown IFLAG: ',IFLAG
          CALL QUIT('Unknown IFLAG in GENFAMEXP',-1)
       END IF
 C
       IF (INPTST) THEN
-         CALL HEADER('Exponents for family basis set',-1)
-         CALL OUTPUT(FAMEXP,1,NFAMEXP,1,1,NFAMEXP,1,1,LUPRI)
+         CALL HEADER('Exponents for family basis set(1)',-1)
+         CALL OUTPUT(FAMEXP,1,NFAMEXP(1),1,1,NFAMEXP(1),1,1,LUPRI)
+         IF ( IFLAG .EQ. 2 ) THEN
+            CALL HEADER('Exponents for family basis set(2)',-1)
+            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,1,
+     &           LUPRI)
+         END IF
       END IF
       RETURN
 C
  5000 CONTINUE
-      WRITE(LUPRI,'(2(A,I3/))')
-     &     '*** ERROR in GENFAMEXP *** ' //
-     $     'Illegal value for number of exponents: ',NFAMEXP,
+      WRITE(LUPRI,'(/,A,/,2(A,I3/))')
+     &     '*** ERROR in GENFAMEXP *** ',
+     $     'Illegal value for number of exponents: ',NFAMEXP(1),
      &     'Value must be between 1 and ',MXFAMEXP
       CALL QUIT('Illegal value for number of exponents')
  5010 CONTINUE
