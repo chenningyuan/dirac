@@ -389,10 +389,10 @@ C
          NTEST = NTEST + NKRMCASH(J)
       END DO
       IF (NTEST .GT. MAXASH) THEN
-         WRITE(LUPRI,'(1X,A,I5,/,10X,A,I4)')
-     &        '*** ERROR in KRMCINP *** Too many active orbitals: ',
-     &        NTEST, ' -- max is ',MAXASH
-         CALL QUIT('*** ERROR in KRMCINP *** To many active orbitals!')
+        WRITE(LUPRI,'(1X,A,I5,/,10X,A,I4)')
+     &       '*** ERROR in KRMCINP *** Too many active orbitals: ',
+     &       NTEST, ' -- max is ',MAXASH
+        CALL QUIT('*** ERROR in KRMCINP *** Too many active orbitals!')
       END IF
 C
 C     Use boson symmetry for CI expansion for the spin-free and
