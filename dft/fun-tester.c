@@ -64,7 +64,7 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 { 
     int i, j, k, failed = 0;
     real drho, dgra, resp, resm, num;
-    FirstDrv gga;
+    FirstFuncDrv gga;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
 	    for(k=-19; k<=19; k+=GRID_STEP) {
@@ -113,7 +113,7 @@ test_second(const char* fun_name,
 { 
     int i, j, k, failed = 0;
     real drho, dgra, num;
-    FirstDrv tmpm, tmpp;
+    FirstFuncDrv tmpm, tmpp;
     SecondFuncDrv gga;
     for(i=1; i<=40; i+=GRID_STEP) {
 	for(j=1; j<=40; j+=GRID_STEP) {
@@ -370,12 +370,12 @@ test_derivatives(Functional* f, DaltonEnFunc dal_fun)
 int
 main(int argc, char* argv[])
 {
-    FirstDrv tmpm, tmpp;
+    FirstFuncDrv tmpm, tmpp;
     SecondFuncDrv gga;
     int res = 0, i, length;
     char* arg;
     Functional* func;
-    FirstDrv df = { 0, 0 };
+    FirstFuncDrv df = { 0, 0 };
     SecondFuncDrv ds = { 0 };
     if(argc<=1) {
 	fprintf(stderr, "Functional derivative tester:\n");

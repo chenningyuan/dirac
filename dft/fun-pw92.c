@@ -31,7 +31,7 @@
 static int  pw92_isgga(void) { return 0; }
 static int  pw92_read(const char* conf_line);
 static real pw92_energy(DftDensProp* dens_prop);
-static void pw92_first(FirstDrv *ds, real factor, DftDensProp* dens_prop);
+static void pw92_first(FirstFuncDrv *ds, real factor, DftDensProp* dens_prop);
 static void pw92_second(SecondFuncDrv *ds, real factor,
                         DftDensProp* dens_prop);
 
@@ -148,7 +148,7 @@ pw92_energy(DftDensProp* dp)
 }
 
 static void
-pw92_first(FirstDrv *ds, real factor, DftDensProp* dp)
+pw92_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
 /* Declarations */
     real  E0;

@@ -23,7 +23,7 @@
 static int p86c_isgga(void) { return 1; }
 static int p86c_read(const char* conf_line);
 static real p86c_energy(DftDensProp* dp);
-static void p86c_first (FirstDrv *ds,      real factor, DftDensProp* dp);
+static void p86c_first (FirstFuncDrv *ds,      real factor, DftDensProp* dp);
 static void p86c_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void p86c_third (ThirdFuncDrv *ds,  real factor, DftDensProp* dp);
 
@@ -85,7 +85,7 @@ p86c_energy(DftDensProp* dp)
 }
 
 static void
-p86c_first(FirstDrv *ds, real factor, DftDensProp* dp)
+p86c_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
   const real  cd4 = 1.0e4*cn3;
   const real cinf = c0+cn1/cd1;

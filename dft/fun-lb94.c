@@ -16,7 +16,7 @@
 static int  lb94_isgga(void) { return 1; }
 static int  lb94_read(const char* conf_line);
 static real lb94_energy(DftDensProp* dens_prop);
-static void lb94_first(FirstDrv *ds, real factor, 
+static void lb94_first(FirstFuncDrv *ds, real factor, 
                        DftDensProp* dens_prop);
 static void lb94_second(SecondFuncDrv *ds, real factor,
                         DftDensProp* dens_prop);
@@ -123,7 +123,7 @@ lb94_energy(DftDensProp* dp)
  */
 
 static void
-lb94_first(FirstDrv *ds, real factor, DftDensProp* dp)
+lb94_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
 
 /* Declarations */

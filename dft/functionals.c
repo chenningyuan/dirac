@@ -65,7 +65,7 @@ Functional* selected_func = &LDAFunctional;
 /* =================================================================== */
 
 void
-drv1_clear(FirstDrv* gga)
+drv1_clear(FirstFuncDrv* gga)
 {
     gga->df1000 = gga->df0100 = gga->df0010 = gga->df0001 = gga->df00001 = 0;
 }
@@ -229,16 +229,18 @@ dftinput_(char* line, int* success, int len)
 void
 dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
 {
+    FirstFuncDrv drvs;
     DftDensProp dp;
     /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
     dp.rhoa  = dp.rhob  = *rho  *0.5;
     dp.grada = dp.gradb = *grad *0.5;
     dp.gradab = dp.grada * dp.gradb;
-    drv1_clear(ds);
-    selected_func->first(ds,*weight, &dp);
+    drv1_clear(&drvs);
+    selected_func->first(&drvs, *weight, &dp);
     /* we should really use a separate structure here
      * but this time, we cheat */
-    ds->df0010 += 0.5*ds->df00001* *grad;
+    ds->fR = drvs.df1000;
+    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
 }
 
 void
@@ -476,7 +478,7 @@ gga_energy(DftDensProp* dp)
 }
 
 static void
-gga_first(FirstDrv *ds, real factor, DftDensProp* dp) 
+gga_first(FirstFuncDrv *ds, real factor, DftDensProp* dp) 
 {
     FuncList* lst;
     for(lst=gga_fun_list; lst; lst=lst->next) 

@@ -18,7 +18,7 @@
 /* INTERFACE PART */
 static int dirac_read(const char* conf_line);
 static real dirac_energy(DftDensProp* dp);
-static void dirac_first (FirstDrv *ds, real factor,      DftDensProp* dp);
+static void dirac_first (FirstFuncDrv *ds, real factor,      DftDensProp* dp);
 static void dirac_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void dirac_third (ThirdFuncDrv *ds, real factor,  DftDensProp* dp);
 
@@ -49,7 +49,7 @@ dirac_energy(DftDensProp* dp)
 }
 
 static void
-dirac_first(FirstDrv *ds, real factor, DftDensProp* dp)
+dirac_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
   ds->df1000 += -pow(6.0/M_PI*dp->rhoa, 1.0/3.0)*factor;
   ds->df0100 += -pow(6.0/M_PI*dp->rhob, 1.0/3.0)*factor;

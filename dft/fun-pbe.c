@@ -36,7 +36,7 @@
 static int pbe_isgga(void) { return 0; }
 static int pbe_read(const char* conf_line);
 static real pbe_energy(DftDensProp* dp);
-static void pbe_first(FirstDrv *ds,       real factor, DftDensProp* dp);
+static void pbe_first(FirstFuncDrv *ds,       real factor, DftDensProp* dp);
 static void pbe_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void pbe_third(ThirdFuncDrv *ds,   real factor, DftDensProp* dp);
 #ifdef FOURTH_ORDER_DERIVATIVES
@@ -87,8 +87,8 @@ static real pbe_xenergy(DftDensProp* dp);
 static real pbe_ro2energy(real *p_ro, real *p_gro);
 static void pbe_ro2d(TwoVarDrv *ds, real *p_ro, real *p_gro);
 
-static void pbe_xd1(FirstDrv *ds, real factor, DftDensProp *dp);
-static void pbe_cd1(FirstDrv *ds, real factor, DftDensProp *dp);
+static void pbe_xd1(FirstFuncDrv *ds, real factor, DftDensProp *dp);
+static void pbe_cd1(FirstFuncDrv *ds, real factor, DftDensProp *dp);
 static void pbe_xd2(SecondFuncDrv *ds, real factor, DftDensProp *dp);
 static void pbe_cd2(SecondFuncDrv *ds, real factor, DftDensProp *dp);
 static void pbe_xd3(ThirdFuncDrv *ds, real factor, DftDensProp *dp);
@@ -120,7 +120,7 @@ pbe_energy(DftDensProp* dp)
 }
 
 static void
-pbe_first(FirstDrv *ds, real factor, DftDensProp* dp)
+pbe_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
     pbe_xd1(ds, factor, dp);
     pbe_cd1(ds, factor, dp);
@@ -505,7 +505,7 @@ pbe_ro2d(TwoVarDrv *ds, real *p_ro, real *p_gro)
 }
 
 static void
-pbe_xd1(FirstDrv *ds, real factor, DftDensProp *dp)
+pbe_xd1(FirstFuncDrv *ds, real factor, DftDensProp *dp)
 {
     TwoVarDrv  dera;
     TwoVarDrv  derb;
@@ -1309,7 +1309,7 @@ pbe_xd4(FourthFuncDrv *ds, real factor, DftDensProp *dp)
 #endif
 
 static void
-pbe_cd1(FirstDrv *ds, real factor, DftDensProp *dp)
+pbe_cd1(FirstFuncDrv *ds, real factor, DftDensProp *dp)
 {
     const real nKF = COR_nKF, nKS = COR_nKS, delta = COR_delta;
     const real nZ = COR_nZ,   gamma = COR_gamma;
@@ -1332,7 +1332,7 @@ pbe_cd1(FirstDrv *ds, real factor, DftDensProp *dp)
     real roafro_p1f3;	real roafro_p2f3;	real roafro_p5f3;	real rob;
     real robfro;	real robfro_p1f3;	real robfro_p2f3;	real robfro_p5f3;
 
-    FirstDrv EC_drv;
+    FirstFuncDrv EC_drv;
 
 /* Set up roa, rob, groa, grob */
     roa = dp->rhoa;

@@ -21,7 +21,7 @@
 static int lyp_isgga(void) { return 1; }
 static int lyp_read(const char* conf_line);
 static real lyp_energy(DftDensProp* dp);
-static void lyp_first(FirstDrv *ds, real factor, DftDensProp* dp);
+static void lyp_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
 static void lyp_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void lyp_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
 
@@ -95,7 +95,7 @@ lyp_energy(DftDensProp* dp)
    See Doc/dft/functionals.tex for details.
 */
 static void
-lyp_first(FirstDrv *ds, real factor, DftDensProp* dp)
+lyp_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
     const real A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     const real CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);

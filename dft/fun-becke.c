@@ -20,12 +20,12 @@
 /* INTERFACE PART */
 static int  becke_read(const char* conf_line);
 static real becke_energy(DftDensProp* dp);
-static void becke_first(FirstDrv *ds, real factor, DftDensProp* dp);
+static void becke_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
 static void becke_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void becke_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
 
 static real b88corr_energy(DftDensProp* dp);
-static void b88corr_first(FirstDrv *ds, real factor, DftDensProp* dp);
+static void b88corr_first(FirstFuncDrv *ds, real factor, DftDensProp* dp);
 static void b88corr_second(SecondFuncDrv *ds, real factor,DftDensProp* dp);
 static void b88corr_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp);
 
@@ -73,7 +73,7 @@ becke_energy(DftDensProp* dp)
 }
 
 static void
-becke_first(FirstDrv *ds, real factor, DftDensProp* dp)
+becke_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
   SlaterFunctional.first (ds,factor,dp);
   B88CorrFunctional.first(ds,factor,dp);
@@ -121,7 +121,7 @@ b88corr_energy(DftDensProp* dp)
 }
 
 static void
-b88corr_first(FirstDrv *ds, real factor, DftDensProp* dp)
+b88corr_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
     real alpha, aa2, asha, sq1aa2;
     real alphb, ab2, ashb, sq1ab2;

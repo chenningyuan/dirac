@@ -1,3 +1,9 @@
+2003-05-09  Pawel Salek  <pawel.salek@kjemi.uio.no>
+
+	* dft/fun-*.c: make first derivative naming consistent with higher
+	orders.
+	* dft/functionals.[hc]: ditto.
+
 2003-04-28  Pawel Salek  <pawel.salek@kjemi.uio.no>
 
 	* configure: remove need for -fno-double-underscore

@@ -21,7 +21,7 @@
 static int  vwn_isgga(void) { return 0; }
 static int  vwn_read(const char* conf_line);
 static real vwn_energy(DftDensProp* dp);
-static void vwn_first(FirstDrv *ds,       real factor, DftDensProp* dp);
+static void vwn_first(FirstFuncDrv *ds,       real factor, DftDensProp* dp);
 static void vwn_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void vwn_third(ThirdFuncDrv *ds,   real factor, DftDensProp* dp);
 
@@ -148,7 +148,7 @@ vwn_energy(DftDensProp* dp)
 }
 
 static void
-vwn_first(FirstDrv *ds, real factor, DftDensProp* dp)
+vwn_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
     real zeta, zeta3,zeta4, f_zeta, f_zet1, e_f,acp, dacp, vcfp, g_f;
     real delta, ep_p[2], ep_f[2], ep_i[2];

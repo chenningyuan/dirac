@@ -35,6 +35,7 @@ typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
 
+typedef struct FirstFuncDrv_  FirstFuncDrv;
 typedef struct SecondFuncDrv_ SecondFuncDrv;
 typedef struct ThirdFuncDrv_  ThirdFuncDrv;
 
@@ -43,7 +44,13 @@ typedef struct ThirdFuncDrv_  ThirdFuncDrv;
  * zeta_i = |\nabla\rho_i|²
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
+
 struct FirstDrv_ {
+    real fR;  /* d/drho F     */
+    real fZ;  /* d/zeta F     */
+};
+
+struct FirstFuncDrv_ {
     real df1000;  /* d/drho F     */
     real df0100;
     real df0010;  /* d/zeta F     */
@@ -165,7 +172,8 @@ typedef int (*IsGGAFunc)(void);
 typedef int (*ReadInputFunc)(const char* conf_string);
 typedef void (*ReportFunc)(void);
 typedef real (*EnergyFunc)(DftDensProp* dens_prop);
-typedef void (*FirstOrderFun)(FirstDrv *ds, real factor, DftDensProp* dns_prp);
+typedef void (*FirstOrderFun)(FirstFuncDrv *ds, real factor,
+                              DftDensProp* dns_prp);
 
 typedef void (*SecondOrderFun)(SecondFuncDrv *ds, real factor,
                                DftDensProp* dens_prop);
@@ -194,6 +202,7 @@ void dftpot1_(SecondDrv*ds, const real* w, const real* rho, const real* grad,
               const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor,  real rho, real grad, int isgga);
 
+void drv1_clear(FirstFuncDrv* gga);  /* set all components to 0 */
 void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
 void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
 int fun_false(void); /* always returns 0 */

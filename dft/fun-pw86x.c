@@ -23,7 +23,7 @@
 static int pw86x_isgga(void) { return 1; }
 static int pw86x_read(const char* conf_line);
 static real pw86x_energy(DftDensProp* dp);
-static void pw86x_first (FirstDrv *ds,      real factor, DftDensProp* dp);
+static void pw86x_first (FirstFuncDrv *ds,      real factor, DftDensProp* dp);
 static void pw86x_second(SecondFuncDrv *ds, real factor, DftDensProp* dp);
 static void pw86x_third (ThirdFuncDrv *ds,  real factor, DftDensProp* dp);
 
@@ -69,7 +69,7 @@ pw86x_energy(DftDensProp* dp)
 }
 
 static void
-pw86x_first(FirstDrv *ds, real factor, DftDensProp* dp)
+pw86x_first(FirstFuncDrv *ds, real factor, DftDensProp* dp)
 {
 /* The energy expression is the integral int(Ax*rho**(4/3)*F). We first 
    calculate d(F)/d(rho) and d(F)/d(grad_rho) and differentiate the
