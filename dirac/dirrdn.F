@@ -3659,9 +3659,9 @@ C     =====================================================
           CALL QUIT(
      &'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP & BSS !')
         ENDIF
-        IF (URKBAL.OR.SPINFR2.OR.OPTIMI) THEN
+        IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT(
-     &'HAMINP:Conflicting options URKBAL/SPINFR2/OPTIMI & BSS!')
+     &'HAMINP:Conflicting options URKBAL/SPINFR2 & BSS!')
         ENDIF
 CMI ... DIRCON(1) means contracted L component basis set
 CMI     IF (ZORA.OR.PROJEC) THEN
