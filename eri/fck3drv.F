@@ -70,6 +70,7 @@ C
       IF ( FIXTHR ) THEN
         THRSH = THRFCK3_DEFAULT
       ELSE
+CTROND...IFTHRS is not set, but I set FIXTHR to true
         THRSH = 10D0**(-IFTHRS)
       END IF
 
@@ -286,8 +287,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &            IPRINT)
+      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
       CALL LMNPRP(WORK(KLMNVL),WORK(KLMNSM),IPRINT)
 
 C

@@ -848,7 +848,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR)
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches

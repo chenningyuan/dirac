@@ -220,8 +220,7 @@ C  ( for FTUV packing and to get carteesian indexes ijk
 C   corresponding to a certain spherical component )
 C
 
-      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
-     &            IPRINT)
+      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
       CALL LMNPRP(WORK(KLMNPWR),WORK(KLMNSYM),IPRINT)
 
       CALL SETFTUV1(WORK(KIFTUVCL),WORK(KRFTUVCL),WORK(KIFTUV),
