@@ -9,7 +9,7 @@
 #ifndef __PATCHLEVEL_H_
 #define __PATCHLEVEL_H_
 
-#define VER_STR "Dirac Release"
+#define VER_STR "Dirac Newest"
 #define MAJOR_REV 3
 #define MINOR_REV 1
 #define PATCHLEVEL 0
