@@ -54,17 +54,19 @@
 #if defined (VAR_MPI)
    int ierr;
 
+
+  /*
+   *  Send finish signal to slaves from master
+   */
+
+/* hjaaj: signal to slaves is now sent in SUBROUTINE DIRAC /July 2000
    if ( mytid == 0 )
    {
-
-      /*
-       *  Send send signal to slaves
-       */
-
       int nfinis = -1;
       if ( (ierr = MPI_Bcast(&nfinis,1,MPI_INT,mparid,MPI_COMM_WORLD)) )
          printf("MPI_Bcast error %i in end_mpi()\n",ierr);
    }
+*/
 
    /*
     * Free MPI error handler
