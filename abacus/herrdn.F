@@ -338,6 +338,11 @@ C
          CALL TITLER('Output from READIN input processing','*',118)
       END IF
       LUINFO = LUMLCL
+C
+C     PARHER is true for slaves, false for master.
+C     If (PARHER) then RDLINE reads from common block transferred
+C     from master, not from file LUINFO.
+C
       NEWFILE = LUINFO .NE. LUCMD .AND. .NOT. PARHER
       IF (NEWFILE) THEN
 #if !defined (SYS_IBM)
@@ -350,7 +355,7 @@ C
 #endif
       END IF
 C
-      REWIND(LUINFO)
+      IF (.NOT.PARHER) REWIND(LUINFO)
       NMLINE = 0
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)') KEYWRD
