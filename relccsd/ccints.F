@@ -132,7 +132,7 @@ C
          CALL QUIT('Adapt RDINTS')
       ENDIF
       IF (2*NKR.NE.NSP) 
-         CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
+     &   CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
 C
 C  Initialize writing to sorted integral files
