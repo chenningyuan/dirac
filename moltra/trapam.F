@@ -3025,7 +3025,6 @@ C
 C
 C     Determine number of active electrons
 C
-      IF(NAELEC.EQ.0) RETURN
       IF (NAELEC.EQ.0) THEN
          WRITE(LUPRI,'(A)')
      &   '*WARNING: No open-shell electrons, no states to resolve!'
