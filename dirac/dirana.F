@@ -326,9 +326,11 @@ C
 C       Perform Mulliken population analysis
 C       ====================================
 C
+        CALL MEMGET('REAL',KOCC,NVEC,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,
-     &              WORK(KJVEC),WORK(KFREE),LFREE)
+     &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE)
+        CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
  20     CONTINUE
         CALL MEMREL('MULPO1',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
@@ -358,7 +360,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
       SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
-     &           PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,JVEC,WORK,LWORK)
+     &           PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,JVEC,OCC,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -397,7 +399,7 @@ C
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
       CHARACTER FMT*6,MXFORM*6
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),
      &          CMO(NCBAS,NPVEC+NPVEC,NZ),EIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
@@ -408,8 +410,7 @@ C
 C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVEC + NEVEC
-      CALL MEMGET('REAL',KFRAC,NVEC,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KFRAC),NVEC)
+      CALL DZERO(OCC,NVEC)
       DO I = 1,NVEC
 c
 c       Find fractional occupation for each requested orbital string
@@ -419,13 +420,13 @@ c
 c     ... open shell
            NVORB =  NVORB + NACSH(IFRP,IOPEN)
            IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
-              WORK(KFRAC-1+I) = DF(IOPEN)
+              OCC(I) = DF(IOPEN)
               GO TO 100
            ENDIF
         END DO
         IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
 c     ... closed shell
-           WORK(KFRAC-1+I) = DF(0)
+           OCC(I) = DF(0)
         ENDIF
 100     CONTINUE
 c
@@ -434,13 +435,13 @@ c
           FMT = MXFORM(EIG(II),16)
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Electronic eigenvalue nr.',JVEC(I),': ',
-     &       EIG(II),'       (Occupation : f = ',WORK(KFRAC-1+I),')'
+     &       EIG(II),'       (Occupation : f = ',OCC(I),')'
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Positronic eigenvalue nr.',II,': ',
-     &       EIG(II),'       (Occupation : f = ',WORK(KFRAC-1+I),')'
+     &       EIG(II),'       (Occupation : f = ',OCC(I),')'
         ENDIF
         CALL PRSYMB(LUPRI,'=',80,0)
 C
@@ -459,7 +460,7 @@ C
 C       Multiply fractional occupation on population.
 C       =============================================
 C
-        FACTOR  = D2*WORK(KFRAC-1+I)
+        FACTOR  = D2*OCC(I)
         CALL DAXPY(NPOPLAB,FACTOR,POPG(1,1),1,PGTOT(1,IFRP),1)
         CALL DAXPY(NPOPLAB,FACTOR,POPG(1,2),1,PGTOT(1,IFRP),1)
 C
