@@ -7,7 +7,7 @@ C SOURCE  : $Source$
 C
 C
 C  /* Deck dnorm2 */
-#if ! ( defined (SYS_DEC) && defined (USE_DXML) )
+#if ! ( defined (SYS_DEC) && defined (VAR_DXML) )
 #if !defined (VAR_ESSL)
       FUNCTION DNORM2(N,DX,INCX)
 C
@@ -66,7 +66,7 @@ C
       RETURN
       END
 #endif
-#endif /* !( defined(SYS_DEC) && defined(USE_DXML) ) */
+#endif /* !( defined(SYS_DEC) && defined(VAR_DXML) ) */
 C  /* Deck daptge */
       SUBROUTINE DAPTGE(N,AAP,AGE)
 C
@@ -320,7 +320,7 @@ C     are also present in 'libveclib'.
 C
 #ifndef VAR_LIBVECLIB
 C  /* Deck dsum */
-#if ! ( defined (SYS_DEC) && defined (USE_DXML) )
+#if ! ( defined (SYS_DEC) && defined (VAR_DXML) )
 #if !defined (VAR_DXML)
       FUNCTION DSUM(N,DA,INCA)
 C
@@ -512,7 +512,7 @@ C
       RETURN
       END
 #endif
-#endif /* !( defined(SYS_DEC) && defined(USE_DXML) ) */
+#endif /* !( defined(SYS_DEC) && defined(VAR_DXML) ) */
 
 C  /* Deck iblas */
       SUBROUTINE ICOPY(N,IX,INCX,IY,INCY)
