@@ -21,12 +21,13 @@ C     NOSMLV     - No small nuclear attraction integrals
 C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
 C     SSMTRC     - Scaling factor for SS overlap matrix
+C     SPINFR     - Neglect spin-orbit coupling
 C
       PARAMETER(MAX1OPER=10)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
      &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL
       LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF
+     &        INERSI,INERSF,SPINFR
       COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &              INERSI,INERSF
+     &              INERSI,INERSF,SPINFR
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV
