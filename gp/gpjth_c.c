@@ -55,18 +55,55 @@
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
+#define c_readreorder C_READREORDER
 #elif defined (SYS_HPUX)
 /* nothing */
 #elif defined (SYS_AIX)
 #define frac2i frac2i
+#define c_readreorder c_readreorder
 #else
 #define frac2i frac2i_
+#define c_readreorder c_readreorder_
 #endif /*CRAY*/
 
 void c_frac2i();
 void frac2i();
 void sysinf();
+void c_readreorder();
 
+/*
+ * Take string of tokens and return new ordering
+ */
+
+void c_readreorder(char *string, int *ireord, int imoord[], int *mxreord)
+
+{
+   char *token;
+   int itemp;
+
+   *ireord = 0;
+   
+   /*
+   printf("string: %s\n",string);
+    */
+   token = strtok(string,",");
+
+   while ( token != NULL )
+   {
+      /*
+      printf("Token %2i: %s\n",*ireord,token);
+       */
+      itemp = atoi(token);
+      if ( itemp <= 0 ) return;
+      if ( (*ireord = *ireord + 1) > (*mxreord) ) 
+      {
+         *ireord = -1;
+         return;
+      }
+      imoord[(*ireord)-1] = atoi(token);
+      token = strtok(NULL,",");
+   }
+}
 
 /* 
  * Take string s and return the fraction n/d
