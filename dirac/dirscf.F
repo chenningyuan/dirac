@@ -178,7 +178,7 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dcbreo.h>
-      LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC
+      LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC, LDFCYCL
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -257,8 +257,16 @@ C
 C     * Check for cycle history on DFCYCL
 C     -----------------------------------
 C
-        INQUIRE(FILE='DFCYCL',EXIST=TOBE)
-        IF(TOBE) THEN
+        INQUIRE(FILE='DFCYCL',EXIST=LDFCYCL)
+        IF(LDFCYCL) THEN
+            IF (.NOT. TRIVEC .AND. .NOT. TRIFCK) THEN
+               WRITE(LUPRI,'(/A/)')
+     &            'Restart on DFCYCL not possible without DFCOEF '//
+     &            'or DFFCK2 (and .TRIFCK)'
+               CALL QUIT(
+     &            'Restart on DFCYCL not possible without DFCOEF '//
+     &            'or DFFCK2 (and .TRIFCK)')
+           END IF
 C
 C         a) DFCYCL is present
 C         --------------------
@@ -539,17 +547,11 @@ C     *****   S O L V E    D F    E I G E N V A L U E    P R O B L E M    ******
 C     **************************************************************************
 C
 C
-      IF (TRIVEC) THEN
 C
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,
-     &               DOSEL,WORK(KFREE),LFREE)
+      CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,
+     &            DOSEL,WORK(KFREE),LFREE)
 C
-      ELSE
-Cjth     CALL DCOPY(NCMOTQ,WORK(KTMAT),1,CMO,1)
-Cjth 980406 skal vistnok ikke bruges ?? (TRIFCK du'r ikke for nasht>0)
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,DOSEL,
-     &            WORK(KFREE),LFREE)
-      END IF
+C
       IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG)
 C
       TID = SECOND() - TID
@@ -590,6 +592,19 @@ C
         WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID
       ENDIF
+C
+      IF (LDFCYCL .AND. TRIFCK) THEN
+C
+C        Get density matrices (normed to one)
+C        and write them to DFDENS.
+C
+         CALL GENDEN(DMAT,CMO,1,IPRSCF)
+         DO IOPEN = 1,NOPEN
+            CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
+         END DO
+         CALL WRIDNS(LUDENS,DMAT)
+      END IF
+C
       CALL FLSHFO(LUPRI)
       CALL MEMREL('PREDHF',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -888,7 +903,7 @@ C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBMAT,(MXDIIS*(MXDIIS+1))/2,
+      CALL MEMGET('REAL',KBMAT,MXDIIS*MXDIIS,
      &            WORK,KFREE,LFREE)
       NPOS = 0
       IF(PARCAL) THEN
