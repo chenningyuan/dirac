@@ -1599,8 +1599,9 @@ C           ... IBEIG = (approximate) boson irrep
             JOCC = JOCC + 1
             IF (J .NE. JOCC) THEN
 C              swap:
+               IBEIGSWP = IBEIG(J)
                IBEIG(J) = IBEIG(JOCC)
-               IBEIG(JOCC) = JSYM - 1
+               IBEIG(JOCC) = IBEIGSWP
                EIGSWP   = EIG(J)
                EIG(J)   = EIG(JOCC)
                EIG(JOCC)= EIGSWP
