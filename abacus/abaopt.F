@@ -54,7 +54,7 @@ C  /* Deck mininp */
 #endif
       PARAMETER (NTABLE = 64, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
-      LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
+      LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD, LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE FIRST
@@ -414,12 +414,12 @@ C           .GRD INTFLG: INTFLG to pass to gradient routines
             IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS
 #endif
             GOTO 100
+ 64         CONTINUE
 C           .GRD SCREEN: screening threshold in gradient calc.
 #if defined (PRG_DIRAC)
             READ (LUCMD,*) SCRGRD
 #endif
 
- 64         CONTINUE
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -2264,7 +2264,7 @@ C
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
 #ifdef PRG_DIRAC
-      CALL QUIT('GTHESS not implemented',-1)
+      CALL QUIT('GTHESS not implemented')
 #else
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
