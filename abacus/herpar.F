@@ -830,12 +830,12 @@ C
 C
          ICOUNT = ICOUNT + ITASK
 C
+         NWHO = ISTAT(MPI_SOURCE)
+C
          IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
              CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,
-     &           MPI_ANY_SOURCE,40,MPI_COMM_WORLD,ISTAT,IERR)
+     &           NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
          ENDIF
-C
-         NWHO = ISTAT(MPI_SOURCE)
 C
 Cjth & trond - this is bit risky
 C
