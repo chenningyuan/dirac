@@ -41,10 +41,11 @@ b gmotra_ if (nz==1 | (n2bbasxq==0 && spinfr==0))
 command
  my_macro
  my_macro1
-# continue
+ echo type continue or sipmly c...\n
+# c
 end
 
-### example of an unconditional breakpoint 
+### example of the unconditional breakpoint 
 b dirone.F:1399
 command
  if ( (nfsym.eq.1 && n2bbasxq.gt.10) | nz.eq.1 | spinfr.eq.0)
@@ -52,18 +53,20 @@ command
   if (nfsym.eq.2)
     printf "NTMO(1)=%d NTMO(2)=%d\n",NTMO(1),NTMO(2)
   else
-    printf "NTMO(1)=%d \n",NTMO(1)
+    printf "One symmetry...NTMO(1)=%d \n",NTMO(1)
   end
  else
   printf "... else branch...."
  end
 
-# while cycle demo
-# indx=0
-# while indx.lt.3
-#   printf "WORK(%d)=%lf\n",WORK(ktmat+indx)
-#   indx=indx+1
-# end 
+##### while cycle demo #####
+printf" Few values of the WORK(KTMAT) array, KTMAT=%d... \n",KTMAT
+ set $indx=0 
+ while ($indx.lt.5)
+   printf "WORK(%d)=%lf\n",ktmat+$indx,(*WORK)(ktmat+$indx)
+#  p ktmat+$indx
+  set $indx=$indx+1
+ end 
 
 end
 
