@@ -532,14 +532,13 @@ C
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 
-#ifdef SYS_IRIX
 
 C
       IF (ITASK .EQ. -1) THEN
-C        go back to main menu via MPI_BCAST
+C        go back from submenu to main menu via MPI_BCAST
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       ELSE
-C        slave should be in main menu
+C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
 chj         write (0,*) 'sending itask',itask,' to node',node
             CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
@@ -547,18 +546,6 @@ chj         write (0,*) 'sending itask',itask,' to node',node
          END DO
 C        should call wait or barrier here
       END IF
-
-#else /* not SYS_IRIX */
-
-C
-C This is not SGI IRIX; sleep and wake up not implemented (yet)
-C
-      IF (MYTID .NE. 0) THEN
-         CALL QUIT('DIRAC_PARCTL called from a slave')
-      END IF
-      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-
-#endif /* SYS_IRIX */
 
 #else /* not VAR_MPI */
 
