@@ -393,6 +393,11 @@ C
         IF(BNCRON .AND. .NOT. ONESYS) THEN
            CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
         ENDIF
+        IF(IPRSCF.GE.5) THEN
+          CALL HEADER('Total FD matrix',-1)
+          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+        END IF
       ELSE
         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C        
@@ -635,7 +640,7 @@ C
       DO 40 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 40
         IF(NFRO(I).EQ.0) THEN
-        CALL BCKTR1(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+          CALL BCKTR1(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              FAO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &              NTMO(I),NZ,NTMO(I),1,NFBAS(I,0),
      &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,
@@ -2082,7 +2087,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck MKMOFK */
+C  /* Deck MKMOFK2 */
       SUBROUTINE MKMOFK2(FMO,FAO,TMAT,WORK,LWORK)
 C**********************************************************************
 C     PURPOSE:
@@ -3172,25 +3177,25 @@ C         real matrices, but a blocking given by another array.
 C         Initialize FAO to zero.
 C         --------------------------------------------------------
 C
-          NORB2 = NORB(I)*NORB(I)
-          CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
+          N2TMO = NTMO(I)*NTMO(I)
+          CALL DZERO(FAO(1+I2TMOT(I)),N2TMO*NZ)
 C
           IBO = 0
           DO ISUB = 1, N_SUB_BL(I)
            NBO = NORB_SUB(ISUB,I,0)
            IF(NBO.GT.0) THEN
-            IMAT = I2ORBT(I) + (NORB(I)+1)*IBO + 1
+            IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
             IEIG = IORB(I) + IBO + 1
 C
 C           Diagonalize the isub'th block of parity i
 C
             IF (DOJACO) THEN
-              CALL RSJACO(NORB(I),NBO,NBO,FMO(IMAT),
+              CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
      &                    EIG(IEIG),1,1,0,FAO(IMAT),
      &                    WORK(KFREE),LFREE)
             ELSE
-              CALL QDIAG(1,NBO,FMO(IMAT),NORB(I),NORB(I),
-     &                   EIG(IEIG),1,FAO(IMAT),NORB(I),NORB(I),
+              CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
+     &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
             IBO = IBO + NORB_SUB(ISUB,I,0)
@@ -3204,9 +3209,9 @@ C
           CALL INIBOS(IBEIG(IORB(I)+1),I)
           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
-          CALL SELBOS (NORB(I),WORK(KINDX),EIG(IORB(I)+1),
-     &                 IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
-     &                 FMO(I2ORBT(I)+1),WORK(KIDUM))
+          CALL SELBOS (NTMO(I),WORK(KINDX),EIG(IORB(I)+1),
+     &                 IBEIG(IORB(I)+1),FAO(I2TMOT(I)+1),
+     &                 FMO(I2TMOT(I)+1),WORK(KIDUM))
           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
 C
 C       3 : ZORA; diagonalize modified LL block

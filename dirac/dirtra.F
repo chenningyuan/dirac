@@ -2724,22 +2724,24 @@ C***********************************************************************
 C      
 #include "dcbbas.h"
 #include "dcborb.h"  
+#include "dcbdhf.h"  
 #include "dgroup.h" 
       DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
 C
-      CALL DZERO(FMO(I2ORBT(IFRP)+1),N2ORB(IFRP)*NZ)
+      NDIM = NTMO(IFRP)*NTMO(IFRP)*NZ
+      CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
       IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
         IAO = I2BASX(IFRP,IFRP)+1
-        IMO = I2ORBT(IFRP) + (NORB(IFRP)+1)*IBORB + 1
+        IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-     &         FMO(IMO),NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),
-     &         TM1(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
-     &         TM2(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
+     &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         BUF,LBUF,IPRINT)
           IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
       ENDIF
