@@ -1595,7 +1595,7 @@ C
         GO TO 200
     3 CONTINUE
 #if defined (MOD_TRA)
-        CALL MP2INP(WORD,WORK,LWORK)
+        CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
     4 CONTINUE
@@ -1606,7 +1606,7 @@ C        CALL DFTINP(WORD)
         GO TO 200
     6 CONTINUE
 #if defined (MOD_TRA)
-        CALL RESINP(WORD,WORK,LWORK)
+        CALL RESINP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
     7 CONTINUE
@@ -1618,12 +1618,19 @@ C
 C     Always initialize DHF, properties will then be
 C     for zero electrons if user has forgotten to specify
 C     wave function
-Cjth  IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+C
+C     For geometry optimizations to work the INPUT routines
+C     must always be called.
+C
+C     IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+C     IF (DOMVO) CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
+C     IF (DORES) CALL RESINP(WORD,.TRUE.,WORK,LWORK)
+C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
-      IF (DOMVO) CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
+      CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_TRA)
-      IF (DORES) CALL RESINP(WORD,WORK,LWORK)
-      IF (DOMP2) CALL MP2INP(WORD,WORK,LWORK)
+      CALL RESINP(WORD,.TRUE.,WORK,LWORK)
+      CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
 #endif
 #if defined (MOD_CC)
 C

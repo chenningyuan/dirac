@@ -32,7 +32,7 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mp2inp */
-      SUBROUTINE MP2INP(WORD,WORK,LWORK)
+      SUBROUTINE MP2INP(WORD,RESET,WORK,LWORK)
 C*****************************************************************************
 C
 C     Input section for MP2-module
@@ -47,7 +47,7 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 15)
 C
-      LOGICAL SET, NEWDEF
+      LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
@@ -68,8 +68,16 @@ C
       DATA SET/.FALSE./
 #include <memint.h>
 C
-      IF (SET) RETURN
-      SET = .TRUE.
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
 C
 C     Initialize /DCBTRA/
 C     ===================
@@ -966,7 +974,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck resinp */
-      SUBROUTINE RESINP(WORD,WORK,LWORK)
+      SUBROUTINE RESINP(WORD,RESET,WORK,LWORK)
 C*****************************************************************************
 C
 C     Input section for MP2-module
@@ -981,7 +989,7 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 5)
 C
-      LOGICAL SET, NEWDEF
+      LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
@@ -999,8 +1007,16 @@ C
       DATA SET/.FALSE./
 #include <memint.h>
 C
-      IF (SET) RETURN
-      SET = .TRUE.
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
 C
 C     Initialize /DCBRES/
 C     ===================
