@@ -1738,11 +1738,7 @@ C
 C     Integral and basis input
 C
       IF ( .NOT. EXSIR ) THEN
-#ifdef MOD_GEO
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
-#else
-         CALL QUIT('No EXEDIR in this distribution.')
-#endif
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
          ELSE IF (DOMP2) THEN

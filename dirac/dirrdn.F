@@ -111,7 +111,6 @@ C
          CALL PRPINP('**PROPE',WORK,LWORK)
          CLOSE(LUCMD)
       ENDIF
-#if defined (MOD_TRA)
 C
 C     Input of transformation module
 C
@@ -120,7 +119,6 @@ C
         CALL TRAINP(WORK,LWORK)
         CLOSE(LUCMD)
       ENDIF
-#endif
 C
 C     Consistency checks
 C
@@ -566,12 +564,7 @@ C&&& HEINZ: Solve one-electronsystems using free-particle projection operators
             GO TO 100
  111     CONTINUE
 C&&&& MINIMIZE: Geometry optimization
-#ifdef MOD_GEO
             MINIMI = .TRUE.
-#else
-            CALL QUIT('Geometry optimization module not distributed '//
-     &                'in this version')
-#endif
             GOTO 100
  112     CONTINUE
             GOTO 100
@@ -603,10 +596,8 @@ C
       IF(DOPSI)   WRITE(LUPRI,'(3X,A)') '* Wave function'
       IF(DOANA)   WRITE(LUPRI,'(3X,A)') '* Analysis'
       IF(DOPRP)   WRITE(LUPRI,'(3X,A)') '* Properties'
-#if defined (MOD_TRA)
       IF(DOTRA) WRITE(LUPRI,'(3X,A)') '* Transformation to Molecu'//
      &    'lar Spinor basis'
-#endif
       IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
      &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
@@ -639,18 +630,14 @@ C
          CALL QUIT('Program stopped in JOBINP, error in prompt.')
       END IF
     2 CONTINUE
-#ifdef MOD_GEO
         CALL MININP(WORD)
-#endif
         GO TO 200
     3 CONTINUE
         GO TO 200
     4 CONTINUE
         GO TO 200
     1 CONTINUE
-#ifdef MOD_GEO
       CALL MININP(WORD)
-#endif
 C
       RETURN
       END
@@ -926,9 +913,6 @@ C&&& ACTIVE SHELLS: read in number of active shells
 C                   and their occupation
 C             Read in number of open shells
 C
-#ifndef MOD_OPEN
-               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
-#else
                READ(LUCMD,*) NOPEN
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
                   WRITE(LUPRI,'(1X,A,I2,A,I2)') 
@@ -989,7 +973,6 @@ c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                   DF(IOPEN) = SDPRE(IELEC)/SDPRE(IAC1+IAC2)
                END DO
                INIOCC = .FALSE.
-#endif
                GO TO 100
    21          CONTINUE
 C&&& AUTOCC: Automatic DHF occupation
@@ -1041,12 +1024,8 @@ C                               closed shell)
                GO TO 100
    30          CONTINUE
 C&&& DIISAO: Do jth Dalton like DIIS 
-#ifdef MOD_OPEN
                   DIISAO = .TRUE.
                   DIISMO = .FALSE.
-#else
-                  CALL QUIT('DIISAO NOT IN THIS DISTRIBUTION')
-#endif
                GO TO 100
    31          CONTINUE
 C&&& POST DHF REORDER: 
@@ -1631,17 +1610,11 @@ C
      &   '* Generate modified virtual orbitals'
       IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
      &    'calculation (Panas method)'
-#if defined (MOD_TRA)
       IF(DORES) WRITE(LUPRI,'(1X,A)') 
      &   '* Resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
-#endif
-#if defined (MOD_CC)
       IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
-#endif
-#if defined (MOD_CI)
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
-#endif
       IF(DOLVC) THEN
          WRITE(LUPRI,'(1X,A)')
      &   '* SS integrals neglected: ',
@@ -1686,9 +1659,7 @@ C
         CALL DHFINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     3 CONTINUE
-#if defined (MOD_TRA)
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     4 CONTINUE
 C        CALL DFTINP(WORD)
@@ -1697,9 +1668,7 @@ C        CALL DFTINP(WORD)
         CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     6 CONTINUE
-#if defined (MOD_TRA)
         CALL RESINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     7 CONTINUE
         GO TO 200
@@ -1720,11 +1689,8 @@ C     IF (DORES) CALL RESINP(WORD,.TRUE.,WORK,LWORK)
 C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
       CALL MVOINP(WORD,.TRUE.,WORK,LWORK)
-#if defined (MOD_TRA)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
-#endif
-#if defined (MOD_CC)
 C
 C     Input of relccsd module
 C
@@ -1734,8 +1700,6 @@ C        OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL CCINPT(LUCMD,LUPRI,MIOBUF)
          CLOSE(LUCMD)
       ENDIF
-#endif
-#if defined (MOD_CI)
 C
 C     Input of dirrci module
 C
@@ -1744,7 +1708,6 @@ C
          CALL CIMINP(WORK,LWORK)
          CLOSE(LUCMD)
       ENDIF
-#endif
 C      CALL DFTINP(WORD)
       RETURN
 C
@@ -2747,12 +2710,8 @@ C            ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
 C&&& SPINFREE : Zero out spin-orbit terms
-#ifdef MOD_SPF
              SPINFR = .TRUE.
              ICHANG = ICHANG + 1
-#else
-             CALL QUIT ('SPINFR option not active in this release')
-#endif
 
                GOTO 100
   114      CONTINUE
