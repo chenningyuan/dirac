@@ -286,7 +286,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      COMPLEX*16 CDOTC,ZDOTC
+      COMPLEX*16 CDOTU,ZDOTU,CDOTC,ZDOTC
       REAL*8 DDOT,ZDOT
 C
 C---------------Executable code--------------------------------------
@@ -296,36 +296,31 @@ C
       ELSE
          EXPA = DDOT (NFVO,EOV,1,DVO,1)
       ENDIF
-c     print*,' Relaxation contribution 1',expa
 C
       IF (CARITH) THEN
          CEXPA = CEXPA + ZDOTU (NFVO,EVO,1,DOV,1)
       ELSE
          EXPA = EXPA + DDOT (NFVO,EVO,1,DOV,1)
       ENDIF
-c     print*,' Relaxation contribution ',expa
 C
       IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTU (NFOO,EOO,1,DOO,1)
+         CEXPA = CEXPA + ZDOTC (NFOO,EOO,1,DOO,1)
       ELSE
          EXPA = EXPA + DDOT (NFOO,EOO,1,DOO,1)
       ENDIF
-c     print*,' OO contribution ',DDOT (NFOO,EOO,1,DOO,1)
 C
       IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTU (NFVV,EVV,1,DVV,1)
+         CEXPA = CEXPA + ZDOTC (NFVV,EVV,1,DVV,1)
       ELSE
          EXPA = EXPA + DDOT (NFVV,EVV,1,DVV,1)
       ENDIF
-c     print*,' VV contribution ',DDOT (NFVV,EVV,1,DVV,1)
-c     print*,' Total MP2 contribution ',expa
 C
 C     This is the correlation contribution, add the reference value
 C
       II = 1
       DO IREP = 1, NREP
          IF (CARITH) THEN
-            CEXPA = CEXPA + ZDOTU (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
+            CEXPA = CEXPA + ZDOTC (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
          ELSE
             EXPA = EXPA + DDOT (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
          ENDIF

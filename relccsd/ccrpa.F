@@ -1207,7 +1207,7 @@ C
 C---------------Local variables--------------------------------------
 C
       COMPLEX*16 CERPA1,CERPA2
-      COMPLEX*16 CDOTC,ZDOTC
+      COMPLEX*16 CDOTU,ZDOTU
       REAL*8 DDOT,ZDOT
 C
 C---------------Executable code--------------------------------------
