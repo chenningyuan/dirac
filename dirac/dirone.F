@@ -1028,7 +1028,7 @@ C  DCBBAS: NTBAS,NFORB
 C
 #include <dcbbas.h>
 C
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBUF(NBAST,*)
 #else

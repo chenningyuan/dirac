@@ -1,5 +1,5 @@
 C  /* Deck dirac */
-#ifndef SYS_LINUX
+#ifndef VAR_G77
       PROGRAM DIRAC
 #else
       SUBROUTINE DIRAC(WORK,LWORK,STR_DIRWRK)
@@ -73,7 +73,7 @@ CTROND      INCLUDE 'sys/schedctl.h'
       LOGICAL DOLOGO
 #if defined (SYS_T3D)
       PARAMETER (LWORK = 10 000 000)
-#elif defined (SYS_LINUX)
+#elif defined (VAR_G77)
       DIMENSION WORK(LWORK)
       CHARACTER STR_DIRWRK*(*)
 #else
@@ -91,12 +91,13 @@ C
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
       CHARACTER*20 DIRWRK
 #endif
+#ifndef VAR_G77
 #if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
       POINTER (WADDR,WORK(1))
 #else
 #if defined (SYS_CONVEX)
       DIMENSION WORK(2)
-#elif !defined (SYS_LINUX)
+#else
 C
 C     Static memory allocation
 C
@@ -106,6 +107,7 @@ C
       COMMON /DIRWRK/ WORK
 #endif
 #endif
+#endif
       CHARACTER CPUTID*12, SECTID*12
       DATA WRKDLM/8H*WRKDLM*/
       LMWORK = 0
@@ -113,6 +115,7 @@ C
       CALL QENTER('DIRAC')
 C
 C
+#ifndef VAR_G77
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
 C
 C     Dynamic allocation of memory;check for DIRWRK in environment
@@ -127,7 +130,6 @@ C
          LMWORK = 0
    20 CONTINUE
 #endif
-#ifndef SYS_LINUX
 C
 C     Either use default memory size
 C     
@@ -153,7 +155,6 @@ C
          WRITE(LUERR,1000)
          CALL QUIT(' DIRAC: memory allocation failure')
       END IF
-#endif
 #if defined (SYS_CONVEX)
 C
 C     Convex dynamic memory allocation
@@ -212,7 +213,8 @@ C
       CALL ERRSET(212,256,-1,1)
 #endif
 #endif
-#ifdef SYS_LINUX
+#endif
+#ifdef VAR_G77
 C
 C     Check memory allocation
 C

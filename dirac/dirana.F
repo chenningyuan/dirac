@@ -380,7 +380,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 C 
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,NBAST)
 #else
@@ -533,7 +533,7 @@ C  DGROUP: NZ
 #include <dgroup.h>
 #include <dcbpop.h>
 C
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,NBAST),PBUF(NBAST,NBAST,*)
 #else

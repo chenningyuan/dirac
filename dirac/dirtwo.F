@@ -1715,7 +1715,7 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbind.h>
 C
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,*),DMAT(NBAST,NBAST,*) 
 #else
@@ -1949,7 +1949,7 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0,D4 = 4.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT) 
@@ -2181,7 +2181,7 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT)
@@ -2395,7 +2395,7 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbind.h>
 #include <dgroup.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT)
@@ -2582,7 +2582,7 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT)
@@ -2764,7 +2764,7 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbind.h>
 #include <dgroup.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT)
@@ -2954,7 +2954,7 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,DP5=0.5D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-#ifdef SYS_LINUX
+#ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
      &          DMAT(NBAST,NBAST,NDMAT)
