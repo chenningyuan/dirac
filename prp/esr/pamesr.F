@@ -300,10 +300,12 @@ C
      &   (GSHIFT(I),I =1,3), GSHFTISO
 
       ENDIF
+C     .. end if (ESRGTENS) then
 C
 C     Print ESR anisotropies from hyperfine Hamiltonian
 C
-      CALL PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
+      IF (ESRANISO)
+     &   CALL PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
 C
 C     Memory deallocation
 C
@@ -392,7 +394,6 @@ C
 C
 
 Chj-start test output
-c      print *, ' ..... test output of property matrix in MO basis ...'
           kfree = 1
           lfree = lwork
           iprtst = 10
@@ -406,12 +407,26 @@ c     imo(1) = icmoq(1)
 c     nmo(1) = norb(1)
 c     imo(2) = icmoq(2)
 c     nmo(2) = norb(2)
-c         print *, 'imo,nmo:',imo,nmo
+c
+c      print *, ' ..... test output of property matrix in MO basis ...'
+c      print *, 'isym,iopsy:',isym,iopsy
+c      print *, 'icmoq  :',icmoq
+c      print *, 'nfbas  :',nfbas(1,0),nfbas(2,0)
+c      print *, 'npsh   :',npsh
+c      print *, 'nish   :',nish
+c      print *, 'imo,nmo:',imo,nmo
           CALL PRPMAT(INDXPR,IOPSY,pmat,CMO,imo,nmo,
      &                WORK,KFREE,LFREE,IPRESR)
+          if (nmo(1) .eq. 1 .and. nmo(2) .eq. 0) then
+             JMOSY = 1
+          else if (nmo(1) .eq. 0 .and. nmo(2) .eq. 1) then
+             JMOSY = 2
+          else
+             call quit('Only one open shell implemented yet!')
+          end if
           DO J = 1,NZ
              JQ = IPQTOQ(J,IREP)
-             ESRVAL(JQ,I) = PMAT(1+N2ORBX*(J-1))
+             ESRVAL(JQ,I) = PMAT(1+I2ORBX(JMOSY,JMOSY)+N2ORBX*(J-1))
           END DO
 c      print *, ' ..... end of test output of MO prp. matrix ...'
 Chj-end test output
