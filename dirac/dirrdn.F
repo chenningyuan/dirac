@@ -159,7 +159,9 @@ C
 #include <dcbcls.h>
 #include <dcbprl.h>
 C
-      DATA TABDIR /'*END OF','*XXXXXX','*XXXXXX','*XXXXXX',
+#include <ibtfun.h>
+C
+      DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
@@ -333,9 +335,9 @@ C
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
      +    'the following two-electron integrals:'
-        IF(ILLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
-        IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
-        IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+        IF(IBTAND(IDFLAG,1)) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+        IF(IBTAND(IDFLAG,2)) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
+        IF(IBTAND(IDFLAG,4)) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
