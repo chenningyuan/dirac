@@ -1756,7 +1756,7 @@ C
 C
  1010 FORMAT(11X,I3,' large AO-blocks of ',A1,' type')
  1020 FORMAT(11X,I3,' small AO-blocks of ',A1,' type')
-      IF (IPREAD .GE. 1) THEN
+      IF (IPREAD .GE. 2) THEN
          KIPCON = 1
          KLAST  = KIPCON + KPRIM
          IF (KLAST.GT.LWORK) CALL STOPIT('BASOUT','ORBOUT',KLAST,LWORK)
