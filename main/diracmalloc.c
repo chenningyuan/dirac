@@ -23,18 +23,12 @@
 void *pointer;
 
 #if defined (SYS_AIX)  || defined (SYS_IRIX)  || defined (SYS_SUN) \
- || defined (SYS_PHUX) || defined (SYS_LINUX) 
+ || defined (SYS_PHUX) || defined (SYS_LINUX) || defined (SYS_CRAY) \
+ || defined (SYS_T3D)  
    pointer = malloc(size);
    if ( pointer == NULL )
    {
       printf("DIRAC could not allocate memory.\n");
-      exit(1);
-   }
-#elif defined (SYS_CRAY) || defined (SYS_T3D)  
-   pointer = hpalloc(size);
-   if ( pointer == NULL )
-   {
-      printf("DIRAC could not allocate memory (%i bytes).\n",size);
       exit(1);
    }
 #elif defined (SYS_CONVEX)
