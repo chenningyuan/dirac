@@ -454,7 +454,7 @@ C       Calculate gross populations
 C       ===========================
 C
         CALL GRSPOP(POPG,PMAT,NPOPLAB)
-        IF (IPRPOP.GT.0) CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
+        CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
 C
 C       Multiply fractional occupation on population.
 C       =============================================
@@ -738,7 +738,7 @@ C
       NPRI = MIN(NEFF+1,8)
       NFMT = 8 + 15*NPRI
       NPRI = NPRI - 1
-        WRITE(LUPRI,'(A,F8.5)') '* Gross populations greater than',DTOL
+        WRITE(LUPRI,'(/A,F8.5)') '* Gross populations greater than',DTOL
       WRITE(FMT,'(A1,I3,A3)') '(',NFMT,'A1)'
       WRITE(LUPRI,'(/A8,2X,A6,2X,A1,4X,7(A12,3X))')
      &     'Gross   ','Total ','|',(LAB(IEFF(I)),I=1,NPRI)
@@ -763,7 +763,7 @@ C
       ENDDO
 C
       IF(IPRINT.GE.1) THEN
-        WRITE(LUPRI,'(A)') '* Gross populations (all):'
+        WRITE(LUPRI,'(/A)') '* Gross populations (all):'
         DO I = 1,NLAB
           WRITE(LUPRI,'(A12,1P,2E16.8)') LAB(I),POPG(I,1),POPG(I,2)
         ENDDO
@@ -2096,7 +2096,7 @@ C        Loop over all centers
       ENDDO      
 C     Add some space, calculate step sizes and convert step vectors to Angstrom
       DO I = 1,3
-        CUBE(I,0) = CUBE(I,0) - CUBADJ(1)
+        CUBE(I,0) = CUBE(I,0)  - CUBADJ(1)
         CUBE(I,I) = (CUBE(I,I) + CUBADJ(2))*XTANG
         CUBE(I,I) = (CUBE(I,I)-CUBE(I,0))/(NCUBE(I)-1)
       ENDDO

@@ -328,7 +328,8 @@ C
          CALL TYPE3MXC(MXCENTC,NNDEP,QMAT,ADDQIC,QTHRS)
          KCENTC  = 0
       END IF
-      IF (MXCENTC.LE.0) CALL QUIT('TYPE3DRV: MXCENTC.le.0')
+C      IF (MXCENTC.LE.0) CALL QUIT('TYPE3DRV: MXCENTC.le.0' //
+C     &   ' (Probably no charges are .GT. Threshold)')
       LFCBA = MXCENTC*NUCDEP**2
       CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGEXP ,  MXCENTC,WORK,KFREE,LFREE)
@@ -420,6 +421,7 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       PARAMETER (D0 = 0.0D0 ,  D2 = 2.0D0)
@@ -439,6 +441,11 @@ C
             IF (ABS(TMP) .GT. QTHRS) MXCENTC = MXCENTC + 1
          ENDDO
       ENDDO
+      IF (MXCENTC.EQ.0) THEN
+         CALL HEADER('Output from TYPE3MXC',-1)
+         WRITE(LUPRI,'(/3X,A,D10.3/)') 
+     &   'No charges greater than threshold : ',QTHRS
+      ENDIF
       CALL QEXIT('TYPE3MXC')
       RETURN
       END
@@ -957,14 +964,14 @@ C
       ICVTEST=(INTTEST.NE.7).OR.(INTTEST.NE.INTFLG)
       IF(INTFLG.LT.1 .AND. .NOT.SMLV1C) 
      & CALL QUIT('  ** ERROR IN CATCORR : '//
-     & 'Called wihout any integral-classes specified !')
+     &     'Called wihout any integral-classes specified !')
 C
 c     ... Get matrix of small- and large-component charges
 C
-C      DOLSQ=(INTV1C.EQ.3).OR.(INTV1C.EQ.2.AND.ICTLV1C(2).EQ.0)
-C     &      .OR.(INTV1C.EQ.4).OR.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)
-      DOLSQ=(INTV1C.NE.2.AND.ICTLV1C(2).NE.1).OR.
-     &      (INTV1C.NE.1.AND.ICTLV1C(2).NE.0)
+      DOLSQ=(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.2).OR.
+     &      (INTV1C.EQ.2.AND.ICTLV1C(2).NE.1).OR.
+     &      (INTV1C.EQ.3)                    .OR.
+     &      (INTV1C.EQ.4.AND.ICTLV1C(2).NE.1)
       KREL = KFREE
       IF(DOLSQ) THEN
         IF(NOPEN.GE.1) THEN
@@ -976,11 +983,12 @@ C     &      .OR.(INTV1C.EQ.4).OR.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)
             JDMAT = 1+N2BBASXQ*ISHELL
             CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(JDMAT),1,
      &                 WORK(KBUF),1)
-         ENDDO
-         CALL LSQMAT(WORK(KQMAT),WORK(KBUF),NMPOLOP,WORK(KFREE),
-     &               LFREE,IPRINT)
+          ENDDO
+          CALL LSQMAT(WORK(KQMAT),WORK(KBUF),NMPOLOP,WORK(KFREE),
+     &                LFREE,IPRINT)
+        ELSE
           CALL LSQMAT(WORK(KQMAT),DMAT,NMPOLOP,WORK(KFREE),LFREE,
-     &              IPRINT)
+     &                IPRINT)
         ENDIF
       ENDIF
 c
@@ -1073,7 +1081,6 @@ c
             CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
             CALL EONECAP(WORK(KONEMT),DMAT,WORK(KFREE),LFREE,2)
 c
-            CALL DAXPY(NNBBASX,D1,WORK(KONEIN2),1,WORK(KONEIN),1)
             IF (ICTLV1C(2).EQ.2) THEN
                OMITVNUC = 'TTFF'
                CALL TYPE2DRV(WORK(KONEIN2),WORK(KFREE),LFREE,DOINT,
@@ -1195,7 +1202,7 @@ c     &                  OMITVNUC,IPRINT)
       ELSE
          CALL QUIT('CATCORR not implemented for .not. ONECAP')
       END IF
-      IF(IPRINT.GE.6) THEN
+C      IF(IPRINT.GE.6) THEN
          IF (INTV1C .EQ. 1) THEN
              CALL HEADER('CATCORR: ONECAP type 1 correction to '//
      &                    'nuclear attraction integrals',-1)
@@ -1208,7 +1215,7 @@ c     &                  OMITVNUC,IPRINT)
          END IF
          CALL PRQMAT(WORK(KONEMT),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-      ENDIF
+C      ENDIF
 C
 C     Add correction to Fock-matrix
 C     =============================
@@ -1231,11 +1238,11 @@ c        ... Correct one-electron Fock-matrix
             END IF
          ELSE
             CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,F1MAT,1)
-            IF(IPRINT.GE.6) THEN
+C            IF(IPRINT.GE.6) THEN
                CALL HEADER('CATCORR: ONECAP corrected F1MAT',-1)
                CALL PRQMAT(F1MAT,NTBAS(0),NTBAS(0),
      &                     NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-            END IF
+C            END IF
          ENDIF
 	  ELSE
 	     CALL QUIT('Unknown .ONECAP type (INTV1C)')
