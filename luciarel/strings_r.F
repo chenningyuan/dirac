@@ -4189,12 +4189,16 @@ C     ^ End of loop over IMS2 values
           NELFTP(ISTTYP) = NAELRF-IANNI
           NELFTP_REF(ISTTYP) = NAELRF
           IF(IANNI.EQ.0) IST_FOR_DT(1,IDTTP) = ISTTYP
+          IF(IANNI.EQ.1) ITPM1(1,IDTTP) = ISTTYP
+          IF(IANNI.EQ.2) ITPM2(1,IDTTP) = ISTTYP
 *. Beta terms
           ISTTYP = ISTTYP + 1
           NELEC(ISTTYP) = NBELRF-IANNI
           NELFTP(ISTTYP) = NBELRF-IANNI
           NELFTP_REF(ISTTYP) = NBELRF
           IF(IANNI.EQ.0) IST_FOR_DT(2,IDTTP) = ISTTYP
+          IF(IANNI.EQ.1) ITPM1(2,IDTTP) = ISTTYP
+          IF(IANNI.EQ.2) ITPM2(2,IDTTP) = ISTTYP
         END DO
       END DO
       NSTTYP = ISTTYP

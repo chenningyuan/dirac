@@ -2143,9 +2143,10 @@ C    &     LUC,LUHC)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MXRESC_REL(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &                      NSMST,NSTFSMSPGP,
+     &                      NSMST,NSTFSMSPGP,NSTFSMSPGP2,
      &                      MXPNSMST,
-     &                      NSMOB,MXPTOB,NTPOB,NTSOB,NTESTG,MXPKA,
+     &                      NSMOB,MXPTOB,NTPOB,NTSOB,NTSOB2,
+     &                      NTESTG,MXPKA,
      &                      NEL1234,
      &                      MXCJ,MXCIJA,
      &                      MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
@@ -2167,8 +2168,8 @@ C    &     LUC,LUHC)
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
       DIMENSION IAB(NOCTPA,NOCTPB)
-      DIMENSION NSTFSMSPGP(MXPNSMST,*)
-      DIMENSION NTSOB(MXPTOB,NSMOB)
+      DIMENSION NSTFSMSPGP(MXPNSMST,*),NSTFSMSPGP2(MXPNSMST,*)
+      DIMENSION NTSOB(MXPTOB,NSMOB),NTSOB2(MXPTOB,NSMOB)
       DIMENSION NEL1234(MXPTOB,*)
 *
       NTESTL = 000
@@ -2196,7 +2197,7 @@ C    &     LUC,LUHC)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXB = 0
             DO 210 ISM = 1, NSMST
-              MXB =MAX(MXB,NSTFSMSPGP(ISM,IBTPABS))
+              MXB = MAX(MXB,NSTFSMSPGP2(ISM,IBTPABS))
   210       CONTINUE
             IF(NTEST.GE.100) WRITE(6,*) ' MXB = ', MXB
             DO 300 IOBTP = 1, NTPOB
@@ -2260,7 +2261,7 @@ C    &     LUC,LUHC)
               IF(KBTP.GT.0) THEN
                 MXKB = 0
                 DO KSM = 1, NSMST
-                  MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
+                  MXKB = MAX(MXKB,NSTFSMSPGP2(KSM,KBTP))
                 END DO
                 IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
                 MXKBO = MXKB
@@ -2268,12 +2269,13 @@ C    &     LUC,LUHC)
      &          MXKB= MXPKA
                 MXSOB = 0
                 DO ISMOB = 1, NSMOB
-                  MXSOB = MAX(MXSOB,NTSOB(IOBTP,ISMOB))
+                  MXSOB = MAX(MXSOB,NTSOB2(IOBTP,ISMOB))
                 END DO
                 IF(NTEST.GE.100) WRITE(6,*) ' MXSOB = ', MXSOB
 *
                 MXADKBLK = MAX(MXADKBLK,MXSOB*MXKBO)
-                LCJBLK = MXSOB*MXKB*MXB
+C               LCJBLK = MXSOB*MXKB*MXB
+                LCJBLK = MXSOB*MXKB*MXA
                 MXCJ = MAX(MXCJ,LCJBLK)
 *
               END IF
@@ -2303,7 +2305,7 @@ C    &     LUC,LUHC)
           IF(IAB(IATP,IBTP).NE.0) THEN
             MXIB = 0
             DO  ISM = 1, NSMST
-              MXIB = MAX(MXIB,NSTFSMSPGP(ISM,IBTPABS))
+              MXIB = MAX(MXIB,NSTFSMSPGP2(ISM,IBTPABS))
             END DO
             IF(MXIB.GT.MXPKA) MXIB = MXPKA
             IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
@@ -2393,14 +2395,14 @@ C    &     LUC,LUHC)
                   IF(KBTP.GT.0) THEN
                     MXKB = 0
                     DO KSM = 1, NSMST
-                      MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
+                      MXKB = MAX(MXKB,NSTFSMSPGP2(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
                     IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
-                      MXJSOB = MAX(MXJSOB,NTSOB(JOBTP,JSMOB))
+                      MXJSOB = MAX(MXJSOB,NTSOB2(JOBTP,JSMOB))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXJSOB = ', MXJSOB
 *
@@ -2459,14 +2461,14 @@ C    &     LUC,LUHC)
                   IF(KBTP.GT.0) THEN
                     MXKB = 0
                     DO KSM = 1, NSMST
-                      MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
+                      MXKB = MAX(MXKB,NSTFSMSPGP2(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
                     IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
-                      MXJSOB = MAX(MXJSOB,NTSOB(JOBTP,JSMOB))
+                      MXJSOB = MAX(MXJSOB,NTSOB2(JOBTP,JSMOB))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXJSOB = ', MXJSOB
 *
@@ -2545,7 +2547,7 @@ C    &     LUC,LUHC)
         IBTPABS = IBTP + IOCTPB - 1
         MXIB = 0
         DO  ISM = 1, NSMST
-          MXIB = MAX(MXIB,NSTFSMSPGP(ISM,IBTPABS))
+          MXIB = MAX(MXIB,NSTFSMSPGP2(ISM,IBTPABS))
         END DO
         IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
 *. Orbitals to be removed
@@ -2569,7 +2571,7 @@ C    &     LUC,LUHC)
               IF(JATP.GT.0) THEN
                 MXIOB = 0
                 DO ISMOB = 1, NSMOB
-                  MXIOB = MAX(MXIOB,NTSOB(IOBTP,ISMOB))
+                  MXIOB = MAX(MXIOB,NTSOB2(IOBTP,ISMOB))
                 END DO
 *
                 MXSXBL = MAX(MXSXBL,MXIOB*MXJOB*MXIA)

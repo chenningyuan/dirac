@@ -1478,8 +1478,8 @@ c
      &               NELFGP,MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
 *. Scratch space for CJKAIB resolution matrices
       CALL MXRESC_REL(WORK(KCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &                NSMST,NSTFSMSPGP,MXPNSMST,
-     &                NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
+     &                NSMST,NSTFSMSPGP,NSTFSMSPGP2,MXPNSMST,
+     &                NSMOB,MXPNGAS,NGAS,NOBPTS,NOBPTS2,IPRCIX,MAXK,
      &                NELFSPGP,
      &                MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
       IF(IPRDEN.GE.2) THEN

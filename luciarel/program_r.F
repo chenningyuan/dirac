@@ -249,7 +249,7 @@ C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
      &     WORK(KFINDMR),WORK(KFINDMI),WORK(KSCR2),
      &     WORK(KT_CC),
      &     ECORE,ICISTR,LBLK,
-     &     IDIAG,WORK(KVEC3),THRES_E,
+     &     IDIAG,THRES_E,
      &     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &     WORK(KPCIBT),INIDEG,E_THRE,C_THRE,
      &     E_CONV,C_CONV,ICLSSEL,
@@ -279,9 +279,9 @@ CTF   CALL RMEMCHK
           WRITE(6,'(1H ,A,I3)')
      &    ' ***************************************************'
 *
-          call gasana(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
-     &                WORK(KPCBLTP),LUSC61,LUSC37,
-     &                KVEC3)
+          call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                    WORK(KPCBLTP),LUSC61,LUSC37,
+     &                    ICISTR)
         end do
       end if
 *
@@ -404,36 +404,8 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
             write(6,*) 'SIGDEN_ROUTE ',SIGDEN_ROUTE
           end if
 *
-CTF     WRITE(6,*)
-CTF     IF(ICISTR.EQ.1) THEN
-CTF       CALL FRMDSC(WORK(KVEC1),NVAR,-1,LUC,IMZERO,IAMPACK)
-CTF       CALL COPVEC(WORK(KVEC1),WORK(KVEC2),NVAR)
-CTF       CALL DENSI2(IDENSI,WORK(KRHO1),
-CTF  &           WORK(KRHO2),
-CTF  &           WORK(KVEC1),WORK(KVEC2),0,0)
-CTF     ELSE
-CTF       IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
-CTF          CALL REWINO(LUSC1)
-CTF          CALL COPVCD_REL(LUC,LUSC1,WORK(KVEC1),0,LBLK)
-CTF          CALL COPVCD_REL(LUSC1,LUHC,WORK(KVEC1),1,LBLK)
-CTF       END IF
-CTF       CALL DENSI2(IDENSI,WORK(KRHO1),
-CTF  &                WORK(KRHO2),
-CTF  &                WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC)
-C         IF(NROOT.GT.1) THEN
-C           CALL REWINO(LUSC1)
-C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
-C    &                      WORK(KPCBLTP),
-C    &                      LUSC1,ICISTR)
-C         ELSE
-C           CALL REWINO(LUC)
-C           CALL GASANA_REL(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
-C    &                      WORK(KPCBLTP),
-C    &                      LUC,ICISTR)
-C           END IF
-CTF       END IF
-C         IF(NPROP.GT.0) CALL ONE_EL_PROP
-        END DO
+        end do
+*       ^ Loop over roots
       end if
 *
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -444,7 +416,7 @@ C         IF(NPROP.GT.0) CALL ONE_EL_PROP
 *     ^ CIRUN cases for MCSCF calls.
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
-      print*,'I have completed my task'
+      write(6,'(A)') 'I have completed my task'
 *
       call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
       RETURN

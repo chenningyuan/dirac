@@ -4736,9 +4736,11 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
      &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
         WRITE(6,*) ' Not enough scratch space to include a single Block'
         WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV'
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV2'
+        write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
-        Call Abend1( 11 )
+        call rmemchk
+        stop ' In PART_CIV2. '
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000

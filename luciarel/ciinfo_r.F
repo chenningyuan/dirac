@@ -994,7 +994,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       DO IMS2 = 1, NMS2VAL
 *
-        if (NTEST.ge.500) write(6,*) 'Doing IMS2 = ',IMS2
+        if (NTEST.ge.100) write(6,*) 'Doing MS2 = ',MS2VAL(IMS2)
         IATP = IST_FOR_DT(1,IMS2)
         IBTP = IST_FOR_DT(2,IMS2)
 *
@@ -1023,11 +1023,11 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
         MXSTBL0 = MXNSTR
 *. This must be generalized !
 *. alpha and beta strings with an electron removed
-        IATPM1 = 3
-        IBTPM1 = 4
+        IATPM1 = ITPM1(1,IMS2)
+        IBTPM1 = ITPM1(2,IMS2)
 *. alpha and beta strings with two electrons removed
-        IATPM2 = 5
-        IBTPM2 = 6
+        IATPM2 = ITPM2(1,IMS2)
+        IBTPM2 = ITPM2(2,IMS2)
 *. Largest number of strings of given symmetry and type
         MAXA = MXNSTR
         IF(NAEL.GE.1) THEN
@@ -1054,14 +1054,14 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &  ' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
-        MAXK = MIN( MXINKA,MXSTBL)
+        MAXK = MIN(MXINKA,MXSTBL)
 *.scratch space for projected matrices and a CI block
 *
 *. Scratch space for CJKAIB resolution matrices
 *. Size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
         CALL MXRESC_REL(WORK(KLCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
-     &                  NSMST,NSTFSMSPGP,MXPNSMST,
-     &                  NSMOB,MXPNGAS,NGAS,NOBPTS,IPRCIX,MAXK,
+     &                  NSMST,NSTFSMSPGP,NSTFSMSPGP2,MXPNSMST,
+     &                  NSMOB,MXPNGAS,NGAS,NOBPTS,NOBPTS2,IPRCIX,MAXK,
      &                  NELFSPGP,
      &                  MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK)
         LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
@@ -1091,8 +1091,6 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
-* Is KC2 this required still??
-* FIX E!
       call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
 *
       RETURN
