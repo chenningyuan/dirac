@@ -1713,10 +1713,16 @@ C     ***** Fill integrals in GMAT *****
 C     **********************************
 C
       NOTEST = .NOT.SHAEQB
+      ICK = LCLASH(ISHELC)
+      ICL = LCLASH(ISHELD)
+C     Check whether we have Gaunt or Coulomb integrals
+      IF (ICK.EQ.ICL) THEN
+         ICKL = ICK
+      ELSE
+         ICKL = 3
+      ENDIF
+      ISOFF  = 0
       IF (NOTEST) THEN
-         ISOFF  = 0
-         ICK = LCLASH(ISHELC)
-         ICL = LCLASH(ISHELD)
          DO I = 1, NINTS
            NSTRNA = IPNTNO(1,I)
            NSTRNB = IPNTNO(2,I)
@@ -1747,23 +1753,21 @@ C
                LRP   = INDX(2,INDD)
                INDCR = INDC - ICOS(KRP+1,ICK)
                INDDR = INDD - ICOS(LRP+1,ICL)
-               IOFFKL = ISPCK(KRP,LRP,ICL)
+               IOFFKL = ISPCK(KRP,LRP,ICKL)
      &                + (INDDR-1)*NCOS(KRP+1,ICK)+INDCR
-               IOFFLK = ISPCK(LRP,KRP,ICK)
+               IOFFLK = ISPCK(LRP,KRP,ICKL)
      &                + (INDCR-1)*NCOS(LRP+1,ICL)+INDDR
                GMAT(IOFFD+IOFFKL) = SOINT
-               GMAT(IOFFD+IOFFLK) = SOINT
+               IF (ICKL.NE.3) GMAT(IOFFD+IOFFLK) = SOINT
                NALL = NALL + 1
-               IF (IOFFKL.NE.IOFFLK) NALL = NALL + 1
+               IF (IOFFKL.NE.IOFFLK.AND.ICKL.NE.3)
+     &         NALL = NALL + 1
               END IF
              ENDDO
            ENDDO
            ISOFF = ISOFF + NOABCD
          ENDDO
       ELSE
-         ISOFF  = 0
-         ICK = LCLASH(ISHELC)
-         ICL = LCLASH(ISHELD)
          DO 100 I = 1, NINTS
            NSTRNA = IPNTNO(1,I)
            NSTRNB = IPNTNO(2,I)
@@ -1803,14 +1807,15 @@ C
 C
                INDCR = INDC - ICOS(KRP+1,ICK)
                INDDR = INDD - ICOS(LRP+1,ICL)
-               IOFFKL = ISPCK(KRP,LRP,ICL)
+               IOFFKL = ISPCK(KRP,LRP,ICKL)
      &                + (INDDR-1)*NCOS(KRP+1,ICK)+INDCR
-               IOFFLK = ISPCK(LRP,KRP,ICK)
+               IOFFLK = ISPCK(LRP,KRP,ICKL)
      &                + (INDCR-1)*NCOS(LRP+1,ICL)+INDDR
                GMAT(IOFFD+IOFFKL) = SOINT
-               GMAT(IOFFD+IOFFLK) = SOINT
+               IF (ICKL.NE.3) GMAT(IOFFD+IOFFLK) = SOINT
                NALL = NALL + 1
-               IF (IOFFKL.NE.IOFFLK) NALL = NALL + 1
+               IF (IOFFKL.NE.IOFFLK.AND.ICKL.NE.3)
+     &         NALL = NALL + 1
               END IF
   300        CONTINUE
   200      CONTINUE
@@ -1881,10 +1886,16 @@ C     ***** Fill integrals in GMAT *****
 C     **********************************
 C
       NOTEST = .NOT.SHAEQB
+      ISOFF  = 0
+      ICK = LCLASH(ISHELC)
+      ICL = LCLASH(ISHELD)
+C     Check whether we have Gaunt or Coulomb integrals
+      IF (ICK.EQ.ICL) THEN
+         ICKL = ICK
+      ELSE
+         ICKL = 3
+      ENDIF
       IF (NOTEST) THEN
-         ISOFF  = 0
-         ICK = LCLASH(ISHELC)
-         ICL = LCLASH(ISHELD)
          DO I = 1, NINTS
            NSTRNA = IPNTNO(1,I)
            NSTRNB = IPNTNO(2,I)
@@ -1917,9 +1928,9 @@ C
                LRP   = INDX(2,INDD)
                INDCR = INDC - ICOS(KRP+1,ICK)
                INDDR = INDD - ICOS(LRP+1,ICL)
-               IOFFKL = ISPCK(KRP,LRP,ICL)
+               IOFFKL = ISPCK(KRP,LRP,ICKL)
      &                + (INDDR-1)*NCOS(KRP+1,ICK)+INDCR
-               IOFFLK = ISPCK(LRP,KRP,ICK)
+               IOFFLK = ISPCK(LRP,KRP,ICKL)
      &                + (INDCR-1)*NCOS(LRP+1,ICL)+INDDR
 C
                KBUF = KBUF + 1
@@ -1936,7 +1947,7 @@ C
                ENDIF
                NALL = NALL + 1
 C
-               IF (IOFFKL.NE.IOFFLK) THEN
+               IF (IOFFKL.NE.IOFFLK.AND.ICKL.NE.3) THEN
                   KBUF = KBUF + 1
                   RGBUF(KBUF,IPASS) = SOINT
                   IGBUF(KBUF,IPASS) = IOFFD+IOFFLK
@@ -1958,9 +1969,6 @@ C
            ISOFF = ISOFF + NOABCD
          ENDDO
       ELSE
-         ISOFF  = 0
-         ICK = LCLASH(ISHELC)
-         ICL = LCLASH(ISHELD)
          DO 100 I = 1, NINTS
            NSTRNA = IPNTNO(1,I)
            NSTRNB = IPNTNO(2,I)
@@ -2002,9 +2010,9 @@ C
 C
                INDCR = INDC - ICOS(KRP+1,ICK)
                INDDR = INDD - ICOS(LRP+1,ICL)
-               IOFFKL = ISPCK(KRP,LRP,ICL)
+               IOFFKL = ISPCK(KRP,LRP,ICKL)
      &                + (INDDR-1)*NCOS(KRP+1,ICK)+INDCR
-               IOFFLK = ISPCK(LRP,KRP,ICK)
+               IOFFLK = ISPCK(LRP,KRP,ICKL)
      &                + (INDCR-1)*NCOS(LRP+1,ICL)+INDDR
 C
                KBUF = KBUF + 1
@@ -2021,7 +2029,7 @@ C
                ENDIF
                NALL = NALL + 1
 C
-               IF (IOFFKL.NE.IOFFLK) THEN
+               IF (IOFFKL.NE.IOFFLK.AND.ICKL.NE.3) THEN
                   KBUF = KBUF + 1
                   RGBUF(KBUF,IPASS) = SOINT
                   IGBUF(KBUF,IPASS) = IOFFD+IOFFLK
