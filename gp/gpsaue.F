@@ -1242,7 +1242,7 @@ C
         NDEC = INT(LOG10(ABS(X)))
       ENDIF
       IF((NDEC.LT.0).OR.(NDEC.GT.(NDIG-3))) THEN
-        MXFORM(1:1) = 'E'
+        MXFORM(1:1) = 'D'
         NDEC = NDIG - 7
       ELSE
         MXFORM(1:1) = 'F'
@@ -1800,7 +1800,7 @@ C  /* Deck dunit2 */
       SUBROUTINE DUNIT2(A,N,LR,LC,NZ)
 C*****************************************************************************
 C
-C     Subroutine DUNIT sets a general square matrix A equal
+C     Subroutine DUNIT2 sets a general square matrix A equal
 C     to a unit matrix.
 C     /VER 2/ 14-Sep-1983 hjaaj
 C     Include leading dimension - T.Saue Aug 16 1996
@@ -1810,9 +1810,14 @@ C*****************************************************************************
       DIMENSION A(LR,LC,NZ)
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
+      IF (N.GT.LR .OR. N.GT.LC) THEN
+        CALL QUIT('Inconsisten N,LR,LC in DUNIT2 call')
+      ENDIF
       DO IZ = 1,NZ
         DO J = 1,N
-          CALL DCOPY(N,D0,0,A(1,J,IZ),1)
+          DO I = 1,N
+            A(I,J,IZ) = D0
+          ENDDO
         ENDDO
       ENDDO
       DO J = 1,N
@@ -3627,7 +3632,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.1) THEN
-        POL1DER = D0
+        POLDER = D0
         RETURN
       ENDIF
       POLDER = B(2)
