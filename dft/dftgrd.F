@@ -325,7 +325,7 @@ C
      &                             +(C(3,INA)-C(3,JNA))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
-          CHI=BRAGG(NINT(ZAN(INA)))/BRAGG(NINT(ZAN(JNA)))
+          CHI = CHIMT(INA,JNA)
           TEMP=(CHI-1.0D0)/(CHI+1.0D0)
           AIJ(ITEMP)=TEMP/(TEMP*TEMP-1.0D0)
           IF (AIJ(ITEMP).GT.0.5D0) AIJ(ITEMP)=0.5D0
