@@ -236,8 +236,11 @@ extern Functional* available_kin_functionals[]; /* kinetic energy functionals */
 
 extern int fun_true(void);
 extern int fun_false(void);
+/* funlistfuncs() lists specific class of functionals */
+void funlistfuncs(Functional *l[]);
 /* fortran (and not only) functional stub routines */
-void dftlistfuncs_(Functional *l[]);
+/* dftlistfuncs_() lists the ordinary functionals (i.e. not embedding) */
+void dftlistfuncs_(void);
 int dft_isgga_(void);
 int dft_isgga__(void);
 

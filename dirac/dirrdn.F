@@ -3543,11 +3543,7 @@ C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
 C              ... hjaaj: DFTINPUT accumulates def. of functional
 C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
-                  CALL DFTINPUT(LINE, SUCCESS)
-                  IF(.NOT.SUCCESS) THEN
-                     CALL DFTLISTFUNCS
-                     CALL QUIT("DFT FUNCTIONAL Read failed.")
-                  ENDIF
+                  CALL DFTINPUT(LINE, INPERR)
                END IF
                DFTHAM = .TRUE.
                DFTADD = .TRUE.

@@ -108,7 +108,7 @@ dft_func_input (const char* line, int* inperr, int len, char** ConfString,
         }
 
     fort_print("Unknown functional '%s'. Aborting.\n", func_name);
-    dftlistfuncs_(avail);
+    funlistfuncs(avail);
     (*inperr)++;
 
     return 0; /* failed to find */

@@ -209,6 +209,16 @@ void
 funfirst_(FunFirstFuncDrv *df, real *factor, const FunDensProp *dp)
 { selected_func->first(df, *factor, dp); }
 
+void
+funlistfuncs(Functional *l[])
+{
+    int i;
+    
+    fun_printf("\nAvailable functionals:");
+    for(i=0; l[i]; i++)
+        fun_printf(l[i]->name);
+}
+
 /* =================================================================== */
 /*           fortran (and not only) functional stub routines           */
 /* =================================================================== */
@@ -226,13 +236,9 @@ dftreport_(void)
 }
 
 void
-dftlistfuncs_(Functional* l[])
+dftlistfuncs_(void)
 {
-    int i;
-    
-    fun_printf("\nAvailable functionals:");
-    for(i=0; l[i]; i++)
-        fun_printf(l[i]->name);
+    funlistfuncs(available_functionals);
 }
 
 /* declare both known fortran name-mangled variants */
