@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/utsname.h>
+#include "patchlevel.h"
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
@@ -113,6 +114,8 @@ void sysinf()
       uname(un);
    }
 
+   printf( " Version           : %s %i.%i (patchlevel %i) \n" , \
+      VER_STR,MAJOR_REV,MINOR_REV,PATCHLEVEL);
    if ( un != NULL )
    {
       printf( " Hostname          : %s\n" , un->nodename);
