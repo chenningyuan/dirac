@@ -1142,24 +1142,23 @@ C
       ELSE
         IF(NODES.GT.1) THEN
 C....total number of tasks divided by number of nodes
-          IJMAX = NSTRT(1)*(NSTRT(1)+1)/2
-          MAXTSK = IJMAX
-          LENTSK = 1
-          DO IJTSK = 1,IJMAX
-            NUM = INT(IJMAX/IJTSK)
-            IF(MOD(IJMAX,IJTSK).NE.0) NUM = NUM + 1
-            NTSK = NUM*(NUM+1)/2
-            IF(NTSK.LT.NODES) GOTO 10
-            IF(NTSK.NE.MAXTSK) THEN
-              MAXTSK = NTSK
-              LENTSK = IJTSK
-            ENDIF
-          ENDDO
- 10       CONTINUE
-          IF(NODES.GT.MAXTSK) THEN
-            WRITE(LUPRI,'(A)') 
+           MAXTSK = NSTRT(1)*(NSTRT(1)+1)/2
+           LENTSK = 1
+           DO IJTSK = 1,NSTRT(1)
+             NUM = INT(NSTRT(1)/IJTSK)
+             IF(MOD(NSTRT(1),IJTSK).NE.0) NUM = NUM + 1
+             NTSK = NUM*(NUM+1)/2
+             IF(NTSK.LT.NODES) GOTO 10
+             IF(NTSK.NE.MAXTSK) THEN
+               MAXTSK = NTSK
+               LENTSK = IJTSK
+             ENDIF
+           ENDDO
+  10       CONTINUE
+           IF(NODES.GT.MAXTSK) THEN
+             WRITE(LUPRI,'(A)') 
      &        '** WARNING: More nodes than tasks !'
-          ENDIF
+           ENDIF
         ELSE
           LENTSK = NSTRT(1)
         ENDIF 
