@@ -432,6 +432,7 @@ CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
 C
+#include <ibtfun.h>
 C
       CALL QENTER('GETFC1')
       LUBUF = 22
