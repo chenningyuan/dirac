@@ -19,8 +19,51 @@ C
          IWRIT_WAIO(ITAPE) = -1
       ENDDO
 C
+C     Initialize timers and other statistics
+C
+      WAIO_RTIME = 0.0
+      WAIO_WTIME = 0.0
+      WAIO_RCALL = 0.0 
+      WAIO_WCALL = 0.0
+      WAIO_RNLEN = 0.0
+      WAIO_WNLEN = 0.0
+C
  1000 FORMAT (/" Initializing word-addressable I/O : the ",A7,
      &        "-interface is used with",I6," KB records")
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WAIO_PRST (IW)
+C
+C     Print statistics for the Word-addressable I/O
+C
+#include "waio.h"
+      REAL*8 WAIO_RMB,WAIO_WMB,WAIO_RAMB,WAIO_WAMB
+C
+C     Compute average speed and totals in MB
+C
+      WAIO_WMB = WAIO_WNLEN / (256 * 1024) 
+      WAIO_RMB = WAIO_RNLEN / (256 * 1024) 
+      WAIO_WAMB = 0.0
+      WAIO_RAMB = 0.0
+      IF (WAIO_WTIME.NE.0.0) WAIO_WAMB = WAIO_WMB / WAIO_WTIME
+      IF (WAIO_RTIME.NE.0.0) WAIO_RAMB = WAIO_RMB / WAIO_RTIME
+C
+      WRITE (IW,1000) WAIO_WCALL,WAIO_RCALL,WAIO_WMB,WAIO_RMB,
+     &                WAIO_WTIME,WAIO_RTIME,WAIO_WAMB,WAIO_RAMB
+C
+ 1000 FORMAT (/' Statistics for the word-addressable I/O'
+     &/' Number of write calls',T40,F20.0
+     &/' Number of read calls',T40,F20.0
+     &/' Megabytes written',T40,F20.3
+     &/' Megabytes read',T40,F20.3
+     &/' Seconds spent in reads',T40,F20.3
+     &/' Seconds spent in writes',T40,F20.3
+     &/' average I/O speed for write (Mb/s)',T40,F20.3
+     &/' average I/O speed for read  (Mb/s)',T40,F20.3
+     & )
+     
 C
       RETURN
       END
@@ -150,6 +193,7 @@ C
 #include "waio.h"
       INTEGER BUFF(NWORDS_ON_RECORD)
       INTEGER*8 OFFSET,OFF,NWORDS
+      REAL*8 WALL1,WALL2,CPU1,CPU2,WALL
 C
       DIMENSION ARRAY(NLEN)
       LOGICAL DO_READ
@@ -166,6 +210,11 @@ C
       IF (OFFSET.LT.0) THEN
          CALL QUIT ("OFFSET smaller than zero in WAIO_INTIO")
       ENDIF
+C
+C     Initialize timer
+C
+      CALL GETTIM(CPU1,WALL1)
+C
 #if defined (VAR_WAIO_C)
       IF (DO_READ) THEN
          CALL RDABSF(ITAPE,ARRAY,NLEN,OFFSET)
@@ -275,6 +324,20 @@ cdbg        print*,"last record",irec_last,1,nwords,'-->',off
 C     Update the information about the highest record that is written
       IWRIT_WAIO(ITAPE) = MAX0(IWRIT_WAIO(ITAPE),IREC_LAST)
 #endif
+C
+C     Take statistics
+C
+      CALL GETTIM(CPU2,WALL2)
+      WALL   = WALL2 - WALL1
+      IF (DO_READ) THEN
+         WAIO_RTIME = WAIO_RTIME + WALL
+         WAIO_RCALL = WAIO_RCALL + 1
+         WAIO_RNLEN = WAIO_RNLEN + NLEN
+      ELSE
+         WAIO_WTIME = WAIO_RTIME + WALL
+         WAIO_WCALL = WAIO_RCALL + 1
+         WAIO_WNLEN = WAIO_WNLEN + NLEN
+      ENDIF
 C
       RETURN
       END

@@ -18,4 +18,12 @@ C     The position of the file : this is the highest record written
 C     by the WAIO routines.
 C
       COMMON /POINTR/ IWRIT_WAIO(MAX_WAIO_FILES)
+C
+C     Some statistics to compute I/O performance
+C
+      REAL*8 WAIO_WCALL,WAIO_RCALL,WAIO_WTIME,WAIO_RTIME,
+     &       WAIO_WNLEN,WAIO_RNLEN
+      COMMON /WAIO_STAT/ WAIO_WCALL,WAIO_RCALL,
+     & WAIO_WTIME,WAIO_RTIME,WAIO_WNLEN,WAIO_RNLEN
+
 

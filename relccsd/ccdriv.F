@@ -201,7 +201,7 @@ C
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
-      READ (IN,RELCCSD,END=1,ERR=1)
+      READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')
     2 CONTINUE
@@ -212,8 +212,8 @@ C
       MAXIT = 30
       NTOL = 12
       DOMP2   = .TRUE.
-      DOCCSD  = .FALSE.
-      DOCCSDT = .FALSE.
+      DOCCSD  = .TRUE.
+      DOCCSDT = .TRUE.
       NOCCS  = .FALSE.
       NOCCD  = .FALSE.
       REWIND (IN)
@@ -690,6 +690,10 @@ C
       CPUTOT = CPUTOT-CPU0
       CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
       WRITE(IW,1010) CPU0,CPUI,CPUS,CPUE,CPUFO,CPUSO,CPUVAR,CPUTOT
+C
+C     Print I/O statistics
+C
+      CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
 C
       RETURN
