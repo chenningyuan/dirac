@@ -2779,7 +2779,8 @@ C
           IQX = IQPX(IZX)
           IQA = IQMULT(IQX,IQY,1)
           IZA = IPA(IQA)
-          IF(IZY.EQ.0) GOTO 20
+          IF(IZA.EQ.0) GOTO 20
+          IF(A(IZA).EQ.D0) GOTO 20
           AA = A(IZA)*(IQSIGN(IQA,IFA,ITA)*IQPHASE(IQA,IQX,1))
           CALL DAXPY(N,AA,X(1,IZX),INCX,Y(1,IZY),INCY)
    20   CONTINUE
@@ -2884,7 +2885,8 @@ C
           IQX = IQPX(IZX)
           IQA = IQMULT(IQX,IQY,1)
           IZA = IPA(IQA)
-          IF(IZY.EQ.0) GOTO 20
+          IF(IZA.EQ.0) GOTO 20
+          IF(A(IZA).EQ.D0) GOTO 20
           AA = A(IZA)*(IQSIGN(IQA,IFA,ITA)*IQPHASE(IQX,IQA,1))
           CALL DAXPY(N,AA,X(1,IZX),INCX,Y(1,IZY),INCY)
    20   CONTINUE
@@ -3297,12 +3299,18 @@ C***********************************************************************
 #include <priunit.h>
 #include <dcbqal.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      DIMENSION X(LRX,LCX,NZX),Y(LRY,LCX,NZY),S(LDS,NY),P(NZP),
+      DIMENSION X(LRX,LCX,NZX),Y(LRY,LCY,NZY),S(LDS,NY),P(NZP),
      &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
       CHARACTER  FX*1,FY*1
       DIMENSION IPY(4)
 C
       EXTERNAL BDQALGEBRA
+C
+C     Found out INC[XY] is not used! /hjaaj 4-Nov-2001
+C
+      IF (INCX .NE. 1 .OR. INCY .NE. 1) THEN
+         CALL QUIT('QDOTM not implemented with INCX/Y .ne. 1')
+      END IF
 C
 C     Initialization
 C
@@ -3399,7 +3407,7 @@ C
         IQB(IZ) = IZ
       ENDDO
       NA = LRA*LCA
-      NB = LRB*LCB
+c     NB = LRB*LCB
       NX = LRX*LCX
 C
 C     First solve U(dagger)y = b by forward substitution
@@ -3786,26 +3794,20 @@ C     Get mass of the most abundant isotope of charge IZ
 C
 C***********************************************************************
 #include <implicit.h>
-      PARAMETER(D0=0.0D0)
-      PARAMETER (MAXISO = 6, MAXCHR = 109)
+      PARAMETER (D0=0.0D0)
+      PARAMETER (ISO=1, MAXCHR=109)
 C
       INFO = -1
       IF(IZ.GT.MAXCHR) THEN
         RETURN
       ENDIF
-      ABUND = D0
-      ISO   = 0
-      DO I =1,5
-        DMASS = DISOTP(IZ,I,'ABUNDANCE')
-        IF(DMASS.GT.ABUND) THEN
-          ABUND = DMASS
-          ISO   = I
-        ENDIF
-      ENDDO
-      IF(ISO.GT.0) THEN
-        DMASS = DISOTP(IZ,ISO,'MASS')
-        INFO = 0
-      ENDIF
+C     DISOTP returns the most abundant isotope
+C     for ISO = 1.
+      ABUND = DISOTP(IZ,ISO,'ABUNDANCE')
+      IF (ABUND .GT. D0) THEN
+         INFO = 0
+         DMASS = DISOTP(IZ,ISO,'MASS')
+      END IF
 C
       RETURN
       END
