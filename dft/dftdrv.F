@@ -322,7 +322,7 @@ C
 C
 C     Test on the number of electrons
 C
-      ELCTRX = FLOAT(NELECT)
+      ELCTRX = FLOAT(NELECT+NAELEC)
       ERROR  = ELCTRN - ELCTRX
       IF (ABS(ERROR) .GT. DFTELS) THEN
          WRITE (LUPRI,'(4(/2X,A,F14.6),/2X,A)')
