@@ -2005,7 +2005,7 @@ C&&&& TWOGRD: Which two-electron gradient to calculate
     4          CONTINUE
 C&&&& IGTHRS: Threshold for screening on the gradient
                READ (LUCMD,*) DTEMP
-               IFTHRS = -NINT(LOG10(DTEMP))
+               IGTHRS = -NINT(LOG10(DTEMP))
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
