@@ -159,10 +159,10 @@ C       Make T2TAU including the spurious Hamiltonian parts
         IF (DOIH.AND.IHEQ.EQ.2) THEN
             CALL GETAMPT (BUF1,BUF3)
             CALL GETTAU (BUF1,BUF3,BUF2)
-            CALL GETTAU2(BUF1,BUF3,BUF2,1)
+            CALL GETTAU2(BUF1,BUF3,BUF2)
         ELSE
             CALL GETTAU (T1,T2,BUF2)
-            CALL GETTAU2(T1,BUF1,BUF2,1)
+            CALL GETTAU2(T1,BUF1,BUF2)
         ENDIF
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
@@ -220,10 +220,10 @@ C       Make T2TAU including the spurious Hamiltonian parts
         IF (DOIH.AND.IHEQ.EQ.2) THEN
 	   CALL GETAMPT (BUF1,BUF3)
            CALL GETTAU (BUF1,BUF3,BUF2)
-           CALL GETTAU2(BUF1,BUF3,BUF2,1)
+           CALL GETTAU2(BUF1,BUF3,BUF2)
         ELSE
            CALL GETTAU (T1,T2,BUF2)
-           CALL GETTAU2(T1,BUF1,BUF2,1)
+           CALL GETTAU2(T1,BUF1,BUF2)
 	ENDIF
 C       Delete Hamiltonian parts (BUF1 is changed
 C       but irrelevant here)
@@ -359,7 +359,7 @@ C       Add the one electron contributions
         CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
 C       Make the effective Hamiltonian in the full array.
         CALL XCOPY (NDIMT2,S2,1,BUF2,1)
-        CALL GETTAU2 (BUF1,BUF3,BUF2,1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,H,1,1,3,3,LFA)
 C-------------------------------------------
@@ -381,9 +381,10 @@ C-------------------------------------------
 C       Add the one electron contributions
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
         CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
+        CALL XSCAL (NDIMT1,-A1,BUF1,1)
 C       Make the effective Hamiltonian in the full array.
         CALL XCOPY (NDIMT2,S2,1,BUF2,1)
-        CALL GETTAU2 (BUF1,BUF3,BUF2,-1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,H,3,3,2,2,LFA)
 C-------------------------------------------
@@ -402,6 +403,16 @@ C  H11(EM,FN) = H01(E,F)*DELTA(M,N) + H10(M,N)*DELTA(E,F)
 C             +/- S2(EM,FN)
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.11) THEN
+        TIT = '(1h,1p) space                         '
+C       Add the one electron contributions
+        CALL XCOPY (NDIMT1,S1,1,BUF1,1)
+        CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
+        CALL SCALE_S1 (BUF1)
+C       Make the effective Hamiltonian in the full array.
+        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2)
+C       Extract the Hamiltonian
+        CALL EXTRT2S(BUF2,H,1,1,3,3,3,3,2,2,LFA)
       ENDIF
 c
       IOFF = 1
@@ -414,6 +425,8 @@ c
           NDT = NAVAVT(IRP)
          ELSEIF (ICURFSS.EQ.20) THEN
           NDT = NAOAOT(IRP)
+         ELSEIF (ICURFSS.EQ.11) THEN
+          NDT = NAVAO(IRP)
          ELSE
           NDT = 0
          ENDIF
@@ -1611,6 +1624,251 @@ C
          ENDDO
          ENDDO
  10      CONTINUE
+C
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EXTRT2S(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,
+     &                   ICOMIN,ICOMAX,JCOMIN,JCOMAX,DOINV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Extract or insert a subset defined in Fock space CC from (to)
+C     the total T2 array.
+C
+C     This routine takes a subset of all indices and 
+C     puts it in a square array.
+C
+C     Coding of the different classes of spinors
+C     This is used below when we indicate  ACVMIN, ACVMAX, etc.
+c
+c      #       O         V
+c     -----------------------
+c      1      IO        AV
+c      2      AO        IV
+c      3      AV        AO
+C
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY,XAXPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T2(*),FT2(*)
+      INTEGER ICOMIN,ICOMAX,JCOMIN,JCOMAX,ACVMIN,ACVMAX,BCVMIN,BCVMAX
+      LOGICAL DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      dimension IOI(0:3), IVA(0:3)
+      dimension IOJ(0:3), IVB(0:3)
+      COMPLEX*16 FACTOR,FACTOR1
+C
+C---------------Executable code--------------------------------------
+C
+      IOFF2 = 1
+C
+C     Loop over compound irreps
+C
+      DO IJRP = 1, NREP
+C
+C    Loop over J : irrep, spinor space, spinors
+C
+         IJRPOFF = IVVOOTT(IJRP)
+C
+         DO 10 JRP = 1, NREP
+         IRP = MULTB(JRP,IJRP+NREP,2)
+C
+         IOJ(0)=0
+         IOJ(1)=NIO(JRP)+IOJ(0)
+         IOJ(2)=NAO(JRP)+IOJ(1)
+         IOJ(3)=NAV(JRP)+IOJ(2)
+C
+         IOI(0)=0
+         IOI(1)=NIO(IRP)+IOI(0)
+         IOI(2)=NAO(IRP)+IOI(1)
+         IOI(3)=NAV(IRP)+IOI(2)
+C
+         DO JCO = JCOMIN, JCOMAX
+         DO J = IOJ(JCO-1)+1, IOJ(JCO)
+C
+C    Loop over I : (irrep fixed via IJRP and JRP), spinor space, spinors
+C
+            DO ICO = ICOMIN, ICOMAX
+            DO I = IOI(ICO-1)+1, IOI(ICO)
+               IF (IRP.GT.JRP) THEN
+C                 The amplitude ij is canonical
+                  IJ = IIOOT(IRP,JRP) + (J-1)*NO(IRP) + I
+                  FACTOR1 = A1
+               ELSEIF (IRP.LT.JRP) THEN
+C                 We have to take the amplitude ji
+                  IJ = IIOOT(JRP,IRP) + (I-1)*NO(JRP) + J
+                  FACTOR1 = - A1
+               ELSEIF (I.GT.J) THEN
+C                 The amplitude ij is canonical
+                  IJ = IIOOT(IRP,JRP) + (J-1)*NO(IRP) + I - J*(J+1)/2
+                  FACTOR1 = A1
+               ELSEIF (I.LT.J) THEN
+C                 We have to take the amplitude ji
+                  IJ = IIOOT(JRP,IRP) + (I-1)*NO(JRP) + J - I*(I+1)/2
+                  FACTOR1 = - A1
+               ELSE
+C                 The amplitude is zero, start at arbitrary position
+                  IJ = 1
+                  FACTOR1 = A0
+               ENDIF
+               IJOFF = IJRPOFF + (IJ-1) * NVVT(IJRP)
+C
+C    Loop over B : irrep, spinor space, spinors
+C
+               DO 20 BRP = 1, NREP
+               ARP = MULTB(BRP,IJRP+NREP,2)
+C
+               IVB(0)=0
+               IVB(1)=NAV(BRP)+IVB(0)
+               IVB(2)=NIV(BRP)+IVB(1)
+               IVB(3)=NAO(BRP)+IVB(2)
+C
+               IVA(0)=0
+               IVA(1)=NAV(ARP)+IVA(0)
+               IVA(2)=NIV(ARP)+IVA(1)
+               IVA(3)=NAO(ARP)+IVA(2)
+C
+               DO BCV = BCVMIN, BCVMAX
+               DO B = IVB(BCV-1)+1, IVB(BCV)
+C
+C    Loop over A : (irrep fixed via IJRP and BRP), spinor space
+C    The loop over spinors is done within XCOPY/XAXPY
+C
+                  ACVSTRT = ACVMIN
+                  DO ACV = ACVSTRT, ACVMAX
+                  DO A = IVA(ACV-1)+1, IVA(ACV)
+                     IF (ARP.GT.BRP) THEN
+C                       The amplitude ab is canonical
+                        AB = IIVVT(ARP,BRP) + (B-1)*NV(ARP) + A
+                        FACTOR = A1 * FACTOR1
+                     ELSEIF (ARP.LT.BRP) THEN
+C                       We have to take the amplitude ba
+                        AB = IIVVT(BRP,ARP) + (A-1)*NV(BRP) + B
+                        FACTOR = - A1 * FACTOR1
+                     ELSEIF (A.GT.B) THEN
+C                       The amplitude ab is canonical
+                        AB = IIVVT(ARP,BRP) + (B-1)*NV(ARP)+A-B*(B+1)/2
+                        FACTOR = A1 * FACTOR1
+                     ELSEIF (A.LT.B) THEN
+C                       We have to take the amplitude ba
+                        AB = IIVVT(BRP,ARP) + (A-1)*NV(BRP)+B-A*(A+1)/2
+                        FACTOR = - A1 * FACTOR1
+                     ELSE
+C                       The amplitude is zero, start at arbitr. position
+                        AB = 1
+                        FACTOR = A0
+                     ENDIF
+                     ABIJ = (IJOFF + AB - 1) * RCW + 1
+                     IF (DOINV) THEN
+                        T2(ABIJ) = T2(ABIJ) + FACTOR * FT2(IOFF2)
+                        IF (CARITH) 
+     &                  T2(ABIJ+1) = T2(ABIJ+1) + FACTOR * FT2(IOFF2+1)
+                     ELSE
+                        FT2(IOFF2) = FACTOR * T2(ABIJ)
+                        IF (CARITH) 
+     &                  FT2(IOFF2+1) = FACTOR * T2(ABIJ+1)
+                     ENDIF
+                     IOFF2 = IOFF2 + RCW
+                  ENDDO
+                  ENDDO
+               ENDDO
+               ENDDO
+ 20            CONTINUE
+C                    
+            ENDDO
+            ENDDO
+C
+         ENDDO
+         ENDDO
+ 10      CONTINUE
+C
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SCALE_S1 (S1)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Scale the different subsets defined in Fock space CC with the 
+C     appropriate sign : +1 for EA, -1 for IE.
+C     Of course only the negative scaling is required.
+C
+C---------------Routines called----------------------------------------
+C
+C     XSCAL
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 S1(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+c
+c
+c The Fock Space blocks construction:
+c
+c
+c      #       O         V
+c     -----------------------
+c      1      IO        AV
+c      2      AO        IV
+c      3      AV        AO
+
+C
+      DO IRP = 1, NREP
+C
+C     We need the second class of occupied spinors : these are the active occupied spinors
+C
+      ISTART = NIO(IRP)
+      IEND = ISTART + NAO(IRP)
+C
+C     Compute the address of the first amplitude in this irrep that needs scaling
+C     The address consists of the pointer to the start of the irrep, the length of the blocks of
+C     unscaled inactive occupieds and the skipped true virtuals (we need the third block of V)
+C
+      AI= IVO(IRP) + ISTART * NV(IRP) + NAV(IRP) + NIV(IRP) + 1
+      AI = (AI - 1) * RCW + 1
+C
+      DO I = ISTART+1, IEND
+         CALL XSCAL (NAO(IRP),-A1,S1(AI),1)
+         AI = AI+ RCW * NV(IRP)
+      ENDDO
 C
       ENDDO
 C
