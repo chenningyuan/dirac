@@ -3315,7 +3315,7 @@ C
      &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
      &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
@@ -3370,7 +3370,7 @@ C
      &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
      &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
@@ -3425,7 +3425,7 @@ C
      &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
      &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
@@ -3801,7 +3801,7 @@ C
 #include <ccom.h>
 #include <blocks.h>
       LOGICAl LBIT
-      CHARACTER SECTID*12
+      CHARACTER SECTID*12, INTTID*12
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -3860,8 +3860,8 @@ C
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             SECTID(CPU),'/',SECTID(WALL)
+     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &            SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
@@ -3907,8 +3907,8 @@ C
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             SECTID(CPU),'/',SECTID(WALL)
+     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &            SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
