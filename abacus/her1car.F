@@ -10,15 +10,15 @@ C
       LOGICAL PROPTY, SECDER, DIFDIP
       DIMENSION WORK(LWORK)
       DIMENSION STDER0(KCKTAB,2), 
-#ifdef PRG_DIRAC
-     &          STDER1(KCKTAB,6,2),
-#else
-     &          STDER1(KCKTAB,3,2),
-#endif
      &          STDER2(KCKTAB,6,2),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), FACINT(*), COORC(3,*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*),GEXP(*)
+#ifdef PRG_DIRAC
+      DIMENSION STDER1(KCKTAB,6,2)
+#else
+      DIMENSION STDER1(KCKTAB,3,2)
+#endif
 #include <onecom.h>
 C
       JMAXD = 2
@@ -63,15 +63,15 @@ C
 C
       LOGICAL PROPTY, KINODC, SECDER, DIFDIP
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), 
-#ifdef PRG_DIRAC
-     &          STDER1(KCKTAB,6,2),
-#else
-     &          STDER1(KCKTAB,3,2),
-#endif
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
      &          GEXP(*)
+#ifdef PRG_DIRAC
+      DIMENSION STDER1(KCKTAB,6,2)
+#else
+      DIMENSION STDER1(KCKTAB,3,2)
+#endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include <cbisol.h>
@@ -681,12 +681,12 @@ C
       LOGICAL SECDER
       DIMENSION STDER0(KCKTAB,2),
      &          STDER1(KCKTAB,6,2), 
-#ifdef PRG_DIRAC
-     &          STDER2(KCKTAB,6,2),
-#else
-     &          STDER2(KCKTAB,6,2),
-#endif
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
+#ifdef PRG_DIRAC
+      DIMENSION STDER2(KCKTAB,6,2)
+#else
+      DIMENSION STDER2(KCKTAB,6,2)
+#endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include <onecom.h>
 #include <ader.h>

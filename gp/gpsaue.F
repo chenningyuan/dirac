@@ -1322,12 +1322,11 @@ C  /* Deck lset */
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_CRAY)
-      REAL
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      REAL FUNCTION GAMMP(A,X)
 #else
-      DOUBLE PRECISION
+      DOUBLE PRECISION FUNCTION GAMMP(A,X)
 #endif
-     &FUNCTION GAMMP(A,X)
 #include <implicit.h>
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C****************************************************************C

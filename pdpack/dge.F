@@ -11,11 +11,10 @@ C general matrix A.
 C
       INTEGER N, IPVT(*), N2
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
+      REAL A(*), AINV(*), WRK(*), DET(2)
 #else
-      DOUBLE PRECISION
+      DOUBLE PRECISION A(*), AINV(*), WRK(*), DET(2)
 #endif
-     &   A(*), AINV(*), WRK(*), DET(2)
 C
       N2 = N*N
 #if !defined (VAR_SBLAS)
