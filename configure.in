@@ -33,7 +33,7 @@
 # Does 'echo' understand escapes?
 #
 #
-set echo_style = sysv
+echo_style=sysv
 if [ "	" = "`echo '\t'`" ]; then
    echo="echo"
 else
@@ -380,23 +380,29 @@ if [ "$par" = "yes" ]; then
    if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
       complist='mpxlf'
       parlib='no'
+      parinc='yes'
    elif [ "$mesp" = "mpi" -a "$machine" = "t3e-cray" ]; then
       parlib='no'
+      parinc='no'
    else
       parlib='yes'
+      parinc='yes'
    fi
 
    pardir=dirlist
    incdir='/usr/include /usr/local/include /local/include'
 #
 #  Modify for SGI that may have both 32 and 64 bit architectures
+#  Modify for RS6000K where mpi.h is placed in some obscure directory
 #
    if [ "$machine" = "mips64-sgi" ]; then
       pardir="$dirlist /usr/lib64"
    elif [ "$machine" = "mips-sgi" ]; then
       pardir="$dirlist /usr/lib32"
+   elif [ "$machine" = "rs6000-ibm" ]; then
+      incdir="$incdir /usr/lpp/ppe.poe/include"
    fi
-   parinc=
+#
    parlibp=
 #
 #  MPI settings, first we do the mpi-library
@@ -417,8 +423,10 @@ if [ "$par" = "yes" ]; then
       if [ -z "$parlib" ]; then
          echo 'Parallel library: none'
       else
-         echo 'Parallel library: '$parlib
+         echo 'Parallel library: '$parlib' ('$parlibp')'
       fi
+   fi
+   if [ "$parinc" = "yes" -a "$mesp" = "mpi" ]; then
 #
 #     Now we try to find an include directory
 #
@@ -814,6 +822,7 @@ case $machine in
           else
              def='dirpvm.x'
           fi
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        opt='+O3 +U77 +E4 +E5'
        inc="-I$INCLUDE_DIR"
@@ -840,6 +849,7 @@ case $machine in
           else
              def='dirpvm.x'
           fi
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        opt='-O3 -Mvect'
        inc="-I$INCLUDE_DIR";;
@@ -866,6 +876,7 @@ case $machine in
              def='dirpvm.x'
           fi
           parlib="$parlib -lfmpi -lrt -pthread"
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        opt='-O5 -fast'
        inc="-I$INCLUDE_DIR";;
@@ -879,6 +890,7 @@ case $machine in
        else
           cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
           ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        for mod in $MODS; do
           cpp=`echo $cpp $mod`
@@ -892,21 +904,22 @@ case $machine in
 #   CRAY
 #
     *-cray)
-      if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}' "
-         ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
-      else
-         cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-      fi
-      for mod in $MODS; do
-         cpp=`echo $cpp $mod`
-      done
-      opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
-      c_opt="-i 64 -a stack -dp"
-      inc="-I$INCLUDE_DIR"
-      LIB="crilib.cld $LIB"
-      def='dirac.x';;
+       if [ "$mesp" = "dummy" ]; then
+          cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}' "
+          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
+       else
+          cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+       fi
+       for mod in $MODS; do
+          cpp=`echo $cpp $mod`
+       done
+       opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
+       c_opt="-i 64 -a stack -dp"
+       inc="-I$INCLUDE_DIR"
+       LIB="crilib.cld $LIB"
+       def='dirac.x';;
 #
 #  CONVEX
 #
@@ -925,6 +938,7 @@ case $machine in
             cpp=`echo $cpp $mod`
          done
          def='dirmpi.x'
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       opt="-O2 -link \"-W\""
       inc="-I$INCLUDE_DIR";;
@@ -950,6 +964,7 @@ case $machine in
          else
             def='dirpvm.x'
          fi
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       opt='-O2 -Nc50'
       inc="-I$INCLUDE_DIR" ;;
@@ -977,6 +992,7 @@ case $machine in
                else
                   def='dirpvm.x'
                fi
+                mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
             inc="-I$INCLUDE_DIR";;
          *)
@@ -998,6 +1014,8 @@ case $machine in
                else
                   def='dirpvm.x'
                fi
+               mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
+               c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
             c_inc="-Wc,-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
@@ -1051,6 +1069,7 @@ case $machine in
             else
                def='dirpvm.x'
             fi
+             mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
          fi
          inc="-I$INCLUDE_DIR";;
 #
@@ -1072,6 +1091,7 @@ case $machine in
          else
             def='dirpvm.x'
          fi
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
@@ -1140,6 +1160,12 @@ EOF
 #
 
 #jth: parlib=-mpi 
+#
+#  Check for special C-directives
+#
+if [ "$c_mpi_inc" = "" ]; then
+   c_mpi_inc="\$(INCLUDE_DIR)"
+fi
 #if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
 if [ "$mesp" = "mpi" ]; then
    if [ ! -z "$parlibp" ]; then
@@ -1152,7 +1178,8 @@ if [ "$mesp" = "mpi" ]; then
 MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
-INCLUDE_DIR     = $inc \$(MPI_INCLUDE_DIR)
+INCLUDE_DIR     = $mpi_inc
+C_INCLUDE_DIR   = $c_mpi_inc
 #
 EOF
 #elif [ "$mesp" = "pvm" -a "$parlib" = "yes" ]; then
