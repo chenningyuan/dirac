@@ -3417,7 +3417,7 @@ C
      &   CALL QUIT ('Either RESOLV OR 4INDEX should be specified')
 C
       RETURN
- 1000 FORMAT (/' **** WARNING ****'/2X,'not tested')
+ 1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck procc */
