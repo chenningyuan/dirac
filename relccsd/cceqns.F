@@ -482,8 +482,6 @@ C
 C        Delete the wave function amps that belong to higher sectors
          CALL DELFCK ('VO',DELS1,S1)
          CALL DELINT ('VVOO',DELS2,S2,0,0,0)
-C.......when debugging print out energies in every iteration
-        IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
 C       Adding folded diagrams, use HOV and H as scratch arrays
         CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
      &               S1,S2)     
@@ -518,6 +516,10 @@ C
       ENDIF
 C
       CALL ZCORE (S1,S2)
+C
+C.....when debugging print out energies in every iteration
+      IF (FOCKSP.AND.DEBUG) 
+     &   CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C

@@ -477,6 +477,10 @@ C
 C     Option 1) :
 C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
+C
+C     In the intermediate Hamiltonian formalism we also zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
+C
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
 C
@@ -505,11 +509,11 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,DIH
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
-      LOGICAL DENO,ZERO
+      LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
 C
 C---------------Executable code--------------------------------------
 C
@@ -533,7 +537,6 @@ C
 C T1 part:
 C
 c
-      DIH=1.D0
       II = 0
       AI = 0
 C
@@ -546,12 +549,12 @@ c
 c
       do ico=1,3
       DO I = IOI(ico-1)+1, IOI(ico)
+         Z1 = .FALSE.
          II = II + 1
          FAC1 = EPS(II)
-         DIH=1.D0
-             IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-                IF (ICURFSS.EQ.01.AND.ICO.EQ.3) DIH=0.D0
-             ENDIF
+         IF (DOIH.AND.IPIORB(II).EQ.1) THEN
+             IF (ICO.EQ.3) Z1=.TRUE.
+         ENDIF
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -562,7 +565,7 @@ c
          do acv=1,3
 C        Find out whether we need to divide by the denominators
 C        leave Hamiltonian matrix elements untouched.
-         IF (OPTION.NE.2) THEN
+         IF (OPTION.EQ.1) THEN
             IF ((ICO.EQ.3.AND.ACV.EQ.3).OR.
      &          (ICO.EQ.3.AND.ACV.EQ.1).OR.
      &          (ICO.EQ.2.AND.ACV.EQ.3)) THEN
@@ -588,17 +591,27 @@ C        This will zero Hamiltonian elements
          ENDIF
 C
          DO A = IVA(acv-1)+1, IVA(acv)
+             Z2 = .FALSE.
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
-                IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                   IF (ICURFSS.EQ.10.AND.ACV.EQ.3) DIH=0.D0
-                ENDIF
+             IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
+                IF (ACV.EQ.3) Z2=.TRUE.
+             ENDIF
              AI = AI + 1
              IF (DENO) THEN
                 IF (CARITH) THEN
-                       CT1(AI) = DIH*CT1(AI)/FAC
+                       CT1(AI) = CT1(AI)/FAC
                  ELSE
-                       T1(AI) = DIH*T1(AI)/FAC
+                       T1(AI) = T1(AI)/FAC
+                ENDIF
+             ENDIF
+C
+             IHZERO = Z1.OR.Z2
+             IF (DOIH.AND.IHZERO) THEN
+                IF (CARITH) THEN
+                       CT1(AI) = A0
+                 ELSE
+                       T1(AI) = A0
                 ENDIF
              ENDIF
 C
@@ -618,7 +631,6 @@ C
 
 c T2 part:
       ABIJ = 0
-      DIH=1.D0
 c
       DO IJRP = 1, NREP
       DO 10 JRP = 1, NREP
@@ -641,13 +653,11 @@ c
 
           do jco=1,3
           DO J = IOJ(jco-1)+1, IOJ(jco)
+            Z1 = .FALSE.
             JJ = JJ + 1
             FAC1 = EPS(JJ)
-            DIH=1.D0
             IF (DOIH.AND.IPIORB(JJ).EQ.1) THEN
-               IF ((ICURFSS.EQ.1.OR.ICURFSS.EQ.2).AND.JCO.EQ.3)
-     1         DIH=0.D0
-               IF (ICURFSS.EQ.11.AND.JCO.EQ.2) DIH=0.D0
+               IF (JCO.EQ.3) Z1 = .TRUE.
             ENDIF
             icomin=1
             IF (IRP.EQ.JRP) icoMIN = jco
@@ -655,12 +665,11 @@ c
             IMIN = IOI(ico-1)+1
             IF (IRP.EQ.JRP.and.ico.eq.jco) IMIN = J + 1
             DO I = IMIN, IOI(ico)
+               Z2 = .FALSE.
                II = IOFF + I
                FAC2 = EPS(II) + FAC1
                IF (DOIH.AND.IPIORB(II).EQ.1) THEN
-                  IF ((ICURFSS.EQ.1.OR.ICURFSS.EQ.2).AND.ICO.EQ.3)
-     1            DIH=0.D0
-                  IF (ICURFSS.EQ.11.AND.ICO.EQ.2.AND.JCO.NE.2) DIH=0.D0
+                  IF (ICO.EQ.3) Z2 = .TRUE.
                ENDIF
 c
              DO 20 BRP = 1, NREP
@@ -682,19 +691,18 @@ c
 c
                   do bcv=1,3
                   DO B = IVB(bcv-1)+1, IVB(bcv)
+                     Z3 = .FALSE.
                      BB = BB + 1
                      FAC3 = FAC2 - EPS(BB)
                      IF (DOIH.AND.IPIORB(BB).EQ.1) THEN
-                       IF((ICURFSS.EQ.10.OR.ICURFSS.EQ.20).AND.BCV.EQ.3) 
-     1                 DIH=0.D0
-                       IF (ICURFSS.EQ.11.AND.BCV.EQ.1) DIH=0.D0
+                       IF (BCV.EQ.3) Z3 = .TRUE.
                      ENDIF
                      acvMIN=1
                      IF (ARP.EQ.BRP) acvMIN = Bcv
                      do acv=acvMIN,3
 C                    Find out whether we need to divide by the denoms
 C                    leave Hamiltonian matrix elements untouched.
-                     IF (OPTION.NE.2) THEN
+                     IF (OPTION.EQ.1) THEN
                  IF ( (ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.1)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.1)
@@ -731,13 +739,11 @@ C                    This will zero out Hamiltonian elements
                      AMIN = IVA(acv-1)+1
                      IF (ARP.EQ.BRP.and.acv.eq.bcv) AMIN = B + 1
                         DO A = AMIN, IVA(acv)
+                           Z4 = .FALSE.
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
                            IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
-                            IF((ICURFSS.EQ.10.OR.ICURFSS.EQ.20).
-     &                          AND.ACV.EQ.3)   DIH=0.D0
-                            IF (ICURFSS.EQ.11.AND.
-     &                          ACV.EQ.1.AND.BCV.NE.1) DIH=0.D0
+                              IF (ACV.EQ.3) Z4 = .TRUE.
                            ENDIF
                            ABIJ = ABIJ + 1
                            IF (DENO) THEN
@@ -751,9 +757,9 @@ C                            Check for zero denominators
                                 CALL QUIT('Zero denominator in DENOMF')
                              ENDIF
                              IF (CARITH) THEN
-                                   CT2(ABIJ) = DIH*CT2(ABIJ)/FAC
+                                   CT2(ABIJ) = CT2(ABIJ)/FAC
                               ELSE
-                                   T2(ABIJ) = DIH*T2(ABIJ)/FAC
+                                   T2(ABIJ) = T2(ABIJ)/FAC
                              ENDIF
 C-----------------------------------------------------------------------
 CThis may cause large output : activate when debugging..
@@ -771,6 +777,15 @@ C    &                          CLASS(ACV,2),CLASS(BCV,2),
 C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
 C                            ENDIF
 C-----------------------------------------------------------------------
+                           ENDIF
+C
+                           IHZERO = Z1.OR.Z2.OR.Z3.OR.Z4
+                           IF (DOIH.AND.IHZERO) THEN
+                             IF (CARITH) THEN
+                                CT2(ABIJ) = A0
+                             ELSE
+                                T2(ABIJ) = A0
+                             ENDIF
                            ENDIF
 C
                            IF (ZERO) THEN
