@@ -902,7 +902,7 @@ C
              ELSE IF (BASIS) THEN
                WRITE(LUPRI,'(/A/A)') 
      &           'BASINP: "BASIS" in first line not allowed in Dirac.',
-     &           'Use "LARGE BASIS <basis>" for each atom type instead."
+     &           'Use "LARGE BASIS <basis>" for each atom type instead.'
                CALL QUIT(
      &           'BASINP: "BASIS" in first line not allowed in Dirac!')
 C
