@@ -12,7 +12,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C     
-      PARAMETER (DP5 = 0.500, D2 = 2.0D00, D4 = 4.0D00)
+#include <consts.h>
 C     
 #include <dummy.h>
 #include <dcbxrs.h>
@@ -33,7 +33,6 @@ C
 C     Solution vector - orbital (e-e) part
 C     
       IF(NZXOPE.GT.0) THEN
-         write(6,*) 'e-e'
          CALL MEMGET('REAL',KBBUF,NZXOPEQ,WORK,KFREE,LFREE)
          OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
@@ -46,7 +45,6 @@ C
 C     Solution vector - orbital (e-p) part
 C     
       IF(NZXOPP.GT.0) THEN
-         write(6,*) 'e-p'
          CALL MEMGET('REAL',KBBUF,NZXOPPQ,WORK,KFREE,LFREE)
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
@@ -59,7 +57,6 @@ C
 C     Solution vector - conf. part
 C     
       IF ( NZCONF .GT. 0 ) THEN
-         write(6,*) 'conf'
          CALL MEMGET('REAL',KBBUF,NZCONFQ,WORK,KFREE,LFREE)
          OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
@@ -76,7 +73,6 @@ C
 C     Scale with .5 (Y+Z=2Y is saved from xrs)
 C     ...and scale with 4 from new RSP code.
 C     
-      write(6,*) 'krmcvec: writing kappa:',nzxoptq
 c     CALL DSCAL(NZXOPTQ,D4,DKAPPA,1)
       CALL WRITT(LUKRM1,NZXOPTQ,DKAPPA)
 C     
@@ -127,9 +123,6 @@ C
 C
       CALL QENTER('KRMCVEC1')
 C
-      KFREE = 1
-      LFREE = LWRK
-C
       IF (NBTYP.EQ.JBENDX) THEN
         NBRED  = NERED
         MZXPAR = NZXOPE
@@ -167,7 +160,7 @@ C
 C
 C     Print section
 C
-      IF(IPRXLR.GE.0) THEN
+      IF(IPRXRS.GE.0) THEN
          CALL HEADER('KRMCVEC1: Solution vectors in KRMCVEC1',-1)
          CALL PRBVEC(LUPRI,XPO,NFREQ,NZXPAR)
          CALL FLSHFO(LUPRI)

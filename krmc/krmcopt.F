@@ -28,12 +28,11 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : diropt.F
-C SOURCE  : $Source$
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
-      SUBROUTINE PSIOPT(WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE PSIOPT(WFTYP,WORK,LWORK)
+C***********************************************************************
 C
 C     Driver routine to PSIOP1
 C     Get second order optimized wave function.
@@ -42,58 +41,91 @@ C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxash.h>
+#include <maxorb.h>
 C
+      CHARACTER WFTYP*(*)
       DIMENSION WORK(LWORK)
 C
+#include <dcbidx.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbopt.h>
 #include <dcbgen.h>
 C
+      LOGICAL EX
+      INTEGER RENAME
+C
 #include <memint.h>
 C
       CALL QENTER('PSIOPT')
 C
-      IF (NASHT .GT. 1) THEN
-         CALL TITLER('KR-MCSCF wave function optimization','*',110)
-         WRITE(LUPRI,'(/3X,A/)')
-     &      'Kramers Restricted Multiconfigurational '//
-     &      'Self-Consistent Field'
+C
+C     Determine the wave function type
+C     --------------------------------
+C
+      IF (WFTYP .EQ. 'SCF  ') THEN
+         IF (NASHT .EQ. 0) THEN
+            MCTYPE = JDHF
+         ELSE IF (NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
+            MCTYPE = JODHF
+         ELSE
+            CALL QUIT('2. order optimization of this open shell DHF'//
+     &        ' is not implemented')
+         END IF
+      ELSE IF (NGAS .EQ. 1) THEN
+         MCTYPE = JCAS
       ELSE
-         CALL TITLER('QC-DHF wave function optimization','*',110)
-         WRITE(LUPRI,'(/3X,A/)')
-     &      'Quadratic convergent Dirac-Hartree-fock '//
-     &      'wave function optimization'
+         MCTYPE = JGAS
       END IF
-      write(6,*) 'ipropt in PSIOPT',ipropt
+cdebug
+c     opt_ucibos = .false.
+cdebug
+C
+C     Say Hi!
+C     -------
+C
+      CALL KRMCHI
 C
 C     ***************************************************
 C     *** Open files needed *****************************
 C     ***************************************************
 C
-      LUKRMC = 20
+C     Units 50-59 are reserved for KRMC.
+C     Units 50-56 are opened here, 57-58 in krmctra.F,
+C     and 59 is not used currently (hjaaj March 2002).
+C     LUKRMC = 50 is also used in ESR_RESOLVE
+C
+C     If old KRMCSCF exists rename it to KRMCOLD.
+C
+C
+      LUKRMC = 50
+C
       CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRMC,LUERR)
-      REWIND LUKRMC
+      CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)
 C
-      LUKRM1 = 101
-      CALL OPNFIL(LUKRM1,'KRMC KAPPA','UNKNOWN','PSIOPT')
+      LUKRM1 = 51
+      CALL OPNFIL(LUKRM1,'KRMC_KAPPA','UNKNOWN','PSIOPT')
 C
-      LUKRM2 = 102
-      CALL OPNFIL(LUKRM2,'KRMC CMO','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRM2,LUERR)
+      LUKRM2 = 52
+      CALL OPNFIL(LUKRM2,'KRMC_CMO','UNKNOWN','PSIOPT')
+      CALL NEWLAB('SODLABEL',LUKRM2,LUPRI)
       REWIND LUKRM2
 C
-      LUKRM3 = 103
-      CALL OPNFIL(LUKRM3,'KRMC FOCK','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRM3,LUERR)
+      LUKRM3 = 53
+      CALL OPNFIL(LUKRM3,'KRMC_FOCK','UNKNOWN','PSIOPT')
+      CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
       REWIND LUKRM3
 C
-      LUITFO = 104
-      CALL OPNFIL(LUITFO,'KRMC ITINFO','UNKNOWN','PSIOPT')
+      LUKRM4 = 54
+      CALL OPNFIL(LUKRM4,'KRMC_LRED','UNKNOWN','PSIOPT')
+      REWIND LUKRM4
+C
+      LUITFO = 56
+      CALL OPNFIL(LUITFO,'KRMC_ITINFO','UNKNOWN','PSIOPT')
 C
 C
 C     ***************************************************
@@ -102,8 +134,9 @@ C     *** parameters.                                 ***
 C     ***************************************************
 C
 C
-      CALL RSETWOP(WORK,KFREE,LFREE)
       CALL SETDCBIDX()
+      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL FLSHFO(LUPRI)
 C
 C
 C     ***************************************************
@@ -123,33 +156,8 @@ C
       CALL MEMGET('REAL',KPV,NASHT*NASHT*NNASHX*NZ*3,
      &     WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGCI  ,NZCONFQ       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGOEE ,NZXOPEQ       ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGOEE ,NZHOPEQ       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGOEP ,NZXOPPQ       ,WORK,KFREE,LFREE)
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
-         LENPV = ( 2 * NASHT ) ** 4 * MIN0(NZ,2)
-      ELSE
-         IF ( NASHT .GE. 1 ) THEN
-            WRITE(LUPRI,'(/,A,/,A,I3,2A)')
-     $           '*** ERROR in PISOPT ***',
-     $           'NASHT = ',NASHT,' not programmed for CI program ',
-     $           OPT_CIPROGRAM
-            CALL QUIT('*** ERROR in PSIOPT ***')
-         END IF
-         LENPV = 0
-      END IF
-#ifdef UNDEF
-      write(6,*) 'memory kcmo   ',kcmo,ncmotq
-      write(6,*) '       kdv    ',kdv,n2ashxq
-      write(6,*) '       kfc    ',kfc,n2orbxq
-      write(6,*) '       kfv    ',kfv,n2orbxq
-      write(6,*) '       kfq    ',kfq,nz*nasht*norbt
-      write(6,*) '       kfcac  ',kfcac,n2ashxq
-      write(6,*) '       kcref  ',kcref,nzconfq
-      write(6,*) '       kh2ac  ',kh2ac,NASHT*NASHT*NNASHX*NZ*3
-      write(6,*) '       kgci   ',kgci,nzconfq
-      write(6,*) '       kgoee  ',kgoee,nzxopeq
-      write(6,*) '       kgoep  ',kgoep,nzxoppq
-#endif
 C
 C     ***************************************************
 C     *** Call 2nd order optimization *******************
@@ -162,43 +170,47 @@ C
 C
 C
 C     ***************************************************
+C     *** Call output routines **************************
+C     ***************************************************
+C
+C
+      CALL KRMCOUT(WORK,KFREE,LFREE)
+C
+C
+C
+C     ***************************************************
 C     *** Memory deallocation ***************************
 C     ***************************************************
 C
       CALL MEMREL('PSIOPT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-C
-C     ***************************************************
-C     *** Call output routines **************************
-C     ***************************************************
-C
-C
-      CALL KRMCOUT(WORK(KFREE),LFREE)
-C
-C
 C     ***************************************************
 C     *** Close files ***********************************
 C     ***************************************************
 C
+C
+Chj July 2002: why is LUKRMC reopened here, I try to comment it out
+Chj   LUKRMC = 50
+C
+Chj   CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
       CLOSE(LUKRMC,STATUS='KEEP')
-      CLOSE(LUKRM1,STATUS='KEEP')
-      CLOSE(LUKRM2,STATUS='KEEP')
+      CLOSE(LUKRM1,STATUS='DELETE')
+      CLOSE(LUKRM2,STATUS='DELETE')
       CLOSE(LUKRM3,STATUS='KEEP')
-      CLOSE(LUITFO,STATUS='KEEP')
-c     CLOSE(LUKRM1,STATUS='DELETE')
-c     CLOSE(LUKRM2,STATUS='DELETE')
 c     CLOSE(LUKRM3,STATUS='DELETE')
-c     CLOSE(LUITFO,STATUS='DELETE')
+      CLOSE(LUKRM4,STATUS='DELETE')
+      CLOSE(LUKRM5,STATUS='DELETE')
+      CLOSE(LUITFO,STATUS='DELETE')
 C
       CALL QEXIT('PSIOPT')
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOP1(CMO,DV,PV,FC,FV,FQ,FCAC,CREF,H2AC,GCI,GOEE,GOEP,
      &                  WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Get second order optimized wave function.
 C     Either DHF or KR-MCSCF...
@@ -206,12 +218,15 @@ C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
 C
-      PARAMETER ( D0 = 0.0D00, D1 = 1.0D00 )
+#include <consts.h>
+#include <thrzer.h>
 C
+#include <dcbnrt.h>
 #include <dcbpsi.h>
 #include <dcbkrmc_itinfo.h>
 #include <dcbgen.h>
@@ -223,17 +238,17 @@ C
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
      &          H2AC(*),GCI(*),GOEE(*),GOEP(*)
       DIMENSION PV(*)
-      LOGICAL   CHKSTP,DO4INDEX
+C
+      LOGICAL CHKSTP,DO4INDEX,TOBE
+      LOGICAL NRALW, NEOALW
+C
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+      CHARACTER SZTRA(2,4)*200
 C
 C
       CALL QENTER('PSIOP1')
       CALL GETTIM(CPUTOT1,WALLTOT1)
       KFRSAV = KFREE
-CDEBUG OPTIONS
-      OPT_THRGRD = 1.0D-7
-CEND DEBUG
-      write(6,*) 'iopt_intdef psiop1',iopt_intdef,ipropt
 C
 C
 C     ***************************************************
@@ -247,18 +262,31 @@ C
          IOPT_IHRMOP(I) = 1
       END DO
       ITMAC  = 0
-      KTRLVL = -1
-      JTRLVL = 0
-      DO4INDEX = ( NASHT .GT. 1 )
+      ITBCK  = 0
+      DO4INDEX = ( MCTYPE .GE. JMCMIN )
+C     ... MCTYPE .lt. JMCMIN is SCF
       EMCOLD = D0
       DEPRED = D0
       STPLEN = D0
+      ICONV  = 0
+C
+      NRALW = FLAG(1)
+      NEOALW = FLAG(2)
+      DONR = NRALW
+      FROZCI = OPT_NOCI
+C
+C     KTRLVL = 3 (KTRLVL set in *OPTIMIZE)
+      JTRLVL = 0
+C
+      CALL DZERO(CPUOPT,NOPTTIM)
+      CALL DZERO(WLLOPT,NOPTTIM)
+C
       CALL DZERO(GNORM,5)
 C
 C     Integrals in macro iteration zero.
 C
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
-     &     OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
+     &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 C
 C
 C     ***************************************************
@@ -279,7 +307,8 @@ C
 C
 C     Get start orbitals and CI vectors:
 C
-      CALL ROPTST(CREF,WORK(KFREE),LFREE)
+      CALL ROPTST(IOPTST,3,CMO,CREF,IPROPT,WORK,KFREE,LFREE)
+C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
 C     Initialize some more parameters:
 C
@@ -296,7 +325,7 @@ C
 C     Check for legal values of Beta:
 C
       BETA = ABS(BETA)
-      IF (BETA .LE. EPSILON)  BETA = D1
+      IF (BETA .LE. THRZER)  BETA = D1
       IF (BETMIN .LE. D0 .OR.
      &    BETMIN .GT. BETMAX) BETMIN = D1
       IF (BETMAX .LE. D1)     BETMAX = D1
@@ -308,13 +337,28 @@ C     ***************************************************
 C
 C
   100 CONTINUE
+         CALL GETTIM(CPUMAC1,WALLMAC1)
          CALL DZERO(DINFO,LDINFO)
          CALL IZERO(IINFO,LIINFO)
-         ITMAC = ITMAC+1
-         CALL GETTIM(CPUMAC1,WALLMAC1)
-         WRITE(LUPRI,9000) ITMAC
+C
+C        Write iteration number etc.
+C        ---------------------------
+C
+         IF (ITBCK .GT. 0) THEN
+            WRITE(LUPRI,9001) ITMAC, ITBCK
+         ELSE IF (ITABS .GT. 0) THEN
+            WRITE(LUPRI,9002) ITMAC
+         ELSE
+            ITMAC = ITMAC+1
+            ITMACN = ITMACN + 1
+            WRITE(LUPRI,9000) ITMAC
+         END IF
 C
  9000    FORMAT(//' <<< MACRO ITERATION',I3,' >>>'
+     &           /' ---------------------------')
+ 9001    FORMAT(//' <<< MACRO ITERATION',I3,' BACKSTEP NO.',I3,' >>>'
+     &           /' ---------------------------')
+ 9002    FORMAT(//' <<< MACRO ITERATION',I3,' AFTER ABSORPTION >>>'
      &           /' ---------------------------')
          CALL FLSHFO(LUPRI)
 C
@@ -325,9 +369,9 @@ C
          CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &        OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 C
-         WRITE(LUPRI,9001) OPT_INTTYP
+         WRITE(LUPRI,9020) OPT_INTTYP
 C
- 9001    FORMAT(/1X,'* Integrals in this macro iteration: ',A)
+ 9020    FORMAT(/' (PSIOPT) Integrals in this macro iteration: ',A)
 C
 C        ***************************************************
 C        *** Get MO-coefficients ***************************
@@ -335,7 +379,7 @@ C        ***************************************************
 C
 C
          JRDCMO = 0
-         CALL RREADMO(CMO,JRDCMO,1)
+         CALL RREADMO(CMO,JRDCMO,1,LUKRMC)
 C
 C
 C        ***************************************************
@@ -348,8 +392,50 @@ C
 C           Do 4-index transformation.
 C           KTRLVL is the order of the transformation.
 C
-            JTRLVL = KTRLVL
-            CALL RTRACTL(JTRLVL,WORK(KFREE),LFREE)
+            IF (.NOT. COMPROT) THEN
+C
+               JTRLVL = KTRLVL
+C
+            ELSE
+C
+C              Orbital compression: we need (ga|aa) integrals to 
+C              get gradient correct. Later, we'll calculate the
+C              rest of the integrals.
+C
+               JTRLVL = 1
+C
+            END IF
+            CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
+C
+C           Get all coefficients
+C
+            CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+C
+C           Read coefficients from KRMCSCF
+C     
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBE)
+            IF (.NOT.TOBE) THEN
+               WRITE(LUPRI,'(A,/,A)')
+     $              '*** ERROR in RTRACTL1 ***',
+     $              'File with coefficients not found'
+               CALL QUIT('*** ERROR in RTRACTL1 ***')
+            ELSE
+               JRDMO = 1
+               CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+            END IF
+C
+C           TODO: Boson symmetry not implemented in KRMCSCF yet.
+C     
+            CALL IZERO(WORK(KIBEIG),NORBT)
+C
+C           *** Now do the transformation
+C
+            CALL RTRACTL(WORK(KCMO),SZTRA,WORK(KFREE),LFREE)
+C
+C           *** Throw away CMO again
+C
+            CALL MEMREL('PSIOP1.RTRACTL.CMO',WORK,1,KCMO,KFREE,LFREE)
 C
          END IF
          CALL GETTIM(CPUITR2,WALLITR2)
@@ -363,7 +449,9 @@ C
 C
          CALL RGRAD(CMO,CREF,WORK(KZXOPE),WORK(KZXOPP),
      &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
-     &              FCAC,H2AC,WORK(KFREE),LFREE,IPROPT)
+     &              FCAC,H2AC,IPROPT,WORK,KFREE,LFREE)
+C
+         GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
 C
 C
@@ -382,14 +470,13 @@ C
      &           ' Orbital e-e grad.  (It. ',I3,') : ',F25.15,/,
      &           ' Orbital e-p grad.  (It. ',I3,') : ',F25.15,/,
      &           ' Total orbital grad.(It. ',I3,') : ',F25.15,/,
-     &           ' Total gradient     (It. ',I3,') : ',F25.15)
+     &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
 C
 C        ***************************************************
 C        *** Converged ??? *********************************
 C        ***************************************************
 C
-         write(6,*) 'jth: THRGRD',OPT_THRGRD
          IF (GNORM(5) .LE. OPT_THRGRD) THEN
             ICONV = 1
             ISTEP = -2
@@ -400,18 +487,72 @@ C        ***************************************************
 C        *** Check step ************************************
 C        ***************************************************
 C
+C        Input to DIRSTP:
+C        istep = -2: MC converged, get step info for analysis
+C        istep = -1: restart prediction (currently unused)
+C        istep =  0: normal second-order step check
+C
+C        DIRSTP returns:
+C        istep =  0: Step is OK
+C        istep =  1: step too large, do backstep
+C        istep =  2: step rejected, no backstep available
+C        istep = -1: no check because we are close to convergence.
+C
          IF (CHKSTP) THEN
-            CALL DIRSTP(ISTEP,CMO,WORK(KFREE),LFREE)
+            CALL DIRSTP(ISTEP,CMO,CREF,WORK,KFREE,LFREE)
          ELSE
             EMCOLD = EMCSCF
             ISTEP  = 0
          END IF
 C
          DINFO(9) = RTRUST
+C
+C        Exit if converged
+C
          IF (ICONV .EQ. 1) GOTO 1000
 C
-         CHKSTP = .TRUE.
+         IF (ISTEP .EQ. 2) THEN
+            WRITE(LUPRI,9050)
+            GOTO 1999
+         END IF
 C
+ 9050    FORMAT(//,1X,'*** WARNING *** ',
+     &        'Aborting: step rejected and backstep is NOT available')
+C
+         IF (ISTEP .GT. 0) THEN
+            ISTEP = 0
+            DONR  = NRALW
+            ITBCK = ITBCK + 1
+c           call quit('argh')
+            IF (ITBCK .LE. MOPT_MAXBCK) THEN
+               WRITE(LUPRI,9060)
+            ELSE
+               WRITE(LUPRI,9062) MOPT_MAXBCK
+            END IF
+            GO TO 1000
+         ELSE IF (ISTEP .LT. 0) THEN
+            IF (GNORM(5) .GT. GNRMSV) THEN
+               WRITE(LUPRI,9064)
+               GOTO 1999
+            END IF
+            ITBCK = 0
+         ELSE
+            ITBCK = 0
+         END IF
+C
+ 9060    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
+     &        'Step was too large, we backstep')
+ 9062    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
+     &        '*** ERROR in PSIOP1 *** No convergence',
+     &        //,1X,'Step was too large and maximum number of ',
+     &        'backsteps',I2,' reached'/)
+ 9064    FORMAT(/,1X,'(PSIOP1) Optimization control: ',
+     &        '*** ERROR in PSIOP1 *** ',
+     &        'Gradient norm increasing in local region.',
+     &        /,1X,'Probable cause: numerical round-off errors ',
+     &        'or too many integrals neglected/screening away')
+C
+         CHKSTP = .TRUE.
 C
 C
 C        ***************************************************
@@ -419,24 +560,27 @@ C        *** Second order step *****************************
 C        ***************************************************
 C
 C
-         CALL DIRNR(CREF,GCI,GOEE,GOEP,CMO,DV,FC,FV,FCAC,
-     &              H2AC,WORK,KFREE,LFREE)
+         STPLEN = D0
+         STPLCI = D0
+         STPLEE = D0
+         STPLEP = D0
+         DEPRED = D0
+c        IF (DONR) THEN
+            CALL DIRNR(CREF,GCI,GOEE,GOEP,CMO,DV,FC,FV,FCAC,
+     &           H2AC,WORK,KFREE,LFREE)
+            LDIRNR = .TRUE.
+c        ELSE
+c           CALL QUIT('*** ERROR in PSIOP1 ***: NEO not implemented')
+C           LDIRNR = .FALSE.
+c        END IF
 C
-C
-C
-C        ***************************************************
-C        *** Step accepted: save info on LUKRMC ************
-C        ***************************************************
-C
-C
-         CALL KRMCSAV(0,WORK(KFREE),LFREE)
 C
 C
  1000    CONTINUE
          CALL GETTIM(CPUMAC2,WALLMAC2)
          CPUTID = SECTID(CPUMAC2-CPUMAC1)
          WALLTID = SECTID(WALLMAC2-WALLMAC1)
-         WRITE(LUPRI,9100) CPUTID,WALLTID
+         WRITE(LUPRI,9100) ITMAC,CPUTID,WALLTID
 C
 C        Save information for final summary output
 C
@@ -446,14 +590,15 @@ C
          DINFO(3) = EMCSCF
          DINFO(16) = CPUMAC2-CPUMAC1
          DINFO(18) = CPUITR2-CPUITR1
+C
          WRITE(LUITFO) DINFO,IINFO
 C
- 9100    FORMAT(/'>>> CPU (WALL) TIME FOR THIS MACRO IT. :',A,'(',A,')')
-         write(6,*) 'iconv=',iconv
-         write(6,*) 'itmac,mopt_mxmacro=',itmac,mopt_mxmacro
+ 9100    FORMAT(/'>>> CPU (WALL) TIME FOR MACRO IT. ',
+     &        I3,':',A,'(',A,')')
          CALL FLSHFO(LUPRI)
          IF (ICONV .GT. 0) GOTO 2000 
-         IF (ITMAC .LT. MOPT_MXMACRO) THEN
+         IF ( (ITBCK .EQ. 0 .AND. ITMAC .LT. MOPT_MXMACRO) .OR.
+     &        (ITBCK .GT. 0 .AND. ITBCK .LE. MOPT_MAXBCK ) ) THEN
             IOPT_INTBUF = IOPT_INTFLG
             GOTO 100
          END IF
@@ -472,6 +617,7 @@ C     *** Not converged *********************************
 C     ***************************************************
 C
 C
+ 1999 CONTINUE
       WRITE(LUPRI,9200) 
  9200 FORMAT(/'WARNING: Wave function did not converge...')
       GOTO 3000
@@ -495,12 +641,12 @@ C
       CALL QEXIT('PSIOP1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgrad */
       SUBROUTINE RGRAD(CMO,CREF,JXOPE,JXOPP,
      &                 GCI,GOEE,GOEP,EMCMY,EMCACT,DV,PV,FC,FV,FQ,FCAC,
-     &                 H2AC,WORK,LWORK,IPRINT)
-C*****************************************************************************
+     &                 H2AC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Calculate the gradient.
 C
@@ -524,36 +670,38 @@ C        FC      - the inactive Fock matrix
 C        FCAC    - the inactive Fock matrix with active indices
 C        FV      - the active Fock matrix
 C        FQ      - the Q Fock matrix
-C     
+CC     
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      PARAMETER (D0 = 0.0D00, D1 = 1.0D00, DM1 = -D1)
+#include <consts.h>
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
       DIMENSION CREF(*)
-      DIMENSION WORK(LWORK)
+      DIMENSION WORK(*)
 C
 C     Local variable
 C
       DIMENSION DFAC(2)
 C
-      LOGICAL   FND,FNDLAB, SAVEDFGEN
+      LOGICAL FND,FNDLAB,SAVEDFGEN
 C
 #include <dcbopt.h>
 #include <dcbgen.h>
 #include <dcborb.h>
 #include <dgroup.h>
 C
-#include <memint.h>
-C
       CALL QENTER('RGRAD')
+      CALL RTKTIME(.TRUE.,9)
+      KFRSAV = KFREE
+C
+      WRITE(LUPRI,'(/1X,A)') '(RGRAD) Calculating gradient.'
 C
       DFAC(1) = D1
       DFAC(2) = DM1
@@ -565,7 +713,7 @@ C
       REWIND LUKRM3 
       FND =  FNDLAB('SODLABEL',LUKRM3)
       BACKSPACE LUKRM3
-      CALL NEWLAB('SODLABEL',LUKRM3,LUERR)
+      CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
       REWIND(LUKRM3)
 C
 C     ***************************************************
@@ -573,8 +721,9 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-         CALL RMAKDM(DV,PV,CREF,WORK(KFREE),LFREE)
+         CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
+C
 C
 C     ***************************************************
 C     *** Calculate inactive and active Fock matrices ***
@@ -589,17 +738,17 @@ C     ***************************************************
 C
       IF (NASHT .GE. 1) THEN
 C
-C        Get Fock matrix with both indeces active.
+C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
          CALL RGETAC(FC,FCAC,IPROPT)
 C
       END IF
 C
-      IF (NASHT .GT. 1) THEN
+      IF (NASHT .GT. 1 .OR. MCTYPE .GE. JMCMIN) THEN
 C
 C        Calculate FQ matrix and two-electron integrals
-C        with active orbital indeces (H2AC).     
+C        with active orbital indices (H2AC).     
 C        FQ and H2AC are written to KRMC FOCK.
 C
          CALL RGETH2(FQ,H2AC,PV,WORK(KFREE),LFREE)
@@ -632,19 +781,22 @@ C     *** Calculate the orbital gradient ****************
 C     ***************************************************
 C
 C
-      SAVEDFGEN = .FALSE.
-      IF (NZXOPE .GT. 0) THEN
-         CALL DZERO(GOEE,NZXOPEQ)
+      SAVEDFGEN = COMPROT
+      IF (NZHOPE .GT. 0) THEN
+         CALL DZERO(GOEE,NZHOPEQ)
          LFPV = NZ*NASHT*NORBT
          CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
-         CALL RORBGRD(DV,FC,FV,FQ,GOEE,
-     &                JXOPE,NZXOPE,WORK(KFPV),DFAC,
+         CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEE,
+     &                JXOPE,NZHOPE,WORK(KFPV),DFAC,
      &                IPQTOQ(1,0),IPRINT)
 C
 C        Save generalized Fock matrix (F_{pv})
 C
-         CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),NORBT * NASHT * NZ)
-         SAVEDFGEN = .TRUE.
+         IF (.NOT. SAVEDFGEN) THEN
+            CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),
+     &           NORBT * NASHT * NZ)
+            SAVEDFGEN = .TRUE.
+         END IF
 C
          CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
       END IF
@@ -652,7 +804,7 @@ C
          CALL DZERO(GOEP,NZXOPPQ)
          LFPV = NZ*NASHT*NORBT
          CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
-         CALL RORBGRD(DV,FC,FV,FQ,GOEP,
+         CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEP,
      &                JXOPP,NZXOPP,WORK(KFPV),DFAC,
      &                IPQTOQ(1,0),IPRINT)
 C
@@ -664,45 +816,110 @@ C
          CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
       END IF
 C
+CEXTREME DEBUG
+c     GOEE(9) = 0.0D00
+C END DEBUG
+C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('rGRAD: gradient:',-1)
-         CALL RPRKAP(GOEE,GOEP,JXOPE,NZXOPE,
+         CALL RPRKAP(GOEE,GOEP,JXOPE,NZHOPE,
      &               JXOPP,NZXOPP,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
 C
 C     ***************************************************
-C     *** Remove redundant orbital rotations ************
+C     *** Singular-value decomposition of gradient ******
 C     ***************************************************
 C
 C
-C     se REDPAR i ./prp/pamset.F
+      IF (COMPROT) THEN
+C
+         CALL SVLDEG(GOEE,GOEP,JXOPE,NZHOPE,JXOPP,NZXOPP,
+     &        DV,FC,FV,FQ,CMO,IPROPT,WORK(KFREE),LFREE)
+C
+      END IF
 C
 C
 C     ***************************************************
 C     *** Calculate the CI gradient *********************
 C     ***************************************************
 C
-      IF (NZCONF .GT. 0) THEN
+      IF (NZCONF .GT. 0 .AND. .NOT. FROZCI ) THEN
 C
 C        Calculate CI gradient
 C
          CALL DZERO(GCI, NZCONFQ)
-c        CALL RCIDIAG
-         CALL RCIGRAD(CREF,FCAC,H2AC,GCI,EMCACT,WORK(KFREE),LFREE)
+         CALL RCIGRAD(CREF,FCAC,H2AC,GCI,EMCACT,WORK,KFREE,LFREE)
+      ELSE
+         CALL DZERO(GCI, NZCONFQ)
       END IF
 C
 C
-      CALL MEMREL('RORBGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+C     ******************************
+C     *** Write matrices to file ***
+C     ******************************
+C
+C     DV & PV
+C     -------
+C
+C     Save active density matrices on file KRMC FOCK
+C     
+      CALL WRTKRMC(LUKRM3,'DVMO    ',DV,N2ASHXQ)
+      IF ( NASHT .GT. 1 .OR. MCTYPE .GE. JMCMIN ) THEN
+         CALL WRTKRMC(LUKRM3,'PVMO    ',PV,NASHT*NASHT*NNASHX*NZ*3)
+      END IF
+C
+C     FC & FV
+C     -------
+C
+      CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
+      IF (NASHT .GT. 0) CALL WRTKRMC(LUKRM3,'FVMO    ',FV,N2ORBXQ)
+C
+C     FCAC, FQ & H2AC
+C     ---------------
+C
+      IF (MCTYPE .GE. JMCMIN) THEN
+         CALL WRTKRMC(LUKRM3,'FCAC    ',FCAC,N2ASHXQ)
+         CALL WRTKRMC(LUKRM3,'FQMO    ',FQ  ,NASHT*NORBT*NZ)
+         CALL WRTKRMC(LUKRM3,'H2AC    ',H2AC,NASHT*NASHT*NNASHX*NZ*3)
+      END IF
+C
+C     CMO & CREF
+C     ----------
+C     (we have to read & write CREF again as CREF is placed after NEWORB
+C      and is therefore deleted when rewriting CMO
+C
+      IF (COMPROT) THEN
+         IF (NZCONF .GT. 0) CALL REAKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+         IF (NZCONF .GT. 0) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+      END IF
+C
+C
+C     As a temporary solution for calculating 1st order properties
+C     we save the total density matrix: DC + DV
+C
+      CALL MEMGET('REAL',KDC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL DCSCT(WORK(KDC))
+      IF (NASHT .GT. 0) THEN
+         CALL MEMGET('REAL',KDV,N2ORBXQ,WORK,KFREE,LFREE)
+         CALL DVSCT(DV,WORK(KDV))
+         CALL DAXPY(N2ORBXQ,D1,WORK(KDV),1,WORK(KDC),1)
+      END IF
+      CALL WRTKRMC(LUKRM3,'DTMO    ',WORK(KDC),N2ORBXQ)
+      CALL MEMREL('RMAKDM.SAVE-TOT',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
+      CALL RTKTIME(.FALSE.,9)
       CALL QEXIT('RGRAD')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmakdm */
-      SUBROUTINE RMAKDM(DV,PV,CREF,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE RMAKDM(CALCDV,CALCPV,DV,PV,CREF,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Construct one- and two-electron active density matrix
 C
@@ -715,9 +932,9 @@ C        DV      - one electron active density matrix
 C        PV      - two electron active density matrix
 C
 C     Written by J. Thyssen - Oct 22 1998
-C     Last revision : 
+C     Last revision : 24.01.2001, T. Fleig
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-10 )
@@ -728,100 +945,177 @@ C
 #include <dgroup.h>
 #include <dcbqal.h>
 C
-      DIMENSION DV(*)
-      DIMENSION PV(*)
-      DIMENSION WORK(*)
+      LOGICAL CALCDV, CALCPV
+      DIMENSION DV(*), PV(*), CREF(*), WORK(*)
+C
+C
       DIMENSION DTRCE(4)
 C
 C
-#include <memint.h>
-C
       CALL QENTER('RMAKDM')
+      CALL RTKTIME(.TRUE.,8)
+      KFRSAV = KFREE
 C
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
+      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' .OR.
+     &     OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C
-         IF ( NASHT .EQ. 1 ) THEN
+C        Calculate density matrices in MOLFDIR format
+C
+         IF (CALCPV) THEN
+            LPV = (2*NASHT)**4 * MIN(2,NZ)
+         ELSE
+            LPV = 0
+         END IF
+         CALL MEMGET('REAL',KPVMOLF,LPV,WORK,KFREE,LFREE)
+chjaaj:  DVMOLF is always calculated in this version
+c        IF (CALCDV) THEN
+            LDV = (2*NASHT)**2 * MIN(2,NZ)
+c        ELSE
+c           LDV = 0
+c        END IF
+         CALL MEMGET('REAL',KDVMOLF,LDV,WORK,KFREE,LFREE)
+C
+         IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
+C        Density matrices generated by KRMC GOSCI
+C           (this routine always calculates DVMOLF)
+c           CALL GOSCI_RMAKDM(CALCDV,CALCPV,WORK(KZCONF),CREF,CREF,
+            CALL GOSCI_RMAKDM(.true.,CALCPV,WORK(KZCONF),CREF,CREF,
+     &           WORK(KDVMOLF),WORK(KPVMOLF),IPROPT)
+C
+         ELSE IF (OPT_CIPROGRAM.eq.'LUCIAREL') then
+            CALL MEMCHK('before LUCI_DENS',WORK,KFRSAV)
+            CALL MEMCHK('before LUCI_DENS 2',WORK,1)
+            CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
+     &                     CREF,CREF,WORK(KFREE),LFREE)
+            CALL MEMCHK('after LUCI_DENS',WORK,KFRSAV)
+            CALL MEMCHK('after LUCI_DENS 2',WORK,1)
+         END IF
+C
+C        Transform to X+, x++ format for DV and PV
+C
+         IF (CALCDV) CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPROPT)
+C                    CALL MFC2QFC(KSYMM,DVM,DVD,IPRINT)
+         IF (CALCPV) THEN
+            CALL M2DNZ3(.FALSE.,.TRUE.,.TRUE.,
+     &           WORK(KPVMOLF),PV,IPROPT)
+C           CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PVD,IPRINT)
+         END IF
+         CALL MEMREL('RMAKDM',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      ELSE IF ( NASHT .EQ. 1 .AND. NAELEC .EQ. 1) THEN
+C
+C        Trivial density matrices for single open shell SCF,
+C        done without the overhead of general CI routines.
+C
+         IF (CALCDV) THEN
             DV(1) = D1
             DO IZ = 2, NZ
                DV(IZ) = D0
             END DO
-         ELSE
+         END IF
+         IF (CALCPV) THEN
+            CALL QUIT('CALCPV not implemented for NASHT.eq.1')
+         END IF
+      ELSE
+         CALL QUIT('RMAKDM called with unknown CI program option')
+      END IF
 C
-C           Calculate density matrices
 C
-            CALL MEMGET('REAL',KPVMOLF,(2*NASHT)**4 * MIN0(2,NZ)
-     &           ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KDVMOLF,(2*NASHT)**2 * MIN0(2,NZ),
-     $           WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIKR,(2*NASHT)*2,WORK,KFREE,LFREE)
-            CALL GOSCI_RMAKDM(CREF,CREF,WORK(KDVMOLF),WORK(KPVMOLF),
-     $           WORK(KIKR))
-            CALL MFC2QFC(WORK(KDVMOLF),DV,IPROPT)
-            CALL M2DNZ3(WORK(KPVMOLF),PV,IPROPT)
-            CALL MEMREL('RMAKDM.GOSCI',WORK,KWORK,KWORK,KFREE,LFREE)
+C        Check trace of DV
 C
-C           Check trace of DV
-C
+C     IF (... debug check of DV,PV trace ...) THEN
+         IF (CALCDV) THEN
             DO IZ = 1, NZ
                DTRCE(IZ) = D0
             END DO
             DO I = 1,NASHT
                DO IZ = 1, NZ
                   DTRCE(IZ) = DTRCE(IZ) +
-     $                 DV( I + ( I - 1 ) * NASHT +
-     $                 ( IZ - 1 ) * NASHT*NASHT )
+     &                 DV( I + (I-1)*NASHT + (IZ-1)*N2ASHX )
                END DO
             END DO
+ 100        CONTINUE
             IF ( IPROPT .GE. 10 ) THEN
                CALL HEADER('RMAKDM: trace of DV',-1)
                WRITE(LUPRI,'(A,4X,3A)')
-     $              'Matrix','    Actual    ','   Expected   ',
-     $              '     Diff     '
-               DO IZ = 1, NZ
-                  IF ( IZ .EQ. 1 ) THEN
-                     DTREXP = NAELEC
-                  ELSE
-                     DTREXP = D0
-                  END IF
-                  WRITE(LUPRI,'(1P,A1,A,6X,D10.3,4X,D10.3,4X,D10.3)')
-     $                 QUNIT(IPQTOQ(IZ,0)),'-part',
-     $                 DTRCE(IZ),DTREXP,ABS(DTRCE(IZ)-DTREXP)
-                  IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. DEPS )
-     $                 CALL QUIT('*** ERROR in RMAKDM ***')
-               END DO
+     &              'Matrix','    Actual    ','   Expected   ',
+     &              '     Diff     '
             END IF
-         END IF
-      ELSE
-         IF (NASHT .EQ. 1) THEN
-            DV(1) = D1
-            DO IZ = 2,NZ
-               DV(IZ) = D0
+            DO IZ = 1, NZ
+               IF ( IZ .EQ. 1 ) THEN
+                  DTREXP = NAELEC
+               ELSE
+                  DTREXP = D0
+               END IF
+               IF (IPROPT .GE. 10) THEN
+                  WRITE(LUPRI,'(1P,A1,A,6X,D10.3,4X,D10.3,4X,D10.3)')
+     &                 QUNIT(IPQTOQ(IZ,0)),'-part',
+     &                 DTRCE(IZ),DTREXP,ABS(DTRCE(IZ)-DTREXP)
+               END IF
+               IF ( ABS ( DTRCE(IZ) - DTREXP ) .GE. DEPS ) THEN
+                  IF (IPROPT .LT. 10) THEN
+                     IPROPT = 10
+                     GOTO 100
+                  END IF
+                  CALL QUIT('*** ERROR in RMAKDM ***')
+               END IF
             END DO
          END IF
-      END IF
+         IF (CALCPV) THEN
 C
+C           TODO FIXME: check trace of PV
+C
+         END IF
+C     END IF
       IF ( IPROPT .GE. 5 ) THEN
-         CALL HEADER('RMAKDM: DV density matrix',-1)
-         CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
-         CALL HEADER('RMAKDM: PV density matrix',-1)
-         CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+         IF (CALCDV) THEN
+            WRITE(LUPRI,'(1X,A)') '(RMAKDM) DV density matrix'
+            CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+         IF (CALCPV) THEN
+            WRITE(LUPRI,'(1X,A)') '(RMAKDM) PV density matrix'
+            CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
       END IF
 C
-C     Save active density matrices on file KRMC FOCK
-C
-      CALL WRTKRMC(LUKRM3,'DVMO    ',DV,N2ASHXQ)
-      IF ( NASHT .GT. 1 ) THEN
-         CALL WRTKRMC(LUKRM3,'PVMO    ',PV,NASHT*NASHT*NNASHX*NZ*3)
-      END IF
-      CALL MEMREL('RMAKDM.PV',WORK,KWORK,KWORK,KFREE,LFREE)
-C
+      CALL RTKTIME(.FALSE.,8)
       CALL QEXIT('RMAKDM')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rmakdv */
+      SUBROUTINE RMAKDV(DV,CREF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Construct one-electron active density matrix
+C
+C     Input:
+C        CREF    - CI vector
+C
+C     Output:
+C        DV      - one electron active density matrix
+C
+C     Written by J. Thyssen - Dec 21 2000
+C     Last revision : 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION DV(*)
+      DIMENSION WORK(*)
+C
+      CALL QENTER('RMAKDV')
+C
+      CALL RMAKDM(.TRUE.,.FALSE.,DV,DUMMY,CREF,WORK,KFREE,LFREE)
+C
+      CALL QEXIT('RMAKDV')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prdnz3 */
       SUBROUTINE PRDNZ3(AMAT,NDIM1,NDIM2,NZ,IP,LUNIT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print a matrix in the Dirac (NZ,3) format.
 C
@@ -837,8 +1131,9 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
+#include <priunit.h>
 C
       DIMENSION AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
       CHARACTER M(4)*2
@@ -856,8 +1151,8 @@ C
 C
 C     Print matrix.
 C
- 9001 FORMAT(1X,/,3X,'Indeces',5X,'Matrix',4X,'Elements',
-     &     /,1X, 65('-'))
+ 9001 FORMAT(/3X,'Indices',5X,'Matrix',4X,'Elements',
+     &       /1X, 65('-'))
  9010 FORMAT(1P,1X,4I3,4X,A2,6X,3(D14.7,1X))
  9011 FORMAT(1P,17X,A2,6X,3(D14.7,1X))
 C
@@ -874,8 +1169,7 @@ C
      &                 M(IP(1)),
      &                 (AMAT(K,L,IJ,1,ICL),ICL = 1,3)
                   DO IZ = 2, NZ
-                     WRITE(LUNIT,9011)
-     &                    M(IP(1)),
+                     WRITE(LUNIT,9011) M(IP(IZ)),
      &                    (AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
                   END DO
                END DO
@@ -885,10 +1179,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rfckmat */
       SUBROUTINE RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct active and inactive Fock matrices
 C
@@ -906,20 +1200,22 @@ C
 C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER (DP5 = 0.50D00, D2 = 2.00D00, D1 = 1.00D0)
+#include <consts.h>
 C
+#include <dcbfir.h>
 #include <blocks.h>
 #include <dcborb.h>
 #include <dcbopt.h>
 #include <dcbgen.h>
 #include <dcbbas.h>
 #include <dgroup.h>
+#include <cbihr2.h>
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
       LOGICAL NOFV
@@ -929,6 +1225,7 @@ C
 #include <memint.h>
 C
       CALL QENTER('RFCKMAT')
+      CALL RTKTIME(.TRUE.,12)
 C
       CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
       IF (NASHT .GT. 0) THEN
@@ -976,6 +1273,9 @@ C
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        FIRST1 = .TRUE.
+        FIRST2 = .TRUE.
+        FIRST3 = .TRUE.
       END IF
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
@@ -1006,7 +1306,7 @@ C     ***************************************************
 C
       CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &            WORK(KFAO),WORK(KDAO),
-     &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPROPT,WORK(KFREE),LFREE)
+     &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
 C
 C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
@@ -1039,8 +1339,8 @@ C
       ELSE
          EMCMY = D0
       END IF
- 9000 FORMAT (/2X'rFCKMAT: ',I1,'-electron inactive energy: ',F25.15)
- 9001 FORMAT (/2X'rFCKMAT: Total inactive energy     : ',F25.15)
+ 9000 FORMAT (/2X,'rFCKMAT: ',I1,'-electron inactive energy: ',F25.15)
+ 9001 FORMAT (/2X,'rFCKMAT: Total inactive energy     : ',F25.15)
 C
 C     ***************************************************
 C     *** Add one-electron contribution to FCAO *********
@@ -1056,12 +1356,12 @@ C
          WRITE(LUPRI,9005)
          IF ( NISHT .GT. 0 ) THEN
             WRITE(LUPRI,9006) 'FCao'
-            CALL PRQMAT(WORK(KFCAO),NASHT,NASHT,NASHT,NASHT,
+            CALL PRQMAT(WORK(KFCAO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      $           NZ,IPQTOQ(1,0),LUPRI)
          END IF
          IF ( NASHT .GT. 0 ) THEN
             WRITE(LUPRI,9006) 'FVao'
-            CALL PRQMAT(WORK(KFCAO),NASHT,NASHT,NASHT,NASHT,
+            CALL PRQMAT(WORK(KFVAO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      $           NZ,IPQTOQ(1,0),LUPRI)
          END IF
       END IF
@@ -1110,11 +1410,6 @@ C
          END IF
   100 CONTINUE
 C
-C     Write to file KRMC FOCK
-C
-c      write(6,*) 'writing files to KRMC FOCK'
-      CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
-      CALL WRTKRMC(LUKRM3,'FVMO    ',FV,N2ORBXQ)
 c      call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
 c      call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
 c      call getmat('FVMO',FV,10,.TRUE.,WORK(KFREE),LFREE)
@@ -1123,15 +1418,16 @@ C
 C
 C
       CALL MEMREL('RFCKMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL RTKTIME(.FALSE.,12)
       CALL QEXIT('RFCKMAT')
       RETURN
  9010 FORMAT(/'rFCKMAT: MO Fock matrices, irrep ',I1)
  9011 FORMAT(/'rFCKMAT: ',A,' fock matrix, irrep ',I1)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetfc */
-      SUBROUTINE RGETFC(CMO,FC,ECORE,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE RGETFC(TOFILE,CMO,FC,ECORE,WORK,LWORK)
+C***********************************************************************
 C
 C     Construct inactive Fock matrices
 C
@@ -1145,14 +1441,15 @@ C
 C     Written by J. Thyssen - June 30 2000
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER (DP5 = 0.50D00, D2 = 2.00D00, D1 = 1.00D0)
+#include <consts.h>
 C
+#include <dcbfir.h>
 #include <blocks.h>
 #include <dcborb.h>
 #include <dcbopt.h>
@@ -1160,8 +1457,9 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <frame.h>
-      DIMENSION CMO(*),FC(*)
-      DIMENSION WORK(LWORK)
+#include <cbihr2.h>
+      LOGICAL   TOFILE
+      DIMENSION CMO(*),FC(*), WORK(LWORK)
       DIMENSION IQBF(4)
 C
 C
@@ -1190,6 +1488,9 @@ C
             NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
             NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
             NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+            FIRST1 = .TRUE.
+            FIRST2 = .TRUE.
+            FIRST3 = .TRUE.
          END IF
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C     
@@ -1207,7 +1508,7 @@ C        ***************************************************
 C
          CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &        WORK(KFCAO),WORK(KDCAO),
-     &        NFMAT,WORK(KPOS),IOPT_INTFLG,IPROPT,WORK(KFREE),LFREE)
+     &        NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
 C
 C
 C        1-electron inactive energy
@@ -1220,9 +1521,9 @@ C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C     
-         ECORE2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
+         EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          IF (IPROPT .GE. 4) 
-     &        WRITE(LUPRI,9000) 2,ECORE2E
+     &        WRITE(LUPRI,9000) 2,EMCMY2E
          ECORE = ECORE + EMCMY2E
 C
 C        ***************************************************
@@ -1232,25 +1533,24 @@ C
          CALL DAXPY(N2BBASXQ,D1,WORK(KFCAO),1,WORK(KH1AO),1)
 C
       ELSE
-         EMCMY = D0
+         ECORE = D0
       END IF
 C
-      IF (IPROPT .GE. 4) 
-     &     WRITE(LUPRI,9001) POTNUC
       ECORE = ECORE + POTNUC
-      IF (IPROPT .GE. 4) 
-     &     WRITE(LUPRI,9002) ECORE
-C
-      IF ( IPROPT .GE. 5 ) THEN
-         WRITE(LUPRI,9006) 'FCao'
-         CALL PRQMAT(WORK(KH1AO),NASHT,NASHT,NASHT,NASHT,
-     $        NZ,IPQTOQ(1,0),LUPRI)
-         CALL FLSHFO(LUPRI)
+      IF (IPROPT .GE. 4) THEN
+          WRITE(LUPRI,9001) POTNUC
+          WRITE(LUPRI,9002) ECORE
       END IF
- 9000 FORMAT (/2X'rRGETFC: ',I1,'-electron core energy: ',F25.15)
- 9001 FORMAT (/2X'rRGETFC: Nuclear repulsion     : ',F25.15)
- 9002 FORMAT (/2X'rRGETFC: Total core energy     : ',F25.15)
- 9006 FORMAT(/'RGETFC: ',A,' fock matrix')
+C
+      IF ( IPROPT .GE. 10 ) THEN
+         WRITE(LUPRI,9006) 'FCao'
+         CALL PRQMAT(WORK(KH1AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     $        NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+ 9000 FORMAT(/' (rGETFC)',I2,'-electron core energy: ',F25.15)
+ 9001 FORMAT(/' (rGETFC) Nuclear repulsion     : ',F25.15)
+ 9002 FORMAT(/' (rGETFC) Total core energy     : ',F25.15)
+ 9006 FORMAT(/'  rGETFC: ',A,' fock matrix')
 C
 C     ***************************************************
 C     *** Transform to MO basis *************************
@@ -1258,8 +1558,6 @@ C     ***************************************************
 C
       CALL DZERO(FC,N2ORBXQ)
       DO 100 I = 1,NFSYM
-         write(6,*) 'rGETFC: norb = ',i,norb(i),nfbas(i,0),i2basx(i,i),
-     &        ntbas(0),i2orbx(i,i),norbt,icmoq(i)
          IF (NORB(I) .EQ. 0) GOTO 100
          CALL QTRANS('AOMO','S',D0,
      &               NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
@@ -1271,36 +1569,27 @@ C
      &               CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
-         IF (IPROPT .GE. 5) THEN
+         IF (IPROPT .GE. 6) THEN
             WRITE(LUPRI,9011) 'FC',I
             CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
-            call flshfo(lupri)
          END IF
   100 CONTINUE
 C
 C     Write to file KRMC FOCK
 C
-      write(6,*) 'writing files to KRMC FOCK'
-      CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
-            call flshfo(lupri)
-c      call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
-c      call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
-c      call getmat('FVMO',FV,10,.TRUE.,WORK(KFREE),LFREE)
-c      call prqmat(fv,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
-C
-C
+      IF (TOFILE) CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
 C
       CALL MEMREL('RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETFC')
       RETURN
- 9010 FORMAT(/'RGETFC: MO Fock matrices, irrep ',I1)
- 9011 FORMAT(/'RGETFC: ',A,' fock matrix, irrep ',I1)
+ 9011 FORMAT(/' RGETFC: ',A,' fock matrix, irrep ',I1)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirh1 */
       SUBROUTINE DIRH1(H1AO,IPRINT,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Get one-electron Fock matrix in AO-basis
 C
@@ -1312,10 +1601,15 @@ C
 C     Written by J. Thyssen - Oct 26 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
+#include <priunit.h>
 #include <implicit.h>
 C
 #include <dcbdhf.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <cbihr1.h>
+C
       DIMENSION H1AO(*), WORK(*)
       LOGICAL   EX
 C
@@ -1335,19 +1629,24 @@ C     (2) Generate H1AO and save on DFFCK1.
 C     -------------------------------------
 C
          CALL ONEFCK(H1AO,IPRONE,WORK,LWORK)
-         CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
+         CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','DIRH1')
          CALL WRIFCK(LUFCK1,H1AO,1)
          CLOSE (LUFCK1,STATUS='KEEP')
 C
+      END IF
+      IF ( IPRINT .GE. 10 ) THEN
+         WRITE(LUPRI,'(/A)') ' (DIRH1) H1 in AO basis'
+         CALL PRQMAT(H1AO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     $        NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
       CALL QEXIT('DIRH1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsetwop */
       SUBROUTINE RSETWOP(WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for 
 C     (KR-MC)SCF calculation.
@@ -1357,89 +1656,96 @@ C        OPT_SKIPEE  - skip e-e rotations
 C        OPT_SKIPEP  - skip e-e rotations
 C
 C     Output:
-C        KXOPE   - electron-electron rotations
-C        NXOPE   - number of -"- 
-C        KXOPP   - electron-positron rotations
-C        NXOPP   - number of -"- 
+C        KZCONF   - work address of info about CI determinants
+C        LZCONF   - integer length of WORK(KZCONF)
+C
+C        KZXOPE   - work address of NZHOPE electron-electron rotations
+C        NZXOPE   - number of -"- (non-redundant)
+C        NZHOPE   - number of -"-  incl. redundant active-active rotations
+C        LZXOPE   - integer length of WORK(KZXOPE)
+C
+C        KZXOPP   - work address of NZXOPP electron-positron rotations
+C        NZXOPP   - number of -"- 
+C        LZXOPP   - integer length of WORK(KZXOPP)
 C
 C     Written by J. Thyssen - Oct 22 1998
-C     Last revision : 
+C     Last revision : July 2002 hjaaj
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
+#include <maxash.h>
 C
-#include <dgroup.h>
 #include <dcbopt.h>
 #include <dcborb.h>
+#include <dgroup.h>
+#include <dcbbos.h>
+#include <dcbnrt.h>
+#include <dcbidx.h>
 C
       DIMENSION WORK(*)
 C
+      DIMENSION ILIST(MAXORB)
 C
       CALL QENTER('RSETWOP')
+C
+C     ***************************************************
+C     *** Approximate boson symmetry ? ******************
+C     ***************************************************
+C
+C     If the use of boson or ``approximate'' boson symmetry
+C     is requested calculate these.
+C
+C     This is needed for the current version of LUCIAREL, but
+C     can also be used for spin-free and Levy-Leblond Hamiltonians.
+C     (Only if LUCIAREL is run in spinfree formalism. Otherwise
+C     boson symmetry array is reset.)
+C
+      IF (OPT_UCIBOS) THEN
+C        
+C        For the current version of LUCIAREL we need the
+C        approximate boson symmetries for labelling of
+C        orbitals. Call ROPTST to retrieve the orbitals.
+C        
+C        FIXME: the control parameter should be consistent
+C        with IOPTST.
+C        
+         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         ISTART = MOD(IOPTST,100)
+         CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,-1,WORK,KFREE,LFREE)
+C        CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
+         CALL RAPPBOS(WORK(KCMO),IBOSYM,IPROPT,WORK(KFREE),LFREE)
+         CALL MEMREL('RSETWOP.LUCIAREL',WORK,1,KCMO,KFREE,LFREE)
+C
+      END IF
 C
 C     ***************************************************
 C     *** Configurational parameters ********************
 C     ***************************************************
 C
-      IF ( NASHT .GT. 1 ) THEN
-C
-C        A non-trivial number of CI rotations.
-C         
-         IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
-C
-C           Use GOSCI:
-C
-            CALL GOSCI_SETCB()
-            CALL GOSCI_GENDET(NZCONF)
-            NZCONFQ = NZCONF
-            IF ( NZ .GE. 2 ) NZCONFQ = 2 * NZCONF
-C
-            WRITE(LUPRI,'(/A,I5,A,I5,A/)')
-     $           ' * RSETWOP: Number of determinants: ',NZCONF,
-     $           ' (dimension ',NZCONFQ,')'
-C
-         ELSE
-C
-            WRITE(LUPRI,'(A/3A)')
-     $           '*** ERROR in RSETWOP ***',
-     $           'Unknown CI program: "',OPT_CIPROGRAM,'"'
-            CALL QUIT('*** ERROR in RSETWOP ***')
-C
-         END IF
-      ELSE
-C
-C        Dirac-Hartree-Fock: only 1 CI coefficient
-C     
-         NZCONF = 0
-         NZCONFQ = 0
-C
-      END IF
-C
-C     Allocate memory of CI rotations
-C
-      write(6,*) 'kfree before CI rot: ',kfree
-      CALL MEMGET('INTE',KZCONF,2*NZCONFQ,WORK,KFREE,LFREE)
-      write(6,*) 'kfree after CI rot: ',kfree
+      CALL RSETCI(OPT_CIPROGRAM,WORK,KFREE,LFREE)
 C
 C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
-      WRITE(LUPRI,'(1X,A)') 'Orbitals classes:'
+      CALL IZERO(NOROT,NORBT)
+C
+      WRITE(LUPRI,'(1X,A)') '(RSETWOP) Orbital classes:'
       DO I = 1,NFSYM
-         WRITE(LUPRI,'(1X,A,I1)') '* Fermion irrep ',I
+         WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
          IF (NISH(I).GT.0) THEN
             WRITE(OPT_INDSTR(1,I),'(I4,A2,I4)') 
      &         1,'..',NISH(I)
          ELSE
-            OPT_INDSTR(1,I) = ''
+            OPT_INDSTR(1,I) = ' '
          END IF
          IF (NASH(I).GT.0) THEN
             WRITE(OPT_INDSTR(2,I),'(I4,A2,I4)') 
      &         NISH(I)+1,'..',NISH(I)+NASH(I)
          ELSE
-            OPT_INDSTR(2,I) = ''
+            OPT_INDSTR(2,I) = ' '
          END IF
          IF (NPSH(I) .GT. 0 .AND. NSSH(I) .GT. 0) THEN
             WRITE(OPT_INDSTR(3,I),'(I4,A2,I4,A1,I4,A2,I4)') 
@@ -1450,44 +1756,307 @@ C
             WRITE(OPT_INDSTR(3,I),'(I4,A2,I4)') 
      &         NISH(I)+NASH(I)+1,'..',NESH(I)
          ELSE
-            OPT_INDSTR(3,I) = ''
+            OPT_INDSTR(3,I) = ' '
          END IF
 C
-         WRITE(LUPRI,'(3X,A,A)')
+         WRITE(LUPRI,'(5X,A,A50)')
      &      'Inactive orbitals   : ',OPT_INDSTR(1,I)
-         WRITE(LUPRI,'(3X,A,A)')
+         WRITE(LUPRI,'(5X,A,A50)')
      &      'Active orbitals     : ',OPT_INDSTR(2,I)
-         WRITE(LUPRI,'(3X,A,A)')
+         WRITE(LUPRI,'(5X,A,A50)')
      &      'Secondary orbitals  : ',OPT_INDSTR(3,I)
+C
+         NVEC = 1
+         CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
+     &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
+         IF (NVEC .GT. 0) THEN
+            LNOROT = .TRUE.
+            WRITE(LUPRI,'(5X,A,A50)')
+     &           'Frozen orbitals     : ',OPT_FRZSTR(I)
+            DO J = 1, NVEC
+               K = ILIST(J) + IORB(I) + NPSH(I)
+               NOROT(K) = 1
+            END DO
+         END IF
       END DO
       CALL FLSHFO(LUPRI)
 C
 C     Always totally symmetric rotations (=> JOPSY = 1)
 C
       JOPSY = 1
-      CALL SETXOP(OPT_INDSTR,JOPSY,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,OPT_SKIPEP,OPT_SKIPEE,.FALSE.,IPROPT)
+      CALL SETXOP(OPT_INDSTR,JOPSY,
+     &     NZXOPE,NZHOPE,KZXOPE,
+     &     NZXOPP,KZXOPP,
+     &     WORK,KFREE,LFREE,
+     &     OPT_SKIPEP,OPT_SKIPEE,.FALSE.,NGAS.GT.0,IPROPT,NOROT)
+C     CALL SETXOP(INDSTR,IOPSY,NXOPE,NHOPE,KXOPE,
+C                 NXOPP,KXOPP,
+C                 WORK,KFREE,LFREE,
+C                 SKIPEP,SKIPEE,QED,GAS,IPRINT,NOROT) 
+C
+C     Define LZXOPE to integer length of work(KZXOPE)
+C     Define LZXOPP to integer length of work(KZXOPP)
+C
+      LZXOPE = 2*NZHOPE
+      LZXOPP = 2*NZXOPP
+C
+C     From now on NOROT is used for the orbitals that should not
+C     be included in the 4-index transformation.
+C     Reset active indices to 0:
+C
+      DO I = 1, NFSYM
+         DO J = 1, NASH(I)
+            NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
+         END DO
+      END DO
+      write(6,*) 'frozen orbitals'
+      CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
+C
+C     Evaluate all derived NZX* and NZH* info in dcbopt.h;
+C     write information to LUKRMC
+C
+      CALL RSET_KRMC(WORK,KFREE,LFREE)
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('RSETWOP')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rset_krmc */
+      SUBROUTINE RSET_KRMC(WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Evaluate all derived NZX* and NZH* info in dcbopt.h;
+C     write information to LUKRMC
+C
+C     Extracted from RSETWOP 9-Jul-2002 hjaaj
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <maxash.h>
+C
+#include <dcbgen.h>
+#include <dgroup.h>
+#include <dcbopt.h>
+#include <dcborb.h>
+C
+      DIMENSION WORK(*)
+      DIMENSION ITMP(9)
+C
+      LOGICAL FNDLAB
+C
+      CALL QENTER('RSET_KRMC')
+
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP
       NZXOPTQ  = NZXOPT *NZ
 C
+      NZHOPEQ  = NZHOPE *NZ
+      NZHOPT   = NZHOPE + NZXOPP
+      NZHOPTQ  = NZHOPT *NZ
+C     
 C     ***************************************************
 C     *** Total number of parameters ********************
 C     ***************************************************
 C
-      NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZVAR*NZ
+      NZVAR  = NZCONF + NZXOPT
+      NZVARQ = NZVAR *NZ
+C
+C     Write rotations to file
+C
+      ITMP(1) = NZCONF
+      ITMP(2) = NZCONFQ
+      ITMP(3) = NZXOPE
+      ITMP(4) = NZHOPE
+      ITMP(5) = NZXOPP
+      ITMP(6) = NZ
+      ITMP(7) = LZCONF
+      ITMP(8) = LZXOPE
+      ITMP(9) = LZXOPP
+      CALL IWRTKRMC(LUKRMC,'VAR INFO',ITMP,9)
+      IF (LZCONF.GT.0)
+     &   CALL IWRTKRMC(LUKRMC,'DET INFO',WORK(KZCONF),LZCONF)
+      IF (LZXOPE.GT.0)
+     &   CALL IWRTKRMC(LUKRMC,'E-E ROT ',WORK(KZXOPE),LZXOPE)
+      IF (LZXOPP.GT.0)
+     &   CALL IWRTKRMC(LUKRMC,'E-P ROT ',WORK(KZXOPP),LZXOPP)
 C     
+C     
+C     Write DCBORB parameters to KRMCSCF
+C     ----------------------------------
 C
+      CALL LABKRMC(LUKRMC,'DCBORB  ')
+      WRITE(LUKRMC)
+     &     NFSYM,
+     &     (NISH(I),I=1,NFSYM),
+     &     (NASH(I),I=1,NFSYM),
+     &     ((NGSH(I,J),I=1,NFSYM),J=1,NGAS),
+     &     (NOCC(I),I=1,NFSYM),
+     &     (NSSH(I),I=1,NFSYM),
+     &     (NFRO(I),I=1,NFSYM),
+     &     (NELEC(I),I=1,NFSYM),
+     &     NAELEC
 C
-      CALL QEXIT('RSETWOP')
+C     End of reference information, write 'Start Of Data' label
+C
+      CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
+C
+C     Consistency check:
+C     ------------------
+C
+C     Check that content on KRMCOLD = KRMCSCF.
+C
+C     FIXME: write me!
+C     FIXME: also write INTFLG 
+C     
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('RSET_KRMC')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rsetci */
+      SUBROUTINE RSETCI(USE_CIPROGRAM,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Initialize configurational parameters for 
+C     (KR-MC)SCF calculation and ESR-CI and ???.
+C
+C     Input:
+C
+C     Output:
+C
+C     Extracted from RSETWOP 9-Jul-2002 by HJAaJ.
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+C Used from common blocks:
+C  dcbgen: LUKRMC
+C  dgroup: NZ
+C  dcbopt: NZCONF,NZCONFQ,KZCONF,IOPT_SYMMETRY,LZCONF
+C  dcborb: NAELEC,NASHT
+C
+#include <dcbgen.h>
+#include <dgroup.h>
+#include <dcbopt.h>
+#include <dcborb.h>
+C
+      CHARACTER*(*) USE_CIPROGRAM
+      DIMENSION WORK(*)
+C
+      CALL QENTER('RSETCI')
+C
+C     Check that NAELEC .le. 2 *NASHT
+C     (NAELEC: # of active electrons)
+C
+      IF (NAELEC .GT. 2 * NASHT) THEN
+         WRITE(LUPRI,'(//,1X,2A,I3,2A,I3,A)')
+     &        '*** ERROR in RSETCI *** ',
+     &        'Number of electrons (',NAELEC,') is larger than ',
+     &        'the number of spinors (',2 * NASHT,')!'
+         CALL QUIT('*** ERROR in RSETCI *** NAELEC > 2 * NASHT')
+      END IF
+C
+C     ***************************************************
+C     *** Configurational parameters ********************
+C     ***************************************************
+C
+C
+Chj   IF ( NASHT .GT. 1 ) THEN
+C
+C        A non-trivial number of CI rotations.
+C        hjaaj July 2002: also include NASHT .eq. 1 (giving 1-2 determinants)
+C         for debug
+C         
+         IF ( USE_CIPROGRAM .EQ. 'GOSCI' ) THEN
+C
+C           Use GOSCI:
+C
+            CALL GOSCI_SETUP()
+C
+C           Generate determinants
+C
+            KFRSAV = KFREE
+C           HJAaJ TODO: reconsider KALLOC ....
+C               .... size KIASTR ca. sqrt size KIDET ???
+C               .... problem if IRAT .eq. 1 -- more than LFREE used
+C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
+            KALLOC = LFREE/4
+            CALL MEMGET('INTE',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIASTR,KALLOC  ,WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIBSTR,KALLOC  ,WORK,KFREE,LFREE)
+            CALL GOSCI_GENDET(NZCONF,WORK(KIDET),
+     &           WORK(KIASTR),WORK(KIBSTR),KALLOC)
+            CALL MEMREL('RSETCI.GOSCI',WORK,1,KFRSAV,KFREE,LFREE)
+C
+C           note: the above release should make sure that KZCONF .eq. KIDET,
+C           where determinant information is already saved inside GOSCI_GENDET,
+C           KZCONF is saved in dcbopt.h and is used in other GOSCI routines
+C           to obtain determinant information.
+C           
+            LZCONF = 2*NZCONF
+            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            IF (KZCONF .NE. KIDET) CALL QUIT(
+     &         'KZCONF .ne. KIDET -- indicates programming error!')
+C
+#ifdef UNDEF
+C
+C           Generate Kramers list...
+C           This is only used for debugging purposes.
+C
+            IF ( MOD(NAELEC,2) .EQ. 0) THEN
+               CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
+               CALL GOSCI_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST))
+               CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
+               CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
+            END IF
+#endif
+         ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+C           
+C           Call driver routine for getting NZCONF
+            CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
+C
+            LZCONF = 0
+            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
+C
+         ELSE
+C
+            WRITE(LUPRI,'(A/3A)')
+     $           '*** ERROR in RSETCI ***',
+     $           'Unknown CI program: "',USE_CIPROGRAM,'"'
+            CALL QUIT('*** ERROR in RSETCI ***')
+C
+         END IF
+         CALL FLSHFO(LUPRI)
+Chj   ELSE
+C
+C        Dirac-Hartree-Fock: only 1 CI coefficient
+C     
+Chj      NZCONF = 0
+Chj      NZCONFQ = 0
+C
+Chj   END IF
+C
+      NZCONFQ = NZCONF
+      IF ( NZ .GE. 2 ) NZCONFQ = 2 * NZCONF
+C
+      WRITE(LUPRI,'(/A,I10,A,I10,A/)')
+     &        ' (RSETCI) Number of determinants: ',NZCONF,
+     &        ' (dimension ',NZCONFQ,')'
+C
+C
+      CALL FLSHFO(LUPRI)
+      CALL QEXIT('RSETCI')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetac */
       SUBROUTINE RGETAC(FC,FCAC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Extract block with active-active orbital indices out of FC
 C
@@ -1500,7 +2069,7 @@ C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -1518,7 +2087,7 @@ C
 C
 C     Print FC 
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 10) THEN
          CALL HEADER('rGETAC: FC matrix',-1)
          CALL PRQMAT(FC,NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -1531,8 +2100,7 @@ C
 C
          ISTART = IORB(IFSYM) + NPSH(IFSYM)+NISH(IFSYM)+1
          IEND   = ISTART-1+NASH(IFSYM)
-         CALL RGETA1(FC,NORBT,
-     *               FCAC,NASHT,
+         CALL RGETA1(FC,NORBT, FCAC,NASHT,
      &               ISTART,IEND,IASH(IFSYM),NZ)
 C
   100 CONTINUE
@@ -1544,18 +2112,13 @@ C
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-C
-C     Save on file LUKRM3
-C
-      CALL WRTKRMC(LUKRM3,'FCAC    ',FCAC,N2ASHXQ)
-C
  9999 CALL QEXIT('RGETAC')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeta1 */
       SUBROUTINE RGETA1(FC,NORBT,FCAC,NASHT,ISTART,IEND,IASH,NZ)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Extract block with active-active orbital indices out of FC
 C
@@ -1569,7 +2132,7 @@ C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -1593,10 +2156,10 @@ C
       CALL QEXIT('RGETA1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renract */
       FUNCTION RENRACT(DV,FCAC,FQ,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate active electronic energy of the KR-MCSCF state
 C
@@ -1611,13 +2174,13 @@ C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
 #include <maxash.h>
 C
-      PARAMETER (DP5 = 0.50D 00)
+#include <consts.h>
 C
 #include <dcborb.h>
 #include <dgroup.h>
@@ -1637,7 +2200,7 @@ C
 C     Print FCAC
 C
       IF (IPRINT .GE. 5) THEN
-         write(6,*) 'n2asht',N2ASHT
+         write(lupri,*) 'n2asht',N2ASHT
          CALL HEADER('rEnract: FCAC matrix',-1)
          CALL PRQMAT(FCAC,NASHT,NASHT,NASHT,NASHT,
      &               NZ,IPQTOQ(1,0),LUPRI)
@@ -1675,14 +2238,14 @@ C
       RENRACT = EACT
       CALL QEXIT('RENRACT')
       RETURN
- 9000 FORMAT(/2X'rENRACT: sum_{uv} DV_{uv} FC_{uv} : ',F25.15)
- 9001 FORMAT(/2X'rENRACT: sum_{u} FQ_{uu}          : ',F25.15)
- 9002 FORMAT(/2X'rENRACT: Total active energy      : ',F25.15)
+ 9000 FORMAT(/2X,'rENRACT: sum_{uv} DV_{uv} FC_{uv} : ',F25.15)
+ 9001 FORMAT(/2X,'rENRACT: sum_{u} FQ_{uu}          : ',F25.15)
+ 9002 FORMAT(/2X,'rENRACT: Total active energy      : ',F25.15)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renrac1 */
       FUNCTION RENRAC1(FQ,NORBT,INASH,IOFF)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate \sum_{u} FQ_{u,u}
 C
@@ -1695,14 +2258,17 @@ C
 C     Written by J. Thyssen - Oct 29 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+C
+#include <consts.h>
 C
       DIMENSION FQ(NORBT,INASH)
 C
       CALL QENTER('RENRAC1')
 C
+      E = D0
       DO I = 1,INASH
          E = E + FQ(I+IOFF,I)
       END DO
@@ -1711,10 +2277,10 @@ C
       CALL QEXIT('RENRAC1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rreadmo */
-      SUBROUTINE RREADMO(CMO,JRDMO,IOPT)
-C*****************************************************************************
+      SUBROUTINE RREADMO(CMO,JRDMO,IOPT,LUNIT)
+C***********************************************************************
 C
 C     Retrieve MO coefficients from file
 C
@@ -1726,7 +2292,7 @@ C
 C     Written by J. Thyssen - Nov 3 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -1757,7 +2323,7 @@ C
 C
 C     Read orbitals from label 'NEWORB'
 C
-      REWIND(LUKRMC)
+      REWIND(LUNIT)
       IERR = -1
       IF ( IOPT .EQ. 1 ) THEN
          LABEL = 'NEWORB  '
@@ -1765,9 +2331,9 @@ C
          LABEL = 'OLDORB  '
       END IF
 C
-      CALL MOLLAB(LABEL,LUKRMC,IERR)
+      CALL MOLLAB(LABEL,LUNIT,IERR)
       IF (IERR .GE. 0) THEN
-         CALL READT(LUKRMC,NCMOTQ,CMO)
+         CALL READT(LUNIT,NCMOTQ,CMO)
       ELSE IF (IERR .EQ. -1) THEN
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -1791,7 +2357,7 @@ C
 C     End:
 C
  1000 CONTINUE
-      IF (IPROPT .GE. 5) THEN
+      IF (IPROPT .GE. 10) THEN
          CALL HEADER('Output from rREADMO:',-1)
          DO I = 1,NFSYM
             CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
@@ -1803,15 +2369,14 @@ C
       CALL QEXIT('RREADMO')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck roptst */
-      SUBROUTINE ROPTST(CREF,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Generate start vectors
 C
 C     Input: 
-C       CREF : CI vector
 C
 C     Output: None
 C
@@ -1819,123 +2384,290 @@ C
 C     Written by J. Thyssen - Nov 17 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxorb.h>
 C
+#include <consts.h>
+C
+#include <dcbbos.h>
 #include <dcbgen.h>
 #include <dcborb.h>
 #include <dcbopt.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbnrt.h>
 C
       LOGICAL EX, FNDLAB
       DIMENSION WORK(*)
-      DIMENSION CREF(*)
+      DIMENSION CREF(*), CMO(*)
+      LOGICAL VERBOSE
 C
-#include <memint.h>
+      LOGICAL LBIT
+      CHARACTER SZTRA(2,4)*80
 C
       CALL QENTER('ROPTST')
+      KFRSAV = KFREE
 C
-C     (1) MO Orbitals
-C     ----------------
+C     Start timer
 C
-C     Get MO orbitals:
+      CALL RTKTIME(.TRUE.,1)
 C
-C     (1.1) From a previous MCSCF calculation.
-C           Read orbitals from KRMCSCF file
+C     IOPTST controls the start guess:
+C     ------------------------------
 C
-      CALL MEMGET('REAL',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
-      INQUIRE ( FILE = 'KRMCSCF', EXIST = EX )
-      IF ( EX ) THEN
+      IROST  = MOD(ISTART,100)
+      IRCIST = ISTART/100
 C
-C     (1.1.1) Read from label NEWORB
+C     IRCIST controls the CI start guess:
+C     -----------------------------------
 C
-         JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,1)
-         IF (JRDMO .EQ. 0) THEN
-            WRITE(LUPRI,'(A)')
-     $           '*** Start orbitals read from' //
-     $           ' label NEWORB on file KRMCSCF'
-            GO TO 1000
-         END IF
+C     bit 1 of IRCIST:  read CREF from KRMCSCF
+C     bit 2 of IRCIST:  read CREFOLD from KRMCSCF
+C     bit 3 of IRCIST:  do MAXCIT CI iterations (MAXCIT<0 ==> full CI)
+C     bit 4 of IRCIST:  1/Hdiag
 C
-C     (1.1.2) Read from label OLDORD
-C     
-         JRDMO = -1
-         CALL RREADMO(WORK(KCMO),JRDMO,2)
-         IF (JRDMO .EQ. 0) THEN
-            WRITE(LUPRI,'(A)')
-     $           '*** Start orbitals read from' //
-     $           ' label OLDORB on file KRMCSCF'
-            GO TO 1000
+C     IROST controls the orbital start guess:
+C     ---------------------------------------
+C
+C     bit 1 of IROST: read NEWORB on KRMCSCF
+C     bit 2 of IROST: read OLDORB on KRMCSCF
+C     bit 3 of IROST: read DFCOEF from DHF program
+C     bit 4 of IROST: start on H1DIAG
+C
+      IF (IPROPT .GE. 5) THEN
+         WRITE(LUPRI,'(/A,I4)')
+     &        ' (ROPTST)  Control parameter (ISTART)  =',ISTART
+         WRITE(LUPRI,'(A,I4)')
+     &        '           Orbital start guess (IROST) =',IROST
+         WRITE(LUPRI,'(A,I4)')
+     &        '           Conf. start guess (IRCIST)  =',IRCIST
+         WRITE(LUPRI,'(A,I4)')
+     &        '           Write CMO & CREF (IWRT)     =',IWRT
+      END IF
+C
+C
+C     *******************************
+C     *** (1) Orbital start guess ***
+C     *******************************
+C
+      IF (IROST .EQ. 0) GOTO 1100
+C
+C     (1.1) Read from label NEWORB on KRMCSCF
+C
+      IF (LBIT(IROST,1)) THEN
+         INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
+         IF ( EX ) THEN
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,1,LUKRM5)
+            IF (JRDMO .EQ. 0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  WRITE(LUPRI,'(/A)')
+     $                 ' (ROPTST)  Start orbitals read from' //
+     $                 ' label NEWORB on file KRMCSCF'
+               END IF
+               GO TO 1000
+            END IF
          END IF
       END IF
 C
-C     (1.2) From previous DHF calculation.
+C     (1.2) Read from label OLDORD on KRMCSCF
+C     
+      IF (LBIT(IROST,2)) THEN
+         INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
+         IF ( EX ) THEN
+            JRDMO = -1
+            CALL RREADMO(CMO,JRDMO,2,LUKRM5)
+            IF (JRDMO .EQ. 0) THEN
+               IF (IPRINT .GE. 0) THEN
+                  WRITE(LUPRI,'(/A)')
+     $                 ' (ROPTST)  Start orbitals read from' //
+     $                 ' label OLDORB on file KRMCSCF'
+               END IF
+               GO TO 1000
+            END IF
+         END IF
+      END IF
+C
+C     (1.3) From previous DHF calculation.
 C           Read orbitals from DFCOEF
 C
-      INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
-      IF ( EX ) THEN
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
-         CLOSE(LUCOEF,STATUS='KEEP')
-         WRITE(LUPRI,'(A)')
-     $        '*** Start orbitals read from' //
-     $        ' file DFCOEF'
-         GO TO 1000
+      IF (LBIT(IROST,3)) THEN
+         INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
+         IF ( EX ) THEN
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,6,
+     &                  WORK,KFREE,LFREE)
+            CLOSE(LUCOEF,STATUS='KEEP')
+            IF (IPRINT .GE. 0) THEN
+               WRITE(LUPRI,'(/A)')
+     $              ' (ROPTST)  Start orbitals read from' //
+     $              ' file DFCOEF'
+            END IF
+            GO TO 1000
+         END IF
       END IF
 C
-C     (1.3) From a usual DHF start guess, i.e. bare nucleus guess.
+C     (1.4) From a usual DHF start guess, i.e. bare nucleus guess.
 C           FIXME: to be implemented
 C 
+      IF (LBIT(IROST,4)) THEN
+         CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
+         IF (IPRINT .GE. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     $           ' (ROPTST)  Start orbitals from' //
+     $           ' diagonalization of H1'
+         END IF
+         GOTO 1000
+      END IF
 C
+C     Oops, nothing worked:
 C
+      WRITE(LUPRI,'(//3A,I3)')
+     $     '*** ERROR in ROPTST *** ',
+     $     'Failed to generate orbital start guess; ',
+     $     'value of IROST is ',IROST
+      CALL QUIT('*** ERROR in ROPTST *** No orbital start guess')
+CC
  1000 CONTINUE
 C
-C     Write coefficients back to file as label OLDORB
-C
-      CALL WRTKRMC(LUKRMC,'OLDORB  ',WORK(KCMO),NCMOTQ)
-C
-C
-C     (2) CI Coefficients
-C     -------------------
-C
-C
-      IF ( NASHT .GT. 1 ) THEN
-C
-C        Do a 0th order 4-index transformation.
-C
-         JTRLVL = 0
-         CALL RTRACTL(JTRLVL,WORK(KFREE),LFREE)
-C
-         CALL RCIST(WORK(KCMO),CREF,WORK(KFREE),LFREE)
-C     
-C        Write CI vector to file as 'CISTART0'
-C     
-         CALL WRTKRMC(LUKRMC,'CISTART0',CREF,NZCONFQ)
-C
-C        Write CI vector LUBCI (for ortho. i micro iterations).
-C
-         LUTMP = 1
-         OPEN(LUTMP,FILE='PAMBCI',FORM='UNFORMATTED',
-     +        ACCESS='DIRECT',RECL=8*NZCONFQ,STATUS='UNKNOWN')
-         CALL WRTDAC(LUTMP, NZCONFQ, CREF, 1)
-         CLOSE (LUTMP, STATUS = 'KEEP' )
-C
-      END IF
 C     
 C     Write coefficients back to file as label NEWORB
 C
-      CALL WRTKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-C      
-      CALL MEMREL('ROPTST',WORK,KWORK,KWORK,KFREE,LFREE)
+      IF (IPROPT .GE. 10) THEN
+         DO I = 1, NFSYM
+            WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
 C
+      IF (LBIT(IWRT,1)) CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+C
+ 1100 CONTINUE
+      CALL FLSHFO(LUPRI)
+C
+C     *****************************
+C     *** (2) Conf. start guess ***
+C     *****************************
+C
+C
+C
+C     bit 1 of IRCIST:  read CREF from KRMCSCF
+C     bit 2 of IRCIST:  read CREFOLD from KRMCSCF
+C     bit 3 of IRCIST:  do MAXCIT CI iterations (MAXCIT<0 ==> full CI)
+C     bit 4 of IRCIST:  1/Hdiag
+C
+      IF (IRCIST .EQ. 0) GOTO 2100
+C
+      IF ( MCTYPE .GE. JMCMIN ) THEN
+C
+C        (2.1) Read CREF from KRMCSCF
+C
+         IF (LBIT(IRCIST,1)) THEN
+            INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
+            IF ( EX ) THEN
+               REWIND(LUKRM5)
+               IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
+                  CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
+                  IF (IPRINT .GE. 0) THEN
+                     WRITE(LUPRI,'(/A)')
+     $                    ' (ROPTST)  CI start vector read from' //
+     $                    ' label CREF on file KRMCSCF'
+                  END IF
+                  GO TO 2000
+               END IF
+            END IF
+         END IF
+C
+C        (2.2) Read CREFOLD from KRMCSCF
+C
+         IF (LBIT(IRCIST,2)) THEN
+            INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
+            IF ( EX ) THEN
+               IF ( FNDLAB('CREF    ',LUKRM5) ) THEN
+                  REWIND(LUKRM5)
+                  CALL REAKRMC(LUKRM5,'CREFOLD ',CREF,NZCONFQ)
+                  IF (IPRINT .GE. 0) THEN
+                     WRITE(LUPRI,'(/A)')
+     $                    ' (ROPTST)  CI start vector read from' //
+     $                    ' label CREFOLD on file KRMCSCF'
+                  END IF
+                  GO TO 2000
+               END IF
+            END IF
+         END IF
+C
+C        (2.3) Do MAXCIT CI iterations
+C
+         IF (LBIT(IRCIST,3)) THEN
+C
+C           Do a 0th order 4-index transformation.
+C
+            IOPT_INTFLG = IOPT_INTDEF
+            JTRLVL = 0
+            CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
+            CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+C
+            CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+C
+            IF (IPRINT .GE. 0) THEN
+               IF (MAXCIT .GE. 0) THEN
+                  WRITE(LUPRI,'(/A,I3,A)')
+     $                 ' (ROPTST)  CI start vector generated from',
+     $                 MAXCIT,' CI iterations.'
+               ELSE
+                  WRITE(LUPRI,'(/2A)')
+     $                 ' (ROPTST)  CI start vector generated from',
+     $                 ' diag. of full CI matrix.'
+               END IF
+            END IF
+            GO TO 2000
+C
+         END IF
+C
+C        (2.4) 1/Hdiag
+C
+         IF (LBIT(IRCIST,4)) THEN
+            CALL QUIT('*** ERROR in ROPTST *** Not implemented')
+         END IF
+C
+C        Oops, nothing worked:
+C
+         WRITE(LUPRI,'(//3A,I3)')
+     $        '*** ERROR in ROPTST *** ',
+     $        'Failed to generate CI start guess; ',
+     $        'value of IRCIST is ',IRCIST
+         CALL QUIT('*** ERROR in ROPTST *** No CI start guess')
+C
+ 2000    CONTINUE
+C
+C        Write CREF to file.
+C
+CFIX     IF (IPRINT .GE. 30) THEN
+         IF (IPRINT .GE.  5) THEN
+            MZ = MIN(NZ,2)
+            WRITE(LUPRI,'(/A)') ' (ROPTST)  CI start vector:'
+            CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+         END IF
+         IF (LBIT(IWRT,2)) CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
+C
+      END IF
+C
+ 2100 CONTINUE
+C      
+      CALL MEMREL('ROPTST',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL FLSHFO(LUPRI)
+      CALL RTKTIME(.FALSE.,1)
       CALL QEXIT('ROPTST')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rcist */
-      SUBROUTINE RCIST(CMO,CREF,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE RCIST(CMO,CREF,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Generate CI start vectors.
 C
@@ -1947,16 +2679,22 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
 #include <dcbgen.h>
 #include <dcborb.h>
+#include <dcbopt.h>
+C
+      DIMENSION CMO(*), CREF(*), WORK(*)
 C
       CALL QENTER('RCIST')
+      CALL RTKTIME(.TRUE.,2)
 C
 C     Do some (e.g., 3) Davidson CI iterations to get a start vector:
+C
+C     MAXCIT >= 0:
 C
 C     (2.1) Contruct diagonal of CI matrix
 C     (2.2) Pick start vector with zeros everywhere except for the lowest 
@@ -1964,23 +2702,65 @@ C           value of the diagonal of the CI matrix. If 2 or more diagonal
 C           values are close, pick more start vectors.
 C     (2.3) Do a couple of Davidson CI iterations.
 C
-C     ...or (the quick hack implemented here):
+C     MAXCIT < 0: 
 C
-C     Diagonalize the full CI matrix now. This is of course only possible
-C     for sufficiently small CI's.
+C     Diagonalize the full CI matrix now. 
+C     This is of course only possible for sufficiently small CI's.
 C
-      CALL GOSCI_STARTVEC(CMO,CREF,WORK,LWORK)
+      IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 1000) THEN
+         WRITE(LUPRI,'(//2A)')
+     &      ' Are you mad? Full CI with ',NZCONF,' determinants?',
+     &      ' Using MAXCIT = 3 instead!'
+         MAXCIT = 3
+      END IF
 C
+C
+      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
+C        
+         IF (MAXCIT .GE. 0) THEN
+C
+C           MAXCIT Davidson CI iterations.
+C
+            CALL GOSCI_RCISTD(WORK(KZCONF),CMO,CREF,ECI,
+     &           WORK(KFREE),LFREE)
+C           
+         ELSE
+C
+C           Full CI.
+C           
+            CALL GOSCI_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
+     &           WORK,KFREE,LFREE)
+C           CALL GOSCI_STARTVEC(IDET,CMO,CREF,ECI,WORK,KFREE,LFREE)
+C           
+         END IF
+C
+      ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+C
+C
+         CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+C
+      ELSE
+         WRITE(LUPRI,'(//3A)')
+     &        '*** ERROR in RCIST ***' //
+     &        'nothing implemented for CI program "',
+     &         OPT_CIPROGRAM,'"'
+         CALL QUIT('*** ERROR in RCIST *** Not implemented')
+      END IF
+C        
+      WRITE(LUPRI,'(/A,F20.8)')
+     &     ' (RCIST) CI energy:',ECI
+C
+      CALL RTKTIME(.FALSE.,2)
       CALL QEXIT('RCIST')
 C
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnr */
       SUBROUTINE DIRNR(CREF,GCI,GOEE,GOEP,CMO,DV,FC,FV,FCAC,
      &                 H2AC,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Perform NR step
 C
@@ -1988,18 +2768,23 @@ C     Input:
 C        CMO     - the orbitals for the CEP
 C        CREF    - CI vector
 C        G       - the gradient
+C         CI       CI
+C         OEE      orbital electronic
+C         OEP      orbital positronic
 C
 C     Output:
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
+#include <maxorb.h>
 C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
 C
+#include <dcbnrt.h>
 #include <dcbopt.h>
 #include <dgroup.h>
 #include <dcborb.h>
@@ -2009,9 +2794,62 @@ C
       DIMENSION CREF(*),GCI(*),DV(*),FC(*),FV(*),
      &          H2AC(*),WORK(*),GOEE(*),GOEP(*)
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
+      DIMENSION IOPTTB(-1:2)
+      DATA IOPTTB / 0,0,0,0 /
+C
+      CHARACTER SZTRA(4,2)*200
 C
       CALL QENTER('DIRNR')
       KFRSAV = KFREE
+C
+      WRITE(LUPRI,'(/1X,A/)') '(DIRNR) Starting micro iterations.'
+C
+C
+C     ***************************************************
+C     *** Compress orbital rotations ********************
+C     ***************************************************
+C
+C
+C
+      IF (COMPROT) THEN
+C
+C        Save lengths and pointers.
+C
+         NZXOPE_SAV = NZXOPE
+         NZHOPE_SAV = NZHOPE
+         NZXOPPQ_SAV = NZXOPPQ
+         NZXOPEQ_SAV = NZXOPEQ
+         NZHOPEQ_SAV = NZHOPEQ
+         NZXOPP_SAV = NZXOPP
+         KZXOPE_SAV = KZXOPE
+         KZXOPP_SAV = KZXOPP
+
+C        Compress orbital rotations.
+C        (this will destroy GPOE and GPOP but that's OK).
+C
+         CALL MEMGET('INTE',KZXOPE,NZHOPE*2,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KZXOPP,NZXOPP*2,WORK,KFREE,LFREE)
+         CALL ICOPY(NZHOPE*2,WORK(KZXOPE_SAV),1,WORK(KZXOPE),1)
+         CALL ICOPY(NZXOPP*2,WORK(KZXOPP_SAV),1,WORK(KZXOPP),1)
+C
+C        Remove rotations.
+C
+         CALL RMROT(NOROTC,GOEE,WORK(KZXOPE),NZXOPE,NZHOPE,
+     &        GOEP,WORK(KZXOPE),NZXOPP,IPRINT,WORK(KFREE),LFREE)
+C
+         NZXOPPQ = NZXOPP*NZ
+         NZXOPEQ = NZXOPE*NZ
+         NZHOPEQ = NZHOPE*NZ
+C
+C        Calculate integrals with only needed orbitals.
+C
+         IF (MCTYPE .GE. JMCMIN) THEN
+            JTRLVL = KTRLVL
+            CALL INISZT(JTRLVL,SZTRA,.TRUE.,NOROTC)
+            CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+         END IF
+C
+      END IF
 C
 C
 C     ***************************************************
@@ -2028,33 +2866,108 @@ CEND DEBUG
       OPTSTERN = .FALSE.
 C
 C     Calculate with the same integrals used for gradient and energy.
-C     In a refined version one might skip some of the integrals in
-C     the micro iterations.
 C
       INTDEF_MIC = IOPT_INTDEF
+      INTDEF_MIC = IOPT_INTFLG
       ITRINT_MIC(1) = 1
       ITRINT_MIC(2) = 1
       CNVINT_MIC(1) = DUMMY
       CNVINT_MIC(2) = DUMMY
 C
-C     Heuristics ripped from Dalton (CNVTHR, sirneo.F)
+C     Calculate initial micro it. convergence threshold
 C
-      THR = MIN (0.2 * GNORM(5), 0.8 * GNORM(5)**2 )
-      IF ( THR .LE. OPT_THRGRD ) THEN
-         THR = 0.98D00 * OPT_THRGRD
-      ELSE IF ( THR .LE. 4.0D00 * OPT_THRGRD ) THEN
-         THR = 0.7D00 * OPT_THRGRD
+      RBETA = D0
+      THR = RCNVTHR()
+C
+      IF ( FROZCI ) THEN
+C
+C        We freeze the CI coefficients this macro iteration.
+C        We have to include the otherwise redudant active-active rotations
+C        in orbital space.
+C
+         NZCONF1 = 0
+         NZCONFQ1 = 0
+C
+c        FIXME: this requires many changes:
+C        - in GTNORB
+C        - in KRMCSAV 
+C        - possibly other places...
+c        NZXOPE1 = NZHOPE
+c        NZXOPEQ1 = NZHOPEQ
+c        NZXOPT1 = NZHOPT
+c        NZXOPTQ1 = NZHOPTQ
+         NZXOPE1 = NZXOPE
+         NZXOPEQ1 = NZXOPEQ
+         NZXOPT1 = NZXOPT
+         NZXOPTQ1 = NZXOPTQ
+      ELSE
+C
+C        ``Normal'' microiterations.
+C
+         NZCONF1 = NZCONF
+         NZCONFQ1 = NZCONFQ 
+C
+         NZXOPE1 = NZXOPE
+         NZXOPEQ1 = NZXOPEQ
+         NZXOPT1 = NZXOPT
+         NZXOPTQ1 = NZXOPTQ
+      ENDIF
+      NZVAR1 = NZCONF1 + NZXOPE1 + NZXOPP
+      NZVARQ1 = NZCONFQ1 + NZXOPEQ1 + NZXOPPQ
+C
+C
+C     *****************************
+C     *** Reorder GPOE gradient ***
+C     *****************************
+C     
+C
+C     The GPOE gradient is stored like this:
+C
+C     non-redundant rotations for IZ = 1
+C     redundant for IZ = 1
+C     non-redundant for IZ = 2
+C     etc...
+C
+C     This makes it very difficult to do things like:
+C     
+C     X = DNRM2(NZXOPEQ,GPOE,1)
+C
+C     which should be
+C
+C     DIMENSION GPOE(NZHOPE,*)
+C     X = 0
+C     DO IZ = 1, NZ
+C        X = X + DNRM2(NZXOPE,GPOE(1,IZ),1)
+C     END DO
+C
+C     ...in a million places in the XRS code.
+C
+C     Instead, we reorder GPOE to:
+C
+C     non-redundant for IZ = 1,..,NZ
+C     redundant     for IZ = 1,..,NZ
+C
+C     The only routine where the full GPOE is used is RSIGOOGB where
+C     we have to take care.
+C
+C
+      IF (NZ .GT. 1) THEN
+         CALL MEMGET('REAL',KGOEER,NZHOPEQ,WORK,KFREE,LFREE)
+         CALL REOGP(NZXOPE,NZHOPE,NZ,GOEE,WORK(KGOEER))
       END IF
-      write(6,*) 'thr in microit',thr
+C
+C
       CALL TDCBXRS(OPTRST,OPTNRM,OPTDIH,OPTSTERN,IPROPT,MOPT_MXMICRO,
-     &             INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
-     &             NZVAR, NZVARQ ,NZCONF,NZCONFQ,
-     &             NZXOPT,NZXOPTQ,NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,
-     &             KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV)
+     &     INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
+     &     NZVAR1, NZVARQ1,NZCONF1,NZCONFQ1,
+     &     NZXOPT1,NZXOPTQ1,NZXOPE1,NZXOPEQ1,NZXOPP,NZXOPPQ,
+     &     NZHOPE,
+     &     KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
+     &     MCTYPE,OPT_NOPFQ,OPT_NOFQX,JTRLVL)
+C     
 C
 C
-C
-      NREDM = 50
+      NREDM = 3 * (MOPT_MXMICRO+2)
       NEXSIM = 1
       CALL MEMGET('REAL',KIBTYP,2*NREDM     ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KIBCVC,NREDM       ,WORK,KFREE,LFREE)
@@ -2068,40 +2981,66 @@ C     ***************************************************
 C     *** Perform micro iterations **********************
 C     ***************************************************
 C
+C     June 2001 hjaaj: CREF is read now from LUKRMC inside XRSCTL
+C     for more convenient use in lin.resp. etc.
+C     (no more memory required with this change)
 C
       WORK(KEVALR) = D0
-      CALL XRSCTL(GCI,GOEE,GOEP,
-     &            WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
-     &            RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
+      IF (NZ .GT. 1) THEN
+         CALL XRSCTL(GCI,WORK(KGOEER),GOEP,
+     &        WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
+     &        RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
+      ELSE
+         CALL XRSCTL(GCI,GOEE,GOEP,
+     &        WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
+     &        RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
+      END IF
 C
+C     Save new orbitals etc.
 C
-      CALL GTNORB(CMO,CREF,WORK(KIBTYP),
-     &            WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
-     &            WORK(KEVALR),WORK(KEVECR),NREDM,WORK,KFREE,LFREE)
-C
+      CALL KRMCSAV(0,CMO,CREF,WORK,KFREE,LFREE)
 C
 C     Save information for final summary output
 C
       DINFO(7) = D0
       DINFO(8) = STPLEN
       DINFO(10) = D1
+      DINFO(19) = STPLCI
+      DINFO(20) = STPLEE
+      DINFO(21) = STPLEP
+C
+      IF (COMPROT) THEN
+C
+C        Restore lengths and pointers.
+C
+         NZXOPE = NZXOPE_SAV
+         NZHOPE = NZHOPE_SAV
+         NZXOPP = NZXOPP_SAV
+         KZXOPE = KZXOPE_SAV
+         KZXOPP = KZXOPP_SAV
+         NZXOPPQ = NZXOPPQ_SAV
+         NZXOPEQ = NZXOPEQ_SAV
+         NZHOPEQ = NZHOPEQ_SAV
+C
+      END IF
 C
       CALL MEMREL('DIRNR.after XRSCTL',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DIRNR')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tdcbxlr */
       SUBROUTINE TDCBXRS(OPTRST,OPTNRM,OPTDIH,OPTSTERN,IPROPT,MXMICRO,
      &     INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
      &     NZVAR_OPT,NZVARQ_OPT,NZCONF_OPT,NZCONFQ_OPT,
      &     NZXOPT_OPT,NZXOPTQ_OPT,NZXOPE_OPT,NZXOPEQ_OPT,
      &     NZXOPP_OPT,NZXOPPQ_OPT,
+     &     NZHOPE_OPT,
      &     KZCONF_OPT,KZXOPE_OPT,KZXOPP_OPT,THR,CIPROGRAM,
-     &     EMC)
-C*****************************************************************************
+     &     EMC,IOPTTB,MCTYPE_OPT,OPT_NOPFQ,OPT_NOFQX,JOPT_JTRLVL)
+C***********************************************************************
 C
-C     Transfer information to response common blocks (dcbxnr.h)
+C     Transfer information to response common blocks (dcbxrs.h)
 C
 C     Input:
 C        Information from optimization module
@@ -2110,14 +3049,15 @@ C     Output:
 C
 C     Written by J. Thyssen - Nov 19 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
 #include <dcbxrs.h>
 C
-      LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN
+      LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN,OPT_NOPFQ,OPT_NOFQX
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
+      DIMENSION IOPTTB(-1:2)
       CHARACTER CIPROGRAM*8
 C
 C     Characters...
@@ -2129,15 +3069,16 @@ C
       RSREST = OPTRST
       STATIC = .TRUE.
       LINEQ  = .TRUE.
-      LSVCFG(1) = .TRUE.
-      LSVCFG(2) = .TRUE.
       TKNORM = OPTNRM
       DIAGHE = OPTDIH
       STERNH = OPTSTERN
       FKRMC  = .TRUE.
+      XRS_NOPFQ = OPT_NOPFQ
+      XRS_NOFQX = OPT_NOFQX
 C
 C     integers...
 C
+      JTRLVL = JOPT_JTRLVL
       IPRXRS = IPROPT
       JSYMOP = 1
       JTIMOP = 1
@@ -2148,15 +3089,19 @@ C
       NEXSTV = NFREQ
       NEXCNV = NFREQ
       LOFFTY = 0
-      NREDM  = 50
+      NREDM  = 3 * (MAXITR+2)
       NCRED  = 0
       NERED  = 0
       NPRED  = 0
       NZRED  = NCRED + NERED + NPRED
       N2REDM  = NREDM**2
       INTDEF = INTDEF_MIC
+      INTFLG = INTDEF_MIC
       ITRINT(1) = ITRINT_MIC(1)
       ITRINT(2) = ITRINT_MIC(2)
+      DO I = -1, 2
+         IXRSTB(I) = IOPTTB(I)
+      END DO
       NZVAR     = NZVAR_OPT
       NZVARQ    = NZVARQ_OPT
       NZCONF    = NZCONF_OPT
@@ -2168,18 +3113,27 @@ C
 C
       NZXOPP    = NZXOPP_OPT
       NZXOPPQ   = NZXOPPQ_OPT
+C
+      NZHOPE    = NZHOPE_OPT
 CDEBUG DEBUG
 c      NZXOPP = 0
 c      NZXOPPQ = 0
 c      NZXOPT = 0
 c      NZXOPPT = 0
+CDEBUG DEBUG
+c     NZCONF = 0
+c     NZCONFQ = 0
+C
+      MCTYPE = MCTYPE_OPT
 C
 C     reals...
 C
       THCXRS = THR
       CNVINT(1) = CNVINT_MIC(1)
-      CNVINT(1) = CNVINT_MIC(2)
+      CNVINT(2) = CNVINT_MIC(2)
       RESFAC    = 1.0D3
+C     with resfac = 1.01 we only take one new trial vector each micro it.
+      RESFAC    = 1.01D00
       ENRGY     = EMC
 C
 C     pointers...
@@ -2195,11 +3149,11 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtnorb */
       SUBROUTINE GTNORB(CMO,CREF,IBTYP,IBCVC,IBEVC,IBPVC,
-     &                  EVALR,EVECR,NREDM,WORK,KFREE,LFREE)
-C*****************************************************************************
+     &                  EVALR,EVECR,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Calculate new orbitals ( CMO_{new} = exp ( -\kappa) CMO_{old} )
 C
@@ -2212,13 +3166,14 @@ C        CMO - new coefficients
 C
 C     Written by J. Thyssen - Nov 24 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
 C
       PARAMETER ( D1 = 1.0D00 )
       PARAMETER ( THRTT = 1.0D-4 )
+#include <thrzer.h>
 C
 #include <dcbopt.h>
 #include <dcborb.h>
@@ -2227,17 +3182,15 @@ C
 #include <dcbgen.h>
 C
       DIMENSION CMO(*), WORK(*), IBTYP(2,*), IBCVC(*),
-     &          IBEVC(*),IBPVC(*), EVECR(NREDM,*)
+     &          IBEVC(*),IBPVC(*), EVECR(*)
       DIMENSION CREF(*)
 C
       CALL QENTER('GTNORB')
       KFRSAV = KFREE
 C
-C
 C     ***************************************************
 C     *** Get solution vectors = kappa ******************
 C     ***************************************************
-C
 C
       CALL MEMGET('REAL',KKAPPA,NZXOPTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDELTACI,NZCONFQ,WORK,KFREE,LFREE)
@@ -2251,16 +3204,16 @@ C
      &     WORK(KFREE),LFREE)
 C
       IF (IPROPT .GE. 5 .AND. NZXOPT .GT. 0) THEN
-         CALL HEADER('GTNORB: Kappa:',-1)
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) Kappa matrix'
          CALL RPRKAP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
      &               WORK(KZXOPE),NZXOPE,
      &               WORK(KZXOPP),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
       IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
-         CALL HEADER('GTNORB: Delta:',-1)
-         CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,IPQTOQ(1,0),
-     &        OPT_CIPROGRAM,LUPRI)
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) CI delta vector'
+         CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,
+     &        OPT_CIPROGRAM,THRPCI,LUPRI)
       END IF
 C
 C     *************************************
@@ -2275,23 +3228,18 @@ C        Add delta:
 C
          CALL DAXPY(NZCONFQ,D1,WORK(KDELTACI),1,CREF,1)
 C
-C        Normalize:
-C
-         DN = DNORM2(NZCONFQ,CREF,1)
-         IF ( DN .NE. D1 ) THEN
-            IF ( DN .LE. THRTT ) THEN
-               DN = D1 / DN
-               CALL DSCAL(NZCONF, CREF, 1)
-               DN = DNORM2(NZCONFQ,CREF,1)
-            END IF
-            DN = D1 / DN
-            CALL DSCAL(NZCONF, DN, CREF, 1)
+         IF (IPROPT .GE. 20 ) THEN
+            WRITE(LUPRI,'(1X,A)') '(GTNORB) New unnorm. CI vector'
+            CALL RPRCI(CREF,NZCONF,NZ,
+     &           OPT_CIPROGRAM,THRZER,LUPRI)
          END IF
 C
-         IF (IPROPT .GE. 5 ) THEN
-            CALL HEADER('GTNORB: new CI vector:',-1)
-            CALL RPRCI(CREF,NZCONF,NZ,IPQTOQ(1,0),
-     &           OPT_CIPROGRAM,LUPRI)
+         CALL RCINORM(CREF)
+C
+         IF (IPROPT .GE. 20 ) THEN
+            WRITE(LUPRI,'(1X,A)') '(GTNORB) New norm. CI vector'
+            CALL RPRCI(CREF,NZCONF,NZ,
+     &           OPT_CIPROGRAM,THRZER,LUPRI)
          END IF
 C
       END IF
@@ -2309,8 +3257,8 @@ C
      &             WORK(KUKAPPA),NORBT,
      &             WORK(KZXOPE),NZXOPE,
      &             WORK(KZXOPP),NZXOPP,NZ)
-      IF (IPROPT .GE. 5) THEN
-         CALL HEADER('GTNORB: Unpacked Kappa:',-1)
+      IF (IPROPT .GE. 10) THEN
+         WRITE(LUPRI,'(1X,A)') '(GTNORB) Unpacked kappa'
          CALL PRQMAT(WORK(KUKAPPA),NORBT,NORBT,NORBT,NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
       END IF
@@ -2325,13 +3273,16 @@ C
       DO I = 1,NFSYM
          IF (NOCC(I) .GT. 0) THEN
 CJTH     IF (NORB(I) .GT. 0) THEN
-            CALL HEADER('Fermion symmetry '//CHAR(I+48),-1)
             CALL ROTCMO(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
      &                  WORK(KUKAPPA+IOFF),
      &                  NORBT,IPQTOQ(1,0),IPROPT,WORK(KFREE),LFREE)
          END IF
          IOFF = IOFF + (NORBT+1)*NORB(I)
       END DO
+C
+C     Reorthonomalize coefficients:
+C
+c     CALL RGMCMO(CMO,WORK(KFREE),LFREE)
 C
 C     Write new coefficients
 C
@@ -2342,44 +3293,11 @@ C
       CALL QEXIT('GTNORB')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rprci */
-      SUBROUTINE RPRCI(CIVEC,NZCONF,NZ,IP,CIPRG,LUPRI)
-C*****************************************************************************
-C
-C     Print ci vector.
-C
-C     Input:
-C
-C     Output:
-C
-C     Written by J. Thyssen - Nov 23 2000
-C
-C*****************************************************************************
-#include <implicit.h>
-C
-      DIMENSION CIVEC(NZCONF,*)
-      DIMENSION IP(4)
-      CHARACTER CIPRG*(*)
-C
-      IF (CIPRG .EQ. 'GOSCI') THEN
-         WRITE(LUPRI,9000)
-         DO I = 1, NZCONF
-            WRITE(LUPRI,9001) I,(CIVEC(I,IZ),IZ=1,MIN0(2,NZ))
-         END DO
- 9000    FORMAT(/1X,'CI vector:',/,
-     &        T5,'Det. no.',T20,'Real part',T45,'Imag part',/,
-     &        60('-'))
- 9001    FORMAT(1P,T5,I5,T20,D20.12,T45,D20.12)
-      END IF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rprkap */
       SUBROUTINE RPRKAP(XKAPEE,XKAPEP,JXOPE,NZXOPE,JXOPP,NZXOPP,
      &                  NZ,IP,LUPRI)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print Kappa vector
 C
@@ -2389,7 +3307,7 @@ C     Output:
 C
 C     Written by J. Thyssen - Nov 24 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 C
       DIMENSION XKAPEE(NZXOPE,NZ),XKAPEP(NZXOPP,NZ),
@@ -2405,6 +3323,8 @@ C
          WRITE(LUPRI,9010) IG,JXOPE(1,IG),JXOPE(2,IG),
      &                     (XKAPEE(IG,I),I=1,NZ)
       END DO
+      DN = DNORM2(NZXOPE*NZ,XKAPEE,1)
+      WRITE(LUPRI,9015) DN
   100 CONTINUE
       IF (NZXOPP .EQ. 0) GOTO 200
       WRITE(LUPRI,9000) 'e-p'
@@ -2414,18 +3334,21 @@ C
          WRITE(LUPRI,9010) IG,JXOPP(1,IG),JXOPP(2,IG),
      &                     (XKAPEP(IG,I),I=1,NZ)
       END DO
- 9000 FORMAT(/A,' part of matrix:')
- 9005 FORMAT(1P,/'Index(r,s)   r    s   ',4(A1,'-part           '))
- 9006 FORMAT(    '----------  ---  ---  ',4A17)
- 9010 FORMAT(1P,4X,I4,4X,I3,2X,I3,2X,4(D15.8,'  '))
+      DN = DNORM2(NZXOPP*NZ,XKAPEP,1)
+      WRITE(LUPRI,9015) DN
+ 9000 FORMAT(/,1X,A,' part of matrix:')
+ 9005 FORMAT(1P,/,1X,'Index(r,s)   r    s   ',4(A1,'-part           '))
+ 9006 FORMAT(1X, '----------  ---  ---  ',4A17)
+ 9010 FORMAT(1P,5X,I4,4X,I3,2X,I3,2X,4(D15.8,'  '))
+ 9015 FORMAT(/,1X,'Norm of vector: ',1P,D15.8)
 C
   200 CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrtkrmc */
       SUBROUTINE WRTKRMC(LUNIT,LABEL,VECTOR,ISIZE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Write VECTOR to LUKRMC under label LABEL.
 C
@@ -2438,7 +3361,7 @@ C     Output:
 C
 C     Written by J. Thyssen - Nov 24 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -2446,6 +3369,88 @@ C
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
+      LOGICAL   FNDLAB
+C
+C     Write label at end or - if already existing - after SODLABEL
+C
+      CALL LABKRMC(LUNIT,LABEL)
+C
+C     Write vector
+C
+      LEN = MAX(4,ISIZE)
+      CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
+      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+C
+      REWIND LUNIT
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck iwrtkrmc */
+      SUBROUTINE IWRTKRMC(LUNIT,LABEL,IVECTOR,ISIZE)
+C***********************************************************************
+C
+C     Write VECTOR to LUKRMC under label LABEL.
+C
+C     Input:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     Output:
+C
+C     Written by J. Thyssen - Nov 24 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <iratdef.h>
+C
+      DIMENSION IVECTOR(ISIZE)
+      CHARACTER LABEL*8,C(4)*8
+      LOGICAL   FNDLAB
+C
+C     Write label at end or - if already existing - after SODLABEL
+C
+      CALL LABKRMC(LUNIT,LABEL)
+C
+C     Write vector
+C
+      LEN = MAX(4*IRAT,ISIZE)
+      CALL WRITI(LUNIT,LEN,IVECTOR)
+      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
+C
+      REWIND LUNIT
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck labkrmc */
+      SUBROUTINE LABKRMC(LUNIT,LABEL)
+C***********************************************************************
+C
+C     Write label LABEL to LUNIT;
+C       If label LABEL exists: 
+C         Seek to label SODLABEL and write from there.
+C       Else:
+C         Seek to label EOFLABEL, backspace and write from there
+C       End If
+C
+C     Input:
+C        LABEL   - the label
+C
+C     Output:
+C
+C     Written by J. Thyssen - Dec 28 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+C
+      CHARACTER LABEL*8
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -2456,7 +3461,7 @@ C     Seek to label SODLABEL and write from there.
 C
          REWIND(LUNIT)
          IF (.NOT. FNDLAB('SODLABEL',LUNIT)) THEN
-            CALL QUIT('WRTKRMC: wrong structure in file')
+            CALL QUIT('LABKRMC: wrong structure in file - no SODLABEL')
          END IF
       ELSE
 C
@@ -2471,23 +3476,14 @@ C
 C
 C     Write label
 C
-      CALL NEWLAB(LABEL,LUNIT,LUERR)
-C
-C     Write vector
-C
-      LEN = MAX(4,ISIZE)
-      CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
-      CALL NEWLAB('EOFLABEL',LUNIT,LUERR)
-C
-      REWIND LUNIT
-C
+      CALL NEWLAB(LABEL,LUNIT,LUPRI)
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reakrmc */
       SUBROUTINE REAKRMC(LUNIT,LABEL,VECTOR,ISIZE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Read VECTOR from LUKRMC under label LABEL.
 C
@@ -2500,7 +3496,7 @@ C        LUNIT   - unit number
 C
 C     Written by J. Thyssen - Jul 4 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -2515,7 +3511,6 @@ C
 C
 C        Label exists.
 C
-         LEN = MAX(4,ISIZE)
          CALL READT(LUNIT,ISIZE,VECTOR)
 C
       ELSE
@@ -2527,16 +3522,52 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck ireakrmc */
+      SUBROUTINE IREAKRMC(LUNIT,LABEL,IVECTOR,ISIZE)
+C***********************************************************************
 C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     Read VECTOR from LUKRMC under label LABEL.
+C
+C     Input:
+C
+C     Output:
+C        VECTOR  - vector of size ISIZE
+C        LABEL   - the label
+C        LUNIT   - unit number
+C
+C     Written by J. Thyssen - Jul 4 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <iratdef.h>
+C
+      DIMENSION IVECTOR(ISIZE)
+      CHARACTER LABEL*8,C(4)*8
+      LOGICAL   FNDLAB
+C
+      REWIND(LUNIT)
+      IF (FNDLAB(LABEL,LUNIT)) THEN
+C
+C        Label exists.
+C
+         CALL READI(LUNIT,ISIZE,IVECTOR)
+C
+      ELSE
+         WRITE(LUPRI,'(//A/,3A,I3)')
+     $        '*** ERROR in IREAKRMC ***',
+     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
+         CALL QUIT('*** ERROR in IREAKRMC ***')
+      END IF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reakrmc */
       SUBROUTINE REAKRMC2(LUNIT,FILENAME,LABEL,VECTOR,ISIZE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Read VECTOR from LUNIT under label LABEL.
 C
@@ -2551,7 +3582,7 @@ C        LUNIT   - unit number
 C
 C     Written by J. Thyssen - Jul 4 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -2577,7 +3608,7 @@ C
          OPEN(LUNIT,FILE=FILENAME,STATUS='NEW',
      &        FORM='UNFORMATTED',ACCESS='SEQUENTIAL')
          REWIND(LUNIT)
-         CALL NEWLAB('SODLABEL',LUNIT,LUERR)
+         CALL NEWLAB('SODLABEL',LUNIT,LUPRI)
       END IF
 C
       IF (FNDLAB(LABEL,LUNIT)) THEN
@@ -2598,11 +3629,11 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rupkwop */
       SUBROUTINE RUPKWOP(WOPEE,WOPEP,UNWOP,NORBT,
      &                   JXOPE,NZXOPE,JXOPP,NZXOPP,NZ)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Unpack WOP into UNWOP
 C     WOP is a rotation type vector and UNWOP is a square matrix.
@@ -2618,7 +3649,7 @@ C        UNWOP   - unpacked matrix
 C
 C     Written by J. Thyssen - Nov 24 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -2630,9 +3661,11 @@ C
       DO IG = 1,NZXOPE
          K = JXOPE(1,IG)
          L = JXOPE(2,IG)
-         DO IZ = 1,NZ
+         UNWOP(K,L,1) =  WOPEE(IG,1)
+         UNWOP(L,K,1) = -WOPEE(IG,1)
+         DO IZ = 2,NZ
             UNWOP(K,L,IZ) =  WOPEE(IG,IZ)
-            UNWOP(L,K,IZ) = -WOPEE(IG,IZ)
+            UNWOP(L,K,IZ) =  WOPEE(IG,IZ)
          END DO
       END DO
 C
@@ -2641,18 +3674,20 @@ C
       DO IG = 1,NZXOPP
          K = JXOPP(1,IG)
          L = JXOPP(2,IG)
-         DO IZ = 1,NZ
+         UNWOP(K,L,1) =  WOPEP(IG,1)
+         UNWOP(L,K,1) = -WOPEP(IG,1)
+         DO IZ = 2,NZ
             UNWOP(K,L,IZ) =  WOPEP(IG,IZ)
-            UNWOP(L,K,IZ) = -WOPEP(IG,IZ)
+            UNWOP(L,K,IZ) =  WOPEP(IG,IZ)
          END DO
       END DO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rotcmo */
       SUBROUTINE ROTCMO(CMO,NBASI,NORBI,NZ,XKAPPA,NORBT,IP,IPRINT,
      &                  WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Rotate coefficients
 C
@@ -2669,9 +3704,11 @@ C        CMO     - new coefficients
 C
 C     Written by J. Thyssen - Nov 24 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+C
+#include <thrzer.h>
 C
       PARAMETER (D1 = 1.00 D00, D0 = 0.00 D00, DM1 = -D1)
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
@@ -2679,7 +3716,6 @@ C
 C
       DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), 
      &          IP(4), WORK(*)
-      DIMENSION IPK(4)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 C
 #include <memint.h>
@@ -2688,7 +3724,7 @@ C
       CALL GETTIM(CPU1,WALL1)
       IF (IPRINT .GE. 5) CALL HEADER('Output from ROTCMO',-1)
 C
-#ifdef OLDCODE
+#ifndef OLDCODE
 C
       NORBXQ = NORBI*NORBI*NZ
       CALL MEMGET('REAL',KEIG,NORBI,WORK,KFREE,LFREE)
@@ -2734,7 +3770,7 @@ C
          IADDR = (I-1) + (I-1)*NORBI
          EIG = WORK(KEIG+I-1)
          IF (EIG .LT. D0) THEN
-            IF (IPRINT .GE. 3)
+            IF (IPRINT .GE. 3 .AND. ABS(EIG).GT. THRZER)
      &         WRITE(LUPRI,9010) EIG
             EIG = D0
             WORK(KEIG+I-1)   = D0
@@ -2775,7 +3811,7 @@ C
      &            WORK(KFREE),LFREE,IPROPT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
-         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZK,IPK,LUPRI)
+         CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 C
 C     Make V sin(d)/d V^{\dagger}
@@ -2790,7 +3826,7 @@ C
      &            WORK(KFREE),LFREE,IPROPT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
-         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZK,IPK,LUPRI)
+         CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
       END IF
 C
 C     Make V cos(d) V^{\dagger} - V sin(d)/d V^{\dagger} \kappa
@@ -2807,7 +3843,7 @@ C
 C
 C     Check if unitary
 C
-C#ifdef KRMC_DEBUG
+c#ifdef KRMC_DEBUG
       CALL QGEMM(NORBI,NORBI,NORBI,D1,
      &           'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ,
      &           'H','N',IP,WORK(KTMP),NORBI,NORBI,NZ,
@@ -2870,6 +3906,8 @@ C
  9021 FORMAT( 'ROTCMO: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
 C
 #else
+      call quit('this code does not work')
+C     fixme: dette ser ikke ud til at virke for complex groups.
 C
 C     Memory alloc
 C
@@ -2900,9 +3938,9 @@ C
 C
 C     Symmetric Orthogonalization with N-R iterative algorithm:
 C
-C     C(p+1) = 1/2( 3C(p) - C(p) S Ct(p) C(p))
+C     C(p+1) = 1/2( 3C(p) - C(p) S C^{\dagger}(p) C(p))
 C     
-C            = 3/2 C(p) + ( -1/2 C(p) Ct(p) ) C(p)
+C            = 3/2 C(p) + ( -1/2 C(p) C^{\dagger}(p) ) C(p)
 C
 C     (here S = unit matrix)
 C
@@ -2911,7 +3949,7 @@ C
          CALL DCOPY(NORBI*NORBI*NZ,WORK(KXKNEW),1,WORK(KXKOLD),1)
          CALL QGEMM(NORBI,NORBI,NORBI,D1,
      &        'N','N',IP,WORK(KXKOLD),NORBI,NORBI,NZ,
-     &        'T','N',IP,WORK(KXKOLD),NORBI,NORBI,NZ,
+     &        'H','N',IP,WORK(KXKOLD),NORBI,NORBI,NZ,
      &        D0,     IP,WORK(KTMP),  NORBI,NORBI,NZ)
          CALL QGEMM(NORBI,NORBI,NORBI,-DP5,
      &        'N','N',IP,WORK(KTMP),  NORBI,NORBI,NZ,
@@ -2920,8 +3958,12 @@ C
 C
          DMX1 = DMX
          DMX = DABSMAXDIFF(WORK(KXKNEW),WORK(KXKOLD),NORBI*NORBI*NZ)
-         IF (DMX .GT. D2 * DMX1 .AND. DMX1 .GT. D0)
-     $        CALL QUIT('divergence...')
+         IF (DMX .GT. D2 * DMX1 .AND. DMX1 .GT. D0) THEN
+            WRITE(LUPRI,'(/1X,2A)')
+     &           '*** ERROR in ROTCMO ***: ',
+     &           'Divergence in symmetric ortho.'
+            CALL QUIT('*** ERROR in ROTCMO: Divergence ***')
+         END IF
          IF (DMX .GT. THREQL) GOTO 100
 C
 C                  
@@ -2964,37 +4006,52 @@ C
       DABSMAXDIFF = DMX
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirstp */
-      SUBROUTINE DIRSTP(ISTEP,CMO,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE DIRSTP(ISTEP,CMO,CREF,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Step control
 C
 C     Input:
+C        ISTEP: control parameter
+C               istep =  0: normal MC step check
+C               istep = -1: restart step (with valid DEPRED)
+C               istep = -2: MC converged, generate info for analysis
+C        CMO  : current MO orbitals
 C
 C     Output:
+C        ISTEP: return parameter
+C               istep = -1: no step check (close to convergence)
+C               istep =  0: step is OK
+C               istep =  1: step is too large
+C               istep =  2: step is too large, backstep NOT possible
 C
 C     Written by J. Thyssen - Nov 27 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      PARAMETER (THDE = 1.0D-10, D1 = 1.00D00)
+      PARAMETER (THDE = 1.0D-10, DP1 = 0.1 D00)
+#include <consts.h>
 C
 #include <dcbopt.h>
 #include <dcbkrmc_itinfo.h>
 C
-      DIMENSION CMO(*), WORK(*)
+      DIMENSION CMO(*), CREF(*), WORK(*)
       LOGICAL   NOREJT
 C
       CALL QENTER('DIRSTP')
+C
+C     We are not allowed to reject restart steps (ISTEP = -1).
 C
       NOREJT = .FALSE.
       IF (ISTEP .LT. 0) THEN
          NOREJT = .TRUE.
       END IF
+C
+C     Calculate actual energy difference, and compare to predicted.
 C
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
@@ -3006,30 +4063,105 @@ C
          ISTEP = -1
          WRITE(LUPRI,9002) DEACT,DEPRED
       END IF
- 9000 FORMAT(/'DIRSTP: Energy difference;',
+ 9000 FORMAT(/1X,'(DIRSTP): Energy difference;',
      &       /' actual, predicted, and ratio: ',1P,2D15.5,0P,F12.6)
- 9002 FORMAT(/'DIRSTP: Close to convergence, ratio set to one.'
+ 9002 FORMAT(/1X,'(DIRSTP): Close to convergence, ratio set to one.'
      &       /' Energy difference; actual and predicted: ',1P,2D15.5)
 C
+C     Save info for final summary output.
+C
+      DINFO(4) = DEPRED
+      DINFO(5) = DEACT
+      DINFO(6) = RATIO
+C
+C     Normal MCSCF optimization
+C
+      RATVGD = D1 - DP1 * (D1 * RATGOD)
+      RTSAVE = RTRUST
+      IF ( IOPT_ISTATE .EQ. 1 ) THEN
+         IF ( RATIO .LT. RATMIN ) THEN
+            RTRUST = STPRED * RTRUST
+            IF ( RATIO .LT. RATREJ .AND. .NOT. NOREJT ) THEN
+               ISTEP = 1
+               RTRUST = MIN(RTRUST, STPRED * STPLEN)
+            END IF
+         ELSE IF (RATIO .GT. RATGOD) THEN
+            RTRUST = MIN (STPMAX, STPINC * RTRUST)
+            IF (RATIO .GT. RATVGD) RTRUST = MIN(STPMAX, STPINC * RTRUST)
+         END IF
+      ELSE
+         CALL QUIT('*** ERROR in DIRSTP ***: '
+     &        //'excited state step control not implemented')
+      END IF
+C
+C     Check if step is accepted
+C
+C     debug
+c     write(6,*) ' (dirstp) itmac, itbck ',itmac,itbck
+c     IF (ITMAC .EQ. 2 .AND. ITBCK .EQ. 0) THEN
+c        ISTEP = 1
+c        RTRUST = 0.5 * RTRUST
+c     END IF
+c     write(6,*) ' (dirstp) istep ',istep
+c     write(6,*) ' (dirstp) donr,ldirnr ',donr,ldirnr
       IF (ISTEP .LE. 0) THEN
          EMCOLD = EMCSCF
          GOTO 1000
       END IF
 C
+C     ************************
+C     *** Step is rejected ***
+C     ************************
+C
+      IF (DONR) THEN
+C
+C        Backstep for pure Newton-Raphson cannot be implemented
+C
+         IF ( DEACT .LE. D0 ) THEN
+C
+C           However, if the energy is decreasing we accept the step
+C           anyway.
+C
+            WRITE(LUPRI,'(/1X,A,F12.6,A)')
+     &           '*** WARNING *** bad ratio (',RATIO,
+     &           '), but step accepted because DEACT < 0'
+            ISTEP = 0
+            EMCOLD = EMCSCF
+         ELSE
+            ISTEP = 2
+         END IF
+         GOTO 1000
+      END IF
+C
+      IF (LDIRNR) THEN
+C
+C        Backstep for NR restricted step algorithm
+C
+         CALL RNRBSTP(CMO,CREF,WORK,KFREE,LFREE)
+C
+      ELSE
+C
+C        Backstep for NEO restricted step algorithm
+C        
+         CALL QUIT('*** NOT IMPLEMENTED ***')
+      END IF
+C
+C
  1000 CONTINUE
 C
 C     Save information for final summary outout
 C
-      DINFO(4) = DEPRED
-      DINFO(5) = DEACT
-      DINFO(6) = RATIO
+      IF (IPROPT .GE. 5)
+     &     WRITE(LUPRI,'(1X,A,2F15.10)')
+     &     '(DIRSTP) Old and new KR-MCSCF trust radius: ',RTSAVE, RTRUST
+C
       CALL QEXIT('DIRSTP')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmc_getfck */
       SUBROUTINE KRMC_GETFCK(FMO,IPRINT,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Read Fock matrix from file KRMC FOCK
 C
@@ -3040,7 +4172,7 @@ C        FMO    - Fock matrix in MO basis
 C
 C     Written by J. Thyssen - Nov 27 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -3053,7 +4185,7 @@ C
 #include <memint.h>
 C
       REWIND(LUKRM3)
-      CALL MOLLAB('FC      ',LUKRM3,LUERR)
+      CALL MOLLAB('FC      ',LUKRM3,LUPRI)
       CALL READT(LUKRM3,N2ORBXQ,FMO)
       IF (IPRINT .GE. 5) THEN
          CALL HEADER('Output from KRMC_GETFCK',-1)
@@ -3064,57 +4196,102 @@ C
 C   
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsnrprd */
-      SUBROUTINE RSNRPRD(REDGP,REDE,EVECR,NREDM)
-C*****************************************************************************
+      SUBROUTINE RSNRPRD(REDGP,REDE,EVECR,NREDM,IBTYP,NZRED)
+C***********************************************************************
 C
 C     Calculate second order change in energy
 C
 C     Written by J. Thyssen - Nov 27 1998
 C     Last revision : 
 C       
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C         
       PARAMETER (DP5 = 0.50D00, D0 = 0.00D00, DP25 = 0.25D00)
 C         
 #include <dcbopt.h>
+#include <dcbibn.h>
 C           
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
+      DIMENSION IBTYP(2,*)
 C         
-      CALL HEADER('Output from RSNRPRD',-1)
-      CALL HEADER('solution vector',-1)
-      CALL OUTPUT(EVECR,1,NREDM,1,1,NREDM,1,1,LUPRI)
-      CALL HEADER('gradient',-1)
-      CALL OUTPUT(REDGP,1,NREDM,1,1,NREDM,1,1,LUPRI)
-      CALL HEADER('hessian',-1)
-      CALL OUTPUT(REDE,1,NREDM,1,NREDM,NREDM,NREDM,1,LUPRI)
+      IF ( IPROPT .GE. 20 ) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced solution vector '
+         CALL OUTPUT(EVECR,1,NZRED,1,1,NREDM,1,1,LUPRI)
+C
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced gradient'
+         CALL OUTPUT(REDGP,1,NZRED,1,1,NREDM,1,1,LUPRI)
+         WRITE(LUPRI,'(1X,A)')
+     &        '(RSNRPRD) Reduced Hessian'
+         CALL OUTPUT(REDE,1,NZRED,1,NZRED,NREDM,NREDM,1,LUPRI)
+      END IF
+C
+C     Calculate step length
+C     ---------------------
+C
+C     Calculate total step length.
+C     We multiply with as the trial vectors are normalized to 0.5
+C
+      STPLEN = DP5*DNRM2(NREDM,EVECR,1)
+      STPLCI = D0
+      STPLEE = D0
+      STPLEP = D0
+      DO I = 1, NZRED
+         IF ( IBTYP(1,I) .EQ. JBCNDX ) THEN
+            STPLCI = STPLCI + EVECR(I) ** 2
+         ELSE IF ( IBTYP(1,I) .EQ. JBENDX ) THEN
+            STPLEE = STPLEE + EVECR(I) ** 2
+         ELSE
+            STPLEP = STPLEP + EVECR(I) ** 2
+         END IF
+      END DO
+      STPLCI = DP5 * SQRT(STPLCI)
+      STPLEE = DP5 * SQRT(STPLEE)
+      STPLEP = DP5 * SQRT(STPLEP)
+C
+C     Calculate predicted energy change
+C     ---------------------------------
+C
+C     DEPRED = E - E0 = x^t g + 1/2 x^t H x
+C
+C     where x is the step vector, g is the gradient (note that REDGP is 
+C     equal to minus the gradient), and H is the Hessian.
+C
       SUM = D0
-      DO I = 1,NREDM
+      DO I = 1,NZRED
          SUM1 = D0
-         DO J = 1,NREDM
+         DO J = 1,NZRED
             SUM1 = SUM1 + REDE(I,J)*EVECR(J)
          END DO
          SUM = SUM + EVECR(I)*(-REDGP(I) + DP5 * SUM1)
       END DO
-      write(6,*) 'rsnrprd: predicted energy change: ',sum
+C
+C     Multiply with 0.5 as trial vectors are normalized to 0.5
+C
       DEPRED = DP5*SUM
+C
+      IF (IPROPT .GE. 2)
+     &     WRITE(LUPRI,'(1X,A,F15.8)')
+     &     '(RSNRPRD) Predicted energy change = ',DEPRED
 C       
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setdbcidx */
       SUBROUTINE SETDCBIDX()
-C*****************************************************************************
+C***********************************************************************
 C
 C     Set common block DCBIDX (index vectors, orbital symmetries etc.)
 C
 C     Written by J. Thyssen - Nov 22 2000
 C     Last revision : 
 C       
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxorb.h>
@@ -3123,48 +4300,1498 @@ C
 #include <dcbidx.h>
 #include <dgroup.h>
 #include <dcborb.h>
+#include <dcbopt.h>
 C
 C
-      IACT = 0
       IORBI = 0
+C
+      IESHI = 0
+      IPSHI = 0
+C
+      IISHI = 0
+      IASHI = 0
+      ISSHI = 0
+C
       DO IFSYM = 1, NFSYM
          DO I = 1, NPSH(IFSYM)
             IORBI = IORBI + 1
+            IPSHI = IPSHI + 1
+C
             IFSMO(IORBI) = IFSYM
             IOBTYP(IORBI) = JTPOSI
+C
+            IDXG2E(IORBI) = -1
+            IDXG2P(IORBI) = IPSHI
+            IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
+            IDXG2V(IORBI) = -1
+C
          END DO
          DO I = 1, NISH(IFSYM)
             IORBI = IORBI + 1
+            IESHI = IESHI + 1
+            IISHI = IISHI + 1
+C
             IFSMO(IORBI) = IFSYM
             IOBTYP(IORBI) = JTINAC
+C
+            IDXG2E(IORBI) = IESHI
+            IDXG2P(IORBI) = -1
+            IDXG2I(IORBI) = IISHI
             IDXG2U(IORBI) = -1
+            IDXG2V(IORBI) = -1
+C
+            IDXE2G(IESHI) = IORBI
+            IDXI2G(IISHI) = IORBI
+C
          END DO
          DO I = 1, NASH(IFSYM)
             IORBI = IORBI + 1
-            IACT = IACT + 1
+            IESHI = IESHI + 1
+            IASHI = IASHI + 1
+C
             IFSMO(IORBI) = IFSYM
             IOBTYP(IORBI) = JTACT
-            IDXG2U(IORBI) = IACT
-            IDXU2G(IACT) = IORBI
+C
+            IDXG2E(IORBI) = IESHI
+            IDXG2P(IORBI) = -1
+            IDXG2I(IORBI) = -1
+            IDXG2U(IORBI) = IASHI
+            IDXG2V(IORBI) = -1
+C
+            IDXU2G(IASHI) = IORBI
+            IDXE2G(IESHI) = IORBI
+C
          END DO
          DO I = 1, NSSH(IFSYM)
             IORBI = IORBI + 1
+            IESHI = IESHI + 1
+            ISSHI = ISSHI + 1
+C
             IFSMO(IORBI) = IFSYM
             IOBTYP(IORBI) = JTSEC
+C
+            IDXG2E(IORBI) = IESHI
+            IDXG2P(IORBI) = -1
+            IDXG2I(IORBI) = -1
             IDXG2U(IORBI) = -1
+            IDXG2V(IORBI) = ISSHI
+C
+            IDXE2G(IESHI) = IORBI
+            IDXV2G(ISSHI) = IORBI
          END DO
       END DO
 C
-      call header('output from setdcvidx',-1)
-      do i = 1, norbt
-         write(6,*) 'ifsmo,iobtyp,idxg2u',ifsmo(i),iobtyp(i),idxg2u(i)
-      end do
-      do i = 1, nasht
-         write(6,*) 'idxu2g',idxu2g(i)
-      end do
+C
+      IF (IPROPT .GE. 10) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        '(SETDCBIDX) I, IFSMO, IOBTYP, IDXG2U, IDXG2E'
+         DO I = 1, NORBT
+            WRITE(LUPRI,'(8X,I6,I7,I8,2I12)')
+     &           I, IFSMO(I), IOBTYP(I), IDXG2U(I), IDXG2E(I)
+         END DO
+         WRITE(LUPRI,'(1X,A)')
+     &        '(SETDCBIDX) E and IDXE2G'
+         DO I = 1, NESHT
+            WRITE(LUPRI,'(8X,I6,I11)') I, IDXE2G(I)
+         END DO
+         WRITE(LUPRI,'(1X,A)')
+     &        '(SETDCBIDX) U and IDXU2G'
+         DO I = 1, NASHT
+            WRITE(LUPRI,'(8X,I6,I11)') I, IDXU2G(I)
+         END DO
+      END IF
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcsol */
+      SUBROUTINE KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
+     &        EVECR,IBTYP,NPRED,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C     Written by J. Thyssen - Nov 22 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <consts.h>
+C
+      PARAMETER (DLVLSTEP = 0.2D0)
+C         
+#include <dgroup.h>
+#include <dcbopt.h>
+#include <dcborb.h>
+#include <dcbkrmc_itinfo.h>
+C
+      DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
+      DIMENSION REDGP(NREDM), EVECR(NREDM)
+      DIMENSION IBTYP(*), INERTIA(3)
+      DIMENSION WORK(*)
+C
+      IF (IOPT_ISTATE .NE. 1)
+     &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
+C
+      RTRMAX = RTRUST*RTTOL
+      RTRMIN = RTRUST/RTTOL
+C
+      CALL DUNIT(REDS,NREDM)
+      DLVLMAX = D0
+      DLVLMIN = D0
+      DLVLSH  = D0
+      ITER = 0
+C
+C
+C     Start bisection iterations to find level-shift
+C     ----------------------------------------------
+C
+ 100  CALL LINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
+     &     EVECR,IBTYP,INERTIA,IPROPT,WORK,KFREE,LFREE)
+      ITER = ITER + 1
+      STPL = DP5 * DNRM2(NREDM,EVECR,1)
+      INONPOS = INERTIA(2) + INERTIA(3)
+C
+C     Save electronic Hessian's index for zero level shift
+C     (used in RCNVTHR below)
+C
+      IF (ITER .EQ. 1) JHESSIAN = INONPOS - NPRED
+C
+C     Don't iterate if Newton-Raphson is requested.
+C
+      IF (DONR) GOTO 200
+C
+      IF (INONPOS .GT. NPRED .OR. STPL .GE. RTRMAX) THEN
+         DLVLMAX = DLVLSH
+         IF (DLVLMIN .EQ. D0) THEN
+            DLVLSH = DLVLSH - DLVLSTEP
+         ELSE
+            DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+         END IF
+#ifdef UNDEF
+         write(6,*) 'krmcsol: inonpos, steplen (>?), new level shift',
+     &        inonpos,STPL,DLVLSH
+#endif
+         GOTO 100
+      ELSE IF (STPL .LE. RTRMIN .AND. DLVLSH .NE. D0) THEN
+         DLVLMIN = DLVLSH
+         DLVLSH  = DP5*(DLVLMIN+DLVLMAX)
+#ifdef UNDEF
+         write(6,*) 'krmcsol: steplen<, new level shift',STPL,DLVLSH
+#endif
+         GOTO 100
+#ifdef UNDEF
+      ELSE
+         write(6,*) 'krmcsol: steplen acceptedlen, level shift',
+     &        STPL,DLVLSH
+#endif
+      END IF
+C
+C     Iterations finished.
+C
+ 200  CONTINUE
+      RBETA = STPL
+      EVALR = DLVLSH
+      IPAR = INERTIA(3)
+      IF (IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/,1X,A,I3,A,F15.8)')
+     &        '(KRMCSOL) Level shift (after',ITER,' bi-sec. iter.) = ',
+     &        DLVLSH
+      END IF
+      IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
+         IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(A,F12.5,A)') 
+     &           ' (KRMCSOL) Solution vector'
+            CALL PRIRVC(EVECR,NZRED,IBTYP)
+         ENDIF
+         WRITE(LUPRI,'(/3X,A,F12.5)') 
+     &      '* Reduced matrix. Level shift:',DLVLSH
+         WRITE(LUPRI,'(5X,A,I5)')
+     &        '* Number of positive eigenvalues:',INERTIA(1),
+     &        '* Number of zero     eigenvalues:',INERTIA(3),
+     &        '* Number of negative eigenvalues:',INERTIA(2)
+      ENDIF
+C
+      DINFO(22) = DLVLSH
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rcnvthr */
+      FUNCTION RCNVTHR()
+C***********************************************************************
+C
+C     Calculate threshold for micro iterations.
+C
+C     Written by J. Thyssen - Dec 12 2000
+C     Last revision : 
+C      
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <consts.h>
+      PARAMETER (THQCXX = 0.10D0, RTTHRG = 4.00D0)
+      PARAMETER (THGFAC = 0.98D0, THGFC2 = 0.70D0)
+C
+#include <dcbopt.h>
+C
+C     Heuristics ripped from Dalton (CNVTHR, sirneo.F)
+C
+C     Note that the Dirac norm is 0.5 Dalton norm, so all norms
+C     have been replaced with 2 * norm.
+C
+C
+C     If new step (RBETA) is greater than previous step (STPLEN)
+C     or the level shift is .NE. 0 we are not in the local region, 
+C     i.e. use global threshold:
+C
+      IF ( (STPLEN .GT. D0 .AND. RBETA .GT. STPLEN) .OR.
+     &     ( DLVLSH .NE. D0 ) )THEN
+         IF (JHESSIAN .NE. 0) THEN
+C
+C           Hessian has incorrect structure, and it's not worth 
+C           the effort to converge better than 50% (we think!)
+C
+C           (FIXME: put DP5 = 50% in common block/input)
+C
+            THRQN = DP5 * D2 * GNORM(5)
+         ELSE
+C
+C           Hessian has correct structure, we converge a little
+C           better (by default: THQLIN = 20%)
+C
+            THRQN = THQLIN * D2 * GNORM(5)
+         END IF
+      ELSE
+         GCNRM = D2 * GNORM(1)
+         GONRM = D2 * GNORM(4)
+         THRQN = THQKVA * (GCNRM * GCNRM)
+         IF (GCNRM .GE. 5.0D-3) THRQN = THQCXX * THRQN
+         THRQN = MAX( THRQN, THQKVA*(GONRM*GONRM) )
+         THRQN = MIN( THRQN, THQLIN* D2 * GNORM(5) )
+         IF (THRQN .LE. OPT_THRGRD) THEN
+            THRQN = THGFAC*D2*OPT_THRGRD
+         ELSE IF (THRQN .LE. RTTHRG*OPT_THRGRD) THEN
+            THRQN = THGFC2*D2*OPT_THRGRD
+         END IF
+      END IF
+      RCNVTHR = DP5 * THRQN
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rcinorm */
+      SUBROUTINE RCINORM(CREF)
+C***********************************************************************
+C
+C     Normalize CI vector.
+C
+C     Written by J. Thyssen - Dec 14 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <consts.h>
+#include <thrzer.h>
+      PARAMETER ( THRTT = 1.0D-4 )
+C
+#include <dcbopt.h>
+#include <dgroup.h>
+C
+      DIMENSION CREF(NZCONF,*)
+C
+      LOGICAL CNRM
+C
+      CALL QENTER('RCINORM')
+C
+      CNRM = .FALSE.
+      DN = DNORM2(NZCONFQ,CREF,1)
+      IF ( DN .NE. D1 ) THEN
+         IF ( DN .LE. THRTT ) THEN
+            DN = D1 / DN
+            CALL DSCAL(NZCONFQ, DN, CREF, 1)
+            DN = DNORM2(NZCONFQ,CREF,1)
+         END IF
+         DN = D1 / DN
+         WRITE(LUPRI,'(/1X,A,F20.12)')
+     &        '(RCINORM) CI vector renormalized with factor ',DN
+         CALL DSCAL(NZCONF, DN, CREF, 1)
+         CNRM = .TRUE.
+      END IF
+      IF ( IPROPT .GE. 20 .AND. CNRM) THEN
+         WRITE(LUPRI,'(/1X,A)') '(RCINORM) Renormalized CI vector'
+         CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRZER,LUPRI)
+      END IF
+C
+      CALL QEXIT('RCINORM')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rtktime */
+      SUBROUTINE RTKTIME(TFLAG,N)
+C***********************************************************************
+C
+C     Start/stop timer no. N
+C
+C     Used for detailed timing statistics.
+C
+C     Written by J. Thyssen - Dec 22 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <priunit.h>
+#include <implicit.h>
+C
+#include <dcbopt.h>
+C
+      LOGICAL TFLAG
+C
+      LOGICAL STATET(NOPTTIM)
+      DIMENSION CPU(NOPTTIM), WLL(NOPTTIM)
+      LOGICAL FIRST
+      DATA FIRST /.TRUE./
+      SAVE FIRST, STATET, CPU, WLL
+C
+C     STATET (state of time; stopped (.false.) or running (.true.)
+C
+      IF (FIRST) THEN
+         DO I = 1, NOPTTIM
+            STATET(I) = .FALSE.
+         END DO
+         FIRST = .FALSE.
+      END IF
+C
+      IF ( N .LT. 1 .OR. N .GT. NOPTTIM ) THEN
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '*** ERROR in RTKTIME ***: parameter N invalid; N = ',N
+         CALL QUIT('*** ERROR in RTKTIME ***')
+      END IF
+      IF ( STATET(N) .EQV. TFLAG ) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        '*** ERROR in RTKTIME ***: state of timer = tflag'
+         CALL QUIT('*** ERROR in RTKTIME ***')
+      END IF
+C
+      STATET(N) = TFLAG
+      CALL GETTIM(CPU1,WLL1)
+C
+      IF (TFLAG) THEN
+C
+C        Start timer no. N
+C
+         CPU(N) = CPU1
+         WLL(N) = WLL1
+      ELSE
+C
+C        Stop timer no. N and add results up.
+C
+         CPUOPT(N) = CPUOPT(N) + (CPU1 - CPU(N))
+         WLLOPT(N) = WLLOPT(N) + (WLL1 - WLL(N))
+C
+      END IF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rnrbstp */
+      SUBROUTINE RNRBSTP(CMO,CREF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Perform backstep (NR restricted step algorihtm)
+C
+C     Written by J. Thyssen - Dec 28 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbopt.h>
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbgen.h>
+C
+      DIMENSION WORK(*)
+      DIMENSION CMO(*), CREF(*)
+C
+      LOGICAL FNDLAB
+C
+      CALL QENTER('RNRBSTP1')
+      KFRSAV = KFREE
+C
+C     Strategy:
+C     (1) read old reduced L (NEO) or H (NR) matrix from prev. macro
+C     (2) solve for reduced trust radius
+C     (3) calculate new CI ref. vector, orbitals, predictions etc
+C
+C
+C     (1) read reduced L or H from from previous macro
+C     ------------------------------------------------
+C
+C     ...and tons of other information.
+C
+C     Get old orbitals
+C
+      CALL REAKRMC(LUKRMC,'OLDORB  ',CMO,NCMOTQ)
+      CALL REAKRMC(LUKRMC,'OLDCREF ',CREF,NZCONFQ)
+C
+C     Get L and other stuff
+C
+      REWIND(LUKRMC)
+      IF ( FNDLAB('LREDUCED',LUKRMC) ) THEN
+         READ(LUKRMC) NREDM
+      ELSE
+         WRITE(LUPRI,'(/1X,A)')
+     &        '*** ERROR in RNRBSTP *** LREDUCED not found on LUKRMC'
+         CALL QUIT('*** ERROR in RNRBSTP ***'//
+     &        ' LREDUCED not found on LUKRMC')
+      END IF
+      REWIND(LUKRMC)
+      CALL MOLLAB('LREDUCED',LUKRMC,LUPRI)
+C
+      CALL MEMGET('REAL',KREDE,NREDM*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDS,NREDM*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KREDGP,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEVECR,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEVC,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBPVC,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBCVC,NREDM,WORK,KFREE,LFREE)
+C
+      CALL REALRED(LUKRMC,NZRED,NREDM,WORK(KREDE),WORK(KREDGP),
+     &     WORK(KEVECR),WORK(KIBTYP),
+     &     WORK(KIBEVC),WORK(KIBPVC),WORK(KIBCVC),NPRED)
+C
+      IF (IPROPT .GE. 20) THEN
+         WRITE(LUPRI,'(/,1X,A,3I4)')
+     &        '(RNRBSTP1) NZRED, NREDM, NPRED ',NZRED, NREDM, NPRED
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) Reduced Hessian'
+         CALL OUTPUT(WORK(KREDE),1,NZRED,1,NZRED,NREDM,NREDM,1,LUPRI)
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) Minus reduced gradient'
+         CALL OUTPUT(WORK(KREDGP),1,NZRED,1,1,NREDM,1,1,LUPRI)
+         WRITE(LUPRI,'(1X,A)') '(RNRBSTP1) IBTYP'
+         DO I = 1, NZRED
+            WRITE(LUPRI,'(5X,2I4)')
+     &           IGETINT(WORK(KIBTYP),1 + (I-1)*2),
+     &           IGETINT(WORK(KIBTYP),2 + (I-1)*2)
+         END DO
+      END IF
+C
+C     (2) solve for reduced trust radius
+C     ----------------------------------
+C
+C     Trust radius has been reduced in DIRSTP.
+C
+      CALL KRMCSOL(NZRED,NREDM,WORK(KREDE),WORK(KREDS),
+     &     EVALR,WORK(KREDGP),WORK(KEVECR),
+     &     WORK(KIBTYP),NPRED,IPROPT,WORK,KFREE,LFREE)
+C
+      WRITE(LUPRI,'(/,1X,A,/,4X,2F15.8)')
+     &     '(RNRBSTP1) Backstep; new trust radius & new levelshift : ',
+     &     RTRUST,DLVLSH
+C
+C     Write stuff back to KRMC_REDL
+C
+      REWIND(LUKRM4)
+      CALL WRTLRED(LUKRM4,NZRED,NREDM,WORK(KREDE),WORK(KREDGP),
+     &     WORK(KEVECR),WORK(KIBTYP),
+     &     WORK(KIBEVC),WORK(KIBPVC),WORK(KIBCVC),NPRED)
+C
+C     Calculate new predicted energy change
+C
+      CALL RSNRPRD(WORK(KREDGP),WORK(KREDE),WORK(KEVECR),
+     &     NREDM,WORK(KIBTYP),NZRED)
+C
+C     Save on KRMCSCF and find new orbitals and CI ref. vector
+C
+      CALL MEMREL('RNRBSTP1',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL KRMCSAV(0,CMO,CREF,WORK,KFREE,LFREE)
+C
+      CALL QEXIT('RNRBSTP1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wrtlred */
+      SUBROUTINE WRTLRED(LUNIT,NZRED,NREDM,REDE,REDGP,EVECR,
+     &     IBTYP,IBEVC,IBPVC,IBCVC,NPRED)
+C***********************************************************************
+C
+C     Dump info needed for backsteps on KRMC_LRED/KRMCSCF
+C
+C     Written by J. Thyssen - Dec 28 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbgen.h>
+C
+      DIMENSION REDE(*), REDGP(*)
+      DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
+      DIMENSION EVECR(*)
+C
+      CALL QENTER('WRTLRED')
+C
+C     Dump info
+C
+      WRITE(LUNIT) NREDM,
+     &     NZRED,
+     &     (REDE(I),I=1,NREDM*NREDM),
+     &     (REDGP(I),I=1,NREDM),
+     &     (EVECR(I),I=1,NREDM),
+     &     (IBTYP(1,I),IBTYP(2,I),I=1,NREDM),
+     &     (IBEVC(I),I=1,NREDM),
+     &     (IBPVC(I),I=1,NREDM),
+     &     (IBCVC(I),I=1,NREDM),
+     &     NPRED
+C
+      CALL QEXIT('WRTLRED')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck realred */
+      SUBROUTINE REALRED(LUNIT,NZRED,NREDM,REDE,REDGP,EVECR,
+     &     IBTYP,IBEVC,IBPVC,IBCVC,NPRED)
+C***********************************************************************
+C
+C     Read info needed for backsteps
+C
+C     Written by J. Thyssen - Dec 28 2000
+C     Last revision : 
+C       
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbgen.h>
+C
+      DIMENSION REDE(*), REDGP(*)
+      DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
+      DIMENSION EVECR(*)
+C
+      CALL QENTER('REALRED')
+C
+C     Dump info
+C
+      READ(LUNIT) NREDM,
+     &     NZRED,
+     &     (REDE(I),I=1,NREDM*NREDM),
+     &     (REDGP(I),I=1,NREDM),
+     &     (EVECR(I),I=1,NREDM),
+     &     (IBTYP(1,I),IBTYP(2,I),I=1,NREDM),
+     &     (IBEVC(I),I=1,NREDM),
+     &     (IBPVC(I),I=1,NREDM),
+     &     (IBCVC(I),I=1,NREDM),
+     &     NPRED
+C
+      CALL QEXIT('REALRED')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmchi */
+      SUBROUTINE KRMCHI
+C***********************************************************************
+C
+C     Write welcome message.
+C
+C     Written by J. Thyssen - Jan 18 2000
+C     Last revision : 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxash.h>
+#include <maxorb.h>
+C
+#include <dcbidx.h>
+#include <dcborb.h>
+#include <dcbopt.h>
+C
+      IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
+         CALL TITLER('QC-DHF wave function optimization','*',110)
+      ELSE IF (MCTYPE .EQ. JCAS) THEN
+         CALL TITLER('KR-CASSCF wave function optimization','*',110)
+      ELSE IF (MCTYPE .EQ. JGAS) THEN
+         CALL TITLER('KR-GASSCF wave function optimization','*',110)
+      ELSE
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '*** ERROR in KRMCHI *** Unknown MCTYPE : ',MCTYPE
+         CALL QUIT('*** ERROR in KRMCHI *** Unknown MCTYPE!')
+      END IF
+C
+      WRITE(LUPRI,9000)
+ 9000 FORMAT(/,1X,78('*'),//,
+     &     3X,'This is output from DIRAC KR-MCSCF',/,
+     &     3X,' - a relativistic four-component second order ',
+     &     'restricted-step ',/,
+     &     6X,'MCSCF wave function optimization program.',
+     &     ///,
+     &     3X,'General structure: ',/,
+     &     3X,'Joern Thyssen and Hans Joergen Aa. Jensen ',//,
+     &     3X,'Linear equation and eigenvalue solver: ',/,
+     &     3X,'Hans Joergen Aa. Jensen, Trond Saue, ',
+     &     'and Joern Thyssen',//,
+     &     3X,'Integral transformation: ',/,
+     &     3X,'Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
+     &     3X,'KRMC-GOSCI CI code: ',/,
+     &     3X,'Joern Thyssen ',
+     &     '(based on ideas from GOSCIP/Molfdir by O. Visser)',//,
+     &     3X,'LUCIAREL CI code: ',/,
+     &     3X,'Jeppe Olsen and Timo Fleig',/,
+     &     ////,
+     &     3X,'``Aha!''''                             ',
+     &     '- Fysiska poem, Linkoepings Universitet',///,
+     &     1X,78('*'),//)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcdao */
+      SUBROUTINE KRMCDAO(TYPE,DCAO,DVAO,WORK,LWORK)
+C***********************************************************************
+C
+C     Get AO density matrices.
+C
+C     TYPE controls which density matrix is calculated:
+C
+C     For any number of electrons:
+C
+C     TYPE = '+': D_{pq} = <0|X^+_{pq}|0>
+C     TYPE = '-': D_{pq} = <0|X^-_{pq}|0>
+C     
+C     For an odd number of electrons:
+C
+C     TYPE = 's': D_{pq} = <0|p^{\dagger}q|0>
+C
+C     Written by J. Thyssen - Feb 2 2001
+C     Last revision : 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+C
+      DIMENSION DCAO(*), DVAO(*)
+      DIMENSION WORK(*)
+      CHARACTER TYPE*2
+C
+C     Get wave function
+C     -----------------
+C
+c      CALL MEMGET('REAL
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rh1diag */
+      SUBROUTINE RH1DIAG(CMO,WORK,LWORK)
+C***********************************************************************
+C
+C     Obtain orbitals from diagonalization of H1.
+C
+C     Written by J. Thyssen - Mar 3 2001
+C     Last revision : 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+#include <dcbopt.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+C
+      DIMENSION CMO(*)
+      DIMENSION WORK(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('RH1DIAG')
+C
+C     Get one-electron Fock matrix
+C
+      CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KH1MO,N2ORBTQ,WORK,KFREE,LFREE)
+      CALL DIRH1(WORK(KH1AO),IPROPT,WORK(KFREE),LFREE)
+C
+C     Transform H1DIAG to MO-basis
+C     ----------------------------
+C
 
-
+C
+C     Get TMAT (AO-MO transformation)
+C
+      LUTMAT = 3
+      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','RH1DIAG')
+      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+      CLOSE(LUTMAT,STATUS='KEEP')
+C
+C     Transform to MO basis
+C
+      DO I = 1, NFSYM
+         CALL QTRANS('AOMO','S',D0,
+     &        NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &        WORK(KH1AO+I2BASX(I,I)),
+     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &        WORK(KH1MO+I2ORBT(I)),
+     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &        WORK(KTMAT+I2TMT(I)),
+     &        NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &        WORK(KTMAT+I2TMT(I)),
+     &        NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &        WORK(KFREE),LFREE,IPROPT)
+      END DO
+C
+C
+C
+C     Diagonalize H1DIAG
+C
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL DFDIAG(WORK(KH1MO),WORK(KEIG),WORK(KIBEIG),WORK(KH1AO),
+     &     WORK,KFREE,LFREE)
+C
+C     Backtransform to current MO basis
+C
+      DO I = 1, NFSYM
+         IF(NORB(I).GT.0) THEN
+C           
+            CALL BCKTRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &           WORK(KH1AO+I2ORBT(I)),NORB(I),NORB(I),
+     &           NORB(I),NZ,NORB(I),1,NFBAS(I,0),
+     &           WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
+     &           IPROPT)
+C           
+         END IF
+      END DO
+C
+      CALL MEMREL('RH1DIAG',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('RH1DIAG')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck RSMPAR */
+      SUBROUTINE RSMPAR(GPOE,GPOP,JXOPE,NXOPE,NHOPE,JXOPP,NXOPP,
+     &                  THRCOM,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
+C
+C     This routine is a direct rip from REDPAR (../prp/pamset.F), 
+C     except that the new vectors are returned along with
+C     their new sizes. Also, we don't try to compress conf.
+C     variables.
+C     Also remember to handle redundant e-e rotations (active-active)
+C     correctly.
+C
+C     Reduce number of parameters by deleting parameters
+C     for which the corresponding gradient element is
+C     below threshold THRCOM
+C
+C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0 = 0.0D0,DC = 100.0D0)
+C
+#include <dgroup.h>
+C
+      DIMENSION GPOE(*),GPOP(*)
+      DIMENSION WORK(*)
+      DIMENSION JXOPE(2,*),JXOPP(2,*)
+C
+      KFRSAV = KFREE
+      IF(IPRINT.GE.3) WRITE(LUPRI,'(/1X,A,1P,D15.6)')
+     &     'RSMPAR: compression threshold = ',THRCOM
+C
+      write(6,*) 'before'
+      CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
+     &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
+      IF(NXOPE.GT.0) THEN
+         CALL MEMGET('REAL',KBUF,NXOPE*NZ,WORK,KFREE,LFREE)
+         II = 0
+         III = 0
+         DO I = 1,NHOPE
+            DTST = D0
+            IZOFF = 0
+            DO IZ = 1,NZ
+               DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
+               IZOFF = IZOFF + NXOPE
+            ENDDO
+            IF(SQRT(DTST).GE.THRCOM) THEN
+               II = II + 1
+               IF (I .LE. NXOPE) III = III + 1
+               JXOPE(1,II) = JXOPE(1,I)
+               JXOPE(2,II) = JXOPE(2,I)
+               IOFF = KBUF-1
+               JOFF = 0
+               DO IZ = 1,NZ
+                  WORK(IOFF+II) = GPOE(JOFF+I)
+                  IOFF = IOFF + NXOPE
+                  JOFF = JOFF + NXOPE
+               ENDDO
+            ENDIF
+         ENDDO
+         WRITE(LUPRI,9000)
+         IF(II.LT.NXOPE) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+               CALL DCOPY(II,WORK(IOFF),1,GPOE(JOFF),1)
+               IOFF = IOFF + NXOPE
+               JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.3) THEN
+               DTST = DC*(NXOPE-II)/NXOPE
+               WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,II,III,DTST
+            ENDIF
+            NHOPE  = II
+            NXOPE  = III
+         ELSE
+            WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+         ENDIF
+         CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
+      ENDIF      
+      write(6,*) 'after'
+      CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
+     &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
+ 9000 FORMAT(3X,'Type',T10,'Before',T30,'After',T50,'Reduction')
+ 9001 FORMAT(3X,A,T10,I5,T18,'(',I5,')',T30,I5,T38,'(',I5,')',
+     &     T50,F5.1,'%')
+C
+C     e-p orbital rotations
+C     =====================
+C
+      IF(NXOPP.GT.0) THEN
+        CALL MEMGET('REAL',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
+        II = 0
+        DO I = 1,NXOPP
+          DTST = D0
+          IZOFF = 0
+          DO IZ = 1,NZ
+            DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
+            IZOFF = IZOFF + NXOPP
+          ENDDO
+          IF(SQRT(DTST).GE.THRCOM) THEN
+            II = II + 1
+            JXOPP(1,II) = JXOPP(1,I)
+            JXOPP(2,II) = JXOPP(2,I)
+            IOFF = KBUF-1
+            JOFF = 0
+            DO IZ = 1,NZ
+              WORK(IOFF+II) = GPOP(JOFF+I)
+              IOFF = IOFF + NXOPP
+              JOFF = JOFF + NXOPP
+            ENDDO
+          ENDIF
+        ENDDO
+        WRITE(LUPRI,9000)
+        IF(II.LT.NXOPP) THEN
+          IOFF = KBUF
+          JOFF = 1
+          DO IZ = 1,NZ
+            CALL DCOPY(II,WORK(IOFF),1,GPOP(JOFF),1)
+            IOFF = IOFF + NXOPP
+            JOFF = JOFF + II
+          ENDDO
+          IF(IPRINT.GE.3) THEN
+            DTST = DC*(NXOPP-II)/NXOPP
+            WRITE(LUPRI,9001) 'e-p',NHOPE,NXOPE,II,III,DTST
+          ENDIF
+          NXOPP  = II
+        ENDIF
+        CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
+      ENDIF      
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck fsmrot */
+      SUBROUTINE FSMROT(NOROT,THR,GOEE,JXOPE,NXOPE,GOEP,JXOPP,NXOPP,
+     &        WORK,LWORK)
+C***********************************************************************
+C
+C     Find orbitals we can freeze.
+C
+C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <consts.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION GOEE(*),GOEP(*)
+      DIMENSION WORK(*)
+      DIMENSION JXOPE(2,*),JXOPP(2,*)
+      DIMENSION NOROT(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('FSMROT')
+C
+      CALL MEMGET('REAL',KGRAD,N2ORBXQ,WORK,KFREE,LFREE)
+C
+C     Scatter gradients into matrix
+C
+      CALL DZERO(WORK(KGRAD),N2ORBXQ)
+      CALL XOPSCT(GOEE,JXOPE,NXOPE,WORK(KGRAD),NORBT,NZ)
+      CALL XOPSCT(GOEP,JXOPP,NXOPP,WORK(KGRAD),NORBT,NZ)
+C
+      CALL FULMAT('A',NORBT,NORBT,WORK(KGRAD))
+      DO IZ = 2, NZ
+         CALL FULMAT('S',NORBT,NORBT,WORK(KGRAD))
+      END DO
+      write(6,*) 'fsmrot full matrix'
+      call prqmat(work(kgrad),norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),6)
+C
+      NBEFORE = NORBT - ISUM(NORBT,NOROT,1)
+C
+      CALL FSMRO1(NOROT,THR,WORK(KGRAD))
+C
+      NAFTER = NORBT - ISUM(NORBT,NOROT,1)
+C
+      WRITE(LUPRI,'(1X,A,I4,A,I4)')
+     &     'FSMROT: Orbitals before: ',NBEFORE,
+     &     ', orbitals after: ',NAFTER
+C
+      CALL MEMREL('FSMROT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('FSMROT')
+      RETURN
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck fsmro1 */
+      SUBROUTINE FSMRO1(NOROT,THR,GRAD)
+C***********************************************************************
+C
+C     Find orbitals we can freeze.
+C
+C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <consts.h>
+#include <maxorb.h>
+#include <maxash.h>
+C
+#include <dcbidx.h>
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
+C
+      write(6,*) 'threshold',thr
+      DO 10 I = 1, NORBT
+C        ...don't remove occupied orbitals.
+         IF (IOBTYP(I) .EQ. JTINAC .OR. IOBTYP(I) .EQ. JTACT) GOTO 10
+         DN = D0
+         DO IZ = 1, NZ
+            DN = DN + DDOT(NORBT,GRAD(1,I,IZ),1,GRAD(1,I,IZ),1)
+         END DO
+         DN = SQRT(DN)
+         write(6,*) 'orbital ',I,' norm = ',dn
+         IF (DN .LE. THR) NOROT(I) = 1
+ 10   CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck rmrot */
+      SUBROUTINE RMROT(NOROT,GOEE,JXOPE,NXOPE,NHOPE,
+     &        GOEP,JXOPP,NXOPP,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Remove orbital rotations.
+C
+C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <consts.h>
+      PARAMETER( DC = 1.0D2 )
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION GOEE(*),GOEP(*)
+      DIMENSION WORK(*)
+      DIMENSION JXOPE(2,*),JXOPP(2,*)
+      DIMENSION NOROT(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('RMROT')
+C
+      IF (IPRINT .GE. 3) WRITE(LUPRI,9000)
+C
+      IF (NHOPE .GT. 0) THEN
+C
+         CALL MEMGET('REAL',KBUF,NHOPE*NZ,WORK,KFREE,LFREE)
+C
+C
+         II = 0
+         III = 0
+         DO I = 1, NHOPE
+            J1 = JXOPE(1,I)
+            J2 = JXOPE(2,I)
+            IF (NOROT(J1) .EQ. 0 .AND. NOROT(J2) .EQ. 0 ) THEN
+               II = II + 1
+               IF (I .LE. NXOPE) III = III + 1
+C              
+               JXOPE(1,II) = JXOPE(1,I)
+               JXOPE(2,II) = JXOPE(2,I)
+               IOFF = KBUF-1
+               JOFF = 0
+               DO IZ = 1,NZ
+                  WORK(IOFF+II) = GOEE(JOFF+I)
+                  IOFF = IOFF + NXOPE
+                  JOFF = JOFF + NXOPE
+               ENDDO
+            END IF
+         END DO
+         IF(II.LT.NHOPE) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+               CALL DCOPY(II,WORK(IOFF),1,GOEE(JOFF),1)
+               IOFF = IOFF + NHOPE
+               JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.3) THEN
+               DTST = DC*(NHOPE-II)/NHOPE
+               WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,II,III,DTST
+            ENDIF
+            NHOPE  = II
+            NXOPE  = III
+         ELSE
+            WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+         ENDIF
+         CALL MEMREL('RMROT.ee',WORK,KWORK,KWORK,KFREE,LFREE)
+      ENDIF      
+C
+      IF (NXOPP .GT. 0) THEN
+        CALL MEMGET('REAL',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
+C
+         II = 0
+         DO I = 1, NXOPP
+            J1 = JXOPP(1,I)
+            J2 = JXOPP(2,I)
+            IF (NOROT(J1) .EQ. 0 .AND. NOROT(J2) .EQ. 0 ) THEN
+               II = II + 1
+C              
+               JXOPE(1,II) = JXOPE(1,I)
+               JXOPE(2,II) = JXOPE(2,I)
+               IOFF = KBUF-1
+               JOFF = 0
+               DO IZ = 1,NZ
+                  WORK(IOFF+II) = GOEP(JOFF+I)
+                  IOFF = IOFF + NXOPP
+                  JOFF = JOFF + NXOPP
+               ENDDO
+            END IF
+         END DO
+         WRITE(LUPRI,9000)
+         IF(II.LT.NXOPP) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+               CALL DCOPY(II,WORK(IOFF),1,GOEP(JOFF),1)
+               IOFF = IOFF + NXOPP
+               JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.3) THEN
+               DTST = DC*(NXOPP-II)/NXOPP
+               WRITE(LUPRI,9002) 'e-p',NXOPP,II,DTST
+            ENDIF
+            NHOPE  = II
+            NXOPE  = III
+         ELSE
+            WRITE(LUPRI,9002) 'e-p',NXOPP,NXOPP,D0
+         ENDIF
+         CALL MEMREL('RMROT.ep',WORK,KWORK,KWORK,KFREE,LFREE)
+      END IF
+C
+ 9000 FORMAT(3X,'Type',T10,'Before',T30,'After',T50,'Reduction')
+ 9001 FORMAT(3X,A,T10,I5,T18,'(',I5,')',T30,I5,T38,'(',I5,')',
+     &     T50,F5.1,'%')
+ 9002 FORMAT(3X,A,T10,I5,T30,I5,T50,F5.1,'%')
+C
+      CALL QEXIT('RMROT')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck svldeg */
+      SUBROUTINE SVLDEG(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
+     &        DV,FC,FV,FQ,CMO,IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Do singular value decomposition of gradient.
+C
+C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+C
+#include <consts.h>
+C
+#include <dcbnrt.h>
+#include <dcbgen.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+C
+      DIMENSION GOEE(NXOPE,*), GOEP(NXOPP,*), JXOPE(*), JXOPP(*)
+      DIMENSION FC(*), FV(*), CMO(*), FQ(NORBT,NASHT,*), DV(*)
+      DIMENSION WORK(*)
+C
+      DIMENSION JMO(2), NMO(2)
+      DIMENSION DFAC(2)
+C
+#include <memint.h>
+C
+      CALL QENTER('SVLDEG')
+C
+C     Make canonical orbitals for inactive and virtual orbitals
+C     ---------------------------------------------------------
+      write(6,*) 'fq before trans'
+      call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+     &     ipqtoq(1,0),lupri)
+C
+      CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KU,N2ORBXQ,WORK,KFREE,LFREE)
+C
+      CALL DCOPY(N2ORBXQ,FC,1,WORK(KFD),1)
+      CALL DAXPY(N2ORBXQ,D1,FV,1,WORK(KFD),1)
+C
+      CALL CANORB('I',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
+C
+      CALL ROTFC('I',WORK(KU),FC,WORK(KFREE),LFREE)
+      CALL ROTFC('I',WORK(KU),FV,WORK(KFREE),LFREE)
+      CALL ROTFQ('I',WORK(KU),FQ,WORK(KFREE),LFREE)
+      CALL ROTORB('I',WORK(KU),CMO,WORK(KFREE),LFREE)
+C
+      CALL CANORB('V',WORK(KFD),WORK(KU),WORK(KFREE),LFREE)
+C
+      CALL ROTFC('V',WORK(KU),FC,WORK(KFREE),LFREE)
+      CALL ROTFC('V',WORK(KU),FV,WORK(KFREE),LFREE)
+      CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
+      CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
+C
+      write(6,*) 'fq after trans'
+      call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+     &     ipqtoq(1,0),lupri)
+C
+C
+C     Calculate trial vector
+C     ----------------------
+C
+      CALL MEMGET('REAL',KBEE,NXOPE*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBEP,NXOPP*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHEE,NXOPE,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHEP,NXOPP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFPV,NASHT*NORBT*NZ,WORK,KFREE,LFREE)
+C
+C     Calculate diagonal part of Hessian
+C
+      CALL FGEN_PV(FC,FQ,DV,WORK(KFPV),IPQTOQ(1,0),IPRINT)
+      CALL E2ODI1(WORK(KHEE),FC,FV,DV,WORK(KFPV),JXOPE,NXOPE)
+      CALL E2ODI1(WORK(KHEP),FC,FV,DV,WORK(KFPV),JXOPP,NXOPP)
+C
+C     Save generalized Fock matrix (F_{pv})
+C
+      CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),LFPV)
+C
+C     Trial vector
+C     (FIXME: avoid divi by zero)
+C
+      J = 0
+      DO IZ = 1, NZ
+         DO I = 1, NXOPE
+            J = J + 1
+            WORK(KBEE+J-1) = GOEE(I,IZ) / WORK(KHEE+I-1)
+         END DO
+      END DO
+      J = 0
+      DO IZ = 1, NZ
+         DO I = 1, NXOPP
+            J = J + 1
+            WORK(KBEP+J-1) = GOEP(I,IZ) / WORK(KHEP+I-1)
+         END DO
+      END DO
+C
+C     
+C     Calculate transformation to SV orbitals
+C     ---------------------------------------
+C
+      CALL DCOPY(NORBT,NOROT,1,NOROTC,1)
+C
+      IF (NXOPE .GT. 0) THEN
+C
+         CALL SVLDE1('E',.TRUE.,.TRUE.,
+     &        GOEE,WORK(KBEE),JXOPE,NXOPE,
+     &        WORK(KU),NOROTC,WORK(KFREE),LFREE)
+C
+         CALL ROTFC('V',WORK(KU),FC,WORK(KFREE),LFREE)
+         CALL ROTFC('V',WORK(KU),FV,WORK(KFREE),LFREE)
+         CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
+         CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
+C
+      END IF
+      IF (NXOPP .GT. 0) THEN
+C
+         CALL SVLDE1('P',.TRUE.,.TRUE.,
+     &        GOEP,WORK(KBEP),JXOPP,NXOPP,
+     &        WORK(KU),NOROT,WORK(KFREE),LFREE)
+C
+         CALL ROTFC('P',WORK(KU),FC,WORK(KFREE),LFREE)
+         CALL ROTFC('P',WORK(KU),FV,WORK(KFREE),LFREE)
+         CALL ROTFQ('P',WORK(KU),FQ,WORK(KFREE),LFREE)
+         CALL ROTORB('P',WORK(KU),CMO,WORK(KFREE),LFREE)
+C
+      END IF
+C
+      CALL IWRTMA(NOROTC,NORBT,1,NORBT,1)
+C
+C
+C     Calculate new gradient
+C
+      DFAC(1) = D1
+      DFAC(2) = DM1
+C
+      LFPV = NZ*NASHT*NORBT
+      IF (NXOPE .GT. 0) THEN
+         CALL DZERO(GOEE,NZ*NXOPE)
+         CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEE,
+     &        JXOPE,NXOPE,WORK(KFPV),DFAC,
+     &        IPQTOQ(1,0),IPRINT)
+      END IF
+      IF (NXOPP .GT. 0) THEN
+         CALL DZERO(GOEP,NZ*NXOPP)
+         CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEE,
+     &        JXOPP,NXOPP,WORK(KFPV),DFAC,
+     &        IPQTOQ(1,0),IPRINT)
+      END IF
+C
+      write(6,*) 'new gradient'
+      CALL RPRKAP(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
+     &     NZ,IPQTOQ(1,0),LUPRI)
+C
+      CALL MEMREL('SVLDEG',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('SVLDEG')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck svlde1 */
+      SUBROUTINE SVLDE1(C,DOGRAD,DOTRI,
+     &     GO,BO,JXOP,NXOP,U,NOROT,WORK,LWORK)
+C***********************************************************************
+C
+C     Do singular value decomposition of gradient.
+C
+C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+C
+#include <consts.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      CHARACTER*1 C
+      LOGICAL DOGRAD, DOTRI
+      DIMENSION GO(*), BO(*)
+      DIMENSION JXOP(2,*)
+      DIMENSION U(*)
+      DIMENSION NOROT(*)
+      DIMENSION WORK(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('SVLDE1')
+C
+      IF (C .EQ. 'E') THEN
+         CALL MEMGET('REAL',KVEC,2 * (NASHT+NISHT) * NSSHT,
+     &        WORK,KFREE,LFREE)
+         NDIM = NSSHT
+      ELSE IF (C .EQ. 'P') THEN
+         CALL MEMGET('REAL',KVEC,2 * (NASHT+NISHT) * NPSHT,
+     &        WORK,KFREE,LFREE)
+         NDIM = NPSHT
+      ELSE
+         WRITE(LUPRI,'(2A)')
+     &        '*** ERROR in SVLDE1 *** Unknown control character: ',C
+         CALL QUIT('*** ERROR in SVLDE1 *** Unknown control character')
+      END IF
+C
+      IF (DOGRAD) THEN
+         IF (DOTRI) THEN
+            CALL SVLDE2(C,DOGRAD,DOTRI,
+     &           GO,BO,JXOP,NXOP,U,NOROT,
+     &           WORK(KVEC),2*NISHT+2*NASHT,NDIM,WORK(KFREE),LFREE)
+         ELSE
+            CALL SVLDE2(C,DOGRAD,DOTRI,
+     &           GO,DUMMY,JXOP,NXOP,U,NOROT,
+     &           WORK(KVEC),NISHT+NASHT,NDIM,WORK(KFREE),LFREE)
+         END IF
+      ELSE
+         IF (DOTRI) THEN
+            CALL SVLDE2(C,DOTRI,DOGRAD,
+     &           BO,DUMMY,JXOP,NXOP,U,NOROT,
+     &           WORK(KVEC),NISHT+NASHT,NDIM,WORK(KFREE),LFREE)
+         ELSE
+            write(6,*) 'both DOGRAD and DOTRI false!'
+            call quit('*** ERROR in SVLDE1 ***')
+         END IF
+      END IF
+C
+      CALL MEMREL('SVLDE2',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('SVLDE1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck svlde2 */
+      SUBROUTINE SVLDE2(C,DOGRAD,DOTRI,
+     &     GO,BO,JXOP,NXOP,U,NOROT,VEC,NR,NC,WORK,LWORK)
+C***********************************************************************
+C
+C     Do singular value decomposition of gradient.
+C
+C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <maxash.h>
+C
+#include <consts.h>
+#include <thrzer.h>
+C
+#include <dcborb.h>
+#include <dcbidx.h>
+#include <dgroup.h>
+C
+      CHARACTER*1 C
+      LOGICAL DOGRAD, DOTRI
+      DIMENSION GO(NXOP,*), BO(NXOP,*)
+      DIMENSION JXOP(2,*)
+      DIMENSION U(*)
+      DIMENSION NOROT(*)
+      DIMENSION VEC(NR,NC,NZ)
+      DIMENSION WORK(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('SVLDE2')
+C
+      CALL DZERO(VEC,NR*NC*NZ)
+C
+      IF (C .EQ. 'E') THEN
+C
+         DO I = 1, NXOP
+            K = JXOP(1,I)
+            L = JXOP(2,I)
+            IF (IOBTYP(L) .EQ. JTSEC) THEN
+               IF (IOBTYP(K) .EQ. JTINAC) THEN
+                  KK = IDXG2I(K)
+               ELSE
+                  KK = IDXG2U(K) + NISHT
+               END IF
+               LL = IDXG2V(L)
+C
+               IF (DOGRAD) THEN
+                  DO IZ = 1, NZ
+                     VEC(KK,LL,IZ) = GO(I,IZ)
+                  END DO
+               END IF
+               IF (DOTRI) THEN
+                  DO IZ = 1, NZ
+                     VEC(KK+NISHT+NASHT,LL,IZ) = BO(I,IZ)
+                  END DO
+               END IF
+            END IF
+         END DO
+C
+      ELSE
+         call quit('write me')
+      END IF
+C
+      CALL MEMGET('REAL',KVEC,NC*NC*NZ,WORK,KFREE,LFREE)
+C
+C
+C     Calculate V^{\dagger} V
+C     -----------------------
+C
+      CALL QGEMM(NC,NC,NR,D1,
+     &     'H','N',IPQTOQ(1,0),VEC,NR,NC,NZ,
+     &     'N','N',IPQTOQ(1,0),VEC,NR,NC,NZ,
+     &     D0,IPQTOQ(1,0),WORK(KVEC),NC,NC,NZ)
+C
+C
+C     Diagonalize matrix
+C     ------------------
+C
+      CALL MEMGET('REAL',KEIG,NC,WORK,KFREE,LFREE)
+C
+      IF (NZ .EQ. 1) THEN
+         IJOB = 1
+         IORDER = 0
+         IPACK = 0
+         CALL RSJACO(NC,NC,NC,WORK(KVEC),WORK(KEIG),
+     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+      ELSE
+         MATZ = 1
+         CALL QDIAG(NZ,NC,WORK(KVEC),NC,NC,
+     &        WORK(KEIG),MATZ,U,NC,NC,
+     &        WORK(KFREE),LFREE,IERR)
+         IF (IERR .NE. 0) THEN
+            WRITE(LUPRI,'(/,1X,2A,I4)')
+     &           '*** ERROR in SVLDE2 ***: ',
+     &           'QDIAG failed with error code ',IERR
+            CALL QUIT('*** ERROR in SVLDE2 ***')
+         END IF
+      END IF
+C
+      write(6,*) 'eigenvalues'
+      CALL OUTPUT(WORK(KEIG),1,NC,1,1,NC,1,1,6)
+C
+      IF (C .EQ. 'E') THEN
+         DO I = 1, NSSHT
+            IF ( ABS(WORK(KEIG+I-1)) .LE. THRZER) THEN
+               II = IDXV2G(I)
+               write(6,*) 'removing virtual ',I,II
+               NOROT(II) = 1
+            END IF
+         END DO
+      ELSE
+         DO I = 1, NPSHT
+            IF ( ABS(WORK(KEIG+I-1)) .LE. THRZER) THEN
+               II = IDXP2G(I)
+               write(6,*) 'removing positronic ',I,II
+               NOROT(II) = 1
+            END IF
+         END DO
+      END IF
+C
+      CALL MEMREL('SVLDE2',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('SVLDE2')
+      RETURN
+      END

@@ -1,7 +1,7 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgrdinf */
       SUBROUTINE RGRDINF(GCI,GOEE,GOEP)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate norm of gradient
 C
@@ -20,7 +20,7 @@ C
 C     Written by J. Thyssen - Nov 3 1998
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -28,8 +28,9 @@ C
 C
 #include <dcbopt.h>
 #include <dcbkrmc_itinfo.h>
+#include <dgroup.h>
 C
-      DIMENSION GCI(*),GOEE(*),GOEP(*)
+      DIMENSION GCI(NZCONF,*),GOEE(NZHOPE,*),GOEP(NZXOPP,*)
 C
       CALL QENTER('RGRDINF')
 C
@@ -38,21 +39,12 @@ C
       ELSE
          GCINRM = D0
       END IF
-      IF (NZXOPT .GT. 0) THEN
-         IF (NZXOPE .GT. 0) THEN
-            GOBEENRM = DNORM2(NZXOPEQ,GOEE,1)
-         ELSE
-            GOBEENRM = D0
-         END IF
-         IF (NZXOPP .GT. 0) THEN
-            GOBEPNRM = DNORM2(NZXOPPQ,GOEP,1)
-         ELSE
-            GOBEPNRM = D0
-         END IF
-      ELSE
-         GOBEENRM = D0
-         GOBEPNRM = D0
-      END IF
+      GOBEENRM = DNORM2(NZXOPE,GOEE(1,1),1)
+      DO IZ = 2, NZ
+         GOBEENRM = GOBEENRM + DNORM2(NZXOPE,GOEE(1,IZ),1)
+      END DO
+      GOBEPNRM = DNORM2(NZXOPPQ,GOEP,1)
+C
       GNORM(1) = GCINRM
       GNORM(2) = GOBEENRM
       GNORM(3) = GOBEPNRM
@@ -67,17 +59,17 @@ C
       CALL QEXIT('RGRDINF')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rcigrad */
-      SUBROUTINE RCIGRAD(CREF,FCAC,H2AC,GCI,EMCACT,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE RCIGRAD(CREF,FCAC,H2AC,GCI,EMCACT,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Calculate CI gradient
 C
 C     Input:
 C        CREF    - CI vector
-C        FCAC    - FC Fock matrix with active indeces
-C        H2AC    - Two-electron integrals with active indeces
+C        FCAC    - FC Fock matrix with active indices
+C        H2AC    - Two-electron integrals with active indices
 C        EMCACT  - active energy
 C
 C     Output:
@@ -86,7 +78,7 @@ C
 C     Written by J. Thyssen - Nov 20 2000
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -101,27 +93,17 @@ C
       DIMENSION FCAC(*)
       DIMENSION H2AC(*)
       DIMENSION GCI(*)
-      DIMENSION WORK(LWORK)
-C
-#include <memint.h>
+      DIMENSION WORK(*)
 C
       CALL QENTER('RCIGRAD')
+      CALL RTKTIME(.TRUE.,10)
 C
 C     Calculate CI gradient
 C     ---------------------
 C
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
 C
-         CALL RCIGRAD_GOSCI(CREF,FCAC,H2AC,GCI,EMCACX,IPROPT,
-     &        WORK(KFREE),LFREE)
-C
-      ELSE
-         WRITE(LUPRI,'(/,A,/,2A)')
-     $        '*** ERROR in RCIGRAD ***',
-     $        'gradient not implemented for CI program ',
-     $        OPT_CIPROGRAM
-         CALL QUIT('*** ERROR in RCIGRAD ***')
-      END IF
+      CALL RCIGRD1(CREF,WORK(KZCONF),FCAC,H2AC,GCI,EMCACX,
+     &             IPROPT,WORK,KFREE,LFREE)
 C
 C     Consistency check of active energy
 C     ----------------------------------
@@ -142,24 +124,26 @@ C
      &           EMCACT,EMCACX
          END IF
       END IF
- 9000 FORMAT(1P,//,A,/,3X,'Active energy from DV and PV:',D25.15,
-     &     /,3X,'Active energy from RCIGRAD:  ',D25.15,/)
+ 9000 FORMAT(1P,//,A,
+     &     /,1X,'(RCIGRAD) Active energy from DV and PV:',D25.15,
+     &     /,1X,'(RCIGRAD) Active energy from RCIGRAD:  ',D25.15,/)
 C
+      CALL RTKTIME(.FALSE.,10)
       CALL QEXIT('RCIGRAD')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rcigrad_gosci */
-      SUBROUTINE RCIGRAD_GOSCI(CREF,FCAC,H2AC,GCI,EMCACT,
-     &     IPRINT,WORK,LWORK)
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rcigrd1 */
+      SUBROUTINE RCIGRD1(CREF,IDET,FCAC,H2AC,GCI,EMCACT,
+     &                   IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
 C
-C     Calculate CI gradient with CI program GOSCI.
+C     Calculate CI gradient.
 C
 C     Input:
 C        CREF    - CI vector
-C        FCAC    - FC Fock matrix with active indeces
-C        H2AC    - Two-electron integrals with active indeces
+C        FCAC    - FC Fock matrix with active indices
+C        H2AC    - Two-electron integrals with active indices
 C        EMCACT  - active energy
 C
 C     Output:
@@ -168,50 +152,39 @@ C
 C     Written by J. Thyssen - Nov 20 2000
 C     Last revision : 
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      PARAMETER ( D1 = 1.0D00, DM1 = -D1, D0 = 0.0D00, D2 = 2.0D00 )
+#include <consts.h>
+#include <thrzer.h>
 C
 #include <dcbopt.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbgen.h>
 C
-      DIMENSION CREF(NZCONF,2)
-      DIMENSION FCAC(*)
-      DIMENSION H2AC(*)
-      DIMENSION GCI(NZCONF,2)
-      DIMENSION WORK(LWORK)
+      DIMENSION CREF(NZCONF,*), GCI(NZCONF,*)
+      DIMENSION FCAC(*), H2AC(*)
+      DIMENSION WORK(*)
       DIMENSION EMC(2)
+      DIMENSION IDET(*)
 C
-#include <memint.h>
+      CALL QENTER('RCIGRD1')
+      KFRSAV = KFREE
 C
-      CALL QENTER('RCIGRAD_GOSCI')
+      MZ = MIN(2,NZ)
 C
 C     ***************************************************
 C     *** Calculate CI matrix times reference vector. ***
 C     ***************************************************
 C
-C     In princinple we would do this direct, i.e. calculating a
-C     CI sigma vector. Instead we do it the ``easy'' way:
-C
-C     - calculate CI matrix
-C     - do a matrix x vector multiplication
-C
-C     Calculate CI matrix
-C     ===================
-C
-C
 C     Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
 C     ---------------------------------------------------------------
 C
-      CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN0(NZ,2),
+      CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN(NZ,2),
      $     WORK,KFREE,LFREE)
-      CALL QFC2MFC(FCAC,WORK(KMOLFFC),IPROPT)
-      CALL GOSCI_SETONE(WORK(KMOLFFC),2*NASHT)
-      CALL MEMREL('after RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QFC2MFC(FCAC,WORK(KMOLFFC),1,1,IPROPT)
 C
 C     Transform integrals from Dirac (NZ,3) basis to Molfdir basis
 C     ------------------------------------------------------------
@@ -221,94 +194,133 @@ C
 C
       CALL DNZ32M(H2AC,WORK(KMUUUU),IPROPT)
 C
-C     Construct Hamiltonian:
-C     ----------------------
-C
-      NZCONF2 = NZCONF ** 2
-      CALL MEMGET('REAL',KHR,NZCONF2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHI,NZCONF2,WORK,KFREE,LFREE)
-C
-      CALL DZERO(WORK(KHR),NZCONF2)
-      CALL DZERO(WORK(KHI),NZCONF2)
-      CALL GOSCI_MAKEH(WORK(KHR),WORK(KHI), WORK(KMUUUU))
-C
 C     Calculate CI matrix times reference vector
 C     ------------------------------------------
 C
-C     Real part: real(H) * real(CREF) - imag(H) * imag(CREF)
+      CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
 C
-C     real(H) * real(CREF):
+      IF ( OPT_CIPROGRAM .EQ. 'GOSCI') THEN
+C        Calculate CI gradient with CI program GOSCI.
+         CALL GOSCI_SVC(.TRUE.,WORK(KDIAG),GCI,WORK(KZCONF),CREF,
+     &        WORK(KMOLFFC),WORK(KMUUUU))
+C        CALL GOSCI_SVC(SAVDIA,DIAG,SCVEC,IDET,BCVEC,HCORE,VMUUUU)
+      ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C
-      CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
-     &     WORK(KHR),NZCONF,
-     &     CREF(1,1),NZCONF,
-     &     D0,GCI(1,1),NZCONF)
+         CALL LUCI_SIGMA(.TRUE.,WORK(KDIAG),CREF,GCI,
+     &                   WORK(KMOLFFC),WORK(KMUUUU),WORK(KFREE),LFREE)
 C
-      IF (NZ .GE. 2) THEN
-C
-C        imag(H) * imag(CREF):
-C
-         CALL DGEMM('N','N',NZCONF,1,NZCONF,DM1,
-     &        WORK(KHI),NZCONF,
-     &        CREF(1,2),NZCONF,
-     &        D1,GCI(1,1),NZCONF)
-C
-C
-C        Imaginary part: real(H) * imag(CREF) + imag(H) * real(CREF)
-C
-C        real(H) * imag(CREF):
-C
-         CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
-     &        WORK(KHR),NZCONF,
-     &        CREF(1,2),NZCONF,
-     &        D0,GCI(1,2),NZCONF)
-C
-C        imag(H) * real(CREF):
-C
-         CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
-     &        WORK(KHI),NZCONF,
-     &        CREF(1,1),NZCONF,
-     &        D1,GCI(1,2),NZCONF)
-C
+      ELSE
+         WRITE(LUPRI,'(/A/2A)')
+     $        '*** ERROR in RCIGRD1 ***',
+     $        'gradient not implemented for CI program ',
+     $        OPT_CIPROGRAM
+         CALL QUIT('*** ERROR in RCIGRD1 ***')
       END IF
 C
-      IF ( IPRINT .GE. 0 ) THEN
-         CALL HEADER('Output from RCIGRAD_GOSCI:',-1)
-         WRITE(LUPRI,'(1X,A)') 'H * CREF, real part'
-         CALL OUTPUT(GCI(1,1),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
-         IF (NZ .GE. 2) THEN
-            WRITE(LUPRI,'(1X,A)') 'H * CREF, imag part'
-            CALL OUTPUT(GCI(1,2),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
-         END IF
+      IF ( IPRINT .GE. 20 ) THEN
+         WRITE(LUPRI,'(/A)')
+     &        ' (RCIGRD1) H|0>'
+         CALL OUTPUT(GCI(1,1),1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+         WRITE(LUPRI,'(/A)')
+     &        ' (RCIGRD1) Diagonal of H'
+         CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
       END IF
 C
 C
 C     Calculate active energy
 C     -----------------------
 C
+C     EACTIVE = <0|H|0> = <0 * H|0>
+C                       = CREF^{\dagger} GCI
+C     (since GCI is the sigma vector)
+C
 C     Real part of energy:
 C
       EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
 C
       IF (NZ .GE. 2) THEN
-         EMC(1) = EMC(1) - DDOT(NZCONF,CREF(1,2),1,GCI(1,2),1)
+         EMC(1) = EMC(1) + DDOT(NZCONF,CREF(1,2),1,GCI(1,2),1)
          EMC(2) =
-     &        DDOT(NZCONF,CREF(1,1),1,GCI(1,2),1)
-     &        + DDOT(NZCONF,CREF(1,2),1,GCI(1,1),1)
+     &        - DDOT(NZCONF,CREF(1,2),1,GCI(1,1),1)
+     &        + DDOT(NZCONF,CREF(1,1),1,GCI(1,2),1)
       ELSE
          EMC(2) = D0
       END IF
       IF (IPRINT .GE. 0 .OR. EMC(2) .NE. D0) THEN
-         WRITE(LUPRI,'(1P,2/,1X,A,2(/,3X,A,D25.15),2/)')
-     &        'Active energy from CI gradient module:',
+         WRITE(LUPRI,9000)
+     &        '(RCIGRD1) Active energy from CI gradient module:',
      &        'Real part: ', EMC(1),
      &        'Imag part: ', EMC(2)
-         IF ( EMC(2) .NE. D0) THEN
-            WRITE(LUPRI,'(2/,A,/,A,2/)')
+         IF ( ABS(EMC(2)) .GT. THRZER) THEN
+            WRITE(LUPRI,'(//,2A,//)')
      &           '*** WARNING ***',
      &           'Active energy is imaginary!'
          END IF
       END IF
+C
+ 9000 FORMAT(1P,//,1X,A,2(/,5X,A,D25.15),//)
+#ifdef UNDEF
+C
+C     Allocate memory for matrices:
+C
+      NZCONF2 = NZCONF ** 2
+      CALL MEMGET('REAL',KHR,NZCONF2 * 2,WORK,KFREE,LFREE)
+      KHI = KHR + NZCONF2
+C
+C     Construct Hamiltonian:
+C     ----------------------
+C
+      CALL DZERO(WORK(KHR),NZCONF2)
+      CALL DZERO(WORK(KHI),NZCONF2)
+      CALL GOSCI_MAKEH(IDET,WORK(KHR),WORK(KHI),
+     &     WORK(KMOLFFC),WORK(KMUUUU))
+      write(6,*) 'debug hamil'
+      call prqmat(work(khr),nzconf,nzconf,nzconf,nzconf,
+     &     min(nz,2),ipqtoq(1,0),lupri)
+C
+      mz = min(nz,2)
+      call qgemm(nzconf,1,nzconf,1.0d00,
+     &     'N','N',ipqtoq(1,0),work(khr),nzconf,nzconf,mz,
+     &     'N','N',ipqtoq(1,0),cref,nzconf,1,mz,
+     &     0.0d00,ipqtoq(1,0),gci,nzconf,1,mz)
+      write(6,*) 'debug H|0>'
+      call output(gci,1,nzconf,1,min(nz,2),nzconf,2,1,6)
+      write(6,*) 'sigma vector'
+      do i = 1, nzconf
+         write(6,*) gci(I,1),gci(i,2)
+      end do
+C
+C     Calculate active energy
+C     -----------------------
+C
+C     EACTIVE = <0|H|0> = <0 * H|0>
+C                       = CREF^{\dagger} GCI
+C     (since GCI is the sigma vector)
+C
+C     Real part of energy:
+C
+      EMC(1) = DDOT(NZCONF,CREF(1,1),1,GCI(1,1),1)
+C
+      IF (NZ .GE. 2) THEN
+         EMC(1) = EMC(1) + DDOT(NZCONF,CREF(1,2),1,GCI(1,2),1)
+         EMC(2) =
+     &        - DDOT(NZCONF,CREF(1,2),1,GCI(1,1),1)
+     &        + DDOT(NZCONF,CREF(1,1),1,GCI(1,2),1)
+      ELSE
+         EMC(2) = D0
+      END IF
+      IF (IPRINT .GE. 0 .OR. EMC(2) .NE. D0) THEN
+         WRITE(LUPRI,9000)
+     &        '(RCIGRD1) Active energy from CI gradient module:',
+     &        'Real part: ', EMC(1),
+     &        'Imag part: ', EMC(2)
+         IF ( ABS(EMC(2)) .GT. THRZER) THEN
+            WRITE(LUPRI,'(//,2A,//)')
+     &           '*** WARNING ***',
+     &           'Active energy is imaginary!'
+         END IF
+      END IF
+#endif
 C
 C
       EMCACT = EMC(1)
@@ -324,13 +336,10 @@ C
          END DO
       END DO
 C
-      IF (IPRINT .GE. 0) THEN
-         WRITE(LUPRI,'(1X,A)') 'CI gradient, real part'
-         CALL OUTPUT(GCI(1,1),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
-         IF (NZ .GE. 2) THEN
-            WRITE(LUPRI,'(1X,A)') 'CI gradient, imag part'
-            CALL OUTPUT(GCI(1,2),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
-         END IF
+      IF (IPRINT .GE. 20) THEN
+         WRITE(LUPRI,'(A)')
+     &        ' (RCIGRD1) CI gradient'
+         CALL OUTPUT(GCI(1,1),1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
       END IF
 C
 C     Save diagonal of Hessian
@@ -342,24 +351,113 @@ C
 C     E^{[2]c^*c}_{\mu,\mu} = <\mu|H|\mu> - E[0] 
 C        - 2 Re ( g_{\mu} C_{\mu} )
 C
-      CALL MEMGET('REAL',KHCDIAG,NZCONF,WORK,KFREE,LFREE)
-C
       DO I = 1, NZCONF
-         WORK(KHCDIAG + I - 1) =
-     &        WORK(KHR + (I-1) + (I-1) * NZCONF) - EMCACT
+         WORK(KDIAG + I - 1) = WORK(KDIAG + I - 1) - EMCACT
      &        - D2 * GCI(I,1) * CREF(I,1)
-         IF (NZ .GE. 2) 
-     &        WORK(KHCDIAG + I - 1) = 
-     &        WORK(KHCDIAG + I - 1) + D2 * GCI(I,2) * CREF(I,2)
+         IF (NZ .GE. 2) THEN
+            WORK(KDIAG + I - 1) = WORK(KDIAG + I - 1)
+     &           + D2 * GCI(I,2) * CREF(I,2)
+         END IF
       END DO
-      IF (IPRINT .GE. 0) THEN
-         WRITE(LUPRI,'(1X,A)') 'E2 conf. diagonal'
-         CALL OUTPUT(WORK(KHCDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
+      IF (IPRINT .GE. 20) THEN
+         WRITE(LUPRI,'(A)')
+     &        ' (RCIGRD1) configurational E[2] diagonal'
+         CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
       END IF
-      CALL WRTKRMC(LUKRM3,'E2CDIAG ',WORK(KHCDIAG),NZCONF)
+      CALL WRTKRMC(LUKRM3,'E2CDIAG ',WORK(KDIAG),NZCONF)
 C
-      CALL MEMREL('E2 diag',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('E2 diag',WORK,1,KFRSAV,KFREE,LFREE)
 C
-      CALL QEXIT('RCIGRAD_GOSCI')
+      CALL QEXIT('RCIGRD1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck reogp */
+      SUBROUTINE REOGP(NZXOPE,NZHOPE,NZ,G,GR)
+C***********************************************************************
+C
+C     Reorder gradient (see comments in DIRNR).
+C
+C     Input:
+C       G - gradient
+C       NZ{X,H}OP and NZ - dimensions
+C
+C     Output:
+C       GR - reordered gradient
+C
+C     Written by J. Thyssen - Jan 19 2001
+C     Last revision : 
+C
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION G(NZHOPE,*)
+      DIMENSION GR(*)
+C
+      write(6,*) 'gradient on entry'
+      call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
+C
+      II = 1
+      DO IZ = 1, NZ
+         CALL DCOPY(NZXOPE,G(1,IZ),1,GR(II),1)
+         II = II + NZXOPE
+      END DO
+      DO IZ = 1, NZ
+         CALL DCOPY(NZHOPE - NZXOPE,G(1+NZXOPE,IZ),1,GR(II),1)
+         II = II + NZHOPE - NZXOPE
+      END DO
+C
+      write(6,*) 'gradient on exit, non-red'
+      call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+      write(6,*) 'gradient on exit, non-red'
+      call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+     &     nz,1,6)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck invreogp */
+      SUBROUTINE INVREOGP(NZXOPE,NZHOPE,NZ,G,GR)
+C***********************************************************************
+C
+C     Inverse of REOGP.
+C
+C     Input:
+C       GR - reduced gradient
+C       NZ{X,H}OP and NZ - dimensions
+C
+C     Output:
+C       G - gradient
+C
+C     Written by J. Thyssen - Jan 19 2001
+C     Last revision : 
+C
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION G(NZHOPE,*)
+      DIMENSION GR(*)
+C
+      write(6,*) 'gradient on entry, non-red'
+      call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+      write(6,*) 'gradient on entry, non-red'
+      call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+     &     nz,1,6)
+C
+      II = 1
+      DO IZ = 1, NZ
+         CALL DCOPY(NZXOPE,GR(II),1,G(1,IZ),1)
+         II = II + NZXOPE
+      END DO
+      DO IZ = 1, NZ
+         CALL DCOPY(NZHOPE - NZXOPE,GR(II),1,G(1+NZXOPE,IZ),1)
+         II = II + NZHOPE - NZXOPE
+      END DO
+C
+      write(6,*) 'gradient on exit'
+      call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
       RETURN
       END
