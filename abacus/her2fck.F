@@ -859,9 +859,11 @@ C
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Subroutine SKLFC1',-1)
-         CALL HEADER("Input skeleton Fock matrix in SKLFC1",1)
-         DO 10 N = 1, NMAT
-            CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
+         CALL HEADER("Input skeleton Fock matrices in SKLFC1",1)
+         DO 10 IMAT = 1, NMAT
+            WRITE (LUPRI,*) 'Input skeleton Fock matrix no.',IMAT,
+     &         ' out of',NMAT
+            CALL OUTPUT(FMAT(1,1,IMAT),1,NBASIS,1,NBASIS,
      &                                NBASIS,NBASIS,1,LUPRI)
    10    CONTINUE
       END IF
@@ -874,13 +876,13 @@ C         (see comments in INTFCK)
 C     /941019-hjaaj
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER("Final skeleton Fock matrices in SKLFC1",1)
+         CALL HEADER("Final scaled skeleton Fock matrices in SKLFC1",1)
       END IF
       DO 100 IMAT = 1, NMAT
          IY = MOD(IFCTYP(IMAT),10)
          IX = IFCTYP(IMAT)/10
          FAC = D2I
-         IF(IX.EQ.0) FAC = D8I
+         IF(IX.EQ.0) FAC = D4I
          CALL DSCAL(NBASIS*NBASIS,FAC,FMAT(1,1,IMAT),1)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,*) 'Skeleton Fock matrix no.',IMAT,
@@ -1024,8 +1026,10 @@ C
          FAC = D1/SDPRE(MAXREP + 1)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("AO Fock matrix in SKLFC1",1)
+            CALL HEADER("AO Fock matrices in SKLFC1",1)
             DO 40 N = 1, NMAT
+               WRITE (LUPRI,*) 'AO Fock matrix no.',IMAT,
+     &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
      &                                   NBASIS,NBASIS,1,LUPRI)
    40       CONTINUE
@@ -1155,6 +1159,8 @@ CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("SO Fock matrix in SKLFC1",1)
             DO 700 N = 1, NMAT
+               WRITE (LUPRI,*) 'SO Fock matrix no.',IMAT,
+     &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
      &                     1,LUPRI)
   700       CONTINUE

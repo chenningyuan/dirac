@@ -669,10 +669,15 @@ C
 C         ... no Coulomb term for antisymmetric density matrix
           IF (HFXFAC.EQ.D0) IE = 0
 C
-          IF(IX.EQ.3 .AND. IREPAB.NE.IREPDM(K)) IC = 0
-C         ... IX.eq.3 in DIRAC: check if Coulomb contribution zero
-C             by symmetry /hjaaj Apr 2002
-C             (IREPDM gives the symmetric component of the packed DMAT)
+          IF(IPREDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
+C         ... IREPDM(K) is either the symmetry of the density matrix
+C             or - in Dirac with NZ .lt. 4 and packed matrices (SOFOCK) -
+C             the symmetry of the only symmetry block of the density matrix
+C             which gives a Coulomb contribution (for IX .eq. 3 this will
+C             be the symmetric component of the packed DMAT, for IX .eq. 0
+C             in quadratic response all blocks are unsymmetric but only
+C             the block of symmetry IREPDM(K) shall give a Coulomb contribution).
+C             / hjaaj July 2004
 C
 C         Screening on Coulomb contributions
           IF(DOC.AND.IC.NE.0) THEN
