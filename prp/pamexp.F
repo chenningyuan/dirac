@@ -298,6 +298,9 @@ C.........Transform property matrix to fragment orbital basis
      &                  IPREXP,PMAT,WORK,KFREE,LFREE)
             CALL PRSYMB(LUPRI,'-',76,0)
           ENDIF
+          IF(PRPCAN) THEN
+            CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
+          ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
@@ -355,6 +358,9 @@ C...........Transform property matrix to fragment orbital basis
      &     'Total : ',EXPVAL(I),'a.u.',
      &     LEXPST(1,I),LEXPST(2,I)
           CALL PRSYMB(LUPRI,'-',60,4)
+          IF(PRPCAN) THEN
+            CALL EXPCAN(INDXPR,PMAT,CMO,IPREXP,WORK,KFREE,LFREE)
+          ENDIF
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
             CALL PRJEX2(EXPVAL(I),PTRI,WORK(KPFMT),WORK(KDFMT),
      &                  WORK(KBVEC),
@@ -1372,5 +1378,161 @@ C
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
         IPB = IPB + NCNT(IFRP)*NMO(IFRP)*NZ
  10   CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Exploc */
+      SUBROUTINE EXPCAN(INDXPR,PAO,CMO,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Generate property canonical occupied orbitals,
+C     that is orbitals that diagonalize the matrix of 
+C     property INDXPR
+C
+C     Input:
+C       PAO - property matrix in AO-basis
+C       CMO - molecular orbital coefficients
+C
+C     Written by T. Saue Jan 20 2005 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dgroup.h"
+      DIMENSION PAO(*),CMO(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Read eigenvalues and boson irrep information
+C
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12,
+     &               WORK,KFREE,LFREE)
+      DO IFRP = 1,NFSYM
+C       Memory allocation
+        CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
+     &              WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KSCO,NISH(IFRP)*NFBAS(IFRP,0)*NZ,
+     &              WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KUCO,NISH(IFRP)*NISH(IFRP)*NZ,
+     &              WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPEI,NISH(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KSEL,NISH(IFRP),WORK,KFREE,LFREE)
+C       Select occupied molecular orbitals
+        CALL ORBLO3(WORK(KSEL),NISH(IFRP))
+        CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KSCO),NISH(IFRP),
+     &              WORK(KSEL),D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
+        CALL MEMREL('EXPCAN.sel',WORK,KSEL,KSEL,KFREE,LFREE)
+C       Generate canonical property orbitals
+        CALL EXPCA1(INDXPR,IFRP,PAO(I2BASX(IFRP,IFRP)+1),
+     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),WORK(KEIG+IORB(IFRP)),
+     &              WORK(KSCO),WORK(KUCO),WORK(KPEI),
+     &              IPRINT,WORK,KFREE,LFREE)
+C      
+        CALL MEMREL('EXPCAN.1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      ENDDO
+C     Write new coefficients
+      IUNIT = 2
+      CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
+      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG)
+      CLOSE(IUNIT,STATUS='KEEP')
+C     Read old coefficients
+      REWIND LUCOEF
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2,
+     &               WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL MEMREL('EXPCAN.2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Explo1 */
+      SUBROUTINE EXPCA1(INDXPR,IFRP,PAO,PMO,CMO,EIG,SCO,UCO,PEIG,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Generate property canonical occupied orbitals,
+C     that is orbitals that diagonalize the matrix of 
+C     property INDXPR
+C
+C     Input:
+C       PAO - property matrix in AO-basis
+C       CMO - molecular orbital coefficients
+C
+C     Written by T. Saue Jan 20 2005 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      CHARACTER MXFORM*6,FMT*6
+      DIMENSION PAO(*),PMO(*),SCO(*),UCO(*),CMO(*),EIG(*),
+     &          PEIG(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Generate property matrix
+C
+      CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &            NISH(IFRP),NISH(IFRP),
+     &            PAO,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &            PMO,NISH(IFRP),NISH(IFRP),NZ,IPQTOQ(1,0),
+     &            SCO,NFBAS(IFRP,0),NISH(IFRP),NZ,IPQTOQ(1,0),
+     &            SCO,NFBAS(IFRP,0),NISH(IFRP),NZ,IPQTOQ(1,0),
+     &            WORK(KFREE),LFREE,IPRINT)
+      IF(IPRINT.GE.1) THEN
+        WRITE(LUPRI,*) '* Property matrix:'
+        CALL PRQMAT(PMO,NISH(IFRP),NISH(IFRP),NISH(IFRP),NISH(IFRP),
+     &            NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+C     Diagonalize
+C
+      CALL QDIAG(NZ,NISH(IFRP),PMO,NISH(IFRP),NISH(IFRP),
+     &           PEIG,1,UCO,NISH(IFRP),NISH(IFRP),
+     &           WORK(KFREE),LFREE,IERR)
+C
+C     Write eigenvalues
+C
+      WRITE(LUPRI,*) '* Eigenvalues:'
+      TMP = D0
+      DO I = 1,NISH(IFRP)
+        FMT = MXFORM(PEIG(I),15)
+        WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')
+     &        FREP(1),I,PEIG(I),'a.u.'
+      ENDDO
+      TMP = DSUM(NISH(IFRP),PEIG,1)
+      FMT = MXFORM(TMP,15)
+      WRITE(LUPRI,'(4X,A8,3X,'//FMT//',1X,A4)')
+     &     'Total : ',TMP,'a.u.'
+      IOFF = NPSH(IFRP)+1
+      CALL DCOPY(NISH(IFRP),PEIG,1,EIG(IOFF),1)
+C
+C     Write eigenvectors
+C
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) '* Eigenvectors:'
+        CALL PRQMAT(UCO,NISH(IFRP),NISH(IFRP),NISH(IFRP),NISH(IFRP),NZ,
+     &            IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+C     Backtransform
+C
+      IOFF = NFBAS(IFRP,0)*NPSH(IFRP)+1
+      CALL QGEMM(NFBAS(IFRP,0),NISH(IFRP),NISH(IFRP),D1,
+     &           'N','N',IPQTOQ(1,0),SCO,NFBAS(IFRP,0),NISH(IFRP),NZ,
+     &           'N','N',IPQTOQ(1,0),UCO,NISH(IFRP),NISH(IFRP),NZ,
+     &           D0,IPQTOQ(1,0),CMO(IOFF),NFBAS(IFRP,0),NORB(IFRP),NZ)
       RETURN
       END

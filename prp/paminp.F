@@ -499,7 +499,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPCAN','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -523,6 +523,7 @@ C
       NEXPP  = 0
       ORBANA = .FALSE.
       PRJANA = .FALSE.
+      PRPCAN = .FALSE.
 C
 C     Process input for DCBEXP
 C     =========================
@@ -574,6 +575,8 @@ C&&&& PROJEC: Analyze expectation value in terms of fragment orbitals
                PRJANA = .TRUE.
                GO TO 100
     5          CONTINUE
+C&&&& PRPCAN: Generate canonical occupied property orbitals
+               PRPCAN = .TRUE.
                GO TO 100
     6          CONTINUE
                GO TO 100
@@ -602,6 +605,10 @@ C
      &   '* Expectation values analyzed in terms of '
         IF(ORBANA) WRITE(LUPRI,'(3X,A)') '- individual orbitals'
         IF(PRJANA) WRITE(LUPRI,'(3X,A)') '- fragment orbitals'
+      ENDIF
+      IF(PRPCAN) THEN
+        WRITE(LUPRI,'(A)') 
+     &     '* Generating canonical orbitals for each property.'
       ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ICHANG.GT.0) THEN
@@ -1135,7 +1142,7 @@ C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C
 
-      IF (IPRINT .GT. 6) THEN
+      IF (IPRINT .GE. 6) THEN
          WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
      &   'XPRADD called for specifying PCOMB;',
      &   '  PNAME   =',PNAME,
@@ -1156,12 +1163,12 @@ C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
       ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
 C ... fix the LS block for the LevyLe option
          PCOMB = '00+0'
-        IF (IPRINT.GT.6) WRITE(LUPRI,'(A)')
+        IF (IPRINT.GE.6) WRITE(LUPRI,'(A)')
      &   '  Only the LS block for the LevyLe-RDSUSLL operator!'
       ELSE IF ((PNAME(1:5).EQ.'d|S>/'.OR.PNAME(1:3).EQ.'dS/').AND.BSS)
      &     THEN
          PCOMB='+000'
-        IF (IPRINT.GT.6) WRITE(LUPRI,'(A)')
+        IF (IPRINT.GE.6) WRITE(LUPRI,'(A)')
      & '  Only the LL block for connection matrixes in two-comp.mode!'
       ELSE
          IF (IPTYP.LT.1 .OR. IPTYP.GT.19)
@@ -1211,7 +1218,7 @@ CMI ... pilot Dirac bare nucleus (from subroutine OP1INI)
       END IF
 
 CMI ... inform about the assigned PCOMB
-      IF (IPRINT .GT. 6) THEN
+      IF (IPRINT .GE. 6) THEN
          WRITE(LUPRI,'(A,A4)') ' assigned PCOMB:',PCOMB
       END IF
 C
