@@ -94,7 +94,7 @@ typedef struct
 
 /* Function prototypes */
 
-int read_dyall_pVTZ (BASIS *basis_set, ATOOM atoms[]);
+int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[]);
 int read_dyall_atom (FILE *file, ATOOM *atom);
 int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[]);
 void read_block (FILE *file, int n_exp, int n_orbs, double *exponent, double *coefficient);
@@ -117,7 +117,7 @@ int main(void)
     
     /*set_element_name (element_name);*/
     
-    ierr = read_dyall_pVTZ (&basis_set, atoms);
+    ierr = read_dyall_pVDZ (&basis_set, atoms);
     
     write_dalton_style (basis_set, &atoms[0]);
     printf("Error code %i \n",ierr);
@@ -126,9 +126,9 @@ int main(void)
 }
 /* ============================================================================================================== */
 
-int read_dyall_pVTZ (BASIS *basis_set, ATOOM atoms[])
+int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
 
-/* Function to read the pVTZ basis from the archive file provided by K.G. Dyall 
+/* Function to read the pVDZ basis from the archive file provided by K.G. Dyall 
    Return values :  0 - Normal completion
                     1 - Error while reading file
  */
@@ -141,11 +141,11 @@ int read_dyall_pVTZ (BASIS *basis_set, ATOOM atoms[])
     int l_max, n_extra[MAX_LVALUE+1];
     
     /* Open the file */ 
-    dyall_file = fopen("Dyall.tz", "r");        
+    dyall_file = fopen("Dyall.dz", "r");        
     if (dyall_file == NULL) return 1;
     
     /* Initialize the fixed elements for this basis */
-    strcpy(basis_set->name,"Dyall.VTZ");
+    strcpy(basis_set->name,"Dyall.VDZ");
     basis_set->type = non_family;
     basis_set->contraction = general;
     basis_set->number_of_atoms = 0; 
@@ -343,8 +343,8 @@ int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[])
             fscanf(file,"%le",&additional[i]);
 
         /* Fix for uncontracted sets as combine_blocks will not detect identical exponents
-           Do not take the d-polarization functions into account as they are already in the original set */
-        if (l <= 2) continue;
+           Do not take the f-polarization functions into account if they are already in the original set */
+          if (l == 3 && atom->n_block[0][l][0] > 0) continue;
 
         for (lj=0; lj<2; lj++)
         {
@@ -593,7 +593,7 @@ void write_block (FILE *file, int n_exp, int n_orbs, double *exp_start, double *
             fprintf(file, DALTON_COEFFICIENT_FORMAT, *coefficient); /* Write the coefficient */
             coefficient++;                                          /* Point to the next coefficient */
             /* 6 coefficients should be written to line 1, 7 to the following lines */
-            if ( (j+1)%7 == 0) fprintf(file, "\n");
+            if ( (j+1)%7 == 0 && j+1<n_orbs ) fprintf(file, "\n");
         }
         fprintf(file, "\n");
     }
