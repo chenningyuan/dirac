@@ -9,11 +9,18 @@
 # for this purpose to make this better maintainable.
 #
 LOC=`pwd`
-PAMDIR=~/bin
-MEMORY=100
-QUEUE=ppwr4
-MPI_NPROC=4
-TIME=15m
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Installation specfic variables : chose the right defaults for your system
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+QSYS=LoadLeveler
+PAMDIR=$HOME/bin
+DEFAULT_MW=100
+DEFAULT_NW=100
+DEFAULT_QUEUE=default
+DEFAULT_MPI_NPROC=4
+DEFAULT_TIME=15m
 #
 # Process relevant arguments
 all_arguments="$*"
@@ -21,7 +28,11 @@ while [ $# != 2 ]; do
    argv="$1"; shift
    case "${argv}" in
       -mw)
-         let MEMORY=$1*1000000
+         MW=$1
+         shift
+         ;;
+      -nw)
+         NW=$1
          shift
          ;;
        -mpi)
@@ -42,20 +53,52 @@ argv="$1";shift; MOL=$argv
 argv="$1";shift; MENU=$argv
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Take the default when variables for pam are not set by the user
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
+if [  -z "$MW" ]; then
+   MW=$DEFAULT_MW;
+   all_arguments="-mw $MW $all_arguments"
+fi
+if [  -z "$NW" ]; then
+   NW=$DEFAULT_NW;
+   all_arguments="-nw $NW $all_arguments"
+fi
+if [  -z "$MPI_NPROC" ]; then
+   MPI_NPROC=$DEFAULT_MPI_NPROC;
+   all_arguments="-mpi $MPI_NPROC $all_arguments"
+fi
+#  The next two variables need not be passed to pam as the queuing system will take care.
+if [  -z "$TIME" ]; then
+   TIME=$DEFAULT_TIME;
+fi
+if [  -z "$QUEUE" ]; then
+   QUEUE=$DEFAULT_QUEUE;
+fi
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# Compute memory required for this job
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+let MEM_IN_MWORDS=$MW+$NW*($MPI_NPROC-1)
+let MEM_IN_KBYTES=$MEM_IN_MWORDS*8192
+let MEM_IN_MBYTES=$MEM_IN_MWORDS*8
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # Convert time to proper units
-#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 case $TIME in
   *m)
-   wallt="0:`basename $TIME m`:0"
+   wallt_ll="0:`basename $TIME m`:0"
+   wallt_bsub="0:`basename $TIME m`"
   ;;
   *h)
-   wallt="`basename $TIME h`:0:0"
+   wallt_ll="`basename $TIME h`:0:0"
+   wallt_bsub="`basename $TIME h`:0:0"
   ;;
   *)
-   echo "Wallclock time incorrect";
+   echo "Wallclock time incorrect; specify in minutes or hours as 15m or 6h.";
    exit 1
   ;;
 esac
@@ -72,18 +115,36 @@ esac
 jobname=${MENU}_${MOL}
 jobinp=job_$$
 jobout=$jobname.$$.log
-#### IBM's loadleveller ########
-set JTYPE=parallel
-set REQUIRE=""
-set CLASS=""
+case $QSYS in
+#### SGI's bsub ########
+  bsub)
+#
+#  Create jobinp file
+#
+cat <<EOJ >$jobinp
+#
+# change to original directory
+#
+cd $LOC
+#
+# execute pam shell script
+#
+$PAMDIR/pam $all_arguments
+EOJ
+bsub -M $MEM_IN_KBYTES -n $MPI_NPROC -o $jobout -J $jobname -W $wallt_bsub $QUEUEQ < $jobinp
+#################### End of bsub code #####
+;;
+#### IBM's LoadLeveler ########
+  LoadLeveler)
+JTYPE=parallel
+REQUIRE="(Memory >= $MEM_IN_MBYTES)"
+CLASS=""
 case $QUEUE in
-  ppwr4)
-    REQUIRE="(OpSys == \"AIX51\")"
-    CLASS="ppwr4"
+  default)
   ;;
-  p-test)
-    REQUIRE="(OpSys == \"AIX51\")"
-    CLASS="p-test"
+  ppwr4)
+    REQUIRE="$REQUIRE && (OpSys == \"AIX51\")"
+    CLASS="ppwr4"
   ;;
   *)
     echo " unknown queue $QUEUE"
@@ -133,7 +194,7 @@ EOJ
 fi
 
 cat <<EOJ >> $jobinp
-# @ wall_clock_limit = $wallt
+# @ wall_clock_limit = $wallt_ll
 # @ environment = LLSHELL=$SHELL;ENVIRONMENT=BATCH;
 # @ notification = never
 # @ queue
@@ -142,7 +203,6 @@ cat <<EOJ >> $jobinp
 # change to original directory
 #
 cd $LOC
-
 #
 # execute pam shell script
 #
@@ -151,7 +211,10 @@ $PAMDIR/pam $all_arguments
 
 EOJ
 llsubmit $jobinp
-#################### End of Load leveller specific code #####
+#################### End of Load Leveler specific code #####
+;;
+esac
+#################### End of case statement for queues #####
 #
 # Clean up : remove the job
 #
