@@ -8,6 +8,5 @@
  *
  */
 
-#include <stdlib.h>
 
-void *diracmalloc(size_t size)
+int *diracmalloc(int size)

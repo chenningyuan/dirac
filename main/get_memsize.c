@@ -25,7 +25,6 @@
    char *strwrk,*str;
    int lwrkmm,ierr,returncode;
 
-   strwrk = (char *) diracmalloc(20);
    str    = (char *) diracmalloc(20);
    if (mytid == 0)
    {
@@ -33,9 +32,8 @@
    }
    else
    {
-      strcpy(str,"DIRWRK");
+      strcpy(str,"DIRNOD");
    }
-
    strwrk = getenv(str);
    returncode = 0;
    if (strwrk != NULL)
@@ -46,7 +44,6 @@
          returncode = 1;
       }
    }
-   free(strwrk);
    free(str);
    return returncode;
 }

@@ -28,7 +28,7 @@ void main()
 {
 
    int mytid, size, parcal, mparid, numnod, errhandler;
-   void *mempointer;
+   int *mempointer;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
    real cpu_start, cpu_end, wall_start, wall_end;
 #else

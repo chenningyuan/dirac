@@ -8,4 +8,4 @@
  *
  */
 
-void *alloc_mem(int mytid, int *size)
+int *alloc_mem(int mytid, int *size)

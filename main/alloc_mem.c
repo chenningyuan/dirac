@@ -25,16 +25,12 @@
 #include "alloc_mem.head"
 
 {
-   if (get_memsize(mytid,size))
+   if (! get_memsize(mytid,size))
    {
-      printf("DIRAC allocating %i words of memory\n",*size);
-      return diracmalloc((*size)*8);
+      *size = INSTALL_WRKMEM;
    }
-   else
-   {
-      printf("DIRAC allocating %i words of memory\n", INSTALL_WRKMEM );
-      return diracmalloc( INSTALL_WRKMEM*8 );
-   }
+   printf("DIRAC allocating %i words of memory\n",*size);
+   return diracmalloc(8*(*size));
 }
 
 

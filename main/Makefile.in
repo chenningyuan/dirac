@@ -39,27 +39,19 @@ DIRAC_OBJS       = dirac.o
 MAIN_OBJS        = $(DIRACMALLOC_OBJS) $(ALLOC_MEM_OBJS)  $(GET_MEMSIZE_OBJS) \
                    $(DIRAC_MAIN_OBJS)  $(PRINT_LOGO_OBJS) $(DIRAC_OBJS) \
                    $(INI_MPI_OBJS)     $(END_MPI_OBJS)    $(CSECTID_OBJS) \
-                   $(EXEC_DIRAC_OBJS)  $(PR_TIMING_OBJS)
+                   $(EXEC_DIRAC_OBJS)  $(PR_TIMING_OBJS)  $(MPI_ERRTRAP_OBJS)
 
 MAIN_SRC         = $(DIRACMALLOC_SRC) $(ALLOC_MEM_SRC)  $(GET_MEMSIZE_SRC) \
                    $(DIRAC_MAIN_SRC)  $(PRINT_LOGO_SRC) $(DIRAC_SRC) \
                    $(INI_MPI_SRC)     $(END_MPI_SRC)    $(CSECTID_SRC) \
-                   $(EXEC_DIRAC_SRC)  $(PR_TIMING_SRC)
-
-MPI_OBJS         = $(MPI_ERRTRAP_OBJS)
-
-MPI_SRC          = $(MPI_ERRTRAP_SRC)
+                   $(EXEC_DIRAC_SRC)  $(PR_TIMING_SRC)  $(MPI_ERRTRAP_SRC)
 
 all:	$(MAIN_OBJS)
-
-mpi:    $(MPI_OBJS)
 
 depend:
 	makedepend -- $(INCLUDE_DIR) $(CCP_FLAGS) -- $(MAIN_SRC)
 
-mpidepend:
-	makedepend -- $(INCLUDE_DIR) $(CCP_FLAGS) -- $(MPI_SRC)
-
-
+clean:
+	$(RM) -f *.o *~ *.f *.lst *.i
 
 # DO NOT DELETE

@@ -8,6 +8,10 @@
  *
  */
 
+#if defined (VAR_MPI)
 #include <mpi.h>
 
 void mpi_errtrap(MPI_Comm *comm, int *err)
+#else
+void mpi_errtrap(int *bla1, int *bla2)
+#endif

@@ -9,4 +9,4 @@
  */
 
 void exec_dirac(int *parcal, int *mytid, int *mparid, int *numnod, \
-                void *mempointer, int *size)
+                int *mempointer, int *size)
