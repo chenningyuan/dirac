@@ -224,13 +224,13 @@ C
 C     Harmonic constant
 C     ==================
 C
-      FORCE = POL2DER(NORDER,C,XOPT)
-      TEMP  = FORCE*XTJ/XTM/XTM
+      V2 = POL2DER(NORDER,C,XOPT)
+      TEMP  = V2*XTJ/XTM/XTM
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
-      OMEGA = SQRT(FORCE/UM)
+      OMEGA = SQRT(V2/UM)
       WRITE(LUPRI,'(A,1P,E12.5,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
      &   '                   ',OMEGA*XTCM,' cm-1'
@@ -270,9 +270,13 @@ C     ===================
 C
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
+      TEMP = 7.0D0*V3*V3/V2/9.0D0
+      T2 = 100.0D0*(TEMP - V4)/V4
       WRITE(ILOGG,'(A,D20.10)')
-     &   '* Third derivative : ', V3,
-     &   '* Fourth derivative: ', V4
+     &   '* Third derivative                   : ', V3,
+     &   '* Fourth derivative                  : ', V4
+      WRITE(ILOGG,'(A,D20.10, F9.2,A)')
+     &   '* Fourth derivative (Morse estimate) : ', TEMP,T2,' \%'
       TEMP = D1/UM/OMEGA
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
