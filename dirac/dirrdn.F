@@ -1000,7 +1000,7 @@ C                               closed shell)
                GO TO 100
    30          CONTINUE
 C&&& DIISAO: Do jth Dalton like DIIS 
-#ifdef OPEN_MOD
+#ifdef MOD_OPEN
                   DIISAO = .TRUE.
                   DIISMO = .FALSE.
 #else
