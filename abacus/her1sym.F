@@ -165,6 +165,7 @@ C
 C     Element (I,J,IZ) in full quaternion matrix
       IQFULL(I,J,IZ) = MAX(I,J) + MIN(I-1,J-1) * NTBAS(0) +
      &     N2BBASX * (IZ-1) 
+      IOLDQFULL(I,J,IZ) = I + (J-1) * NTBAS(0) + N2BBASX * (IZ-1) 
 #endif 
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONESO1','*',103)
 C
@@ -177,7 +178,7 @@ C
       IF (IBTAND(ISYMOP,MAB) .NE. 0) THEN
          IF ( IBTAND ( ISYMOP, MULB ) .EQ. 0 ) THEN
             IDENB  = IDENB + KHKTB
-        END IF
+         END IF
          GOTO 100
       ELSE
          IDENB  = IDENB + KHKTB
@@ -287,6 +288,7 @@ Cjth - sib                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = D
                      END DO
                   ELSE
                      IDXAB = IQFULL(IORBA,IORBB,1)
+                     IDXAB = IOLDQFULL(IORBA,IORBB,1)
                      FSHELL(MAXCMP) = FAC*FOCMAT(IDXAB)
                      DSHELL(MAXCMP,1) = FAC*DENMAT(IDXAB)
                   END IF
