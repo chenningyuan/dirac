@@ -401,7 +401,6 @@ C***********************************************************************
 C
       DIMENSION WORK(*)
       PARAMETER ( D2 = 2.0D0 )
-      LOGICAL DOHYP
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -637,7 +636,6 @@ C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )
       CHARACTER PFMT*6,MXFORM*6,ALAB*8,BLAB*8
-      DIMENSION VECEEE(MZYEE,NZ),VECEEP(MZYEP,NZ)
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION RES_TPA(3,NBSYM,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION WORK(*)

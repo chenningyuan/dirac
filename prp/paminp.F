@@ -294,7 +294,11 @@ C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
+#if defined (MOD_XPP)
             CALL DEF_TPA(WORK,LWORK,DOTPA)
+#else
+            CALL QUIT('TPA not included in this version')
+#endif
             GO TO 100
 C&&&& .VERDET - Calculates the Verdet constant with the QR module
  125     CONTINUE

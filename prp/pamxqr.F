@@ -122,6 +122,7 @@ C
          NCQRFR = 1
          BQRFR(1) = D0
          CQRFR(1) = D0
+         XQR_LEVICI = .FALSE.
       END IF
       IPRXQR = 0
       THCQR  = 1.0D-5
@@ -364,6 +365,18 @@ C
       DOXQR = (NAQROP.GT.0.AND.NBQROP.GT.0.AND.NCQROP.GT.0).AND.
      &        (.NOT.DOTPA)
       IF ( .NOT.(DOXQR.OR.DOTPA) ) GOTO 999
+
+C     Don't do Verdet "optimization" if all combinations are
+C     requested.
+      IF (DOVER) THEN
+         IF (XQR_ALLCMB) THEN
+            WRITE (LUPRI,*) 
+     &           'WARNING: Option .ALLCMB disables Verdet final output.'
+         ELSE
+C     Generate only the needed functions
+            XQR_LEVICI = .TRUE.
+         ENDIF 
+      ENDIF 
 C
 C     Print section
 C
@@ -592,7 +605,18 @@ C
                CALL QRHYPCHK(LAQROP(IAOP),LBQROP(IBOP),LCQROP(ICOP),
      &              ISYMA,ISYMB,ISYMC,AFREQ,BQRFR(IBFR),CQRFR(ICFR),
      &              DOHYP)
-C
+c     ulfek: For XQR_LEVICI we only want combinations with 3 different
+c     cartesian indices (for .VERDET).
+               IF (XQR_LEVICI.AND.(
+     &              (PRPNAM(LAQROP(IAOP))(1:1).EQ.
+     &              PRPNAM(LBQROP(IBOP))(1:1)).OR.
+     &              (PRPNAM(LAQROP(IAOP))(1:1).EQ.
+     &              PRPNAM(LCQROP(ICOP))(1:1)).OR.
+     &              (PRPNAM(LCQROP(ICOP))(1:1).EQ.
+     &              PRPNAM(LBQROP(IBOP))(1:1)))) THEN
+                  DOHYP = .FALSE.
+               ENDIF
+c
                IF (DOHYP) THEN
                   NQRHYP = NQRHYP+1
                   IF (NQRHYP.LE.MAXQR) THEN
@@ -2891,7 +2915,7 @@ C
       CHARACTER T*1
 C
       DIMENSION FAO(N2BBASXQ),FMO(N2ORBXQ)
-      DIMENSION IQBF(4),T(-1:1),CMO(*),WORK(LWRK)
+      DIMENSION T(-1:1),CMO(*),WORK(LWRK)
 C
       CALL QENTER('QRFAOMO')
 C
@@ -3417,6 +3441,7 @@ C
       CALL PRSYMB(LUPRI,'-',70,1)
 C
       IF (DOVER) THEN
+         IF (XQR_LEVICI) THEN
 C
          CALL HEADER('Verdet Constants',-1)
          CALL PRSYMB(LUPRI,'-',70,1)
@@ -3460,6 +3485,9 @@ C
      &           VFACTOR*V*BQRFR(I)
          END DO
          CALL PRSYMB(LUPRI,'-',70,1)
+      ELSE
+         WRITE (LUPRI,*) 'Verdet output disabled due to .ALLCMB'
+      END IF
 C
 C     End of Verdet printout
 C

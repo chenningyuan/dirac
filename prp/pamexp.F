@@ -997,7 +997,7 @@ C
 C
       CALL QENTER('WEXPVTOF')
 C
-      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='NEW')
+      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='UNKNOWN')
       WRITE (LUCORP) (EXPVAL(I),I=1,NEXPP)
       CLOSE (LUCORP,STATUS='KEEP')
 C
@@ -1012,7 +1012,7 @@ C
 C     read expectation values from file
 C
 C     Written by Joost van Stralen, June 2002
-C
+C     
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1024,7 +1024,7 @@ C
 #include "dcbprp.h"
 C
       CALL QENTER('READEXPV')
-C
+C     
       CALL DZERO(EXPVAL,NEXPP)
 C
       INQUIRE(FILE='CORPROP',EXIST=TOBE)
@@ -1044,7 +1044,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck  */
+C  /* Deck exptot */
       SUBROUTINE EXPTOT(EXPVAL,EXP_CORR,EXP_TOT)
 C*****************************************************************************
 C

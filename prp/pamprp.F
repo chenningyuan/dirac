@@ -236,7 +236,9 @@ C
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
+#if defined (MOD_XPP)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
+#endif
       ENDIF
 C
 C***********************************************************************
@@ -1396,8 +1398,7 @@ C
       WRITE(LUPRI,'(14X,A)')
      &     'MP2 expectation values are documented in:',
      &     'J. N. P. van Stralen, L. Visscher, C. V. Larsen',
-     &     'and H. J. Aa Jensen, Chem. Phys. in press.',
-     &     ' '
+     &     'and H. J. Aa Jensen, Chem. Phys. (2004) in press.'
 C
       KFRSAV=KFREE
 C
