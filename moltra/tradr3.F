@@ -1284,11 +1284,15 @@ C
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM
 C
+#if defined (VAR_MPI)
       IF (PARCAL) THEN
          NODE = MYTID
       ELSE
          NODE = 0
       ENDIF
+#else
+      NODE = 0
+#endif
 C
  1000 FORMAT (A5,I5)
       WRITE (LFILNAM,1000) FILNAM,NODE
