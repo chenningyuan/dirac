@@ -323,3 +323,24 @@ C              SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
       end do
       return
       end
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
+* Read indices from file INDICES
+*
+      subroutine read_indices(IN,NINTS)
+#include "clunit.inc"
+      dimension IN(4,NINTS)
+*
+      open(unit=LUSC95,file='INDICES',
+     &       status='OLD',form='FORMATTED')
+      rewind(LUSC95)
+      do I=1,NINTS,1
+        read(LUSC95,'(4I4)') (IN(J,I),J=1,4)
+      end do
+      close(LUSC95)
+*
+      return
+      end

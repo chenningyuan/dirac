@@ -1218,7 +1218,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
-     &                            INDEX,
+C    &                            INDEX,
      &                            NASHT,F1,F2,IBOSYM,
      &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
@@ -1239,9 +1239,9 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
      &          NIAA_STR(MXPNGAS),NIAB_STR(MXPNGAS)
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
-     &          INDEX(4,NINT_CC),
+C    &          INDEX(4,NINT_CC),
      &          IBSPOBEX_TP(NSPOBEX_TP),LABEL(4,NSPOBEX_TP)
-      dimension I_ADD(4)
+      dimension I_ADD(4),INDEX(4)
 *
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
@@ -1315,8 +1315,11 @@ C   formalism !
         end if
       end if
 *
-* Loop over excitation types
-      write(6,*) 'Number of types:',NSPOBEX_TP
+* File for saving index sequence
+      LUINSV = LUSC95
+      open(unit=LUINSV,file='INDICES',
+     &     status='UNKNOWN',form='FORMATTED')
+      rewind(LUINSV)
 *
 * Loop over real/imaginary part
       ICOUNT = 1
@@ -1334,6 +1337,8 @@ C   formalism !
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           if (NTEST.ge.1) write(LUINGR,'(A)') 'INTEGRAL FILE'
         end if
+*
+* Loop over excitation types
         do IXTP=1,NSPOBEX_TP,1
 *
 * Check for correct pointers to type blocks
@@ -1481,12 +1486,12 @@ C   formalism !
                             IXCH = 0
 *
                             if (NEL_CA.eq.1.and.NEL_CB.eq.0) then
-                              INDEX(1,ICOUNT) 
+                              INDEX(1) 
      &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
-                              INDEX(2,ICOUNT) = 0
+                              INDEX(2) = 0
                             else if (NEL_CA.eq.0.and.NEL_CB.eq.1) then
-                              INDEX(1,ICOUNT) = 0
-                              INDEX(2,ICOUNT) 
+                              INDEX(1) = 0
+                              INDEX(2) 
      &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
                             else
                               write(6,*) 
@@ -1497,12 +1502,12 @@ C   formalism !
                             end if
 *
                             if (NEL_AA.eq.1.and.NEL_AB.eq.0) then
-                              INDEX(3,ICOUNT) 
+                              INDEX(3) 
      &                              = ISTR_AA(1+NEL_AA*(I_AA-1))
-                              INDEX(4,ICOUNT) = 0
+                              INDEX(4) = 0
                             else if (NEL_AA.eq.0.and.NEL_AB.eq.1) then
-                              INDEX(3,ICOUNT) = 0
-                              INDEX(4,ICOUNT) 
+                              INDEX(3) = 0
+                              INDEX(4) 
      &                              = ISTR_AB(1+NEL_AB*(I_AB-1))
                             else
                               write(6,*) 
@@ -1520,29 +1525,29 @@ C   formalism !
 *                               Exchange integrals
                                 IXCH = 1
                                 do IEL=1,NEL_CA,1
-                                  INDEX(IEL,ICOUNT) = 
+                                  INDEX(IEL) = 
      &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
                                 end do
                               else if (NEL_AB.eq.2) then
 *                               Spin-orbit integrals (no exchange)
                                 IXCH = 1
-                                INDEX(1,ICOUNT)
+                                INDEX(1)
      &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
-                                INDEX(2,ICOUNT)
+                                INDEX(2)
      &                              = ISTR_CA(2+NEL_CA*(I_CA-1))
                               else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
 *                               Spin-orbit integral
                                 IXCH = 0
                                 do IEL=1,NEL_CA,1
-                                  INDEX(IEL,ICOUNT) =
+                                  INDEX(IEL) =
      &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
                                 end do
                               end if
                             else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
                               IXCH = 0
-                              INDEX(1,ICOUNT) 
+                              INDEX(1) 
      &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
-                              INDEX(3,ICOUNT) 
+                              INDEX(3) 
      &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
                             else if (NEL_CA.eq.0.and.NEL_CB.eq.2) then
                               IXCH = 0
@@ -1550,21 +1555,21 @@ C   formalism !
 *                               Exchange integrals
                                 IXCH = 1
                                 do IEL=1,NEL_CB,1
-                                  INDEX(IEL,ICOUNT) = 
+                                  INDEX(IEL) = 
      &                                ISTR_CB(IEL+NEL_CB*(I_CB-1))
                                 end do
                               else if (NEL_AA.eq.2) then
 *                               Spin-orbit integrals (no exchange)
                                 IXCH = 1
-                                INDEX(1,ICOUNT)
+                                INDEX(1)
      &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
-                                INDEX(2,ICOUNT)
+                                INDEX(2)
      &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
                               else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
 *                               Spin-orbit integral
-                                INDEX(1,ICOUNT)
+                                INDEX(1)
      &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
-                                INDEX(3,ICOUNT)
+                                INDEX(3)
      &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
                               end if
                             else
@@ -1579,20 +1584,20 @@ C   formalism !
                               if (NEL_CA.eq.2) then
                                 IXCH = 1
                                 do IEL=1,NEL_AA,1
-                                 INDEX(IEL+2,ICOUNT) = 
+                                 INDEX(IEL+2) = 
      &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
                                 end do
                               else if (NEL_CB.eq.2) then
 *                               Spin-orbit integrals (no exchange)
                                 IXCH = 1
-                                INDEX(3,ICOUNT)
+                                INDEX(3)
      &                              = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(4,ICOUNT)
+                                INDEX(4)
      &                              = ISTR_AA(2+NEL_AA*(I_AA-1))
                               else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
 *                               Spin-orbit integral
                                 do IEL=1,NEL_AA,1
-                                 INDEX(IEL*2,ICOUNT) =
+                                 INDEX(IEL*2) =
      &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
                                 end do
                               end if
@@ -1600,34 +1605,34 @@ C   formalism !
                               IXCH = 0
                               if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
 *                               Spinfree integral
-                                INDEX(2,ICOUNT) 
+                                INDEX(2) 
      &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(4,ICOUNT) 
+                                INDEX(4) 
      &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
                               else
 *                               Spin-orbit integral
-                                INDEX(4,ICOUNT)
+                                INDEX(4)
      &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(2,ICOUNT)
+                                INDEX(2)
      &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
                               end if
                             else if (NEL_AA.eq.0.and.NEL_AB.eq.2) then
                               if (NEL_CB.eq.2) then
                                 IXCH = 1
                                 do IEL=1,NEL_AB,1
-                                 INDEX(IEL+2,ICOUNT) = 
+                                 INDEX(IEL+2) = 
      &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
                                 end do
                               else if (NEL_CA.eq.2) then
 *                               Spin-orbit integrals (no exchange)
-                                INDEX(3,ICOUNT)
+                                INDEX(3)
      &                              = ISTR_AB(1+NEL_AB*(I_AB-1))
-                                INDEX(4,ICOUNT)
+                                INDEX(4)
      &                              = ISTR_AB(2+NEL_AB*(I_AB-1))
                               else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
 *                               Spin-orbit integral
                                 do IEL=1,NEL_AB,1
-                                 INDEX(IEL*2,ICOUNT) =
+                                 INDEX(IEL*2) =
      &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
                                 end do
                               end if
@@ -1652,18 +1657,18 @@ C   formalism !
                           JR_IND = 0
                           KR_IND = 0
                           LR_IND = 0
-                          if (INDEX(1,ICOUNT).ne.IZERO) 
-     &                              IR_IND = IREOTS(INDEX(1,ICOUNT))
-                          if (INDEX(2,ICOUNT).ne.IZERO) 
-     &                              JR_IND = IREOTS(INDEX(2,ICOUNT))
-                          if (INDEX(3,ICOUNT).ne.IZERO) 
-     &                              KR_IND = IREOTS(INDEX(3,ICOUNT))
-                          if (INDEX(4,ICOUNT).ne.IZERO) 
-     &                              LR_IND = IREOTS(INDEX(4,ICOUNT))
-                          INDEX(1,ICOUNT) = IR_IND
-                          INDEX(2,ICOUNT) = JR_IND
-                          INDEX(3,ICOUNT) = KR_IND
-                          INDEX(4,ICOUNT) = LR_IND
+                          if (INDEX(1).ne.IZERO) 
+     &                              IR_IND = IREOTS(INDEX(1))
+                          if (INDEX(2).ne.IZERO) 
+     &                              JR_IND = IREOTS(INDEX(2))
+                          if (INDEX(3).ne.IZERO) 
+     &                              KR_IND = IREOTS(INDEX(3))
+                          if (INDEX(4).ne.IZERO) 
+     &                              LR_IND = IREOTS(INDEX(4))
+                          INDEX(1) = IR_IND
+                          INDEX(2) = JR_IND
+                          INDEX(3) = KR_IND
+                          INDEX(4) = LR_IND
 *
 * Index reordering and second integral in exchange case:
 * (Reason: CACA string generated e.g. for two alpha excitations,
@@ -1681,14 +1686,14 @@ C   formalism !
 * (Overall, indices L and J are interchanged and a "-" introduced,
 *  due to I+ K+ L J = - I+ K+ J L
 * Coulomb:
-                            I_SV = INDEX(1,ICOUNT)
-                            L_SV = INDEX(2,ICOUNT)
-                            K_SV = INDEX(3,ICOUNT)
-                            J_SV = INDEX(4,ICOUNT)
-                            INDEX(1,ICOUNT) = I_SV
-                            INDEX(2,ICOUNT) = K_SV
-                            INDEX(3,ICOUNT) = L_SV
-                            INDEX(4,ICOUNT) = J_SV
+                            I_SV = INDEX(1)
+                            L_SV = INDEX(2)
+                            K_SV = INDEX(3)
+                            J_SV = INDEX(4)
+                            INDEX(1) = I_SV
+                            INDEX(2) = K_SV
+                            INDEX(3) = L_SV
+                            INDEX(4) = J_SV
 * Exchange:
                             I_ADD(1) = I_SV
                             I_ADD(2) = J_SV
@@ -1713,30 +1718,30 @@ C   formalism !
 *  Modify if integrals are over relativistic spinors:
                             if ((INTIMP.eq.6.or.INTIMP.eq.7).and.
      &                           ISPINFREE.eq.0) then
-                              if (INDEX(1,ICOUNT).ne.0.and.
-     &                            INDEX(2,ICOUNT).ne.0) then
+                              if (INDEX(1).ne.0.and.
+     &                            INDEX(2).ne.0) then
                                 do IRUN = 1,4,1
-                                    INDEX(IRUN,ICOUNT) = 
-     &                                  INDEX(IRUN,ICOUNT) * 
+                                    INDEX(IRUN) = 
+     &                                  INDEX(IRUN) * 
      &                                  LABEL(IRUN,IXTP)
                                 end do
 *
 * Correct internal ordering of two-bar exchange type integrals:
 * (This might be implemented in some more elegant way later on.)
-                                if (INDEX(1,ICOUNT).gt.0.and.
-     &                              INDEX(2,ICOUNT).lt.0.and.
-     &                              INDEX(3,ICOUNT).lt.0.and.
-     &                              INDEX(4,ICOUNT).gt.0) then
-                                  J_SV = INDEX(2,ICOUNT)
-                                  L_SV = INDEX(4,ICOUNT)
-                                  INDEX(2,ICOUNT) = -L_SV
-                                  INDEX(4,ICOUNT) = -J_SV
+                                if (INDEX(1).gt.0.and.
+     &                              INDEX(2).lt.0.and.
+     &                              INDEX(3).lt.0.and.
+     &                              INDEX(4).gt.0) then
+                                  J_SV = INDEX(2)
+                                  L_SV = INDEX(4)
+                                  INDEX(2) = -L_SV
+                                  INDEX(4) = -J_SV
                                 end if
                               end if
                             end if
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
-                              call getint_sigden(YINT,INDEX(1,ICOUNT),
+                              call getint_sigden(YINT,INDEX(1),
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
                             end if
 *
@@ -1750,25 +1755,29 @@ C   formalism !
                               if (NTEST.ge.10)
      &                            write(6,'(A,I4,A,4I3,A,1F18.12)') 
      &                                  'INTEGRAL no. ',ICOUNT,'(',
-     &                                   (INDEX(M,ICOUNT),M=1,4),
+     &                                   (INDEX(M),M=1,4),
      &                                  ') Value: ',T(ICOUNT)
 *                           write integral to file (for debugging):
                               if (IXCH.eq.0) then
                                 write(LUINGR,'(I4,4X,4I3,1F18.10)') 
-     &                                ICOUNT,INDEX(1,ICOUNT),
-     &                                       INDEX(2,ICOUNT),
-     &                                       INDEX(3,ICOUNT),
-     &                                       INDEX(4,ICOUNT),T(ICOUNT)
+     &                                ICOUNT,INDEX(1),
+     &                                       INDEX(2),
+     &                                       INDEX(3),
+     &                                       INDEX(4),T(ICOUNT)
                               else
                           write(LUINGR,'(I4,4X,4I3,X,A,X,4I3,1F18.10)')
-     &                                ICOUNT,INDEX(1,ICOUNT),
-     &                                       INDEX(2,ICOUNT),
-     &                                       INDEX(3,ICOUNT),
-     &                                       INDEX(4,ICOUNT),'-',
+     &                                ICOUNT,INDEX(1),
+     &                                       INDEX(2),
+     &                                       INDEX(3),
+     &                                       INDEX(4),'-',
      &                             I_ADD(1),I_ADD(2),I_ADD(3),I_ADD(4),
      &                                       T(ICOUNT)
                               end if
                             end if
+*
+*                           Write INDEX sequence to line in file
+*                           for use in diagonal routine (saving memory):
+                            write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
                           end if
                           ICOUNT = ICOUNT + 1
 *
@@ -1793,6 +1802,8 @@ C   formalism !
       end do
 *     ^ End loop over real/imaginary
       if (NTEST.ge.1) close(LUINGR)
+      close(LUINSV)
+      NALLINT = ICOUNT - 1
 *
       return
       end

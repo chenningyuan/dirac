@@ -382,6 +382,9 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUSC61,LUSC62,
      &                       WORK(KT_CC),2)
 *
+            call memmar(KINDEX,NALLINT*4,'ADDL  ',1,'KINDEX')
+            call read_indices(WORK(KINDEX),NALLINT)
+*
             if (IPRDEN.ge.10) then
               write(6,*) '======================================='
               write(6,'(A,I4)') ' Density matrix for root ',JROOT
@@ -398,6 +401,7 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
      &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
      &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
      &                    IRC_D,NTOOB2,IPRDEN)
+            close(LUINSV)
 *
           else
             write(6,*) 'SIGDEN_ROUTE with unallowed value in gasci.'

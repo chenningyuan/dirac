@@ -1776,12 +1776,6 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
         end if
       end if
 *
-* When integral transformation section is generalized to traditional
-* or sigden route, the allocation should be revised. At the moment:
-      if (SIGDEN_ROUTE.eq.'SIGDEN') then
-        write(6,*) ' Number of integrals/CC amplitudes: ',NINT_CC
-        call memmar(KINDEX,4*NINT_CC,'ADDS  ',1,'IINDEX')
-      end if
 *
 ************************************************
 * Set mark for flushing local memory
@@ -2380,7 +2374,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
      &                            WORK(KISTR_AA),WORK(KISTR_AB),
-     &                            WORK(KINDEX),
+C    &                            WORK(KINDEX),
      &                            NDIM_TOT2,F1,F2,IBOSYM,
      &                            WORK(KLIBSOBEX),
      &                            WORK(KLABEXTP),CIRUN,NTEST)
@@ -2401,6 +2395,12 @@ c           stop 'AFTER DIST_INTS_SIGDEN.'
         Call Abend2( 'Quitting.' )
       end if
 *     ^ End if external Fock matrix active or not
+*
+      if (SIGDEN_ROUTE.eq.'SIGDEN') then
+        write(6,*)
+        write(6,*) ' Number of integrals/CC amplitudes: ',2*NALLINT
+        write(6,*) ' (including imaginary parts) '
+      end if
 *
 *  Flush local memory to mark set at beginning of do loop
       call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')

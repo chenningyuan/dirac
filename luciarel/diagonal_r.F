@@ -495,6 +495,13 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
         write(6,*) ' //////////////////////////////////// '
       end if
 *
+* Read in indices from INDICES file
+      IDUM = 1
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'GTDIA2')
+      NINT12 = N1ELINT+N2ELINT
+      call memmar(KINDEX,NINT12*4,'ADDL  ',1,'KINDEX')
+      call read_indices(WORK(KINDEX),NINT12)
+*
 * UUUUC and UUUUE obtained from integral list 3
 *
 * ( I I ! J J )
@@ -556,7 +563,6 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
           IKPERM(3) = 4
           IKPERM(4) = 3
         end if  
-        N12INTS = N1ELINT + N2ELINT
         IGSOFF = 0
         JGSOFF = 0
         ISMOFF = 0
@@ -583,7 +589,7 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
                     call geth2dia_sigden(UUUUC(I,J),
      &                                   WORK(KT_CC),WORK(KINDEX),
      &                                   I,J,
-     &                                   'COUL',WORK(KLIBSOBEX),N12INTS,
+     &                                   'COUL',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,NTEST)
                   end do
@@ -680,7 +686,7 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
                     call geth2dia_sigden(UUUUE(I,J),
      &                                   WORK(KT_CC),WORK(KINDEX),
      &                                   I,J,
-     &                                   'EXC1',WORK(KLIBSOBEX),N12INTS,
+     &                                   'EXC1',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS,NTEST)
                   end do
@@ -781,7 +787,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
                       call geth2dia_sigden(UBBUE(I,J),
      &                                   WORK(KT_CC),WORK(KINDEX),
      &                                   I,J,
-     &                                   'EXC2',WORK(KLIBSOBEX),N12INTS,
+     &                                   'EXC2',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
      &                                   IREOTS,IREOTS2,NTEST)
                     end do
@@ -815,6 +821,7 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
           CALL WRTMAT(UBBUE,NTOOB,NTOOB,NTOOB,NTOOB)
         end if
       END IF
+      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'GTDIA2')
 *
       RETURN
       END
@@ -868,6 +875,10 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       IDUM = 1
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GT1DIA')
       call memmar(KLH1,NTOOB**2,'ADDL  ',2,'H1BL  ')
+*
+* Read in indices from INDICES file
+      call memmar(KINDEX,N1ELINT*4,'ADDL  ',1,'KINDEX')
+      call read_indices(WORK(KINDEX),N1ELINT)
 *
       if (SIGDEN_ROUTE.eq.'TRADIT') then
 *
