@@ -58,7 +58,7 @@ usage ()
    echo '     -utfck                 : Save DFFCK2 from work area'
    echo '     -inxvc                 : Copy PAMXV1 to   work area'
    echo '     -utxvc                 : Save PAMXV1 from work area'
-   echo '     -mw mem                : Set memory (in megawords) for master'
+   echo '     -mw mem                : Set memory (in megawords) for master (and nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the nodes'
    echo '     -rmscr                 : Remove work area before calculation'
    echo '     -rmwrk                 : Remove work area after calculation'
@@ -161,7 +161,7 @@ setup_command()
    #
    # MPI?
    #
-   if [ -n "$PARCAL" ]; then
+   if [ "$DIRPAR" = "1" ]; then
 #SX   if [ -n "$MULTI_NODE" ]; then
 #SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
 #SX   else
@@ -169,7 +169,7 @@ setup_command()
          DIRAC_CMD="$MPIRUN -np $MPI_NPROC $SSRUN_CMD $DIRAC"
 #SX   fi
    else
-      DIRAC_CMD="$SSRUN_CMD ./$DIRAC"
+      DIRAC_CMD="$SSRUN_CMD $DIRAC"
    fi
    #
    # Debug
@@ -539,22 +539,19 @@ save_old_output()
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# SET WORKING MEMORY FOR MASTER AND NODE
+# EXPORT ENVIRONMENTAL VARIABLES TO CONTROL DIRAC (BOTH MASTER AND NODES)
 #
 #
-set_work_memory()
+set_dirac_environment()
 {
-   if [ -n "$PARCAL" ]; then
-      DIRPAR=1
-      export DIRPAR
-   fi
+   export DIRPAR # tell dirac.x if parallel run or not
+   export BASDIR # tell dirac.x which directories to search for basis sets
    if [ -n "$MEMORY" ]; then
-      DIRWRK=$MEMORY
-      export DIRWRK
+      DIRWRK=$MEMORY; export DIRWRK
+      DIRNOD=$MEMORY; export DIRNOD
    fi
    if [ -n "$NODE_MEMORY" ]; then
-      DIRNOD=$NODE_MEMORY
-      export DIRNOD
+      DIRNOD=$NODE_MEMORY; export DIRNOD
    fi
 }
 #
@@ -629,12 +626,8 @@ initialize()
 
    SCR_DIR=
 
-   if [ ! -z "$MPI_NPROC" ]; then
-      PARCAL=1
-   else
-      MPI_NPROC=
-      PARCAL=
-   fi
+   MPI_NPROC=
+   DIRPAR=0 # initialize to sequential
 
    NICE=
    SSRUN=
@@ -648,7 +641,7 @@ initialize()
 #  1) job directory
 #  2) basis set directory in Dirac distribution
 
-   BASDIR="$LOC/:$SRC_DIR/basis/"; export BASDIR
+   BASDIR="$LOC/:$SRC_DIR/basis/"
 }
 #
 #
@@ -674,7 +667,7 @@ while [ -n "$1" ]; do
    case $1 in
       -basdir)
          shift
-         BASDIR="$1:${BASDIR}"; export BASDIR
+         BASDIR="$1:${BASDIR}"
          ;;
       -copy)
          shift
@@ -732,7 +725,7 @@ while [ -n "$1" ]; do
 #        let MPI_NPROC=$1+1
 #        New default : master by itself on a node
          MPI_NPROC=$1
-         PARCAL=1
+         DIRPAR=1 # set to parallel run
          ;;
       -nice)
          NICE=1
@@ -772,7 +765,7 @@ while [ -n "$1" ]; do
 #SX      MULTI_NODE=1
 #SX      shift
 #SX      MULTI_CONF=$1
-#SX      PARCAL=1
+#SX      DIRPAR=1
 #SX      ;;
 #SX   -mpiconf)
 #SX      shift
@@ -806,7 +799,7 @@ EXIT=0
 # Next line is for IBM only but will not hurt other systems
 XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
 set_work_dir
-set_work_memory
+set_dirac_environment
 print_header
 copy_files
 save_old_output
