@@ -1,3 +1,4 @@
+#ifdef SYS_LINUX
 /*
  *
  * VERSION : $Id$
@@ -64,3 +65,4 @@ void main()
    *work = 10101.0;
    dirac_(work,&lwork,str_dirwrk[0],str_dirwrk[1]);
 }
+#endif
