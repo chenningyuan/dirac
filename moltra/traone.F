@@ -841,7 +841,7 @@ C        The gu-block
          MULTB(5,4) = 4
          MULTB(6,4) = 3
       ELSE
-         STOP 'Multiplication table is not defined'
+         CALL QUIT('Multiplication table is not defined')
       ENDIF
 C
       DO I = 1, 2*NSYMRPA
