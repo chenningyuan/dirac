@@ -233,7 +233,6 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#
 #include <dgroup.h>
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), BUF(NBAST),WORK(LWORK), NCNT(NBAST)
