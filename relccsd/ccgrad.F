@@ -103,8 +103,7 @@ C
 C###########################################
 C convert the density matrix to DIRAC format
 C###########################################
-c     deactivated because checking in to trunk
-c     CALL CONVDM(BUF1,BUF2,DOO,DVV,DMO)
+      CALL CONVDM(BUF1,BUF2,DOO,DVV,DMO)
 C
       IF (IOPT.LT.2) RETURN
 C----------------------------------------------------------------------
@@ -325,7 +324,10 @@ C     No relaxation if there are no virtuals within the right irrep
 C
       IF (NFVO.EQ.0) RETURN
 C
+      IF (DOMP2GOLD) THEN ! old code generation Lagrangian
+C
 C     Calculate X-intermediate
+C     (Old code!!!)
 C
       CALL XCOPY (NDIMX,A0,0,XVO,1)
 C--------------------------------------------
@@ -382,45 +384,45 @@ C
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
 C
+      ENDIF !old code generation Lagrangian
+C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
 C     | contraction with the 3/4 transformed integrals |
 C     +------------------------------------------------+
 C
-C     deactivated because checking in to trunk
-c     CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-c    &              T2,BUF1)
-C     deactivated because checking in to trunk
-c     CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
-c     CALL SRTT1T2(BUF2,BUF1)
-C     deactivated because checking in to trunk
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              T2,BUF1)
+      CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
+      CALL SRTT1T2(BUF2,BUF1)
 C
 C     +---------------------------------------------------+
 C     | Generate the tau dependent part of the Lagrangian |
 C     +---------------------------------------------------+
 C
-c     LFREE=NBUF3*RCW
-c     CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
+      LFREE=NBUF3*RCW
+      CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
 C
 C     +-------------------------------------------------------+
 C     | Calculate the ji' and b'a parts of the density matrix |
 C     +-------------------------------------------------------+
-C     deactivated because checking in to trunk
 C
-c     KFREE=1
-c     LFREE=NBUF3*RCW
-c     CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
+      KFREE=1
+      LFREE=NBUF3*RCW
+      CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
 C
 C     +-------------------------------------------------+
 C     | Generate the D dependent part of the Lagrangian |
 C     +-------------------------------------------------+
-C     deactivated because checking in to trunk
 C
-c     KFREE=1 
-c     LFREE=NBUF3*RCW
-c     CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
+      KFREE=1 
+      LFREE=NBUF3*RCW
+      CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
+C
+      IF (DOMP2GOLD) THEN
 C
 C     Solve Z-vector equations by calling the RPA routine
+C     (Old code!!!)
 C
       NAME = 'MP2-GRAD'
       DO EOPER = 1, NEOPER
@@ -442,6 +444,7 @@ C
       CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
+      ENDIF
 C
 C###########################################
 C
@@ -449,10 +452,9 @@ C     Solve Z-vector equations by using XRPA
 C
 C###########################################
 C
-c     KFREE=1
-c     LFREE=NBUF3*RCW
-c     deactivated because checking in to trunk
-c     CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+      KFREE=1
+      LFREE=NBUF3*RCW
+      CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
 C
       RETURN
       END

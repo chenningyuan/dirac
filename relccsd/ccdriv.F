@@ -167,7 +167,7 @@ C
       NAMELIST/CCSORT/ USEOE,NORECMP
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
      &                 MAXIT,MAXDIM,NTOL
-      NAMELIST/CCFOPR/ DOMP2G,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
+      NAMELIST/CCFOPR/ DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
@@ -229,9 +229,10 @@ C
 C
 C     Input for the gradient calculation.
 C
-      DOMP2G   = .FALSE.
-      DOCCSDG  = .FALSE.
-      DOCCSDTG = .FALSE.
+      DOMP2G    = .FALSE.
+      DOMP2GOLD = .FALSE.
+      DOCCSDG   = .FALSE.
+      DOCCSDTG  = .FALSE.
       NEOPER = 1
       NAMEE(1) = 'ZDIPLEN '
       MAXDIM = 8
@@ -2189,7 +2190,7 @@ C     Allocate the work array
 C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
 C################################
-      IF (DOMP2G) MXCORR = KFREE
+      IF (DOMP2G.OR.DOMP2GOLD) MXCORR = KFREE
 C################################
       IF (DOCCSDG) THEN
          CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
@@ -2211,7 +2212,7 @@ C
          RETURN
       ENDIF
 C
-      WRITE (IW,1007) DOMP2G,DOCCSDG,DOCCSDTG,
+      WRITE (IW,1007) DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,
      &                MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
       EQNS = 'LAMBDA'
 C
@@ -2219,7 +2220,10 @@ C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,CC(FVO),CC(FOO),CC(FVV))
 C
+      IF (DOMP2GOLD) THEN
+C
 C     Start with SCF (reference determinant) expectation values
+C     (Old code!!!)
 C
       WRITE (IW,1002) '    SCF'
       CALL XCOPY (NFOO,A0,0,CC(DOO),1)
@@ -2237,9 +2241,11 @@ C
          WRITE (IW,1004) NAMEE(EOPER),CEXPA
       ENDDO
 C
+      ENDIF
+C
 C     Get MP2 relaxed density matrix
 C
-      IF (DOMP2G) THEN
+      IF (DOMP2G.OR.DOMP2GOLD) THEN
 C
 C        Solve relativistic MP2 lambda equations
 C
@@ -2250,8 +2256,7 @@ C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
-C
-C        Solve Z-vector equations
+C        Solve Z-vector equations 
 C
          TOL = 10.0D0**(-NTOLGR)
          MAXIT  = MXITGR
@@ -2262,13 +2267,15 @@ C
      &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
      &                 CC(CCC),CC(BB1),CC(BB2),TOL,CC(XMO),CC(DMO))
 C
-C#################################################################
-C
-C     create upper triangle of density matrix
+         IF (DOMP2GOLD) THEN
 C
 C#################################################################
-c      deactivated because of checking in to trunk
-c        CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
+C
+C     Old code!
+C
+C#################################################################
+C
+C      Calculate expecation value
 C
          WRITE (IW,1002) '    MP2'
          DO EOPER = 1, NEOPER
@@ -2280,6 +2287,15 @@ C
      &                  EPHASE,CEXPA)
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
+         ENDIF
+C
+C#################################################################
+C
+C     create upper triangle of density matrix
+C
+C#################################################################
+         CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
+C
 C
 C#################################################################
 C
@@ -2291,8 +2307,7 @@ C
          KFREE1=1
          LFREE1=NBUF3*RCW
          CALL MEMCHK('voor prpexp_mp2',CC,1)
-c      deactivated because of checking in to trunk
-c        CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
+         CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
 C
       ENDIF
 C
@@ -2366,6 +2381,7 @@ C
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
 1007  FORMAT (//" Gradient calculations"
      &        /" MP2 module active :",T44,L1
+     &        /" MP2 old module active :",T44,L1
      &        /" CCSD module active :",T44,L1
      &        /" CCSD(T) module active :",T44,L1
      &        //" Z-vector equations :"

@@ -245,10 +245,9 @@ C
       IF (DOEXP .OR. DOXLR) THEN
          CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KLRCNV),
      &            WORK,KFREE,LFREE)
-c    deactivated because of checking in to trunk
-c        IF (DOCCM) THEN
-c           CALL PRPOUT_CORR(WORK(KEXP),WORK,KFREE,LFREE)
-c        END IF
+         IF (DOCCM) THEN
+            CALL PRPOUT_CORR(WORK(KEXP),WORK,KFREE,LFREE)
+         END IF
       END IF
 C
       CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1387,6 +1386,11 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
 C
       CALL TITLER('MP2 expectation values','*',124)
+      WRITE(LUPRI,'(14X,A)')
+     &     'MP2 expectation values are documented in:',
+     &     'J. N. P. van Stralen, L. Visscher, C. V. Larsen',
+     &     'and H. J. Aa Jensen, Chem. Phys. in press.',
+     &     ' '
 C
       KFRSAV=KFREE
 C
