@@ -181,7 +181,7 @@ C
 C     Print section
 C     -------------
 C
-      IF ( IPROPT .GE. 20 ) THEN
+      IF ( IPROPT .GE. 2 ) THEN
          WRITE(LUPRI,'(A,3I3/A)')
      &      ' (GOSCI_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
      &      ' -> IRRP.lt.0 means include all symmetries'
@@ -336,17 +336,10 @@ D     write(lupri,*) 'IAEL   IBEL'
 D        write(lupri,'(I4,I7)') IAEL,IBEL
 D        call flshfo(lupri)
 C
-         IF (IAEL .LE. IBEL) THEN
-            CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
-            IF (NASTR .EQ. 0) GOTO 10
-            CALL GOSCI_GENSTR(IBEL,IBSTR,NBSTR,MSKGAS,MAXDET)
-            IF (NBSTR .EQ. 0) GOTO 10
-         ELSE
-            CALL GOSCI_GENSTR(IBEL,IBSTR,NBSTR,MSKGAS,MAXDET)
-            IF (NBSTR .EQ. 0) GOTO 10
-            CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
-            IF (NASTR .EQ. 0) GOTO 10
-         END IF
+         CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
+         IF (NASTR .EQ. 0) GOTO 10
+         CALL GOSCI_GENSTR(IBEL,IBSTR,NBSTR,MSKGAS,MAXDET)
+         IF (NBSTR .EQ. 0) GOTO 10
 D        write(lupri,'(12X,I8,I11,I11)') NASTR,NBSTR,NDET
 D        call flshfo(lupri)
 C
@@ -766,7 +759,7 @@ C
 C
 C     Check norm of CI vector
 C
-      CALL RCINORM(CREF)
+      CALL RCINORM(CREF,10)
 C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_STARTVEC) CI start vector'
@@ -1392,7 +1385,7 @@ C
             END IF
          END DO
          IF (IELEC .NE. NAELEC)
-     &       CALL QUIT('GOSCI_MAKEH: IELEC.ne.NAELEC')
+     &      CALL QUIT('GOSCI_MAKEH: IELEC.ne.NAELEC')
 C
          IF (HFULL) THEN
             JEND = NZCONF
@@ -1485,12 +1478,10 @@ C
      &              HR(I,J),HI(I,J),HCORE,VMUUUU)
                IF( IHRM .GT. 0 ) THEN
                   HR (J,I) =  HR (I, J)
-                  IF (DOIMAG)
-     &            HI (J,I) = -HI (I, J)
+                  IF (DOIMAG) HI (J,I) = -HI (I, J)
                ELSE IF( IHRM .LT. 0 ) THEN
                   HR (J,I) = -HR (I, J)
-                  IF (DOIMAG)
-     &            HI (J,I) =  HI (I, J)
+                  IF (DOIMAG) HI (J,I) =  HI (I, J)
                END IF
             END IF
 C           ... for IF ( IT .LE. ITMAX ) THEN
@@ -1657,10 +1648,21 @@ C
 C
       CALL QENTER('GOSCI_SVC')
 C
+#define xxx
+#ifdef xxx
+C hj 16-jun-2004 new sigma code with screening
+      THRSCR = 1.0D-10
+      CALL GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,.TRUE.,IDET,THRSCR)
+      IF (SAVDIA) CALL GOSCI_CI(SAVDIA,DIAG,
+     &     .FALSE.,SVEC,BVEC,HCORE,VMUUUU,
+     &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &     .TRUE.,IDET)
+#else
       CALL GOSCI_CI(SAVDIA,DIAG,
      &     .TRUE.,SVEC,BVEC,HCORE,VMUUUU,
      &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &     .TRUE.,IDET)
+#endif
 C
 C     CALL GOSCI_CI(
 C    &     DODIA,DIAG,
@@ -1751,6 +1753,10 @@ C
 C
       CALL GETTIM(CPU1,WLL1)
 C
+      IF (NCIROOT .GT. 1) THEN
+         CALL QUIT('.CIROOT .gt. 1 has not been implemented yet.')
+      END IF
+C
 C     ************************************
 C     *** Calculate necesary integrals ***
 C     ************************************
@@ -1813,8 +1819,10 @@ C
 C     Assume we can have all sigma and trial vectors in memory.
 C     This could get a little expensive for large CI's.
 C
-      CALL MEMGET('REAL',KBCVEC,MAXCIT * NZCONFQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSCVEC,MAXCIT * NZCONFQ,WORK,KFREE,LFREE)
+      MAXR = MAX(50,MAXCIT+4)
+C     MAXCIT+4: allocating space for up to 5-double degeneracy in diagonal
+      CALL MEMGET('REAL',KBCVEC,MAXR * NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCVEC,MAXR * NZCONFQ,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal of CI matrix:
 C     --------------------------------
@@ -1837,30 +1845,43 @@ C     Find lowest elements in HDIAG:
 C
       II = IDMIN(NZCONF,WORK(KHDIAG),1)
 C
-C     Set first trial vector equal to: BCVEC(I) = DELTA(I,II) / HDIAG(II)
+C     Set first trial vector equal to:
+C     BCVEC(I) = DELTA(I,II) / HDIAG(II)
+C     add trial vectors for degenerate determinants within 1.0D-5
 C
-      CALL DZERO(WORK(KBCVEC),NZCONFQ)
-      WORK(KBCVEC + (II-1)) = D1
-      CALL RCINORM(WORK(KBCVEC))
+      HDIAGTST = WORK(KHDIAG-1+II) + 1.0D-5
+      NCSIM = 0
+      DO  II = 1, NZCONF
+          IF (WORK(KHDIAG-1+II) .LE. HDIAGTST) THEN
+             JBCVEC = KBCVEC +  NCSIM*NZCONFQ
+             CALL DZERO(WORK(JBCVEC),NZCONFQ)
+             WORK(JBCVEC + (II-1)) = D1
+             CALL RCINORM(WORK(JBCVEC),IPROPT)
+             NCSIM = NCSIM + 1
+          END IF
+      END DO
 C
 C
 C
       MZ = MIN(2,NZ)
 C
-      NCSIM = 1
-      JCSIM = 0
-      NCRED = 1
-      RTHRCI = 1.0D-12
+      JCRED = 0
+      NCRED = NCSIM
+      RTHRCI = 1.0D-5
+c     RTHRCI = 1.0D-12
 c     RTHRCI = 1.0D-6
       ECI = D0
+C     GOSCI screening, a calculation in C2 symmetry showd that
+C     THRSCR = RTHRCI**2 was not good enough for the complex group /hjaaj July 04
+      THRSCR = RTHRCI**2 * 0.01D0
 C
-      MAXR = 50
       LHRED = MAXR*MAXR*MZ
       CALL MEMGET('REAL',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVL,MAXR,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
       KHREDI = KHRED + MAXR*MAXR
+      KEIGVCI = KEIGVC + MAXR*MAXR
 C
       ITMIC = 0
       ICONV = 0
@@ -1883,15 +1904,25 @@ C        -------------------------
 C
          DO I = 1, NCSIM
 c           CALL GOSCI_SVC(.FALSE.,DUMMY,
-c    &           WORK(KSCVEC+(I-1+JCSIM)*NZCONFQ),
-c    &           IDET,WORK(KBCVEC+(I-1+JCSIM)*NZCONFQ),
+c    &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
+c    &           IDET,WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
 c    &           WORK(KFCACM),WORK(KMUUUU))
+#define xxx
+#ifdef xxx
+C hj 16-jun-2004 new sigma code with screening
+            CALL GOSCI_CISIG_SCREEN(
+     &           WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
+     &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
+     &           WORK(KFCACM),WORK(KMUUUU),
+     &           .TRUE.,IDET,THRSCR)
+#else
             CALL GOSCI_CI(.FALSE.,DUMMY,
-     &           .TRUE.,WORK(KSCVEC+(I-1+JCSIM)*NZCONFQ),
-     &           WORK(KBCVEC+(I-1+JCSIM)*NZCONFQ),
+     &           .TRUE.,WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
+     &           WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
      &           WORK(KFCACM),WORK(KMUUUU),
      &           .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &           .TRUE.,IDET)
+#endif
 C           CALL GOSCI_CI(DODIA,DIAG,
 C                         DOSIG,SVEC,BVEC,
 C                         HCORE,VMUUUU,
@@ -1904,14 +1935,14 @@ C              Trial vector
 C
                WRITE(LUPRI,'(/A,I3)')
      &              ' (GOSCI_RCISTD) Trial vector no. ',I
-               CALL OUTPUT(WORK(KBCVEC+(I-1+JCSIM)*NZCONFQ),
+               CALL OUTPUT(WORK(KBCVEC+(I-1+JCRED)*NZCONFQ),
      &              1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
 C
 C              Sigma vector
 C
                WRITE(LUPRI,'(/A,I3)')
      &              ' (GOSCI_RCISTD) Sigma vector no. ',I
-               CALL OUTPUT(WORK(KSCVEC+(I-1+JCSIM)*NZCONFQ),
+               CALL OUTPUT(WORK(KSCVEC+(I-1+JCRED)*NZCONFQ),
      &              1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
             END IF
          END DO
@@ -1919,97 +1950,147 @@ C
 C        Extend reduced Hamiltonian:
 C        ---------------------------
 C
-C HJ 2-sep-03 FIXME: imag. part of HRED is missing !!!
-C                    (see GOSCI_FULLCI)
-         IF (MZ .GT. 1) CALL QUIT('MZ.gt.1 not implemented yet')
-C
 C        HRED(I,J) = BCVEC(I)^+ * SCVEC(J)
 C
 C        New trial vectors * Old sigma vectors
 C
-         DO J = 1, JCSIM
-            DO I = JCSIM+1, NCRED
+         DO J = 1, JCRED
+            DO I = JCRED+1, NCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
      &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               IF (MZ .GT. 1) THEN
+                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
+     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               END IF
             END DO
          END DO
 C
 C        Old trial vectors * New sigma vectors
 C
-         DO J = JCSIM+1, NCRED
-            DO I = 1, JCSIM
+         DO J = JCRED+1, NCRED
+            DO I = 1, JCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
      &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               IF (MZ .GT. 1) THEN
+                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
+     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               END IF
             END DO
          END DO
 C
 C        New trial vectors * New sigma vectors
 C
-         DO J = JCSIM+1, NCRED
-            DO I = JCSIM+1, NCRED
+         DO J = JCRED+1, NCRED
+            DO I = JCRED+1, NCRED
                WORK(KHRED+(I-1)*MAXR+(J-1)) =
      &              DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               IF (MZ .GT. 1) THEN
+                  WORK(KHREDI+(I-1)*MAXR+(J-1)) =
+     &              DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ+NZCONF),1)
+     &            - DDOT(NZCONF,WORK(KBCVEC+(I-1)*NZCONFQ+NZCONF),1,
+     &              WORK(KSCVEC+(J-1)*NZCONFQ),1)
+               END IF
             END DO
          END DO
-         IF (IPROPT .GE. 10) THEN
-            WRITE(LUPRI,'(A)')
-     &           ' (GOSCI_RCISTD) Reduced Hamiltonian, real part'
-            CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
-         END IF
 C
 C        Check for inconsistencies:
 C
+chj      1.0D-10 can give problems with 1.0D-10 screening in GOSCI
+chj      THRDAS = 1.0D-10
+         THRDAS = THRSCR*10.0D0
          DAS = D0
          DO I = 1, NCRED
             DO J = 1, I - 1
                DAS = DAS +
      &              ABS( WORK(KHRED + (J-1) + (I-1)*MAXR) -
      &              WORK(KHRED + (I-1) + (J-1)*MAXR) )
+               IF (MZ .GT. 1) DAS = DAS +
+     &              ABS( WORK(KHREDI + (J-1) + (I-1)*MAXR) +
+     &              WORK(KHREDI + (I-1) + (J-1)*MAXR) )
             END DO
          END DO
-         IF (IPROPT .GE. 10 .OR. DAS .GT. 1.0D-10) THEN
+         IF (IPROPT .GE. 6 .OR. DAS .GT. THRDAS) THEN
+            WRITE(LUPRI,'(/A)')
+     &           ' (GOSCI_RCISTD) Reduced Hamiltonian, real part'
+            CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+           IF (MZ .GT. 1) THEN
+            WRITE(LUPRI,'(/A)')
+     &           ' (GOSCI_RCISTD) Reduced Hamiltonian, imaginary part'
+            CALL OUTPUT(WORK(KHREDI),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+           END IF
+         END IF
+         IF (IPROPT .GE. 5 .OR. DAS .GT. 0.01D0*THRDAS) THEN
             WRITE(LUPRI,'(A,1P,D10.3)')
      &      ' (GOSCI_RCISTD) Anti-hermiticity of red. Hamiltonian = ',
      &      DAS
-            IF (DAS .GT. 1.0D-10) THEN
-               call quit('red. Hamiltonian not hermitian')
+            IF (DAS .GT. THRDAS) THEN
+               call QUIT('red. Hamiltonian not hermitian')
             END IF
          END IF
 C
 C        Diagonalize reduced Hamiltonian
 C        -------------------------------
 C
-         IJOB = 1
-         IORDER = 1
-         IPACK = 0
-         CALL RSJACO(MAXR,NCRED,NCRED,WORK(KHRED),WORK(KEIGVL),
+         IF (MZ.EQ.1) THEN
+            IJOB = 1
+            IORDER = 1
+            IPACK = 0
+            CALL RSJACO(MAXR,NCRED,NCRED,WORK(KHRED),WORK(KEIGVL),
      &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
+         ELSE
+            MATZ = 1
+            CALL MEMGET('REAL',KHREDCP,LHRED,WORK,KFREE,LFREE)
+            CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
+            CALL QDIAG(2,NCRED,WORK(KHREDCP),MAXR,MAXR,
+     &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAXR,MAXR,
+     &        WORK(KFREE),LFREE,IERR)
+            IF (IERR .NE. 0) THEN
+               WRITE(LUPRI,'(/2A,I4)')
+     &           ' *** ERROR in GOSCI_RCISTD ***: ',
+     &           'QDIAG failed with error code ',IERR
+               CALL QUIT('*** ERROR in GOSCI_RCISTD *** QDIAG failed')
+            END IF
+            CALL MEMREL('GOSCI_RCISTD.QDIAG',
+     &         WORK,KWORK,KHREDCP,KFREE,LFREE)
+         END IF
 C
-         IF (IPROPT .GE. 10) THEN
+         IF (IPROPT .GE. 5) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (GOSCI_RCISTD) Eigenvalues of reduced Hamiltonian'
-            CALL OUTPUT(WORK(KEIGVL),1,NCRED,1,1,MAXR,1,1,LUPRI)
-            WRITE(LUPRI,'(/A)')
-     &' (GOSCI_RCISTD) Eigenvectors of reduced Hamiltonian, real part'
+            CALL OUTPUT(WORK(KEIGVL),1,1,1,NCRED,1,MAXR,1,LUPRI)
+         END IF
+         IF (IPROPT .GE. 6) THEN
+            WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD)'//
+     &      ' Eigenvectors of reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KEIGVC),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
-            CALL FLSHFO(LUPRI)
+           IF (MZ .GT. 1) THEN
+            WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD)'//
+     &      ' Eigenvectors of reduced Hamiltonian, imaginary part'
+            CALL OUTPUT(WORK(KEIGVCI),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
+           END IF
          END IF
          ECIOLD = ECI
          ECIA = WORK(KEIGVL + IOPT_ISTATE - 1)
          ECI = ECORE + ECIA
-         IF (IPROPT .GE. 8) THEN
-            WRITE(LUPRI,'(/A,F20.8)')
-     &        ' (GOSCI_RCISTD) Core energy        = ',ECORE
-            WRITE(LUPRI,'(A,F20.8)')
+         IF (IPROPT .GE. 4) THEN
+            WRITE(LUPRI,'(2(/A,F20.10))')
+     &        '                Core energy        = ',ECORE,
      &        '                Active energy      = ',ECIA
          END IF
-         WRITE(LUPRI,'(A,F20.8)')
-     &        ' (GOSCI_RCISTD) Total energy       = ',ECI
-         WRITE(LUPRI,'(A,F20.8)')
+         WRITE(LUPRI,'(A,F20.10)')
+     &        ' (GOSCI_RCISTD) Total energy       = ',ECI,
      &        '                Lowering of energy = ',(ECIOLD-ECI)
+         CALL FLSHFO(LUPRI)
 C
 C        Construct residual
 C        ------------------
@@ -2026,31 +2107,36 @@ C
             CALL DAXPY(NZCONFQ,-ECIA*FAC,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &           CREF,1)
          END DO
+         DNRES = DNORM2(NZCONFQ,CREF,1)
+         WRITE(LUPRI,'(A,1P,D18.3,A,D8.2,A)')
+     &        '                Norm of residual   =',DNRES,
+     &        '  (thr = ',RTHRCI,')'
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GOSCI_RCISTD) Residual'
             CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
+            WRITE(LUPRI,'()')
          END IF
 C
-         DNRES = DNORM2(NZCONFQ,CREF,1)
-         WRITE(LUPRI,'(/A,1P,D10.3,A,D8.2,A)')
-     &        ' (GOSCI_RCISTD) Norm of residual =',DNRES,
-     &        ' (thr = ',RTHRCI,')'
          CALL FLSHFO(LUPRI)
 C
          IF (DNRES .LE. RTHRCI) THEN
             ICONV = 1
             GOTO 200
          END IF
-         IF (ITMIC .EQ. MAXCIT) THEN
+         IF (ITMIC .GE. MAXCIT) THEN
             ICONV = -2
+            GOTO 200
+         END IF
+         IF (NCRED .GE. MAXR) THEN
+            ICONV = -3
             GOTO 200
          END IF
 C
 C        Construct 1 new trial vector
 C        ----------------------------
 C
-         JCSIM = NCRED
+         JCRED = NCRED
          NCRED = NCRED + 1
          NCSIM = 1
 C
@@ -2066,7 +2152,7 @@ C
                END IF
             END DO
          END DO
-         CALL RCINORM(WORK(KBCVEC+(NCRED-1)*NZCONFQ))
+         CALL RCINORM(WORK(KBCVEC+(NCRED-1)*NZCONFQ),IPROPT)
 C
 C        Orthogonalize trial vector(s)
 C        -----------------------------
@@ -2079,13 +2165,13 @@ C
 C
             IF (NCSIM .GT. 1)
      &           CALL QUIT('*** ERROR in GOSCI_RCISTD ***'//
-     &           ' Not implemented')
+     &           ' NCSIM.gt.1 not implemented')
 C
 C
 C           Project out all previous trial vectors
 C
             DNBEF = DNORM2(NZCONFQ,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
-            DO I = 1, JCSIM
+            DO I = 1, JCRED
 C
 C              FIXME: loop over new trial vectors
 C
@@ -2114,6 +2200,7 @@ C
      &           IROUND = IROUND + 1
 C
             CALL DSCAL(NZCONFQ,1/DNAFT,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
+C hj 16-jun-2004 TODO: screen on elements here ...
 C
             IF (IROUND .GT. 0) THEN
                IROUND = 0
@@ -2130,7 +2217,7 @@ C
                WALLTID = SECTID(WLL4-WLL3)
                WRITE(LUPRI,'(/A,I3,5A)')
      &              ' (GOSCI_RCISTD) CPU (Wall) time for iteration ',
-     &              ITMIC,': ',CPUTID,'(',WALLTID,')'
+     &              ITMIC,': ',CPUTID,' (',WALLTID,')'
             END IF
 C
          GOTO 100
@@ -2139,19 +2226,21 @@ C
 C
 C     Print timings
 C
+      CALL GETTIM(CPU4,WLL4)
       IF (IPROPT .GE. 2) THEN
-         CALL GETTIM(CPU4,WLL4)
          CPUTID = SECTID(CPU4-CPU3)
          WALLTID = SECTID(WLL4-WLL3)
          WRITE(LUPRI,'(/A,I4,5A)')
      &        ' (GOSCI_RCISTD) CPU (Wall) time for iteration',
-     &        ITMIC,': ',CPUTID,'(',WALLTID,')'
+     &        ITMIC,': ',CPUTID,' (',WALLTID,')'
+      END IF
+      IF (IPROPT .GE. 0) THEN
          CPUTID = SECTID(CPU4-CPU2)
          WALLTID = SECTID(WLL4-WLL2)
          WRITE(LUPRI,'(/6A)')
      &        ' (GOSCI_RCISTD) Total CPU (Wall) '//
      &        'time for microiterations: ',
-     &        CPUTID,'(',WALLTID,')'
+     &        CPUTID,' (',WALLTID,')'
       END IF
 C
       IF (ICONV .GT. 0) THEN
@@ -2162,20 +2251,27 @@ C
             WRITE(LUPRI,'(//A)') ' (GOSCI_RCISTD) '//
      &           'WARNING: linear dependency in trial vectors.'
          ELSE IF (ICONV .EQ. -2) THEN
-            WRITE(LUPRI,'(//2A,I3,A)') ' (GOSCI_RCISTD) ',
-     &           'WARNING: maximum number of micro iterations ',
+            WRITE(LUPRI,'(/A,I4,A)') ' (GOSCI_RCISTD) '//
+     &           'WARNING: maximum number of micro iterations',
      &           MAXCIT, ' reached.'
+         ELSE IF (ICONV .EQ. -3) THEN
+            WRITE(LUPRI,'(//A,I4,A)') ' (GOSCI_RCISTD) '//
+     &           'WARNING: maximum reduced space dimension of',
+     &           MAXR, ' reached.'
+         ELSE
+            WRITE(LUPRI,'(//A,I4/A)') ' (GOSCI_RCISTD) '//
+     &        'WARNING: micro iterations aborted while not converged.',
+     &        ' ICONV value :',ICONV
          END IF
       END IF
 C
+C
       MAXCIT = ITMIC
       ECI = ECORE + ECIA
-      WRITE(LUPRI,'(//A,F20.8)')
-     &     ' (GOSCI_RCISTD) Core energy       = ',ECORE
-      WRITE(LUPRI,'(A,F20.8)')
-     &     '                Active energy     = ',ECIA
-      WRITE(LUPRI,'(A,F20.8)')
-     &     '                Final CI energy   = ',ECI
+      WRITE(LUPRI,'(3(/A,F20.10))')
+     &     '                Core energy       = ',ECORE,
+     &     '                Active energy     = ',ECIA,
+     &     ' (GOSCI_RCISTD) Final CI energy   = ',ECI
 C
 C     Construct CREF:
 C
@@ -2184,15 +2280,10 @@ C
          CALL DAXPY(NZCONFQ,WORK(KEIGVC+(I-1)+(IOPT_ISTATE-1)*MAXR),
      &        WORK(KBCVEC+(I-1)*NZCONFQ),1,CREF,1)
       END DO
-CDEBUG
-c     call dzero(cref,nzconfq)
-c     cref(37,1) = d1
-c     call dzero(cref,nzconfq)
-c     cref(2,1) = d1
 C
 C     Check norm of CI vector
 C
-      CALL RCINORM(CREF)
+      CALL RCINORM(CREF,10)
 C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD) CI start vector'
@@ -2200,13 +2291,13 @@ C
       END IF
 C
       CALL GETTIM(CPU2,WLL2)
-      IF (IPROPT .GE. 2) THEN
+      IF (IPROPT .GE. 0) THEN
          CPUTID = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WLL2-WLL1)
          WRITE(LUPRI,9000) CPUTID,WALLTID
       END IF
  9000 FORMAT(/' (GOSCI_RCISTD) Total CPU (Wall) time for routine: ',
-     &     A,'(',A,')')
+     &     A,' (',A,')')
 C
       CALL MEMREL('GOSCI_RCISTD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -2467,8 +2558,7 @@ C        write(lupri,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
          J = J + 2
       END DO
 C
-      CALL CGENDET(IEL,NASHT,NSTR,ISTR,
-     &     NGAS,MSKGAS,NGSPC,MAXDET)
+      CALL CGENDET(IEL,NASHT,NSTR,ISTR,NGAS,MSKGAS,NGSPC,MAXDET)
 C
       RETURN
       END
@@ -2529,7 +2619,7 @@ C
       DIMENSION DV(2*NASHT,2*NASHT,*)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
 C
-      LOGICAL   DODIA, DOSIG, DODEN, DO2EL
+      LOGICAL   DODIA, DOSIG, DODEN, DO2EL, DODENCHK
 C
       DIMENSION IDET(2,*)
 C
@@ -2578,6 +2668,12 @@ C
       DOIMAG  = NZ.GT.1
       DOIMAG1 = DOIMAG
 C
+C     screening for density matrices:
+C
+      DODENCHK = DODEN .AND. .NOT.DOSIG .AND. .NOT.DODIA
+      THRSCR = 1.0D-10
+      NDSKIP = 0
+C
       MK2STP = 2
 C
       DO 10 MK2I = MINMK2, MAXMK2, MK2STP
@@ -2587,27 +2683,11 @@ D        write(lupri,*) '(GOSCI_CI) MK2I = ',MK2I
          ISTRT = IMK2(MK2I) + 1
          IEND  = IMK2(MK2I) + NMK2(MK2I)
 C
-         MK2JSTRT = MAX(MINMK2,-MAXMK2,MK2I-ITMAX)
+Chj 16June2004: I don't understand how the -MAXMK2 in next line can be right ...
+Chj      MK2JSTRT = MAX(MINMK2,-MAXMK2,MK2I-ITMAX)
+         MK2JSTRT = MAX(MINMK2,MK2I-ITMAX)
          MK2JEND  = MK2I - MK2STP
 C
-C
-C        *************************
-C        *** Off-diagonal loop *** (MK2J .lt. MK2I)
-C        *************************
-C
-C
-         IF (.NOT. (DODEN .OR. DOSIG)) GOTO 21
-C        ...only off-diagonal blocks for dens.mat or sigma-vec.
-C
-         DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
-            IF (NMK2(MK2J) .EQ. 0) GOTO 20
-D           write(lupri,*) '(GOSCI_CI) MK2I MK2J = ',MK2I,MK2J
-D           call flshfo(lupri)
-C
-            JSTRT = IMK2(MK2J) + 1
-            JEND  = IMK2(MK2J) + NMK2(MK2J)
-            MXNDAV = ITMAX + (MK2J - MK2I)/2
-C           ... we know that NDBV .ge. (MK2I-MK2J)/2
 C
 C           Loop over determinants
 C           (use that outer loop in gosci_gendet is over A-strings,
@@ -2615,6 +2695,15 @@ C           inner loop is over B-strings)
 C
             IDAOLD = -1
             DO 100 I = ISTRT, IEND
+               IF (DODENCHK) THEN
+                  DENCHK = ABS(CL(I,1)) + ABS(CR(I,1))
+                  IF (DOIMAG)
+     &            DENCHK = DENCHK + ABS(CL(I,2)) + ABS(CR(I,2))
+                  IF (DENCHK .LT. THRSCR) THEN
+                     NDSKIP = NDSKIP + 1
+                     GO TO 100
+                  END IF
+               ENDIF
 C
 C
                IDA = IDET(1,I)
@@ -2639,7 +2728,25 @@ C
                   END IF
                END DO
                IF (IELEC .NE. NAELEC)
-     &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
+     &            CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
+C
+C        *************************
+C        *** Off-diagonal loop *** (MK2J .lt. MK2I)
+C        *************************
+C
+C
+            IF (.NOT. (DODEN .OR. DOSIG)) GOTO 21
+C           ...only off-diagonal blocks for dens.mat or sigma-vec.
+C
+            DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
+               IF (NMK2(MK2J) .EQ. 0) GOTO 20
+D              write(lupri,*) '(GOSCI_CI) MK2I MK2J = ',MK2I,MK2J
+D              call flshfo(lupri)
+C
+               JSTRT = IMK2(MK2J) + 1
+               JEND  = IMK2(MK2J) + NMK2(MK2J)
+               MXNDAV = ITMAX + (MK2J - MK2I)/2
+C              ... we know that NDBV .ge. (MK2I-MK2J)/2
 C
                JDAOLD = -1
                DO 200 J = JSTRT, JEND
@@ -2684,6 +2791,12 @@ C
                   IF (IT .GT. ITMAX) GOTO 200
 C                 ... IT = number of different spinors
 C                          in det(I) and det(J)
+                  IF (DODENCHK) THEN
+                     DENCHK = ABS(CL(J,1)) + ABS(CR(J,1))
+                     IF (DOIMAG)
+     &               DENCHK = DENCHK + ABS(CL(J,2)) + ABS(CR(J,2))
+                     IF (DENCHK .LT. THRSCR) GO TO 200
+                  ENDIF
 C
                   IELEC = JAELEC
                   IBI = IBTAND (IDBV, IDB)
@@ -2694,7 +2807,7 @@ C
                      IIBIT = IBTSHL (1, II - 1)
                      IF (IBTAND (JDB, IIBIT) .NE. 0) THEN
                         IELEC = IELEC + 1
-                        JOCCI(IELEC) = IPTB2O(K)
+                        JOCCI(IELEC) = IPTB2O(II)
                      END IF
 C
                      IF (IBTAND (IBI, IIBIT) .NE. 0) THEN
@@ -2746,7 +2859,7 @@ C
                         DMIIJ = CL(I,1)*CR(J,2) - CL(I,2)*CR(J,1)
                         DMRJI = DMRJI + CL(J,2)*CR(I,2)
                         DMIJI = CL(J,1)*CR(I,2) - CL(J,2)*CR(I,1)
-                        DOIMAG1 = (ABS(DMIIJ)+ABS(DMIJI)) .LT. THRZER
+                        DOIMAG1 = (ABS(DMIIJ)+ABS(DMIJI)) .GT. THRZER
                      END IF
                      CALL GOSCI_PMAT(DO2EL,DOIMAG1,IT,IOCCI,JOCCI,
      &                    K,L,M,N,
@@ -2754,42 +2867,14 @@ C
 C
                   END IF
  200           CONTINUE
- 100        CONTINUE
- 20      CONTINUE
- 21      CONTINUE
+ 20         CONTINUE
+ 21         CONTINUE
 C
 C
 C
 C        ***********************
 C        *** Diagonal blocks *** (MK2J .eq. MK2I)
 C        ***********************
-C
-         IDAOLD = -1
-         DO 300 I = ISTRT, IEND
-C
-C
-            IDA = IDET(1,I)
-            IF (IDA .NE. IDAOLD) THEN
-C              ... outer loop in gosci_gendet is over A-strings
-               IAELEC = 0
-               DO K = 1, NASHT
-                  IF (IBTAND (IDA, IBTSHL (1, K - 1)) .NE. 0) THEN
-                     IAELEC = IAELEC + 1
-                     IOCCI(IAELEC) = IPTA2O(K)
-                  END IF
-               END DO
-               IDAOLD = IDA
-            END IF
-            IDB = IDET(2,I)
-            IELEC = IAELEC
-            DO K = 1, NASHT
-               IF (IBTAND (IDB, IBTSHL (1, K - 1)) .NE. 0) THEN
-                  IELEC = IELEC + 1
-                  IOCCI(IELEC) = IPTB2O(K)
-               END IF
-            END DO
-            IF (IELEC .NE. NAELEC)
-     &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
 C
 C           Diagonal element (Det_I .eq. DET_J)
 C
@@ -2826,7 +2911,7 @@ C
                ELSE
                   DMR = CL(I,1)*CR(I,1) + CL(I,2)*CR(I,2)
                   DMI = CL(I,1)*CR(I,2) - CL(I,2)*CR(I,1)
-                  DOIMAG1 = ABS(DMI) .LT. THRZER
+                  DOIMAG1 = ABS(DMI) .GT. THRZER
                END IF
                CALL GOSCI_PMAT(DO2EL,DOIMAG1,0,IOCCI,IOCCI,0,0,0,0,
      &              DMR,DMI,DMR,DMI,DV,PV)
@@ -2836,7 +2921,7 @@ C
 C           Off-diagonal elements
 C           ---------------------
 C
-            IF (.NOT. (DOSIG .OR. DODEN)) GOTO 300
+            IF (.NOT. (DOSIG .OR. DODEN)) GOTO 100
             JDAOLD = -1
             DO 400 J = ISTRT, I - 1
 C
@@ -2870,6 +2955,13 @@ C
                   JDAOLD = JDA
                END IF
                IF (NDAV .GT. ITMAX) GOTO 400
+C
+               IF (DODENCHK) THEN
+                  DENCHK = ABS(CL(J,1)) + ABS(CR(J,1))
+                  IF (DOIMAG)
+     &               DENCHK = DENCHK + ABS(CL(J,2)) + ABS(CR(J,2))
+                  IF (DENCHK .LT. THRSCR) GO TO 400
+               ENDIF
 C
                JDB = IDET(2,J)
                IF (NDAV .EQ. ITMAX) THEN
@@ -2950,14 +3042,14 @@ C
                      DMIIJ = CL(I,1)*CR(J,2) - CL(I,2)*CR(J,1)
                      DMRJI = DMRJI + CL(J,2)*CR(I,2)
                      DMIJI = CL(J,1)*CR(I,2) - CL(J,2)*CR(I,1)
-                     DOIMAG1 = (ABS(DMIIJ)+ABS(DMIJI)) .LT. THRZER
+                     DOIMAG1 = (ABS(DMIIJ)+ABS(DMIJI)) .GT. THRZER
                   END IF
                   CALL GOSCI_PMAT(DO2EL,DOIMAG1,IT,IOCCI,JOCCI,K,L,M,N,
      &                 DMRIJ,DMIIJ,DMRJI,DMIJI,DV,PV)
 C
                END IF
  400        CONTINUE
- 300     CONTINUE
+ 100     CONTINUE
 C
  10   CONTINUE
 C
@@ -2967,7 +3059,276 @@ C
       CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
 D     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
       WRITE(LUPRI,'(/5A)')
-     &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,'(',WALLTID,')'
+     &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,' (',WALLTID,')'
+      IF (NDSKIP .GT. 0) WRITE(LUPRI,'(A,I10,A,I10)')
+     &   ' Number of configuration elements skipped:',NDSKIP,
+     &   ' out of',NZCONF
+C
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gosci_cisig_screen */
+      SUBROUTINE GOSCI_CISIG_SCREEN(SVEC,BVEC,HCORE,VMUUUU,
+     &                              DO2EL,IDET,THRSCR)
+C***********************************************************************
+C
+C     Calculate:
+C         CI sigma vector in SVEC with screening
+C
+C     Input:
+C
+C        BVEC - trial vector
+C        HCORE  - core Fock matrix
+C        VMUUUU - two electron integrals.
+C
+C        DO2EL - include 2-electron part : VMUUUU
+C        IDET  - determinant strings
+C        THRSCR - skip abs(BVEC(i)) .le. THRSCR
+C
+C     Output:
+C
+C        SVEC   - sigma vector
+C
+C
+C     Written by J. Thyssen and H.J.Aa. Jensen - Jan-Mar 2001
+C     Last revision : July 2002/Sep 2003 hjaaj
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgosci.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbopt.h"
+C
+      DIMENSION SVEC(NZCONF,*), BVEC(NZCONF,*)
+      DIMENSION VMUUUU(*), HCORE(*)
+C
+C
+      LOGICAL   DO2EL
+C
+      DIMENSION IDET(2,*)
+C
+      LOGICAL   DOIMAG
+C
+      DIMENSION IOCCI(2*MAXASH_GOSCI), JOCCI(2*MAXASH_GOSCI)
+      DIMENSION IBTAB(0:255)
+      INTEGER*8 FNCALLS, CNCALLS
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+C
+#include "ibtfun.h"
+C
+      CALL GETTIM(CPU1,WLL1)
+C
+C     Initialization
+C     --------------
+C
+C     Bit table:
+C
+      CALL IBTABINI(IBTAB)
+C
+C     Zero counters
+C
+      CALL GETNBITSCALLS(1,FNCALLS,CNCALLS)
+C
+C     Zero vectors:
+C
+      MZ = MIN(NZ,2)
+      CALL DZERO(SVEC,NZCONFQ)
+C
+      IF (DO2EL) THEN
+C        max 4 differences between 2 determinants
+C        for 2-electron terms
+         ITMAX = 4
+      ELSE
+C        max 2 differences between 2 determinants
+C        when only 1-electron terms
+         ITMAX = 2
+      END IF
+C
+      DOIMAG  = NZ.GT.1
+C
+      MK2STP = 2
+C
+      NBSKIP = 0
+      DO 10 MK2I = MINMK2, MAXMK2, MK2STP
+C        ... MK2 is NAEL - NBEL
+         IF (NMK2(MK2I) .EQ. 0) GOTO 10
+D        write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I = ',MK2I
+         ISTRT = IMK2(MK2I) + 1
+         IEND  = IMK2(MK2I) + NMK2(MK2I)
+C
+         MK2JSTRT = MAX(MINMK2,MK2I-ITMAX)
+         MK2JEND  = MIN(MAXMK2,MK2I+ITMAX)
+C
+C        Loop over determinants
+C        (use that outer loop in gosci_gendet is over A-strings,
+C        inner loop is over B-strings)
+C
+         IDAOLD = -1
+         DO 100 I = ISTRT, IEND
+C
+C        Screening:
+C
+            IF (ABS(BVEC(I,1)) .GT. THRSCR) GOTO 12
+            IF (DOIMAG) THEN
+               IF (ABS(BVEC(I,2)) .GT. THRSCR) GOTO 12
+            END IF
+            NBSKIP = NBSKIP + 1
+            GOTO 100
+C
+C           ---------------
+C
+   12       IDA = IDET(1,I)
+            IF (IDA .NE. IDAOLD) THEN
+C              ... outer loop in gosci_gendet is over A-strings
+               IAELEC = 0
+               DO K = 1, NASHT
+                  IF (IBTAND (IDA, IBTSHL (1, K - 1)) .NE. 0) THEN
+                     IAELEC = IAELEC + 1
+                     IOCCI(IAELEC) = IPTA2O(K)
+                  END IF
+               END DO
+               IDAOLD = IDA
+            END IF
+C
+            IELEC = IAELEC
+            IDB = IDET(2,I)
+            DO K = 1, NASHT
+               IF (IBTAND (IDB, IBTSHL (1, K - 1)) .NE. 0) THEN
+                  IELEC = IELEC + 1
+                  IOCCI(IELEC) = IPTB2O(K)
+               END IF
+            END DO
+            IF (IELEC .NE. NAELEC)
+     &         CALL QUIT('GOSCI_CISIG_SCREEN: IELEC.ne.NAELEC')
+C
+C
+C        *************************
+C        *************************
+C
+C
+            DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
+               IF (NMK2(MK2J) .EQ. 0) GOTO 20
+D           write(lupri,*) '(GOSCI_CISIG_SCREEN) MK2I MK2J = ',MK2I,MK2J
+D              call flshfo(lupri)
+C
+               JSTRT = IMK2(MK2J) + 1
+               JEND  = IMK2(MK2J) + NMK2(MK2J)
+               MXNDAV = ITMAX - ABS(MK2J - MK2I)/2
+C              ... we know that NDBV .ge. ABS(MK2I-MK2J)/2
+C
+               JDAOLD = -1
+               DO 200 J = JSTRT, JEND
+C
+                  JDA = IDET(1,J)
+                  IF (JDA .NE. JDAOLD) THEN
+C                    ... outer loop in gosci_gendet is over A-strings
+                     IDAV = IBTXOR (IDA, JDA)
+                     CALL FNBITS(NDAV,IDAV,IBTAB)
+                     IF (NDAV .GT. MXNDAV) GOTO 200
+C
+                     JAELEC = 0
+                     IAI = IBTAND (IDAV, IDA)
+                     KA  = 0
+                     IAJ = IBTAND (IDAV, JDA)
+                     MA  = 0
+                     DO II = 1, NASHT
+                        IIBIT = IBTSHL (1, II - 1)
+                        IF (IBTAND (JDA, IIBIT) .NE. 0) THEN
+                           JAELEC = JAELEC + 1
+                           JOCCI(JAELEC) = IPTA2O(II)
+                        END IF
+                        IF (IBTAND (IAI, IIBIT) .NE. 0) THEN
+                           L  = KA
+                           KA = IPTA2O(II)
+                        END IF
+                        IF (IBTAND (IAJ, IIBIT) .NE. 0) THEN
+                           N  = MA
+                           MA = IPTA2O(II)
+                        END IF
+                     END DO
+                     JDAOLD = JDA
+                  END IF
+                  IF (NDAV .GT. MXNDAV) GOTO 200
+C                 ... see note above about MXNDAV
+C
+                  JDB  = IDET(2,J)
+                  IF (NDAV .EQ. ITMAX) THEN
+                     IF (JDB .NE. IDB) GO TO 200
+                     IT = NDAV
+                     IBI = 0
+                     IBJ = 0
+                     K = KA
+                     M = MA
+                     DO IELEC = JAELEC + 1, NAELEC
+                        JOCCI(IELEC) = IOCCI(IELEC)
+                     END DO
+                  ELSE
+                     IDBV = IBTXOR (IDB, JDB)
+                     CALL FNBITS(NDBV,IDBV,IBTAB)
+C
+                     IT = NDAV + NDBV
+                     IF (IT .GT. ITMAX) GOTO 200
+C                    ... IT = number of different spinors
+C                          in det(I) and det(J)
+C
+                     IELEC = JAELEC
+                     IBI = IBTAND (IDBV, IDB)
+                     IBJ = IBTAND (IDBV, JDB)
+                     K = KA
+                     M = MA
+                     DO II = 1, NASHT
+                        IIBIT = IBTSHL (1, II - 1)
+                        IF (IBTAND (JDB, IIBIT) .NE. 0) THEN
+                           IELEC = IELEC + 1
+                           JOCCI(IELEC) = IPTB2O(II)
+                        END IF
+C
+                        IF (IBTAND (IBI, IIBIT) .NE. 0) THEN
+                           L = K
+                           K = IPTB2O(II)
+                        END IF
+                        IF (IBTAND (IBJ, IIBIT) .NE. 0) THEN
+                           N = M
+                           M = IPTB2O(II)
+                        END IF
+                     END DO
+                  END IF
+C
+C                 Hamiltonian matrix element
+C                 --------------------------
+C
+C
+                  CALL GOSCI_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,
+     &                    K,L,M,N,HR,HI,HCORE,VMUUUU)
+C
+C                 S_J += H_{IJ}^* B_{I}
+C
+                  SVEC(J,1) = SVEC(J,1) + HR * BVEC(I,1)
+                  IF (DOIMAG) THEN
+                     SVEC(J,1) = SVEC(J,1) + HI * BVEC(I,2)
+                     SVEC(J,2) = SVEC(J,2)
+     &                    + HR * BVEC(I,2) - HI * BVEC(I,1)
+                  END IF
+C              end loop 200 J and end loop 20 MKJ
+ 200           CONTINUE
+ 20         CONTINUE
+C        end loop 100 I and end loop 10 MKI
+ 100     CONTINUE
+ 10   CONTINUE
+C
+      CALL GETTIM(CPU2,WLL2)
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WLL2-WLL1)
+D     CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
+D     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+      WRITE(LUPRI,'(/5A/A,I10,A,I10)')
+     &   ' CPU (Wall) time in GOSCI_CISIG_SCREEN kernel: ',CPUTID,' (',
+     &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
+     &   ' out of',NZCONF
 C
       CALL FLSHFO(LUPRI)
       RETURN
