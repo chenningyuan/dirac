@@ -193,7 +193,7 @@ C
             WRITE (LUPRI,'(A,I5)') ' Print level in READIN:',IPREAD
          END IF
          IF (OLDNRM) THEN
-            WRITE (LUPRI,'(A')
+            WRITE (LUPRI,'(A)')
      &         ' Dalton 1.0 normalization of spherical GTOs used.'
          END IF
          IF (TOLLRN .NE. 0.0D0) THEN
