@@ -11,26 +11,26 @@ include ../Makefile.config
 # Delete the entry libpdlib.a(gpblas.o) if you supply your own BLAS !
 #
 
-F_OBJS=libpdlib.a(arhpack.o) libpdlib.a(dge.o) libpdlib.a(dsp.o)\
-       libpdlib.a(linextra.o) libpdlib.a(printpkg.o)\
-       libpdlib.a(gpblas.o) libpdlib.a(eispack.o)
+F_OBJS = libpdlib.a(arhpack.o) libpdlib.a(dge.o) libpdlib.a(dsp.o)\
+         libpdlib.a(linextra.o) libpdlib.a(printpkg.o)\
+         libpdlib.a(gpblas.o) libpdlib.a(eispack.o)
 
-SRC=arhpack.F dge.F dsp.F linextra.F printpkg.F \
-    gpblas.F  eispack.F
+F77_SRC = arhpack.F dge.F dsp.F linextra.F printpkg.F \
+          gpblas.F  eispack.F
 
-F_CPPS = $(F_OBJS:.o=.i)
+F77_CPPS = $(F77_SRC:.F=.i)
 
 all :	libpdlib.a
 
-pre:	$(F_CPPS)
+pre:	$(F77_CPPS)
 
 ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
 libpdlib.a: $(F_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.a
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i *.a
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -39,6 +39,6 @@ dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(SRC:.o=.F) 
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_SRC) 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

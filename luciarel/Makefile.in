@@ -7,16 +7,18 @@
 
 include ../Makefile.config
 
-F_OBJS=ciinfo_r.o  density_r.o  diagonal_r.o  diagonalize_r.o  fock_r.o  interface_r.o  \
-       io_r.o  memory_r.o  program_r.o  sigden_r.o  sigma_r.o  strings_r.o  transform_r.o  \
-       utils_r.o  vecmat_r.o
+F77_OBJS = ciinfo_r.o  density_r.o  diagonal_r.o  diagonalize_r.o  fock_r.o  interface_r.o  \
+           io_r.o  memory_r.o  program_r.o  sigden_r.o  sigma_r.o  strings_r.o  transform_r.o  \
+           utils_r.o  vecmat_r.o
 
-F_CPPS = $(F_OBJS:.o=.i)
+F90_OBJS =
 
-pre:	$(F_CPPS)
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
 
 ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -24,14 +26,14 @@ dirac.x:
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
-all:	$(F_OBJS)
+all:	$(F77_OBJS) $(F90_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i
-
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 

@@ -7,22 +7,24 @@
 
 include ../Makefile.config
 
-F_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
-	  qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
-	  gpjth.o    gplucia.o     gpkrmc.o
+F77_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
+	    qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
+	    gpjth.o    gplucia.o     gpkrmc.o
+
+F90_OBJS =
 
 C_OBJS = gpc.o
 
 MXM_OBJS = mxmpack.o
 
-F_CPPS = $(F_OBJS:.o=.i)
+F77_CPPS = $(F77_OBJS:.o=.i)
 
-pre:	$(F_CPPS)
+pre:	$(F77_CPPS)
 
-ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+ftnchek: pre
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	setcomp $(F_OBJS) $(C_OBJS)
+all:	setcomp $(F77_OBJS) $(F90_OBJS) $(C_OBJS)
 
 setcomp:
 	( \
@@ -37,7 +39,7 @@ setcomp:
 mxm:	$(MXM_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
 
 dirac.x:
@@ -48,6 +50,7 @@ dirmpi.x:
 
 
 depend: setcomp
-	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

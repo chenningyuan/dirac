@@ -7,20 +7,22 @@
 
 include ../Makefile.config
 
-F_OBJS =ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
-      ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o
+F77_OBJS = ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
+           ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o
 
-F_CPPS = $(F_OBJS:.o=.i)
+F90_OBJS =
 
-pre:	$(F_CPPS)
+F77_CPPS = $(F77_OBJS:.o=.i)
+
+pre:	$(F77_CPPS)
 
 ftnchek:pre
-	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+	ftnchek $(CHEKFLAGS) $(F77_CPPS) > ftnchek.out
 
-all:	$(F_OBJS) $(C_OBJS)
+all:	$(F77_OBJS) $(F90_OBJS) $(C_OBJS)
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i
+	$(RM) -f *.o *~ *.f *.f90 *.lst *.i
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
@@ -29,6 +31,6 @@ dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
+	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
