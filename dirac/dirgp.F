@@ -1767,3 +1767,132 @@ C           ... single number
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLS3: oo must be two consecutive characters.')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck cmomi1 */
+      SUBROUTINE CMOROT(CMO,EIG,IBEIG,WORK,LWORK)
+C***********************************************************************
+C
+C     Perform Jacobi rotations of user-specified angle on pairs
+C     of orbitals
+C
+C     Written by T. Saue March 1 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D180=180.0D0)
+#include "pi.h"
+C
+#include "dcbgen.h"
+#include "dcbrot.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
+#include "memint.h"
+C
+      X = ROTANG*PI/D180
+      COSX = COS(X)
+      SINX = SIN(X)      
+      DO 10 IFRP = 1,NFSYM
+        NVECS = 1
+        CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
+        CALL NUMLST(VECROT(IFRP),WORK(KJVEC),NORB(IFRP),
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS,WORK(KFREE),LFREE)
+        CALL ORBCN2(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
+        IF(MOD(NVECS,2).EQ.1) THEN
+          CALL QUIT('CMOROT: Odd number of orbitals to rotate !')
+        ENDIF
+        IF(NVECS.EQ.0) GOTO 20
+        CALL MEMGET('REAL',KBUF,NFBAS(IFRP,0),WORK,KFREE,LFREE)
+        CALL JACORB(COSX,SINX,NVECS,WORK(KJVEC),CMO(ICMOQ(IFRP)+1),
+     &              NFBAS(IFRP,0),NORB(IFRP),WORK(KBUF))
+ 20     CONTINUE
+        CALL MEMREL('CMOROT',WORK,1,KWORK,KFREE,LFREE)
+ 10   CONTINUE
+C
+      RETURN
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck jacorb */
+      SUBROUTINE JACORB(COSX,SINX,NVECS,JVEC,CMO,NBAS,NORB,BUF)
+C***********************************************************************
+C
+C     Perform Jacobi rotation of orbitals
+C
+C     Written by T. Saue March 1 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),BUF(NBAS),JVEC(NORB)
+      DO I=1,NVECS,2
+        I1 = JVEC(I)
+        I2 = JVEC(I+1)
+        DO IZ = 1,NZ
+          CALL DROT(NBAS,CMO(1,I1,IZ),1,CMO(1,I2,IZ),1,COSX,SINX)
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck orbmod */
+      SUBROUTINE PREORB(WORK,LWORK)
+C***********************************************************************
+C
+C     Manipulation of DFCOEF prior to wave function calculation
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbreo.h"
+#include "dcbrot.h"
+      LOGICAL TOBE
+      DIMENSION WORK(LWORK)
+C
+#include "memint.h"
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG ,NORBT ,WORK,KFREE,LFREE)
+C
+C     Read coefficients, eigenvalues and irrep identification 
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREMOD')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &            WORK(KIBG),TOTERG,14,WORK,KFREE,LFREE)
+C
+C     Reorder orbitals
+C
+      IF (LMOORD) CALL REORD(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &                       IMOORD,IREORD,MXREORD,WORK(KFREE),LFREE)
+C
+C     Rotate orbitals
+C
+      IF(ROTORB) CALL CMOROT(WORK(KCMO),WORK(KEIG),WORK(KIBG),
+     &         WORK(KFREE),LFREE)
+C
+C     Write new coefficients
+C
+      CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBG),TOTERG)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Memory deallocation
+      CALL MEMREL('PREMOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PREMOD: Coefficient file not found !'
+      CALL QUIT('PREMOD: Coefficients not found !')
+C
+      END

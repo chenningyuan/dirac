@@ -46,10 +46,13 @@ C
 #include "dcbgen.h"
 C
 #include "infpar.h"
+#include "dgroup.h"
 C
       DIMENSION WORK(LWORK)
 C
 C
+      ISIZE = ICOMMSIZE(NZ,ITOT)
+      WRITE(6,*) 'Size of COMMON=',ISIZE
       PARCAL = (IPARCAL .NE. 0)
 C
 C     Transfer variables to common blocks
@@ -209,6 +212,9 @@ C HJAaJ Nov. 2002 TODO: PAMANA only works for closed shell SCF now
 C (DHF or DFT), not for other wave functions.
 C It ought to be implemented for other wave function types as well.
 C TF, Nov. 2003:  Done for KRMC. 
+C
+C     Reorder/rotate orbitals prior to SCF-calculations
+      IF(DOORBM) CALL PREORB(WORK,LWORK)
 C
 C***********************************************************************
 C***** D I R A C - H A R T R E E - F O C K *****************************

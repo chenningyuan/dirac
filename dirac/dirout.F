@@ -1930,3 +1930,39 @@ C
       RETURN
  100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ORBCN2(JVEC,NVEC,IFRP,NPVEC,NEVEC)
+C***********************************************************************
+C     Find number of electronic/positronic vectors
+C
+C     Written by T.Saue Jan 7 1996
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION JVEC(NVEC)
+#include "dcborb.h"
+C
+      NPVEC = 0
+      NEVEC = 0
+      II = 0
+      DO 10 I = 1,NVEC
+        J = JVEC(I)
+C
+C       Positronic orbital in range [-NPSH(IFRP),-1]
+C
+        IF    (J.LT.0.AND.J.GE.(-NPSH(IFRP))) THEN
+          JVEC(I)  = NPSH(IFRP)+1+J
+          NPVEC    = NPVEC + 1
+C
+C       Electronic orbital in range [1,NESH(IFRP)]
+C
+        ELSEIF (J.GT.0.AND.J.LE.NESH(IFRP)) THEN
+          JVEC(I)  = NPSH(IFRP)+J
+          NEVEC    = NEVEC + 1
+        ENDIF
+ 10   CONTINUE
+C
+      NVEC = NPVEC+NEVEC
+      RETURN
+      END

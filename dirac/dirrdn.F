@@ -701,7 +701,7 @@ C***********************************************************************
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER CTEMP*72, LINE*80, TEXT*20
+      CHARACTER LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
 C
 #include "nuclei.h"
@@ -712,7 +712,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbreo.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -720,8 +719,8 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
-     &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
+     &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',
+     &            '.XXXXXX','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
      &            '.MJSELE','.AOC   ','.FOCC  ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
@@ -856,12 +855,6 @@ C
       CALL DZERO(DA,1+MXOPEN)
       CALL DZERO(DF,1+MXOPEN)
       CALL DZERO(DALPHA,1+MXOPEN)
-C
-C *** Initialize /CBIREO/ in dcbreo.h
-C     ===================
-C
-      LMOORD    = .FALSE.
-      LMOORF    = .FALSE.
 C
 C     Process input for DHFCAL
 C     ========================
@@ -1121,19 +1114,6 @@ C            (new overlap selection matrix formed in each iteration)
                     DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
-C&&& LMOORD: Reorder MO orbitals (only on restart on coefficients)
-C                 First read the number of orbital reorderings
-C                 in each fermion corep.
-C
-                  LMOORD = .TRUE.
-                  IREORD(1) = 0
-                  IREORD(2) = 0
-                  DO I = 1,NFSYM
-                     READ(LUCMD,'(A72)') CTEMP
-                     IREORD(I) = -1
-                     CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
-     &                           I,IREORD(I),WORK,LWORK)
-                  END DO
                GO TO 100
    29          CONTINUE
 C&&& DIISMO: Do tsaue/jon DIIS (DIIS in MO-basis, only works for
@@ -1147,20 +1127,6 @@ C&&& DIISAO: Do jth Dalton like DIIS
                   DIISMO = .FALSE.
                GO TO 100
    31          CONTINUE
-C&&& POST DHF REORDER: 
-C                 Reorder finished MO orbitals
-C                 First read the number of orbital reorderings
-C                 in each fermion corep.
-C
-                  LMOORF = .TRUE.
-                  IREORF(1) = 0
-                  IREORF(2) = 0
-                  DO I = 1,NFSYM
-                     READ(LUCMD,'(A72)') CTEMP
-                     IREORF(I) = -1
-                     CALL NUMLST(CTEMP,IMOORF(1,I),MXREORD,1,MXREORD,
-     &                           I,IREORF(I),WORK,LWORK)
-                  END DO
                GO TO 100
    32          CONTINUE
 C&&& MAX MACRO ITERATIONS: Maximum number of macro iterations for QC-DHF
@@ -1669,35 +1635,6 @@ C
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
 #endif
-C
-C     Reordering
-C
-      IF (LMOORD) THEN
-         WRITE(LUPRI,'(A)') ' * Reorder start orbitals '
-         WRITE(LUPRI,'(3X,A)') '- new ordering of start orbitals...'
-         DO I = 1,NFSYM
-            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
-            IF (IREORD(I) .GT. 0) THEN
-               WRITE(LUPRI,'(5X,50(I3,A))') 
-     &            (IMOORD(J,I),',',J=1,IREORD(I))
-            ELSE
-               WRITE(LUPRI,'(5X,A)') 'No reordering'
-            END IF
-         END DO
-      END IF
-      IF (LMOORF) THEN
-         WRITE(LUPRI,'(A)') ' * Reorder converged orbitals...'
-         WRITE(LUPRI,'(3X,A)') '- new ordering of converged orbitals...'
-         DO I = 1,NFSYM
-            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
-            IF (IREORF(I) .GT. 0) THEN
-               WRITE(LUPRI,'(5X,50(I3,A))') 
-     &            (IMOORF(J,I),',',J=1,IREORF(I))
-            ELSE
-               WRITE(LUPRI,'(5X,A)') 'No reordering'
-            END IF
-         END DO
-      END IF
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC) 
@@ -1876,19 +1813,22 @@ C***********************************************************************
       PARAMETER (NDIR = 12, NTABLE = 12)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7
+     &          WORD1*7,CTEMP*72
       DIMENSION WORK(LWORK)
 C
 #include "dcbgen.h"
+#include "dgroup.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
+#include "dcbreo.h"
+#include "dcbrot.h"
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','XXXXXXX','XXXXXXX','XXXXXXX'/
-      DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.XXXXXX',
-     &             '.XXXXXX','.RELCCS','.DIRRCI','.MVO   ',
-     &             '.RESOLV','.XXXXXX','.LUCIAR','.KRMCSC'/
+      DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
+     &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
+     &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC'/
 C
       NJOBS = 0
 C
@@ -1905,6 +1845,13 @@ C
       DOLUCT  = .FALSE.
       DOKRMC  = .FALSE.
       DOLUCIAR= .FALSE.
+      DOORBM  = .FALSE.
+C
+C *** Initialize /CBIREO/ in dcbreo.h
+C     ===================
+C
+      LMOORD    = .FALSE.
+      LMOORF    = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -1972,10 +1919,36 @@ C&&&& LUCITA: Perform spinfree CI calculation
             NJOBS = NJOBS + 1
             GO TO 100
   104    CONTINUE
-C&&&& XXXXXX: Empty space for new option (removed LVCOR here)
+C&&& REORDER: Reorder MO orbitals (only on restart on coefficients)
+C             First read the number of orbital reorderings
+C             in each fermion corep.
+C
+            LMOORD = .TRUE.
+            DOORBM = .TRUE.
+            IREORD(1) = 0
+            IREORD(2) = 0
+            DO I = 1,NFSYM
+              READ(LUCMD,'(A72)') CTEMP
+              IREORD(I) = -1
+              CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
+     &                    I,IREORD(I),WORK,LWORK)
+            END DO
             GO TO 100
   105    CONTINUE
-C&&&& XXXXXX: Empty space for new option (removed TSCOR here)
+C&&& POST DHF REORDER: 
+C           Reorder finished MO orbitals
+C           First read the number of orbital reorderings
+C           in each fermion corep.
+C
+            LMOORF = .TRUE.
+            IREORF(1) = 0
+            IREORF(2) = 0
+            DO I = 1,NFSYM
+              READ(LUCMD,'(A72)') CTEMP
+              IREORF(I) = -1
+              CALL NUMLST(CTEMP,IMOORF(1,I),MXREORD,1,MXREORD,
+     &                    I,IREORF(I),WORK,LWORK)
+                  END DO
             GO TO 100
   106    CONTINUE
 C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
@@ -2000,7 +1973,11 @@ C&&&& RESOLVE: Resolve open-shell states
             NJOBS = NJOBS + 1
             GO TO 100
   110    CONTINUE
-C&&&& XXXXXX: Empty space for new option (removed surplus LUCITA entry!)
+C&&&& ORBROT: Rotate orbitals prior to SCF calculations
+            ROTORB = .TRUE.
+            DOORBM = .TRUE.
+            READ(LUCMD,*) ROTANG
+            READ(LUCMD,'(A72)') (VECROT(I),I=1,NFSYM)            
             GO TO 100
   111    CONTINUE
 C&&&& LUCIAREL: Call LUCIAREL
@@ -2056,6 +2033,42 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOCCM) WRITE(LUPRI,'(A)') ' * Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
+C
+C     Orbital manipulations
+C
+      IF(ROTORB) THEN
+        WRITE(LUPRI,'(A)') 
+     &     ' * Jacobi rotations between pairs of orbitals '
+        DO I = 1,NFSYM
+          WRITE(LUPRI,'(A2,A1,3X,A72)') FREP(I),':',VECROT(I)
+        ENDDO
+      ENDIF
+      IF (LMOORD) THEN
+         WRITE(LUPRI,'(A)') ' * Reorder start orbitals '
+         WRITE(LUPRI,'(3X,A)') '- new ordering of start orbitals...'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
+            IF (IREORD(I) .GT. 0) THEN
+               WRITE(LUPRI,'(5X,50(I3,A))') 
+     &            (IMOORD(J,I),',',J=1,IREORD(I))
+            ELSE
+               WRITE(LUPRI,'(5X,A)') 'No reordering'
+            END IF
+         END DO
+      END IF
+      IF (LMOORF) THEN
+         WRITE(LUPRI,'(A)') ' * Reorder converged orbitals...'
+         WRITE(LUPRI,'(3X,A)') '- new ordering of converged orbitals...'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
+            IF (IREORF(I) .GT. 0) THEN
+               WRITE(LUPRI,'(5X,50(I3,A))') 
+     &            (IMOORF(J,I),',',J=1,IREORF(I))
+            ELSE
+               WRITE(LUPRI,'(5X,A)') 'No reordering'
+            END IF
+         END DO
+      END IF
 C
 C     Process input for various program sections
 C     ==========================================
