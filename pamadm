@@ -411,7 +411,7 @@ OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
-dirac/dirgeo.o dirac/dirgrd.o dirac/dirsol.o \\
+dirac/dirgrd.o dirac/dirsol.o \\
 dirac/main/alloc_mem.o    dirac/main/csectid.o    dirac/main/dirac.o \\
 dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \\
 dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \\
