@@ -810,4 +810,398 @@ C
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)
+C     
+C     Report the maximum number of buffer and record size that 
+C     will be used in the sort
+C
+C     Calling parameters
+C     
+C     NBUF   : Maximum number of buffers (hardwired in the common block)
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+C
+      NBUF = N_BUFFER
+      NSIZE = NGBFSZ
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_INIT (I_FILE,IROWS,NROWS)
+C     
+C     Initialize a buffer file to transpose a large matrix that is generated in parts
+C     Currently used in MOLTRA for the halftransformed two-electron
+C     integrals but it may be useful at other places as well.
+C
+C     Calling parameters
+C     
+C     I_FILE   : Bucket sort indentifier (we may have more than one active)
+C     IROWS    : Pointer from rows to buffer and position therein
+C     NROWS    : Number of rows
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      DIMENSION IROWS(3,NROWS)
+      CHARACTER*10 NAME*5,FNODE,LFNAM
+C
+C     The record size needs to be NGBFSZ real + (2*NGBFSZ + 2) integer
+C     because we also need to store the labels
+C
+      IRECL = IRECLEN(NGBFSZ,2*NGBFSZ+2,0)
+C
+C     The opening of a file is a bit tricky in FORTRAN, pray that the unit
+C     is not yet in use....
+C
+      WRITE (NAME,'(A4,I1)') 'BUFF',I_FILE 
+      FNODE = LFNAM(NAME)
+      LGFIL = I_BF_UNIT+I_FILE
+      OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
+C
+C     Initialize the data that is kept in the common block
+C
+      I_BF_REC(I_FILE) = 0
+      BF_NAME(I_FILE) = FNODE
+      CALL IZERO(LGREC(1,I_FILE),N_BUFFER)
+      CALL IZERO(LGBUF(1,I_FILE),N_BUFFER)
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_WRITE (I_FILE,RGBUF,IGBUF,IROWS,
+     &                              A,NROWS,ICOL,TRESHOLD)                              
+C     
+C     Scatter row of matrix A over the buffers, flush them if necessary
+C     
+C     Calling parameters
+C     
+C     LGFIL    : File unit
+C     RGBUF    : Real data in buffers
+C     IGBUF    : Integer data data in buffers
+C     IROWS    : Pointer from the rows to buffer
+C     A        : Column of matrix that is to be buffered away
+C     NROWS    : Number of rows in A
+C     ICOL     : Column index of A
+C     TRESHOLD : Treshold for writing the matrix element
+C
+C     Written by Luuk Visscher, August 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
+      DIMENSION IGBUF(2,NGBFSZ,*)
+      DIMENSION IROWS(3,NROWS)
+C
+C     Get the information stored in the common block 
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = I_BF_REC(I_FILE) 
+C
+C     Loop through the row and check if the data need be stored
+C
+      DO I = 1, NROWS
+         IBUF = IROWS(1,I)
+         IF (IBUF.GT.0.AND.ABS(A(I)).GT.TRESHOLD) THEN
+            IROW = IROWS(2,I)
+            N = LGBUF(IBUF,I_FILE) + 1
+            RGBUF(N,IBUF) = A(I)
+            IGBUF(1,N,IBUF) = ICOL
+            IGBUF(2,N,IBUF) = IROW
+            IF (N.GE.NGBFSZ) THEN 
+               IREC = IREC + 1
+               WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,
+     &               (RGBUF(JBUF,IBUF),JBUF=1,NGBFSZ),
+     &               ((IGBUF(IX,JBUF,IBUF),IX=1,2),JBUF=1,NGBFSZ)
+               LGREC(IBUF,I_FILE) = IREC
+               N = 0
+            ENDIF
+            LGBUF(IBUF,I_FILE) = N
+        ENDIF
+      ENDDO
+C
+      I_BF_REC(I_FILE) = IREC
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_FLUSH (I_FILE,RGBUF,IGBUF,IROWS,NROWS)                              
+C     
+C     Flush the buffers
+C     
+C     Calling parameters
+C     
+C     LGFIL    : File unit
+C     RBUF     : Real data in buffers
+C     IBUF     : Integer data data in buffers
+C     IROWS    : Pointer from rows to buffer and position therein
+C     NROWS    : Number of rows
+C     
+C     Written by Luuk Visscher, August 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      REAL*8 RGBUF(NGBFSZ,*)
+      DIMENSION IGBUF(2,NGBFSZ,*)
+      DIMENSION IROWS(3,NROWS)
+C
+C     Get the information stored in the common block 
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = I_BF_REC(I_FILE) 
+C
+C     Loop through the rows and check if the data need be flushed
+C
+      DO I = 1, NROWS
+         IBUF = IROWS(1,I)
+         N = LGBUF(IBUF,I_FILE)
+         IF (IBUF.GT.0.AND.N.GT.0) THEN 
+            IREC = IREC + 1
+            WRITE (LGFIL,REC=IREC) LGREC(IBUF,I_FILE),N,
+     &            (RGBUF(JBUF,IBUF),JBUF=1,NGBFSZ),
+     &            ((IGBUF(IX,JBUF,IBUF),IX=1,2),JBUF=1,NGBFSZ)
+            LGREC(IBUF,I_FILE) = IREC
+            N = 0
+         ENDIF
+         LGBUF(IBUF,I_FILE) = N
+      ENDDO
+C
+      I_BF_REC(I_FILE) = IREC
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_READ (I_FILE,IBUF,A,NROW,ICOL)                              
+C
+C     Read back the sorted integrals and put them at the right position
+C
+C     Written by Luuk Visscher, August 2004
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      REAL*8 RGBUF(NGBFSZ),A(NROW)
+      DIMENSION IGBUF(2,NGBFSZ)
+C
+      LGFIL    = I_BF_UNIT+I_FILE
+      IREC     = LGREC(IBUF,I_FILE)
+C
+      CALL DZERO (A,NROW)
+C
+    1 IF (IREC.EQ.0) RETURN
+C
+C     Read a batch and the link to the previous record.
+C
+      READ (LGFIL,REC=IREC) IRECN,NABFSZ,RGBUF,IGBUF
+      IREC = IRECN
+C
+C     Pick out the integrals that we need.
+C
+      DO JBUF = 1, NABFSZ
+         IF (IGBUF(2,JBUF).EQ.ICOL) THEN
+            A(IGBUF(1,JBUF)) = RGBUF(JBUF)
+         ENDIF
+      ENDDO
+C
+C     We read in reverse order, if we have the first block we're done
+C
+      GOTO 1
+C
+      RETURN
+      END
+#if defined (VAR_MPI)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BUFFER_FILE_DIST (I_FILE_1,IROWS,NROWS)    
+C     
+C     Send the buffers to the correct place
+C     
+C     Calling parameters
+C     
+C     LGFIL    : File unit
+C     IROWS    : Pointer from rows to buffer and position therein
+C     NROWS    : Number of rows
+C     
+C     Written by Luuk Visscher, August 2004
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "bucket_sort.h"
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE),ISTATS(MPI_STATUS_SIZE,3)
+#include "infpar.h"
+      REAL*8 RGBUF(NGBFSZ),RHBUF(NGBFSZ)
+      DIMENSION IGBUF(2,NGBFSZ),IHBUF(2,NGBFSZ)
+      DIMENSION IROWS(3,NROWS)
+      INTEGER INFO(2),JNFO(2),IREQ(4)
+      LOGICAL NEWMAIL, READY
+C
+C     Open a new file for the redistributed integrals
+C
+      I_FILE_2 = I_FILE_1 + 1
+      CALL BUFFER_FILE_INIT (I_FILE_2,IROWS,NROWS)
+C     
+C     Get the file units of the old and new file
+C
+      LGFIL_1   = I_BF_UNIT + I_FILE_1
+      LGFIL_2   = I_BF_UNIT + I_FILE_2
+C
+C     Get the start record for the new file
+C
+      IREC_2    = I_BF_REC(I_FILE_2) 
+C
+C     Put all local integrals that should stay on this node on the new file
+C
+      DO I = 1, NROWS
+         IBUF = IROWS(1,I)
+         IPOS = IROWS(2,I)
+         IF (IPOS.EQ.1) THEN
+            IBUF_PREVIOUS = IBUF
+            JNOD = IROWS(3,I)
+            IF (JNOD.EQ.MYTID) THEN
+C
+C              Read the integrals
+C
+               IREC_1 = LGREC(IBUF,I_FILE_1)
+    1          IF (IREC_1.EQ.0) GOTO 10
+               READ (LGFIL_1,REC=IREC_1) IRECN,N,RGBUF,IGBUF
+C
+C              Write to the new file
+C
+               IREC_2 = IREC_2 + 1
+               WRITE (LGFIL_2,REC=IREC_2) LGREC(IBUF,I_FILE_2),N,
+     &                                    RGBUF,IGBUF
+               LGREC(IBUF,I_FILE_2) = IREC_2
+               IREC_1 = IRECN
+               GOTO 1
+   10          CONTINUE
+            ENDIF
+         ENDIF
+      ENDDO
+C
+C     Send all other local integrals to their destination and receive them from the others
+C     
+      DO IR = 1, 4
+         IREQ(IR) = MPI_REQUEST_NULL
+      ENDDO
+C
+      DO I = 1, NROWS 
+         IBUF = IROWS(1,I)
+         IPOS = IROWS(2,I)
+         IF (IPOS.EQ.1) THEN
+            IBUF_PREVIOUS = IBUF
+            JNOD = IROWS(3,I)
+            IF (JNOD.NE.MYTID) THEN
+C           
+C              Read the integrals
+C              
+               IREC_1 = LGREC(IBUF,I_FILE_1)
+   11          IF (IREC_1.EQ.0) GOTO 20
+C
+C              Check whether the previous send has completed
+C
+   12          CALL MPI_TESTALL(3, IREQ, READY, ISTATS, IERR)
+               IF (.NOT.READY) THEN
+C
+C                 We use the waiting time to receive integrals from the others
+C
+                  CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
+     &                            MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+                  IF (NEWMAIL) THEN 
+                     INOD = ISTAT(MPI_SOURCE)
+                     CALL MPI_RECV(JNFO,2,MPI_INTEGER,INOD,95,
+     &                             MPI_COMM_WORLD,ISTAT,IERR)
+                     M    = JNFO(1)
+                     JBUF = JNFO(2)
+                     CALL MPI_RECV(IHBUF,2*M,MPI_INTEGER,INOD,96,
+     &                             MPI_COMM_WORLD,ISTAT,IERR)
+                     CALL MPI_RECV(RHBUF,M,MPI_DOUBLE_PRECISION,INOD,97,
+     &                             MPI_COMM_WORLD,ISTAT,IERR)
+                     IREC_2 = IREC_2 + 1
+                     WRITE (LGFIL_2,REC=IREC_2) LGREC(JBUF,I_FILE_2),M,
+     &                                          RHBUF,IHBUF
+                     LGREC(JBUF,I_FILE_2) = IREC_2
+                  ENDIF
+                  GOTO 12
+               ENDIF
+C
+C              Our read buffer is free, read integrals
+C
+               READ (LGFIL_1,REC=IREC_1) IRECN,N,RGBUF,IGBUF
+C              
+C              Send them to their destination
+C
+               INFO(1) = N
+               INFO(2) = IBUF
+               CALL MPI_ISEND(INFO,2,MPI_INTEGER,JNOD,95,
+     &                        MPI_COMM_WORLD,IREQ(1),IERR)
+               CALL MPI_ISEND(IGBUF,2*N,MPI_INTEGER,JNOD,96,
+     &                        MPI_COMM_WORLD,IREQ(2),IERR)
+               CALL MPI_ISEND(RGBUF,N,MPI_DOUBLE_PRECISION,JNOD,97,
+     &                        MPI_COMM_WORLD,IREQ(3),IERR)
+C
+               IREC_1 = IRECN
+               GOTO 11
+   20          CONTINUE
+            ENDIF
+         ENDIF
+      ENDDO
+C
+C     We have sent all our integrals, tell the others
+C
+      DO INOD = 0, NODES
+         IF (INOD.NE.MYTID) CALL MPI_ISEND(1,1,MPI_INTEGER,INOD,98,
+     &                        MPI_COMM_WORLD,IREQ(4),IERR)
+      ENDDO
+C
+C     Go into loop to wait for integrals and completion signals
+C
+      IDONE = 0
+  100 CONTINUE
+      CALL MPI_IPROBE(MPI_ANY_SOURCE,95,
+     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      IF (NEWMAIL) THEN 
+         INOD = ISTAT(MPI_SOURCE)
+         CALL MPI_RECV(JNFO,2,MPI_INTEGER,INOD,95,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         M    = JNFO(1)
+         JBUF = JNFO(2)
+         CALL MPI_RECV(IHBUF,2*M,MPI_INTEGER,INOD,96,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL MPI_RECV(RHBUF,M,MPI_DOUBLE_PRECISION,INOD,97,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         IREC_2 = IREC_2 + 1
+         WRITE (LGFIL_2,REC=IREC_2) LGREC(JBUF,I_FILE_2),M,
+     &                              RHBUF,IHBUF
+         LGREC(JBUF,I_FILE_2) = IREC_2
+      ENDIF
+      CALL MPI_IPROBE(MPI_ANY_SOURCE,98,
+     &                MPI_COMM_WORLD,NEWMAIL,ISTAT,IERR)
+      IF (NEWMAIL) THEN 
+         IDONE = IDONE + 1
+         INOD = ISTAT(MPI_SOURCE)
+         CALL MPI_RECV(M,1,MPI_INTEGER,INOD,98,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+      ENDIF
+      IF (IDONE.LT.NODES) GOTO 100
+C
+      I_BF_REC(I_FILE_2) = IREC_2
+C
+      CLOSE (LGFIL_1,STATUS='DELETE')
+C
+      RETURN
+      END
+#endif
