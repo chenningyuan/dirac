@@ -9,7 +9,7 @@ include ../Makefile.config
 
 F_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	  qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
-	  gpjth.o    gplucia.o
+	  gpjth.o    gplucia.o     gpkrmc.o
 
 C_OBJS = gpc.o
 
