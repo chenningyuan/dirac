@@ -50,6 +50,7 @@ C
       LOGICAL   WFCONV
       DIMENSION WORK(LWORK)
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1700,6 +1701,7 @@ C
 #include "dgroup.h"
 #include "dcbbos.h"
 #include "dcbnrt.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION WORK(*), ILIST(MAXORB)
@@ -2205,6 +2207,7 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
@@ -4097,6 +4100,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -4491,6 +4495,7 @@ C***********************************************************************
 #include "consts.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4886,6 +4891,7 @@ C
 #include "thrzer.h"
 C
 #include "dcborb.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 C

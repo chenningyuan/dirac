@@ -146,6 +146,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"
@@ -1067,6 +1068,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"

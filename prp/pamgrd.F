@@ -699,6 +699,7 @@ C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
 #include "dcborb.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),

@@ -176,6 +176,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
 C
@@ -219,6 +220,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
 C
@@ -476,6 +478,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -533,6 +536,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -651,6 +655,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -715,6 +720,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -776,6 +782,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1262,6 +1269,8 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1327,6 +1336,8 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "mx2orb.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1442,6 +1453,7 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"

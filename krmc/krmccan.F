@@ -277,6 +277,7 @@ C
 #include "dcbopt.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION CREF(*)
@@ -604,6 +605,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbbas.h"

@@ -48,6 +48,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbbos.h"
 #include "dgroup.h"

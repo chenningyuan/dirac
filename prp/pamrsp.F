@@ -3129,6 +3129,7 @@ C
 C     
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3248,6 +3249,7 @@ C
 C     
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)

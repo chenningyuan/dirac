@@ -190,6 +190,7 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       CHARACTER C*4
@@ -455,6 +456,7 @@ C***********************************************************************
 #include "maxash.h"
 #include "mx2orb.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 C
@@ -991,6 +993,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C
@@ -1798,6 +1801,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
@@ -1947,6 +1951,7 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
@@ -2110,6 +2115,7 @@ C
 #include "dcbxrs.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C
@@ -2602,6 +2608,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
+#include "mx2orb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -3103,6 +3110,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
@@ -3208,6 +3216,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "mx2orb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
