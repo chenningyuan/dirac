@@ -479,7 +479,7 @@ OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
 
-NOCPPFS = \$(TOT_FORTRANOBJS:.o=.i)
+F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
@@ -490,10 +490,10 @@ dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 #
 # Run ftnchek on Dirac
 #
-dirac.pre: \$(NOCPPFS)
+pre: \$(F_CPPS)
 
-dirac.ftnchek: dirac.pre
-	ftnchek \$(CHEKFLAGS) \$(NOCPPFS) > dirac.ftnchek
+ftnchek: pre
+	ftnchek \$(CHEKFLAGS) \$(F_CPPS) > dirac.ftnchek
 EOF
 #
 # Parallel targets
