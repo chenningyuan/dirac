@@ -19,7 +19,10 @@ OBJS =	dircnv.o \
 	dirgp.o  \
 	dirgrd.o \
 	dirden.o \
-	dirsol.o 
+	dirsol.o \
+	dirspf.o \
+	diropen.o \
+	dirgeo.o
 
 all:	$(OBJS)
 
