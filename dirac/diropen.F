@@ -211,6 +211,7 @@ C*****************************************************************************
 #include <dcbgen.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
+#include <dcbham.h>
 #include <dcborb.h>
 #include <dgroup.h>
 C
@@ -229,7 +230,7 @@ C
 C     Get AO overlap matrix
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLP(WORK(KSAO),WORK(KFREE),LFREE)
+      CALL GTOVLP(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
 C
       IOFF = 1
       DO I = 1,NFSYM

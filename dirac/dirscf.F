@@ -1357,6 +1357,7 @@ C
 #include <dcbgen.h>
 #include <dcbbas.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <dgroup.h>
 #include <dcbdhf.h>
       DIMENSION SMO(*),CMO(*),TMAT(*),SMAT(*),BUF(*),WORK(LWORK)
@@ -1367,7 +1368,7 @@ Cjth
 C      CALL OPNFIL(LUOVLP,'DFOVLP','OLD','SMOGE1')
 C      CALL READT(LUOVLP,N2BBASX,SMAT)
 C      CLOSE(LUOVLP,STATUS='KEEP')
-      CALL GTOVLP(SMAT,WORK,LWORK)
+      CALL GTOVLP(SMAT,SSMTRC,WORK,LWORK)
       DO I = 1,NFSYM
       IF(NOCC(I).NE.0) THEN
         IOFF = ICMOQ(I) + NPSH(I)*NFBAS(I,0)

@@ -1,9 +1,3 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirana.F
-C SOURCE  : $Source$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamana */
       SUBROUTINE PAMANA(WORK,LWORK)
@@ -194,6 +188,7 @@ C
 #include <dcbpop.h>
 #include <dcborb.h>
 #include <dcbbas.h>
+#include <dcbham.h>
 #include <dgroup.h>
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IPGRS(*),
@@ -220,7 +215,7 @@ C
 C     Get overlap matrix
 C     ==================
 C
-      CALL GTOVLP(SMAT,WORK,LWORK)
+      CALL GTOVLP(SMAT,SSMTRC,WORK,LWORK)
 C
 C     If necessary, backtransform overlap matrix to AO-basis
 C     ======================================================
@@ -864,6 +859,7 @@ C     DGROUP: NZ
 #include <dcbprj.h>
 #include <dcbbas.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <dgroup.h>
 C
       CALL QENTER('ANAPRJ')
@@ -877,7 +873,7 @@ C
 C     Get overlap matrix
 C     ===================
 C
-      CALL GTOVLP(WORK(KSMAT),WORK(KFREE),LFREE)
+      CALL GTOVLP(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
 C
 C     Read reference coefficients
 C     ===========================

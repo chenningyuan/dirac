@@ -1,9 +1,3 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirrdn.F
-C SOURCE  : $Source$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
       SUBROUTINE PAMINP(WORK,LWORK)
@@ -528,7 +522,6 @@ C&&&& RELCCSD:  Call relccsd module
             GO TO 100
   110    CONTINUE
 C&&&& DIRRCI:  Call dirrci module
-            CALL QUIT('*** DIRRCI interface not implemented **')
             DOCIM = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
@@ -643,6 +636,7 @@ C
 #include <dcbgen.h>
 #include <dcbpsi.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
@@ -938,6 +932,7 @@ C
 C
 C
       INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
+      IF (LEVYLE) INTDEF = ILLINT
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
@@ -2168,8 +2163,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 16)
-      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00,
-     &           DTHR = 1.0D-13)
+      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include <dcbgen.h>
 #include <dcbham.h>
@@ -2183,11 +2177,12 @@ C
       LOGICAL SYMSTP,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
+      DIMENSION IN(MXOPEN),ID(MXOPEN)
       CHARACTER A*80
 C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.NELECT','.OPEN S','.XXXXXX','.FREEPJ',
-     &            '.VEXTPJ','.URKBAL','.NOSMLV','.XXXXXX',
+     &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       SYMSTP = .FALSE.
@@ -2203,7 +2198,9 @@ C
       VEXTPJ  = .FALSE.
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
+      LEVYLE  = .FALSE.
       N1OPER  = 0
+      SSMTRC  = D1
       CALL OP1INI(WORK,LWORK)
 C
 C     Initialize /DCBORB/
@@ -2298,16 +2295,13 @@ C&&&& Number of electrons
             READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
             GO TO 100
   106     CONTINUE
-#ifndef MOD_OPEN
-               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
-#else
 C&&& ACTIVE SHELLS: read in number of active shells
 C                   and their occupation
 C             Read in number of open shells
 C
                READ(LUCMD,*) NOPEN
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
+                  WRITE(LUPRI,'(1X,A,I,A,I)') 
      &               'HAMINP: NOPEN must be between ',
      &               1,' and ',MXOPEN
                   CALL QUIT('HAMINP ERROR: Open shell error!')
@@ -2318,15 +2312,21 @@ C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,*) (NACSH(J,IOPEN),J=1,NFSYM)
                   READ(LUCMD,'(A)') A
-                  CALL FRAC2I(DF(IOPEN),A)
-                  IF (DF(IOPEN).GT.(D1+DTHR)) THEN
-                     WRITE(LUPRI,'(A,I2,A,F6.4,A)')
+                  CALL FRAC2I(A,IN(IOPEN),ID(IOPEN),IERR)
+                  IF (IERR.LT.0) 
+     &               CALL QUIT('HAMINP: Error reading occupation.')
+                  IF (ID(IOPEN).EQ.0) 
+     &               CALL QUIT('HAMINP: Frac. occ. denumerator = 0')
+                  IF (IN(IOPEN).EQ.0) 
+     &               CALL QUIT('HAMINP: Frac. occ. enumerator = 0')
+                  DF(IOPEN) = D1*IN(IOPEN) / (D1*ID(IOPEN))
+                  IF (DF(IOPEN).GT.(D1+1.0D-10)) THEN
+                     WRITE(LUPRI,'(A,I2,A,F,A)')
      &                  'HAMINP: Frac. occ. for shell ',IOPEN,
      &                  ' greater than 1 (',DF(IOPEN),')'
                      CALL QUIT('HAMINP ERROR: Open shell error!')
                   END IF
                END DO
-#endif
             GO TO 100
   107     CONTINUE
             GO TO 100
@@ -2351,6 +2351,11 @@ C&&& NOSMLV: Turn off small nuclear attraction integrals
              ICHANG = ICHANG + 1
              GO TO 100
   112      CONTINUE
+C&&& LEVYLE : Use Levy-Leblond Hamiltonian
+             LEVYLE = .TRUE.
+             NOSMLV = .TRUE.
+             SSMTRC = D0
+             ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
                GOTO 100
@@ -2382,8 +2387,14 @@ C
          DO IOPEN = 1,NOPEN
             NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
             DTEMP        = DTEMP +
-     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
+     &                     NACSH(IFRP,IOPEN)*D2*IN(IOPEN)/(D1*ID(IOPEN))
          END DO
+C         IF (ABS(MOD(DTEMP,D1)).GE.1.0D-10) THEN
+C            WRITE(LUPRI,'(A,F,A)') 
+C     &         'ERROR! Number of active electrons not an integer (',
+C     &         DTEMP,')'
+C            CALL QUIT('HAMINP ERROR: Open shell error!')
+C         END IF
          NAELEC(IFRP) = NINT(DTEMP)
          IF (NELEC(IFRP).LT.0) 
      &      CALL QUIT('HAMINP: negative number of '//
@@ -2398,7 +2409,7 @@ C        We do     allow fractional occupation of 1
 C           This corresponds to a inactive electron
 C           and gives DALPHA = 0
 C
-         IF (ABS(DF(IOPEN)-D1).LE.DTHR) THEN
+         IF (ABS(DF(IOPEN)-D1).LE.1.0D-13) THEN
             WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
      &         'WARNING: Open shell no. ',IOPEN,
      &         ' has frac. occ. of ',DF(IOPEN)
@@ -2422,7 +2433,12 @@ C
 C     Remove inconsitencies
 C     =====================
 C
-      IF(FREEPJ.OR.VEXTPJ) URKBAL = .FALSE.
+      IF (LEVYLE) THEN
+         IF(FREEPJ) CALL QUIT('Conflicting options : LEVYLE & FREEPJ !')
+         IF(VEXTPJ) CALL QUIT('Conflicting options : LEVYLE & VEXTPJ !')
+      ENDIF
+C
+      IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) URKBAL = .FALSE.
       IF(FREEPJ.AND.VEXTPJ) THEN
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)') 'You cannot specify both VEXTPJ and FREEPJ !'
@@ -2525,7 +2541,11 @@ C
          CALL QUIT('HAMINP: Wrong ISPHTR!')
       ENDIF
 C
-      WRITE(LUPRI,'(1X,A)') '* Dirac-Coulomb Hamiltonian'
+      IF(.NOT.LEVYLE) THEN
+        WRITE(LUPRI,'(1X,A)') '* Dirac-Coulomb Hamiltonian'
+      ELSE
+        WRITE(LUPRI,'(1X,A)') '* Levy-Leblond Hamiltonian'
+      ENDIF
       IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
      &    'with the following modifications:'
       IF(N1OPER.GT.0) THEN
@@ -2573,16 +2593,18 @@ C         Operator must be symmetric under time reversal
         WRITE(LUPRI,'(1X,A,A)') '* Two-electron part ignored ',
      &   '(one-electron system)'
       ENDIF
-      IF(FREEPJ) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* Free positronic solutions projected out'
+      IF (.NOT.LEVYLE) THEN
+         IF(FREEPJ) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &        '* Free positronic solutions projected out'
+         ENDIF
+         IF(VEXTPJ) THEN
+           WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
+     &          'solutions projected out'
+         ENDIF
+         IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
+     &      '* No nuclear attraction integrals for small components !'
       ENDIF
-      IF(VEXTPJ) THEN
-        WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
-     &       'solutions projected out'
-      ENDIF
-      IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
-     &   '* No nuclear attraction integrals for small components !'
 C
 C
 C     Calculate LV-correction
@@ -2686,8 +2708,6 @@ C  /* Deck CIMINP */
 C***********************************************************************
 C
 C     Dummy routine while the interface is being implemented
-C
-      CALL QUIT('*** DIRRCI interface not implemented **')
 C
       RETURN
       END

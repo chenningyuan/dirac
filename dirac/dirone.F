@@ -1,9 +1,3 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirone.F
-C SOURCE  : $Source$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
       SUBROUTINE ONEGEN(WORK,LWORK)
@@ -24,6 +18,8 @@ C
       DIMENSION WORK(LWORK)
 C
 #include <dcbgen.h>
+#include <dcbprl.h>
+#include <dcbham.h>
 #include <dcbcls.h>
 #include <cbihr1.h>
 #include <cbiher.h>
@@ -37,6 +33,8 @@ C
 C     Nuclear attraction integrals (molecular field)
 C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
+        IF (NOSMLV) CLSCMB(I) = 'TFFF'
+        IF (NOSMLV) PDOINT(I) = 'TFFF'
         CALL NUCATT(WORK,LWORK,CLSCMB(I),IPRONE)
 C
 C     Contribution from beta-matrix
@@ -689,7 +687,7 @@ C
 C     Get overlap matrix and transform to AO-basis
 C     ==================================================
 C
-      CALL GTOVLP(SMAT,WORK,LWORK)
+      CALL GTOVLP(SMAT,D1,WORK,LWORK)
       IF(NBSYM.GT.1) THEN
         CALL MTBSBU(SMAT,VMAT)
         CALL MTSOAO(VMAT,SMAT,NTBAS(0),0,IPRINT)
@@ -958,37 +956,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck ltest */
-      SUBROUTINE LTEST(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-      DIMENSION WORK(LWORK)
-      CALL QENTER('LTEST')
-#include <memint.h>
-      CALL MEMGET('REAL',KSSO,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-C
-C     Get overlap matrix and transform to unsorted basis
-C     ==================================================
-C
-      CALL GTOVLP(WORK(KSSO),WORK(KFREE),LFREE)
-      CALL BSTOBU(WORK(KSSO),1,WORK(KFREE),LFREE)
-C
-C     Transform overlap matrix to AO-basis
-C     ====================================
-C
-      CALL MTSOAO(WORK(KSSO),WORK(KSAO),NTBAS(0),0,10)
-      CALL DZERO(WORK(KSSO),N2BBASX)
-      CALL MTAOSO(WORK(KSAO),WORK(KSSO),NTBAS(0),0,10)
-      CALL MEMREL('LTEST',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('LTEST')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vfsort */
       SUBROUTINE VFSORT(NLEFF,NSEFF,VMAT,VBUF,WORK,LWORK)
 C*****************************************************************************
@@ -1025,7 +992,7 @@ C
 C     Sort Lowdin matrix on fermion symmetries
 C
 C     Written by T.Saue Sep 12 1995
-C     Last revision: Jan 7 1998 - jth LINUX
+C     Last revision: Sep 12 1995
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -1033,7 +1000,6 @@ C Used from COMMON blocks:
 C  DCBBAS: NTBAS,NFORB
 C
 #include <dcbbas.h>
-C
 #ifdef VAR_G77
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBUF(NBAST,*)
@@ -1309,7 +1275,7 @@ C
      &            WORK(KFREE),LFREE)
         N2TMT = 0
         NFAC = 2
-        IF(FREEPJ.OR.VEXTPJ) THEN
+        IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) THEN
           DO I = 1,NFSYM
             N2TMT = N2TMT + NFBAS(I,0)*NFORB(I,1)
           ENDDO
@@ -1337,8 +1303,10 @@ C  /* Deck delpos */
 C*****************************************************************************
 C
 C     Diagonalize free particle matrix and remove unphysical solutions
+C     Or transform to basis for Levy-Leblond Hamiltonian
 C
 C     Written by T.Saue, October 1995
+C     Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1360,6 +1328,8 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4)
+C
+      FAC = DM2*CVAL*CVAL
 C
 C     Construct free particle matrix
 C
@@ -1391,20 +1361,54 @@ C
      &     '*** WARNING *** DELPOS: NBF.NE.NZ !'
    10 CONTINUE
 C
-C       Diagonalize Fock-matrix in MO-basis
-C       ===================================
-C
       IOFT = 1
       IEIG = 1
+      FACSL = - D1 / FAC
       DO 20 I = 1,NFSYM
+C
         IF(NFORB(I,0).EQ.0) GOTO 20
-        IF(DOJACO) THEN
-          CALL RSJACO(NFORB(I,0),NFORB(I,0),NFORB(I,0),TMAT(IOFT),
-     &                EIG(IEIG),1,1,0,TBUF(IOFT),WORK,LWORK)
+        IF (IPRHAM.GE.5) THEN
+           CALL HEADER('One-electron Fock matrix in orthon. basis',-1)
+           CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
+     &                 NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+        IF (LEVYLE)THEN
+C
+C          Set up basis for Levy-Leblond equation as 
+C          Psi = (Psi(L), (2mc)^-1 sigma.p Psi(L) )
+C          =========================================
+C
+           CALL DCOPY (NFORB(I,0)*NFORB(I,0)*NZ,D0,0,TBUF(IOFT),1)
+           JJ = IOFT + NFORB(I,0) * NFORB(I,2)
+           DO J = 1, NFORB(I,1)
+              TBUF(JJ) = D1
+              JJ = JJ + NFORB(I,0) + 1
+           ENDDO
+           IZOFF= IOFT
+           DO IZ = 1, NZ
+              JJ1 = IZOFF + NFORB(I,1)
+              JJ2 = IZOFF + NFORB(I,1) + NFORB(I,0) * NFORB(I,2)
+              DO J = 1, NFORB(I,1)
+                CALL DCOPY (NFORB(I,2),TMAT(JJ1),1,TBUF(JJ2),1)
+                CALL DSCAL (NFORB(I,2),FACSL,TBUF(JJ2),1)
+                JJ1 = JJ1 + NFORB(I,0)
+                JJ2 = JJ2 + NFORB(I,0)
+              ENDDO
+              IZOFF = IZOFF + NFORB(I,0) * NFORB(I,0)
+           ENDDO
         ELSE
-          CALL QDIAG(NZ,NFORB(I,0),TMAT(IOFT),NFORB(I,0),NFORB(I,0),
-     &             EIG(IEIG),1,TBUF(IOFT),NFORB(I,0),
-     &             NFORB(I,0),WORK,LWORK,IERR)
+C
+C          Diagonalize Fock-matrix in MO-basis
+C          ===================================
+C
+           IF(DOJACO) THEN
+             CALL RSJACO(NFORB(I,0),NFORB(I,0),NFORB(I,0),TMAT(IOFT),
+     &                   EIG(IEIG),1,1,0,TBUF(IOFT),WORK,LWORK)
+           ELSE
+             CALL QDIAG(NZ,NFORB(I,0),TMAT(IOFT),NFORB(I,0),NFORB(I,0),
+     &                EIG(IEIG),1,TBUF(IOFT),NFORB(I,0),
+     &                NFORB(I,0),WORK,LWORK,IERR)
+           ENDIF
         ENDIF
         IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
         IEIG = IEIG + NFORB(I,0)
@@ -1417,15 +1421,20 @@ C
       IOFU = 1
       IOFV = 1
       NFAC = 2
-      IF(FREEPJ.OR.VEXTPJ) NFAC = 1
+      IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) NFAC = 1
       DO 30 I = 1,NFSYM
         IF(NFORB(I,0).EQ.0) GOTO 30
+        IF (IPRHAM.GE.5) THEN
+           CALL HEADER('Transformation matrix in orthon. basis',-1)
+           CALL PRQMAT(TBUF(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
+     &                 NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
         NTDIM = NFAC*NFORB(I,1)
 C
 C       Backtransform accepted positronic solutions
 C       ===========================================
 C
-        IF(FREEPJ.OR.VEXTPJ) THEN
+        IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) THEN
           IOFTE = IOFT
         ELSE
           CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NTDIM,
@@ -1455,9 +1464,8 @@ C
 C
 C     Print section
 C
-      FAC = DM2*CVAL*CVAL
       CALL HEADER('Output from DELPOS',-1)
-      IF(FREEPJ.OR.VEXTPJ) THEN
+      IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) THEN
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
       ELSE
         IEIG = 0
@@ -1559,13 +1567,14 @@ C     Found label SRCLBL on LU; check COMB
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtovlp */
-      SUBROUTINE GTOVLP(SMAT,WORK,LWORK)
+      SUBROUTINE GTOVLP(SMAT,SSMETR,WORK,LWORK)
 C*****************************************************************************
 C
 C     Get overlap matrix from file AOPROPER
+C     The SS block is scaled by the factor SSMETR
 C
 C     Written by T.Saue May 26 1996
-C     Last revision: May 26 1996 - tsaue
+C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1574,6 +1583,7 @@ C
 #include <dcbgen.h>
 #include <cbihr1.h>
 #include <dcbbas.h>
+#include <dgroup.h>
       DIMENSION SMAT(N2BBASX),WORK(LWORK)
       CALL QENTER('GTOVLP')
 #include <memint.h>
@@ -1610,6 +1620,20 @@ C     Reindex to sorted basis
 C     =======================
 C
       CALL BUTOBS(SMAT,1,WORK,LWORK)
+C
+C     Scale SS-block
+C     ==============
+C
+      DO I = 1,NFSYM
+         JJ =  I2BASX(I,I) + (NFBAS(I,1) * NTBAS(0)) + NFBAS(I,1) + 1
+cdebug   print*,'ifsym :',i
+cdebug   print*,'nfbas(i,2) :',nfbas(i,2)
+         DO J = 1, NFBAS(I,2)
+cdebug      print*,'jj :',jj
+            CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
+            JJ = JJ + NTBAS(0)
+         ENDDO
+      ENDDO
 C
       CALL QEXIT('GTOVLP')
       RETURN
@@ -1984,7 +2008,7 @@ C
 C     DLIMIT Should be set to ca. 1.0D-05 in final version!
 C
       DLIMIT = 1.0D-02
-      IF((IPRINT.GE.0).AND.(EIG(NDIM).LT.DLIMIT)) THEN
+      IF((IPRINT.GE.1).AND.(EIG(NDIM).LT.DLIMIT)) THEN
          CALL HEADER('Generating AO-MO Transformation',-1)
          WRITE(LUPRI,'(/3X,A,X,E6.1)') 
      &        '*** Eigenvalues of overlap matrix below', DLIMIT

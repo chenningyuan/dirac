@@ -1,9 +1,3 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirset.F
-C SOURCE  : $Source$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
       SUBROUTINE PAMSET(WORK,LWORK)
@@ -390,7 +384,7 @@ C
         IF(URKBAL) THEN
           NZT         = 1
           NPSH(IFRP)  = NFORB(IFRP,2)
-        ELSEIF(VEXTPJ.OR.FREEPJ) THEN
+        ELSEIF(VEXTPJ.OR.FREEPJ.OR.LEVYLE) THEN
           NZT         = NZ
           NPSH(IFRP)  = 0
         ELSE
@@ -571,6 +565,7 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <sdpre.h>
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
@@ -608,7 +603,7 @@ C
       DO I = 1,N
         IQ   = NINT(Q(I))
         XPOL = IQ.GT.103
-        IPOL = (Q(I)-IQ).GT.DTOL.AND.(.NOT.XPOL)
+        IPOL = (Q(I)-SDPRE(IQ)).GT.DTOL.AND.(.NOT.XPOL)
         IF(XPOL.OR.IPOL) THEN
           SCQ(I) = - POLVAL(5,BFIT,Q(I))
         ELSEIF(IQ.GT.0) THEN

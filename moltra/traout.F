@@ -1,5 +1,8 @@
 C
-C $Id$
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : traout.F
+C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
@@ -325,6 +328,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       DIMENSION WORK(*)
       DIMENSION NFPCK12(2),NFPCK34(2)
+      CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
 C     Open direct access scratch file for 4-indexed transformed integrals
       NCLASS = NZ * NZ * NBSYM / NFSYM
@@ -332,7 +336,9 @@ C
       DO IREPIJ = 1, NFSYM
          IRECL = IRECLEN(NCLASS*NFPCK34(IREPIJ),0,0)
          IRECL = MAX0(IRECL,IRECLEN(1,0,0))
-         OPEN (LUMLF3+IREPIJ,ACCESS='DIRECT',RECL=IRECL)
+         WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
+         FNODE = LFNAM(FNAM)
+         OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)
          CALL MEMGET('REAL',KFTMAT,NKL*NCLASS,WORK,KFREE,LFREE)
