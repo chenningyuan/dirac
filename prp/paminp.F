@@ -56,11 +56,11 @@ C
 #include <dcbprp.h>
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
-     &             '*MOLGRD','*NMR   ','*XXXXXX','*XXXXXX'/
+     &             '*MOLGRD','*NMR   ','*ESR   ','*XXXXXX'/
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
-     &             '.MOLGRD','.NSTDIA','.XXXXXX','.PVC   '/
+     &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   '/
 C
       CALL QENTER('PRPINP')
 #include <memint.h>
@@ -72,6 +72,7 @@ C     ===================
 C
       IPRPRP   = 0
       DOEXP    = .FALSE.
+      DOESR    = .FALSE.
       DOXLR    = .FALSE.
       DOXPP    = .FALSE.
       DIPOLE   = .FALSE.
@@ -88,6 +89,8 @@ C
       ABUND    = D1
       NDSOINT  = 0
       MGRAD    = .FALSE.
+      ESRGTENS = .FALSE.
+      ESRANISO = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -208,6 +211,10 @@ C&&&& NSTDIA diamagnetic contribution to shielding
             DOEXP = .TRUE.
             GO TO 100
   115    CONTINUE
+C&&&& ESR parameters
+            DOESR = .TRUE.
+            ESRGTENS = .TRUE.
+            ESRANISO = .TRUE.
             GO TO 100
   116    CONTINUE
 C&&&& PVC Parity violation - chirality
@@ -280,6 +287,7 @@ C        CALL XPPINP(WORD,WORK,LWORK)
 #endif
         GO TO 200
     7 CONTINUE
+        CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     8 CONTINUE
         GO TO 200
@@ -291,6 +299,7 @@ C
       CALL NMRINP(WORD,.TRUE.)
 C      CALL XPPINP(WORD,WORK,LWORK)
 #endif
+      CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
       CALL GRDINP(WORD,.TRUE.)
 C
 C     Define special operators
@@ -483,11 +492,11 @@ C
 C    1. DIAGONAL
 C       P             * scalar operator
 C    2. XALPHA
-C       [alpha_x]p    * x-component of alpha times scalar operator
+C       [alpha_x]P    * x-component of alpha times scalar operator
 C    3. YALPHA
-C       [alpha_y]p    * y-component of alpha times scalar operator
+C       [alpha_y]P    * y-component of alpha times scalar operator
 C    4. ZALPHA
-C       [alpha_z]p    * z-component of alpha times scalar operator
+C       [alpha_z]P    * z-component of alpha times scalar operator
 C    5. XAVECTOR
 C       [Alpha x P]_x * vector product of alpha and vector operator,
 C                       x-component    
@@ -501,7 +510,7 @@ C    8. ALPHADOT
 C       A.P           * dot-product of alpha and vector operator
 C
 C    9. GAMMA5        
-C       gamma5 p      * The gamma5 matrix times a scalar operator
+C       gamma5 P      * The gamma5 matrix times a scalar operator
 C                       gamma5 = | 0 I | 
 C                                | I 0 |
 C
@@ -651,14 +660,15 @@ C
      &     ' XPRINP: INPUT ERROR following '//WORD,
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
-C&&&&    One component: DIAGONAL, XALPHA, YALPHA, ZALPHA
+C&&&&    One component: DIAGONAL, XALPHA, YALPHA, ZALPHA, GAMMA5
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
 C&&&&    Two components: XAVECTOR,YAVECTOR,ZAVECTOR
     2    CONTINUE
            NPCOMP = 2
-c          PFAC(2) = -D1
+C          note that the minus in the second component
+C          is introduced later
          GO TO 300
 C&&&&    Three components: ALPHADOT
     3    CONTINUE
@@ -1716,35 +1726,35 @@ C
       GOTO 10
     2 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'XALPHA   : [alpha_x]p'
+     &   'XALPHA   : [alpha_x]P'
       GOTO 10
     3 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'YALPHA   : [alpha_y]p'
+     &   'YALPHA   : [alpha_y]P'
       GOTO 10
     4 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'ZALPHA   : [alpha_z]p'
+     &   'ZALPHA   : [alpha_z]P'
       GOTO 10
     5 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'XAVECTOR : [Alpha x P]_x'
+     &   'XAVECTOR : [alpha x P]_x'
       GOTO 10
     6 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'YAVECTOR : [Alpha x P]_y'
+     &   'YAVECTOR : [alpha x P]_y'
       GOTO 10
     7 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'ZAVECTOR : [Alpha x P]_z'
+     &   'ZAVECTOR : [alpha x P]_z'
       GOTO 10
     8 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'ALPHADOT : [Alpha.P]'
+     &   'ALPHADOT : [alpha.P]'
       GOTO 10
     9 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'GAMMA5   : '
+     &   'GAMMA5   : [gamma_5]P'
       GOTO 10
 C
    10 CONTINUE
