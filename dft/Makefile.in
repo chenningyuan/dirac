@@ -1,11 +1,12 @@
 
 include ../Makefile.config
 
-OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o \
-	functionals.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
+F_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o
+
+C_OBJS = functionals.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
 	fun-pw86x.o fun-p86c.o
 
-all:	$(OBJS) 
+all:	$(F_OBJS) $(C_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -20,6 +21,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
