@@ -404,6 +404,7 @@ C
       KJCO2  = KJCO   +  KATOM*KANG*2
       KLAST  = KJCO2  +  KATOM*KANG
 C hjj: take as many blocks as fit in memory
+C      (to be able to run tests with memory < 1 mio DP words)
       LWRK   = LWORK  -  KLAST + 1
       LBLOCK = 6 + 2*KPRIM + 4*KCMAT
 C      (we reserve size of one block for later allocations)
@@ -412,6 +413,10 @@ C                          ^- for sympro
       KBLOCK = (LWRK-LRESRV)/LBLOCK
       KBLOCK = MAX(KBLOCK,10)
 C              ... minimum 10 blocks
+      KBLOCK = MIN(KBLOCK,MXSHEL)
+C              ... maximum MXSHEL blocks
+C              (otherwise the program will stop later;
+C              and no reason to allocate all of memory here).
 C
       KNUC   = KLAST
       KNRC   = KNUC   +  KBLOCK*2
