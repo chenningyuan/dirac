@@ -213,7 +213,7 @@ C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
       IF(TRIVEC) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
 C
 C       Reorder orbitals if requested
