@@ -185,10 +185,11 @@ C
       CHARACTER FILENAME*(*)
       WRITE(6,*) FILENAME
       OPEN(100, FILE = FILENAME, STATUS = 'NEW', FORM = 'FORMATTED' )
-      WRITE(100,'(I/I)') NR,NC
+      WRITE(100,'(I10)') NR
+      WRITE(100,'(I10)') NC
       DO J = 1,NC
          DO I = 1,NR
-            WRITE(100,'(F)') A(I,J)
+            WRITE(100,'(D22.12)') A(I,J)
          END DO
       END DO
       CLOSE (100)
