@@ -1,3 +1,12 @@
+/*
+ 
+  VERSION : $Revision$
+  DATE    : $Date$
+  FILE    : TODOD
+  SOURCE  : $Source$
+ 
+ */
+ 
 - abacus/her2ave.F: INTEX1:
   "Total Fock matrix" DVAD, DV... etc. are not defined
 
@@ -77,10 +86,12 @@
 
 - PAMPRP memory leak: alloc foer PAMEXP, men ingen dealloc?
 
-- AUTOCC a la dalton
+- AUTOCC a la dalton <-- NEM AT LAVE!!!
 
 - aktivering af SYMADD i herrdn.F
 
 - redundant kald til MVODEN i MVOGEN (dirscf.F)
 
 - gradient beregning uden DFFCK2
+
+- Logik i convergens af DHF. F.eks. ERGCNV = 1.0D-7 AND EVCCNV = 1.0D-7
