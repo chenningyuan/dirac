@@ -50,8 +50,6 @@
 #include "logo.h"
 #include "subtitle.h"
 
-   if (mytid != 0) return;
-
    printf("%s",strtitle);
    printf("%s",strlogo);
    printf("%s",strsubtitle);
