@@ -2757,8 +2757,6 @@ C&&& SPINFREE : Zero out spin-orbit terms
                GOTO 100
   114      CONTINUE
 C&&& ZORA   : Use ZORA approximation
-CTROND: to be removed !!!
-             CALL QUIT('HAMINP: ZORA is under reconstruction !')
              READ(LUCMD,*) IZORA4,IZORAS
              ZORA   = .TRUE.
              ZORA4  = (IZORA4.NE.0)

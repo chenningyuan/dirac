@@ -315,8 +315,8 @@ C
      &                FAO,N2BBASXQ,IPRSCF)
             ENDIF
 C
-            IF (ZORA) CALL ZRDIIS (NZ,NESH(I),NPSH(I),
-     &                  EVEC(1+IOFF),NORB(I),NORB(I))
+            IF (ZORA) CALL ZRDIIS (I,NZ,NPSH(I),NESH(I),
+     &          EVEC(1+IOFF),NORB(I),NORB(I),WORK,KFREE,LFREE)
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
@@ -394,8 +394,8 @@ C
      &                     NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
 C
-           IF (ZORA) CALL ZRDIIS (NZ,NESH(I),NPSH(I),
-     &                  EVEC(1+IOFF),NORB(I),NORB(I))
+           IF (ZORA) CALL ZRDIIS (I,NZ,NPSH(I),NESH(I),
+     &         EVEC(1+IOFF),NORB(I),NORB(I),WORK,KFREE,LFREE)
 C
             CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
             IF(IPRSCF.GE.5) THEN
@@ -873,26 +873,34 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck zrdiis */
-      SUBROUTINE ZRDIIS(NZ,NE,NP,EVEC,N1,N2)
+      SUBROUTINE ZRDIIS(I,NZ,NS,NL,EVEC,N1,N2,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Modify DIIS matrix to account for ZORA
+C     When calculating the error vector we need to account for the 
+C     zero SS-metric
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
       PARAMETER(D0=0.0D0)
-      DIMENSION EVEC(N1,N2,NZ)
+      DIMENSION EVEC(N1,N2,NZ),WORK(*)
 C
-      DO IZ = 1, NZ
-         DO J = 1,NP
-            CALL DSCAL(NE,D0,EVEC(NP+1,J,IZ),1)
-         ENDDO
-         DO J = NP+1,NP+NE
-            CALL DSCAL(NP,D0,EVEC(1,J,IZ),1)
-         ENDDO
-      ENDDO
+C     We get a chunk of memory, fill it with zeroes and insert it in
+C     the full matrix so that the SS block becomes zero.
+C
+      CALL MEMGET('REAL',KESS,NZ*NS*NS,WORK,KFREE,LFREE)
+      CALL DZERO (WORK(KESS),NZ*NS*NS)
+      CALL EXTRSB (2,I,0,0,2,2,1,NZ,WORK(KESS),NS,NS,NZ,EVEC,N1,N2)
+      CALL MEMREL('ZRDIIS',WORK,KESS,KESS,KFREE,LFREE)
+C
+C     Same procedure for LS block 
+C
+      CALL MEMGET('REAL',KELS,NZ*NL*NS,WORK,KFREE,LFREE)
+      CALL DZERO (WORK(KELS),NZ*NL*NS)
+      CALL EXTRSB (2,I,0,0,1,2,1,NZ,WORK(KELS),NL,NS,NZ,EVEC,N1,N2)
+      CALL MEMREL('ZRDIIS',WORK,KELS,KELS,KFREE,LFREE)
 C
       RETURN
       END

@@ -1333,8 +1333,14 @@ C
 C
 C     Check HOMO-LUMO gap and check for negative virtuals
 C
-      ELUMO = EIG(1+NPSH(1)+NOCC(1))
-      EHOMO = EIG(1+NPSH(1))
+CLV   ELUMO = EIG(1+NPSH(1)+NOCC(1))
+CLV   EHOMO = EIG(1+NPSH(1))
+C     These initializations do not work in the (unlikely) case of
+C     just one function in irrep 1. Below my pragmatic solution that
+C     should work in most conceivable cases. LV, 1-9-2000.
+      ELUMO = 1.D15
+      EHOMO = -1.D15
+C
       IF (LEVYLE .OR. SPINFR) THEN
         ILUMO = IBEIG(IORB(1)+NPSH(1)+NOCC(1)+1)
         IHOMO = IBEIG(IORB(1)+NPSH(1)+1)
