@@ -218,15 +218,8 @@ C
                IREPABR = IREPABR + 1
                DO IZ1 = 1, NZ
                   IQ1 = IQMO(IZ1,IREPAB)
-C
-C                 Fix for the complex groups. We need to redefine the 
-C                 spin-quantization axis. This should work...
-C
-                  IF (NZ.EQ.2) IQ1 = IQCMPL(IQ1)
-C
                   DO IZ2 = 1, NZ
                      IQ2 = IQMO(IZ2,IREPAB)
-                     IF (NZ.EQ.2) IQ2 = IQCMPL(IQ2)
                      IFAC = INTCL(ICLASS,IQ1,IQ2)
                      IF (IFAC.NE.0) THEN
                         FACTR = IFAC
