@@ -593,7 +593,6 @@ C---------------------------------------------
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
          MINT = NBUF3/NVVT(IRP)
-         mint = 153
   10     CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          CALL DELINT ('VVVV','KKDD',BUF3,IRP,ISTART,NINT)
          M = NVVT(IRP)
