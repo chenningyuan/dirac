@@ -922,8 +922,9 @@ C
 #include <dcbprp.h>
 #include <dcbexp.h>
       PARAMETER(CONV = 234.9647417D0)
-      DIMENSION EXPVAL(*),AXIS(*),TEMP(*), EFGTOT(3)
+      DIMENSION EXPVAL(*),AXIS(*),TEMP(*),PVAL(9),TMP(3),ITMP(3)
       LOGICAL   DOATOM(*)
+      CHARACTER*4 HZUNIT
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
@@ -943,50 +944,78 @@ C
 C     
       ENDIF
 C
-C
-C
 C print section
+C
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)')
-     &     '* Nuclear quadrupole coupling constants:'
-      WRITE(LUPRI,'(12X,3(A12,11X))')
-     &     'Electronic  ','Nuclear     ','Total       '
-      WRITE(LUPRI,'(12X,3(A12,11X))')
-     &     'contribution','contribution','contribution'
+     &'* Nuclear quadrupole coupling constants (principal components):'
+      WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCIND
-         DO I=1,3
-            EFGTOT(I)=EFGNUC(I,I,IATOM)+EFGEL(I,I,IATOM)
-         ENDDO
-         NUCCHA = NINT(CHARGE(IATOM))
-         DO ISO = 1, 5
+        IF (DOATOM(IATOM)) THEN
+          DO I=1,3
+            DO J=1,3
+              EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+            ENDDO
+          ENDDO
+C
+C         Diagonalize to get principal components
+C
+          IJ = 1
+          DO I = 1, 3
+            DO J = 1, I
+              PVAL(IJ) = EFGTOT(I,J,IATOM)
+              IJ = IJ + 1
+            ENDDO
+          ENDDO
+          CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
+          EFGTOT(1,1,IATOM) = PVAL(1)
+          EFGTOT(2,2,IATOM) = PVAL(3)
+          EFGTOT(3,3,IATOM) = PVAL(6)
+C
+C         Reorder to calculate eta:
+C         |xx|<|yy|<|zz|
+C
+          PVAL(2) = PVAL(3)
+          PVAL(3) = PVAL(6)
+          IZ = IDAMAX(3,PVAL(1),1)
+          CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+          IX = IDAMIN(3,PVAL(1),1)
+          CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+          ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+          NUCCHA = NINT(CHARGE(IATOM))
+          DO ISO = 1, 5
             QMOM = DISOTP(NUCCHA,ISO,'QMOM')
             IF (QMOM .NE. 0.D0) THEN
                FACT=CONV*QMOM
+C
+C              Change to GHz when abs values bigger then 1.0D4
+C
+               HZUNIT = ' MHz'
+               DBUNIT = 1.0D0
+               IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
+     &             (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
+     &             (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
+                   DBUNIT = 1.0D3
+                   HZUNIT = ' GHz'
+               ENDIF
                SPIN = DISOTP(NUCCHA,ISO,'SPIN')
                MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
                WRITE (LUPRI
-     *              ,'(/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/)'
-     *              )'Nucleus: ',NAMDEP(IATOM),'Mass: ',MASS,'Spin: '
-     *              ,SPIN,'Quadrupole moment: ',QMOM
+     &              ,'(/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/)'
+     &              )'Nucleus: ',NAMDEP(IATOM),'Mass: ',MASS,'Spin: '
+     &              ,SPIN,'Quadrupole moment: ',QMOM
                DO I=1,3
-                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
-     &                 'X'//CHAR(IOFF+I)//CHAR(IOFF+I),(FACT*EFGEL(I,I
-     *                 ,IATOM)),' MHz',(FACT*EFGNUC(I,I,IATOM)),' MHz'
-     *                 ,(FACT*EFGTOT(I))
-     *                 ,' MHz'
+                  WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
+     &                 'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
+     &                 EFGTOT(I,I,IATOM)*FACT/DBUNIT,HZUNIT
                ENDDO
-               IZ = IDAMAX(3,EFGTOT(1),1)
-               CALL DSWAP(1,EFGTOT(3),1,EFGTOT(IZ),1)
-               IX = IDAMIN(3,EFGTOT(1),1)
-               CALL DSWAP(1,EFGTOT(1),1,EFGTOT(IX),1)
-               ETA = (EFGTOT(1) - EFGTOT(2))/
-     &              EFGTOT(3)
-               WRITE (LUPRI,'(2X,A3,53X,F12.10)')
+               WRITE (LUPRI,'(2X,A3,9X,F16.8)')
      &              'Eta', ETA
             ENDIF
-         ENDDO
+          ENDDO
+        ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz' 
@@ -1042,50 +1071,53 @@ C
          END IF
       ENDDO
 C     
-      IF (IPRINT .GE. 2) THEN
-         WRITE(LUPRI,'(A/)')
-     &        '  Electronic contribution:'
-         DO I = 1, NUCIND
-            IF (DOATOM(I)) THEN
-               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-               CALL OUTPUT(EFGEL(1,1,I),1,3,1,3,3,3,1,LUPRI)
-            END IF
-         ENDDO
-      END IF
+C     This part of the code is incorrect: one cannot split the 
+C     electronic and nuclear contributions and diagonalize them
+C
+C     IF (IPRINT .GE. 2) THEN
+C        WRITE(LUPRI,'(A/)')
+C    &        '  Electronic contribution:'
+C        DO I = 1, NUCIND
+C           IF (DOATOM(I)) THEN
+C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+C              CALL OUTPUT(EFGEL(1,1,I),1,3,1,3,3,3,1,LUPRI)
+C           END IF
+C        ENDDO
+C     END IF
 C     diagonalize efg tensor
-      DO IATOM = 1, NUCIND
-         IF (DOATOM(IATOM)) THEN
-            CALL DUNIT(AXIS(1,1,IATOM),3)
-            IJ = 1
-            DO I = 1, 3
-               DO J = 1, I
-                  PVAL(IJ) = EFGEL(I,J,IATOM)
-                  IJ = IJ + 1
-               ENDDO
-            ENDDO
-            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-            PVAL(2) = PVAL(3)
-            PVAL(3) = PVAL(6)
-            IZ = IDAMAX(3,PVAL(1),1)
-            CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-            IX = IDAMIN(3,PVAL(1),1)
-            CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-            EFGEL(1,1,IATOM) = PVAL(1)
-            EFGEL(2,2,IATOM) = PVAL(2)
-            EFGEL(3,3,IATOM) = PVAL(3)
-         END IF
-      ENDDO
+C     DO IATOM = 1, NUCIND
+C        IF (DOATOM(IATOM)) THEN
+C           CALL DUNIT(AXIS(1,1,IATOM),3)
+C           IJ = 1
+C           DO I = 1, 3
+C              DO J = 1, I
+C                 PVAL(IJ) = EFGEL(I,J,IATOM)
+C                 IJ = IJ + 1
+C              ENDDO
+C           ENDDO
+C           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+C           PVAL(2) = PVAL(3)
+C           PVAL(3) = PVAL(6)
+C           IZ = IDAMAX(3,PVAL(1),1)
+C           CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+C           IX = IDAMIN(3,PVAL(1),1)
+C           CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+C           EFGEL(1,1,IATOM) = PVAL(1)
+C           EFGEL(2,2,IATOM) = PVAL(2)
+C           EFGEL(3,3,IATOM) = PVAL(3)
+C        END IF
+C     ENDDO
 C     print section
-      IF (IPRINT .GE. 4) THEN
-         WRITE(LUPRI,'(A/)')
-     &        '  Principal axis to electronic contribution'
-         DO I = 1, NUCIND
-            IF (DOATOM(I)) THEN
-               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-               CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
-            END IF
-         ENDDO
-      END IF
+C     IF (IPRINT .GE. 4) THEN
+C        WRITE(LUPRI,'(A/)')
+C    &        '  Principal axis to electronic contribution'
+C        DO I = 1, NUCIND
+C           IF (DOATOM(I)) THEN
+C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+C              CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
+C           END IF
+C        ENDDO
+C     END IF
 C     
       RETURN
       END
@@ -1138,7 +1170,8 @@ C
 #include <maxaqn.h>
 #include <mxorb.h>
 #include <dcbexp.h>
-      DIMENSION EXPVAL(*),EFGTOT(3),AXIS(*),TEMP(*)
+      DIMENSION EXPVAL(*),AXIS(3,3,MXCENT),TEMP(*)
+      DIMENSION TMP(3),ITMP(3),PVAL(9)
       LOGICAL   DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
@@ -1151,7 +1184,7 @@ C     ========================================
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)')
-     &     '* Electric field gradients:'
+     &     '* Electric field gradients :'
      
       CALL EL_EFG(IPREXP,EXPVAL,DOATOM,AXIS,TEMP)
       CALL NUC_EFG(IPREXP,DOATOM,AXIS,TEMP)
@@ -1159,6 +1192,8 @@ C
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
+      WRITE(LUPRI,'(12X,A/)')
+     &     'Individual (non-zero) components'
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'Electronic  ','Nuclear     ','Total       '
       WRITE(LUPRI,'(12X,3(A12,11X))')
@@ -1166,21 +1201,61 @@ C     print section
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
             DO I=1,3
-               EFGTOT(I)=EFGNUC(I,I,IATOM)+EFGEL(I,I,IATOM)
+               DO J=1,3
+                  EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+                  IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
+     &                 ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
+     &                 ,EFGTOT(I,J,IATOM),' au '
+               ENDDO
             ENDDO
+         ENDIF
+      ENDDO
+C
+C           diagonalize total efg tensor
+C
+      WRITE(LUPRI,'(/,A)') '  '
+      CALL PRSYMB(LUPRI,'-',72,2)
+      WRITE(LUPRI,'(12X,A)')
+     &     'Total contribution to principal components '
+      CALL PRSYMB(LUPRI,'-',72,2)
+      DO IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            CALL DUNIT(AXIS(1,1,IATOM),3)
+            IJ = 1
+            DO I = 1, 3
+               DO J = 1, I
+                  PVAL(IJ) = EFGTOT(I,J,IATOM)
+                  IJ = IJ + 1
+               ENDDO
+            ENDDO
+            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+            EFGTOT(1,1,IATOM) = PVAL(1)
+            EFGTOT(2,2,IATOM) = PVAL(3)
+            EFGTOT(3,3,IATOM) = PVAL(6)
             WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
             DO I=1,3
                WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
-     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I),EFGEL(I,I
-     *              ,IATOM),' au ',EFGNUC(I,I,IATOM),' au '
-     *              ,EFGTOT(I)
-     *              ,' au '
+     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
+     &              ,EFGTOT(I,I,IATOM),' au '
             ENDDO
+C
+C           print section principle axis
+C
+            IF (IPRINT .GE. 4) THEN
+               WRITE(LUPRI,'(A/)')
+     &           '  Principal axis to total contribution'
+               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+               CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+            END IF
          END IF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
-      WRITE(LUPRI,'(/A,1PE12.5,A)') '  1 a.u. = ',9.71736E21,' V*m**-2' 
+      WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
+     &      '  1 a.u. = ',9.71736E21,' V*m**-2' 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
