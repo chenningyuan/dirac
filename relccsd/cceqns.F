@@ -336,11 +336,11 @@ C
          IF (TEQ) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
           CALL XTIME(3,1,'T1EQNS                        ')
-          CALL T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
+          CALL T1EQNS (FVO,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
           CALL XTIME(3,2,'T1EQNS                        ')
          ELSE
-          CALL T1EQNS (HOV,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
+          CALL T1EQNS (HOV,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
          ENDIF
       ENDIF
@@ -431,7 +431,7 @@ C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(12,1,'T2 EQNS                       ')
-      CALL T2EQNS (T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
+      CALL T2EQNS (EPS,T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(12,2,'T2 EQNS                       ')
       CPUT2 = CPUT2 + CPUDELTA()
@@ -681,7 +681,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
+      SUBROUTINE T1EQNS (FVO,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                   BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
 C
       IMPLICIT INTEGER (A-Z)
@@ -707,7 +707,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF2,NBUF3
-      REAL*8 FVO(*)
+      REAL*8 EPS(*),FVO(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
       REAL*8 HO(*),HV(*),HOV(*),H(*)
@@ -754,11 +754,16 @@ C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
         CALL XCOPY (NDIMT1,FVO,1,S1,1)
-         IF (DOIH.AND.IHEQ.EQ.2) THEN
-          CALL GETAMPT (BUF1,BUF2)
-          CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
-          CALL XAXPY (NFVO,A1,BUF1,1,S1,1)
-         ENDIF
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+           CALL GETAMPT (BUF1,BUF2)
+cluuk : I think we need to divide because on disk are the amplitudes
+cluuk : that are NOT scaled by denominators. The denomf then gives
+cluuk : the true wave function part.
+           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
+cluuk
+           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
+           CALL XAXPY (NFVO,A1,BUF1,1,S1,1)
+        ENDIF
 C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
@@ -979,7 +984,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE T2EQNS (T1,T2,GO,GV,HOV,H,AZ,CZ,GOO,GVV,
+      SUBROUTINE T2EQNS (EPS,T1,T2,GO,GV,HOV,H,AZ,CZ,GOO,GVV,
      &                   BUF1,BUF2,BUF3,NBUF3,S2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -999,6 +1004,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
+      REAL*8 EPS(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 GO(*),GV(*),HOV(*)
@@ -1045,10 +1051,15 @@ C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
         CALL GETVVOO (S2)
-         IF (DOIH.AND.IHEQ.EQ.2) THEN
-          CALL GETAMPT (BUF1,BUF2)
-          CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
-          CALL XAXPY (NFVO,A1,BUF2,1,S2,1)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+           CALL GETAMPT (BUF1,BUF2)
+cluuk : I think we need to divide because on disk are the amplitudes
+cluuk : that are NOT scaled by denominators. The denomf then gives
+cluuk : the true wave function part.
+           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
+cluuk
+           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
+           CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
          ENDIF
       ENDIF
 C---------------------------------------------

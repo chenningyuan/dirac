@@ -747,7 +747,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SYMTAB (NELEC,NFROZ,NINACT,NACT,
-     &                   NSP,EPS1,EPS,IREPSP,IREPSPI,FOCKSP,REPORT)
+     &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
+     &                   FOCKSP,REPORT)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2607,7 +2608,12 @@ C
      &             TOL,NBUF2,NBUF3)
 C       Save the updated wave function & Hamiltonian
         CALL PUTAMPT (CC(T1),CC(T2))
-	IF (DOIH) THEN
+C
+C       When we run with the intermediate Hamiltonian formalism
+C       we need a second iteration in which the neglected excitations
+C       are included via a modified scheme.
+C
+	IF (DOIH.AND.ICURFSS.GT.0) THEN
  	   IHEQ=2
            CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
