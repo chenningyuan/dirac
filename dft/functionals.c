@@ -58,6 +58,16 @@ Functional* available_functionals[] = {
     &BLYPFunctional,
     &B3LYPFunctional,
     &WAHFunctional,
+
+    /* generic embedding functional */
+    &EmbeddingFunctional,
+    NULL
+};    
+
+/* kinetic energy functional */
+Functional* available_kin_functionals[] = {
+    &TF_KinFunctional,
+    &VW_KinFunctional,
     NULL
 };
 Functional* selected_func = &LDAFunctional;
@@ -102,6 +112,12 @@ dftisgga_(void)
     return selected_func->is_gga();
 }
 
+int
+dftisemb_(void)
+{
+    return !strcmp(selected_func->name, "embedding");
+}
+
 void
 dft_set_hf_weight(real hfxfac)
 {
@@ -128,6 +144,7 @@ dftenergy_(const real* rho, const real* grad)
     dp.rhoa  = dp.rhob  = *rho *0.5;
     dp.grada = dp.gradb = *grad*0.5; 
     dp.gradab= dp.grada * dp.gradb;
+    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     return selected_func->func(&dp);
 }
 
@@ -241,6 +258,7 @@ dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
     dp.rhoa  = dp.rhob  = *rho  *0.5;
     dp.grada = dp.gradb = *grad *0.5;
     dp.gradab = dp.grada * dp.gradb;
+    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     drv1_clear(&drvs);
     selected_func->first(&drvs, *weight, &dp);
     /* we should really use a separate structure here
@@ -260,6 +278,7 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     dp.rhoa  = dp.rhob  = *rho *0.5;
     dp.grada = dp.gradb = *grad*0.5; 
     dp.gradab = dp.grada * dp.gradb;
+    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
     if(do_alda)
         LDAFunctional.second(&drvs, *w, &dp);
     else
@@ -286,6 +305,7 @@ dftpot2_(ThirdDrv *ds, real factor, real rho, real grad, int isgga)
     dp.rhoa  = dp.rhob  = rho *0.5;
     dp.grada = dp.gradb = grad*0.5; 
     dp.gradab = dp.grada * dp.gradb;
+    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
 
     drv3_clear(&drvs);
     selected_func->third(&drvs, factor, &dp);

@@ -4,6 +4,9 @@
    of functional and their derivatives.
    (c) Pawel Salek, pawsa@theochem.kth.se. 2001.07.13
 
+   Extension for Embedding
+   Written by Christoph Jacob, 2004
+
    NOTE1: the derivatives are computed with respect to the density,
    and SQUARE of the density gradient. This is a choice. It stems from
    the fact that the factors involved in the derivative vector
@@ -23,14 +26,22 @@ typedef double real;
 */
 typedef struct DftDensProp_ DftDensProp;
 struct DftDensProp_ {
+  /* These variables are used in "normal DFT" for the density.
+     When do embedding, they are used for the TOTAL rho          */
+
     real rhoa,  rhob;
     real grada, gradb; /* norms of the density gradient, not squares */
     real gradab;       /* scalar product of grada and gradb */
+
     /* real current[3] or something may come in the future :-) */
+
+  /* This is for the densities of the (two) subsystems when doing embedding.
+     In "normal" calculations it is not used and should be NULL) */
+    DftDensProp *subsystem[2];
 };
 
 typedef struct Functional_ Functional;
-extern Functional* selected_func;
+
 typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;
 typedef struct ThirdDrv_  ThirdDrv;
@@ -44,6 +55,25 @@ typedef struct ThirdFuncDrv_  ThirdFuncDrv;
  * zeta_i = |\nabla\rho_i|²
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
+
+/* Comment on use of FirstDrv_->fZ (by Christoph Jacob) :
+ * It says here, that fZ sould be d/dzeta F (zeta = |\nabla\rho|^2)
+ * (which I think would be a clean way of programming)
+ *
+ * However, what is actually done in function _dftpot0 (file functionals.c)
+ * is something different:
+ * fZ is NOT d/dzeta F, but fZ = (d/dzeta F) * | \nabla\rho |
+ * When the result is used in DFTDRV (file dftdrv.F) this is corrected
+ * by dividing by | \nabla\rho | again (in addition, we start messing
+ * around with a factor 2)
+ *
+ * The code is working and I dont know where else these values are
+ * used and what I have seen, the same problem applys in SecondDrv_
+ * and so on, so I wont try to fix it.
+ *
+ * But it took me some time to figure this out and I got very confused,
+ * so maybe these lines are helpful when someone else looks at the code!
+ */ 
 
 struct FirstDrv_ {
     real fR;  /* d/drho F     */
@@ -164,6 +194,11 @@ struct ThirdFuncDrv_ {
    */
 };
 
+/* helper functions for FuncDrv structures */ 
+void drv1_clear(FirstFuncDrv* gga);  /* set all components to 0 */
+void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
+void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
+
 /* EnergyFunc: the function returning the energy for given densities
    and gradients. Note that some functionals(like LYP) depend explicitely
    on separately alpha and beta densities
@@ -192,9 +227,10 @@ struct Functional_ {
     ThirdOrderFun   third;
 };
 
-int  dftisgga(void);
+/* these are the functions that will be called from Fortran */
+int  dftisgga_(void);
+int  dftisemb_(void);
 void dftreport_(void);
-void fort_print(const char* format, ...);
 void dftlistfuncs_(void);
 real dftenergy_(const real* rho, const real* grad);
 void dftpot0_(FirstDrv *ds, const real* w, const real* rho, const real* grad);
@@ -202,9 +238,8 @@ void dftpot1_(SecondDrv*ds, const real* w, const real* rho, const real* grad,
               const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor,  real rho, real grad, int isgga);
 
-void drv1_clear(FirstFuncDrv* gga);  /* set all components to 0 */
-void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
-void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
+/* helper functions */
+void fort_print(const char* format, ...);
 int fun_false(void); /* always returns 0 */
 int fun_true(void);  /* always returns 1 */
 
@@ -230,8 +265,17 @@ extern Functional BLYPFunctional;
 extern Functional B3LYPFunctional;
 extern Functional WAHFunctional;
 
+/* generic functionals for embedding */
+extern Functional EmbeddingFunctional;
+extern Functional EmbInteractionFunctional;
+
+/* kinetic energy functionals */
+extern Functional TF_KinFunctional;     /* Thomas-Fermi */
+extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
+
 /* the list of the functionals */
-extern Functional* available_functionals[];
+extern Functional* available_functionals[];       /* XC-functionlas */
+extern Functional* available_kin_functionals[];   /* kinetic energy functionals */
 
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS */
