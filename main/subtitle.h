@@ -23,7 +23,7 @@ char *strsubtitle = "\
 *    Thomas Enevoldsen,       Odense University,                Denmark      *\n\
 *    Trygve Helgaker,         University of Oslo,               Norway       *\n\
 *    Hans Joergen Aa. Jensen, Odense University,                Denmark      *\n\
-*    Jon K. Laerdahl,         Auckland University,              New Zealand  *\n\
+*    Jon K. Laerdahl,         University of Auckland,           New Zealand  *\n\
 *    Kenneth Ruud,            University of Oslo,               Norway       *\n\
 *    Joern Thyssen,           Odense University,                Denmark      *\n\
 *    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Holland      *\n\
