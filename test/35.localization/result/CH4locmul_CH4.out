@@ -1,11 +1,4 @@
-Master : DIRAC allocating 60000000 words of memory
-Node  1: DIRAC allocating 60000000 words of memory
-Node  4: DIRAC allocating 60000000 words of memory
-Node  7: DIRAC allocating 60000000 words of memory
-Node  2: DIRAC allocating 60000000 words of memory
-Node  3: DIRAC allocating 60000000 words of memory
-Node  5: DIRAC allocating 60000000 words of memory
-Node  6: DIRAC allocating 60000000 words of memory
+Master : DIRAC allocating 10000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -80,23 +73,37 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *          Direct Iterative Relativistic Allelectron Calculations            *
 *         =======================================================            *
 *                                                                            *
-*                        VERSION 3.2     OCTOBER 2000                        *
+*                        VERSION 04.1    SEPTEMBER 2004                      *
 *                                                                            *
 ******************************************************************************
 *                                                                            *
-* Written by:                                                                *
-*    Trond Saue,              University of Tromsoe,            Norway       *
-*    Vebjoern Bakken,         University of Oslo,               Norway       *
-*    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *
-*    Trygve Helgaker,         University of Oslo,               Norway       *
-*    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *
-*    Jon K. Laerdahl,         University of Oslo,               Norway       *
-*    Kenneth Ruud,            University of Tromsoe,            Norway       *
-*    Joern Thyssen,           SDU, Odense University,           Denmark      *
-*    Luuk Visscher,           Vrije Universiteit Amsterdam,     Netherlands  *
+*    Written by:                                                             *
 *                                                                            *
+*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+*    Trond Saue               CNRS/ULP Strasbourg               France       *
+*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands  *
 *                                                                            *
-* Note:                                                                      *
+*    with contributions from:                                                *
+*                                                                            *
+*    Vebjoern Bakken          University of Oslo                Norway       *
+*    Ephraim Eliav            University of Tel Aviv            Israel       *
+*    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+*    Timo Fleig               University of Duesseldorf         Germany      *
+*    Olav Fossgaard           University of Tromsoe             Norway       *
+*    Trygve Helgaker          University of Oslo                Norway       *
+*    Jon K. Laerdahl          University of Oslo                Norway       *
+*    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
+*    Patrick Norman           Linkoeping University             Sweden       *
+*    Jeppe Olsen              Aarhus University                 Denmark      *
+*    Markus Pernpointner      Vrije Universiteit Amsterdam      Netherlands  *
+*    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
+*    Kenneth Ruud             University of Tromsoe             Norway       *
+*    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+*    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands  *
+*    Joern Thyssen            University of Southern Denmark    Denmark      *
+*    Olivier Visser           University of Groningen           Netherlands  *
+*    Toke Winther             University of Southern Denmark    Denmark      *
+*                                                                            *
 *    This is an experimental code. The authors accept no responsibility      *
 *    for the performance of the code or for the correctness of the results.  *
 *                                                                            *
@@ -107,23 +114,30 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 *    If results obtained with this code are published, an                    *
 *    appropriate citation would be:                                          *
 *                                                                            *
-*    T. Saue, V. Bakken, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,       *
-*    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *
-*    "Dirac, a relativistic ab initio electronic structure program,          *
-*    Release 3.2 (2000)"                                                     *
+*    "Dirac, a relativistic ab initio electronic structure program",         *
+*    release DIRAC04.1 (2004),                                               *
+*    written by H. J. Aa. Jensen, T. Saue, and L. Visscher                   *
+*    with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,   *
+*    O. Fossgaard, T. Helgaker, J. K. Laerdahl, C. V. Larsen, P. Norman,     *
+*    J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud, P. Salek,           *
+*    J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther             *
+*    (http://dirac.chem.sdu.dk).                                             *
+*                                                                            *
 *    (for a suitable BibTEX entry, see                                       *
 *    <URL:"http://dirac.chem.sdu.dk/doc/reference.shtml">)                   *
 *                                                                            *
 ******************************************************************************
- Version           : Dirac 3.2 (patchlevel 1) 
- Hostname          : gridur
- Operating system  : IRIX64 6.5
- Machine           : IP35
- Run               : Parallel
- Last compilation  : 11:51:30 May 11 2004 (by trondsau@gridur)
- Basis set dir.    : /home/u1/trondsau/Dirac/test/34.localization/result/:
+ Version           : Dirac 4.1 (patchlevel 0) 
+ Hostname          : oddgs3.chem.uit.no
+ Operating system  : Linux 2.4.20-8
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 23:36:12 Oct  9 2004 (by tsaue@oddgs3.chem.uit.no)
+ FORTRAN compiler  : g77 -O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore 
+ C compiler        : gcc -O3 -ffast-math 
+ Basis set dir.    : /home/tsaue/Dirac/test/35.localization/:/home/tsaue/Dirac/basis/:/home/tsaue/Dirac/basis_dalton/
 
- Date and time (IRIX)   : Tue May 11 15:33:09 2004
+ Date and time (Linux) : Sun Oct 10 00:27:15 2004
 
 
  *************************************************************************
@@ -139,27 +153,17 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  **************************************************************************
 
  * The speed of light :        137.0359998
- * Parallel run
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
    - SS-integrals
- * SS integrals neglected:
-   Interatomic Coulombic SS-contributions modelled by
-   classical repulsion of small component atomic charges
-   using tabulated charges.
- * Default integral flags passed to all modules
-   - LL-integrals: T
-   - LS-integrals: T
-   - SS-integrals: F
-   - GT-integrals: F
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
    MO-transformation for small components
  * Thresholds for linear dependence:
-   Large components:   1.00D-06
-   Small components:   1.00D-08
+   Large components:   1.00E-06
+   Small components:   1.00E-08
  * General print level   :   0
 
 
@@ -200,9 +204,9 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
   Projection CH4 pour différentes bases :                                 
   DunningDZ                                                               
 
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
+  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929E+08
 
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171E+09
 
 
                       SYMGRP:Point group information
@@ -262,13 +266,13 @@ Point group: C1
   ----------------------------------------------------------------------
   C           1       6      24      10      L  - [9s5p|4s2p]                                        
                              62      62      S  - [5s9p5d|5s9p5d]                                    
-  H           1       1       4       2      L  - [4s|2s]                                            
+  H1          1       1       4       2      L  - [4s|2s]                                            
                              12      12      S  - [4p|4p]                                            
-  H           1       1       4       2      L  - [4s|2s]                                            
+  H2          1       1       4       2      L  - [4s|2s]                                            
                              12      12      S  - [4p|4p]                                            
-  H           1       1       4       2      L  - [4s|2s]                                            
+  H3          1       1       4       2      L  - [4s|2s]                                            
                              12      12      S  - [4p|4p]                                            
-  H           1       1       4       2      L  - [4s|2s]                                            
+  H4          1       1       4       2      L  - [4s|2s]                                            
                              12      12      S  - [4p|4p]                                            
   ----------------------------------------------------------------------
                              40      18   L - large components
@@ -277,7 +281,7 @@ Point group: C1
   total:      5      10     150     128
 
   Cartesian basis used.
-  Threshold for integrals:  1.00D-15
+  Threshold for integrals:  1.00E-15
 
 
   References for the basis sets
@@ -299,19 +303,19 @@ Point group: C1
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   H        x      1.1848627200
+   4   H1       x      1.1848627200
    5            y      1.1848627200
    6            z      1.1848627200
 
-   7   H        x     -1.1848627200
+   7   H2       x     -1.1848627200
    8            y     -1.1848627200
    9            z      1.1848627200
 
-  10   H        x      1.1848627200
+  10   H3       x      1.1848627200
   11            y     -1.1848627200
   12            z     -1.1848627200
 
-  13   H        x     -1.1848627200
+  13   H4       x     -1.1848627200
   14            y      1.1848627200
   15            z     -1.1848627200
 
@@ -320,13 +324,13 @@ Point group: C1
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            C           H           H           H           H   
+            C           H1          H2          H3          H4  
 
    C       0.000000
-   H       1.086000    0.000000
-   H       1.086000    1.773430    0.000000
-   H       1.086000    1.773430    1.773430    0.000000
-   H       1.086000    1.773430    1.773430    1.773430    0.000000
+   H1      1.086000    0.000000
+   H2      1.086000    1.773430    0.000000
+   H3      1.086000    1.773430    1.773430    0.000000
+   H4      1.086000    1.773430    1.773430    1.773430    0.000000
 
 
 
@@ -336,10 +340,10 @@ Point group: C1
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
-  bond distance:    H          C                              1.086000
+  bond distance:    H1         C                              1.086000
+  bond distance:    H2         C                              1.086000
+  bond distance:    H3         C                              1.086000
+  bond distance:    H4         C                              1.086000
 
 
   Bond angles (degrees):
@@ -347,12 +351,12 @@ Point group: C1
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
-  bond angle:       H          C          H                    109.471
+  bond angle:       H2         C          H1                   109.471
+  bond angle:       H3         C          H1                   109.471
+  bond angle:       H3         C          H2                   109.471
+  bond angle:       H4         C          H1                   109.471
+  bond angle:       H4         C          H2                   109.471
+  bond angle:       H4         C          H3                   109.471
 
 
   Nuclear repulsion energy :   13.484875956018
@@ -362,13 +366,13 @@ Point group: C1
                             -----------------
 
    * Large components:    8
-     1  L C     s        2  L C     px       3  L C     py       4  L C     pz       5  L H     s        6  L H     s   
-     7  L H     s        8  L H     s   
+     1  L C     s        2  L C     px       3  L C     py       4  L C     pz       5  L H1    s        6  L H2    s   
+     7  L H3    s        8  L H4    s   
    * Small components:   22
      9  S C     s       10  S C     px      11  S C     py      12  S C     pz      13  S C     dxx     14  S C     dxy 
-    15  S C     dxz     16  S C     dyy     17  S C     dyz     18  S C     dzz     19  S H     px      20  S H     py  
-    21  S H     pz      22  S H     px      23  S H     py      24  S H     pz      25  S H     px      26  S H     py  
-    27  S H     pz      28  S H     px      29  S H     py      30  S H     pz  
+    15  S C     dxz     16  S C     dyy     17  S C     dyz     18  S C     dzz     19  S H1    px      20  S H1    py  
+    21  S H1    pz      22  S H2    px      23  S H2    py      24  S H2    pz      25  S H3    px      26  S H3    py  
+    27  S H3    pz      28  S H4    px      29  S H4    py      30  S H4    pz  
 
 
   Symmetry Orbitals
@@ -386,10 +390,10 @@ Point group: C1
         2 functions:    C  px  
         2 functions:    C  py  
         2 functions:    C  pz  
-        2 functions:    H  s   
-        2 functions:    H  s   
-        2 functions:    H  s   
-        2 functions:    H  s   
+        2 functions:    H1 s   
+        2 functions:    H2 s   
+        2 functions:    H3 s   
+        2 functions:    H4 s   
 
 * Small component functions
 
@@ -405,18 +409,18 @@ Point group: C1
         5 functions:    C  dyy 
         5 functions:    C  dyz 
         5 functions:    C  dzz 
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
+        4 functions:    H1 px  
+        4 functions:    H1 py  
+        4 functions:    H1 pz  
+        4 functions:    H2 px  
+        4 functions:    H2 py  
+        4 functions:    H2 pz  
+        4 functions:    H3 px  
+        4 functions:    H3 py  
+        4 functions:    H3 pz  
+        4 functions:    H4 px  
+        4 functions:    H4 py  
+        4 functions:    H4 pz  
 
 
  ***************************************************************************
@@ -425,6 +429,15 @@ Point group: C1
 
  * Print level :    0
  * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals: T
+   - LS-integrals: T
+   - SS-integrals: F
+   - GT-integrals: F
  * Basis set:
    - contracted large component basis set
    - uncontracted small component basis set
@@ -468,14 +481,14 @@ Point group: C1
  * Trial vectors read from file DFCOEF
  ***** CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
-   Desired convergence:1.000D-07
-   Allowed convergence:1.000D-07
+   Desired convergence:1.000E-07
+   Allowed convergence:1.000E-07
 
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
     with optimal parameter.
  * DIIS (in MO basis)
- * DIIS will be activated when convergence reaches : 1.00D+20
+ * DIIS will be activated when convergence reaches : 1.00E+20
    - Maximum size of B-matrix:   10
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
@@ -501,9 +514,9 @@ Point group: C1
  LOCINP: Molecular orbital localization (Pipek-Mezey criterion)
 ===========================================================================
  * Molecular orbital localization from Mulliken analysis
- * Threshold for convergence of the localization process : 0.10D-05
+ * Threshold for convergence of the localization process : 0.10E-03
    (based on the inverse mean delocalization)
- * Maximum number of iterations :   200
+ * Maximum number of iterations :   100
  * Localised MO are written in file DFCOEF !!!
  * Print level :    0
 ===========================================================================
@@ -511,7 +524,6 @@ Point group: C1
 ===========================================================================
  * Gross populations
  * Label definitions based on SO-labels
-   (default small component groups labels will be added)
  * Number of spinors analyzed:
     - Orbitals in fermion ircop E1  :   1..   5                                                              
  * Print level:    0
@@ -561,7 +573,7 @@ Total no. of orbitals      (NORB):    36
                             -----------------
 
 
-* Electronic eigenvalue nr.  1: -11.212473315318       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  1: -11.212473315325       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
@@ -571,54 +583,54 @@ Gross     Total   |    L A  C  s      A  C  _small
  alpha    0.9997  |      0.9994         0.0001
  beta     0.0003  |      0.0000         0.0003
 
-* Electronic eigenvalue nr.  2: -0.9469953651139       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  2: -0.9469953651127       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  s      L A  H  s      L A  H  s      L A  H  s      L A  H  s   
+Gross     Total   |    L A  C  s      L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
 --------------------------------------------------------------------------------------------------
  alpha    1.0000  |      0.7315         0.0671         0.0671         0.0671         0.0671
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue nr.  3: -0.5438894431134       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  3: -0.5438894430963       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H  s      L A  H  s      L A  H  s      L A  H  s   
+Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.4999  |      0.0921         0.0921         0.0921         0.1001         0.0117         0.0847         0.0272
- beta     0.5001  |      0.0921         0.0921         0.0921         0.0117         0.1001         0.0272         0.0847
+ alpha    0.4948  |      0.0892         0.0892         0.0950         0.0238         0.0869         0.0132         0.0975
+ beta     0.5052  |      0.0950         0.0950         0.0892         0.0881         0.0249         0.0987         0.0143
 
-* Electronic eigenvalue nr.  4: -0.5436979500587       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  4: -0.5436979500451       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H  s      L A  H  s      L A  H  s      L A  H  s   
+Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.3667  |      0.0662         0.0399         0.0964         0.0235         0.0787         0.0118         0.0502
- beta     0.6333  |      0.2050         0.1286         0.0161         0.0316         0.0202         0.0776         0.1541
+ alpha    0.3838  |      0.0941         0.0249         0.0929         0.0203         0.0954         0.0287         0.0274
+ beta     0.6162  |      0.0731         0.0851         0.1821         0.1818         0.0143         0.0335         0.0463
 
-* Electronic eigenvalue nr.  5: -0.5436979500453       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  5: -0.5436979500305       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H  s      L A  H  s      L A  H  s      L A  H  s   
+Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s      L A  H4 s   
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.3721  |      0.0708         0.1200         0.0147         0.0522         0.1030         0.0002         0.0112
- beta     0.6279  |      0.0261         0.0796         0.2410         0.1164         0.0220         0.1343         0.0083
+ alpha    0.3518  |      0.0998         0.0609         0.0336         0.0123         0.0183         0.1021         0.0247
+ beta     0.6482  |      0.1012         0.1973         0.0595         0.0093         0.0959         0.0596         0.1254
 
 
 *** Total gross population ***
 
-Gross      Total    |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  H  s      L A  H  s      L A  H  s   
+Gross      Total    |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  H1 s      L A  H2 s      L A  H3 s   
 --------------------------------------------------------------------------------------------------------------------------------
  total    10.00000  |      3.46186        1.10475        1.10475        1.10475        0.80571        0.80571        0.80571
 
-Gross  | L A  H  s      A  C  _small
+Gross  | L A  H4 s      A  C  _small
 --------------------------------------
  total |   0.80571        0.00101
 
@@ -633,3223 +645,334 @@ Gross  | L A  H  s      A  C  _small
 * Orbital   1 Pipek-Mezey localization measure d =  1.0003
 * Orbital   2 Pipek-Mezey localization measure d =  1.8078
 * Orbital   3 Pipek-Mezey localization measure d =  2.8139
-* Orbital   4 Pipek-Mezey localization measure d =  2.7204
-* Orbital   5 Pipek-Mezey localization measure d =  2.7204
+* Orbital   4 Pipek-Mezey localization measure d =  2.7231
+* Orbital   5 Pipek-Mezey localization measure d =  2.7231
 
-* Inverse mean delocalization = 0.5286831387212
+* Inverse mean delocalization = 0.5285394402321
 
-########## START ITERATION NO.   1 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   1 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.28E+00
+Norm of gradient:     0.36E+00
  ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  4.2188474935755949E-15
+ Element  5 5 value :  6.66133815E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0003
-* Orbital   2 Pipek-Mezey localization measure d =  1.8109
-* Orbital   3 Pipek-Mezey localization measure d =  2.7913
-* Orbital   4 Pipek-Mezey localization measure d =  2.5315
-* Orbital   5 Pipek-Mezey localization measure d =  2.6866
+* Orbital   1 Pipek-Mezey localization measure d =  0.9991
+* Orbital   2 Pipek-Mezey localization measure d =  1.8218
+* Orbital   3 Pipek-Mezey localization measure d =  2.7910
+* Orbital   4 Pipek-Mezey localization measure d =  2.4721
+* Orbital   5 Pipek-Mezey localization measure d =  2.6600
 
-* Inverse mean delocalization = 0.5354908471749
+* Inverse mean delocalization = 0.5377122652480
 
-########## START ITERATION NO.   2 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   2 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.31E+00
+Norm of gradient:     0.69E+00
  ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.6645352591003757E-15
+ Element  3 3 value :  2.44249065E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8211
-* Orbital   3 Pipek-Mezey localization measure d =  2.6970
-* Orbital   4 Pipek-Mezey localization measure d =  2.2936
-* Orbital   5 Pipek-Mezey localization measure d =  2.6393
+* Orbital   1 Pipek-Mezey localization measure d =  0.9989
+* Orbital   2 Pipek-Mezey localization measure d =  1.9034
+* Orbital   3 Pipek-Mezey localization measure d =  2.5676
+* Orbital   4 Pipek-Mezey localization measure d =  1.9388
+* Orbital   5 Pipek-Mezey localization measure d =  2.5576
 
-* Inverse mean delocalization = 0.5469129422666
+* Inverse mean delocalization = 0.5645422761998
 
-########## START ITERATION NO.   3 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   3 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.29E+00
+Norm of gradient:     0.74E+00
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.4408920985006262E-15
+ Element  4 4 value :  1.55431223E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8352
-* Orbital   3 Pipek-Mezey localization measure d =  2.5566
-* Orbital   4 Pipek-Mezey localization measure d =  2.1589
-* Orbital   5 Pipek-Mezey localization measure d =  2.5569
+* Orbital   1 Pipek-Mezey localization measure d =  0.9993
+* Orbital   2 Pipek-Mezey localization measure d =  1.9635
+* Orbital   3 Pipek-Mezey localization measure d =  2.1629
+* Orbital   4 Pipek-Mezey localization measure d =  1.8563
+* Orbital   5 Pipek-Mezey localization measure d =  2.2794
 
-* Inverse mean delocalization = 0.5580314204848
+* Inverse mean delocalization = 0.5899578986607
 
-########## START ITERATION NO.   4 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   4 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.11E+00
+Norm of gradient:     0.13E+01
  ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.9968028886505635E-15
+ Element  3 4 value :  7.19118942E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8498
-* Orbital   3 Pipek-Mezey localization measure d =  2.5080
-* Orbital   4 Pipek-Mezey localization measure d =  2.0734
-* Orbital   5 Pipek-Mezey localization measure d =  2.5463
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.9584
+* Orbital   3 Pipek-Mezey localization measure d =  1.8654
+* Orbital   4 Pipek-Mezey localization measure d =  1.9594
+* Orbital   5 Pipek-Mezey localization measure d =  1.8748
 
-* Inverse mean delocalization = 0.5628334657650
+* Inverse mean delocalization = 0.6182066466308
 
-########## START ITERATION NO.   5 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   5 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.89E-01
+Norm of gradient:     0.12E+01
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.5543122344752192E-15
+ Element  1 1 value :  1.55431223E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8639
-* Orbital   3 Pipek-Mezey localization measure d =  2.4653
-* Orbital   4 Pipek-Mezey localization measure d =  2.0156
-* Orbital   5 Pipek-Mezey localization measure d =  2.5336
+* Orbital   1 Pipek-Mezey localization measure d =  1.0012
+* Orbital   2 Pipek-Mezey localization measure d =  1.9606
+* Orbital   3 Pipek-Mezey localization measure d =  2.2301
+* Orbital   4 Pipek-Mezey localization measure d =  1.9640
+* Orbital   5 Pipek-Mezey localization measure d =  1.8989
 
-* Inverse mean delocalization = 0.5665599638897
+* Inverse mean delocalization = 0.5986145058557
 
-########## START ITERATION NO.   6 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.77E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.2204460492503131E-15
+     !!! Localization criterion decreases !!!
+     !!! Restart from  previous iteration !!!
+     !!!  and activation of the Hessian   !!!
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8764
-* Orbital   3 Pipek-Mezey localization measure d =  2.4276
-* Orbital   4 Pipek-Mezey localization measure d =  1.9755
-* Orbital   5 Pipek-Mezey localization measure d =  2.5164
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.9584
+* Orbital   3 Pipek-Mezey localization measure d =  1.8654
+* Orbital   4 Pipek-Mezey localization measure d =  1.9594
+* Orbital   5 Pipek-Mezey localization measure d =  1.8748
 
-* Inverse mean delocalization = 0.5696549635465
+* Inverse mean delocalization = 0.6182066466308
 
-########## START ITERATION NO.   7 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.76E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.7747582837255322E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8860
-* Orbital   3 Pipek-Mezey localization measure d =  2.3937
-* Orbital   4 Pipek-Mezey localization measure d =  1.9472
-* Orbital   5 Pipek-Mezey localization measure d =  2.4919
-
-* Inverse mean delocalization = 0.5725319926244
-
-########## START ITERATION NO.   8 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.74E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8915
-* Orbital   3 Pipek-Mezey localization measure d =  2.3630
-* Orbital   4 Pipek-Mezey localization measure d =  1.9269
-* Orbital   5 Pipek-Mezey localization measure d =  2.4609
-
-* Inverse mean delocalization = 0.5754013721184
-
-########## START ITERATION NO.   9 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.67E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0002
-* Orbital   2 Pipek-Mezey localization measure d =  1.8935
-* Orbital   3 Pipek-Mezey localization measure d =  2.3355
-* Orbital   4 Pipek-Mezey localization measure d =  1.9122
-* Orbital   5 Pipek-Mezey localization measure d =  2.4289
-
-* Inverse mean delocalization = 0.5781639404719
-
-########## START ITERATION NO.  10 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.57E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  9.7145192281059001E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8931
-* Orbital   3 Pipek-Mezey localization measure d =  2.3111
-* Orbital   4 Pipek-Mezey localization measure d =  1.9013
-* Orbital   5 Pipek-Mezey localization measure d =  2.3990
-
-* Inverse mean delocalization = 0.5807132058641
-
-########## START ITERATION NO.  11 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.49E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.7747582837255322E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8913
-* Orbital   3 Pipek-Mezey localization measure d =  2.2897
-* Orbital   4 Pipek-Mezey localization measure d =  1.8933
-* Orbital   5 Pipek-Mezey localization measure d =  2.3718
-
-* Inverse mean delocalization = 0.5830299277660
-
-########## START ITERATION NO.  12 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   5 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.42E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.6645352591003757E-15
+ Element  4 4 value :  2.44249065E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8886
-* Orbital   3 Pipek-Mezey localization measure d =  2.2708
-* Orbital   4 Pipek-Mezey localization measure d =  1.8872
-* Orbital   5 Pipek-Mezey localization measure d =  2.3472
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.9372
+* Orbital   3 Pipek-Mezey localization measure d =  1.8618
+* Orbital   4 Pipek-Mezey localization measure d =  1.9537
+* Orbital   5 Pipek-Mezey localization measure d =  1.8738
 
-* Inverse mean delocalization = 0.5851314535165
+* Inverse mean delocalization = 0.6198904099907
 
-########## START ITERATION NO.  13 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   6 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.37E-01
+Norm of gradient:     0.36E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.5543122344752192E-15
+ Element  2 4 value :  2.25168811E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8854
-* Orbital   3 Pipek-Mezey localization measure d =  2.2540
-* Orbital   4 Pipek-Mezey localization measure d =  1.8826
-* Orbital   5 Pipek-Mezey localization measure d =  2.3249
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.9212
+* Orbital   3 Pipek-Mezey localization measure d =  1.8597
+* Orbital   4 Pipek-Mezey localization measure d =  1.9488
+* Orbital   5 Pipek-Mezey localization measure d =  1.8730
 
-* Inverse mean delocalization = 0.5870442275826
+* Inverse mean delocalization = 0.6211682803262
 
-########## START ITERATION NO.  14 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   7 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.33E-01
+Norm of gradient:     0.31E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.3306690738754696E-15
+ Element  2 2 value :  4.4408921E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8819
-* Orbital   3 Pipek-Mezey localization measure d =  2.2390
-* Orbital   4 Pipek-Mezey localization measure d =  1.8791
-* Orbital   5 Pipek-Mezey localization measure d =  2.3047
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.9091
+* Orbital   3 Pipek-Mezey localization measure d =  1.8587
+* Orbital   4 Pipek-Mezey localization measure d =  1.9447
+* Orbital   5 Pipek-Mezey localization measure d =  1.8723
 
-* Inverse mean delocalization = 0.5887942970895
+* Inverse mean delocalization = 0.6221417102873
 
-########## START ITERATION NO.  15 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   8 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.29E-01
+Norm of gradient:     0.26E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.5543122344752192E-15
+ Element  4 4 value :  1.77635684E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8783
-* Orbital   3 Pipek-Mezey localization measure d =  2.2254
-* Orbital   4 Pipek-Mezey localization measure d =  1.8764
-* Orbital   5 Pipek-Mezey localization measure d =  2.2862
+* Orbital   1 Pipek-Mezey localization measure d =  0.9994
+* Orbital   2 Pipek-Mezey localization measure d =  1.8998
+* Orbital   3 Pipek-Mezey localization measure d =  1.8583
+* Orbital   4 Pipek-Mezey localization measure d =  1.9413
+* Orbital   5 Pipek-Mezey localization measure d =  1.8717
 
-* Inverse mean delocalization = 0.5904044929905
+* Inverse mean delocalization = 0.6228864694479
 
-########## START ITERATION NO.  16 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.   9 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.27E-01
+Norm of gradient:     0.23E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  7.9936057773011271E-15
+ Element  4 4 value :  8.8817842E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8746
-* Orbital   3 Pipek-Mezey localization measure d =  2.2130
-* Orbital   4 Pipek-Mezey localization measure d =  1.8742
-* Orbital   5 Pipek-Mezey localization measure d =  2.2692
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8927
+* Orbital   3 Pipek-Mezey localization measure d =  1.8585
+* Orbital   4 Pipek-Mezey localization measure d =  1.9384
+* Orbital   5 Pipek-Mezey localization measure d =  1.8712
 
-* Inverse mean delocalization = 0.5918939822660
+* Inverse mean delocalization = 0.6234592932727
 
-########## START ITERATION NO.  17 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  10 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.24E-01
+Norm of gradient:     0.20E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.5527136788005009E-15
+ Element  4 4 value :  1.99840144E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0001
-* Orbital   2 Pipek-Mezey localization measure d =  1.8709
-* Orbital   3 Pipek-Mezey localization measure d =  2.2017
-* Orbital   4 Pipek-Mezey localization measure d =  1.8726
-* Orbital   5 Pipek-Mezey localization measure d =  2.2536
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8872
+* Orbital   3 Pipek-Mezey localization measure d =  1.8588
+* Orbital   4 Pipek-Mezey localization measure d =  1.9359
+* Orbital   5 Pipek-Mezey localization measure d =  1.8708
 
-* Inverse mean delocalization = 0.5932786065016
+* Inverse mean delocalization = 0.6239027194923
 
-########## START ITERATION NO.  18 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.22E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.6629367034256575E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8673
-* Orbital   3 Pipek-Mezey localization measure d =  2.1912
-* Orbital   4 Pipek-Mezey localization measure d =  1.8713
-* Orbital   5 Pipek-Mezey localization measure d =  2.2391
-
-* Inverse mean delocalization = 0.5945714179608
-
-########## START ITERATION NO.  19 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.21E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  8.0492609241334181E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8638
-* Orbital   3 Pipek-Mezey localization measure d =  2.1815
-* Orbital   4 Pipek-Mezey localization measure d =  1.8702
-* Orbital   5 Pipek-Mezey localization measure d =  2.2256
-
-* Inverse mean delocalization = 0.5957832037363
-
-########## START ITERATION NO.  20 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.19E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8604
-* Orbital   3 Pipek-Mezey localization measure d =  2.1725
-* Orbital   4 Pipek-Mezey localization measure d =  1.8694
-* Orbital   5 Pipek-Mezey localization measure d =  2.2130
-
-* Inverse mean delocalization = 0.5969229343699
-
-########## START ITERATION NO.  21 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.18E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.2204460492503131E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8571
-* Orbital   3 Pipek-Mezey localization measure d =  2.1640
-* Orbital   4 Pipek-Mezey localization measure d =  1.8687
-* Orbital   5 Pipek-Mezey localization measure d =  2.2012
-
-* Inverse mean delocalization = 0.5979981276736
-
-########## START ITERATION NO.  22 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  11 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.17E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  1.1166702159031826E-15
+ Element  4 4 value :  1.77635684E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8539
-* Orbital   3 Pipek-Mezey localization measure d =  2.1561
-* Orbital   4 Pipek-Mezey localization measure d =  1.8682
-* Orbital   5 Pipek-Mezey localization measure d =  2.1901
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8829
+* Orbital   3 Pipek-Mezey localization measure d =  1.8594
+* Orbital   4 Pipek-Mezey localization measure d =  1.9337
+* Orbital   5 Pipek-Mezey localization measure d =  1.8704
 
-* Inverse mean delocalization = 0.5990151368473
+* Inverse mean delocalization = 0.6242486655599
 
-########## START ITERATION NO.  23 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.16E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  1.5018217086129886E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8509
-* Orbital   3 Pipek-Mezey localization measure d =  2.1486
-* Orbital   4 Pipek-Mezey localization measure d =  1.8677
-* Orbital   5 Pipek-Mezey localization measure d =  2.1797
-
-* Inverse mean delocalization = 0.5999793764604
-
-########## START ITERATION NO.  24 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  12 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.15E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.6645352591003757E-15
+ Element  4 4 value :  3.33066907E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  1.0000
-* Orbital   2 Pipek-Mezey localization measure d =  1.8480
-* Orbital   3 Pipek-Mezey localization measure d =  2.1416
-* Orbital   4 Pipek-Mezey localization measure d =  1.8674
-* Orbital   5 Pipek-Mezey localization measure d =  2.1698
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8796
+* Orbital   3 Pipek-Mezey localization measure d =  1.8600
+* Orbital   4 Pipek-Mezey localization measure d =  1.9318
+* Orbital   5 Pipek-Mezey localization measure d =  1.8700
 
-* Inverse mean delocalization = 0.6008954993214
+* Inverse mean delocalization = 0.6245210941594
 
-########## START ITERATION NO.  25 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.14E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  1.5161230128944302E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8453
-* Orbital   3 Pipek-Mezey localization measure d =  2.1349
-* Orbital   4 Pipek-Mezey localization measure d =  1.8671
-* Orbital   5 Pipek-Mezey localization measure d =  2.1605
-
-* Inverse mean delocalization = 0.6017675352028
-
-########## START ITERATION NO.  26 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.14E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  9.5626335151689952E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8427
-* Orbital   3 Pipek-Mezey localization measure d =  2.1285
-* Orbital   4 Pipek-Mezey localization measure d =  1.8669
-* Orbital   5 Pipek-Mezey localization measure d =  2.1516
-
-* Inverse mean delocalization = 0.6025990001488
-
-########## START ITERATION NO.  27 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  13 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.13E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.9984014443252818E-15
+ Element  4 4 value :  3.10862447E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8402
-* Orbital   3 Pipek-Mezey localization measure d =  2.1225
-* Orbital   4 Pipek-Mezey localization measure d =  1.8667
-* Orbital   5 Pipek-Mezey localization measure d =  2.1432
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8770
+* Orbital   3 Pipek-Mezey localization measure d =  1.8607
+* Orbital   4 Pipek-Mezey localization measure d =  1.9302
+* Orbital   5 Pipek-Mezey localization measure d =  1.8696
 
-* Inverse mean delocalization = 0.6033929831340
+* Inverse mean delocalization = 0.6247380054942
 
-########## START ITERATION NO.  28 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.13E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8378
-* Orbital   3 Pipek-Mezey localization measure d =  2.1167
-* Orbital   4 Pipek-Mezey localization measure d =  1.8665
-* Orbital   5 Pipek-Mezey localization measure d =  2.1351
-
-* Inverse mean delocalization = 0.6041522152446
-
-########## START ITERATION NO.  29 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.12E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8355
-* Orbital   3 Pipek-Mezey localization measure d =  2.1112
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  2.1275
-
-* Inverse mean delocalization = 0.6048791253225
-
-########## START ITERATION NO.  30 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.12E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8334
-* Orbital   3 Pipek-Mezey localization measure d =  2.1060
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  2.1202
-
-* Inverse mean delocalization = 0.6055758850637
-
-########## START ITERATION NO.  31 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  14 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.11E-01
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.3322676295501878E-15
+ Element  2 2 value :  1.33226763E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8314
-* Orbital   3 Pipek-Mezey localization measure d =  2.1010
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  2.1132
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8749
+* Orbital   3 Pipek-Mezey localization measure d =  1.8613
+* Orbital   4 Pipek-Mezey localization measure d =  1.9287
+* Orbital   5 Pipek-Mezey localization measure d =  1.8693
 
-* Inverse mean delocalization = 0.6062444458523
+* Inverse mean delocalization = 0.6249129284536
 
-########## START ITERATION NO.  32 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.11E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9999
-* Orbital   2 Pipek-Mezey localization measure d =  1.8294
-* Orbital   3 Pipek-Mezey localization measure d =  2.0961
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  2.1065
-
-* Inverse mean delocalization = 0.6068865690732
-
-########## START ITERATION NO.  33 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.10E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8276
-* Orbital   3 Pipek-Mezey localization measure d =  2.0915
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  2.1000
-
-* Inverse mean delocalization = 0.6075038512428
-
-########## START ITERATION NO.  34 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.10E-01
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  8.8817841970012523E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8258
-* Orbital   3 Pipek-Mezey localization measure d =  2.0871
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  2.0939
-
-* Inverse mean delocalization = 0.6080977449919
-
-########## START ITERATION NO.  35 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.98E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.6629367034256575E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8242
-* Orbital   3 Pipek-Mezey localization measure d =  2.0828
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  2.0879
-
-* Inverse mean delocalization = 0.6086695767061
-
-########## START ITERATION NO.  36 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  15 ##########   Sun Oct 10 00:27:15 2004
 
 Norm of gradient:     0.95E-02
  ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  3.8549648658224464E-16
+ Element  4 4 value :  2.22044605E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8226
-* Orbital   3 Pipek-Mezey localization measure d =  2.0787
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  2.0822
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8733
+* Orbital   3 Pipek-Mezey localization measure d =  1.8620
+* Orbital   4 Pipek-Mezey localization measure d =  1.9275
+* Orbital   5 Pipek-Mezey localization measure d =  1.8690
 
-* Inverse mean delocalization = 0.6092205614508
+* Inverse mean delocalization = 0.6250560374428
 
-########## START ITERATION NO.  37 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  16 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.92E-02
+Norm of gradient:     0.83E-02
  ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.4408920985006262E-15
+ Element  4 4 value :  3.10862447E-15
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8211
-* Orbital   3 Pipek-Mezey localization measure d =  2.0747
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0767
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8720
+* Orbital   3 Pipek-Mezey localization measure d =  1.8625
+* Orbital   4 Pipek-Mezey localization measure d =  1.9263
+* Orbital   5 Pipek-Mezey localization measure d =  1.8687
 
-* Inverse mean delocalization = 0.6097518156785
+* Inverse mean delocalization = 0.6251749891777
 
-########## START ITERATION NO.  38 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  17 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.89E-02
+Norm of gradient:     0.72E-02
  ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  6.8418465556775419E-16
+ Element  1 4 value :  1.53773447E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8197
-* Orbital   3 Pipek-Mezey localization measure d =  2.0709
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0714
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8710
+* Orbital   3 Pipek-Mezey localization measure d =  1.8630
+* Orbital   4 Pipek-Mezey localization measure d =  1.9253
+* Orbital   5 Pipek-Mezey localization measure d =  1.8684
 
-* Inverse mean delocalization = 0.6102643681089
+* Inverse mean delocalization = 0.6252755498651
 
-########## START ITERATION NO.  39 ##########   Tue May 11 15:33:10 2004
+########## START ITERATION NO.  18 ##########   Sun Oct 10 00:27:15 2004
 
-Norm of gradient:     0.87E-02
+Norm of gradient:     0.63E-02
  ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.2204460492503131E-15
+ Element  2 2 value :  6.66133815E-16
 
 ** Pipek-Mezey localization criteria **
   ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8184
-* Orbital   3 Pipek-Mezey localization measure d =  2.0671
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0663
+* Orbital   1 Pipek-Mezey localization measure d =  0.9995
+* Orbital   2 Pipek-Mezey localization measure d =  1.8702
+* Orbital   3 Pipek-Mezey localization measure d =  1.8635
+* Orbital   4 Pipek-Mezey localization measure d =  1.9244
+* Orbital   5 Pipek-Mezey localization measure d =  1.8681
 
-* Inverse mean delocalization = 0.6107591690969
+* Inverse mean delocalization = 0.6253620654359
 
-########## START ITERATION NO.  40 ##########   Tue May 11 15:33:10 2004
+ >>> Convergence in    18 iterations
+ >>> Time used in localization is :   0.07 seconds
 
-Norm of gradient:     0.85E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  3.5527136788005009E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8172
-* Orbital   3 Pipek-Mezey localization measure d =  2.0636
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0614
-
-* Inverse mean delocalization = 0.6112370987384
-
-########## START ITERATION NO.  41 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.82E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.3290705182007514E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8160
-* Orbital   3 Pipek-Mezey localization measure d =  2.0601
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0566
-
-* Inverse mean delocalization = 0.6116989739195
-
-########## START ITERATION NO.  42 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.80E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8148
-* Orbital   3 Pipek-Mezey localization measure d =  2.0568
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0520
-
-* Inverse mean delocalization = 0.6121455544730
-
-########## START ITERATION NO.  43 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.78E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9998
-* Orbital   2 Pipek-Mezey localization measure d =  1.8138
-* Orbital   3 Pipek-Mezey localization measure d =  2.0535
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0475
-
-* Inverse mean delocalization = 0.6125775485783
-
-########## START ITERATION NO.  44 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.76E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           3 value :  1.2821495370940982E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8128
-* Orbital   3 Pipek-Mezey localization measure d =  2.0504
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0432
-
-* Inverse mean delocalization = 0.6129956175171
-
-########## START ITERATION NO.  45 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.74E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  6.2172489379008766E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8118
-* Orbital   3 Pipek-Mezey localization measure d =  2.0473
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0391
-
-* Inverse mean delocalization = 0.6134003798765
-
-########## START ITERATION NO.  46 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.73E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8109
-* Orbital   3 Pipek-Mezey localization measure d =  2.0444
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0350
-
-* Inverse mean delocalization = 0.6137924152768
-
-########## START ITERATION NO.  47 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.71E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.8849813083506888E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8101
-* Orbital   3 Pipek-Mezey localization measure d =  2.0415
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0311
-
-* Inverse mean delocalization = 0.6141722676894
-
-########## START ITERATION NO.  48 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.69E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  7.9025768754739828E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8093
-* Orbital   3 Pipek-Mezey localization measure d =  2.0387
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0273
-
-* Inverse mean delocalization = 0.6145404483977
-
-########## START ITERATION NO.  49 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.68E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8085
-* Orbital   3 Pipek-Mezey localization measure d =  2.0360
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0236
-
-* Inverse mean delocalization = 0.6148974386482
-
-########## START ITERATION NO.  50 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.66E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8078
-* Orbital   3 Pipek-Mezey localization measure d =  2.0334
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0200
-
-* Inverse mean delocalization = 0.6152436920305
-
-########## START ITERATION NO.  51 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.65E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8072
-* Orbital   3 Pipek-Mezey localization measure d =  2.0308
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0165
-
-* Inverse mean delocalization = 0.6155796366192
-
-########## START ITERATION NO.  52 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.64E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.5527136788005009E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8066
-* Orbital   3 Pipek-Mezey localization measure d =  2.0284
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0132
-
-* Inverse mean delocalization = 0.6159056769063
-
-########## START ITERATION NO.  53 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.62E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8060
-* Orbital   3 Pipek-Mezey localization measure d =  2.0259
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0099
-
-* Inverse mean delocalization = 0.6162221955494
-
-########## START ITERATION NO.  54 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.61E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           2 value :  1.2679897270195174E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8054
-* Orbital   3 Pipek-Mezey localization measure d =  2.0236
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0067
-
-* Inverse mean delocalization = 0.6165295549561
-
-########## START ITERATION NO.  55 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.60E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.6645352591003757E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8049
-* Orbital   3 Pipek-Mezey localization measure d =  2.0213
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0036
-
-* Inverse mean delocalization = 0.6168280987231
-
-########## START ITERATION NO.  56 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.59E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8045
-* Orbital   3 Pipek-Mezey localization measure d =  2.0191
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  2.0005
-
-* Inverse mean delocalization = 0.6171181529460
-
-########## START ITERATION NO.  57 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.57E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8040
-* Orbital   3 Pipek-Mezey localization measure d =  2.0169
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9976
-
-* Inverse mean delocalization = 0.6174000274147
-
-########## START ITERATION NO.  58 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.56E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  3.3306690738754696E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8036
-* Orbital   3 Pipek-Mezey localization measure d =  2.0148
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9947
-
-* Inverse mean delocalization = 0.6176740167043
-
-########## START ITERATION NO.  59 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.55E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.9952043329758453E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8032
-* Orbital   3 Pipek-Mezey localization measure d =  2.0127
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9919
-
-* Inverse mean delocalization = 0.6179404011751
-
-########## START ITERATION NO.  60 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.54E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  6.2172489379008766E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8029
-* Orbital   3 Pipek-Mezey localization measure d =  2.0107
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9892
-
-* Inverse mean delocalization = 0.6181994478885
-
-########## START ITERATION NO.  61 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.53E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.8849813083506888E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8026
-* Orbital   3 Pipek-Mezey localization measure d =  2.0087
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9865
-
-* Inverse mean delocalization = 0.6184514114486
-
-########## START ITERATION NO.  62 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.52E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8023
-* Orbital   3 Pipek-Mezey localization measure d =  2.0068
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9840
-
-* Inverse mean delocalization = 0.6186965347768
-
-########## START ITERATION NO.  63 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.51E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  7.5495165674510645E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8020
-* Orbital   3 Pipek-Mezey localization measure d =  2.0049
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9814
-
-* Inverse mean delocalization = 0.6189350498244
-
-########## START ITERATION NO.  64 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.51E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  6.2172489379008766E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9997
-* Orbital   2 Pipek-Mezey localization measure d =  1.8018
-* Orbital   3 Pipek-Mezey localization measure d =  2.0031
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9790
-
-* Inverse mean delocalization = 0.6191671782313
-
-########## START ITERATION NO.  65 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.50E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8015
-* Orbital   3 Pipek-Mezey localization measure d =  2.0013
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9766
-
-* Inverse mean delocalization = 0.6193931319342
-
-########## START ITERATION NO.  66 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.49E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8014
-* Orbital   3 Pipek-Mezey localization measure d =  1.9995
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9742
-
-* Inverse mean delocalization = 0.6196131137289
-
-########## START ITERATION NO.  67 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.48E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8012
-* Orbital   3 Pipek-Mezey localization measure d =  1.9978
-* Orbital   4 Pipek-Mezey localization measure d =  1.8659
-* Orbital   5 Pipek-Mezey localization measure d =  1.9719
-
-* Inverse mean delocalization = 0.6198273177919
-
-########## START ITERATION NO.  68 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.47E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8010
-* Orbital   3 Pipek-Mezey localization measure d =  1.9961
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9697
-
-* Inverse mean delocalization = 0.6200359301644
-
-########## START ITERATION NO.  69 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.46E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           4 value :  3.3954102670323412E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8009
-* Orbital   3 Pipek-Mezey localization measure d =  1.9945
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9675
-
-* Inverse mean delocalization = 0.6202391292011
-
-########## START ITERATION NO.  70 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.46E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8008
-* Orbital   3 Pipek-Mezey localization measure d =  1.9929
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9653
-
-* Inverse mean delocalization = 0.6204370859882
-
-########## START ITERATION NO.  71 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.45E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8007
-* Orbital   3 Pipek-Mezey localization measure d =  1.9914
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9633
-
-* Inverse mean delocalization = 0.6206299647327
-
-########## START ITERATION NO.  72 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.44E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  1.2089096296585662E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8006
-* Orbital   3 Pipek-Mezey localization measure d =  1.9898
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9612
-
-* Inverse mean delocalization = 0.6208179231246
-
-########## START ITERATION NO.  73 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.43E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8006
-* Orbital   3 Pipek-Mezey localization measure d =  1.9883
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9592
-
-* Inverse mean delocalization = 0.6210011126759
-
-########## START ITERATION NO.  74 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.43E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           5 value :  1.5901202528810130E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9869
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9573
-
-* Inverse mean delocalization = 0.6211796790360
-
-########## START ITERATION NO.  75 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.42E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9854
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9554
-
-* Inverse mean delocalization = 0.6213537622880
-
-########## START ITERATION NO.  76 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.41E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           5 value :  6.7285840934334581E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9840
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9535
-
-* Inverse mean delocalization = 0.6215234972248
-
-########## START ITERATION NO.  77 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.41E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9827
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9517
-
-* Inverse mean delocalization = 0.6216890136089
-
-########## START ITERATION NO.  78 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.40E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9813
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9499
-
-* Inverse mean delocalization = 0.6218504364153
-
-########## START ITERATION NO.  79 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.40E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  3.1086244689504383E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8005
-* Orbital   3 Pipek-Mezey localization measure d =  1.9800
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9481
-
-* Inverse mean delocalization = 0.6220078860596
-
-########## START ITERATION NO.  80 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.39E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  3.3306690738754696E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8006
-* Orbital   3 Pipek-Mezey localization measure d =  1.9787
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9464
-
-* Inverse mean delocalization = 0.6221614786127
-
-########## START ITERATION NO.  81 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.38E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  3.1086244689504383E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8006
-* Orbital   3 Pipek-Mezey localization measure d =  1.9774
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9447
-
-* Inverse mean delocalization = 0.6223113260027
-
-########## START ITERATION NO.  82 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.38E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8007
-* Orbital   3 Pipek-Mezey localization measure d =  1.9762
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9431
-
-* Inverse mean delocalization = 0.6224575362039
-
-########## START ITERATION NO.  83 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.37E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8008
-* Orbital   3 Pipek-Mezey localization measure d =  1.9750
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9415
-
-* Inverse mean delocalization = 0.6226002134167
-
-########## START ITERATION NO.  84 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.37E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8009
-* Orbital   3 Pipek-Mezey localization measure d =  1.9738
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9399
-
-* Inverse mean delocalization = 0.6227394582352
-
-########## START ITERATION NO.  85 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.36E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  5.0085608512502886E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8010
-* Orbital   3 Pipek-Mezey localization measure d =  1.9726
-* Orbital   4 Pipek-Mezey localization measure d =  1.8660
-* Orbital   5 Pipek-Mezey localization measure d =  1.9383
-
-* Inverse mean delocalization = 0.6228753678067
-
-########## START ITERATION NO.  86 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.36E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8011
-* Orbital   3 Pipek-Mezey localization measure d =  1.9715
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9368
-
-* Inverse mean delocalization = 0.6230080359818
-
-########## START ITERATION NO.  87 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.35E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8012
-* Orbital   3 Pipek-Mezey localization measure d =  1.9703
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9353
-
-* Inverse mean delocalization = 0.6231375534561
-
-########## START ITERATION NO.  88 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.35E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  3.8381171654345991E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8013
-* Orbital   3 Pipek-Mezey localization measure d =  1.9692
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9339
-
-* Inverse mean delocalization = 0.6232640079046
-
-########## START ITERATION NO.  89 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.34E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  3.3146130215229874E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8015
-* Orbital   3 Pipek-Mezey localization measure d =  1.9682
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9325
-
-* Inverse mean delocalization = 0.6233874841085
-
-########## START ITERATION NO.  90 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.34E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8016
-* Orbital   3 Pipek-Mezey localization measure d =  1.9671
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9311
-
-* Inverse mean delocalization = 0.6235080640754
-
-########## START ITERATION NO.  91 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.33E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8018
-* Orbital   3 Pipek-Mezey localization measure d =  1.9661
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9297
-
-* Inverse mean delocalization = 0.6236258271530
-
-########## START ITERATION NO.  92 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.33E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.2188474935755949E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8020
-* Orbital   3 Pipek-Mezey localization measure d =  1.9650
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9283
-
-* Inverse mean delocalization = 0.6237408501377
-
-########## START ITERATION NO.  93 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.32E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8021
-* Orbital   3 Pipek-Mezey localization measure d =  1.9640
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9270
-
-* Inverse mean delocalization = 0.6238532073761
-
-########## START ITERATION NO.  94 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.32E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8023
-* Orbital   3 Pipek-Mezey localization measure d =  1.9630
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9257
-
-* Inverse mean delocalization = 0.6239629708633
-
-########## START ITERATION NO.  95 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.32E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.3290705182007514E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8025
-* Orbital   3 Pipek-Mezey localization measure d =  1.9621
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9245
-
-* Inverse mean delocalization = 0.6240702103346
-
-########## START ITERATION NO.  96 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.31E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8027
-* Orbital   3 Pipek-Mezey localization measure d =  1.9611
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9232
-
-* Inverse mean delocalization = 0.6241749933534
-
-########## START ITERATION NO.  97 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.31E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8029
-* Orbital   3 Pipek-Mezey localization measure d =  1.9602
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9220
-
-* Inverse mean delocalization = 0.6242773853952
-
-########## START ITERATION NO.  98 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.30E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8031
-* Orbital   3 Pipek-Mezey localization measure d =  1.9593
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9208
-
-* Inverse mean delocalization = 0.6243774499265
-
-########## START ITERATION NO.  99 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.30E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8033
-* Orbital   3 Pipek-Mezey localization measure d =  1.9584
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9196
-
-* Inverse mean delocalization = 0.6244752484809
-
-########## START ITERATION NO. 100 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.30E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8035
-* Orbital   3 Pipek-Mezey localization measure d =  1.9575
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9184
-
-* Inverse mean delocalization = 0.6245708407311
-
-########## START ITERATION NO. 101 ##########   Tue May 11 15:33:10 2004
-
-Norm of gradient:     0.29E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8038
-* Orbital   3 Pipek-Mezey localization measure d =  1.9566
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9173
-
-* Inverse mean delocalization = 0.6246642845575
-
-########## START ITERATION NO. 102 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.29E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8040
-* Orbital   3 Pipek-Mezey localization measure d =  1.9557
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9162
-
-* Inverse mean delocalization = 0.6247556361141
-
-########## START ITERATION NO. 103 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.28E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8042
-* Orbital   3 Pipek-Mezey localization measure d =  1.9549
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9151
-
-* Inverse mean delocalization = 0.6248449498905
-
-########## START ITERATION NO. 104 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.28E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.5511151231257827E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8045
-* Orbital   3 Pipek-Mezey localization measure d =  1.9541
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9140
-
-* Inverse mean delocalization = 0.6249322787725
-
-########## START ITERATION NO. 105 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.28E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  5.5150270907960511E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8047
-* Orbital   3 Pipek-Mezey localization measure d =  1.9533
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9129
-
-* Inverse mean delocalization = 0.6250176740980
-
-########## START ITERATION NO. 106 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.27E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8050
-* Orbital   3 Pipek-Mezey localization measure d =  1.9525
-* Orbital   4 Pipek-Mezey localization measure d =  1.8661
-* Orbital   5 Pipek-Mezey localization measure d =  1.9119
-
-* Inverse mean delocalization = 0.6251011857126
-
-########## START ITERATION NO. 107 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.27E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  8.7707760624882685E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8052
-* Orbital   3 Pipek-Mezey localization measure d =  1.9517
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9109
-
-* Inverse mean delocalization = 0.6251828620212
-
-########## START ITERATION NO. 108 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.27E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8055
-* Orbital   3 Pipek-Mezey localization measure d =  1.9509
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9099
-
-* Inverse mean delocalization = 0.6252627500376
-
-########## START ITERATION NO. 109 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.26E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           5 value :  7.5711203545290222E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8057
-* Orbital   3 Pipek-Mezey localization measure d =  1.9501
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9089
-
-* Inverse mean delocalization = 0.6253408954330
-
-########## START ITERATION NO. 110 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.26E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  4.8849813083506888E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8060
-* Orbital   3 Pipek-Mezey localization measure d =  1.9494
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9079
-
-* Inverse mean delocalization = 0.6254173425809
-
-########## START ITERATION NO. 111 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.26E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  4.8849813083506888E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8063
-* Orbital   3 Pipek-Mezey localization measure d =  1.9486
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9070
-
-* Inverse mean delocalization = 0.6254921346012
-
-########## START ITERATION NO. 112 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.25E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  3.9968028886505635E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8065
-* Orbital   3 Pipek-Mezey localization measure d =  1.9479
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9060
-
-* Inverse mean delocalization = 0.6255653134023
-
-########## START ITERATION NO. 113 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.25E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8068
-* Orbital   3 Pipek-Mezey localization measure d =  1.9472
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9051
-
-* Inverse mean delocalization = 0.6256369197210
-
-########## START ITERATION NO. 114 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.25E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8071
-* Orbital   3 Pipek-Mezey localization measure d =  1.9465
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9042
-
-* Inverse mean delocalization = 0.6257069931610
-
-########## START ITERATION NO. 115 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.24E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8073
-* Orbital   3 Pipek-Mezey localization measure d =  1.9458
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9033
-
-* Inverse mean delocalization = 0.6257755722303
-
-########## START ITERATION NO. 116 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.24E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8076
-* Orbital   3 Pipek-Mezey localization measure d =  1.9451
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9024
-
-* Inverse mean delocalization = 0.6258426943763
-
-########## START ITERATION NO. 117 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.24E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8079
-* Orbital   3 Pipek-Mezey localization measure d =  1.9445
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9016
-
-* Inverse mean delocalization = 0.6259083960200
-
-########## START ITERATION NO. 118 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.24E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8082
-* Orbital   3 Pipek-Mezey localization measure d =  1.9438
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.9007
-
-* Inverse mean delocalization = 0.6259727125889
-
-########## START ITERATION NO. 119 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.23E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8085
-* Orbital   3 Pipek-Mezey localization measure d =  1.9432
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8999
-
-* Inverse mean delocalization = 0.6260356785483
-
-########## START ITERATION NO. 120 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.23E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8088
-* Orbital   3 Pipek-Mezey localization measure d =  1.9425
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8991
-
-* Inverse mean delocalization = 0.6260973274315
-
-########## START ITERATION NO. 121 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.23E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8091
-* Orbital   3 Pipek-Mezey localization measure d =  1.9419
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8983
-
-* Inverse mean delocalization = 0.6261576918690
-
-########## START ITERATION NO. 122 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.22E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8093
-* Orbital   3 Pipek-Mezey localization measure d =  1.9413
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8975
-
-* Inverse mean delocalization = 0.6262168036165
-
-########## START ITERATION NO. 123 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.22E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8096
-* Orbital   3 Pipek-Mezey localization measure d =  1.9407
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8967
-
-* Inverse mean delocalization = 0.6262746935818
-
-########## START ITERATION NO. 124 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.22E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.7747582837255322E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8099
-* Orbital   3 Pipek-Mezey localization measure d =  1.9401
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8959
-
-* Inverse mean delocalization = 0.6263313918507
-
-########## START ITERATION NO. 125 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.22E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8102
-* Orbital   3 Pipek-Mezey localization measure d =  1.9395
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8952
-
-* Inverse mean delocalization = 0.6263869277117
-
-########## START ITERATION NO. 126 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.21E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  2.6645352591003757E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8105
-* Orbital   3 Pipek-Mezey localization measure d =  1.9389
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8944
-
-* Inverse mean delocalization = 0.6264413296808
-
-########## START ITERATION NO. 127 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.21E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8108
-* Orbital   3 Pipek-Mezey localization measure d =  1.9383
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8937
-
-* Inverse mean delocalization = 0.6264946255236
-
-########## START ITERATION NO. 128 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.21E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  1.0459518847095840E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8111
-* Orbital   3 Pipek-Mezey localization measure d =  1.9377
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8930
-
-* Inverse mean delocalization = 0.6265468422786
-
-########## START ITERATION NO. 129 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.21E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.6645352591003757E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8114
-* Orbital   3 Pipek-Mezey localization measure d =  1.9372
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8922
-
-* Inverse mean delocalization = 0.6265980062783
-
-########## START ITERATION NO. 130 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.20E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8117
-* Orbital   3 Pipek-Mezey localization measure d =  1.9366
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8915
-
-* Inverse mean delocalization = 0.6266481431697
-
-########## START ITERATION NO. 131 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.20E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8120
-* Orbital   3 Pipek-Mezey localization measure d =  1.9361
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8909
-
-* Inverse mean delocalization = 0.6266972779350
-
-########## START ITERATION NO. 132 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.20E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8123
-* Orbital   3 Pipek-Mezey localization measure d =  1.9355
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8902
-
-* Inverse mean delocalization = 0.6267454349103
-
-########## START ITERATION NO. 133 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.20E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  5.9952043329758453E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8126
-* Orbital   3 Pipek-Mezey localization measure d =  1.9350
-* Orbital   4 Pipek-Mezey localization measure d =  1.8662
-* Orbital   5 Pipek-Mezey localization measure d =  1.8895
-
-* Inverse mean delocalization = 0.6267926378046
-
-########## START ITERATION NO. 134 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.19E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8129
-* Orbital   3 Pipek-Mezey localization measure d =  1.9345
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8889
-
-* Inverse mean delocalization = 0.6268389097179
-
-########## START ITERATION NO. 135 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.19E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8132
-* Orbital   3 Pipek-Mezey localization measure d =  1.9340
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8882
-
-* Inverse mean delocalization = 0.6268842731582
-
-########## START ITERATION NO. 136 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.19E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8135
-* Orbital   3 Pipek-Mezey localization measure d =  1.9335
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8876
-
-* Inverse mean delocalization = 0.6269287500589
-
-########## START ITERATION NO. 137 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.19E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8138
-* Orbital   3 Pipek-Mezey localization measure d =  1.9330
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8869
-
-* Inverse mean delocalization = 0.6269723617944
-
-########## START ITERATION NO. 138 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.19E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8141
-* Orbital   3 Pipek-Mezey localization measure d =  1.9325
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8863
-
-* Inverse mean delocalization = 0.6270151291964
-
-########## START ITERATION NO. 139 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.18E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.9984014443252818E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8144
-* Orbital   3 Pipek-Mezey localization measure d =  1.9320
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8857
-
-* Inverse mean delocalization = 0.6270570725687
-
-########## START ITERATION NO. 140 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.18E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  2.2204460492503131E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8147
-* Orbital   3 Pipek-Mezey localization measure d =  1.9315
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8851
-
-* Inverse mean delocalization = 0.6270982117022
-
-########## START ITERATION NO. 141 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.18E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8150
-* Orbital   3 Pipek-Mezey localization measure d =  1.9310
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8845
-
-* Inverse mean delocalization = 0.6271385658886
-
-########## START ITERATION NO. 142 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.18E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.9968028886505635E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8153
-* Orbital   3 Pipek-Mezey localization measure d =  1.9306
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8839
-
-* Inverse mean delocalization = 0.6271781539349
-
-########## START ITERATION NO. 143 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.18E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8156
-* Orbital   3 Pipek-Mezey localization measure d =  1.9301
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8834
-
-* Inverse mean delocalization = 0.6272169941761
-
-########## START ITERATION NO. 144 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.17E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8159
-* Orbital   3 Pipek-Mezey localization measure d =  1.9297
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8828
-
-* Inverse mean delocalization = 0.6272551044882
-
-########## START ITERATION NO. 145 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.17E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  2.8865798640254070E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8162
-* Orbital   3 Pipek-Mezey localization measure d =  1.9292
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8822
-
-* Inverse mean delocalization = 0.6272925023010
-
-########## START ITERATION NO. 146 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.17E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  2.2204460492503131E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8165
-* Orbital   3 Pipek-Mezey localization measure d =  1.9288
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8817
-
-* Inverse mean delocalization = 0.6273292046098
-
-########## START ITERATION NO. 147 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.17E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8168
-* Orbital   3 Pipek-Mezey localization measure d =  1.9283
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8811
-
-* Inverse mean delocalization = 0.6273652279873
-
-########## START ITERATION NO. 148 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.17E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  7.7715611723760958E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8171
-* Orbital   3 Pipek-Mezey localization measure d =  1.9279
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8806
-
-* Inverse mean delocalization = 0.6274005885949
-
-########## START ITERATION NO. 149 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.16E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8174
-* Orbital   3 Pipek-Mezey localization measure d =  1.9275
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8801
-
-* Inverse mean delocalization = 0.6274353021936
-
-########## START ITERATION NO. 150 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.16E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8177
-* Orbital   3 Pipek-Mezey localization measure d =  1.9271
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8795
-
-* Inverse mean delocalization = 0.6274693841548
-
-########## START ITERATION NO. 151 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.16E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.7747582837255322E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8180
-* Orbital   3 Pipek-Mezey localization measure d =  1.9266
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8790
-
-* Inverse mean delocalization = 0.6275028494708
-
-########## START ITERATION NO. 152 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.16E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           5 value :  8.6654334099998007E-17
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8183
-* Orbital   3 Pipek-Mezey localization measure d =  1.9262
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8785
-
-* Inverse mean delocalization = 0.6275357127641
-
-########## START ITERATION NO. 153 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.16E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  2.2204460492503131E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8186
-* Orbital   3 Pipek-Mezey localization measure d =  1.9258
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8780
-
-* Inverse mean delocalization = 0.6275679882982
-
-########## START ITERATION NO. 154 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           5 value :  1.1791198350144828E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8189
-* Orbital   3 Pipek-Mezey localization measure d =  1.9254
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8775
-
-* Inverse mean delocalization = 0.6275996899858
-
-########## START ITERATION NO. 155 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8192
-* Orbital   3 Pipek-Mezey localization measure d =  1.9250
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8770
-
-* Inverse mean delocalization = 0.6276308313991
-
-########## START ITERATION NO. 156 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8195
-* Orbital   3 Pipek-Mezey localization measure d =  1.9247
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8766
-
-* Inverse mean delocalization = 0.6276614257779
-
-########## START ITERATION NO. 157 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8197
-* Orbital   3 Pipek-Mezey localization measure d =  1.9243
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8761
-
-* Inverse mean delocalization = 0.6276914860385
-
-########## START ITERATION NO. 158 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  1.1082976161656516E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8200
-* Orbital   3 Pipek-Mezey localization measure d =  1.9239
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8756
-
-* Inverse mean delocalization = 0.6277210247819
-
-########## START ITERATION NO. 159 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.15E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8203
-* Orbital   3 Pipek-Mezey localization measure d =  1.9235
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8752
-
-* Inverse mean delocalization = 0.6277500543023
-
-########## START ITERATION NO. 160 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8206
-* Orbital   3 Pipek-Mezey localization measure d =  1.9231
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8747
-
-* Inverse mean delocalization = 0.6277785865945
-
-########## START ITERATION NO. 161 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.4408920985006262E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8209
-* Orbital   3 Pipek-Mezey localization measure d =  1.9228
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8743
-
-* Inverse mean delocalization = 0.6278066333619
-
-########## START ITERATION NO. 162 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8212
-* Orbital   3 Pipek-Mezey localization measure d =  1.9224
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8738
-
-* Inverse mean delocalization = 0.6278342060238
-
-########## START ITERATION NO. 163 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  6.4392935428259079E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8215
-* Orbital   3 Pipek-Mezey localization measure d =  1.9221
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8734
-
-* Inverse mean delocalization = 0.6278613157225
-
-########## START ITERATION NO. 164 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8217
-* Orbital   3 Pipek-Mezey localization measure d =  1.9217
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8730
-
-* Inverse mean delocalization = 0.6278879733307
-
-########## START ITERATION NO. 165 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           3 value :  1.6994348922541109E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8220
-* Orbital   3 Pipek-Mezey localization measure d =  1.9213
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8725
-
-* Inverse mean delocalization = 0.6279141894580
-
-########## START ITERATION NO. 166 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.14E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.5527136788005009E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8223
-* Orbital   3 Pipek-Mezey localization measure d =  1.9210
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8721
-
-* Inverse mean delocalization = 0.6279399744574
-
-########## START ITERATION NO. 167 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  6.7789312517950045E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8226
-* Orbital   3 Pipek-Mezey localization measure d =  1.9207
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8717
-
-* Inverse mean delocalization = 0.6279653384325
-
-########## START ITERATION NO. 168 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  3.1086244689504383E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8229
-* Orbital   3 Pipek-Mezey localization measure d =  1.9203
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8713
-
-* Inverse mean delocalization = 0.6279902912426
-
-########## START ITERATION NO. 169 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  7.0372525645660185E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8231
-* Orbital   3 Pipek-Mezey localization measure d =  1.9200
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8709
-
-* Inverse mean delocalization = 0.6280148425100
-
-########## START ITERATION NO. 170 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8234
-* Orbital   3 Pipek-Mezey localization measure d =  1.9197
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8705
-
-* Inverse mean delocalization = 0.6280390016250
-
-########## START ITERATION NO. 171 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           3 value :  1.9326863254064678E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8237
-* Orbital   3 Pipek-Mezey localization measure d =  1.9193
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8701
-
-* Inverse mean delocalization = 0.6280627777522
-
-########## START ITERATION NO. 172 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  3.5527136788005009E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8240
-* Orbital   3 Pipek-Mezey localization measure d =  1.9190
-* Orbital   4 Pipek-Mezey localization measure d =  1.8663
-* Orbital   5 Pipek-Mezey localization measure d =  1.8697
-
-* Inverse mean delocalization = 0.6280861798360
-
-########## START ITERATION NO. 173 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.13E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.6629367034256575E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8242
-* Orbital   3 Pipek-Mezey localization measure d =  1.9187
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8693
-
-* Inverse mean delocalization = 0.6281092166059
-
-########## START ITERATION NO. 174 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  3.3306690738754696E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8245
-* Orbital   3 Pipek-Mezey localization measure d =  1.9184
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8689
-
-* Inverse mean delocalization = 0.6281318965819
-
-########## START ITERATION NO. 175 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           5 value :  3.9127569973713213E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8248
-* Orbital   3 Pipek-Mezey localization measure d =  1.9181
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8686
-
-* Inverse mean delocalization = 0.6281542280798
-
-########## START ITERATION NO. 176 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  3.3306690738754696E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8250
-* Orbital   3 Pipek-Mezey localization measure d =  1.9178
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8682
-
-* Inverse mean delocalization = 0.6281762192161
-
-########## START ITERATION NO. 177 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.7763568394002505E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8253
-* Orbital   3 Pipek-Mezey localization measure d =  1.9174
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8678
-
-* Inverse mean delocalization = 0.6281978779128
-
-########## START ITERATION NO. 178 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  6.6613381477509392E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8256
-* Orbital   3 Pipek-Mezey localization measure d =  1.9171
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8675
-
-* Inverse mean delocalization = 0.6282192119024
-
-########## START ITERATION NO. 179 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8258
-* Orbital   3 Pipek-Mezey localization measure d =  1.9168
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8671
-
-* Inverse mean delocalization = 0.6282402287324
-
-########## START ITERATION NO. 180 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           4 value :  1.6193538995937333E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8261
-* Orbital   3 Pipek-Mezey localization measure d =  1.9166
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8668
-
-* Inverse mean delocalization = 0.6282609357699
-
-########## START ITERATION NO. 181 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.12E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  4.4408920985006262E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8263
-* Orbital   3 Pipek-Mezey localization measure d =  1.9163
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8664
-
-* Inverse mean delocalization = 0.6282813402059
-
-########## START ITERATION NO. 182 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.6629367034256575E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8266
-* Orbital   3 Pipek-Mezey localization measure d =  1.9160
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8661
-
-* Inverse mean delocalization = 0.6283014490595
-
-########## START ITERATION NO. 183 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8268
-* Orbital   3 Pipek-Mezey localization measure d =  1.9157
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8657
-
-* Inverse mean delocalization = 0.6283212691824
-
-########## START ITERATION NO. 184 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           2 value :  3.3755090128696421E-17
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8271
-* Orbital   3 Pipek-Mezey localization measure d =  1.9154
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8654
-
-* Inverse mean delocalization = 0.6283408072627
-
-########## START ITERATION NO. 185 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8273
-* Orbital   3 Pipek-Mezey localization measure d =  1.9151
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8651
-
-* Inverse mean delocalization = 0.6283600698290
-
-########## START ITERATION NO. 186 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  5.7731597280508140E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8276
-* Orbital   3 Pipek-Mezey localization measure d =  1.9148
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8647
-
-* Inverse mean delocalization = 0.6283790632540
-
-########## START ITERATION NO. 187 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  4.2188474935755949E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8278
-* Orbital   3 Pipek-Mezey localization measure d =  1.9146
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8644
-
-* Inverse mean delocalization = 0.6283977937586
-
-########## START ITERATION NO. 188 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  5.1070259132757201E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8281
-* Orbital   3 Pipek-Mezey localization measure d =  1.9143
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8641
-
-* Inverse mean delocalization = 0.6284162674156
-
-########## START ITERATION NO. 189 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           4 value :  6.8904571081197572E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8283
-* Orbital   3 Pipek-Mezey localization measure d =  1.9140
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8638
-
-* Inverse mean delocalization = 0.6284344901526
-
-########## START ITERATION NO. 190 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.11E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            3           3 value :  1.3322676295501878E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8286
-* Orbital   3 Pipek-Mezey localization measure d =  1.9138
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8635
-
-* Inverse mean delocalization = 0.6284524677564
-
-########## START ITERATION NO. 191 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.10E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  1.5543122344752192E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8288
-* Orbital   3 Pipek-Mezey localization measure d =  1.9135
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8632
-
-* Inverse mean delocalization = 0.6284702058759
-
-########## START ITERATION NO. 192 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.10E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8291
-* Orbital   3 Pipek-Mezey localization measure d =  1.9132
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8629
-
-* Inverse mean delocalization = 0.6284877100252
-
-########## START ITERATION NO. 193 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.10E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  2.4424906541753444E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8293
-* Orbital   3 Pipek-Mezey localization measure d =  1.9130
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8626
-
-* Inverse mean delocalization = 0.6285049855874
-
-########## START ITERATION NO. 194 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.10E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            2           4 value :  3.8683249214916591E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8295
-* Orbital   3 Pipek-Mezey localization measure d =  1.9127
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8623
-
-* Inverse mean delocalization = 0.6285220378173
-
-########## START ITERATION NO. 195 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.10E-02
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  3.3306690738754696E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8298
-* Orbital   3 Pipek-Mezey localization measure d =  1.9125
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8620
-
-* Inverse mean delocalization = 0.6285388718445
-
-########## START ITERATION NO. 196 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.99E-03
- ROTCMO: maximum deviation from unitary matrix
- Element            5           5 value :  1.1102230246251565E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8300
-* Orbital   3 Pipek-Mezey localization measure d =  1.9122
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8617
-
-* Inverse mean delocalization = 0.6285554926767
-
-########## START ITERATION NO. 197 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.98E-03
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  8.8817841970012523E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8302
-* Orbital   3 Pipek-Mezey localization measure d =  1.9120
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8614
-
-* Inverse mean delocalization = 0.6285719052021
-
-########## START ITERATION NO. 198 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.97E-03
- ROTCMO: maximum deviation from unitary matrix
- Element            2           2 value :  3.7747582837255322E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8305
-* Orbital   3 Pipek-Mezey localization measure d =  1.9117
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8611
-
-* Inverse mean delocalization = 0.6285881141930
-
-########## START ITERATION NO. 199 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.96E-03
- ROTCMO: maximum deviation from unitary matrix
- Element            4           4 value :  4.6629367034256575E-15
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8307
-* Orbital   3 Pipek-Mezey localization measure d =  1.9115
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8608
-
-* Inverse mean delocalization = 0.6286041243075
-
-########## START ITERATION NO. 200 ##########   Tue May 11 15:33:11 2004
-
-Norm of gradient:     0.95E-03
- ROTCMO: maximum deviation from unitary matrix
- Element            1           1 value :  2.2204460492503131E-16
-
-** Pipek-Mezey localization criteria **
-  ===================================  
-* Orbital   1 Pipek-Mezey localization measure d =  0.9996
-* Orbital   2 Pipek-Mezey localization measure d =  1.8309
-* Orbital   3 Pipek-Mezey localization measure d =  1.9112
-* Orbital   4 Pipek-Mezey localization measure d =  1.8664
-* Orbital   5 Pipek-Mezey localization measure d =  1.8605
-
-* Inverse mean delocalization = 0.6286199400934
-
- >>> No convergence after   200 iterations
- >>> Time used in localization is :   1.35 seconds
-
- Date and time (IRIX)   : Tue May 11 15:33:12 2004
+ Date and time (Linux) : Sun Oct 10 00:27:15 2004
 *****************************************************
->>>> Total CPU  time used in DIRAC (Node 0):  2.64837577s
->>>> Total CPU  time used in DIRAC (Node 1):  1.04635306s
->>>> Total CPU  time used in DIRAC (Node 2):  0.96459498s
->>>> Total CPU  time used in DIRAC (Node 3):  0.98247600s
->>>> Total CPU  time used in DIRAC (Node 4):  0.96010399s
->>>> Total WALL time used in DIRAC:  5.00000000s
+>>>> Total CPU  time used in DIRAC:  0.55999994s
+>>>> Total WALL time used in DIRAC:  1.00000000s
 ********** E N D   of   D I R A C  output  **********
->>>> Total CPU  time used in DIRAC (Node 5):  0.95931391s
->>>> Total CPU  time used in DIRAC (Node 6):  0.97537395s
->>>> Total CPU  time used in DIRAC (Node 7):  0.96224396s
