@@ -1,7 +1,17 @@
+* August 13 1999
+
+  - SUBR REORD (either .REORDER MO's or .POST DHF REORDER) now also reorders
+    eigenvalues and boson irrep identification. (jth)
+  - New code: AUTOCC: Automatic occupation of the molecular orbitals
+    based on the total charge of the atoms and the charge of the molecule,
+    which is given in MOLECULE.INP. For an odd number of electrons AUTOCC
+    assumes one electron in one open shell. (jth)
+
 * August 11 1999
 
   - Added new code for reordering of converged orbitals. New keyword
-    is '.POST D' with the same syntax as '.REORD' (jth)
+    is '.POST DHF REORDER MO's' with the same syntax as 
+    '.REORDER MO's' (jth)
 
 * July 19 1999
 
