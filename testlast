@@ -215,10 +215,14 @@ if [ "${cvs}" = "yes" ]; then
   }
 fi
 #
-cat <<EOF >job
+cat <<EOF >job_testlast.sh
+#!/bin/sh
+#
+# This file is a test job script created by the 'testlast' script
+#
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -240,21 +244,21 @@ EOF
 if [ "${queue}" = "none" ]; then
 # The tests are default run interactively on the same machine as the cvs and make command is run.
 echo ' Starting test calculations interactively ... '
-chmod u+x job
-job
+chmod u+x job_testlast.sh
+./job_testlast.sh
 else
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
 #
 # This is a script that works with the pbs (qsub) batch environment
 #
-qsub -j oe -o $errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job
+qsub -j oe -o $errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
 #
 # Other queue systems used in Amsterdam. Add you own as new comment line if you like
 #
-#das:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job
-#solo:  qstc -n $nodes -m -q power4 job 1h
-#teras: bsub <job
+#das:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+#solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
+#teras: bsub <job_testlast.sh
 fi
-rm job
+#rm job_testlast.sh
 #
