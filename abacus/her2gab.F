@@ -79,7 +79,7 @@ C
 C     Threshold for integrals
 C
 C     Because we take the square root of the integrals
-C     we need to have a higher threshold.
+C     we need to have a lower threshold.
 C     Because elements of value 1.0D10 are not unlikely
 C     we set threshold to 1.0D-40, since
 C         SQRT (1.0D10 * 1.0D-40) = 1.0D-15
@@ -352,29 +352,6 @@ C               Electron 2:
   200    CONTINUE
   100 CONTINUE
 C
-C     Print section
-C
-      IF(IPRINT.GE.4) THEN
-        IF(IJOB.EQ.0) THEN
-          IF (MAXDER.GE.1) THEN
-             NMAT = 3
-      CALL HEADER('Full (x,y,z)-derivative GAB-matrices in AO basis',-1)
-          ELSE
-             NMAT = 1
-             CALL HEADER('Full GAB-matrix in AO basis',-1)
-          END IF
-          DO IMAT = 1,NMAT
-             IF (NMAT.GT.1) WRITE (LUPRI,'(/A,I2,A)')
-     &          ' GAB derivative matrix no.',IMAT,' out of {x,y,z}'
-             CALL OUTPUT(GABM(1,1,IMAT),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &                 -4,LUPRI)
-          END DO
-        ELSE
-          CALL HEADER('Full GAB-matrix in SO basis',-1)
-          CALL OUTPUT(GABM,1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &              -4,LUPRI)
-        ENDIF
-      ENDIF
       CALL MEMREL('GABDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GABDRV')
       RETURN
@@ -429,7 +406,7 @@ C               Electron 2
 C
       CALL QENTER('GABDR1')
 #include <memint.h>
-      IF (IPRINT .GE. 5) CALL TITLER('Output from GABDR1','*',103)
+      IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR1','*',103)
       CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)      
       CALL MEMGET('INTE',KCORBC,NORBC,WORK,KFREE,LFREE)      
@@ -621,7 +598,7 @@ C
 C
       CALL QENTER('GABDR2')
 #include <memint.h>
-      IF (IPRINT .GE. 5) CALL TITLER('Output from GABDR2','*',103)
+      IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR2','*',103)
 C
       IF (.NOT.DDFOCK.AND. NSOINT.EQ.0) GOTO 400
 C
@@ -1002,7 +979,7 @@ C
 C
 #include <ibtfun.h>
 C
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABPCK',-1)
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
          WRITE (LUPRI,'(2X,A,4I5)') 'MUL?  ', MULA,  MULB,  MULC,  MULD
@@ -1237,7 +1214,7 @@ C
 C     Print section
 C     =============
 C
-      IF (IPRINT.GE.4) CALL PRDRAO(DRAO,NDMAT,WORK(KINRAO))
+      IF (IPRINT.GE.5) CALL PRDRAO(DRAO,NDMAT,WORK(KINRAO))
 C
       CALL QEXIT('MKDRAO')
       RETURN
@@ -1436,7 +1413,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.4) THEN
+      IF(IPRINT.GE.5) THEN
         CALL HEADER('Output from MKDRSO',-1)
         DO K = 1,NDMAT
           WRITE(LUPRI,'(A,I5)') '* Reduced density matrix no.',K
@@ -1698,18 +1675,42 @@ C
 #include <nuclei.h>
 #include <cbihr2.h>
       LOGICAL NOCONT
-      DIMENSION GABM(NBASIS*NBASIS),WORK(LWORK)
-#include <memint.h>
+      DIMENSION GABM(NBASIS,NBASIS,*),WORK(LWORK)
 C
 C
 Chj sep2000: segmented shell structure for GAB
 C            (code: IATOM = -10000 )
-      CALL PAOVEC(WORK,LWORK,-10000,IPRINT)
+Chj apr2001: print in integral routines controlled by IPRTWO, not IPRINT
+      CALL PAOVEC(WORK,LWORK,-10000,IPRTWO)
       CALL GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,
-     &            MAXDIF,JATOM,NOCONT,IPRINT)
+     &            MAXDIF,JATOM,NOCONT,IPRTWO)
 Chj sep2000: restore twoint shell structure
-      CALL PAOVEC(WORK,LWORK,0,IPRINT)
+      CALL PAOVEC(WORK,LWORK,0,IPRTWO)
 C
+C
+C     Print section
+C
+      IF(IPRINT.GE.5) THEN
+        IF(IJOB.EQ.0) THEN
+          IF (MAXDIF.GE.1) THEN
+             NMAT = 3
+      CALL HEADER('Full (x,y,z)-derivative GAB-matrices in AO basis',-1)
+          ELSE
+             NMAT = 1
+             CALL HEADER('Full GAB-matrix in AO basis',-1)
+          END IF
+          DO IMAT = 1,NMAT
+             IF (NMAT.GT.1) WRITE (LUPRI,'(/A,I2,A)')
+     &          ' GAB derivative matrix no.',IMAT,' out of {x,y,z}'
+             CALL OUTPUT(GABM(1,1,IMAT),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
+     &                 -4,LUPRI)
+          END DO
+        ELSE
+          CALL HEADER('Full GAB-matrix in SO basis',-1)
+          CALL OUTPUT(GABM,1,NBASIS,1,NBASIS,NBASIS,NBASIS,
+     &              -4,LUPRI)
+        ENDIF
+      ENDIF
       RETURN
 C
       END
@@ -1974,6 +1975,14 @@ C
          REWIND LUPROP
          IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
             CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+            IF(IPRINT.GE.5) THEN
+C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
+C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+               CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
+               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+               CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
+     &                  NSYMBL,NSYMBL,-4,LUPRI)
+            ENDIF
          ELSE 
             WRITE(LUPRI,'(/4A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
@@ -1990,12 +1999,6 @@ C
             END IF
          ENDIF
 C
-         IF(IPRINT.GE.4) THEN
-            CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
-            WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
-            CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,NSYMBL,NSYMBL,
-     &                  -4,LUPRI)
-         ENDIF
 C
       END DO
 C     
