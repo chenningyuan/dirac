@@ -1604,7 +1604,7 @@ C
          RETURN
       ELSE
          WRITE (LUERR,'(/3A,I5/A,I7)')
-     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LUERR,
+     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLAB: output error writing label')
@@ -1627,7 +1627,7 @@ C
          RETURN
       ELSE
          WRITE (LUERR,'(/3A,I5/A,I7)')
-     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LUERR,
+     &      ' NEWLAB: error writing label "',LABEL,'" to unit',LU,
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')
