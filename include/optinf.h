@@ -8,7 +8,7 @@ C
      &                INITHS, HSFILE, STEEPD, RANKON, PSB   , DFP,
      &                BFGS,   SCHLEG, NEWTON, QUADSD, KEEPHE, REINIH,
      &                BAKER,  REDINT, CARTCO, INRDHS, FSTORD, SNDORD,
-     &                REJINI, GRDINI, MBFGS, CHGRDT,  GRDTCK, TWOGRD(3)
+     &                REJINI, GRDINI, MBFGS, CHGRDT
       COMMON /OPTINF/ TRSTRA, TRSTIN, TRSTDE, RTENBD, RTENGD, RTRJMN,
      &                RTRJMX, ENERGY, ERGOLD, ERGPRD, ERGPRO, STPNRM,
      &                STPNRO, GRADNM, THRERG, GRDTHR, THRSTP, THRSYM,
@@ -25,5 +25,4 @@ C
      &                VISUAL, INTRAC, INITHS, HSFILE, STEEPD, RANKON,
      &                PSB   , DFP,    BFGS,   SCHLEG, NEWTON, QUADSD,
      &                KEEPHE, REINIH, BAKER,  REDINT, CARTCO, INRDHS,
-     &                FSTORD, SNDORD, REJINI, GRDINI, MBFGS, CHGRDT,
-     &                GRDTCK, TWOGRD
+     &                FSTORD, SNDORD, REJINI, GRDINI, MBFGS, CHGRDT
