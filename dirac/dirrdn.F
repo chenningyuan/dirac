@@ -999,7 +999,7 @@ C
                   DO I = 1,NFSYM
                      READ(LUCMD,'(A72)') CTEMP
                      IREORD(I) = -1
-                     CALL NUMLST(CTEMP,IMOORD(I),MXREORD,1,MXREORD,
+                     CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
      &                           IREORD(I),WORK,LWORK)
                   END DO
                GO TO 100
