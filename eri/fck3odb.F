@@ -62,7 +62,6 @@ C
       NCSQ1 = NSPHER(0,1,0,0) - 1
       NCSQ2 = 1  
 
-      R2PI52 = SQRT(2.0D0*(SQRT(PI)**5))
 #ifdef (MOD_FMM)
       FACCLS = ERFCIV(THRCLS)
 #endif
@@ -256,6 +255,7 @@ C
 #include "fck3aob.h"
 #include "fck3odb.h"
 #include "fck3thr.h"
+#include "pi.h"
 
       EXPMUMIN = EXPAOMIN/2 
       COEFMAX = R2PI52 / EXPAOMIN * CCFAOMAX * CCFAOMAX 
@@ -348,6 +348,7 @@ C
 #include"implicit.h"
 #include"priunit.h"
 #include"fck3thr.h"
+#include"pi.h"
       DIMENSION IPR12(2,NPRF1*NPRF2),RODBTCH(5),
      &          COOR1(3),COOR2(3),EXPBT1(NPRF1),EXPBT2(NPRF2),
      &          CCF11(NPRF1,NCTF1),CCF21(NPRF1,NCTF1),

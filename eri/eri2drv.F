@@ -2107,15 +2107,6 @@ C
 C
       RETURN
       END
-C  /* Deck getpi */
-      SUBROUTINE GETPI
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
-#include "eripi.h"
-      PI = D2*ACOS(D0)
-      R2PI52 = SQRT(D2*(SQRT(PI)**5))
-      RETURN
-      END
 C  /* Deck pntuv */
       SUBROUTINE PNTUV(IPNTUV,LMNPWR,INDHER,IPRINT)
 #include "implicit.h"

@@ -112,7 +112,6 @@ C
 #include "maxaqn.h"
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-      PARAMETER (R2PI52 = 5.91496 71727 95612 D00)
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
 #include "primit.h"
@@ -518,7 +517,6 @@ C
 #include "mxorb.h"
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
-      PARAMETER (R2PI52 = 5.91496 71727 95612 D00)
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
 #include "primit.h"
 #include "symmet.h"

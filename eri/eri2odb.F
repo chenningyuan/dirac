@@ -560,7 +560,7 @@ C  /* Deck noddim */
 #include "erithr.h"
 #include "odclss.h"
 #include "aobtch.h"
-#include "eripi.h"
+#include "pi.h"
 #include "symmet.h"
 C
 #include "ibtfun.h"
