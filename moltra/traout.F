@@ -492,7 +492,7 @@ C     SGI IRIX counts recl in *4 words
 #if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #else
-#if defined (SYS_IBM)
+#if defined (SYS_IBM) || defined (SYS_SUN)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #else
      ===== insert definition for specification of record length
