@@ -1235,9 +1235,8 @@ C
       IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 2 ) ) THEN
          CALL ESTGLS(DOLS)
          IF ( .NOT. DOLS ) THEN
-            IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 2 )
-         ELSE
-            IGRD_INTBUF = IBTOR  ( IGRD_INTBUF, 2 )
+            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+C           ... skip LS and SS gradient
          END IF
       END IF
       CALL CYESNO(STR, LBIT ( IGRD_INTBUF, 2 ) )
@@ -1341,13 +1340,10 @@ C
  200  CONTINUE
 C
       CALL HEADER('RMOLGRD1: SS-Two-electron part',-1)
-      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 )
-     &     .AND. .NOT. DOLVC ) THEN
+      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 ) ) THEN
          CALL ESTGSS(DOSS)
          IF ( .NOT. DOSS ) THEN
-            IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 4 )
-         ELSE
-            IGRD_INTBUF = IBTOR  ( IGRD_INTBUF, 4 )
+            IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
          END IF
       END IF
 C
@@ -1355,7 +1351,7 @@ C
      &     .NOT. LBIT( IGRD_INTBUF, 2 ) ) THEN
          WRITE(LUPRI,'(/1X,A/)') 'WARNING: SS-gradient .NOT. '//
      &       'calculated since LS-gradient is not calculated.'
-         IGRD_INTBUF = IBTAND ( IGRD_INTBUF, 1+2 )
+         IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
       END IF
       CALL CYESNO(STR, LBIT( IGRD_INTBUF, 3 ) )
       WRITE(LUPRI,'(1X,2A/)') 'Calculate SS-Two-electron gradient: ',
@@ -1745,16 +1741,17 @@ C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
 C       ===================================================
 C
-        IF ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT ( IGRD_INTFLG, 3) ) THEN
+        IF ( DOLVC .OR.
+     &      (LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3)) ) THEN
            CALL HEADE3('"SS-integral contribution by classical ',
      &                 'repulsion of small component atomic ',
      &                 'charges"-gradient',-1)
            IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
               WRITE(LUPRI,'(/A)') 'SCC gradient is NOT used, since '//
-     &                            'SS-gradient is calculated.'
-           ELSE
+     &             'SS-gradient has been calculated.'
+           ELSE IF (.NOT.DOLVC) THEN
               WRITE(LUPRI,'(/A)') 'SCC gradient is used, since '//
-     &                            'SS-gradient is NOT calculated.'
+     &             'SS-gradient was NOT calculated for this geometry.'
            END IF 
            CALL PRIGDR(GRADLV,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
         END IF
@@ -1774,9 +1771,10 @@ C
       CALL ADDGRD(GRADRO(1,0))
       CALL ADDGRD(GRADER(1,0))
       CALL ADDGRD(GRADNN)
-      IF ( (LBIT( IGRD_INTBUF, 2 ) .AND.
+      IF ( DOLVC .OR. (LBIT( IGRD_INTBUF, 2 ) .AND.
      &     .NOT. LBIT ( IGRD_INTBUF, 3 ) .AND.
-     &           LBIT ( IGRD_INTFLG, 3)) .OR. DOLVC ) THEN
+     &           LBIT ( IGRD_INTFLG, 3)) ) THEN
+C     if ( dolvc or ( dols and not doss and doss_in_input )
          write(LUPRI,*) 'adding lv grad'
          CALL ADDGRD(GRADLV)
       END IF
@@ -1802,6 +1800,7 @@ C
 C     If ||g(2,LS)|| > 0.1 ||g(1)+g(2,LL)|| then we calculate g(2,LS).
 C     As an estimate of ||g(2,LS)|| we use 0.005 ||g(2,LL)|| based
 C     on empirical facts.
+C     Combined: DOLS if ||g(2,LL)|| > 20. ||g(1)+g(2,LL)||
 C
 C     Since the LS-gradient is based on (LL|SS) or (SS|LL) integrals
 C     it scales with 1/(c^2). 
@@ -1817,7 +1816,7 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM2 = -2.0 D00)
+      PARAMETER( D0 = 0.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -1833,7 +1832,7 @@ C
 C
       DO I = 1, 3*NUCDEP
 C
-C        Calculate "total" gradient
+C        Calculate "total" gradient so far
 C
          TGRAD(I)  = GRADNN(I)   + 
      &               GRADRO(I,1) + GRADRO(I,2) +
@@ -1850,30 +1849,31 @@ C
       DLLNRM = DDOT(3*NUCDEP,GRADER(1,1),1,GRADER(1,1),1)
       DLLNRM = SQRT(DLLNRM)
 C
-C     If ||g(2,LL)|| / ||g(1)+g(2,LL)|| > 20 then calculate LS-gradient
+C     If ||g(2-el,LL)|| / ||g(1-el)+g(2-el,LL)|| > 20 then calculate LS-gradient
 C
-      CFAC = (( CVEL / CVAL) ** ( DM2 ) )
+      CFAC = (CVAL / CVEL) ** 2
+C     user may have changed CVAL, the velocity of light (!)
       IF ( TOTNRM .GT. D0 ) THEN
          DL = DLLNRM / TOTNRM
-         DR = 2.0 D01 * CFAC
+         DR = 20.D0 * CFAC
          IF ( DL .GE. DR ) THEN
             DOLS = .TRUE.
          END IF
       ELSE
          DOLS = .TRUE.
       END IF
-      WRITE(LUPRI,'(/1X,A)') 'Output from ESTGLS'
-      WRITE(LUPRI,1000) 'Norm of g(1)+g(2,LL): ',TOTNRM
-      WRITE(LUPRI,1000) 'Norm of g(2,LL)     : ',DLLNRM
-      WRITE(LUPRI,1000) 'Est. norm of g(2,LS): ',DR
+      WRITE(LUPRI,'(/A)') ' Output from ESTGLS'
+      WRITE(LUPRI,1000) ' Norm of g(1)+g(2,LL): ',TOTNRM
+      WRITE(LUPRI,1000) ' Norm of g(2,LL)     : ',DLLNRM
+      WRITE(LUPRI,1000) ' Est. norm of g(2,LS): ',0.005D0*DLLNRM
       CALL CYESNO(STR,DOLS)
-      WRITE(LUPRI,'(1X,A,A3/)') 'Calculate g(2,LS)   : ',STR
+      WRITE(LUPRI,'(A,A3/)') ' Calculate g(2,LS)   : ',STR
 C
       CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('ESTGLS')
       RETURN
- 1000 FORMAT(1X,A,F16.9)
+ 1000 FORMAT(A,F16.9)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck estgss */
@@ -1896,8 +1896,7 @@ C*****************************************************************************
 #include <aovec.h>
 #include <alphac.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM4 = -4.0 D00,
-     &           D2 = 2.0 D00 , DP1 = 1.0D-01)
+      PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
@@ -1913,7 +1912,7 @@ C
 C
       DO I = 1, 3*NUCDEP
 C
-C        Calculate "total" gradient
+C        Calculate "total" gradient so far
 C
          TGRAD(I)  = GRADNN(I)   + 
      &               GRADRO(I,1) + GRADRO(I,2) +
@@ -1934,10 +1933,13 @@ C
 C
 C     As estimate for ||g(2,SS)|| use ||g(2,LS)||^2 / ||g(2,LL)||
 C
-      CFAC = (( CVEL / CVAL) ** ( DM4 ) )
+CHJ   CFAC = (CVAL / CVEL) ** 4
+C     user may have changed CVAL, the velocity of light (!)
+C     hjaaj aug 2001: no, this factor is already in DLSNRM !
       IF ( TOTNRM .GT. D0 ) THEN
-         DR = ( DLSNRM ** D2 ) / DLLNRM
-         DL = CFAC * DP1 * MAX( TOTNRM, GRDTHR )
+         DR = ( DLSNRM ** 2 ) / DLLNRM
+CHJ      DL = CFAC * DP1 * MAX( TOTNRM, GRDTHR )
+         DL = DP1 * MAX( TOTNRM, GRDTHR )
          IF ( DR .GE. DL ) THEN
             DOSS = .TRUE.
          END IF
