@@ -3051,6 +3051,7 @@ C
      &             49*2.0D0/
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "cbiher.h"
