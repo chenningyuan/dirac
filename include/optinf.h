@@ -26,4 +26,4 @@ C
      &                PSB   , DFP,    BFGS,   SCHLEG, NEWTON, QUADSD,
      &                KEEPHE, REINIH, BAKER,  REDINT, CARTCO, INRDHS,
      &                FSTORD, SNDORD, REJINI, GRDINI, MBFGS, CHGRDT,
-     &                GRDTCK, TWOGRD
+     &                GRDTCK, TWOGRD(3)
