@@ -22,6 +22,7 @@ if ($#argv == 0) then
       echo '     -cc           : Include CCSD module'
       echo '     -tra          : Include 4-index transformation module'
       echo '     -open         : Include open shell module'
+      echo '     -ci          : Include DIRRCI module'
       echo '     tarfile=make  : only generate new Makefile'
       exit 0
 endif
@@ -68,6 +69,12 @@ set OPENTAR = 0
 set OPENFLG =
 set OPENOBJ =
 set OPENMAK =
+# DIRRCI module
+set CIMOD = 0
+set CITAR = 0
+set CIFLG =
+set CIOBJ =
+set CIMAK =
 #
 while($#argv)
    switch($argv[1])
@@ -90,6 +97,12 @@ while($#argv)
 #        set ERIMOD = 1
         set ERIMOD = 0
         breaksw
+     case -open
+        set OPENMOD = 1
+        breaksw
+      case -ci
+         set CIMOD
+         breaksw
      case -*:
         echo $argv[1] 'not recognized'
         exit 1
@@ -115,6 +128,7 @@ if($PAMADM) then
   set PARMOD = 1
   set PARTAR = 1
   set OPENMOD = 1
+  set CIMOD = 1
 endif
 #
 #  RELCCSD-module
@@ -153,11 +167,22 @@ if($ERIMOD) then
         set ERITAR = 1
 endif
 #
+# Open shell module
+#
 if($OPENMOD) then
         set OPENFLG = '-DMOD_OPEN'
         set OPENOBJ = '$(OPENOBJS)'
         set OPENMAK = OPEN_OBJ
         set OPENTAR = 1
+endif
+#
+# DIRRCI Module
+#
+if($CIMOD) then
+        set CIFLG = '-DMOD_CI'
+        set CIOBJ = '$(CIOBJS)'
+        set CIMAK = CI_OBJ
+        set CITAR = 1
 endif
 #
 #  Safeguard files
@@ -171,19 +196,20 @@ endif
 #  Write active modules
 #
 echo "#\!/bin/sh" > configure
-echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG\" >> configure
+echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG $CIFLG\" >> configure
 echo ERIFLG=$ERITAR >> configure
 echo CCFLG=$CCTAR   >> configure
 echo RSPFLG=$RSPTAR >> configure
 echo TRAFLG=$TRATAR >> configure
 echo PARFLG=$PARTAR >> configure
 echo OPENFLG=$OPENTAR >> configure
+echo CIFLG=$CITAR >> configure
 #
 #
 cat configure.in >> configure
 chmod +x configure
-set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ"
-set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK"
+set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $CIOBJ"
+set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $CIMAK"
 #
 #  Write current Makefile
 #
@@ -274,6 +300,16 @@ dirac/open/diropen.o
 EOF
 endif
 #
+#  Object files for DIRRCI module
+#
+if ($CIMOD) then
+cat <<EOF>> Makefile
+
+CIOBJS = \
+dirrci/cidirr.o dirrci/cigenp.o
+EOF
+endif
+#
 #
 #
 if($PARMOD) then
@@ -329,6 +365,12 @@ endif
 if($PARMOD) then
 echo '	cd abacus/par  ; $(MAKE) clean' >> Makefile
 endif
+if($OPENMOD) then
+echo '	cd dirac/open ; $(MAKE) clean' >> Makefile
+endif
+if($CIMOD) then
+echo '	cd dirrci ; $(MAKE) clean' >> Makefile
+endif
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
@@ -364,6 +406,9 @@ endif
 if($PARTAR) then
 echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in ' >> Makefile
 endif
+if($CITAR) then
+echo '	tar rvf DIRAC.new.tar dirrci/*.F dirrci/*.inc dirrci/Makefile.in ' >> Makefile
+endif
 if($PAMADM) then
 echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
 endif
@@ -379,8 +424,11 @@ endif
 if($CCMOD) then
 echo '	$(RM) -r relccsd' >> Makefile
 endif
-if($ERIMOD) then
-echo '	$(RM) -r eri' >> Makefile
+if($CCMOD) then
+echo '	$(RM) -r relccsd' >> Makefile
+endif
+if($CIMOD) then
+echo '	$(RM) -r dirrci' >> Makefile
 endif
 cat <<EOF>> Makefile
 
@@ -440,6 +488,13 @@ SLAVE_OBJ :
 EOF
 endif
 #
+if ($CIMOD) then
+cat <<EOF>> Makefile
+CI_OBJ:
+	cd dirrci ; \$(MAKE) all
+EOF
+endif
+#
 if ($OPENMOD) then
 cat <<EOF>> Makefile
 OPEN_OBJ:
@@ -477,6 +532,9 @@ if ($ERIMOD) then
 endif
 if ($OPENMOD) then
    set TEMP = ($TEMP 'dirac/open')
+endif
+if ($CIMOD) then
+   set TEMP = ($TEMP 'dirrci')
 endif
 
 cat <<EOF>> Makefile
