@@ -530,7 +530,7 @@ if [ -n "$EMBMOD" ]; then
 cat <<EOF>> Makefile
 
 EMBOBJS = \\
-embedding/emb_frozen_dmat.o
+embedding/embedding.o embedding/emb_frozen_orbitals.o embedding/emb_settings.o
 EOF
 fi
 #
