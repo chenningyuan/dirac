@@ -108,6 +108,13 @@ C
         KGAB  = KFREE
       ENDIF
 C
+C     in the case of complex groups T^q,3 of the 2nd T has to be
+C     scaled with -1
+C
+      IF (NZ.EQ.2) THEN
+        CALL SCALT2(TMATRX2,NSTR(1,0,4))
+      ENDIF
+C
 C     *****************************************
 C     ****** P A R A L L E L    C O D E  ******
 C     *****************************************
@@ -721,18 +728,21 @@ C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       DIMENSION NSTR3(2)
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-      DIMENSION IPTQLAG(2,0:7,0:7,2)
-      DIMENSION IHM(0:7)
+      DIMENSION IPTQLAG(2,0:7,0:7,2), IHM(0:7)
       DIMENSION HMAT(*),Q3(*),QCOF(4)
       DIMENSION WORK(*)
       DIMENSION IND(2)
       DIMENSION INDXAS(0:7), INDXBS(0:7)
       DIMENSION TMATRX(*), XAOMO(*)
-      DIMENSION ILOFF(0:7)
-      DIMENSION ILTMOFF(0:7,2)
+      DIMENSION ILOFF(0:7), ILTMOFF(0:7,2)
       DIMENSION NBBASA(0:7,0:2), NBBASB(0:7,0:2)
       DIMENSION INDXL(*)
       DIMENSION NTQINT(2,0:7,0:7,2)
+      DIMENSION IQMULPH(4,4)
+      DATA IQMULPH / 1, 1, 1, 1,
+     &               1,-1,-1, 1,
+     &               1, 1,-1,-1,
+     &               1,-1, 1,-1/
 C
 #include "ibtfun.h"
 C
@@ -757,13 +767,14 @@ C
 C     initialisation of offset for the final Laomo
 C     ============================================
 C
+      CALL IZERO(ILOFF,8)
       IF(ITRIANG.EQ.1) THEN
         CALL IZERO(INDXL,NBBAS4T)
+        CALL LOFFSET(NBBASB,ILOFF,IC)
       ELSE
         CALL IZERO(INDXL,NBBAS3T)
+        CALL LOFFSET(NBBASA,ILOFF,IC)
       ENDIF
-      CALL IZERO(ILOFF,8)
-      CALL LOFFSET(NBBASB,ILOFF,IC)
 C
 C     determine the packing of the 3/4 transformed integrals
 C     ======================================================
@@ -831,7 +842,7 @@ C     This is actual index R and S in this irrep and IC.
 C     From the lower triangle we don't want the diagonal part to avoid
 C     double counting
             IF(ITRIANG.EQ.2) THEN
-              IF (INDA1.EQ.INDB1) GOTO 10
+              IF (INDA.EQ.INDB) GOTO 10
             ENDIF
 C     Indexing from relative to absolute AO nr, needed for Laomo     
             IF(ITRIANG.EQ.1) THEN
@@ -948,6 +959,8 @@ C
       ELSE
         CALL LTMPOFF(NBBASA,ILTMOFF,IC,IFLGTAU)
       ENDIF
+C
+      DPHASE = D1
 C   
 C     The 1st tau dependent part of the Lagrangian
 C     --------------------------------------------
@@ -971,26 +984,42 @@ C     --------------------------------------------
                   IOFFC = ILTMOFF(IREPS,IREPI)
 c
                   IF(NZ.EQ.1) THEN
-c                   IF (IC.EQ.1) THEN
-                      IREPRS2 = IREPRS
-c                   ELSE
-c                     IREPRS2 = IBTXOR(IXYZ,IREPRS)
-c                   ENDIF
-                  IQ = IPQTOQ(1,IREPRS2)
-                    IF(IQ.GT.1) THEN
-                      CALL DSCAL(K*N*NZ,-D1,TMATRX(IOFFB),1)
+                    IREPR = IBTXOR(IREPRS,IREPS)
+                    IF (IC.EQ.1) THEN
+                      IREPR2 = IREPR
+                    ELSE
+                      IREPR2 = IBTXOR(IXYZ,IREPR)
                     ENDIF
+                    IQ1 = IPQTOQ(1,IREPR2)
+                    IQ2 = IPQTOQ(1,IREPRS)
+                    DPHASE = IQMULPH(IQ1,IQ2)*D1
+                    IF(IQ2.GT.1) DPHASE = -DPHASE
                   ENDIF
 c
                   IF(NZ.EQ.2) THEN
-                    IQ = IPQTOQ(2,IREPRS)
-                    IF(IQ.EQ.3) THEN
-                      CALL DSCAL(K*N,-D1,TMATRX(IOFFB),1)
+                    IREPR = IBTXOR(IREPRS,IREPS)
+                    IF (IC.EQ.1) THEN
+                      IREPR2 = IREPR
+                    ELSE
+                      IREPR2 = IBTXOR(IXYZ,IREPR)
+                    ENDIF
+                    IQ2 = IPQTOQ(1,IREPRS)
+                    IF(IQ2.GT.2) THEN
+                      IQ1 = IPQTOQ(2,IREPR2)
+                      IF(IQ1.EQ.2) THEN
+                        IOFSC = IOFFA + K*M
+                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
+                      ENDIF
+                      IQ1 = IPQTOQ(1,IREPR2)
+                      IF(IQ1.EQ.4) THEN
+                        IOFSC = IOFFA
+                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
+                      ENDIF
                     ENDIF
                   ENDIF
 c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,0),
+                  CALL QGEMM(M,N,K,DPHASE,'T','N',IPQTOQ(1,0),
      &                       WORK(KTQMAT+IOFFA),K,M,NZ,
      &                       'N','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
      &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
@@ -1025,8 +1054,44 @@ C     --------------------------------------------
                   IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
                   IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
                   IOFFC = ILTMOFF(IREPS,IREPA)
+c                     
+                  IF(NZ.EQ.1) THEN 
+                    IREPR = IBTXOR(IREPRS,IREPS)
+                    IF (IC.EQ.1) THEN
+                      IREPR2 = IREPR
+                    ELSE
+                      IREPR2 = IBTXOR(IXYZ,IREPR)
+                    ENDIF
+                    IQ1 = IPQTOQ(1,IREPR2)
+                    IQ2 = IPQTOQ(1,IREPRS)
+                    DPHASE = IQMULPH(IQ1,IQ2)*D1
+                    IF(IQ2.GT.1) DPHASE = -DPHASE
+                  ENDIF      
+c                 
+                  IF(NZ.EQ.2) THEN
+                    IREPR = IBTXOR(IREPRS,IREPS)
+                    IF (IC.EQ.1) THEN
+                      IREPR2 = IREPR
+                    ELSE
+                      IREPR2 = IBTXOR(IXYZ,IREPR)
+                    ENDIF
+                    IQ2 = IPQTOQ(1,IREPRS)
+                    IF(IQ2.GT.2) THEN
+                      IQ1 = IPQTOQ(2,IREPR2)
+                      IF(IQ1.EQ.2) THEN
+                        IOFSC = IOFFA + K*M
+                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
+                      ENDIF
+                      IQ1 = IPQTOQ(1,IREPR2)
+                      IF(IQ1.EQ.4) THEN
+                        IOFSC = IOFFA
+                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
+                      ENDIF
+                    ENDIF
+                  ENDIF
+c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,0),
+                  CALL QGEMM(M,N,K,-DPHASE,'T','N',IPQTOQ(1,0),
      &                       WORK(KTQMAT+IOFFA),K,M,NZ,
      &                       'C','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
      &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
@@ -1074,8 +1139,10 @@ C               for shell X
 C               
 C     Input :
 C     
-C     Output :
-C     
+C     Output : NBBASA(IREPA,IC) - number of basis functions per boson
+C                                 irrep for IC component for shell X
+C              NBBASAT          - total nr of basis functions of shell
+C                                 X
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
@@ -1697,6 +1764,51 @@ C
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck scalt2*/
+      SUBROUTINE SCALT2(TMATRX2,NSTR3)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     
+C     Written by Joost van Stralen december 2003.
+C     
+C     PURPOSE : scale the T^q,3 part of the T matrix (only for nz=2)
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h" 
+#include "dcbtra.h"  
+C               
+#include "mp1stpr.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      PARAMETER (D1 = 1.0D00)
+      DIMENSION NSTR3(2)
+      DIMENSION TMATRX2(*)
+C
+      CALL QENTER('SCALT2')
+C     
+      DO IREPLA = 1, NFSYM
+        DO IREPRS = 0, NBSYM - 1
+          IF (IREPLA.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPA = 1, NFSYM
+              K = NFPCK12(IREPLA)*NZ*NSTR3(IREPA)
+              N = NAVIR(IREPA)
+              IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
+              DO IZ = 1, NZ
+                IQ2 = IPQTOQ(IZ,IREPRS)
+                IF (IQ2.EQ.4) THEN
+                  CALL DSCAL(K*N,-D1,TMATRX2(IOFFB),1)
+                ENDIF
+              ENDDO ! iz
+            ENDDO ! irepa
+          ENDIF
+        ENDDO ! ireprs
+      ENDDO ! irepla
+C       
+      CALL QEXIT('SCALT2')
+C           
+      RETURN  
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pk3inla*/ 
       SUBROUTINE PK3INLA(NBBASR,NBBASS,IPTQLAG,NPTQLAG,NTQINT,NSTR3,IC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2242,10 +2354,6 @@ C
       ENDDO       ! iz
 C
 c
-c     print*,'xmo'
-c     do i = 1, norbt*norbt*nz
-c       print*,'i, xmo',i, xmo(i)
-c     enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
