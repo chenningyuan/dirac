@@ -1251,7 +1251,8 @@ C
 C
 C        Print occupation string for each fermion symmetry
 C
-         DO IFSYM = 1, NFSYM
+         IF (NBSYM.GT.1) THEN
+          DO IFSYM = 1, NFSYM
             WRITE(LUPRI,'(/2A)')
      &           '* Occupation in fermion symmetry ',FREP(IFSYM)
             IF (NISH(IFSYM) .GT. 0) THEN
@@ -1283,7 +1284,9 @@ C
                WRITE(LUPRI,'(4X,18A4)')
      &              (REP(IBEIG(I)),I=JST+1,JST+NPSH(IFSYM))
             END IF
-         END DO
+          END DO
+         END IF
+C
       END IF
       WRITE(LUPRI,'(/)')
       RETURN
