@@ -1047,6 +1047,7 @@ C***********************************************************************
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      LOGICAL DELSS
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1062,16 +1063,6 @@ C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C
-      IF (IPRINT .GT. 100) THEN
-         WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
-     &   'XPRADD called;',
-     &   '  PNAME   =',PNAME,
-     &   '  IPTYP   =',IPTYP,
-     &   '  NPCOMP  =',NPCOMP,
-     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
-         WRITE (LUPRI,'(A,3(A8,2X))')
-     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
-      END IF
       IF (PLABEL(1)(1:7).EQ.'BETAMAT') THEN
 Chj      PCOMB = 'FFFT'
          PCOMB = '000+'
@@ -1113,8 +1104,28 @@ C
     4    PCOMB = '0+-0'
          GO TO 100
 C
-  100    IF (LEVYLE) PCOMB(4:4) = '0'
+  100    CONTINUE
+         IF (LEVYLE) THEN
+           DELSS=.FALSE.
+           IF (PCOMB(4:4).NE.'0') DELSS=.TRUE.
+           PCOMB(4:4) = '0'
+         ENDIF
       END IF
+
+      IF (IPRINT .GE. 7) THEN
+         WRITE (LUPRI,'(/A/2A,/A,A4,/A,I5/A,I5/A,1P,3(D20.10))')
+     &   'XPRADD called, property operator parameters:',
+     &   '  PNAME   =',PNAME,
+     &   '  PCOMB   =',PCOMB,
+     &   '  IPTYP   =',IPTYP,
+     &   '  NPCOMP  =',NPCOMP,
+     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
+         WRITE (LUPRI,'(A,3(A8,2X))')
+     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
+         IF (DELSS) WRITE(LUPRI,'(2X,A)')
+     &    'Levy-Leblond nonrelativistic mode, SS block zeroed!'
+      END IF
+
 C
 C     Define property
 C
