@@ -1,6 +1,6 @@
 CMI ....
       subroutine initired
-#include <implicit.h>
+#include "implicit.h"
 cbs   initialize all information for ireducible representations 
 cbs   later on, it might be useful to have a switch for 
 cbs    changing to other orders of IREDs like e.g. in TURBOMOLE
@@ -17,9 +17,9 @@ c   3. assign the right IRs to L_X, L_Y and L_Z
 c
 c   that is  all. Good luck!!!
 c
-#include <priunit.h>
-#include <para.h>
-#include <ired.h>
+#include "priunit.h"
+#include "para.h"
+#include "ired.h"
       character*3 symmetry 
       symmetry='D2H'  ! MOLCAS-Version
       if (symmetry.eq.'D2H') then 
@@ -341,7 +341,7 @@ c    *IRwithLZ(ired)
       return 
       end 
       subroutine kindiag(TKIN,TKINTRIA,ndim,evec,eval,breit)
-#include <implicit.h>
+#include "implicit.h"
 cbs   determines eigenvectors and -values of TKIN  
       dimension tkin(ndim,ndim),
      *TKINTRIA((ndim*ndim+ndim)/2),eval(ndim),evec(ndim,ndim)
@@ -387,8 +387,8 @@ cbs   ensure normalization of the vectors.
       return   
       end   
       Subroutine kinemat(L,ndim,evtkin,type1,type2,Energy)
-#include <implicit.h>
-#include <alphac.h>
+#include "implicit.h"
+#include "alphac.h"
 cbs   at least it's identical with Odd's valuE
       parameter (speed2=CVEL*CVEL) 
       parameter (speed4=speed2*speed2) 
@@ -429,9 +429,9 @@ cbs   LMdepang= LM dependent angular factors
 cbs   cheater included for a correcting signs, as there were some 
 cbs   signs (only signs!!!!) missing when compared to HERMIT  
 cbs                                        B.S.  08.10.96 
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
       LMdepang=0d0
 cbs   some quick checks
       if (L.lt.abs(M)) return 
@@ -512,7 +512,7 @@ cbs   lots of checks
      *caseaOO,caseb1OO,caseb2OO,casecOO,
      *preroots,clebsch,dummy,bonn,breit,
      *sameorb)
-#include <implicit.h>
+#include "implicit.h"
 cbs   subroutine for combining radial integrals with angular 
 cbs   factors for the block with l1,l2,l3,l4,m1,m2,m3m,m4  
 cbs   this routine mkangL0 = make angular factors for the L0-part 
@@ -1146,7 +1146,7 @@ cbs   get the L,M dependent coefficients
      *caseaOO,caseb1OO,caseb2OO,casecOO,
      *preroots,clebsch,dummy,bonn,breit,
      *sameorb)
-#include <implicit.h>
+#include "implicit.h"
 cbs   subroutine for combining radial intgrls with angular 
 cbs   factors for the block with l1,l2,l3,l4,m1,m2,m3m,m4  
 cbs   this routine mkangLmin = make angular factors for the L- -part 
@@ -1755,7 +1755,7 @@ cbs   get the L,M dependent coefficients
       end
    
       subroutine prefac(Lmax,preroots,clebsch)
-#include <implicit.h>
+#include "implicit.h"
       dimension preroots(2,0:Lmax),
      *clebsch(3,2,-Lmax:Lmax,0:Lmax)
 cbs   the roots appearing in front of all 

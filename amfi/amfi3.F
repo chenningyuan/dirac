@@ -2,10 +2,10 @@
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
-#include <ired.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
+#include "ired.h"
       logical OLDNRM,ADDSO1 
       logical makemean,AIMP,oneonly  
       character*8 xa,ya,za
@@ -73,6 +73,11 @@ C===================================================================
 cbs   generate one-electron integrals for all L greater/equal 1
 C===================================================================
       if (ifinite.eq.2) charge=0d0 ! nuclear integrals are modelled for finite nucleus somewhere else
+
+CMI ... based on BS advise to remove 1 el.SO integrals..
+CMI ... this is only temporary solution for now...
+       charge=0d0
+  
       do L=1,Lhigh   
       	call contone(L,oneoverr3(1,L),onecontr(1,1,-Lmax,1,L),
      *  Lmax,contrarray(iaddtyp3(L)),nprimit(L),ncontrac(L),
@@ -257,9 +262,9 @@ cbs   contraction for powers (+2)  with alpha1*alpha3
 cbs   other-orbit term 
 cbs   use averaged integrals by interchanging kinematic factors   
 cbs   this is case a in the documentation 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*) 
      *,cont4OO(*)
       ncont(1)=ncontrac(l1)
@@ -354,9 +359,9 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (+2)  with alpha1*alpha3
 cbs   same orbit term 
 cbs   this is case a in the documentation 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*),
      *cont4SO(*) 
       ncont(1)=ncontrac(l1)
@@ -398,9 +403,9 @@ c     write(6,*) 'nstart ',nstart
 cbs   contraction for powers (0)  with alpha1
 cbs   this is one of the cases b in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*) 
      *,cont4OO(*)
       ncont(1)=ncontrac(l1)
@@ -496,9 +501,9 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (0)  with alpha1
 cbs   this is one of the cases b in the documentation 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*),
      *cont4SO(*) 
       ncont(1)=ncontrac(l1)
@@ -531,9 +536,9 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (0)  with alpha3
 cbs   this is one of the cases b in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*) 
      *,cont4OO(*)
       ncont(1)=ncontrac(l1)
@@ -629,9 +634,9 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (0)  with alpha3
 cbs   this is one of the cases b in the documentation 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*),
      *cont4SO(*) 
       ncont(1)=ncontrac(l1)
@@ -666,9 +671,9 @@ cbs   copy primitive integrals to scratch1
 cbs   contraction for powers (-2)  with factor 1 
 cbs   this is case c in the documentation 
 cbs   use averaged integrals by interchanging kinematic factors 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*) 
      *,cont4OO(*)
       ncont(1)=ncontrac(l1)
@@ -762,9 +767,9 @@ cbs   copy primitive integrals to scratch1
      *scratch1,scratch2,cont4SO)
 cbs   contraction for powers (-2)  with factor 1 
 cbs   this is case c in the documentation 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension ncont(4),nprim(4),primints(*),scratch1(*),scratch2(*),
      *cont4SO(*) 
       ncont(1)=ncontrac(l1)
@@ -801,7 +806,7 @@ cbs   copy primitive integrals to scratch1
 cbs   contracts one-electron integrals and multiplies with l,m-dependent 
 cbs   factors for L-,L0,L+ 
 
-#include <implicit.h>
+#include "implicit.h"
       dimension oneoverR3(*),
      *onecontr(MxcontL,MxcontL,-Lmax:Lmax,3),
      *contcoeff(nprim,ncont),dummy(ncont,ncont),
@@ -897,7 +902,7 @@ cbs  array one contains at the beginning the uncontracted integrals
      *arr1,  ! array of size (nprim(1)*nprim(2)*nprim(3)*nprim(4))
      *arr2   ! array of size (nprim(1)*nprim(2)*nprim(3)*nprim(4))
      *)
-#include <implicit.h>
+#include "implicit.h"
       dimension coeffs1(*),coeffs2(*),coeffs3(*),coeffs4(*),   
      *arr1(*),arr2(*),ncont(4),nprim(4),nolds(4),nnew(4)
 C
@@ -1045,8 +1050,8 @@ cbs   sqrt( (2l1+1)(2l2+1)(2l2+3)/ 4Pi)  * 3J(l1,l2,l3,0,0,0) *
 cbs   3J(l1,l2,l3,m1,m2,m3)
 cbs   
 cbs   
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       double precision inv4pi
 cbs   (4*PI)**-1 
       inv4pi=0.25d0/pi                                   
@@ -1069,7 +1074,7 @@ cbs   double all values for regge3j
       end 
 
       subroutine daxpint(from,to,fact,ndim1,ndim2,ndim3,ndim4)
-#include <implicit.h>
+#include "implicit.h"
 cbs   subroutine similar to daxpy with interchange of two indices 
 cbs   change from physicists notation to chemists notaion 
 cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l) 
@@ -1091,14 +1096,14 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
 
 
       subroutine gen1overR3(Lhigh)
-#include <implicit.h>
+#include "implicit.h"
 cbs   generates the radial integrals  for the one electron spin orbit integrals   
 cbs   taken the 1/r**3 formula from the documentation and included additional 
 cbs   factors for normalization   
-#include <para.h>
-#include <param.h>
-#include <dofuc.h>
-#include <pi.h>
+#include "para.h"
+#include "param.h"
+#include "dofuc.h"
+#include "pi.h"
       do L=1,Lhigh    
       icount=0
       do iprim2=1,nprimit(L)
@@ -1121,12 +1126,12 @@ cbs   factors for normalization
       subroutine gencoul(l1,l2,l3,l4,makemean,
      *bonn,breit,sameorb,cont4SO,cont4OO,icont4,
      *WRK,LFREE)
-#include <implicit.h>      
+#include "implicit.h"      
 cbs   SUBROUTINE to generate all required radial 
 cbs   integrals for the four angular momenta l1-l4
-#include <priunit.h>
-#include <para.h>
-#include <param.h>
+#include "priunit.h"
+#include "para.h"
+#include "param.h"
       logical makemean,bonn,breit,sameorb 
       dimension cont4SO(*),cont4OO(*),WRK(LFREE)
       max1=1  !starting values for limits of precalculated 
@@ -1357,10 +1362,10 @@ cbs### check, whether integrals fit on array ################
       end  
       subroutine gencoulDIM(l1,l2,l3,l4,makemean,
      *bonn,breit,sameorb,icont4)
-#include <implicit.h>
-#include <priunit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
+#include "param.h"
 cbs   SUBROUTINE to calculate the dimemsion of the radial integral 
 cbs   arrays. BASICALLY GENCOUL WITHOUT EXPLICIT INTEGRAL CALCULATION 
 cbs   integrals for the four angular momenta l1-l4
@@ -1469,9 +1474,9 @@ c
       return 
       end  
       subroutine genovlp(Lhigh)
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
 cbs   generates overlap of normalized  primitives. 
       dimension evecinv(MxprimL,MxprimL)
       do L=0,Lhigh 
@@ -1564,10 +1569,10 @@ cbs   now generate OVLPinv
       return 
       end   
       subroutine genpowers(Lhigh)   
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
-#include <dofuc.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
+#include "dofuc.h"
 cbs   set some often used powers of exponents 
       do L2=0,Lhigh 
       do L1=0,L2    
@@ -1624,9 +1629,9 @@ cbs   with shifted l-values
  
     
       subroutine genstar(Lhigh) 
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
 cbs   purpose: generate start adresses of contraction coeffs on 
 cbs   contrarray for the different L-Blocks 
       istart=1
@@ -1646,8 +1651,8 @@ cbs   contrarray for the different L-Blocks
       return 
       end  
       subroutine gentkin(L,TKIN,nprims,exponents,rootOVLPinv)   
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
 cbs   subroutine to generate the kinetic energy 
       dimension TKIN(nprims,nprims),exponents(*),
      *dummy(MxprimL,MxprimL),dummy2(MxprimL,MxprimL),
@@ -1694,11 +1699,11 @@ cbs   now transform by rootovlp*dummy*rootovlp
 
 CMI ..................................
       subroutine getAOsx(lhigh)                  
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "para.h"
+#include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions 
       character*12    occtext,occread
       character*18  textnorbmf,textnorbmf2    
@@ -1736,10 +1741,12 @@ CBS   write(6,*) 'get occupations from DATA-block'
       call gpclose(LUAOEX,'KEEP')
       return 
       end 
+
+
       subroutine getAOs2(lhigh)
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions
       common /nucleus/ charge,Exp_finite
       character*12    occtext
@@ -1779,9 +1786,9 @@ CBS   enddo
       end
 cbs
       subroutine getocc_ao(icharge,iclosed,iopen)
-#include <implicit.h>
-#include <priunit.h>
-#include <para.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
       parameter (ichargemax=96)
       dimension iclocc(0:Lmax_occ,0:ichargemax)
       dimension iopocc(0:Lmax_occ,0:ichargemax)
@@ -2138,7 +2145,7 @@ cbs                             |  j1   j2   j3   |
 cbs                             |                 |     
 cbs                             |  m1   m2  -m3   |
 cbs                              ---            ---
-#include <implicit.h>
+#include "implicit.h"
 cbs   initialize CG-coefficient
       getCG=0d0
 cbs   quick check 
@@ -2160,8 +2167,8 @@ cbs   check the correct sign    end
 
 
       subroutine getLIMIT(l1,l2,l3,l4,Lanf,Lend)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 cbs   get the minimum and maximum L-values 
 cbs   of the the coulomb-potential to interact 
 cbs   with l1-l4
@@ -2192,8 +2199,8 @@ cbs   check the other parity
      *nprim1,nprim2,nprim3,nprim4)
 cbs   generates some powers of for the prefactors of cfunct(X)
 cbs   look out for details there and in initfrac   
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       dimension quotpow(nprim1,nprim2,
      *nprim3,nprim4),
      *quot(nprim1,nprim2,nprim3,nprim4) 
@@ -2228,10 +2235,10 @@ cbs
  
       subroutine inidf
 cbs   initializes the df on common block  with double facultatives
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
-#include <dofuc.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
+#include "dofuc.h"
       df(0)=1.d0
       df(1)=1.d0
       do irun=2,ndfmx
@@ -2254,7 +2261,7 @@ cbs   initializes the df on common block  with double facultatives
      *quot1,quot2,expo1,expo2,
      *expo3,expo4)
 cbs   initialize some arrays with factors  needed for cfunct(x) 
-#include <implicit.h>
+#include "implicit.h"
       dimension expo1(*),expo2(*),expo3(*),expo4(*), 
      *quot1(nprimit1,nprimit2,nprimit3,nprimit4),
      *quot2(nprimit1,nprimit2,nprimit3,nprimit4)

@@ -2,7 +2,7 @@ C
 
 CMI from dalton...para.h param.h  dofuc.h  ired.h alphac.h Regge.h datapow.h
 
-CMI all include files:
+CMI AMFI include files:
 C=======================
 C   amfi.o : amfi.F \
 C ../include/alphac.h  ../include/datapow.h \
@@ -14,7 +14,8 @@ C  ../include/Regge.h
 Csymtra.o : symtra.F \
 C  ../include/dummy.h  ../include/implicit.h \
 C  ../include/para.h  ../include/priunit.h
-CMI 
+CMI
+
       Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
      *                WRK,LFREE)            
 CBS
@@ -27,7 +28,7 @@ CB  EXP_FIN: the finite nucleus exponent (if required)
 CBS WRK, KFREE,LFREE standard work-array parameters in DALTON
 CBS
 CBS
-#include <implicit.h>
+#include "implicit.h"
 c###########################################################################
 c
 c          A M F I 
@@ -116,7 +117,7 @@ c
 c  New version for DALTON canibalized from the MOLCAS version september 2000
 c                                                           
 c###########################################################################
-#include <para.h>
+#include "para.h"
       logical keep    ! parameter to decide about keeping angular 
 cbs                     ! integrals in memory 
       logical keepcart    ! parameter to decide about keeping cartesian
@@ -133,7 +134,7 @@ CBS                        schemes are used
 
       logical ADDSO1  ! Add also one-electron SO integrals
       character*4  symmetry  
-#include <datapow.h>
+#include "datapow.h"
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
 c##########################################################################
@@ -155,7 +156,7 @@ cbs   initialize tables with double facultatives...
 cbs   move some powers of x,y,z to the right place   BEGIN 
 cbs   check if Lpowmax is high enough..
       if (Lpowmax.lt.Lmax) then 
-      CALL QUIT('increase lpowmax and edit ixyzpow')
+      CALL QUIT('AMFI: increase lpowmax and edit ixyzpow')
       endif 
       jrun=1
       do irun=0,Lmax
@@ -168,9 +169,9 @@ cbs   check if Lpowmax is high enough..
       enddo
 cbs   move some powers of x,y,z to the right place   END   
       if (FINITE) then 
-      	ifinite=1
+        ifinite=1
       else
-	ifinite=0
+        ifinite=0
       endif 
 cbs   read the input 
       call readbas(Lhigh,makemean,bonn,breit,
@@ -248,9 +249,9 @@ cbs
 cbs   subroutine to set up parameters for finite nucleus. The s-functions are replaced 
 cbs   by just one exponent which models the nucleus.
 cbs
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       common /nucleus/ charge,Exp_finite    
       noccorb(0)=1  
       do l=1,lmax_occ
@@ -280,10 +281,10 @@ cbs   Therefore, the integrals are kept in memory and
 cbs   can be further transformed, whenever required.   
 cbs   in order not to waste to much memory, the atomic  
 cbs   integrals are thrown away after each l,l,l,l-block 
-#include <implicit.h>
-#include <priunit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
+#include "param.h"
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   
      *breiT,sameorb,cleaner,NFINI
 cbs   NFINI means not finite nucleus  
@@ -1267,11 +1268,11 @@ cbs  with extra factors to correct the
 cbs  normalization                  
 c
 cbs ##################################################################
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
-#include <dofuc.h>
-#include <pi.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
+#include "dofuc.h"
+#include "pi.h"
       dimension expo1(nprim1),
      *expo2(nprim2),
      *expo3(nprim3),
@@ -1565,7 +1566,7 @@ cbs
       end 
       subroutine cartoneX(L,Lmax,onecontr,ncontrac,
      *MxcontL,onecartX)
-#include <implicit.h>
+#include "implicit.h"
       dimension onecontr(MxcontL,MxcontL,-Lmax:Lmax,3),
      *onecartX(MxcontL,MxcontL,(Lmax+Lmax+1)*(Lmax+1))  
 cbs   arranges the cartesian one-elctron-integrals for X  on a 
@@ -1615,7 +1616,7 @@ cbs   -1 || 0 integrals
 
       subroutine cartoneY(L,Lmax,onecontr,ncontrac,
      *MxcontL,onecartY)
-#include <implicit.h>
+#include "implicit.h"
       dimension onecontr(MxcontL,MxcontL,-Lmax:Lmax,3),
      *onecartY(MxcontL,MxcontL,(Lmax+Lmax+1)*(Lmax+1))  
 cbs   arranges the cartesian one-electron integrals for Y  
@@ -1665,7 +1666,7 @@ cbs    0 || 1 integrals
       end 
       subroutine cartoneZ(L,Lmax,onecontr,ncontrac,
      *MxcontL,onecartZ)
-#include <implicit.h>
+#include "implicit.h"
       dimension onecontr(MxcontL,MxcontL,-Lmax:Lmax,3),
      *onecartZ(MxcontL,MxcontL,(Lmax+Lmax+1)*(Lmax+1))  
 cbs   arranges the cartesian one-electron integrals for Z  
@@ -1705,7 +1706,7 @@ cbs   the different cases for contracted integrals differ later on in the
 cbs   choice of different sets of contraction coefficients. 
 cbs
 c###############################################################################
-#include <implicit.h>
+#include "implicit.h"
       dimension coeffs(nprims,ncont),    ! original contraction coefficients   
      *coeffst1(nprims,ncont),            ! A * contraction coefficients
      *coeffst1a(nprims,ncont),           ! A * alpha*contraction coefficients
@@ -1859,9 +1860,9 @@ cbs###########################################################################
 cbs   cont prepares all required contraction coefficients for functions 
 cbs   with angular momentum L
 cbs###########################################################################
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
       dimension tkintria((MxprimL*MxprimL+MxprimL)/2)
       logical breit,breit_finite
       breit_finite=.true.

@@ -5,11 +5,11 @@
      *EXP_FIN) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
-#include <implicit.h>
-#include <para.h>
-#include <param.h>
-#include <ired.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "para.h"
+#include "param.h"
+#include "ired.h"
+#include "priunit.h"
       character*4 WORD                         
       character*4 symmetry   
       character*13 Llimit 
@@ -354,10 +354,10 @@ cbs   |  j1+m1        j2+m2            j3+m3             |
 cbs   |                                                  |
 cbs    ---                                            ---
 cbs 
-#include <implicit.h>
+#include "implicit.h"
       dimension MAT(3,3)
       logical testup,testdown
-#include <Regge.h>
+#include "Regge.h"
 cbs  facul,   integer array (nprim,0:mxLinRE) prime-expansion of factorials 
 cbs  mxLinRE,    integer max. number for facul is given
 cbs  nprim,   number of primes for expansion of factorials 
@@ -613,9 +613,9 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with indices one or three  (sigma_+ and sigma_-)- combinations 
 cbs
-#include <implicit.h>
-#include <para.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "para.h"
+#include "priunit.h"
       logical cleaner
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -864,9 +864,9 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with one or three (sigma_+ and sigma_-)  - combinations 
 cbs
-#include <implicit.h>
-#include <priunit.h>
-#include <para.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
 cbs  !!!!!!!!!!!changing now to the order of chemists notation!!!!!!!!!!
@@ -1131,9 +1131,9 @@ cbs   | L,M,-> = -i 2**(-0.5) ( (-1)**M Y(L,M) - Y(L,-M)) ($$$$)
 cbs
 cbs   only angular integrals of type 2 (sigma_0) contribute  
 cbs
-#include <implicit.h>
-#include <priunit.h>
-#include <para.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,
      *-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -1371,7 +1371,7 @@ cbs   makes the transformation for the ich-th index
      *array1, ! array of size (nolds1,nolds2,nolds3,nolds4)
      *array2  ! array of size (nnew1,nnew2,nnew3,nnew4)
      *)
-#include <implicit.h>
+#include "implicit.h"
       dimension coeffs(idim1,idim2),           
      *array1(nolds1,nolds2,nolds3,nolds4),
      *array2(nnew1,nnew2,nnew3,nnew4)
@@ -1449,7 +1449,7 @@ c     write(6,*) 'end  trans '
       return
       end
       subroutine transcon(contold,idim1,idim2,ovlp,contnew,nprim,ncont)
-#include <implicit.h>
+#include "implicit.h"
       dimension contold(idim1,idim2),contnew(nprim,ncont),
      *ovlp(idim1,idim1)
 c     write(6,*) 'begin transcon nprim,ncont ',nprim,ncont 
@@ -1482,8 +1482,8 @@ c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont
       end 
       subroutine two2mean12a(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1530,8 +1530,8 @@ c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont
       
       subroutine two2mean12b(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1581,8 +1581,8 @@ c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont
 cbs   gives the two first contributions
 cbs   < i M | j M >  with Malpha  and Mbeta 
 cbs   the other orbit parts cancel    
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       dimension carteSO(ncontmf,ncontmf,norbsum,norbsum),
      *occup(*),AOcoeffs(MxcontL,*),onecart(MxcontL,MxcontL)
       do icartleft=1,norbsum
@@ -1609,8 +1609,8 @@ c     enddo
       
       subroutine two2mean34a(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),
@@ -1657,8 +1657,8 @@ c     enddo
       
       subroutine two2mean34b(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
-#include <implicit.h>
-#include <para.h>
+#include "implicit.h"
+#include "para.h"
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),

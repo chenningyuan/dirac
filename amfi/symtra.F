@@ -1,35 +1,5 @@
 C
-C...   Copyright (c) 2001 by the authors of Dalton (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of
-C...   "Dalton, a molecular electronic structure program, Release 1.2
-C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
-C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
-C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
-C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
-C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
-C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
-C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
-C...   and O. Vahtras"
-C...
-C...   This source code is provided under a written licence and may be
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may
-C...   be distributed outside the research group of the licence holder.
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence.
-C...
-C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
-C...
-C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
 C
       Subroutine SYMTRAFO(LUPROP,LUPROP2,PROPRI,IPRINT,WRK,LFREE)
 cbs   
@@ -39,10 +9,10 @@ cbs
 cbs   LUPROP has the atomic integrals, LUPROP2 will have the molecular 
 cbs   integrals    
 cbs   
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <para.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "para.h"
       parameter(maxorbs=500)
       parameter(maxcent=40)
       character*8 xa,ya,za,xa2
@@ -75,19 +45,23 @@ c###############################################################################
       xa(4)='X1MNF-SO'
       ya(4)='Y1MNF-SO'
       ZA(4)='Z1MNF-SO'  
+
+      WRITE(LUPRI,'(/2X,A/)')
+     & 'SYMTRAFO: Symmetry adaptation of the AMFI SO-integrals'
 c
 c     read information from SYMINFO   
       ISYMUNIT = 0
       inquire(FILE='SYMINFO',EXIST=EX) 
 
-      if (.not.EX) CALL QUIT('SYMTRAFO: SYMINFO not present. Sorry')
-CMI   if (.not.EX) RETURN
+      IF (.not.EX) THEN
+        WRITE(LUPRI,'(/A)')
+     &  'SYMTRAFO: SYMINFO not present. Sorry'
+        CALL QUIT('SYMTRAFO: SYMINFO not present. Sorry')
+      ENDIF
 
       CALL GPOPEN(ISYMUNIT,'SYMINFO','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       rewind(isymunit)  
-
-      write(LUPRI,*) 'SYMTRAFO: Symmetry adapation of the SO-integrals'
 
       read(isymunit,*)   
       read(isymunit,*)   
@@ -98,7 +72,8 @@ CMI   if (.not.EX) RETURN
       read(isymunit,'(A3)') END   
       enddo    
 
-      write(LUPRI,*) 'there are totally ',numboffunct,' functions' 
+      write(LUPRI,'(2X,A,I4,A)')
+     & 'there are totally ',numboffunct,' functions' 
 
       if (numboffunct.gt.maxorbs) 
      *CALL QUIT('increase maxorbs in symtrafo')
@@ -116,7 +91,8 @@ CBS   read(5,SYMTRA,END=4711)
       enddo 
       CALL GPCLOSE(ISYMUNIT,'KEEP')
 
-      write(LUPRI,*) 'number of unique centres' , numbofcent 
+      write(LUPRI,'(2X,A,I2)')
+     & 'number of unique centres ' , numbofcent 
 c
 c     clean up arrays for new integrals  
       numboffunct3=(numboffunct*numboffunct+numboffunct)/2 
@@ -155,8 +131,8 @@ c
      *        (mcent(i,icent),I=1,numballcart(icent)),
      *        Lhighcent(icent),(ncontcent(I,icent),I=0,Lhighcent(icent))
 
-              write(LUPRI,*) numballcart(icent) , 
-     &        ' functions on centre ',icent
+              write(LUPRI,'(2X,I4,A,I2)') numballcart(icent) , 
+     &        ' functions on the centre ',icent
 
               length3=ipnt(numballcart(icent),numballcart(icent)) 
               ipC(1,iCent)=ipSCRX
@@ -268,8 +244,12 @@ CBS
       endif 
       enddo   
       enddo   
-      if (lauf.ne.numboffunct3) CALL QUIT('error in numbering ')
-*
+
+      if (lauf.ne.numboffunct3)
+     & CALL QUIT('SYMTRAFO: error in numbering ')
+
+C ... control output of integrals....
+
       IPRINT=5
       IF (PROPRI .OR. IPRINT .GT. 4) THEN
          CALL AROUND('Integrals of operator: '//XA(4))
@@ -280,12 +260,18 @@ CBS
          CALL OUTPAK(WRK(IPZ),NUMBOFFUNCT,1,LUPRI)
       END IF
       IPRINT=0
+
+C ... write MNF-SO integrals to the AOPROPER file
       CALL WRTPRO(WRK(IPX),NUMBOFFUNCT3,XA(4),XA(2))
       CALL WRTPRO(WRK(IPY),NUMBOFFUNCT3,YA(4),YA(2))
       CALL WRTPRO(WRK(IPZ),NUMBOFFUNCT3,ZA(4),ZA(2))
+
+      WRITE(LUPRI,'(2X,A)')
+     &'SYMTRAFO: Symmery adapted AMFI integrals have been written'//
+     &' to the AOPROPER file.'
+
       Return
       End 
-
   
       Subroutine Jacobi(A,C,N,LdC)
 ************************************************************************
