@@ -790,6 +790,8 @@ C     **************************************************
 C
       LINEQ     = .FALSE.
 C     ... solve eigenvalue equation!
+      FKRMC     = .FALSE.
+C     ... not KRMC wave function optimization
       LSVCFG(1) = XPP_LSFG(1)
       LSVCFG(2) = XPP_LSFG(2)
       TKNORM    = XPPNRM
@@ -807,7 +809,7 @@ C     ... solve eigenvalue equation!
       ITRINT(1) = ITRIPP(1)
       ITRINT(2) = ITRIPP(2)
       INTDEF    = INTXPP
-C     special LINEQ variables:
+C     special variables only for linear equations (LINEQ true):
       NFREQ     = 0
       STERNH    = .FALSE.
       STATIC    = .FALSE.
