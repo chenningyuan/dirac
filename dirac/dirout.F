@@ -1119,9 +1119,10 @@ C***********************************************************************
 C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
      &          IFIRST(*),NMULT(*)
-      CHARACTER FMTE*6,FMTP*6,MXFORM*6
+      CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*60
       CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
       DIMENSION IOFF(2),ISS(0:7)
+      DIMENSION ISHEL_SUB(3+MXOPEN,MAX_SUB_BL,2)
       LOGICAL   PRPOS
 C
 C
@@ -1228,6 +1229,7 @@ C
      &                      IORB(IFSYM)+NPSH(IFSYM)+1,
      &                      IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
      &                      IBEIG,ID,NEIG,EIGBUF)
+                ISHEL_SUB(1,ISUB,IFSYM) = NEIG
 C
                 IF (NEIG .GT. 0) THEN
                    NTOT = NTOT + NEIG
@@ -1243,6 +1245,7 @@ C
                    CALL PCKEIG(EIG,
      &                  IOFF(IFSYM)+1,IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
      &                  IBEIG,ID,NEIG,EIGBUF)
+                        ISHEL_SUB(1+IOPEN,ISUB,IFSYM) = NEIG
 C
                    IF (NEIG .GT. 0) THEN
                       NTOT = NTOT + NEIG
@@ -1261,6 +1264,7 @@ C
      &                     IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
      &                     IORB(IFSYM)+NORB(IFSYM),
      &                     IBEIG,ID,NEIG,EIGBUF)
+               ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM) = NEIG
 C           
                IF (NEIG .GT. 0) THEN
                   NTOT = NTOT + NEIG
@@ -1273,11 +1277,13 @@ C              Positronic eigenvalues
 C        
 C              Pick eigenvalues of symmetry ISYM
 C     
+               ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = 0
                IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
                   CALL PCKEIG(EIG,
      &                        IORB(IFSYM)+1,
      &                        IORB(IFSYM)+NPSH(IFSYM),
      &                        IBEIG,ID,NEIG,EIGBUF)
+                   ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = NEIG
 C
                   IF (NEIG .GT. 0) THEN
                      NTOT = NTOT + NEIG
@@ -1332,6 +1338,42 @@ C
          END IF
 C
       END IF
+
+
+CMI ... print out occupation of m_j subblocks
+      WRITE(LUPRI,'(/A)') '  Occupation of subblocks' 
+      DO IFSYM=1, NFSYM
+        TLINE = ' '
+        IT = 24
+        WRITE(TLINE(IT:),'(2A)') FREP(IFSYM),': '
+        IT = IT + 5
+        DO ISUB = 1, N_SUB_BL(IFSYM)
+          ID = ID_SUB_BL(ISUB,IFSYM)
+                IF (LEVYLE .OR. SPINFR) THEN
+                   WRITE(TLINE(IT:),'(1X,A)') REP(ID)
+                ELSE
+                   WRITE(TLINE(IT:),'(I2,A)')
+     &                      ABS(ID),'/2 '
+                ENDIF  
+                IT = IT + 5
+        ENDDO
+        WRITE (LUPRI,'(A)') TLINE
+        WRITE(LUPRI,'(A,F6.4,A,16I5)') 
+     &     '  closed shells (f=',DF(0),'):',
+     &     (ISHEL_SUB(1,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
+        DO IOPEN=1,NOPEN
+         WRITE(LUPRI,'(A,I1,A,F6.4,A,16I5)')
+     &     '  open shell #',IOPEN,' (f=',DF(IOPEN),'):',
+     &     (ISHEL_SUB(1+IOPEN,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
+        ENDDO
+        WRITE(LUPRI,'(A,F6.4,A,16I5)')
+     &     ' virtual shells (f=',D0,'):',
+     &     (ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
+        IF (PRPOS) THEN
+        WRITE(LUPRI,'(A,16I5)') '       positronic shells :',
+     &    (ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
+        ENDIF
+      ENDDO
       WRITE(LUPRI,'(/)')
       RETURN
       END
