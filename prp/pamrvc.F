@@ -561,7 +561,7 @@ C     *** Generate FQT, FQX, H2XAC ***
 C     ********************************
 C
 #ifdef MOD_KRMC
-      IF ( NASHT .GT. 1 ) THEN
+      IF (NASHT.GT.1) THEN
          CALL MEMGET('REAL',KFQT,NCSIM * NASHT * NORBT * NZ,
      &        WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KFQX,NOSIM * NASHT * NORBT * NZ,
@@ -590,6 +590,10 @@ C
 C        Dispose PV
 C
          CALL MEMREL('after RGETH2TX',WORK,1,KPV,KFREE,LFREE)
+      ELSE
+        KFQT   = KFREE
+        KFQX   = KFREE
+        KH2ACX = KFREE
       END IF
 C
 C

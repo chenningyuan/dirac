@@ -50,7 +50,6 @@
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *.Output
 #include "glbbas.inc"
-
 *.1 : One electron integrals( Complete matrix allocated )
       CALL MEMMAN(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1  ')
 *. A copy of the original UNMODIFIED 1-elecs ints

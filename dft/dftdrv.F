@@ -491,6 +491,7 @@ C
 C
       DIMENSION CMO(*), FMAT(NORBT,NORBT), WORK(LWORK)
 C
+#include "mx2orb.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
@@ -630,6 +631,7 @@ C  /* Deck dftsol */
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(*)
+#include "mx2orb.h"
 #include "infvar.h"
 #include "inflin.h"
 C
@@ -648,6 +650,7 @@ C  /* Deck dftso1 */
       PARAMETER (FAC = -1.0D0/4.0D0)
       DIMENSION VEC(*), FCK(*)
 #include "nuctap.h"
+#include "mx2orb.h"
 #include "infvar.h"
 #include "inflin.h"
 #include "inforb.h"
