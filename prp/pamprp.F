@@ -424,7 +424,6 @@ C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C
 C***********************************************************************
-Cradovan
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2088,12 +2087,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+C
 #include "dcbprp.h"
 #include "dcbxlr.h"
+C
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-#include "dcbibt.h"
       CALL MEMGET('REAL',KTMPMAT,3*3,WORK,KFREE,LFREE)
+C
       CALL PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
      &                 WORK,KFREE,LFREE)
       CALL MEMREL('PRP_EPOLAR',WORK,1,KFREE,KFREE,LFREE)
@@ -2112,15 +2113,19 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+C
 #include "dcbprp.h"
 #include "dcbxlr.h"
+C
 #include "codata.h"
+C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C
 C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
       PARAMETER (DFAC = XTANG**3)
+      CHARACTER CNVTEXT(3)*16
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
-#include "dcbibt.h"
 C
       CALL AROUND('Electric dipole polarizability')
       WRITE(LUPRI,*)
@@ -2168,23 +2173,51 @@ C             e-p
           ENDDO
         ENDDO
 C
+C
+C       check if converged
+C
+        DO B = 1,3
+          IF(ABCNV(IFREQ,B).LE.THCLR) THEN
+            CNVTEXT(B) = '(converged)'
+          ELSE
+            CNVTEXT(B) = '(NOT converged!)'
+          ENDIF
+        ENDDO
+C
 C       calculate average of trace
-        AVERAGE = (TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3))/D3
+        POLTRACE = TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3)
+        POLAVG = POLTRACE/D3
 C
 C
 C       printout a.u.
 C
-        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
-     &                         'xx', TMPMAT(1,1), 'a.u.'
-        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
-     &                         'yy', TMPMAT(2,2), 'a.u.'
-        WRITE(LUPRI,'(A3,A3,F22.8,A5)') '@  ',
-     &                         'zz', TMPMAT(3,3), 'a.u.'
+        WRITE(LUPRI,'(A3,A3,F22.8,A5,A20)') '@  ',
+     &              'xx', TMPMAT(1,1), 'a.u.', CNVTEXT(1)
+        WRITE(LUPRI,'(A3,A3,F22.8,A5,A20)') '@  ',
+     &              'yy', TMPMAT(2,2), 'a.u.', CNVTEXT(2)
+        WRITE(LUPRI,'(A3,A3,F22.8,A5,A20)') '@  ',
+     &              'zz', TMPMAT(3,3), 'a.u.', CNVTEXT(3)
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A5)') '@  ',
-     &                    'average', AVERAGE, 'a.u.'
+     &              'average', POLAVG, 'a.u.'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
+C
+C
+C       calculate anisotropy
+C
+        POLTRACESQ = TMPMAT(1,1)**D2+TMPMAT(2,2)**D2+TMPMAT(3,3)**D2
+        IF(POLTRACESQ.LE.1.0D-8) POLTRACESQ = D0
+        POLSQTRACE = POLTRACE**D2
+        IF(POLSQTRACE.LE.1.0D-8) POLSQTRACE = D0
+        POLANISO = DSQRT(ABS((D1/D2)*(D3*POLTRACESQ-POLSQTRACE)))
+C
+C
+C       print anisotropy
+C
+        WRITE(LUPRI,'(A3,A11,F14.8,A5)') '@  ',
+     &              'anisotropy', POLANISO, 'a.u.'
+        WRITE(LUPRI,'(A)') '@'
 C
 C
 C       convert to SI units
@@ -2196,20 +2229,20 @@ C
         ENDDO
 C
 C       convert average of trace
-        AVERAGE = AVERAGE*DFAC
+        POLAVG = POLAVG*DFAC
 C
 C
 C       printout SI
 C
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &                         'xx', TMPMAT(1,1), '1.0E30/m**3'
+     &              'xx', TMPMAT(1,1), '1.0E30/m**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &                         'yy', TMPMAT(2,2), '1.0E30/m**3'
+     &              'yy', TMPMAT(2,2), '1.0E30/m**3'
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
-     &                         'zz', TMPMAT(3,3), '1.0E30/m**3'
+     &              'zz', TMPMAT(3,3), '1.0E30/m**3'
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
-     &                    'average', AVERAGE, '1.0E30/m**3'
+     &              'average', POLAVG, '1.0E30/m**3'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
 C
@@ -2218,6 +2251,7 @@ C
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',46,0)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
