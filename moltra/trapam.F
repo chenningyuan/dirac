@@ -3657,6 +3657,7 @@ C
             CALL MPI_RECV(EBUF,1,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
             EMP2 = EMP2 + EBUF
+C           Should it be MPI_REAL instead? /jth - Dec 1 2000
             CALL MPI_RECV(TIM1(1,NODE),7,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           ENDIF
@@ -3673,6 +3674,7 @@ C
         IF(LMP2) THEN
           CALL MPI_SEND(EMP2,1,MPI_DOUBLE_PRECISION,
      &          MPARID,40,MPI_COMM_WORLD,IERR)
+C           Should it be MPI_REAL instead? /jth - Dec 1 2000
           CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
      &          MPARID,40,MPI_COMM_WORLD,IERR)
         ENDIF
