@@ -1189,7 +1189,8 @@ C                 =======================================================
 C
                   CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST)
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                 CNTBAS)
 C
                ENDIF
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
@@ -6176,7 +6177,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
       SUBROUTINE KINBAL(I,IBLL,IBLS,
      &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST)
+     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST, 
+     &     CNTBAS)
 C*****************************************************************************
 C
 C      Generate small component functions from large using the
@@ -6185,8 +6187,10 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
+#include <ccom.h>
 C
-      LOGICAL SEG,INPTST
+      LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
@@ -6211,9 +6215,29 @@ C
             IBD = IBD + 1
             IF(IDOWN(ISGEN(IBD)).EQ.1
      $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 )  THEN
-              IBS = IBS + 1
-              CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST)
+              IF (CNTBAS) THEN
+                MXDUM = 50 - MOD(50, KHK(J))
+                MAXS = MAX((MXDUM/KHK(J)),1)
+                IBJCO=1+(NUC(IBD,1)-1)/MAXS
+                JSEND = 0
+                DO JBLCK=1, IBJCO
+	          JSBEG = JSEND
+                  IBS = IBS + 1
+                  IF (JBLCK*MAXS.LE.NUC(IBD,1)) THEN
+                    JSEND = JSEND + MAXS
+                  ELSE
+                    JSEND = NUC(IBD,1)
+                  ENDIF
+                  CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)                
+                ENDDO
+              ELSE
+                JSBEG = 0
+                JSEND = NUC(IBD,1)
+                IBS = IBS + 1
+                CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+              ENDIF
             ENDIF
           ENDDO
         ENDIF
@@ -6225,9 +6249,29 @@ C
             IBU = IBU + 1
             IF(IUP(ISGEN(IBU)).EQ.1
      $           .OR. IDOWN(ISGEN(IBU)) .EQ. 0 ) THEN
-              IBS = IBS + 1
-              CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                    SEG,KBLOCK,KPRIM,INPTST)
+              IF (CNTBAS) THEN
+                MXDUM = 50 - MOD(50, KHK(J))
+                MAXS = MAX((MXDUM/KHK(J)),1)
+                IBJCO=1+(NUC(IBU,1)-1)/MAXS
+                JSEND = 0
+                DO JBLCK=1, IBJCO
+                  JSBEG = JSEND
+                  IBS = IBS + 1
+                  IF (JBLCK*MAXS.LE.NUC(IBU,1)) THEN
+                    JSEND = JSEND + MAXS
+                  ELSE
+                    JSEND = NUC(IBU,1)
+                  ENDIF
+                  CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+                ENDDO
+              ELSE
+                JSBEG = 0
+                JSEND = NUC(IBU,1)
+                IBS = IBS + 1
+                CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
+              ENDIF
             ENDIF
           ENDDO
         ENDIF
@@ -6241,7 +6285,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gensml */
       SUBROUTINE GENSML(IQM,IBL,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                  SEG,KBLOCK,KPRIM,INPTST)
+     &                  SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
 C*****************************************************************************
 C
 C
@@ -6267,7 +6311,7 @@ C
 C     Remove small component basis functions already present.
 C
       NUC_IBS = 0
-      DO I = 1,NUC(IBL,1)
+      DO I = JSBEG + 1,JSEND
          ALPTEST = ALPHA(I,IBL,1)
 C
          DO J = IBJ+1,IBS-1
@@ -6282,10 +6326,10 @@ C
 C
   100 CONTINUE
       END DO
-      IF (NUC(IBL,1) .NE. NUC_IBS) THEN
+      IF ((JSEND-JSBEG) .NE. NUC_IBS) THEN
          WRITE(LUPRI,'(A,I3,A,I3)')
-     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
-     &   ' small functions in a block out of',NUC(IBL,1)
+     &   ' INFO: GENSML deleted',(JSEND-JSBEG) - NUC_IBS,
+     &   ' small functions in a block out of',(JSEND-JSBEG)
       END IF
       IF (NUC_IBS .EQ. 0) THEN
 C
@@ -6342,7 +6386,7 @@ C     Generates array IRKB running over shells
 C       For large shells IRKB points to L+1 small partner
 C       For small shells IRKB points to L-2 small partner
 C       or to the L-1 large partner if the L-2 small partner does
-C       not exist (pointer is negative in this case). 
+C       not exist (pointer is negative in this case).
 C
 C     Written by Jon K. Laerdahl 05.12.1996
 C     Major surgery by T.Saue May 5 1998
@@ -6390,6 +6434,7 @@ C        Skip primitives we've already processed.
 C
          IF (iPrimStart .EQ. iPrimTest) GO TO 100
          iPrimTest = iPrimStart
+C
 C
 C        Loop over primitives in this shell.
 C
@@ -6450,8 +6495,8 @@ C
                         IRKB(IPRIM) = JSH2M
                      ENDIF
 C
-C                    Match large component to L+1 small function and 
-C                    vice versa. The initialization of the SC is 
+C                    Match large component to L+1 small function and
+C                    vice versa. The initialization of the SC is
 C                    overwritten if an (L-1) SC does also exist. It
 C                    serves to check whether this SC is used to balance
 C                    by itself.
