@@ -747,7 +747,7 @@ if [ -z "$optblas" ] ; then
    esac
 else
    $echo 'Use of an optimized BLAS implementation is very important for the performance of MOLTRA and RELCCSD'
-   $echo 'We propose to use the implementation in $optblas. Is this OK ? [y]/n \c'
+   $echo "We propose to use the implementation in $optblas. Is this OK ? [y]/n \c"
    read defblas
    case "$defblas" in
    "no" | "n" | "N" )
