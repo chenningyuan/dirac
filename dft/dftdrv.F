@@ -115,6 +115,7 @@ C
 #if defined (VAR_MPI)
       ENDIF
 #endif
+      IF (DOATR) THEN
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
@@ -128,6 +129,7 @@ C       Insert half-phases
           ENDIF
           ENDDO
         ENDIF
+      ENDIF
       DO IM = 1,NXCMAT
       IF(IHRMOP(IM).EQ.1) THEN
         DO I = 1, NTBAS(0)
