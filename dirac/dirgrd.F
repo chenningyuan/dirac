@@ -1372,7 +1372,7 @@ C
         CALL HEADER('Kinetic energy integral gradient',-1)
         LABEL(1) = 'Momentum'
         LABEL(2) = 'Beta mtx.'
-        CALL PRIGDR(GRADKN,2,CSTRA,SCTRA,LABEL)
+        CALL PRIGDR(GRADKN,2,CSTRA,SCTRA,LABEL,' ')
 C
 C       Nuclear attraction
 C       ==================
@@ -1380,7 +1380,7 @@ C
         CALL HEADER('Nuclear attraction integral gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
-        CALL PRIGDR(GRADNU,2,CSTRA,SCTRA,LABEL)
+        CALL PRIGDR(GRADNU,2,CSTRA,SCTRA,LABEL,' ')
 C
 C       Reorthonormalization gradient
 C       =============================
@@ -1388,7 +1388,7 @@ C
         CALL HEADER('Reorthonormalization gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
-        CALL PRIGDR(GRADRO,2,CSTRA,SCTRA,LABEL)
+        CALL PRIGDR(GRADRO,2,CSTRA,SCTRA,LABEL,' ')
 C
 C       Two-electron gradient
 C       =====================
@@ -1397,7 +1397,7 @@ C
         LABEL(1) = 'LL'
         LABEL(2) = 'LS'
         LABEL(3) = 'SS'
-        CALL PRIGDR(GRADER,3,CSTRA,SCTRA,LABEL)
+        CALL PRIGDR(GRADER,3,CSTRA,SCTRA,LABEL,' ')
 C
 C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
@@ -1414,13 +1414,13 @@ C
               WRITE(LUPRI,'(/A)') 'SCC gradient is used, since '//
      &                            'SS-gradient is NOT calculated.'
            END IF 
-           CALL PRIGDR(GRADLV,0,CSTRA,SCTRA,LABEL)
+           CALL PRIGDR(GRADLV,0,CSTRA,SCTRA,LABEL,' ')
         END IF
 C       Nuclear repulsion
 C       =================
 C
         CALL HEADER('Nuclear repulsion gradient',-1)
-        CALL PRIGDR(GRADNN,0,CSTRA,SCTRA,LABEL)
+        CALL PRIGDR(GRADNN,0,CSTRA,SCTRA,LABEL,' ')
 C
 C
       END IF
@@ -1435,8 +1435,8 @@ C
       IF ( DO2GRD(2) .AND. .NOT. DO2GRD(3) ) THEN
          CALL ADDGRD(GRADLV)
       END IF
-      CALL HEADER('Total molecular gradient',-1)
-      CALL PRIGDR(GRDMOL,0,CSTRA,SCTRA,LABEL)
+      CALL HEADE2('Total molecular gradient','@',-1)
+      CALL PRIGDR(GRDMOL,0,CSTRA,SCTRA,LABEL,'@')
 C
 C
       CALL FLSHFO(LUPRI)
@@ -2050,7 +2050,7 @@ C
       RETURN
       END
 C  /* Deck prigdr */
-      SUBROUTINE PRIGDR(GRAD,ICOMPO,CSTRA,SCTRA,LABEL)
+      SUBROUTINE PRIGDR(GRAD,ICOMPO,CSTRA,SCTRA,LABEL,CFIRST)
 C
 C     Written by Joern Thyssen 1997/06/20
 C     Last revision: 1997/06/20 jth
@@ -2061,6 +2061,7 @@ C     GRAD is asummed to be an array GRAD(MXCOOR,ICOMPO), where
 C     (1) GRAD(0) is total gradient
 C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
+C     CFIRST is the first character printed on each line
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -2075,6 +2076,7 @@ C
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
       CHARACTER*10  TLABEL
+      CHARACTER*1   CFIRST
 C
       DIMENSION DNORM(0:3)
 C
@@ -2088,10 +2090,10 @@ C
          DO 100 IATOM = 1, NUCDEP
             TLABEL = 'Total     '
             IF ( ICOMPO .EQ. 0 ) TLABEL = '          '
-            WRITE (LUPRI,1000) NAMDEP(IATOM),TLABEL,
+            WRITE (LUPRI,1000) CFIRST,NAMDEP(IATOM),TLABEL,
      &                         (GRAD(IOFF+J,0),J=1,3)
             DO K = 1, ICOMPO
-               WRITE (LUPRI,1000) '      ',LABEL(K),
+               WRITE (LUPRI,1000) CFIRST,'      ',LABEL(K),
      &                            (GRAD(IOFF+J,K),J=1,3)
             END DO
             IF ( ICOMPO .GT. 0 ) WRITE(LUPRI,'()')
@@ -2115,10 +2117,10 @@ C
          END DO
          IOFF = 0
          DO 300 IATOM = 1, NUCDEP
-            WRITE (LUPRI,1000) NAMDEP(IATOM),TLABEL,
+            WRITE (LUPRI,1000) CFIRST,NAMDEP(IATOM),TLABEL,
      &                         (CGRAD(IOFF+J,0),J=1,3)
             DO K = 1, ICOMPO
-               WRITE (LUPRI,1000) '      ',LABEL(K),
+               WRITE (LUPRI,1000) CFIRST,'      ',LABEL(K),
      &                            (CGRAD(IOFF+J,K),J=1,3)
             END DO
             IF ( ICOMPO .GT. 0 ) WRITE(LUPRI,'()')
@@ -2145,5 +2147,27 @@ C
       WRITE (LUPRI,'(//)')
       CALL FLSHFO(LUPRI)
       RETURN
- 1000 FORMAT (1X,A6,1X,A10,F17.10,2F21.10)
+ 1000 FORMAT (A1,A6,1X,A10,F17.10,2F21.10)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck heade2 */
+      SUBROUTINE HEADE2(HEAD,CFIRST,IN)
+C*****************************************************************************
+C
+C     Print header like SUBR HEADER
+C     except for the first character being CFIRST
+C
+      CHARACTER HEAD*(*), CFIRST*1
+#include <priunit.h>
+C
+      LENGTH = LEN(HEAD)
+      IF (IN .GE. 0) THEN
+         INDENT = IN + 1
+      ELSE
+         INDENT = (72 - LENGTH)/2 + 1
+      END IF
+      WRITE (LUPRI, '(//,80A)') CFIRST,(' ',I=1,INDENT), HEAD
+      WRITE (LUPRI, '(80A)') CFIRST,(' ',I=1,INDENT), ('-',I=1,LENGTH)
+      WRITE (LUPRI, '()')
+      RETURN
       END
