@@ -209,14 +209,14 @@ C     Read coefficients
       ELSEIF(TEST) THEN
         CALL MEMGET('REAL',KC,NC,WORK,KFREE,LFREE)
         CALL READT(IUNIT,NC,WORK(KC))
-        JC = KC + 1
+        JC = KC 
         DO IFRP = 1,NFSYM
           CALL ADACMO(NFBAS(IFRP,0),NZ,
      &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         WORK(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
           JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
         ENDDO
-        CALL MEMREL('REACMO.cf',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
       ELSE
         READ (IUNIT,END=30,ERR=40) CMO
       ENDIF
@@ -225,14 +225,14 @@ C     Read eigenvalues
       IF(TEST) THEN
         CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
         CALL READT(IUNIT,NO,WORK(KO))
-        JO = KO + 1
+        JO = KO 
         DO IFRP = 1,NFSYM
           CALL ADAEIG(
      &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         WORK(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
           JC = JC + IDIM(3,IFRP)
         ENDDO
-        CALL MEMREL('REACMO.eig',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('REACMO.eig',WORK,KO,KO,KFREE,LFREE)
       ELSE
         READ (IUNIT,END=50,ERR=60) EIG
       ENDIF
@@ -242,7 +242,7 @@ C     Read single group irrep (spinfree and Levy-Leblond calcs)
         CALL MEMGET('INTE',KO,NO,WORK,KFREE,LFREE)
         CALL READI(IUNIT,NO,WORK(KO))
         CALL ADAIBP(IBEIG,WORK(KO),IDIM)
-        CALL MEMREL('REACMO.ibos',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('REACMO.ibos',WORK,KO,KO,KFREE,LFREE)
       ELSE
         READ (IUNIT,END=70,ERR=80) IBEIG
       ENDIF
@@ -885,13 +885,15 @@ C     Positronic part
           CALL DZERO(CF1(1,IV1,IZ),NN)
         ENDDO
         IV1 = IV1 + NR
+      ELSE
+        IV2 = 1-NR
       ENDIF
       NN = NB*NC
-      DO IZ = 1,NZ
+      DO IZ = 1,NZf
         CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
       ENDDO
 C     Electronic part
-      IV1 = NP1 + 1
+      IV1 = IV1 + NC
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
@@ -929,10 +931,12 @@ C     Positronic part
       IF(NR.GT.0) THEN
         CALL DZERO(EIG1(IV1),NR)
         IV1 = IV1 + NR
+      ELSE
+        IV2 = 1-NR
       ENDIF
       CALL DCOPY(NC,EIG2(IV2),1,EIG1(IV1),1)        
 C     Electronic part
-      IV1 = NP1 + 1
+      IV1 = IV1 + NC
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
@@ -989,10 +993,12 @@ C     Positronic part
       IF(NR.GT.0) THEN
         CALL IZERO(IBO1(IV1),NR)
         IV1 = IV1 + NR
+      ELSE
+        IV2 = 1-NR
       ENDIF
       CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)        
 C     Electronic part
-      IV1 = NP1 + 1
+      IV1 = IV1 + NC
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2

@@ -8,8 +8,9 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-time $PAM_PATH/pam -rmscr -rmwrk -mw 4 $MPIARG HeH+ HeH+
+#time $PAM_PATH/pam -rmscr -rmwrk -mw 4 $MPIARG HeH+ HeH+
 time $PAM_PATH/pam -rmscr -mw 12 $MPIARG -basdir `pwd` \
    1.3.5_trisilacyclohexane 1.3.5_trisilacyclohexane
+exit 0
 time $PAM_PATH/pam -rmscr -mw 10 $MPIARG -basdir `pwd` \
    acetone acetone 
