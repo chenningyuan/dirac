@@ -209,7 +209,7 @@ C 62: No combinations of degenerate initial vectors
       INIDEG = 0
 C
 C 64: Length of batches of C vectors
-      LCSBLK = 13 000 000
+      LCSBLK = 1 000 000
 C
 C 74: Density matrices requested
       CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
