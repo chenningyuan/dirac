@@ -25,14 +25,9 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dgroup.h"
+#include "functionals.h"
       LOGICAL DOERG, DOGRD, DOLND, DOATR
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
-#else
-      DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
-#endif
-      DIMENSION DMAT(N2BBASX,NZ,*),
+      DIMENSION DMAT(N2BBASX,NZ,*),EXCMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
 C
@@ -68,14 +63,22 @@ C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
       IF (DOATR) THEN
         CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
-C       Insert half-phases
+C       Insert half-phases:
+C       The symmetry scheme tries to pack the real symemtric and three 
+C       imaginary anti-symmetric matrices of the original quaternion 
+C       matrix. The DFT contribution goes into the real part. 
+C       For a totally symmetric density (IREPOP=0) the DFT contribution 
+C       will go into the first packed matrix (IZ=1) having the correct
+C       symmetry about the diagonal, but this is not generally true.
+C       The insertion of half-phases assures the correcy symmetry about
+C       the diagonal for the appropriate symmetry blocks...
         IF(NZ.LT.4) THEN
-           DO IM = 1,NXCMAT
+          DO IM = 1,NXCMAT
             IREPOP = ISYMOP(IM)-1
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
               CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
             ENDDO
           ENDDO
         ENDIF
@@ -115,6 +118,7 @@ C
 #if defined (VAR_MPI)
       ENDIF
 #endif
+      IF(DFTISGGA()) CALL SYMSYM(EXCMAT,NXCMAT,ISYMOP,IHRMOP)
       IF (DOATR) THEN
 C       Insert half-phases
         IF(NZ.LT.4) THEN
@@ -124,23 +128,15 @@ C       Insert half-phases
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
               CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
-              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,IZ,IM))
             ENDDO
           ENDIF
           ENDDO
         ENDIF
       ENDIF
-      DO IM = 1,NXCMAT
-      IF(IHRMOP(IM).EQ.1) THEN
-        DO I = 1, NTBAS(0)
-          DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1,IM) + EXCMAT(J,I,1,IM))
-            EXCMAT(I,J,1,IM) = AVERAG 
-            EXCMAT(J,I,1,IM) = AVERAG 
-          ENDDO
-        ENDDO
-      ENDIF
-      ENDDO
+C
+C     Symmetrize matrices
+C     ..include DOGGA check !
 C
 C     Rescale density matrices
 C
@@ -499,13 +495,14 @@ C       Exchange-correlation contribution to Kohn-Sham matrix
 C       =====================================================
 C
         IF (DOERG) THEN
+          IREPOP = 0
           IF (DOGGA .AND. .NOT.FROMVX) THEN
             DO I = 1,3
               VT(I) = VX(FZ0)*RHG(I)
             ENDDO
-            CALL DOEXC2(VX(FR0),VT,EXCMAT,GAO,GAO1)      
+            CALL DOEXC2(VX(FR0),VT,IREPOP,EXCMAT,GAO,GAO1)      
           ELSE
-            CALL DOEXC1(VX(FR0),0,EXCMAT,GAO)
+            CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
           END IF
         END IF
 C
@@ -839,28 +836,26 @@ C
       MC = 2
       IF(LEVYLE) MC = 1      
       DO 10 IRP1 = 0,NBSYM-1
-        DO 20 IRP2 = 0,NBSYM-1
-          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
-          DO 30 IC = 1,MC
-            NB1 = NBBAS(IRP1,IC)
-            IF(NB1.EQ.0) GOTO 30
-             NB2 = NBBAS(IRP2,IC)
-            IF(NB2.EQ.0) GOTO 30
-            JB1 = IBBAS(IRP1,IC)
-            JB2 = IBBAS(IRP2,IC)
-            DO J = 1, NBBAS(IRP2,IC)
-              GVXC = VXC*GAO(JB2+J)
-              CALL DAXPY(NBBAS(IRP1,IC),GVXC,
-     &                   GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
-            ENDDO
-   30     CONTINUE
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        DO 20 IC = 1,MC
+          NB1 = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB1 = IBBAS(IRP1,IC)
+          JB2 = IBBAS(IRP2,IC)
+          DO J = 1, NBBAS(IRP2,IC)
+            GVXC = VXC*GAO(JB2+J)
+            CALL DAXPY(NBBAS(IRP1,IC),GVXC,
+     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
+          ENDDO
    20   CONTINUE
    10 CONTINUE
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck doexc2 */
-      SUBROUTINE DOEXC2(SXC,VXC,EXCMAT,GAO,GAO1)      
+      SUBROUTINE DOEXC2(SXC,VXC,IREPOP,EXCMAT,GAO,GAO1)      
 C***********************************************************************
 C
 C     Construct the matrix
@@ -891,29 +886,29 @@ C
      &          GAO1(NTBAS(0),3)
 #endif
       DIMENSION VXC(3)
+#include "ibtfun.h"
 C      
       MC = 2
       IF(LEVYLE) MC = 1      
-      NBRP = 4/NZ
-      DO IFRP = 1,NFSYM
-        DO IC = 1,MC
-          IP = MOD(IFRP+IC,NFSYM) + 1
-          DO JSYM = 1,NBRP
-            IREP = JFSYM(JSYM,IP) - 1
-            IF(NBBAS(IREP,IC).GT.0) THEN
-              JJ = IBBAS(IREP,IC)
-              DO J = 1, NBBAS(IREP,IC)
-                FC = SXC*GAO(JJ+J)
-                DO I = 1,3
-                  FC = FC + VXC(I)*GAO1(JJ+J,I)
-                ENDDO
-                CALL DAXPY(NBBAS(IREP,IC),FC,
-     &                     GAO(JJ+1),1,EXCMAT(JJ+1,JJ+J),1)            
-              ENDDO
-            ENDIF
+      DO 10 IRP1 = 0,NBSYM-1
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        DO 20 IC = 1,MC
+          NB1 = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 20
+          NB2 = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 20
+          JB1 = IBBAS(IRP1,IC)
+          JB2 = IBBAS(IRP2,IC)
+          DO J = 1, NBBAS(IRP2,IC)
+            FC = SXC*GAO(JB2+J)
+            DO I = 1,3
+              FC = FC + VXC(I)*GAO1(JB2+J,I)
+            ENDDO
+            CALL DAXPY(NBBAS(IRP1,IC),FC,
+     &                 GAO(JB1+1),1,EXCMAT(JB1+1,JB2+J),1)            
           ENDDO
-        ENDDO
-      ENDDO
+   20   CONTINUE
+   10 CONTINUE
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -935,6 +930,80 @@ C
       DIMENSION DMAT(N2BBASX,NZ,NFMAT)
       DO ISHELL = 1, NOPEN
         CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Symsym */
+      SUBROUTINE SYMSYM(AMAT,NMAT,ISYMOP,IHRMOP)
+C***********************************************************************
+C
+C     Symmetrize only specific symmetry blocks of a matrix
+C
+C     Written by T. Saue Mar 10 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AMAT(NBAST,NBAST,NZ,NMAT)
+#else
+      DIMENSION AMAT(NTBAS(0),NTBAS(0),NZ,NMAT)
+#endif
+
+      DIMENSION ISYMOP(NMAT),IHRMOP(NMAT)
+#include "ibtfun.h"
+C
+      MC = 2
+      IF(LEVYLE) MC = 1      
+      DO IM = 1,NMAT
+      IF(IHRMOP(IM).EQ.1) THEN
+        IREPOP = ISYMOP(IM)-1
+        DO 10 IRP1 = 0,NBSYM-1
+          IRP2 = IBTXOR(IRP1,IREPOP)
+          IF(IRP2.LT.IRP1) THEN
+          DO 20 IC = 1,MC
+            NB1 = NBBAS(IRP1,IC)
+            IF(NB1.EQ.0) GOTO 20
+            NB2 = NBBAS(IRP2,IC)
+            IF(NB2.EQ.0) GOTO 20
+            JB1 = IBBAS(IRP1,IC)
+            JB2 = IBBAS(IRP2,IC)
+            DO I = 1,NB1
+              II = JB1+I
+              DO J = 1,NB2
+                JJ = JB2+J
+                AVERAG = DP5*(AMAT(II,JJ,1,IM) + AMAT(JJ,II,1,IM))
+                AMAT(II,JJ,1,IM) = AVERAG 
+                AMAT(JJ,II,1,IM) = AVERAG 
+              ENDDO
+            ENDDO
+   20     CONTINUE
+          ELSEIF(IRP2.EQ.IRP1) THEN
+          DO 30 IC = 1,MC
+            NB = NBBAS(IRP1,IC)
+            IF(NB.EQ.0) GOTO 30
+            JB = IBBAS(IRP1,IC)
+            DO I = 1,NB
+              II = JB+I
+              DO J = 1,I-1
+                JJ = JB+J
+                AVERAG = DP5*(AMAT(II,JJ,1,IM) + AMAT(JJ,II,1,IM))
+                AMAT(II,JJ,1,IM) = AVERAG 
+                AMAT(JJ,II,1,IM) = AVERAG 
+              ENDDO
+            ENDDO
+   30     CONTINUE
+          ENDIF
+   10   CONTINUE
+      ENDIF
       ENDDO
 C
       RETURN
@@ -1239,7 +1308,6 @@ C-----------------------
 C     Send data
 C-----------------------
 C
-      WRITE(0,*) 'Sending NXCMAT..',NXCMAT
       CALL MPI_BCAST(NXCMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 C     Transfer various COMMON blocks
       CALL DFTPRD

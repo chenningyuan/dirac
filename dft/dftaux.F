@@ -76,7 +76,7 @@ C
 
 C           Linear transformation
 C
-            CALL DOEXC2(SXC,VT,EXCMAT(1,1,1,IM),GAO,GAO1)      
+            CALL DOEXC2(SXC,VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)      
 CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
           END IF
         END IF
