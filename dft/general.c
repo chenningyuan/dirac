@@ -31,6 +31,7 @@
 #include "general.h"
 #include "functionals.h"
 #include "inforb.h"
+#include "dcbham.h"
 
 #ifdef VAR_MPI
 #include <mpi.h>
@@ -55,6 +56,18 @@ static char* DftConfString = NULL;
 static char* EmbXcConfString = NULL;
 static char* EmbKinConfString = NULL;
 
+static void
+dft_set_hf_weight(real hfxfac)
+{
+  dcrham_.hfxfac = hfxfac;
+}
+
+static real
+dft_get_hf_weight(void)
+{
+    return dcrham_.hfxfac;
+}
+
 static int
 dft_func_input (const char* line, int* inperr, int len, char** ConfString,
                 Functional* avail[], Functional** func);
@@ -62,6 +75,10 @@ dft_func_input (const char* line, int* inperr, int len, char** ConfString,
 int
 FSYM(dftinput)(const char* line, int * inperr, int len)
 {
+    fun_printf        = fort_print;
+    fun_set_hf_weight = dft_set_hf_weight;
+    fun_get_hf_weight = dft_get_hf_weight;
+    /* fun_set_cam_param = dal_set_cam_param; */
     return dft_func_input (line, inperr, len, &DftConfString,
                            available_functionals, &selected_func); 
 }
