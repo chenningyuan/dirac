@@ -215,7 +215,7 @@ C.........Transform property matrix to fragment orbital basis
      &                  WORK,KFREE,LFREE)
             CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,2),NP(1,1),
-     &                  NR,MREFS,NREFS,WORK(KFMAT),WORK(KINDX),
+     &                  NR,MREFS,WORK(KFMAT),WORK(KINDX),
      &                  IPREXP,PMAT,WORK,KFREE,LFREE)
           ENDIF
  30       CONTINUE
@@ -241,19 +241,18 @@ C
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
           CALL PRSYMB(LUPRI,'-',60,4)
-          WRITE(LUPRI,'(4X,A16,A44)')
-     &          PRPNAM(INDXPR),
-     &          ' : Expectation value for individual orbitals'
+          CALL HEADER('Operator '//PRPNAM(INDXPR)//':',0)            
+          CALL HEADER('Expectation value for individual orbitals',-1)
           EXPVAL(I) = D0
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
-            DO J = 1,NOCC(IFRP)
-              CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
-              CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
+            CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
      &          IREP,ITIM,PTRI,PMAT,FIRST,
      &          WORK(KFREE),LFREE,IPREXP)
-CMI  &          WORK(KFREE),LFREE,IPRONE)
-              IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
+            IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
+            DO J = 1,NOCC(IFRP)
+              CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
+              EXPBUF = D0
               CALL PRPEX3(EXPBUF,IREP,ITIM,
      &          DMAT,PMAT,PTRI,FIRST,ORBANA,
      &          WORK(KFREE),LFREE,IPREXP)
@@ -265,6 +264,16 @@ CMI  &          WORK(KFREE),LFREE,IPRONE)
      &          FREP(IFRP),J,EXPBUF,'a.u.'
               CALL FLSHFO(LUPRI)
             ENDDO
+            IF(PRJANA) THEN
+C...........Transform property matrix to fragment orbital basis
+            CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
+     &                  INDXPR,IREP,ITIM,NP(1,2),FIRST,IPREXP,
+     &                  WORK,KFREE,LFREE)
+            CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
+     &                  WORK(KIBUF),INDXPR,NP(1,2),NP(1,1),
+     &                  NR,MREFS,WORK(KFMAT),WORK(KINDX),
+     &                  IPREXP,PMAT,WORK,KFREE,LFREE)
+            ENDIF
  10       CONTINUE
  20       CONTINUE
           CALL PRSYMB(LUPRI,'-',60,4)
@@ -294,7 +303,10 @@ C  /* Deck prpex2 */
      &           PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C     Calculate expectation values defined in /CBIEXP/
+C     For totally symmetric operators return property matrix;
+C     for other symmetries return .FALSE. in
+C         LEXPST(1) - molecular point group symmetry
+C     or  LEXPST(2) - time reversal symmetry
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
@@ -372,6 +384,7 @@ C
 C     Get expectation value, using only the matrices containing
 C     integrals
 C
+      CALL DZERO(PMAT,N2BBASX)
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
         IQ = IPQTOQ(IZ,IREP)
@@ -477,7 +490,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
       SUBROUTINE PRJEX2(PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NREF,NMO,
-     &                  NR,MREFS,NREFS,FMAT,INDX,
+     &                  NR,MREFS,FMAT,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -496,6 +509,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),PAO(N2BBASX),NREF(*),NMO(*),
      &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
@@ -504,7 +518,7 @@ C
       N2REF = NREFS*NREFS
       CALL DZERO(FMAT,N2REF)
 C
-C     Make densitry matrix in fragment orbitals
+C     Make density matrix in fragment orbitals
 C
       IPD = 1
       IPR = 1
@@ -528,8 +542,8 @@ C
      &         NREF(IFRP),NREF(IFRP),NZ,
      &         IPQTOQ(1,0),LUPRI)
         ENDIF
-        CALL PRJEX3(PTRI,PFO(IPF),DFO(IPD),NREF(IFRP),IBUF,PBUF,
-     &              FMAT,INDX,NREFS,INDXPR,IPRINT)
+        CALL PRJEX3(EXPVAL,PTRI,PFO(IPF),DFO(IPD),NREF(IFRP),
+     &              IBUF,PBUF,FMAT,INDX,NREFS,INDXPR,IPRINT)
         IPD = IPD + NREF(IFRP)*NREF(IFRP)*NZ
         IPF = IPF + NREF(IFRP)*NREF(IFRP)*NZ
         IPR = IPR + NREF(IFRP)*NMO(IFRP)*NZ
@@ -537,12 +551,18 @@ C
 C
 C     Give fragment contributions
 C
-      WRITE(LUPRI,'(/A/)') '* Total fragment contributions..'
+      CALL HEADER('* Total fragment contributions',-1)
       DO J = 1,NREFS
         DO I = 1,(J-1)
-          WRITE(LUPRI,'(2I5,E16.8)') I,J,D2*(FMAT(I,J)+FMAT(J,I))
+          TMP = D2*(FMAT(I,J)+FMAT(J,I))
+          FAC = TMP/EXPVAL
+          WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+     &      I,REFFIL(I),J,REFFIL(J),TMP,FAC
         ENDDO
-        WRITE(LUPRI,'(2I5,E16.8)') J,J,D2*FMAT(J,J)
+        TMP = D2*FMAT(J,J)
+        FAC = TMP/EXPVAL
+        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+     &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
       ENDDO
       RETURN
       END
@@ -1025,7 +1045,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck prjex3 */
-      SUBROUTINE PRJEX3(PTRI,PFO,DFO,NREF,IBUF,PBUF,
+      SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NREF,IBUF,PBUF,
      &                  FMAT,INDX,NREFS,INDXPR,IPRINT)
 C***********************************************************************
 C
@@ -1073,21 +1093,21 @@ C
 C
 C     Make ordered list of contributions
 C
-      CALL HEADER('Ordered list fo contributions',-1)            
+      CALL HEADER('Ordered list of contributions',-1)            
       DO IJ = 1,NTRI
         PBUF(IJ) = -ABS(PTRI(IJ))
       ENDDO
       CALL INDEXX (NTRI,PBUF,IBUF)
       TMP = D0      
       WRITE(LUPRI,'(A)')
-     &  ' Ind1 Ind2  Contribution    Accumulated     Fraction'
+     &  ' Ind1 Ind2  Contribution    Accumulated       Fraction'
       DO M = 1,NTRI
         IJ = IBUF(M)
         J  = INT(SQRT(SDPRE(2*IJ) + 0.25D0) + 0.4999D0)
         I  = IJ - J*(J-1)/2
         TMP = TMP + PTRI(IJ)
         FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(2I5,2E16.8,F8.4)') I,J,PTRI(IJ),TMP,FAC
+        WRITE(LUPRI,'(2I5,2E16.8,F10.4)') I,J,PTRI(IJ),TMP,FAC
       ENDDO
       RETURN
       END
