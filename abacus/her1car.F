@@ -36,7 +36,7 @@ C  /* Deck oneprm */
      &                  RLMINT,RLMTAB,FCM,
      &                  WORK,LWORK,IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &                  GNUEXP,JCENTC,NCENTC)
+     &                  GEXP,JCENTC,NCENTC)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -47,7 +47,7 @@ C
      &          STDER2(KCKTAB,6,2),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
-     &          RLMINT(*), RLMTAB(*), FCM(*),GNUEXP(*)
+     &          RLMINT(*), RLMTAB(*), FCM(*),GEXP(*)
 #ifdef PRG_DIRAC
       DIMENSION STDER1(KCKTAB,6,2)
 #else
@@ -72,7 +72,7 @@ C
      &            RLMINT,RLMTAB,FCM,
      &            WORK(KAHGTF),WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            IPRINT,PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &            FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &            FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &            WORK(KLAST),LWRK)
       RETURN
       END
@@ -81,7 +81,7 @@ C  /* Deck onepr1 */
      &                  RLMINT,RLMTAB,FCM,
      &                  AHGTF,ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,IPRINT,
      &                  PROPTY,MAXDIF,NATOMC,TOLOG,TOLS,SECDER,DIFDIP,
-     &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
+     &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
 #include "implicit.h"
@@ -102,7 +102,7 @@ C
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
-     &          GNUEXP(*), JCENTC(*)
+     &          GEXP(*), JCENTC(*)
 #ifdef PRG_DIRAC
       DIMENSION STDER1(KCKTAB,6,2)
 #else
@@ -263,9 +263,8 @@ C                  IF(.NOT.(PROPTY.AND.ONECEN.AND.ICENTA.EQ.ICENTC)) THEN
                      DIFCPX = COORC(1,IATOMC) - CORPX
                      DIFCPY = COORC(2,IATOMC) - CORPY
                      DIFCPZ = COORC(3,IATOMC) - CORPZ
-                     JJ = JCENTC(IATOMC)
-                     IF(ABS(GNUEXP(JJ)).GT.GNUTHR) THEN
-                       EXPFAC = GNUEXP(JJ)
+                     IF(ABS(GEXP(IATOMC)).GT.GNUTHR) THEN
+                       EXPFAC = GEXP(IATOMC)
                        EXPFAC = EXPFAC/(EXPFAC + EXPP)
                        EXPPGN = EXPP*EXPFAC
                        FACTOR = FACTOR*(EXPFAC**D1P5)
