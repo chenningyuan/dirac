@@ -503,9 +503,12 @@ C
 C     !! Number 0 (Zero) NOT counted or stored !!
 C
 C     Input: 
-C           IF(IP.NE.0) : Give list of numbers in array
+C           IP > 0: Give list of numbers in array
 C                         ILIST(NLIST).
-C           ELSE : Only IP as OUTPUT
+C           IP = 0: Only IP as OUTPUT
+C           IP < 0: Give list of numbers in array
+C                         ILIST(NLIST) - but the order is maintained,
+C                         ie, 1-8,10,9  .NE.  1-10
 C
 C     Output:
 C           IP : number of elements in the list A.
@@ -529,6 +532,7 @@ C     Initialize
 C
       NUM1 = 0
       NUM2 = 0
+      INO  = 0
       NA   = LEN(A)
       IF(NA.GT.72) GOTO 940
       IF(NA.GE.3) THEN
@@ -614,7 +618,8 @@ C              ... read end of range
             IF (NUM1.GT.NUM2) GOTO 900
             IF ((NUM1.GE.IRNGE1).AND.(NUM2.LE.IRNGE2)) THEN
                DO 200 J=NUM1,NUM2
-                  ITMPAR(J) = 1
+                  INO = INO + 1
+                  ITMPAR(J) = INO
  200           CONTINUE
             ELSE
                WRITE(LUPRI,'(A,I5,A,I5)') 'Range:', NUM1,'..',NUM2
@@ -623,15 +628,20 @@ C              ... read end of range
          ELSEIF ((TEGN.EQ.',').OR.(TEGN.EQ.' ')) THEN
 C           ... single number
             IF ((NUM1.GE.IRNGE1).AND.(NUM1.LE.IRNGE2)) THEN
-               ITMPAR(NUM1) = 1
+               INO = INO + 1
+               ITMPAR(NUM1) = INO
             ELSE
                WRITE(LUPRI,'(A,I5)') 'Value:', NUM1
                GOTO 920
             ENDIF
          ELSE 
+            WRITE(LUPRI,'(A,A1,A1,I3,A1)')
+     &        'NUMLST: Wrong Character in Input: ',CHAR(INT),'(',INT,')'
             GOTO 910
          ENDIF
       ELSEIF ((INT.NE.ISPACE).AND.(INT.NE.IPOINT)) THEN
+         WRITE(LUPRI,'(A,A1,A1,I3,A1)')
+     &      'NUMLST: Wrong Character in Input: ',CHAR(INT),'(',INT,')'
          GOTO 910
       ENDIF
       I = I+1
@@ -659,7 +669,11 @@ C
             IF (ITMPAR(I).NE.0) THEN
                IC = IC + 1
                IF (IC.GT.NLIST) GOTO 930
-               ILIST(IC) = I
+               IF (IP.GT.0) THEN
+                  ILIST(IC) = I
+               ELSE
+                  ILIST(ITMPAR(I)) = I
+               END IF
             ENDIF
  400     CONTINUE
       ENDIF
