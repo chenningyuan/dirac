@@ -4428,9 +4428,10 @@ C     Check for possible ways of correcting..
       IF (SS_COR_NEEDED.AND..NOT.SS_COR) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)') 
-     &     " * User asked for neglect of SS-integrals without "//
-     &     "invoking a correction.",
-     &     "   Activated SCC method, see L. Visscher TCA 98 (1997) 68."
+     &     " * WARNING: User asked for neglect of SS-integrals "//
+     &     "without invoking a correction.",
+     &     "   Activated SCC method (.LVCORR), "//
+     &     "see L. Visscher TCA 98 (1997) 68."
       ENDIF
 C
 C     Check for LUCIA and parallel
