@@ -5072,7 +5072,7 @@ C
          OPEN(LUMOL,STATUS='NEW',FORM='FORMATTED',
      *        CARRIAGECONTROL='LIST')
 #endif
-#ifdef (SYS_MANY)
+#ifdef SYS_MANY
          OPEN(LUMOL,FILE='MOLECULE.INP',STATUS='UNKNOWN',
      &        FORM='FORMATTED')
 #endif
