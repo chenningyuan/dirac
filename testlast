@@ -9,6 +9,8 @@
 pampath=`pwd`
 dirac=`pwd`/dirac.x
 testdir=`pwd`/test
+cvs="yes"
+queue="none"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -38,7 +40,11 @@ usage='Usage: '$0'\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run\n'\
 '--testdir=TESTDIR\n'\
-'\tDirectory in which the tests should be run (default: -testdir=test)\n'
+'\tDirectory in which the tests should be run (default: -testdir=test)\n'\
+'--cvs=yes/no\n'\
+'\tRun cvs prior to compilation (default: -cvs=yes)\n'\
+'--queue=QUEUE\n'\
+'\tQueue to be used in qsub (default: -queue=none meaning run interactively)\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -77,6 +83,16 @@ while [ $# != 0 ]; do
       "tests")
          if [ "${valomitted}" = "no" ]; then
             tests="$val"
+         fi
+         ;;
+      "cvs")
+         if [ "${valomitted}" = "no" ]; then
+            cvs="$val"
+         fi
+         ;;
+      "queue")
+         if [ "${valomitted}" = "no" ]; then
+            queue="$val"
          fi
          ;;
       *)
@@ -129,20 +145,22 @@ for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
 done
 cd ${pampath};
 #
-if [  -z "$branch" ]; then 
-   echo ' Starting CVS Update ... ' ;
-   cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
-{ echo " CVS update failed" ; \
-  echo " now we are here" ; \
-  exit 1 ;\
-}
-else
-   echo " Switching working copy to branch $branch and updating ..."
-   cvs update -P -d -r $branch > ${testdir}/logs/$cvslog 2>&1 || \
-{ echo " CVS update failed" ; \
-  echo " Please check the logfile ${testdir}/logs/$cvslog" ; \
-  exit 1 ;\
-}
+if [ "${cvs}" = "yes" ]; then
+  if [  -z "$branch" ]; then 
+     echo ' Starting CVS Update ... ' ;
+     cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
+  { echo " CVS update failed" ; \
+    echo " now we are here" ; \
+    exit 1 ;\
+  }
+  else
+     echo " Switching working copy to branch $branch and updating ..."
+     cvs update -P -d -r $branch > ${testdir}/logs/$cvslog 2>&1 || \
+  { echo " CVS update failed" ; \
+    echo " Please check the logfile ${testdir}/logs/$cvslog" ; \
+    exit 1 ;\
+  }
+  fi
 fi
 #
 echo ' Recompiling ... '
@@ -151,24 +169,29 @@ make > ${testdir}/logs/$makelog 2>&1 || \
   echo " Please check the logfile ${testdir}/logs/$makelog" ; \
   exit 1 ;\
 }
-echo ' Starting test calculations ... '
+if [ "${queue}" = "none" ]; then
+echo ' Starting test calculations interactively ... '
 cd ${testdir};
 ./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
-{ echo " Make failed" ; \
+{ echo " runtest failed" ; \
   echo " Please check the logfile ${testdir}/logs/$runlog" ; \
   exit 1 ;\
 }
+else
 #
-# The tests are default run interactively on the same machine as the cvs and make command is run. I have not
-# attempted to make a generic batch script as batch environments vary wildly. The lines below work on
-# our Linux clusters that used the pbs batch system. When using this one should of course comment the line
-# directly above this comment block. (LV, May 22, 2002)
+# The tests are default run interactively on the same machine as the cvs and make command is run.
+# Below is also a script that works with the pbs (qsub) batch environment that we use on our
+# Linux cluster. It should be relatively easy to adapt this to other queue systems.
+# (LV, June 04, 2002)
 #
-#errfile=das500:${testdir}/logs/errfile
-#cat <<EOF >job
-#cd ${testdir};
-#./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run ;
-#EOF
-#qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:das5c -q das5cq -V job
-#rm job
+echo " Submitting test calculations to queue $queue ... "
+echo " When they are done please check the results in the directory ${testdir}/logs. "
+errfile=das500:${testdir}/logs/$runlog
+cat <<EOF >job
+cd ${testdir};
+./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run ;
+EOF
+qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue}q -V job
+rm job
+fi
 #

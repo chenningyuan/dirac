@@ -130,7 +130,7 @@ setup_command()
    if [ -n "$ALT_DIRAC" ]; then
       DIRAC=${ALT_DIRAC##*/}
       BIN_DIR=${ALT_DIRAC%/*}
-      if [ ! -z "$BIN_DIR" ]; then
+      if [ -z "$BIN_DIR" ]; then
          BIN_DIR=$LOC
       fi
    else
