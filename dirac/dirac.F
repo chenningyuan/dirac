@@ -75,7 +75,7 @@ CTROND      INCLUDE 'sys/schedctl.h'
       PARAMETER (LWORK = 10 000 000)
 #elif defined (SYS_LINUX)
       DIMENSION WORK(LWORK)
-      CHARACTER STR_DIRWRK*(80)
+      CHARACTER STR_DIRWRK*(*)
 #else
       PARAMETER (LWORK = INSTALL_WRKMEM)
 #endif
@@ -217,8 +217,9 @@ C
 C     Check memory allocation
 C
       LMWORK = LWORK
-      NBYTES = (LMWORK+2) * 8
+      NBYTES = LMWORK * 8
       XMBYTES = NBYTES
+      XMBYTES = XMBYTES / (1024*1024)
       DIRWRK = STR_DIRWRK
       IF (WORK(1).NE.10101.0) 
      &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
