@@ -5,25 +5,41 @@
  * FILE    : gpjth_c.c
  * SOURCE  : $Source$
  *
+ * frac2i:
+ *
  * Take string with a fraction (e.g. either 1/2 or 0.5)
  * Written by J. Thyssen - Jan 28 1998
+ *
+ *
+ * sysinf:
+ *
+ * Print info about system to stdout
+ * Written by J. Thyssen - Feb 9 1998
  *
  */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/utsname.h>
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
+#define sysinf SYSINF
+#elif defined (SYS_HPUX)
+#define frac2i FRAC2I
+#define sysinf SYSINF
+#elif defined (SYS_AIX)
 #define frac2i frac2i
+#define sysinf sysinf
 #else
 #define frac2i frac2i_
+#define sysinf sysinf_
 #endif /*CRAY*/
 
 void c_frac2i();
 void frac2i();
+void sysinf();
 
 
 /* 
@@ -83,3 +99,27 @@ int l;
    c_frac2i(temp,f);
    free(temp);
 }
+
+
+void sysinf()
+
+{
+   struct utsname *un;
+
+   un = (struct utsname *) malloc(sizeof(struct utsname));
+
+   if ( un != NULL )
+   {
+      uname(un);
+   }
+
+   if ( un != NULL )
+   {
+      printf( "Hostname          : %s\n" , un->nodename);
+      printf( "Operating system  : %s %s\n" , un->sysname, un->release);
+      printf( "Machine           : %s\n" , un->machine);
+   }
+
+   free(un);
+}
+
