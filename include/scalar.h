@@ -1,12 +1,12 @@
 #if defined (SYS_ALLIANT)
-CVD$ NOVECTOR
+!VD$ NOVECTOR
 #endif
 #if defined (SYS_CONVEX)
-C$DIR SCALAR
+!$DIR SCALAR
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-CDIR$ NEXTSCALAR
+!DIR$ NEXTSCALAR
 #endif
 #if defined (SYS_SX)
-*VDIR NOVECTOR
+!VDIR NOVECTOR
 #endif

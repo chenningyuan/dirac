@@ -1,59 +1,75 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dcbxrs.h
-C
-C*** Reduced response equations
-C
-C    JSYMOP - point group symmetry of operator
-C    JTIMOP - time reversal symmetry of operator: 1(+),2(-)
-C    JOPSY  - pointer to fermion ircop which spans JSYMOP
-C
-C    IPRXRS - print level
-C    MAXITR  - max number of iterations 
-C    NFREQ  - number of frequencies
-C    NEXSIM - number of simultaneous solutions
-C    NEXSTV - number of start vectors
-C
-C    FKRMC  - is this a KR-MCSCF optimization
-C    ENRGY - energy
-C
-C    THCXRS - threshold for convergence of reduced response equations
-C     
-C    Configuration and orbital rotation parameters
-C    are held in separate vectors
-C
-C    Trial vectors have the general structure:
-C
-C     (b_1)^T = [ Z  Y^*]     (b_2)^T  =  [Y   Z^*]
-C
-C    
-      CHARACTER XRS_INTTYP*9,BVTYP*2,RSPLAB*16, XRS_CIPROGRAM*8
-      COMMON/ XRSCCB/ XRS_INTTYP,BVTYP(6),RSPLAB, XRS_CIPROGRAM
-C
-C     Parameters for MCTYPE:
-C
-      PARAMETER ( JDHF  = 0,
-     &            JODHF = 1,
-     &            JCAS  = 2, JMCMIN = JCAS,
-     &            JGAS  = 3)
-C
-      LOGICAL RSREST, STATIC, LINEQ, LSVCFG, TKNORM, DIAGHE,STERNH,
+!
+! VERSION : $Revision$
+! DATE    : $Date$
+! FILE    : dcbxrs.h
+!
+!*** Reduced response equations
+!
+!    JSYMOP - point group symmetry of operator
+!    JTIMOP - time reversal symmetry of operator: 1(+),2(-)
+!    JOPSY  - pointer to fermion ircop which spans JSYMOP
+!
+!    IPRXRS - print level
+!    MAXITR  - max number of iterations 
+!    NFREQ  - number of frequencies
+!    NEXSIM - number of simultaneous solutions
+!    NEXSTV - number of start vectors
+!
+!    FKRMC  - is this a KR-MCSCF optimization
+!    ENRGY - energy
+!
+!    THCXRS - threshold for convergence of reduced response equations
+!     
+!    Configuration and orbital rotation parameters
+!    are held in separate vectors
+!
+!    Trial vectors have the general structure:
+!
+!     (b_1)^T = [ Z  Y^*]     (b_2)^T  =  [Y   Z^*]
+!
+!    
+      CHARACTER*9 XRS_INTTYP
+      CHARACTER*2 BVTYP(6)
+      CHARACTER*16 RSPLAB
+      CHARACTER*8 XRS_CIPROGRAM
+      COMMON /XRSCCB/ XRS_INTTYP, BVTYP, RSPLAB, XRS_CIPROGRAM
+
+!     Parameters for MCTYPE:
+!
+      INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
+      PARAMETER (JDHF = 0, JODHF = 1, JCAS = 2, JMCMIN = JCAS, JGAS =   &
+     &           3)
+
+      LOGICAL RSREST, STATIC, LINEQ, LSVCFG(2), TKNORM, DIAGHE, STERNH, &
      &        FKRMC, XRS_NOPFQ, XRS_NOFQX
-      COMMON /XRSICB/ IPRXRS,JSYMOP,JTIMOP,JOPSY,MAXITR,ITMIC,NFREQ,
-     &                NEXSIM,NEXSTV,NEXCNV,LOFFTY,IPX,IMX,MAXSIM,
-     &                NZVAR, NZVARQ ,NZCONF,NZCONFQ,NTYP,
-     &                NZXOPT,NZXOPTQ,NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,
-     &                NZHOPE,
-     &                NVPAR ,IPEP,IPEM,IPPP,IPPM,IPCP,IPCM,
-     &                NREDM ,N2REDM ,NZRED, NCRED ,NERED  ,NPRED, 
-     &                KCONV ,NCSIM, NESIM, NPSIM, NOSIM, NTSIM,
-     &                IZRED,ICRED,IERED,IPRED,INTXRS,
-     &                INTFLG,INTDEF,INTBUF,ITRINT(2),NFOCKMAT,
-     &                IXRSTB(-1:2),MCTYPE,JTRLVL
-      COMMON /XRSRCB/ THCXRS,CNVINT(2),RESFAC,GPTNRM, ENRGY
-      COMMON /WRKFLG/ STATIC, RSREST, LINEQ, LSVCFG(2), TKNORM, DIAGHE,
+      INTEGER IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC, NFREQ,      &
+     &        NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX, MAXSIM, NZVAR,  &
+     &        NZVARQ, NZCONF, NZCONFQ, NTYP, NZXOPT, NZXOPTQ, NZXOPE,   &
+     &        NZXOPEQ, NZXOPP, NZXOPPQ, NZHOPE, NVPAR, IPEP, IPEM, IPPP,&
+     &        IPPM, IPCP, IPCM, NREDM, N2REDM, NZRED, NCRED, NERED,     &
+     &        NPRED, KCONV, NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED,   &
+     &        ICRED, IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,      &
+     &        ITRINT(2), NFOCKMAT, IXRSTB(-1:2), MCTYPE, JTRLVL
+      COMMON /XRSICB/ IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC,     &
+     &                NFREQ, NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX,  &
+     &                MAXSIM, NZVAR, NZVARQ, NZCONF, NZCONFQ, NTYP,     &
+     &                NZXOPT, NZXOPTQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ,&
+     &                NZHOPE, NVPAR, IPEP, IPEM, IPPP, IPPM, IPCP, IPCM,&
+     &                NREDM, N2REDM, NZRED, NCRED, NERED, NPRED, KCONV, &
+     &                NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED, ICRED,  &
+     &                IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,     &
+     &                ITRINT, NFOCKMAT, IXRSTB, MCTYPE, JTRLVL
+
+      REAL*8 THCXRS, CNVINT(2), RESFAC, GPTNRM, ENRGY
+      COMMON /XRSRCB/ THCXRS, CNVINT, RESFAC, GPTNRM, ENRGY
+
+      COMMON /WRKFLG/ STATIC, RSREST, LINEQ, LSVCFG, TKNORM, DIAGHE,    &
      &                STERNH, FKRMC, XRS_NOPFQ, XRS_NOFQX
-      COMMON /MEMXRS/ KBTOT,KBCI,KBOE,KBOP,KZCONF,KZXOPE,KZXOPP
-      COMMON /XRSIOU/ LUBCI,LUBOE,LUBOP,LUSCI,LUSOE,LUSOP,LURSP,LUXVC,
-     &                LURST,LUCYCL
+
+      INTEGER KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP
+      COMMON /MEMXRS/ KBTOT, KBCI, KBOE, KBOP, KZCONF, KZXOPE, KZXOPP
+
+      INTEGER LUBCI, LUBOE, LUBOP, LUSCI, LUSOE, LUSOP, LURSP, LUXVC,   &
+     &        LURST, LUCYCL
+      COMMON /XRSIOU/ LUBCI, LUBOE, LUBOP, LUSCI, LUSOE, LUSOP, LURSP,  &
+     &                LUXVC, LURST, LUCYCL

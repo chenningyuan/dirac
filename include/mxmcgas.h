@@ -1,8 +1,9 @@
-C
-C VERSION : $$
-C DATE    : $$
-C SOURCE  : $$
-C
-C     Maximum number of GAS spaces in KRMC
-C     MUST(!) match MXPNGAS from luciarel.
+!
+! VERSION : $$
+! DATE    : $$
+! SOURCE  : $$
+!
+!     Maximum number of GAS spaces in KRMC
+!     MUST(!) match MXPNGAS from luciarel.
+      INTEGER MXMCGAS
       PARAMETER (MXMCGAS = 6)

@@ -1,5 +1,6 @@
-C     Labels for vector types:
-C       JBCNDX for CI-type,
-C       JBENDX for electron orb-type, 
-C       JBPNDX for positron orb-type
-      PARAMETER (JBCNDX=-1, JBENDX=1, JBPNDX=2)
+!     Labels for vector types:
+!       JBCNDX for CI-type,
+!       JBENDX for electron orb-type, 
+!       JBPNDX for positron orb-type
+      INTEGER JBCNDX, JBENDX, JBPNDX
+      PARAMETER (JBCNDX = -1, JBENDX = 1, JBPNDX = 2)

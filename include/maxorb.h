@@ -5,5 +5,6 @@
 ! MXCORB = max total number of contracted functions = max NBASIS
 ! MXBSETS = max number of basis sets (typically 4 : large comp., small comp. + 
 !           density fit sets for both)
-      PARAMETER (MXSHEL = 500, MXPRIM = 2000, MXCORB = 5000,            &
-     &           MXORBT = MXCORB*(MXCORB + 1)/2, MXBSETS = 4)
+      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT, MXBSETS
+      PARAMETER (MXSHEL = 500, MXPRIM = 2000, MXCORB = 5000, MXORBT =   &
+     &           MXCORB*(MXCORB+1)/2, MXBSETS = 4)

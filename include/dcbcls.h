@@ -1,12 +1,17 @@
-C
-C     CLASS LABELS
-C
-C     CLSINT - keyword for a class of integrals
-C     CLSCMB - indicates what blocks to compute : LL,SL,LS,SS
-C     CLSCAL - indicates whether class is active, that is to be calculated
-C
-      PARAMETER(MAXCLS = 15)
-      LOGICAL CLSCAL
-      CHARACTER CLSINT*7,CLSCMB*4
-      COMMON/XCBCLS/NPRPCLS,IORDCL(MAXCLS),CLSCAL(MAXCLS)
-      COMMON/CLSLBL/CLSINT(MAXCLS),CLSCMB(MAXCLS)
+!
+!     CLASS LABELS
+!
+!     CLSINT - keyword for a class of integrals
+!     CLSCMB - indicates what blocks to compute : LL,SL,LS,SS
+!     CLSCAL - indicates whether class is active, that is to be calculated
+!
+      INTEGER MAXCLS
+      PARAMETER (MAXCLS = 15)
+
+      LOGICAL CLSCAL(MAXCLS)
+      CHARACTER*7 CLSINT(MAXCLS)
+      CHARACTER*4 CLSCMB(MAXCLS)
+      INTEGER NPRPCLS, IORDCL(MAXCLS)
+      COMMON /XCBCLS/ NPRPCLS, IORDCL, CLSCAL
+
+      COMMON /CLSLBL/ CLSINT, CLSCMB

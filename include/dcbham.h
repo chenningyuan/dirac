@@ -1,57 +1,71 @@
 #if !defined(__CVERSION__)
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dcbham.h
-C
-C*****************************************************************************
-C  DCBHAM:  Hamiltonian used for generation of wavefunction
-C
-C     IPRHAM     - Print level
-C     IPOVERLAP  - Pointer to overlap in DCBXPR
-C     IPBETAMT   - Pointer to beta matrix in DCBXPR
-C     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
-C     IPKINERG   - Pointer to kinetic energy in DCBXPR
-C     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
-C     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
-C     N1OPER     - Number of additional operators (finite field calculations)
-C     IPR1OP     - Pointer to DCBXPR for additional operators
-C     QED        - use QED Hamiltonian (filled positronic levels)
-C     ONESYS     - No two-electron operators
-C     FREEPJ     - Hamiltonian embedded in free particle projections
-C     VEXTPJ     - Hamiltonian embedded in molecular field projections
-C     NOSMLV     - No small nuclear attraction integrals
-C     URKBAL     - Unrestricted kinetic balance
-C     LEVYLE     - Levy-Leblond Hamiltonian
-C     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
-C     SSMTRC     - Scaling factor for SS overlap matrix
-C     SPINFR     - Neglect spin-orbit coupling
-C     SPINFR2    - Neglect 2-electron spin-orbit coupling
-C     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
-C     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
-C     SMLV1C     - Neglect two-center blocks of VSS
-C     ONECAP     - Do one-center approximation depending on model INTV1C
-C                  Default is type 2 : Neglect two-center blocks of VSS
-C                  ONECAP type 1 model. One-center (SS|SS) and (LL|SS).
-C                  Correction made to one-electron Fock-matrix.
-C                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
-C                  Correction made to two-electron Fock-matrix.
-C     ONECOFF    - internal flag for turning off ONECAP
-C
-      PARAMETER(MAX1OPER=10)
-      COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,IPANGMOM,
-     &              IPSPNMOM,N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
-     &              ICTLV1C(2)
-      EQUIVALENCE (INTV1C, ICTLV1C(1))
-      LOGICAL QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SUB_BL,
-     &        SOLVEN,INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
-     &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF,NOSPIN
-      PARAMETER (NDCLHAM=18)
-      COMMON/DCLHAM/
-     &        QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SUB_BL,
-     &        SOLVEN,INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
-     &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF,NOSPIN
-      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,HFXFAC,ONECNV
+
+! VERSION : $Revision$
+! DATE    : $Date$
+! FILE    : dcbham.h
+!
+!*****************************************************************************
+!  DCBHAM:  Hamiltonian used for generation of wavefunction
+!
+!     IPRHAM     - Print level
+!     IPOVERLAP  - Pointer to overlap in DCBXPR
+!     IPBETAMT   - Pointer to beta matrix in DCBXPR
+!     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
+!     IPKINERG   - Pointer to kinetic energy in DCBXPR
+!     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
+!     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
+!     N1OPER     - Number of additional operators (finite field calculations)
+!     IPR1OP     - Pointer to DCBXPR for additional operators
+!     QED        - use QED Hamiltonian (filled positronic levels)
+!     ONESYS     - No two-electron operators
+!     FREEPJ     - Hamiltonian embedded in free particle projections
+!     VEXTPJ     - Hamiltonian embedded in molecular field projections
+!     NOSMLV     - No small nuclear attraction integrals
+!     URKBAL     - Unrestricted kinetic balance
+!     LEVYLE     - Levy-Leblond Hamiltonian
+!     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
+!     SSMTRC     - Scaling factor for SS overlap matrix
+!     SPINFR     - Neglect spin-orbit coupling
+!     SPINFR2    - Neglect 2-electron spin-orbit coupling
+!     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
+!     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
+!     SMLV1C     - Neglect two-center blocks of VSS
+!     ONECAP     - Do one-center approximation depending on model INTV1C
+!                  Default is type 2 : Neglect two-center blocks of VSS
+!                  ONECAP type 1 model. One-center (SS|SS) and (LL|SS).
+!                  Correction made to one-electron Fock-matrix.
+!                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
+!                  Correction made to two-electron Fock-matrix.
+!     ONECOFF    - internal flag for turning off ONECAP
+!
+      INTEGER MAX1OPER
+      PARAMETER (MAX1OPER = 10)
+
+      INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
+     &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
+     &        ICTLV1C(2)
+      COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG,   &
+     &                IPANGMOM, IPSPNMOM, N1OPER, IPR1OP, LSOLMX,       &
+     &                IPRSOL, ICTLV1C
+
+      INTEGER INTV1C
+      EQUIVALENCE (INTV1C, ICTLV1C (1))
+
+      LOGICAL QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL, LEVYLE,      &
+     &        SUB_BL, SOLVEN, INERSI, INERSF, SPINFR, SPINFR2, ZORA,    &
+     &        ZORA4, ZORASC, PROJEC, PROOWN, DFTHAM, SMLV1C, ONECAP,    &
+     &        ONECOFF, NOSPIN
+      INTEGER NDCLHAM
+      PARAMETER (NDCLHAM = 18)
+
+      COMMON /DCLHAM/ QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
+     &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
+     &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
+     &                DFTHAM, SMLV1C, ONECAP, ONECOFF, NOSPIN
+
+      REAL*8 SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
+      COMMON /DCRHAM/ SSMTRC, EPSOL, EPSTAT, RSOLAV, HFXFAC, ONECNV
+
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
   extern struct common_dcrham {

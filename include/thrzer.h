@@ -1,2 +1,3 @@
-C     FILE : thrzer.h
-      PARAMETER ( THRZER = 1.0D-14 )
+!     FILE : thrzer.h
+      REAL*8 THRZER
+      PARAMETER (THRZER = 1.0D-14)

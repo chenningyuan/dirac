@@ -1,15 +1,28 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : consts.h
-C
-C     Collection of frequently used constants.
-C
-      PARAMETER ( DM1 = - 1.0 D00 )
-      PARAMETER ( DMP5= - 0.5 D00 )
-      PARAMETER ( D0  = 0.0 D00 )
-      PARAMETER ( DP5 = 0.5 D00 )
-      PARAMETER ( D1  = 1.0 D00 )
-      PARAMETER ( D2  = 2.0 D00 )
-      PARAMETER ( D4  = 4.0 D00 )
+!
+! VERSION : $Revision$
+! DATE    : $Date$
+! FILE    : consts.h
+!
+!     Collection of frequently used constants.
+!
+      REAL*8 DM1
+      PARAMETER (DM1 = -1.0 D00)
+
+      REAL*8 DMP5
+      PARAMETER (DMP5 = -0.5 D00)
+
+      REAL*8 D0
+      PARAMETER (D0 = 0.0 D00)
+
+      REAL*8 DP5
+      PARAMETER (DP5 = 0.5 D00)
+
+      REAL*8 D1
+      PARAMETER (D1 = 1.0 D00)
+
+      REAL*8 D2
+      PARAMETER (D2 = 2.0 D00)
+
+      REAL*8 D4
+      PARAMETER (D4 = 4.0 D00)
 

@@ -1,31 +1,42 @@
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C
-C*****************************************************************************
-C *** Property module ***
-C  DOEXP - do expectation values
-C  DOESR - do ESR properties
-C  DOXLR - do linear response
-C  DOXPP - do excitation energies 
-C          (by the polarization propagator method)
-C  DOXQR - do quadratic response
-C  MGRAD - calculate molecular gradient
+!
+! VERSION : $Revision$
+! DATE    : $Date$
+!
+!*****************************************************************************
+! *** Property module ***
+!  DOEXP - do expectation values
+!  DOESR - do ESR properties
+!  DOXLR - do linear response
+!  DOXPP - do excitation energies 
+!          (by the polarization propagator method)
+!  DOXQR - do quadratic response
+!  MGRAD - calculate molecular gradient
+      INTEGER LUCORP
       PARAMETER (LUCORP = 91)
-      LOGICAL DOEXP,DOXLR,DOXPP,DOXQR,DIPOLE,EPOLAR,MSUSCP,SHIELD,
-     &        SPNSPN,EFG,NQCC,MGRAD,NSTDIA,PVC,DOESR,ESRGTENS,ESRANISO,
-     &        EFT,EFTNTL,PVCSHI,EFN,RHONUC
-C
+
+      LOGICAL DOEXP, DOXLR, DOXPP, DOXQR, DIPOLE, EPOLAR, MSUSCP,       &
+     &        SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, PVC, DOESR,     &
+     &        ESRGTENS, ESRANISO, EFT, EFTNTL, PVCSHI, EFN, RHONUC
+
+      INTEGER MXPRPWF
       PARAMETER (MXPRPWF = 3)
+
       CHARACTER*4 PRPWF(MXPRPWF)
-C
-      COMMON/CBLPRP/DOXLR,DOXPP,DOEXP,DOXQR,DIPOLE,EPOLAR,MSUSCP,
-     &        SHIELD,SPNSPN,EFG,NQCC,MGRAD,NSTDIA,PVC,
-     &        DOESR,ESRGTENS,ESRANISO,EFT,EFTNTL,PVCSHI,EFN,RHONUC
-      COMMON/CBIPRP/IPRPRP,IPEPOLAR(3,2),IPSPNSPN(2,MXCOOR),
-     &     IPDSO(MXCOOR*(MXCOOR+1)/2),NDSOIN,IPSHIELD(MXCOOR+3),
-     &              IPNSTDIA(MXCOOR*3),NNSTIN,IPESR(MXCOOR+3,2),
-     &     NPRPWF
-      COMMON/CBRPRP/ABUND
-      COMMON/CBCPRP/PRPWF
+
+      COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,       &
+     &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
+     &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
+     &                PVCSHI, EFN, RHONUC
+
+      INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
+     &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
+     &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRPWF
+      COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
+     &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF
+
+      REAL*8 ABUND
+      COMMON /CBRPRP/ ABUND
+
+      COMMON /CBCPRP/ PRPWF
+
 #include <cbiher.h>

@@ -1,19 +1,19 @@
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-CDIR$ IVDEP
+!DIR$ IVDEP
 #endif
 #if defined (SYS_ALLIANT)
-CVD$ NODEPCHK
+!VD$ NODEPCHK
 #endif
 #if defined (SYS_CONVEX)
-C$DIR NO_RECURRENCE
+!$DIR NO_RECURRENCE
 #endif
 #if defined (SYS_IBM)
-Cvectorization note: ignore vector dependence
-C*VDIR: IGNORE RECRDEPS
+!vectorization note: ignore vector dependence
+!*VDIR: IGNORE RECRDEPS
 #endif
 #if defined (SYS_SX)
-*VDIR NODEP
+!VDIR NODEP
 #endif
 #if !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_IBM) && !defined (SYS_CONVEX) && !defined (SYS_T3D) && !defined (SYS_SX)
-Cvectorization note: ignore vector dependence
+!vectorization note: ignore vector dependence
 #endif
