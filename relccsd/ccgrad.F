@@ -193,7 +193,7 @@ C------------------------------------
       N = NFVO
       IF (N.EQ.0) RETURN
       IF (NBUF3.LT.JVVVO(2)) THEN
-         STOP " OUT OF CORE STEP IN GV NOT IMPLEMENTED"
+         CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
       ENDIF
       USEDZ = .FALSE.
       CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,

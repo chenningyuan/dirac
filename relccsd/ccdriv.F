@@ -152,7 +152,7 @@ C
       MWORD = 0
       READ (IN,RELCCSD,END=1,ERR=1)
       GOTO 2
-    1 STOP 'Error exit while reading namelist RELCCSD'
+    1 CALL QUIT('Error exit while reading namelist RELCCSD')
     2 CONTINUE
 C
 C     Input for the energy calculation.
@@ -166,7 +166,7 @@ C
       REWIND (IN)
       READ (IN,CCENER,END=4,ERR=3)
       GOTO 4
-    3 STOP 'Error exit while reading namelist CCENER'
+    3 CALL QUIT('Error exit while reading namelist CCENER')
     4 CONTINUE
       MXDIMCC = MAXDIM
       MXITCC = MAXIT
@@ -185,7 +185,7 @@ C
       REWIND (IN)
       READ (IN,CCGRAD,END=6,ERR=5)
       GOTO 6
-    5 STOP 'Error exit while reading namelist CCGRAD'
+    5 CALL QUIT('Error exit while reading namelist CCGRAD')
     6 CONTINUE
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
@@ -210,7 +210,7 @@ C
       REWIND (IN)
       READ (IN,CCLINR,END=8,ERR=7)
       GOTO 8
-    7 STOP 'Error exit while reading namelist CCLINR'
+    7 CALL QUIT('Error exit while reading namelist CCLINR')
     8 CONTINUE
       MXDIMRP = MAXDIM
       MXITRP = MAXIT
@@ -227,7 +227,7 @@ C
       REWIND (IN)
       READ (IN,CCEXC,END=10,ERR=9)
       GOTO 10
-    9 STOP 'Error exit while reading namelist CCEXC'
+    9 CALL QUIT('Error exit while reading namelist CCEXC')
    10 CONTINUE
       MXDIMEX = MAXDIM
       MXITEX = MAXIT
@@ -240,7 +240,7 @@ C
       REWINP = .FALSE.
       READ (IN,CCEND,END=100,ERR=99)
       GOTO 100
-   99 STOP 'Error exit while reading namelist CCEND'
+   99 CALL QUIT('Error exit while reading namelist CCEND')
   100 CONTINUE
       IF (REWINP) REWIND (IN)
 C
@@ -313,7 +313,7 @@ C
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
-         STOP "NSP.GT.MAXSP"
+         CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 C
 C     Read input
@@ -344,7 +344,7 @@ C
       IF (IERR.NE.0) THEN
          MWORD = MAXCORE / (1024 * 1024)
          WRITE (IW,1006) MAXCORE,MWORD
-         STOP "DECREASE MWORD"
+         CALL QUIT("DECREASE MWORD")
       ENDIF
 C
 C     In case of dynamic allocation :
@@ -431,7 +431,7 @@ C
          MWORD = MXCORR / (1024 * 1024)
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
-         STOP "INCREASE MWORD"
+         CALL QUIT("INCREASE MWORD")
       ENDIF
 C
 C  Allocate the memory
@@ -452,7 +452,7 @@ C
 #endif
       IF (IERR.NE.0) THEN
           PRINT*, " Problems allocating ",MXCORR," words"
-          STOP "MEMORY PROBLEMS"
+          CALL QUIT("MEMORY PROBLEMS")
       ENDIF
 #endif
 C
@@ -674,7 +674,7 @@ C
                   NO(IREP) = NO(IREP) + 1
                   IREPSP(I,3) = NO(IREP)
                   IREPSPI(NO(IREP),IREP,1) = I
-                  IF (NO(IREP).GT.MAXFROZ) STOP "INCREASE MAXFROZ"
+                  IF (NO(IREP).GT.MAXFROZ) CALL QUIT("INCREASE MAXFROZ")
                   IF (IN.LE.NFROZ(IRP)) THEN
                      NC(IREP) = NC(IREP) + 1
                      IFROZ(NO(IREP),IREP) =  NC(IREP)

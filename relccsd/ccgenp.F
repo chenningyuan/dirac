@@ -181,7 +181,7 @@ C
 C
       IF (ITAPE.GT.99.OR.ITAPE.LT.1) THEN
       WRITE(6,*) ' INVALID TAPE NUMBER GIVEN: ITAPE=' ,ITAPE
-      STOP
+      CALL QUIT('ccgenp.F line 184')
       ENDIF
       SECTOR = SEC2I(1)
       MAXLN = SECTOR*1024*1024
@@ -192,7 +192,7 @@ C
       CALL WOPEN(ITAPE,BLOCKS,ISTATS,IERR)
       IF(IERR .NE. 0) THEN
           WRITE(6,*) ' PROBLEMS OPENING FILE ',ITAPE,' IERR =',IERR
-          STOP
+          CALL QUIT('ccgenp line 195')
       END IF
 #else
       FNAM = DN(ITAPE)
@@ -228,7 +228,7 @@ C
       IF(IPOS.NE.TEST) THEN
       WRITE(*,*) ' ERROR ENCOUNTERED IN RGETSA FOR FILE ',ITAPE
       WRITE(*,*) ' IPOS,TEST = ',IPOS,TEST
-      STOP
+      CALL QUIT('ccgenp.F line  231')
       END IF
 C
       IADR=IREC
@@ -266,7 +266,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN WWRITW FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 269')
       END IF
 #else
       OFF = FWORD - 1
@@ -295,7 +295,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN WREADW FOR FILE ',ITAPE,FWORD,NLEN
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 298')
       END IF
 #else
       OFF = FWORD - 1
@@ -338,7 +338,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE,FWORD,NW
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 341')
       END IF
 #else
       IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY,NW,OFF)
@@ -353,7 +353,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE,FWD,NW
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 356')
       END IF
 #else
       CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -377,7 +377,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 380')
       END IF
 #else
       CALL RDABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
@@ -393,7 +393,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 396')
       END IF
 #else
       IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY(IPT),NW,OFF)
@@ -408,7 +408,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 411')
       END IF
 #else
       CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -458,7 +458,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 461')
       END IF
 #else
       CALL WRABSF(ITAPE,ARRAY,NW,OFF)
@@ -476,7 +476,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 479')
       END IF
 #else
       CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -497,7 +497,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 500')
       END IF
 #else
       CALL WRABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
@@ -513,7 +513,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 516')
       END IF
 #else
       IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY(IPT),NW,OFF)
@@ -532,7 +532,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN RWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 535')
       END IF
 #else
       CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -578,7 +578,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 581')
       END IF
 #else
       IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY,NW,OFF)
@@ -593,7 +593,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 596')
       END IF
 #else
       CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -617,7 +617,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 620')
       END IF
 #else
       CALL RDABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
@@ -633,7 +633,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 636')
       END IF
 #else
       IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY(IPT),NW,OFF)
@@ -648,7 +648,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 651')
       END IF
 #else
       CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -697,7 +697,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 700')
       END IF
 #else
       IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY,NW,OFF)
@@ -715,7 +715,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 718')
       END IF
 #else
       CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -736,7 +736,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 739')
       END IF
 #else
       CALL WRABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
@@ -752,7 +752,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 755')
       END IF
 #else
       IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY(IPT),NW,OFF)
@@ -771,7 +771,7 @@ C
       IF(IERR.NE.0) THEN
          WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
          WRITE(*,*) ' IERR = ',IERR
-         STOP
+         CALL QUIT('ccgenp.F line 774')
       END IF
 #else
       CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
@@ -826,7 +826,7 @@ C
          JCODE = 3
       END IF
 C
-      IF(ITAPE.EQ.6) STOP ' YOU CANNOT CLOSE A FILE ON UNIT 6'
+      IF(ITAPE.EQ.6) CALL QUIT(' YOU CANNOT CLOSE A FILE ON UNIT 6')
 #if defined (SYS_CRAY)
       IERR = 0
       CALL WCLOSE(ITAPE,IERR)

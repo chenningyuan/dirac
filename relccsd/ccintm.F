@@ -158,7 +158,7 @@ C------------------------------------
       N = MVO(1)
       IF (N.EQ.0) RETURN
       IF (NBUF3.LT.JVVVO(2)) THEN
-         STOP " OUT OF CORE STEP IN GV NOT IMPLEMENTED"
+         CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
       ENDIF
       USEDZ = .FALSE.
       CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
@@ -208,7 +208,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to HINTM'
+         CALL QUIT('Wrong keyword in call to HINTM')
       ENDIF
 C---------------------------------------------------------------------
 C H(AK,IC) = - W(AK,CI)
@@ -518,7 +518,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to BINTM'
+         CALL QUIT('Wrong keyword in call to BINTM')
       ENDIF
 C---------------------------------------------
 C S(AB,CD) =  S(AB,CD) + V(AB,CD) * TAU(CD,IJ)

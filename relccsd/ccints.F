@@ -66,7 +66,7 @@ C
 C  Check buffer size for passing of VOVV and VVVV integrals
 C
       IF (MOD(NVT*IRW*RCW,SEC2I(1)).NE.0)
-     &    STOP "INVALID BUFFER SIZE IN RDINTS"
+     &    CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
 C
 C  GET THE NUCLEAR REPULSION ENERGY
 C
@@ -129,9 +129,10 @@ C
      &                                    (KR(I),KR(-I),I=1,NKR)
       ELSE
          WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
-         STOP 'Adapt RDINTS'
+         CALL QUIT('Adapt RDINTS')
       ENDIF
-      IF (2*NKR.NE.NSP) STOP "INCONSISTENT MRCONEE AND MDCINT FILES"
+      IF (2*NKR.NE.NSP) 
+         CALL QUIT("INCONSISTENT MRCONEE AND MDCINT FILES")
       ITRSGN = 1
 C
 C  Initialize writing to sorted integral files
@@ -523,11 +524,11 @@ C
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
       RETURN
-10000 STOP 'ERROR READING HEADER MDCINT'
-10001 STOP 'ERROR READING HEADER MDBINT'
-10003 STOP 'MDCINT AND MDBINT FILES ARE INCOMPATIBLE'
-10010 STOP 'ERROR READING INTEGRALS FROM MDCINT'
-10011 STOP 'ERROR READING INTEGRALS FROM MDBINT'
+10000 CALL QUIT('ERROR READING HEADER MDCINT')
+10001 CALL QUIT('ERROR READING HEADER MDBINT')
+10003 CALL QUIT('MDCINT AND MDBINT FILES ARE INCOMPATIBLE')
+10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
+10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
@@ -629,7 +630,7 @@ C
       IF (.NOT.CARITH.AND.ABS(AMAXI).GT.ACCUR) THEN
          IF (PHASE) THEN
             WRITE (IW,1010) AA,II,AMAXI
-            STOP 'USE COMPLEX ARITHMETICS'
+            CALL QUIT('USE COMPLEX ARITHMETICS')
          ELSE
             APHASE(1) = AMAXR
             APHASE(2) = AMAXI 
@@ -685,7 +686,7 @@ C
 C
       RETURN
   100 WRITE (6,*) ' Property ',NAMEA,' not found on file MDPROP'
-      STOP ' Property integrals missing'
+      CALL QUIT(' Property integrals missing')
  1000 FORMAT (/' Read integral type ',A8,' created ',
      & A8,' storage info : ',A8)
  1010 FORMAT (/' Largest imaginary part of matrix element',2I5,F10.2)
@@ -839,7 +840,7 @@ C
       ENDDO
 C
       RETURN
-10010 STOP 'ERROR READING 2-E INTEGRALS'
+10010 CALL QUIT('ERROR READING 2-E INTEGRALS')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKEFM (BUF1,BUF2,FOO,FVO,FVV,E0,E1)

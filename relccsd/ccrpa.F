@@ -611,7 +611,7 @@ C64B     RNORM = RNORM + FACTOR * CDOTC (NDIMX,Y1,1,Y1,1)
 C64B     RNORM = RNORM + FACTOR * SDOT (NDIMX,Y1,1,Y1,1)
       ENDIF
 C
-      IF (RNORM.LT.1.D-32) STOP 'RNORM TOO SMALL'
+      IF (RNORM.LT.1.D-32) CALL QUIT('RNORM TOO SMALL')
 C
       RNORM = 1.D0 / DSQRT(RNORM)
 C64B  RNORM = 1.0 / SQRT(RNORM)
@@ -754,7 +754,7 @@ C
       CALL RREAD(IOAMPS,Y2,INTOWP(NDIMX*RCW),SECT2)
 C
       IF (CARITH) THEN
-         STOP 'No complex eigensolver implemented'
+         CALL QUTI('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
 C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
@@ -781,7 +781,7 @@ C
       CALL RREAD(IOAMPL,Y2,INTOWP(NDIMX*RCW),SECT2)
 C
       IF (CARITH) THEN
-         STOP 'No complex eigensolver implemented'
+         CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
 C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)
@@ -827,7 +827,7 @@ c        print*,'eigenvalue ',i,'  ',FREQR(I)
       EFREQ = FREQR(1)
       IF (IERR.NE.0) THEN
          PRINT*,' Failed to solve reduced equations'
-         STOP 'ERROR CONDITION IN RGG'
+         CALL QUIT('ERROR CONDITION IN RGG')
       ENDIF
 C
 C  Form the solution vector
@@ -925,7 +925,7 @@ C
       CALL RREAD(IOAMPL,Y1,INTOWP(NDIMX*RCW),SECT2)
 C
       IF (CARITH) THEN
-         STOP 'No complex eigensolver implemented'
+         CALL QUIT('No complex eigensolver implemented')
       ELSE
          SUM1 = DDOT (NDIMX,X1,1,X2,1)
 C64B     SUM1 = SDOT (NDIMX,X1,1,X2,1)

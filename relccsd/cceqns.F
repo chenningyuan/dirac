@@ -48,7 +48,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to MP2EQNS'
+         CALL QUIT('Wrong keyword in call to MP2EQNS')
       ENDIF
 C
 C     Initialize the timing.
@@ -165,7 +165,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to CCEQNS'
+         CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
 C
 C     Initialize the timing.
@@ -449,7 +449,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to L1EQNS'
+         CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
 C-------------------------------
 C S(A,I) = F(A,I)
@@ -580,7 +580,7 @@ C--------------------------------------
       M = NFVV
       N = NFVO
       IF (NBUF3.LT.JVVVO(2)) THEN
-         STOP " OUT OF CORE STEP IN GV NOT IMPLEMENTED"
+         CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
       ENDIF
       USEDZ = .TRUE.
       CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
@@ -660,7 +660,7 @@ C
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
       ELSE
-         STOP 'Wrong keyword in call to L1EQNS'
+         CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
 C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)

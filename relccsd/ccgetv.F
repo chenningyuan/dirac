@@ -183,7 +183,7 @@ C---------------Executable code--------------------------------------
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN GETVOVV TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE GETVOVV"
+         CALL QUIT("UPDATE GETVOVV")
       ENDIF
 C
       DONE = .FALSE.
@@ -270,7 +270,7 @@ C---------------Executable code--------------------------------------
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN GETVVVV TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE GETVVVV"
+         CALL QUIT("UPDATE GETVVVV")
       ENDIF
       DONE = .FALSE.
       MTOT = NVVT(IREP)
@@ -356,7 +356,7 @@ C---------------Executable code--------------------------------------
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN PUTDZ TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE PUTDZ"
+         CALL QUIT("UPDATE PUTDZ")
       ENDIF
 C
       DONE = .FALSE.
@@ -443,7 +443,7 @@ C---------------Executable code--------------------------------------
 C
       IF (NIOBUF.LT.MINBUF*RCW*IRW) THEN
          PRINT*,"CHANGE NIOBUF IN GETDZ TO MINIMALLY",MINBUF*RCW*IRW
-         STOP "UPDATE GETDZ"
+         CALL QUIT("UPDATE GETDZ")
       ENDIF
 C
       DONE = .FALSE.

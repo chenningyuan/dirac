@@ -49,7 +49,7 @@ C
 C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC
-      STOP "NORMAL END OF PROGRAM"
+      CALL QUIT("NORMAL END OF PROGRAM")
  1000 FORMAT (//' Total amount of CPU time (seconds) used :',F14.4,
      &//'  --- Normal end of Run ---')
       END
