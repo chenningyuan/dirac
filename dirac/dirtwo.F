@@ -53,6 +53,7 @@ C*****************************************************************************
 C
 #include <dcbind.h>
 #include <dcbgen.h>
+#include <dcbham.h>
 #include <cbihr2.h>
 #include <dgroup.h>
 #include <dcbbas.h>
@@ -72,6 +73,15 @@ C     Initialize
 C     ==========
 C
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
+C 
+C     In approximate density ZORA only the LL part of the densitry matrix
+C     is to be used
+C
+      IF (ZORA.AND..NOT.ZORA4) THEN
+         DO I = 1,NFMAT
+            CALL KEEPLL(DMAT(1,1,I),NZ,'SRT')
+         ENDDO
+      ENDIF
 C
 C     Transform density matrix to unsorted basis
 C     and insert half-phases

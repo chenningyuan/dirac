@@ -92,7 +92,7 @@
       *mytid =  0;
       *parcal = 0;
       *mparid = 0;
-      *numnod = 0;
+      *numnod = 1;
    }
    else
    {
@@ -101,7 +101,7 @@
        * MPI start
        */
 
-      if ( (ierr = MPI_Init(NULL,NULL)) )
+      if ( (ierr = MPI_Init( &argc, &argv )) )
          printf("MPI_Init error %i in ini_mpi()\n",ierr);
 
       /*
@@ -136,7 +136,6 @@
          exit(1);
       }
 #endif /* SYS_IRIX */
-      (*numnod)--;
       *mparid = 0;
       *parcal = 1;
    }
@@ -145,6 +144,6 @@
    *mytid =  0;
    *parcal = 0;
    *mparid = 0;
-   *numnod = 0;
+   *numnod = 1;
 #endif  /* VAR_MPI */
 }

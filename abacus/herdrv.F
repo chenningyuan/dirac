@@ -2304,7 +2304,7 @@ C        ***** Two-electron repulsion integrals *****
 C        ********************************************
 C
          IF (HAMILT) THEN
-            CALL PAOVEC(0,IPRTWO)
+            CALL PAOVEC(WORK,LWORK,0,IPRTWO)
             CALL TIMER('START ',TIMSTR,TIMEND)
             IRNTYP = 0
             CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
@@ -2321,7 +2321,7 @@ C        ***** Spatial two-electron spin-orbit integrals *****
 C        *****************************************************
 C
          IF (SPNORB) THEN
-            CALL PAOVEC(0,IPRTWO)
+            CALL PAOVEC(WORK,LWORK,0,IPRTWO)
             CALL TIMER('START ',TIMSTR,TIMEND)
             IRNTYP = - 2
             CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,

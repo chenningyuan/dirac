@@ -833,7 +833,7 @@ C  /* Deck rn2ord */
 #include <trkoor.h>
 #include <cbiwlk.h>
 #include <hrunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (LUERR = 0)
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO
       LOGICAL REJGEO, TRU, FAL, TMPLOG
@@ -1186,7 +1186,7 @@ C  /* Deck rn1ord */
 #include <trkoor.h>
 #include <cbiwlk.h>
 #include <hrunit.h>
-#include <units.h>
+#include <codata.h>
 Cjth
 #include <nuclei.h>
       PARAMETER (LUERR = 0)

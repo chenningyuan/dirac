@@ -1160,9 +1160,9 @@ C
          NAELEC = NINT(DTEMP)
          DO IOPEN = 1,NOPEN
 C   
-C           We do     allow fractional occupation of 1
-C              This corresponds to a inactive electron
-C              and gives DALPHA = 0
+C           We do allow fractional occupation of 1
+C           This corresponds to a inactive electron
+C           and gives DALPHA = 0
 C   
             IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
                WRITE(LUPRI,'(1X,A,I2,A,F6.4)')  
@@ -1208,6 +1208,9 @@ C
         ISLINT = 0
         ISSINT = 0
       ENDIF
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+      ENDIF
       INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
@@ -1237,6 +1240,11 @@ C
 C
       IF(.NOT.DODHF) GOTO 999
 C
+      IF (NOPEN.GT.0.AND.ZORA) THEN
+          WRITE(LUPRI,'(1X,A)') 
+     &       'DHFINP: Open shell ZORA is not implemented yet, sorry.. '
+          CALL QUIT('DHFINP ERROR: asked for ZORA Open shell calc.')
+      ENDIF
 C
       WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRSCF
       WRITE(LUPRI,'(1X,A)') '***** TRIAL FUNCTION *****'
@@ -1330,7 +1338,7 @@ C
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC) 
-     &      CALL QUIT('WARNING! .AUTOCC combined with overlap ',
+     &      CALL QUIT('WARNING! .AUTOCC combined with overlap '//
      &           'selection does not work')
          IF(.NOT. DYNSEL) THEN
             WRITE(LUPRI,'(1X,A)') '* Vector selection based on overlap'
@@ -2384,7 +2392,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in VECINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in DHFINP.')
+               CALL QUIT('Illegal keyword in VECINP.')
     1          CONTINUE
 C&&&& PRICMP: Print control for large and small component vectors
                   READ(LUCMD,*) IL,IS
@@ -2532,10 +2540,8 @@ C
       ENDIF
       IPRUSR = 0
       SEGBAS = .TRUE.
-      LENBAS = 0
       NEWBAS = .TRUE.
       NEWPRP = .TRUE.
-      BASDIR = 'Not implemented !!!!'            
       RELCAL = .TRUE.
       INTGEN = 7
 C
@@ -2606,9 +2612,10 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            'XXXXXXX','XXXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.ZORAFC','.SMLV1C','.XXXXXX'/
+     &            '.SPINFR','.ZORA  ','.SMLV1C','XXXXXXX'/
 C
       SYMSTP = .FALSE.
+      INPERR = 0
       CALL TITLER('Hamiltonian defined','*',127)      
 C
 C
@@ -2624,7 +2631,9 @@ C
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
       SOLVEN  = .FALSE.
-      ZORAFC  = .FALSE.
+      ZORA    = .FALSE.
+      ZORA4   = .FALSE.
+      ZORASC  = .FALSE.
       SMLV1C  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
@@ -2753,9 +2762,12 @@ C&&& SPINFREE : Zero out spin-orbit terms
 
                GOTO 100
   114      CONTINUE
-C&&& ZORAFC : Use ZORA-like approximation
-             ZORAFC = .TRUE.
-             READ (LUCMD,*) SSMTRC
+C&&& ZORA   : Use ZORA approximation
+             READ(LUCMD,*) IZORA4,IZORAS
+             ZORA   = .TRUE.
+             ZORA4  = (IZORA4.NE.0)
+             ZORASC = (IZORAS.NE.0)
+             SSMTRC = D0
              ICHANG = ICHANG + 1
              GO TO 100
   115      CONTINUE
@@ -2783,7 +2795,9 @@ C
          IF(VEXTPJ) CALL QUIT('Conflicting options : LEVYLE & VEXTPJ !')
       ENDIF
 C
-      IF(FREEPJ.OR.VEXTPJ.OR.LEVYLE) URKBAL = .FALSE.
+      IF( (FREEPJ.OR.VEXTPJ.OR.LEVYLE) .AND. URKBAL )
+     $   CALL QUIT('FREEPJ, VEXTPJ, or LEVYLE require URKBAL = .FALSE.')
+C
       IF(FREEPJ.AND.VEXTPJ) THEN
         WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
         WRITE(LUPRI,'(A)') 'You cannot specify both VEXTPJ and FREEPJ !'
@@ -2799,20 +2813,15 @@ C
 C
       IF (DIRCON) THEN
          WRITE(LUPRI,'(1X,A)') '* Contracted basis set'
-         IF (MOLFCON) THEN
-            WRITE(LUPRI,'(1X,A)') '     ...molfdir type'
-            IF (.NOT. URKBAL) THEN
-               CALL QUIT('Molfdir type basis sets require'
-     &                   //'URKBAL = .TRUE.')
-            END IF
-            IF (.NOT. (ISPHTR .EQ. 1)) THEN
-               CALL QUIT('Molfdir type basis sets require'
-     &                   //'SPHTRA = 1 0')
-            END IF
-         ELSE
-            WRITE(LUPRI,'(1X,A)') '     ...dirac type'
+         IF (.NOT. URKBAL) THEN
+            WRITE(LUPRI,'(A)')
+     $           'WARNING: contracted basis set'//
+     $           'without .URKBAL is not tested'
          END IF
-C
+         IF (.NOT. (ISPHTR .EQ. 1)) THEN
+            CALL QUIT('Contracted type basis sets require'
+     &           //'SPHTRA = 1 0')
+         END IF
       ELSE
          WRITE(LUPRI,'(1X,A)') '* Uncontracted basis set'
       END IF
@@ -2936,8 +2945,12 @@ C         Operator must be symmetric under time reversal
            WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
      &          'solutions projected out'
          ENDIF
-         IF(ZORAFC) WRITE(LUPRI,'(1X,A,E8.2)')
-     &      '* ZORA-like approximation with scaling factor :',SSMTRC
+         IF(ZORA.AND..NOT.ZORA4) WRITE(LUPRI,'(1X,A,E8.2)')
+     &      '* ZORA approximation using approximate density'
+         IF(ZORA4) WRITE(LUPRI,'(1X,A,E8.2)')
+     &      '* ZORA approximation using the full density'
+         IF(ZORASC) WRITE(LUPRI,'(1X,A,E8.2)')
+     &      '* Calculating and printing scaled ZORA orbital energies'
          IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
      &      '* No nuclear attraction integrals for small components !'
          IF(SMLV1C) WRITE(LUPRI,'(1X,A)')

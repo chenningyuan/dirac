@@ -575,108 +575,7 @@ C
       ENDIF     
 C
       TDDG = SECOND()
-      DO 30 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 30
-C
-C       The next array is used in spinfree calculations, make it zero.
-C
-        DO J = 1, NORB(I)
-          IBEIG(IORB(I)+J) = 0
-        ENDDO
-C
-C       Diagonalize Fock-matrix in MO-basis
-C         - store coefficients in FAO
-C       ===================================
-C
-        IF (.NOT.(SPINFR.OR.LEVYLE)) THEN
-          IF(DOJACO) THEN
-            CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
-     &                  EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
-     &                  WORK(KFREE),LFREE)
-          ELSE
-            CALL QDIAG(NZ,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                 EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
-     &                 NORB(I),WORK(KFREE),LFREE,IERR)
-          ENDIF
-C
-        ELSE
-C
-C         Spinfree calculations can use the boson blocking of the
-C         Fock matrix. For quaternion groups we use the fact that
-C         the matrix becomes real.
-C         Initialize FAO to zero.
-C         --------------------------------------------------------
-C
-          NORB2 = NORB(I)*NORB(I)
-          CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
-C
-          IF (NZ.EQ.4) THEN
-            DO J = 1, NORB(I)
-              IBEIG(IORB(I)+J) = I
-            ENDDO
-            IF(DOJACO) THEN
-              CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
-     &                    EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
-     &                    WORK(KFREE),LFREE)
-            ELSE
-              CALL QDIAG(1,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                   EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
-     &                   NORB(I),WORK(KFREE),LFREE,IERR)
-            ENDIF
-          ELSE
-            NBRP = 4 / NZ
-            DO 20 ISYM = 1, NBRP
-              NBO = NBORB(ISYM,I,0)
-              IF (NBO.EQ.0) GOTO 20
-              NBO2 = NBO * NBO
-              CALL MEMGET('REAL',KFBOS,NBO2,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KVBOS,NBO2,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KEBOS,NBO ,WORK,KFREE,LFREE)
-C
-C             Extract the block of symmetry isym out of the full matrix
-C
-              CALL FBOSON (1,I,ISYM,WORK(KFBOS),NBO,
-     &                     FMO(I2ORBT(I)+1),NORB(I),
-     &                     WORK(KEBOS),EIG(IORB(I)+1))
-C
-C             Diagonalize the block of symmetry isym (and parity i)
-C
-              IF (DOJACO) THEN
-                CALL RSJACO(NBO,NBO,NBO,WORK(KFBOS),
-     &                      WORK(KEBOS),1,1,0,WORK(KVBOS),
-     &                      WORK(KFREE),LFREE)
-              ELSE
-                CALL QDIAG(1,NBO,WORK(KFBOS),NBO,NBO,
-     &                     WORK(KEBOS),1,WORK(KVBOS),NBO,
-     &                     NBO,WORK(KFREE),LFREE,IERR)
-              ENDIF
-C
-C             Copy the block of symmetry isym in to the full matrix
-C
-              CALL FBOSON (2,I,ISYM,WORK(KVBOS), NBO,
-     &                     FAO(I2ORBT(I)+1),NORB(I),
-     &                     WORK(KEBOS),EIG(IORB(I)+1))
-              CALL MEMREL('DFSOLV',WORK,KFBOS,KFBOS,KFREE,LFREE)
-  20        CONTINUE
-C
-C           Sort the eigenvalues according to energy : keep track of 
-C           the boson symmetry. (Use FMO as scratch space for the 
-C           vector sort)
-C
-            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
-            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
-     &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
-     &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
-            CALL MEMREL('DFSOLV',WORK,KINDX,KINDX,KFREE,LFREE)
-          ENDIF
-        ENDIF
-C
-C       Check if positronic eigenvalues are below -2mc^2
-C
-        IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
-C
- 30   CONTINUE
+      CALL DFDIAG (FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
 C
@@ -1178,7 +1077,7 @@ C
 C        Make sure that reordered coefficients are written back
 C        to file.
 C
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
       END IF
 C
 C     Phase-adjustment of coefficients, if requested...
@@ -2704,6 +2603,465 @@ C
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
       END DO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dfdiag */
+      SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
+C*****************************************************************************
+C
+C     Diagonalize Dirac-Fock matrix
+C     On input:
+C       FMO - MO-coefficients from previous iteration
+C     On output:
+C       FAO - MO-coefficients from current iteration
+C       EIG - eigenvalues
+C
+C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
+C     Last revision: Jan 10 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbgen.h>
+#include <dcbdhf.h>
+#include <dcbham.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
+     &            DM1 = -1.00D00, D2 = 2.00D00)
+      LOGICAL SPECIAL
+      DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
+C
+C     Check for special cases :
+C     - Spinfree or Levy-Leblond; diagonalize boson irreps (subblocks)
+C     - ZORA; first diagonalize SS-block, than form and diagonalize
+C       modified large component block
+C
+      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
+      CALL DZERO(FAO,N2BBASXQ)
+C
+      DO 30 I = 1,NFSYM
+C
+        IF(NORB(I).EQ.0) GOTO 30
+C
+C       The next array is used in spinfree calculations, make it zero.
+C
+        DO J = 1, NORB(I)
+          IBEIG(IORB(I)+J) = 0
+        ENDDO
+C
+C       Diagonalize Fock-matrix in MO-basis
+C         - store coefficients in FAO
+C       ===================================
+C
+C       1 : Normal diagonalization, use matrix as supplied by dfsolv
+C
+        IF (.NOT.SPECIAL) THEN
+          IF(DOJACO) THEN
+            CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+     &                  WORK(KFREE),LFREE)
+          ELSE
+            CALL QDIAG(NZ,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                 EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
+     &                 NORB(I),WORK(KFREE),LFREE,IERR)
+          ENDIF
+C
+C
+C       2 : Levy-Leblond or spinfree, use matrix as supplied by dfsolv,
+C           but diagonalize blockwise
+C
+        ELSEIF (.NOT.ZORA) THEN
+C
+C         Spinfree calculations can use the boson blocking of the
+C         Fock matrix. For quaternion groups we use the fact that
+C         the matrix becomes real.
+C         Initialize FAO to zero.
+C         --------------------------------------------------------
+C
+          NORB2 = NORB(I)*NORB(I)
+          CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
+C
+          IF (NZ.EQ.4) THEN
+            DO J = 1, NORB(I)
+              IBEIG(IORB(I)+J) = I
+            ENDDO
+            IF(DOJACO) THEN
+              CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
+     &                    EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+     &                    WORK(KFREE),LFREE)
+            ELSE
+              CALL QDIAG(1,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                   EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
+     &                   NORB(I),WORK(KFREE),LFREE,IERR)
+            ENDIF
+          ELSE
+            NBRP = 4 / NZ
+            DO 20 ISYM = 1, NBRP
+              NBO = NBORB(ISYM,I,0)
+              IF (NBO.EQ.0) GOTO 20
+              NBO2 = NBO * NBO
+              CALL MEMGET('REAL',KFBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KVBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KEBOS,NBO ,WORK,KFREE,LFREE)
+C
+C             Extract the block of symmetry isym out of the full matrix
+C
+              CALL FBOSON (1,I,ISYM,WORK(KFBOS),NBO,
+     &                     FMO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+C
+C             Diagonalize the block of symmetry isym (and parity i)
+C
+              IF (DOJACO) THEN
+                CALL RSJACO(NBO,NBO,NBO,WORK(KFBOS),
+     &                      WORK(KEBOS),1,1,0,WORK(KVBOS),
+     &                      WORK(KFREE),LFREE)
+              ELSE
+                CALL QDIAG(1,NBO,WORK(KFBOS),NBO,NBO,
+     &                     WORK(KEBOS),1,WORK(KVBOS),NBO,
+     &                     NBO,WORK(KFREE),LFREE,IERR)
+              ENDIF
+C
+C             Copy the block of symmetry isym in to the full matrix
+C
+              CALL FBOSON (2,I,ISYM,WORK(KVBOS), NBO,
+     &                     FAO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+              CALL MEMREL('DFDIAG',WORK,KFBOS,KFBOS,KFREE,LFREE)
+  20        CONTINUE
+C
+C           Sort the eigenvalues according to energy : keep track of
+C           the boson symmetry. (Use FMO as scratch space for the
+C           vector sort)
+C
+            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+     &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
+            CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
+          ENDIF
+C
+C       3 : ZORA; diagonalize modified LL block
+C
+        ELSEIF (ZORA.AND.(.NOT.SPINFR)) THEN
+C
+C         Set dimensions
+C
+          NL = NESH(I)
+          NS = NPSH(I)
+          NT = NORB(I)
+          NLL = NL * NL
+          NLS = NL * NS
+          NSS = NS * NS
+          NTT = NT * NT
+C
+C         Allocate memory : note that the use of memory can be
+C         reduced by re-using the space for KWRK3
+C
+          CALL MEMGET('REAL',KEINV,NS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KWRK1,NZ*NSS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KWRK2,NZ*NLS,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KWRK3,NZ*NLL,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KWRK4,NZ*NLS,WORK,KFREE,LFREE)
+          CALL DZERO(WORK(KWRK1),NZ*NSS)
+          CALL DZERO(WORK(KWRK2),NZ*NLS)
+          CALL DZERO(WORK(KWRK3),NZ*NLL)
+          CALL DZERO(WORK(KWRK4),NZ*NLS)
+C
+C         Calculate offset for blocks in the matrices
+C
+          IOP  = IORB(I)+1
+          IOE  = IORB(I)+NS+1
+          IOSS = I2ORBT(I)+1
+          IOLS = I2ORBT(I)+NS+1
+          IOSL = I2ORBT(I)+NT*NS+1
+          IOLL = I2ORBT(I)+NT*NS+NS+1
+          CALL QDIAG(NZ,NS,FMO(IOSS),NT,NT,
+     &               EIG(IOP),1,FAO(IOSS),NT,NT,
+     &               WORK(KFREE),LFREE,IERR)
+C
+C         Make (2c^2-V)**-1/2
+C
+          DO J = 0, NS-1
+             WORK(KEINV+J) = D1 / SQRT(-EIG(IOP+J))
+          ENDDO
+C
+C         Form U * (2c^2-V)**-1/2
+C
+          DO IZ = 1, NZ
+             IOFF = (IZ-1)*NTT + IOSS
+             JOFF = KWRK1 + (IZ-1)*NSS
+             DO J = 0, NS-1
+                CALL DAXPY(NS,WORK(KEINV+J),FAO(IOFF),1,WORK(JOFF),1)
+                IOFF = IOFF + NT
+                JOFF = JOFF + NS
+             ENDDO
+          ENDDO
+C
+C         Form c(sigma.p) * U * (2c^2-V)**-1/2
+C
+          CALL QGEMM(NL,NS,NS,D1,
+     &         'N','N',IPQTOQ(1,0),FMO(IOLS),NT,NT,NZ,
+     &         'N','N',IPQTOQ(1,0),WORK(KWRK1),NS,NS,NZ,
+     &          D0,IPQTOQ(1,0),WORK(KWRK2),NL,NS,NZ)
+C
+C         Form c(sigma.p) * U * (2c^2-V)**-1 * U+ * c(sigma.p)
+C         This is the ZORA modified K.E. matrix
+C
+          CALL QGEMM(NL,NL,NS,D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KWRK2),NL,NS,NZ,
+     &         'H','N',IPQTOQ(1,0),WORK(KWRK2),NL,NS,NZ,
+     &          D0,IPQTOQ(1,0),WORK(KWRK3),NL,NL,NZ)
+C
+C         Add the ZORA modified K.E. matrix to the LL-block
+C
+          DO IZ = 1, NZ
+             IOFF = (IZ-1)*NTT + IOLL
+             JOFF = KWRK3 + (IZ-1)*NLL
+             DO J = 1, NL
+                CALL DAXPY (NL,D1,WORK(JOFF),1,FMO(IOFF),1)
+                IOFF = IOFF + NT
+                JOFF = JOFF + NL
+             ENDDO
+          ENDDO
+C
+C         Diagonalize the ZORA matrix
+C
+          CALL QDIAG(NZ,NL,FMO(IOLL),NT,NT,
+     &               EIG(IOE),1,FAO(IOLL),NT,NT,
+     &               WORK(KFREE),LFREE,IERR)
+C
+C
+C         Form C[S] = U * (2c^2-V)**-1 * U+ * c(sigma.p) * C[L]
+C                   = {U * (2c^2-V)**-1/2} *
+C                     {(2c^2-V)**-1/2 * U+ * c(sigma.p)} * C[L]
+C
+C         The coefficients for the small components.
+C
+          CALL QGEMM(NS,NL,NS,D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KWRK1),NS,NS,NZ,
+     &         'H','N',IPQTOQ(1,0),WORK(KWRK2),NL,NS,NZ,
+     &          D0,IPQTOQ(1,0),WORK(KWRK4),NS,NL,NZ)
+C
+          CALL QGEMM(NS,NL,NL,D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KWRK4),NS,NL,NZ,
+     &         'N','N',IPQTOQ(1,0),FAO(IOLL),NT,NT,NZ,
+     &          D0,IPQTOQ(1,0),FAO(IOSL),NT,NT,NZ)
+C
+C         Determine scaling factors
+C
+          CALL QGEMM(NL,NL,NT,D1,
+     &         'H','N',IPQTOQ(1,0),FAO(IOSL),NT,NT,NZ,
+     &         'N','N',IPQTOQ(1,0),FAO(IOSL),NT,NT,NZ,
+     &          D0,IPQTOQ(1,0),WORK(KWRK3),NL,NL,NZ)
+C
+C         Normalize the vectors for ZORA-4
+C
+          IF (ZORA4)  THEN
+             DO J = 1, NL
+                FACTOR = D1 / SQRT(WORK(KWRK3+(J-1)*(NL+1)))
+                DO IZ = 1, NZ
+                   IOFF = (IZ-1)*NTT + IOSL + (J-1)*NT
+                   CALL DSCAL (NT,FACTOR,FAO(IOFF),1)
+                ENDDO
+             ENDDO
+          ENDIF
+C
+C         Calculate the scaled ZORA eigenvalues
+C
+          IF (ZORASC)  THEN
+             DO J = 1, NL
+                FACTOR = D1 / WORK(KWRK3+(J-1)*(NL+1))
+                EIG(IOE+J-1) = EIG(IOE+J-1) * FACTOR
+             ENDDO
+          ENDIF
+C
+C         Done; release the extra memory used in ZORA
+C
+          CALL MEMREL('DFDIAG',WORK,KEINV,KEINV,KFREE,LFREE)
+C
+C       4 : Spinfree ZORA : Make modified matrix but according to boson blocks
+C
+        ELSEIF (ZORA.AND.SPINFR) THEN
+            NBRP = 4 / NZ
+            DO 21 ISYM = 1, NBRP
+C
+C             Set dimensions
+C
+              NBO = NBORB(ISYM,I,0)
+              IF (NBO.EQ.0) GOTO 21
+              NBO2 = NBO * NBO
+              NL = NBORB(ISYM,I,1)
+              NS = NBORB(ISYM,I,2)
+              NT = NBORB(ISYM,I,0)
+              NLL = NL * NL
+              NLS = NL * NS
+              NSS = NS * NS
+              NTT = NT * NT
+              CALL MEMGET('REAL',KFBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KVBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KEBOS,NBO ,WORK,KFREE,LFREE)
+C
+C             Extract the block of symmetry isym out of the full matrix
+C
+              CALL FBOSON (1,I,ISYM,WORK(KFBOS),NBO,
+     &                     FMO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+C
+C             Allocate memory : note that the use of memory can be
+C             reduced by re-using the space for KWRK3
+C
+              CALL MEMGET('REAL',KEINV,NS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KWRK1,NZ*NSS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KWRK2,NZ*NLS,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KWRK3,NZ*NLL,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KWRK4,NZ*NLS,WORK,KFREE,LFREE)
+              CALL DZERO(WORK(KWRK1),NZ*NSS)
+              CALL DZERO(WORK(KWRK2),NZ*NLS)
+              CALL DZERO(WORK(KWRK3),NZ*NLL)
+              CALL DZERO(WORK(KWRK4),NZ*NLS)
+C
+C             Calculate offset for blocks in the matrices
+C
+              IOP  = KEBOS
+              IOE  = KEBOS+NS
+              IOSS = 0
+              IOLS = NS
+              IOSL = NT*NS
+              IOLL = NT*NS+NS
+              CALL QDIAG(1,NS,WORK(KFBOS+IOSS),NT,NT,
+     &                   WORK(IOP),1,WORK(KVBOS+IOSS),NT,NT,
+     &                   WORK(KFREE),LFREE,IERR)
+C
+C             Make (2c^2-V)**-1/2
+C
+              DO J = 0, NS-1
+                 WORK(KEINV+J) = D1 / SQRT(-WORK(IOP+J))
+              ENDDO
+C
+C             Form U * (2c^2-V)**-1/2
+C
+              IOFF = KVBOS+IOSS
+              JOFF = KWRK1
+              DO J = 0, NS-1
+                 CALL DAXPY(NS,WORK(KEINV+J),WORK(IOFF),1,WORK(JOFF),1)
+                 IOFF = IOFF + NT
+                 JOFF = JOFF + NS
+              ENDDO
+C
+C             Form c(sigma.p) * U * (2c^2-V)**-1/2
+C
+              CALL DGEMM('N','N',NL,NS,NS,D1,
+     &             WORK(KFBOS+IOLS),NT,
+     &             WORK(KWRK1),NS,
+     &             D0,WORK(KWRK2),NL)
+C
+C             Form c(sigma.p) * U * (2c^2-V)**-1/2 * U+ * c(sigma.p)
+C             This is the ZORA modified K.E. matrix
+C
+              CALL DGEMM('N','T',NL,NL,NS,D1,
+     &             WORK(KWRK2),NL,
+     &             WORK(KWRK2),NL,
+     &             D0,WORK(KWRK3),NL)
+C
+C             Add the ZORA modified K.E. matrix to the LL-block
+C
+              IOFF = KFBOS+IOLL
+              JOFF = KWRK3
+              DO J = 1, NL
+                 CALL DAXPY (NL,D1,WORK(JOFF),1,WORK(IOFF),1)
+                 IOFF = IOFF + NT
+                 JOFF = JOFF + NL
+              ENDDO
+C
+C             Diagonalize the ZORA matrix
+C
+              CALL QDIAG(1,NL,WORK(KFBOS+IOLL),NT,NT,
+     &                   WORK(IOE),1,WORK(KVBOS+IOLL),NT,NT,
+     &                   WORK(KFREE),LFREE,IERR)
+C
+C
+C             Form C[S] = U * (2c^2-V)**-1 * U+ * c(sigma.p) * C[L]
+C                       = {U * (2c^2-V)**-1/2} *
+C                         {(2c^2-V)**-1/2 * U+ * c(sigma.p)} * C[L]
+C
+C             The coefficients for the small components.
+C
+              CALL DGEMM('N','T',NS,NL,NS,D1,
+     &             WORK(KWRK1),NS,
+     &             WORK(KWRK2),NL,
+     &             D0,WORK(KWRK4),NS)
+C
+              CALL DGEMM('N','N',NS,NL,NL,D1,
+     &             WORK(KWRK4),NS,
+     &             WORK(KVBOS+IOLL),NT,
+     &             D0,WORK(KVBOS+IOSL),NT)
+C
+C             Determine scaling factors
+C
+              CALL DGEMM('T','N',NL,NL,NT,D1,
+     &                    WORK(KVBOS+IOSL),NT,
+     &                    WORK(KVBOS+IOSL),NT,
+     &                    D0,WORK(KWRK3),NL)
+C
+C             Normalize the vectors for ZORA-4
+C
+              IF (ZORA4)  THEN
+                  DO J = 1, NL
+                     FACTOR = D1 / SQRT(WORK(KWRK3+(J-1)*(NL+1)))
+                     IOFF = KVBOS + IOSL + (J-1)*NT
+                     CALL DSCAL (NT,FACTOR,WORK(IOFF),1)
+                  ENDDO
+              ENDIF
+C
+C             Calculate the scaled ZORA eigenvalues
+C
+              IF (ZORASC)  THEN
+                 DO J = 1, NL
+                    FACTOR = D1 / WORK(KWRK3+(J-1)*(NL+1))
+                    WORK(IOE+J-1) = WORK(IOE+J-1) * FACTOR
+                 ENDDO
+              ENDIF
+C
+C
+C             Release the extra memory used in ZORA
+C
+              CALL MEMREL('DFDIAG',WORK,KEINV,KEINV,KFREE,LFREE)
+C
+C             Copy the block of symmetry isym in to the full matrix
+C
+              CALL FBOSON (2,I,ISYM,WORK(KVBOS), NBO,
+     &                     FAO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+C
+C             Release the memory used for spinfree
+C
+              CALL MEMREL('DFDIAG',WORK,KFBOS,KFBOS,KFREE,LFREE)
+  21        CONTINUE
+C
+C           Sort the eigenvalues according to energy : keep track of
+C           the boson symmetry. (Use FMO as scratch space for the
+C           vector sort)
+C
+            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+     &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
+            CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
+        ENDIF
+C
+C       Check if positronic eigenvalues are below -2mc^2
+C
+        IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
+C
+ 30   CONTINUE
 C
       RETURN
       END

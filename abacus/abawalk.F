@@ -1098,7 +1098,7 @@ C  /* Deck wlkscl */
      &                  IWKTYP,ISOTPS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
@@ -2207,7 +2207,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <units.h>
+#include <codata.h>
 #include <facang.h>
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
      &           DM13 = 1.0D-13)
@@ -2763,7 +2763,7 @@ C     symmetrized tuh 13 April 90
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -3347,7 +3347,7 @@ C     6 - Intrinsic reaction path
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0 D0, DP5 = 0.5 D0)
 C
       LOGICAL KEEPSY, IMAGE, DONWTN
@@ -4268,7 +4268,7 @@ C  /* Deck wlkdyn */
       SUBROUTINE WLKDYN(TDET,Q,P,GRDDIA,EVAL,NCART,RADIUS,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D10 = 10.0D0)
       PARAMETER (EFFZER = 1.0D-10)
       PARAMETER (MAXIT = 1000, D100 = 1.0D02)
@@ -4512,7 +4512,7 @@ C  /* Deck wlkirc */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (TMAX = 10000.0D0)
       LOGICAL DONWTN
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
@@ -5236,7 +5236,7 @@ C  /* Deck wlkdan */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
 #include <mxcent.h>
 #include <maxaqn.h>
@@ -5301,7 +5301,7 @@ C  /* Deck wlkda1 */
 C
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
 #include <mxcent.h>

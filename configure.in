@@ -390,19 +390,28 @@ if [ "$par" = "yes" ]; then
             complist='mpxlf'
             parlib='no'
             parinc='yes'
+            mpirun='mpirun'
             ;;
          t3e-cray)
             parlib='no'
             parinc='no'
+            mpirun='mpirun'
             ;;
          *-hp)
             parlib='no'
             parinc='yes'
             complist='mpif77 $complist'
+            mpirun='mpirun'
+            ;;
+	 *-dec)
+            parlib='yes'
+            parinc='yes'
+            mpirun='dmpirun'
             ;;
          *)
             parlib='yes'
             parinc='yes'
+            mpirun='mpirun'
             ;;
       esac
    fi
@@ -929,8 +938,12 @@ case $machine in
           parlib="$parlib -lfmpi -lrt -pthread"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
-       opt='-O5 -fast'
-       inc="-I$INCLUDE_DIR";;
+       opt='-fast -nofor_main'
+       inc="-I$INCLUDE_DIR"
+       if [ ! -z "echo $LIB | grep 'dxml'" ]; then
+          cpp="$cpp -DVAR_DXML"
+       fi
+       ;;
 #
 #   CRAY T3E
 #
@@ -1068,49 +1081,25 @@ case $machine in
 #  IRIX
 #
    mips*-sgi)
-      case $machine in
-         mips64-sgi) 
-            prc=`hinv -t cpu | egrep ' R5| R8| R10' > /dev/null` || \
-                    prc="non-10000"
-            if [ "$prc" = "non-10000" ]; then
-               echo "Non R10000 IRIX64"
-               opt='-O2 -n32 -mips3 -G 0 -woff 2290'
-               c_opt='-O2 -n32 -mips3 -G 0'
-            else
-               echo "R10000 IRIX64"
-               opt='-O2 -64 -mips4 -G 0 -woff 2290'
-               c_opt='-O2 -64 -mips4 -G 0'
-            fi;;
-         *)          
-            case $os in
-               irix6.4)
-                  opt='-O2 -64 -mips4 -G 0 -woff 2290'
-                  c_opt='-O2 -64 -mips4 -G 0';;
-               irix6.[2-3])
-                  opt='-O2 -n32 -mips3 -G 0 -woff 2290'
-                  c_opt='-O2 -n32 -mips3 -G 0';;
-               *)
-                  opt='-O2 -32 -mips2 -G 0 -woff 2290'
-                  c_opt='-O2 -32 -mips2 -G 0';;
-            esac
-         esac
-         if [ "$mesp" = "dummy" ]; then
-            cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-            ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-            for mod in $MODS; do
-               cpp=`echo $cpp $mod`
-            done
-            def='dirac.x'
-         else
-            cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-            ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-            for mod in $MODS; do
-               cpp=`echo $cpp $mod`
-            done
-	    def='dirmpi.x'
-             mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-         fi
-         inc="-I$INCLUDE_DIR";;
+      opt='-O2 -G 0 -woff 2290'
+      c_opt='-O2 -G 0'
+      if [ "$mesp" = "dummy" ]; then
+         cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         for mod in $MODS; do
+            cpp=`echo $cpp $mod`
+         done
+         def='dirac.x'
+      else
+         cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         for mod in $MODS; do
+            cpp=`echo $cpp $mod`
+         done
+	 def='dirmpi.x'
+          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+      fi
+      inc="-I$INCLUDE_DIR";;
 #
 #   Linux
 #
@@ -1188,7 +1177,14 @@ EOF
 fi
 cat <<EOF >> Makefile.config
 OPTFLAGS    = $opt
+OPTGFLAGS   = $opt -g
+OPTIFLAGS   = -E
 C_OPTFLAGS  = $c_opt
+CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
+ -noargumants -arguments=number \\
+ -usage=var-unitialized
+# -usage=var-unitialized:arg-const-modified:arg-alias
+# -usage=var-unitialized:var-set-unused:arg-unused:arg-const-modified:arg-alias
 INCLUDE_DIR = $inc
 C_INCLUDE_DIR = $c_inc
 LIB_LIST    = $LIB
@@ -1349,12 +1345,18 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o .a
+.SUFFIXES : .F .c .o .a .g .i
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
+.F.g:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F
+.F.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
+.c.i:
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTIFLAGS) \$*.c > \$*.i
 EOF
 esac
 #
@@ -1382,6 +1384,7 @@ QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
+MPIRUN=$mpirun
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam

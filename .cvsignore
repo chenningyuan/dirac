@@ -1,0 +1,9 @@
+.deps
+Makefile
+configure
+pam
+*.o
+*.i
+*.bak
+*.rej
+*.orig

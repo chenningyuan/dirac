@@ -219,7 +219,7 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
       LOGICAL SKIP, DIF, PRINT, PUNCH

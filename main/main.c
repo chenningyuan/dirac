@@ -58,11 +58,11 @@
 #include "mpi_errtrap.h"
 
 #if defined (SYS_DEC)
-extern int MAIN__()
+extern int MAIN__( int argc, char** argv )
 #elif defined (SYS_SX)
-extern int c_main_()
+extern int c_main_( int argc, char** argv )
 #else
-extern int main()
+extern int main( int argc, char** argv )
 #endif
 
 {
@@ -90,7 +90,8 @@ extern int main()
     * Initialize MPI stuff
     */
 
-   ini_mpi(&parcal, &mytid, &mparid, &numnod, &errhandler);
+   ini_mpi( &parcal, &mytid, &mparid, &numnod, &errhandler, 
+            argc, argv );
 
    /*
     * Allocate memory

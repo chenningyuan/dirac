@@ -501,9 +501,9 @@ C
       ORBXLR     = .FALSE.
       XSTERN     = .FALSE.
       DO I = 1,NFSYM
-         XLR_INDSTR(2,I) = ''
-         XLR_INDSTR(1,I) = ''
-         XLR_INDSTR(3,I) = ''
+         XLR_INDSTR(2,I) = ' '
+         XLR_INDSTR(1,I) = ' '
+         XLR_INDSTR(3,I) = ' '
       ENDDO
 C
 C     Initialize user-defined linear response properties
@@ -996,7 +996,7 @@ C
       DO I = 1,3
          ORBDEF(I) = .FALSE.
          DO J = 1, NFSYM
-            ORBDEF(I) = ORBDEF(I) .OR. (XLR_INDSTR(I,J) .NE. '')
+            ORBDEF(I) = ORBDEF(I) .OR. (XLR_INDSTR(I,J) .NE. ' ')
          END DO
       END DO
 C
@@ -1461,7 +1461,7 @@ C
                   I1 = JXOP(1,I)
                   IND = IORBCL(2,I1) + 1
                   ABLRF(IFREQ,INDAP,INDBP,IND)=
-     &            ABLRF(IFREQ,INDAP,INDBP,IND)+FAC*GPO(I,IZ)*
+     &            ABLRF(IFREQ,INDAP,INDBP,IND)+D2*GPO(I,IZ)*
      &              XPO(I,IZ,IFREQ)
                 ENDDO
               ENDDO

@@ -1754,7 +1754,7 @@ C
 #include <nuclei.h>
 #include <blocks.h>
 #include <chrxyz.h>
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT,LFND
+      LOGICAL EXTST,OPTST,FNDLAB,NOCONT
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       CALL QENTER('GABGEN')
@@ -1804,16 +1804,14 @@ C           File AOPROPER is not opened; open it
      &            FILE='AOPROPER')
 #endif
          ENDIF
-         REWIND LUPROP
 C
 C       Search for GAB-integrals; return if they are there
 C
-         LFND = .TRUE.
          DO I = 1,NGAB
-            LFND = LFND .AND. (FNDLAB(GABLAB,LUPROP)) 
-            IF (.NOT. LFND) GOTO 10
+            REWIND LUPROP
+            IF (.NOT. FNDLAB(GABLAB(I),LUPROP)) GOTO 10
          END DO
-         IF (LFND) GOTO 999
+         GOTO 999
  10      CONTINUE
          REWIND LUPROP
          IF(FNDLAB('EOFLABEL',LUPROP)) THEN
@@ -1842,6 +1840,7 @@ C
       ELSE
          NRGAB = 3
       END IF
+      IF (NRGAB .NE. NGAB) CALL QUIT('GABGEN ERROR: NGAB .ne. NRGAB')
       NBUF = NRGAB*NBASIS*NBASIS
       CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)     
       CALL GABGE1(IJOB,WORK(KBUF),ITYPE,IGTYP,
@@ -1863,6 +1862,7 @@ C
             ENDDO
             IF(IPRINT.GE.4) THEN
                CALL HEADER('GABGEN:Reduced GAB-matrix in AO basis',-1)
+               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
                CALL OUTPUT(WORK(KGAB+IOFF2),1,NSYMBL,1,NSYMBL,
      &                   NSYMBL,NSYMBL,-4,LUPRI)
             ENDIF
@@ -1871,32 +1871,22 @@ C
 C
 C     GAB-matrix in SO-basis
 C
-        N2GAB = MAXSHL*MAXSHL
-        CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-        CALL MKDRSO(WORK(KGAB),WORK(KBUF),1,WORK(KFREE),LFREE,IPRINT)
-        DO I = 0,N2GAB-1
-          WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
-        ENDDO
-        IF(IPRINT.GE.4) THEN
-          CALL HEADER('GABGEN:Reduced GAB-matrix in SO basis',-1)
-          CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
-     &              1,LUPRI)
-        ENDIF
+         IF (NGAB .GT. 1) CALL QUIT('GABGEN: only NGAB .eq. 1 for SO')
          N2GAB = MAXSHL*MAXSHL
          CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
          CALL MKDRSO(WORK(KGAB),WORK(KBUF),1,WORK(KFREE),LFREE,IPRINT)
          DO I = 0,N2GAB-1
             WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
          ENDDO
-         IF(IPRINT.GE.0) THEN
-c        IF(IPRINT.GE.4) THEN
+         IF(IPRINT.GE.4) THEN
             CALL HEADER('GABGEN:Reduced GAB-matrix in SO basis',-1)
+            WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(1)
             CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
      &                  -4,LUPRI)
          ENDIF
       ELSE
          WRITE(LUPRI,'(A,I5)') 'GABGEN: Unknown IJOB = ',IJOB
-         CALL QUIT('GABDRV: Unknown IJOB !')
+         CALL QUIT('GABGEN: Unknown IJOB !')
       ENDIF
 C
 C
@@ -1965,14 +1955,10 @@ C
       REWIND LUPROP
       IF(FNDLAB(GABLAB,LUPROP)) THEN
          READ(LUPROP,ERR=10,END=20) GABM
-      ELSE
-         WRITE(LUPRI,'(A,A8,A)')
-     &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-         CALL QUIT('GETGAB: No GAB on AOPROPER !')
-c         WRITE(LUPRI,'(A,A,A8,A)') '*** WARNING: ',
-c     &        'GETGAB: ',GABLAB,' not found on AOPROPER. Regenerating.'
-c we don't know if this is the matrix we want
-c        CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
+      ELSE IF (GABLAB(6:8) .EQ. 'XXX') THEN
+         WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
+     &        GABLAB,' not found on AOPROPER. Regenerating.'
+         CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
          REWIND LUPROP
          IF(FNDLAB(GABLAB,LUPROP)) THEN
             READ(LUPROP,ERR=10,END=20) GABM
@@ -1981,6 +1967,10 @@ c        CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
      &           'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
             CALL QUIT('GETGAB: No GAB on AOPROPER !')
          END IF
+      ELSE
+         WRITE(LUPRI,'(A,A8,A)')
+     &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
+         CALL QUIT('GETGAB: No derivative GAB on AOPROPER !')
       ENDIF
 C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')

@@ -247,7 +247,7 @@ C
 C
       IF(DOSCRN .AND. .NOT.DDFOCK) THEN
 C     ... DNSMAX fits EXPECT, not DDFOCK
-         EXPTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
+         EXPTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       ELSE
          EXPTOL = 1.00D-15
       ENDIF

@@ -4,6 +4,6 @@
      &                JSTRT(MXSHEL),    NSTRT(MXSHEL),  MST(MXSHEL),
      &                NCENT(MXSHEL),    SHARE(MXSHEL),  NRCO(MXSHEL),
      &                NUMCF(MXSHEL),    NBCH(MXSHEL),   KSTRT(MXSHEL),
-     &                SEGM(MXSHEL),     LCLASS(MXSHEL), NOTWOC(MXSHEL),
+     &                SEGM(MXSHEL),     LCLASS(MXSHEL),
      &                IPTSHL(MXSHEL),   NUMCFT(MXSHEL), SPHR(MXSHEL),
      &                KMAX, NLRGSH, NSMLSH, NORBS

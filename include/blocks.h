@@ -7,5 +7,5 @@
      &                JSTRSH(MXSHEL,MXAOVC,2),NPRIMS(MXSHEL,MXAOVC,2),
      &                NCONTS(MXSHEL,MXAOVC,2),IORBSH(MXSHEL,MXAOVC),
      &                IORBSB(0:MXCORB-1), NRCSH(MXSHEL), SEGMSH(MXSHEL),
-     &                LCLASH(MXSHEL),NO2INT(MXSHEL), SPHRSH(MXCORB),
+     &                LCLASH(MXSHEL),SPHRSH(MXCORB),
      &                NLRBL,ISYMBL(MXSHEL,8),NSYMBL

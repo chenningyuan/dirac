@@ -19,7 +19,7 @@ all:	setcomp $(OBJS) $(C_OBJS)
 
 setcomp:
 	( \
-	   rm gpjth_c.o; \
+	   rm -f gpjth_c.o; \
 	   cd include ; \
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \

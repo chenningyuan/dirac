@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 #
 # VERSION : $Revision$
 # DATE    : $Date$
@@ -427,11 +427,7 @@ dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o \\
-dirac/main/alloc_mem.o    dirac/main/csectid.o    dirac/main/dirac.o \\
-dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \\
-dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \\
-dirac/main/mpi_errtrap.o  dirac/main/pr_timing.o  dirac/main/print_logo.o \\
-dirac/main/get_time.o \\
+dirac/main/dirac.o \\
 abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
@@ -443,9 +439,18 @@ abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
 abacus/abanuc.o     abacus/abatro.o \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
-gp/gpjth.o          gp/gpjth_c.o \\
+gp/gpjth.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o
+
+C_OBJS = \\
+dirac/main/alloc_mem.o    dirac/main/csectid.o \\
+dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \\
+dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \\
+dirac/main/mpi_errtrap.o  dirac/main/pr_timing.o  dirac/main/print_logo.o \\
+dirac/main/get_time.o \\
+gp/gpjth_c.o
+
 
 PDLIB = pdpack/pdlib.a
 EOF
@@ -483,7 +488,9 @@ relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o \\
 relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o \\
-relccsd/ccunix.o relccsd/ccgrad.o
+relccsd/ccgrad.o
+
+C_CCOBJS = relccsd/ccunix.o
 EOF
 fi
 #
@@ -558,12 +565,22 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
+TOTOBJS = \$(OBJS) \$(RSPOBJS) \$(TRAOBJS) \$(CCOBJS) \$(ERIOBJS) \\
+	\$(OPENOBJS) \$(SPFOBJS) \$(CIOBJS) \$(GEOOBJS) \$(OBJSLAVE) \$(OBJSMXM)
+
+NOCPPFS = \$(TOTOBJS:.o=.i)
+
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	$AUXMAK
+	$AUXMAK 
 	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
-	\$(OBJS) \\
+	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	$AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+#
+# Run ftnchek on Dirac
+#
+dirac.ftnchek: $(NOCPPFS)
+	ftnchek $(CHEKFLAGS) $(NOCPPFS) > dirac.ftnchek
 EOF
 #
 # Parallel targets
@@ -574,7 +591,8 @@ dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ \\
 	PD_OBJ  SLAVE_OBJ \\
 	$AUXMAK
 	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
-	\$(OBJS)  \$(OBJSLAVE) $AUXOBJ \\
+	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
+	\$(OBJSLAVE) $AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
  	\$(MPI_LIB_PATH) \$(MPI_LIB)
 

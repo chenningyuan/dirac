@@ -249,7 +249,6 @@ C
             IF(NBSYM.EQ.1) THEN
               NCBF1 = NTBAS(0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
               CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
      &                    NFBAS(IFRP,0))
             ELSE
@@ -424,6 +423,9 @@ C       ===========================
 C
         CALL GRSPOP(POPG,PMAT,NPOPLAB)
         CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF)
+C
+CJTH    D2 should be replaced by ??? for average of conf.
+C
         CALL DAXPY(NPOPLAB,D2,POPG(1,1),1,PGTOT(1,IFRP),1)
         CALL DAXPY(NPOPLAB,D2,POPG(1,2),1,PGTOT(1,IFRP),1)
 C

@@ -1879,7 +1879,7 @@ C
 C
 C
          J  = IBEVC(I+IEOFF) - ITOFF
-         IF (IPRINT .GE. 20) THEN
+         IF (IPRXRS .GE. 20) THEN
              WRITE(LUPRI,'(A,I2)') 'XRSTEP: contribution to J = ',J
              WRITE(LUPRI,'(I5,3X,1P,E18.10)')
      &         (K,WORK(KOP+K-1), K = 1,NZXOPE)

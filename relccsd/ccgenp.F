@@ -177,6 +177,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_HPUX)
       CHARACTER FDATE*24
 #endif
+#if defined (SYS_DEC)
+      character*12 real_clock(3)
+#endif
       Character*10 Datum,Tijd*8,String*26
       external time
 #if defined (SYS_DEC)
@@ -213,7 +216,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Datum = String(1:10)
       Tijd  = String(12:19)
 #else
+#if defined (SYS_DEC)
+      Call Date_and_Time(real_clock(1),real_clock(2),real_clock(3))
+      Datum = real_clock(1)(1:10)
+      Tijd = real_clock(2)(1:10)
+#else
       Date and time on your computer???
+#endif
 #endif
 #endif
 #endif

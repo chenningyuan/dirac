@@ -233,7 +233,7 @@ C
 C
       MAXDIF = 0
       ITYPE  = 4
-      CALL PAOVEC(0,IPRALL)
+      CALL PAOVEC(WORK,LWORK,0,IPRALL)
 C
 C----------------------------
 C     Calculate distributions
@@ -648,7 +648,7 @@ C
 C
       ITYPE  = 3
       MAXDER = 0
-      CALL PAOVEC(0,IPRALL)
+      CALL PAOVEC(WORK,LWORK,0,IPRALL)
 C
 C     Transform density to AO basis
 C
@@ -869,7 +869,7 @@ C
       OPEN (LUINTA,STATUS='UNKNOWN',FORM='UNFORMATTED',FILE='AOTWODIS')
       REWIND LUINTA
 C
-      CALL PAOVEC(0,IPRALL)
+      CALL PAOVEC(WORK,LWORK,0,IPRALL)
 C
       RETURN
       END

@@ -1164,9 +1164,25 @@ C
         ENDIF
       ELSE
         IF(NODES.GT.1) THEN
-          FAC = (SQRT(D1+D8*SDPRE(NODES))-D1)/D2
-          FAC = SDPRE(NSTRT(1))/FAC
-          LENTSK = MAX(1,INT(FAC))
+C....total number of tasks divided by number of nodes
+          IJMAX = NSTRT(1)*(NSTRT(1)+1)/2
+          MAXTSK = IJMAX
+          LENTSK = 1
+          DO IJTSK = 1,IJMAX
+            NUM = INT(IJMAX/IJTSK)
+            IF(MOD(IJMAX,IJTSK).NE.0) NUM = NUM + 1
+            NTSK = NUM*(NUM+1)/2
+            IF(NTSK.LT.NODES) GOTO 10
+            IF(NTSK.NE.MAXTSK) THEN
+              MAXTSK = NTSK
+              LENTSK = IJTSK
+            ENDIF
+          ENDDO
+ 10       CONTINUE
+          IF(NODES.GT.MAXTSK) THEN
+            WRITE(LUPRI,'(A)') 
+     &        '** WARNING: More nodes than tasks !'
+          ENDIF
         ELSE
           LENTSK = NSTRT(1)
         ENDIF 

@@ -739,11 +739,7 @@ C
 C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
-       IF (ZORAFC) THEN
-          CALL GTOVLT(SMAT,SSMTRC,WORK,LWORK)
-       ELSE
-          CALL GTOVLT(SMAT,D1,WORK,LWORK)
-       ENDIF
+      CALL GTOVLT(SMAT,D1,WORK,LWORK)
 C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
@@ -1316,9 +1312,7 @@ C
         DO I = 1,NFSYM
           N2TMT = N2TMT + NFBAS(I,0)*NFORB(I,0)
         ENDDO
-        CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
-        CALL WRITT(LUTMAT,N2TMT,WORK(KVMAT))
-        CLOSE(LUTMAT,STATUS='KEEP')
+        KTMAT = KVMAT
       ELSE
 C
 C     Charge conjugation symmetry
@@ -1342,10 +1336,13 @@ C
           ENDDO
         ENDIF
         N2TMT = NZ*N2TMT
-        CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
-        CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-        CLOSE(LUTMAT,STATUS='KEEP')
       ENDIF
+C
+C     Write the transformation matrix.
+C
+      CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
+      CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
+      CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Memory deallocation
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1459,7 +1456,7 @@ C          Finish by adjusting the number of positron solutions to zero
               NBORB(ISYM,I,2) = 0
               NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
            ENDDO
-        ELSE IF (SPINFR) THEN
+        ELSE IF (SPINFR.OR.ZORA) THEN
 C
 C          Basis as in Levy-Leblond but without fixed ratio
 C          Psi = (Psi(L), (2mc)^-1 sigma.p Psi(L) )
@@ -2705,6 +2702,7 @@ C  /* Deck lowgen */
 C*****************************************************************************
 C
 C     Generate Lowdin matrix
+C     (Lowdin's canonical orthonormalization)
 C
 C     Written by T.Saue Sep 11 1995
 C     Last revision Apr 1 1998 - tsaue
@@ -2732,7 +2730,7 @@ C
 C     Print section
 C
       IF(IPRINT.GE.6) THEN
-        CALL HEADER('LOWGEN: Lowdin matrix:',-1)
+        CALL HEADER('LOWGEN: Canonical Lowdin matrix:',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
       CALL QEXIT('LOWGEN')

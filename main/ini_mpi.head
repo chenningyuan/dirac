@@ -11,4 +11,4 @@
 #include "mpi_errtrap.h"
 
 void ini_mpi(int *parcal, int *mytid, int *mparid, int *numnod, 
-             errhandler_type *errhandler)
+             errhandler_type *errhandler, int argc, char** argv )

@@ -2153,6 +2153,7 @@ C
 C
 C     Memory allocation
 C
+      KREL = KFREE
       N2A = LDA*N
       CALL MEMGET('REAL',KAE  ,N2A,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KAS  ,N2A,WORK,KFREE,LFREE)
@@ -2179,7 +2180,7 @@ C
 C     Transfer information back
 C
       CALL QUIT('EIGRED not finished !')
-      CALL MEMREL('EIGRED',WORK,1,KBCI,KFREE,LFREE)
+      CALL MEMREL('EIGRED',WORK,1,KREL,KFREE,LFREE)
       CALL QEXIT ('EIGRED')
       RETURN
       END

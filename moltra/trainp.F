@@ -862,6 +862,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
+      INPERR = 0
 C
 C
 C     Initialize /CBIEXP/

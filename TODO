@@ -101,3 +101,7 @@
   (mochi@koma.jaeri.go.jp)
 
 - KINBAL does not check if block number is higher than MXAOVC
+
+- TMAT should be cheched for orthonormality. If TMAT is not
+  properly orthogonal you may get wrong linear dependecy errors
+  etc.

@@ -89,16 +89,24 @@ C
       DIMENSION WORK(LWORK)
 C
 C
+      PARCAL = (IPARCAL .NE. 0)
+#if defined (VAR_MPI)
 C
 C     Transfer variables to common blocks
 C
-#if defined (VAR_MPI)
       MPARID = IMPARID
-      NUMNOD = INUMNOD
+C We count the number of slave nodes, subtract the master
+      NUMNOD = INUMNOD - 1
       MYTID  = IMYTID
-#endif
-      PARCAL = (IPARCAL .NE. 0)
 C
+      PARCAL = PARCAL.AND.NUMNOD.ne.0
+#endif
+C
+C     Set basis set directory
+C
+      CALL GETBASDIR()
+C
+C     Execute Dirac
 C
       CALL TIMDAT
       CALL DIRCTL(WORK,LWORK)
@@ -321,7 +329,8 @@ C
 C     Transfer variables to common blocks
 C
       MPARID = IMPARID
-      NUMNOD = INUMNOD
+C We count the number of slave nodes, subtract the master
+      NUMNOD = INUMNOD - 1
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
  100  CONTINUE
@@ -422,3 +431,48 @@ C
       STOP
       END
 #endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dirctl */
+      SUBROUTINE GETBASDIR()
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbgen.h>
+C
+C     Check environment variable BASDIR
+C
+#if defined (SYS_T3D) || defined (SYS_T90)
+      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
+#else
+      CALL GETENV ('BASDIR',BASDIR)
+#endif
+      LENBAS = 0
+ 10   CONTINUE
+      IF ( LENBAS .LT. 58 ) THEN
+         IF ( BASDIR(LENBAS+1:LENBAS+1) .NE. ' ' ) THEN
+            LENBAS = LENBAS + 1
+            GOTO 10
+         END IF
+      END IF
+C
+C     Add a trailing slash if necesary
+C
+      IF ( LENBAS .GT. 0 ) THEN
+         IF ( BASDIR(LENBAS:LENBAS) .NE. '/' ) THEN
+            LENBAS = LENBAS + 1
+            BASDIR(LENBAS:LENBAS) = '/'
+         END IF
+      ELSE
+C
+C        Use current directory as basis set directory
+C
+         BASDIR(LENBAS+1:LENBAS+2) = './'
+         LENBAS = LENBAS+2
+C
+      END IF
+C
+      WRITE(LUPRI,'(2A)')
+     $     ' Basis set dir.    : ',BASDIR(1:LENBAS)
+C 
+      RETURN
+      END

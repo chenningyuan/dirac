@@ -1492,7 +1492,7 @@ C
 C
       WRITE(LUPRI,9000) 
      &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
-      WRITE(LUPRI,9000) '','','MPV(n)/au    ','QW(n)    ',''
+      WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
       NATOM = 0
       DO 120 IATOM = 1, NUCIND
          IF (.NOT. DOATOM(IATOM)) GOTO 110
@@ -1587,7 +1587,7 @@ C***********************************************************************
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <dummy.h>
-#include <units.h>
+#include <codata.h>
 #include <alphac.h>
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
@@ -1833,7 +1833,7 @@ C  /* Deck spiana */
      &                  WORK,KFREE,LFREE)
 #include <implicit.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
 #include <alphac.h>
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
 #include <mxcent.h>
@@ -2198,7 +2198,7 @@ C***********************************************************************
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <dummy.h>
-#include <units.h>
+#include <codata.h>
 #include <alphac.h>
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)

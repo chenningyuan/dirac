@@ -1,0 +1,959 @@
+Master : DIRAC allocating 63000000 words of memory
+******************************************************************************
+*                                                                            *
+*                                O U T P U T                                 *
+*                                   from                                     *
+*                                                                            *
+*                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+*                   @@  @@        @@  @@   @@  @@   @@                       *
+*                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+*                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+*                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+*                                                                            *
+*                                                                            *
+MMMMMMMMMMMMMMMMMMMMMMMMMMP!<<~"<<<<<!<<<<!!!!!<~"!****MMHMMMMMMMMX?HMXMMX9M?H
+MMMMMMMMMMMMMMMMMMMMMMMM!M!<<<<<<:<<<<<<<<<<~<<< <<~~~<!!MMMMMMMMMMH%XX%!XMMXX
+MMMMMMMMMMMMMMMMMMMMMMM!<!!!<<<<<<<<<<<<<<< <~<~~~~    ~<~!!??MSMMMM!tXX!9HtSM
+MMMMMMMMMMMMMMMMMMMMMMM!:!<<<<!!!<<<<<<~<`<~~~     `     <<<~!*MMHM9XXMMHSHMMM
+MMMMMMMMMMMMMMMMMMMMMMM%?<<<<<<<<<<~~<~'~<~'             `<<<!~!MMMMMMMXMMMMMM
+MMMMMMMMMMMMMMMMMMMMMM!!!X<<<<<<<<<~     ~                 `<<<<!?MMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMX<<!!<!<<<~~<<<                       `~<<<~?MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMM?M:<<<<<<<~ <<<<      :                  `<<<!MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMM!!!!<<<<<<<~ <<~ '<::<<<<<<:                `<<MMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMX<<<<<<<<<<<:<<  <`<<<<<:nnnhnn:              ~<!MMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMXxnnnnxnxi:<<<<<<<<<<<<xHMMMMMMnx:              `"??MMMMMMM
+MMMMMMMMMMMMMMMMMMX8NN888MMMMXXx:::xxHMMMMMMMMMMMMMMH::              <!!?MMMMM
+MMMMMMMMMMMMMMMM?9$$$$$$$NM8MMMMMMMMMMMMMMMMMMMMMMMMMMH:            '!!!!MMMMM
+MMMMMMMMMMMMMMMXt$$$$$$$$$$$N8MMMMMNNMMMMMMMMMMMMMMMMMMh<            <<<!?MMMM
+MMMMMMMMMMMMMMXN$$$$$$$$$$$$$$$NN$$$$NN8N9MMMMMMMMMMMMMX<~            `~<<!MSM
+MMMMMMMMMMMM!~t$$$$$$$$$$$$$$$$$$$$$$$BMMMMMMMMMMMMMMMMM>               `<XMMM
+MMMMMMMMMMMMXX$$$$$$$$$$$$$$$$$$$$$$R$RMMMMMMMMMMMMMMMMM%<               <XMSt
+MMMMMMMMMMMMXN$$$$$$$$$$$$$$$$$$$$MMMMMMMMMMMMMMMMMMMMMMf<<  :          :<?MMH
+MMMMMMMMMMMMX$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMMMMMMMMM!<<<            `<MMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$RMMMMMB8MMMMMMMMMMMMMMMMMMMM!<<<            <!HXSt
+MMMMMMMMMMMM9$$$$$$$$$$$$N$8MMM8NN$$8NNMMMMMMMMMMMMMMMM!<<<<            <!MMMX
+MMMMMMMMMMMM$$$$$$$$$$$$$$NN8N$$$$$$$$$MMMMMMMMMMMMMMMMX<<<<            <XXMMM
+MMMMMMMMMMMM9$$$$$$$$$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMx<<<            <XMXMX
+MMMMMMMMMMMMM$$$$$$$$$$$$$$$RR$RRRRM*!"""!*MMMMMMMMMMMMMH><~           ::MMMHM
+MMMMMMMMMMMMMRRRRR$$$RM$$RRMMMM*!"!~<<<<<::X??MMMMMMMMMMMf~        :xnx:?MMMHM
+MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
+MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
+MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
+MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
+MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!??!!!
+MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
+MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
+MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
+MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM??!MMMMMMMMXH!!!~<~!!
+MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
+MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
+MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
+MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
+MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
+MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2??!*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
+MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
+MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
+MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
+MM??!?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
+?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM??!!!!<<<<<<<<<!XMMM            
+X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
+!!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
+!!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
+<<<<<<<<<<<<!<<~     ~?MMRRMMMMMMMMMMMM!"!<<~      <<<<<<<<<<H$$f             
+<<<<<<<<<<<<<<~       ~MMMMMMMMMMM**M?"<<~         <<<<<<<<:HM$R"             
+<<<<<<<<<<<<<~         `***!"?"!!!<<<<~           :<<<<<<<HMMMRP              
+<<<<<<<<<<<<<             `~ ` ~~    :            ~<<<<<xHMMMMM"              
+<<<<<<<<<<<<~                       <<:            ~ <<:HMMMMMf               
+<<<<<<<<<<<<                        `Hn:             <xMMMMMMM"               
+<<<<<<<<<<<                          !MMi          <xXMMMMMMM!                
+<<<<<<<<<<<                           !MM:        :!MMMMMMMMM~                
+<<<<<<<<<<:                            "MMr::  :xnHMMMMMMMMM!                 
+<<<<<<<<<<                              `"  `~~~?MMMMMMMMM?!                  
+<<<<<<<<<<                                      `"*MP*?XMM!~                  
+<<<<<<<<<<                                        `"!<!MMf~                   
+<<<<<<<<<~                                          `~!!?!                    
+<<<<<<<<<                                            `<~!~                    
+<<<<<<<<<                                          <:<<`~                     
+<<<<<<<<<~                                         ::<<                      :
+<<<<<<<<<<                                        'MHk<                      <
+:<<<<<<<<<                                        `MMH:                   < <<
+******************************************************************************
+*                                                                            *
+*         =======================================================            *
+*                     Program for Atomic and Molecular                       *
+*          Direct Iterative Relativistic Allelectron Calculations            *
+*         =======================================================            *
+*                                                                            *
+*                        VERSION 3.1     OCTOBER 1998                        *
+*                                                                            *
+******************************************************************************
+*                                                                            *
+* Written by:                                                                *
+*    Trond Saue,              IRSAMC, Universite Paul Sabatier, France       *
+*    Thomas Enevoldsen,       Odense University,                Denmark      *
+*    Trygve Helgaker,         University of Oslo,               Norway       *
+*    Hans Joergen Aa. Jensen, Odense University,                Denmark      *
+*    Jon K. Laerdahl,         University of Auckland,           New Zealand  *
+*    Kenneth Ruud,            University of Oslo,               Norway       *
+*    Joern Thyssen,           Odense University,                Denmark      *
+*    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Netherlands  *
+*                                                                            *
+*                                                                            *
+* Note:                                                                      *
+*    This is an experimental code. The authors accept no responsibility      *
+*    for the performance of the code or for the correctness of the results.  *
+*                                                                            *
+*    The code (in whole or part) is not to be reproduced for further         *
+*    distribution without the written permission of the authors or           *
+*    their representatives.                                                  *
+*                                                                            *
+*    If results obtained with this code are published, an                    *
+*    appropriate citation would be:                                          *
+*                                                                            *
+*    T. Saue, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen, J. Laerdahl,     *
+*    K. Ruud, J. Thyssen, and L. Visscher:                                   *
+*    "Dirac, a relativistic ab initio electronic structure program,          *
+*    Release 3.1 (1998)"                                                     *
+*                                                                            *
+******************************************************************************
+ Version           : Dirac Newest 3.1 (patchlevel 0) 
+ Hostname          : das503.cs.vu.nl
+ Operating system  : Linux 2.2.14-5.nodes
+ Machine           : i686
+ Run               : Parallel
+ Last compilation  : 09:22:14 May 11 2000 (by visscher@das0fs.cs.vu.nl)
+
+
+ *************************************************************************
+ ********************* DIRAC: No title specified !!! *********************
+ *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+
+
+ **************************************************************************
+ ************************** General DIRAC set-up **************************
+ **************************************************************************
+
+ * The speed of light :        137.0359895
+ * Direct evaluation of the following two-electron integrals:
+ * Default integral flags passed to all modules
+   - LL-integrals: T
+   - LS-integrals: T
+   - SS-integrals: T
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:  0.100E-05
+   Small components:  0.100E-07
+ * General print level   :   0
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Uranium atom                                                            
+  Dyall basis for n=2.                                                    
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E 
+    C2z | C2z   E 
+    C2y | C2y  C2x   E 
+    C2x | C2x  C2y  C2z   E 
+     i  |  i   Oxy  Oxz  Oyz   E 
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E 
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E 
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag 
+    B3u | B3u  Ag 
+    B2u | B2u  B1g  Ag 
+    B1g | B1g  B2u  B3u  Ag 
+    B1u | B1u  B2g  B3g  Au   Ag 
+    B2g | B2g  B1u  Au   B3g  B3u  Ag 
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag 
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                        **************************
+                        *** Output from DBLGRP ***
+                        **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                             Spinor structure
+                             ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                          Quaternion symmetries
+                          ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  U           1      92     121     121      L - [1s40p|1s40p]                          
+                            283     283      S - [40s1p40d|40s1p40d]                    
+  ----------------------------------------------------------------------
+                            121     121   L - large components
+                            283     283   S - small components
+  ----------------------------------------------------------------------
+  total:      1      92     404     404
+
+  Cartesian basis used.
+  Threshold for integrals:  1.00E-16
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   U        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   0  1  1  0  1  0  0  0
+
+
+  Symmetry 2
+
+   1   U     x    1
+
+
+  Symmetry 3
+
+   2   U     y    2
+
+
+  Symmetry 5
+
+   3   U     z    3
+  Nuclear repulsion energy :    0.000000000000
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:         161   41   41   40   41   40   40    0
+  Number of large orbitals in each symmetry:     1   40   40    0   40    0    0    0
+  Number of small orbitals in each symmetry:   160    1    1   40    1   40   40    0
+
+
+  Symmetry  Ag ( 1)
+
+    1     U    L   s            1
+    2     U    S   s          122
+    3     U    S   s          123
+    4     U    S   s          124
+    5     U    S   s          125
+    6     U    S   s          126
+    7     U    S   s          127
+    8     U    S   s          128
+    9     U    S   s          129
+   10     U    S   s          130
+   11     U    S   s          131
+   12     U    S   s          132
+   13     U    S   s          133
+   14     U    S   s          134
+   15     U    S   s          135
+   16     U    S   s          136
+   17     U    S   s          137
+   18     U    S   s          138
+   19     U    S   s          139
+   20     U    S   s          140
+   21     U    S   s          141
+   22     U    S   s          142
+   23     U    S   s          143
+   24     U    S   s          144
+   25     U    S   s          145
+   26     U    S   s          146
+   27     U    S   s          147
+   28     U    S   s          148
+   29     U    S   s          149
+   30     U    S   s          150
+   31     U    S   s          151
+   32     U    S   s          152
+   33     U    S   s          153
+   34     U    S   s          154
+   35     U    S   s          155
+   36     U    S   s          156
+   37     U    S   s          157
+   38     U    S   s          158
+   39     U    S   s          159
+   40     U    S   s          160
+   41     U    S   s          161
+   42     U    S   dxx        165
+   43     U    S   dyy        168
+   44     U    S   dzz        170
+   45     U    S   dxx        171
+   46     U    S   dyy        174
+   47     U    S   dzz        176
+   48     U    S   dxx        177
+   49     U    S   dyy        180
+   50     U    S   dzz        182
+   51     U    S   dxx        183
+   52     U    S   dyy        186
+   53     U    S   dzz        188
+   54     U    S   dxx        189
+   55     U    S   dyy        192
+   56     U    S   dzz        194
+   57     U    S   dxx        195
+   58     U    S   dyy        198
+   59     U    S   dzz        200
+   60     U    S   dxx        201
+   61     U    S   dyy        204
+   62     U    S   dzz        206
+   63     U    S   dxx        207
+   64     U    S   dyy        210
+   65     U    S   dzz        212
+   66     U    S   dxx        213
+   67     U    S   dyy        216
+   68     U    S   dzz        218
+   69     U    S   dxx        219
+   70     U    S   dyy        222
+   71     U    S   dzz        224
+   72     U    S   dxx        225
+   73     U    S   dyy        228
+   74     U    S   dzz        230
+   75     U    S   dxx        231
+   76     U    S   dyy        234
+   77     U    S   dzz        236
+   78     U    S   dxx        237
+   79     U    S   dyy        240
+   80     U    S   dzz        242
+   81     U    S   dxx        243
+   82     U    S   dyy        246
+   83     U    S   dzz        248
+   84     U    S   dxx        249
+   85     U    S   dyy        252
+   86     U    S   dzz        254
+   87     U    S   dxx        255
+   88     U    S   dyy        258
+   89     U    S   dzz        260
+   90     U    S   dxx        261
+   91     U    S   dyy        264
+   92     U    S   dzz        266
+   93     U    S   dxx        267
+   94     U    S   dyy        270
+   95     U    S   dzz        272
+   96     U    S   dxx        273
+   97     U    S   dyy        276
+   98     U    S   dzz        278
+   99     U    S   dxx        279
+  100     U    S   dyy        282
+  101     U    S   dzz        284
+  102     U    S   dxx        285
+  103     U    S   dyy        288
+  104     U    S   dzz        290
+  105     U    S   dxx        291
+  106     U    S   dyy        294
+  107     U    S   dzz        296
+  108     U    S   dxx        297
+  109     U    S   dyy        300
+  110     U    S   dzz        302
+  111     U    S   dxx        303
+  112     U    S   dyy        306
+  113     U    S   dzz        308
+  114     U    S   dxx        309
+  115     U    S   dyy        312
+  116     U    S   dzz        314
+  117     U    S   dxx        315
+  118     U    S   dyy        318
+  119     U    S   dzz        320
+  120     U    S   dxx        321
+  121     U    S   dyy        324
+  122     U    S   dzz        326
+  123     U    S   dxx        327
+  124     U    S   dyy        330
+  125     U    S   dzz        332
+  126     U    S   dxx        333
+  127     U    S   dyy        336
+  128     U    S   dzz        338
+  129     U    S   dxx        339
+  130     U    S   dyy        342
+  131     U    S   dzz        344
+  132     U    S   dxx        345
+  133     U    S   dyy        348
+  134     U    S   dzz        350
+  135     U    S   dxx        351
+  136     U    S   dyy        354
+  137     U    S   dzz        356
+  138     U    S   dxx        357
+  139     U    S   dyy        360
+  140     U    S   dzz        362
+  141     U    S   dxx        363
+  142     U    S   dyy        366
+  143     U    S   dzz        368
+  144     U    S   dxx        369
+  145     U    S   dyy        372
+  146     U    S   dzz        374
+  147     U    S   dxx        375
+  148     U    S   dyy        378
+  149     U    S   dzz        380
+  150     U    S   dxx        381
+  151     U    S   dyy        384
+  152     U    S   dzz        386
+  153     U    S   dxx        387
+  154     U    S   dyy        390
+  155     U    S   dzz        392
+  156     U    S   dxx        393
+  157     U    S   dyy        396
+  158     U    S   dzz        398
+  159     U    S   dxx        399
+  160     U    S   dyy        402
+  161     U    S   dzz        404
+
+
+  Symmetry  B3u( 2)
+
+  162     U    L   px           2
+  163     U    L   px           5
+  164     U    L   px           8
+  165     U    L   px          11
+  166     U    L   px          14
+  167     U    L   px          17
+  168     U    L   px          20
+  169     U    L   px          23
+  170     U    L   px          26
+  171     U    L   px          29
+  172     U    L   px          32
+  173     U    L   px          35
+  174     U    L   px          38
+  175     U    L   px          41
+  176     U    L   px          44
+  177     U    L   px          47
+  178     U    L   px          50
+  179     U    L   px          53
+  180     U    L   px          56
+  181     U    L   px          59
+  182     U    L   px          62
+  183     U    L   px          65
+  184     U    L   px          68
+  185     U    L   px          71
+  186     U    L   px          74
+  187     U    L   px          77
+  188     U    L   px          80
+  189     U    L   px          83
+  190     U    L   px          86
+  191     U    L   px          89
+  192     U    L   px          92
+  193     U    L   px          95
+  194     U    L   px          98
+  195     U    L   px         101
+  196     U    L   px         104
+  197     U    L   px         107
+  198     U    L   px         110
+  199     U    L   px         113
+  200     U    L   px         116
+  201     U    L   px         119
+  202     U    S   px         162
+
+
+  Symmetry  B2u( 3)
+
+  203     U    L   py           3
+  204     U    L   py           6
+  205     U    L   py           9
+  206     U    L   py          12
+  207     U    L   py          15
+  208     U    L   py          18
+  209     U    L   py          21
+  210     U    L   py          24
+  211     U    L   py          27
+  212     U    L   py          30
+  213     U    L   py          33
+  214     U    L   py          36
+  215     U    L   py          39
+  216     U    L   py          42
+  217     U    L   py          45
+  218     U    L   py          48
+  219     U    L   py          51
+  220     U    L   py          54
+  221     U    L   py          57
+  222     U    L   py          60
+  223     U    L   py          63
+  224     U    L   py          66
+  225     U    L   py          69
+  226     U    L   py          72
+  227     U    L   py          75
+  228     U    L   py          78
+  229     U    L   py          81
+  230     U    L   py          84
+  231     U    L   py          87
+  232     U    L   py          90
+  233     U    L   py          93
+  234     U    L   py          96
+  235     U    L   py          99
+  236     U    L   py         102
+  237     U    L   py         105
+  238     U    L   py         108
+  239     U    L   py         111
+  240     U    L   py         114
+  241     U    L   py         117
+  242     U    L   py         120
+  243     U    S   py         163
+
+
+  Symmetry  B1g( 4)
+
+  244     U    S   dxy        166
+  245     U    S   dxy        172
+  246     U    S   dxy        178
+  247     U    S   dxy        184
+  248     U    S   dxy        190
+  249     U    S   dxy        196
+  250     U    S   dxy        202
+  251     U    S   dxy        208
+  252     U    S   dxy        214
+  253     U    S   dxy        220
+  254     U    S   dxy        226
+  255     U    S   dxy        232
+  256     U    S   dxy        238
+  257     U    S   dxy        244
+  258     U    S   dxy        250
+  259     U    S   dxy        256
+  260     U    S   dxy        262
+  261     U    S   dxy        268
+  262     U    S   dxy        274
+  263     U    S   dxy        280
+  264     U    S   dxy        286
+  265     U    S   dxy        292
+  266     U    S   dxy        298
+  267     U    S   dxy        304
+  268     U    S   dxy        310
+  269     U    S   dxy        316
+  270     U    S   dxy        322
+  271     U    S   dxy        328
+  272     U    S   dxy        334
+  273     U    S   dxy        340
+  274     U    S   dxy        346
+  275     U    S   dxy        352
+  276     U    S   dxy        358
+  277     U    S   dxy        364
+  278     U    S   dxy        370
+  279     U    S   dxy        376
+  280     U    S   dxy        382
+  281     U    S   dxy        388
+  282     U    S   dxy        394
+  283     U    S   dxy        400
+
+
+  Symmetry  B1u( 5)
+
+  284     U    L   pz           4
+  285     U    L   pz           7
+  286     U    L   pz          10
+  287     U    L   pz          13
+  288     U    L   pz          16
+  289     U    L   pz          19
+  290     U    L   pz          22
+  291     U    L   pz          25
+  292     U    L   pz          28
+  293     U    L   pz          31
+  294     U    L   pz          34
+  295     U    L   pz          37
+  296     U    L   pz          40
+  297     U    L   pz          43
+  298     U    L   pz          46
+  299     U    L   pz          49
+  300     U    L   pz          52
+  301     U    L   pz          55
+  302     U    L   pz          58
+  303     U    L   pz          61
+  304     U    L   pz          64
+  305     U    L   pz          67
+  306     U    L   pz          70
+  307     U    L   pz          73
+  308     U    L   pz          76
+  309     U    L   pz          79
+  310     U    L   pz          82
+  311     U    L   pz          85
+  312     U    L   pz          88
+  313     U    L   pz          91
+  314     U    L   pz          94
+  315     U    L   pz          97
+  316     U    L   pz         100
+  317     U    L   pz         103
+  318     U    L   pz         106
+  319     U    L   pz         109
+  320     U    L   pz         112
+  321     U    L   pz         115
+  322     U    L   pz         118
+  323     U    L   pz         121
+  324     U    S   pz         164
+
+
+  Symmetry  B2g( 6)
+
+  325     U    S   dxz        167
+  326     U    S   dxz        173
+  327     U    S   dxz        179
+  328     U    S   dxz        185
+  329     U    S   dxz        191
+  330     U    S   dxz        197
+  331     U    S   dxz        203
+  332     U    S   dxz        209
+  333     U    S   dxz        215
+  334     U    S   dxz        221
+  335     U    S   dxz        227
+  336     U    S   dxz        233
+  337     U    S   dxz        239
+  338     U    S   dxz        245
+  339     U    S   dxz        251
+  340     U    S   dxz        257
+  341     U    S   dxz        263
+  342     U    S   dxz        269
+  343     U    S   dxz        275
+  344     U    S   dxz        281
+  345     U    S   dxz        287
+  346     U    S   dxz        293
+  347     U    S   dxz        299
+  348     U    S   dxz        305
+  349     U    S   dxz        311
+  350     U    S   dxz        317
+  351     U    S   dxz        323
+  352     U    S   dxz        329
+  353     U    S   dxz        335
+  354     U    S   dxz        341
+  355     U    S   dxz        347
+  356     U    S   dxz        353
+  357     U    S   dxz        359
+  358     U    S   dxz        365
+  359     U    S   dxz        371
+  360     U    S   dxz        377
+  361     U    S   dxz        383
+  362     U    S   dxz        389
+  363     U    S   dxz        395
+  364     U    S   dxz        401
+
+
+  Symmetry  B3g( 7)
+
+  365     U    S   dyz        169
+  366     U    S   dyz        175
+  367     U    S   dyz        181
+  368     U    S   dyz        187
+  369     U    S   dyz        193
+  370     U    S   dyz        199
+  371     U    S   dyz        205
+  372     U    S   dyz        211
+  373     U    S   dyz        217
+  374     U    S   dyz        223
+  375     U    S   dyz        229
+  376     U    S   dyz        235
+  377     U    S   dyz        241
+  378     U    S   dyz        247
+  379     U    S   dyz        253
+  380     U    S   dyz        259
+  381     U    S   dyz        265
+  382     U    S   dyz        271
+  383     U    S   dyz        277
+  384     U    S   dyz        283
+  385     U    S   dyz        289
+  386     U    S   dyz        295
+  387     U    S   dyz        301
+  388     U    S   dyz        307
+  389     U    S   dyz        313
+  390     U    S   dyz        319
+  391     U    S   dyz        325
+  392     U    S   dyz        331
+  393     U    S   dyz        337
+  394     U    S   dyz        343
+  395     U    S   dyz        349
+  396     U    S   dyz        355
+  397     U    S   dyz        361
+  398     U    S   dyz        367
+  399     U    S   dyz        373
+  400     U    S   dyz        379
+  401     U    S   dyz        385
+  402     U    S   dyz        391
+  403     U    S   dyz        397
+  404     U    S   dyz        403
+
+
+  No orbitals in symmetry  Au ( 8)
+
+  Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
+
+  Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
+
+
+ ***************************************************************************
+ *************************** Hamiltonian defined ***************************
+ ***************************************************************************
+
+ * Print level :    0
+ * Uncontracted basis set
+ * Restricted kinetic balance
+ * Default RKB projection:
+   1: Pre-projection on scalar basis
+   2: Removing unphysical solutions for no external field
+ * Dirac-Coulomb Hamiltonian
+ with the following modifications:
+ * Spin-orbit terms zeroed out (NB : ONLY in the DHF calculation !!)
+ * Two-electron part ignored (one-electron system)
+ * ZORA approximation using approximate density
+ * Calculating and printing scaled ZORA orbital energies
+===========================================================================
+ Maximum memory load for two-integral processing in HERMIT:
+===========================================================================
+ * LL-integrals:
+   3(U    Lp)   2(U    Lp)   3(U    Lp)   2(U    Lp)               78870
+ * SL-integrals:
+  24(U    Sd)  23(U    Sd)   3(U    Lp)   2(U    Lp)              295030
+ * SS-integrals:
+  24(U    Sd)  23(U    Sd)  24(U    Sd)  23(U    Sd)             1043830
+
+
+ **************************************************************************
+ ************************** Wave function module **************************
+ **************************************************************************
+
+ Jobs in this run:
+ * Dirac-Hartree-Fock calculation
+===========================================================================
+ DHFINP: Set-up for Dirac-Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Closed shell DHF with    2 electrons in
+       1 orbitals in Fermion irrep 1
+       0 orbitals in Fermion irrep 2
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Maximum number of iterations:   50
+ * Convergence on error vector(approximate gradient).
+   Convergence threshold:0.100E-05
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter .
+ * DIIS (dirac-like)
+ * DIIS will be activated when convergence reaches : 0.10E+21
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ *************************************************************************
+ ************************ End of input processing ************************
+ *************************************************************************
+
+
+
+                        Generating Lowdin matrix:
+                        -------------------------
+
+   L   Ag    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Ag    * Deleted:         40(Proj:         40, Lindep:          0)
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                            Output from DELPOS
+                            ------------------
+
+* Applied strict kinetic balance !
+
+
+ *******************************************************************************
+
+
+***
+ ************************* Dirac-Hartree-Fock calculation *************************
+ *******************************************************************************
+***
+
+* Total time for one-electron system: 0.00000000s
+
+
+                               Eigenvalues
+                               -----------
+
+
+* Boson symmetry Ag 
+  * Closed shell, f = 1.0000
+     -4.6410637788  ( 2)
+
+* Boson symmetry B3u
+  * Virtual eigenvalues, f = 0.0000
+  -1136.9081528778  ( 2)      -503.4300326707  ( 2)      -280.4786197946  ( 2)      -178.0367208481  ( 2)      -122.8358716377  ( 2)
+    -89.7823107074  ( 2)       -68.4417373877  ( 2)       -53.7737612748  ( 2)       -42.8610183377  ( 2)       -33.9914939806  ( 2)
+    -26.5822674151  ( 2)       -20.5259333251  ( 2)       -16.0301814632  ( 2)       -14.4664783265  ( 2)       -11.1614010966  ( 2)
+    134.9447456467  ( 2)       519.8820392230  ( 2)      1303.0364821755  ( 2)      2717.2569642305  ( 2)      5039.5403673887  ( 2)
+   8509.3734714402  ( 2)     13197.5312159860  ( 2)     18922.5820660855  ( 2)     25330.8135707606  ( 2)     32110.2039127774  ( 2)
+  39161.6323501080  ( 2)     46603.1122973766  ( 2)     54746.8506063606  ( 2)     63891.4040857072  ( 2)     74660.2812101021  ( 2)
+  87179.0217818530  ( 2)    103039.1472146774  ( 2)    121133.2158499869  ( 2)    146773.9553811786  ( 2)    172715.0237695882  ( 2)
+ 218266.3247784925  ( 2)    251763.2312698664  ( 2)    333565.2834925933  ( 2)    374093.4344259388  ( 2)    486462.0500083806  ( 2)
+
+* Boson symmetry B2u
+  * Virtual eigenvalues, f = 0.0000
+  -1136.9081528779  ( 2)      -503.4300326707  ( 2)      -280.4786197942  ( 2)      -178.0367208477  ( 2)      -122.8358716378  ( 2)
+    -89.7823107074  ( 2)       -68.4417373876  ( 2)       -53.7737612749  ( 2)       -42.8610183382  ( 2)       -33.9914939812  ( 2)
+    -26.5822674157  ( 2)       -20.5259333252  ( 2)       -16.0301814633  ( 2)       -14.4664783270  ( 2)       -11.1614010964  ( 2)
+    134.9447456462  ( 2)       519.8820392227  ( 2)      1303.0364821752  ( 2)      2717.2569642299  ( 2)      5039.5403673879  ( 2)
+   8509.3734714399  ( 2)     13197.5312159868  ( 2)     18922.5820660858  ( 2)     25330.8135707610  ( 2)     32110.2039127772  ( 2)
+  39161.6323501076  ( 2)     46603.1122973761  ( 2)     54746.8506063613  ( 2)     63891.4040857074  ( 2)     74660.2812101016  ( 2)
+  87179.0217818529  ( 2)    103039.1472146771  ( 2)    121133.2158499789  ( 2)    146773.9553811776  ( 2)    172715.0237696074  ( 2)
+ 218266.3247784922  ( 2)    251763.2312698713  ( 2)    333565.2834925889  ( 2)    374093.4344259406  ( 2)    486462.0500083900  ( 2)
+
+* Boson symmetry B1g
+
+* Boson symmetry B1u
+  * Virtual eigenvalues, f = 0.0000
+  -1136.9081528780  ( 2)      -503.4300326705  ( 2)      -280.4786197944  ( 2)      -178.0367208476  ( 2)      -122.8358716377  ( 2)
+    -89.7823107074  ( 2)       -68.4417373878  ( 2)       -53.7737612748  ( 2)       -42.8610183380  ( 2)       -33.9914939814  ( 2)
+    -26.5822674158  ( 2)       -20.5259333257  ( 2)       -16.0301814632  ( 2)       -14.4664783261  ( 2)       -11.1614010965  ( 2)
+    134.9447456465  ( 2)       519.8820392230  ( 2)      1303.0364821748  ( 2)      2717.2569642301  ( 2)      5039.5403673880  ( 2)
+   8509.3734714388  ( 2)     13197.5312159863  ( 2)     18922.5820660857  ( 2)     25330.8135707606  ( 2)     32110.2039127777  ( 2)
+  39161.6323501086  ( 2)     46603.1122973778  ( 2)     54746.8506063624  ( 2)     63891.4040857099  ( 2)     74660.2812101048  ( 2)
+  87179.0217818525  ( 2)    103039.1472146764  ( 2)    121133.2158499818  ( 2)    146773.9553811707  ( 2)    172715.0237695988  ( 2)
+ 218266.3247784791  ( 2)    251763.2312698477  ( 2)    333565.2834925905  ( 2)    374093.4344259278  ( 2)    486462.0500083830  ( 2)
+
+* Boson symmetry B2g
+
+* Boson symmetry B3g
+
+* Boson symmetry Au 
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :*************** au (symmetry B3u)
+  - E(HOMO) :    -4.64106378 au (symmetry B3u)
+  ------------------------------------------
+    gap     :*************** au
+
+
+* INFO: E(LUMO) - E(HOMO) small or negative.
+*****************************************************
+>>>> Total CPU  time used in DIRAC (Node 0):  6.04999971s
+>>>> Total WALL time used in DIRAC (Node 0):  6.00000000s
+********** E N D   of   D I R A C  output  **********
+Scratch files for master directory :
+total 11904
+-rw-r--r--    1 visscher vu-chem   3927208 May 11 12:32 AOPROPER
+-rw-r--r--    1 visscher vu-chem    771110 May 11 12:32 DFCOEF
+-rw-r--r--    1 visscher vu-chem   1305818 May 11 12:32 DFFCK1
+-rw-r--r--    1 visscher vu-chem    460832 May 11 12:32 DFFOCK
+-rw-r--r--    1 visscher vu-chem    768072 May 11 12:32 DFTMAT
+-rw-r--r--    1 visscher vu-chem       131 May 11 12:32 DIRAC.INP
+-rw-r--r--    1 visscher vu-chem       842 May 11 12:32 MOLECULE.INP
+-rwxr-xr-x    1 visscher vu-chem       749 May 11 12:32 dirac.script.0.4439.das503
+-rwxr-xr-x    1 visscher vu-chem   4428626 May 11 12:32 dirac.x
+-rw-r--r--    1 visscher vu-chem    460840 May 11 12:32 fort.23
+-rw-r--r--    1 visscher vu-chem       420 May 11 12:32 fort.66

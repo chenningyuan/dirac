@@ -2708,3 +2708,56 @@ C                   that all coefficients are integers.
       RETURN
 C     
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck keepll */
+      SUBROUTINE KEEPLL(AMAT,MZ,BASIS)
+C*****************************************************************************
+C
+C     Delete all parts of the matrix, except the LL block.
+C
+C     Written by L.Visscher, 6-1-2000
+C     Last revision : 6-1-2000 - lvisscher
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <symmet.h>
+C
+      DIMENSION AMAT(*)
+      CHARACTER*3 BASIS
+C
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,2
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              DO IC = 1,2
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  IF (IC+JC.GT.2.AND.NBBAS(IREP,IC).GT.0) THEN
+                    IF (BASIS.EQ.'UNS') THEN
+                       CALL DZERO(AMAT(IUOFF+1),NBBAS(IREP,IC))
+                    ELSEIF (BASIS.EQ.'SRT') THEN
+                       CALL DZERO(AMAT(ISOFF+1),NBBAS(IREP,IC))
+                    ENDIF
+                  ENDIF
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + N2BBASX
+      ENDDO
+C
+      RETURN
+C
+      END

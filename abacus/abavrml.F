@@ -573,7 +573,7 @@ C
 #endif
 #include <cbiwlk.h>
 #include <priunit.h>
-#include <units.h>
+#include <codata.h>
 #include <symmet.h>
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR

@@ -202,14 +202,20 @@ C       ===========================
 C
  250    CONTINUE
         GOTO 300
-        IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 300
-        DO IA = ISTA,IENDA
-          DO JA = JSTA,JENDA
-            NXOPE          = NXOPE + 1
-            JXOPE(1,NXOPE) = IND(IA,2,ISYM)
-            JXOPE(2,NXOPE) = IND(JA,2,JSYM)
-          ENDDO
-        ENDDO
+        CALL QUIT('Act-act rot. not implemented, fix me!')
+        IF (ISYM .EQ. JSYM) THEN
+           IF (NIND(2,2,ISYM).LE.1) GO TO 300
+C          ... write code ! triangular loop! omit redundant rot.s!
+        ELSE
+           IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 300
+           DO IA = ISTA,IENDA
+             DO JA = JSTA,JENDA
+               NXOPE          = NXOPE + 1
+               JXOPE(1,NXOPE) = IND(IA,2,ISYM)
+               JXOPE(2,NXOPE) = IND(JA,2,JSYM)
+             ENDDO
+           ENDDO
+        END IF
 C
 C       Active-secondary elements
 C       =========================

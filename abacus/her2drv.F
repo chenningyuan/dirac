@@ -2534,7 +2534,6 @@ C
                LCLASH(MAXSHL) = LCLASS(IA)
                IF(RELCAL) THEN
                  IF(LCLASS(IA).EQ.1) NLRGBL = NLRGBL + 1
-                 NO2INT(MAXSHL) = NOTWOC(IA)
                ENDIF
                NHKTSH(MAXSHL) = NHKTA
                KHKTSH(MAXSHL) = KHKTA

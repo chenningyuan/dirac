@@ -2114,14 +2114,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0=0.0D0)
-      DIMENSION AMAT(LRA,LCA,NZ),FAC(4)
-C
-C     Initialize FAC
-C
-      FAC(1) = -1.0D0
-      FAC(2) =  1.0D0
-      FAC(3) =  1.0D0
-      FAC(4) =  1.0D0
+      DIMENSION AMAT(LRA,LCA,NZ)
 C
 C     Take difference
 C

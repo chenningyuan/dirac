@@ -140,7 +140,7 @@ setup_command()
    #
    if [ -n "$PARCAL" ]; then
       if [ -n "$MULTI_NODE" ]; then
-         DIRAC_CMD="mpirun -np $MPI_NPROC $DIRAC"
+         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
       else
          DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
       fi

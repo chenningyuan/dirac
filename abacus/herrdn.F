@@ -105,19 +105,20 @@ C  /* Deck reainp */
 C
 C     Note that the parameter MAXPRD also must be set in subroutine REAINI
 C
-#if defined (SYS_PARAGON) || defined (SYS_T3D)
-      PARAMETER ( NTABLE = 8, MAXPRD = 14 )
+#if defined (SYS_T3D)
+      PARAMETER ( MAXPRD = 22 )
 #else
-      PARAMETER ( NTABLE = 8, MAXPRD = 30 )
+      PARAMETER ( MAXPRD = 30 )
 #endif
-      PARAMETER (D1 = 1.0D0)
+      PARAMETER ( NTABLE = 10, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include <cbirea.h>
 #include <ccom.h>
 C
-      DATA TABLE /'.PRINT ', '.UNIT  ', '.MAXPRI', '.BIGVEC',
-     *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL'/
+      DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
+     *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
+     *            '.MOLPRI', '.UNCONT'/
 C
       NEWDEF = (WORD .EQ. '*READIN')
       ICHANG = 0
@@ -132,7 +133,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -144,14 +145,14 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in REAINP.')
     1          CONTINUE
-                  READ (LUCMD, '(I5)') IPREAD
+                  READ (LUCMD, *) IPREAD
                   IF (IPREAD .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD,'(I5)') LUMLCL
+                  OLDNRM = .TRUE.
                GO TO 100
     3          CONTINUE
-                  READ (LUCMD,'(I5)') MAXPRI
+                  READ (LUCMD, *) MAXPRI
                GO TO 100
     4          CONTINUE
                   BIGVC = .TRUE.
@@ -160,15 +161,21 @@ C
                   LUMLCL = LUCMD
                GO TO 100
  6             CONTINUE
-                  READ (LUCMD,'(D12.6)') TOLLRN
+                  READ (LUCMD, *) TOLLRN
                GO TO 100
  7             CONTINUE 
                   READ (LUCMD,*) LCMMAX, CMSTR, CMEND
-                  NCMSTR = NINT(2*CMSTR + 0.01D0)
-                  NCMEND = NINT(2*CMEND + 0.01D0)
+                  NCMSTR = NINT(2*CMSTR)
+                  NCMEND = NINT(2*CMEND)
                GO TO 100
  8             CONTINUE 
                   READ (LUCMD,*) ZCMVAL
+               GO TO 100
+ 9             CONTINUE
+                  PRIBAS = .TRUE.
+               GO TO 100
+ 10            CONTINUE
+                  UNCONT = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -185,15 +192,20 @@ C
          IF (IPREAD .NE. IPRDEF) THEN
             WRITE (LUPRI,'(A,I5)') ' Print level in READIN:',IPREAD
          END IF
+         IF (OLDNRM) THEN
+            WRITE (LUPRI,'(A')
+     &         ' Dalton 1.0 normalization of spherical GTOs used.'
+         END IF
          IF (TOLLRN .NE. 0.0D0) THEN
             WRITE (LUPRI,'(A,G9.2)') ' Symmetry threshold: ',TOLLRN
          END IF
-         IF (LUMLCL .NE. 9) THEN
-            IF (LUMLCL .EQ. LUCMD) THEN
-               WRITE (LUPRI,'(/A)') ' MOLECULE read from input file'
-            ELSE
-              WRITE (LUPRI,'(/A,I5)') ' MOLECULE input from unit',LUMLCL
-            END IF
+         IF (LUMLCL .EQ. LUCMD) THEN
+            WRITE (LUPRI,'(/A)') ' MOLECULE read from input file'
+         END IF
+         IF (UNCONT) THEN
+            WRITE (LUPRI,'(/A)')
+     &         ' Uncontracted basis forced, irrespective of '//
+     &         'basis input file.'
          END IF
          IF (MAXPRI .NE. MAXPRD) THEN
             WRITE (LUPRI,'(/A,I5)')
@@ -223,6 +235,10 @@ C
                CALL QUIT('Error in *READIN input processing')
             END IF
          END IF
+         IF (PRIBAS) THEN
+            WRITE (LUPRI,'(/A)')
+     &           ' The molecular input will be dumped on DALTON.BAS'
+         END IF
 C        IF (GENCON) THEN
 C           WRITE (LUPRI,'(/A)')
 C    *         ' Routines for general contraction used.'
@@ -243,8 +259,8 @@ C
 C
 C     Note that MAXPRD also must me set in subroutine REAINP
 C
-#if defined (SYS_PARAGON) || defined (SYS_T3D)
-      PARAMETER (MAXPRD = 14)
+#if defined (SYS_T3D)
+      PARAMETER (MAXPRD = 22)
 #else
       PARAMETER (MAXPRD = 30)
 #endif
@@ -253,17 +269,20 @@ C
 #include <ccom.h>
 #include <mxsymm.h>
 #include <cbirea.h>
-      THRS = 1.0D-12
+      THRS = 1.0D-15
 C
       IPREAD = IPRDEF
       LUMLCL = 9
       MAXPRI = MAXPRD
+      UNCONT = .FALSE.
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
       INPTST = TSTINP
       BASIS  = .FALSE.
+      ATOMBA = .FALSE.
       PRIBAS = .FALSE.
+      OLDNRM = .FALSE.
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
@@ -302,7 +321,6 @@ C******************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
 C
 #include <abainf.h>
 #ifdef PRG_DIRAC
@@ -359,13 +377,17 @@ C
       NMLINE = 0
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)') KEYWRD
+#if !defined (PRG_DIRAC)
       IF (KEYWRD .EQ. 'BASIS ') THEN
          BASIS = .TRUE.
-      ELSE IF (KEYWRD .EQ. 'JTHHAC') THEN
-         JTHHACK = .TRUE.
+      ELSE IF (KEYWRD .EQ. 'ATOMBA') THEN
+         ATOMBA = .TRUE.
       ELSE IF (KEYWRD .NE. 'INTGRL') THEN
          GOTO 5010
       END IF
+#else
+C     In Dirac we do the readin the same way whatever KEYWRD is.
+#endif
 C
 C     ********************************************
 C     ***** Allocate memory **********************
@@ -385,12 +407,10 @@ C
       KNUC   = KJCO2  +  KATOM*KANG
       KNRC   = KNUC   +  KBLOCK*2
       KSEG   = KNRC   +  KBLOCK*2
-      KNINT  = KSEG   +  KBLOCK*2
-      KA     = KNINT  +  KBLOCK*2
+      KA     = KSEG   +  KBLOCK*2
       KC     = KA     +  KBLOCK*KPRIM*2
       KCC    = KC     +  KBLOCK*KCMAT*2
       KLAST  = KCC    +  KBLOCK*KCMAT*2
-C     WRITE(LUPRI,'(A,2I8)') 'KLAST,LWORK',KLAST,LWORK
       IF(KLAST.GT.LWORK) GOTO 5020
       LWRK   = LWORK  -  KLAST + 1
 C
@@ -400,7 +420,7 @@ C     ********************************************
 C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
      &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KNUC),
-     &            WORK(KNRC),WORK(KSEG),WORK(KNINT),WORK(KA),
+     &            WORK(KNRC),WORK(KSEG),WORK(KA),
      &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM,KAOVEC,
      &            HERMIT)
 C     CALL RDLINE(LUINFO)
@@ -423,7 +443,7 @@ C5030 CONTINUE
       END
 C  /* Deck readi1 */
       SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,NUC,
-     &           NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
+     &           NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
      &           KPRIM,KAOVEC,HERMIT)
 C******************************************************************************
 C
@@ -449,14 +469,12 @@ C                                         in a given AO-block
 C       NRC             (KBLOCK)        - number of contracted functions
 C                                         in a given AO-block
 C       SEG             (KBLOCK)        - TRUE: segmented contraction
-C       NOINT           (KBLOCK)        - TRUE: XXXX - type two-electron
-C                                         integrals not to be calculated
 C       ALPHA           (KPRIM,KBLOCK)  - exponents
 C       CPRIM           (KPRIM,KPRIM,KBLOCK)  - normalized contraction
 C                                               coefficients
 C       CPRIMU          (KPRIM,KPRIM,KBLOCK)  - contraction coefficients
 C
-C     LOCAL VARIABLES:
+C     LOCAL VARIABLES
 C       IPRIMA - runs over primitives for a given atomic type
 C       ISHELL - runs over all shells
 C       IPRIM - runs over all primitives
@@ -469,14 +487,14 @@ C******************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
 #include <cbirea.h>
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
       DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
      &          JCO(KANG,KATOM,2),JCO2(KANG,KATOM),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
+     &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),
      &          WORK(LWORK)
@@ -513,8 +531,9 @@ C     Card 2: If basis set library, read additional card containing basis set
 C*****************************************************************************
       IF (BASIS) THEN
          CALL RDLINE(LUINFO)
-         READ (MLINE(NMLINE),'(BN,A13,11I3)') BASNAM,
-     &                                        (NVEC(I), I = 1, 11)
+         READ (MLINE(NMLINE),'(A)') BASNAM
+         IF (IPREAD .GT. 1) WRITE (LUPRI,'(/A/5X,A/A)') ' Basis set',
+     &      BASNAM,' from the basis set library will be used.'
       END IF
 C*****************************************************************************
 C     Card 2-3: Title cards
@@ -530,7 +549,7 @@ C*****************************************************************************
       END IF
 C*****************************************************************************
 C     Card 4:
-C       CRT     - flag for spherical harmonics
+C       CRT     - flag for spherical harmonics or "your own scheme"
 C       NONTYP  - number of atomic types
 C       SYMTXT  - Symmetry operations read as a text to test if
 C                 symmetry is to be added automatically
@@ -553,11 +572,11 @@ C
       IF (MLINE(NMLINE)(21:30) .EQ. '          ') THEN
 C        nothing specified, default minimum value used
          THRS = THRMIN
-      ELSE IF (THRS .LE. D0) THEN
-         WRITE (LUPRI,'(/2X,A)') '*** Warning from READIN ***'
+      ELSE IF (THRS .LE. THRMIN) THEN
+         WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
          WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
-     &      'Threshold is reset to                 ',THRMIN
+     &      'Threshold is reset to minimum value   ',THRMIN
          THRS = THRMIN
       ENDIF
 C*****************************************************************************
@@ -606,7 +625,7 @@ C
       LWRK   = LWORK  -  KLAST + 1
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NSYMOP,NONT,
      &            IQM,NBLCK,JCO,
-     &            NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
      &            KATOM,KANG,KBLOCK,KPRIM,KAOVEC,ANG,ZMAT)
 C
 C     *************************************************
@@ -614,7 +633,7 @@ C     ***** Process ZMAT coordinates if requested *****
 C     *************************************************
 C
       IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
-     &                  NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &                  KBLOCK,KPRIM,KAOVEC,DOOWN)
 
 C
@@ -646,7 +665,7 @@ C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &            SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
+     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &            KAOVEC,DOOWN)
 C
 C     *************************************************
@@ -654,7 +673,7 @@ C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &            NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &            ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &            KBLOCK,KPRIM,KAOVEC,HERMIT)
 C
       IF (IPREAD .GE. 2) THEN
@@ -699,7 +718,7 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
 #include <cbirea.h>
 C
 #include <ccom.h>
@@ -746,7 +765,7 @@ C
       END
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
-     &                  JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,ISGEN,
+     &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST)
 C*****************************************************************************
 C
@@ -763,16 +782,16 @@ C*****************************************************************************
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include <units.h>
+#include <codata.h>
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,ZMTTST,CNTBAS
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),NOINT(KBLOCK,2),
+     &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*6,BASFIL*20
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*7
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -791,14 +810,11 @@ C
       IBLOCK(2) = 1
       CALL IZERO(IQM,KATOM*2)
       DIRCON = .FALSE.
-      MOLFCON = .FALSE.
 C
 C     Run over atomic centers
 C     =======================
 C
       DO 100 I = 1, NONTYP
-         LARGECON(I) = .FALSE.
-         SMALLCON(I) = .FALSE.
          NOORBTS = .TRUE.
          INUC = NUCIND
 C
@@ -813,6 +829,22 @@ C*****************************************************************************
 C
          CALL RDLINE(LUINFO)
 C
+C        Test if Z-matrix for first line (I.eq.1):
+C
+
+         IF (I .EQ. 1 .AND. .NOT. DIRAC) THEN
+           READ (MLINE(NMLINE),'(A1)') ZMATL
+           IF (ZMATL .NE. ' ') THEN
+              ZMTTST = .TRUE.
+              WRITE (LUPRI,'(/A)')
+     &        'Atoms and their geometry is read in Z-matrix format.'
+              IF (.NOT. BASIS) THEN
+                 WRITE (LUPRI,'(/A)') '*** READI1 ERROR:'
+                 CALL QUIT('Z-matrix only implemented with BASIS')
+              END IF
+           END IF
+         END IF
+C
 C       Read/process data on centers/blocks
 C       ===================================
 C
@@ -820,13 +852,13 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             ADDSTO = .FALSE.
-            READ (MLINE(NMLINE),'(BN,A6,F5.0,I4,F20.5)') 
-     &            ZMATL,Q,NONT(I),QEXP
+            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)') 
+     &            Q,NONT(I),QEXP
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (ADDSTO) NSETS = 2
             BSET  = 'Basis'
-            READ (MLINE(NMLINE),'(BN,A6,F5.0,I4,24I5)') ZMATL,Q,NONT(I),
+            READ (MLINE(NMLINE),'(BN,1X,F9.0,25I5)') Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
@@ -840,11 +872,9 @@ C
 C       Read/process data on symmetry independent centers
 C       =================================================
 C
- 200    CONTINUE 
-        IF (ZMTTST .OR. ZMATL .NE. '      ') THEN
+        IF (ZMTTST) THEN
            CALL ZMAT(NONT,KATOM)
            Q = CHARGE(NUCIND)
-           ZMTTST = .TRUE.
         ELSE
            IF (INPTST) THEN
               WRITE(LUPRI,'(/A,I5)') 'Atomic type: ',I
@@ -879,51 +909,97 @@ C
 C              Start with LARGE Component
 C              ==========================
 C
+C              The following four possibilities exist:
+C
+C              LARGE INTGRL     2    1    1  (IBSFLAG = 1)
+C              LARGE    2    1    1 (IBSFLAG = 1)
+C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
+C              LARGE BASIS basisset (IBSFLAG = 3)
+C
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(BN,A5,12I5)')
-     &               BSET,IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
-               IF ((BSET.NE.'LARGE').AND.(BSET.NE.'LBFIL')) GOTO 5100
+               READ (MLINE(NMLINE),'(A5,X,A7)') BSET,BSKEYWORD
 C
-C              Test BSET: 
-C              If BSET.eq.LARGE read LC basis from MOLECULE.INP
-C              If BSET.eq.LBFIL read LC basis from file to be 
-C                               read from next line
-C              ================================================
+               IF ( BSET .NE. 'LARGE') THEN
+                  WRITE(LUPRI,'(A,I5,A,/,A)')
+     $                 'Expected keyword LARGE, read line no. ',
+     $                 NMLINE,':',MLINE(NMLINE)
+                  GOTO 5100
+               END IF
 C
-               IF (BSET.EQ.'LARGE') THEN
+C              Initialize basis set flag 
+C
+               IBSFLAG = 0
+C
+C              Check what kind of basis set we have
+C
+               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE),'(12X,12I5)')
+     &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+               ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
+                  IBSFLAG = 2
+                  READ (MLINE(NMLINE),'(14X,A20)') BASFIL
+               ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
+                  IBSFLAG = 3
+                  READ (MLINE(NMLINE),'(12X,A20)') BASFIL
+               ELSE
+C                 Assume it is 'LARGE   2    1....'
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE),'(5X,12I5)')
+     &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
+               END IF
+C
+               IF ( IBSFLAG .EQ. 1 ) THEN
+C
+C                 Read explicitly given basis set.
+C
                   CALL GTOINP(LUINFO,IQM(I,1),JCO(1,I,1),
      &                 NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
-     &                 SEG(IBLOCK(1),1),NOINT(IBLOCK(1),1),
+     &                 SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
      &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,1) = NBLOCK
-               ELSE
-                  CALL RDLINE(LUINFO)
-                  READ (MLINE(NMLINE),'(BN,A20)') BASFIL
+C
+               ELSE IF ( IBSFLAG .EQ. 2 ) THEN
+C
+C                 Molfdir basis set
+C
                   KBFPR = 1
                   KBFCO = KBFPR + MXPRIM
                   KLAST = KBFCO + MXCORB*MXPRIM
                   IF (KLAST.GT.LWORK) 
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-                  LARGECON(I) = .TRUE.
-                  MOLFCON = .TRUE.
                   DIRCON = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
-     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
      &                 KAOVEC)
+               ELSE IF ( IBSFLAG .EQ. 3 ) THEN
+C     
+                  BASNAM = BASFIL
+C
+                  CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK(1),1),
+     &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
+     &                 ALPHA(1,IBLOCK(1),1),
+     &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
+     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM)
+                  NBLCK(I,1) = NBLOCK
+C     
                ENDIF
+C
+C              Print out basis set             
+C
                NOORBTS    = NOORBTS.AND.IQM(I,1).EQ.0
                IF (IQM(I,1).GT.0) THEN
-                 IF(INPTST) THEN
-                   WRITE(LUPRI,'(3X,A)') 'Large component set:'
-                   WRITE(LUPRI,'(6X,A,I5,A,12I5)')
-     &                 'Max.ang.quantum no.:',(IQM(I,1)-1),
-     &                 '  Blocks:',(JCO(K,I,1), K=1,IQM(I,1))
-                 ENDIF
-                 NHTYP     = MAX(NHTYP,IQM(I,1))
-                 IF(NHTYP.GT.MXQN) GOTO 5000
+                  IF(INPTST) THEN
+                     WRITE(LUPRI,'(3X,A)') 'Large component set:'
+                     WRITE(LUPRI,'(6X,A,I5,A,12I5)')
+     &                    'Max.ang.quantum no.:',(IQM(I,1)-1),
+     &                    '  Blocks:',(JCO(K,I,1), K=1,IQM(I,1))
+                  ENDIF
+                  NHTYP     = MAX(NHTYP,IQM(I,1))
+                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
 C              Check if large component basis is contracted 
@@ -933,69 +1009,114 @@ C
                   IF ((NUC(JBLCK,1).NE.NRC(JBLCK,1)).AND.
      &                (NRC(JBLCK,1).GT.0)) CNTBAS = .TRUE.
   210          CONTINUE
+               IF ( CNTBAS .AND.
+     $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
+                  DIRCON = .TRUE.
+               END IF
+C
+C
 C
 C              Next is the SMALL Component 
 C              ==========================
 C
-               IF (.NOT.CNTBAS) THEN
 C
-C              When uncontracted we generate the small component basis 
-C              using the kinetic balance relation
-C              =======================================================
+C              The following four possibilities exist:
 C
-                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
-               ELSE IF (JTHHACK) THEN
+C              SMALL INTGRL     2    1    1  (IBSFLAG = 1)
+C              SMALL    2    1    1 (IBSFLAG = 1)
+C              SMALL MOLFBAS H.bas (IBSFLAG = 2)
+C              SMALL KINBAL (IBSFLAG = 4)
 C
+               CALL RDLINE(LUINFO)
+               READ (MLINE(NMLINE),'(A5,X,A7)') BSET,BSKEYWORD
+C
+C              Initialize basis set flag 
+C
+               IBSFLAG = 0
+C
+C              Check what kind of basis set we have
+C
+               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE),'(12X,12I5)')
+     &                  IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+               ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
+                  IBSFLAG = 2
+                  READ (MLINE(NMLINE),'(14X,A20)') BASFIL
+               ELSE IF ( BSKEYWORD(1:6) .EQ. 'KINBAL' ) THEN
+                  IBSFLAG = 4
+               ELSE
+                  IF ( BSET .EQ. 'SMALL' ) THEN
+C                    Assume it is 'LARGE   2    1....'
+                     IBSFLAG = 1
+                     READ (MLINE(NMLINE),'(BN,A5,12I5)')
+     &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                  ELSE
+C
+C                    No 'SMALL' keyword given. 
+C                    Assume kinetic balance
+C
+C                    Discard the line we just read.
+C
+                     NMLINE = NMLINE - 1
+                     IBSFLAG = 4
+C
+                  END IF
+               END IF
+               write(6,*) 'small bskeyword = <',bskeyword,'>'
+               write(6,*) 'small c basis set: ',ibsflag
+C
+C
+C
+               IF ( IBSFLAG .EQ. 1 ) THEN
+C
+C                 Read explicitly given small component basis set.
+C
+                  CALL GTOINP(LUINFO,IQM(I,2),JCO(1,I,2),
+     &                 NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),
+     &                 SEG(IBLOCK(2),2),
+     &                 ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),
+     &                 CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),
+     &                 NBLOCK,KAOVEC,KPRIM)
+                  NBLCK(I,2) = NBLOCK
+C
+               ELSE IF ( IBSFLAG .EQ. 2 ) THEN
+C
+C                 Read molfdir small component basis set.
+C
+                  KBFPR = 1
+                  KBFCO = KBFPR + MXPRIM
+                  KLAST = KBFCO + MXCORB*MXPRIM
+                  IF (KLAST.GT.LWORK) 
+     &                 CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+                  CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),
+     &                 WORK(KBFCO),
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
+     &                 KAOVEC)
+C
+               ELSE IF ( IBSFLAG .EQ. 4 ) THEN
+C
+C                 When uncontracted we generate the small component basis 
+C                 using the kinetic balance relation
+C                 ...or...
 C                 Hack: Make uncontracted small component basis
 C                 set from kinetic balance.
+C                 =======================================================
+C
+                  write(6,*) 'making kinetic balance'
 C
                   CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
 C
-               ELSE
-                  CALL RDLINE(LUINFO)
-                  READ (MLINE(NMLINE),'(BN,A5,12I5)')
-     &                  BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
-                  IF ((BSET.NE.'SMALL').AND.(BSET.NE.'SBFIL')) GOTO 5200
-C
-C                 Test BSET: 
-C                 If BSET.eq.SMALL read SC basis from MOLECULE.INP
-C                 If BSET.eq.SBFIL read SC basis from file to be 
-C                                  read from next line
-C                 ================================================
-C
-                  IF (BSET.EQ.'SMALL') THEN
-                     CALL GTOINP(LUINFO,IQM(I,2),JCO(1,I,2),
-     &                    NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),
-     &                    SEG(IBLOCK(2),2),NOINT(IBLOCK(2),2),
-     &                    ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),
-     &                    CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),
-     &                    NBLOCK,KAOVEC,KPRIM)
-                     NBLCK(I,2) = NBLOCK
-                  ELSE
-                     CALL RDLINE(LUINFO)
-                     READ (MLINE(NMLINE),'(BN,A20)') BASFIL
-                     KBFPR = 1
-                     KBFCO = KBFPR + MXPRIM
-                     KLAST = KBFCO + MXCORB*MXPRIM
-                     IF (KLAST.GT.LWORK) 
-     &                  CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-                     SMALLCON(I) = .TRUE.
-                     MOLFCON = .TRUE.
-                     DIRCON = .TRUE.
-                     CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),
-     &                    WORK(KBFCO),
-     &                    IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
-     &                    NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
-     &                    KAOVEC)
-                  ENDIF
                ENDIF
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
                IBLOCK(2)  = IBLOCK(2) + NBLCK(I,2)
-               NOORBTS    = NOORBTS.AND.IQM(I,1).EQ.0
+               NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
+C
+C              Print small comp. basis set
+C
                IF (IQM(I,2).GT.0) THEN
                  IF(INPTST) THEN
                    WRITE(LUPRI,'(3X,A)') 'Small component set:'
@@ -1018,7 +1139,7 @@ C
                   IQM(I,J) = LCMMAX + 1
                   CALL CMBAS(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
-     &                 NOINT(IBLOCK(J),J),ALPHA(1,IBLOCK(J),J),
+     &                 ALPHA(1,IBLOCK(J),J),
      &                 CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                 NBLOCK,KAOVEC,KPRIM,Q)
 C
@@ -1039,7 +1160,7 @@ C              ========================
 C
                  CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
-     &                SEG(IBLOCK(J),J),NOINT(IBLOCK(J),J),
+     &                SEG(IBLOCK(J),J),
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
      &                CPRIMU(1,1,IBLOCK(J),J),IDUMMY,
      &                NBLOCK,KAOVEC,KPRIM)
@@ -1081,7 +1202,7 @@ C
      &     ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
         CALL QUIT('Too high angular specified in input.')
  5100 CONTINUE
-        CALL QUIT('Error reading keyword LARGE or LBFIL.')
+        CALL QUIT('Error reading keyword LARGE.')
  5200 CONTINUE
         CALL QUIT('Error reading keyword SMALL or SBFIL.')
       END
@@ -1097,7 +1218,7 @@ C*****************************************************************************
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #if defined (SYS_HPUX)
       PARAMETER (LUERR = 7)
@@ -1216,7 +1337,7 @@ C
       END
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
-     &                  NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &                  KBLOCK,KPRIM,KAOVEC,DOOWN)
 C
 C*****************************************************************************
@@ -1232,14 +1353,14 @@ C
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
 #include <cbirea.h>
 #include <dcbgen.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),NOINT(KBLOCK,2),
+     &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
       CHARACTER*1 SPDCAR
@@ -1250,6 +1371,7 @@ C
 #include <primit.h>
 #include <huckel.h>
 #include <aosotr.h>
+#include <gencon.h>
 #include <ibtfun.h>
 C
 C*****************************************************************************
@@ -1292,7 +1414,7 @@ C*****************************************************************************
       IORB   = 0
       IORBD  = 0
       CALL ORBPRO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),NUC(1,1),
-     &            NRC(1,1),SEG(1,1),NOINT(1,1),
+     &            NRC(1,1),SEG(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
@@ -1307,7 +1429,7 @@ C       Process orbital data for small components
 C*****************************************************************************
       LCOMP = 2
       CALL ORBPRO(NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),NUC(1,2),
-     &            NRC(1,2),SEG(1,2),NOINT(1,2),
+     &            NRC(1,2),SEG(1,2),
      &            ALPHA(1,1,2),CPRIM(1,1,1,2),CPRIMU(1,1,1,2),
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
@@ -1360,7 +1482,9 @@ C
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
 C
-      IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT. JTHHACK) CALL RKBREL(IPREAD)
+      WRITE(6,*) 'jth: ',dirac,isphtr,dircon,molfcon
+      IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT. DIRCON )
+     $     CALL RKBREL(IPREAD)
 C
       RETURN
 C
@@ -1387,7 +1511,7 @@ C
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &                  SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
+     &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &                  KBLOCK,KPRIM,KAOVEC,HERMIT)
 C*****************************************************************************
 C
@@ -1401,14 +1525,14 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
 #include <cbirea.h>
 #include <dcbgen.h>
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),NOINT(KBLOCK,2),
+     &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
       CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRIN2*(6*MXQN+3)
@@ -1536,13 +1660,13 @@ C*****************************************************************************
             IF (DIRAC) CALL HEADER('Large Components Basis',-1)
             NRMPRI = .FALSE.
             CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &                  NUC(1,1),NRC(1,1),SEG(1,1),NOINT(1,1),
+     &                  NUC(1,1),NRC(1,1),SEG(1,1),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  CPRIMU,NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
                CALL ORBOUT(1,NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &                     NUC(1,1),NRC(1,1),SEG(1,1),NOINT(1,1),
+     &                     NUC(1,1),NRC(1,1),SEG(1,1),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     CPRIMU,NRMPRI)
             END IF
@@ -1554,13 +1678,13 @@ C*****************************************************************************
             CALL HEADER('Small Components Basis',-1)
             NRMPRI = .FALSE.
             CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
-     &                  NUC(1,2),NRC(1,2),SEG(1,2),NOINT(1,2),
+     &                  NUC(1,2),NRC(1,2),SEG(1,2),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  CPRIMU(1,1,1,2),NRMPRI)
             IF (IPREAD .GT. 2) THEN
                NRMPRI = .TRUE.
                CALL ORBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),JCO(1,1,2),
-     &                     NUC(1,2),NRC(1,2),SEG(1,2),NOINT(1,2),
+     &                     NUC(1,2),NRC(1,2),SEG(1,2),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     CPRIMU(1,1,1,2),NRMPRI)
             END IF
@@ -1609,24 +1733,11 @@ C*****************************************************************************
          ISHELL = 0
          NCOMP = KHK(I)
 C
-C        If general contracted use data read from input.
-C
-         IF (ICP.EQ.1.AND.LARGECON(IATM)) THEN
-            IPRIM = ILARGEC(IATM,I)
-            NPRIM = NPRIM + NCOMP*ILARGEC(IATM,I)
-         ELSEIF (ICP.EQ.2.AND.SMALLCON(IATM)) THEN
-            IPRIM = ISMALLC(IATM,I)
-            NPRIM = NPRIM + NCOMP*ISMALLC(IATM,I)
-         ELSE
-C
-C        Deal with uncontracted basis set
-C
          DO 200 J = 1,JCO(I)
             IBLOCK = IBLOCK + 1
             IPRIM  = IPRIM  + NUC(IBLOCK)
             NPRIM = NPRIM + NCOMP*NUC(IBLOCK)
   200    CONTINUE
-         ENDIF
 C
          IF (IPRIM.GT.0) THEN
             IF (IPRIM.GE.10) THEN
@@ -1689,7 +1800,7 @@ C*****************************************************************************
       TSTRING(IND:IND) = ']'
       END
 C  /* Deck gtoinp */
-      SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,
+      SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
 #include <implicit.h>
 #include <priunit.h>
@@ -1704,7 +1815,7 @@ C
 C
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
-     &          NOINT(KAOVEC),ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
+     &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 #include <cbirea.h>
 #include <molinp.h>
@@ -1735,14 +1846,9 @@ C                   components using the kinetic balance relation
 C             1 - downwards: small L+1 from large L
 C             2 - upwards  : small L-1 from large L
 C           
-C           NOINT - bit packed information for skipping 2-integrals
-C             1 - small L+1
-C             2 - small L-1
-C             4 - large L
-C
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,A,I4,3I5)')
-     &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK),NOINT(NBLOCK)
+            READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
+     &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK)
             IF (INPTST) THEN
               WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
               WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUCIJ,
@@ -1807,16 +1913,15 @@ C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
             IF (J. EQ. 1) THEN
-               READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
-     &              FRMT,NUCIJ,NRCIJ,NOINT(NBLOCK)
+               READ (MLINE(NMLINE),'(BN,A,I4,1I5)')
+     &              FRMT,NUCIJ,NRCIJ
             ELSE
                READ (MLINE(NMLINE),'(BN,A,I4,1I5)') FRMT,NUCIJ,NRCIJ
             END IF
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
                WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUCIJ,
-     &                                  'Shells    :  ',NRCIJ,
-     &                                  'NOINT     :  ',NOINT(NBLOCK)
+     &                                  'Shells    :  ',NRCIJ
             END IF
             SEGIJ = SEGIJ .AND. (NRCIJ .GE. 0)
             NUCIJ = ABS(NUCIJ)
@@ -1877,7 +1982,7 @@ C
         CALL QUIT('Too many contracted functions')
       END
 C  /* Deck cmbas */
-      SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,
+      SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
 #include <implicit.h>
 #include <priunit.h>
@@ -1885,7 +1990,7 @@ C  /* Deck cmbas */
 #include <maxaqn.h>
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
-     &          NOINT(KAOVEC),ALPHA(KPRIM,KAOVEC),
+     &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          BASA(0:4), BASB(0:4)
 #include <cbirea.h>
@@ -1952,7 +2057,7 @@ C
         CALL QUIT('Too many contracted functions')
       END
 C  /* Deck orbinx */
-      SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,
+      SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
 #include <implicit.h>
 #include <priunit.h>
@@ -1964,7 +2069,7 @@ C  /* Deck orbinx */
       CHARACTER*12 FMT2
       LOGICAL SEG, FREE
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
-     &          NOINT(KAOVEC),ALPHA(KPRIM,KAOVEC),
+     &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 #include <cbirea.h>
 #include <molinp.h>
@@ -1982,13 +2087,12 @@ C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
-            READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
-     &           FRMT,NUC(NBLOCK),NRC(NBLOCK),NOINT(NBLOCK)
+            READ (MLINE(NMLINE),'(BN,A,I4,I5)')
+     &           FRMT,NUC(NBLOCK),NRC(NBLOCK)
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
                WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUC(NBLOCK),
-     &                                  'Shells    :  ',NRC(NBLOCK),
-     &                                  'NOINT     :  ',NOINT(NBLOCK)
+     &                                  'Shells    :  ',NRC(NBLOCK)
             END IF
             SEG(NBLOCK) = NRC(NBLOCK).GE.0
             NUC(NBLOCK) = ABS(NUC(NBLOCK))
@@ -2185,7 +2289,7 @@ C
       END
 C  /* Deck orbpro */
       SUBROUTINE ORBPRO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
+     &           ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
      &           ISHELL,IPRIM,IPRIMD,IORB,IORBD,LCOMP)
 C******************************************************************************
 C
@@ -2199,14 +2303,14 @@ C******************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0)
 C
 #include <cbirea.h>
       LOGICAL SEG,SPHER
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          SEG(KBLOCK),NOINT(KBLOCK),ALPHA(KPRIM,KBLOCK),
+     &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include <ccom.h>
 #include <nuclei.h>
@@ -2255,7 +2359,6 @@ C       KHKT    - number of spherical (Cartesian) components
 C       KCKT    - number of Cartesian components
 C       SEGM    - segmented contraction
 C       LCLASS  - component: large(1) or small(0)
-C       NOTWOC  - no SS 2-integrals from this block
 C       CENT    - coordinates of center
 C*****************************************************************************
                      NUCO  (ISHELL) = NUC(KBCH)
@@ -2275,7 +2378,6 @@ C*****************************************************************************
                      KCKT  (ISHELL) = NCCMP
                      SEGM  (ISHELL) = SEG(KBCH)
                      LCLASS(ISHELL) = LCOMP
-                     NOTWOC(ISHELL) = NOINT(KBCH)
                      CENT(ISHELL,1,1) = CORD(1,ICENT)
                      CENT(ISHELL,2,1) = CORD(2,ICENT)
                      CENT(ISHELL,3,1) = CORD(3,ICENT)
@@ -2321,7 +2423,7 @@ C
       END
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           NOINT,IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+     &           IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 #include <implicit.h>
 #include <priunit.h>
 #include <pi.h>
@@ -2329,7 +2431,7 @@ C  /* Deck orbout */
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0)
 C
 #include <ccom.h>
@@ -2341,7 +2443,7 @@ C
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK),
-     &          SEG(KBLOCK),NOINT(KBLOCK)
+     &          SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
 C
 C     P R I M I T I V E S
@@ -2529,7 +2631,7 @@ C******************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include <cbirea.h>
@@ -4075,17 +4177,44 @@ C  /* Deck rdline */
 #include <mxorb.h>
 #include <molinp.h>
 #include <infpar.h>
+C
+C     Reads a line from MOLECULE.INP
+C
+C     We keep track of which line we've read last time (NMLN_LASTREAD).
+C     This allows some routines to read a line, check if it want to use
+C     that line, and then discard it by decrementing NMLINE. 
+C     Note that we only allow decrements of one /jth-20000621.
+C
+      DATA NMLN_LASTREAD /0/
+      SAVE NMLN_LASTREAD
+C
+C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new readin,
+C     e.g. during a geometry optimization.
+C
+      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
+C
    10 CONTINUE
       NMLINE = NMLINE + 1
-      IF (.NOT. PARHER) READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
+      IF ( NMLINE .LT. NMLN_LASTREAD ) THEN
+         WRITE(LUPRI,'(//A,2(/A,I5))')
+     $        '*** ERROR ***: NMLINE < NMLN_LASTREAD in RDLINE',
+     $        'NMLINE = ',NMLINE,
+     $        'NMLN_LASTREAD = ',NMLN_LASTREAD
+         CALL QUIT('*** ERROR argh')
+      ENDIF 
+      IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD) 
+     $     READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
-     &      ' READIN ERROR: Too many lines in input -,',
-     &      ' Increase dimension in /MOLINP/ to at least',NMLINE
+     &        ' READIN ERROR: Too many lines in input -,',
+     &        ' Increase dimension in /MOLINP/ to at least',NMLINE
          CALL QUIT('*** ERROR *** Too many input lines for READIN')
       END IF
-      IF((MLINE(NMLINE)(1:1).EQ.'#') .OR. (MLINE(NMLINE)(1:1).EQ.'!'))
-     &         GOTO 10
+      IF((MLINE(NMLINE)(1:1).EQ.'#') .OR.
+     $     (MLINE(NMLINE)(1:1).EQ.'!') .OR.
+     $     (MLINE(NMLINE)(1:1) .EQ. '$' ))
+     &     GOTO 10
+      NMLN_LASTREAD = NMLINE
       RETURN
    11 MLINE(NMLINE)='        '
       RETURN
@@ -4233,7 +4362,7 @@ C  /* Deck reapri */
 #include <mxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <units.h>
+#include <codata.h>
 C
 #include <abainf.h>
 #include <cbirea.h>
@@ -5172,7 +5301,7 @@ C
       END
 C  /* Deck buildz */
       SUBROUTINE BUILDZ(IPRINT,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
-     &                  SEG,NOINT,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
+     &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
      &                  KPRIM,KAOVEC,DOOWN)
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
@@ -5182,7 +5311,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <pi.h>
-#include <units.h>
+#include <codata.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
@@ -5193,7 +5322,7 @@ C
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),NOINT(KBLOCK,2),
+     &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), NONCH(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
@@ -5501,7 +5630,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bfginp */
       SUBROUTINE BFGINP(IAT,IBLCK,ICP,ALPIN,CPRIN,
-     &              IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &              IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM,KAOVEC)
 C***********************************************************************
 C
@@ -5525,7 +5654,7 @@ C
       CHARACTER*15 FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE,FORMATC
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
+     &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(MXPRIM),CPRIN(MXPRIM*MXCORB)
@@ -5595,8 +5724,6 @@ C
          ENDIF
       ENDIF
       IQM(IAT,ICP) = ITYP
-      IF (ICP.EQ.1) ILARGEC(IAT,ITYP) = NPRIM
-      IF (ICP.EQ.2) ISMALLC(IAT,ITYP) = NPRIM
 C
 C     Check dimensions of arrays
 C     ==========================
@@ -5751,7 +5878,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
       SUBROUTINE KINBAL(I,IBLL,IBLS,
-     &              IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &              IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
 C*****************************************************************************
 C
@@ -5765,7 +5892,7 @@ C
       LOGICAL SEG
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
+     &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
 #include <ibtfun.h>
@@ -5785,11 +5912,11 @@ C
         IF(J.GT.1) THEN
           DO K = 1,JCO(J-1,I,1)
             IBD = IBD + 1
-            IF(IDOWN(ISGEN(IBD)).EQ.1)  THEN
+            IF(IDOWN(ISGEN(IBD)).EQ.1
+     $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 )  THEN
               IBS = IBS + 1
-              NOINT(IBS,2) = IDOWN(NOINT(IBD,1))
-              CALL GENSML(J,IBD,IBS,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,NOINT,KBLOCK,KPRIM)
+              CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                      SEG,KBLOCK,KPRIM)
             ENDIF
           ENDDO
         ENDIF
@@ -5799,11 +5926,11 @@ C
         IF(J.LT.IQM(I,1)) THEN
           DO K = 1,JCO(J+1,I,1)
             IBU = IBU + 1
-            IF(IUP(ISGEN(IBU)).EQ.1) THEN
+            IF(IUP(ISGEN(IBU)).EQ.1
+     $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 ) THEN
               IBS = IBS + 1
-              NOINT(IBS,2) = IUP(NOINT(IBU,1))
-              CALL GENSML(J,IBU,IBS,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                    SEG,NOINT,KBLOCK,KPRIM)
+              CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                    SEG,KBLOCK,KPRIM)
             ENDIF
           ENDDO
         ENDIF
@@ -5812,21 +5939,12 @@ C
       ENDDO
       NBLCK(I,2) = IBS - JBS
 C
-C     Check NOINT for large components
-C
-      IBL = IBLL - 1
-      DO J = 1,IQM(I,1)
-        DO K = 1,JCO(J,I,1)
-          IBL = IBL + 1
-          NOINT(IBL,1) = IBTAND(1,IBTSHR(NOINT(IBL,1),2))
-        ENDDO
-      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gensml */
-      SUBROUTINE GENSML(IQM,IBL,IBS,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                  SEG,NOINT,KBLOCK,KPRIM)
+      SUBROUTINE GENSML(IQM,IBL,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
+     &                  SEG,KBLOCK,KPRIM)
 C*****************************************************************************
 C
 C
@@ -5834,25 +5952,58 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
+      PARAMETER ( ALPTHR = 1.0D-3 )
+C
       LOGICAL SEG
       DIMENSION NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
+     &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),CPRIMU(KPRIM,KPRIM,KBLOCK,2)
 C
 C
 C     Small component basis set is always uncontracted,
 C     hence NRC(IBS) = NUC(IBL) and SEG(IBS) = T
 C
-      NUC(IBS,2)   = NUC(IBL,1)
-      NRC(IBS,2)   = NUC(IBL,1)
-      NOINT(IBS,2) = NOINT(IBL,1)
       SEG(IBS,2)   = .TRUE.
 C
-      CALL DCOPY(NUC(IBS,2),ALPHA(1,IBL,1),1,ALPHA(1,IBS,2),1)
+cccC     CALL DCOPY(NUC(IBS,2),ALPHA(1,IBL,1),1,ALPHA(1,IBS,2),1)
 C
-C     Contraction matrix is just a unit matrix
+C     Remove small component basis functions already present.
 C
-c     CALL DCOPY(NCMAT,CPRIMU(1,1,IBL,1),1,CPRIMU(1,1,IBS,2),1)
+      NUC_IBS = 0
+      DO I = 1,NUC(IBL,1)
+         ALPTEST = ALPHA(I,IBL,1)
+C
+         DO J = IBJ+1,IBS-1
+            DO IJ = 1,NUC(J,2)
+              TEST = ABS(ALPTEST - ALPHA(IJ,J,2))
+              IF (TEST .LE. ALPTHR) GO TO 100
+            END DO
+         END DO
+C
+         NUC_IBS = NUC_IBS + 1
+         ALPHA(NUC_IBS,IBS,2) = ALPTEST
+C
+  100 CONTINUE
+      END DO
+      IF (NUC_IBS .EQ. 0) THEN
+C
+C        We've deleted all functions from this block.
+C        This might happen for (dual) family basis sets.
+C        Decrement IBS and return.
+C
+         IBS = IBS - 1
+         RETURN
+      END IF
+      IF (NUC(IBL,1) .NE. NUC_IBS) THEN
+         WRITE(LUPRI,'(A,I3,A,I3)')
+     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
+     &   ' small functions in a block out of',NUC(IBL,1)
+      END IF
+      NUC(IBS,2) = NUC_IBS
+      NRC(IBS,2) = NUC_IBS
+C
+C     Contraction matrix for SMALL is just a unit matrix
+C
       CALL DUNIT(CPRIMU(1,1,IBS,2),KPRIM)
       CALL NRMORB(IQM,NRC(IBS,2),NUC(IBS,2),ALPHA(1,IBS,2),
      &            CPRIM(1,1,IBS,2),CPRIMU(1,1,IBS,2),KPRIM,IBS)
@@ -5961,12 +6112,13 @@ C/* Deck Getpot */
 C***********************************************************************
 C
 C     Get nuclear potential energy
+C     Point charges are not included. /June2000,jth+hjaaj
 C     Surgery by T.Saue June 7 1997
 C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+      PARAMETER (D0 = 0.0D0, DP1 = 0.1D0, DP5 = 0.5D0)
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
@@ -5987,11 +6139,12 @@ C
      &            + (CORD(2,N)-CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)))**2
      &            + (CORD(3,N)-CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB)))**2
                DIST = SQRT(DS)
-cjth           IF (DIST.LT.0.1.AND.Q(M)*Q(N).NE.D0) GOTO 5000
+               IF (DIST.LT.DP1 .AND. Q(M)*Q(N).NE.D0 .AND.
+     &             .NOT.(NOORBT(M).OR.NOORBT(N)) ) GOTO 5000
+C                  ... exit if close and no floating and no point charge
                IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
-CTROND                  IF((ABS(Q(M)) .GT. 100.0D0) .AND.
-CTROND     &               (ABS(Q(N)) .GT. 100.0D0)) GOTO 30
-                  IF (DIST.GT.D0) THEN
+                  IF (.NOT.(NOORBT(M).OR.NOORBT(N))) THEN
+C                 if (no point charge) then
                      HKAB  = FMULT(IBTAND(ISTBNU(M),ISTBNU(N)))
                      IF (M .EQ. N) HKAB = DP5*HKAB
                      GETPOT = GETPOT + Q(M)*Q(N)*HKAB/DIST

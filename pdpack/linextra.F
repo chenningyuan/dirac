@@ -319,9 +319,9 @@ C     there are any duplicates, and DSUM, IDMIN, IDAMIN, ICOPY, ISCAL
 C     are also present in 'libveclib'.
 C
 #ifndef VAR_LIBVECLIB
-
 C  /* Deck dsum */
 #if ! ( defined (SYS_DEC) && defined (USE_DXML) )
+#if !defined (VAR_DXML)
       FUNCTION DSUM(N,DA,INCA)
 C
 C     Sums elements of a vector.
@@ -374,7 +374,9 @@ C
    60 DSUM = DTEMP
       RETURN
       END
+#endif
 C  /* Deck idamin */
+#if !defined (VAR_DXML)
       INTEGER FUNCTION IDAMIN(N,DX,INCX)
 C
 C     FINDS THE INDEX OF ELEMENT HAVING MIN. ABSOLUTE VALUE.
@@ -419,7 +421,9 @@ C
    30 CONTINUE
       RETURN
       END
+#endif
 C  /* Deck idmax */
+#if !defined (VAR_DXML)
       INTEGER FUNCTION IDMAX(N,DX,INCX)
 C
 C     FINDS THE INDEX OF ELEMENT HAVING MAX. VALUE.
@@ -462,7 +466,9 @@ C
    30 CONTINUE
       RETURN
       END
+#endif
 C  /* Deck idmin */
+#if !defined (VAR_DXML)
       INTEGER FUNCTION IDMIN(N,DX,INCX)
 C
 C     FINDS THE INDEX OF ELEMENT HAVING MIN. VALUE.
@@ -505,6 +511,7 @@ C
    30 CONTINUE
       RETURN
       END
+#endif
 #endif /* !( defined(SYS_DEC) && defined(USE_DXML) ) */
 
 C  /* Deck iblas */
