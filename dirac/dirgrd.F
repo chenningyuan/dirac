@@ -1544,7 +1544,8 @@ C
             IPQ   = IQTOPQ(IQ,IREP)
             IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.DENSITY: IPQ.GT.NZ !')
             IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.DENSITY: IPQ.LE.0 !')
-            CALL DTSOAO(WORK(KTMP),DMAT(1,IZ,IMAT),
+            IADR = (IPQ-1) * N2BBASX
+            CALL DTSOAO(WORK(KTMP+IADR),DMAT(1,IZ,IMAT),
      &                 NTBAS(0),IREPD,IPRINT)
          ENDDO
       ENDDO
