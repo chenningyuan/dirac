@@ -41,20 +41,20 @@ C     Written by L. Visscher Jul 1997
 C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <dcbham.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <mxcent.h>
-#include <dcbtrp.h>
+#include "mxorb.h"
+#include "dcbham.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "mxcent.h"
+#include "dcbtrp.h"
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
@@ -220,12 +220,12 @@ C     Written by L.Visscher 1997
 C     Last revision Jul 23 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       DIMENSION PRPMO(NORBT,NORBT,NZ),
      &          PBUF(NDIM1,NDIM2,NZ),
      &          JVEC1(*),JVEC2(*)
@@ -285,14 +285,14 @@ C     file
 C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbqal.h>
-#include <dcbham.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbqal.h"
+#include "dcbham.h"
       PARAMETER (DM1=-1.D0)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)

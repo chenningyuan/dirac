@@ -39,17 +39,17 @@ C     Written by Luuk Visscher, december 1996
 C     Screening introduced by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <iratdef.h>
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "iratdef.h"
+#include "mxorb.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -421,16 +421,16 @@ C
 C     Luuk Visscher
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
 C
       PARAMETER (HALF=0.5D0)
 C
@@ -446,7 +446,7 @@ C
       DIMENSION IRECC(2),IBOFF(2),NBFSZ(2),NBUF(2),NIJBUF(2)
       DIMENSION JBOFF(2,0:*),RBUF(*),LBUF1(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Loop over the functions inside the shell-block.
 C     We do it this way rather than just over the boson irreps of the
@@ -594,8 +594,8 @@ C     - Q4S          Coefficients for index 4
 C     - Q3T          Coefficients for index 3 but for transposed AO ints
 C     - Q4T          Coefficients for index 4 but for transposed AO ints
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       INTEGER   NSTR3(2),NSTR4(2)
@@ -603,15 +603,15 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbibt.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN2D')
 C
@@ -685,8 +685,8 @@ C     - HMAT         Symmetry packed half-transformed integrals
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       INTEGER   NSTR3(2),NSTR4(2)
@@ -694,15 +694,15 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbibt.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN2P')
       KFRSAV = KFREE
@@ -912,10 +912,10 @@ C     transformed integrals
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION NBFSZ(2),NBUF(2),JBOFF(2,0:*),IRECC(2)
       CHARACTER*10 LFNAM,FNODE,FNAME*5
 C
@@ -951,10 +951,10 @@ C     Delete the buffer files for the half-transformed integrals
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       DO IRREP = 1, NFSYM
          LUTRA11 = LUTRA1 + IRREP
@@ -972,10 +972,10 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),JBOFF(2,0:*),IBOFF(2)
       DIMENSION RBUF(*),LBUF1(*)
 C
@@ -1012,10 +1012,10 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION RBUF(NBFSZ),LBUF1(NBFSZ),HMAT(*)
 C
       DO IREC = IBUF, IRECC-1, NBUF
@@ -1083,8 +1083,8 @@ C     Output :
 C
 C     -              Updated values of buffer blocks
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       LOGICAL   TRIAN
@@ -1105,10 +1105,10 @@ C
 C
       DIMENSION IHM(0:7)
 C
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbibt.h>
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN1D')
       KFRSAV = KFREE
@@ -1171,8 +1171,8 @@ C
 C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION RBUF(NGBFSZ),LBUF(NGBFSZ),GMAT(*)
 C
       IF (IREC.EQ.0) RETURN
@@ -1204,8 +1204,8 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
 C
@@ -1233,8 +1233,8 @@ C     integrals
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       CHARACTER*10 FNODE,LFNAM
 C
@@ -1262,8 +1262,8 @@ C     Delete the buffer files for the scalar integrals
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CLOSE (UNIT=LGFIL,STATUS='DELETE')
 C
@@ -1278,13 +1278,13 @@ C     Written by Luuk Visscher, February 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-#include <implicit.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "dcbgen.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM

@@ -40,16 +40,16 @@ C
 C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "mxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
      &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
@@ -104,13 +104,13 @@ C
 C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
@@ -163,22 +163,22 @@ C
 C     Based on Trond Saue's GETFC1, Luuk Visscher, Mar 17 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "aovec.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dcbfir.h>
-#include <dcbdhf.h>
-#include <blocks.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <cbihr2.h>
+#include "dcbgen.h"
+#include "dcbfir.h"
+#include "dcbdhf.h"
+#include "blocks.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "cbihr2.h"
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
@@ -322,14 +322,14 @@ C  /* Deck CDENS */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DMAT(*),QCO(*)
       DIMENSION NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
@@ -366,14 +366,14 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0=0.D0)
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
 C
       DIMENSION FMO(NORBT,NORBT,NZ)
       DIMENSION ORBE(*),IBORB(*),WORK(*)
@@ -431,16 +431,16 @@ C     Added number of boson symmetry reps (of parent group).
 C      Timo Fleig, Mar 28, 2002
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       LOGICAL BREIT
       CHARACTER*14 REPN(8)
@@ -659,8 +659,8 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER*4 REPA(64)
       DIMENSION MULTB(64,64)
@@ -785,16 +785,16 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <pgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "pgroup.h"
 C
       CHARACTER*4 REPA(64)
       CHARACTER*1 REPAS(8)
       DIMENSION MULTB(64,64),MULTBS(8,8)
 C
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Start by making the spin-multiplication table
 C

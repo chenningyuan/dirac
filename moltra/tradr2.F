@@ -39,24 +39,24 @@ C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <blocks.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "blocks.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTRT(4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NSTR(2,0:2,4),NDMOBF(2,2,4)
@@ -237,10 +237,10 @@ C
 C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
       LOGICAL LMP2
       DIMENSION TIM1(7,NDIM)
 C
@@ -277,19 +277,19 @@ C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbmpt.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxorb.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbmpt.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
       LOGICAL ANTIS, LMP2, NODV, NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4), ITQMT(0:7,0:7,2),
@@ -298,7 +298,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          TIM1(7),DINTSKP(*),GABAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Notice: Range for index 1, 2, 3 and 4 are not
 C     the same. E1(3) is NOT necessarily = E3(3)
@@ -820,15 +820,15 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       INTEGER   NSTR3(2)
@@ -840,7 +840,7 @@ C
       DIMENSION WORK(*)
       DIMENSION IND(2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C     
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('TQTRNS')
@@ -976,15 +976,15 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <dcbbas.h>
-#include <dcbtra.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dcbbas.h"
+#include "dcbtra.h"
+#include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       INTEGER   NSTR3(2),NSTR4(2)
@@ -993,7 +993,7 @@ C
       DIMENSION TQMAT(*),Q4(*),FQMAT(*)
       DIMENSION WORK(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('LQTRNS')
@@ -1075,10 +1075,10 @@ C/* Deck MP2FI1 */
      &     NFM,NI,NJ,NK,NL,LS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
       DIMENSION SPMAT(NI,NJ,NK,NL,LS)
@@ -1110,8 +1110,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck timec */
       SUBROUTINE TIMEC(TEXT,TIMSTR,TIMEND)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER TEXT*6
 C
       IF (TEXT .EQ. 'START ') THEN
@@ -1131,13 +1131,13 @@ C     Written by Jon Laerdahl, June 1997
 C     Parallel polish by T.Saue Sep 18 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D8=8.0D0,D1=1.0D0,D2=2.0D0)
-#include <dgroup.h>
-#include <dcbmpt.h>
+#include "dgroup.h"
+#include "dcbmpt.h"
       DIMENSION NSTRT(4),NSTR(2,0:2,4)
-#include <sdpre.h>
+#include "sdpre.h"
 C
 C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
@@ -1257,8 +1257,8 @@ C     Output :
 C
 C     -              Updated values of buffer blocks
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       INTEGER   NSTR1(2),NSTR2(2)
@@ -1276,9 +1276,9 @@ C     For the buffered output
 C
       DIMENSION IHM(0:7)
 C
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbibt.h>
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN1E')
       KFRSAV = KFREE
@@ -1330,9 +1330,9 @@ C/* Deck PRIEIN */
       SUBROUTINE PRIEIN(E1,E2,E3,E4,N1,N2,N3,N4,NSTR)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
       DIMENSION E1(N1),E2(N2),E3(N3),E4(N4)
       DIMENSION NSTR(2,0:2,4)
       NX = 0
@@ -1372,11 +1372,11 @@ C/* Deck CONMP2 */
      &                  NSTR,ISPNR,JSPNR,IPRINT)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <dgroup.h>
-#include <dcbmpt.h>
+#include "dgroup.h"
+#include "dcbmpt.h"
       LOGICAL IBEQJB
       DIMENSION NSTR(2,0:2,4)
       DIMENSION E1(N1),E2(N2),E3(N3),E4(N4)
@@ -1478,8 +1478,8 @@ C
 C     Written by Jon K. Laerdahl 1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER I,A,J,B
       LOGICAL IBEQJB
       DIMENSION
@@ -1537,8 +1537,8 @@ C
 C     Written by Jon K. Laerdahl 1995
 C     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER I,A,J,B
       LOGICAL IBEQJB
       DIMENSION
@@ -1576,11 +1576,11 @@ C
 C     Written by T.Saue Sep 9, based on previous code
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dgroup.h"
 C     Global variables
       DIMENSION NSTR(2,0:2,4),  ICMOQR(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
@@ -1680,23 +1680,23 @@ C
 C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <mxorb.h>
+#include "mxorb.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL ANTIS,LMP2
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4),TRIAN(2)

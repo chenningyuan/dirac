@@ -38,13 +38,13 @@ C
 C     Written by Luuk Visscher, Februari 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       PARAMETER (MAXTSK=1)
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK)
@@ -107,16 +107,16 @@ C
 C     Written by Luuk Visscher, december 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "mxorb.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
@@ -380,15 +380,15 @@ C
 C     Luuk Visscher
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
       DIMENSION IHTM(0:7),IHM(0:7),NHTM(2)
@@ -396,7 +396,7 @@ C
       DIMENSION WORK(*)
       DIMENSION IND(2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Loop over the functions inside the shell-block.
 C     We do it this way rather than just over the boson irreps of the
@@ -485,8 +485,8 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       INTEGER   NSTR1(2),NSTR2(2)
@@ -494,14 +494,14 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbibt.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN2')
 C
@@ -599,15 +599,15 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION FMAT(NF,*)
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
 C
       NKL = NFPCK34(IREPIJ)
       DO IJ = 1, NIJ

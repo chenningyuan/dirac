@@ -38,12 +38,12 @@ C     Initialize MDINT file
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION NSTR(2),IKRA(*),IKRB(*)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
 C
@@ -81,12 +81,12 @@ C     Finish MDINT file
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
 #if defined (VAR_MPI)
-#include <dcbgen.h>
-#include <infmpi.h>
+#include "dcbgen.h"
+#include "infmpi.h"
 #endif
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
@@ -112,9 +112,9 @@ C     Split MDINT file if necessary
 C     Written by Luuk Visscher, Spring 2000
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
       CHARACTER*8 NEXTFIL
 C
       NTKL = NTKL + NZKL
@@ -150,10 +150,10 @@ C
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NFM,2),INDK(*),INDL(*)
       COMPLEX*16 RKL(*)
@@ -247,11 +247,11 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dcbham.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dcbham.h"
+#include "dgroup.h"
       DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
@@ -406,10 +406,10 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION INDXKR(2,*)
@@ -455,10 +455,10 @@ C     Written by Luuk Visscher, May 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
       DIMENSION WORK(*)
       CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
@@ -492,7 +492,7 @@ C/* Deck MDSCRI1 */
 C
 C     HJAaJ Aug 2001
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION FMAT(LFMAT)
       DO IJ = 1, NIJ
          WRITE (LU,REC=IJ) FMAT
@@ -509,8 +509,8 @@ C     Written by Luuk Visscher, July 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "dcbtra.h"
       DIMENSION FMAT(LFMAT)
 C
 C     Read integrals.
@@ -529,8 +529,8 @@ C     Written by Luuk Visscher, July 1997
 C     Revised HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "dcbtra.h"
       DIMENSION FMAT(LFMAT), FTMP(LFMAT)
 C
 C     Read integrals from previous batch and add up.
@@ -553,8 +553,8 @@ C     Written by Luuk Visscher, July 1997
 C     Modified HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "dcbtra.h"
       DIMENSION FMAT(LFMAT)
 C
       WRITE (LUMLF3+IREPIJ,REC=IJ) FMAT
@@ -569,9 +569,9 @@ C     Delete MDSCR file
 C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       DO IREPIJ = 1, NFSYM
          IF (.NOT. NOMDCINT) THEN
@@ -600,16 +600,16 @@ C    Written by Luuk Visscher, April 1997
 C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <dcbqal.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbqal.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
       DIMENSION INDXB(2,*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IJ = 0
       DO IREPIJ =1, NFSYM
@@ -677,9 +677,9 @@ C     Initialize MDINFO file
 C     Authored by Joern Thyssen, 1/11/2000.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       CHARACTER*8 DATEX,TIMEX
 C

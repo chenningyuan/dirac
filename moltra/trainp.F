@@ -40,10 +40,10 @@ C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 15)
 C
@@ -51,14 +51,14 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbmp2.h>
-#include <dcbmpt.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbmp2.h"
+#include "dcbmpt.h"
+#include "dcbham.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
@@ -66,8 +66,8 @@ C
      &            '.POSITR','.SCHEME','xTHROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
-#include <ibtfun.h>
-#include <memint.h>
+#include "ibtfun.h"
+#include "memint.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -339,10 +339,10 @@ C
 C     Written by Jon K. Laerdahl, T. Saue and L. Visscher (Dec 1996)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxorb.h"
       PARAMETER(D0=0.0D0)
       PARAMETER (NDIR = 4, NTABLE = 25)
 C
@@ -352,13 +352,13 @@ C
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbham.h"
 C
       SAVE SET
       DATA TABDIR /'*END OF','*PRPTRA','xXXXXXX','xXXXXXX'/
@@ -370,7 +370,7 @@ C
      &            '.PAR4BS','.SCATTE','.MDCINT','xXXXXXX','xXXXXXX'/
       DATA SET/.FALSE./
 C
-#include <memint.h>
+#include "memint.h"
       IF (SET) RETURN
       SET = .TRUE.
 C
@@ -869,21 +869,21 @@ C
 C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <dummy.h>
+#include "dummy.h"
 
-#include <mxorb.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbprp.h>
-#include <dcbtrp.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxpr.h>
-#include <dcbtra.h>
+#include "dcbprp.h"
+#include "dcbtrp.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxpr.h"
+#include "dcbtra.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1025,10 +1025,10 @@ C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 5)
 C
@@ -1036,20 +1036,20 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*2 WS
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbres.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbres.h"
+#include "dcbham.h"
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','.THROUT'/
       DATA SET/.FALSE./
-#include <ibtfun.h>
-#include <memint.h>
+#include "ibtfun.h"
+#include "memint.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.

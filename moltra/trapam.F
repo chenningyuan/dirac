@@ -40,17 +40,17 @@ C
 C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <mxorb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "mxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
@@ -58,7 +58,7 @@ C
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
       CALL QENTER('PAMTRA')
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
       DUM = DUMMY
 C
@@ -389,8 +389,8 @@ C
 C     Written  L.Visscher May 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER KAVEC(NA),KCVEC(NO)
       LOGICAL CORE
 C
@@ -418,23 +418,23 @@ C
 C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <dcbmp2.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "dcbmp2.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
       LOGICAL TOBE,TRANOP
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,2),KQ(2,4),KIBE(2,4),
      &          NR(2),IR(2,2),NQ(2),KE(2,4)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
 C
       CALL QENTER('PSIMP2')
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
       CALL MP2HI(IPRMP2)
 C
@@ -685,11 +685,11 @@ C
 C     Written by T.Saue Jan 19 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION IOS1(*),IOS2(*),NSTR(2,0:2,4)
 C
       WRITE(LUPRI,'(1X,A,A3)') '* Fermion ircop ',FREP(I)
@@ -729,11 +729,11 @@ C
 C     Written by T.Saue Jan 19 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION IOS1(*),IOS2(*),IOS3(*),IOS4(*)
       DIMENSION NSTR(0:2,2,NINDEX)
 C
@@ -807,25 +807,25 @@ C
 C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       LOGICAL MSOUT,ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
 C
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
       KFRSAV = KFREE
 C
@@ -913,13 +913,13 @@ C
 C     Written by Trond Saue and Luuk Visscher Jan 17 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbmp2.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbmp2.h"
 C
 C     Now say hi and give orbital information
 C
@@ -947,15 +947,15 @@ C
 C     Written by Luuk Visscher 05-11-1996.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <mxorb.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "mxorb.h"
+#include "dcbtra.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE
 C
@@ -1041,8 +1041,8 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL   TRIAN
@@ -1051,14 +1051,14 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbibt.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbibt.h"
 C
       CALL QENTER('MS4IN1')
 C
@@ -1238,20 +1238,20 @@ C               distributions (**|cd).
 C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <comdis.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "comdis.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
-#include <cbihr2.h>
-#include <dorps.h>
-#include <ccom.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "cbihr2.h"
+#include "dorps.h"
+#include "ccom.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       LOGICAL NODV, NOPV, NOCONT
 C
@@ -1304,11 +1304,11 @@ C
 C     Written by Luuk Visscher, january 1997 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <dcbbas.h>
+#include "implicit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbbas.h"
 C
       LOGICAL L2TYP(0:4),LBIT
 C
@@ -1403,19 +1403,19 @@ C     Luuk Visscher, january 1997
 C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
+#include "implicit.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
 C
       DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
       DIMENSION NBBASA(0:7,0:2),NBBASB(0:7,0:2)
       DIMENSION IBBASA(0:7,0:2),IBBASB(0:7,0:2)
       DIMENSION IBASA(2),IBASB(2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Find out to which component these shells belong
 C
@@ -1560,21 +1560,21 @@ C     INDX(3,INDA) : Position of function within this particular irrep
 C
 C     Luuk Visscher, 24-1-97
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <dcbtra.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine NINSH',-1)
 C
@@ -1691,23 +1691,23 @@ C     - NPASS :   Number of passes for this distribution set (kept in
 C                 disbuf)
 C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
       DIMENSION IJPASS(0:7,*)
       DIMENSION IND(2)
-#include <twocom.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbtra.h>
+#include "twocom.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbtra.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 3) CALL HEADER('Subroutine NDISTRN',-1)
       IF (MKINAB.AND.(.NOT.ABSPOI).AND.(.NOT.MKIJPA)) 
@@ -1860,11 +1860,11 @@ C     Written by L.Visscher January 1997
 C
 C***********************************************************************
 ******
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION IOS11(*),IOS12(*),IOS21(*),IOS22(*)
       DIMENSION NSTR1(2,0:2),NSTR2(2,0:2)
 C
@@ -1903,8 +1903,8 @@ C
 C   Written by T.Saue Feb 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION IOS1(*),IOS2(*),IBUF(*)
 C
@@ -1956,9 +1956,9 @@ C     Class 14 : Imaginary part of integrals (i    j    |k    lbar)
 C     Class 15 : Imaginary part of integrals (ibar j    |k    l   )
 C     Class 16 : Imaginary part of integrals (i    jbar |k    l   )
 C
-#include <implicit.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       IF (NCLASS.GT.16) CALL QUIT ('Only 16 integral classes defined')
 C
@@ -2021,8 +2021,8 @@ C     Give contribution of the quaternion combination to the class
 C
 C     Luuk Visscher
 C
-#include <implicit.h>
-#include <dcbtra.h>
+#include "implicit.h"
+#include "dcbtra.h"
 C
       INTCL = ICLARR(IQ1,IQ2,ICLASS)
 C
@@ -2037,7 +2037,7 @@ C     form. Add result to existing matrix multiplied by factor
 C
 C     Luuk Visscher
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       CHARACTER*4 TASK
       DIMENSION ASQ(NROW,NCOL,NZ),ATRI(NDIM,NZ)
@@ -2093,15 +2093,15 @@ C
 C     Written by T.Saue - Aug 19 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <blocks.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "blocks.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       LOGICAL SAME
       DIMENSION DRIJ(NSYMBL,NSYMBL,*),WORK(*),
      &          Q1(*),NDMOQ1(2,2),ICMOQ1(2),NSTR1(2,0:2),
@@ -2199,11 +2199,11 @@ C
 C     Written by T.Saue August 20 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION CAO(*),Q(*),WORK(*)
       IF(NSEL.EQ.NVEC) THEN
 C
@@ -2270,17 +2270,17 @@ C         1 - electronic
 C         2 - positronic
 C
 C***********************************************************************
-#include <priunit.h>
-#include <implicit.h>
+#include "priunit.h"
+#include "implicit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <blocks.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "blocks.h"
       DIMENSION QB(*),Q(*),NDMOQR(2,2),ICMOQR(2),NSTR(2,0:2),
      &          IND(*),WORK(*)
 C
@@ -2342,13 +2342,13 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <dgroup.h>
-#include <blocks.h>
+#include "dgroup.h"
+#include "blocks.h"
 C
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
      &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
@@ -2389,13 +2389,13 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <dgroup.h>
-#include <blocks.h>
+#include "dgroup.h"
+#include "blocks.h"
 C
       LOGICAL SAME
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
@@ -2454,8 +2454,8 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
 C
       DIMENSION DINTSKP(2,4)
@@ -2504,11 +2504,11 @@ C
 C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "dcbtra.h"
+#include "dgroup.h"
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
 C
@@ -2569,15 +2569,15 @@ C
 C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION ITQMT(0:7,0:7,2),NSTR(2,0:2,4)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialize
 C
@@ -2621,25 +2621,25 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <dummy.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "dummy.h"
+#include "aovec.h"
+#include "mxorb.h"
 C
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbdhf.h>
-#include <blocks.h>
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbdhf.h"
+#include "blocks.h"
 #if defined (VAR_MPI)
-#include <infpar.h>
+#include "infpar.h"
 #endif
       LOGICAL RECAN
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
@@ -2706,16 +2706,16 @@ C     NB!! For the moment this routine assumes closed shell !!!!
 C     Written by T.Saue Jan 11 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D0=0.0D0)
 C
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),FAO(*),FMO(*),WORK(*)
       DIMENSION NFMO(2,2),IFMO(2)
@@ -2798,8 +2798,8 @@ C
 C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL TESTOK
       DIMENSION EIG(*),IVEC(*)
@@ -2817,8 +2817,8 @@ C
 C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EIG(*),IVEC(*),IBUF(*)
 C
@@ -2842,11 +2842,11 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcborb.h"
       DIMENSION WORK(*),NSTR(2,0:2),KVEC(*)
       KFRSAV = KFREE
 C
@@ -2886,22 +2886,22 @@ C
 C     Written by T.Saue, Jan 12 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "aovec.h"
+#include "mxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dcbfir.h>
-#include <dcbdhf.h>
-#include <blocks.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <cbihr2.h>
+#include "dcbgen.h"
+#include "dcbfir.h"
+#include "dcbdhf.h"
+#include "blocks.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "cbihr2.h"
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
@@ -3039,24 +3039,24 @@ C     Based on TRAPAM
 C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
 C
-#include <mxorb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbres.h>
-#include <dcbgen.h>
+#include "mxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbres.h"
+#include "dcbgen.h"
 #if defined (VAR_MPI)
-#include <infpar.h>
+#include "infpar.h"
 #endif
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
@@ -3064,7 +3064,7 @@ C
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 C
       CALL QENTER('RESOLV')
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
       CALL TITLER('Resolution of open-shell states','*',120)
 C
@@ -3341,10 +3341,10 @@ C
 C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
+#include "dcborb.h"
       DIMENSION IVEC(*)
       DO I = 1,NVEC
         IVEC(I) = IOFF + I
@@ -3362,9 +3362,9 @@ C     Note that the input array IBEIG is overwritten by the new data.
 C     Written by L.Visscher may 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION IBEIG(NBO),IBEIG2(NBO),VEC(NBO,NBO)
@@ -3411,25 +3411,25 @@ C    *******************************************************************
 C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <dcbgen.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "dcbgen.h"
 C
-#include <dorps.h>
-#include <dcborb.h>
-#include <infpar.h>
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <cbihr2.h>
+#include "dorps.h"
+#include "dcborb.h"
+#include "infpar.h"
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "cbihr2.h"
 C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
@@ -3521,29 +3521,29 @@ C                                 dcbtr3, comdis and symmet
 C
 C     Written by Luuk Visscher, august 1997.
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <infpar.h>
-#include <parint.h>
-#include <blocks.h>
-#include <twosta.h>
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "infpar.h"
+#include "parint.h"
+#include "blocks.h"
+#include "twosta.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -3801,26 +3801,26 @@ C     Written by Luuk Visscher, August 1997
 C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*),DINTSKP(8),TIM1(7)
 C
       CALL QENTER('TRANOD')
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
 C
 C     Initialize the common blocks.
@@ -3874,25 +3874,25 @@ C     Slave --> Master:
 C       - Screening information
 C       - MP2 results
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <dcbgen.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "dcbgen.h"
 C
-#include <dorps.h>
-#include <dcborb.h>
-#include <infpar.h>
-#include <dcbtra.h>
-#include <dgroup.h>
+#include "dorps.h"
+#include "dcborb.h"
+#include "infpar.h"
+#include "dcbtra.h"
+#include "dgroup.h"
 C
       LOGICAL LMP2
       DIMENSION DINTSKP(8),TIM1(7,*),WORK(*)
@@ -3962,9 +3962,9 @@ C
 C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
 C                 type of integrals specified with IC, I2TYP
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "twosta.h"
 C
 C     Memory requirements for HERMIT:
 C

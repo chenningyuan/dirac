@@ -69,25 +69,25 @@ C     Written by Luuk Visscher, Februari 1997
 C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 
-#include <blocks.h>
+#include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -360,18 +360,18 @@ C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <maxaqn.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxorb.h>
-#include <dcbgen.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxorb.h"
+#include "dcbgen.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "twosta.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -841,21 +841,21 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <dcbgen.h>
-#include <infpar.h>
+#include "dcbgen.h"
+#include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
-#include <dgroup.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
+#include "dgroup.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
 C
       KFRSAV = KFREE
 C
@@ -942,21 +942,21 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <dcbtra.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       INDA2 = 0
       DO IREPA1 = 0, MAXREP
@@ -1024,22 +1024,22 @@ C     Written by T.Saue Sep 17 1998
 C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
+#include "mxorb.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <infpar.h>
-#include <dcbgen.h>
-#include <dcborb.h>
-#include <dcbtra.h>
-#include <dcbtr3.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "infpar.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
       DIMENSION DINTSKP(*),WORK(*)
@@ -1138,10 +1138,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C& End of parallel section : activitate compilation only when necessary
 #endif
       FUNCTION MWHMATCALC(IJPASS,NPASS,NFPCK12)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
+#include "dgroup.h"
 C
       DIMENSION IJPASS(0:7,NPASS)
       DIMENSION NFPCK12(2)
@@ -1173,8 +1173,8 @@ C     TODO: note that this code assumes only LL and SS
 C           shells, no LS shells, fix when introducing
 C           Gaunt or Breit
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     get NA1 = number of S A-shells and NA2 = number of L A-shells
 C
