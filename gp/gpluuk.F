@@ -402,4 +402,143 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,EV,
+     &                   INDX,IRPS,IND)
+C 
+#include "implicit.h"
+C
+C---------------Description--------------------------------------------
+C
+C     Print list of eigenvalues from different symmetries, sorted on
+C     increasing energy value.
+C 
+C     An offset is added to this value so that e.g. the constant
+C     CCSD energy can be added to the Fockspace eigenvalues.
+C
+C     The routine is based on an older routine in GOSCIP but changed
+C     to get rid of the common blocks.
+C
+C     Parameters :
+C     - LUPRI   : Output unit
+C     - N_IRPS  : Number of irreps
+C     - N_EV    : Number of eigenvalues in each irrep
+C     - REPNA   : Name of each irrep
+C     - E_OFF   : Energy offset
+C     - EV      : Eigenvalues
+C     - INDX    : Work array of the same length as EV
+C     - IRPS    : Work array of the same length as EV
+C     - IND     : Work array of length N_IRPS
+C
+C---------------Routines called----------------------------------------
+C
+C     INDEXX
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher, august 2003.
+C
+C---------------Calling variables--------------------------------------
+C
+      DIMENSION N_EV(*),INDX(*)
+      DIMENSION EV(*)
+      DIMENSION IRPS(*),IND(*)
+      CHARACTER*4 REPNA(*)
+
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "codata.h"
+C
+C---------------Local variables--------------------------------------
+C
+      PARAMETER (DEGEN=1.D-9)
+C
+C---------------Executable code----------------
+C     
+C     Compute the total number of eigenvalues and fill
+C     the array with the identication
+C
+      N_TOTAL = 0
+      DO IRP = 1, N_IRPS
+         CALL ICOPY(N_EV(IRP),IRP,0,IRPS(N_TOTAL+1),1)
+         N_TOTAL = N_TOTAL + N_EV(IRP)
+      ENDDO
+C
+      IF (N_TOTAL.EQ.0) RETURN
+C     
+C     Sort them from low to high
+C
+      CALL INDEXX(N_TOTAL,EV,INDX)
+C
+      WRITE (LUPRI,1005)
+      ILEVEL=0
+      EW=0.0D0
+      EWF=EV(INDX(1))
+      NEW=0
+      AVER=0.0D0
+      DO I=1,N_TOTAL
+        E = EV(INDX(I))
+        AVER=AVER+E
+        IF (ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0)
+     &      WRITE(6,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+        ELSE
+          NEW=NEW+1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF
+      ENDDO
+      IF (NEW.NE.0)
+     &WRITE(6,1010) ILEVEL,EW-EWF,EW+E_OFF,NEW
+      WRITE(6,1020) AVER/DBLE(N_TOTAL)+E_OFF
+C
+      DO IRP1 = 1, N_IRPS, 8
+      IRP2 = MIN0(N_IRPS,IRP1+7)
+      WRITE(6,1025) (REPNA(I),I=IRP1,IRP2)
+      ILEVEL=0
+      EW=0.0D0
+      EWF=EV(INDX(1))
+      NEW=0
+      DO JRP = IRP1, IRP2
+         IND(JRP) = 0
+      END DO
+C
+      DO 140 I=1,N_TOTAL
+        E=EV(INDX(I))
+        IF (ABS(E-EW).GT.DEGEN) THEN
+          IF (NEW.NE.0)
+     &      WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &                    (IND(JRP),JRP=IRP1,IRP2)
+          DO JRP = IRP1, IRP2
+            IND(JRP) = 0
+          ENDDO
+          ILEVEL = ILEVEL + 1
+          IND(IRPS(INDX(I))) = 1
+          NEW=1
+          EW=E
+        ELSE
+          NEW=NEW+1
+          IND(IRPS(INDX(I))) = IND(IRPS(INDX(I))) + 1
+          EW=((NEW-1)*EW+E)/DBLE(NEW)
+        ENDIF
+ 140    CONTINUE
+      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,XTEV*(EW-EWF),XTKAYS*(EW-EWF),
+     &              (IND(JRP),JRP=IRP1,IRP2)
+      ENDDO
+ 1000 FORMAT(F17.8)
+ 1008 FORMAT(17X,I8,2X,16(A1),F16.8)
+ 1005 FORMAT(//' Energy eigenvalues in atomic units'
+     +            //' Level   Rel eigenvalue     ',
+     +            'Abs eigenvalue  Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
+ 1020 FORMAT(//' Total average: ',F20.10)
+ 1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
+     +       ' Classification in the Abelian subgroup',
+     +       //' Level  eigenvalue (eV) ',
+     +      ' Eigenvalue (cm-1)',2X,8A4/)
+ 1030 FORMAT(I5,F19.9,F18.6,8(I4))
+      RETURN
+      END
 

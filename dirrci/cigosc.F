@@ -550,11 +550,9 @@ C
 C
       INCLUDE 'goscom.inc'
 C
-      PARAMETER (EVOLT=27.21139590988D0,CM=219474.63068D0)
-C
       CHARACTER*1 N(N1)
 C
-      INTEGER IRPS(N2*N5),IND(N5)
+      INTEGER IRPS(N2*N5),INDX(N2*N5),IND(N5)
       REAL*8 DS(N2*N5)
 C
       NAMELIST/POPAN/THRESH,DEGEN,SELPOP
@@ -608,74 +606,26 @@ C     ------------------------------------
 C     PRINT COMPRESSED LIST OF EIGENVALUES
 C     ------------------------------------
 C
- 110  CALL SORTEW (DS,NDETT,IRPS)
-      WRITE(6,1005)
-      ILEVEL=1
-      EW=0.0D0
-      EWF=DS(1)
-      NEW=0
-      AVER=0.0D0
-      DO 120 I=1,NDETT
-        AVER=AVER+DS(I)
-        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
-          IF (NEW.NE.0)
-     &      WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
-          ILEVEL=ILEVEL+1
-          NEW=1
-          EW=DS(I)
-        ELSE
-          NEW=NEW+1
-          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
-        ENDIF
- 120    CONTINUE
-      IF (NEW.NE.0)
-     &WRITE(6,1010) ILEVEL,EW-EWF,EW+ECORE,NEW
-      WRITE(6,1020) AVER/DBLE(NDETT)+ECORE
+ 110  CONTINUE
 C
-      DO NREP1 = 1, NREP, 8
-      NREP2 = MIN0(NREP,NREP1+7)
-      IF (IRRP.EQ.0) WRITE(6,1025) (REPNA(I),I=NREP+NREP1,NREP+NREP2)
-      IF (IRRP.EQ.1) WRITE(6,1025) (REPNA(I),I=NREP1,NREP2)
-      ILEVEL=0
-      EW=0.0D0
-      EWF=DS(1)
-      NEW=0
-      DO JRP = NREP1, NREP2
-         IND(JRP) = 0
-      END DO
-      DO 140 I=1,NDETT
-        IF (ABS(DS(I)-EW).GT.DEGEN) THEN
-          IF (NEW.NE.0)
-     &      WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
-     &                    (IND(JRP),JRP=NREP1,NREP2)
-          DO 130 JRP = NREP1, NREP2
-            IND(JRP) = 0
- 130        CONTINUE
-          ILEVEL = ILEVEL + 1
-          IND(IRPS(I)) = 1
-          NEW=1
-          EW=DS(I)
-        ELSE
-          NEW=NEW+1
-          IND(IRPS(I)) = IND(IRPS(I)) + 1
-          EW=((NEW-1)*EW+DS(I))/DBLE(NEW)
-        ENDIF
- 140    CONTINUE
-      IF (NEW.NE.0) WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
-     &              (IND(JRP),JRP=NREP1,NREP2)
+      ND = 0
+      DO I = 1, NREP
+         CALL DCOPY (NDETI(I),D(1,I),1,DS(ND+1),1)
+         ND = ND + NDETI(I)
       ENDDO
+C
+      IF (IRRP.EQ.0) THEN
+C        Even number of electrons, boson irreps
+         CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,
+     &                DS,INDX,IRPS,IND)
+      ELSE
+C        Odd number of electrons, fermion irreps
+         CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,
+     &                DS,INDX,IRPS,IND)
+      ENDIF
+C
  1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
- 1005 FORMAT(//' Energy eigenvalues in atomic units'
-     +            //' Level   Rel eigenvalue     ',
-     +            'Abs eigenvalue  Degeneracy'/)
- 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
- 1020 FORMAT(//' Total average: ',F20.10)
- 1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
-     +       ' Classification in the Abelian subgroup',
-     +       //' Level  eigenvalue (eV) ',
-     +      ' Eigenvalue (cm-1)',2X,8A4/)
- 1030 FORMAT(I5,F19.9,F18.6,8(I4))
       RETURN
       END
 C
