@@ -281,8 +281,8 @@ C
                NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
 C              subtract max mem needed in Hermit and 10%/1Mw for anything else
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
@@ -290,8 +290,9 @@ C
 C
 C           Set INDXAB and INDPASS
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &                       INDX,WORK(KDXAB),IJP12,IDUM,
+     &                       NSIZG,WORK(KIJPASS))
 C
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1

@@ -1262,6 +1262,13 @@ C
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.5) THEN
+          CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
+      ELSEIF (ISTRAT.EQ.6) THEN
+c..not yet activated
+          call quit ('strategy 6 is not yet fully tested & implemented')
+c         CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+c    &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
      &        'PAMTR1: Strategy ',ISTRAT,' not implemented'
@@ -1478,8 +1485,8 @@ C     - ICL          Last class of integrals
 C     - TRIAN        Store the transformed integrals as a lower triangle
 C     - NSTR1        Number of active spinors for index 1
 C     - NSTR2        Number of active spinors for index 2
-C     - NFPCK12        Number of spinor pairs for each compound symmetry
-C     - IFPCK12        Pointers to spinor pairs
+C     - NFPCK12      Number of spinor pairs for each compound symmetry
+C     - IFPCK12      Pointers to spinor pairs
 C     - NDMOQR       Dimensions of the coefficient array
 C     - ICMOQR       Pointers to coefficients
 C     - IJPAIRS      Number of blocks for each boson symmetry
@@ -2122,8 +2129,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ndistrn */
-      FUNCTION NDISTRN(I2TYP,IPRINT,MKINAB,MKIJPA,ABSPOI,INDX,
-     &                 INDXAB,IJPAIRS,NWDS,IJPASS)
+      FUNCTION NDISTRN(I2TYP,IPRINT,MKINAB,MKIJPA,MKIAB,ABSPOI,INDX,
+     &                 INDXAB,IJPAIRS,IABIND,NWDS,IJPASS)
 C
 C     Calculate number of distributions in a shell pair
 C     Set up pointer array INDXAB
@@ -2139,6 +2146,7 @@ C     - MKINAB : .TRUE.   Make pointer array
 C                .FALSE.  Only calculate number of distributions
 C     - MKIJPA : .TRUE.   Make pointer array for each pass
 C                .FALSE.  Only calculate number of passes
+C     - MKIAB  : .TRUE.   Make another pointer array from distribution to pair indices
 C     - ABSPOI : .TRUE.   Absolute pointers in INDXAB(,,4)
 C                .FALSE.  Pointers within pass in INDXAB(,,4)
 C     - INDX   : Pointer from complete list to position in the shell
@@ -2158,9 +2166,10 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-      LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,DIAGAB1,ABSPOI
+      LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
       DIMENSION IJPASS(0:7,*)
+      DIMENSION IABIND(*)
       DIMENSION IND(2)
 #include "twocom.h"
 #include "dgroup.h"
@@ -2296,6 +2305,9 @@ C
                                  ENDIF
                                  INDXAB(INDAR,INDBR,5) = NPASS
                               ENDIF
+C
+                              IF (MKIAB) IABIND(IJ) = INDAB
+C
                               IOFF = IOFF + NSPCK(IREPAB,IC)
                             ENDDO
                         ENDDO
@@ -4331,6 +4343,14 @@ C
           CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
+      ELSEIF (ISTRAT.EQ.5) THEN
+         WRITE(LUPRI,'(A)')
+     &     'TRANOD: Strategy 5 not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
+      ELSEIF (ISTRAT.EQ.6) THEN
+          call quit ('strategy 6 is not yet fully tested & implemented')
+c         CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+c    &              NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')
      &     'TRANOD: Strategy ',ISTRAT,' not implemented'
@@ -4404,8 +4424,8 @@ C       signal the slave to stop computing & transforming integrals.
           CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
           IF (ITEST .NE. 0) THEN
-C         ... this node not finished yet, is asking to get or release file lock
-             CALL QUIT('TRARES: file lock not implemented yet')
+C         ... this node sends the wrong message, abort
+             CALL QUIT('TRARES: wrong code sent by slave')
              GO TO 100
           END IF
           NWHO = ISTAT(MPI_SOURCE)

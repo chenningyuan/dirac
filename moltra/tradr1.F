@@ -210,8 +210,8 @@ C
 C           Get memory needed for Hermit
             MWHER = MXMEMHER(IC,I2TYP)
             NSIZG = LFREE - MWHER
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.FALSE.,.TRUE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.FALSE.,.FALSE.,.TRUE.,
+     &                       INDX,WORK(KDXAB),IJP12,IDUM,NSIZG,IDUM)
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1
                IHM(IREPAB) = NSIZH

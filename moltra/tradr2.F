@@ -459,8 +459,8 @@ C              subtract max mem needed in Hermit and 10%/1Mw for anything else
                ENDIF
             ENDIF
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
 C     If several passes are needed, memory requirements
 C     must be reconsidered
@@ -469,8 +469,8 @@ C
                NGBTMP = (IRAT*NSIZG)/((1+IRAT)*NPASS)
                MEMSV2 = 2*NGBTMP
                NSIZG = LFREE - MAX(MEMSV1,MEMSV2)
-               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &              .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &              .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
             END IF
 C
             LDXAB = 5*NINSHA*NINSHB
@@ -479,8 +479,8 @@ C
 C
 C           Set INDXAB and INDPASS
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &              INDX,WORK(KDXAB),IJP12,IDUM,NSIZG,WORK(KIJPASS))
 C
             NSIZH = 0
             DO IREPAB = 0, NBSYM-1
@@ -1124,7 +1124,7 @@ C     IBSMAX = ISHLA, making use of RS-symmetry
                   NSIZG = MAXSCL
                ENDIF
                ITOTDS = ITOTDS + NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &              .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &              .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
             END DO
             IDSLST(6,ISHLA) = ITOTDS
          END DO
@@ -1268,7 +1268,7 @@ C
 C     Determine number of passes based on available memory
 C
          NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &        .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &        .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
 C     If several passes are needed, memory requirements
 C     must be reconsidered
@@ -1278,7 +1278,7 @@ C
             MEMSV2 = 2*NGBTMP
             NSIZG = LFREE - MAX(MEMSV1,MEMSV2)
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
+     &           .FALSE.,.TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
          END IF
 C
          LDXAB = 5*NINSHA*NINSHB
@@ -1287,8 +1287,8 @@ C
 C
 C     Set INDXAB and INDPASS
 C
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
-     &        INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.TRUE.,
+     &        INDX,WORK(KDXAB),IJP12,IDUM,NSIZG,WORK(KIJPASS))
          NSIZH = 0
          DO IREPAB = 0, NBSYM-1
             IHM(IREPAB) = NSIZH

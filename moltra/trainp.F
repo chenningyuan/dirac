@@ -856,7 +856,7 @@ C
       WRITE(LUPRI,'(/1X,A)')
      &   '* Set-up for 4-index transformation'
       WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRAT
-      GOTO (501,502,503,504) ISTRAT
+      GOTO (501,502,503,504,505,506) ISTRAT
   501 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - all half-transformed integrals (ij|rs) kept in core'
@@ -873,6 +873,16 @@ C
         WRITE(LUPRI,'(A)')
      &    ' - write (rs)-batches of half-transformed integrals ',
      &    ' (ij|rs) to disk; parallel scheme'
+        GOTO 500
+  505 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - scheme 5 is meant for MP2 properties'
+        CALL QUIT ('Specified wrong scheme for index transform')
+        GOTO 500
+  506 CONTINUE
+        WRITE(LUPRI,'(A)')
+     &    ' - write half-transformed integrals (ij|rs) to disk'
+        GOTO 500
   500 CONTINUE
       IF(SCRTRA.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold :',SCRTRA

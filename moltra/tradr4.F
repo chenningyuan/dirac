@@ -670,8 +670,8 @@ C
 C           Calculate NUMDIS and NSIZG
 C           --------------------------
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                       .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &              .FALSE.,INDX,WORK(KFREE),IJP12,IDUM,NSIZG,IDUM)
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 C           CRAYfix:
 C           Opening a direct access file with too long records 
@@ -685,8 +685,9 @@ C           ---------------------
 C
             CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.FALSE.,
+     &                       INDX,WORK(KDXAB),IJP12,IDUM,
+     &                       NSIZG,WORK(KIJPASS))
 C
 C           Calculate MWHMAT:
 C           -----------------
@@ -716,8 +717,9 @@ C        Final calculation of INDXAB & IJPASS
 C
          CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                    INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,.FALSE.,
+     &                    INDX,WORK(KDXAB),IJP12,IDUM,
+     &                    NSIZG,WORK(KIJPASS))
 C
          IF (IPRINT .GE. 3) THEN
             WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
