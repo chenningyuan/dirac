@@ -84,7 +84,7 @@ void main()
     * End MPI
     */
 
-   end_mpi(mparid,mytid,errhandler);
+   if ( parcal ) end_mpi(mparid,mytid,errhandler);
 
    /*
     * Free memory
