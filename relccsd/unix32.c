@@ -30,6 +30,7 @@ Timing routines:second()
 Bit routines:        popcnt(pat)
                 leadz(pat)
                         as documented for cray, except operating on 32 bit word
+   bla bla
         */
 #include <stdio.h>
 #include <sys/types.h>
