@@ -186,7 +186,7 @@ C
       CHARACTER*8 GABLAB
       LOGICAL   DOINT(2,2)
       LOGICAL   DOLS,DOSS,LBIT
-      LOGICAL   NODV,NOPV,FIRST,NOCONT
+      LOGICAL   NODV,NOPV,FIRST,NOCONT, NOINFO
 C     Timing variables
       DOUBLE PRECISION DPRTIM(4,2)
       SAVE DPRTIM
@@ -203,6 +203,7 @@ C
 #include <dcbdhf.h>
 #include <dgroup.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <dorps.h>
 C two el. part
 #include <ccom.h>
@@ -236,12 +237,37 @@ C
       CPUGAB = D0
       WLLGAB = D0
 C
+      NOINFO = .TRUE.
+      GRD_NOSMLV = .FALSE.
+      GRD_NOSMLS = .FALSE.
 C    
       DO I = 1,2
          DO J = 1,2
             DOINT(I,J) = .TRUE.
          END DO
       END DO
+      WRITE(LUPRI,'(1X,A,A)') 
+     &   'Special information about calculation ',
+     &   'of the molecular gradient:'
+      IF (LEVYLE) THEN
+         WRITE(LUPRI,'(/X,A,2(/,4X,A))') 
+     &      'Levy-Leblond Hamiltonian: ',
+     &      '- No small-small nuclear attraction integrals.',
+     &      '- No small-small reorthonormalization gradient'
+         NOINFO = .FALSE.
+         GRD_NOSMLS = .TRUE.
+         IF (NOSMLV) THEN
+            GRD_NOSMLV = .TRUE.
+         ELSE
+            WRITE(LUPRI,'(/1X,2A)')
+     &         'WARNING: small-small nuclear attraction integrals AND',
+     &         ' Levy-Leblond Hamiltonian: Inconsistent...'
+         END IF
+      ELSE IF (NOSMLV) THEN
+         WRITE(LUPRI,'(/X,A)') 
+     &      '- No small-small nuclear attraction integrals.'
+         NOINFO = .FALSE.
+      END IF
 C
       IF ( DOLVC .AND. DO2GRD(3) ) THEN
          DO2GRD(3) = .FALSE.
@@ -249,7 +275,9 @@ C
      &                        ' not in gradient =>'
          WRITE(LUPRI,'(X,A/)') 'LVCORR gradient used (SS-gradient is'//
      &                        ' not calculated)'
+         NOINFO = .FALSE.
       END IF
+      IF (NOINFO) WRITE(LUPRI,'(1X,A)') 'No special information.'
 C
 C     Do totally symmetric contributions (RSETSYM(.FALSE.)
 C     and calculate translation/rotation invariance

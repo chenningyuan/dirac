@@ -300,22 +300,36 @@ C
                   CALL AVEMOM(STDER1,ISYMOP,MAXCMP,SECDER,DSHELL)
                END IF
             ELSE
+C
+C              GRD_NOSMLV: No small-small nuclear attraction 
+C                          (eg. when using Levy-Leblond Hamiltonian)
+C              GRD_NOSMLS: No small-small reorthonormalization term
+C                          (eg. when using Levy-Leblond Hamiltonian)
+C
+C
                IF ( ONECEN ) THEN
 C
 C                 Derivatives of the nuclear attraction, one center case
 C
-                  CALL AVENA1(ADER,NATOMC,SECDER,NCENTC,JCENTC,
-     &                        MAXCMP,JSYMC,SIGNC,DSHELL)
+                  IF (.NOT. (GRD_NOSMLV .AND. (INTCLASS .EQ. 2))) THEN
+                     CALL AVENA1(ADER,NATOMC,SECDER,NCENTC,JCENTC,
+     &                           MAXCMP,JSYMC,SIGNC,DSHELL)
+                  END IF
+C
                ELSE
 C
 C                 Derivatives of the nuclear attraction, two center case
 C
-                  CALL AVENA2(ADER,NATOMC,ISYMOP,SECDER,NCENTC,MAXCMP,
-     &                        JCENTC,JSYMC,SIGNC,DSHELL)
+                  IF (.NOT. (GRD_NOSMLV .AND. (INTCLASS .EQ. 2))) THEN
+                     CALL AVENA2(ADER,NATOMC,ISYMOP,SECDER,NCENTC,
+     &                           MAXCMP,JCENTC,JSYMC,SIGNC,DSHELL)
+                  END IF
 C
 C                 Reorthonormalization
 C
-                  CALL AVEFS(STDER1,ISYMOP,MAXCMP,SECDER,FSHELL)
+                  IF (.NOT. (GRD_NOSMLS .AND. (INTCLASS .EQ. 2))) THEN
+                     CALL AVEFS(STDER1,ISYMOP,MAXCMP,SECDER,FSHELL)
+                  END IF
 C
 C                 Derivatives of the \beta-matrix
 C 
