@@ -838,7 +838,7 @@ C
 C
 C         electronic indeces...
 C
-          NS = NORB(I1)
+          NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ELSE
@@ -1258,25 +1258,6 @@ C
 C
 C       Parameters for first index
 C
-        IF (.NOT. LBIT(ITYP,2) ) THEN
-C
-C          Inactive...
-C
-           NI  = NISH(I2) - NFRO(I2)
-           II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-C
-         ELSE
-C
-C          Active...
-C
-           NI  = NASH(I2)
-           II  = IORB(I2) + NPSH(I2) + NISH(I2) + 1
-C
-         END IF
-CJTH    NI = NOCC(I2) - NFRO(I2)
-CJTH    II = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-c       NI = NESH(I2)
-c       II = IORB(I2) + NPSH(I2) + 1
         NI = NOCC(I2) - NFRO(I2)
         II = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
 C
@@ -1396,7 +1377,7 @@ C
 C
 C         electronic indeces...
 C
-          NS = NORB(I1)
+          NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ELSE
@@ -1408,27 +1389,8 @@ C
           JS = ICMOQ(I1) + 1
         ENDIF
 C
-C       Parameters for second index
+C       Parameters for second index.
 C
-         IF (.NOT. LBIT(ITYP,2)) THEN
-C
-C           inactive density matrix...
-C
-            NI  = NISH(I2) - NFRO(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
-C
-         ELSE
-C
-C           or active density matrix...
-C
-            NI  = NASH(I2)
-            II  = IORB(I2) + NPSH(I2) + NISH(I2) + 1
-            JI  = ICMOQ(I2) + 
-     &               (NPSH(I2)+ NISH(I2))*NFBAS(I2,0) + 1
-C
-         END IF
-c        NI = NESH(I2)
          NI = NOCC(I2)
          II = IORB(I2) + NPSH(I2) + 1
          JI = ICMOQ(I2) + NPSH(I2) * NFBAS(I2,0) + 1
@@ -1465,7 +1427,7 @@ C
 C
 C         electronic indeces...
 C
-          NS = NORB(I1)
+          NS = NESH(I1)
           IS = IORB(I1) + NPSH(I1) + 1
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ENDIF
