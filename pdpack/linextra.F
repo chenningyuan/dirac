@@ -311,6 +311,13 @@ C
   400 CONTINUE
       RETURN
       END
+C
+C     HP-UX (and possible other machines) declines to link if
+C     there are any duplicates, and DSUM, IDMIN, IDAMIN, ICOPY, ISCAL
+C     are also present in 'libveclib'.
+C
+#ifndef VAR_LIBVECLIB
+
 C  /* Deck dsum */
       FUNCTION DSUM(N,DA,INCA)
 C
@@ -609,6 +616,11 @@ C
    70     CONTINUE
       RETURN
       END
+C
+C
+#endif /* VAR_LIBVECLIB */
+C
+C
       SUBROUTINE ISWAP(N,IX,INCX,IY,INCY)
 C
 C     Swap integer arrays IX and IY.
