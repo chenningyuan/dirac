@@ -48,7 +48,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 C
@@ -558,7 +558,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "mxcent.h"

@@ -43,7 +43,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -725,7 +725,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -1177,7 +1177,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1301,7 +1301,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1402,7 +1402,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbtra.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE
@@ -1500,7 +1500,7 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1765,7 +1765,7 @@ C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbbas.h"
@@ -1866,7 +1866,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 C
@@ -2022,7 +2022,7 @@ C     Luuk Visscher, 24-1-97
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
@@ -2153,7 +2153,7 @@ C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,DIAGAB1,ABSPOI
@@ -2555,7 +2555,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "blocks.h"
@@ -2734,7 +2734,7 @@ C***********************************************************************
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dcbbas.h"
@@ -2804,7 +2804,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"
@@ -2851,7 +2851,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"
@@ -3090,7 +3090,7 @@ C***********************************************************************
 #endif
 #include "dummy.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -3348,7 +3348,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
@@ -3505,7 +3505,7 @@ C***********************************************************************
       INCLUDE 'mpif.h'
 #endif
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -3874,7 +3874,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"
@@ -3980,7 +3980,7 @@ C
       INCLUDE 'mpif.h'
 C
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -4359,7 +4359,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"

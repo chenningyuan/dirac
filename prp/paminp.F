@@ -45,7 +45,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 21)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -395,7 +395,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 C
@@ -1610,7 +1610,7 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
       CHARACTER PLABEL*8,CLASSLB*7,PCOMB*4,LABINT(15*MXCENT)*8
@@ -1765,7 +1765,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -2148,7 +2148,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcbgrd.h"
@@ -2189,7 +2189,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
 C

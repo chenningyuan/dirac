@@ -283,7 +283,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C   
       LOGICAL DOLND
@@ -383,7 +383,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
@@ -459,7 +459,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D2 = 2.0D0) 
 C
@@ -598,7 +598,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
@@ -722,7 +722,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)

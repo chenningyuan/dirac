@@ -142,7 +142,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
      &          IBTYP(2,NREDM), IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),

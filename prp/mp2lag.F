@@ -107,7 +107,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"

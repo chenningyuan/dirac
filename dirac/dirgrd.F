@@ -45,7 +45,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
@@ -191,7 +191,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
@@ -780,7 +780,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
       PARAMETER(D0 = 0.0D0)
 C
@@ -1715,7 +1715,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -1960,7 +1960,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
       PARAMETER( D0 = 0.0 D00)
@@ -2039,7 +2039,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "codata.h"
 C
@@ -2184,7 +2184,7 @@ C*****************************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
@@ -2356,7 +2356,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -2471,7 +2471,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
@@ -2586,7 +2586,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <abainf.h>
 #include <nuclei.h>

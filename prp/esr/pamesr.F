@@ -959,7 +959,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 C Used from common blocks:

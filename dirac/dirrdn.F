@@ -170,7 +170,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
@@ -1679,7 +1679,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -2246,7 +2246,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 8)
-#include "mxorb.h"
+#include "maxorb.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,WRDSRC*7
@@ -2460,7 +2460,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbgen.h"
@@ -3015,7 +3015,7 @@ C***********************************************************************
 C
 #include "maxaqn.h"
 #include "codata.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "siripc.h"
 #include "huckel.h"
@@ -3135,7 +3135,7 @@ C***********************************************************************
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"

@@ -44,7 +44,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
@@ -732,7 +732,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -2373,7 +2373,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dcbbas.h"

@@ -185,7 +185,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
+#include "mx2orb.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
@@ -453,7 +453,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
+#include "mx2orb.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
@@ -491,7 +491,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
+#include "mx2orb.h"
 C
 #include "dgroup.h"
 C
@@ -699,7 +699,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
 #include "dcbbas.h"

@@ -41,7 +41,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
@@ -150,7 +150,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -301,7 +301,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
@@ -640,7 +640,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
@@ -911,7 +911,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "pi.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
      &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
 C

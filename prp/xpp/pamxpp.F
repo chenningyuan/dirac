@@ -358,7 +358,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
 C

@@ -100,7 +100,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -644,7 +644,7 @@ C  /* Deck derout */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
@@ -1147,7 +1147,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
@@ -1269,7 +1269,7 @@ C     *********************************************************
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 #include "ibtfun.h"
@@ -1373,7 +1373,7 @@ C     *********************************************************
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
       LOGICAL TPRIAB,TPRICD
 #include "symmet.h"

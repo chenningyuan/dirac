@@ -40,7 +40,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbham.h"
 #include "dcblab.h"
@@ -137,7 +137,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"
@@ -735,7 +735,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -808,7 +808,7 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -917,7 +917,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -998,7 +998,7 @@ C***********************************************************************
 C
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <symmet.h>
 #include <nuclei.h>
@@ -1046,7 +1046,7 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <frame.h>
 C
@@ -1126,7 +1126,7 @@ C***********************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 C
 #include <symmet.h>
 #include <nuclei.h>
@@ -1322,7 +1322,7 @@ C***********************************************************************
 #include <priunit.h>
 C
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <frame.h>
 C
@@ -1378,7 +1378,7 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <dcbbas.h>
       PARAMETER(D2=2.0D0)

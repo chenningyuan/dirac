@@ -309,7 +309,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbitrp.h"
@@ -557,7 +557,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
@@ -638,7 +638,7 @@ C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL OK, OKALL, ONCE, DONE(NCOOR)
@@ -896,7 +896,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
 #include "abainf.h"
 #include "cbitro.h"
@@ -1297,7 +1297,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
 #include "abainf.h"
@@ -1466,7 +1466,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DEPMAT, BOTH, DOTMAT, DOHMAT, DOORTH, TC, DODMAT
@@ -1816,7 +1816,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.D00)
 C
       LOGICAL OK, DONE
@@ -2021,7 +2021,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
       CHARACTER*(*) KEY

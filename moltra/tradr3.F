@@ -67,7 +67,7 @@ C
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
@@ -250,7 +250,7 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -342,7 +342,7 @@ C
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"

@@ -158,7 +158,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
       PARAMETER (LUTEMP = 48, LUDA1 = 53)
@@ -388,7 +388,7 @@ C              otherwise .FALSE.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
 #include "nuclei.h"
@@ -449,7 +449,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION WORK(LWORK)
@@ -525,7 +525,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"
 #include "energy.h"

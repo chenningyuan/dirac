@@ -676,7 +676,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D3 = 3.0D0)
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
@@ -1071,7 +1071,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D3 = 3.0D0)
 #include "nuclei.h"
 #include "symmet.h"

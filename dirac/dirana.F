@@ -110,7 +110,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
@@ -196,7 +196,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -390,7 +390,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -573,7 +573,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 C
 C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
@@ -1536,7 +1536,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbpop.h"
 C
 #include "dcbibt.h"
@@ -1600,7 +1600,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "orbene.h"
 #include "dcbgen.h"
@@ -1805,7 +1805,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
@@ -1879,7 +1879,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -2202,7 +2202,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "codata.h"
 C
 #include "symmet.h"

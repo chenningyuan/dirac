@@ -108,7 +108,7 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -572,7 +572,7 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 C
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"

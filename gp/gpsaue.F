@@ -2577,7 +2577,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -3082,7 +3082,7 @@ C***********************************************************************
 #include "maxmom.h"
 #include "xyzpow.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "symmet.h"

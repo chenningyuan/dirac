@@ -40,7 +40,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -340,7 +340,7 @@ C***********************************************************************
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -450,7 +450,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcblab.h"
@@ -700,7 +700,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
@@ -1756,7 +1756,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbbas.h"
 #include "dcblab.h"
@@ -1790,7 +1790,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dgroup.h"
 #include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6

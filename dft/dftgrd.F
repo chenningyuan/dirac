@@ -12,7 +12,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "nuclei.h"
 #include "dftcom.h"
 #include "symmet.h"
@@ -178,7 +178,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -933,7 +933,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 
       PARAMETER (A0 = 1.0D-8)
@@ -1176,7 +1176,7 @@ C***********************************************************************
       PARAMETER(MAXCEN = 100)
 
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"

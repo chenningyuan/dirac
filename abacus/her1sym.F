@@ -120,7 +120,7 @@ C  /* Deck oneso1 */
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -622,7 +622,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
 #include "shells.h"
@@ -699,7 +699,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "csym1.h"
 #include "ccom.h"
@@ -802,7 +802,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
@@ -925,7 +925,7 @@ C     Modified tuh 880819
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
@@ -1020,7 +1020,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (LUTEMP = 48)
       LOGICAL LDIAG, FULMAT, ANTI
@@ -1137,7 +1137,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY

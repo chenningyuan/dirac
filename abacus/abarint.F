@@ -231,7 +231,7 @@ C
 #include "codata.h"
 C
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "priunit.h"
 #include "optinf.h"
@@ -2612,7 +2612,7 @@ C     coordinates.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
@@ -3792,7 +3792,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
 #include "gnrinf.h"

@@ -908,7 +908,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1108,7 +1108,7 @@ C
       INCLUDE 'mpif.h'
 #endif
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1208,7 +1208,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #if defined (PRG_DIRAC)

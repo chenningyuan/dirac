@@ -204,7 +204,7 @@ C
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (NDIR = 6, NTABLE = 80)
@@ -1596,7 +1596,7 @@ C  /* Deck herint */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
 C
@@ -2400,7 +2400,7 @@ C  /* Deck setdch */
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"

@@ -41,7 +41,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcblab.h"
@@ -302,7 +302,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
@@ -367,7 +367,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
@@ -425,7 +425,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -454,7 +454,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -503,7 +503,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -551,7 +551,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dcbqal.h"
@@ -601,7 +601,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -654,7 +654,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -747,7 +747,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -837,7 +837,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -926,7 +926,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -1018,7 +1018,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -1098,7 +1098,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
@@ -1159,7 +1159,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "shells.h"
@@ -1237,7 +1237,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
@@ -1300,7 +1300,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
@@ -1362,7 +1362,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1422,7 +1422,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1477,7 +1477,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1522,7 +1522,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1565,7 +1565,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1610,7 +1610,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -1808,7 +1808,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 C Used from COMMON blocks:
@@ -1972,7 +1972,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 C Used from COMMON blocks:
@@ -2047,7 +2047,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 C Used from COMMON blocks:
@@ -2172,7 +2172,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -2830,7 +2830,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 #include "ccom.h"
@@ -2872,7 +2872,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
@@ -3094,7 +3094,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "chrsgn.h"
@@ -3178,7 +3178,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "symmet.h"
@@ -3274,7 +3274,7 @@ C     Written by L. Visscher november 2003 (based on part of LSQMAT)
 C
 C***********************************************************************
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbbas.h"
       DIMENSION DMAT(*), SDMAT(*)
       DIMENSION WORK(*)

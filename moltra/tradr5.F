@@ -66,7 +66,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -311,7 +311,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -709,7 +709,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcborb.h"
@@ -1081,7 +1081,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 C

@@ -337,7 +337,7 @@ C******************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 C
@@ -523,7 +523,7 @@ C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -771,7 +771,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -832,7 +832,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
@@ -1694,7 +1694,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "codata.h"
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #if defined (SYS_HPUX)
@@ -1820,7 +1820,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -1993,7 +1993,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -2284,7 +2284,7 @@ C  /* Deck gtoinp */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
@@ -2465,7 +2465,7 @@ C  /* Deck gtoinp */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
@@ -2925,7 +2925,7 @@ C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -3051,7 +3051,7 @@ C  /* Deck orbout */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -3250,7 +3250,7 @@ C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -3375,7 +3375,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "symmet.h"
@@ -3564,7 +3564,7 @@ C*************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
@@ -3800,7 +3800,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
@@ -3876,7 +3876,7 @@ C  /* Deck symnco */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "chrxyz.h"
 #include "cbirea.h"
@@ -3987,7 +3987,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -4120,7 +4120,7 @@ C
 C  /* Deck priord */
       SUBROUTINE PRIORD(ALPHA,CPRIMU,NPRI,NRCI,SEG,KPRIM,DSM)
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 C
@@ -4366,7 +4366,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
       DIMENSION IAOAO(MXCORB)
 C
@@ -4435,7 +4435,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -4515,7 +4515,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "symmet.h"
 C
@@ -4697,7 +4697,7 @@ C  /* Deck rdline */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "molinp.h"
 #include "infpar.h"
 C
@@ -4753,7 +4753,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
       CHARACTER*72 TITLE(2)
@@ -4884,7 +4884,7 @@ C  /* Deck reapri */
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "codata.h"
@@ -4988,7 +4988,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "symmet.h"
@@ -5231,7 +5231,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "cbirea.h"
@@ -6800,7 +6800,7 @@ C
 C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -6942,7 +6942,7 @@ C***********************************************************************
       PARAMETER (D0 = 0.0D0, DP1 = 0.1D0, DP5 = 0.5D0)
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"

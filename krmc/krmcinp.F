@@ -47,7 +47,7 @@ C***********************************************************************
 #include "maxash.h"
 C
 C#include "mxcent.h"
-C#include "mxorb.h"
+C#include "maxorb.h"
 C#include "symmet.h"
 C
       PARAMETER (NTABLE = 30)

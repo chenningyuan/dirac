@@ -90,7 +90,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif

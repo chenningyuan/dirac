@@ -3356,7 +3356,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbxrs.h"
 #include "dcbbas.h"
@@ -3479,7 +3479,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "cbihr2.h"
 #include "dcbxrs.h"

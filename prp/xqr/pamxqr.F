@@ -15,7 +15,7 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

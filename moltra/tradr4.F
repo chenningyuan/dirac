@@ -71,7 +71,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -395,7 +395,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -913,7 +913,7 @@ C     Output is written directly in the MOLFDIR-type file MDCINT
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
@@ -1013,7 +1013,7 @@ C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
@@ -1096,7 +1096,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)

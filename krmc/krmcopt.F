@@ -1144,7 +1144,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "consts.h"
@@ -1462,7 +1462,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "consts.h"
@@ -1692,7 +1692,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
+#include "mx2orb.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"

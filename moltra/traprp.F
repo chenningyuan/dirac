@@ -43,7 +43,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
 #include "dcbbas.h"

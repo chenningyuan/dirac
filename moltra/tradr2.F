@@ -41,7 +41,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #if defined (VAR_MPI)
@@ -319,7 +319,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1397,7 +1397,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1569,7 +1569,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1725,7 +1725,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
@@ -2597,7 +2597,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
@@ -2911,7 +2911,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
@@ -3132,7 +3132,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"

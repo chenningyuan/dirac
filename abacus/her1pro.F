@@ -36,7 +36,7 @@ C  /* Deck pr1int */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -143,7 +143,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -268,7 +268,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
       PARAMETER (NTABLE = 58)
@@ -1473,7 +1473,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
       PARAMETER (NTABLE = 54)
@@ -1623,7 +1623,7 @@ C  /* Deck setatm */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
       LOGICAL DOATOM(NUCIND), SPIN
@@ -1682,7 +1682,7 @@ C  /* Deck cmtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)/2)*8
@@ -1719,7 +1719,7 @@ C  /* Deck sl1typ */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*3/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*3/2)*8
@@ -1767,7 +1767,7 @@ C  /* Deck sl2typ */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*6/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*6/2)*8
@@ -1831,7 +1831,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(2*IORDER + 1)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT(2*IORDER + 1)*8
@@ -1864,7 +1864,7 @@ C  /* Deck frmtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -1897,7 +1897,7 @@ C  /* Deck nsttyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, LABEL*4
@@ -1939,7 +1939,7 @@ C  /* Deck psotyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -1975,7 +1975,7 @@ C  /* Deck sdtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -2027,7 +2027,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
@@ -2103,7 +2103,7 @@ C  /* Deck hdbtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -2144,7 +2144,7 @@ C  /* Deck hdotyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(*)
       LOGICAL DOATOM(NUCIND), ANTISY
       CHARACTER LABINT(*)*8
@@ -2189,7 +2189,7 @@ C  /* Deck npetyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
@@ -2225,7 +2225,7 @@ C  /* Deck efntyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
@@ -2261,7 +2261,7 @@ C  /* Deck efgtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(6*MXCENT)*8
@@ -2319,7 +2319,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
       LOGICAL DOATOM(NUCIND),TRLESS
       CHARACTER LABINT(*)*8, LABNM*1
@@ -2382,7 +2382,7 @@ C  /* Deck efgsph */
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
 #include "nuclei.h"
@@ -2414,7 +2414,7 @@ C  /* Deck efgsp1 */
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL DOATOM(NUCIND)
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
@@ -2475,7 +2475,7 @@ C
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       LOGICAL DOATOM(NUCIND)
       DIMENSION INTREP(5*NATOM)
       CHARACTER LABINT(5*NATOM)*8, NAME*2
@@ -2530,7 +2530,7 @@ C  /* Deck pvtyp */
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -3020,7 +3020,7 @@ C
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.D0)
       DIMENSION SOINT(NELMNT,NOPTYP), DIFFER(NELMNT), INTADR(NOPTYP)
       LOGICAL DOATOM(NUCIND), SAME

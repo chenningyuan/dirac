@@ -42,7 +42,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 19)
 C
@@ -402,7 +402,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D0=0.0D0)
       PARAMETER (NDIR = 4, NTABLE = 25)
 C
@@ -950,7 +950,7 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
 
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
@@ -1104,7 +1104,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 5)
 C

@@ -191,7 +191,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
@@ -275,7 +275,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -793,7 +793,7 @@ C
 #include "iratdef.h"
 #include "mxcent.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 C Used from common blocks:
 C   ABAINF : CCSD
@@ -986,7 +986,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
 #include "abainf.h"

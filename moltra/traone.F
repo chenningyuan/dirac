@@ -42,7 +42,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -166,7 +166,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"

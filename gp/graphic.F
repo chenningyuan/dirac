@@ -42,7 +42,7 @@ C
 #include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
       PARAMETER (LUIP = 4)
 C
@@ -164,7 +164,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "pi.h"
 #include "codata.h"
 C

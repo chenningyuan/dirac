@@ -48,7 +48,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -135,7 +135,7 @@ C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 C
 C     ITASK = 3 for parallel RELCCSD
@@ -153,7 +153,7 @@ C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -191,7 +191,7 @@ C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbham.h"
 #include "infpar.h"
 #if defined (VAR_MPI)

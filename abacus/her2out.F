@@ -46,7 +46,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -376,7 +376,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -423,7 +423,7 @@ C*****************************************************************************
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
      &           D0 = 0.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -864,7 +864,7 @@ C     tuh Sep 92
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -1029,7 +1029,7 @@ C  /* Deck dr2wrt */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
@@ -1195,7 +1195,7 @@ C     tuh Sep 92
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -1389,7 +1389,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -1623,7 +1623,7 @@ C                   we write to a direct access file if npass > 1
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -1677,7 +1677,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -1848,7 +1848,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"

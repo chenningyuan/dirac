@@ -186,7 +186,7 @@ C
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
       LOGICAL ABA
@@ -349,7 +349,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
@@ -389,7 +389,7 @@ C  INFORB: NSYM,NBAS(8)
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "cbirea.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -457,7 +457,7 @@ C
 #include "iratdef.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
       LOGICAL USEERI, LDUMMY
 C
@@ -580,7 +580,7 @@ C
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
       LOGICAL   ABA
@@ -756,7 +756,7 @@ C  /* Deck aindex */
 #include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
@@ -823,7 +823,7 @@ C*****************************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "nuclei.h"
 #include "inforb.h"

@@ -344,7 +344,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dcborb.h"

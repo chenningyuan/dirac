@@ -117,7 +117,7 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbgen.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -964,7 +964,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "shells.h"
 #include "symmet.h"
@@ -1997,7 +1997,7 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0)
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "cbihr1.h"
@@ -2369,7 +2369,7 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
 C
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -2621,7 +2621,7 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
 C
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -3099,7 +3099,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH
@@ -3558,7 +3558,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2)

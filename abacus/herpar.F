@@ -122,7 +122,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "molinp.h"
@@ -298,7 +298,7 @@ C     Revised Oct 1996 by T.Saue
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
@@ -396,7 +396,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -633,7 +633,7 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "infpar.h"
 C
       DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
@@ -731,7 +731,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -850,7 +850,7 @@ C     Written by Paal Dahle December 1993.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "infpar.h"
 C
@@ -928,7 +928,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "infpar.h"
 C
@@ -1022,7 +1022,7 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "suscpt.h"
@@ -1183,7 +1183,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "hrunit.h"
 #include "dorps.h"
@@ -1458,7 +1458,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER(D0=0.0D0)
@@ -1848,7 +1848,7 @@ C
       INCLUDE 'mpif.h'
 #endif
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -1957,7 +1957,7 @@ C  /* Deck prlinp */
 #endif
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
       LOGICAL FIRST, NEWDEF
@@ -2093,7 +2093,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"

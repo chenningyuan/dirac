@@ -11,7 +11,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "priunit.h"
       DIMENSION DENS(LDM,*),ADENS(LDM,*),CFIT(*)
       DIMENSION INDAO(*),INDAOS(*)

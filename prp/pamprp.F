@@ -509,7 +509,7 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "chrnos.h"
@@ -603,7 +603,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
@@ -700,7 +700,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
@@ -801,7 +801,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
@@ -929,7 +929,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -1578,7 +1578,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -1732,7 +1732,7 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
@@ -1800,7 +1800,7 @@ C*****************************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL_CORR(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
@@ -1903,7 +1903,7 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
@@ -2079,7 +2079,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 C
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
@@ -2472,7 +2472,7 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D3 = 3.0D0, D9 = 9.0D00, D15 = 15.0D0,
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
@@ -2696,7 +2696,7 @@ C
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
@@ -2853,7 +2853,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
 #include "codata.h"
@@ -3162,7 +3162,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -3206,7 +3206,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
       DIMENSION WORK(LWORK)
@@ -3326,7 +3326,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -3462,7 +3462,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
 #include "codata.h"
@@ -3704,7 +3704,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "gfac.h"
@@ -4039,7 +4039,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -4164,7 +4164,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4500,7 +4500,7 @@ C*****************************************************************************
 C     
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       LOGICAL   DOATOM(*)
       DIMENSION EXPVAL(*),EFNVEC(3,NUCDEP,2),TEMP(3,NUCIND)
@@ -4556,7 +4556,7 @@ C*****************************************************************************
 C     
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)

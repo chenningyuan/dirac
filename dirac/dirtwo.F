@@ -631,7 +631,7 @@ C************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -790,7 +790,7 @@ C************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -977,7 +977,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -1332,7 +1332,7 @@ C************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -3244,7 +3244,7 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
@@ -3370,7 +3370,7 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
 #include "maxaqn.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 C Used from COMMON blocks:
@@ -3921,7 +3921,7 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 Ctec Is FIRST needed??
       LOGICAL FIRST
@@ -3990,7 +3990,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxaqn.h"
 C
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "cbihr2.h"
 #include "dgroup.h"
@@ -4234,7 +4234,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"

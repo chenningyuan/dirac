@@ -1221,7 +1221,7 @@ C***********************************************************************
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
 C
@@ -1359,7 +1359,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dcbgen.h"
