@@ -99,7 +99,7 @@ C
    10   CONTINUE
         CLOSE(LUCYCL,STATUS='KEEP')
         CALL PRSYMB(LUPRI,'-',128,0)
-        IF(SUCCES) THEN
+        IF(WFCONV) THEN
           WRITE(LUPRI,'(A,I5,A)')
      +       '* Convergence after ',NITER,' iterations'
         ELSE

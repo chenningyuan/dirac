@@ -100,7 +100,7 @@ C     Memory deallocation
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      IF (.NOT. SUCCES) THEN
+      IF (.NOT. WFCONV) THEN
 C        ... DHF not converged; 
          WRITE (LUPRI,'(//A)')
      &      ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
@@ -685,7 +685,7 @@ C     Solve one-electron system ...
 C     =============================
 C 
         CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
-        SUCCES = .TRUE.
+        WFCONV = .TRUE.
       ELSE
 C
 C     ... or perform SCF-cycle

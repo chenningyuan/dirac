@@ -723,7 +723,7 @@ C
       ERGCNV    = .FALSE.
       EVCCNV    = .TRUE.
       FCKCNV    = .FALSE.
-      SUCCES    = .FALSE.
+      WFCONV    = .FALSE.
       EXIT      = .FALSE.
       TRIVEC    = .TRUE.
       TRIFCK    = .FALSE.

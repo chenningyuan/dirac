@@ -114,8 +114,8 @@ C
       ELSEIF(EVCCNV) THEN
         CONVRG = EVCVAL
       ENDIF
-      IF(ABS(CONVRG).LT.SCFCNV) SUCCES = .TRUE.
-      IF(SUCCES.OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
+      IF(ABS(CONVRG).LT.SCFCNV) WFCONV = .TRUE.
+      IF(WFCONV.OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
 C
 C     Convergence acceleration
 C     ========================
@@ -299,7 +299,7 @@ C
 C           Transform to MO-basis.: Ct Sao A C
 C           use FAO as buffer
 C
-            IF(SPINFR) THEN
+            IF(SPINFR.OR.LEVYLE) THEN
               CALL TBOSON(I,EBUF,EVEC,SAOMO,TMAT,
      &                      WORK(KFREE),LFREE,IPRSCF)
             ELSE
