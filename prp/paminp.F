@@ -108,7 +108,12 @@ C         if reading input from a terminal
          GO TO 900
       END IF
   910 CONTINUE
-         WRITE(LUPRI,*) 'End of file on LUCMD, no property input found'
+C        Tell user which property input is missing
+C        (**PROPE or **PRP F or ?)
+         WRITE(LUPRI,'(/3A/A)')
+     &   ' * INFORMATION: No property input "',WRDSRC,
+     &   '" found in input file.',
+     &   ' - No properties calculated.'
          CALL QEXIT('PRPINP')
          RETURN
   920 CONTINUE
@@ -252,7 +257,8 @@ C     Print section
 C     =============
 C
       CALL TITLER('Property module','*',129)
-      WRITE(LUPRI,'(1X,A,I3)') '* Print level:',IPRPRP
+      WRITE(LUPRI,'(A,I3)') ' * Print level:',IPRPRP
+      WRITE(LUPRI,'(2A)')   ' * Input label:',WRDSRC
 C
 C     Process input for various program sections
 C     ==========================================
@@ -458,11 +464,11 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'EXPINP: Expectation values'
+      WRITE(LUPRI,'(A)') ' EXPINP: Expectation values'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ICHANG.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') 
-     &  '*The following expectation values will be calculated:'
+        WRITE(LUPRI,'(A)') 
+     &  ' * The following expectation values will be calculated:'
       ENDIF
       IF(NEXPP.GT.0) THEN
         DO I = 1,NEXPP
@@ -2213,13 +2219,13 @@ C     Print section
 C     =============
       IF (MGRAD) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') 'GRDINP: Calculation of molecular '//
-     &                         'gradient.'
+         WRITE(LUPRI,'(A)')
+     &        ' GRDINP: Calculation of molecular gradient.'
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* Print level                       : ', IPRGRD
-         WRITE(LUPRI,'(1X,A)')
-     &        '* Contributions to the molecular gradient from'
+         WRITE(LUPRI,'(A,I3)')
+     &        ' * Print level                       : ', IPRGRD
+         WRITE(LUPRI,'(A)')
+     &        ' * Contributions to the molecular gradient from'
          IF ( LBIT( IGRD_INTFLG, 1 ) )
      &        WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
          IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
@@ -2239,11 +2245,11 @@ C     =============
             END IF
          END IF
          IF(SCRGRD.GT.D0) THEN
-           WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &           '* Screening threshold in gradient calculation ',SCRGRD
+            WRITE(LUPRI,'(A,1P,E8.2)')
+     &           ' * Screening threshold in gradient calculation ',SCRGRD
          ELSE
-            WRITE(LUPRI,'(1X,A)')
-     &           '* No screening in the calculation of '//
+            WRITE(LUPRI,'(A)')
+     &           ' * No screening in the calculation of '//
      &           'two-electron integrals.'
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
@@ -2256,6 +2262,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck minprp */
       SUBROUTINE MINPRP(WORK,LWORK)
 C*****************************************************************************
+C     Calculate specified properties at final, converged geometry
+C     (called when .OPTIMIZE specified if geometry converges)
+C
 #include <implicit.h>
 #include <dcbxpr.h>
 #include <priunit.h>
