@@ -501,8 +501,8 @@ dft/dftaux.o dft/grtest.o dft/Lebedev-Laikov.o
 # dft files written in C:
 
 DFTOBJS_C = \\
-dft/functionals.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
-dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o
+dft/functionals.o dft/emb-functional.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
+dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o dft/fun-kin_tf.o dft/fun-kin_vw.o
 EOF
 fi
 #
