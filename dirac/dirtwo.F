@@ -1706,7 +1706,7 @@ C
 C     Process integrals with all indices unequal
 C
 C     Written by T.Saue Mar 5 1995
-C     Last revision: tsaue Mar 5 1995
+C     Last revision: Jan 7 1998 - jth (Linux cheat)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1714,10 +1714,16 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-      INTEGER A,B,C,D
-      DIMENSION FMAT(NTBAS(0),NTBAS(0),*),DMAT(NTBAS(0),NTBAS(0),*),
-     &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
+C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,*),DMAT(NBAST,NBAST,*) 
+#else
+      DIMENSION FMAT(NTBAS(0),NTBAS(0),*),DMAT(NTBAS(0),NTBAS(0),*) 
+#endif
+      DIMENSION BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
      &          IFCTYP(NDMAT),IREPDM(NDMAT)
+      INTEGER A,B,C,D
 #include <ibtfun.h>
 C
    10   CONTINUE
@@ -1943,11 +1949,17 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0,D4 = 4.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-      INTEGER A,B,D
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT) 
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),IFCTYP(NDMAT),
-     &          IREPDM(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT) 
+#endif
+      DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
+      INTEGER A,B,D
 #include <ibtfun.h>
 C
       IF(IPRINT.GE.6) THEN
@@ -2169,11 +2181,17 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-      INTEGER A,B,C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT)
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),IFCTYP(NDMAT),
-     &          IREPDM(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
+#endif
+      DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
+      INTEGER A,B,C
 #include <ibtfun.h>
 C
  10     CONTINUE
@@ -2377,11 +2395,17 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbind.h>
 #include <dgroup.h>
-      INTEGER A,B
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT)
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),IFCTYP(NDMAT),
-     &          IREPDM(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
+#endif
+      DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
+      INTEGER A,B
 #include <ibtfun.h>
         CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
@@ -2558,11 +2582,17 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-      INTEGER A,B
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT)
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),IFCTYP(NDMAT),
-     &          IREPDM(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
+#endif
+      DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
+      INTEGER A,B
 #include <ibtfun.h>
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
@@ -2734,11 +2764,17 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbind.h>
 #include <dgroup.h>
-      INTEGER A,B
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT)
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),IFCTYP(NDMAT),
-     &          IREPDM(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
+#endif
+      DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
+      INTEGER A,B
 #include <ibtfun.h>
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
@@ -2918,11 +2954,17 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,DP5=0.5D0)
 #include <dcbbas.h>
 #include <dcbind.h>
-      INTEGER A
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION FMAT(NBAST,NBAST,NDMAT),
+     &          DMAT(NBAST,NBAST,NDMAT)
+#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          DMAT(NTBAS(0),NTBAS(0),NDMAT),
-     &          BUF(NDIM),IND(NDIM),IFCTYP(NDMAT),
+     &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
+#endif
+      DIMENSION BUF(NDIM),IND(NDIM),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
+      INTEGER A
       CALL REAINT(IUNIT,NBUF,IREPAB,NDIM,1,IND,BUF)
 C
 C       Print integrals

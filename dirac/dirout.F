@@ -198,14 +198,17 @@ C
               NCBF1 = NTBAS(0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
               NCBF1 = NTBAS(0)*NVEC*4
               NCBF2 = NFBAS(IFRP,0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRINT)
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
+     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
               CALL MEMREL('PRCOEF.AO',WORK,1,KCBF2,KFREE,LFREE)
             ENDIF
           ELSE
@@ -215,13 +218,18 @@ C
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
             IF(NBSYM.EQ.1) THEN
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    WORK(KJVEC),NPVEC,NEVEC)
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    NFBAS(IFRP,0),NORB(IFRP))
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    WORK(KJVEC),NPVEC,NEVEC)
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP)
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRINT)
+     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    NFBAS(IFRP,0),NORB(IFRP))
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
+     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
             ENDIF
           ENDIF
         ELSE
@@ -234,7 +242,8 @@ C
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                  NFBAS(IFRP,0))
           ELSE
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
@@ -242,8 +251,10 @@ C
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
             CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  WORK(KJVEC),NPVEC,NEVEC)
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+     &                  WORK(KJVEC),NPVEC,NEVEC,
+     &                  NFBAS(IFRP,0),NORB(IFRP))
+            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+     &                  NFBAS(IFRP,0))
             CALL MEMREL('PRCOEF.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
         ENDIF
@@ -375,14 +386,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */
-      SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP)
+      SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP,KNFBAS)
 C*****************************************************************************
 C
 C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
 C     to quaternionic
 C
 C     Written by T.Saue November 1994
-C     Last revision: Nov 16 1994
+C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -397,8 +408,11 @@ C
 #include <dcbqal.h>
 #include <dcbbas.h>
 #include <dcborb.h>
-      DIMENSION CMO(NFBAS(IFRP,0),NVEC,NZ),
-     &          CBUF(NFBAS(IFRP,0),NVEC,4)
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C
+      DIMENSION CMO(KNFBAS,NVEC,NZ),
+     &          CBUF(KNFBAS,NVEC,4)
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
 C
@@ -595,6 +609,7 @@ C*****************************************************************************
 C
 #include <dgroup.h>
 #include <dcbbas.h>
+#include <dcborb.h>
       DIMENSION CMO(*),CAO(*),JVEC(NPVEC+NEVEC),WORK(LWORK)
       CALL QENTER('CAOSRT')
 #include <memint.h>
@@ -603,14 +618,16 @@ C
       NTOT  = NVEC*NDIM
       NTOTZ = NTOT*NZ
       CALL MEMGET('REAL',KCBUF,NTOTZ,WORK,KFREE,LFREE)
-      CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,IPRINT)
+      CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,
+     &            NFBAS(IFRP,0),NORB(IFRP),NTBAS(0),IPRINT)
       CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)      
       CALL QEXIT('CAOSRT')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck caosr1 */
-      SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,IPRINT)
+      SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,
+     &                  KNFBAS,KNORB,NBAST,IPRINT)
 C*****************************************************************************
 C
 C     Expand coefficients to unsorted quaternion matrix
@@ -631,8 +648,13 @@ C
 #include <dcbqal.h>
 #include <dcbbas.h>
 #include <dcborb.h>
-      DIMENSION CMO(NFBAS(IFRP,0),NORB(IFRP),NZ),
-     &          CBUF(NTBAS(0),NVEC,NZ),CAO(NTBAS(0),NVEC,4)
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C     KNORB  = NORB(IFRP)
+C     NBAST  = NTBAS(0)
+C
+      DIMENSION CMO(KNFBAS,KNORB,NZ),
+     &          CBUF(NBAST,NVEC,NZ),CAO(NBAST,NVEC,4)
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
 C
@@ -717,7 +739,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELCFS(CMO,IFRP,CBUF,JVEC,NPVEC,NEVEC)
+      SUBROUTINE SELCFS(CMO,IFRP,CBUF,JVEC,NPVEC,NEVEC,
+     &                 KNFBAS,KNORB)
 C***********************************************************************
 C     Pick out a set of vectors from CMO according to array JVEC
 C
@@ -731,8 +754,12 @@ C
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
-      DIMENSION CMO(NFBAS(IFRP,0),NORB(IFRP),NZ),
-     &          CBUF(NFBAS(IFRP,0),NPVEC+NEVEC,NZ),
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C     KNORB  = NORB(IFRP)
+C
+      DIMENSION CMO(KNFBAS,KNORB,NZ),
+     &          CBUF(KNFBAS,NPVEC+NEVEC,NZ),
      &          JVEC(*)
 C
       NVEC = NPVEC + NEVEC
@@ -881,7 +908,8 @@ C
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
-      DIMENSION EIG(NFBAS(IFRP,0)),
+Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
+      DIMENSION EIG(*),
      &          EBUF(NPVEC+NEVEC),
      &          JVEC(*)
 C

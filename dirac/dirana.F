@@ -253,14 +253,17 @@ C
               NCBF1 = NTBAS(0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
               NCBF1 = NTBAS(0)*NVEC*4
               NCBF2 = NFBAS(IFRP,0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRPOP)
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
+     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
               CALL MEMREL('MULPO1.AO',WORK,1,KCBF2,KFREE,LFREE)
             ENDIF
           ELSE
@@ -270,13 +273,18 @@ C
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
             IF(NBSYM.EQ.1) THEN
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    WORK(KJVEC),NPVEC,NEVEC)
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    NFBAS(IFRP,0),NORB(IFRP))
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    WORK(KJVEC),NPVEC,NEVEC)
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP)
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,NVEC*4,IPRPOP)
+     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    NFBAS(IFRP,0),NORB(IFRP))
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
+              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
+     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
             ENDIF
           ENDIF
         ELSE
@@ -289,7 +297,8 @@ C
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
           ELSE
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
@@ -297,8 +306,10 @@ C
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
             CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  WORK(KJVEC),NPVEC,NEVEC)
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+     &                  WORK(KJVEC),NPVEC,NEVEC,
+     &                  NFBAS(IFRP,0),NORB(IFRP))
+            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+     &                    NFBAS(IFRP,0))
             CALL MEMREL('MULPO1.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
         ENDIF
@@ -351,8 +362,7 @@ C     SMAT - overlap matrix
 C     COEF - coefficients
 C
 C     Written by T.Saue July 24 1994
-C     LAST VERSION: Oct 11 1995
-
+C     Last revision: Jan 7 1998 - jth LINUX
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -369,10 +379,15 @@ C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
-C
+C 
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION SMAT(NBAST,NBAST)
+#else
+      DIMENSION SMAT(NTBAS(0),NTBAS(0))
+#endif
       CHARACTER FMT*6,MXFORM*6
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),
-     &          SMAT(NTBAS(0),NTBAS(0)),
      &          CMO(NCBAS,NPVEC+NPVEC,NZ),EIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
@@ -501,7 +516,7 @@ C         M(i,j) = Re(CONJ[CMO(i,IVEC)]*SMAT(i,j)*CMO(j,IVEC))
 C     The final population matrix is compressed based on a labeling system.
 C
 C     Written by T.Saue Oct 9 1995
-C     Last revision: Oct 9 1995
+C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -517,9 +532,14 @@ C  DGROUP: NZ
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbpop.h>
-      DIMENSION PMAT(NGLAB,NGLAB,2),SMAT(NTBAS(0),NTBAS(0)),
-     &          PBUF(NTBAS(0),NTBAS(0),2),
-     &          CMO(NCBAS,NVEC,4),IGLAB(*),
+C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION SMAT(NBAST,NBAST),PBUF(NBAST,NBAST,*)
+#else
+      DIMENSION SMAT(NTBAS(0),NTBAS(0)),PBUF(NTBAS(0),NTBAS(0),*)
+#endif
+      DIMENSION PMAT(NGLAB,NGLAB,2),CMO(NCBAS,NVEC,4),IGLAB(*),
      &          WORK(LWORK)
 C
 C     Generate population matrix for basis
@@ -952,7 +972,8 @@ C
           NCBF  = NFBAS(IFRP,0)*NVEC
           NCBF1 = NCBF*4
           CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-          CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP)
+          CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
+     &                NFBAS(IFRP,0))
         ELSE
           NCBF  = NFBAS(IFRP,0)*NVEC
           NCBF1 = NCBF*4
@@ -960,8 +981,10 @@ C
           CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
           CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                WORK(KJVEC),NPVEC,NEVEC)
-          CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP)
+     &                WORK(KJVEC),NPVEC,NEVEC,
+     &                NFBAS(IFRP,0),NORB(IFRP))
+          CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+     &                NFBAS(IFRP,0))
           CALL MEMREL('ANAPR1.CMO',WORK,1,KCBF2,KFREE,LFREE)
         ENDIF
 C
@@ -972,7 +995,8 @@ C
           NRBF  = NFBAS(IFRP,0)*NREF
           NRBF1 = NRBF*4
           CALL MEMGET('REAL',KRBF1,NRBF1,WORK,KFREE,LFREE)
-          CALL CFSORT(WORK(KRBF1),CREF(ICMOQ(IFRP)+1),NREF,IFRP)
+          CALL CFSORT(WORK(KRBF1),CREF(ICMOQ(IFRP)+1),NREF,IFRP,
+     &                NFBAS(IFRP,0))
         ELSE
           NRBF  = NFBAS(IFRP,0)*NREF
           NRBF1 = NRBF*4
@@ -980,8 +1004,10 @@ C
           CALL MEMGET('REAL',KRBF1,NRBF1,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KRBF2,NRBF2,WORK,KFREE,LFREE)
           CALL SELCFS(CREF(ICMOQ(IFRP)+1),IFRP,WORK(KRBF2),
-     &                WORK(KJREF),NPREF,NEREF)
-          CALL CFSORT(WORK(KRBF1),WORK(KRBF2),NREF,IFRP)
+     &                WORK(KJREF),NPREF,NEREF,
+     &                NFBAS(IFRP,0),NORB(IFRP))
+          CALL CFSORT(WORK(KRBF1),WORK(KRBF2),NREF,IFRP,
+     &                NFBAS(IFRP,0))
           CALL MEMREL('ANAPR1.REF',WORK,1,KRBF2,KFREE,LFREE)
         ENDIF
 C
@@ -992,7 +1018,8 @@ C
         CALL MEMGET('REAL',KPROJ,NPROJ,WORK,KFREE,LFREE)
         CALL ANAPR2(WORK(KFREE),LFREE,WORK(KPROJ),IFRP,SMAT,
      &       WORK(KCBF1),EIG (IORB(IFRP)+1),NPVEC,NEVEC,WORK(KJVEC),
-     &       WORK(KRBF1),EREF(IORB(IFRP)+1),NPREF,NEREF,WORK(KJREF))
+     &       WORK(KRBF1),EREF(IORB(IFRP)+1),NPREF,NEREF,WORK(KJREF),
+     &       NFBAS(IFRP,0))
  20     CONTINUE
         CALL MEMREL('ANAPR1',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
@@ -1003,7 +1030,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(WORK,LWORK,CPROJ,IFRP,SMAT,
      &                  CVEC,EVEC,NPVEC,NEVEC,JVEC,
-     &                  CREF,EREF,NPREF,NEREF,JREF)
+     &                  CREF,EREF,NPREF,NEREF,JREF,
+     &                  KNFBAS)
 C*****************************************************************************
 C
 C
@@ -1016,7 +1044,7 @@ C     Projection coeffients:  c_ji = <Y(ref)_j|Y(mol)_i>
 C     PROTHR is threshold for print of projection coeffiencients.
 C
 C     Written by Trond Saue March 13 1996
-C     Last revision Jan 9 1997  - tsaue
+C     Last revision Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1028,9 +1056,12 @@ C
 #include <dcbprj.h>
 #include <dcborb.h>
 #include <dcbbas.h>
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C
       LOGICAL FIRST
-      DIMENSION CVEC(NFBAS(IFRP,0),NEVEC+NPVEC,4),EVEC(*),JVEC(*),
-     &          CREF(NFBAS(IFRP,0),NEREF+NPREF,4),EREF(*),JREF(*),
+      DIMENSION CVEC(KNFBAS,NEVEC+NPVEC,4),EVEC(*),JVEC(*),
+     &          CREF(KNFBAS,NEREF+NPREF,4),EREF(*),JREF(*),
      &          CPROJ(NEREF+NPREF,NEVEC+NPVEC,4),SMAT(*),WORK(LWORK)
       CHARACTER FMT*6,MXFORM*6,BLINE*105
       DIMENSION IQBF(4),IQCF(4)

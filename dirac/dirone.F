@@ -1019,7 +1019,7 @@ C
 C     Sort Lowdin matrix on fermion symmetries
 C
 C     Written by T.Saue Sep 12 1995
-C     Last revision: Sep 12 1995
+C     Last revision: Jan 7 1998 - jth LINUX
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -1027,8 +1027,14 @@ C Used from COMMON blocks:
 C  DCBBAS: NTBAS,NFORB
 C
 #include <dcbbas.h>
-      DIMENSION VMAT(*),VBUF(NTBAS(0),*),ISORT(*),
-     &          NVEC(2)
+C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION VBUF(NBAST,*)
+#else
+      DIMENSION VBUF(NTBAS(0),*)
+#endif
+      DIMENSION VMAT(*),ISORT(*),NVEC(2)
 C
 C
 C     Fermion symmetry 1

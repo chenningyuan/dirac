@@ -345,7 +345,7 @@ C*****************************************************************************
 C
 C     Matrix Transform: QO-basis to SO-basis
 C     Written by Trond Saue
-C     Last revision: June 25 1996
+C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -360,12 +360,16 @@ C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
-C     DCBBAS:  NTBAS(0),N2BBASX
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
+#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
+#endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(ASO,N2BBASX*4)
+      CALL DZERO(ASO,NTBAS(0)*NTBAS(0)*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
         DO J = 1,NTBAS(0)
@@ -390,7 +394,7 @@ C*****************************************************************************
 C
 C     Matrix transform: SO-basis to QO-basis
 C     Written by Trond Saue
-C     Last revision: June 25 1996 - tsaue
+C     Last revision: Jan 7 1998 -jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -405,12 +409,16 @@ C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
-C     DCBBAS:  NTBAS(0),N2BBASX
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
+#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
+#endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(AQO,N2BBASX*NZ)
+      CALL DZERO(AQO,NTBAS(0)*NTBAS(0)*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
           IQJ  = JQBAS(IGET(IATTR(IPLAB(J,1),1)),
@@ -434,6 +442,7 @@ C  /* Deck vtqoso */
 C*****************************************************************************
 C
 C     Vector Transform: QO-basis to SO-basis
+C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -450,10 +459,15 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
+#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
+#endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(ASO,N2BBASX*4)
+      CALL DZERO(ASO,NTBAS(0)*NTBAS(0)*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
         DO J = 1,NTBAS(0)
@@ -478,7 +492,7 @@ C*****************************************************************************
 C
 C     Vector transform: SO-basis to QO-basis
 C     Written by Trond Saue
-C     Last revision: June 25 1996 - tsaue
+C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -493,12 +507,16 @@ C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
-C     DCBBAS:  NTBAS(0),N2BBASX
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
+#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
+#endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(AQO,N2BBASX*NZ)
+      CALL DZERO(AQO,NTBAS(0)*NTBAS(0)*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
           IQJ  = JQBAS(IGET(IATTR(IPLAB(J,1),1)),
@@ -1026,14 +1044,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wtsoao */
-      SUBROUTINE WTSOAO(ASO,AAO,IFRP,NVEC,IPRINT)
+      SUBROUTINE WTSOAO(ASO,AAO,IFRP,KNFBAS,NBAST,NVEC,IPRINT)
 C*****************************************************************************
 C
 C     Vector transform: SO-basis to AO-basis (in sorted basis !)
 C     Based on HERMIT routine DSOTAO (880418  PRT)
 C
 C     Written by T.Saue - Sept 10 1995
-C     Last revision: Sep 10 1995 - tsaue
+C     Last revision: Jan 7 1998 (jth: NFBAS(IFRP,0) now parameter)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1048,7 +1066,11 @@ C
 #include <pgroup.h>
 #include <dgroup.h>
 #include <dcbbas.h>
-      DIMENSION ASO(NFBAS(IFRP,0),NVEC), AAO(NTBAS(0),NVEC)
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C     NBAST  = NTBAS(0)
+C
+      DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
 C
 #include <ibtfun.h>
@@ -1280,7 +1302,7 @@ C
 C     Vector transform:  from unsorted basis to sorted basis
 C
 C     Written by T.Saue Mar 2 1995
-C     Last revision : May 6 1996 - tsaue
+C     Last revision : Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1293,7 +1315,12 @@ C
 #include <dgroup.h>
 #include <symmet.h>
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
+#else
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
+#endif
       CALL QENTER('VTBUBS')
 C
       DO J = 1,NVEC
@@ -1320,7 +1347,7 @@ C
 C     Vector transform:  from sorted basis to unsorted basis
 C
 C     Written by T.Saue Mar 2 1995
-C     Last revision : May 6 1996 - tsaue
+C     Last revision : Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1333,7 +1360,12 @@ C
 #include <dgroup.h>
 #include <symmet.h>
 C
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION VBS(NBAST,NVEC),VBU(NBAST,NVEC)
+#else
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
+#endif
       CALL QENTER('VTBSBU')
       DO J = 1,NVEC
         DO IC = 1,2
@@ -1931,7 +1963,12 @@ C  /* Deck sphts1 */
 #include <priunit.h>
 C
 #include <dcbbas.h>
+#ifdef SYS_LINUX
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
+#else
       DIMENSION AMAT(NTBAS(0),NTBAS(0)),BMAT(NSPH,NTBAS(0)),WORK(LWORK)
+#endif
 C
 C     GENERATE MATRIX
 C
