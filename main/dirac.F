@@ -49,6 +49,7 @@ C
 #include <dcbgen.h>
 C
 #if defined (VAR_MPI)
+#include <mxorb.h>
 #include <infpar.h>
 #include <infmpi.h>
 #endif
@@ -226,7 +227,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnod */
 #if defined (VAR_MPI) || defined (VAR_MPI)
-      SUBROUTINE DIRNOD(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
+      SUBROUTINE DIRNOD(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,MWORK)
 #endif
 #if defined (VAR_PVM)
       PROGRAM DIRNOD
