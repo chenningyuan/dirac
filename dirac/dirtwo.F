@@ -142,6 +142,31 @@ C     =====
       ENDIF
 C     =====
 C
+      IF (DENSFIT) THEN
+         NIND = 2 * NUMBER_OF_NUCLEI(2) + 2
+         CALL MEMGET ('INTE',KINDAO,NTBAS(0),WORK,KFREE,LFREE)
+         CALL MEMGET ('INTE',KINDAOS,NTBAS(0),WORK,KFREE,LFREE)
+         CALL MEMGET ('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
+         CALL MEMGET ('REAL',KSDMAT,N2BBASX,WORK,KFREE,LFREE)
+         CALL MEMGET ('REAL',KADMAT,N2BBASX,WORK,KFREE,LFREE)
+         CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
+C        We allocate the fit-coefficients in work for the time being.
+C        When we have implemented the fit-basis read routine and the Coulomb build routine, they should
+C        probably be allocated at a higher level and passed on to TWOFCK.
+         nfit_coef = 1000 ! something to start with as long as we have not implemented the correct structure
+         CALL MEMGET ('REAL',KCFIT,nfit_coef,WORK,KFREE,LFREE)
+         DO I = 1,NFMAT
+            IREP = ISYMOP(I)-1
+            IF (IREP.NE.0) 
+     &      CALL QUIT ("Only totally symmetric densities can be fitted")
+            CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
+            CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
+     &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
+     &                     IPRINT,WORK(KCFIT))
+         ENDDO
+         CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
+      ENDIF
+C
 C     Initialize Fock matrix
 C     ======================
 C

@@ -190,7 +190,7 @@ C
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.LVCORR','.LVNEW ','.TSCORR',
      &             '.ACMOUT','.VACUUM','.NUCVAC','.FAMILY',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &             '.DENSFI','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP
@@ -204,6 +204,7 @@ C
       DOLVC  = .FALSE.
       LVNEW  = .FALSE.
       DOTSC  = .FALSE.
+      DENSFIT = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -341,6 +342,8 @@ C&&&& FAMILY: Family basis (Not yet implemented)
             FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
+C&&&& DENSFIT: Density fitting (Not yet implemented)
+            DENSFIT = .TRUE.
             GO TO 100
   118    CONTINUE
             GO TO 100
@@ -402,6 +405,9 @@ C
         IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
+C
+      IF(DENSFIT) 
+     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
 C
 C     Write info about the modelling of SS interactions
 C
