@@ -1939,7 +1939,7 @@ C       Give major orbital rotations in excitations
      &      FREP(IORBCL(3,I2)),')',SQRT(BUF2(JJ))
         ENDDO
  5      CONTINUE
-        IF(IPRINT.GE.2) THEN
+        IF(IPRINT.GE.4) THEN
           WRITE(LUPRI,'(3X,A/)') 'All excitation amplitudes :'
           DO J = 1,NBDIM
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
