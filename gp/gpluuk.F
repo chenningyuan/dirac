@@ -684,10 +684,9 @@ C
            IF (MYTID.EQ.MPARID.AND.TIMERN.EQ.-1.AND.CPU_AV.NE.D0)
      &        WRITE(LUPRI,340) T_REPORT,MY_T,CPU_MI,CPU_MA,CPU_AV
         ENDDO
-#endif
-
       ENDIF ! end of 1 / multiple processor clause
       IF (MYTID.EQ.MPARID) WRITE(LUPRI,350)
+#endif
       RETURN
       ENDIF ! end of all timers IF-THEN-ELSE clause
 C
