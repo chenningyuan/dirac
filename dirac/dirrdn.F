@@ -2818,7 +2818,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRICMP','.AOLAB ','.VECPRI','.IPRINT',
+      DATA TABLE /'.PRICMP','.AOLAB ','.VECPRI','.PRINT ',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
