@@ -41,10 +41,10 @@ C
       END IF
 #if defined (VAR_MPI)
       IF(PARCAL) THEN
-      CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &            IREPOP,DOERG,DOGRD,DOLND,DOATR,
-     &            DUM,DUM,DUM,DUM,DUM,DUM,DUM,
-     &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
+        CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
+     &              IREPOP,DOERG,DOGRD,DOLND,DOATR,
+     &              DUM,DUM,DUM,DUM,DUM,DUM,DUM,
+     &              WORK(KFREE),LFREE,LUQUAD,IPRDFT)
       ELSE
 #endif
 C
@@ -112,7 +112,7 @@ CTROND
       TIMSTR = SECOND()
 #include <memint.h>
 C
-      IF (IPRINT .GT. 100) THEN
+      IF (IPRINT .GE. 100) THEN
          CALL HEADER('DMAT in DFTDRV ',-1)
          CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
@@ -295,7 +295,7 @@ CTROND      END IF
 C
 C     Print section
 C
-      IF (IPRINT .GT. 2) THEN 
+      IF (IPRINT .GE. 2) THEN 
          WRITE (LUPRI,'(/2X,A,I20)')
      &      ' Number of quadrature points:       ', NPNTS
          WRITE (LUPRI,'( 2X,A,F20.12)')
@@ -312,7 +312,7 @@ C
      &          ERGDRC + ERGBCK + ERGVWN + ERGLYP
          END IF
       END IF
-      IF (IPRINT .GT. 100) THEN
+      IF (IPRINT .GE. 100) THEN
          IF (DOERG) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
             CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
@@ -380,7 +380,7 @@ C
       DIMENSION RHG(3)
       DO 300 IPNT = 1, NPOINT
        
-        IF (IPRINT .GT. 100) THEN
+        IF (IPRINT .GE. 100) THEN
           WRITE (LUPRI,'(2X,I6,4F20.12)') 
      &       IPNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),WEIGHT(IPNT)
         END IF

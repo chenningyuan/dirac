@@ -48,7 +48,7 @@ C     Initialize /DFTCOM/
 C     ===================
 C
       IQDTYP = 1
-      IPRDFT = 0
+      IPRDFT = 2
       WDFTX  = D0
       WDFTC  = D0
       WDFTL  = D0
@@ -215,7 +215,7 @@ C
       WRITE(LUPRI,'(1X,A)') 
      &   'DFTINP: Set-up for Kohn-Sham calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') '* Print level: ',IPRDFT
+      WRITE(LUPRI,'(1X,A,I5)') '* Print level: ',IPRDFT
 C
       GO TO (91,92,93,94,95),ITYP
  91   CONTINUE
