@@ -108,7 +108,7 @@ C
 #if defined (SYS_PARAGON) || defined (SYS_T3D)
       PARAMETER ( NTABLE = 8, MAXPRD = 14 )
 #else
-      PARAMETER ( NTABLE = 8, MAXPRD = 50 )
+      PARAMETER ( NTABLE = 8, MAXPRD = 30 )
 #endif
       PARAMETER (D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
@@ -246,7 +246,7 @@ C
 #if defined (SYS_PARAGON) || defined (SYS_T3D)
       PARAMETER (MAXPRD = 14)
 #else
-      PARAMETER (MAXPRD = 50)
+      PARAMETER (MAXPRD = 30)
 #endif
       LOGICAL RELCAL, TSTINP
 #include <maxaqn.h>
@@ -788,6 +788,8 @@ C
       IBLOCK(1) = 1
       IBLOCK(2) = 1
       CALL IZERO(IQM,KATOM*2)
+      DIRCON = .FALSE.
+      MOLFCON = .FALSE.
 C
 C     Run over atomic centers
 C     =======================
@@ -903,6 +905,8 @@ C
                   IF (KLAST.GT.LWORK) 
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   LARGECON(I) = .TRUE.
+                  MOLFCON = .TRUE.
+                  DIRCON = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
@@ -969,6 +973,8 @@ C
                      IF (KLAST.GT.LWORK) 
      &                  CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                      SMALLCON(I) = .TRUE.
+                     MOLFCON = .TRUE.
+                     DIRCON = .TRUE.
                      CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),
      &                    WORK(KBFCO),
      &                    IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
@@ -1688,6 +1694,7 @@ C
 #include <molinp.h>
 #include <ccom.h>
 #include <dcbgen.h>
+#include <gencon.h>
 C
       IF(DIRAC) THEN
 C
@@ -1728,6 +1735,7 @@ C
             SEGIJ = NRCIJ .GE. 0
             NUCIJ = ABS(NUCIJ)
             NRCIJ = ABS(NRCIJ)
+            DIRCON = DIRCON .OR. (NRCIJ .GE. 0)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
             IF ((ISPHTR.EQ.3).AND.(NRCIJ.NE.0)) THEN
