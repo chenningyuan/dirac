@@ -628,10 +628,12 @@ clean   :
 	cd moltra   ; \$(MAKE) clean
 	cd relccsd  ; \$(MAKE) clean
 	cd dirrci  ; \$(MAKE) clean
-	cd krmc ; \$(MAKE) clean
 	cd lucita  ; \$(MAKE) clean
-	cd luciarel  ; \$(MAKE) clean
 EOF
+if [ -n "$KRMCMOD" ]; then
+   echo '	cd krmc      ; $(MAKE) clean' >> Makefile
+   echo '	cd luciarel  ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$DFTMOD" ]; then
    echo '	cd dft      ; $(MAKE) clean' >> Makefile
 fi
@@ -780,7 +782,7 @@ EOF
 #
 #  Add makedepend targets
 #
-TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci krmc lucita luciarel"
+TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
 fi
