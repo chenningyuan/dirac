@@ -264,7 +264,7 @@ case $machine in
       complist='if77 if90 f77 f90';;
 
    alpha-dec|mips-dec|vax-dec)
-      liblist='libblas'
+      liblist='libdxml libblas'
       complist='f77 f90';;
 
    *-cray)
@@ -578,6 +578,7 @@ for testdir in $dirlist; do
                libesslp2) LIB="$LIB -lesslp2";;
                libessl) LIB="$LIB -lessl";;
                libblas) LIB="$LIB -lblas";;
+               libdxml) LIB="$LIB -ldxml";;
                libcomplib.sgimath) LIB="$LIB -lcomplib.sgimath";;
                libveclib) LIB="$LIB -lveclib";;
                libmath) LIB="$LIB -lmath -lm -nx";;
