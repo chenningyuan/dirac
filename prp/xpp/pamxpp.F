@@ -330,11 +330,6 @@ C
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
-C
-C     Release the slaves if we run in parallel.
-C        ( ITASK = -1 )
-C
-      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
       CALL QEXIT('PRPXP1')
       RETURN
       END
