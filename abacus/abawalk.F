@@ -35,6 +35,9 @@ C
 C#include <single.h>
 #ifdef REVLOG
 $Log$
+Revision 1.7  2000/09/29 13:34:56  jth
+Initialize LUMOL before use.
+
 Revision 1.6  2000/09/18 14:14:17  jth
 New geometry optimization module from Dalton1.1.
 
@@ -2124,6 +2127,7 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
+      LUMOL = 0
       CALL GPOPEN(LUMOL,'ABACUS.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
      &            .FALSE.)
       DO 200 IMLINE = 1,NMLINE
