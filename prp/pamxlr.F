@@ -171,11 +171,6 @@ C
       CALL QENTER('PRPXL1')
       KFRSAV = KFREE
 C
-C     Get hold of the slaves if we run in parallel.
-C        ( ITASK = 1 for Fock matrices )
-C
-      IF (PARCAL) CALL DIRAC_PARCTL( 1 )
-C
 C     ****************************
 C     *** I N I T I A L I Z E  ***
 C     ****************************
@@ -321,12 +316,6 @@ C
       CALL XLROUT(ABLRF,RCNV,WORK(KEIG),WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
-C
-C
-C     Release the slaves if we run in parallel.
-C        ( ITASK = -1 )
-C
-      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
       CALL QEXIT('PRPXL1')
       RETURN
       END
