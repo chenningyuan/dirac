@@ -479,11 +479,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qdiag */
       SUBROUTINE QDIAG(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,
      &                 WORK,LWORK,IERR)
-C*****************************************************************************
+C***********************************************************************
 C
 C       This is a driver routine for the diagonalization of
 C         * real symmetric matrices                     NZ = 1
@@ -510,7 +510,7 @@ C
 C       TEMPORARY STORAGE:      FV1,FV2,TAU
 C       Written by T.Saue November 1994 - Odense
 C       Last revision : Nov 15 1994 - tsaue
-C*****************************************************************************
+C***********************************************************************
 C
 #include "implicit.h"
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
@@ -532,7 +532,7 @@ C
 C       Householder transform to real symmetric tridiagonal matrix
 C       ==========================================================
 C
-      IF    (NZ.EQ.4) THEN
+      IF (NZ.EQ.4) THEN
         CALL  QHTRID(A,N,LRA,LCA,EIG,
      &               WORK(KFV1),WORK(KFV2),WORK(KTAU))
         IF(MATZ.NE.0) GO TO 10
@@ -589,17 +589,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qmgath */
       SUBROUTINE QMGATH(AIN,NRW1,NCL1,AOUT,NRW2,NCL2,NZ,
      &                  NROW,NCOL,IROW,ICOL)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Gather operations for generally quaternionic matrices
 C
 C     Written by T.Saue November 1994
 C     Last revision: Nov 15 1994
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       DIMENSION AIN(NRW1,NCL1,NZ),AOUT(NRW2,NCL2,NZ)
       DIMENSION IROW(*),ICOL(*)
@@ -615,14 +615,14 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qhtrid */
       SUBROUTINE QHTRID(A,N,LRA,LCA,D,E,E2,TAU)
 C
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
       DIMENSION A(LRA,LCA,4),D(N),E(N),E2(N),TAU(4,N)
-C*****************************************************************************
+C***********************************************************************
 C
 
 C       Trond Saue, University of Tromsoe, Norway , December 1993
@@ -877,14 +877,14 @@ C
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qhtrbk */
       SUBROUTINE QHTRBK(A,N,LRA,LCA,TAU,Z,M,LRZ,LCZ)
 C
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
       DIMENSION A(LRA,LCA,4),TAU(4,N),Z(LRZ,LCZ,4)
-C*****************************************************************************
+C***********************************************************************
 C
 C       Trond Saue, University of Tromsoe, Norway , December 1993
 C
@@ -979,10 +979,10 @@ C
 C
   200 RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qopvec */
       SUBROUTINE QOPVEC(FA,TA,IQPA,A,N,NZA)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Modify quaternion vector as follows:
 C
@@ -998,7 +998,7 @@ C
 C     Written by T.Saue July 1996
 C     Last revision: July 14 196 - tsaue
 C     
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbqal.h"
@@ -1054,7 +1054,7 @@ C  /* Deck ran1 */
       PARAMETER (IA=16807,IM=2147483647,AM=1.0D0/IM,
      +           IQ=127773,IR=2386,NTAB=32,NDIV=1+(IM-1)/NTAB,
      +           EPS=1.0D-7,RNMX=1.0D0-EPS)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     "Minimal" random number generator of Park and Miller with
 C     Bays-Durham shuffle and added safeguards. Return a uniform random
 C     deviate between 0.0 and 1.0 (exclusive of the end point values).
@@ -1063,10 +1063,11 @@ C     do not alter IDUM between succesive deviates in a sequence. RNMX
 C     should approximate the largest floating value that is less than 1.
 C
 C     References:
-C       Press,Teukolsky,Vetterling & Flannery: "Numerical Recipes in FORTRAN",
+C       Press,Teukolsky,Vetterling & Flannery: 
+C         "Numerical Recipes in FORTRAN",
 C         Cambridge University Press 2nd edition 1992
 C       Park & Miller (1988), Communications of the ACM, vol.31,pp.1192-1201
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER IV(NTAB)
       SAVE IV,IY
       DATA IV/NTAB*0/, IY /0/
@@ -1101,20 +1102,20 @@ C
       RAN1 = MIN(AM*IY,RNMX)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ranelm */
       FUNCTION RANELM(RMIN,RMAX,IDUM)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Pick a random number in the range <RMIN,RMAX>.
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       R = RAN1(IDUM)
       RANELM = RMIN + (RMAX-RMIN)*R
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ranmat */
       SUBROUTINE RANMAT(TYP,A,LDA,N,RMIN,RMAX,IDUM)
 C**********************************************************************
@@ -1158,7 +1159,7 @@ C**********************************************************************
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
 #include "implicit.h"
@@ -1189,7 +1190,7 @@ C   ON OUTPUT:A - full matrix
      +    MATTYP,' not recognized!'
       ENDIF
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck offtst */
       FUNCTION OFFTST(A,N,IZ)
 C
@@ -1217,15 +1218,15 @@ C
    10 CONTINUE
       OFFTST = (ELM*OFFTST - DIA*DIATST)/(ELM-DIA)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mxform */
       FUNCTION MXFORM(X,NDIG)
-C*****************************************************************************
+C***********************************************************************
 C
 C	Find the format that gives optimum precision for real
 C	variable X
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -1274,16 +1275,16 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck opnfil */
       SUBROUTINE OPNFIL(IUNIT,NAME,STATUS,SUB)
-C*****************************************************************************
+C***********************************************************************
 C
 C	Open sequential, unformatted file.
 C	Based on OPENDX
 C	T.Saue, University of Tromsoe, Norway, Feb.-94
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
@@ -1319,19 +1320,19 @@ C
      +    ') not found.'
       CALL QUIT('OPNFIL: Old file not found')
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck putltr */
       SUBROUTINE PUTLTR(NM,N,ATRI,B)
-C*****************************************************************************
+C***********************************************************************
 C
-C	Copy elements from a rowwise lower triangularly packed matrix into a
-C	square matrix
+C	Copy elements from a rowwise lower triangularly packed matrix 
+C       into a square matrix
 C	
 C	ATRI 	- rowwise lower triangularly packed matrix
 C	B    	- square matrix
 C	NM	- leading dimension of B
 C	N	- order of matrix B
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION ATRI(N*(N+1)/2),B(NM,N)
@@ -1343,10 +1344,10 @@ C
    20   CONTINUE
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck putsqr */
       SUBROUTINE PUTSQR(NM,NROW,NCOL,ASQR,B)
-C*****************************************************************************
+C***********************************************************************
 C
 C	Copy elements from columnwise array into rectangular matrix
 C	
@@ -1355,7 +1356,7 @@ C	B    	- rectangular matrix
 C	NM	- leading dimension of B
 C	NROW	- number of rows in B
 C	NCOL    - number of columns in B
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION ASQR(NROW*NCOL),B(NM,NCOL)
@@ -1367,10 +1368,10 @@ C
    20   CONTINUE
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck unfld */
       SUBROUTINE UNFLD(NDIM,AR,AI)
-C****************************************************************************
+C**********************************************************************
 C	A Kramer symmetric matrix has the following structure:
 C	
 C  		-------------
@@ -1379,13 +1380,14 @@ C		-------------
 C               | -B* |  A* |
 C		-------------
 C
-C	in which A is a complex Hermitian matrix and B a complex antisymmetric
-C	matrix.
+C	in which A is a complex Hermitian matrix and B a complex 
+C       antisymmetric matrix.
 C
-C	This subroutines assumes on input that only the lower triangle of blocks
-C	A and B are given, abd will on output give the full blocks A and B.
+C	This subroutines assumes on input that only the lower triangle 
+C       of blocks A and B are given, abd will on output give the full 
+C       blocks A and B.
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AR(NDIM,NDIM/2),AI(NDIM,NDIM/2)
@@ -1403,7 +1405,7 @@ C** Unfold imaginary part:
       CALL UNFLDR('ASYM',NDIM,NHALF,AI)
       CALL UNFLDR('ASYM',NDIM,NHALF,AI(IOFF,1))
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
 #include "implicit.h"
@@ -1434,15 +1436,15 @@ C   ON OUTPUT:A - full matrix
      +    MATTYP,' not recognized!'
       ENDIF
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sectid */
       FUNCTION SECTID(TID)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given time in seconds this function return a character string
 C     with time in suitable units
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       CHARACTER*12 SECTID
 C
@@ -1489,13 +1491,13 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck logset */
       SUBROUTINE LOGSET(N,LVAL,LVEC)
-C*****************************************************************************
+C***********************************************************************
 C     This routine will initialize a logical array
 C     Written by T.Saue , January 1995
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL LVAL,LVEC(*)
@@ -1503,7 +1505,7 @@ C*****************************************************************************
         LVEC(I) = LVAL
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lbit */
 C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
@@ -1513,7 +1515,7 @@ C	Based on an analogous DISCO routine(Jan Almloef)
       LBIT = .FALSE.
       IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */
       SUBROUTINE LSET(N,LVAL,LVEC)
 #include "implicit.h"
@@ -1522,7 +1524,7 @@ C  /* Deck lset */
         LVEC(I) = LVAL
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       REAL FUNCTION GAMMP(A,X)
 #else
@@ -1558,7 +1560,7 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GSER(GAMSER,A,X,GLN)
 #include "implicit.h"
 C******************************************************************C
@@ -1580,7 +1582,7 @@ C
 1     GAMSER=SUM*EXP(-X+A*LOG(X)-GLN)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GCF(GAMMCF,A,X,GLN)
 #include "implicit.h"
 C*******************************************************************C
@@ -1615,11 +1617,11 @@ C
 1     GAMMCF=EXP(-X+A*LOG(X)-GLN)*G
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION GAMMLN(XX)
 #include "implicit.h"
 C***********************************************************************C
-C                                                                       C
+C
 C     GAMMALN RETURNS THE NATURAL LOGARITHM OF THE GAMMA FUNCTION       C
 C     (FROM "NUMERICAL RECIPES")                                        C
 C                                                                       C
@@ -1640,7 +1642,7 @@ C
       GAMMLN=TMP+LOG(STP*SER)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFACTR
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1664,11 +1666,11 @@ C
 10    CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsjaco */
       SUBROUTINE RSJACO(LDM,NDIM,NROWE,AMAT,EIG,IJOB,IORDER,IPACK,EVEC,
      &                  WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Diagonalize real symmetric matrix by the Jacobi method
 C     This is basically a driver for the routine JACO.
@@ -1681,13 +1683,14 @@ C       IORDER.EQ. 2 : Sort eigenvalues in absolute ascending order
 C       IORDER.EQ. 0 : No sorting of eigenvalues and eigenvectors
 C     Control parameter IJOB:
 C               IJOB = 0        Only eigenvalues desired.
-C               IJOB = 1        Eigenvalues and eigenvectors in ortonormal 
-C                               basis. EVEC set to identity matrix.
-C                               NROWE is dimension of basis equal to NDIM.
-C               IJOB = 2        Eigenvalues and eigenvectors in another basis.
-C                               EVEC equal to transformation to other basis.
-C                               NROWE is dimension of basis and may differ from
-C                               NDIM.
+C               IJOB = 1        Eigenvalues and eigenvectors in 
+C                               orthonormal basis. EVEC set to identity 
+C                               matrix.NROWE is dimension of basis 
+C                               equal to NDIM.
+C               IJOB = 2        Eigenvalues and eigenvectors in another 
+C                               basis.EVEC equal to transformation to 
+C                               other basis. NROWE is dimension of 
+C                               basis and may differ from NDIM.
 C     Control parameter IPACK:
 C               IPACK = 0   : AMAT given as square matrix
 C               IPACK = 1   : AMAT given as row-packed lower triangle
@@ -1695,7 +1698,7 @@ C
 C     Written by T.Saue - Aug 15 1996
 C     Last revision : Aug 15 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AMAT(*),EIG(NDIM),EVEC(LDM,NDIM),
@@ -1768,16 +1771,16 @@ C
       CALL QEXIT('RSDIAG')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DAMATR(N,AMAT,LDM,ATRI)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Row-pack lower triangle of matrix AMAT into ATRI
 C
 C     Written by T.Saue - Aug 16 1996
 C     Last revision: Aug 16 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
@@ -1791,17 +1794,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dunit2 */
       SUBROUTINE DUNIT2(A,N,LR,LC,NZ)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Subroutine DUNIT2 sets a general square matrix A equal
 C     to a unit matrix.
 C     /VER 2/ 14-Sep-1983 hjaaj
 C     Include leading dimension - T.Saue Aug 16 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       DIMENSION A(LR,LC,NZ)
       PARAMETER (D1=1.0D00, D0=0.0D00)
@@ -1822,7 +1825,7 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck jaco2 */
       SUBROUTINE JACO2(F,V,NB,NMAX,NROWV,LDM,BIG,JBIG)
 C
@@ -1859,7 +1862,7 @@ C
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
 #include "thrzer.h"
 C      DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
-COLD      DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
+COLD   DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       DATA C1,C2,C3,C4,C5,C6/1.D-15,1.D-15,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
 Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj
@@ -2036,24 +2039,26 @@ Cwas         JBB=(IB-1)*NROWV
       GO TO 410
   420 RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck order3 */
       SUBROUTINE ORDER3(EVEC,EVAL,LDM,N,NEVEC,IJOB)
-C*****************************************************************************
+C***********************************************************************
 C
 C Purpose: order the N values in EVAL and their associated vectors 
 C     in EVEC:
-C     IJOB.EQ. 2  -  absolute ascending order  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C     IJOB.EQ. 2  -  absolute ascending order  
+C                    ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
 C     IJOB.EQ. 1  -  ascending order   EVAL(i+1) .ge. EVAL(i)
 C     IJOB.EQ.-1  -  descending order   EVAL(i+1) .le. EVAL(i)
-C     IJOB.EQ.-2  -  absolute descending order  ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C     IJOB.EQ.-2  -  absolute descending order  
+C                    ABS(EVAL(i+1)).le. ABS(EVAL(i))
 C     IJOB.EQ.0  -  return
 C          
 C          Generalization of routines ORDER/ORDER2
 C          Written by T.Saue - Aug 26 1996
 C          Last revision: Aug 26 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
@@ -2061,7 +2066,8 @@ C*****************************************************************************
       GOTO (1,2,3,4,5) II
 1     CONTINUE
 C***********************************************************************
-C IJOB.EQ.-2  -  absolute descending order ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C IJOB.EQ.-2  -  absolute descending order 
+C                ABS(EVAL(i+1)).le. ABS(EVAL(i))
 C***********************************************************************
       IN = 1
       DO I=1,N-1
@@ -2114,7 +2120,8 @@ C***********************************************************************
       RETURN
 4     CONTINUE
 C***********************************************************************
-C   IJOB.EQ. 1  -  ascending order   EVAL(i+1) .ge. EVAL(i)
+C   IJOB.EQ. 1  -  ascending order   
+C                  EVAL(i+1) .ge. EVAL(i)
 C***********************************************************************
       IN = 1
       DO I=1,N-1
@@ -2138,7 +2145,8 @@ C***********************************************************************
       RETURN
 5     CONTINUE
 C***********************************************************************
-C   IJOB.EQ. 2  -  absolute ascending order  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C   IJOB.EQ. 2  -  absolute ascending order  
+C                  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
 C***********************************************************************
       IN = 1
       DO I=1,N-1
@@ -2161,10 +2169,10 @@ C***********************************************************************
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gatpak */
       SUBROUTINE GATPAK(NA,A,NB,B,IND,IOFF)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine will gather elements of the same "kin" in the
 C     rowpacked lower triangular matrix A and place them in the
@@ -2176,7 +2184,7 @@ C
 C     Written by T.Saue  -  July 23 1994
 C     LAST VERSION: July 23 1994
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2196,16 +2204,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck igath */
       SUBROUTINE IGATH(IV1,N1,IV2,N2,N,IND)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Reorder an integer array
 C
 C     Written by T..Saue November 1994
 C     Last revision: Nov 16 1994 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       DIMENSION IV1(N1),IV2(N2),IND(*)
       DO 10 I = 1,N
@@ -2213,17 +2221,17 @@ C*****************************************************************************
    10 CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck privec */
       SUBROUTINE PRIVEC(NAME,IVEC,NVEC)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print integer array with indices in compact form
 C
 C     Written by T.Saue, November 1994
 C     Last revised: Nov 24 1994 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER NAME*6
@@ -2238,15 +2246,15 @@ C*****************************************************************************
         J1 = J1 + 16
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtcomp */
       SUBROUTINE MTCOMP(COMP,AMAT,NDIM,NZ,CMAT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This subroutine will pick out symmetric('S') or antisymmetric('A')
 C     component of a quadratic matrix AMAT and place it in CMAT.
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DP5 = 0.5D0)
@@ -2281,10 +2289,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck difmmh */
       SUBROUTINE DIFMMH(AMAT,NDIM,NZ,LRA,LCA)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Take difference between a general quaternionic matrix AMAT and
 C     its Hermitian conjugate; return in AMAT. Note that this gives
@@ -2293,7 +2301,7 @@ C
 C     Written by T.Saue, August 23 1995
 C     Last revision: tsaue - aug23-95
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -2321,7 +2329,7 @@ C
       RETURN
       END
       SUBROUTINE QGETHE(AMAT,NDIM,NZ,LRA,LCA)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Quaternian GEneral matrix To HErmitian matrix:
 C     generate the Hermitian component of the general matrix AMAT;
@@ -2330,7 +2338,7 @@ C
 C     Written by H.J.Aa. Jensen, June 2002
 C     (based on DIFMMH)
 C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
       PARAMETER(D0=0.0D0, DP5=0.5D0)
       DIMENSION AMAT(LRA,LCA,NZ)

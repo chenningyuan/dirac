@@ -1595,12 +1595,14 @@ C     Print vectors
 C
 C     Written by Trond Saue May 1996
 C     Last revision: tsaue - Jan 9 1997
-C     Reading of coefficients from KRMCSCF added: T. Fleig, Oct 2003
+C     Vector analysis for KRMC added: T. Fleig, Oct 2003
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxorb.h"
 C
+#include "orbene.h"
 #include "dcbgen.h"
 #include "dcbvec.h"
 #include "dcborb.h"
@@ -1610,6 +1612,7 @@ C
 C
       LOGICAL TOBE_D,TOBE_K
       DIMENSION WORK(*)
+      DIMENSION IOFPFS(2,2)
 #include "memint.h"
 C
       NTESTL = 000
@@ -1623,15 +1626,14 @@ C
       INQUIRE (FILE='DFCOEF',EXIST=TOBE_D)
 C
       IF(.NOT.TOBE_K) GOTO 990
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
 C
       CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMANA')
       IOPT = 1       ! Read from NEWORB label
       JRDMO = -1
       CALL RREADMO(WORK(KCMO),JRDMO,IOPT,LUKRMC)
       CLOSE(LUKRMC,STATUS='KEEP')
-      CALL HEADER('Coefficients from KRMCSCF',2)
 C
       IF (NTESTL.GE.20) THEN
 C
@@ -1644,15 +1646,9 @@ C
         END DO
       END IF
 C
-C     Zero out orbital energies. They are irrelevant for canonical
-C     orbitals at the moment.
-C
-      DO J=1,NORBT,1
-        WORK(KEIG+J-1) = D0
-      END DO
-C
-      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,
-     &            WORK(KFREE),LFREE)
+      CALL HEADER('Coefficients from KRMCSCF',2)
+      CALL PRCOEF(WORK(KCMO),ORBENE,VECPRI,IPRCMP,ILABDF,
+     &            IPRVEC,WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -1669,6 +1665,15 @@ C
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &            TOTERG,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
+C
+      IF (NTESTL.GE.10) THEN
+C
+C     Check orbital energies.
+C
+        DO J=1,NORBT,1
+          WRITE(6,*) 'ORBENE(',J,') = ',WORK(KEIG+J-1)
+        END DO
+      END IF
 C
       CALL HEADER('Coefficients from DFCOEF',2)
       CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,

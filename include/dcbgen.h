@@ -13,9 +13,10 @@ C  DOLVC  - Treat SS 2-e interaction by point charge model
 C  DOTSC  - Treat SS 2-e interaction by TS point charge model
 C  DIRSET - Conventional OR direct calculation of 2-e integrals 
 C           has been specified manually (used for SMLV1C)
-C  BNCRON - Improved screening of nucleus for bare nucleus starting guess
+C  BNCRON - Improved screening of nucleus for bare nucleus starting 
+C           guess
 C
-C  These flags should be pased on to every module
+C  These flags should be passed on to every module
 C
 C
       PARAMETER ( LBASDIR = 600 )

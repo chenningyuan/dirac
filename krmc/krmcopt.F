@@ -196,10 +196,6 @@ C     *** Close files ***********************************
 C     ***************************************************
 C
 C
-Chj July 2002: why is LUKRMC reopened here, I try to comment it out
-Chj   LUKRMC = 50
-C
-Chj   CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
       CLOSE(LUKRMC,STATUS='KEEP')
       CLOSE(LUKRM1,STATUS='DELETE')
       CLOSE(LUKRM2,STATUS='DELETE')
@@ -464,11 +460,9 @@ C        *** Get Gradient **********************************
 C        ***************************************************
 C
 C
-         call memchk('before CALL RGRAD',WORK,KFREE)
          CALL RGRAD(CMO,CREF,WORK(KZXOPE),WORK(KZXOPP),
      &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
      &              FCAC,H2AC,IPROPT,WORK,KFREE,LFREE)
-         call memchk('after CALL RGRAD',WORK,KFREE)
 C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
@@ -1215,6 +1209,8 @@ C        FV      - the active Fock matrix
 C
 C     Written by J. Thyssen - Oct 22 1998
 C     Last revision :
+C      Oct 24, 2003: Diagonalization of FC + FV matrix,
+C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1224,9 +1220,11 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "orbene.h"
 #include "dcbfir.h"
 #include "blocks.h"
 #include "dcborb.h"
+#include "dcbkrmc.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -1235,7 +1233,9 @@ C
       DIMENSION DV(*),CMO(*),FC(*),FV(*)
       DIMENSION WORK(LWORK)
       LOGICAL NOFV
+      LOGICAL FNDLAB
       DIMENSION IQBF(4)
+      DIMENSION IOPSST(2,MXMCGAS+2,2),NOPSST(2,MXMCGAS+2,2)
 C
 C
 #include "memint.h"
@@ -1420,11 +1420,85 @@ C
      &               NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPROPT)
          IF (IPROPT .GE. 5) THEN
+            WRITE(LUPRI,9011) 'FC',I
+            CALL PRQMAT(FC(I2ORBX(I,I)+1),NORB(I),NORB(I),
+     &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
             WRITE(LUPRI,9011) 'FV',I
             CALL PRQMAT(FV(I2ORBX(I,I)+1),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
   100 CONTINUE
+      CALL MEMREL('RFCKMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C  Diagonalize complete Fock matrix FT:
+C
+C  Total Fock matrix FC + FV:
+C
+      CALL MEMGET('REAL',KFT,N2ORBXQ,WORK,KFREE,LFREE)
+      NORBQU = NORBT*NORBT*NZ
+      DO ISM = 1,NORBQU,1
+        WORK(KFT+ISM-1) = FC(ISM) + FV(ISM)
+      END DO
+C
+C  Eigenvalues (orbital energies) and save electronic part:
+C
+      CALL MEMGET('REAL',KEIGHL,NORBT,WORK,KFREE,LFREE)
+      CALL QDIAG(NZ,NORBT,WORK(KFT),NORBT,NORBT,
+     &           WORK(KEIGHL),0,DUMMY,NORBT,NORBT,
+     &           WORK(KFREE),LFREE,IERR)
+      IF (IERR.NE.0) CALL QUIT('Erroneous completion of QDIAG for FT.')
+C
+C     Reorder from
+C     particle - space - symmetry to
+C     symmetry - particle - space ordering
+C     and store in ORBENE
+C
+C     Define offsets and lengths ...
+      NACCORB = 0
+      NINTSP = NGAS + 2
+      DO IPAR = 1,2,1
+        DO IINTSP = 1,NINTSP,1
+          DO IFS = 1,NFSYM,1
+            IF (IINTSP.EQ.1) THEN
+              NNORB = NKRMCISH(IFS)
+            ELSE IF (IINTSP.EQ.NINTSP) THEN
+              NNORB = NSSH(IFS)
+            ELSE
+              IGS = IINTSP - 1
+              NNORB = NKRMCGSH(IFS,IGS)
+            END IF
+            IOPSST(IFS,IINTSP,IPAR) = NACCORB
+            NOPSST(IFS,IINTSP,IPAR) = NNORB
+            NACCORB = NACCORB + NNORB
+          END DO
+        END DO
+      END DO
+C
+C     ... and reorder
+      IRN = 1
+C     Loop over symmetries
+      DO IFS = 1,NFSYM,1
+C       Loop over particle type
+        DO IPAR = 1,2,1
+C         Loop over internal spaces
+          DO IINTSP = 1,NINTSP,1
+C           Loop over orbital block
+            DO IORBRN = 1,NOPSST(IFS,IINTSP,IPAR),1
+             ORBENE(IRN) = WORK(KEIGHL+IOPSST(IFS,IINTSP,IPAR)+IORBRN-1)
+             IRN = IRN + 1
+            END DO
+          END DO
+        END DO
+      END DO
+C
+      IF (IPROPT.GE.3) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'Orbital energies after FC + FV diagonalization'
+        DO IPR = 1,NORBT,1
+          WRITE(LUPRI,'(A8,I3,A4,1F10.3)') 
+     &          ' OrbEn (',IPR,') = ',ORBENE(IPR)
+        END DO
+      END IF
 C
 c      call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
 c      call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
@@ -1433,7 +1507,6 @@ c      call prqmat(fv,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
 C
 C
 C
-      CALL MEMREL('RFCKMAT',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL RTKTIME(.FALSE.,12)
       CALL QEXIT('RFCKMAT')
       RETURN
@@ -3390,7 +3463,6 @@ C
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
-      LOGICAL   FNDLAB
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -3431,7 +3503,6 @@ C
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8,C(4)*8
-      LOGICAL   FNDLAB
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -3486,7 +3557,7 @@ C
          END IF
       ELSE
 C
-C     Label do not exist
+C     Label does not exist
 C     Seek to label EOFLABEL and write from there
 C
          REWIND(LUNIT)
@@ -3536,8 +3607,8 @@ C
 C
       ELSE
          WRITE(LUPRI,'(//A/,3A,I3)')
-     $        '*** ERROR in REAKRMC ***',
-     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
+     &        '*** ERROR in REAKRMC ***',
+     &        'Label <',LABEL,'> does not exist on unit ',LUNIT
          CALL QUIT('*** ERROR in REAKRMC ***')
       END IF
 C
