@@ -1,3 +1,8 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C SOURCE  : $Source$
+C
 C*****************************************************************************
 C  DCBEXP:  Expectation values
 C
@@ -5,5 +10,6 @@ C
       LOGICAL ORBANA
       COMMON/DCBEXP/IPREXP,NEXPP,LEXPP(MAXEXP),
      &              IPDIPOLE(3),IPQUADRU(6),IPEFG(6*MXCENT),
-     &              IPPVC(MXCENT),ORBANA
+     &              IPPVC(MXCENT),IPEFT(15*MXCENT),IPEFTNTL(15*MXCENT),
+     &              ORBANA
 

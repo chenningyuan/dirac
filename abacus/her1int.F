@@ -382,6 +382,16 @@ C
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.56) THEN
+         JMAXD = 0
+         JMAXM = 0
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.57) THEN
+         JMAXD = 0
+         JMAXM = 0
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -677,6 +687,8 @@ C
      &                    .OR. (INTTYP .EQ. 51)
      &                    .OR. (INTTYP .EQ. 54)
      &                    .OR. (INTTYP .EQ. 55)
+     &                    .OR. (INTTYP .EQ. 56)
+     &                    .OR. (INTTYP .EQ. 57)
      &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
@@ -699,6 +711,8 @@ C
          IF (INTTYP .EQ. 51) JMAX = JMAX + 1
          IF (INTTYP .EQ. 54) JMAX = JMAX + 1
          IF (INTTYP .EQ. 55) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 56) JMAX = JMAX + 4
+         IF (INTTYP .EQ. 57) JMAX = JMAX + 4
          MULCHA = (INTTYP .EQ. 5) .OR. (INTTYP .EQ. 19)
      &                            .OR. (INTTYP .EQ. 20)
      &                            .OR. (INTTYP .EQ. 24)
@@ -832,6 +846,12 @@ C
          ELSE IF (INTTYP .EQ. 62) THEN
             CALL PVCTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+         ELSE IF (INTTYP .EQ. 56) THEN
+            CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+         ELSE IF (INTTYP .EQ. 57) THEN
+            CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE
             FULMAT = .TRUE.
             DO 200 I = 1, NOPTYP
@@ -921,7 +941,7 @@ C  /* Deck pr1pra */
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3,
      &           D2INV = 0.50D0, D1P5 = 1.5D0, GNUTHR = 1.D-4)
 C
-      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCORB
+      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCORB, ONCN
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), TEMP(3),
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
@@ -998,7 +1018,8 @@ C
          ELSE IF ((INTTYP .EQ. 2) .OR. (INTTYP .EQ. 4) .OR.
      &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
      &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
-     &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31)) THEN
+     &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
+     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -1066,7 +1087,9 @@ C
      &                       .OR. (INTTYP .EQ. 48)
      &                       .OR. (INTTYP .EQ. 51)
      &                       .OR. (INTTYP .EQ. 54)
-     &                       .OR. (INTTYP .EQ. 55)) THEN
+     &                       .OR. (INTTYP .EQ. 55)
+     &                       .OR. (INTTYP .EQ. 56)
+     &                       .OR. (INTTYP .EQ. 57)) THEN
                CALL DZERO(AHGTF,(NATOMC + 1)*NAHGTF)
             IF (ADDNAI) THEN
                CALL DZERO(AHGTF,NAHGTF)
@@ -1484,6 +1507,28 @@ C
          ELSE IF (INTTYP .EQ. 55) THEN
             CALL RNSLOIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,DIFABX,DIFABY,DIFABZ)
+C
+C        Traceless electric field third derivatives
+C        ----------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 56) THEN
+            ONCN =   (CORAX .EQ. CORBX)
+     &         .AND. (CORAY .EQ. CORBY)
+     &         .AND. (CORAZ .EQ. CORBZ)
+            CALL EFTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+     &                  SHLINT,NOPTYP,NATOMC,.TRUE.,ONCN,
+     &                  CORCX,CORCY,CORCZ)
+C
+C        Non-traceless electric field third derivatives
+C        ----------------------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 57) THEN
+            ONCN =   (CORAX .EQ. CORBX)
+     &         .AND. (CORAY .EQ. CORBY)
+     &         .AND. (CORAZ .EQ. CORBZ)
+            CALL EFTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+     &                  SHLINT,NOPTYP,NATOMC,.FALSE.,ONCN,
+     &                  CORCX,CORCY,CORCZ)
          END IF
   200    CONTINUE
   100 CONTINUE
@@ -2931,6 +2976,347 @@ C
  100  CONTINUE
       RETURN
       END
+C  /* Deck eftint */
+      SUBROUTINE EFTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  NOPTYP,NATOMC,TRLESS,ONCN,
+     &                  CORCX,CORCY,CORCZ)
+C
+C     Electric field third derivatives.
+C
+C     Calculate the traceless (TRLESS = true) or 
+C     non-traceless (TRLESS = false).
+C
+C     ONCN: one-center (coor a = coor b)
+C     Don't calculate < s_A | d^4/dx^4 1/r_A | s_A >
+C     
+C
+C     In Dirac the routine PRP_EFT calculates the 'traceless' tensor
+C     using the Laplace equation. But for numerical reasons
+C     it is best (I guess) to calculate the traceless one
+C     directly.
+C
+C     Adapted from EFGINT.
+C
+C     J. Thyssen, September 30, 1999
+C
+C
+#include <implicit.h>
+      PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
+     &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
+     &           D35 = 35.0D00, DTHR = 1.0D-10)
+      PARAMETER (D8=8.0D0,D24=24.0D0,D6=6.0D0)
+
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxmom.h>
+#include <mxorb.h>
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &              SHLINT(KCKTAB,NOPTYP), AHGTF(*),
+     &              CORCX(*),CORCY(*),CORCZ(*)
+      DIMENSION II(0:2)
+      LOGICAL   TRLESS,ONCN
+#include <nuclei.h>
+#include <symmet.h>
+#include <onecom.h>
+#include <lmns.h>
+#include <ibtfun.h>
+C
+      INT = 1
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         MAXT = LVALA + LVALB
+         MAXU = MVALA + MVALB
+         MAXV = NVALA + NVALB
+         IADRAV = 1
+         DO 200 IV = 0, MAXV
+            EV = ODC(NVALA,NVALB,IV,0,0,3)
+            IADRAU = IADRAV
+            DO 300 IU = 0, MAXU
+               EU = ODC(MVALA,MVALB,IU,0,0,2)
+               DO 400 IT = 0, MAXT
+                  ET = ODC(LVALA,LVALB,IT,0,0,1)
+                  EEE = ET*EU*EV
+                  IOFF = 0
+                  INTTYP = 0
+                  DO 500 IATOM = 1, NATOMC
+C
+C
+C
+                     IADR0 = IOFF + IADRAU + IT
+                     VXXXX = AHGTF(IADR0 + 4)
+                     VXXXY = AHGTF(IADR0 + 3 +     ISTEPU)
+                     VXXXZ = AHGTF(IADR0 + 3              +     ISTEPV)
+                     VXXYY = AHGTF(IADR0 + 2 + 2 * ISTEPU)
+                     VXXYZ = AHGTF(IADR0 + 2 +     ISTEPU +     ISTEPV)
+                     VXXZZ = AHGTF(IADR0 + 2              + 2 * ISTEPV)
+                     VXYYY = AHGTF(IADR0 + 1 + 3 * ISTEPU)
+                     VXYYZ = AHGTF(IADR0 + 1 + 2 * ISTEPU +     ISTEPV)
+                     VXYZZ = AHGTF(IADR0 + 1 +     ISTEPU + 2 * ISTEPV)
+                     VXZZZ = AHGTF(IADR0 + 1              + 3 * ISTEPV)
+                     VYYYY = AHGTF(IADR0     + 4 * ISTEPU)
+                     VYYYZ = AHGTF(IADR0     + 3 * ISTEPU + 1 * ISTEPV)
+                     VYYZZ = AHGTF(IADR0     + 2 * ISTEPU + 2 * ISTEPV)
+                     VYZZZ = AHGTF(IADR0     + 1 * ISTEPU + 3 * ISTEPV)
+                     VZZZZ = AHGTF(IADR0                  + 4 * ISTEPV)
+C
+                     IF (ONCN) THEN
+                        IF ( (CORCX(IATOM) .EQ. CORAX) 
+     &                     .AND. (CORCY(IATOM) .EQ. CORAY) 
+     &                     .AND. (CORCZ(IATOM) .EQ. CORAZ) 
+     &                     .AND. (MAXU+MAXT+MAXV .LE. 3)) THEN
+#ifdef UNDEF
+                           dbla = 
+     &                  (  D8 * VZZZZ 
+     &                  - D24 * VXXZZ
+     &                  - D24 * VYYZZ
+     &                  +  D6 * VXXYY
+     &                  +  D3 * VXXXX
+     &                  +  D3 * VYYYY ) / D35
+c                          if (dbla .ge. 1.0d-12) then
+                              write(7,*) 'jth maxtuv ',lvala+mvala+nvala,
+     &                            lvalb+mvalb+nvalb
+                              write(7,*) 'jth tuv    ',it,iu,iv
+                              write(7,*) 'jth cont   ',dbla
+                              write(7,*) 'jth odc    ',eee
+                              write(7,*) 'jth c * odc',eee*dbla
+                              write(7,*) 'jth indi1  ',
+     &                           vzzzz,vxxzz,vyyzz
+                              write(7,*) 'jth indi2  ',
+     &                           vxxyy,vxxxx,vyyyy
+c                          end if
+#endif
+                           GOTO 600
+                        END IF
+                     END IF
+                     IF (TRLESS) THEN
+#ifndef OLD_CODE
+                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1) 
+     &                     + EEE * (
+     &                        D8 * VXXXX 
+     &                     - D24 * VXXYY
+     &                     - D24 * VXXZZ
+     &                     +  D3 * VYYYY
+     &                     +  D6 * VYYZZ
+     &                     +  D3 * VZZZZ ) / D35
+                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2) 
+     &                     + EEE * (
+     &                        D4 * VXXXY 
+     &                     -  D3 * VXYYY
+     &                     -  D3 * VXYZZ ) / D7
+                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3) 
+     &                     + EEE * (
+     &                        D4 * VXXXZ 
+     &                     -  D3 * VXYYZ
+     &                     -  D3 * VXZZZ ) / D7
+                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4) 
+     &                     + EEE * (
+     &                     -  D4 * VXXXX 
+     &                     + D27 * VXXYY
+     &                     -  D3 * VXXZZ
+     &                     -  D4 * VYYYY
+     &                     -  D3 * VYYZZ
+     &                     +       VZZZZ ) / D35
+                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5) 
+     &                     + EEE * (
+     &                        D6 * VXXYZ 
+     &                     -       VYYYZ
+     &                     -       VYZZZ ) / D7
+                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6) 
+     &                     + EEE * (
+     &                     -  D4 * VXXXX 
+     &                     -  D3 * VXXYY
+     &                     + D27 * VXXZZ
+     &                     +       VYYYY
+     &                     -  D3 * VYYZZ
+     &                     -  D4 * VZZZZ ) / D35
+                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7) 
+     &                     + EEE * (
+     &                     -  D3 * VXXXY 
+     &                     +  D4 * VXYYY
+     &                     -  D3 * VXYZZ ) / D7
+                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8) 
+     &                     + EEE * (
+     &                        D6 * VXYYZ 
+     &                     -       VXXXZ
+     &                     -       VXZZZ ) / D7
+                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9) 
+     &                     + EEE * (
+     &                        D6 * VXYZZ 
+     &                     -       VXXXY
+     &                     -       VXYYY ) / D7
+                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10) 
+     &                     + EEE * (
+     &                        D4 * VXZZZ 
+     &                     -  D3 * VXXXZ
+     &                     -  D3 * VXYYZ ) / D7
+                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11) 
+     &                     + EEE * (
+     &                        D8 * VYYYY 
+     &                     - D24 * VXXYY
+     &                     - D24 * VYYZZ
+     &                     +  D6 * VXXZZ
+     &                     +  D3 * VXXXX
+     &                     +  D3 * VZZZZ ) / D35
+                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12) 
+     &                     + EEE * (
+     &                        D4 * VYYYZ 
+     &                     -  D3 * VXXYZ
+     &                     -  D3 * VYZZZ ) / D7
+                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13) 
+     &                     + EEE * (
+     &                     -  D4 * VYYYY 
+     &                     -  D3 * VXXYY
+     &                     + D27 * VYYZZ
+     &                     +       VXXXX
+     &                     -  D3 * VXXZZ
+     &                     -  D4 * VZZZZ ) / D35
+                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14) 
+     &                     + EEE * (
+     &                        D4 * VYZZZ 
+     &                     -  D3 * VXXYZ
+     &                     -  D3 * VYYYZ ) / D7
+                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15) 
+     &                     + EEE * (
+     &                        D8 * VZZZZ 
+     &                     - D24 * VXXZZ
+     &                     - D24 * VYYZZ
+     &                     +  D6 * VXXYY
+     &                     +  D3 * VXXXX
+     &                     +  D3 * VYYYY ) / D35
+#else
+                        VXXAA = VXXXX + VXXYY + VXXZZ
+                        VXYAA = VXXXY + VXYYY + VXYZZ
+                        VXZAA = VXXXZ + VXYYZ + VXZZZ
+                        VYYAA = VXXYY + VYYYY + VYYZZ
+                        VYZAA = VXXYZ + VYYYZ + VYZZZ
+                        VZZAA = VXXZZ + VYYZZ + VZZZZ
+                        SHLINT(INT,INTTYP+ 1) = SHLINT(INT,INTTYP+ 1) 
+     &                     + EEE * (
+     &                       VXXXX 
+     &                     - D27/D35 * VXXAA
+     &                     +  D3/D35 * VYYAA
+     &                     +  D3/D35 * VZZAA )
+                        SHLINT(INT,INTTYP+ 2) = SHLINT(INT,INTTYP+ 2) 
+     &                     + EEE * (
+     &                       VXXXY 
+     &                     -  D3/D7  * VXYAA )
+                        SHLINT(INT,INTTYP+ 3) = SHLINT(INT,INTTYP+ 3) 
+     &                     + EEE * (
+     &                       VXXXZ 
+     &                     -  D3/D7  * VXZAA )
+                        SHLINT(INT,INTTYP+ 4) = SHLINT(INT,INTTYP+ 4) 
+     &                     + EEE * (
+     &                       VXXYY 
+     &                     -  D4/D35 * VXXAA
+     &                     -  D4/D35 * VYYAA
+     &                     +  D1/D35 * VZZAA )
+                        SHLINT(INT,INTTYP+ 5) = SHLINT(INT,INTTYP+ 5) 
+     &                     + EEE * (
+     &                       VXXYZ 
+     &                     -  D1/D7  * VYZAA )
+                        SHLINT(INT,INTTYP+ 6) = SHLINT(INT,INTTYP+ 6) 
+     &                     + EEE * (
+     &                       VXXZZ 
+     &                     -  D4/D35 * VXXAA
+     &                     +  D1/D35 * VYYAA
+     &                     -  D4/D35 * VZZAA )
+                        SHLINT(INT,INTTYP+ 7) = SHLINT(INT,INTTYP+ 7) 
+     &                     + EEE * (
+     &                       VXYYY 
+     &                     -  D3/D7  * VXYAA )
+                        SHLINT(INT,INTTYP+ 8) = SHLINT(INT,INTTYP+ 8) 
+     &                     + EEE * (
+     &                       VXYYZ 
+     &                     -  D1/D7  * VXZAA )
+                        SHLINT(INT,INTTYP+ 9) = SHLINT(INT,INTTYP+ 9) 
+     &                     + EEE * (
+     &                       VXYZZ 
+     &                     -  D1/D7  * VXYAA )
+                        SHLINT(INT,INTTYP+10) = SHLINT(INT,INTTYP+10) 
+     &                     + EEE * (
+     &                       VXZZZ 
+     &                     -  D3/D7  * VXZAA )
+                        SHLINT(INT,INTTYP+11) = SHLINT(INT,INTTYP+11) 
+     &                     + EEE * (
+     &                       VYYYY 
+     &                     +  D3/D35 * VXXAA
+     &                     - D27/D35 * VYYAA
+     &                     +  D3/D35 * VZZAA )
+                        SHLINT(INT,INTTYP+12) = SHLINT(INT,INTTYP+12) 
+     &                     + EEE * (
+     &                       VYYYZ 
+     &                     -  D3/D7  * VYZAA )
+                        SHLINT(INT,INTTYP+13) = SHLINT(INT,INTTYP+13) 
+     &                     + EEE * (
+     &                       VYYZZ 
+     &                     +  D1/D35 * VXXAA
+     &                     -  D4/D35 * VYYAA
+     &                     -  D4/D35 * VZZAA )
+                        SHLINT(INT,INTTYP+14) = SHLINT(INT,INTTYP+14) 
+     &                     + EEE * (
+     &                       VYZZZ 
+     &                     -  D3/D7  * VYZAA )
+                        SHLINT(INT,INTTYP+15) = SHLINT(INT,INTTYP+15) 
+     &                     + EEE * (
+     &                       VZZZZ
+     &                     +  D3/D35 * VXXAA
+     &                     +  D3/D35 * VYYAA
+     &                     - D27/D35 * VZZAA )
+#endif
+                     ELSE
+                        SHLINT(INT,INTTYP+ 1) =
+     &                     SHLINT(INT,INTTYP+ 1) + EEE * VXXXX
+                        SHLINT(INT,INTTYP+ 2) =
+     &                     SHLINT(INT,INTTYP+ 2) + EEE * VXXXY
+                        SHLINT(INT,INTTYP+ 3) =
+     &                     SHLINT(INT,INTTYP+ 3) + EEE * VXXXZ
+                        SHLINT(INT,INTTYP+ 4) =
+     &                     SHLINT(INT,INTTYP+ 4) + EEE * VXXYY
+                        SHLINT(INT,INTTYP+ 5) =
+     &                     SHLINT(INT,INTTYP+ 5) + EEE * VXXYZ
+                        SHLINT(INT,INTTYP+ 6) =
+     &                     SHLINT(INT,INTTYP+ 6) + EEE * VXXZZ
+                        SHLINT(INT,INTTYP+ 7) =
+     &                     SHLINT(INT,INTTYP+ 7) + EEE * VXYYY
+                        SHLINT(INT,INTTYP+ 8) =
+     &                     SHLINT(INT,INTTYP+ 8) + EEE * VXYYZ
+                        SHLINT(INT,INTTYP+ 9) =
+     &                     SHLINT(INT,INTTYP+ 9) + EEE * VXYZZ
+                        SHLINT(INT,INTTYP+10) =
+     &                     SHLINT(INT,INTTYP+10) + EEE * VXZZZ
+                        SHLINT(INT,INTTYP+11) =
+     &                     SHLINT(INT,INTTYP+11) + EEE * VYYYY
+                        SHLINT(INT,INTTYP+12) =
+     &                     SHLINT(INT,INTTYP+12) + EEE * VYYYZ
+                        SHLINT(INT,INTTYP+13) =
+     &                     SHLINT(INT,INTTYP+13) + EEE * VYYZZ
+                        SHLINT(INT,INTTYP+14) =
+     &                     SHLINT(INT,INTTYP+14) + EEE * VYZZZ
+                        SHLINT(INT,INTTYP+15) =
+     &                     SHLINT(INT,INTTYP+15) + EEE * VZZZZ
+                     END IF
+ 600                 CONTINUE
+                     IOFF = IOFF + NAHGTF
+                     INTTYP = INTTYP + 15
+ 500              CONTINUE
+ 400           CONTINUE
+               IADRAU = IADRAU + ISTEPU
+ 300        CONTINUE
+            IADRAV = IADRAV + ISTEPV
+ 200     CONTINUE
+         INT = INT + 1
+ 100  CONTINUE
+c     CALL HEADER('EFTINT - integrals',-1)
+c     CALL OUTPUT(SHLINT,1,KCKTAB,1,NOPTYP,KCKTAB,NOPTYP,1,6)
+      RETURN
+      END
 C  /* Deck ef1int */
       SUBROUTINE EF1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
@@ -3924,6 +4310,60 @@ C
             IJ = IJ + 1
             ITYP = ITYP + 1
             ISYMXY = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            DO 300 IREPC = 0, MAXREP
+              IF (IBTAND(ISTBNU(ICENTC),IBTXOR(IREPC,ISYMXY)).EQ.0) THEN
+                  FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))
+     &                           *PT(IBTAND(IREPC ,ISYMC))
+                  IADR = IFGTBL(ICENTC,IJ,IREPC)
+                  IF (IREPC .EQ. 0) THEN
+                     CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
+     &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
+                  ELSE
+                     CALL SYM1N(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
+     &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
+     &                          KHKTB,FACSYM,LDIAG,FULMAT,ANTI,DUM,
+     &                          IDUM,IPRINT)
+                  END IF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100   CONTINUE
+       RETURN
+       END
+C  /* Deck efttra */
+      SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
+#include <implicit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      LOGICAL FULMAT, ANTI
+      DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
+     &          IFGTBL(NUCIND,15,0:MAXREP)
+#include <onecom.h>
+#include <nuclei.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      FULMAT = .TRUE.
+      ITYP = 0
+      DO 100 IATOMC = 1, NATOMC
+         ICENTC = JCENTC(IATOMC)
+         ISYMC  = JSYMC(IATOMC)
+         FACTOR = FACINT(IATOMC)
+         IJ = 0
+         DO 200 ICOOR1 = 1, 3
+         DO 200 ICOOR2 = ICOOR1, 3
+         DO 200 ICOOR3 = ICOOR2, 3
+         DO 200 ICOOR4 = ICOOR3, 3
+            IJ = IJ + 1
+            ITYP = ITYP + 1
+            ISYMXY = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMXY = IBTXOR(ISYMXY          ,ISYMAX(ICOOR3,1))
+            ISYMXY = IBTXOR(ISYMXY          ,ISYMAX(ICOOR4,1))
             DO 300 IREPC = 0, MAXREP
               IF (IBTAND(ISTBNU(ICENTC),IBTXOR(IREPC,ISYMXY)).EQ.0) THEN
                   FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))

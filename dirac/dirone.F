@@ -105,7 +105,7 @@ C
 #include <maxaqn.h>
 #include <mxorb.h>
       LOGICAL DOINT(4),TOFILE
-      CHARACTER WORD*7,COMB*4,LABINT(3*MXCOOR)*8
+      CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8
       DIMENSION WORK(LWORK)
 #include <dcbgen.h>
 #include <nuclei.h>
@@ -117,7 +117,7 @@ C
 C     Write integrals to file
       TOFILE   = .TRUE.
       NCOMP    = 0
-      MAXTYP = 3*MXCOOR
+      MAXTYP = 5*MXCOOR
       IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE

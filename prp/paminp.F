@@ -45,7 +45,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 16)
+      PARAMETER (NDIR = 8, NTABLE = 20)
 #include <mxorb.h>
 #include <mxcent.h>
 C
@@ -60,7 +60,8 @@ C
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
-     &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   '/
+     &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
+     &             '.EFT   ','.EFTNTL','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('PRPINP')
 #include <memint.h>
@@ -82,6 +83,8 @@ C
       SHIELD   = .FALSE.
       SPNSPN   = .FALSE.
       EFG      = .FALSE.
+      EFT      = .FALSE.
+      EFTNTL   = .FALSE.
       NQCC     = .FALSE.
       DSO      = .FALSE.
       NSTDIA   = .FALSE.
@@ -125,7 +128,8 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
-     &                109,110,111,112,113,114,115,116),I
+     &                109,110,111,112,113,114,115,116,
+     &                117,118,119,120),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -220,6 +224,20 @@ C&&&& ESR parameters
 C&&&& PVC Parity violation - chirality
             PVC   = .TRUE.
             DOEXP = .TRUE.
+            GO TO 100
+  117    CONTINUE
+C&&&& EFT - traceless electric field third derivatives
+            EFT      = .TRUE.
+            DOEXP    = .TRUE.
+            GO TO 100
+  118    CONTINUE
+C&&&& EFTNTL - non-traceless electric field third derivatives
+            EFTNTL   = .TRUE.
+            DOEXP    = .TRUE.
+            GO TO 100
+  119    CONTINUE
+            GO TO 100
+  120    CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -328,7 +346,7 @@ C*****************************************************************************
 #include <dummy.h>
 #include <mxorb.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 C
 #include <dcbprp.h>
 #include <dcbexp.h>
@@ -461,6 +479,16 @@ C
       IF(EFG) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field gradient'
+      ENDIF
+      IF(EFT) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')
+     &     '- traceless electric field third derivattives'
+      ENDIF
+      IF(EFTNTL) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')
+     &     '- non-traceless electric field third derivattives'
       ENDIF
       IF(NQCC) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)
@@ -928,6 +956,14 @@ C
       ELSEIF (IPTYP .EQ. 1) THEN
          PCOMB = 'TFFT'
          IF (LEVYLE) PCOMB = 'TFFF'
+CJTH DEBUG!!
+C#ifdef UNDEF
+         write(6,*) 'debug debug: operator ',PNAME
+         IF (PNAME(1:2) .EQ. 'EF') THEN
+            PCOMB = 'TFFF'
+            write(6,*) '           : setting comp to',pcomb
+         END IF
+C#endif
       ELSE
          PCOMB = 'FTTF'
       END IF
@@ -1275,10 +1311,10 @@ C
         RETURN
       ENDIF
 C
-C     Electric field gradient at the individual nuclei, cartesian
+C     traceless electric field third derivatives
 C
-      IF(LABINT(3:5).EQ.'EFG') THEN
-        CLASSLB = 'ELFGRDC'
+      IF(LABINT(5:5).EQ.'V') THEN
+        CLASSLB = 'EFT    '
         RETURN
       ENDIF
 C
@@ -1401,6 +1437,20 @@ C
         RETURN
       ENDIF
 C
+C     non-traceless electric field third derivatives
+C
+      IF(LABINT(5:5).EQ.'v') THEN
+        CLASSLB = 'EFTNTL '
+        RETURN
+      ENDIF
+C
+C     Electric field gradient at the individual nuclei, cartesian
+C
+      IF(LABINT(3:5).EQ.'EFG') THEN
+        CLASSLB = 'ELFGRDC'
+        RETURN
+      ENDIF
+C
 C     Unknown LABINT
 C
       CLASSLB = 'Unknown'
@@ -1427,13 +1477,13 @@ C
 #include <mxorb.h>
 #include <nuclei.h>
 #include <symmet.h>
-      CHARACTER PLABEL*8,CLASSLB*7,PCOMB*4,LABINT(3*MXCOOR)*8
+      CHARACTER PLABEL*8,CLASSLB*7,PCOMB*4,LABINT(15*MXCENT)*8
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('XPLDEF')
 #include <memint.h>
 C
-      MAXTYP = 3*MXCOOR
+      MAXTYP = 15*MXCENT
       IF ((CLASSLB.EQ.'ELFGRDC').OR.(CLASSLB.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE

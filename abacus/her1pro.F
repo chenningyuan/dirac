@@ -51,7 +51,7 @@ C
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
       DIMENSION WORK(LWORK)
 C
-      MAXTYP = 3*MXCOOR
+      MAXTYP = 15*MXCENT
       NCOMP    = 0
       TOFILE   = .TRUE.
       DOINT(1,1) = .TRUE.
@@ -257,6 +257,7 @@ C     Half-derivative overlap integrals for 1st-order NACMEs (25.06.91)
 C     Cosine and Sine integrals (24.06.93)
 C     Mass-velocity and Darwin integrals (23.07.93 ShKi+HJAaJ)
 C     Magnetic field derivatives of electric field (280893 KRu)
+C     Electric field third derivatives (30.09.1999) jth
 C
 C     Changes for writing symmetry information to property file
 C     (OV 08.03.90)
@@ -271,7 +272,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 55)
+      PARAMETER (NTABLE = 57)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -298,7 +299,8 @@ C
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
-     &            'S1ELB  ', 'ONEELD ', 'PVC    '/
+     &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
+     &            'EFTNTL '/
 C
 #include <ibtfun.h>
 C
@@ -315,7 +317,7 @@ C
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55), I
+     &             49,50,51,52,53,54,55,56,57), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1361,6 +1363,37 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
+C     Traceless electric field third derivatives
+C
+C     ___________________________________________________________
+C
+ 56   CONTINUE
+         INTTYP = 56
+         IF (IPRINT .GT. -1) WRITE (LUPRI,'(/A/)')
+     &     'Calculation of traceless electric field third derivatives'
+         NOPTYP = 15
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFTTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM,.TRUE.)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C     non-traceless electric field third derivatives
+C
+C     ___________________________________________________________
+C
+ 57   CONTINUE
+         INTTYP = 57
+         IF (IPRINT .GT. -1) WRITE (LUPRI,'(/A/)')
+     &     'Calculation of non-traceless electric field third'//
+     &     ' derivatives'
+         NOPTYP = 15
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL EFTTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM,.FALSE.)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C
+C
 C
   200 CONTINUE
 C
@@ -1828,7 +1861,7 @@ C  /* Deck frmtyp */
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
-     &	                              CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   INTREP(ITYP) = IREP
                END IF
             END IF
@@ -2242,6 +2275,76 @@ c     &                           CHRXYZ(ICOOR2)
                   LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
      &                  CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
      &                  CHRNOS(IOFF)
+                  INTREP(ITYP) = IREPC
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+      END IF
+ 100  CONTINUE
+      RETURN
+      END
+C  /* Deck efttyp */
+      SUBROUTINE EFTTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM,TRLESS)
+C
+C     Set labels etc. for electric field third derivatives.
+C     Either traceless (TRLESS = true) or non-traceless (TRLESS = false)
+C
+C     Based on EFGTYP.
+C
+C     Written by J. Thyssen - Sept 30 1999
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
+      LOGICAL DOATOM(NUCIND),TRLESS
+      CHARACTER LABINT(*)*8, LABNM*1
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+C
+      NOPTYP = 0
+c     CALL NTYPTS(NOPTYP)
+      CALL IZERO(IFGTBL,15*NUCIND*(MAXREP + 1))
+      IF (TRLESS) THEN
+         LABNM = 'V'
+      ELSE
+         LABNM = 'v'
+      END IF
+C
+      ITYP = 0
+      DO 100 IATOM = 1, NUCIND
+      IF (DOATOM(IATOM)) THEN
+         IJ = 0
+         DO 200 ICOOR1 = 1, 3
+         DO 200 ICOOR2 = ICOOR1, 3
+         DO 200 ICOOR3 = ICOOR2, 3
+         DO 200 ICOOR4 = ICOOR3, 3
+            IJ = IJ + 1
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  NOPTYP = NOPTYP + 1
+                  IFGTBL(IATOM,IJ,IREPC) = ITYP
+                  LABINT(ITYP) = 
+     &                CHRXYZ(ICOOR1)//
+     &                CHRXYZ(ICOOR2)//
+     &                CHRXYZ(ICOOR3)//
+     &                CHRXYZ(ICOOR4)//
+     &                LABNM//
+     &                CHRNOS(IATOM/10)//
+     &                CHRNOS(MOD(IATOM,10))//
+     &                CHRNOS(IOFF)
                   INTREP(ITYP) = IREPC
                END IF
  300        CONTINUE

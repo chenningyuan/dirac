@@ -558,6 +558,145 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EFT */
+      SUBROUTINE DEF_EFT(PNAME,PLABEL,PFAC,TRLESS,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electric field third derivatives
+C
+C     TRLESS: traceless or non-traceless
+C
+C     Written by: J. Thyssen - Sept 30 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <mxcent.h>
+#include <nuclei.h>
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   TRLESS
+C
+#include <memint.h>
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EFTINT: INTTYP = 52 or INTTYP = 53
+      IF (TRLESS) THEN
+         CALL SETATM(WORK(KDATOM),NATOM,52)
+      ELSE
+         CALL SETATM(WORK(KDATOM),NATOM,53)
+      END IF
+      CALL DEF_EFT1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                TRLESS,WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_efg */
+      SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,
+     &                    WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Define operator for fourth derivative nuclear attraction 
+C     integrals.
+C
+C     Written by: J. Thyssen - Sept 30 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxorb.h>
+      PARAMETER(D1 = 1.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8, 
+     &          PNPREFIX*6, PLBNAME*1
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND),TRLESS
+#include <dcbxpr.h>
+#include <dcbexp.h>
+Ctec
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+Ctec
+      ITYP = 0
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      IF (TRLESS) THEN
+         PNPREFIX = 'EFT'
+         PLBNAME  = 'V'
+      ELSE
+         PNPREFIX = 'EFTNTL'
+         PLBNAME  = 'v'
+      END IF
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+         DO 200 ICOOR1 = 1, 3
+         DO 201 ICOOR2 = ICOOR1, 3
+         DO 202 ICOOR3 = ICOOR2, 3
+         DO 203 ICOOR4 = ICOOR3, 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  PNAME        = PNPREFIX//
+     &               CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &               CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//
+     &               CHRNOS(IATOM/10)//
+     &               CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(1) = 
+     &                 CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &                 CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//
+     &                 PLBNAME//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  IF (TRLESS) THEN
+                     CALL OP1IND(
+     &                  CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &                  CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//'V',
+     &                  IPEFT(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+                  ELSE
+                     CALL OP1IND(
+     &                  CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
+     &                  CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//'v',
+     &                  IPEFTNTL(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+                  END IF
+               END IF
+ 300        CONTINUE
+ 203     CONTINUE
+ 202     CONTINUE
+ 201     CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      IF(IPRINT.GE.1) THEN
+         DO I = 1,ITYP
+            IF (TRLESS) THEN
+               INDXPR = LEXPP(IPEFT(I))
+            ELSE
+               INDXPR = LEXPP(IPEFTNTL(I))
+            END IF
+            CALL PRSYMB(LUPRI,'.',75,0)
+            WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &        'Component no.',I,':',PRPNAM(INDXPR)
+            CALL PRSYMB(LUPRI,'.',75,0)
+            CALL WRIXPR(I,INDXPR)
+         ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSPN */
       SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -824,6 +963,26 @@ C
         CALL DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
+C     Non-traceless electric field third derivatives
+C
+      IF(EFTNTL) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 
+     &     'Non-traceless electric field third derivatives'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Traceless electric field third derivatives
+C
+      IF(EFT) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 
+     &     'Traceless electric field third derivatives'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,WORK,LWORK,IPRPRP)
+      ENDIF
+C
 C     Nuclear quadrupole coupling
 C
       IF(NQCC) THEN
@@ -916,6 +1075,18 @@ C     Electric field gradients
 C
       IF(EFG) THEN
         CALL PRP_EFG(EXPVAL,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     non-traceless EFT's (electric field third derivatives)
+C
+      IF(EFT) THEN
+        CALL PRP_EFT(EXPVAL,.FALSE.,WORK(KFREE),LFREE)
+      ENDIF
+C
+C     Traceless EFT's (electric field third derivatives)
+C
+      IF(EFT) THEN
+        CALL PRP_EFT(EXPVAL,.TRUE.,WORK(KFREE),LFREE)
       ENDIF
 C
 C     Nuclear quadrupole coupling
@@ -1402,6 +1573,539 @@ C
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
      &      '  1 a.u. = ',9.71736E21,' V*m**-2' 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prp_eft */
+      SUBROUTINE PRP_EFT(EXPVAL,TRLESS,WORK,LWORK)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Oct 13 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <dcbprp.h>
+#include <dcbexp.h>
+#include <dcbxlr.h>
+#include <nuclei.h>
+C
+      DIMENSION EXPVAL(*),WORK(*)
+      LOGICAL   TRLESS
+C
+#include <memint.h>
+C
+C     Allocate memory
+C
+      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP,15*NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KNUC ,15*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEL  ,15*NUCDEP,WORK,KFREE,LFREE)
+C
+      IF (TRLESS) THEN
+         CALL SETATM(WORK(KATOM),NATOM,52)
+      ELSE
+         CALL SETATM(WORK(KATOM),NATOM,53)
+      END IF
+      CALL PRP_EFT1(EXPVAL,WORK(KATOM),
+     &              WORK(KTEMP),WORK(KEL),WORK(KNUC),TRLESS)
+      CALL MEMREL('PRP_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prp_EFT */
+      SUBROUTINE PRP_EFT1(EXPVAL,DOATOM,TEMPEFT,EFTEL,EFTNUC,
+     &                    TRLESS)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Oct 19 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+C
+      PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00, 
+     &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00, 
+     &           D35 = 35.0D00, DTHR = 1.0D-10)
+C
+#include <dcbprp.h>
+#include <dcbexp.h>
+#include <dcbxlr.h>
+#include <nuclei.h>
+#include <chrxyz.h>
+#include <symmet.h>
+      LOGICAL   DOATOM(*), TRLESS
+      DIMENSION EXPVAL(*),TEMPEFT(15,*), EFTEL(15,*),
+     &          EFTNUC(15,*)
+      DIMENSION ITR(3,6),DTRNUC(6),DTREL(6)
+      DATA ITR  / 1, 4, 6,
+     &            2, 7, 9,
+     &            3, 8,10,
+     &            4,11,13,
+     &            5,12,14,
+     &            6,13,15/
+C                
+#include <ibtfun.h>
+C
+#include <memint.h>
+C     
+      CALL QENTER('PRP_EFT')
+C     
+      CALL PRSYMB(LUPRI,'-',76,0)
+      IF (TRLESS) THEN
+         WRITE(LUPRI,'(/A/)')
+     &        '* Traceless electric field third derivative :'
+      ELSE
+         WRITE(LUPRI,'(/A/)')
+     &        '* Non-traceless electric field third derivative :'
+      END IF
+C     
+C     **************************************
+C     ***  Nuclear contribution to EFT:  ***
+C     **************************************
+C
+      CALL NUCEFT(EFTNUC)
+C     
+C     *****************************************
+C     ***  Electronic contribution to EFT:  ***
+C     *****************************************
+C
+C     Gather expectation values and take 
+C     symmetry combinations.
+C
+      CALL DZERO(TEMPEFT,15*NUCIND)
+      CALL DZERO(EFTEL  ,15*NUCDEP)
+      ITYP = 0
+      DO 100 IATOM = 1, NUCIND
+c        IF (.NOT. DOATOM(IATOM)) GOTO 100
+         IELEM = 0
+         DO ICOOR1 = 1, 3
+         DO ICOOR2 = ICOOR1, 3
+         DO ICOOR3 = ICOOR2, 3
+         DO ICOOR4 = ICOOR3, 3
+            IELEM = IELEM + 1
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  IF (TRLESS) THEN
+                     IPE = IPEFT(ITYP)
+                  ELSE
+                     IPE = IPEFTNTL(ITYP)
+                  END IF
+                  TEMPEFT(IELEM,IATOM) =
+     &               TEMPEFT(IELEM,IATOM) +
+     &               EXPVAL(IPE) / NUCDEG(IATOM)
+               END IF
+ 300        CONTINUE
+         END DO
+         END DO
+         END DO
+         END DO
+ 100  CONTINUE
+C
+C     Assign value for individual centers
+C
+      NATOM = 0
+      DO 110 IATOM = 1,NUCIND
+c        IF (.NOT. DOATOM(IATOM)) GOTO 110
+         DO IREPC = 0,MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+               NATOM = NATOM + 1
+               IELEM = 0
+               DO ICOOR1 = 1, 3
+               DO ICOOR2 = ICOOR1, 3
+               DO ICOOR3 = ICOOR2, 3
+               DO ICOOR4 = ICOOR3, 3
+                  IELEM = IELEM + 1
+                  ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+                  EFTEL(IELEM,NATOM) =
+     &               TEMPEFT(IELEM,IATOM) * PT(IBTAND(ISYMIJ,IREPC))
+               END DO
+               END DO
+               END DO
+               END DO
+            END IF
+         END DO
+ 110  CONTINUE
+C
+C     *****************************************
+C     ***  Output section 1: non-traceless  ***
+C     *****************************************
+C
+      IF (TRLESS) GOTO 200
+      CALL PRSYMB(LUPRI,'-',72,2)
+      WRITE(LUPRI,'(14X,A/)')
+     &     'Non-traceless electric field third derivatives'
+      WRITE(LUPRI,'(14X,A/)')
+     &     'Individual (non-zero) components'
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'Electronic  ','Nuclear     ','Total       '
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'contribution','contribution','contribution'
+      CALL PRSYMB(LUPRI,'-',72,2)
+      DO IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+            IELEM = 0
+            DO ICOOR1=1,3
+            DO ICOOR2=ICOOR1,3
+            DO ICOOR3=ICOOR2,3
+            DO ICOOR4=ICOOR3,3
+               IELEM = IELEM + 1
+               EFTTOT = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
+               IF (ABS(EFTTOT).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))') 
+     &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
+     &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
+     &                 EFTEL (IELEM,IATOM),' au ',
+     &                 EFTNUC(IELEM,IATOM),' au ',
+     &                 EFTTOT             ,' au '
+            ENDDO
+            ENDDO
+            ENDDO
+            ENDDO
+         ENDIF
+      ENDDO
+C
+      DO IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+C
+C          Trace 1 = V_xxaa = V_xxxx + V_xxyy + V_xxzz
+C          Trace 2 = V_xyaa = V_xxxy + V_xyyy + V_xyzz
+C          Trace 3 = V_xzaa = V_xxxz + V_xyyz + V_xzzz
+C          Trace 4 = V_yyaa = V_xxyy + V_yyyy + V_yyzz
+C          Trace 5 = V_yzaa = V_xxyz + V_yyyz + V_yzzz
+C          Trace 6 = V_zzaa = V_xxzz + V_yyzz + V_zzzz
+C          (aa is short for sum over xx,yy, and zz)
+C
+           DO I = 1,6
+               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) + 
+     &                     EFTNUC(ITR(2,I),IATOM) + 
+     &                     EFTNUC(ITR(3,I),IATOM)
+               DTREL(I)  = EFTEL (ITR(1,I),IATOM) + 
+     &                     EFTEL (ITR(2,I),IATOM) + 
+     &                     EFTEL (ITR(3,I),IATOM)
+            END DO
+C
+C           Subtract linear kombinations of traces...
+C           Documented in J. Thyssen et al. (unpublished)
+C
+C           V_xxxx = V_xxxx - 27/35 V_xxaa +  3/35 V_yyaa +  3/35 V_zzaa
+C           V_xxxy = V_xxxy -  3/ 7 V_xyaa
+C           V_xxxz = V_xxxz -  3/ 7 V_xzaa
+C           V_xxyy = V_xxyy -  4/35 V_xxaa -  4/35 V_yyaa +  1/35 V_zzaa
+C           V_xxyz = V_xxyz -  1/ 7 V_yzaa
+C           V_xxzz = V_xxzz -  4/35 V_xxaa +  1/35 V_yyaa -  4/35 V_zzaa
+C           V_xyyy = V_xyyy -  3/ 7 V_xyaa
+C           V_xyyz = V_xyyz -  1/ 7 V_xzaa
+C           V_xyzz = V_xyzz -  1/ 7 V_xyaa
+C           V_xzzz = V_xzzz -  3/ 7 V_xzaa
+C           V_yyyy = V_yyyy +  3/35 V_xxaa - 27/35 V_yyaa +  3/35 V_zzaa
+C           V_yyyz = V_yyyz -  3/ 7 V_yzaa
+C           V_yyzz = V_yyzz +  1/35 V_xxaa -  4/35 V_yyaa -  4/35 V_zzaa
+C           V_yzzz = V_yzzz -  3/ 7 V_yzaa
+C           V_zzzz = V_yyyy +  3/35 V_xxaa +  3/35 V_yyaa - 27/35 V_zzaa
+C
+            EFTEL( 1,IATOM) = EFTEL( 1,IATOM) -
+     &         D27/D35*DTREL(1) +  D3/D35*DTREL(4) +  D3/D35*DTREL(6)
+            EFTEL( 2,IATOM) = EFTEL( 2,IATOM) - D3/D7*DTREL(2)
+            EFTEL( 3,IATOM) = EFTEL( 3,IATOM) - D3/D7*DTREL(3)
+            EFTEL( 4,IATOM) = EFTEL( 4,IATOM) +
+     &          -D4/D35*DTREL(1) -  D4/D35*DTREL(4) +  D1/D35*DTREL(6)
+            EFTEL( 5,IATOM) = EFTEL( 5,IATOM) - D1/D7*DTREL(5)
+            EFTEL( 6,IATOM) = EFTEL( 6,IATOM) +
+     &          -D4/D35*DTREL(1) +  D1/D35*DTREL(4) -  D4/D35*DTREL(6)
+            EFTEL( 7,IATOM) = EFTEL( 7,IATOM) - D3/D7*DTREL(2)
+            EFTEL( 8,IATOM) = EFTEL( 8,IATOM) - D1/D7*DTREL(3)
+            EFTEL( 9,IATOM) = EFTEL( 9,IATOM) - D1/D7*DTREL(2)
+            EFTEL(10,IATOM) = EFTEL(10,IATOM) - D3/D7*DTREL(3)
+            EFTEL(11,IATOM) = EFTEL(11,IATOM) +
+     &           D3/D35*DTREL(1) - D27/D35*DTREL(4) +  D3/D35*DTREL(6)
+            EFTEL(12,IATOM) = EFTEL(12,IATOM) - D3/D7*DTREL(5)
+            EFTEL(13,IATOM) = EFTEL(13,IATOM) +
+     &           D1/D35*DTREL(1) -  D4/D35*DTREL(4) -  D4/D35*DTREL(6)
+            EFTEL(14,IATOM) = EFTEL(14,IATOM) - D3/D7*DTREL(5)
+            EFTEL(15,IATOM) = EFTEL(15,IATOM) +
+     &           D3/D35*DTREL(1) +  D3/D35*DTREL(4) - D27/D35*DTREL(6)
+         END IF
+C
+      END DO
+C
+C     *************************************
+C     ***  Output section 2: traceless  ***
+C     *************************************
+C
+ 200  CONTINUE
+      CALL PRSYMB(LUPRI,'-',72,2)
+      WRITE(LUPRI,'(14X,A)')
+     &     '"traceless" electric field third derivatives',
+     &     'after applying the Laplace equation: habcc = 0',
+     &     '(einstein summation convention).',
+     &     'See, for example:',
+     &     ' A. D. McLean & M. Yoshimine, JCP 47, 1927 (1967)',
+     &     ' J. Thyssen, P. Schwerdfeger, M. Bender, W. Nazarewicz,',
+     &     '    and P. B. Semmes, PRA 63, 022505 (2001).'
+      WRITE(LUPRI,'(14X,A/)')
+     &     'Individual (non-zero) components'
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'Electronic  ','Nuclear     ','Total       '
+      WRITE(LUPRI,'(14X,3(A12,11X))')
+     &     'contribution','contribution','contribution'
+      CALL PRSYMB(LUPRI,'-',72,2)
+      DO IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+            IELEM = 0
+            DO ICOOR1=1,3
+            DO ICOOR2=ICOOR1,3
+            DO ICOOR3=ICOOR2,3
+            DO ICOOR4=ICOOR3,3
+               IELEM = IELEM + 1
+               EFTTOT = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
+               IF (ABS(EFTTOT).GT.1.0D-12)
+     &            WRITE(LUPRI,'(2X,A5,3(3X,F16.10,A))') 
+     &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
+     &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
+     &                 EFTEL (IELEM,IATOM),' au ',
+     &                 EFTNUC(IELEM,IATOM),' au ',
+     &                 EFTTOT             ,' au '
+            ENDDO
+            ENDDO
+            ENDDO
+            ENDDO
+         ENDIF
+      ENDDO
+C
+C     Double checkt to see if Laplace equation is fullfilled.
+C     It should be, or my formulas are wrong!
+C
+      DO IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+C
+            DO I = 1,6
+               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) + 
+     &                     EFTNUC(ITR(2,I),IATOM) + 
+     &                     EFTNUC(ITR(3,I),IATOM)
+               DTREL(I)  = EFTEL (ITR(1,I),IATOM) + 
+     &                     EFTEL (ITR(2,I),IATOM) + 
+     &                     EFTEL (ITR(3,I),IATOM)
+               IF (DTREL (I) .GE. DTHR .OR.
+     &             DTRNUC(I) .GE. DTHR) THEN
+                  WRITE (LUPRI ,'(/2X,A9,A4,/)')
+     &               'Nucleus: ',NAMDEP(IATOM)
+                  WRITE(LUPRI,'(2X,A,I1,A,1P,D20.10)')
+     &               'Laplace equation ',I,' (elec. part): ',DTREL(I)
+                  WRITE(LUPRI,'(2X,A,I1,A,1P,D20.10)')
+     &               'Laplace equation ',I,' (nuc. part) : ',DTRNUC(I)
+               END IF
+            END DO
+         END IF
+C
+C
+      END DO
+C     
+C
+      CALL QEXIT('PRP_EFT')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck nuceft */
+      SUBROUTINE NUCEFT(EFTNUC)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Nov 15 1999
+C     Nuclear contribution to electric field third-derivatives.
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+      PARAMETER (D3 = 3.0D0, D9 = 9.0D00, D15 = 15.0D0,
+     &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
+      DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
+#include <nuclei.h>
+#include <symmet.h>
+C
+#include <ibtfun.h>
+C
+C
+C     Initialization of GEOM
+C     (copied from abacus/hergp.F:CMMASS)
+C
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = NINT(CHARGE(IATOM))
+                  DO KCOOR = 1, 3
+                     GEOM(3*JATOM + KCOOR) =
+     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    *CORD(KCOOR,IATOM)
+                  END DO
+                  JATOM = JATOM + 1
+            END IF
+         END DO
+      END DO
+C
+      CALL DZERO(EFTNUC,15*NUCDEP)
+      KK = 1
+      NATOM = 1
+      DO 10 I = 1, NUCIND
+         DO 20 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+               LL = 1
+               DO 100 I2 = 1, NUCIND
+                  IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
+                  DO 110 ISYM = 0, MAXOPR
+                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                        IF (LL .NE. KK) THEN
+                           XCOOR = GEOM(LL) - GEOM(KK)
+                           YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                           ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                           R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                           R5 = R2*R2*SQRT(R2)
+                           R7 = R5*R2
+                           R9 = R7*R2
+C
+C                          V_xxxx 
+C
+                           EFTNUC( 1,NATOM) = EFTNUC( 1,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D9 / R5 
+     &                        -  D90 * (XCOOR**2) / R7
+     &                        + D105 * (XCOOR**4) / R9 )
+C
+C                          V_xxxy 
+C
+                           EFTNUC( 2,NATOM) = EFTNUC( 2,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * XCOOR*YCOOR / R7
+     &                        + D105 * (XCOOR**3) * YCOOR / R9 )
+C
+C                          V_xxxz
+C
+                           EFTNUC( 3,NATOM) = EFTNUC( 3,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * XCOOR*ZCOOR / R7
+     &                        + D105 * (XCOOR**3) * ZCOOR / R9 )
+C
+C                          V_xxyy
+C
+                           EFTNUC( 4,NATOM) = EFTNUC( 4,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D3 / R5
+     &                        -  D15 * XCOOR**2 / R7     
+     &                        -  D15 * YCOOR**2 / R7     
+     &                        + D105 * (XCOOR**2) * (YCOOR**2) / R9 )
+C
+C                          V_xxyz
+C
+                           EFTNUC( 5,NATOM) = EFTNUC( 5,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D15 * YCOOR * ZCOOR / R7     
+     &                        + D105 * (XCOOR**2) * YCOOR * ZCOOR / R9 )
+C
+C                          V_xxzz
+C
+                           EFTNUC( 6,NATOM) = EFTNUC( 6,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D3 / R5
+     &                        -  D15 * XCOOR**2 / R7     
+     &                        -  D15 * ZCOOR**2 / R7     
+     &                        + D105 * (XCOOR**2) * (ZCOOR**2) / R9 )
+C
+C                          V_xyyy
+C
+                           EFTNUC( 7,NATOM) = EFTNUC( 7,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * XCOOR*YCOOR / R7
+     &                        + D105 * (YCOOR**3) * XCOOR / R9 )
+C
+C                          V_xyyz
+C
+                           EFTNUC( 8,NATOM) = EFTNUC( 8,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D15 * XCOOR * ZCOOR / R7     
+     &                        + D105 * (YCOOR**2) * XCOOR * ZCOOR / R9 )
+C
+C                          V_xyzz
+C
+                           EFTNUC( 9,NATOM) = EFTNUC( 9,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D15 * XCOOR * YCOOR / R7     
+     &                        + D105 * (ZCOOR**2) * XCOOR * YCOOR / R9 )
+C
+C                          V_xzzz
+C
+                           EFTNUC(10,NATOM) = EFTNUC(10,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * XCOOR*ZCOOR / R7
+     &                        + D105 * (ZCOOR**3) * XCOOR / R9 )
+C
+C                          V_yyyy
+C
+                           EFTNUC(11,NATOM) = EFTNUC(11,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D9 / R5 
+     &                        -  D90 * (YCOOR**2) / R7
+     &                        + D105 * (YCOOR**4) / R9 )
+C
+C                          V_yyyz
+C
+                           EFTNUC(12,NATOM) = EFTNUC(12,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * YCOOR*ZCOOR / R7
+     &                        + D105 * (YCOOR**3) * ZCOOR / R9 )
+C
+C                          V_yyzz
+C
+                           EFTNUC(13,NATOM) = EFTNUC(13,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D3 / R5
+     &                        -  D15 * YCOOR**2 / R7     
+     &                        -  D15 * ZCOOR**2 / R7     
+     &                        + D105 * (YCOOR**2) * (ZCOOR**2) / R9 )
+C
+C                          V_yzzz
+C
+                           EFTNUC(14,NATOM) = EFTNUC(14,NATOM)
+     &                        + CHARGE(I2) * (
+     &                        -  D45 * YCOOR*ZCOOR / R7
+     &                        + D105 * (ZCOOR**3) * YCOOR / R9 )
+C
+C                          V_zzzz
+C
+                           EFTNUC(15,NATOM) = EFTNUC(15,NATOM)
+     &                        + CHARGE(I2) * (
+     &                            D9 / R5 
+     &                        -  D90 * (ZCOOR**2) / R7
+     &                        + D105 * (ZCOOR**4) / R9 )
+                        END IF
+                        LL = LL + 3
+                     END IF
+ 110              CONTINUE
+ 100           CONTINUE
+               NATOM = NATOM + 1
+               KK = KK + 3
+            END IF
+ 20      CONTINUE
+ 10   CONTINUE
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
