@@ -141,6 +141,8 @@ echo
 echo 'FINDING TESTS...'
 echo
 short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction'
+medium_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction'
+long_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction'
 all_test=
 for ff in [0-9]*; do
    if test -d $ff; then
@@ -183,6 +185,14 @@ if [ ! -z "$arg_tests" ]; then
       "short")
          tests=$short_test;
          RUNTYPE="short"; export RUNTYPE
+         ;;
+      "medium")
+         tests=$medium_test;
+         RUNTYPE="medium"; export RUNTYPE
+         ;;
+      "long")
+         tests=$long_test;
+         RUNTYPE="long"; export RUNTYPE
          ;;
       "all")
          tests=$all_test
