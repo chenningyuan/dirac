@@ -849,7 +849,8 @@ C
       PARAMETER ( D0 = 0.0 D00, D1 = 1.0 D00, D2 = 2.0 D00 )
 C
       DIMENSION FOCK(*),CMO(*),WORK(*)
-      DIMENSION DTMP2(N2BBASX,NZ,NFMAT),DMAT(*),DTMP1(N2BBASXQ)
+      DIMENSION DTMP2(N2BBASX,NZ,NFMAT),DMAT(*),
+      DIMENSION DTMP1(N2BBASXQ*NFMAT)
       DIMENSION IQBF(4)
 Ctest
       DIMENSION DVMO(1,1,4)
@@ -955,11 +956,11 @@ C     Transform to sorted basis
 C
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
-        CALL BSTOBU(DTMP1(1+(I-1)*N2BASX),NZ,WORK(KFREE),LFREE)
+        CALL BSTOBU(DTMP1(1+(I-1)*N2BBASXQ),NZ,WORK(KFREE),LFREE)
         IF(IPRINT.GE.5) THEN
           CALL HEADER('GTCNV1: FOCK After BSTOBU to unsorted basis',-1)
           WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',I
-          CALL PRQMAT(DTMP1(1+(I-1)*N2BASX),NTBAS(0),NTBAS(0),
+          CALL PRQMAT(DTMP1(1+(I-1)*N2BBASXQ),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),NZ,
      &                IPQTOQ(1,IREP),LUPRI)
         ENDIF
