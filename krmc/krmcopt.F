@@ -670,7 +670,7 @@ C        FC      - the inactive Fock matrix
 C        FCAC    - the inactive Fock matrix with active indices
 C        FV      - the active Fock matrix
 C        FQ      - the Q Fock matrix
-CC     
+C     
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision : 
@@ -798,7 +798,7 @@ C
             SAVEDFGEN = .TRUE.
          END IF
 C
-         CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
+         CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
       END IF
       IF (NZXOPP .GT. 0) THEN
          CALL DZERO(GOEP,NZXOPPQ)
@@ -813,7 +813,7 @@ C
          IF (.NOT. SAVEDFGEN) 
      &        CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),
      &        NORBT * NASHT * NZ)
-         CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
+         CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
       END IF
 C
 CEXTREME DEBUG
@@ -907,7 +907,6 @@ C
          CALL DAXPY(N2ORBXQ,D1,WORK(KDV),1,WORK(KDC),1)
       END IF
       CALL WRTKRMC(LUKRM3,'DTMO    ',WORK(KDC),N2ORBXQ)
-      CALL MEMREL('RMAKDM.SAVE-TOT',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL MEMREL('RORBGRD',WORK,1,KFRSAV,KFREE,LFREE)
 C
