@@ -357,6 +357,7 @@ main/get_time.o \\
 gp/gpjth_c.o \\
 relccsd/ccunix.o
 
+OBJSLAVE = abacus/herpar.o
 
 PDLIB = pdpack/pdlib.a
 EOF
@@ -509,7 +510,7 @@ CCM_OBJ :
 	cd relccsd ; \$(MAKE) all
 
 SLAVE_OBJ :
-	cd abacus/par  ; \$(MAKE) slave
+	cd abacus  ; \$(MAKE) slave
 
 CI_OBJ:
 	cd dirrci ; \$(MAKE) all
