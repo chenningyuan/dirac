@@ -1848,6 +1848,9 @@ C
       CALL QENTER('REORD')
 C
    
+      IPRJTH = IPRSCF
+      IPRSCF = 10
+
       DO 10 I = 1,NFSYM
          IF (IREORD(I).EQ.0) GOTO 10
          IF (IPRSCF.GE.10) THEN
@@ -1865,7 +1868,7 @@ C
 C        Reorder coefficients
 C
          CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTEMP),NFBAS(I,0),NORB(I),NZ,
-     &              IMOORD(1,I),IREORD(I))
+     &              IMOORD(1,I),IREORD(I),NPSH(I))
 C
 C        Release memory
 C
@@ -1878,13 +1881,15 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
          END IF
  10   CONTINUE
+      IPRSCF = IPRJTH
       CALL FLSHFO(LUPRI)
       CALL QEXIT('REORD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reor1 */
-      SUBROUTINE REOR1(CMO,CMOBCK,NBASI,NORBI,NZ,IORDER,NORDER)
+      SUBROUTINE REOR1(CMO,CMOBCK,NBASI,NORBI,NZ,IORDER,NORDER,
+     &                 NPOSITRON)
 C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
@@ -1901,11 +1906,11 @@ C
 C
       CALL QENTER('REOR1')
 C
-      DO I = 1,NORDER*2,2
+      DO I = 1,NORDER
          DO IZ = 1,NZ
-            IORB1 = IORDER(I)
-            IORB2 = IORDER(I+1)
-            CALL DCOPY(NBASI,CMOBCK(1,IORB2,IZ),1,CMO(1,IORB1,IZ),1)
+            IORB_S = I+NPOSITRON
+            IORB_D = IORDER(I)+NPOSITRON
+            CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,CMO(1,IORB_D,IZ),1)
          END DO
       END DO
 C

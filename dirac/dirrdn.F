@@ -604,14 +604,18 @@ C
          CALL QUIT('Program stopped in JOBINP, error in prompt.')
       END IF
     2 CONTINUE
+#ifdef MOD_GEO
         CALL MININP(WORD)
+#endif
         GO TO 200
     3 CONTINUE
         GO TO 200
     4 CONTINUE
         GO TO 200
     1 CONTINUE
+#ifdef MOD_GEO
       CALL MININP(WORD)
+#endif
 C
       RETURN
       END
@@ -634,6 +638,7 @@ C*****************************************************************************
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER CTEMP*72
       DIMENSION WORK(LWORK)
 C
 #include <dcbgen.h>
@@ -651,7 +656,7 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.XXXXXX','.EIGPRI','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.DYNSEL','.REORDE','.DIISMO','.DIISAO'/
+     &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -877,39 +882,28 @@ C            (default is dynamic overlap selection, see below)
                     DYNSEL = .TRUE.
                GO TO 100
    27          CONTINUE
-C&&& DYNSEL: Dynamic overlap selection 
+C&&& NODYNSEL: No Dynamic overlap selection 
 C            (new overlap selection matrix formed in each iteration)
-                  OVLSEL = .TRUE.
-                  READ(LUCMD,*) ITMP
-                  IF (ITMP .EQ. 0) THEN
-                     DYNSEL = .FALSE.
-                  ELSE
-                     DYNSEL = .TRUE.
-                  END IF
+                    DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
 C&&& LMOORD: Reorder MO orbitals (only on restart on coefficients)
 C                 First read the number of orbital reorderings
 C                    in each fermion corep.
 C
+c                 CALL QUIT('not implemented yet...')
                   LMOORD = .TRUE.
-                  READ(LUCMD,*) (IREORD(I),I=1,NFSYM)
-C
-C                 Then read in the reordering. 
-C                    Ie. >.REORDER MO's
-C                        > 3 0
-C                        > 1 2 2 3 3 1
-C                    Means: in fermion symmetry substitue orbital
-C                           1 with 2, 2 with 3 and 3 with 1
-C                           Before: 1 2 3
-C                           Now   : 2 3 1
-C
                   DO I = 1,NFSYM
-                     IF (IREORD(I).GT.MXREORD) 
-     &                  CALL QUIT('You cannot reorder that many'//
-     &                            ' orbitals...')
-                     IF (IREORD(I).GT.0) 
-     &                  READ(LUCMD,*) (IMOORD(J,I),J=1,2*IREORD(I))
+                     READ(LUCMD,'(A72)') CTEMP
+                     CALL READREORDER(CTEMP,IREORD(I),IMOORD(1,I),
+     &                                MXREORD)
+                     IF (IREORD(I) .LT. 0) THEN
+                        WRITE(LUPRI,'(A,I3,A)')
+     &                     'ERROR! You cannot reorder more than',
+     &                     MXREORD,' orbitals!!!'
+                        CALL QUIT('You cannot reorder that'//
+     &                            ' many orbitals')
+                      END IF
                   END DO
                GO TO 100
    29          CONTINUE
@@ -1023,15 +1017,17 @@ C
      &     DAMPFC
       ENDIF
       IF (LMOORD) THEN
-          WRITE(LUPRI,'(1X,A)') '* Reorder orbitals...'
-          DO I = 1,NFSYM
-             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
-             DO J = 1,IREORD(I)*2,2
-                WRITE(LUPRI,'(5X,A,I3,A,I3)') 'Substitute orbital ',
-     &            IMOORD(J,I),' with orbital ',IMOORD(J+1,I)
-             END DO
-             IF (IREORD(I).EQ.0) WRITE(LUPRI,'(5X,A)') 'No reordering'
-          END DO
+         WRITE(LUPRI,'(1X,A)') '* Reorder orbitals...'
+         WRITE(LUPRI,'(3X,A)') '- new ordering of orbitals...'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
+            IF (IREORD(I) .GT. 0) THEN
+               WRITE(LUPRI,'(5X,50(I3,A))') 
+     &            (IMOORD(J,I),',',J=1,IREORD(I))
+            ELSE
+               WRITE(LUPRI,'(5X,A)') 'No reordering'
+            END IF
+         END DO
       END IF
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
@@ -2920,5 +2916,24 @@ C
         ENDDO
       ENDDO
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck READREORDER*/
+      SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
+C*****************************************************************************
+C
+C     Readin new order of orbitals
+C
+C     Written by J. Thyssen, Sep 1 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION IMOORD(MXREORD)
+      CHARACTER STRING*72
+
+      string(72:72) = char(0)
+      call c_readreorder(string,ireord,imoord,mxreord)
       RETURN
       END
