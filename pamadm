@@ -53,20 +53,12 @@ setup()
    noclobber=
    EXPORTTAR=1
    if [ -n "$PAMADM" ]; then
-      CCFOCKSPMOD=1
       ERITAR=1
       ESRMOD=1
       XQRMOD=1
       XPPMOD=1
       DFTMOD=1
       echo " - DIRAC administrator ..."
-   fi
-   if [ -n "$CCFOCKSPMOD" ]; then
-      CCFOCKSPFLG='-DMOD_FOCKSPCC'
-      CCFOCKSPOBJ='$(CCFOCKSPOBJS)'
-      CCFOCKSPMAK=CCFOCKSP_OBJ
-      CCFOCKSPTAR=1
-      echo " - Fock space CC module (FOCKSPCC)"
    fi
    #
    #  DFT
@@ -227,10 +219,9 @@ make_configure()
    echo "*** Making ./configure"
    echo 
    echo "#!/bin/sh" > configure
-   echo "MODS=\" $ERIFLG $CCFOCKSPFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG\"" >> configure
+   echo "MODS=\" $ERIFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG\"" >> configure
    echo DFTFLG=$DFTTAR >> configure
    echo ERIFLG=$ERITAR >> configure
-   echo CCFOCKSPFLG=$CCFOCKSPTAR   >> configure
    echo ESRFLG=$ESRTAR >> configure
    echo XQRFLG=$XQRTAR >> configure
    echo XPPFLG=$XPPTAR >> configure
@@ -273,12 +264,6 @@ EOF
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,Makefile.in} 2>> export.log
-EOF
-   fi
-   if [ "$CCFOCKSPTAR" ]; then
-      cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/relccsd/ccfocksp/{*.F,Makefile.in} \\
-              2>> export.log
 EOF
    fi
    if [ "$ESRTAR" ]; then
@@ -325,8 +310,8 @@ make_makefile()
 {
    echo "*** Making Makefile"
    echo
-   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $DFTOBJ $ERIOBJ $XPPOBJ"
-   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $DFTMAK $ERIMAK $XPPMAK"
+   AUXOBJ="$ESROBJ $XQROBJ $DFTOBJ $ERIOBJ $XPPOBJ"
+   AUXMAK="$ESRMAK $XQRMAK $DFTMAK $ERIMAK $XPPMAK"
    #
    # Write current Makefile
    #
@@ -367,7 +352,7 @@ moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
-relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o \\
+relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 \$(LUCITA_OBJS)
 
@@ -399,7 +384,7 @@ RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
-relccsd/ccunix.o
+relccsd/ccunix.o relccsd/ccfspc.o
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
@@ -454,16 +439,6 @@ prp/xpp/pamxpp.o
 EOF
 fi
 #
-# Object files for CC Fock space
-#
-if [ -n "$CCFOCKSPMOD" ]; then
-cat <<EOF>> Makefile
-
-CCFOCKSPOBJS = \\
-relccsd/ccfocksp/ccfspc.o
-EOF
-fi
-#
 #  Object-files for DFT module
 #
 if [ -n "$DFTMOD" ]; then
@@ -502,7 +477,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
+TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
 
 NOCPPFS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -538,17 +513,15 @@ EOF
 #
 cat <<EOF>> Makefile
 relccsd.x: GP_OBJ PD_OBJ \\
-	CCM_OBJ $CCFOCKSPMAK
+	CCM_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
-	$CCFOCKSPOBJ \\
 	\$(LIB_LIST) \$(PDLIB)
 
 mpiccsd.x: GP_OBJ PD_OBJ \\
-	CCM_OBJ $CCFOCKSPMAK
+	CCM_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/relccsd.x \\
 	\$(RELCCSD_MAIN) \$(RELCCSD_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
-	$CCFOCKSPOBJ \\
 	\$(LIB_LIST) \$(PDLIB) \\
 	\$(MPI_LIB_PATH) \$(MPI_LIB)
 
@@ -611,9 +584,6 @@ fi
 if [ -n "$XQRMOD" ]; then
    echo '	cd prp/xqr   ; $(MAKE) clean' >> Makefile
 fi
-if [ -n "$CCFOCKSPMOD" ]; then
-   echo '	cd relccsd/ccfocksp  ; $(MAKE) clean' >> Makefile
-fi
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
@@ -674,13 +644,6 @@ XPP_OBJ :
 	cd prp/xpp ; \$(MAKE) all
 EOF
 fi
-if [ -n "$CCFOCKSPMOD" ]; then
-cat <<EOF>> Makefile
-
-CCFOCKSP_OBJ :
-	cd relccsd/ccfocksp ; \$(MAKE) all
-EOF
-fi
 if [ -n "$DFTMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -721,9 +684,6 @@ EOF
 #  Add makedepend targets
 #
 TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
-if [ -n "$CCFOCKSPMOD" ]; then
-   TEMP="$TEMP relccsd/ccfocksp"
-fi
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
 fi
@@ -770,9 +730,6 @@ while [ -n "$1" ]; do
    case "$1" in
       -adm|-ad|-a)
          PAMADM=1
-         ;;
-      -ccfocksp|-c)
-         CCFOCKSPMOD=1
          ;;
       -dft)
          DFTMOD=1

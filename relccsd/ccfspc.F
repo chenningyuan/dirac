@@ -31,10 +31,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../param.inc"
-#include "../complex.inc"
-#include "../symm.inc"
-#include "../ccpar.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -253,11 +253,11 @@ C
       INTEGER ICURFSS
 C---------------Common Blocks--------------------------------------
 C
-#include "../param.inc"
-#include "../complex.inc"
-#include "../symm.inc"
-#include "../ccpar.inc"
-#include "../files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "ccpar.inc"
+#include "files.inc"
 C
 C---------------Local variables -----------------------------------
       PARAMETER (NDIMH=30,NDIMH2=NDIMH*NDIMH)
@@ -465,10 +465,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../files.inc"
-#include "../complex.inc"
-#include "../param.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -774,9 +774,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../complex.inc"
-#include "../param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -871,9 +871,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../complex.inc"
-#include "../param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1034,9 +1034,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../complex.inc"
-#include "../param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1186,11 +1186,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../files.inc"
-#include "../complex.inc"
-#include "../param.inc"
-#include "../eqns.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1401,9 +1401,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../symm.inc"
-#include "../complex.inc"
-#include "../param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
