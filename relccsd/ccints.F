@@ -41,8 +41,6 @@ C
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
       INCLUDE "results.inc"
-      INCLUDE "files.inc"
-      INCLUDE "inpt.inc"
 C
 C---------------Local variables--------------------------------------
 C
