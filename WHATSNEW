@@ -1,3 +1,22 @@
+* July 19 1999
+
+  - Bugfix for allocation of memory in Relccsd (Luuk)
+  - Minor bugfix in 'pam' shell script (tsaue)
+
+* June 3 1999
+
+  - Bugfix for parallel MVO calculations (Luuk)
+
+* June 1 1999
+
+  - Merged in hjj and panor's changes to RPA module,
+    including a bugfix for operators with different time reversal
+    symmetry.
+
+* May 27 1999
+
+  - Modified virtual orbitals merged with 4-index transformation (Luuk)
+
 * May 20 1999
   
   - Bugfix in the reading of .OPERATOR (hjj):
@@ -12,7 +31,7 @@
     (Bert de Jong, Luuk, jth)
   - Spinfree Dirac-equation:
     - spinfree DHF
-    - spinfree 4index-transf. (WARNING: NOT WORKING YET)
+    - spinfree 4index-transf.
     - spinfree CI
     (Luuk)
 
