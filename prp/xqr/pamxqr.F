@@ -90,12 +90,17 @@ C
       IF (LEVYLE) THEN
          INTXQR = ILLINT
          XQR_SKIPEP = .TRUE.
+      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
+C        ... no positron orbitals ("no-pair")
+         XQR_SKIPEP = .TRUE.
       ELSE
          XQR_SKIPEP = .FALSE.
       END IF
-      XQR_INDSTR(1,I) = ' '
-      XQR_INDSTR(2,I) = ' '
-      XQR_INDSTR(3,I) = ' '
+      DO I = 1,NFSYM
+         XQR_INDSTR(1,I) = ' '
+         XQR_INDSTR(2,I) = ' '
+         XQR_INDSTR(3,I) = ' '
+      END DO
 C     TODO hjaaj Feb 2004: make possibility to specify in
 C          input as for XLR_INDSTR in pamxlr.F
 C
@@ -330,9 +335,9 @@ C
      &  ' * No preconditioning of initial trial vectors.'
       ENDIF
       IF (XQR_SKIPEE) WRITE(LUPRI,'(A)')
-     &     ' * No e-e rotation considered.'
+     &     ' * No e-e rotations considered.'
       IF (XQR_SKIPEP) WRITE(LUPRI,'(A)')
-     &     ' * No e-p rotation considered.'
+     &     ' * No e-p rotations considered.'
 C
       WRITE(LUPRI,'(A)') 
      &     ' * Frequencies in quadratic response in a.u.'
@@ -496,6 +501,12 @@ C
 C
       KFREE = 1
       LFREE = LWRK
+C
+      IF (NPSHT.EQ.0 .AND. .NOT.XQR_SKIPEP) THEN
+         WRITE(LUPRI,'(/A)')
+     &   'INFO: XQR_SKIPEP reset to true because no positron orbitals'
+         XQR_SKIPEP = .TRUE.
+      END IF
 C
       CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
 C
