@@ -305,7 +305,7 @@ C        Overdimension KCMO because it is used as Focksize scratch space
          CALL MEMREL('TRADRV',WORK,KFRSAV,KCMO,KFREE,LFREE)
       ENDIF
 C
-      IF (PRPTRA) CALL TRAPRP(WORK,LWORK)
+      IF (PRPTRA) CALL TRAPRP(WORK(KFREE),LFREE)
       IF (.NOT.NO2IND) 
      &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
 C
