@@ -115,9 +115,9 @@ void sysinf()
 
    if ( un != NULL )
    {
-      printf( "Hostname          : %s\n" , un->nodename);
-      printf( "Operating system  : %s %s\n" , un->sysname, un->release);
-      printf( "Machine           : %s\n" , un->machine);
+      printf( " Hostname          : %s\n" , un->nodename);
+      printf( " Operating system  : %s %s\n" , un->sysname, un->release);
+      printf( " Machine           : %s\n" , un->machine);
    }
 
    free(un);
