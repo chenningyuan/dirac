@@ -1225,13 +1225,16 @@ C  /* Deck readdi */
 C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
 #include "implicit.h"
+      CHARACTER*30 STRING
       DIMENSION X(N)
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
-      CALL QUIT('READT: END reading file')
+      WRITE (STRING,'(A25,I5)') 'READT: END reading file  ',IT
+      CALL QUIT(STRING)
  20   CONTINUE
-      CALL QUIT('READT: Error reading file')
+      WRITE (STRING,'(A25,I5)') 'READT: Error reading file',IT
+      CALL QUIT(STRING)
       END
 C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)
