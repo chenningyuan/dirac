@@ -1835,8 +1835,8 @@ C
 C
       RETURN
       END
-C  /* Deck grdini */
-      SUBROUTINE GRDINI
+C  /* Deck INIGRD */
+      SUBROUTINE INIGRD
 C*****************************************************************************
 C
 C     Initialization for molecular gradient
@@ -1870,7 +1870,7 @@ C
          DO2GRD(3) = .FALSE.
       ENDIF
       DOTRCK    = .FALSE.
-      GRADRE    = .FALSE.
+      IGTHRS    = 17
 C
       RETURN
       END
@@ -1902,7 +1902,7 @@ C
       DIMENSION PFAC(3),II(3)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.TWOGRD','.TRICK ','.GRADRE'/
+      DATA TABLE /'.PRINT ','.TWOGRD','.TRICK ','.IGTHRS'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -1915,7 +1915,7 @@ C
          SET = .TRUE.
       END IF
 C
-      CALL GRDINI
+      CALL INIGRD
 C
 C
 C     Process input from CBIEXP
@@ -1970,7 +1970,8 @@ C&&&& TWOGRD: Which two-electron gradient to calculate
                   END IF
                GO TO 100
     4          CONTINUE
-               GRADRE = .TRUE.
+C&&&& IGTHRS: Threshold for screening on the gradient
+               READ(LUCMD,*) IGTHRS
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1987,7 +1988,7 @@ C     Print section
 C     =============
       IF (MGRAD) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') 'GRDINP: Calculation of molecular'//
+         WRITE(LUPRI,'(1X,A)') 'GRDINP: Calculation of molecular '//
      &                         'gradient.'
          CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(1X,A,I3)')'Print level                       : ',
@@ -2004,6 +2005,14 @@ C     =============
          CALL CYESNO(STR,DOTRCK)
          WRITE(LUPRI,'(1X,A,A)') 'Skip LS/SS-two-el. grd. if small  : ',
      &                           STR
+         DTMP = 10.0D00**(-IGTHRS)
+         WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &      '* Screening threshold in gradient calculation ',DTMP
+         IF (IGTHRS .GE. 16) THEN
+            WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &         'WARNING: Screening turned off...'
+            IGTHRS    = 0
+         END IF
          CALL PRSYMB(LUPRI,'-',75,0)
       END IF
   999 CONTINUE
