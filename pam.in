@@ -339,7 +339,7 @@ endif
 # Nice ?
 #
 if ( $NICE ) then
-   if ( ( "`uname`" == "IRIX" ) || ( "`uname`" == "IRIX64" ) ) then
+   if ( -e /usr/sbin/npri ) then
       set NICE_CMD = "npri -h129"
    else
       set NICE_CMD = "nice -20"
@@ -361,7 +361,7 @@ else
    endif
 endif
 if ( "$MPI_NPROC" != "" ) then
-   set DIRAC_CMD = "mpiexe -np $MPI_NPROC $DIRAC"
+   set DIRAC_CMD = "mpirun -np $MPI_NPROC $DIRAC"
 else
    set DIRAC_CMD = "$DIRAC"
 endif
