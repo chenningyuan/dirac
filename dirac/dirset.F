@@ -420,6 +420,7 @@ C
         IORB(IFRP)  = NORBT
         IASH(IFRP)  = NASHT
         IOCC(IFRP)  = NOCCT
+        NOCC(IFRP)  = NISH(IFRP)+NASH(IFRP)
 C
         N2ORB(IFRP) = NORB(IFRP)*NORB(IFRP)
         NORBT       = NORBT  + NORB(IFRP)
