@@ -348,7 +348,9 @@ C       ================================
         IF(DFTADD) THEN
 C          tsaue: turn off test on numerical integration,
 C                 When starting from coefficients from a different
-C                 geometry the spiky small components give problems
+C                 geometry; they are not orthonormal at the new
+C                 geometry and thus the correct number of electrons
+C                 is generally not integrated
            TMP = DFTELS
            DFTELS = D1
 C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
