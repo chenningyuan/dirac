@@ -261,6 +261,19 @@ C     ===================================
 C
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 C
+C     IF LVCON is used we should take the repulsion between all charge while
+C     for the core-core interaction we leave out the valence part. Add on the
+C     valence-valence SS-repulsion by recalculating CORRLV
+C
+C     LV+OF 20-8-2002 : To be tested !
+C 
+C     IF (LVCON) THEN
+C        CORRLV_CORE = CORRLV
+C        CALL GENDEN(DMAT,CMO,1,IPRSCF)
+C        CALL LVCORR(DMAT,WORK,LWORK,IPRSCF)
+C        DHFERG = DHFERG + CORRLV - CORRLV_CORE
+C     ENDIF
+C
 C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
