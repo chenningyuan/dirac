@@ -30,7 +30,8 @@ C     DMXWLT: Max wall time for slaves
 C     DMXCPT: Max cpu time for slaves
 C
       COMMON /CBIGRD/ IPRGRD,INTCLASS,IGTHRS
-      COMMON /CBLGRD/ RELGRD,DO2GRD,DOTRCK,DODERM
+      COMMON /CBLGRD/ RELGRD,DO2GRD,DOTRCK,DODERM,
+     &                GRD_NOSMLV,GRD_NOSMLS
       COMMON /CBRGRD/ GRADKN(MXCOOR,0:2),
      &                GRADNU(MXCOOR,0:2),
      &                GRADRO(MXCOOR,0:2),
