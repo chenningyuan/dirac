@@ -2266,6 +2266,7 @@ C
 1011  FORMAT (//" Random Phase Approximation : ",
      &        /" Calculate",I3," excitation energies for irrep ",A4)
       END
+#ifdef MOD_FOCKSPCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                  NSP,IREPSP,IREPSPI,MREMAIN)
@@ -2466,6 +2467,7 @@ C
      &        /" Convergence criterium :",T38,E7.1)
 1009  FORMAT (//" Solving equations for sector ",I2/)
       END
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI
 C
