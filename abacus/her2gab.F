@@ -1484,6 +1484,10 @@ C
         WRITE(LUPRI,'(A),A9)') 'SCR        scr.thr.    '//
      &     'Step1    Step2  Coulomb  Exchange    CPU-time'
         RETURN
+      ELSE IF(TEXT(1:9).EQ.'MPIHeader') THEN
+        WRITE(LUPRI,'(A),A9)') 'SCR        scr.thr.    '//
+     &     'Step1    Step2  Coulomb  Exchange   WALL-time'
+        RETURN
       ENDIF
       CALL DZERO(DSTEP,4)
       IF(DINTSKP(1,1).GT.D0) DSTEP(1) = DINTSKP(2,1)/DINTSKP(1,1)

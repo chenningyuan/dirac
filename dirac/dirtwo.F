@@ -3426,7 +3426,11 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
-      CALL SCRSTA('Header',DUM,DUM)
+      IF (PARCAL) THEN
+         CALL SCRSTA('MPIHeader',DUM,DUM)
+      ELSE
+         CALL SCRSTA('Header',DUM,DUM)
+      END IF
 C
 C initialize MTOTTK
 C
@@ -3452,7 +3456,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
+           CALL SCRSTA('AOfock:LL',DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -3513,7 +3517,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
+           CALL SCRSTA('AOfock:SL',DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -3576,7 +3580,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
+           CALL SCRSTA('AOfock:SS',DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4036,7 +4040,11 @@ C
       MAXDIF = 0
       JATOM  = 0
       KPOS   = 1
-      CALL SCRSTA('Header',DUM,DUM)
+      IF (PARCAL) THEN
+         CALL SCRSTA('MPIHeader',DUM,DUM)
+      ELSE
+         CALL SCRSTA('Header',DUM,DUM)
+      END IF
 C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
@@ -4058,7 +4066,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
+           CALL SCRSTA('SOfock:LL',DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4112,7 +4120,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
+           CALL SCRSTA('SOfock:SL',DNTSKP,WALL)
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4169,7 +4177,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
+           CALL SCRSTA('SOfock:SS',DNTSKP,WALL)
 C
            IF (IPRINT .GT. 0) THEN
               TOTTID = SECTID(TOTWAL)

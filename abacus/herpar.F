@@ -126,6 +126,7 @@ C
 #include "aovec.h"
 #include "blocks.h"
 #include "molinp.h"
+#include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -239,6 +240,9 @@ C
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
+C     and transfer screening information to twocom.h
+C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
+      SCRTHR = SCREEN
 C
 C-----------------------
 C     Start calculation.
@@ -522,14 +526,11 @@ C
          CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       END IF
 C
-C     Send Panas value and
-C     send screening threshold and transfer information to twocom.h
-C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
+C     Send Panas value and screening threshold
       DSEND(1) = PANAS
       DSEND(2) = SCREEN
       CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      SCRTHR = SCREEN
 #if defined (PRG_DIRAC)
 C     Send SMLV1C and ONECAP,INTV1C
       LSEND(1) = SMLV1C
