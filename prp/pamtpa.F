@@ -1,11 +1,11 @@
       SUBROUTINE PRPTPA(WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Driver routine for computing two-photon absorption.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -105,13 +105,13 @@ C
       END
 C
       SUBROUTINE TPAEXC(WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculation of excitation energies.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -253,13 +253,13 @@ C
       END
 C
       SUBROUTINE EXCSET(WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Some settings used in TPAEXC.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxlr.h"
@@ -346,7 +346,7 @@ C
       END
 C
       SUBROUTINE TPA_SETUP(WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Determine which linear response equations to be solved. Similar to 
 C     QR_SETUP, but differences in loop structure and considerations of
@@ -354,7 +354,7 @@ C     different symmetries.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxpr.h"
@@ -432,13 +432,13 @@ C
 C
       SUBROUTINE QRTPA(RESULT,VECAEE,VECBEE,VECEEE,VECAEP,VECBEP,VECEEP,
      &     CMO,IBEIG,WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculation of elements in two-photon transition tensor.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -513,9 +513,7 @@ C
      &                         ELAB,NZYEEE,NZYEEP,VECEEE,VECEEP,
      &                         WORK(KFREE),LFREE)
 C
-C panor: debug
-C                  WRITE(LUPRI,'(/A,2(I2,A),3(/A,A10,I4,F10.6))')
-                  WRITE(LUPRI,'(/A,2(I2,A),3(/A,A10,I4,F20.16))')
+                  WRITE(LUPRI,'(/A,2(I2,A),3(/A,A10,I4,F10.6))')
      &                 ' Two-photon absorption calculation no. ',
      &                 IQRF,' out of ',NQRHYP,' in a.u.',
      &                 ' A operator, boson symmetry, frequency: ',
@@ -584,13 +582,13 @@ C
       END
 C
       SUBROUTINE TPA_PRINT(RES_LR,RES_TPA,WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Printing of results aquired during TPA calculations.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -895,13 +893,13 @@ C
       END
 C
       SUBROUTINE DEF_TPA(WORK,LWRK,DOTPA)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input handeling for .TWO-PHOTON
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -966,14 +964,14 @@ C
 C
       SUBROUTINE EXCINIT(INDEX,NFRQ,FREQ,JSYM,IFER,ITIM,LAB,
      &                   NZYEE,NZYEP,VECEE,VECEP,WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Initialize variables and read excitation vectors from file
 C     for given TPA calculation.
 C
 C     Written by johhe 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"

@@ -1080,7 +1080,7 @@ C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
      &     XPOZ(NZPAR,NZ,NFREQ),XPOY(NZPAR,NZ,NFREQ),
-     &     RSPVEC(MZYPAR,NZ),BUF(MZYPAR*NZ),WORK(LWRK)
+     &     RSPVEC(MZYPAR*NZ),BUF(MZYPAR*NZ),WORK(LWRK)
 C
       CALL QENTER('LRVEC1')
 C
@@ -1132,16 +1132,22 @@ C     Zeroing response vector
 C
       CALL DZERO(RSPVEC,MZYPAR*NZ)
 C
+      NZYPAR = 2*NZPAR
+C
       DO IFR=1,NFREQ
 C
          DO IZ=1,NZ
-            CALL DCOPY(NZPAR,XPOZ(1,IZ,IFR),1,RSPVEC(1,IZ),1)
-            CALL DCOPY(NZPAR,XPOZ(1,IZ,IFR),1,RSPVEC(1+NZPAR,IZ),1)
-            CALL DAXPY(NZPAR,D1,XPOY(1,IZ,IFR),1,RSPVEC(1,IZ),1)
+            CALL DCOPY(NZPAR,XPOZ(1,IZ,IFR),1,
+     &           RSPVEC(1+(IZ-1)*NZYPAR),1)
+            CALL DCOPY(NZPAR,XPOZ(1,IZ,IFR),1,
+     &           RSPVEC(1+NZPAR+(IZ-1)*NZYPAR),1)
+            CALL DAXPY(NZPAR,D1,XPOY(1,IZ,IFR),1,
+     &           RSPVEC(1+(IZ-1)*NZYPAR),1)
             CALL DAXPY(NZPAR,DM1,XPOY(1,IZ,IFR),1,
-     &           RSPVEC(1+NZPAR,IZ),1)
+     &           RSPVEC(1+NZPAR+(IZ-1)*NZYPAR),1)
             IF (IPQTOQ(IZ,JSYMOP-1).GT.1) 
-     &           CALL DSCAL(NZPAR,DM1,RSPVEC(1+NZPAR,IZ),1)
+     &           CALL DSCAL(NZPAR,DM1,
+     &           RSPVEC(1+NZPAR+(IZ-1)*NZYPAR),1)
          END DO
          CALL DSCAL(MZYPAR*NZ,DH,RSPVEC,1)
          CALL INDQR(INDPRP,EVALR(IFR),IREC)
@@ -1334,8 +1340,7 @@ C     Compute the LR function value. The gradient vector is
 C     daggered and swapped in QDAGDOT.
 C     
                CALL QDAGDOT('-A+[1] Nb',.TRUE.,.TRUE.,-ITIMA*D4,
-     &              WORK(KGEE),WORK(KGEP),VECBEE,VECBEP,
-     &              NZYAEE,NZYAEP,MZYEE,MZYEP,NZYAEE,NZYAEP,
+     &              WORK(KGEE),WORK(KGEP),VECBEE,VECBEP,NZYAEE,NZYAEP,
      &              ISYMA,RESULT(1,IAOP,IBOP,IFR),IPRXQR)
 C     
 C     Print out information about present LR function
@@ -1590,6 +1595,7 @@ C
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(IPT,ABS(FREQ),IREC)
+C
       IF (.NOT.XQR_SKIPEE) CALL READAC(LUQREE,MZYEE*NZ,VECEE,IREC)
       IF (.NOT.XQR_SKIPEP) CALL READAC(LUQREP,MZYEP*NZ,VECEP,IREC)
 C
@@ -1673,8 +1679,8 @@ C*****************************************************************************
 C
       PARAMETER ( D1 = 1.0D0, D4 = 4.0D0 )
 C
-      DIMENSION VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
-     &          VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
+      DIMENSION VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
+     &          VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(LWRK)
 C
       CALL QENTER('A2DRV')
@@ -1707,8 +1713,8 @@ C
 C     One-index transform A matrix with unpacked C response vector
 C
       CALL DZERO(WORK(KAC),N2ORBXQ)
-      CALL OITMAT(WORK(KA),ISYMA,ITIMA,IFERA,WORK(KC),ISYMC,ITIMC,IFERC,
-     &     WORK(KAC),ISYMB,ITIMA*ITIMC,IFERB,IPRXQR)
+      CALL OITMAT(WORK(KA),ISYMA,IFERA,WORK(KC),ISYMC,IFERC,
+     &     WORK(KAC),ISYMB,IFERB,IPRXQR)
 C
 C     Make the gradient
 C
@@ -1722,8 +1728,7 @@ C     transfered to QDAGDOT by instead swapping the response vector Nx in
 C     that routine.
 C
       CALL QDAGDOT('Nx A[2] Ny',.TRUE.,.TRUE.,-D4,VECBEE,VECBEP,
-     &     WORK(KGEE),WORK(KGEP),MZYEE,MZYEP,NZYBEE,NZYBEP,
-     &     NZYBEE,NZYBEP,ISYMB,RESULT,IPRXQR)
+     &     WORK(KGEE),WORK(KGEP),NZYBEE,NZYBEP,ISYMB,RESULT,IPRXQR)
 C
       CALL QEXIT('A2DRV')
       RETURN
@@ -1754,8 +1759,8 @@ C*****************************************************************************
 C
       PARAMETER ( D1 = 1.0D0, D8 = 8.0D0 )
 C
-      DIMENSION VECAEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
-     &          VECAEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
+      DIMENSION VECAEE(NZYAEE,NZ),VECCEE(NZYCEE,NZ),
+     &          VECAEP(NZYAEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(LWRK)
 C
       CALL QENTER('X2DRV')
@@ -1795,8 +1800,8 @@ C
 C     One-index transform B matrix with unpacked C response vector
 C
       CALL DZERO(WORK(KBC),N2ORBXQ)
-      CALL OITMAT(WORK(KB),ISYMB,ITIMB,IFERB,WORK(KC),ISYMC,ITIMC,IFERC,
-     &     WORK(KBC),ISYMA,ITIMB*ITIMC,IFERA,IPRXQR)
+      CALL OITMAT(WORK(KB),ISYMB,IFERB,WORK(KC),ISYMC,IFERC,
+     &     WORK(KBC),ISYMA,IFERA,IPRXQR)
 C
 C     Make the gradient
 C
@@ -1807,8 +1812,7 @@ C     Perform the dot product with the Na response vector. The response
 C     vector Na is swapped in QDAGDOT in accordance with the definition.
 C
       CALL QDAGDOT('Na X[2] Ny',.TRUE.,.TRUE.,-D8,VECAEE,VECAEP,
-     &     WORK(KGEE),WORK(KGEP),MZYEE,MZYEP,NZYAEE,NZYAEP,
-     &     NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
+     &     WORK(KGEE),WORK(KGEP),NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
 C
       CALL QEXIT('X2DRV')
       RETURN
@@ -1838,7 +1842,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxqr.h"
 C
-      DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
+      DIMENSION VECEE(NZYEE,NZ),VECEP(NZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
       DIMENSION WORK(LWRK)
 C
       CALL QENTER('GTZYMT')
@@ -1860,8 +1864,9 @@ C
 C     Scatter the response vector into matrix using index for RPA. 
 C
       CALL DZERO(ZYMAT,N2ORBXQ)
-      CALL VEC2MAT(ZYMAT,VECEE,MZYEE,NZEE,WORK(KZXOPE))
-      CALL VEC2MAT(ZYMAT,VECEP,MZYEP,NZEP,WORK(KZXOPP))
+C
+      CALL VEC2MAT(ZYMAT,VECEE,NZYEE,NZEE,WORK(KZXOPE))
+      CALL VEC2MAT(ZYMAT,VECEP,NZYEP,NZEP,WORK(KZXOPP))
 C
 C     Print section
 C
@@ -1908,8 +1913,8 @@ C
 C
       RETURN
       END
-      SUBROUTINE OITMAT(A,ISYMA,ITIMA,IFERA,W,ISYMW,ITIMW,IFERW,
-     &     C,ISYMC,ITIMC,IFERC,IPRINT)
+      SUBROUTINE OITMAT(A,ISYMA,IFERA,W,ISYMW,IFERW,C,ISYMC,IFERC,
+     &                  IPRINT)
 C*****************************************************************************
 C
 C     One-index quaternion matrix QA with unpacked quaternion response vector 
@@ -1918,13 +1923,12 @@ C     denote time reversal symmetries, orbitals within [] parenthesis
 C     denote Kramers pair orbitals, and indices within () denote matrix 
 C     rows and columns. 
 C     
-C     QC(r,s){+1} = QC(r,s){+1} + 
-C                   ( QW(r,p){tA}*QA(p,s){+1} - QA(r,p){tW}*QW(p,s){+1} ) , 
+C     QC(r,s) = QC(r,s) + ( QW(r,p)*QA(p,s) - QA(r,p)*QW(p,s) ) , 
 C
 C     where
 C
-C     QA(r,s){tA} = A(r,s) + tA*A(r,[s]) j 
-C     QW(r,s){tW} = W(r,s) + tW*W(r,[s]) j .
+C     QA(r,s) = A(r,s) + A(r,[s]) j 
+C     QW(r,s) = W(r,s) + W(r,[s]) j .
 C
 C     The structure of QA is general and the unpacked response vector
 C     is of the form:
@@ -1946,9 +1950,7 @@ C*****************************************************************************
 #include "dgroup.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
-      CHARACTER T*1
       DIMENSION A(NORBT,NORBT,NZ),W(NORBT,NORBT,NZ),C(NORBT,NORBT,NZ)
-      DIMENSION T(-1:1)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -1958,10 +1960,6 @@ C
       IF (ISYMC.NE.MULD2H(ISYMA,ISYMW)) THEN
          CALL QUIT('Error with operator symmetry in OITMAT')
       END IF
-C
-      T(1)  = 'N'
-C      T(-1) = 'I'
-      T(-1) = 'N'
 C
       DO I1 = 1,NFSYM
 C
@@ -1983,7 +1981,7 @@ C
         IF (NORB1.GT.0 .AND. NORB2.GT.0) THEN
            IF (NORB3.GT.0) THEN
               CALL QGEMM(NORB1,NORB3,NORB2,D1,
-     &             'N',T(ITIMA),IPQTOQ(1,ISYMW-1),
+     &             'N','N',IPQTOQ(1,ISYMW-1),
      &             W(IORB1,IORB2,1),NORBT,NORBT,NZ,
      &             'N','N',IPQTOQ(1,ISYMA-1),
      &             A(IORB2,IORB3,1),NORBT,NORBT,NZ,
@@ -1992,7 +1990,7 @@ C
 C
            IF (NORB4.GT.0) THEN
               CALL QGEMM(NORB4,NORB2,NORB1,DM1,
-     &             'N',T(ITIMW),IPQTOQ(1,ISYMA-1),
+     &             'N','N',IPQTOQ(1,ISYMA-1),
      &             A(IORB4,IORB1,1),NORBT,NORBT,NZ,
      &             'N','N',IPQTOQ(1,ISYMW-1),
      &             W(IORB1,IORB2,1),NORBT,NORBT,NZ,
@@ -2012,7 +2010,7 @@ C
         IF (NORB1.GT.0 .AND. NORB2.GT.0) THEN
            IF (NORB3.GT.0) THEN
               CALL QGEMM(NORB1,NORB3,NORB2,D1,
-     &             'N',T(ITIMA),IPQTOQ(1,ISYMW-1),
+     &             'N','N',IPQTOQ(1,ISYMW-1),
      &             W(IORB1,IORB2,1),NORBT,NORBT,NZ,
      &             'N','N',IPQTOQ(1,ISYMA-1),
      &             A(IORB2,IORB3,1),NORBT,NORBT,NZ,
@@ -2021,7 +2019,7 @@ C
 C           
            IF (NORB4.GT.0) THEN
               CALL QGEMM(NORB4,NORB2,NORB1,DM1,
-     &             'N',T(ITIMW),IPQTOQ(1,ISYMA-1),
+     &             'N','N',IPQTOQ(1,ISYMA-1),
      &             A(IORB4,IORB1,1),NORBT,NORBT,NZ,
      &             'N','N',IPQTOQ(1,ISYMW-1),
      &             W(IORB1,IORB2,1),NORBT,NORBT,NZ,
@@ -2162,8 +2160,8 @@ C*****************************************************************************
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-      DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
-     &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
+      DIMENSION VECAEE(NZYAEE,NZ),VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
+     &          VECAEP(NZYAEP,NZ),VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
       CALL QENTER('T3DRV')
@@ -2221,8 +2219,8 @@ C*****************************************************************************
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
-      DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
-     &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
+      DIMENSION VECAEE(NZYAEE,NZ),VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
+     &          VECAEP(NZYAEP,NZ),VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
@@ -2273,12 +2271,12 @@ C     Construct the Fock matrices in AO basis.
 C
       CALL E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYMB,ISYMC,ISYMA,
      &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA)
+C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
      &     IDUM,INTFLG,IPRXQR,WORK(KFREE),LFREE)
-c    &     IDUM,INTFLG,5,WORK(KFREE),LFREE)
 C
-C     Scale all Fock matrices with a factor 4 to get the right values
-C     /hjaaj July 2004
+C     Scale all Fock matrices with a factor 4 to agree with
+C     convention used in TWOFCK as of Aug 2004.
 C
       CALL DSCAL(3*N2BBASXQ,D4,WORK(KF1AO),1)
 C
@@ -2334,20 +2332,18 @@ C
 C     [Wb,F] ---> F1
 C     [Wc,F] ---> F2
 C
-      CALL OITMAT(WORK(KFMO),1,1,1,WORK(KB),ISYMB,ITIMB,IFERB,
-     &     WORK(KF1MO),ISYMB,ITIMB,IFERB,IPRXQR)
-      CALL OITMAT(WORK(KFMO),1,1,1,WORK(KC),ISYMC,ITIMC,IFERC,
-     &     WORK(KF2MO),ISYMC,ITIMC,IFERC,IPRXQR)
+      CALL OITMAT(WORK(KFMO),1,1,WORK(KB),ISYMB,IFERB,
+     &     WORK(KF1MO),ISYMB,IFERB,IPRXQR)
+      CALL OITMAT(WORK(KFMO),1,1,WORK(KC),ISYMC,IFERC,
+     &     WORK(KF2MO),ISYMC,IFERC,IPRXQR)
 C
 C     [Wc, F1+[Wb,F]] ---> F3
 C     [Wb, F2+[Wc,F]] ---> F3
 C
-      CALL OITMAT(WORK(KF1MO),ISYMB,ITIMB,IFERB,
-     &     WORK(KC),ISYMC,ITIMC,IFERC,
-     &     WORK(KF3MO),ISYMA,ITIMB*ITIMC,IFERA,IPRXQR)
-      CALL OITMAT(WORK(KF2MO),ISYMC,ITIMC,IFERC,
-     &     WORK(KB),ISYMB,ITIMB,IFERB,
-     &     WORK(KF3MO),ISYMA,ITIMB*ITIMC,IFERA,IPRXQR)     
+      CALL OITMAT(WORK(KF1MO),ISYMB,IFERB,WORK(KC),ISYMC,IFERC,
+     &     WORK(KF3MO),ISYMA,IFERA,IPRXQR)
+      CALL OITMAT(WORK(KF2MO),ISYMC,IFERC,WORK(KB),ISYMB,IFERB,
+     &     WORK(KF3MO),ISYMA,IFERA,IPRXQR)     
 C
 C     Reuse the memory of the intermediate Fock
 C     matrices in MO basis for the gradient.  
@@ -2366,8 +2362,7 @@ C     Perform the dot product with the Na response vector. The response
 C     vector Na is swapped in QDAGDOT in accordance with the definition.
 C
       CALL QDAGDOT('Na E[3] Nb Nc',.TRUE.,.TRUE.,-D2,VECAEE,VECAEP,
-     &     WORK(KGEE),WORK(KGEP),MZYEE,MZYEP,NZYAEE,NZYAEP,
-     &     NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
+     &     WORK(KGEE),WORK(KGEP),NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
 C
       CALL QEXIT('E3DRV')
 C     
@@ -2400,8 +2395,8 @@ C*****************************************************************************
 C
       PARAMETER ( D2 = 2.0D0 )
 C
-      DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
-     &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
+      DIMENSION VECAEE(NZYAEE,NZ),VECBEE(NZYBEE,NZ),VECCEE(NZYCEE,NZ),
+     &          VECAEP(NZYAEP,NZ),VECBEP(NZYBEP,NZ),VECCEP(NZYCEP,NZ)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
       CALL QENTER('S3DRV')
@@ -2423,8 +2418,8 @@ C
 C     One-index transform B with C
 C
       CALL DZERO(WORK(KBC),N2ORBXQ)
-      CALL OITMAT(WORK(KB),ISYMB,ITIMB,IFERB,WORK(KC),ISYMC,ITIMC,IFERC,
-     &     WORK(KBC),ISYMA,ITIMB*ITIMC,IFERA,IPRXQR)
+      CALL OITMAT(WORK(KB),ISYMB,IFERB,WORK(KC),ISYMC,IFERC,
+     &     WORK(KBC),ISYMA,IFERA,IPRXQR)
 C
 C     Make the gradient.
 C
@@ -2438,8 +2433,7 @@ C     Perform the dot product with the Na response vector. The response
 C     vector Na is swapped in QDAGDOT in accordance with the definition.
 C
       CALL QDAGDOT('Na S[3] Nb Nc',.TRUE.,.TRUE.,-BFREQ,VECAEE,VECAEP,
-     &     WORK(KGEE),WORK(KGEP),MZYEE,MZYEP,NZYAEE,NZYAEP,
-     &     NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
+     &     WORK(KGEE),WORK(KGEP),NZYAEE,NZYAEP,ISYMA,RESULT,IPRXQR)
 C
       CALL QEXIT('S3DRV')
 C     
@@ -2801,15 +2795,15 @@ C
 C
       CALL QENTER('E3FCK')
 C
+C     Integer arrays used in TWOFCK call
+C
       ISYMOP(1) = ISYM1
       ISYMOP(2) = ISYM2
       ISYMOP(3) = ISYM3
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
-C
-C     IFCKOP  used in TWOFCK call,
-C     1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
+C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1
       IFCKOP(3)=1
@@ -2902,8 +2896,7 @@ C
       RETURN
       END
       SUBROUTINE QDAGDOT(TEXT,DAGGER,SWAP,FAC,
-     &     VECAEE,VECAEP,VECBEE,VECBEP,
-     &     NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYEE,NZYEP,
+     &     VECAEE,VECAEP,VECBEE,VECBEP,NZYEE,NZYEP,
      &     ISYM,RESULT,IPRINT)
 C*****************************************************************************
 C
@@ -2939,8 +2932,8 @@ C
 C
       CHARACTER*(*) TEXT
       LOGICAL DAGGER, SWAP
-      DIMENSION VECAEE(NZYAEE,NZ),VECAEP(NZYAEP,NZ),
-     &          VECBEE(NZYBEE,NZ),VECBEP(NZYBEP,NZ)
+      DIMENSION VECAEE(NZYEE,NZ),VECAEP(NZYEP,NZ),
+     &          VECBEE(NZYEE,NZ),VECBEP(NZYEP,NZ)
       DIMENSION RESULT(3),TEMP(3,3)
 C
       CALL QENTER('QDAGDOT')
