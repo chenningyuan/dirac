@@ -348,7 +348,7 @@ C
       CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LWORK)
 C
       CALL GETTIM(CPU1,WALL1)
-      IF (IGTHRS .LE. 16) THEN
+      IF (IGTHRS .GT. 0) THEN
 C
 C     Prepare screening
 C        =================
@@ -533,7 +533,7 @@ C
          CPUTLL = MAX(CPUTLL,DMXCPT)
          WLLTLL = MAX(WLLTLL,DMXWLT)
       END IF
-      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
+      CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LL-two-electron part of gradient :',
      &      CPUTLL,' seconds.'
@@ -645,7 +645,7 @@ C
          CPUTLS = MAX(CPUTLS,DMXCPT)
          WLLTLS = MAX(WLLTLS,DMXWLT)
       END IF
-      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
+      CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for LS-two-electron part of gradient :',
      &      CPUTLS,' seconds.'
@@ -766,7 +766,7 @@ C
          CPUTSS = MAX(CPUTSS,DMXCPT)
          WLLTSS = MAX(WLLTSS,DMXWLT)
       END IF
-      IF (IGTHRS .GT. 0) CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
+      CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
       WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
      &      'Time for SS-two-electron part of gradient :',
      &      CPUTSS,' seconds.'
