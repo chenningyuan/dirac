@@ -27,9 +27,14 @@
 #include <fortran.h>
 #define frac2i FRAC2I
 #define sysinf SYSINF
-#elif defined (SYS_HPUX)
-#define frac2i FRAC2I
-#define sysinf SYSINF
+/*
+ * These HPUX flags does not work
+ *
+ * #elif defined (SYS_HPUX)
+ * #define frac2i FRAC2I
+ * #define sysinf SYSINF
+ *
+ */
 #elif defined (SYS_AIX)
 #define frac2i frac2i
 #define sysinf sysinf
