@@ -271,7 +271,7 @@ C
 #if defined (VAR_MPI)
 #include "infmpi.h"
       INCLUDE 'mpif.h'
-      INTEGER ISTATUS(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
 #endif
 C
@@ -310,7 +310,7 @@ C     using an idle loop that consumes unnecessary CPU when
 C     waiting in a serial part of the code.
 C
       CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-     &                NEWTASK,STATUS_MPI,IERR)
+     &                NEWTASK,ISTAT,IERR)
       IF (NEWTASK) THEN
          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
