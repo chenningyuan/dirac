@@ -4278,12 +4278,10 @@ C
          CALL DCOPY(9*NUCDEP,PMAT,1,TMAT,1)
          IF (XLR_SKIPEP) CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
          IATOM = 0
-         print*,'NUCIND ',NUCIND
          DO 100 I = 1, NUCIND
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
-                  print*,'IATOM after increment ',IATOM
                   IF (DOATOM(IATOM)) THEN
                      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
      &                 PMAT(1,1,IATOM),TISO(IATOM),DISO(IATOM),
