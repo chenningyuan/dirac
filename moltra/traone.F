@@ -747,11 +747,12 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dgroup.h>
 #include <pgroup.h>
-#include <dcbibt.h>
 C
       CHARACTER*4 REPA(64)
       CHARACTER*1 REPAS(8)
       DIMENSION MULTB(64,64),MULTBS(8,8)
+C
+#include <dcbibt.h>
 C
 C     Start by making the spin-multiplication table
 C
