@@ -9,6 +9,15 @@ include ../Makefile.config
 
 F_OBJS = cidirr.o cigenp.o
 
+dirac.x:
+        cd .. ; $(MAKE) dirac.x
+
+dirmpi.x:
+        cd .. ; $(MAKE) dirmpi.x
+
+dirpvm.x:
+        cd .. ; $(MAKE) dirpvm.x
+
 all:	$(F_OBJS)
 
 clean : 
