@@ -915,3 +915,194 @@ C
 C
       RETURN
       END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck m2duuuu */
+      SUBROUTINE M2DUUUU(VMUUUU,VDUUUU,IPRINT)
+C*****************************************************************************
+C
+C     Transform a UUUU matrix in Molfdir format to a UUUU matrix
+C     in Dirac format.
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION VDUUUU(NASHT,NASHT,NASHT,NASHT,NZ,NZ,*)
+      DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
+C
+      DIMENSION NSTR(2,0:2,4)
+      DIMENSION KR(-300:300)
+      DIMENSION DINT(8,2)
+C
+#include <ibtfun.h>
+#include <memint.h>
+C
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      write(6,*) 'nclass',nclass,nasht,nasht**4 * nclass
+      call flshfo(6)
+      CALL DZERO(VDUUUU,NASHT**4 * NCLASS)
+      write(6,*) 'after dzero'
+      call flshfo(6)
+C
+      CALL DEFINVCL(NCLASS)
+C
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+C
+      DO IREPI = 1, NFSYM
+      DO II = 1+IASH(IREPI),IASH(IREPI)+NASH(IREPI)
+         DO IREPJ = 1, NFSYM
+         IREPIJ = IBTXOR(IREPI-1,IREPJ-1) + 1
+         DO JJ = 1+IASH(IREPJ),IASH(IREPJ)+NASH(IREPJ)
+            DO KK = 1, NASHT
+               DO LL = 1, NASHT
+                  I = KR(II)
+                  J = KR(JJ)
+                  K = KR(KK)
+                  L = KR(LL)
+                  ITR = KR(-II)
+                  JTR = KR(-JJ)
+                  KTR = KR(-KK)
+                  LTR = KR(-LL)
+C                 
+                  CALL DZERO(DINT,16)
+C
+C                 Calculate integral classes.
+C                 
+                  DO IZ = 1,2
+                     DINT(1,IZ) = VMUUUU(I,J,K,L,IZ)
+                     DINT(2,IZ) = VMUUUU(I,J,KTR,LTR,IZ)
+                     DINT(3,IZ) = VMUUUU(I,JTR,K,LTR,IZ)
+                     DINT(4,IZ) = VMUUUU(I,JTR,KTR,L,IZ)
+                     DINT(5,IZ) = VMUUUU(I,J,KTR,L,IZ)
+                     DINT(6,IZ) = VMUUUU(I,J,K,LTR,IZ)
+                     DINT(7,IZ) = VMUUUU(ITR,J,K,L,IZ)
+                     DINT(8,IZ) = VMUUUU(I,JTR,K,L,IZ)
+                  END DO
+                  DO ICLASS = 1, 4
+                     IREPABR = 0
+                     DO IREPAB = 0, NBSYM - 1
+                        IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                           IREPABR = IREPABR + 1
+                           DO IZ1 = 1, NZ
+                              IQ1 = IPQTOQ(IZ1,IREPAB)
+                              DO IZ2 = 1,NZ
+                                 IQ2 = IPQTOQ(IZ2,IREPAB)
+                                 RFAC = RINVINTCL(ICLASS,IQ1,IQ2)
+#ifdef UNDEF
+                                 if (ii .eq. 1 .and. jj .eq. 2 .and.
+     &                                kk .eq. 1 .and. ll .eq. 2 ) then
+                                    write(6,*) 'iz1,iz2,iq1,iq2',
+     &                                   iz1,iz2,iq1,iq2,iclass,ifac
+                                    write(6,*) 'dint before',
+     &                                   dint(iclass,1)
+                                    write(6,*) 'vd',vduuuu(ii,jj,kk,ll,
+     &                                   iz2,iz1,irepabr)
+                                 end if
+#endif
+                                 IF (RFAC .NE. 0) THEN
+                                    VDUUUU(II,JJ,KK,LL,
+     &                                   IZ2,IZ1,IREPABR) =
+     &                                   VDUUUU(II,JJ,KK,LL,
+     &                                   IZ2,IZ1,IREPABR) +
+     &                                   RFAC * DINT(ICLASS,1)
+                                 END IF
+#ifdef UNDEF
+                                 if (ii .eq. 1 .and. jj .eq. 2 .and.
+     &                                kk .eq. 1 .and. ll .eq. 2 ) then
+                                    write(6,*) 'dint after',
+     &                                   dint(iclass,1)
+                                 end if
+#endif
+                                 IF (NZ .GT. 1) THEN
+                                    RFAC = RINVINTCL(ICLASS+4,IQ1,IQ2)
+                                    IF (RFAC .NE. 0) THEN
+                                       VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) =
+     &                                      VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) +
+     &                                      RFAC * DINT(ICLASS,2)
+                                    END IF
+                                 END IF
+                              END DO
+                           END DO
+                        END IF
+                     END DO
+                  END DO
+                  IF (NZ .EQ. 4) THEN
+                     DO ICLASS = 1, 4
+                        IREPABR = 0
+                        DO IREPAB = 0, NBSYM - 1
+                           IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                              IREPABR = IREPABR + 1
+                              DO IZ1 = 1, NZ
+                                 IQ1 = IPQTOQ(IZ1,IREPAB)
+                                 DO IZ2 = 1,NZ
+                                    IQ2 = IPQTOQ(IZ2,IREPAB)
+                                    RFAC = RINVINTCL(ICLASS+8,IQ1,IQ2)
+                                    IF (RFAC .NE. 0) THEN
+                                       VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) =
+     &                                      VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) +
+     &                                      RFAC * DINT(ICLASS+4,1)
+                                    END IF
+                                    RFAC = RINVINTCL(ICLASS+12,IQ1,IQ2)
+                                    IF (RFAC .NE. 0) THEN
+                                       VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) =
+     &                                      VDUUUU(II,JJ,KK,LL,
+     &                                      IZ2,IZ1,IREPABR) +
+     &                                      RFAC * DINT(ICLASS+4,2)
+                                    END IF
+                                 END DO
+                              END DO
+                           END IF
+                        END DO
+                     END DO
+                  END IF
+               END DO
+            END DO
+            END DO
+         END DO
+      END DO
+      END DO
+C
+ 9000 FORMAT(1P,1X,4I3,4X,4(D14.7,1X),3(/,16X,4(D14.7,1X)))
+C
+      IF (IPRINT .GE. 0) THEN
+         CALL HEADER('VUUUU matrix in Dirac format',-1)
+         DO I = 1,NASHT
+            DO J = 1,NASHT
+               DO K = 1,NASHT
+                  DO L = 1,NASHT
+                     WRITE(LUPRI,9000)
+     &                    I,J,K,L,
+     &                    (((VDUUUU(I,J,K,L,IZ1,IZ2,ICL),
+     &                    IZ1 = 1,NZ),IZ2=1,NZ),ICL=1,NCLASS)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
+      call quit('ralle ralle')
+C
+      RETURN
+      END 
+
+
