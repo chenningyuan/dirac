@@ -55,7 +55,7 @@ C          geometry in a geometry optimization) /hjaaj
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
-      RADINT = 1.0D-8
+      RADINT = 1.0D-13
       ANGINT = 41
       INTCHK = 0
       DFTHR0 = 1.0D-9
