@@ -42,6 +42,9 @@ C  /* Deck memget */
 C
 C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
+C l.r. 980824-hjaaj: QENTER/QEXIT calls use too much time because MEMGET
+C is called often. Now only call QENTER/QEXIT if warning or error.
+C
 C     Memory allocation
 C
 #include <implicit.h>
@@ -60,7 +63,7 @@ C
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
 C
-      CALL QENTER('MEMGET')
+Chj   CALL QENTER('MEMGET  ')
       IF (KFREE .EQ. 1) THEN
          LENIDS = 2*LENID
       ELSE
@@ -80,6 +83,7 @@ C
          LENGTH = LFREE - LENIDS
          LREAL  = LENGTH
       ELSE
+         CALL QENTER('MEMGET  ')
          WRITE (LUWMEM,'(/2A)')
      *      ' MEMGET ERROR, illegal type :',TYPE
          CALL QTRACE(LUWMEM)
@@ -92,6 +96,7 @@ C
       END IF
 C
       IF (LREAL+LENIDS .GT. LFREE) THEN
+         CALL QENTER('MEMGET  ')
          WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
          IF (KFREE .GT. 1) THEN
             CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
@@ -117,6 +122,7 @@ C
          WMEMCK(1) = WORK(KFREE-LENID)
          IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
          IF (MEMCK(1) .NE. MEMID(1)) THEN
+            CALL QENTER('MEMGET  ')
             WRITE (LUWMEM,'(/A/A,I10,2(/A,I25))')
      *         ' MEMGET ERROR, not a valid memget id in work(kfree)',
      *         ' KFREE =',KFREE,
@@ -138,6 +144,7 @@ C
      *         ' MEMGET WARNING, nonzero allocation work(kfree)',
      *         ' KFREE =',KFREE,
      *         ' found memory allocation :',MEMCK(2)
+            CALL QENTER('MEMGET  ')
             CALL QTRACE(LUWMEM)
             IF (LUEMEM.NE.LUWMEM) THEN
                WRITE (LUEMEM,'(/A/A)')
@@ -145,6 +152,7 @@ C
      *         ' ---> see output file'
                CALL QTRACE(LUEMEM)
             END IF
+            CALL QEXIT('MEMGET  ')
          END IF
          WORK(KFREE-LENID) = WMEMID(1)
          IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
@@ -155,7 +163,7 @@ C
       MEMID(2) = 0
       WORK(KFREE-LENID) = WMEMID(1)
       IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
-      CALL QEXIT('MEMGET')
+Chj1  CALL QEXIT('MEMGET  ')
       RETURN
       END
 C  /* Deck memrel */
@@ -181,7 +189,7 @@ C
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
 C
-      CALL QENTER('MEMREL')
+      CALL QENTER('MEMREL  ')
 C
 C     First check if memory allocation is intact
 C     (check if anything has been out of bounds)
@@ -236,7 +244,7 @@ C
       LFREE = LFREE + (KFREE-KREL)
       KFREE = KREL
 C
-      CALL QEXIT('MEMREL')
+      CALL QEXIT('MEMREL  ')
       RETURN
       END
 C  /* Deck memchk */
@@ -261,7 +269,7 @@ C
       SAVE          MEMID
       DATA          MEMID(1) /1234567890/
 C
-      CALL QENTER('MEMCHK')
+      CALL QENTER('MEMCHK  ')
 C
       KFREE = KFIRST
       IF (KFREE .EQ. 1) KFREE = 1 + LENID
@@ -308,7 +316,7 @@ C
             GO TO 100
          END IF
 C
-      CALL QEXIT('MEMCHK')
+      CALL QEXIT('MEMCHK  ')
       RETURN
       END
 C  /* Deck memopt */
