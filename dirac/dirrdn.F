@@ -335,9 +335,9 @@ C
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
      +    'the following two-electron integrals:'
-        IF(IBTAND(IDFLAG,1)) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
-        IF(IBTAND(IDFLAG,2)) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
-        IF(IBTAND(IDFLAG,4)) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
+        IF(IBTAND(IDFLAG,1).NE.0) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+        IF(IBTAND(IDFLAG,2).NE.0) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
+        IF(IBTAND(IDFLAG,4).NE.0) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
