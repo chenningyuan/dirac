@@ -244,9 +244,10 @@ C
                   IF (NACSH(I,IOPEN).EQ.0) GOTO 15
 C
 C                 (a_o-1) f_o DVao QVao
-C                 The DP5 comes from TWOINT
+C                 = (a_o-1) f_o DVao f FVao
+C                 where FVao is the Fock matrix from TWOINT
 C
-                  DSCALE = DP5*DF(IOPEN)*(DA(IOPEN)-D1)
+                  DSCALE = DF(IOPEN)*(DA(IOPEN)-D1)*DF(IOPEN)
                   CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),DSCALE,
      &                 'N','N',IPQTOQ(1,0),
      &                         DMAT(1+I2BASX(I,I)+N2BBASXQ*IOPEN),
