@@ -230,6 +230,7 @@ make_export()
      \$szCurrDir/crilib.cld \\
      \$szCurrDir/pam.in \\
      \$szCurrDir/pam.1 \\
+     \$szCurrDir/pamq \\
      \$szCurrDir/Makefile \\
      \$szCurrDir/doc/doc.html \\
      \$szCurrDir/include/*.h \\
@@ -239,12 +240,12 @@ make_export()
      \$szCurrDir/test \\
      \$szCurrDir/testlast \\
      \$szCurrDir/basis \\
+     \$szCurrDir/basis_dalton \\
      \$szCurrDir/utils 2> export.log
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
       tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
-      rm export.log
    done
 EOF
    #
@@ -375,8 +376,7 @@ main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
 main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
-gp/gpc.o \\
-relccsd/ccunix.o
+gp/gpc.o
 
 #
 
@@ -392,7 +392,7 @@ RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
-relccsd/ccunix.o relccsd/ccfspc.o  relccsd/waio.o 
+relccsd/ccfspc.o  relccsd/waio.o 
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
