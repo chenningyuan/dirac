@@ -8,17 +8,7 @@
  *
  */
 
-#if defined (VAR_MPI)
-
-#include <mpi.h>
+#include "mpi_errtrap.h"
 
 void ini_mpi(int *parcal, int *mytid, int *mparid, int *numnod, 
-             MPI_Errhandler *errhandler)
-
-#else /* VAR_MPI */
-
-void ini_mpi(int *parcal, int *mytid, int *mparid, int *numnod, 
-             int *errhandler)
-
-#endif
-
+             errhandler_type *errhandler)
