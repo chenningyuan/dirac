@@ -32,6 +32,27 @@ fi
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
+# Define backup function /hjaaj
+#
+backup () {
+  if [ "$1" = "-v" ]; then ekko=1; shift
+     else ekko=0;
+  fi
+  for i in $* ; do
+     if [ -f "${i}" ]; then
+        for j in 6 5 4 3 2 1 0 ; do
+           let jp=$j+1
+           if [ -f "${i}.${j}" ]; then 
+              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+              mv -f "${i}.${j}" "${i}.${jp}"
+           fi
+        done
+        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+        mv -f "${i}" "${i}.0"
+     fi
+  done
+}
+#
 #
 # CHECK OPTIONS
 #
@@ -50,7 +71,7 @@ usage='Usage: '$0'\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
 '--time=TIME\n'\
-'\tRuntime (for the queueing system) (default: 24:00:00)\n'\
+"\tRuntime (for the queueing system) (default: $time)\n"\
 '--q=QUEUE\n'\
 '\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
@@ -127,7 +148,7 @@ done
 #
 errfile=${testdir}/logs/lastrun
 if [ -f $errfile ]; then
-   rm $errfile
+   backup -v $errfile
 fi
 if [  -z "$tests" ]; then
    run=default_test;
@@ -166,18 +187,11 @@ if [ ! -d "${testdir}/logs" ]; then
    mkdir ${testdir}/logs;
 fi
 cd ${testdir}/logs;
-for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
-    if [ -f "${i}" ]; then
-        if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
-        if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
-        if [ -f "${i}.4" ]; then mv -f "${i}.4" "${i}.5"; fi
-        if [ -f "${i}.3" ]; then mv -f "${i}.3" "${i}.4"; fi
-        if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.3"; fi
-        if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
-        if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
-        if [ -f "${i}" ]; then mv -f "${i}" "${i}.0" ; fi
-    fi
-done
+backup $makelog
+backup $cvslog
+backup $runlog
+backup $txtlog
+backup $htmlog
 cd ${pampath};
 #
 if [ "${cvs}" = "yes" ]; then
