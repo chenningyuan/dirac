@@ -7,12 +7,16 @@
 
 include ../Makefile.config
 
+#
+# Delete the entry libpdlib.a(gpblas.o) if you supply your own BLAS !
+#
+
 OBJS=libpdlib.a(arhpack.o) libpdlib.a(dge.o) libpdlib.a(dsp.o)\
      libpdlib.a(linextra.o) libpdlib.a(printpkg.o)\
-     libpdlib.a(gpblas.o) libpdlib.a(gp_dblas3.o) libpdlib.a(eispack.o)
+     libpdlib.a(gpblas.o) libpdlib.a(eispack.o)
 
 SRC=arhpack.F dge.F dsp.F linextra.F printpkg.F \
-    gpblas.F gp_dblas3.F eispack.F
+    gpblas.F  eispack.F
 
 all :	libpdlib.a
 
