@@ -120,6 +120,10 @@ C
       ENDIF
 #endif
 C
+C     Consistency checks
+C
+      CALL CONINP
+C
       CALL TITLER('End of input processing','*',124)
 C
 C     If input test , exit here
@@ -3281,4 +3285,30 @@ C
   999 CONTINUE
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck coninp */
+      SUBROUTINE CONINP
+C*****************************************************************************
+C
+C <<< Check concistency of the specified input >>>
+C
+C     Written by Luuk Visscher may 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcbdhf.h>
+#include <dcbham.h>
+C
+      IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
+      IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
+      IF (RESOLV.AND.DOTRA)
+     &   CALL QUIT ('Either RESOLV OR 4INDEX should be specified')
+C
+      RETURN
+ 1000 FORMAT (/' **** WARNING ****'/2X,'not tested')
       END
