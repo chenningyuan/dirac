@@ -1819,3 +1819,61 @@ C
       CALL QEXIT('NOFDIA')
       RETURN
       END
+C  /* Deck fndmin */
+      SUBROUTINE FNDMIN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
+C
+C 23-Nov-2000 hjaaj (FNDMIN = CIFNMN from 12-Aug-1990 hjaaj)
+C (Find minimum elemnts)
+C
+C Purpose:
+C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
+C
+#include <implicit.h>
+      DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
+C
+      IF (LWRK .LT. NELMNT) THEN
+         CALL QUIT('FNDMIN: Insufficient memory (LWRK .lt. NELMNT)')
+      END IF
+      IF (NELMNT .GT. NVEC) THEN
+         CALL QUIT('FNDMIN ERROR: NELMNT .gt. NVEC')
+      END IF
+C
+C     Sort first NELMNT elements of VEC
+C
+      DO 120 I = 1,NELMNT
+         VECI = VEC(I)
+         DO 115 J = 1,(I-1)
+         IF (WRK(J) .GT. VECI) THEN
+            DO 112 K = I,(J+1),-1
+               WRK(K)    = WRK(K-1)
+               IPLACE(K) = IPLACE(K-1)
+  112       CONTINUE
+            IPLACE(J) = I
+            WRK(J)    = VECI
+         GO TO 120
+         END IF
+  115    CONTINUE
+         IPLACE(I) = I
+         WRK(I)    = VECI
+  120 CONTINUE
+C
+C     Find lowest elements by insertion sort
+C
+      XHGH = WRK(NELMNT)
+      DO 140 I = NELMNT+1,NVEC
+      IF (VEC(I).GE.XHGH) GO TO 140
+         DO 130 J = 1,NELMNT
+         IF (VEC(I) .LT. WRK(J)) THEN
+            DO 135 K = NELMNT,(J+1),-1
+               WRK(K) = WRK(K-1)
+               IPLACE(K) = IPLACE(K-1)
+  135       CONTINUE
+            IPLACE(J) = I
+            WRK(J) = VEC(I)
+            XHGH   = WRK(NELMNT)
+            GO TO 140
+         END IF
+  130    CONTINUE
+  140 CONTINUE
+      RETURN
+      END
