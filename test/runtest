@@ -9,6 +9,20 @@
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
+# predefined restricted test sequences:
+#
+short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short'
+medium_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 13.rpa 14.basis.set.input 19.fockspace 22.lucita_short'
+long_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 13.rpa 14.basis.set.input 19.fockspace 24.lucita_large'
+all_test=
+for ff in [1-9]\.* [1-9][0-9]\.*; do
+   if test -d $ff; then
+      all_test=$all_test' '$ff
+   fi
+done
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
 #
 # Does 'echo' understand escapes?
 #
@@ -33,18 +47,19 @@ usage () {
    $echo '--version'
    $echo '\tPrint version of runtest'
    $echo '--tests="tests to run"'
-   $echo '\tChoose which tests to run'
+   $echo '\tChoose which tests to run (default: short)'
    $echo '--pampath="path to pam script"'
    $echo '\tSet path to pam script'
    $echo '--dirac="executable"'
    $echo '\tSpecify which dirac.x should be used'
    $echo '--run="tag"'
-   $echo '\tLabel the output (default out)'
+   $echo '\tLabel the output (default: out)'
    $echo '--mpi="number of slaves"'
    $echo '\tRun test in parallell under MPI'
    $echo
 }
 
+# next line defines default test series
 arg_tests=short
 arg_pampath=
 arg_dirac=
@@ -65,6 +80,7 @@ while [ $# != 0 ]; do
          valomitted=yes
          ;;
       *)
+         $echo Invalid argument: ${arg}
          $echo $usage
          exit
    esac
@@ -134,51 +150,13 @@ done
 #
 #
 # FIND ALL POSSIBLE TESTS
+# Create list of tests for this run
 #
 #
 echo
 echo 'FINDING TESTS...'
 echo
-short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short'
-medium_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 13.rpa 14.basis.set.input 19.fockspace 22.lucita_short'
-long_test='1.energy+dipole 2.nmrspinspin 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 10.efg 11.methods.cosci 12.zora 13.rpa 14.basis.set.input 19.fockspace 24.lucita_large'
-all_test=
-for ff in [0-9]*; do
-   if test -d $ff; then
-      all_test=$all_test' '$ff
-   fi
-done
-echo
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-# CREATE HTML HEADER
-#
-cat <<\eor > logs/${arg_tag}_dif.htm
-<HTML>
-<TITLE> Error report for DIRAC test runs </TITLE>
-<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
-<PRE>
-<H1>drep output by color</H1>
 
-<p>The colors are determined using relative errors for numbers larger than 0.001, and absolute errors otherwise.</p>
-<p>Only those digits that actually differ are yellow or red, the others are white.</p>
-<p>The coloring scheme used:</P>
-1.23456789  white: difference can be neglected (less than 1e-12)
-1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
-1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
-
-eor
-#
-#
-# RUN THE REQUESTED TESTS
-#
-#
-HOSTS=`hostname`
-export HOSTS
-echo 
-echo "Running tests on host : $HOSTS ..."
-echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
@@ -197,12 +175,66 @@ if [ ! -z "$arg_tests" ]; then
          tests=$all_test
          ;;
       *)
-         tests=$arg_tests
+#        hjaaj: extract and test users list of tests
+         tests=
+         for ff in ${arg_tests}; do
+            if test -d $ff; then
+#              hjaaj: OK, user has specified a test directory
+               tests=$tests' '$ff
+            else
+#              hjaaj: check if test is specified just by number ?
+               for ff2 in ${ff}\.*; do
+                  if test -d $ff2; then
+#                    hjaaj: yes, so OK
+                     tests=$tests' '$ff2
+                  else
+                     echo "ERROR: test '$ff' not recognized"
+                     exit 1
+                  fi
+               done
+            fi
+         done
          ;;
    esac
 else
-   tests=$all_test
+   tests=$short_test
+#  tests=$all_test
 fi
+
+echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+# CREATE HTML HEADER
+#
+cat <<\eor > logs/${arg_tag}_dif.htm
+<HTML>
+<TITLE> Error report for DIRAC test runs </TITLE>
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
+<PRE>
+<H1>drep output by color</H1>
+
+<p>The colors are determined using relative errors for numbers larger than 0.001,
+and absolute errors otherwise.</p>
+<p>Only those digits that actually differ are yellow or red, the others are white.</p>
+<p>The coloring scheme used:</p>
+1.23456789  white: difference can be neglected (less than 1e-12)
+1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
+1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
+
+eor
+echo "<p>Date and time for start of test: " `date` "</p>" >> logs/${arg_tag}_dif.htm
+echo "<p> </p><hr><p> </p>"                               >> logs/${arg_tag}_dif.htm
+#
+#
+# RUN THE REQUESTED TESTS
+#
+#
+HOSTS=`hostname`
+export HOSTS
+echo 
+echo "Running tests on host : $HOSTS ..."
+echo
 $echo " Using tests: $tests \c"
 echo
 
