@@ -17,7 +17,7 @@
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #define CALL_QUIT QUIT
-#elif defined (SYS_AIX || defined (SYS_HPUX)
+#elif defined (SYS_AIX)|| defined (SYS_HPUX)
 #define CALL_QUIT quit
 #else 
 #define CALL_QUIT quit_
