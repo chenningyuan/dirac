@@ -1,0 +1,20 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : Makefile.in
+# SOURCE  : $Source$
+#
+
+include ../Makefile.config
+
+OBJS =	twofit.o
+
+twofit:	$(OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

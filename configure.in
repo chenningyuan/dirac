@@ -1437,7 +1437,7 @@ echo
 #
 echo
 echo "Making Makefiles..."
-dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci"
+dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi

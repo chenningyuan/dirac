@@ -3523,3 +3523,221 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CURVE(NORDER,NPOINTS,A,B,X,Y,VAR,KVPT)
+#include <implicit.h>
+      PARAMETER (D0=0.0D0)
+      DIMENSION A(*),B(*),KVPT(*)
+      DIMENSION X(NPOINTS),Y(NPOINTS)
+      NDIM = NORDER + 1
+C* Stabilize by subtracting mean from Y-vector:
+      YMEAN = D0
+      DO I = 1,NPOINTS
+        YMEAN = YMEAN + Y(I)
+      ENDDO
+      YMEAN = YMEAN/NPOINTS
+      DO I = 1,NPOINTS
+        Y(I) = Y(I) - YMEAN
+      ENDDO
+C* Calculate upper triangle column packed matrix A :
+      IOFF = 0
+      DO 10 J = 1,NDIM
+        DO 20 I = 1,J
+          IOFF = IOFF + 1
+          IORDER = I + J - 2
+CTROND          A(I,J) = XN(IORDER,NPOINTS,X)
+          A(IOFF) = XN(IORDER,NPOINTS,X)
+   20 CONTINUE
+   10 CONTINUE  
+C* Calculate column vector b:
+      DO 30 I = 1,NDIM
+        IORDER = I - 1
+        B(I) = XNY(IORDER,NPOINTS,X,Y)
+   30 CONTINUE  
+C* Solve linear equations
+      CALL DSPSOL(NDIM,1,A,B,KVPT,INFO)      
+      DO I = 1,NPOINTS
+        Y(I) = Y(I) + YMEAN
+      ENDDO
+      B(1) = B(1) + YMEAN
+C*    Estimate fit
+      VAR = MAX(DFIT(NPOINTS,NORDER,X,Y,B),1D-14)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NEWRAP(NORDER,DTOL,B,XVAL,NITER,IERR)
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION B(NORDER + 1)
+      IERR = 0
+      NSTEP = 0
+      WRITE(LUPRI,'(A,E12.6,A,E8.2)') 'NEWTON: Start value:',XVAL,
+     +   '   Tolerance:  ',DTOL
+   10 CONTINUE
+      NSTEP = NSTEP + 1
+      XOLD = XVAL  
+      XFAC = POLDER(NORDER,B,XOLD)/POL2DER(NORDER,B,XOLD)
+      XVAL = XOLD - XFAC
+      IF((ABS((XVAL-XOLD)).GT.DTOL).AND.(NSTEP.LE.NITER)) GOTO 10
+      IF(NSTEP.GT.NITER) THEN
+        IERR = 1
+      ENDIF
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION XN(NORDER,NPOINTS,X)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION X(NPOINTS)
+      XN = D0
+      DO 10 I = 1,NPOINTS
+        XN = XN + X(I)**NORDER
+   10 CONTINUE    
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION XNY(NORDER,NPOINTS,X,Y)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION X(NPOINTS),Y(NPOINTS)
+      XNY = D0
+      FAC = NORDER
+      DO 10 I = 1,NPOINTS
+        XNYBUF = Y(I)
+        XBUF = X(I)
+        DO 20 J = 1,NORDER
+          XNYBUF = XNYBUF*XBUF
+   20   CONTINUE    
+C      XNY = XNY + XNYBUF
+      XNY = XNY + Y(I)*(X(I)**FAC)
+   10 CONTINUE    
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION POLVAL(NORDER,B,XVAL)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION B(NORDER+1)
+      POLVAL = B(1)
+      DO 10 I = 1,NORDER
+        POLVAL = POLVAL + (XVAL**I)*B(I+1)
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION POLDER(NORDER,B,XVAL)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION B(NORDER+1)
+      IF(NORDER.LT.1) THEN
+        POL1DER = D0
+        RETURN
+      ENDIF
+      POLDER = B(2)
+      XBUF = D1
+      DO 10 I = 2,NORDER
+        POLDER = POLDER + (XVAL**(I-1))*I*B(I+1)
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION POL2DER(NORDER,B,XVAL)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D2 = 2.0D0)
+      DIMENSION B(NORDER+1)
+      IF(NORDER.LT.2) THEN
+        POL2DER = D0
+        RETURN
+      ENDIF
+      POL2DER = D2*B(3)
+      XBUF = D1
+      DO 10 I = 3,NORDER
+        POL2DER = POL2DER + (XVAL**(I-2))*I*(I-1)*B(I+1)
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION POL3DER(NORDER,B,XVAL)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D6 = 6.0D0)
+      DIMENSION B(NORDER+1)
+      IF(NORDER.LT.3) THEN
+        POL3DER = D0
+        RETURN
+      ENDIF
+      POL3DER = D6*B(4)
+      XBUF = D1
+      DO 10 I = 4,NORDER
+        POL3DER = POL3DER + (XVAL**(I-3))*(I-2)*(I-1)*I*B(I+1)
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION POLNDER(NORDER,B,XVAL,N)
+#include <implicit.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D6 = 6.0D0)
+      DIMENSION B(NORDER+1)
+      IF(NORDER.LT.N) THEN
+        POLNDER = D0
+        RETURN
+      ENDIF
+      FAC = D1
+      DO J = 2,N
+        FAC = FAC*J
+      ENDDO
+      POLNDER = FAC*B(N+1)
+      XBUF = 1
+      DO 10 I = N+1,NORDER
+        FAC = I
+        DO J = 1,N-1
+          FAC = FAC*(I-J)
+        ENDDO
+        POLNDER = POLNDER + (XVAL**(I-N))*B(I+1)*FAC
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION MIND(NPOINTS,Y)
+#include <implicit.h>
+      DIMENSION Y(NPOINTS)
+      YVAL = Y(1)
+      DO 10 I = 2,NPOINTS
+        IF(Y(I).LE.YVAL) THEN
+          YVAL = Y(I)
+          MIND = I
+        ENDIF
+   10 CONTINUE
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION DFIT(NPOINTS,NORDER,X,Y,B)
+#include <implicit.h>
+      DIMENSION B(NORDER+1)
+      DIMENSION X(NPOINTS),Y(NPOINTS)
+      DFIT = 0
+      DO 10 I = 1,NPOINTS
+        DIFF = Y(I) - POLVAL(NORDER,B,X(I))
+        DFIT = DFIT + DIFF*DIFF
+   10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETMSS(IZ,DMASS,ABUND,INFO)
+C***********************************************************************
+C
+C     Get mass of the most abundant isotope of charge IZ
+C
+C***********************************************************************
+#include <implicit.h>
+      PARAMETER(D0=0.0D0)
+      PARAMETER (MAXISO = 6, MAXCHR = 109)
+C
+      INFO = -1
+      IF(IZ.GT.MAXCHR) THEN
+        RETURN
+      ENDIF
+      ABUND = D0
+      ISO   = 0
+      DO I =1,5
+        DMASS = DISOTP(IZ,I,'ABUNDANCE')
+        IF(DMASS.GT.ABUND) THEN
+          ABUND = DMASS
+          ISO   = I
+        ENDIF
+      ENDDO
+      IF(ISO.GT.0) THEN
+        DMASS = DISOTP(IZ,ISO,'MASS')
+        INFO = 0
+      ENDIF
+C
+      RETURN
+      END
