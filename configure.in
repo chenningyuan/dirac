@@ -793,32 +793,18 @@ if [ -z "$worksp" ]; then
          if [ $quick = 0 ]; then
             ok=
             while [ -z "$ok" ]; do
-               $echo "- Do you want to create $worksp [y]/n? \c"
+               $echo "- Are you sure that you want $worksp [y]/n? \c"
                read answer
                case "$answer" in
                "y" | "yes" | "")
-                  answer=yes
                   ok=xxx
                   ;;
                "n" | "no")
-                  answer=no
+                  worksp=
                   ok=xxx
                   ;;
                esac
             done
-         else
-            answer=yes
-         fi
-         if [ "$answer" = "yes" ]; then
-            $echo "Making $worksp: \c"
-            mkdir -p $worksp 2> /dev/null || worksp=
-            if [ -z "$worksp" ]; then
-               echo "error..."
-            else
-               echo "ok"
-            fi
-         else
-            worksp=
          fi
       fi
    done
@@ -896,12 +882,12 @@ fi
 
 
 INCLUDE_DIR=include
+arflag=
 case $machine in
 #
 #  HEWLETT - PACKARD
 #
     *-hp) 
-       echo "hp"
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -922,11 +908,12 @@ case $machine in
           fi
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
+       arflag='rv'
        c_opt='+O3 -Ae'
        opt='+O3 +U77 +E4 +E5'
        inc="-I$INCLUDE_DIR"
        LIB="-lV7 $LIB"
-       if [ `echo $LIB | grep 'veclib'` ]; then
+       if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp="$cpp -DVAR_LIBVECLIB"
        fi
        ;;
@@ -1252,6 +1239,13 @@ F77         = $F77
 CC          = cc
 RM          = -rm
 AR          = ar
+EOF
+if [ -n "$arflag" ]; then
+cat <<EOF >> Makefile.config
+ARFLAGS     = $arflag
+EOF
+fi
+cat <<EOF >> Makefile.config
 OPTFLAGS    = $opt
 C_OPTFLAGS  = $c_opt
 INCLUDE_DIR = $inc
