@@ -349,7 +349,7 @@ C
      +   '* The speed of light : ',CVEL
       IF(CVAL.NE.CVEL) THEN
         FMT = MXFORM(CVAL,14)
-        WRITE(LUPRI,'(3X,A,E9.3,A,'//FMT//')')
+        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
      +   '* The speed of light scaled by ',(CVAL/CVEL),
      +   ' to : ',CVAL
       ENDIF
@@ -386,7 +386,7 @@ C
      &    ' L component basis !'
          CALL QUIT('GENINP: Pre-RKB with non-spherical L-comp!')
       ENDIF
-      WRITE(LUPRI,'(1X,A,2(/3X,A,E9.3))')
+      WRITE(LUPRI,'(1X,A,2(/3X,A,1P,D9.2))')
      +     '* Thresholds for linear dependence:',
      +     'Large components:  ',STOL(1),
      +     'Small components:  ',STOL(2)
@@ -1263,15 +1263,15 @@ C
       WRITE(LUPRI,'(1X,A,I4)')
      +   '* Maximum number of iterations: ',MAXITR
       IF(ERGCNV) THEN
-        WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
+        WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
      &    '* Convergence on total energy.',
      &    '  Convergence threshold:',SCFCNV
       ELSEIF(FCKCNV) THEN
-        WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
+        WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
      &    '* Convergence on total Fock matrix.',
      &    '  Convergence threshold:',SCFCNV
       ELSEIF(EVCCNV) THEN
-      WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
+      WRITE(LUPRI,'(1X,A,/,1X,A,1P,D9.2)')
      &    '* Convergence on error vector(approximate gradient).',
      &    '  Convergence threshold:',SCFCNV
       ENDIF
@@ -1365,7 +1365,7 @@ C
       ENDIF
       IF(LBIT(INTDEF,2)) THEN
         IF(CNVINT(1).LT.DUMMY) THEN
-          WRITE(LUPRI,'(3X,A,E8.1)')
+          WRITE(LUPRI,'(3X,A,1P,D8.1)')
      +    'SL-integrals  below SCF convergence ',CNVINT(1)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
@@ -1374,7 +1374,7 @@ C
       ENDIF
       IF(LBIT(INTDEF,3)) THEN
         IF(CNVINT(2).LT.DUMMY) THEN
-          WRITE(LUPRI,'(3X,A,E8.1)')
+          WRITE(LUPRI,'(3X,A,1P,D8.1)')
      +    'SS-integrals  below SCF convergence ',CNVINT(2)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
@@ -2270,7 +2270,7 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'PRJINP: Projection onto another solution'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,1P,E9.2)')
+      WRITE(LUPRI,'(1X,A,1P,D9.2)')
      &       '* Threshold for printing projection coefficients:',PROTHR
       WRITE(LUPRI,'(1X,A)') '* Number of spinors projected:'
       DO I = 1,NFSYM
@@ -2941,11 +2941,11 @@ C         Operator must be symmetric under time reversal
            WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
      &          'solutions projected out'
          ENDIF
-         IF(ZORA.AND..NOT.ZORA4) WRITE(LUPRI,'(1X,A,E8.2)')
+         IF(ZORA.AND..NOT.ZORA4) WRITE(LUPRI,'(1X,A,1P,D8.2)')
      &      '* ZORA approximation using approximate density'
-         IF(ZORA4) WRITE(LUPRI,'(1X,A,E8.2)')
+         IF(ZORA4) WRITE(LUPRI,'(1X,A,1P,D8.2)')
      &      '* ZORA approximation using the full density'
-         IF(ZORASC) WRITE(LUPRI,'(1X,A,E8.2)')
+         IF(ZORASC) WRITE(LUPRI,'(1X,A,1P,D8.2)')
      &      '* Calculating and printing scaled ZORA orbital energies'
          IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
      &      '* No nuclear attraction integrals for small components !'
@@ -3439,20 +3439,17 @@ C
 C
       IF (NAELEC .EQ. 0) THEN
          WRITE(LUPRI,'(1X,A,I4,A)') 
-     &      '* Closed shell DHF with ',NELECT,
+     &      '* Closed shell DHF calculation with ',NELECT,
      &      ' electrons in'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(3X,I5,A,I1)')
      &          NISH(I),' orbitals in Fermion irrep ',I
          END DO
       ELSE
-         WRITE(LUPRI,'(1X,A)') 
-     &      '* Open shell DHF calculation.'
-         WRITE(LUPRI,'(1X,A/)') 
-     &      '* Shell specifications:'
-         WRITE(LUPRI,'(40X,A)') 
-     &      'Orbitals'
-         WRITE(LUPRI,'(24X,A,/,24X,A)') 
+         WRITE(LUPRI,'(1X,A/1X,A//40X,A,2(/24X,A))') 
+     &      '* Open shell DHF calculation.',
+     &      '* Shell specifications:',
+     &                     'Orbitals',
      &      '#electrons  irrep 1  irrep 2     f        a      alpha',
      &      '----------  -------  -------  -------  -------  -------'
          IF (NFSYM .EQ. 1) THEN
