@@ -17,7 +17,7 @@ C  ../include/para.h  ../include/priunit.h
 CMI
 
       Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
-     *                WRK,LFREE)            
+     *                IC_AMFI,WRK,LFREE)            
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
@@ -28,7 +28,11 @@ CB  EXP_FIN: the finite nucleus exponent (if required)
 CBS WRK, KFREE,LFREE standard work-array parameters in DALTON
 CBS
 CBS
+CMI  IC_AMFI ... specify what SO to include:
+CMI
+CMI=====================================================================
 #include "implicit.h"
+#include "priunit.h"
 c###########################################################################
 c
 c          A M F I 
@@ -137,6 +141,38 @@ CBS                        schemes are used
 #include "datapow.h"
       common ipowxyz(3,-Lmax:Lmax,0:Lmax)
       dimension WRK(LFREE)
+
+CMI    set the oneonly option !!
+       WRITE(LUPRI,*) 'AMFI: IC_AMFI=',IC_AMFI
+       IF (IC_AMFI.EQ.1) THEN
+        oneonly=.true.
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: ONLY SO1!' 
+       ELSE IF (IC_AMFI.EQ.2) THEN
+        oneonly=.false.
+        sameorb=.true.   
+        ADDSO1=.FALSE.
+        WRITE(LUPRI,*) 'AMFI: ONLY MFSSO2 !' 
+       ELSE IF (IC_AMFI.EQ.3) THEN
+        oneonly=.false.
+        sameorb=.false.   
+        ADDSO1=.FALSE.
+        WRITE(LUPRI,*) 'AMFI: ONLY MFSO2 !' 
+       ELSE IF (IC_AMFI.EQ.4) THEN
+        oneonly=.false.
+        sameorb=.true.   
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !' 
+       ELSE IF (IC_AMFI.EQ.5) THEN
+        oneonly=.false.
+        sameorb=.false.   
+        ADDSO1=.TRUE.
+        WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
+       ELSE
+        CALL QUIT('AMFI: IC_AMFI out of range')
+       ENDIF    
+
+
 c##########################################################################
 cbs  #####################################################################
 cbs         version with all angular integrals in memory 
@@ -177,14 +213,11 @@ cbs   read the input
       call readbas(Lhigh,makemean,bonn,breit,
      *symmetry,sameorb,AIMP,oneonly,ncont4,numballcart,IN,
      *ifinite,EXP_FIN) 
-cbs
+
 cbs
  123  if (ifinite.eq.2) call finsub  
 cbs
-cbs
 ! Lhigh is the highest l-value in the basis set
-      if (makemean.and.(.not.oneonly).and.ifinite.le.1) 
-     *call getAOsx(Lhigh)
 
       call genpowers(Lhigh) !generate powers of exponents and overlaps 
 cbs   start generating modified contraction coefficients
@@ -198,18 +231,24 @@ cbs   cont(L) arranges all the contraction coefficients for a given L-value
 cbs   and renormalizes them 
       call cont(lrun,breit,ifinite)
       enddo 
+
+      if (makemean.and.(.not.oneonly).and.ifinite.le.1) 
+     *call getAOsx(Lhigh)
+
+
 cbs                        
 cbs        beginning the angular part  
       if (.not.oneonly) then  
 CBS   write(6,*) '***************************************************' 
-CBS   write(6,*) '********   beginning the 2e-part ******************' 
+      write(LUPRI,*)
+     &      '********   beginning the 2e-part ******************' 
 CBS   write(6,*) '***************************************************' 
 cbs                        
 cbs  ##################################################################################### 
 cbs  ##################################################################################### 
 cbs  ##################################################################################### 
 cbs
-cbs       
+cbs    
       call angular(Lhigh,keep,keepcart,makemean,bonn,breit,
      *sameorb,ifinite,WRK,LFREE) ! subroutine for angular part 
       endif 
@@ -222,11 +261,10 @@ cbs ############################################################################
 cbs ########################################################################################
 cbs ########################################################################################
 CBS   write(6,*) '***************************************************' 
-CBS   write(6,*) '*******   beginning the 1-electron-part  **********' 
+      write(LUPRI,*)
+     &      '*******   beginning the 1-electron-part  **********' 
 CBS   write(6,*) '***************************************************' 
 
-C      ADDSO1 = .TRUE.
-       ADDSO1 = .FALSE.
 cbs    the one-electron spin-orbit integrals   
       call gen1overR3(Lhigh)   ! generates the 1/r**3 integrals  for normalized functions 
       call contandmult(Lhigh,makemean,AIMP,oneonly,
@@ -234,7 +272,8 @@ cbs    the one-electron spin-orbit integrals
      *     ifinite,OLDNRM,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
 cbs                             factors and contraction coefficients 
 CBS   write(6,*) '***************************************************' 
-CBS   write(6,*) '*******   end of  the 1-electron-part    **********' 
+      write(LUPRI,*)
+     &         '*******   end of  the 1-electron-part    **********' 
 CBS   write(6,*) '***************************************************' 
 cbs ########################################################################################
 cbs ########################################################################################
@@ -712,7 +751,11 @@ cbs   determine the size icont4 for the radial integrals
       iconSO=icartOO+ncont
       iconOO=iconSO+icont4   
       KLAST = ICONOO + ICONT4
-      IF (KLAST .GT. LFREE) CALL STOPIT('AMFI  ','ANGULAR',KLAST,LFREE)
+CMI   IF (KLAST .GT. LFREE) CALL STOPIT('AMFI  ','ANGULAR',KLAST,LFREE)
+      IF (KLAST .GT. LFREE) THEN  
+        WRITE(LUPRI,*) 'angular: KLAST,LFREE:',KLAST,LFREE
+        CALL QUIT('angular: work space exceeded.')
+      ENDIF
       LLEFT = LFREE - KLAST + 1
       call gencoul(l1,l2,l3,l4,makemean,bonn,breit,
      *sameorb,WRK(iconSO),WRK(iconOO),icont4,
@@ -1868,10 +1911,11 @@ cbs###########################################################################
       breit_finite=.true.
 cbs   transcon transfers and normalizes contracted functions
 cbs   ore more precizely the coefficients  
+CMI ... modified according to 'amfi_wizard'  
       call transcon(cntscrtch(1,1,L),MxprimL,
      *MxcontL,normovlp(1,1,L),
-     *contrarray(iaddori(L)),nprimit(L),ncontrac(L))
-cbs   gentkin generates the matrix of kinetic energy  TKIN 
+     *contrarray(iaddori(L)),nprimit(L),ncontrac(L),ovlpcont(1,1,L))
+cbs   gentkin generates the matrix of kinetic energy TKIN 
       call gentkin(L,TKIN,nprimit(L),exponents(1,L),rootOVLPinv(1,1,L))
 cbs   kindiag diagonalizes TKIN 
 cbs   for finite nucleus 

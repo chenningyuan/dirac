@@ -1,6 +1,7 @@
 C
 C Authorship of this program must be dicussed before
 C distributing it with the DIRAC package ! (MI,jan 2005)
+C see mail from Timo: Atomares SCF
 C
 C  How to compile it:
 C
@@ -5071,7 +5072,7 @@ C
       WRITE (LUPRI,2006) I,(ITRAN(IN),CTRAN(IN),IN=INMIN,INMAX)   
  2005 INMIN=INMIN+MXCC-1                                                
  2006 FORMAT(6X,'*',I2,'*',5X,7(I2,F12.7,3X),/,(10X,5X,7(I2,F12.7,3X))) 
-  210 WRITE(LUPRU,220) NITSCF,THRSCF                       
+  210 WRITE(LUPRI,220) NITSCF,THRSCF                       
   220 FORMAT('0',5X,'FINAL SCF RESULTS OBTAINED AT COMPUTATION NO',I2,  
      *       5X,'SCF THRESHOLD =',E11.4)                                
       IF(NFLAG2.EQ.1) GO TO 1002                                        

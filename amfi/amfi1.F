@@ -31,12 +31,12 @@ cbs   functions, the exponents and contraction coefficients
       Nofcont=' NUMBER OF CONTRACTED FUNCTIONS:' 
       addtext='ADDITIONAL FUNCTIONS in IRS:'
 CBS   write(LUPRI,*)                                                      
-CBS   write(LUPRI,*) 'ATOMIC NO-PAIR SO-MF CODE starts'
+      write(LUPRI,*) 'ATOMIC NO-PAIR SO-MF CODE starts'
 CBS   write(LUPRI,*)                                                      
       bonn=.false.
-      sameorb=.false.
+CMI   sameorb=.false.
       aimp=.false.
-      oneonly=.false. 
+CMI   oneonly=.false. 
       makemean=.true.
 CBS   write(LUPRI,*) stars                                                
 CBS   write(LUPRI,*) '2e-integrals for the mean-field only'
@@ -50,32 +50,34 @@ CBS   write(LUPRI,*) stars
 CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
       endif 
       if (BREIT) then
-CBS   write(LUPRI,*) ' Breit-Pauli-Approximation'
+       write(LUPRI,*) ' Breit-Pauli-Approximation'
       else
-CBS   write(LUPRI,*) 'Douglas-Kroll type operators '
+       write(LUPRI,*) 'Douglas-Kroll type operators '
       endif 
       if (ifinite.eq.0) then 
-CBS   write(LUPRI,*) 'Point-nucleus '
+       write(LUPRI,*) 'Point-nucleus '
       else
-CBS   write(LUPRI,*) 'Finite Nucleus' 
+       write(LUPRI,*) 'Finite Nucleus' 
       endif  
-CBS   write(LUPRI,*) stars                                                
-CBS   write(LUPRI,*) 'write out one-electron integrals in MOLCAS-style'
-CBS   write(LUPRI,*) '   and with MOLCAS normalization ' 
-CBS   write(LUPRI,*) stars                                                
-CBS   write(LUPRI,*) stars                                                
+      write(LUPRI,*) stars
+      write(LUPRI,*) 'write out one-electron integrals in MOLCAS-style'
+      write(LUPRI,*) '   and with MOLCAS normalization ' 
+      write(LUPRI,*) stars                               
+      write(LUPRI,*) stars                                         
 CBS   write(LUPRI,*) 
       symmetry='D2H' 
-CBS   write(LUPRI,*) 'Symmetry is D2H'
+      write(LUPRI,*) 'Symmetry is D2H'
 CBS   write(LUPRI,*) 'check whether order of IRs is correct!!!'
       numbofsym=8    
+      if (.not.oneonly) then
       if (SAMEORB) then 
       write(LUPRI,*) 'SAME-ORBIT only'
       else
       write(LUPRI,*) 'OTHER-ORBIT included' 
       endif 
+      endif 
       if (AIMP) then 
-CBS   write(LUPRI,*) 'CORE removed for use with AIMP' 
+      write(LUPRI,*) 'CORE removed for use with AIMP' 
       endif
 CMI ... reading in  
       read(IN,*) charge,Lhigh
@@ -117,15 +119,28 @@ cbs   check maximum numbers
      *           'that. Sorry!! '
             CALL QUIT('Inconsistent input detected in AMFI')            
          endif
-C     write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
-C    *' there will be ',
-C    *ncontrac(Lrun),' contracted functions, built from ',
-C    *nprimit(Lrun),
-C    *' uncontracted functions.' 
+      write(LUPRI,'(A7,I3,A15,I3,A33,I3,A24)') 'For L= ',Lrun,
+     *' there will be ',
+     *ncontrac(Lrun),' contracted functions, built from ',
+     *nprimit(Lrun),
+     *' uncontracted functions.' 
+CMI ... this works only for uncontracted basis functions
+       IF (ncontrac(Lrun).ne.nprimit(Lrun)) 
+     &   CALL QUIT('AMFI: only decontracted basis sets needed!')
+
          do ILINE=1,nprimit(Lrun)
-            read(IN,*) exponents(ILINE,Lrun), 
-     *           (cntscrtch(ILINE,JRUN,Lrun),
-     *           Jrun=1,ncontrac(Lrun))
+CMI         read(IN,*) exponents(ILINE,Lrun), 
+CMI  *           (cntscrtch(ILINE,JRUN,Lrun),
+CMI  *           Jrun=1,ncontrac(Lrun))
+CMI   ... only decontracted basis functions
+            read(IN,*) exponents(ILINE,Lrun)
+            do Jrun=1,ncontrac(Lrun)
+              if (ILINE.eq.Jrun) then
+               cntscrtch(ILINE,JRUN,Lrun)=1.0D0
+              else
+               cntscrtch(ILINE,JRUN,Lrun)=0.0D0
+              endif
+            enddo
          enddo 
 ckr         read(IN,'(A76)') header
 c
@@ -155,16 +170,16 @@ cbs   setting the numbers of cartesians per IR
      *           nmbMperIRL(ipOw2ired(ipowxyz(1,mrun,Lrun),
      *           ipowxyz(2,mrun,Lrun),IpowxYz(3,mrun,Lrun)),lruN)+1
          enddo
-CBS   write(LUPRI,*) stars                                                       
-CBS   write(LUPRI,'(A,8I4)') 
-CBS  *'Number of functions per IR: ',(nfunctions(iredrun,Lrun),
-CBS  *iredrun=1,numbofsym)
-CBS   write(LUPRI,*) stars                                                          
+      write(LUPRI,*) stars                                        
+      write(LUPRI,'(A,8I4)') 
+     *'Number of functions per IR: ',(nfunctions(iredrun,Lrun),
+     *iredrun=1,numbofsym)
+      write(LUPRI,*) stars                                     
       enddo                     ! enddo for loop over L-values 
-C     write(LUPRI,*) 'distribution of M-values'
-c     do Lrun=0,Lhigh
-c     write(LUPRI,*) (nmbMperIRL(nsym,Lrun),nsym=1,numbofsym)
-c     endDo 
+      write(LUPRI,*) 'distribution of M-values'
+      do Lrun=0,Lhigh
+      write(LUPRI,*) (nmbMperIRL(nsym,Lrun),nsym=1,numbofsym)
+      endDo 
       numbofcart=0
       do lrun=0,Lhigh 
       numbofcart=numbofcart+(Lrun+Lrun+1)*
@@ -179,10 +194,11 @@ c     endDo
      *nfunctions(iredrun,Lrun)
       enddo
       enddo
-CBS   write(LUPRI,*) stars                                                        
-CBS   write(LUPRI,'(A,8I3)') 'total number of atomic functions per IRED ',
-CBS  *(nfunctperIRED(iredrun),iredrun=1,numbofsym) 
-CBS   write(LUPRI,*) stars                                                        
+      write(LUPRI,*) stars                            
+      write(LUPRI,'(A,8I3)')
+     &     'total number of atomic functions per IRED ',
+     *(nfunctperIRED(iredrun),iredrun=1,numbofsym) 
+      write(LUPRI,*) stars                          
       isum=0
       do iredrun=1,numbofsym
       itotalperIR(iredrun)=nfunctperIRED(iredrun)
@@ -196,10 +212,10 @@ CBS   write(LUPRI,*) stars
       IREDoffunctnew(Iorbrun)=iredrun 
       enddo 
       enddo 
-CBS   write(LUPRI,*) stars                                                        
-CBS   write(LUPRI,'(A,8I3)') 'including additional functions per IRED ',
-CBS  *(itotalperIR(iredrun),iredrun=1,numbofsym) 
-CBS   write(LUPRI,*) stars                                                          
+      write(LUPRI,*) stars                                  
+      write(LUPRI,'(A,8I3)') 'including additional functions per IRED ',
+     *(itotalperIR(iredrun),iredrun=1,numbofsym) 
+      write(LUPRI,*) stars           
       do iredrun=1,numbofsym  
       ibeginIRED(iredrun)=0                              
       enddo
@@ -265,20 +281,22 @@ cbs
       enddo
       enddo
       enddo
-CBS   write(LUPRI,*) stars
-CBS   write(LUPRI,*) 'SYMMETRY-INFORMATION ON FUNCTIONS '
-CBS   write(LUPRI,*) stars
+      write(LUPRI,*) stars
+      write(LUPRI,*) 'SYMMETRY-INFORMATION ON FUNCTIONS '
+      write(LUPRI,*) stars
+
       do irun = 1, numbofcart
-CBS   write(LUPRI,'(4(A,I3))') 'Number of function: ',
-CBS  *irun,
-CBS  *' IR of function: ',IREDoffunction(irun),
-CBS  *' L-value: ',Loffunction(irun),
-CBS  *' M-value: ',Moffunction(irun)
-CBS   numboffunct(irun)=irun
+      write(LUPRI,'(4(A,I3))') 'Number of function: ',
+     *irun,
+     *' IR of function: ',IREDoffunction(irun),
+     *' L-value: ',Loffunction(irun),
+     *' M-value: ',Moffunction(irun)
+C     numboffunct(irun)=irun
       INOFF(irun)=irun
-CBS   if (IREDoffunction(irun).ne.IREDoffunction(irun+1)) 
-CBS  *write(LUPRI,*)   
+      if (IREDoffunction(irun).ne.IREDoffunction(irun+1)) 
+     *write(LUPRI,*)   
       enddo
+
       do nsymrun=1,numbofsym
       idelpersym(nsymrun)=0
       enddo 
@@ -1449,10 +1467,16 @@ c     write(6,*) 'end  to transform second index '
 c     write(6,*) 'end  trans ' 
       return
       end
-      subroutine transcon(contold,idim1,idim2,ovlp,contnew,nprim,ncont)
+
+CMI .. modified according to the 'amfi_wizard' !!
+      subroutine transcon(contold,idim1,idim2,ovlp,contnew,nprim,ncont,
+     *ovlpcont)
 #include "implicit.h"
+#include "priunit.h"
+CMI#include "para.h"
+CMI#include "param.h"
       dimension contold(idim1,idim2),contnew(nprim,ncont),
-     *ovlp(idim1,idim1)
+     *ovlp(idim1,idim1),ovlpcont(idim2,idim2)
 c     write(6,*) 'begin transcon nprim,ncont ',nprim,ncont 
 cbs   copy old contraction coefficients in dense form to common block 
       do Jrun=1,ncont
@@ -1462,25 +1486,46 @@ cbs   copy old contraction coefficients in dense form to common block
       enddo 
 cbs   ensure normalization 
       do ICONT=1,ncont
-      	xnorm=0d0   
-      	do Jrun=1,nprim
-      	do Irun=1,nprim
-      	xnorm=xnorm+contnew(Irun,ICONT)*contnew(Jrun,ICONT)
-     *	*ovlp(Irun,Jrun)
+        xnorm=0d0   
+        do Jrun=1,nprim
+        do Irun=1,nprim
+          xnorm=xnorm+contnew(Irun,ICONT)*contnew(Jrun,ICONT)
+     *   *ovlp(Irun,Jrun)
 c       write(6,*) 'Icont,jrun,irun,xnorm ',
 c    *  icont,jrun,irun,xnorm 
-      	enddo 
-      	enddo 
+        enddo 
+        enddo 
 c       write(6,*) 'ICONT ',ICONT,xnorm   
-      	xnorm=1d0/dsqrt(xnorm)
+        xnorm=1d0/dsqrt(xnorm)
 cbs   scale with normalization factor 
-      	do Irun=1,nprim
-      	contnew(Irun,ICONT)=xnorm*contnew(Irun,ICONT)
-      	enddo 
+        do Irun=1,nprim
+        contnew(Irun,ICONT)=xnorm*contnew(Irun,ICONT)
+        enddo 
       enddo 
 c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont 
+CMI
+CMI This piece of the code added from 'amfi_wizard'
+cbs   calculate overlap of contracted functions
+      do irun=1,ncont
+      do jrun=1,ncont
+      ovlpcont(jrun,irun)=0d0
+      enddo
+      enddo
+      do icont2=1,ncont
+      do icont1=1,ncont
+      do iprim2=1,nprim
+      do iprim1=1,nprim
+      ovlpcont(icont1,icont2)=ovlpcont(icont1,icont2)+
+     *contnew(iprim1,icont1)*contnew(iprim2,icont2)*
+     *ovlp(iprim1,iprim2)
+      enddo
+      enddo
+      enddo
+      enddo
+c     write(6,*) 'end transcon nprim,ncont ',nprim,ncont     
       return 
       end 
+
       subroutine two2mean12a(carteSO,carteOO,occup,AOcoeffs,onecart,
      *ncontmf,norbsum,noccorb,sameorb)
 #include "implicit.h"
@@ -1703,3 +1748,349 @@ c     enddo
       endif 
       return 
       end 
+
+      Subroutine Jacobi(A,C,N,LdC)
+************************************************************************
+*                                                                      *
+*     (c) Copyright. All rights reserved                               *
+*                                                                      *
+*     No part of this code may be copied, redestributed or included    *
+*     into any commercial product without the written permission of    *
+*     the author. The use is restriced to research purposes only.      *
+*                                                                      *
+************************************************************************
+*                                                                      *
+*     Jacobi diagonalization                                           *
+*                                                                      *
+*     calling parameters:                                              *
+*     A       : array of double precision real, input/output           *
+*               On input this is the matrix to be diagonalized.        *
+*               On ouput the diagonal matrix is returned.              *
+*     C       : array of double precision real                         *
+*               On input this are the basis vectors.                   *
+*               The rotated basis vectors are returned.                *
+*     N       : Integer, input                                         *
+*               Dimension of the matrix to be diagonalized             *
+*     LdC     : Integer, input                                         *
+*               Leading dimension of matrix C.                         *
+*                                                                      *
+*----------------------------------------------------------------------*
+*                                                                      *
+*     written by:                                                      *
+*     M.P. Fuelscher, University of Lund, Sweden, 1993                 *
+*                                                                      *
+*----------------------------------------------------------------------*
+*                                                                      *
+*     history: none                                                    *
+*                                                                      *
+************************************************************************
+      Implicit Real*8 (A-H,O-Z)
+*
+      Dimension A(*)
+      Dimension C(LdC,*)
+*
+      Parameter ( Eps=1.D-12 )
+      Parameter ( EpsSqr=Eps*Eps )
+*----------------------------------------------------------------------*
+*     initialisation step:                                             *
+*     - compute the largest subdiagonal element                        *
+*----------------------------------------------------------------------*
+      ASqrMax=0.0  
+      Do i=2,N
+         ii=i*(i-1)/2
+         Do j=1,i-1
+            Temp=A(ii+j)*A(ii+j)
+            ASqrMax=Max(ASqrMax,Temp)
+         End Do
+      End Do
+      If ( ASqrMax.le.EpsSqr ) Return  
+      Thrs=0.1*ASqrMax
+*----------------------------------------------------------------------*
+*     start loop over sweeps:                                          *
+*     - no pivot elementsearch is implemented. However, the rotation   *
+*       is applied only to those submatrix elements which are bigger   *
+*       than a threshold. The latter is based on the value of the      *
+*       Largest subdiagonal element.                                   *
+*----------------------------------------------------------------------*
+      iter=0
+100   iter=iter+1
+      Do i=2,N
+         ii=i*(i-1)/2
+         Do j=1,i-1
+            jj=j*(j-1)/2
+            Aij=A(ii+j)
+            AijSqr=Aij*Aij
+            If ( AijSqr.ge.Thrs ) then
+*---  compute the rotation angle --------------------------------------*
+               Aii=A(ii+i)
+               Ajj=A(jj+j)
+               Diff=Aii-Ajj
+               SigRot=1.0
+               If ( Diff.lt.0.0 ) then
+                  SigRot=-SigRot
+                  Diff=-Diff
+               End If
+               Temp=Diff+SQRT(Diff*Diff+4.0*AijSqr)
+               TanA=2.0*SigRot*Aij/Temp
+               CosA=1.0/SQRT(1.0+TanA*TanA)
+               SinA=CosA*TanA
+*---  update rows/columnes of the matrix A ----------------------------*
+               kmin=1  
+               kmax=j-1
+               kleft=Mod(kmax-kmin+1,4)
+               If ( kleft.eq.1 ) then
+                  Aii1=A(ii+1)
+                  Ajj1=A(jj+1)
+                  A(ii+1)=SinA*Ajj1+CosA*Aii1
+                  A(jj+1)=CosA*Ajj1-SinA*Aii1
+               Else If ( kleft.eq.2 ) then
+                  Ajj1=A(jj+1)
+                  Ajj2=A(jj+2)
+                  Aii1=A(ii+1)
+                  Aii2=A(ii+2)
+                  A(ii+1)=SinA*Ajj1+CosA*Aii1
+                  A(ii+2)=SinA*Ajj2+CosA*Aii2
+                  A(jj+1)=CosA*Ajj1-SinA*Aii1
+                  A(jj+2)=CosA*Ajj2-SinA*Aii2
+               Else If ( kleft.eq.3 ) then
+                  Ajj1=A(jj+1)
+                  Ajj2=A(jj+2)
+                  Ajj3=A(jj+3)
+                  Aii1=A(ii+1)
+                  Aii2=A(ii+2)
+                  Aii3=A(ii+3)
+                  A(ii+1)=SinA*Ajj1+CosA*Aii1
+                  A(ii+2)=SinA*Ajj2+CosA*Aii2
+                  A(ii+3)=SinA*Ajj3+CosA*Aii3
+                  A(jj+1)=CosA*Ajj1-SinA*Aii1
+                  A(jj+2)=CosA*Ajj2-SinA*Aii2
+                  A(jj+3)=CosA*Ajj3-SinA*Aii3
+               End If
+               kmin=kmin+kleft
+               Do k=kmin,kmax,4
+                  Ajj0=A(jj+k+0)
+                  Ajj1=A(jj+k+1)
+                  Ajj2=A(jj+k+2)
+                  Ajj3=A(jj+k+3)
+                  Aii0=A(ii+k+0)
+                  Aii1=A(ii+k+1)
+                  Aii2=A(ii+k+2)
+                  Aii3=A(ii+k+3)
+                  A(ii+k+0)=SinA*Ajj0+CosA*Aii0
+                  A(ii+k+1)=SinA*Ajj1+CosA*Aii1
+                  A(ii+k+2)=SinA*Ajj2+CosA*Aii2
+                  A(ii+k+3)=SinA*Ajj3+CosA*Aii3
+                  A(jj+k+0)=CosA*Ajj0-SinA*Aii0
+                  A(jj+k+1)=CosA*Ajj1-SinA*Aii1
+                  A(jj+k+2)=CosA*Ajj2-SinA*Aii2
+                  A(jj+k+3)=CosA*Ajj3-SinA*Aii3
+               End Do
+               kmin=j+1
+               kmax=i-1
+               kleft=Mod(kmax-kmin+1,4)
+               kk=jj+j
+               If ( kleft.eq.1 ) then
+                  k0=kk
+                  Ak0j=A(k0+j)
+                  Aii0=A(ii+kmin+0)
+                  A(ii+kmin+0)=SinA*Ak0j+CosA*Aii0
+                  A(kk+j)=CosA*Ak0j-SinA*Aii0
+                  kk=k0+kmin
+               Else If ( kleft.eq.2 ) then
+                  k0=kk
+                  k1=k0+kmin
+                  Ak0j=A(k0+j)
+                  Ak1j=A(k1+j)
+                  Aii0=A(ii+kmin+0)
+                  Aii1=A(ii+kmin+1)
+                  A(k0+j)=CosA*Ak0j-SinA*Aii0
+                  A(k1+j)=CosA*Ak1j-SinA*Aii1
+                  A(ii+kmin+0)=SinA*Ak0j+CosA*Aii0
+                  A(ii+kmin+1)=SinA*Ak1j+CosA*Aii1
+                  kk=k1+kmin+1
+               Else If ( kleft.eq.3 ) then
+                  k0=kk
+                  k1=k0+kmin
+                  k2=k1+kmin+1
+                  Ak0j=A(k0+j)
+                  Ak1j=A(k1+j)
+                  Ak2j=A(k2+j)
+                  Aii0=A(ii+kmin+0)
+                  Aii1=A(ii+kmin+1)
+                  Aii2=A(ii+kmin+2)
+                  A(k0+j)=CosA*Ak0j-SinA*Aii0
+                  A(k1+j)=CosA*Ak1j-SinA*Aii1
+                  A(k2+j)=CosA*Ak2j-SinA*Aii2
+                  A(ii+kmin+0)=SinA*Ak0j+CosA*Aii0
+                  A(ii+kmin+1)=SinA*Ak1j+CosA*Aii1
+                  A(ii+kmin+2)=SinA*Ak2j+CosA*Aii2
+                  kk=k2+kmin+2
+               End If
+               kmin=kmin+kleft
+               Do k=kmin,kmax,4
+                  k0=kk
+                  k1=k0+k
+                  k2=k1+k+1
+                  k3=k2+k+2
+                  Ak0j=A(k0+j)
+                  Ak1j=A(k1+j)
+                  Ak2j=A(k2+j)
+                  Ak3j=A(k3+j)
+                  Aii0=A(ii+k+0)
+                  Aii1=A(ii+k+1)
+                  Aii2=A(ii+k+2)
+                  Aii3=A(ii+k+3)
+                  A(k0+j)=CosA*Ak0j-SinA*Aii0
+                  A(k1+j)=CosA*Ak1j-SinA*Aii1
+                  A(k2+j)=CosA*Ak2j-SinA*Aii2
+                  A(k3+j)=CosA*Ak3j-SinA*Aii3
+                  A(ii+k+0)=SinA*Ak0j+CosA*Aii0
+                  A(ii+k+1)=SinA*Ak1j+CosA*Aii1
+                  A(ii+k+2)=SinA*Ak2j+CosA*Aii2
+                  A(ii+k+3)=SinA*Ak3j+CosA*Aii3
+                  kk=k3+k+3
+               End Do
+               kmin=i+1
+               kmax=N
+               kleft=Mod(kmax-kmin+1,4)
+               kk=ii+i
+               If ( kleft.eq.1 ) then
+                  k0=kk
+                  Ak0j=A(k0+j)
+                  Ak0i=A(k0+i)
+                  A(k0+j)=CosA*Ak0j-SinA*Ak0i
+                  A(k0+i)=SinA*Ak0j+CosA*Ak0i
+                  kk=k0+kmin
+               Else If ( kleft.eq.2 ) then
+                  k0=kk
+                  k1=k0+kmin
+                  Ak0j=A(k0+j)
+                  Ak0i=A(k0+i)
+                  Ak1j=A(k1+j)
+                  Ak1i=A(k1+i)
+                  A(k0+j)=CosA*Ak0j-SinA*Ak0i
+                  A(k0+i)=SinA*Ak0j+CosA*Ak0i
+                  A(k1+j)=CosA*Ak1j-SinA*Ak1i
+                  A(k1+i)=SinA*Ak1j+CosA*Ak1i
+                  kk=k1+kmin+1
+               Else If ( kleft.eq.3 ) then
+                  k0=kk
+                  k1=k0+kmin
+                  k2=k1+kmin+1
+                  Ak0j=A(k0+j)
+                  Ak0i=A(k0+i)
+                  Ak1j=A(k1+j)
+                  Ak1i=A(k1+i)
+                  Ak2j=A(k2+j)
+                  Ak2i=A(k2+i)
+                  A(k0+j)=CosA*Ak0j-SinA*Ak0i
+                  A(k0+i)=SinA*Ak0j+CosA*Ak0i
+                  A(k1+j)=CosA*Ak1j-SinA*Ak1i
+                  A(k1+i)=SinA*Ak1j+CosA*Ak1i
+                  A(k2+j)=CosA*Ak2j-SinA*Ak2i
+                  A(k2+i)=SinA*Ak2j+CosA*Ak2i
+                  kk=k2+kmin+2
+               End If
+               kmin=kmin+kleft
+               Do k=kmin,kmax,4
+                  k0=kk
+                  k1=k0+k
+                  k2=k1+k+1
+                  k3=k2+k+2
+                  Ak0j=A(k0+j)
+                  Ak0i=A(k0+i)
+                  Ak1j=A(k1+j)
+                  Ak1i=A(k1+i)
+                  Ak2j=A(k2+j)
+                  Ak2i=A(k2+i)
+                  Ak3j=A(k3+j)
+                  Ak3i=A(k3+i)
+                  A(k0+j)=CosA*Ak0j-SinA*Ak0i
+                  A(k0+i)=SinA*Ak0j+CosA*Ak0i
+                  A(k1+j)=CosA*Ak1j-SinA*Ak1i
+                  A(k1+i)=SinA*Ak1j+CosA*Ak1i
+                  A(k2+j)=CosA*Ak2j-SinA*Ak2i
+                  A(k2+i)=SinA*Ak2j+CosA*Ak2i
+                  A(k3+j)=CosA*Ak3j-SinA*Ak3i
+                  A(k3+i)=SinA*Ak3j+CosA*Ak3i
+                  kk=k3+k+3
+               End Do
+*---  update the diagonal elements of A -------------------------------*
+               Temp=2.0*CosA*SinA*Aij
+               CosA2=CosA*CosA
+               SinA2=SinA*SinA
+               A(jj+j)=SinA2*Aii+CosA2*Ajj-Temp
+               A(ii+j)=0.0
+               A(ii+i)=CosA2*Aii+SinA2*Ajj+Temp
+*---  update rows/columnes of the eigenvectors C ----------------------*
+               kmin=1  
+               kmax=LdC
+               kleft=Mod(kmax-kmin+1,4)
+               If ( kleft.eq.1 ) then
+                  C1j=C(1,j)
+                  C1i=C(1,i)
+                  C(1,i)=SinA*C1j+CosA*C1i
+                  C(1,j)=CosA*C1j-SinA*C1i
+               Else If ( kleft.eq.2 ) then
+                  C1j=C(1,j)
+                  C2j=C(2,j)
+                  C1i=C(1,i)
+                  C2i=C(2,i)
+                  C(1,i)=SinA*C1j+CosA*C1i
+                  C(2,i)=SinA*C2j+CosA*C2i
+                  C(1,j)=CosA*C1j-SinA*C1i
+                  C(2,j)=CosA*C2j-SinA*C2i
+               Else If ( kleft.eq.3 ) then
+                  C1j=C(1,j)
+                  C2j=C(2,j)
+                  C3j=C(3,j)
+                  C1i=C(1,i)
+                  C2i=C(2,i)
+                  C3i=C(3,i)
+                  C(1,i)=SinA*C1j+CosA*C1i
+                  C(2,i)=SinA*C2j+CosA*C2i
+                  C(3,i)=SinA*C3j+CosA*C3i
+                  C(1,j)=CosA*C1j-SinA*C1i
+                  C(2,j)=CosA*C2j-SinA*C2i
+                  C(3,j)=CosA*C3j-SinA*C3i
+               End If
+               kmin=kmin+kleft
+               Do k=kmin,kmax,4
+                  C0j=C(k+0,j)
+                  C1j=C(k+1,j)
+                  C2j=C(k+2,j)
+                  C3j=C(k+3,j)
+                  C0i=C(k+0,i)
+                  C1i=C(k+1,i)
+                  C2i=C(k+2,i)
+                  C3i=C(k+3,i)
+                  C(k+0,i)=SinA*C0j+CosA*C0i
+                  C(k+1,i)=SinA*C1j+CosA*C1i
+                  C(k+2,i)=SinA*C2j+CosA*C2i
+                  C(k+3,i)=SinA*C3j+CosA*C3i
+                  C(k+0,j)=CosA*C0j-SinA*C0i
+                  C(k+1,j)=CosA*C1j-SinA*C1i
+                  C(k+2,j)=CosA*C2j-SinA*C2i
+                  C(k+3,j)=CosA*C3j-SinA*C3i
+               End Do
+            End If
+         End Do
+      End Do
+*---  find the value of the largest subdiagonal element ---------------*
+      ASqrMax=0.0
+      Do i=2,N
+         ii=i*(i-1)/2
+         Do j=1,i-1
+            Temp=A(ii+j)*A(ii+j)
+            ASqrMax=Max(ASqrMax,Temp)
+         End Do
+      End Do
+*---  update the threshold --------------------------------------------*
+      Thrs=0.1*ASqrMax
+*---  check the accuracy ----------------------------------------------*
+      If ( ASqrMax.gt.EpsSqr ) Goto 100
+*----------------------------------------------------------------------*
+*     Thats the end                                                    *
+*----------------------------------------------------------------------*
+200   Return
+      End 

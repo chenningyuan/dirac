@@ -6,6 +6,7 @@
 #include "para.h"
 #include "param.h"
 #include "ired.h"
+#include "alphac.h"
       logical OLDNRM,ADDSO1 
       logical makemean,AIMP,oneonly  
       character*8 xa,ya,za
@@ -13,13 +14,19 @@
       DIMENSION WRK(LWRK)
       common /nucleus/ charge,Exp_Finite
       double precision normasHERMIT(-Lmax:Lmax,0:Lmax)
+CMI   ... addition 
+      integer function indx_LML
+
       data ((normasHERMIT(ml,l),ml=-l,l),l=0,lmax) /1.0d0,
      &     1.0d0,1.0d0,1.0d0,
      &     1.0d0,1.0d0,3.46410162d0,1.0d0,2.0d0,
      &     4.8989795d0,1.0d0,6.3245553d0,-2.5819889d0,6.3245553d0,
      &     2.0d0,-1.6329932d0,
-     &     3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
-     &   -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/   
+CMI  &     2.0000,2.828427124746190d0,9.16515139d0,4.3204938d0,
+CMI  &   -3.4156503d0,4.3204938d0,18.330303d0,-0.942809041582d0,-4.0d0/
+CMI    ... old (last) g-factors...
+     &   3.4641016d0,4.89897949d0,9.16515139d0,4.3204938d0,
+     &  -3.4156503d0,4.3204938d0,18.330303d0,-1.6329932d0,-6.9282032d0/ 
       IPNT(I,J)=(J*J-J)/2+I 
 cbs   get back the real number of functions for the finite nucleus   
       if (ifinite.eq.2) ncontrac(0)=ncontrac_keep
@@ -53,8 +60,8 @@ CBS   print *, 'iloca',iloca
       iocaz2=iocay2+iloca
 
       KLAST = IOCAZ2 + ILOCA
-CMI ... replace STOPIT by the DIRAC counterpart !
-      IF (KLAST .GT. LWRK) CALL STOPIT('AMFI  ','CAMUL',KLAST,LFREE)
+CMI   IF (KLAST .GT. LWRK) CALL STOPIT('AMFI  ','CAMUL',KLAST,LFREE)
+      IF (KLAST .GT. LWRK) CALL QUIT('AMFI CAMUL')
       call dzero(WRK(iocax),6*length3)
 c
 c
@@ -76,7 +83,7 @@ C===================================================================
 
 CMI ... based on BS advise to remove 1 el.SO integrals..
 CMI ... this is only temporary solution for now...
-       charge=0d0
+       IF (.NOT.ADDSO1) charge=0d0
   
       do L=1,Lhigh   
       	call contone(L,oneoverr3(1,L),onecontr(1,1,-Lmax,1,L),
@@ -235,20 +242,96 @@ cbs   which means huge triangular matrices
       Enddo 
       enddo
 
- 
+CMI   ... prepare the factor 1/4c^2
+      fac = 0.25D0*ALPHA2 
+
+CMI ... here it is : Waw !
 c     write a hermit-like file   b.s. 4.10.96   
 CBS   write(6,*) 'number of orbitals ',numbalLcarT
 CBS   write(6,*) 'length of triangular matrix ', length3
-              write(LUPROP)  xa,numbofsym,(nrtofiperIR(I),
-     *        i=1,numbofsym),
-     *        numballcart,(Loffunction(I),I=1,numballcart), 
-     *        (Moffunction(I),I=1,numballcart),
-     *        Lhigh,(ncontrac(I),I=0,Lhigh)          
-              write(LUPROP) (WRK(iocax2+irun),irun=0,length3-1) 
+
+CMI           write(LUPROP)  xa,numbofsym,(nrtofiperIR(I),
+CMI  *        i=1,numbofsym),
+CMI  *        numballcart,(Loffunction(I),I=1,numballcart), 
+CMI  *        (Moffunction(I),I=1,numballcart),
+CMI  *        Lhigh,(ncontrac(I),I=0,Lhigh)          
+
+              write(LUPROP)  xa
+              write(LUPROP)  numballcart
+C        ... write only type 5HERLIT) and index 
+          do I=1,numballcart
+
+           IXL  = Loffunction(I)
+           IXML = Moffunction(I)
+           IXINLML = indx_LML(Loffunction,Moffunction,I)
+
+           IPTYP=0
+        IF (IXL.EQ.0.AND.IXML.EQ.0) THEN
+            IPTYP=1
+        ELSE IF (IXL.EQ.1.AND.IXML.EQ.1) THEN
+            IPTYP=2 ! 2px
+        ELSE IF (IXL.EQ.1.AND.IXML.EQ.-1) THEN
+            IPTYP=3 ! 2py
+        ELSE IF (IXL.EQ.1.AND.IXML.EQ. 0) THEN
+            IPTYP=4 ! 2pz
+        ELSE IF (IXL.EQ.2.AND.IXML.EQ.-2) THEN
+            IPTYP=5 ! 3d2-
+        ELSE IF (IXL.EQ.2.AND.IXML.EQ.-1) THEN
+            IPTYP=6 ! 3d1-
+        ELSE IF (IXL.EQ.2.AND.IXML.EQ. 0) THEN
+            IPTYP=7 ! 3d0
+        ELSE IF (IXL.EQ.2.AND.IXML.EQ.+1) THEN
+            IPTYP=8 ! 3d1+
+        ELSE IF (IXL.EQ.2.AND.IXML.EQ.+2) THEN
+            IPTYP=9 ! 3d2+
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.-3) THEN
+            IPTYP=10 ! 4f3-
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.-2) THEN
+            IPTYP=11 ! 4f2-
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.-1) THEN
+            IPTYP=12 ! 4f1-
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ. 0) THEN
+            IPTYP=13 ! 4f0
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.+1) THEN
+            IPTYP=14 ! 4f1+
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.+2) THEN
+            IPTYP=15 ! 4f2+
+        ELSE IF (IXL.EQ.3.AND.IXML.EQ.+3) THEN
+            IPTYP=16 ! 4f3+
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.-4) THEN
+            IPTYP=17 ! 5g4-
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.-3) THEN
+            IPTYP=18 ! 5g3-
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.-2) THEN
+            IPTYP=19 ! 5g2-
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.-1) THEN
+            IPTYP=20 ! 5g1-
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ. 0) THEN
+            IPTYP=21 ! 5g0
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.+1) THEN
+            IPTYP=22 ! 5g1+
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.+2) THEN
+            IPTYP=23 ! 5g2+
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.+3) THEN
+            IPTYP=24 ! 5g3+
+        ELSE IF (IXL.EQ.4.AND.IXML.EQ.+4) THEN
+            IPTYP=25 ! 5g4+
+        ELSE
+           write(lupri,*) 'IXL=',IXL,' IXML=',IXML,' IXINLML=',IXINLML 
+           CALL QUIT('AMFI:IPTYP not defined !!!')
+        ENDIF
+           write(LUPROP) IPTYP,IXINLML
+          enddo
+              write(LUPROP) Lhigh,(ncontrac(I),I=0,Lhigh)
+CMO           write(LUPROP)  xa
+              write(LUPROP) (WRK(iocax2+irun)*fac,irun=0,length3-1) 
               write(LUPROP)  Ya  
-              write(LUPROP) (WRK(iocay2+irun),irun=0,length3-1) 
-              write(LUPROP)  Za    
-              write(LUPROP) (WRK(iocaz2+irun),irun=0,length3-1) 
+              write(LUPROP) (WRK(iocay2+irun)*fac,irun=0,length3-1) 
+CMI           .... I don't know why...
+C             write(LUPROP)  Za    
+              write(LUPROP) (WRK(iocaz2+irun)*fac,irun=0,length3-1) 
+
+C            write(lupri,*) (WRK(iocax2+irun)*fac,irun=0,length3-1)
 cbs   
 cbs   that is it!!
 cbs   
@@ -873,13 +956,6 @@ cbs   start to add l,m dependent factors
       enddo
       enddo
 
-CMI ... I hope that this deletes ONE-ELECTRON SO integrals...
-C     do jrun=1,ncont
-C     do irun=1,ncont
-C     dummy(irun,jrun)=0d0   
-C     enddo 
-C     enddo 
-
 cbs   make the final cartesian integrals 
       call cartoneX(L,Lmax,onecontr,ncont,
      *MxcontL,onecartX(1,1,1))
@@ -1165,7 +1241,8 @@ cbs   now nanz is given the new value
       iscr1=iprim+nprimprod
       iscr2=iscr1+nprimprod
       KLAST = ISCR2 + NPRIMPROD
-      IF (KLAST .GT. LFREE) CALL STOPIT('AMFI  ','GENCOU',KLAST,LFREE)
+CMI   IF (KLAST .GT. LFREE) CALL STOPIT('AMFI  ','GENCOU',KLAST,LFREE)
+      IF (KLAST .GT. LFREE) CALL QUIT('AMFI-GENCOU')
 c
       call initfrac(nprimit(l1),nprimit(l2),nprimit(l3),nprimit(l4),
      *WRK(iquot1),WRK(iquot2),exponents(1,l1),exponents(1,l2),
@@ -1843,7 +1920,9 @@ cbs     on contracted basis set
         ovlpcontinv(jrun,irun,lrun)=ovlpcont(jrun,irun,lrun)
         enddo
         enddo
+CMI ... hmm.. a possible source of dammage...
         call invers(ovlpcontinv(1,1,lrun),MxcontL,ncontrac(lrun))
+
         do jrun=1,nprimit(lrun)
         do irun=1,ncontrac(lrun)
         ovlpprimcont(irun,jrun)=0d0

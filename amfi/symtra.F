@@ -12,11 +12,13 @@ cbs
 CMI IPRINT is IPRHAM    
 CMI    
 #include "implicit.h"
+#include "alphac.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "para.h"
       parameter(maxorbs=500)
       parameter(maxcent=40)
+
       character*8 xa,ya,za,xa2
       character*3 END                     
 CBS   character*20 filename               
@@ -47,6 +49,9 @@ c###############################################################################
       xa(4)='X1MNF-SO'
       ya(4)='Y1MNF-SO'
       ZA(4)='Z1MNF-SO'  
+
+C        ... 1/4c^2
+      fac = 0.25D0*ALPHA2 
 
       WRITE(LUPRI,'(/2X,A/)')
      & 'SYMTRAFO: Symmetry adaptation of the AMFI SO-integrals'
@@ -223,13 +228,21 @@ cbs   determine indices of atomic integrals
       ipSCRY=ipC(2,ncent(irun))-1+laufalt
       ipSCRZ=ipC(3,ncent(irun))-1+laufalt
       if (indexi.gt.indexj) then 
-         Wrk(ipX+lauf-1)=coeff*Wrk(ipSCRX)
-         Wrk(ipY+lauf-1)=coeff*Wrk(ipSCRY)
-         Wrk(ipZ+lauf-1)=coeff*Wrk(ipSCRZ)
+CMI      Wrk(ipX+lauf-1)=coeff*Wrk(ipSCRX)
+CMI      Wrk(ipY+lauf-1)=coeff*Wrk(ipSCRY)
+CMI      Wrk(ipZ+lauf-1)=coeff*Wrk(ipSCRZ)
+CMI ... include the normalization...
+         Wrk(ipX+lauf-1)=coeff*Wrk(ipSCRX)*fac
+         Wrk(ipY+lauf-1)=coeff*Wrk(ipSCRY)*fac
+         Wrk(ipZ+lauf-1)=coeff*Wrk(ipSCRZ)*fac
       else 
-         Wrk(ipX+lauf-1)=-coeff*Wrk(ipSCRX)
-         Wrk(ipY+lauf-1)=-coeff*Wrk(ipSCRY)
-         Wrk(ipZ+lauf-1)=-coeff*Wrk(ipSCRZ)
+CMI      Wrk(ipX+lauf-1)=-coeff*Wrk(ipSCRX)
+CMI      Wrk(ipY+lauf-1)=-coeff*Wrk(ipSCRY)
+CMI      Wrk(ipZ+lauf-1)=-coeff*Wrk(ipSCRZ)
+CMI ... include the normalization...
+         Wrk(ipX+lauf-1)=-coeff*Wrk(ipSCRX)*fac
+         Wrk(ipY+lauf-1)=-coeff*Wrk(ipSCRY)*fac
+         Wrk(ipZ+lauf-1)=-coeff*Wrk(ipSCRZ)*fac
       endif 
 CBS
 CBS  the integrals are now on on the WRK array 
