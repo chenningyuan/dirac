@@ -211,11 +211,14 @@ C
       IF (.NOT.SHCEQD) SFAC = D2*SFAC
 C
       THRSH = MAX(THRESH,ZERADD)
-      IF(DOSCRN) THEN
+C
+      IF(DOSCRN .AND. .NOT.DDFOCK) THEN
+C     ... DNSMAX fits EXPECT, not DDFOCK
          EXPTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
       ELSE
          EXPTOL = 1.00D-15
       ENDIF
+C
       NODER = .TRUE.
       CALL DZERO(DERIV,NINTYP)
 C     initialize PAOVAL to zero for output in NOPMAT case
@@ -236,22 +239,29 @@ C
                IF (DIAGCD) KHKTDD = ICOMPC
                DO 400 ICOMPD = 1, KHKTDD
 C
-C                 Step 2 screening on gradient
+C                 Step 2 screening on gradient, hessian, London, and
+C                 susceptibilities.
+C                 Always do Step 2 screening 
 C
-                  IF (EXPECT .AND. DOSCRN) THEN
-                     AOMAX = D0
-                     DO I = 1,NINTYP
-                        IAOMAX = IDAMAX(NOABCD,AOINT(IAOFF,I),1)-1
-                        AOMAX = MAX(AOMAX,ABS(AOINT(IAOFF+IAOMAX,I)))
-                     END DO
-                     IF (AOMAX .LT. EXPTOL) THEN
+                  AOMAX = D0
+                  DO I = 1,NINTYP
+                     IAOMAX = IDAMAX(NOABCD,AOINT(IAOFF,I),1)-1
+                     AOMAX = MAX(AOMAX,ABS(AOINT(IAOFF+IAOMAX,I)))
+                  END DO
+                  IF (AOMAX .LT. EXPTOL) THEN
+C
+C                    If geometrical dist. then sum up statistics
+C
+                     IF (.NOT. LONDON .AND. EXPECT) THEN
                         DO IXYZ = 1,3
                            IF (DOXYZ(IXYZ))
      &                        CALL ADDDINT(DINTSKP,NOABCD,ICEN,3,IXYZ)
                         END DO
-                        GO TO 510
                      END IF
+                     GO TO 510
                   END IF
+C
+C
                   DCMPCD = DIAGCD .AND. ICOMPC .EQ. ICOMPD
                   FACCD  = D1
                   IF (DIAGCD .AND. ICOMPC .NE. ICOMPD) FACCD = D2*FACCD
