@@ -191,7 +191,7 @@ C ... for NTMO...
 C
       DIMENSION H1AO(*), TMAT(*),TBUF(*),VMAT(*),EIG(*),IBEIG(*)
       DIMENSION FACKIN(2,*), PCTM(*), WORK(LWORK)
-      LOGICAL   DOJACO_SAVE, SPINFR_SAVE, SF0, DK2SO1
+      LOGICAL   DOJACO_SAVE, SPINFR_SAVE, SF0, DK2SO1, DBGDIAG
       CALL QENTER('MAKE_DKH')
 #include <memint.h> 
 
@@ -239,7 +239,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         NZT  = NZ ! Store here number of transform. matrixes....
         IMAT = 1
         IBUF = 1
-        N2TMOQ = 0
+        N2TMOTQ = 0
         DO 40 I = 1,NFSYM
           NESH(I)  = NFORB(I,1) 
           NPSH(I)  = NFORB(I,1) ! Charge conjugation symmetry
@@ -534,20 +534,22 @@ C ... we need this variables because of later calling of the DFDIAG
 
 C     ... to tell DFDIAG to use boson symmetries
       SUB_BL = .TRUE.
-C     LEVYLE = .TRUE.
 
-      WRITE(LUPRI,'(/,3X,A,A/)') 
-     &'MAKE_DKH: Diagonalizing (Jacobi) the real part',
-     &' of the FP matrix in the ON "theta" basis !'
+      IF (IPRHAM.GE.2) THEN
+       WRITE(LUPRI,'(/,3X,A,A/)') 
+     & 'MAKE_DKH: Diagonalizing (Jacobi) the real part',
+     & ' of the FP matrix in the ON "theta" basis !'
+      ENDIF
 
 C ... after diagonalization we get the IBEIG array which is used later !
-      CALL DFDIAG (WORK(KBUF),EIG,IBEIG,TBUF,
+      DBGDIAG=.FALSE.
+      IF (IPRHAM.GE.5) DBGDIAG=.TRUE.
+      CALL DFDIAG (WORK(KBUF),EIG,IBEIG,TBUF,DBGDIAG,
      &             WORK,KFREE,LFREE)
 
       NZ = NZSAVE
       DOJACO = DOJACO_SAVE
       SUB_BL = .FALSE.
-C     LEVYLE = .FALSE.
 C*******************************************************************
 C
 C
@@ -569,14 +571,16 @@ C*******************************************************************
 
        CALL DZERO(WORK(KKUN),N2BBASXQ)
 
-       IF(IPRHAM.GE.JCONSIST) THEN
-        CALL HEADER(
+C   ... do always check the RKB free-particle eigenvalues !
+        IF (IPRHAM.GE.2) THEN
+         CALL HEADER(
      &'MAKE_DKH: Free particle (in ON basis "theta") eigenvalues :',-1)
-        WRITE(LUPRI,'(3X,A,I2,A,I2)') '*** Fermion corep ',I,'/',NFSYM
-        WRITE(LUPRI,'(A,3X,A,2X,A,2X,A,3X,A)')
-     &  'Shell no ','FP eigval',
-     &  'FP eigval+2c^2','bos.symm.','diff.'
-!   Print free particle eigenvalues with differences e(+)-e(i)
+         WRITE(LUPRI,'(3X,A,I2,A,I2)') '*** Fermion corep ',I,'/',NFSYM
+         WRITE(LUPRI,'(A,3X,A,2X,A,2X,A,3X,A)')
+     &   'Shell no ','FP eigval',
+     &   'FP eigval+2c^2','bos.symm.','diff.'
+        ENDIF
+
         TOTDIFF  = D0
         ISHELL = -NPSH(I)
         DO J=1,NORB(I) 
@@ -588,16 +592,23 @@ C ...  positronic and electronic free particle eigenvalues differ by 2c^2
           DIFF = EIG(IORB(I)+J)+EIG(IORB(I)+NORB(I)-J+1)+CVAL2+CVAL2
           TOTDIFF = TOTDIFF + DABS(DIFF)
           IF (ISHELL.EQ.0) ISHELL = 1
-          WRITE(LUPRI,'(I3,1X,I4,2D14.6,3X,I2,3X,D10.4)')
-     &            J,ISHELL,FPEV,FPEV2C,IBS,DIFF
+          
+C   Print free particle eigenvalues with differences e(+)-e(i)
+          IF (IPRHAM.GE.2) THEN
+           WRITE(LUPRI,'(I4,1X,I5,2D14.6,3X,I2,3X,D10.4)')
+     &             J,ISHELL,FPEV,FPEV2C,IBS,DIFF
+          ENDIF
           ISHELL = ISHELL + 1
         ENDDO
         TOTDIFF = TOTDIFF/DFLOAT(NORB(I)/2)
+C ... do always print the average difference for RKB free-particle e-p pairing !
         WRITE(LUPRI,'(/,3X,A,/,A,I1,A,I1,4X,D12.6)')
      & 'MAKE_DKH: The average difference for e-p pairing of all',
      & 'free particle eigenvalues in fermion symmetry ',I,
      & '/',NFSYM,TOTDIFF
-
+       IF (TOTDIFF.GE.10D0) THEN
+         WRITE(LUPRI,'(A)') 'MAKE_DKH: Big difference! Check DFDIAG !'
+         CALL QUIT('MAKE_DKH:Big difference ! Check DFDIAG !')
        ENDIF
 
        IF(IPRHAM.GE.7) THEN
@@ -929,7 +940,7 @@ C
               SPINFR_SAVE = SPINFR
               SPINFR = .FALSE. ! When SF "BEFORE", H1 is pure spin-free
               CALL DFDIAG (WORK(KBUF),EIG,WORK(KIBEIG),WORK(JH1VEC),
-     &                     WORK,KFREE,LFREE)
+     &                     .FALSE.,WORK,KFREE,LFREE)
               SPINFR      = SPINFR_SAVE
               CALL MEMREL('DKH 4',WORK,KWORK,KIBEIG,KFREE,LFREE)
            END IF

@@ -1800,7 +1800,7 @@ C
 C         Diagonalize
 C
           CALL DFDIAG (WORK(KBUF),EIG,WORK(KBEIG),TBUF,
-     &                 WORK,KFREE,LFREE)
+     &                 .FALSE.,WORK,KFREE,LFREE)
 C
 C         Backtransform only electronic solutions
 C

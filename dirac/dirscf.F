@@ -640,7 +640,7 @@ C     Diagonalize Fock matrix
 C     =======================
 C
       TDDG = SECOND()
-      CALL DFDIAG (FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
+      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
 C
@@ -3167,15 +3167,18 @@ C     Subtract frozen orbitals (if any) from orbital classes
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfdiag */
-      SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
+      SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,DODBG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Diagonalize Dirac-Fock matrix
+C
 C     On input:
-C       FMO - MO-coefficients from previous iteration
+C       FMO - Fock (or other) matrix in MO basis to be diagonalized 
+C       DODBG - decide to print out control output
 C     On output:
-C       FAO - MO-coefficients from current iteration
+C       FAO - eigenvectors of the diagonalized FMO matrix
 C       EIG - eigenvalues
+C       IBEIG - boson irreps of eigenvectors
 C
 C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
 C     Last revision: Jan 10 2000
@@ -3191,8 +3194,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
-      LOGICAL SPECIAL
+      LOGICAL SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
+
+      CALL QENTER('DFDIAG')
 C
 C     Check for special cases :
 C     - Spinfree or Levy-Leblond; diagonalize boson irreps (subblocks)
@@ -3246,6 +3251,14 @@ C         --------------------------------------------------------
 C
           N2TMO = NTMO(I)*NTMO(I)
           CALL DZERO(FAO(1+I2TMOT(I)),N2TMO*NZ)
+
+            IF (DODBG.AND.IPRHAM.GE.12) THEN
+             WRITE(LUPRI,'(/2X,A)')
+     &        'DFDIAG-SPECIAL: FULL MATRIX BEFORE DIAGONALIZATION'
+             CALL PRQMAT(FMO(1+I2TMOT(I)),
+     &          NTMO(I),NTMO(I),NTMO(I),NTMO(I),
+     &          1,IPQTOQ(1,0),LUPRI)
+            ENDIF 
 C
           IBO = 0
           DO ISUB = 1, N_SUB_BL(I)
@@ -3253,6 +3266,18 @@ C
            IF(NBO.GT.0) THEN
             IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
             IEIG = IORB(I) + IBO + 1
+
+            IF (DODBG) THEN
+             WRITE(LUPRI,'(2X,A,A,I1,A,I1,A,I2,A,I2)')
+     &       'DFDIAG-SPECIAL', 
+     &       ' IFSYM=',I,'/',NFSYM,
+     &       ' ISUB=',ISUB,'/',N_SUB_BL(I) 
+             WRITE(LUPRI,'(2X,A)')
+     &        'MATRIX(SUBBBLOCK) BEFORE DIAGONALIZATION'
+             CALL PRQMAT(FMO(IMAT),
+     &          NBO,NBO,NTMO(I),NTMO(I),
+     &          1,IPQTOQ(1,0),LUPRI)
+            ENDIF 
 C
 C           Diagonalize the isub'th block of parity i
 C
@@ -3265,6 +3290,13 @@ C
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
+
+            IF (DODBG) THEN
+             WRITE(LUPRI,'(2X,A)') 'CORRESPONDING EIGENVALUES:'
+             WRITE(LUPRI,'(6(I3,A,D14.6))')
+     &         (IX,'-',EIG(IX),IX=IEIG,IEIG+NBO-1)
+            ENDIF
+
             IBO = IBO + NORB_SUB(ISUB,I,0)
            ENDIF
           ENDDO
@@ -3496,6 +3528,7 @@ C
 C
  30   CONTINUE
 C
+      CALL QEXIT('DFDIAG')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
