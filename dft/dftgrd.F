@@ -39,8 +39,6 @@ C     ********************************
 C
 C     INFOA
 C     =====
-CTROND: Modified to handle symmetry dependent atoms
-C       as well
       NAT = 0
       NUM = NBASIS
       DO ICENT = 1, NUCIND
@@ -207,15 +205,6 @@ C     partitioning scheme.
 C
       CALL TITLER('Slater-Bragg atomic size estimates','*',122)
 C
-C     List atoms
-C
-C      WRITE(LUPRI,*)
-C      DO IATOM = 1,NUCIND
-C         WRITE(LUPRI,*) '** Atom(',IATOM,') = ',NAMN(IATOM)
-C      ENDDO
-C      WRITE(LUPRI,*)
-
-C
 C     Initialize CHIMT with Bragg-Slater data
 C
       DO I = 1,NATOMS
@@ -296,15 +285,15 @@ C
       NALL = 0
       BOHR   = 0.529177249D0
       NATOM = 1
-CTROND: define scaling factor for Bragg: set to one !!!!
-      TFAC = 1.0D0
+      WRITE(LUPRI,'(A)')
+     &  'Atom  Deg   Rmin        Rmax        Step size     #rp     #tp',
+     &  '============================================================='
       DO 10 IATOM = 1, NUCIND
       DO 10 ISYMOP = 0, MXOPR         
       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          NDEG  = MULT(ISTBNU(IATOM))
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-         WRITE(LUPRI,'(A,A4)') '** Atom ',NAMN(IATOM)
          MULA  = ISTBNU(IATOM)
          NDEG  = MULT(MULA)
          IPT   = 0
@@ -321,7 +310,6 @@ C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
 C
 
 C        Grid spacing....
-         WRITE(LUPRI,'(A)') '* Grid spacing'
          H = DUMMY
          DO LL = 1,NHTYP
            L = LL-1
@@ -336,16 +324,11 @@ C        Grid spacing....
            ENDIF
          ENDDO
          EPH = EXP(H)
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',H
 C...     Inner grid point
          AH = D2*MAX(AA(1,1,1,IATOM),AA(1,1,2,IATOM))
-         WRITE(LUPRI,*) 'AH = ',AH
-         WRITE(LUPRI,*) 'RADERR = ',RADERR
          RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
          RL = EXP(RL)
-         WRITE(LUPRI,'(A,1P,E12.5)') '* Inner grid point:',RL
 C...     Outer point
-         WRITE(LUPRI,'(A)') '* Outer point:'
          RH = D0
          DO LL = 1,NHTYP
            L = LL-1
@@ -362,11 +345,8 @@ C...     Outer point
              ENDIF
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(1X,A,F6.3)') 'Value chosen: ',RH
          GRDC = RL/(EPH-D1)
-         WRITE(6,'(A,E12.5)') 'Constant c:',GRDC
          NR = NINT(LOG(D1+(RH/GRDC))/H)
-         WRITE(6,'(A,I5)') 'Number of points:',NR
          RADNDE(1) = RL
          RADWT(1)  = (RL+GRDC)*RL*RL*H
          DO IR = 2,NR
@@ -457,7 +437,8 @@ C
          NTOTAL = NTOTAL + NTHIS
          NALL = NALL + NTHAT
          NATOM = NATOM + NDEG
-         WRITE(LUPRI,'(A4,I3,3I8)') NAMN(IATOM),NDEG,NTHIS,NR,NANG
+         WRITE(LUPRI,'(A4,I5,3E12.3,2I8)') NAMN(IATOM),NDEG,
+     &         RL,RH,H,NR,NTHIS
 
       END IF
 10    CONTINUE
