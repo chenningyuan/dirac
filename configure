@@ -423,21 +423,21 @@ if [ "$par" = "yes" ]; then
          i[3-6]86-*)
             parlib='yes'
             parinc='yes'
-            complist="mpif77 $complist"
+            complist="mpif90 mpif77 $complist"
             cclist="mpicc $cclist"
             mpirun='mpirun'
             ;;
          x86_64-*)
             parlib='yes'
             parinc='yes'
-            complist="mpif77 $complist"
+            complist="mpif90 mpif77 $complist"
             cclist="mpicc $cclist"
             mpirun='mpirun'
             ;;
          ia64-unknown-linux)
             parlib='yes'
             parinc='yes'
-            complist="mpif77 $complist"
+            complist="mpif90 mpif77 $complist"
             cclist="mpicc $cclist"
             mpirun='mpirun'
             ;;
@@ -747,11 +747,11 @@ if [ -n "$liblist" ]; then
                libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
                libveclib) LIB="$LIB -L$testdir -lveclib";;
                libmath) LIB="$LIB -L$testdir -lmath -lm -nx";;
-               libmkl) LIB="$LIB -L$testdir -Wl,--rpath,$testdir -lguide -lpthread -lmkl"
+               libmkl) LIB="$LIB -L$testdir -lguide -lpthread -lmkl"
                        optblas=$testdir;;
-               libmkl_ipf) LIB="$LIB -L$testdir -Wl,--rpath,$testdir -lguide -lpthread -lmkl_ipf"
+               libmkl_ipf) LIB="$LIB -L$testdir -lguide -lpthread -lmkl_ipf"
                        optblas=$testdir;;
-               libmkl_itp) LIB="$LIB -L$testdir -Wl,--rpath,$testdir -lguide -lpthread -lmkl_itp"
+               libmkl_itp) LIB="$LIB -L$testdir -lguide -lpthread -lmkl_itp"
                        optblas=$testdir;;
             esac
             test -n "$LIB" && break
@@ -1190,8 +1190,8 @@ case $machine in
 # sure we use the correct flags
 #
       case "$F77" in
-      mpif77)
-         if mpif77 -show; then
+      mpif*)
+         if "$F77" -show; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1623,12 +1623,12 @@ esac
 # ksh is preferred - otherwise use sh
 #
 $echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
-if [ -f /bin/ksh ]; then
-   echo "found /bin/ksh"
-   echo '#!/bin/ksh' > $INSTALL_DIR/pam
-elif [ -f /bin/bash ]; then
+if [ -f /bin/bash ]; then
    echo "found /bin/bash"
    echo '#!/bin/bash' > $INSTALL_DIR/pam
+elif [ -f /bin/ksh ]; then
+   echo "found /bin/ksh"
+   echo '#!/bin/ksh' > $INSTALL_DIR/pam
 else
    echo ""
    echo "Neither ksh nor bash seems to be installed -> using sh."
