@@ -435,25 +435,25 @@ C          DINTSKP(2,I,3) - number of integrals skipped, z direction
 C
       DOSCRN = .FALSE.
       IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
-        IF (DIRFCK.OR.SOFOCK) THEN
-          CALL DZERO(DINTSKP,8)
-        ELSE
-          CALL DZERO(DINTSKP,3*14*3)
-        END IF
-        IF(SCREEN.GT.D0) THEN
-          DOSCRN = .TRUE.
-          SCRTHR = SCREEN
-          ICEFLG = ICEDIF
-          NCM = 0
-          NEM = 0
-          DO I = 1,NDMAT
+         IF (DIRFCK.OR.SOFOCK) THEN
+            CALL DZERO(DINTSKP,8)
+         ELSE
+            CALL DZERO(DINTSKP,3*14*3)
+         END IF
+         IF(SCREEN.GT.D0) THEN
+            DOSCRN = .TRUE.
+            SCRTHR = SCREEN
+         END IF
+         ICEFLG = ICEDIF
+         NCM = 0
+         NEM = 0
+         DO I = 1,NDMAT
             IY  = MOD(IFCTYP(I),10)
             IC  = MOD(IY,2)
             NCM = NCM + IC
             IE  = (IY - IC)/2
             NEM = NEM + IE
-          ENDDO
-        ENDIF
+         ENDDO
       ENDIF
 C
       IF(I2TYP.EQ.0) THEN
