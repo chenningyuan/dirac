@@ -178,6 +178,7 @@ C
 #include <dcbbas.h>
 #include <hrunit.h>
       DIMENSION WORK(LWORK)
+      LOGICAL NOCONT
 C
 C     Initialize COMMON BLOCKS
 C     ========================
