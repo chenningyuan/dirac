@@ -56,13 +56,13 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
 #include <infpar.h>
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-      INCLUDE "ccpar.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
+#include "ccpar.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -143,7 +143,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <mxorb.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include <dcbgen.h>
@@ -183,14 +183,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 #include <infmpi.h>
 #include <infpar.h>
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include <priunit.h>
 #include <dgroup.h>
-      INCLUDE "ccpar.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
+#include "ccpar.inc"
+#include "symm.inc"
+#include "files.inc"
       CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
 C

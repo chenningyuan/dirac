@@ -49,9 +49,9 @@ C
       IMPLICIT INTEGER (A-Z)
       REAL*8 ELTIM
 
-      INCLUDE "timtbl.inc"
-      INCLUDE "param.inc"
-      INCLUDE "files.inc"
+#include "timtbl.inc"
+#include "param.inc"
+#include "files.inc"
       
       IF(TIMERN.LT.1.OR.TIMERN.GT.MXTIMF) THEN
         WRITE(IW,10)
@@ -71,12 +71,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME
 
-      INCLUDE "timtbl.inc"
-      INCLUDE "param.inc"
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
+#include "timtbl.inc"
+#include "param.inc"
+#include "files.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       PARAMETER(TITAG=12)
 #endif
@@ -203,7 +203,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 SUMT,A(*)
       INTEGER N
 
-      INCLUDE "param.inc"
+#include "param.inc"
 
       SUMT=D0
       DO I=1,N
@@ -231,7 +231,7 @@ C USE THIS FOR ALL UNFORMATTED FILES
 C
       IMPLICIT INTEGER (A-Z)
 #if defined (VAR_MPI)
-      INCLUDE "ccpar.inc"
+#include "ccpar.inc"
 #endif
 C
       CHARACTER*4 DN, FNAM*8, FTFILN*9
@@ -564,7 +564,7 @@ C
       IMPLICIT INTEGER (A-Z)
 
 #if defined (VAR_MPI)
-      INCLUDE "ccpar.inc"
+#include "ccpar.inc"
 #endif
 
       CHARACTER*8 FNAM

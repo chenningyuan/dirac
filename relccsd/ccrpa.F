@@ -68,11 +68,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "diis.inc"
-      INCLUDE "complex.inc"
+#include "files.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "diis.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -312,11 +312,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "diis.inc"
-      INCLUDE "complex.inc"
+#include "files.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "diis.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -480,9 +480,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -552,9 +552,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -610,8 +610,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -678,8 +678,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -736,10 +736,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc" 
-      INCLUDE "param.inc" 
-      INCLUDE "complex.inc" 
-      INCLUDE "diis.inc"
+#include "files.inc" 
+#include "param.inc" 
+#include "complex.inc" 
+#include "diis.inc"
 C
 C---------------Local variables--------------------------------------
 C 
@@ -1147,8 +1147,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1200,9 +1200,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1265,8 +1265,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc" 
-      INCLUDE "complex.inc" 
+#include "param.inc" 
+#include "complex.inc" 
 C
 C---------------Local variables--------------------------------------
 C 
@@ -1358,9 +1358,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1420,8 +1420,8 @@ C
       CHARACTER*17 TEXT
       INTEGER OFF
 C 
-      INCLUDE "files.inc"
-      INCLUDE "symm.inc"
+#include "files.inc"
+#include "symm.inc"
 C
       WRITE (*,1000) TEXT,TRESH
 C

@@ -68,15 +68,15 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "results.inc"
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "complex.inc"
+#include "results.inc"
+#include "files.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -600,13 +600,13 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -803,13 +803,13 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "eqns.inc"
+#include "inpt.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -1060,16 +1060,16 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "results.inc"
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "inpt.inc"
+#include "complex.inc"
+#include "results.inc"
+#include "files.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C---------------Local variables--------------------------------------
@@ -1337,10 +1337,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1443,8 +1443,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1604,8 +1604,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C

@@ -54,7 +54,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -94,7 +94,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -136,7 +136,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -189,7 +189,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -234,7 +234,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -277,8 +277,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
+#include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -356,7 +356,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "complex.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

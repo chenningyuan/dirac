@@ -61,11 +61,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -174,11 +174,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -282,9 +282,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C

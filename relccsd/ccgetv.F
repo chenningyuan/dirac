@@ -52,10 +52,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -106,10 +106,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -140,10 +140,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -174,10 +174,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -208,10 +208,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -252,11 +252,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "iobuf.inc"
-      INCLUDE "ccpar.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "iobuf.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -339,11 +339,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "iobuf.inc"
-      INCLUDE "ccpar.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "iobuf.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -427,11 +427,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "iobuf.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -513,11 +513,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "iobuf.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "iobuf.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -594,9 +594,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -660,9 +660,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C

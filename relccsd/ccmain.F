@@ -51,12 +51,12 @@ C
 C---------------Common Blocks--------------------------------------
 C
       PARAMETER (MAXCOR = 60 000 000)
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
+#include "files.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
 #include <infmpi.h>
 #include <infpar.h>
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C

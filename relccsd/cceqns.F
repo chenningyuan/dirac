@@ -52,13 +52,13 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "results.inc"
-      INCLUDE "complex.inc"
+#include "files.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "inpt.inc"
+#include "results.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -170,17 +170,17 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "diis.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "results.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "ccpar.inc"
+#include "files.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "diis.inc"
+#include "eqns.inc"
+#include "inpt.inc"
+#include "results.inc"
+#include "complex.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -670,11 +670,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "complex.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -956,11 +956,11 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "eqns.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "eqns.inc"
+#include "symm.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1357,15 +1357,15 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "files.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "results.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "inpt.inc"
+#include "results.inc"
+#include "complex.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 
@@ -1872,10 +1872,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "freeze.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "freeze.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1939,12 +1939,12 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "ccpar.inc"
 #if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
+#include <mpif.h>
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -1996,10 +1996,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc" 
-      INCLUDE "complex.inc" 
-      INCLUDE "diis.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc" 
+#include "complex.inc" 
+#include "diis.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C 
@@ -2174,9 +2174,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2251,9 +2251,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2321,8 +2321,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2415,9 +2415,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2475,10 +2475,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "ccpar.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2555,9 +2555,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2655,10 +2655,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2742,10 +2742,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "param.inc"
-      INCLUDE "eqns.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2862,10 +2862,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "symm.inc"
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "eqns.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
