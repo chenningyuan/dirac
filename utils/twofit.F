@@ -104,7 +104,8 @@ C
       WRITE(LUPRI,'(A)')
      &  'Select one of the following:',
      &  '  1. Select masses of the most abundant isotopes.',
-     &  '  2. Employ user-defined atomic masses.'
+     &  '  2. Employ user-defined atomic masses.',
+     &  '  3. Normal modes: Give reduced mass.'
       READ(LUCMD,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') '* Give charge of atom A:'
@@ -134,6 +135,10 @@ C
         READ(LUCMD,*) AM
         WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
         READ(LUCMD,*) BM
+      ELSEIF(I.EQ.3) THEN
+        WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
+        READ(LUCMD,*) UM
+        GOTO 50
       ELSE
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
         GOTO 10
@@ -142,6 +147,7 @@ C
       WRITE(ILOGG,'(A)') '* MASSES:'
       WRITE(ILOGG,'(3X,A,F8.4)') 'Atom A      :',AM
       WRITE(ILOGG,'(3X,A,F8.4)') 'Atom B      :',BM
+ 50   CONTINUE
       WRITE(ILOGG,'(3X,A,F8.4)') 'Reduced mass:',UM
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       UM = XFAMU*UM
@@ -298,7 +304,7 @@ C     Anharmonic constant at non-stationary geometry
 C     ==============================================
 C
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',
-     &   'at another geometry (y/n)?'
+     &   ' at another geometry (y/n)?'
       READ(LUCMD,*) REPLY
       IF(REPLY.EQ.'y') THEN
         WRITE(LUPRI,*) 'Give geometry in Angstroms '
