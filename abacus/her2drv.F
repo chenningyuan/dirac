@@ -2712,7 +2712,7 @@ C     ... PAOSET work is done in 200 loop for SEGMEN
 C
 C     Print Section
 C
-      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GE. 5) THEN
          CALL HEADER('Output from PAOVEC',-1)
          WRITE (LUPRI,'(A,L5)') ' SEGMEN ', SEGMEN
          WRITE (LUPRI,'(A,I5)') ' MAXSHL ', MAXSHL
