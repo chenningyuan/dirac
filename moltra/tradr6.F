@@ -173,6 +173,7 @@ C        the way the initialization routine works for this.
       CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
       CALL XTIME(5,2,' First halftransformation      ')
 C
+#if defined (VAR_MPI)
 
       IF (PARCAL) THEN
          CALL GETTIM(CPUST,WALLST)
@@ -190,6 +191,7 @@ C
      & '- Ending integral redistribution after ',
      &  WALLST-WALLBEF,' seconds'
       ENDIF
+#endif
 C
 C     Initialize MOLFDIR integral file
 C
@@ -1285,8 +1287,8 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbibt.h"
       DIMENSION GMAT(NDG,NZ)
+#include "dcbibt.h"
 C
       DO IZ = 1, NZ
          DO IC = ICS, ICF
