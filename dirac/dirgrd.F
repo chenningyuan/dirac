@@ -1599,7 +1599,6 @@ C        Transform to unsorted basis
 C
          IREP = ISYMOP(IMAT)-1
          CALL BSTOBU(WORK(KTMP),NZ,WORK(KFREE),LFREE)
-#include <alphac.h>
          IF(IPRINT.GE.5) THEN
             CALL HEADER('GTCNVD: DMAT After BSTOBU to unsorted basis',
      &                  -1)
@@ -1703,6 +1702,7 @@ C
 #include <symmet.h>
 #include <dcbgen.h>
 #include <dcbgrd.h>
+#include <alphac.h>
 C
       CALL QENTER('ESTGLS')
 C
