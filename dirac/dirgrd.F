@@ -78,12 +78,6 @@ C
 C
       IF (DODHF) THEN
 C
-C        Density and Fock matrices for (Dirac-)Hartree-Fock
-C
-         write(6,*) 'lfree before conmat dhf',lfree
-         CALL CONMAT_DHF(IPRGRD,WORK(KFREE),LFREE)
-         write(6,*) 'lfree after conmat dhf',lfree
-C
 C        Initialize some variables
 C
 C        If calculation of gradient requested without
@@ -91,6 +85,10 @@ C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
 C
          CALL SETDHF(IPRGRD)
+C
+C        Density and Fock matrices for (Dirac-)Hartree-Fock
+C
+         CALL CONMAT_DHF(IPRGRD,WORK(KFREE),LFREE)
 C
       ELSE
 C
@@ -385,7 +383,7 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
-C     Transform to sorted basis
+C     Transform to unsorted basis
 C
       CALL BSTOBU(WORK(KFAO),NZ,WORK(KFREE),LFREE)
       IF(IPRINT.GE.5) THEN
@@ -434,7 +432,7 @@ C
 C     where S is the overlap matrix, which is real.
 C
       CALL DZERO(WORK(KFVAO),N2BBASX)
-      CALL DSYM1R(WORK(KFCAO),WORK(KFVAO),NTBAS(0),0,IPRINT)
+      CALL DSYM1R(WORK(KFCAO),WORK(KFVAO),NTBAS(0),0,IPRINT - 20)
 C
       IF ( IPRINT .GE. 10 ) THEN
          CALL HEADER('Final folded contravariant AO Fock matrix',-1)
@@ -479,7 +477,7 @@ C     and .NOT. DC_ij = 2 \sum C_ia C_ja^*, we multiply with 2.0
 C
       CALL DSCAL(N2BBASXQ,D2,WORK(KDCAO),1)
 C
-C     Transform to sorted basis
+C     Transform to unsorted basis
 C
       CALL BSTOBU(WORK(KDCAO),NZ,WORK(KFREE),LFREE)
       IF(IPRINT.GE.10) THEN
@@ -499,7 +497,7 @@ C
       IF(NZ.LT.4) THEN
          DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IREP)
-            CALL Q2PHASE('D',IQ,1,WORK(KDCAO))
+            CALL Q2PHASE('D',IQ,1,WORK(KDCAO + N2BBASX * (IZ - 1) ) )
          ENDDO
          IF(IPRINT.GE.5) THEN
             CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
@@ -580,9 +578,7 @@ C
 C
 C     Contruct density matrix
 C
-      write(6,*) 'nfmat',nfmat
       DO IMAT = 1,NFMAT
-         write(6,*) 'imat = ',imat
          IBIT = IBTSHL(1,IMAT-1)
          CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
          IF (IPRINT .GE. 5) THEN
