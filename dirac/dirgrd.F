@@ -72,8 +72,6 @@ C     so we call it anyway.
 C
       CALL SETDHF(IPRGRD)
 C
-C
-C
 C     Save DO2GRD
 C
       DO I = 1,3
