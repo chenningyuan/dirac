@@ -1,6 +1,4 @@
 #
-# $Id$
-#
 # Shell script for configuring Makefile.config needed to build 
 # the DIRAC relativistic molecular code.
 # The shell script is a modified version of the script used for DALTON
@@ -175,47 +173,47 @@ echo $comp
 #
     if [ $parlib = 'yes' -a $mesp = 'mpi' ]; then
         parlib=
-	tmplib='libmpi.a libmpi.so'
-	incfile='mpif.h'
-	for testdir in $pardir; do
-	    for testlib in $tmplib; do
-       	        if test -f $testdir/$tmplib; then
-	            parlib='-lmpi'
-		    parlibp=$testdir
-		    break
-	         fi
+        tmplib='libmpi.a libmpi.so'
+        incfile='mpif.h'
+        for testdir in $pardir; do
+            for testlib in $tmplib; do
+                if test -f $testdir/$tmplib; then
+                    parlib='-lmpi'
+                    parlibp=$testdir
+                    break
+                 fi
             done
-	    test -n "$parlib" && break
-	 done
+            test -n "$parlib" && break
+         done
 #
 #   Now we try to find an include directory
 #
-	 for testdir in $incdir; do
-	     if test -f $testdir/$incfile; then
-	         parinc=$testdir
-		 break
-	     fi
-	 done
+         for testdir in $incdir; do
+             if test -f $testdir/$incfile; then
+                 parinc=$testdir
+                 break
+             fi
+         done
 #
 #   PVM settings, we need two PVM library files
 #
     elif [ $parlib = 'yes' -a $mesp = 'pvm' ]; then
         parlib=
-	tmplib='libpvm3.a libfpvm3.a'
-	for testdir in $pardir; do
-	    for testlib in $tmplib; do
-		if test -f $testdir/$parlib; then
-		    if [ $parlib = 'libpvm3.a']; then
-			parlib="$parlib -lpvm3"
-		    else
-		        parlib="$parlib -lfpvm3"
-		    fi
-		fi
-	    done
-	 done
+        tmplib='libpvm3.a libfpvm3.a'
+        for testdir in $pardir; do
+            for testlib in $tmplib; do
+                if test -f $testdir/$parlib; then
+                    if [ $parlib = 'libpvm3.a']; then
+                        parlib="$parlib -lpvm3"
+                    else
+                        parlib="$parlib -lfpvm3"
+                    fi
+                fi
+            done
+         done
     fi
 #    if [ "$parlib" = "no" ]; then
-#	 parlib=
+#        parlib=
 #    fi
 fi
 #
@@ -232,16 +230,16 @@ if [ "$mesp" = "mpi" -a "$WHICH" = "rs6000" ]; then
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
-	    ac_cv_prog_F77=$ac_word
-     	    break
+        if test -f $ac_dir/$ac_word; then
+            ac_cv_prog_F77=$ac_word
+            break
         fi  
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if test -n "$F77"; then
-	echo "\n   Compiler $F77 found"
+        echo "\n   Compiler $F77 found"
         break
     fi
 fi
@@ -252,16 +250,16 @@ for comp in $complist; do
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
-	    ac_cv_prog_F77=$ac_word
-     	    break
+        if test -f $ac_dir/$ac_word; then
+            ac_cv_prog_F77=$ac_word
+            break
         fi  
     done
     IFS="$ac_save_ifs"
     test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
     F77="$ac_cv_prog_F77"
     if test -n "$F77"; then
-	echo "\n   Compiler $F77 found"
+        echo "\n   Compiler $F77 found"
         break
     fi
 done
@@ -283,14 +281,14 @@ for testdir in $dirlist; do
     for testlib in $liblist; do
       if test -f $testdir/$testlib; then
          case $testlib in
-	    libesslp2.a) LIB='-lesslp2';;
-	    libessl.a) LIB='-lessl';;
+            libesslp2.a) LIB='-lesslp2';;
+            libessl.a) LIB='-lessl';;
             libblas.a) LIB='-lblas';;
             libcomplib.sgimath.a) LIB='-lcomplib.sgimath';;
             libveclib.a) LIB='-lveclib';;
             libmath.a) LIB='-lmath -lm -nx';;
          esac
-	 break
+         break
       fi
     done
     test -n "$LIB" && break
@@ -412,7 +410,7 @@ if [ -f Makefile.config ]; then
     echo 'Ooops. Makefile.config exists. I take a backup as Makefile.config.orig'
     if [ -f Makefile.config.orig -a ! -w Makefile.config.orig ]; then
         echo 'Makefile.config.orig is write-protetcted.'
-	answer=
+        answer=
         while [ "$answer" != "y" -a "$answer" != "n" ]
         do
            echo 'Do you want me to overwrite Makefile.config.orig anyway? [y/n]\c'
@@ -420,7 +418,7 @@ if [ -f Makefile.config ]; then
         done
         if [ "$answer" = "n" ];  then
             echo 'I do not take a backup of Makefile.config. This file will be overwritten'
-	else
+        else
             exec `chmod u+w Makefile.config.orig`
             exec `mv Makefile.config Makefile.config.orig`
             exec `chmod u-w Makefile.config.orig`
@@ -448,15 +446,18 @@ case $WHICH in
 #   RS6000
 #
     rs6000) case $opsys in
-		2) if [ "$mesp" = "dummy" ]; then
+                2) if [ "$mesp" = "dummy" ]; then
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23
 -D'INSTALL_WRKMEM=$memsiz' "
+                       ccp = "-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
                        def='dirac.x'
                    else
-                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23
+-D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       ccp = "-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
@@ -464,17 +465,19 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-		   fi
+                       fi
+                   fi
                    inc="-I$INCLUDE_DIR";;
-		2) if [ "$mesp" = "dummy" ]; then
+                2) if [ "$mesp" = "dummy" ]; then
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' "
+                       ccp = "-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
                        def='dirac.x'
                    else
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       ccp = "-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
@@ -482,17 +485,19 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-		   fi
+                       fi
+                   fi
                    inc="-I$INCLUDE_DIR";;
                 *) if [ "$mesp" = "dummy" ]; then
                        cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz'"
+                       ccp = "-DSYS_AIX"
                        for mod in $MODS; do
                          cpp=`echo $cpp,$mod`
                        done
                        def='dirac.x'
                    else
                        cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D$parop"
+                       ccp = "-DSYS_AIX"
                        for mod in $MODS; do
                          cpp=`echo $cpp,$mod`
                        done
@@ -500,9 +505,9 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-		   fi
-		   inc="-WF,-I$INCLUDE_DIR";;
+                       fi
+                   fi
+                   inc="-WF,-I$INCLUDE_DIR";;
             esac
             opt='-O3 -qstrict';;
 #
@@ -510,16 +515,18 @@ case $WHICH in
 #
     iris4d) case $opsys in
                IRIX64) opt='-O2 -64 -mips4 -G 0';;
-	       *) opt='-O2 -32 -mips2 -G 0';;
+               *) opt='-O2 -32 -mips2 -G 0';;
             esac
             if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz'"
+                ccp = "-DSYS_IRIX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirac.x'
-	    else
+            else
                 cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                ccp = "-DSYS_IRIX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -527,66 +534,74 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-	    fi
-	    inc="-I$INCLUDE_DIR";;
+                       fi
+            fi
+            inc="-I$INCLUDE_DIR";;
 #
 #  CONVEX
 #
     convex) if [ "$mesp" = "dummy" ]; then
                 cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' "
+                ccp = "-DSYS_CONVEX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirac.x'
-	    else
+            else
                 cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                ccp = "-DSYS_CONVEX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirmpi.x'
-	    fi
+            fi
             opt="-O2 -link \"-W\""
-	    inc="-I$INCLUDE_DIR";;
+            inc="-I$INCLUDE_DIR";;
 #
 #   CRAY
 #
     cray)   if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=$memsiz' "
-	    else
+                ccp = "-DSYS_CRAY"
+            else
                 cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=$memsiz' ,$parop"
-	    fi
+                ccp = "-DSYS_CRAY"
+            fi
             for mod in $MODS; do
               cpp=`echo $cpp,$mod`
             done
             opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
-	    inc="-I$INCLUDE_DIR"
-	    def='dirac.x';;
+            inc="-I$INCLUDE_DIR"
+            def='dirac.x';;
 #
 #   CRAY T3E
 #
     cray_t3e) if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
-	    else
+                ccp = "-DSYS_T3D"
+            else
                 cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
-	    fi
+                ccp = "-DSYS_T3D"
+            fi
             for mod in $MODS; do
               cpp=`echo $cpp $mod`
             done
             opt="-Oaggress,scalar3"
-	    inc="-I$INCLUDE_DIR"
-	    def='dirac.x';;
+            inc="-I$INCLUDE_DIR"
+            def='dirac.x';;
 #
 #   ALPHA
 #
     alpha)  if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' "
+                ccp = "-DSYS_DEC"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
-	        def='dirac.x'
-	    else
+                def='dirac.x'
+            else
                 cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                ccp = "-DSYS_DEC"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -594,8 +609,8 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-	    fi
+                       fi
+            fi
             opt='-O4 -fpe2'
             inc="-I$INCLUDE_DIR";;
 #
@@ -603,12 +618,14 @@ case $WHICH in
 
     paragon) if [ "$mesp" = "dummy" ]; then
                  cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' "
+                 ccp = "-DSYS_PARAGON"
                  for mod in $MODS; do
                    cpp=`echo $cpp $mod`
                  done
                  def='dirmpi.x'
-	     else
+             else
                  cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                 ccp = "-DSYS_PARAGON"
                  for mod in $MODS; do
                    cpp=`echo $cpp $mod`
                  done
@@ -616,21 +633,23 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
-	     fi
+                       fi
+             fi
              opt='-O3 -Mvect'
-	     inc="-I$INCLUDE_DIR";;
+             inc="-I$INCLUDE_DIR";;
 #
 #  SUN
 #
     sun4) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz'"
+                 ccp = "-DSYS_SUN"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
               def='dalton.x'
           else
               cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                 ccp = "-DSYS_SUN"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -638,7 +657,7 @@ case $WHICH in
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
+                       fi
           fi
               opt='-O2 -Nc50'
               inc="-I$INCLUDE_DIR" ;;
@@ -647,12 +666,14 @@ case $WHICH in
 #
     hp) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' "
+              ccp = "-DSYS_HPUX"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
               def='dirac.x'
           else
               cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+              ccp = "-DSYS_HPUX"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
@@ -660,7 +681,7 @@ case $WHICH in
                  def='dirmpi.x'
               else
                  def='dirpvm.x'
-	      fi
+              fi
           fi
           opt='+O3 +U77 +E4 +E5'
           inc="-I$INCLUDE_DIR"
@@ -670,14 +691,16 @@ case $WHICH in
 #
     linux) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
+              ccp = "-DSYS_LINUX"
               def='dalton.x'
           else
               cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+              ccp = "-DSYS_LINUX"
                        if [ "$mesp" = "mpi" ]; then
                           def='dirmpi.x'
                        else
                           def='dirpvm.x'
-		       fi
+                       fi
           fi
               for mod in $MODS; do
                  cpp=`echo $cpp $mod`
@@ -691,6 +714,7 @@ ARCH        = $WHICH
 #
 #
 CPP_FLAGS   = $cpp 
+CCP_FLAGS   = $ccp
 F77         = $F77
 CC          = cc
 RM          = rm
@@ -741,9 +765,9 @@ if [ $WHICH = 'convex' ]; then
     IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
     for ac_dir in $PATH; do
         test -z "$ac_dir" && ac_dir=.
-	if test -f $ac_dir/$ac_word; then
-	    ac_cv_prog_cpp=$ac_word
-     	    break
+        if test -f $ac_dir/$ac_word; then
+            ac_cv_prog_cpp=$ac_word
+            break
         fi  
     done
     IFS="$ac_save_ifs"
@@ -755,8 +779,8 @@ if [ $WHICH = 'convex' ]; then
 #   Try /usr/lib/cc as a last resort
 #
         if [ -x /usr/lib/cc/cpp ]; then
-	   cppuse='/usr/lib/cc/cpp'
-	fi
+           cppuse='/usr/lib/cc/cpp'
+        fi
     fi
     if test -n "$cppuse"; then
        echo "Preprocessor $cppuse found"
@@ -800,7 +824,7 @@ $tab mv \$*.i \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f 
 $tab\$(RM) \$*.f
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
     else cat <<EOF>> Makefile.config
 #
@@ -811,7 +835,7 @@ EOF
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
     fi
 else cat <<EOF>> Makefile.config
@@ -823,7 +847,7 @@ else cat <<EOF>> Makefile.config
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 fi
 
@@ -831,5 +855,6 @@ echo '\n   The configuration of DIRAC has finished succesfully.'
 echo '\n   Check compiler flags etc. in Makefile.config and run "make" to get executable.'
 
 exit
+
 
 
