@@ -129,11 +129,14 @@ C        error and warning checks:
 C
          WMEMCK(1) = WORK(KFREE-LENID)
          IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
+C        error check:
          IF (LREAL+LENID .GT. LFREE) GO TO 8001
          IF (MEMCK(1) .NE. MEMID(1)) GO TO 8002
+C        warning check:
          IF (MEMCK(2) .NE. 0) GO TO 8003
+C        ... go issue warning and continue at 8013
 C
- 8013    WORK(KFREE-LENID) = WMEMID(1)
+         WORK(KFREE-LENID) = WMEMID(1)
          IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
       ELSE
          IF (LREAL+2*LENID .GT. LFREE) GO TO 8001
@@ -142,7 +145,7 @@ C
          KFREE = KFREE + LENID
          LFREE = LFREE - LENID
       END IF
-      KBASE  = KFREE
+ 8013 KBASE  = KFREE
       KFREE  = KBASE + (LREAL + LENID)
       LFREE  = LFREE - (LREAL + LENID)
       MEMID(2) = 0
@@ -208,6 +211,9 @@ C
             CALL QTRACE(LUEMEM)
          END IF
          CALL QEXIT('MEMGET  ')
+C        Warning issued, do the assignment now and continue
+         WORK(KFREE-LENID) = WMEMID(1)
+         IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
          GO TO 8013
 C
 C     end of MEMGET
@@ -355,16 +361,28 @@ C
      *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
      *      ' found memory check :',MEMCK(1),
      *      ' expected           :',MEMID(1)
+         WRITE (LUWMEM,'(/A/A)')
+     &      ' Dump of allocations before invalid memget id:',
+     &      ' IALLOC #    KBASE         Length'
+         KFREE = KFIRST
+         IF (KFREE .EQ. 1) KFREE = 1 + LENID
+         DO I = 1, IALLOC-1
+            WMEMCK(1) = WORK(KFREE-LENID)
+            IF (LENID .EQ. 2) WMEMCK(2) = WORK(KFREE-1)
+            LREAL = MEMCK(2)
+            WRITE (LUWMEM,'(I5,2I15)') I,KFREE,LREAL
+            KFREE = KFREE + LENID + LREAL
+         END DO
          CALL QENTER('MEMCHK  ')
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMCHK ERROR, not a valid memget id in work(kfree)',
+     *      ' MEMCHK ERROR, not a valid memget id in work(kfree-1)',
      *      ' ---> see output file'
             CALL QTRACE(LUEMEM)
          END IF
          CALL QUIT('MEMCHK ERROR, not a valid memget '//
-     &             'id in work(kfree)')
+     &             'id in work(kfree-1)')
 C
 C        error branch IF (LREAL .LT. 0) THEN
 C
