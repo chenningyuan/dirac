@@ -3975,7 +3975,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
 #include "machine.inc"
-      include 'SysDef.inc'
+#include "SysDef.inc"
 *. Output
 #include "irat.inc"
 *. For CRAY or explicit 64 bit architecture : IRAT = 1

@@ -5666,7 +5666,8 @@ C?    CALL MEMCHK
       IPICO = 0
       IF(IPICO.NE.0) THEN
 C?      WRITE(6,*) ' Perturbative solver '
-        MAXVEC = MIN(MAXVEC,2)
+C       MAXVEC = MIN(MAXVEC,2)
+C       ... MAXVEC not used in this routine /hjaaj
       ELSE IF(IPICO.EQ.0) THEN
 C?      WRITE(6,*) ' Variational  solver '
       END IF
