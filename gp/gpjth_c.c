@@ -51,6 +51,7 @@
 #include <stdlib.h>
 #include <sys/utsname.h>
 #include "patchlevel.h"
+#include "compinfo.h"
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
@@ -188,6 +189,12 @@ void sysinf(int parcal)
       printf( " Run               : Sequential\n");
    else
       printf( " Run               : Parallel\n");
+
+   /* Information about compilation */
+
+   printf(" Last compilation  : %s %s (by %s@%s)\n", 
+      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
+
    free(un);
 }
 
