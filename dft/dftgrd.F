@@ -194,60 +194,11 @@ C
 C     CARE: Some equivalencing through argument list!
 C
       DIMENSION RIJ(NAT*(NAT-1)/2),AIJ(NAT*(NAT-1)/2)
-C
-C     Bragg contains Bragg-Slater radii for atoms. 
-C     Following Becke, the hydrogen radius is 0.35. 
-C     For the noble gases, the values have been guessed.
-C
       DIMENSION RBC(NAT,NAT)
-      DIMENSION BRAGG(0:103)
       DIMENSION RVEC(IVECL,3)
       DIMENSION RADWT(2000), RADNDE(2000)
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
-
-C Trond Saue:
-C     The below data gives atomic radii in Angstroms and stems from table I of 
-C     J.C.Slater: "Atomic Radii in Crystals"
-C     J.Chem.Phys. 41(1964) 3199-3204
-C     Values for elements marked with an asterisk has been
-C     guessed/interpolated
-C
-      DATA BRAGG/ 0.75D0,
-C       H      He*   
-     &  0.35D0,0.35D0,
-C       Li     Be     B      C      N      O      F      Ne*
-     &  1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.50D0,0.45D0,
-C       Na     Mg     Al     Si     P      S      Cl     Ar*
-     &  1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,1.00D0,1.00D0,
-C       K      Ca     Sc     Ti     V      Cr     Mn     Fe     Co 
-     &  2.20D0,1.80D0,1.60D0,1.40D0,1.35D0,1.40D0,1.40D0,1.40D0,1.35D0,
-C       Ni     Cu     Zn     Ga     Ge     As     Se     Br     Kr*
-     &  1.35D0,1.35D0,1.35D0,1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.10D0,
-C       Rb     Sr     Y      Zr     Nb     Mo     Tc     Ru     Rh
-     &  2.35D0,2.00D0,1.80D0,1.55D0,1.45D0,1.45D0,1.35D0,1.30D0,1.35D0,
-C       Pd     Ag     Cd     In     Sn     Sb     Te     I      Xe*
-     &  1.40D0,1.60D0,1.55D0,1.55D0,1.45D0,1.45D0,1.40D0,1.40D0,1.40D0,
-C       Cs     Ba     La    
-     &  2.60D0,2.15D0,1.95D0,
-C       Ce     Pr     Nd     Pm     Sm     Eu     Gd
-     &  1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.80D0,
-C       Tb     Dy     Ho     Er     Tm     Yb     Lu
-     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
-C       Hf     Ta     W      Re     Os     Ir     Pt     Au     Hg
-     &  1.55D0,1.45D0,1.35D0,1.30D0,1.30D0,1.35D0,1.35D0,1.35D0,1.50D0,
-C       Tl     Pb*    Bi     Po     At*    Rn*
-     &  1.90D0,1.75D0,1.60D0,1.90D0,1.50D0,1.50D0,
-C       Fr*    Ra     Ac     
-     &  2.15D0,2.15D0,1.95D0,
-CTROND rad(U): 1.75 --> 1.37D0
-C       Th     Pa     U      Np     Pu     Am     Cm*     
-     &  1.80D0,1.80D0,1.37D0,1.75D0,1.75D0,1.75D0,1.75D0,
-CTROND       Th     Pa     U      Np     Pu     Am     Cm*     
-CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
-C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
-     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
-
 #include "sdpre.h"
 #include "ibtfun.h"
 C
@@ -291,6 +242,7 @@ C
      &        'radii will be used.'
          WRITE(LUPRI,*)
       ENDIF
+
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
 C     OF QUADRATURE
@@ -331,7 +283,6 @@ C
           IF (AIJ(ITEMP).GT.0.5D0) AIJ(ITEMP)=0.5D0
           IF (AIJ(ITEMP).LT.-0.5D0) AIJ(ITEMP)=-0.5D0
 7     CONTINUE
-
 C
 C     Get information about basis sets
 C
@@ -521,7 +472,6 @@ C
 C     Print file
 C
       IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,LUQUAD)
-
       RETURN
       END
 
@@ -1487,5 +1437,64 @@ C
          END DO
       END DO
       
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bragg */
+      FUNCTION BRAGG(NCHARGE)
+#include "implicit.h"
+C     Returns Slater-Bragg radius in Angstrom;
+C     Returns radius of MAXCHR when data not available.
+C 
+C     The below data gives atomic radii in Angstroms and stems from table I of 
+C     J.C.Slater: "Atomic Radii in Crystals"
+C     J.Chem.Phys. 41(1964) 3199-3204
+C     Values for elements marked with an asterisk has been
+C     guessed/interpolated
+C
+      PARAMETER (MAXCHR=103)
+      DIMENSION RAD(0:MAXCHR)
+      DATA (RAD(I), I = 0, MAXCHR)/0.75D0,
+C       H      He*   
+     &  0.35D0,0.35D0,
+C       Li     Be     B      C      N      O      F      Ne*
+     &  1.45D0,1.05D0,0.85D0,0.70D0,0.65D0,0.60D0,0.50D0,0.45D0,
+C       Na     Mg     Al     Si     P      S      Cl     Ar*
+     &  1.80D0,1.50D0,1.25D0,1.10D0,1.00D0,1.00D0,1.00D0,1.00D0,
+C       K      Ca     Sc     Ti     V      Cr     Mn     Fe     Co 
+     &  2.20D0,1.80D0,1.60D0,1.40D0,1.35D0,1.40D0,1.40D0,1.40D0,1.35D0,
+C       Ni     Cu     Zn     Ga     Ge     As     Se     Br     Kr*
+     &  1.35D0,1.35D0,1.35D0,1.30D0,1.25D0,1.15D0,1.15D0,1.15D0,1.10D0,
+C       Rb     Sr     Y      Zr     Nb     Mo     Tc     Ru     Rh
+     &  2.35D0,2.00D0,1.80D0,1.55D0,1.45D0,1.45D0,1.35D0,1.30D0,1.35D0,
+C       Pd     Ag     Cd     In     Sn     Sb     Te     I      Xe*
+     &  1.40D0,1.60D0,1.55D0,1.55D0,1.45D0,1.45D0,1.40D0,1.40D0,1.40D0,
+C       Cs     Ba     La    
+     &  2.60D0,2.15D0,1.95D0,
+C       Ce     Pr     Nd     Pm     Sm     Eu     Gd
+     &  1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.85D0,1.80D0,
+C       Tb     Dy     Ho     Er     Tm     Yb     Lu
+     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
+C       Hf     Ta     W      Re     Os     Ir     Pt     Au     Hg
+     &  1.55D0,1.45D0,1.35D0,1.30D0,1.30D0,1.35D0,1.35D0,1.35D0,1.50D0,
+C       Tl     Pb*    Bi     Po     At*    Rn*
+     &  1.90D0,1.75D0,1.60D0,1.90D0,1.50D0,1.50D0,
+C       Fr*    Ra     Ac     
+     &  2.15D0,2.15D0,1.95D0,
+CTROND rad(U): 1.75 --> 1.37D0
+C       Th     Pa     U      Np     Pu     Am     Cm*     
+     &  1.80D0,1.80D0,1.37D0,1.75D0,1.75D0,1.75D0,1.75D0,
+CTROND       Th     Pa     U      Np     Pu     Am     Cm*     
+CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
+C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
+     &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
+C
+      IF(NCHARGE.GT.MAXCHR) THEN
+        BRAGG = RAD(MAXCHR)
+      ELSEIF(NCHARGE.LT.0) THEN
+        BRAGG = -1.0D0
+      ELSE
+        BRAGG = RAD(NCHARGE)
+      ENDIF
       RETURN
       END
