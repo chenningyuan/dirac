@@ -7,7 +7,7 @@
 
 include ../Makefile.config
 
-F_OBJS = cidirr.o cigenp.o cigosc.o
+F_OBJS = cidirr.o cigenp.o cigosc.o cimain.o
 
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
