@@ -1050,9 +1050,9 @@ C     Fold Fock matrix
 C
       DO IZ = 1,NZ
          IF ( IZ .EQ. 1 ) THEN
-            DSCALE = 1.0
+            DSCALE = D1
          ELSE
-            DSCALE = -1.0
+            DSCALE = -D1
          END IF
          DO IMU = 2,NTBAS(0)
             DO INU = 1,IMU-1
@@ -1599,7 +1599,7 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM2 = -2.0 D00, CSTD = 137.0359895)
+      PARAMETER( D0 = 0.0 D00 , DM2 = -2.0 D00, CSTD = 137.0359895D0)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -1676,7 +1676,7 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM4 = -4.0 D00, CSTD = 137.0359895, 
+      PARAMETER( D0 = 0.0 D00 , DM4 = -4.0 D00, CSTD = 137.0359895D0, 
      &           D2 = 2.0 D00 , DP1 = 1.0D-01)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
