@@ -2359,13 +2359,13 @@ C
 #include <mxcent.h>
 #include <mxorb.h>
       CHARACTER CFIRST*1
+      DIMENSION COORD(3,*)
 C
 #include <nuclei.h>
 #include <symmet.h>
 #include <ibtfun.h>
 C
 C
-      DIMENSION COORD(3,*)
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
