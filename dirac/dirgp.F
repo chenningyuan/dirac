@@ -564,6 +564,7 @@ C              IF (IC.GT.NLIST) GOTO 930
       ICOMMA = ICHAR(',')
       INULL  = ICHAR('0')
       ININE  = ICHAR('9')
+      IOOH   = ICHAR('o')
       CALL IZERO(ITMPAR,IRNGE2-IRNGE1+1)
       B = ' '
 C
@@ -586,11 +587,24 @@ C
          I = I+1
          INT = ICHAR(B(I:I))
       ENDIF
-      IF ((INT.GE.INULL).AND.(INT.LE.ININE)) THEN
-C        ... found a number
-         NUM1 = INT-INULL
-         CALL READNM(I,NUM1,B)
-         NUM1 = NUM1*NEG1
+      IF ((INT.GE.INULL).AND.(INT.LE.ININE) .OR.
+     &    (INT.EQ.IOOH) ) THEN
+         IF (INT .EQ. IOOH) THEN
+            I = I + 1
+            TEGN = B(I:I)
+            IF (TEGN .NE. 'o') GOTO 950
+            IF (NEG1 .EQ -1) THEN
+               NUM1 = -IRNGE1
+            ELSE
+               NUM1 = IRNGE2
+            END IF
+            I = I + 1
+         ELSE
+C           ... found a number
+            NUM1 = INT-INULL
+            CALL READNM(I,NUM1,B)
+            NUM1 = NUM1*NEG1
+         END IF
          TEGN = B(I:I)
          IF (TEGN.EQ.'.') THEN
 C        ... checking for range
@@ -613,6 +627,16 @@ C              ... read end of range
                   NUM2 = INT-INULL
                   CALL READNM(I,NUM2,B)
                   NUM2 = NUM2*NEG2
+               ELSE IF (INT .EQ. IOOH) THEN
+                  I = I + 1
+                  TEGN = B(I:I)
+                  IF (TEGN .NE. 'o') GOTO 950
+                  IF (NEG2 .EQ -1) THEN
+                     NUM1 = -IRNGE1
+                  ELSE
+                     NUM1 = IRNGE2
+                  END IF
+                  I = I + 1
                ELSE 
                   GOTO 900
                ENDIF
@@ -697,6 +721,8 @@ C
  940  CONTINUE
       WRITE(LUPRI,'(A)') 'Character string beyond 72'
       CALL QUIT('NUMLST: Character string beyond 72') 
+ 950  CONTINUE
+      CALL QUIT('NUMLST: oo must be two consecutive characters.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readnm */
