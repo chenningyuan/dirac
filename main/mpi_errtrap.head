@@ -11,7 +11,18 @@
 #if defined (VAR_MPI)
 #include <mpi.h>
 
+#if defined (SYS_AIX)
+
+void mpi_errtrap(MPI_Comm *comm,int *err,char *errmesg,int *oeh1,int *oeh2)
+
+#else /* SYS_AIX */
+
 void mpi_errtrap(MPI_Comm *comm, int *err, ...)
-#else
+
+#endif /* SYS_AIX */
+
+#else /* VAR_MPI */
+
 void mpi_errtrap(int *bla1, int *bla2)
-#endif
+
+#endif /* VAR_MPI */
