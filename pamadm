@@ -496,7 +496,7 @@ dft/dftaux.o dft/grtest.o dft/Lebedev-Laikov.o dft/dftac.o
 DFTOBJS_C = \\
 dft/functionals.o dft/emb-functional.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
 dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o dft/fun-kin_tf.o dft/fun-kin_vw.o dft/fun-lb94.o \
-dft/fun-pbex.o dft/fun-pbec.o dft/fun-pw91c.o dft/fun-pw92.o
+dft/fun-pbex.o dft/fun-pbec.o dft/fun-pw91c.o dft/fun-pw92.o dft/fun-pz81.o
 EOF
 fi
 #

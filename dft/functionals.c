@@ -88,12 +88,14 @@ Functional* available_functionals[] = {
     &pbexFunctional,
     &PbecFunctional,
     &pw91cFunctional,
+    &PZ81Functional,
     &PW92Functional,
     /* mixed functionals */
     &XAlphaFunctional,
     &LDAFunctional,
     &GGAKeyFunctional,
     &BLYPFunctional,
+    &BP86Functional,
     &B3LYPFunctional,
     &WAHFunctional,
     &PBEFunctional,
@@ -470,6 +472,17 @@ blyp_read(const char* conf_line)
 }
 
 static int
+bp86_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,  1.0);
+    dft_set_hf_weight(0);
+    return 1;
+}
+
+static int
 b3lyp_read(const char* conf_line)
 {
     static const real lypw = 0.81, dirw = 0.8;
@@ -665,6 +678,17 @@ Functional PBEFunctional = {
     gga_first,
     gga_second,
     gga_third
+};
+
+Functional BP86Functional = {
+  "BP86",      /* name */
+  gga_isgga,     /* gga-corrected */
+  bp86_read,
+  gga_report,
+  gga_energy, 
+  gga_first,
+  gga_second,
+  gga_third
 };
 
 Functional BLYPFunctional = {

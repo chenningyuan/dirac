@@ -266,6 +266,7 @@ extern Functional PW92Functional;
 extern Functional pbexFunctional;
 extern Functional PbecFunctional;
 extern Functional pw91cFunctional;
+extern Functional PZ81Functional;
 
 /* mixed functionals */
 extern Functional XAlphaFunctional;
@@ -273,6 +274,7 @@ extern Functional RhoFunctional;
 extern Functional LDAFunctional;
 extern Functional GGAKeyFunctional;
 extern Functional BLYPFunctional;
+extern Functional BP86Functional;
 extern Functional B3LYPFunctional;
 extern Functional WAHFunctional;
 extern Functional PBEFunctional;
