@@ -1562,11 +1562,15 @@ C
 #include <symmet.h>
 #include <cbiher.h>
 C
+#ifdef PRG_DIRAC
+      IF (ALLATM) THEN
+#else
       SPIN = INTTYP .EQ.  9 .OR. INTTYP .EQ. 10 .OR.
      &       INTTYP .EQ. 11 .OR. INTTYP .EQ. 12 .OR. INTTYP .EQ. 13 .OR.
      &       INTTYP .EQ. 26 .OR. INTTYP .EQ. 27 .OR. INTTYP .EQ. 28 .OR.
      &       INTTYP .EQ. 34 .OR. INTTYP .EQ. 38 .OR. INTTYP .EQ. 48
       IF (.NOT.SPIN .OR. ALLATM) THEN
+#endif
          NATOM = NUCDEP
          DO 100 I = 1, NUCIND
             DOATOM(I) = .TRUE.

@@ -279,7 +279,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_efg */
-      SUBROUTINE NUC_EFG(IPRINT,AXIS,TMP)
+      SUBROUTINE NUC_EFG(IPRINT,DOATOM,AXIS,TMP)
 C*****************************************************************************
 C     
 C     Calculates nuclear contribution to electric field gradients
@@ -296,6 +296,7 @@ C*****************************************************************************
       PARAMETER (D3 = 3.0D0)
       DIMENSION  TMP(3), ITMP(3), PVAL(9),
      &     AXIS(3,3,MXCENT)
+      LOGICAL    DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
@@ -303,6 +304,7 @@ C*****************************************************************************
 
       CALL DZERO(EFGNUC,9*MXCENT)
       DO 10 I = 1, NUCIND
+         IF (.NOT. DOATOM(I)) GOTO 10
          LL = 1
          DO 100 I2 = 1, NUCIND
             DO 110 ISYM = 0, MAXOPR
@@ -341,38 +343,44 @@ C*****************************************************************************
          WRITE(LUPRI,'(A/)')
      &        '  Nuclear contribution:'
          DO I = 1, NUCIND
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-            CALL OUTPUT(EFGNUC(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            IF (DOATOM(I)) THEN
+               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+               CALL OUTPUT(EFGNUC(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            END IF
          ENDDO
       END IF
 C     diagonalize efg tensor
       DO IATOM = 1, NUCIND
-         CALL DUNIT(AXIS(1,1,IATOM),3)
-         IJ = 1
-         DO I = 1, 3
-            DO J = 1, I
-               PVAL(IJ) = EFGNUC(I,J,IATOM)
-               IJ = IJ + 1
+         IF (DOATOM(I)) THEN
+            CALL DUNIT(AXIS(1,1,IATOM),3)
+            IJ = 1
+            DO I = 1, 3
+               DO J = 1, I
+                  PVAL(IJ) = EFGNUC(I,J,IATOM)
+                  IJ = IJ + 1
+               ENDDO
             ENDDO
-         ENDDO
-         CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-         PVAL(2) = PVAL(3)
-         PVAL(3) = PVAL(6)
-         IZ = IDAMAX(3,PVAL(1),1)
-         CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-         IX = IDAMIN(3,PVAL(1),1)
-         CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-         EFGNUC(1,1,IATOM) = PVAL(1)
-         EFGNUC(2,2,IATOM) = PVAL(2)
-         EFGNUC(3,3,IATOM) = PVAL(3)
+            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+            PVAL(2) = PVAL(3)
+            PVAL(3) = PVAL(6)
+            IZ = IDAMAX(3,PVAL(1),1)
+            CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+            IX = IDAMIN(3,PVAL(1),1)
+            CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+            EFGNUC(1,1,IATOM) = PVAL(1)
+            EFGNUC(2,2,IATOM) = PVAL(2)
+            EFGNUC(3,3,IATOM) = PVAL(3)
+         END IF
       ENDDO
 C     print section
       IF (IPRINT .GE. 4) THEN
          WRITE(LUPRI,'(A/)')
      &        '  Principal axis to nuclear contribution'
          DO I = 1, NUCIND
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-            CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            IF (DOATOM(I)) THEN
+               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+               CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            END IF
          ENDDO
       END IF
 C     

@@ -338,14 +338,42 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EFG */
+      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electric field gradient
+C
+C     Written by T.Saue Feb 19 1997
+C     Last revision: J. Thyssen - Oct 13 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <mxcent.h>
+#include <nuclei.h>
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include <memint.h>
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EFGINT: INTTYP = 30
+      CALL SETATM(WORK(KDATOM),NATOM,30)
+      CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
-      SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C     Define nuclear quadrupole coupling constants
+C     Define electric field gradient
 C     Written by T.Enevoldsen - Sep 1996
-C     Last revision: 
+C     Last revision: J. Thyssen - Oct 13 1998
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -357,6 +385,7 @@ C*****************************************************************************
       PARAMETER(DM1 = -1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
 #include <dcbxpr.h>
 #include <dcbexp.h>
 Ctec
@@ -371,6 +400,7 @@ Ctec
       NPCOMP    = 1
       PFAC(1)   = DM1
       DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
          DO 200 ICOOR2 = ICOOR1, 3
             ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
@@ -838,9 +868,41 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRP_NQCC */
+      SUBROUTINE PRP_NQCC(EXPVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Oct 13 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <dcbprp.h>
+#include <dcbexp.h>
+#include <dcbxlr.h>
+#include <nuclei.h>
+      DIMENSION EXPVAL(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Allocate memory
+C
+      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
+C
+      CALL SETATM(WORK(KATOM),NATOM,30)
+      CALL PRP_NQCC1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP))
+      CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prp_nqcc */
-      SUBROUTINE PRP_NQCC(EXPVAL,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_NQCC1(EXPVAL,DOATOM,AXIS,TEMP)
 C*****************************************************************************
 C
 C      Calculate nuclear quadrupole coupling constants
@@ -858,28 +920,25 @@ C
 #include <dcbprp.h>
 #include <dcbexp.h>
       PARAMETER(CONV = 234.9647417D0)
-      DIMENSION EXPVAL(*),WORK(*),EFGTOT(3)
+      DIMENSION EXPVAL(*),AXIS(*),TEMP(*), EFGTOT(3)
+      LOGICAL   DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C
       IF (.NOT.EFG) THEN
-         CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
 C     Electronic contribution to dipole moment
 C     ========================================
 C
-         CALL EL_EFG(0,EXPVAL,WORK(KAXIS),WORK(KTEMP))
+         CALL EL_EFG(0,EXPVAL,AXIS,TEMP)
 C
 C     Nuclear contribution to dipole moment
 C     ========================================
 C
-         CALL NUC_EFG(0,WORK(KAXIS),WORK(KTEMP))
+         CALL NUC_EFG(0,AXIS,TEMP)
 C     
-         CALL MEMREL('PRP_NQCC',WORK,KTEMP,KTEMP,KFREE,LFREE)
-         CALL MEMREL('PRP_NQCC',WORK,KAXIS,KAXIS,KFREE,LFREE)
       ENDIF
 C
 C
@@ -933,7 +992,7 @@ C print section
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
-      SUBROUTINE EL_EFG(IPRINT,EXPVAL,AXIS,TEMP)
+      SUBROUTINE EL_EFG(IPRINT,EXPVAL,DOATOM,AXIS,TEMP)
 C*****************************************************************************
 C     
 C     Calculates electronic contribution to electric field gradients
@@ -951,6 +1010,7 @@ C
 #include <dcbexp.h>
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT), TMP(3), ITMP(3), PVAL(9),
      *     AXIS(3,3,MXCENT)
+      LOGICAL DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
@@ -958,75 +1018,115 @@ C
       CALL DZERO(EFGEL,9*MXCENT)
       ITYP = 0
       DO IATOM = 1, NUCIND
-         DO ICOOR1 = 1, 3
-            DO ICOOR2 = ICOOR1, 3
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-               DO IREPC = 0, MAXREP
-                  IF (IBTAND(ISTBNU(IATOM),
-     &                 IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-                     ITYP = ITYP + 1
-                     EFGEL(ICOOR1,ICOOR2,IATOM) =
-     &                    EFGEL(ICOOR1,ICOOR2,IATOM) -
-     *                    EXPVAL(IPEFG(ITYP))/NUCDEG(IATOM)*
-     &                    PT(IBTAND(ISYMIJ,IREPC))
-                  END IF
+         IF (DOATOM(IATOM)) THEN
+            DO ICOOR1 = 1, 3
+               DO ICOOR2 = ICOOR1, 3
+                  ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                  DO IREPC = 0, MAXREP
+                     IF (IBTAND(ISTBNU(IATOM),
+     &                    IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                        ITYP = ITYP + 1
+                        EFGEL(ICOOR1,ICOOR2,IATOM) =
+     &                       EFGEL(ICOOR1,ICOOR2,IATOM) -
+     *                       EXPVAL(IPEFG(ITYP))/NUCDEG(IATOM)*
+     &                       PT(IBTAND(ISYMIJ,IREPC))
+                     END IF
+                  ENDDO
                ENDDO
             ENDDO
-         ENDDO
-         EFGEL(2,1,IATOM) = EFGEL(1,2,IATOM)
-         EFGEL(3,1,IATOM) = EFGEL(1,3,IATOM)
-         EFGEL(3,2,IATOM) = EFGEL(2,3,IATOM)
+            EFGEL(2,1,IATOM) = EFGEL(1,2,IATOM)
+            EFGEL(3,1,IATOM) = EFGEL(1,3,IATOM)
+            EFGEL(3,2,IATOM) = EFGEL(2,3,IATOM)
+         END IF
       ENDDO
 C     
       IF (IPRINT .GE. 2) THEN
          WRITE(LUPRI,'(A/)')
      &        '  Electronic contribution:'
          DO I = 1, NUCIND
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-            CALL OUTPUT(EFGEL(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            IF (DOATOM(I)) THEN
+               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+               CALL OUTPUT(EFGEL(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            END IF
          ENDDO
       END IF
 C     diagonalize efg tensor
       DO IATOM = 1, NUCIND
-         CALL DUNIT(AXIS(1,1,IATOM),3)
-         IJ = 1
-         DO I = 1, 3
-            DO J = 1, I
-               PVAL(IJ) = EFGEL(I,J,IATOM)
-               IJ = IJ + 1
+         IF (DOATOM(IATOM)) THEN
+            CALL DUNIT(AXIS(1,1,IATOM),3)
+            IJ = 1
+            DO I = 1, 3
+               DO J = 1, I
+                  PVAL(IJ) = EFGEL(I,J,IATOM)
+                  IJ = IJ + 1
+               ENDDO
             ENDDO
-         ENDDO
-         CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-         PVAL(2) = PVAL(3)
-         PVAL(3) = PVAL(6)
-         IZ = IDAMAX(3,PVAL(1),1)
-         CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-         IX = IDAMIN(3,PVAL(1),1)
-         CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-         EFGEL(1,1,IATOM) = PVAL(1)
-         EFGEL(2,2,IATOM) = PVAL(2)
-         EFGEL(3,3,IATOM) = PVAL(3)
+            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+            PVAL(2) = PVAL(3)
+            PVAL(3) = PVAL(6)
+            IZ = IDAMAX(3,PVAL(1),1)
+            CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+            IX = IDAMIN(3,PVAL(1),1)
+            CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+            EFGEL(1,1,IATOM) = PVAL(1)
+            EFGEL(2,2,IATOM) = PVAL(2)
+            EFGEL(3,3,IATOM) = PVAL(3)
+         END IF
       ENDDO
 C     print section
       IF (IPRINT .GE. 4) THEN
          WRITE(LUPRI,'(A/)')
      &        '  Principal axis to electronic contribution'
          DO I = 1, NUCIND
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-            CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            IF (DOATOM(I)) THEN
+               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
+               CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
+            END IF
          ENDDO
       END IF
 C     
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRP_EFG */
       SUBROUTINE PRP_EFG(EXPVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Oct 13 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <dcbprp.h>
+#include <dcbexp.h>
+#include <dcbxlr.h>
+#include <nuclei.h>
+      DIMENSION EXPVAL(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Allocate memory
+C
+      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
+C
+      CALL SETATM(WORK(KATOM),NATOM,30)
+      CALL PRP_EFG1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP))
+      CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRP_EFG1(EXPVAL,DOATOM,AXIS,TEMP)
 C*****************************************************************************
 C     
 C     Calculate nuclear quadrupole coupling constants
 C     
 C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision 
+C     Last revision by J. Thyssen - Oct 13 1998
 C     
 C*****************************************************************************
 #include <implicit.h>
@@ -1036,14 +1136,13 @@ C
 #include <maxaqn.h>
 #include <mxorb.h>
 #include <dcbexp.h>
-      DIMENSION EXPVAL(*),WORK(*),EFGTOT(3)
+      DIMENSION EXPVAL(*),EFGTOT(3),AXIS(*),TEMP(*)
+      LOGICAL   DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 C     
-      CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C     
 C     Electronic contribution to dipole moment
 C     ========================================
@@ -1052,10 +1151,9 @@ C
       WRITE(LUPRI,'(A/)')
      &     '* Electric field gradients:'
      
-      CALL EL_EFG(IPREXP,EXPVAL,WORK(KAXIS),WORK(KTEMP))
-      CALL NUC_EFG(IPREXP,WORK(KAXIS),WORK(KTEMP))
+      CALL EL_EFG(IPREXP,EXPVAL,DOATOM,AXIS,TEMP)
+      CALL NUC_EFG(IPREXP,DOATOM,AXIS,TEMP)
 C     
-      CALL MEMREL('PRP_EFG',WORK,KAXIS,KAXIS,KFREE,LFREE)
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
@@ -1065,17 +1163,19 @@ C     print section
      &     'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCIND
-         DO I=1,3
-            EFGTOT(I)=EFGNUC(I,I,IATOM)+EFGEL(I,I,IATOM)
-         ENDDO
-         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-         DO I=1,3
-            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
-     &           'q'//CHAR(IOFF+I)//CHAR(IOFF+I),EFGEL(I,I
-     *           ,IATOM),' au ',EFGNUC(I,I,IATOM),' au '
-     *           ,EFGTOT(I)
-     *           ,' au '
-         ENDDO
+         IF (DOATOM(IATOM)) THEN
+            DO I=1,3
+               EFGTOT(I)=EFGNUC(I,I,IATOM)+EFGEL(I,I,IATOM)
+            ENDDO
+            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+            DO I=1,3
+               WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+I),EFGEL(I,I
+     *              ,IATOM),' au ',EFGNUC(I,I,IATOM),' au '
+     *              ,EFGTOT(I)
+     *              ,' au '
+            ENDDO
+         END IF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A)') '  1 a.u. = ',9.71736E21,' V*m**-2' 
