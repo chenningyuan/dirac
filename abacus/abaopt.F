@@ -52,13 +52,18 @@ Cjth
 #include <gnrinf.h>
 #include <infinp.h>
 #endif
-      PARAMETER (NTABLE = 48, ITRMX = 25, MXREJ = 5, D0 = 0.0D0,
-     &                              DEFTHR = 1.0D-6, DEFDSP = 1.0D-3)
-      LOGICAL NEWDEF, TRSTCH, FIRST, BEENHERE
+      PARAMETER (NTABLE = 48, ITRMX = 25, MXREJ = 5, D0 = 0.0D0, 
+     &           DEFDSP = 1.0D-3)
+#ifndef PRG_DIRAC
+      PARAMETER (DEFTHR = 1.0D-6)
+#else
+      PARAMETER (DEFTHR = 5.0D-5)
+#endif
+      LOGICAL NEWDEF, TRSTCH, FIRST
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, STR*3
       DIMENSION II(3)
 C
-      SAVE FIRST, BEENHERE
+      SAVE FIRST
       DATA TABLE /'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC',
      &            '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY',
      &            '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA',
@@ -73,13 +78,7 @@ C
      &            '.IGTHRS', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
-      DATA BEENHERE /.FALSE./
 C
-      IF (BEENHERE) THEN
-         RETURN
-      ELSE
-         BEENHERE = .TRUE.
-      END IF
       IF (.NOT. FIRST) THEN
          IF ((WORD .NE. '*END OF') .AND. (WORD(1:2) .NE. '**')) THEN
  969        READ(LUCMD, '(A7)') WORD
@@ -1739,7 +1738,7 @@ C
 C     Integral and basis input
 C
       IF ( .NOT. EXSIR ) THEN
-#ifdef MOD_MIN
+#ifdef MOD_GEO
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
 #else
          CALL QUIT('No EXEDIR in this distribution.')
