@@ -272,7 +272,7 @@ make_export()
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
-      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.inc \$MDir/Makefile \$MDir/include 2>> export.log
+      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
    done
 EOF
    #
