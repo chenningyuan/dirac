@@ -1979,7 +1979,7 @@ C
       DIMENSION PFAC(3),II(3)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.TWOGRD','.TRICK ','.SCREEN'/
+      DATA TABLE /'.PRINT ','.INTFLG','.TRICK ','.SCREEN'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2028,7 +2028,7 @@ C&&&& PRINT:  Print level
                   READ(LUCMD,*) IPRGRD
                GO TO 100
     2          CONTINUE
-C&&&& TWOGRD: Which two-electron gradient to calculate
+C&&&& INTFLG: Which two-electron gradient to calculate
                   READ(LUCMD,*) II(1),II(2),II(3)
                   DO III=1,3
                      IF ( II(III) .GT. 0 ) THEN
@@ -2039,12 +2039,7 @@ C&&&& TWOGRD: Which two-electron gradient to calculate
                   END DO
                GO TO 100
     3          CONTINUE
-                  READ(LUCMD,*) III
-                  IF ( III .GT. 0 ) THEN
-                     DOTRCK = .TRUE.
-                  ELSE
-                     DOTRCK = .FALSE.
-                  END IF
+                  DOTRCK = .TRUE.
                GO TO 100
     4          CONTINUE
 C&&&& IGTHRS: Threshold for screening on the gradient
