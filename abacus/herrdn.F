@@ -6259,96 +6259,96 @@ C     shells, and we skip shells with the same primitives.
 C     A potential problem arises if you block a contracted basis set.
 C
 C
-      iPrimSmallTest = 0
       iPrimLargeTest = 0
 C
       DO 100 ISHL = 1, NLRGSH 
 C
-        NCENTL = NCENT(ISHL)
-        NHKTL  = NHKT(ISHL)
+         NCENTL = NCENT(ISHL)
+         NHKTL  = NHKT(ISHL)
 C
-        iPrimLargeStart = JSTRT(ISHL) + 1
-        iPrimLargeEnd   = JSTRT(ISHL) + NUCO(ISHL)
+         iPrimLargeStart = JSTRT(ISHL) + 1
+         iPrimLargeEnd   = JSTRT(ISHL) + NUCO(ISHL)
 C
-C       Skip primitives we've already processed.
+C        Skip primitives we've already processed.
 C
-        IF (iPrimLargeStart .EQ. iPrimLargeTest) GO TO 100
-        iPrimLargeTest = iPrimLargeStart
+         IF (iPrimLargeStart .EQ. iPrimLargeTest) GO TO 100
+         iPrimLargeTest = iPrimLargeStart
 C
-C       Loop over primitives in this shell.
+C        Loop over primitives in this shell.
 C
-        DO 200 IPRIML = iPrimLargeStart, iPrimLargeEnd
-           PRIEXL = PRIEXP(IPRIML)
+         DO 200 IPRIML = iPrimLargeStart, iPrimLargeEnd
+            PRIEXL = PRIEXP(IPRIML)
 C
-           ISH2M = 0
+            ISH2M = 0
+            iPrimSmallTest = 0
 C
-C          Loop over small component shells
-C          Find matching small component basis functions.
+C           Loop over small component shells
+C           Find matching small component basis functions.
 C
-           DO 300 ISHS = NLRGSH+1, KMAX
-              NCENTS = NCENT(ISHS)
-              NHKTS  = NHKT(ISHS)
+            DO 300 ISHS = NLRGSH+1, KMAX
+               NCENTS = NCENT(ISHS)
+               NHKTS  = NHKT(ISHS)
 C
-C             Must be on same atomic center.
+C              Must be on same atomic center.
 C
-              IF ( NCENTS .NE. NCENTL ) GO TO 300
+               IF ( NCENTS .NE. NCENTL ) GO TO 300
 C
-              iPrimSmallStart = JSTRT(ISHS) + 1
-              iPrimSmallEnd   = JSTRT(ISHS) + NUCO(ISHS)
+               iPrimSmallStart = JSTRT(ISHS) + 1
+               iPrimSmallEnd   = JSTRT(ISHS) + NUCO(ISHS)
 C
-C             Skip primitives we've already processed.
+C              Skip primitives we've already processed.
 C
-              IF ( iPrimSmallStart .EQ. iPrimSmallTest) GO TO 300
-              iPrimSmallTest = iPrimSmallStart
+               IF ( iPrimSmallStart .EQ. iPrimSmallTest) GO TO 300
+               iPrimSmallTest = iPrimSmallStart
 C
-C             Loop over primitives.
+C              Loop over primitives.
 C
-              DO 400 IPRIMS = iPrimSmallStart, iPrimSmallEnd
+               DO 400 IPRIMS = iPrimSmallStart, iPrimSmallEnd
 C
-                 PRIEXS = PRIEXP(IPRIMS)
+                  PRIEXS = PRIEXP(IPRIMS)
 C
-                 IF ( ABS ( PRIEXS - PRIEXL ) .LT. SML ) THEN
-C
-C
-C                   We've got a match: same center, same exponent
+                  IF ( ABS ( PRIEXS - PRIEXL ) .LT. SML ) THEN
 C
 C
-C                   L-1 small function....
+C                    We've got a match: same center, same exponent
 C
-                    IF(NHKTS.EQ.NHKTL-1) THEN
 C
-C                      Check for two identical functions.
-C                      This should never happen, since GENSML deletes
-C                      functions it already know.
+C                    L-1 small function....
 C
-                       IF(ISH2M.NE.0) CALL QUIT
+                     IF(NHKTS.EQ.NHKTL-1) THEN
+C
+C                       Check for two identical functions.
+C                       This should never happen, since GENSML deletes
+C                       functions it already know.
+C
+                        IF(ISH2M.NE.0) CALL QUIT
      &                      ('RKBREL:Error, two identical functions')
 C
-C                      Note that we use ISHS and not IPRIMS, since RKBLOW
-C                      in dirone.F wants shell number, and not primitive
-C                      number.
+C                       Note that we use ISHS and not IPRIMS, since RKBLOW
+C                       in dirone.F wants shell number, and not primitive
+C                       number.
 C
-                       ISH2M = ISHS + (IPRIMS - iPrimSmallStart)
-                    ENDIF
+                        ISH2M = ISHS + (IPRIMS - iPrimSmallStart)
+                     ENDIF
 C
-C                   L+1 small function....
+C                    L+1 small function....
 C
-                    IF(NHKTS.EQ.NHKTL+1) THEN
-                       IRKB(IPRIML) = ISH2M
-                       IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
-                          WRITE(LUPRI,'(A)') 
+                     IF(NHKTS.EQ.NHKTL+1) THEN
+                        IRKB(IPRIML) = ISH2M
+                        IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
+                           WRITE(LUPRI,'(A)') 
      &                         'S Component Function with' //
      $                         'no Partner at L-2'
-                          CALL QUIT('S Component Function'// 
-     &                         ' with no Partner at L-2')
-                       ELSE
-                          IRKB(IPRIMS) = IPRIML
-                       ENDIF
-                    ENDIF
-                 ENDIF
- 400          CONTINUE
- 300       CONTINUE
- 200    CONTINUE
+                           CALL QUIT('S Component Function'// 
+     &                          ' with no Partner at L-2')
+                        ELSE
+                           IRKB(IPRIMS) = IPRIML
+                        ENDIF
+                     ENDIF
+                  ENDIF
+ 400           CONTINUE
+ 300        CONTINUE
+ 200     CONTINUE
  100  CONTINUE
 C
       IF ( IPRINT .GE. 10 ) THEN
