@@ -4370,6 +4370,8 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "mxmcgas.h"
+#include "dcbkrmc.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -4405,6 +4407,13 @@ C     Check for possible ways of correcting..
      &     " * User asked for neglect of SS-integrals without "//
      &     "invoking a correction.",
      &     "   Activated SCC method, see L. Visscher TCA 98 (1997) 68."
+      ENDIF
+C
+C     Check for LUCIA and parallel
+C
+      IF (PARCAL .AND. DOKRMC) THEN
+         IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
+     &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
       ENDIF
 C
       RETURN
