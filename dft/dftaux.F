@@ -1,5 +1,5 @@
 C /* Deck dftrpa */
-      SUBROUTINE DFTRPA(DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
+      SUBROUTINE DFTRPA(DMAT,DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &                  IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -16,17 +16,13 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
         DIMENSION DMAT(N2BBASX,NZ),DTRMAT(N2BBASX,NZ,NXCMAT),
-     &            EXCMAT(N2BBASX,NZ,NXCMAT),WORK(*)
-CTROND        CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
-CTROND        IOFF = 1
-CTROND        DO ISHELL = 1, NOPEN
-CTROND          IOFF = IOFF + N2BBASXQ
-CTROND          CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
-CTROND        ENDDO
-CTROND
+     &            EXCMAT(N2BBASX,NZ,NXCMAT),ISYMOP(NXCMAT),
+     &            IHRMOP(NXCMAT),WORK(*)
+C
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
+            IREPOP = ISYMOP(IM)-1
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
               CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
@@ -39,14 +35,14 @@ C       Insert half-phases
 CTROND: This must be fixed !
           CALL QUIT('Not yet implemented !')
           IRNTYP = 7
-          CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
+          CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NXCMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
         ELSE
 #endif
-          CALL DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
+          CALL DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,
      &               WORK(KFREE),LFREE,IPRINT)
 #if defined (VAR_MPI)
@@ -55,6 +51,7 @@ CTROND: This must be fixed !
 C       Insert half-phases
         IF(NZ.LT.4) THEN
            DO IM = 1,NXCMAT
+            IREPOP = ISYMOP(IM)-1
             DO IZ = 1,NZ
               IQ = IPQTOQ(IZ,IREPOP)
               CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
@@ -65,7 +62,7 @@ C       Insert half-phases
       RETURN
       END       
 C /* Deck dftltr */
-      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,
+      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
      &                  RHOGRD,RHG,WGHT,DOGGA,BUF)
 C
 C     T. Helgaker sep 99/oct 00
@@ -75,7 +72,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 C
-      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,DP5 = 0.5D0,D2=2.0D0)
 C
 #include "inforb.h"
 #include "nuclei.h"
@@ -92,11 +89,14 @@ C
       LOGICAL DOGGA, TRPLET
       DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
      &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          GAO(NBAST), GAO1(NBAST,3), 
-     &          RHG(3),VT(0:3), VXC(DERVS2), BUF(*)
+     &          RHG(3),VT(3), VXC(DERVS2), BUF(*)
       DIMENSION B3(3)
 C
       DO IM = 1,NXCMAT      
+      IF(IHRMOP(IM).EQ.1) THEN
+        IREPOP = ISYMOP(IM)-1
 C
 C       Get perturbed density
 C       =====================
@@ -107,42 +107,42 @@ C       ***************
 C       ***** LDA *****
 C       ***************
 C
-        IF (.NOT.DOGGA) THEN
-CTROND           IF (DABS(B0).GT.DFTHRL) THEN 
-           IF (DABS(B0).GT.1.0D-10) THEN 
+        IF(.NOT.DOGGA) THEN
+          IF(DABS(B0).GT.DFTHRL) THEN 
 C
-C             Calculated VT
+C           Calculated VT
 C
-              CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
-              VT(0) = VXC(FRR)*B0
+            CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
+            SXC = VXC(FRR)*B0
 C
-C             Linear transformation
+C           Linear transformation
 C  
-              CALL DOEXC1(VT(0),IREPOP,EXCMAT(1,1,1,IM),GAO)
-           END IF
+            CALL DOEXC1(SXC,IREPOP,EXCMAT(1,1,1,IM),GAO)
+          END IF
         ELSE  
 C
-C          ***************
-C          ***** GGA *****
-C          ***************
+C         ***************
+C         ***** GGA *****
+C         ***************
 C
-           CALL GETGRHO(B3,IREPOP,GAO,GAO1,DTRMAT(1,1,1,IM),BUF)
-           BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
+          CALL GETGRHO(B3,IREPOP,GAO,GAO1,DTRMAT(1,1,1,IM),BUF)
+          BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
 C          
-           
-           IF (.TRUE..OR.BMAX.GT.DFTHRL) THEN
-              CALL DFTPOT1(VXC, WGHT,RHO, RHOGRD)
-              BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
-              FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
-              VT(0) = VXC(FRR)*B0 + VXC(FRZ)*BR
-              VT(1) = (RHG(1)*FACR + VXC(FZ0)*B3(1))/RHOGRD
-              VT(2) = (RHG(2)*FACR + VXC(FZ0)*B3(2))/RHOGRD
-              VT(3) = (RHG(3)*FACR + VXC(FZ0)*B3(3))/RHOGRD
+          IF (BMAX.GT.DFTHRL) THEN
+            CALL DFTPOT1(VXC,WGHT,RHO,RHOGRD)
+            BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
+            FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
+            SXC = VXC(FRR)*B0 + VXC(FRZ)*BR
+            DO I = 1,3
+              VT(I) = D2*(RHG(I)*FACR + VXC(FZ0)*B3(I))/RHOGRD
+            ENDDO
 
-C             Linear transformation
+C           Linear transformation
 C
-              CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
-         END IF
+            CALL DOEXC2(SXC,VT,EXCMAT(1,1,1,IM),GAO,GAO1)      
+CTROND            CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
+          END IF
+        END IF
       END IF
       ENDDO
       RETURN

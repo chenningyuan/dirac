@@ -251,7 +251,8 @@ C
       IF(ITYPE.EQ.7) THEN
 C        Kohn-Sham
 #if defined (MOD_DFT)
-         CALL DFTEXC(DMAT,1,FMAT,1,.TRUE.,.TRUE.,.FALSE.,
+C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+         CALL DFTEXC(DMAT,1,FMAT,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRPAR)
 #endif
       ELSE

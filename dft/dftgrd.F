@@ -1026,11 +1026,11 @@ C     Newton-Raphson search
         DX = F0/F1
         HTLOG = HTLOG - DX
         DISERR = EXP(HTLOG)
-        IF(ABS(DX).LT.ACC) RETURN
+        IF(ABS(DX).LT.ACC) GOTO 10
       ENDDO
-      STOP 'Error in DISERR'
+      CALL QUIT('Error in DISERR')
 
-      RETURN
+ 10   RETURN
       END
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1078,12 +1078,12 @@ C     Newton-Raphson search
         U = U - DX
         IF(ABS(DX).LT.ACC) THEN
           OUTERR = SQRT(U/AL)
-          RETURN
+          GOTO 10
         ENDIF
       ENDDO
-      STOP 'Error in OUTERR'
+      CALL QUIT('Error in OUTERR')
 
-      RETURN
+ 10   RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gt1wt  */

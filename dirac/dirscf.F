@@ -330,7 +330,8 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-             CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
+C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+             CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
          ENDIF
 #endif
@@ -932,7 +933,8 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-             CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
+C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+             CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
          ENDIF
 #endif

@@ -674,8 +674,8 @@ C                s   - all indices (electronic or positronic)
 C                i   - inactive index
 C
 C     IH   = 1        Hermitian density matrix:  DMAT = -[DB + DB^+]
-C                       based on anti-Hermitian BMAT
-C     IH   = 2   anti-Hermitian density matrix:  DMAT = -[DB - DB^+]
+C                       based on Hermitian BMAT
+C     IH   =-1   anti-Hermitian density matrix:  DMAT = -[DB - DB^+]
 C                       based on anti-Hermitian BMAT
 C
 C     For time-symmetric operators DB^+ refers to the Hermite conjugate
@@ -1168,9 +1168,6 @@ C
          END IF
          IBOFF = IBOFF + NZXOPPQ
       ENDDO
-cjth  IF (IPRXRS .GE. 10) THEN
-cjth     CALL MEMREL('GMOLI',WORK,1,KFRSAV,KFREE,LFREE)
-cjth  END IF
 C
       RETURN
 C
@@ -3563,7 +3560,7 @@ C       Generate standard density matrix
         IREPOP = JSYMOP-1
         CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
         CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-        CALL DFTRPA(WORK(KBUF),FMO,FAO,NOSIM,IREPOP,
+        CALL DFTRPA(WORK(KBUF),FMO,FAO,NOSIM,ISYMOP,IHRMOP,
      &              IPRXRS,WORK,KFREE,LFREE)
         CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
       ENDIF
@@ -4626,7 +4623,7 @@ C
       IF (NZ .GT. 1 .AND. NZHOPE.GT.NZXOPE) THEN
          CALL INVREOGP(NZXOPE,NZHOPE,NZ,WORK(KGPOE),GPOE)
       ELSE
-         CALL DCOPY(NZHOPEQ,GPOE,1,WORK(KGOPE),1)
+         CALL DCOPY(NZHOPEQ,GPOE,1,WORK(KGPOE),1)
       END IF
 C
 C     Add G * B term

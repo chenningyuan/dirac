@@ -614,7 +614,7 @@ C          Fock matrix type
            IFCKOP(IMAT) = 1
 C          Hermitian operator
            IHRMOP(IMAT) = 1
-         END DO
+        END DO
         INQUIRE(FILE='DFDENS',EXIST=TOBE)
         IF(TOBE) THEN
           CALL OPNFIL(LUBUF,'DFDENS','OLD','GETFC1')
@@ -635,13 +635,15 @@ c         CALL DENSTY(FAO,CMO,IPRINT)
         ENDIF
       ENDIF
 #if defined (MOD_DFT)
-C        Construct Kohn-Sham contribution
-C        ================================
-         IF(DFTADD) THEN
-             CALL GENDEN(FAO,CMO,1,IPRINT)
-             CALL DFTEXC(FAO,DUM,FMO,1,0,.TRUE.,.FALSE.,
-     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRINT)
-         ENDIF
+C
+C     Construct Kohn-Sham contribution
+C     ================================
+      IF(DFTADD) THEN
+         CALL GENDEN(FAO,CMO,1,IPRINT)
+C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+         CALL DFTEXC(FAO,DUM,FMO,1,1,1,.TRUE.,.FALSE.,
+     &               .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRINT)
+      ENDIF
 #endif
 C
 C     3a. Solvent: get solvent contribution

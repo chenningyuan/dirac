@@ -1,6 +1,6 @@
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C     /* Deck dftexc */                                                C
+C     /* Deck grtest */                                                C
       SUBROUTINE GRTEST(WORK,LWORK,JPRINT)
 C                                                                      C
 C     T. Helgaker sep 99                                               C
@@ -48,7 +48,7 @@ COLAV
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C /* Deck dftdrv */
+C /* Deck grtes1 */
       SUBROUTINE GRTES1(SMAT,GAO,GAO1,GAO2,GAB1,
      &                  NCNT,DST,BUF,ICLAB,WORK,LWORK,LUQUAD,IPRINT)
 C                                                                      C
@@ -361,35 +361,35 @@ C
      &      ' Absolute average SMAT error      : ', ERRAB      
       WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' RMS deviation                    : ', RMS
-      WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &      '',' Largest error                    : ', ERRMX
+      WRITE (LUPRI,'(/A,E16.10)')
+     &    '   Largest error                    : ', ERRMX
       WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &      ' Position and label               : (',
      &      MAXI,',',MAXJ,') = (',MXLB1,',',MXLB2,')'
       IF(SSOVER) THEN
-         WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &        '',' Largest internuclear (s|s) error : ', MAXS
+         WRITE (LUPRI,'(/A,E16.10)')
+     &      '   Largest internuclear (s|s) error : ', MAXS
          WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &        ' Position and label               : (',
      &        MAXIS,',',MAXJS,') = (',MXLB1S,',',MXLB2S,')'
       ENDIF
       IF(PPOVER) THEN
-         WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &        '',' Largest internuclear (p|p) error : ', MAXP
+         WRITE (LUPRI,'(/A,E16.10)')
+     &        '   Largest internuclear (p|p) error : ', MAXP
          WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &        ' Position and label               : (',
      &        MAXIP,',',MAXJP,') = (',MXLB1P,',',MXLB2P,')'
       ENDIF
       IF(DDOVER) THEN
-         WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &        '',' Largest internuclear (d|d) error : ', MAXD
+         WRITE (LUPRI,'(/A,E16.10)')
+     &        '   Largest internuclear (d|d) error : ', MAXD
          WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &        ' Position and label               : (',
      &        MAXID,',',MAXJD,') = (',MXLB1D,',',MXLB2D,')'
       ENDIF
       IF(FFOVER) THEN
-         WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &        '',' Largest internuclear (f|f) error : ', MAXF
+         WRITE (LUPRI,'(/A,E16.10)')
+     &        '   Largest internuclear (f|f) error : ', MAXF
          WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &        ' Position and label               : (',
      &        MAXIF,',',MAXJF,') = (',MXLB1F,',',MXLB2F,')'
@@ -402,8 +402,8 @@ C
      &      ' Average SMAT error               : ', RERRAV
       WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Absolute average SMAT error      : ', RERRAB      
-      WRITE (LUPRI,'(/A,2X,A,E16.10)')
-     &      '',' Largest error                    : ', ERRMX
+      WRITE (LUPRI,'(/A,E16.10)')
+     &      '   Largest error                    : ', ERRMX
       WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
      &      ' Position and label               : (',
      &      MAXIR,',',MAXJR,') = (',RMXLB1,',',RMXLB2,')'
@@ -419,7 +419,7 @@ C
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C     /* Deck dftdr1 */                                                C
+C     /* Deck grtes2 */                                                C
       SUBROUTINE GRTES2(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &               SMAT,DFTASC,
      &               GAO,GAO1,GAO2,GAB1,
@@ -478,7 +478,7 @@ C
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C     /* Deck reaqua */
+C     /* Deck grtes3 */
       SUBROUTINE GRTES3(X,Y,Z,WT,LUQUAD,NPOINT)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -494,7 +494,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C     /* Deck doexc1 */
+C     /* Deck grtes4 */
       SUBROUTINE GRTES4(VXC,IREPOP,EXCMAT,GAO)      
 C
 C     Construct Kohn-Sham matrix                                       C
@@ -547,7 +547,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck dftgrd */
+C  /* Deck getwt1 */
       SUBROUTINE GETWT1(X,Y,Z,WT,IPRINT,WORK,LWORK)
 C                                                                      C
 C     Interface routine for grid points                                C
@@ -630,7 +630,7 @@ C      CALL MEMREL('GETBW1',WORK,KWORK,KWORK,KFREE,LFREE)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck construc */
+C  /* Deck wt1con */
       SUBROUTINE WT1CON(X,Y,Z,WT,PSMU,RJ,
      &                    RIJ,AIJ,IPRINT)
 C                                                                      C
@@ -805,7 +805,7 @@ C      END IF
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck bweght */                                                   C
+C  /* Deck wght1 */                                                   C
       SUBROUTINE WGHT1(RJ,PSMU,RIJ,AIJ,APASC,XPASC,X,Y,Z,WEIGHT,
      &                 NTRANS,NATOM)
 C                                                                      C
@@ -912,7 +912,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gt1rh1 */
+C  /* Deck gt1bw1 */
       SUBROUTINE GT1BW1(WT,COORD,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -991,7 +991,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck Gt1rh2 */
+C  /* Deck Gt1w2 */
       SUBROUTINE GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
      &     KFREE,LFREE)
 C***********************************************************************

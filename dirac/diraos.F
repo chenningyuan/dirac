@@ -69,20 +69,6 @@ C
      &             DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
         RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
    10 CONTINUE
-CTROND      DO 10 IRP1 = 0,NBSYM-1
-CTROND        NB1 = NBBAS(IRP1,IC)
-CTROND        IF(NB1.EQ.0) GOTO 10
-CTROND        JB1 = IBBAS(IRP1,IC)+1
-CTROND        DO 20 IRP2 = 0,NBSYM-1
-CTROND          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
-CTROND          NB2 = NBBAS(IRP2,IC)
-CTROND          IF(NB2.EQ.0) GOTO 20
-CTROND          JB2 = IBBAS(IRP2,IC)+1
-CTROND          CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
-CTROND     &                 DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
-CTROND          RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
-CTROND   20   CONTINUE
-CTROND   10 CONTINUE
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -92,6 +78,8 @@ C***********************************************************************
 C
 C     Get gradient of density in point (PX,PY,PZ).
 C     Gets values of AOs in this point from GAO
+C
+C     WARNING: This routine assumes Hermitian density matrix !
 C
 C     Written by T.Saue and T.Helgaker
 C

@@ -546,9 +546,11 @@ C&&&& XLRNRM: normalize trial vectors
                  XLRNRM = .TRUE.
                GOTO 100
  13            CONTINUE
+C&&&& ONLYSF: Only generate one-index transformed Fock matrix
                   XLR_LSFG(1) = .FALSE.
                GOTO 100
  14            CONTINUE
+C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
                   XLR_LSFG(2) = .FALSE.
                GOTO 100
 C&&&& INTFLG: specify what two-electron integrals to include

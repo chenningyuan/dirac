@@ -1,7 +1,7 @@
 C /* Deck dftexc */
       SUBROUTINE DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &                  IREPOP,DOERG,DOGRD,DOLND,DOATR,
-     &                  WORK,LWORK,JPRINT)
+     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  WORK,LWORK,IPRINT)
 C
 C     T. Helgaker sep 99
 C     DIRAC adaption by T.Saue
@@ -25,9 +25,9 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dgroup.h"
-#include "dcbdhf.h"
       LOGICAL DOERG, DOGRD, DOLND, DOATR
-      DIMENSION DMAT(N2BBASX,NZ,NFMAT),
+      DIMENSION DMAT(N2BBASX,NZ,*),
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &          DTRMAT(*),EXCMAT(*),WORK(LWORK)
 C
 #include "memint.h"
@@ -37,18 +37,24 @@ C     Initial expectation value of two-electron matrix
       IF (DOERG) THEN
          ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
       END IF 
+C     Check for Hermitian density matrices;
+C     The present implementation uses only total density and no
+C     spin polarization nor current density so DFT contributes
+C     only for Hermitian densities
+      NHM = 0
+      DO IM = 1,NXCMAT
+        IF(IHRMOP(IM).EQ.1) NHM = NHM + 1
+      ENDDO
+      IF(NHM.EQ.0) GOTO 10
 C
       IF(NASHT.GT.0) THEN
-C     In the open shell case:
-C        1) Put real DMAT in a buffer
-C        2) Replace with average density for DFT
-C     This is a preliminary treatment of open shells; 
-C     more refinement must be considered
+C       1) Put real DMAT in a buffer
         CALL MEMGET('REAL',KDBF,N2BBASX,WORK,KFREE,LFREE)
         CALL DCOPY(N2BBASX,DMAT,1,WORK(KDBF),1)
-        DO ISHELL = 1, NOPEN
-          CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
-        ENDDO
+C       2) Replace with average density for DFT
+        CALL GTDOAV(DMAT)
+C       This is a preliminary treatment of open shells; 
+C       more refinement must be considered
       ENDIF
 C
 C     Scale density matrices
@@ -68,8 +74,8 @@ C
       IF(PARCAL) THEN
 C        Get hold of slaves
         CALL DIRAC_PARCTL( 1 )
-        CALL DFT_PARDRV(WORK(KFREE),LFREE,EXCMAT,DMAT,1,
-     &          IREPOP,LUQUAD,IPRDFT)
+        CALL DFT_PARDRV(WORK(KFREE),LFREE,EXCMAT,DMAT,NXCMAT,
+     &          ISYMOP,IHRMOP,LUQUAD,IPRDFT)
       ELSE
 #endif
 C
@@ -83,7 +89,7 @@ C
       CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF,NTBAS(0)*4,WORK,KFREE,LFREE)
       CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &            IREPOP,DOERG,DOGRD,DOLND,DOATR,
+     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
@@ -110,11 +116,11 @@ C     the Kohn-Sham contribution can then be subtracted
         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
       END IF 
 C
-      RETURN
+ 10   RETURN
       END
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &                  IREPOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
      &                  GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
      &                  WORK,LWORK,LUQUAD,IPRINT)
 C
@@ -126,8 +132,6 @@ C
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-CTROND      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
-      PARAMETER (THRSH = 1.0D-10, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -156,9 +160,9 @@ C
 #else
       DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
 #endif
-      DIMENSION DMAT(*),DTRMAT(*),
+      DIMENSION DMAT(*),DTRMAT(*),NCNT(*),DST(*),BUF(*),
      &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
-     &          WORK(LWORK), NCNT(*), DST(*),BUF(*)
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
 C
 CTROND
       TIMSTR = SECOND()
@@ -247,7 +251,7 @@ C
          ELSE
 #endif
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
-     &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
+     &               DMAT,DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &               DOERG,DOGRD,DOLND,DOATR,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
@@ -265,15 +269,19 @@ C
 #if defined (VAR_MPI)
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,WORK(KFREE),LFREE,IPRINT)
 #endif
-      IF (DOERG) THEN
+CTROND      IF (DOERG) THEN
+      DO IM = 1,NXCMAT
+      IF(IHRMOP(IM).EQ.1) THEN
         DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1,1) + EXCMAT(J,I,1,1))
-            EXCMAT(I,J,1,1) = AVERAG 
-            EXCMAT(J,I,1,1) = AVERAG 
+            AVERAG = DP5*(EXCMAT(I,J,1,IM) + EXCMAT(J,I,1,IM))
+            EXCMAT(I,J,1,IM) = AVERAG 
+            EXCMAT(J,I,1,IM) = AVERAG 
           ENDDO
         ENDDO
-      END IF 
+      ENDIF
+      ENDDO
+CTROND      END IF 
 CTROND      IF (DOATR) THEN
 CTROND        DO K = 1,NXCMAT
 CTROND          DO I = 1, NTBAS(0)
@@ -361,7 +369,7 @@ CPAWSA            CALL DFT_ENE_REPORT()
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT,
-     &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
+     &               DMAT,DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &               DOERG,DOGRD,DOLND,DOATR,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,DST,BUF,WORK,LWORK,IPRINT)
@@ -374,8 +382,6 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
-CTROND      PARAMETER (THRSH = 1.0D-12, THRSH2 = 1.0D-10) 
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -393,9 +399,9 @@ C
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
-     &            VX(DERVS1),
+     &            VX(DERVS1),ISYMOP(NXCMAT),IHRMOP(NXCMAT),
      &            WORK(LWORK)
-      DIMENSION RHG(3)
+      DIMENSION RHG(3),VT(3)
       DO 300 IPNT = 1, NPOINT
        
         IF (IPRINT .GE. 100) THEN
@@ -463,7 +469,9 @@ C       ==============================
 C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
            CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
-           IF(DOGGA) VX(FZ0) = 2D0*VX(FZ0)/RHOGRD
+           IF(DOGGA) THEN
+             VX(FZ0) = D2*VX(FZ0)/RHOGRD
+           ENDIF
         ENDIF
 C
 C       Exchange-correlation contribution to Kohn-Sham matrix
@@ -471,7 +479,10 @@ C       =====================================================
 C
         IF (DOERG) THEN
           IF (DOGGA .AND. .NOT.FROMVX) THEN
-            CALL DOEXC2(VX(FR0),VX(FZ0),RHG,EXCMAT,GAO,GAO1)      
+            DO I = 1,3
+              VT(I) = VX(FZ0)*RHG(I)
+            ENDDO
+            CALL DOEXC2(VX(FR0),VT,EXCMAT,GAO,GAO1)      
           ELSE
             CALL DOEXC1(VX(FR0),0,EXCMAT,GAO)
           END IF
@@ -495,7 +506,7 @@ C       Hessian transformation
 C       ======================
 C
         IF (DOATR) THEN
-          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,
+          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
      &                RHOGRD,RHG,WGHT,DOGGA,BUF)
 CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
         END IF
@@ -503,52 +514,6 @@ CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
 C
       RETURN
       END
-#ifndef PRG_DIRAC
-C  /* Deck dftxcm */
-      SUBROUTINE DFTXCM(FMAT,CMO,WORK,LWORK)
-C
-C     T. Helgaker Sep 99
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "dummy.h"
-      PARAMETER (D0 = 0.0D0)
-C
-      DIMENSION CMO(*), FMAT(NORBT,NORBT), WORK(LWORK)
-C
-#include "mx2orb.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "infvar.h"
-C
-      KDAO = 1
-      KFAO = KDAO + N2BASX
-      KLST = KFAO + N2BASX
-      LWRK = LWORK - KLST + 1
-C
-C     CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,IPRINT,WORK,LWORK)
-C
-      CALL FCKDEN(.TRUE.,.FALSE.,WORK(KDAO),DUMMY,CMO,DUMMY,
-     &            IPRINT,WORK(KLST),LWRK)
-      CALL DZERO(WORK(KFAO),N2BASX)
-      CALL DFTEXC(WORK(KDAO),1,WORK(KFAO),1,
-     &            .TRUE.,.TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     &            WORK(KLST),LWORK,IPRINT)
-C
-C     Transform Fock matrices to MO basis
-C
-      CALL DZERO(FMAT,NORBT*NORBT)
-      CALL MPATB(CMO,NBAST,NORBT,NBAST,NORBT,
-     &           WORK(KFAO),NBAST,NBAST,NBAST,NBAST,
-     &           WORK(KDAO),NORBT,NBAST)
-      CALL AMPAB(WORK(KDAO),NORBT,NBAST,NORBT,NBAST,
-     &           CMO,NBAST,NORBT,NBAST,NORBT,
-     &           FMAT,NORBT,NORBT)
-C
-      RETURN
-      END
-#endif
 C  /* Deck reaqua */
       SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
 #include "implicit.h" 
@@ -874,11 +839,17 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck doexc2 */
-      SUBROUTINE DOEXC2(VXC,VXB,RHG,EXCMAT,GAO,GAO1)      
+      SUBROUTINE DOEXC2(SXC,VXC,EXCMAT,GAO,GAO1)      
 C***********************************************************************
 C
-C     Get density in point (PX,PY,PZ).
-C     Gets values of AOs in this point from GAO
+C     Construct the matrix
+C
+C     E(i,j) = GAO(I)*SXC*GAO(J)+GAO(I)*VXC(K)*GAO1(J,K
+C     E(i,j) = GAO(I)*SXC*GAO(J)+GAO(I)*VXC(K)*nabla[GAO1(J)]
+C
+C     Upon symmetrization later on one obtains
+C
+C     E(i,j) = GAO(I)*SXC*GAO(J)+(1/2)*VXC(K)*nabla[GAO(I)*GAO(J)]
 C
 C     Written by T.Saue and T.Helgaker
 C
@@ -898,7 +869,7 @@ C
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0)),
      &          GAO1(NTBAS(0),3)
 #endif
-      DIMENSION RHG(3)
+      DIMENSION VXC(3)
 C      
       MC = 2
       IF(LEVYLE) MC = 1      
@@ -911,9 +882,10 @@ C
             IF(NBBAS(IREP,IC).GT.0) THEN
               JJ = IBBAS(IREP,IC)
               DO J = 1, NBBAS(IREP,IC)
-                FC = VXC*GAO(JJ+J) + VXB*
-     &               (RHG(1)*GAO1(JJ+J,1)+RHG(2)*GAO1(JJ+J,2)
-     &               +RHG(3)*GAO1(JJ+J,3))
+                FC = SXC*GAO(JJ+J)
+                DO I = 1,3
+                  FC = FC + VXC(I)*GAO1(JJ+J,I)
+                ENDDO
                 CALL DAXPY(NBBAS(IREP,IC),FC,
      &                     GAO(JJ+1),1,EXCMAT(JJ+1,JJ+J),1)            
               ENDDO
@@ -926,7 +898,7 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftres */
-      SUBROUTINE DFTRES(EXCMAT,NFMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DFTRES(EXCMAT,NXCMAT,WORK,LWORK,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Send receive DFTresults
@@ -954,9 +926,9 @@ C
       DIMENSION EXCMAT(*),WORK(*)
 C
 #include "memint.h"
-      LFMAT = N2BBASX*NFMAT*NZ
+      LEXCMAT = N2BBASX*NXCMAT*NZ
       IF (MYTID.EQ.0) THEN
-        CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFBUF,LEXCMAT,WORK,KFREE,LFREE)
 C
 C     **************************
 C     ***** Master receive *****
@@ -975,9 +947,9 @@ C
           CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
           EDFTY = EDFTY + TEMP
-          CALL MPI_RECV(WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,NWHO,45,
+          CALL MPI_RECV(WORK(KFBUF),LEXCMAT,MPI_DOUBLE_PRECISION,NWHO,45,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-          CALL DAXPY(LFMAT,D1,WORK(KFBUF),1,EXCMAT,1)
+          CALL DAXPY(LEXCMAT,D1,WORK(KFBUF),1,EXCMAT,1)
         ENDDO
         CALL MEMREL('DFTRES',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE 
@@ -990,7 +962,7 @@ C
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
+         CALL MPI_SEND(EXCMAT,LEXCMAT,MPI_DOUBLE_PRECISION,MPARID,45,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
       RETURN
@@ -1008,7 +980,6 @@ C
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -1029,8 +1000,8 @@ C
 #include "functionals.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
-      DIMENSION DMAT(*), DTRMAT(*),
-     &          WORK(LWORK),EXCMAT(*)
+      DIMENSION DMAT(*), DTRMAT(*),EXCMAT(*),ISYMOP(NXCMAT),
+     &          IHRMOP(NXCMAT),WORK(LWORK)
 
 C
 CTROND
@@ -1038,11 +1009,10 @@ CTROND
       TIMSTR = SECOND()
 #include "memint.h"
 C
-      LFMAT = NBAST*NBAST*NZ*NXCMAT
-      CALL DZERO(EXCMAT,LFMAT)
+      LEXCMAT = NBAST*NBAST*NZ*NXCMAT
+      CALL DZERO(EXCMAT,LEXCMAT)
 C
 CTROND: This is temporary fix to have DFTenergy work in parallell...
-      IREPOP = 0
       CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
@@ -1105,7 +1075,7 @@ C
       CALL MPI_RECV(WORK(KW),NPOINT,MPI_DOUBLE_PRECISION,
      &                 MPARID,35,MPI_COMM_WORLD,ISTAT,IERR)
       CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
-     &            DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
+     &            DMAT,DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,
      &            DOERG,DOGRD,DOLND,DOATR,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
@@ -1176,8 +1146,8 @@ C
       RETURN
       END
 C  /* Deck pardrv */
-      SUBROUTINE DFT_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPOP,LUQUAD,
-     &                      IPRINT)
+      SUBROUTINE DFT_PARDRV(WORK,LWORK,EXCMAT,DMAT,NXCMAT,ISYMOP,IHRMOP,
+     &                     LUQUAD,IPRINT)
 C
 C     A cut and paste job by T. Saue Sep 25 2003
 C     Based on HER_PARDRV which was
@@ -1225,7 +1195,7 @@ C           DOCOOR -
 C           MULD2H - Start address for common block INFORB.
 C           NMLINE - Number of lines in MOLECULE.INP
 C           MLINE  - MOLECULE.INP as internal file
-C           NDMAT  - Number of density-matrices
+C           NXCMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
 C
 C
@@ -1248,7 +1218,7 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK)
+      DIMENSION EXCMAT(*), DMAT(N2BASX,NXCMAT), WORK(LWORK)
 C
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
@@ -1273,7 +1243,7 @@ C
       ENDIF
       TIMING = .FALSE.
       ITYPE = 7
-      CALL SDINIT(DMAT,NDMAT,IREPOP,IDUM,ITYPE,IDUM,IDUM,.TRUE.,
+      CALL SDINIT(DMAT,NXCMAT,IREPOP,IDUM,ITYPE,IDUM,IDUM,.TRUE.,
      &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,DUM,
      &            DUM,DUM,DUM)
 C
@@ -1281,8 +1251,8 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      CALL DFTDRV(DMAT,DTRMAT,FMAT,1,
-     &            IREPOP,.TRUE.,.FALSE.,.FALSE.,.FALSE.,
+      CALL DFTDRV(DMAT,DTRMAT,EXCMAT,1,ISYMOP,IHRMOP,
+     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &            DUM,DUM,DUM,DUM,DUM,DUM,DUM,
      &            WORK(KFREE),LFREE,LUQUAD,IPRINT)
 C
@@ -1301,3 +1271,28 @@ C
       RETURN
       END
 #endif
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Getavd */
+      SUBROUTINE GTDOAV(DMAT)
+C***********************************************************************
+C
+C     Get average density from open shells; only real part !
+C     Written by T.Saue March 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION DMAT(N2BBASX,NZ,NFMAT)
+      DO ISHELL = 1, NOPEN
+        CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
+      ENDDO
+C
+      RETURN
+      END
+
+
