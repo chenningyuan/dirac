@@ -40,18 +40,19 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      LOGICAL PROPTY, SECDER, DIFDIP
+#ifdef PRG_DIRAC
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
+#else
+      PARAMETER(NDER1=3,NDER2=6)
+#endif
+      LOGICAL   PROPTY, SECDER, DIFDIP
       DIMENSION WORK(LWORK)
-      DIMENSION STDER0(KCKTAB,2), 
-     &          STDER2(KCKTAB,6,2),
+      DIMENSION STDER0(KCKTAB,2),STDER1(KCKTAB,NDER1,2),
+     &          STDER2(KCKTAB,NDER2,2),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*),GEXP(*)
-#ifdef PRG_DIRAC
-      DIMENSION STDER1(KCKTAB,6,2)
-#else
-      DIMENSION STDER1(KCKTAB,3,2)
-#endif
 #include "onecom.h"
 C
       JMAXD = 2
@@ -97,18 +98,20 @@ C
      &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
 C
       LOGICAL PROPTY, KINODC, SECDER, DIFDIP, DOST, DONA
-      DIMENSION WORK(LWORK), STDER0(KCKTAB,2), 
-     &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
+#ifdef PRG_DIRAC
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
+      PARAMETER (DOST = .TRUE.)
+#else
+      PARAMETER(NDER1=3,NDER2=6)
+      PARAMETER (DOST = .TRUE., DONA = .TRUE.)
+#endif
+C
+      DIMENSION WORK(LWORK), STDER0(KCKTAB,2), STDER1(KCKTAB,NDER1,2),
+     &          STDER2(KCKTAB,NDER2,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
      &          GEXP(*), JCENTC(*)
-#ifdef PRG_DIRAC
-      PARAMETER (DOST = .TRUE.)
-      DIMENSION STDER1(KCKTAB,6,2)
-#else
-      PARAMETER (DOST = .TRUE., DONA = .TRUE.)
-      DIMENSION STDER1(KCKTAB,3,2)
-#endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include "cbisol.h"
@@ -144,12 +147,8 @@ C
             CALL DZERO(ADER,NATOT)
          ELSE
             CALL DZERO(STDER0,2*KCKTAB)
-#ifdef PRG_DIRAC
-            CALL DZERO(STDER1,12*KCKTAB)
-#else
-            CALL DZERO(STDER1,6*KCKTAB)
-#endif
-            IF (SECDER) CALL DZERO(STDER2,12*KCKTAB)
+            CALL DZERO(STDER1,2*NDER1*KCKTAB)
+            IF (SECDER) CALL DZERO(STDER2,2*NDER2*KCKTAB)
 C
             IA0000 =  1
             IA0X00 =  2
@@ -731,14 +730,15 @@ C
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER,DOST,DONA
-      DIMENSION STDER0(KCKTAB,2),
-     &          STDER2(KCKTAB,6,2), 
-     &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
 #ifdef PRG_DIRAC
-      DIMENSION STDER1(KCKTAB,6,2)
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
 #else
-      DIMENSION STDER1(KCKTAB,3,2)
+      PARAMETER(NDER1=3,NDER2=6)
 #endif
+      DIMENSION STDER0(KCKTAB,2),STDER1(KCKTAB,NDER1,2),
+     &          STDER2(KCKTAB,NDER2,2), 
+     &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
 #include "ader.h"

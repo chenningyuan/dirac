@@ -58,11 +58,13 @@ C
       KSDER1 = KSDER0 +  2*KCKTAB
 #ifdef PRG_DIRAC
 C     jth - length of STDER1 is now KCKTAB*6*2
-      KSDER2 = KSDER1 + 12*KCKTAB
-#else 
-      KSDER2 = KSDER1 +  6*KCKTAB
-#endif 
-      KADER  = KSDER2 + 12*KCKTAB
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
+#else
+      PARAMETER(NDER1=3,NDER2=6)
+#endif
+      KSDER2 = KSDER1 +  2*KCKTAB*NDER1
+      KADER  = KSDER2 +  2*KCKTAB*NDER2
       KSINT0 = KADER  +    NADER
       KDINT1 = KSINT0 +    KCKTAB
       KDSHEL = KDINT1 +  9*KCKTAB
@@ -125,25 +127,21 @@ C  /* Deck oneso1 */
 C
       LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, LOMITVNUC(2,5)
       DIMENSION WORK(LWORK)
-#if defined (PRG_DIRAC)
-      DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,6,2),
-     &          STDER2(KCKTAB,6,2), ADER(*),
+#ifdef PRG_DIRAC
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
+#else
+      PARAMETER(NDER1=3,NDER2=6)
+C     only DSHELL(*,1) used for Dalton
+#endif
+      DIMENSION STHMAT(NNBASX,3),STDER0(KCKTAB,2),
+     &          STDER1(KCKTAB,NDER1,2),STDER2(KCKTAB,NDER2,2),ADER(*),
      &          DSHELL(KHKTAB,4),FSHELL(KHKTAB),
      &          DENMAT(*),FOCMAT(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#else 
-      DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,3,2),
-     &          STDER2(KCKTAB,6,2), ADER(*),
-     &          DSHELL(KHKTAB),FSHELL(KHKTAB),
-     &          DENMAT(NNBASX),FOCMAT(NNBASX),
-     &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
-     &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
-     &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#endif
 #include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
@@ -199,23 +197,23 @@ C
          END IF
 C
 C *****
-C   Omit selected terms depending on LOMITVNUC(INTYPE,1-5)
-C   INTTYPE = 1 : Specifies which terms to omit from the
-C   SS-part of the nuclear-atrraction integrals.
-C   INTTYPE = 2 : Specifies terms to omit from the LL-part
+C   Omit selected terms depending on LOMITVNUC(INTTYP,1-5)
+C   INTTYP = 1 : Specifies which terms to omit from the LL-part
+C                of the nuclear-attraction integrals.
+C   INTTYP = 2 : Specifies which terms to omit from the SS-part
 C
-C   LOMITVNUC(INTTYPE,1) true : omit < C | V_C | C > 
-C   LOMITVNUC(INTTYPE,2) true : omit < A | V_C | A > 
-C   LOMITVNUC(INTTYPE,3) true : omit < A | V_C | C > and  < C | V_C | B > 
-C   LOMITVNUC(INTTYPE,4) true : omit < A | V_C | B > 
-C   LOMITVNUC(INTTYPE,5) true : any of the above true
+C   LOMITVNUC(INTTYP,1) true : omit < C | V_C | C > 
+C   LOMITVNUC(INTTYP,2) true : omit < A | V_C | A > 
+C   LOMITVNUC(INTTYP,3) true : omit < A | V_C | C > and  < C | V_C | B > 
+C   LOMITVNUC(INTTYP,4) true : omit < A | V_C | B > 
+C   LOMITVNUC(INTTYP,5) true : any of the above true
 C /hjaaj July 2001
 C   added seperate treatment of SS- and LL-part     /jkp Sep 2001
 C *****
          IFACINT = 1
          IF (INTCLASS .EQ. 0) THEN
             INTTYP = 1
-         ELSE IF (INTCLASS .EQ. 2) THEN
+         ELSE
             INTTYP = 2
          END IF
          IF (LOMITVNUC(INTTYP,5)) THEN
@@ -284,14 +282,11 @@ C
      &                        IPRINT)
                ELSE
                   CALL SPHRM1(STDER0,STDER0,2,WORK,LWORK,PROPTY,IPRINT)
-#ifdef PRG_DIRAC
-                  CALL SPHRM1(STDER1,STDER1,12,WORK,LWORK,PROPTY,IPRINT)
-#else
-                  CALL SPHRM1(STDER1,STDER1,6,WORK,LWORK,PROPTY,IPRINT)
-#endif
+                  CALL SPHRM1(STDER1,STDER1,2*NDER1,
+     &                        WORK,LWORK,PROPTY,IPRINT)
                   IF (SECDER) THEN
-                     CALL SPHRM1(STDER2,STDER2,12,WORK,LWORK,PROPTY,
-     &                           IPRINT)
+                     CALL SPHRM1(STDER2,STDER2,2*NDER2,
+     &                           WORK,LWORK,PROPTY,IPRINT)
                   END IF
                   CALL SPHRM1(ADER,ADER,28*NATOMC,WORK,LWORK,PROPTY,
      &                        IPRINT)
@@ -531,6 +526,10 @@ C  /* Deck wd1sym */
      &          RLMINT(*), FCM(*), WORK(LWORK)
 #include "onecom.h"
 C
+#ifdef PRG_DIRAC
+C     HJAaj Nov 2002: this routine is not programmed for Dirac (yet)
+      CALL QUIT('WD1SYM called in Dirac, but not programmed for Dirac')
+#endif
       KOMAT = 1
       KLAST  = KOMAT + 6*KCKTAB
       IF (KLAST .GT. LWORK) CALL STOPIT('WD1SYM',' ',KLAST,LWORK)
