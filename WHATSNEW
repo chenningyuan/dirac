@@ -1,0 +1,42 @@
+* May 20 1999
+  
+  - Bugfix in the reading of .OPERATOR (hjj):
+    - Error in the definition of QAVECTOR, Q=X,Y,Z
+    - New definition of COMFACTOR (factor = factor*comfactor,
+      instead of factor = comfactor).
+  - Bugfix for open shell expectation values (hjj)
+
+* May 4 1999
+
+  - Contracted basis sets
+    (Bert de Jong, Luuk, jth)
+  - Spinfree Dirac-equation:
+    - spinfree DHF
+    - spinfree 4index-transf. (WARNING: NOT WORKING YET)
+    - spinfree CI
+    (Luuk)
+
+* May 1 1999
+  
+  - Screening in 4-index transformation (Trond) 
+  - Modified virtual orbitals (Trond) 
+  - Resolve energies of states present in average-of-configuration open shell 
+    calculations. Automatic setup of 4index transformation and call to 
+    CI code (Trond) 
+  - Improved projection analysis (Trond) 
+  - Numerous bugfixes, eg.
+    - fix in linear response when A,B had different 
+      time-reversal symmetry (hjj) 
+    - Bugfix for open shell calculations with more than one open shell (jth) 
+  - Expectation values for open shell molecules (jth)
+  - Molecular gradient with Levy-Leblond Hamiltonian (jth)
+  - Solvent (Trond + Kurt Mikkelsen)
+
+/*
+
+  Version : $Revision$
+  Date    : $Date$
+  File    : WHATSNEW
+  Source  : $Source$
+
+ */
