@@ -106,8 +106,10 @@ C     Driver for the generation of one-electron integrals
 C     to be placed on file AOPROPER.
 C
 C     Written by Trond Saue - May 1996
+C
 C     Last revision May 19 1996
 C
+C  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -116,8 +118,8 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
-      LOGICAL DOINT(4),TOFILE
-      CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8
+      LOGICAL DOINT(4),TOFILE,TRIANG
+      CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
       DIMENSION WORK(LWORK)
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -132,6 +134,8 @@ C     Write integrals to file
       MAXTYP = 5*MXCOOR
       IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
+      ELSE IF (WORD.EQ.'DSO    ') THEN
+         NINTAD = 9*NUCDEP*(NUCDEP-1)
       ELSE
          NINTAD = MAXTYP
       END IF
@@ -145,9 +149,16 @@ C
 C     Generate integrals
 C
       NCOMP = 0
+      IF (WORD.EQ.'S1MAGR ') THEN 
+         TRIANG = .FALSE.
+         MTFORM = 'SQUARE'
+      ELSE
+         TRIANG = .TRUE.
+         MTFORM = 'TRIANG'
+      END IF
       CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
-     &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,'TRIANG',
+     &            PROPRI,IPRINT,DUMMY,NCOMP,TOFILE,MTFORM, 
      &            DOINT)
 C
 C     Memory deallocation
@@ -619,8 +630,8 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IF(IPRINT.GE.4) THEN
           WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
           FMT = MXFORM(PFAC,20)
-          WRITE(LUPRI,'(A,4X,'//FMT//')')
-     &      'Factor: ',PFAC
+          WRITE(LUPRI,'(A,4X,'//FMT//',A,A4)')
+     &      'Factor: ',PFAC,' and PDOINT:',PDOINT(KLBL)
           WRITE(LUPRI,'(A,I5)') 'Integrals enter matrix :',IQP
           WRITE(LUPRI,'(A,L1)') 'FIRST = ',FIRST(IQP)
         ENDIF
