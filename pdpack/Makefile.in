@@ -7,25 +7,25 @@
 
 include ../Makefile.config
 
-OBJS=	arhpack.o  dge.o      dsp.o         fastio_g07.o\
-linextra.o printpkg.o gpblas.o gp_dblas3.o eispack.o
+OBJS=pdlib.a(arhpack.o) pdlib.a(dge.o) pdlib.a(dsp.o)\
+     pdlib.a(fastio_g07.o) pdlib.a(linextra.o) pdlib.a(printpkg.o)\
+     pdlib.a(gpblas.o) pdlib.a(gp_dblas3.o) pdlib.a(eispack.o)
 
-all :	pdpack.a
+all :	pdlib.a
 
-pdpack.a: $(OBJS)
-	ar r pdlib.a $(OBJS)
+pdlib.a: $(OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
 
 dirac.x:
-        cd .. ; $(MAKE) dirac.x
+	cd .. ; $(MAKE) dirac.x
 
 dirmpi.x:
-        cd .. ; $(MAKE) dirmpi.x
+	cd .. ; $(MAKE) dirmpi.x
 
 dirpvm.x:
-        cd .. ; $(MAKE) dirpvm.x
+	cd .. ; $(MAKE) dirpvm.x
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
