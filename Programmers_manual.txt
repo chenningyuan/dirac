@@ -30,6 +30,22 @@ derived files contain proper reference to the new code. It should be rather stra
 to do this by looking at the example provide by other (optional) modules.
 DO NEVER EDIT THE MAKEFILES OR PAM DIRECTLY. They are derived files and are overwritten
 by pamadm. The files to be changed are pamadm, configure, pam.in and the Makefile.in files.
+Modules can be excluded from the release version by surrounding the
+appropriate parts of code by preprocessor statements, e.g. :
+
+#ifdef MOD_KRMC
+         CALL TKRMCORB
+         CALL SETDC2(0)
+         CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
+         IF(DOANA) CALL PAMANA(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+#endif
+
+This means that the calls are included only if MOD_KRMC is defined. Look in
+pamadm for an existing module (e.g. DFT or KRMC) to see how this is done in
+detail.
 
 4. The configure script.
 This script take care of the machine dependent code. Please use this only for this 
