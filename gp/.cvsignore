@@ -7,3 +7,4 @@ pam
 *.bak
 *.rej
 *.orig
+compinfo.h
