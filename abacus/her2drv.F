@@ -1903,7 +1903,7 @@ CTROND                      FAC = NORBAB*NORBCD
                         IF(IPRINT.GE.2) THEN
                    WRITE(LUPRI,
      &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1),I3)')
-     &        '*Skip: ',FCKMAX,
+     &        '*Skip: ',DISMAX,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
      &        SPDCAR(NHKTSH(ISHELA)-1),')',
      &        ISHELB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
