@@ -185,6 +185,7 @@ C
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +  '########## START ITERATION NO.',NITER,' ##########',
      +  DAYTID
+        CALL FLSHFO(LUPRI)
 C
 C       Open files necessary for Dirac-Fock calculation
 C
@@ -447,6 +448,7 @@ C
         CALL GTINFO(DAYTID)
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
+        CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
       ENDIF
@@ -820,6 +822,7 @@ C
          WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +     '########## START ITERATION NO.',NITER,'##########',
      &     DAYTID
+         CALL FLSHFO(LUPRI)
 C
 C        Check what integral types contribute
 C        ====================================
@@ -1041,6 +1044,7 @@ C            ONECOFF = .FALSE.
      &    DAYTID
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
+        CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
