@@ -67,6 +67,8 @@ usage='Usage: '$0'\n'\
 '\tSet memory size to MEM-SIZE words\n'\
 '--install-directory=INST-DIR\n'\
 '\tSet install directory to INST-DIR\n'\
+'--queuing-system=QUEUESYS\n'\
+'\tSet queuing system to QUEUESYS\n'\
 '--scratch-directory=SCR-DIR\n'\
 '\tSet work directory to SCR-DIR\n'\
 '--f77=F77\n'\
@@ -165,6 +167,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          worksp="$val"
+         ;;
+      "queuing_system" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         queuesys="$val"
          ;;
       "f77" )
          if [ "${valomitted}" = "yes" ]; then
@@ -470,6 +480,46 @@ else
    mesp='dummy'
 fi
 echo
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# QUEUING SYSTEM
+#
+#
+echo
+echo 'QUEUING SYSTEM'
+echo
+case "$queuesys" in
+   "none" | "qsub" | "bsub" | "ll" )
+      ;;
+   *)
+      queuesys=
+      ;;
+esac
+
+if [ -z "$queuesys" ]; then
+   while [ -z "$queuesys" ]; do
+      if [ $quick -eq 0 ]; then
+	 $echo 'Queuing system [none]/qsub/bsub/ll: \c'
+	 read queuesys
+      else
+	 queuesys=none
+      fi
+      case "$queuesys" in
+	 "none" | "qsub" | "bsub" | "ll" )
+	    ;;
+	 "")
+	    queuesys=none
+	    ;;
+	 *)
+	    queuesys=
+	    ;;
+      esac
+   done
+fi
+echo 'Queuing system: '$queuesys
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1346,6 +1396,7 @@ $echo 'Copying dhf shell script to '$INSTALL_DIR' : \c'
 cat <<EOF > $INSTALL_DIR/dhf
 #!/bin/csh -f
 #
+set QUEUESYS    = $queuesys
 set SCR_DEFAULT = $worksp
 set BIN_DIR     = $INSTALL_DIR
 set SRC_DIR     = `pwd`
