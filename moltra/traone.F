@@ -1168,7 +1168,7 @@ C     j
                CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
      &                                  DMO(1+IOFF1,I+IOFF1,3),1)
 C     k
-               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+               CALL DCOPY((NO(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
      &                                  DMO(1+IOFF1,I+IOFF1,4),1)
             IJ = IJ + NO(IFSYM)
             ENDDO
@@ -1297,7 +1297,7 @@ C     j
                CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
      &                                  DMO(1+IOFF1,I+IOFF1,3),1)
 C     k
-               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,1),1,
+               CALL DCOPY((NV(IFSYM)/2),      DMOM(IJ+IOFF2,2),1,
      &                                  DMO(1+IOFF1,I+IOFF1,4),1)
             IJ = IJ + NV(IFSYM)
             ENDDO

@@ -206,7 +206,7 @@ C##############
                IJ = IJ + 1
                IF (CARITH) THEN
                   BUF1(IJ) = DOO(RCW*IJ-1)
-                  BUF2(IJ) = DOO(RCW*IJ)
+                  BUF2(IJ) = -DOO(RCW*IJ)
                ELSE
                   BUF1(IJ)= DOO(IJ)
                ENDIF
@@ -237,7 +237,7 @@ C##############
                AB = AB + 1
                IF (CARITH) THEN
                   BUF1(AB) = DVV(RCW*AB-1)
-                  BUF2(AB) = DVV(RCW*AB)
+                  BUF2(AB) = -DVV(RCW*AB)
                ELSE
                   BUF1(AB)= DVV(AB)
                ENDIF
