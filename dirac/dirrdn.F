@@ -2164,7 +2164,8 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 16)
-      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
+      PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00,
+     &           DTHR = 1.0D-13)
 C
 #include <dcbgen.h>
 #include <dcbham.h>
@@ -2300,7 +2301,7 @@ C             Read in number of open shells
 C
                READ(LUCMD,*) NOPEN
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I,A,I)') 
+                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
      &               'HAMINP: NOPEN must be between ',
      &               1,' and ',MXOPEN
                   CALL QUIT('HAMINP ERROR: Open shell error!')
@@ -2319,8 +2320,8 @@ C
                   IF (IN(IOPEN).EQ.0) 
      &               CALL QUIT('HAMINP: Frac. occ. enumerator = 0')
                   DF(IOPEN) = D1*IN(IOPEN) / (D1*ID(IOPEN))
-                  IF (DF(IOPEN).GT.(D1+1.0D-10)) THEN
-                     WRITE(LUPRI,'(A,I2,A,F,A)')
+                  IF (DF(IOPEN).GT.(D1+DTHR)) THEN
+                     WRITE(LUPRI,'(A,I2,A,F6.4,A)')
      &                  'HAMINP: Frac. occ. for shell ',IOPEN,
      &                  ' greater than 1 (',DF(IOPEN),')'
                      CALL QUIT('HAMINP ERROR: Open shell error!')
@@ -2383,12 +2384,6 @@ C
             DTEMP        = DTEMP +
      &                     NACSH(IFRP,IOPEN)*D2*IN(IOPEN)/(D1*ID(IOPEN))
          END DO
-C         IF (ABS(MOD(DTEMP,D1)).GE.1.0D-10) THEN
-C            WRITE(LUPRI,'(A,F,A)') 
-C     &         'ERROR! Number of active electrons not an integer (',
-C     &         DTEMP,')'
-C            CALL QUIT('HAMINP ERROR: Open shell error!')
-C         END IF
          NAELEC(IFRP) = NINT(DTEMP)
          IF (NELEC(IFRP).LT.0) 
      &      CALL QUIT('HAMINP: negative number of '//
@@ -2403,7 +2398,7 @@ C        We do     allow fractional occupation of 1
 C           This corresponds to a inactive electron
 C           and gives DALPHA = 0
 C
-         IF (ABS(DF(IOPEN)-D1).LE.1.0D-13) THEN
+         IF (ABS(DF(IOPEN)-D1).LE.DTHR) THEN
             WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
      &         'WARNING: Open shell no. ',IOPEN,
      &         ' has frac. occ. of ',DF(IOPEN)
