@@ -3712,7 +3712,7 @@ C     Local variables
       SAVE IPFCK,HTYP
       DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:2)*1
-      DATA HTYP /'X','S','A'/
+      DATA HTYP /'G','S','A'/
       DATA IPFCK/3,2,2,2,1,0,0,0,2,2,2,2/
 #include <ibtfun.h>
 C
@@ -3735,7 +3735,7 @@ C
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)
 C         An anti-symmetric matrix takes no Coulomb contributions
-          IF(IH.NE.1) IC = 0
+          IF(IH.EQ.2) IC = 0
           IY   = IC + IE
           IF(MZ.LT.4) THEN
             IQFCK(IZ)     = IQMULT(1,JQBAS(IRFCK(IZ),IPAR),IZ)
