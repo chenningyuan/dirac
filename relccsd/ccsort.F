@@ -1104,7 +1104,7 @@ C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
-      INTEGER NTRIPL(NREP),IVOVVT(NREP+1)
+      INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
