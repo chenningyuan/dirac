@@ -258,7 +258,7 @@ case $machine in
    i[3-6]86-*)
       liblist='libatlas libblas'
 #TODO liblist='libMKL libatlas libblas'
-      complist='ifc g77 pgf90'
+      complist='ifc g77 pgf90 f77'
       cclist='cc gcc pgcc'
       debug='gdb';;
 
@@ -1107,7 +1107,7 @@ case $machine in
       fi
       inc="-I$INCLUDE_DIR";;
 #
-#   Linux
+#   Linux and BSD's
 #
    i[3-6]86-*)
       echo 
@@ -1129,7 +1129,7 @@ case $machine in
 #
 # Ask user whether the large file option can be set
 #
-      $echo 'Can your Linux system handle files longer than 2 GB ? y/[n] \c'
+      $echo 'Can your Linux/BSD system handle files longer than 2 GB ? y/[n] \c'
       read largefiles
       case "$largefiles" in
       "yes" | "y" | "Y" )
@@ -1141,6 +1141,9 @@ case $machine in
       esac
       case "$F77" in
       g77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         ;;
+      f77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
          ;;
       mpif77)
