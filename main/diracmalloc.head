@@ -1,0 +1,13 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for diracmalloc
+ * AUTHOR  : J. Thyssen - 980709
+ *
+ */
+
+#include <stdlib.h>
+
+void *diracmalloc(size_t size)

@@ -1,0 +1,13 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for mpi_errtrap
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+#include <mpi.h>
+
+void mpi_errtrap(MPI_Comm *comm, int *err)

@@ -1,0 +1,11 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for pR_timing
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+void pr_timing(int cpu_used, int wall_used, int numnod, int mytid)

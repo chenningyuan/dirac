@@ -1,0 +1,12 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for exec_dirac
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+void exec_dirac(int *parcal, int *mytid, int *mparid, int *numnod, \
+                void *mempointer, int *size)

@@ -1,0 +1,11 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for end_mpi
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+void end_mpi(int mparid, int mytid, int errhandler)

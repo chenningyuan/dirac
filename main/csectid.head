@@ -1,0 +1,15 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for csectid
+ * AUTHOR  : J. Thyssen - 980709
+ *
+ */
+
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+void csectid(real tid, char *sectid)
+#else
+void csectid(double tid, char *sectid)
+#endif

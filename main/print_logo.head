@@ -1,0 +1,11 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for print_logo
+ * AUTHOR  : J. Thyssen - 980709
+ *
+ */
+
+void print_logo(int mytid)
