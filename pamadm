@@ -464,6 +464,7 @@ clean   :
 	cd main ; \$(MAKE) clean
 	cd moltra   ; \$(MAKE) clean
 	cd relccsd  ; \$(MAKE) clean
+	cd dirrci  ; \$(MAKE) clean
 EOF
 if [ -n "$ERIMOD" ]; then
    echo '	cd eri      ; $(MAKE) clean' >> Makefile
