@@ -4039,7 +4039,6 @@ C      END IF
      &               RNRM(1,IROOT)/RNRM(ITER,IROOT)
            write(6,'(A,F18.10)') 
      &               ' Final energy ',FINEIG(IROOT)
-           write(6,'(A)') 'ENDEND'
  1601   CONTINUE
       END IF
 *

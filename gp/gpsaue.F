@@ -29,7 +29,7 @@ C FILE    : gpsaue.F
 C
 C
 #if defined (PRG_DIRAC)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA BDQALGEBRA
 C
 C Initialize /QALGEBRA/
@@ -51,7 +51,7 @@ C
      &              1,-1,-1, 1, 1, 1, 1,-1/
       DATA QUNIT  / '1','i','j','k'/
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prqmat */
       SUBROUTINE PRQMAT(QMAT,NROW,NCOL,LRQ,LCQ,NZ,IQP,IUNIT)
 #include "implicit.h"
@@ -68,10 +68,10 @@ C  /* Deck prqmat */
         CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,1,IUNIT)
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck iqpack */
       SUBROUTINE IQPACK(IQPA,NZA,IQPB,NZB,IQPC,NZC)
-C*****************************************************************************
+C***********************************************************************
 C
 C     IQPA and IQPB are pointers to quaternion units 1,i,j and k
 C     IQPACK considers what quaternion units span the quaternion product
@@ -80,7 +80,7 @@ C
 C     Written by T.Saue - June 27 1996
 C     Last revision: June 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "dcbqal.h"
 C

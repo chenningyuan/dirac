@@ -2606,7 +2606,7 @@ C
 C
       DO 10 MK2I = MINMK2, MAXMK2, MK2STP
          IF (NMK2(MK2I) .EQ. 0) GOTO 10
-         write(6,*) '(GOSCI_CI) MK2I = ',MK2I
+C?       write(6,*) '(GOSCI_CI) MK2I = ',MK2I
          call flshfo(6)
          ISTRT = IMK2(MK2I) + 1
          IEND  = IMK2(MK2I) + NMK2(MK2I)
@@ -2957,7 +2957,7 @@ C
  10   CONTINUE
 C
       CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-      write(6,*) '#calls to nbits: ',cncalls,fncalls
+C?    write(6,*) '#calls to nbits: ',cncalls,fncalls
       CALL FLSHFO(LUPRI)
       RETURN
       END

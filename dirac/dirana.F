@@ -29,17 +29,17 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirana.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paman */
       SUBROUTINE PAMANA(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Analyze Dirac-Fock wavefunction
 C
 C     Written by T.Saue Sep 11 1995
 C     Last revision : KApril 27 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -54,41 +54,41 @@ C
 C
       CALL QENTER('PAMANA')
 C
-C*****************************************************************************
-C*****  V E C T O R    P R I N T *********************************************
-C*****************************************************************************
+C***********************************************************************
+C*****  V E C T O R    P R I N T ***************************************
+C***********************************************************************
 C
       IF(DOVEC) CALL ANAVEC(WORK,LWORK)
 C
-C*****************************************************************************
-C*****  M U L L I K E N    P O P U L A T I O N     A N A L Y S I S  **********
-C*****************************************************************************
+C***********************************************************************
+C*****  M U L L I K E N    P O P U L A T I O N     A N A L Y S I S  ****
+C***********************************************************************
 C
       IF(DOPOP) CALL MULPOP(WORK,LWORK)
 C
-C*****************************************************************************
-C*****  P L O T   1 - D I M E N S I O N A L     D E N S I T Y   **************
-C*****************************************************************************
+C***********************************************************************
+C*****  P L O T   1 - D I M E N S I O N A L     D E N S I T Y   ********
+C***********************************************************************
 C
       IF(DO1RHO) CALL GT1RHO(WORK,LWORK)
 C
-C*****************************************************************************
-C*****  P L O T   3 - D I M E N S I O N A L     D E N S I T Y   **************
-C*****************************************************************************
+C***********************************************************************
+C*****  P L O T   3 - D I M E N S I O N A L     D E N S I T Y   ********
+C***********************************************************************
 C
       IF(DO3RHO) CALL GT3RHO(WORK,LWORK)
 C
-C*****************************************************************************
-C*****  P R O J E C T I O N   O N T O    A N O T H E R   S O L U T I O N *****
-C*****************************************************************************
+C***********************************************************************
+C*****  P R O J E C T I O N   O N T O    A N O T H E R   S O L U T I O N
+C***********************************************************************
 C
       IF(DOPRJ) CALL ANAPRJ(WORK,LWORK)
 C
 C
-C*****************************************************************************
-C*****  P L O T  I N T E G R A T I O N                   *********************
-C*****  W E I G H T S   I N   O N E   D I M E N S I O N  *********************
-C*****************************************************************************
+C***********************************************************************
+C*****  P L O T  I N T E G R A T I O N                   ***************
+C*****  W E I G H T S   I N   O N E   D I M E N S I O N  ***************
+C***********************************************************************
 #if defined (MOD_DFT)
       IF(DO1WT) CALL GT1WT(WORK,LWORK)
 #endif
@@ -97,17 +97,17 @@ C*****************************************************************************
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpop */
       SUBROUTINE MULPOP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Mulliken population analysis
 C
 C     Written by T.Saue - Sep 11 1995
 C     Last revision: Aoril 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -174,11 +174,11 @@ C
       CALL QUIT('MULPOP: Coefficients not found !')
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo1 */
       SUBROUTINE MULPO1(PMAT,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
      &                  PGTOT,PNTOT,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
 C     separately for each component of a 2-spinor. The array
@@ -192,7 +192,7 @@ C
 C     Written by T.Saue July 24 1994
 C     LAST VERSION: Jan 9 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -366,11 +366,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
       SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
      &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates net and gross Mulliken populations
 C     separately for each component of a 2-spinor. The array
@@ -383,8 +383,9 @@ C     COEF - coefficients
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
-C     Last revision : Aug 20 2002 - jkp (take fractional occ. into account)
-C*****************************************************************************
+C     Last revision : Aug 20 2002 - jkp (take fractional occ. into 
+C                                        account)
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
@@ -518,11 +519,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popmat */
       SUBROUTINE POPMAT(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,IGLAB,NGLAB,
      &                  NCBAS,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct population matrix
 C         M(i,j) = Re(CONJ[CMO(i,IVEC)]*SMAT(i,j)*CMO(j,IVEC))
@@ -531,7 +532,7 @@ C
 C     Written by T.Saue Oct 9 1995
 C     Last revision: Oct 9 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C Used from COMMON blocks
@@ -555,11 +556,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popma1 */
       SUBROUTINE POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,PBUF,
      &                  IGLAB,NGLAB,NCBAS,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct population matrix
 C         M(i,j) = Re(CONJ[CMO(i,IVEC)]*SMAT(i,j)*CMO(j,IVEC))
@@ -568,7 +569,7 @@ C
 C     Written by T.Saue Oct 9 1995
 C     Last revision: Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -689,10 +690,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck grspop */
       SUBROUTINE GRSPOP(POPG,PMAT,NLAB)
-C*****************************************************************************
+C***********************************************************************
 C
 C     From Mulliken population matrix generate gross populations for
 C     2-spinor.
@@ -700,7 +701,7 @@ C
 C     Written by T.Saue - July 24 1994
 C     LAST VERSION: Oct 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION POPG(NLAB,2),PMAT(NLAB,NLAB,2)
@@ -710,16 +711,16 @@ C
         POPG(J,2) = DSUM(NLAB,PMAT(1,J,2),1)
    10 CONTINUE
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrpopg */
       SUBROUTINE WRPOPG(POPG,LAB,NLAB,IEFF,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Output routine for Mulliken gross population
 C
 C     Written by T.Saue - Oct 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)
@@ -782,17 +783,17 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck netpop */
       SUBROUTINE NETPOP(POPN,PMAT,NLAB)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Mulliken net populations (upper triangular columnwise packed)
 C
 C     Written  by T.Saue Oct 11 1995
 C     Last revision: Oct 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0)
@@ -814,17 +815,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrpopn */
       SUBROUTINE WRPOPN(PMAT,POPG,LAB,NLAB,IEFF,COMP)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Output routine for Mulliken net populations
 C
 C     Written by T.Saue Oct 11 1995
 C     Last revision Oct 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D2 = 2.0D0)
@@ -1296,15 +1297,15 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,PMAT,GVEC,AMAT,BVEC,
      &                  JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
-C*****************************************************************************
+C***********************************************************************
 C
 C
-C     Project molecular solution down onto reference solution(e.g. atomic)
-C     in the same basis
+C     Project molecular solution down onto reference solution
+C     (e.g. atomic) in the same basis
 C
 C         Y(mol)_i = Y(ref)_jc_ji
 C
@@ -1314,7 +1315,7 @@ C
 C     Written by Trond Saue March 13 1996
 C     Last revision Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbqal.h"
@@ -1494,17 +1495,17 @@ C
  110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
      &       2(3X,A1,F5.2,A1,F5.2,A1,3X))
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getplb */
       SUBROUTINE GETPLB(IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Generate labels for use in population analysis
 C
 C     Written by Trond Saue May 1996
 C     Last revision: tsaue - May 2 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1558,17 +1559,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anavec */
       SUBROUTINE ANAVEC(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print vectors
 C
 C     Written by Trond Saue May 1996
 C     Last revision: tsaue - Jan 9 1997
+C     Reading of coefficients from KRMCSCF added: T. Fleig, Oct 2003
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1576,18 +1578,59 @@ C
 #include "dcbvec.h"
 #include "dcborb.h"
 #include "dcbbas.h"
+#include "dgroup.h"
+#include "consts.h"
 C
-      LOGICAL TOBE
+      LOGICAL TOBE_D,TOBE_K
       DIMENSION WORK(*)
 #include "memint.h"
+C
+      NTESTL = 000
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
 C
 C     Check if coefficients are on file
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
+      INQUIRE (FILE ='KRMCSCF',EXIST=TOBE_K)
+      INQUIRE (FILE='DFCOEF',EXIST=TOBE_D)
+C
+      IF(.NOT.TOBE_K) GOTO 990
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+C
+      CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMANA')
+      IOPT = 1       ! Read from NEWORB label
+      JRDMO = -1
+      CALL RREADMO(WORK(KCMO),JRDMO,IOPT,LUKRMC)
+      CLOSE(LUKRMC,STATUS='KEEP')
+      CALL HEADER('Coefficients from KRMCSCF',2)
+C
+      IF (NTESTL.GE.20) THEN
+C
+C     Print all coefficients (including positronic and S component)
+C
+        DO I = 1, NFSYM
+           WRITE(LUPRI,'(A,I2)') ' (ROPTST)  Coefficients, irrep ',I
+           CALL PRQMAT(WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &          NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        END DO
+      END IF
+C
+C     Zero out orbital energies. They are irrelevant for canonical
+C     orbitals at the moment.
+C
+      DO J=1,NORBT,1
+        WORK(KEIG+J-1) = D0
+      END DO
+C
+      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,
+     &            WORK(KFREE),LFREE)
+C     Memory deallocation
+      CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+C
+ 990  IF(.NOT.TOBE_D) GOTO 1000
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
@@ -1599,7 +1642,8 @@ C
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
      &            TOTERG,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
-
+C
+      CALL HEADER('Coefficients from DFCOEF',2)
       CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,
      &            WORK(KFREE),LFREE)
 C     Memory deallocation
@@ -1610,16 +1654,16 @@ C
       WRITE(LUPRI,'(A)') 'ANAVEC: Coefficient file not found !'
       CALL QUIT('ANAVEC: Coefficients not found !')
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrpopt */
       SUBROUTINE WRPOPT(POPG,LAB,NLAB,IEFF)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Output routine for Mulliken gross population
 C
 C     Written by T.Saue - Oct 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)

@@ -29,14 +29,14 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirout.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfout */
       SUBROUTINE DHFOUT(CMO,EIG,IBEIG,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Output module for DIRAC
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -134,29 +134,35 @@ C
 C       Start by writing the computed electronic energy
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY
-C       The total energy consists of the electronic energy plus additional terms
+C       The total energy consists of the electronic energy plus 
+C       additional terms
         WRITE(LUPRI,'(/3X,A)') 'Other contributions to the total energy'
 C       We will always want to add the repulsion between the nuclei
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Nuclear repulsion energy                 :   ',POTNUC
-C       In case we invoked a solvent model we need to add the solvation energy as well
-C       (LV: I have not changed the name into solvation energy but think this would be
-C        more appropriate than solvent energy, leave this to authors of this part)
+C       In case we invoked a solvent model we need to add the 
+C       solvation energy as well
+C       (LV: I have not changed the name into solvation energy but 
+C            think this would be more appropriate than solvent energy, 
+C            leave this to authors of this part)
         IF(SOLVEN) THEN
           ERGSOL = ESOLVN + ESOLVE
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Solvent energy                           :   ',ERGSOL
         ENDIF
-C       A one-center approximation may be used that gives a correction to the electronic energy
+C       A one-center approximation may be used that gives a correction 
+C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'ONECAP model 2 SS correction             :   ',CORRLV
-C       The SCC model may be used in cases where no SS integrals were computed
+C       The SCC model may be used in cases where no SS integrals were 
+C       computed
         ELSE IF(LVCON) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'SS Coulombic correction                  :   ',CORRLV
         ENDIF
-C       We now write the sum, the actual summation is done in the ERGCAL routine 
+C       We now write the sum, the actual summation is done in the 
+C       ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
@@ -187,10 +193,10 @@ C
 C     ... 1020 is used for reading, thus no '1P' factor !
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prcoef */
       SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPRCMP,ILABDF,IPRINT,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print coefficients in
 C       AO-basis  (ILABDF = 1)
@@ -201,7 +207,7 @@ C
 C     Written by T.Saue 1996
 C     Last revision Jan 9 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -224,8 +230,8 @@ C       ============================================
 C
         NVEC = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
-        CALL  NUMLST(VECPRI(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
+        CALL NUMLST(VECPRI(IFRP),WORK(KJVEC),NORB(IFRP),
+     &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
 C
@@ -320,17 +326,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prcoe1 */
       SUBROUTINE PRCOE1(CMO,EIG,IFRP,JVEC,NPVEC,NEVEC,NCBAS,
      &                  IPRCMP,ILABDF)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Print vectors (AO/SO-basis)
 C     Written by T.Saue May 6 1996
 C     Last revision: May 6 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
 #include "priunit.h"
@@ -429,17 +435,17 @@ C
       RETURN
  100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */
       SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP,KNFBAS)
-C*****************************************************************************
+C***********************************************************************
 C
 C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
 C     to quaternionic
 C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -491,17 +497,17 @@ Ctsaue: true only for the large components
       CALL DSCAL(NTOT,DM1,CBUF(1,1,3),1)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preigv */
       SUBROUTINE PREIGV(EIG,NVAL,IVAL,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues and their degeneracies
 C
 C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -524,17 +530,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preig1 */
       SUBROUTINE PREIG1(EIG,NVAL,IFIRST,NMULT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues and their degeneracies
 C
 C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -568,10 +574,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck degana */
       SUBROUTINE DEGANA(NDEG,NVAL,EIG,IFIRST,NMULT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Given a list EIG of ordered eigenvalues, this routine
 C     finds degeneracies. For each disctinct value, it will list
@@ -580,7 +586,7 @@ C
 C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DEGTOL = 1.0D-6)
@@ -619,17 +625,17 @@ C
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck eigchk */
       SUBROUTINE EIGCHK(EIG,NVAL)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine checks for intruder states
 C
 C     Written by T.Saue - November 1994
 C     Last revision : Nov 15 1994 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -650,16 +656,16 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck caosrt */
       SUBROUTINE CAOSRT(CAO,CMO,JVEC,NPVEC,NEVEC,IFRP,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Expand coefficients to unsorted quaternion matrix
 C
 C     Written by T.Saue May 1996
 C     Last revision: Jan 7 1997
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -680,17 +686,17 @@ C
       CALL QEXIT('CAOSRT')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck caosr1 */
       SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,
      &                  KNFBAS,KNORB,NBAST,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Expand coefficients to unsorted quaternion matrix
 C
 C     Written by T.Saue May 1996
 C     Last revision: May 6 1996
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -756,14 +762,14 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ORBCNT(JVEC,NVEC,IFRP,NPVEC,NEVEC)
-C*****************************************************************************
+C***********************************************************************
 C     Find number of electronic/positronic vectors
 C
 C     Written by T.Saue Jan 7 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION JVEC(NVEC)
@@ -1014,17 +1020,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preigb */
       SUBROUTINE PREIGB(EIG,IBEIG,IVAL,NVAL)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues and their degeneracies
 C
 C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1048,16 +1054,16 @@ C
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preign */
       SUBROUTINE PREIGN(EIG,IBEIG,PRPOS,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues and their degeneracies
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1083,16 +1089,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preign */
       SUBROUTINE PREIGN1(EIG,EIGBUF,IBEIG,IFIRST,NMULT,PRPOS)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues - new version.
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1316,16 +1322,16 @@ C
       WRITE(LUPRI,'(/)')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck preign2 */
       SUBROUTINE PREIGN2(EIG,IFIRST,NMULT,NSH,FMT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Prints eigenvalues - new version.
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1345,17 +1351,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pckeig */
       SUBROUTINE PCKEIG(EIG,ISTART,IEND,IBEIG,ISYM,NEIG,EIGBUF)
-C*****************************************************************************
+C***********************************************************************
 C
-C     Pick all eigenvalues in the from the array EIG(ISTART),...,EIG(IEND)
-C     and put them in EIGBUF
+C     Pick all eigenvalues in the from the array 
+C     EIG(ISTART),...,EIG(IEND) and put them in EIGBUF
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1371,16 +1377,16 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck eighlc */
       SUBROUTINE CHKHLG(EIG,IBEIG)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Check HOMO-LUMO gap
 C
 C     Written by J. Thyssen - 26 Aug 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C

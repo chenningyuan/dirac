@@ -293,6 +293,7 @@ C        *** Call PSIOPT for KR-MCSCF wave function ******
 C        *************************************************
 C
          CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
+         IF(DOANA) CALL PAMANA(WORK,LWORK)
       END IF
 C
 C***********************************************************************

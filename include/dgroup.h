@@ -3,8 +3,10 @@ C     NZ - number of matrices (1,2,4)
 C     NFSYM - number of fermion irreps
 C     NBSYM - number of boson irreps
 C     JSPINR(IM,IC,IFRP) - boson irrep for a given spinor position
-C     JBTOF(IBRP,IC) - points to fermion irrep for given boson irrep/component
-C     JFSYM(NZ,IFRP) - points to boson symmetries associated with given fermion
+C     JBTOF(IBRP,IC) - points to fermion irrep for given boson 
+C                      irrep/component
+C     JFSYM(NZ,IFRP) - points to boson symmetries associated with 
+C                      given fermion
 C                      ircop
 C     IQDEF(4)
 C     JQBAS(IBRP,IC) - points to quaternionic position
@@ -26,7 +28,8 @@ C
 C     M = I_4,iA_z,iA_y,iA_x
 C
 C     JM4REP(0:7) - bosonirrep of matrix operator
-C     JM4POS(0:7) - quaternionic position of matrix operator (1,2(i),3(j),4(k))
+C     JM4POS(0:7) - quaternionic position of matrix operator 
+C                   (1,2(i),3(j),4(k))
 C     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 C
 C     OPERATORS (18 types):

@@ -25,17 +25,18 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.ou.dk/Dirac
 C
 C
-C     Contains the modifications to activate the spinfree option in the code
+C     Contains the modifications to activate the spinfree option in 
+C     the code
 C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirspf.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spfscf */
       SUBROUTINE SPFSCF(FMO,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Zero out the spin-dependent part of the Fock matrix.
 C     On input:
@@ -48,7 +49,7 @@ C     to the SPINFR option (having boson symmetry adapted blocks)
 C
 C     Written by L.Visscher, august 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -106,10 +107,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spfao */
-      SUBROUTINE SPFAO (FMO,FAO,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE SPFAO(FMO,FAO,WORK,LWORK)
+C***********************************************************************
 C
 C     Zero out the spin-dependent part of the Fock matrix.
 C     On input:
@@ -122,7 +123,7 @@ C     to the SPINFR option (having boson symmetry adapted blocks)
 C
 C     Written by L.Visscher, march 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
