@@ -189,6 +189,7 @@ if [ "${cvs}" = "yes" ]; then
 fi
 #
 cat <<EOF >job
+echo " Starting test at \`date\`"
 cd ${testdir};
 ./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
@@ -198,9 +199,9 @@ cd ${testdir};
 }
 if [ -e logs/$txtlog ]; then
    if [ -s logs/$txtlog ]; then
-      echo ' Calculations completed : an error has been detected'
+      echo " Calculations completed at \`date\` : an error has been detected"
     else
-      echo ' Calculations completed : no errors were detected'
+      echo " Calculations completed at \`date\` : no errors were detected"
     fi
 else
     echo ' Calculations were not completed : the run_log follows'
@@ -220,8 +221,11 @@ else
 #
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
-errfile=fs0.das2.cs.vu.nl:${testdir}/logs/lastrun
-qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
+errfile=${testdir}/logs/lastrun
+if [ -e $errfile ]; then
+   rm $errfile
+fi
+/usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
 fi
 rm job
 #
