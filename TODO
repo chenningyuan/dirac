@@ -93,3 +93,11 @@
 - gradient beregning uden DFFCK2
 
 - Logik i convergens af DHF. F.eks. ERGCNV = 1.0D-7 AND EVCCNV = 1.0D-7
+
+- The compilation message from SX on this is 
+  Branching to label "8103" from outside of the block is illegal.
+  The corresponding part can be found at the end of this email.
+  This type of jumps due to "go to" is not favorable for SX.
+  (mochi@koma.jaeri.go.jp)
+
+- KINBAL does not check if block number is higher than MXAOVC
