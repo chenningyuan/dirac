@@ -307,7 +307,7 @@ C
           NERED  = 0
           NPRED  = 0
           NZRED  = NCRED + NERED + NPRED
-          RSPLAB = 'PP EXCITATIONS  '
+          RSPLAB = 'PP EXCITATION'//REP(JSYMOP-1)
           CALL XRSCTL(WORK(KGPCI) ,WORK(KGPOE),WORK(KGPOP),
      &                WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),
      &                WORK(KIBPVC),RCNV(1,JSYMOP),
