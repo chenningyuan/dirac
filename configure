@@ -386,8 +386,8 @@ if [ "$par" = "yes" ]; then
    if [ "$mesp" = "mpi" ]; then
       case $machine in
          *-ibm)
-            complist="mpxlf $complist"
-            cclist="mpcc $cclist" 
+            complist="mpxlf_r mpxlf $complist"
+            cclist="mpcc_r mpcc $cclist" 
             parlib='no'
             parinc='yes'
             mpirun='poe'
@@ -1136,9 +1136,10 @@ case $machine in
             c_inc="-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
          esac
-         opt='-O3 -qstrict -qextname'
-	 c_opt='-O3 -qstrict'
-         ldflag='-bmaxdata:0x80000000'
+         opt='-O3 -qstrict -qextname -q64'
+	 c_opt='-O3 -qstrict -q64'
+         ldflag='-q64 -bmaxdata:0x8000000000'
+         arflag='rv -X64'
          ;;
 #
 #  IRIX
