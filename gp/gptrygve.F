@@ -639,54 +639,61 @@ C
 #endif
       RETURN
       END
+C
+C panor: The 48 bit shift done below:
+C        IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
+C        genereates a compilation error on SUN Solaris 32 bit
+C        architectures. The subroutine is commented out because 
+C        it is presently not used in Dirac. 2004-08-28
+C
 C  /* Deck aolab4 */
-      SUBROUTINE AOLAB4(IINDPK,NMAX,NIBUF,NBITS,IINDX4,N)
-C
-C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
-C     Generalized 25-Oct-1993 hjaaj
-C                 31-Jul-1996 hjaaj (new NIBUF parameter)
-C
-C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
-C
-#include "implicit.h"
-      DIMENSION IINDPK(*), IINDX4(4,*)
-#include "ibtdef.h"
-C
-      N = IINDPK(NIBUF*NMAX+1)
-C
-      IF (NIBUF .EQ. 1) THEN
-      IF (NBITS .EQ. 8) THEN
-         DO 100 I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-  100    CONTINUE
-      ELSE IF (NBITS .EQ. 16) THEN
-         DO 200 I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-  200    CONTINUE
-      ELSE
-	 CALL QUIT('AOLAB4 error')
-      END IF
-      ELSE
-         DO 300 I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-            LABEL = IINDPK(NMAX+I)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-  300    CONTINUE
-      END IF
-C
-      RETURN
-      END
+C       SUBROUTINE AOLAB4(IINDPK,NMAX,NIBUF,NBITS,IINDX4,N)
+C C
+C C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
+C C     Generalized 25-Oct-1993 hjaaj
+C C                 31-Jul-1996 hjaaj (new NIBUF parameter)
+C C
+C C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
+C C
+C #include "implicit.h"
+C       DIMENSION IINDPK(*), IINDX4(4,*)
+C #include "ibtdef.h"
+C C
+C       N = IINDPK(NIBUF*NMAX+1)
+C C
+C       IF (NIBUF .EQ. 1) THEN
+C       IF (NBITS .EQ. 8) THEN
+C          DO 100 I = 1,N
+C             LABEL = IINDPK(I)
+C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
+C             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
+C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
+C             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+C   100    CONTINUE
+C       ELSE IF (NBITS .EQ. 16) THEN
+C          DO 200 I = 1,N
+C             LABEL = IINDPK(I)
+C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
+C             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
+C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+C             IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
+C   200    CONTINUE
+C       ELSE
+C 	 CALL QUIT('AOLAB4 error')
+C       END IF
+C       ELSE
+C          DO 300 I = 1,N
+C             LABEL = IINDPK(I)
+C             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+C             IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+C             LABEL = IINDPK(NMAX+I)
+C             IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+C             IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+C   300    CONTINUE
+C       END IF
+C C
+C       RETURN
+C       END
 C  /* Deck GPOPEN */
       SUBROUTINE GPOPEN(LUNIT,FILEIN,STATIN,ACCEIN,FORMIN,NELEM,OLDDX)
 C
