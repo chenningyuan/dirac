@@ -1478,7 +1478,7 @@ C
       ENDDO
       DO IFRP = 1,NFSYM
         IDIM(1) = IDIM(1) + NPSH(IFRP)  
-        IDIM(1) = IDIM(1) + NESH(IFRP)  
+        IDIM(2) = IDIM(2) + NESH(IFRP)  
       ENDDO
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
