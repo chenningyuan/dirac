@@ -41,6 +41,179 @@ C64B  SEC2I=512*N
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XTIMRD (TIMERN,ELTIM)
+C
+C  purpose:  read out a specific timer previously set by XTIME
+C
+
+      IMPLICIT INTEGER (A-Z)
+      REAL*8 ELTIM
+
+      INCLUDE "timtbl.inc"
+      INCLUDE "param.inc"
+      INCLUDE "files.inc"
+      
+      IF(TIMERN.LT.1.OR.TIMERN.GT.MXTIMF) THEN
+        WRITE(IW,10)
+        ELTIM=D0
+      ELSE
+        ELTIM=CPUTF(TIMERN)
+      ENDIF
+
+ 10   FORMAT(/' **WARNING** Timer # out of range'/,
+     &        ' ** zero returned')
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XTIME (TIMERN,FUNCT,NAME)
+
+      IMPLICIT INTEGER (A-Z)
+      CHARACTER*30 NAME
+
+      INCLUDE "timtbl.inc"
+      INCLUDE "param.inc"
+      INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      PARAMETER(TITAG=12)
+#endif
+
+      REAL*8 A
+C     REAL*8 SUMT
+
+C ** check requested function
+
+      IF(TIMERN.LT.1.OR.TIMERN.GT.MXTIMF) THEN
+        WRITE(IW,130) MXTIMF
+        RETURN
+      ENDIF
+
+      IF(FUNCT.EQ.TCLEAR) THEN
+        DO I=1,MXTIMF
+          CPUTF(I)=D0
+          CPUTFT(I)=D0
+          CPUTAV(I)=D0
+          CPUTMI(I)=D0
+          CPUTMA(I)=D0
+          CPUTT(I)='                    '
+        ENDDO
+      ELSE IF (FUNCT.EQ.TSTART) THEN
+        CALL CPUUSED(A)
+        CPUTF(TIMERN)=A
+        CPUTT(TIMERN)=NAME
+      ELSE IF (FUNCT.EQ.TSTOP) THEN
+        CALL CPUUSED(A)
+        CPUTF(TIMERN)=A-CPUTF(TIMERN)
+        CPUTFT(TIMERN)=CPUTFT(TIMERN)+CPUTF(TIMERN)
+      ELSE IF (FUNCT.EQ.TPRNTI) THEN
+        IF(CPUTF(TIMERN).NE.D0) THEN
+          WRITE(IW,222) CPUTT(TIMERN),CPUTF(TIMERN)
+        ELSE
+          WRITE(IW,224) TIMERN
+        ENDIF
+      ELSE IF (FUNCT.EQ.TPRNTA) THEN
+#if defined (VAR_MPI)
+        IF(NMPROC.EQ.1) THEN
+          WRITE(IW,220)
+          DO I=1,MXTIMF
+            IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+          ENDDO
+C         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+        ELSE
+          IF(MYPROC.EQ.MASTER) THEN
+            DO I=1,MXTIMF
+              CPUTMI(I)=CPUTFT(I)
+              CPUTMA(I)=CPUTFT(I)
+              CPUTAV(I)=CPUTFT(I)
+            ENDDO
+            WRITE(IW,300)
+            WRITE(IW,310) MASTER
+            DO I=1,MXTIMF
+              IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+            ENDDO
+
+            DO ND=1,NMPROC-1
+              CALL MPI_RECV(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
+     &           ND,TITAG,MPI_COMM_WORLD,ISTAT,IERR)
+              IF(IERR.NE.MPI_SUCCESS) CALL 
+     &          QUIT('MPI ERROR IN XTIME')
+              WRITE(IW,310) ND
+              DO I=1,MXTIMF
+                IF(CPUTFT(I).LT.CPUTMI(I)) CPUTMI(I)=CPUTFT(I)
+                IF(CPUTFT(I).GT.CPUTMA(I)) CPUTMA(I)=CPUTFT(I)
+                CPUTAV(I)=CPUTAV(I)+CPUTFT(I)
+                IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+              ENDDO
+C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+            ENDDO
+
+            WRITE(IW,330)
+            DO I=1,MXTIMF
+              IF(CPUTAV(I).NE.D0) WRITE(IW,340) CPUTT(I),CPUTMI(I),
+     &          CPUTMA(I),CPUTAV(I)/DBLE(NMPROC)
+            ENDDO
+          ELSE
+            DO I=1,MXTIMF
+              CALL MPI_SEND(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
+     &          MASTER,TITAG,MPI_COMM_WORLD,IERR)
+              IF(IERR.NE.0) CALL QUIT('MPI ERROR in XTIME')
+            ENDDO
+          ENDIF
+        ENDIF
+        WRITE(IW,350)
+#else
+        WRITE(IW,220)
+        DO I=1,MXTIMF
+          IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+        ENDDO
+C       WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+#endif
+      ELSE
+        WRITE(IW,135)
+      ENDIF
+ 130  FORMAT(/' **WARNING** Timer # out of range'/,
+     &        ' ** no action taken')
+ 135  FORMAT(/' **WARNING** Unknown timer function'/,
+     &        ' ** no action taken')
+ 220  FORMAT(/'########################################'/,
+     &        '###'/'### Timing results:'/'###'/,
+     &        '########################################'/)
+ 222  FORMAT(' Time in ',A30,T33,F12.3,' seconds')
+ 223  FORMAT(T37,'-------------',/,T25,'Sum: ',F12.3,' seconds',
+     &       /,T37,'-------------')
+ 224  FORMAT(' Timer ',I3,' not used for measurements')
+ 300  FORMAT(/'########################################'/,
+     &        '###'/'### Timing results for all nodes'/'###'/,
+     &        '########################################'/)
+ 310  FORMAT(/,T10,'Results node ',I3,/,T10,'----------------'/)
+ 330  FORMAT(//,T30,'Summary with min/max/average'/,
+     &          T30,'----------------------------'//,
+     &          T2,'Timer',T33,'Minimum',T43,'Maximum',
+     &          T53,'Average'/)
+ 340  FORMAT(T2,A30,T33,F12.3,T43,F12.3,T53,F12.3)
+ 350  FORMAT(/'########################################'/,
+     &        '###'/'### End of timing report'/'###'/,
+     &        '########################################'/)
+     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      FUNCTION SUMT(A,N)
+      REAL*8 SUMT,A(*)
+      INTEGER N
+
+      INCLUDE "param.inc"
+
+      SUMT=D0
+      DO I=1,N
+        SUMT=SUMT+A(I)
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RSAVE(ITAPE,BLOCKS)
 C
 C FLUSH THE FILE
@@ -146,104 +319,6 @@ C
       RETURN
       END
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RGETSA(ITAPE,IADR)
-C
-C THIS ROUTINE RETURNS THE CURRENT SECTOR ADDRESS FOR FILES USING
-C THE SREAD/SWRIT AND/OR RREAD/RWRIT IO ROUTINES.
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-C
-      IPOS = POS(ITAPE)
-      IREC = (IPOS-1)/SECTOR + 1
-      TEST = SECTOR*(IREC-1) + 1
-      IF(IPOS.NE.TEST) THEN
-      WRITE(*,*) ' ERROR ENCOUNTERED IN RGETSA FOR FILE ',ITAPE
-      WRITE(*,*) ' IPOS,TEST = ',IPOS,TEST
-      CALL QUIT('ccgenp.F line  231')
-      END IF
-C
-      IADR=IREC
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RSETSA(ITAPE,IADR)
-C
-C THIS ROUTINE SETS THE POINTER OF A UTILITIES FILE TO THE DESIRED
-C SECTOR ADDRESS.
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-C
-      IPOS = SEC2I(IADR-1) + 1
-      POS(ITAPE) = IPOS
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WWRITW(ITAPE,ARRAY,NLEN,FWORD,LWORD)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-C
-      DIMENSION ARRAY(NLEN)
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL PUTWA(ITAPE,ARRAY,FWORD,NLEN,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN WWRITW FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 269')
-      END IF
-#else
-      OFF = FWORD - 1
-      CALL WRABSF(ITAPE,ARRAY,NLEN,OFF)
-#endif
-C
-C UPDATE LWORD AND THEN RETURN
-C
-      LWORD = FWORD + NLEN
-      POS(ITAPE) = LWORD
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WREADW(ITAPE,ARRAY,NLEN,FWORD,LWORD)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-C
-      DIMENSION ARRAY(NLEN)
-C
-#if defined (SYS_CRAY) || defined(SYS_T3D)
-      CALL GETWA(ITAPE,ARRAY,FWORD,NLEN,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN WREADW FOR FILE ',ITAPE,FWORD,NLEN
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 298')
-      END IF
-#else
-      OFF = FWORD - 1
-      CALL RDABSF(ITAPE,ARRAY,NLEN,OFF)
-#endif
-C
-C UPDATE LWORD AND THEN RETURN
-C
-      LWORD = FWORD + NLEN
-      POS(ITAPE) = LWORD
-C
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RREAD(ITAPE,ARRAY,NLEN,IREC)
 C
@@ -482,263 +557,6 @@ C
       IF(SECTOR*TEST .NE. NLEN) TEST = TEST + 1
       TESTL = SECTOR*TEST
       POS(ITAPE) = FWORD + TESTL
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SREAD(ITAPE,ARRAY,NLEN)
-C
-C THIS ROUTINE READS NLEN INTEGER WORDS INTO ARRAY STARTING AT
-C STARTING AT THE CURRENT POINTER LOCATION.
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-      COMMON /IOBUFF/ BUFF(1024)
-C
-      DIMENSION ARRAY(NLEN)
-C
-      FWORD = POS(ITAPE)
-      NGRP = NLEN/MAXLN
-      IF(MAXLN*NGRP.NE.NLEN) NGRP = NGRP + 1
-C
-      IF(NGRP.EQ.1) THEN
-C
-      NW = (NLEN/SECTOR)*SECTOR
-      OFF = FWORD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY,FWORD,NW,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 581')
-      END IF
-#else
-      IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY,NW,OFF)
-#endif
-C
-      EXTRA = MOD(NLEN,SECTOR)
-      IF(EXTRA.NE.0) THEN
-      FWD = FWORD + NW
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 596')
-      END IF
-#else
-      CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
-#endif
-      DO 12 I = 1,EXTRA
-      ARRAY(NW+I) = BUFF(I)
-   12 CONTINUE
-      END IF
-C
-      ELSE
-C
-      LLEN = MOD(NLEN,MAXLN)
-      IF(LLEN.EQ.0) LLEN = MAXLN
-      FWD = FWORD
-C
-      DO 11 IGRP = 1,NGRP-1
-      IPT = (IGRP-1)*MAXLN + 1
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL GETWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 620')
-      END IF
-#else
-      CALL RDABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
-#endif
-      FWD = FWD + MAXLN
-  11  CONTINUE
-C
-      NW = (LLEN/SECTOR)*SECTOR
-      IPT = (NGRP-1)*MAXLN + 1
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IF(NW.GT.0) CALL GETWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 636')
-      END IF
-#else
-      IF(NW.GT.0) CALL RDABSF(ITAPE,ARRAY(IPT),NW,OFF)
-#endif
-C
-      EXTRA = MOD(LLEN,SECTOR)
-      IF(EXTRA.NE.0) THEN
-      FWD = FWD + NW
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL GETWA(ITAPE,BUFF,FWD,SECTOR,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SREAD FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 651')
-      END IF
-#else
-      CALL RDABSF(ITAPE,BUFF,SECTOR,OFF)
-#endif
-      IPT = IPT + NW - 1
-      DO 13 I = 1,EXTRA
-      ARRAY(IPT+I) = BUFF(I)
-   13 CONTINUE
-      END IF
-C
-      END IF      
-C
-C WE MUST POSITION THE FILE POINTER AT THE BEGINNING OF THE NEXT SECTOR
-C
-      TEST = NLEN/SECTOR
-      IF(SECTOR*TEST .NE. NLEN) TEST = TEST + 1
-      TESTL = SECTOR*TEST
-      POS(ITAPE) = FWORD + TESTL
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SWRIT(ITAPE,ARRAY,NLEN)
-C
-C THIS ROUTINE WRITES NLEN INTEGER WORDS FROM ARRAY TO FILE ITAPE
-C STARTING AT THE CURRENT POINTER LOCATION.
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-      COMMON /SECT/ SECTOR,MAXLN
-      COMMON /IOBUFF/ BUFF(1024)
-C
-      DIMENSION ARRAY(NLEN)
-C
-      FWORD = POS(ITAPE)
-      NGRP = NLEN/MAXLN
-      IF(MAXLN*NGRP.NE.NLEN) NGRP = NGRP + 1
-C
-      IF(NGRP.EQ.1) THEN
-      NW = (NLEN/SECTOR)*SECTOR
-      OFF = FWORD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY,FWORD,NW,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 700')
-      END IF
-#else
-      IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY,NW,OFF)
-#endif
-C
-      EXTRA = MOD(NLEN,SECTOR)
-      IF(EXTRA.NE.0) THEN
-      DO 12 I = 1,EXTRA
-      BUFF(I) = ARRAY(NW+I)
-   12 CONTINUE
-      FWD = FWORD + NW
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 718')
-      END IF
-#else
-      CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
-#endif
-      END IF
-C
-      ELSE
-C
-      LLEN = MOD(NLEN,MAXLN)
-      IF(LLEN.EQ.0) LLEN = MAXLN
-      FWD = FWORD
-C
-      DO 11 IGRP = 1,NGRP-1
-      IPT = (IGRP-1)*MAXLN + 1
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL PUTWA(ITAPE,ARRAY(IPT),FWD,MAXLN,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 739')
-      END IF
-#else
-      CALL WRABSF(ITAPE,ARRAY(IPT),MAXLN,OFF)
-#endif
-      FWD = FWD + MAXLN
-  11  CONTINUE
-C
-      NW = (LLEN/SECTOR)*SECTOR
-      IPT = (NGRP-1)*MAXLN + 1
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IF(NW.GT.0) CALL PUTWA(ITAPE,ARRAY(IPT),FWD,NW,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 755')
-      END IF
-#else
-      IF(NW.GT.0) CALL WRABSF(ITAPE,ARRAY(IPT),NW,OFF)
-#endif
-C
-      EXTRA = MOD(LLEN,SECTOR)
-      IF(EXTRA.NE.0) THEN
-      IPT = IPT + NW - 1
-      DO 13 I = 1,EXTRA
-      BUFF(I) = ARRAY(IPT+I)
-   13 CONTINUE
-      FWD = FWD + NW
-      OFF = FWD - 1
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL PUTWA(ITAPE,BUFF,FWD,SECTOR,IERR)
-      IF(IERR.NE.0) THEN
-         WRITE(*,*) ' ERROR IN SWRIT FOR FILE ',ITAPE
-         WRITE(*,*) ' IERR = ',IERR
-         CALL QUIT('ccgenp.F line 774')
-      END IF
-#else
-      CALL WRABSF(ITAPE,BUFF,SECTOR,OFF)
-#endif
-      END IF
-C
-      END IF      
-C
-C WE MUST POSITION THE FILE POINTER AT THE BEGINNING OF THE NEXT SECTOR
-C
-      TEST = NLEN/SECTOR
-      IF(SECTOR*TEST .NE. NLEN) TEST = TEST + 1
-      TESTL = SECTOR*TEST
-      POS(ITAPE) = FWORD + TESTL
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SREW(ITAPE)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-      COMMON /POINTR/ POS(100)
-C
-C PLACE THE POINTER OF ITAPE AT THE BEGINNING
-C
-C
-C UPDATE THE POSITION ARRAY
-C
-      POS(ITAPE) = 1
-C
-C RETURN
 C
       RETURN
       END

@@ -178,6 +178,11 @@ C
       INCLUDE "inpt.inc"
       INCLUDE "results.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -296,88 +301,148 @@ C
          CALL GETAMPT (S1,S2)
          CALL MKGPP (S2,T2,BUF1,BUF2,GOO,GVV)
       ENDIF
-C
+
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
 C
-      IF (TEQ) CALL HOINTM (FOO,T1,T2,BUF1,BUF2,BUF3,HO)
-      IF (TEQ) CALL HVINTM (FVV,T1,T2,BUF1,BUF2,BUF3,HV)
+      IF (TEQ) THEN
+           CALL HOINTM (FOO,T1,T2,BUF1,BUF2,BUF3,HO)
+      ENDIF
+      IF (TEQ) THEN
+           CALL HVINTM (FVV,T1,T2,BUF1,BUF2,BUF3,HV)
+      ENDIF
       IF (NDIMT1.GT.0) THEN
          IF (TEQ) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
+          CALL XTIME(3,1,'T1EQNS                        ')
           CALL T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
+          CALL XTIME(3,2,'T1EQNS                        ')
          ELSE
           CALL T1EQNS (HOV,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
          ENDIF
       ENDIF
       CPUT1 = CPUT1 + CPUDELTA()
- 111  format (a,2f30.15)
+
+      
+
+ 111  format (a,I4,2f30.15)
       if (carith.and.debug) then
-C64B  write (iw,111)"ho",cdotc(nfoo,ho,1,ho,1)
-C64B  write (iw,111)"hv",cdotc(nfvv,hv,1,hv,1)
-C64B  write (iw,111)"hov",cdotc(ndimt1,hov,1,hov,1)
-C64B  write (iw,111)"s1",cdotc(ndimt1,s1,1,s1,1)
-      write (iw,111)"ho",zdotc(nfoo,ho,1,ho,1)
-      write (iw,111)"hv",zdotc(nfvv,hv,1,hv,1)
-      write (iw,111)"hov",zdotc(ndimt1,hov,1,hov,1)
-      write (iw,111)"s1",zdotc(ndimt1,s1,1,s1,1)
+      write (*,111)"ho",MYPROC,zdotc(nfoo,ho,1,ho,1)
+      write (*,111)"hv",MYPROC,zdotc(nfvv,hv,1,hv,1)
+      write (*,111)"hov",MYPROC,zdotc(ndimt1,hov,1,hov,1)
+      write (*,111)"s1",MYPROC,zdotc(ndimt1,s1,1,s1,1)
       elseif (debug) then
-C64B  write (iw,111)"ho",sdot(nfoo,ho,1,ho,1)
-C64B  write (iw,111)"hv",sdot(nfvv,hv,1,hv,1)
-C64B  write (iw,111)"hov",sdot(ndimt1,hov,1,hov,1)
-C64B  write (iw,111)"s1",sdot(ndimt1,s1,1,s1,1)
-      write (iw,111)"ho",ddot(nfoo,ho,1,ho,1)
-      write (iw,111)"hv",ddot(nfvv,hv,1,hv,1)
-      write (iw,111)"hov",ddot(ndimt1,hov,1,hov,1)
-      write (iw,111)"s1",ddot(ndimt1,s1,1,s1,1)
+      write (*,111)"ho",MYPROC,ddot(nfoo,ho,1,ho,1)
+      write (*,111)"hv",MYPROC,ddot(nfvv,hv,1,hv,1)
+      write (*,111)"hov",MYPROC,ddot(ndimt1,hov,1,hov,1)
+      write (*,111)"s1",MYPROC,ddot(ndimt1,s1,1,s1,1)
       endif
 C
-C  EVALUATE T2 EQUATIONS
+C  EVALUATE T2 INTERMEDIATES
 C
       IF (TEQ) THEN
          CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
          CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
          CALL AINTM (T1,T2,BUF1,BUF2,AZ)
+         CALL XTIME(10,1,'HINTM                         ')
          CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-         CPUINT = CPUINT + CPUDELTA()
+         CALL XTIME(10,2,'HINTM                         ')
+
+#if defined (VAR_MPI)
+
+C *******************
+C ** parallel case: the H-intermediate was partially calculated
+C ** on the separate slaves. In order to perform the H*T2
+C ** contraction we need the complete H array ==> we complete it
+C ** here and synchronize all the nodes. They then have the complete
+C ** H-array and this lengthy contraction can also be parallelized.
+C
+      IF (NMPROC .GT. 1) THEN
+C ... synchronization timing
+C       CALL XTIME(30,1,'HINTM synchronization         ')
+C       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C       CALL XTIME(30,2,'HINTM synchronization         ')
+
+        IF(NBUF3.LT.IVOVO(NREP+1)) 
+     &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
+        CALL XCOPY (NBUF3,A0,0,BUF3,1)
+
+C ... we collect the H array
+
+        CALL XTIME(31,1,'HINTM MPI_REDUCE (comm step)  ')
+        CALL MPI_REDUCE(H,BUF3,RCW*IVOVO(NREP+1),
+     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
+        IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+        CALL XTIME(31,2,'HINTM MPI_REDUCE (comm step)  ')
+        CALL XCOPY(RCW*IVOVO(NREP+1),BUF3,1,H,1)
+
+C ... and redistribute it
+
+        CALL XTIME(32,1,'HINTM MPI_BCAST  (comm step)  ')
+        CALL MPI_BCAST(H,RCW*IVOVO(NREP+1),MPI_DOUBLE_PRECISION,
+     &     MASTER,MPI_COMM_WORLD,IERR)
+        IF(IERR.GT.0) CALL QUIT('MPI_BCAST ERROR !')
+        CALL XTIME(32,2,'HINTM MPI_BCAST  (comm step)  ')
       ENDIF
+
+#endif
+
+      CPUINT = CPUINT + CPUDELTA()
+      ENDIF
+
 C
       if (carith.and.debug) then
-      write (iw,111)"go",zdotc(nfoo,ho,1,ho,1)
-      write (iw,111)"gv",zdotc(nfvv,hv,1,hv,1)
-      write (iw,111)"az",a2*a2*zdotc(ioooott(nrep+1),az,1,az,1)
-      write (iw,111)"h ",zdotc(ivovo(nrep+1),h,1,h,1)
+      write (*,111)"go",MYPROC,zdotc(nfoo,ho,1,ho,1)
+      write (*,111)"gv",MYPROC,zdotc(nfvv,hv,1,hv,1)
+      write (*,111)"az",MYPROC,a2*a2*zdotc(ioooott(nrep+1),az,1,az,1)
+      write (*,111)"h ",MYPROC,zdotc(ivovo(nrep+1),h,1,h,1)
       elseif (debug) then
-      write (iw,111)"go",ddot(nfoo,ho,1,ho,1)
-      write (iw,111)"gv",ddot(nfvv,hv,1,hv,1)
-      write (iw,111)"az",4.d0*ddot(ioooott(nrep+1),az,1,az,1)
-      write (iw,111)"h ",ddot(ivovo(nrep+1),h,1,h,1)
+      write (*,111)"go",MYPROC,ddot(nfoo,ho,1,ho,1)
+      write (*,111)"gv",MYPROC,ddot(nfvv,hv,1,hv,1)
+      write (*,111)"az",MYPROC,4.d0*ddot(ioooott(nrep+1),az,1,az,1)
+      write (*,111)"h ",MYPROC,ddot(ivovo(nrep+1),h,1,h,1)
       endif
 C
-C  INTERMEDIATES FORMED --- T2 EQUATIONS
+C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
+      CALL XTIME(12,1,'T2 EQNS                       ')
       CALL T2EQNS (T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
+      CALL XTIME(12,2,'T2 EQNS                       ')
       CPUT2 = CPUT2 + CPUDELTA()
+
+
 C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
 C
       if (carith.and.debug) then
-      write (iw,111)"s2",zdotc(ndimt2,s2,1,s2,1)
+      write (*,111)"s2",MYPROC,zdotc(ndimt2,s2,1,s2,1)
       elseif (debug) then
-      write (iw,111)"s2",ddot(ndimt2,s2,1,s2,1)
+      write (*,111)"s2",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
 C      
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
+      CALL XTIME(13,1,'BINTM                         ')
+      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
+      CALL XTIME(13,2,'BINTM                         ')
+
       if (carith.and.debug) then
-      write (iw,111)"s2 after bintm",zdotc(ndimt2,s2,1,s2,1)
+      write (*,111)"s2 after bintm",MYPROC,zdotc(ndimt2,s2,1,s2,1)
       elseif (debug) then
-      write (iw,111)"s2 after bintm",ddot(ndimt2,s2,1,s2,1)
+      write (*,111)"s2 after bintm",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
       CPU4V = CPU4V + CPUDELTA()
+C
+C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
+C
+C     CALL XTIME(35,1,'PARTS (sync before adding)    ')
+C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C     CALL XTIME(35,2,'PARTS (sync before adding)    ')
+      CALL XTIME(36,1,'PARTS adding partial T1/T2    ')
+      CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
+      CALL XTIME(36,2,'PARTS adding partial T1/T2    ')
 C
 #ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
@@ -392,13 +457,12 @@ C
       ENDIF
 #endif
 C
-C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
-C
-      CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
       if (carith.and.debug) then
-      write (iw,111)"s2 after parts",zdotc(ndimt2,s2,1,s2,1)
+      write (*,111)"s2 after parts",MYPROC,zdotc(ndimt2,s2,1,s2,1)
+      write (*,111)"s1 after parts",MYPROC,zdotc(ndimt1,s1,1,s1,1)
       elseif (debug) then
-      write (iw,111)"s2 after parts",ddot(ndimt2,s2,1,s2,1)
+      write (*,111)"s2 after parts",MYPROC,ddot(ndimt2,s2,1,s2,1)
+      write (*,111)"s1 after parts",MYPROC,ddot(ndimt1,s1,1,s1,1)
       endif
 C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
@@ -418,8 +482,10 @@ C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       IF (.NOT.FOCKSP) THEN
+         CALL XTIME(15,1,'DIISX                         ')
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+         CALL XTIME(15,2,'DIISX                         ')
 #ifdef MOD_FOCKSPCC
       ELSE
 C
@@ -467,7 +533,12 @@ C
 C
 C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
 C
+C     CALL XTIME(37,1,'PARTS (sync before sync)      ')
+C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
+C     CALL XTIME(37,2,'PARTS (sync before sync)      ')
+      CALL XTIME(38,1,'PARTS synchronizing           ')
       CALL PARTS (2,RMS,S1,S2,BUF1,BUF2)
+      CALL XTIME(38,2,'PARTS synchronizing           ')
 C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
@@ -578,6 +649,14 @@ C
 C---------------Description--------------------------------------------
 C
 C     Evaluate T1 or Lambda1 equations
+C     Here we have to take care of the fact that certain integral classes
+C     are now split over individual nodes. The corresponding contributions
+C     which are linear in the integrals are added at the end of the T1
+C     routines. Therefore we have to take care of calculating the 
+C     non-distributed contributions to the T1 amplitudes only on the
+C     master node in order to avoid double-counting in the PARTS routine !
+C     all direct VOVV/VVVV contributions and VOVV/VVVV contributions stemming 
+C     from intermediates have to be calculated on EACH node.
 C
 C---------------Routines called----------------------------------------
 C
@@ -611,11 +690,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      IF (MYPROC.NE.MASTER) THEN
-         CALL XCOPY (NDIMT1,A0,0,S1,1)
-         RETURN
-      ENDIF
-C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
@@ -625,18 +699,36 @@ C
       ELSE
          CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
+
+C------------------------------------------------------------------
+C If not master initialize S1 buffer with zero otherwise with F(A,I)
+C------------------------------------------------------------------
+      IF (MYPROC.NE.MASTER) THEN
+C-------------------------------
+C S(A,I) = 0.0
+C-------------------------------
+        CALL XCOPY (NDIMT1,A0,0,S1,1)
+      ELSE
 C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
-      CALL XCOPY (NDIMT1,FVO,1,S1,1)
-      CALL DELFCK ('VO','DD',S1)
+        CALL XCOPY (NDIMT1,FVO,1,S1,1)
+        CALL DELFCK ('VO','DD',S1)
+      ENDIF
+
+
 C--------------------------------
 C Terms specific for T1 equations
 C--------------------------------
       IF (TEQ) THEN
+C ********************
+C ** TASK SPLITTING **
+C ********************
+        IF (MYPROC.EQ.MASTER) THEN
 C------------------------------------------------------------
 C S(A,I) = S(A,I) + T(A,K) * [HOV(K,C) - 2 * F(K,C)] * T(C,I)
 C------------------------------------------------------------
+         CALL XTIME(4,1,' ** T1EQNS T*[HOV - F]*T      ')
          CALL XCOPY (NFVO,HOV,1,BUF1,1)
          IF (CARITH) CALL CONJUGA (NFVO,BUF1,1)
          CALL XAXPY (NFVO,-A2,FVO,1,BUF1,1)
@@ -653,15 +745,42 @@ C------------------------------------------------------------
      &                   A1,S1(OFF1),M)
             OFF1 = OFF1 + M * N * RCW
          ENDDO
+         CALL XTIME(4,2,' ** T1EQNS T*[HOV - F]*T      ')
+
+      ENDIF
+C ****************************************************
+C ** END OF TASK SPLITTING. Parallel execution      **
+C ****************************************************
+
 C-----------------------------------------------------------------
 C S(A,I) = S(A,I) + HOV(CK) * T2(A,C,I,K)
 C-----------------------------------------------------------------
+         CALL XTIME(5,1,' ** T1EQNS   HOV*T2(A,C,I,K   ')
          CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
      &                 MVO,JVOVO,JJVO,JJVO,T2,BUF1)
-         M = MVO(1)
-         K = MVO(1)
-         CALL XGEMV ('N',M,K,A1,BUF1,M,HOV,1,A1,S1,1)
+
+         K    = IDIST(1,3,1)
+         OFF1 = IDIST(2,3,1)
+         OFF2 = IDIST(3,3,1)
+         M    = MVO(1)
+         CALL XGEMV ('N',M,K,A1,BUF1(OFF1),M,HOV(OFF2),1,A1,S1,1)
+         CALL XTIME(5,2,' ** T1EQNS   HOV*T2(A,C,I,K   ')
+
+C .... old serial code ....
+C        M    = MVO(1)
+C        K    = MVO(1)
+C        CALL XGEMV ('N',M,K,A1,BUF1,M,HOV,1,A1,S1,1)
+
+
       ENDIF
+
+C ********************
+C ** TASK SPLITTING **
+C ********************
+
+      IF (MYPROC.EQ.MASTER) THEN
+
+      CALL XTIME(6,1,' ** T1EQNS   HV*T / T*HO      ')
 C-----------------------------------------------
 C S(A,I) = S(A,I) + HV(A,C) * T(C,I)
 C-----------------------------------------------
@@ -670,23 +789,34 @@ C-----------------------------------------------
 C S(A,I) = S(A,I) - T(A,K) * HO(K,I)
 C-----------------------------------------------
       CALL CNTRCT ('N','N',NV,NO,NO,-A1,T1,HO,A1,S1,NREP)
+      CALL XTIME(6,2,' ** T1EQNS   HV*T / T*HO      ')
+
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
+      CALL XTIME(7,1,' ** T1EQNS VOOO*TAU (+GET!)   ')
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF3)
       ELSE
          CALL XCOPY (NDIMT2,T2,1,BUF3,1)
       ENDIF
       CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,S1)
+      CALL XTIME(7,2,' ** T1EQNS VOOO*TAU (+GET!)   ')
+
+C ****************************************************
+C ** END OF TASK SPLITTING. THE COMMON STUFF STARTS **
+C ****************************************************
+
+      ENDIF
+
 C--------------------------------------------
-C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
+C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)   ! VOVV contributions !
 C--------------------------------------------
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
       ELSE
 C -------------------------------------------
-C TAU'(CD,IK) = L(CD,IK) +  G(C,B) * T(BD,IK)
+C TAU'(CD,IK) = L(CD,IK) +  G(C,B) * T(BD,IK)   <<<<<<------- LAMBDA EQNS
 C -------------------------------------------
          CALL GETAMPT (BUF1,BUF2)
          CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
@@ -696,10 +826,14 @@ C -------------------------------------------
      &                BUF2,BUF1)
          CALL XAXPY (NDIMT2,A1,T2,1,BUF1,1)
       ENDIF
-      CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)
+      CALL XTIME(8,1,' ** T1EQNS (VOVV contr.)     ')
+      CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
+      CALL XTIME(8,2,' ** T1EQNS (VOVV contr.)     ')
+
 C--------------------------------------
-C S(A,I) = S(A,I) - W(A,K,C,I) * T(C,K)
+C S(A,I) = S(A,I) - W(A,K,C,I) * T(C,K)    ! VOVO contributions
 C--------------------------------------
+      CALL XTIME(9,1,' ** T1EQNS VOVO * T(C,K)     ')
       IF (TEQ) THEN
          CALL GETVOVO (BUF1)
          CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
@@ -708,11 +842,21 @@ C--------------------------------------
       ELSE
          CALL XCOPY (JVOVO(2),H,1,BUF2,1)
       ENDIF
-      M = MVO(1)
-      K = MVO(1)
-      CALL XGEMV ('N',M,K,-A1,BUF2,M,T1,1,A1,S1,1)
+
+      M    = MVO(1)
+      K    = IDIST(1,3,1)
+      OFF1 = IDIST(2,3,1)
+      OFF2 = IDIST(3,3,1)
+      CALL XGEMV ('N',M,K,-A1,BUF2(OFF1),M,T1(OFF2),1,A1,S1,1)
+      CALL XTIME(9,2,' ** T1EQNS VOVO * T(C,K)     ')
+
+
+C     M    = MVO(1)
+C     K    = MVO(1)
+C     CALL XGEMV ('N',M,K,-A1,BUF2,M,T1,1,A1,S1,1)
+
 C------------------------------------
-C Terms specific for Lamba1 equations
+C Terms specific for Lambda1 equations
 C------------------------------------
       IF (.NOT.TEQ) THEN
 C----------------------------------------------------
@@ -828,15 +972,12 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
       complex*16 zdotc
       real*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
-      IF (MYPROC.NE.MASTER) THEN
-         CALL XCOPY (NDIMT2,A0,0,S2,1)
-         RETURN
-      ENDIF
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -847,19 +988,58 @@ C
       ELSE
          CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
+
+C---- fill arrays according to node...
+
+      IF (MYPROC.NE.MASTER) THEN
+         CALL XCOPY (NDIMT2,A0,0,S2,1)
+      ELSE
 C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
-      CALL GETVVOO (S2)
+        CALL GETVVOO (S2)
+      ENDIF
+
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
+      CALL XTIME(14,1,'TAU*AINTM contraction         ')
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
       ELSE
          CALL XCOPY (NDIMT2,T2,1,BUF1,1)
       ENDIF
-      CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
+
+      OFF3 = 1
+      DO IREP = 1, NREP
+        M    = NVVT(IREP)
+        N    = NOOT(IREP)
+        KLD  = NOOT(IREP)
+        K    = IDIST(1,5,IREP)
+        OFF1 = IDIST(2,5,IREP)
+        OFF2 = IDIST(3,5,IREP)
+        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,AZ(OFF2),KLD,
+     &              A1,S2(OFF3),M)
+        OFF3 = OFF3 + M * N * RCW
+      ENDDO
+
+C ***
+C *** original CNTRCT call in serial version
+C ***
+C *** CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
+C ***
+
+      CALL XTIME(14,2,'TAU*AINTM contraction         ')
+
+C ** we will not parallelize a summation over just one occupied index
+C ** if the system is small this can lead to zero batches. Only master
+C ** does the T2(AB,IK) * GO(K,J) contraction
+
+C ********************
+C ** TASK SPLITTING **
+C ********************
+
+      IF(MYPROC.EQ.MASTER) THEN
 C----------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
 C----------------------------------------------------------------
@@ -869,16 +1049,38 @@ C----------------------------------------------------------------
       CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF2,BUF1)
       CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+
+C     OFF3 = 1
+C     DO IREP = 1, NREP
+C        M    = NVVOT(IREP)
+C        N    = NO   (IREP)
+C        KLD  = NO   (IREP)
+C        K    = IDIST(1,7,IREP)
+C        OFF1 = IDIST(2,7,IREP)
+C        OFF2 = IDIST(3,7,IREP)
+C        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,GO(OFF2),KLD,
+C    &                A0,BUF2(OFF3),M)
+C        OFF3 = OFF3 + M * N * RCW
+C     ENDDO
+
+C ***************************
+C ** END OF TASK SPLITTING **
+C ***************************
+
+      ENDIF
+
+
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
 C-----------------------------------------------------------------------
+      CALL XTIME(26,1,' ** T2EQNS: VOVV*T1           ')
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
+         MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
   10     IF (TEQ) THEN
-            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
             CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
          ELSE
             CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
@@ -931,6 +1133,16 @@ C-----------------------------------------------------------------------
             GOTO 10
          ENDIF
  30    CONTINUE
+      CALL XTIME(26,2,' ** T2EQNS: VOVV*T1           ')
+
+C ********************
+C ** TASK SPLITTING **
+C ********************
+C ** here a VOOV dependent contribution (Term 7 in the paper) is to be
+C ** calculated only by the master
+
+      IF(MYPROC.EQ.MASTER) THEN
+
 C--------------------------------
 C Terms specific for T2 equations
 C--------------------------------
@@ -949,11 +1161,35 @@ C-------------------------------------------------------------------
 C        Integrals are now in VO,OOT format : combine with next term
 C-------------------------------------------------------------------
       ENDIF
-C----------------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ) - T1(A,K) *W(KB,IJ) ]
-C----------------------------------------------------------------------
+
+      ENDIF
+
+C ****************************
+C ** END OF TASK SPLITTING. **
+C ****************************
+C ** this contribution coming from the intermediate G(A,C) has to be
+C ** calculated on each node. The fact that G(A,C) contains LOCAL +
+C ** DISTRIBUTED parts as well is accounted for by the original calculation
+C ** of the G(A,C) array before entering T2EQNS
+
+C-------------------------------------------------
+C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
+C-------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
       CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
+
+C ** the contraction of G(A,C) with the T2 amplitudes now is in BUF1 !
+C ** these are the partial contributions available on EACH node
+
+
+C ***
+C ****** task splitting
+C ***
+      IF(MYPROC.EQ.MASTER) THEN
+
+C------------------------------------------------
+C S(AB,IJ) = S(AB,IJ) - PAB [ T1(A,K) *W(KB,IJ) ]
+C------------------------------------------------
       IF (TEQ) THEN
          CALL GETVOOO (BUF2)
          CALL DELINT ('VOOO','KDKK',BUF2,0,0,0)
@@ -964,36 +1200,71 @@ C----------------------------------------------------------------------
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
      &             BUF3,BUF2)
+
+C     OFF3 = 1
+C     DO IREP = 1, NREP
+C       M    = NV(IREP)
+C       N    = NVOOT(IREP)
+C       KLD  = NO(IREP)
+C       K    = IDIST(1,8,IREP)
+C       OFF1 = IDIST(2,8,IREP)
+C       OFF2 = IDIST(3,8,IREP)
+C       CALL XGEMM ('N','N',M,N,K,-A1,T1(OFF1),M,BUF2(OFF2),KLD,
+C    &              A1,BUF1(OFF3),M)
+C       OFF3 = OFF3 + M * N * RCW
+C     ENDDO
       CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
+
+
+C ***
+C *** end of task splitting
+C ***
+      ENDIF
+
+
       CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF1,BUF2)
       CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+
+
+C ** now the final H*T2 contraction. H is complete since we communicated
+C ** it already.
+
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
 C-----------------------------------------------------------------------
+
+      CALL XTIME(27,1,' ** T2EQNS: HINTM*T2          ')
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
       CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
-      OFF1 = 1
-      OFF2 = 1
+
       OFF3 = 1
-      DO IRP =1 , NREP
-         JRP = MULTB(IRP+NREP,1+NREP,2)
-         M = MVO(IRP)
-         N = MVO(JRP)
-         K = MVO(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,H(OFF1),M,BUF1(OFF2),K,
-     &               A0,BUF2(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
+      DO IREP = 1, NREP
+         JREP = MULTB(IREP+NREP,1+NREP,2)
+         M    = MVO(IREP)
+         N    = MVO(IREP)
+         KLD  = MVO(JREP)
+         K    = IDIST(1,4,JREP)
+         OFF1 = IDIST(2,4,JREP)
+         OFF2 = IDIST(3,4,JREP)
+         CALL XGEMM ('N','N',M,N,K,A1,H(OFF1),M,BUF1(OFF2),KLD,
+     &                A0,BUF2(OFF3),M)
          OFF3 = OFF3 + M * N * RCW
       ENDDO
+
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF2,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
-C------------------------------------
-C Terms specific for Lamba2 equations
-C------------------------------------
+      CALL XTIME(27,2,' ** T2EQNS: HINTM*T2          ')
+
+
+
+C==========================================================
+C============= L A M B D A   E Q U A T I O N S ============
+C==========================================================
+
+
       IF (.NOT.TEQ) THEN
 C-------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * V(KL,CD) * L(CD,IJ)
@@ -1094,12 +1365,18 @@ C
       INCLUDE "inpt.inc"
       INCLUDE "results.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+
 C
 C---------------Local variables--------------------------------------
 C
       REAL*8 EPSIJK,EIJKABC,VMIN(2)
       REAL*8 CPUDELTA,CPU0,CPU1,CPU2,CPU3,CPUTOT
-C
+
 C---------------Executable code--------------------------------------
 C
 C     Initialize the timing.
@@ -1110,11 +1387,10 @@ C
       CPU2 = D0
       CPU3 = D0
 C
-
       ET1 = D0
       ET2 = D0
       ET3 = D0
-C
+
       CALL GETVOOO(VOOO)
       CALL GETVVOO(VVOO)
 C
@@ -1122,9 +1398,19 @@ C     Bring arrays in correct order
 C
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,T2,T2S)
       CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,T2,T2T)
+
+C call SRT23 with appropriate arguments
+
+#if defined (VAR_MPI)
+      CALL SRT23 (NREP,MULTB,NVO,NV,NO,NT3VVT,NT3VVVT,KT3VVVOT,
+     &            LLT3VVVT,BUF4,VVVO,NVVVOTMX)
+      IF (CARITH) CALL CONJUGA (KT3VVVOT(NREP+1),VVVO,1)
+#else
       CALL SRT23 (NREP,MULTB,NVO,NV,NO,NVVT,NVVVT,KVVVOT,LLVVVT,
-     &            BUF4,VVVO)
+     &            BUF4,VVVO,NVVVOTMX)
       IF (CARITH) CALL CONJUGA (KVVVOT(NREP+1),VVVO,1)
+#endif
+
 C
 C     Put TAU3 in block BUF4 for use in evaluating -T correction
 C
@@ -1167,9 +1453,15 @@ C
       IJOFF3 = IVVOOTT(IJREP) + (IJ-1) * NVVT(IJREP)
       IKOFF3 = IVVOOTT(IKREP) + (IK-1) * NVVT(IKREP)
       JKOFF3 = IVVOOTT(JKREP) + (JK-1) * NVVT(JKREP)
+
       IOFF1  = KVVVOT(IREP) + (I-1) * NVVVT(IREP)
       JOFF1  = KVVVOT(JREP) + (J-1) * NVVVT(JREP)
       KOFF1  = KVVVOT(KREP) + (K-1) * NVVVT(KREP)
+
+      IT3OFF1  = KT3VVVOT(IREP) + (I-1) * NT3VVVT(IREP)
+      JT3OFF1  = KT3VVVOT(JREP) + (J-1) * NT3VVVT(JREP)
+      KT3OFF1  = KT3VVVOT(KREP) + (K-1) * NT3VVVT(KREP)
+
       IOFF2  = LOVVOT(IREP) + (I-1) * NOVVT(IREP)
       JOFF2  = LOVVOT(JREP) + (J-1) * NOVVT(JREP)
       KOFF2  = LOVVOT(KREP) + (K-1) * NOVVT(KREP)
@@ -1180,33 +1472,56 @@ C
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       M = NV(AREP)
       N = NVVT(BCREP)
+      NN = NT3VVT(BCREP)
+      OFF2 = M * IDIST(1,2,BCREP) * RCW
 C-------------------------------------------
 C U'(ABC) = T(A,E:IJ) * W(E,BC:K)
 C-------------------------------------------
       EREP = MULTB(KREP,BCREP+NREP,2)
       O = NV(EREP)
       AEIJ = (IJOFF1 + IIVV(AREP,EREP)) * RCW + 1
-      EBCK = (KOFF1 + LLVVVT(EREP,BCREP)) * RCW + 1
-      CALL XGEMM ('N','N',M,N,O,A1,T2S(AEIJ),M,
-     &            VVVO(EBCK),O,A1,BUF1(OFF1),M)
+      EBCK = (KT3OFF1 + LLT3VVVT(EREP,BCREP)) * RCW + 1
+      CALL XGEMM ('N','N',M,NN,O,A1,T2S(AEIJ),M,
+     &     VVVO(EBCK),O,A1,BUF1(OFF1+OFF2),M)
 C-------------------------------------------
 C U'(ABC) = U'(ABC) + T(A,E:JK) * W(E,BC:I)
 C-------------------------------------------
       EREP = MULTB(IREP,BCREP+NREP,2)
       O = NV(EREP)
       AEJK = (JKOFF1 + IIVV(AREP,EREP)) * RCW + 1
-      EBCI = (IOFF1 + LLVVVT(EREP,BCREP)) * RCW + 1
-      CALL XGEMM ('N','N',M,N,O,A1,T2S(AEJK),M,
-     &            VVVO(EBCI),O,A1,BUF1(OFF1),M)
+      EBCI = (IT3OFF1 + LLT3VVVT(EREP,BCREP)) * RCW + 1
+      CALL XGEMM ('N','N',M,NN,O,A1,T2S(AEJK),M,
+     &     VVVO(EBCI),O,A1,BUF1(OFF1+OFF2),M)
 C-------------------------------------------
 C U'(ABC) = U'(ABC) - T(A,E:IK) * W(E,BC:J)
 C-------------------------------------------
       EREP = MULTB(JREP,BCREP+NREP,2)
       O = NV(EREP)
       AEIK = (IKOFF1 + IIVV(AREP,EREP)) * RCW + 1
-      EBCJ = (JOFF1 + LLVVVT(EREP,BCREP)) * RCW + 1
-      CALL XGEMM ('N','N',M,N,O,-A1,T2S(AEIK),M,
-     &            VVVO(EBCJ),O,A1,BUF1(OFF1),M)
+      EBCJ = (JT3OFF1 + LLT3VVVT(EREP,BCREP)) * RCW + 1
+      CALL XGEMM ('N','N',M,NN,O,-A1,T2S(AEIK),M,
+     &     VVVO(EBCJ),O,A1,BUF1(OFF1+OFF2),M)
+
+C ** here the distributed VOVV integrals are used. we 
+C ** communicate the partial U(ABC) and proceed on one 
+C ** node only. BUF1, BUF2 and BUF3 have the same size so we
+C ** can uns them as send/receive buffers here
+
+#if defined (VAR_MPI)
+      IF(NMPROC.GT.1) THEN
+        CALL MPI_REDUCE(BUF1(OFF1),BUF2(1),RCW*M*N,
+     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
+     &    MPI_COMM_WORLD,IERR)
+        CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
+      ENDIF
+#endif
+
+C *******************
+C *** TASK SPLITTING
+C *******************
+
+      IF(MYPROC.EQ.MASTER) THEN
+
 C-------------------------------------------
 C U'(ABC) = U'(ABC) + W(A,L:IJ) * T(L,BC:K)
 C-------------------------------------------
@@ -1235,11 +1550,24 @@ C-------------------------------------------
       CALL XGEMM ('N','N',M,N,O,-A1,VOOO(ALIK),M,
      &            T2T(LBCJ),O,A1,BUF1(OFF1),M)
 C
+C ************************************
+C **** end of task splitting 
+C **** offsets have to be corrected
+C ************************************
+      ENDIF
+
       OFF1 = OFF1 + M * N * RCW
       ENDDO
 C
       CPU2 = CPU2 + CPUDELTA()
 C
+C ** the U array is complete on the master node. 
+C ** we can permute the indices and compute on the
+C ** master only...
+
+
+      IF(MYPROC.EQ.MASTER) THEN
+
 C-------------------------------------
 C U(ABC) = U'(ABC) - U'(BAC) + U'(CAB)
 C-------------------------------------
@@ -1478,6 +1806,11 @@ C-----------------------------
 C
       CPU3 = CPU3 + CPUDELTA()
 C
+
+C ******** end of task splitting *******
+      ENDIF
+C ******** end of task splitting *******
+
       ENDDO
       ENDDO
       ENDDO
@@ -2148,6 +2481,7 @@ C
       INCLUDE "param.inc"
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2156,19 +2490,44 @@ C
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
+
+C ** TAU now reorganised in BUF1: NV*NVOOT
+
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF3,BUF1)
       CALL GETVOOO (BUF3)
       CALL DELINT ('VOOO','DKDD',BUF3,0,0,0)
+
 C     --------------------------------
 C     Sort from 12,34 to 134,2 (VOO,O)
 C     --------------------------------
       CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           BUF3,BUF2)
+
+C ** VOOO integrals now reorganised in BUF2: NVOOT * NO
+
 C     ------------------------
 C     V(K,L,C,I) = V*(C,I,K,L)
 C     ------------------------
       IF (CARITH) CALL CONJUGA (LOVOOT(NREP+1),BUF2,1)
+
+C     OFF3 = 1
+C     DO IREP = 1, NREP
+C       M    = NV(IREP)
+C       N    = NO(IREP)
+C       KLD  = NVOOT(IREP)
+C       K    = IDIST(1,6,IREP)
+C       OFF1 = IDIST(2,6,IREP)
+C       OFF2 = IDIST(3,6,IREP)
+C       CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),KLD,
+C    &              A1,S1(OFF3),M)
+C       OFF3 = OFF3 + M * N * RCW
+C     ENDDO
+
+C***
+C*** original CNTRCT call in serial version
+C***
+C
       CALL CNTRCT ('N','N',NV,NO,NVOOT,A1,BUF1,BUF2,A1,S1,NREP)
 C
       RETURN
@@ -2217,8 +2576,11 @@ C--------------------------------------------
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         NINT = NBUF3/NVO(IRP)  ! maximum # of NVO batches
+
+C ** NINT is updated on exit of GETVOVV !
+
+  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,NINT)
          CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
          IK = 0
          DO 20 KREP = 1, NREP
@@ -2302,22 +2664,38 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 MFLOP,MFLOPS
+      REAL*8 MFLOP,MFLOPS,DRCW2,DRCW,DNVVT,DNOOT,DNVO,DNVOOT,DNV,DNO
 C
 C---------------Executable code--------------------------------------
 C
       IF (CPU4V.EQ.0.0) RETURN
       MFLOP = 0.D0
 C
+      DRCW2 = DBLE(2*RCW**2)
+      DRCW  = DBLE(RCW)
       DO IRP = 1, NREP
-         MFLOP = MFLOP + NVVT(IRP) * NVVT(IRP) * NOOT(IRP) * 2 * RCW**2
-         MFLOP = MFLOP + NVVT(IRP) * NVO (IRP) * NOOT(IRP) * 2 * RCW**2
-         MFLOP = MFLOP + NVOOT(IRP) * NV (IRP) * NO  (IRP) * 2 * RCW**2
-         MFLOP = MFLOP + NVVT(IRP) * NOOT(IRP) * RCW
+
+         DNVVT = DBLE(NVVT(IRP))
+         DNOOT = DBLE(NOOT(IRP))
+         DNVO  = DBLE(NVO(IRP))
+         DNVOOT= DBLE(NVOOT(IRP))
+         DNV   = DBLE(NV(IRP))
+         DNO   = DBLE(NO(IRP))
+
+         MFLOP = MFLOP + DNVVT  * DNVVT * DNOOT * DRCW2
+         MFLOP = MFLOP + DNVVT  * DNVO  * DNOOT * DRCW2
+         MFLOP = MFLOP + DNVOOT * DNV   * DNO   * DRCW2
+         MFLOP = MFLOP + DNVVT  * DNOOT * DRCW
+
+C        MFLOP = MFLOP + NVVT(IRP) * NVVT(IRP) * NOOT(IRP) * 2 * RCW**2
+C        MFLOP = MFLOP + NVVT(IRP) * NVO (IRP) * NOOT(IRP) * 2 * RCW**2
+C        MFLOP = MFLOP + NVOOT(IRP) * NV (IRP) * NO  (IRP) * 2 * RCW**2
+C        MFLOP = MFLOP + NVVT(IRP) * NOOT(IRP) * RCW
+
       ENDDO 
 C
-      MFLOP = MFLOP * 0.000001D0
-      MFLOPS = MFLOP * NIT / CPU4V
+      MFLOP = MFLOP * 0.000001
+      MFLOPS = MFLOP * DBLE(NIT) / CPU4V
       WRITE (IW,1000) MFLOP,MFLOPS
 C
  1000 FORMAT (/' Performance of routine BINTM (largest contraction)'

@@ -1083,7 +1083,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT23 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
-     &                  OFF,OFF1,BUF1,BUF2)
+     &                  OFF,OFF1,BUF1,BUF2,NVVVOTMX)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1103,7 +1103,7 @@ C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
-      INTEGER NTRIPL(NREP)
+      INTEGER NTRIPL(NREP),IVOVVT(NREP+1)
       INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
@@ -1115,7 +1115,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
-      INTEGER ISTART,NINT
+      INTEGER ISTART,NINT,MINT
 C
 C---------------Executable code--------------------------------------
 C
@@ -1126,7 +1126,10 @@ C
        N = NPAIR2(KLREP)
        ISTART = 0
        NINT = N
-       CALL GETVOVV (IJREP,ISTART,NINT,DONE,BUF1)
+       MINT=NVVVOTMX/M
+       CALL GETVOVV (IJREP,ISTART,NINT,DONE,BUF1,MINT)
+       IF(.NOT.DONE) CALL 
+     > QUIT (' SRT23: IRREP BATCH TOO LARGE FOR INCORE TRIPLES')
        CALL DELINT ('VOVV','DKKK',BUF1,IJREP,ISTART,NINT)
        IJ = 1
        DO 10 JREP = 1, NREP
@@ -1385,23 +1388,32 @@ C---------------Common Blocks--------------------------------------
 C
       INCLUDE "complex.inc"
       INCLUDE "param.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       REAL*8 TVAL(2)
+      DATA TVAL /2*0.0D0/
+C ** control variable for counting upwards to the value of KLSTAR
+      INTEGER KCO
 C
 C---------------Executable code--------------------------------------
 C
+      DONE=.FALSE.
       DO 10 KLREP = 1, NREP
        IF (IJPAIR(KLREP).EQ.0) GOTO 10
        IJKL = 1
        KL = 0
+       KCO = 0
+C ** IJPAIR contains the length of the NVO batch
        KLMAX = NBUF1 / IJPAIR(KLREP)
        KLSTAR = 0
-       KLINCR = KLMAX
+
+C ** KLINCR is updated on exit of GETVOVV. pure output parameter !
+
        IF (.NOT.USEDZ) THEN
-          CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+          CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1,KLMAX)
           CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
        ELSE
           CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
@@ -1413,7 +1425,14 @@ C
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO 40 K = KMIN, KFIE(KREP)
+
+          IF(KCO.LT.KLSTAR) THEN
+            KCO = KCO + 1
+            GOTO 40
+          ENDIF
+
           KL = KL + 1
+ 
           IF (KL.EQ.KLINCR+1) THEN
 C -----------------------
 C We need the next buffer
@@ -1421,13 +1440,19 @@ C -----------------------
              KLSTAR = KLSTAR + KLINCR
              KLINCR = KLMAX
              IF (.NOT.USEDZ) THEN
-                CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
-                CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
+                IF(.NOT.DONE) THEN
+                  CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1,KLMAX)
+                  CALL DELINT ('VOVV','KDDD',BUF1,
+     >                         KLREP,KLSTAR,KLINCR)
+                ELSE
+                  GOTO 10
+                ENDIF
              ELSE
                 CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
              ENDIF
              KL = 1
              IJKL = 1
+             KCO = KLSTAR
           ENDIF
           DO 50 JREP = 1, NREP
            IREP = MULTB(JREP,KLREP+NREP,2)
@@ -1443,6 +1468,11 @@ C -----------------------
            IL0   = IL0 * RCW + 1
            DO 60 J = 1, JFIE(JREP)
             IF (LJREP.EQ.1) THEN
+C              DO IX=1,IFIE(IREP)
+C                GV(IK0+IX-1)=GV(IK0+IX-1)+T1(LJ)*BUF1(IJKL+IX-1)
+C     write(*,'(A,3I3,3I6,3F30.15)') '**',KLREP,K,L,IK0+IX-1,LJ,
+C    >  IJKL+IX-1,GV(IK0+IX-1),T1(LJ),BUF1(IJKL+IX-1)
+C              ENDDO
                CALL XAXPY (IFIE(IREP),T1(LJ),BUF1(IJKL),1,GV(IK0),1)
             ENDIF
             IF (KJREP.EQ.1) THEN 

@@ -42,7 +42,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      IF (MYPROC.NE.MASTER) RETURN
 C
 C-------------------------------------------
 C (0,1) Sector
@@ -212,6 +211,7 @@ C
       INCLUDE "../complex.inc"
       INCLUDE "../symm.inc"
       INCLUDE "../ccpar.inc"
+      INCLUDE "../files.inc"
 C
 C---------------Local variables -----------------------------------
       PARAMETER (NDIMH=30,NDIMH2=NDIMH*NDIMH)
@@ -335,10 +335,10 @@ c
        endif
        IOFF=IOFF+NDT2*RCW
       if (ierr.ne.0) then                
-	write (*,'('' rg ierr='',i4)') ierr
+	write (IW,'('' rg ierr='',i4)') ierr
 	call quit('eneru')
       endif
-      if (ipr.gt.0) write (*,8300) tit,IRP,(ev(i),i=1,ndt)
+      if (ipr.gt.0) write (IW,8300) tit,IRP,(ev(i),i=1,ndt)
 8300  format (//1x,'Diagonalization of ',a40,' irrep =',i2/
      &' Energies in atomic units:'
      &,(/4F20.12))
@@ -351,9 +351,9 @@ c   normalize
       FNOR = A1 / DSQRT(FNOR)
       CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
       IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-      if (ipr.gt.0) write (*,8400) i,ev(i),(vec(ivec+j-1),j=1,ndt)
+      if (ipr.gt.0) write (IW,8400) i,ev(i),(vec(ivec+j-1),j=1,ndt)
       if (CARITH.and.ipr.gt.0) 
-     1            write (*,8401) i,evi(i),(veci(ivec+j-1),j=1,ndt)
+     1            write (IW,8401) i,evi(i),(veci(ivec+j-1),j=1,ndt)
 8400  format (/1x,'Renergy',i3,1h:,F20.12,' Real Vector:',/
      1 (1x,6f12.7))
 8401  format ('Ienergy',i3,1h:,F20.12,' Imag Vector:',

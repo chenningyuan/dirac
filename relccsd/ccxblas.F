@@ -50,7 +50,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER N,INCX,INCY
-      REAL*8 A,X,Y
+      REAL*8 A,X(*),Y(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -132,7 +132,7 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*1 TRANSA,TRANSB
       INTEGER M,N,K,LDA,LDB,LDC
-      REAL*8 ALPHA,BETA,A,B,C
+      REAL*8 ALPHA,BETA,A(*),B(*),C(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -185,7 +185,7 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*1 TRANS
       INTEGER M,N,LDA,INCX,INCY
-      REAL*8 ALPHA,BETA,A,X,Y
+      REAL*8 ALPHA,BETA,A(*),X(*),Y(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -230,7 +230,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER N,INCX
-      REAL*8 A,X
+      REAL*8 A,X(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -272,7 +272,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER N,INCX
-      REAL*8 X
+      REAL*8 X(*)
       COMPLEX*16 YSUM,ZSUM,CSUM
 C
 C---------------Common Blocks--------------------------------------

@@ -222,16 +222,20 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV)
+      SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV,MINT)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
-C     Get VOVV part of two-electron integrals
-C     Representation 			IREP
-C     Start address of integrals 	ISTART 
-C     Number of integrals in batch 	NINT
+C     Get VOVV part of two-electron integrals in the
+C     Representation                        IREP
+C     with start address of integrals       ISTART (updated)
+C     Number of integrals in batch          NINT (updated)
+C     if there are read all in a batch      DONE=.TRUE.
+C     Buffer:                               VVOVV(*)
+C     Maximum number of VO batches that can
+C     be buffered:                          MINT
 C     
 C
 C---------------Routines called----------------------------------------
@@ -258,8 +262,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=4096)
        INTEGER IOBUFFER(NIOBUF)
-       REAL*8 RDUM
-       EQUIVALENCE (RDUM,IOBUFFER)
+       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -269,22 +272,21 @@ C
       ENDIF
 C
       DONE = .FALSE.
-      MTOT = NVO(IREP)
-      NTOT = NVVT(IREP)
-      NINT = MIN0(NINT,NTOT-ISTART)
-C
-C     Calculate absolute starting address
-C
-      JSTART = IVOVVT(IREP) + ISTART * MTOT
-      JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
-C
+      MTOT = NVO(IREP)     ! one (VV)_ij batch has length NVO
+      ISTART = MAX0(ISTART,IDIST(1,2,IREP))
+      NTOT = IDIST(2,2,IREP)     ! local # of VO batches in this IRREP
+      NINT = MIN0(MINT,NTOT-ISTART)  ! # of batches which will actually be read
+      JSTART = IDIST(5,2,IREP)      ! compute relative local offset
+      JSTART = JSTART + (ISTART-IDIST(1,2,IREP)) * MTOT
+
 C     Read partial batch from first record
 C     JINT : Total number of integrals to be read
 C     JINT1: Number of integrals of previous batch on first record
 C     JINT2: Number of integrals of current batch on first record
 C     JINT3: Total number of integrals on first record
 C
+      JINT = MTOT * NINT
+      JSEC = (JSTART / MINBUF) * MINSEC + 1
       JINT1 = MOD (JSTART,MINBUF)
       JINT2 = 0
       IF (JINT1.NE.0) THEN
@@ -347,8 +349,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=4096)
        INTEGER IOBUFFER(NIOBUF)
-       REAL*8 RDUM
-       EQUIVALENCE (RDUM,IOBUFFER)
+       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -362,11 +363,11 @@ C     nodes for parallel runs. Take only the part that is on our node
 C
       DONE = .FALSE.
       MTOT = NVVT(IREP)
-      ISTART = MAX0(ISTART,IDIST(1,2,IREP))
-      NTOT = IDIST(2,2,IREP)
+      ISTART = MAX0(ISTART,IDIST(1,1,IREP))
+      NTOT = IDIST(2,1,IREP)
       NINT = MIN0(MINT,NTOT-ISTART)
-      JSTART = IDIST(5,2,IREP)
-      JSTART = JSTART + (ISTART-IDIST(1,2,IREP)) * MTOT
+      JSTART = IDIST(5,1,IREP)
+      JSTART = JSTART + (ISTART-IDIST(1,1,IREP)) * MTOT
 C
 C     Read partial batch from first record
 C     JINT : Total number of integrals to be read
@@ -436,8 +437,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=2048)
        INTEGER IOBUFFER(NIOBUF)
-       REAL*8 RDUM
-       EQUIVALENCE (RDUM,IOBUFFER)
+       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -523,8 +523,7 @@ C---------------Local variables--------------------------------------
 C
        PARAMETER (NIOBUF=2048)
        INTEGER IOBUFFER(NIOBUF)
-       REAL*8 RDUM
-       EQUIVALENCE (RDUM,IOBUFFER)
+       DATA IOBUFFER /NIOBUF*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -602,7 +601,7 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
-      DATA BUFF /RSRCLEN*0/       ! compiler bug on SGI ! => array init.
+      DATA BUFF /RSRCLEN*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -668,6 +667,7 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
+      DATA BUFF /RSRCLEN*0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -706,75 +706,4 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DISVVVV
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Set up parallel distribution of VVVV part of 2-electron integrals
-C     Stored in IDIST (ccpar.inc)
-C
-C     IOFF counts number of NVVT-sized batches on this node and irrep
-C     JOFF points to the starting address in the full integral list
-C     KOFF points to the relative starting address in the node integral list
-C
-C     JOFF and KOFF can be used to go from the absolute indexing to
-C     the relative indexing. In both cases the begin is set at zero (last
-C     integral of the previous block) and the end to the last integral in
-C     the block
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-C---------------Common Blocks--------------------------------------
-C
-      INCLUDE "symm.inc"
-      INCLUDE "files.inc"
-      INCLUDE "ccpar.inc"
-C
-C---------------Local variables--------------------------------------
-C
-C---------------Executable code--------------------------------------
-C
-      KOFF = 0
-      DO IREP = 1, NREP
-         MTOT = NVVT(IREP)
-         NTOT = NVVT(IREP)
-         NBTCH = NTOT / NMPROC
-         NREST = MOD(NTOT,NMPROC)
-         IOFF = 0
-         DO I = 1, NMPROC
-C
-C           Calculate absolute start address of this batch
-C
-            JOFF = IVVVVTT(IREP) + IOFF * MTOT
-C
-C           Create even distribution, the higher nodes get the remains
-C
-            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
-C
-C           We need this information for our own process
-C
-            IF (I.EQ.MYPROC+1) THEN
-               IDIST(1,2,IREP) = IOFF
-               IDIST(2,2,IREP) = IOFF + NBTCH
-               IDIST(3,2,IREP) = JOFF
-               IDIST(4,2,IREP) = JOFF + NBTCH * MTOT
-               IDIST(5,2,IREP) = KOFF
-               IDIST(6,2,IREP) = KOFF + NBTCH * MTOT
-               KOFF = KOFF + NBTCH * MTOT
-            ENDIF
-            IOFF = IOFF + NBTCH
-         ENDDO
-      ENDDO
-C
-      NV6PAR =  KOFF
-C
-      RETURN
-      END
+

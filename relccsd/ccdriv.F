@@ -389,11 +389,13 @@ C
       IN = IUNIN
       IW = IUNUT
       WRITE (IW,1011) MYPROC+1,NMPROC
+
 C
       CALL CCHEADER
 C
 C     Initialize the timing.
 C
+      CALL XTIME(1,0,'')
       CALL CPUUSED(CPU0)
       CPU1 = CPU0
       CPUI = 0
@@ -476,7 +478,8 @@ C     -------------
 C
       CALL CCDINI
 C
-C  Set up symmetry tables
+C     Set up symmetry tables and parallel distribution arrays
+C     -------------------------------------------------------
 C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
      &             .FALSE.,.TRUE.)
@@ -498,6 +501,7 @@ C
 #endif
 C
 C     Check the memory requirements of the active modules
+C     ---------------------------------------------------
 C
       ICALC = 1
       ALLOC = .FALSE.
@@ -508,10 +512,12 @@ C
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
      &             NSP,IREPSP,IREPSPI)
       IF (DOSORT) MXCORR = MAX0(MXCORR,MXCORR1)
+C     WRITE(IW,1015) 'CCSETI',MXCORR1,MXCORR
 
       MXCORR1 = 0
       CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
       IF (DOENER) MXCORR = MAX0(MXCORR,MXCORR1)
+C     WRITE(IW,1015) 'CCENER',MXCORR1,MXCORR
 C
       MXCORR1 = 0
       CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
@@ -532,6 +538,10 @@ C
       IF (DOFSPC) MXCORR = MAX0(MXCORR,MXCORR1)
 #endif
 C
+C MXCORR is a cumulative maximum of individual memory requirements
+C and MAXCOR is the fixed maximum of core memory available on this
+C node. ===> if any subroutine would need more core memory we quit.
+
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
          MXCORR = MXCORR+800*1024
@@ -546,7 +556,7 @@ C
          CALL QUIT("INCREASE MWORD")
       ENDIF
 C
-C  Allocate the memory
+C  Allocate the memory and check if it is a standalone version
 C
 #if defined (CC_ALONE)
       IERR = 0
@@ -600,8 +610,10 @@ C
       KFREE = 1
       LFREE = MXCORR
 C
+      CALL XTIME(1,1,'Sorting of integrals          ')
       IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,MREMAIN,EPS,
      &            NSP,IREPSP,IREPSPI)
+      CALL XTIME(1,2,'Sorting of integrals          ')
       CALL CPUUSED(CPU2)
       CPUS = CPUS + CPU2 - CPU1
       CPU1 = CPU2
@@ -656,8 +668,9 @@ C
 C
       CALL CCSUMM
 C   
-C     Print timings
+C     Print timings (second XTIME parameter has to be 4)
 C
+      CALL XTIME(1,4,'')
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
       CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
@@ -699,6 +712,7 @@ C
      &/' Untimed parts :',T30,F12.3,' seconds'
      &/' Total time in CC driver :',T30,F12.3,' seconds')
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
+ 1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -732,6 +746,7 @@ C
       INCLUDE "symm.inc"
       INCLUDE "freeze.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -773,6 +788,9 @@ C
          NOVVT(IREP) = 0
          NOOOT2(IREP) = 0
          NVVVT2(IREP) = 0
+C ** additional arrays for parallel triples
+         NT3VVT(IREP) = 0
+         NT3VVVT(IREP) = 0
       ENDDO
 C
 C     Convert input information to abelian subgroup
@@ -1070,6 +1088,9 @@ C
          ENDDO
       ENDDO
 C
+C set up number of Fock matrix elements NFOO, NFVO, NFVV
+C and maximum number of amplitudes NDIMT1, NDIMT2
+C
       NFOO = MOO(1)
       NFVO = MVO(1)
       NFVV = MVV(1)
@@ -1104,6 +1125,15 @@ C
       IVVVVTT(1) = 0
       IVVOO  (1) = 0
       IVVOOT (1) = 0
+C
+C setting up the totally symmetric XXXX arrays. IMPORTANT:
+C if we look at <VV||VV> the product of all four ireps has to be
+C totally symmetric. due to construction the NXX(T) arrays are either
+C starred or unstarred and the product NXX(T) * NXX(T) always corresponds
+C to GAMMA* * GAMMA = A only in ABELIAN symmetries !!!
+C so a further distinction and check for total symmetry is not necessary !!
+C ==> therefore the IXXXX(TT) arrays contain the offsets of nonvanishing
+C totally symmetric integrals.
 C
       NVVVOTMX = 1
       DO IREP = 1, NREP
@@ -1202,6 +1232,55 @@ C
       DO IJKREP = 1, NREP
       IF (IVVVT(NREP+1,IJKREP).GT.IVVVTMX) IVVVTMX=IVVVT(NREP+1,IJKREP)
       ENDDO
+
+C ** here all symm arrays are set up and we can call the 
+C ** parallel distribution list generator
+
+      CALL DISLIST
+
+C ** set up the remaining arrays for the parallel triples
+
+      DO IREP=1,NREP
+        NT3VVT(IREP)=IDIST(2,2,IREP)-IDIST(1,2,IREP)
+      ENDDO
+
+      DO IJREP = 1,NREP
+        DO KREP = 1,NREP
+          IJKREP = MULTB(KREP,IJREP+NREP,2)
+          LLT3VVVT(KREP,IJREP)=NT3VVVT(IJKREP)
+          NT3VVVT(IJKREP)=NT3VVVT(IJKREP) + NT3VVT(IJREP) * NV(KREP)
+        ENDDO
+      ENDDO
+C
+      KT3VVVOT(1)=0
+      DO IREP=1,NREP
+        KT3VVVOT(IREP+1) = KT3VVVOT(IREP) + NT3VVVT(IREP)*NO(IREP)
+      ENDDO
+C
+C ==> DEBUG <==
+C
+C     WRITE(IW,*) '== triples array comparison =='
+C     DO IREP=1,NREP
+C       write(iw,*) 'irep,nvvt,nt3vvt:',irep,nvvt(irep),nt3vvt(irep)
+C     ENDDO
+C     DO IREP=1,NREP
+C       write(iw,*) 'irep,nvvvt,nt3vvvt:',
+C    &               irep,nvvvt(irep),nt3vvvt(irep)
+C     ENDDO
+C     DO IREP=1,NREP+1
+C       write(iw,*) 'irep,kvvvot,kt3vvvot:',
+C    &               irep,kvvvot(irep),kt3vvvot(irep)
+C     ENDDO
+C     DO IREP=1,NREP
+C     DO JREP=1,NREP
+C       write(iw,*) 'irep,jrep,llvvvt(i,j),llt3vvvt(i,j):',
+C    &    irep,jrep,llvvvt(irep,jrep),llt3vvvt(irep,jrep)
+C     ENDDO
+C     ENDDO
+      
+C----------------------------------------------
+C----- F O C K   S P A C E   A R R A Y S ------
+C----------------------------------------------
 C
 C     Make the dimension and pointer arrays need in Fock space calcns.
 C     Like in the CCSD(T) calculations we calculate only the arrays
@@ -1413,9 +1492,10 @@ C
       CALL MEMOPT('REAL',V3A,NV3*RCW,CC,KFREE,LFREE,ALLOC)
       MXCORR = MAX0(MXCORR,KFREE)
 C
-C     We cannot reuse the memory when the bound checking is active
-C     Here is room for improvement if the memory requirements become
-C     large for this step. Start after VVOO arrays.
+C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
+C     parts of the above arrays are not needed anymore and could be used
+C     for buffering the VOVV and VVVV integrals as well. but this is not
+C     a critical shortage of memory so far.
 C
 C     The maximum necessary size is
 C
@@ -1427,6 +1507,9 @@ C
 C     The remaining space is
 C
       NVF = (LFREE-4) / (2 * RCW )
+C
+C  Determine number of available buffers with respect to free memory
+C  -----------------------------------------------------------------
 C
       IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
@@ -1507,6 +1590,7 @@ C
       INCLUDE "eqns.inc"
       INCLUDE "results.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1680,11 +1764,13 @@ C
          IMSTAT(5) = 2
          CALL CCDUMP
 C
+         CALL XTIME(2,1,'CCSD equations                ')
          CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
      &           TOL,NBUF2,NBUF3)
+         CALL XTIME(2,2,'CCSD equations                ')
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -1755,6 +1841,9 @@ C
 1010  FORMAT (/' Skipping MP2 calculation')
 1011  FORMAT (/' Skipping CCSD calculation')
 1012  FORMAT (/' Skipping CCSD(T) calculation')
+C015  FORMAT (//" ********************************************"
+C    &         /" ** Parallel Triples not implemented yet ! **"
+C    &         /" ********************************************")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR,
@@ -2354,7 +2443,8 @@ C
       LFRSAV = LFREE
       MXCORR = 0
 C
-C  Set up symmetry tables for use in Fock space calculations
+C  Set up symmetry tables and parallel distribution list
+C  for use in Fock space calculations
 C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
      &             FOCKSP,REPORT)
@@ -2542,9 +2632,9 @@ C     otherwise use file name without further extension.
 C     the global quit routine can be found in gp/gptrygve.F
 C
 C     set generic RESTART file name
-
+C  
       RSBASF='MCCRES'
-
+C
 #if defined (VAR_MPI)
       IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
          WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
@@ -2636,8 +2726,8 @@ C
 C
 C since a unique restart file name was created in CCDINI we do not
 C want to regenerate it in CCDUMP ==> we keep this file name in the
-C COMMON BLOCK
-
+C COMMON BLOCK 
+C
       CALL CCDUMP
 C
       RETURN
@@ -2918,3 +3008,365 @@ C
 #endif
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DISLIST
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Set up parallel distribution lists for the integral classes VVVV,
+C     VOVV and VVOO stored in IDIST(6,6,8) common: ccpar.inc
+C     the distribution is performed wrt the second batch
+C
+C     IOFF counts number of NVVT-sized batches on this node and irrep
+C     JOFF points to the starting address in the full integral list
+C     KOFF points to the relative starting address in the node integral list
+C
+C     JOFF and KOFF can be used to go from the absolute indexing to
+C     the relative indexing. In both cases the begin is set at zero (last
+C     integral of the previous block) and the end to the last integral in
+C     the block
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+C
+C---------------Executable code--------------------------------------
+C
+C ********
+C *** VVVV
+C ********
+C
+
+      KOFF = 0
+      DO IREP = 1, NREP
+         MTOT = NVVT(IREP)
+         NTOT = NVVT(IREP)
+         NBTCH = NTOT / NMPROC
+         NREST = MOD(NTOT,NMPROC)
+         IOFF = 0
+C        write(IW,*) 'splitting for IREP:',IREP
+C        write(IW,*) 'NVVT(IREP),NBTCH,NREST: ',NVVT(IREP),
+C    &                NBTCH,NREST
+C        write(IW,*) ' '
+         DO I = 1, NMPROC
+C
+C           Calculate absolute start address of this batch
+C
+            JOFF = IVVVVTT(IREP) + IOFF * MTOT
+C
+C           Create even distribution, the higher nodes get the remains
+C
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+C
+C           We need this information for our own process
+C
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,1,IREP) = IOFF
+               IDIST(2,1,IREP) = IOFF + NBTCH
+               IDIST(3,1,IREP) = JOFF
+               IDIST(4,1,IREP) = JOFF + NBTCH * MTOT
+               IDIST(5,1,IREP) = KOFF
+               IDIST(6,1,IREP) = KOFF + NBTCH * MTOT
+               KOFF = KOFF + NBTCH * MTOT
+            ENDIF
+            IOFF = IOFF + NBTCH
+         ENDDO
+      ENDDO
+C
+C     NV6PAR is the number of VVVV integrals which is to handle
+C     on THIS node. Can still be too large to be sorted in ONE pass.
+C     ==> instead of NV6 the number of passes is calculated from NV6PAR !
+C     ==> hierarchy is first determination of individual numbers
+C                      second local sorting of VOVV and VVVV classes.
+C
+      NV6PAR =  KOFF
+C
+C ********
+C *** VOVV
+C ********
+C
+      KOFF = 0
+      DO IREP = 1, NREP
+         NVOTOT = NVO (IREP)
+         NVVTOT = NVVT(IREP)
+         NBTCH = NVVTOT / NMPROC
+         NREST = MOD(NVVTOT,NMPROC)
+         IOFF = 0
+         DO I = 1, NMPROC
+C
+C           Calculate absolute start address of this batch
+C
+            JOFF = IVOVVT(IREP) + IOFF * NVOTOT
+C
+C           Create even distribution, the higher nodes get the remains
+C
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+C
+C           We need this information for our own process
+C
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,2,IREP) = IOFF
+               IDIST(2,2,IREP) = IOFF + NBTCH
+               IDIST(3,2,IREP) = JOFF
+               IDIST(4,2,IREP) = JOFF + NBTCH * NVOTOT
+               IDIST(5,2,IREP) = KOFF
+               IDIST(6,2,IREP) = KOFF + NBTCH * NVOTOT
+               KOFF = KOFF + NBTCH * NVOTOT
+            ENDIF
+            IOFF = IOFF + NBTCH
+         ENDDO
+      ENDDO
+C
+C     NV5PAR is the number of VOVV integrals which is to handle
+C     on THIS node. Can still be too large to be sorted in ONE pass.
+C     ==> instead of NV5 the number of passes is calculated from NV5PAR !
+C     ==> hierarchy is first determination of individual numbers
+C                      second local sorting of VOVV and VVVV classes.
+C
+      NV5PAR =  KOFF
+C
+C
+C ****************************************************************
+C *** HINTM VVOO contraction, column number in corresponding IRREP
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         JREP=MULTB(IREP+NREP,1+NREP,2)
+         MI=MVO(IREP)
+         MVOTOT=MVO(JREP)
+         NBTCH = MVOTOT / NMPROC
+         NREST = MOD(MVOTOT,NMPROC)
+         JOFF = J2VOVO(JREP)*RCW + 1
+         IOFF = JOFF
+         DO I = 1, NMPROC
+ 
+C           Create even distribution, the higher nodes get the remains
+ 
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+ 
+C           Process-local information
+ 
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,4,JREP) = NBTCH
+               IDIST(2,4,JREP) = IOFF
+               IDIST(3,4,JREP) = JOFF
+            ENDIF
+            IOFF = IOFF + MI*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+C
+C ****************************************************************
+C *** index range distribution for W(A,K,C,I)*T(C,K)
+C *** only irrep 1 (totally symmetric ) is needed in the ket space =>
+C *** the bosonic bra irrep also has to be 1 and we do not need two
+C *** different arrays.
+C ****************************************************************
+C
+      MVOTOT=MVO(1)
+      NBTCH = MVOTOT / NMPROC
+      NREST = MOD(MVOTOT,NMPROC)
+      IOFF = 1
+      JOFF = 1
+      DO I = 1, NMPROC
+
+C        Create even distribution, the higher nodes get the remains
+
+         IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C        Process-local information
+
+         IF (I.EQ.MYPROC+1) THEN
+            IDIST(1,3,1) = NBTCH
+            IDIST(2,3,1) = IOFF
+            IDIST(3,3,1) = JOFF
+         ENDIF
+         IOFF = IOFF + MVOTOT*NBTCH*RCW
+         JOFF = JOFF + NBTCH*RCW
+      ENDDO
+
+C
+C ****************************************************************
+C ***  VVOO distr. for AINTM * TAU contraction
+C ***  Both arrays have an equal symmetry structure G(i) = G(j)
+C ***  suitable for the usage of the CNTRCT call.===> we use this here.
+C ***  batches are created according to the individual irreps
+C ***  IOFF: source offset    JOFF: start offset of second matrix
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         NOOTOT=NOOT(IREP)
+         NVVTOT=NVVT(IREP)
+         NBTCH = NOOTOT / NMPROC
+         NREST = MOD(NOOTOT,NMPROC)
+         IOFF = IVVOOTT(IREP)*RCW + 1
+         JOFF = IOOOOTT(IREP)*RCW + 1
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,5,IREP) = NBTCH
+               IDIST(2,5,IREP) = IOFF
+               IDIST(3,5,IREP) = JOFF
+            ENDIF
+            IOFF = IOFF + NVVTOT*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+C
+C ****************************************************************
+C ***  distr. for the contraction TAU * VOOO in T1EQN1.
+C ***  the arrays are organised according to 
+C ***  NV(IREP),NVOOT(IREP) * NVOOT(IREP),NO(IREP)
+C ***  Both arrays have an equal symmetry structure G(i) = G(j)
+C ***  suitable for the usage of the CNTRCT call.===> we use this here.
+C ***  IOFF: source offset for first matrix
+C ***  JOFF: entry point for second matrix
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         NV33   = NV(IREP)
+         NVOO33 = NVOOT(IREP)
+         NBTCH = NVOO33 / NMPROC
+         NREST = MOD(NVOO33,NMPROC)
+         IOFF = LVVOOT (IREP)*RCW + 1
+         JOFF = LOVOOT (IREP)*RCW + 1
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,6,IREP) = NBTCH
+               IDIST(2,6,IREP) = IOFF
+               IDIST(3,6,IREP) = JOFF
+            ENDIF
+            IOFF = IOFF + NV33*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+C
+C ****************************************************************
+C ***  distr. for the contraction T2 * GOINTM in T2EQNS
+C ***  the arrays are organised according to 
+C ***  NVVOT(IREP),NO(IREP) * NO(IREP),NO(IREP)
+C ***  Both arrays have an equal symmetry structure G(i) = G(j)
+C ***  suitable for the usage of the CNTRCT call.===> we use this here.
+C ***  IOFF: source offset for first matrix
+C ***  JOFF: entry point for second matrix
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         NVVO33 = NVVOT(IREP)
+         NO33   = NO(IREP)
+         NBTCH = NO33 / NMPROC
+         NREST = MOD(NO33,NMPROC)
+         IOFF = KVVOOT(IREP)*RCW + 1
+         JOFF = IOO(IREP)*RCW + 1
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,7,IREP) = NBTCH
+               IDIST(2,7,IREP) = IOFF
+               IDIST(3,7,IREP) = JOFF
+            ENDIF
+            IOFF = IOFF + NVVO33*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+C ****************************************************************
+C ***  distr. for the contraction T1(A,K) * W(KB,IJ)
+C ***  the arrays are organised according to 
+C ***  NV(IREP),NO(IREP) * NO(IREP)*NVOOT(IREP)
+C ***  Both arrays have an equal symmetry structure G(i) = G(j)
+C ***  suitable for the usage of the CNTRCT call.===> we use this here.
+C ***  IOFF: source offset for first matrix
+C ***  JOFF: entry point for second matrix
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         NV33 = NV(IREP)
+         NO33 = NO(IREP)
+         NBTCH = NO33 / NMPROC
+         NREST = MOD(NO33,NMPROC)
+         IOFF = IVO(IREP)*RCW + 1
+         JOFF = LOVOOT(IREP)*RCW + 1
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,8,IREP) = NBTCH
+               IDIST(2,8,IREP) = IOFF
+               IDIST(3,8,IREP) = JOFF
+            ENDIF
+            IOFF = IOFF + NV33*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+C ****************************************************************
+C ***  distr. for the contraction T1(A,K) * W(BK,IC) * T1(C,J)
+C ***  the permutation operators are taken into account by the sorters
+C ***  CNTRCT organization: NVOO(IRP),NV(IRP) * NV(IRP),NO(IRP)
+C ***  Both arrays have an equal symmetry structure G(i) = G(j)
+C ***  suitable for the usage of the CNTRCT call.===> we use this here.
+C ***  IOFF: source offset for first matrix
+C ***  JOFF: entry point for second matrix
+C ****************************************************************
+C
+      DO IREP = 1, NREP
+         NVOO33 = NVOO(IREP)
+         NV33   = NV(IREP)
+         NBTCH = NV33 / NMPROC
+         NREST = MOD(NV33,NMPROC)
+         IOFF  = KVOOV(IREP)*RCW + 1
+         JOFF  = IVO(IREP)*RCW + 1
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,9,IREP) = NBTCH
+               IDIST(2,9,IREP) = IOFF
+               IDIST(3,9,IREP) = JOFF
+            ENDIF
+            IOFF = IOFF + NVOO33*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+      ENDDO
+
+      RETURN
+      END
+

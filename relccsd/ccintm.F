@@ -172,19 +172,39 @@ C
       INCLUDE "param.inc"
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL USEDZ
+      real*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
+C ********************
+C ** TASK SPLITTING **
+C ********************
+C ** only master calculates local contr. to G(A,C) !
+C ** all nodes calculate nonlocal contr.
+
+      IF(MYPROC.EQ.MASTER) THEN
+
 C----------------------------------
 C G(A,C) = H(A,C) - T(A,K) * F(K,C)
 C----------------------------------
-      CALL XCOPY (NFVO,FVO,1,BUF2,1)
-      CALL DELFCK ('VO','DD',BUF2)
-      CALL CNTRCT ('N','C',NV,NV,NO,-A1,T1,BUF2,A1,GV,NREP)
+        CALL XCOPY (NFVO,FVO,1,BUF2,1)
+        CALL DELFCK ('VO','DD',BUF2)
+        CALL CNTRCT ('N','C',NV,NV,NO,-A1,T1,BUF2,A1,GV,NREP)
+  
+      ELSE
+
+        CALL XCOPY(NFVV*RCW,A0,0,GV,1)
+
+      ENDIF
+C ***************************
+C ** END OF TASK SPLITTING **
+C ***************************
+
 C------------------------------------
 C G(A,C) = G(A,C) + W(AK,CD) * T(D,K)
 C------------------------------------
@@ -192,6 +212,8 @@ C------------------------------------
       N = MVO(1)
       IF (N.EQ.0) RETURN
       USEDZ = .FALSE.
+
+
 C... This is the old code that uses a large scratch array...
 cluuk IF (NBUF3.LT.JVVVO(2)) THEN
 cluuk    CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
@@ -206,6 +228,8 @@ C... satisfactory.
      &            JJVO,BUF2,NBUF2,T1,GV,USEDZ)
 C... End of new code (11-02-00)
 C
+
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -235,10 +259,12 @@ C
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
       INCLUDE "eqns.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
       LOGICAL DONE,TEQ
       real*8 ddot,xsum
 C
@@ -253,6 +279,17 @@ C
       ELSE
          CALL QUIT('Wrong keyword in call to HINTM')
       ENDIF
+
+C ********************
+C ** TASK SPLITTING **
+C ********************
+C ** master calculates local contr. 
+C ** - W(AK,CI)  + T(A,L) * W(LK,CI) 
+C ** to the H intermediate which is kept
+C ** in BUF1 ! ===> If we want to start from a clear H array we have to
+C ** clear BUF1 at the extent of the H length.
+
+      IF(MYPROC.EQ.MASTER) THEN
 C---------------------------------------------------------------------
 C H(AK,IC) = - W(AK,CI)
 C We store h initially as H(AK,CI), ordening and minus sign after next
@@ -270,34 +307,69 @@ C----------------------------------------
       CALL CNTRCT ('N','N',NV,NOVO,NO,A1,T1,BUF1,A0,BUF3,NREP)
       CALL SRT1S2 (NREP,MULTB,LTR,NVO,NV,NO,NVO,LVOVO,LLOVO,BUF3,BUF1)
       CALL XAXPY (IVOVO(NREP+1),-A1,H,1,BUF1,1)
+
+      ELSE
+    
+        CALL XCOPY(NV4*RCW,A0,0,BUF1,1)
+
+      ENDIF
+
+C ***************************
+C ** END OF TASK SPLITTING **
+C ***************************
+C ** here now come the distributed VOVV contributions to be calculated
+C ** by each node !
+
 C------------------------------------------------------------------
 C H(AK,CI) = H(AK,CI) - W(AK,CD) * T(D,I)
 C H is kept in BUF1, still ordered VOVO
 C------------------------------------------------------------------
+      CALL XTIME(28,1,' ** HINTM: VOVV*T             ')
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
-         NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         CCO=0
+         MINT = NBUF3/NVO(IRP)
+
+C ** reading from GETVOVV: ISTART is updated with the actual batch #
+C ** available on the local node, NINT is updated with the number of
+C ** actually read integrals from this batch and is a pure output parameter !
+C ** We therefore have to count upwards in case of ISTART.NE.0 !!
+
+         CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+
+C ** now start SORTING and contraction loop
+
          CD = 0
          DO 20 DREP = 1, NREP
            CREP = MULTB(DREP,IRP+NREP,2)
            IF (CREP.LT.DREP) GOTO 20
-           DO D = 1, NV(DREP)
+           DO 15 D = 1, NV(DREP)
               CMIN = 1
               IF (CREP.EQ.DREP) CMIN = D + 1
-              DO C = CMIN, NV(CREP)
+              DO 10 C = CMIN, NV(CREP)
+
+                 IF(CCO.LT.ISTART) THEN
+                   CCO=CCO+1
+                   GOTO 10
+                 ENDIF
+
                  CD = CD + 1
                  IF (CD.GT.NINT) THEN
-C                   -----------------------
-C                   We need the next buffer
-C                   -----------------------
+C                   ---------------------------------------
+C                   We need the next buffer in this IRREP !
+C                   ---------------------------------------
                     ISTART = ISTART + NINT
-                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
-                    CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
-                    CD = 1
+                    IF(.NOT.DONE) THEN
+                      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+                      CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+                      CD = 1
+                      CCO=ISTART
+                    ELSE
+                      GOTO 30
+                    ENDIF
                  ENDIF
                  AKCD = (CD-1)*NVO(IRP)*RCW+1
                  DO I = 1, NO(DREP)
@@ -316,15 +388,19 @@ C                   -----------------------
                     IF (CARITH) T1VAL(2) = T1(T1CI+1)
                     CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKDI),1)
                  ENDDO
-              ENDDO
-           ENDDO
+ 10           CONTINUE
+ 15        CONTINUE
  20      CONTINUE
  30    CONTINUE
 C------------------------------------------------------------------
-C Now sort H(AK,CI) to H(AI,CK)
+C Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
+C The H buffer is not changed any more up to the final XGEMM !
+C Every other calculation is done in BUF1 !!
 C------------------------------------------------------------------
       CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &            BUF1,H)
+      CALL XTIME(28,2,' ** HINTM: VOVV*T             ')
+
 C------------------------------------------------------------------
 C H(AI,CK) = H(AI,CK) + [ 0.5*T(AD,IL) - T(A,L)*T(D,I) ] * W(KL,CD)
 C------------------------------------------------------------------
@@ -348,20 +424,46 @@ C
       IF (CARITH) CALL CONJUGA (NV3,BUF3,1)
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF3,BUF2)
-      OFF1 = 1
+
+      CALL XTIME(29,1,' ** HINTM: VVOO cont             ')
+
+C
+C --- old nonparallel VOVO contraction
+C
+C     OFF1 = 1
+C     OFF3 = 1
+C     DO IREP = 1, NREP
+C        JREP = MULTB(IREP+NREP,1+NREP,2)
+C        M = MVO(IREP)
+C        N = MVO(IREP)
+C        K = MVO(JREP)
+C        OFF2 = J2VOVO(JREP) * RCW + 1
+C        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
+C    &               A1,H(OFF3),M)
+C        OFF1 = OFF1 + M * K * RCW
+C        OFF3 = OFF3 + M * N * RCW
+C     ENDDO
+C
+ 
+C
+C --- new parallelized VOVO contraction
+C
       OFF3 = 1
       DO IREP = 1, NREP
          JREP = MULTB(IREP+NREP,1+NREP,2)
-         M = MVO(IREP)
-         N = MVO(IREP)
-         K = MVO(JREP)
-         OFF2 = J2VOVO(JREP) * RCW + 1
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
-     &               A1,H(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
+         M    = MVO(IREP)
+         N    = MVO(IREP)
+         KLD  = MVO(JREP)
+         K    = IDIST(1,4,JREP)
+         OFF1 = IDIST(2,4,JREP)
+         OFF2 = IDIST(3,4,JREP)
+         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),
+     &               KLD,A1,H(OFF3),M)
          OFF3 = OFF3 + M * N * RCW
       ENDDO
-C
+ 
+      CALL XTIME(29,2,' ** HINTM: VVOO cont             ')
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -416,6 +518,7 @@ C----------------------------------------------------------------------
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF3,BUF1)
       CALL GETTAU  (T1,T2,BUF3)
+
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF3,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,A1,BUF1,BUF2,A1,HO,NREP)
@@ -504,6 +607,7 @@ C
       INCLUDE "complex.inc"
 C
 C---------------Local variables--------------------------------------
+      REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
@@ -533,7 +637,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
+      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -549,7 +653,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF2,NBUF3
+      INTEGER NBUF2,NBUF3,IW
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
@@ -566,10 +670,12 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ
       REAL*8 T1MIN(2)
-      real*8 sint,st2s,ss2s
+      DATA T1MIN /2*0.0D0/
+      REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
+
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
@@ -587,6 +693,26 @@ C---------------------------------------------
       ELSE
          CALL XCOPY  (NDIMT2,T2,1,BUF1,1)
       ENDIF
+
+C****************************************************
+C**
+C**   DEBUGGING PURPOSES:
+C**   VERIFYING TAU MATRIX
+C**
+C     write(*,*) '== IN BINTM: TAU MATRIX: =='
+C     OFF1=1
+C     DO IRP=1,NREP
+C       M=NVVT(IRP)
+C       N=NOOT(IRP)
+C       write(*,*) 'IRP,M,N:',IRP,M,N
+C       write(*,'(A,I5,F30.15)') 'TAU(IREP)',IRP,
+C    >  ddot(M*N*RCW,BUF1(OFF1),1,BUF1(OFF1),1)
+C       OFF1=OFF1 + M*N*RCW
+C     ENDDO
+C**
+C**
+C****************************************************
+
       OFF1 = 1
       OFF2 = 1
       DO 30 IRP = 1, NREP
@@ -604,19 +730,50 @@ C---------------------------------------------
             ISTART = ISTART + NINT
             GOTO 10
          ENDIF
+
+ 111  format (a,i6,2f30.15)
+C     write(iw,111) '------>>> VVVV/IRP contraction in IRP:',IRP,
+C    >    ddot(M*N*RCW,S2(OFF2),1,S2(OFF2),1)
+
          OFF1 = OFF1 + M * N * RCW
          OFF2 = OFF2 + M * N * RCW
  30   CONTINUE
+
+C******************************************************
+C**
+C**     DEBUGGING PURPOSES
+C**     construct absolute norm of VOVV per IRREP
+C**
+C**
+C******************************************************
+C     DO 37 IRP = 1, NREP
+C        write(iw,*) '=========='
+C        write(iw,*) '== IRREP:',IRP
+C        write(iw,*) '=========='
+C        ISTART=0
+C        MINT = NBUF3/NVO(IRP)
+C        INX=1
+C38      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+C        DO IJNV=1,NINT   ! loop over all IJ combinations in this irrep
+C          DO IKS=1,NO(IRP)
+C           DO IAS=1,NV(IRP)
+C            write(iw,'(2I5,E25.16)') INX,IJNV,BUF3(INX)
+C            INX=INX+1
+C           ENDDO
+C          ENDDO
+C        ENDDO
+C        IF (.NOT.DONE) THEN
+C           ISTART = ISTART + NINT
+C           GOTO 38
+C        ENDIF
+C37    CONTINUE
+C      call quit('now compare integrals !')
+
 C--------------------------------------------------------------
 C S(AB,IJ) =  S(AB,IJ) - PAB [ T(B,K) * W(AK,CD) * TAU(CD,IJ) ]
 C--------------------------------------------------------------
       CALL XCOPY (NV2,A0,0,BUF2,1)
 C
-C     Explicit parallelization with ITASK.
-C     After integral distribution parallelization should be handled
-C     by GETVOVV !
-C
-      ITASK = 1
       OFF1 = 1
       OFF2 = 1
       DO 130 IRP = 1, NREP
@@ -625,25 +782,51 @@ C
          M = NVO (IRP)
          N = NOOT(IRP)
          KD = NVVT(IRP)
-         NINT = NBUF3/NVO(IRP)
-  110    IF (ITASK.EQ.MYPROC+1) THEN
-            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
-            CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
-            K = NINT
-            CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),
-     &                  KD,A1,BUF2(OFF2),M)
+         MINT = NBUF3/NVO(IRP)
+
+ 110     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+         CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+
+         K = NINT
+
+C ** now we construct the full NVO x NOOT matrix
+C ** but the contributions are only from the restricted CD range
+C ** the method is additive since ZGEMM works according to
+C **      C=A*B + C  ==> all the already computed contributions
+C ** will be added in this IRREP.
+
+         CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),
+     &               KD,A1,BUF2(OFF2),M)
+         IF (.NOT.DONE) THEN
             ISTART = ISTART + NINT
-         ELSE
-            ISTART = ISTART + NINT
-            DONE = ISTART.GE.NVVT(IRP)
+            GOTO 110
          ENDIF
-         ITASK = ITASK + 1
-         IF (ITASK.GT.NMPROC) ITASK = 1
-         IF (.NOT.DONE) GOTO 110
+
+
+C******************************************************
+C**
+C**     DEBUGGING PURPOSES
+C
+C     write(iw,111) '--------->> VOVV contraction in IRP:',IRP,
+C    >    ddot(M*N*RCW,BUF2(OFF2),1,BUF2(OFF2),1)
+C**
+C**
+C******************************************************
+
          OFF1 = OFF1 + KD * N * RCW
          OFF2 = OFF2 + M * N * RCW
  130  CONTINUE
+
+C ** now the <AK||IJ> contr. are available in memory sorted according
+C ** to combined IRREPS (AK) and (IJ).
+
+C ** next sort resorts according to (KA) and (IJ)
+
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
+
+C ** next sort resorts according to K,AIJ which means sorted according to
+C ** IRREPS K and not combined IRREPS anymore for subsequent contraction
+
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
      &             BUF3,BUF2)
 C---------------------------------------------------------------
@@ -690,6 +873,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1MIN(2)
+      DATA T1MIN /2*0.0D0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -796,6 +980,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 S1MIN(2)
+      DATA S1MIN /2*0.0D0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -914,6 +1099,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -1012,6 +1198,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1MIN(2)
+      DATA T1MIN /2*0.0D0/
 C
 C---------------Executable code--------------------------------------
 C
@@ -1112,6 +1299,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
 C
@@ -1273,6 +1461,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1CON(2)
+      DATA T1CON /2*0.0D0/
       LOGICAL DONE
 C
 C---------------Executable code--------------------------------------
@@ -1575,6 +1764,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
 C
@@ -1699,6 +1889,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
+      DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
 C

@@ -89,6 +89,7 @@ C
 C---------------Executable code--------------------------------------
 C
 C
+C     write(iw,*) '********** entering rdints **********'
       FOCKSP = EQNS.EQ.'FOCKSP'
       call memchk ('entering',cc,1)
 C
@@ -162,8 +163,6 @@ C
          WRITE (IW,1010)
          GOTO 150
       ENDIF
-C
-      CALL DISVVVV
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
@@ -277,16 +276,23 @@ C
          GOTO 550
       ENDIF
 C
-C     GET THE VOVV INTEGRALS
+C     Determine # of passes necessary for treating VOVV integrals
+C     on a specific node
 C
-      NPASS = (NV5-1) / NVT + 1
+      NPASS = (NV5PAR-1) / NVT + 1
       NSEC5 = 1
       N5L = 0
       WRITE (IW,1005) NPASS,'VOVV'
 C
+C
+C     N5CTL=0
+C   start of IPASS loop for the VOVV
+C ----------------------------
       DO IPASS = 1, NPASS
+C ----------------------------
+
       N5F = N5L + 1
-      N5L = MIN0(N5L+NVT,NV5)
+      N5L = MIN0(N5L+NVT,NV5PAR)
       N5 = N5L - N5F + 1
       NSEC = N5*IRW*RCW / SEC2I(1)
       IF (MOD(N5*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
@@ -311,18 +317,39 @@ C
             JTRS = IBUF(6,INZE)
             I    = IBUF(7,INZE)
             IF (ITYP.EQ.14) THEN       
+
+C             Check absolute address and decide if this integral goes
+C             to this node
+
                IND = IVOVVT(IREP) + (IND1-1)*NVO(IREP) + IND2
-               IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
-                  IND = IND - N5F + 1
-                  VVOVV(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) VVOVV(2,IND) = CBUF(2,I) * JTRS
+               IF (IND.GT.IDIST(3,2,IREP).AND.
+     &           IND.LE.IDIST(4,2,IREP)) THEN
+
+C                now check relative offset if we need it in
+C                the current path
+
+                 IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                 IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
+                    IND = IND - N5F + 1
+                    VVOVV(1,IND) = CBUF(1,I) * ITRS
+                    IF (CARITH) VVOVV(2,IND) = CBUF(2,I) * JTRS
+                 ENDIF
                ENDIF
             ELSEIF (ITYP.EQ.-14) THEN
                IND = IVOVVT(IREP) + (IND1-1)*NVO(IREP) + IND2
-               IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
-                  IND = IND - N5F + 1
-                  VVOVVA(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) VVOVVA(2,IND) = CBUF(2,I) * JTRS
+
+C             Check absolute address and decide if this integral goes
+C             to this node
+
+               IF (IND.GT.IDIST(3,2,IREP).AND.
+     &           IND.LE.IDIST(4,2,IREP)) THEN
+
+                 IND = IND -IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                 IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
+                    IND = IND - N5F + 1
+                    VVOVVA(1,IND) = CBUF(1,I) * ITRS
+                    IF (CARITH) VVOVVA(2,IND) = CBUF(2,I) * JTRS
+                 ENDIF
                ENDIF
             ENDIF
   202 CONTINUE
@@ -340,7 +367,18 @@ C
       ENDIF
       CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,NSEC5)
       NSEC5 = NSEC5 + NSEC
+C
+C    for debugging purposes: count nonzero VOVV ints in this batch.
+C
+C     DO IX=1,N5
+C       IF(VVOVV(1,IX).NE.0.0d0) N5CTL=N5CTL+1
+C     ENDDO
+C
+C  end of IPASS LOOP
+C ----------------------
       ENDDO
+C ----------------------
+      WRITE(IW,*) 'VOVV sorting done.'
 C
       IF (.NOT.SRTALL) GOTO 600
 C
@@ -351,7 +389,12 @@ C
       N6L = 0
       WRITE (IW,1005) NPASS,'VVVV'
 C
+C    start of IPASS loop for the VVVV
+C     N6CTL=0
+C --------------------------
       DO IPASS = 1, NPASS
+C --------------------------
+
       N6F = N6L + 1
       N6L = MIN0(N6L+NVT,NV6PAR)
       N6 = N6L - N6F + 1
@@ -383,13 +426,13 @@ C              The integral should go to this node : check the absolute
 C              address to see if it belongs here. 
 C
                IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-               IF (IND.GT.IDIST(3,2,IREP).AND.
-     &             IND.LE.IDIST(4,2,IREP)) THEN
+               IF (IND.GT.IDIST(3,1,IREP).AND.
+     &             IND.LE.IDIST(4,1,IREP)) THEN
 C
 C                 Now check the relative offset, whether we need it in
 C                 the current pass.
 C
-                  IND = IND - IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                  IND = IND - IDIST(3,1,IREP) + IDIST(5,1,IREP)
                   IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
                      IND = IND - N6F + 1
                      VVVVV(1,IND) = CBUF(1,I) * ITRS
@@ -398,13 +441,13 @@ C
                ENDIF
             ELSEIF (ITYP.EQ.-16) THEN
               IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-              IF (IND.GT.IDIST(3,2,IREP).AND.
-     &             IND.LE.IDIST(4,2,IREP)) THEN
+              IF (IND.GT.IDIST(3,1,IREP).AND.
+     &             IND.LE.IDIST(4,1,IREP)) THEN
 C
 C                 Now check the relative offset, whether we need it in
 C                 the current pass.
 C
-                  IND = IND - IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                  IND = IND - IDIST(3,1,IREP) + IDIST(5,1,IREP)
                   IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
                      IND = IND - N6F + 1
                      VVVVVA(1,IND) = CBUF(1,I) * ITRS
@@ -427,9 +470,35 @@ C
       ENDIF
       CALL RWRIT(ITAPT+6,VVVVV,N6*RCW*IRW,NSEC6)
       NSEC6 = NSEC6 + NSEC
+C
+C    for debugging purposes: count nonzero VVVV ints in this batch.
+C
+C     DO IX=1,N6
+C       IF(VVVVV(1,IX).NE.0.0d0) N6CTL=N6CTL+1
+C     ENDDO
+C
+C     end of IPASS loop for the VVVV
+C --------------------------
       ENDDO
+C --------------------------
 C
   500 CLOSE(MDINT)
+      WRITE(IW,*) 'VVVV sorting done.'
+
+C
+C  ... debugging ...
+C
+C     IF(N6CTL.NE.NV6) THEN
+C       WRITE(IW,*) 'VVVV diff. in #:',N6CTL,NV6
+C     ELSE
+C       WRITE(IW,*) 'VVVV numbers ok.'
+C     ENDIF
+C
+C     IF(N5CTL.NE.NV5) THEN
+C       WRITE(IW,*) 'VOVV diff. in #:',N5CTL,NV5
+C     ELSE
+C       WRITE(IW,*) 'VOVV numbers ok.'
+C     ENDIF
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
 C  Breit is only used with MOLFDIR in this version
