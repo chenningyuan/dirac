@@ -91,26 +91,6 @@ C
         CLOSE(LUCMD)
       ENDIF
 #endif
-#if defined (MOD_CC)
-C
-C     Input of relccsd module
-C
-      IF(DOCCM) THEN
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL CCINPT(LUCMD,LUPRI,MIOBUF)
-         CLOSE(LUCMD)
-      ENDIF
-#endif
-#if defined (MOD_CI)
-C
-C     Input of dirrci module
-C
-      IF(DOCIM) THEN
-         OPEN(LUCMD,FILE = 'DIRAC.INP')
-         CALL CIMINP(WORK,LWORK)
-         CLOSE(LUCMD)
-      ENDIF
-#endif
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -432,7 +412,7 @@ C
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.INTGRL',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.RELCCS','.DIRRCI','.MINIMI','.XXXXXX'/
+     &             '.XXXXXX','.XXXXXX','.MINIMI','.XXXXXX'/
 C
       NJOBS = 0
 C
@@ -520,14 +500,8 @@ C&&& HEINZ: Solve one-electronsystems using free-particle projection operators
             DOHEINZ = .TRUE.
             GO TO 100
   109    CONTINUE
-C&&&& RELCCSD:  Call relccsd module
-            DOCCM = .TRUE.
-            NJOBS = NJOBS + 1
             GO TO 100
   110    CONTINUE
-C&&&& DIRRCI:  Call dirrci module
-            DOCIM = .TRUE.
-            NJOBS = NJOBS + 1
             GO TO 100
  111     CONTINUE
 C&&&& MINIMIZE: Geometry optimization
@@ -566,12 +540,6 @@ C
 #if defined (MOD_TRA)
       IF(DOTRA) WRITE(LUPRI,'(3X,A)') '* Transformation to Molecu'//
      &    'lar Spinor basis'
-#endif
-#if defined (MOD_CC)
-      IF(DOCCM) WRITE(LUPRI,'(3X,A)') '* Run RELCCSD code'
-#endif
-#if defined (MOD_CI)
-      IF(DOCIM) WRITE(LUPRI,'(3X,A)') '* Run DIRCCI code'
 #endif
       IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
      &    ' free particle projection and point nucleus'
@@ -1188,13 +1156,14 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*DFTCAL',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.DFT   ','.LVCORR',
-     &             '.TSCORR','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.TSCORR','.RELCCS','.XXXXXX','.XXXXXX'/
 C
       NJOBS = 0
 C
 C     Initialize /CBLPSI/
 C     ===================
 C
+      DOCCM   = .FALSE.
       DODHF   = .FALSE.
       DOMP2   = .FALSE.
       DODFT   = .FALSE.
@@ -1270,8 +1239,14 @@ C             using small component atomic charges
             DOTSC = .TRUE.
             GO TO 100
   106    CONTINUE
+C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
+            DOCCM = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
   107    CONTINUE
+C&&&& DIRRCI: Perform CISD or COSCI
+            DOCIM = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
             GO TO 100
@@ -1296,6 +1271,12 @@ C
      &    'calculation (Panas method)'
 #if defined (MOD_TRA)
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
+#endif
+#if defined (MOD_CC)
+      IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
+#endif
+#if defined (MOD_CI)
+      IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
 #endif
       IF(DOLVC) WRITE(LUPRI,'(1X,A)')
      &   '* SS integrals neglected: ',
@@ -1353,6 +1334,27 @@ C
       IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_TRA)
       IF (DOMP2) CALL MP2INP(WORD,WORK,LWORK)
+#endif
+#if defined (MOD_CC)
+C
+C     Input of relccsd module
+C
+      IF(DOCCM) THEN
+C        DIRAC.INP is already open.
+C        OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL CCINPT(LUCMD,LUPRI,MIOBUF)
+         CLOSE(LUCMD)
+      ENDIF
+#endif
+#if defined (MOD_CI)
+C
+C     Input of dirrci module
+C
+      IF(DOCIM) THEN
+         OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL CIMINP(WORK,LWORK)
+         CLOSE(LUCMD)
+      ENDIF
 #endif
 C      CALL DFTINP(WORD)
       RETURN
@@ -2206,7 +2208,7 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.NELECT','.OPEN S','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       SYMSTP = .FALSE.
       CALL TITLER('Hamiltonian defined','*',127)      
@@ -2222,7 +2224,6 @@ C
       URKBAL  = .FALSE.
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
-      SPINFR  = .FALSE.
       SOLVEN  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
@@ -2384,14 +2385,7 @@ C&&& LEVYLE : Use Levy-Leblond Hamiltonian
              ICHANG = ICHANG + 1
              GO TO 100
   113      CONTINUE
-C&&& SPINFREE : Zero out spin-orbit terms
-#ifdef MOD_SPF
-             SPINFR = .TRUE.
-             ICHANG = ICHANG + 1
-#else
-             CALL QUIT ('SPINFR option not active in this release')
-#endif
-             GO TO 100
+               GOTO 100
   114      CONTINUE
               GOTO 100
   115      CONTINUE
@@ -2581,10 +2575,6 @@ C
       ENDIF
       IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
      &    'with the following modifications:'
-      IF(SPINFR) THEN
-        WRITE(LUPRI,'(1X,A,A)') '* Spin-orbit terms zeroed out ',
-     &    '(NB : ONLY in the DHF calculation !!)'
-      ENDIF
       IF(N1OPER.GT.0) THEN
         WRITE(LUPRI,'(1X,A,A)') '* The following one-electron ',
      &    'operators have been added:'
@@ -2822,7 +2812,8 @@ C/* Deck MINANA */
       SUBROUTINE MINANA(WORK,LWORK)
 C***********************************************************************
 C
-C     Readin analasis input for the final geometry
+C     Readin analysis input for the final geometry
+C     Call analysis module
 C
 C     Written by J. Thyssen, Nov 13 1997
 C
@@ -2837,9 +2828,16 @@ C
       CALL QENTER('MINANA')
 C
       IF(DOANA) THEN
-        OPEN(LUCMD,FILE = 'DIRAC.INP')
-        CALL ANWINP('**ANA F',WORK,LWORK)
-        CLOSE(LUCMD)
+         OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL ANWINP('**ANA F',WORK,LWORK)
+         CLOSE(LUCMD)
+C
+C*****************************************************************************
+C*****  A N A L Y S I S    M O D U L E  **************************************
+C*****************************************************************************
+C
+         IF(DOANA) CALL PAMANA(WORK,LWORK)
+C
       ENDIF
 C
       CALL QEXIT('MINANA')
