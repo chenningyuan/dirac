@@ -74,6 +74,7 @@ C     ===================
 C
       IPRESR  = 0
       NESRP   = 0
+      NCIESR  = -1
 C
 C     Initialize orgcom.h
 C     ===================
@@ -180,8 +181,13 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+C     for PRQMAT print of complex matrices:
+      PARAMETER (NZCMPLX = 2)
+      DIMENSION IQINDX(NZCMPLX)
+      SAVE IQINDX
+      DATA IQINDX /1,2/
 C
-      DIMENSION ESRVAL(4,*),WORK(LWORK)
+      DIMENSION ESRVAL(NCIESR,NCIESR,NZCMPLX,*),WORK(LWORK)
       DIMENSION GTENSOR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),GEVEC(3,3),
      &          GCOR(3)
 C
@@ -234,8 +240,10 @@ C
      &       'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(I,INDXPR)
-          WRITE(LUPRI,'(4X,A,4F15.6)')
-     &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
+cq        WRITE(LUPRI,'(4X,A,4F15.6)')
+cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
+          CALL PRQMAT(ESRVAL(1,1,1,I),NCIESR,NCIESR,
+     &                NCIESR,NCIESR,NZCMPLX,IQINDX,LUPRI)
         ENDDO
       END IF
 C
@@ -246,16 +254,16 @@ C
       DO K = 1,3
 C        ... for B field in direction k (x,y,z)
          I = IPESR(MXCOOR+K,1)
-         GTENSOR(K,1) = D4*ESRVAL(4,I)
-         GTENSOR(K,2) = D4*ESRVAL(3,I)
-         GTENSOR(K,3) = D4*ESRVAL(2,I)
+         GTENSOR(K,1) =  D4*ESRVAL(1,2,1,I)
+         GTENSOR(K,2) = -D4*ESRVAL(1,2,2,I)
+         GTENSOR(K,3) =  D4*ESRVAL(1,1,1,I)
       ENDDO
 
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   ' The g-tensor for H(Zeeman) = 1/2c B g Seff :',
      &   ((GTENSOR(I,K),K=1,3),I=1,3)
 
-C     Get G-matrix = gtensor*gtensor(transponed)
+C     Get G-matrix = gtensor*gtensor(transposed)
 C
       DO I = 1,3
         DO K = 1,3
@@ -307,16 +315,16 @@ C
 C        ... for B field in direction k (x,y,z)
          I = IPESR(MXCOOR+K,1)
          J = IPESR(MXCOOR+K,2)
-         GTENSOR(K,1) = D4*( ESRVAL(4,I)+ESRVAL(4,J) )
-         GTENSOR(K,2) = D4*( ESRVAL(3,I)+ESRVAL(3,J) )
-         GTENSOR(K,3) = D4*( ESRVAL(2,I)+ESRVAL(2,J) )
+         GTENSOR(K,1) =  D4*(ESRVAL(1,2,1,I)+ESRVAL(1,2,1,J))
+         GTENSOR(K,2) = -D4*(ESRVAL(1,2,2,I)+ESRVAL(1,2,2,J))
+         GTENSOR(K,3) =  D4*(ESRVAL(1,1,1,I)+ESRVAL(1,1,1,J))
       ENDDO
 
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   ' The g_1 corrected g-tensor for H(Zeeman) = 1/2c B g Seff :',
      &   ((GTENSOR(I,K),K=1,3),I=1,3)
 
-C     Get G-matrix = gtensor*gtensor(transponed)
+C     Get G-matrix = gtensor*gtensor(transposed)
 C
       DO I = 1,3
         DO K = 1,3
@@ -382,8 +390,8 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0)
 C
       LOGICAL FIRST(NZ),LESRST(2,*),FILEX
-      DIMENSION ESRVAL(4,*),CMO(*),DMAT(*),PMAT(*),PTRI(*),
-     &          OP1INT(*),EIG(*),WORK(LWORK)
+      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),CMO(*),DMAT(*),PMAT(*),
+     &          PTRI(*),OP1INT(*),EIG(*),WORK(LWORK)
       CHARACTER MXFORM*6,FMT*6
       INTEGER   GETIOPEN, IMO(2), NMO(2)
 C
@@ -410,7 +418,7 @@ C
 C     Initialize
 C     ==========
 C
-      CALL DZERO(ESRVAL,4*NESRP)
+      CALL DZERO(ESRVAL,NCIESR*NCIESR*2*NESRP)
       N2ESR = 2*NESRP
       CALL LSET(N2ESR,.FALSE.,LESRST)
 C
@@ -434,27 +442,32 @@ c       END DO
 c       CALL TITLER('Expectation values','*',127)
 c       WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
 c       CALL PRSYMB(LUPRI,'-',76,0)
+C
         DO I = 1,NESRP
           INDXPR = LESRP(I)
 C
-C     Extract symmetry information
-C     =============================
+C         Extract symmetry information
+C         =============================
 C
-      ISYM = IPRPSYM(INDXPR)
-      IREP = ISYM - 1
-      ITIM = IPRPTIM(INDXPR)
+          ISYM = IPRPSYM(INDXPR)
+          IREP = ISYM - 1
+          ITIM = IPRPTIM(INDXPR)
+          IOPSY = JBTOF(ISYM-1,1)
+          IF (IPRESR.GT.1 .OR. ITIM.GE.0) WRITE(LUPRI,'(A,I3,A,A16)')
+     &    '* PRPESR1: calculating property no.',I,' : ',PRPNAM(INDXPR)
+C
+          IF (ITIM .GE. 0) CALL QUIT(
+     &    'PRPESR1 only implemented for time-antisymmetric operators')
 C
 
 Chj-start test output
           kfree = 1
           lfree = lwork
           iprtst = 10
-      ISYM  = IPRPSYM(INDXPR)
-      IOPSY = JBTOF(ISYM-1,1)
-      imo(1) = icmoq(1) + nfbas(1,0)*(npsh(1)+nish(1))
-      nmo(1) = nash(1)
-      imo(2) = icmoq(2) + nfbas(2,0)*(npsh(2)+nish(2))
-      nmo(2) = nash(2)
+          imo(1) = icmoq(1) + nfbas(1,0)*(npsh(1)+nish(1))
+          nmo(1) = nash(1)
+          imo(2) = icmoq(2) + nfbas(2,0)*(npsh(2)+nish(2))
+          nmo(2) = nash(2)
 c     imo(1) = icmoq(1)
 c     nmo(1) = norb(1)
 c     imo(2) = icmoq(2)
@@ -467,19 +480,17 @@ c      print *, 'nfbas  :',nfbas(1,0),nfbas(2,0)
 c      print *, 'npsh   :',npsh
 c      print *, 'nish   :',nish
 c      print *, 'imo,nmo:',imo,nmo
+C
           CALL PRPMAT(INDXPR,IOPSY,pmat,CMO,imo,nmo,
      &                WORK,KFREE,LFREE,IPRESR)
-          if (nmo(1) .eq. 1 .and. nmo(2) .eq. 0) then
-             JMOSY = 1
-          else if (nmo(1) .eq. 0 .and. nmo(2) .eq. 1) then
-             JMOSY = 2
-          else
-             call quit('Only one open shell implemented yet!')
-          end if
-          DO J = 1,NZ
-             JQ = IPQTOQ(J,IREP)
-             ESRVAL(JQ,I) = PMAT(1+I2ORBX(JMOSY,JMOSY)+N2ORBX*(J-1))
-          END DO
+C
+          IF ( MOD(NAELEC,2) .EQ. 1) THEN
+C         ... odd number of electrons
+             CALL PRPESRODD(NMO,ESRVAL(1,1,1,I),IREP,PMAT)
+          ELSE
+C         ... even number of electrons
+             CALL PRPESREVEN(NMO,ESRVAL(1,1,1,I),IREP,PMAT)
+          END IF
 c      print *, ' ..... end of test output of MO prp. matrix ...'
 Chj-end test output
 
@@ -506,9 +517,83 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpesrodd */
+      SUBROUTINE PRPESRODD(NMO,ESRVAL,IREP,PMAT)
+C*****************************************************************************
+C
+C    
+C
+C    
+C     
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER(D0 = 0.0D0)
+C
+#include <dcbesr.h>
+#include <dgroup.h>
+#include <dcborb.h>
+C
+      DIMENSION ESRVAL(NCIESR,NCIESR,2),PMAT(*)
+      INTEGER   NMO(*)
+C
+          if (nmo(1) .eq. 1 .and. nmo(2) .eq. 0) then
+             JMOSY = 1
+          else if (nmo(1) .eq. 0 .and. nmo(2) .eq. 1) then
+             JMOSY = 2
+          else
+             call quit('Only one open shell implemented yet!')
+          end if
+          DO J = 1,NZ
+             PVAL = PMAT(1+I2ORBX(JMOSY,JMOSY)+N2ORBX*(J-1))
+             JQ = IPQTOQ(J,IREP)
+             IF (JQ .EQ. 2) THEN
+                ESRVAL(1,1,1) =  PVAL
+                ESRVAL(2,2,1) = -PVAL
+             ELSE IF (JQ .EQ. 3) THEN
+                ESRVAL(1,2,2) = -PVAL
+                ESRVAL(2,1,2) =  PVAL
+             ELSE IF (JQ .EQ. 4) THEN
+                ESRVAL(1,2,1) =  PVAL
+                ESRVAL(2,1,1) =  PVAL
+             ELSE
+C               ... JQ .eq. 1
+                ESRVAL(1,1,2) =  PVAL
+                ESRVAL(2,2,2) =  PVAL
+                WRITE(LUPRI, *) 'test PVAL zero?: JQ,J,IREP,JMOSY,PVAL',
+     &             JQ,J,IREP,JMOSY,PVAL
+             END IF
+          END DO
+          RETURN
+          END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpesreven */
+      SUBROUTINE PRPESREVEN(NMO,ESRVAL,IREP,PMAT)
+C*****************************************************************************
+C
+C
+C
+C
+C
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER(D0 = 0.0D0)
+C
+      DIMENSION ESRVAL(*),PMAT(*)
+      INTEGER   NMO(*)
+C
+      CALL QUIT('only implemented for odd number of active electrons')
+      RETURN
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #ifdef WORK_IN_PROGRESS
 C  /* Deck PRPESR2 */
-      SUBROUTINE PRPESR2(LU1INT,INDXPR,ESRVAL,LESRST,
+      SUBROUTINE PRPESR2(LU1INT,INDXPR,PVAL,LESRST,
      &           DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -540,7 +625,7 @@ C
 C
 C     Check symmetry
 C
-      ESRVAL = D0
+      PVAL = D0
 C
 C     1. Molecular point group symmetry
 C
@@ -576,7 +661,7 @@ C
         CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
           IF (LESRST(2) .AND. RODHF) THEN
 C           ... < p | O | p > for ITIM = -1 :
-            ESRVAL = ESRVAL +
+            PVAL = PVAL +
      &         DF(1)*DDOT(N2BBASX,DMAT(1,IZ,2),1,PMAT(1,IZ),1)
             write (6,*) 'iz, df(1),esrval',iz,df(1),esrval
             write (6,*) 'dmat(1,iz,2)'
@@ -586,13 +671,13 @@ C           ... < p | O | p > for ITIM = -1 :
             call output(pmat(1,iz),1,nbast,1,nbast,nbast,nbast,1,6)
           ELSE
             DO IOPEN = 0,NOPEN
-              ESRVAL = ESRVAL + DF(IOPEN)
+              PVAL = PVAL + DF(IOPEN)
      &           *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
             END DO
           ENDIF
       ENDIF
       ENDDO
-      ESRVAL = ESRVAL + ESRVAL
+      PVAL = PVAL + PVAL
 C
       RETURN
       END
@@ -612,11 +697,10 @@ C***********************************************************************
 #include <priunit.h>
 #include <mxcent.h>
 C     
-#include <dcbprp.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
+#include <dcbesr.h>
 #include <nuclei.h>
-      DIMENSION ESRVAL(4,*),WORK(*)
+C
+      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),WORK(*)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       CALL MEMGET('REAL',KTMAT,NCMAT,WORK,KFREE,LFREE)
@@ -658,12 +742,12 @@ C
 #include <dcbprp.h>
 #include <dcbxpr.h>
 #include <dcbprl.h>
-#include <dcbexp.h>
-#include <dcbxlr.h>
+#include <dcbesr.h>
+C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL TEST,DOATOM(NUCIND)
-      DIMENSION ESRVAL(4,*), TMPMAT(3,*),TMAT(3,3,NUCDEP),TISO(NUCDEP),
-     &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
+      DIMENSION ESRVAL(NCIESR,NCIESR,2,*), TMPMAT(3,*),TMAT(3,3,NUCDEP),
+     &          TISO(NUCDEP),IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
      &          IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
      &          SCTRA(NUCDEP*NUCDEP*9),WORK(*)
 #include <nuclei.h>
@@ -767,9 +851,9 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) = ESRVAL(4,KA)
-            TMPMAT(IPTAX(2,2),JA) = ESRVAL(3,KA)
-            TMPMAT(IPTAX(3,2),JA) = ESRVAL(2,KA)
+            TMPMAT(IPTAX(1,2),JA) =  ESRVAL(1,2,1,KA)
+            TMPMAT(IPTAX(2,2),JA) = -ESRVAL(1,2,2,KA)
+            TMPMAT(IPTAX(3,2),JA) =  ESRVAL(1,1,1,KA)
          ENDDO
          IF (IPRPRP.GE.4) THEN
             CALL HEADER('ESR hfs anisotropies'//

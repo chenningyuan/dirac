@@ -101,8 +101,14 @@ C*****  E S R   P R O P E R T I E S      *************************************
 C*****************************************************************************
 C
 #if defined (MOD_ESR)
-      CALL MEMGET('REAL',KESR,4*NESRP,WORK,KFREE,LFREE)
-      IF(DOESR) CALL PRPESR(WORK(KESR),WORK(KFREE),LFREE)
+      IF (DOESR) THEN
+         NCIESR = 2
+C        TODO: set NCIESR -- currently fixed to one open shell /May 2002
+         CALL MEMGET('REAL',KESR,2*NCIESR*NCIESR*NESRP,WORK,KFREE,LFREE)
+         CALL PRPESR(WORK(KESR),WORK(KFREE),LFREE)
+         CALL MEMREL('for PRPESR',WORK,KWORK,KESR,KFREE,LFREE)
+C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
+      END IF
 #endif
 C
 C*****************************************************************************
@@ -149,6 +155,7 @@ C
      &            WORK,KFREE,LFREE)
       END IF
 C
+      CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('PAMPRP')
 C
       RETURN
