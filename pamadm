@@ -172,7 +172,7 @@ setup()
       GENTAR=
    fi
    if [ "$TARFIL" = "export" ]; then
-      if [ -e DIRAC.new.tar.gz ]; then
+      if [ -a DIRAC.new.tar.gz ]; then
          rm DIRAC.new.tar.gz
       fi
       TARFIL=DIRAC.new
@@ -193,16 +193,16 @@ backup()
       echo "*** Backing up old files ..." 
       echo
       temp=
-      if [ -e DIRAC.new.tar.gz ]; then
+      if [ -a DIRAC.new.tar.gz ]; then
          temp="$temp DIRAC.new.tar.gz"
       fi
-      if [ -e configure ]; then
+      if [ -a configure ]; then
          temp="$temp configure"
       fi
-      if [ -e export ]; then
+      if [ -a export ]; then
          temp="$temp export"
       fi
-      if [ -e Makefile ]; then
+      if [ -a Makefile ]; then
          temp="$temp Makefile"
       fi
       for file in $temp; do
@@ -230,7 +230,7 @@ restore()
       echo "*** Making tar-file ..."
       echo
       ./export
-      if [ -e DIRAC.new.tar.gz ]; then
+      if [ -a DIRAC.new.tar.gz ]; then
          if [ "$TARFIL" != "DIRAC.new" ]; then
             mv DIRAC.new.tar.gz $TARFIL.tar.gz
          fi
@@ -243,16 +243,16 @@ restore()
       echo "*** Restoring old files ..." 
       echo
       temp=
-      if [ -e DIRAC.new.tar.gz.buf ]; then
+      if [ -a DIRAC.new.tar.gz.buf ]; then
          temp="$temp DIRAC.new.tar.gz"
       fi
-      if [ -e configure.buf ]; then
+      if [ -a configure.buf ]; then
          temp="$temp configure"
       fi
-      if [ -e export.buf ]; then
+      if [ -a export.buf ]; then
          temp="$temp export"
       fi
-      if [ -e Makefile.buf ]; then
+      if [ -a Makefile.buf ]; then
          temp="$temp Makefile"
       fi
       for file in $temp; do
