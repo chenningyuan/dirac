@@ -268,7 +268,7 @@ case $machine in
       cclist='gcc cc'
       debug='gdb';;
 
-   Power-Macintosh)
+   *apple*)
       liblist='libatlas libblas'
       complist='g77'
       cclist='gcc'
@@ -1217,7 +1217,7 @@ case $machine in
 #
 #   Darwin
 #
-   Power-Macintosh)
+   *apple*)
       echo 
       echo "Get the BLAS routines. See 'Known issues and problems' at"
       echo "http://dirac.chem.sdu.dk"
