@@ -3298,7 +3298,7 @@ C     (y = 0.28196 x^-1.5532)
 C
 C     Table of s,p,d,f orbital occupations of the elements
 C     (from which the electron-configuration can be deduced)
-      DIMENSION NOCC(109*4)
+      DIMENSION NOCC(118*4)
       SAVE NOCC
       DATA NOCC 
 C     Periode 1
@@ -3397,9 +3397,19 @@ C    --> Lanthanides & actinides
      &           14,30,30,28, 14,30,31,28,
 C    <-- Lanthanides & actinides
      &           14,30,32,28, 14,30,33,28, 14,30,34,28,
-     &           14,30,35,28, 14,30,36,28, 14,30,37,28/
+     &           14,30,35,28, 14,30,36,28, 14,30,37,28,
+     &           13,30,39,28, 13,30,40,28, 14,30,40,28,
+     &           14,31,40,28, 14,32,40,28, 14,33,40,28,
+     &           14,34,40,28, 14,35,40,28, 14,36,40,28/
       CALL QENTER('BNCOR1')
 c
+      IF (NINT(Z) .GT. 118) THEN
+         WRITE(LUPRI,'(1X,2(A/))') 'FATAL : The bare nucleus '//
+     &   'correction is only implemented for elemtents 1-118',
+     &   '         You can disable BNCORR with the .NOBNCR keyword '//
+     &   'in *DHFCAL'
+         CALL QUIT('BNCORR : Unsupported element!')
+      ENDIF
       IF (MAXSHELL) THEN
 c    ... just find maximum number of shells we need to run over 
 c        and return number in J-variable (used in BNCORR)
@@ -3445,34 +3455,24 @@ c     =================================
 c     How many s-electron in this shell
 c     =================================
 c
-      NS = NST
-      DO I  = 1,N-1
-         NS = NS - D2
-      ENDDO
+      NS = NST - (N-1)*D2
 c
       IF (NS .LE. D0) THEN
          NS = D0
       ELSEIF (NS.GE.D2) THEN
          NS = D2
-      ELSE
-         NS = NST - (N-1)*D2
       ENDIF
 c
 c     =================================
 c     How many p-electron in this shell
 c     =================================
 c
-      NP = NPT
-      DO I  = 1,N-2
-         NP = NP - D6
-      ENDDO
+      NP = NPT - (N-2)*D6
 c
       IF (NP .LE. D0) THEN
          NP = D0
       ELSEIF (NP.GE.D6) THEN
          NP = D6
-      ELSE
-         NP = NPT - (N-2)*D6
       ENDIF
 c
 c     =================================
@@ -3517,7 +3517,7 @@ c
          GOTO 10
       ENDIF
 C
-C     ... Finally use Slater's rules to extimate screening 
+C     ... Finally use Slater's rules to estimate screening 
 C         (and orbital exponent)
 C
       IF (J.EQ.1) THEN
@@ -3539,6 +3539,9 @@ c
 20    CONTINUE
 c     ... Convert STO to GTO using 1 Gaussian (STO1G)
       GNU = D2*SEXP*SEXP*STO1G(N)
+C     ... Make sure we dont get more delocalized than the first 
+C         1s electron.
+C      GNU = MAX(GNU,0.50D0)
 10    CONTINUE
       CALL QEXIT ('BNCOR1')
       RETURN
