@@ -92,7 +92,6 @@ C***********************************************************************
 #if defined (MOD_DFT)
       IF(DO1WT) CALL GT1WT(WORK,LWORK)
 #endif
-
       CALL QEXIT('PAMANA')
 C
       RETURN
@@ -933,7 +932,6 @@ C
      &                KFREE,LFREE)
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
-
         ENDDO
       ENDDO
 C
@@ -1246,7 +1244,6 @@ C
         DO J = 1,NREFS
           IOFF = 1
           DO I = 1,(J-1)
-
             WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
      &           REFFIL(I),REFFIL(J)
             CALL PRQMAT(AMAT(IOFF,JOFF,1),
@@ -1362,7 +1359,6 @@ C
      &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
-
       DATA OTYP/'E','P'/
       SAVE OTYP
 C
@@ -1400,7 +1396,6 @@ c       ... closed shell
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Electronic eigenvalue nr.',JMOL(K),': ',
      &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
-
         ELSE
           KK  = NPSH(IFRP)+1+JMOL(K)
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
@@ -1970,7 +1965,6 @@ C
 #include "sdpre.h"
       MC = 2
       IF(LEVYLE) MC = 1      
-
 C
 C     Calculate distance between centers
 C
