@@ -714,7 +714,7 @@ C
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
-     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.XXXXXX'/
+     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -758,6 +758,7 @@ C
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DYNSEL    = .FALSE.
+      DOBOSSEL  = .FALSE.
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
       AUTOCC    = .FALSE.
@@ -825,6 +826,8 @@ C
       NELEC_DHF(2) = 0
       NASH_DHF(1)  = 0
       NASH_DHF(2)  = 0
+      CALL IZERO(NISH_BOS,MAX_BOS_BL)
+      CALL IZERO(NASH_BOS,MAX_BOS_BL)
       CALL IZERO(NACSH,2*MXOPEN)
       NOPEN    = 0
       NFRO_DHF(1)  = 0
@@ -980,7 +983,7 @@ C&&& TRIFCK: Start on two-electron Fock matrix read from file
                   TRIVEC = .FALSE.
                GO TO 100
    18          CONTINUE
-C&&&& number of closed shell electrons
+C&&&& CLOSED: number of closed shell electrons
                   READ (LUCMD,*) (NELEC_DHF(I),I=1,NFSYM)
                   INIOCC = .FALSE.
                GO TO 100
@@ -990,8 +993,8 @@ C&&&& EIGPRI: Print control for electron and positron solutions
                   IPREIG = IL+2*IS
                GO TO 100
    20          CONTINUE
-C&&& ACTIVE SHELLS: read in number of active shells
-C                   and their occupation
+C&&& OPEN SHELLS: read in number of active shells
+C                 and their occupation
 C             Read in number of open shells
 C
                READ(LUCMD,*) NOPEN
@@ -1174,6 +1177,13 @@ C&&& FROZEN: Frozen orbitals
                ENDDO
                GOTO 100
  40               CONTINUE
+C&&& BOSONS: Selection based on (approx.) boson symmetry
+               DOBOSSEL = .TRUE.
+               READ(LUCMD,*) (NISH_BOS(I),I=1,NBSYM)
+               IF (NOPEN .GT. 0)
+     &         READ(LUCMD,*) (NASH_BOS(I),I=1,NBSYM)
+C ... hjaaj 19.oct.2004, initial implementation for boson symmetriex
+C     can later be extended to linear symmetry
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1197,11 +1207,11 @@ C
       IF (INIOCC) THEN
 C
          CALL RMOLCHR(ICHRG)
-         WRITE(LUPRI,'(/,1X,A,3(/A,I3))')
-     &      '* Initial Automatic occupation based on:',
-     &      '  Total charge of atoms = ',ICHRG,
-     &      '  Charge of molecule    = ',KCHARG,
-     &      '  ie. no. of electrons  = ',ICHRG-KCHARG
+         WRITE(LUPRI,'(/A,3(/A,I3))')
+     &      ' * Initial Automatic occupation based on:',
+     &      '   Total charge of atoms = ',ICHRG,
+     &      '   Charge of molecule    = ',KCHARG,
+     &      '   i.e. no. of electrons = ',ICHRG-KCHARG
 C
          IF (NFSYM .EQ. 1) THEN
 C
@@ -1538,7 +1548,7 @@ C
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC) 
-     &      CALL QUIT('WARNING! .AUTOCC combined with overlap '//
+     &      CALL QUIT('ERROR! .AUTOCC combined with overlap '//
      &           'selection does not work')
          IF(.NOT. DYNSEL) THEN
             WRITE(LUPRI,'(A)') ' * Vector selection based on overlap'
@@ -1547,6 +1557,42 @@ C
      &         ' * Vector selection based on overlap ',
      &            '(dynamic update of overlap-selection matrix)'
          END IF
+      END IF
+      IF (DOBOSSEL) THEN
+C     .BOSONS was programmed by hjaaj Oct 2004
+         NERR = 0
+         IF (MAX_BOS_BL .NE. MAX_SUB_BL) THEN
+            NERR = NERR + 1
+            WRITE (LUPRI,*)
+     &      'PROGRAMMING ERROR: MAX_BOS_BL .ne. MAX_SUB_BL'
+         END IF
+         IF (AUTOCC) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .AUTOCC combined with '//
+     &           '.BOSONS does not work'
+         END IF
+         IF (INIOCC) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS requires'//
+     &           'specification of .CLOSED/.OPEN SH'
+         END IF
+         IF (OVLSEL) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS combined with'//
+     &           ' .OVLSEL does not work'
+         END IF
+         IF (NOPEN .GT. 1) THEN
+            NERR = NERR + 1
+            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS currently'//
+     &           'only works with at most one open shell'
+         END IF
+         WRITE(LUPRI,'(A/4X,8I4)')
+     *      ' * Vector selection based on (approximate) boson symmetry',
+     &      (NISH_BOS(J),J=1,NBSYM)
+         IF (NOPEN.GT.0) WRITE(LUPRI,'(4X,8I4)') (NASH_BOS(J),J=1,NBSYM)
+C  TODO HJAAJ: check sum(NISH_BOS) = sum(NISH_DHF) 
+C  TODO HJAAJ: check sum(NASH_BOS) = sum(NASH_DHF) 
+C  TODO HJAAJ: check parity (IFSYM) of each boson symmetry
       END IF
       IF (AUTOCC .AND. NASHT_DHF .GT. 1) THEN
          WRITE(LUPRI,'(A)')

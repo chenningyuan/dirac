@@ -622,6 +622,11 @@ C     =================
 C
       IF(DOSEL) CALL SMOSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
+C     Boson type selection
+C     ====================
+C
+      IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
+C
 C
 C     Backtransform all spinors (temporary storage in FMO)
 C     ====================================================
@@ -1515,6 +1520,92 @@ C
       CALL WRITT(LUSMOS,NSMOTQ,SMO)
       CLOSE(LUSMOS,STATUS='KEEP')
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bossel */
+      SUBROUTINE BOSSEL(EIG,IBEIG,CFU,WORK,LWORK)
+C***********************************************************************
+C
+C     Select occupied orbitals based on (approximate) boson symmetry.
+C     Input is coefficients in MO-basis.
+C
+C     Written by H.J.Aa.Jensen Oct. 2004
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
+C
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      INTEGER NISHB_CNT(MAX_BOS_BL), NASHB_CNT(MAX_BOS_BL), JOCC(2)
+C
+      CALL QENTER('BOSSEL')
+C
+      CALL ICOPY(MAX_BOS_BL,NISH_BOS,1,NISHB_CNT,1)
+      CALL ICOPY(MAX_BOS_BL,NASH_BOS,1,NASHB_CNT,1)
+      NISHB_T = ISUM(MAX_BOS_BL,NISHB_CNT,1)
+      NASHB_T = ISUM(MAX_BOS_BL,NASHB_CNT,1)
+      DO I = 1,NFSYM
+         JOCC(I) = NPSH(I)
+      IF(NISH_DHF(I).NE.0) THEN
+        CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+     &              CFU(I2ORBT(I)+1),NORB(I),JOCC(I),NISHB_CNT)
+      ENDIF
+      ENDDO
+      IF (NOPEN .GT. 0) THEN
+         DO I = 1,NFSYM
+C           JOCC(I) = NPSH(I) + NISH(I) from loop above
+         IF(NASH_DHF(I).NE.0) THEN
+           CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+     &                 CFU(I2ORBT(I)+1),NORB(I),JOCC(I),NASHB_CNT)
+         ENDIF
+      ENDDO
+      END IF
+      CALL QEXIT('BOSSEL')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bosse2 */
+      SUBROUTINE BOSSE2(IFSYM,EIG,IBEIG,CFU,NO,JOCC,NB_CNT)
+C***********************************************************************
+C
+C     Select occupied orbitals based on (approximate) boson symmetry.
+C     Input is coefficients in MO-basis in a fermion symmetry IFSYM.
+C
+C     Written by H.J.Aa.Jensen Oct. 2004
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+      DIMENSION EIG(*), CFU(NO,NO,NZ)
+      INTEGER   IBEIG(*), NB_CNT(*)
+C
+      CALL QENTER('BOSSE2')
+C
+C hjaaj Oct 2004: must also implement open shells (NASHB*)
+      JST = JOCC + 1
+      DO J = JST,NO
+         JSYM = IBEIG(J) + 1
+         IF (NB_CNT(JSYM) .GT. 0) THEN
+            NB_CNT(JSYM) = NB_CNT(JSYM) - 1
+            JOCC = JOCC + 1
+            IF (J .NE. JOCC) THEN
+C              swap:
+               IBEIG(J) = IBEIG(JOCC)
+               IBEIG(JOCC) = JSYM - 1
+               EIGSWP   = EIG(J)
+               EIG(J)   = EIG(JOCC)
+               EIG(JOCC)= EIGSWP
+               DO IZ = 1,NZ
+                  CALL DSWAP(NO,CFU(1,J,IZ),1,CFU(1,JOCC,IZ),1)
+               END DO
+            END IF
+         END IF
+      ENDDO
+      CALL QEXIT('BOSSE2')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2808,11 +2899,11 @@ C
           BARNUC = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)')
-     &    '*** WARNING *** No trial vectors found.'//
-     &    'Using bare nucleus approximation instead.'
+     &    '*** INFO *** No trial vectors found.'//
+     &    ' Using bare nucleus approximation instead.'
           IF (BNCRON) WRITE(LUPRI,'(A/)')
-     &    '                Improved by a crude '//
-     &    'estimate of the two-electron repulsion.'
+     &    '             Improved by a crude '//
+     &    'estimate of the two-electron screening.'
           TRIVEC = .FALSE.
 C     Do not use density-based atomic size adjustments in this case:
           ATSIZE = .FALSE.
