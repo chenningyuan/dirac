@@ -790,25 +790,25 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XTIMRD (TIMERN,ELTIM)
+      SUBROUTINE XTIMRD (ELTIM,NAME)
 C
 C  purpose:  read out a specific timer previously set by XTIME
 C
       IMPLICIT INTEGER (A-Z)
+      CHARACTER*30 NAME
       REAL*8 ELTIM
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
 #include "priunit.h"
+      TIMERN = -1
+      DO I = 1, MXTIMF
+         IF (NAME.EQ.CPUTT(I)) TIMERN = I
+      ENDDO
       IF(TIMERN.LT.1.OR.TIMERN.GT.MXTIMF) THEN
-        WRITE(LUPRI,10)
         ELTIM=D0
       ELSE
         ELTIM=CPUTFT(TIMERN)
       ENDIF
-
- 10   FORMAT(/' **WARNING** Timer # out of range'/,
-     &        ' ** zero returned')
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -187,9 +187,9 @@ C     This is important in Fock space calculations where we enter this
 C     routine more than once. We do it in this manner rather than resetting
 C     the timer because we want the overall timing at the end.
 C
-      CALL XTIMRD (24,CPU4V)
-      CALL XTIMRD (27,CPUH1)
-      CALL XTIMRD (34,CPUH2)
+      CALL XTIMRD (CPU4V,'-- BINTM                       ')
+      CALL XTIMRD (CPUH1,'--- HINTM: VVOO contribution   ')
+      CALL XTIMRD (CPUH2,'--- T2EQNS: HINTM*T2           ')
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -560,11 +560,11 @@ C        Calculate the energies for this sector
 C
 C     Read out timers for the most important contractions
 C
-      CALL XTIMRD (24,CPU)
+      CALL XTIMRD (CPU,'-- BINTM                       ')
       CPU4V = CPU - CPU4V
-      CALL XTIMRD (27,CPU)
+      CALL XTIMRD (CPU,'--- HINTM: VVOO contribution   ')
       CPUH1 = CPU - CPUH1
-      CALL XTIMRD (34,CPU)
+      CALL XTIMRD (CPU,'--- T2EQNS: HINTM*T2           ')
       CPUH2 = CPU - CPUH2
 C
 C     Compute & print the performance in Mega/Giga/TeraFlops
@@ -2642,13 +2642,13 @@ C
       DO I = 1, 3
          IF (I.EQ.1) THEN
             MFLOPS = MFLOPB * DBLE(NIT) / CPU4V
-            CONTR = 'VVVV+VOVV (via B intermediate)'
+            CONTR = 'VVVV+VOVV (in B: includes I/O)'
          ELSEIF (I.EQ.2) THEN
             MFLOPS = MFLOPH * DBLE(NIT) / CPUH1
-            CONTR = 'VOVO (in H intermediate)      '
+            CONTR = 'VOVO (in H: only XGEMM)       '
          ELSE
             MFLOPS = MFLOPH * DBLE(NIT) / CPUH2
-            CONTR = 'VOVO (contracting H)          '
+            CONTR = 'VOVO (in T2EQN: includes sort)'
          ENDIF
 C
          IF (MFLOPS.GE.1.0E6) THEN
