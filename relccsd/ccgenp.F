@@ -123,20 +123,20 @@ C         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
             DO I=1,MXTIMF
               IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
             ENDDO
-
+C
             DO ND=1,NMPROC-1
               CALL MPI_RECV(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
      &           ND,TITAG,MPI_COMM_WORLD,ISTAT,IERR)
               IF(IERR.NE.MPI_SUCCESS) CALL 
      &          QUIT('MPI ERROR IN XTIME')
-              WRITE(IW,310) ND
+cluuk         WRITE(IW,310) ND
               DO I=1,MXTIMF
                 IF(CPUTFT(I).LT.CPUTMI(I)) CPUTMI(I)=CPUTFT(I)
                 IF(CPUTFT(I).GT.CPUTMA(I)) CPUTMA(I)=CPUTFT(I)
                 CPUTAV(I)=CPUTAV(I)+CPUTFT(I)
-                IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+Cluuk           IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
               ENDDO
-C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
+Cluuk         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
             ENDDO
 
             WRITE(IW,330)
@@ -148,6 +148,10 @@ C             WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
             CALL MPI_SEND(CPUTFT,MXTIMF,MPI_DOUBLE_PRECISION,
      &          MASTER,TITAG,MPI_COMM_WORLD,IERR)
             IF(IERR.NE.0) CALL QUIT('MPI ERROR in XTIME')
+            WRITE(IW,310) MYPROC
+            DO I=1,MXTIMF
+               IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
+            ENDDO
           ENDIF
         ENDIF
         WRITE(IW,350)
@@ -178,8 +182,8 @@ C       WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
  310  FORMAT(/,T10,'Results node ',I3,/,T10,'----------------'/)
  330  FORMAT(//,T30,'Summary with min/max/average'/,
      &          T30,'----------------------------'//,
-     &          T2,'Timer',T33,'Minimum',T43,'Maximum',
-     &          T53,'Average'/)
+     &          T2,'Timer',T36,'Minimum',T48,'Maximum',
+     &          T59,'Average'/)
  340  FORMAT(T2,A30,T33,F12.3,T43,F12.3,T53,F12.3)
  350  FORMAT(/'########################################'/,
      &        '###'/'### End of timing report'/'###'/,

@@ -1156,7 +1156,6 @@ C so a further distinction and check for total symmetry is not necessary !!
 C ==> therefore the IXXXX(TT) arrays contain the offsets of nonvanishing
 C totally symmetric integrals.
 C
-      NVVVOTMX = 1
       DO IREP = 1, NREP
          IOO    (IREP+1) = IOO    (IREP) + NO  (IREP)*NO  (IREP)
          IVO    (IREP+1) = IVO    (IREP) + NV  (IREP)*NO  (IREP)
@@ -1169,8 +1168,6 @@ C
          IVVVVTT(IREP+1) = IVVVVTT(IREP) + NVVT(IREP)*NVVT(IREP)
          IVVOO  (IREP+1) = IVVOO  (IREP) + NVV (IREP)*NOO (IREP)
          IVVOOT (IREP+1) = IVVOOT (IREP) + NVV (IREP)*NOOT(IREP)
-         IF (NVVT(IREP)*NVO(IREP).GT.NVVVOTMX) 
-     &         NVVVOTMX=NVVT(IREP)*NVO(IREP)
       ENDDO
 C
       NV1 = IOOOOTT(NREP+1)
@@ -1708,8 +1705,8 @@ C
       BUF1B = VVVO + KT3VVVOT(NREP+1)*RCW + RCW
       BUF2B = BUF1B + IVVVTMX*RCW + RCW
       BUF3B = BUF2B + IVVVTMX*RCW + RCW
-      BUF4B = BUF3B + IVVVTMX*RCW + RCW
-      TOP = BUF4B + MAX(NVVVOTMX,NDIMT2)*RCW + RCW
+      TAU3B = BUF3B + IVVVTMX*RCW + RCW
+      TOP = TAU3B + NDIMT2*RCW + RCW
       IF(ICALC.EQ.1) WRITE (IW,1001) "in core evaluation of triples",TOP
       IF (DOCCSDT) MXCORR = MAX(MXCORR,TOP)
 C
@@ -1809,7 +1806,7 @@ C
             WRITE (IW,1012)
             GOTO 30
          ENDIF
-         CALL MEMREL('CCENER',CC,1,KFRSAV1,KFREE,LFREE)
+         CALL MEMREL('CCENER 1',CC,1,KFRSAV1,KFREE,LFREE)
          CALL MEMOPT('REAL',VOOO,NV2*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',T2S,IVVOOT(NREP+1)*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',T2T,LOVVOT(NREP+1)*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1822,8 +1819,7 @@ C
          CALL MEMOPT('REAL',BUF1,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF2,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF3,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',BUF4,MAX(NVVVOTMX,NDIMT2)*RCW,
-     &               CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',TAU3,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
 C
 C        Check if CCSD amplitudes are available
 C
@@ -1837,18 +1833,22 @@ C
             GOTO 11
          ENDIF
 C
+         CALL XTIME(40,1,'CCSD(T) evaluation            ')
          CALL T3CORR (CC(FVO),EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
-     &                CC(BUF1),CC(BUF2),CC(BUF3),CC(BUF4),
+     &                CC(BUF1),CC(BUF2),CC(BUF3),CC(TAU3),
      &                CC(VVVO),CC(VVOO),CC(VOOO))
+         CALL XTIME(40,2,'CCSD(T) evaluation            ')
 C
 C     This is a restart point : update status.
 C
+         write (iw,*) "returned from T3CORR"
          IMSTAT(6) = 3
          CALL CCDUMP
+         write (iw,*) "returned from CCDUMP"
    30    CONTINUE
       ENDIF
 C
-      CALL MEMREL('CCENER',CC,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('CCENER 2',CC,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -1865,9 +1865,6 @@ C
 1010  FORMAT (/' Skipping MP2 calculation')
 1011  FORMAT (/' Skipping CCSD calculation')
 1012  FORMAT (/' Skipping CCSD(T) calculation')
-C015  FORMAT (//" ********************************************"
-C    &         /" ** Parallel Triples not implemented yet ! **"
-C    &         /" ********************************************")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR,
@@ -2615,7 +2612,7 @@ C       Save the updated wave function & Hamiltonian
       ENDIF
       ENDDO
 C
-      CALL MEMREL('CCENER',CC,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('CCFSPC',CC,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")

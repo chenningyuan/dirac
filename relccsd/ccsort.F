@@ -1083,7 +1083,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT23 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
-     &                  OFF,OFF1,BUF1,BUF2,NVVVOTMX)
+     &                  OFF,OFF1,BUF1,BUF2,NBUF1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1106,7 +1106,6 @@ C
       INTEGER NTRIPL(NREP)
       INTEGER OFF1(32,32)
       INTEGER*8 OFF(NREP+1)
-      INTEGER*8 NVVVOTMX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1128,25 +1127,35 @@ C
        IJREP = KLREP
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
+C
+C      We can only fetch integrals that are present on our node, ISTART will be 
+C      modified by GETVOVV to represent the first value of KL that is present on
+C      our node. Likewise we address the target array such that we count from this
+C      first value. This offset is kept in KL
+C
        ISTART = 0
-       NINT = N
-       MINT=NVVVOTMX/(MAX0(M,1))
+       KL1 = 0
+       MINT=NBUF1/(MAX0(M,1))
+   1   CONTINUE
        CALL GETVOVV (IJREP,ISTART,NINT,DONE,BUF1,MINT)
-       IF(.NOT.DONE) CALL 
-     & QUIT (' SRT23: IRREP BATCH TOO LARGE FOR INCORE TRIPLES')
        CALL DELINT ('VOVV','DKKK',BUF1,IJREP,ISTART,NINT)
        IJ = 1
        DO 10 JREP = 1, NREP
         IREP = MULTB(JREP,IJREP+NREP,2)
-        JOFF = (OFF(JREP) + OFF1(IREP,KLREP)) * RCW
+        JOFF = (OFF(JREP) + OFF1(IREP,KLREP) + KL1*IFIE(IREP) ) * RCW
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
             IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
-            CALL XCOPY(N,BUF1(IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            CALL XCOPY(NINT,BUF1(IJ),M,BUF2(IKLJ1),IFIE(IREP))
             IJ = IJ + RCW
          ENDDO
         ENDDO
  10    CONTINUE
+       IF (.NOT.DONE) THEN
+          ISTART = ISTART + NINT
+          KL1 = KL1 + NINT
+          GOTO 1
+       ENDIF
       ENDDO
 C
       RETURN

@@ -308,7 +308,7 @@ C------------------------------------------------------------------
 C H(AK,CI) = H(AK,CI) - W(AK,CD) * T(D,I)
 C H is kept in BUF1, still ordered VOVO
 C------------------------------------------------------------------
-      CALL XTIME(28,1,' ** HINTM: VOVV*T             ')
+      CALL XTIME(26,1,'--- HINTM: VOVV*T              ')
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
@@ -383,7 +383,7 @@ C Every other calculation is done in BUF1 !!
 C------------------------------------------------------------------
       CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &            BUF1,H)
-      CALL XTIME(28,2,' ** HINTM: VOVV*T             ')
+      CALL XTIME(26,2,'--- HINTM: VOVV*T              ')
 
 C------------------------------------------------------------------
 C H(AI,CK) = H(AI,CK) + [ 0.5*T(AD,IL) - T(A,L)*T(D,I) ] * W(KL,CD)
@@ -409,7 +409,7 @@ C
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF3,BUF2)
 
-      CALL XTIME(29,1,' ** HINTM: VVOO cont             ')
+      CALL XTIME(27,1,'--- HINTM: VVOO contribution      ')
 
 C
 C --- new parallelized VOVO contraction
@@ -428,7 +428,7 @@ C
          OFF3 = OFF3 + M * N * RCW
       ENDDO
  
-      CALL XTIME(29,2,' ** HINTM: VVOO cont             ')
+      CALL XTIME(27,2,'--- HINTM: VVOO contribution      ')
 
       RETURN
       END
