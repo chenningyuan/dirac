@@ -1727,6 +1727,7 @@ C
              DO ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
+              IF (ABS(SOINT) .GT. 1.0D-14) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1743,6 +1744,7 @@ C
                GMAT(IOFFD+IOFFLK) = SOINT
                NALL = NALL + 1
                IF (IOFFKL.NE.IOFFLK) NALL = NALL + 1
+              END IF
              ENDDO
            ENDDO
            ISOFF = ISOFF + NOABCD
@@ -1780,6 +1782,7 @@ C
              DO 300 ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
+              IF (ABS(SOINT) .GT. 1.0D-14) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1797,6 +1800,7 @@ C
                GMAT(IOFFD+IOFFLK) = SOINT
                NALL = NALL + 1
                IF (IOFFKL.NE.IOFFLK) NALL = NALL + 1
+              END IF
   300        CONTINUE
   200      CONTINUE
            ISOFF = ISOFF + NOABCD
@@ -1893,6 +1897,7 @@ C
              DO ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
+              IF (ABS(SOINT) .GT. 1.0D-14) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1935,6 +1940,7 @@ C
                   ENDIF
                   NALL = NALL + 1
                ENDIF
+              END IF
              ENDDO
              LGBUF(IPASS) = KBUF
            ENDDO
@@ -1975,6 +1981,7 @@ C
              DO 300 ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
+              IF (ABS(SOINT) .GT. 1.0D-14) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -2018,6 +2025,7 @@ C
                   ENDIF
                   NALL = NALL + 1
                ENDIF
+              END IF
 C
   300        CONTINUE
              LGBUF(IPASS) = KBUF
