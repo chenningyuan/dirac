@@ -32,8 +32,10 @@
 #
 # Does 'echo' understand backslash commands
 #
-if [ "	" != "`echo '\t'`" ]; then
-   echo='echo -e'
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
 fi
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
