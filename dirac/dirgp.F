@@ -1010,3 +1010,101 @@ C     Electronic part
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Nucbas */
+      SUBROUTINE NUCBAS(NUCORB,AA,IPRINT)
+C***********************************************************************
+C
+C     Extract basis information for all centers
+C
+C     Written by T.Saue March 12 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+C
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+#include <dummy.h>
+C
+#include <nuclei.h>
+#include <ccom.h>
+#include <shells.h>
+#include <primit.h>
+      CHARACTER SPDCAR*1
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
+C
+C     Initialize
+C
+      NDIM = 2*NHTYP*NUCIND
+      CALL IZERO(NUCORB,NDIM)
+C
+      JCENT = 0
+      JPRIM = -1
+      JC = -1
+      DO ISHELL = 1,KMAX
+        ICENT = NCENT(ISHELL)
+        IF(ICENT.NE.JCENT) THEN
+          JCENT = ICENT
+          JLVAL = 0
+        ENDIF
+        IC = LCLASS(ISHELL)
+        IF(IC.NE.JC) THEN
+          JC    = IC
+          JLVAL = 0
+        ENDIF
+        ILVAL = NHKT(ISHELL)
+        IF(ILVAL.NE.JLVAL) THEN
+          JLVAL = ILVAL
+          NUCORB(ILVAL,IC,ICENT) = 0
+          AA(1,ILVAL,IC,ICENT)=D0
+          AA(2,ILVAL,IC,ICENT)=DUMMY
+        ENDIF
+        NUCORB(ILVAL,IC,ICENT)=NUCORB(ILVAL,IC,ICENT)+1
+        IPRIM = JSTRT(ISHELL)
+        IF(IPRIM.NE.JPRIM) THEN
+          JPRIM = IPRIM
+          NPRIM = NUCO(ISHELL)
+          DO IEXP = 1,NPRIM
+            A=PRIEXP(IPRIM+IEXP)
+            WRITE(LUPRI,*) IEXP,A
+            AA(1,ILVAL,IC,ICENT)=MAX(AA(1,ILVAL,IC,ICENT),A)
+            AA(2,ILVAL,IC,ICENT)=MIN(AA(2,ILVAL,IC,ICENT),A)
+          ENDDO
+        ENDIF
+      ENDDO
+C
+      IF(IPRINT.GE.1) THEN
+         CALL HEADER('NUCORB:Basis set information:',-1)
+        DO I = 1,NUCIND
+          WRITE(LUPRI,'(/A,A4,A/)') '*** Center: ',NAMN(I),' ***'
+          WRITE(LUPRI,'(2X,A)') '* Large components:'
+          IC = 1
+          DO LL = 1,NHTYP
+          IF(NUCORB(LL,IC,I).GT.0) THEN
+            L=LL-1
+            WRITE(LUPRI,'(3X,A1,A,I6,2(3X,A,E12.5))')
+     &      SPDCAR(L),'-orbitals:',NUCORB(LL,IC,I),
+     &      'Alpha_H :',AA(1,LL,IC,I),
+     &      'Alpha_L :',AA(2,LL,IC,I)
+          ENDIF
+          ENDDO
+          WRITE(LUPRI,'(2X,A)') '* Small components:'
+          IC = 2
+          DO LL = 1,NHTYP
+          IF(NUCORB(LL,IC,I).GT.0) THEN
+            L=LL-1
+            WRITE(LUPRI,'(3X,A1,A,I6,2(3X,A,E12.5))')
+     &      SPDCAR(L),'-orbitals:',NUCORB(LL,IC,I),
+     &      'Alpha_H: ',AA(1,LL,IC,I),
+     &      'Alpha_L: ',AA(2,LL,IC,I)
+          ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
+C
+      RETURN
+      END
