@@ -2760,6 +2760,10 @@ C
 C
             IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
 C                        ^- to get correct shell number
+C
+C           JA is the pointer to the start of this series of uncontracted
+C           shells, increase it by the distance from the start
+C
             IROW = IPTSYM(IROW,IREP) - ISOFF
 C
 C           Fill in standard spherical transformation matrix

@@ -6370,13 +6370,13 @@ C
 C     New code for generating RKBREL.
 C     This should also work for contracted large component basis set.
 C
-C     Loop over large component shells.
+C     Loop over large and small component shells.
 C     For contracted basis sets, the same primitives are present in many
 C     shells, and we skip shells with the same primitives.
 C     A potential problem arises if you block a contracted basis set.
 C
 C
-      iPrimLargeTest = 0
+      iPrimTest = 0
 C
       DO 100 ISHL = 1, KMAX 
 C
@@ -6397,7 +6397,7 @@ C
             PRIEXI = PRIEXP(IPRIM)
 C
             JSH2M = 0
-            iPrimTest = 0
+            jPrimTest = 0
 C
 C           Loop over small component shells
 C           Find matching small component basis functions.
