@@ -733,10 +733,11 @@ case $machine in
 esac
 #
 #  Add VAR_G77 is compiler is g77
+#  and add INSTALL_WRKMEM to the ccp-flags.
 #
 if [ "$F77" = "g77" ]; then
    cpp="$cpp -DVAR_G77"
-   ccp="$ccp -DVAR_G77"
+   ccp="$ccp -DVAR_G77 -D'INSTALL_WRKMEM=$memsiz'"
 fi
 # 
 #  Make Makefile.config
