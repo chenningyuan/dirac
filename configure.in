@@ -59,7 +59,7 @@ usage='Usage: '$0'\n'\
 '\tSet system to SYSTEM-id\n'\
 '--parallel[=(yes|no)]\n'\
 '\tParallel version of Dirac\n'\
-'--parallel-message=(mpi|pvm)\n'\
+'--parallel-message=mpi\n'\
 '\tParallel message passing\n'\
 '--mathematical-libraries=MATH-LIB\n'\
 '\tChoose the math. lib. MATH-LIB\n'\
@@ -361,13 +361,13 @@ if [ "$par" = "yes" ]; then
       while [ -z "$ok" ]; do
          ok=1
          if [ $quick = 0 ]; then
-            $echo 'Message passing [mpi]/pvm: \c'
+            $echo 'Message passing [mpi]: \c'
             read mesp
          else
             mesp=mpi
          fi
          case "$mesp" in
-         "mpi" | "pvm" )
+         "mpi" )
             ;;
          "" )
             mesp="mpi"
@@ -379,14 +379,6 @@ if [ "$par" = "yes" ]; then
       done
    fi
    echo 'Parallel message passing: '$mesp
-#
-#  Abort if PVM
-#
-   if [ "$mesp" = "pvm" ]; then
-      echo "I don't think PVM is working..."
-      echo "configure aborted..."
-      exit 1
-   fi
 #
 #  The only computer I can think of with a separate compiler for parallel
 #  MPI code is IBMs xlf
@@ -472,27 +464,10 @@ if [ "$par" = "yes" ]; then
       else
          echo 'Parallel include:'$parinc
       fi
-#
-#     PVM settings, we need two PVM library files
-#
-      elif [ $parlib = 'yes' -a $mesp = 'pvm' ]; then
-         parlib=
-         tmplib='libpvm3.a libfpvm3.a'
-         for testdir in $pardir; do
-            for testlib in $tmplib; do
-               if test -f $testdir/$parlib; then
-                  if [ $parlib = 'libpvm3.a']; then
-                     parlib="$parlib -lpvm3"
-                  else
-                     parlib="$parlib -lfpvm3"
-                  fi
-                fi
-             done
-          done
-       fi
-       if [ "$parlib" = "no" ]; then
-            parlib=
-       fi
+      fi
+      if [ "$parlib" = "no" ]; then
+           parlib=
+   fi
 else
    mesp='dummy'
 fi
@@ -865,8 +840,6 @@ fi
 
 if [ "$mesp" = "mpi" ]; then
     parop='VAR_MPI'
-elif [ "$mesp" = "pvm" ]; then
-    parop='VAR_PVM'
 else
     parop=
 fi
@@ -901,11 +874,7 @@ case $machine in
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
-          if [ "$mesp" = "mpi" ]; then
-             def='dirmpi.x'
-          else
-             def='dirpvm.x'
-          fi
+          def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        arflag='rv'
@@ -927,18 +896,14 @@ case $machine in
           for mod in $MODS; do
             cpp=`echo $cpp $mod`
           done
-          def='dirmpi.x'
+          def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
-          if [ "$mesp" = "mpi" ]; then
-             def='dirmpi.x'
-          else
-             def='dirpvm.x'
-          fi
+	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        opt='-O3 -Mvect'
@@ -960,11 +925,7 @@ case $machine in
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
-          if [ "$mesp" = "mpi" ]; then
-             def='dirmpi.x'
-          else
-             def='dirpvm.x'
-          fi
+	  def='dirmpi.x'
           parlib="$parlib -lfmpi -lrt -pthread"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
@@ -1053,11 +1014,7 @@ case $machine in
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
-         if [ "$mesp" = "mpi" ]; then
-            def='dirmpi.x'
-         else
-            def='dirpvm.x'
-         fi
+	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       opt='-fast -xO4 -w -xtarget=native'
@@ -1081,11 +1038,7 @@ case $machine in
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                done
-               if [ "$mesp" = "mpi" ]; then
-                  def='dirmpi.x'
-               else
-                  def='dirpvm.x'
-               fi
+		def='dirmpi.x'
                 mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
             inc="-I$INCLUDE_DIR";;
@@ -1103,11 +1056,7 @@ case $machine in
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
                done
-               if [ "$mesp" = "mpi" ]; then
-                  def='dirmpi.x'
-               else
-                  def='dirpvm.x'
-               fi
+	       def='dirmpi.x'
                mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
                c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
@@ -1158,11 +1107,7 @@ case $machine in
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
             done
-            if [ "$mesp" = "mpi" ]; then
-               def='dirmpi.x'
-            else
-               def='dirpvm.x'
-            fi
+	    def='dirmpi.x'
              mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
          fi
          inc="-I$INCLUDE_DIR";;
@@ -1180,11 +1125,7 @@ case $machine in
       else
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         if [ "$mesp" = "mpi" ]; then
-            def='dirmpi.x'
-         else
-            def='dirpvm.x'
-         fi
+	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       for mod in $MODS; do
@@ -1281,16 +1222,6 @@ MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
 INCLUDE_DIR     = $mpi_inc
 C_INCLUDE_DIR   = $c_mpi_inc
-#
-EOF
-#elif [ "$mesp" = "pvm" -a "$parlib" = "yes" ]; then
-elif [ "$mesp" = "pvm" ]; then
-    cat <<EOF >> Makefile.config
-#
-# Parallel initialization
-#
-PVM_LIB_PATH    = $parinc
-PVM_LIB_LIST    = $parlib
 #
 EOF
 fi
