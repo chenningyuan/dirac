@@ -4305,17 +4305,20 @@ C      END IF
         end do
         write(6,*)
         write(6,*) '*************************************************'//
-     &             '*********************'
-        write(6,*) '>>> CI  Iter  Root    Energy        RESIDUAL    R'//
-     &             'ESRATIO '
+     &             '**************************'
+        write(6,*) '                  Iter  Root    Energy           '//
+     &             'RESIDUAL     RESRATIO '
         write(6,*) '*************************************************'//
-     &             '*********************'
+     &             '**************************'
         write(6,*)
         DO 1601 IROOT = 1, NROOT
            FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-           WRITE(6,'(9X,I3,2X,I3,3X,F15.8,2X,E10.3,3X,E10.3)')
+           WRITE(6,'(3X,I3,2X,I3,3X,F18.10,2X,E10.3,3X,E10.3)')
      &               ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &               RNRM(1,IROOT)/RNRM(ITER,IROOT)
+           write(6,'(A,F18.10)') 
+     &               ' Final energy ',FINEIG(IROOT)
+           write(6,'(A)') 'ENDEND'
  1601   CONTINUE
       END IF
 *

@@ -1,0 +1,33 @@
+#################################
+**DIRAC
+.TITLE
+ Small LUCITA for He in s basis
+.WAVE FUNCTION
+.4INDEX
+#################################
+**HAMILTONIAN
+.SPINFREE
+#################################
+**WAVE FUNCTION
+.DHF
+.LUCITA
+#
+*DHFCAL
+.CLOSED SHELL
+ 2
+#
+*LUCITA
+.INIWFC
+  DHFSCF
+.CITYPE
+  FCI
+.MULTIP
+  1
+#################################
+**MOLTRA
+.INTFLG
+ 1 1 1
+.ACTIVE
+energy  -1000.  1000.  0.1
+#################################
+*END OF
