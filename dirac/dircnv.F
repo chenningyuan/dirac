@@ -594,7 +594,7 @@ C
           DO I = 2,NELMBM
             CFSUM = CFSUM + CVEC(I)
           ENDDO
-          WRITE(LUPRI,'(/A,1P,D9.3/)') '* DIIS coefficients.Sum: ',CFSUM
+          WRITE(LUPRI,'(/A,1P,D9.3/)') '* DIIS coefficients. Sum:',CFSUM
           IOFF = NITER - NELMBM
           WRITE(LUPRI,'(5X,A6,4X,1P,D10.3)')
      &       'lambda',CVEC(1)
