@@ -237,8 +237,6 @@ C
              CLOSE(LUTMAT,STATUS='KEEP')            
           ENDIF
         ENDIF
-      ENDIF
-      IF(TRIVEC) THEN
 C
 C        Generate density matrix
 C        Be aware: Both density matrices are normed to 1
@@ -301,7 +299,8 @@ C           read old Fock matrix in DMAT to finish new Fock matrix/hj
      &                  FOCK(1+N2BBASXQ*IOPEN),1)
             END DO
           END IF
-
+C         restore density matrix in DMAT/tsaue
+          CALL READNS(LUDENS,DMAT)
         ELSE
           CALL WRIDNS(LUDENS,DMAT)
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
