@@ -76,7 +76,7 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -597,7 +597,7 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -800,7 +800,7 @@ C
 #include "inpt.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C
@@ -1060,7 +1060,7 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-#include <mpif.h>
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 C---------------Local variables--------------------------------------

@@ -48,15 +48,15 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-#include <implicit.h>
-#include <mxorb.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <dcbham.h>
+#include "implicit.h"
+#include "mxorb.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbham.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
-#include <infpar.h>
-#include <mpif.h>
+#include "infmpi.h"
+#include "infpar.h"
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "ccpar.inc"
@@ -121,9 +121,9 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <mxorb.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "mxorb.h"
+#include "dcbgen.h"
 C
 C     ITASK = 3 for parallel RELCCSD
 C
@@ -139,15 +139,15 @@ C     Written by Luuk Visscher, August 1997
 C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "mxorb.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
-#include <mpif.h>
+#include "infmpi.h"
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <dcbgen.h>
-#include <infpar.h>
+#include "dcbgen.h"
+#include "infpar.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
@@ -177,17 +177,17 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <mxorb.h>
-#include <dcbham.h>
+#include "implicit.h"
+#include "mxorb.h"
+#include "dcbham.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
-#include <infpar.h>
-#include <mpif.h>
+#include "infmpi.h"
+#include "infpar.h"
+#include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <priunit.h>
-#include <dgroup.h>
+#include "priunit.h"
+#include "dgroup.h"
 #include "ccpar.inc"
 #include "symm.inc"
 #include "files.inc"
