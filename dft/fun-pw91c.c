@@ -73,8 +73,6 @@ static void pw91c_first(FirstFuncDrv *ds, real factor,
                        DftDensProp* dp);
 static void pw91c_second(SecondFuncDrv *ds, real factor,
                         DftDensProp* dp);
-static void pw91c_third(ThirdFuncDrv *ds, real factor,
-                       DftDensProp* dp);
 
 Functional pw91cFunctional = {
   "pw91c",
@@ -83,8 +81,7 @@ Functional pw91cFunctional = {
   NULL,
   pw91c_energy,
   pw91c_first,
-  pw91c_second,
-  pw91c_third
+  pw91c_second
 };
 
 /* IMPLEMENTATION PART */
@@ -318,5 +315,3 @@ pw91c_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
     ds->df0002 += factor*d2fdgbgb;
 }
 
-static void pw91c_third(ThirdFuncDrv *ds, real factor,
-                       const DftDensProp* dp){}
