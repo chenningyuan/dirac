@@ -548,6 +548,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 * LABEL : 1  for unbarred (alpha)
 *         -1 for barred   (beta)
+*         and refers to integral (not operator!) indexing !!
 *
 * IOP_REO : Reordering array for output density elements.
 *           Relate definition of operator in this routine with
@@ -593,6 +594,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
 *
 *. Delta MK = 0 terms
 *
+* operator:
 * a+i alpha a j alpha
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
@@ -631,6 +633,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
         END DO
       END DO
 *
+* operator:
 * a+i beta a j beta
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
@@ -673,6 +676,7 @@ C?            WRITE(6,*) ' IT, T(IT) = ', IT,T(IT)
       IFTONE = 1
       IFTTWO = NHX + 1
 *
+* operator:
 *. a+i alpha  a+j alpha  a k alpha  a l alpha, ordered so i.ge.j, k.ge.l
       DO IGAS = 1, NGAS
         DO JGAS = 1, IGAS 
@@ -716,20 +720,23 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
                     CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
+* This excitation corresponds to the integral
+*  (+a  a | +a  a)
+* so reorder accordingly:
                     IHINDX(1,NHX) = 1
-                    IHINDX(2,NHX) = 2
-                    IHINDX(3,NHX) = 3
-                    IHINDX(4,NHX) = 4
+                    IHINDX(2,NHX) = 3
+                    IHINDX(3,NHX) = 4
+                    IHINDX(4,NHX) = 2
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = 1
                     LABEL(IHINDX(2,NHX),NHX) = 1
                     LABEL(IHINDX(3,NHX),NHX) = 1
                     LABEL(IHINDX(4,NHX),NHX) = 1
                     IOP_REO(1,NHX) = 1
-                    IOP_REO(2,NHX) = 2
+                    IOP_REO(2,NHX) = 4
                     IOP_REO(3,NHX) = 3
-                    IOP_REO(4,NHX) = 4
-                    SIGN_OPREO(NHX) = ONE
+                    IOP_REO(4,NHX) = 2
+                    SIGN_OPREO(NHX) = -ONE
                   end if
                 END IF
               END IF
@@ -738,6 +745,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
         END DO
       END DO
 *
+* operator:
 *. a+i beta a+j beta a k beta a l beta, ordered so i.ge.j, k.ge.l
       DO IGAS = 1, NGAS
         DO JGAS = 1, IGAS 
@@ -776,20 +784,23 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                   NHX = NHX + 1
                   if (IFLAG.ne.1) then
                     CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
+* This excitation corresponds to the integral
+*  (+b  b | +b  b)
+* so reorder accordingly:
                     IHINDX(1,NHX) = 1
-                    IHINDX(2,NHX) = 2
-                    IHINDX(3,NHX) = 3
-                    IHINDX(4,NHX) = 4
+                    IHINDX(2,NHX) = 3
+                    IHINDX(3,NHX) = 4
+                    IHINDX(4,NHX) = 2
                     SIGN_NHX(NHX) = ONE
                     LABEL(IHINDX(1,NHX),NHX) = -1
                     LABEL(IHINDX(2,NHX),NHX) = -1
                     LABEL(IHINDX(3,NHX),NHX) = -1
                     LABEL(IHINDX(4,NHX),NHX) = -1
                     IOP_REO(1,NHX) = 1
-                    IOP_REO(2,NHX) = 2
+                    IOP_REO(2,NHX) = 4
                     IOP_REO(3,NHX) = 3
-                    IOP_REO(4,NHX) = 4
-                    SIGN_OPREO(NHX) = ONE
+                    IOP_REO(4,NHX) = 2
+                    SIGN_OPREO(NHX) = -ONE
                   end if
                 END IF
               END IF
@@ -801,6 +812,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 * First type of integrals for 2-electron diagonal
       I2DIATP = NHX + 1
 *
+* operator:
 *. a+i alpha  a+j beta  a k beta  a l alpha
       DO IGAS = 1, NGAS
         DO JGAS = 1, NGAS
@@ -824,7 +836,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                   if (IFLAG.ne.1) then
                     CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +a  a  +b  b
+*  (+a  a | +b  b)
 * so reorder accordingly:
                     IHINDX(1,NHX) = 1
                     IHINDX(2,NHX) = 3
@@ -837,8 +849,8 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     LABEL(IHINDX(4,NHX),NHX) = 1
                     IOP_REO(1,NHX) = 1
                     IOP_REO(2,NHX) = 4
-                    IOP_REO(3,NHX) = 3
-                    IOP_REO(4,NHX) = 2
+                    IOP_REO(3,NHX) = 2
+                    IOP_REO(4,NHX) = 3
                     SIGN_OPREO(NHX) = -1.D0 * ONE
                   end if
                 END IF
@@ -850,6 +862,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *
       if (IHTYPE.ge.4) then
 *
+* operator:
 *. a+i alpha  a+j beta  a k alpha  a l beta
 *   Generates type (ub|bu) of integrals.
 *
@@ -875,7 +888,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     if (IFLAG.ne.1) then
                       call icopve(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +a  b  +b  a
+*  (+a  b | +b  a)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
                       IHINDX(2,NHX) = 3
@@ -908,6 +921,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *
       IF (IHTYPE.GT.2) THEN
 *
+* operator:
 * a+i alpha  j beta
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
@@ -944,6 +958,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
           END DO
         END DO
 *
+* operator:
 * a+i beta a j alpha 
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
@@ -991,6 +1006,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
 *    (ub|uu), (bu|uu), (bu|bb), (ub|bb) integral classes *
 **********************************************************
 *
+* operator:
 *. a+i alpha a+j alpha a k alpha a l beta, i .ge. j
         DO IGAS = 1, NGAS
           DO JGAS = 1, IGAS
@@ -1019,7 +1035,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +a  a  b  a+
+*  (+a  a | b  a+)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
                       IHINDX(2,NHX) = 3
@@ -1043,6 +1059,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
           END DO
         END DO
 *
+* operator:
 *. a+i beta a+j alpha a k alpha a l alpha, k .ge. l
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
@@ -1071,7 +1088,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +b  a  a  a+
+*  (+b  a | a  a+)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
                       IHINDX(2,NHX) = 3
@@ -1095,6 +1112,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
           END DO
         END DO
 *
+* operator:
 *. a+i beta  a+j beta  a k beta  a l alpha , i .ge. j
         DO IGAS = 1, NGAS
           DO JGAS = 1, IGAS
@@ -1123,7 +1141,7 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +b  a  b  b+
+*  (+b  a | b  b+)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
                       IHINDX(2,NHX) = 4
@@ -1148,6 +1166,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
           END DO
         END DO
 *
+* operator:
 *. a+i alpha  a+j beta  a k beta  a l beta , k .ge. l
         DO IGAS = 1, NGAS
           DO JGAS = 1, NGAS
@@ -1176,7 +1195,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +a  b  +b  b
+*  (+a  b | +b  b)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
                       IHINDX(2,NHX) = 3
@@ -1209,6 +1228,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
 *
       if (IHTYPE.eq.4) then
 *
+* operator:
 *. a+i alpha  a+j alpha  a k beta  a l beta, i.ge.j, k.ge.l
         DO IGAS = 1, NGAS
           DO JGAS = 1, IGAS
@@ -1248,22 +1268,22 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +a  b  +a  b 
+*  (+a  b | +a  b )
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 2
-                      IHINDX(3,NHX) = 3
-                      IHINDX(4,NHX) = 4
+                      IHINDX(2,NHX) = 3
+                      IHINDX(3,NHX) = 4
+                      IHINDX(4,NHX) = 2
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = 1
                       LABEL(IHINDX(2,NHX),NHX) = 1
                       LABEL(IHINDX(3,NHX),NHX) = -1
                       LABEL(IHINDX(4,NHX),NHX) = -1 
                       IOP_REO(1,NHX) = 1
-                      IOP_REO(2,NHX) = 3
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = -1.D0 * ONE
+                      IOP_REO(2,NHX) = 4
+                      IOP_REO(3,NHX) = 3
+                      IOP_REO(4,NHX) = 2
+                      SIGN_OPREO(NHX) = -ONE
                     end if
                   END IF
                 END IF
@@ -1272,6 +1292,7 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
           END DO
         END DO
 *
+* operator:
 *. a+i beta  a+j beta  a k alpha  a l alpha, i.ge.j, k.ge.l
         DO IGAS = 1, NGAS
           DO JGAS = 1, IGAS
@@ -1311,11 +1332,11 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                     if (IFLAG.ne.1) then
                       CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
 * This excitation corresponds to the integral
-*  +b  a  +b  a
+*  (+b  a | +b  a)
 * so reorder accordingly:
                       IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 2
-                      IHINDX(3,NHX) = 3
+                      IHINDX(2,NHX) = 3
+                      IHINDX(3,NHX) = 2
                       IHINDX(4,NHX) = 4
                       SIGN_NHX(NHX) = 1 * ONE
                       LABEL(IHINDX(1,NHX),NHX) = -1
@@ -1323,10 +1344,10 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       LABEL(IHINDX(3,NHX),NHX) = 1
                       LABEL(IHINDX(4,NHX),NHX) = 1 
                       IOP_REO(1,NHX) = 1
-                      IOP_REO(2,NHX) = 3
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = -1.D0 * ONE
+                      IOP_REO(2,NHX) = 4
+                      IOP_REO(3,NHX) = 3
+                      IOP_REO(4,NHX) = 2
+                      SIGN_OPREO(NHX) = -ONE
                     end if
                   END IF
                 END IF

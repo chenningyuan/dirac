@@ -9,4 +9,4 @@
      &              KPICLX_F,KPICLY_F,KPICLZ_F,
      &              KDIONEE,KDITWOE,KKR,KIOFF12,KINDK,KINDL,
      &              KINVREO,KNUMINT,KT_CC,KBOSYM,KISREO,
-     &              IMOFFSET,KINDEX
+     &              IMOFFSET,KINDEX,KINDEX_ORI

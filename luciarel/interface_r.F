@@ -1208,8 +1208,9 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
-     &                            INDEX,NASHT,F1,F2,IBOSYM,
-     &                            IBSPOBEX_TP,IHINDX,LABEL,CIRUN,IPRNT)
+     &                            INDEX,
+     &                            NASHT,F1,F2,IBOSYM,
+     &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
 #include "implicit.inc"
 #include "mxpdim.inc"
@@ -1224,9 +1225,9 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       character*6 CIRUN
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
      &          NIAA_STR(MXPNGAS),NIAB_STR(MXPNGAS)
-      dimension ISOBEX(NGAS,4,NSPOBEX_TP),INDEX(4,NINT_CC),
-     &          IBSPOBEX_TP(NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
-     &          LABEL(4,NSPOBEX_TP)
+      dimension ISOBEX(NGAS,4,NSPOBEX_TP),
+     &          INDEX(4,NINT_CC),
+     &          IBSPOBEX_TP(NSPOBEX_TP),LABEL(4,NSPOBEX_TP)
       dimension I_ADD(4)
 *
 * Group notation of the strings:
@@ -1309,7 +1310,6 @@ C       call reo_info_molcas()
           if (IRI.eq.1.and.ICOUNT.ne.IBSPOBEX_TP(IXTP)) then
             write(6,*) 'Pointers to types do not match numbers'
             write(6,*) 'of integrals generated.'
-            write(6,*) 'IHINDX array: ',(IHINDX(I,IXTP),I=1,4,1)
             write(6,*) 'LABEL array: ',(LABEL(I,IXTP),I=1,4,1)
             write(6,*) 'int.no.,offset: ',ICOUNT,IBSPOBEX_TP(IXTP)
             write(6,*) 'Current type: ',IXTP
@@ -1616,32 +1616,10 @@ C       call reo_info_molcas()
                             call abend2('Quitting.')
                           end if
 *
-*  Modify if integrals are over relativistic spinors:
-                          if ((INTIMP.eq.6.or.INTIMP.eq.7).and.
-     &                         ISPINFREE.eq.0) then
-                            if (INDEX(1,ICOUNT).ne.0.and.
-     &                          INDEX(2,ICOUNT).ne.0) then
-                              do IRUN = 1,4,1
-                                  INDEX(IRUN,ICOUNT) = 
-     &                                INDEX(IRUN,ICOUNT) * 
-     &                                LABEL(IRUN,IXTP)
-                              end do
-*
-* Correct internal ordering of two-bar exchange type integrals:
-* (This might be implemented in some more elegant way later on.)
-                              if (INDEX(1,ICOUNT).gt.0.and.
-     &                            INDEX(2,ICOUNT).lt.0.and.
-     &                            INDEX(3,ICOUNT).lt.0.and.
-     &                            INDEX(4,ICOUNT).gt.0) then
-                                J_SV = INDEX(2,ICOUNT)
-                                L_SV = INDEX(4,ICOUNT)
-                                INDEX(2,ICOUNT) = -L_SV
-                                INDEX(4,ICOUNT) = -J_SV
-                              end if
-                            end if
-                          end if
-*
 * Index reordering and second integral in exchange case:
+* (Reason: CACA string generated e.g. for two alpha excitations,
+*          but this does not correspond to index ordering in integral!)
+*
                           YXINT = 0.D0
                           if (IXCH.eq.1) then
 * Index sequence reads:
@@ -1666,6 +1644,11 @@ C       call reo_info_molcas()
                             I_ADD(2) = J_SV
                             I_ADD(3) = L_SV
                             I_ADD(4) = K_SV
+                            do IRUN = 1,4,1
+                              I_ADD(IRUN) = 
+     &                              I_ADD(IRUN) * 
+     &                              LABEL(IRUN,IXTP)
+                            end do
                             if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ')
      &                      call getint_sigden(YXINT,I_ADD,IRI,
      &                                    NDIM_TOT,NASHT,F1,F2,IPRNT)
@@ -1673,6 +1656,31 @@ C       call reo_info_molcas()
 *
                           if (CIRUN.ne.'DENS1 '.and.
      &                        CIRUN.ne.'DENS2 ') then
+*
+*  Modify if integrals are over relativistic spinors:
+                            if ((INTIMP.eq.6.or.INTIMP.eq.7).and.
+     &                           ISPINFREE.eq.0) then
+                              if (INDEX(1,ICOUNT).ne.0.and.
+     &                            INDEX(2,ICOUNT).ne.0) then
+                                do IRUN = 1,4,1
+                                    INDEX(IRUN,ICOUNT) = 
+     &                                  INDEX(IRUN,ICOUNT) * 
+     &                                  LABEL(IRUN,IXTP)
+                                end do
+*
+* Correct internal ordering of two-bar exchange type integrals:
+* (This might be implemented in some more elegant way later on.)
+                                if (INDEX(1,ICOUNT).gt.0.and.
+     &                              INDEX(2,ICOUNT).lt.0.and.
+     &                              INDEX(3,ICOUNT).lt.0.and.
+     &                              INDEX(4,ICOUNT).gt.0) then
+                                  J_SV = INDEX(2,ICOUNT)
+                                  L_SV = INDEX(4,ICOUNT)
+                                  INDEX(2,ICOUNT) = -L_SV
+                                  INDEX(4,ICOUNT) = -J_SV
+                                end if
+                              end if
+                            end if
                             call getint_sigden(YINT,INDEX(1,ICOUNT),
      &                                IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
                             T(ICOUNT) = YINT - YXINT
@@ -1727,6 +1735,7 @@ C       call reo_info_molcas()
 *     ^ End loop over real/imaginary
       if (NTEST.ge.1) close(LUINGR)
 *
+C     stop 'After dist_ints_sigden.'
       return
       end
 ***********************************************************************
@@ -8518,10 +8527,8 @@ Cjan      end do
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP)
 *
-      NTESTL = 100
+      NTESTL = 000
       NTEST = max(IPRNT,NTESTL)
-*
-      NTEST = 10  ! forced
 *
       NINT_TOT = N1ELINT + N2ELINT
 *
@@ -8608,51 +8615,41 @@ Cjan      end do
 *  INDEX array refers to integral indexing.
 *  The corresponding second quantization operators then result
 *  from the following resorting to CACA ordering:
-*  CA AA CB AB
-*  IHINDX relates integral and operator ordering of a particular
-*  excitation class. LABEL has been defined for integrals (see
-*  get_hx_rela.F), so it is reordered for operators here.
-*
-                IND_R(IOP_REO(1,IXTP)) = INDEX_L(1)  
-     &                   - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHT
+*  e.g. CA AA CB AB
+*  Retaining integral indexing for densities (as they come out of
+*  the program, and labelled by the INDEX array:
+                IND_R(1) = INDEX_L(1) - (LABEL(1,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' I '
-                  write(6,*) ' INDEX_L(1) ',INDEX_L(1)
                   write(6,*) ' IHINDX(1,IXTP) ' ,IHINDX(1,IXTP)
                   write(6,*) ' LABEL(IHINDX(1,IXTP),IXTP) ',
      &                         LABEL(IHINDX(1,IXTP),IXTP)
                 end if
 *
-                IND_R(IOP_REO(2,IXTP)) = INDEX_L(2)  
-     &                   - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHT
+                IND_R(2) = INDEX_L(2) - (LABEL(2,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' L '
                   write(6,*) ' INDEX_L(2) ',INDEX_L(2)
-                  write(6,*) ' IHINDX(2,IXTP) ' ,IHINDX(2,IXTP)
                   write(6,*) ' LABEL(IHINDX(2,IXTP),IXTP) ',
      &                         LABEL(IHINDX(2,IXTP),IXTP)
                 end if
 *
-                IND_R(IOP_REO(3,IXTP)) = INDEX_L(3)  
-     &                   - (LABEL(IHINDX(3,IXTP),IXTP) - 1)/2 * NASHT
+                IND_R(3) = INDEX_L(3) - (LABEL(3,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' K '
                   write(6,*) ' INDEX_L(3) ',INDEX_L(3)
-                  write(6,*) ' IHINDX(3,IXTP) ' ,IHINDX(3,IXTP)
                   write(6,*) ' LABEL(IHINDX(3,IXTP),IXTP) ',
      &                         LABEL(IHINDX(3,IXTP),IXTP)
                 end if
 *
-                IND_R(IOP_REO(4,IXTP)) = INDEX_L(4)  
-     &                   - (LABEL(IHINDX(4,IXTP),IXTP) - 1)/2 * NASHT
+                IND_R(4) = INDEX_L(4) - (LABEL(4,IXTP) - 1)/2 * NASHT
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' J '
                   write(6,*) ' INDEX_L(4) ',INDEX_L(4)
-                  write(6,*) ' IHINDX(4,IXTP) ' ,IHINDX(4,IXTP)
                   write(6,*) ' LABEL(IHINDX(4,IXTP),IXTP) ',
      &                         LABEL(IHINDX(4,IXTP),IXTP)
                 end if
@@ -8672,7 +8669,7 @@ Cjan      end do
                 end if
 *
 * ... and copy to the entry for allowed index permutation
-* (ab|cd) = -(ad|cb)
+* (ab|cd) = -(ad|cb)  in terms of integral indexing
 *
                 I_R = IND_R(1)
                 L_R = IND_R(2)
@@ -8720,7 +8717,8 @@ Cjan      end do
 *
 *   Revised for operator ordering, Mar 20, 2002
 *
-      subroutine wrtdens(DENS,INDEX,IHINDX,SIGN,IOP_REO,ISF)
+      subroutine wrtdens(DENS,INDEX,IHINDX,SIGN,NASHT,LABEL,IOP_REO,
+     &                   SIGN_REO,ISF)
 *
 #include "implicit.inc"
 #include "mxpdim.inc"
@@ -8730,7 +8728,8 @@ Cjan      end do
 *
       dimension DENS(NINT_CC),SIGN(NSPOBEX_TP)
       dimension INDEX(4,NINT_CC),IND_R(4),IHINDX(4,NSPOBEX_TP),
-     &          IOP_REO(4,NSPOBEX_TP)
+     &          IOP_REO(4,NSPOBEX_TP),LABEL(4,NSPOBEX_TP),
+     &          SIGN_REO(NSPOBEX_TP)
 *
       NINT_TOT = N1ELINT + N2ELINT
       if (ISF.eq.1) then
@@ -8747,11 +8746,15 @@ Cjan      end do
         end do
         write(6,*)
         write(6,*)
+        write(6,*) 'Writing densities in reordered form (for MCSCF):'
+        write(6,*) '- a+ a b b+  '
+        write(6,*) '(means sign multiplied to all 2-particle densities)'
+        write(6,*) '(done in GET_HX_RELA)'
+        write(6,*)
         if (IRI.eq.1) write(6,*) ' Real density elements     : '
         if (IRI.eq.2) write(6,*) ' Imaginary density elements: '
         write(6,*) ' -------------------------------'
         do IXTP = 1,NSPOBEX_TP,1
-          SIGN_REO = 1.D0
           write(6,*)
           write(6,'(A,I4)') ' Excitation type ... ',IXTP
           write(6,*)        ' -------------------------'
@@ -8765,22 +8768,32 @@ Cjan      end do
 *  The corresponding second quantization operators then result
 *  from the following resorting to CACA ordering:
 *  CA AA CB AB for printing:
-              IND_R(IOP_REO(1,IXTP)) = INDEX(IHINDX(1,IXTP),IRUN)
-              IND_R(IOP_REO(2,IXTP)) = INDEX(IHINDX(2,IXTP),IRUN)
-              IND_R(IOP_REO(3,IXTP)) = INDEX(IHINDX(3,IXTP),IRUN)
-              IND_R(IOP_REO(4,IXTP)) = INDEX(IHINDX(4,IXTP),IRUN)
-              SIGN_REO = -1.D0
+*
+              IUBFAC = 1
+              if (INDEX(1,IRUN).lt.0) IUBFAC = -1
+              IND_R(1) = INDEX(1,IRUN) - (LABEL(1,IXTP) - 1)/2 * NASHT
+*
+              IUBFAC = 1
+              if (INDEX(2,IRUN).lt.0) IUBFAC = -1
+              IND_R(2) = INDEX(2,IRUN) - (LABEL(2,IXTP) - 1)/2 * NASHT
+*
+              IUBFAC = 1
+              if (INDEX(3,IRUN).lt.0) IUBFAC = -1
+              IND_R(3) = INDEX(3,IRUN) - (LABEL(3,IXTP) - 1)/2 * NASHT
+*
+              IUBFAC = 1
+              if (INDEX(4,IRUN).lt.0) IUBFAC = -1
+              IND_R(4) = INDEX(4,IRUN) - (LABEL(4,IXTP) - 1)/2 * NASHT
             else
 *  One-particle density element. No modification.
               IND_R(1) = INDEX(1,IRUN)
               IND_R(2) = INDEX(2,IRUN)
               IND_R(3) = INDEX(3,IRUN)
               IND_R(4) = INDEX(4,IRUN)
-              SIGN_REO = 1.D0
             end if
             write(6,'(X,4I3,2X,1F18.10)') 
-     &           (IND_R(I),I=1,4,1),DENS(IRUN+IRIOFF)
-     &                              *SIGN_REO*SIGN(IXTP)
+     &           (IND_R(I),I=1,4,1),DENS(IRUN+IRIOFF) * SIGN(IXTP)
+     &                                                * SIGN_REO(IXTP)
             IRUN = IRUN + 1
           end do
         end do

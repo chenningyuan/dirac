@@ -1746,24 +1746,24 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
       call memmar(KPICI1,INTSPACE,'ADDS  ',2,'IPI1  ')
 *  Space for incorporated sf integrals and symmetry info
         if (ENVIRO(1:6).ne.'DIRAC ') then
-      call memmar(KPICAOT,ITRIASUM,'ADDS  ',2,'IPISFT')
+          call memmar(KPICAOT,ITRIASUM,'ADDS  ',2,'IPISFT')
 *  Incorporated spin-orbit integrals
-      call memmar(KPICLX,NTRIAEL,'ADDS  ',2,'IPILX ')
-      call memmar(KPICLY,NTRIAEL,'ADDS  ',2,'IPILY ')
-      call memmar(KPICLZ,NTRIAEL,'ADDS  ',2,'IPILZ ')
+          call memmar(KPICLX,NTRIAEL,'ADDS  ',2,'IPILX ')
+          call memmar(KPICLY,NTRIAEL,'ADDS  ',2,'IPILY ')
+          call memmar(KPICLZ,NTRIAEL,'ADDS  ',2,'IPILZ ')
           if (IFOCKEX.eq.1) then
-      call memmar(KPICLX_F,NTRSM_FULL,'ADDS  ',2,'IPILXF')
-      call memmar(KPICLY_F,NTRSM_FULL,'ADDS  ',2,'IPILYF')
-      call memmar(KPICLZ_F,NTRSM_FULL,'ADDS  ',2,'IPILZF')
+          call memmar(KPICLX_F,NTRSM_FULL,'ADDS  ',2,'IPILXF')
+          call memmar(KPICLY_F,NTRSM_FULL,'ADDS  ',2,'IPILYF')
+          call memmar(KPICLZ_F,NTRSM_FULL,'ADDS  ',2,'IPILZF')
           end if
         else
-      call memmar(KBOSYM,2*NDIM_TOT,'ADDS  ',1,'IBOSUM')
-      call memmar(KISREO,2*NDIM_TOT,'ADDS  ',1,'IISREO')
+          call memmar(KBOSYM,2*NDIM_TOT,'ADDS  ',1,'IBOSUM')
+          call memmar(KISREO,2*NDIM_TOT,'ADDS  ',1,'IISREO')
         end if
       else
         if (ENVIRO(1:6).eq.'DIRAC ') then
-      call memmar(KBOSYM,2*NDIM_TOT,'ADDS  ',1,'IBOSUM')
-      call memmar(KISREO,2*NDIM_TOT,'ADDS  ',1,'IISREO')
+          call memmar(KBOSYM,2*NDIM_TOT,'ADDS  ',1,'IBOSUM')
+          call memmar(KISREO,2*NDIM_TOT,'ADDS  ',1,'IISREO')
         end if
       end if
 *
@@ -1771,7 +1771,7 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
 * or sigden route, the allocation should be revised. At the moment:
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
         print*,'NINT_CC',NINT_CC
-      call memmar(KINDEX,4*NINT_CC,'ADDS  ',1,'IINDEX')
+        call memmar(KINDEX,4*NINT_CC,'ADDS  ',1,'IINDEX')
       end if
 *
 ************************************************
@@ -2367,7 +2367,7 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                            WORK(KISTR_AA),WORK(KISTR_AB),
      &                            WORK(KINDEX),
      &                            NDIM_TOT2,F1,F2,IBOSYM,
-     &                            WORK(KLIBSOBEX),WORK(KLIHIND),
+     &                            WORK(KLIBSOBEX),
      &                            WORK(KLABEXTP),CIRUN,NTEST)
 C     subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
 C                                 ISOBEX,T,

@@ -765,7 +765,7 @@ C        Active energy.
 C
          EMCACT = RENRACT(DV,FCAC,FQ,IPROPT)
          print*,'Active energy from densities in RGRAD: ',EMCACT
-C        stop 'In RGRAD.'
+c        stop 'In RGRAD.'
 C
       ELSE IF (NASHT. EQ. 1) THEN
          CALL DZERO(FQ,NZ*NASHT*NORBT)

@@ -385,15 +385,16 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
               write(6,*) '======================================='
               IRC_D = 2
               call wrtdens(WORK(KT_CC),WORK(KINDEX),WORK(KLIHIND),
-     &                     WORK(KSIGNNHX),WORK(KLOP_REO),IRC_D)
+     &                     WORK(KSIGNNHX),NTOOB2,WORK(KLABEXTP),
+     &                     WORK(KLOP_REO),WORK(KSIOPREO),IRC_D)
             end if
 *
 * Transfer density matrices to KRMC format
             IRC_D = 2
             call trnsfdens(F1,F2,WORK(KT_CC),
-     &                     WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
-     &                     WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                     IRC_D,NTOOB2,IPRDEN)
+     &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
+     &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
+     &                    IRC_D,NTOOB2,IPRDEN)
 *
           else
             write(6,*) 'SIGDEN_ROUTE with unallowed value in gasci.'
