@@ -55,27 +55,27 @@
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
-#define c_readreorder C_READREORDER
+#define creadreorder CREADREORDER
 #elif defined (SYS_HPUX)
 /* nothing */
 #elif defined (SYS_AIX)
 #define frac2i frac2i
-#define c_readreorder c_readreorder
+#define creadreorder creadreorder
 #else
 #define frac2i frac2i_
-#define c_readreorder c_readreorder_
+#define creadreorder creadreorder_
 #endif /*CRAY*/
 
 void c_frac2i();
 void frac2i();
 void sysinf();
-void c_readreorder();
+void creadreorder();
 
 /*
  * Take string of tokens and return new ordering
  */
 
-void c_readreorder(char *string, int *ireord, int imoord[], int *mxreord)
+void creadreorder(char *string, int *ireord, int imoord[], int *mxreord)
 
 {
    char *token;

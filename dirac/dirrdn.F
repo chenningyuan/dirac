@@ -2934,6 +2934,6 @@ C*****************************************************************************
       CHARACTER STRING*72
 
       string(72:72) = char(0)
-      call c_readreorder(string,ireord,imoord,mxreord)
+      call creadreorder(string,ireord,imoord,mxreord)
       RETURN
       END
