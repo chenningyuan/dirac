@@ -332,20 +332,8 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
-c     print*,'1e tau relccsd uit'
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
-c     print*,'jvs: 1e tau part RELCCSD'
 C
-c     if (rcw.EQ.2) then
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(2*i-1)
-c        print*,'imag xvo',i,xvo(2*i)
-c     enddo
-c     else
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(i)
-c     enddo
-c     endif
 C------------------------------------
 C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
 C------------------------------------
@@ -353,7 +341,6 @@ C------------------------------------
       N = NFVO
       USEDZ = .FALSE.
       RIGHT = .FALSE.
-c     print*,'jvs: D part RELCCSD off'
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
      &            JJVO,BUF2,NBUF2,XVO,DVV,USEDZ,RIGHT)
 C
@@ -379,20 +366,8 @@ C
 C--------------------------------------------
 C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
-c     print*,'jvs: 2e tau part RELCCSD'
       CALL XCOPY (NDIMT2,S2,1,BUF3,1)
       CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
-c
-c     if (rcw.EQ.2) then
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(2*i-1)
-c        print*,'imag xvo',i,xvo(2*i)
-c     enddo
-c     else
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(i)
-c     enddo
-c     endif
 C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------
@@ -401,26 +376,11 @@ C---------------------------------------------------------------------
      &              BUF1,BUF2)
       M = NFVO
       K = NFOO
-c     print*,'jvs: D part RELCCSD off'
       CALL XGEMV ('N',M,K,A1,BUF2,M,DOO,1,A1,XVO,1)
 C
       CALL XSCAL(NDIMX,-A1,XVO,1)
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
-c
-c     if (rcw.EQ.2) then
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(2*i-1)
-c        print*,'imag xvo',i,xvo(2*i)
-c     enddo
-c     else
-c     do i = 1, ndimx
-c        print*,'real xvo',i,xvo(i)
-c     enddo
-c     endif
-C
-c     call convxm(buf1,buf2,xvo,xmo)
-c
 C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
@@ -428,19 +388,11 @@ C     | contraction with the 3/4 transformed integrals |
 C     +------------------------------------------------+
 C
 C     deactivated because checking in to trunk
-c     print*,'generatie mulliken Ts'
 c     CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
 c    &              T2,BUF1)
-c     do i=1,200
-c       print*,'i,T2=',i,T2(i)
-c     enddo
-c     do i=1,200
-c       print*,'i,BUF1(i)=',i,BUF1(i)
-c     enddo
 C     deactivated because checking in to trunk
 c     CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
 c     CALL SRTT1T2(BUF2,BUF1)
-c     print*,'jvs: T-dependent part of Lagrangian'
 C     deactivated because checking in to trunk
 C
 C     +---------------------------------------------------+
@@ -490,19 +442,6 @@ C
       CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
-c     print*,'zet dvo en dov op 0'
-c     call dzero(dvo,NDIMX*RCW)
-c     call dzero(dov,NDIMX*RCW)
-c     if (rcw.EQ.2) then
-c     do i = 1, ndimx
-c        print*,'real dvo',i,dvo(2*i-1)
-c        print*,'imag dvo',i,dvo(2*i)
-c     enddo
-c     else
-c     do i = 1, ndimx
-c        print*,'real dvo',i,dvo(i)
-c     enddo
-c     endif
 C
 C###########################################
 C
@@ -512,7 +451,6 @@ C###########################################
 C
 c     KFREE=1
 c     LFREE=NBUF3*RCW
-c     print*,'laat VO deel DMO op o door prpxlr_mpg niet te callen'
 c     deactivated because checking in to trunk
 c     CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
 C
@@ -576,9 +514,6 @@ C
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ELSE
       ENDIF
-c     do i =1, NFVO*RCW
-c        print*,'xvo',i,BUF1(i)
-c     enddo
 C######################################################################
 C  STEP 2:
 C

@@ -31,6 +31,8 @@ C
 C
       CALL QENTER('MPGLVC')
 C
+      CALL TITLER('Density matrix dependent part Lagrangian','*',116)
+C
 C
 C     Calculate density matrix dependent part of Lagrangian
 C     =====================================================
@@ -191,6 +193,7 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbdhf.h"
 C
       LOGICAL TOBE
       DIMENSION DMO(*)
@@ -220,21 +223,14 @@ C
 C     c) Generate AO Lagrangian
 C     -------------------------
 C
-      print*,'jvs: put integral flag now by hand, later via commonblock'
-C
-      ILL = 1
-      ILS = 1
-      ISS = 0
-      INTFLG = ILL + 2 * ILS + 4 * ISS 
-C
       ISYMLAG = 1 ! Lagrangian is totally symmetric
-      IHRMOP = 1  ! Hermitian operator
-      IFCKOP = 1  ! 'Fock' matrix type
+      IHRMOPT = 1  ! Hermitian operator
+      IFCKOPT = 1  ! 'Fock' matrix type
       NRFMAT = 1  ! nr of Fock-type matrices
 C
       CALL DZERO(XLAGAO,N2BBASXQ)
 C
-      CALL TWOFCK(ISYMLAG,IHRMOP,IFCKOP,
+      CALL TWOFCK(ISYMLAG,IHRMOPT,IFCKOPT,
      &            XLAGAO,DMAT,NRFMAT,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
 C

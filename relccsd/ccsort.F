@@ -1487,7 +1487,6 @@ C     T's
 C
       CALL TAUINFO(INFOT)
 C
-      print*,'begin SRTDIR'
       ITDIR = 1 ! the pointer for the T needed in moltra
 C
       DO IREPCI = 1, NFSYM

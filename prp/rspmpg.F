@@ -41,6 +41,8 @@ C
 
       call qenter('PRPXLR_MPG')
 C
+      CALL TITLER('Solving Z-vector equation','*',123)
+C
 C     Initialization - from xlrinp
 C     ============================
 C
@@ -128,12 +130,12 @@ C     ---Right side operator
 C
       pfac(1)=-1.d0
       plabel(1)='OVERLAP'
-      write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
-     &     iprxlr
+c     write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
+c    &     iprxlr
       call xprind('Lagrangian rhs. ',iptyp,npcomp,pfac,plabel,
      &     indxpr,isyxpr,itrxpr,work(kfree),lfree,iprxlr)
-      write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
-     &     iprxlr
+c     write(lupri,'(a,6i4)') 'XPRIND',iptyp,npcomp,indxpr,isyxpr,itrxpr,
+c    &     iprxlr
       call op1ind('NLRBPT',ind1op,llrbpu,nlrbpt,indxpr,maxllr)
 C
 C     Allocate memory
@@ -695,8 +697,6 @@ C     Solution vector (e-e) part
 C     ==========================
 C
       if(nzxope.gt.0)then
-         write(lupri,'(a)') 'e-e solutions'
-c        PRINT*, 'in getlrf_mpg'
          nesim=nfreq*ifac
          kee=kfree
          call memget('REAL',kgvec,      nzxopeq,work,kfree,lfree)
@@ -756,7 +756,6 @@ C     Solution vector (e-p) part
 C     ==========================
 C
       IF(NZXOPP.GT.0)THEN
-         write(lupri,'(a)') 'e-p solutions'
          npsim=nfreq*ifac
          call memget('REAL',kxvec,nzxoppq*nfreq,work,kfree,lfree)
          call memget('REAL',kgvec,nzxoppq      ,work,kfree,lfree)

@@ -89,6 +89,8 @@ C***********************************************************************
 C     
       CALL QENTER('TRDR5T')
       KFRSAV = KFREE
+C
+      CALL TITLER('Amplitude dependent part Lagrangian','*',118)
 C     
 C     Define the packing of the 4-index transformed integrals
 C

@@ -1247,28 +1247,6 @@ C
 C
       ioff1 = 0
       ioff2 = 0
-c     print*,'nfsym=',nfsym
-c     do ifsym = 1, nfsym
-c        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-c        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFYSM,1)
-c        do iz=1,nz
-c           do j=1,naocc(ifsym)
-c              do i=1,navir(ifsym)
-c                 print*,'XMO ',i,j,'iz ',iz,xmo(i+ioff1,j+ioff2,iz)
-c              enddo
-c           enddo
-c        enddo
-c        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-c        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFYSM,1) + NORB(IFSYM)
-c     enddo
-c     print*,'xmo op een andere manier geprint'
-c     do iz = 1, nz
-c        do j = 1, norbt
-c           do i= 1, norbt
-c              print*, 'lagr=', iz, i, j, xmo(i,j,iz)
-c           enddo
-c        enddo
-c     enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

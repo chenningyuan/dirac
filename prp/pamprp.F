@@ -1304,7 +1304,7 @@ C
 C     Electric fields at individual nuclei
 C
       IF(EFN) THEN
-        CALL PRP_EFN(EXPVAL,WORK,KFREE,LFREE)
+        CALL PRP_EFN(EXPVAL,WORK(KEXP_CORR),.FALSE.,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Electric field gradients
@@ -1417,6 +1417,12 @@ C     Parity violation: Chirality
 C
       IF(PVC) THEN
         CALL PRP_PVC(WORK(KEXP_TOT),WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Electric fields at individual nuclei
+C
+      IF(EFN) THEN
+        CALL PRP_EFN(EXPVAL,WORK(KEXP_CORR),.TRUE.,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Electric field gradients
@@ -1802,10 +1808,10 @@ C     /* Deck corr_efg */
       SUBROUTINE CORR_EFG(IPRINT,EXPVAL_CORR,DOATOM,TEMP)
 C*****************************************************************************
 C
-C     Calculates electronic contribution to electric field gradients
+C     Calculates correlation contribution to electric field gradients
+C     Based on EL_EFG
 C
-C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision
+C     Written by Joost van Stralen  - June 11 2002 
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -4520,7 +4526,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRP_EFN */
-      SUBROUTINE PRP_EFN(EXPVAL,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_EFN(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Written by T. Saue Feb 26 2003
@@ -4534,24 +4540,27 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-      DIMENSION EXPVAL(*),WORK(*)
+      DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
+      LOGICAL CORR
 C
       KFRSAV = KFREE
 C
 C     Allocate memory
 C
       CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEFN ,6*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEFN ,9*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,29)
-      CALL PRP_EFN1(EXPVAL,WORK(KEFN),WORK(KTEMP),WORK(KATOM),IPRPRP)
+      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),CORR,
+     &              IPRPRP)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRP_EFN1(EXPVAL,EFNVEC,TEMP,DOATOM,IPRINT)
+      SUBROUTINE PRP_EFN1(EXPVAL,EXP_CORR,EFNVEC,TEMP,DOATOM,CORR,
+     &                    IPRINT)
 C*****************************************************************************
 C     
 C     Calculate electric field at individual nuclei
@@ -4566,8 +4575,8 @@ C
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "dcbexp.h"
-      LOGICAL   DOATOM(*)
-      DIMENSION EXPVAL(*),EFNVEC(3,NUCDEP,2),TEMP(3,NUCIND)
+      LOGICAL   DOATOM(*), CORR
+      DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -4577,26 +4586,44 @@ C
 C    
       CALL EL_EFN(IPREXP,EXPVAL,DOATOM,EFNVEC(1,1,1),TEMP)
       CALL NUC_EFN(IPREXP,DOATOM,EFNVEC(1,1,2),TEMP)
+      IF (CORR) THEN
+         CALL CORR_EFN(IPREXP,EXP_CORR,DOATOM,EFNVEC(1,1,3),TEMP)
+      END IF
 C     
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(12X,A/)')
      &     'Individual (non-zero) components'
+      IF (CORR) THEN
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'Hartree-Fock','correlation ','Total       '
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'contribution','contribution','MP2 value   '
+      ELSE
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'Electronic  ','Nuclear     ','Total       '
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
+      END IF
       CALL PRSYMB(LUPRI,'-',72,2)
       DO IATOM = 1, NUCDEP
          WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
          DO I = 1,3
-           EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
-CTROND               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
-           WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
-     &           EFNVEC(I,IATOM,1),' au ',EFNVEC(I,IATOM,2),' au ',
-     &           EFNTOT,' au '
-CTROND               ENDIF
+           IF (CORR) THEN
+             EFNTOT1=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
+             EFNTOT2 = EFNTOT1 + EFNVEC(I,IATOM,3)
+             WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+     &             EFNTOT1,' au ',EFNVEC(I,IATOM,3),' au ',
+     &             EFNTOT2,' au '
+           ELSE
+             EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
+CTROND                 IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+             WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+     &             EFNVEC(I,IATOM,1),' au ',EFNVEC(I,IATOM,2),' au ',
+     &             EFNTOT,' au '
+CTROND                 ENDIF
+           ENDIF
          END DO
       END DO
       CALL PRSYMB(LUPRI,'-',72,2)
@@ -4660,6 +4687,70 @@ C
               DO I = 1,3
                 WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+I),
      &              '-component: ',EFNEL(I,NATOM)
+              ENDDO
+            END IF
+            NATOM = NATOM + 1
+          END IF
+ 310    CONTINUE
+ 110  CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck corr_efn */
+      SUBROUTINE CORR_EFN(IPRINT,EXPVAL_CORR,DOATOM,EFNCORR,TEMP)
+C*****************************************************************************
+C           
+C     Calculates correlation contribution to electric fields
+C     Based on EL_EFN
+C             
+C     Written by Joost van Stralen - June 9 2004
+C               
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C           
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "dcbexp.h"
+      DIMENSION EXPVAL_CORR(*), TEMP(3,NUCIND),EFNCORR(3,NUCDEP)
+      LOGICAL DOATOM(*)
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
+      CALL DZERO(EFNCORR,3*NUCDEP)
+      CALL DZERO(TEMP,3*NUCIND)
+      ITYP = 0
+      DO 100 IATOM = 1, NUCIND
+      IF (.NOT. DOATOM(IATOM)) GOTO 100
+        DO 50 IREPC = 0, MAXREP
+          DO 200 ICOOR = 1, 3
+          IF (IBTAND(ISTBNU(IATOM),
+     &        IBTXOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
+            ITYP = ITYP + 1
+            TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM)
+     &                        + EXPVAL_CORR(IPEFN(ITYP))/NUCDEG(IATOM)
+          END IF
+ 200      CONTINUE
+  50    CONTINUE
+ 100  CONTINUE
+      NATOM = 1
+      DO 110 IATOM = 1, NUCIND
+        IF (.NOT. DOATOM(IATOM)) GOTO 110
+        DO 310 IREPC = 0, MAXREP
+          IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+            DO 220 I = 1, 3
+              EFNCORR(I,NATOM) = TEMP(I,IATOM)*
+     &                         PT(IBTAND(ISYMAX(I,1),IREPC))
+ 220        CONTINUE
+            IF (IPRINT .GE. 2) THEN
+              WRITE (LUPRI ,'(/2X,A,A/)')
+     &         'MP2 corr. electronic field at nucleus ',NAMDEP(NATOM)
+              IOFF = ICHAR('w')
+              DO I = 1,3
+                WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+I),
+     &              '-component: ',EFNCORR(I,NATOM)
               ENDDO
             END IF
             NATOM = NATOM + 1
