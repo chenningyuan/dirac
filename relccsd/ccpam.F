@@ -134,6 +134,7 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
 #include <mxorb.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
