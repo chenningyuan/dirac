@@ -3063,7 +3063,8 @@ C
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
-        CALL MRCONE(WORK(KBUF),WORK(KE(1,1)),NSTR,NSTRT,IPRRES,
+        CALL MRCONE(WORK(KBUF),WORK(KE(1,1)),WORK(KIBE(1,1)),
+     &              NSTR,NSTRT,IPRRES,
      &              WORK,KFREE,LFREE)
 C
 C       Release the slaves if we run in parallel.
