@@ -125,11 +125,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      DIMENSION CREF(*)
-      DIMENSION FCAC(*)
-      DIMENSION H2AC(*)
-      DIMENSION GCI(*)
-      DIMENSION WORK(*)
+      DIMENSION CREF(*), FCAC(*), H2AC(*), GCI(*), WORK(*)
 C
       CALL QENTER('RCIGRAD')
       CALL RTKTIME(.TRUE.,10)
@@ -200,10 +196,8 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 C
-      DIMENSION CREF(NZCONF,*), GCI(NZCONF,*)
-      DIMENSION FCAC(*), H2AC(*)
-      DIMENSION WORK(*)
-      DIMENSION EMC(2)
+      DIMENSION CREF(NZCONF,*), GCI(NZCONF,*), FCAC(*), H2AC(*)
+      DIMENSION WORK(*), EMC(2)
       DIMENSION IDET(*)
 C
       CALL QENTER('RCIGRD1')
@@ -429,8 +423,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION G(NZHOPE,*)
-      DIMENSION GR(*)
+      DIMENSION G(NZHOPE,*), GR(*)
 C
 D     write(6,*) 'gradient on entry'
 D     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
@@ -474,8 +467,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION G(NZHOPE,*)
-      DIMENSION GR(*)
+      DIMENSION G(NZHOPE,*), GR(*)
 C
 D     write(6,*) 'gradient on entry, non-red'
 D     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)

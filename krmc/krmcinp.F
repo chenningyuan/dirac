@@ -259,7 +259,7 @@ C&&& THRPCI:
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
-C&&& CI BOSON SYMMETRY: use boson symmetry for CI expansion
+C&&& CI BOSON SYMMETRY: use boson spinor symmetry for CI expansion
                KRMC_UCIBOS = .TRUE.
                IKWSET(18) = 1
                GO TO 100
@@ -487,13 +487,10 @@ C
 C
 C     Boson symmetry in the CI expansion
 C
-      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
-         WRITE(LUPRI,'(1X,A)') '* Boson symmetry used in CI expansion.'
-      END IF
-      IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '* ``Approximate'''' boson symmetry used in CI expansion.'
-      END IF
+      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) WRITE(LUPRI,'(A)')
+     &   ' * Boson spinor symmetry used in CI expansion.'
+      IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) WRITE(LUPRI,'(A)')
+     &   ' * Approximate boson spinor symmetry used in CI expansion.'
 C
       WRITE(LUPRI,'(A,I4)')
      +   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
@@ -529,15 +526,11 @@ C
      +    'SS-integrals from iteration ',IKRMC_ITRINT(2)
         ENDIF
       ENDIF
-      IF(KRMC_SKIPEE) THEN
-        WRITE(LUPRI,'(A)')
+      IF(KRMC_SKIPEE) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No e-e rotations in 2nd order optimization'
-      ENDIF
-      IF(KRMC_SKIPEP) THEN
-        WRITE(LUPRI,'(A)')
+      IF(KRMC_SKIPEP) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons'//
      &     ' in 2nd order optimization.'
-      ENDIF
 C
 C     Frozen orbitals:
 C     ----------------
