@@ -619,7 +619,7 @@ C
 C
           IF (NZ.EQ.4) THEN
             DO J = 1, NORB(I)
-              IBEIG(IORB(I)+J) = 1
+              IBEIG(IORB(I)+J) = I
             ENDDO
             IF(DOJACO) THEN
               CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
