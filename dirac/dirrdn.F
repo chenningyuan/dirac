@@ -2704,7 +2704,7 @@ C&&&& VECPRJ: Spinors to project onto reference vectors
     4          CONTINUE
 C&&&& VECREF: Reference vectors
                   READ(LUCMD,*) NREFS
-                  IF(NREFS.GT.MAXREF) THEN
+                  IF((NREFS+1).GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
      &         '* Number of reference fragments specified:',NREFS,
      &         '* Current maximum                        :',MAXREF
@@ -2714,6 +2714,7 @@ C&&&& VECREF: Reference vectors
                     READ(LUCMD,'(A6)') REFFIL(J)
                     READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
                   ENDDO
+                  REFFIL(NREFS+1) = 'Polari'
                GO TO 100
     5          CONTINUE
 C&&& WGPOP: Split overlap densities according to weight of contributions
