@@ -59,7 +59,7 @@ C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KEXPST ,2*NEXPP   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*(NOPEN+1),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT  ,NZ*N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
@@ -96,9 +96,10 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0)
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
-      DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(*),OP1INT(*),
-     &          EIG(*),WORK(LWORK)
+      DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(*),
+     &          OP1INT(*),EIG(*),WORK(LWORK)
       CHARACTER MXFORM*6,FMT*6
+      INTEGER   GETIOPEN
 C
 #include <dgroup.h>
 ctec dcborb included
@@ -107,6 +108,7 @@ ctec dcborb included
 #include <dcbgen.h>
 #include <dcbxpr.h>
 #include <dcbprp.h>
+#include <dcbdhf.h>
 C
 C
 C     Initialize
@@ -139,14 +141,18 @@ C     Expectation values normal procedure
 C    ************************************
 C
       IF(.NOT.ORBANA) THEN
-        CALL DENSTY(DMAT,CMO,IPREXP)
+c       CALL DENSTY(DMAT,CMO,IPREXP)
+        CALL GENDEN(DMAT,CMO,1,IPREXP)
+        DO IOPEN = 1,NOPEN
+           CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPREXP)
+        END DO
         CALL TITLER('Expectation values','*',127)
         WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &        DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPREXP)
+     &        DMAT,PMAT,PTRI,OP1INT,FIRST,ORBANA,WORK,LWORK,IPREXP)
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
@@ -178,8 +184,10 @@ C
             DO J = 1,NOCC(IFRP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
-     &          DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPREXP)
+     &          DMAT,PMAT,PTRI,OP1INT,FIRST,ORBANA,WORK,LWORK,IPREXP)
               IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
+              IOPEN = GETIOPEN(J,IFRP)
+              EXPBUF = EXPBUF*DF(IOPEN)
               EXPVAL(I) = EXPVAL(I) + EXPBUF
               FMT = MXFORM(EXPBUF,15)
               WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')   
@@ -212,7 +220,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
       SUBROUTINE PRPEX2(LU1INT,INDXPR,EXPVAL,LEXPST,
-     &           DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+     &           DMAT,PMAT,PTRI,OP1INT,FIRST,ORBFLG,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -228,9 +236,10 @@ C
 #include <dcbxpr.h>
 #include <dcbbas.h>
 #include <dgroup.h>
+#include <dcborb.h>
 C
-      LOGICAL FIRST(NZ),LEXPST(2)
-      DIMENSION DMAT(N2BBASX,NZ),PMAT(N2BBASX,NZ),
+      LOGICAL FIRST(NZ),LEXPST(2),ORBFLG
+      DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
@@ -270,7 +279,14 @@ C
           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ENDIF
         CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
-        EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ),1,PMAT(1,IZ),1)
+        IF (ORBFLG) THEN
+           DO IOPEN = 0,OPEN
+              EXPVAL = EXPVAL + DF(IOPEN)
+     &           *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
+            END DO
+         ELSE
+            EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT(1,IZ),1)
+         END IF
       ENDIF
       ENDDO
       EXPVAL = EXPVAL + EXPVAL
@@ -384,5 +400,39 @@ C     print section
          ENDDO
       END IF
 C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck getiopen */
+      INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
+C*****************************************************************************
+C     
+C     Which shell does electron orbital IORBITAL belong to?
+C     
+C     Written by J. Thyssen - Feb 11 1999
+C     
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+      IF (IORBITAL .LT. 1) 
+     &   CALL QUIT('illegal value in GETIOPEN(neg)')
+C
+      IF (IORBITAL .LE. NISH(IFRP)) THEN
+         GETIOPEN = 0
+         RETURN
+      END IF
+C
+      ILOW = NISH(IFRP)+1
+      DO IOPEN = 1,NOPEN
+         IHIGH = ILOW + NACSH(IFRP,IOPEN)
+         IF ( (IORBITAL .GE. ILOW) .AND. (IORBITAL .LE. IHIGH) ) THEN
+            GETIOPEN = IOPEN
+            RETURN
+         END IF
+         ILOW = IHIGH+1
+      END DO
+      CALL QUIT('illegal value in GETIOPEN(pos)')
       RETURN
       END
