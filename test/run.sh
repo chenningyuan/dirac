@@ -4,7 +4,7 @@
 #
 LOG=../logs
 #
-# Default setup for a calculation
+# Set the default arguments for the pam script
 #
 if [ -z "$PAM_PATH" ]; then
    PAM_PATH=`which pam`
@@ -24,10 +24,10 @@ fi
 NEWOUT=${MENU}_${MOL}.${TAG}
 OLDOUT=${MENU}_${MOL}.out 
 #
-# Run calculation
+# Run calculation (pass on additional arguments for pam that are supplied by the caller)
 #
 EXIT=0 
-$PAM_PATH/pam -dirac $DIRAC -run $TAG -rmwrk -rmscr $MPIARG $MOL $MENU || EXIT=1
+$PAM_PATH/pam -dirac $DIRAC -run $TAG -rmwrk -rmscr $MPIARG $* $MOL $MENU || EXIT=1
 if [ $EXIT -eq 0 ]; then
 #
 # Succesful run : check for deviations with the standard output.

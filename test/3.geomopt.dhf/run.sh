@@ -6,4 +6,4 @@ MENU=acetone;
 MOL=acetone;
 export MENU;
 export MOL;
-../run.sh
+../run.sh -basdir `pwd`

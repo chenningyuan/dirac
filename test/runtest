@@ -175,8 +175,10 @@ fi
 # RUN THE REQUESTED TESTS
 #
 #
+HOSTS=`hostname`
+export HOSTS
 echo 
-echo 'RUNNING TESTS...'
+echo "Running tests on host : $HOSTS ..."
 echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
@@ -193,7 +195,8 @@ if [ ! -z "$arg_tests" ]; then
 else
    tests=$all_test
 fi
-$echo ' Using tests: $tests \c'
+$echo " Using tests: $tests \c"
+echo
 
 for tt in $tests; do
    if [ ! -d $tt ]; then

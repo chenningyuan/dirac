@@ -11,4 +11,4 @@ MENU=dhf;
 MOL=H2O.usingfiles;
 export MENU;
 export MOL;
-../run.sh
+../run.sh -copy O.ccpvdz.bas -copy H.ccpvdz.bas
