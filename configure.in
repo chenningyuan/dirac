@@ -283,7 +283,7 @@ case $machine in
       liblist='libmath libblas'
       complist='if77 if90 f77 f90';;
 
-   alpha-dec|mips-dec|vax-dec)
+   alpha-dec|mips-dec|vax-dec|alphaev6-dec)
       liblist='libdxml libblas'
       complist='f77 f90';;
 
@@ -948,7 +948,7 @@ case $machine in
 #
 #   ALPHA
 #
-    alpha-dec|mips-dec|vax-dec)
+    alpha-dec|mips-dec|vax-dec|alphaev6-dec)
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' "
           ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
