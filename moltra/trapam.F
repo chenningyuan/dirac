@@ -672,7 +672,7 @@ C
           CALL MP2PRI(I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),NSTR)
         ENDDO
         IF (IPRMP2.GE.1) THEN
-          WRITE(LUPRI,'(A)') 'Active Eigenvals:'
+          WRITE(LUPRI,'(/A)') 'Active Eigenvals:'
           DO I = 1, 2
             DO IFRP = 1,NFSYM
               WRITE(LUPRI,'(/2I8)') I, IFRP
@@ -2155,7 +2155,7 @@ C
 C
       IF (IPRINT .GT. 3) CALL HEADER('Subroutine NDISTRN',-1)
       IF (MKINAB.AND.(.NOT.ABSPOI).AND.(.NOT.MKIJPA))
-     &    CALL QUIT ('Conficting options in NDISTRN')
+     &    CALL QUIT ('Conflicting options in NDISTRN')
 C
       IF (MKINAB) CALL IZERO(INDXAB,NINSHA*NINSHB*5)
       CALL IZERO(IJPAIRS,8)
@@ -2994,6 +2994,7 @@ C
       ENDDO
 C
       IF(IPRINT.GE.2) THEN
+         WRITE(LUPRI,*)
          WRITE(LUPRI,'(A,2I8)') 'NFPCK12',(NFPCK12(I), I=1,NFSYM)
          WRITE(LUPRI,'(A,2I8)') 'NFPCK34',(NFPCK34(I), I=1,NFSYM)
          WRITE(LUPRI,'(A,4I8)') 'IFPCK12',
@@ -3043,9 +3044,9 @@ C
             ELSE
               IREPK=3-IREPL
             ENDIF
-c              WRITE(LUPRI,'(A,I10,10I6)')
-c    &              'NTQMT',NTQMT,NZ,NS,NIJ,NSTR(IREPK,0,3),IREPK,
-c    &              IREPIJ,IREPS,IREPRS,NR,IREPR
+C              WRITE(LUPRI,'(A,I10,10I6)')
+C    &              'NTQMT',NTQMT,NZ,NS,NIJ,NSTR(IREPK,0,3),IREPK,
+C    &              IREPIJ,IREPS,IREPRS,NR,IREPR
             IF (NR.EQ.0) GOTO 11
             NTQMT = NTQMT + NIJ*NSTR(IREPK,0,3)*NS*NZ*NZ
 11        CONTINUE
@@ -3952,7 +3953,7 @@ C     Communicate DIRAC common blocks for parallel 4-index transform.
 C     Communicate arguments received from main program
 C
 C     Common blocks initialized : dcborb, dcbbas, dgroup, dcbtri,
-C                                 dcbtr3, comdis and symmet
+C                                 dcbtr3, dcbmp2, comdis and symmet
 C
 C     Written by Luuk Visscher, august 1997.
 C
@@ -3967,10 +3968,13 @@ C
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
+#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
+#include "dcbmp2.h"
+#include "dcbmpt.h"
 #include "dcbbas.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -4073,6 +4077,27 @@ C
 C     The rest
 C     --------
 C
+      NUMELM = 1
+      CALL MPI_BCAST(TESTLS,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(TESTSL,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(MP2ORG,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(GTHSHL,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(CMMNFO,NUMELM,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(TPRI34,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      NUMELM = 1
+      CALL MPI_BCAST(TPRI44,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
       NUMELM = 1
       CALL MPI_BCAST(INTFLG,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -4263,9 +4288,15 @@ C
      &     'TRANOD: Strategy 1 not implemented in parallel.'
          CALL QUIT('TRANOD: No parallel strategy 1 (yet)!')
       ELSEIF (ISTRAT.EQ.2) THEN
-          CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &         KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
-     &         DINTSKP,TIM1)
+         IF (.NOT. MP2ORG) THEN
+            CALL TR2NOD(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
+     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &           DINTSKP,TIM1)
+         ELSE
+            CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
+     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
+     &           DINTSKP,TIM1)
+         END IF
       ELSEIF (ISTRAT.EQ.3) THEN
          WRITE(LUPRI,'(A)')
      &     'TRANOD: Strategy 3 not implemented in parallel.'
@@ -4334,14 +4365,24 @@ C
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
         NTEST = -1
         DO I = 1,NODES
-  100     CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+ 100      CONTINUE
+#if defined (MPE_MP2)
+          CALL MPE_LOG_EVENT(3, 0, "start wait")
+#endif
+          CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
+#if defined (MPE_MP2)
+          CALL MPE_LOG_EVENT(4, 0, "end wait")
+#endif
           IF (ITEST .NE. 0) THEN
 C         ... this node not finished yet, is asking to get or release file lock
              CALL QUIT('TRARES: file lock not implemented yet')
              GO TO 100
           END IF
           NWHO = ISTAT(MPI_SOURCE)
+#if defined (MPE_MP2)
+          CALL MPE_LOG_EVENT(7, 0, "start rcvint")
+#endif
           CALL GETTIM(CPUST,WALLST)
           WRITE(LUPRI,'(3X,(A,I4),A,F14.2,A)')
      &           '- Process ',NWHO,
@@ -4356,9 +4397,12 @@ C         ... this node not finished yet, is asking to get or release file lock
             CALL MPI_RECV(EBUF,1,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
             EMP2 = EMP2 + EBUF
-            CALL MPI_RECV(TIM1(1,NODE),7,MPI_DOUBLE_PRECISION,
+            CALL MPI_RECV(TIM1(1,NWHO),7,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           ENDIF
+#if defined (MPE_MP2)
+          CALL MPE_LOG_EVENT(8, 0, "end rcvint")
+#endif
         ENDDO
         CALL MEMREL('TRARES',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ELSE

@@ -44,7 +44,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "mxorb.h"
       PARAMETER(D0 = 0.0D0)
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 19)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -63,7 +63,8 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','xMSOUT ',
      &            '.POSITR','.SCHEME','xTHROUT','.SPECIA','.VIRTHR',
-     &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
+     &            '.IJTSK ','.SCLMEM','.SCREEN','.ORGALG','.NOSORT',
+     &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -112,6 +113,14 @@ C     note TODO: MSOUT is not implemented!
       IJTSK = 0
       MAXSCL = 0
       SCRMP2 = -1.0D0
+      SRTSHL = .TRUE.
+      CMMNFO = .FALSE.
+      TPRI34 = -1.D0
+      TPRI44 = -1.D0
+C
+C     Activate/deactivate original algorithm
+C
+      MP2ORG = .FALSE.
 C
 C     Process input for MP2CAL
 C     ========================
@@ -130,7 +139,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                    11,12,13,14,15), I
+     &                    11,12,13,14,15,16,17,18,19), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -220,8 +229,28 @@ C&&&& SCREEN: Screening threshold for 4-index transformation
                READ(LUCMD,*) SCRMP2
                GO TO 100
    14          CONTINUE
+C&&&& MP2ORG: Activate/deactivate original MP2 algorithm
+               MP2ORG = .TRUE.
                GO TO 100
    15          CONTINUE
+C&&&& SRTSHL: Controls the sorting of shells in decreasing size
+               SRTSHL = .FALSE.
+               GO TO 100
+   16          CONTINUE
+               GO TO 100
+   17          CONTINUE
+C&&&& CMMNFO: Active printing of communication status (for parallel jobs)
+               CMMNFO = .TRUE.
+               GO TO 100
+   18          CONTINUE
+C&&&& TPRI34: Threshold for printing 3/4 transformed inetgrals
+               READ(LUCMD,*) ITHR
+               TPRI34 = 10.D0**(ITHR)
+               GO TO 100
+   19          CONTINUE
+C&&&& TPRI44: Threshold for printing fully-transformed inetgrals
+               READ(LUCMD,*) ITHR
+               TPRI44 = 10.D0**(ITHR)
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -268,6 +297,30 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
+C
+      IF (MP2ORG) THEN
+         WRITE(LUPRI,'(1X,A)') '* Original MP2 algorithm.'
+         IF ((.NOT. SRTSHL) .OR. CMMNFO .OR. (TPRI34 .GT. 0.D0)
+     &        .OR. (TPRI44 .GT. 0.D0))
+     &        WRITE(LUPRI,'(1X,A/A)')
+     &    '  - Keywords .NOSORT, .COMMIN, .TPRI34 and .TPRI44',
+     &    '    have no effect when running original MP2 algorithm.'
+      ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &        '* New MP2 algorithm (better parallelization).'
+         IF (SRTSHL) THEN
+            WRITE(LUPRI,'(1X,A)') '  - Shells will be sorted.'
+         ELSE
+            WRITE(LUPRI,'(1X,A)') '  - No sorting of shells.'
+         END IF
+         IF (CMMNFO) WRITE(LUPRI,'(1X,A)')
+     &           '  - Detailed (MPI) communication info.'
+         IF (TPRI34 .GT. 0.D0) WRITE(LUPRI,'(1X,A,G10.3)')
+     &        '  - Print 3/4 transf. integrals larger than:   ', TPRI34
+         IF (TPRI44 .GT. 0.D0) WRITE(LUPRI,'(1X,A,G10.3)')
+     &        '  - Print fully-transf. integrals larger than: ', TPRI44
+      END IF
+C
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals Not included.'
       IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
