@@ -4370,7 +4370,7 @@ C
 #include "dgroup.h"
 C
       LOGICAL LMP2
-      DIMENSION DINTSKP(8),TIM1(7,*),WORK(*)
+      DIMENSION DINTSKP(8),TIM1(7,*),WORK(*),IBUFMPI(5)
 C
       KFRSAV = KFREE
       IF (MYTID.EQ.0) THEN
@@ -4381,7 +4381,10 @@ C     **************************
 C
         IF(LMP2) EBUF = D0
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
-        NTEST = -1
+C       For historical reasons we need to set the third variable in the buf to -1 to
+C       signal the slave to stop computing & transforming integrals.
+        CALL IZERO (IBUFMPI,5)
+        IBUFMPI(3) = -1
         DO I = 1,NODES
  100      CONTINUE
 #if defined (MPE)
@@ -4406,7 +4409,7 @@ C         ... this node not finished yet, is asking to get or release file lock
      &           '- Process ',NWHO,
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
-          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NWHO,30,
+          CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
      &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)

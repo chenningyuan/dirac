@@ -187,7 +187,7 @@ C             Distribute number of B's evenly
 C
               ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
               IBUFMPI(4) = ISHLB
-              IBUFMPI(4) = IBEND
+              IBUFMPI(5) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
