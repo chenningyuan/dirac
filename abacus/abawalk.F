@@ -29,93 +29,13 @@ C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C$Id$
 C
-C#include "single.h"
-C#ifdef REVLOG
-C$Log$
-CRevision 1.17  2004/02/12 07:57:19  luuk
-CLV: The continuing story of abawalk. Tronds fix introduced a parser bug on
-Cmy Linux system (Redhat). Apparently the problem is in the log text that is
-Cautomaticially included in this file. I have deleted only the line that caused
-Cthe problem,  maybe its better to avoid these problem and not include the log
-Cin the file, since these logs are available via cvs as well.
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : abawalk.F
 C
-CRevision 1.16  2004/02/11 16:56:35  tsaue
-Ctsaue: Introduced modification to allow smooth compilation with the Intel efc
-Ccompiler (shorten some cpp statements etc.)
-C
-CRevision 1.15  2003/12/10 09:50:25  tsaue
-Ctsaue: Modified JCO(IQM) to JCO(*) i routine BASLIB to avoid stop
-Cdue to array bounds check
-C
-CRevision 1.14  2003/12/10 08:41:01  luuk
-CLV: Bugfixes related to the renaming of common blocks that was done yesterday.
-CMainly insertion of the renamed block mx2orb.h in places where MAXORB is required.
-C
-CRevision 1.13  2003/12/09 16:07:58  tsaue
-Ctsaue: NB ! NB!
-CThe COMMON mxorb.h has been renamed maxorb.h consistent with DALTON.
-CThe previous global maxorb.h has been moved to krmc and renamed mx2orb.h.
-C
-CRevision 1.12  2003/12/09 16:00:12  tsaue
-Ctsaue: Removed all unnecessary inclusions to maxorb.h
-C
-CRevision 1.11  2003/06/12 12:07:09  fleig
-CTF:
-C
-C KRMC MERGE !
-C
-C - Complete MCSCF program including all changes in other relevant
-C   program parts.
-C
-C - Entire LUCIAREL program module.
-C
-C - LUCITA/LUCIAREL merge: eliminated duplicate code, introduced
-C   new library file gp/gplucia.F with common routines.
-C
-C - Some restructuring in dcb... include files.
-C
-C - New standard test cases added:
-C  -- 26.krmc_gosci: MCSCF test with GOSCI module (Be atom)
-C  -- 28.luciarel_medium: LUCIAREL standalone test in MCSCF
-C                         framework (F atom)
-C
-CRevision 1.10.2.1  2003/02/17 19:17:31  fleig
-CTF:
-C - krmc: abacus
-C
-CRevision 1.10  2002/11/21 12:44:54  hjj
-CHJAaJ:
-C1) abaopt.F: revised some output text
-C2) changed '<xxx.h>' to '"xxx.h"'
-C   (they were missed by the perl script because they had space in '# include')
-C
-CRevision 1.9  2002/08/20 15:49:34  tsaue
-Ctsaue: Local abacus COMMON blocks added to abacus directory.
-C       Fortran files modified to allow cpp include local files
-C       using the command
-C          perl -pi -e '/^#include/ and s,<(.*?)>,"$1",g' *.F
-C       Thanks, Pawel !
-C
-CRevision 1.8  2001/08/31 12:05:14  panor
-CChanged from infpri.h to priunit.h
-C
-CRevision 1.7  2000/09/29 13:34:56  jth
-CInitialize LUMOL before use.
-C
-CRevision 1.6  2000/09/18 14:14:17  jth
-CNew geometry optimization module from Dalton1.1.
-C
-CRevision 1.5  2000/09/18 09:57:23  jth
-CNew files from Dalton1.1. Before merge with Dirac.
-C
-C961019-kruud: Added ROA changes from Gilbert Hangartner
-C960417-hjaaj: Rudimentary initial implementation of .RESTART
-C950601-vebjorn:
-C  A flag for geometry convergence has been added in common block GNRINF.
-C#endif
 #ifndef PRG_DIRAC
+#include "single.h"
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include "implicit.h"
@@ -1271,7 +1191,7 @@ C
       CALL QEXIT('WLKDIA')
       RETURN
       END
-#endif
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
@@ -3220,7 +3140,7 @@ C
       END IF
       RETURN
       END
-#endif
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkinc */
       SUBROUTINE WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,IPOINT,
      *                  IPRINT)
@@ -4811,7 +4731,7 @@ C
       END IF
       RETURN
       END
-#endif
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
 #include "implicit.h"
@@ -6138,7 +6058,7 @@ C
       WLKSTL = SQRT(STEP) - RTRUST
       RETURN
       END
-#endif
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkbis */
       SUBROUTINE WLKBIS(XMAX,XMIN,XDET,GDDIA,HESDIA,TRUSTR,
      *                  NCORD,FUNCT,IFAIL)
@@ -7286,7 +7206,7 @@ C  /* Deck ircpot */
       CALL GPCLOSE(LUTRJ,'KEEP')
       STOP
       END
-#endif
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
 #include "implicit.h"
@@ -7694,4 +7614,4 @@ C
 C
       RETURN
       END
-#endif
+#endif /* ! PRG_DIRAC */
