@@ -3205,6 +3205,12 @@ C
       N1OPER  = 0
       SSMTRC  = D1
       HFXFAC  = D1
+C ... get integral flags in advance
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
+      IGTINT    = IBTAND(INTGEN/8,1)
+
       CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
 #if defined (MOD_DFT)
@@ -3529,10 +3535,6 @@ C
 C
 C     Remove integral classes not needed for this Hamiltonian
 C
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IGTINT    = IBTAND(INTGEN/8,1)
       IF (LEVYLE) THEN
         ISLINT = 0
         ISSINT = 0
