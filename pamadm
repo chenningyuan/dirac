@@ -246,6 +246,7 @@ make_export()
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
       tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
+      rm export.log
    done
 EOF
    #
