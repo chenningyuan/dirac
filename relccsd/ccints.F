@@ -209,13 +209,14 @@ C
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
 C
       ICNTOLD = 0
-      WRITE(IW,'(A)') 'Reading integrals from MDCINT'
+      WRITE(IW,'(1X,A)') 'Reading integrals from MDCINT'
+      CALL FLSHFO(IW)
 C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,INDK,INDL,
      &               NZ,CBUF,IBUF)
       ICNT = ICOUNT / 10000000
       IF (ICNT .NE. ICNTOLD) THEN
-         WRITE(IW,'(A,I10)') '- integrals read so far: ',icount
+         WRITE(IW,'(1X,A,I10)') '- integrals read so far: ',icount
          CALL FLSHFO(IW)
          ICNTOLD = ICNT
       END IF
