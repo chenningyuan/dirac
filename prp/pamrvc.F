@@ -242,14 +242,14 @@ C
 C
 C        Print ?
 C
-CFIXME   IF ( IPRXRS .GE. 30 ) THEN
+         IF ( IPRXRS .GE. 30 ) THEN
             IF (NZ .EQ. 1) THEN
-C              WRITE(LUPRI,'(A,I1,A)')
-C    &           '( XRSSCIM) real part of real   B(',I,')>'
+               WRITE(LUPRI,'(A,I1,A)')
+     &           '( XRSSCIM) real part of real   B(',I,')>'
                CALL OUTPUT(BCVEC(1,I),1,NZCONF,1,1,
      &                     NZCONF,1,1,LUPRI)
-C              WRITE(LUPRI,'(A,I1,A)')
-C    &           '( XRSSCIM) real part of real H|B(',I,')>'
+               WRITE(LUPRI,'(A,I1,A)')
+     &           '( XRSSCIM) real part of real H|B(',I,')>'
                CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,1,
      &                     NZCONF,1,1,LUPRI)
             ELSE
@@ -262,7 +262,7 @@ C    &           '( XRSSCIM) real part of real H|B(',I,')>'
                CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,2,
      &                     NZCONF,2,1,LUPRI)
             END IF
-CFIXME   END IF
+         END IF
 C
 C        Finish sigma vector: - E[0] b_{\mu}
 C
