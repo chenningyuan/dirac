@@ -99,11 +99,12 @@ C
 #include "orgcom.h"
 #include "dftbuf.h"
 #include "functionals.h"
+#include "dgroup.h"
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*),DTRMAT(*),
      &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
-     &          WORK(LWORK),EXCMAT(NBAST,NBAST,NXCMAT), 
+     &          WORK(LWORK),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &          NCNT(*), DST(*),BUF(*)
 C
 CTROND
@@ -224,9 +225,9 @@ C
         EDFTY = EDFTY +EXCTRO-DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
         DO I = 1, NBAST
           DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1) + EXCMAT(J,I,1))
-            EXCMAT(I,J,1) = AVERAG 
-            EXCMAT(J,I,1) = AVERAG 
+            AVERAG = DP5*(EXCMAT(I,J,1,1) + EXCMAT(J,I,1,1))
+            EXCMAT(I,J,1,1) = AVERAG 
+            EXCMAT(J,I,1,1) = AVERAG 
           ENDDO
         ENDDO
       END IF 
@@ -242,9 +243,9 @@ CTROND      END IF
       IF (DOLND) THEN
         DO I = 1, NBAST
           DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1) - EXCMAT(J,I,1))
-            EXCMAT(I,J,1) =   AVERAG 
-            EXCMAT(J,I,1) = - AVERAG 
+            AVERAG = DP5*(EXCMAT(I,J,1,1) - EXCMAT(J,I,1,1))
+            EXCMAT(I,J,1,1) =   AVERAG 
+            EXCMAT(J,I,1,1) = - AVERAG 
           ENDDO
         ENDDO
       END IF 
@@ -270,13 +271,13 @@ CPAWSA            CALL DFT_ENE_REPORT()
          END IF
          IF (DOLND) THEN
             CALL HEADER('EXCMAT in DFTDRV (x direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,1),
+            CALL OUTPUT(EXCMAT(1,1,1,1),
      &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
             CALL HEADER('EXCMAT in DFTDRV (y direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,2),
+            CALL OUTPUT(EXCMAT(1,1,1,2),
      &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
             CALL HEADER('EXCMAT in DFTDRV (z direction)',-1)
-            CALL OUTPUT(EXCMAT(1,1,3),
+            CALL OUTPUT(EXCMAT(1,1,1,3),
      &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          END IF
          IF (DOGRD) THEN
@@ -285,7 +286,7 @@ CPAWSA            CALL DFT_ENE_REPORT()
          END IF
          IF (DOATR) THEN
             CALL HEADER('EXCMAT in DFTDRV ',-1)
-            CALL OUTPUT(EXCMAT(1,1,1),
+            CALL OUTPUT(EXCMAT(1,1,1,1),
      &                  1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          END IF
       END IF
@@ -321,12 +322,13 @@ C
 #include "dftbuf.h"
 #include "dfterg.h"
 #include "functionals.h"
+#include "dgroup.h"
       LOGICAL DOERG,DOGRD,DOLND,DOATR, DFTASC
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DTRMAT(*),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
-     &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NXCMAT), 
+     &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NZ,NXCMAT), 
      &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
      &            VX(DERVS1),
      &            WORK(LWORK)
@@ -973,12 +975,11 @@ CTROND
       TIMSTR = SECOND()
 #include "memint.h"
 C
-        LFMAT = NBAST*NBAST*NZ*NXCMAT
-        CALL DZERO(EXCMAT,LFMAT)
+      LFMAT = NBAST*NBAST*NZ*NXCMAT
+      CALL DZERO(EXCMAT,LFMAT)
 C
 CTROND: This is temporary fix to have DFTenergy work in parallell...
       IREPOP = 0
-CTROND
       CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
@@ -1001,7 +1002,6 @@ CTROND
       END IF
 C
       DOGGA = DFT_IS_GGA()
-CTROND
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
 C

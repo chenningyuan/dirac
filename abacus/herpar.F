@@ -400,6 +400,7 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dgroup.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -561,7 +562,7 @@ C       send density matrix
         ISEND(1) = NDMAT
         ISEND(2) = NFMAT
         CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
+        CALL MPI_BCAST(DMAT,N2BASX*NDMAT*NZ,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
         RETURN
       ENDIF
@@ -1067,7 +1068,7 @@ C
 #if defined (MOD_DFT)
       IF (ITYPE.EQ.7) THEN
         JPRINT = 0
-        LFMAT  = NFMAT*N2BASX
+CTROND        LFMAT  = NFMAT*N2BASX
         CALL DFTPAR(WORK(KDMAT),DUM,WORK(KFMAT),NFMAT,
      &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &              WORK(KFREE),LFREE,JPRINT)
@@ -1190,6 +1191,7 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dgroup.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -1355,11 +1357,11 @@ C       Receive density matrix (scaled by a factor two!)
         CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         NDMAT = ISEND(1)
         NFMAT = ISEND(2)
-        LDMAT = NDMAT*N2BASX
+        LDMAT = NDMAT*N2BASX*NZ
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
      &               MPARID,MPI_COMM_WORLD,IERR)
-        LFMAT = NFMAT*N2BASX
+        LFMAT = NDMAT*N2BASX*NZ
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         RETURN
       ENDIF
