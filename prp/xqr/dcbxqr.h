@@ -21,6 +21,7 @@ C NCQRFR - number of C frequencies
 C CQRFR  - C frequencies
 C XQR_SKIPEE - do not include e-e rotations
 C XQR_SKIPEP - do not include e-p rotations
+C ALLABC - (debug option) include all A,B,C
 C XQR_INDSTR - list of orbitals to include in rotation vectors
 C
 C Used to store the necessary linear response equations
@@ -39,8 +40,8 @@ C QRFRHYP - list of A/B/C frequencies
 C
       PARAMETER ( MAXLQR=10,MAXFQR=10,MAXQR=60 )
       PARAMETER ( LUQRINFO = 40, LUQREE = 41, LUQREP = 42 )
-      LOGICAL XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP
-      COMMON /XCBLQR/ XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP
+      LOGICAL XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,ALLABC
+      COMMON /XCBLQR/ XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,ALLABC
       COMMON /XCBRQR/ THCQR,BQRFR(MAXFQR),CQRFR(MAXFQR),
      &     QRFREQ(3*MAXFQR,3*MAXLQR),QRFRHYP(MAXQR,3),
      &     CNVXQR(2),RESXQR

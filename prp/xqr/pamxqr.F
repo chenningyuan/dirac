@@ -33,7 +33,7 @@ C
       DATA TABLE /
      &     '.PRINT ','.A OPER','.B OPER','.C OPER',
      &     '.B FREQ','.C FREQ','.THRESH','.MAXITR',
-     &     '.SKIPEP','.MAXRED','xXXXXXX','.XQRNRM',
+     &     '.SKIPEP','.MAXRED','.ALLABC','.XQRNRM',
      &     '.XXXXXX','.XXXXXX','.INTFLG','.NOPREC',
      &     '.DIPLEN','.XXXXXX','.XXXXXX','.XXXXXX',
      &     '.ITRINT','.CNVINT','.XXXXXX','.XXXXXX',
@@ -85,6 +85,7 @@ C
       ITRIQR(2) = 1
       XQRNRM = .FALSE.
       XQRDIH = .TRUE.
+      ALLABC = .FALSE.
       XQR_SKIPEE = .FALSE.
       IF (LEVYLE) THEN
          INTXQR = ILLINT
@@ -117,8 +118,8 @@ C
             DO 200 I = 1, NTABLE
                IF (TABLE(I) .EQ. WORD) THEN
                   GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                 11,12,13,14,15,16,17,18,19,20,
-     &                 21,22,23,24,25,26,27,28), I
+     &                  11,12,13,14,15,16,17,18,19,20,
+     &                  21,22,23,24,25,26,27,28), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -206,7 +207,9 @@ C     Max dimension of matrix in reduced system
             READ(LUCMD,*) MAXQRM
             GOTO 100
  11         CONTINUE
-C
+C     .ALLABC for including all A,B,C i.e. do not
+C     check for permutation symmetry (debug option)
+            ALLABC = .TRUE.
             GOTO 100
  12         CONTINUE
 C     Normalize trial vectors
@@ -300,65 +303,68 @@ C
       DOXQR = DOXQR.OR.(NAQROP.GT.0.AND.NBQROP.GT.0.AND.NCQROP.GT.0)
       IF (.NOT.DOXQR) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
-     &    'XQRINP: Electronic quadratic response properties'
+      WRITE(LUPRI,'(A)') 
+     &    ' XQRINP: Electronic quadratic response properties'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,I5)') 
-     &   '* Print level                 :',IPRXQR
-      WRITE(LUPRI,'(1X,A,I5)') 
-     &   '* Maximum number of iterations:',ITRXQR
-      WRITE(LUPRI,'(1X,A,I5)') 
-     &   '* Max. size of reduced matrix :',MAXQRM
-      WRITE(LUPRI,'(1X,A,D9.2)') 
-     &   '* Threshold for convergence   :',THCQR
+      WRITE(LUPRI,'(A,I5)') 
+     &   ' * Print level                 :',IPRXQR
+      WRITE(LUPRI,'(A,I5)') 
+     &   ' * Maximum number of iterations:',ITRXQR
+      WRITE(LUPRI,'(A,I5)') 
+     &   ' * Max. size of reduced matrix :',MAXQRM
+      WRITE(LUPRI,'(A,1P,D9.2)') 
+     &   ' * Threshold for convergence   :',THCQR
 C
-      WRITE(LUPRI,'(1X,A)') '* Include contributions from '//
+      WRITE(LUPRI,'(A)') ' * Include contributions from '//
      &    'the following two-electron integrals:'
       IF (ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF (ISLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LS-integrals'
       IF (ISSINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
-      IF (XQRNRM) WRITE(LUPRI,'(1X,A)')
-     &     '* Trial vectors will be normalized.'
+      IF (XQRNRM) WRITE(LUPRI,'(A)')
+     &     ' * Trial vectors will be normalized.'
       IF (XQRDIH) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &  '* Initial trial vectors will be preconditioned.'
+        WRITE(LUPRI,'(A)')
+     &  ' * Initial trial vectors will be preconditioned.'
       ELSE
-        WRITE(LUPRI,'(1X,A)')
-     &  '* No preconditioning of initial trial vectors.'
+        WRITE(LUPRI,'(A)')
+     &  ' * No preconditioning of initial trial vectors.'
       ENDIF
-      IF (XQR_SKIPEE) WRITE(LUPRI,'(1X,A)')
-     &     '* No e-e rotation considered.'
-      IF (XQR_SKIPEP) WRITE(LUPRI,'(1X,A)')
-     &     '* No e-p rotation considered.'
+      IF (XQR_SKIPEE) WRITE(LUPRI,'(A)')
+     &     ' * No e-e rotation considered.'
+      IF (XQR_SKIPEP) WRITE(LUPRI,'(A)')
+     &     ' * No e-p rotation considered.'
 C
-      WRITE(LUPRI,'(1X,A)') 
-     &     '* Frequencies in quadratic response in a.u.'
+      WRITE(LUPRI,'(A)') 
+     &     ' * Frequencies in quadratic response in a.u.'
       WRITE(LUPRI,'(3X,A16,6(4F12.8,/,19X))') '- B-frequencies:',
      &     (BQRFR(I),I=1,NBQRFR)
       WRITE(LUPRI,'(3X,A16,6(4F12.8,/,19X))') '- C-frequencies:',
      &     (CQRFR(I),I=1,NCQRFR)
 C
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
-      WRITE(LUPRI,'(1X,A)') '* | A-operators |'
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
+      WRITE(LUPRI,'(A)') '   +-------------+'
+      WRITE(LUPRI,'(A)') ' * | A-operators |'
+      WRITE(LUPRI,'(A)') '   +-------------+'
       DO I = 1,NAQROP
         INDXPR = LAQROP(I)
         CALL WRIXPR(I,INDXPR)
       ENDDO
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
-      WRITE(LUPRI,'(1X,A)') '* | B-operators |'
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
+      WRITE(LUPRI,'(A)') '   +-------------+'
+      WRITE(LUPRI,'(A)') ' * | B-operators |'
+      WRITE(LUPRI,'(A)') '   +-------------+'
       DO I = 1,NBQROP
         INDXPR = LBQROP(I)
         CALL WRIXPR(I,INDXPR)
       ENDDO
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
-      WRITE(LUPRI,'(1X,A)') '* | C-operators |'
-      WRITE(LUPRI,'(1X,A)') '  +-------------+'
+      WRITE(LUPRI,'(A)') '   +-------------+'
+      WRITE(LUPRI,'(A)') ' * | C-operators |'
+      WRITE(LUPRI,'(A)') '   +-------------+'
       DO I = 1,NCQROP
         INDXPR = LCQROP(I)
         CALL WRIXPR(I,INDXPR)
       ENDDO
+      IF (ALLABC) WRITE(LUPRI,'(/A)')
+     &   ' * .ALLABC: all A,B,C included,'//
+     &   ' i.e. no reduction because of permutation symmetry.'
 C
   999 CONTINUE
       IF (INPERR.GT.0) CALL QUIT('Input error in *QUADRATIC RESPONSE')
@@ -366,13 +372,13 @@ C
       RETURN
       END
       SUBROUTINE PRPXQR(WORK,LWRK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Driver routine for computing the quadratic response properties
 C
 C     Written by panor 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -677,12 +683,13 @@ C        OK: A B C is totally symmetric
          DOHYP = .TRUE.
       ELSE
          DOHYP=.FALSE.
-         GOTO 100
       END IF
 C
 C     Check permutation symmetries by comparing
 C     to the N previously defined QR functions
+C     (unless debug option ALLABC true)
 C
+      IF (DOHYP .AND. .NOT. ALLABC) THEN
       DO I = 1,N
          DO J = 1,3
          DO K = 1,3
@@ -706,6 +713,7 @@ C
          END DO
          END DO
       END DO
+      END IF
 C
 C     If not done before put in list with unique calculations
 C
@@ -722,8 +730,6 @@ C
          FRQ(N,3) = CFR
       END IF
 C
- 100  CONTINUE
-C     
       CALL QEXIT('QRHYPCHK')
 C     
       RETURN
