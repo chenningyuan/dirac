@@ -1110,7 +1110,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcborb.h"
@@ -1369,12 +1369,51 @@ CMI ... print out occupation of m_j subblocks
         WRITE(LUPRI,'(A,F6.4,A,16I5)')
      &     ' virtual shells (f=',D0,'):',
      &     (ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
-        IF (PRPOS) THEN
-        WRITE(LUPRI,'(A,16I5)') '       positronic shells :',
+        IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+        WRITE(LUPRI,'(A,F6.4,A,16I5)')
+     &     ' positr. shells (f=',D1,'):',
      &    (ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM),ISUB=1,N_SUB_BL(IFSYM))
         ENDIF
+
+        WRITE(LUPRI,'(A,16I5)')
+     &     'tot.num. of electr. shells:',
+     &    (NORB_SUB(ISUB,IFSYM,1),ISUB=1,N_SUB_BL(IFSYM))
+        IF (PRPOS.AND.(.NOT.LEVYLE)) THEN
+        WRITE(LUPRI,'(A,16I5)')
+     &     'tot.num. of positr. shells:',
+     &    (NORB_SUB(ISUB,IFSYM,2),ISUB=1,N_SUB_BL(IFSYM))
+        ENDIF
+        
       ENDDO
       WRITE(LUPRI,'(/)')
+
+C ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
+      IC =1
+      IF (PRPOS) IC=0
+      DO IFSYM=1, NFSYM 
+      DO ISUB=1,N_SUB_BL(IFSYM)
+C       ... closed shells
+       ISUM = ISHEL_SUB(1,ISUB,IFSYM)
+       DO IOPEN=1,NOPEN
+C       ... add open shells
+        ISUM = ISUM + ISHEL_SUB(1+IOPEN,ISUB,IFSYM)
+       ENDDO
+C       ... add virtual shells
+       ISUM = ISUM + ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM)
+C       ... add positronic shells
+       ISUM = ISUM + ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM)
+C       ... note: IC=0 when print of positr. shells desired
+       IF (ISUM.NE.NORB_SUB(ISUB,IFSYM,IC)) THEN
+         WRITE(LUPRI,'(2X,A,A,A,I3)') 
+     &   'WARNING! Inconsistency for ifsym=',
+     &    FREP(IFSYM),' and  mj_id=',ID_SUB_BL(ISUB,IFSYM)
+         WRITE(LUPRI,'(A,I4,A,I4)')
+     &    'ISUM=',ISUM,'<> NORB_SUB(ISUB,IFSYM,0)=',
+     &     NORB_SUB(ISUB,IFSYM,0)
+       ENDIF
+      ENDDO
+      ENDDO
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
