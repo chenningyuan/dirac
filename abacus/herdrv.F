@@ -624,7 +624,9 @@ C&&& MAGCOR - print magnetic coordinates
             GO TO 100
  179     CONTINUE
 C&&& JENGIN - activate J-engine
+#if defined (MOD_ERI)
             DOFCK3=.TRUE.
+#endif
             GO TO 100
  180     CONTINUE
             GO TO 100
