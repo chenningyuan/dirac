@@ -1156,19 +1156,12 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      IF (CARITH) THEN
-         CERPA1 = ZDOTU (NDIMX,AOV,1,X1,1)
-      ELSE
-         ERPA = DDOT (NDIMX,AOV,1,X1,1)
-      ENDIF
+      CERPA1 = (0.0, 0.0)
+      CERPA2 = (0.0, 0.0)
+      CALL XDOTU (CERPA1,NDIMX,AOV,1,X1,1)
+      CALL XDOTU (CERPA2,NDIMX,AVO,1,Y1,1)
+      CERPA = APHASE * BPHASE * (CERPA1 + CERPA2)
 C
-      IF (CARITH) THEN
-         CERPA2 = ZDOTU (NDIMX,AVO,1,Y1,1)
-         CERPA = APHASE * BPHASE * (CERPA1 + CERPA2)
-      ELSE
-         ERPA = ERPA + DDOT (NDIMX,AVO,1,Y1,1)
-         CERPA = APHASE * BPHASE * ERPA
-      ENDIF
 cdebug print*,"real part aov",ddot(ndimx,aov,2,x1,2)
 cdebug print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
 cdebug print*,"real part avo",ddot(ndimx,avo,2,y1,2)

@@ -571,60 +571,34 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      COMPLEX*16 CDOTU,ZDOTU
+      COMPLEX*16 EXPA,EXPA_SUM
       REAL*8 DDOT,ZDOT
 C
 C---------------Executable code--------------------------------------
 C
-      IF (CARITH) THEN
-         CEXPA = ZDOTU (NFVO,EOV,1,DVO,1)
-      ELSE
-         EXPA = DDOT (NFVO,EOV,1,DVO,1)
-      ENDIF
-C
-      IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTU (NFVO,EVO,1,DOV,1)
-c        print*,' Relaxation contribution ',cexpa
-      ELSE
-         EXPA = EXPA + DDOT (NFVO,EVO,1,DOV,1)
-c        print*,' Relaxation contribution ',expa
-      ENDIF
-C
-      IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTU (NFOO,EOO,1,DOO,1)
-c        print*,' OO contribution ',ZDOTU (NFOO,EOO,1,DOO,1)
-      ELSE
-         EXPA = EXPA + DDOT (NFOO,EOO,1,DOO,1)
-c        print*,' OO contribution ',DDOT (NFOO,EOO,1,DOO,1)
-      ENDIF
-C
-      IF (CARITH) THEN
-         CEXPA = CEXPA + ZDOTU (NFVV,EVV,1,DVV,1)
-c        print*,' VV contribution ',ZDOTU (NFVV,EVV,1,DVV,1)
-c        print*,' Total MP2 contribution ',cexpa
-      ELSE
-         EXPA = EXPA + DDOT (NFVV,EVV,1,DVV,1)
-c        print*,' VV contribution ',DDOT (NFVV,EVV,1,DVV,1)
-c        print*,' Total MP2 contribution ',expa
-      ENDIF
+      EXPA = (0.0, 0.0)
+      CALL XDOTU (EXPA,NFVO,EOV,1,DVO,1)
+      EXPA_SUM = EXPA
+      CALL XDOTU (EXPA,NFVO,EVO,1,DOV,1)
+      EXPA_SUM = EXPA_SUM + EXPA
+c     print*,' Relaxation contribution ',expa_sum
+      CALL XDOTU (EXPA,NFOO,EOO,1,DOO,1)
+c     print*,' OO contribution ',EXPA
+      EXPA_SUM = EXPA_SUM + EXPA
+      CALL XDOTU (EXPA,NFVV,EVV,1,DVV,1)
+c     print*,' VV contribution ',EXPA
+      EXPA_SUM = EXPA_SUM + EXPA
 C
 C     This is the correlation contribution, add the reference value
 C
       II = 1
       DO IREP = 1, NREP
-         IF (CARITH) THEN
-            CEXPA = CEXPA + ZDOTU (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
-         ELSE
-            EXPA = EXPA + DDOT (NO(IREP),EOO(II),NO(IREP)+1,A1,0)
-         ENDIF
+         CALL XDOTU (EXPA,NO(IREP),EOO(II),NO(IREP)+1,A1,0)
+         EXPA_SUM = EXPA_SUM + EXPA
          II = II + NO(IREP)*NO(IREP)*RCW
       ENDDO
 C
-      IF (CARITH) THEN
-         CEXPA = EPHASE * CEXPA
-      ELSE
-         CEXPA = EPHASE * EXPA
-      ENDIF
+      CEXPA = EPHASE * EXPA_SUM
 C
       RETURN
       END
