@@ -40,17 +40,24 @@ C
 C  /* Deck expcft */
       SUBROUTINE EXPCFT(ETIJ,NPP12,JMAX1,JMAX2,COOR12,EXP12,
      &                  IAB0,HPI,PA,PB,IRUTIN,IELCTR,MAX1,MAX2,
-     &                  NCNT12,IDL,ISCAL1,ISCAL2,IPRINT)
+     &                  NCNT12,IDL,ISCAL1,ISCAL2,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C     T. Helgaker
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "r12int.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X
       DIMENSION ETIJ(NPP12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NPP12,3), EXP12(NPP12,3), IAB0(3), 
-     &          HPI(NPP12), PA(NPP12,3), PB(NPP12,3)
+     &          HPI(NPP12), PA(NPP12,3), PB(NPP12,3),
+     &          TEXPA(NPP12),TEXPB(NPP12),AOVERP(NPP12),BOVERP(NPP12)
+C     TEXPA, TEXPB, AOVERP and BOVERP have been added; EQ30LB contains
+C     labels for coefficients of subroutine WKEQ30 (WK/UniKA/04-11-2002).
+      CHARACTER*4 EQ30LB(3)
+      DATA EQ30LB/'EX01','EY01','EZ01'/
 C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('Output from EXPCFT',-1)
@@ -74,8 +81,9 @@ C
 C     Extract exponents and coordinates
 C     =================================
 C
+C     Compute TEXPA (= 2a) and TEXPB (= 2b) (WK/UniKA/04-11-2002).
       CALL EXPVEC(HPI,PA,PB,COOR12,EXP12,SIGN,NPP12,MAX1,MAX2,IDL,
-     &            IPRINT)
+     &            IPRINT,TEXPA,TEXPB)
 C
 C     Expansion coefficients
 C     ======================
@@ -85,7 +93,16 @@ C
      &               ETIJ(1,0,0,0,X,2),NPP12,MAX1,MAX2,JMAX1,JMAX2,
      &               SIGN,IAB0(X),PA(1,X),PB(1,X),EXP12,HPI,
      &               X,0,IPRINT)
+         IF (U12INT)
+C           Calculate expansion coefficients for [T1,r12] integrals (WK/UniKA/04-11-2002).
+     &      CALL WKEQ30(ETIJ(1,0,0,0,X,1),ETIJ(1,0,0,0,X,2),
+     &                  JMAX1,JMAX2,NPP12,MAX1,MAX2,SIGN,
+     &                  IAB0(X),PA(1,X),PB(1,X),TEXPA,TEXPB,AOVERP,
+     &                  BOVERP,HPI,EQ30LB(X),IPRINT)
       END DO
+      IF (U12INT)
+     &   CALL AMINBP(AOVERP,NPP12,TEXPA,TEXPB,HPI,SIGN,IPRINT)
+C        Calculate (a-b)/(a+b) for [T1,r12] integrals (WK/UniKA/04-11-2002).
 C
 C     Scale coefficients
 C     ==================
@@ -113,13 +130,16 @@ C
       END
 C  /* Deck EXPVEC */
       SUBROUTINE EXPVEC(HPI,PA,PB,COOR12,EXP12,SIGN,
-     &                  NPP12,MAX1,MAX2,IDL,IPRINT)
+     &                  NPP12,MAX1,MAX2,IDL,IPRINT,TEXPA,TEXPB)
+C     Compute TEXPA and TEXPB (WK/UniKA/04-11-2002).
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DP5 = 0.5D0)
+#include "r12int.h"
+      PARAMETER (DP5 = 0.5D0, D2 = 2.0D0)
       DIMENSION HPI(NPP12), 
      &          PA(NPP12,3), PB(NPP12,3),
-     &          COOR12(NPP12,3), EXP12(NPP12,3)
+     &          COOR12(NPP12,3), EXP12(NPP12,3),
+     &          TEXPA(NPP12), TEXPB(NPP12)
 C
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(2X,A,I5)') 'NPP12',NPP12
@@ -136,10 +156,22 @@ C
          HPI(I) = HPIFAC*EXP12(I,3)
       END DO
 C
+C     2A, 2B
+C     ======
+C
+      IF (U12INT) THEN
+C        2a and 2b are needed for [T1,r12] integrals (WK/UniKA/04-11-2002).
+         DO I = 1, NPP12
+            TEXPA(I) = D2*EXP12(I,1) / EXP12(I,3)
+            TEXPB(I) = D2*EXP12(I,2) / EXP12(I,3)
+         END DO
+      END IF
+C
 C     PA and PB
 C     =========
 C
-      IF (MAX1 .GT. 0 .AND. MAX2 .GT. 0) THEN
+      IF ((MAX1 .GT. 0 .AND. MAX2 .GT. 0) .OR. U12INT) THEN
+C        Are always needed for [T1,r12] integrals (WK/UniKA/04-11-2002).
          DO I = 1, NPP12
             EXP1    =  EXP12(I,1)
             EXP2    = -EXP12(I,2)
@@ -765,9 +797,9 @@ C
          WRITE (LUPRI,'(2X,A,3I5)') 'IDL, IABO, X', IDL,IAB0,X
          WRITE (LUPRI,'(2X,A,2I5)') 'MAXI,MAXJ   ', MAXI, MAXJ
          IF (IPRINT .GT. 20) THEN
-            IF (X .EQ. 1) WORD = 'EX00(I,J,T)'
-            IF (X .EQ. 2) WORD = 'EY00(I,J,T)'
-            IF (X .EQ. 3) WORD = 'EZ00(I,J,T)'
+            IF (X .EQ. 1) WORD = 'EX00'
+            IF (X .EQ. 2) WORD = 'EY00'
+            IF (X .EQ. 3) WORD = 'EZ00'
             DO I = 0, MAXI
             DO J = 0, MAXJ
             DO T = 0, I + J
@@ -819,9 +851,9 @@ C
          IF (IPRINT .GT. 20) THEN
             CALL HEADER('ETIJ in ERISCL',-1)
             DO X = 1, 3
-               IF (X .EQ. 1) WORD = 'EX00(I,J,T)'
-               IF (X .EQ. 2) WORD = 'EY00(I,J,T)'
-               IF (X .EQ. 3) WORD = 'EZ00(I,J,T)'
+               IF (X .EQ. 1) WORD = 'EX00'
+               IF (X .EQ. 2) WORD = 'EY00'
+               IF (X .EQ. 3) WORD = 'EZ00'
                DO I = 0, MAX1
                DO J = 0, MAX2
                DO T = 0, I + J

@@ -31,6 +31,10 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
+#if defined (VAR_SINGLE)
+#include "single.h"
+#endif
+C
       PROGRAM NODPRG
 C
 #include "implicit.h"

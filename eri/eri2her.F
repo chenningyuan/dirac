@@ -1,3 +1,4 @@
+C
 C...   Copyright (c) 2001 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
@@ -30,15 +31,13 @@ C...
 C...   For information on how to get a licence see:
 C...      http://www.kjemi.uio.no/software/dalton/dalton.html
 C
-C
-C$Id$
-C
 #if defined (VAR_SINGLE)
 #include "single.h"
 #endif
-C  /* Deck fmmgam */
-      SUBROUTINE FMMGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C
+C  /* Deck erigam */
+      SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
+C     Two-electron Dirac delta added (WK/UniKA/22-11-2002).
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -46,25 +45,32 @@ C
      &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
 #include "ericom.h"
+#include "drw2el.h"
 C-----------------------------------------------------------------------
 C
-C     Allocate FMMGAM
+C     Allocate ERIGAM
 C
-      KALPHA = 1
-      KWVALU = KALPHA +  NPPX
+      KWVALU = 1
       KNDADR = KWVALU +  NPPX
       KLAST  = KNDADR + (NPPX - 1)/IRAT + 1
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIGAM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
-      CALL FMMGA1(RJ000,FACINT,ALPHA,COORPQ,
-     &            WORK(KALPHA),WORK(KWVALU),WORK(KNDADR),
-     &            WORK(KLAST),LWRK,IPRINT)
+      IF (DO2DAR .OR. S4CENT) THEN
+         CALL ERIGA3(RJ000,FACINT,ALPHA,COORPQ,WORK(KWVALU),
+     &               WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
+      ELSE IF (AD2DAR) THEN
+         CALL ERIGA2(RJ000,FACINT,ALPHA,COORPQ,WORK(KWVALU),
+     &               WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
+      ELSE
+         CALL ERIGA1(RJ000,FACINT,ALPHA,COORPQ,WORK(KWVALU),
+     &               WORK(KNDADR),WORK(KLAST),LWRK,IPRINT)
+      END IF
 C
       RETURN
       END
-C  /* Deck fmmga1 */
-      SUBROUTINE FMMGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
+C  /* Deck eriga1 */
+      SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
 #include "implicit.h"
@@ -73,142 +79,10 @@ C
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
 C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
-     &          COORPQ(NPPX,3),TALPHA(NPPX),
-     &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
+     &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
 #include "ericom.h"
 #include "erithr.h"
-#include "sdpre.h"
-C-----------------------------------------------------------------------
-C
-C     One-center Integrals
-C     ====================
-C
-C     Note: There should be no testing for small integrals since
-C     this may in the case of one-center integrals introduce
-C     numerical instabilities for large exponents.
-C
-      DO 450 J = 0, JMAX
-      DO 450 I = 1, NPPX
-CMAW  Set multi-centre Coulomb integrals to zero (exchange??)
-         RJ000(I,J) = D0
-  450 CONTINUE
-
-      IF (IPQXYZ.EQ.7) THEN
-C         CALL DCOPY(NPPX,FACINT,1,RJ000(1,0),1)
-C         IF (JMAX .GT. 0) THEN
-C            CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
-C            DO 500 J = 1, JMAX
-C               FAC = D1/SDPRE(2*J + 1)
-C               DO 510 I = 1, NPPX
-C            FACINT(I)  = D0 
-C                  RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
-C                  FACINT(I)  = ALPHA(I)*FACINT(I)
-C  510          CONTINUE
-C  500       CONTINUE
-C         END IF
-C
-      ELSE
-         NODS  = 0
-         DO 600 I = 1, NPPX
-            IF (ABS(FACINT(I)) .GT. THRSH) THEN
-               NODS = NODS + 1
-               WVALU(NODS) = DP5*ALPHA(I)
-     &             *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
-               INDADR(NODS) = I
-            ELSE
-               FACINT(I) = D0
-               DO J = 0, JMAX
-                  RJ000(I,J) = D0
-               END DO
-            END IF
-  600    CONTINUE
-C
-C        Calculate gamma function
-C        - In fact returns the Boys Function, Fn(a*RPQ)
-C        ===============================================
-C
-C        Allocate GETGAM
-C
-         KINDAD = 1
-         KWVALS = KINDAD + (3*NPPX - 1)/IRAT + 1
-         KFJW   = KWVALS +  3*NPPX
-         KREXPW = KFJW   +    NPPX*(JMAX + 1)
-         KLAST  = KREXPW +    NPPX
-         IF (KLAST .GT. LWORK) CALL STOPIT('ERIGA1',' ',KLAST,LWORK)
-C         CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
-C     &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
-C
-C        Scale gamma function
-C        i.e. generate (-2a)^n * Fn(a*RPQ^2)
-C        ====================================
-C
-         N = 0
-         DO 800 I = 1, NPPX
-            IF (ABS(FACINT(I)) .GT. THRSH) THEN
-               N = N+1
-               ARG = WVALU(N)
-               DO J = 0, JMAX
-CMAW  Build RJ000 from Asymptotic Long Range Boys Function
-                  RJ000(I,J) = ABOYSF(ARG,J)
-CMAW  Set multi-centre Coulomb integrals to zero (exchange??)
-C            FACINT(I)  = D0 
-                  RJ000(I,J) = FACINT(I)*RJ000(I,J)
-                  FACINT(I)  = ALPHA(I)*FACINT(I)
-               END DO
-             END IF
-CMAW FIXME:  note we divide and multiply by (D2**J) when using LRBOYS
-  800    CONTINUE
-      END IF
-C
-      RETURN
-      END
-C
-C  /* Deck erigam */
-      SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-      DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
-     &          ALPHA(NPPX), COORPQ(NPPX,3),
-     &          WORK(LWORK)
-#include "ericom.h"
-C-----------------------------------------------------------------------
-C
-C     Allocate ERIGAM
-C
-      KALPHA = 1
-      KWVALU = KALPHA +  NPPX
-      KNDADR = KWVALU +  NPPX
-      KLAST  = KNDADR + (NPPX - 1)/IRAT + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('ERIGAM',' ',KLAST,LWORK)
-      LWRK   = LWORK - KLAST + 1
-C
-      CALL ERIGA1(RJ000,FACINT,ALPHA,COORPQ,
-     &            WORK(KALPHA),WORK(KWVALU),WORK(KNDADR),
-     &            WORK(KLAST),LWRK,IPRINT)
-C
-      RETURN
-      END
-C  /* Deck eriga1 */
-      SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
-     &                  WVALU,INDADR,WORK,LWORK,IPRINT)
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP5 = -0.5D0)
-C
-      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
-     &          COORPQ(NPPX,3),TALPHA(NPPX),
-     &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
-C
-#include "ericom.h"
-#include "erithr.h"
-CMAW
-#include "cbieri.h"
-#include "clsfmm.h"
 #include "sdpre.h"
 C-----------------------------------------------------------------------
 C
@@ -252,8 +126,7 @@ C
   600    CONTINUE
 C
 C        Calculate gamma function
-C        - In fact returns the Boys Function, Fn(a*RPQ)
-C        ==============================================
+C        ========================
 C
 C        Allocate GETGAM
 C
@@ -266,32 +139,197 @@ C
          CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
      &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
 C
-C        Scale and adjust gamma function
-C        i.e. generate (-2a)^n * Fn(a*RPQ^2) (- long range part)
-C        =======================================================
+C        Scale gamma function
+C        ====================
 C
-         N = 0
+         DO 800 J = 0, JMAX
          DO 800 I = 1, NPPX
-            IF (ABS(FACINT(I)) .GT. THRSH) THEN
-#ifdef (MOD_FMM)
-               IF ( BFCFMM ) THEN
-                  RPQ = COORPQ(I,1)**2+COORPQ(I,2)**2+COORPQ(I,3)**2
-                  RPQ = SQRT(RPQ)
-               END IF
-#endif
-               N = N+1
-               DO J = 0, JMAX
-#ifdef (MOD_FMM)
-                  IF ( BFCFMM .AND. ( (RPQ-RPQMIN).GT.ZERODST) ) THEN
-CMAW                 Subtract off Asymptotic Long Range Boys Function
-                     ARG = WVALU(N)
-                     RJ000(I,J) = RJ000(I,J) - ABOYSF(ARG,J)
-                  END IF
-#endif
-                  RJ000(I,J) = FACINT(I)*RJ000(I,J)
-                  FACINT(I)  = ALPHA(I)*FACINT(I)
-               END DO
-             END IF
+            RJ000(I,J) = FACINT(I)*RJ000(I,J)
+            FACINT(I)  = ALPHA(I)*FACINT(I)
+  800    CONTINUE
+      END IF
+C
+C     *************************
+C     ***** PRINT SECTION *****
+C     *************************
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Output from ERIGAM',-1)
+         WRITE (LUPRI,'(2X,A,I10)') 'JMAX:  ', JMAX
+         WRITE (LUPRI,'(2X,A,I10)') 'NPPX:  ', NPPX
+         WRITE (LUPRI,'(2X,A,I10)') 'IPQXYZ:', IPQXYZ
+         IF (IPRINT .GT. 20) THEN
+            CALL HEADER('COORPQ in ERIGAM',-1)
+            CALL OUTPUT(COORPQ,1,NPPX,1,3,NPPX,3,1,LUPRI)
+            CALL HEADER('Scaled incomplete gamma function in ERIGAM',-1)
+            CALL OUTPUT(RJ000(1,0),1,NPPX,1,JMAX+1,NPPX,JMAX+1,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck eriga2 */
+      SUBROUTINE ERIGA2(RJ000,FACINT,ALPHA,COORPQ,
+     &                  WVALU,INDADR,WORK,LWORK,IPRINT)
+C
+C     This subroutine adds two-electron Darwin integrals,
+C     ---weighted with the perturbation parameter DARFAC---
+C     onto the standard repulsion integrals.
+C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
+C
+C     Wim Klopper, University of Karlsruhe, 22 November 2002.
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
+C
+      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
+     &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
+C
+#include "codata.h"
+#include "drw2el.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "sdpre.h"
+C
+      DRWFAC=DP25*ALPHA2*DARFAC
+C
+C     One-center Integrals
+C     ====================
+C
+C     Note: There should be no testing for small integrals since
+C     this may in the case of one-center integrals introduce
+C     numerical instabilities for large exponents.
+C
+      IF (IPQXYZ.EQ.7) THEN
+         DO 500 J = 0, JMAX
+            FAC = D1/SDPRE(2*J + 1)
+            DO 510 I = 1, NPPX
+               RJ000(I,J) = (FAC + DRWFAC*ALPHA(I))*FACINT(I)
+               FACINT(I)  = ALPHA(I)*FACINT(I)
+  510       CONTINUE
+  500    CONTINUE
+C
+C     Multicenter Integrals
+C     =====================
+C
+      ELSE
+         NODS  = 0
+         DO 600 I = 1, NPPX
+            NODS = NODS + 1
+            WVALU(NODS) = DP5*ALPHA(I)
+     &         *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
+            INDADR(NODS) = I
+  600    CONTINUE
+C
+C        Calculate gamma function
+C        ========================
+C
+C        Allocate GETGAM
+C
+         KINDAD = 1
+         KWVALS = KINDAD + (3*NPPX - 1)/IRAT + 1
+         KFJW   = KWVALS +  3*NPPX
+         KREXPW = KFJW   +    NPPX*(JMAX + 1)
+         KLAST  = KREXPW +    NPPX
+         IF (KLAST .GT. LWORK) CALL STOPIT('ERIGA1',' ',KLAST,LWORK)
+         CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
+     &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
+C
+C        Scale gamma function
+C        ====================
+C
+         DO 900 I = 1, NPPX
+            WVALU(I) = DRWFAC*ALPHA(I)*EXP(-WVALU(I))
+  900    CONTINUE
+         DO 800 J = 0, JMAX
+         DO 800 I = 1, NPPX
+            RJ000(I,J) = FACINT(I)*(RJ000(I,J) + WVALU(I))
+            FACINT(I)  = ALPHA(I)*FACINT(I)
+  800    CONTINUE
+      END IF
+C
+C     *************************
+C     ***** PRINT SECTION *****
+C     *************************
+C
+      IF (IPRINT .GT. 10) THEN
+         CALL HEADER('Output from ERIGAM',-1)
+         WRITE (LUPRI,'(2X,A,I10)') 'JMAX:  ', JMAX
+         WRITE (LUPRI,'(2X,A,I10)') 'NPPX:  ', NPPX
+         WRITE (LUPRI,'(2X,A,I10)') 'IPQXYZ:', IPQXYZ
+         IF (IPRINT .GT. 20) THEN
+            CALL HEADER('COORPQ in ERIGAM',-1)
+            CALL OUTPUT(COORPQ,1,NPPX,1,3,NPPX,3,1,LUPRI)
+            CALL HEADER('Scaled incomplete gamma function in ERIGAM',-1)
+            CALL OUTPUT(RJ000(1,0),1,NPPX,1,JMAX+1,NPPX,JMAX+1,1,LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck eriga3 */
+      SUBROUTINE ERIGA3(RJ000,FACINT,ALPHA,COORPQ,
+     &                  WVALU,INDADR,WORK,LWORK,IPRINT)
+C
+C     Computation of the two-electron Dirac delta function
+C
+C     The subroutine either computes the two-electron
+C     Darwin integral (DO2DAR = .true.) or the one-electron
+C     four-center overlap integral (S4CENT = .true.)
+C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
+C
+C     Wim Klopper, University of Karlsruhe, 22 November 2002.
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0, DP25 = 0.25D0)
+C
+      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
+     &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
+C
+#include "drw2el.h"
+#include "codata.h"
+#include "ericom.h"
+#include "erithr.h"
+#include "sdpre.h"
+C
+      IF (DO2DAR) DRWFAC=DP25*ALPHA2
+      IF (S4CENT) DRWFAC=-DP25/PI
+C
+C     One-center Integrals
+C     ====================
+C
+C     Note: There should be no testing for small integrals since
+C     this may in the case of one-center integrals introduce
+C     numerical instabilities for large exponents.
+C
+      IF (IPQXYZ.EQ.7) THEN
+         DO 500 J = 1, JMAX
+            DO 510 I = 1, NPPX
+               RJ000(I,J) = DRWFAC*ALPHA(I)*FACINT(I)
+               FACINT(I)  = ALPHA(I)*FACINT(I)
+  510       CONTINUE
+  500    CONTINUE
+C
+C     Multicenter Integrals
+C     =====================
+C
+      ELSE
+         NODS  = 0
+         DO 600 I = 1, NPPX
+            NODS = NODS + 1
+            WVALU(NODS) = DP5*ALPHA(I)
+     &         *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
+            INDADR(NODS) = I
+  600    CONTINUE
+         DO 810 I = 1, NPPX
+            WVALU(I) = DRWFAC*ALPHA(I)*EXP(-WVALU(I))
+  810    CONTINUE
+         DO 800 J = 0, JMAX
+         DO 800 I = 1, NPPX
+            RJ000(I,J) = FACINT(I)*WVALU(I)
+            FACINT(I)  = ALPHA(I)*FACINT(I)
   800    CONTINUE
       END IF
 C

@@ -37,19 +37,22 @@ C
 #include "single.h"
 #endif
 C  /* Deck eriexp */
-      SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPE1,RODPE2,IPNTPP,
-     &                  IPRINT)
+      SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
+     &                  RODPE1,RODPE2,IPNTPP,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
+#include "r12int.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0)
       INTEGER AB, CD, PQ, RST
       DIMENSION EXPAB(NPQBCS,MLTPZ,NPRFAB,3),
      &          EXPCD(NPQBCS,MLTPZ,NPRFCD,3),
      &          ALPHA(NPQBCS,MLTPZ,NPRFPQ),
+     &          HEXPP(NPQBCS,MLTPZ,NPRFPQ),
+     &          HEXPQ(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ),
      &          RODPE1(NODPP1,  2), RODPE2(NODPP2,  2),
      &          IPNTPP(MAXBCH,2)
@@ -107,12 +110,20 @@ C
             PINV = EXPAB(PQ,1,I,3) 
             QINV = EXPCD(PQ,1,J,3) 
             ALFA = D2/(PINV+QINV)
-            FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
+            IF (R12EIN) THEN
+               FACPQ(PQ,IJ) = SFAC*SQRT(D2)
+            ELSE
+               FACPQ(PQ,IJ) = SFAC*SQRT(PINV*QINV*ALFA)
+            END IF
             ALPHA(PQ,1,IJ) = -ALFA
+            HEXPP(PQ,1,IJ) = D1/PINV
+            HEXPQ(PQ,1,IJ) = D1/QINV
          END DO
          DO RST = 2, MLTPZ
          DO PQ = 1, NPQBCS
             ALPHA(PQ,RST,IJ) = ALPHA(PQ,1,IJ)
+            HEXPP(PQ,RST,IJ) = HEXPP(PQ,1,IJ)
+            HEXPQ(PQ,RST,IJ) = HEXPQ(PQ,1,IJ)
          END DO
          END DO
       END DO
@@ -127,6 +138,10 @@ C
          CALL OUTPUT(FACPQ,1,NPQBCS, 1,MLTPZ,NPQBCX,MLTPZ,1,LUPRI)
          CALL HEADER('ALPHA in ERIEXP',-1)
          CALL OUTPUT(ALPHA,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
+         CALL HEADER('HEXPP in ERIEXP',-1)
+         CALL OUTPUT(HEXPP,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
+         CALL HEADER('HEXPQ in ERIEXP',-1)
+         CALL OUTPUT(HEXPQ,1,NPPX, 1,1,NPPX, 1,1,LUPRI)
       END IF
 C
       RETURN
@@ -258,19 +273,21 @@ C
       END
 C  /* Deck eripfs */
       SUBROUTINE ERIPFS(FACINT,FACPQ,RODAB,RODCD,RODPF1,RODPF2,IPNTPP,
-     &                  IPRINT)
+     &                  ROD1,ROD2,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
+#include "symmet.h"
       INTEGER AB, CD, PQ, RST
       DIMENSION FACINT(NPQBCS,MLTPZ,NPRFPQ),
      &          FACPQ(NPQBCS,NPRFPQ), 
      &          RODAB(NPQBCS,MLTPZ,NPRFAB),
      &          RODCD(NPQBCS,MLTPZ,NPRFCD),
      &          RODPF1(MAXOPR+1,*), RODPF2(MAXOPR+1,*),
+     &          ROD1(NPQBCS,NPRFAB,3), ROD2(NPQBCS,NPRFCD,3),
      &          IPNTPP(MAXBCH,2)
 #include "cbieri.h"
 #include "odclss.h"
@@ -278,7 +295,6 @@ C  /* Deck eripfs */
 #include "hertop.h"
 #include "aobtch.h"
 #include "erisop.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERIPFS','*',103)
@@ -617,45 +633,23 @@ C
       END IF
       RETURN
       END
-C  /* Deck erfciv */
-      FUNCTION ERFCIV(THR)
-C
-C     tuh
-C
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0, THRMAX = 1.0D-15)
-      DIMENSION ERFCI(0:15)
-      DATA (ERFCI(I),I=0,15)/0.00000D0, 1.16309D0, 1.82139D0, 2.32675D0, 
-     &                       2.75106D0, 3.12341D0, 3.45891D0, 3.76656D0, 
-     &                       4.05224D0, 4.32001D0, 4.57282D0, 4.81292D0, 
-     &                       5.04203D0, 5.26151D0, 5.47248D0, 5.67585D0/
-      ARG = MAX(MAX(ABS(THR),THRMAX),D0)
-      ERFCIV = ERFCI(-NINT(DLOG10(ARG)))
-      RETURN
-      END 
 C  /* Deck ericls */
-      SUBROUTINE ERICLS(FACINT,CLSINT,COORAO,FACAB,FACCD,EXPAB,EXPCD,
-     &                  CMATA,CMATB,CMATC,CMATD,IPRINT)
-C
-C     tuh
-C
+      SUBROUTINE ERICLS(FACINT,COORPQ,EXPAB,EXPCD,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
+C
+C     tuh
+C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
-      LOGICAL CLSALL, CLSONE
-      LOGICAL CLSINT(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX)
+      LOGICAL CLASIC 
       DIMENSION FACINT(NPQBCX,NPRFAB,NPRFCD),
-     &          COORAO(NPQBCX,3,4), 
-     &          FACAB (NPQBCX,NPRFAB),
-     &          FACCD (NPQBCX,NPRFCD),
+     &          COORPQ(NPQBCX,NPRFAB,NPRFCD,3), 
      &          EXPAB (NPQBCX,NPRFAB,3),
-     &          EXPCD (NPQBCX,NPRFCD,3),
-     &          CMATA (NPRFA,NCTFA), CMATB (NPRFB,NCTFB),
-     &          CMATC (NPRFC,NCTFC), CMATD (NPRFD,NCTFD)
+     &          EXPCD (NPQBCX,NPRFCD,3)
 #include "cbieri.h"
 #include "odclss.h"
 #include "ericom.h"
@@ -666,268 +660,36 @@ C
 #include "symmet.h"
 #include "clsfmm.h"
 C
-      IF (IPRINT .GT. 10) CALL TITLER('Output from ERICLS','*',103)
-C
-      NOINTS = .TRUE.
-      ERFFAC = ERFCIV(THRCLS)
-      IF (GCONAB .OR. GCONCD) THEN
-         CLSZER = .FALSE.
-         DO K = 1, NPQBCX
-            CLSALL = .TRUE.
-            CLSONE = .FALSE.
-            DO IA = 1, NCTFA 
-            DO IB = 1, NCTFB 
-            DO IC = 1, NCTFC 
-            DO ID = 1, NCTFD 
-               IF (GCONAB) THEN
-                  CALL ERIGGN(AM,BM,PM,FACAB(K,1),EXPAB(K,1,1),
-     &                        CMATA(1,IA),CMATB(1,IB),NPRFA,NPRFB,
-     &                        IPRINT)
-               ELSE
-                  CALL ERIGSG(AM,BM,PM,FACAB(K,1),EXPAB(K,1,1),NPRFAB,
-     &                        IPRINT)
-               END IF
-               IF (GCONCD) THEN
-                  CALL ERIGGN(CM,DM,QM,FACCD(K,1),EXPCD(K,1,1),
-     &                        CMATC(1,IC),CMATD(1,ID),NPRFC,NPRFD,
-     &                        IPRINT)
-               ELSE
-                  CALL ERIGSG(CM,DM,QM,FACCD(K,1),EXPCD(K,1,1),NPRFCD,
-     &                        IPRINT)
-               END IF
-               PQX = AM*COORAO(K,1,1) + BM*COORAO(K,1,2)
-     &             - CM*COORAO(K,1,3) - DM*COORAO(K,1,4)
-               PQY = AM*COORAO(K,2,1) + BM*COORAO(K,2,2)
-     &             - CM*COORAO(K,2,3) - DM*COORAO(K,2,4)
-               PQZ = AM*COORAO(K,3,1) + BM*COORAO(K,3,2)
-     &             - CM*COORAO(K,3,3) - DM*COORAO(K,3,4)
-               RPQ = SQRT(PQX**2 + PQY**2 + PQZ**2)
-               EPQ = ERFFAC*(SQRT(PM) + SQRT(QM))
-CMAW
-C               IF (DABS(RPQ-RPQMIN) .LT. 0.00001D0) THEN
-C         print *, "RPQ   ", RPQ
-C         print *, "RPQMIN", RPQMIN
-C         print *, "0.000001D0", 0.000001D0
-C         print *,"1.", (RPQ-RPQMIN),((RPQ-RPQMIN) > ZERODST)
-C         print *,"2.", (RPQ-RPQMIN),((RPQ-RPQMIN) > D0)
-C         print *,"3.", (RPQ-RPQMIN),(RPQ>RPQMIN)
-C               END IF
-CMAW
-               IF (((RPQ-EPQ) .GT. ZERODST) .AND.
-     &             ((RPQ-RPQMIN) .GT. ZERODST)) THEN
-CMAW              Interaction has no non-classical contribution
-CMAW              and is outside cut-off MM radius
-                  CLSINT(ID,IC,IB,IA,K) = .TRUE.
-                  CLSONE = .TRUE.
-               ELSE
-                  CLSALL = .FALSE.
-                  NOINTS = .FALSE.
-               END IF
-            END DO
-            END DO
-            END DO
-            END DO
-            IF (CLSALL) THEN
-               DO J = 1, NPRFCD
-               DO I = 1, NPRFAB
-                  FACINT(K,I,J) = D0
-               END DO
-               END DO
-            END IF
-            IF (CLSONE.AND..NOT.CLSALL) CLSZER = .TRUE.
-         END DO
-      ELSE 
-         CLSZER = .FALSE.
-         DO K = 1, NPQBCX
-            CALL ERIGSG(AM,BM,PM,FACAB(K,1),EXPAB(K,1,1),NPRFAB,IPRINT)
-            CALL ERIGSG(CM,DM,QM,FACCD(K,1),EXPCD(K,1,1),NPRFCD,IPRINT)
-            PQX = AM*COORAO(K,1,1) + BM*COORAO(K,1,2)
-     &          - CM*COORAO(K,1,3) - DM*COORAO(K,1,4)
-            PQY = AM*COORAO(K,2,1) + BM*COORAO(K,2,2)
-     &          - CM*COORAO(K,2,3) - DM*COORAO(K,2,4)
-            PQZ = AM*COORAO(K,3,1) + BM*COORAO(K,3,2)
-     &          - CM*COORAO(K,3,3) - DM*COORAO(K,3,4)
-            RPQ = SQRT(PQX**2 + PQY**2 + PQZ**2)
-            EPQ = ERFFAC*(SQRT(PM) + SQRT(QM))
-CMAW
-C               IF (DABS(RPQ-RPQMIN) .LT. 0.000001D0) THEN
-C         print *, "RPQ   ", RPQ
-C         print *, "RPQMIN", RPQMIN
-C         print *, "0.000001D0", 0.000001D0
-C         print *,"1.", (RPQ-RPQMIN),((RPQ-RPQMIN) > ZERODST)
-C         print *,"2.", (RPQ-RPQMIN),((RPQ-RPQMIN) > D0)
-C         print *,"3.", (RPQ-RPQMIN),(RPQ>RPQMIN)
-C               END IF
-CMAW
-            IF (((RPQ-EPQ) .GT. ZERODST) .AND.
-     &          ((RPQ-RPQMIN) .GT. ZERODST)) THEN
-CMAW           Interaction has no non-classical contribution
-CMAW           and is outside cut-off MM radius
-               DO J = 1, NPRFCD
-               DO I = 1, NPRFAB
-                  FACINT(K,I,J) = D0
-               END DO
-               END DO
-            ELSE
-               NOINTS = .FALSE.
-            END IF
-         END DO
+      IF (IPRINT .GT. 10) THEN
+         CALL TITLER('Output from ERICLS','*',103)
       END IF
+C
+      FAC = ERFCIV(THRCLS)
+      NNCLS = 0
+      DO K  = 1, NPQBCX
+         CLASIC = .TRUE.
+         DO J = 1, NPRFCD
+         DO I = 1, NPRFAB
+            RPQ = SQRT(COORPQ(K,I,J,1)**2 + COORPQ(K,I,J,2)**2
+     &                                    + COORPQ(K,I,J,3)**2)
+            EPQ = FAC*(SQRT(EXPAB(K,I,3)) + SQRT(EXPCD(K,J,3)))
+            IF (RPQ .LE. EPQ) CLASIC = .FALSE. 
+         END DO
+         END DO
+         IF (CLASIC) THEN
+            NNCLS = NNCLS + 1
+            DO J = 1, NPRFCD
+            DO I = 1, NPRFAB
+               FACINT(K,I,J) = D0
+            END DO
+            END DO
+         END IF
+      END DO
 C
       IF (IPRINT .GT. 25) THEN
          CALL HEADER('FACINT in ERICLS',-1)
          WRITE (LUPRI,'(2X,A,2I5)') ' NPQBCX, NNCLS ', NPQBCX, NNCLS
          CALL OUTPUT(FACINT,1,NPQBCX,1,NPRFPQ,NPQBCX,NPRFPQ,1,LUPRI)
-      END IF
-C
-      RETURN
-      END
-C  /* Deck erigsg */
-      SUBROUTINE ERIGSG(AM,BM,PM,FACAB,EXPAB,NDIM,IPRINT)
-C
-C     tuh
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION FACAB (NPQBCX,NDIM), EXPAB (NPQBCX,NDIM,3)
-#include "cbieri.h"
-#include "odclss.h"
-#include "ericom.h"
-#include "hertop.h"
-#include "aobtch.h"
-#include "erisop.h"
-#include "erithr.h"
-#include "symmet.h"
-#include "clsfmm.h"
-C
-      SM = D0 
-      AM = D0
-      BM = D0
-      PM = D0
-      DO I = 1, NDIM
-         PI = EXPAB(1,I,3)
-         PM = MAX(PM,PI)
-         WT = ABS(FACAB(1,I)/PI)
-         SM = SM + WT
-         AM = AM + WT*EXPAB(1,I,1)
-         BM = BM + WT*EXPAB(1,I,2)
-      END DO
-      AM = AM/SM
-      BM = BM/SM
-      RETURN
-      END
-C  /* Deck eriggn */
-      SUBROUTINE ERIGGN(AM,BM,PM,FACAB,EXPAB,CMATA,CMATB,NDIMA,NDIMB,
-     &                  IPRINT)
-C
-C     tuh
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION FACAB(NPQBCX,NDIMA*NDIMB), EXPAB(NPQBCX,NDIMA*NDIMB,3),
-     &          CMATA(NDIMA), CMATB(NDIMB)
-#include "cbieri.h"
-#include "odclss.h"
-#include "ericom.h"
-#include "hertop.h"
-#include "aobtch.h"
-#include "erisop.h"
-#include "erithr.h"
-#include "symmet.h"
-#include "clsfmm.h"
-C
-      SM = D0 
-      AM = D0
-      BM = D0
-      PM = D0
-      IJ = 0
-      DO I = 1, NDIMA
-      DO J = 1, NDIMB
-         IJ = IJ + 1
-         CFAB = ABS(CMATA(I)*CMATB(J))
-         IF (CFAB.GT.D0) THEN
-            PI = EXPAB(1,IJ,3)
-            PM = MAX(PM,PI)
-            WT = ABS(CFAB*FACAB(1,IJ)/PI)
-            SM = SM + WT
-            AM = AM + WT*EXPAB(1,IJ,1)
-            BM = BM + WT*EXPAB(1,IJ,2)
-         END IF
-      END DO
-      END DO
-      AM = AM/SM
-      BM = BM/SM
-      RETURN
-      END
-C  /* Deck erizer */
-      SUBROUTINE ERIZER(AO,CLSINT,IODDCC,IPNTUV,IPRINT)
-C
-C     tuh
-C
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-      PARAMETER (D0 = 0.0D0)
-      INTEGER A, B, C, D
-      LOGICAL CLSINT(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX)
-      DIMENSION AO(NCTFD,NCTFC,NCTFB,NCTFA,NPQBCX,KHKTAB,KHKTCD),
-     &          IPNTUV(KC2MAX,0:NRDER,2), IODDCC(NRTOP)
-#include "ericom.h"
-#include "symmet.h"
-#include "hertop.h"
-C
-#include "ibtfun.h"
-C
-      IF (IPATH.EQ.2) THEN
-         WRITE (LUPRI,'(2X,A)') ' ERIZER not implemented for IPATH = 2.' 
-         STOP ' ERIZER not implemented for IPATH = 2.'
-      END IF
-      IF (CLSZER) THEN
-         MAXB = KHKTB
-         MAXD = KHKTD
-         ICMPAB = 0
-         DO ICOMPA = 1, KHKTA
-            IF (TKMPAB) MAXB = ICOMPA
-            DO ICOMPB = 1, MAXB
-               ICMPAB = ICMPAB + 1
-               ICMPCD = 0
-               DO ICOMPC = 1, KHKTC
-                  IF (TKMPCD) MAXD = ICOMPC
-                  DO ICOMPD = 1, MAXD
-                     ICMPCD = ICMPCD + 1
-                     IF (IODDCC(IPNTUV(ICMPAB,0,1)) .EQ.
-     &                   IODDCC(IPNTUV(ICMPCD,0,2))) THEN
-                        DO I = 1, NPQBCX
-                           DO A = 1, NCTFA
-                           DO B = 1, NCFTB
-                           DO C = 1, NCFTC
-                           DO D = 1, NCFTD
-                              IF (CLSINT(D,C,B,A,K)) THEN
-                                 AO(D,C,B,A,I,ICMPAB,ICMPCD) = D0
-                              END IF
-                           END DO
-                           END DO
-                           END DO
-                           END DO
-                        END DO
-                     END IF
-                  END DO
-               END DO
-            END DO
-         END DO
       END IF
 C
       RETURN

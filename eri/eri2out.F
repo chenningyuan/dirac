@@ -47,13 +47,13 @@ C  /* Deck eriout */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "eridst.h"
+#include "eribuf.h"
       DIMENSION SO(NAOINT,*), 
      &          IPNTCR(MAXBCH,4), IPNTUV(KC2MAX,0:NRDER,2),
      &          WORK(LWORK), IODDCC(NRTOP), BUF(*), IBUF(*),
      &          NINTS(MXDIST), NCOUNT(*), INDXBT(*)
 #include "cbieri.h"
 #include "ericom.h"
-#include "eribuf.h"
 #include "symmet.h"
 #include "hertop.h"
 #include "inftap.h"
@@ -67,7 +67,7 @@ C
          KSOPRT = 1
          KNDORB = 1
          KLABEL = 1
-         KPNCHN = 1
+         KPNBCH = 1
          KNDALL = 1
          KNDXTR = 1
          KJCMPA = 1
@@ -77,15 +77,15 @@ C
          KIOFCM = 1
          KLAST  = 1
       ELSE IF (GDER .OR. BDER) THEN
+         CALL ERISDS(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
-C
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
          KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
          KNDORB = KSOPRT + NAOINT 
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
-         KPNCHN = KLABEL + (4*NAOINT - 1)/IRAT + 1
-         KNDALL = KPNCHN + (LBIN - 1)/IRAT + 1
+         KPNBCH = KLABEL + (4*NAOINT - 1)/IRAT + 1
+         KNDALL = KPNBCH + (LPNBCH*NDISTR - 1)/IRAT + 1
          KNDXTR = KNDALL + (2*NCCS - 1)/IRAT + 1
          KJCMPA = KNDXTR + (4*NCCS*(MAXREP + 1) - 1)/IRAT + 1
          KJCMPC = KJCMPA + 64*MXAQN*MXAQN
@@ -94,14 +94,15 @@ C
          KIOFCM = KJADDC + 64*MXAQN*MXAQN
          KLAST  = KIOFCM + MXAQN*MXAQN*MXAQN*MXAQN
       ELSE IF (DODIST) THEN
+         CALL ERISDS(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
          KIBIN  = KBIN   +  LBIN
          KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
          KNDORB = KSOPRT 
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
-         KPNCHN = KLABEL 
-         KNDALL = KPNCHN + (LBIN - 1)/IRAT + 1
+         KPNBCH = KLABEL 
+         KNDALL = KPNBCH + (LPNBCH*NDISTR - 1)/IRAT + 1
          KNDXTR = KNDALL + (2*NCCS - 1)/IRAT + 1
          KJCMPA = KNDXTR + (4*NCCS*(MAXREP + 1) - 1)/IRAT + 1
          KJCMPC = KJCMPA + 64*MXAQN*MXAQN
@@ -116,8 +117,8 @@ C
          KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
          KNDORB = KSOPRT
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
-         KPNCHN = KLABEL
-         KNDALL = KPNCHN
+         KPNBCH = KLABEL
+         KNDALL = KPNBCH
          KNDXTR = KNDALL
          KJCMPA = KNDXTR
          KJCMPC = KJCMPA
@@ -131,14 +132,14 @@ C
          IF (GDER) N0 = 13 
          IF (BDER) N0 =  7 
          CALL ERIOU1(SO,SO(1,N0),ITYPE,WORK(KNDORB),WORK(KLABEL),
-     &               WORK(KPNCHN),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
+     &               WORK(KPNBCH),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
      &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
      &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
      &               IPRINT)
       ELSE
          CALL ERIOU1(SO,WORK(KSOPRT),ITYPE,WORK(KNDORB),WORK(KLABEL),
-     &               WORK(KPNCHN),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
+     &               WORK(KPNBCH),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
      &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
      &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
@@ -160,6 +161,8 @@ C  /* Deck eriou1 */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "eridst.h"
+#include "eribuf.h"
       DIMENSION SO(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,*), SOPRT(*),
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
@@ -173,10 +176,8 @@ C  /* Deck eriou1 */
 #include "ericom.h"
 #include "erithr.h"
 #include "nuclei.h"
-#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
-#include "eridst.h"
 #include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIOU1',-1)
@@ -300,6 +301,7 @@ C  /* Deck eriwrt */
 #include "aovec.h"
 C
 #include "eridst.h"
+#include "eribuf.h"
       CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
      &          BIN(LBIN), IBIN(LBIN,NIBUF),
@@ -310,7 +312,6 @@ C
 #include "nuclei.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
 #include "inftap.h"
@@ -979,6 +980,7 @@ C
 #include "aovec.h"
 C
 #include "eridst.h"
+#include "symmet.h"
       INTEGER A, B, C, D, AB, CD, R, S, T
       DIMENSION INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          INDALL(NCCS), INDCD(NCCS), INDXTR(NCCS,MAXREP+1,4),
@@ -994,7 +996,6 @@ C
 #include "erithr.h"
 #include "aobtch.h"
 #include "hertop.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -1169,16 +1170,15 @@ C  /* Deck erisrt */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
-C
 #include "eridst.h"
+C
       DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
      &          INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          SO    (NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          IPNTCR(MAXBCH,4), IODDCC(NRTOP), 
      &          IPNTUV(KC2MAX,0:NRDER,2), IOFCMP(*)
-      DIMENSION NCCDST(MXDIST), NCCFST(MXDIST),
-     &          NBTCHX(MXDIST), LBTCHX(MXDIST),
-     &          IPNBCH(NCTFA*MLTPX*KHKTB*KHKTCD,*), NINTS(NDISTR)
+      DIMENSION NBTCHX(MXDIST), LBTCHX(MXDIST),
+     &          IPNBCH(LPNBCH,*), NINTS(NDISTR)
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
 #include "cbieri.h"
 #include "ericom.h"
@@ -1187,8 +1187,34 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
 C
-      NBCHS = NCTFA*MLTPX*KHKTB*KHKTCD
+      CALL ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,
+     &            IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,IPRINT)
 C
+      ISTR = 1
+      DO I = 1, NDISTR
+         NBTCH = NBTCHX(I)
+         LBTCH = LBTCHX(I)
+         CALL ERITRF(BIN(ISTR),IBIN(ISTR,1),NTOT,SO,INDORB,NBTCH,LBTCH,
+     &               IPNBCH(1,I),NDISTR,LBIN,NIBUF)
+         NINTS(I) = NTOT 
+         ISTR = ISTR + NTOT 
+      END DO
+C
+      RETURN
+      END
+C /* Deck erisds */
+      SUBROUTINE ERISDS(IPNTCR,INDXBT)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "eridst.h"
+      DIMENSION IPNTCR(MAXBCH,4)
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
+#include "ericom.h"
+#include "aobtch.h"
       IANEW = 0
       IDIST = 0
       NIJKL = 0
@@ -1214,25 +1240,12 @@ C
          END DO
       END DO
       NDST = IDIST
-C
-      CALL ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,NBCHS,NDST,NCCFST,NCCDST,
-     &            IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,IPRINT)
-C
-      ISTR = 1
-      DO I = 1, NDISTR
-         NBTCH = NBTCHX(I)
-         LBTCH = LBTCHX(I)
-         CALL ERITRF(BIN(ISTR),IBIN(ISTR,1),NTOT,SO,INDORB,NBTCH,LBTCH,
-     &               IPNBCH(1,I),NDISTR,LBIN,NIBUF)
-         NINTS(I) = NTOT 
-         ISTR = ISTR + NTOT 
-      END DO
-C
+      LPNBCH = NDST*MLTPX*KHKTAB*KHKTCD
       RETURN
       END
 C  /* Deck erichn */
-      SUBROUTINE ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,NBCHS,NDST,NCCFST,
-     &                  NCCDST,IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,
+      SUBROUTINE ERICHN(INDORB,NBTCHX,LBTCHX,IPNBCH,
+     &                  IODDCC,IPNTUV,NBITS,NIBUF,IOFCMP,ICART,
      &                  IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -1241,8 +1254,8 @@ C  /* Deck erichn */
 #include "maxorb.h"
 #include "eridst.h"
       DIMENSION NBTCHX(*), LBTCHX(*), 
-     &          IPNBCH(NCTFA*MLTPX*KHKTB*KHKTCD,*),
-     &          NCCFST(*), NCCDST(*), IODDCC(*), 
+     &          IPNBCH(LPNBCH,*),
+     &          IODDCC(*), 
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IOFCMP(MXAQN**4), INDORB(NCCS,*)
 #include "ericom.h"
@@ -1377,6 +1390,7 @@ C  /* Deck erilbd */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "eribuf.h"
       PARAMETER (D2=2.0D0, D1=1.0D0)
       INTEGER A, B, C, D, AB, CD, R, S, T
       LOGICAL DOREP(0:7,4), CTRIAB, CTRICD, DCD
@@ -1390,8 +1404,6 @@ C  /* Deck erilbd */
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
-#include "eridst.h"
-#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
 #include "symmet.h"

@@ -76,7 +76,7 @@ C
 C
       IF (DEBUG) THEN
          IPRNOD = IPRINT
-      ELSE 
+      ELSE
          IPRNOD = 0
       END IF
 C
@@ -222,7 +222,7 @@ C      50 - Receive (I|J) request from node
 C      60 - Send new (I|J) labels to node
 C      70 - Receive fock matrix from nodes if MEMOK
 C      80 - Receive overall timings
-C      
+C
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -293,7 +293,7 @@ C
       IBLOCK = NODTOT*NTASK
       NINDEX = (IBLOCK + 1)*INT(MXCLS2/IBLOCK + 1)
 C
-      KTMPMT = 1            
+      KTMPMT = 1
       KINDEX = KTMPMT +  N2BASX
       KTIMES = KINDEX + (NINDEX + 1)/IRAT
       KWHICH = KTIMES +  MXCLS2
@@ -379,6 +379,7 @@ C
 #include "molinp.h"
 #include "inforb.h"
 #include "infpar.h"
+#include "r12int.h"
 #if defined (SYS_T3D)
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER on
@@ -388,7 +389,6 @@ C
       EQUIVALENCE (ITMP,MLINE)
 #endif
 #include "cbieri.h"
-#include "clsfmm.h"
 C
       NDMAT = NDMT
 C
@@ -414,7 +414,7 @@ C   /molinc/
 #if defined (SYS_T3D)
          CALL MPIXBCAST(ITMP,10*NMLINE,'INTEGER',MASTER)
 #else
-         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)   
+         CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
          CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
@@ -424,12 +424,13 @@ C   /cbieri/ integers
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
 C   /cbieri/ logicals
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
-C   /clsfmm/ floats
-         CALL MPIXBCAST(THRCLS,NCLSFM,'DOUBLE',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
-      CALL MPIXBCAST(DMAT,N2BASX ,'DOUBLE' ,MASTER)     
+      CALL MPIXBCAST(DMAT,N2BASX ,'DOUBLE' ,MASTER)
 #endif
 #if defined (VAR_PVM)
       CALL PVMXINITSEND(NCODE)
@@ -452,10 +453,13 @@ C   /molinc/
 C   /inforb/
          CALL PVMXPACK(MULD2H,NINFI,'INTEGER')
 C   /infpar/
-         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')      
-C   /cbieri/ 
-         CALL PVMXPACK(NDMAT ,NCBII,'INTEGER')      
-         CALL PVMXPACK(RUNERI,NCBIL,'LOGICAL')      
+         CALL PVMXPACK(NODTOT,NPARI,'INTEGER')
+C   /cbieri/
+         CALL PVMXPACK(NDMAT ,NCBII,'INTEGER')
+         CALL PVMXPACK(RUNERI,NCBIL,'LOGICAL')
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
       CALL PVMXPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXPACK(IFCTYP,NDMAT,'INTEGER')
@@ -596,7 +600,7 @@ C
 #if defined (VAR_MPI)
          IWHO = -1
          CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG5)
-C  
+C
 C        Send (I|J) batch to NODEID
 C
          CALL MPIXSEND(DONE,1,'LOGICAL',NWHO,MTAG6)
@@ -754,7 +758,7 @@ C
      &      ' Memory requirements largest for OD classes :',
      &        IABMAX,ICDMAX
          CALL QUIT('Insufficient memory in ERIFCK.')
-      ELSE 
+      ELSE
          IF (IPRINT.GT.5) THEN
             CALL HEADER('Fock matrices in ERI_RVRES',-1)
             CALL OUTPUT(FMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
@@ -775,7 +779,7 @@ C
       END
 C  /* Deck node */
 #if defined (VAR_MPI)
-      SUBROUTINE NODSTR(WORK,MWORK,MASTER,MYNUM)
+      SUBROUTINE NODSTR(WORK,MWORK,WRKDLM,MASTER,MYNUM)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -784,31 +788,28 @@ C
 C
 C     Get calculation type (iprtyp)
 C
-      CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
+  100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
-      DO WHILE(IPRTYP.GT.0)       
+      IF (IPRTYP.GT.0) THEN
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C
-         IF (IPRTYP.EQ.1) THEN
+         IF      (IPRTYP.EQ.1) THEN
             CALL HER_NODSTR(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.2) THEN
             CALL ERI_NODSTR(WORK,MWORK,IPRINT)
+C        ELSE IF (IPRTYP.EQ.3) THEN
+C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.4) THEN
             CALL DFT_NODSTR(WORK,MWORK,IPRINT)
-         ELSE IF (IPRTYP.EQ.5) THEN
-            CALL FCK3_SLAVE_FOCK(WORK,MWORK,IPRINT)
-#ifdef (MOD_FMM)
-         ELSE IF (IPRTYP.EQ.6) THEN
-            CALL FMM_SLAVE_FOCK(WORK,MWORK,IPRINT)
-#endif
-c         ELSE IF (IPRTYP.EQ.6) THEN
-c            CALL FMM_SLAVE_ENERGY(WORK,MWORK,IPRINT)
-C         ELSE IF (IPRTYP.EQ.3) THEN
-C            CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A,I10)')
+     &         '(NODSTR) ERROR on slave',MYTID,
+     &         ': Unknown calculation type request',IPRTYP
+            CALL QUIT('NODSTR: Unknown calculation type')
          END IF
 C
-         CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      END DO
+         GO TO 100
+      END IF
 C
       RETURN
       END
@@ -824,7 +825,7 @@ C
 #include "infpar.h"
 C
       MASTER = NASTER
-      MYTID  = NYTID 
+      MYTID  = NYTID
 C
 #if defined (VAR_PVM)
 C
@@ -837,7 +838,7 @@ C     Get my name
 C
       CALL GETNAME(MYNAME)
 C
-C     Return name to master      
+C     Return name to master
 C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
@@ -847,7 +848,7 @@ C
       CALL PVMXPACK(MYTID,1,'INTEGER')
       CALL PVMXPACK(MYNAME,20,'STRING')
       CALL PVMXSEND(NASTER,MTAG8)
-#endif      
+#endif
 C
       RETURN
       END
@@ -858,12 +859,12 @@ C
 #include "priunit.h"
 #include "maxorb.h"
 #include "mtags.h"
-      CHARACTER NAME*20 
+      CHARACTER NAME*20
 #include "infpar.h"
 C
 #if defined (VAR_PVM)
 C
-C     NCODE must be the first variable PVM-slaves must receive    
+C     NCODE must be the first variable PVM-slaves must receive
 C
       CALL PVMXINITSEND(NCODE)
       CALL PVMXPACK(NCODE,1,'INTEGER')
@@ -874,7 +875,7 @@ C
       CALL GETNAME(MYNAME)
       NODNAM(0) = MYNAME
 C
-C     Return name to master      
+C     Return name to master
 C
       DO I = 1,NODTOT
 #if defined (VAR_MPI)
@@ -938,15 +939,15 @@ C
 C     Receive initialization from Master
 C
       NPAO = MXSHEL*MXAOVC
-      CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)     
-      CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)     
+      CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
       CALL ERI_RVINIT(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &                WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),
-     &                ISYMDM,IFCTYP,WORK,LWORK,IPRINT) 
+     &                ISYMDM,IFCTYP,WORK,LWORK,IPRINT)
 C
 C     Allocate workspace
 C
@@ -958,11 +959,11 @@ C
       KDMAT  = 1
       KFMAT  = KDMAT  + N2BASX
       KCCFBT = KFMAT  + N2BASX
-      KINDXB = KCCFBT + MXPRIM*MXCONT  
+      KINDXB = KCCFBT + MXPRIM*MXCONT
       KFCKPT = KINDXB + (MXSHEL*MXCONT*8 - 1)/IRAT + 1
 #if defined (VAR_VECTOR)
       KLAST  = KFCKPT + ICHUNK*NDMAT*(NBASE + NODD)*NBASE
-#else 
+#else
       KLAST  = KFCKPT
 #endif
       IF (KLAST .GT. LWORK) CALL STOPIT('ERI_NODSTR',' ',KLAST,LWORK)
@@ -993,7 +994,7 @@ C
 #include "mtags.h"
 C
       LOGICAL FIRST
-      DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*), 
+      DIMENSION JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
      &          JORBSH(*), KORBSH(*), ISYMDM(*), IFCTYP(*),
      &          WORK(LWORK)
 C
@@ -1004,7 +1005,7 @@ C MXORB  : MXSHEL (for INFPAR)
 C GNRINF : NEWBAS, (PVM: BASDIR, BASLEN)
 C SIRIPC : NEWGEO
 C MOLINP : NMLINE
-C MOLINC : MLINE() 
+C MOLINC : MLINE()
 C INFORB : *
 C INFPAR : *
 C CBIERI : *
@@ -1018,6 +1019,7 @@ C
 #include "molinp.h"
 #include "infpar.h"
 #include "inforb.h"
+#include "r12int.h"
 #include "cbieri.h"
 #if defined (SYS_T3D)
 C
@@ -1032,7 +1034,7 @@ C
 C
 #if defined (VAR_MPI)
 C
-C     Master tells nodes whether to read new input information.  
+C     Master tells nodes whether to read new input information.
 C
       CALL MPIXBCAST(FIRST ,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(NEWGEO,1,'LOGICAL',MASTER)
@@ -1040,7 +1042,7 @@ C
 C
       TIMING = FIRST .OR. NEWBAS
 C
-C     Receive /MOLINC/,/MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/ 
+C     Receive /MOLINC/,/MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/
 C
       IF (TIMING .OR. NEWGEO) THEN
          IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
@@ -1055,12 +1057,15 @@ C   /molinc/
          CALL MPIXBCAST(MLINE,80*NMLINE,'STRING',MASTER)
 #endif
 C   /inforb/
-         CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)      
+         CALL MPIXBCAST(MULD2H,NINFI,'INTEGER',MASTER)
 C   /infpar/
          CALL MPIXBCAST(NODTOT,NPARI,'INTEGER',MASTER)
 C   /cbieri/
          CALL MPIXBCAST(NDMAT ,NCBII,'INTEGER',MASTER)
          CALL MPIXBCAST(RUNERI,NCBIL,'LOGICAL',MASTER)
+C  comr12
+         CALL MPIXBCAST(R12INT,NR12L,'LOGICAL',MASTER)
+         CALL MPIXBCAST(INTGAC,NR12I,'INTEGER',MASTER)
       END IF
       CALL MPIXBCAST(ISYMDM,NDMAT,'INTEGER',MASTER)
       CALL MPIXBCAST(IFCTYP,NDMAT,'INTEGER',MASTER)
@@ -1078,7 +1083,7 @@ C
 C
       TIMING = FIRST .OR. NEWBAS
 C
-C     Receive /MOLINC/,/MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/ 
+C     Receive /MOLINC/,/MOLINP/, /INFORB/, /INFPAR/ and /CBIERI/
 C
       IF (TIMING .OR. NEWGEO) THEN
          IF (IPRINT .GT. 3) WRITE(LUPRI,'(/1X,A,/,1X,A,3L3)')
@@ -1098,12 +1103,15 @@ C   /infpar/
 C   /cbieri/
          CALL PVMXUNPACK(NDMAT ,NCBII,'INTEGER')
          CALL PVMXUNPACK(RUNERI,NCBIL,'LOGICAL')
+C  comr12
+         CALL PVMXBCAST(R12INT,NR12L,'LOGICAL')
+         CALL PVMXBCAST(INTGAC,NR12I,'INTEGER')
       END IF
       CALL PVMXUNPACK(ISYMDM,NDMAT,'INTEGER')
       CALL PVMXUNPACK(IFCTYP,NDMAT,'INTEGER')
 #endif
 C
-C     Set hermit 
+C     Set hermit
 C
       IF (NEWGEO) RDINPC = .FALSE.
 C
@@ -1122,7 +1130,7 @@ C
 #endif
 #if defined (VAR_PVM)
       CALL PVMXUNPACK(WORK,N2BASX,'DOUBLE')
-#endif      
+#endif
 C
       RETURN
       END
@@ -1139,7 +1147,7 @@ C
 #include "mtags.h"
       DIMENSION TMGARR(2)
 #include "infpar.h"
-C 
+C
       IF (IPRINT .GT. 3) CALL TITLER('Output from SDTIM','*',103)
 C
       CALL GETTIM(CPU2,WALL2)
@@ -1219,7 +1227,7 @@ C
       IF (IPRINT .GT. 3) CALL TITLER('Output from ERI_NODDRV','*',103)
 C
 C     Send NODCL1 and NTASK to master.
-C      
+C
       IF (MYNUM .EQ. 1) THEN
          CALL ERI_SDCLS(NODCL1,IPRINT)
       END IF
@@ -1308,7 +1316,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches
@@ -1331,11 +1339,11 @@ C
   200 CONTINUE
 C
 C     Send ID number and ask for something to do.
-C  
+C
 #if defined (VAR_MPI)
       CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG5)
 C
-C     Receive IJ labels for NTASK new (class|class) integrals 
+C     Receive IJ labels for NTASK new (class|class) integrals
 C
       CALL IZERO(IJS,NTASK)
 C
@@ -1348,7 +1356,7 @@ C
       CALL PVMXPACK(MYNUM,1,'INTEGER')
       CALL PVMXSEND(MASTER,MTAG5)
 C
-C     Receive IJ labels for NTASK new (class|class) integrals 
+C     Receive IJ labels for NTASK new (class|class) integrals
 C
       CALL IZERO(IJS,NTASK)
 C
@@ -1645,7 +1653,7 @@ C
 #include "maxorb.h"
 #include "mtags.h"
 C
-      DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)   
+      DIMENSION DMAT(*), FMAT(*), CLSCPU(IJSTOT), IWHICH(IJSTOT)
 C
 C Used from common blocks
 C
@@ -1708,7 +1716,7 @@ C
          CALL PVMXPACK(LWORK ,1,'INTEGER')
          CALL PVMXSEND(MASTER,MTAG7)
 #endif
-      END IF   
+      END IF
 C
       RETURN
       END

@@ -59,6 +59,11 @@ C
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
+#include "r12int.h"
+C     LOCU12 is a local copy of U12INT, which is set .false.
+C     for the transformation from Hermite to Cartesian functions
+C     for electron 2 (WK/UniKA/04-11-2002).
+      LOGICAL LOCU12
 C
 #include "ibtfun.h"
 C
@@ -97,6 +102,9 @@ C
          LCV4   = 0
          LC34   = 0
          LCPINT = 0
+C        Make local copy of U12INT (WK/UniKA/04-11-2002).
+         LOCU12 = U12INT
+         U12INT = .FALSE.
 C
          LFIRST = KHKT12
 C
@@ -166,7 +174,7 @@ C
          KCPINT = KCCPRM + LCCPRM
          KCCPDE = KCCPRM + LCCPRM
          KCCRDE = KCCPDE + LCCPRD
-C
+C 
          IF (IELCT2 .EQ. 1) THEN
             ICORCD = 1
             IEXPCD = 1
@@ -185,7 +193,9 @@ C
      &               WORK(KCA3),WORK(KCV3),WORK(KCA4),WORK(KCV4),
      &               NCENTR,CCFBT,WORK(KCPINT),
      &               WORK(KHPI),WORK(KP3),WORK(KP4),
-     &               NDER3,NDER4,NDIMD,IPRINT)
+     &               NDER3,NDER4,NDIMD,IPRINT,
+     &               WORK,WORK,WORK,WORK)
+         U12INT = LOCU12
 C
       RETURN
       END
@@ -199,7 +209,8 @@ C  /* Deck cr2two */
      &                  CSQ,CSA3,CSV3,CSA4,CSV4,NCENTR,
      &                  CCFBT,CPINT,
      &                  HPI,P3,P4,
-     &                  NDER3,NDER4,NDIMD,IPRINT)
+     &                  NDER3,NDER4,NDIMD,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C     tuh
 C
@@ -224,7 +235,9 @@ C
      &          CSQ(NCSQ1,NCSQ2),  NCENTR(NPQBCX,2),
      &          CSA3(KHKT3,KCKT3), CSV3(NCCCC,KHKT3,KCKT3), 
      &          CSA4(KHKT4,KCKT4), CSV4(NCCCC,KHKT4,KCKT4),
-     &          CCFBT(*), CPINT(*)
+     &          CCFBT(*), CPINT(*),
+     &          TEXPA(*), TEXPB(*), AOVERP(*), BOVERP(*)
+C               TEXPA, TEXPB, AOVERP, and BOVERP are dummies (WK/UniKA/04-11-2002).
 #include "ericom.h"
 #include "eriao.h"
 #include "hertop.h"
@@ -288,7 +301,8 @@ C
             ISCAL2 = (J4 - NHKT4 + J4D)/2
             CALL EXPCFT(ECOEF,NPP34,JMXD3,JMXD4,COOR34,EXP34,I340,HPI,
      &                  P3,P4,IRUTIN,IELCT2,J3-1,J4-1,NCNT34,IDL,
-     &                  ISCAL1,ISCAL2,IPRINT)
+     &                  ISCAL1,ISCAL2,IPRINT,
+     &                  TEXPA,TEXPB,AOVERP,BOVERP)
 C
 C           Run over components
 C
@@ -564,13 +578,8 @@ C
                END DO
             ELSE
                IF (GCON34) THEN
-                  CALL DGEMM('T','T',NCTF3,NCC12*NPRF4,NPRF3,
-     &                       D1,CMAT3,NPRF3,
-     &                       PPINT(1,1,ICMP12),NCC12*NPRF4,
-     &                       D0,CPINT,NCTF3)
-                  CALL DGEMM('T','T',NCTF4,NCTF3*NCC12,NPRF4,
-     &                       D1,CMAT4,NPRF4,CPINT,NCTF3*NCC12,
-     &                       D0,CCINT(1,1,ICMP12),NCTF4)
+                  CALL CONT34(NCC12,PPINT(1,1,ICMP12),
+     &                 CCINT(1,1,ICMP12),CMAT3,CMAT4,CPINT)
                ELSE
                   DO J = 1, NCCCC
                      CCINT(J,1,ICMP12) = PPINT(J,1,ICMP12)
@@ -617,5 +626,32 @@ C
   800    CONTINUE
       END IF
 C
+      RETURN
+      END
+
+C  /* Deck cont34 */
+      SUBROUTINE CONT34(NCC12,PPINT,CCINT,CMAT3,CMAT4,CPINT)
+#include "implicit.h"
+      DIMENSION CMAT3(NPRF3,NCTF3)
+      DIMENSION CMAT4(NPRF4,NCTF4)
+      DIMENSION PPINT(NCC12*NPRF4,NPRF3)
+      DIMENSION CCINT(NCTF4,NCC12*NCTF3)
+      DIMENSION CPINT(NCTF3,NCC12,NPRF4)
+#include "ericom.h"
+#include "eriao.h"
+      CALL DZERO(CPINT,NCTF3*NCC12*NPRF4)
+      DO 200 K = 1, NPRF3
+         DO 200 M = 1, NCTF3
+            DO 200 N = 1, NCC12*NPRF4
+               CPINT(M,N,1) = CPINT(M,N,1) +
+     &              CMAT3(K,M)*PPINT(N,K)
+ 200  CONTINUE
+      CALL DZERO(CCINT(1,1),NCTF3*NCC12*NCTF4)
+      DO 300 K = 1, NPRF4
+         DO 300 M = 1, NCTF4
+            DO 300 N = 1, NCTF3*NCC12
+               CCINT(M,N) = CCINT(M,N) + 
+     &              CMAT4(K,M)*CPINT(N,1,K)
+ 300  CONTINUE
       RETURN
       END

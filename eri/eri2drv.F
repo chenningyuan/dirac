@@ -62,11 +62,8 @@ C
      &            '.EXTPRI', '.SELCT1', '.SELCT2', '.SELCT3', '.SELCT4',
      &            '.INTPRI', '.DISTRI', '.INTSKI', '.BUFFER', '.MAXDIS',
      &            '.DISTST', '.MXBCH ', '.NSPMAX', '.NOLOCS', '.GRDZER',
-CMAW
-     &            '.BFCFMM', '.DOERIP', '.NOSCRE', '.GENCON', '.NCLERI'/
+     &            '.XXXXXX', '.DOERIP', '.NOSCRE', '.GENCON', '.NCLERI'/
 C
-      NCLERI = .FALSE.
-CMAW
       NEWDEF = WORD .EQ. '*ER2INT'
       ICHANG = 0
       IF (NEWDEF) THEN
@@ -193,9 +190,6 @@ CMAW
                   GRDZER = .TRUE. 
                GO TO 100
    31          CONTINUE
-#ifdef(MOD_FMM) then
-                  BFCFMM = .TRUE. 
-#endif
                GO TO 100
    32          CONTINUE
                   DOERIP = .TRUE. 
@@ -278,10 +272,6 @@ CMAW
      &         ' All contractions treated as general.' 
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
-#ifdef (MOD_FMM)
-            IF (BFCFMM) WRITE (LUPRI,'(A)')
-     &         ' Doing ER2INT to complement Branch-Free MM scheme.' 
-#endif
             IF (DODIST) THEN
                WRITE (LUPRI, '(A)')
      &         ' Distributions for electron 1.'
@@ -370,7 +360,7 @@ C
       BDER   = .FALSE.
       EXPERI = .FALSE.
       LBFINP = 600
-      MAXDSD = 30
+      MAXDSD = 40
       MAXDST = MAXDSD
       DISTST = .FALSE.
       MXBCH0 = 1000000000
@@ -381,9 +371,8 @@ C
          NSELCT(I) = 0
       END DO
       GENCON = .FALSE.
-C     NCLERI = .FALSE.
-CMAW crucial to not set .FALSE. here!!
-C     BFCFMM = .FALSE.
+      NCLERI = .FALSE.
+
       RETURN
       END
 C  /* Deck er2int */
@@ -514,6 +503,7 @@ C  /* Deck odcdrv */
 #include "ccom.h"
 #include "ericom.h"
 #include "eridst.h"
+#include "r12int.h"
 #include "hertop.h"
 #include "eribuf.h"
 #include "nuclei.h"
@@ -526,6 +516,14 @@ C
       IF (BDER) MAXDER = 1
 C
       JTOP  = 4*(NHTYP - 1) + MAXDER
+C    
+C     JTOP must be increased for [T1,r12] integrals (WK/UniKA/04-11-2002).
+      IF (U12INT) JTOP = JTOP + 1
+C     JTOP must be increased for integrals #5 (WK/UniKA/04-11-2002).
+      IF (INTGAC .EQ. 5) JTOP = JTOP + 1
+C     JTOP must be at least 1 for r12 integrals (WK/UniKA/04-11-2002).
+      IF (R12INT) JTOP = MAX(JTOP,1)
+C
       IF (BDER) JTOP = JTOP + 1
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
@@ -667,6 +665,7 @@ C  /* Deck odcdr1 */
 #include "erista.h"
 #include "hertop.h"
 #include "symmet.h"
+#include "r12int.h"
 #include "iratdef.h" 
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
@@ -690,7 +689,7 @@ C
 C     IODCL1 and IODCL2 give information specific to each class
 C     =========================================================
 C
-C     NITCL = 20
+C     NITCL = 22 (WK/UniKA/04-11-2002).
 C
 C     There are NODCL1 and NODCL2 different classes.
 C
@@ -718,6 +717,9 @@ C     IODCL1(*,17): NCTFA  - number of contracted for orb. a
 C     IODCL1(*,18): NCTFB  - number of contracted for orb. b 
 C     IODCL1(*,19): ICMATA - contraction coefficient matrix for orb. a 
 C     IODCL1(*,20): ICMATB - contraction coefficient matrix for orb. b 
+C
+C     IODCL1(*,21): MBSIDA - multiple basis set identifier for orb. a (WK/UniKA/04-11-2002).
+C     IODCL1(*,22): MBSIDB - multiple basis set identifier for orb. b (WK/UniKA/04-11-2002).
 C
 C
 C     IODBC1 and IODBC2 give "integer" information for each OD batch
@@ -844,7 +846,7 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(INDHER,INDHSQ,IODDHR)
+      CALL HERPRP(INDHER,INDHSQ,IODDHR,IPRINT)
       CALL LMNPRP(LMNPWR,LMNSYM,IPRINT)
 C
 C     Active/inactive batches
@@ -888,19 +890,44 @@ C
          NCTFB  = IODCL1(IODAB,18)
          ICMATA = IODCL1(IODAB,19)
          ICMATB = IODCL1(IODAB,20)
+C 
+         IF (ONEAUX .AND. MBSMAX .EQ. 5) THEN
+             IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+                IF (IODCL1(IODAB,22) .EQ. 2) THEN
+                   MAXCD = 0
+                   GOTO 1919
+                END IF
+             ELSE
+                IF (IODCL1(IODAB,21) .EQ. 2) THEN
+                   MAXCD = 0
+                   GOTO 1919
+                END IF
+            END IF
+         END IF
 C
+C        Sum of basis-set identifiers for a and b (WK/UniKA/04-11-2002).
+         MBSMAB = IODCL1(IODAB,21) + IODCL1(IODAB,22)
          MAXCD = NODCL2
          IF (ODTR12) MAXCD = IODAB
 C
-         DO IODCD = 1, MAXCD
+         DO 1918 IODCD = 1, MAXCD
+         IF (ONEAUX .AND. MBSMAX .EQ. 5) THEN
+            IF (.NOT. (R12HYB .AND. COMBSS)) THEN
+               IF (IODCL2(IODCD,21) + IODCL2(IODCD,22) .NE. 2) GOTO 1918
+            END IF
+         END IF
          IF (NACTCD(IODCD) .GT. 0) THEN
             NODSCD = NACTCD(IODCD)
 C
             NODTCD = IODCL2(IODCD, 1)
             KODSCD = IODCL2(IODCD, 2)
             SCRMCD = SCRNCD(KODSCD+IDAMAX(NODTCD,SCRNCD(KODSCD),1)-1)
+C           Sum of basis-set identifiers for a, b, c and d (WK/UniKA/04-11-2002).
+            MBSMCD = MBSMAB + IODCL2(IODCD,21) + IODCL2(IODCD,22)
 C
-         IF (SCRMAB*SCRMCD .GT. THRSH) THEN
+         IF (SCRMAB*SCRMCD .GT. THRSH .AND. MBSMCD .LE. MBSMAX) THEN
+C           Only compute integrals for which the sum of basis-set identifiers
+C           is less than its prescribed maximum value MBSMAX (WK/UniKA/04-11-2002).
 C
             IF (EXTPRI .AND. IODAB.EQ.IPROD1 .AND. IODCD.EQ.IPROD2) THEN
                IPRINT = 1000
@@ -950,6 +977,14 @@ C
             JMAXAB = JMAXA + JMAXB + MAXDER
             JMAXCD = JMAXC + JMAXD + MAXDER
             JMAX   = JMAXA + JMAXB + JMAXC + JMAXD + MAXDER
+C
+C           For [r12,T1+T2] integrals, JMAX must be increased by 1. For
+C           r12 integrals, JMAX must be 1 for (ss|ss) integrals, but is
+C           not increased otherwise. JMAX is also increased for #5 integrals 
+C           (WK/UniKA/04-11-2002).
+            IF (U12INT)        JMAX = JMAX + 1
+            IF (INTGAC .EQ. 5) JMAX = JMAX + 1
+            IF (R12INT)        JMAX = MAX(1,JMAX)
 C
             NTUVAB = (JMAXAB + 1)*(JMAXAB + 2)*(JMAXAB + 3)/6
             NTUVCD = (JMAXCD + 1)*(JMAXCD + 2)*(JMAXCD + 3)/6
@@ -1128,7 +1163,8 @@ C
             END IF
          END IF
          END IF
-         END DO
+ 1918    CONTINUE
+ 1919    CONTINUE
       END IF
       END DO
 C
@@ -1337,7 +1373,6 @@ C  /* Deck odcpa2 */
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
      &          BUF(*), IBUF(*),
      &          CCFBT(*), CSQ(*), INDXBT(*), NCOUNT(*), WORK(LWORK)
-#include "cbieri.h"
 #include "aobtch.h"
 #include "ericom.h"
 #include "erimem.h"
@@ -1412,11 +1447,6 @@ C
       ELSE
          LCENTR = 0
       END IF
-      IF (NCLERI .AND. (GCONAB.OR.GCONCD)) THEN
-          NCLS = (NCCX - 1)/IRAT + 1
-      ELSE
-          NCLS = 0
-      END IF
 C
 C     Allocate ODCPAS
 C
@@ -1426,15 +1456,22 @@ C
       KEXPCD = KEXPAB +  3*NPPAB
       KALPHA = KEXPCD +  3*NPPCD
       KFACPQ = KALPHA +    NPPX
-      KCENTR = KFACPQ +    NPPS
+      KHEXPP = KFACPQ +    NPPS
+      KHEXPQ = KHEXPP +    NPPX
+      KCENTR = KHEXPQ +    NPPX
       KCORAO = KCENTR +    LCENTR 
       KCORAB = KCORAO + 12*NPQBCX
       KCORCD = KCORAB +  6*NPPAB
       KCORPQ = KCORCD +  6*NPPCD
-      KROD1  = KCORPQ +  3*NPPX
-      KROD2  = KROD1  +  3*NPQBCX*NPRFAB
-      KCLSN  = KROD2  +  3*NPQBCX*NPRFCD
-      KLAST  = KCLSN  +    NCLS 
+#if defined (VAR_CRY)
+      KROD1 = KCORPQ  +  3*NPPX
+      KROD2 = KROD1   +  3*NPQBCS*NPRFAB
+      KLAST = KROD2   +  3*NPQBCS*NPRFCD
+#else
+      KROD1 = KCORPQ  + 3*NPPX
+      KROD2 = KROD1
+      KLAST = KROD2
+#endif
       LWRK  = LWORK - KLAST + 1
       IF (KLAST .GT. LWORK) THEN
          CALL STOPIT('ODCPAR','ODCPAS',KLAST,LWORK)
@@ -1442,11 +1479,11 @@ C
       CALL ODCPAS(IODPP1,IODPP2,RODPP1,RODPP2,IPNTCR,IPNTPP,INDHER,
      &            INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,WORK(KFCINT),
      &            WORK(KCORTR),WORK(KEXPAB),WORK(KEXPCD),WORK(KALPHA),
-     &            WORK(KFACPQ),WORK(KCORAO),WORK(KCORAB),WORK(KCORCD),
+     &            WORK(KFACPQ),WORK(KHEXPP),WORK(KHEXPQ),
+     &            WORK(KCORAO),WORK(KCORAB),WORK(KCORCD),
      &            WORK(KCORPQ),WORK(KROD1),WORK(KROD2),WORK(KCENTR),
-     &            WORK(KCLSN),FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,
-     &            IBUF,CSQ,CCFBT,INDXBT,NCOUNT,WORK(KLAST),LWRK,IPASS,
-     &            IPRINT)
+     &            FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,BUF,IBUF,CSQ,CCFBT,
+     &            INDXBT,NCOUNT,WORK(KLAST),LWRK,IPASS,IPRINT)
 C
       RETURN
       END
@@ -1455,10 +1492,10 @@ C  /* Deck odcpas */
      &                  IPNTCR,IPNTPP,
      &                  INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
      &                  FACINT,COORTR,
-     &                  EXPAB,EXPCD,ALPHA,FACPQ,
+     &                  EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
      &                  COORAO,COORAB,COORCD,COORPQ,
-     &                  ROD1,ROD2,NCENTR,CLSINT,FMAT,DMAT,NDMT,IFCTYP,
-     &                  D2MAT,ID2MAT,BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,
+     &                  ROD1,ROD2,NCENTR,FMAT,DMAT,NDMT,IFCTYP,D2MAT,
+     &                  ID2MAT,BUF,IBUF,CSQ,CCFBT,INDXBT,NCOUNT,
      &                  WORK,LWORK,IPASS,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -1468,11 +1505,11 @@ C  /* Deck odcpas */
 #include "aovec.h"
       DIMENSION IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          ROD1(NPQBCX,NPRFAB,3),
-     &          ROD2(NPQBCX,NPRFCD,3),
+     &          ROD1(NPQBCS,NPRFAB,3),
+     &          ROD2(NPQBCS,NPRFCD,3),
      &          NCENTR(NPQBCX,4),
      &          FMAT(*), DMAT(*), IFCTYP(*), D2MAT(*), ID2MAT(*),
-     &          BUF(*), IBUF(*), CLSINT(*),
+     &          BUF(*), IBUF(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
@@ -1484,7 +1521,7 @@ C  /* Deck odcpas */
      &          COORAB(NPPAB,3,2), 
      &          COORCD(NPPCD,3,2), 
      &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
-     &          ALPHA(NPPX), FACPQ(NPPS),
+     &          ALPHA(NPPX), FACPQ(NPPS), HEXPP(NPPX), HEXPQ(NPPX),
      &          COORPQ(NPPX,3), CSQ(*), CCFBT(*), INDXBT(*), NCOUNT(*),
      &          WORK(LWORK)
 #include "cbieri.h"
@@ -1530,7 +1567,9 @@ C     Collect coordinates and exponents
 C     =================================
 C
       CALL ERICOR(COORTR,IPNTCR,ROD1,IPRINT)
-      CALL ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,RODPP1,RODPP2,IPNTPP,IPRINT)
+C     HEXPP and HEXPQ have been added (WK/UniKA/12-11-2002).
+      CALL ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,RODPP1,RODPP2,
+     &            IPNTPP,IPRINT)
       CALL ERISSO(IPRINT)
       IF (BDER) CALL ERICNT(NCENTR,IPNTCR,IPRINT)
 C
@@ -1544,19 +1583,20 @@ C     =========
 C
       CALL ERINT0(IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
      &            IPNTUV,RODPP1,RODPP2,ROD1,ROD2,COORTR,
-     &            FACINT,EXPAB,EXPCD,ALPHA,FACPQ,
+     &            FACINT,EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,
      &            COORAO,COORAB,COORCD,COORPQ,NCENTR,
      &            FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,CSQ,BUF,IBUF,
-     &            CCFBT,INDXBT,NCOUNT,CLSINT,WORK,LWORK,IPRINT)
+     &            CCFBT,INDXBT,NCOUNT,WORK,LWORK,IPRINT)
       RETURN
       END
 C  /* Deck erint0 */
       SUBROUTINE ERINT0(IPNTCR,IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,
      &                  LMNSYM,IPNTUV,RODPP1,RODPP2,ROD1,ROD2,
      &                  COORTR,FACINT,EXPAB,EXPCD,ALPHA,FACPQ,
+     &                  HEXPP,HEXPQ,
      &                  COORAO,COORAB,COORCD,COORPQ,NCENTR,
      &                  FMAT,DMAT,NDMT,IFCTYP,D2MAT,ID2MAT,CSQ,BUF,IBUF,
-     &                  CCFBT,INDXBT,NCOUNT,CLSINT,
+     &                  CCFBT,INDXBT,NCOUNT,
      &                  WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -1573,17 +1613,17 @@ C  /* Deck erint0 */
      &          IPNTUV(KC2MAX,0:NRDER,2),
      &          IPNTCR(MAXBCH,4), IPNTPP(MAXBCH,2),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          ROD1(NPQBCX,NPRFAB,3),
-     &          ROD2(NPQBCX,NPRFCD,3),
+     &          ROD1(NPQBCS,NPRFAB,3),
+     &          ROD2(NPQBCS,NPRFCD,3),
      &          NCENTR(NPQBCX,4),
      &          FACINT(NPPX), COORAO(NPQBCX,3,4),
      &          COORTR(NPQBCS,3,4), 
      &          COORAB(NPPAB,3,2), 
      &          COORCD(NPPCD,3,2), 
      &          EXPAB(NPPAB,3), EXPCD(NPPCD,3), 
-     &          ALPHA(NPPX), FACPQ(NPPS),
+     &          ALPHA(NPPX), FACPQ(NPPS), HEXPP(NPPX), HEXPQ(NPPX),
      &          COORPQ(NPPX,3), CCFBT(*), INDXBT(*), 
-     &          NCOUNT(*), CLSINT(*), WORK(LWORK)
+     &          NCOUNT(*), WORK(LWORK)
 #include "cbieri.h"
 #include "odclss.h"
 #include "ericom.h"
@@ -1592,6 +1632,7 @@ C  /* Deck erint0 */
 #include "hertop.h"
 #include "nuclei.h"
 #include "aobtch.h"
+#include "r12int.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERINT0','*',103)
@@ -1608,7 +1649,12 @@ C
       LRJ000 = NPPX*(JMAX + 1)
       LHRIN1 = NPPX*NTUV
       LHRINT = LHRIN1
-      IF (DOPTH2 .OR. MAXDER.GT.0) LHRINT = 2*LHRIN1
+C     Path 2 not implemented for R12 method (WK/UniKA/04-11-2002).
+      IF ((R12INT .OR. R12EIN .OR. U12INT) .AND. DOPTH2) 
+     &CALL QUIT('ERINT0: DOPTH2 not implemented for r12 integrals')
+C     Extra space (WK/UniKA/04-11-2002).
+      IF (R12INT .OR. U12INT .OR. DOPTH2 .OR. MAXDER.GT.0) 
+     &LHRINT = 2*LHRIN1
 C
       LCPIN1 = 0 
       LCPIN2 = 0 
@@ -1654,8 +1700,38 @@ C
       KSOINT = KAOINT + LSOINT
       KHRINT = KAOINT + IOFFAO
       KHRIN2 = KHRINT + LHRIN1
-      KRJ000 = KAOINT + IOFFAO + LHRINT
-      KCPINT = KAOINT + IOFFAO + MAX(LHRINT,LAOINT)
+      IF (R12EIN) THEN
+C        Space for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
+         KRJ000 = KAOINT + IOFFAO + 2*LHRIN1
+         KCPINT = KAOINT + IOFFAO + MAX(2*LHRIN1,LAOINT)
+         KHARGE = KRJ000 + LRJ000
+         KHARGF = KHARGE + NPPX
+         KHALPH = KHARGF + NPPX
+         KHBETA = KHALPH + NPPX
+         KHPRE1 = KHBETA + NPPX
+         KHPRE2 = KHPRE1 + NPPX
+         KHPRE3 = KHPRE2 + NPPX
+         KRO000 = KHPRE3 + NPPX
+         KHRIN3 = KRO000 + LRJ000
+         KHRIN4 = KHRIN3 + LHRIN1
+         KHRIN5 = KHRIN4 + LHRIN1
+         LSTEIN = KHRIN5 + LHRIN1
+      ELSE
+         KRJ000 = KAOINT + IOFFAO + LHRINT
+         KCPINT = KAOINT + IOFFAO + MAX(LHRINT,LAOINT)
+         KHARGE = KRJ000
+         KHARGF = KHARGE
+         KHALPH = KHARGF
+         KHBETA = KHALPH
+         KHPRE1 = KHBETA
+         KHPRE2 = KHPRE1
+         KHPRE3 = KHPRE2
+         KRO000 = KHPRE3
+         KHRIN3 = KRO000
+         KHRIN4 = KHRIN3
+         KHRIN5 = KHRIN4
+         LSTEIN = KHRIN5
+      END IF
 C
       IF (IPRINT .GT. 20) THEN
          CALL HEADER('Allocations HERCAR in ERINT0',1)
@@ -1670,10 +1746,30 @@ C
          WRITE (LUPRI,'(1X,A, I10)') ' KHRINT ', KHRINT
          WRITE (LUPRI,'(1X,A, I10)') ' KRJ000 ', KRJ000
          WRITE (LUPRI,'(1X,A, I10)') ' KCPINT ', KCPINT
+C        Output for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
+         IF (R12EIN) THEN
+            WRITE (LUPRI,'(1X,A, I10)') ' KHARGE ', KHARGE
+            WRITE (LUPRI,'(1X,A, I10)') ' KHARGF ', KHARGF
+            WRITE (LUPRI,'(1X,A, I10)') ' KHALPH ', KHALPH
+            WRITE (LUPRI,'(1X,A, I10)') ' KHBETA ', KHBETA
+            WRITE (LUPRI,'(1X,A, I10)') ' KHPRE1 ', KHPRE1
+            WRITE (LUPRI,'(1X,A, I10)') ' KHPRE2 ', KHPRE2
+            WRITE (LUPRI,'(1X,A, I10)') ' KHPRE3 ', KHPRE3
+            WRITE (LUPRI,'(1X,A, I10)') ' KRO000 ', KRO000
+            WRITE (LUPRI,'(1X,A, I10)') ' KHRIN3 ', KHRIN3
+            WRITE (LUPRI,'(1X,A, I10)') ' KHRIN4 ', KHRIN4
+            WRITE (LUPRI,'(1X,A, I10)') ' KHRIN5 ', KHRIN5
+         END IF
       END IF
 C
-      LSTGAM = KRJ000 + LRJ000
-      LSTHER = KRJ000 + LRJ000
+      IF (R12EIN) THEN
+C        Space for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
+         LSTHER = KRJ000 + 7*NPPX + 2*LRJ000 + 3*LHRIN1
+         LSTGAM = KRJ000
+      ELSE
+         LSTHER = KRJ000 + LRJ000
+         LSTGAM = KRJ000 + LRJ000
+      END IF
       LSTCR1 = KCPINT + LCPMAX
       LSTCR2 = KCPINT + LCPINT
       LSTOUT = KSOINT + LAOINT
@@ -1689,6 +1785,7 @@ C
       IF (LSTCR1.GT.LWORK) CALL STOPIT('ERINT0','LSTCR1',LSTCR1,LWORK)
       IF (LSTCR2.GT.LWORK) CALL STOPIT('ERINT0','LSTCR2',LSTCR2,LWORK)
       IF (LSTOUT.GT.LWORK) CALL STOPIT('ERINT0','LSTOUT',LSTOUT,LWORK)
+      IF (LSTEIN.GT.LWORK) CALL STOPIT('ERINT0','LSTEIN',LSTEIN,LWORK)
 C
 C     **********************************
 C     *** Undifferentiated integrals ***
@@ -1699,20 +1796,25 @@ C
 C        Calculate integrals
 C        ===================
 C
+C        Extra work space for Gaussian-damped R12 integrals 
+C        has been added (WK/UniKA/04-11-2002).
+C
          NDIMD  = 1
-Cdirac         NOINTS = .FALSE.
          CALL ERINTS(WORK(KAOINT),WORK(KHRINT),WORK(KHRIN2),
      &               WORK(KRJ000),WORK(KCPINT),
      &               IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
      &               RODPP1,RODPP2,ROD1,ROD2,
      &               COORTR,FACINT,CCFBT,
      &               EXPAB,EXPCD,ALPHA,FACPQ,
-     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,CLSINT,
+     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
      &               WORK(LSTGAM),WORK(LSTHER),WORK(LSTCR1),
      &               WORK(LSTCR2),
-     &               LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &               WORK(KHARGE),WORK(KHARGF),WORK(KHALPH),
+     &               WORK(KHBETA),WORK(KHPRE1),WORK(KHPRE2),
+     &               WORK(KHPRE3),WORK(KRO000),
+     &               WORK(KHRIN3),WORK(KHRIN4),WORK(KHRIN5),
+     &               HEXPP,HEXPQ,LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &               NDIMD,IPRINT)
-Ctrond         IF (NOINTS) RETURN
 C
 C        Symmetrize
 C        ==========
@@ -1752,16 +1854,24 @@ C
             NDIMD = 6
             IF (UNDIFF) NDIMD = 7
          END IF
+C
+C        Extra work space for Gaussian-damped R12 integrals 
+C        has been added (WK/UniKA/04-11-2002).
+C
          CALL ERINTS(WORK(KAOINT),WORK(KHRINT),WORK(KHRIN2),
      &               WORK(KRJ000),WORK(KCPINT),
      &               IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
      &               RODPP1,RODPP2,ROD1,ROD2,
      &               COORTR,FACINT,CCFBT,
      &               EXPAB,EXPCD,ALPHA,FACPQ,
-     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,CLSINT,
+     &               COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
      &               WORK(LSTGAM),WORK(LSTHER),WORK(LSTCR1),
      &               WORK(LSTCR2),
-     &               LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &               WORK(KHARGE),WORK(KHARGF),WORK(KHALPH),
+     &               WORK(KHBETA),WORK(KHPRE1),WORK(KHPRE2),
+     &               WORK(KHPRE3),WORK(KRO000),
+     &               WORK(KHRIN3),WORK(KHRIN4),WORK(KHRIN5),
+     &               HEXPP,HEXPQ,LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &               NDIMD,IPRINT)
 C
 C        Symmetrization
@@ -1822,9 +1932,11 @@ C  /* Deck erints */
      &                  IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,
      &                  IPNTUV,RODPP1,RODPP2,ROD1,ROD2,
      &                  COORTR,FACINT,CCFBT,EXPAB,EXPCD,ALPHA,FACPQ,
-     &                  COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,CLSINT,
+     &                  COORAO,COORAB,COORCD,COORPQ,CSQ,NCENTR,
      &                  WRKGAM,WRKHER,WRKCR1,WRKCR2,
-     &                  LWKGAM,LWKHER,LWKCR1,LWKCR2,
+     &                  HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,
+     &                  HPRE3,RO000,HRIN1,HRIN2,HRIN3,
+     &                  HEXPP,HEXPQ,LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &                  NDIMD,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -1832,17 +1944,21 @@ C  /* Deck erints */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+C
+C     Arrays for Gaussian-damped R12 integrals (WK/UniKA/04-11-2002).
+      DIMENSION HARGE(*), HARGF(*), HALPH(*), HBETA(*), HPRE1(*), 
+     &          HPRE2(*), HPRE3(*), RO000(*), HRIN1(*),
+     &          HRIN2(*), HRIN3(*), HEXPP(*), HEXPQ(*)
       DIMENSION AOINT(NCCS,MLTPX,KHKTAB*KHKTCD,NDIMD),
      &          HRINT1(*),HRINT2(*),RJ000(*),CPINT(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          INDHSQ(NRTOP), IODDHR(NRTOP,0:7),
      &          LMNPWR(KCKMAX,NHKMAX,3), LMNSYM(KCKMAX,NHKMAX,2,0:7),
      &          IPNTUV(KC2MAX,0:NRDER,2), IPNTPP(MAXBCH,2),
-     &          FACINT(NPPX), 
-     &          COORAO(NPQBCX,3,4), CCFBT(*), CLSINT(*),
+     &          FACINT(NPPX), COORAO(NPQBCX,3,4), CCFBT(*),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          ROD1(NPQBCX,NPRFAB,3),
-     &          ROD2(NPQBCX,NPRFCD,3),
+     &          ROD1(NPQBCS,NPRFAB,3),
+     &          ROD2(NPQBCS,NPRFCD,3),
      &          COORTR(NPQBCS,3,4),
      &          COORAB(NPPAB,3,2), 
      &          COORCD(NPPCD,3,2), 
@@ -1857,6 +1973,7 @@ C  /* Deck erints */
 #include "erisop.h"
 #include "eribuf.h"
 #include "hertop.h"
+#include "r12int.h"
 #include "aobtch.h"
 #include "clsfmm.h"
 C
@@ -1866,7 +1983,7 @@ C
 C
 C     IF (NREDZ .GT. 1) CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
       CALL DZERO(AOINT,NCCT*KHKTAB*KHKTCD*NDIMD)
-C     Try to avoid zeroing - check sph2 routines.
+C     Try to avoid zeroing - check sph2 rouintes.
 C
       IOFRST = 0
       DO IOPS = 1, NREDZ 
@@ -1885,9 +2002,9 @@ C
 C        Preexponential factors
 C        =======================
 C
-         CALL ERIPFS(FACINT,FACPQ,ROD1,ROD2,
+         CALL ERIPFS(FACINT,FACPQ,COORAB,COORCD,
      &               RODPP1(2*NODPP1+1,1),RODPP2(2*NODPP2+1,1),
-     &               IPNTPP,IPRINT)
+     &               IPNTPP,ROD1,ROD2,IPRINT)
 C
 C        Set up coordinate vectors
 C        =========================
@@ -1897,29 +2014,24 @@ C
 C        Test for classical and nonclassical integrals
 C        =============================================
 C
-         IF (NCLERI) THEN
-            IF (NREDZ .GT. 1) THEN
-               WRITE (LUPRI,'(2X,A)') 
-     &            ' NCLERI not implemented with symmetry.'
-               STOP ' NCLERI not implemented with symmetry.'
-            END IF
-C           Screen out unwanted (classical) integrals
-            CALL ERICLS(FACINT,CLSINT,COORAO,ROD1,ROD2,
-     &                  EXPAB,EXPCD,CCFBT(IMATA),CCFBT(IMATB),
-     &                  CCFBT(IMATC),CCFBT(IMATD),IPRINT)
-Ctrond            IF (NOINTS) RETURN 
-         END IF
+         IF (NCLERI) CALL ERICLS(FACINT,COORPQ,EXPAB,EXPCD,IPRINT)
 C
-C        Incomplete gamma function (Boys function)
-C        =========================================
+C        Incomplete gamma function
+C        =========================
 C
-         CALL ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WRKGAM,LWKGAM,IPRINT)
+         IF (.NOT. R12EIN)
+     &   CALL ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WRKGAM,LWKGAM,IPRINT)
+C        ERIGAM is not called for Gaussian-damped r12 integrals (WK/UniKA/04-11-2002).
 C
 C        Hermite integrals
 C        =================
 C
-         CALL ERITUV(HRINT1,RJ000,COORPQ,INDHER,IODDHR(1,IPQXYZ),
-     &               WRKHER,LWKHER,IPRINT)
+         CALL ERIHER(HRINT1,HRINT2,RJ000,COORPQ,INDHER,
+     &               IODDHR(1,IPQXYZ),FACINT,ALPHA,
+     &               HARGE,HARGF,HALPH,HBETA,HPRE1,HPRE2,
+     &               HPRE3,RO000,HRIN1,HRIN2,HRIN3,
+     &               HEXPP,HEXPQ,WRKHER,LWKHER,IPRINT)
+C        ERIHER replaces call to ERITUV (WK/UniKA/04-11-2002).
 C 
 C        A: Undifferentiated Cartesian integrals
 C        =======================================
@@ -1930,7 +2042,7 @@ C
             IF (DOPTH1) THEN
                IPATH = 1
                CALL SETCAO(IPRINT)
-               CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+               CALL CR1DRV(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                     IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                     COORAB,EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
                CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
@@ -1943,7 +2055,7 @@ C
                IPATH = 2
                CALL SETCAO(IPRINT)
                CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
-               CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+               CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                     IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                     COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
                CALL CR2DRV(AOINT(1,IOFRST+1,1,1),CPINT,INDHER,
@@ -1952,9 +2064,6 @@ C
      &                     COORAB,EXPAB,CSQ,CCFBT,NCENTR(1,IOFRST+1,1),
      &                     NDER3,NDER4,NDIMD,WRKCR2,LWKCR2,IPRINT)
             END IF
-C
-            IF (NCLERI) CALL ERIZER(AOINT(1,IOFRST+1,1,1),CLSINT,
-     &                              IODDHR(1,ICCXYZ),IPNTUV,IPRINT)
 C
 C        B: Magnetic field derivatives 
 C        =============================
@@ -1966,7 +2075,7 @@ C           -------------------------------
 C
             IPATH  = 1
             CALL SETCAO(IPRINT)
-            CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+            CALL CR1DRV(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORAB,EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
 C
@@ -2003,7 +2112,7 @@ C
             NDIMD2 = 3
             CALL SETCAO(IPRINT)
             CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
-            CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+            CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
             NDER3 = 1
@@ -2025,7 +2134,7 @@ C
             IPATH  = 1
             NDIMD1 = 3
             CALL SETCAO(IPRINT)
-            CALL CR1DRV(HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
+            CALL CR1DRV(HRINT1,HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORAB,EXPAB,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
 C
@@ -2070,7 +2179,7 @@ C
             NDIMD2 = 3
             CALL SETCAO(IPRINT)
             CALL ERISWP(HRINT1,HRINT2,INDHER,IODDHR(1,IPQXYZ),IPRINT)
-            CALL CR1DRV(HRINT2,CPINT,INDHER,IODDHR(1,IPQXYZ),
+            CALL CR1DRV(HRINT2,HRINT1,CPINT,INDHER,IODDHR(1,IPQXYZ),
      &                  IODDHR(1,IHCBIT),INDHSQ,LMNPWR,IPNTUV,
      &                  COORCD,EXPCD,CSQ,CCFBT,WRKCR1,LWKCR1,IPRINT)
 C
@@ -2549,6 +2658,7 @@ C  /* Deck mempqb */
 #include "eridst.h"
 #include "eribuf.h"
 #include "symmet.h"
+#include "r12int.h"
       MEMI(I) = I
       MEMR(I) = IRAT*I
 C------------------------------------
@@ -2591,6 +2701,16 @@ C
       NHER = MEMR(LHRINT + LRJ000)
       NCR1 = MEMR(MAX(LAOINT,LHRINT) + LCPMAX)
       NCR2 = MEMR(MAX(LAOINT,LHRINT) + LCPINT)
+      IF (R12INT .OR. U12INT) THEN
+C        Space for R12 method (WK/UniKA/04-11-2002).
+         NQ52 = MEMR(2*LHRINT + NPRFPQ)
+         IF (U12INT) THEN
+            NCR1 = MEMR(MAX(LAOINT,2*LHRINT) + LCPMAX)
+            NCR2 = MEMR(MAX(LAOINT,2*LHRINT) + LCPINT)
+         END IF
+      ELSE
+         NQ52 = 0
+      END IF
       NOUT = MEMR(LAOINT)
       IF (MLTPX .GT. 1) NOUT = NOUT + NOUT
 C
@@ -2679,7 +2799,8 @@ C
          DOREC  = MIN(NHKTA,NHKTB) .NE. 1
          FRSTAO = NHKTA .LE. NHKTB
 C
-         IF (KHKTAB .GT. 1) THEN
+         IF (KHKTAB .GT. 1 .OR. U12INT) THEN
+C           No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
             IF (DOREC) THEN
                LCCONT = NPRFCD*NTUVCD*KCREC1
                LXDIF  = 3*NPRFCD
@@ -2689,6 +2810,7 @@ C              LCSINT = NPRFCD*NTUVCD*KHKTB
 C           END IF
 C
             LECOEF = 3*NPRFPQ*(JMAXAB + 1)*(JMAXAB + 1)
+            IF (U12INT) LECOEF = 2*LECOEF
             LHPI   =   NPRFPQ
             IF (FRSTAO) THEN
                LPB = 3*NPRFPQ
@@ -2706,8 +2828,8 @@ C
          NREAL = LCCONT
      &          + MAX( LXDIF,
      &                 LCSINT,
-     &                 LECOEF + MAX(
-     &                              LHPI+LPA+LPB,
+     &                 LECOEF + 2*NPRFPQ + MAX(
+     &                              LHPI+LPA+LPB + 2*NPRFPQ,
      &                              LEUV+LETUV+LHCPRM+LFIRST
      &                             )
      &               )
@@ -2782,6 +2904,7 @@ C     Total memory
 C     ============
 C
       MEMORY = MEMPAR + MEMPAS + MAX(
+     &                               NQ52,
      &                               NGAM + MEMGAM + MEMGGM,
      &                               NHER + MEMTUV,
      &                               NCR1 + MAX(MEMC1T,MEMC1O),
@@ -2811,6 +2934,7 @@ C  /* Deck memcr1 */
      &                SPHR12,SPHR1,SPHR2,NPRF34,NTUV34,NPRFPQ)
 C
 #include "implicit.h"
+#include "r12int.h"
 C
       LOGICAL SPHR12, SPHR1, SPHR2
 C
@@ -2828,7 +2952,8 @@ C
 C
       LFIRST = NTUV34
 C
-      IF (KHKT12 .GT. 1) THEN
+      IF (KHKT12 .GT. 1 .OR. U12INT) THEN
+C        No symmetry for [T1,r12] integrals (WK/UniKA/04-11-2002).
          IF (SPHR12) THEN
             LCCONT = NPRF34*NTUV34*KCKT12
             LFCINT = NTUV34*KHKT12

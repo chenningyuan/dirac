@@ -48,7 +48,7 @@ C  /* Deck erifck */
 #include "dummy.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0)
 C
 C	I don't know if IFCTYP and ISYMDM is used properly in this 
 C	routine at the current stage, K.Ruud-jan96
@@ -92,17 +92,12 @@ C
       MODCD  = 0
 C
       WRTINT = .FALSE.
-      IF (IFCTYP(1) .EQ.0) THEN
-         FCKINT = .FALSE.
-      ELSE
-         FCKINT = .TRUE.
-      END IF
+      FCKINT = .TRUE.
 C
 C     AO batches
 C     ==========
 C
       CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-C
 C
 C     Density matrix (not needed yet)
 C     ===============================
@@ -148,10 +143,8 @@ C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
 #if defined (VAR_VECTOR)
-      IF (FCKINT) THEN
-         ICHUNK = MAX(IVECLN/NDMT,1)
-         CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
-      END IF
+      ICHUNK = MAX(IVECLN/NDMT,1)
+      CALL DZERO(FCKTMP,ICHUNK*NDMT*(NBASE + NODD)*NBASE)
 #endif
 C
       KLAST = KFREE
@@ -242,19 +235,17 @@ C        Print densities and Fock matrix
 C        ===============================
 C
          IF (IPRINT.GT.4) THEN
-            IF (FCKINT) THEN
-               CALL HEADER('Density and Fock matrices in ERIFCK',-1)
-               KSTR = 1
-               DO I = 1, NDMT
-                  WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-                  CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
-     &                        NBASE,1,LUPRI)
-                  WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-                  CALL OUTPUT(FMAT(KSTR),1,NBASE,1,NBASE,NBASE,
-     &                        NBASE,1,LUPRI)
-                  KSTR = KSTR + NBASE*NBASE
-               END DO
-            END IF
+            CALL HEADER('Density and Fock matrices in ERIFCK',-1)
+            KSTR = 1
+            DO I = 1, NDMT
+               WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+               CALL OUTPUT(DMAT(KSTR),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
+               WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+               CALL OUTPUT(FMAT(KSTR),1,NBASE,1,NBASE,NBASE,
+     &                     NBASE,1,LUPRI)
+               KSTR = KSTR + NBASE*NBASE
+            END DO
          END IF
 C
          CALL TIMER('ERIFCK',TIMSTR,TIMEND)
@@ -334,9 +325,7 @@ C
 C     Construct Fock matrix contribution
 C     ==================================
 C
-      IF (FCKINT) THEN
-         CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,IPRINT)
-      END IF
+      CALL FOKDI1(FMAT,DMAT,NDMT,IFCTYP,BIN,IBIN,LBIN,INT,IPRINT)
 C
       RETURN
       END
