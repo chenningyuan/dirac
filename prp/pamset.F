@@ -284,8 +284,8 @@ C
          IF (ISYM .EQ. JSYM) THEN
             IF (NIND(2,2,ISYM).LE.1) GO TO 20
             DO IA = ISTA, IENDA
+               IAA = IND(IA,2,ISYM)
                DO JA = IA + 1, IENDA
-                  IAA = IND(IA,2,ISYM)
                   JAA = IND(JA,2,JSYM)
                   IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
      &                 NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
@@ -298,8 +298,8 @@ C
          ELSE
             IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 20
             DO IA = ISTA,IENDA
+               IAA = IND(IA,2,ISYM)
                DO JA = JSTA,JENDA
-                  IAA = IND(IA,2,ISYM)
                   JAA = IND(JA,2,JSYM)
                   IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
      &                 NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
