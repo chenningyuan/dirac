@@ -1608,7 +1608,8 @@ C       New parameter class
         IF(TYP1(1:1).NE.PBUF.OR.LAB1.NE.LBUF) THEN
           IF(TOBE) THEN
 C           Analyze NVEC solution vectors from previous parameter class
-            NVEC = IVEC+1-IPAR
+CTROND            NVEC = IVEC+1-IPAR
+            NVEC = IVEC-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 30
@@ -1842,7 +1843,7 @@ C       Calculate norm
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
 C       Distribute squared norm on orbitals
-        THR = 5.0D0
+        THR = 1.0D0
         CALL DZERO(RIBF,NI)
         CALL DZERO(RVBF,NV)
         DO J = 1,NBDIM
