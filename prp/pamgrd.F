@@ -427,11 +427,11 @@ C
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
 
-C ... check for anti-/symmetrity of the property matrix
+C ... check for anti-/symmetry of the property matrix/MI
 
       IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
-       WRITE(LUPRI,'(2X,I3,1X,A,I2)')
-     &'PRPMA1: Property operator no ',INDXPPR,PRPNAM(INDXPR),
+       WRITE(LUPRI,'(/A,I3,1X,2A)')
+     & '  PRPMA1: Property operator no.',INDXPR,PRPNAM(INDXPR),
      & ' is NOT (anti-)hermitian!'
        CALL QUIT('PRPMA1: Non-hermitian property!')
       ENDIF
