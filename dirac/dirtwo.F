@@ -3248,7 +3248,7 @@ C
 #include <dcbqal.h>
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
-      CHARACTER SECTID*12
+      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12
       DIMENSION FAO(N2BBASX*4,NFMAT),DAO(*),
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -3310,13 +3310,16 @@ C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             SECTID(TOTWAL)
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
      &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             SECTID(CPU),'/',SECTID(WALL)
+     &             CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3364,14 +3367,17 @@ C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
 C
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             SECTID(TOTWAL)
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
      &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             SECTID(CPU),'/',SECTID(WALL)
+     &             CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3420,13 +3426,16 @@ C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             SECTID(TOTWAL)
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
      &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             SECTID(CPU),'/',SECTID(WALL)
+     &             CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3801,7 +3810,7 @@ C
 #include <ccom.h>
 #include <blocks.h>
       LOGICAl LBIT
-      CHARACTER SECTID*12, INTTID*12
+      CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -3854,14 +3863,16 @@ C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             SECTID(TOTWAL)
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
-                 INTTID = SECTID(CPU)
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
      &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &            SECTID(CPU),'/',SECTID(WALL)
+     &             CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3901,14 +3912,16 @@ C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             SECTID(TOTWAL)
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
-                 INTTID = SECTID(CPU)
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
      &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &            SECTID(CPU),'/',SECTID(WALL)
+     &             CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
