@@ -2162,12 +2162,14 @@ C
 C
 C     Add the results on to the contents of the MO matrix ?
 C
-c     print*, 'The AO matrix'
-c     CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-c     print*, 'The transformation matrix TM1'
-c     CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-c     print*, 'The transformation matrix TM2'
-c     CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#ifdef DEBUG
+      print*, 'QTRANS: The AO matrix'
+      CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
 C
 C
 C     Time reversal symmetry of F-matrix
