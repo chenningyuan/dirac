@@ -711,7 +711,8 @@ C
 C
       SAVE IOP,FRQ,N,ISYM
 C
-      DATA N/0/
+      DATA N/0/, FRQ(1,1)/0.0D0/, IOP(1,1)/0/, ISYM(1,1)/0/
+C     (FRQ, IOP, ISYM initialized to avoid messages from ftnchek /Aug 2004)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -739,14 +740,14 @@ C
             IF (L.NE.K .AND. L.NE.J) THEN
 C
                IF (IAOP.EQ.IOP(I,J) .AND.
-     &              IBOP.EQ.IOP(I,K) .AND.
-     &              ICOP.EQ.IOP(I,L) .AND.
-     &              ISYMA.EQ.ISYM(I,J) .AND.
-     &              ISYMB.EQ.ISYM(I,K) .AND.
-     &              ISYMC.EQ.ISYM(I,L) .AND.
-     &              ABS(ABS(AFR)-ABS(FRQ(I,J))).LT.THD .AND.
-     &              ABS(ABS(BFR)-ABS(FRQ(I,K))).LT.THD .AND.
-     &              ABS(ABS(CFR)-ABS(FRQ(I,L))).LT.THD ) THEN
+     &             IBOP.EQ.IOP(I,K) .AND.
+     &             ICOP.EQ.IOP(I,L) .AND.
+     &             ISYMA.EQ.ISYM(I,J) .AND.
+     &             ISYMB.EQ.ISYM(I,K) .AND.
+     &             ISYMC.EQ.ISYM(I,L) .AND.
+     &             ABS(ABS(AFR)-ABS(FRQ(I,J))).LT.THD .AND.
+     &             ABS(ABS(BFR)-ABS(FRQ(I,K))).LT.THD .AND.
+     &             ABS(ABS(CFR)-ABS(FRQ(I,L))).LT.THD ) THEN
                   DOHYP = .FALSE.
                END IF
 C
@@ -1857,7 +1858,7 @@ C
       JSYMOP = ISYM
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            WORK,KFREE,LFREE,IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('GTZYMT: Inconsistent orbital rotations')
 C
@@ -2079,7 +2080,7 @@ C
       JSYMOP = ISYMGR
       JOPSY  = JBTOF(JSYMOP-1,1)
       CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
-     &            WORK,KFREE,LFREE,IPRXQR)
+     &            WORK,KFREE,LFREE,IPRINT)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('RSP1GR: Inconsistent orbital rotations')
 C
@@ -3223,7 +3224,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
-      PARAMETER ( D1 = 1.0D0 )
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       CHARACTER PNAME*16
       DIMENSION WORK(LWRK),PNAME(3)
 C
@@ -3286,8 +3287,8 @@ C     for static fields
 C
       NBQRFR = 1
       NCQRFR = 1
-      BQRFR(1) = 0.0656
-      CQRFR(1) = 0.0000
+      BQRFR(1) = 0.0656D0
+      CQRFR(1) = 0.0000D0
 C     Enter the A and B operators 
       PNAME(1) = 'XDIPLEN'
       PNAME(2) = 'YDIPLEN'
@@ -3397,7 +3398,7 @@ C
             L = 0
             DO J=1,NQRHYP
 C
-C     Collect response terms with frequency nr I.
+C     Collect response terms with frequency no. I.
 C     This is not so rubust to changes in the code above
 C
                IF (BQRFR(I) .EQ. QRFRHYP(J,2)) THEN
@@ -3416,7 +3417,7 @@ C     Take into account that some response functions are calculated due
 C     to permutational symmetry.
 C     !!!TODO: probably not correct.!!!
 C
-            V = V * 6.0 / L
+            V = V * 6.0D0 / L
 C
 C     Unit conversion for Verdet calculations
 C     from au to (umin/G cm at STP)

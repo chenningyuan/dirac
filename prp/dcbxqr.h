@@ -1,3 +1,4 @@
+C dcbxqr.h - control common block for pamxqr.h and pamtpa.h
 C **************************************************************
 C ***********    Quadratic response  <<A;B,C>>    **************
 C **************************************************************
@@ -21,7 +22,7 @@ C NCQRFR - number of C frequencies
 C CQRFR  - C frequencies
 C XQR_SKIPEE - do not include e-e rotations
 C XQR_SKIPEP - do not include e-p rotations
-C XQR_ALLCMB - calculate all response functions disragarding 
+C XQR_ALLCMB - calculate all response functions disregarding 
 C              permutational symmetries (debug option) 
 C XQR_INDSTR - list of orbitals to include in rotation vectors
 C
@@ -47,7 +48,7 @@ C TPASIM  -
 C TPASTV  - 
 C EXCIT   - list of excitations in each irrep
 C
-      PARAMETER ( MAXLQR=10,MAXFQR=10,MAXQR=60 )
+      PARAMETER ( MAXLQR=10, MAXFQR=10, MAXQR=60 )
       PARAMETER ( IEXCOFF=90 )
       PARAMETER ( LUQRINFO = 40, LUQREE = 41, LUQREP = 42 )
 C
@@ -55,8 +56,7 @@ C
       INTEGER TPACNV,TPASIM,TPASTV
       CHARACTER XQR_INDSTR*72
 C
-      COMMON /XCBLQR/ XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,
-     &     XQR_ALLCMB
+      COMMON /XCBLQR/ XQRNRM,XQRDIH,XQR_SKIPEE,XQR_SKIPEP,XQR_ALLCMB
       COMMON /XCBRQR/ THCQR,BQRFR(MAXFQR),CQRFR(MAXFQR),
      &     QRFREQ(3*MAXFQR,3*MAXLQR),QRFRHYP(MAXQR,3),
      &     CNVXQR(2),RESXQR,EXCIT(MAXFQR,8)
@@ -67,5 +67,5 @@ C
      &     TPACNV(8),TPASIM(8),TPASTV(8)
       COMMON /XCBCQR/XQR_INDSTR(3,2)
 C
-C End
+C End of dcbxqr.h
 C
