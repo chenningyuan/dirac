@@ -437,6 +437,98 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_PVC */
+      SUBROUTINE DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for parity violation - chirality
+C
+C     Written by J. Thyssen - Oct 7 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <mxcent.h>
+#include <nuclei.h>
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include <memint.h>
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     PVC: INTTYP = 62
+      CALL SETATM(WORK(KDATOM),NATOM,62)
+      CALL DEF_PVC1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_pvc */
+      SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Define operator for parity violation - chirality
+C
+C     Written by J. Thyssen - Oct 7 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxorb.h>
+      PARAMETER(D1 = 1.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+#include <dcbxpr.h>
+#include <dcbexp.h>
+C
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+C
+      ITYP = 0
+      IPTYP     = 9
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      DO 100 IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            DO 200 IREP = 0, MAXREP
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  PNAME = 'PVC: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('PVC   '
+     *                 ,IPPVC(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+C
+      IF(IPRINT.GE.1) THEN
+        DO I = 1,ITYP
+          INDXPR = LEXPP(IPPVC(I))
+          CALL PRSYMB(LUPRI,'.',75,0)
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+          CALL PRSYMB(LUPRI,'.',75,0)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SPNSPN */
       SUBROUTINE DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -694,6 +786,15 @@ C
         CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
+C     Parity violation - Chirality
+C
+      IF(PVC) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Parity violation - Chirality'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_PVC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
 C     Nuclear quadrupole coupling
 C
       IF(NQCC) THEN
@@ -774,6 +875,12 @@ C
       IF(QUADRU) THEN
         CALL PRSYMB(LUPRI,'-',76,0)
 C        CALL PRP_QUADRU(EXPVAL,WORK,LWORK)
+      ENDIF
+C
+C     Parity violation: Chirality
+C
+      IF(PVC) THEN
+        CALL PRP_PVC(EXPVAL,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Electric field gradients
@@ -952,74 +1059,80 @@ C
      &'* Nuclear quadrupole coupling constants (principal components):'
       WRITE(LUPRI,'(14X,A18)') 'Total contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCIND
-        IF (DOATOM(IATOM)) THEN
-          DO I=1,3
-            DO J=1,3
-              EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-            ENDDO
-          ENDDO
-C
-C         Diagonalize to get principal components
-C
-          IJ = 1
-          DO I = 1, 3
-            DO J = 1, I
-              PVAL(IJ) = EFGTOT(I,J,IATOM)
-              IJ = IJ + 1
-            ENDDO
-          ENDDO
-          CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
-          EFGTOT(1,1,IATOM) = PVAL(1)
-          EFGTOT(2,2,IATOM) = PVAL(3)
-          EFGTOT(3,3,IATOM) = PVAL(6)
-C
-C         Reorder to calculate eta:
-C         |xx|<|yy|<|zz|
-C
-          PVAL(2) = PVAL(3)
-          PVAL(3) = PVAL(6)
-          IZ = IDAMAX(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-          IX = IDAMIN(3,PVAL(1),1)
-          CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-          ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
-          NUCCHA = NINT(CHARGE(IATOM))
-          DO ISO = 1, 5
-            QMOM = DISOTP(NUCCHA,ISO,'QMOM')
-            IF (QMOM .NE. 0.D0) THEN
-               FACT=CONV*QMOM
-C
-C              Change to GHz when abs values bigger then 1.0D4
-C
-               HZUNIT = ' MHz'
-               DBUNIT = 1.0D0
-               IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
-     &             (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
-     &             (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
-                   DBUNIT = 1.0D3
-                   HZUNIT = ' GHz'
-               ENDIF
-               SPIN = DISOTP(NUCCHA,ISO,'SPIN')
-               MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
-               WRITE (LUPRI
-     &              ,'(/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/)'
-     &              )'Nucleus: ',NAMDEP(IATOM),'Mass: ',MASS,'Spin: '
-     &              ,SPIN,'Quadrupole moment: ',QMOM
+      NATOM = 0
+      DO 100 IATOM = 1, NUCIND
+         DO 110 ISYM = 0,MAXOPR
+            IF (IBTAND(ISTBNU(IATOM),ISYM) .EQ. 0) THEN
+               NATOM = NATOM + 1
                DO I=1,3
-                  WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
-     &                 'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
-     &                 EFGTOT(I,I,IATOM)*FACT/DBUNIT,HZUNIT
+                  DO J=1,3
+                     EFGTOT(I,J,NATOM)=
+     &                  EFGNUC(I,J,NATOM)+EFGEL(I,J,NATOM)
+                  ENDDO
                ENDDO
-               WRITE (LUPRI,'(2X,A3,9X,F16.8)')
-     &              'Eta', ETA
-            ENDIF
-          ENDDO
-        ENDIF
-      ENDDO
+C
+C              Diagonalize to get principal components
+C
+               IJ = 1
+               DO I = 1, 3
+                  DO J = 1, I
+                     PVAL(IJ) = EFGTOT(I,J,IATOM)
+                     IJ = IJ + 1
+                  ENDDO
+               ENDDO
+               CALL JACO(PVAL,AXIS,3,3,3,TMP,ITMP)
+               EFGTOT(1,1,IATOM) = PVAL(1)
+               EFGTOT(2,2,IATOM) = PVAL(3)
+               EFGTOT(3,3,IATOM) = PVAL(6)
+C
+C              Reorder to calculate eta:
+C              |xx|<|yy|<|zz|
+C
+               PVAL(2) = PVAL(3)
+               PVAL(3) = PVAL(6)
+               IZ = IDAMAX(3,PVAL(1),1)
+               CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
+               IX = IDAMIN(3,PVAL(1),1)
+               CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
+               ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
+               NUCCHA = NINT(CHARGE(IATOM))
+               DO ISO = 1, 5
+                  QMOM = DISOTP(NUCCHA,ISO,'QMOM')
+                  IF (QMOM .NE. 0.D0) THEN
+                     FACT=CONV*QMOM
+C
+C                    Change to GHz when abs values bigger then 1.0D4
+C
+                     HZUNIT = ' MHz'
+                     DBUNIT = 1.0D0
+                     IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
+     &                  (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
+     &                  (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
+                        DBUNIT = 1.0D3
+                        HZUNIT = ' GHz'
+                     ENDIF
+                     SPIN = DISOTP(NUCCHA,ISO,'SPIN')
+                     MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
+                     WRITE (LUPRI,9000)
+     &                  'Nucleus: ',NAMDEP(IATOM),
+     &                  'Mass: ',MASS,'Spin: ',
+     &                  SPIN,'Quadrupole moment: ',QMOM
+                     DO I=1,3
+                        WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
+     &                     'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
+     &                     EFGTOT(I,I,IATOM)*FACT/DBUNIT,HZUNIT
+                     ENDDO
+                     WRITE (LUPRI,'(2X,A3,9X,F16.8)')
+     &                  'Eta', ETA
+                  ENDIF
+               ENDDO
+            END IF
+ 110     CONTINUE
+ 100  CONTINUE
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz' 
       RETURN
+ 9000 FORMAT (/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/) 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
@@ -1048,42 +1161,49 @@ C
 #include <ibtfun.h>
       CALL DZERO(EFGEL,9*MXCENT)
       ITYP = 0
-      DO IATOM = 1, NUCIND
-         IF (DOATOM(IATOM)) THEN
-            DO ICOOR1 = 1, 3
-               DO ICOOR2 = ICOOR1, 3
-                  ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-                  DO IREPC = 0, MAXREP
-                     IF (IBTAND(ISTBNU(IATOM),
-     &                    IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-                        ITYP = ITYP + 1
-                        EFGEL(ICOOR1,ICOOR2,IATOM) =
-     &                       EFGEL(ICOOR1,ICOOR2,IATOM) -
-     *                       EXPVAL(IPEFG(ITYP))/NUCDEG(IATOM)*
-     &                       PT(IBTAND(ISYMIJ,IREPC))
-                     END IF
-                  ENDDO
-               ENDDO
-            ENDDO
-            EFGEL(2,1,IATOM) = EFGEL(1,2,IATOM)
-            EFGEL(3,1,IATOM) = EFGEL(1,3,IATOM)
-            EFGEL(3,2,IATOM) = EFGEL(2,3,IATOM)
-         END IF
-      ENDDO
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+         DO 200 ICOOR1 = 1, 3
+            DO 210 ICOOR2 = ICOOR1, 3
+               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               DO 300 IREPC = 0, MAXREP
+                  IF (IBTAND(ISTBNU(IATOM),
+     &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                     ITYP = ITYP + 1
+                     TEMP(ICOOR1,ICOOR2,IATOM) =
+     &                  TEMP(ICOOR1,ICOOR2,IATOM) - EXPVAL(IPEFG(ITYP))
+     &                                             /NUCDEG(IATOM)
+                  END IF
+ 300           CONTINUE
+ 210        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+      NATOM = 1
+      DO 110 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 110
+         DO 310 IREPC = 0, MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+               DO 220 I = 1, 3
+                  DO 230 J = I, 3
+                     EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
+     &                         PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                            ISYMAX(J,1)),IREPC))
+                     IF (I .NE. J) EFGEL(J,I,NATOM) = EFGEL(I,J,NATOM)
+ 230              CONTINUE
+ 220           CONTINUE
+               IF (IPRINT .GE. 2) THEN
+                  WRITE (LUPRI ,'(/2X,A,A/)')
+     &               'Electronic EFG Tensor of nucleus ',NAMDEP(NATOM)
+                  CALL OUTPUT(EFGEL(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
+               END IF
+               NATOM = NATOM + 1
+            END IF
+ 310     CONTINUE
+ 110  CONTINUE
 C     
 C     This part of the code is incorrect: one cannot split the 
 C     electronic and nuclear contributions and diagonalize them
 C
-C     IF (IPRINT .GE. 2) THEN
-C        WRITE(LUPRI,'(A/)')
-C    &        '  Electronic contribution:'
-C        DO I = 1, NUCIND
-C           IF (DOATOM(I)) THEN
-C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-C              CALL OUTPUT(EFGEL(1,1,I),1,3,1,3,3,3,1,LUPRI)
-C           END IF
-C        ENDDO
-C     END IF
 C     diagonalize efg tensor
 C     DO IATOM = 1, NUCIND
 C        IF (DOATOM(IATOM)) THEN
@@ -1200,21 +1320,19 @@ C     print section
       WRITE(LUPRI,'(12X,3(A12,11X))')
      &     'contribution','contribution','contribution'
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCIND
-         IF (DOATOM(IATOM)) THEN
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-            DO I=1,3
-               DO J=1,3
-                  EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-                  IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+      DO IATOM = 1, NUCDEP
+         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+         DO I = 1,3
+            DO J = 1,3
+               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
      &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
-     &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
-     &                 ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
-     &                 ,EFGTOT(I,J,IATOM),' au '
-               ENDDO
-            ENDDO
-         ENDIF
-      ENDDO
+     &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
+     &              ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
+     &              ,EFGTOT(I,J,IATOM),' au '
+            END DO
+         END DO
+      END DO
 C
 C           diagonalize total efg tensor
 C
@@ -1223,8 +1341,7 @@ C
       WRITE(LUPRI,'(12X,A)')
      &     'Total contribution to principal components '
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCIND
-         IF (DOATOM(IATOM)) THEN
+      DO IATOM = 1, NUCDEP
             CALL DUNIT(AXIS(1,1,IATOM),3)
             IJ = 1
             DO I = 1, 3
@@ -1252,11 +1369,151 @@ C
                WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
                CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
             END IF
-         END IF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
      &      '  1 a.u. = ',9.71736E21,' V*m**-2' 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRP_PVC */
+      SUBROUTINE PRP_PVC(EXPVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by J. Thyssen - Oct 12 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+#include <dcbprp.h>
+#include <dcbexp.h>
+#include <dcbxlr.h>
+#include <nuclei.h>
+      DIMENSION EXPVAL(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Allocate memory
+C
+      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KMPV,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KQV,NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIS,NUCDEP,WORK,KFREE,LFREE)
+C
+      CALL SETATM(WORK(KATOM),NATOM,62)
+      CALL PRP_PVC1(EXPVAL,WORK(KATOM),WORK(KMPV),WORK(KQV),
+     &              WORK(KIS),WORK(KTEMP),IPRPRP)
+      CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRP_PVC1(EXPVAL,DOATOM,DMPV,QW,IS,TEMP,IPRINT)
+C*****************************************************************************
+C     
+C     Calculate parity violation - chirality
+C     
+C     Written by J. Thyssen - Oct 12 1999
+C     
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C     
+      PARAMETER (D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00, D4 = 4.0D00)
+C
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <dcbexp.h>
+      DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
+     &          IS(*)
+      LOGICAL   DOATOM(*)
+#include <nuclei.h>
+#include <symmet.h>
+#include <nqcc.h>
+#include <ibtfun.h>
+C     
+      CALL QENTER('PRP_PVC')
+C
+C     Gather expectation values into TEMP
+C     (only over symmetry distinct centers)
+C
+      STHETAW2 = 0.2319D0
+      DFAC = 2.22255D-14 / (D2 * SQRT(D2))
+C
+      CALL DZERO(TEMP,NUCDEP)
+      ITYP = 0
+      DO 100 IATOM = 1,NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+         DO IREP = 0,MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
+               ITYP = ITYP + 1
+               write(6,*) 'jth iatom',
+     &            iatom,ippvc(ityp),ityp,
+     &            expval(ippvc(ityp)),nucdeg(iatom)
+               TEMP(IATOM) = TEMP(IATOM) + 
+     &            EXPVAL(IPPVC(ITYP)) / NUCDEG(IATOM)
+            END IF
+         END DO
+ 100  CONTINUE
+C
+C     For each atom calculate exp. value
+C
+      DTOT = D0
+      NATOM = 0
+      DO 110 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 110
+         DO IREP = 0 ,MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
+               NATOM =  NATOM + 1
+               DMPV(NATOM) = TEMP(IATOM)
+               ICHARGE = NINT(CHARGE(IATOM))
+               IMASS = NINT(DISOTP(ICHARGE,1,'MASS'))
+               NPROTON  = ICHARGE
+               NNEUTRON = IMASS - ICHARGE
+               IS(NATOM) = IMASS
+               QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON - 
+     &            D1 * NNEUTRON
+               DTOT = DTOT + DMPV(NATOM)*QW(NATOM)*DFAC
+            END IF
+         END DO
+ 110  CONTINUE
+C
+C     Output section
+C
+      CALL PRSYMB(LUPRI,'-',76,0)
+      WRITE(LUPRI,'(A/)')
+     &     '* Parity violation - chirality E(PV):'
+      CALL PRSYMB(LUPRI,'-',76,0)
+C
+      WRITE(LUPRI,9000) 
+     &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
+      WRITE(LUPRI,9000) '','','MPV(n)/au    ','QW(n)    ',''
+      NATOM = 0
+      DO 120 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 110
+         DO IREP = 0 ,MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
+               NATOM =  NATOM + 1
+               WRITE(LUPRI,9010) 
+     &            NAMDEP(NATOM),IS(NATOM),DMPV(NATOM),QW(NATOM),
+     &            DMPV(NATOM)*QW(NATOM)*DFAC
+            END IF
+         END DO
+ 120  CONTINUE
+      CALL PRSYMB(LUPRI,'-',76,0)
+      WRITE(LUPRI,9020) 'Total EPV = ',DTOT
+ 9000 FORMAT(4X,A8,'  ',A6,'  ',A20,'  ',A10,'  ',A20)
+ 9010 FORMAT(4X,A8,'   ',I4,'   ',1P,E20.12,'  ',0P,F11.5,'  ',
+     &       1P,E20.12)
+ 9020 FORMAT(4X,A12,41X,1P,E20.12)
+C
+C
+C
+      CALL QEXIT('PRP_PVC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
