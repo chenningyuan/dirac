@@ -1,60 +1,19 @@
 include ../Makefile.config
 
-DIRACMALLOC_SRC  = diracmalloc.c
-DIRACMALLOC_OBJS = diracmalloc.o
+C_OBJS = diracmalloc.o alloc_mem.o get_memsize.o print_logo.o ini_mpi.o\
+         end_mpi.o csectid.o main.o exec_dirac.o mpi_errtrap.o pr_timing.o\
+         get_time.o 
 
-ALLOC_MEM_SRC  = alloc_mem.c
-ALLOC_MEM_OBJS = alloc_mem.o
+F_OBJS = dirac.o
 
-GET_MEMSIZE_SRC  = get_memsize.c
-GET_MEMSIZE_OBJS = get_memsize.o
+F_CPPS = $(F_OBJS:.o=.i)
 
-PRINT_LOGO_SRC   = print_logo.c
-PRINT_LOGO_OBJS  = print_logo.o
+pre:	$(F_CPPS)
 
-INI_MPI_SRC      = ini_mpi.c
-INI_MPI_OBJS     = ini_mpi.o
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
 
-END_MPI_SRC      = end_mpi.c
-END_MPI_OBJS     = end_mpi.o
-
-CSECTID_SRC      = csectid.c
-CSECTID_OBJS     = csectid.o
-
-DIRAC_MAIN_SRC   = main.c
-DIRAC_MAIN_OBJS  = main.o
-
-EXEC_DIRAC_SRC   = exec_dirac.c
-EXEC_DIRAC_OBJS  = exec_dirac.o
-
-MPI_ERRTRAP_SRC  = mpi_errtrap.c
-MPI_ERRTRAP_OBJS = mpi_errtrap.o
-
-PR_TIMING_SRC    = pr_timing.c
-PR_TIMING_OBJS   = pr_timing.o
-
-GET_TIME_SRC     = get_time.c
-GET_TIME_OBJS    = get_time.o
-
-DIRAC_SRC        = dirac.F
-DIRAC_OBJS       = dirac.o
-
-MAIN_OBJS        = $(DIRACMALLOC_OBJS) $(ALLOC_MEM_OBJS)  $(GET_MEMSIZE_OBJS) \
-                   $(DIRAC_MAIN_OBJS)  $(PRINT_LOGO_OBJS) $(DIRAC_OBJS) \
-                   $(INI_MPI_OBJS)     $(END_MPI_OBJS)    $(CSECTID_OBJS) \
-                   $(EXEC_DIRAC_OBJS)  $(PR_TIMING_OBJS)  $(MPI_ERRTRAP_OBJS) \
-                   $(GET_TIME_OBJS)
-
-MAIN_SRC         = $(DIRACMALLOC_SRC) $(ALLOC_MEM_SRC)  $(GET_MEMSIZE_SRC) \
-                   $(DIRAC_MAIN_SRC)  $(PRINT_LOGO_SRC) $(DIRAC_SRC) \
-                   $(INI_MPI_SRC)     $(END_MPI_SRC)    $(CSECTID_SRC) \
-                   $(EXEC_DIRAC_SRC)  $(PR_TIMING_SRC)  $(MPI_ERRTRAP_SRC) \
-                   $(GET_TIME_SRC)
-
-all:	$(MAIN_OBJS)
-
-depend:
-	makedepend -- $(INCLUDE_DIR) $(CCP_FLAGS) -- $(MAIN_SRC)
+all:	$(F_OBJS) $(C_OBJS)
 
 clean:
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -65,4 +24,7 @@ dirmpi.x:
 dirac.x:
 	cd .. ; $(MAKE) dirac.x
 
-# DO NOT DELETE
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

@@ -7,26 +7,18 @@
 
 include ../Makefile.config
 
-OBJS =	dircnv.o \
-	dirone.o \
-	dirout.o \
-	dirana.o \
-	dirrdn.o \
-	dirscf.o \
-	dirset.o \
-	dirtra.o \
-	dirtwo.o \
-	dirgp.o  \
-	dirgrd.o \
-	dirden.o \
-	dirsol.o \
-	dirspf.o \
-	diropen.o \
-	dirgeo.o \
-        diraos.o 
+F_OBJS = dircnv.o dirone.o dirout.o dirana.o dirrdn.o dirscf.o dirset.o \
+         dirtra.o dirtwo.o dirgp.o  dirgrd.o dirden.o dirsol.o dirspf.o \
+         diropen.o dirgeo.o diraos.o 
 
+F_CPPS = $(F_OBJS:.o=.i)
 
-all:	$(OBJS)
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	$(F_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -41,6 +33,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

@@ -7,12 +7,19 @@
 
 include ../Makefile.config
 
-OBJS = eri2cft.o     eri2her.o     eri2sym.o \
+F_OBJS = eri2cft.o     eri2her.o     eri2sym.o \
 eri2aob.o     eri2dis.o     eri2odb.o     eri2vec.o \
 eri2car1.o    eri2drv.o     eri2out.o \
 eri2car2.o    eri2fck.o     eri2sph.o     
 
-all:	$(OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	$(F_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -28,5 +35,5 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
 # DO NOT DELETE THIS LINE -- make depend depends on it.

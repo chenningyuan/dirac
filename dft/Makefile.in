@@ -7,6 +7,13 @@ F_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o grtest.o \
 C_OBJS = functionals.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
 	fun-pw86x.o fun-p86c.o
 
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
 all:	$(F_OBJS) $(C_OBJS)
 
 clean : 

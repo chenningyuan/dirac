@@ -7,9 +7,16 @@
 
 include ../../Makefile.config
 
-OBJS = pamxqr.o
+F_OBJS = pamxqr.o
 
-all:	$(OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	$(F_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -24,6 +31,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

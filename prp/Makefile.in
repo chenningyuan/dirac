@@ -7,23 +7,17 @@
 
 include ../Makefile.config
 
-OBJS =paminp.o \
-        pamprp.o \
-	pamexp.o \
-        pamgrd.o \
-        pamogrd.o \
-        pamfck.o \
-        pamset.o \
-	pamxlr.o \
-	pamrvc.o \
-	pamrsp.o
+F_OBJS =paminp.o pamprp.o pamexp.o pamgrd.o pamogrd.o pamfck.o pamset.o pamxlr.o \
+	pamrvc.o pamrsp.o
 
-NOCPPFS = $(OBJS:.o=.i)
+F_CPPS = $(F_OBJS:.o=.i)
 
-all:	$(OBJS)
+pre:	$(F_CPPS)
 
-ftnchek: $(NOCPPFS)
-	ftnchek $(CHEKFLAGS) $(NOCPPFS) */*.i > prp.ftnchek
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	$(F_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -38,6 +32,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

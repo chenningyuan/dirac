@@ -7,15 +7,22 @@
 
 include ../Makefile.config
 
-OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
-	qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
-	gpjth.o
+F_OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
+	  qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
+	  gpjth.o
 
 C_OBJS = gpc.o
 
 MXM_OBJS = mxmpack.o
 
-all:	setcomp $(OBJS) $(C_OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	setcomp $(F_OBJS) $(C_OBJS)
 
 setcomp:
 	( \
@@ -42,7 +49,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend: setcomp
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(C_OBJS:.o=.c)
-
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

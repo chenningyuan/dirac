@@ -12,6 +12,13 @@ F_OBJS =ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
 
 C_OBJS = ccunix.o
 
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
 all:	$(F_OBJS) $(C_OBJS)
 
 clean : 
