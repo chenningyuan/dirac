@@ -42,16 +42,18 @@ void dftpot1(SecondDrv *ds, const real *w, const real* rho, const real* grad,
 void condft_(void);
 
 static __inline__
-void test_var(real comp, real refer, const char* fun, const char* drv, 
-              int* counter)
+int test_var(real comp, real refer, const char* fun, const char* drv, 
+             int* counter)
 {
-      if(fabs(comp-refer)>2e-8+5e-5*(fabs(comp)+fabs(refer))) { 
+    if(fabs(comp-refer)>2e-8+5e-5*(fabs(comp)+fabs(refer))) { 
         if(*counter<95)
             printf("%s %s: fin.diff: %12g found: %12g, diff=%g\n", 
                    fun, drv, refer, comp, fabs(comp-refer));
 	++*counter;
-	  } /* else printf("Test '%s:%s' passed (expected: %g found: %g).\n", fun,drv,
+        return 1;
+    } /* else printf("Test '%s:%s' passed (expected: %g found: %g).\n", fun,drv,
 	       refer, comp); */
+    return 0;
 }
 
 const int GRID_STEP = 1;
@@ -185,7 +187,7 @@ test_second(const char* fun_name,
                  num = (tmpp.df0100-tmpm.df0100)/(2*dgra);
 		 test_var(gga.df0110, num, fun_name, "df0110b", &failed); 
                	/* TEST df1001, df0101, df0002 */
-		 dgra = ngrad*1e-3;
+		 dgra = ngrad*1e-5;
 	         drv1_clear(&tmpm);
 		 dt = dp; dt.gradb -= dgra; first_fun(&tmpm, 1, &dt);
 		 drv1_clear(&tmpp);
@@ -415,19 +417,6 @@ main(int argc, char* argv[])
         return 3;
     }
     free(arg);
-
-    DftDensProp dt, dp = { 0.4875, 0.195, 0.0125 , 0.005, -5.9375e-05 };
-    drv2_clear(&gga);
-    func->second(&gga, 1, &dp);    
-    real dgra = 1e-1*dp.gradb;
-    drv1_clear(&tmpm);
-    dt = dp; dt.gradb -= dgra; func->first(&tmpm, 1, &dt);
-    drv1_clear(&tmpp);
-    dt = dp; dt.gradb += dgra; func->first(&tmpp, 1, &dt);
-    real num = (tmpp.df1000-tmpm.df1000)/(2*dgra);
-    test_var(gga.df1010, num, "INITIAL TEST", "df1001b", &length);
-    printf("HERE\n");
-
 
     res += test_derivatives(func, NULL);
 
