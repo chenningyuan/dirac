@@ -902,7 +902,7 @@
      &                           IBOSYM,IREO,
      &                           INVREO,NTOOBS,NSTR,
      &                           ITOTDIM,ITOTDIM2,
-     &                           INVERSM,IKRAMERS,
+     &                           INVERSM,
      &                           IHAM12,
      &                           ISPINFREE,IMXDIM,NIRREP,IPRINT)
 *
@@ -6097,7 +6097,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *     Point group if of quaternionic type:
       if (DOUGRP.eq.'C1 '.or.DOUGRP.eq.'Ci ') then
         IPGTYP = 1
-        IKRAMERS = 0
         if (DOUGRP.eq.'Ci ') then
           INVERSM = 1
         else
@@ -6106,7 +6105,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
       else if (DOUGRP.eq.'C2 '.or.DOUGRP.eq.'Cs '.or.
      &         DOUGRP.eq.'C2h') then
         IPGTYP = 2
-        IKRAMERS = 1
         if (DOUGRP.eq.'C2h') then
           INVERSM = 1
         else
@@ -6115,7 +6113,6 @@ C    &           ' MO orbitals obtained from LUCIA ')
       else if (DOUGRP.eq.'D2 '.or.DOUGRP.eq.'C2v'.or.
      &         DOUGRP.eq.'D2h') then
         IPGTYP = 3
-        IKRAMERS = 1
         if (DOUGRP.eq.'D2h') then
           INVERSM = 1
         else
@@ -6156,7 +6153,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                 ISYDISUM,NBASD,ISPINFREE,WORK(KBOSYM),
      &                 WORK(KIDUMAR),WORK(KDUMAR),NIRREP,
      &                 NGSSH,NGAS,NSTR,
-     &                 IPGTYP,INVERSM,IKRAMERS,INVERSM+1,NTEST)
+     &                 IPGTYP,INVERSM,INVERSM+1,NTEST)
 *
       call rdtwo_dirac(WORK(KDITWOE),
      &                 LU2INT,DIRACTWO,
@@ -6174,7 +6171,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
      &                     WORK(KBOSYM),WORK(KIREO),
      &                     WORK(KINVREO),NTOOBS,NSTR,
      &                     ISYDISUM,ISYDISUM2,
-     &                     INVERSM,IKRAMERS,
+     &                     INVERSM,
      &                     IHAM12,ISPINFREE,IMXDIM,NIRREP,NTEST)
 *
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
@@ -6965,7 +6962,7 @@ c     call XFLUSH(6)
       subroutine rdone_dirac(ONEINT,LUONE,DIRACONE,MORB,NDIM,
      &                       NBAS,ISPINFREE,IBOSYM,IDUMAR,DUMAR,
      &                       NIRREP,NGSSH,NGAS,NSTR,
-     &                       IPGTYP,INVERSM,IKRAMERS,NFSYM,IPRINT)
+     &                       IPGTYP,INVERSM,NFSYM,IPRINT)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -6981,7 +6978,7 @@ c     call XFLUSH(6)
      &          NGSSH(MXPIRR,MXPNGAS),IORBF(2),NSTR(NFSYM)
       dimension ONEINT((2*NDIM)**2),DUMAR(*)
 *
-      NTESTL = 00
+      NTESTL = 05
       NTEST = max(NTESTL,IPRINT)
 *
       IZERO = 0
