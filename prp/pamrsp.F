@@ -585,8 +585,7 @@ C
           CALL XRSSVC(WORK(KBCI),WORK(KBOE),WORK(KBOP),
      &         WORK(KSCI),WORK(KSOE),WORK(KSOP),
      &         IBTYP,IBCVC,IBEVC,IBPVC,NPOS,
-     &         GPCI,GPOE,GPOP,
-     &         WORK,KFREE,LFREE)
+     &         GPCI,GPOE,GPOP, WORK,KFREE,LFREE)
 C
 C         On file we save the Hessian PHP = PLP (i.e. beta=0), so
 C         we must project CREF out.
@@ -3327,11 +3326,11 @@ C
       CALL QENTER('XRSST2')
 C
       NVARQ = NVAR*NZ
-      IF(NBTYP.EQ.JBENDX) THEN
+      IF (NBTYP.EQ.JBENDX) THEN
          ITYP    = IPEP
          LUBVEC  = LUBOE
          IRECOFF = 0
-      ELSEIF(NBTYP.EQ.JBPNDX) THEN
+      ELSE IF (NBTYP.EQ.JBPNDX) THEN
          ITYP    = IPPP
          LUBVEC  = LUBOP
          IRECOFF = 0
@@ -3404,15 +3403,12 @@ C
             IBVEC(NBPREV+IM)      = IBOFF + IM
 C              
 C           hjj+patrick:
-C           If partial gradient (e-e, e-p, or conf) is small 
-C           compared to the
-C           total gradient we assume that it is unnecessary to 
-C           provide a 
-C           corresponding trial vector. If not then create a 
-C           trial vector 
+C           If partial gradient (e-e, e-p, or conf) is small compared to the
+C           total gradient we assume that it is unnecessary to provide a 
+C           corresponding trial vector now. If not then create a trial vector 
 C           from the gradient vector and the diagonal of the Hessian.
 C           
-            IF (GPTMP.LT.0.01D0*GPTNRM) THEN
+            IF (GPTMP.LT.0.3D0*GPTNRM) THEN
               IVEC(IP) = 0
               IVEC(IM) = 0
             ELSE
