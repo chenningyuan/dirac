@@ -1153,9 +1153,6 @@ C
           CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
      &                NVECS(IFRP,2),NFBAS(IFRP,0),NVECS(IFRP,0))
         ENDIF      
-C       Add polarization contribution to expansion coefficients
-        CALL DUNIT2(WORK(KBV(IFRP)+NVECS(IFRP,1)),NVECS(IFRP,2),
-     &              NVECS(IFRP,0),NVECS(IFRP,2),NZ)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
@@ -1258,19 +1255,21 @@ C
 C
 C       Print overlaps
 C
-        JOFF = 1
-        DO J = 1,NREFS
-          IOFF = 1
-          DO I = 1,(J-1)
-            WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
-     &           REFFIL(I),REFFIL(J)
-            CALL PRQMAT(AMAT(IOFF,JOFF,1),
-     &           NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,NZ,
-     &           IPQTOQ(1,0),LUPRI)
-            IOFF = IOFF + NSTR(IFRP,0,I)
+        IF(IPRPRJ.GE.1) THEN
+          JOFF = 1
+          DO J = 1,NREFS
+            IOFF = 1
+            DO I = 1,(J-1)
+              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
+     &             REFFIL(I),REFFIL(J)
+              CALL PRQMAT(AMAT(IOFF,JOFF,1),
+     &             NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,NZ,
+     &             IPQTOQ(1,0),LUPRI)
+              IOFF = IOFF + NSTR(IFRP,0,I)
+            ENDDO
+            JOFF = JOFF + NSTR(IFRP,0,J)
           ENDDO
-          JOFF = JOFF + NSTR(IFRP,0,J)
-        ENDDO
+        ENDIF
 C
 C       Solve linear system by Cholesky decomposition
 C       with full pivoting
@@ -1291,6 +1290,10 @@ C       Restore overlap matrix
 C
         CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
       ENDIF
+C
+C     Add polarization contribution to expansion coefficients
+C
+      CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZ)
 C
 C     Population analysis
 C
