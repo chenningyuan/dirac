@@ -1058,7 +1058,8 @@ case $machine in
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
-      opt='-fast -xO4 -w -xtarget=native'
+      opt='-Nc50 -fast -xO4 -w -xtarget=native'
+      c_opt='-fast -xO4 -w -xtarget=native'
       inc="-I$INCLUDE_DIR" ;;
 #
 #   RS6000
