@@ -21,12 +21,12 @@ char *strsubtitle = "\
 * Written by:                                                                *\n\
 *    Trond Saue,              The University of Tromsoe,        Norway       *\n\
 *    Vebjoern Bakken,         University of Oslo,               Norway       *\n\
-*    Thomas Enevoldsen,       Odense University,                Denmark      *\n\
+*    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *\n\
 *    Trygve Helgaker,         University of Oslo,               Norway       *\n\
-*    Hans Joergen Aa. Jensen, Odense University,                Denmark      *\n\
+*    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *\n\
 *    Jon K. Laerdahl,         University of Oslo                Norway       *\n\
-*    Kenneth Ruud,            University of Oslo,               Norway       *\n\
-*    Joern Thyssen,           Odense University,                Denmark      *\n\
+*    Kenneth Ruud,            The University of Tromsoe,        Norway       *\n\
+*    Joern Thyssen,           SDU, Odense University,           Denmark      *\n\
 *    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Netherlands  *\n\
 *                                                                            *\n\
 *                                                                            *\n\
