@@ -77,11 +77,10 @@ C ------------------------------------------------------------------------
 C     Quadratic response calc may also be specified under **PROPERTIES
 C     in which case we should NOT re-initialize some variables
 C
-      IF (.NOT.(DOXQR.OR.DOTPA)) THEN
+      IF (.NOT.(DOXQR.OR.DOTPA.OR.DOVER)) THEN
          NAQROP = 0
          NBQROP = 0
          NCQROP = 0
-      ELSE IF (.NOT. DOVER) THEN
          NBQRFR = 1
          NCQRFR = 1
          BQRFR(1) = D0
@@ -1695,8 +1694,8 @@ C
       CALL MEMGET('REAL',KA,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KAC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGEE,NZYAEE*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGEP,NZYAEP*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGEE,NZYBEE*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGEP,NZYBEP*NZ,WORK,KFREE,LFREE)
 C
 C     Get the A operator matrix in MO basis
 C
@@ -1919,7 +1918,7 @@ C
 C     One-index quaternion matrix QA with unpacked quaternion response vector 
 C     in matrix QW and add the result to matrix QC. Value in {} parenthesis 
 C     denote time reversal symmetries, orbitals within [] parenthesis 
-C     denote Kramer pair orbitals, and indices within () denote matrix 
+C     denote Kramers pair orbitals, and indices within () denote matrix 
 C     rows and columns. 
 C     
 C     QC(r,s){+1} = QC(r,s){+1} + 
@@ -2097,10 +2096,10 @@ C
 C     Print section
 C
       IF (IPRINT.GE.12) THEN
-         WRITE(LUPRI,'(/A)') 'Gradient (e-e) in RSP1GR'
-         CALL PRQMAT(GEE,NZYEE,1,NZYEE,1,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
-         WRITE(LUPRI,'(/A)') 'Gradient (e-p) in RSP1GR'
-         CALL PRQMAT(GEP,NZYEP,1,NZYEP,1,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'Gradient (e-e) in RSP1GR: Z- and Y-parts'
+         CALL PRQMAT(GEE,NZEE,2,NZEE,2,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'Gradient (e-p) in RSP1GR: Z- and Y-parts'
+         CALL PRQMAT(GEP,NZEP,2,NZEP,2,NZ,IPQTOQ(1,ISYMGR-1),LUPRI)
       ENDIF
 C
       CALL QEXIT('RSP1GR')
@@ -2180,14 +2179,14 @@ C
      &     NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,
      &     RESULT,CMO,WORK(KFREE),LFREE)
 C
-      IF (BFREQ.NE.D0) THEN
+      IF (NZCONF.NE.0 .AND. BFREQ.NE.D0) THEN
          CALL  S3DRV(VECAEE,VECAEP,VECBEE,VECBEP,VECCEE,VECCEP,
      &        ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
      &        NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,BFREQ,
      &        RESULT,CMO,WORK(KFREE),LFREE)
       END IF
 C
-      IF (CFREQ.NE.D0) THEN
+      IF (NZCONF.NE.0 .AND. CFREQ.NE.D0) THEN
          CALL  S3DRV(VECAEE,VECAEP,VECCEE,VECCEP,VECBEE,VECBEP,
      &        ISYMA,ISYMC,ISYMB,ITIMA,ITIMC,ITIMB,IFERA,IFERC,IFERB,
      &        NZYAEE,NZYAEP,NZYCEE,NZYCEP,NZYBEE,NZYBEP,CFREQ,
@@ -2250,7 +2249,7 @@ C     Unpack the response vectors into matrices
 C
       IF (IPRXQR.GE.10) THEN
          WRITE(LUPRI,'(/A)') 
-     &        'CMO in e3drv'
+     &        'CMO in E3DRV'
          CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &        IPQTOQ(1,0),LUPRI)
       END IF
@@ -2258,7 +2257,7 @@ C
       CALL GTZYMT(VECBEE,NZYBEE,VECBEP,NZYBEP,ISYMB,WORK(KB),
      &     IPRXQR,WORK(KFREE),LFREE)
       CALL GTZYMT(VECCEE,NZYCEE,VECCEP,NZYCEP,ISYMC,WORK(KC),
-     &     0,WORK(KFREE),LFREE)
+     &     IPRXQR,WORK(KFREE),LFREE)
 C
 C     Construct the modified density matrices
 C
@@ -3026,14 +3025,14 @@ C
       END IF
 C
       IF (IPRINT.GE.10) THEN
-         WRITE(LUPRI,'(/A)') 'VECA (e-e) in QDAGDOT'
-         CALL PRQMAT(VECAEE,NZYAEE,1,NZYAEE,1,NZ,IPQTOQ(1,ISYM-1),LUPRI)
-         WRITE(LUPRI,'(/A)') 'VECA (e-p) in QDAGDOT'
-         CALL PRQMAT(VECAEP,NZYAEP,1,NZYAEP,1,NZ,IPQTOQ(1,ISYM-1),LUPRI)
-         WRITE(LUPRI,'(/A)') 'VECB (e-e) in QDAGDOT'
-         CALL PRQMAT(VECBEE,NZYBEE,1,NZYBEE,1,NZ,IPQTOQ(1,ISYM-1),LUPRI)
-         WRITE(LUPRI,'(/A)') 'VECB (e-p) in QDAGDOT'
-         CALL PRQMAT(VECBEP,NZYBEP,1,NZYBEP,1,NZ,IPQTOQ(1,ISYM-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'VECA (e-e) in QDAGDOT: Z- and Y-parts'
+         CALL PRQMAT(VECAEE,NZEE,2,NZEE,2,NZ,IPQTOQ(1,ISYM-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'VECA (e-p) in QDAGDOT: Z- and Y-parts'
+         CALL PRQMAT(VECAEP,NZEP,2,NZEP,2,NZ,IPQTOQ(1,ISYM-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'VECB (e-e) in QDAGDOT: Z- and Y-parts'
+         CALL PRQMAT(VECBEE,NZEE,2,NZEE,2,NZ,IPQTOQ(1,ISYM-1),LUPRI)
+         WRITE(LUPRI,'(/A)') 'VECB (e-p) in QDAGDOT: Z- and Y-parts'
+         CALL PRQMAT(VECBEP,NZEP,2,NZEP,2,NZ,IPQTOQ(1,ISYM-1),LUPRI)
       END IF
 C
       CALL QEXIT('QDAGDOT')
@@ -3264,6 +3263,11 @@ C
       NAQROP = 0
       NBQROP = 0
       NCQROP = 0
+      NBQRFR = 1
+      NCQRFR = 1
+      BQRFR(1) = D0
+      CQRFR(1) = D0
+C
       PNAME(1) = 'XDIPLEN'
       PNAME(2) = 'YDIPLEN'
       PNAME(3) = 'ZDIPLEN'
