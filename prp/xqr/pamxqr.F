@@ -40,6 +40,8 @@ C
      &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE'/
       DATA SET/.FALSE./
 C
+#include <ibtfun.h>
+C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
