@@ -264,8 +264,6 @@ C
       CALL CCDUMP
       call memchk ('after first sort',cc,1)
 C
-      IF (.NOT.SRTALL) GOTO 600
-C
       NINTSB5 = MAX0(MREMAIN/512,20)
       NINTSB5 = MIN0(NV5*RCW/512+1,NINTSB5)
       CALL RFILE(ITAPT+5,NINTSB5)
@@ -343,6 +341,8 @@ C
       CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,NSEC5)
       NSEC5 = NSEC5 + NSEC
       ENDDO
+C
+      IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
@@ -464,6 +464,7 @@ C
      &                'VOVV',NV5,'VVVV',NV6
       ELSE
       WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
+     &                'VOVV',NV5
       ENDIF
 C
       CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
