@@ -1372,10 +1372,10 @@ C
 C     Parity-violating contribution to NMR shielding
 C
       IF(PVCSHI) THEN
-        CALL PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C       CALL PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF 
 C
-C    Magnetic susceptibilities
+C     Magnetic susceptibilities
 C
       IF (MSUSCP) THEN
         CALL PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
@@ -2075,56 +2075,32 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck PRP_EPOLAR */
+C     /* deck prp_epolar */
       SUBROUTINE PRP_EPOLAR(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
-C***********************************************************************
-C        
-C     prepare output for electric dipole polarizability
-C           
-C     radovan bast december 2004
-C        
-C***********************************************************************
+C  *********************************************************************
+C  *                                                                   *
+C  *  electric dipole polarizability output                            *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              december 2004             07/02/2005   *
+C  *                                                                   *
+C  *********************************************************************
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C
-#include "dcbprp.h"
-#include "dcbxlr.h"
-C
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-      CALL MEMGET('REAL',KTMPMAT,3*3,WORK,KFREE,LFREE)
-C
-      CALL PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
-     &                 WORK,KFREE,LFREE)
-      CALL MEMREL('PRP_EPOLAR',WORK,1,KFREE,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck PRP_EPOLAR1 */
-      SUBROUTINE PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,TMPMAT,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     output for electric dipole polarizability
-C
-C     radovan bast december 2004
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-C
-#include "dcbprp.h"
-#include "dcbxlr.h"
-C
 #include "codata.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C
 C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
       PARAMETER (DFAC = XTANG**3)
+C
+#include "dcbprp.h"
+#include "dcbxlr.h"
+C
       CHARACTER CNVTEXT(3)*16
-      INTEGER A,B
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
@@ -2133,6 +2109,7 @@ C
 C
 C
 C     print header
+C     ============
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A)') '@'
@@ -2144,7 +2121,10 @@ C
       DO IFREQ = 1,NBFREQ
         CALL DZERO(TMPMAT,9)
 C
+C
 C       print frequency
+C       ===============
+C
         IF(.NOT.(NBFREQ.EQ.1)) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,'(A3,A10,F15.8,A5)') '@  ',
@@ -2155,42 +2135,48 @@ C       print frequency
 C
 C
 C       fill temporary matrix
+C       =====================
 C
-        DO A = 1,3
-          DO B = 1,3
-            KA = IPEPOLAR(A,1)
-            KB = IPEPOLAR(B,1)
+        DO I = 1,3
+          DO J = 1,3
+            KI = IPEPOLAR(I,1)
+            KJ = IPEPOLAR(J,1)
 C
 C           e-e
-            TMPMAT(A,B) = -D1*ABLRF(IFREQ,KA,KB,2)
+            TMPMAT(I,J) = -D1*ABLRF(IFREQ,KI,KJ,2)
 C
 C           don't look for e-p in case of XLR_SKIPEP
             IF(.NOT.XLR_SKIPEP) THEN
 C
 C             e-p
-              TMPMAT(A,B) = TMPMAT(A,B)
-     &                    - ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+              TMPMAT(I,J) = TMPMAT(I,J)
+     &                    - ABLRF(IFREQ,KI,KJ,3+N_ORBXLR)
             ENDIF
           ENDDO
         ENDDO
 C
 C
 C       check if converged
+C       ==================
 C
-        DO B = 1,3
-          IF(ABCNV(IFREQ,B).LE.THCLR) THEN
-            CNVTEXT(B) = '(converged)'
+        DO J = 1,3
+          IF(ABCNV(IFREQ,J).LE.THCLR) THEN
+            CNVTEXT(J) = '(converged)'
           ELSE
-            CNVTEXT(B) = '(NOT converged!)'
+            CNVTEXT(J) = '(NOT converged!)'
           ENDIF
         ENDDO
 C
+C
 C       calculate average of trace
+C       ==========================
+C
         POLTRACE = TMPMAT(1,1)+TMPMAT(2,2)+TMPMAT(3,3)
         POLAVG = POLTRACE/D3
 C
 C
 C       printout a.u.
+C       =============
 C
         WRITE(LUPRI,'(A3,A3,F22.8,A5,A20)') '@  ',
      &              'xx', TMPMAT(1,1), 'a.u.', CNVTEXT(1)
@@ -2206,34 +2192,39 @@ C
 C
 C
 C       calculate anisotropy
+C       ====================
 C
         POLTRACESQ = TMPMAT(1,1)**D2+TMPMAT(2,2)**D2+TMPMAT(3,3)**D2
-        IF(POLTRACESQ.LE.1.0D-8) POLTRACESQ = D0
         POLSQTRACE = POLTRACE**D2
-        IF(POLSQTRACE.LE.1.0D-8) POLSQTRACE = D0
         POLANISO = DSQRT(ABS((D1/D2)*(D3*POLTRACESQ-POLSQTRACE)))
 C
 C
 C       print anisotropy
+C       ================
 C
-        WRITE(LUPRI,'(A3,A11,F14.8,A5)') '@  ',
+        WRITE(LUPRI,'(A3,A11,F9.3,A10)') '@  ',
      &              'anisotropy', POLANISO, 'a.u.'
         WRITE(LUPRI,'(A)') '@'
 C
 C
 C       convert to SI units
+C       ===================
 C
-        DO A = 1,3
-          DO B = 1,3
-            TMPMAT(A,B) = TMPMAT(A,B)*DFAC
+        DO I = 1,3
+          DO J = 1,3
+            TMPMAT(I,J) = TMPMAT(I,J)*DFAC
           ENDDO
         ENDDO
 C
+C
 C       convert average of trace
+C       ========================
+C
         POLAVG = POLAVG*DFAC
 C
 C
 C       printout SI
+C       ===========
 C
         WRITE(LUPRI,'(A3,A3,F22.8,A12)') '@  ',
      &              'xx', TMPMAT(1,1), '1.0E30/m**3'
@@ -2251,6 +2242,7 @@ C
           WRITE(LUPRI,'(A)') '@   ---------'
         ENDIF
       ENDDO
+C
       CALL PRSYMB(LUPRI,'-',46,0)
 C
       RETURN
