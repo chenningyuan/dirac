@@ -957,13 +957,17 @@ C
             IGBUF(2,N,IBUF) = IROWS(2,I)
             IF (N.GE.NGBFSZ) THEN 
                INODE = IROWS(3,I)
+#if defined (VAR_MPI)
                IF (INODE.NE.MYTID) THEN
                    CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
      &              IGBUF(1,1,IBUF),N,INODE)
                ELSE
+#endif
                    CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
      &              IGBUF(1,1,IBUF),N)
+#if defined (VAR_MPI)
                ENDIF
+#endif
                N = 0
             ENDIF
             LGBUF(IBUF,I_FILE) = N
@@ -1039,13 +1043,17 @@ C
          N = LGBUF(IBUF,I_FILE)
          IF (IBUF.GT.0.AND.N.GT.0) THEN 
             INODE = IROWS(3,I)
+#if defined (VAR_MPI)
             IF (INODE.NE.MYTID) THEN
                 CALL BUFFER_FILE_SEND (I_FILE,IBUF,RGBUF(1,IBUF),
      &           IGBUF(1,1,IBUF),N,INODE)
             ELSE
+#endif
                 CALL BUFFER_FILE_WRITE (I_FILE,IBUF,RGBUF(1,IBUF),
      &           IGBUF(1,1,IBUF),N)
+#if defined (VAR_MPI)
             ENDIF
+#endif
             N = 0
          ENDIF
          LGBUF(IBUF,I_FILE) = N

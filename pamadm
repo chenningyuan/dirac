@@ -354,7 +354,7 @@ prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
 prp/mp2lag.o        prp/pamxqr.o        prp/pamtpa.o \\
 moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o moltra/tradr5.o \\
-moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
+moltra/tradr6.o moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
