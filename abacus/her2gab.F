@@ -559,6 +559,7 @@ C
 #include <nuclei.h>
 #include <twosta.h>
 #ifdef PRG_DIRAC
+#include <dcbham.h>
 #include <dcbgrd.h>
 #else
 #include <energy.h>
@@ -885,7 +886,7 @@ C
      &                   NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DOGAB)
+     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DOGAB,HFXFAC)
 C
 C            ********************************
 C            ***** Process AO integrals *****

@@ -159,6 +159,13 @@ C
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
       ENDIF
+      IF(ITYPE.EQ.7) THEN
+        KWORK = 1
+        KFREE = KWORK
+        LFREE = LWORK
+        TIMING = .FALSE.
+        GOTO 10      
+      ENDIF
 C
 C     Take calculation time of each IJ pair?
 C
@@ -250,8 +257,16 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
-
-      CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      IF(ITYPE.EQ.7) THEN 
+C        Kohn-Sham
+#if defined (MOD_DFT)
+         CALL DFTEXC(DMAT,1,FMAT,1,.TRUE.,.TRUE.,.FALSE.,
+     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,KPRINT)
+#endif
+         GOTO 90
+      ELSE
+        CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      ENDIF
 C
 C--------------------------------------
 C     Receive final results from nodes.
@@ -428,6 +443,10 @@ C
 #else
 #include <gnrinf.h>
 #endif
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#include <dfterg.h>
+#endif
 #include <molinp.h>
 #include <aovec.h>
 C
@@ -456,7 +475,7 @@ C--------------------------------------
 C
       IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 4) THEN
          NFMAT  = 0
-      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9) THEN
+      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9 .OR. ITYPE. EQ. 7) THEN
          NFMAT  = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          NFMAT  = 3*NDMAT
@@ -551,6 +570,47 @@ C     Send SMLV1C
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+#if defined (MOD_DFT)
+      IF(ITYPE.EQ.7) THEN
+C       Kohn-Sham energy calculation
+C       Transfer various common blocks     
+        CALL DFTPRD
+C       Transfer dftcom
+        JDFTADD = 0
+        JGRDONE = 0
+        JDFTRUN = 0
+        JDFTPOT = 0
+        JDFTORD = 0
+        JDFTASC = 0 
+        IF(DFTADD) JDFTADD = 1
+        IF(GRDONE) JGRDONE = 1
+        IF(DFTRUN) JDFTRUN = 1
+        IF(DFTPOT) JDFTPOT = 1
+        IF(DFTORD) JDFTORD = 1
+        IF(DFTASC) JDFTASC = 1
+        CALL MPI_BCAST(JDFTADD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JGRDONE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTRUN,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTPOT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTORD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTASC,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C       Transfer dfterg
+        CALL MPI_BCAST(WDFTX,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTC,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTL,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTB,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+C       send density matrix
+        CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        RETURN
+      ENDIF
+#endif
       CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
@@ -571,6 +631,8 @@ C
      &                  MPI_COMM_WORLD,IERR)
         ENDIF
       END IF
+      CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
@@ -1242,6 +1304,17 @@ C
      &            KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
+#if defined (MOD_DFT)
+      IF (ITYPE.EQ.7) THEN
+        JPRINT = 0
+        LFMAT  = NFMAT*N2BASX
+        CALL DFTPAR(WORK(KDMAT),DUM,WORK(KFMAT),NFMAT,
+     &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &              WORK(KFREE),LFREE,JPRINT)
+        CALL DFTRES(WORK(KFMAT),NFMAT,WORK(KFREE),LFREE,JPRINT)
+        GOTO 20
+      ENDIF
+#endif
 C
 C     ***************************
 C     ***** Allocate memory *****
@@ -1377,6 +1450,10 @@ C
 #include <dcbham.h>
 #else
 #include <gnrinf.h>
+#endif
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#include <dfterg.h>
 #endif
 #include <molinp.h>
 #include <nuclei.h>
@@ -1548,6 +1625,44 @@ C
       CALL PAOVEC(WORK(KFREE),LFREE,0,0)
 C
 #if defined (VAR_MPI)
+#if defined (MOD_DFT)
+      IF(ITYPE.EQ.7) THEN
+C       Various common blocks
+        CALL DFTPRD
+C       Transfer dftcom
+        CALL MPI_BCAST(JDFTADD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JGRDONE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTRUN,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTPOT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTORD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(JDFTASC,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        DFTADD = JDFTADD.EQ.1
+        GRDONE = JGRDONE.EQ.1
+        DFTRUN = JDFTRUN.EQ.1
+        DFTPOT = JDFTPOT.EQ.1
+        DFTORD = JDFTORD.EQ.1 
+        DFTASC = JDFTASC.EQ.1
+C       Receive dfterg
+        CALL MPI_BCAST(WDFTX,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTC,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTL,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(WDFTB,1,MPI_DOUBLE_PRECISION,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
+C       Receive density matrix(scaled by a factor two!)
+        CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        LDMAT = NDMAT*N2BASX
+        CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
+     &               MPARID,MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        LFMAT = NFMAT*N2BASX
+        CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
+        RETURN
+      ENDIF 
+#endif
       CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         LDMAT = NDMAT*N2BASX
@@ -1579,6 +1694,8 @@ C
         CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
       END IF
+      CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         LDMRAO = NDMAT*N2RED
@@ -2116,6 +2233,11 @@ C
 #else
 #include <energy.h>
 #endif
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#include <dfterg.h>
+#include <dftbuf.h>
+#endif
 #include <suscpt.h>
 #include <infpar.h>
 #include <inforb.h>
@@ -2143,6 +2265,23 @@ CTROND            CALL DCOPY(NUMSUS,SUS2EL,1,RESMAT(NPOS),1)
 C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,MPI_INTEGER,MPARID,40,MPI_COMM_WORLD,IERR)
+#if defined (MOD_DFT)
+      IF(ITYPE.EQ.7) THEN
+         CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_SEND(ERGDRC,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_SEND(ERGVWN,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_SEND(ERGBCK,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_SEND(ERGLYP,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
+         RETURN
+      ENDIF
+#endif
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)

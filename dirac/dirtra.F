@@ -1156,6 +1156,70 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wtaoso */
+      SUBROUTINE WTAOSO(AAO,ASO,NBAST,NVEC,IPRINT)
+C*****************************************************************************
+C
+C     Vector Transform:  AO-basis to SO-basis
+C     VTAOSO/WTAOSO are covariant/contarvariant versions
+C       VTAOSO is good for vectors and WTAOSO for functions
+C     This routine is based on HERMIT routine DAOTSO (880418  PRT)
+C
+C     Written by T.Saue - Sept 10 1995
+C     Last revision: Sept 10 1995
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D1 = 1.0D0)
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+      DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
+      DIMENSION IR(2)
+#include <shells.h>
+#include <pincom.h>
+#include <symmet.h>
+#include <pgroup.h>
+#include <ibtfun.h>
+      IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
+C
+C     Loop over all irreps in molecule
+C
+      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+      ISTRA = 1
+      CALL DZERO(ASO,NBAST*NVEC)
+      DO 100 IREPA = 0, MAXREP
+        NORBA = NAOS(IREPA+1)
+        DO 200 I = ISTRA,ISTRA + NORBA - 1
+          IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
+          NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+          NHKTA  = NHKT(IA)
+          KHKTA  = KHKT(IA)
+          MULA   = ISTBAO(IA)
+          INDA   = KSTRT(IA) + NA - KHKTA
+C
+C         Loop over symmetry dependent centers
+C
+          DO 300 ISYMA = 0, MAXOPR
+          IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            INDA = INDA + KHKTA
+            FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+            CALL DAXPY(NVEC,FAC,AAO(INDA,1),NBAST,ASO(I,1),NBAST)
+          ENDIF
+  300     CONTINUE
+  200   CONTINUE
+        ISTRA = ISTRA + NORBA
+  100 CONTINUE
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT: Vectors in AO basis',-1)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL HEADER('OUTPUT: Vectors in SO basis',-1)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtaoso */
       SUBROUTINE VTAOSO(AAO,ASO,NBAST,NVEC,IPRINT)
 C*****************************************************************************

@@ -1207,6 +1207,13 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
+      IF(DFTHAM) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &   'DHFINP: Set-up for Kohn-Sham calculation:'
+      ELSE
+        WRITE(LUPRI,'(1X,A)') 
+     &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
+      ENDIF 
       WRITE(LUPRI,'(1X,A)') 
      &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -1226,7 +1233,7 @@ C
       END IF
 C
 C
-      IF(.NOT.DODHF) GOTO 999
+      IF(.NOT.DOSCF) GOTO 999
 C
       IF (NOPEN.GT.0.AND.ZORA) THEN
           WRITE(LUPRI,'(1X,A)') 
@@ -1489,10 +1496,11 @@ C
 C
 #include <dcbgen.h>
 #include <dcbpsi.h>
+#include <dcbham.h>
 C
-      DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*DFTCAL',
+      DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*XXXXXX',
      &             '*MVOCAL','*RESOLV','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DHF   ','.MP2   ','.DFT   ','.LVCORR',
+      DATA TABLE  /'.DHF   ','.MP2   ','.XXXXXX','.LVCORR',
      &             '.TSCORR','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -1502,9 +1510,10 @@ C     Initialize /CBLPSI/
 C     ===================
 C
       DOCCM   = .FALSE.
+      DOSCF   = .FALSE.
       DODHF   = .FALSE.
-      DOMP2   = .FALSE.
       DODFT   = .FALSE.
+      DOMP2   = .FALSE.
       DOLVC   = .FALSE.
       DOTSC   = .FALSE.
       DORES   = .FALSE.
@@ -1555,7 +1564,12 @@ C
             CALL QUIT('Illegal keyword in PSIINP.')
 C&&&& DHF: Perform Dirac-Hartree-Fock calculation
   101    CONTINUE
-            DODHF = .TRUE.
+            DOSCF = .TRUE.
+            IF(DFTHAM) THEN
+              DODFT = .TRUE.
+            ELSE
+              DODHF = .TRUE.
+            ENDIF
             NJOBS = NJOBS +1
             GO TO 100
 C&&&& MP2: Perform second-order Moller-Plesset calculation
@@ -1564,8 +1578,6 @@ C&&&& MP2: Perform second-order Moller-Plesset calculation
             NJOBS = NJOBS + 1
             GO TO 100
   103    CONTINUE
-C&&&& DFT: Perform density functional calculation by the Panas method
-            DODFT = .TRUE.
             NJOBS = NJOBS +1
             GO TO 100
   104    CONTINUE
@@ -1623,8 +1635,14 @@ C
       IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Hartree-Fock calculation'
       IF(DOMVO) WRITE(LUPRI,'(1X,A)') 
      &   '* Generate modified virtual orbitals'
+#if defined (MOD_DFT)
       IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
-     &    'calculation (Panas method)'
+     &    'calculation (Kohn-Sham method)'
+#else
+      IF(DODFT) THEN
+        CALL QUIT('*** DFT is not in this version')        
+      ENDIF
+#endif
       IF(DORES) WRITE(LUPRI,'(1X,A)') 
      &   '* Resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
@@ -1677,7 +1695,9 @@ C
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-C        CALL DFTINP(WORD)
+#if defined (MOD_DFT)
+CTROND        CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     5 CONTINUE
         CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
@@ -1753,8 +1773,8 @@ C
 #include <dcbana.h>
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.XXXXXX',
+     &             '*RHO1  ','*XXXXXX','*XXXXXX','*XXXXXX'/
+      DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
@@ -1768,6 +1788,7 @@ C
       DOVEC   = .FALSE.
       DOPOP   = .FALSE.
       DOPRJ   = .FALSE.
+      DORHO1  = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -1833,6 +1854,9 @@ C&&&& PRIVEC: Print vectors
             NJOBS = NJOBS +1
             GO TO 100
   104    CONTINUE
+C&&&& RHO1: Punch density along the lines between centers
+            DORHO1 = .TRUE.
+            NJOBS = NJOBS +1
             GO TO 100
   105    CONTINUE
             GO TO 100
@@ -1863,6 +1887,8 @@ C
      &     '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)') 
      &     '* Projection onto another solution '
+      IF(DORHO1) WRITE(LUPRI,'(1X,A)') 
+     &     '* Punch density along lines between nuclear centers'
 C
 C
 C     Process input for various program sections
@@ -1898,6 +1924,7 @@ C
         CALL VECINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     5 CONTINUE
+        CALL RHO1IN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     6 CONTINUE
         GO TO 200
@@ -1910,6 +1937,7 @@ C
       IF(DOPOP) CALL POPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOPRJ) CALL PRJINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
+      IF(DORHO1) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -2586,7 +2614,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 16,NDIR = 8)
+      PARAMETER (NTABLE = 20,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include <maxaqn.h>
@@ -2610,12 +2638,13 @@ C
      &          WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
-      DATA TABDIR /'*END OF','*SOLVEN','XXXXXXX','XXXXXXX',
+      DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR'/
+     &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
+     &            '.DFT   ','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 #include <ibtfun.h>
 C
@@ -2637,6 +2666,7 @@ C
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
+      DFTHAM  = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
@@ -2644,6 +2674,7 @@ C
       SMLV1C  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
+      HFXFAC  = D1
       PRJTHR  = 1.0D-10
       CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
@@ -2682,7 +2713,7 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116),I
+     &                111,112,113,114,115,116,117,118,119,120),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -2799,6 +2830,16 @@ C&&& SMLV1C : Neglect potential for off-diagonal SS-blocks
 C&&& PRJTHR: Smallest norm accepted in projection step
               READ(LUCMD,*) PRJTHR
               GOTO 100
+  117     CONTINUE
+C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
+             DFTHAM = .TRUE.
+            GO TO 100
+  118     CONTINUE
+            GO TO 100
+  119     CONTINUE
+            GO TO 100
+  120     CONTINUE
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -3072,6 +3113,9 @@ C
         CALL SOLVIN(WORD,WORK,LWORK)
         GO TO 200
     3 CONTINUE
+#if defined (MOD_DFT)
+        CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     4 CONTINUE
         GO TO 200
@@ -3587,4 +3631,122 @@ C
  1020 FORMAT(3X,76('-'))
  1031 FORMAT(3X,'Total',19X,I4,7X,I4)
  1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rho1in */
+      SUBROUTINE RHO1IN(WORD,RESET,WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for 1-dimensional density plot
+C
+C     Written by T.Saue - May 9 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER (NTABLE = 8)
+C
+#include <dcbgen.h>
+#include <dcbana.h>
+#include <dcbrho1.h>
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.MESH  ','.PRINT ','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /DCBRHO1/
+C     ===================
+C
+      DSTEP  = 0.01D0
+      IPRHO1 = 0
+C
+C     Process input from DCBRHO1
+C     ==========================
+C
+      NEWDEF = (WORD .EQ. '*RHO1  ')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in RHO1IN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in DHFINP.')
+    1          CONTINUE
+C&&&& MESH; Step length for grid
+                  READ(LUCMD,*) DSTEP
+               GO TO 100
+    2          CONTINUE
+C&&&& PRINT: Print level
+                  READ(LUCMD,*) IPRHO1
+               GO TO 100
+    3          CONTINUE
+               GO TO 100
+    4          CONTINUE
+               GO TO 100
+    5          CONTINUE
+               GO TO 100
+    6          CONTINUE
+               GO TO 100
+    7          CONTINUE
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in RHO1IN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in RHO1IN.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DORHO1) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'RHO1IN: 1-dimensional density plot:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A,I4)') '* Print level: ',IPRHO1
+      WRITE(LUPRI,'(1X,A,F7.4)') '* Grid mesh (in Angstroms): ',DSTEP
+      WRITE(LUPRI,'(1X,A)') 
+     &    '(Remember that lines can be defined by ghost centers)'
+  999 CONTINUE
+      RETURN
+C
       END

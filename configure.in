@@ -1441,6 +1441,9 @@ dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
+if [ -n "$DFTFLG" ]; then
+   dirs="$dirs dft"
+fi
 if [ -n "$CCFOCKSPFLG" ]; then
    dirs="$dirs relccsd/ccfocksp"
 fi

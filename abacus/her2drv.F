@@ -2156,7 +2156,8 @@ C
      &                     NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB)
+     &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB,
+     &                     HFXFAC)
                LWTOT  = LWTOT - KFREE + 1
                CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
@@ -2216,7 +2217,7 @@ C
             IF (TKTIME) TIMSTR = SECOND()
             CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
-     &                  DMRSO,DNSBUF,WORK,LWORK,IPRINT)
+     &                  DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
             IF (TKTIME) TFCKOU = TFCKOU + SECOND() - TIMSTR
             FIRST = .FALSE.
 C
@@ -2250,7 +2251,7 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  DNSBUF,DINTSKP,DOGAB)
+     &                  DNSBUF,DINTSKP,DOGAB,HFXFAC)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2398,7 +2399,7 @@ C
             CALL INTFCK(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,HKABCD,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,WORK,LWORK)
+     &                  DNSBUF,DINTSKP,HFXFAC,WORK,LWORK)
             IF (TKTIME) TINTEX = TINTEX + SECOND() - TIMSTR
          END IF
       END IF

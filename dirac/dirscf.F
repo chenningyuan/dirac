@@ -50,6 +50,7 @@ C
 #include <ccom.h>
 #include <dcbgen.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -60,7 +61,11 @@ C
       CALL QENTER('PSIDHF')
 #include <memint.h>
 C
-      CALL TITLER('Dirac-Hartree-Fock calculation','*',120)
+      IF(DFTHAM) THEN
+        CALL TITLER('Kohn - Sham calculation','*',125)
+      ELSE
+        CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
+      ENDIF
       CALL FLSHFO(LUPRI)
 C
 C     Initialize
@@ -96,7 +101,7 @@ C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       IF (.NOT. SUCCES) THEN
-C        ... DHF not converged
+C        ... DHF not converged; 
          WRITE (LUPRI,'(//A)')
      &      ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
          CALL QUIT('Dirac-Hartree-Fock not converged')
@@ -141,12 +146,15 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00, 
-     &          D2 = 2.0D0)
+     &          D2 = 2.0D0, DP5=0.5D0)
 C
 #include <dcbgen.h>
 #include <dcbpsi.h>
 #include <dcbham.h>
 #include <dcbdhf.h>
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#endif
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -308,6 +316,29 @@ C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
         TDF2 = SECOND() - TDF2
+#if defined (MOD_DFT)
+C        Construct Kohn-Sham contribution
+C        ================================
+         IF(DFTADD) THEN
+           CALL DSCAL(N2BBASX,D2,DMAT,1)
+#if defined (VAR_MPI)
+           IF(PARCAL) THEN
+             IRNTYP = 7
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
+     &          IDUM,IDUM,
+     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
+     &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
+     &          IDUM,DUM,DUM,DUM,DUM,DUM)
+           ELSE
+#endif
+             CALL DFTEXC(DMAT,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
+#if defined (VAR_MPI)
+           ENDIF
+#endif
+           CALL DSCAL(N2BBASX,DP5,DMAT,1)
+         ENDIF
+#endif
 C
 C       Solvent contribution
 C
@@ -782,6 +813,9 @@ C
 #include <dcbham.h>
 #include <dcbint.h>
 #include <dcbdhf.h>
+#if defined (MOD_DFT)
+#include <dftcom.h>
+#endif
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
@@ -919,6 +953,29 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+#if defined (MOD_DFT)
+C        Construct Kohn-Sham contribution
+C        ================================
+         IF(DFTADD) THEN
+           CALL DSCAL(N2BBASX,D2,DMAT,1)
+#if defined (VAR_MPI)
+           IF(PARCAL) THEN
+             IRNTYP = 7
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
+     &          IDUM,IDUM,
+     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
+     &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
+     &          IDUM,DUM,DUM,DUM,DUM,DUM)
+           ELSE
+#endif
+           CALL DFTEXC(DMAT,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
+#if defined (VAR_MPI)
+           ENDIF
+#endif
+           CALL DSCAL(N2BBASX,DP5,DMAT,1)
+         ENDIF
+#endif
 C
 C        Solvent contribution
 C        ====================
@@ -1089,6 +1146,9 @@ C
 #include <dcbpsi.h>
 #include <dcborb.h>
 #include <dcbham.h>
+#if defined (MOD_DFT)
+#include <dfterg.h>
+#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
@@ -1157,6 +1217,9 @@ C
       ENDIF
       IF(LVCON)  DHFERG = DHFERG + CORRLV
       ELERGY = E1PART + E2PART
+      IF(DODFT) THEN
+        ELERGY = ELERGY + EDFTY
+      ENDIF
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN

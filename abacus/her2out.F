@@ -1,4 +1,3 @@
-
 C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
@@ -363,7 +362,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckout */
       SUBROUTINE FCKOUT(FMAT,DMAT,NDMAT,SO,IPNTNO,IPNTRP,IPNTLG,
      &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
-     &                  DMRSO,DNSBUF,WORK,LWORK,IPRINT)
+     &                  DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     First routine written by P.Taylor with 
@@ -397,7 +396,7 @@ C
 C
       CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KIBUF),
      &            IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
-     &            DMRSO,DNSBUF,DINTSKP,IFCTYP,IREPDM,IPRINT)
+     &            DMRSO,DNSBUF,DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
       CALL MEMREL('FCKOUT',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('FCKOUT')
       RETURN
@@ -406,7 +405,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckou1 */
       SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,IBUF,IPNTNO,IPNTRP,
      &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
-     &                  DINTSKP,IFCTYP,IREPDM,IPRINT)
+     &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
 C
 C     Revised by T.Saue August 1996
@@ -683,6 +682,7 @@ C         Screening on exchange contributions
           IY = IE + IC
           IF(IY.EQ.0) GOTO 400
           IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+            EXCFAC = DMP25*HFXFAC
 C
 C           Symmetric singlet Fock matrix
 C           =============================
@@ -695,7 +695,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = DMP25*SO(INT,I)
+                EINT = EXCFAC*SO(INT,I)
                 FMAT(A,B,K) = FMAT(A,B,K) + SO(INT,I)*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + SO(INT,I)*DMAT(A,B,K)
 CTROND      This is a quick and dirty alternative to nsym
@@ -724,7 +724,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = DMP25*SO(INT,I)
+                EINT = EXCFAC*SO(INT,I)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
                 FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
@@ -754,6 +754,7 @@ C
      &          'ERROR in FCKOU1: specified IFCTYP not implemented.')
             ENDIF
           ELSEIF(IX.EQ.0) THEN
+            EXCFAC = DMP5*HFXFAC
 C
 C           General singlet case - no permutational symmetry
 C           ================================================
@@ -772,7 +773,7 @@ C
                 GAB  = SO(INT,I)*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
-                EINT = DMP5*SO(INT,I)
+                EINT = EXCFAC*SO(INT,I)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
                 FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)
@@ -794,7 +795,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = DMP5*SO(INT,I)
+                EINT = EXCFAC*SO(INT,I)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,A,K) = FMAT(D,A,K) + EINT*DMAT(C,B,K)
                 FMAT(C,B,K) = FMAT(C,B,K) + EINT*DMAT(D,A,K)

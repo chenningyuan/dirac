@@ -51,7 +51,7 @@ C  /* Deck intfck */
       SUBROUTINE INTFCK(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,WORK,LWORK)
+     &                  DNSBUF,DINTSKP,HFXFAC,WORK,LWORK)
 C*****************************************************************************
 C
 C  Major surgery Aug 26 1996 by T.Saue
@@ -102,7 +102,7 @@ C
       CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,WORK(KIND))
+     &                  DNSBUF,DINTSKP,HFXFAC,WORK(KIND))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -115,7 +115,7 @@ C  /* Deck intfc1 */
       SUBROUTINE INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,IND)
+     &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
 C
 C  Revised Aug 26 1996 by T.Saue
@@ -132,7 +132,7 @@ C*****************************************************************************
 #include <aovec.h>
 #include <mxorb.h>
 #include <mxcent.h>
-      PARAMETER (DP25=0.25D0,DP5=0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
+      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -416,6 +416,7 @@ C       Screening on exchange contributions
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
         IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+          EXCFAC = DMP25*HFXFAC
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -428,7 +429,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              EINT = -DP25*AOINT(INT)
+              EINT = EXCFAC*AOINT(INT)
               FMAT(A,B,I) = FMAT(A,B,I) + AOINT(INT)*DMAT(C,D,I)
               FMAT(C,D,I) = FMAT(C,D,I) + AOINT(INT)*DMAT(A,B,I)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
@@ -450,7 +451,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              EINT = -DP25*AOINT(INT)
+              EINT = EXCFAC*AOINT(INT)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
@@ -479,6 +480,7 @@ C
      &        'ERROR in INTFC1: specified IFCTYP not implemented.')
           ENDIF
         ELSEIF(IX.EQ.0) THEN
+          EXCFAC = DMP5*HFXFAC
 C
 C         General singlet case - no permutational symmetry
 C         ================================================
@@ -497,7 +499,7 @@ C
               GAB  = AOINT(INT)*(DMAT(A,B,I) + DMAT(B,A,I))
               FMAT(C,D,I) = FMAT(C,D,I) + GAB
               FMAT(D,C,I) = FMAT(D,C,I) + GAB
-              EINT = -DP5*AOINT(INT)
+              EINT = EXCFAC*AOINT(INT)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)
@@ -519,7 +521,7 @@ C
               B = IND(2,INT)
               C = IND(3,INT)
               D = IND(4,INT)
-              EINT = -DP5*AOINT(INT)
+              EINT = EXCFAC*AOINT(INT)
               FMAT(C,A,I) = FMAT(C,A,I) + EINT*DMAT(D,B,I)
               FMAT(D,A,I) = FMAT(D,A,I) + EINT*DMAT(C,B,I)
               FMAT(C,B,I) = FMAT(C,B,I) + EINT*DMAT(D,A,I)

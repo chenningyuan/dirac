@@ -70,6 +70,16 @@ setup()
       echo " - Fock space CC module (CCFOCKSP)"
    fi
    #
+   #  DFT
+   #
+   if [ -n "$DFTMOD" ]; then
+      DFTFLG='-DMOD_DFT'
+      DFTOBJ='$(DFTOBJS)'
+      DFTMAK=DFT_OBJ
+      DFTTAR=1
+      echo " - DFT module (DFT)"
+   fi
+   #
    #  ESR
    #
    if [ -n "$ESRMOD" ]; then
@@ -218,7 +228,8 @@ make_configure()
    echo "*** Making ./configure"
    echo 
    echo "#!/bin/sh" > configure
-   echo "MODS=\" $ERIFLG $CCFOCKSPFLG $ESRFLG $XQRFLG $XPPFLG\"" >> configure
+   echo "MODS=\" $ERIFLG $CCFOCKSPFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG\"" >> configure
+   echo DFTFLG=$DFTTAR >> configure
    echo ERIFLG=$ERITAR >> configure
    echo CCFOCKSPFLG=$CCFOCKSPTAR   >> configure
    echo ESRFLG=$ESRTAR >> configure
@@ -255,6 +266,11 @@ EOF
    #
    # Active modules
    #
+   if [ "$DFTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.F,Makefile.in} 2>> export.log
+EOF
+   fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,Makefile.in} 2>> export.log
@@ -310,8 +326,8 @@ make_makefile()
 {
    echo "*** Making Makefile"
    echo
-   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $ERIOBJ $XPPOBJ"
-   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $ERIMAK $XPPMAK"
+   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $DFTOBJ $ERIOBJ $XPPOBJ"
+   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $DFTMAK $ERIMAK $XPPMAK"
    #
    # Write current Makefile
    #
@@ -323,7 +339,7 @@ dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
-dirac/diropen.o \\
+dirac/diropen.o dirac/diraos.o\\
 main/dirac.o \\
 abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
@@ -421,6 +437,16 @@ relccsd/ccfocksp/ccfspc.o
 EOF
 fi
 #
+#  Object-files for DFT module
+#
+if [ -n "$DFTMOD" ]; then
+cat <<EOF>> Makefile
+
+DFTOBJS = \\
+dft/pamdft.o    dft/dftden.o    dft/dftdrv.o    dft/dftfun.o    dft/dftgrd.o 
+EOF
+fi
+#
 #  Object-files for ERI module
 #
 if [ -n "$ERIMOD" ]; then
@@ -440,7 +466,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(ERIOBJS) \$(XPPOBJS) 
+TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) 
 
 NOCPPFS = \$(TOTOBJS:.o=.i)
 
@@ -529,6 +555,9 @@ clean   :
 	cd relccsd  ; \$(MAKE) clean
 	cd dirrci  ; \$(MAKE) clean
 EOF
+if [ -n "$DFTMOD" ]; then
+   echo '	cd dft      ; $(MAKE) clean' >> Makefile
+fi
 if [ -n "$ERIMOD" ]; then
    echo '	cd eri      ; $(MAKE) clean' >> Makefile
 fi
@@ -608,6 +637,13 @@ CCFOCKSP_OBJ :
 	cd relccsd/ccfocksp ; \$(MAKE) all
 EOF
 fi
+if [ -n "$DFTMOD" ]; then
+cat <<EOF>> Makefile
+
+DFT_OBJ :
+	cd dft; \$(MAKE) all
+EOF
+fi
 if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -646,6 +682,9 @@ if [ -n "$CCFOCKSPMOD" ]; then
 fi
 if [ -n "$ESRMOD" ]; then
    TEMP="$TEMP prp/esr"
+fi
+if [ -n "$DFTMOD" ]; then
+   TEMP="$TEMP dft"
 fi
 if [ -n "$XPPMOD" ]; then
    TEMP="$TEMP prp/xpp"
@@ -690,6 +729,9 @@ while [ -n "$1" ]; do
          ;;
       -ccfocksp|-c)
          CCFOCKSPMOD=1
+         ;;
+      -dft)
+         DFTMOD=1
          ;;
       -esr|-es)
          ESRMOD=1
