@@ -2054,7 +2054,7 @@ C
 C     Initialize
       CALL DZERO(CUBE,12)
       DO I = 1,3
-        TEMP = XTANG*CORD(I,1)
+        TEMP = CORD(I,1)
         CUBE(I,0) = TEMP
         CUBE(I,I) = TEMP
       ENDDO
@@ -2068,7 +2068,7 @@ C        Loop over all centers
            JCENT = JCENT + 1
            DO I = 1,3
              ATOMS(I,JCENT) = 
-     &         XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+     &             PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
              CUBE(I,0) = MIN(CUBE(I,0),ATOMS(I,JCENT))
              CUBE(I,I) = MAX(CUBE(I,I),ATOMS(I,JCENT))
            ENDDO
@@ -2076,12 +2076,13 @@ C        Loop over all centers
          ENDIF
          ENDDO
       ENDDO      
-C     Add some space and calculate step sizes
+C     Add some space, calculate step sizes and convert to Angstrom
       DO I = 1,3
         CUBE(I,0) = CUBE(I,0) - 5.0D0
         CUBE(I,I) = CUBE(I,I) + 5.0D0
         CUBE(I,I) = (CUBE(I,I)-CUBE(I,0))/(NCUBE(I)-1)
       ENDDO
+      CALL DSCAL(12,XTANG,CUBE,1)
 C
       RETURN
       END
