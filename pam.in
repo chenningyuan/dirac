@@ -50,10 +50,12 @@ usage ()
    echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
+   echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
+   echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
    echo '     -mw mem                : Set memory (in megawords) for master (and nodes if "-nw mem" not specified)'
    echo '     -nw mem                : Set memory (in megawords) for the nodes'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
-   echo '     -wrkdir name           : Directory for work area; default "'$SCR/$MOL.$$'"'
+   echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.$$'"'
    echo '     -clean                 : Clean work area before calculation'
    echo '     -rmwrk                 : Remove work area after calculation'
    echo '     -copy "file1 file2 .." : Copy files to work area'
@@ -162,15 +164,33 @@ setup_command()
    # MPI?
    #
    if [ "$DIRPAR" = "1" ]; then
+#  Parallel run ($MPIARG allows any MPI run argument):
+      DIRAC_CMD="$MPIRUN $MPIARG"
+#     Set number of processors:      
+      if [ "$MPIRUN" = "mpirun" ]; then
+        DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
+#       Include machinefile
+        if [ -n "$MACH_FILE" ]; then
+          if [ -r "$MACH_FILE" ]; then
+            DIRAC_CMD="$DIRAC_CMD -machinefile $MACH_FILE"
+          else
+            echo "ERROR: Machinefile $MACH_FILE cannot be read"
+            exit 1
+          fi
+        fi
+
+      fi
 #SX   if [ -n "$MULTI_NODE" ]; then
 #SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
 #SX   else
-#Linux   DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile machines $DIRAC"
-         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $SSRUN_CMD $DIRAC"
+#Linux   DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile dirac_machines $DIRAC"
+#         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $SSRUN_CMD $DIRAC"
 #SX   fi
    else
-      DIRAC_CMD="$SSRUN_CMD $DIRAC"
+#  Sequential run:
+      DIRAC_CMD=
    fi
+   DIRAC_CMD="$DIRAC_CMD $SSRUN_CMD $DIRAC"
    #
    # Debug
    #
@@ -317,11 +337,11 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
    master=`hostname`
-   for node in ` uniq $WRK/machines `; do
+   for node in ` uniq $WRK/dirac_machines `; do
        if [ $node != $master ]; then
           echo "Contents of work directory $WRK on slave node $node"
-          rsh $node "ls -l $WRK"
-          rsh $node "rm -fr $WRK"
+          $RSH $node "ls -l $WRK"
+          $RSH $node "rm -fr $WRK"
        fi
    done
 #
@@ -373,6 +393,7 @@ set_work_dir()
    if [ -n "$RMSCR" ]; then
       rm -f $WRK/* 2> /dev/null || echo "rm $WRK error\!"
    fi
+cd $WRK
 }
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -383,16 +404,14 @@ set_work_dir()
 #
 distribute_work_dir()
 {
-   cd $WRK
+#  This routine is only called when local disks
+#  The list of machines available to dirac.x
 #
-#  The list of machines depends on the queuing system that is used.
-#
-   if [ ! -z "$PBS_NODEFILE" ]; then
-#     PBS queueing system
-      cp $PBS_NODEFILE machines
+   if [ ! -z "$MACH_FILE" ]; then
+      cp $MACH_FILE dirac_machines
    else
-#    Serial run or shared disk systems
-     echo `hostname` > machines 
+#    Serial run of parallel program
+     echo `hostname` > dirac_machines 
    fi
 #
 #  Initialize value of master
@@ -401,15 +420,15 @@ distribute_work_dir()
 #
 #  Loop over the remote machines and copy the contents of the work directory.
 #
-   for node in ` cat machines `; do
+   for node in `uniq dirac_machines `; do
        if [ $node != $master ]; then
           echo "copying contents of $master:$WRK to $node:$WRK"
-          rsh $node "mkdir -p $WRK"
+          $RSH $node "mkdir -p $WRK"
           if [ -n "$RMSCR" ]; then
-             rsh $node rm -f $WRK/*
+             $RSH $node rm -f $WRK/*
           fi
           for file in ` ls `; do
-              rcp $file $node:$WRK/$file
+              $RCP $file $node:$WRK/$file
           done
        fi
    done
@@ -453,7 +472,6 @@ copy_files()
    #
    # COPY MOLECULE AND MENU FILE
    #
-   cd $WRK
    $echo "   Copying $LOC/$MOL.mol to working directory : \c"
 #   if [ -a $LOC/$MOL.mol ]; then
    if [ -f $LOC/$MOL.mol ]; then
@@ -553,6 +571,9 @@ set_dirac_environment()
    if [ -n "$NODE_MEMORY" ]; then
       DIRNOD=$NODE_MEMORY; export DIRNOD
    fi
+#  Next line is for IBM only but will not hurt other systems
+   XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
+
 }
 #
 #
@@ -628,6 +649,7 @@ initialize()
 
    MPI_NPROC=
    DIRPAR=0 # initialize to sequential
+   MPIARG =
 
    NICE=
    SSRUN=
@@ -714,18 +736,18 @@ while [ -n "$1" ]; do
          shift
          SCR_DIR=$1
          ;;
+      -machinefile|-mf)
+         shift
+         MACH_FILE=$1
+         ;;
       -mpi)
          shift
-# LV : Be ware that the old default was to run also a slave on the master machine
-# This is fine for a master-slave HF/RPA algorithm but not for
-# parallel I/O intensive procedures (MOLTRA) and the symmetrically 
-# parallelized RELCCSD. I therefore changed the default to a lonely master.
-#
-#        Old default : master + one slave on node
-#        let MPI_NPROC=$1+1
-#        New default : master by itself on a node
          MPI_NPROC=$1
          DIRPAR=1 # set to parallel run
+         ;;
+      -mpiarg)
+         shift
+         MPIARG=$1
          ;;
       -nice)
          NICE=1
@@ -796,15 +818,15 @@ while [ -n "$1" ]; do
 done
 #
 EXIT=0
-# Next line is for IBM only but will not hurt other systems
-XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
-set_work_dir
+set_work_dir  # set and go to work directory
 set_dirac_environment
 print_header
 copy_files
 save_old_output
 setup_command
-distribute_work_dir
+if [ "$LOCALDISKS" = "yes" ]; 
+  distribute_work_dir 
+fi
 make_mpi_config
 execute_dirac
 save_files

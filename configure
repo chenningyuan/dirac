@@ -374,26 +374,7 @@ if [ "$par" = "yes" ]; then
 #  Determine message passing protocol to be used
 #
    if [ -z "${mesp}" ]; then
-      ok=
-      while [ -z "$ok" ]; do
-         ok=1
-         if [ $quick = 0 ]; then
-            $echo 'Message passing [mpi]: \c'
-            read mesp
-         else
-            mesp=mpi
-         fi
-         case "$mesp" in
-         "mpi" )
-            ;;
-         "" )
-            mesp="mpi"
-            ;;
-         *)
-            ok=
-            ;;
-         esac
-      done
+      mesp="mpi"
    fi
    echo 'Parallel message passing: '$mesp
 #
@@ -499,8 +480,18 @@ if [ "$par" = "yes" ]; then
       if [ "$parlib" = "no" ]; then
            parlib=
    fi
+#
+#  Ask for machine file
+#
+   if [ $quick = 0 ]; then
+      $echo 'Specify default machinefile for MPI runs: filename/[nothing] \c'\
+      read mach_file
+   else
+      mach_file=
+   fi
 else
    mesp='dummy'
+   mach_file=
 fi
 echo
 #
@@ -1562,11 +1553,20 @@ fi
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF>> $INSTALL_DIR/pam
 #
-QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
 MPIRUN=$mpirun
+MACH_FILE=$mach_file
+LOCALDISKS=$localdisks
+# Passing files to local disks:
+# For rcp/rsh choose this; 
+RCP=rcp
+RSH=rsh
+# For scp/ssh choose this (requires use of ssh-keygen without password)
+#RCP=scp
+#RSH=ssh
+#
 DEBUGGER=$debug
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
