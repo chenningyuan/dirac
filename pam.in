@@ -65,6 +65,10 @@ usage ()
    echo '     -user                  : Which user to notify'
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
    echo '                              dirac'
+   echo '     -multi "config file"   : Run MPI on MULTI NODEs'
+   echo '                              and configuration file'
+   echo '     -mpiconf "mpi.conf"    : Change MPI configuration file name'
+   echo '     -thread                : Run thread parallel execution[SX only]'
    echo '     -help                  : Help on pam'
 }
 #
@@ -135,7 +139,11 @@ setup_command()
    # MPI?
    #
    if [ -n "$PARCAL" ]; then
-      DIRAC_CMD="mpirun -np $MPI_NPROC $DIRAC"
+      if [ -n "$MULTI_NODE" ]; then
+         DIRAC_CMD="mpirun -np $MPI_NPROC $DIRAC"
+      else
+         DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
+      fi
    else
       DIRAC_CMD="$DIRAC"
    fi
@@ -162,20 +170,28 @@ setup_command()
 execute_dirac()
 {
    echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
-   if [ -x $BIN_DIR/$DIRAC ]; then
-      cp $BIN_DIR/$DIRAC . || \
-         ( \
-            echo "   Error copying $BIN_DIR/$DIRAC" ; \
-            EXIT=1 ;\
-            exitfunc \
-         )
-      echo "ok"
-   else
-      echo "not found"
-      EXIT=1
-      exitfunc
+   if [ ! -f $WRK/$DIRAC ]; then
+      if [ -x $BIN_DIR/$DIRAC ]; then
+         cp $BIN_DIR/$DIRAC . || \
+            ( \
+               echo "   Error copying $BIN_DIR/$DIRAC" ; \
+               EXIT=1 ;\
+               exitfunc \
+            )
+         echo "ok"
+      else
+         echo "not found"
+         EXIT=1
+         exitfunc
+      fi
    fi
    echo "   Executing: $NICE_CMD $DIRAC_CMD"
+
+   if [ -n "$MULTI_NODE" ]; then
+      PWD=`pwd`
+      export PWD
+   fi
+
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
@@ -321,7 +337,8 @@ copy_files()
    #
    cd $WRK
    echo "   Copying $LOC/$MOL.mol to working directory : \c"
-   if [ -e $LOC/$MOL.mol ]; then
+#   if [ -e $LOC/$MOL.mol ]; then
+   if [ -f $LOC/$MOL.mol ]; then
       cp $LOC/$MOL.mol MOLECULE.INP || \
          ( \
             echo "   Error copying $LOC/$MOL.mol" ; \
@@ -335,7 +352,8 @@ copy_files()
       exitfunc
    fi
    echo "   Copying $LOC/$MENU.inp to working directory : \c"
-   if [ -e $LOC/$MENU.inp ]; then
+#   if [ -e $LOC/$MENU.inp ]; then
+   if [ -f $LOC/$MENU.inp ]; then
       cp $LOC/$MENU.inp DIRAC.INP || \
          ( \
             echo "   Error copying $LOC/$MENU.inp" ; \
@@ -386,7 +404,8 @@ save_old_output()
    #
    # Save old output file
    #
-   if [ -e $OUTPUT_FILE ]; then
+#   if [ -e $OUTPUT_FILE ]; then
+   if [ -f $OUTPUT_FILE ]; then
       echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
       mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
          ( \
@@ -447,6 +466,10 @@ initialize()
    NODE_MEMORY=
 
    RUN='out'
+
+   MULTI_CONF=
+   MULTI_NODE=
+   MPI_CONF_NAME=
 
    if [ "$LOGNAME" = "" ]; then
       SCR=$SCR_DEFAULT/$USER
@@ -565,6 +588,19 @@ while [ -n "$1" ]; do
          EXIT=0
          exitfunc
          ;;
+      -multi)
+         MULTI_NODE=1
+         shift
+         MULTI_CONF=$1
+         PARCAL=1
+         ;;
+      -mpiconf)
+         shift
+         MPI_CONF_NAME=$1
+         ;;
+      -thread)
+         export MULTITASKMIX=ON
+         ;;
       -*)
          echo "$1 not recognized"
          usage
@@ -584,7 +620,30 @@ while [ -n "$1" ]; do
    esac
    shift
 done
+#
+#
+# MAKE MPI CONFIGURATION FILE
+#
+#
+make_mpi_config()
+{
+if [ -n "$MULTI_NODE" ]; then
+   echo " Create configuration file for MPI on MULTI NODEs"
+   if [ ! -f $MULTI_CONF ]; then
+      if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
+         if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
+            echo "$MULTI_CONF not found"
+         else
+            MULTI_CONF=$BIN_DIR/$MULTI_CONF
+         fi
+      else
+         MULTI_CONF=$SRC_DIR/$MULTI_CONF
+      fi
+   fi
 
+   . $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
+fi
+}
 #
 #  Set working directory, set work memory, print header
 #  copy files to working directory, save existing output file,
@@ -598,6 +657,7 @@ print_header
 copy_files
 save_old_output
 setup_command
+make_mpi_config
 execute_dirac
 save_files
 remove_work_dir
