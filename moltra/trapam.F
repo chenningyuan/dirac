@@ -753,13 +753,7 @@ C     Define number of double quaternionic classes
 C     
       NQQCLASS = NZ * NZ * NBSYM / NFSYM
 C
-      print*,'jvs:WAARSCHUWING: tijdelijk met de hand de orbital 
-     & string, later via input'
-      MPR_INDSTR(1,1) = '1..1'
-      MPR_INDSTR(2,1) = '2..3'
-      MPR_INDSTR(3,1) = '2..3'
-      MPR_INDSTR(4,1) = '1..1'
-C     
+C
 C     +-----------------------------------------+
 C     | Set up index arrays for active orbitals |
 C     +-----------------------------------------+
@@ -777,6 +771,10 @@ C
           IR(1,IFRP) = -NPSH(IFRP)
           IR(2,IFRP) =  NOCC(IFRP)
         ENDIF
+C
+        ISTART = 1 + NIOCC(IFRP)
+        IEND = NOCC(IFRP)
+        WRITE(MPR_INDSTR(1,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,1) = - 1
@@ -803,6 +801,10 @@ C
           IR(2,IFRP) =  NESH(IFRP)
         ENDIF
 C
+        ISTART = NOCC(IFRP) + 1
+        IEND = NOCC(IFRP) + NAVIR(IFRP)
+        WRITE(MPR_INDSTR(2,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
+C
         CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,2) = - 1
         CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
@@ -827,6 +829,10 @@ C
           IR(1,IFRP) = -NPSH(IFRP)
           IR(2,IFRP) =  NESH(IFRP)
         ENDIF
+C
+        ISTART = NOCC(IFRP) + 1
+        IEND = NOCC(IFRP) + NAVIR(IFRP)
+        WRITE(MPR_INDSTR(3,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
         CALL MEMGET('INTE',KVEC(IFRP,3),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,3) = - 1
@@ -856,6 +862,10 @@ C
           IR(2,IFRP) =  NOCC(IFRP)
         ENDIF
 C    
+        ISTART = 1 + NIOCC(IFRP)
+        IEND = NOCC(IFRP)
+        WRITE(MPR_INDSTR(4,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
+C
         CALL MEMGET('INTE',KVEC(IFRP,4),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,4) = - 1
         CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
