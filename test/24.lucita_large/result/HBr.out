@@ -1,4 +1,4 @@
-Master : DIRAC allocating 40000000 words of memory
+Master : DIRAC allocating 63000000 words of memory
 ******************************************************************************
 *                                                                            *
 *                                O U T P U T                                 *
@@ -40,22 +40,22 @@ MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
 MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
 MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
 MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
-MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!|!!
+MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!??!!!
 MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
 MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
 MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
-MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM|MMMMMMMMXH!!!~<~!!
+MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM??!MMMMMMMMXH!!!~<~!!
 MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
 MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
 MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
 MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
 MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
-MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2|*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
+MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2??!*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
 MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
 MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
 MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
-MM|?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
-?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM|!!!<<<<<<<<<!XMMM            
+MM??!?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
+?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM??!!!!<<<<<<<<<!XMMM            
 X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
 !!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
 !!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
@@ -120,14 +120,14 @@ X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 3.2 (patchlevel 1) 
- Hostname          : p5
- Operating system  : IRIX64 6.5
- Machine           : IP35
- Run               : Sequential
- Last compilation  : 11:53:19 Sep  4 2002 (by v14@p2.teras.sara.nl)
- Basis set dir.    : .
+ Hostname          : chem000
+ Operating system  : Linux 2.4.9-13.smp
+ Machine           : i686
+ Run               : Parallel
+ Last compilation  : 02:00:44 Nov  3 2002 (by visscher@fs0.das2.cs.vu.nl)
+ Basis set dir.    : /home4/visscher/sources/Dirac.latest.par/test/24.lucita_large/:/home4/visscher/sources/Dirac.latest.par/basis/
 
- Date and time (IRIX)   : Fri Sep  6 15:44:08 2002
+ Date and time (Linux) : Sun Nov  3 02:42:06 2002
 
 
  *************************************************************************
@@ -154,8 +154,8 @@ X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M
  * Transformation to scalar RKB basis embedded in
    MO-transformation for small components
  * Thresholds for linear dependence:
-   Large components:   1.00D-06
-   Small components:   1.00D-08
+   Large components:   1.00E-06
+   Small components:   1.00E-08
  * General print level   :   0
 
 
@@ -177,9 +177,9 @@ X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M
    HBr molecule in 15s12p9d/6s4p basis                                    
    Large LUCITA test                                                      
 
-  Nuclear Gaussian exponent for atom of charge  35.000 :    2.4305454351D+08
+  Nuclear Gaussian exponent for atom of charge  35.000 :    2.4305454351E+08
 
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171E+09
 
 
   Symmetry Operations
@@ -278,7 +278,7 @@ Point group: C2v
   total:      2      36     415     415
 
   Cartesian basis used.
-  Threshold for integrals:  1.00D-13
+  Threshold for integrals:  1.00E-13
 
 
   Cartesian Coordinates
@@ -499,12 +499,12 @@ Point group: C2v
  ***** CONVERGENCE CRITERIA *****
  * Maximum number of iterations:   50
  * Convergence on error vector(approximate gradient).
-   Convergence threshold: 1.00D-06
+   Convergence threshold: 1.00E-06
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
     with optimal parameter .
  * DIIS (dirac-like)
- * DIIS will be activated when convergence reaches : 1.00D+20
+ * DIIS will be activated when convergence reaches : 1.00E+20
    - Maximum size of B-matrix:   10
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
@@ -523,6 +523,7 @@ Point group: C2v
 
  * General print level   :   0
  * Electronic orbitals only.
+ * MDCINT (and in principle the 4IND*-files)   will be scattered to all nodes.
  * Total active space.
     Fermion ircop:E1 
      No explicit orbitals specified 
@@ -588,246 +589,246 @@ Total no. of orbitals      (NORB):   228
 *** WARNING *** No trial vectors found.Using bare nucleus approximation instead.
 
 
-########## START ITERATION NO.   1 ##########   Fri Sep  6 15:44:11 2002
+########## START ITERATION NO.   1 ##########                           
 
-It.   1    -4026.608850319      1.00D+20  0.00D+00  0.00D+00               0.27336979s   Bare nuc.   Fri Sep  6
+It.   1    -4026.608850318      1.00E+20  0.00E+00  0.00E+00               1.32999992s   Bare nuc.             
 
-########## START ITERATION NO.   2##########   Fri Sep  6 15:44:12 2002
+########## START ITERATION NO.   2##########                           
 
 
 * GETGAB: label "GABAOXXX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.70%    0.00%    0.00%   2.32048416s
-SOfock:SL  1.00D-12    0.00%   12.01%    0.00%    0.02%  22.80589867s
-SOfock:SS  1.00D-12    0.10%   30.30%    0.06%    0.01%   1min 0.726s
->>> Total wall time: 1min29.000s
->>> Total CPU-time : 1min27.729s
+SOfock:LL  1.00E-12    0.00%    5.70%    0.00%    0.00%   7.15000057s
+SOfock:SL  1.00E-12    0.00%   12.01%    0.00%    0.02%   1min14.890s
+SOfock:SS  1.00E-12    0.10%   30.30%    0.06%    0.01%   3min19.790s
+>>> Total wall time: 4min47.000s
+>>> Total CPU-time : 4min45.960s
 
-########## END ITERATION NO.   2##########   Fri Sep  6 15:44:12 2002
+########## END ITERATION NO.   2##########                           
 
-It.   2    -2256.124511001     -1.77D+03  2.32D+02  1.63D+02               1min27.729s   LL SL SS    Fri Sep  6
+It.   2    -2256.124511001     -1.77E+03  2.32E+02  1.63E+02               4min45.960s   LL SL SS              
 
-########## START ITERATION NO.   3##########   Fri Sep  6 15:45:41 2002
+########## START ITERATION NO.   3##########                           
 
     3 *** Differential density matrix. DCOVLP     = 0.0137
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    3.51%    0.00%    0.00%   2.33399963s
-SOfock:SL  1.00D-12    0.00%   10.99%    0.00%    0.00%  22.75424194s
-SOfock:SS  1.00D-12    0.00%   32.01%    0.04%    0.01%   1min 0.397s
->>> Total wall time: 1min28.000s
->>> Total CPU-time : 1min25.970s
+SOfock:LL  1.00E-12    0.00%    3.51%    0.00%    0.00%   7.19000244s
+SOfock:SL  1.00E-12    0.00%   10.99%    0.00%    0.00%   1min15.010s
+SOfock:SS  1.00E-12    0.00%   32.01%    0.04%    0.01%   3min19.080s
+>>> Total wall time: 4min44.000s
+>>> Total CPU-time : 4min43.140s
 
-########## END ITERATION NO.   3##########   Fri Sep  6 15:45:41 2002
+########## END ITERATION NO.   3##########                           
 
-It.   3    -2271.462576196      1.53D+01 -9.87D+01  5.04D+01   DIIS   3    1min25.970s   LL SL SS    Fri Sep  6
+It.   3    -2271.462576196      1.53E+01 -9.87E+01  5.04E+01   DIIS   3    4min43.140s   LL SL SS              
 
-########## START ITERATION NO.   4##########   Fri Sep  6 15:47:09 2002
+########## START ITERATION NO.   4##########                           
 
     4 *** Differential density matrix. DCOVLP     = 0.0016
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.66%    0.00%    0.00%   2.32212830s
-SOfock:SL  1.00D-12    0.00%   12.00%    0.00%    0.02%  22.68395996s
-SOfock:SS  1.00D-12    0.10%   32.16%    0.04%    0.03%   1min 0.295s
->>> Total wall time: 1min27.000s
->>> Total CPU-time : 1min25.790s
+SOfock:LL  1.00E-12    0.00%    5.66%    0.00%    0.00%   7.15997314s
+SOfock:SL  1.00E-12    0.00%   12.00%    0.00%    0.02%   1min14.900s
+SOfock:SS  1.00E-12    0.10%   32.16%    0.04%    0.03%   3min18.990s
+>>> Total wall time: 4min44.000s
+>>> Total CPU-time : 4min42.920s
 
-########## END ITERATION NO.   4##########   Fri Sep  6 15:47:09 2002
+########## END ITERATION NO.   4##########                           
 
-It.   4    -2530.113511101      2.59D+02  6.71D+01  4.70D+01   DIIS   4    1min25.790s   LL SL SS    Fri Sep  6
+It.   4    -2530.113511101      2.59E+02  6.71E+01  4.70E+01   DIIS   4    4min42.920s   LL SL SS              
 
-########## START ITERATION NO.   5##########   Fri Sep  6 15:48:36 2002
+########## START ITERATION NO.   5##########                           
 
     5 *** Differential density matrix. DCOVLP     = 0.2626
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.22%    0.00%    0.00%   2.32495117s
-SOfock:SL  1.00D-12    0.00%   11.57%    0.00%    0.01%  22.71871948s
-SOfock:SS  1.00D-12    0.02%   32.80%    0.02%    0.02%   1min 0.233s
->>> Total wall time: 1min27.000s
->>> Total CPU-time : 1min25.765s
+SOfock:LL  1.00E-12    0.00%    5.22%    0.00%    0.00%   7.17004395s
+SOfock:SL  1.00E-12    0.00%   11.57%    0.00%    0.01%   1min14.940s
+SOfock:SS  1.00E-12    0.02%   32.80%    0.02%    0.02%   3min18.700s
+>>> Total wall time: 4min44.000s
+>>> Total CPU-time : 4min42.670s
 
-########## END ITERATION NO.   5##########   Fri Sep  6 15:48:36 2002
+########## END ITERATION NO.   5##########                           
 
-It.   5    -2592.217883882      6.21D+01 -1.29D+01  1.50D+01   DIIS   5    1min25.765s   LL SL SS    Fri Sep  6
+It.   5    -2592.217883882      6.21E+01 -1.29E+01  1.50E+01   DIIS   5    4min42.670s   LL SL SS              
 
-########## START ITERATION NO.   6##########   Fri Sep  6 15:50:03 2002
+########## START ITERATION NO.   6##########                           
 
     6 *** Differential density matrix. DCOVLP     = 0.2199
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.65%    0.00%    0.00%   2.32189941s
-SOfock:SL  1.00D-12    0.00%   12.17%    0.00%    0.02%  22.67291260s
-SOfock:SS  1.00D-12    0.10%   33.26%    0.03%    0.02%   1min 0.105s
->>> Total wall time: 1min27.000s
->>> Total CPU-time : 1min25.599s
+SOfock:LL  1.00E-12    0.00%    5.65%    0.00%    0.00%   7.17993164s
+SOfock:SL  1.00E-12    0.00%   12.17%    0.00%    0.02%   1min14.840s
+SOfock:SS  1.00E-12    0.10%   33.26%    0.03%    0.02%   3min18.550s
+>>> Total wall time: 4min43.000s
+>>> Total CPU-time : 4min42.460s
 
-########## END ITERATION NO.   6##########   Fri Sep  6 15:50:03 2002
+########## END ITERATION NO.   6##########                           
 
-It.   6    -2605.262251222      1.30D+01 -8.32D+00  1.62D+00   DIIS   6    1min25.599s   LL SL SS    Fri Sep  6
+It.   6    -2605.262251223      1.30E+01 -8.32E+00  1.62E+00   DIIS   6    4min42.460s   LL SL SS              
 
-########## START ITERATION NO.   7##########   Fri Sep  6 15:51:30 2002
+########## START ITERATION NO.   7##########                           
 
     7 *** Differential density matrix. DCOVLP     = 0.9463
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.62%    0.00%    0.00%   2.31036377s
-SOfock:SL  1.00D-12    0.00%   14.63%    0.00%    0.04%  22.60778809s
-SOfock:SS  1.00D-12    0.18%   41.20%    0.03%    0.02%  58.40106201s
->>> Total wall time: 1min24.000s
->>> Total CPU-time : 1min23.826s
+SOfock:LL  1.00E-12    0.00%    7.62%    0.00%    0.00%   7.11999512s
+SOfock:SL  1.00E-12    0.00%   14.63%    0.00%    0.04%   1min14.460s
+SOfock:SS  1.00E-12    0.18%   41.20%    0.03%    0.02%   3min15.110s
+>>> Total wall time: 4min40.000s
+>>> Total CPU-time : 4min38.590s
 
-########## END ITERATION NO.   7##########   Fri Sep  6 15:51:30 2002
+########## END ITERATION NO.   7##########                           
 
-It.   7    -2605.381011982      1.19D-01  3.65D-01  2.52D-01   DIIS   7    1min23.826s   LL SL SS    Fri Sep  6
+It.   7    -2605.381011982      1.19E-01  3.65E-01  2.52E-01   DIIS   7    4min38.590s   LL SL SS              
 
-########## START ITERATION NO.   8##########   Fri Sep  6 15:52:54 2002
+########## START ITERATION NO.   8##########                           
 
     8 *** Differential density matrix. DCOVLP     = 1.0067
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    8.80%    0.00%    0.00%   2.30303955s
-SOfock:SL  1.00D-12    0.00%   16.32%    0.00%    0.05%  22.49652100s
-SOfock:SS  1.00D-12    0.23%   47.46%    0.02%    0.02%  57.22875977s
->>> Total wall time: 1min24.000s
->>> Total CPU-time : 1min22.546s
+SOfock:LL  1.00E-12    0.00%    8.80%    0.00%    0.00%   7.11999512s
+SOfock:SL  1.00E-12    0.00%   16.32%    0.00%    0.05%   1min14.250s
+SOfock:SS  1.00E-12    0.23%   47.46%    0.02%    0.02%   3min12.510s
+>>> Total wall time: 4min36.000s
+>>> Total CPU-time : 4min35.780s
 
-########## END ITERATION NO.   8##########   Fri Sep  6 15:52:54 2002
+########## END ITERATION NO.   8##########                           
 
-It.   8    -2605.390670979      9.66D-03  1.89D-01  1.15D-01   DIIS   8    1min22.546s   LL SL SS    Fri Sep  6
+It.   8    -2605.390670979      9.66E-03  1.89E-01  1.15E-01   DIIS   8    4min35.780s   LL SL SS              
 
-########## START ITERATION NO.   9##########   Fri Sep  6 15:54:18 2002
+########## START ITERATION NO.   9##########                           
 
     9 *** Differential density matrix. DCOVLP     = 0.9968
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   11.61%    0.00%    0.00%   2.32220459s
-SOfock:SL  1.00D-12    0.00%   20.29%    0.00%    0.13%  22.12377930s
-SOfock:SS  1.00D-12    0.64%   54.83%    0.06%    0.08%  55.59033203s
->>> Total wall time: 1min21.000s
->>> Total CPU-time : 1min20.542s
+SOfock:LL  1.00E-12    0.00%   11.61%    0.00%    0.00%   7.09008789s
+SOfock:SL  1.00E-12    0.00%   20.29%    0.00%    0.13%   1min13.640s
+SOfock:SS  1.00E-12    0.64%   54.83%    0.06%    0.08%   3min 8.580s
+>>> Total wall time: 4min33.000s
+>>> Total CPU-time : 4min31.230s
 
-########## END ITERATION NO.   9##########   Fri Sep  6 15:54:18 2002
+########## END ITERATION NO.   9##########                           
 
-It.   9    -2605.391509514      8.39D-04 -5.84D-02  8.85D-03   DIIS   9    1min20.542s   LL SL SS    Fri Sep  6
+It.   9    -2605.391509514      8.39E-04 -5.84E-02  8.85E-03   DIIS   9    4min31.230s   LL SL SS              
 
-########## START ITERATION NO.  10##########   Fri Sep  6 15:55:39 2002
+########## START ITERATION NO.  10##########                           
 
    10 *** Differential density matrix. DCOVLP     = 0.9994
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   13.71%    0.00%    0.00%   2.27307129s
-SOfock:SL  1.00D-12    0.00%   23.29%    0.00%    0.22%  21.91241455s
-SOfock:SS  1.00D-12    1.56%   59.66%    0.07%    0.11%  54.07727051s
->>> Total wall time: 1min20.000s
->>> Total CPU-time : 1min18.770s
+SOfock:LL  1.00E-12    0.00%   13.71%    0.00%    0.00%   7.04003906s
+SOfock:SL  1.00E-12    0.00%   23.29%    0.00%    0.22%   1min13.180s
+SOfock:SS  1.00E-12    1.56%   59.66%    0.07%    0.11%   3min 4.760s
+>>> Total wall time: 4min28.000s
+>>> Total CPU-time : 4min26.910s
 
-########## END ITERATION NO.  10##########   Fri Sep  6 15:55:39 2002
+########## END ITERATION NO.  10##########                           
 
-It.  10    -2605.391538621      2.91D-05  3.02D-03  2.60D-03   DIIS  10    1min18.770s   LL SL SS    Fri Sep  6
+It.  10    -2605.391538621      2.91E-05  3.02E-03  2.60E-03   DIIS  10    4min26.910s   LL SL SS              
 
-########## START ITERATION NO.  11##########   Fri Sep  6 15:56:59 2002
+########## START ITERATION NO.  11##########                           
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   18.19%    0.00%    0.00%   2.24487305s
-SOfock:SL  1.00D-12    0.01%   28.01%    0.00%    0.43%  21.56915283s
-SOfock:SS  1.00D-12    3.50%   70.09%    0.03%    0.06%  50.64929199s
->>> Total wall time: 1min15.000s
->>> Total CPU-time : 1min14.974s
+SOfock:LL  1.00E-12    0.00%   18.19%    0.00%    0.00%   6.98999023s
+SOfock:SL  1.00E-12    0.01%   28.01%    0.00%    0.43%   1min12.490s
+SOfock:SS  1.00E-12    3.50%   70.09%    0.03%    0.06%   2min56.240s
+>>> Total wall time: 4min18.000s
+>>> Total CPU-time : 4min17.650s
 
-########## END ITERATION NO.  11##########   Fri Sep  6 15:56:59 2002
+########## END ITERATION NO.  11##########                           
 
-It.  11    -2605.391540531      1.91D-06  1.09D-03  5.86D-04   DIIS  10    1min14.974s   LL SL SS    Fri Sep  6
+It.  11    -2605.391540531      1.91E-06  1.09E-03  5.86E-04   DIIS  10    4min17.650s   LL SL SS              
 
-########## START ITERATION NO.  12##########   Fri Sep  6 15:58:14 2002
+########## START ITERATION NO.  12##########                           
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   20.56%    0.00%    0.00%   2.23028564s
-SOfock:SL  1.00D-12    0.05%   31.55%    0.00%    0.56%  21.30932617s
-SOfock:SS  1.00D-12    4.49%   73.71%    0.05%    0.09%  49.22644043s
->>> Total wall time: 1min14.000s
->>> Total CPU-time : 1min13.279s
+SOfock:LL  1.00E-12    0.00%   20.56%    0.00%    0.00%   6.96020508s
+SOfock:SL  1.00E-12    0.05%   31.55%    0.00%    0.56%   1min11.890s
+SOfock:SS  1.00E-12    4.49%   73.71%    0.05%    0.09%   2min52.720s
+>>> Total wall time: 4min15.000s
+>>> Total CPU-time : 4min13.490s
 
-########## END ITERATION NO.  12##########   Fri Sep  6 15:58:14 2002
+########## END ITERATION NO.  12##########                           
 
-It.  12    -2605.391540786      2.55D-07  2.86D-04  1.45D-04   DIIS  10    1min13.279s   LL SL SS    Fri Sep  6
+It.  12    -2605.391540786      2.55E-07  2.86E-04  1.45E-04   DIIS  10    4min13.490s   LL SL SS              
 
-########## START ITERATION NO.  13##########   Fri Sep  6 15:59:28 2002
+########## START ITERATION NO.  13##########                           
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   24.46%    0.00%    0.00%   2.20495605s
-SOfock:SL  1.00D-12    0.09%   36.50%    0.00%    0.87%  20.93438721s
-SOfock:SS  1.00D-12    7.41%   76.36%    0.10%    0.18%  46.85754395s
->>> Total wall time: 1min11.000s
->>> Total CPU-time : 1min10.508s
+SOfock:LL  1.00E-12    0.00%   24.46%    0.00%    0.00%   6.89990234s
+SOfock:SL  1.00E-12    0.09%   36.50%    0.00%    0.87%   1min11.070s
+SOfock:SS  1.00E-12    7.41%   76.36%    0.10%    0.18%   2min45.750s
+>>> Total wall time: 4min 6.000s
+>>> Total CPU-time : 4min 5.650s
 
-########## END ITERATION NO.  13##########   Fri Sep  6 15:59:28 2002
+########## END ITERATION NO.  13##########                           
 
-It.  13    -2605.391540801      1.52D-08  5.84D-05  2.49D-05   DIIS  10    1min10.508s   LL SL SS    Fri Sep  6
+It.  13    -2605.391540801      1.50E-08  5.84E-05  2.49E-05   DIIS  10    4min 5.650s   LL SL SS              
 
-########## START ITERATION NO.  14##########   Fri Sep  6 16:00:39 2002
+########## START ITERATION NO.  14##########                           
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.07%   30.04%    0.01%    0.00%   2.16711426s
-SOfock:SL  1.00D-12    0.37%   43.44%    0.00%    1.61%  20.35192871s
-SOfock:SS  1.00D-12   12.22%   76.29%    0.37%    0.54%  43.57983398s
->>> Total wall time: 1min 7.000s
->>> Total CPU-time : 1min 6.606s
+SOfock:LL  1.00E-12    0.07%   30.04%    0.01%    0.00%   6.83007812s
+SOfock:SL  1.00E-12    0.37%   43.44%    0.00%    1.61%   1min 9.800s
+SOfock:SS  1.00E-12   12.22%   76.29%    0.37%    0.54%   2min35.380s
+>>> Total wall time: 3min55.000s
+>>> Total CPU-time : 3min53.920s
 
-########## END ITERATION NO.  14##########   Fri Sep  6 16:00:39 2002
+########## END ITERATION NO.  14##########                           
 
-It.  14    -2605.391540801      2.42D-10  5.95D-06  2.60D-06   DIIS  10    1min 6.606s   LL SL SS    Fri Sep  6
+It.  14    -2605.391540801      4.91E-10  5.95E-06  2.60E-06   DIIS  10    3min53.920s   LL SL SS              
 
-########## START ITERATION NO.  15##########   Fri Sep  6 16:01:46 2002
+########## START ITERATION NO.  15##########                           
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.31%   40.70%    0.01%    0.01%   2.10400391s
-SOfock:SL  1.00D-12    1.50%   54.48%    0.00%    3.52%  19.20825195s
-SOfock:SS  1.00D-12   26.52%   68.63%    0.91%    3.59%  35.21813965s
->>> Total wall time:57.00000000s
->>> Total CPU-time :56.98718262s
+SOfock:LL  1.00E-12    0.31%   40.70%    0.01%    0.01%   6.67016602s
+SOfock:SL  1.00E-12    1.50%   54.48%    0.00%    3.52%   1min 7.120s
+SOfock:SS  1.00E-12   26.52%   68.63%    0.91%    3.59%   2min 6.860s
+>>> Total wall time: 3min23.000s
+>>> Total CPU-time : 3min22.480s
 
-########## END ITERATION NO.  15##########   Fri Sep  6 16:01:46 2002
+########## END ITERATION NO.  15##########                           
 
-It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.98718262s   LL SL SS    Fri Sep  6
+It.  15    -2605.391540801      1.14E-11  7.84E-07  5.34E-07   DIIS  10    3min22.480s   LL SL SS              
 
 
                                SCF - CYCLE
                                -----------
 
-* Convergence on norm of error vector (gradient). Convergence threshold:1.000D-06
+* Convergence on norm of error vector (gradient). Convergence threshold:1.000E-06
 * ERGVAL - convergence in total energy
 * FCKVAL - convergence in maximum change in total Fock matrix
 * EVCVAL - convergence in error vector (gradient)
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -4026.608850319      1.00D+20  0.00D+00  0.00D+00               0.27336979s   Bare nuc.   Fri Sep  6
-It.   2    -2256.124511001     -1.77D+03  2.32D+02  1.63D+02               1min27.729s   LL SL SS    Fri Sep  6
-It.   3    -2271.462576196      1.53D+01 -9.87D+01  5.04D+01   DIIS   3    1min25.970s   LL SL SS    Fri Sep  6
-It.   4    -2530.113511101      2.59D+02  6.71D+01  4.70D+01   DIIS   4    1min25.790s   LL SL SS    Fri Sep  6
-It.   5    -2592.217883882      6.21D+01 -1.29D+01  1.50D+01   DIIS   5    1min25.765s   LL SL SS    Fri Sep  6
-It.   6    -2605.262251222      1.30D+01 -8.32D+00  1.62D+00   DIIS   6    1min25.599s   LL SL SS    Fri Sep  6
-It.   7    -2605.381011982      1.19D-01  3.65D-01  2.52D-01   DIIS   7    1min23.826s   LL SL SS    Fri Sep  6
-It.   8    -2605.390670979      9.66D-03  1.89D-01  1.15D-01   DIIS   8    1min22.546s   LL SL SS    Fri Sep  6
-It.   9    -2605.391509514      8.39D-04 -5.84D-02  8.85D-03   DIIS   9    1min20.542s   LL SL SS    Fri Sep  6
-It.  10    -2605.391538621      2.91D-05  3.02D-03  2.60D-03   DIIS  10    1min18.770s   LL SL SS    Fri Sep  6
-It.  11    -2605.391540531      1.91D-06  1.09D-03  5.86D-04   DIIS  10    1min14.974s   LL SL SS    Fri Sep  6
-It.  12    -2605.391540786      2.55D-07  2.86D-04  1.45D-04   DIIS  10    1min13.279s   LL SL SS    Fri Sep  6
-It.  13    -2605.391540801      1.52D-08  5.84D-05  2.49D-05   DIIS  10    1min10.508s   LL SL SS    Fri Sep  6
-It.  14    -2605.391540801      2.42D-10  5.95D-06  2.60D-06   DIIS  10    1min 6.606s   LL SL SS    Fri Sep  6
-It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.98718262s   LL SL SS    Fri Sep  6
+It.   1    -4026.608850318      1.00E+20  0.00E+00  0.00E+00               1.32999992s   Bare nuc.             
+It.   2    -2256.124511001     -1.77E+03  2.32E+02  1.63E+02               4min45.960s   LL SL SS              
+It.   3    -2271.462576196      1.53E+01 -9.87E+01  5.04E+01   DIIS   3    4min43.140s   LL SL SS              
+It.   4    -2530.113511101      2.59E+02  6.71E+01  4.70E+01   DIIS   4    4min42.920s   LL SL SS              
+It.   5    -2592.217883882      6.21E+01 -1.29E+01  1.50E+01   DIIS   5    4min42.670s   LL SL SS              
+It.   6    -2605.262251223      1.30E+01 -8.32E+00  1.62E+00   DIIS   6    4min42.460s   LL SL SS              
+It.   7    -2605.381011982      1.19E-01  3.65E-01  2.52E-01   DIIS   7    4min38.590s   LL SL SS              
+It.   8    -2605.390670979      9.66E-03  1.89E-01  1.15E-01   DIIS   8    4min35.780s   LL SL SS              
+It.   9    -2605.391509514      8.39E-04 -5.84E-02  8.85E-03   DIIS   9    4min31.230s   LL SL SS              
+It.  10    -2605.391538621      2.91E-05  3.02E-03  2.60E-03   DIIS  10    4min26.910s   LL SL SS              
+It.  11    -2605.391540531      1.91E-06  1.09E-03  5.86E-04   DIIS  10    4min17.650s   LL SL SS              
+It.  12    -2605.391540786      2.55E-07  2.86E-04  1.45E-04   DIIS  10    4min13.490s   LL SL SS              
+It.  13    -2605.391540801      1.50E-08  5.84E-05  2.49E-05   DIIS  10    4min 5.650s   LL SL SS              
+It.  14    -2605.391540801      4.91E-10  5.95E-06  2.60E-06   DIIS  10    3min53.920s   LL SL SS              
+It.  15    -2605.391540801      1.14E-11  7.84E-07  5.34E-07   DIIS  10    3min22.480s   LL SL SS              
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    15 iterations
 * Average CPU-time per iteration: 
-      No 2-ints :    0.00000000s
-      LL SL SS  :    1min19.357s
+      No 2-ints :    2.00000000s
+      LL SL SS  :    4min25.429s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy       :    -2618.4860012457498
+   Electronic energy       :    -2618.4860012457884
    Nuclear repulsion energy:       13.0944604446280
-   Total energy            :    -2605.3915408011217
+   Total energy            :    -2605.3915408011603
 
 
                                Eigenvalues
@@ -836,19 +837,19 @@ It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.987
 
 * Boson symmetry A1 
   * Closed shell, f = 1.0000
-   -498.4996471851  ( 2)       -67.1154562872  ( 2)       -59.0007931711  ( 2)       -10.1849244590  ( 2)        -7.5408059919  ( 2)
+   -498.4996471852  ( 2)       -67.1154562872  ( 2)       -59.0007931711  ( 2)       -10.1849244590  ( 2)        -7.5408059919  ( 2)
      -3.1421245152  ( 2)        -3.1282752906  ( 2)        -1.0607599884  ( 2)        -0.5844240811  ( 2)
   * Virtual eigenvalues, f = 0.0000
       0.0338941098  ( 2)         0.0699330099  ( 2)         0.1073959634  ( 2)         0.1376867495  ( 2)         0.1501479954  ( 2)
       0.2169963052  ( 2)         0.2617996912  ( 2)         0.3739333757  ( 2)         0.4081665781  ( 2)         0.4719060901  ( 2)
       0.6878715226  ( 2)         0.9281850740  ( 2)         1.0663480511  ( 2)         1.1778881734  ( 2)         1.2283499595  ( 2)
       1.5130036125  ( 2)         2.3878012178  ( 2)         3.2318535918  ( 2)         3.4991030918  ( 2)         3.7678905802  ( 2)
-      4.5994626751  ( 2)         8.1920274756  ( 2)         8.3782009260  ( 2)         8.4305990279  ( 2)        10.1042148924  ( 2)
-     17.7529642189  ( 2)        19.9401610394  ( 2)        20.0390797235  ( 2)        51.5501132414  ( 2)        58.9403746043  ( 2)
-     58.9934327672  ( 2)        60.8794474917  ( 2)        61.4643832516  ( 2)       191.7084833801  ( 2)       228.1762392496  ( 2)
-    228.2158947527  ( 2)       237.9694255155  ( 2)       586.2443800283  ( 2)       843.6508291425  ( 2)      1859.1311610572  ( 2)
-   2535.7076952079  ( 2)      6571.2288058558  ( 2)      6951.7018412743  ( 2)     17939.7968508820  ( 2)     45433.4730824031  ( 2)
- 125270.8327586122  ( 2)
+      4.5994626751  ( 2)         8.1920274756  ( 2)         8.3782009258  ( 2)         8.4305990279  ( 2)        10.1042148923  ( 2)
+     17.7529642189  ( 2)        19.9401610392  ( 2)        20.0390797235  ( 2)        51.5501132414  ( 2)        58.9403746043  ( 2)
+     58.9934327672  ( 2)        60.8794474918  ( 2)        61.4643832516  ( 2)       191.7084833801  ( 2)       228.1762392496  ( 2)
+    228.2158947528  ( 2)       237.9694255155  ( 2)       586.2443800283  ( 2)       843.6508291423  ( 2)      1859.1311610574  ( 2)
+   2535.7076952079  ( 2)      6571.2288058557  ( 2)      6951.7018412744  ( 2)     17939.7968508819  ( 2)     45433.4730824021  ( 2)
+ 125270.8327586134  ( 2)
 
 * Boson symmetry B1 
   * Closed shell, f = 1.0000
@@ -856,36 +857,36 @@ It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.987
   * Virtual eigenvalues, f = 0.0000
       0.0687101867  ( 2)         0.1325183527  ( 2)         0.2084138985  ( 2)         0.3179058104  ( 2)         0.4478987009  ( 2)
       0.8564388847  ( 2)         0.9547411406  ( 2)         1.2558775272  ( 2)         3.4266628050  ( 2)         3.5378535242  ( 2)
-      4.2503629060  ( 2)         8.3955567061  ( 2)        17.5070794159  ( 2)        19.9582792147  ( 2)        58.9553594578  ( 2)
-     60.6740538553  ( 2)       191.5475749555  ( 2)       228.1864756023  ( 2)       586.1188081687  ( 2)      1859.0408925862  ( 2)
-   6571.1784045848  ( 2)
+      4.2503629060  ( 2)         8.3955567061  ( 2)        17.5070794159  ( 2)        19.9582792148  ( 2)        58.9553594578  ( 2)
+     60.6740538553  ( 2)       191.5475749555  ( 2)       228.1864756023  ( 2)       586.1188081688  ( 2)      1859.0408925862  ( 2)
+   6571.1784045847  ( 2)
 
 * Boson symmetry A2 
   * Closed shell, f = 1.0000
      -3.1282752906  ( 2)
   * Virtual eigenvalues, f = 0.0000
-      0.1376867495  ( 2)         0.4081665781  ( 2)         1.1778881734  ( 2)         3.4991030918  ( 2)         8.3782009260  ( 2)
-     19.9401610394  ( 2)        58.9403746043  ( 2)       228.1762392497  ( 2)
+      0.1376867495  ( 2)         0.4081665781  ( 2)         1.1778881734  ( 2)         3.4991030919  ( 2)         8.3782009260  ( 2)
+     19.9401610395  ( 2)        58.9403746043  ( 2)       228.1762392496  ( 2)
 
 * Boson symmetry B2 
   * Closed shell, f = 1.0000
-    -58.9994034520  ( 2)        -7.5326605308  ( 2)        -3.1376375554  ( 2)        -0.4337995996  ( 2)
+    -58.9994034521  ( 2)        -7.5326605308  ( 2)        -3.1376375554  ( 2)        -0.4337995996  ( 2)
   * Virtual eigenvalues, f = 0.0000
       0.0687101867  ( 2)         0.1325183527  ( 2)         0.2084138985  ( 2)         0.3179058104  ( 2)         0.4478987009  ( 2)
       0.8564388847  ( 2)         0.9547411406  ( 2)         1.2558775272  ( 2)         3.4266628050  ( 2)         3.5378535242  ( 2)
-      4.2503629061  ( 2)         8.3955567061  ( 2)        17.5070794159  ( 2)        19.9582792147  ( 2)        58.9553594578  ( 2)
-     60.6740538553  ( 2)       191.5475749555  ( 2)       228.1864756023  ( 2)       586.1188081688  ( 2)      1859.0408925862  ( 2)
+      4.2503629060  ( 2)         8.3955567062  ( 2)        17.5070794159  ( 2)        19.9582792148  ( 2)        58.9553594578  ( 2)
+     60.6740538553  ( 2)       191.5475749555  ( 2)       228.1864756022  ( 2)       586.1188081688  ( 2)      1859.0408925862  ( 2)
    6571.1784045847  ( 2)
 
 * Occupation in fermion symmetry E1 
   * Inactive orbitals
-     A1  A1  A1  B1  B2  A1  A1  B1  B2  A1  B1  B2  A1  A2  A1  A1  B2  B1 
+     A1  A1  A1  B2  B1  A1  A1  B2  B1  A1  B2  B1  A2  A1  A1  A1  B2  B1 
   * Virtual orbitals
-     A1  B1  B2  A1  A1  B1  B2  A2  A1  A1  B2  B1  A1  A1  B1  B2  A1  A1 
-     A2  B1  B2  A1  A1  B1  B2  A1  B2  B1  A1  A2  A1  A1  B1  B2  A1  A1 
-     A1  B1  B2  A2  A1  B2  B1  A1  B1  B2  A1  A1  A2  A1  B2  B1  A1  A1 
-     B1  B2  A1  A1  A2  B2  B1  A1  A1  A1  A2  B2  B1  A1  B1  B2  A1  A1 
-     B1  B2  A1  A1  A2  B2  B1  A1  A1  B1  B2  A1  A1  B1  B2  A1  A1  B2 
+     A1  B2  B1  A1  A1  B2  B1  A1  A2  A1  B2  B1  A1  A1  B2  B1  A1  A1 
+     A2  B2  B1  A1  A1  B1  B2  A1  B2  B1  A1  A2  A1  A1  B2  B1  A1  A1 
+     A1  B2  B1  A1  A2  B2  B1  A1  B2  B1  A1  A1  A1  A2  B1  B2  A1  A1 
+     B1  B2  A1  A1  A2  B1  B2  A1  A1  A1  A2  B1  B2  A1  B1  B2  A1  A1 
+     B2  B1  A1  A1  A2  B2  B1  A1  A1  B2  B1  A1  A1  B2  B1  A1  A1  B2 
      B1  A1  A1  A1  A1  A1 
 
 
@@ -914,10 +915,10 @@ It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.987
  ************************************************************************
 
 
- Transformation started at : Fri Sep  6 16:02:43 2002
+ Transformation started at :                         
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -2605.39154080112170
-* Heading : Testing LUCITA                                   Fri Sep  6 16:02:43 2002
+* REACMO: Coefficients read from file DFCOEF - Total energy: -2605.39154080116032
+* Heading : Testing LUCITA                                                           
      Energy selection of active orbitals :   -2.00 < Eps. <   100.00 with a mininum gap of   0.1000 au.
      Energy selection of active orbitals :   -2.00 < Eps. <   100.00 with a mininum gap of   0.1000 au.
      Energy selection of active orbitals :   -2.00 < Eps. <   100.00 with a mininum gap of   0.1000 au.
@@ -992,93 +993,93 @@ It.  15    -2605.391540801      1.52D-10  7.84D-07  5.34D-07   DIIS  10   56.987
    ********************************************************************
 
 
- Transformation started at : Fri Sep  6 16:02:43 2002
+ Transformation started at :                         
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -2605.39154080112170
-* Heading : Testing LUCITA                                   Fri Sep  6 16:02:43 2002
+* REACMO: Coefficients read from file DFCOEF - Total energy: -2605.39154080116032
+* Heading : Testing LUCITA                                                           
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    7.44%    0.00%    0.00%   2.32104492s
-SOfock:SL  1.00D-12    0.00%   15.16%    0.00%    0.10%  22.56213379s
-SOfock:SS  1.00D-12    0.20%   37.03%    0.23%    0.09%  59.14770508s
+SOfock:LL  1.00E-12    0.00%    7.44%    0.00%    0.00%   7.15014648s
+SOfock:SL  1.00E-12    0.00%   15.16%    0.00%    0.10%   1min14.390s
+SOfock:SS  1.00E-12    0.20%   37.03%    0.23%    0.09%   3min16.570s
 
 * REAFCK: Fock matrix read from file DFFCK1              
-* Heading : Testing LUCITA                                   Fri Sep  6 15:44:11 2002
+* Heading : Testing LUCITA                                                           
 
 
  Core energy (includes nuclear repulsion) :          -2588.9789803291
  - Electronic part :                                 -2602.0734407737
    - One-electron terms :                            -3491.2933002513
-   - Two-electron terms :                              889.2198594776
+   - Two-electron terms :                              889.2198594775
 
 
  MOLFDIR file MRCONEE is written
  - Integral class 1
    - Beginning with task   1 of  10 after      0.00 seconds
                                 and after      0.00 CPU-seconds
-   - Beginning with task   2 of  10 after     32.00 seconds
-                                and after      9.65 CPU-seconds
-   - Beginning with task   3 of  10 after     54.00 seconds
-                                and after     20.32 CPU-seconds
-   - Beginning with task   4 of  10 after     97.00 seconds
-                                and after     48.53 CPU-seconds
-   - Beginning with task   5 of  10 after    132.00 seconds
-                                and after     80.11 CPU-seconds
-   - Beginning with task   6 of  10 after    163.00 seconds
-                                and after    103.20 CPU-seconds
-   - Beginning with task   7 of  10 after    258.00 seconds
-                                and after    161.08 CPU-seconds
-   - Beginning with task   8 of  10 after    351.00 seconds
-                                and after    225.85 CPU-seconds
-   - Beginning with task   9 of  10 after    431.00 seconds
-                                and after    301.47 CPU-seconds
-   - Beginning with task  10 of  10 after    468.00 seconds
-                                and after    334.00 CPU-seconds
+   - Beginning with task   2 of  10 after    155.00 seconds
+                                and after     25.41 CPU-seconds
+   - Beginning with task   3 of  10 after    296.00 seconds
+                                and after     53.47 CPU-seconds
+   - Beginning with task   4 of  10 after    463.00 seconds
+                                and after    123.90 CPU-seconds
+   - Beginning with task   5 of  10 after    646.00 seconds
+                                and after    205.24 CPU-seconds
+   - Beginning with task   6 of  10 after    801.00 seconds
+                                and after    257.94 CPU-seconds
+   - Beginning with task   7 of  10 after   1036.00 seconds
+                                and after    398.26 CPU-seconds
+   - Beginning with task   8 of  10 after   1299.00 seconds
+                                and after    563.22 CPU-seconds
+   - Beginning with task   9 of  10 after   1589.00 seconds
+                                and after    757.30 CPU-seconds
+   - Beginning with task  10 of  10 after   1781.00 seconds
+                                and after    846.66 CPU-seconds
  - Integral class 2
-   - Beginning with task  11 of  27 after    550.00 seconds
-                                and after    393.31 CPU-seconds
-   - Beginning with task  12 of  27 after    574.00 seconds
-                                and after    401.78 CPU-seconds
-   - Beginning with task  13 of  27 after    606.00 seconds
-                                and after    410.87 CPU-seconds
-   - Beginning with task  14 of  27 after    628.00 seconds
-                                and after    419.13 CPU-seconds
-   - Beginning with task  15 of  27 after    692.00 seconds
-                                and after    461.21 CPU-seconds
-   - Beginning with task  16 of  27 after    754.00 seconds
-                                and after    513.15 CPU-seconds
-   - Beginning with task  17 of  27 after    797.00 seconds
-                                and after    547.83 CPU-seconds
-   - Beginning with task  18 of  27 after    845.00 seconds
-                                and after    584.35 CPU-seconds
-   - Beginning with task  19 of  27 after    932.00 seconds
-                                and after    623.92 CPU-seconds
-   - Beginning with task  20 of  27 after   1057.00 seconds
-                                and after    745.06 CPU-seconds
-   - Beginning with task  21 of  27 after   1208.00 seconds
-                                and after    892.06 CPU-seconds
-   - Beginning with task  22 of  27 after   1300.00 seconds
-                                and after    972.15 CPU-seconds
-   - Beginning with task  23 of  27 after   1489.00 seconds
-                                and after   1157.87 CPU-seconds
-   - Beginning with task  24 of  27 after   1701.00 seconds
-                                and after   1368.32 CPU-seconds
-   - Beginning with task  25 of  27 after   1941.00 seconds
-                                and after   1604.80 CPU-seconds
-   - Beginning with task  26 of  27 after   1985.00 seconds
-                                and after   1647.25 CPU-seconds
-   - Beginning with task  27 of  27 after   2157.00 seconds
-                                and after   1816.90 CPU-seconds
- - Starting symmetrization after        2409.00 seconds
- - Finished symmetrization after        2416.00 seconds
+   - Beginning with task  11 of  27 after   2044.00 seconds
+                                and after   1008.63 CPU-seconds
+   - Beginning with task  12 of  27 after   2179.00 seconds
+                                and after   1028.12 CPU-seconds
+   - Beginning with task  13 of  27 after   2315.00 seconds
+                                and after   1050.87 CPU-seconds
+   - Beginning with task  14 of  27 after   2451.00 seconds
+                                and after   1069.67 CPU-seconds
+   - Beginning with task  15 of  27 after   2656.00 seconds
+                                and after   1184.96 CPU-seconds
+   - Beginning with task  16 of  27 after   2891.00 seconds
+                                and after   1324.74 CPU-seconds
+   - Beginning with task  17 of  27 after   3074.00 seconds
+                                and after   1407.07 CPU-seconds
+   - Beginning with task  18 of  27 after   3264.00 seconds
+                                and after   1495.85 CPU-seconds
+   - Beginning with task  19 of  27 after   3462.00 seconds
+                                and after   1592.14 CPU-seconds
+   - Beginning with task  20 of  27 after   3881.00 seconds
+                                and after   1917.82 CPU-seconds
+   - Beginning with task  21 of  27 after   4375.00 seconds
+                                and after   2316.92 CPU-seconds
+   - Beginning with task  22 of  27 after   4674.00 seconds
+                                and after   2521.10 CPU-seconds
+   - Beginning with task  23 of  27 after   5272.00 seconds
+                                and after   3029.09 CPU-seconds
+   - Beginning with task  24 of  27 after   5947.00 seconds
+                                and after   3608.37 CPU-seconds
+   - Beginning with task  25 of  27 after   6706.00 seconds
+                                and after   4261.48 CPU-seconds
+   - Beginning with task  26 of  27 after   6927.00 seconds
+                                and after   4381.47 CPU-seconds
+   - Beginning with task  27 of  27 after   7496.00 seconds
+                                and after   4853.41 CPU-seconds
+ - Starting symmetrization after        8264.00 seconds
+ - Finished symmetrization after        8326.00 seconds
  - MOLFDIR file MDCINT was written.
 
 
- Total wall time used in PAMTRA :   00:41:46
- Total CPU  time used in PAMTRA :   00:35:54
+ Total wall time used in PAMTRA :   02:24:14
+ Total CPU  time used in PAMTRA :   01:37:03
 
 
 
- Transformation ended at : Fri Sep  6 16:44:29 2002
+ Transformation ended at :                         
 
 
  ********************************************************************************
@@ -1126,7 +1127,7 @@ SOfock:SS  1.00D-12    0.20%   37.03%    0.23%    0.09%  59.14770508s
 
    Approximate size of CI calculation ... NOR
 
-          Dimension of R*8 workspace :     40000000
+          Dimension of R*8 workspace :     63000000
  Integral import from DIRAC.
  No checking of environment dims.
 
@@ -1259,17 +1260,51 @@ SOfock:SS  1.00D-12    0.20%   37.03%    0.23%    0.09%  59.14770508s
  Using spinfree Dirac Hamiltonian!
 DIRAC core energy =   -2588.9789803291
  Integrals have been calculated on the
-               6Sep02  
-         at  16:44:22
+               3Nov02  
+         at  06:07:22
  End of file MDCINT.
  Only or last 2-el. integral file.
  Complete real list of 2-el. ints processed. 
-  Updated core energy   -2605.391540790527    
+  Updated core energy  -2605.39154
+  IAICBM_GAS entered 
+  ===================
+
+  Number of GAS spaces included  1
+  GAS spaces included  1
+
+  IOCA and IOCB 
+
+     1 :      3      2      1      2      1      1
+
+     2 :      4      4      4      5      5      6
+
+     3 :      7      8      9      7      8      7
+
+     1 :      3      2      1      2      1      1
+
+     2 :      4      4      4      5      5      6
+
+     3 :      7      8      9      7      8      7
+
+  Matrix giving allowed combinations of types 
+
+
+     1 :      1      1      1      1      1      1
+
+     2 :      1      1      0      1      0      0
+
+     3 :      1      0      0      0      0      0
+
+     4 :      1      1      0      1      0      0
+
+     5 :      1      0      0      0      0      0
+
+     6 :      1      0      0      0      0      0
 
 
   Number of internal combinations per symmetry 
   =========================================== 
-  CI space            1
+  CI space  1
   0.299570000000000E+05 0.285440000000000E+05 0.271480000000000E+05 0.285440000000000E+05
 
 
@@ -1286,83 +1321,85 @@ DIRAC core energy =   -2588.9789803291
 
 
 
-  Number of determinants/combinations         29957
-  Number of blocks           60
+  Number of determinants/combinations   29957
+  Number of blocks  60
 
 
  Info from iteration      1
  _______________________
- Iter RNORM EIGAPR          1   .6803355719768E+00      -2605.3915407905
+ Iter RNORM EIGAPR          1   .6803355719768E+00      -2605.3915407906
 
  Info from iteration      2
  _______________________
- Iter RNORM EIGAPR          2   .9019227715112E-01      -2605.5434200284
+ Iter RNORM EIGAPR          2   .9019227715069E-01      -2605.5434200284
 
  Info from iteration      3
  _______________________
- Iter RNORM EIGAPR          3   .1922238024906E-01      -2605.5468201031
+ Iter RNORM EIGAPR          3   .1922238024940E-01      -2605.5468201032
 
  Info from iteration      4
  _______________________
- Iter RNORM EIGAPR          4   .4557692712847E-02      -2605.5469636161
+ Iter RNORM EIGAPR          4   .4557692713117E-02      -2605.5469636162
 
  Info from iteration      5
  _______________________
- Iter RNORM EIGAPR          5   .1046222491437E-02      -2605.5469722885
+ Iter RNORM EIGAPR          5   .1046222491524E-02      -2605.5469722885
 
  Info from iteration      6
  _______________________
- Iter RNORM EIGAPR          6   .3077192187447E-03      -2605.5469727638
+ Iter RNORM EIGAPR          6   .3077192187762E-03      -2605.5469727638
 
  Info from iteration      7
  _______________________
- Iter RNORM EIGAPR          7   .8153018874626E-04      -2605.5469728019
+ Iter RNORM EIGAPR          7   .8153018874833E-04      -2605.5469728020
 
  Info from iteration      8
  _______________________
- Iter RNORM EIGAPR          8   .2099666812872E-04      -2605.5469728045
+ Iter RNORM EIGAPR          8   .2099666813027E-04      -2605.5469728045
 
  Info from iteration      9
  _______________________
- Iter RNORM EIGAPR          9   .5696617946835E-05      -2605.5469728047
+ Iter RNORM EIGAPR          9   .5696617947618E-05      -2605.5469728047
 
  Info from iteration     10
  _______________________
- Iter RNORM EIGAPR         10   .1782046166265E-05      -2605.5469728047
+ Iter RNORM EIGAPR         10   .1782046166491E-05      -2605.5469728047
 
  ------------------------
- Root number             1
+ Root number   1
  ------------------------
-          1         -2605.3915407905270   0.68034E+00
-          2         -2605.5434200283817   0.90192E-01
-          3         -2605.5468201031172   0.19222E-01
-          4         -2605.5469636161183   0.45577E-02
-          5         -2605.5469722884859   0.10462E-02
-          6         -2605.5469727638056   0.30772E-03
-          7         -2605.5469728019352   0.81530E-04
-          8         -2605.5469728045041   0.20997E-04
-          9         -2605.5469728046751   0.56966E-05
-         10         -2605.5469728046905   0.17820E-05
+          1         -2605.3915407905606   0.68034E+00
+          2         -2605.5434200284153   0.90192E-01
+          3         -2605.5468201031508   0.19222E-01
+          4         -2605.5469636161520   0.45577E-02
+          5         -2605.5469722885196   0.10462E-02
+          6         -2605.5469727638392   0.30772E-03
+          7         -2605.5469728019689   0.81530E-04
+          8         -2605.5469728045377   0.20997E-04
+          9         -2605.5469728047087   0.56966E-05
+         10         -2605.5469728047242   0.17820E-05
 
- **********************************************************************
- >>> CI  Iter  Root    Energy        RESIDUAL    RESRATIO 
- **********************************************************************
+ ***************************************************************************
+                   Iter  Root    Energy           RESIDUAL     RESRATIO 
+ ***************************************************************************
 
-          10    1    -2605.54697280   0.178E-05    0.382E+06
+    10    1     -2605.5469728047   0.178E-05    0.382E+06
+ Final energy   -2605.5469728047
+ENDEND
 
   Information about MATML7 calls : 
   ================================
 
-  Number of calls    2212606.000000000    
-  Number of flops executed    1140312136.000000    
-  Average row length of C    3.820649832030958    
-  Average column  length of C    4.882919223970669    
-  Average number of operations per element of  C    14.31527234619356    
-  Average number of operations per per call    515.3706245034136    
-  Number of seconds spent in MATML7   21.71972656250000    
-  Average MFLOPS    52.50121969623667    
+  Number of calls   2212606.
+  Number of flops executed   1.14031214E+09
+  Average row length of C   3.82064983
+  Average column  length of C   4.88291922
+  Average number of operations per element of  C   14.3152723
+  Average number of operations per per call   515.370625
+  Number of seconds spent in MATML7  32.9042969
+  Average MFLOPS   34.6554172
   I am home from the loops 
 *****************************************************
->>>> Total CPU  time used in DIRAC (Node 0): 55min38.550s
->>>> Total WALL time used in DIRAC (Node 0):  1h 1min45s
+>>>> Total CPU  time used in DIRAC (Node 0):  2h41min19s
+>>>> Total WALL time used in DIRAC:  3h28min46s
 ********** E N D   of   D I R A C  output  **********
