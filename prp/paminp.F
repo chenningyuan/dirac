@@ -228,11 +228,15 @@ C
     3 CONTINUE
 #if defined (MOD_RSP)
         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('RSP not in this distribution')
 #endif
         GO TO 200
     4 CONTINUE
 #if defined (MOD_RSP)
 C        CALL XPPINP(WORD,WORK,LWORK)
+#else
+        CALL QUIT('RSP not in this distribution')
 #endif
         GO TO 200
     5 CONTINUE
@@ -241,6 +245,8 @@ C        CALL XPPINP(WORD,WORK,LWORK)
     6 CONTINUE
 #if defined (MOD_RSP)
         CALL NMRINP(WORD,.FALSE.)
+#else
+        CALL QUIT('RSP not in this distribution')
 #endif
         GO TO 200
     7 CONTINUE
@@ -2061,6 +2067,14 @@ C        Close AOPROPER if it was closed on entry to
 C        MINPRP.
 C
          IF (.NOT. OPEN) CLOSE(LU1INT,STATUS = 'KEEP')
+C
+C
+C*****************************************************************************
+C*****  R E S P O N S E    M O D U L E  **************************************
+C*****************************************************************************
+C
+         CALL PAMPRP(WORK,LWORK)
+C
       END IF
 C
       CALL QEXIT('MINPRP')
