@@ -62,7 +62,7 @@
       COMMON /DCODHF/ DF, DA, DALPHA, NISH_DHF, NASH_DHF, NSSH_DHF,     &
      &                NESH_DHF, NPSH_DHF, NFRO_DHF, NELEC_DHF,          &
      &                NELECT_DHF, NAELEC_DHF, NACSH, NOPEN,             &
-     &                NISH_BOS, NASH_BOS
+     &                NISH_BOS, NACSH_BOS
 
       INTEGER LUCYCL, LUFCK1, LUFCK2, LUFOCK, LUDIIS, LUDENS, LUEVEC,   &
      &        LUCMOS, LUSMOS
