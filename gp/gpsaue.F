@@ -2374,7 +2374,7 @@ C columns.
       DIMENSION AMAT(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL,FX,FPRI
-      CHARACTER   PFMT*24, COLUMN*8, LFMT*10,XFMT*6,RFMT*9
+      CHARACTER   PFMT*27, COLUMN*8, LFMT*13,XFMT*6,RFMT*6
       PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
@@ -2409,14 +2409,14 @@ C     Determine output format
 C
       IF (AMIN.GT.FFMIN.AND.AMAX.LE.FFMAX) THEN
 C        use F output format
-         LFMT = '(A1,I7,2X,'
+         LFMT = '(   A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = 'F15.8)   '
+         RFMT = 'F15.8)'
       ELSE
 C        use 1PD output format
-         LFMT = '(A1,I7,2X,'
+         LFMT = '(1P,A1,I7,2X,'
          XFMT = '(15X),'
-         RFMT = '1P,D15.8)'
+         RFMT = 'D15.8)'
       END IF
 C
 C LAST is the last column number in the row currently being printed
