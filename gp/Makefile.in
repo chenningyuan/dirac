@@ -41,7 +41,8 @@ dirmpi.x:
 dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
-depend:
+depend: setcomp
 	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(C_OBJS:.o=.c)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
