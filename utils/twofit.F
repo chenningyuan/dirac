@@ -98,7 +98,7 @@ C
         WRITE(LUPRI,'(A)') '* You must have at least five points !'
         STOP 'Too few points for a quartic fit !'
       ENDIF
-      DO I = 1,NPOINTS
+      DO I = 1,NP
        X(I) = X(I)/XTANG
       ENDDO
 C
