@@ -540,7 +540,7 @@ while [ -n "$1" ]; do
    case $1 in
       -basdir)
          shift
-         BASDIR=$1; export BASDIR
+         BASDIR="${BASDIR}:$1"; export BASDIR
          ;;
       -copy)
          shift
