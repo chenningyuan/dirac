@@ -109,7 +109,10 @@ Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
 C
       CALL QENTER('PRPXPP')
 C
-      IF (MAXEXC.EQ.0) CALL QUIT('PRPXPP called for zero excitations!')
+      IF (MAXEXC.EQ.0) THEN
+        IF(XPPANA) GOTO 10
+        CALL QUIT('PRPXPP called for zero excitations!')
+      ENDIF
       NEXCF  = MAXEXC*NBSYM
       IF(ORBXPP) THEN
         CALL MEMGET('INTE',KPPO,4*NORBT,WORK,KFREE,LFREE)
@@ -150,6 +153,9 @@ C     Initialize:
 C
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
      &            WORK,KFREE,LFREE)
+C
+ 10   CONTINUE
+      IF(XPPANA) CALL ANAXLR(WORK,KFREE,LFREE)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
       CALL QEXIT('PRPXPP')
@@ -375,7 +381,7 @@ C
 C
       SAVE SET
       DATA SET/.FALSE./
-      DATA TABLE /'.PRINT ','.A OPER','-------','.OPERAT',
+      DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
      &            '.EXCITA','-------','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.QED   ','.NONORM',
      &            '-------','-------','.INTFLG','-------',
@@ -423,6 +429,7 @@ C
       CALL IZERO(KEXCNV,8)
       CALL IZERO(KEXSIM,8)
       CALL IZERO(KEXSTV,8)
+      XPPANA     = .FALSE.
       XPPNRM     = .TRUE.
       XPPFIL     = 'NORXVC'
       ORBXPP     = .FALSE.
@@ -496,6 +503,8 @@ C&&&& OPERATOR: = A OPERATOR here
      &                        MAXLPP)
                GO TO 100
     3          CONTINUE
+C&&&& ANALYZe: Analyze individual contributions to repsonse functions
+                  XPPANA = .TRUE.
                GO TO 100
     5          CONTINUE
 C&&&& EXCITAtions - how many roots in symmetry I
@@ -637,13 +646,16 @@ C     Print section
 C     =============
 C      
       DOXPP = DOXPP.OR.MAXEXC.GT.0
-      IF(.NOT.DOXPP) GOTO 999
+      IF(.NOT.(DOXPP.OR.XPPANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' XPPINP: Electronic PP excitation energies'//
      &    ' and transition moments'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I5)') 
      &   '* Print level                 :',IPRXPP
+      IF(XPPANA) THEN
+        WRITE(LUPRI,'(1X,A)') '* Analysis of solution vectors.'
+      ENDIF
       IF(ORBXPP) WRITE(LUPRI,'(A)') 
      &   ' * Analysis of individual orbital contributions.'
       IF(XPPFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A,A6)')
@@ -660,6 +672,10 @@ C
      &     ' * NB!!! No rotations between electrons and positrons.'
       IF(QEDRUN) WRITE(LUPRI,'(A)') 
      & ' * .QED: Rotations between positrons and all electron orbitals.'
+      IF(.NOT.DOXPP) THEN
+        DOXPP = DOXPP.OR.XPPANA
+        GOTO 999
+      ENDIF
 C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'

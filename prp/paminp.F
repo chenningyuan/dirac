@@ -323,7 +323,7 @@ C
       CALL NMRINP(WORD,.TRUE.)
       CALL GRDINP(WORD,.TRUE.)
 #if defined (MOD_XPP)
-      CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
+CTROND      CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 #if defined (MOD_XQR)
       CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
@@ -598,7 +598,7 @@ C
 #include <priunit.h>
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 21)
+      PARAMETER (NTABKW = 23)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -608,12 +608,12 @@ C
       PARAMETER  (D1 = 1.0D0)
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
-      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO',
-     &           'DIAGONAL', 'XALPHA  ', 'YALPHA  ', 'ZALPHA  ',
-     &           'XAVECTOR', 'YAVECTOR', 'ZAVECTOR', 'ALPHADOT',
-     &           'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ',
-     &           'XBETASIG', 'YBETASIG', 'ZBETASIG', 'XiBETAAL',
-     &           'YiBETAAL', 'ZiBETAAL'/  
+      DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'DIAGONAL',
+     &           'XALPHA  ', 'YALPHA  ', 'ZALPHA  ', 'XAVECTOR',
+     &           'YAVECTOR', 'ZAVECTOR', 'ALPHADOT', 'GAMMA5  ',
+     &           'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ', 'XBETASIG',
+     &           'YBETASIG', 'ZBETASIG', 'XiBETAAL', 'YiBETAAL',
+     &           'ZiBETAAL', 'CFACTORS', 'COMCFACT'/
 C
       CALL QENTER('XPRINP')
 C
