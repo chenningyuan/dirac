@@ -265,6 +265,10 @@ C
       PARAMETER (MAXPRD = 30)
 #endif
       LOGICAL RELCAL, TSTINP
+#if defined (VAR_MPI)
+#include "infmpi.h"
+      INCLUDE 'mpif.h'
+#endif
 #include "maxaqn.h"
 #include "ccom.h"
 #include "mxsymm.h"
@@ -274,7 +278,6 @@ C
       IPREAD = IPRDEF
       LUMLCL = 9
       MAXPRI = MAXPRD
-      UNCONT = .FALSE.
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
@@ -286,6 +289,23 @@ C
       TOLLRN = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
+C
+C     In MPI runs this initialization needs to be done by the master
+C     because this is the only provess to read the DIRAC.INP file.
+C
+C     TODO : Check that the other variables are indeed not modified
+C     in DIRAC because the slaves will always get the default, unless
+C     the variable is explictly communicated after reading !!
+C
+#if defined (VAR_MPI)
+      IF (MYTID.EQ.0) THEN
+C        This is the master, initialize as usual
+C        Slaves are already initialized before coming here.
+         UNCONT = .FALSE.
+      ENDIF
+#else
+      UNCONT = .FALSE.
+#endif
       RETURN
       END
 C  /* Deck readin */

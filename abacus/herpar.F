@@ -146,6 +146,10 @@ C
 C
       CALL QENTER('HER_PARDRV')
 C
+#if !defined (VAR_MPI)
+      CALL QUIT('PVM is not supported in DIRAC')
+#endif
+C
 C
 C     Ensure that NODES .LE. MAXNOD
 C
@@ -265,8 +269,6 @@ C
       ITASK = -1
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#else
-      call quit('PVM not implemented in HER_PARDRV')
 #endif
 
 C
@@ -426,6 +428,7 @@ C
 C
 #include "inforb.h"
 #include "cbisol.h"
+#include "cbirea.h"
 #include "siripc.h"
 C
       LOGICAL NODMAT,NOFMAT
@@ -513,6 +516,8 @@ C
          CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MULD2H,338,MPI_DOUBLE_PRECISION,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .FALSE.
       ELSE
@@ -616,96 +621,6 @@ C
         CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
-#else
-C
-      CALL PVMFINITSEND(NCODE,MBUFID)
-      IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-      IF (NEWGEO) THEN
-         CALL PVMFPACK(INTEGER4,NMLINE,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-         NEWGEO = .FALSE.
-C
-C        -------------------------
-C        Pack common-block MOLINP.
-C        -------------------------
-C
-         CALL PVMFPACK(STRING,MLINE,80*NMLINE,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C        -------------------------
-C        Pack common-block INFORB.
-C        -------------------------
-C
-         CALL PVMFPACK(INTEGER4,MULD2H,338,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-      ELSE
-         NFINIS = 0
-         CALL PVMFPACK(INTEGER4,NFINIS,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-      END IF
-C
-C     -------------------------
-C     Pack common-block PARINT.
-C     -------------------------
-C
-      NUMELM = 40 + MAXNOD + MXCOOR
-C
-C
-      CALL PVMFPACK(REAL8,PANAS,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(INTEGER4,JATOM,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     -----------------------------------------------------------------------
-C     Pack the density matrices, their symmetries and the Fock matrix types.
-C     -----------------------------------------------------------------------
-C
-      CALL PVMFPACK(INTEGER4,NDMAT,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(REAL8,DMAT,N2BASX*NDMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(INTEGER4,NFMAT,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(INTEGER4,IREPDM,NFMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(INTEGER4,IFCTYP,NFMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-        N2RED = NSYMBL*NSYMBL
-        CALL PVMFPACK(INTEGER4,N2RED,1,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        CALL PVMFPACK(REAL8,DMRAO,N2RED*NDMAT,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        CALL PVMFPACK(REAL8,GABRAO,N2RED,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-      ENDIF
-      IF(ITYPE.EQ.9) THEN
-       N2RED = MAXSHL*MAXSHL
-        CALL PVMFPACK(INTEGER4,N2RED,1,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        CALL PVMFPACK(REAL8,DMRSO,N2RED*NDMAT,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      ENDIF
-C
-C
-C     -----------------------------------
-C     Multicast initialization to nodes.
-C     -----------------------------------
-C
-      CALL PVMFMCAST(NODES,MTIDS,10,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
 #endif
       RETURN
       END
@@ -748,20 +663,6 @@ C
 C
          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
-#else
-         CALL PVMFRECV(-1,20,MBUFID)
-         IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-         CALL PVMFUNPACK(INTEGER4,NODE,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C        Send task identification to node.
-C
-         CALL PVMFINITSEND(NCODE,MBUFID)
-         IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-         CALL PVMFPACK(INTEGER4,NTEST,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
          DO 200 J = 1,NTASK
@@ -773,9 +674,6 @@ C
 #if defined (VAR_MPI)
             CALL MPI_SEND(ISHELL,2,MPI_INTEGER,NODE,30,
      &                    MPI_COMM_WORLD,IERR)
-#else
-            CALL PVMFPACK(INTEGER4,ISHELL,2,1,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
 C           Pack only one null-task.
@@ -795,10 +693,6 @@ C
   300    CONTINUE
          NWHO = MTIDS(NODE)
 C
-#if !defined (VAR_MPI)
-         CALL PVMFSEND(NWHO,30,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-#endif
 C
 C        Who-got-the-last-batch statistics
 C
@@ -821,25 +715,6 @@ C
 C
          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
      &                 MPI_COMM_WORLD,IERR)
-#else
-            CALL PVMFRECV(-1,20,MBUFID)
-            IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-            CALL PVMFUNPACK(INTEGER4,NODE,1,1,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C           Send termination identification to node.
-C
-            CALL PVMFINITSEND(NCODE,MBUFID)
-            IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-            CALL PVMFPACK(INTEGER4,NTEST,1,1,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-            NWHO = MTIDS(NODE)
-C
-            CALL PVMFSEND(NWHO,30,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
   400 CONTINUE
@@ -918,25 +793,6 @@ Cjth & trond - this is a bit risky
 C
          CALL MPI_RECV(WORK,NREQUI,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#else
-         CALL PVMFRECV(-1,40,MBUFID)
-         IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-C        Unpack the number of tasks received by the node.
-C
-         CALL PVMFUNPACK(INTEGER4,ITASK,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         ICOUNT = ICOUNT + ITASK
-C
-C        Unpack results.
-C
-         CALL PVMFUNPACK(REAL8,WORK,NREQUI,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-         IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-           CALL PVMFUNPACK(REAL8,DNSKBF,8,1,INFO)
-           IF (INFO .LT. 0) CALL PFAIL(INFO)
-         ENDIF
 #endif
 C
 C        Add results to final matrices.
@@ -978,12 +834,6 @@ C
      &                       MPI_COMM_WORLD,ISTAT,IERR)
                CALL MPI_RECV(VALUE,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                       MPI_COMM_WORLD,ISTAT,IERR)
-#else
-               CALL PVMFUNPACK(INTEGER4,NUMBER,1,1,INFO)
-               IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-               CALL PVMFUNPACK(REAL8,VALUE,1,1,INFO)
-               IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
                TIMES(NUMBER) = VALUE
@@ -1116,18 +966,6 @@ C
          NODE = ISTAT(MPI_SOURCE)
          CPUS(NODE)  = RBUF(1)
          WALLS(NODE) = RBUF(2)
-#else
-         CALL PVMFRECV(-1,50,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFUNPACK(INTEGER4,NODE,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFUNPACK(REAL8,CPUS(NODE),1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFUNPACK(REAL8,WALLS(NODE),1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
          TSOFAR = TSOFAR + CPUS(NODE)
@@ -1180,11 +1018,7 @@ C
       RETURN
       END
 C  /* Deck hernod */
-#if !defined (VAR_PVM)
       SUBROUTINE HERNOD(WORK,MWORK)
-#else
-      PROGRAM HERNOD
-#endif
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
@@ -1202,9 +1036,6 @@ C
 #include "fpvm3h.h"
 #endif
 C
-#if defined (VAR_PVM)
-      PARAMETER (MWORK = 6 000 000)
-#endif
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxorb.h"
@@ -1236,17 +1067,7 @@ C
 C
       CALL DZERO(DINTSKP,3*3*14)
 C
-#if defined (VAR_MPI)
  100  CONTINUE
-#else
-      CALL PVMFMYTID(MYTID)
-      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
-C
-      CALL PVMFPARENT(MPARID)
-      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
-C
- 100  CONTINUE
-#endif
 C
 C     Start timing.
 C
@@ -1359,11 +1180,6 @@ C
 C
  999  CONTINUE
 C
-#if defined (VAR_PVM)
-      CALL PVMFEXIT(INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-#endif
-C
       CALL QEXIT('HERNOD')
       END
 C  /* Deck rvinit */
@@ -1410,6 +1226,7 @@ C
 C
 #include "inforb.h"
 #include "cbisol.h"
+#include "cbirea.h"
 C
       DIMENSION WORK(*)
       CHARACTER*6 NAVN
@@ -1428,6 +1245,8 @@ C
          CALL MPI_BCAST(MLINE,80*NMLINE,MPI_CHARACTER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(MULD2H,338,MPI_DOUBLE_PRECISION,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .TRUE.
       ELSE
@@ -1449,42 +1268,6 @@ C     Receive SMLV1C
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#else
-      CALL PVMFRECV(MPARID,10,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFUNPACK(INTEGER4,NMLINE,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     --------------------------------------------------
-C     Unpack common block MOLINP and INFORB (only once).
-C     --------------------------------------------------
-C
-      IF (NMLINE .LT. 0) THEN
-         FINISH = .TRUE.
-         RETURN
-      ELSE IF (NMLINE .GT. 0) THEN
-         CALL PVMFUNPACK(STRING,MLINE,80*NMLINE,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFUNPACK(INTEGER4,MULD2H,338,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-         NEWGEO = .TRUE.
-      ELSE
-         NEWGEO = .FALSE.
-      END IF
-C
-C     ---------------------------
-C     Unpack common-block PARINT.
-C     ---------------------------
-C
-      NUMELM = 40 + MAXNOD + MXCOOR
-C
-      CALL PVMFUNPACK(REAL8,PANAS,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFUNPACK(INTEGER4,JATOM,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
 C------------------------------------
@@ -1665,67 +1448,6 @@ C       Receive density matrix(scaled by a factor two!)
       ELSE
          KDMRSO = KFREE
       ENDIF
-#else
-C
-C     ------------------------
-C     Unpack density matrices.
-C     ------------------------
-C
-      CALL PVMFUNPACK(INTEGER4,NDMAT,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      LDMAT = NDMAT*N2BASX
-      CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
-      CALL PVMFUNPACK(REAL8,WORK(KDMAT),LDMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     --------------------------------------------------------
-C     Unpack number of Fock matrices NFMAT and IREPDM, IFCTYP.
-C     --------------------------------------------------------
-C
-      CALL PVMFUNPACK(INTEGER4,NFMAT,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      LFMAT = NFMAT*N2BASX
-      CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
-C
-      CALL MEMGET('INTE',KIRD,NFMAT,WORK,KFREE,LFREE)
-      CALL PVMFUNPACK(INTEGER4,WORK(KIRD),NFMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-      CALL PVMFUNPACK(INTEGER4,WORK(KIFC),NFMAT,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     Unpacked reduced density matrix and Gauchy-Schwarz
-C
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-        CALL PVMFUNPACK(INTEGER4,N2RED,1,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        LDMRAO = NDMAT*N2RED
-        CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
-        CALL PVMFUNPACK(REAL8,WORK(KDMRAO),LDMRAO,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-        CALL PVMFUNPACK(REAL8,WORK(KGABAO),N2RED,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-      ELSE
-         KDMRAO = KFREE
-         KGABAO = KFREE
-      ENDIF
-      IF(ITYPE.EQ.9) THEN
-        CALL PVMFUNPACK(INTEGER4,N2RED,1,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-        LDMRSO = NDMAT*N2RED
-        CALL MEMGET('REAL',KDMRSO,LDMRSO,WORK,KFREE,LFREE)
-        CALL PVMFUNPACK(REAL8,WORK(KDMRSO),LDMRSO,1,INFO)
-        IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      ELSE
-        KDMRSO = KFREE
-      ENDIF
 #endif
 C
       RETURN
@@ -1745,15 +1467,11 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 #include "implicit.h"
-#if defined (VAR_MPI) || defined (VAR_PVM)
 #if defined (VAR_MPI)
 #include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include "fpvm3h.h"
 #endif
-#endif /* VAR_MPI || VAR_PVM */
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1869,32 +1587,6 @@ C
 C
          CALL MPI_RECV(IJSHEL,2,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#else
-      CALL PVMFINITSEND(NCODE,MBUFID)
-      IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-      CALL PVMFPACK(INTEGER4,NODE,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFSEND(MPARID,20,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     ************************************************
-C     ***** Receive task information from master *****
-C     ************************************************
-C
-      CALL PVMFRECV(MPARID,30,MBUFID)
-      IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-      CALL PVMFUNPACK(INTEGER4,NTEST,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      IF (NTEST .EQ. -1) GOTO 300
-C
-      DO 200 I = 1, NTASK
-C
-         CALL PVMFUNPACK(INTEGER4,IJSHEL,2,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
 C        **************************************
@@ -2255,44 +1947,6 @@ C
 C
   200    CONTINUE
       END IF
-C
-#else
-PVM (I think) does not work
-      CALL PVMFINITSEND(NCODE,MBUFID)
-      IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-C     Pack the number of tasks received.
-C
-      CALL PVMFPACK(INTEGER4,ICOUNT,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     Pack the final results.
-C
-C     This does .NOT. work!!!
-C     FMAT is not packed in RESMAT anymore.
-C
-      CALL PVMFPACK(REAL8,RESMAT,NREQUI,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-      CALL PVMFPACK(REAL8,DINTSKP,8,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-C     Pack the integral-calculation times.
-C
-      IF (TIMING) THEN
-         DO 200, I = 1, ICOUNT
-C
-            CALL PVMFPACK(INTEGER4,INDEX(I),1,1,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-            CALL PVMFPACK(REAL8,TIMES(I),1,1,INFO)
-            IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-  200    CONTINUE
-      END IF
-C
-      CALL PVMFSEND(MPARID,40,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
 C----------------------------------------------
@@ -2310,21 +1964,6 @@ C
          RBUF(2) = WALL
          CALL MPI_SEND(RBUF,2,MPI_DOUBLE_PRECISION,MPARID,50,
      &                 MPI_COMM_WORLD,IERR)
-#else
-         CALL PVMFINITSEND(NCODE,MBUFID)
-         IF (MBUFID .LT. 0) CALL PFAIL(MBUFID)
-C
-         CALL PVMFPACK(INTEGER4,NODE,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFPACK(REAL8,CPU,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFPACK(REAL8,WALL,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-C
-         CALL PVMFSEND(MPARID,50,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
       END IF
@@ -2373,11 +2012,6 @@ C
 C
       MTAG = ABS(NTAG)
       WRITE(6,'(/1X,A)') FAILS(MTAG)
-C
-#ifdef VAR_PVM
-      CALL PVMFEXIT(INFO)
-      CALL QUIT('Error detected in PVM. Please consult sirius output!')
-#endif
 C
       RETURN
       END
