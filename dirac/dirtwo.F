@@ -50,6 +50,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <maxaqn.h>
 #include <dummy.h>
+      PARAMETER(D1=1.0D0)
 C
 #include <dcbind.h>
 #include <dcbgen.h>
@@ -89,7 +90,6 @@ C     ==========================================
 C
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
-        CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
         IF(IPRINT.GE.5) THEN
           CALL HEADER('Unsorted DMAT',-1)
           WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',I
@@ -113,6 +113,7 @@ C
      &                  IPQTOQ(1,IREP),LUPRI)
           ENDIF
         ENDIF
+        CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
       ENDDO
 C
 C     *************************************************
@@ -141,6 +142,8 @@ C     *****  C o n v e n t i o n a l    S C F  *****
 C     **********************************************
 C
       IF(IDFLAG.NE.7) THEN
+        IF(HFXFAC.NE.D1) 
+     &       CALL QUIT('HFXFAC not implemented in CONSCF !')
         CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
      &              IPRINT,WORK,LWORK)
       ENDIF
@@ -149,6 +152,12 @@ C     Insert half-phases and symmetrize
 C     =================================
 C
       DO I = 1,NFMAT
+C
+C       Reindex to sorted basis
+C       =======================
+C
+        CALL BUTOBS(FMAT(1,1,I),NZ,WORK,LWORK)
+        CALL BUTOBS(DMAT(1,1,I),NZ,WORK,LWORK)
         IREP = ISYMOP(I)-1
         IF(IPRINT.GE.5) 
      &    WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',I
@@ -180,12 +189,6 @@ C
             CALL FULMAT('A',NTBAS(0),NTBAS(0),FMAT(1,IZ,I))
           ENDIF
         ENDDO
-C
-C       Reindex to sorted basis
-C       =======================
-C
-        CALL BUTOBS(FMAT(1,1,I),NZ,WORK,LWORK)
-        CALL BUTOBS(DMAT(1,1,I),NZ,WORK,LWORK)
         IF(IPRINT.GE.5) THEN
           CALL HEADER('Sorted FMAT matrix',-1)
           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
@@ -3692,6 +3695,7 @@ C
 #include <dcbqal.h>
 #include <pgroup.h>
 #include <dgroup.h>
+#include <dcbham.h>
 C     External variables
       EXTERNAL BDQALGEBRA
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
@@ -3706,6 +3710,7 @@ C     Local variables
 C
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
+        WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
       ENDIF
       CALL IZERO(IFCTYP,MZ*NFMAT)
       DO I = 1,NFMAT
