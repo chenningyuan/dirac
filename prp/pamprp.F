@@ -2102,7 +2102,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck PRP_EPOLAR1 */
-      SUBROUTINE PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,TMPMAT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     output for electric dipole polarizability
