@@ -447,8 +447,9 @@ C         if reading input from a terminal
   910 CONTINUE
         CALL QUIT('Error reading LUCMD, no transformation input found')
   920 CONTINUE
-        WRITE (LUPRI,'(/A)') 'End-of-file in input, using defaults'//
-     &            ' for the integral transformation'
+        WRITE (LUPRI,'(/A)') 
+     &  'No input for integrals transformation, using defaults'
+        GOTO 400
   930 CONTINUE
       WORD1 = WORD
       ICHANG = 0
