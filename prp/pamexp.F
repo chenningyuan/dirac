@@ -319,7 +319,6 @@ C*****************************************************************************
 #include <symmet.h>
 #include <nqcc.h>
 #include <ibtfun.h>
-
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)

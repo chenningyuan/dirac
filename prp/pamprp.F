@@ -382,7 +382,7 @@ C*****************************************************************************
 #include <maxaqn.h>
 #include <maxmom.h>
 #include <mxorb.h>
-      PARAMETER(DM1 = -1.0D0)
+      PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
@@ -398,7 +398,7 @@ Ctec
       ITYP = 0
       IPTYP     = 1
       NPCOMP    = 1
-      PFAC(1)   = DM1
+      PFAC(1)   = D1
       DO 100 IATOM = 1, NUCIND
          IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
@@ -1172,7 +1172,7 @@ C
      &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
                      ITYP = ITYP + 1
                      TEMP(ICOOR1,ICOOR2,IATOM) =
-     &                  TEMP(ICOOR1,ICOOR2,IATOM) - EXPVAL(IPEFG(ITYP))
+     &                  TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(IPEFG(ITYP))
      &                                             /NUCDEG(IATOM)
                   END IF
  300           CONTINUE
