@@ -820,7 +820,8 @@ C
       IBLOCK(1) = 1
       IBLOCK(2) = 1
       CALL IZERO(IQM,KATOM*2)
-      DIRCON = .FALSE.
+      DIRCON(1) = .FALSE.
+      DIRCON(2) = .FALSE.
 C
 C     Run over atomic centers
 C     =======================
@@ -1027,7 +1028,7 @@ C
                   KLAST = KBFCO + KPRIM*KPRIM
                   IF (KLAST.GT.LWORK) 
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-                  DIRCON = .TRUE.
+                  DIRCON(1) = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
@@ -1081,7 +1082,7 @@ C
   210          CONTINUE
                IF ( CNTBAS .AND.
      $              (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
-                  DIRCON = .TRUE.
+                  DIRCON(1) = .TRUE.
                END IF
 C
 C
@@ -1205,6 +1206,16 @@ C
                  NHTYP     = MAX(NHTYP,IQM(I,2))
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
+C
+C              Check if large component basis is contracted 
+C              ============================================
+C
+               DO JBLCK = 1, NBLCK(I,2)
+                  IF ((NUC(JBLCK,1).NE.NRC(JBLCK,2)).AND.
+     &                (NRC(JBLCK,2).GT.0)) CNTBAS = .TRUE.
+               END DO
+               IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
+C
              ENDIF
            ELSE
              DO 300 J = 1,NSETS
@@ -1270,6 +1281,7 @@ C
  400       CONTINUE
         END IF
   100 CONTINUE
+C
       RETURN
 C
 C     Error messages:
@@ -1947,7 +1959,6 @@ C
             SEGIJ = NRCIJ .GE. 0
             NUCIJ = ABS(NUCIJ)
             NRCIJ = ABS(NRCIJ)
-            DIRCON = DIRCON .OR. (NRCIJ .GT. 0)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
 C     

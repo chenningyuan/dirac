@@ -2767,15 +2767,26 @@ C
       WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRHAM
 C
 C
-      IF (DIRCON) THEN
-         WRITE(LUPRI,'(1X,A)') '* Contracted basis set'
-         IF (.NOT. URKBAL) THEN
-            WRITE(LUPRI,'(A)')
-     $           'WARNING: contracted basis set '//
-     $           'without .URKBAL is not tested'
-         END IF
+      WRITE(LUPRI,'(1X,A)') '* Basis set:'
+      IF ( DIRCON(1) ) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     &      '  - contracted large component basis set'
       ELSE
-         WRITE(LUPRI,'(1X,A)') '* Uncontracted basis set'
+         WRITE(LUPRI,'(1X,A)') 
+     &      '  - uncontracted large component basis set'
+      END IF
+      IF ( DIRCON(2) ) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     &      '  - contracted small component basis set'
+      ELSE
+         WRITE(LUPRI,'(1X,A)') 
+     &      '  - uncontracted small component basis set'
+      END IF
+      IF ( DIRCON(2) .AND. .NOT. URKBAL ) THEN
+         WRITE(LUPRI,'(A)') '**** ERROR in HAMINP ****'
+         WRITE(LUPRI,'(A)') 'Contracted small component basis set '//
+     &      'and restricted kinetic balance is not implemented.'
+         CALL QUIT('*** ERROR in HAMINP ****')
       END IF
 C
 C

@@ -10,5 +10,5 @@ C   - DIRCON true if contracted basis set is used
 C
       PARAMETER (MXCON_PARAM = 300)
 C     
-      LOGICAL DIRCON
+      LOGICAL DIRCON(2)
       COMMON /GENCON/ DIRCON
