@@ -293,7 +293,7 @@ case $machine in
 
    *)
       echo "System $guess is currently .NOT. supported"
-      echo "Please report the following to jth@chem.ou.dk:"
+      echo "Please report the following to dirac-admin@chem.sdu.dk:"
       $echo "\t\`uname -m\` , \`uname -r\` , \`uname -s\` and \`uname -v\` "
       $echo "\tYou may also recommend compilerflags," 
       $echo "\tpreferred fortran compiler and mathematical libraries" \
@@ -1153,7 +1153,7 @@ case $machine in
    i[3-6]86-*)
       echo 
       echo "Get the BLAS routines. See 'Known issues and problems' at"
-      echo "http://dirac.chem.ou.dk"
+      echo "http://dirac.chem.sdu.dk"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' "
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1515,7 +1515,7 @@ echo "Before you run make, please check Makefile.config and edit"
 echo "it if you wish."
 echo
 echo "Please check 'Known issues and problems' at"
-echo "   http://dirac.chem.ou.dk"
+echo "   http://dirac.chem.sdu.dk"
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
