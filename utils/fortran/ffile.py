@@ -61,14 +61,15 @@ class ffile :
         """
 
 ## Constructor
-        def __init__ (self, filename, ignore_errors=False):
+        def __init__ (self, filename, ignore_errors=False, do_prog_units=True):
 		self.filename = filename
 		
                 f = file (filename, 'r')
                 self.lines = f.readlines () 
                 f.close
 
-		self.setup_program_units (ignore_errors)
+		if do_prog_units :
+			self.setup_program_units (ignore_errors)
 
 ## Make a copy with suffix appended to filename
 ## Raises FortranIOError if backupfile already exists
@@ -131,10 +132,19 @@ class ffile :
 		return result
 		
 ## Save the file, overwriting the original version
+## use the parsed lines
 
         def save (self):
                 f = file (self.filename, 'w')
                 f.write ( self.str() )
+                f.close
+
+## Save the file, overwriting the original version
+## use the lines as strings
+
+        def save_strings (self):
+                f = file (self.filename, 'w')
+               	f.writelines ( self.lines )
                 f.close
 
 ## Get the Fortran part (for files that have a Fortan and a C part)
@@ -208,3 +218,44 @@ class ffile :
 
 		for i in range(len(self.program_units)) :
 			self.program_units[i].add_explicit_declarations ()
+
+	def add_copyright (self, dirac_copyright) :
+
+		cr_string = ""
+		for l in dirac_copyright :
+			cr_string = cr_string + l
+		self.lines[0] = cr_string + self.lines[0]
+
+
+	def remove_copyright (self) :
+## loop ueber Zeilen, Ende suchen
+		end_of_header = 0
+		for i in range(len(self.lines)) :
+			if not self.lines[i].strip(' \n') == "" :
+				if not self.lines[i][0] in ['C', 'c', '*', '!', '#'] :
+					## non-comment line -> we have not found it
+					break
+				if self.lines[i][0] in ['C', 'c', '*', '!'] :
+					if not self.lines[i].find("http://dirac.chem.ou.dk") == -1 :
+						end_of_header = i+1
+						break
+                                        if not self.lines[i].find("http://dirac.chem.sdu.dk") == -1 :
+                                                end_of_header = i+1
+                                                break
+                                        if not self.lines[i].find("http://www.kjemi.uio.no") == -1 :
+                                                end_of_header = i+1
+                                                break
+
+## loeschen, nur Kommentare
+		if end_of_header > 0 :
+			for i in range(end_of_header) :
+				if not self.lines[i].strip(' \n') == "" :
+                               		if self.lines[i][0] in ['C', 'c', '*', '!'] :
+                                        	self.lines[i] = ""
+		
+
+
+
+
+
+
