@@ -11,7 +11,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 9)
+      PARAMETER (NTABLE = 8)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -31,7 +31,7 @@ C
 #include <prune.h>
 C
       SAVE SET
-      DATA TABLE /'.DFTFUN','.FROMVX','.QUADRA','.DFTAC ','.RADINT',
+      DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN'/
       DATA SET/.FALSE./
 C
@@ -46,10 +46,9 @@ C
          SET = .TRUE.
       END IF
 C
-C     Initialize /DFTCOM/ and other integration parameters
-C     ====================================================
+C     Initialize /DFTCOM/ and integration parameters
+C     ==============================================
 C
-      IQDTYP = 1
       IPRDFT = 2
       DFTRUN = .FALSE.
       DFTADD = .FALSE.
@@ -58,7 +57,6 @@ C
       DFTORD = .FALSE.
       DFTASC = .FALSE.
       RADINT = 1.0D-8
-
       ANGINT = 41
       INTCHK = 0
       NOPRUN = .FALSE.
@@ -79,7 +77,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -105,39 +103,30 @@ C&&& DFTPOT: calculate Kohn-Sham matrix directly using v_xc
                  DFTPOT = .TRUE.
                  GO TO 100
  3               CONTINUE
-C&&& QUADRA: number of quadrature points
-C            IQUAD = 2    very coarse
-C            IQUAD = 4    coarse
-C            IQUAD = 5    medium
-C            IQUAD = 1    dense
-C            IQUAD = 7    very dense
-                 READ (LUCMD,*) IQDTYP
-                 GO TO 100
- 4               CONTINUE
 C&&& DFTAC: asymptotic correction
                  DFTASC = .TRUE.
                  DFTPOT = .TRUE.
                  READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
                  GO TO 100
- 5               CONTINUE
+ 4               CONTINUE
 C&&& RADINT: Give relative precision of the radial integration
                  READ(LUCMD,*) RADINT
                  GO TO 100
- 6               CONTINUE
-C&&& RADINT: Give precision of the angular integration.
+ 5               CONTINUE
+C&&& ANGINT: Give precision of the angular integration.
 C            The integration is exact for spherical harmonics up to
 C            order ANGINT
             READ(LUCMD,*) ANGINT
             GO TO 100
- 7          CONTINUE
+ 6          CONTINUE
 C&&& PRINT: Print level for DFT-module
                  READ(LUCMD,*) IPRDFT
                  GO TO 100
- 8            CONTINUE
+ 7               CONTINUE
 C&&& INTCHK: Test grid by analyzing numerical SMAT
               READ(LUCMD,*) INTCHK
                  GO TO 100
- 9            CONTINUE
+ 8               CONTINUE
 C&&& NOPRUN: Turn off pruning of angular grid.
               NOPRUN = .TRUE.
                  GO TO 100
@@ -164,19 +153,21 @@ C
       CALL DFT_REPORT()
  90   CONTINUE
       WRITE(LUPRI,'(A)')
-     &  '* Radial quadrature according to ',
-     &  '     R.Lindh, P.-Aa. Malmqvist and L.Gagliardi'
-      WRITE(LUPRI,'(1X,A,E12.5)') 
-     &  '  Precision of radial quadrature set to: ', RADINT
+     &     '* Radial quadrature according to ',
+     &     '     R.Lindh, P.-Aa. Malmqvist and L.Gagliardi'
+      WRITE(LUPRI,'(A,E12.5)') 
+     &     '  Precision of radial quadrature set to: ', RADINT
       WRITE(LUPRI,'(A)')
-     &  '* Angular quadrature according to Lebedev scheme.'
-      IF (INTCHK.GT.0) THEN
-         WRITE(LUPRI,'(A)')
-     &        '* Numerical integration will be tested.'
-      END IF
+     &     '* Angular quadrature according to Lebedev scheme.'
+      WRITE(LUPRI,'(A,I2)')
+     &     '  Angular integration exact up to order L = ', ANGINT
       IF(NOPRUN) THEN
          WRITE(LUPRI,'(A)')
      &        '* Pruning of angular grid turned off.'
+      END IF
+      IF (INTCHK.GT.0) THEN
+         WRITE(LUPRI,'(A)')
+     &        '* Numerical integration will be tested.'
       END IF
 C
   999 CONTINUE

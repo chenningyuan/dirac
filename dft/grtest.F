@@ -63,8 +63,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-CTROND      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
-      PARAMETER (THRSH = 1.0D-10, THRSH2 = 1.0D-10) 
 
 #include <dcbgen.h>
 #include <dcbham.h>
@@ -96,7 +94,7 @@ CTROND      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10)
 #include <memint.h>
 
 C
-C OLAV Get analytical SMAT(I,J,2)
+C     Get analytical SMAT(I,J,2)
 C
       NELM = NTBAS(0)*NTBAS(0)
       CALL DZERO(SMAT(1,1,1),NELM)
@@ -181,7 +179,7 @@ C
 C
                   ERRAV = ERRAV + SMATDF
                   ERRAB = ERRAB + ABS(SMATDF)
-                  IF(ABS(SMATDF) .GT. ERRMX) THEN
+                  IF(ABS(SMATDF) .GT. ABS(ERRMX)) THEN
                      ERRMX = SMATDF
                      MAXI = IS
                      MAXJ = JS
@@ -199,8 +197,8 @@ COLAV     &                    IS, MXLB1, JS, MXLB2,SMATAN,
 COLAV     &                    LOG10(ABS(SMATFR)),
 COLAV     &                    LOG10(ABS(D1-SMATAN))
 C                    
-                     IF (ABS(SMATFR) .GT. RERRMX) THEN
-                        RERRMX = ABS(SMATFR)
+                     IF (ABS(SMATFR) .GT. ABS(RERRMX)) THEN
+                        RERRMX = SMATFR
                         MAXIR = IS
                         MAXJR = JS
                      END IF   
@@ -302,8 +300,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
-      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
-CTROND      PARAMETER (THRSH = 1.0D-12, THRSH2 = 1.0D-10) 
 
 #include <mxcent.h>
 #include <nuclei.h>
