@@ -97,12 +97,13 @@ C     KCMO is N2BBASXQ because it is used for Fock matrix in PREDHF.
 C    
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 C
 C     Solve DHF-equations
 C     ===================
 C
-      CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KFOCK),
+      CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
 C
 C     Memory deallocation
@@ -110,7 +111,8 @@ C     Memory deallocation
 C
 C     Output section
 C
-      CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KFREE),LFREE,IPRINT)
+      CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+     &            LFREE,IPRINT)
 C
 C     Release the slaves if we run in parallel.
 C
@@ -135,7 +137,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck predhf */
-      SUBROUTINE PREDHF(CMO,EIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+      SUBROUTINE PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Obtain orthonormal trial vectors for Dirac-Fock
@@ -179,7 +181,7 @@ C
 #include <dcbreo.h>
       LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC,TEST
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
-      DIMENSION FOCK(*),EIG(*),CMO(*),
+      DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
@@ -236,7 +238,7 @@ C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
       IF(TRIVEC) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2)
 C
 C       Reorder orbitals if requested
 C
@@ -246,7 +248,7 @@ C
 C         Make sure that reordered coefficients are written back
 C         to file.
 C
-          CALL WRICMO(LUCOEF,CMO,EIG,TOTERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         END IF
         IF(OVLSEL) THEN
           DOSEL = .TRUE.
@@ -417,7 +419,7 @@ C     *************************************************
 C     *****   SOLVE  DHF  EIGENVALUE  PROBLEM    ******
 C     *************************************************
 C
-      CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,
+      CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,CHKCNV,
      &            DOSEL,WORK(KFREE),LFREE)
 C
       IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG)
@@ -439,7 +441,7 @@ C
           DO I = 1,NFSYM
             CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
           ENDDO
-          CALL WRICMO(LUCOEF,CMO,EIG,DHFERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
         CLOSE(LUFCK1,STATUS='KEEP')
@@ -488,7 +490,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfsolv */
-      SUBROUTINE DFSOLV(FMO,EIG,FAO,DMAT,BMAT,CHKCNV,DOSEL,
+      SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,CHKCNV,DOSEL,
      &                  WORK,LWORK)
 C*****************************************************************************
 C
@@ -518,7 +520,7 @@ C
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
       LOGICAL CHKCNV,DOSEL,TEST
-      DIMENSION FMO(*),EIG(*),FAO(*),DMAT(*),BMAT(*),
+      DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
 C
 #include <memint.h>
@@ -537,7 +539,7 @@ C
 #ifdef MOD_OPEN
       IF (NASHT.GT.0.AND.TRIVEC) THEN
         CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,TOTERG,3)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,3)
       ELSE
         KCMOSAV = KFREE
       END IF
@@ -583,28 +585,100 @@ C
       DO 30 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 30
 C
+C       The next array is used in spinfree calculations, make it zero.
+C
+        DO J = 1, NORB(I)
+          IBEIG(IORB(I)+J) = 0
+        ENDDO
+C
 C       Diagonalize Fock-matrix in MO-basis
 C         - store coefficients in FAO
 C       ===================================
 C
-        IF(DOJACO.OR.SPINFR) THEN
-C
-C       Spinfree calculations use the Jacobi method to
-C       prevent mixing of symmetries (the matrix is always real)
-C       --------------------------------------------------------
-C
-          IF (SPINFR) THEN
-            NORB2 = NORB(I)*NORB(I)
-            CALL DZERO(FAO(1+I2ORBT(I)+NORB2),NORB2*(NZ-1))
+        IF (.NOT.(SPINFR.OR.LEVYLE)) THEN
+          IF(DOJACO) THEN
+            CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+     &                  WORK(KFREE),LFREE)
+          ELSE
+            CALL QDIAG(NZ,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                 EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
+     &                 NORB(I),WORK(KFREE),LFREE,IERR)
           ENDIF
-          CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
-     &                EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
-     &                WORK(KFREE),LFREE)
+C
         ELSE
-          CALL QDIAG(NZ,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &             EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
-     &             NORB(I),WORK(KFREE),LFREE,IERR)
+C
+C         Spinfree calculations can use the boson blocking of the
+C         Fock matrix. For quaternion groups we use the fact that
+C         the matrix becomes real.
+C         Initialize FAO to zero.
+C         --------------------------------------------------------
+C
+          NORB2 = NORB(I)*NORB(I)
+          CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
+C
+          IF (NZ.EQ.4) THEN
+            DO J = 1, NORB(I)
+              IBEIG(IORB(I)+J) = 1
+            ENDDO
+            IF(DOJACO) THEN
+              CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
+     &                    EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+     &                    WORK(KFREE),LFREE)
+            ELSE
+              CALL QDIAG(1,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
+     &                   EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
+     &                   NORB(I),WORK(KFREE),LFREE,IERR)
+            ENDIF
+          ELSE
+            NBRP = 4 / NZ
+            DO 20 ISYM = 1, NBRP
+              NBO = NBORB(ISYM,I,0)
+              IF (NBO.EQ.0) GOTO 20
+              NBO2 = NBO * NBO
+              CALL MEMGET('REAL',KFBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KVBOS,NBO2,WORK,KFREE,LFREE)
+              CALL MEMGET('REAL',KEBOS,NBO ,WORK,KFREE,LFREE)
+C
+C             Extract the block of symmetry isym out of the full matrix
+C
+              CALL FBOSON (1,I,ISYM,WORK(KFBOS),NBO,
+     &                     FMO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+C
+C             Diagonalize the block of symmetry isym (and parity i)
+C
+              IF (DOJACO) THEN
+                CALL RSJACO(NBO,NBO,NBO,WORK(KFBOS),
+     &                      WORK(KEBOS),1,1,0,WORK(KVBOS),
+     &                      WORK(KFREE),LFREE)
+              ELSE
+                CALL QDIAG(1,NBO,WORK(KFBOS),NBO,NBO,
+     &                     WORK(KEBOS),1,WORK(KVBOS),NBO,
+     &                     NBO,WORK(KFREE),LFREE,IERR)
+              ENDIF
+C
+C             Copy the block of symmetry isym in to the full matrix
+C
+              CALL FBOSON (2,I,ISYM,WORK(KVBOS), NBO,
+     &                     FAO(I2ORBT(I)+1),NORB(I),
+     &                     WORK(KEBOS),EIG(IORB(I)+1))
+              CALL MEMREL('DFSOLV',WORK,KFBOS,KFBOS,KFREE,LFREE)
+  20        CONTINUE
+C
+C           Sort the eigenvalues according to energy : keep track of 
+C           the boson symmetry. (Use FMO as scratch space for the 
+C           vector sort)
+C
+            CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+            CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
+     &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
+     &                   FMO(I2ORBT(I)+1),WORK(KIDUM))
+            CALL MEMREL('DFSOLV',WORK,KINDX,KINDX,KFREE,LFREE)
+          ENDIF
         ENDIF
+C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
         IF(IPRSCF.GE.3) THEN
             CALL HEADER('ELECTRON STATES - eigenvalues',-1)
@@ -653,7 +727,7 @@ C     Write untransformed coefficients
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2ORBTQ,FAO)
 C     Write transformed coefficients
-      CALL WRICMO(LUCOEF,FMO,EIG,DHFERG)
+      CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
 C
 C
 C     Dynamic update of overlap selection matrix
@@ -668,7 +742,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfscf */
-      SUBROUTINE DHFSCF(CMO,EIG,FOCK,WORK,LWORK)
+      SUBROUTINE DHFSCF(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
 C*****************************************************************************
 C
 C*****************************************************************************
@@ -682,7 +756,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <cbihr1.h>
-      DIMENSION FOCK(*),EIG(*),CMO(*),
+      DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
 C
 C     Generate one-electron Fock matrix and write to file
@@ -703,7 +777,7 @@ C
 C     ... or perform SCF-cycle
 C     ========================
 C 
-        CALL SCFCYC(CMO,EIG,FOCK,WORK,LWORK)
+        CALL SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
       ENDIF                                                        
 C
       RETURN
@@ -767,7 +841,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcyc */
-      SUBROUTINE SCFCYC(CMO,EIG,FOCK,WORK,LWORK)
+      SUBROUTINE SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -780,7 +854,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <aovec.h>
 #include <mxorb.h>
-      DIMENSION FOCK(*),EIG(*),CMO(*), WORK(LWORK)
+      DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include <dcbgen.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
@@ -803,7 +877,7 @@ C
 C
 C     Initiate/restart SCF-cycle
 C 
-      CALL SCFCY1(CMO,EIG,FOCK,WORK(KDMAT),WORK(KBMAT),
+      CALL SCFCY1(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),WORK(KBMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('SCFCYC.SCFCY1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT ('SCFCYC')
@@ -811,7 +885,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcy1 */
-      SUBROUTINE SCFCY1(CMO,EIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+      SUBROUTINE SCFCY1(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -834,7 +908,7 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
-      DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),
+      DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK) 
       DIMENSION DVOVLP(MXOPEN)
       CALL QENTER('SCFCY1')
@@ -847,7 +921,7 @@ C     ***********************************
 C
 C     Initiate/restart SCF cycle
 C
-      CALL PREDHF(CMO,EIG,FOCK,DMAT,BMAT,
+      CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &            NPOS,WORK,LWORK)
 C
 C     Start cycle
@@ -1012,7 +1086,7 @@ C                DMAT - Density matrix
 C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,.TRUE.,
+         CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,.TRUE.,
      &               OVLSEL,WORK(KFREE),LFREE)
         IF(IPRSCF.GE.1) THEN
           CPUTID = SECTID(TDF2)
@@ -1062,7 +1136,7 @@ C
         DO I = 1,NFSYM
           CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
         ENDDO
-        CALL WRICMO(LUCOEF,CMO,EIG,DHFERG)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
       ENDIF
 C
 C     Close necessary files
@@ -1644,7 +1718,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck oneerg */
-      SUBROUTINE ONEERG(EIG)
+      SUBROUTINE ONEERG(EIG,IBEIG)
 C****************************************************************************
 C     PURPOSE:
 C        Calculate one-electron energy as sum of eigenvalues
@@ -1861,6 +1935,129 @@ C
       CALL QEXIT('MKMOFK')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FBOSON */
+      SUBROUTINE FBOSON (IMODE,I,ISYM,FBOS,NBO,FMOI,NO,EBOS,EIG)
+C****************************************************************************
+C     PURPOSE:
+C        Extract or insert a boson sub block out of the full matrix
+C
+C        Written by L. Visscher
+C        April 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+C
+      DIMENSION FBOS(NBO,NBO),FMOI(NO,NO),EBOS(NBO),EIG(NO)
+      DIMENSION IBOFF1(2),IBOFF2(2)
+C
+C     Determine offsets : the small component basis comes first
+C
+      IBOFF1(1) = NBORB(ISYM,I,2)
+      IBOFF1(2) = 0
+      IBOFF2(1) = NPSH(I)
+      IBOFF2(2) = 0
+      DO JC = 1, 2
+        DO JSYM = 1, ISYM - 1
+         IBOFF2(JC) = IBOFF2(JC) + NBORB(JSYM,I,JC)
+        ENDDO
+      ENDDO
+C
+      IF (IMODE.EQ.1) THEN
+        DO JC = 1, 2
+          JOFF1 = IBOFF1(JC)
+          JOFF2 = IBOFF2(JC)
+          DO JX = 1, NBORB(ISYM,I,JC)
+            DO IC = 1, 2
+              IOFF1 = IBOFF1(IC)
+              IOFF2 = IBOFF2(IC)
+              DO IX = 1, NBORB(ISYM,I,IC)
+                FBOS(IX+IOFF1,JX+JOFF1) = FMOI(IX+IOFF2,JX+JOFF2)
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ELSEIF (IMODE.EQ.2) THEN
+       DO JC = 1, 2
+          JOFF1 = IBOFF1(JC)
+          JOFF2 = IBOFF2(JC)
+          DO JX = 1, NBORB(ISYM,I,JC)
+            EIG(JX+JOFF2) = EBOS(JX+JOFF1)
+            DO IC = 1, 2
+              IOFF1 = IBOFF1(IC)
+              IOFF2 = IBOFF2(IC)
+              DO IX = 1, NBORB(ISYM,I,IC)
+                FMOI(IX+IOFF2,JX+JOFF2) = FBOS(IX+IOFF1,JX+JOFF1)
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ELSE
+       CALL QUIT('IMODE SHOULD BE 1 (EXTRACT) OR 2 (INSERT) IN FBOSON')
+      ENDIF
+C
+      RETURN
+      END
+C
+      SUBROUTINE SELBOS (I,NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
+C****************************************************************************
+C     PURPOSE:
+C        Sort eigenvectors from boson ordering to energy ordering
+C
+C        Written by L. Visscher
+C        April 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
+      DIMENSION EVEC(NO,NO),RDUM(NO,NO)
+C
+C     Establish the order
+C
+      CALL INDEXX (NO,EIG,INDX)
+C
+C     Sort the eigenvalues
+C
+      DO J = 1, NO
+         RDUM(J,1) = EIG(INDX(J))
+      ENDDO
+      CALL DCOPY(NO,RDUM,1,EIG,1)
+C
+C     Fill an array with the identification of the boson irreps
+C
+      IX = 0
+      NBRP = 4 / NZ
+      DO JZ = 2, 1, -1 
+         DO ISYM = 1, NBRP
+           DO J = 1, NBORB(ISYM,I,JZ)
+              IX = IX + 1
+              IDUM(IX) = JFSYM(ISYM,I) - 1
+           ENDDO
+        ENDDO
+      ENDDO
+C
+C     Sort this array
+C
+      DO J = 1, NO
+         IBEIG(J) = IDUM(INDX(J))
+      ENDDO
+C
+C     Sort the eigenvectors
+C
+      DO J = 1, NO
+         CALL DCOPY(NO,EVEC(1,INDX(J)),1,RDUM(1,J),1)
+      ENDDO
+      CALL DCOPY(NO*NO,RDUM,1,EVEC,1)
+C
+      RETURN
+      END
+            
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mvogen */
       SUBROUTINE MVOGEN(WORK,LWORK)
