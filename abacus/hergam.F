@@ -32,9 +32,6 @@ C
 C
 C  /* Deck gamfun */
       SUBROUTINE GAMFUN
-#if defined (SYS_ALLIANT)
-CVD$r NOASSOC
-#endif
 C
 C     Trygve Ulf Helgaker fall 1984
 C
