@@ -146,8 +146,9 @@ C
 C
 C     Check that there are no eigenvalues in the gap
 C
-      CALL EIGCHK(EIG(IORB(IFRP)+1),NPSH(IFRP))
-  100 CONTINUE
+      DO IFRP = 1,NFSYM
+         CALL EIGCHK(EIG(IORB(IFRP)+1),NPSH(IFRP))
+      END DO
 C
 C     Print eigenvalues
 C
