@@ -417,7 +417,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <aovec.h>
 #include <mxorb.h>
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00)
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include <dcbgen.h>
 #include <dcbfir.h>
@@ -484,7 +484,7 @@ C
         ISSINT = IBTAND(INTFLG/4,1)
         WRITE(LUPRI,'(/A,3I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
-     &    ' Regenerating with .INTFLG =',ILLINT,ILSINT,ISSINT
+     &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT
         NPOS = 0
         IF(PARCAL) THEN
           BF1  = FIRST1
@@ -535,6 +535,8 @@ C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
            CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+CTROND: sjekk....
+           CALL GENDEN(FAO,CMO,1,IPRINT)
            CALL DCOPY(N2BBASX,FAO,1,WORK(KBUF),1)           
            IOFF = 1
            DO ISHELL = 1, NOPEN

@@ -348,7 +348,9 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D2=2.0D0)
 C
+#include <dcbgen.h>
 #include <cbihr2.h>
 #include <dcbxrs.h>
 #include <dcborb.h>
@@ -408,7 +410,7 @@ C     Construct Kohn-Sham contribution
 C     ================================
       IF(DFTADD) THEN
 C       Generate standard density matrix
-        CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
         CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
 CTROND        CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
 CTROND        IOFF = 1
