@@ -1,0 +1,835 @@
+#
+# $Id$
+#
+# Shell script for configuring Makefile.config needed to build 
+# the DIRAC relativistic molecular code.
+# The shell script is a modified version of the script used for DALTON
+#
+# It tries to determine what platform we are on (although allowing builds 
+# for other platforms, as needed for crosscompiling), as well as detect any
+# interesting mathematical libraries on the present computer.
+#
+#
+# Known problems: The parallelization installation is rudimentary
+#                 The checks for compilers and libraries hopefully works
+#
+# Written by K.Ruud, Dec-1 1996
+# Revised 970401 hjaaj
+# Linux support added 970414 by Konrad Hinsen.
+# HP revisions 970505-ekd/Konrad Hinsen. Combined by kr 080597
+# Adapted for DIRAC 970910 - tsaue
+# Polish by Thomas Enevoldsen Oct 2 1997
+#
+# List of active modules
+#
+#
+echo
+echo '   Configuring the DIRAC Makefile.config and dhf run script'
+echo
+arclist='aix convex cray cray-t3d cray-t3e dec-alpha linux paragon sgi sun hp'
+answer=
+echo "Please enter architecture"
+echo "The following architectures are allowed :\n    $arclist"
+read answer
+echo "   Installing DIRAC on a $answer computer\n"
+case $answer in 
+    aix|rs6000 ) WHICH="rs6000";;
+    sgi|iris4d|irix ) WHICH="iris4d";;
+    paragon ) WHICH="paragon";;
+    cray ) WHICH="cray";;
+    cray-t3d ) WHICH="cray";;
+    cray-t3e ) WHICH="cray_t3e";;
+    convex ) WHICH="convex";;
+    sun|sun4 ) WHICH="sun4";;
+    dec-alpha|-alpha|-ultrix ) WHICH="alpha";;
+    hp ) WHICH="hp";;
+    linux ) WHICH="linux";;
+    * ) echo "$answer is an unsupported architecture. Choose one of\n $arclist"
+        exit;;
+esac
+#
+# Now we try to check the compiler and find some mathematical libraries. 
+# I don't think I will find more than two possible libraries of interest, 
+# thus define only two for each computer type
+#
+dirlist='/lib /usr/lib /usr/local/lib'
+case $WHICH in
+    rs6000) liblist='libesslp2.a libessl.a libblas.a'
+            complist='xlf f77 f90';;
+    iris4d) liblist='libcomplib.sgimath.a libblas.a'
+            complist='f77 f90';;
+    convex) liblist='libveclib.a libblas.a'
+            complist='fc f77 f90';;
+    cray)   liblist=''
+            complist='cf77 f77 cf90 f90';;
+    cray_t3e) liblist=''
+            complist='f90 cf90 cf77 f77';;
+    alpha)  liblist='libblas.a'
+            complist='f77 f90';;
+    sun4)   liblist='libblas.a'
+            complist='f77 f90';;
+    paragon) liblist='libmath.a libblas.a'
+             complist='if77 if90 f77 f90';;
+    linux)  liblist='libblas.a'
+            complist='g77';;
+    hp)      liblist='libblas.a'
+             complist='f77 fort77 f90'
+esac
+
+#
+# For AIX systems we need to knwo which version of the operating system we
+# have.
+#
+opsys=
+if [ $WHICH = 'rs6000' ]; then
+   opsys=`uname -v`
+   echo 'The version of the AIX operating system found is '$opsys'\n'
+   echo '\n NOTE: There appears to be a bug in the newest compiler of IBM'
+   echo '       If the code does not perform correctly on your system'
+   echo '       either reinstall an older compiler or turn off all optimization\n'
+fi
+
+#
+# For SGI we need to now if this is a 64 or 32 bits computer
+#
+
+if [ $WHICH = 'iris4d' ]; then
+    opsys=`uname -s`
+    if [ $opsys = 'IRIX' ]; then
+      bit='32'
+    else
+      bit='64'
+    fi
+    answer=
+    while [ "$answer" != "y" -a "$answer" != "n" ]
+    do
+      echo "This appears to be a $bit -bit architecture. Is this correct? [y/n] \c"
+      read answer
+    done
+    if [ "$answer" = "n" ]; then
+      if [ $bit = '64' ]; then
+        opsys='IRIX'
+      else
+        opsys='IRIX64'
+      fi
+    fi
+fi
+
+answer=
+mesp='dummy'
+while [ "$answer" != "y" -a "$answer" != "n" ]
+do
+    echo 'Do you want to install the program in a parallel version? [y/n] \c'
+    read answer
+done
+if [ "$answer" = "y" ]; then
+
+#
+#   Parallel architectures are difficult, better warn the user
+#
+
+    echo "\n   Makefiles for parallel architecture are defficult to guess"
+    echo "   Please always compare the generated Makefile.config with local documentation.\n"
+
+#
+# Determine message passing protocol to be used
+#
+
+    mesp=
+    while [ "$mesp" != "mpi" -a "$mesp" != "pvm" ]
+    do
+        echo 'Do you want to use "mpi" or "pvm" for message passing? \c'
+        read mesp
+    done
+#
+# The only computer I can think of with a separate compiler for parallel
+# MPI code is IBMs xlf
+#
+    if [ "$mesp" = "mpi" -a "$WHICH" = "rs6000" ]; then
+        comp='mpxlf'
+        parlib='no'
+    elif [ "$mesp" = "mpi" -a "$WHICH" = "cray_t3e" ]; then
+        parlib='no'
+    else
+        parlib='yes'
+    fi
+echo $parlib
+echo $comp
+
+    pardir=dirlist
+    incdir='/usr/include /usr/local/include /local/include'
+#
+#   Modify for SGI that may have both 32 and 64 bit architectures
+#
+    if [ $WHICH = 'iris4d' ]; then
+      if [ $opsys = 'IRIX64' ]; then
+        pardir="$dirlist /usr/lib64"
+      else
+        pardir="$dirlist /usr/lib32"
+      fi
+    fi
+    parinc=
+    parlibp=
+#
+#   MPI settings, first we do the mpi-library
+#
+    if [ $parlib = 'yes' -a $mesp = 'mpi' ]; then
+        parlib=
+	tmplib='libmpi.a libmpi.so'
+	incfile='mpif.h'
+	for testdir in $pardir; do
+	    for testlib in $tmplib; do
+       	        if test -f $testdir/$tmplib; then
+	            parlib='-lmpi'
+		    parlibp=$testdir
+		    break
+	         fi
+            done
+	    test -n "$parlib" && break
+	 done
+#
+#   Now we try to find an include directory
+#
+	 for testdir in $incdir; do
+	     if test -f $testdir/$incfile; then
+	         parinc=$testdir
+		 break
+	     fi
+	 done
+#
+#   PVM settings, we need two PVM library files
+#
+    elif [ $parlib = 'yes' -a $mesp = 'pvm' ]; then
+        parlib=
+	tmplib='libpvm3.a libfpvm3.a'
+	for testdir in $pardir; do
+	    for testlib in $tmplib; do
+		if test -f $testdir/$parlib; then
+		    if [ $parlib = 'libpvm3.a']; then
+			parlib="$parlib -lpvm3"
+		    else
+		        parlib="$parlib -lfpvm3"
+		    fi
+		fi
+	    done
+	 done
+    fi
+#    if [ "$parlib" = "no" ]; then
+#	 parlib=
+#    fi
+fi
+#
+# Parallel information finished setting
+#
+#
+# Test for the existence of the compiler
+#
+echo "\nChecking for compiler ...\c"
+
+if [ "$mesp" = "mpi" -a "$WHICH" = "rs6000" ]; then
+    set dummy $comp; ac_word=$2
+    echo " $comp\c"
+    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+    for ac_dir in $PATH; do
+        test -z "$ac_dir" && ac_dir=.
+	if test -f $ac_dir/$ac_word; then
+	    ac_cv_prog_F77=$ac_word
+     	    break
+        fi  
+    done
+    IFS="$ac_save_ifs"
+    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
+    F77="$ac_cv_prog_F77"
+    if test -n "$F77"; then
+	echo "\n   Compiler $F77 found"
+        break
+    fi
+fi
+if test -z "$F77"; then
+for comp in $complist; do
+    set dummy $comp; ac_word=$2
+    echo " $comp\c"
+    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+    for ac_dir in $PATH; do
+        test -z "$ac_dir" && ac_dir=.
+	if test -f $ac_dir/$ac_word; then
+	    ac_cv_prog_F77=$ac_word
+     	    break
+        fi  
+    done
+    IFS="$ac_save_ifs"
+    test -z "$ac_cv_prog_F77" && ac_cv_prog_F77=""
+    F77="$ac_cv_prog_F77"
+    if test -n "$F77"; then
+	echo "\n   Compiler $F77 found"
+        break
+    fi
+done
+fi
+if test -z "$F77"; then
+    echo "\n   No compiler found on this computer"
+    echo "   Cannot proceed without a Fortran compiler in path"
+    exit
+fi
+#
+# Check out mathematical libraries. May have to expand library list?
+#
+# For rs6000 we first try ESSLP2,ESSL, then BLAS
+#
+
+LIB=''
+for testdir in $dirlist; do
+  if [ -n "$liblist" ]; then
+    for testlib in $liblist; do
+      if test -f $testdir/$testlib; then
+         case $testlib in
+	    libesslp2.a) LIB='-lesslp2';;
+	    libessl.a) LIB='-lessl';;
+            libblas.a) LIB='-lblas';;
+            libcomplib.sgimath.a) LIB='-lcomplib.sgimath';;
+            libveclib.a) LIB='-lveclib';;
+            libmath.a) LIB='-lmath -lm -nx';;
+         esac
+	 break
+      fi
+    done
+    test -n "$LIB" && break
+  fi
+done
+
+if [ -z "$LIB" -a -n "$liblist" ]; then
+    echo '   No mathematical libraries seem to be available'
+    echo '   I will proceed without them\n'
+elif [ -n "$LIB" ]; then
+    echo '   I have found the following mathematical library(ies): '$LIB'\n'
+fi      
+#
+# Determine memory size. 
+#
+memdef=10000000
+echo 'DIRAC uses approximately 800000 words of static allocations'
+echo 'How many words to use as default for scratch memory ?'
+echo '(we do not recommend going below 1000000 words)'
+echo 'Note that scratch memory can be changed through the shell variable WRKMEM\n'
+read memsiz
+if [ -z "$memsiz" ]; then
+    memsiz=$memdef
+fi
+echo '   Program will be installed with a default scratch memory of '$memsiz' words\n'
+
+#
+# Determine location for executable and run script
+#
+
+curr=`pwd`
+echo '   Current directory is '$curr'\n'
+
+INSTALL_DIR=$curr
+#INCLUDE_DIR=$curr/include
+INCLUDE_DIR=include
+answer=
+while [ "$answer" != "y" -a "$answer" != "n" ]
+do
+    echo 'Use current directory as installation directory for binaries and scripts? [y/n] \c'
+    read answer
+done
+
+while [ "$answer" = "n" ]
+do
+    echo 'Please enter installation directory: \c'
+    read INSTALL_DIR
+    echo '\n   Dirac executable and script will be placed in '$INSTALL_DIR' directory\n'
+    if [ ! -d "$INSTALL_DIR" ]; then
+        echo "ERROR: $INSTALL_DIR does not exist"
+    else
+        answer="ok"
+    fi
+done
+
+#if [ "$curr" = "$INSTALL_DIR" ]; then
+#    INSTALL_DIR=$curr
+#    sed '/mv dalpar.x/d' Makefile1 > Makefile2
+#    sed '/mv node.x/d' Makefile2 > Makefile
+#    rm -f Makefile[1-2]
+#fi
+
+#
+# Determine default basis set library location
+#
+#
+#answer=
+#basdir=$curr'/basis/'
+#while [ "$answer" != "y" -a "$answer" != "n" ]
+#do
+#    echo 'Use '$basdir' as default basis set directory? [y/n] \c'
+#    read answer
+#done
+#if [ "$answer" = "n" ];  then
+#    echo 'Please enter default basis set directory (must end with /) \c'
+#    read basdir
+#    echo '\n   Default basis set directory will be '$basdir'\n'
+#fi
+#
+#
+# Determine default scratch disk space for calculations
+#
+
+if [ -d '/work' ]; then
+    worksp='/work'
+elif [ -d '/scratch' ]; then
+    worksp='/scratch'
+elif [ -d '/scr' ]; then
+    worksp='/scr'
+elif [ -d '/temp' ]; then
+    worksp='/temp'
+else
+    echo '\nI did not find /work, /scratch, /scr or /temp. I will use /tmp'
+    worksp='/tmp/'
+fi
+
+answer=
+while [ "$answer" != "y" -a "$answer" != "n" ]
+do
+    echo 'Use '$worksp' as default root scratch space in dhf run script? [y/n] \c'
+    read answer
+done
+if [ "$answer" = "n" ];  then
+    echo 'Please enter default root scratch directory: \c'
+    read worksp
+fi
+echo '\n   Job specific directories under '$worksp'/$USER\n   will be used for temporary files when running dhf\n'
+
+#
+#
+# We are beginning to see the end of the installation requirements
+#
+# We will now dump machine specific things to Makefile.config
+#
+
+echo '\n   Updating Makefile.config'
+
+if [ -f Makefile.config ]; then
+    echo 'Ooops. Makefile.config exists. I take a backup as Makefile.config.orig'
+    if [ -f Makefile.config.orig -a ! -w Makefile.config.orig ]; then
+        echo 'Makefile.config.orig is write-protetcted.'
+	answer=
+        while [ "$answer" != "y" -a "$answer" != "n" ]
+        do
+           echo 'Do you want me to overwrite Makefile.config.orig anyway? [y/n]\c'
+           read answer
+        done
+        if [ "$answer" = "n" ];  then
+            echo 'I do not take a backup of Makefile.config. This file will be overwritten'
+	else
+            exec `chmod u+w Makefile.config.orig`
+            exec `mv Makefile.config Makefile.config.orig`
+            exec `chmod u-w Makefile.config.orig`
+        fi
+    else   
+        exec `mv Makefile.config Makefile.config.orig`
+        exec `chmod u-w Makefile.config.orig`
+    fi
+fi
+
+#
+# Parallel preprocessor directive need to be set
+#
+
+if [ "$mesp" = "mpi" ]; then
+    parop='VAR_MPI'
+elif [ "$mesp" = "pvm" ]; then
+    parop='VAR_PVM'
+else
+    parop=
+fi
+
+case $WHICH in
+#
+#   RS6000
+#
+    rs6000) case $opsys in
+		2) if [ "$mesp" = "dummy" ]; then
+                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23
+-D'INSTALL_WRKMEM=$memsiz' "
+                       for mod in $MODS; do
+                         cpp=`echo $cpp $mod`
+                       done
+                       def='dirac.x'
+                   else
+                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       for mod in $MODS; do
+                         cpp=`echo $cpp $mod`
+                       done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+		   fi
+                   inc="-I$INCLUDE_DIR";;
+		2) if [ "$mesp" = "dummy" ]; then
+                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' "
+                       for mod in $MODS; do
+                         cpp=`echo $cpp $mod`
+                       done
+                       def='dirac.x'
+                   else
+                       cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       for mod in $MODS; do
+                         cpp=`echo $cpp $mod`
+                       done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+		   fi
+                   inc="-I$INCLUDE_DIR";;
+                *) if [ "$mesp" = "dummy" ]; then
+                       cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz'"
+                       for mod in $MODS; do
+                         cpp=`echo $cpp,$mod`
+                       done
+                       def='dirac.x'
+                   else
+                       cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D$parop"
+                       for mod in $MODS; do
+                         cpp=`echo $cpp,$mod`
+                       done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+		   fi
+		   inc="-WF,-I$INCLUDE_DIR";;
+            esac
+            opt='-O3 -qstrict';;
+#
+#   IRIS4D
+#
+    iris4d) case $opsys in
+               IRIX64) opt='-O2 -64 -mips4 -G 0';;
+	       *) opt='-O2 -32 -mips2 -G 0';;
+            esac
+            if [ "$mesp" = "dummy" ]; then
+                cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz'"
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                def='dirac.x'
+	    else
+                cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+	    fi
+	    inc="-I$INCLUDE_DIR";;
+#
+#  CONVEX
+#
+    convex) if [ "$mesp" = "dummy" ]; then
+                cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' "
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                def='dirac.x'
+	    else
+                cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                def='dirmpi.x'
+	    fi
+            opt="-O2 -link \"-W\""
+	    inc="-I$INCLUDE_DIR";;
+#
+#   CRAY
+#
+    cray)   if [ "$mesp" = "dummy" ]; then
+                cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=$memsiz' "
+	    else
+                cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=$memsiz' ,$parop"
+	    fi
+            for mod in $MODS; do
+              cpp=`echo $cpp,$mod`
+            done
+            opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
+	    inc="-I$INCLUDE_DIR"
+	    def='dirac.x';;
+#
+#   CRAY T3E
+#
+    cray_t3e) if [ "$mesp" = "dummy" ]; then
+                cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
+	    else
+                cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
+	    fi
+            for mod in $MODS; do
+              cpp=`echo $cpp $mod`
+            done
+            opt="-Oaggress,scalar3"
+	    inc="-I$INCLUDE_DIR"
+	    def='dirac.x';;
+#
+#   ALPHA
+#
+    alpha)  if [ "$mesp" = "dummy" ]; then
+                cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' "
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+	        def='dirac.x'
+	    else
+                cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+	    fi
+            opt='-O4 -fpe2'
+            inc="-I$INCLUDE_DIR";;
+#
+#   PARAGON
+
+    paragon) if [ "$mesp" = "dummy" ]; then
+                 cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' "
+                 for mod in $MODS; do
+                   cpp=`echo $cpp $mod`
+                 done
+                 def='dirmpi.x'
+	     else
+                 cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                 for mod in $MODS; do
+                   cpp=`echo $cpp $mod`
+                 done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+	     fi
+             opt='-O3 -Mvect'
+	     inc="-I$INCLUDE_DIR";;
+#
+#  SUN
+#
+    sun4) if [ "$mesp" = "dummy" ]; then
+              cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz'"
+              for mod in $MODS; do
+                cpp=`echo $cpp $mod`
+              done
+              def='dalton.x'
+          else
+              cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                for mod in $MODS; do
+                  cpp=`echo $cpp $mod`
+                done
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+          fi
+              opt='-O2 -Nc50'
+              inc="-I$INCLUDE_DIR" ;;
+#
+#  HEWLETT - PACKARD
+#
+    hp) if [ "$mesp" = "dummy" ]; then
+              cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' "
+              for mod in $MODS; do
+                cpp=`echo $cpp $mod`
+              done
+              def='dirac.x'
+          else
+              cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+              for mod in $MODS; do
+                cpp=`echo $cpp $mod`
+              done
+              if [ "$mesp" = "mpi" ]; then
+                 def='dirmpi.x'
+              else
+                 def='dirpvm.x'
+	      fi
+          fi
+          opt='+O3 +U77 +E4 +E5'
+          inc="-I$INCLUDE_DIR"
+          LIB="-lV7 $LIB";;
+#
+#  LINUX
+#
+    linux) if [ "$mesp" = "dummy" ]; then
+              cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
+              def='dalton.x'
+          else
+              cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+                       if [ "$mesp" = "mpi" ]; then
+                          def='dirmpi.x'
+                       else
+                          def='dirpvm.x'
+		       fi
+          fi
+              for mod in $MODS; do
+                 cpp=`echo $cpp $mod`
+              done
+              opt='-O2'
+              inc="-I$INCLUDE_DIR"
+esac
+#
+cat <<EOF > Makefile.config
+ARCH        = $WHICH
+#
+#
+CPP_FLAGS   = $cpp 
+F77         = $F77
+CC          = cc
+RM          = rm
+OPTFLAGS    = $opt
+INCLUDE_DIR = $inc
+LIB_LIST    = $LIB
+INSTALLDIR  = $INSTALL_DIR
+#
+default : $def
+EOF
+
+#
+# Insert necessary additional features for parallel calculations
+#
+
+if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
+    cat <<EOF >> Makefile.config
+#
+# Parallel initialization
+#
+MPI_INCLUDE_DIR = $parinc
+MPI_LIB_PATH    = $parlibp
+MPI_LIB         = $parlib
+#
+EOF
+elif [ "$mesp" = "pvm" ]; then
+    cat <<EOF >> Makefile.config
+#
+# Parallel initialization
+#
+PVM_LIB_PATH    = $parinc
+PVM_LIB_LIST    = $parlib
+#
+EOF
+fi
+#
+# Include the rule for building the object files
+#
+cppuse=
+if [ $WHICH = 'convex' ]; then
+    cpptry='cpp'
+#
+#  On the Convex accesible to us, cpp is very oddly placed. If we can't
+#  find cpp, we try to see if this is a general Convex installation
+#
+    set dummy $cpptry; ac_word=$2
+    echo "checking for preprocessor""... $cpptry\c"
+    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+    for ac_dir in $PATH; do
+        test -z "$ac_dir" && ac_dir=.
+	if test -f $ac_dir/$ac_word; then
+	    ac_cv_prog_cpp=$ac_word
+     	    break
+        fi  
+    done
+    IFS="$ac_save_ifs"
+    test -z "$ac_cv_prog_cpp" && ac_cv_prog_cpp=""
+    cppuse="$ac_cv_prog_cpp"
+    echo "cppuse $cppuse cpptry $cpptry"
+    if test -z "$cppuse"; then
+#
+#   Try /usr/lib/cc as a last resort
+#
+        if [ -x /usr/lib/cc/cpp ]; then
+	   cppuse='/usr/lib/cc/cpp'
+	fi
+    fi
+    if test -n "$cppuse"; then
+       echo "Preprocessor $cppuse found"
+    else
+       echo "Preprocessor $cpptry not found"
+    fi
+    
+fi
+if [ "$WHICH" = "rs6000" -a "$opsys" = "2" ]; then
+    cppuse='cc'
+fi
+
+
+tab=`echo "\t"`
+
+if [ $WHICH = 'convex' ]; then
+   cat <<EOF >> Makefile.config
+CPP         = $cppuse
+#
+# Suffix rules
+#
+.SUFFIXES : .F .f .o
+
+.F.o:
+$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F > \$*.f
+$tab\$(F77) \$(OPTFLAGS) -c \$*.f 
+$tab\$(RM) \$*.f
+EOF
+elif [ $WHICH = 'rs6000' ]; then
+   if [ $opsys = '2' ]; then
+cat <<EOF>> Makefile.config
+CPP        = $cppuse
+#
+# Suffix rules
+#
+.SUFFIXES : .F .c .o
+
+.F.o:
+$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F
+$tab mv \$*.i \$*.f
+$tab\$(F77) \$(OPTFLAGS) -c \$*.f 
+$tab\$(RM) \$*.f
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+EOF
+    else cat <<EOF>> Makefile.config
+#
+# Suffix rules
+#
+.SUFFIXES : .F .c .o
+
+.F.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+EOF
+    fi
+else cat <<EOF>> Makefile.config
+#
+# Suffix rules
+#
+.SUFFIXES : .F .c .o
+
+.F.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F 
+.c.o:
+$tab\$(CC) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.c
+EOF
+fi
+
+echo '\n   The configuration of DIRAC has finished succesfully.'
+echo '\n   Check compiler flags etc. in Makefile.config and run "make" to get executable.'
+
+exit
+
+
