@@ -1599,6 +1599,7 @@ C        Transform to unsorted basis
 C
          IREP = ISYMOP(IMAT)-1
          CALL BSTOBU(WORK(KTMP),NZ,WORK(KFREE),LFREE)
+#include <alphac.h>
          IF(IPRINT.GE.5) THEN
             CALL HEADER('GTCNVD: DMAT After BSTOBU to unsorted basis',
      &                  -1)
@@ -1694,7 +1695,7 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <aovec.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM2 = -2.0 D00, CSTD = 137.0359895D0)
+      PARAMETER( D0 = 0.0 D00 , DM2 = -2.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -1728,7 +1729,7 @@ C
 C
 C     If ||g(2,LL)|| / ||g(1)+g(2,LL)|| > 20 then calculate LS-gradient
 C
-      CFAC = (( CSTD / CVAL) ** ( DM2 ) )
+      CFAC = (( CVEL / CVAL) ** ( DM2 ) )
       IF ( TOTNRM .GT. D0 ) THEN
          DL = DLLNRM / TOTNRM
          DR = 2.0 D01 * CFAC
@@ -1770,8 +1771,9 @@ C*****************************************************************************
 #include <mxcent.h>
 #include <mxorb.h>
 #include <aovec.h>
+#include <alphac.h>
 C
-      PARAMETER( D0 = 0.0 D00 , DM4 = -4.0 D00, CSTD = 137.0359895D0, 
+      PARAMETER( D0 = 0.0 D00 , DM4 = -4.0 D00,
      &           D2 = 2.0 D00 , DP1 = 1.0D-01)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
@@ -1809,7 +1811,7 @@ C
 C
 C     As estimate for ||g(2,SS)|| use ||g(2,LS)||^2 / ||g(2,LL)||
 C
-      CFAC = (( CSTD / CVAL) ** ( DM4 ) )
+      CFAC = (( CVEL / CVAL) ** ( DM4 ) )
       IF ( TOTNRM .GT. D0 ) THEN
          DR = ( DLSNRM ** D2 ) / DLLNRM
          DL = CFAC * DP1 * MAX( TOTNRM, GRDTHR )
