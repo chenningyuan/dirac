@@ -8,4 +8,4 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-time $PAM_PATH/pam -rmscr -rmwrk H2O MP2
+time $PAM_PATH/pam -rmscr -rmwrk $MPIARG H2O MP2
