@@ -61,7 +61,11 @@ C INFPAR : MASTER, NODTOT, IPRPAR, MAXTSK, NCODE, DEBUG
 C GNRINF : BASDIR, LENBAS
 C
 #include "infpar.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       DATA TOTWAL /0./
       SAVE TOTWAL
 C
@@ -237,7 +241,11 @@ C SIRIPC : NEWGEO
 C INFORB : N2BASX
 C INFPAR : NODEID(), NODTOT, NCODE, NTASK
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "siripc.h"
 #include "inforb.h"
 #include "infpar.h"
@@ -362,7 +370,11 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "siripc.h"
 #include "molinp.h"
 #include "inforb.h"
@@ -503,7 +515,11 @@ C GNRINF : NEWBAS
 C SIRIPC : NEWGEO
 C INFPAR : NODTOT, NTASK, TIMING, MAXCL2
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "siripc.h"
 #include "infpar.h"
 C
@@ -991,7 +1007,11 @@ C INFORB : *
 C INFPAR : *
 C CBIERI : *
 C
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "siripc.h"
 #include "molinp.h"
 #include "infpar.h"

@@ -51,7 +51,11 @@ C
 #include "cbieri.h"
 #include "erisel.h"
 #include "eribuf.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
       DATA TABLE /'.SKIP  ', '.PRINT ', '.TIME  ', '.RETURN', '.AOBTCH',
      &            '.NOPSAB', '.NOPSCD', '.NOPS12', '.OFFCNT', '.NO12GS',
      &            '.NEWCR1', '.NONCAN', '.WRITEA', '.NOWRIT', '.XXXXXX',
@@ -327,7 +331,11 @@ C  /* Deck er2ini */
 #include "erisel.h"
 #include "eribuf.h"
 #include "ericom.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 C
 C     Initialize /CBIERI/
 C

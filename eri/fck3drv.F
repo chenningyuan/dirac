@@ -1,7 +1,11 @@
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, WORK, LWORK )
 #include "implicit.h"
 #include "priunit.h"
+#ifdef PRG_DIRAC
+#include "dcbgen.h"
+#else
 #include "gnrinf.h"
+#endif
 #include "cbihr2.h"
 #include "cbieri.h"
 #include "cbione.h"
