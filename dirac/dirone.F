@@ -1376,19 +1376,7 @@ C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
-      IF (.NOT.SUB_BL) THEN
-         DO IFRP = 1, NFSYM
-            N_SUB_BL(IFRP) = 4 / NZ
-            DO IB = 1, N_SUB_BL(IFRP) 
-              NORB_SUB(IB,IFRP,0) = NBORB(IB,IFRP,0)
-              NORB_SUB(IB,IFRP,1) = NBORB(IB,IFRP,1)
-              NORB_SUB(IB,IFRP,2) = NBORB(IB,IFRP,2)
-              IREP = JFSYM(IB,IFRP) - 1
-              ID_SUB_BL(IB,IFRP) = IREP
-            ENDDO
-         ENDDO
-      ENDIF
-C
+      IF (.NOT.SUB_BL) CALL INISUB
       IF (LEVYLE.OR.SPINFR) THEN
          SUB_BL = .TRUE.
       ENDIF
@@ -3946,6 +3934,7 @@ C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
         IF(SPINFR.OR.LEVYLE) THEN
 C         Spin-free case: Fill array with boson irrep info
+          CALL INISUB
           CALL INIBOS(WORK(KIBOS),IFRP)
         ELSE
 C         Spin-orbit coupling: Fill array with zeros..
@@ -5476,3 +5465,34 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Inisub */
+      SUBROUTINE INISUB
+C***********************************************************************
+C
+C
+C     Copy information from NBORB to the subblock array if we have not
+C     partioned the orbital space otherwise.
+C
+C     Written by Luuk and copied by Trond Oct 19 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dgroup.h"
+      DO IFRP = 1, NFSYM
+        N_SUB_BL(IFRP) = 4 / NZ
+        DO IB = 1, N_SUB_BL(IFRP) 
+          NORB_SUB(IB,IFRP,0) = NBORB(IB,IFRP,0)
+          NORB_SUB(IB,IFRP,1) = NBORB(IB,IFRP,1)
+          NORB_SUB(IB,IFRP,2) = NBORB(IB,IFRP,2)
+          IREP = JFSYM(IB,IFRP) - 1
+          ID_SUB_BL(IB,IFRP) = IREP
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+
