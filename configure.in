@@ -882,9 +882,11 @@ case $machine in
        for mod in $MODS; do
           cpp=`echo $cpp $mod`
        done
-       opt="-Oaggress,scalar3"
+#       opt="-Oaggress,scalar3"
+       opt="-dp -F -O3,unroll2,msgs,negmsgs -R nb -Wl,-Dstreams=on"
        inc="-I$INCLUDE_DIR"
        def='dirac.x';;
+       LIB="crilib.cld $LIB"
 #
 #   CRAY
 #
@@ -902,6 +904,7 @@ case $machine in
       opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
       inc="-I$INCLUDE_DIR"
       def='dirac.x';;
+      LIB="crilib.cld $LIB"
 #
 #  CONVEX
 #
