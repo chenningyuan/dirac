@@ -71,6 +71,8 @@ C     calculating the wavefunction SETDHF must be called -
 C     so we call it anyway.
 C
 C
+C
+C
       CALL SETDHF(IPRGRD)
 C
 C     Save DO2GRD
