@@ -292,6 +292,15 @@ C
 C     Process input for various program sections
 C     ==========================================
 C
+C     hjaaj Oct 2003:
+C        first initialize common /dcbexp/
+C        because it may be modified both by EXPINP
+C        and elsewhere for diamag. terms for magnetic properties
+C
+      CALL EXPINP('INITIALIZE',.FALSE.,WORK,LWORK)
+C
+C     Now read input
+C
   200 CONTINUE
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -415,7 +424,7 @@ C
       END IF
 C
 C
-C     Initialize /CBIEXP/
+C     Initialize /DCBEXP/
 C     ===================
 C
       IPREXP = 0
@@ -423,7 +432,7 @@ C
       ORBANA = .FALSE.
       PRJANA = .FALSE.
 C
-C     Process input from CBIEXP
+C     Process input for DCBEXP
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*EXPECT')
@@ -2206,8 +2215,8 @@ C
       CALL INIGRD
 C
 C
-C     Process input from CBIEXP
-C     =========================
+C     Process input for DCBEXP
+C     ========================
 C
       NEWDEF = (WORD .EQ. '*MOLGRD')
       ICHANG = 0
