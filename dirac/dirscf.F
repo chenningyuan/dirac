@@ -2919,6 +2919,7 @@ C        this needs to be checked by the MCSCF bunch !!!
 C
          NISH_DHF(I) = NISH(I)
          NASH_DHF(I) = NASH(I)
+         NOCC_DHF(I) = NISH_DHF(I) + NASH_DHF(I)
       END DO
 C
       RETURN
