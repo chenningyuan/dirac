@@ -78,7 +78,7 @@ C        version of GOSCI !!!!!!!!!!!!!
 C        (MULTB is not used as it includes spin-symmetry -- see GMULTSF --
 C        and we treat the spin Ms separately as in non-rel codes)
       ELSE
-         CALL GMULTA (NZ,NFSYM,NREP,REPNA,MULTB(1,1))
+         CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB(1,1))
       ENDIF
 C     We extend MULTB(1:2*NREP,1:2*NREP) with MULTB(1:2*NREP,0) for use in
 C     GOSCI_SYMOK when we add the first spinor to a new
@@ -181,8 +181,7 @@ C
 C     Print section
 C     -------------
 C
-      IF ( IPROPT .GE. 0 ) THEN
-c     IF ( IPROPT .GE. 20 ) THEN
+      IF ( IPROPT .GE. 20 ) THEN
          WRITE(LUPRI,'(A,3I3/A)')
      &      ' (GOSCI_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
      &      ' -> IRRP.lt.0 means include all symmetries'

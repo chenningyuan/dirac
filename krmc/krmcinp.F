@@ -54,9 +54,11 @@ C
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
+      CHARACTER*4 REPNA(64)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
       DIMENSION WORK(LWORK)
+      DIMENSION MULTB_TMP(64,64)
 C
       INTEGER IKWSET(NTABLE)
 C
@@ -445,14 +447,23 @@ C
 C     Symmetry of the wave function:
 C     ------------------------------
 C
+      IF (SPINFR.OR.LEVYLE) THEN
+         CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+      ELSE
+         CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+      ENDIF
+C
+      IRP = IKRMC_SYMMETRY
       IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
+         IRRP = NREP + IRP
          WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (boson) of wave function: ',
-     &        REP ( IKRMC_SYMMETRY - 1 )
+     &        REPNA(IRRP)
       ELSE
+         IRRP = IRP
          WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (fermion) of wave function: ',
-     &        FREP ( IKRMC_SYMMETRY - NBSYM )
+     &        REPNA(IRRP)
       END IF
 C
 C     MK constraints in the CI expansion.
