@@ -14,7 +14,7 @@ mpi=" "
 parallel=" "
 nodes=1
 queue="none"
-time="24:00:00"
+time="4:00:00"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -255,7 +255,7 @@ echo " When they are done please check the results in the directory ${testdir}/l
 # Other queue systems used in Amsterdam. Add you own as new comment line if you like
 #
 #tc: SGE queueing system
-qsub -e testlast.\$JOB_ID.out -o testlast.\$JOB_ID.out -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
+qsub -e $errfile -o $errfile -l s_cpu=$time -cwd -V $parallel -l queue=$queue -N testlast job_testlast.sh
 #das:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=$time,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
 #solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
 #teras: bsub <job_testlast.sh
