@@ -42,6 +42,7 @@ C
     Kenneth: will you put .SUPONLy into HERMIT manual ?
     Done by Kenneth before jan.-96
 #endif
+#ifndef PRG_DIRAC
 C  /* Deck herctl */
       SUBROUTINE HERCTL(WORK,LWORK)
 C
@@ -194,6 +195,7 @@ CTROND      IF (ONEPRP ) CLOSE(LUPROP,STATUS='KEEP')
       CALL TIMTXT('>>>> Total wall time used in HERMIT:',WALHER,LUPRI)
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
@@ -219,7 +221,6 @@ C
 #endif
 #include <cbiher.h>
 #include <cbihr1.h>
-#include <cbihrs.h>
 #include <cbisol.h>
 #include <nuclei.h>
 #include <orgcom.h>
@@ -1083,7 +1084,11 @@ C
       GO TO 201
     4   CALL HR2INP(WORD)
       GO TO 201
+#ifndef PRG_DIRAC
     5   CALL HRSINP(WORD)
+#else
+    5   CALL QUIT('*SUPINT not implemented in Dirac')
+#endif /* ifndef PRG_DIRAC */
       GO TO 201
 #if defined (VAR_MPI) || defined (VAR_MPI)
  6    CONTINUE
@@ -1100,7 +1105,9 @@ C
 C
       CALL HR1INP(WORD)
       CALL HR2INP(WORD)
+#ifndef PRG_DIRAC
       CALL HRSINP(WORD)
+#endif /* ifndef PRG_DIRAC */
 #if defined (MOD_ERI)
       CALL ER2INP(WORD)
 #endif
@@ -1116,22 +1123,16 @@ C     need to call readin since all information should already
 C     be on unit LUONEL. Parameter .TRUE. in call indicates that
 C     LUONEL must be written.
 C
-      IF(RELCAL) THEN
-        CALL READIN(WORK,LWORK,.FALSE.)
-        CALL SETDCH
-      ELSE
-#if !defined (SYS_IBM)
-        OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOONEINT')
+#ifdef PRG_DIRAC
+      CALL READIN(WORK,LWORK,.FALSE.)
 #else
-        OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AONEINT')
-#endif
-        CALL READIN(WORK,LWORK,.TRUE.)
-        CALL SETDCH
-        IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
-      ENDIF
+      OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &      FILE='AOONEINT')
+      CALL READIN(WORK,LWORK,.TRUE.)
+      IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
+#endif
+      CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
          DO 234 I = 1, MXCENT
             ISOTOP(I) = 1
@@ -1479,6 +1480,7 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
 #include <implicit.h>
@@ -2403,6 +2405,7 @@ C
       END IF
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
