@@ -379,7 +379,7 @@ EOF
    fi
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar configure.in pamadm 2>> export.log
+      tar rvf DIRAC.new.tar configure.in pamadm WHATSNEW 2>> export.log
 EOF
    fi
    if [ "$EXPORTTAR" ]; then
