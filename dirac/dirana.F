@@ -1137,22 +1137,6 @@ C
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
      &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
         POLT = POLT + POL(IFRP)
-C
-C       Calculate polarization contribution
-C       ===================================
-C
-        CALL QGEMM(NFBAS(IFRP,0),NVECS(IFRP,2),NVECS(IFRP,1),DM1,
-     &             'N','N',IPQTOQ(1,0),
-     &             WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NVECS(IFRP,0),NZ,
-     &             'N','N',IPQTOQ(1,0),
-     &             WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),NZ,
-     &             D1,IPQTOQ(1,0),
-     &             WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NVECS(IFRP,0),NZ)
-        IF(IPRPRJ.GE.5) THEN
-          CALL HEADER('Polarization vectors',0)
-          CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
-     &                NVECS(IFRP,2),NFBAS(IFRP,0),NVECS(IFRP,0))
-        ENDIF      
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
@@ -1198,12 +1182,17 @@ C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
 C
+C     KQ and KE are adresses for coefficients and eigenvalues
+C       KQ(IFRP,1)   reference orbitals
+C       KQ(IFRP,2)   on input: Molecular Orbitals
+C                    on output: Polarization contributions
+C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0)
+      PARAMETER(D0=0.0D0,DC=1.0D-2,D2=2.0D0,D1=1.0D0,DM1=-1.0D0)
 C
 #include "dcbprj.h"
 #include "dgroup.h"
@@ -1294,6 +1283,16 @@ C
 C     Add polarization contribution to expansion coefficients
 C
       CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZ)
+      CALL QGEMM(NFBAS(IFRP,0),NMOL,NREF,DM1,'N','N',IPQTOQ(1,0),
+     &             WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,
+     &             'N','N',IPQTOQ(1,0),
+     &             BVEC,NTOT,NMOL,NZ,D1,IPQTOQ(1,0),
+     &             WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ)
+        IF(IPRPRJ.GE.5) THEN
+          CALL HEADER('Polarization vectors',0)
+          CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
+     &                NMOL,NFBAS(IFRP,0),NTOT)
+        ENDIF      
 C
 C     Population analysis
 C
