@@ -120,8 +120,14 @@ C
       REWIND(MDINT)
       IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
          IF (MYPROC.EQ.MASTER) THEN
-            READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
+C           The oldest MOLFDIR file format
+            READ (MDINT,ERR=10000,END=10) DATEX,TIMEX,NKR,
+     &       (IDUM,I=1,4*NKR),(KR(I),KR(-I),I=1,NKR)
+            GO TO 11
+C           The newer MOLFDIR file format = identical to older DIRAC
+   10       READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &       (KR(I),KR(-I),I=1,NKR)
+   11       CONTINUE
          ENDIF
 #if defined (VAR_MPI)
          IF (NMPROC .GT. 1) THEN
@@ -974,7 +980,7 @@ C                            Contribution to direct part
                              IBUF(7,NZE) = INZ
 C                            Skip unnecessary integrals
                              IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
-                           ELSE
+                          ELSE
 C                            Contribution to exchange part
                              ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
                              ITYP = - ITYP
@@ -988,7 +994,7 @@ C                            Contribution to exchange part
 C                            Skip unnecessary integrals
                              ITYP = - ITYP
                              IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
-                           ENDIF
+                          ENDIF
                        ENDIF
                      J = I1
                      I = J1
