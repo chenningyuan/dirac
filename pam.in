@@ -455,8 +455,12 @@ initialize()
 
    SCR_DIR=
 
-   MPI_NPROC=
-   PARCAL=
+   if [ ! -z "$MPI_NPROC" ]; then
+      PARCAL=1
+   else
+      MPI_NPROC=
+      PARCAL=
+   fi
 
    NICE=1
 
