@@ -47,9 +47,9 @@ C
       PARAMETER (THRRND=1.D-2, THRTT=1.D-4, D1=1.0D0)
 C
 C     Used from common blocks:
-C     INFPRI: LUW6
+C     PRIUNIT: LUPRI
 C
-#include <infpri.h>
+#include <priunit.h>
 C
       CALL QENTER('ORTVEC')
 C
@@ -64,7 +64,7 @@ C
          TT   = DNORM2(NVDIM,VEC(1,IVEC),1)
          IF (TT.LE.THRLDP) THEN
             LINDEP(INEW) = .TRUE.
-            WRITE (LUW6,8100) INEW,TT
+            WRITE (LUPRI,8100) INEW,TT
          ELSE
             LINDEP(INEW) = .FALSE.
             IF (TT.LT.THRTT) THEN
@@ -107,7 +107,7 @@ C           ... orthogonalize using prev. vectors are normalized
             TT = DNORM2(NVDIM,VEC(1,IVEC),1)
             IF (TT .LE. THRLDP) THEN
                LINDEP(INEW) = .TRUE.
-               WRITE (LUW6,8100) INEW,TT
+               WRITE (LUPRI,8100) INEW,TT
             ELSE
                IF (TT .LT. THRRND) IROUND = IROUND+1
                IF (TT .LT. THRTT) THEN
@@ -133,7 +133,7 @@ C
          END IF
  4400 CONTINUE
       IF (JNEW .LT. NNEW) THEN
-         WRITE (LUW6,8200) NNEW,JNEW
+         WRITE (LUPRI,8200) NNEW,JNEW
          NNEW = JNEW
       END IF
 C
