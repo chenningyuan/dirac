@@ -39,8 +39,11 @@ if [ $EXIT -eq 0 ]; then
 #
 # Extract report from the output using the filter file
 #
-../crep  result/$OLDOUT result/filter >result/$OLDOUT.rep
-../crep  $NEWOUT result/filter >$NEWOUT.rep
+if [ -z "$FILTER" ]; then
+   FILTER=filter
+fi
+../crep  result/$OLDOUT result/$FILTER >result/$OLDOUT.rep
+../crep  $NEWOUT result/$FILTER >$NEWOUT.rep
 #
 # Generate differences
 #

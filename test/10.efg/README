@@ -3,38 +3,23 @@
 !
 | The run zerofield serves to generate the MO-vectors and gives the EFG
 ! expectation value at the DHF & MP2 level. The finite field approach 
-! for the CCSD(T) value can be done in two ways :
+! serves to compute a correlation contribution that
+! can be added to the analytical HF value. We use relaxed orbitals for this
+! purpose as this gives the most rigorous result.
 !
-! 1 : Using relaxed orbitals
-!     - Use the inputs scf.ccsd.1 and scf.ccsd.m1 (and other field strenghts)
-!       to reoptimize the orbitals in the presence of an arbitrary (strong)
-!       quadrupole field at one of the nuclei. The obtained total CCSD(T)
-!       energies can be used to obtain the EFG by numerical differentation.
-!
-! 2 : Using fixed orbitals
-!     - Use the inputs ccsd.1 and ccsd.m1 (and other field strenghts)
-!       and send in the orbitals from the zero-field reference calculation
-!       to only obtain the matrix elements in the unchanged MO-basis in the
-!       presence of the field. Run the CCSD(T) and you have a reasonable 
-!       approximation to the more rigorous result of 1. In cases where one 
-!       uses high exponents in the basis this method gives less numerical
-!       noise and is to be preferred.
-!       Note that the costly 4-index cases needs to be performed only once
-!       if you save the file MDCINT and uncomment the .NO4IND line.
-!
-! Results :
+! Results (electronic contributions) :
 ! 
 ! DHF analytic (calculated via property module as exp. val.) 2.728 au
-! DHF fin. diff. (via relaxed orb. results)                  2.727 au
-! DHF fin. diff. (via fixed orb. results)                    2.728 au
+! DHF fin. diff. (via finite field)                          2.727 au
 !
-! MP2 analytic   (via CCFOPR module in RELCCSD)              2.608 au
-! MP2 fin. diff. (via relaxed orb. results)                  2.609 au
-! MP2 fin. diff. (via fixed orb.results)                     2.754 au
+! Correlation contributions
+! MP2 analytic   (via CCFOPR module in RELCCSD)             -0.086 au
+! MP2 fin. diff.                                            -0.118 au
+! CCSD fin. diff.                                           -0.056 au
+! CCSD(T) fin. diff.                                        -0.057 au
 !
-! CCSD(T) fin. diff. (via relaxed orb. results)              2.670 au
-! CCSD(T) fin. diff. (via fixed orb. results)                2.672 au
+! Total CCSD(T) value (adding nuclear + anal. HF + fin. diff corr. contr.)  3.056 au
 !
-! Notes: - the MP2 unrelaxed fin. diff. approach gives unreliable results !
-!        - the relaxed and unrelaxed CCSD(T) results are very close
+! Notes: - the MP2 analytic approach misses relaxation from the negative energy states
 !        - the MP2 method overshoots the correlation correction by a factor of 2
+!        - the basis is too small to give reliable results (this is only a test !)

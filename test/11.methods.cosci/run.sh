@@ -1,15 +1,24 @@
-#!/bin/ksh
-if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=`which pam`
-   if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
-      echo "pam not found. Please either set the enviroment variable"
-      echo "PAM_PATH or put pam in your path."
-      exit 1
-   fi
-   PAM_PATH=${PAM_PATH%/*}
-fi
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG O ci.1
-time $PAM_PATH/pam -rmscr -rmwrk -utcmo -mw 3 $MPIARG O ci.2
-time $PAM_PATH/pam -rmscr -rmwrk -incmo -mw 3 $MPIARG O ci.3
+#!/bin/sh
+#
+# Set up calculation
+#
+MOL=O;
+export MOL;
+###############################
+MENU=ci.1;
+export MENU;
+../run.sh
+###############################
+MENU=ci.2;
+export MENU;
+../run.sh -utcmo
+###############################
+MENU=ci.3;
+export MENU;
+../run.sh -incmo
+###############################
+MENU=ci.4;
+export MENU;
+../run.sh
+###############################
 rm DFCOEF
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG O ci.4

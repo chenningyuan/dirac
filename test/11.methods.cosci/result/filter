@@ -1,3 +1,6 @@
 $ERROR 0.000000001
 Nlines 3:Electronic energy
 
+$ERROR 0.000001
+FromRE: Energy eigenvalues in atomic units
+To:Total CPU

@@ -9,8 +9,9 @@ MOL=ch4_explicit; export MOL;
 ../run.sh
 MOL=ch4_family; export MOL;
 ../run.sh
-MOL=dualfamily; export MOL;
+MOL=ch4_dualfamily; export MOL;
 ../run.sh
-#time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` ch4_basis ch4
-#time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` \
-#   -basdir `pwd`/../../basis/MOLFDIR/accpvtz ch4_molfbas ch4
+MOL=ch4_basis; export MOL;
+../run.sh -basdir `pwd`
+MOL=ch4_molfbas; export MOL;
+../run.sh -basdir `pwd`/../../basis/MOLFDIR/accpvtz
