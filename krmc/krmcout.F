@@ -332,7 +332,7 @@ C
 C
 C           Analyze CI vectors
 C
-            CALL LUCI_ANAL(WORK(KFREE),LFREE)
+            CALL LUCI_ANAL(WORK(KCREF),WORK,KFREE,LFREE)
 C
          END IF
 C
