@@ -14,7 +14,7 @@ LOC=`pwd`
 # Installation specfic variables : chose the right defaults for your system
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-QSYS=XGrid  
+QSYS=LoadLeveler
 PAMDIR=$HOME/bin
 DEFAULT_MW=100
 DEFAULT_NW=100
@@ -178,13 +178,8 @@ CLASS=""
 case $QUEUE in
   default)
   ;;
-  ppwr4)
-    REQUIRE="$REQUIRE && (OpSys == \"AIX51\")"
-    CLASS="ppwr4"
-  ;;
   *)
-    echo " unknown queue $QUEUE"
-    exit 1
+  CLASS="$QUEUE"
   ;;
 esac
 if [ $MPI_NPROC -le 32 ]; then
@@ -216,14 +211,7 @@ cat <<EOJ >$jobinp
 # @ requirements = $REQUIRE
 EOJ
 
-if [ -z "$CLASS" ]; then
-cat <<EOJ >>$jobinp
-# @ class = $CLASS
-EOJ
-fi
-
-if test "$QUEUE" = "p-test"
-then
+if [ -n "$CLASS" ]; then
 cat <<EOJ >>$jobinp
 # @ class = $CLASS
 EOJ
