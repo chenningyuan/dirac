@@ -935,12 +935,12 @@ C
 C     Electronic contribution to dipole moment
 C     ========================================
 C
-         CALL EL_EFG(0,EXPVAL,AXIS,TEMP)
+         CALL EL_EFG(0,EXPVAL,DOATOM,AXIS,TEMP)
 C
 C     Nuclear contribution to dipole moment
 C     ========================================
 C
-         CALL NUC_EFG(0,AXIS,TEMP)
+         CALL NUC_EFG(0,DOATOM,AXIS,TEMP)
 C     
       ENDIF
 C
@@ -1148,13 +1148,14 @@ C
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,30)
-      CALL PRP_EFG1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP))
+      CALL PRP_EFG1(EXPVAL,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
+     &              IPRPRP)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRP_EFG1(EXPVAL,DOATOM,AXIS,TEMP)
+      SUBROUTINE PRP_EFG1(EXPVAL,DOATOM,AXIS,TEMP,IPRINT)
 C*****************************************************************************
 C     
 C     Calculate nuclear quadrupole coupling constants
