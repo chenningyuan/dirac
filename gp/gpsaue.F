@@ -3282,4 +3282,35 @@ C
 C
       RETURN
       END
-
+      SUBROUTINE QSWAP(N,DX,ISYMX,FAC,DAGGER)
+C*****************************************************************************
+C
+C     Swap upper and lower part of quaternionic vector and scale
+C     with a factor FAC.
+C     If DAGGER then also complex conjugate vector.
+C
+C     Calls BLAS routine DSWAP.
+C
+C     Written by panor 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dgroup.h>
+C
+      PARAMETER ( DM1 = -1.0D0 )
+C
+      LOGICAL DAGGER
+      DIMENSION DX(N,NZ)
+C
+      IF (N.LE.0) RETURN
+C
+      DO IZ=1,NZ
+         CALL DSWAP(N/2,DX(1,IZ),1,DX(N/2+1,IZ),1)
+         IF (DAGGER .AND. IPQTOQ(IZ,ISYMX-1).GT.1) 
+     &        CALL DSCAL(N,DM1,DX(1,IZ),1)
+      END DO
+      CALL DSCAL(N*NZ,FAC,DX,1)
+C
+      RETURN
+      END
