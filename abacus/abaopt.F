@@ -88,7 +88,7 @@ C
       END IF
       FIRST = .FALSE.
 C
-      NEWDEF = (WORD .EQ. '*OPTIMI')
+      NEWDEF = ((WORD .EQ. '*MINIMI') .OR. (WORD .EQ. '*OPTIMI'))
       ICHANG = 0
       IPDEF  = 0
       NSPMOD = -1

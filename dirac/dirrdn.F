@@ -471,11 +471,11 @@ C
 C
 #include <dcbgen.h>
 C
-      DATA TABDIR /'*END OF','*OPTIMI','*XXXXXX','*XXXXXX'/
+      DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','*XXXXXX'/
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.XXXXXX','.XXXXXX','.OPTIMI','.XXXXXX'/
+     &             '.XXXXXX','.XXXXXX','.OPTIMI','.MINIMI'/
 C
       NJOBS = 0
 C
@@ -571,6 +571,9 @@ C&&&& OPTIMIZE: Geometry optimization
             OPTIMI = .TRUE.
             GOTO 100
  112     CONTINUE
+C&&&& MINIMIZE: Geometry optimization 
+Ctsaue: retained for backwards compatibility
+            OPTIMI = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -637,6 +640,8 @@ C
         CALL OPINPU(WORD)
         GO TO 200
     3 CONTINUE
+Ctsaue: for backwards compatibility
+        CALL OPINPU(WORD)
         GO TO 200
     4 CONTINUE
         GO TO 200
