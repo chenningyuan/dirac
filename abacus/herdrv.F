@@ -41,160 +41,6 @@ C
     Kenneth: will you put .SUPONLy into HERMIT manual ?
     Done by Kenneth before jan.-96
 #endif
-#ifndef PRG_DIRAC
-C  /* Deck herctl */
-      SUBROUTINE HERCTL(WORK,LWORK)
-C
-C     The code for calculation of one- and two-electron integrals
-C     was written by T. Helgaker in 1984 at the University of Oslo.
-C
-C     General contractions were implemented by T. Helgaker at the
-C     University of Aarhus in Feb-Mar 1988.
-C
-C     Symmetry was implemented by P. R. Taylor and T. Helgaker at
-C     NASA Ames in Apr 1988.
-C
-C     The supermatrix code is written by O. Kvalheim at the University
-C     of Bergen.
-C
-C     Spin-orbit integrals by O. Vahtras and T. Helgaker at the
-C     University of Oslo, Nov 1989.
-C
-C     Cartesian and spherical moments integrals by T. Helgaker,
-C     University of Oslo, Sep and Oct 1990
-C
-C     Integrals for indirect spin-spin coupling tensors by T. Helgaker
-C     and O. Vahtras at the University of Oslo, Feb 1991.
-C
-C     Half-derivative overlap integrals for NACMES by T. Helgaker,
-C     at University of Aarhus, Jun 1991
-C
-C     Overlap matrix differentiated with respect to external magetic
-C     field, K. Ruud & T. Helgaker, Oct 1991
-C
-C     Electronic angular momentum around fixed center or nuclei,
-C     K. Ruud & T. Helgaker, Oct 1991
-C
-C     One-electron contribution to the magnetic moment of molecules,
-C     K. Ruud & T. Helgaker, Nov. 1991
-C
-C     Kinetic energy integrals, K. Ruud, Nov. 1991
-C
-C     Cosine and sine integrals, T. Helgaker, Jun. 1993
-C
-C     Mass-velocity and Darwin integrals
-C     S. Kirpekar & H.J.Aa. Jensen, Jul. 1993
-C
-C     Magnetic field derivative integrals of dipole length
-C     K.Ruud, Aug.-93
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-C
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbihr2.h"
-#include "cbihrs.h"
-#include "cbieri.h"
-C
-#include "hrunit.h"
-C
-      LOGICAL SET
-C
-      DIMENSION WORK(LWORK)
-C
-C---------------------------------------------------------------------
-#if defined (SYS_VAX)
-C     VAX/VMS:
-C        Open output for shared access and with small block size
-C        so the output can be monitored during a calculation.
-      OPEN (UNIT=LUPRI,SHARED,FORM='FORMATTED',STATUS='NEW',
-     *      BLOCKSIZE=512,INITIALSIZE=12,EXTENDSIZE=12)
-C
-C---------------------------------------------------------------------
-#endif
-C
-      CALL GETTIM(TIMHER,WALHER)
-C
-C     Unit assignments
-C
-      LUONEL = 16
-      LUINTA = 11
-      LUSUPM = 17
-      LUDASP = 24
-      LUSOL  = 49
-C
-C     *************************
-C     ***** Input Section *****
-C     *************************
-C
-      TIMSTR = SECOND()
-      CALL HERINP(WORK,LWORK)
-      IF (TSTINP) CALL QUIT('*** End of input test for HERMIT ***')
-      TIMINP = SECOND() - TIMSTR
-      CALL FLSHFO(LUPRI)
-C
-C     ************************************
-C     ***** Calculation of Integrals *****
-C     ************************************
-C
-#if !defined (SYS_IBM)
-      IF (DORLM) THEN
-         OPEN (LUSOL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='AOSOLINT')
-      END IF
-      IF (RUNTWO .OR. RUNERI) THEN
-         OPEN (LUINTA,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='AOTWOINT')
-      END IF
-      IF (RUNSUP) THEN
-         IF (.NOT. RUNONE) THEN
-            OPEN (LUONEL,STATUS='OLD',FORM='UNFORMATTED',
-     *            FILE='AOONEINT')
-         ENDIF
-         OPEN (LUSUPM,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='AOSUPINT')
-      END IF
-#else
-      IF (DORLM) THEN
-         OPEN (LUSOL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='ASOLINT')
-      END IF
-      IF (RUNTWO .OR. RUNERI) THEN
-         OPEN (LUINTA,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='ATWOINT')
-      END IF
-      IF (RUNSUP) THEN
-         IF (.NOT. RUNONE) THEN
-            OPEN (LUONEL,STATUS='OLD',FORM='UNFORMATTED',
-     *            FILE='AONEINT')
-         END IF
-         OPEN (LUSUPM,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *         FILE='ASUPINT')
-      END IF
-#endif
-      CALL HERINT(WORK,LWORK)
-C
-C     ******************************
-C     ***** End of Calculation *****
-C     ******************************
-C
-CTROND: LUPROP is not set !!!!
-CTROND      IF (ONEPRP ) CLOSE(LUPROP,STATUS='KEEP')
-      IF (RUNONE .OR. RUNERI .OR. RUNSUP) CLOSE(LUONEL,STATUS='KEEP')
-      IF (RUNTWO .OR. RUNERI .OR. RUNSUP) CLOSE(LUINTA,STATUS='KEEP')
-      IF (RUNSUP) CLOSE(LUSUPM,STATUS='KEEP')
-      IF (DORLM) CLOSE(LUSOL,STATUS='KEEP')
-      CALL GETTIM(TEND,WEND)
-      TIMHER = TEND - TIMHER
-      WALHER = WEND - WALHER
-      CALL TIMTXT('>>>> Total CPU  time used in HERMIT:',TIMHER,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in HERMIT:',WALHER,LUPRI)
-      RETURN
-      END
-#endif /* ifndef PRG_DIRAC */
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
@@ -207,7 +53,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "efield.h"
-      PARAMETER (NDIR = 6, NTABLE = 80)
+      PARAMETER (NDIR = 7, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -228,14 +74,13 @@ C
 #include "hrunit.h"
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
-     &             '*SUPINT', '*ER2INT'/
+     &             '*SUPINT', '*ER2INT', '*JENGIN'/
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
      &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
      &             '.CARMOM', '.SPHMOM', '.FC    ', '.PSO   ',
      &             '.SD    ', '.DSO   ', '.POINTS', '.SELECT',
      &             '.QUASUM', '.SD+FC ', '.PROPRI', '.HDO   ',
-c     
      &             '.S1MAG ', '.S2MAG ', '.ANGMOM', '.ANGLON',
      &             '.LONMOM', '.MAGMOM', '.S1MAGT', '.MGMOMT',
      &             '.KINENE', '.S2MAGT', '.DSUSNL', '.DSUSLL',
@@ -249,7 +94,7 @@ c
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.XXXXXX', '.XXXXXX'/
+     &             '.NUCMOD', '.MAGCOR', '.JENGIN', '.XXXXXX'/
 C
 C     Check if input has been processed earlier.
 C
@@ -774,10 +619,12 @@ C&&& Nuclear model
             ENDIF
             GO TO 100
  178     CONTINUE
-C MAGCOR - print magnetic coordinates
+C&&& MAGCOR - print magnetic coordinates
             MGCOOR = .TRUE.
             GO TO 100
  179     CONTINUE
+C&&& JENGIN - activate J-engine
+            DOFCK3=.TRUE.
             GO TO 100
  180     CONTINUE
             GO TO 100
@@ -790,13 +637,13 @@ C MAGCOR - print magnetic coordinates
       END IF
  199  CONTINUE
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
-      WRITE (LUPRI,'(//A,I5/)') ' Default print level:    ',IPRDEF
-      IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only '
+      WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
+      IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
       IF(GAUNUC) THEN
-        WRITE(LUPRI,'(A)') ' * Nuclear model: '//
+        WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
       ELSE
-        WRITE(LUPRI,'(A)') ' * Nuclear model: Point charge.'
+        WRITE(LUPRI,'(A)') ' Nuclear model: Point charge.'
       ENDIF
       IF (SPNORB .AND. SOTEST) THEN
          WRITE (LUPRI,'(/A/)')
@@ -1055,7 +902,7 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6), I
+               GO TO (1,2,3,4,5,6,7), I
             END IF
   210    CONTINUE
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
@@ -1089,6 +936,13 @@ CTROND        CALL ER2INP(WORD)
 #endif
       GO TO 201
 #endif
+    7    CONTINUE
+#if defined (MOD_ERI)
+C&&& JENGINE: Read input for J-engine for Coulom contribution
+        CALL FCK3INP(WORD)
+        STOP 'End of test'
+      GO TO 201
+#endif
 C
     1 CONTINUE
 C
@@ -1097,8 +951,12 @@ C
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
 #endif /* ifndef PRG_DIRAC */
-#if defined (MOD_ERI)
+#ifdef MOD_ERI
 CTROND      CALL ER2INP(WORD)
+CTROND
+      WRITE(0,*) 'Calling FCK3INP..'
+      CALL FCK3INP(WORD)
+      STOP 'End of test II'
 #endif
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
