@@ -44,13 +44,10 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 C
-#include "dcbgen.h"
-#include "dcbpsi.h"
+C Used in common blocks:
+C dcbprp.h: NPRPWF, PRPWF(*)
+C
 #include "dcbprp.h"
-#include "dcbexp.h"
-#include "dcbesr.h"
-#include "dcbxlr.h"
-#include "dcborb.h"
 C
       DIMENSION WORK(LWORK)
 C
