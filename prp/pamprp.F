@@ -2090,9 +2090,9 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcbibt.h"
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
+#include "dcbibt.h"
       CALL MEMGET('REAL',KTMPMAT,3*3,WORK,KFREE,LFREE)
       CALL PRP_EPOLAR1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
      &                 WORK,KFREE,LFREE)
@@ -2114,13 +2114,13 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcbibt.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
       PARAMETER (DFAC = XTANG**3)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
+#include "dcbibt.h"
 C
       CALL AROUND('Electric dipole polarizability')
       WRITE(LUPRI,*)
