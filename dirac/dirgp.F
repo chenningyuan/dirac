@@ -54,8 +54,9 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG ,NORBT   ,WORK,KFREE,LFREE)
 C
-      CALL PCMOI1(WORK(KCMO),WORK(KEIG),WORK(KFREE),LFREE)
+      CALL PCMOI1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
 C
 C     Memory deallocation
       CALL MEMREL('PCMOIN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -88,8 +89,9 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KEIG ,NORBT   ,WORK,KFREE,LFREE)
 C
-      CALL PCMOU1(WORK(KCMO),WORK(KEIG),WORK(KFREE),LFREE)
+      CALL PCMOU1(WORK(KCMO),WORK(KEIG),WORK(KIBG),WORK(KFREE),LFREE)
 C
 C     Memory deallocation
       CALL MEMREL('PCMOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -100,7 +102,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wricmo */
-      SUBROUTINE WRICMO(IUNIT,CMO,EIG,TOTERG)
+      SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
 C*****************************************************************************
 C
 C     Write DHF-coefficients and eigenvalues to unformatted file
@@ -119,7 +121,7 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcbgen.h>
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IDIM(3,2)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),IDIM(3,2)
 C
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
@@ -129,9 +131,11 @@ C
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
       REWIND IUNIT
-      WRITE(IUNIT) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),TOTERG
+      WRITE(IUNIT) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),
+     &             TOTERG
       WRITE(IUNIT) CMO
       WRITE(IUNIT) EIG
+      WRITE(IUNIT) IBEIG
 C
       RETURN
       END
@@ -241,7 +245,7 @@ C
 #include <dgroup.h>
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 C
 C     Get coefficients from FDPCMO
@@ -259,12 +263,13 @@ C
       READ (LUCOEF,'(D24.16)') TOTERG
       READ (LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
       READ (LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
+      READ (LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Write coefficients to DFCOEF
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
-      CALL WRICMO(LUCOEF,CMO,EIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -277,10 +282,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmou1 */
-      SUBROUTINE PCMOU1(CMO,EIG,WORK,LWORK)
+      SUBROUTINE PCMOU1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Read DHF-coefficients and eigenvalues from FORMATTED file
+C     Write DHF-coefficients and eigenvalues from FORMATTED file
 C
 C     Written by T.Saue Feb 1997
 C
@@ -295,7 +300,7 @@ C
 #include <dgroup.h>
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),WORK(*)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 C
 C     Get coefficients from DFCOEF
@@ -307,7 +312,7 @@ C
           CALL QUIT('PCMOUT: Unformatted file DFCOEF not found !')
       ENDIF
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Write coefficients to DFPCMO
@@ -326,6 +331,7 @@ C
       WRITE(LUCOEF,'(D24.16)') TOTERG
       WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
       WRITE(LUCOEF,'(6D22.12)') (EIG(I),I=1,NORBT)
+      WRITE(LUCOEF,'(66I2)') (IBEIG(I),I=1,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -791,10 +797,12 @@ C
       KFRSAV = KFREE
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT ,WORK,KFREE,LFREE)
       IOPT  = 2
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,IOPT)
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
+     &            TOTERG,IOPT)
       CLOSE(LUBUF,STATUS='KEEP')
       DO I = 1,NORBT
       IF(IORBCL(1,I).EQ.ITYP) THEN
