@@ -318,6 +318,15 @@ C
       CALL ROPTST(IOPTST,3,CMO,CREF,IPROPT,WORK,KFREE,LFREE)
 C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
+C     Check if only do CI (no MCSCF iterations)
+C
+      IF (MOPT_MXMACRO .LE. 0) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' Stop after initial CI in KR-MCSCF as requested'//
+     &      ' with .MAX MACRO'
+         GO TO 3000
+      END IF
+C
 C     Initialize some more parameters:
 C
 C     If DEPRED < 0, we have restarted a calculation.
@@ -1903,7 +1912,6 @@ C
      &     (NOCC(I),I=1,NFSYM),
      &     (NSSH(I),I=1,NFSYM),
      &     (NFRO(I),I=1,NFSYM),
-     &     (NELEC(I),I=1,NFSYM),
      &     NAELEC
 C
 C     End of reference information, write 'Start Of Data' label

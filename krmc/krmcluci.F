@@ -1736,7 +1736,7 @@ C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,ECORE,
      &               CIRUN)
 C
-      IF (MAXCIT.GT.4.OR.MAXCIT.LT.0) THEN
+      IF (MAXCIT.LT.0) THEN
         CALL QUIT (' Normal STOP after LUCIAREL CI.')
       ELSE
         IF (NCIROOT.GE.2) 

@@ -2196,6 +2196,7 @@ C
          END IF
       END IF
 C
+      MAXCIT = ITMIC
       ECI = ECORE + ECIA
       WRITE(LUPRI,'(//A,F20.8)')
      &     ' (GOSCI_RCISTD) Core energy       = ',ECORE
@@ -2203,12 +2204,6 @@ C
      &     '                Active energy     = ',ECIA
       WRITE(LUPRI,'(A,F20.8)')
      &     '                Final CI energy   = ',ECI
-C
-      IF (MAXCIT.GT.4) THEN
-        CALL QUIT (' Normal STOP after GOSCI CI.')
-      END IF
-C
-      MAXCIT = ITMIC
 C
 C     Construct CREF:
 C

@@ -117,7 +117,6 @@ C
          NKRMCSSH(I) = 0
          NKRMCPSH(I) = 0
          NKRMCFRO(I) = 0
-         NKRMCELEC(I) = 0
          DO J = 1, MXMCGAS
             NKRMCGSH(I,J) = 0
          END DO
@@ -263,8 +262,8 @@ C&&& GASSH: GAS setup
    22          CONTINUE
 C&&& GASSPC: GAS space constraints
                   IF (NKRMCGAS .EQ. 0) THEN
-                     WRITE(LUPRI,'(1X,2A)') '*** ERROR in KRMCINP ***',
-     &                  ' .GASSH must be specified before .GASSP!'
+                     WRITE(LUPRI,'(A)') ' *** ERROR in KRMCINP ***'
+     &                  //' .GASSH must be specified before .GASSP!'
                      CALL QUIT('*** ERROR in KRMCINP ***')
                   END IF
                   DO I = 1, NKRMCGAS
@@ -387,24 +386,24 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &   'KRMCINP: Set-up for KR-MCSCF calculation:'
+      WRITE(LUPRI,'(A)')
+     &   ' KRMCINP: Set-up for KR-MCSCF calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
-      WRITE(LUPRI,'(1X,A,I4)') '* General print level   : ',IPRKRMC
-      WRITE(LUPRI,'(1X,A,2I4)')
-     $     '* Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
-      WRITE(LUPRI,'(1X,A,2I4)')
-     $     '* Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRMC
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,2I4)')
+     &     ' * Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
       IF (NKRMCGAS .GT. 0) THEN
-         WRITE(LUPRI,'(1X,A,I3,A)')
-     &        '* GAS space setup for ',NKRMCGAS,' GAS space(s) : '
+         WRITE(LUPRI,'(A,I3,A)')
+     &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
          DO I = 1, NKRMCGAS
-            WRITE(LUPRI,'(1X,A,I3,A,2I4)')
-     $           '* GAS space ',I,'       : ',
+            WRITE(LUPRI,'(A,I3,A,2I4)')
+     &           ' * GAS space ',I,'       : ',
      &           (NKRMCGSH(J,I),J=1,NFSYM)
-            WRITE(LUPRI,'(1X,A,I3,A1,I3,A)')
-     &      '   (constraints: min/max active electrons after space : ',
+            WRITE(LUPRI,'(A,I3,A1,I3,A)')
+     &      '    (constraints: min/max active electrons after space : ',
      &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
          END DO
          NAE = NKRMCGSP(2,NKRMCGAS)
@@ -413,24 +412,24 @@ C
      &        'Inconsistency between .GASSP and .ACTIVE ELEC')
          NKRMCAELEC = NAE
       END IF
-      WRITE(LUPRI,'(1X,A,I4)')
-     $     '* Active electrons      : ',NKRMCAELEC
-      WRITE(LUPRI,'(1X,A,I4)')
-     $     '* State number          : ',IKRMC_ISTATE
-      WRITE(LUPRI,'(1X,2A)')
-     $     '* CI program used       : ',KRMC_CIPROGRAM
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * Active electrons      : ',NKRMCAELEC
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * State number          : ',IKRMC_ISTATE
+      WRITE(LUPRI,'(2A)')
+     &     ' * CI program used       : ',KRMC_CIPROGRAM
 C     
 C     Symmetry of the wave function:
 C     ------------------------------
 C     
       IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
-         WRITE(LUPRI,'(1X,2A)')
-     $        '* Symmetry (boson) of wave function: ',
-     $        REP ( IKRMC_SYMMETRY - 1 )
+         WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (boson) of wave function: ',
+     &        REP ( IKRMC_SYMMETRY - 1 )
       ELSE
-         WRITE(LUPRI,'(1X,2A)')
-     $        '* Symmetry (fermion) of wave function: ',
-     $        FREP ( IKRMC_SYMMETRY - NBSYM )
+         WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (fermion) of wave function: ',
+     &        FREP ( IKRMC_SYMMETRY - NBSYM )
       END IF 
 C
 C     MK constraints in the CI expansion.
@@ -459,8 +458,8 @@ C
          END IF
       END IF
 C
-      WRITE(LUPRI,'(1X,A,I4,A,I4)')
-     $     '* Allowed interval of 2 * MK ',
+      WRITE(LUPRI,'(A,I4,A,I4)')
+     &     ' * Allowed interval of 2 * MK ',
      &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
 C
 C     Boson symmetry in the CI expansion
@@ -473,19 +472,19 @@ C
      &        '* ``Approximate'''' boson symmetry used in CI expansion.'
       END IF
 C
-      WRITE(LUPRI,'(1X,A,I4)')
-     +   '* Maximum number of macro iterations  : ',MKRMC_MXMACRO
-      WRITE(LUPRI,'(1X,A,I4)')
-     +   '* Maximum number of micro iterations  : ',MKRMC_MXMICRO
-      WRITE(LUPRI,'(1X,A,1P,D15.6)')
-     +   '* Convergence threshold               : ',DKRMC_THRGRD
+      WRITE(LUPRI,'(A,I4)')
+     +   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
+      WRITE(LUPRI,'(A,I4)')
+     +   ' * Maximum number of micro iterations  : ',MKRMC_MXMICRO
+      WRITE(LUPRI,'(A,1P,D15.6)')
+     +   ' * Convergence threshold               : ',DKRMC_THRGRD
       IF (MCFLAG(1) .AND. MCFLAG(2)) MCFLAG(1) = .FALSE.
-      IF (MCFLAG(1)) WRITE(LUPRI,'(1X,A)') 
-     &   '* Only Newton-Raphson iterations.'
-      IF (MCFLAG(2)) WRITE(LUPRI,'(1X,A)') 
-     &   '* Only NEO iterations.'
-      WRITE(LUPRI,'(1X,A)')
-     +    '* Contributions from 2-electron integrals to Fock matrix:'
+      IF (MCFLAG(1)) WRITE(LUPRI,'(A)') 
+     &   ' * Only Newton-Raphson iterations.'
+      IF (MCFLAG(2)) WRITE(LUPRI,'(A)') 
+     &   ' * Only NEO iterations.'
+      WRITE(LUPRI,'(A)')
+     +    ' * Contributions from 2-electron integrals to Fock matrix:'
       IF(LBIT(IKRMC_INTDEF,1)) THEN
         WRITE(LUPRI,'(3X,A)') 'LL-integrals.'
       ENDIF
@@ -508,12 +507,12 @@ C
         ENDIF
       ENDIF
       IF(KRMC_SKIPEE) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* NB!!! No e-e rotations in 2nd order optimization'
+        WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No e-e rotations in 2nd order optimization'
       ENDIF
       IF(KRMC_SKIPEP) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* NB!!! No rotations between electrons and positrons'//
+        WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No rotations between electrons and positrons'//
      &     ' in 2nd order optimization.'
       ENDIF
 C
@@ -921,10 +920,10 @@ C
      &        '* Start guess: ',IOPTST
 C
       IF ( OPT_NOPFQ ) WRITE (LUPRI, '(1X,A)' )
-     $     '* Positronic part of positronic FQX ignored.'
+     &     '* Positronic part of positronic FQX ignored.'
 C
       IF ( OPT_NOFQX ) WRITE (LUPRI, '(1X,A)' )
-     $     '* FQX and FQT approximate with DV * FV.'
+     &     '* FQX and FQT approximate with DV * FV.'
 C
 C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------
