@@ -26,44 +26,52 @@
 # Guess machine automatic by Joern Thyssen Nov 11 1997
 #
 
+#
+# Does 'echo' understand escapes?
+#
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+#
+#
 echo
 echo '   Configuring the DIRAC Makefile.config and dhf run script'
 echo
-
+#
+#
+#
 dirlist='/lib /usr/lib /usr/local/lib'
+#
+# GUESS SYSTEM
+#
 guess=`./config.guess`
-if [ "$guess" != "" ]; then
-   answer=
-   while [ "$answer" != "y" -a "$answer" != "n" ]
-   do
-      echo "The system appears to be $guess"
-      echo "Is that correct [y/n]"
-      read answer
-   done
-else
-   echo "Could not guess system!"
-   answer=n
+if [ "$guess" = "" ]; then
+   guess=`./config.status ARCH`
 fi
+$echo "Enter system:"
+$echo "\tExamples:"
+$echo "\tmips-sgi"
+$echo "\tmips-sgi-irix6.2"
+$echo "\tmips64-sgi-irix"
+$echo "\trs6000-ibm-aix3.2"
+$echo "\tsparc-sun-solaris"
+$echo "\tsparc-sun-sunos"
+$echo "\tm68k-sun-sunos"
+$echo "\tc2-convex-bsd"
+$echo "\tSee the file system.text for other choices."
+$echo "System [$guess]: \c"
+read answer
 
-if [ "$answer" = "n" ]; then
-   echo "Enter system:"
-   echo "Examples:"
-   echo "mips-sgi"
-   echo "mips-sgi-irix6.2"
-   echo "mips64-sgi-irix"
-   echo "rs6000-ibm-aix3.2"
-   echo "sparc-sun-solaris"
-   echo "sparc-sun-sunos"
-   echo "m68k-sun-sunos"
-   echo "c2-convex-bsd"
-   echo "See the file system.text for other choices."
-   echo "Please enter system"
-   read guess
+if [ "$answer" != "" ]; then
+   guess=$answer
 fi
 
 guess=`./config.sub $guess 2>/dev/null` 
-echo "Configuring $guess..."
 
+$echo "Configuring $guess..."
 machine=`echo $guess | sed 's/-[^-]*$//'`
 if [ "$machine" != "$guess" ]; then 
    os=`echo $guess | sed 's/.*-//'`
@@ -71,12 +79,6 @@ else
    os=
 fi
 
-case $machine in
-   i[3-5]86-*)
-      echo="echo -e";;
-   *)
-      echo=echo;;
-esac
 $echo "Machine\t\t\t: $machine"
 $echo "Operating system\t: $os"
 
@@ -132,13 +134,12 @@ case $machine in
 esac
 
    
-answer=
 mesp='dummy'
-while [ "$answer" != "y" -a "$answer" != "n" ]
-do
-    $echo 'Do you want to install the program in a parallel version? [y/n] \c'
-    read answer
-done
+$echo 'Do you want to install the program in a parallel version? y/[n] \c'
+read answer
+if [ "$answer" = "" ]; then
+   answer="n"
+fi
 
 if [ "$answer" = "y" ]; then
 
@@ -326,76 +327,90 @@ elif [ -n "$LIB" ]; then
     $echo '   I have found the following mathematical library(ies): '$LIB'\n'
 fi
 #
-# Determine memory size.
 #
-memdef=10000000
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# DETERMINE MEMORY SIZE
+#
+memdef=`./config.status WRKMEM`
+if [ -z "$memdef" ]; then
+   memdef=10000000
+fi
 echo 'DIRAC uses approximately 800000 words of static allocations'
 echo 'How many words to use as default for scratch memory ?'
 echo '(we do not recommend going below 1000000 words)'
 $echo 'Note that scratch memory can be changed through the shell variable WRKMEM\n'
+$echo 'Memory size ['$memdef'] \c'
 read memsiz
 if [ -z "$memsiz" ]; then
    memsiz=$memdef
 fi
 $echo '   Program will be installed with a default scratch memory of '$memsiz' words\n'
-
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # Determine location for executable and run script
 #
-
-curr=`pwd`
-$echo '   Current directory is '$curr'\n'
-
-INSTALL_DIR=$curr
-INCLUDE_DIR=include
-answer=
-while [ "$answer" != "y" -a "$answer" != "n" ]
+INSTALL_DIR=
+while [ -z "$INSTALL_DIR" ]
 do
-   $echo 'Use current directory as installation directory for binaries and scripts? [y/n] \c'
-   read answer
-done
-
-while [ "$answer" = "n" ]
-do
-   $echo 'Please enter installation directory: \c'
+   curr=`./config.status INSTALLDIR`
+   if [ -z "$curr" ]; then
+      curr=`pwd`
+   fi
+   INCLUDE_DIR=include
+   $echo 'Directory for installation of binaries and scripts ['$curr'] \c'
    read INSTALL_DIR
+   if [ -z "$INSTALL_DIR" ]; then
+      INSTALL_DIR=$curr
+   fi
    $echo '\n   Dirac executable and script will be placed in '$INSTALL_DIR' directory\n'
    if [ ! -d "$INSTALL_DIR" ]; then
       echo "ERROR: $INSTALL_DIR does not exist"
-   else
-      answer="ok"
+      INSTALL_DIR=
    fi
 done
-
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
 #
 # Determine default scratch disk space for calculations
 #
-
-if [ -d '/work' ]; then
-   worksp='/work'
-elif [ -d '/scratch' ]; then
-   worksp='/scratch'
-elif [ -d '/scr' ]; then
-   worksp='/scr'
-elif [ -d '/temp' ]; then
-   worksp='/temp'
-else
-   $echo '\nI did not find /work, /scratch, /scr or /temp. I will use /tmp'
-   worksp='/tmp/'
-fi
-
-answer=
-while [ "$answer" != "y" -a "$answer" != "n" ]
+#
+worksp=
+while [ -z "$worksp" ]
 do
-   $echo 'Use '$worksp' as default root scratch space in dhf run script? [y/n] \c'
-   read answer
-done
-if [ "$answer" = "n" ];  then
-   $echo 'Please enter default root scratch directory: \c'
-   read worksp
-fi
-$echo '\n   Job specific directories under '$worksp'/$USER\n   will be used for temporary files when running dhf\n'
+   if [ -d '/work' ]; then
+      worksp='/work'
+   elif [ -d '/scratch' ]; then
+      worksp='/scratch'
+   elif [ -d '/scr' ]; then
+      worksp='/scr'
+   elif [ -d '/temp' ]; then
+      worksp='/temp'
+   elif [ -d '/tmp' ]; then
+      worksp='/tmp'
+   else
+      worksp=
+   fi
 
+   $echo 'Default scratch space in script ['$worksp'] \c'
+   read answer
+   if [ ! -z "$answer" ]; then
+      worksp=$answer
+   fi
+   $echo '\n   Job specific directories under '$worksp'/$USER'
+   $echo 'will be used for temporary files when running dhf\n'
+   if [ ! -d $worksp ]; then
+      echo 'Scratch directory '$worksp' does not exist!'
+      worksp=
+   fi
+done
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
 # We are beginning to see the end of the installation requirements
@@ -411,8 +426,11 @@ if [ -f Makefile.config ]; then
       answer=
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
-         $echo 'Do you want me to overwrite Makefile.config.orig anyway? [y/n]$\c'
+         $echo 'Do you want me to overwrite Makefile.config.orig anyway? [y]/n\c'
          read answer
+	 if [ -z "$answer" ]; then
+	    answer="y"
+	 fi
       done
       if [ "$answer" = "n" ];  then
          echo 'I do not take a backup of Makefile.config. This file will be overwritten'
@@ -682,14 +700,14 @@ case $machine in
             esac
          esac
          if [ "$mesp" = "dummy" ]; then
-            cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz'"
+            cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
             ccp="-DSYS_IRIX"
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
             done
             def='dirac.x'
          else
-            cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D$parop"
+            cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
             ccp="-DSYS_IRIX"
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
@@ -753,6 +771,7 @@ cat <<EOF > Makefile.config
 ARCH        = $guess
 #
 #
+WRKMEM      = $memsiz
 DEPEND_FLAGS= $depend_flags
 CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
