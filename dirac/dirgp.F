@@ -41,15 +41,15 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       DIMENSION WORK(LWORK)
       CALL QENTER('PCMOIN')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -76,15 +76,15 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       DIMENSION WORK(LWORK)
       CALL QENTER('PCMOUT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -114,12 +114,12 @@ C
 C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),IDIM(3,2)
 C
@@ -162,12 +162,12 @@ C
 C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL INFO,LBIT,TEST
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
@@ -305,14 +305,14 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
@@ -360,19 +360,19 @@ C
 C     Written by T.Saue Feb 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
-#include <memint.h>
+#include "memint.h"
 C
 C     Get coefficients from DFCOEF
 C
@@ -424,13 +424,13 @@ C
 C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION FOCK(N2BBASXQ*N)
 C
@@ -451,12 +451,12 @@ C
 C     Read AO Fock matrix from unformatted file
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
       LOGICAL INFO
       CHARACTER TEXT*74, FILNAM*20
       DIMENSION FOCK(N2BBASXQ*N)
@@ -502,12 +502,12 @@ C
 C     Written by T.Saue Oct 12 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
+#include "dcbbas.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION DMAT(N2BBASXQ*NFMAT)
 C
@@ -527,11 +527,11 @@ C
 C     Read SO density matrix from unformatted file
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcbdhf.h>
+#include "dcbbas.h"
+#include "dcbdhf.h"
       CHARACTER TEXT*74
       DIMENSION DMAT(N2BBASXQ*NFMAT)
 C
@@ -586,10 +586,10 @@ C     lower treshold, upper treshold and minimal gap (to prevent cutting through
 C     quasi-degenerate orbitals).
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbgen.h"
 C
       CHARACTER A*(*)
       DIMENSION ILIST(NLIST),WORK(LWORK)
@@ -666,8 +666,8 @@ C                           Jon K. Laerdahl 30.12.96
 C     Minor polish T.Saue Jan 7 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (MAXLB = 72)
 C
@@ -900,8 +900,8 @@ C
 C     L. Visscher, May 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       CHARACTER A*(*)
       DIMENSION EIG(*)
@@ -1000,8 +1000,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C   /* Deck wrtiar */
       SUBROUTINE WRTIAR(ILIST,IP)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION ILIST(IP)
 C
       WRITE(LUPRI,'(10I5)') (ILIST(I), I=1,IP)
@@ -1010,10 +1010,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck EIGEXT */
       SUBROUTINE EIGEXT(EIG,IORBCL,ITYP,WORK,KFREE,LFREE)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
+#include "dcborb.h"
 C
       DIMENSION EIG(*),IORBCL(2,NORBT),WORK(*)
       KFRSAV = KFREE
@@ -1045,8 +1045,8 @@ C     Adapt coefficients CF2 to current dimensions CF1
 C     Written by T.Saue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CF1(NB,NO1,NZ),CF2(NB,NO2,NZ)
 C     Positronic part
       IV1 = 1
@@ -1094,8 +1094,8 @@ C     Adapt eigenvalues EIG2 to current dimensions EIG1
 C     Written by T.Saue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION EIG1(NO1),EIG2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1131,11 +1131,11 @@ C     Pre-routine to adaibo
 C     Written by T.Saue Feb 1 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION IBO1(*),IBO2(*),IDIM(3,2)
       I2 = 1
       DO IFRP = 1,NFSYM
@@ -1156,8 +1156,8 @@ C     Adapt boson irrep array IBO2 to current dimensions IBO1
 C     Written by T.Saue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IBO1(NO1),IBO2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1194,20 +1194,20 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <dummy.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "dummy.h"
 C
-#include <nuclei.h>
-#include <ccom.h>
-#include <shells.h>
-#include <primit.h>
+#include "nuclei.h"
+#include "ccom.h"
+#include "shells.h"
+#include "primit.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C

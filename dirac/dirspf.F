@@ -50,18 +50,18 @@ C
 C     Written by L.Visscher, august 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
 C
       DIMENSION FMO(*),WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
 C
 C Zero out the coupling blocks between different boson irreps and the
 C imaginary or q-imaginary blocks. With a 1-1 kinetic balance basis this
@@ -124,20 +124,20 @@ C
 C     Written by L.Visscher, march 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
       DIMENSION FMO(*),FAO(*),WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('SPFAO')
 C
 C     We have no information about the print level : make IPRINT zero

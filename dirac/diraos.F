@@ -9,13 +9,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
@@ -41,13 +41,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
@@ -55,7 +55,7 @@ C
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 #endif
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C      
       DO 10 IRP1 = 0,NBSYM-1
         NB1 = NBBAS(IRP1,IC)
@@ -84,13 +84,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
@@ -143,13 +143,13 @@ C
 C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION RHO(0:2),GAO(NBAST),DMAT(NBAST,NBAST),
@@ -231,9 +231,9 @@ C
 C     Written by T.Saue May 12 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), BUF(NBAST),WORK(LWORK), NCNT(NBAST)
 C
@@ -269,23 +269,23 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), WORK(LWORK), NCNT(NBAST)
 C
-#include <onecom.h>
-#include <lmns.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
+#include "onecom.h"
+#include "lmns.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C
       CALL DZERO(GAO,NBAST)
@@ -369,18 +369,18 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-#include <sphtrm.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
+#include "sphtrm.h"
 C
       ISTR = JSTA + 1
       IEND = JSTA + NUCA
@@ -445,23 +445,23 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       PARAMETER (D2 = 2.0D0) 
 C
       LOGICAL FIRST
       DIMENSION GAO(KCKTA), GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA),
      &          CAO(MXAQN), CAOX(MXAQN), CAOY(MXAQN), CAOZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-#include <sphtrm.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
+#include "sphtrm.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2
       FIRST = .TRUE.
@@ -584,11 +584,11 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -597,12 +597,12 @@ C
      &          CAOXX(MXAQN), CAOXY(MXAQN), CAOXZ(MXAQN),
      &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
-#include <lmns.h>
-#include <onecom.h>
-#include <primit.h>
-#include <sphtrm.h>
+#include "lmns.h"
+#include "onecom.h"
+#include "primit.h"
+#include "sphtrm.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       PA2 = PAX**2 + PAY**2 + PAZ**2
       FIRST = .TRUE.   
@@ -708,18 +708,18 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)
 C
-#include <onecom.h>
-#include <primit.h>
-#include <orgcom.h>
+#include "onecom.h"
+#include "primit.h"
+#include "orgcom.h"
 C
       POX = PX - ORIGIN(1)
       POY = PY - ORIGIN(2)

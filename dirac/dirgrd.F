@@ -42,27 +42,27 @@ C
 C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <blocks.h>
-#include <dcbgrd.h>
-#include <dcbpsi.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "blocks.h"
+#include "dcbgrd.h"
+#include "dcbpsi.h"
 C
       CALL QENTER('RMOLGRD')
-#include <memint.h>
+#include "memint.h"
 C
 C
 C     Start by writing information to file RMOLGRD:
@@ -161,23 +161,23 @@ C
 C     J. Thyssen, 2000/8/27
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbgen.h>
-#include <dcbgrd.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbgen.h"
+#include "dcbgrd.h"
+#include "symmet.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -185,8 +185,8 @@ C
 C
       DATA M /'AR','AI','BR','BI'/
 C
-#include <ibtfun.h>
-#include <memint.h>
+#include "ibtfun.h"
+#include "memint.h"
 C
       CALL QENTER('CONMAT_DHF')
       IF ( IPRINT .GT. 5 )
@@ -700,8 +700,8 @@ C
 C
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D00 )
 C
@@ -740,13 +740,13 @@ C
 C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION WORK(LWORK)
@@ -765,34 +765,34 @@ C     Timing variables
       SAVE DPRTIM
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
-#include <dcbbas.h>
-#include <dcbqal.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbisol.h>
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dorps.h>
+#include "dcbbas.h"
+#include "dcbqal.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dorps.h"
 C two el. part
-#include <ccom.h>
-#include <cbihr2.h>
-#include <blocks.h>
-#include <dcbgrd.h>
+#include "ccom.h"
+#include "cbihr2.h"
+#include "blocks.h"
+#include "dcbgrd.h"
 C
-#include <exeinf.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "exeinf.h"
+#include "symmet.h"
+#include "chrxyz.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('RMOLGRD1')
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL GETTIM(CPUTO1,WLLTO1)
       MAXDER = 1
@@ -1547,10 +1547,10 @@ C
 C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <abainf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "abainf.h"
       LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
       DO I=2,8
@@ -1574,19 +1574,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
 C
 C     Loop over all irreps in molecule
@@ -1669,17 +1669,17 @@ C
 C     Last revision: 1997/06/11 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <nuclei.h>
-#include <taymol.h>
-#include <dummy.h>
+#include "mxcent.h"
+#include "nuclei.h"
+#include "taymol.h"
+#include "dummy.h"
 C
-#include <dcbpsi.h>
-#include <dcbgen.h>
-#include <dcbgrd.h>
+#include "dcbpsi.h"
+#include "dcbgen.h"
+#include "dcbgrd.h"
 C
       LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
@@ -1687,7 +1687,7 @@ C
 C
       CALL QENTER('GRDOUT')
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
@@ -1809,23 +1809,23 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
       PARAMETER( D0 = 0.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
-#include <nuclei.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbgrd.h>
-#include <alphac.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbgrd.h"
+#include "alphac.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -1888,24 +1888,24 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <alphac.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "alphac.h"
 C
       PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
-#include <nuclei.h>
-#include <symmet.h>
-#include <dcbgen.h>
-#include <dcbgrd.h>
-#include <optinf.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbgrd.h"
+#include "optinf.h"
 C
       CALL QENTER('ESTGSS')
 C
@@ -1974,7 +1974,7 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) STR
       LOGICAL BOOL
 C
@@ -1997,8 +1997,8 @@ C
 C     Last revision: 1997/07/09 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) FILENAME
       LOGICAL EX
 C
@@ -2033,17 +2033,17 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <dcbgen.h>
-#include <frame.h>
+#include "nuclei.h"
+#include "dcbgen.h"
+#include "frame.h"
       DIMENSION DMAT(*),WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('LVCGRD')
 C
@@ -2068,23 +2068,23 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
-#include <nuclei.h>
-#include <frame.h>
-#include <dorps.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "frame.h"
+#include "dorps.h"
+#include "symmet.h"
 C
       DIMENSION SCQ(NUCIND),DMAT(*),WORK(LWORK)
       LOGICAL LVNEW
-#include <dcbgrd.h>
-#include <ibtfun.h>
+#include "dcbgrd.h"
+#include "ibtfun.h"
 C
 C
       CALL QENTER('LVCGR1')
@@ -2199,9 +2199,9 @@ C
 C
 C
       SUBROUTINE HEADE3(HEAD1,HEAD2,HEAD3,IN)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) HEAD1,HEAD2,HEAD3
-#include <priunit.h>
+#include "priunit.h"
 C
       IF (IN .GE. 0) THEN
          I1 = IN + 1
@@ -2238,15 +2238,15 @@ C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2333,7 +2333,7 @@ C     Print header like SUBR HEADER
 C     except for the first character being CFIRST
 C
       CHARACTER HEAD*(*), CFIRST*1
-#include <priunit.h>
+#include "priunit.h"
 C
       LENGTH = LEN(HEAD)
       IF (IN .GE. 0) THEN
@@ -2353,17 +2353,17 @@ C     Slight modified Feb 17 1998 jth
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
 C
       IATOM = 0
@@ -2389,11 +2389,11 @@ C
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <cbitro.h>
-#include <abainf.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "cbitro.h"
+#include "abainf.h"
+#include "dcbgen.h"
       LOGICAL LCOMPA
 C
       IPRINT = IPRGEN

@@ -46,27 +46,27 @@ C     The reduced density matrices are generated within this routine,
 C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "dummy.h"
       PARAMETER(D1=1.0D0)
 C
-#include <dcbind.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <cbihr2.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcbind.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "cbihr2.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "ccom.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
 C
       CALL QENTER('TWOFCK')
-#include <memint.h>
+#include "memint.h"
 C
       IF(IPRTWO.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -264,14 +264,14 @@ C
 C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <cbihr2.h>
-#include <dcbind.h>
-#include <dcbbas.h>
-#include <hrunit.h>
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dcbind.h"
+#include "dcbbas.h"
+#include "hrunit.h"
       DIMENSION WORK(LWORK)
 C
 C     Initialize COMMON BLOCKS
@@ -329,17 +329,17 @@ C		Class Ba and Bb placed in matrices of dimension NDIM2
 C		Class A placed in array of length NDIM
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
-#include <dcbbas.h>
-#include <dcbind.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcbind.h"
+#include "dgroup.h"
       CHARACTER FILNAM*6
       DIMENSION	WORK(LWORK),IREPA(N2BBASX),LUINT(0:8)
       CALL QENTER('TWOSRT')
-#include <memint.h>
+#include "memint.h"
       LU2HER    = 13
       DO I = 0,8
         LUINT(I) = LU2HER + 1 + I
@@ -599,21 +599,21 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
-#include <dcbind.h>
+#include "symmet.h"
+#include "pgroup.h"
+#include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
@@ -758,21 +758,21 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
-#include <dcbind.h>
+#include "symmet.h"
+#include "pgroup.h"
+#include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
@@ -945,21 +945,21 @@ C
 C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
-#include <dcbind.h>
+#include "symmet.h"
+#include "pgroup.h"
+#include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          CMAT(MAXBUF,2),ICMAT(MAXBUF,NIBUF,2),
      &          BMAT(NNDIM,4)  ,IBMAT(NNDIM,4),
      &          AVEC(NDIM),IAVEC(NDIM),LUBUF(0:7)
       DIMENSION NC(0:7,2),ICOUNT(0:7,2),NB(0:7,4),NBT(4)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialize
 C
@@ -1227,8 +1227,8 @@ C     Written by T.Saue, Feb 27 1995
 C     Last revision: Feb 27 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
       WRITE(IUNIT) NINTS,IREP
@@ -1249,8 +1249,8 @@ C     Written by T.Saue, Feb 27 1995
 C     Last revision: Feb 27 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
       READ(IUNIT) NINTS,IREP
@@ -1300,20 +1300,20 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision : Feb 27 1995
 C
 C************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
-#include <dcbind.h>
+#include "symmet.h"
+#include "pgroup.h"
+#include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
      &          AMAT(NSLDIM),IAMAT(NSLDIM),
      &          BCMAT(MAXBUF,2),IBCMAT(MAXBUF,NIBUF,2),
      &          ICOUNT(0:7,2),LUBUF(0:7),NB(0:7),NC(0:7)
-#include <ibtfun.h>
+#include "ibtfun.h"
       REWIND LUINTB
       CALL IZERO(ICOUNT,16)
       CALL IZERO(NC,8)
@@ -1458,14 +1458,14 @@ C
 C     Written by T.Saue May 18 1995
 C     Last revision : Sep 30 1996 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <cbihr2.h>
-#include <dcbbas.h>
-#include <dcbgen.h>
+#include "cbihr2.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
       DIMENSION WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -1485,15 +1485,15 @@ C  /* Deck twoge1 */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <cbihr2.h>
-#include <hrunit.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
       DIMENSION IREPA(*),WORK(LWORK)
 C
@@ -1643,10 +1643,10 @@ C
 C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
+#include "dgroup.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),IFCTYP(*),
      &          IREPDM(*)
 C
@@ -1739,10 +1739,10 @@ C
 C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
+#include "dcbbas.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),
      &          IFCTYP(*),IREPDM(*)
 C
@@ -1800,11 +1800,11 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: Jan 7 1998 - jth (Linux cheat)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
-#include <dcbbas.h>
-#include <dcbind.h>
+#include "dcbbas.h"
+#include "dcbind.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -1815,7 +1815,7 @@ C
       DIMENSION BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
      &          IFCTYP(NDMAT),IREPDM(NDMAT)
       INTEGER A,B,C,D
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
    10   CONTINUE
         CALL REAINT(IUNIT,NBUF,IREPAB,N2BBASX,NIBUF,IBUF,BUF)
@@ -1877,7 +1877,7 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1899,7 +1899,7 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1915,7 +1915,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1941,7 +1941,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1968,7 +1968,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1989,7 +1989,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2035,11 +2035,11 @@ C     Written by T.Saue Mar 4 1995
 C     Last revision Mar 4 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D2 = 2.0D0,D4 = 4.0D0)
-#include <dcbbas.h>
-#include <dcbind.h>
+#include "dcbbas.h"
+#include "dcbind.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -2051,7 +2051,7 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,D
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF(IPRINT.GE.6) THEN
         WRITE(LUPRI,'(A)') '* DOIJIL: IFCTYP:'
@@ -2115,7 +2115,7 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2136,7 +2136,7 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2151,7 +2151,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2176,7 +2176,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2202,7 +2202,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2222,7 +2222,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2267,11 +2267,11 @@ C     Written by T.Saue Mar 4 1995
 C     Last revision Mar 4 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D2 = 2.0D0)
-#include <dcbbas.h>
-#include <dcbind.h>
+#include "dcbbas.h"
+#include "dcbind.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -2283,7 +2283,7 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
  10     CONTINUE
         CALL REAINT(IUNIT,NBUF,IREPAB,N2BBASX,NIBUF,IBUF,BUF)
@@ -2343,7 +2343,7 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2362,7 +2362,7 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2375,7 +2375,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2400,7 +2400,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2421,7 +2421,7 @@ C         ================================================
 C         FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2437,7 +2437,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2480,12 +2480,12 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: tsaue Mar 5 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
-#include <dcbbas.h>
-#include <dcbind.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcbind.h"
+#include "dgroup.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -2497,7 +2497,7 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include <ibtfun.h>
+#include "ibtfun.h"
         CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
 C       Unpack indices
@@ -2545,7 +2545,7 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2559,7 +2559,7 @@ C         antisymmetric triplet Fock matrix
 C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2571,7 +2571,7 @@ C         Coulomb contributions only
 C         ==========================
 C
            ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2595,7 +2595,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2611,7 +2611,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2627,7 +2627,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2668,11 +2668,11 @@ C     Written by T.Saue Mar 5 1995
 C     Last revision: tsaue Mar 5 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
-#include <dcbbas.h>
-#include <dcbind.h>
+#include "dcbbas.h"
+#include "dcbind.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -2684,7 +2684,7 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
@@ -2733,7 +2733,7 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2749,7 +2749,7 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2760,7 +2760,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2783,7 +2783,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2798,7 +2798,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2811,7 +2811,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2849,12 +2849,12 @@ C     Written by T.Saue Mar 5 1995
 C     Sep 3 1996 - tsaue   Generalize to IFCTYP
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,D3 = 3.0D0,DP5 = 0.5D0)
-#include <dcbbas.h>
-#include <dcbind.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcbind.h"
+#include "dgroup.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -2866,7 +2866,7 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
@@ -2915,7 +2915,7 @@ C       =============================
 C       F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2932,7 +2932,7 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2946,7 +2946,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2968,7 +2968,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include<scalar.h>
+#include"scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2985,7 +2985,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3000,7 +3000,7 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3040,11 +3040,11 @@ C     Written by T.Saue Mar 5 1995
 C     Sep 3 1996 - tsaue   Genrazlized to IFCTYP
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,DP5=0.5D0)
-#include <dcbbas.h>
-#include <dcbind.h>
+#include "dcbbas.h"
+#include "dcbind.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION FMAT(NBAST,NBAST,NDMAT),
@@ -3191,26 +3191,26 @@ C     tsaue -    Sep 2 1996 Generalized to NFMAT
 C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
-#include <blocks.h>
-#include <cbihr2.h>
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "blocks.h"
+#include "cbihr2.h"
       EXTERNAL BDQALGEBRA
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('DIRSCF')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       NDMAT   = NFMAT*4
@@ -3317,13 +3317,13 @@ C
 C     Driver for direct SCF calculations
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0,D10 = 10.0D0)
-#include <dummy.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
 C Used from COMMON blocks:
 C   CCOM  : THRS,NHTYP,KHK
@@ -3332,16 +3332,16 @@ C   SHELLS: KMAX
 C   DCBBAS: NTBAS(0),N2BBASX
 C   DCBGEN: PARCAL
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <cbihr2.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <shells.h>
-#include <blocks.h>
-#include <dcbqal.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "shells.h"
+#include "blocks.h"
+#include "dcbqal.h"
 #if defined (VAR_MPI)
-#include <infpar.h>
+#include "infpar.h"
 #endif
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
@@ -3353,7 +3353,7 @@ C
       EXTERNAL BDQALGEBRA
 C
       CALL QENTER('DIRSC1')
-#include <memint.h>
+#include "memint.h"
 C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
@@ -3588,23 +3588,23 @@ C     Written by T.Saue July 2 1995
 C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C   DHFIOU: LUINT
 C   INDPCK: NIBUF
 C
-#include <dcbind.h>
-#include <dcbgen.h>
-#include <cbihr2.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbind.h"
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION FSO(*),DSO(*),
      &          IFCKOP(NFMAT),ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -3638,15 +3638,15 @@ C
 C     Written by T.Saue Feb 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbind.h>
-#include <dcbgen.h>
-#include <cbihr2.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbind.h"
+#include "dcbgen.h"
+#include "cbihr2.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       LOGICAL LBIT
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
@@ -3745,13 +3745,13 @@ C
 C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>    
+#include "implicit.h"
+#include "priunit.h"    
 C
-#include <dcbqal.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcbham.h>
+#include "dcbqal.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbham.h"
 C     External variables
       EXTERNAL BDQALGEBRA
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
@@ -3763,7 +3763,7 @@ C     Local variables
       CHARACTER HTYP(0:2)*1
       DATA HTYP /'G','S','A'/
       DATA IPFCK/3,2,2,2,1,0,0,0,2,2,2,2/
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
@@ -3849,27 +3849,27 @@ C     Driver for direct SCF calculations in SO-basis
 C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
 Ctec Is FIRST needed??
       LOGICAL FIRST
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),NPOS(*),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
-#include <dgroup.h>
-#include <cbihr2.h>
-#include <dcbbas.h>
-#include <blocks.h>
+#include "dgroup.h"
+#include "cbihr2.h"
+#include "dcbbas.h"
+#include "blocks.h"
 C
 C      SAVE FIRST
       FIRST = .TRUE.
       CALL QENTER('DIRSOF')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -3917,22 +3917,22 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
-#include <dummy.h>
-#include <maxaqn.h>
+#include "dummy.h"
+#include "maxaqn.h"
 C
-#include <mxorb.h>
-#include <aovec.h>
-#include <cbihr2.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <ccom.h>
-#include <blocks.h>
+#include "mxorb.h"
+#include "aovec.h"
+#include "cbihr2.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "ccom.h"
+#include "blocks.h"
 #if defined (VAR_MPI)
-#include <infpar.h>
+#include "infpar.h"
 #endif
       LOGICAl LBIT
       CHARACTER SECTID*12, INTTID*12, TOTTID*12, CPUTID*12, WALLTID*12
@@ -3943,7 +3943,7 @@ C
      &          DNTSKP(8),NPOS(*),WORK(LWORK)
 C
       CALL QENTER('DIRSO1')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialization
 C
@@ -4158,23 +4158,23 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
-#include <blocks.h>
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "blocks.h"
       DIMENSION DQO(N2BBASX,NZ,NFMAT),
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
       EXTERNAL BDQALGEBRA      
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL QENTER('MKDRQO')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialize
 C

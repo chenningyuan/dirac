@@ -39,27 +39,27 @@ C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
       DIMENSION WORK(LWORK)
 C
-#include <dcbibt.h>
+#include "dcbibt.h"
       CALL QENTER('GETLAB')
-#include <memint.h>
+#include "memint.h"
       CLS(1) = 'L'
       CLS(2) = 'S'
 C
@@ -234,19 +234,19 @@ C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
 C     Last revision: Nov 7 2001 - hjaaj
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
       LOGICAL DIAG,SAME
       DIMENSION ONEINT(NNBBASX), IDOINT(2,2)
       PARAMETER (IL = 2, IR = 1)
       EXTERNAL BDQALGEBRA
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       I1 = 0
       DO 10 IRP1 = 0,NBSYM-1
@@ -299,18 +299,18 @@ C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dcbqal.h>
-#include <dgroup.h>
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dcbqal.h"
+#include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
       EXTERNAL BDQALGEBRA
@@ -364,18 +364,18 @@ C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dcbqal.h>
-#include <dgroup.h>
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dcbqal.h"
+#include "dgroup.h"
       CHARACTER TYP*1
       DIMENSION AMAT(*)
       EXTERNAL BDQALGEBRA
@@ -423,16 +423,16 @@ C  /* Deck rpgen */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
       DIMENSION IREPA(*)
       DO 10 ISYM = 1,NBSYM
         IREP = ISYM - 1
@@ -453,14 +453,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcblab.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
+#include "dcblab.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
@@ -473,7 +473,7 @@ C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
@@ -502,14 +502,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcblab.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
+#include "dcblab.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
@@ -522,7 +522,7 @@ C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
@@ -550,14 +550,14 @@ C     Vector Transform: QO-basis to SO-basis
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcblab.h>
-#include <dcbqal.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcblab.h"
+#include "dcbqal.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
@@ -571,7 +571,7 @@ C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
@@ -600,14 +600,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcblab.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
+#include "dcblab.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
 C  Used from COMMON blocks:
 C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
@@ -620,7 +620,7 @@ C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
 #endif
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
@@ -651,19 +651,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -744,19 +744,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -834,19 +834,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -923,19 +923,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1015,20 +1015,20 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1096,18 +1096,18 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1157,18 +1157,18 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Jan 7 1998 (jth: NFBAS(IFRP,0) now parameter)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbbas.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     NBAST  = NTBAS(0)
@@ -1176,7 +1176,7 @@ C
       DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1234,19 +1234,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1297,19 +1297,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1361,19 +1361,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
       CALL QENTER('BSTOBU')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -1421,19 +1421,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
       CALL QENTER('BUTOBS')
-#include <memint.h>
+#include "memint.h"
 C
 
       CALL MEMGET('REAL',KBUF,MZ*N2BBASX,WORK,KFREE,LFREE)
@@ -1476,15 +1476,15 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -1521,15 +1521,15 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -1564,15 +1564,15 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
       DIMENSION AMS(*),AMU(*)
       CALL QENTER('MTBSBU')
@@ -1609,15 +1609,15 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
       DIMENSION AMU(*),AMS(*)
       CALL QENTER('MTBUBS')
@@ -1657,20 +1657,20 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision: Sep 19 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <maxaqn.h>
+#include "maxaqn.h"
 C
 C Used from COMMON blocks
 C  SPHCOM: CSP,ISPADR
 C
-#include <dcbsph.h>
+#include "dcbsph.h"
 
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('SPHGEN')
-#include <memint.h>
+#include "memint.h"
       NCSPT = (MXQN*(MXQN + 1)/2)*(2*MXQN - 1)
       CALL DZERO(CSP,NCSP)
 C
@@ -1805,20 +1805,20 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbsph.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 C
 C     Set limits
@@ -1886,12 +1886,12 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
+#include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*),WORK(LWORK)
       CALL QENTER('MTAOCS')
 C
@@ -1914,7 +1914,7 @@ C       Small components
 C
 C     Allocate work space
 C
-#include <memint.h>
+#include "memint.h"
       NWRK = NVEC*NSPH
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
@@ -1969,20 +1969,20 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbsph.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 C
 C     Set limits
@@ -2045,17 +2045,17 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include <mxorb.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX,NHKT
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include <nuclei.h>
-#include <shells.h>
+#include "nuclei.h"
+#include "shells.h"
 C
 C     Set limits
 C
@@ -2094,14 +2094,14 @@ C
 C     Check normalization of tranformation matrix
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
-#include <dcbsph.h>
-#include <dcbbas.h>
+#include "dcbsph.h"
+#include "dcbbas.h"
       DIMENSION CSPSUM(((MXQN+1)*MXQN)/2),WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
       CALL HEADER('Output from SPHTST',-1)
       CALL SPHGEN(WORK,LWORK,IPRINT)
@@ -2130,10 +2130,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphts1 */
       SUBROUTINE SPHTS1(AMAT,BMAT,NSPH,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
@@ -2169,19 +2169,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -2285,8 +2285,8 @@ C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
 C****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
       CHARACTER TREV*1,TRA*1,TYP*4
@@ -2481,11 +2481,11 @@ C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
 C
-#include <dgroup.h>
+#include "dgroup.h"
       DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
      &          TMAT(LR1,LC1,NZT)
 C
@@ -2527,17 +2527,17 @@ C     Written June 20 1996 - Trond Saue
 C     Last revision June 20 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
+#include "nuclei.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
 C
       CALL QENTER('DELSPH')
-#include <memint.h>
+#include "memint.h"
       IF    (LCOMP.EQ.1) THEN
 C     LL-block
         NDIM = NLARGE
@@ -2599,14 +2599,14 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <maxaqn.h>
+#include "maxaqn.h"
 C
       DIMENSION WORK(LWORK)
       CALL QENTER('MKSPHC')
-#include <memint.h>
+#include "memint.h"
       NIJK = MXQN*MXQN*MXQN
       MXYZ = (MXQN*(MXQN+1))/2      
       NFUN = (MXQN*(MXQN+1)*(MXQN+2))/6
@@ -2636,13 +2636,13 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <maxaqn.h>
+#include "maxaqn.h"
 C
-#include <sphtrm.h>
+#include "sphtrm.h"
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          IX(*),JY(*),KZ(*),LOFF(*),DFAC(*),WORK(*)
 C
@@ -2694,17 +2694,17 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <maxaqn.h>
+#include "maxaqn.h"
 C
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          LOFF(*),DFAC(*),WORK(*)
 C
       CALL QENTER('MKSPH2')
-#include <memint.h>
+#include "memint.h"
       NXYZ           = (LVAL+1)*(LVAL+2)/2
       NNXYZ          = (NXYZ*(NXYZ+1))/2
       N2XYZ          = NXYZ*NXYZ
@@ -2731,13 +2731,13 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <maxaqn.h>
+#include "maxaqn.h"
 C
-#include <ccom.h>
+#include "ccom.h"
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          LOFF(*),DFAC(*),SXYZ(*),COEF(*),BUF(*),
      &          IBUF(*),WORK(*)
@@ -2776,8 +2776,8 @@ C     Make lower triangular row-packed overlap matrix in minimal
 C     Cartesian Gaussian basis for angular momentum value L
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1 = 1.0D0)
 C
       DIMENSION INADR(3,*),LOFF(*),DFAC(*),SXYZ(*)
@@ -2822,16 +2822,16 @@ C     Get spherical transformation matrices up to LMAX
 C     Written by T.Saue May 1 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
-#include <ccom.h>
-#include <sphtrm.h>
-#include <symmet.h>
-#include <pgroup.h>
+#include "ccom.h"
+#include "sphtrm.h"
+#include "symmet.h"
+#include "pgroup.h"
       DIMENSION CSPH(*),ICSP(*),WORK(*)
 C
 C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
@@ -2865,15 +2865,15 @@ C     Written by L.Visscher, 6-1-2000
 C     Last revision : 6-1-2000 - lvisscher
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
 C
       DIMENSION AMAT(*)
       CHARACTER*3 BASIS
@@ -2920,12 +2920,12 @@ C
 C     Written by T.Saue Aug 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
 C
       NSYM = 4/NZ
@@ -2963,19 +2963,19 @@ C        Modified by T.Saue Aug 2000
 C        Last revision: Jan 2 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION SMOAO(*),TMAT(*),WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('MKSMOAO')
 C
@@ -3027,19 +3027,19 @@ C
 C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION SAOMO(*),TMAT(*),WORK(*)
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('MKSAOMO')
 C
@@ -3091,21 +3091,21 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <chrsgn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "chrsgn.h"
 C
-#include <dcbbas.h>
-#include <dcblab.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <aosotr.h>
-#include <pgroup.h>
+#include "dcbbas.h"
+#include "dcblab.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "aosotr.h"
+#include "pgroup.h"
       DIMENSION ILAB(2,*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Scan SO-labels
 C
@@ -3174,19 +3174,19 @@ C
 C      Written by L. Visscher august 2001
 C      Last revision: Aug 15 2001 - LV 
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <aosotr.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "symmet.h"
+#include "aosotr.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)
 C

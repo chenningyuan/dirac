@@ -41,25 +41,25 @@ C     Written by T.Saue November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <blocks.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "blocks.h"
 C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PSIDHF')
-#include <memint.h>
+#include "memint.h"
 C
       IF(DFTHAM) THEN
         CALL TITLER('Kohn - Sham calculation','*',125)
@@ -142,23 +142,23 @@ C     Written by T.Saue November 1994
 C     Last revision : Jan 27 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00, 
      &          D2 = 2.0D0, DP5=0.5D0)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
 #if defined (MOD_DFT)
-#include <dftcom.h>
+#include "dftcom.h"
 #endif
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbreo.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbreo.h"
       LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC,TEST
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -166,7 +166,7 @@ C
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 C
-#include <memint.h>
+#include "memint.h"
 C
       TEST = DIISAO.OR.NASHT.GT.0.OR.NAELEC.GT.0
 C
@@ -488,15 +488,15 @@ C     Written by T.Saue Mar 09 1995
 C     Last revision: Mar 09 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
       LOGICAL CHKCNV,DOSEL,TEST
@@ -504,7 +504,7 @@ C
      &          WORK(LWORK)
       DIMENSION NISHOLD(2),NASHOLD(2)
 C
-#include <memint.h>
+#include "memint.h"
 C
       TEST = NASHT.GT.0.OR.DIISAO.OR.NAELEC.GT.0
       IF (TEST) THEN
@@ -658,16 +658,16 @@ C  /* Deck dhfscf */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr1.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          WORK(LWORK)
 C
@@ -701,13 +701,13 @@ C  /* Deck densty */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DMAT(*),CMO(*)
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
@@ -740,10 +740,10 @@ C
 C     Written by T.Saue Mar 3 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0,D0=0.0D0)
-#include <dgroup.h>
+#include "dgroup.h"
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
       CALL QGEMM(NBAS,NBAS,NVEC,D1,
@@ -763,18 +763,18 @@ C     Written by T.Saue Mar 3 1995
 C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <cbihr2.h>
-#include <blocks.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
       CALL QENTER('SCFCYC')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -807,29 +807,29 @@ C     Written by T.Saue Mar 3 1995
 C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00, 
      &          D2 = 2.00D00)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbham.h>
-#include <dcbint.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dcbint.h"
+#include "dcbdhf.h"
 #if defined (MOD_DFT)
-#include <dftcom.h>
+#include "dftcom.h"
 #endif
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbreo.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbreo.h"
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK) 
       DIMENSION DVOVLP(MXOPEN)
       CALL QENTER('SCFCY1')
-#include <memint.h>
+#include "memint.h"
 C
 C
 C     ***********************************
@@ -1149,23 +1149,23 @@ C
 C     Last revision: 971022-jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0, DP5 = 0.5D00,
      &          DP25 = 0.25D00)
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <frame.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
-#include <dcbpsi.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dcbgen.h>
+#include "nuclei.h"
+#include "frame.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+#include "dcbpsi.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbgen.h"
 #if defined (MOD_DFT)
-#include <dfterg.h>
+#include "dfterg.h"
 #endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
@@ -1306,9 +1306,9 @@ C     Written by T.Saue Mar 09 1995
 C     Last revision: Aug 24 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
       LOGICAL LBIT
       CHARACTER INTTYP*9
@@ -1369,21 +1369,21 @@ C
 C     Written by T.Saue Nov 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX,NFBAS
 C  DCBORB: NOCC
 C  DHFCAL: NSMOTQ
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION CMO(*),TMAT(*),WORK(LWORK)
 C
       CALL QENTER('SMOGEN')
-#include <memint.h>
+#include "memint.h"
       NBFDIM = 0
       DO I = 1,NFSYM
         NBFDIM = MAX(NBFDIM,NOCC(I)*NFBAS(I,0))
@@ -1419,8 +1419,8 @@ C
 C     Written by T.Saue Nov 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 C Used from COMMON blocks:
@@ -1429,12 +1429,12 @@ C  DCBBAS:
 C  DCBORB:
 C  DGROUP: NFSYM
 C
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
       DIMENSION SMO(*),CMO(*),TMAT(*),SMAT(*),BUF(*),WORK(LWORK)
 C
 C     Get overlap matrix
@@ -1484,15 +1484,15 @@ C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
 C  DHFCAL: NSMOTQ
 C
-#include <dcbdhf.h>
+#include "dcbdhf.h"
       CALL QENTER('SMOSEL')
-#include <memint.h>
+#include "memint.h"
 C     Memory allocation
       CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
       CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
@@ -1511,18 +1511,18 @@ C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
 C
 C Used from COMMON blocks:
 C  DCBORB: NSMOTQ,NOCC
 C  DGROUP: NFSYM
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
       CALL QENTER('SMOSE1')
-#include <memint.h>
+#include "memint.h"
 C
 C     Read vectors to select from
 C
@@ -1563,16 +1563,16 @@ C     Written by T.Saue Nov 11 1995
 C     Major revisions: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C                      May 2002 hjaaj: EIG and IBEIG added
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 C
 C Used from COMMON blocks:
 C
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
 C
 C     KNORB = NORB(IFRP)
 C     KNOCC = NOCC(IFRP)
@@ -1707,13 +1707,13 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0,D0=0.0D0)
       DIMENSION DMAT(*),CMO(*)
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       JOFF = NPSH(IFRP) + JVEC 
       CALL DZERO(DMAT,N2BBASXQ)
@@ -1742,16 +1742,16 @@ C
 C        Written by T.Saue Jan 28 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0)
 C
-#include <mxcent.h>
-#include <frame.h>
-#include <nuclei.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
+#include "mxcent.h"
+#include "frame.h"
+#include "nuclei.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION EIG(*)
 C
@@ -1807,16 +1807,16 @@ C
 C        Written by J. Thyssen Nov 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION WORK(LWORK),CMO(*),EIG(*),IBEIG(*)
       DIMENSION IMOORD(MXREORD,2),IREORD(2)
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('REORD')
 C
@@ -1892,8 +1892,8 @@ C
 C        Written by J. Thyssen Nov 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CMO(NBASI,NORBI,NZ), CMOBCK(NBASI,NORBI,NZ),
      &          EIG(*),EIGBCK(*), IBEIG(*), IBEIGBCK(*),
      &          IORDER(NORDER)
@@ -1951,20 +1951,20 @@ C
 C        Written by J. Thyssen Dec 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
-#include <memint.h>
+#include "memint.h"
 C
       CALL QENTER('MKMOFK2')
 C
@@ -2009,11 +2009,11 @@ C        Written by L. Visscher
 C        August 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION FSUB(MSUB,NSUB,NZS),FFUL(MFUL,NFUL,NZ)
       LOGICAL SUBI, SUBJ
@@ -2122,11 +2122,11 @@ C        Written by L. Visscher
 C        September 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION FSUB(MSUB,NSUB,NZS),FFUL(MFUL,NFUL,NZ)
       LOGICAL SUBI, SUBJ
@@ -2231,11 +2231,11 @@ C        Written by L. Visscher
 C        April 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
       NBRP = 4 / NZ
@@ -2295,12 +2295,12 @@ C        Written by L. Visscher
 C        October 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbham.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbham.h"
       DIMENSION IBEIG(NO),INDX(NO)
       DIMENSION EVEC(NO,NO,NZ),RDUM(NO,4)
 C
@@ -2382,24 +2382,24 @@ C
 C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbbas.h"
+#include "dcborb.h"
 C
-#include <dcbfir.h>
-#include <dcbgen.h>
-#include <dcbmvo.h>
-#include <blocks.h>
+#include "dcbfir.h"
+#include "dcbgen.h"
+#include "dcbmvo.h"
+#include "blocks.h"
 C
       LOGICAL BF1,BF2,BF3
       DIMENSION WORK(*)      
 C
-#include <memint.h>
+#include "memint.h"
       CALL TITLER('Modified virtual orbitals','*',125)
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2443,23 +2443,23 @@ C     Written by T.Saue June 18 1998
 C     Last revision : June 18 1998 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcbmvo.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbmvo.h"
+#include "dcbham.h"
       LOGICAL TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
       DIMENSION IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
       CALL QENTER('MVOGEN')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialization
 C
@@ -2594,17 +2594,17 @@ C
 C     Generate density matrix for chosen MVO vectors
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbmvo.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbmvo.h"
       DIMENSION DMAT(*),CMO(*),BUF(*),WORK(*)
       DIMENSION NR(2),IR(2,2),KVEC(2,2),NVEC(2,0:2)
       DIMENSION ICMV(2)
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
 C
 C     Set up index arrays for coefficients contributing
@@ -2680,14 +2680,14 @@ C     Based on old code.
 C     Written by T.Saue Oct 1 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbham.h"
 C
       DIMENSION BMAT(MXDIIS,MXDIIS)
       LOGICAL TOBE,CHKCNV,DSCFON,BARNUC
@@ -2861,11 +2861,11 @@ C     Find DHF occupation based on eigenvalues
 C     using the build-up principle.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION EIG(*)
       DIMENSION IEIGMIN(2)
@@ -2934,15 +2934,15 @@ C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
 C     Last revision: Jan 10 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL SPECIAL
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
@@ -3245,15 +3245,15 @@ C     Taken out of DFDIAG and modified by L.Visscher Aug 28 2000
 C     Last revision: Aug 28 2000
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       DIMENSION EIGP(NS),EIGE(NL),WORK(*)
       DIMENSION FLL(NL,NL,NZS),FSS(NS,NS,NZS),FLS(NL,NS,NZS)

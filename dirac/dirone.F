@@ -43,19 +43,19 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 19 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
+#include "mxcent.h"
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
 C
-#include <dcbgen.h>
-#include <dcbprl.h>
-#include <dcbham.h>
-#include <dcbcls.h>
-#include <cbihr1.h>
-#include <cbiher.h>
+#include "dcbgen.h"
+#include "dcbprl.h"
+#include "dcbham.h"
+#include "dcbcls.h"
+#include "cbihr1.h"
+#include "cbiher.h"
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -110,23 +110,23 @@ C     Written by Trond Saue - May 1996
 C     Last revision May 19 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8
       DIMENSION WORK(LWORK)
-#include <dcbgen.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cbiher.h>
+#include "dcbgen.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
 C
       CALL QENTER('OP1GEN')
-#include <memint.h>
+#include "memint.h"
 C     Write integrals to file
       TOFILE   = .TRUE.
       NCOMP    = 0
@@ -177,18 +177,18 @@ C     Written by Trond Saue - May 1996
 C     Last revision May 19 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dummy.h>
+#include "dummy.h"
       LOGICAL DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       DIMENSION WORK(LWORK)
-#include <dcbgen.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
 C
       CALL QENTER('BETAMT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialization
 C
@@ -245,16 +245,16 @@ C     Written by T.Saue May 1995
 C     Last revision May 19 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAl DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       DIMENSION WORK(LWORK)
-#include <dcbbas.h>
+#include "dcbbas.h"
 C
       CALL QENTER('NUCATT')
-#include <memint.h>
+#include "memint.h"
 C     Memory allocation
       CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
 C
@@ -296,21 +296,21 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
-#include <dcbbas.h>
-#include <nuclei.h>
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbisol.h>
+#include "dcbbas.h"
+#include "nuclei.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('NUCAT1')
-#include <memint.h>
+#include "memint.h"
 C
       CALL MEMGET('REAL',KSTHMA,3*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFACIN,  NUCDEP,WORK,KFREE,LFREE)
@@ -359,16 +359,16 @@ C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <cbihr1.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('ONEFCK')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -400,19 +400,19 @@ C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialize
 C
@@ -504,15 +504,15 @@ C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,PTOL = 1.0D-12)
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
       CHARACTER MXFORM*6,FMT*6,JCHR*1
       LOGICAL FIRST(*)
@@ -728,17 +728,17 @@ C
 C     Written by T.Saue
 C     Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbbas.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
       DIMENSION VMAT(*),WORK(LWORK)
 C
       CALL QENTER('LOWDIN')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -789,19 +789,19 @@ C
 C        Written by T.Saue
 C        Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbbas.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
       CHARACTER COMP(2)*1
       DIMENSION VMAT(*),SMAT(*),EIG(*),CSPH(*),ICSP(*),WORK(LWORK)
       LOGICAL LBIT
@@ -936,21 +936,21 @@ C     Driver for getting one-electron property integrals
 C     Written by T.Saue October 1994
 C     Last revision : Nov 15 1994
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <shells.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "shells.h"
+#include "symmet.h"
+#include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
       CHARACTER WORD*7,MXFORM*6,LABINT(3*MXCOOR)*8
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
 C
       CALL QENTER('RGETINT')
-#include <memint.h>
+#include "memint.h"
 C
       MAXTYP = 3*MXCOOR
       IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
@@ -990,15 +990,15 @@ C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C Used from COMMON blocks:
 C  DCBBAS: NTBAS(0)
 C
-#include <dcbbas.h>
+#include "dcbbas.h"
       DIMENSION VMAT(*),VBUF(*),WORK(LWORK)
       CALL QENTER('VFSORT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('INTE',KSORT,NTBAS(0),WORK,KFREE,LFREE)
@@ -1019,12 +1019,12 @@ C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C Used from COMMON blocks:
 C  DCBBAS: NTBAS,NFORB
 C
-#include <dcbbas.h>
+#include "dcbbas.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION VBUF(NBAST,*)
@@ -1082,17 +1082,17 @@ C     Trond Saue, October 1995 - Oslo
 C     Last revision: May 21 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION FOCK(*),WORK(LWORK)
-#include <dcbgen.h>
-#include <cbihr1.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "cbihr1.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C
       CALL QENTER('FREEMT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
 C
@@ -1153,13 +1153,13 @@ C
 C     It should be noted that Ar is symmetric, whereas Ai,Br and Bi
 C     are antisymmetric.
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbham.h>
-#include <dcbgen.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "dcbgen.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
@@ -1248,22 +1248,22 @@ C     Written by T.Saue, October 1995
 C     Last revision May 21 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C   DCBBAS: N2BBASX
 C   PAMIOU: LUTMAT
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <cbihr1.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "cbihr1.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
-#include <memint.h>
+#include "memint.h"
 C
 C     Make one-center projection matrix
 C     =================================
@@ -1386,8 +1386,8 @@ C     Written by T.Saue, October 1995
 C     Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,DM2 = -2.0D0,D0 = 0.0D0)
 C
 C Used from COMMON blocks
@@ -1396,16 +1396,16 @@ C  DHFCAL:
 C  DCBBAS:
 C  DCBORB:
 C  DGROUP:
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <cbihr1.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-#include <memint.h> 
+#include "memint.h" 
 C
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
@@ -1786,8 +1786,8 @@ C     Written by T.Saue, January 1995
 C     Last revision: May 19 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL FNDLB3
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
@@ -1823,8 +1823,8 @@ C       a)Cannot find label: return FALSE
 C       b)Finds label      : continues
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL FNDLB2
       CHARACTER SRCLBL*8, RTNLBL(2)*8, COMB*4
       FNDLB3 = .FALSE.
@@ -1849,17 +1849,17 @@ C     Written by T.Saue May 26 1996
 C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include <dcbgen.h>
-#include <cbihr1.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "cbihr1.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION SMAT(N2BBASX),WORK(LWORK)
       CALL QENTER('GTOVLX')
-#include <memint.h>
+#include "memint.h"
 C      
 C     Allocate integral buffer
 C     ========================
@@ -1923,21 +1923,21 @@ C     Written by T.Saue May 26 1996
 C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <dcbgen.h>
-#include <cbihr1.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <symmet.h>
+#include "dcbgen.h"
+#include "cbihr1.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
       DIMENSION SMAT(*),WORK(LWORK)
       CALL QENTER('GTOVLT')
-#include <memint.h>
+#include "memint.h"
 C      
 C     Allocate integral buffer
 C     ========================
@@ -2019,16 +2019,16 @@ C     Solve one-electron systems with finite nuclei and project
 C     out all free positronic solutions
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION WORK(LWORK)
       CALL QENTER('HEINZ')
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2058,16 +2058,16 @@ C     Solve one-electron systems with finite nuclei and project
 C     out all free positronic solutions
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <alphac.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "alphac.h"
       PARAMETER(DP5 = 0.5D0,D0 = 0.0D0)
 C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAL FIRST(NZ)
       DIMENSION CMO(*),EIG(*),FAO(N2BBASX,NZ),FMO(*),FBUF(N2BBASX,NZ),
      &          VBUF(N2BBASX),TMAT(*),OP1INT(*),FTRI(NNBBASX,NZ),
@@ -2234,8 +2234,8 @@ C
       END
 C  /* Deck reno */
       SUBROUTINE RENO(LDM,NDIM,SMAT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION SMAT(LDM,NDIM)
       DO J = 1,NDIM
         DO I = 1,NDIM
@@ -2253,17 +2253,17 @@ C
 C     Generate Lowdin matrix with spherical transformation embedded.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
      &          CSPH(*),ICSP(*),WORK(*)
 C
       CALL QENTER('SPHLOW')
-#include <memint.h>
+#include "memint.h"
       NXYZ = (LMAX*(LMAX+1))/2
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
       NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
@@ -2292,29 +2292,29 @@ C
 C     Generate Lowdin matrix with spherical transformation embedded.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
 C
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <ccom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <shells.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <dcbrkb.h>
+#include "ccom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "dcbrkb.h"
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
      &          CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
      &          TMAT(NCAR,NCAR),CBUF(*),ICBF(3,LMAX),
      &          WORK(*)
       DATA COMP/'L','S'/
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "sdpre.h"
+#include "ibtfun.h"
 C
 C**************************************************
 C***  Generate spherical transformation matrix  ***
@@ -2479,16 +2479,16 @@ C
 C     Generate Lowdin matrix with RKB transformation embedded.
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dgroup.h"
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
      &          CSPH(*),ICSP(*),WORK(*)
 C
       CALL QENTER('RKBLOW')
-#include <memint.h>
+#include "memint.h"
       NXYZ = (LMAX*(LMAX+1))/2
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
       NCBUF = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
@@ -2544,21 +2544,21 @@ C
 C      
 
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D6=6.0D0,D4=4.0D0)
 C
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <ccom.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <shells.h>
-#include <nuclei.h>
-#include <dgroup.h>
-#include <dcbrkb.h>
+#include "ccom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "dcbrkb.h"
       LOGICAL LRKB
       CHARACTER COMP(2)*1
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
@@ -2566,8 +2566,8 @@ C
      &          TMAT(NCAR,NCAR),CRED(*),IRED(3,LMAX),
      &          WORK(*)
       DATA COMP/'L','S'/
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "sdpre.h"
+#include "ibtfun.h"
 C
 C**************************************************
 C***  Generate spherical transformation matrix  ***
@@ -2879,8 +2879,8 @@ C
 C     Written by T.Saue Sep 11 1995
 C     Last revision Apr 1 1998 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),WORK(LWORK)
@@ -2933,19 +2933,19 @@ C     Written by T.Saue July 1997
 C     Last revision July 15 1997 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2)
       DIMENSION WORK(LWORK),CBUF(2),GBUF(2),FMAT(*)
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <nuclei.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "nuclei.h"
 C
       CALL QENTER('TSCORR')
-#include <memint.h>
+#include "memint.h"
 C     Memory allocation
       CALL MEMGET('REAL',KONEMT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
@@ -3000,15 +3000,15 @@ C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
@@ -3183,12 +3183,12 @@ C  /* Deck PRJOUT */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
       PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
 C
-#include <dgroup.h>
+#include "dgroup.h"
       DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
      &          VBUF(NVDIM,NZ),SMAT(NVDIM,NVDIM),IVECS(NVECS)
       DIMENSION P(4)
@@ -3333,12 +3333,12 @@ C  /* Deck PRJORT */
 C*****************************************************************************
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
       PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
 C
-#include <dgroup.h>
+#include "dgroup.h"
       DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
      &          IVECS(NVECS)
       DIMENSION P(4)
@@ -3458,13 +3458,13 @@ C     COMMON blocks DCBBAS and DCBORB
 C     Written by T.Saue Jan 31 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
      &          TMAT(NAO,NMO,NZ)
       II = 0
@@ -3489,12 +3489,12 @@ C     COMMON blocks DCBBAS and DCBORB
 C     Written by T.Saue Jan 31 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION IVEC(*),TMAT(NBAS,NMAT,NZ),TBUF(NBAS,NBUF,NZ)
       NSYM = 4/NZ
       JVEC = 0
@@ -3532,21 +3532,21 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbbas.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('MK1CEX')
@@ -3617,21 +3617,21 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include <ccom.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbbas.h>
-#include <mxcent.h>
-#include <nuclei.h>
+#include "ccom.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
       DIMENSION INDNAO(2,*)
@@ -3722,9 +3722,9 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
       DIMENSION WORK(*)
@@ -3775,14 +3775,14 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),
@@ -3871,10 +3871,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <dcbqal.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION FOCK(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
@@ -3977,10 +3977,10 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 17, 2001
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <dcbqal.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbqal.h"
 C
       PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
       DIMENSION DENS(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)

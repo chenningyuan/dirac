@@ -41,10 +41,10 @@ C
 C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbbas.h>
+#include "dcbbas.h"
       DIMENSION DCAO(*),DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(*)
       LOGICAL GETDC,GETDV
@@ -83,16 +83,16 @@ C
 C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(LWORK)
       PARAMETER ( D1 = 1.0 D00, D0 = 0.0 D00 )
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
-#include <memint.h>
+#include "memint.h"
 C
 C
       CALL QENTER('DENSDV')
@@ -183,8 +183,8 @@ C
 C     Written by J. Thyssen
 C     Last revision: 1997/10/22 - jth
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION DV(*)
 C
       DV(1) = 0.50D00
@@ -197,8 +197,8 @@ C
 C Dummy routine: writtes matrix to file for use by jth python program
 C
       SUBROUTINE PYTHONMATRIX(A,NR,NC,NDIMR,NDIMC,FILENAME)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION A(NDIMR,NDIMC)
       CHARACTER FILENAME*(*)
       WRITE(6,*) FILENAME
@@ -233,18 +233,18 @@ C     Written by J. Thyssen
 C     Last revision: 1997/11/23 - jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DMAT(*), CMO(*)
       DIMENSION IFLG(5)
       DATA IFLG /01,02,04,08,16/
       CHARACTER CHR*80
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL QENTER('GENDEN')
 C
@@ -309,13 +309,13 @@ C     Written by J. Thyssen
 C     Last revision: 1997/12/27 - jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION DMAT(*), CMO(*)
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       CALL QENTER('ACTDEN')
 C

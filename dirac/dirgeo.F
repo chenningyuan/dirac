@@ -41,14 +41,14 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbham.h>
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbgrd.h>
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbgrd.h"
 C
       CALL QENTER('PAMGEO')
 C
@@ -77,15 +77,15 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION WORK(LWORK)
       LOGICAL FIRST
       SAVE FIRST
       DATA FIRST /.TRUE./
 C 
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dcbdhf.h>
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('EXEDIR')
 C
@@ -162,8 +162,8 @@ C
       END
 C  /* Deck rgetccsd */
       FUNCTION RGETCCSD()
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C     Get energy from RELCCSD
 C

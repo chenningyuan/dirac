@@ -42,16 +42,16 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
 C
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       DIMENSION FOCK(*),DMAT(*),WORK(*)
-#include <memint.h>
+#include "memint.h"
       CALL QENTER('SOLFCK')
 C
       MAXYZ = (LSOLMX + 1)*(LSOLMX + 2)/2
@@ -101,21 +101,21 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D2 = 2.0D0)
       PARAMETER(FLFAC = -0.5D0,DM2 = -2.0D0)
-#include <dummy.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <orgcom.h>
-#include <dgroup.h>
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "orgcom.h"
+#include "dgroup.h"
 C
       LOGICAL DOINT(2,2),FIRST
       DIMENSION FOCK(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
@@ -124,7 +124,7 @@ C
      &          RLMMAT(*),RLMNUC(*),CSPH(MAXYZ,MAXLM),IFUN(*),WORK(*)
       DIMENSION RLMORI(3), IDOINT(2,2)
       CHARACTER SECTID*12,INTTID*12
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -327,11 +327,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <maxmom.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "maxmom.h"
+#include "mxcent.h"
 C
 C -- local variables and constants
 C
@@ -340,11 +340,11 @@ C
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      &          MXFORM*6,FMT*6
       DIMENSION WORK(*)
-#include <dcbham.h>
-#include <orgcom.h>
-#include <cbisol.h>
-#include <cbiher.h>
-#include <nuclei.h>
+#include "dcbham.h"
+#include "orgcom.h"
+#include "cbisol.h"
+#include "cbiher.h"
+#include "nuclei.h"
 C
       SAVE SET
 
@@ -355,7 +355,7 @@ C
          RETURN
       END IF
       SET = .TRUE.
-#include <memint.h>
+#include "memint.h"
 C
 C     Initialize
 C
@@ -568,18 +568,18 @@ C
 C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION ORIGIN(3)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     First find the most distant center
 C

@@ -41,12 +41,12 @@ C     Written by T.Saue Sep 11 1995
 C     Last revision : KApril 27 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbana.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbbas.h"
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX
@@ -94,24 +94,24 @@ C     Written by T.Saue - Sep 11 1995
 C     Last revision: Aoril 27 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbpop.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbpop.h"
+#include "dgroup.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('MULPOP')
-#include <memint.h>
+#include "memint.h"
 C
       CALL TITLER('Mulliken population analysis','*',122)
 C
@@ -179,21 +179,21 @@ C     Written by T.Saue July 24 1994
 C     LAST VERSION: Jan 9 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include <mxorb.h>
+#include "mxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
 C  DGROUP: NZ
 C
-#include <dcbgen.h>
-#include <dcbpop.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbpop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dgroup.h"
 C
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
@@ -201,7 +201,7 @@ C
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
       CALL QENTER('MULPO1')
-#include <memint.h>
+#include "memint.h"
 C
       N2LAB = NPOPLAB*NPOPLAB
       CALL DZERO(PNTOT,N2LAB*NFSYM)
@@ -368,21 +368,21 @@ C
 C     Written by T.Saue July 24 1994
 C     Last revision: Jan 7 1998 - jth LINUX
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D2 = 2.0D0)
-#include <dummy.h>
-#include <mxorb.h>
+#include "dummy.h"
+#include "mxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
 C  DGROUP: NZ
 C
-#include <dcbgen.h>
-#include <dcbpop.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbpop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
 C 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -398,7 +398,7 @@ C
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
       CALL QENTER('MULPO2')
-#include <memint.h>
+#include "memint.h"
 C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVEC + NEVEC
@@ -490,15 +490,15 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Oct 9 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C Used from COMMON blocks
 C  DCBAS: N2BBASX
-#include <dcbbas.h>
+#include "dcbbas.h"
       DIMENSION PMAT(*),SMAT(*),CMO(*),IGLAB(*),WORK(LWORK)
 C
       CALL QENTER('POPMAT')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KPBUF,2*N2BBASX,WORK,KFREE,LFREE)
@@ -527,19 +527,19 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <mxorb.h>
+#include "mxorb.h"
 C
 C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
 C  DCBORB: NORB
 C  DGROUP: NZ
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbpop.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbpop.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -659,8 +659,8 @@ C     Written by T.Saue - July 24 1994
 C     LAST VERSION: Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION POPG(NLAB,2),PMAT(NLAB,NLAB,2)
 C
       DO 10 J = 1,NLAB
@@ -678,8 +678,8 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7
       DIMENSION POPG(NLAB,2),IEFF(*)
@@ -750,8 +750,8 @@ C     Written  by T.Saue Oct 11 1995
 C     Last revision: Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D2 = 2.0D0)
       DIMENSION POPN((NLAB*(NLAB+1)/2),2),PMAT(NLAB,NLAB,2)
 C
@@ -782,8 +782,8 @@ C     Written by T.Saue Oct 11 1995
 C     Last revision Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D2 = 2.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7,PFMT*23,COMP*5
       DIMENSION PMAT(NLAB,NLAB),POPG(NLAB),IEFF(NLAB)
@@ -849,16 +849,16 @@ C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <dcbgen.h>
-#include <dcbprj.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbprj.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
@@ -866,7 +866,7 @@ C
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          KE(2,2),KQ(2,2),NVECS(2,2),NQ(2),NE(2)
 C
-#include <memint.h>
+#include "memint.h"
       KFRSAV = KFREE
       CALL TITLER('Projection analysis','*',122)
 C
@@ -1091,15 +1091,15 @@ C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,DC=1.0D-2)
 C
-#include <dcbprj.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbprj.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
@@ -1199,11 +1199,11 @@ C
 C     Wrintten by T.Saue March 31 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcborb.h>
-#include <dcbprj.h>
+#include "dcborb.h"
+#include "dcbprj.h"
       DIMENSION JREF(3,*),NSTR(2,0:2,0:MAXREF),KREF(*)
 C
 C     Positrons
@@ -1245,16 +1245,16 @@ C     Written by Trond Saue March 13 1996
 C     Last revision Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include <dcbprj.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbham.h>
+#include "dcbprj.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1
@@ -1411,13 +1411,13 @@ C     Written by Trond Saue May 1996
 C     Last revision: tsaue - May 2 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <dcbpop.h>
+#include "mxorb.h"
+#include "dcbpop.h"
 C
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
       IF(.NOT.LABDEF) THEN
         DO I = 1,NPLAB(1)
@@ -1475,17 +1475,17 @@ C     Written by Trond Saue May 1996
 C     Last revision: tsaue - Jan 9 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbvec.h>
-#include <dcborb.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcbvec.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(*)
-#include <memint.h>
+#include "memint.h"
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
@@ -1526,8 +1526,8 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DTOL=0.0001D0,D0 = 0.0D0)
       CHARACTER LAB(NLAB)*12,FMT*7
       DIMENSION POPG(NLAB),IEFF(*)
@@ -1584,8 +1584,8 @@ C
 C     Written by T.Saue Oct 5 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER REFFIL*6
@@ -1628,18 +1628,18 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
-#include <dcbgen.h>
-#include <dcbrho1.h>
-#include <dcbbas.h>
+#include "dcbgen.h"
+#include "dcbrho1.h"
+#include "dcbbas.h"
 C
       CALL QENTER('GT1RHO')
-#include <memint.h>
+#include "memint.h"
 C
       CALL TITLER('Density along bonds','*',122)
 C
@@ -1694,17 +1694,17 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
+#include "symmet.h"
+#include "nuclei.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
       CHARACTER FILNAM*10
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       LURHO = 1
 C
@@ -1774,17 +1774,17 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <codata.h>
+#include "codata.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcbrho1.h>
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbrho1.h"
 C
-#include <sdpre.h>
+#include "sdpre.h"
       MC = 2
       IF(LEVYLE) MC = 1      
 

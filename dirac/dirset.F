@@ -39,17 +39,17 @@ C     Subroutine for setting dimensions and generate overlap and Lowdin
 C     matrices
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcbham.h>
-#include <dcblab.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-#include <cbihr1.h>
-#include <infpar.h>
+#include "dcbham.h"
+#include "dcblab.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "cbihr1.h"
+#include "infpar.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -140,18 +140,18 @@ C
 C     Written by T.Saue - October 1994
 C     Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <dcbgen.h>
-#include <dcbbas.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcbfir.h>
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbfir.h"
       CHARACTER COMP(2)*1
 C
       IF(IPRINT.GE.2) CALL TITLER('Output from SETDC1','*',103)
@@ -356,15 +356,15 @@ C
 C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <pgroup.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "pgroup.h"
+#include "dgroup.h"
       CHARACTER COMP(2)*1
 C
 C
@@ -508,13 +508,13 @@ C
 C     Written by T.Saue November 1994
 C     Last revision : Nov 23 1994 - tsaue
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
 C
 C     *****************************************
 C     ***** COMMON/DHFIOU/ - Unit numbers *****
@@ -604,12 +604,12 @@ C       R square = 0.9999999
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
-#include <sdpre.h>
+#include "sdpre.h"
       DATA (SCCHRG(I),I = 1,103)
      1/ 0.0000D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
      2  0.0010D0, 0.0014D0, 0.0020D0, 0.0026D0, 0.0034D0, 
@@ -681,23 +681,23 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <dcborb.h>     
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "dcborb.h"     
+#include "dcbgen.h"
+#include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
-#include <memint.h>
+#include "memint.h"
       IF(LEVYLE) THEN
         CORRLV = D0
       ELSE
@@ -759,23 +759,23 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
-#include <memint.h>
+#include "memint.h"
       CALL DZERO(SCQ,NUCIND)
       IF(.NOT.LEVYLE) THEN
         CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
@@ -811,13 +811,13 @@ C
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <frame.h>
+#include "nuclei.h"
+#include "frame.h"
       DIMENSION SCQ(*)
 C
 C     Get small component charges
@@ -852,22 +852,22 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <frame.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "frame.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <ccom.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "ccom.h"
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
@@ -875,7 +875,7 @@ C
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
 #endif
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
 C     Get array ICLAB which maps small component basis functions onto
 C     atomic centers.

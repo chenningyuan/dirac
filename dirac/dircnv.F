@@ -41,8 +41,8 @@ C     Written by T.Saue October 1995
 C     Last revision 971028-jth: Lot of changes to make one open shell work.
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
 C Used from COMMON blocks
@@ -50,10 +50,10 @@ C   DCBBAS: N2BBASX
 C   DCBORB: N2ORBT
 C   DGROUP: NZ
 C
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
       LOGICAl CHKCNV
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),SAOMO(*),WORK(LWORK), FAO(*)
@@ -203,16 +203,16 @@ C
 C     Last revision 971029-jth
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0, DM1 = -1.00D00, 
      &          D4 = 4.00D00, DP5 = 0.50D00)
 C
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dcbham.h>
-#include <dgroup.h>
-#include <dcbdhf.h>
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
 C
 C Used from COMMON blocks:
 C    DCBBAS: N2BBASX,NTBAS(0)
@@ -225,7 +225,7 @@ C
      &          SAOMO(*),WORK(LWORK), FMO(*)
       CHARACTER*1 CTMP
 C
-#include <memint.h>
+#include "memint.h"
 C
 C
       CALL QENTER('DIISER')
@@ -442,22 +442,22 @@ C
 C     Find largest change in Fock matrix between two iterations
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C   DCBORB: N2ORBTQ
 C   DCIDHF: NFMAT
 C   DGROUP: NZ
 C
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION FNEW(*),FOLD(*),WORK(LWORK)
 C
       CALL QENTER('FCKCMP')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KDIFF,N2ORBTQ,WORK,KFREE,LFREE)
@@ -481,8 +481,8 @@ C     Written by T.Saue Aug 25 1995
 C     Last revision Aug 25 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION AVEC(NELM),BVEC(NELM),DIFF(NELM)
 C
       DO I = 1,NELM
@@ -503,17 +503,17 @@ C     Written by Jon Laerdahl and T. Saue 1995
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C   DHFCAL: MXDIIS
 C
-#include <dcbdhf.h>
+#include "dcbdhf.h"
       DIMENSION BMAT(*),EVEC(*),FOCK(*),EBUF(*),WORK(LWORK)
 C
       CALL QENTER('DIISDR')
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('REAL',KCVEC,MXDIIS,WORK,KFREE,LFREE)
       CALL DIISD1(BMAT,EVEC,FOCK,EBUF,WORK(KCVEC),IBSTAT,
      &            WORK(KFREE),LFREE)
@@ -532,14 +532,14 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision Aug 28 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D0 = 0.0D0)
 C
 C Used from COMMON blocks:
 C   DHFCAL: LUEVEC,IPRSCF,ITDIIS,MXDIIS
 C
-#include <dcbdhf.h>
+#include "dcbdhf.h"
       DIMENSION BMAT(MXDIIS*MXDIIS),EVEC(*),FOCK(*),EBUF(*),CVEC(*),
      &          WORK(LWORK)
       IPRINT = IPRSCF
@@ -616,15 +616,15 @@ C     Written by Jon Laerdahl & Trond Saue
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C Used from COMMON blocks:
 C   DHFCAL: MXDIIS
-#include <dcbdhf.h>
+#include "dcbdhf.h"
       DIMENSION BMAT(*),CVEC(*),EVEC(*),EBUF(*),WORK(LWORK)
 C
       CALL QENTER('EQDIIS')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('REAL',KBFAC,(MXDIIS*(MXDIIS+1))/2,
@@ -651,15 +651,15 @@ C     Written by Jon Laerdahl & Trond Saue
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0, D0 = 0.00D00)
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),
      &          KPVT(*),WORK(LWORK)
 C Used from COMMON blocks
 C  DHFCAL: NELMBM
 C
-#include <dcbdhf.h>
+#include "dcbdhf.h"
 C
 C     Construct and factorize B - matrix
 C     ==================================
@@ -693,18 +693,18 @@ C     Written by Jon Laerdahl & T.Saue
 C     Last revision: Aug 27 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
 C Used from COMMON blocks:
 C  DHFCAL: LUEVEC,NELMBM,ITDIIS,MXDIIS
 C  DGROUP: NZ
 C  DCBBAS: N2VCTQ
 C
-#include <dcbdhf.h>
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcbdhf.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),KPVT(*)
       CALL QENTER('BMDIIS')
 C
@@ -778,8 +778,8 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision: Oct 18 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DP5=0.5D00,D8=8.00D00)
 C
 C Used from COMMON blocks:
@@ -787,9 +787,9 @@ C   DHFCAL: N2EVECQ,I2EVECTQ
 C   DGROUP: NFSYM
 C   DCBORB: NOCC
 C
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION EVEC1(*),EVEC2(*)
 C
 COld Code
@@ -829,8 +829,8 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision Aug 28 1995
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION BMAT(*)
 C
 C     J runs over columns, I over rows;
@@ -859,18 +859,18 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
 C Used from COMMON blocks:
 C  DHFCAL: LUFOCK,NITER,NELMBM
 C  DCIDHF: NFMAT
 C  DGROUP: NZ
 C
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbbas.h>
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION FOCK(*),FBUF(*),CVEC(*)
 C
       CALL DSCAL(N2ORBTQ,CVEC(NELMBM),FOCK,1)
@@ -895,8 +895,8 @@ C     When calculating the error vector we need to account for the
 C     zero SS-metric
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER(D0=0.0D0)
       DIMENSION EVEC(N1,N2,NZ),WORK(*)

@@ -38,26 +38,26 @@ C
 C     Output module for DIRAC
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <frame.h>
-#include <dcblab.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbpsi.h>
+#include "nuclei.h"
+#include "frame.h"
+#include "dcblab.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbpsi.h"
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
-#include <memint.h>
+#include "memint.h"
 C
 C     Summary of calculation
 C     ======================
@@ -185,17 +185,17 @@ C     Written by T.Saue 1996
 C     Last revision Jan 9 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       CHARACTER VECPRI*72
       DIMENSION CMO(*),EIG(*),VECPRI(NFSYM),WORK(LWORK)
 C
       CALL QENTER('PRCOEF')
-#include <memint.h>
+#include "memint.h"
 C
 C     Loop over fermion ircops
 C     ========================
@@ -314,18 +314,18 @@ C     Written by T.Saue May 6 1996
 C     Last revision: May 6 1996 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
 C
-#include <dcblab.h>
-#include <dgroup.h>
-#include <symmet.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcblab.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       LOGICAL LBIT
       CHARACTER FMT*6,MXFORM*6
       DIMENSION CMO(NCBAS,NPVEC+NEVEC,4),EIG(*),JVEC(*)
@@ -423,25 +423,25 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <dcblab.h>
-#include <symmet.h>
-#include <dgroup.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcblab.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
       IF(NVEC.EQ.0) RETURN
       IXYZ  = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
@@ -478,13 +478,13 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EIG(*),WORK(LWORK)
 C
       CALL QENTER('PREIGV')
-#include <memint.h>
+#include "memint.h"
 C
       IF(IVAL.LT.0) IVAL = 0
 C
@@ -511,8 +511,8 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER(D0 = 0.0D0)
       CHARACTER FMT*6,MXFORM*6
@@ -557,8 +557,8 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DEGTOL = 1.0D-6)
       DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
 C
@@ -603,9 +603,9 @@ C     Written by T.Saue - November 1994
 C     Last revision : Nov 15 1994 - tsaue
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
       DIMENSION EIG(NVAL)
 C
       NGAP = 0
@@ -632,15 +632,15 @@ C
 C     Written by T.Saue May 1996
 C     Last revision: Jan 7 1997
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       DIMENSION CMO(*),CAO(*),JVEC(NPVEC+NEVEC),WORK(LWORK)
       CALL QENTER('CAOSRT')
-#include <memint.h>
+#include "memint.h"
       NDIM  = NTBAS(0)
       NVEC  = NPVEC + NEVEC
       NTOT  = NVEC*NDIM
@@ -663,19 +663,19 @@ C
 C     Written by T.Saue May 1996
 C     Last revision: May 6 1996
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C
-#include <dcblab.h>
-#include <dgroup.h>
-#include <symmet.h>
-#include <dcbqal.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dcblab.h"
+#include "dgroup.h"
+#include "symmet.h"
+#include "dcbqal.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     KNORB  = NORB(IFRP)
@@ -684,7 +684,7 @@ C
       DIMENSION CMO(KNFBAS,KNORB,NZ),
      &          CBUF(NBAST,NVEC,NZ),CAO(NBAST,NVEC,4)
       EXTERNAL BDQALGEBRA
-#include <dcbibt.h>
+#include "dcbibt.h"
 C
       NTOT = NVEC*NTBAS(0)
       NTOTZ = NTOT*4
@@ -736,10 +736,10 @@ C
 C     Written by T.Saue Jan 7 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION JVEC(NVEC)
-#include <dcborb.h>
+#include "dcborb.h"
 C
       NPVEC = 0
       NEVEC = 0
@@ -776,12 +776,12 @@ C     Written by T.Saue 1997
 C     Last revision Jan 8 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     KNORB  = NORB(IFRP)
@@ -816,8 +816,8 @@ C
 C     Phase transform of vectors
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0, DM1 = -1.0D0)
       DIMENSION VEC(NDIM,NVEC,NZ),A(4),B(4)
 C
@@ -925,12 +925,12 @@ C
 C     Written by L. Visscher 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
       DIMENSION EIG(*),
      &          EBUF(NPVEC+NEVEC),
@@ -962,12 +962,12 @@ C
 C     Written by L. Visscher 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
       DIMENSION IBEIG(*),
      &          IBBUF(*),
      &          JVEC(*)
@@ -1001,10 +1001,10 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <pgroup.h>
+#include "pgroup.h"
 C
       DIMENSION EIG(*),IBEIG(*)
       CHARACTER FMT*6,MXFORM*6
@@ -1034,16 +1034,16 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EIG(*),IBEIG(*),WORK(LWORK)
       LOGICAL PRPOS
 C
-#include <dcborb.h>
+#include "dcborb.h"
 C
       CALL QENTER('PREIGN')
-#include <memint.h>
+#include "memint.h"
 C
 C     Memory allocation
       CALL MEMGET('INTE',KFIRST,NORBT,WORK,KFREE,LFREE)
@@ -1069,13 +1069,13 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcborb.h>
-#include <dcbham.h>
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcborb.h"
+#include "dcbham.h"
 C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
      &          IFIRST(*),NMULT(*)
@@ -1301,8 +1301,8 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION EIG(*),IFIRST(*),NMULT(*)
@@ -1331,8 +1331,8 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*)
 C
@@ -1356,18 +1356,18 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (GAPMIN = 0.1D00)
 C
       DIMENSION EIG(*),IBEIG(*)
       CHARACTER CLUMO*3,CHOMO*3
 C
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcborb.h>
-#include <dcbham.h>
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcborb.h"
+#include "dcbham.h"
 C
 C
 C     Check HOMO-LUMO gap and check for negative virtuals
@@ -1446,13 +1446,13 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <nuclei.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "nuclei.h"
       DIMENSION EIG(*),CMO(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          NQ(2),NE(2),WORK(*)
 C     Local variables
@@ -1537,12 +1537,12 @@ C     Written by T.Saue 1997
 C     Last revision Jan 8 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 C
       DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
      &          JBAS(*)
@@ -1582,12 +1582,12 @@ C
 C     Written by L. Visscher 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 Cjth - linux      DIMENSION EIG(NFBAS(IFRP,0)),
       DIMENSION EIG(*),
      &          EBUF(NPVEC+NEVEC),
@@ -1624,15 +1624,15 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <dcbbas.h>
-#include <dcblab.h>
+#include "dcbbas.h"
+#include "dcblab.h"
       DIMENSION JBAS(*)
 C
-#include <dcbibt.h>
+#include "dcbibt.h"
       NSBAS = 0
       DO I = 1,NFBAS(IFRP,0)
         II = IBAS(IFRP) + I

@@ -40,11 +40,11 @@ C     Written by T.Saue April 26 1996
 C     Last revision: 260496 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <cbirea.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "cbirea.h"
       DIMENSION WORK(*)
 C    
 C
@@ -154,11 +154,11 @@ C       Written by Trond Saue, Tromsoe October 1993
 C       Last revision: Nov 14 1994 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <alphac.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "alphac.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
@@ -168,9 +168,9 @@ C
       DIMENSION WORK(LWORK)
       LOGICAL   NOGENINP
 C
-#include <dcbgen.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -509,14 +509,14 @@ C     Written by Trond Saue May 1996
 C     Last revision: 1997/09/15 - jth (OPTIMIZE added)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (NTABLE = 12, NDIR = 4)
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7, TABDIR(NDIR)*7,
      &          WORD1*7
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
       DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','*XXXXXX'/
 C
@@ -709,9 +709,9 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 31)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
@@ -721,14 +721,14 @@ C
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbreo.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbreo.h"
 C
       SAVE SET
       DATA TABLE /'.XXXXXX','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -740,9 +740,9 @@ C
      &            '.POST D'/
       DATA SET/.FALSE./
 C
-#include <sdpre.h>
-#include <ibtfun.h>
-#include <memint.h>
+#include "sdpre.h"
+#include "ibtfun.h"
+#include "memint.h"
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -1447,17 +1447,17 @@ C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <ccom.h>
-#include <shells.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
+#include "shells.h"
 C
       CALL QENTER('IDNNUC')
 C
@@ -1507,8 +1507,8 @@ C  /* Deck fldinp */
 C***********************************************************************
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORD*7
 C
       WRITE(LUPRI,'(A)') 'FLDINP: Sorry, not yet written !'
@@ -1526,8 +1526,8 @@ C       Written by Trond Saue, Tromsoe April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 12)
 C
@@ -1535,9 +1535,9 @@ C
      &          WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
 C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','xXXXXXX',
      &             '*MVOCAL','*RESOLV','*LUCITA','xXXXXXX'/
@@ -1807,10 +1807,10 @@ C       Written by Timo Fleig, December 2001
 C       (modified DHFINP routine)
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <luctinp.h>
+#include "luctinp.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
@@ -1996,18 +1996,18 @@ C       Written by Trond Saue, April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 8, NTABLE = 8)
-#include <mxorb.h>
+#include "mxorb.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,WRDSRC*7
       DIMENSION WORK(LWORK)
 C
-#include <dcblab.h>
-#include <dcbana.h>
+#include "dcblab.h"
+#include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -2015,7 +2015,7 @@ C
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
-#include <memint.h>
+#include "memint.h"
 C
       NJOBS = 0
 C
@@ -2192,18 +2192,18 @@ C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxorb.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbgen.h>
-#include <dcbana.h>
-#include <dcbpop.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbpop.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
@@ -2223,7 +2223,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
-#include <memint.h>
+#include "memint.h"
 C
 C
 C     Initialize /CBIPOP/
@@ -2368,19 +2368,19 @@ C     Written by T.Saue - April 1996
 C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbgen.h>
-#include <dcbana.h>
-#include <dcbprj.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <nuclei.h>
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbprj.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "nuclei.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -2584,17 +2584,17 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 2 - 1996
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbgen.h>
-#include <dcbana.h>
-#include <dcbvec.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbvec.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -2742,22 +2742,22 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 C
-#include <maxaqn.h>
-#include <alphac.h>
-#include <mxorb.h>
+#include "maxaqn.h"
+#include "alphac.h"
+#include "mxorb.h"
 C
-#include <siripc.h>
-#include <huckel.h>
-#include <dcbgen.h>
-#include <ccom.h>
-#include <cbirea.h>
-#include <dcbxpr.h>
-#include <dcbcls.h>
-#include <dcbprl.h>
+#include "siripc.h"
+#include "huckel.h"
+#include "dcbgen.h"
+#include "ccom.h"
+#include "cbirea.h"
+#include "dcbxpr.h"
+#include "dcbcls.h"
+#include "dcbprl.h"
       DIMENSION WORK(LWORK)
 C
 C     Initialize temporary variables
@@ -2848,26 +2848,26 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 27 1998 - tsaue and kmi
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 24,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
-#include <dcbprl.h>
-#include <gencon.h>
-#include <nuclei.h>
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"
+#include "gencon.h"
+#include "nuclei.h"
 C
       LOGICAL SYMSTP,NOINPUT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
@@ -2883,7 +2883,7 @@ C
      &            '.DFT   ','.HFXFAC','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       SYMSTP = .FALSE.
       INPERR = 0
@@ -3400,12 +3400,12 @@ C     Written by T.Saue May 21 1996
 C     Last reviosn : may 21 1996
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
 C
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
 C
@@ -3481,12 +3481,12 @@ C     Check for memory for processing of two-electron integrals
 C     Written by T.Saue June 12 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
 C
-#include <dcbgen.h>
-#include <cbihr2.h>
+#include "dcbgen.h"
+#include "cbihr2.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL LBIT,DIRFCK
@@ -3522,10 +3522,10 @@ C
 C     Written by J. Thyssen, Nov 13 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
+#include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -3562,8 +3562,8 @@ C
 C     Written by T.Saue - Feb 3 1998
 C
 C***********************************************************************
-#include<implicit.h>
-#include<priunit.h>
+#include"implicit.h"
+#include"priunit.h"
 C
       CHARACTER LINE*72,LAB(*)*12
       DIMENSION ILAB(*),IBUF(*),WORK(*)
@@ -3593,8 +3593,8 @@ C
 C     Written by J. Thyssen, Sep 1 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION IMOORD(MXREORD)
       CHARACTER STRING*72
 
@@ -3614,17 +3614,17 @@ C     Written by T.Saue - June 1998
 C     Last revision: June 16 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbbas.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbmvo.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbmvo.h"
 C
       LOGICAL SET, NEWDEF, RESET,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -3635,7 +3635,7 @@ C
      &            '.ADDREP','.IONMVO','.POTMVO','.XXXXXX'/
       DATA SET/.FALSE./
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -3798,13 +3798,13 @@ C
 C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbgen.h>
-#include <dcbpsi.h>
-#include <dcbdhf.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
 C
       IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
@@ -3832,13 +3832,13 @@ C
 C     Written by J. Thyssen Aug 12 1999
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER (D2=2.0D00)
 C
-#include <dcborb.h>
-#include <dgroup.h>
+#include "dcborb.h"
+#include "dgroup.h"
 C
       IF (NAELEC .EQ. 0) THEN
          WRITE(LUPRI,'(1X,A,I4,A)') 
@@ -3907,14 +3907,14 @@ C
 C     Written by T.Saue - May 9 2000
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include <dcbgen.h>
-#include <dcbana.h>
-#include <dcbrho1.h>
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbrho1.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
