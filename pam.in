@@ -253,7 +253,7 @@ setup_command()
 execute_dirac()
 {
 
-   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR(S) :"
+   echo "   Executing \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
    BDIR=$BASDIR
    while [ -n "`echo $BDIR | grep ':'`" ]; do
       TDIR=`echo $BDIR | cut -d ":" -f 1`
