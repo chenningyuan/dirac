@@ -1185,9 +1185,19 @@ C***********************************************************************
 C
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 C
+#if defined (VAR_G77) || defined (SYS_SX)
+C     g77 fails in the complicated dimension statement that was used
+C     in the original version, make things easier for the compiler with an
+C     equiavelence statment
+      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
+      DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NBAST,NBAST),
+     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NBAST),WORK(*)
+#else
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
      &     ICLAB(NTBAS(0)),WORK(*)
+#endif
 C
 C     
 #include "ibtfun.h"
@@ -1236,10 +1246,19 @@ C***********************************************************************
 #include "dcbbas.h"
 C
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-C
+#if defined (VAR_G77) || defined (SYS_SX)
+C     g77 fails in the complicated dimension statement that was used
+C     in the original version, make things easier for the compiler with an
+C     equiavelence statment
+      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
+      DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NBAST,NBAST),
+     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NBAST),WORK(LWORK)
+#else
       DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
      &     ICLAB(NTBAS(0)),WORK(LWORK)
+#endif
 C
 C     Arrays for 2nd order polynomial fit:
 C
@@ -1407,10 +1426,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
 C
-
+#if defined (VAR_G77) || defined (SYS_SX)
+C     g77 fails in the complicated dimension statement that was used
+C     in the original version, make things easier for the compiler with an
+C     equiavelence statment
+      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
+      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
+     &     SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+     &     ICLAB(NBAST),WORK(LWORK)
+#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
      &     ICLAB(NTBAS(0)),WORK(LWORK)
+#endif
+
 
       CALL DZERO(GAO,NTBAS(0))
       CALL DZERO(SMAT,NTBAS(1)*NTBAS(1))
