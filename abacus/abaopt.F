@@ -977,6 +977,7 @@ C
          END IF
       END IF
 C
+      IPRGRD = IPRINT
       IF (IPRINT .NE. IPDEF) THEN
          WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
       END IF
