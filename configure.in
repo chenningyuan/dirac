@@ -1063,7 +1063,7 @@ case $machine in
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
       done
-      opt='-O2'
+      opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
       inc="-I$INCLUDE_DIR";;
    
    *)
