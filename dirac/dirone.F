@@ -2108,7 +2108,7 @@ C
       LOGICAL FIRST(NZ)
       DIMENSION CMO(*),EIG(*),FAO(N2BBASX,NZ),FMO(*),FBUF(N2BBASX,NZ),
      &          VBUF(N2BBASX),TMAT(*),OP1INT(*),FTRI(NNBBASX,NZ),
-     &          WORK(LWORK),IQBF(4)
+     &          WORK(LWORK)
 C
 C     Initialize
 C
@@ -2598,7 +2598,7 @@ C
 #include <dcbrkb.h>
       LOGICAL LRKB
       CHARACTER COMP(2)*1
-      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IQBF(4),
+      DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),
      &          CSPH(*),ICSP(LMAX),IFUN(NFUN,3),
      &          TMAT(NCAR,NCAR),CRED(*),IRED(3,LMAX),
      &          WORK(*)
@@ -3033,11 +3033,13 @@ C
 #include <dcbbas.h>
 #include <dcbham.h>
 C
+      CHARACTER SECTID*12, CPUTID*12
       LOGICAL TOBE
       DIMENSION TMAT(*),TBUF(*),WORK(*)
       DIMENSION NSTR(2,0:2,MPRJREF),KVEC(2,MPRJREF),
      &          KQ(2),NVECS(2),NQ(2)
 C
+      CALL GETTIM(CPU1,WALL1)
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
      &     '*',125)
@@ -3100,6 +3102,7 @@ C
         IF(NVECT.EQ.0) THEN
           WRITE(LUPRI,'(A,A6)') 
      &       '* No coefficients selected for reference ',PRJFIL(I)
+          GOTO 10
         ENDIF
         INQUIRE(FILE=PRJFIL(I),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
@@ -3162,7 +3165,7 @@ C     Do projection
         CALL MEMGET('INTE',NQ(IFRP),NORB(IFRP),WORK,KFREE,LFREE)
         CALL ICOPY (NORB(IFRP),1,0,WORK(NQ(IFRP)),1) 
         CALL PRJOUT(TMAT(I2TMT(IFRP)+1),WORK(KQ(IFRP)),PRJTHR,THRMAX,
-     &              WORK(KSMAT+ISOFF),WORK(NQ(IFRP)),
+     &              WORK(KSMAT+ISOFF),TBUF,WORK(NQ(IFRP)),
      &              NFBAS(IFRP,0),NORB(IFRP),NVECS(IFRP),NDEL,IPRHAM)
         WRITE(LUPRI,'(A,A3)') '* Fermion ircop ',FREP(IFRP)        
         WRITE(LUPRI,'(2X,A,I6)') '- Number of orbitals deleted: ',NDEL
@@ -3177,12 +3180,21 @@ C     Do projection
       IF(NYTMT.NE.N2TMT) CALL DCOPY(NYTMT,TBUF,1,TMAT,1)
  30   CONTINUE
       CALL MEMREL('PSIPRJ',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL GETTIM(CPU2,WALL2)
+      CPU  = CPU2 - CPU1
+      WALL = WALL2 - WALL1
+      CPUTID = SECTID(WALL)
+      WRITE(LUPRI,'(A,A12)')
+     &   '>>>> Total wall time used in  PSIPRJ:', CPUTID
+      CPUTID = SECTID(CPU)
+      WRITE(LUPRI,'(A,A12)')
+     &   '>>>> Total CPU time used in  PSIPRJ:', CPUTID
       RETURN
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PRJOUT */
-      SUBROUTINE PRJOUT(VECS,VREF,THRLDP,THRMAX,SMAT,IVECS,
+      SUBROUTINE PRJOUT(VECS,VREF,THRLDP,THRMAX,SMAT,VBUF,IVECS,
      &                  NVDIM,NVECS,NVREF,NDEL,IPRINT)
 C*****************************************************************************
 C
@@ -3190,11 +3202,11 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
-      PARAMETER (T1MIN = 1.D-8, THRRND = 1.D-4)
+      PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
 C
 #include <dgroup.h>
       DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
-     &          SMAT(NVDIM,NVDIM),IVECS(NVECS)
+     &          VBUF(NVDIM,NZ),SMAT(NVDIM,NVDIM),IVECS(NVECS)
       DIMENSION P(4)
 C
       THRMAX = D0
@@ -3204,107 +3216,128 @@ C
       IROUND = 0
       ITURN  = 0
  10   CONTINUE
-      IREC   = 0
       ITURN  = ITURN + 1
-      DO 100 IVEC = 1,NVECS
-        IF(IVECS(IVEC).EQ.0) GOTO 100
-        CALL QDOTM(VNRM,IPQTOQ(1,0),1,
-     &       'H',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &       'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         SMAT,NVDIM)
-        VNRM=SQRT(VNRM)
 C
-C       Project out reference vectors
-C       =============================
+C     First project out reference vectors
+C     ===================================
 C
-        DO IREF = 1,NVREF
+      DO IREF = 1,NVREF
+        CALL QGEMM(NVDIM,1,NVDIM,D1,
+     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
+     &         'N','N',IPQTOQ(1,0),VREF(1,IREF,1),NVDIM,NVREF,NZ,
+     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
+        IF(IPRINT.GE.2) THEN
+          CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
+     &           'N',IPQTOQ(1,0),VREF(1,IREF,1),N2VREF,NZ,1)
+          VNRM=SQRT(VNRM)
+          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+     &      'Reference vector no.',IREF,' Norm: ',VNRM
+        ENDIF
+        DO 100 IVEC = 1,NVECS
+          IF(IVECS(IVEC).EQ.0) GOTO 100
 C
-C         Form -<VREF|VECS>
+C         Form -<VREF|IVEC>
 C
-          CALL QDOTM(P,IPQTOQ(1,0),NZ,
-     &         'H',IPQTOQ(1,0),VREF(1,IREF,1),NVDIM,NVDIM,NVREF,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         SMAT,NVDIM)
-          CALL DSCAL(NZ,DM1,P,1)
+          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
+     &         'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
+     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
+          DO IZ = 1,NZ
+            P(IZ) = -P(IZ)
+          ENDDO
 C
-C         Form VECS = VECS -VREF<BVECS|BVBUF>
+C         Form VECS = VECS -VREF<VREF|VECS>
 C
           CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
      &                VREF(1,IREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
      &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
-        ENDDO
+ 100    CONTINUE
+      ENDDO
 C
-C       Orthogonalize new vectors against each others
-C       =============================================
+C     Next commence internal orthogonalization
+C     =========================================
 C
-        DO 200 JVEC = 1,(IVEC-1)
-          IF(IVECS(JVEC).EQ.0) GOTO 200
-C
-C         Form -<VECS|VECS>
-C
-          CALL QDOTM(P,IPQTOQ(1,0),NZ,
-     &         'H',IPQTOQ(1,0),VECS(1,JVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         SMAT,NVDIM)
-          CALL DSCAL(NZ,DM1,P,1)
-C
-C         Form VECS = VECS -VECS<VECS|VECS>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 200    CONTINUE
+      DO 200 IVEC = 1,NVECS
+        IF(IVECS(IVEC).EQ.0) GOTO 200
+        CALL QGEMM(NVDIM,1,NVDIM,D1,
+     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
+     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
+     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
 C
 C       Check size of norm
 C       ==================
 C
-        CALL QDOTM(VNRM,IPQTOQ(1,0),1,
-     &       'H',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &       'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         SMAT,NVDIM)
+        CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
+     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
         VNRM=SQRT(VNRM)
-        IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
-     &      'Vector no.',IVEC,' Norm: ',VNRM
         THRMAX=MAX(THRMAX,VNRM)
         IF(VNRM.LT.THRLDP) THEN
-          IF(IPRINT.GE.1) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+          WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
      &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
           IVECS(IVEC) = 0
           NDEL = NDEL + 1
+          GOTO 200
         ELSE
-Ctsaue          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
+          IF(IPRINT.GE.2) WRITE(LUPRI,'(A,I3,A,1P,D12.5)')
+     &      'Vector no.',IVEC,' Norm: ',VNRM
+          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
           IF(VNRM.LT.T1MIN) THEN
-            VNRM = D1 / VNRM
+            VNRM = D1/VNRM
             DO IZ = 1,NZ
               CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
             ENDDO
-            CALL QDOTM(VNRM,IPQTOQ(1,0),1,
-     &       'H',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &       'N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVDIM,NVECS,NZ,1,
-     &         SMAT,NVDIM)
-            VNRM=SQRT(VNRM)
+            CALL QGEMM(NVDIM,1,NVDIM,D1,
+     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
+     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
+     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
+            CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
+     &           'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
+     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
           END IF
           VNRM = D1 / VNRM
           DO IZ = 1,NZ
             CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
           ENDDO
         ENDIF
- 100  CONTINUE
+        CALL QGEMM(NVDIM,1,NVDIM,D1,
+     &         'N','N',IPQTOQ(1,0),SMAT,NVDIM,NVDIM,1,
+     &         'N','N',IPQTOQ(1,0),VECS(1,IVEC,1),NVDIM,NVECS,NZ,
+     &              D0,IPQTOQ(1,0),VBUF,NVDIM,1,NZ)
+        DO 300 JVEC = (IVEC+1),NVECS
+          IF(IVECS(JVEC).EQ.0) GOTO 300
+C
+C         Form -<IVEC|JVEC>
+C
+          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
+     &         'H',IPQTOQ(1,0),VBUF,NVDIM,NZ,1,
+     &         'N',IPQTOQ(1,0),VECS(1,JVEC,1),N2VECS,NZ,1)
+          DO IZ = 1,NZ
+            P(IZ) = -P(IZ)
+          ENDDO
+C
+C         Form JVEC = JVEC -IVEC<IVEC|JVEC>
+C
+          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
+     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
+     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
+ 300    CONTINUE
+ 200  CONTINUE
 C
 C     Check whether a new round of orthonormalization is
 C     necessary
 C     ==================================================
 C
-      IF(IROUND.GT.0) THEN
-         IROUND = 0
+CTROND      IF(IROUND.GT.0) THEN
+CTROND         IROUND = 0
          IF (ITURN.EQ.1) THEN
            WRITE(LUPRI,'(A)') 
      &     '* PRJORT: Second round of orthonormalization !'
            GO TO 10
          ENDIF
-         CALL QUIT(
-     &     'PRJOUT error: IROUND .gt. 0 and ITURN .gt. 1')
-      END IF
+CTROND         CALL QUIT(
+CTROND     &     'PRJOUT error: IROUND .gt. 0 and ITURN .gt. 1')
+CTROND      END IF
 C
       RETURN
 C
