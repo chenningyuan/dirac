@@ -300,19 +300,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_AIX)
-      REAL*8 FUNCTION DSUM (N,X,INCX)
-      REAL*8 X(*),SUM
-      II = 1
-      SUM = 0.D0
-      DO I = 1, N
-         SUM = SUM + X(II)
-         II = II + INCX
-      ENDDO
-      DSUM = SUM
-      RETURN
-      END
-#endif
 C
 #if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
  || defined (SYS_HPUX) || defined (SYS_T3D)  || defined (SYS_SUN) || defined (SYS_DARWIN)
