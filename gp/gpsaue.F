@@ -1207,7 +1207,7 @@ C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0,DM1 = -1.D0)
+      PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
       CHARACTER*4 MATTYP
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -1472,9 +1472,11 @@ C     Diagonalize real symmetric matrix by the Jacobi method
 C     This is basically a driver for the routine JACO.
 C
 C     Control parameter IORDER:
-C               IORDER.LT.0 : Sort eigenvalues in descending order
-C               IORDER.GT.0 : Sort eigenvalues in ascending order
-C               IORDER.EQ.0 : No sorting of eigenvalues and eigenvectors
+C       IORDER.EQ.-2 : Sort eigenvalues in absolute descending order
+C       IORDER.EQ.-1 : Sort eigenvalues in descending order
+C       IORDER.EQ. 1 : Sort eigenvalues in ascending order
+C       IORDER.EQ. 2 : Sort eigenvalues in absolute ascending order
+C       IORDER.EQ. 0 : No sorting of eigenvalues and eigenvectors
 C     Control parameter IJOB:
 C               IJOB = 0        Only eigenvalues desired.
 C               IJOB = 1        Eigenvalues and eigenvectors in ortonormal 
@@ -1832,10 +1834,12 @@ C  /* Deck order3 */
 C*****************************************************************************
 C
 C Purpose: order the N values in EVAL and their associated vectors 
-C          in EVEC:
-C          IJOB.GT.0  -  ascending order   EVAL(i+1) .ge. EVAL(i)
-C          IJOB.LT.0  -  descending order   EVAL(i+1) .le. EVAL(i)
-C          IJOB.EQ.0  -  return
+C     in EVEC:
+C     IJOB.EQ. 2  -  absolute ascending order  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C     IJOB.EQ. 1  -  ascending order   EVAL(i+1) .ge. EVAL(i)
+C     IJOB.EQ.-1  -  descending order   EVAL(i+1) .le. EVAL(i)
+C     IJOB.EQ.-2  -  absolute descending order  ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C     IJOB.EQ.0  -  return
 C          
 C          Generalization of routines ORDER/ORDER2
 C          Written by T.Saue - Aug 26 1996
@@ -1846,17 +1850,46 @@ C*****************************************************************************
       PARAMETER(DM1 = -1.0D0)
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
-      IF (IJOB.LT.0) CALL DSCAL(N,DM1,EVAL,1)
+      II = IJOB + 3
+      GOTO (1,2,3,4,5) II
+1     CONTINUE
+C***********************************************************************
+C IJOB.EQ.-2  -  absolute descending order ABS(EVAL(i+1)).le. ABS(EVAL(i))
+C***********************************************************************
       IN = 1
-      DO 10 I=1,N-1
+      DO I=1,N-1
          EMIN = EVAL(I)
          IMIN = I
-         DO 20 J=I+1,N
-            IF (EVAL(J) .LT. EMIN) THEN
+         DO J=I+1,N
+            IF (ABS(EVAL(J)) .GE. ABS(EMIN)) THEN
                EMIN = EVAL(J)
                IMIN = J
             ENDIF
-   20    CONTINUE
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)   =EMIN
+            IF (NEVEC .GT. 0) THEN
+              CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMIN-1)*LDM+1),1)
+            ENDIF
+         ENDIF
+         IN = IN + LDM
+      ENDDO
+      RETURN
+2     CONTINUE
+C***********************************************************************
+C      IJOB.EQ.-1  -  descending order   EVAL(i+1) .le. EVAL(i)
+C***********************************************************************
+      IN = 1
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (EVAL(J) .GE. EMIN) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
          IF (IMIN.NE.I) THEN
             EVAL(IMIN)=EVAL(I)
             EVAL(I)=EMIN
@@ -1865,8 +1898,60 @@ C*****************************************************************************
             ENDIF
          ENDIF
          IN = IN + LDM
-   10 CONTINUE
-      IF (IJOB.LT.0) CALL DSCAL(N,DM1,EVAL,1)
+      ENDDO
+      RETURN
+3     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 0  -  return
+C***********************************************************************
+      RETURN
+4     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 1  -  ascending order   EVAL(i+1) .ge. EVAL(i)
+C***********************************************************************
+      IN = 1
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (EVAL(J) .LT. EMIN) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)=EMIN
+            IF (NEVEC .GT. 0) THEN
+              CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMIN-1)*LDM+1),1)
+            ENDIF
+         ENDIF
+         IN = IN + LDM
+      ENDDO
+      RETURN
+5     CONTINUE
+C***********************************************************************
+C   IJOB.EQ. 2  -  absolute ascending order  ABS(EVAL(i+1)) .ge. ABS(EVAL(i))
+C***********************************************************************
+      IN = 1
+      DO I=1,N-1
+         EMIN = EVAL(I)
+         IMIN = I
+         DO J=I+1,N
+            IF (ABS(EVAL(J)).LT.ABS(EMIN)) THEN
+               EMIN = EVAL(J)
+               IMIN = J
+            ENDIF
+         ENDDO
+         IF (IMIN.NE.I) THEN
+            EVAL(IMIN)=EVAL(I)
+            EVAL(I)=EMIN
+            IF (NEVEC .GT. 0) THEN
+              CALL DSWAP(NEVEC,EVEC(IN),1,EVEC((IMIN-1)*LDM+1),1)
+            ENDIF
+         ENDIF
+         IN = IN + LDM
+      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2664,5 +2749,78 @@ C
      &   VEC(IPLACE(1)),VEC(IPLACE(NELMN))
       END IF
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Extelm */
+      SUBROUTINE EXTELM(FA,A,LDA,NA,B,LDB,NBR,NBC,IBR,IBC)
+C***********************************************************************
+C
+C     Extract elements of matrix A(LDA,NA) and
+C     insert into matrix B(LDB,NBC) using 
+C     row array IBR and column array IBC.
+C
+C     Written by T.Saue Mar 24 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      CHARACTER FA*1
+      DIMENSION A(LDA,NA),B(LDB,NBC),IBR(NBR),IBC(NBC)
+C
+C     Extract from normal matrix
+C
+      IF(FA.EQ.'N') THEN
+        DO J = 1,NBC
+          JA = IBC(J)
+          DO I = 1,NBR
+            B(I,J) = A(IBR(I),JA)
+          ENDDO
+        ENDDO
+C
+C     Extract from transposed matrix
+C
+      ELSEIF(FA.EQ.'T') THEN
+        DO J = 1,NBC
+          JA = IBC(J)
+          DO I = 1,NBR
+            B(I,J) = A(JA,IBR(I))
+          ENDDO
+        ENDDO
+      ELSE
+        CALL QUIT('EXTELM:Unknown FA '//FA//' of matrix A!')
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck lmnrep */
+      SUBROUTINE LMNREP(IREP,NHKTA,KHKTA,LVALUE,MVALUE,NVALUE)
+C***********************************************************************
+C
+C     Get out xyz-powers for a given irrep IREP.
+C     Based on LMNVAL by tuh March 87
+C
+C     Written by T.Saue - Mar 24 1998
+C***********************************************************************
+#include <implicit.h>
+#include <maxmom.h>
+#include <xyzpow.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+      DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
+#include <symmet.h>
+C
+      ICOMP = 0
+      DO 100 I = 1, KHKTA
+      IF(ISYMAO(NHKTA,I).EQ.IREP) THEN
+        ICOMP = ICOMP + 1
+        LVALUE(ICOMP) = NHKTA - ISTEP(I)
+        MVALUE(ICOMP) = MVAL(I)
+        NVALUE(ICOMP) = NVAL(I)
+      ENDIF
+  100 CONTINUE
       RETURN
       END
