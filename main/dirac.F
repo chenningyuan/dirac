@@ -615,7 +615,6 @@ C
       IF (NEWTASK) THEN
          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       ELSE
          CALL SLEEP(1)
          GO TO 100
@@ -761,7 +760,6 @@ C        slave should be in main menu, ready to receive task
             CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
      &                 MPI_COMM_WORLD,IERR)
          END DO
-         CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
       END IF
 
 #else /* not VAR_MPI */
