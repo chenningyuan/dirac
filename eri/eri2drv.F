@@ -427,7 +427,7 @@ C  /* Deck er2int */
 #include "maxorb.h"
 #include "dummy.h"
       DIMENSION CCFBT(*), INDXBT(*),NCENTS(4),ICENTS(2,4),ICLASSES(4),
-     &          WORK(LWORK)
+     &          WORK(LWORK),KOD(10)
 CTROND: check this !, CSMAT(NBAST,NBAST)
       LOGICAL WRTINT_SAVE
 #include "ccom.h"
@@ -444,8 +444,6 @@ CTROND: check this !, CSMAT(NBAST,NBAST)
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
-C
-C     CALL ER2INI
 C
 C     Memory
 C
@@ -467,11 +465,27 @@ C     ==========
 C
 C     This subroutine returns several arrays for each electron
 C     starting at addresses K????1 and K????2. These are to be
-C     transferred to ODCDRV.
+C     transferred to ODCDRV, see ODCDR1 for details.
 C
-      CALL ODBCHS(KODCL1,KODCL2,
-     &            KODBC1,KODBC2,KRDBC1,KRDBC2,
-     &            KODPP1,KODPP2,KRDPP1,KRDPP2,
+C     IODCL1 and IODCL2 give information specific to each class
+C     KOD(1)  --> IODCL1
+C     KOD(2)  --> IODCL2
+C     IODBC1 and IODBC2 give "integer" information for each OD batch
+C     KOD(3)  --> IODBC1
+C     KOd(4)  --> IODBC2
+C     RODBC1 and RODBC2 give "real" information for each OD batch
+C     KOD(5)  --> RODBC1
+C     KOD(6)  --> RODBC2
+C     IODPP1 and IODPP2 give "integer" information for each OD
+C     KOD(7)  --> IODPP1
+C     KOD(8)  --> IODPP2
+C     RODPP1 and RODPP2 give "real" information for each OD
+C     KOD(9)  --> RODPP1
+C     KOD(10) --> RODPP2
+C
+      CALL ODBCHS(KOD(1),KOD(2),
+     &            KOD(3),KOD(4),KOD(5),KOD(6),
+     &            KOD(7),KOD(8),KOD(9),KOD(10),
      &            KFREE,LFREE,CCFBT,WORK,
      &            LWORK,IPRINT)
 C
@@ -504,11 +518,11 @@ CTROND      IF (.TRUE.) THEN
          DGABAB = .TRUE.
          WRTINT_SAVE = WRTINT
          WRTINT = .FALSE.
-         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
-     &               WORK(KODBC1),WORK(KODBC2),
-     &               WORK(KRDBC1),WORK(KRDBC2),
-     &               WORK(KODPP1),WORK(KODPP2),
-     &               WORK(KRDPP1),WORK(KRDPP2),
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
      &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
 C
@@ -525,11 +539,11 @@ C     Calculate integrals
 C     ===================
 C
       IF (.NOT.INTSKP) THEN
-         CALL ODCDRV(WORK(KODCL1),WORK(KODCL2),
-     &               WORK(KODBC1),WORK(KODBC2),
-     &               WORK(KRDBC1),WORK(KRDBC2),
-     &               WORK(KODPP1),WORK(KODPP2),
-     &               WORK(KRDPP1),WORK(KRDPP2),
+         CALL ODCDRV(WORK(KOD(1)),WORK(KOD(2)),
+     &               WORK(KOD(3)),WORK(KOD(4)),
+     &               WORK(KOD(5)),WORK(KOD(6)),
+     &               WORK(KOD(7)),WORK(KOD(8)),
+     &               WORK(KOD(9)),WORK(KOD(10)),
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
      &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
 C
