@@ -241,7 +241,7 @@ C
      &                ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
           REWIND LUCYCL
  10       CONTINUE
-          READ(LUCYCL,1010,END=20) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
+          READ(LUCYCL,1020,END=20) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID
           GOTO 10
  20       CONTINUE
@@ -379,7 +379,6 @@ C     1) - using trial vectors
 C     -------------------------
 C
       IF(TRIVEC) THEN
-C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
 C        Reorder orbitals if requested
 C
@@ -473,6 +472,11 @@ C
         ENDIF
         CALL WRIDNS(LUDENS,DMAT)
         CALL WRIFCK(LUFCK2,WORK(KDTMP),NFMAT)
+        IF(SOLVEN) THEN
+          NF = 1
+          CALL SOLFCK(WORK(KDTMP),DMAT,NF,ESOLVE,ESOLVN,
+     &                 WORK(KFREE),LFREE,IPRSOL)
+        ENDIF
       ENDIF
 C
 C     2) - using old 2-electron Fock matrix
@@ -487,7 +491,9 @@ C     ===========================================
 C
       CALL DZERO(FOCK,N2BBASXQ*NFMAT)
       CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
-      IF(TRIVEC) CALL ERGCAL(FOCK,WORK(KDTMP),DMAT)
+      IF(TRIVEC) THEN
+        CALL ERGCAL(FOCK,WORK(KDTMP),DMAT)
+      ENDIF
 C
 C     If necessary, add one- and two- electron Fock matrices
 C     ======================================================
@@ -564,6 +570,8 @@ C
  666  CONTINUE
       RETURN
  1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
+     &       3X,A10)
+ 1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
      &       3X,A10)
 C
       END
@@ -863,8 +871,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcy1 */
-      SUBROUTINE SCFCY1(CMO,EIG,FOCK,DMAT,BMAT,
-     &                  NPOS,WORK,LWORK)
+      SUBROUTINE SCFCY1(CMO,EIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -1009,6 +1016,16 @@ C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
+C        Solvent contribution
+C        ====================
+C
+         IF(SOLVEN) THEN
+           WRITE(LUPRI,'(A)') '* Calling SOLFCK'
+           NF = 1
+           CALL SOLFCK(FOCK,DMAT,NF,ESOLVE,ESOLVN,
+     &                 WORK(KFREE),LFREE,IPRSOL)
+         ENDIF
+C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
@@ -1089,6 +1106,9 @@ C
         WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
+C
+      WRITE(LUPRI,'(A,L1)') '* EXIT = ',EXIT
+C
         IF(EXIT) GOTO 30
         INTBUF = INTFLG
  10   CONTINUE
@@ -1150,6 +1170,7 @@ C
 #include <dcbdhf.h>
 #include <dcbpsi.h>
 #include <dcborb.h>
+#include <dcbham.h>
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
@@ -1210,26 +1231,30 @@ C
          END DO
       END DO
 C
+      IF(SOLVEN) THEN
+        E2PART = E2PART - ESOLVE
+      ENDIF
       ELERGY = E1PART + E2PART
       DHFERG = ELERGY + POTNUC
-      IF(LVCON) DHFERG = DHFERG + CORRLV
+      IF(LVCON)  DHFERG = DHFERG + CORRLV
+      IF(SOLVEN) THEN
+        ERGSOL = ESOLVE + ESOLVN
+        DHFERG = DHFERG + ERGSOL
+      ENDIF
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
          ERGMAX = MAX(ABS(E1PART),ABS(E2PART))*10
          FMT = MXFORM(ERGMAX,20)
-         IF(LVCON) THEN
             WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total electronic energy            :  ',ELERGY,
-     +       'Nuclear potential energy           :  ',POTNUC,
-     +       'SS Coulombic correction            :  ',CORRLV,
+     +       'Nuclear potential energy           :  ',POTNUC
+         IF(LVCON) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'SS Coulombic correction            :  ',CORRLV
+         IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Solvent energy                     :  ',ERGSOL
+         WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
-         ELSE
-            WRITE(LUPRI,'(A,'//FMT//')')
-     +       'Total electronic energy            :  ',ELERGY,
-     +       'Nuclear potential energy           :  ',POTNUC,
-     +       'Total energy                       :  ',DHFERG
-         ENDIF
          IF(IPRSCF.GE.2) THEN
             WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* 1-electron energy          :  ',E1PART
@@ -1411,11 +1436,8 @@ C
 C
 C     Get overlap matrix
 C
-Cjth
-C      CALL OPNFIL(LUOVLP,'DFOVLP','OLD','SMOGE1')
-C      CALL READT(LUOVLP,N2BBASX,SMAT)
-C      CLOSE(LUOVLP,STATUS='KEEP')
-      CALL GTOVLP(SMAT,SSMTRC,WORK,LWORK)
+      CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK)
+C
       DO I = 1,NFSYM
       IF(NOCC(I).NE.0) THEN
         IOFF = ICMOQ(I) + NPSH(I)*NFBAS(I,0)
@@ -1530,7 +1552,6 @@ C
 C     Written by T.Saue Nov 11 1995
 C     Last revision: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C*****************************************************************************
-C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
