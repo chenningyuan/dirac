@@ -1211,7 +1211,7 @@ C              Check if large component basis is contracted
 C              ============================================
 C
                DO JBLCK = 1, NBLCK(I,2)
-                  IF ((NUC(JBLCK,1).NE.NRC(JBLCK,2)).AND.
+                  IF ((NUC(JBLCK,2).NE.NRC(JBLCK,2)).AND.
      &                (NRC(JBLCK,2).GT.0)) CNTBAS = .TRUE.
                END DO
                IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
