@@ -1751,54 +1751,60 @@ C This is all we need to calculate the MP2 energy
 C
       IF (DOMP2) MXCORR = KFREE
 C
-      CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',HO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',HV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-      MAXDIM = MXDIMCC
-      CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
-      NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
-     &             JVVOO(NREP+1),JVOVO(NREP+1))
-      NBUF2 = NBUF1
-      CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
-C
-C     Calculate size of the 3rd work array
-C     The last array is used to buffer in the <VV||VV> and <VO||VV>
-C     integrals, start by making it as large as possible.
-C
-      NBUF3 = (LFREE - 4) / RCW
-C
-C     Calculate maximum size necessary for the VOVV and VVVV buffers
-C
-      NV5IRP = 1
-      NV6IRP = 1
-      DO IRP = 1, NREP
-         NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-         NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
-      ENDDO
-C
-      NVIRP = MAX(NV5IRP,NV6IRP)
-      NBUF3 = MIN(NVIRP,NBUF3)
-C
-C     Check the minimum size for the general use of this array
-C
-      NBUF3 = MAX(NBUF1,NBUF3)
-C
-C     Allocate the work array
-C
-      CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
-C        
-      IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",KFREE
-C
       IF (DOCCSD) THEN
-         MXCORR = MAX(MXCORR,KFREE)
+         CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+         MAXDIM = MXDIMCC
+         CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,
+     &               ALLOC)
+         CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,
+     &               ALLOC)
+         NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
+     &               JVVOO(NREP+1),JVOVO(NREP+1))
+         NBUF2 = NBUF1
+         CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+C
+C        Calculate size of the 3rd work array
+C        The last array is used to buffer in the <VV||VV> and <VO||VV>
+C        integrals, start by making it as large as possible.
+C
+         NBUF3 = (LFREE - 4) / RCW
+C
+C        Calculate maximum size necessary for the VOVV and VVVV buffers
+C
+         NV5IRP = 1
+         NV6IRP = 1
+         DO IRP = 1, NREP
+            NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
+            NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
+         ENDDO
+C
+         NVIRP = MAX(NV5IRP,NV6IRP)
+         NBUF3 = MIN(NVIRP,NBUF3)
+C
+C        Check the minimum size for the general use of this array
+C
+         NBUF3 = MAX(NBUF1,NBUF3)
+C
+C        Allocate the work array
+C
+         CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
+C        
+C
+         IF (DOCCSD) THEN
+            MXCORR = MAX(MXCORR,KFREE)
+         ENDIF
+C
       ENDIF
+C
+      IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",KFREE
 C
 C  Calculate requirements for triples correction.
 C  Use MEMOPT later.
