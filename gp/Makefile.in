@@ -30,6 +30,8 @@ setcomp:
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \
 	   echo "#define WHERE_COMPILED \"${HOST}\"" >> compinfo.h ; \
+           echo "#define FCOMP \"${F77} ${OPTFLAGS}\"" >> compinfo.h ; \
+           echo "#define CCOMP \"${CC} ${C_OPTFLAGS}\"" >> compinfo.h ; \
 	)
 
 mxm:	$(MXM_OBJS)

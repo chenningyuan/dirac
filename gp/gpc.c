@@ -199,6 +199,9 @@ void sysinf(int parcal)
    printf(" Last compilation  : %s %s (by %s@%s)\n", 
       __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
 
+   printf(" FORTRAN compiler  : %s \n", FCOMP);
+   printf(" C compiler        : %s \n", CCOMP);
+
    free(un);
 }
 
