@@ -1841,7 +1841,7 @@ C
             DO I = 0,N2GAB-1
                WORK(KGAB+I+IOFF2) = SQRT(ABS(WORK(KGAB+I+IOFF2)))
             ENDDO
-            IF(IPRINT.GE.3) THEN
+            IF(IPRINT.GE.4) THEN
                CALL HEADER('GABGEN:Reduced GAB-matrix in AO basis',-1)
                WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
                CALL OUTPUT(WORK(KGAB+IOFF2),1,NSYMBL,1,NSYMBL,
@@ -1859,7 +1859,7 @@ C
          DO I = 0,N2GAB-1
             WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
          ENDDO
-         IF(IPRINT.GE.3) THEN
+         IF(IPRINT.GE.4) THEN
             CALL HEADER('GABGEN:Reduced GAB-matrix in SO basis',-1)
             WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(1)
             CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
