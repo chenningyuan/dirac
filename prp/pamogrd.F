@@ -41,7 +41,7 @@ C
 #include "mx2orb.h"
 #include "dcbidx.h"
 C
-      DIMENSION DV(NASHT,NASHT,NZ), FC(NORBT,NORBT,NZ)
+      DIMENSION DV(NASHT,NASHT,NZ),  FC(NORBT,NORBT,NZ)
       DIMENSION FCX(NORBT,NORBT,NZ), FVX(NORBT,NORBT,NZ)
       DIMENSION FQX(NORBT,NASHT,NZ), FPV(NORBT,NASHT,NZ)
       DIMENSION GORB(NXOP,NZ), JXOP(2,*), DFAC(2), IPQ(*)
@@ -62,7 +62,7 @@ C     ***   = \sum_{u} D^V_{vu} F^C_{pu} + F^Q_{pv} *****
 C     ***************************************************
 C
 C
-      IF (NASHT.GT.0) CALL FGEN_PV(FC,FQX,DV,FPV,IPQ,IPRINT)
+      IF (.NOT.NOFV) CALL FGEN_PV(FC,FQX,DV,FPV,IPQ,IPRINT)
 C
  9000 FORMAT(' Orbital trial vector: ',L1)
  9001 FORMAT(1X,A,' matrix'/)
@@ -72,38 +72,35 @@ C
       IF ( IPRINT .GE. 20 ) THEN
          CALL HEADER('Output from RORBGRD',-1)
          WRITE(LUPRI,9000) LORBTRI
-         WRITE(LUPRI,9003) 'FC',NOFC
-         WRITE(LUPRI,9003) 'FV',NOFV
+         WRITE(LUPRI,9003) 'NOFC',NOFC
+         WRITE(LUPRI,9003) 'NOFV',NOFV
          WRITE(LUPRI,9002) 'lk',DFAC(1)
          WRITE(LUPRI,9002) 'kl',DFAC(2)
 C
-         IF (NASHT .GT. 0) THEN
-            WRITE(LUPRI,9001) 'DV'
-            CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQ,LUPRI)
-         END IF
-C
-         WRITE(LUPRI,9001) 'FC'
-         CALL PRQMAT(FC,NORBT,NORBT,NORBT,NORBT,NZ,IPQ,LUPRI)
-C
-         IF (LORBTRI) THEN
+         IF (.NOT.NOFC) THEN
             WRITE(LUPRI,9001) 'FCX'
             CALL PRQMAT(FCX,NORBT,NORBT,NORBT,NORBT,NZ,IPQ,LUPRI)
          END IF
-C        
-         IF (NASHT .GT. 0) THEN
+C
+         IF (.NOT.NOFV) THEN
             WRITE(LUPRI,9001) 'FVX'
             CALL PRQMAT(FVX,NORBT,NORBT,NORBT,NORBT,NZ,IPQ,LUPRI)
-         END IF
+C        
+            WRITE(LUPRI,9001) 'DV'
+            CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQ,LUPRI)
 C
-         IF (NASHT .GT. 1) THEN
-            WRITE(LUPRI,9001) 'FQX'
-            CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQ,LUPRI)
-         END IF
+            WRITE(LUPRI,9001) 'FC'
+            CALL PRQMAT(FC,NORBT,NORBT,NORBT,NORBT,NZ,IPQ,LUPRI)
 C
-         IF (NASHT .GT. 0) THEN
+            IF (NASHT .GT. 1) THEN
+               WRITE(LUPRI,9001) 'FQX'
+               CALL PRQMAT(FQX,NORBT,NASHT,NORBT,NASHT,NZ,IPQ,LUPRI)
+            END IF
+C
             WRITE(LUPRI,9001) 'F_{pv}'
             CALL PRQMAT(FPV,NORBT,NASHT,NORBT,NASHT,NZ,IPQ,LUPRI)
          END IF
+C
       END IF
 C     
 C
