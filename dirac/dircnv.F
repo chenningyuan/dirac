@@ -298,15 +298,14 @@ C
       CALL QENTER('DIISER')
 C
 C
-       IF (DIISAO.OR.(NASHMFT.GT.0)) THEN
-CTROND       IF (DIISAO) THEN
+       IF (DIISAO.OR.(NASHMFT.GT.0.AND.AOC)) THEN
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
 C             = (DCao+f_o DVao) FDao + f_o (a_o-1) DVao QVao + H.C.
 C
 C
-         IF (NASHT.GT.0) THEN
+         IF (AOC) THEN
 C
 C           Construct total density matrix in "DCao"
 C
@@ -339,7 +338,7 @@ C
                CALL PRQMAT(EBUF(J2BASXI),NFBAS(I,0),NFBAS(I,0),
      &                     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
             END IF
-            IF (NASHT.GT.0) THEN
+            IF (AOC) THEN
                DO 15 IOPEN = 1,NOPEN
                   IF (NACSH(I,IOPEN).EQ.0) GOTO 15
 C
@@ -428,9 +427,9 @@ C
 C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
-            IF(NISHMF(I).EQ.0) GOTO 20
+            IF(NOCC(I).EQ.0) GOTO 20
             IOFF = I2TMOT(I)+NTMO(I)*NPSH(I)+1
-            CALL QGEMM(NTMO(I),NTMO(I),NISHMF(I),D1,
+            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
 CTROND            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
      &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
      &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,

@@ -1391,6 +1391,7 @@ C
       N2TMOTQ = 0
       DO IFRP = 1,NFSYM
         NISHMF(IFRP) = NISH(IFRP)
+        NOCCMF(IFRP) = NOCC(IFRP)
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
         I2TMOT(IFRP) = N2TMOTQ
@@ -5492,7 +5493,9 @@ C         If so, subtract from occupation number
         ENDIF
       ENDIF
       ENDDO
+      NOCCMF(IFRP) = NISHMF(IFRP)
       DO IOPEN = 1,NOPEN
+        NOCCMF(IFRP) = NOCCMF(IFRP) + NACSHMF(IFRP,IOPEN)
         NASHMFT = NASHMFT + NACSHMF(IFRP,IOPEN)
       ENDDO
       CALL WRITI(IUNIT,NFRO(IFRP),IVEC)

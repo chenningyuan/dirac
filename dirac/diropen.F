@@ -128,6 +128,7 @@ C
 C     Construct coupling operator L
 C
 C
+      IF(.NOT.AOC) GOTO 30
       DO 10 IOPEN = 1,NOPEN
 C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)

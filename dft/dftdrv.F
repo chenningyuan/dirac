@@ -82,15 +82,7 @@ C     only for Hermitian densities
       ENDDO
       IF(NHM.EQ.0) GOTO 10
 C
-      IF(NASHT.GT.0) THEN
-C       1) Put real DMAT in a buffer
-        CALL MEMGET('REAL',KDBF,N2BBASX,WORK,KFREE,LFREE)
-        CALL DCOPY(N2BBASX,DMAT,1,WORK(KDBF),1)
-C       2) Replace with average density for DFT
-        CALL GTDOAV(DMAT)
-C       This is a preliminary treatment of open shells; 
-C       more refinement must be considered
-      ENDIF
+      IF(NASHT.GT.0) CALL GTDOAV(DMAT,1)
 C
 C     Scale density matrices
 C
@@ -174,12 +166,8 @@ C     ..include DOGGA check !
 C
 C     Rescale density matrices
 C
-      IF(NASHT.GT.0) THEN
-        CALL DCOPY(N2BBASX,WORK(KDBF),1,DMAT,1)
-        CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
-      ELSE
-        CALL DSCAL(N2BBASX,DP5,DMAT,1)
-      ENDIF
+      CALL DSCAL(N2BBASX,DP5,DMAT,1)
+      IF(NASHT.GT.0) CALL GTDOAV(DMAT,-1)
       IF (DOATR) THEN
         CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
       END IF
@@ -859,7 +847,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getavd */
-      SUBROUTINE GTDOAV(DMAT)
+      SUBROUTINE GTDOAV(DMAT,IFAC)
 C***********************************************************************
 C
 C     Get average density from open shells; only real part !
@@ -874,9 +862,12 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION DMAT(N2BBASX,NZ,NFMAT)
-      DO ISHELL = 1, NOPEN
-        CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
-      ENDDO
+      IF(AOC) THEN
+        DO ISHELL = 1, NOPEN
+          FAC = IFAC*DF(ISHELL)
+          CALL DAXPY(N2BBASX,FAC,DMAT(1,1,ISHELL+1),1,DMAT,1)
+        ENDDO
+      ENDIF
 C
       RETURN
       END

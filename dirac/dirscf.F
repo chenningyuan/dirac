@@ -303,7 +303,7 @@ C
             ENDIF
             CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
           END IF
-          IF (NASHT .GT. 0) THEN
+          IF (AOC) THEN
              DO IOPEN = 1,NOPEN
                 IF (FIXDIF) THEN
                    DVOVLP(IOPEN) = D1
@@ -332,7 +332,7 @@ C           read old Fock matrix in DMAT to finish new Fock matrix/hj
           CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
           IF (NISHT.GT.0)
      &         CALL DAXPY(N2BBASXQ,DCOVLP,DMAT,1,FOCK,1)
-          IF (NASHT.GT.0) THEN
+          IF (AOC) THEN
             DO IOPEN = 1,NOPEN
               CALL DAXPY(N2BBASXQ,DVOVLP(IOPEN),
      &                   DMAT(1+N2BBASXQ*IOPEN),1,
@@ -421,14 +421,16 @@ C
 C
 C       Add active two-electron Fock matrices
 C
-        DO IOPEN = 1,NOPEN
+        IF(AOC) THEN
+          DO IOPEN = 1,NOPEN
+C  
+C           The factor in only DF and not D2*DF because of the
+C           multiplication with D2 in TWOFCK.
 C
-C         The factor in only DF and not D2*DF because of the
-C         multiplication with D2 in TWOFCK.
-C
-          CALL DAXPY(N2BBASXQ,DF(IOPEN),
-     &               FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
-        END DO
+            CALL DAXPY(N2BBASXQ,DF(IOPEN),
+     &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
+          END DO
+        ENDIF
 C
         IF(IPRSCF.GE.5) THEN
           IF (NISHT .GT. 0) THEN
@@ -436,13 +438,15 @@ C
             CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,0),LUPRI)
           END IF
-          DO IOPEN = 1,NOPEN
-            CALL HEADER('Total FV matrix',-1)
-            WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
-            CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-          END DO
-         END IF
+          IF(AOC) THEN
+            DO IOPEN = 1,NOPEN
+              CALL HEADER('Total FV matrix',-1)
+              WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
+              CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
+     &                    NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+            END DO
+          ENDIF
+        END IF
       ENDIF
 C
 C     *************************************************
@@ -560,7 +564,7 @@ C
 C
 #include "memint.h"
 C
-      DODIISAO = NASHT.GT.0.OR.DIISAO.OR.NAELEC.GT.0
+      DODIISAO = DIISAO.OR.(NASHMFT.GT.0.AND.AOC)
       IF (DODIISAO) THEN
         CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
@@ -986,7 +990,7 @@ C           read old density matrix in FOCK before saving new density matrix/hj
                END IF
                CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
             END IF
-            IF (NASHT.GT.0) THEN
+            IF (AOC) THEN
                DO IOPEN = 1,NOPEN
                   IF (FIXDIF) THEN
                      DVOVLP(IOPEN) = D1
@@ -1023,7 +1027,7 @@ C           read old Fock matrix in DMAT to finish new Fock matrix/hj
 C
             IF (NISHT .GT. 0)
      &         CALL DAXPY(N2BBASXQ,DCOVLP,DMAT,1,FOCK,1)
-            IF (NASHT .GT. 0) THEN
+            IF (AOC) THEN
                DO IOPEN = 1,NOPEN
                   CALL DAXPY(N2BBASXQ,DVOVLP(IOPEN),
      &               DMAT(1+N2BBASXQ*IOPEN),1,
@@ -1090,31 +1094,35 @@ C
 C
 C        Add active two-electron Fock matrices
 C
-         DO IOPEN = 1,NOPEN
+         IF(AOC) THEN
+           DO IOPEN = 1,NOPEN
+C  
+C             The factor in only DF and not D2*DF because of the
+C                multiplication with D2 in TWOFCK.
 C
-C           The factor in only DF and not D2*DF because of the
-C              multiplication with D2 in TWOFCK.
-C
-            CALL DAXPY(N2BBASXQ,DF(IOPEN),
+              CALL DAXPY(N2BBASXQ,DF(IOPEN),
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
-         END DO
+           END DO
+         ENDIF
 C
          IF(IPRSCF.GE.5) THEN
-            IF (NISHT .GT. 0) THEN
-               CALL HEADER('Total FD matrix',-1)
-               CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                     NZ,IPQTOQ(1,0),LUPRI)
-            END IF
-            DO IOPEN = 1,NOPEN
+           IF (NISHT .GT. 0) THEN
+             CALL HEADER('Total FD matrix',-1)
+             CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                   NZ,IPQTOQ(1,0),LUPRI)
+           END IF
+           IF(AOC) THEN
+             DO IOPEN = 1,NOPEN
                CALL HEADER('Total FV matrix',-1)
 #if defined (SYS_SX)
-               WRITE(LUPRI,'(1X,A,I2)') 'Matrix number ',IOPEN
+                WRITE(LUPRI,'(1X,A,I2)') 'Matrix number ',IOPEN
 #else
-               WRITE(LUPRI,'(X,A,I2)') 'Matrix number ',IOPEN
+                WRITE(LUPRI,'(X,A,I2)') 'Matrix number ',IOPEN
 #endif
-               CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-            END DO
+                CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
+     &                      NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+             END DO
+           ENDIF
          END IF
 C
 C        Solve DF eigenvalue problem
@@ -1280,7 +1288,12 @@ C
       E2PART  = D0
 C
 C
-      DO ISHELL = 0,NOPEN
+      IF(AOC) THEN
+        ITOP = NOPEN
+      ELSE
+        ITOP = 0
+      ENDIF
+      DO ISHELL = 0,ITOP
 C
 C        Factor D2 comes from Time-Reversal Symmetry.
 C
@@ -1322,7 +1335,7 @@ C...  to two-electron energy
         E(1,2,0) = E(1,2,0) - ERRKS
       ENDIF
       DO IZ = 1,NZ
-        DO IOPEN = 0,NOPEN
+        DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
            E2PART = E2PART + E(IZ,2,IOPEN)
         END DO
@@ -1367,7 +1380,7 @@ C
      &         '* 1-electron energy          :  ',E1PART
             IF(NZ.GT.1) THEN
                DO 20 IZ = 1,NZ
-               DO IOPEN = 0,NOPEN
+               DO IOPEN = 0,ITOP
                   WRITE(LUPRI,'(6X,A,A2,A,I2,A,'//FMT//')')
      +               '            from ',M(IZ),'(Shell ',
      +               IOPEN,'):  ',E(IZ,1,IOPEN)
@@ -1378,7 +1391,7 @@ C
      +         '* 2-electron energy          :  ',E2PART
             IF(NZ.GT.1) THEN
                DO 30 IZ = 1,NZ
-               DO IOPEN = 0,NOPEN
+               DO IOPEN = 0,ITOP
                   WRITE(LUPRI,'(6X,A,A2,A,I2,A,'//FMT//')')
      +               '            from ',M(IZ),'(Shell ',
      +               IOPEN,'):  ',E(IZ,2,IOPEN)
@@ -1977,7 +1990,7 @@ C
               E1PART = E1PART + D2*DSUM(NISH(IFRP),
      &                         EIG(IORB(IFRP)+NPSH(IFRP)+1),1)
            END IF
-           IF (NASHT .GT. 0) THEN
+           IF (AOC) THEN
              IDX = IORB(IFRP)+NPSH(IFRP)+NISH(IFRP)+1
              DO IOPEN = 1,NOPEN
                 E1PART = E1PART + D2*DF(IOPEN)*DSUM(NACSH(IFRP,IOPEN),
@@ -3875,7 +3888,7 @@ C
                  if(eps.gt.eigmax) eigmax=eps
               enddo
            END IF
-           IF (NASHT .GT. 0) THEN
+           IF (AOC) THEN
              IDX = IORB(IFRP)+NPSH(IFRP)+NISH(IFRP)+1
              DO IOPEN = 1,NOPEN
                 E1PART = E1PART + D2*DF(IOPEN)*DSUM(NACSH(IFRP,IOPEN),

@@ -569,7 +569,9 @@ C
 C     Closed shell Hartree - Fock
 C     ===========================
 C
-      IF (NOPEN.GT.0) THEN
+      IF (.NOT.AOC) THEN
+         NFMAT = 1
+      ELSEIF (NOPEN.GT.0) THEN
          NFMAT = NOPEN+1
       ELSE
          IF (NASHT.GT.0) THEN
@@ -764,13 +766,13 @@ C
         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
 C
 C     Get small component charges
-C     Two options (dicided in SCDENS) :
+C     Two options (decided in SCDENS) :
 C     - Old method uses a table lookup with to get the DHF limit
 C       small component charges
 C     - New method uses a Mulliken analysis of the density
 C       THIS WILL NOT WORK FOR PARTIAL DENSITIES AS IN MOLTRA !!!!
 C
-        IF(NOPEN.GT.1) THEN
+        IF(AOC) THEN
           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
           CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)           
           DO ISHELL = 1, NOPEN

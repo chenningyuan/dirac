@@ -134,6 +134,8 @@ C
 C
 C     Input of property module
 C
+CTROND
+      WRITE(LUPRI,*) 'Check for DOPRP =',DOPRP
       IF(DOPRP) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PROPE',WORK,LWORK)
@@ -693,7 +695,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 41)
+      PARAMETER (NTABLE = 45)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -721,7 +723,7 @@ C
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
-     &            '.MJSELE'/
+     &            '.MJSELE','.AOC   ','.FOCC  ','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -783,6 +785,10 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
+C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
+C     ... whereas Fractional Occupation is default for DFT
+      AOC = .TRUE.
+      IF(DODFT) AOC = .FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -876,7 +882,8 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40, 41), I
+     &                     31,32,33,34,35,36,37,38,39,40,
+     &                     41,42,43,44,45), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1212,7 +1219,18 @@ C            NSUBBL = # of subblocks for MJ sym.
                   READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
                END DO
                GO TO 100
-C
+ 42            CONTINUE
+C&&& AOC: Average-of-Configuration
+               AOC = .TRUE.
+               GOTO 100
+ 43            CONTINUE
+C&&& FOCC: Fractional Occupation
+               AOC = .FALSE.
+               GOTO 100
+ 44            CONTINUE
+               GOTO 100
+ 45            CONTINUE
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1358,6 +1376,7 @@ C
          NFROT_DHF  = NFRO_DHF(1)  + NFRO_DHF(2)
          NELECT_DHF = NELEC_DHF(1) + NELEC_DHF(2)
       END IF
+      IF(NASHT_DHF.EQ.0) AOC = .FALSE.
       IF(PROJEC) THEN
         WRITE(LUPRI,'(A/A,1P,E13.4)')
      &      ' * Variational space reduced by projection'//
@@ -1614,7 +1633,7 @@ C
         ENDIF
       ENDIF
       IF(DODIIS) THEN
-         IF (DIISAO .OR. NASHT_DHF.GT.0) THEN
+         IF (DIISAO .OR. (NASHT_DHF.GT.0.AND.AOC)) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
          ELSEIF(DIISMO) THEN
            WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
@@ -4698,15 +4717,21 @@ C
 C
       IF (NAELEC_DHF .EQ. 0) THEN
          WRITE(LUPRI,'(1X,A,I4,A)') 
-     &      '* Closed shell DHF calculation with ',NELECT_DHF,
+     &      '* Closed shell SCF calculation with ',NELECT_DHF,
      &      ' electrons in'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(3X,I5,A,I1)')
      &          NISH_DHF(I),' orbitals in Fermion irrep ',I
          END DO
       ELSE
-         WRITE(LUPRI,'(A/A//40X,A,2(/24X,A))') 
-     &      ' * Open shell DHF calculation.',
+         IF(AOC) THEN
+           WRITE(LUPRI,'(A/)') 
+     &  ' * Open shell SCF calculation using Average-of-Configuration'
+         ELSE
+           WRITE(LUPRI,'(A/)') 
+     &  ' * Open shell SCF calculation using Fractional Occupation'
+         ENDIF
+         WRITE(LUPRI,'(A//40X,A,2(/24X,A))') 
      &      ' * Shell specifications:',
      &      'Orbitals',
      &      '#electrons  irrep 1  irrep 2     f        a      alpha',

@@ -319,7 +319,7 @@ C
       CALL QENTER('ACTDEN')
 C
 CTROND
-      CALL DZERO(DMAT,N2BBASXQ)
+CTROND      CALL DZERO(DMAT,N2BBASXQ)
       DO 20 ISYM = 1,NFSYM
          ITEST  = NACSH(ISYM,IOPEN)
          ISTART = NPSH(ISYM)+NISH(ISYM)+1
@@ -365,9 +365,19 @@ C***********************************************************************
 C
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
       CALL GENDEN(DMAT,CMO,1,IPRINT)
-      DO IOPEN = 1,NOPEN
-        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),D1,D0,CMO,IOPEN,IPRINT)
-      END DO
+      IF(AOC) THEN
+C.......Average of Configuration
+        DO IOPEN = 1,NOPEN
+          CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),D1,D0,CMO,IOPEN,IPRINT)
+        END DO
+      ELSE
+C.......Fractional Occupation
+        DO IOPEN = 1,NOPEN
+CTROND
+          WRITE(LUPRI,*) 'focc..',DF(IOPEN)
+          CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
+        END DO
+      ENDIF
 C
       RETURN
       END
