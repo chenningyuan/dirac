@@ -739,5 +739,180 @@ C         WRITE(6,*) 'PSMU(',INA,') = ', PSMU(INA)
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1wt  */
+      SUBROUTINE GT1WT(WORK,LWORK)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C     Modified for GT1WT by O. Fossgaard - May 2003
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION WORK(LWORK)
+#include "dcbgen.h"
+#include "dcbwt1.h"
+#include "nuclei.h"
+C
+      CALL QENTER('GT1WT')
+#include "memint.h"
+C
+      CALL TITLER('Integration weights along bonds','*',122)
+C
+C     Memory allocation
+      CALL MEMGET('REAL',KWT,NATOMS    ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCOOR,6       ,WORK,KFREE,LFREE)
 
+      CALL GT1BW1(WORK(KWT),WORK(KCOOR),IPWT1,WORK,KFREE,LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('GT1WT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+ 9999 CALL QEXIT('GT1WT')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gt1rh1 */
+      SUBROUTINE GT1BW1(WT,COORD,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "symmet.h"
+#include "nuclei.h"
+      DIMENSION COORD(3,2),WT(NATOMS),WORK(*)
+      CHARACTER FILNAM*10
+#include "ibtfun.h"
+C
+      LUWT = 1
+C
+C     Loop over pairs of nuclear centers
+C
+      DO ICENTA = 1, NUCIND
+         MULA  = ISTBNU(ICENTA)
+         IDEGA = 1
+         COORD(1,1) = CORD(1,ICENTA)
+         COORD(2,1) = CORD(2,ICENTA)
+         COORD(3,1) = CORD(3,ICENTA)
+         DO ICENTB = ICENTA+1, NUCIND
+           MULB = ISTBNU(ICENTB)
+           IDEGB = 0 
+           DO ISYMOP = 0, MAXOPR
+             IF (IBTAND(ISYMOP,MULB) .EQ. 0) THEN
+               IDEGB = IDEGB + 1
+               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
+               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
+               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
+               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+     &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
+               DO I = 1,10
+                 IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
+               ENDDO
+               OPEN(LUWT,FILE =FILNAM,STATUS='NEW',
+     &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
+     &              KFREE,LFREE)
+               CLOSE(LUWT,STATUS='KEEP')
+             ENDIF
+           ENDDO
+         ENDDO
+         IF (MULT(MULA).GT.1) THEN
+           IDEGB = 1
+           DO ISYMOP = 1, MAXOPR
+             IF (IBTAND(ISYMOP,MULA) .EQ. 0) THEN
+               IDEGB = IDEGB + 1
+               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
+               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
+               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
+               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+     &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
+               DO I = 1,10
+                 IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
+               ENDDO
+               OPEN(LUWT,FILE =FILNAM,STATUS='NEW',
+     &              ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
+               CALL GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
+     &              KFREE,LFREE)
+               CLOSE(LUWT,STATUS='KEEP')
+              ENDIF
+           ENDDO
+         ENDIF 
+      ENDDO
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Gt1rh2 */
+      SUBROUTINE GT1W2(ICENTA,ICENTB,WT,COORD,LUWT,IPRINT,WORK,
+     &     KFREE,LFREE)
+C***********************************************************************
+C
+C     Get density in one dimension, that is along bonds
+C     (ghost centers may be defined to get other lines)
+C
+C     Written by Trond Saue May 9 2000
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+#include "codata.h"
+#include "mxcent.h"
+#include "nuclei.h"
+C
+      DIMENSION COORD(3,2),WT(NATOMS),WORK(*)
+#include "dcbwt1.h"
+#include "sdpre.h"
+C
+C     Calculate distance between centers
+C
+      DX = (COORD(1,2)-COORD(1,1))
+      DY = (COORD(2,2)-COORD(2,1))
+      DZ = (COORD(3,2)-COORD(3,1))
+      DISTAN = SQRT(DX*DX+DY*DY+DZ*DZ)
+      DX     = DX/DISTAN
+      DY     = DY/DISTAN
+      DZ     = DZ/DISTAN
+      ASTEP  = DSTEP/XTANG
+      NPOINT = INT(DISTAN/ASTEP)
+      IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
+      ASTEP  = DISTAN/SDPRE(NPOINT)
+C
+C     Calculate density along between centers:
+C     If bond distance is 2R, then points are calculated between (-R,3R)
+C 
+      IP1 = -NPOINT/2
+      IP2 = NPOINT - IP1 
+      DO IP = IP1,IP2
+        PP  = SDPRE(IP)*ASTEP
+        PX  = COORD(1,1) + PP*DX
+        PY  = COORD(2,1) + PP*DY
+        PZ  = COORD(3,1) + PP*DZ
 
+C     Get weights for each atom at (PX,PY,PZ)
+
+        CALL DZERO(WT,NATOMS)
+
+        CALL GETWT1(PX,PY,PZ,WT,IPRINT,WORK(KFREE),LFREE)
+        PP = XTANG*PP
+C        WRITE(LUWT,'(F10.6,3E20.10)') PP,(WT(I),I=1,NATOMS)
+        WRITE(LUWT,'(F10.6,3E20.10)') PP,WT(ICENTA),WT(ICENTB)
+      ENDDO
+C
+      END

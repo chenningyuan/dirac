@@ -2496,7 +2496,9 @@ C
         CALL DENSIN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
+#if defined (MOD_DFT)
         CALL WT1IN(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     8 CONTINUE
         GO TO 200
@@ -2507,7 +2509,9 @@ C
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
       IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
       IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
+#if defined (MOD_DFT)
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
+#endif
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -4607,6 +4611,7 @@ C
       RETURN
 C
       END
+#if defined (MOD_DFT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wt1in */
       SUBROUTINE WT1IN(WORD,RESET,WORK,LWORK)
@@ -4726,3 +4731,4 @@ C
       RETURN
 C
       END
+#endif
