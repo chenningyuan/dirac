@@ -579,17 +579,17 @@ CTF       IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
           CALL OCCLS_REL(IWAY,NOCCLS,IOCCLS,NEL,NGAS,
      &                   IGSOCC(1,1),IGSOCC(1,2))
 *. and then the occupation classes
-      call memmar(KLOCCLS,NGAS*NOCCLS,'ADDL  ',1,'KLOCCL')
+          call memmar(KLOCCLS,NGAS*NOCCLS,'ADDL  ',1,'KLOCCL')
           IWAY = 2
           CALL OCCLS_REL(IWAY,NOCCLS,WORK(KLOCCLS),NEL,NGAS,
      &                   IGSOCC(1,1),IGSOCC(1,2))
 *
-      call memmar(KLASTR,MXNSTR*NAEL,'ADDL  ',1,'KLASTR')
-      call memmar(KLBSTR,MXNSTR*NBEL,'ADDL  ',1,'KLBSTR')
+          call memmar(KLASTR,MXNSTR*NAEL,'ADDL  ',1,'KLASTR')
+          call memmar(KLBSTR,MXNSTR*NBEL,'ADDL  ',1,'KLBSTR')
 *
           LENGTH = NOCCLS*10
-      call memmar(KNCPMT,LENGTH,'ADDL  ',1,'KNCPMT')
-      call memmar(KWCPMT,LENGTH,'ADDL  ',2,'KWCPMT')
+          call memmar(KNCPMT,LENGTH,'ADDL  ',1,'KNCPMT')
+          call memmar(KWCPMT,LENGTH,'ADDL  ',2,'KWCPMT')
 *
 *. Occupation of strings of given sym and supergroup
           CALL GASANAS_REL(C,LUSCR,NBL_C,WORK(KNSTSO(IACTP)),

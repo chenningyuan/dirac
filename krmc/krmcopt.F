@@ -2792,6 +2792,9 @@ C
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
+         IF (IANACI.EQ.1) THEN
+           CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
+         END IF
 C
       ELSE
          WRITE(LUPRI,'(//3A)')

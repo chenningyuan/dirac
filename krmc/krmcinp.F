@@ -771,6 +771,8 @@ C
 C     Written by J. Thyssen - Dec 29 2000
 C     Last revision: 17.05.2002
 C                    Added CI keyword CIROOT. Timo Fleig
+C                    05.01.2005
+C                    Added CI keyword ANALYZ. Timo Fleig
 C
 C***********************************************************************
 #include "implicit.h"
@@ -788,7 +790,7 @@ C
       SAVE SET
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
      &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
-     &            '.NO PFQ','.NO FQX','.XXXXXX','.CIROOT','.MXCIVE',
+     &            '.NO PFQ','.NO FQX','.ANALYZ','.CIROOT','.MXCIVE',
      &            '.KTRLVL'/
       DATA SET/.FALSE./
 C
@@ -819,6 +821,7 @@ C
       COMPROT = .FALSE.
       COMPFAC = 0.01D00
       NCIROOT = 1
+      IANACI = 0
       IRESTRK = 0
 C
 C
@@ -904,6 +907,8 @@ C&&& .NO FQXT: no FQX and FQT (approximate with DV * FV)
                   OPT_NOFQX = .TRUE.
                GO TO 100
    13          CONTINUE
+C&&& .ANALYZ: Analyze LUCIAREL CI vector(s)
+                  IANACI = 1
                GO TO 100
    14          CONTINUE
 C&&& .CIROOT: Number of CI roots to be optimized
@@ -957,13 +962,18 @@ C
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of initial CI iterations: ',MAXCIT
       ELSE
-         WRITE(LUPRI,'(A,I3)')
+         WRITE(LUPRI,'(A)')
      &     ' * CI start guess is based on full CI '
       END IF
 C
       IF (IRESTRK.EQ.1) THEN
-         WRITE(LUPRI,'(A,I3)')
+         WRITE(LUPRI,'(A)')
      &     ' * Restarting CI from C vector on LUCIAREL file '
+      END IF
+C
+      IF (IANACI.EQ.1) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * Analyzing CI vectors in terms of coefficients '
       END IF
 C
       IF (NCIROOT.GT.1) THEN

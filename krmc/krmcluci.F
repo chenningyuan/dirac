@@ -1385,8 +1385,12 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
      &        ' No integrals imported (or > 1st NS iteration) '
           END IF
 *
-          call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
-     &                 NL2D,IBU2D,ISM2D,F1,F2,IBOSYM,CIRUN)
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+          if (CIRUN.ne.'ANALYZ') then
+            call picasso(INTSPACE,ISO1,IPRTRA,MCSCF,
+     &                   NL2D,IBU2D,ISM2D,F1,F2,IBOSYM,CIRUN)
+          end if
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
 *
 * ======================
@@ -1524,13 +1528,13 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
                 ISM = IREFSM
                 ITERGLB = 1
 *
-*
+*=============================================================
 *
                 CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN)
 *
-*
+*=============================================================
 *
 *. Last space where vectors were stored
                 ISTOSPC = JCMBSPC
@@ -1634,8 +1638,7 @@ C
         write(LUPRI,*)
         write(LUPRI,*) ' ANALYZ flag call '
         write(LUPRI,*) ' ------           '
-        write(LUPRI,*) '   Analyzing a CI vector.'
-        call quit('NOT IMPLEMENTED YET!')
+        write(LUPRI,*) '   Analyzing the current CI vector(s).'
         write(LUPRI,*)
       else if (CIRUN.eq.'DIAG  ') then
         write(LUPRI,*)
@@ -2031,26 +2034,33 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_ANAL(WORK,LWORK)
+      SUBROUTINE LUCI_ANAL(CREF,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Analyze CI vectors
 C
-C     Written by T. Fleig                  - Jan 24 2001
-C     Last revision :
+C     Written by T. Fleig                  - Jan 24, 2001
+C     Last revision : T. Fleig
+C                     activated            - Jan 05, 2005
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
       CHARACTER*6 CIRUN
 C
       DIMENSION WORK(*)
+C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
 C
       CIRUN = 'ANALYZ'
 C
@@ -2063,11 +2073,27 @@ C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
-C     Write CI reference vector to LUCIAREL restart file
-C     FIXME: write me
+      IF (NCIROOT.EQ.1) THEN
+        IO_ANAL_IN = 1
+        IF (IO_ANAL_IN.EQ.1) THEN
+          REWIND LUC
+          CALL MEMGET('REAL',KASCR,NZCONF*MZ,WORK,KFREE,LFREE)
+          CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
+     &                          DUMMY,1,
+     &                    DUMMY,1,DUMMY,1,
+     &                    WORK(KASCR),IDUMMY,2,IRIQ,
+     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        END IF
+      ELSE IF (NCIROOT.GT.1) THEN
+        CONTINUE
+      END IF
 C
 C     Call LUCIAREL for analysis of CI vectors.
-      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+C
+      IF (NCIROOT.EQ.1) THEN
+        CALL MEMREL('LUCI_ANALYZ',WORK,1,KFRSAV,KFREE,LFREE)
+      END IF
 C
       RETURN
       END

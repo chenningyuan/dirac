@@ -3035,14 +3035,14 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 *. End of vector mark
                   CALL ITODS(-1,1,-1,LUSC37)
 *
-* Analyze T coefficients before doing the job
+* Analyze T before doing the job
                   call flush(6)
-                  if (NTEST.ge.100) then
-C FIXME: Debug me !!
-c                   call ana_gencc(T,ISYM_T)
-c                   stop
-C FIXME: Debug me !!
-                  end if
+*  This is only useful for density matrix elements, otherwise
+*  in CC theory.
+C                 if (NTEST.ge.100) then
+C                   call ana_gencc(T,ISYM_T)
+C                   stop
+C                 end if
 *
                   call sigden_rel2(C,HC,JBATABS,NBATCH_MK2,
      &                             LBATS,LEBATS,I1BATS,IBATS,

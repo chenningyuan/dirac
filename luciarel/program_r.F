@@ -295,29 +295,28 @@ CTF   CALL RMEMCHK
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
           end if
         end if
-      else if (CIRUN.eq.'ANAL  ') then
+      else if (CIRUN.eq.'ANALYZ') then
 * Analysis of optimized wave function
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
-      if (IPRWFC.ge.1) then
-        call rewino(LUC)
-        do JROOT=1,NROOT,1
-          call rewino(LUSC61)
-          call copvcdc(LUC,LUSC61,WORK(KVEC2),0,LBLK)
-          call rewino(LUSC61)
-          WRITE(6,*)
-          WRITE(6,'(1H ,A,I3)')
-     &    ' ***************************************************'
-          WRITE(6,'(1H ,A,I3)')
-     &    ' Analysis of Optimized Wave Function for ROOT = ',JROOT
-          WRITE(6,'(1H ,A,I3)')
-     &    ' ***************************************************'
+      LBLK = -1
+      call rewino(LUC)
+      do JROOT=1,NROOT,1
+        call rewino(LUSC61)
+        call copvcdc(LUC,LUSC61,WORK(KVEC2),0,LBLK)
+        call rewino(LUSC61)
+        WRITE(6,*)
+        WRITE(6,'(1H ,A,I3)')
+     &  ' ***************************************************'
+        WRITE(6,'(1H ,A,I3)')
+     &  ' Analysis of Optimized Wave Function for ROOT = ',JROOT
+        WRITE(6,'(1H ,A,I3)')
+     &  ' ***************************************************'
 *
-          call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
-     &                    WORK(KPCBLTP),LUSC61,LUSC37,
-     &                    ICISTR)
-        end do
-      end if
+        call gasana_rel(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                  WORK(KPCBLTP),LUSC61,LUSC37,
+     &                  ICISTR)
+      end do
 *
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
       else if (CIRUN.eq.'DENS1 '.or.CIRUN.eq.'DENS2 ') then
