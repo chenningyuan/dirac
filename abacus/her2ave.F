@@ -467,6 +467,7 @@ C
                               END IF
 #endif
                            END IF
+#ifndef PRG_DIRAC
                            IF (IPRINT .GT. 30) THEN
                               WRITE(LUPRI,'(//A,4I5,D12.4)')
      &                              ' IORBA... PAOVAL',
@@ -484,6 +485,7 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
+#endif
 C
 C                       **************************
 C                       ***** Magnetic field *****

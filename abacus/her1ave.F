@@ -82,7 +82,9 @@ C
 C
 C           ***** Energy *****
 C
+#ifndef PRG_DIRAC
             ENERNA = ENERNA + DA0000
+#endif
 C
 C           ********************
 C           ***** Gradient *****
@@ -620,7 +622,9 @@ C
 C
 C        Undifferentiated Nuclear Attraction Energy
 C
+#ifndef PRG_DIRAC
          ENERNA = ENERNA + DA0000
+#endif
 C
 C        ***** two-center case: C = A *****
 C
