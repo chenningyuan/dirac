@@ -202,7 +202,6 @@ C
          TEQ = .FALSE.
          FOCKSP = .FALSE.
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
-#ifdef MOD_FOCKSPCC
          TEQ = .TRUE.
          FOCKSP = .TRUE.
          DELS1 = 'DD'
@@ -236,9 +235,6 @@ C
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
 C        Delete Hamiltonian parts
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
-#else
-         CALL QUIT('FOCKSP keyword disabled in this version of CCEQNS')
-#endif
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
@@ -470,7 +466,6 @@ C     CALL XTIME(35,2,'PARTS (sync before adding)    ')
       CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
       CALL XTIME(36,2,'PARTS adding partial T1/T2    ')
 C
-#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
 C.......when debugging print out energies in every iteration
         IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
@@ -483,7 +478,6 @@ C.......when debugging print out energies in every iteration
         write (iw,111)"s2 after folded",MYPROC,ddot(ndimt2,s2,1,s2,1)
         endif
       ENDIF
-#endif
 C
       if (carith.and.debug) then
       write (*,111)"s2 after parts",MYPROC,zdotc(ndimt2,s2,1,s2,1)
@@ -501,11 +495,7 @@ C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
       IF (FOCKSP) THEN
-#ifdef MOD_FOCKSPCC
         CALL DENOMF (EPS,S1,S2,S1,S2,1)
-#else
-        CALL QUIT('FOCKSP not in this distibution')
-#endif
       ELSE
         CALL DENOM (EPS,S1,S2,S1,S2)
       ENDIF
@@ -519,7 +509,6 @@ C
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
          CALL XTIME(15,2,'DIISX                         ')
-#ifdef MOD_FOCKSPCC
       ELSE
 C
 C     In the Fockspace algorithm we only need to extrapolate the
@@ -561,7 +550,6 @@ C
          CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
          CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
-#endif
       ENDIF
 C
 C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
@@ -592,13 +580,11 @@ C
 C     Remove the Hamiltonian elements, T1 and T2 should only contain
 C     the wave function (amplitudes) appropriate for this sector.
 C
-#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
          CALL DELFCK ('VO',DELS1,T1)
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       ENDIF
-#endif
 C
       CPUE = CPUE + CPUDELTA()
 C
@@ -636,7 +622,6 @@ C
       WRITE(IW,6078) RMS
       WRITE(IW,6079) NIT
 C
-#ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
          CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
@@ -646,7 +631,6 @@ C        S1 & S2.
          CALL XCOPY(NDIMT1,S1,1,T1,1)
          CALL XCOPY(NDIMT2,S2,1,T2,1)
       ENDIF
-#endif
 C
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
@@ -746,9 +730,6 @@ C
          TEQ = .FALSE.
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
          TEQ = .TRUE.
-#ifndef MOD_FOCKSPCC
-        CALL QUIT('FOCKSP keyword disabled in this version of T1EQNS')
-#endif
       ELSE
          CALL QUIT('Wrong keyword in call to T1EQNS')
       ENDIF
@@ -770,9 +751,7 @@ C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
 C
-#ifdef MOD_FOCKSPCC
         IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
-#endif
       ENDIF
 
 
@@ -1040,9 +1019,6 @@ C
          TEQ = .FALSE.
       ELSEIF (EQNS.EQ.'FOCKSP') THEN
          TEQ = .TRUE.
-#ifndef MOD_FOCKSPCC
-        CALL QUIT('FOCKSP keyword disabled in this version of T2EQNS')
-#endif
       ELSE
          CALL QUIT('Wrong keyword in call to T2EQNS')
       ENDIF

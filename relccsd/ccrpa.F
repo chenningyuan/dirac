@@ -1231,10 +1231,10 @@ C64B     CERPA2 = CDOTU (NDIMX,AVO,1,Y1,1)
 C64B     ERPA = ERPA + SDOT (NDIMX,AVO,1,Y1,1)
          CERPA = APHASE * BPHASE * ERPA
       ENDIF
-      print*,"real part aov",ddot(ndimx,aov,2,x1,2)
-      print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
-      print*,"real part avo",ddot(ndimx,avo,2,y1,2)
-      print*,"imag part avo",ddot(ndimx,avo(2),2,y1(2),2)
+c     print*,"real part aov",ddot(ndimx,aov,2,x1,2)
+c     print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
+c     print*,"real part avo",ddot(ndimx,avo,2,y1,2)
+c     print*,"imag part avo",ddot(ndimx,avo(2),2,y1(2),2)
 C
       RETURN
 1000  FORMAT (/' WARNING : Imaginary contribution to ',A2,
