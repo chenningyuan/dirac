@@ -785,9 +785,11 @@ C
           ENDIF
         ENDDO
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
-        WRITE(LUPRI,'(A,I2)') '* Lowdin matrix for ifrep = ',IFRP
-        CALL OUTPUT(VMAT(IVOFF),1,NFBAS(IFRP,0),1, NFORB(IFRP,0),
-     &                NFBAS(IFRP,0),NFORB(IFRP,0),1,LUPRI)
+        IF ( IPRINT .GE. 5) THEN
+           WRITE(LUPRI,'(A,I2)') '* Lowdin matrix for ifrep = ',IFRP
+           CALL OUTPUT(VMAT(IVOFF),1,NFBAS(IFRP,0),1, NFORB(IFRP,0),
+     &                   NFBAS(IFRP,0),NFORB(IFRP,0),1,LUPRI)
+        END IF
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
@@ -2182,11 +2184,15 @@ C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
       NSPH = ICOL
+      NZA = 1
+      NZB = 1
+      NZC = 1
+      NZD = 1
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
-     &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
-     &            VMAT,LDM ,NSPH,1,IQBF,
-     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
-     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            SMAT,LDM ,NCAR,NZA,IPQTOQ(1,0),
+     &            VMAT,LDM ,NSPH,NZB,IQBF,
+     &            TMAT,NCAR,NSPH,NZC,IPQTOQ(1,0),
+     &            TMAT,NCAR,NSPH,NZD,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &            EIG,WORK,LWORK)
@@ -2533,11 +2539,15 @@ C***  generate Lowdin matrix                           ***
 C*********************************************************
 C
       NSPH = ICOL
+      NZA = 1
+      NZB = 1
+      NZC = 1
+      NZD = 1
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
-     &            SMAT,LDM ,NCAR,1,IPQTOQ(1,0),
-     &            VMAT,LDM ,NSPH,1,IQBF,
-     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
-     &            TMAT,NCAR,NSPH,1,IPQTOQ(1,0),
+     &            SMAT,LDM ,NCAR,NZA,IPQTOQ(1,0),
+     &            VMAT,LDM ,NSPH,NZB,IQBF,
+     &            TMAT,NCAR,NSPH,NZC,IPQTOQ(1,0),
+     &            TMAT,NCAR,NSPH,NZD,IPQTOQ(1,0),
      &            WORK,LWORK,IPRINT)
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &            EIG,WORK,LWORK)
