@@ -167,7 +167,7 @@ C
          WRITE (6,1041)
       ELSE
          WRITE (6,1042)
-         STOP
+         CALL QUIT('cidirr line 170')
       ENDIF
 C
       CALL CPUUSED (SEC)
@@ -811,7 +811,7 @@ C
       GOTO 10
    20 CONTINUE
       RETURN
-10001 Stop 'Cannot read Unit'
+10001 CALL QUIT('Cannot read Unit')
       END
 C
       SUBROUTINE CRITER (ENDRUN)
@@ -1126,7 +1126,7 @@ C     ----
          EVECR(I,J) = WORKR(I,J)
          EVECI(I,J) = WORKI(I,J)
    20    CONTINUE
-         IF (IFAIL.NE.0) STOP'**ERROR-CANNOT DIAGONALISE CMTR**'
+         IF (IFAIL.NE.0) CALL QUIT('**ERROR-CANNOT DIAGONALISE CMTR**')
 C     -----
       ENDIF
 C     -----
@@ -1628,7 +1628,7 @@ C
       Open (MRCVECS,File=FNAM(7),ACCESS='DIRECT',RECL=IRECL,
      &      IOSTAT=IOS,ERR=100)
       Return
- 100  STOP 'Cannot open MRCVECS'
+ 100  CALL QUIT('Cannot open MRCVECS')
       End
 C
       SUBROUTINE CINPRD (VECTR,VECTI,SIGMAR,SIGMAI)
@@ -1866,7 +1866,7 @@ C
 C
       RETURN
 C
-10000 STOP 'ERROR READING HEADER OF MDCINT'
+10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
       END
 C
       SUBROUTINE MAKIDS (ILIND,IRIND,IJREC,JLIND,JRIND,
@@ -2097,13 +2097,13 @@ C64B        CALL F01BCE(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
 C64B        CALL F02AYE(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
      &                  Work1,NS,Work2,NS,IFail)
          ENDIF
-         IF (IFAIL.NE.0) STOP'**ERROR-CANNOT DIAGONALISE CMTR**'
-	 Do IEIGEN = 1, NS
-	    Work3(Ioff1+IEigen-1) = - Work3(Ioff1+IEigen-1)
-	 EndDo
-	 Write (6,1010) Iroot, RepN(Irp)
-	 Write (6,1020) (Work3(Ioff1+IEigen-1),IEigen=1,NS)
-	 Call NSRepl (Irp,NS,Work3(Ioff1),Work1,Work2,RepN(Irp),
+         IF (IFAIL.NE.0) CALL QUIT('**ERROR-CANNOT DIAGONALISE CMTR**')
+         Do IEIGEN = 1, NS
+            Work3(Ioff1+IEigen-1) = - Work3(Ioff1+IEigen-1)
+         EndDo
+         Write (6,1010) Iroot, RepN(Irp)
+         Write (6,1020) (Work3(Ioff1+IEigen-1),IEigen=1,NS)
+         Call NSRepl (Irp,NS,Work3(Ioff1),Work1,Work2,RepN(Irp),
      &                Work3(Ioff5),Work3(Ioff6),Work3(Ioff7))
   100 Continue 
       Close (21)
@@ -2466,7 +2466,7 @@ C64B &   CALL SSCAL (NDET,RR,VECTI(1,IVEC),1)
          WRITE (*,*) ' NORM OF NEW VECTOR < 1.D-12 '
          WRITE (*,*)
          WRITE (*,*) '  -- SILLY END OF PROGRAM -- '
-         STOP
+         CALL QUIT('dirrci line  2469')
       ENDIF
       CALL PUTVEC (MVEC+IVEC,VECTR(1,IVEC),VECTI(1,IVEC))
  1000 CONTINUE
@@ -2746,11 +2746,11 @@ C
       Read (mdcint,err=10000,end=10000) datex,timex,nkr,
      & (kr(i),kr(-i),i=1,nkr)
       IF (2*NKR.NE.NORB) 
-     &   STOP 'MRCONEE AND MDCINT ARE INCOMPATIBLE'
+     &   CALL QUIT('MRCONEE AND MDCINT ARE INCOMPATIBLE')
       IF (BREIT) THEN
       OPEN(MDBINT,FILE=FNAM(3),FORM='UNFORMATTED')
       Read (mdbint,err=10001,end=10001) datexb,timexb,nkrb
-      IF (NKR.NE.NKRB) STOP 'MDCINT AND MDBINT ARE INCOMPATIBLE'
+      IF (NKR.NE.NKRB) CALL QUIT('MDCINT AND MDBINT ARE INCOMPATIBLE')
       ENDIF
       OPEN (MRCTWOE,FILE=FNAM(8),FORM='UNFORMATTED')
    10 REWIND (MDCINT)
@@ -3099,10 +3099,10 @@ C
  1002 FORMAT (/' Real arithmetic will be used in EXPAND and TWOLIN')
  1003 FORMAT (/' Complex arithmetic will be used')
  1010 FORMAT (//' CAUTION : No non-zero integrals found on ',A//)
-10000 STOP 'ERROR READING HEADER OF MDCINT'
-10001 STOP 'ERROR READING HEADER OF MDBINT'
-10010 STOP 'ERROR READING INTEGRALS FROM MDCINT'
-10011 STOP 'ERROR READING INTEGRALS FROM MDBINT'
+10000 CALL QUIT('ERROR READING HEADER OF MDCINT')
+10001 CALL QUIT('ERROR READING HEADER OF MDBINT')
+10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
+10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
 C
       SUBROUTINE TRIAL (VECTR,VECTI,IDIND,JDET,JELEC,JSIND,
