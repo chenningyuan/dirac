@@ -582,11 +582,13 @@ C
       IF (MLINE(NMLINE)(21:30) .EQ. '          ') THEN
 C        nothing specified, default minimum value used
          THRS = THRMIN
-      ELSE IF (THRS .LE. THRMIN) THEN
-         WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
-         WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
+      ELSE IF (THRS .LT. THRMIN) THEN
+         IF (.NOT.PARHER) THEN
+            WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
+            WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
      &      'Threshold is reset to minimum value   ',THRMIN
+         END IF
          THRS = THRMIN
       ENDIF
 C*****************************************************************************
