@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : ccmain.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMCCM (CC,MAXCOR)
@@ -105,8 +104,10 @@ C     Tell them the correct arithmetic (NZ is not initialized on the slaves
 C     if you do not run HF !)
 C
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      IF (NMPROC .GT. 1) THEN
+         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      END IF
 #endif
 C
 C     Enter the generic CCMAIN routine (master becomes now primus inter parens)
@@ -232,8 +233,10 @@ C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
 C
 #if defined (VAR_MPI)
-      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      IF (NMPROC .GT. 1) THEN
+         CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      END IF
 #endif
 C
 C     create a node-unique filename as output file. Important on

@@ -103,9 +103,12 @@ extern int main( int argc, char** argv )
     * Distribute environment variables
     */
 
-   distribute_env( "BASDIR", mytid );
-   distribute_env( "DIRWRK", mytid );
-   distribute_env( "DIRNOD", mytid );
+   if ( parcal )
+   {
+      distribute_env( "BASDIR", mytid );
+      distribute_env( "DIRWRK", mytid );
+      distribute_env( "DIRNOD", mytid );
+   }
 
 
    /*

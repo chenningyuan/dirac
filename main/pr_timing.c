@@ -65,7 +65,7 @@
    csectid(gt_last->cpu - gt_first->cpu,sectid);
 
 #if defined (VAR_MPI)
-   if ( numnod > 0 )
+   if ( numnod > 1 )
       {
        for (itid=0; itid<numnod; itid++) 
          {
