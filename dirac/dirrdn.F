@@ -4445,7 +4445,7 @@ C
          WRITE (*,'(A,A)') ' * WARNING : Orbital localization not yet',
      S   ' implemented'
          WRITE (*,'(A)') '             for other groups than C1 !!!'
-         WRITE (*,'(A)') '   -> LOCALISE ignored'
+         WRITE (*,'(A)') '   -> LOCALIZE ignored'
          DOLOC = .FALSE.
       ENDIF
 C
