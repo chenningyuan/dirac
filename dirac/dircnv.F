@@ -338,8 +338,8 @@ C
 C           Transform to MO-basis.: Ct Sao A C
 C           use FAO as buffer
 C
-            IF(SPINFR.OR.LEVYLE) THEN
-              CALL TBOSON(I,EBUF,EVEC,SAOMO,TMAT,
+            IF(SUB_BL) THEN
+              CALL TSUBBL(I,EBUF,EVEC,SAOMO,TMAT,
      &                      WORK(KFREE),LFREE,IPRSCF)
             ELSE
               CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),

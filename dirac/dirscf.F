@@ -1955,8 +1955,8 @@ C     Transform FD to MO-basis
 C
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
-        IF(SPINFR.OR.LEVYLE) THEN
-          CALL TBOSON(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
+        IF(SUB_BL) THEN
+          CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &            NORB(I),NORB(I),

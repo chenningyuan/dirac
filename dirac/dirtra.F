@@ -2913,43 +2913,39 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck bostra */
-      SUBROUTINE TBOSON(IFRP,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+C/* Deck tsubbl */
+      SUBROUTINE TSUBBL(IFRP,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
 C***********************************************************************
+C 
+C     Perform AO->MO transformation only on diagonal blocks of a given irrep
 C
-C     Perform AO->MO transformation only on blocks of a given
-C     boson irrep IBRP
-C
-C     Very useful for spinfree calculations
-C
-C     Written by T.Saue Aug 2000
+C     Generalized routine TBOSON that was written by Trond Saue,
+C     LV November 2003
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
+C      
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
+#include "dcborb.h"  
+#include "dgroup.h" 
       DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
 C
-      NSYM = 4/NZ
-CTROND Nz can be taken away....
       CALL DZERO(FMO(I2ORBT(IFRP)+1),N2ORB(IFRP)*NZ)
-      IBORB = 0
-      DO ISYM = 1,NSYM
-      IF(NBORB(ISYM,IFRP,0).GT.0) THEN
+      IBORB = 0    
+      DO ISUB = 1,N_SUB_BL(IFRP)
+      IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2ORBT(IFRP) + (NORB(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &         NBORB(ISYM,IFRP,0),NBORB(ISYM,IFRP,0),
+     &         NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &         FMO(IMO),NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),
      &         TM1(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
      &         TM2(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
      &         BUF,LBUF,IPRINT)
-          IBORB = IBORB + NBORB(ISYM,IFRP,0)
+          IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO
 C
