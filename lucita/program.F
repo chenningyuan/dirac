@@ -474,9 +474,8 @@ CTF
           END IF
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
-          IF(IDENSI.EQ.2)
-     &    WRITE(6,*) ' Expectation value of S2', EXPS2
-          IF(NROOT.GT.1) THEN
+*
+          IF (NROOT.GT.1) THEN
             if (IPRNCIV.ge.1) then
               CALL REWINO(LUSC1)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),

@@ -4496,7 +4496,7 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 *. Allowed length of each batch
       IF(ICISTR.EQ.1) THEN
 *. assumes determinants
-        LBLOCK =  XISPSM(ISM,ISPC)
+        LBLOCK = XISPSM(ISM,ISPC)
       ELSE IF (ICISTR.EQ.2) THEN
         LBLOCK = MXSB
       ELSE IF( ICISTR.EQ.3) THEN

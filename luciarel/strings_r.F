@@ -2853,7 +2853,7 @@ C
 *. Number of strings per symmetry and offset for strings of given sym
 *. for types
 *
-      DO  ITP  = 1, NSTTP
+      DO ITP = 1, NSTTP
         call memmar(KNSTSO(ITP),NSPGPFTP(ITP)*NSMST,'ADDS  ',1,'NSTSO ')
         call memmar(KISTSO(ITP),NSPGPFTP(ITP)*NSMST,'ADDS  ',1,'ISTSO ')
       END DO

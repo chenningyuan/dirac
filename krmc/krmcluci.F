@@ -1281,9 +1281,19 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
       IMEMCK = 0
       MCSCF = .true.
 *
-******************************************
 *. Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
+*
+******************************************
+      if (CIRUN.eq.'RSTRMC') then
+        ISPC = 1
+        CALL Z_BLKFO_REL(IDC,NMS2VAL,ISPC,IREFSM,KPCLBT,KPCLEBT,
+     &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
+     &                   NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
+        CALL QEXIT('LUCIAR')
+        RETURN
+      end if
+******************************************
       if (IMEMCK.gt.0) then
         write(6,*) ' Memory map after STRINF_GAS_REL'
         IDUM = 0
@@ -1528,13 +1538,16 @@ c           CALL FINMO_REL
         end do
 *       ^ End loop over natural spinor iterations (default=1)
 *
+*******************************************
       end if
 *     ^ End if CIRUN.ne.'NDET  '
+*******************************************
 *
       CALL QEXIT('LUCIAR')
 #ifdef LUCIAREL_STANDALONE
       Call Abend2( ' I am home from  the loops ' )
 #endif
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_TASK(CIRUN)
@@ -1574,7 +1587,12 @@ C
         write(LUPRI,*) ' CIINII flag call '
         write(LUPRI,*) ' ------           '
         write(LUPRI,*) '   Determining configurational start guess'
-        write(LUPRI,*) '   (or information for restart of MCSCF).'
+        write(LUPRI,*)
+      else if (CIRUN.eq.'RSTRMC') then
+        write(LUPRI,*)
+        write(LUPRI,*) ' RSTRMC flag call '
+        write(LUPRI,*) ' ------           '
+        write(LUPRI,*) '   Determining info for restart of MCSCF.'
         write(LUPRI,*)
       else if (CIRUN.eq.'SIGMA ') then
         write(LUPRI,*)
@@ -2113,7 +2131,7 @@ C
       END
 #endif /* NOT_USED_ROUTINE */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_RSTRMC()      
+      SUBROUTINE LUCI_RSTRMC(WORK,LWORK)      
 C***********************************************************************
 C
 C     Restart information for LUCIAREL in MCSCF runs.
@@ -2127,6 +2145,7 @@ C
 #include "dcbopt.h"
 C
       CHARACTER*6 CIRUN
+      DIMENSION WORK(*)
 C
 #include "../luciarel/cstate.inc"
 C
@@ -2141,9 +2160,8 @@ C
 C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
-      CALL Z_BLKFO(IDC,NMS2VAL,ISPC,ISM,KPCLBT,KPCLEBT,
-     &             KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
-     &             NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
+C     Call LUCIAREL for setting up vector partitioning information.
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
       RETURN
       END

@@ -3233,6 +3233,10 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
        DIMENSION XJEP(10000)
        INTEGER   IXJEP(10000)
 *
+       WRITE(6,*) '                  :::::::::::::::::::'
+       WRITE(6,*) '                    Entering MICDV6  '
+       WRITE(6,*) '                  :::::::::::::::::::'
+*
        IPICO = 0
        IF(IPICO.NE.0) THEN
 C?       WRITE(6,*) ' Perturbative solver '
@@ -4006,10 +4010,6 @@ C      END IF
  1200       FORMAT(1H0,'The final approximation to eigenvector')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
-          WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
-          WRITE(6,1310)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
@@ -4025,11 +4025,11 @@ C      END IF
           end do
         end do
         write(6,*)
-        write(6,*) '*************************************************'//
+        write(6,*) '**********************************'//
      &             '**************************'
-        write(6,*) '                  Iter  Root    Energy           '//
+        write(6,*) '   Iter  Root       Energy        '//
      &             'RESIDUAL     RESRATIO '
-        write(6,*) '*************************************************'//
+        write(6,*) '**********************************'//
      &             '**************************'
         write(6,*)
         DO 1601 IROOT = 1, NROOT
@@ -4368,6 +4368,9 @@ C
 *
        EXTERNAL MV7
 *
+       WRITE(6,*) ':::::::::::::::::::'
+       WRITE(6,*) '  Entering MINDV4  '
+       WRITE(6,*) ':::::::::::::::::::'
        IOLSTM = IOLSEN
        IF(IPRT.GT.1.AND.(IOLSEN.NE.0.AND.IPICO.EQ.0))
      & WRITE(6,*) ' Inverse iteration modified Davidson, Variational'
@@ -5660,6 +5663,10 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 *     H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
       LOGICAL CONVER
+*
+      WRITE(6,*) ':::::::::::::::::::'
+      WRITE(6,*) '  Entering PICO3   '
+      WRITE(6,*) ':::::::::::::::::::'
 *
 C?    WRITE(6,*) ' Memchk at start of PICO3'
 C?    CALL MEMCHK

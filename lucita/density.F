@@ -361,7 +361,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
 * Density matrices between L and R
 *
-* I12 = 1 => only one-bodydensity
+* I12 = 1 => only one-body density
 * I12 = 2 => one- and two-body-density matrices
 *
 * Jeppe Olsen,      Oct 94
@@ -370,16 +370,18 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *
 * Table-Block driven, June 97
 *
-* Two-body density is stored as rho2(ijkl)=<l!e(ij)e(kl)-delta(jk)e(il)!r>
-* ijkl = ij*(ij-1)/2+kl, ij.ge.kl
+* Two-body density is stored as 
+*     rho2(ijkl)=<l!e(ij)e(kl)-delta(jk)e(il)!r>
+*                ijkl = ij*(ij-1)/2+kl, ij.ge.kl
 *
 * If the twobody density matrix is calculated, then also the
-* expectation value of the spin is evalueated.
-* The latter is realixed as
+* expectation value of the spin is evaluated.
+* The latter is realized as
 * S**2
 *      = S+S- + Sz(Sz-1)
 *      = -Sum(ij) a+i alpha a+j beta a i beta a j alpha + Nalpha +
 *        1/2(N alpha - N beta))(1/2(N alpha - Nbeta) - 1)
+*
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPRDD
 *
@@ -494,7 +496,7 @@ C?     WRITE(6,*) ' ISSPC ICSPC in DENSI2 ',ISSPC,ICSPC
         MAXB = MAX(MAXB,MAXB1)
       END IF
       MXSTBL = MAX(MAXA,MAXB)
-      IF(IPRDEN.GE.2 ) WRITE(6,*)
+      IF (IPRDEN.GE.10) WRITE(6,*)
      &' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
@@ -515,7 +517,7 @@ CTF
       END DO
       MAXIJ = MXTSOB_L ** 2
 *.Local scratch arrays for blocks of C and sigma
-      IF(IPRDEN.GE.2) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
+      IF (IPRDEN.GE.10) write(6,*) ' DENSI2 : MXSB MXTSOB_L MXSOOB ',
      &       MXSB,MXTSOB_L,MXSOOB
       IF(ICISTR.LE.2) THEN
         LSCR1 = MXSB
@@ -523,8 +525,7 @@ CTF
         LSCR1 = MXSOOB
       END IF
       LSCR1 = MAX(LSCR1,LCSBLK)
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
+      IF (IPRDEN.GE.10) WRITE(6,*) ' ICISTR,LSCR1 ',ICISTR,LSCR1
       IF(ICISTR.EQ.1) THEN
         CALL MEMMAN(KCB,LSCR1,'ADDL  ',2,'KCB   ')
         CALL MEMMAN(KSB,LSCR1,'ADDL  ',2,'KSB   ')
@@ -532,8 +533,8 @@ CTF
 *.SCRATCH space for block of two-electron density matrix
 * A 4 index block with four indeces belonging OS class
       INTSCR = MXTSOB_L ** 4
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' Density scratch space ',INTSCR
+      IF (IPRDEN.GE.10)
+     &   WRITE(6,*) ' Density scratch space ',INTSCR
       CALL MEMMAN(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
 *
 *. Arrays giving allowed type combinations '
@@ -554,13 +555,13 @@ CTF
      &     NELFSPGP,
      &     MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,MXADKBLK,
      &     IPHGAS,NHLFSPGP,MNHL,IADVICE)
-      IF(IPRDEN.GE.2) THEN
+      IF (IPRDEN.GE.10) THEN
         WRITE(6,*) ' DENSI12 :  : MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
-     &                     MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
+     &                            MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
       END IF
       LSCR2 = MAX(MXCJ,MXCIJA,MXCIJB)
-      IF(IPRDEN.GE.2)
-     &WRITE(6,*) ' Space for resolution matrices ',LSCR2
+      IF (IPRDEN.GE.10)
+     &    WRITE(6,*) ' Space for resolution matrices ',LSCR2
       LSCR12 = MAX(LSCR1,2*LSCR2)
 *. It is assumed that the third block already has been allocated, so
       KC2 = KVEC3
@@ -690,11 +691,11 @@ C?    CALL MEMCHK
       END IF
 * Natural Orbitals
       CALL LNATORB(RHO1,NSMOB,NTOOBS,NACOBS,NINOBS,
-     &            IREOST,WORK(KXNATO),
-     &            WORK(KRHO1SM),WORK(KOCCSM),NACOB,
-     &            WORK(KRHO1P),IPRDEN)
+     &             IREOST,WORK(KXNATO),
+     &             WORK(KRHO1SM),WORK(KOCCSM),NACOB,
+     &             WORK(KRHO1P),IPRDEN)
 *
-      IF(IPRDEN.GE.5) THEN
+      IF (IPRDEN.GE.5) THEN
         WRITE(6,*) ' One-electron density matrix '
         WRITE(6,*) ' ============================'
         CALL WRTMAT(RHO1,NTOOB,NTOOB,NTOOB,NTOOB)
@@ -704,7 +705,7 @@ C?    CALL MEMCHK
         END IF
       END IF
 *
-      IF(I12.EQ.2) THEN
+      IF (I12.EQ.2) THEN
 * <L!S**2|R>
         EXPS2 = S2_TERM1 + NAEL +
      &          0.5*(NAEL-NBEL)*(0.5*(NAEL-NBEL)-1)

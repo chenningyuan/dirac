@@ -3153,6 +3153,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *     M.P. Fuelscher                                                   *
 *     University of Lund, Sweden, 1993                                 *
 *     Modified, Timo Fleig, Dec 2001                                   *
+*                           Aug 2004                                   *
 *                                                                      *
 *----------------------------------------------------------------------*
 *                                                                      *
@@ -3194,10 +3195,9 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.9 )
      &  Line='T. Fleig'
         If ( i.eq.10 )
-     &  Line='Divisie Scheikunde, '//
-     &       'Faculteit der Exacte Wetenschappen, '
+     &  Line='Theoretische Chemie und Computerchemie, '
         If ( i.eq.11)
-     &  Line='Vrije Universiteit Amsterdam'
+     &  Line='Heinrich-Heine-Universität Düsseldorf '
         If ( i.eq.12)
      &  Line='                            '
         If ( i.eq.13)
@@ -5635,7 +5635,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 0
          IPRXT  = 0
          IPRRSP = 0
-         IPRDEN = 0
+         if (IDEMOL.ge.1) IPRDEN = 1
          IPROCC = 0
          IPRNCIV = 0
       else if (PRILUC.eq.'LOW') then
@@ -5645,7 +5645,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 1
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 1
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'MED') then
@@ -5655,7 +5655,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 2
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 1
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'HIG') then
@@ -5665,7 +5665,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 10
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 2
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'VHI') then

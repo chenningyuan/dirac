@@ -8609,7 +8609,11 @@ Cjan      end do
 *  1-particle: molfdir full spinor format
 *  2-particle: molfdir full spinor format
 *
+*--------------------------------------------------------------------*
 *   November 12, 2001, Timo Fleig
+*                - updated for correct one-particle function ordering
+*                  Timo Fleig, June 2004
+*--------------------------------------------------------------------*
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                     SIGN_OPREO,ISF,NASHT,NIRREP,IPRNT)

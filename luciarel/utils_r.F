@@ -7,14 +7,17 @@
 *   Routine for (complex) transposing rectangular matrix A
 *
       subroutine adjoint(B,A,NROWS,NCOLUMNS,IMRECO)
-      implicit real*8 (A-H,O-Z)
+*
+#include "implicit.inc"
+*
       dimension A(NROWS,NCOLUMNS),B(NROWS,NCOLUMNS)
 *
 *   Write zeroes to matrix B
 *
+      ZERO = 0.D0
       do K=1,NCOLUMNS,1
          do L=1,NROWS,1
-            B(L,K) = 0.
+            B(L,K) = ZERO
          end do
       end do
 *

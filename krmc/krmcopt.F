@@ -2614,6 +2614,7 @@ C
       IF ( MCTYPE .GE. JMCMIN ) THEN
 C
 C        (2.1) Read CREF from KRMCSCF
+C              or restart plain LUCIAREL from CI vector
 C
          IF (LBIT(IRCIST,1)) THEN
             INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
@@ -2623,16 +2624,30 @@ C
                   CALL REAKRMC(LUKRM5,'CREF    ',CREF,NZCONFQ)
                   IF (IPRINT .GE. 0) THEN
                      WRITE(LUPRI,'(/A)')
-     $                    ' (ROPTST)  CI start vector read from' //
-     $                    ' label CREF on file KRMCSCF'
+     &                    ' (ROPTST)  CI start vector read from' //
+     &                    ' label CREF on file KRMCSCF'
                   END IF
                   IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
 C
-C                   Generate restart and vector blocking information
-C                   for LUCIAREL CI vectors:
-                    CALL QUIT(' Restart with LUCIAREL not yet working ')
-                    CALL LUCI_RSTRMC()
+                    IF (IRESTRK.EQ.0) THEN
 C
+C                     RESTART from KRMCOLD in MCSCF run
+C                     Generate restart and vector blocking information
+C                     for LUCIAREL CI vectors:
+C
+c                     CALL QUIT(
+c    &                   ' Restart with LUCIAREL not yet working ')
+                      CALL LUCI_RSTRMC(WORK(KFREE),LFREE)
+C
+                    ELSE IF (IRESTRK.EQ.1) THEN
+                      WRITE(LUPRI,*) 
+     &                '  Restarting CI calculation from vector. '
+                      IOPT_INTFLG = IOPT_INTDEF
+                      JTRLVL = 0
+                      CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
+                      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+                      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+                    END IF
                   END IF
                   GO TO 2000
                END IF

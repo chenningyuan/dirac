@@ -1658,8 +1658,8 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LNATORB(RHO1,NSMOB,NTOPSM,NACPSM,NINPSM,
-     &                  ISTOB,XNAT,RHO1SM,OCCNUM,
-     &                  NACOB,SCR,IPRDEN)
+     &                   ISTOB,XNAT,RHO1SM,OCCNUM,
+     &                   NACOB,SCR,IPRDEN)
 *
 * Obtain natural orbitals in symmetry blocks
 *
@@ -1703,7 +1703,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
            END DO
         END DO
 *
-        IF(NTEST.GE.2 ) THEN
+        IF (NTEST.GE.2) THEN
           WRITE(6,*)
           WRITE(6,*) ' Density matrix for symmetry  = ', ISMOB
           WRITE(6,*) ' ======================================='
@@ -1744,7 +1744,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
           END IF
         END DO
 *
-        IF(NTEST.GE.1) THEN
+        IF (NTEST.GE.1) THEN
           WRITE(6,*)
           WRITE(6,*)
      &    ' Natural occupation numbers for symmetry = ', ISMOB
@@ -1752,7 +1752,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
      &    ' ==================================================='
           WRITE(6,*)
           CALL WRTMAT(OCCNUM(IOBOFF),1,LOB,1,LOB)
-          IF(NTEST.GE.2 ) THEN
+          IF (NTEST.GE.2) THEN
             WRITE(6,*)
             WRITE(6,*) ' Corresponding Eigenvectors '
             WRITE(6,*)
