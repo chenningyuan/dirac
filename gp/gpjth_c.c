@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
@@ -57,7 +57,7 @@ double *f;
 }
 
 void
-#if defined(SYS_CRAY)
+#if defined(SYS_CRAY) || defined (SYS_T3D)
 frac2i(f,fcd)
 double *f;
 _fcd fcd;
@@ -70,7 +70,7 @@ int l;
 
 {
    char *temp;
-#if defined(_CRAY)
+#if defined(SYS_CRAY) || defined (SYS_T3D)
    int l;
    char *s;
 
