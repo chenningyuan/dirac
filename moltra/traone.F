@@ -387,7 +387,7 @@ C
       CALL MEMGET('INTE',KIRPMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRPAMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORBMO,NSTRT(1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBSPI,NSTRT(1)*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBSPI,NSTRT(1)*2,WORK,KFREE,LFREE)
 C
       CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
      &            WORK(KIRPAMO),WORK(KORBMO),WORK(KIBSPI),
@@ -539,6 +539,15 @@ C
             ORBMO(II)  = ORBE(IK)
             IBSPI(II)  = IBORB(IK)
          ENDDO
+C
+C        Skip the marker : We have a marker inbetween because the
+C        2-d array was allocated as two separate one-dimensional arrays
+C        However, if the first array has an odd number of elements
+C        we need to skip one more because MEMGET allocates on real
+C        word boundaries. 
+C        NB the allocation in question is done in trapam
+C
+         IK = IK + 2 + MOD(NSTR(I),2)
       ENDDO
 C
 C     Fill in complete core-Fock matrix in complex form
@@ -597,9 +606,6 @@ C
       WRITE (LUMLF1) ((MULTB(I,J),I=1,2*NSYMRPA),J=1,2*NSYMRPA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),
      &               (IBSPI(I),I=1,2*NSTRT)
-      do ix = 1, 2*NSTRT
-      print*,"ibspi",ix,IBSPI(Ix)
-      enddo
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
      &                  J=1,NSTRT*2),I=1,NSTRT*2)
       CLOSE (LUMLF1)
