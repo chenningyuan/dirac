@@ -2,27 +2,27 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -162,12 +162,12 @@ C
  6             CONTINUE
                   READ (LUCMD, *) TOLLRN
                GO TO 100
- 7             CONTINUE 
+ 7             CONTINUE
                   READ (LUCMD,*) LCMMAX, CMSTR, CMEND
                   NCMSTR = NINT(2*CMSTR)
                   NCMEND = NINT(2*CMEND)
                GO TO 100
- 8             CONTINUE 
+ 8             CONTINUE
                   READ (LUCMD,*) ZCMVAL
                GO TO 100
  9             CONTINUE
@@ -225,7 +225,7 @@ C
      &           LCMMAX
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at ',CMSTR,' and ends at ', CMEND
-            IF (ZCMVAL .NE. D1) 
+            IF (ZCMVAL .NE. D1)
      &           WRITE (LUPRI,'(A,F3.1)') ' Net charge of ionic core  ',
      &           ZCMVAL
             IF (LCMMAX .GT. 4) THEN
@@ -265,7 +265,7 @@ C
 #endif
       LOGICAL RELCAL, TSTINP
 #if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
 #endif
 #include "maxaqn.h"
@@ -297,7 +297,7 @@ C     in DIRAC because the slaves will always get the default, unless
 C     the variable is explictly communicated after reading !!
 C
 #if defined (VAR_MPI)
-      IF (MYTID.EQ.0) THEN
+      IF (MYTID.EQ.MPARID) THEN
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
          UNCONT = .FALSE.
@@ -890,7 +890,7 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             ADDSTO = .FALSE.
-            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)') 
+            READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')
      &            Q,NONT(I),QEXP
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
@@ -936,7 +936,7 @@ C            Get basis set from basis set library
 C            ===================================
 C
              ELSE IF (BASIS) THEN
-               WRITE(LUPRI,'(/A/A)') 
+               WRITE(LUPRI,'(/A/A)')
      &           'BASINP: "BASIS" in first line not allowed in Dirac.',
      &           'Use "LARGE BASIS <basis>" for each atom type instead.'
                CALL QUIT(
@@ -974,7 +974,7 @@ C
                   GOTO 5100
                END IF
 C
-C              Initialize basis set flag 
+C              Initialize basis set flag
 C
                IBSFLAG = 0
 C
@@ -1052,14 +1052,14 @@ C
                   KBFPR = 1
                   KBFCO = KBFPR + KPRIM
                   KLAST = KBFCO + KPRIM*KPRIM
-                  IF (KLAST.GT.LWORK) 
+                  IF (KLAST.GT.LWORK)
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   DIRCON(1) = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
                ELSE IF ( IBSFLAG .EQ. 3 ) THEN
-C     
+C
                   BASNAM = BASFIL
 C
                   KAOVEC = KBLOCK + 1 - IBLOCK(1)
@@ -1069,7 +1069,7 @@ C
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
      &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM)
                   NBLCK(I,1) = NBLOCK
-C     
+C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
 C                 Generate well-temperered/family basis set
@@ -1085,7 +1085,7 @@ C
 C
                ENDIF
 C
-C              Print out basis set             
+C              Print out basis set
 C
                NOORBTS    = NOORBTS.AND.IQM(I,1).EQ.0
                IF (IQM(I,1).GT.0) THEN
@@ -1099,7 +1099,7 @@ C
                   IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
-C              Check if large component basis is contracted 
+C              Check if large component basis is contracted
 C              ============================================
 C
                DO 210 JBLCK = 1, NBLCK(I,1)
@@ -1113,7 +1113,7 @@ C
 C
 C
 C
-C              Next is the SMALL Component 
+C              Next is the SMALL Component
 C              ==========================
 C
 C
@@ -1128,7 +1128,7 @@ C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,X,A7)') BSET,BSKEYWORD
 C
-C              Initialize basis set flag 
+C              Initialize basis set flag
 C
                IBSFLAG = 0
 C
@@ -1155,7 +1155,7 @@ C                    Assume it is 'SMALL   2    1....'
      &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                   ELSE
 C
-C                    No 'SMALL' keyword given. 
+C                    No 'SMALL' keyword given.
 C                    Assume kinetic balance
 C
 C                    Discard the line we just read.
@@ -1196,7 +1196,7 @@ C
                   KBFPR = 1
                   KBFCO = KBFPR + KPRIM
                   KLAST = KBFCO + KPRIM*KPRIM
-                  IF (KLAST.GT.LWORK) 
+                  IF (KLAST.GT.LWORK)
      &                 CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
@@ -1204,7 +1204,7 @@ C
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
-C                 When uncontracted we generate the small component basis 
+C                 When uncontracted we generate the small component basis
 C                 using the kinetic balance relation
 C                 ...or...
 C                 Make uncontracted small component basis
@@ -1234,7 +1234,7 @@ C
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
-C              Check if large component basis is contracted 
+C              Check if large component basis is contracted
 C              ============================================
 C
                DO JBLCK = 1, NBLCK(I,2)
@@ -1275,7 +1275,7 @@ C
 C
 C              Read basis set from file
 C              ========================
-C 
+C
                   KAOVEC = KBLOCK + 1 - IBLOCK(J)
                   CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
@@ -1370,16 +1370,12 @@ C
 C       Print out warning if GEXP < 1.0D8
 C
         IF (GEXP .LE. 1.0D8) THEN
-           WRITE(LUERR,*) 'WARNING!!!'            
-           WRITE(LUERR,*) 'WARNING!!!'            
-           WRITE(LUERR,*) 'WARNING!!!'            
-           WRITE(LUERR,*) 'Nuclear gaussian exponent small: ',GEXP
-           WRITE(LUPRI,*) 'WARNING!!!'            
-           WRITE(LUPRI,*) 'WARNING!!!'            
-           WRITE(LUPRI,*) 'WARNING!!!'            
+           WRITE(LUPRI,*) 'WARNING!!!'
+           WRITE(LUPRI,*) 'WARNING!!!'
+           WRITE(LUPRI,*) 'WARNING!!!'
            WRITE(LUPRI,*) 'Nuclear gaussian exponent small: ',GEXP
         END IF
-        WRITE(LUPRI,'(/A,F8.3,A,1P,D20.10)') 
+        WRITE(LUPRI,'(/A,F8.3,A,1P,D20.10)')
      &       '  Nuclear Gaussian exponent for atom of charge',
      &       Q,' :',GEXP
       ELSE
@@ -1968,12 +1964,12 @@ C           Card 8:
 C
 C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
-C           ISGEN - bit packed information on generation of small 
+C           ISGEN - bit packed information on generation of small
 C                   components using the kinetic balance relation
 C             1 - downwards: small L+1 from large L
 C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
-C           
+C
             CALL RDLINE(LUINFO)
             READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
      &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK)
@@ -1989,12 +1985,12 @@ C
             NRCIJ = ABS(NRCIJ)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
-C     
+C
 C     Read in exponents and contraction coefficients
-C     
+C
             CALL ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
      &           CPRIMU(1,1,NBLOCK),KPRIM)
-C     
+C
 C           Identify segmented contractions
 C
             CALL SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU(1,1,NBLOCK),KPRIM,DSM)
@@ -2136,7 +2132,7 @@ C
          DO 200 J = 1, JCO(I)
             NBLOCK = NBLOCK + 1
             IF(NBLOCK.GT.KAOVEC) GOTO 5000
-C     
+C
             CALL DZERO(ALPHA (1,  NBLOCK),KPRIM)
             CALL DZERO(CPRIMU(1,1,NBLOCK),KPRIM*KPRIM)
             CALL DZERO(CPRIM (1,1,NBLOCK),KPRIM*KPRIM)
@@ -2144,7 +2140,7 @@ C
             ISGEN (NBLOCK) = 0
 C
 C           Get exponents
-C     
+C
             IC = MOD(I + 1, 2) + 1
             CALL FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
      &           CPRIMU(1,1,NBLOCK),KPRIM,IC)
@@ -2161,8 +2157,8 @@ C
             NRCIJ = ABS(NRCIJ)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
-C     
-C     
+C
+C
 C           Identify segmented contractions
 C
             CALL SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU(1,1,NBLOCK),KPRIM,DSM)
@@ -2178,7 +2174,7 @@ C
             CALL NRMORB(I,NRCIJ,NUCIJ,ALPHA(1,NBLOCK),
      &           CPRIM(1,1,NBLOCK),
      &           CPRIMU(1,1,NBLOCK),KPRIM,NBLOCK)
-C     
+C
             NUC(NBLOCK) = NUCIJ
             NRC(NBLOCK) = NRCIJ
   200      CONTINUE
@@ -2265,7 +2261,7 @@ C  /* Deck cmbas */
 #include "cbirea.h"
 #include "molinp.h"
 #include "ccom.h"
-      DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027, 
+      DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
      &                      0.304679/
       DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
      &                      0.189944/
@@ -3469,16 +3465,16 @@ C*****************************************************************************
 C       S Y M M E T R Y      O R B I T A L S
 C*****************************************************************************
       CALL HEADER('Symmetry Orbitals',1)
-      WRITE (LUPRI,'(1X,A,6X,8I5)')
-     *   ' Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
+      WRITE (LUPRI,'(A,6X,8I5)')
+     &  '  Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
       IF(DIRAC) THEN
         COMP(1) = 'L'
         COMP(2) = 'S'
-        WRITE (LUPRI,'(1X,A,8I5)')
-     *   ' Number of large orbitals in each symmetry: ',
+        WRITE (LUPRI,'(A,8I5)')
+     &   '  Number of large orbitals in each symmetry: ',
      &    (NCOS(I,1),I=1,MAXREP+1)
-        WRITE (LUPRI,'(1X,A,8I5)')
-     *   ' Number of small orbitals in each symmetry: ',
+        WRITE (LUPRI,'(A,8I5)')
+     &   '  Number of small orbitals in each symmetry: ',
      &    (NCOS(I,2),I=1,MAXREP+1)
       ELSE
         COMP(1) = ' '
@@ -3488,8 +3484,8 @@ C*****************************************************************************
       DO 10 LA=1,MAXREP+1
         NBI=NAOS(LA)
         IF (NBI.GT.0) THEN
-          WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1/)')
-     &          'Symmetry',REP(LA-1),'(',LA,')'
+          WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
+     &          '  Symmetry',REP(LA-1),'(',LA,')'
           DO 20 L=1,NBI
             I=I+1
             ICENT = IPCEN(I)
@@ -4359,7 +4355,7 @@ C     Reads a line from MOLECULE.INP
 C
 C     We keep track of which line we've read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
-C     that line, and then discard it by decrementing NMLINE. 
+C     that line, and then discard it by decrementing NMLINE.
 C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
@@ -4380,8 +4376,8 @@ C
      $        'NMLINE = ',NMLINE,
      $        'NMLN_LASTREAD = ',NMLN_LASTREAD
          CALL QUIT('*** ERROR reading basis')
-      ENDIF 
-      IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD) 
+      ENDIF
+      IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD)
      $     READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
@@ -5236,7 +5232,7 @@ C
       JCOM(1,5) =  1
       JCOM(2,5) = -1
 C
-C     6. i[Alpha x P]_y * vector product of alpha and vector operator, 
+C     6. i[Alpha x P]_y * vector product of alpha and vector operator,
 C                         y-component
 C     ================================================================
 C
@@ -5290,7 +5286,7 @@ C
 C
 C     12. i[Sigma_z]P   * z-component of sigma times scalar operator
 C     ==============================================================
-C 
+C
       MCMP(12)  =  1
       JM4 (1,12)=  5
       JCOM(1,12)=  1
@@ -5299,7 +5295,7 @@ C     13. i[betaSig_x]P * x-component of beta sigma times scalar operator
 C     ==================================================================
 C
       MCMP(13)  =  1
-      JM4 (1,13)=  7 
+      JM4 (1,13)=  7
       JCOM(1,13)=  1
 C
 C     14. i[betaSig_y]P * y-component of beta sigma times scalar operator
@@ -5328,32 +5324,39 @@ C     ==================================================================
 C
       MCMP(17)  =  1
       JM4 (1,17)=  2
-      JCOM(1,17)=  1 
+      JCOM(1,17)=  1
 C
 C     18. i[betaalp_z]P * z-component of beta alpha times scalar operator
 C     ===================================================================
 C
       MCMP(18)  =  1
       JM4 (1,18)=  1
-      JCOM(1,18)=  1  
+      JCOM(1,18)=  1
 C
 C     Matrix symmetry
 C     ===============
 C
 C     The matrix of an operator that is symmetric or
-C     antisymmetric under time reversal has the following 
+C     antisymmetric under time reversal has the following
 C     structure:
 C
 C       A   B          A^{dagger} =   hA
 C     -tB* tA*         B^T        = -thB
 C
-C     The matrix symmetry of matrices A and B is stored
-C     in IHQMAT(4,IH,ITIM) and can be summarized as follows:
+C     The matrix symmetry of matrices A and B
+C     can be summarized as follows:
 C
 C     IH   ITIM   AR  AI  BR  BI
 C      1     1     1   2   2   2
 C     -1     1     2   1   1   1
+C      1    -1     1   2   1   1
+C     -1    -1     2   1   2   2
 C
+C     Only ITIM=1 is used (ITIM=-1 is transferred to IH=-1
+C     by extracting an imaginary i), and the matrix symmetry
+C     of matrices A and B is stored in IHQMAT(4,IH):
+C
+C     H-
       IHQMAT(1,-1) = 2
       IHQMAT(2,-1) = 1
       IHQMAT(3,-1) = 1
@@ -5913,7 +5916,7 @@ C***********************************************************************
 C
       PARAMETER (DSM=1.0D-30)
 C
-      LOGICAL SEG,TOBE,SEGIJ
+      LOGICAL   SEG,TOBE,SEGIJ
       CHARACTER FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE*10,FORMATC*10
       CHARACTER STRING*200, SZ(2)*5
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -5930,19 +5933,19 @@ C
       DATA SZ / 'LARGE', 'SMALL' /
 C
 #include "ibtfun.h"
-C     
+C
       LUBFIL = 55
       NTYP   = 0
       NBLOCK = IBLCK
 C
-C     We now deal with general contracted basis sets: 
+C     We now deal with general contracted basis sets:
 C     Use Unrestricted kinetic balance.
 C     ===============================================
 C
 C     URKBAL = .TRUE.
 C     This doesn't work because it is reset in HAMINP
 C
-C     Look if basis set file exists and, if so, read in data  
+C     Look if basis set file exists and, if so, read in data
 C     ======================================================
 C
       IF (.NOT. PARHER) THEN
@@ -6076,9 +6079,9 @@ C
      &         (CPRIN(IND),IND=I,MIN(I+3,NPRIM*NCONTR))
       ENDDO
 C
-C     We cannot split the primitives in blocks. However, we can 
+C     We cannot split the primitives in blocks. However, we can
 C     split up the contracted functions making that the leading
-C     dimension. The number of contracted functions in a block 
+C     dimension. The number of contracted functions in a block
 C     depends on the # of angular components and is set to a max.
 C     of MXCON_PARAM (gencon.h)
 C     ==========================================================
@@ -6108,12 +6111,12 @@ C
             IPRI = IPRI + 1
             ALPHA(IPRI,NBLOCK,ICP) = ALPIN(JPRI)
             ICON = 0
-            DO 503 JCON = ICONS, ICONE 
+            DO 503 JCON = ICONS, ICONE
                ICON = ICON + 1
                CPRIMU(IPRI,ICON,NBLOCK,ICP) = CPRIN(NPRIM*(JCON-1)+JPRI)
   503       CONTINUE
   502    CONTINUE
-         NUCIJ = NPRIM 
+         NUCIJ = NPRIM
          NRCIJ = ICONE - ICONS + 1
          SEGIJ = NRCIJ .GE. 0
 C
@@ -6131,7 +6134,7 @@ C
                DO 603 IPRI = JPRI+1, NUCIJ
                   ALPHA(IPRI-1,NBLOCK,ICP) = ALPHA(IPRI,NBLOCK,ICP)
                   DO 604 JCON = 1, NRCIJ
-                     CPRIMU(IPRI-1,JCON,NBLOCK,ICP) = 
+                     CPRIMU(IPRI-1,JCON,NBLOCK,ICP) =
      &                      CPRIMU(IPRI,JCON,NBLOCK,ICP)
   604             CONTINUE
   603          CONTINUE
@@ -6198,12 +6201,12 @@ C
      &     'Cannot find MOLFDIR type basis set file : ',FILNAM
         CALL QUIT('Error finding MOLFDIR type basis set file.')
  5040 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)') 
+        WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BFGINP error, number of primitives           ',NPRIM,
      *  '                   current maximum number (MAXPRI)',KPRIM
         CALL QUIT('Too many primitives, increase MAXPRI in input.')
  5060 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)') 
+        WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BFGINP error, number of contracted functions ',NCONTR,
      *  '                   current maximum number (MAXPRI)',KPRIM
         CALL QUIT('Too many contracted fun., increase MAXPRI in input.')
@@ -6212,7 +6215,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
       SUBROUTINE KINBAL(I,IBLL,IBLS,
      &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST, 
+     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
      &     CNTBAS)
 C*****************************************************************************
 C
@@ -6264,7 +6267,7 @@ C
                     JSEND = NUC(IBD,1)
                   ENDIF
                   CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)                
+     &                      SEG,KBLOCK,KPRIM,INPTST,JSBEG,JSEND)
                 ENDDO
               ELSE
                 JSBEG = 0
@@ -6416,7 +6419,7 @@ C  /* Deck rkbrel */
 C******************************************************************************
 C
 C     Routine for Restricted Kinetic Balance (RKB) Relations.
-C     
+C
 C     Generates array IRKB running over shells
 C       For large shells IRKB points to L+1 small partner
 C       For small shells IRKB points to L-2 small partner
@@ -6442,7 +6445,7 @@ C******************************************************************************
 #include "primit.h"
 #include "dcbrkb.h"
 C
-      IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)') 
+      IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)')
      &   'RKBREL: Constructing relations for scalar RKB transformation'
       CALL IZERO(IRKB,MXPRIM)
 C
@@ -6457,7 +6460,7 @@ C
 C
       iPrimTest = 0
 C
-      DO 100 ISHL = 1, KMAX 
+      DO 100 ISHL = 1, KMAX
 C
          NCENTI = NCENT(ISHL)
          NHKTI  = NHKT(ISHL)
@@ -6623,7 +6626,7 @@ C     internal file, K.Ruud-Feb.97
 C
 #include "implicit.h"
 #include "priunit.h"
-C      
+C
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
 C
@@ -6687,8 +6690,8 @@ C
 C        Generate well-temperered exponents
 C        Geometric progression is just a special case
 C        with gamma = 0 and delta = 0.
-C        
-C        See Huzinaga and Klobukowski, CPL 212, 260 (1993). 
+C
+C        See Huzinaga and Klobukowski, CPL 212, 260 (1993).
 C
          IF (NFAMEXP(1) .LT. 1 .OR. NFAMEXP(1) .GT. MXFAMEXP) GOTO 5000
          IF (FAMPAR(1) .LE. D0) GOTO 5010

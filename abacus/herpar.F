@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -32,9 +32,9 @@ C
 C
 #ifdef UNDEF
 /* Comdeck notes */
-961125 - tec RELCAL: FIRST replaced by COMMON parfir remember to set FIRST1 
+961125 - tec RELCAL: FIRST replaced by COMMON parfir remember to set FIRST1
 961003 - tsaue: DOINT is removed and replaced by I2TYP.
-                Some polishing av code: 
+                Some polishing av code:
                   Note that NPOS enters PARDRV as argument
                   and that Fock matrices are not initialized at master !
 950620-kr: Ported to MPI, based on previous efforts by Bjarne Herland at
@@ -67,7 +67,7 @@ C  /* Deck pardrv */
      &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
-C     Extended with I2TYP Oct 1 1996 by T.Saue 
+C     Extended with I2TYP Oct 1 1996 by T.Saue
 C     Extended with screening Oct 11 1996 by T.Saue
 C
 C
@@ -85,7 +85,6 @@ C      40 - Receive final results from nodes.
 C      50 - Get timing results from nodes.
 C
 C
-C           NCODE  - PVM-message encoding option.
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = fock matrices.
 C                               -5 = Integrals derivated with respect
@@ -118,10 +117,7 @@ C
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 C
 #include "priunit.h"
@@ -138,7 +134,7 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK), 
+      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
@@ -146,7 +142,8 @@ C
       CALL QENTER('HER_PARDRV')
 C
 #if !defined (VAR_MPI)
-      CALL QUIT('PVM is not supported in DIRAC')
+      CALL QUIT
+     &('program error: parallel code called but MPI not activated')
 #endif
 C
 C
@@ -167,7 +164,7 @@ C
         KFREE = KWORK
         LFREE = LWORK
         TIMING = .FALSE.
-        GOTO 10      
+        GOTO 10
       ENDIF
 C
 C     Take calculation time of each IJ pair?
@@ -206,9 +203,9 @@ C
             NREQUI = NUMGRA
          END IF
       ELSE IF (ITYPE .EQ. 3) THEN
-         NREQUI = NDMAT*N2BASX 
+         NREQUI = NDMAT*N2BASX
       ELSE IF (ITYPE .EQ. 9) THEN
-         NREQUI = NDMAT*N2BASX 
+         NREQUI = NDMAT*N2BASX
       ELSE IF (ITYPE .EQ. -5) THEN
          NUMSUS = 9
          NREQUI = 3*NNBASX + NUMSUS
@@ -247,7 +244,7 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      IF(ITYPE.EQ.7) THEN 
+      IF(ITYPE.EQ.7) THEN
 C        Kohn-Sham
 #if defined (MOD_DFT)
          CALL DFTEXC(DMAT,1,FMAT,1,.TRUE.,.TRUE.,.FALSE.,
@@ -297,7 +294,7 @@ C  /* Deck indeks */
      &                  NPOS,I2TYP)
 C
 C     Written by Paal Dahle May 1994.
-C     Revised Oct 1996 by T.Saue 
+C     Revised Oct 1996 by T.Saue
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -318,7 +315,7 @@ C
 C     If new run, make initial guess as to run times
 C
       DOFIRST = .FALSE.
-C        
+C
       IF (RELCAL) THEN
          IF (I2TYP.EQ.1.AND.FIRST1) THEN
             DOFIRST = .TRUE.
@@ -394,10 +391,7 @@ C
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 #include "priunit.h"
 #include "mxcent.h"
@@ -433,8 +427,8 @@ C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
      &          DMRAO(NSYMBL,NSYMBL,*),GABRAO(NSYMBL,NSYMBL,*),
-     &          DMRSO(MAXSHL,MAXSHL,*)
-      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR
+     &          DMRSO(MAXSHL,MAXSHL,*), DSEND(2), ISEND(2)
+      LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR, LSEND(6)
 C
 C--------------------------------------
 C     Calculate number of Fock matrices
@@ -459,8 +453,9 @@ C----------------------------
 C     Set common-block PARINT
 C----------------------------
 C
+      JCODE  = 0
+C     ... not used any more (was used for PVM)
       JATOM  = IATOM
-      JCODE  = NCODE
       JLUDAS = LUDASP
       JLUINT = LUINTA
       JLUONE = LUONEL
@@ -524,80 +519,74 @@ C
          CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       END IF
 C
-      NUMELM = 39 + MAXNOD + MXCOOR
-C     Send Panas value
-      CALL MPI_BCAST(PANAS,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-C     Send screening threshold and transfer information to twocom.h
+C     Send Panas value and
+C     send screening threshold and transfer information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
-      CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
+      DSEND(1) = PANAS
+      DSEND(2) = SCREEN
+      CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       SCRTHR = SCREEN
 #if defined (PRG_DIRAC)
 C     Send SMLV1C and ONECAP,INTV1C
-      CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ONECAP,1,MPI_LOGICAL,MPARID,
+      LSEND(1) = SMLV1C
+      LSEND(2) = ONECAP
+      CALL MPI_BCAST(LSEND,2,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
+C     Send common PARINT
+      NUMELM = 39 + MAXNOD + MXCOOR
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #if defined (MOD_DFT)
+C
       IF(ITYPE.EQ.7) THEN
 C       Kohn-Sham energy calculation
-C       Transfer various common blocks     
+C       Transfer various common blocks
         CALL DFTPRD
 C       Transfer dftcom
-        JDFTADD = 0
-        JGRDONE = 0
-        JDFTRUN = 0
-        JDFTPOT = 0
-        JDFTORD = 0
-        JDFTASC = 0 
-        IF(DFTADD) JDFTADD = 1
-        IF(GRDONE) JGRDONE = 1
-        IF(DFTRUN) JDFTRUN = 1
-        IF(DFTPOT) JDFTPOT = 1
-        IF(DFTORD) JDFTORD = 1
-        IF(DFTASC) JDFTASC = 1
-        CALL MPI_BCAST(JDFTADD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JGRDONE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTRUN,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTPOT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTORD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTASC,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        LSEND(1) = DFTADD
+        LSEND(2) = GRDONE
+        LSEND(3) = DFTRUN
+        LSEND(4) = DFTPOT
+        LSEND(5) = DFTORD
+        LSEND(6) = DFTASC
+        CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C       Transfer functionals
         CALL DFT_SYNC_FUNC(1)
 C       send density matrix
-        CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        ISEND(1) = NDMAT
+        ISEND(2) = NFMAT
+        CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         RETURN
       ENDIF
+C
 #endif
-      CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      ISEND(1) = NDMAT
+      ISEND(2) = NFMAT
+      CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 C
-      CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NFMAT.GT.0) THEN
         CALL MPI_BCAST(IREPDM,NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
       IF(ITYPE.NE.4) THEN
         IF (ITYPE.EQ.2) THEN
-          CALL MPI_BCAST(IFCTYP,NDMAT,MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+          NFCTYP = NDMAT
         ELSE
-          CALL MPI_BCAST(IFCTYP,NFMAT,MPI_INTEGER,MPARID,
-     &                  MPI_COMM_WORLD,IERR)
+          NFCTYP = NFMAT
         ENDIF
+        CALL MPI_BCAST(IFCTYP,NFCTYP,MPI_INTEGER,MPARID,
+     &                 MPI_COMM_WORLD,IERR)
       END IF
       CALL MPI_BCAST(HFXFAC,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -608,6 +597,7 @@ C     ITYPE = 2 : gradient
 C     ITYPE = 4 : (rs|**)-distributions
 C
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
+C       ... broadcast screening matrix
         N2RED = NSYMBL*NSYMBL
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMRAO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
@@ -636,11 +626,8 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include "fpvm3h.h"
 #endif
 #include "priunit.h"
 #include "mxorb.h"
@@ -674,7 +661,7 @@ C
             IPLACE = IPLACE + 1
             NUMTSK = NUMTSK + 1
             ISHELL(1) = INDEX(IPLACE)
-            ISHELL(2) = IPLACE            
+            ISHELL(2) = IPLACE
 C
 #if defined (VAR_MPI)
             CALL MPI_SEND(ISHELL,2,MPI_INTEGER,NODE,30,
@@ -733,16 +720,11 @@ C     Written by Henrik Koch and Paal Dahle July-1994
 C
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 C
 #endif
       PARAMETER (D1 = 1.0D0)
-#if !defined (VAR_MPI)
-C
-#include "fpvm3h.h"
-#endif
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -939,11 +921,8 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include "fpvm3h.h"
 #endif
 #include "priunit.h"
 #include "mxorb.h"
@@ -963,7 +942,7 @@ C
 #ifdef PRG_DIRAC
       IF (RELGRD) DMXCPU = D0
       IF (RELGRD) DMXWLL = D0
-#endif 
+#endif
       DO 100 I = 1,NODES
 #if defined (VAR_MPI)
          CALL MPI_RECV(RBUF,2,MPI_DOUBLE_PRECISION,MPI_ANY_SOURCE,
@@ -979,7 +958,7 @@ C
             DMXCPU = MAX(DMXCPU,CPUS(NODE))
             DMXWLL = MAX(DMXWLL,WALLS(NODE))
          END IF
-#endif 
+#endif
 C
   100 CONTINUE
 C
@@ -1035,10 +1014,7 @@ C
 #include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 C
 #include "priunit.h"
@@ -1200,10 +1176,7 @@ C
       PARAMETER(D0 = 0.0D0)
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 #include "priunit.h"
 #include "mxcent.h"
@@ -1233,9 +1206,9 @@ C
 #include "cbisol.h"
 #include "cbirea.h"
 C
-      DIMENSION WORK(*)
+      DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
 C
 C-----------------------------------------
 C     Receive initializations from master.
@@ -1258,23 +1231,22 @@ C
          NEWGEO = .FALSE.
       END IF
 C
-      NUMELM = 39 + MAXNOD + MXCOOR
-C
-      CALL MPI_BCAST(PANAS,1,MPI_DOUBLE_PRECISION,MPARID,
+C     Receive PANAS and screening threshold
+      CALL MPI_BCAST(DSEND,2,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-C     Receive screening threshold
-      CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      PANAS  = DSEND(1)
+      SCREEN = DSEND(2)
 #if defined (PRG_DIRAC)
 C     Receive SMLV1C and ONECAP,INTV1C
-      CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
+      CALL MPI_BCAST(LSEND,2,MPI_LOGICAL,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(ONECAP,1,MPI_LOGICAL,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      SMLV1C = LSEND(1)
+      ONECAP = LSEND(2)
       CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
+      NUMELM = 39 + MAXNOD + MXCOOR
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
@@ -1293,7 +1265,6 @@ C
       LUSUPM = JLUSUP
       MAXDIF = JMXDIF
       MAXREP = JMXREP
-      NCODE  = JCODE
       NODES  = JNODES
       NTASK  = JTASK
       NOCONT = JNOCNT .EQ. 1
@@ -1353,7 +1324,7 @@ C
          ISTBNU(NUCIND) = 7
          CHARGE(NUCIND) = D0
          CALL NUCPRO(WORK(KFREE),LFREE)
-         NEWGEO = .FALSE.   
+         NEWGEO = .FALSE.
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
@@ -1366,53 +1337,52 @@ C
 C
 #if defined (VAR_MPI)
 #if defined (MOD_DFT)
+C
       IF(ITYPE.EQ.7) THEN
 C       Various common blocks
         CALL DFTPRD
-C       Transfer dftcom
-        CALL MPI_BCAST(JDFTADD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JGRDONE,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTRUN,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTPOT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTORD,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(JDFTASC,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        DFTADD = JDFTADD.EQ.1
-        GRDONE = JGRDONE.EQ.1
-        DFTRUN = JDFTRUN.EQ.1
-        DFTPOT = JDFTPOT.EQ.1
-        DFTORD = JDFTORD.EQ.1 
-        DFTASC = JDFTASC.EQ.1
+C       Receive some dftcom variables
+        CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+        DFTADD = LSEND(1)
+        GRDONE = LSEND(2)
+        DFTRUN = LSEND(3)
+        DFTPOT = LSEND(4)
+        DFTORD = LSEND(5)
+        DFTASC = LSEND(6)
 C       Receive functionals
         CALL DFT_SYNC_FUNC(0)
-C       Receive density matrix(scaled by a factor two!)
-        CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C       Receive density matrix (scaled by a factor two!)
+        CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        NDMAT = ISEND(1)
+        NFMAT = ISEND(2)
         LDMAT = NDMAT*N2BASX
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
      &               MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         LFMAT = NFMAT*N2BASX
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         RETURN
-      ENDIF 
+      ENDIF
+C
 #endif
-      CALL MPI_BCAST(NDMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+      NDMAT = ISEND(1)
+      NFMAT = ISEND(2)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         LDMAT = NDMAT*N2BASX
         CALL MEMGET('REAL',KDMAT,LDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMAT),LDMAT,MPI_DOUBLE_PRECISION,
      &               MPARID,MPI_COMM_WORLD,IERR)
-      ELSE 
+      ELSE
         KDMAT = KFREE
       ENDIF
-      CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       LFMAT = NFMAT*N2BASX
       IF(NFMAT.GT.0) THEN
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KIRD),NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      ELSE  
+      ELSE
         KFMAT = KFREE
         KIRD  = KFREE
       ENDIF
@@ -1477,7 +1447,6 @@ C     Minor revisions Oct 1996 T.Saue
 C
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -1872,10 +1841,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 #include "mxcent.h"
 #include "mxorb.h"
@@ -1979,56 +1945,10 @@ C
 C
       RETURN
       END
-C  /* Deck pfail */
-      SUBROUTINE PFAIL(NTAG)
-C
-C     Written by Henrik Koch and Paal Dahle Nov-1993
-C
-#include "implicit.h"
-#include "fpvm3h.h"
-C
-      CHARACTER FAILS(0:40)*70
-C
-      FAILS( 0) = 'PvmOk         (okay)'
-      FAILS( 2) = 'PvmBadParam   (bad parameter)'
-      FAILS( 3) = 'PvmMismatch   (barrier count mismatch)'
-      FAILS( 5) = 'PvmNoData     (read past end of buffer)'
-      FAILS( 6) = 'PvmNoHost     (no such host)'
-      FAILS( 7) = 'PvmNoFile     (no such executable)'
-      FAILS(10) = 'PvmNoMem      (cannot get memory)'
-      FAILS(12) = 'PvmBadMsg     (cannot decode received message)'
-      FAILS(14) = 'PvmSysErr     (pvmd not responding)'
-      FAILS(15) = 'PvmNoBuf      (no current buffer)'
-      FAILS(16) = 'PvmNoSuchBuf  (bad message identifier)'
-      FAILS(17) = 'PvmNullGroup  (null group name is illegal)'
-      FAILS(18) = 'PvmDupGroup   (already in group)'
-      FAILS(19) = 'PvmNoGroup    (no group with that name)'
-      FAILS(20) = 'PvmNotInGroup (not in group)'
-      FAILS(21) = 'PvmNoInst     (no such instance in group)'
-      FAILS(22) = 'PvmHostFail   (host failed)'
-      FAILS(23) = 'PvmNoParent   (no parent task)'
-      FAILS(24) = 'PvmNotImpl    (function not implemented)'
-      FAILS(25) = 'PvmDSysErr    (pvmd system error)'
-      FAILS(26) = 'PvmBadVersion (pvmd-pvmd protocol mismatch)'
-      FAILS(27) = 'PvmOutOfRes   (out of resources)'
-      FAILS(28) = 'PvmDupHost    (host already configured)'
-      FAILS(29) = 'PvmCantStart  (FAILSed to execute new slave pvmd)'
-      FAILS(30) = 'PvmAlready    (already doing operation)'
-      FAILS(31) = 'PvmNoTask     (no such task)'
-      FAILS(32) = 'PvmNoEntry    (no such (group.instance))'
-      FAILS(33) = 'PvmDupEntry   ((group.instance) already exists)'
-      FAILS(40) = 'Failed to spawn process(es)'
-C
-      MTAG = ABS(NTAG)
-      WRITE(6,'(/1X,A)') FAILS(MTAG)
-C
-      RETURN
-      END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
 #include "priunit.h"
@@ -2039,7 +1959,7 @@ C  /* Deck prlinp */
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       SAVE FIRST
-      DATA TABLE /'.NODES ', '.NTASK ', '.PRINT ', '.ENCODE'/
+      DATA TABLE /'.NODES ', '.NTASK ', '.PRINT ', 'xXXXXXX'/
       DATA FIRST /.TRUE./
 C
 C-------------------------
@@ -2058,7 +1978,6 @@ C
       FIRST = .FALSE.
 C
       PARHER = .FALSE.
-      NCODE  = 0
 #if defined (VAR_MPI)
       NODES = NUMNOD
 #else
@@ -2102,19 +2021,6 @@ C
                   READ(LUCMD,*) KPRINT
                GO TO 100
     4          CONTINUE
-                  READ (LUCMD,'(A7)') WORD
-                  IF (WORD.EQ.' PVMDEF'.OR.WORD.EQ.'PVMDEFA') THEN
-                     NCODE = 0
-                  ELSE IF (WORD.EQ.' PVMRAW'.OR.WORD.EQ.'PVMRAW ') THEN
-                     NCODE = 1
-                  ELSE IF (WORD.EQ.' PVMINP'.OR.WORD.EQ.'PVMINPL') THEN
-                     NCODE = 2
-                  ELSE
-                     WRITE(6,'(/1X,A,A,A//1X,A/15X,A/15X,A/)')
-     &              '.ENCODE type ',word,' unknown!!!',
-     &              'Options are : PVMDEFAULT','PVMRAW','PVMINPLACE'
-                     CALL QUIT('Calculation stopped...!')
-                  END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2150,12 +2056,12 @@ C*****************************************************************************
       PARAMETER(THRES = 1.0D-2)
       DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX(NDIM)
       CALL FNDAMX(TIMES,NDIM,NDIM,NPOS,NDIM,0,THRES)
-CTROND FNDAMX sorts by absolute values, but unless we hope 
+CTROND FNDAMX sorts by absolute values, but unless we hope
 C      for negative run times, this will be no problem...
       IF (IPRINT .GE. 10) THEN
         DO I = 1, NDIM
           WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
-     &           'IJ-shell =', INDEX(NPOS(I)), 
+     &           'IJ-shell =', INDEX(NPOS(I)),
      &           '   time =', TIMES(NPOS(I))
         ENDDO
       ENDIF
@@ -2173,7 +2079,7 @@ C  /* Deck det_task */
       SUBROUTINE DET_TASK (I2TYP,IMODE,MTOTTK,NPOS)
 C*****************************************************************************
 C
-C     Determine tasks that are to be distributed. 
+C     Determine tasks that are to be distributed.
 C     IMODE 1 : Determine only total number
 C     IMODE 2 : Fill the array NPOS
 C
@@ -2239,7 +2145,7 @@ C
 C           Skip two-center SS contributions if requested
 C           This test is provisory, in SYMLOP we take out more integrals
 C           in case of symmetry-degenerate nuclei. Testing at this place,
-C           will, however, take out the work in ODCVEC and EXCOEF that 
+C           will, however, take out the work in ODCVEC and EXCOEF that
 C           otherwise would cause a quartic scaling term.
 C
             IF (SMLV1C) THEN
