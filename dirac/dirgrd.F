@@ -24,6 +24,7 @@ C*****************************************************************************
 #include <mxcent.h>
 C
       DIMENSION WORK(LWORK)
+      LOGICAL   LSAVE(3)
 #include <infpar.h>
 #include <ccom.h>
 #include <dcbgen.h>
@@ -40,8 +41,12 @@ C
 C     Initialize
 C     ==========
 C
-      CALL SETDHF(IPRGRD)
+C      CALL SETDHF(IPRGRD)
 C
+C
+C     Save DO2GRD
+C
+      CALL DCOPY(3,DO2GRD,1,LSAVE,1)
 C
 C
 C     Memory allocation
@@ -87,6 +92,10 @@ C     Output of gradient
 C
       CALL GRDOUT(IPRGRD)
 C
+C
+C     Restore DO2GRD
+C
+      CALL DCOPY(3,LSAVE,1,DO2GRD,1)
 C
 C     Memory deallocation
       CALL MEMREL('PSIGRD.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
@@ -298,12 +307,12 @@ C
       CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LWORK)
 C
 C
-CC      IF ( DO2GRD(1) .AND. .NOT. LBIT(INTFLG,1)) THEN
-CC         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LL-integrals not used in '//
-CC     &                  ' SCF calculation => '//
-CC     &                  ' LL-Two-electron gradient .NOT. calculated!'
-CC         DO2GRD(1) = .FALSE.
-CC      END IF
+      IF ( DO2GRD(1) .AND. .NOT. LBIT(INTFLG,1)) THEN
+         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LL-integrals not used in '//
+     &                  ' SCF calculation => '//
+     &                  ' LL-Two-electron gradient .NOT. calculated!'
+         DO2GRD(1) = .FALSE.
+      END IF
 C
       CALL CYESNO(STR,DO2GRD(1))
       WRITE(LUPRI,'(1X,2A/)') 'Calculate LL-Two-electron gradient: ',
@@ -420,16 +429,16 @@ C
 C
       IF ( DOTRCK ) THEN
          CALL ESTGLS(DOLS)
-         DO2GRD(2) = DOLS
+         DO2GRD(2) = DO2GRD(2) .AND. DOLS
       END IF
 C
 C     Some output...
-CC      IF ( DO2GRD(2) .AND. .NOT. LBIT(INTFLG,2) ) THEN
-CC         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LS-integrals not used in '//
-CC     &                  ' SCF calculation => '//
-CC     &                  ' LS-Two-electron gradient .NOT. calculated!'
-CC         DO2GRD(2) = .FALSE.
-CC      END IF
+      IF ( DO2GRD(2) .AND. .NOT. LBIT(INTFLG,2) ) THEN
+         WRITE(LUPRI,'(/1X,A/)') 'WARNING: LS-integrals not used in '//
+     &                  ' SCF calculation => '//
+     &                  ' LS-Two-electron gradient .NOT. calculated!'
+         DO2GRD(2) = .FALSE.
+      END IF
       CALL CYESNO(STR,DO2GRD(2))
       WRITE(LUPRI,'(/1X,2A/)') 'Calculate LS-Two-electron gradient: ',
      &                        STR
@@ -538,7 +547,7 @@ C
 C
       IF ( DOTRCK .AND. .NOT. DOLVC) THEN
          CALL ESTGSS(DOSS)
-         DO2GRD(3) = DOSS
+         DO2GRD(3) = DOSS .AND. DO2GRD(3)
       END IF
 C
       IF ( DO2GRD(3) .AND. .NOT. DO2GRD(2) ) THEN
