@@ -154,6 +154,8 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
+#include <consts.h>
+C
 #include <dgroup.h>
 #include <dcbdhf.h>
 #include <dcborb.h>
@@ -217,6 +219,7 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV)
       END IF
+      THRPCI = D0
 C
 C     Set common block DCLOPT
 C
@@ -309,6 +312,7 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
+      THRPCI         = DKRMC_THRPCI
 C
 C     Set common block DCLOPT
 C
