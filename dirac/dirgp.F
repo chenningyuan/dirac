@@ -1065,7 +1065,6 @@ C
           NPRIM = NUCO(ISHELL)
           DO IEXP = 1,NPRIM
             A=PRIEXP(IPRIM+IEXP)
-            WRITE(LUPRI,*) IEXP,A
             AA(1,ILVAL,IC,ICENT)=MAX(AA(1,ILVAL,IC,ICENT),A)
             AA(2,ILVAL,IC,ICENT)=MIN(AA(2,ILVAL,IC,ICENT),A)
           ENDDO
