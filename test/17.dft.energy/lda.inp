@@ -6,6 +6,8 @@
 .TITLE
 Water molecule. LDA energy
 .WAVE F
+**GENERAL
+.LVCORR
 **HAMILTONIAN
 .DFT
 *DFT
@@ -14,7 +16,6 @@ Water molecule. LDA energy
 1.0D-12
 **WAVE FUNCTIONS
 .DHF
-.LVCORR
 *DHFCAL
 .CLOSED SHELL
 10
