@@ -513,7 +513,8 @@ C    from a previous print statement!
 C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
 C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-      CALL hostnm_(HSTNAM)
+C     CALL hostnm_(HSTNAM)
+      CALL hostnm(HSTNAM)
       WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
 C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
