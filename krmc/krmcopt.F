@@ -120,6 +120,8 @@ C
       CALL MEMGET('REAL',KCREF ,NZCONFQ       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
      &     WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPV,NASHT*NASHT*NNASHX*NZ*3,
+     &     WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGCI  ,NZCONFQ       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGOEE ,NZXOPEQ       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGOEP ,NZXOPPQ       ,WORK,KFREE,LFREE)
@@ -153,7 +155,7 @@ C     ***************************************************
 C     *** Call 2nd order optimization *******************
 C     ***************************************************
 C
-      CALL PSIOP1(WORK(KCMO),WORK(KDV),WORK(KFC),
+      CALL PSIOP1(WORK(KCMO),WORK(KDV),WORK(KPV),WORK(KFC),
      &            WORK(KFV),WORK(KFQ),WORK(KFCAC),WORK(KCREF),
      &            WORK(KH2AC),WORK(KGCI),WORK(KGOEE),WORK(KGOEP),
      &            WORK,KFREE,LFREE)
@@ -194,7 +196,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
-      SUBROUTINE PSIOP1(CMO,DV,FC,FV,FQ,FCAC,CREF,H2AC,GCI,GOEE,GOEP,
+      SUBROUTINE PSIOP1(CMO,DV,PV,FC,FV,FQ,FCAC,CREF,H2AC,GCI,GOEE,GOEP,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -220,6 +222,7 @@ C
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
      &          H2AC(*),GCI(*),GOEE(*),GOEP(*)
+      DIMENSION PV(*)
       LOGICAL   CHKSTP,DO4INDEX
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
@@ -359,7 +362,7 @@ C        ***************************************************
 C
 C
          CALL RGRAD(CMO,CREF,WORK(KZXOPE),WORK(KZXOPP),
-     &              GCI,GOEE,GOEP,EMY,EACTIV,DV,FC,FV,FQ,
+     &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
      &              FCAC,H2AC,WORK(KFREE),LFREE,IPROPT)
          CALL RGRDINF(GCI,GOEE,GOEP)
 C
@@ -495,7 +498,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgrad */
       SUBROUTINE RGRAD(CMO,CREF,JXOPE,JXOPP,
-     &                 GCI,GOEE,GOEP,EMCMY,EMCACT,DV,FC,FV,FQ,FCAC,
+     &                 GCI,GOEE,GOEP,EMCMY,EMCACT,DV,PV,FC,FV,FQ,FCAC,
      &                 H2AC,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -515,6 +518,7 @@ C        GOEE    - the e-e orbital gradient of the CEP
 C        GOEP    - the e-p gradient of the CEP
 C        EMCMY   - inactive energy 
 C        DV      - one-electron active density matrix
+C        PV      - two-electron active density matrix
 C        H2AC    - two-electron integrals with active indices
 C        FC      - the inactive Fock matrix
 C        FCAC    - the inactive Fock matrix with active indices
@@ -531,7 +535,7 @@ C*****************************************************************************
 C
       PARAMETER (D0 = 0.0D00, D1 = 1.0D00, DM1 = -D1)
 C
-      DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*)
+      DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
       DIMENSION CREF(*)
       DIMENSION WORK(LWORK)
@@ -540,7 +544,7 @@ C     Local variable
 C
       DIMENSION DFAC(2)
 C
-      LOGICAL   FND,FNDLAB
+      LOGICAL   FND,FNDLAB, SAVEDFGEN
 C
 #include <dcbopt.h>
 #include <dcbgen.h>
@@ -569,7 +573,7 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-         CALL RMAKDM(DV,WORK(KFREE),LFREE)
+         CALL RMAKDM(DV,PV,CREF,WORK(KFREE),LFREE)
       END IF
 C
 C     ***************************************************
@@ -598,7 +602,7 @@ C        Calculate FQ matrix and two-electron integrals
 C        with active orbital indeces (H2AC).     
 C        FQ and H2AC are written to KRMC FOCK.
 C
-         CALL RGETH2(FQ,H2AC,WORK(KFREE),LFREE)
+         CALL RGETH2(FQ,H2AC,PV,WORK(KFREE),LFREE)
 C
 C        Active energy.
 C
@@ -628,6 +632,7 @@ C     *** Calculate the orbital gradient ****************
 C     ***************************************************
 C
 C
+      SAVEDFGEN = .FALSE.
       IF (NZXOPE .GT. 0) THEN
          CALL DZERO(GOEE,NZXOPEQ)
          LFPV = NZ*NASHT*NORBT
@@ -638,7 +643,8 @@ C
 C
 C        Save generalized Fock matrix (F_{pv})
 C
-         CALL WRTKRMC(LUKRM3,'FGEN_PV ',WORK(KPFV),NORBT * NASHT * NZ)
+         CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),NORBT * NASHT * NZ)
+         SAVEDFGEN = .TRUE.
 C
          CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
       END IF
@@ -649,6 +655,12 @@ C
          CALL RORBGRD(DV,FC,FV,FQ,GOEP,
      &                JXOPP,NZXOPP,WORK(KFPV),DFAC,
      &                IPQTOQ(1,0),IPRINT)
+C
+C        Save generalized Fock matrix (F_{pv})
+C
+         IF (.NOT. SAVEDFGEN) 
+     &        CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),
+     &        NORBT * NASHT * NZ)
          CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
       END IF
 C
@@ -689,7 +701,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmakdm */
-      SUBROUTINE RMAKDM(DV,WORK,LWORK)
+      SUBROUTINE RMAKDM(DV,PV,CREF,WORK,LWORK)
 C*****************************************************************************
 C
 C     Construct one- and two-electron active density matrix
@@ -700,6 +712,7 @@ C        CREF    - CI vector
 C
 C     Output:
 C        DV      - one electron active density matrix
+C        PV      - two electron active density matrix
 C
 C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
@@ -716,6 +729,7 @@ C
 #include <dcbqal.h>
 C
       DIMENSION DV(*)
+      DIMENSION PV(*)
       DIMENSION WORK(*)
       DIMENSION DTRCE(4)
 C
@@ -723,10 +737,6 @@ C
 #include <memint.h>
 C
       CALL QENTER('RMAKDM')
-C
-      IF ( NASHT .GT. 1 )
-     $     CALL MEMGET('REAL',KPV,LENPV,WORK,KFREE,LFREE)
-      write(6,*) 'lenpv ',lenpv
 C
       IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
 C
@@ -739,15 +749,16 @@ C
 C
 C           Calculate density matrices
 C
-            CALL MEMGET('REAL',KDVMOLF,(2*NASHT)**2*MIN0(2,NZ),
+            CALL MEMGET('REAL',KPVMOLF,(2*NASHT)**4 * MIN0(2,NZ)
+     &           ,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KDVMOLF,(2*NASHT)**2 * MIN0(2,NZ),
      $           WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIKR,(2*NASHT)*2,WORK,KFREE,LFREE)
-            CALL REAKRMC(LUKRMC,'CISTART0',WORK(KCREF),NZCONFQ)
-            CALL GOSCI_RMAKDM(WORK(KCREF),WORK(KDVMOLF),WORK(KPV),
+            CALL GOSCI_RMAKDM(CREF,CREF,WORK(KDVMOLF),WORK(KPVMOLF),
      $           WORK(KIKR))
             CALL MFC2QFC(WORK(KDVMOLF),DV,IPROPT)
-            CALL MEMREL('RMAKDM.GOSCI',WORK,KDVMOLF,KDVMOLF,KFREE,LFREE)
+            CALL M2DNZ3(WORK(KPVMOLF),PV,IPROPT)
+            CALL MEMREL('RMAKDM.GOSCI',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C           Check trace of DV
 C
@@ -792,17 +803,86 @@ C
       IF ( IPROPT .GE. 5 ) THEN
          CALL HEADER('RMAKDM: DV density matrix',-1)
          CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER('RMAKDM: PV density matrix',-1)
+         CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
 C     Save active density matrices on file KRMC FOCK
 C
       CALL WRTKRMC(LUKRM3,'DVMO    ',DV,N2ASHXQ)
       IF ( NASHT .GT. 1 ) THEN
-         CALL WRTKRMC(LUKRM3,'PVMO    ',WORK(KPV),LENPV)
+         CALL WRTKRMC(LUKRM3,'PVMO    ',PV,NASHT*NASHT*NNASHX*NZ*3)
       END IF
       CALL MEMREL('RMAKDM.PV',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('RMAKDM')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prdnz3 */
+      SUBROUTINE PRDNZ3(AMAT,NDIM1,NDIM2,NZ,IP,LUNIT)
+C*****************************************************************************
+C
+C     Print a matrix in the Dirac (NZ,3) format.
+C
+C     Input:
+C       AMAT  - the matrix
+C       NDIM1, NDIM2, NZ - dimensions.
+C       IP    - index vector from packed quarternion to quaternion.
+C       LUNIT - print unit
+C
+C     Output:
+C       None
+C
+C     Written by J. Thyssen - Nov 24 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+C
+      DIMENSION AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
+      CHARACTER M(4)*2
+      DIMENSION IP(4)
+      DATA M /'AR', 'AI', 'BR', 'BI' /
+C
+      IF (NDIM1 * (NDIM1+1) / 2 .NE. NDIM2) THEN
+         WRITE(LUPRI,9000) NDIM1, NDIM2
+         CALL QUIT('*** ERROR in PRDNZ3 ***')
+      END IF
+C
+ 9000 FORMAT(/,'*** ERROR in PRDNZ3 ***',/,
+     &     'Inconsistent dimensions: NDIM1 = ',I5,
+     &     ', NDIM2 = ',I5)
+C
+C     Print matrix.
+C
+ 9001 FORMAT(1X,/,3X,'Indeces',5X,'Matrix',4X,'Elements',
+     &     /,1X, 65('-'))
+ 9010 FORMAT(1P,1X,4I3,4X,A2,6X,3(D14.7,1X))
+ 9011 FORMAT(1P,17X,A2,6X,3(D14.7,1X))
+C
+      WRITE(LUNIT,9001)
+C
+      IJ = 0
+      DO I = 1,NDIM1
+         DO J = 1,I
+            IJ = IJ + 1
+            DO K = 1,NDIM1
+               DO L = 1,NDIM1
+                  WRITE(LUNIT,9010)
+     &                 K,L,I,J,
+     &                 M(IP(1)),
+     &                 (AMAT(K,L,IJ,1,ICL),ICL = 1,3)
+                  DO IZ = 2, NZ
+                     WRITE(LUNIT,9011)
+     &                    M(IP(1)),
+     &                    (AMAT(K,L,IJ,IZ,ICL),ICL = 1,3)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1970,7 +2050,7 @@ C
      &             INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
      &             NZVAR, NZVARQ ,NZCONF,NZCONFQ,
      &             NZXOPT,NZXOPTQ,NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,
-     &             KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM)
+     &             KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV)
 C
 C
 C
@@ -1995,7 +2075,7 @@ C
      &            RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
 C
 C
-      CALL GTNORB(CMO,WORK(KIBTYP),
+      CALL GTNORB(CMO,CREF,WORK(KIBTYP),
      &            WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
      &            WORK(KEVALR),WORK(KEVECR),NREDM,WORK,KFREE,LFREE)
 C
@@ -2013,11 +2093,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tdcbxlr */
       SUBROUTINE TDCBXRS(OPTRST,OPTNRM,OPTDIH,OPTSTERN,IPROPT,MXMICRO,
-     &                   INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
-     &                   NZVAR_OPT,NZVARQ_OPT,NZCONF_OPT,NZCONFQ_OPT,
-     &                   NZXOPT_OPT,NZXOPTQ_OPT,NZXOPE_OPT,NZXOPEQ_OPT,
-     &                   NZXOPP_OPT,NZXOPPQ_OPT,
-     &                   KZCONF_OPT,KZXOPE_OPT,KZXOPP_OPT,THR,CIPROGRAM)
+     &     INTDEF_MIC,ITRINT_MIC,CNVINT_MIC,
+     &     NZVAR_OPT,NZVARQ_OPT,NZCONF_OPT,NZCONFQ_OPT,
+     &     NZXOPT_OPT,NZXOPTQ_OPT,NZXOPE_OPT,NZXOPEQ_OPT,
+     &     NZXOPP_OPT,NZXOPPQ_OPT,
+     &     KZCONF_OPT,KZXOPE_OPT,KZXOPP_OPT,THR,CIPROGRAM,
+     &     EMC)
 C*****************************************************************************
 C
 C     Transfer information to response common blocks (dcbxnr.h)
@@ -2084,8 +2165,14 @@ C
       NZXOPTQ   = NZXOPTQ_OPT
       NZXOPE    = NZXOPE_OPT
       NZXOPEQ   = NZXOPEQ_OPT
+C
       NZXOPP    = NZXOPP_OPT
       NZXOPPQ   = NZXOPPQ_OPT
+CDEBUG DEBUG
+c      NZXOPP = 0
+c      NZXOPPQ = 0
+c      NZXOPT = 0
+c      NZXOPPT = 0
 C
 C     reals...
 C
@@ -2093,6 +2180,7 @@ C
       CNVINT(1) = CNVINT_MIC(1)
       CNVINT(1) = CNVINT_MIC(2)
       RESFAC    = 1.0D3
+      ENRGY     = EMC
 C
 C     pointers...
 C
@@ -2109,7 +2197,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtnorb */
-      SUBROUTINE GTNORB(CMO,IBTYP,IBCVC,IBEVC,IBPVC,
+      SUBROUTINE GTNORB(CMO,CREF,IBTYP,IBCVC,IBEVC,IBPVC,
      &                  EVALR,EVECR,NREDM,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -2117,6 +2205,7 @@ C     Calculate new orbitals ( CMO_{new} = exp ( -\kappa) CMO_{old} )
 C
 C     Input:
 C        CMO - old coefficients
+C        CREF - ref. CI vector
 C
 C     Output:
 C        CMO - new coefficients
@@ -2128,6 +2217,9 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 C
+      PARAMETER ( D1 = 1.0D00 )
+      PARAMETER ( THRTT = 1.0D-4 )
+C
 #include <dcbopt.h>
 #include <dcborb.h>
 #include <dcbbas.h>
@@ -2136,6 +2228,7 @@ C
 C
       DIMENSION CMO(*), WORK(*), IBTYP(2,*), IBCVC(*),
      &          IBEVC(*),IBPVC(*), EVECR(NREDM,*)
+      DIMENSION CREF(*)
 C
       CALL QENTER('GTNORB')
       KFRSAV = KFREE
@@ -2147,15 +2240,60 @@ C     ***************************************************
 C
 C
       CALL MEMGET('REAL',KKAPPA,NZXOPTQ,WORK,KFREE,LFREE)
-      CALL KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,
-     &           EVALR,EVECR,WORK(KKAPPA),WORK(KFREE),LFREE)
+      CALL MEMGET('REAL',KDELTACI,NZCONFQ,WORK,KFREE,LFREE)
 C
-      IF (IPROPT .GE. 5) THEN
+CDEBUG - jth
+CDEBUG DZERO - can safely be removed as XRSXV1 does a DZERO
+      CALL DZERO(WORK(KKAPPA),NZXOPTQ)
+C
+      CALL KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,
+     &     EVALR,EVECR,WORK(KKAPPA),WORK(KDELTACI),
+     &     WORK(KFREE),LFREE)
+C
+      IF (IPROPT .GE. 5 .AND. NZXOPT .GT. 0) THEN
          CALL HEADER('GTNORB: Kappa:',-1)
          CALL RPRKAP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
      &               WORK(KZXOPE),NZXOPE,
      &               WORK(KZXOPP),NZXOPP,
      &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+      IF (IPROPT .GE. 5 .AND. NZCONF .GT. 0) THEN
+         CALL HEADER('GTNORB: Delta:',-1)
+         CALL RPRCI(WORK(KDELTACI),NZCONF,NZ,IPQTOQ(1,0),
+     &        OPT_CIPROGRAM,LUPRI)
+      END IF
+C
+C     *************************************
+C     *** Calculate new CI coefficients ***
+C     *************************************
+C
+      IF ( NZCONF .GT. 0 ) THEN
+C
+         CALL WRTKRMC(LUKRM2,'CREFOLD ',CREF,NZCONFQ)
+C
+C        Add delta:
+C
+         CALL DAXPY(NZCONFQ,D1,WORK(KDELTACI),1,CREF,1)
+C
+C        Normalize:
+C
+         DN = DNORM2(NZCONFQ,CREF,1)
+         IF ( DN .NE. D1 ) THEN
+            IF ( DN .LE. THRTT ) THEN
+               DN = D1 / DN
+               CALL DSCAL(NZCONF, CREF, 1)
+               DN = DNORM2(NZCONFQ,CREF,1)
+            END IF
+            DN = D1 / DN
+            CALL DSCAL(NZCONF, DN, CREF, 1)
+         END IF
+C
+         IF (IPROPT .GE. 5 ) THEN
+            CALL HEADER('GTNORB: new CI vector:',-1)
+            CALL RPRCI(CREF,NZCONF,NZ,IPQTOQ(1,0),
+     &           OPT_CIPROGRAM,LUPRI)
+         END IF
+C
       END IF
 C
 C
@@ -2198,9 +2336,43 @@ C
 C     Write new coefficients
 C
       CALL WRTKRMC(LUKRM2,'NEWORB  ',CMO,NCMOTQ)
+      CALL WRTKRMC(LUKRM2,'CREF    ',CREF,NZCONFQ)
 C
       CALL MEMREL('GTNORB',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GTNORB')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rprci */
+      SUBROUTINE RPRCI(CIVEC,NZCONF,NZ,IP,CIPRG,LUPRI)
+C*****************************************************************************
+C
+C     Print ci vector.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by J. Thyssen - Nov 23 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+C
+      DIMENSION CIVEC(NZCONF,*)
+      DIMENSION IP(4)
+      CHARACTER CIPRG*(*)
+C
+      IF (CIPRG .EQ. 'GOSCI') THEN
+         WRITE(LUPRI,9000)
+         DO I = 1, NZCONF
+            WRITE(LUPRI,9001) I,(CIVEC(I,IZ),IZ=1,MIN0(2,NZ))
+         END DO
+ 9000    FORMAT(/1X,'CI vector:',/,
+     &        T5,'Det. no.',T20,'Real part',T45,'Imag part',/,
+     &        60('-'))
+ 9001    FORMAT(1P,T5,I5,T20,D20.12,T45,D20.12)
+      END IF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
