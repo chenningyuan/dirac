@@ -931,24 +931,24 @@ esac
 echo
 echo "Making Makefiles..."
 dirs="dirac prp abacus gp pdpack"
-if [ $ERIFLG ]; then
+if [ $ERIFLG != 0 ]; then
    dirs="$dirs eri"
 fi
-if [ $CCFLG ]; then
+if [ $CCFLG != 0 ]; then
    dirs="$dirs relccsd"
 fi
-if [ $RSPFLG ]; then
+if [ $RSPFLG != 0 ]; then
    dirs="$dirs prp/rsp"
 fi
-if [ $TRAFLG ]; then
+if [ $TRAFLG != 0 ]; then
    dirs="$dirs moltra"
 fi
-if [ $PARFLG ]; then
+if [ $PARFLG != 0 ]; then
    dirs="$dirs abacus/par"
 fi
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
-   cp $makefile/Makefile.in $makefile/Makefile
+   cp -f $makefile/Makefile.in $makefile/Makefile
 done
 echo
 #
