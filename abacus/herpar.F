@@ -249,6 +249,7 @@ C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
+ 10   CONTINUE
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
@@ -300,6 +301,7 @@ C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
+ 90   CONTINUE
       CALL MEMREL('HER_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('HER_PARDRV')
       RETURN
@@ -1406,6 +1408,7 @@ C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
+ 20   CONTINUE
       CALL MEMREL('HERNOD',WORK,1,KDMAT,KFREE,LFREE)
       GOTO 100
 C
