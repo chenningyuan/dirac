@@ -1,3 +1,0 @@
-      SUBROUTINE  QENTER
-      RETURN
-      END

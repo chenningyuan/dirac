@@ -1,3 +1,0 @@
-      SUBROUTINE  QUIT
-      RETURN
-      END

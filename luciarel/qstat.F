@@ -1,3 +1,0 @@
-      SUBROUTINE  QSTAT
-      RETURN
-      END

@@ -1,3 +1,0 @@
-      SUBROUTINE  QEXIT
-      RETURN
-      END
