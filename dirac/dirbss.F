@@ -32,7 +32,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbdhf.h"
 
         DIMENSION VMAT(*),WORK(LWORK)
-        LOGICAL DK2SO1,ONLYSO1,SF_BEG,GETPCTM
+        LOGICAL DK2SO1,ONLYSO1,SF_BEG,
+     &         GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF
 
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
@@ -51,7 +52,8 @@ C    ... refrence
      & '  in preparation (2005)'
 
 C extract information about the BSS Hamiltonian 
-      CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,ONLYSO1,SF_BEG,IPRHAM)
+      CALL EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,ADD_AMFI,
+     &         ONLYSO1,ONLYTRA,SF_BEG,ELIM_SF,IC_AMFI,IPRHAM)
 
 C generate free particle one-electron matrix in Lowdin-basis "Theta"
       CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
@@ -116,7 +118,8 @@ C       ... second order DKH
      &                    IPRHAM,WORK(KFREE),LFREE)
       ELSE
 C       ...and very rough first order, or SO1 integrals only...
-        CALL GET_HDK1_FPM(WORK(KH2FP),WORK(KTBUF),WORK(KIBEIG),
+        CALL GET_HDK1_FPM(WORK(KH2FP),WORK(KTBUF),WORK(KH1FP),
+     &                   WORK(KIBEIG),
      &                    ONLYSO1,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 
@@ -130,19 +133,32 @@ C   (C+el)-1 = Sao(LL) C(el) Ad^(-1) to transform H2c "k"-> H2c "xhi" LL
      &            SPINFR,SF_BEG,GETPCTM,IPRHAM,WORK(KFREE),LFREE)
 
 C transform H2C Hamitonian from FP "k" basis to the SO-AO  basis,
-C prepare the final picture change transformation matrix if wished
+C prepare the final picture change transformation matrix if wished,
+C save integrals (and pctmtx) into the file
       CALL MAKE_H2C_AO(WORK(KCTM),WORK(KTMAT),WORK(KTBUF),
      &                 WORK(KH2FP),WORK(KHDAO),WORK(KPCTM),
-     &                 WORK(KIBEIG),
+     &                 WORK(KIBEIG),ONLYSO1,
      &                 GETPCTM,SPINFR,SF_BEG,
      &                 IPRHAM,WORK(KFREE),LFREE)
 
+      IF (.NOT.ONLYSO1) THEN
 C       ... compare eigenvalues of 4c and 2c 1-el.Hamiltonians
-      CALL CMP_EIGVAL(VMAT,WORK(KTMAT),WORK(KH1FP),
-     &                  WORK(KEIG),WORK(KTBUF),WORK(KIBEIG),
-     &                  SPINFR,SF_BEG,IPRHAM,WORK(KFREE),LFREE)
+        CALL CMP_EIGVAL(VMAT,WORK(KTMAT),WORK(KH1FP),
+     &              WORK(KEIG),WORK(KTBUF),WORK(KIBEIG),
+     &           SPINFR,SF_BEG,ONLYSO1,IPRHAM,WORK(KFREE),LFREE)
+      ENDIF
 
+      IF (ADD_AMFI) THEN
+C    ... transformation cartesian -> spherical, calling the AMFI stuff,
+C        fitting AMFI integrals in the DIRAC order, saving to the BSSMAT
+       IF (SPINFR.AND.ELIM_SF) SPINFR=.FALSE.
+       CALL AMFI_STUFF(WORK(KTMAT),VMAT,ONLYSO1,
+     &                 ONLYTRA,IC_AMFI,WORK(KFREE),LFREE)
+      ENDIF
+
+C ============================================================
 C  Finally set up number of positronic shells equal to zero
+C ============================================================
       NSYM = 4/NZ
       DO I=1,NFSYM
        NPSH(I) = 0
@@ -159,9 +175,8 @@ C ******************************************************************************
 C    ... Number of transf. matrixes is set to 1 - it is only the Lowdin AO->MO
       NZT = 1
 C **********************************************************************************
-
-C     WRITE(LUPRI,'(/2X,A/)') 
-C    &'MAKE_DKH:Two-component BSS mode - positronic shells deleted !'
+      WRITE(LUPRI,'(2X,A)') 
+     &'MAKE_BSS: Two-component BSS mode - positronic shells deleted !'
 
       CALL MEMREL('MAKE_BSS',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -371,15 +386,16 @@ C****************************************************************************
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck EXTR_BSS_INFO */
-      SUBROUTINE EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,
-     &                         ONLYSO1,SF0,IPRINT)
+      SUBROUTINE EXTR_BSS_INFO(IBSS,IPZ,SPINFR,DK2SO1,ADD_AMFI,
+     &                    ONLYSO1,ONLYTRA,SF0,ELIM_SF,IC_AMFI,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C PURPOSE:
 C ========
 C     Set control variables based on IBSS coding
-C     IBSS = xyz
+C     IBSS = axyz
 C
+C        a - 1 to 6, defines AMFI flags..
 C        x - .ne. 0: define spinfree before (as 4-comp)
 C            .eq. 0: define spinfree at end
 C            ... x is active with the SPINFREE option only !!!
@@ -395,29 +411,41 @@ C On input: IBSS, SPINFR, IPRINT
 C
 C On output: IPZ - order of Hamiltonian
 C            DK2SO1,SF0
-C            ONLYSO1
+C            ONLYSO1 - flagfo BSS-DKH-SO1 integrals to be compared with AMFI DKH-SO1 integrals
+C            ONLYTRA - flag for C->S->C transformation
+C            ELIM_SF
+C            IC_AMFI - flag for AMFI subroutine
 C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+      LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1,ONLYTRA,ADD_AMFI,ELIM_SF
+      CALL QENTER('EXTR_BSS_INFO')
 
-      LOGICAL SPINFR,DK2SO1,SF0,ONLYSO1
-
-      CALL EXTR_DIG(IBSS,IPX,IPY,IPZ,IPRINT)
+      CALL EXTR_DIG(IBSS,IPA,IPX,IPY,IPZ,IPRINT)
 
       WRITE (LUPRI,'(A,I2)')
      &  '* Order of Barysz-Sadlej_Snijders transformation :',IPZ
+
+      ELIM_SF=.FALSE.
       IF (SPINFR.AND.IPY.GE.1) THEN 
        WRITE(LUPRI,'(A)') '* "SPINFR" option, no spin-orbit terms!' 
        IPY=0
       ENDIF
       IF (IPY .EQ. 0) THEN
-         IF (.NOT.SPINFR) CALL QUIT(
+         IF (.NOT.SPINFR.AND.IPA.EQ.0) CALL QUIT(
      & 'You forgot to specify .SPINFR in the Hamiltonian input!')
          DK2SO1 = .FALSE.
+         IF (SPINFR.AND.IPA.GT.0) CALL QUIT(
+     & 'Wrong .SPINFR in the Hamiltonian input with AMFI on!')
+         IF (.NOT.SPINFR.AND.IPA.GT.0) THEN
+          SPINFR=.TRUE.
+          ELIM_SF=.TRUE.
+         ENDIF
       ELSE IF (IPY .EQ. 1 .AND. IPZ .EQ. 2 .AND.(.NOT.SPINFR)) THEN
+C        ... DKH2sfB + SO1
          DK2SO1 = .TRUE.
          WRITE (LUPRI,'(A)')
      &   '* spin-orbit terms only to the first order -'//
@@ -427,6 +455,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          WRITE (LUPRI,'(A)')
      &   '* all spin-orbit terms included (full relativity)'
       END IF
+
       IF (IPX .GE. 1 .AND. SPINFR) THEN  
          SF0 = .TRUE.
          WRITE (LUPRI,'(A)')
@@ -438,23 +467,88 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      & '* Elimination of spin-orbit terms from the 2comp.Ham. in "k"'//
      & ' basis (spinfree "AFTER / AT THE END")'
       ENDIF
+
+      IF (ELIM_SF) WRITE (LUPRI,'(A)')                                
+     & '* SPIN-FREE flag on only for BSS Hamiltonain, later removed'//
+     & ' due to the AMFI spin-orbit integrals'
      
+C      .... flag IBSS=010 - activate the ONLYSO1 flag
       ONLYSO1=.FALSE.
+      ADD_AMFI=.FALSE.
       IF (IPX.EQ.0.AND.IPY.EQ.1.AND.IPZ.EQ.0) THEN
          WRITE (LUPRI,'(/A)')
      &  '* only SO1 terms (for comparison with AMFI, then quit)'
         ONLYSO1=.TRUE.
-      ENDIF 
+C       ... AMFI gives only SO1 integrals
+        IC_AMFI = 1
+        ADD_AMFI=.TRUE.
+      ENDIF
 
+      ONLYTRA=.FALSE.
+      IF (IPA.EQ.1) THEN
+        ONLYTRA=.TRUE.
+        ADD_AMFI=.TRUE.
+C     ... AMFI gives SO1+MFSO2 integrals,
+C        but these are added to the Hamiltionian with ZERO weight
+        IC_AMFI = 3
+        WRITE(LUPRI,'(/A)')
+     &'* C->S->C transformation + AMFI run(test), but no adding'//
+     &' of AMFI integrals.'  
+      ELSE IF (IPA.EQ.2) THEN
+        ADD_AMFI=.TRUE.
+        IC_AMFI = 2
+        WRITE(LUPRI,'(/A)')
+     &'* AMFI: MFSSO2 terms (spin-same orbit only) added.'  
+      ELSE IF (IPA.EQ.3) THEN
+        ADD_AMFI=.TRUE.
+        IC_AMFI = 3
+        WRITE(LUPRI,'(/A)')
+     &'* AMFI: MFSO2 terms (both spin-same&spin-other orbit) added.'  
+      ELSE IF (IPA.EQ.4) THEN
+        ADD_AMFI=.TRUE.
+        IC_AMFI = 4
+        WRITE(LUPRI,'(/A)')
+     &'* AMFI: SO1+MFSSO2 terms (only spin-same orbit) added.'
+      ELSE IF (IPA.EQ.5) THEN
+        ADD_AMFI=.TRUE.
+        IC_AMFI = 5
+        WRITE(LUPRI,'(/A)')
+     &'* AMFI: SO1+MFSO2 terms (spin-same&spin-other orbit) added.'  
+      ELSE IF (IPA.EQ.6) THEN
+        ADD_AMFI=.TRUE.
+        IC_AMFI = 1
+        WRITE(LUPRI,'(/A)')
+     &'* AMFI: SO1 terms added.'  
+      ENDIF
+
+      IF (ADD_AMFI) THEN
+C        WRITE (LUPRI,'(A/)')
+C    &  '* AMFI_STUFF is included.'
+      ELSE
+         WRITE (LUPRI,'(A/)')
+     &  '* AMFI_STUFF is NOT included.'
+      ENDIF
+
+C     ... consistency checks - do not repeat 1 el SO interactions !!!
+      IF (IPY.GT.0.AND.(IPA.EQ.6.OR.IPA.EQ.5.OR.IPA.EQ.4)) THEN
+       WRITE(LUPRI,*) 'EXTR_BSS_INFO: IPY=',IPY,' IPA=',IPA
+       WRITE(LUPRI,*) 'EXTR_BSS_INFO: Doubled inclusion of 1el'//
+     & ' SO terms - AMFI & BSS Ham. '
+       CALL  QUIT('EXTR_BSS_INFO: Double inclusion of 1el SO terms! ')
+      ENDIF
+      WRITE(LUPRI,*)
+
+      CALL QEXIT('EXTR_BSS_INFO')
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck EXTR_DIG */
-      SUBROUTINE EXTR_DIG(IBSS,IPX,IPY,IPZ,IPRINT)
+      SUBROUTINE EXTR_DIG(IBSS,IPA,IPX,IPY,IPZ,IPRINT)
 C****************************************************************************
 C
 C  PURPOSE: For entering integer number of type xyz,
-C            extract x,y,z into IPX,IPY,IPZ
+C            extract a,x,y,z into IPA,IPX,IPY,IPZ
 C             
 C  Written: M Ilias, Odense, aug. 2002             
 C
@@ -462,34 +556,53 @@ C****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 
-      IF (IBSS.LT.0.OR.IBSS.GE.1000)
-     & CALL QUIT('EXTR_DIG: The entering number not in range 0-999! ')
+      IF (IBSS.LT.1.OR.IBSS.GT.9999)
+     & CALL QUIT('EXTR_DIG: The entering number not in range 1-9999! ')
   
-      IBSS0 = IBSS
-      IF (IBSS.GE.100) THEN 
+C     ... save the IBSS
+      IBSS_SAVE = IBSS
+      IBSS0     = IBSS
+
+      IF (IBSS.GE.1000) THEN
+       IPA  = IBSS/1000
+       IBSS0 = MOD(IBSS,1000)
+       IBSS = MOD(IBSS0,100)
+       IPX  = IBSS0/100
+       IPY = IBSS/10
+       IPZ = MOD(IBSS,10)
+      ELSE IF (IBSS.GE.100) THEN 
        IBSS = MOD(IBSS,100)
+       IPA = 0
        IPX  = IBSS0/100
        IPY = IBSS/10
        IPZ = MOD(IBSS,10)
       ELSE IF (IBSS.GE.10) THEN
+       IPA = 0
        IPX = 0
        IPY = IBSS/10
        IPZ = MOD(IBSS,10)
       ELSE IF (IBSS.GE.0) THEN
+       IPA = 0
        IPX = 0
        IPY = 0
        IPZ = IBSS
       ENDIF
 
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.3) THEN
        WRITE (LUPRI,'(/A,I3,A,3I2)')
-     &'EXTR_DIG: IBSS=xyz=',IBSS0,
-     &'individual  x,y,z:',IPX,IPY,IPZ
+     &'EXTR_DIG: IBSS=axyz=',IBSS_SAVE,
+     &'extracted digits  a,x,y,z:',IPA,IPX,IPY,IPZ
       ENDIF
 
-      IBSS1 = 100*IPX + 10*IPY + IPZ
-      IF (IBSS1.NE.IBSS0) 
-     & CALL QUIT('EXTR_DIG: Error in extraction of x,y,z from xyz!')
+C     ... restore the IBSS
+      IBSS = IBSS_SAVE
+C     ... check the extraction procedure
+      IBSS1 = (1000*IPA)+(100*IPX)+(10*IPY)+IPZ
+      IF (IBSS1.NE.IBSS) THEN 
+        WRITE(LUPRI,*) 'EXTR_DIG: input IBSS=axyz',IBSS
+        WRITE(LUPRI,*) 'EXTR_DIG: extracted digits:',IPA,IPX,IPY,IPZ
+        CALL QUIT('EXTR_DIG: Error in extraction of a,x,y,z from axyz!')
+      ENDIF
 
       RETURN
       END
@@ -517,6 +630,7 @@ C****************************************************************************
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #include "priunit.h"
+
       DIMENSION HK(LROW,LCOL,NZ),IBS1(*),IBS2(*)
       LOGICAL SPFR
 
@@ -524,7 +638,9 @@ C****************************************************************************
 
       IF (NROW.NE.NCOL) THEN
         WRITE(LUPRI,'(2X,A)') 'SPF_HK: Warning, NROW<>NCOL!'
+        CALL QUIT('SPF_HK: NROW<>NCOL! How it is possible?')
       ENDIF
+
 
       IF (IPRINT. GE. 5) THEN
        WRITE(LUPRI,'(2X,A)')
@@ -630,7 +746,8 @@ C       4c AO-> 2c AO(LL)
 C ... array for the picture change transformation matrix (PCTM)...
       CALL MEMGET('REAL',KPCTM,N2BBASXQ,WORK,KFREE,LFREE)
 
-      CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCT')
+      CALL OPNFIL(LUBSS,'BSSMAT','OLD','DOPCTRA')
+C     ... set up at the beginning of the file
       REWIND LUBSS
       IF (FNDLAB('U_PICTRM',LUBSS)) THEN
          CALL READT(LUBSS,N2BBASXQ,WORK(KPCTM))
@@ -1246,7 +1363,7 @@ C     (it uses N2BBASXQ); so we can continue with the quaternion TBUF afterwards
 
       DOJACO_SAVE = DOJACO
       DOJACO = .TRUE.
-C     ... use JACO because it does not mix degenerate eigenvectors
+C     ... use JACOBI diagonalization because it does not mix degenerate eigenvectors
 C  NOTE: All fermion symmetries are diagonalized !!
 
 C ........  added from GMOTRA 
@@ -2637,13 +2754,14 @@ C      ... save the 4c "k" -> 2c "xhi" picture change transform.matrix
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck */      
        SUBROUTINE MAKE_H2C_AO(SAOMO,TMAT,TBUF,H2FP,H4AO,PCTM,IBEIG,
-     &                        GETPCTM,SPFR,SPFR_BEG,IPRINT,WORK,LWORK)
+     &                ONLYSO1,GETPCTM,SPFR,SPFR_BEG,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C    PURPOSE: Make the Hamiltonian in 2c AO basis
-C    ========
+C    PURPOSE:  Make the Hamiltonian in 2c SA-AO basis "xhi",
+C    ========  write it to the file (with pict.change transf.matrixes, if wished)
 C                                                         
 C   On input: 
+C ============
 C      SAOMO - transf. matrix H2c "k" <- H2c "xhi_LL"
 C      H2FP - H2c Ham. in the electronic FP "k" basis 
 C            to be transformed to the SA-AO "xhi_LL" basis
@@ -2659,7 +2777,11 @@ C                               when spin-free from beginning
 C
 C     TMAT - temporary array, or H4c "xhi" -> H4c "k" transformation matrix, SF beginning
 C                                                
+C     ONLYSO1 - if .true., do not write integrals and
+C                picture change transf.matrixes into files                                                
+C                                                
 C   On output:  
+C  ============
 C     TMAT - H2c(BSSinf,DK2,DK1) in SA-AO "xhi" basis,
 C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
@@ -2675,7 +2797,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
    
       DIMENSION SAOMO(*),TBUF(*),TMAT(*),PCTM(*),
      &          H4AO(*),H2FP(*),IBEIG(*),WORK(LWORK)    
-      LOGICAL GETPCTM,SPFR,SPFR_BEG
+      LOGICAL ONLYSO1,GETPCTM,SPFR,SPFR_BEG
 
 
       CALL QENTER('MAKE_H2C_AO')
@@ -2691,7 +2813,7 @@ C       H_DKn = WORK(JBUF) ... H_ee in |k_e> basis
 C     CALL DZERO(TMAT(1),N2BBASXQ)
       CALL DZERO(WORK(KH2AO),N2BBASXQ)
 
-      IF (SPFR.AND.SPFR_BEG.AND.GETPCTM) THEN
+      IF (SPFR.AND.SPFR_BEG.AND.GETPCTM.AND..NOT.ONLYSO1) THEN
 
        ISIZE1=NFBAS(1,0)*NORB(1)*NZ
        IF(NFSYM.EQ.2) ISIZE1=ISIZE1+(NFBAS(2,0)*NORB(2)*NZ)
@@ -3031,17 +3153,19 @@ C    ... save the integrals for exporting them in TMAT
       CALL DCOPY(N2BBASXQ,WORK(KH2AO),1,TMAT(1),1)
 
 
+      IF (.NOT.ONLYSO1) THEN
 C  SAVE THE INTEGRALS AND PICTURE CHANGE TRANSFORMATION MATRIX/MATRIXES, IF WISHED
 C     ... include/dcbgen.h
-      LUBSS = 35
+       LUBSS = 35
 C ...save hamiltonian matrix elements
-      CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN','GMOTRA')
-      CALL NEWLAB('H1AO_DK ',LUBSS,LUPRI)
-      CALL WRITT(LUBSS,N2BBASXQ,WORK(KH2AO))
-      WRITE(LUPRI,'(/2X,A)')
+       CALL OPNFIL(LUBSS,'BSSMAT','UNKNOWN','GMOTRA')
+       CALL NEWLAB('H1AO_DK ',LUBSS,LUPRI)
+       CALL WRITT(LUBSS,N2BBASXQ,WORK(KH2AO))
+       WRITE(LUPRI,'(/2X,A)')
      &'BSS relativistic atomic integrals'//
      &' are written to the BSSMAT file.'
-     
+      ENDIF
+
       IF (GETPCTM) THEN
 C ...save the picture change transformation matrixes
        IF (.NOT.SPFR) THEN
@@ -3074,7 +3198,7 @@ C        ... we need to save also boson irreps of "k"
        ENDIF
       ENDIF
 
-      CLOSE(LUBSS,STATUS='KEEP')
+C     CLOSE(LUBSS,STATUS='KEEP')
 
 C ....   memmory deallocation
       CALL MEMREL('MAKE_BSS',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3087,7 +3211,8 @@ C ....   memmory deallocation
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck cmp_eigval */      
        SUBROUTINE CMP_EIGVAL(VMAT,H2AO,H1FP,EIG,TBUF,
-     &                       IBEIG,SPFR,SPFR_BEG,IPRINT,WORK,LWORK)
+     &                       IBEIG,SPFR,SPFR_BEG,ONLYSO1,
+     &                       IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C    PURPOSE:
@@ -3115,7 +3240,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
    
       DIMENSION H2AO(*),VMAT(*),H1FP(*),
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
-      LOGICAL SPFR,SPFR_BEG
+      LOGICAL SPFR,SPFR_BEG,ONLYSO1
 
       CALL QENTER('CMP_EIGVAL')
 #include "memint.h"         
@@ -3198,6 +3323,7 @@ C =============================================================
 C         ... remove spin-orbit dependent terms...
 C  ... if spin-free "from the end"...
 C =============================================================
+       ONLYSO1=.FALSE. ! rather do remove it..
        IF (SPFR.AND..NOT.SPFR_BEG) THEN
 
          IF (IPRINT.GE.5) THEN
@@ -3210,6 +3336,21 @@ C =============================================================
          ENDIF
 
          CALL SPF_HK(H1FP(IH1FP),.TRUE.,IBEIG(IORB(I)+1),
+     &    IBEIG(IORB(I)+1),
+     &    NORB(I),NORB(I),NORB(I),NORB(I),NZ,IPRINT )
+
+       ELSE IF (ONLYSO1) THEN
+
+         IF (IPRINT.GE.5) THEN
+          CALL HEADER(
+     &'CMP_EIGVAL: H4c in MO basis (before elim.SF terms) ',-1)
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     & '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(H1FP(IH1FP),NORB(I),NORB(I),
+     &             NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         ENDIF
+
+         CALL SPF_HK(H1FP(IH1FP),.FALSE.,IBEIG(IORB(I)+1),
      &    IBEIG(IORB(I)+1),
      &    NORB(I),NORB(I),NORB(I),NORB(I),NZ,IPRINT )
 
@@ -3442,7 +3583,7 @@ C         ... update the offsets...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hdk1_fpm */      
-      SUBROUTINE GET_HDK1_FPM(H2FP,TBUF,IBEIG,ONLYSO1,
+      SUBROUTINE GET_HDK1_FPM(H2FP,TBUF,TBUF1,IBEIG,ONLYSO1,
      &                         IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -3453,19 +3594,21 @@ C   trasnform each to the ON basis and do the diagonalization
 C
 C  On input:  TBUF H1 in "k" basis
 C             IBEIG - boson irreps if pure spin-orbit integrals (ONLYSO1=.true.)
+C             ONLYSO1 - flag for removing all scalar terms from Hamiltonian                                                         
 C                                                         
-C  On output: H2FP(*) - the desired DK2 Hamiltonian in "k" basis
+C  On output: H2FP(*) - the desired DK1 Hamiltonian in "k" basis
 C                                                         
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
 #include "priunit.h"   
+      PARAMETER( DM1= -1.0D0 )
 #include "dcbbas.h"  
 #include "dcborb.h"   
 #include "dgroup.h"   
 
-      DIMENSION H2FP(*),TBUF(*),IBEIG(*),WORK(LWORK)
+      DIMENSION H2FP(*),TBUF(*),TBUF1(*),IBEIG(*),WORK(LWORK)
       LOGICAL ONLYSO1
 
       CALL QENTER('GET_HDK1_FPM')
@@ -3484,15 +3627,46 @@ C  ... store into WORK(IBUF) the ee-part of the full H1 Hamiltonian
      &           + (IZ-1)*N2T
            DO J = 1, NESH(I)
              CALL DCOPY(NESH(I),TBUF(JH1EE),1,H2FP(IBUF),1)
+             CALL DCOPY(NESH(I),TBUF(JH1EE),1,TBUF1(IBUF),1)
              JH1EE = JH1EE + NORB(I)
              IBUF  = IBUF  + NESH(I)
            ENDDO
         ENDDO
-C      ... if desired, remove scalar terms to have only SO1 integrals...
+C      ... if desired, remove all scalar terms to have only SO1 integrals...
         IF (ONLYSO1) THEN
-          CALL SPF_HK(H2FP(JBUF),.FALSE.,IBEIG(IORB(I)+1+NPSH(I)),
+          IF (IPRINT.GE.5) THEN
+           CALL HEADER(
+     &  'GET_HDK1_FPM: H_DK1 matrix in "k" basis ',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(H2FP(JBUF),NESH(I),NESH(I),
+     &         NESH(I),NESH(I), NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          CALL SPF_HK(H2FP(JBUF),.TRUE.,IBEIG(IORB(I)+1+NPSH(I)),
+CMI       CALL SPF_HK(H2FP(JBUF),.FALSE.,IBEIG(IORB(I)+1+NPSH(I)),
      &               IBEIG(IORB(I)+1+NPSH(I)),
      &              NESH(I),NESH(I),NESH(I),NESH(I),NZ,IPRINT)
+          IF (IPRINT.GE.5) THEN
+           CALL HEADER(
+     &  'GET_HDK1_FPM: H_DK1-SF matrix in "k" basis ',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(H2FP(JBUF),NESH(I),NESH(I),
+     &         NESH(I),NESH(I), NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+C         ... calculate the difference TBUF1(JBUF) = TBUF1(JBUF) - H2FP(JBUF) 
+          CALL DAXPY(N2ESHI*NZ,DM1,H2FP(JBUF),1,TBUF1(JBUF),1)
+          CALL DCOPY(N2ESHI*NZ,TBUF1(JBUF),1,H2FP(JBUF),1)
+
+          IF (IPRINT.GE.5) THEN
+           CALL HEADER(
+     &  'GET_HDK1_FPM: H_DK1-SO1 matrix in "k" basis ',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(H2FP(JBUF),NESH(I),NESH(I),
+     &         NESH(I),NESH(I), NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+
         ENDIF
 C       ... update the offsets...
         JBUF  = JBUF  + N2ESHI*NZ
@@ -3501,5 +3675,1044 @@ C       ... update the offsets...
       ENDDO
 
       CALL QEXIT('GET_HDK1_FPM')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck amfiin */
+      SUBROUTINE AMFIIN(H2SAO,NB,NTNUC,IPTYPAO,INDXLM,IPNUC,IZTNUCS,
+     &                  IPTA,INDXLMA,IAMFU,IANUCS,ISTNUCTYP,
+     &                   NSPH,LABINT,ONLYSO1,ONLYTRA,
+     &                 IMFCH,IC_AMFI,IPRINT,WORK,LWORK)    
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C 
+C  Interface to B.Schimmelpfennig's atomic mean-field integral code, AMFI   
+C
+C  On input:  H2SAO
+C             NB - total number of basis functions(L+S)
+C             NTNUC - total number (all) of nucleis 
+C              
+C          ... IZTNUCS - array for charges (int) of all nuclei of the system
+C             
+C          ... for each sperical AO in H2CAO matrix: 
+C             IPTYPAO - typ of spherical AO
+C             INDXLM - index of typ
+C             IPNUC - index nuclei (1-NTNUC)
+C             ISTNUCTYP - integer array for storing ICENT, INDXLM 
+C 
+C 
+C          ... for each sperical AO in AMFI triangular matrixes
+C             IPTA - typ of spherical AO for AMFI
+C             INDXLMA - index of AMFI type
+C             IAMFU - mapping function AMFI ints -> H2SAO positions
+C
+C             LABINT - spherical AO labels
+C             ONLYSO1 - is .true. do only comparison of SO1 BSS/AMFI integrals 
+C
+C          ... for AMFI
+C              IFMCH
+C              IC_AMFI
+C
+C On output: H2SAO with mean-field contributions, if wished, or nothing 
+C            - only comparison made
+C
+C     Written by Miro Ilias, Strasbourg, 2005
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+CMI        ... it would be good to define thrs param.
+C     PARAMETER(THRNULL=1.D-7)
+      PARAMETER(THRNULL=1.D-5)
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dummy.h"
+C
+C Used from COMMON blocks:
+C    SHELLS: KMAX
+C    SPHCOM:
+C    NUCLEI: NLARGE,NSMALL,NBASIS
+#include "nuclei.h"
+#include "aosotr.h"
+#include "shells.h"
+#include "dcbsph.h"
+#include "chrnos.h"
+
+C
+      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA
+      DIMENSION WORK(LWORK),H2SAO(NB,NB,4)  
+      DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
+     &       IPTA(*),INDXLMA(*),IAMFU(NSPH),ISTNUCTYP(NSPH,2),
+     &       IZTNUCS(NTNUC),IANUCS(NTNUC)
+      DIMENSION ncontrac(0:4)
+
+      CHARACTER LABINT(MXQN**2)*4
+      character*8 xa,ya,za
+      DIMENSION xa(4),ya(4),za(5)
+      CHARACTER*15 AFN
+
+      CALL QENTER('AMFIIN')
+#include "memint.h"
+
+      write(lupri,*) 'NUCIND=',NUCIND
+      write(lupri,*) 'charge:',(charge(i),i=1,nucind)
+      write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
+
+      write(lupri,*) 'Total number of centers:',NTNUC
+
+C  ... this failes !!!
+C     CALL MEMCHK('AMFIIN 1 ',WORK,1)
+
+C   ... fill IZTNUCS
+      IX = 1
+      DO I=1,NUCIND
+      DO J=1,NUCDEG(I)
+       IZTNUCS(IX) = NINT(CHARGE(I))
+       write(lupri,*) IX,'. nuclei:',IZTNUCS(IX) 
+       IX = IX + 1
+      ENDDO
+      ENDDO
+
+C     CALL QUIT('amfiin')
+
+C    .. make ready the IPTYPAO, INDXLM,IPNUC
+      IOFF = 1
+      JOFF = 1
+      IX = 1
+      DO ISHELL = 1, NLRGSH
+        L     = NHKT(ISHELL)
+        ICENT = NCENT(ISHELL)
+        NDEG  = NUCDEG(ICENT)
+        INDX=NUMCF(ISHELL)
+        DO IDEG = 1, NDEG
+C        ... find out the nuclei
+         INUCPOS = 0
+         DO IC=1,ICENT
+           IF (IC.LT.ICENT) THEN
+             IDEG1=NUCDEG(IC)
+           ELSE
+             IDEG1=IDEG
+           ENDIF
+           DO IDG = 1, IDEG1
+             INUCPOS = INUCPOS + 1
+           ENDDO
+         ENDDO
+
+         write(lupri,*) ' L=',NHKT(ISHELL),
+     &  ' ICENT=',NCENT(ISHELL),' charge:',CHARGE(ICENT),
+     &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
+     &  ' INDXLM=',INDX
+
+        
+C      ... specify IPTYPAO,  INDX_L_ML and center
+        IF (L.EQ.1) THEN
+          IPTYPAO(IX)=1
+C          write(lupri,*) 'IX=',IX,' >',WORK(KIPTYPAO+IX)
+          INDXLM(IX)=INDX
+          IPNUC(IX)=INUCPOS
+          IX = IX + 1 
+C          write(lupri,*) 'IX set to:',IX
+        ELSE IF (L.EQ.2) THEN
+          IPTYPAO(IX)=2 ! 2px
+C          write(lupri,*) 'IX=',IX,' >',WORK(KIPTYPAO+IX)
+          INDXLM(IX)=INDX
+          IPNUC(IX)=INUCPOS
+          IPTYPAO(IX+1)=3  ! 2py
+C          write(lupri,*) 'IX=',IX+1,' >',WORK(KIPTYPAO+IX+1)
+          INDXLM(IX+1)=INDX
+          IPNUC (IX+1)=INUCPOS
+          IPTYPAO(IX+2)=4  ! 2pz
+C          write(lupri,*) 'IX=',IX+2,' >',WORK(KIPTYPAO+IX+2)
+          INDXLM(IX+2)=INDX
+          IPNUC (IX+2)=INUCPOS
+          IX = IX + 3
+C          write(lupri,*) 'IX set to:',IX
+        ELSE IF (L.EQ.3) THEN
+          IPTYPAO(IX  )=5 ! 3d2-
+          INDXLM(IX+0)=INDX
+          IPNUC(IX)=INUCPOS
+
+          IPTYPAO(IX+1)=6 ! 3d1-
+          INDXLM(IX+1)=INDX
+          IPNUC (IX+1)=INUCPOS
+
+          IPTYPAO(IX+2)=7 ! 3d0
+          INDXLM(IX+2)=INDX
+          IPNUC (IX+2)=INUCPOS
+
+          IPTYPAO(IX+3)=8 ! 3d1+
+          INDXLM(IX+3)=INDX
+          IPNUC (IX+3)=INUCPOS
+
+          IPTYPAO(IX+4)=9 ! 3d2+
+          INDXLM(IX+4)=INDX
+          IPNUC (IX+4)=INUCPOS
+
+          IX = IX + 5
+        ELSE IF (L.EQ.4) THEN
+
+          IPTYPAO(IX  )=10 ! 4f3-
+          INDXLM(IX+0)=INDX
+          IPNUC (IX+0)=INUCPOS
+
+          IPTYPAO(IX+1)=11 ! 4f2-
+          INDXLM(IX+1)=INDX
+          IPNUC (IX+1)=INUCPOS
+
+          IPTYPAO(IX+2)=12 ! 4f1-
+          INDXLM(IX+2)=INDX
+          IPNUC (IX+2)=INUCPOS
+
+          IPTYPAO(IX+3)=13 ! 4f0 
+          INDXLM(IX+3)=INDX
+          IPNUC (IX+3)=INUCPOS
+
+          IPTYPAO(IX+4)=14 ! 4f1+
+          INDXLM(IX+4)=INDX
+          IPNUC (IX+4)=INUCPOS
+
+          IPTYPAO(IX+5)=15 ! 4f2+
+          INDXLM(IX+5)=INDX
+          IPNUC (IX+5)=INUCPOS
+
+          IPTYPAO(IX+6)=16 ! 4f3+
+          INDXLM(IX+6)=INDX
+          IPNUC (IX+6)=INUCPOS
+
+          IX = IX + 7
+        ELSE IF (L.EQ.5) THEN
+
+          IPTYPAO(IX+0)=17 ! 5g4-
+          INDXLM(IX+0)=INDX
+          IPNUC (IX+0)=INUCPOS
+
+          IPTYPAO(IX+1)=18 ! 5g3-
+          INDXLM(IX+1)=INDX
+          IPNUC (IX+1)=INUCPOS
+
+          IPTYPAO(IX+2)=19 ! 5g2-
+          INDXLM(IX+2)=INDX
+          IPNUC (IX+2)=INUCPOS
+
+          IPTYPAO(IX+3)=20 ! 5g1-
+          INDXLM(IX+3)=INDX
+          IPNUC (IX+3)=INUCPOS
+
+          IPTYPAO(IX+4)=21 ! 5g0
+          INDXLM(IX+4)=INDX
+          IPNUC (IX+4)=INUCPOS
+
+          IPTYPAO(IX+5)=22 ! 5g1+
+          INDXLM(IX+5)=INDX
+          IPNUC (IX+5)=INUCPOS
+
+          IPTYPAO(IX+6)=23 ! 5g2+
+          INDXLM(IX+6)=INDX
+          IPNUC (IX+6)=INUCPOS
+
+          IPTYPAO(IX+7)=24 ! 5g3+
+          INDXLM(IX+7)=INDX
+          IPNUC (IX+7)=INUCPOS
+
+          IPTYPAO(IX+8)=25 ! 5g4+
+          INDXLM(IX+8)=INDX
+          IPNUC (IX+8)=INUCPOS
+
+          IX = IX + 9
+        ELSE
+          CALL QUIT('AMFI MAX UP TO g FUNCTIONS!')
+        ENDIF
+      ENDDO
+      ENDDO
+
+C     CALL MEMCHK('before AMFI1',WORK,1)
+
+      IF ((IX-1).NE.NSPH) THEN
+      write(lupri,*) 'IX-1=',IX-1, 'NSPH=',NSPH
+        CALL QUIT('amfiin')
+      ENDIF
+
+      write(lupri,*) (LABINT(i),i=1,25)
+      write(lupri,*)
+      write(lupri,*) 'Order of basis functions in spher. AO basis:'
+
+C     DO I=1, NSPH
+C       write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
+C    &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
+C     ENDDO
+
+C ... rearange INDXLM for splitted basis sets...
+      CALL UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,INDXLM,ISTNUCTYP)
+
+
+      IF (IPRINT.GE.6) THEN
+        CALL HEADER(
+     &'AMFIIN: TOTAL H(2c)_LL in "xhi" S AO basis ' ,-1)
+        CALL PRQMAT(H2SAO,NB,NB,NB,NB,4,IQDEF,LUPRI)    
+      ENDIF
+
+C     CALL MEMCHK('before AMFI2',WORK,1)
+C ... TODO: find out the "best" optimal allocation for AMFI !
+C     LAMFI = N2BBASXQ*N2BBASXQ
+C     LAMFI = N2BBASXQ*4
+      LAMFI = N2BBASXQ*32
+      CALL MEMGET('REAL',KAMFI,LAMFI,WORK,KFREE,LFREE)
+
+C     Open Mean-field input file generated in READIN      
+      LUTMP2 = 0
+      MNFPRP = 0
+      CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+
+      OLDNRM=.FALSE.
+      BREIT = .FALSE.
+
+C ===================================
+C     We loop over unique centers
+C ===================================
+
+      REWIND (LUTMP2)
+C     ... skip text
+      READ(LUTMP2,*) 
+C     ... read number of unique nuclei
+      READ(LUTMP2,*) NUNUC
+      write(lupri,*) 'MNF.INP - number of unique nuclei:',NUNUC
+
+      DO IATOM = 1, NUNUC
+
+      write(lupri,*) 'AMFI - calculating unique nucleus no:',IATOM
+
+      READ(LUTMP2,*) ICHARGE
+      write(lupri,*) 'AMFI - charge of nucleus (inty) :',ICHARGE
+C     ... file name for AMFI integrals of center
+       IF (ICHARGE.LT.10) THEN
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)
+       ELSE IF (ICHARGE.LT.100) THEN
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/10)//CHRNOS(MOD(ICHARGE,10))
+       ELSE IF (ICHARGE.LT.1000) THEN
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
+     &                       CHRNOS(MOD(ICHARGE,100)/10)//
+     &                       CHRNOS(MOD(MOD(ICHARGE,100),10))
+       ELSE
+         CALL QUIT('AMFIIN: charge > 1000!')
+       ENDIF
+
+       write(lupri,*) 'AMFI file:',AFN
+       CALL GPOPEN(MNFPRP,AFN,'UNKNOWN',' ','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
+
+C      ... find out the correct index of nuclear exponent
+       IF (GAUNUC) THEN
+        IATOM1 = 0
+        DO J = 1, NUCIND
+          IF (NINT(CHARGE(J)).EQ.ICHARGE) IATOM1=J
+        ENDDO
+        IF (IATOM1.EQ.0) THEN
+         CALL QUIT('AMFIIN: IATOM1 not found')
+        ELSE
+         write(lupri,*) ' indx=',IATOM1,' CHARGE=',
+     &        CHARGE(IATOM1),ICHARGE,
+     &   ' nucl. exponent:',GNUEXP(IATOM1)
+        ENDIF
+
+CMI   ... gauss.nucleus (for SO1) does not work in AMFI !!!!
+        IF (IC_AMFI.EQ.1.OR.IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5) CALL
+     &  QUIT('AMFIIN: GNUC is not working in AMFI!')
+       ENDIF
+
+       CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
+     &             IC_AMFI,WORK(KAMFI),LAMFI)
+
+C      ...... this works...
+      CALL MEMCHK('after AMFI',WORK,1)
+
+C      ... read AOPROPER.MNF file...
+C    numballcart... total no of functions per centre...
+      REWIND (MNFPRP)
+
+      READ(MNFPRP) xa
+      READ(MNFPRP) numballcart
+
+      write(lupri,*) 'numballcart=',numballcart
+
+C  ... allocate memmory for this AMFI center
+      length3=((numballcart*numballcart)+numballcart)/2
+      CALL MEMGET('REAL',KSOX,length3,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSOY,length3,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSOZ,length3,WORK,KFREE,LFREE)
+
+      CALL MEMCHK('after AMFI 2',WORK,1)
+
+      DO I=1,numballcart
+        READ(MNFPRP) IPTA(I),INDXLMA(I)
+       write(lupri,*) 'from amfi:',I,' ',LABINT(IPTA(I)),' ',INDXLMA(I)
+      ENDDO
+
+      READ(MNFPRP)  Lhigh,(ncontrac(I),I=0,Lhigh) 
+        write(lupri,*) 'Lhigh=',Lhigh,' ncontrac:',
+     &     (ncontrac(I),I=0,Lhigh)
+
+C     ... find out degeneracy of that nuclei IATOM
+        NICHARGE = 0
+        DO I = 1, NTNUC
+         IF (IZTNUCS(I).EQ.ICHARGE) NICHARGE=NICHARGE+1
+        ENDDO
+        IF (NICHARGE.EQ.0) THEN
+         CALL QUIT('AMFIIN: The nucleus does not exist is system!')
+        ENDIF  
+        write(lupri,*) 'AMFI nuclei ',ICHARGE,
+     &                 ' is degenerate ',NICHARGE
+
+C        ... find NICHARGE centers on IZTNUCS of H2CAO with ICHARGE !
+C          use IANUCS(1-NTNUC)
+        CALL IZERO(IANUCS,NTNUC)
+        IX = 0
+        DO I=1,NTNUC
+         IF (ICHARGE.EQ.IZTNUCS(I)) THEN
+           IX = IX + 1
+           IANUCS(IX)=I
+         ENDIF
+        ENDDO
+        IF (IX.NE.NICHARGE) THEN
+          CALL QUIT('AMFIIN: nuclei do not correspond !')
+        ENDIF
+        write(lupri,*) 'corresponding H2CAO nuclei:',
+     &    (IANUCS(I),I=1,NICHARGE)
+
+C       ... prepare the mapping array...
+        CALL IZERO(IAMFU,NSPH)
+        DO I=1, NICHARGE
+        DO J=1, numballcart
+           K=0
+ 23        K=K+1
+            ISONLIST=.FALSE.
+            ISONLIST=(IPTA(J).EQ.IPTYPAO(K)).AND.
+     &             (INDXLMA(J).EQ.INDXLM(K)).AND.
+     &              (IANUCS(I).EQ.IPNUC(K))
+C           write(lupri,*) K,IPTA(J),IPTYPAO(K),INDXLMA(J),
+C    &                    INDXLM(K),IANUCS(I),IPNUC(K),ISONLIST
+C          IF (ISONLIST) THEN
+C           write(lupri,*) 'MATCH! K=',K,' I=',I,' J=',J
+C          ENDIF
+          IF (K.LT.NSPH.AND..NOT.ISONLIST) GOTO 23 
+          IF (K.EQ.NSPH.AND..NOT.ISONLIST) THEN
+           CALL QUIT('AMFIIN: isonlist 1')
+          ELSE IF (ISONLIST.AND.K.LE.NSPH) THEN
+            JI=J+(numballcart*(I-1))
+            IAMFU(JI) = K 
+C           write(lupri,*) 'stored k=',K,' at pos:',JI
+          ELSE
+           CALL QUIT('AMFIIN: isonlist 2')
+          ENDIF
+
+        ENDDO
+        ENDDO
+
+C   ... write out mapping function correspondance....
+        write(lupri,*) '*** Mapping AMFI - H2CAO *** '
+       IX = 0
+       DO I=1,NICHARGE
+       DO J=1,numballcart
+         IX = IX + 1
+        write(lupri,*) 'amfi :',IANUCS(I),' ',LABINT(IPTA(J)),
+     &                INDXLMA(J),
+     &   ' H2CAO: pos= ',IAMFU(IX), ' nucleus:',
+     &      IPNUC(IAMFU(IX)),' ',LABINT(IPTYPAO(IAMFU(IX))),
+     &      INDXLM(IAMFU(IX))
+       ENDDO
+       ENDDO
+
+C     ... read AMFI integrals...
+C     READ(MNFPRP) xa
+      READ(MNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
+       write(lupri,*) ' AMFI X integrals:'
+C      write(lupri,*) (WORK(KSOX+irun),irun=0,length3-1) 
+      READ(MNFPRP) ya
+      READ(MNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
+       write(lupri,*) ' AMFI Y integrals:'
+C      write(lupri,*) (WORK(KSOY+irun),irun=0,length3-1) 
+C     READ(MNFPRP) za
+      READ(MNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
+       write(lupri,*) ' AMFI Z integrals:'
+C      write(lupri,*) (WORK(KSOZ+irun),irun=0,length3-1) 
+
+      CALL MEMCHK('after AMFI2',WORK,1)
+
+
+C ************************************************************************
+C     ... do comparison of SO1 integrals if wished
+C       or add AMFI contributions into H2CAO
+C ************************************************************************
+
+      DO IANUC=1,NICHARGE
+      IX = 0
+      DO  I = 1, numballcart
+      DO  J = 1, I
+
+C       ... get SO integrals from AMFI
+       SOXINT=-WORK(KSOX+IX)
+       SOYINT=-WORK(KSOY+IX)
+       SOZINT=-WORK(KSOZ+IX)
+
+C      ... indexes of H2CAO(I1,J1,2-4)
+       I1 = IAMFU(I+(numballcart*(IANUC-1)))
+       J1 = IAMFU(J+(numballcart*(IANUC-1)))
+
+       IF (IPRINT.GE.5) THEN
+       write(lupri,*) 'amfi: <',LABINT(IPTA(I)),'(',INDXLMA(I),')',
+     &  '[',IANUCS(IANUC),']','|O|',LABINT(IPTA(J)),'(',INDXLMA(J),')',
+     &   '[',IANUCS(IANUC),']> H2CAO: <',LABINT(IPTYPAO(I1)),
+     &     '(',INDXLM(I1),
+     &    ')','[',IPNUC(I1),']','|O|',LABINT(IPTYPAO(J1)),
+     &   '(',INDXLM(J1),
+     &   ')[',IPNUC(J1),']>'
+       ENDIF
+
+
+      IF (ONLYSO1) THEN
+
+       DIFSOX = SOXINT-H2SAO(I1,J1,4)
+       DIFSOY = SOYINT-H2SAO(I1,J1,3)
+       DIFSOZ = SOZINT-H2SAO(I1,J1,2)
+
+       IF (DABS(DIFSOX).GE.THRNULL) THEN
+           ratio=SOXINT/H2SAO(I1,J1,4)
+           write(lupri,*) '<',LABINT(IPTYPAO(I1)),'(',
+     &        INDXLM(I1),')','|SOX|',
+     &         LABINT(IPTYPAO(J1)),'(',INDXLM(J1),')','>'
+           write(lupri,*) SOXINT,H2SAO(I1,J1,4),DIFSOX,ratio
+         ENDIF
+
+         IF (DABS(DIFSOY).GE.THRNULL) THEN
+           ratio=SOYINT/H2SAO(I1,J1,3)
+           write(lupri,*) '<',LABINT(IPTYPAO(I1)),'(',
+     &        INDXLM(I1),')','|SOY|',
+     &         LABINT(IPTYPAO(J1)),'(',INDXLM(J1),')','>'
+           write(lupri,*) SOYINT,H2SAO(I1,J1,3),DIFSOY,ratio
+         ENDIF
+
+         IF (DABS(DIFSOZ).GE.THRNULL) THEN
+           ratio=SOZINT/H2SAO(I1,J1,2)
+           write(lupri,*) '<',LABINT(IPTYPAO(I1)),'(',
+     &        INDXLM(I1),')','|SOZ|',
+     &         LABINT(IPTYPAO(J1)),'(',INDXLM(J1),')','>'
+           write(lupri,*) SOZINT,H2SAO(I1,J1,2),DIFSOZ,ratio
+         ENDIF
+
+         IF (I1.NE.J1) THEN
+            DIFSOX = SOXINT+H2SAO(J1,I1,4)
+            DIFSOY = SOYINT+H2SAO(J1,I1,3)
+            DIFSOZ = SOZINT+H2SAO(J1,I1,2)
+         IF (DABS(DIFSOX).GE.THRNULL) THEN
+           ratio=SOXINT/H2SAO(J1,I1,4)
+           write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
+     &        INDXLM(J1),')','|SOX|',
+     &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
+           write(lupri,*) SOXINT,H2SAO(J1,I1,4),DIFSOX,ratio
+         ENDIF
+
+         IF (DABS(DIFSOY).GE.THRNULL) THEN
+           ratio=SOYINT/H2SAO(J1,I1,3)
+           write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
+     &        INDXLM(J1),')','|SOY|',
+     &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
+           write(lupri,*) SOYINT,H2SAO(J1,I1,3),DIFSOY,ratio
+         ENDIF
+
+         IF (DABS(DIFSOZ).GE.THRNULL) THEN
+           ratio=SOZINT/H2SAO(J1,I1,2)
+           write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
+     &        INDXLM(J1),')','|SOZ|',
+     &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
+           write(lupri,*) SOZINT,H2SAO(J1,I1,2),DIFSOZ,ratio
+         ENDIF
+
+        ENDIF
+       ELSE IF (.NOT.ONLYTRA) THEN
+C  ==================================================
+C      ... add AMFI contribution to the H2CAO
+C        when onlytra=.false.
+C  ==================================================
+        H2SAO(I1,J1,2) = H2SAO(I1,J1,2) + SOZINT 
+        H2SAO(I1,J1,3) = H2SAO(I1,J1,3) + SOYINT 
+        H2SAO(I1,J1,4) = H2SAO(I1,J1,4) + SOXINT 
+
+        H2SAO(J1,I1,2) = H2SAO(J1,I1,2) - SOZINT 
+        H2SAO(J1,I1,3) = H2SAO(J1,I1,3) - SOYINT 
+        H2SAO(J1,I1,4) = H2SAO(J1,I1,4) - SOXINT 
+       ENDIF
+       IX = IX + 1
+      ENDDO
+      ENDDO
+        write(lupri,*) '*******************************************'
+      ENDDO
+
+C     ... when you have integrals, compare them..
+C        ... release memmory...
+      CALL MEMREL('KSOZ',WORK,KWORK,KSOZ,KFREE,LFREE)
+      CALL MEMREL('KSOY',WORK,KWORK,KSOY,KFREE,LFREE)
+      CALL MEMREL('KSOX',WORK,KWORK,KSOX,KFREE,LFREE)
+      CALL MEMREL('AMFI',WORK,KWORK,KAMFI,KFREE,LFREE)
+
+      CALL GPCLOSE(MNFPRP,'KEEP')
+
+      END DO
+
+C    .. close the MNF.INP file
+      CALL GPCLOSE(LUTMP2,'KEEP')
+
+      IF (ONLYSO1) 
+     & CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
+
+      CALL QEXIT('AMFIIN')
+      RETURN
+      END
+
+      INTEGER FUNCTION INDX_LML(IL,IML,I)
+CMI  ... called from AMFI/contandmult
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION IL(*),IML(*)
+
+       IX = I
+        J = 0
+      LX = IL(I)
+      MLX=IML(I)
+
+ 20   CONTINUE
+      IF (LX.EQ.IL(IX) .AND. MLX.EQ.IML(IX) .AND. IX.GT.0) THEN
+         IX = IX - 1
+         J = J + 1
+         GOTO 20
+      ENDIF
+     
+      INDX_LML = J 
+
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck amfi_stuff */
+      SUBROUTINE UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,INDXLM,ISTNUCTYP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE: If the basis set is splitted, do unite the INDXLM so that their fit
+C           for entering of the AMFI integrals.
+C
+C  Written by Miro Ilias, Strasbourg, 2005
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+
+      DIMENSION IPNUC(NSPH),IPTYPAO(NSPH),INDXLM(NSPH),ISTNUCTYP(NSPH,2)
+      CHARACTER LABINT(MXQN**2)*4
+      LOGICAL ITWAS
+
+      CALL QENTER('UNITE_INDXS')
+
+      write(lupri,*) ''
+      DO I=1, NSPH
+        write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
+     &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
+      ENDDO
+      write(lupri,*) ''
+
+C    ... list of stored INUC&IPTYP
+      IT = 0 
+      IL = 0
+      I = 0
+ 234  I = I + 1
+
+      INUC=IPNUC(I)
+      IPTYP=IPTYPAO(I)
+
+C     ...find out if INUC&IPTYP are not in the list
+      ITWAS=.FALSE.
+      DO K=1,IL
+       IF (INUC.EQ.ISTNUCTYP(K,1).AND.IPTYP.EQ.ISTNUCTYP(K,2))
+     &    ITWAS=.TRUE.
+      ENDDO
+      IF (ITWAS) GOTO 234
+
+C     ... store INUC&IPTYP into the store_list_array
+      IL=IL+1
+      ISTNUCTYP(IL,1)=INUC 
+      ISTNUCTYP(IL,2)=IPTYP 
+C     ... check out indexes from J
+      JJ = 0
+      J = I-1
+ 235  J = J + 1
+
+      IF (INUC.EQ.IPNUC(J).AND.IPTYP.EQ.IPTYPAO(J).AND.J.LE.NSPH) THEN
+      JJ = JJ + 1
+      IT = IT + 1
+        write(lupri,*) 'I=',I,' J=',J,
+     &   ' for INUC=',INUC,' IPTYP=',IPTYP,
+     &   ' indexes:', JJ,INDXLM(J)
+        IF (INDXLM(J).NE.JJ) THEN
+         write(lupri,*) 'difference in indexes !'
+C          ... change the index !
+            INDXLM(J)=JJ
+        ENDIF
+      ENDIF
+      IF (J.LT.NSPH) GOTO 235 
+      IF (I.LT.NSPH) GOTO 234
+
+      write(lupri,*) 'IT=',IT,' NSPH=',NSPH
+
+      IF (IT.NE.NSPH) THEN
+        write(lupri,*) 'IT=',IT,' NSPH=',NSPH
+        CALL QUIT('UNITE_INDXS: IT<>NSPH !')
+      ENDIF
+
+C     ... when indexes are changed, print them out....
+      write(lupri,*) ' '
+      DO I=1, NSPH
+        write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
+     &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
+      ENDDO
+
+
+C     CALL QUIT('UNITE_ENDXS ')
+      CALL QEXIT('UNITE_INDXS')
+      RETURN
+      END
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C  /* Deck amfi_stuff */
+      SUBROUTINE AMFI_STUFF(H2CAO,VMAT,ONLYSO1,
+     &                      ONLYTRA,IC_AMFI,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C    PURPOSE: 
+C   ==========
+C Routine to include AMFI integrals, or simply do comparison 
+C or only the transformation 
+C
+C On input: H2CAO - entering 2c integrals...
+C           ONLYSO1 - flag for making AMFI-SO1 and BSS-SO1 integrals comparison
+C           ONLYTRA - flag announcing only CSC transformation (testing purposes)
+C           IC_AMFI - flag for the AMFI stuff
+C
+C On output: H2CAO - CSC trasformed (+ AMFI, if wished) 2c SA-AO integrals.
+C
+C Written by Miro Ilias, Strasbourg, 2005
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "dcbham.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+
+      DIMENSION H2CAO(*),VMAT(*),WORK(LWORK)
+      CHARACTER LABINT(MXQN**2)*4
+      LOGICAL ONLYSO1,ONLYTRA,TESTCSC
+
+      CALL QENTER('AMFI_STUFF')
+#include "memint.h"
+
+       IF (IPRHAM.GE.5) THEN
+C    ... print out H2c matrix in AO "xhi" basis
+        CALL HEADER(
+     &'AMFI_STUFF: ENTERING TOTAL H(2c)_LL in "xhi" SA-AO basis ' ,-1)
+        CALL PRQMAT(H2CAO(1),NTBAS(0),NTBAS(0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+C ... insert phases
+      IREP=0
+      IF (NZ.LT.4) THEN
+      DO IZ = 1,NZ                                                 
+         IQ = IPQTOQ(IZ,IREP)                                       
+         CALL Q2BPHASE('F',IQ,1,H2CAO(1+N2BBASX*(IZ-1)))
+      ENDDO            
+      ENDIF           
+C   ... transform to BU basis  
+      CALL BSTOBU(H2CAO,NZ,WORK(KFREE),LFREE)
+
+      CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF2,N2BBASX*4,WORK,KFREE,LFREE)
+
+
+C  ... transform to the AO basis ... as in dirone.F/PR1CEX2
+      IPAR = JBTOF(IREP,1)
+      NB = NTBAS(0)
+      CALL DZERO(WORK(KBUF1),4*N2BBASX)
+      DO IZ =1,4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+         CALL MTSOAO(H2CAO(1+N2BBASX*(IPQ-1)),
+     &             WORK(KBUF1+N2BBASX*(IZ-1)),
+     &             NB,IREPD,IPRHAM)
+      ENDDO
+
+C     CALL DCOPY(N2BBASXQ,WORK(KH2AOS1),1,WORK(KH2AOS),1)
+
+      IF (IPRHAM.GE.4) THEN
+        CALL HEADER(
+     &'AMFI_STUFF: TOTAL H(2c)_LL in "xhi" C AO basis ' ,-1)
+C        ... use IQDEF instead of IPQTOQ only when beeing in AO basis!
+        CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+      ENDIF
+
+C      ... generate transf.coefficients...
+      CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRHAM)
+
+C      ... transform C AO, WORK(KBUF1) -> S AO, WORK(KBUF2) 
+      CALL DZERO(WORK(KBUF2),4*N2BBASX)
+      LCOMP=0 
+      DO IZ = 1, 4
+       CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &         WORK(KFREE),LFREE,IPRHAM)
+      ENDDO
+
+      IF (IPRHAM.GE.5) THEN
+        CALL HEADER(
+     &'AMFI_STUFF: TOTAL H(2c)_LL in "xhi" S AO basis ' ,-1)
+        CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+      ENDIF
+
+C   ... find out total number of L-component spherical functions
+      NSPH = NSPHCM(1)
+
+      CALL MEMGET('INTE',KHINLM,NSPH,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPTYPAO,NSPH,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPNUC,NSPH,WORK,KFREE,LFREE)
+      CALL MEMCHK('XXX',WORK,1)
+      CALL SPHLAB(MXQN-1,LABINT)
+       write(lupri,*) 'SPHLAB done, NSPH=',NSPH
+       write(lupri,*) 'NLRGSH=',NLRGSH
+
+
+C     ...allocations for AMFI integrals: typ and index
+       CALL MEMGET('INTE',KAIPT,NSPH,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KAILM,NSPH,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KAMFU,NSPH,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KSTNUCTYP,2*NSPH,WORK,KFREE,LFREE)
+
+
+C      ... find out total number of atomic centers of the system
+       NTNUC = 0
+       DO I=1,NUCIND
+         NTNUC = NTNUC + NUCDEG(I)
+       ENDDO
+       write(lupri,*) 'Total number of centers:',NTNUC
+
+       CALL MEMGET('INTE',KZTNUCS,NTNUC,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KANUCS,NTNUC,WORK,KFREE,LFREE)
+
+       IMFCH=0
+       CALL MEMCHK('before AMFI2',WORK,1)
+
+       CALL AMFIIN(WORK(KBUF2),NB,NTNUC,WORK(KIPTYPAO),WORK(KHINLM),
+     &  WORK(KIPNUC),WORK(KZTNUCS),WORK(KAIPT),WORK(KAILM),WORK(KAMFU),
+     &  WORK(KANUCS),WORK(KSTNUCTYP),
+     &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCH,IC_AMFI,
+     &  IPRHAM,WORK(KFREE),LFREE)
+
+      CALL MEMCHK('before S->C',WORK,1)
+
+C ===================================================================
+C     now transform back: S AO, WORK(KBUF2) -> C AO, WORK(KBUF1) 
+C ===================================================================
+      CALL DZERO(WORK(KBUF1),N2BBASX*4)
+C     ... generate with appropriare factors !!
+      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRHAM)
+      DO IZ = 1, 4
+       CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &          WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &          WORK(KFREE),LFREE,IPRHAM)
+      ENDDO
+
+C   ... point to check H2c in C AO basis again...
+      IF (IPRHAM.GE.4) THEN
+        CALL HEADER(
+     &'AMFI_STUFF: TOTAL H(2c)_LL BACK in "xhi" C AO basis ' ,-1)
+        CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI) 
+      ENDIF
+
+      TESTCSC=.FALSE.
+      IF (TESTCSC) THEN
+       CALL DZERO(WORK(KBUF2),N2BBASX*4)
+C       ... needed to go back to S
+       CALL SPHGEN(1,2,.FALSE.,WORK(KFREE),LFREE,IPRHAM)
+       DO IZ = 1, 4
+         CALL MTAOCS(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &         WORK(KFREE),LFREE,IPRHAM)
+       ENDDO
+
+        IF (IPRHAM.GE.6) THEN
+          CALL HEADER(
+     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" S AO basis ' ,-1)
+          CALL PRQMAT(WORK(KBUF2),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+        ENDIF
+
+       CALL DZERO(WORK(KBUF1),N2BBASX*4)
+      CALL SPHGEN(1,2,.TRUE.,WORK(KFREE),LFREE,IPRHAM)
+
+C        ... and from S to C
+        DO IZ = 1, 4
+         CALL MTAOSC(WORK(KBUF1+N2BBASX*(IZ-1)),NB,
+     &         WORK(KBUF2+N2BBASX*(IZ-1)),NB,LCOMP,
+     &         WORK(KFREE),LFREE,IPRHAM)
+        ENDDO
+
+        IF (IPRHAM.GE.6) THEN
+          CALL HEADER(
+     &'AMFI_STUFF: TOTAL CSC_H(2c)_LL AGAIN in "xhi" C AO basis ' ,-1)
+          CALL PRQMAT(WORK(KBUF1),NB,NB,NB,NB,4,IQDEF,LUPRI)    
+        ENDIF
+
+        CALL QUIT('CSC  again')
+      ENDIF
+
+C ============================================================
+C   ... FINALLY: transform BACK from AO to the SA-AO basis
+C            WORK(KBUF1) -> H2CAO(1)
+C ============================================================
+      CALL DZERO(H2CAO,N2BBASXQ)
+      DO IZ = 1, 4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+       CALL MTAOSO(WORK(KBUF1+N2BBASX*(IZ-1)),
+     &             H2CAO(1+N2BBASX*(IPQ-1)),
+     &             NB,IREPD,IPRHAM)
+      ENDDO
+
+      CALL BUTOBS(H2CAO,NZ,WORK(KFREE),LFREE) 
+      IF(NZ.LT.4) THEN                              
+        DO IZ = 1,NZ                                
+          IQ = IPQTOQ(IZ,IREP)                    
+          CALL Q2BPHASE('F',IQ,1,H2CAO(1+N2BBASX*(IZ-1)))  
+        ENDDO                                    
+      ENDIF
+C        ... print statement...
+       IF (IPRHAM.GE.6) THEN
+C    ... print out H2c matrix in AO "xhi" basis
+        CALL HEADER(
+     &'AMFI_STUFF: AGAIN TOTAL H(2c)_LL in "xhi" SA-AO basis ' ,-1)
+        CALL PRQMAT(H2CAO,NTBAS(0),NTBAS(0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+      CALL MEMREL('AMFI_STUFF',WORK,KWORK,KWORK,KFREE,LFREE)
+
+C  SAVE THE CSC TRANSFOMED INTEGRALS 
+C     ... include/dcbgen.h..LUBSS
+C ...save hamiltonian matrix elements
+C ... no OPNFIL, no REWIND ! It destroys previous data !
+C      CALL OPNFIL(LUBSS,'BSSMAT','OLD','AMFI_STUFF')
+C      REWIND(LUBSS)
+       CALL NEWLAB('H1AO_DK2',LUBSS,LUPRI)
+       CALL WRITT(LUBSS,N2BBASXQ,H2CAO)
+       CLOSE(LUBSS,STATUS='KEEP')
+       WRITE(LUPRI,'(/2X,A)')
+     &'New BSS2 relativistic atomic integrals'//
+     &' are written to the BSSMAT file.'
+
+      CALL QEXIT('AMFI_STUFF')
+      RETURN
+      END
+
+      subroutine matrix_inversion ( A, NP, IPIV, INDXR, INDXC )
+      !-------------------------------------------------------------------------
+      !
+      !	      Taken from "Numeric recipes".  The original program was
+      !       GAUSSJ which solves linear equations by the Gauss_Jordon
+      !       elimination method.  Only the parts required to invert
+      !	      matrices have been retained.
+      !
+      !	      J.P. Griffith  6/88
+      !
+CMI       A - input/output....
+      !-------------------------------------------------------------------------
+#include "implicit.h" 
+#include "priunit.h"  
+
+C     PARAMETER (NMAX=50)
+
+      DIMENSION A(NP,NP), IPIV(*), INDXR(*), INDXC(*)
+
+      n = np
+
+      DO 11 J=1,N
+        IPIV(J)=0
+11    CONTINUE
+      DO 22 I=1,N
+        BIG=0.
+        DO 13 J=1,N
+          IF(IPIV(J).NE.1)THEN
+            DO 12 K=1,N
+              IF (IPIV(K).EQ.0) THEN
+                IF (ABS(A(J,K)).GE.BIG)THEN
+                  BIG=ABS(A(J,K))
+                  IROW=J
+                  ICOL=K
+                ENDIF
+              ELSE IF (IPIV(K).GT.1) THEN
+CMI             PAUSE 'Singular matrix'
+                CALL QUIT('Singular matrix!')
+              ENDIF
+12          CONTINUE
+          ENDIF
+13      CONTINUE
+
+        IPIV(ICOL)=IPIV(ICOL)+1
+        IF (IROW.NE.ICOL) THEN
+          DO 14 L=1,N
+            DUM=A(IROW,L)
+            A(IROW,L)=A(ICOL,L)
+            A(ICOL,L)=DUM
+14        CONTINUE
+        ENDIF
+        INDXR(I)=IROW
+        INDXC(I)=ICOL
+CMI     IF (A(ICOL,ICOL).EQ.0.) PAUSE 'Singular matrix.'
+        IF (A(ICOL,ICOL).EQ.0.) CALL QUIT('Singular matrix.')
+        PIVINV=1./A(ICOL,ICOL)
+        A(ICOL,ICOL)=1.
+        DO 16 L=1,N
+          A(ICOL,L)=A(ICOL,L)*PIVINV
+16      CONTINUE
+        DO 21 LL=1,N
+          IF(LL.NE.ICOL)THEN
+            DUM=A(LL,ICOL)
+            A(LL,ICOL)=0.
+            DO 18 L=1,N
+              A(LL,L)=A(LL,L)-A(ICOL,L)*DUM
+18          CONTINUE
+          ENDIF
+21      CONTINUE
+22    CONTINUE
+      DO 24 L=N,1,-1
+        IF(INDXR(L).NE.INDXC(L))THEN
+          DO 23 K=1,N
+            DUM=A(K,INDXR(L))
+            A(K,INDXR(L))=A(K,INDXC(L))
+            A(K,INDXC(L))=DUM
+23        CONTINUE
+        ENDIF
+24    CONTINUE
       RETURN
       END

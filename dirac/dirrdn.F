@@ -3316,7 +3316,7 @@ C
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','.NOSPIN','.XXXXXX',
-     &            '.INTFLG','.BSS   ','.XXXXXX','.XXXXXX'/
+     &            '.INTFLG','.BSS   ','.AMFICH','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3357,6 +3357,7 @@ C
       SSMTRC  = D1
       BSS     = .FALSE.
       IBSS    = -1
+      IMFCH   = 0
       MC      = 2
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) HFXFAC  = D1
@@ -3629,6 +3630,10 @@ C      as they need to be modified within BSS transformations
              ENDIF
             GO TO 100
   127     CONTINUE
+C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
+C     for mean-field summations of each atom in the system
+C          ... read integer number
+             READ(LUCMD,*) IMFCH
             GO TO 100
   128     CONTINUE
             GO TO 100
@@ -3714,7 +3719,10 @@ C
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (BSS) THEN
         WRITE(LUPRI,'(1X,A,I3)')
-     &' * Barysz-Sadlej-Snijders Hamiltonian. Type code -',IBSS
+     &' * Barysz-Sadlej-Snijders Hamiltonian. Type code:',IBSS
+        WRITE(LUPRI,'(1X,A,I4)')
+     &' * If wished, mean-field AMFI summation for the charge: ',
+     &   IMFCH
       ELSE IF (IGTINT .NE. 0) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE

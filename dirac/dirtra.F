@@ -1649,11 +1649,11 @@ C
       ENDDO
       CALL QEXIT ('MTBUBS')
       RETURN
-C
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphgen */
-      SUBROUTINE SPHGEN(WORK,LWORK,IPRINT)
+      SUBROUTINE SPHGEN(MORDER,MINTEG,CSCADAPT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Generate coefficients for transforming from Cartesian to
@@ -1665,10 +1665,13 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision: Sep 19 1995
 C
+CMI   MORDER=1, MINTEG=2 ... previous settings
+CMI   CSCADAPT ... if true, adapt CSP matrix for C-S-C transformation
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 #include "maxaqn.h"
 C
 C Used from COMMON blocks
@@ -1677,9 +1680,11 @@ C
 #include "dcbsph.h"
 
       DIMENSION WORK(LWORK)
+      LOGICAL CSCADAPT
 C
       CALL QENTER('SPHGEN')
 #include "memint.h"
+
       NCSPT = (MXQN*(MXQN + 1)/2)*(2*MXQN - 1)
       CALL DZERO(CSP,NCSP)
 C
@@ -1690,8 +1695,11 @@ C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
 C     MINTEG eq 1 : the spherical components are normalized such
 C                   that all coefficients are integers.
-      MORDER = 1
-      MINTEG = 1
+CMI   MORDER = 1
+CMI    ... only this works ...
+CMI   MINTEG = 2
+CMI ... try for CSC tra..
+CMI   MINTEG = 1
       IOFF = 1
       DO 10 LVAL = 0, MXQN - 1
         NLM            = 2*LVAL + 1
@@ -1707,56 +1715,10 @@ C                   that all coefficients are integers.
         ELSE
           CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,MORDER,MINTEG,
      &                WORK(KFREE),LFREE,IPRINT)
-C
-C         Normalize matrix
-C
-        IF(LVAL.EQ.3) THEN
-C
-C     Jon K. Laerdahl (16.12.96):
-C         Normalization NOT necessary
-C         Makes RKB transformation more complicated
-C         --> Remove Normalization
-C
-C          JOFF = KCSPT
-C1
-C          FAC = D1/SQRT(24.0000D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C2
-C          JOFF = JOFF + NXYZ
-C3
-C          FAC = D1/SQRT(40.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C4
-C          FAC = D1/SQRT(6.666666666670D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C5
-C          FAC = D1/SQRT(40.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C6
-C          FAC = D1/SQRT(4.0D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
-C7
-C          FAC = D1/SQRT(2.66666667D0)
-C          CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C          JOFF = JOFF + NXYZ
           CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,CSP(ISPADR(LVAL+1)),NLM)
-        ELSE
-C          JOFF = KCSPT
-C          DO K = 1,NLM
-C            FAC = DDOT(NXYZ,WORK(JOFF),1,WORK(JOFF),1)
-C            FAC = D1/SQRT(FAC)
-C            CALL DSCAL(NXYZ,FAC,WORK(JOFF),1)
-C            JOFF = JOFF + NXYZ
-C          ENDDO
-          CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,CSP(ISPADR(LVAL+1)),NLM)
-        END IF
         END IF
  10   CONTINUE
+
 C
 C     Generate backtransformation as well
 C
@@ -1766,6 +1728,59 @@ C
         NXYZ = (L*(L+1))/2
         CALL MTRSP(NLM,NXYZ,CSP(IOFF),NLM,SPC(IOFF),NXYZ)
       ENDDO
+
+CMI ... adapt the SPC matrixes for S-C correct transformations...
+      IF (CSCADAPT) THEN
+       CALL MEMGET('REAL',KSCCS,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KSCCS1,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIPIV,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KINDXR,NCSPT,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KINDXC,NCSPT,WORK,KFREE,LFREE)
+
+CMI     ... start from d-functions...
+        DO L = 3,MXQN
+          IOFF = ISPADR(L)
+          NLM  = 2*L- 1
+          NXYZ = (L*(L+1))/2
+C        ... do the multiplication CSP*SPC = WORK(KSCCS)
+          CALL DZERO(WORK(KSCCS),NCSPT)
+          CALL DZERO(WORK(KSCCS1),NCSPT)
+          CALL IZERO(WORK(KIPIV),NCSPT)
+          CALL IZERO(WORK(KINDXR),NCSPT)
+          CALL IZERO(WORK(KINDXC),NCSPT)
+
+          CALL DGEMM('N','N',NLM,NLM,NXYZ,D1,CSP(IOFF),NLM,
+     &          SPC(IOFF),NXYZ,D0,WORK(KSCCS),NLM)
+
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(/1X,A,I5)')
+     &      'CSP*SPC matrix for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+          ENDIF
+C        ... do the matrix inverse, WORK(KSCCS)
+          CALL MATRIX_INVERSION(WORK(KSCCS),NLM,WORK(KIPIV),
+     &                          WORK(KINDXR),WORK(KINDXC))
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(1X,A,I5)')
+     &      'CSP*SPC inversion matrix for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+          ENDIF
+C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
+           NLX = NLM*NXYZ
+          CALL DCOPY(NLX,CSP(IOFF),1,WORK(KSCCS1),1) 
+          CALL DGEMM('N','N',NLM,NXYZ,NLM,D1,WORK(KSCCS),NLM,
+     &          WORK(KSCCS1),NLM,D0,CSP(IOFF),NLM)
+          IF (IPRINT.GE.4) THEN
+            WRITE (LUPRI,'(1X,A,I5)')
+     &      'inv(CSP*SPC)*CSP for L=',L-1
+            WRITE (LUPRI,'(1X,A,2I5)') ' size NLM, NXYZ:',NLM,NXYZ
+            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+          ENDIF
+        ENDDO
+      ENDIF
+
 C
 C     Print section
 C
@@ -1795,6 +1810,7 @@ C
       RETURN
 C
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtaocs */
       SUBROUTINE VTAOCS(AOV,LDA,CSV,LDC,NVEC,LCOMP,IPRINT)
@@ -1809,6 +1825,8 @@ C     LCOMP = 1   Transform only large components
 C     LCOMP = 2   Transform only small components
 C
 C     NSPH - number of spherical components
+C
+C       LDC <= LDA
 C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
@@ -1829,6 +1847,12 @@ C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "shells.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('VTAOCS: Input vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,NVEC
+        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,1,LUPRI)
+      ENDIF
 C
 C     Set limits
 C
@@ -1850,7 +1874,7 @@ C       Small components
         CALL QUIT('VTAOCS: Unknown component LCOMP !!!')
       ENDIF
 C
-C     Transform to spherical components
+C     Transform to cartesian components
 C
       IOFF = 1
       JOFF = 1
@@ -1859,7 +1883,7 @@ C
         NLM   = 2*(L-1) + 1
         NXYZ  = L*(L+1)/2
         NDEG   = NUCDEG(NCENT(ISHELL))
-        DO IDEG = 1,NDEG
+        DO IDEG = 1, NDEG
           CALL DGEMM('N','N',NLM,NVEC,NXYZ,D1,CSP(ISPADR(L)),NLM,
      &               AOV(IOFF,1),LDA,D0,CSV(JOFF,1),LDC)
           IOFF = IOFF + NXYZ
@@ -1870,7 +1894,11 @@ C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
+CMI     CALL HEADER('VTAOCS: Transformed vectors(full size):',-1)
+CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,1,LUPRI)
+
         CALL HEADER('VTAOCS: Transformed vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NSPH,NVEC
         CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,1,LUPRI)
       ENDIF
 C
@@ -1903,6 +1931,12 @@ C
 #include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*),WORK(LWORK)
       CALL QENTER('MTAOCS')
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOCS: Input AO (C) matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,LDA
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+      ENDIF
 C
 C     Set limits
 C
@@ -1930,16 +1964,17 @@ C
 C
 C     First transform rows
 C
-      CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,0)
+      CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOCS: Half-transformed matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NVEC:',NSPH,NVEC
         CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,1,LUPRI)
       ENDIF
 C
 C     Transpose and transform columns
 C
       CALL MTRSP(NSPH,NVEC,WORK(KW1),NSPH,WORK(KW2),NVEC)
-      CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,0)
+      CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,IPRINT)
 C
 C     Backtranspose to obtain final matrix
 C
@@ -1951,12 +1986,161 @@ C
 C     Print section
 C
       IF(IPRINT.GE.5) THEN
-        CALL HEADER('MTAOCS: Transformed matrix:',-1)
+        CALL HEADER('MTAOCS: Transformed (S) matrix:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NSPH:',NSPH,NSPH
         CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,1,LUPRI)
       ENDIF
       CALL QEXIT ('MTAOCS')
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mtaocs */
+      SUBROUTINE MTAOSC(AOM,LDA,CSM,LDC,LCOMP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Transform NVEC vectors from Spherical AO basis to Cartesian
+C     AO basis
+C
+C     Options:
+C     LCOMP = 0   Transform all components
+C     LCOMP = 1   Transform only large components
+C     LCOMP = 2   Transform only small components
+C
+C     NSPH - total number of spherical components
+C
+C     On input:  CSM in spherical components (NB,NB)
+C     On output: AOM in cartesian components (NB,NB)
+C
+C
+C  Written by Miro Ilias (after T.Saue's MTAOCS), Strasburg, 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+#include "mxcent.h"
+C
+#include "nuclei.h"
+      DIMENSION AOM(LDA,*),CSM(LDC,*)
+C     DIMENSION AOM(*),CSM(*)
+
+      DIMENSION WORK(LWORK)
+      CALL QENTER('MTAOSC')
+
+C
+C     Set limits
+C
+      NSPH = NSPHCM(LCOMP)
+
+      IF    (LCOMP.EQ.0) THEN
+C       All components
+        NVEC = NBASIS
+      ELSEIF(LCOMP.EQ.1) THEN
+C       Large components
+        NVEC = NLARGE
+      ELSEIF(LCOMP.EQ.2) THEN
+C       Small components
+        NVEC = NSMALL
+      ELSE
+        WRITE(LUPRI,'(A,I5)') '* Unknown LCOMP = ',LCOMP
+        CALL QUIT('MTAOCS: Unknown component LCOMP !!!')
+      ENDIF
+
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOSC: Entering matrix in S AO:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'size: NROWS, NCOLS',LDC,LDC
+        WRITE(LUPRI,'(2X,A,2I4,A,2I4)')
+     &   'desired:  (S) NSPH,NSPH:',NSPH,NSPH,
+     &   ' -> (C) NVEC,NVEC:',NVEC,NVEC
+        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,1,LUPRI)
+      ENDIF
+
+CMI   NVEC >= NSPH !!
+
+C
+C     Allocate work space
+C
+#include "memint.h"
+      NWRK = NVEC*NSPH
+      NWRK2 = NVEC*NVEC
+
+CMI   CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KW1,NWRK2,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KW2,NWRK2,WORK,KFREE,LFREE)
+C
+C     First transform rows
+C
+CMI   CALL VTAOCS(AOM,LDA,WORK(KW1),NSPH,NVEC,LCOMP,0)
+CMI   CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+C ... in calling of this routine is the origin of the memmory fault !!!
+C     CALL VTCSAO(CSM,LDC,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
+C     CALL VTCSAO(CSM,LDC,WORK(KW1),NSPH,NVEC,LCOMP,IPRINT)
+C1    CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+      CALL VTCSAO(CSM,LDC,WORK(KW1),NVEC,NVEC,LCOMP,IPRINT)
+
+CMI   ... we get WORK(KW1) ... NVECxNSPH
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('MTAOSC: Half-transformed matrix, WORK(KW1):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NSPH:',NVEC,NSPH
+C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+C      WORK(KW1),NVECxNSPH -> WORK(KW2),NSPHxNVEC
+C
+C     Transpose and transform columns
+C
+CMI   CALL MTRSP(NSPH,NVEC,WORK(KW1),NSPH,WORK(KW2),NVEC)
+C     CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NSPH)
+C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NVEC)
+      CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,WORK(KW2),NVEC)
+
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER(
+     &    'MTAOSC: Half-transformed transposed matrix, WORK(KW2):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NSPH, NVEC:',NSPH,NVEC
+        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+
+CMI ... we have WORK(KW2) NSPHxNVEC -> WORK(KW1) ... NVECxNVEC
+CMI   CALL VTAOCS(WORK(KW2),NVEC,WORK(KW1),NSPH,NSPH,LCOMP,0)
+C     CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
+      CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NVEC,LCOMP,IPRINT)
+
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER(
+     &    'MTAOSC: Transformed transposed matrix, WORK(KW1):',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NVEC:',NVEC,NVEC
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,1,LUPRI)
+      ENDIF
+
+C
+C     Backtranspose to obtain final matrix WORK(KW1) ->  AOM
+C
+CMI   CALL MTRSP(NSPH,NSPH,WORK(KW1),NSPH,CSM,LDC)
+CMI   CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,AOM,LDA)
+C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,AOM,LDA)
+      CALL MTRSP(NVEC,NVEC,WORK(KW1),NVEC,AOM,LDA)
+C
+C     Memory deallocation
+C  ... MI makes error, removed...
+C   ... origin unknown...
+      CALL MEMREL('MTAOSC',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C     Print section
+C
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('MTAOSC: Final transformed matrix in C AO:',-1)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+      ENDIF
+
+      CALL QEXIT ('MTAOSC')
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtcsao */
       SUBROUTINE VTCSAO(CSV,LDC,AOV,LDA,NVEC,LCOMP,IPRINT)
@@ -2033,6 +2217,7 @@ C
       IF(IPRINT.GE.5) THEN
         NDIM = IOFF-1
         CALL HEADER('VTCSAO: Transformed vectors:',-1)
+        WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NDIM,NVEC
         CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,1,LUPRI)
       ENDIF
 C
@@ -2113,7 +2298,8 @@ C
 #include "memint.h"
 C
       CALL HEADER('Output from SPHTST',-1)
-      CALL SPHGEN(WORK,LWORK,IPRINT)
+CMI   CALL SPHGEN(WORK,LWORK,IPRINT)
+      CALL SPHGEN(1,2,.FALSE.,WORK,LWORK,IPRINT)
 C
 C     Check normalization
 C
@@ -2325,6 +2511,8 @@ C     LCOMP  = 2   SS-block
 C
 C     Written June 20 1996 - Trond Saue
 C     Last revision June 20 1996 - tsaue
+C   
+C     Used in BSS mode, M.ILIAS, Strasbourg, 2005
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2354,8 +2542,12 @@ C     SS-block
 C
       NSPH = NSPHCM(LCOMP)
       NWRK = NDIM*NSPH
-      WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
-      CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
+       WRITE(LUPRI,'(A)') '* DELSPH: Entering AMAT matrix '
+       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+      ENDIF
 C     Allocate buffers
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
@@ -2615,7 +2807,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Getsph */
-      SUBROUTINE GETSPH(CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+      SUBROUTINE GETSPH(MORDER,MINTEG,CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Get spherical transformation matrices up to LMAX
@@ -2639,9 +2831,9 @@ C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
 C     MINTEG eq 1 : the spherical components are normalized such
 C                   that all coefficients are integers.
-      MORDER = 1
+CMI   MORDER = 1
       SPHNRM = .FALSE.
-      MINTEG = 1
+CMI   MINTEG = 1
       IOFF   = 0
       DO LL = 1, LMAX
         L    = LL - 1

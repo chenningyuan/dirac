@@ -2199,10 +2199,19 @@ C
          WRITE (LUPRI,'(1X,A,1P,D10.2)') ' Threshold for integrals:',
      &                                   THRS
       END IF
+
+
+CMI   ... prepare the MNF.INP file with basis set exponents....
+      CALL MOLOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
+     &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
+     &            WORK(KIPCON),KATOM,KANG,KBLOCK,
+     &           KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
+
 C
 C     Print the references to the basis sets
 
       IF (IPREAD .GT. 0) CALL PRBASREF(LUPRI,NONTYP,BASREF)
+
 C
 C     ******************************************
 C     ***** Printing of atomic coordinates *****
@@ -7505,3 +7514,133 @@ C
  1002 FORMAT (2X,A80)
       RETURN
       END
+
+
+C  /* Deck molout */
+      SUBROUTINE MOLOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &     IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM,
+     &     NSYMOP)
+C
+C     Now also dumps a file MNF.INP for use for SO mean-field approximation
+C     Written by K.Ruud 160297 
+C
+C     Added and modified by Miro Ilias for the AMFI part
+C      Strasbourg, 2005
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <pi.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <aovec.h>
+#include <maxaqn.h>
+#include <ccom.h>
+#include <cbirea.h>
+#include <nuclei.h>
+#include <primit.h>
+#include <molinp.h>
+      LOGICAL SEG, NRMPRI
+      CHARACTER KASYM(3,3)*1, CRT*1
+      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
+     &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
+     &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
+      DIMENSION IPCON(KPRIM)
+C
+      LUTMP2 = 0
+      CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+C    
+      IPRIMD = 0
+      IPRIM =  0
+      ICENT  = 0
+      IBLOCK = 0
+      ISYCNT = 1
+
+C     write(lupri,*) 'NONTYP=',NONTYP
+
+      write(lutmp2,*)
+     & 'Formatted input for AMFI - decontracted basis sets !'
+      write(lutmp2,*) NONTYP
+
+      DO 100 I = 1, NONTYP
+         DO N = 1, NONT(I)
+            ISYCNT = ISYCNT + 1
+         END DO
+         MNCENT = ICENT + 1
+C     write(lupri,*) 'I(1-NONTYP)=',I,' NONT(I)=',NONT(I)
+C   .... prevent segmentation of L shells...
+         DO 110 N = 1, NONT(I)
+C     write(lupri,*) 'N(1-NONT(I))=',N
+            ICENT = ICENT + 1
+            NDEG  = NUCDEG(ICENT)
+            KBCH  = IBLOCK
+CMI         ... charge, highest angular momentum
+           IF (N.EQ.1) THEN
+            WRITE(LUTMP2,*) NINT(CHARGE(MNCENT)) 
+            WRITE (LUTMP2,*) CHARGE(MNCENT),IQM(I)-1
+C           WRITE (lupri,*) '*****  charge,iqm:',CHARGE(MNCENT),IQM(I)-1
+           ENDIF
+            II = 0
+            DO 200 J = 1, IQM(I)
+           IF (N.EQ.1) THEN
+C            write(lupri,*)
+C    &       '  >>>  momentum J=',J,' JCO(J,I)=',JCO(J,I)
+           ENDIF
+CMI           .... segmentation of L blocks ...not desirable for AMFI...
+               IF (JCO(J,I).GT.1) THEN
+                KBCH_SAVE=KBCH
+                NNUCT=0
+                NNRCT=0
+                DO KI=1, JCO(J,I)
+                  KBCH = KBCH + 1
+                  NNUCT = NNUCT + NUC(KBCH) 
+                  NNRCT = NNRCT + NRC(KBCH) 
+                ENDDO
+                 KBCH = KBCH_SAVE
+               ENDIF
+               DO 210 K = 1, JCO(J,I)
+                  KBCH = KBCH + 1
+                  NNUC  = NUC(KBCH)
+                  NNRC  = NRC(KBCH)
+                  IF (NNUC .EQ. 0) GO TO 200
+                IF (N.EQ.1) THEN
+                 IF (JCO(J,I).EQ.1) THEN
+                  WRITE (LUTMP2,*) NNUC,NNRC
+C                 WRITE (lupri,*) 'K(1-JCO(J,I))=',K,
+C    &                '  -> NNUC,NNRC:',NNUC,NNRC
+                 ELSE
+                  IF (K.EQ.1) THEN
+                    WRITE (LUTMP2,*) NNUCT,NNRCT
+C                   WRITE (lupri,*) 
+C    &               '  -> NNUCT,NNRCT:',NNUCT,NNRCT
+                  ENDIF
+                 ENDIF
+                ENDIF
+                  ITYP = NHKOFF(J)
+                  IPSTRT = IPRIM + 1
+                  IPRIM =  IPRIM + NNUC
+                  ITYP = ITYP + 1
+                  IPRIMD = IPRIMD + 1
+CMI             ... write out exponents only when N=1 !!!
+                  IF (N .EQ. 1) THEN
+                     DO 410 M = 1, NNUC
+                        IPRIMD = IPRIMD + 1
+                           WRITE (LUTMP2,'(F20.10)') PRIEXP(IPSTRT-1+M)
+C                          WRITE (lupri,'(F20.10)') PRIEXP(IPSTRT-1+M)
+ 410                 CONTINUE
+                  END IF
+ 210           CONTINUE
+ 200        CONTINUE
+ 110     CONTINUE
+         IBLOCK = IBLOCK + NBLCK(I)
+ 100  CONTINUE
+C
+      WRITE (LUTMP2,'(A)') 'END'
+      CALL GPCLOSE(LUTMP2,'KEEP')
+
+      WRITE(LUPRI,'(/,2X,A)')
+     &       'MNF.INP input file (for the AMFI stuff) is ready.'
+
+      RETURN
+      END
+
+

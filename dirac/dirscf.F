@@ -3219,6 +3219,18 @@ C
         DO J = 1, NORB(I)
           IBEIG(IORB(I)+J) = 0
         ENDDO
+
+
+C ... control print out of the matrix to be diagonalized
+         IF (DODBG.AND.IPRHAM.GE.7) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &     'DFDIAG: Ferm.symm.blocked MO matrix to be diagonalized:'
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          CALL PRQMAT(FMO(1+I2TMOT(I)),
+     &     NTMO(I),NTMO(I),NTMO(I),NTMO(I),
+     &     NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF 
 C
 C       Diagonalize Fock-matrix in MO-basis
 C         - store coefficients in FAO
@@ -3227,6 +3239,7 @@ C
 C       1 : Normal diagonalization, use matrix as supplied by dfsolv
 C
         IF (.NOT.SPECIAL) THEN
+
           IF(DOJACO) THEN
             CALL RSJACO(NTMO(I),NTMO(I),NTMO(I),FMO(I2TMOT(I)+1),
      &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1),
@@ -3236,6 +3249,14 @@ C
      &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
+
+         IF (DODBG.AND.IPRHAM.GE.7) THEN
+          WRITE(LUPRI,'(/2X,A)')
+     &     'DFDIAG: Eigenvalues (.NOT.SPECIAL) :'
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NORB(I)) 
+         ENDIF 
 C
 C
 C       2 : Subblock diagonalization (e.g. Levy-Leblond, spinfree, linear symmetry)
@@ -3253,14 +3274,6 @@ C
           N2TMO = NTMO(I)*NTMO(I)
           CALL DZERO(FAO(1+I2TMOT(I)),N2TMO*NZ)
 
-            IF (DODBG.AND.IPRHAM.GE.12) THEN
-             WRITE(LUPRI,'(/2X,A)')
-     &        'DFDIAG-SPECIAL: FULL MATRIX BEFORE DIAGONALIZATION'
-             CALL PRQMAT(FMO(1+I2TMOT(I)),
-     &          NTMO(I),NTMO(I),NTMO(I),NTMO(I),
-     &          1,IPQTOQ(1,0),LUPRI)
-            ENDIF 
-C
           IBO = 0
           DO ISUB = 1, N_SUB_BL(I)
            NBO = NORB_SUB(ISUB,I,0)
@@ -3270,11 +3283,11 @@ C
 
             IF (DODBG) THEN
              WRITE(LUPRI,'(2X,A,A,I1,A,I1,A,I2,A,I2)')
-     &       'DFDIAG-SPECIAL', 
+     &       'DFDIAG: SPECIAL', 
      &       ' IFSYM=',I,'/',NFSYM,
      &       ' ISUB=',ISUB,'/',N_SUB_BL(I) 
              WRITE(LUPRI,'(2X,A)')
-     &        'MATRIX(SUBBBLOCK) BEFORE DIAGONALIZATION'
+     &        'MO matrix (subblocks) to be diagonalized'
              CALL PRQMAT(FMO(IMAT),
      &          NBO,NBO,NTMO(I),NTMO(I),
      &          1,IPQTOQ(1,0),LUPRI)
@@ -3292,10 +3305,14 @@ C
      &                   WORK(KFREE),LFREE,IERR)
             ENDIF
 
-            IF (DODBG) THEN
-             WRITE(LUPRI,'(2X,A)') 'CORRESPONDING EIGENVALUES:'
+            IF (DODBG.AND.IPRHAM.GE.8) THEN
+             WRITE(LUPRI,'(2X,A)') 'DFDIAG: Eigenvalues(subbblock):'
              WRITE(LUPRI,'(6(I3,A,D14.6))')
      &         (IX,'-',EIG(IX),IX=IEIG,IEIG+NBO-1)
+             WRITE(LUPRI,'(2X,A)') 'DFDIAG: Eigenvectors(subblock):'
+             CALL PRQMAT(FAO(IMAT),
+     &          NBO,NBO,NTMO(I),NTMO(I),
+     &          1,IPQTOQ(1,0),LUPRI)
             ENDIF
 
             IBO = IBO + NORB_SUB(ISUB,I,0)

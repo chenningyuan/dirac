@@ -58,6 +58,7 @@ CBS   write(LUPRI,*) 'Bonn-approach for spin-other-orbit part'
        write(LUPRI,*) 'Point-nucleus '
       else
        write(LUPRI,*) 'Finite Nucleus' 
+       write(LUPRI,*) ' nuclear exponent=',Exp_finite
       endif  
       write(LUPRI,*) stars
       write(LUPRI,*) 'write out one-electron integrals in MOLCAS-style'

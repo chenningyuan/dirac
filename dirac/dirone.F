@@ -387,6 +387,8 @@ C
 C MI&HJAaJ (2003): If BSS=.TRUE., read the TWO-COMPONENT
 C                   relativistic bare nuclei(in AO basis) from the file
 C                   BSSMAT (label='H1AO_DK')
+C MI, 2005,Strasbourg - added new label='H1AO_DK2' containing
+C  modified (CSC transformed) atomic integrals.
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -398,7 +400,7 @@ C
 #include "dcbgen.h"
 #include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
-      LOGICAL FNDLAB
+      LOGICAL FNDLAB,IS_READ
 C
       CALL QENTER('ONEFCK')
 #include "memint.h"
@@ -407,16 +409,30 @@ CMI...   If BSS is active read one-electron
 CMI     DKn(BSS) AO integrals from the file BSSMAT(lu=LUBSS)
       IF (BSS) THEN
 
+         IS_READ=.FALSE.
          CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')
          REWIND LUBSS
-         IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
+         IF (FNDLAB('H1AO_DK2',LUBSS)) THEN
           CALL READT(LUBSS,N2BBASXQ,FOCK)
           IF (IPRHAM.GE.2)
      &    WRITE(LUPRI,'(/2X,A,A)')
+     & 'ONEFCK: BSS2 transformed one-electron relativistic',
+     & ' integrals were read from the file BSSMAT.'
+          IS_READ=.TRUE.
+         ENDIF
+
+         REWIND LUBSS
+         IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
+           IF (.NOT.IS_READ) THEN 
+             CALL READT(LUBSS,N2BBASXQ,FOCK)
+             IF (IPRHAM.GE.2)
+     &         WRITE(LUPRI,'(/2X,A,A)')
      & 'ONEFCK: BSS transformed one-electron relativistic',
      & ' integrals were read from the file BSSMAT.'
-         ELSE
-          CALL QUIT('ONEFCK: Error, H1AO_DK not found in BSSMAT !')
+           ENDIF
+         ELSE IF (.NOT.IS_READ) THEN
+          CALL QUIT(
+     &      'ONEFCK: Error, H1AO_DK/H1AO_DK2 not found in BSSMAT !')
          END IF
          CLOSE(LUBSS,STATUS='KEEP')
 
@@ -796,9 +812,14 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 C
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0,DM1 = -1.0D0)
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dgroup.h"
 #include "dcbbas.h"
+
+#include "dcbsph.h"
+#include "dcbqal.h"
       DIMENSION VMAT(*),WORK(LWORK)
 C
       CALL QENTER('LOWDIN')
@@ -808,6 +829,7 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
+
       IF(ISPHTR.NE.0) THEN
         NCSPH = 0
         DO LL = 1,NHTYP
@@ -840,6 +862,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lowdi1 */
       SUBROUTINE LOWDI1(VMAT,SMAT,EIG,CSPH,ICSP,WORK,LWORK,IPRINT)
 C*****************************************************************************
+C
 C     PURPOSE:
 C        Construction of the transformation matrix for Lowdin
 C        ortogonalization
@@ -879,11 +902,15 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,WORK,LWORK)
+
 C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
 C
-      IF(ISPHTR.NE.0) CALL GETSPH(CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+
+       IF(ISPHTR.NE.0) 
+     &       CALL GETSPH(1,2,CSPH,ICSP,NHTYP,WORK,LWORK,IPRINT)
+
 C
 C     Initialize Lowdin matrix
 C     ========================
@@ -2391,7 +2418,8 @@ C
       CALL MEMGET('INTE',KICBF,3*LMAX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIFUN,3*NFUN,WORK,KFREE,LFREE)
       CALL SPHLO1(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,EIG,NCAR,
-     &            CSPH,ICSP,LMAX,NXYZ,NFUN,WORK(KTMAT),WORK(KCBUF),
+     &            CSPH,ICSP,LMAX,NXYZ,NFUN,WORK(KTMAT),
+     &            WORK(KCBUF),
      &            WORK(KICBF),WORK(KIFUN),
      &            WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2535,6 +2563,7 @@ C
      &       ' * Center : ',JNUC,
      &       ' * L-value: ',L
             IF(KLM.GT.0) THEN
+              WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
               CALL OUTPUT(CBUF(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
             ELSE
               WRITE(LUPRI,'(A)') ' - no functions - '
@@ -5175,7 +5204,12 @@ C
         DO IX = IEIGE, IEIGE+NL-1
            MJ = NINT(D2*EIG(IX))
            MJABS = (ABS(MJ)+1)/2
-           IF (MJABS.GT.MAX_SUB_BL) CALL QUIT ("increase max_sub_bl")
+           IF (MJABS.GT.MAX_SUB_BL) THEN
+             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
+     &       ' actual MJ:',MJABS,' max value of MJ:',
+     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
+             CALL QUIT ("increase max_sub_bl")
+           ENDIF
            ID_SUB_BL(MJABS,I)  = MJ
            NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
            NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
@@ -5185,7 +5219,12 @@ C
         DO IX = IEIGP, IEIGP+NS-1
            MJ = NINT(D2*EIG(IX))
            MJABS = (ABS(MJ)+1)/2
-           IF (MJABS.GT.MAX_SUB_BL) CALL QUIT ("increase max_sub_bl")
+           IF (MJABS.GT.MAX_SUB_BL) THEN 
+             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
+     &        ' max value of MJ:',
+     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
+             CALL QUIT ("increase max_sub_bl")
+           ENDIF
            ID_SUB_BL(MJABS,I)  = MJ
            NORB_SUB(MJABS,I,2) = NORB_SUB(MJABS,I,2) + 1
            NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1

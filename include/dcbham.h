@@ -43,16 +43,17 @@
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
+!     IMFCH      - charge for the mean-field summation in the AMFI
 
       INTEGER MAX1OPER
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS, MC
+     &        ICTLV1C(2), IBSS, MC, I2_HAM, IMFCH
       COMMON /DCIHAM/ I1_HAM,IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,      &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM, IMFCH
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))

@@ -365,6 +365,8 @@ abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
 abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
 abacus/abanuc.o     abacus/abatro.o     abacus/abaortvec.o abacus/abarint.o \\
 abacus/abaopt.o     abacus/abavrml.o abacus/abawalk.o abacus/abaop2.o \\
+amfi/amfi.o         amfi/amfi1.o        amfi/amfi2.o        amfi/amfi3.o \\
+amfi/relscf.o\\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o \\
@@ -563,7 +565,7 @@ TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(CCFOCKSPOBJS) \\
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
-dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
+dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
@@ -581,7 +583,7 @@ EOF
 # Parallel targets
 #
 cat <<EOF>> Makefile
-dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
+dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ AMFI_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(OBJSLAVE) \\
@@ -644,6 +646,7 @@ cat <<EOF>> Makefile
 clean   :
 	cd dirac    ; \$(MAKE) clean
 	cd abacus   ; \$(MAKE) clean
+	cd amfi     ; \$(MAKE) clean
 	cd prp      ; \$(MAKE) clean
 	cd main ; \$(MAKE) clean
 	cd moltra   ; \$(MAKE) clean
@@ -784,6 +787,9 @@ cat <<EOF>> Makefile
 HER_OBJ :
 	cd abacus ; \$(MAKE) all
 
+AMFI_OBJ :
+	cd amfi ; \$(MAKE) all
+
 GP_OBJ :
 	cd gp ; \$(MAKE) all
 
@@ -873,7 +879,7 @@ which_modules()
 #
 MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG"
 MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XPPFLG $EMBFLG"
-dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
+dirs="dirac prp abacus amfi gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
