@@ -2315,7 +2315,7 @@ C     Initialize /PRLINP/.
 C-------------------------
 C
       IF (.NOT. FIRST) THEN
-         IF (WORD .NE. '*END OF' .OR. WORD(1:2) .NE. '**') THEN
+         IF ( WORD .EQ. '*PARALL' ) THEN
  969        READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
