@@ -419,15 +419,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
       SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
      &                  ORBMO,IBSPI,NSPC,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
 C
-C*****************************************************************************
+C     Added number of boson symmetry reps (of parent group).
+C      Timo Fleig, Mar 28, 2002
+C
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
@@ -446,7 +449,7 @@ C
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
       DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
       DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
-      DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
+      DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2)
       DIMENSION MULTB(64,64)
       DATA IPHS/ 1,-1,-1, 1/
 C
@@ -460,30 +463,36 @@ C
       BREIT = .FALSE.
       IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
          NSYMRP = 2
+         NBSYMRP = 1
          REPN(1) = '  1A          '
          REPN(2) = '  2A          '
       ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN
          NSYMRP = 2
+         NBSYMRP = 2
          REPN(1) = '  1E          '
          REPN(2) = '  2E          '
       ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
          NSYMRP = 2
+         NBSYMRP = 4
          REPN(1) = '   E  1E      '
          REPN(2) = '   E  2E      '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
          NSYMRP = 4
+         NBSYMRP = 2
          REPN(1) = ' 1AG          '
          REPN(2) = ' 2AG          '
          REPN(3) = ' 1AU          '
          REPN(4) = ' 2AU          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
          NSYMRP = 4
+         NBSYMRP = 4
          REPN(1) = ' 1Eg          '
          REPN(2) = ' 2Eg          '
          REPN(3) = ' 1Eu          '
          REPN(4) = ' 2Eu          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
          NSYMRP = 4
+         NBSYMRP = 8
          REPN(1) = '  Eg 1Eg      '
          REPN(2) = '  Eg 2Eg      '
          REPN(3) = '  Eu 1Eu      '
@@ -504,11 +513,12 @@ C     Set the number of active electrons
 C
       DO IREP = 1, NSYMRP
          IFRP = (IREP+1) / 2
-         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP,1)
+         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP)
       ENDDO
 C
-C     The correlation codes do not use TR symmetry, write Kramers
-C     pairs as spinors
+C     The correlation codes (RELCCSD, DIRRCI, LUCITA) do not use 
+C     TR symmetry, write Kramers pairs as spinors
+C
 C
       II    = 0
       IK    = 0
@@ -595,16 +605,40 @@ C
 C
 C     Write MRCONEE file
 C
+C     Pass on all the information that the post-dhf
+C     electron correlation codes might need.
+C
       OPEN (LUMLF1,FILE='MRCONEE',FORM='UNFORMATTED')
-      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG
+C     Total number of spinors, breit active in DHF ?,
+C     DHF energy, group type (1 real, 2 complex, 4 quat.)
+      WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ
+C     Number of fermion irreps in parent group, names of these
+C     irreps (gerade, ungerade), number of spinors active
+C     in the transformation, number of occupied frozen spinors,
+C     number of deleted spinors.
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
-     &              (NAEL(IRP),IRP=1,NSYMRP)
+     &                      (NAEL(IRP),IRP=1,NSYMRP),
+     &                      (NSTR(IRP),IRP=1,NFSYM),
+     &                      (NSPC(IRP),IRP=1,NFSYM),
+     &  (NESH(IRP)-NSTR(IRP)-NSPC(IRP),IRP=1,NFSYM)
+C     Number of fermion irreps in the Abelian subgroup,
+C     names of these irreps.
       WRITE (LUMLF1) NSYMRPA,(REPA(IRPA),IRPA=1,NSYMRPA*2)
+C     Multiplication table for direct products in the
+C     Abelian subgroup.
       WRITE (LUMLF1) ((MULTB(I,J),I=1,2*NSYMRPA),J=1,2*NSYMRPA)
+C     Information for each spinor :
+C     - Irrep in parent group (1:gerade, 2:ungerade)
+C     - Irrep in Abelian subgroup
+C     - Orbital energy taken from DHF
+C     - Approximate boson irrep identification (needed in LUCIAREL
+C       and LUCITA)
+C     - Number of boson symmetry reps (for LUCITA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),
-     &               (IBSPI(I),I=1,2*NSTRT),(NORB(I),I=1,NFSYM)
+     &               (IBSPI(I),I=1,2*NSTRT),NBSYMRP
+C     Matrix elements over the core Fock operator.
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
-     &                  J=1,NSTRT*2),I=1,NSTRT*2)
+     &                 J=1,NSTRT*2),I=1,NSTRT*2)
       CLOSE (LUMLF1)
 C
       WRITE (LUPRI,1000) 
