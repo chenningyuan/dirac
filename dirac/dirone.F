@@ -62,6 +62,7 @@ C
 #include "dcbprl.h"
 #include "dcbham.h"
 #include "dcbcls.h"
+#include "dcbxpr.h"
 #include "cbihr1.h"
 #include "cbiher.h"
 C
@@ -85,10 +86,12 @@ C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
         IF (NOSMLV) THEN
            CLSCMB(I)(4:4) = '0'
-           PDOINT(I)(4:4) = '0'
+           ILBL = IPRPLBL(1,I)
+           PDOINT(ILBL)(4:4) = '0'
            COMB(4:4) = 'F'
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
+
 C
 C     Contribution from beta-matrix
 C
