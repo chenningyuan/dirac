@@ -400,7 +400,7 @@ C
       IMINS  = IMINS - 60*IHOURS
       ISECS  = NINT(CPU) - 3600*IHOURS - 60*IMINS
       WRITE(LUPRI,'(A,I5.2,A,I2.2,A,I2.2)')
-     &      ' Total CPU  time used in PAMTRA :',
+     &      ' Total CPU  time used in PAMTRA (master only) :',
      &      IHOURS,':',IMINS,':',ISECS
 C
       WRITE(LUPRI,'(/A,F20.6)')
@@ -4294,7 +4294,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRARES*/
-      SUBROUTINE TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1)
+      SUBROUTINE TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1,WALLBEF)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Trond Saue Sep 15 1998
@@ -4345,7 +4345,7 @@ C         ... this node not finished yet, is asking to get or release file lock
           CALL GETTIM(CPUST,WALLST)
           WRITE(LUPRI,'(3X,(A,I4),A,F14.2,A)')
      &           '- Process ',NWHO,
-     &           ' finished at ',WALLST,' seconds after start'
+     &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
           CALL MPI_SEND(NTEST,1,MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)

@@ -93,6 +93,7 @@ C
       ELSE
          WRITE (LUPRI,1000)
       END IF
+      CALL FLSHFO(LUPRI)
  1000 FORMAT (' - MOLFDIR file MDCINT was written.')
  1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
       RETURN

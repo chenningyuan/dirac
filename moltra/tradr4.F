@@ -92,6 +92,8 @@ C***********************************************************************
 C
       CALL QENTER('TRDR4T')
       KFRSAV = KFREE
+C     Initialize the timing
+      CALL XTIME(0,-1,'                             ')
 C
 C     Define the packing of the 4-index transformed integrals
 C
@@ -131,7 +133,9 @@ C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
         IF (NOMDCINT) THEN
+           CALL XTIME(1,1,' Initializing MS4IND file  ')
            CALL MDSCRI(WORK,KFREE,LFREE)
+           CALL XTIME(1,2,' Initializing MS4IND file  ')
         END IF
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
@@ -178,8 +182,10 @@ C             Distribute number of B's evenly
 C
               ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
 C
+              CALL XTIME(2,1,' Slave requesting task from master')
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
+              CALL XTIME(2,2,' Slave requesting task from master')
               NWHO = ISTAT(MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C             ... slave wants new set of A,B shells
@@ -191,6 +197,7 @@ C             ... slave wants new set of A,B shells
      &              ' after',WALLST-WALLBEF,' seconds'
                  CALL FLSHFO(LUPRI)
               END IF
+              CALL XTIME(3,1,' Master and slave negotiating task')
               CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
@@ -201,6 +208,7 @@ C             ... slave wants new set of A,B shells
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
+              CALL XTIME(3,2,' Master and slave negotiating task')
               ELSE IF (ABS(ITEST) .LE. 2) THEN
 C             ... slave wants to lock or free file
                  CALL QUIT('lock/free file not implemented yet')
@@ -214,7 +222,7 @@ C
 C       Get the slaves out of the transformation loop
 C       and receive final results
 C
-        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM)
+        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM,WALLBEF)
       ELSE
 #endif
 C
@@ -225,8 +233,11 @@ C
 C
 C     Initialize scratch output file for final integrals
 C
+        CALL XTIME(1,1,' Initializing MS4IND file  ')
         CALL MDSCRI(WORK,KFREE,LFREE)
+        CALL XTIME(1,2,' Initializing MS4IND file  ')
 C
+        CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 3
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
@@ -254,6 +265,7 @@ C
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
            ENDDO
         ENDDO
+        CALL XTIME(5,2,' Computing+transform. integrals')
 #if defined (VAR_MPI)
       ENDIF
 #endif
@@ -290,6 +302,7 @@ C
      &              TRIAN(2),WORK(KDXB34))
 C
       CALL GETTIM(CPUST,WALLST)
+      CALL XTIME(4,1,' Symmetrizing MO integrals    ')
       WRITE(LUPRI,'(1X,A,F14.2,A)') 
      & '- Starting symmetrization after ',
      &  WALLST-WALLBEF,' seconds'
@@ -311,6 +324,7 @@ C
          NKLOFF = NKLOFF + NKL
       ENDDO
 C        
+      CALL XTIME(4,2,' Symmetrizing MO integrals    ')
       CALL GETTIM(CPUST,WALLST)
       WRITE(LUPRI,'(1X,A,F14.2,A)') 
      &     '- Finished symmetrization after ',
@@ -353,11 +367,14 @@ C
       END IF
       IF (.NOT.PARCAL) CALL MDSCRF
 C
+C     Print timing report
+C
+      CALL XTIME(0,4,' integral transformation      ')
+C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -1 )
-C
       CALL MEMREL('TRDR4T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR4T')
 C
@@ -1098,6 +1115,7 @@ C
 C     Define the packing of the 2-index transformed integrals
 C
       KFRSAV = KFREE
+      CALL XTIME(0,-1,'                             ')
       TRIAN(1) = ISAME(2).EQ.ISAME(1)
       TRIAN(2) = .FALSE.
       CALL PCK2IN(NSTR,TRIAN,IPRINT)
@@ -1112,14 +1130,17 @@ C
 #if defined (VAR_MPI)
          ITEST = 0
 C        ... ask for new set of A,B shells
+         CALL XTIME(2,1,' Slave requesting task from master')
          CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_RECV(ISHLA,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL XTIME(2,2,' Slave requesting task from master')
          IF (ISHLA.EQ.-1) GOTO 200
 C
 C        ISHLB range:
 C
+         CALL XTIME(3,1,' Master and slave negotiating task')
          CALL MPI_RECV(ISHLBS,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          CALL MPI_RECV(ISHLBE,1,MPI_INTEGER,MPARID,30,
@@ -1129,17 +1150,20 @@ C
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL XTIME(3,2,' Master and slave negotiating task')
 #endif
+         CALL XTIME(5,1,' Computing+transform. integrals')
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
      &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
+         CALL XTIME(5,2,' Computing+transform. integrals')
          GOTO 100
   200 CONTINUE
 C
 C     Send statistics (and EMP2 if LMP2)
 C
-      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM)
+      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM,DUM)
 C
 C     Complete the integrals to the desired classes
 C
@@ -1163,6 +1187,7 @@ C
          CALL MEMREL('TR4PAR',WORK,1,KIKRA,KFREE,LFREE)
       END IF
 C
+      CALL XTIME(4,1,' Symmetrizing MO integrals    ')
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
@@ -1174,6 +1199,7 @@ C
          NIJOFF = NIJOFF + NIJ
          NKLOFF = NKLOFF + NKL
       ENDDO
+      CALL XTIME(4,2,' Symmetrizing MO integrals    ')
 C
 C     Close MOLFDIR integral file and delete direct access file
 C
@@ -1181,6 +1207,7 @@ C
 C
  1000 CONTINUE
       CALL MDSCRF
+      CALL XTIME(0,4,' MOLTRA integral transformation')
       CALL MEMREL('TR4PAR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
 C

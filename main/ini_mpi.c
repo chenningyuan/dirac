@@ -139,7 +139,7 @@
 	MPE_Describe_state(1, 2, "Init", "black");
 	MPE_Describe_state(3, 4, "Wait", "red");
 	MPE_Describe_state(5, 6, "Send/recv task", "yellow");
-	MPE_Describe_state(7, 8, "Send/recv integrals", "green");
+	MPE_Describe_state(7, 8, "Send/recv data", "green");
 	MPE_Describe_state(9,10, "Calc", "blue");
       }
       MPE_Start_log();

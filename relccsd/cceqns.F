@@ -290,7 +290,7 @@ C
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
 C
-      CALL XTIME(3,1,'- T1 equations                  ')
+      CALL XTIME(5,1,'- T1 equations                  ')
       IF (TEQ) THEN
            CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
       ENDIF
@@ -307,13 +307,13 @@ C
      &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
          ENDIF
       ENDIF
-      CALL XTIME(3,2,'- T1 equations                  ')
+      CALL XTIME(5,2,'- T1 equations                  ')
 
 C
 C     In case of NOCCD we can skip the calculation of T2 amplitudes 
 C
       IF (TEQ.AND.NOCCD) GOTO 100
-      CALL XTIME(20,1,'- T2 equations                  ')
+      CALL XTIME(5,1,'- T2 equations                  ')
 
       
       if (carith.and.debug) then
@@ -331,18 +331,18 @@ C
 C  EVALUATE T2 INTERMEDIATES
 C
       IF (TEQ) THEN
-         CALL XTIME(21,1,'-- GOINTM                        ')
+         CALL XTIME(0,1,'-- GOINTM                        ')
          CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
-         CALL XTIME(21,2,'-- GOINTM                        ')
-         CALL XTIME(22,1,'-- GVINTM                        ')
+         CALL XTIME(0,2,'-- GOINTM                        ')
+         CALL XTIME(0,1,'-- GVINTM                        ')
          CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
-         CALL XTIME(22,2,'-- GVINTM                        ')
-         CALL XTIME(23,1,'-- AINTM                         ')
+         CALL XTIME(0,2,'-- GVINTM                        ')
+         CALL XTIME(0,1,'-- AINTM                         ')
          CALL AINTM (T1,T2,BUF1,BUF2,AZ)
-         CALL XTIME(23,1,'-- AINTM                         ')
-         CALL XTIME(25,1,'-- HINTM                         ')
+         CALL XTIME(0,2,'-- AINTM                         ')
+         CALL XTIME(0,1,'-- HINTM                         ')
          CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-         CALL XTIME(25,2,'-- HINTM                         ')
+         CALL XTIME(0,2,'-- HINTM                         ')
 
 #if defined (VAR_MPI)
 C *******************
@@ -353,10 +353,6 @@ C ** here and synchronize all the nodes. They then have the complete
 C ** H-array and this lengthy contraction can also be parallelized.
 C
       IF (NMPROC .GT. 1) THEN
-C ... synchronization timing
-C       CALL XTIME(28,1,'-- HINTM synchronization         ')
-C       CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C       CALL XTIME(28,2,'-- HINTM synchronization         ')
 
         IF(NBUF3.LT.IVOVO(NREP+1)) 
      &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
@@ -364,20 +360,29 @@ C       CALL XTIME(28,2,'-- HINTM synchronization         ')
 
 C ... we collect the H array
 
-        CALL XTIME(29,1,'-- adding partial HINTM via MPI_REDUCE')
-        CALL MPI_REDUCE(H,BUF3,RCW*IVOVO(NREP+1),
-     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
-        IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
-        CALL XTIME(29,2,'-- adding partial HINTM via MPI_REDUCE')
+        CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
         CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
+        CALL MPI_ALLREDUCE(BUF3,H,RCW*IVOVO(NREP+1),
+     &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
+        IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+        CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
+c
+cluuk : old code below, that uses two steps
+c       CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
+c       CALL XTIME(4,1,'-- adding partial HINTM via MPI_REDUCE')
+c       CALL MPI_REDUCE(H,BUF3,RCW*IVOVO(NREP+1),
+c    &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
+c       IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+c       CALL XTIME(4,2,'-- adding partial HINTM via MPI_REDUCE')
+c       CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
 
 C ... and redistribute it
 
-        CALL XTIME(30,1,'-- distributing HINTM via MPI_BCAST')
-        CALL MPI_BCAST(H,RCW*IVOVO(NREP+1),MPI_DOUBLE_PRECISION,
-     &     MASTER,MPI_COMM_WORLD,IERR)
-        IF(IERR.GT.0) CALL QUIT('MPI_BCAST ERROR !')
-        CALL XTIME(30,2,'-- distributing HINTM via MPI_BCAST')
+c       CALL XTIME(4,1,'-- distributing HINTM via MPI_BCAST')
+c       CALL MPI_BCAST(H,RCW*IVOVO(NREP+1),MPI_DOUBLE_PRECISION,
+c    &     MASTER,MPI_COMM_WORLD,IERR)
+c       IF(IERR.GT.0) CALL QUIT('MPI_BCAST ERROR !')
+c       CALL XTIME(4,2,'-- distributing HINTM via MPI_BCAST')
       ENDIF
 
 #endif
@@ -399,10 +404,10 @@ C
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
-      CALL XTIME(31,1,'-- T2 EQNS                     ')
+      CALL XTIME(5,1,'-- T2 EQNS                     ')
       CALL T2EQNS (EPS,T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
-      CALL XTIME(31,2,'-- T2 EQNS                     ')
+      CALL XTIME(5,2,'-- T2 EQNS                     ')
 C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
@@ -413,16 +418,16 @@ C
       write (*,111)"s2",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
 C      
-      CALL XTIME(24,1,'-- BINTM                       ')
+      CALL XTIME(5,1,'-- BINTM                       ')
       CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
-      CALL XTIME(24,2,'-- BINTM                       ')
+      CALL XTIME(5,2,'-- BINTM                       ')
 
       if (carith.and.debug) then
       write (*,111)"s2 after bintm",MYPROC,zdotc(ndimt2,s2,1,s2,1)
       elseif (debug) then
       write (*,111)"s2 after bintm",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
-      CALL XTIME(20,2,'- T2 equations                  ')
+      CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
 C
@@ -437,12 +442,9 @@ C
 C
 C  ADD PARTIAL S1 AND S2 (PARALLEL RUNS)
 C
-C     CALL XTIME(35,1,'- PARTS (sync before adding)    ')
-C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C     CALL XTIME(35,2,'- PARTS (sync before adding)    ')
-      CALL XTIME(36,1,'- adding partial T1/T2 amplitudes ')
+      CALL XTIME(4,1,'- adding partial T1/T2 amplitudes ')
       CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
-      CALL XTIME(36,2,'- adding partial T1/T2 amplitudes ')
+      CALL XTIME(4,2,'- adding partial T1/T2 amplitudes ')
 C
       IF (FOCKSP) THEN
 C       Adding folded diagrams, use HOV and H as scratch arrays
@@ -493,21 +495,18 @@ C.....when debugging print out energies in every iteration
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C
-      CALL XTIME(37,1,'- DIIS extrapolation            ')
+      CALL XTIME(5,1,'- DIIS extrapolation            ')
       CALL DELFCK ('VO',DELS1,T1)
       CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
-      CALL XTIME(37,2,'- DIIS extrapolation            ')
+      CALL XTIME(5,2,'- DIIS extrapolation            ')
 C
 C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
 C
-C     CALL XTIME(38,1,'- PARTS (sync before sync)      ')
-C     CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-C     CALL XTIME(38,2,'- PARTS (sync before sync)      ')
-      CALL XTIME(39,1,'- synchronizing T1 & R2 amplitudes')
+      CALL XTIME(4,1,'- synchronizing T1 & T2 amplitudes')
       CALL PARTS (2,RMS,T1,T2,BUF1,BUF2)
-      CALL XTIME(39,1,'- synchronizing T1 & T2 amplitudes')
+      CALL XTIME(4,2,'- synchronizing T1 & T2 amplitudes')
 C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
@@ -672,7 +671,7 @@ C ********************
 C------------------------------------------------------------
 C S(A,I) = S(A,I) + T(A,K) * [HOV(K,C) - 2 * F(K,C)] * T(C,I)
 C------------------------------------------------------------
-         CALL XTIME(4,1,'--- T1EQNS T*[HOV - F]*T      ')
+         CALL XTIME(0,1,'--- T1EQNS T*[HOV - F]*T      ')
          CALL XCOPY (NFVO,HOV,1,BUF1,1)
          IF (CARITH) CALL CONJUGA (NFVO,BUF1,1)
          CALL XAXPY (NFVO,-A2,FVO,1,BUF1,1)
@@ -689,7 +688,7 @@ C------------------------------------------------------------
      &                   A1,S1(OFF1),M)
             OFF1 = OFF1 + M * N * RCW
          ENDDO
-         CALL XTIME(4,2,'--- T1EQNS T*[HOV - F]*T      ')
+         CALL XTIME(0,2,'--- T1EQNS T*[HOV - F]*T      ')
         ENDIF
 C ****************************************************
 C ** END OF TASK SPLITTING. Parallel execution      **
@@ -697,7 +696,7 @@ C ****************************************************
 C-----------------------------------------------------------------
 C S(A,I) = S(A,I) + HOV(CK) * T2(A,C,I,K)
 C-----------------------------------------------------------------
-         CALL XTIME(5,1,'--- T1EQNS HOV*T2(A,C,I,K       ')
+         CALL XTIME(0,1,'--- T1EQNS HOV*T2(A,C,I,K       ')
          CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
      &                 MVO,JVOVO,JJVO,JJVO,T2,BUF1)
 
@@ -706,7 +705,7 @@ C-----------------------------------------------------------------
          OFF2 = IDIST(3,3,1)
          M    = MVO(1)
          CALL XGEMV ('N',M,K,A1,BUF1(OFF1),M,HOV(OFF2),1,A1,S1,1)
-         CALL XTIME(5,2,'--- T1EQNS HOV*T2(A,C,I,K       ')
+         CALL XTIME(0,2,'--- T1EQNS HOV*T2(A,C,I,K       ')
       ENDIF
 
 C ********************
@@ -715,7 +714,7 @@ C ********************
 
       IF (MYPROC.EQ.MASTER) THEN
 
-      CALL XTIME(6,1,'--- T1EQNS   HV*T / T*HO              ')
+      CALL XTIME(0,1,'--- T1EQNS   HV*T / T*HO              ')
 C-----------------------------------------------
 C S(A,I) = S(A,I) + HV(A,C) * T(C,I)
 C-----------------------------------------------
@@ -724,19 +723,19 @@ C-----------------------------------------------
 C S(A,I) = S(A,I) - T(A,K) * HO(K,I)
 C-----------------------------------------------
       CALL CNTRCT ('N','N',NV,NO,NO,-A1,T1,HO,A1,S1,NREP)
-      CALL XTIME(6,2,'--- T1EQNS   HV*T / T*HO            ')
+      CALL XTIME(0,2,'--- T1EQNS   HV*T / T*HO            ')
 
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
-      CALL XTIME(7,1,'--- T1EQNS VOOO*TAU                ')
+      CALL XTIME(0,1,'--- T1EQNS VOOO*TAU                ')
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF3)
       ELSE
          CALL XCOPY (NDIMT2,T2,1,BUF3,1)
       ENDIF
       CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,S1)
-      CALL XTIME(7,2,'--- T1EQNS VOOO*TAU               ')
+      CALL XTIME(0,2,'--- T1EQNS VOOO*TAU               ')
 
 C ****************************************************
 C ** END OF TASK SPLITTING. THE COMMON STUFF STARTS **
@@ -761,14 +760,14 @@ C -------------------------------------------
      &                BUF2,BUF1)
          CALL XAXPY (NDIMT2,A1,T2,1,BUF1,1)
       ENDIF
-      CALL XTIME(8,1,'--- T1EQNS VOVV contribution     ')
+      CALL XTIME(0,1,'--- T1EQNS VOVV contribution  ')
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
-      CALL XTIME(8,2,'--- T1EQNS VOVV contrbution      ')
+      CALL XTIME(0,2,'--- T1EQNS VOVV contribution  ')
 
 C--------------------------------------
 C S(A,I) = S(A,I) - W(A,K,C,I) * T(C,K)    ! VOVO contributions
 C--------------------------------------
-      CALL XTIME(9,1,'--- T1EQNS VOVO * T(C,K)         ')
+      CALL XTIME(0,1,'--- T1EQNS VOVO * T(C,K)         ')
       IF (TEQ) THEN
          CALL GETVOVO (BUF1)
          CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
@@ -783,7 +782,7 @@ C--------------------------------------
       OFF1 = IDIST(2,3,1)
       OFF2 = IDIST(3,3,1)
       CALL XGEMV ('N',M,K,-A1,BUF2(OFF1),M,T1(OFF2),1,A1,S1,1)
-      CALL XTIME(9,2,'--- T1EQNS VOVO * T(C,K)        ')
+      CALL XTIME(0,2,'--- T1EQNS VOVO * T(C,K)        ')
 C------------------------------------
 C Terms specific for Lambda1 equations
 C------------------------------------
@@ -927,7 +926,7 @@ C---- Initialize to zero...
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
-      CALL XTIME(32,1,'--- T2EQNS: TAU*AINTM contraction')
+      CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
       ELSE
@@ -953,7 +952,7 @@ C ***
 C *** CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
 C ***
 
-      CALL XTIME(32,2,'--- T2EQNS: TAU*AINTM contraction')
+      CALL XTIME(0,2,'--- T2EQNS: TAU*AINTM contraction')
 
 C ** we will not parallelize a summation over just one occupied index
 C ** if the system is small this can lead to zero batches. Only master
@@ -982,7 +981,7 @@ C ***************************
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
 C-----------------------------------------------------------------------
-      CALL XTIME(33,1,'--- T2EQNS: VOVV*T1              ')
+      CALL XTIME(0,1,'--- T2EQNS: VOVV*T1              ')
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
@@ -1042,7 +1041,7 @@ C-----------------------------------------------------------------------
             GOTO 10
          ENDIF
  30    CONTINUE
-      CALL XTIME(33,2,'--- T2EQNS: VOVV*T1              ')
+      CALL XTIME(0,2,'--- T2EQNS: VOVV*T1              ')
 
 C ********************
 C ** TASK SPLITTING **
@@ -1129,7 +1128,7 @@ C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
 C-----------------------------------------------------------------------
 
-      CALL XTIME(34,1,'--- T2EQNS: HINTM*T2           ')
+      CALL XTIME(0,1,'--- T2EQNS: HINTM*T2           ')
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
       CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
@@ -1151,7 +1150,7 @@ C-----------------------------------------------------------------------
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF2,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
-      CALL XTIME(34,2,'--- T2EQNS: HINTM*T2           ')
+      CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
 
 
 
@@ -1275,7 +1274,7 @@ C---------------Executable code--------------------------------------
 C
 C     Initialize the timing.
 C
-      CALL XTIME(41,1,'-- T3CORR: Integral resorting      ')
+      CALL XTIME(0,1,'-- T3CORR: Integral resorting      ')
 C
       ET1 = D0
       ET2 = D0
@@ -1308,7 +1307,7 @@ C     Compute TAU3 that is needed in evaluating the -T correction
 C
       CALL GETTAU3 (T1,T2,TAU3)
 C
-      CALL XTIME(41,2,'-- T3CORR: Integral resorting      ')
+      CALL XTIME(0,2,'-- T3CORR: Integral resorting      ')
 C
       DO 300 IJKREP = 1, NREP
       DO 200 KREP = 1, NREP
@@ -1354,7 +1353,7 @@ C
       JOFF2  = LOVVOT(JREP) + (J-1) * NOVVT(JREP)
       KOFF2  = LOVVOT(KREP) + (K-1) * NOVVT(KREP)
 C
-      CALL XTIME(42,1,'-- T3CORR: VOVV contraction        ')
+      CALL XTIME(0,1,'-- T3CORR: VOVV contraction        ')
 C
       CALL XCOPY (IVVVT(NREP+1,IJKREP),A0,0,BUF1,1)
       OFF1 = 1
@@ -1401,15 +1400,15 @@ C ** can uns them as send/receive buffers here
       IF(NMPROC.GT.1) THEN
 C       Switch off the overall timer for this part and focus on
 C       the communication.
-        CALL XTIME(42,2,'-- T3CORR: VOVV contraction        ')
-        CALL XTIME(43,1,'-- T3CORR: addition of partial U   ')
+        CALL XTIME(0,2,'-- T3CORR: VOVV contraction        ')
+        CALL XTIME(0,1,'-- T3CORR: addition of partial U   ')
         CALL MPI_REDUCE(BUF1(OFF1),BUF2(1),RCW*M*N,
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
      &    MPI_COMM_WORLD,IERR)
         CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
 C       Communication completed, switch back to operations timer
-        CALL XTIME(43,2,'-- T3CORR: addition of partial U   ')
-        CALL XTIME(42,1,'-- T3CORR: VOVV contraction        ')
+        CALL XTIME(0,2,'-- T3CORR: addition of partial U   ')
+        CALL XTIME(0,1,'-- T3CORR: VOVV contraction        ')
       ENDIF
 #endif
 
@@ -1456,8 +1455,8 @@ C ************************************
       OFF1 = OFF1 + M * N * RCW
       ENDDO
 C
-      CALL XTIME(42,2,'-- T3CORR: VOVV contraction        ')
-      CALL XTIME(45,1,'-- T3CORR: energy calculation      ')
+      CALL XTIME(0,2,'-- T3CORR: VOVV contraction        ')
+      CALL XTIME(0,1,'-- T3CORR: energy calculation      ')
 C
 C ** the U array is complete on the master node. 
 C ** we can permute the indices and compute on the
@@ -1707,7 +1706,7 @@ C ******** end of task splitting *******
       ENDIF
 C ******** end of task splitting *******
 
-      CALL XTIME(45,2,'-- T3CORR: energy calculation      ')
+      CALL XTIME(0,2,'-- T3CORR: energy calculation      ')
       ENDDO
       ENDDO
       ENDDO

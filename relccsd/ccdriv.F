@@ -473,7 +473,7 @@ C
 C
 C     Initialize the timing.
 C
-      CALL XTIME(1,0,' ')
+      CALL XTIME(0,-1,'                             ')
       CALL GETTIM(CPU0,WALL0)
       CPU1 = CPU0
       CPUI = 0
@@ -672,10 +672,10 @@ C
       KFREE = 1
       LFREE = MXCORR
 C
-      CALL XTIME(1,1,'Sorting of integrals          ')
+      CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
-      CALL XTIME(1,2,'Sorting of integrals          ')
+      CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1
       CPU1 = CPU2
@@ -743,9 +743,9 @@ C
       CALL CCSUMM
       CALL FLSHFO (IW)
 C   
-C     Print timings (second XTIME parameter has to be 4)
+C     Print timings
 C
-      CALL XTIME(1,4,' ')
+      CALL XTIME(0,4,' RELCCSD                     ')
       CALL FLSHFO (IW)
       CALL GETTIM(CPUTOT,WALLTOT)
       CPUTOT = CPUTOT - CPU0
@@ -1863,13 +1863,13 @@ C
          IMSTAT(5) = 2
          CALL CCDUMP
 C
-         CALL XTIME(2,1,'CCSD equations                ')
+         CALL XTIME(5,1,'CCSD equations                ')
          CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
      &           TOL,NBUF2,NBUF3)
-         CALL XTIME(2,2,'CCSD equations                ')
+         CALL XTIME(5,2,'CCSD equations                ')
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -1914,11 +1914,11 @@ C
             GOTO 11
          ENDIF
 C
-         CALL XTIME(40,1,'CCSD(T) evaluation            ')
+         CALL XTIME(5,1,'CCSD(T) evaluation            ')
          CALL T3CORR (CC(FVO),EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
      &                CC(BUF1),CC(BUF2),CC(BUF3),CC(TAU3),
      &                CC(VVVO),CC(VVOO),CC(VOOO))
-         CALL XTIME(40,2,'CCSD(T) evaluation            ')
+         CALL XTIME(5,2,'CCSD(T) evaluation            ')
 C
 C     This is a restart point : update status.
 C

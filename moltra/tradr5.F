@@ -202,7 +202,7 @@ C
 C       Get the slaves out of the transformation loop
 C       and receive final results
 C
-        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM)
+        CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM,WALLBEF)
       ELSE
 #endif
 C

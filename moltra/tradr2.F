@@ -166,8 +166,9 @@ C
 C       Get the slaves out of the transformation loop
 C       and receive final results
 C
+        WALLBEF = 0.0
         CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,
-     &              WORK(KTIM))
+     &              WORK(KTIM),WALLBEF)
 C
 C       Timing information
 C
@@ -1742,7 +1743,7 @@ C        ITEST .eq. 0: code for "send me new task"
 C
 C     send whatever results we have
 C
-      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1)
+      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1,DUM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

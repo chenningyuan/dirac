@@ -521,4 +521,294 @@ C
  1030 FORMAT(I5,F19.9,F18.6,8(I4))
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XTIME (TIMERT,FUNCT,NAME)
+C
+C     Initial routine written by M. Pernpointner
+C     Documented and revised by L. Visscher
+C
+C     Input parameters 
+C         - TIMERT : Type of timer (Used in MPE calls 
+C                                   0:Do not log in MPE
+C                                   1:Initialization
+C                                   2:Wait,
+C                                   3:Send/receive task,
+C                                   4:Send/receive Data,
+C                                   5:Perform computation)
+C         - FUNCT  : TCLEAR=0 : Set the timer to zero
+C                    TSTART=1 : Start adding time to this timer
+C                    TSTOP=2  : Stop the timer
+C                    TPRNTI=3 : Write contents of the timer to output
+C                    TPRNTA=4 : Write contents of all timers to output
+C                    TINIT=-1 : Initialize all timers
+C         - NAME   : Name of the timer (max 30 characters)
+C
+      IMPLICIT INTEGER (A-Z)
+      CHARACTER*30 NAME,T_REPORT
+      PARAMETER ( D0 = 0.0D0 )
+#include "timtbl.h"
+#include "priunit.h"
+#if defined (VAR_MPI)
+#include "mpif.h"
+#endif
+#include "infpar.h"
+      REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
+C
+C     Check first for operations that involve all timers
+C
+      IF (FUNCT.EQ.TINIT) THEN
+C     
+C        Initialization of all timers
+C
+         DO I = 1, MXTIMF
+          CPUTF(I)=D0
+          CPUTFT(I)=D0
+          CPUTT(I)=TIMERF_NAME
+         ENDDO
+         LAST_MPE_ACTION = 0
+         LAST_MPE_STATE  = 0
+         RETURN
+      ELSEIF (FUNCT.EQ.TPRNTA) THEN
+C     
+C        Print out of all timers
+C
+        IF (MYTID.EQ.MPARID) WRITE(LUPRI,220) NAME
+#if ! defined (VAR_MPI)
+C       Serial code : no need to communicate with slaves
+        DO I=1,MXTIMF
+          IF(CPUTFT(I).NE.D0) WRITE(LUPRI,222) CPUTT(I),CPUTFT(I)
+        ENDDO
+#else
+C
+C       We may have the parallel version running in serial mode, 
+C       handle this first (same code as serial)
+C
+        IF (NUMNOD.EQ.0) THEN
+          DO I=1,MXTIMF
+            IF(CPUTFT(I).NE.D0) WRITE(LUPRI,222) CPUTT(I),CPUTFT(I)
+          ENDDO
+        ELSE
+C      
+C        The parallel version runs in parallel. We need to communicate
+C        to gather all data on the master.
+C
+C        Run over all master timers and collect data from slaves
+C        NB : This also gets the inactive timers, but the loop structure
+C        is easier this way
+C
+         IF (MYTID.EQ.MPARID)  WRITE(LUPRI,330)
+C
+         DO I = 1, MXTIMF
+C          Tell the slaves to look for timer I
+           T_REPORT = CPUTT(I)
+           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
+     &                     MPARID,MPI_COMM_WORLD,IERR)
+C          Find the timer (we do this code on master also for simplicity)
+           TIMERN = -1
+           DO J = 1, MXTIMF
+              IF (T_REPORT.EQ.CPUTT(J)) TIMERN = J
+           ENDDO
+           IF (TIMERN.EQ.-1) THEN
+C             Timer not used, give zero values
+              MY_T = D0
+           ELSE
+              MY_T = CPUTFT(TIMERN)
+           ENDIF
+C          NB : The following computations are only correct on the master,
+C          but since we report only there there is no need for an ALLREDUCE call.
+C          Compute the average time spent by the slaves
+           IF (MYTID.EQ.MPARID) THEN
+              A = D0
+           ELSE
+              A = MY_T
+           ENDIF
+           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           CPU_AV = (CPU_AV)/DBLE(NUMNOD)
+C          Compute the minimum time
+           IF (MYTID.EQ.MPARID) A = 1.D8
+           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+C          Compute the maximum time
+           IF (MYTID.EQ.MPARID) A = -1.D8
+           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+C
+C          Write the result to the output
+C
+           IF (MYTID.EQ.MPARID.AND.(CPU_AV.NE.D0.OR.MY_T.NE.D0))
+     &        WRITE(LUPRI,340) T_REPORT,MY_T,CPU_MI,CPU_MA,CPU_AV
+C
+         ENDDO
+C
+C        The slaves may also have timers that master does not have, let
+C        the primus inter pares report.
+C
+         DO I = 1, MXTIMF
+           SLAVE = MPARID+1
+           T_REPORT = CPUTT(I)
+           CALL MPI_BCAST (T_REPORT,30,MPI_CHARACTER,
+     &                     SLAVE,MPI_COMM_WORLD,IERR)
+           TIMERN = -1
+           DO J = 1, MXTIMF
+              IF (T_REPORT.EQ.CPUTT(J)) TIMERN = J
+           ENDDO
+           IF (TIMERN.EQ.-1) THEN
+C             Timer not used, give zero values
+              MY_T = D0
+           ELSE
+              MY_T = CPUTFT(TIMERN)
+           ENDIF
+           IF (MYTID.EQ.MPARID) THEN
+              A = D0
+           ELSE
+              A = MY_T
+           ENDIF
+C          Compute the average time spent by the slaves
+           CALL MPI_REDUCE (A,CPU_AV,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_SUM,MPARID,MPI_COMM_WORLD,IERR)
+           CPU_AV = (CPU_AV)/DBLE(NUMNOD)
+C          Compute the minimum time
+           IF (MYTID.EQ.MPARID) A = 1.D8
+           CALL MPI_REDUCE (A,CPU_MI,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_MIN,MPARID,MPI_COMM_WORLD,IERR)
+C          Compute the maximum time
+           IF (MYTID.EQ.MPARID) A = -1.D8
+           CALL MPI_REDUCE (A,CPU_MA,1,MPI_DOUBLE_PRECISION,
+     &                      MPI_MAX,MPARID,MPI_COMM_WORLD,IERR)
+C
+C          Write the result to the output
+C          The master has to have TIMERN -1, otherwise this timer
+C          has already been reported in the previous loop.
+C
+           IF (MYTID.EQ.MPARID.AND.TIMERN.EQ.-1.AND.CPU_AV.NE.D0)
+     &        WRITE(LUPRI,340) T_REPORT,MY_T,CPU_MI,CPU_MA,CPU_AV
+        ENDDO
+#endif
 
+      ENDIF ! end of 1 / multiple processor clause
+      IF (MYTID.EQ.MPARID) WRITE(LUPRI,350)
+      RETURN
+      ENDIF ! end of all timers IF-THEN-ELSE clause
+C
+C     We come here only if we work on a single timer, find out which one
+C
+      TIMERN = -1
+      DO I = 1, MXTIMF
+         IF (NAME.EQ.CPUTT(I)) TIMERN = I
+      ENDDO
+C 
+C     We may have a new timer, look for free slots
+C
+      IF (TIMERN.EQ.-1) THEN
+         TIMERF = 0
+         DO I = MXTIMF,1,-1
+            IF (CPUTT(I).EQ.TIMERF_NAME) TIMERF = I
+         ENDDO
+C
+         IF (TIMERF.NE.0) THEN
+C           Use the first free slot and initialize
+            CPUTT(TIMERF)=NAME
+            CPUTFT(TIMERF)=D0
+            TIMERN = TIMERF
+         ELSE 
+C           Too bad, we ran out of slots
+            WRITE(LUPRI,130) MYTID,NAME
+            RETURN
+         ENDIF
+      ENDIF
+C
+C     Perform the desired action
+C
+      IF(FUNCT.EQ.TCLEAR) THEN
+          CPUTF(TIMERN)=D0
+          CPUTFT(TIMERN)=D0
+          CPUTT(TIMERN)=TIMERF_NAME
+      ELSE IF (FUNCT.EQ.TSTART) THEN
+        CALL CPUUSED(A)
+        CPUTF(TIMERN)=A
+        CPUTT(TIMERN)=NAME
+#if defined (MPE)
+        IF (TIMERT.NE.0) THEN
+C          We may need to end the previous state
+           IF (TIMERT.NE.LAST_MPE_STATE.AND.LAST_MPE_ACTION.EQ.1) THEN
+              I_MPE = 2 * LAST_MPE_STATE
+              CALL MPE_LOG_EVENT(I_MPE,0,NAME)
+           ENDIF
+C          Announce the new state if necessary
+           IF (TIMERT.NE.LAST_MPE_STATE.OR.LAST_MPE_ACTION.NE.1) THEN
+              I_MPE = 2 * TIMERT - 1
+              CALL MPE_LOG_EVENT(I_MPE,0,NAME)
+              LAST_MPE_STATE  = TIMERT
+              LAST_MPE_ACTION = 1    
+           ENDIF
+        ENDIF
+#endif
+      ELSE IF (FUNCT.EQ.TSTOP) THEN
+        CALL CPUUSED(A)
+        CPUTF(TIMERN)=A-CPUTF(TIMERN)
+        CPUTFT(TIMERN)=CPUTFT(TIMERN)+CPUTF(TIMERN)
+#if defined (MPE)
+        IF (TIMERT.NE.0) THEN
+C          The state to be ended may be interrupted and ended by a start
+C          Only do something if everything matches
+           IF (TIMERT.EQ.LAST_MPE_STATE.AND.LAST_MPE_ACTION.EQ.1) THEN
+              I_MPE = 2 * TIMERT
+              CALL MPE_LOG_EVENT(I_MPE,0,NAME)
+              LAST_MPE_STATE  = TIMERT
+              LAST_MPE_ACTION = 2    
+           ENDIF
+        ENDIF
+#endif
+      ELSE IF (FUNCT.EQ.TPRNTI) THEN
+        IF (MYTID.EQ.MPARID) THEN
+           IF(CPUTF(TIMERN).NE.D0) THEN
+             WRITE(LUPRI,222) CPUTT(TIMERN),CPUTFT(TIMERN)
+           ELSE
+             WRITE(LUPRI,224) TIMERN
+           ENDIF
+        ENDIF
+      ELSE
+        WRITE(LUPRI,135)
+      ENDIF
+C
+ 130  FORMAT(/' **WARNING** No free timer slots for proces',I4/,
+     &        ' ** no action taken')
+ 135  FORMAT(/' **WARNING** Unknown timer function'/,
+     &        ' ** no action taken')
+ 220  FORMAT(/'------ Timing report (in CPU seconds) of module ',A/)
+ 222  FORMAT(' Time in ',A30,T33,F12.3,' seconds')
+ 223  FORMAT(T37,'-------------',/,T25,'Sum: ',F12.3,' seconds',
+     &       /,T37,'-------------')
+ 224  FORMAT(' Timer ',I3,' not used for measurements')
+ 330  FORMAT(//,T37,'Master',T46,'--------- Slaves ------------'//,
+     &          T2,'Timer',T37,'Master',T46,'Minimum',T56,'Maximum',
+     &          T68,'Average'/)
+ 340  FORMAT(T2,A30,T33,F10.1,T43,F10.1,T53,F10.1,T63,F10.1)
+ 350  FORMAT(/'------ End of timing report ------'/)
+     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XTIMRD (TIMERN,ELTIM)
+C
+C  purpose:  read out a specific timer previously set by XTIME
+C
+      IMPLICIT INTEGER (A-Z)
+      REAL*8 ELTIM
+      PARAMETER ( D0 = 0.0D0 )
+#include "timtbl.h"
+#include "priunit.h"
+      IF(TIMERN.LT.1.OR.TIMERN.GT.MXTIMF) THEN
+        WRITE(LUPRI,10)
+        ELTIM=D0
+      ELSE
+        ELTIM=CPUTFT(TIMERN)
+      ENDIF
+
+ 10   FORMAT(/' **WARNING** Timer # out of range'/,
+     &        ' ** zero returned')
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
