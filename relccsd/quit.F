@@ -1,0 +1,3 @@
+      SUBROUTINE QUIT(TEXT)
+      STOP
+      END
