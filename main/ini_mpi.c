@@ -133,7 +133,7 @@
       *parcal = 1;
 
 #if defined (MPE)
-      /* initialize MPE if precompiler option MPE_MP2 is set */
+      /* initialize MPE if precompiler option MPE is set */
       MPE_Init_log();
       if ( *mytid == 0 ) {
 	MPE_Describe_state(1, 2, "Init", "black");

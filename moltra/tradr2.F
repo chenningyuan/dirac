@@ -159,12 +159,12 @@ C
 C     Start loop over tasks
 C     
          DO IJTSK = 1, MAXTSK
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
             CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &           MPI_COMM_WORLD,ISTAT,IERR)
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
 C     .. ITEST .eq. 0: code for "send me new task"
@@ -173,14 +173,14 @@ C     .. ITEST .eq. 0: code for "send me new task"
             IF (IPRINT.GE.1) WRITE(LUPRI,'(3(A,I6))') 
      &           '* Sending to node:',NODE,
      &           '; IJTSK  =',IJTSK,', LENTSK =',LENTSK
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
             CALL MPI_SEND(IJTSK,1,MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
             CALL MPI_SEND(LENTSK,1,MPI_INTEGER,NODE,30,
      &           MPI_COMM_WORLD,IERR)
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
          ENDDO
@@ -2690,7 +2690,7 @@ C
          IF (CMMNFO) WRITE(LUPRI,'(A/A)') ' <COMMINFO>',
      &        ' <COMMINFO> Master is listening...'
          CALL FLSHFO(LUPRI)
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(3, 0, "start wait")
          CALL MPI_RECV(NODINT,1,MPI_INTEGER,MPI_ANY_SOURCE,90,
      &        MPI_COMM_WORLD,ISTAT,IERR)
@@ -2712,7 +2712,7 @@ C
             DO I = 1, 6
                IDSNFO(I) = IDSLST(I,ITSKSD)
             END DO
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
             CALL MPI_SEND(IDSNFO,6,MPI_INTEGER,NODE,92,
      &           MPI_COMM_WORLD,IERR)
@@ -2737,7 +2737,7 @@ C
 C     Slave has integrals to send back
 C
          ELSE
-#if defined (MPE_MP2)
+#if defined (MPE)
             CALL MPE_LOG_EVENT(7, 0, "start rcvint")
             CALL MPI_RECV(WORK(K4QMAT),N4QMT,MPI_DOUBLE_PRECISION,
      &           NODE,94,MPI_COMM_WORLD,ISTAT,IERR)
@@ -2811,7 +2811,7 @@ C
 C
 C     Calculate contribution to MP2 energy for this complete batch
 C
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
          CALL TIMEC('START ',TIMSTR,TIMEND)
@@ -2837,7 +2837,7 @@ C
      &        NSTRIJ,ISPNR,JSPNR,IPRINT)
          CALL TIMEC('CONMP2',TIMSTR,TIMEND) 
          WORK(KTIM+4) = WORK(KTIM+4) + TIMEND - TIMSTR
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
 C
@@ -2993,7 +2993,7 @@ C     Sending 0 to master signals that slave is idle
 C
       IF (CMMNFO) WRITE(LUPRI,'(A,I4)')
      &     ' <COMMINFO> Sending 0 from node #', MYTID
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
       CALL MPI_SEND(0,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
@@ -3016,7 +3016,7 @@ C
 C
 C     Update 3/4 transformed matrix with contribution from current shell
 C
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
       CALL SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
@@ -3029,7 +3029,7 @@ C
       IF (TPRI34 .GT. 0.D0)
      &     CALL PRIINT('The accumulated 3/4 transformed integrals',
      &     NTQMT, WORK(KTQMAT), TPRI34, MYTID)
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
       GOTO 120
@@ -3045,14 +3045,14 @@ C
       CALL DZERO(WORK(K4QMAT),N4QMT)
       CALL T44INI(INTFLG,ICS2,ICF2)
       CALL TIMEC('START ',TIMSTR,TIMEND)
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
       CALL LQTRNS(WORK,KFREE,LFREE,IPRINT,
      &     ITQMT,ICMOQR(1,4),NDMOQR(1,1,4),
      &     WORK(KTQMAT),NSTRIJ(1,0,3),NSTRIJ(1,0,4),
      &     WORK(KQ(1,4)),WORK(K4QMAT),ICS2,ICF2)
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
       CALL TIMEC('LQTRNS',TIMSTR,TIMEND) 
@@ -3069,7 +3069,7 @@ C     Send integrals as soon as master is ready to accept them
 C
       IF (CMMNFO) WRITE(LUPRI,'(2(A,I4))') ' <COMMINFO> Sending ',
      &     INTGTH, ' from node #', MYTID
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(3, 0, "start wait")
       CALL MPI_SEND(INTGTH,1,MPI_INTEGER,MPARID,90,MPI_COMM_WORLD,IERR)
       CALL MPE_LOG_EVENT(4, 0, "end wait")
@@ -3166,12 +3166,12 @@ C
          CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
 C        ITEST .eq. 0: code for "send me new task"
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(5, 0, "start sndtsk")
 #endif
          CALL MPI_RECV(IJTSK,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(6, 0, "end sndtsk")
 #endif
          IF (IJTSK.EQ.-1) GOTO 200
@@ -3181,7 +3181,7 @@ C        ITEST .eq. 0: code for "send me new task"
          CALL TSKARR(ISPNR,JSPNR,LENTSK,NSTRT,
      &               NSTR,NSTRIJ,ICMOQR,ICMOIJ,
      &               IPRINT)
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
          CALL TRDR23(WORK,KFREE,LFREE,IPRINT,
@@ -3189,7 +3189,7 @@ C        ITEST .eq. 0: code for "send me new task"
      &        INTFLG,NDMOQR,ICMOIJ,NSTRIJ,
      &        ANTIS,LMP2,WORK(KINDX),KQ,KE,
      &        DINTSKP,WORK(KGAB),TIM1)
-#if defined (MPE_MP2)
+#if defined (MPE)
          CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
          GOTO 100
@@ -3197,11 +3197,11 @@ C        ITEST .eq. 0: code for "send me new task"
 C
 C     send whatever results we have
 C
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(7, 0, "start sndint")
 #endif
       CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,EMP2,TIM1,DUM)
-#if defined (MPE_MP2)
+#if defined (MPE)
       CALL MPE_LOG_EVENT(8, 0, "end sndint")
 #endif
       RETURN

@@ -4366,12 +4366,12 @@ C
         NTEST = -1
         DO I = 1,NODES
  100      CONTINUE
-#if defined (MPE_MP2)
+#if defined (MPE)
           CALL MPE_LOG_EVENT(3, 0, "start wait")
 #endif
           CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
-#if defined (MPE_MP2)
+#if defined (MPE)
           CALL MPE_LOG_EVENT(4, 0, "end wait")
 #endif
           IF (ITEST .NE. 0) THEN
@@ -4380,7 +4380,7 @@ C         ... this node not finished yet, is asking to get or release file lock
              GO TO 100
           END IF
           NWHO = ISTAT(MPI_SOURCE)
-#if defined (MPE_MP2)
+#if defined (MPE)
           CALL MPE_LOG_EVENT(7, 0, "start rcvint")
 #endif
           CALL GETTIM(CPUST,WALLST)
@@ -4400,7 +4400,7 @@ C         ... this node not finished yet, is asking to get or release file lock
             CALL MPI_RECV(TIM1(1,NWHO),7,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           ENDIF
-#if defined (MPE_MP2)
+#if defined (MPE)
           CALL MPE_LOG_EVENT(8, 0, "end rcvint")
 #endif
         ENDDO
