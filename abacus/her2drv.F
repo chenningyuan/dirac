@@ -312,7 +312,7 @@ C
 C        All integrals
 C        =============
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI) 
          IF (PARHER) THEN
             CALL PARLOP(WORK(KFREE),LFREE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &           EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,

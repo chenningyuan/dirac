@@ -2356,7 +2356,7 @@ C     ***** New integral program *****
 C     ********************************
 C
       IF (RUNERI) THEN
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
 #if defined (MOD_ERI)

@@ -361,6 +361,8 @@ C
       READ (MLINE(NMLINE),'(A6)') KEYWRD
       IF (KEYWRD .EQ. 'BASIS ') THEN
          BASIS = .TRUE.
+      ELSE IF (KEYWRD .EQ. 'JTHHAC') THEN
+         JTHHACK = .TRUE.
       ELSE IF (KEYWRD .NE. 'INTGRL') THEN
          GOTO 5010
       END IF
@@ -818,13 +820,13 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             ADDSTO = .FALSE.
-            READ (MLINE(NMLINE),'(BN,A6,F4.0,I5,F20.5)') 
+            READ (MLINE(NMLINE),'(BN,A6,F5.0,I4,F20.5)') 
      &            ZMATL,Q,NONT(I),QEXP
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (ADDSTO) NSETS = 2
             BSET  = 'Basis'
-            READ (MLINE(NMLINE),'(BN,A6,F4.0,I5,24I5)') ZMATL,Q,NONT(I),
+            READ (MLINE(NMLINE),'(BN,A6,F5.0,I4,24I5)') ZMATL,Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
@@ -944,17 +946,26 @@ C
                   CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
      &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+               ELSE IF (JTHHACK) THEN
+C
+C                 Hack: Make uncontracted small component basis
+C                 set from kinetic balance.
+C
+                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+C
                ELSE
                   CALL RDLINE(LUINFO)
                   READ (MLINE(NMLINE),'(BN,A5,12I5)')
      &                  BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                   IF ((BSET.NE.'SMALL').AND.(BSET.NE.'SBFIL')) GOTO 5200
 C
-C              Test BSET: 
-C              If BSET.eq.SMALL read SC basis from MOLECULE.INP
-C              If BSET.eq.SBFIL read SC basis from file to be 
-C                               read from next line
-C              ================================================
+C                 Test BSET: 
+C                 If BSET.eq.SMALL read SC basis from MOLECULE.INP
+C                 If BSET.eq.SBFIL read SC basis from file to be 
+C                                  read from next line
+C                 ================================================
 C
                   IF (BSET.EQ.'SMALL') THEN
                      CALL GTOINP(LUINFO,IQM(I,2),JCO(1,I,2),
@@ -1120,6 +1131,11 @@ C
            WRITE(LUPRI,*) 'WARNING!!!'            
            WRITE(LUPRI,*) 'WARNING!!!'            
            WRITE(LUPRI,*) 'Nuclear gaussian exponent small: ',GEXP
+        END IF
+        IF (INPTST) THEN
+           WRITE(LUPRI,'(3X,A,F7.3,A,1P,D20.10)') 
+     &        'Nuclear Gaussian exponent for atom of charge ',
+     &        Q,': ',GEXP
         END IF
       ELSE
          GEXP = D0
@@ -1344,7 +1360,7 @@ C
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
 C
-      IF (DIRAC.AND.ISPHTR.EQ.3) CALL RKBREL(IPREAD)
+      IF (DIRAC.AND.ISPHTR.EQ.3.AND..NOT. JTHHACK) CALL RKBREL(IPREAD)
 C
       RETURN
 C
@@ -1738,11 +1754,11 @@ C
             DIRCON = DIRCON .OR. (NRCIJ .GT. 0)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
-            IF ((ISPHTR.EQ.3).AND.(NRCIJ.NE.0)) THEN
-               WRITE(LUPRI,'(A)') 
-     &              'Not implemented RKB with contraction!'
-               CALL QUIT('Cannot do RKB with contraction!')
-            ENDIF
+c           IF ((ISPHTR.EQ.3).AND.(NRCIJ.NE.0)) THEN
+c              WRITE(LUPRI,'(A)') 
+c    &              'Not implemented RKB with contraction!'
+c              CALL QUIT('Cannot do RKB with contraction!')
+c           ENDIF
 C     
 C     Read in exponents and contraction coefficients
 C     
@@ -5404,7 +5420,7 @@ C
       IATOM = 1
       DO 605 I = 1, NONTYP
          NOORBTS = .TRUE.
-         WRITE(MLINE(NMLINE),'(6X,F4.0,I5)') CHARGE(IATOM),NONT(I)
+         WRITE(MLINE(NMLINE),'(6X,F5.0,I4)') CHARGE(IATOM),NONT(I)
          NMLINE = NMLINE + 1
          DO 606 J = 1, NONT(I)
             NCLINE(IATOM) = NMLINE
@@ -5823,13 +5839,21 @@ C
      &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),CPRIMU(KPRIM,KPRIM,KBLOCK,2)
 C
+C
+C     Small component basis set is always uncontracted,
+C     hence NRC(IBS) = NUC(IBL) and SEG(IBS) = T
+C
       NUC(IBS,2)   = NUC(IBL,1)
-      NRC(IBS,2)   = NRC(IBL,1)
+      NRC(IBS,2)   = NUC(IBL,1)
       NOINT(IBS,2) = NOINT(IBL,1)
-      SEG(IBS,2)   = SEG(IBL,1)
-      NCMAT        = KPRIM*NRC(IBL,1)
+      SEG(IBS,2)   = .TRUE.
+C
       CALL DCOPY(NUC(IBS,2),ALPHA(1,IBL,1),1,ALPHA(1,IBS,2),1)
-      CALL DCOPY(NCMAT,CPRIMU(1,1,IBL,1),1,CPRIMU(1,1,IBS,2),1)
+C
+C     Contraction matrix is just a unit matrix
+C
+c     CALL DCOPY(NCMAT,CPRIMU(1,1,IBL,1),1,CPRIMU(1,1,IBS,2),1)
+      CALL DUNIT(CPRIMU(1,1,IBS,2),KPRIM)
       CALL NRMORB(IQM,NRC(IBS,2),NUC(IBS,2),ALPHA(1,IBS,2),
      &            CPRIM(1,1,IBS,2),CPRIMU(1,1,IBS,2),KPRIM,IBS)
 C
@@ -5963,7 +5987,7 @@ C
      &            + (CORD(2,N)-CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)))**2
      &            + (CORD(3,N)-CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB)))**2
                DIST = SQRT(DS)
-               IF (DIST.LT.0.1.AND.Q(M)*Q(N).NE.D0) GOTO 5000
+cjth           IF (DIST.LT.0.1.AND.Q(M)*Q(N).NE.D0) GOTO 5000
                IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
 CTROND                  IF((ABS(Q(M)) .GT. 100.0D0) .AND.
 CTROND     &               (ABS(Q(N)) .GT. 100.0D0)) GOTO 30

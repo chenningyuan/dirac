@@ -2889,6 +2889,7 @@ C
                      IADRUU = IADR0 + 2*ISTEPU
                      IADRUV = IADR0 + ISTEPU + ISTEPV
                      IADRVV = IADR0 + 2*ISTEPV
+#ifndef NON_TRACELESS_EFG
                      SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1)
      &                                  + EEE*D3INV*(2*AHGTF(IADRTT)
      &                                  - AHGTF(IADRUU) - AHGTF(IADRVV))
@@ -2904,6 +2905,20 @@ C
                      SHLINT(INT,INTTYP+6) = SHLINT(INT,INTTYP+6)
      &                                  + EEE*D3INV*(2*AHGTF(IADRVV)
      &                                  - AHGTF(IADRTT) - AHGTF(IADRUU))
+#else
+                     SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1)
+     &                                  + EEE*AHGTF(IADRTT)
+                     SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)
+     &                                  + EEE*AHGTF(IADRTU)
+                     SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
+     &                                  + EEE*AHGTF(IADRTV)
+                     SHLINT(INT,INTTYP+4) = SHLINT(INT,INTTYP+4)
+     &                                  + EEE*AHGTF(IADRUU)
+                     SHLINT(INT,INTTYP+5) = SHLINT(INT,INTTYP+5)
+     &                                  + EEE*AHGTF(IADRUV)
+                     SHLINT(INT,INTTYP+6) = SHLINT(INT,INTTYP+6)
+     &                                  + EEE*AHGTF(IADRVV)
+#endif
                      IOFF = IOFF + NAHGTF
                      INTTYP = INTTYP + 6
  500              CONTINUE

@@ -665,7 +665,7 @@ C--------------------------------
 C     Calculate fock matrices.
 C--------------------------------
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI) 
       IF (PARFCK .OR. PARALL) THEN
          IATOM = 0
          KNSTAT = KLAST
@@ -723,7 +723,7 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,.FALSE.)
          CALL TIMER('TWOINT',TIMSTR,TIMEND)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       END IF
 #endif
 C
