@@ -475,6 +475,9 @@ C     CALL XTIME(35,2,'- PARTS (sync before adding)    ')
       CALL XTIME(36,2,'- adding partial T1/T2 amplitudes ')
 C
       IF (FOCKSP) THEN
+C        Delete the wave function amps that belong to higher sectors
+         CALL DELFCK ('VO',DELS1,S1)
+         CALL DELINT ('VVOO',DELS2,S2,0,0,0)
 C.......when debugging print out energies in every iteration
         IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
         CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
@@ -524,19 +527,16 @@ C
       ELSE
 C
 C     In the Fockspace algorithm we only need to extrapolate the
-C     amplitudes of the current sector. We delete the ones from
+C     amplitudes of the current sector. We already deleted the ones from
 C     the higher sectors, the ones from the previous sectors are
 C     constant and can be left inside. In addition the Hamiltonian
 C     matrix elements should not be taken into account in the 
 C     extrapolation because of the difference in magnitude with the wf 
 C     (energy vs. dimensionless).
 C
-C        Save the full S1 and S2 arrays (all wf and ham elements)
+C        Save the full S1 and S2 arrays (including ham elements)
          CALL XCOPY(NDIMT1,S1,1,BUF1,1)
          CALL XCOPY(NDIMT2,S2,1,BUF2,1)
-C        Delete the wave function amps that belong to higher sectors
-         CALL DELFCK ('VO',DELS1,S1)
-         CALL DELINT ('VVOO',DELS2,S2,0,0,0)
 C        Delete the effective Hamiltonian elements
          CALL DENOMF (EPS,S1,S2,S1,S2,2)
          if (carith.and.debug) then
@@ -553,12 +553,10 @@ C        Delete the effective Hamiltonian elements
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
 C
-C        Put the deleted elements back.
+C        Put the Hamiltonian elements back.
 C
          CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
-         CALL DELFCK ('VO',DELS1,BUF1)
-         CALL DELINT ('VVOO',DELS2,BUF2,0,0,0)
          CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
          CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
          CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
@@ -595,8 +593,6 @@ C     the wave function (amplitudes) appropriate for this sector.
 C
       IF (FOCKSP) THEN
          CALL DENOMF (EPS,T1,T2,T1,T2,2)
-         CALL DELFCK ('VO',DELS1,T1)
-         CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       ENDIF
 C
       CPUE = CPUE + CPUDELTA()
@@ -638,11 +634,6 @@ C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
          CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
-C        The updated amplitudes should be in T1 & T2. Since
-C        the Hamiltonian part was deleted we copy again from
-C        S1 & S2.
-         CALL XCOPY(NDIMT1,S1,1,T1,1)
-         CALL XCOPY(NDIMT2,S2,1,T2,1)
       ENDIF
 C
       CALL CPUUSED(CPUTOT)
@@ -766,7 +757,7 @@ C-------------------------------
 cluuk : I think we need to divide because on disk are the amplitudes
 cluuk : that are NOT scaled by denominators. The denomf then gives
 cluuk : the true wave function part.
-           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
+cluuk      CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
 cluuk
            CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
            CALL XAXPY (NFVO,A1,BUF1,1,S1,1)
@@ -1054,7 +1045,7 @@ C-------------------------------------------
 cluuk : I think we need to divide because on disk are the amplitudes
 cluuk : that are NOT scaled by denominators. The denomf then gives
 cluuk : the true wave function part.
-           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
+cluuk      CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
 cluuk
            CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
            CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)

@@ -2621,7 +2621,7 @@ C
      &             CC(CCC),CC(BB1),CC(BB2),
      &             TOL,NBUF2,NBUF3)
 C       Save the updated wave function & Hamiltonian
-        CALL PUTAMPT (CC(T1),CC(T2))
+        CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
 C
 C       When we run with the intermediate Hamiltonian formalism
 C       we need a second iteration in which the neglected excitations
@@ -2635,8 +2635,8 @@ C
      &             CC(CCC),CC(BB1),CC(BB2),
      &             TOL,NBUF2,NBUF3)
 C       Save the updated wave function & Hamiltonian
-            CALL PUTAMPT (CC(T1),CC(T2))
-	    ENDIF
+            CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
+	ENDIF
       ELSE
         WRITE (IW,1010) ICURFSS
       ENDIF
@@ -2656,6 +2656,66 @@ C
      &        /" Convergence criterium :",T38,E7.1)
 1009  FORMAT (//" Solving equations for sector ",I2/)
 1010  FORMAT (//" Sector ",I2," is not implemented."/)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Augments computed amplitudes with amplitudes from previously
+C     calculated sectors and write the updated array to disk
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*2 DELS1
+      CHARACTER*4 DELS2
+C    
+C---------------Executable code--------------------------------------
+C    
+      DELS1 = 'DD'
+      IF (ICURFSS.EQ. 1) DELS1 = 'DK'
+      IF (ICURFSS.EQ.10) DELS1 = 'KD'
+      IF (ICURFSS.EQ.11) DELS1 = 'KK'
+      IF (ICURFSS.EQ. 2) DELS1 = 'DK'
+      IF (ICURFSS.EQ.20) DELS1 = 'KD'
+      DELS2 = 'DDDD'
+      IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
+      IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
+      IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
+      IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
+      IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+C
+      IF (ICURFSS.EQ.0) THEN
+         CALL PUTAMPT(T1,T2)
+      ELSE
+         CALL GETAMPT(BUF1,BUF2)
+         CALL XAXPY(NDIMT1,A1,BUF1,1,T1,1)
+         CALL XAXPY(NDIMT2,A1,BUF2,1,T2,1)
+         CALL DELFCK ('VO',DELS1,BUF1)
+         CALL DELINT ('VVOO',DELS2,BUF2,0,0,0)
+         CALL XAXPY(NDIMT1,-A1,BUF1,1,T1,1)
+         CALL XAXPY(NDIMT2,-A1,BUF2,1,T2,1)
+         CALL PUTAMPT (T1,T2)
+      ENDIF
+C
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI

@@ -174,6 +174,7 @@ C       Extract the 2-particle Hamiltonian
         CALL CNTRCT ('N','N',NSVSVT,NAVAVT,NAVAVT,-A1,BUF3,BUF1,A0,
      &               BUF2,NREP)
 C       Insert the updated wave function
+c       print*,"norm of contribution",ddot(ndimt2,buf2,1,buf2,1)
         CALL EXTRT2T(S2,BUF2,1,2,3,3,LTR)
 C       Get the wave function for term (2)
         IF (DOIH.AND.IHEQ.EQ.2) THEN
@@ -217,12 +218,11 @@ C-------------------------------------------
       IF (ICURFSS.EQ.20) THEN
 C       Make T2TAU including the spurious Hamiltonian parts
         IF (DOIH.AND.IHEQ.EQ.2) THEN
-	    CALL GETAMPT (BUF1,BUF3)
-            CALL GETTAU (BUF1,BUF3,BUF2)
-            CALL GETTAU2(BUF1,BUF3,BUF2,1)
+	   CALL GETAMPT (BUF1,BUF3)
+           CALL GETTAU (BUF1,BUF3,BUF2)
+           CALL GETTAU2(BUF1,BUF3,BUF2,1)
         ELSE
            CALL GETTAU (T1,T2,BUF2)
-        print*,"t1 before gettau2",ddot(ndimt1,t1,1,t1,1)
            CALL GETTAU2(T1,BUF1,BUF2,1)
 	ENDIF
 C       Delete Hamiltonian parts (BUF1 is changed
@@ -234,10 +234,9 @@ C       Extract the 2-particle Hamiltonian
         CALL EXTRT2T(S2,BUF1,3,3,2,2,LFA)
         CALL CNTRCT ('N','N',NAOAOT,NSOSOT,NAOAOT,-A1,BUF1,BUF3,A0,
      &               BUF2,NREP)
+c       print*,"norm of contribution",ddot(ndimt2,buf2,1,buf2,1)
 C       Insert the updated wave function
-        print*,"t2 before term 1",ddot(ndimt2,s2,1,s2,1)
         CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
-        print*,"t2 after term 1",ddot(ndimt2,s2,1,s2,1)
 C       Get the wave function for term (2)
         IF (DOIH.AND.IHEQ.EQ.2) THEN
            CALL GETAMPT (BUF1,BUF3)
@@ -260,7 +259,6 @@ C       Extract the 1-particle Hamiltonian
      &               LAOAOSOSOT,LLAOSOSOT,BUF3,BUF2)
 C       Insert the updated wave function
         CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
-        print*,"t2 after term 2",ddot(ndimt2,s2,1,s2,1)
       ENDIF
 C-------------------------------------------
 C (1,1) Sector
