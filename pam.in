@@ -1,28 +1,23 @@
 #
-#...   Copyright (c) 1998 by the authors of Dirac (see below).
+#...   Copyright (c) 2002 by the authors of Dirac (see below).
 #...   All Rights Reserved.
 #...
-#...   The source code in this file is part of 
-#...   "Dirac, a relativistic ab initio electronic structure program, 
-#...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-#...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
-#...
-#...   This source code is provided under a written licence and may be 
+#...   This code is provided under a written licence and may be 
 #...   used, copied, transmitted, or stored only in accord with that
 #...   written licence.
 #...
 #...   In particular, no part of the source code or compiled modules may 
 #...   be distributed outside the research group of the licence holder. 
 #...   This means also that persons (e.g. post-docs) leaving the research
-#...   group of the licence holder may not take any part of Dalton,
+#...   group of the licence holder may not take any part of Dirac,
 #...   including modified files, with him/her, unless that person has
 #...   obtained his/her own licence. 
 #...
 #...   For questions concerning this copyright write to:
-#...      dirac-admin@dirac.chem.ou.dk
+#...      dirac-admin@dirac.chem.sdu.dk
 #...
 #...   For information on how to get a licence see:
-#...      http://dirac.chem.ou.dk/Dirac
+#...      http://dirac.chem.sdu.dk/Dirac
 #
 #
 # Shell Script for running Dirac
@@ -30,8 +25,8 @@
 # VERSION : $Revision$
 # DATE    : $Date$
 # FILE    : pam.in
-# SOURCE  : $Source$
 #
+# -- To activate special code for NEC SX systems (in vi): %s/#SX/   /
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -45,7 +40,7 @@ usage ()
    echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
    echo '   Flags:'
    echo '     -copy "file1 file2 .." : Copy files to work area'
-   echo '     -debug                 : Run dirac in debugger'
+   echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
    echo '     -get "file1 file2 .."  : Get files from work area'
    echo '     -incmo                 : Copy DFCOEF to   work area'
    echo '     -utcmo                 : Save DFCOEF from work area'
@@ -53,24 +48,26 @@ usage ()
    echo '     -utfck                 : Save DFFCK2 from work area'
    echo '     -inxvc                 : Copy PAMXV1 to   work area'
    echo '     -utxvc                 : Save PAMXV1 from work area'
-   echo '     -mw mem                : Set memory(in megawords) for master '
-   echo '     -nw mem                : Set memory(in megawords) for the nodes '
+   echo '     -mw mem                : Set memory (in megawords) for master'
+   echo '     -nw mem                : Set memory (in megawords) for the nodes'
    echo '     -rmscr                 : Remove work area before calculation'
    echo '     -rmwrk                 : Remove work area after calculation'
-   echo '     -run name              : File suffix for output    '
-   echo '     -scr name              : Directory name for scratch  '
-   echo '     -mpi n                 : Run MPI with n nodes'
+   echo '     -run name              : File suffix for output; default "'$RUN'"'
+   echo '     -scr name              : Directory root for work area; default "'$SCR/$MOL'"'
+   echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -nice                  : execute Dirac with nice/npri'
-   echo '     -notify                : Notify user'
-   echo '     -user                  : Which user to notify'
+   echo '     -notify                : Notify when finished to user starting job'
+   echo '     -user e-mail           : Notify when finished using specified e-mail address'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
-   echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
-   echo '                              dirac'
-   echo '     -multi "config file"   : Run MPI on MULTI NODEs'
-   echo '                              and configuration file [SX only]'
-   echo '     -mpiconf "mpi.conf"    : Change MPI config file name [SX only]'
-   echo '     -thread                : Run thread parallel execution [SX only]'
-   echo '     -help                  : Help on pam'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
+   echo '                              (path must be included if executable is not in input directory)'
+   echo '     -help                  : More help on pam than this'
+# only for SYS_SX (NEC SX systems)
+#SXecho '     -multi "config file"   : [SX only] Run MPI on MULTI NODEs'
+#SXecho '                              and configuration file'
+#SXecho '     -mpiconf "mpi.conf"    : [SX only] Change MPI config file name'
+#SXecho '     -thread                : [SX only] Run thread parallel execution'
+# end only for SYS_SX
 }
 #
 #
@@ -133,6 +130,9 @@ setup_command()
    if [ -n "$ALT_DIRAC" ]; then
       DIRAC=${ALT_DIRAC##*/}
       BIN_DIR=${ALT_DIRAC%/*}
+      if [ ! -z "$BIN_DIR" ]; then
+         BIN_DIR=$LOC
+      fi
    else
       DIRAC=dirac.x
    fi
@@ -140,11 +140,11 @@ setup_command()
    # MPI?
    #
    if [ -n "$PARCAL" ]; then
-      if [ -n "$MULTI_NODE" ]; then
-         DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
-      else
+#SX   if [ -n "$MULTI_NODE" ]; then
+#SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
+#SX   else
          DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
-      fi
+#SX   fi
    else
       DIRAC_CMD="./$DIRAC"
    fi
@@ -161,7 +161,7 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include $DIRAC"
       else
-        DIRAC_CMD="dbx -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
+        DIRAC_CMD="$DEBUGGER -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
@@ -192,6 +192,7 @@ execute_dirac()
 
    if [ -f $WRK/$DIRAC ]; then
       if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
+         echo "Old $WKR/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
          rm $WRK/$DIRAC
       fi
    fi
@@ -215,10 +216,10 @@ execute_dirac()
    fi
    echo "   Executing: $NICE_CMD $DIRAC_CMD"
 
-   if [ -n "$MULTI_NODE" ]; then
-      PWD=`pwd`
-      export PWD
-   fi
+#SXif [ -n "$MULTI_NODE" ]; then
+#SX   PWD=`pwd`
+#SX   export PWD
+#SXfi
 
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
@@ -445,7 +446,7 @@ save_old_output()
       mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
          ( \
             echo "   Error renaming $OUTPUT_FILE" ; \
-            EXIT=1 ;\
+            EXIT=1 ; \
             exitfunc \
          )
       echo "ok"
@@ -502,9 +503,9 @@ initialize()
 
    RUN='out'
 
-   MULTI_CONF=
-   MULTI_NODE=
-   MPI_CONF_NAME=
+#SXMULTI_CONF=
+#SXMULTI_NODE=
+#SXMPI_CONF_NAME=
 
    if [ "$LOGNAME" = "" ]; then
       SCR=$SCR_DEFAULT/$USER
@@ -528,7 +529,11 @@ initialize()
 
    ALT_DIRAC=
 
-   BASDIR=$BAS_DIR; export BASDIR
+#  set default search path for basis sets:
+#  1) job directory
+#  2) basis set directory in Dirac distribution
+
+   BASDIR="$LOC/:$SRC_DIR/basis/"; export BASDIR
 }
 #
 #
@@ -629,19 +634,21 @@ while [ -n "$1" ]; do
          EXIT=0
          exitfunc
          ;;
-      -multi)
-         MULTI_NODE=1
-         shift
-         MULTI_CONF=$1
-         PARCAL=1
-         ;;
-      -mpiconf)
-         shift
-         MPI_CONF_NAME=$1
-         ;;
-      -thread)
-         export MULTITASKMIX=ON
-         ;;
+# only for SYS_SX (NEC SX systems)
+#SX   -multi)
+#SX      MULTI_NODE=1
+#SX      shift
+#SX      MULTI_CONF=$1
+#SX      PARCAL=1
+#SX      ;;
+#SX   -mpiconf)
+#SX      shift
+#SX      MPI_CONF_NAME=$1
+#SX      ;;
+#SX   -thread)
+#SX      export MULTITASKMIX=ON
+#SX      ;;
+# end only for SYS_SX
       -*)
          echo "$1 not recognized"
          usage
@@ -664,26 +671,28 @@ done
 #
 #
 # MAKE MPI CONFIGURATION FILE
+# for NEC SX systems
 #
 #
 make_mpi_config()
 {
-if [ -n "$MULTI_NODE" ]; then
-   echo " Create configuration file for MPI on MULTI NODEs"
-   if [ ! -f $MULTI_CONF ]; then
-      if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
-         if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
-            echo "$MULTI_CONF not found"
-         else
-            MULTI_CONF=$BIN_DIR/$MULTI_CONF
-         fi
-      else
-         MULTI_CONF=$SRC_DIR/$MULTI_CONF
-      fi
-   fi
-
-   . $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
-fi
+    echo
+#SX if [ -n "$MULTI_NODE" ]; then
+#SXecho " Create configuration file for MPI on MULTI NODEs"
+#SXif [ ! -f $MULTI_CONF ]; then
+#SX   if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
+#SX      if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
+#SX         echo "$MULTI_CONF not found"
+#SX      else
+#SX         MULTI_CONF=$BIN_DIR/$MULTI_CONF
+#SX      fi
+#SX   else
+#SX      MULTI_CONF=$SRC_DIR/$MULTI_CONF
+#SX   fi
+#SXfi
+#SX
+#SX. $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
+#SX fi
 }
 #
 #  Set working directory, set work memory, print header

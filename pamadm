@@ -1,7 +1,8 @@
 #! /bin/sh
 #
+# VERSION : $Revision$
+# DATE    : $Date$
 # FILE    : pamadm
-# SOURCE  : $Source$
 #
 #
 #   Master script for administrator of DIRAC
@@ -72,7 +73,7 @@ setup()
    #
    if [ -n "$DFTMOD" ]; then
       DFTFLG='-DMOD_DFT'
-      DFTOBJ='$(DFTOBJS)'
+      DFTOBJ='$(DFTOBJS) $(DFTOBJS_C)'
       DFTMAK=DFT_OBJ
       DFTTAR=1
       echo " - DFT module (DFT)"
@@ -333,6 +334,11 @@ make_makefile()
 include ./Makefile.config
 include lucita/Makefile.sub
 
+#
+# Note that only object files from fortran files (.F) should be included in OBJS,
+# object files from C files (.c) should be in C_OBJS.
+# 
+
 OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
@@ -365,6 +371,11 @@ relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 \$(LUCITA_OBJS)
 
+#
+# All .o files for C routines in .c files are listed separately from OBJS
+# (otherwise you'll get a lot of irrelevant error messages from ftnchek)
+#
+
 C_OBJS = \\
 main/alloc_mem.o    main/csectid.o \\
 main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
@@ -374,6 +385,16 @@ main/get_time.o \\
 gp/gpjth_c.o \\
 relccsd/ccunix.o
 
+#
+
+OBJSLAVE = abacus/herpar.o
+
+PDLIB = -Lpdpack -lpdlib
+
+#
+# RELCCSD_OBJS and RELCCSD_MAIN are for stand-alone relccsd.x and mpiccsd.x
+#
+
 RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
@@ -382,19 +403,25 @@ relccsd/ccunix.o
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
+#
+# DIRRCI_OBJS and DIRRCI_MAIN are for stand-alone dirrci.x
+#
+
 DIRRCI_OBJS = \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
 
 DIRRCI_MAIN = dirrci/cimain.o
+
+#
+# GP_OBJS are for stand-alone programs relccsd.x, mpiccsd.x, and dirrci.x
+#         and for some 'make utils' programs.
+#
 
 GP_OBJS = \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o
 
-OBJSLAVE = abacus/herpar.o
-
-PDLIB = -Lpdpack -lpdlib
 EOF
 #
 #  Object-files for ESR-module
@@ -442,9 +469,16 @@ fi
 if [ -n "$DFTMOD" ]; then
 cat <<EOF>> Makefile
 
+# dft files written in fortran:
+
 DFTOBJS = \\
 dft/pamdft.o dft/dftden.o      dft/dftdrv.o     dft/dftgrd.o \
-dft/dftaux.o dft/functionals.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
+dft/dftaux.o
+
+# dft files written in C:
+
+DFTOBJS_C = \\
+dft/functionals.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
 dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o
 EOF
 fi
@@ -468,15 +502,15 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
+TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
 
-NOCPPFS = \$(TOTOBJS:.o=.i)
+NOCPPFS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
-	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
-	$AUXOBJ \\
+	\$(OBJS) \$(C_OBJS) \\
+	 $AUXOBJ \\
 	\$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 #
 # Run ftnchek on Dirac
@@ -493,7 +527,7 @@ cat <<EOF>> Makefile
 dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
-	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
+	\$(OBJS) \$(C_OBJS) \\
 	\$(OBJSLAVE) $AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
  	\$(MPI_LIB_PATH) \$(MPI_LIB)

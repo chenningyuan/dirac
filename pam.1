@@ -1,7 +1,6 @@
 .\"VERSION : $Revision$"
 .\"DATE    : $Date$"
-.\"FILE    : configure.in"
-.\"SOURCE  : $Source$"
+.\"FILE    : pam.1"
 .TH pam 1
 .SH NAME
 .B pam
@@ -43,11 +42,11 @@ Run
 in debugger
 .TP 5
 .B -incmo
-Copy file 'DFCOEF' (wavefunction) to work area. This is an alias for
+Copy file 'DFCOEF' (DHF molecular orbital coefficients) to work area. This is an alias for
 .B -copy DFCOEF
 .TP 5
 .B -utcmo
-Get file 'DFCOEF' (wavefunction) from work area. This is an alias for
+Get file 'DFCOEF' (DHF molecular orbital coefficients) from work area. This is an alias for
 .B -get DFCOEF
 .TP 5
 .B -infck
@@ -74,23 +73,23 @@ can also be specified through the environment variable
 .B DIRNOD. 
 If neither 
 .B -nw
-or 
+nor 
 .B DIRNOD
-is set, then the memory size from
+are set, then the memory size from
 .B -mw
 or
 .B DIRWRK
 is used. If none of these are set, the default memory size is used.
 .TP 5
 .B -rmscr
-Delete working directory before starting job.
+Delete directory with work area before starting job.
 .TP 5
 .B -rmwrk
-Delete working directory when job is finished.
+Delete directory with work area when job is finished.
 .TP 5
 .B -run "name"
-File suffix for output file. The default is
-.B .out.
+File suffix for output file. The default is "
+.B .out".
 .TP 5
 .B -scr "name"
 Set scratch directory. Default scratch directory is prompted when configuring
@@ -112,9 +111,9 @@ Send the above e-mail to "user".
 .TP 5
 .B -dirac "cmd"
 Use alternate 
-.B Dirac 
+.B Dirac executable
 "cmd" instead of the default 
-.B Dirac.
+.B dirac.x.
 .TP 5
 .B -help
 This page.
@@ -140,7 +139,7 @@ For questions about
 .B pam
 or
 .B Dirac
-write to
-.B dirac-admin@dirac.chem.ou.dk
-or see
-.B http://dirac.chem.ou.dk/Dirac
+see
+.B http://dirac.chem.sdu.dk
+or write to
+.B dirac-admin@dirac.chem.sdu.dk
