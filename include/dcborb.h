@@ -5,8 +5,7 @@ C FILE    : dcborb.h
 C SOURCE  : $Source$
 C
 C*** Dimensions for MO-basis ***
-Cjth: Due to bug MXOPEN reset to one      PARAMETER( MXOPEN = 10 )
-      PARAMETER( MXOPEN = 1 )
+      PARAMETER( MXOPEN = 10 )
 C     Length of common block : keep up to date !!
       PARAMETER (NDCBORB=79+5*MXOPEN)
       COMMON/DCBORB/
