@@ -451,7 +451,7 @@ case $WHICH in
                 2) if [ "$mesp" = "dummy" ]; then
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23
 -D'INSTALL_WRKMEM=$memsiz' "
-                       ccp = "-DSYS_AIX -DSYS_AIX23"
+                       ccp="-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
@@ -459,7 +459,7 @@ case $WHICH in
                    else
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23
 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                       ccp = "-DSYS_AIX -DSYS_AIX23"
+                       ccp="-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
@@ -472,14 +472,14 @@ case $WHICH in
                    inc="-I$INCLUDE_DIR";;
                 2) if [ "$mesp" = "dummy" ]; then
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' "
-                       ccp = "-DSYS_AIX -DSYS_AIX23"
+                       ccp="-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
                        def='dirac.x'
                    else
                        cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                       ccp = "-DSYS_AIX -DSYS_AIX23"
+                       ccp="-DSYS_AIX -DSYS_AIX23"
                        for mod in $MODS; do
                          cpp=`echo $cpp $mod`
                        done
@@ -492,14 +492,14 @@ case $WHICH in
                    inc="-I$INCLUDE_DIR";;
                 *) if [ "$mesp" = "dummy" ]; then
                        cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz'"
-                       ccp = "-DSYS_AIX"
+                       ccp="-DSYS_AIX"
                        for mod in $MODS; do
                          cpp=`echo $cpp,$mod`
                        done
                        def='dirac.x'
                    else
                        cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=$memsiz',-D$parop"
-                       ccp = "-DSYS_AIX"
+                       ccp="-DSYS_AIX"
                        for mod in $MODS; do
                          cpp=`echo $cpp,$mod`
                        done
@@ -521,14 +521,14 @@ case $WHICH in
             esac
             if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=$memsiz'"
-                ccp = "-DSYS_IRIX"
+                ccp="-DSYS_IRIX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirac.x'
             else
                 cpp="-DPRG_DIRAC -DSYS_IRIX -DVAR_SIRBIG -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                ccp = "-DSYS_IRIX"
+                ccp="-DSYS_IRIX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -544,14 +544,14 @@ case $WHICH in
 #
     convex) if [ "$mesp" = "dummy" ]; then
                 cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' "
-                ccp = "-DSYS_CONVEX"
+                ccp="-DSYS_CONVEX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirac.x'
             else
                 cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                ccp = "-DSYS_CONVEX"
+                ccp="-DSYS_CONVEX"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -564,10 +564,10 @@ case $WHICH in
 #
     cray)   if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=$memsiz' "
-                ccp = "-DSYS_CRAY"
+                ccp="-DSYS_CRAY"
             else
                 cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=$memsiz' ,$parop"
-                ccp = "-DSYS_CRAY"
+                ccp="-DSYS_CRAY"
             fi
             for mod in $MODS; do
               cpp=`echo $cpp,$mod`
@@ -580,10 +580,10 @@ case $WHICH in
 #
     cray_t3e) if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
-                ccp = "-DSYS_T3D"
+                ccp="-DSYS_T3D"
             else
                 cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
-                ccp = "-DSYS_T3D"
+                ccp="-DSYS_T3D"
             fi
             for mod in $MODS; do
               cpp=`echo $cpp $mod`
@@ -596,14 +596,14 @@ case $WHICH in
 #
     alpha)  if [ "$mesp" = "dummy" ]; then
                 cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' "
-                ccp = "-DSYS_DEC"
+                ccp="-DSYS_DEC"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
                 def='dirac.x'
             else
                 cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                ccp = "-DSYS_DEC"
+                ccp="-DSYS_DEC"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -620,14 +620,14 @@ case $WHICH in
 
     paragon) if [ "$mesp" = "dummy" ]; then
                  cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' "
-                 ccp = "-DSYS_PARAGON"
+                 ccp="-DSYS_PARAGON"
                  for mod in $MODS; do
                    cpp=`echo $cpp $mod`
                  done
                  def='dirmpi.x'
              else
                  cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                 ccp = "-DSYS_PARAGON"
+                 ccp="-DSYS_PARAGON"
                  for mod in $MODS; do
                    cpp=`echo $cpp $mod`
                  done
@@ -644,14 +644,14 @@ case $WHICH in
 #
     sun4) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz'"
-                 ccp = "-DSYS_SUN"
+                 ccp="-DSYS_SUN"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
               def='dalton.x'
           else
               cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-                 ccp = "-DSYS_SUN"
+                 ccp="-DSYS_SUN"
                 for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                 done
@@ -668,14 +668,14 @@ case $WHICH in
 #
     hp) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' "
-              ccp = "-DSYS_HPUX"
+              ccp="-DSYS_HPUX"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
               def='dirac.x'
           else
               cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-              ccp = "-DSYS_HPUX"
+              ccp="-DSYS_HPUX"
               for mod in $MODS; do
                 cpp=`echo $cpp $mod`
               done
@@ -693,11 +693,11 @@ case $WHICH in
 #
     linux) if [ "$mesp" = "dummy" ]; then
               cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
-              ccp = "-DSYS_LINUX"
+              ccp="-DSYS_LINUX"
               def='dalton.x'
           else
               cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' -D$parop"
-              ccp = "-DSYS_LINUX"
+              ccp="-DSYS_LINUX"
                        if [ "$mesp" = "mpi" ]; then
                           def='dirmpi.x'
                        else
