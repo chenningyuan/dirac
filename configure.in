@@ -66,6 +66,12 @@ while [ $# != 0 ]; do
    optname="${opt}"
    opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
    case "${opt}" in
+      "version")
+	 echo $0
+	 echo '$Revision$'
+	 echo '$Date$'
+	 exit 
+	 ;;
       "system")
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
