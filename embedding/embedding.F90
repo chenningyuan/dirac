@@ -76,7 +76,7 @@ CONTAINS
 
     SELECT CASE (Emb_Mode)
     CASE (EMB_MODE_FROZEN_ORBITALS)
-        CALL Get_Grad_Rho_Frozen_Orbitals (Frozen_Grad_Rho, GAO, GAO)
+        CALL Get_Grad_Rho_Frozen_Orbitals (Frozen_Grad_Rho, GAO, GAO1)
     CASE (EMB_MODE_OFF)
         CALL QUIT ("Get_Frozen_Rho called in Emb_Mode = EMB_OFF - This should never happen")
     CASE DEFAULT
