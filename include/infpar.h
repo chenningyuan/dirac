@@ -11,8 +11,9 @@ C        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 C        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       PARAMETER (MAXNOD=100)
       REAL*8 TOTWAL
-      LOGICAL PARHER, TIMING
+      LOGICAL PARHER, TIMING, SLAVE
       COMMON /INFPAR/ TOTWAL,
      &                ICOUNT, KPRINT, MTIDS(MAXNOD), MPARID, MYTID,
-     &                NODE, NODES, NUMNOD, NTASK, NCODE, PARHER, TIMING
+     &                NODE, NODES, NUMNOD, NTASK, NCODE, PARHER, TIMING,
+     &                SLAVE
 #endif

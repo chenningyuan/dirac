@@ -1057,6 +1057,11 @@ C     Start timing.
 C
       CALL GETTIM(CPU1,WALL1)
 C
+C     This is a slave in a parallel run
+C
+      SLAVE = .TRUE.
+C
+C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
 C     ***************************************************
@@ -1980,6 +1985,10 @@ C
       END IF
 C
       FIRST = .FALSE.
+C
+C     For infpar.h
+C
+      SLAVE  = .FALSE.
 C
       PARHER = .FALSE.
 #if defined (VAR_MPI)
