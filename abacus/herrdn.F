@@ -4595,9 +4595,9 @@ C
 C
 C     Determine NZ - parameter
 C     ========================
-C       NZ = 4	quaternionic group	no    totally symmetric rotations
-C       NZ = 2  complex group		one   totally symmetric rotation
-C       NZ = 1  real group		three totally symmetric rotations
+C       NZ = 4  quaternionic group        no    totally symmetric rotations
+C       NZ = 2  complex group             one   totally symmetric rotation
+C       NZ = 1  real group                three totally symmetric rotations
 C
       NZ = 1
       DO 30 I = 1,3
@@ -4819,14 +4819,14 @@ C
       JM4POS(0) =  1
       JM4FAS(0) =  1
 C
-C     i(alpha_z)   -->  i(sigma_x)
-C     ==========================
+C     i(alpha_z)   --> i(sigma_z)
+C     ===========================
 C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
       JM4FAS(1) =  1
 C
-C     i(alpha_y)   --> j(sigma_x)
+C     i(alpha_y)   --> j(sigma_y)
 C     ===========================
 C
       JM4REP(2) =  ISYMAX(2,1)
@@ -4834,11 +4834,19 @@ C
       JM4FAS(2) =  1
 C
 C     i(alpha_x)   --> k(sigma_x)
-C     ==========================
+C     ===========================
 C
       JM4REP(3) =  ISYMAX(1,1)
       JM4POS(3) =  IXQ
       JM4FAS(3) =  1
+C
+C     | 0 I |       | 0 1 |
+C     | I 0 |  -->  | 1 0 |
+C     =====================
+C
+      JM4REP(4) =  IXYZ
+      JM4POS(4) =  1
+      JM4FAS(4) =  1
 C
 C     ***************************************
 C     ***** Definition of full operator *****
@@ -4913,6 +4921,13 @@ C
       JCOM(1,8) =  1
       JCOM(2,8) =  1
       JCOM(3,8) =  1
+C
+C     9. gamma5 P       * gamma5 times scalar operator
+C     ===========================================================
+C
+      MCMP(9)   =  1
+      JM4 (1,9) =  4
+      JCOM(1,9) =  1
 C
 C     Matrix symmetry
 C     ===============

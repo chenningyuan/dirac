@@ -356,6 +356,11 @@ C
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.62) THEN
+         JMAXD = 0
+         JMAXM = 0
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
       END IF
 C
       IF (IPRINT .GT. 5) THEN
@@ -647,7 +652,8 @@ C
      &                    .OR. (INTTYP .EQ. 35)
      &                    .OR. (INTTYP .EQ. 38)
      &                    .OR. (INTTYP .EQ. 48)
-     &                    .OR. (INTTYP .EQ. 51)) THEN
+     &                    .OR. (INTTYP .EQ. 51)
+     &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
@@ -795,6 +801,9 @@ C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+         ELSE IF (INTTYP .EQ. 62) THEN
+            CALL PVCTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE
             FULMAT = .TRUE.
             DO 200 I = 1, NOPTYP
@@ -848,7 +857,13 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('PR1PRM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
-      IF (INTTYP .NE. 12) THEN
+      IF (INTTYP .EQ. 62) THEN
+         CALL PR1PRV(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
+     &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
+     &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
+     &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC)
+      ELSE IF (INTTYP .NE. 12) THEN
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
@@ -1381,14 +1396,14 @@ C
 C        First electric derivative of overlap integrals. Type A
 C        ------------------------------------------------------
 C
-	 ELSE IF (INTTYP .EQ. 49) THEN
-	    CALL SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
+         ELSE IF (INTTYP .EQ. 49) THEN
+            CALL SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C        First electric derivative of overlap integrals. Type B
 C        ------------------------------------------------------
 C
-	 ELSE IF (INTTYP .EQ. 50) THEN
-	    CALL SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
+         ELSE IF (INTTYP .EQ. 50) THEN
+            CALL SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT, EXPA, EXPB)
 C
 C        First electric deriv. of 1-electron Ham. integrals
@@ -3648,6 +3663,54 @@ C  /* Deck sdtra */
   100 CONTINUE
       RETURN
       END
+C  /* Deck pvctra */
+      SUBROUTINE PVCTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
+     &                  NELMNT,NOPTYP,ANTI,IPVCTBL,IPRINT)
+C
+C     J.Thyssen - Oct 7 1999
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      LOGICAL FULMAT, ANTI
+      DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
+     &          IPVCTBL(NUCIND,0:MAXREP)
+#include <onecom.h>
+#include <symmet.h>
+#include <nuclei.h>
+#include <ibtfun.h>
+      FULMAT = .TRUE.
+      ITYP = 0
+      DO 100 IATOMC = 1, NATOMC
+         ICENTC = JCENTC(IATOMC)
+         ISYMC  = JSYMC (IATOMC)
+         FACTOR = FACINT(IATOMC)
+c        write(6,*) '- jth iatomc ',iatomc
+         ITYP = ITYP + 1
+         DO 200 IREPC = 0, MAXREP
+            IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
+c              write(6,*) '   - jth irepc ',irepc
+               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+               IADR = IPVCTBL(ICENTC,IREPC)
+c              write(6,*) '   - jth iadr ',iadr
+c              call flshfo(6)
+               IF (IREPC .EQ. 0) THEN
+                  CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
+     &                       MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                       FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
+               ELSE
+                  CALL SYM1N(SHLINT(1,ITYP),SOINT(1,IADR),IREPC,
+     &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                       FACSYM,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+               END IF
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      RETURN
+      END
 C  /* Deck npetra */
       SUBROUTINE NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,NPETBL,IPRINT)
@@ -4473,7 +4536,7 @@ C
 C  /* Deck se1int */
       SUBROUTINE SE1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C	H. Heiberg, -95
+C        H. Heiberg, -95
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -4536,7 +4599,7 @@ C  /* Deck se1inb */
       SUBROUTINE SE1INB(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT, EXPA, EXPB)
 C
-C	H. Heiberg, -95
+C        H. Heiberg, -95
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -4667,5 +4730,160 @@ c$$$ 300        CONTINUE
 c$$$            IADRAV = IADRAV + ISTEPV
 c$$$ 200     CONTINUE
  100  CONTINUE
+      RETURN
+      END
+C  /* Deck pr1prv */
+      SUBROUTINE PR1PRV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
+     &                  WORK,LWORK,LABINT,INTTYP,NOPTYP,
+     &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
+     &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
+     &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
+#include <implicit.h>
+#include <priunit.h>
+#include <aovec.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <pi.h>
+      PARAMETER (D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
+     &           D2INV = 0.50D0)
+C
+      PARAMETER (SMTHR = 1.00D-20)
+      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI, HUCFAC
+      CHARACTER LABINT(NOPTYP)*8
+      DIMENSION WORK(LWORK), TEMP(3),
+     &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
+     &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
+     &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+C
+#include <onecom.h>
+#include <nuclei.h>
+#include <orgcom.h>
+#include <primit.h>
+#include <symmet.h>
+C
+#include <ibtfun.h>
+C
+C Does only work for Tensor/Chiral effect!
+C
+      DIFODC = .FALSE.
+C
+C
+C
+C Exponent and coordinates of Spherical Nuclear distribution
+      NUCPN1 = 0
+      DO 50 IATOM = 1, NUCIND
+      DO 60 IREP = 0, MAXREP
+         IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GOTO 60
+      NUCPN1 = NUCPN1 + 1
+      EXPN = GNUEXP(IATOM) 
+      CORNX = CORCX(NUCPN1)
+      CORNY = CORCY(NUCPN1)
+      CORNZ = CORCZ(NUCPN1)
+      CONTN = DSQRT((EXPN / PI)**3)
+C
+      DIFANX = CORAX - CORNX
+      DIFANY = CORAY - CORNY
+      DIFANZ = CORAZ - CORNZ
+      DISTAN = DIFANX*DIFANX + DIFANY*DIFANY + DIFANZ*DIFANZ
+      DIFBNX = CORBX - CORNX
+      DIFBNY = CORBY - CORNY
+      DIFBNZ = CORBZ - CORNZ
+      DISTBN = DIFBNX*DIFBNX + DIFBNY*DIFBNY + DIFBNZ*DIFBNZ
+C
+      DO 100 IPRIMA = 1,NUCA
+         JPRIMA = JSTA + IPRIMA
+         CONTA = PRICCF(JPRIMA,NUMCFA)
+         EXPA = PRIEXP(JPRIMA)
+      DO 100 IPRIMB = 1,NUCB
+         JPRIMB = JSTB + IPRIMB
+         CONTB = PRICCF(JPRIMB,NUMCFB)
+         EXPB = PRIEXP(JPRIMB)
+         EXPP = EXPA + EXPB + EXPN
+C
+C     Tensor interaction
+C
+         EXPPI = D1/EXPP
+         EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN+EXPB*EXPN*DISTBN
+         EXPABQ = EXPABQ*EXPPI
+         IF (EXPABQ.GT.TOLOG) GO TO 200
+         SAAB = CONTA*CONTB*CONTN*DEXP(-EXPABQ)
+         ASAAB = DABS(SAAB)
+         IF (ASAAB.LT.TOLS) GO TO 200
+         SAAB13 = SIGN(ASAAB**D3INV,SAAB)
+C
+C        Calculate coordinates of product Gaussian P
+C
+         EXPAPI = EXPA*EXPPI
+         EXPBPI = EXPB*EXPPI
+         EXPNPI = EXPN*EXPPI
+         CORPX  = EXPAPI*CORAX + EXPBPI*CORBX + EXPNPI*CORNX
+         CORPY  = EXPAPI*CORAY + EXPBPI*CORBY + EXPNPI*CORNY
+         CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ + EXPNPI*CORNZ
+C
+C Check for same center (To avoid numerical noise, e.g. nonzero
+C (p_x | \rho | s) on same center since CORPX - CORAX has noise
+C of apprix 10^(-16)
+C
+         IF(DISTAB.LT.SMTHR) THEN
+            IF(DISTAN.LT.SMTHR) THEN
+               IF(DISTBN.LT.SMTHR) THEN
+                  CORAX = CORNX
+                  CORAY = CORNY
+                  CORAZ = CORNZ
+                  CORBX = CORNX
+                  CORBY = CORNY
+                  CORBZ = CORNZ
+                  CORPX = CORNX
+                  CORPY = CORNY
+                  CORPZ = CORNZ
+               ENDIF
+            ENDIF
+         ENDIF
+C     
+C        *********************************************
+C        ***** Overlap Distribution Coefficients *****
+C        *********************************************
+C
+         TEMP(1) = ORIGIN(1)
+         TEMP(2) = ORIGIN(2)
+         TEMP(3) = ORIGIN(3)
+C
+         CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
+     &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
+     &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
+     &                  TEMP,INTTYP)
+C        **********************************************
+C        ***** Calculation of Hermitian integrals *****
+C        **********************************************
+C
+C        Overlap integral
+C
+         SHGTF = DSQRT(PI*EXPPI)
+C
+C        **********************************************
+C        ***** Calculation of Cartesian integrals *****
+C        **********************************************
+C
+C        PV integrals
+C        ------------
+C
+         CALL OVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &        D1, SHGTF,SHLINT(1,NUCPN1))
+C
+ 200     CONTINUE
+ 100  CONTINUE
+
+  60  CONTINUE
+  50  CONTINUE
+C
+C     Print
+C
+      IF (IPRINT .GT. 30) THEN
+         DO 400 I = 1, NOPTYP
+            CALL AROUND('SHLINT for '//LABINT(I)//' in PR1PRV')
+            CALL OUTPUT(SHLINT(1,I),1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
+  400    CONTINUE
+      END IF
       RETURN
       END

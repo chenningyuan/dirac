@@ -271,7 +271,7 @@ C
 #include <mxorb.h>
 #include <iratdef.h>
 #include <efield.h>
-      PARAMETER (NTABLE = 54)
+      PARAMETER (NTABLE = 55)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -298,7 +298,7 @@ C
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
-     &	          'S1ELB  ', 'ONEELD'/
+     &            'S1ELB  ', 'ONEELD ', 'PVC    '/
 C
 #include <ibtfun.h>
 C
@@ -315,7 +315,7 @@ C
             GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
      &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54), I
+     &             49,50,51,52,53,54,55), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1343,6 +1343,21 @@ C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
          INTREP(3) = ISYMAX(3,1)
+         ANTI = .FALSE.
+      GOTO 200
+C
+C     Integrals for Parity Violation - chirality
+C     __________________________________________
+C
+C     The operator is: rho_n(r_i)
+C     - where rho_n is the density for nucleus n.
+C
+ 55   CONTINUE
+         INTTYP = 62
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     $     'Parity Violation - chirality integrals'
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL PVCTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
          ANTI = .FALSE.
       GOTO 200
 C
@@ -2382,6 +2397,40 @@ C
  20         CONTINUE
          END IF
  10   CONTINUE
+      RETURN
+      END
+C  /* Deck pvtyp */
+      SUBROUTINE PVCTYP(NOPTYP,INTREP,IPVCTBL,LABINT,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include <nuclei.h>
+#include <symmet.h>
+#include <chrnos.h>
+#include <ibtfun.h>
+      NOPTYP = NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                                CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  IPVCTBL(IATOM,IREP) = ITYP
+                  INTREP(ITYP) = IREP
+               END IF
+            END IF
+  200    CONTINUE
+  100 CONTINUE
       RETURN
       END
 C  /* Deck gauher */
