@@ -51,6 +51,8 @@ extern char  *getenv();
 #if defined (SMALL_CFILES) || (SYS_DEC)
 typedef off_t off64_t;
 #define lseek64 lseek
+#elif defined (SYS_HPUX)
+#define lseek64 lseek
 #endif
 
 typedef struct
