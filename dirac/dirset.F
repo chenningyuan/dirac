@@ -830,7 +830,7 @@ C
 C
 C     Print section
 C      
-      CALL HEADER('Output from LVCORR',-1)
+      CALL HEADER('Output from LVCOR3',-1)
       WRITE(LUPRI,'(1X,A)')
      &  '* Small component atomic charges:'
       WRITE(LUPRI,'(4X,A4,F10.4)') (NAMN(I),SCQ(I),I = 1,NUCIND)
