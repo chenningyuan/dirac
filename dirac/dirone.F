@@ -776,13 +776,23 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                     STOL(IC),IPRINT,EIG,WORK,LWORK)
             ENDIF
-            NBORB(JSYM,IFRP,IC) = NEFF
-            NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
-            JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
-            JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
             NDEL  = NBBAS(IREP,IC) - NEFF
             WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
      &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
+C
+C           Zero columns of Lowdin matrix that are to be deleted
+C
+            IF(NDEL.GT.0) THEN
+              J = JVOFF + NFBAS(IFRP,0)*NEFF 
+              DO I = 1,NEFF
+                CALL DZERO(VMAT(J),NBBAS(IREP,IC))
+                J = J + NFBAS(IFRP,0)
+              ENDDO
+            ENDIF
+            JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
+            JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF + NBBAS(IREP,IC)
+            NBORB(JSYM,IFRP,IC) = NEFF
+            NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
           ENDIF
         ENDDO
 C
@@ -805,13 +815,23 @@ C
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
             ENDIF
+            NDEL  = NBBAS(IREP,IC) - NEFF
+            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
+     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
+C
+C           Zero columns of Lowdin matrix that are to be deleted
+C
+            IF(NDEL.GT.0) THEN
+              J = JVOFF + NFBAS(IFRP,0)*NEFF 
+              DO I = 1,NEFF
+                CALL DZERO(VMAT(J),NBBAS(IREP,IC))
+                J = J + NFBAS(IFRP,0)
+              ENDDO
+            ENDIF
             NBORB(JSYM,IFRP,IC) = NEFF
             NFORB(IFRP,IC) = NFORB(IFRP,IC) + NEFF
             JSOFF = JSOFF + (NFBAS(IFRP,0)+1)*NBBAS(IREP,IC)
             JVOFF = JVOFF + NFBAS(IFRP,0)*NEFF+NBBAS(IREP,IC)
-            NDEL  = NBBAS(IREP,IC) - NEFF
-            WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
-     &        COMP(IC),REP(IREP),'* Deleted: ',NDEL
           ENDIF
           NBORB(JSYM,IFRP,0) = NBORB(JSYM,IFRP,1) + NBORB(JSYM,IFRP,2)
         ENDDO
