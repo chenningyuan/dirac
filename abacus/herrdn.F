@@ -793,7 +793,7 @@ C*****************************************************************************
      &          SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*7
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -911,15 +911,18 @@ C
 C              Start with LARGE Component
 C              ==========================
 C
-C              The following four possibilities exist:
+C              The following seven possibilities exist:
 C
 C              LARGE INTGRL     2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
+C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
+C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
+C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,X,A7)') BSET,BSKEYWORD
+               READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
 C
                IF ( BSET .NE. 'LARGE') THEN
                   WRITE(LUPRI,'(A,I5,A,/,A)')
@@ -944,6 +947,25 @@ C
                ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
                   IBSFLAG = 3
                   READ (MLINE(NMLINE),'(12X,A20)') BASFIL
+               ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
+                  IBSFLAG = 4
+                  READ (MLINE(NMLINE)(16:),ERR=9000,*)
+     $                 (FAMPAR(K),K=1,4),NFAMEXP,
+     $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+                  CALL GENFAMEXP(LUINFO,0)
+               ELSE IF ( BSKEYWORD(1:4) .EQ. 'GEOM' ) THEN
+                  IBSFLAG = 4
+                  READ (MLINE(NMLINE)(11:),ERR=9000,*)
+     $                 (FAMPAR(K),K=1,2),NFAMEXP,
+     $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+                  FAMPAR(3) = D0
+                  FAMPAR(4) = D0
+                  CALL GENFAMEXP(LUINFO,0)
+               ELSE IF ( BSKEYWORD(1:6) .EQ. 'FAMILY') THEN
+                  IBSFLAG = 4
+                  READ (MLINE(NMLINE),ERR=9000,'(12X,12I5)')
+     $                 NFAMEXP, IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
+                  CALL GENFAMEXP(LUINFO,1)
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
@@ -988,6 +1010,18 @@ C
      &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM)
                   NBLCK(I,1) = NBLOCK
 C     
+               ELSE IF ( IBSFLAG .EQ. 4 ) THEN
+C
+C                 Generate well-temperered/family basis set
+C
+                  CALL FAMBAS(LUINFO,IQM(I,1),JCO(1,I,1),
+     &                 NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
+     &                 SEG(IBLOCK(1),1),
+     &                 ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
+     &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
+     &                 NBLOCK,KAOVEC,KPRIM)
+                  NBLCK(I,1) = NBLOCK
+C
                ENDIF
 C
 C              Print out basis set             
@@ -1065,8 +1099,6 @@ C
 C
                   END IF
                END IF
-               write(6,*) 'small bskeyword = <',bskeyword,'>'
-               write(6,*) 'small c basis set: ',ibsflag
 C
 C
 C
@@ -1102,15 +1134,13 @@ C
 C                 When uncontracted we generate the small component basis 
 C                 using the kinetic balance relation
 C                 ...or...
-C                 Hack: Make uncontracted small component basis
+C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-                  write(6,*) 'making kinetic balance'
-C
                   CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST)
 C
                ENDIF
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
@@ -1207,6 +1237,11 @@ C
         CALL QUIT('Error reading keyword LARGE.')
  5200 CONTINUE
         CALL QUIT('Error reading keyword SMALL or SBFIL.')
+ 9000 CONTINUE
+         WRITE(LUPRI,'(A,I3,/,A)')
+     $     '*** ERROR in READIN ***: error reading line ',NMLINE,
+     $     MLINE(NMLINE)
+         CALL QUIT('*** ERROR in READIN ***')
       END
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,QEXP,NSYMOP,ANG)
@@ -1484,7 +1519,7 @@ C
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
 C
-      WRITE(6,*) 'jth: ',dirac,isphtr,dircon,molfcon
+C FIXME: only is small component is NOT contracted...
       IF (DIRAC.AND.ISPHTR.EQ.3)
      $     CALL RKBREL(IPREAD)
 C
@@ -1853,8 +1888,10 @@ C
      &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK)
             IF (INPTST) THEN
               WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
-              WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUCIJ,
-     &                               'Shells    :  ',NRCIJ
+              WRITE(LUPRI,'(6X,A,I5)')
+     $             'Primitives:  ',NUCIJ,
+     &             'Shells    :  ',NRCIJ,
+     $             'KinBal    :  ',ISGEN(NBLOCK)
             END IF
             SEGIJ = NRCIJ .GE. 0
             NUCIJ = ABS(NUCIJ)
@@ -1862,11 +1899,6 @@ C
             DIRCON = DIRCON .OR. (NRCIJ .GT. 0)
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
-c           IF ((ISPHTR.EQ.3).AND.(NRCIJ.NE.0)) THEN
-c              WRITE(LUPRI,'(A)') 
-c    &              'Not implemented RKB with contraction!'
-c              CALL QUIT('Cannot do RKB with contraction!')
-c           ENDIF
 C     
 C     Read in exponents and contraction coefficients
 C     
@@ -1922,8 +1954,9 @@ C
             END IF
             IF (INPTST) THEN
                WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
-               WRITE(LUPRI,'(6X,A,I5)') 'Primitives:  ',NUCIJ,
-     &                                  'Shells    :  ',NRCIJ
+               WRITE(LUPRI,'(6X,A,I5)')
+     $              'Primitives:  ',NUCIJ,
+     &              'Shells    :  ',NRCIJ
             END IF
             SEGIJ = SEGIJ .AND. (NRCIJ .GE. 0)
             NUCIJ = ABS(NUCIJ)
@@ -1982,6 +2015,145 @@ C
      *  NRCIJ,
      *  '                   current maximum number              ',KPRIM
         CALL QUIT('Too many contracted functions')
+      END
+C  /* Deck gtoinp */
+      SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
+     &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+      PARAMETER (DSM=1.0D-30)
+      CHARACTER*1 SPDCAR, FRMT
+      CHARACTER*8 FMT1
+      CHARACTER*12 FMT2
+C
+C
+      LOGICAL SEG, FREE, SEGIJ
+      DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
+     &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
+     &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
+#include <cbirea.h>
+#include <molinp.h>
+#include <ccom.h>
+#include <dcbgen.h>
+#include <gencon.h>
+C
+      NBLOCK = 0
+      DO 100 I = 1, IQM
+         DO 200 J = 1, JCO(I)
+            NBLOCK = NBLOCK + 1
+            IF(NBLOCK.GT.KAOVEC) GOTO 5000
+C     
+            CALL DZERO(ALPHA (1,  NBLOCK),KPRIM)
+            CALL DZERO(CPRIMU(1,1,NBLOCK),KPRIM*KPRIM)
+            CALL DZERO(CPRIM (1,1,NBLOCK),KPRIM*KPRIM)
+C
+C           Get exponents
+C     
+            CALL FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
+     &           CPRIMU(1,1,NBLOCK),KPRIM,WORK,LWORK)
+C
+            IF (INPTST) THEN
+               WRITE(LUPRI,'(3X,A,I2,A,I4)') 'L= ',(I-1),'  Block: ',J
+               WRITE(LUPRI,'(6X,A,I5)')
+     $              'Primitives:  ',NUCIJ,
+     &              'Shells    :  ',NRCIJ,
+     $              'KinBal    :  ',ISGEN(NBLOCK)
+            END IF
+            SEGIJ = NRCIJ .GE. 0
+            NUCIJ = ABS(NUCIJ)
+            NRCIJ = ABS(NRCIJ)
+            IF (NUCIJ.GT.KPRIM) GOTO 5010
+            IF (NRCIJ.GT.KPRIM) GOTO 5020
+C     
+C     
+C           Identify segmented contractions
+C
+            CALL SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU(1,1,NBLOCK),KPRIM,DSM)
+            SEG(NBLOCK) = SEGIJ
+C
+C           Reorder primitive orbitals
+C
+            CALL PRIORD(ALPHA(1,NBLOCK),CPRIMU(1,1,NBLOCK),NUCIJ,NRCIJ,
+     &           SEG(NBLOCK),KPRIM,DSM)
+C
+C           Normalize orbitals
+C
+            CALL NRMORB(I,NRCIJ,NUCIJ,ALPHA(1,NBLOCK),
+     &           CPRIM(1,1,NBLOCK),
+     &           CPRIMU(1,1,NBLOCK),KPRIM,NBLOCK)
+C     
+            NUC(NBLOCK) = NUCIJ
+            NRC(NBLOCK) = NRCIJ
+  200      CONTINUE
+  100   CONTINUE
+      RETURN
+C
+C     Error messages:
+C
+ 5000 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *  ' >>> FAMBAS error, number of AO-blocks            ',NBLOCK,
+     *  '                   current maximum number         ',KAOVEC
+        CALL QUIT('Too many AO-blocks')
+ 5010 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *  ' >>> FAMBAS error,'//
+     *  'number of primitives per block      ',NUCIJ,
+     *  '                   current maximum number              ',KPRIM
+        CALL QUIT('Too many primitives')
+ 5020 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *  ' >>> FAMBAS error, number of contracted functions      ',
+     *  NRCIJ,
+     *  '                   current maximum number              ',KPRIM
+        CALL QUIT('Too many contracted functions')
+      END
+C  /* Deck famcopy */
+      SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+      PARAMETER(D1 = 1.0D0)
+      DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
+#include <cbirea.h>
+      DIMENSION ILIST(MXFAMEXP),TMP(MXFAMEXP+2)
+#include <molinp.h>
+C
+C     Card 9:
+C
+C     ALPHA  - exponent of primitive
+C     CPRIMU - unnormalized contraction coefficients
+C
+C
+C     NUMLST needs an work array for dimension NFALPHA.
+C
+C     Read string in format as described in SUBR NUMLST
+C     Eg.: 1..20
+C
+      CALL RDLINE(LUINFO)
+      NUCIJ = 1
+      CALL NUMLST(MLINE(NMLINE)(1:72),ILIST,NFAMEXP,1,NFAMEXP,NUCIJ,
+     &     TMP,MXFAMEXP)
+      NRCIJ = NUCIJ
+      DO 300 L = 1, NUCIJ
+         ALPHA(L) = FAMEXP(ILIST(L))
+         CPRIMU(L,L) = D1
+  300 CONTINUE
+C
+C     Test print
+C
+      IF (INPTST) THEN
+         WRITE(LUPRI,'(A)') 'Contraction matrix:'
+         DO 400 L = 1, NUCIJ
+            WRITE (LUPRI,'(E16.10)') ALPHA(L)
+            WRITE (LUPRI,'(6(2X,F10.8))') (CPRIMU(L,M),M=1,NRCIJ)
+  400    CONTINUE
+      END IF
+C
+      RETURN
       END
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
@@ -3232,9 +3404,7 @@ C*****************************************************************************
      *      'No orbitals in symmetry',REP(LA-1),'(',LA,')'
         END IF
   10  CONTINUE
-      write(6,*) 'ipread',ipread
-      IF (.true.) THEN
-c      IF (IPREAD .GT. 10) THEN
+      IF (IPREAD .GT. 10) THEN
          WRITE(LUPRI,'(10X,A,/)') 'Symmetry pointer indices'
          WRITE(LUPRI,'(4X,8I4)')
      &      ((IPTSYM(I,J),J = 0,MAXREP),I=1,NORBS)
@@ -5883,7 +6053,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
       SUBROUTINE KINBAL(I,IBLL,IBLS,
      &     IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+     &     NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST)
 C*****************************************************************************
 C
 C      Generate small component functions from large using the
@@ -5893,7 +6063,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      LOGICAL SEG
+      LOGICAL SEG,INPTST
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
@@ -5920,7 +6090,7 @@ C
      $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 )  THEN
               IBS = IBS + 1
               CALL GENSML(J,IBD,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                      SEG,KBLOCK,KPRIM)
+     &                      SEG,KBLOCK,KPRIM,INPTST)
             ENDIF
           ENDDO
         ENDIF
@@ -5931,10 +6101,10 @@ C
           DO K = 1,JCO(J+1,I,1)
             IBU = IBU + 1
             IF(IUP(ISGEN(IBU)).EQ.1
-     $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 ) THEN
+     $           .OR. IDOWN(ISGEN(IBU)) .EQ. 0 ) THEN
               IBS = IBS + 1
               CALL GENSML(J,IBU,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                    SEG,KBLOCK,KPRIM)
+     &                    SEG,KBLOCK,KPRIM,INPTST)
             ENDIF
           ENDDO
         ENDIF
@@ -5948,7 +6118,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gensml */
       SUBROUTINE GENSML(IQM,IBL,IBS,IBJ,NUC,NRC,ALPHA,CPRIM,CPRIMU,
-     &                  SEG,KBLOCK,KPRIM)
+     &                  SEG,KBLOCK,KPRIM,INPTST)
 C*****************************************************************************
 C
 C
@@ -5958,7 +6128,7 @@ C*****************************************************************************
 C
       PARAMETER ( ALPTHR = 1.0D-3 )
 C
-      LOGICAL SEG
+      LOGICAL SEG,INPTST
       DIMENSION NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),CPRIMU(KPRIM,KPRIM,KBLOCK,2)
@@ -5995,6 +6165,10 @@ C        We've deleted all functions from this block.
 C        This might happen for (dual) family basis sets.
 C        Decrement IBS and return.
 C
+         WRITE(LUPRI,'(A,I3,A,I3)')
+     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
+     &   ' small functions in a block out of',NUC(IBL,1)
+C
          IBS = IBS - 1
          RETURN
       END IF
@@ -6011,6 +6185,17 @@ C
       CALL DUNIT(CPRIMU(1,1,IBS,2),KPRIM)
       CALL NRMORB(IQM,NRC(IBS,2),NUC(IBS,2),ALPHA(1,IBS,2),
      &            CPRIM(1,1,IBS,2),CPRIMU(1,1,IBS,2),KPRIM,IBS)
+C
+C     Test print
+C
+      IF (INPTST) THEN
+         WRITE(LUPRI,'(A)') 'Contraction matrix:'
+         DO 400 L = 1, NUC(IBS,2)
+            WRITE (LUPRI,'(E16.10)') ALPHA(L,IBS,2)
+            WRITE (LUPRI,'(6(2X,F10.8))')
+     $           (CPRIMU(L,M,IBS,2),M=1,NUC(IBS,2))
+  400    CONTINUE
+      END IF
 C
       RETURN
       END
@@ -6088,7 +6273,6 @@ C       Loop over primitives in this shell.
 C
         DO 200 IPRIML = iPrimLargeStart, iPrimLargeEnd
            PRIEXL = PRIEXP(IPRIML)
-           write(6,*) ' 200    : L prim',PRIEXL,NHKTL
 C
            ISH2M = 0
 C
@@ -6116,7 +6300,6 @@ C
               DO 400 IPRIMS = iPrimSmallStart, iPrimSmallEnd
 C
                  PRIEXS = PRIEXP(IPRIMS)
-                 write(6,*) '   400  : S prim',PRIEXS,NHKTS
 C
                  IF ( ABS ( PRIEXS - PRIEXL ) .LT. SML ) THEN
 C
@@ -6145,7 +6328,6 @@ C
 C                   L+1 small function....
 C
                     IF(NHKTS.EQ.NHKTL+1) THEN
-                       write(6,*) '     hit...',IPRIML,IPRIMS,ISH2M
                        IRKB(IPRIML) = ISH2M
                        IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
                           WRITE(LUPRI,'(A)') 
@@ -6163,10 +6345,12 @@ C
  200    CONTINUE
  100  CONTINUE
 C
-      write(6,*) 'new code'
-      DO I = 1,NPSHEL
-         WRITE(6,'(A,I3,A,I3)') 'IRKB(',I,') = ',IRKB(I)
-      END DO
+      IF ( IPRINT .GE. 10 ) THEN
+         CALL HEADER('RKBREL: RKB array',-1)
+         DO I = 1,NPSHEL
+            WRITE(6,'(A,I3,A,I3)') 'IRKB(',I,') = ',IRKB(I)
+         END DO
+      END IF
 C
 C
       RETURN
@@ -6272,4 +6456,104 @@ C
       END IF
       ISTART = IEND + IPOS
       RETURN
+      END
+C  /* Deck genfamily */
+      SUBROUTINE GENFAMEXP(LUINFO,IFLAG)
+C***********************************************************************
+C
+C     Read in or calculate exponents for family basis sets
+C
+C     Written by J. Thyssen - Jun 4 1998
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+C
+      PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
+      CHARACTER KEYWRD*6
+C
+#include <cbirea.h>
+#include <molinp.h>
+#include <sdpre.h>
+C
+C
+C
+      IF ( IFLAG .EQ. 0 ) THEN
+C
+C        Generate well-temperered exponents
+C        Geometric progression is just a special case
+C        with gamma = 0 and delta = 0.
+C        
+C        See Huzinaga and Klobukowski, CPL 212, 260 (1993). 
+C
+         IF (NFAMEXP .LT. 1 .OR. NFAMEXP .GT. MXFAMEXP) GOTO 5000
+         IF (FAMPAR(1) .LE. D0) GOTO 5010
+         IF (FAMPAR(2) .LE. D1) GOTO 5010
+         IF (FAMPAR(3) .LT. D0) GOTO 5010
+         IF (FAMPAR(4) .LT. D0) GOTO 5010
+C
+         IF ( INPTST ) THEN
+            WRITE(LUPRI,'(A,/,4(A,F20.10,/),A,I3)')
+     $           'Parameters for well-temperered progression: ',
+     $           'alpha = ',FAMPAR(1),
+     $           'beta  = ',FAMPAR(2),
+     $           'gamma = ',FAMPAR(3),
+     $           'delta = ',FAMPAR(4),
+     $           'N     = ',NFAMEXP
+         END IF
+C
+C        Formula is:
+C
+C        zeta_N = alpha,
+C
+C        zeta_N-k+1 = zeta_N-k+2 beta ( 1 + gamma (k/N)^delta), k = 2,N
+C
+         FAMEXP(NFAMEXP) = FAMPAR(1)
+         DO K = 2,NFAMEXP
+            FAMEXP(NFAMEXP - K + 1) =
+     $           FAMEXP(NFAMEXP - K + 2) * FAMPAR(2) *
+     $           ( D1 + FAMPAR(3) *
+     $           ( ( SDPRE(K) / SDPRE(NFAMEXP) ) ** FAMPAR(4) ) )
+         END DO
+            
+C
+      ELSE IF ( IFLAG .EQ. 1 ) THEN
+C
+C        Read exponents from file
+C
+         DO I = 1,NFAMEXP
+            CALL RDLINE(LUINFO)
+            READ (MLINE(NMLINE),*) FAMEXP(I)
+         END DO
+C
+      ELSE
+         WRITE(LUPRI,'(A,I3)')
+     $        '*** ERROR ***: Unknown IFLAG in GENFAMEXP: ',IFLAG
+         CALL QUIT('Unknown IFLAG in GENFAMEXP',-1)
+      END IF
+C
+      IF (INPTST) THEN
+         CALL HEADER('Exponents for family basis set',-1)
+         CALL OUTPUT(FAMEXP,1,NFAMEXP,1,1,NFAMEXP,1,1,LUPRI)
+      END IF
+      RETURN
+C
+ 5000 CONTINUE
+      WRITE(LUPRI,'(2(A,I3/))')
+     &     '*** ERROR in GENFAMEXP *** ' //
+     $     'Illegal value for number of exponents: ',NFAMEXP,
+     &     'Value must be between 1 and ',MXFAMEXP
+      CALL QUIT('Illegal value for number of exponents')
+ 5010 CONTINUE
+      WRITE(LUPRI,'(2(A,/),4(A,F20.10,/))')
+     &     '*** ERROR in GENFAMEXP *** ',
+     $     'Illegal non-positive value for parameters in'//
+     &     ' well-tempered progression',
+     &     'Alpha = ',FAMPAR(1),
+     &     'Beta  = ',FAMPAR(2),
+     &     'Gamma = ',FAMPAR(3),
+     &     'Delta = ',FAMPAR(4)
+      CALL QUIT('Illegal value for parameter in ' //
+     $     'well-tempered progression')
       END
