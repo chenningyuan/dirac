@@ -4,8 +4,8 @@
      &        NUCO(MXSHEL), JSTRT(MXSHEL), NSTRT(MXSHEL), NCENT(MXSHEL),&
      &        NRCO(MXSHEL), NUMCF(MXSHEL), NBCH(MXSHEL), KSTRT(MXSHEL), &
      &        LCLASS(MXSHEL), IPTSHL(MXSHEL), NUMCFT(MXSHEL), KMAX,     &
-     &        NLRGSH, NSMLSH, NORBS
+     &        NLRGSH, NSMLSH, NORBS, KMAXTOT
       COMMON /SHELLS/ CENT, NHKT, KHKT, KCKT, ISTBAO, NUCO, JSTRT,      &
      &                NSTRT, NCENT, SHARE, NRCO, NUMCF, NBCH, KSTRT,    &
      &                SEGM, LCLASS, IPTSHL, NUMCFT, SPHR, KMAX, NLRGSH, &
-     &                NSMLSH, NORBS
+     &                NSMLSH, NORBS, KMAXTOT
