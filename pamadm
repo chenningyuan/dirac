@@ -244,66 +244,57 @@ make_export()
    #
    cat <<EOF> ./export
 #!/bin/sh
+   szCurrDir=\`pwd\`
+   szCurrDir=\${szCurrDir##*/}
+   cd ..
    echo " - adding files to tar-achive..."
    echo
-   tar cvf DIRAC.new.tar \\
-      configure config.sub config.guess config.status doc/doc.html \\
-      C90lib.cld crilib.cld \\
-      include/*.h Makefile \\
-      dirac/*.F   dirac/Makefile.in \\
-      prp/*.F     prp/Makefile.in \\
-      abacus/*.F  abacus/Makefile.in \\
-      gp/*.F gp/*.c gp/Makefile.in \\
-      pdpack/Makefile.in pdpack/*.F \\
-      dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \\
-      dirac/main/*.h dirac/main/*.head dirac/main/*.struct \\
-      relccsd/*.F relccsd/*.inc relccsd/*.c relccsd/Makefile.in \\
-      moltra/*.F moltra/Makefile.in \\
-      pam.in pam.1 test 2> export.log
+   tar cvf \$szCurrDir.tar \\
+      \$szCurrDir/{configure,config.sub,config.guess,config.status,C90lib.cld,crilib.cld,pam.in,pam.1,Makefile,abacus/*.F,abacus/Makefile.in,basis,dirac/*.F,dirac/Makefile.in,dirrci/*.F,dirrci/Makefile.in,dirrci/*.inc,doc/doc.html,gp/*.F,gp/*.c,gp/Makefile.in,include/*.h,main/Makefile.in,main/*.c,main/*.F,main/*.h,main/*.head,main/*.struct,moltra/*.F,moltra/Makefile.in,pdpack/Makefile.in,pdpack/*.F,prp/*.F,prp/Makefile.in,relccsd/*.F,relccsd/*.inc,relccsd/*.c,relccsd/Makefile.in,test,utils} 2> export.log
 EOF
    #
    # Active modules
    #
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,Makefile.in} 2>> export.log
 EOF
    fi
    if [ "$CCFOCKSPTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar relccsd/ccfocksp/*.F \\
-              relccsd/ccfocksp/Makefile.in 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/relccsd/ccfocksp/{*.F,Makefile.in} \\
+              2>> export.log
 EOF
    fi
    if [ "$ESRTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar prp/esr/*.F prp/esr/Makefile.in 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,Makefile.in} 2>> export.log
 EOF
    fi
    if [ "$XPPTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar prp/xpp/*.F prp/xpp/Makefile.in 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,Makefile.in} 2>> export.log
 EOF
    fi
    if [ "$XQRTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar prp/xqr/*.F prp/xqr/Makefile.in 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xqr/{*.F,Makefile.in} 2>> export.log
 EOF
    fi
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar configure.in pamadm WHATSNEW 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/{configure.in,pamadm,WHATSNEW} 2>> export.log
 EOF
    fi
    if [ "$EXPORTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf DIRAC.new.tar export 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/export 2>> export.log
 EOF
    fi
    cat <<EOF>> ./export
       echo " - gzip'ing archive..."
       echo
-      gzip -9v DIRAC.new.tar
+      gzip -9v \$szCurrDir.tar
 EOF
    chmod +x ./export
 }
