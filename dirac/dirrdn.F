@@ -1872,11 +1872,11 @@ C
      &          WRITE(LUPRI,'(1X,A)')
      &       '  - Testing the simulation of terms neglected in this',
      &       '    way (cheap alternative to Luuk`s projection scheme)'
-	     ELSE IF (INTV1C .EQ. 2) THEN
-             WRITE(LUPRI,'(1X,A)')
-     &       '* One-center approximation (model 2):',
-     &    '  - Multicenter SS and LS integrals are modelled by',
-     &    '    classical interaction of atomic charges'
+             ELSE IF (INTV1C .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '* One-center approximation (model 2):',
+     &          '  - Multicenter SS and LS integrals are modelled by',
+     &          '    classical interaction of atomic charges'
              IF(ICTLV1C(2) .EQ. 0) THEN
                 WRITE(LUPRI,'(1X,A)')
      &          '  - Using Mulliken small component charges.'
@@ -1995,9 +1995,6 @@ C
         CALL MP2INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-#if defined (MOD_DFT)
-CTROND        CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     5 CONTINUE
         CALL MVOINP(WORD,.FALSE.,WORK,LWORK)
@@ -2045,7 +2042,7 @@ C
          CALL CIMINP(WORK,LWORK)
          CLOSE(LUCMD)
       ENDIF
-C      CALL DFTINP(WORD)
+C
       RETURN
 C
       END
@@ -3635,6 +3632,11 @@ C
     3 CONTINUE
 #if defined (MOD_DFT)
         CALL DFTINP(WORD,.FALSE.,WORK,LWORK)
+#else
+C       hjaaj 3jun2003: dirac.x went into an infinite loop here
+C       if *DFT in input but MOD_DFT not defined !!!
+        CALL QUIT(
+     &  '*DFT specified, but DFT is not included in this version')
 #endif
         GO TO 200
     4 CONTINUE
