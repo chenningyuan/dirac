@@ -31,7 +31,7 @@ C
 C
 C$Id$
 C
-C#include <single.h>
+C#include "single.h"
 #ifdef UNDEF
 /* Comdeck log */
 960818-vebjornb: New module taking care of redundant internal
@@ -4275,6 +4275,7 @@ C  /* Deck bldhes */
       SUBROUTINE BLDHES(MXRCRD,ATMARR,HESINT,ALFA,DIST)
 C
 C     Builds a simple model Hessian in redundant internal coordinates.
+C     As described by Roland Lindh
 C
 #include "implicit.h"
 #include "priunit.h"

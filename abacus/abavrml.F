@@ -31,7 +31,7 @@ C
 C
 C$Id$
 C
-C#include <single.h>
+C#include "single.h"
 #ifdef UNDEF
 /* Comdeck log */
 960319-vebjornb: New module for visualization with VRML models.

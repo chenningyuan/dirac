@@ -32,9 +32,15 @@ C
 C
 C$Id$
 C
-C#include <single.h>
+C#include "single.h"
 #ifdef REVLOG
 $Log$
+Revision 1.10  2002/11/21 12:44:54  hjj
+HJAaJ:
+1) abaopt.F: revised some output text
+2) changed '<xxx.h>' to '"xxx.h"'
+   (they were missed by the perl script because they had space in '# include')
+
 Revision 1.9  2002/08/20 15:49:34  tsaue
 tsaue: Local abacus COMMON blocks added to abacus directory.
        Fortran files modified to allow cpp include local files

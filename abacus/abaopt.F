@@ -31,7 +31,7 @@ C
 C
 C$Id$
 C
-C#include <single.h>
+C#include "single.h"
 #ifdef UNDEF
 /* Comdeck log */
 950915-vebjornb: New module taking care of optimizations.
@@ -46,11 +46,11 @@ C  /* Deck opinpu */
 #include "optinf.h"
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
-#   include <dcbgrd.h>
-#   include <dcbgen.h>
+#include "dcbgrd.h"
+#include "dcbgen.h"
 #else
-#   include <infinp.h>
-#   include <gnrinf.h>
+#include "infinp.h"
+#include "gnrinf.h"
 #endif
       PARAMETER (NTABLE = 68, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
@@ -1173,16 +1173,14 @@ C  /* Deck optmin */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-CTROND#include <mxorb.h>
-CTROND#include <inftap.h>
 #ifdef PRG_DIRAC
-#   include <dcbgen.h>
+#include "dcbgen.h"
 #else
 #include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
-#   include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #include "optinf.h"
 #include "cbiher.h"
@@ -1190,9 +1188,9 @@ CTROND#include <inftap.h>
       LOGICAL TSTIN
       CALL QENTER('OPTMIN')
       IF (NEWTON) THEN
-         CALL TITLER('2nd Order Geometry Minimization','>',110)
+         CALL TITLER('2nd Order Geometry Optimization','>',110)
       ELSE
-         CALL TITLER('1st Order Geometry Minimization','>',110)
+         CALL TITLER('1st Order Geometry Optimization','>',110)
       END IF
 C
 C     The number of Cartesian and redundant internal coordinates
@@ -1316,7 +1314,7 @@ C  /* Deck runopt */
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
-#if ! defined (PRG_DIRAC)
+#if !defined (PRG_DIRAC)
 #include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
@@ -2056,13 +2054,11 @@ C
       WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
          DO 50 I = 0, MAXREP
-            IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I1,A,I7)')
-     &           ' Hessian index (',I,')              : ', INDHES(I)
+            IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I7)')
+     &           ' Hessian index (irrep',I,')        : ', INDHES(I)
  50      CONTINUE
       END IF
-      WRITE(LUPRI,'(A,I7)') ' Total Hessian index            : ',INDTOT
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A,I7//)')' Total Hessian index            : ',INDTOT
       IF (BRKSYM .AND. GECONV) THEN
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) '*) Within given symmetry.'
@@ -2328,21 +2324,21 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
-CTROND#include <infpar.h>
-CTROND#include <pario.h>
+CTROND#include "infpar.h"
+CTROND#include "pario.h"
 #include "abainf.h"
 #include "optinf.h"
 #ifndef PRG_DIRAC
-#  include <gnrinf.h>
-#  include <infinp.h>
-#  include <inftap.h>
+#  include "gnrinf.h"
+#  include "infinp.h"
+#  include "inftap.h"
 #else
-#  include <dcbgrd.h>
-#  include <dcbham.h>
-#  include <dcbdhf.h>
-#  include <dcbgen.h>
-#  include <dcbmp2.h>
-#  include <dcbpsi.h>
+#  include "dcbgrd.h"
+#  include "dcbham.h"
+#  include "dcbdhf.h"
+#  include "dcbgen.h"
+#  include "dcbmp2.h"
+#  include "dcbpsi.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -7352,12 +7348,12 @@ C
 #include "optinf.h"
 #include "infopt.h"
 #ifdef PRG_DIRAC
-#  include <dcbdhf.h>
-#  include <dcbgen.h>
-#  include <dcbmp2.h>
-#  include <dcbpsi.h>
+#  include "dcbdhf.h"
+#  include "dcbgen.h"
+#  include "dcbmp2.h"
+#  include "dcbpsi.h"
 #else
-#  include <gnrinf.h>
+#  include "gnrinf.h"
 #endif
 C
 #ifdef PRG_DIRAC

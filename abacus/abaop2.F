@@ -31,7 +31,7 @@ C
 C
 C$Id$
 C
-C#include <single.h>
+C#include "single.h"
 #ifdef UNDEF
 /* Comdeck log */
 971020-vebjornb: Just an extension of abaopt.F which is becoming
