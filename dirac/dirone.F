@@ -3255,7 +3255,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-      LOGICAL TOBE,LNSYM
+      LOGICAL TOBE
       DIMENSION TMAT(*),TINV(*),WORK(*)
       DIMENSION NSTR(2,0:2,MPRJREF),KVEC(2,MPRJREF),
      &          KQ(2),KI(2),NVECS(2),NQ(2)
@@ -3299,16 +3299,12 @@ C     AND normal coefficients
 C
 C     Calculate dimensions of reference coefficients array
 C
-      LNSYM = SPINFR.OR.LEVYLE
       NDIM  = 0
       DO IFRP = 1,NFSYM
         NQ(IFRP)         = NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         NDIM             = NDIM + NQ(IFRP)
-        IF(LNSYM) THEN
-          CALL MEMGET('INTE',KI(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
-        ELSE
-          KI(IFRP) = KFREE
-        ENDIF
+        CALL MEMGET('INTE',KI(IFRP),NVECS(IFRP),WORK,KFREE,LFREE)
+        CALL IZERO(WORK(KI(IFRP)),NVECS(IFRP))
       ENDDO       
       CALL MEMGET('REAL',KQ(1),NDIM,WORK,KFREE,LFREE)
       KQ(2)   = KQ(1) + NQ(1)
@@ -3318,7 +3314,7 @@ C     Select reference orbitals
 C
       IOPT = 3
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      IF(LNSYM) THEN
+      IF(SPINFR.OR.LEVYLE) THEN
         IOPT = 11
         CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
@@ -3365,9 +3361,12 @@ C
      &                       NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                       NFBAS(IFRP,0),NORB(IFRP))
               NQ(IFRP) = NQ(IFRP) + NSTR(IFRP,0,I)*NFBAS(IFRP,0)
-              IF(LNSYM) CALL SELIBEIG(WORK(KIBE),IORB(IFRP),IFRP,
-     &                     WORK(KI(IFRP)),WORK(KVEC(IFRP,I)),
-     &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+              IF(SPINFR.OR.LEVYLE) THEN
+C               Spin-free case: Fill array with boson irrep info
+                CALL SELIBEIG(WORK(KIBE),IORB(IFRP),IFRP,
+     &                         WORK(KI(IFRP)),WORK(KVEC(IFRP,I)),
+     &                         NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+              ENDIF
             ENDIF
           ENDDO
         ENDIF
@@ -3397,7 +3396,6 @@ C       Transform reference coefficients to orthonormal basis
         NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
         NBUF = MAX(NREF,NPRJ)
         CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND,NORB(IFRP),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
      &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
@@ -3406,17 +3404,19 @@ C       Transform reference coefficients to orthonormal basis
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &            D0,IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NVECS(IFRP),NZ)
         CALL DCOPY(NREF,WORK(KBUF),1,WORK(KQ(IFRP)),1)
-C       Initialize index array to monitor projection
-        CALL ICOPY (NORB(IFRP),1,0,WORK(KIND),1) 
 C       Initialize unit matrix (transformation matrix in MO-basis)
         CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-C       Fill array with boson irrep info 
-        CALL INIBOS(WORK(KIBOS),IFRP)
+        IF(SPINFR.OR.LEVYLE) THEN
+C         Spin-free case: Fill array with boson irrep info
+          CALL INIBOS(WORK(KIBOS),IFRP)
+        ELSE
+C         Spin-orbit coupling: Fill array with zeros..
+          CALL ICOPY (NORB(IFRP),0,0,WORK(KIND),1) 
+        ENDIF
 C       Do projection
         CALL PRJORT(WORK(KBUF),WORK(KIBOS),
      &              WORK(KQ(IFRP)),WORK(KI(IFRP)),
-     &              PRJTHR,THRMAX,
-     &              WORK(KIND),NORB(IFRP),NORB(IFRP),
+     &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
      &              NVECS(IFRP),NDEL,IPRHAM)
  21     CONTINUE
         WRITE(LUPRI,'(2X,A,I6)') '- Number of orbitals deleted: ',NDEL
@@ -3429,8 +3429,8 @@ C         Backtransform to SO-basis
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
           CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
-     &                NORB(IFRP),NFBAS(IFRP,0),NEFF,
-     &                WORK(KIND),TINV(IEFF))
+     &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
+     &                NEFF,WORK(KIBOS),TINV(IEFF))
 CTROND: It is assumed that the orbitals projected out belong to the electronic
 CTROND: space. This must be worked on !!!!
           NESH(IFRP) = NESH(IFRP)-NDEL
@@ -3612,7 +3612,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PRJORT */
-      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,THRLDP,THRMAX,IVECS,
+      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,THRLDP,THRMAX,
      &                  NVDIM,NVECS,NVREF,NDEL,IPRINT)
 C*****************************************************************************
 C
@@ -3624,7 +3624,7 @@ C*****************************************************************************
 C
 #include "dgroup.h"
       DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
-     &          IBVEC(NVECS),IBREF(NVREF),IVECS(NVECS)
+     &          IBVEC(NVECS),IBREF(NVREF)
       DIMENSION P(4)
 C
       IF(IPRINT.GE.7) THEN
@@ -3653,8 +3653,6 @@ C
      &      'Reference vector no.',IREF,' Norm: ',VNRM
         ENDIF
         DO 100 IVEC = 1,NVECS
-          IF(IVECS(IVEC).LT.0) GOTO 100
-CTROND
           IF(IBVEC(IVEC).NE.IBREF(IREF)) GOTO 100
 C
 C         Form -<VREF|IVEC>
@@ -3678,7 +3676,7 @@ C     Next commence internal orthogonalization
 C     =========================================
 C
       DO 200 IVEC = 1,NVECS
-        IF(IVECS(IVEC).LT.0) GOTO 200
+        IF(IBVEC(IVEC).LT.0) GOTO 200
 C
 C       Check size of norm
 C       ==================
@@ -3691,7 +3689,7 @@ C
         IF(VNRM.LT.THRLDP) THEN
           WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5)')
      &      'Vector no.',IVEC,' removed. Linear dependence: ',VNRM
-          IVECS(IVEC) = -1
+          IBVEC(IVEC) = -1-IBVEC(IVEC)
           NDEL = NDEL + 1
           GOTO 200
         ELSE
@@ -3713,8 +3711,6 @@ C
           ENDDO
         ENDIF
         DO 300 JVEC = (IVEC+1),NVECS
-          IF(IVECS(JVEC).LT.0) GOTO 300
-CTROND
           IF(IBVEC(JVEC).NE.IBVEC(IVEC)) GOTO 300
 C
 C         Form -<IVEC|JVEC>
@@ -3746,7 +3742,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck prjcnt */
-      SUBROUTINE PRJCNT(VMO,VAO,NMO,NAO,NEFF,IVEC,TMAT)
+      SUBROUTINE PRJCNT(VMO,VAO,IFRP,NMO,NAO,NEFF,IVEC,TMAT)
 C***********************************************************************
 C
 C     After a projection step, backtransform to SO-basis
@@ -3765,8 +3761,15 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dcbham.h"
       DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
      &          TMAT(NAO,NMO,NZ)
+      DIMENSION IBOS(0:7)
+      NBRP = 4/NZ
+      DO ISYM = 1, NBRP
+        IREP = JFSYM(ISYM,IFRP) - 1
+        IBOS(IREP) = ISYM
+      ENDDO
       II = 0
       DO I = 1,NMO
       IF(IVEC(I).GE.0) THEN
@@ -3775,7 +3778,17 @@ C
      &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZ,
      &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
      &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
+      ELSE
+        IF(SPINFR.OR.LEVYLE) THEN
+C         tsaue: I assume that electronic orbitals are projected out...
+          IREP = -1-IVEC(I)
+          ISYM = IBOS(IREP)
+          NBORB(ISYM,IFRP,1) = NBORB(ISYM,IFRP,1) - 1
+        ENDIF
       ENDIF
+      ENDDO
+      DO ISYM = 1, NBRP
+        NBORB(ISYM,IFRP,0) = NBORB(ISYM,IFRP,1) + NBORB(ISYM,IFRP,2)
       ENDDO
       RETURN
       END

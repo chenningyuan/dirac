@@ -3400,7 +3400,7 @@ C***********************************************************************
 #include "dgroup.h"
       DIMENSION IBOS(*)
 C
-      NBRP = 4 / NZ
+      NBRP = 4/NZ
       IX = 1
       DO ISYM = 1, NBRP
         IREP = JFSYM(ISYM,IFRP) - 1
