@@ -1355,7 +1355,6 @@ C     Output
 C
       CALL HEADER('Output from GMOTRA',-1)
       IF ( NFSYM .EQ. 1 ) THEN
-         WRITE(LUPRI,'(40X,A)') 'Irrep 1'
          WRITE(LUPRI,'(A,I5)')
      &        'No. of electronic orbitals (NESH): ',NESH(1)
          WRITE(LUPRI,'(A,I5)')
