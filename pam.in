@@ -185,6 +185,8 @@ execute_dirac()
          EXIT=1
          exitfunc
       fi
+   else
+      echo "was already there"
    fi
    echo "   Executing: $NICE_CMD $DIRAC_CMD"
 
@@ -199,8 +201,7 @@ execute_dirac()
       $NICE_CMD $DIRAC_CMD > $OUTPUT_FILE || \
          ( \
             echo "   $DIRAC returned non-zero exit code" ; \
-            EXIT=1 ;
-            export EXIT \
+            EXIT=1 ; export EXIT \
          )
    fi
 }
@@ -262,8 +263,16 @@ exitfunc()
 remove_work_dir()
 {
    if [ -n "$RMWRK" ]; then
-      cd ..
-      rm -fr $WRK
+      if [ $EXIT -eq 0 ]; then
+         cd ..
+         rm -fr $WRK
+      else
+         echo '*** DIRAC terminated with an error exit code'
+         echo "- THEREFORE scratch directory $WRK is not deleted as requested with -rmwrk"
+         echo "  so you may restart the calculation, or debug, if possible"
+         echo "  ( $WRK may be deleted by your queueing system )"
+         echo "- REMEMBER to delete $WRK yourself !!!"; echo
+      fi
    fi
 }
 #
