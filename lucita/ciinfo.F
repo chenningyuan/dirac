@@ -1086,9 +1086,9 @@ C?    WRITE(6,*) ICISPC,  LCMBSPC(ICISPC)
 C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 
       CALL IAIBCM_GAS(LCMBSPC(ICISPC),ICMBSPC(1,ICISPC),
-     &            IGSOCCX,NOCTPA,
-     &            NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,IAIB,IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,IAIB,IPRDIA)
 *
       RETURN
       END
@@ -1346,9 +1346,9 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
       DO 100 ICI = 1, NICISP
 *. allowed combination of types
       CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
-     &            IGSOCCX,NOCTPA,
-     &            NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
 *
       DO  50 ISYM = 1, NSMCI
           if (IDC.eq.3.or.IDC.eq.4) then

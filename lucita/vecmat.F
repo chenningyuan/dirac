@@ -240,17 +240,15 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
       CALL MEMMAN(KLIABI,NOCTPA*NOCTPB,'ADDL  ',1,'KLIABI')
       CALL MEMMAN(KLIABU,NOCTPA*NOCTPB,'ADDL  ',1,'KLIABU')
-      CALL IAIBCM_GAS(LCMBSPC(ISPCIN),ICMBSPC(1,ISPCIN),IGSOCCX,
-     &            NOCTPA,NOCTPB,
-     &            ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,
-     &            WORK(KLIABI),NTEST)
+      CALL IAIBCM_GAS(LCMBSPC(ISPCIN),ICMBSPC(1,ISPCIN),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KLIABI),NTEST)
 *
-      CALL IAIBCM_GAS(LCMBSPC(ISPCUT),ICMBSPC(1,ISPCUT),IGSOCCX,
-     &            NOCTPA,NOCTPB,
-     &            ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,
-     &            WORK(KLIABU),NTEST)
+      CALL IAIBCM_GAS(LCMBSPC(ISPCUT),ICMBSPC(1,ISPCUT),
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KLIABU),NTEST)
 *
 * type of each symmetry block ( full, lower diagonal, absent )
 *

@@ -543,15 +543,13 @@ CTF
       CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
       CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &               IGSOCCX,
-     &               NOCTPA,NOCTPB,
-     &               ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &               NELFGP,MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
       CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &               IGSOCCX,
-     &               NOCTPA,NOCTPB,
-     &               ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &               NELFGP,MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
 *. Scratch space for CJKAIB resolution matrices
       CALL MXRESCPH(WORK(KCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &     NSMST,NSTFSMSPGP,MXPNSMST,
@@ -2731,15 +2729,13 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       CALL MEMMAN(KCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
       write(6,*) ' TRADEN : ISSPC,ICSPC : ',ISSPC,ICSPC
       CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &               IGSOCCX,
-     &               NOCTPA,NOCTPB,
-     &               ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &               NELFGP,MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
       CALL IAIBCM_GAS(LCMBSPC(ICSPC),ICMBSPC(1,ICSPC),
-     &               IGSOCCX,
-     &               NOCTPA,NOCTPB,
-     &               ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &               NELFGP,MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KCIOIO),IPRDIA)
 *. Scratch space for CJKAIB resolution matrices
       CALL MXRESC(WORK(KCIOIO),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &            NSMST,NSTFSMSPGP,MXPNSMST,

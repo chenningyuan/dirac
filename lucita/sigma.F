@@ -1086,9 +1086,9 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 *. Arrays giving allowed type combinations
       CALL MEMMAN(KSIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'SIOIO ')
       CALL IAIBCM_GAS(LCMBSPC(ISSPC),ICMBSPC(1,ISSPC),
-     &            IGSOCCX,NOCTPA,
-     &            NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
+     &                IGSOCCX,NOCTPA,NOCTPB,
+     &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
+     &                MXPNGAS,NGAS,WORK(KSIOIO),IPRDIA)
 *. Arrays for additional symmetry operation
       IF(IDC.EQ.3.OR.IDC.EQ.4) THEN
         CALL MEMMAN(KSVST,NSMST,'ADDL  ',2,'SVST  ')
