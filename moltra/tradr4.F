@@ -137,24 +137,39 @@ C
            CALL MDSCRI(WORK,KFREE,LFREE,NODE)
         END IF
 C
-C     We send out all the tasks (shells in this case) to the slaves
+C     We send out all the tasks (shell pairs in this case) to the slaves
 C
+        CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 2
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
+              CALL GETTIM(CPUST,WALLST)
+              WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
+     &           '- Starting shell A no. ',ISHLA,' after ',
+     &           WALLST - WALLBEF, ' seconds.'
+              CALL FLSHFO(LUPRI)
+           DO ISHLB = IBSTRT, ISHLA
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,3(A,I4),A,F14.2,A)') 
-     &           '- Sending task ',ISHLA,' of ',IASMAX,' to ',NWHO,
-     &           ' at ',WALLST,' seconds after start'
-              CALL FLSHFO(LUPRI)
+              IF (IPRINT .GE. 3) THEN
+                 WRITE(LUPRI,'(3X,3(A,I4),A,F14.2,A)') 
+     &              '- Sending shells (',ISHLA,',',ISHLB,
+     &              ') to ',NWHO,
+     &              ' after ',WALLST-WALLBEF,' seconds'
+                 CALL FLSHFO(LUPRI)
+              END IF
               CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
+     &                      MPI_COMM_WORLD,IERR)
+              CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,35,
      &                      MPI_COMM_WORLD,IERR)
+              CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,35,
+     &                      MPI_COMM_WORLD,IERR)
+           ENDDO
            ENDDO
         ENDDO
 C
@@ -175,18 +190,20 @@ C
         NODE = 0
         CALL MDSCRI(WORK,KFREE,LFREE,NODE)
 C
+        CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 2
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F14.2,A)') 
+              WRITE(LUPRI,'(3X,2(A,I4),A,F14.2,A/34X,A,F14.2,A)') 
      &           '- Beginning with task ',ISHLA,' of ',IASMAX,
-     &           ' at ',WALLST,' seconds after start'
+     &           ' after ',WALLST-WALLBEF,' seconds',
+     &        'and after ',CPUST-CPUBEF,' CPU-seconds'
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &                   KQ,KE,KIBE,IC,
+     &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,ISHLA,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
            ENDDO
         ENDDO
@@ -227,8 +244,8 @@ C
 C
       CALL GETTIM(CPUST,WALLST)
       WRITE(LUPRI,'(1X,A,F14.2,A)') 
-     & '- Starting symmetrization at ',
-     &  WALLST,' seconds after start'
+     & '- Starting symmetrization after ',
+     &  WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)
 C
 C     Collect integrals from slaves
@@ -249,8 +266,8 @@ C
 C        
       CALL GETTIM(CPUST,WALLST)
       WRITE(LUPRI,'(1X,A,F14.2,A)') 
-     &     '- Finished symmetrization at ',
-     &     WALLST,' seconds after start'
+     &     '- Finished symmetrization after ',
+     &     WALLST-WALLBEF,' seconds'
       CALL FLSHFO(LUPRI)
 C
       IF (.NOT. NOMDCINT) THEN
@@ -304,13 +321,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV4 */
       SUBROUTINE TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,DRIJ,GABRAO,DINTSKP)
+     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
+#include <maxaqn.h>
 #include <priunit.h>
 #include <iratdef.h>
 #include <mxorb.h>
@@ -320,6 +338,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
+#include <twosta.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -471,7 +490,6 @@ C
 C
       CALL INITBUF (IRECC,NBFSZ,NBUF,WORK(KJBOFF))
 C
-      CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
       IF (I2TYP.LT.0) THEN
          GOTO 999
       ELSEIF (I2TYP.EQ.1) THEN
@@ -485,13 +503,56 @@ C
          ICF12 = 2
       ENDIF
 C
+C     Memory requirements for HERMIT:
+C
+C     IC = 1: (LL|**) integrals
+C     IC = 2: (SS|**) integrals
+C
+C     I2TYP =  1: (**|LL) integrals
+C     I2TYP =  2: (**|SS) integrals
+C     I2TYP = 12: (**|LL) + (**|SS) integrals
+C
+      IF ( I2TYP .EQ. 0 ) THEN
+C        ...(GG|GG) integrals
+         MWHER = MAX(MXHERMEM(1),MXHERMEM(2),MXHERMEM(3))
+      ELSE IF ( I2TYP .EQ. 1 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|LL) integrals
+            MWHER = MXHERMEM(1)
+         ELSE
+C           ...(SS|LL) integrals
+            MWHER = MXHERMEM(2)
+         END IF
+      ELSE IF ( I2TYP .EQ. 2 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|SS) integrals
+            MWHER = MXHERMEM(2)
+         ELSE
+C           ...(SS|SS) integrals
+            MWHER = MXHERMEM(3)
+         END IF
+      ELSE IF ( I2TYP .EQ. 12 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|LL) + (LL|SS) integrals
+            MWHER = MAX(MXHERMEM(1),MXHERMEM(2))
+         ELSE
+C           ...(SS|LL) + (SS|SS) integrals
+            MWHER = MAX(MXHERMEM(2),MXHERMEM(3))
+         END IF
+      ELSE
+         CALL QUIT('argh, ralle ralle')
+      END IF
+C
 C     Loop over the shells
 C
-      DO ISHLB = IBSTRT, ISHLA
+      DO ISHLB = IBSTRT, IBEND
 C
          KFRSAV3 = KFREE
          NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
          NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
+C
+         LDXAB = 5*NINSHA*NINSHB
+         CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
 C
 C           Set up gather array for distributions, 
 C           calculate memory requirements for this batch.
@@ -506,22 +567,77 @@ C           First a dummy run to calculate the memory requirements
 C           for GMAT. We assume that HMAT is not more than twice GMAT,
 C           and reserve the same memory also for use in HERMIT.
 C
-         NSIZG = LFREE / 3
+C        The size of HMAT is approximately: 
+C           NUMDIS * NFPCK12(IREPIJ) * NZ / NPASS
+C
+C        (1) overhead: Subtract 10% or 1MW from available memory 
+C
+         MFREE = LFREE - MIN(LFREE/10, 1 000 000)
+C
+C        (2) We must be able to hold
+C            (a) GMAT + HERMIT
+C            (b) GMAT + HMAT
+C            simultaniously in memory.
+C 
+C
+         IF (MWHER .GT. MFREE) THEN
+            CALL QUIT('Not enough memory for HERMIT')
+         END IF
+C            
+         MWHMAT = 0
+         IT = 0
+ 2000    CONTINUE
+            IT = IT + 1
+            NSIZG = MFREE - MAX(MWHMAT,MWHER)
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-C        CRAYfix:
-C        Opening a direct access files with too long records 
-C        generates a crash because the machine tries to keep some
-C        records in memory
-         NSIZG = MIN0(NSIZG,1000000)
+C           CRAYfix:
+C           Opening a direct access files with too long records 
+C           generates a crash because the machine tries to keep some
+C           records in memory
+            NSIZG = MIN0(NSIZG,1000000)
 #endif
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                    .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
 C
-         LDXAB = 5*NINSHA*NINSHB
-         CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
+C           Calculate NUMDIS and NSIZG
+C           --------------------------
+C
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
+     &                       .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
+C
+C           Setup INDXAB & IJPASS
+C           ---------------------
+C
+            CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
+C
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
+     &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
+C
+C           Calculate MWHMAT:
+C           -----------------
+C
+            MWHMAT = MWHMATCALC(WORK(KIJPASS),NPASS,NFPCK12)
+C
+            CALL MEMREL('bla bla',WORK,1,KIJPASS,KFREE,LFREE)
+C
+C           Check that we fit in memory
+C           ---------------------------
+C
+            IF (IPRINT .GE. 3) THEN
+               WRITE(LUPRI,'(A,I3,A,4(A,I9))')
+     &         '       - Memory estimate iteration no. ',IT,' : ',
+     &         '         Free: ',MFREE,', Hermit: ',MXHER,
+     &         ', HMAT ',MWHMAT,', GMAT ',GMAT
+            END IF
+            CALL FLSHFO(LUPRI)
+            IF ( (NSIZG + MAX(MWHMAT,MWHER) ) .GT. MFREE ) THEN
+               IF ( MWHMAT .GT. MFREE) THEN
+                  MWHMAT = MFREE * 9 / 10
+               END IF
+               GOTO 2000
+            END IF
+C
+C        Final calculation of INDXAB & IJPASS
+C
          CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
-C
-C        Set INDXAB and INDPASS
 C
          NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
      &                    INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
@@ -876,6 +992,7 @@ C
 C     Slave driver for scheme 4.
 C
 C     Written by T.Saue Sep 17 1998
+C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
 #include <implicit.h>
@@ -918,17 +1035,22 @@ C
          CALL MPI_RECV(ISHLA,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          IF (ISHLA.EQ.-1) GOTO 200
+         CALL MPI_RECV(ISHLBX,1,MPI_INTEGER,MPARID,30,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+C        do not use ISHLB because in common and used in TRDRV4
          CALL MPI_RECV(IC,1,MPI_INTEGER,MPARID,35,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,35,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
 #endif
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &               KQ,KE,KIBE,IC,
+     &               KQ,KE,KIBE,IC,I2TYP,ISHLBX,ISHLBX,
      &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
          GOTO 100
   200 CONTINUE
 C
-C     Send results
+C     Send statistics (and EMP2 if LMP2)
 C
       CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM)
 C
@@ -976,3 +1098,24 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C& End of parallel section : activitate compilation only when necessary
 #endif
+      FUNCTION MWHMATCALC(IJPASS,NPASS,NFPCK12)
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+C
+      DIMENSION IJPASS(0:7,NPASS)
+      DIMENSION NFPCK12(2)
+C
+      MSIZH = 0
+      DO IPASS = 1, NPASS
+         NSIZH = 0
+         DO IREPAB = 0, NBSYM - 1
+            IREPIJ = JBTOF(IREPAB,1)
+            NSIZH = NSIZH + IJPASS(IREPAB,IPASS)*NFPCK12(IREPIJ)
+         END DO 
+         MSIZH = MAX(MSIZH,NSIZH)
+      END DO
+      MWHMATCALC = NZ * MSIZH
+      RETURN 
+      END
