@@ -3219,13 +3219,13 @@ c     ... Make list of nuclei.
 c
          CALL CATNUC(NUCDEP,NCENTC,WORK(KCHRG),WORK(KFCBA),WORK(KGEXP),
      &            WORK(KXGEXP),WORK(KCOORC), WORK(KSIGNC),WORK(KJSYMC),
-     &            WORK(KJCENT),OMITVNUC,IPRINT)
+     &            WORK(KJCENT),OMITVNUC,IPRONE)
 c
 c    ... Calculate integrals (both LL and SS)
 c
          CALL CATDR1(WORK(KONEMT),DUMMY,NCENTC,WORK(KFCBA),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
-     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRINT,
+     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRONE,
      &            .FALSE.,0,NNBBASX,DOINT)
 c  ... end loop within shells
 20    CONTINUE
