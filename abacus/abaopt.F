@@ -6479,11 +6479,7 @@ C     earlier but ends up with the same energy, we're having trouble.
 C     This is brutally resolved by removing all symmetry, that is the
 C     molecule has to be minimized withim the C1 point group.
 C
-      TMPLN = MLINE(1)
-      BASIS = (TMPLN(1:5) .EQ. 'BASIS')
-      I = 4
-      IF (BASIS) I = 5
-      TMPLN = MLINE(I)
+      TMPLN = MLINE(NMLAU)
       READ(TMPLN(1:5),'(I5)') NONTYP
       WRITE(TMPLN(10:20), '(A11)') '           '
       II = 0
@@ -6493,7 +6489,7 @@ C
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
       IF (BRKALS) WRITE(TMPLN(10:20), '(A11)') '0          '
-      MLINE(I) = TMPLN
+      MLINE(NMLAU) = TMPLN
 C
       IATOM = 1
       I = NCLINE(IATOM)-1
@@ -6702,10 +6698,10 @@ C
 C     If all symmetry has been removed during preoptimization, we try
 C     to detect it again after each preoptimization phase.
 C
-      TMPLIN = MLINE(5)
+      TMPLIN = MLINE(NMLAU)
       IF ((MAXOPR .EQ. 0) .AND. (ITRBRK .GE. 0)) THEN
          WRITE(TMPLIN(10:20), '(A11)') '           '
-         MLINE(5) = TMPLIN
+         MLINE(NMLAU) = TMPLIN
          NWSYMM = .TRUE.
       END IF
       CALL PNCMOL

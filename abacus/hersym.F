@@ -235,12 +235,10 @@ C ::: The new symmetry is added. :::
  200     CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there's any Aangstroem mark, it's removed.    :::
-         I = 4
-         IF (BASIS) I = 5
-         TMPLN = MLINE(I)
+         TMPLN = MLINE(NMLAU)
          WRITE(TMPLN(10:10), '(I1)') NSYMOP
          WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
-         MLINE(I) = TMPLN
+         MLINE(NMLAU) = TMPLN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/1X,A)') 'No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
