@@ -2885,29 +2885,35 @@ C
          NACSH(I,1) = 0
       END DO
 C
-      NELEC2GO = NELECT
-      IF ((NELECT+1)/2 .GT. NESHT) THEN
+      NELEC2GO = NELECT_DHF
+      IF ((NELECT_DHF+1)/2 .GT. NESHT) THEN
          WRITE(LUPRI,'(I3,A,I3,A)')
-     &      NELECT,' electrons but only ',NESHT,' orbitals.'
+     &      NELECT_DHF,' electrons but only ',NESHT,' orbitals.'
          CALL QUIT('ERROR: Not enough eigenvalues for FNDOCC.')
       END IF
 C
+C     100 loop is over electron pairs (closed shell orbitals)
+C
  100  CONTINUE
+C        Find the irrep that has the lowest eigenvalue
          IEIGSYM = 0
  110     IEIGSYM = IEIGSYM + 1
-            IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
-C
+         IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
          J = IEIGSYM
          DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
      &         IEIGSYM = I
          END DO
+C        We found the lowest yet unoccupied MO, occupy it
          NISH(IEIGSYM) = NISH(IEIGSYM) + 1
          IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
          NELEC2GO = NELEC2GO - 2
+C        More orbitals to be filled ?
       IF (NELEC2GO .GT. 0) GOTO 100
 C
-      IF (NAELEC .GT. 0) THEN
+C     Same procedure for the open shell (works only for one e in one open shell)
+C
+      IF (NAELEC_DHF .GT. 0) THEN
          IEIGSYM = 0
  200     IEIGSYM = IEIGSYM + 1
             IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
@@ -2922,6 +2928,16 @@ C
 C
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
+C
+C        LV : CAUTION, POSSIBLE BUG
+C
+C        After the MCSCF merge we now have two arrays that seem to be
+C        used interchangeably at various places, I just copy the info
+C        to both so that the auto-occupation feature works for DHF but
+C        this needs to be checked by the MCSCF bunch !!!
+C
+         NISH_DHF(I) = NISH(I)
+         NASH_DHF(I) = NASH(I)
       END DO
 C
       RETURN
