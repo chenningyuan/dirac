@@ -95,8 +95,7 @@ C
       WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
      &                'VOVV',NV5,'VVVV',NV6
       ELSE
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                'VOVV',NV5
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
       ENDIF
 C
       CALL FLSHFO (IW)
@@ -286,6 +285,8 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
       CALL FLSHFO (IW)
 C
+      IF (.NOT.SRTALL) GOTO 600
+C
 C   start of IPASS loop for the VOVV
 C ----------------------------
       DO IPASS = 1, NPASS
@@ -379,8 +380,6 @@ C ----------------------
 C ----------------------
       WRITE(IW,*) 'VOVV sorting done.'
       CALL FLSHFO (IW)
-C
-      IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
@@ -540,7 +539,7 @@ C
      &/' First order electronic energy :',T40,F25.15 
      &/' Electronic energy :',T40,F25.15 
      &/' SCF energy :',T40,F25.15) 
- 1004 FORMAT (/' Expanding and sorting integrals to 6 types :'/
+ 1004 FORMAT (/' Expanding and sorting integrals to unique types :'/
      & (' Type ',A4,' :',I10,' integrals'))
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
  1006 FORMAT (/' Finished sorting of integrals')

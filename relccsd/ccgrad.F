@@ -386,8 +386,6 @@ C
 C
       ENDIF !old code generation Lagrangian
 C
-      GOTO 101
-C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
 C     | contraction with the 3/4 transformed integrals |
@@ -421,7 +419,7 @@ C
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
 C
- 101  IF (DOMP2GOLD) THEN
+      IF (DOMP2GOLD) THEN
 C
 C     Solve Z-vector equations by calling the RPA routine
 C     (Old code!!!)
@@ -447,7 +445,6 @@ C
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
       ENDIF
-      RETURN
 C
 C###########################################
 C

@@ -230,7 +230,7 @@ C
 C     Input for the gradient calculation.
 C
       DOMP2G    = .FALSE.
-      DOMP2GOLD = .TRUE.
+      DOMP2GOLD = .FALSE.
       DOCCSDG   = .FALSE.
       DOCCSDTG  = .FALSE.
       NEOPER = 1
@@ -1743,7 +1743,10 @@ C
 C  Read integrals & make fock matrices
 C
       SRTALL = .TRUE.
-      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD
+C
+C  MP2 calculations need less integrals
+C
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
 C
       CALL RDINTS(IPRNT,NSP,CC(INDEX),CC(KR),CC(INDK),CC(INDL),
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
@@ -2102,7 +2105,6 @@ C
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC
-      LOGICAL DOMP2GNEW
 C
 C---------------Executable code--------------------------------------
 C
@@ -2112,7 +2114,6 @@ C
          doccsdg = .false.
          domp2g = .true.
       endif
-      domp2gnew = .false.
       ALLOC = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
 C
@@ -2291,7 +2292,6 @@ C
          ENDDO
          ENDIF
 C
-         IF (DOMP2GNEW) THEN
 C
 C#################################################################
 C
@@ -2312,9 +2312,8 @@ C
          LFREE1=NBUF3*RCW
          CALL MEMCHK('voor prpexp_mp2',CC,1)
          CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
-         ENDIF
-C
       ENDIF
+C
 C
 C     Get CCSD relaxed density matrix
 C
