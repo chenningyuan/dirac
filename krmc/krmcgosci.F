@@ -681,14 +681,17 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_rmakdm */
-      SUBROUTINE GOSCI_RMAKDM(CREF,DV,PV,IKR)
+      SUBROUTINE GOSCI_RMAKDM(CL,CR,DV,PV,IKR)
 C*****************************************************************************
 C
 C     Construct one- and two-electron active density matrix
 C
+C     D_{pq} = < CL | X^+_{pq} | CR >
+C
+C     P_{pqrs} = < CL | x^+_{pq,rs} | CR >
+C
 C     Input:
-C        CMO     - the orbitals for the CEP
-C        CREF    - CI vector
+C        CL, CR  - CI vectors
 C
 C     Output:
 C        DV      - one electron active density matrix
@@ -702,7 +705,7 @@ C     I haven't yet found the quaternion PV, so it has dimensions
 C     (2*NASHT)**4 * MIN0(NZ,2). Triangular packing would be better,
 C     but whatever... The code is now very straightforward.
 C
-C     Written by J. Thyssen - Oct 22 1998
+C     Written by J. Thyssen - Oct 22 2000
 C     Last revision : 
 C
 C*****************************************************************************
@@ -713,7 +716,7 @@ C
 #include "../dirrci/goscom.inc"
 #include <dgroup.h>
 C
-      DIMENSION CREF(NDET,NZ),DV(NORB,NORB,2)
+      DIMENSION CL(NDET,NZ),CR(NDET,NZ),DV(NORB,NORB,2)
       DIMENSION PV(NORB,NORB,NORB,NORB,2)
       DIMENSION IKR(2,*)
       LOGICAL LBIT
@@ -734,11 +737,17 @@ C     Construct one-particle density matrix
 C     -------------------------------------
 C
 C
-      call header('real(CREF)',-1)
-      call output(CREF(1,1),1,NDET,1,1,NDET,1,1,LUPRI)
+      call header('real(CL)',-1)
+      call output(CL(1,1),1,NDET,1,1,NDET,1,1,LUPRI)
       if ( nz .ge. 2 ) then
-         call header('imag(CREF)',-1)
-         call output(CREF(1,2),1,NDET,1,1,NDET,1,1,LUPRI)
+         call header('imag(CL)',-1)
+         call output(CL(1,2),1,NDET,1,1,NDET,1,1,LUPRI)
+      end if
+      call header('real(CR)',-1)
+      call output(CR(1,1),1,NDET,1,1,NDET,1,1,LUPRI)
+      if ( nz .ge. 2 ) then
+         call header('imag(CR)',-1)
+         call output(CR(1,2),1,NDET,1,1,NDET,1,1,LUPRI)
       end if
       CALL DZERO(DV, NORB*NORB*MIN0(NZ,2) )
 C
@@ -805,28 +814,28 @@ c                  write(6,*) '      CREF(J)',
 c     $                 (CREF(J,K), K = 1,MIN0(NZ,2))
 C
                   IF ( NZ .EQ. 1 ) THEN
-                     DV(IU,IV,1) = DV(IU,IV,1) + 
-     $                    CREF(I,1) * CREF(J,1) *
+                     DV(IU,IV,1) = DV(IU,IV,1) +
+     &                    CL(I,1) * CR(J,1) *
      $                    SDPRE(IDSIGN * JDSIGN)
                      DV(IKV,IKU,1) = DV(IKV,IKU,1) +
-     $                    CREF(I,1) * CREF(J,1) *
+     &                    CL(I,1) * CR(J,1) *
      $                    SDPRE(IKSIGN * IDSIGN * JDSIGN)
                   ELSE
                      DV(IU,IV,1) = DV(IU,IV,1) + 
-     $                    ( CREF(I,1) * CREF(J,1) +
-     $                      CREF(I,2) * CREF(J,2) ) *
+     $                    ( CL(I,1) * CR(J,1) +
+     $                      CL(I,2) * CR(J,2) ) *
      $                    SDPRE(IDSIGN * JDSIGN)
                      DV(IU,IV,2) = DV(IU,IV,1) + 
-     $                    ( - CREF(I,2) * CREF(J,1) 
-     $                      + CREF(I,1) * CREF(J,2) ) *
+     $                    ( - CL(I,2) * CR(J,1) 
+     $                      + CL(I,1) * CR(J,2) ) *
      $                    SDPRE(IDSIGN * JDSIGN)
                      DV(IKV,IKU,1) = DV(IKV,IKU,1) + 
-     $                    ( CREF(I,1) * CREF(J,1) +
-     $                      CREF(I,2) * CREF(J,2) ) *
+     $                    ( CL(I,1) * CR(J,1) +
+     $                      CL(I,2) * CR(J,2) ) *
      $                    SDPRE(IKSIGN * IDSIGN * JDSIGN)
                      DV(IKV,IKU,2) = DV(IKV,IKU,1) + 
-     $                    ( - CREF(I,2) * CREF(J,1) 
-     $                      + CREF(I,1) * CREF(J,2) ) *
+     $                    ( - CL(I,2) * CR(J,1) 
+     $                      + CL(I,1) * CR(J,2) ) *
      $                    SDPRE(IKSIGN * IDSIGN * JDSIGN)
                   END IF
 c                 write(6,*) '      DV(U,V) = ',
@@ -922,7 +931,7 @@ C
 C                          C^*(I) * C(J) * signs =
 C                          C(I) * C(J) * signs
 C
-                           PVELEM =  ( CREF(I,1) * CREF(J,1) ) *
+                           PVELEM =  ( CL(I,1) * CR(J,1) ) *
      $                          SDPRE(IDSIGN * JDSIGN)
 C
                            PV(IU,IV,IX,IY,1) = PV(IU,IV,IX,IY,1) +
@@ -947,12 +956,12 @@ C                          (a-bi) * (c+di) * signs =
 C                          ( (ac+bd) + (-bc+ad)i ) * signs
 C
                            PVELER =
-     $                          ( CREF(I,1) * CREF(J,1) +
-     $                            CREF(I,2) * CREF(J,2) ) *
+     $                          ( CL(I,1) * CR(J,1) +
+     $                            CL(I,2) * CR(J,2) ) *
      $                          SDPRE(IDSIGN * JDSIGN)
                            PVELEI =
-     $                          ( - CREF(I,2) * CREF(J,1)
-     $                            + CREF(I,1) * CREF(J,2) ) *
+     $                          ( - CL(I,2) * CR(J,1)
+     $                            + CL(I,1) * CR(J,2) ) *
      $                          SDPRE(IDSIGN * JDSIGN)
 C
                            PV(IU,IV,IX,IY,1) = PV(IU,IV,IX,IY,1) +
@@ -1838,6 +1847,160 @@ C     ==============================================
 C     
       HMR = 0.0D0
       HMI = 0.0D0
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gosci_sigma */
+      SUBROUTINE GOSCI_SIGMA(BCVEC,SCVEC,IBCVC,FCAC,H2AC,
+     &     IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Calculate conf. contribution to conf. sigma vector.
+C     (Equation 3.29 in the KRMC paper (JCP 104, 4083 (1996)).
+C     
+C     Input:
+C       BCVEC: the CI trial vectors.
+C       IBCVC: boson symmetry of the CI trial vectors.
+C       GPCI : the CI gradient (only needed for MC wave func. optimization).
+C       FCAC : active-active part of FC fock matrix 
+C       H2AC : two-electron integrals.
+C
+C     Output:
+C       SCVEC: the CI sigma vectors.
+C
+C     Written by J. Thyssen - Nov 23 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER ( D1 = 1.0D00, DM1 = -D1, D0 = 0.0D00, D2 = 2.0D00 )
+C
+      DIMENSION BCVEC(NZCONFQ,*)
+      DIMENSION SCVEC(NZCONFQ,*)
+      DIMENSION WORK(*),IBCVC(*)
+      DIMENSION FCAC(*),H2AC(*)
+C
+#include <dcbxrs.h>
+#include <dcborb.h>
+#include <dgroup.h>
+C
+#include <memint.h>
+C
+      CALL QENTER('GOSCI_SIGMA')
+C
+      IF (IPRINT .GE. 0) THEN
+         CALL HEADER('Output from GOSCI_SIGMA:',-1)
+      END IF
+C
+C
+C     *********************************
+C     *** Calculate CI sigma vector ***
+C     *********************************
+C
+C     In princinple we would do this direct, i.e. calculating a
+C     standard CI sigma vector. Instead we do it the ``easy'' way:
+C
+C     - calculate CI matrix
+C     - do a matrix x vector multiplication
+C
+C     Calculate CI matrix
+C     ===================
+C
+C
+C     Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
+C     ---------------------------------------------------------------
+C
+      CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN0(NZ,2),
+     $     WORK,KFREE,LFREE)
+      CALL QFC2MFC(FCAC,WORK(KMOLFFC),IPRINT)
+      CALL GOSCI_SETONE(WORK(KMOLFFC),2*NASHT)
+      CALL MEMREL('after RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C     Transform integrals from Dirac (NZ,3) basis to Molfdir basis
+C     ------------------------------------------------------------
+C
+      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KMUUUU),(2*NASHT)**4 * 2)
+C
+      CALL DNZ32M(H2AC,WORK(KMUUUU),IPRINT)
+C
+C     Construct Hamiltonian:
+C     ----------------------
+C
+      NZCONF2 = NZCONF ** 2
+      CALL MEMGET('REAL',KHR,NZCONF2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHI,NZCONF2,WORK,KFREE,LFREE)
+C
+      CALL DZERO(WORK(KHR),NZCONF2)
+      CALL DZERO(WORK(KHI),NZCONF2)
+      CALL GOSCI_MAKEH(WORK(KHR),WORK(KHI), WORK(KMUUUU))
+C
+C     
+C     *******************************
+C     *** Loop over trial vectors ***
+C     *******************************
+C
+C
+      DO I  = 1, NCSIM
+C
+C
+C        **********************
+C        *** <\mu|H|B> part ***
+C        **********************
+C
+C        Real part: real(H) * real(BCVEC) - imag(H) * imag(BCVEC)
+C
+C        real(H) * real(BCVEC):
+C
+         CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
+     &        WORK(KHR),NZCONF,
+     &        BCVEC(1,I),NZCONF,
+     &        D0,SCVEC(1,I),NZCONF)
+C
+         IF (NZ .GE. 2) THEN
+C           
+C           imag(H) * imag(BCVEC):
+C
+            CALL DGEMM('N','N',NZCONF,1,NZCONF,DM1,
+     &           WORK(KHI),NZCONF,
+     &           BCVEC(1+NZCONF,I),NZCONF,
+     &           D1,SCVEC(1,I),NZCONF)
+C
+C
+C           Imaginary part: real(H) * imag(BCVEC) + imag(H) * real(BCVEC)
+C
+C           real(H) * imag(BCVEC):
+C
+            CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
+     &           WORK(KHR),NZCONF,
+     &           BCVEC(1+NZCONF,I),NZCONF,
+     &           D0,SCVEC(1+NZCONF,I),NZCONF)
+C
+C           imag(H) * real(BCVEC):
+C
+            CALL DGEMM('N','N',NZCONF,1,NZCONF,D1,
+     &           WORK(KHI),NZCONF,
+     &           BCVEC(1,1),NZCONF,
+     &           D1,SCVEC(1+NZCONF,I),NZCONF)
+C
+         END IF
+C
+         IF ( IPRINT .GE. 0 ) THEN
+            WRITE(LUPRI,'(1X,A,I2,A)') 'H * BCVEC(',I,'), real part'
+            CALL OUTPUT(SCVEC(1,I),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
+            IF (NZ .GE. 2) THEN
+               WRITE(LUPRI,'(1X,A,I2,A)') 'H * BCVEC(',I,'), imag part'
+               CALL OUTPUT(SCVEC(1+NZCONF,I),1,NZCONF,1,1,
+     &              NZCONF,1,1,LUPRI)
+            END IF
+         END IF
+C
+      END DO
+C
+      CALL MEMREL('GOSCI_SIGMA',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT ('GOSCI_SIGMA')
       RETURN
       END
 #ifdef UNDEF
