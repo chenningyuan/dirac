@@ -3163,12 +3163,16 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      IJOB   = 0
-      ITYPE  = 0
-      IGTYP  = 1
-      MAXDIF = 0
-      CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+      IF (SCRFCK .GT. D0) THEN
+C
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 1
+         MAXDIF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+C
+      END IF
 C
       IF(NBSYM.GT.1) THEN
         CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
@@ -3809,12 +3813,15 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      IJOB   = 0
-      ITYPE  = 0
-      IGTYP  = 1
-      MAXDIF = 0
-      CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+      IF (SCRFCK .GT. D0) THEN
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 1
+         MAXDIF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
+C
+      END IF
 C
       CALL DIRSO1(FMAT,DSO,NFMAT,
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
