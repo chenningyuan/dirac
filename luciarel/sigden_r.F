@@ -3808,7 +3808,7 @@ C     CALL RMEMCHK
          DO ISM_CA = 1, NSMST
            ISM_CB = IDBGMULT(ISM_C,IADJSYM(ISM_CA))
            DO ISM_AA = 1, NSMST
-          B  ISM_AGM=  IDBM_ULT(ISSYA,IADJAAM(ISM_  ))
+             ISM_AB = IDBGMULT(ISM_A,IADJSYM(ISM_AA))
 C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
              LCA = NCA(ISM_CA)
              LCB = NCB(ISM_CB)
