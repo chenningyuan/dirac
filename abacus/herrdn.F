@@ -5634,6 +5634,9 @@ C     ==============
 C
       JMROI(1) = 1
       IQDEF(1) = 1
+      IQDEF(2) = 2
+      IQDEF(3) = 3
+      IQDEF(4) = 4
 C
 C     Quaternion groups
 C
@@ -5691,7 +5694,6 @@ C         ..non-totally symmetric rotation
           IPQTOQ(1,IXYZ) = 1
           DO I = 2,4
             JMROI(I) = I
-            IQDEF(I) = I
             IPQTOQ(1,ISYMAX(5-I,2)) = I
             IPQTOQ(1,ISYMAX(5-I,1)) = I
           ENDDO
