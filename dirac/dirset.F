@@ -177,15 +177,16 @@ C        IBBAS(ibrp,ic),
 C        I2BBASX(ibrp,jbrp,ic,jc)
 C        IBAS(ifrp),I2BASX(ifrp,ifrp),I2BAST(ifrp)
 C
-      NNBAST = 0
+      NNBBAST = 0
+      N2BBAST = 0
       DO IBREP = 0,MAXREP
         NBBAS(IBREP,0) = NAOS(IBREP+1)
         NNBBAST        = NNBBAST + NBBAS(IBREP,0)*(NBBAS(IBREP,0)+1)/2
+        N2BBAST        = N2BBAST + NBBAS(IBREP,0)*NBBAS(IBREP,0)
       ENDDO
       CALL IZERO(NTBAS,3)
       CALL IZERO(NFBAS,6)
       MXBBAS   = 0
-      N2BBAST  = 0
       IBASI    = 0
       NBRP     = 4/NZ
 C
