@@ -440,7 +440,7 @@ C
 #elif defined (SYS_IRIX)
 C     SGI IRIX counts recl in *4 words
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#elif defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX)
+#elif defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #elif defined (SYS_IBM)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI

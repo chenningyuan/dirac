@@ -510,8 +510,10 @@ C
 C
       DO IFSYM = 1, NFSYM
          CALL QREDUC (ISHLA,IFSYM,
-     &                Q3(ICMOQR(IFSYM,3)),NDMOQR(1,IFSYM,3),
-     &                WORK(KQ3S+ICMOQS(IFSYM,3)-1),NDMOQS(1,IFSYM,3))
+     &                Q3(ICMOQR(IFSYM,3)),
+     &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
+     &                WORK(KQ3S+ICMOQS(IFSYM,3)-1),
+     &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3))
 c        print*,' q3 '
 c        CALL PRQMAT(Q3(ICMOQR(IFSYM,3)),
 c    &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
@@ -523,8 +525,10 @@ c    &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3),
 c    &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3),
 c    &                NZ,IPQTOQ(1,0),LUPRI)
          CALL QREDUC (ISHLA,IFSYM,
-     &                Q4(ICMOQR(IFSYM,4)),NDMOQR(1,IFSYM,4),
-     &                WORK(KQ4T+ICMOQT(IFSYM,4)-1),NDMOQT(1,IFSYM,4))
+     &                Q4(ICMOQR(IFSYM,4)),
+     &                NDMOQR(1,IFSYM,4),NDMOQR(2,IFSYM,4),
+     &                WORK(KQ4T+ICMOQT(IFSYM,4)-1),
+     &                NDMOQT(1,IFSYM,4),NDMOQT(2,IFSYM,4))
       ENDDO
 C
       CALL MEMCHK('TRDRV4.3',WORK,1)
@@ -1122,9 +1126,11 @@ C& End of parallel section : activitate compilation only when necessary
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qreduc */
-      SUBROUTINE QREDUC (ISHELA1,IFSYM,QM,NDIM,QMR,NDIMR)
+      SUBROUTINE QREDUC (ISHELA1,IFSYM,QM,NDIM1,NDIM2,
+     &                                 QMR,NDIMR1,NDIMR2)
 C
 C     Takes out active rows of coefficient matrix for a given irrep.
+C     NDIM and NDIMR is now NDIM1,NDIM2,NDIMR1 and NDIMR2
 C
 C     Luuk Visscher, 25-8-97
 C
@@ -1140,8 +1146,7 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 C
-      DIMENSION NDIM(2),NDIMR(2)
-      DIMENSION QM(NDIM(1),NDIM(2),NZ),QMR(NDIMR(1),NDIMR(2),NZ)
+      DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C
 #include <ibtfun.h>
 C
@@ -1175,8 +1180,8 @@ C                 This function is active : copy the row to the reduced
 C                 matrix
 C
                   DO IZ = 1, NZ
-                     CALL DCOPY (NDIMR(2),QM(INDA1,1,IZ),NDIM(1),
-     &                           QMR(INDA2,1,IZ),NDIMR(1))
+                     CALL DCOPY (NDIMR2,QM(INDA1,1,IZ),NDIM1,
+     &                           QMR(INDA2,1,IZ),NDIMR1)
                   ENDDO
                ENDDO
             ENDIF

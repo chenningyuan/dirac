@@ -135,7 +135,8 @@ C
          ENDDO
          CALL MEMREL('TRAPRP',WORK,KPRPMO,KPRPMO,KFREE,LFREE)
          CALL MEMGET('REAL',KPRCMO,NSTRT(1)*NSTRT(2)*8,WORK,KFREE,LFREE)
-         CALL PRPMLF (WORK(KPRCMO),WORK(KPROPMO),IPRTRA,NSTR,NSTRT,
+         CALL PRPMLF (WORK(KPRCMO),WORK(KPROPMO),IPRTRA,NSTR,
+     &                NSTRT(1),NSTRT(2),
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)
       ENDDO
@@ -221,10 +222,11 @@ C
       END
 C
 C     ==============================================================
-      SUBROUTINE PRPMLF (PRCMO,PROPMO,IPRINT,NSTR,NSTRT,ISYM,
+      SUBROUTINE PRPMLF (PRCMO,PROPMO,IPRINT,NSTR,NSTRT1,NSTRT2,ISYM,
      &                   ACHAR,LUMLF1)
 C     Express property integrals in complex form and write them to
 C     file
+C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
 #include <implicit.h>
@@ -235,13 +237,13 @@ C
 #include <dcborb.h>
       PARAMETER (DM1=-1.D0)
       CHARACTER*32 ACHAR
-      DIMENSION NSTR(2,0:2,2),NSTRT(2),PRCMO(NSTRT(1)*2,NSTRT(2)*2,2)
-      DIMENSION PROPMO(NSTRT(1),NSTRT(2),NZ)
+      DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
+      DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
 C
       IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
-         CALL PRQMAT(PROPMO,NSTRT(1),NSTRT(2),NSTRT(1),NSTRT(2),
+         CALL PRQMAT(PROPMO,NSTRT1,NSTRT2,NSTRT1,NSTRT2,
      &               NZ,IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
 C
@@ -264,7 +266,7 @@ C
          IOFF3(IFRP,2) = IOFF2(IFRP,2) + NSTR(IFRP,0,2)
       ENDDO
 C
-      CALL DZERO(PRCMO,NSTRT(1)*NSTRT(2)*8)
+      CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
 C
       DO IZ = 1, NZ
         IQ = IPQTOQ(IZ,ISYM-1)
@@ -309,17 +311,17 @@ C
       ENDDO
 C
       IF (IPRINT.GE.1) THEN
-         IF (NSTRT(1).EQ.NSTRT(2)) THEN
+         IF (NSTRT1.EQ.NSTRT2) THEN
             WRITE (LUPRI,1010) ACHAR(25:32)
-            DO I = 1, 2*NSTRT(1)
+            DO I = 1, 2*NSTRT1
                WRITE (LUPRI,1011) I,PRCMO(I,I,1),PRCMO(I,I,2)
             ENDDO
             WRITE (LUPRI,*)
          ENDIF
          IF (IPRINT.GE.3) THEN
             WRITE (LUPRI,1012)
-            DO I = 1, NSTRT(1)*2
-               DO J = 1, NSTRT(2)*2
+            DO I = 1, NSTRT1*2
+               DO J = 1, NSTRT2*2
                   WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
                ENDDO
             ENDDO
@@ -331,7 +333,7 @@ C     WRITE PRCMO TO FILE
 C
       WRITE (LUMLF1) ACHAR
       WRITE (LUMLF1) ((PRCMO(I,J,1),PRCMO(I,J,2),
-     &                I=1,NSTRT(1)*2),J=1,NSTRT(2)*2)
+     &                I=1,NSTRT1*2),J=1,NSTRT2*2)
 C
  1000 FORMAT (/' Transforming ',A8,' evaluation date ',A8,' label ',A8)
  1001 FORMAT (/' Finished transformation : integrals on ',A8)

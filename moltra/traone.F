@@ -113,7 +113,8 @@ C
       DO IFRP = 1, NFSYM
          CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
      &                WORK(KVEC(IFRP,1)),
-     &                NSPC(IFRP,2),NSPC(IFRP,1))
+     &                NSPC(IFRP,2),NSPC(IFRP,1),
+     &                NFBAS(IFRP,0),NORB(IFRP))
       ENDDO
 C
 C     Throw away the complete set, keep only the selected sets
@@ -230,7 +231,8 @@ C
          DO IFRP = 1, NFSYM
             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   WORK(KVEC(IFRP,I)),
-     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                   NFBAS(IFRP,0),NORB(IFRP))
             CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &                   WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I))

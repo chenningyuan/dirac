@@ -140,7 +140,8 @@ C
          DO IFRP = 1, NFSYM
             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   WORK(KVEC(IFRP,I)),
-     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                   NFBAS(IFRP,0),NORB(IFRP))
          ENDDO
       ENDDO
 C
@@ -341,7 +342,8 @@ C
          DO IFRP = 1, NFSYM
             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),
      &           IFRP,WORK(KQ(IFRP,I)),WORK(KVEC(IFRP,I)),
-     &           NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+     &           NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &           NFBAS(IFRP,0),NORB(IFRP))
             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &        WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
         ENDDO
