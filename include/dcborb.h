@@ -28,4 +28,5 @@ C     Length of common block : keep up to date !!
      &     IOCC(2),I2OCCT(2),I2OCCX(2,2),
      &     NAOCC(2),NAOCCT,
      &     NIOCC(2),NIOCCT,
-     &     NAVIR(2),NAVIRT
+     &     NAVIR(2),NAVIRT,
+     &     NIVIR(2),NIVIRT

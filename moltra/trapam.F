@@ -298,6 +298,14 @@ C
          NAVIR(IFRP) = NSTR(IFRP,0,1) - NAOCC(IFRP)
          NAVIRT = NAVIRT + NAVIR(IFRP)
       ENDDO
+C     
+C     number of inactive virtuals
+C 
+      NIVIRT=0
+      DO IFRP = 1, NFSYM 
+         NIVIR(IFRP) = NORB(IFRP) - NOCC(IFRP) - NPSH(IFRP) -NAVIR(IFRP)
+         NIVIRT = NIVIRT + NIVIR(IFRP)
+      ENDDO
 C####################################################
 C
 C     Print section
@@ -704,8 +712,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck LAGTAU */
-      SUBROUTINE LAGTAU(WORK,LWORK)
+C/* Deck lagtau */
+      SUBROUTINE LAGTAU(TMATRX1,TMATRX2,WORK,LWORK)
 C***********************************************************************
 C
 C     Driver routine for tau dependent part of the Lagrangian
@@ -727,6 +735,7 @@ C
 #include "mp1stpr.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
+      DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -748,7 +757,7 @@ C
       MPR_INDSTR(1,1) = '1..1'
       MPR_INDSTR(2,1) = '2..3'
       MPR_INDSTR(3,1) = '2..3'
-      MPR_INDSTR(4,1) = '2..3'
+      MPR_INDSTR(4,1) = '1..1'
 C     
 C     +-----------------------------------------+
 C     | Set up index arrays for active orbitals |
@@ -829,19 +838,22 @@ C
       ENDDO
 C     
 C       
-C     index 4: virtual (this should be general, change later)  
-C     ================= 
+C     index 4: occupied (Because we don't have a fourth index, because
+C                        we do a 3/4 transformation, this is the 3rd
+C                        index of the 2nd tau dependent part of the
+C                        Lagrangian)
+C     ================================================================
 C         
       DO IFRP = 1,NFSYM
-        IF(NOPAIR) THEN 
-          NR(IFRP)   = NSSH(IFRP)
-          IR(1,IFRP) = NOCC(IFRP) + 1
-          IR(2,IFRP) = NESH(IFRP)
+        IF(NOPAIR) THEN
+          NR(IFRP)   =  NOCC(IFRP)
+          IR(1,IFRP) =  1
+          IR(2,IFRP) =  NOCC(IFRP)
         ELSE
-          NR(IFRP)   =  NSSH(IFRP) + NPSH(IFRP)
+          NR(IFRP)   =  NOCC(IFRP) + NPSH(IFRP)
           IR(1,IFRP) = -NPSH(IFRP)
-          IR(2,IFRP) =  NESH(IFRP)
-        ENDIF       
+          IR(2,IFRP) =  NOCC(IFRP)
+        ENDIF
 C    
         CALL MEMGET('INTE',KVEC(IFRP,4),NR(IFRP),WORK,KFREE,LFREE)
         NSTR(IFRP,0,4) = - 1
@@ -967,8 +979,8 @@ C     Call driver for 4-index transformation
 C     --------------------------------------
 C
       IF (.NOT.NO4IND)
-     &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &   CALL LAGTAU1(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRTRA,KQ,KE,
+     &               KIBE,NDMOQR,ICMOQR,NSTR,
      &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
@@ -1228,7 +1240,7 @@ C
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
-          CALL QUIT('PAMTR1: strategy 5 is still under construction')
+c         CALL QUIT('PAMTR1: strategy 5 is still under construction')
           IF (.NOT.MSOUT)
      &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 5')
           IF (LMP2)
@@ -1246,6 +1258,85 @@ C
 C
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck lagtau1 */
+      SUBROUTINE LAGTAU1(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,KQ,KE,
+     &           KIBE,NDMOQR,ICMOQR,NSTR,MSOUT,ANTIS,INTFLG)
+C***********************************************************************
+C       
+C     Subdriver for 4index transformation.
+C       
+C     KQ(ifrp,n)     - adresses of coefficient set for index n
+C     KE(ifrp,2)     - adresses of eigenvalues (for MP2 calculation)
+C     KIBE(ifrp,n)   - adresses of single group identification (for spinfree calculation)
+C     NSTR(ifrp,0,i) - total number of orbitals for index i
+C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
+C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
+C     MSOUT = .TRUE. - write transformed integrals to file
+C     note TODO: choice of MSOUT is not implemented!
+C     ANTIS = .TRUE. - anti-symmetrize integrals
+C     note TODO: ANTIS is not implemented!
+C     INTFLG - flag of what integral types to transform
+C
+C     Written by Joost van Stralen september 2003
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+C
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbtra.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      LOGICAL MSOUT,ANTIS
+      DIMENSION TMATRX1(*),TMATRX2(*)
+      DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
+     &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
+C    
+#include "dcbibt.h"
+C
+      KFRSAV = KFREE
+C
+C     Set up symmetry packing information.
+C
+      CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
+      CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
+      MXINSH = NINSH(0,-1,WORK(KINDX),IPRINT)
+C
+C     Define the MS integral types that we are going to make
+C
+      IF (NZ.EQ.1) THEN
+         NCLASS = 4
+      ELSEIF (NZ.EQ.2) THEN
+         NCLASS = 8
+      ELSE
+         NCLASS = 16
+      ENDIF
+C
+      CALL DEFCL (NCLASS)
+C
+      CALL QENTER('LAGTAU1')
+C
+      IF (ANTIS) THEN
+         CALL QUIT('LAGTAU1: .ANTIS is not implemented!')
+      ENDIF
+C
+      CALL TRDR5T(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+     &            ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+C
+      CALL MEMREL('LAGTAU1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('LAGTAU1')
+C     
+      RETURN
+C     
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MP2HI */

@@ -396,7 +396,7 @@ C
       CALL XSCAL(NDIMX,-A1,XVO,1)
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
-c
+ 
 c     if (rcw.EQ.2) then
 c     do i = 1, ndimx
 c        print*,'real xvo',i,xvo(2*i-1)
@@ -408,7 +408,7 @@ c        print*,'real xvo',i,xvo(i)
 c     enddo
 c     endif
 C
-      call convxm(buf1,buf2,xvo,xmo)
+c     call convxm(buf1,buf2,xvo,xmo)
 c
 c     jvs: temporarily to test generation of Lagrangian
 c     deactivated because checking in to trunk
@@ -436,10 +436,11 @@ c       print*,'i,BUF1(i)=',i,BUF1(i)
 c     enddo
 C     deactivated because checking in to trunk
 c     CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
+c     CALL SRTT1T2(BUF2,BUF1)
 c     print*,'jvs: T-dependent part of Lagrangian'
 C     deactivated because checking in to trunk
 c     LFREE=NBUF3*RCW
-c     CALL TR5INI(BUF3,LFREE)
+c     CALL TR5INI(BUF2,BUF1,BUF3,LFREE)
 C
 C     Solve Z-vector equations by calling the RPA routine
 C

@@ -1,9 +1,8 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tr5ini */
-      SUBROUTINE TR5INI(WORK,LWORK)
+      SUBROUTINE TR5INI(TMATRX1,TMATRX2,WORK,LWORK)
 C
 C     Because we come from RELCCSD we have to call PAMTRA again
-C     ISTRAT has to be put to 5
 C
 C     Written by Joost van Stralen -  march 2003
 C
@@ -11,18 +10,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+      DIMENSION TMATRX1(*),TMATRX2(*)
+      DIMENSION WORK(*)
+C
       CALL QENTER('TR5INI')
 #include "memint.h"
 C
-      ISTRAT = 5
-      CALL LAGTAU(WORK,LWORK)
+      CALL LAGTAU(TMATRX1,TMATRX2,WORK,LWORK)
 C
       CALL QEXIT('TR5INI')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck trdr5t */
-      SUBROUTINE TRDR5T(WORK,KFREE,LFREE,IPRINT,INTFLG,
+      SUBROUTINE TRDR5T(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -80,11 +81,13 @@ C***********************************************************************
 #include "mp1stpr.h"
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
+      DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
 C     
       CALL QENTER('TRDR5T')
       KFRSAV = KFREE
+      print*,'trdr5t'
 C     
 C     Define the packing of the 4-index transformed integrals
 C
@@ -206,18 +209,14 @@ C     ****** S E R I A L    C O D E  ******
 C     *************************************
 C
 C
-C       Allocate memory for the T-matrix and XAOMO
-C       ==========================================
+C       Allocate memory for the XAOMO and ZAOMO
+C       =======================================
 C
-        CALL MEMGET('REAL',KTMATRIX,NTMATR,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KXAOMO,NCMOTQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KZAOMO,NCMOTQ,WORK,KFREE,LFREE)
 C
-        CALL DZERO(WORK(KTMATRIX),NTMATR)
         CALL DZERO(WORK(KXAOMO),NCMOTQ)
-C
-C       Read the T-matrix from file
-C       ---------------------------
-        CALL READTAU(WORK(KTMATRIX))
+        CALL DZERO(WORK(KZAOMO),NCMOTQ)
 C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 2
@@ -234,25 +233,41 @@ C
      &                   NSTR,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,ISHLA,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP,
-     &                   WORK(KTMATRIX),WORK(KXAOMO))
+     &                   TMATRX1,TMATRX2,WORK(KXAOMO))
            ENDDO            
         ENDDO               
 #if defined (VAR_MPI)
       ENDIF                 
 #endif        
 C             
-C      +-------------------------------------------------+ 
-C      |                                                 |
-C      |   Transform the AO index of the Lagrangian      |
-C      |                                                 |
-C      +-------------------------------------------------+
-C          
-C     Allocate memory for the MO Lagrangian
-C     -------------------------------------
-      CALL MEMGET('REAL',KXMO,NORBT*NAOCCT*NZ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KXMO),NORBT*NAOCCT*NZ)
+C     +-----------------------------------------------------------+ 
+C     |                                                           |
+C     |   Transform the AO index of the 1st and 2nd part of the   |
+C     |   Lagrangian                                              |
+C     |                                                           |
+C     +-----------------------------------------------------------+
 C
-      CALL LAGTRA(WORK(KXAOMO),WORK(KXMO),WORK,KFREE,LFREE)
+C          
+C     Allocate memory for the 1st part of the MO Lagrangian
+C     -----------------------------------------------------
+      CALL MEMGET('REAL',KXMO1,NORBT*NAOCCT*NZ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KXMO1),NORBT*NAOCCT*NZ)
+C
+C     Allocate memory for the 2nd part of the MO Lagrangian
+C     -----------------------------------------------------
+      CALL MEMGET('REAL',KXMO2,NAVIRT*NORBT*NZ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KXMO2),NAVIRT*NORBT*NZ)
+C
+C     Transform the 1st and the 2nd part of the Lagrangian:
+C     1:     L = (C+)(X)
+C     2:     L = (Z+)(C)
+C     -----------------------------------------
+      CALL LAGTRA(WORK(KXAOMO),WORK(KXMO1),WORK(KZAOMO),WORK(KXMO2),
+     &            WORK,KFREE,LFREE)
+C
+C     Put the two tau dependent parts of the Lagrangian together to
+C     the final Lagrangian
+C     -------------------------------------------------------------
 C             
 C     Screening statistics
 C
@@ -276,7 +291,7 @@ C/* Deck TRDRV5 */
       SUBROUTINE TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,INDX,TRIAN,KQ,KE,KIBE,
      &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,
-     &                  DINTSKP,TMATRIX,XAOMO)
+     &                  DINTSKP,TMATRX1,TMATRX2,XAOMO)
 C
 C     This is a modified version of TRDRV4 that makes the
 C     Lagrangian in a mixed AO,MO form.
@@ -306,7 +321,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION IJP12(0:7)
       DIMENSION IHM(0:7)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
-      DIMENSION TMATRIX(*), XAOMO(*)
+      DIMENSION TMATRX1(*),TMATRX2(*),XAOMO(*)
 C
       CALL QENTER('TRDRV5')
       KFRSAV = KFREE
@@ -496,12 +511,12 @@ C      we do really need it as the upper triangle (ITRIANG=1), in the
 C      2nd call we need it as a lower triangle (ITRIANG=2).
 C
 C
-      DO ITRIANG = 1, 2
-         CALL MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,NSTR(1,0,3),
-     &               WORK(KQ(1,4)),IBEND,ISHLB,
-     &               INDX,WORK(KDXAB),WORK(KHMAT),TMATRIX,XAOMO,
-     &               WORK(KINDXL),ITRIANG)
-      ENDDO
+        DO ITRIANG = 1, 2
+           CALL MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,NSTR(1,0,3),
+     &                 WORK(KQ(1,3)),IBEND,ISHLB,
+     &                 INDX,WORK(KDXAB),WORK(KHMAT),TMATRX1,XAOMO,
+     &                 WORK(KINDXL),ITRIANG)
+        ENDDO
 C
          CALL MEMREL('TRDRV5.3',WORK,1,KFRSAV3,KFREE,LFREE)
 C
@@ -639,7 +654,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck ms3in2*/ 
       SUBROUTINE MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,
      &                  NSTR3,Q3,ISHEL1,ISHEL2,
-     &                  INDX,INDXAB,HMAT,TMATRIX,XAOMO,INDXL,ITRIANG)
+     &                  INDX,INDXAB,HMAT,TMATRX1,XAOMO,INDXL,ITRIANG)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     
 C     Written by Joost van Stralen march 2003.
@@ -694,7 +709,7 @@ C
       DIMENSION WORK(*)
       DIMENSION IND(2)
       DIMENSION INDXAS(0:7), INDXBS(0:7)
-      DIMENSION TMATRIX(*), XAOMO(*)
+      DIMENSION TMATRX1(*), XAOMO(*)
       DIMENSION ILOFF(0:7)
       DIMENSION ILTMOFF(0:7,2)
       DIMENSION NBBASA(0:7,0:2), NBBASB(0:7,0:2)
@@ -915,7 +930,7 @@ C
                   ENDIF
                   N = NAOCC(IREPI)
                   IOFFA = IPTQLAG(IREPCI,IREPRS,IREPS,IC)
-                  IOFFB = IOFFTM(IREPI,IREPRS,IREPCI) + 1
+                  IOFFB = IOFFTM1(IREPI,IREPRS,IREPCI) + 1
                   IOFFC = ILTMOFF(IREPS,IREPI)
 c
                   IF(NZ.EQ.1) THEN
@@ -926,21 +941,21 @@ c                     IREPRS2 = IBTXOR(IXYZ,IREPRS)
 c                   ENDIF
                   IQ = IPQTOQ(1,IREPRS2)
                   IF(IQ.GT.1) THEN
-                    CALL DSCAL(K*N*NZ,-D1,TMATRIX(IOFFB),1)
+                    CALL DSCAL(K*N*NZ,-D1,TMATRX1(IOFFB),1)
                   ENDIF
                   ENDIF
 c
                   IF(NZ.EQ.2) THEN
                     IQ = IPQTOQ(2,IREPRS)
                     IF(IQ.EQ.3) THEN
-                      CALL DSCAL(K*N,-D1,TMATRIX(IOFFB),1)
+                      CALL DSCAL(K*N,-D1,TMATRX1(IOFFB),1)
                     ENDIF
                   ENDIF
 c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
                   CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,0),
      &                       WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                       'N','N',IPQTOQ(1,0),TMATRIX(IOFFB),K,N,NZ,
+     &                       'N','N',IPQTOQ(1,0),TMATRX1(IOFFB),K,N,NZ,
      &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF
                 ENDIF
@@ -1389,8 +1404,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck init_t*/
-      SUBROUTINE INIT_T(TMATRIX)
+C/* Deck init_t1*/
+      SUBROUTINE INIT_T1(TMATRX1)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen june 2003.
@@ -1407,16 +1422,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcborb.h"
 #include "mp1stpr.h"
 C
-      DIMENSION TMATRIX(*)
+      DIMENSION TMATRX1(*)
 C
-      NTMATR = 0
-      CALL IZERO(IOFFTM,32)
+      NTMATR1 = 0
+      CALL IZERO(IOFFTM1,32)
 C
       DO IREPCI = 1, NFSYM
         DO IREPRS = 0, NBSYM -1
           IF(IREPCI.EQ.JBTOF(IREPRS,1)) THEN
             DO IREPI = 1, NFSYM
-              IOFFTM(IREPI,IREPRS,IREPCI) = NTMATR
+              IOFFTM1(IREPI,IREPRS,IREPCI) = NTMATR1
               NI = NAOCC(IREPI)
               IREPC = MOD(IREPI + IREPCI,2) + 1
               NC = NAVIR(IREPC)
@@ -1424,7 +1439,7 @@ C
                 ND = NAVIR(IREPD)
                 IREPK = MOD(IREPD + IREPCI,2) + 1
                 NK = NAOCC(IREPK)
-                NTMATR = NTMATR + NK*ND*NC*NI*NZ*NZ
+                NTMATR1 = NTMATR1 + NK*ND*NC*NI*NZ*NZ
               ENDDO !irepd
             ENDDO !irepi
           ENDIF
@@ -1433,8 +1448,57 @@ C
 C
 C     put the T matrix to zero
 C
-      CALL DZERO(TMATRIX,NTMATR)  
+      CALL DZERO(TMATRX1,NTMATR1)  
 C 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck init_t2*/
+      SUBROUTINE INIT_T2(TMATRX2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen September 2003.
+C     
+C     PURPOSE : initialize the 2nd T matrix
+C     
+C     Input :   -
+C     
+C     Output :
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "mp1stpr.h"
+C
+      DIMENSION TMATRX2(*)
+C
+      NTMATR2 = 0
+      CALL IZERO(IOFFTM2,32)
+C
+      DO IREPLA = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1
+          IF(IREPLA.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPA = 1, NFSYM
+              IOFFTM2(IREPA,IREPRS,IREPLA) = NTMATR2
+              NA = NAVIR(IREPA)
+              IREPL = MOD(IREPA + IREPLA,2) + 1
+              NL = NAOCC(IREPL)
+              DO IREPC = 1, NFSYM
+                NC = NAVIR(IREPC)
+                IREPK = MOD(IREPC + IREPLA,2) + 1
+                NK = NAOCC(IREPK)
+                NTMATR2 = NTMATR2 + NK*NC*NL*NA*NZ*NZ
+              ENDDO !irepc
+            ENDDO !irepa
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepla
+C
+C     put the T matrix to zero
+C
+      CALL DZERO(TMATRX2,NTMATR2)
+C     
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1455,7 +1519,7 @@ C
       CALL QENTER('WRITETAU')
 C
       OPEN (LUMPPR,FILE='MP2PRP',FORM='UNFORMATTED',STATUS='NEW')
-      WRITE (LUMPPR) (TMATRIX(I),I=1,NTMATR)
+      WRITE (LUMPPR) (TMATRIX(I),I=1,NTMATR1)
       CLOSE (LUMPPR,STATUS='KEEP')
 C
       CALL QEXIT('WRITETAU')
@@ -1481,12 +1545,93 @@ C
 C
       OPEN (LUMPPR,FILE='MP2PRP',FORM='UNFORMATTED',STATUS='OLD')
       REWIND (LUMPPR)
-      READ (LUMPPR) (TMATRIX(I),I=1,NTMATR)
+      READ (LUMPPR) (TMATRIX(I),I=1,NTMATR1)
       CLOSE (LUMPPR,STATUS='DELETE')
 C
       CALL QEXIT('READTAU')
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck srtt1t2*/
+      SUBROUTINE SRTT1T2(TMATRX1,TMATRX2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen september 2003.
+C     
+C     PURPOSE : Reorder the indices for the T matrix
+C               T_kcal -> T_kcla
+C               The results will be put in TMATRX2, which is needed to
+C               generate the 2nd T dependent part of the Lagrangian
+C
+C     Input :  TMATRX1 - T matrix, order kcal, stays unchanged
+C
+C     Output:  TMATRX2 - T matrix, order kcla
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "mp1stpr.h"
+C
+      DIMENSION TMATRX1(*), TMATRX2(*)
+C
+C     initialize the 2nd T matrix
+C
+      CALL INIT_T2(TMATRX2)
+C
+C     Reorder the stuff
+C
+      DO IREPAL = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1
+          IF(IREPAL.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPL = 1, NFSYM
+              IREPA = MOD(IREPL + IREPAL,2) + 1
+              IOFFT1A = IOFFTM1(IREPL,IREPRS,IREPAL) + 1
+              IOFFT2A = IOFFTM2(IREPA,IREPRS,IREPAL) + 1
+              print*,'irepl=, irepa=',irepl, irepa
+              NL = NAOCC(IREPL)
+              NA = NAVIR(IREPA)
+              print*,'nl=, na= ',nl, na
+              NKC = 0
+              DO IREPC = 1, NFSYM
+                NC = NAVIR(IREPC)
+                IREPK = MOD(IREPC + IREPAL,2) + 1
+                NK = NAOCC(IREPK)
+                NKC = NKC + NK*NC*NZ
+              ENDDO !irepc
+              print*,'nkc=',nkc
+              DO IZ = 1, NZ
+                IOFFT1B = IOFFT1A + (IZ-1)*NKC*NA*NL
+                IOFFT2B = IOFFT2A + (IZ-1)*NKC*NA*NL
+                IOFFT1C = IOFFT1B
+                IOFFT2C = IOFFT2B
+                DO L = 1, NL
+                  IOFFT2D = IOFFT2C
+                  DO IA = 1, NA
+                   CALL DCOPY(NKC,TMATRX1(IOFFT1C),1,TMATRX2(IOFFT2D),1)
+                   IOFFT1C = IOFFT1C + NKC
+                   IOFFT2D = IOFFT2D + NKC*NL
+                  ENDDO ! ia
+                  IOFFT2C = IOFFT2C + NKC
+                ENDDO ! l
+              ENDDO ! iz
+            ENDDO !irepl
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepal
+C
+      print*,'printen van de bende'
+      print*,'de 1e T matrix!!!!!'
+      do i =1, NTMATR1
+        print*,'i=, T=',i,TMATRX1(i)
+      enddo
+      print*,'de 2e T matrix!!!!!'
+      do i =1, NTMATR2
+        print*,'i=, T=',i,TMATRX2(i)
+      enddo
+C
+      RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pk3inla*/ 
@@ -1686,14 +1831,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck lagtra*/
-      SUBROUTINE LAGTRA(XAOMO,XMO,WORK,KFREE,LFREE)
+      SUBROUTINE LAGTRA(XAOMO,XMO1,ZAOMO,XMO2,WORK,KFREE,LFREE)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen april 2003.
 C
-C     PURPOSE : Transform the AO index of the Lagrangian
-C
-C     Input :   -
+C     PURPOSE : Transfrom the 1st and the 2nd part of the Lagrangian
+C               1:       L=(C+)X
+C               2:       L=(Z+)C
 C
 C     Output :
 C
@@ -1704,7 +1849,9 @@ C
       LOGICAL FILEX
       DIMENSION WORK(*)
       DIMENSION XAOMO(*)
-      DIMENSION XMO(*)
+      DIMENSION XMO1(*)
+      DIMENSION ZAOMO(*)
+      DIMENSION XMO2(*)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1733,8 +1880,8 @@ C     ---------------------
 C     Do the transformation
 C     ---------------------
 C
-      CALL LAGTRA1(WORK(KCMO),XAOMO,XMO)
-C
+      CALL LAGTR1(WORK(KCMO),XAOMO,XMO1)
+      CALL LAGTR2(WORK(KCMO),ZAOMO,XMO2)
 C
 C     Memory deallocation
 C     -------------------
@@ -1748,17 +1895,20 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck lagtra1*/
-      SUBROUTINE LAGTRA1(CMO,XAOMO,XMO)
+C/* Deck lagtr1*/
+      SUBROUTINE LAGTR1(CMO,XAOMO,XMO1)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen may 2003.
 C
-C     PURPOSE : Transform the AO index of the Lagrangian
+C     PURPOSE : Transform the AO index of the 1st part of the Lagrangian
+C
+C               L=(C+)X
 C
 C     Input :   -
 C
-C     Output :
+C     Output :  XMO1 - The 1st tau dependent part of the Lagrangian in
+C                      spinor basis
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
@@ -1771,7 +1921,7 @@ C
 C
       DIMENSION CMO(*)
       DIMENSION XAOMO(*)
-      DIMENSION XMO(*)
+      DIMENSION XMO1(*)
 C
 C     +------------------+
 C     |  form L_qj       |
@@ -1787,7 +1937,7 @@ C
      &             NFBAS(IFSYM,0),NORB(IFSYM),NZ,
      &             'N','N',IPQTOQ(1,0),XAOMO(IOFF1+1),
      &             NFBAS(IFSYM,0),NAOCC(IFSYM),NZ,
-     &             D1,IPQTOQ(1,0),XMO(IOFF),NORBT,NAOCCT,NZ)
+     &             D1,IPQTOQ(1,0),XMO1(IOFF),NORBT,NAOCCT,NZ)
         IOFF = IOFF + NORBT*NAOCC(IFSYM)+NORB(IFSYM)
         IOFF1 = IOFF1 + NZ*NAOCC(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
@@ -1802,7 +1952,7 @@ C
         DO IFSYM = 1, NFSYM
           DO J = 1, NAOCC(IFSYM)
             IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM) + NAOCC(IFSYM)
-            CALL DSCAL(NIOCC(IFSYM),-D1,XMO(IOFF),1)
+            CALL DSCAL(NIOCC(IFSYM),-D1,XMO1(IOFF),1)
           ENDDO   ! j
           IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
@@ -1817,17 +1967,100 @@ C
         DO IFSYM = 1, NFSYM
           DO J = 1, NAOCC(IFSYM)
             IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM)
-            CALL DZERO(XMO(IOFF),NAOCC(IFSYM))
+            CALL DZERO(XMO1(IOFF),NAOCC(IFSYM))
           ENDDO   ! j
           IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
       ENDDO       ! iz   
 C     
-      print*,'voor het printen van xmo'
+      print*,'voor het printen van xmo1'
       print*,'norbt=,naocct=,nz=',norbt,naocct,nz
       do i = 1, norbt*naocct*nz
-         print*,'i=,xmo=',i,xmo(i)
+         print*,'i=,xmo1=',i,xmo1(i)
       enddo
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lagtr2*/
+      SUBROUTINE LAGTR2(CMO,ZAOMO,XMO2)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen september 2003.
+C
+C     PURPOSE : Transform the AO index of the 2nd part of the Lagrangian
+C
+C               L=(Z+)C
+C
+C     Input :   -
+C
+C     Output :  XMO2 - The 2nd tau dependent part of the Lagrangian in
+C                      spinor basis
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0, D4 = 4.0D0)
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION CMO(*)
+      DIMENSION ZAOMO(*)
+      DIMENSION XMO2(*)
+C
+C     
+C     +------------------+
+C     |  form L_aq       |
+C     +------------------+
+C     
+      IOFF = 1 ! offset for the MO-Lagrangian
+      IOFF1 = 0
+      SCALE = D1 !  ***  CHECK THIS LATER ***
+C     
+      DO IFSYM = 1, NFSYM
+        CALL QGEMM(NAVIR(IFSYM),NORB(IFSYM),NFBAS(IFSYM,0),D1,
+     &             'H','N',IPQTOQ(1,0),ZAOMO(IOFF1+1),
+     &             NFBAS(IFSYM,0),NAVIR(IFSYM),NZ,
+     &             'N','N',IPQTOQ(1,0),CMO(ICMOQ(IFSYM)+1),
+     &             NFBAS(IFSYM,0),NORB(IFSYM),NZ,
+     &             D1,IPQTOQ(1,0),XMO2(IOFF),NAVIRT,NORBT,NZ)
+        IOFF = IOFF + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
+        IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
+      ENDDO ! IFSYM
+C
+C     +-----------------------------------------+
+C     | The L_ab' part has to be scaled by -1   |
+C     +-----------------------------------------+
+C
+      DO IZ = 1, NZ
+        IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
+        DO IFSYM = 1, NFSYM
+          DO IB = 1, NIVIR(IFSYM)
+            IOFF = IOFFSYM + (IB-1)*NAVIRT 
+     &           + (NORB(IFSYM)-NIVIR(IFSYM))*NAVIRT
+            CALL DSCAL(NAVIR(IFSYM),-D1,XMO2(IOFF),1)
+          ENDDO   ! ib
+          IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
+C     +----------------------------------+
+C     | The L_ab part has to be put to 0 |
+C     +----------------------------------+
+C
+      DO IZ = 1, NZ
+        IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
+        DO IFSYM = 1, NFSYM
+          DO IB = 1, NAVIR(IFSYM)
+            IOFF = IOFFSYM + (IB-1)*NAVIRT
+     &           + (NOCC(IFSYM) + NPSH(IFSYM))*NAVIRT
+            CALL DZERO(XMO2(IOFF),NAVIR(IFSYM))
+          ENDDO   ! ib
+          IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

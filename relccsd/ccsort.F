@@ -1480,7 +1480,7 @@ C
 C
 C     Initialize the array with reordered tau's
 C
-      CALL INIT_T(BUF2)
+      CALL INIT_T1(BUF2)
 C
 C     Information needed to convert the relccsd tau's to the moltra 
 C     T's                           
@@ -1619,7 +1619,7 @@ C
 C
 C     Write the T's to file
 C
-      CALL WRITETAU(BUF2)
+c     CALL WRITETAU(BUF2)
 C
       RETURN                
       END
