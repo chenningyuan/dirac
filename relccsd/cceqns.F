@@ -576,7 +576,7 @@ C
 C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,H,BUF1,BUF2,BUF3)
       ENDIF
 C
       CALL CPUUSED(CPUTOT)
