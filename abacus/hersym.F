@@ -57,10 +57,10 @@ C
 C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <mxcent.h>
-#include <mxsymm.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
+#include "priunit.h"
          DIMENSION WORK(LWORK), NONT(KATOM)
          CHARACTER*1 KASYM(3,3), CLASS*15
          IF (TOLLRN .EQ. 0D0) TOLLRN = 5.0D-6
@@ -86,15 +86,15 @@ C  /* Deck fndsym */
       SUBROUTINE FNDSYM(ATMARR,DRTAXS,DIRAXS,DMRPLN,TMPARR,TMP2AR,
      &                         NONTYP,NSYMOP,NONT,KATOM,KASYM,LENTMP,
      &                         CLASS)
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <priunit.h>
-#include <cbirea.h>
-#include <cbisol.h>
-#include <cbihr1.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "priunit.h"
+#include "cbirea.h"
+#include "cbisol.h"
+#include "cbihr1.h"
+#include "molinp.h"
 C ***********************************************************
 C *   ATMARR - Atomic coordinates
 C *   CLASS  - Full point group
@@ -286,8 +286,8 @@ C ::                                          ::
 C ::       Prints all elements of array       ::
 C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
          CHARACTER*40 TEXT
          CHARACTER*40 UNDER
          DIMENSION ARR(5,0:MXM)
@@ -313,9 +313,9 @@ C ::                                                 ::
 C ::       Finds the angle between two vectors       ::
 C ::                                                 ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <pi.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "pi.h"
+#include "mxsymm.h"
          PARAMETER ( D2 = 2.0D00 )
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
@@ -343,8 +343,8 @@ C ::                              ::
 C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ARR(5,0:MXM), VEC(3)
          IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
          IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
@@ -383,9 +383,9 @@ C ::                                                             ::
 C ::       Deletes all duplicate axes (parallell) in array       ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "priunit.h"
          DIMENSION AXARR(5,0:MXM), V1(3), V2(3)
          N = NINT(AXARR(1,0))
          I = 1
@@ -430,8 +430,8 @@ C ::                                         ::
 C ::       Deletes all duplicate atoms       ::
 C ::                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), V1(3), V2(3)
          N = NINT(ATMARR(1,0))
          CALL SRTATM(MXM, ATMARR)
@@ -480,7 +480,7 @@ C ::       matter for these (though it is still used as criterion).       ::
 C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(5,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
@@ -522,7 +522,7 @@ C ::       Sorts atoms after original order. The method used       ::
 C ::       is bubble sorting.                                      ::
 C ::                                                               ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(5,0:IUPPER)
          DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
@@ -560,7 +560,7 @@ C ::                                       ::
 C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ATMARR(5,0:MXM), SUM(3)
          N = NINT(ATMARR(1,0))
          SUM(1) = 0.0D0
@@ -590,8 +590,8 @@ C ::       Rotate molecule in space Deg degrees around       ::
 C ::           an arbitrary axis defined by AxVec            ::
 C ::                                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
          AXNRM=SQRT(AXVEC(1)*AXVEC(1) + AXVEC(2)*AXVEC(2) +
      &                                           AXVEC(3)*AXVEC(3))
@@ -649,8 +649,8 @@ C ::                                                    ::
 C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5, 0:MXM), DRTAXS(5, 0:MAXAXS)
          DIMENSION DIRAXS(5, 0:MAXAXS), DMRPLN (5, 0:MAXMIR)
          DIMENSION V1(3), V2(3), V3(3), TMPARR(5, 0:LENTMP)
@@ -775,8 +775,8 @@ C ::                                              ::
 C ::       Checks if the molecule is linear       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), V1(3), V2(3), V3(3)
          N = NINT(ATMARR(1,0))
          LINMOL = .TRUE.
@@ -811,8 +811,8 @@ C ::                                              ::
 C ::       Checks if the molecule is planar       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
          N = NINT(ATMARR(1,0))
@@ -871,9 +871,9 @@ C ::                                                              ::
 C ::       Checks if the molecule has a center of inversion       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
          DIMENSION ATMARR(5,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
          N = NINT(ATMARR(1,0))
@@ -935,9 +935,9 @@ C ::                                                                   ::
 C ::       Checks if the mol. has mirror plane defined by vector       ::
 C ::                                                                   ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxcent.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "mxsymm.h"
          DIMENSION ORGARR(5,0:MXM), ATMARR(5,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
          N = NINT(ORGARR(1,0))
@@ -1012,11 +1012,11 @@ C ::       Checks if the mol. has rotational axis of order Order       ::
 C ::                     around the given vector                       ::
 C ::                                                                   ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <pi.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "pi.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "priunit.h"
          DIMENSION ORGARR(5,0:MXM), ATMARR(5,0:MXM), ROTVEC(3)
          DIMENSION VROT(3), V1(3), V2(3), V3(3), V4(3)
          DIMENSION IUSED(2*MXCENT)
@@ -1117,10 +1117,10 @@ C ::                                                       ::
 C ::       Finds all rotational axes in the molecule       ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "priunit.h"
          DIMENSION ATMARR(5,0:MXM), DRTAXS(5,0:MAXAXS)
          DIMENSION TMPARR(5,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
@@ -1404,8 +1404,8 @@ C ::                                                                ::
 C ::       Finds all improper rotational axes in the molecule       ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), AXIMAR(5,0:MAXAXS)
          DIMENSION AXARR(5,0:MAXAXS), TMPARR(5,0:2*MXM)
          DIMENSION TMP2AR(5,0:MXM), V1(3), V2(3)
@@ -1463,8 +1463,8 @@ C ::                                                     ::
 C ::       Finds all mirror planes in the molecule       ::
 C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "mxsymm.h"
          DIMENSION ATMARR(5,0:MXM), DMRARR(5,0:MAXMIR)
          DIMENSION AXARR(5,0:MAXAXS), TMPARR(5,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
@@ -1620,9 +1620,9 @@ C ::                                                              ::
 C ::       Determines which point group molecule belongs to       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "priunit.h"
          DIMENSION ATMARR(5,0:MXM), DRTAXS(5,0:MAXAXS)
          DIMENSION DIRAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
          DIMENSION TMPARR(5,0:2*MXM), TMP2AR(5,0:MXM)
@@ -1735,7 +1735,7 @@ C ::                                                    ::
 C ::       Test pair of atoms for given operation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
+#include "implicit.h"
          DIMENSION ARR(6, 0:MXM), TARR(5, 0:MXM)
          DIMENSION TMPARR(5, 0:2), VEC(3)
          LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
@@ -1772,11 +1772,11 @@ C ::                                             ::
 C ::       Removes symmetry-dependant atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
-#include <implicit.h>
-#include <mxsymm.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxsymm.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "priunit.h"
          DIMENSION ATMARR(5, 0:MXM), EXTARR(6, 0:MXM)
          DIMENSION TMPARR(5, 0:MXM), V1(3), V2(3), V3(3)
          CHARACTER STRING*9, SYMELM*(*)

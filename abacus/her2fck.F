@@ -62,12 +62,12 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL NODV, SUSCEP
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -75,14 +75,14 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
-#include <twocom.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "ibtfun.h"
 C
       CALL QENTER('INTFCK')
-#include <memint.h>
+#include "memint.h"
 C
 C     Scanning for zero integrals; this is done twice, but
 C     saves quite a bit of memory
@@ -126,12 +126,12 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
       INTEGER A,B,C,D
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
@@ -140,11 +140,11 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
-#include <twocom.h>
-#include <expcom.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "expcom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
@@ -426,7 +426,7 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -448,7 +448,7 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -465,7 +465,7 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -490,7 +490,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -518,7 +518,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -540,7 +540,7 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -591,16 +591,16 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -671,25 +671,25 @@ C      Revised Oct 11 1996 by T.Saue
 C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "iratdef.h"
       LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
       DIMENSION FMAT(NBASIS*NBASIS,*), WORK(LWORK), ISYMDM(NDMAT),
      &          IFCTYP(NDMAT)
-#include <abainf.h>
-#include <ccom.h>
-#include <nuclei.h>
+#include "abainf.h"
+#include "ccom.h"
+#include "nuclei.h"
 CTROND#include <inforb.h>
-#include <shells.h>
-#include <symmet.h>
-#include <nuctap.h>
+#include "shells.h"
+#include "symmet.h"
+#include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
-#include <memint.h>
+#include "memint.h"
       N2BASX = NBASIS*NBASIS
       NNBASX = (NBASIS*(NBASIS+1))/2
 C
@@ -836,11 +836,11 @@ C      For now the program assumes RELCAL if KMAX.GT.NLRGSH,
 C       -- this is a bit shaky .....
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
       PARAMETER (D4I = 0.25D0, D8I = 0.125D0, D16I = 0.0625D0)
       INTEGER A, B, AP, BP
@@ -849,12 +849,12 @@ C*****************************************************************************
      &          IPOINT(NBASIS,0:MAXREP),
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
-#include <nuclei.h>
-#include <pincom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "nuclei.h"
+#include "pincom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "ibtfun.h"
+#include "sdpre.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1165,25 +1165,25 @@ CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
 C  /* Deck sklexp */
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP
       DIMENSION SKLTON(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
      &          IPOINT(3*NUCDEP,0:MAXREP)
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1364,22 +1364,22 @@ C
 C  /* Deck sklond */
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP)
-#include <nuclei.h>
-#include <pincom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "nuclei.h"
+#include "pincom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

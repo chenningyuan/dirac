@@ -41,21 +41,21 @@ C     T. Helgaker, Sep. 91
 C
 C     gnrinf.h needed for PANAS correction factor
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL NOINT, ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
      &          FAC34(*), SIGNT(*), WORK(LWORK)
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <twosta.h>
+#include "twosta.h"
       CALL QENTER('HR2DRV')
-#include <memint.h>
+#include "memint.h"
       LRJ000 = (JMAX + 1)*NUABCD
       CALL MEMGET('REAL',KRJ000,LRJ000,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPQX  ,NUABCD,WORK,KFREE,LFREE)
@@ -80,11 +80,11 @@ C  /* Deck hr2dr1 */
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL NOINT, ONECEN
-#include <twosta.h>
+#include "twosta.h"
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          RJ000(NUABCD,0:JMAX), WORK(LWORK),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
@@ -134,17 +134,17 @@ C  /* Deck r000 */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "twosta.h"
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WORK(LWORK)
 C-----------------------------------------------------------------------
       CALL QENTER('R000')
-#include <memint.h>
+#include "memint.h"
       CALL MEMGET('REAL',KWVALU,NUABCD,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KALPHA,NUABCD,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KALPHJ,NUABCD,WORK,KFREE,LFREE)
@@ -169,10 +169,10 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
@@ -181,11 +181,11 @@ C
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
-#include <twosta.h>
-#include <subdir.h>
-#include <sdpre.h>
+#include "twosta.h"
+#include "subdir.h"
+#include "sdpre.h"
       CALL QENTER('R0001')
-#include <memint.h>
+#include "memint.h"
 C-----------------------------------------------------------------------
 C
 C     *****************
@@ -423,10 +423,10 @@ C
 C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (HALF = 0.5D0)
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
       PARAMETER (D2 = 2.D0, D4 = 4.D0, D6 = 6.D0, D12 = 12.D0,
@@ -439,11 +439,11 @@ C  /* Deck getgam */
      &           GFAC3 = -D2*0.3811559346 D0)
       PARAMETER (SQRPIH = 0.88622 69254 52758 D00)
       PARAMETER (PID4 = PI/D4, PID4I = D4/PI)
-#include <gamcom.h>
+#include "gamcom.h"
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
      &          WVALU(*), RJ000(NUABCD,0:JMAX), INDADS(NODS,3),
      &          WVALS(NODS,3), REXPW(NODS)
-#include <sdpre.h>
+#include "sdpre.h"
 C-----------------------------------------------------------------------
 C
       NODS1 = 0
@@ -569,17 +569,17 @@ C     undetermined numbers - tuh
 C
 C     Modified for triangular addressing March 92 - tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       INTEGER T, U, V, TUV
       DIMENSION WORK(LWORK), RJ000(NUABCD,0:JMAX), IODDHR(*),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), HERINT(NUABCD,NTUV)
-#include <twosta.h>
-#include <hertop.h>
+#include "twosta.h"
+#include "hertop.h"
       CALL QENTER('HERI')
-#include <memint.h>
+#include "memint.h"
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C
@@ -659,18 +659,18 @@ C  /* Deck hrecur */
       SUBROUTINE HRECUR(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NUABCD,NTUV,IPQX,IPQY,IPQZ)
 C
-#include <implicit.h>
+#include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
       DIMENSION CUR(NUABCD,NTUV), OLD(NUABCD,NTUV),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          RJ000(NUABCD,0:JMAX)
-#include <doxyz.h>
-#include <hertop.h>
+#include "doxyz.h"
+#include "hertop.h"
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -823,8 +823,8 @@ C  /* Deck herswp */
 C
 C     TUH 87
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION HERINT(NUABCD,NTUV), WORK(LWORK)
       NHRINT = NTUV*NUABCD
       IF (NHRINT .GT. LWORK) CALL STOPIT('HERSWP',' ',LWORK,NHRINT)
@@ -858,10 +858,10 @@ C  /* Deck r000x */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),
@@ -869,9 +869,9 @@ C
      &          COOR12(NUC1*NUC2,3), COOR34(NUC3*NUC4,3),
      &          EXP12 (NUC1*NUC2),   EXP34 (NUC3*NUC4),
      &          FAC12 (NUC1*NUC2),   FAC34 (NUC3*NUC4)
-#include <gamcom.h>
-#include <twosta.h>
-#include <subdir.h>
+#include "gamcom.h"
+#include "twosta.h"
+#include "subdir.h"
       IF (.NOT.DPATH1) THEN
          SIGN   = - D1
       ELSE

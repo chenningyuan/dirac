@@ -45,19 +45,19 @@ C     Written by T.Saue Apr 6 1997
 CTROND check for contraction and spherical
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <twosta.h>
-#include <ccom.h>
-#include <symmet.h>
-#include <blocks.h>
-#include <twocom.h>
+#include "twosta.h"
+#include "ccom.h"
+#include "symmet.h"
+#include "blocks.h"
+#include "twocom.h"
 C
 C
       LOGICAL DIRFCK,SOFOCK,DPATH1,DPATH2
@@ -514,11 +514,11 @@ C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
 C     Memory allocation
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) TYPE
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       PARAMETER ( LENID = 1/IRAT + 1)
 C
@@ -556,18 +556,18 @@ C/* Deck Memlop */
 C***********************************************************************
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "mxcent.h"
 C
-#include <blocks.h>
-#include <twosta.h>
-#include <twocom.h>
-#include <nuclei.h>
+#include "blocks.h"
+#include "twosta.h"
+#include "twocom.h"
+#include "nuclei.h"
       CHARACTER SPDCAR*1,COMP(2)*1
       LOGICAL DIRFCK
       DIMENSION IMSHL(4)

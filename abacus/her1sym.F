@@ -36,9 +36,9 @@ C  /* Deck onesop */
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
 C
       LOGICAL SECDER, DIFDIP, PROPTY
       DIMENSION WORK(LWORK)
@@ -46,8 +46,8 @@ C
      &          FACINT(*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          FCM(*), TLMD(*)
-#include <cbisol.h>
-#include <onecom.h>
+#include "cbisol.h"
+#include "onecom.h"
 C
       IF (PROPTY) THEN
          NADER = 28*NATOMC*KCKTAB
@@ -114,13 +114,13 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO)
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "dummy.h"
       PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
 C
       LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI
@@ -144,22 +144,22 @@ C
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #endif
-#include <ccom.h>
-#include <onecom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cbisol.h>
+#include "ccom.h"
+#include "onecom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbisol.h"
 C
 #ifdef PRG_DIRAC
-#include <dgroup.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcbqal.h>
-#include <dcbgrd.h>
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcbqal.h"
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif 
-#include <ibtfun.h>
+#include "ibtfun.h"
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix
@@ -463,11 +463,11 @@ C
 C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
-#include <onecom.h>
+#include "onecom.h"
 C
       KOMAT = 1
       KLAST  = KOMAT + 6*KCKTAB
@@ -479,14 +479,14 @@ C
 C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
      &                  NATOMC,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
-#include <cbisol.h>
-#include <onecom.h>
-#include <ader.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "ader.h"
       IF (IPRINT .GT. 5) THEN
          NADER = 28*NATOMC
          IF (ONECEN) NADER = 10*NATOMC
@@ -557,16 +557,16 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include <shells.h>
-#include <pincom.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
 C     Loop over all irreps in molecule
@@ -634,18 +634,18 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <csym1.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "csym1.h"
+#include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -737,19 +737,19 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
-#include <ccom.h>
-#include <csym1.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "csym1.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -861,18 +861,18 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
-#include <csym1.h>
-#include <symmet.h>
-#include <symind.h>
-#include <ibtfun.h>
+#include "csym1.h"
+#include "symmet.h"
+#include "symind.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
          WRITE (LUPRI, '(A, I5)') ' KB ', KB
@@ -955,18 +955,18 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (LUTEMP = 48)
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
-#include <csym1.h>
-#include <symmet.h>
-#include <symind.h>
-#include <ibtfun.h>
+#include "csym1.h"
+#include "symmet.h"
+#include "symind.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
          WRITE (LUPRI, '(A,2I5)') ' IREPO, KB ', IREPO, KB
@@ -1051,10 +1051,10 @@ C
       END
 C  /* Deck sphrm1 */
       SUBROUTINE SPHRM1(CI,SPI,NTYPE,WORK,LWORK,PROPTY,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL PROPTY
       DIMENSION CI(KCKTAB,*), SPI(KCKTAB,*), WORK(LWORK)
-#include <onecom.h>
+#include "onecom.h"
       KTMP  = 1
       KTMQ  = KTMP + KCKTA*KCKTB
       KLAST = KTMQ + KCKTA*KHKTB
@@ -1072,17 +1072,17 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
-#include <onecom.h>
-#include <sphtrm.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "onecom.h"
+#include "sphtrm.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(A,2I6)') ' KCKT? ', KCKTA, KCKTB

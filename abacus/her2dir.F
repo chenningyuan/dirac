@@ -55,17 +55,17 @@ C
       DOUBLE PRECISION ONE, TWO, ZERO
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00, ZERO = 0.0 D00)
 #endif
-#include <priunit.h>
+#include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
       CHARACTER*4 ATYPE
-#include <doxyz.h>
-#include <crossd.h>
-#include <subdir.h>
-#include <crsdir.h>
-#include <expcom.h>
-#include <dirprt.h>
-#include <derzer.h>
+#include "doxyz.h"
+#include "crossd.h"
+#include "subdir.h"
+#include "crsdir.h"
+#include "expcom.h"
+#include "dirprt.h"
+#include "derzer.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DETDIR/ DETVEC(36)
       COMMON /DHODIR/ DHOVEC(18)
@@ -1494,7 +1494,7 @@ C  /* Deck dire00 */
 #if !defined (SYS_CRAY) && !defined (SYS_T3D)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL (D)
 #endif
-#include <expcom.h>
+#include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,
      *                DEZA00, DEZB00, DEZC00, DEZD00,
@@ -1588,7 +1588,7 @@ C  /* Deck dire00 */
      *                FHXQ00, FHYQ00, FHZQ00,
      *                FHXXPP, FHXYPP, FHXZPP, FHYYPP, FHYZPP, FHZZPP,
      *                FHXXQQ, FHXYQQ, FHXZQQ, FHYYQQ, FHYZQQ, FHZZQQ
-#include <doxyz.h>
+#include "doxyz.h"
 C
       ENTRY DIREA0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
          DEXA00 = DOX
@@ -2101,8 +2101,8 @@ C
       END
 C  /* Deck dp211 */
       SUBROUTINE DP211(MAXDER,DALL2,DALL1)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC101(LOOP,IDER) = LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2134,8 +2134,8 @@ C
       END
 C  /* Deck dp422 */
       SUBROUTINE DP422(MAXDER,DALL2,DALL1)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2172,8 +2172,8 @@ C
       END
 C  /* Deck dcross */
       SUBROUTINE DCROSS(CROSS1,CROSS2)
-#include <implicit.h>
-#include <twocom.h>
+#include "implicit.h"
+#include "twocom.h"
       LOGICAL CROSS1, CROSS2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2201,10 +2201,10 @@ C
 C  /* Deck dloop */
       SUBROUTINE DLOOP(NHKT1,NHKT2,KCKT1,KCKT2,DIAG12,IAB0X,IAB0Y,IAB0Z,
      *                 DER0,DER1,DER2,LOOP0,LOOP1,LOOP2)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL DIAG12, DER0, DER1, DER2
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "maxmom.h"
+#include "xyzpow.h"
       IAB1X = IAB0X + 1
       IAB1Y = IAB0Y + 1
       IAB1Z = IAB0Z + 1

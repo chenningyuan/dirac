@@ -42,10 +42,10 @@ C
 C     This subroutine calculates the incomplete gamma function as
 C     described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (D1 = 1.D0,  D2 = 2.D0, D3 = 3.D0, D6 = 6.D0,
      &           D10 = 10.D0, D24 = 24.D0, D120 = 120.D0,
      &           D720 = 720.D0,
@@ -64,12 +64,12 @@ C
      *           GFAC11 = -.2152832    D0,
      *           GFAC00 =  .490        D0)
 C
-#include <gamcom.h>
+#include "gamcom.h"
 C
       SAVE MAXJ0, SQRPIH
       DATA MAXJ0 /-1/
 C
-#include <sdpre.h>
+#include "sdpre.h"
 C
       IPOINT = NINT(D10*MIN(WVAL,TEN6))
       IF (IPOINT .LT. 120) THEN
@@ -174,15 +174,15 @@ C
       END
 C  /* Deck carpow */
       SUBROUTINE CARPOW
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Calculates Cartesian powers
 C     tuh oct 27 90
 C
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "xyzpow.h"
       IF (MXQN .GT. MXQNM) THEN
          WRITE (LUPRI,'(//A,I5,A,I3)')
      &      ' CARPOW ERROR: MXQN =',MXQN,
@@ -206,11 +206,11 @@ C  /* Deck lmnval */
 C
 C     tuh March 87
 C
-#include <implicit.h>
-#include <maxmom.h>
-#include <xyzpow.h>
+#include "implicit.h"
+#include "maxmom.h"
+#include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

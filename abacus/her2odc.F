@@ -41,17 +41,17 @@ C  /* Deck odcvec */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
      &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), WORK(LWORK)
-#include <twosta.h>
+#include "twosta.h"
       CALL QENTER('ODCVEC')
-#include <memint.h>
+#include "memint.h"
       IF (TKTIME) TIMSTR = SECOND()
       IF (GEN12) THEN
          CALL MEMGET('INTE',KPOINT,2*NUC1*NUC2*NODC12,WORK,KFREE,LFREE)
@@ -105,19 +105,19 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (R2PI52 = 5.91496 71727 95612 D00)
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
-#include <primit.h>
-#include <symmet.h>
+#include "primit.h"
+#include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
      &          JSTR1(*), JSTR2(*),
@@ -137,7 +137,7 @@ C
      &          NREDCC(NORB1,NORB2), NRED12(NORB1*NORB2),
      &          NFTOR1(NUC1), NFTOR2(NUC2)
 
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -511,18 +511,18 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (R2PI52 = 5.91496 71727 95612 D00)
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include <primit.h>
-#include <symmet.h>
+#include "primit.h"
+#include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -530,7 +530,7 @@ C
      &          FAC12(NUC1*NUC2,NODC12), NUCT12(NODC12),
      &          NUCS12(NORB1*NORB2,NODC12), NPRI12(8),
      &          NIND12(NORB1*NORB2,2), NORT12(8)
-#include <ibtfun.h>
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -696,15 +696,15 @@ C  /* Deck odcoef */
 C
 C     TUH Apr 11 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, LONDON
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
      &          COOR12(*), EXP12(*), NUCS12(*), WORK(LWORK)
-#include <orgcom.h>
-#include <twosta.h>
+#include "orgcom.h"
+#include "twosta.h"
 C
       IF (TKTIME) TIMSTR = SECOND()
       DIFX  = SIGN1X*COR1X - SIGN2X*COR2X
@@ -755,8 +755,8 @@ C  /* Deck excoef */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, LONDON
@@ -985,15 +985,15 @@ C  /* Deck twoodc */
 C
 C     TUH 84
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 =0.00 D00, D1 =1.00 D00, D2 =2.00 D00)
       INTEGER T, A, B, AB
       CHARACTER WORD*4
       DIMENSION DIFPA(*), DIFPB(*), HEXPPI(*)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
 C     ****************************
 C     ********** AB > 0 **********
@@ -1250,8 +1250,8 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER WORDA*4, WORDB*4
       LOGICAL DER1, DER2
       INTEGER A, B, AB, T
@@ -1259,8 +1259,8 @@ C
      &          ACOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       DO 100 A = 0, MAX1
          DO 200 B = 0, MAX2
@@ -1335,8 +1335,8 @@ C  /* Deck dertwo */
 C
 C     Oct 91 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER A, B, AB, T
       CHARACTER WORD*1
       LOGICAL DER1, DER2, DER12, AGT0, BGT0
@@ -1345,8 +1345,8 @@ C
      &          XCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          BCOEF(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2),
      &          AXP(*), BXP(*)
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       DO 100 A = 0, MAX1
          AGT0 = A .GT. 0
@@ -1474,16 +1474,16 @@ C  /* Deck derlon */
 C
 C     tuh Sep 4 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12)
-#include <abainf.h>
-#include <chrxyz.h>
-#include <orgcom.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "chrxyz.h"
+#include "orgcom.h"
+#include "ibtfun.h"
 C
       IODD(1) = I120X
       IODD(2) = I120Y
@@ -1582,21 +1582,21 @@ C  /* Deck excsgn */
 C
 C     tuh March 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P
       LOGICAL DOCOMP(3), SPNORB, LONDON
       DIMENSION COEFCD(MXUCCD,0:JMAXC+JMAXD,0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
-#include <symmet.h>
-#include <chrnos.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))

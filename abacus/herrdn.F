@@ -98,10 +98,10 @@ CNTINP: read in old 3F10 format if error reading coordinates
 #endif
 C  /* Deck reainp */
       SUBROUTINE REAINP(WORD,IPRDEF,RELCAL,TSTINP)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxsymm.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxsymm.h"
 C
 C     Note that the parameter MAXPRD also must be set in subroutine REAINI
 C
@@ -113,8 +113,8 @@ C
       PARAMETER ( NTABLE = 10, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <cbirea.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "ccom.h"
 C
       DATA TABLE /'.PRINT ', '.OLDNOR', '.MAXPRI', '.BIGVEC',
      *            '.MOLINP', '.SYMTHR', '.CM FUN', '.ZCMVAL',
@@ -255,7 +255,7 @@ C
 C
 C     Initialize /CBIREA/
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Note that MAXPRD also must me set in subroutine REAINP
 C
@@ -265,10 +265,10 @@ C
       PARAMETER (MAXPRD = 30)
 #endif
       LOGICAL RELCAL, TSTINP
-#include <maxaqn.h>
-#include <ccom.h>
-#include <mxsymm.h>
-#include <cbirea.h>
+#include "maxaqn.h"
+#include "ccom.h"
+#include "mxsymm.h"
+#include "cbirea.h"
       THRS = 1.0D-15
 C
       IPREAD = IPRDEF
@@ -314,35 +314,35 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
 C
-#include <abainf.h>
+#include "abainf.h"
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <cbirea.h>
+#include "cbirea.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL HERMIT,NEWFILE,SET
       CHARACTER KEYWRD*6
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <chrsgn.h>
-#include <aosotr.h>
-#include <infpar.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "chrsgn.h"
+#include "aosotr.h"
+#include "infpar.h"
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -493,16 +493,16 @@ C       ISHELL - runs over all shells
 C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
-#include <cbirea.h>
+#include "cbirea.h"
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
       DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
      &          JCO(KANG,KATOM,2),JCO2(KANG,KATOM),
@@ -520,21 +520,21 @@ C
       CHARACTER*15 CLASS
       DIMENSION IFXYZ(3)
       LOGICAL ANG, ADDSYM
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <infpar.h>
-#include <dcbrkb.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "infpar.h"
+#include "dcbrkb.h"
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <ibtfun.h>
+#include "ibtfun.h"
       ZMAT = .FALSE.
       CALL IZERO(IRKB,MXPRIM)
 C
@@ -728,21 +728,21 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <cbirea.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "cbirea.h"
 C
-#include <ccom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "ibtfun.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -789,18 +789,18 @@ C
 C       Read orbital and geometry input data
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include <codata.h>
-#include <cbirea.h>
+#include "codata.h"
+#include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,ZMTTST,CNTBAS
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -810,16 +810,16 @@ C*****************************************************************************
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
       DIMENSION IBLOCK(2)
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <cbisol.h>
-#include <huckel.h>
-#include <aosotr.h>
-#include <gencon.h>
-#include <dcbgen.h>
-#include <ibtfun.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbisol.h"
+#include "huckel.h"
+#include "aosotr.h"
+#include "gencon.h"
+#include "dcbgen.h"
+#include "ibtfun.h"
 C
       CNTBAS = .FALSE.
       NUCIND = 0
@@ -1320,26 +1320,26 @@ C
 C        Read and process data about symmetry independent centers
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "codata.h"
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #if defined (SYS_HPUX)
       PARAMETER (LUERR = 7)
 #else
       PARAMETER (LUERR = 0)
 #endif
-#include <cbirea.h>
+#include "cbirea.h"
 C
       LOGICAL ANG
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IF (GAUNUC.AND.NINT(Q).NE.0) THEN
         IF(QEXP.EQ.D0) THEN
@@ -1451,16 +1451,16 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <cbirea.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "cbirea.h"
+#include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,DOOWN
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -1469,15 +1469,15 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
       CHARACTER*1 SPDCAR
-#include <ccom.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <primit.h>
-#include <huckel.h>
-#include <aosotr.h>
-#include <gencon.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "primit.h"
+#include "huckel.h"
+#include "aosotr.h"
+#include "gencon.h"
+#include "ibtfun.h"
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -1625,16 +1625,16 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
-#include <cbirea.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
+#include "cbirea.h"
+#include "dcbgen.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,HERMIT,NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -1643,13 +1643,13 @@ C*****************************************************************************
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2)
       CHARACTER SPDCAR*1,TSTRING*(6*MXQN+3),TSTRIN2*(6*MXQN+3)
-#include <ccom.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <primit.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "primit.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "ibtfun.h"
 C
 C     ******************************************
 C     ***** Printing of basis information  *****
@@ -1820,13 +1820,13 @@ C
 C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
       DIMENSION JCO(IQM),NRC(*),NUC(*)
-#include <ccom.h>
-#include <gencon.h>
+#include "ccom.h"
+#include "gencon.h"
 C*****************************************************************************
       IND = 1
       TSTRING(IND:IND) = '['
@@ -1910,11 +1910,11 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
       CHARACTER*8 FMT1
@@ -1925,11 +1925,11 @@ C
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include <cbirea.h>
-#include <molinp.h>
-#include <ccom.h>
-#include <dcbgen.h>
-#include <gencon.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "ccom.h"
+#include "dcbgen.h"
+#include "gencon.h"
 C
       IF(DIRAC) THEN
 C
@@ -2091,11 +2091,11 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
       CHARACTER*8 FMT1
@@ -2106,11 +2106,11 @@ C
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include <cbirea.h>
-#include <molinp.h>
-#include <ccom.h>
-#include <dcbgen.h>
-#include <gencon.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "ccom.h"
+#include "dcbgen.h"
+#include "gencon.h"
 C
       NBLOCK = 0
       DO 100 I = 1, IQM
@@ -2189,14 +2189,14 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
-#include <cbirea.h>
+#include "cbirea.h"
       DIMENSION ILIST(MXFAMEXP),TMP(MXFAMEXP+2)
-#include <molinp.h>
+#include "molinp.h"
 C
 C     Card 9:
 C
@@ -2234,18 +2234,18 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          BASA(0:4), BASB(0:4)
-#include <cbirea.h>
-#include <molinp.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "ccom.h"
       DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027, 
      &                      0.304679/
       DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
@@ -2312,10 +2312,10 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
       CHARACTER*8 FMT1
@@ -2324,9 +2324,9 @@ C  /* Deck orbinx */
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include <cbirea.h>
-#include <molinp.h>
-#include <ccom.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "ccom.h"
 C
       NBLOCK = 0
       DO 100 I=1,IQM
@@ -2403,10 +2403,10 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2414,8 +2414,8 @@ C  /* Deck acporb */
       CHARACTER*7 FMT3
       LOGICAL FREE
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
-#include <cbirea.h>
-#include <molinp.h>
+#include "cbirea.h"
+#include "molinp.h"
 C
 C     Card 9:
 C
@@ -2495,8 +2495,8 @@ C
       END
 C  /* Deck segorb */
       SUBROUTINE SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU,KPRIM,DSM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL SEGIJ
       DIMENSION CPRIMU(KPRIM,KPRIM)
 C
@@ -2511,9 +2511,9 @@ C
       END
 C  /* Deck nrmorb */
       SUBROUTINE NRMORB(I,NRCIJ,NUCIJ,ALPHA,CPRIM,CPRIMU,KPRIM,NBLOCK)
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
      &           THRMIN = 1.D-17)
@@ -2551,35 +2551,35 @@ C
 C     Process basis data
 C
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <cbirea.h>
+#include "cbirea.h"
       LOGICAL SEG,SPHER
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include <ccom.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       ICENT  = 0
       IBLOCK = 0
       DO 10 I = 1,NONTYP
@@ -2679,20 +2679,20 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <ccom.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <primit.h>
+#include "ccom.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "primit.h"
       CHARACTER CHRSEG*10,DEG*2
       LOGICAL SEG, NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
@@ -2879,28 +2879,28 @@ C
 C     Process molecular data
 C
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
-#include <cbirea.h>
+#include "cbirea.h"
       DIMENSION WORK(LWORK)
-#include <ccom.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
+#include "ccom.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
 C
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Statement function to "convert" 0 - 7 to a printable
 C     "binary" form
@@ -3004,23 +3004,23 @@ C
 C     tsaue - 940825 - major revision: tagged on SYMGRP + polish
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <ccom.h>
-#include <cbirea.h>
-#include <chrxyz.h>
+#include "symmet.h"
+#include "ccom.h"
+#include "cbirea.h"
+#include "chrxyz.h"
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include <sdpre.h>
-#include <ibtfun.h>
+#include "sdpre.h"
+#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -3193,27 +3193,27 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
-#include <nuclei.h>
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <pincom.h>
-#include <aosotr.h>
-#include <sphtrm.h>
-#include <huckel.h>
-#include <cbirea.h>
+#include "nuclei.h"
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "pincom.h"
+#include "aosotr.h"
+#include "sphtrm.h"
+#include "huckel.h"
+#include "cbirea.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C*****************************************************************************
 C Determine ISYMAO:
 C       ISYMAO is a bitstring indicating how atomic orbitals centered in
@@ -3429,24 +3429,24 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
-#include <nuclei.h>
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <pincom.h>
-#include <cbirea.h>
-#include <aosotr.h>
-#include <chrsgn.h>
+#include "nuclei.h"
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "pincom.h"
+#include "cbirea.h"
+#include "aosotr.h"
+#include "chrsgn.h"
       CHARACTER COMP(2)*1
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C*****************************************************************************
 C       S Y M M E T R Y      O R B I T A L S
 C*****************************************************************************
@@ -3503,20 +3503,20 @@ C*****************************************************************************
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <aovec.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxmom.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
 C
-#include <chrxyz.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "chrxyz.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION WORK(LWORK)
-#include <ibtfun.h>
+#include "ibtfun.h"
       LENGTH = 48*NUCIND
       CALL IZERO(IPTCNT,LENGTH)
       IOFFT = 0
@@ -3616,28 +3616,28 @@ C     This subroutine prints information about atomic coordinates
 C
 C     tuh 081188 - Bush elected
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
-#include <nuclei.h>
-#include <frame.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
+#include "nuclei.h"
+#include "frame.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
 C
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
 C
-#include <memint.h>
+#include "memint.h"
       NCOOR = 3*NUCDEP
 C
 C     *********************************
@@ -3759,8 +3759,8 @@ C
       END
 C  /* Deck priord */
       SUBROUTINE PRIORD(ALPHA,CPRIMU,NPRI,NRCI,SEG,KPRIM,DSM)
-#include <implicit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "mxorb.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 C
@@ -3848,8 +3848,8 @@ C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
@@ -3926,12 +3926,12 @@ C     +     DELTA
       END
 C  /* Deck sphlab */
       SUBROUTINE SPHLAB(IORDER,LABINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       CHARACTER LABINT(MXQN**2)*4
       CHARACTER SPDCAR*1, SIGNJ*1
-#include <chrnos.h>
+#include "chrnos.h"
 C
       IOFF = 0
       DO 100 I = 0, IORDER
@@ -3963,14 +3963,14 @@ C
       END
 C  /* Deck carlab */
       SUBROUTINE CARLAB(IORDER,LABINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       DIMENSION IX(MXAQN), IY(MXAQN), IZ(MXAQN)
       CHARACTER LABINT(MXQN*(MXQN+1)*(MXQN+2)/6)*4
       CHARACTER SPDCAR*1
-#include <chrnos.h>
-#include <ibtfun.h>
+#include "chrnos.h"
+#include "ibtfun.h"
       J = 0
       DO 100 I = 0, IORDER
          IF (I .LE. 3) THEN
@@ -4002,19 +4002,19 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
       DIMENSION IAOAO(MXCORB)
 C
-#include <symmet.h>
-#include <nuclei.h>
-#include <shells.h>
+#include "symmet.h"
+#include "nuclei.h"
+#include "shells.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
 C
@@ -4071,22 +4071,22 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <chrxyz.h>
-#include <chrsgn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "chrxyz.h"
+#include "chrsgn.h"
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
-#include <cbiher.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <pgroup.h>
+#include "cbiher.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "pgroup.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (NMRISS .AND. MAXREP .GT. 0) THEN
          IF (IPREAD .GT. 0) THEN
@@ -4148,12 +4148,12 @@ C     Set up IPTCOR - points from symmetry coordinate to generating
 C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <symmet.h>
+#include "symmet.h"
 C
       DO 400 ITYPE = 1, 2
          IJ = 0
@@ -4170,7 +4170,7 @@ C
       END
 C  /* Deck setclb */
       SUBROUTINE SETCLB(I,LABINT,NDIM)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER LABINT(NDIM)*4
       IF (I .EQ. 0) THEN
          LABINT(1) = 's   '
@@ -4201,7 +4201,7 @@ C  /* Deck setclb */
       END
 C  /* Deck spdcar */
       FUNCTION SPDCAR(IORDER)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*1 SPDCAR
       IF (IORDER .EQ. 0) THEN
          SPDCAR = 's'
@@ -4224,15 +4224,15 @@ C  /* Deck sphinp */
 C
 C     Calculate spherical harmonic transformation coefficients
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <sphtrm.h>
-#include <molinp.h>
-#include <ccom.h>
-#include <cbirea.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "sphtrm.h"
+#include "molinp.h"
+#include "ccom.h"
+#include "cbirea.h"
       CHARACTER*1 KEY
       LOGICAL DOOWN
       DIMENSION WORK(LWORK)
@@ -4315,10 +4315,10 @@ C
       END
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "molinp.h"
       CHARACTER*4 GTOTYP(*)
       DIMENSION CSP(KHKI,KCKI)
       DO 100 I = 1, KHKI
@@ -4330,12 +4330,12 @@ C  /* Deck rdcsp */
       END
 C  /* Deck rdline */
       SUBROUTINE RDLINE(LUINFO)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <molinp.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "molinp.h"
+#include "infpar.h"
 C
 C     Reads a line from MOLECULE.INP
 C
@@ -4385,12 +4385,12 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
       CHARACTER*72 TITLE(2)
       CHARACTER*8 CDATE,CTIME
@@ -4404,15 +4404,15 @@ C
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
-#include <ccom.h>
-#include <shells.h>
-#include <symmet.h>
-#include <aosotr.h>
-#include <hrunit.h>
-#include <nuclei.h>
-#include <frame.h>
-#include <sphtrm.h>
-#include <ibtfun.h>
+#include "ccom.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aosotr.h"
+#include "hrunit.h"
+#include "nuclei.h"
+#include "frame.h"
+#include "sphtrm.h"
+#include "ibtfun.h"
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -4516,26 +4516,26 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <maxaqn.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "maxaqn.h"
+#include "codata.h"
 C
-#include <abainf.h>
-#include <cbirea.h>
+#include "abainf.h"
+#include "cbirea.h"
 C
-#include <molinp.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <primit.h>
-#include <shells.h>
-#include <symmet.h>
-#include <chrsgn.h>
-#include <aosotr.h>
+#include "molinp.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "primit.h"
+#include "shells.h"
+#include "symmet.h"
+#include "chrsgn.h"
+#include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
       WRITE (LUPRI,'(A,1P,D15.6)') ' THRS  ', THRS
@@ -4622,15 +4622,15 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <symmet.h>
-#include <pgroup.h>
-#include <cbirea.h>
+#include "symmet.h"
+#include "pgroup.h"
+#include "cbirea.h"
       LOGICAL LSYMOP(0:7)
       DIMENSION IGEN(3),IROTS(3),IREFL(3),JPAR(0:7)
       CHARACTER*(*) CLASS
@@ -4638,7 +4638,7 @@ C
       DATA IREFL/4,2,1/
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
       EXTERNAL BDPGROUP
-#include <ibtfun.h>
+#include "ibtfun.h"
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -4864,23 +4864,23 @@ C     Written by T.Saue - october 1994 - odense
 C     Sep 24 1996 - tsaue: Updated version
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
 C
-#include <cbirea.h>
-#include <symmet.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <dcbqal.h>
+#include "cbirea.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbqal.h"
 C
       LOGICAL LBUF(8)
       EXTERNAL BDQALGEBRA
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL IZERO(IQTOPQ,32)
@@ -5447,13 +5447,13 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
-#include <nuclei.h>
-#include <molinp.h>
+#include "nuclei.h"
+#include "molinp.h"
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION NONT(KATOM)
       DATA FIRST /.TRUE./
@@ -5551,12 +5551,12 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <pi.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "pi.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
@@ -5571,15 +5571,15 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), NONCH(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
-#include <nuclei.h>
+#include "nuclei.h"
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <ccom.h>
-#include <molinp.h>
-#include <cbisol.h>
+#include "ccom.h"
+#include "molinp.h"
+#include "cbisol.h"
     1 FORMAT(/,2X,' INTERNAL COORDINATES'/)
     2 FORMAT(2X,I3,67X,F15.5)
     3 FORMAT(2X,I3,I5,F14.7,48X,F15.5)
@@ -5847,8 +5847,8 @@ C
       END
 C  /* Deck vec */
       SUBROUTINE VEC(U,C,J,K)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION C(MXCENT,3),R(3),U(3)
 C
@@ -5865,7 +5865,7 @@ C
       END
 C  /* Deck vprod */
       SUBROUTINE VPROD(VP,X,Y)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VP(3),X(3),Y(3)
 C
       VP(1)=X(2)*Y(3)-X(3)*Y(2)
@@ -5886,12 +5886,12 @@ C      ICP = 1 : Read large component
 C      ICP = 2 : Read small component
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <infpar.h>
-#include <molinp.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "infpar.h"
+#include "molinp.h"
 C
       PARAMETER (DSM=1.0D-30)
 C
@@ -5904,14 +5904,14 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
-#include <dcbgen.h>
-#include <cbirea.h>
-#include <ccom.h>
-#include <gencon.h>
+#include "dcbgen.h"
+#include "cbirea.h"
+#include "ccom.h"
+#include "gencon.h"
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C     
       LUBFIL = 55
       NTYP   = 0
@@ -6190,10 +6190,10 @@ C      Generate small component functions from large using the
 C      kinetic balance relation
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <ccom.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -6201,7 +6201,7 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IDOWN(J) = IBTAND(1,J)
       IUP(J)   = IBTAND(1,IBTSHR(J,1))
 C
@@ -6295,8 +6295,8 @@ C*****************************************************************************
 C
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       PARAMETER ( ALPTHR = 1.0D-3 )
 C
@@ -6372,8 +6372,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C Initialize /PGROUP/
 C
-#include <implicit.h>
-#include <pgroup.h>
+#include "implicit.h"
+#include "pgroup.h"
 C
       DATA SYMOP/ ' E ','Oyz','Oxz','C2z',
      &            'Oxy','C2y','C2x',' i '/
@@ -6399,18 +6399,18 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <dcbbas.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "dcbbas.h"
+#include "aovec.h"
       PARAMETER (SML = 1.0D-6)
-#include <primit.h>
-#include <dcbrkb.h>
+#include "primit.h"
+#include "dcbrkb.h"
 C
       IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)') 
      &   'RKBREL: Constructing relations for scalar RKB transformation'
@@ -6538,18 +6538,18 @@ C     Surgery by T.Saue June 7 1997
 C     Point charges are not included. /June2000,jth+hjaaj
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP1 = 0.1D0, DP5 = 0.5D0)
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <symmet.h>
-#include <nuclei.h>
+#include "symmet.h"
+#include "nuclei.h"
       DIMENSION Q(*)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       GETPOT = D0
       DO 10 N = 1, NUCIND
@@ -6591,8 +6591,8 @@ C
 C     Simulate free format input for Cray computers when reading from an
 C     internal file, K.Ruud-Feb.97
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C      
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
@@ -6639,16 +6639,16 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
       CHARACTER KEYWRD*6
 C
-#include <cbirea.h>
-#include <molinp.h>
-#include <sdpre.h>
+#include "cbirea.h"
+#include "molinp.h"
+#include "sdpre.h"
 C
 C
 C

@@ -64,11 +64,11 @@ C  /* Deck writda */
       END
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D00)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          GRDMOL(I) = D0
@@ -77,11 +77,11 @@ C  /* Deck zergrd */
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.D00)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          DO 200 J = 1, NCOORD
@@ -92,10 +92,10 @@ C  /* Deck zerhes */
       END
 C  /* Deck heszer */
       SUBROUTINE HESZER(HESS)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <nuclei.h>
+#include "nuclei.h"
       DO 100 I = 1, 3*NUCDEP
          CALL DZERO(HESS(1,I),3*NUCDEP)
   100 CONTINUE
@@ -103,11 +103,11 @@ C  /* Deck heszer */
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION GRAD(MXCOOR)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
@@ -116,11 +116,11 @@ C  /* Deck addgrd */
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <taymol.h>
-#include <nuclei.h>
+#include "taymol.h"
+#include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
@@ -136,15 +136,15 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -180,18 +180,18 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(MXCOOR,MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       INTEGER BEGIN
 C
       IF (KEY .EQ. 'CENTERS') THEN
@@ -271,8 +271,8 @@ C
       END
 C  /* Deck tragrd */
       SUBROUTINE TRAGRD(SGRAD,CGRAD,CSTRA,SCTRA,NCR0,NCOOR)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       CALL TRACOR(CSTRA,SCTRA,1,NCOOR,0)
@@ -283,8 +283,8 @@ C  /* Deck tragrd */
       END
 C  /* Deck trahes */
       SUBROUTINE TRAHES(SHESS,NDIMS,CHESS,CSTRA,SCTRA,NDIMC,NCOOR,ITYPE)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
      &          AMAT(MXCOOR,MXCOOR), CSTRA(NCOOR,NCOOR),
      &          SCTRA(NCOOR,NCOOR)
@@ -308,17 +308,17 @@ C  /* Deck prigeo */
 C
 C     Jun 29 1988 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
       DIMENSION COORD(3,*)
 C
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -336,11 +336,11 @@ C
       END
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (DP5 = 0.5D0)
-#include <mxcent.h>
+#include "mxcent.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include <nuclei.h>
+#include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
@@ -357,18 +357,18 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <infinp.h>
-#include <inforb.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "infinp.h"
+#include "inforb.h"
 C
 C     Nuclear charge
 C
@@ -387,15 +387,15 @@ C  /* Deck rmolchr */
 C
 C     Calculates total charge of molecule
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
 C
 C     Nuclear charge
 C
@@ -455,9 +455,9 @@ C       Quantities, Units and Symbols in Physical Chemistry
 C       (IUPAC, Blackwell Scientific, Oxford, 1988)
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
       PARAMETER (DMP = 1.6726231D-27, ELECT = 1.60217733D-19)
       PARAMETER (THRESH = 1.0D-10)
@@ -1656,7 +1656,7 @@ C     This routine unpacks triangular index, inspired by P. Taylor
 C     T. Helgaker & H. Koch
 C     Wed Nov 27 10:38:04  1991
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       I = INT(SQRT(FLOAT(2*IJ) + 0.25D00) + 0.4999999D00)
       J = IJ - I*(I - 1)/2
@@ -1665,12 +1665,12 @@ C
       END
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, KCOL = 6)
       INTEGER BEGIN
       DIMENSION CHESS(NDIM,NDIM)
-#include <nuclei.h>
+#include "nuclei.h"
       LAST = MIN(NROW,KCOL)
       BEGIN= 1
  51   CONTINUE
@@ -1700,20 +1700,20 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <chrxyz.h>
-#include <alphac.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "chrxyz.h"
+#include "alphac.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1808,15 +1808,15 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
      *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
-#include <symmet.h>
+#include "symmet.h"
 C
       CALL DZERO(PERDIP,9)
       DO 100 ICOOR = 1, 3
@@ -1833,15 +1833,15 @@ C
       END
 C  /* Deck dp0pri */
       SUBROUTINE DP0PRI(DIPOLE)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <chrxyz.h>
-#include <debye.h>
-#include <cbidip.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "chrxyz.h"
+#include "debye.h"
+#include "cbidip.h"
+#include "symmet.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)') ' All components zero by symmetry'
@@ -1864,16 +1864,16 @@ C
 C     Determine center of mass from information in common blocks
 C     K.Ruud, june-94
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
      &          ISOTOP(MXCENT)
-#include <orgcom.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "orgcom.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       JATOM = 0
       DO 10 IATOM = 1, NUCIND
@@ -1897,20 +1897,20 @@ C
       END
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,GEOM,ORIGIN,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
 C
-#include <priunit.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &            BIGMAS = 1.0D20 )
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3*NATOMS), ORIGIN(3)
 C
-#include <cbisol.h>
-#include <nuclei.h>
+#include "cbisol.h"
+#include "nuclei.h"
 C
       IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
@@ -1953,19 +1953,19 @@ C     nuclear coordinates
 C
 C     tuh Jun 29 1988
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       CALL DZERO(CSTRA,NCOOR*NCOOR)
       CALL DZERO(SCTRA,NCOOR*NCOOR)
@@ -2050,7 +2050,7 @@ C
 C     Get mass of the most abundant isotope of charge IZ
 C
 C***********************************************************************
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0=0.0D0)
       PARAMETER (ISO=1, MAXCHR=109)
 C

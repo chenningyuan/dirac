@@ -33,12 +33,12 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <symmet.h>
-#include <ibtfun.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       IREPLM = 0
       IF (MOD(L + M,2) .EQ. 1)  IREPLM = ISYMAX(3,1)
@@ -55,15 +55,15 @@ C     Write Solvent integrals to LUSOL
 C
 C  SYMTOT true: only totally-symmetric integrals written to LUSOL.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION RLMINT(NNBASX,NOPTYP), INTREP(NOPTYP)
       LOGICAL SYMTOT
-#include <priunit.h>
+#include "priunit.h"
 C
 C Used from common blocks:
 C  HRUNIT : LUSOL
 C
-#include <hrunit.h>
+#include "hrunit.h"
 C
       IF (NOPTYP .NE. 2*L + 1) THEN
          WRITE (LUPRI,*) 'WRTSOL ERROR: NOPTYP .ne. 2*L+1'
@@ -111,12 +111,12 @@ C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
 C
@@ -126,10 +126,10 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  HRUNIT : LUSOL
 C
-#include <symmet.h>
-#include <cbisol.h>
-#include <orgcom.h>
-#include <hrunit.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "orgcom.h"
+#include "hrunit.h"
 C
       CHARACTER*8 LABSOL(4)
       DIMENSION   FILL4(4)
@@ -180,20 +180,20 @@ C  /* Deck solnuc */
 C
 C 12-Jan-1993 hjaaj+kvm
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION TLMND(*),FCM(*), WORK(*), HSOLNN(*)
       LOGICAL   PROPTY, DIFDIP
 C
-#include <priunit.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
 C  NUCLEI : NUCDEP
 C
-#include <nuclei.h>
-#include <cbisol.h>
+#include "nuclei.h"
+#include "cbisol.h"
 C
       IF (IPRINT .GT. 4) THEN
          CALL HEADER('Output from SOLNUC',-1)
@@ -238,12 +238,12 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -258,18 +258,18 @@ C  CBISOL : LCAVMX,NCNTCV
 C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
-#include <cbisol.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <taysol.h>
-#include <orgcom.h>
+#include "cbisol.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "taysol.h"
+#include "orgcom.h"
 C
 C     Local arrays
 C
 C
 C     Statement functions
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Cartesian orders
 C     ----------------
@@ -416,8 +416,8 @@ C
 C Transform Cartesian vector (e.g. gradient) to
 C           symmetry  vector
 C
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION VEC(MXCOOR), CSTRA(MXCOOR,MXCOOR)
       DIMENSION SVEC(MXCOOR)
 C
@@ -436,8 +436,8 @@ C
 C Transform Cartesian matrix (e.g. Hessian) to
 C           symmetry  vector
 C
-#include <implicit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "mxcent.h"
       DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), 
      &          CSTRA(MXCOOR,MXCOOR), WORK(LWORK)
       NDIM = MAX(MXCOOR*MXCOOR,LMNTOT*NCOOR)
@@ -477,10 +477,10 @@ C
 C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
@@ -493,9 +493,9 @@ C  CBISOL : LCAVMX,LMNTOT,?
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
-#include <cbisol.h>
-#include <lmns.h>
-#include <taysol.h>
+#include "cbisol.h"
+#include "lmns.h"
+#include "taysol.h"
 C
 C     Statement functions
 C     -------------------
@@ -613,8 +613,8 @@ C  /* Deck solint */
 C
 C 27-May-1992 kvm+hjaaj
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION RLMINT(*), RLMTAB(*), FCM(*), WORK(LWORK)
@@ -623,8 +623,8 @@ C Used from common blocks:
 C  ONECOM : NHKT[AB]
 C  CBISOL : LCAVMX,LMNTOT
 C
-#include <onecom.h>
-#include <cbisol.h>
+#include "onecom.h"
+#include "cbisol.h"
 C
       ITMAX = NHKTA-1 + NHKTB-1 + MAXDIF
       ITMAX = MIN(LCAVMX,ITMAX)
@@ -689,9 +689,9 @@ C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -707,10 +707,10 @@ C  ONECOM : KCKTA, KCKTB, KCKTAB,
 C           (KCKTAB = KCKTA*KCKTB)
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C
-#include <cbisol.h>
-#include <onecom.h>
-#include <lmns.h>
-#include <orgcom.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "lmns.h"
+#include "orgcom.h"
 C
       INTEGER T,U,V
 C
@@ -911,8 +911,8 @@ C
 C     This subroutine calculates Hermitian integrals
 C     used in SOLIN1 and MOMINT
 C
-#include <implicit.h>
-#include <pi.h>
+#include "implicit.h"
+#include "pi.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       DIMENSION HMULT(0:LCAVMX,0:LCAVMX,3), ORIGIN(3)
@@ -963,7 +963,7 @@ C  /* Deck rlmset */
 C
 C 27-May-1992 kvm+hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION LO(*), MO(*), NO(*)
 C
@@ -1002,11 +1002,11 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1014,17 +1014,17 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include <onecom.h>
-#include <symmet.h>
-#include <cbisol.h>
-#include <taysol.h>
+#include "onecom.h"
+#include "symmet.h"
+#include "cbisol.h"
+#include "taysol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      *        DOCX, DOCY, DOCZ, DIFDIP
       DIMENSION DSHELL(MAXCMP), FCM(LMNTOT), TLMD(LMNTOT,*)
       DIMENSION RLMINT(KCKTAB,LMNTOT,7), RLMTAB(KCKTAB,21),
      &          LMNO(LMNTOT,3), HSOLT2(MXCOOR,MXCOOR)
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -1449,8 +1449,8 @@ C
 C FCM(LMN) = -2 * g(l) * sum(m) [T(lm) * C(LMN,m)]
 C  where l = L+M+N
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION GLM(LMTOT), TLM(LMTOT), FCM(LMNTOT), WORK(LWORK)
 C
 C
@@ -1486,7 +1486,7 @@ C  /* Deck fcmfa1 */
 C
 C 13-Oct-1992 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (DM2 = -2.0D0, D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
 C
@@ -1522,14 +1522,14 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
-#include <implicit.h>
-#include <iratdef.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
-#include <cbisol.h>
-#include <inforb.h>
+#include "cbisol.h"
+#include "inforb.h"
 C
 C
       CALL QENTER('MAGSOL')
@@ -1570,27 +1570,27 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
      &          AOMAT1(NNBASX,NCOMP,(LCAVMX + 1)*(LCAVMX + 2)/2),
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include <symmet.h>
-#include <cbisol.h>
-#include <orgcom.h>
-#include <mgsolt.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "orgcom.h"
+#include "mgsolt.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
 C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
@@ -1768,14 +1768,14 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxorb.h>
-#include <maxaqn.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       CHARACTER*2 LBL3(3), LBL6(6), LABXY
       CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)
@@ -1787,14 +1787,14 @@ C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
 C
-#include <symmet.h>
-#include <cbisol.h>
-#include <mgsolt.h>
-#include <orgcom.h>
-#include <inforb.h>
-#include <infinp.h>
-#include <inftap.h>
-#include <chrnos.h>
+#include "symmet.h"
+#include "cbisol.h"
+#include "mgsolt.h"
+#include "orgcom.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "inftap.h"
+#include "chrnos.h"
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
       DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/

@@ -47,14 +47,14 @@ C  /* Deck anainp */
 C
 C  5-Jul-1985 Hans Jorgen Aa. Jensen
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       PARAMETER (MAXANG = 20)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
+#include "abainf.h"
       LOGICAL SKIP
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
@@ -164,7 +164,7 @@ C  /* Deck anaini */
 C
 C     Initialize /CBIANA/
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (MAXANG = 20)
       LOGICAL SKIP
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
@@ -182,13 +182,13 @@ C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
-#include <implicit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
 C
       CALL QENTER('GEOANA')
       KFREE = 1
@@ -214,20 +214,20 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "codata.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
       LOGICAL SKIP, DIF, PRINT, PUNCH
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
-#include <nuclei.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "symmet.h"
 C
       PARAMETER (LUIP = 4)
       DIMENSION COORD(3,*),
@@ -241,10 +241,10 @@ C
 #if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_VAX)
       ARCCOS(ARG) = ACOSD(ARG)
 #else
-#include <facang.h>
+#include "facang.h"
       ARCCOS(ARG) = FACANG*ACOS(ARG)
 #endif
-#include <ibtfun.h>
+#include "ibtfun.h"
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
@@ -506,8 +506,8 @@ C (based on OUTPAK by Nelson H.F. Beebe)
 C
 C Print bond distance matrix
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (ZERO=0.D00, KCOL=6)
       INTEGER BEGIN
       CHARACTER*6 NAMEX(*)
@@ -536,7 +536,7 @@ C
       END
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
-#include <implicit.h>
+#include "implicit.h"
 C     based on covalent radii and metallic radii. 
 C     Returns radius of MAXCHR when data not available.
 C     Revision March 17 1999 - Trond Saue
@@ -573,7 +573,7 @@ C
       END
 C  /* Deck vdwrad */
       FUNCTION VDWRAD(NCHARGE)
-#include <implicit.h>
+#include "implicit.h"
 C     based on van der Waals radii. 
 C     returns radius of MAXCHR when data not available
 C     Revised by T.Saue March 17 1999

@@ -40,14 +40,14 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include <abainf.h>
-#include <cbione.h>
+#include "abainf.h"
+#include "cbione.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','XXXXXXX',
      *            '.NODC  ', '.NODV  ','.STOP  '/
@@ -138,10 +138,10 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <abainf.h>
-#include <cbione.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "abainf.h"
+#include "cbione.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -163,11 +163,11 @@ C  /* Deck oneint */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL PASS, PROPTY
       DIMENSION WORK(LWORK)
-#include <cbione.h>
+#include "cbione.h"
       IF (SKIP) RETURN
       IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
@@ -188,21 +188,21 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       DIMENSION WORK(LWORK)
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <cbisol.h>
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "cbisol.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       DOINT(1,1) = .TRUE.
       DOINT(2,1) = .TRUE.
@@ -267,12 +267,12 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <iratdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "iratdef.h"
+#include "priunit.h"
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00 D00)
 C
@@ -282,25 +282,25 @@ C
      &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
-#include <dipole.h>
-#include <taysol.h>
-#include <ccom.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <symind.h>
-#include <csym1.h>
-#include <cbisol.h>
+#include "dipole.h"
+#include "taysol.h"
+#include "ccom.h"
+#include "nuclei.h"
+#include "shells.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "symind.h"
+#include "csym1.h"
+#include "cbisol.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -744,9 +744,9 @@ C
       END
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
-#include <implicit.h>
-#include <priunit.h>
-#include <inforb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
 C
@@ -769,21 +769,21 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
-#include <iratdef.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "iratdef.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
 C Used from common blocks:
 C   ABAINF : CCSD
 C
-#include <abainf.h>
-#include <inforb.h>
-#include <nuctap.h>
+#include "abainf.h"
+#include "inforb.h"
+#include "nuctap.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -965,19 +965,19 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
-#include <abainf.h>
-#include <nuclei.h>
-#include <dipole.h>
-#include <symmet.h>
-#include <dorps.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "dipole.h"
+#include "symmet.h"
+#include "dorps.h"
+#include "ibtfun.h"
 C
 C     Dipole moment
 C
@@ -1027,11 +1027,11 @@ C
       END
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
-#include <nuclei.h>
+#include "nuclei.h"
       KGRADE = 1
       KGRADN = KGRADE + 3*NUCDEP
       KGDIFE = KGRADN + 3*NUCDEP
@@ -1046,18 +1046,18 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include <nuclei.h>
-#include <nuctap.h>
-#include <cbisol.h>
-#include <taysol.h>
+#include "nuclei.h"
+#include "nuctap.h"
+#include "cbisol.h"
+#include "taysol.h"
 C
 C     Test TLMD
 C
@@ -1135,10 +1135,10 @@ C
       END
 C  /* Deck tlmtra */
       SUBROUTINE TLMTRA(NMAT,CARMAT,SPHMAT,WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       DIMENSION CARMAT(*), SPHMAT(*), WORK(LWORK)
-#include <cbisol.h>
+#include "cbisol.h"
 C
       MXLM  = 2*LCAVMX + 1
       MXXYZ = (LCAVMX+1)*(LCAVMX+2)/2
@@ -1153,14 +1153,14 @@ C
 C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),
      &          WORK(LWORK)
-#include <cbisol.h>
+#include "cbisol.h"
 C
       JLM  = 0
       JXYZ = 0

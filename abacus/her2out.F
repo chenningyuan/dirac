@@ -44,25 +44,25 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
       DIMENSION SO(*), BUF(LBUF), IBUF(LBUF,2),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -255,19 +255,19 @@ C
 C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include <twosta.h>
-#include <hrunit.h>
-#include <nuclei.h>
+#include "twosta.h"
+#include "hrunit.h"
+#include "nuclei.h"
       SAVE NBUF
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       IF (ITYPE .EQ. -1) THEN
          REWIND LUINTA
@@ -374,23 +374,23 @@ C       - screening
 C       - extended to include all Fock matrices
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(*), DMAT(*),DMRSO(*),DINTSKP(*),
      &          WORK(LWORK),DNSBUF(*),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
-#include <twocom.h>
-#include <symmet.h>
+#include "twocom.h"
+#include "symmet.h"
       CALL QENTER('FCKOUT')
-#include <memint.h>
+#include "memint.h"
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
 C
@@ -419,15 +419,15 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
      &           D0 = 0.0D0)
 C
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
@@ -438,13 +438,13 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include <twosta.h>
-#include <twocom.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <blocks.h>
+#include "twosta.h"
+#include "twocom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "blocks.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GE. 6) CALL HEADER('Subroutine FCKOU1',-1)
       IF (IPRINT .GE. 10) THEN
@@ -696,7 +696,7 @@ C           =============================
 C           F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
             IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -725,7 +725,7 @@ C           =========================================
 C           F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
             ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -742,7 +742,7 @@ C           Coulomb contributions only
 C           ==========================
 C
             ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -768,7 +768,7 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             IF(IY.EQ.3) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -796,7 +796,7 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.2) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -818,7 +818,7 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.1) THEN
-#include <scalar.h>
+#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -858,24 +858,24 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include <twocom.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <doxyz.h>
+#include "twocom.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
 C
@@ -1023,21 +1023,21 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
-#include <hrunit.h>
+#include "hrunit.h"
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
-#include <nodint.h>
-#include <symmet.h>
-#include <chrxyz.h>
+#include "nodint.h"
+#include "symmet.h"
+#include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -1158,13 +1158,13 @@ C
       END
 C  /* Deck dr2pri */
       SUBROUTINE DR2PRI(BUF,IBUF,ICOUNT,NBUF)
-#include <implicit.h>
-#include <priunit.h>
-#include <ibtpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "ibtpar.h"
       DIMENSION BUF(600), IBUF(600)
-#include <chrxyz.h>
+#include "chrxyz.h"
       SAVE IATOM, ICOOR, IREPE
-#include <ibtfun.h>
+#include "ibtfun.h"
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'
       DO 100 INT = 1, ICOUNT
@@ -1189,24 +1189,24 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include <twocom.h>
-#include <dorps.h>
-#include <symmet.h>
-#include <doxyz.h>
+#include "twocom.h"
+#include "dorps.h"
+#include "symmet.h"
+#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
 C
@@ -1357,13 +1357,13 @@ C  /* Deck ds2out */
       SUBROUTINE DS2OUT(SO,WRKBUF,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IPRINT)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*)
-#include <disbuf.h>
+#include "disbuf.h"
 C
 C---------------------------------
 C     Call sort and write routine.
@@ -1382,25 +1382,25 @@ C  /* Deck ds2ou1 */
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS)
-#include <nuclei.h>
-#include <twocom.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
-#include <sdpre.h>
+#include "ibtfun.h"
+#include "sdpre.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1617,19 +1617,19 @@ C
 C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "twosta.h"
 C
-#include <nuclei.h>
-#include <twocom.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <comdis.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),GMAT(*),
@@ -1671,26 +1671,26 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <comdis.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "comdis.h"
+#include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),GMAT(*),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-#include <nuclei.h>
-#include <twocom.h>
-#include <blocks.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "blocks.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1837,14 +1837,14 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <comdis.h>
-#include <twosta.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "comdis.h"
+#include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),
@@ -1853,12 +1853,12 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
-#include <nuclei.h>
-#include <twocom.h>
-#include <blocks.h>
-#include <symmet.h>
+#include "nuclei.h"
+#include "twocom.h"
+#include "blocks.h"
+#include "symmet.h"
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -2066,8 +2066,8 @@ C
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       GO TO ( 1,2,3,4,5,6,7,8,9,10),INTCLS
       STOP 'Error in TST2IN'
  1    CONTINUE

@@ -40,7 +40,7 @@ C
 C 15-Mar-1985 hjaaj
 C l.r. 4-May-1994 hjaaj (only elim. new vector if norm < THRLDP)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVDIM,*)
       LOGICAL   LINDEP(*)
 C
@@ -49,7 +49,7 @@ C
 C     Used from common blocks:
 C     PRIUNIT: LUPRI
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       CALL QENTER('ORTVEC')
 C

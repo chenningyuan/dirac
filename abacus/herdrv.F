@@ -89,18 +89,18 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
 C
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbieri.h>
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
 C
-#include <hrunit.h>
+#include "hrunit.h"
 C
       LOGICAL SET
 C
@@ -201,13 +201,13 @@ C  /* Deck herinp */
 C
 C <<< General Input for HERMIT >>>
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <efield.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "efield.h"
       PARAMETER (NDIR = 6, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -215,18 +215,18 @@ C
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbisol.h>
-#include <nuclei.h>
-#include <orgcom.h>
-#include <huckel.h>
-#include <ccom.h>
-#include <hrunit.h>
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+#include "nuclei.h"
+#include "orgcom.h"
+#include "huckel.h"
+#include "ccom.h"
+#include "hrunit.h"
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT'/
@@ -1160,17 +1160,17 @@ C
       END
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <orgcom.h>
-#include <cbiher.h>
-#include <cbihr1.h>
+#include "orgcom.h"
+#include "cbiher.h"
+#include "cbihr1.h"
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.ALLRLM', '.CAVORG',
@@ -1286,21 +1286,21 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <cbiher.h>
-#include <cbihr2.h>
+#include "cbiher.h"
+#include "cbihr2.h"
 #ifdef PRG_DIRAC
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
@@ -1483,16 +1483,16 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
-#include <cbiher.h>
-#include <cbihrs.h>
+#include "cbiher.h"
+#include "cbihrs.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.NOSYMM', '.OLDSUP', '.THRESH',
      &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
@@ -1604,22 +1604,22 @@ C
       END
 C  /* Deck herint */
       SUBROUTINE HERINT(WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dummy.h"
 C
-#include <cbiher.h>
-#include <cbihr1.h>
-#include <cbihr2.h>
-#include <cbihrs.h>
-#include <cbieri.h>
-#include <orgcom.h>
-#include <nuclei.h>
-#include <huckel.h>
-#include <ccom.h>
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbihr2.h"
+#include "cbihrs.h"
+#include "cbieri.h"
+#include "orgcom.h"
+#include "nuclei.h"
+#include "huckel.h"
+#include "ccom.h"
 C
 C
       DIMENSION   RLMORI(3)
@@ -2409,13 +2409,13 @@ C
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
 C
-#include <symmet.h>
-#include <dorps.h>
+#include "symmet.h"
+#include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP
          DOREPS(IREP) = .TRUE.

@@ -39,12 +39,12 @@ C#include <single.h>
 #endif
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <optinf.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "optinf.h"
+#include "cbiwlk.h"
 #ifdef PRG_DIRAC
 #   include <dcbgrd.h>
 #   include <dcbgen.h>
@@ -1170,22 +1170,22 @@ C
 
 C  /* Deck optmin */
       SUBROUTINE OPTMIN(WORK,LWORK,IWOFF,WRKDLM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
 CTROND#include <mxorb.h>
 CTROND#include <inftap.h>
 #ifdef PRG_DIRAC
 #   include <dcbgen.h>
 #else
-#include <infpar.h>
+#include "infpar.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
 #   include <gnrinf.h>
 #endif
-#include <optinf.h>
-#include <cbiher.h>
+#include "optinf.h"
+#include "cbiher.h"
       DIMENSION WORK(LWORK)
       LOGICAL TSTIN
       CALL QENTER('OPTMIN')
@@ -1296,28 +1296,28 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(IWOFF,WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
-#include <implicit.h>
-#include <dummy.h>
-#include <codata.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <optinf.h>
-#include <cbirea.h>
-#include <molinp.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <inftap.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <taymol.h>
-#include <prkoor.h>
-#include <trkoor.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "codata.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "optinf.h"
+#include "cbirea.h"
+#include "molinp.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "inftap.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "taymol.h"
+#include "prkoor.h"
+#include "trkoor.h"
+#include "cbiwlk.h"
 #if ! defined (PRG_DIRAC)
-#include <molde.h>      
+#include "molde.h"      
 #endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
@@ -1996,16 +1996,16 @@ C  /* Deck priall */
 C
 C     Prints important information for the current iteration.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
-#include <trkoor.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
+#include "trkoor.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "symmet.h"
+#include "nuclei.h"
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
       INTEGER     START
@@ -2103,11 +2103,11 @@ C  /* Deck priinf */
 C
 C     Prints important information at the end of an optimization.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "optinf.h"
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
       LOGICAL RED
@@ -2171,21 +2171,21 @@ C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <infopt.h>
-#include <optinf.h>
-#include <siripc.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "infopt.h"
+#include "optinf.h"
+#include "siripc.h"
 #ifndef PRG_DIRAC
-#include <infinp.h>
-#include <gnrinf.h>
+#include "infinp.h"
+#include "gnrinf.h"
 #else /* PRG_DIRAC */
-#include <dcbdhf.h>
-#include <dcbgen.h>
-#include <dcbmp2.h>
-#include <dcbpsi.h>
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbmp2.h"
+#include "dcbpsi.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
@@ -2319,19 +2319,19 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxorb.h>
-#include <taymol.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxorb.h"
+#include "taymol.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
 CTROND#include <infpar.h>
 CTROND#include <pario.h>
-#include <abainf.h>
-#include <optinf.h>
+#include "abainf.h"
+#include "optinf.h"
 #ifndef PRG_DIRAC
 #  include <gnrinf.h>
 #  include <infinp.h>
@@ -2400,19 +2400,19 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <taymol.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <trkoor.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "taymol.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "trkoor.h"
+#include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -2459,15 +2459,15 @@ C  /* Deck inihes */
 C
 C     Initializes Hessian
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <optinf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "optinf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2486,7 +2486,7 @@ C     normalization vector in WLKCGH).
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include <scalar.h>
+#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -2784,15 +2784,15 @@ C  /* Deck updhes */
 C
 C     Controls Hessian updates
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <taymol.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GRDMAT(25,MXRCRD), STPMAT(25,MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), GAMMA(MXRCRD)
@@ -3011,15 +3011,15 @@ C  /* Deck upoutp */
 C
 C     Some common output for the updating subroutines.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <optinf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "optinf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD) 
       DIMENSION GAMMA(MXRCRD), HESOLD(MXRCRD,MXRCRD) 
@@ -3079,15 +3079,15 @@ C  /* Deck updold */
 C
 C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <optinf.h>
-#include <taymol.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "optinf.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESINT(MXRCRD,MXRCRD)
@@ -3137,9 +3137,9 @@ C  /* Deck upbfgs */
 C
 C     Updates the Hessian using BFGS method
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3255,9 +3255,9 @@ C  /* Deck updfp */
 C
 C     Updates the Hessian using DFP method
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3403,9 +3403,9 @@ C  /* Deck uppsb */
 C
 C     Updates the Hessian using Powell-symmetric-Broyden
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3515,9 +3515,9 @@ C  /* Deck upbofl */
 C
 C     Updates the Hessian using Bofills update
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3583,9 +3583,9 @@ C /* Deck upbfr1 */
      & TMPVEC,TMPMAT,TMPMT2,TMPMT3,TMPMT4,IPRINT)
 C
 C Updates the Hessian using BFGS/rank one combination update (ala Bofill)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3654,9 +3654,9 @@ C  /* Deck uprnko */
 C
 C     Updates the Hessian using rank one method
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -3754,9 +3754,9 @@ C  /* Deck upschl */
 C
 C     Updates the Hessian using Schlegel's updating scheme
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -4037,9 +4037,9 @@ C  /* Deck upmult */
       SUBROUTINE UPMULT(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,MCRD,TMPVEC,TMPVC2,TMPMAT,TMPMT2,HESUPD,RMAT,GMAT,
      &     MAXDIM,RESET,GNRM,IPRINT,ITYPE,SMART)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION DELTA(MXRCRD), STPMAT(25,MCRD)
@@ -4306,9 +4306,9 @@ C  /* Deck upcmbm */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -4392,9 +4392,9 @@ C  /* Deck upmodh */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -4455,9 +4455,9 @@ C  /* Deck upmodo */
       SUBROUTINE UPMODO(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     BMTRAN,MAXDIM,RESET,REJLST,GNRM,ITYPE,DELINT,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -4741,17 +4741,17 @@ C
 C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "cbiwlk.h"
       LOGICAL TRU, FAL
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -4784,16 +4784,16 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <prkoor.h>
-#include <trkoor.h>
-#include <cbiwlk.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "prkoor.h"
+#include "trkoor.h"
+#include "cbiwlk.h"
       NCRTOT = 0
       NTMAT = 0
       NCART = NCRREP(0,1)
@@ -4829,10 +4829,10 @@ C
 C     Construct, scale and orthogonalize T matrix.
 C
       SUBROUTINE GTTMAT(TMAT,TMPMAT,NCR,NPR,IREP,THRLDP)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION TMAT(NCR,NPR), TMPMAT(MXCOOR)
       CALL DZERO(TMAT,NCR*NPR)
       CALL GETTRO(TMAT,TMPMAT,NCR,NPR,'BOTH','TORTHO',
@@ -4866,16 +4866,16 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <trkoor.h>
-#include <prkoor.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "trkoor.h"
+#include "prkoor.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -4915,10 +4915,10 @@ C     Hessian to remove both rotation and translation.
 C
       SUBROUTINE PRJGH1(EGRAD,ALLHES,TMAT,PROJOP,TMPMAT,TMPMT2,
      &                                        NCR,NPR,IREP,THRLDP)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION EGRAD(NCR), ALLHES(NCR,NCR)
       DIMENSION TMAT(NCR,NPR), PROJOP(NCR,NCR)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -4973,16 +4973,16 @@ C     Diagonalize Hessian
 C
       SUBROUTINE DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,ALLHES,
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
-#include <cbiwlk.h>
-#include <optinf.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
+#include "cbiwlk.h"
+#include "optinf.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -5127,12 +5127,12 @@ c  /* Deck uptrad */
 C
 C     Updates the trust radius and checks if step should be rejected.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <maxorb.h>
-#include <priunit.h>
-#include <infinp.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "priunit.h"
+#include "infinp.h"
+#include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)
       LOGICAL REJGEO
       ERGDIF = ENERGY - ERGOLD
@@ -5208,11 +5208,11 @@ C  /* Deck rfstp */
 C
 C     Determines a rational function (RF) step.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
@@ -5342,11 +5342,11 @@ C  /* Deck prfstp */
 C
 C     Determines a partitioned rational function (RF) step.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <pi.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
@@ -5519,10 +5519,10 @@ C
 C     Controls saddle point optimization in Cartesian
 C     coordinates using the partitioned rational function approach.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
       DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD,MX2CRD)
@@ -5744,12 +5744,12 @@ C
 C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <trkoor.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "trkoor.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -5990,13 +5990,13 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "priunit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
       DIMENSION WORK(LWORK)
@@ -6234,26 +6234,26 @@ C  /* Deck dobrk */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <trkoor.h>
-#include <huckel.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "trkoor.h"
+#include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
-#include <ibtfun.h>
+#include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       ISYMBR = MAXREP
@@ -6486,11 +6486,11 @@ C
 
 C  /* Deck visulz */
       SUBROUTINE VISULZ(WORK,LWORK,IWOFF,WRKDLM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <gnrinf.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "gnrinf.h"
+#include "inftap.h"
       DIMENSION WORK(LWORK)
 C
 C     HERINP has to be run to process geometry input.
@@ -6518,15 +6518,15 @@ C
 
 C  /* Deck inipre */
       SUBROUTINE INIPRE(WORK,LWORK,IWOFF,WRKDLM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <optinf.h>
-#include <cbirea.h>
-#include <molinp.h>
-#include <abainf.h>
-#include <gnrinf.h>
-#include <inftap.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "optinf.h"
+#include "cbirea.h"
+#include "molinp.h"
+#include "abainf.h"
+#include "gnrinf.h"
+#include "inftap.h"
       CHARACTER TMPLIN*80
       DIMENSION WORK(LWORK)
 C
@@ -6583,22 +6583,22 @@ C
 C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <gnrinf.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <cbirea.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <trkoor.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "gnrinf.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "cbirea.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "trkoor.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
-#include <ibtfun.h>
+#include "ibtfun.h"
       TMPLIN = MLINE(2)
       IF (IPRE .LT. NUMPRE) THEN
          MLINE(2) = PREBTX(IPRE+1)
@@ -6645,14 +6645,14 @@ C
 C     Makes scaling vector that's necessary for manipulating
 C     gradient and step vectors.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <optinf.h>
-#include <nuclei.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "optinf.h"
+#include "nuclei.h"
+#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -6662,7 +6662,7 @@ C
       CALL DZERO(SCLVEC,MXCOOR)
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include <scalar.h>
+#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -6684,14 +6684,14 @@ C  /* Deck minend */
 C
 C     Determines if the end of the minimization has been reached.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <taymol.h>
-#include <gnrinf.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "taymol.h"
+#include "gnrinf.h"
+#include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
       LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK
@@ -6818,12 +6818,12 @@ C  /* Deck spnrgy */
 C
 C     Calculates single point energy with another basis if requested.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
       DIMENSION WORK(LWORK)
@@ -6860,9 +6860,9 @@ C     equations (the level-shifted Newton equations) in the
 C     diagonal representation.  We assume that the Newton step
 C     is longer than the trust radius.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -7085,15 +7085,15 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
       CHARACTER*12 FILENM
 C
       CALL GPOPEN(LUMOL,'MOLECULE.INP','UNKNOWN',' ','FORMATTED',IDUMMY,
@@ -7124,18 +7124,18 @@ C     Punch molecular Hessian to the file DALTON.HES, this file can be
 C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <taymol.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "taymol.h"
+#include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7195,18 +7195,18 @@ C     returned with the value 0 if everything is OK. -1 indicates that
 C     the file cannot be opened, -2 that the Hessian in the file has
 C     wrong dimensions.
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <nuclei.h>
-#include <molinp.h>
-#include <optinf.h>
-#include <gnrinf.h>
-#include <taymol.h>
-#include <symmet.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "molinp.h"
+#include "optinf.h"
+#include "gnrinf.h"
+#include "taymol.h"
+#include "symmet.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7273,9 +7273,9 @@ C     Finds the largest elemement (absolute value) of the vector VEC
 C     of dimension IDIM. The value is returned through the
 C     variable ELMMX.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
       DIMENSION VEC(IDIM),SCLVEC(MXCOOR)
       LOGICAL SCALE
       ELMMX = ABS(VEC(1))
@@ -7305,7 +7305,7 @@ C        where
 C
 C        STEP = - GDDIA/(HESDIA+RNU)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER(D0=0.0D0, ZERO=1.0D-8 )
       STEP = D0
@@ -7333,24 +7333,24 @@ C     no need to run without symmetry).
 C
 C     K.Ruud, Feb.-6 1997
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <inftap.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "inftap.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL EXHER, EXSIR, EXABA, BIG
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
-#include <molinp.h>
-#include <taymol.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <optinf.h>
-#include <infopt.h>
+#include "molinp.h"
+#include "taymol.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "optinf.h"
+#include "infopt.h"
 #ifdef PRG_DIRAC
 #  include <dcbdhf.h>
 #  include <dcbgen.h>

@@ -38,16 +38,16 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
      &                  DINTSKP)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*), 
      &          DINTSKP(*)
-#include <twocom.h>
-#include <twosta.h>
+#include "twocom.h"
+#include "twosta.h"
 C
 C     Allocations
 C
@@ -97,12 +97,12 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &           D0 = 0.0 D00, DP125 = 0.125D00,
@@ -123,14 +123,14 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
-#include <twocom.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <expcom.h>
-#include <dirprt.h>
-#include <dcbgrd.h>
-#include <doxyz.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "expcom.h"
+#include "dirprt.h"
+#include "dcbgrd.h"
+#include "doxyz.h"
+#include "ibtfun.h"
 Cjth
 C
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
@@ -638,19 +638,19 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
-#include <nuclei.h>
-#include <expcom.h>
+#include "nuclei.h"
+#include "expcom.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
 C
       IF (IPRINT .GE.10) THEN
@@ -1141,18 +1141,18 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
-#include <twocom.h>
-#include <symmet.h>
-#include <suscpt.h>
-#include <ibtfun.h>
+#include "twocom.h"
+#include "symmet.h"
+#include "suscpt.h"
+#include "ibtfun.h"
       XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
       YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
@@ -1256,7 +1256,7 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     *********************************************************
 C     ***  Transform a block of the P-matrix from SO basis  ***
@@ -1264,12 +1264,12 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <symmet.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "symmet.h"
       DIMENSION PSO(*), PAO(*)
-#include <ibtfun.h>
+#include "ibtfun.h"
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
       IRR(I,J,K,L) = MULTA*(MULTB*(MULTC*L+K)+J)+I+1
       ISYMTS = IBTXOR(ISYMT,ISYMS)
@@ -1328,12 +1328,12 @@ C
 C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
-#include <twosta.h>
+#include "twosta.h"
 C
 C     Allocations
 C
@@ -1358,7 +1358,7 @@ C
 C  /* Deck pprim1 */
       SUBROUTINE PPRIM1(PAO,PUNC,QTR,HALF,PHALF,NORBA,NORBB,NORBC,NORBD,
      &                  NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     *********************************************************
 C     ***  Transform a block of the density matrix elements ***
@@ -1368,12 +1368,12 @@ C     ***  desired combination of one- and two-electron     ***
 C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
       LOGICAL TPRIAB,TPRICD
-#include <symmet.h>
+#include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
 C     Loop over second pair of indices and transform over the

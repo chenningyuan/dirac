@@ -64,13 +64,13 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM, Q,
      &                   ISET, DSM)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       LOGICAL SEG
       DIMENSION JCO(IQM), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC), 
      +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
-#include <cbirea.h>
+#include "cbirea.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -356,9 +356,9 @@ C
 C/* Deck readnu */
       SUBROUTINE READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C
 C Reading the exponents
 C
@@ -534,9 +534,9 @@ C/* Deck reaano */
       SUBROUTINE REAANO(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU, ALPHA, 
      +                  KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                  LUBAS)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
 C
 C Reading the exponents. Format from MOLCAS files
 C
@@ -643,7 +643,7 @@ C*************************************************************
 C/* Deck conlin */
 C
       SUBROUTINE CONLIN(INTORB, NUMLIN, DSM)
-#include <implicit.h>
+#include "implicit.h"
 C      
 C This is the parameters for the number of contraction-coeffecients
 C on 1. and 2. line.
@@ -675,9 +675,9 @@ C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck findel */
       SUBROUTINE FINDEL(BASNAM, INTQ,LUBAS)
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     BASNAM - The name of the basisfile                *
@@ -691,11 +691,11 @@ C
       CHARACTER*140 STRING
       CHARACTER SIGN
       LOGICAL EXST
-#include <inftap.h>
+#include "inftap.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 C
 C     The environment variable is a : separated string, e.g.:
@@ -801,9 +801,9 @@ C/* Deck finnqd */
       SUBROUTINE FINNQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
      &     NRC,SEG,KPRIM,ISGEN,KAOVEC,DSM,POLFUN,IPOLST,
      $     LUBAS)
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     BASNAM - The name of the basisfile                *
@@ -822,9 +822,9 @@ C
      &          CPRIM(KPRIM,KPRIM,KAOVEC), NUC(KAOVEC), NRC(KAOVEC),
      &          SEG(KAOVEC), ISGEN(KAOVEC)
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 C
 C     Determine primitive basis
@@ -1021,8 +1021,8 @@ C*********************************************************
 C
 C/* Deck finpos */
       SUBROUTINE FINPOS(NEWEL, INTEXP, INTORB, INTISG, LUBAS)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     SIGN - The first sign in a sentence, to find out  *

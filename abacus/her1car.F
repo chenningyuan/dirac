@@ -38,8 +38,8 @@ C  /* Deck oneprm */
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
      &                  GNUEXP,JCENTC,NCENTC)
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
       LOGICAL PROPTY, SECDER, DIFDIP
       DIMENSION WORK(LWORK)
@@ -53,7 +53,7 @@ C
 #else
       DIMENSION STDER1(KCKTAB,3,2)
 #endif
-#include <onecom.h>
+#include "onecom.h"
 C
       JMAXD = 2
       IF (PROPTY .AND. .NOT.ONECEN) JMAXD = 4
@@ -84,15 +84,15 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GNUEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <pi.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #endif
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, THIRD = D1/D3,
      &           GNUTHR = 1.D-4,D1P5 = 1.5D0)
@@ -110,10 +110,10 @@ C
 #endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include <cbisol.h>
-#include <onecom.h>
-#include <ader.h>
-#include <primit.h>
+#include "cbisol.h"
+#include "onecom.h"
+#include "ader.h"
+#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -328,7 +328,7 @@ C
 C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
-#include <implicit.h>
+#include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
 C     McMurchie and Davidson in J. Comp. Phys. 26 (1978) 218.
@@ -345,14 +345,14 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-#include <priunit.h>
-#include <pi.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "priunit.h"
+#include "pi.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
-#include <gamcom.h>
-#include <ibtfun.h>
+#include "gamcom.h"
+#include "ibtfun.h"
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -522,15 +522,15 @@ C  /* Deck cint0 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       SFAC = SHGTF**3
       TFAC = -DP5*SFAC
       INT = 0
@@ -601,16 +601,16 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -710,10 +710,10 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER
       DIMENSION STDER0(KCKTAB,2),
@@ -725,11 +725,11 @@ C
       DIMENSION STDER2(KCKTAB,6,2)
 #endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <ader.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "ader.h"
+#include "lmns.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #endif
       MAXADD = 1
       IF (SECDER) MAXADD = 2
@@ -972,15 +972,15 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include <onecom.h>
-#include <lmns.h>
+#include "onecom.h"
+#include "lmns.h"
       INT1 = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)

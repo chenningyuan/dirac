@@ -116,28 +116,28 @@ C           NDMAT  - Number of density-matrices
 C           DMAT   - Density-matrices.
 C
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <blocks.h>
-#include <molinp.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#include "molinp.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <inforb.h>
-#include <infpar.h>
+#include "inforb.h"
+#include "infpar.h"
 C
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK), 
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
@@ -298,18 +298,18 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue 
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <infpar.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "infpar.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
+#include "dcbgen.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
-#include <blocks.h>
-#include <dcbfir.h>
+#include "blocks.h"
+#include "dcbfir.h"
 C
       DIMENSION INDEX(MTOTTK), NPOS(MTOTTK)
       LOGICAL FIRST,DOFIRST
@@ -390,43 +390,43 @@ C  /* Deck sdinit */
 C
 C     Written by Henrik Koch and Paal Dahle
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #if defined (MOD_DFT)
-#include <dftcom.h>
-#include <dfterg.h>
+#include "dftcom.h"
+#include "dfterg.h"
 #endif
-#include <molinp.h>
-#include <aovec.h>
+#include "molinp.h"
+#include "aovec.h"
 C
-#include <hrunit.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <parint.h>
+#include "hrunit.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "parint.h"
 C
-#include <inforb.h>
-#include <cbisol.h>
-#include <siripc.h>
+#include "inforb.h"
+#include "cbisol.h"
+#include "siripc.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -721,17 +721,17 @@ C  /* Deck dopar */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <priunit.h>
-#include <mxorb.h>
-#include <infpar.h>
+#include "priunit.h"
+#include "mxorb.h"
+#include "infpar.h"
 C
       DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
@@ -858,9 +858,9 @@ C  /* Deck rvres */
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 C
@@ -868,20 +868,20 @@ C
       PARAMETER (D1 = 1.0D0)
 #if !defined (VAR_MPI)
 C
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
 C
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
 C
       DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
      &          DNSKBF(3*3*14)
@@ -1015,11 +1015,11 @@ C  /* Deck parsrt */
 C
 C     Written by Paal Dahle December 1993.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxorb.h"
 C
-#include <infpar.h>
+#include "infpar.h"
 C
       DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
@@ -1088,22 +1088,22 @@ C  /* Deck timres */
       SUBROUTINE TIMRES(NSTAT)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <infpar.h>
+#include "priunit.h"
+#include "mxorb.h"
+#include "mxcent.h"
+#include "infpar.h"
 C
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #endif
 C
       DIMENSION NSTAT(NODES),CPUS(MAXNOD),WALLS(MAXNOD),RBUF(2)
@@ -1200,34 +1200,34 @@ C    *    This is the node program for the construction of fock-     *
 C    *   matrices, derivated fock-matrices and expectation values.   *
 C    *****************************************************************
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
 C
 #if defined (VAR_PVM)
       PARAMETER (MWORK = 6 000 000)
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <aovec.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
 C
-#include <suscpt.h>
-#include <inforb.h>
-#include <infpar.h>
-#include <molinp.h>
-#include <blocks.h>
+#include "suscpt.h"
+#include "inforb.h"
+#include "infpar.h"
+#include "molinp.h"
+#include "blocks.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbgrd.h>
+#include "dcbgen.h"
+#include "dcbgrd.h"
 #else
-#include <gnrinf.h>
-#include <energy.h>
+#include "gnrinf.h"
+#include "energy.h"
 #endif
 C
       DIMENSION WORK(MWORK),DINTSKP(14*3*3)
@@ -1235,7 +1235,7 @@ C
 C
       CALL QENTER('HERNOD')
       LWORK = MWORK
-#include <memint.h>
+#include "memint.h"
 C
       PARHER = .TRUE.
 C
@@ -1382,41 +1382,41 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
 C
-#include <hrunit.h>
-#include <dorps.h>
-#include <abainf.h>
-#include <symmet.h>
+#include "hrunit.h"
+#include "dorps.h"
+#include "abainf.h"
+#include "symmet.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
-#include <dcbham.h>
+#include "dcbgen.h"
+#include "dcbham.h"
 #else
-#include <gnrinf.h>
+#include "gnrinf.h"
 #endif
 #if defined (MOD_DFT)
-#include <dftcom.h>
-#include <dfterg.h>
+#include "dftcom.h"
+#include "dfterg.h"
 #endif
-#include <molinp.h>
-#include <nuclei.h>
-#include <infpar.h>
-#include <parint.h>
+#include "molinp.h"
+#include "nuclei.h"
+#include "infpar.h"
+#include "parint.h"
 C
-#include <inforb.h>
-#include <cbisol.h>
+#include "inforb.h"
+#include "cbisol.h"
 C
       DIMENSION WORK(*)
       CHARACTER*6 NAVN
@@ -1758,22 +1758,22 @@ C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI) || defined (VAR_PVM)
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
 #endif /* VAR_MPI || VAR_PVM */
-#include <priunit.h>
-#include <maxaqn.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <dummy.h>
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER(D0=0.0D0)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1785,23 +1785,23 @@ C
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
      &          IJSHEL(2),INDEX(*),TIMES(*)
 C
-#include <cbisol.h>
-#include <twocom.h>
-#include <nuclei.h>
+#include "cbisol.h"
+#include "twocom.h"
+#include "nuclei.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
-#include <dcbham.h>
+#include "dcbgrd.h"
+#include "dcbham.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
-#include <taymol.h>
-#include <taysol.h>
-#include <suscpt.h>
-#include <blocks.h>
-#include <symmet.h>
-#include <infpar.h>
+#include "taymol.h"
+#include "taysol.h"
+#include "suscpt.h"
+#include "blocks.h"
+#include "symmet.h"
+#include "infpar.h"
 C
-#include <inforb.h>
+#include "inforb.h"
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from PARLOP','*',103)
 C
@@ -2183,28 +2183,28 @@ C  /* Deck sdres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #else
-#include <fpvm3h.h>
+#include "fpvm3h.h"
 #endif
-#include <mxcent.h>
-#include <mxorb.h>
+#include "mxcent.h"
+#include "mxorb.h"
 #ifdef PRG_DIRAC
-#include <dcbgrd.h>
+#include "dcbgrd.h"
 #else
-#include <energy.h>
+#include "energy.h"
 #endif
 #if defined (MOD_DFT)
-#include <dftcom.h>
-#include <dfterg.h>
-#include <dftbuf.h>
+#include "dftcom.h"
+#include "dfterg.h"
+#include "dftbuf.h"
 #endif
-#include <suscpt.h>
-#include <infpar.h>
-#include <inforb.h>
+#include "suscpt.h"
+#include "infpar.h"
+#include "inforb.h"
 C
       DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*)
 #if defined (VAR_MPI)
@@ -2350,8 +2350,8 @@ C  /* Deck pfail */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
-#include <implicit.h>
-#include <fpvm3h.h>
+#include "implicit.h"
+#include "fpvm3h.h"
 C
       CHARACTER FAILS(0:40)*70
 C
@@ -2397,16 +2397,16 @@ C
       END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <priunit.h>
-#include <mxcent.h>
-#include <mxorb.h>
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
       PARAMETER (NTABLE = 4)
-#include <infpar.h>
+#include "infpar.h"
       LOGICAL FIRST, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       SAVE FIRST
@@ -2516,8 +2516,8 @@ C     Sort IJ-indices according to increasing run time...
 C     Written by T.Saue Oct 3 1996
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(THRES = 1.0D-2)
       DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX(NDIM)
       CALL FNDAMX(TIMES,NDIM,NDIM,NPOS,NDIM,0,THRES)
@@ -2550,16 +2550,16 @@ C     IMODE 2 : Fill the array NPOS
 C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <nuclei.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "nuclei.h"
 #ifdef PRG_DIRAC
-#include <dcbham.h>
+#include "dcbham.h"
 #endif
-#include <blocks.h>
+#include "blocks.h"
 C
       DIMENSION NPOS(*)
 C

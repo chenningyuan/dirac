@@ -44,12 +44,12 @@ C
 C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
-#include <implicit.h>
-#include <mxcent.h>
-#include <priunit.h>
-#include <optinf.h>
-#include <cbiwlk.h>
-#include <trkoor.h>
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "optinf.h"
+#include "cbiwlk.h"
+#include "trkoor.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
       LOGICAL ACTIVE
@@ -145,10 +145,10 @@ C
 C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "optinf.h"
       DIMENSION GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
       DIMENSION GRAD(*), STEP(*)
       IF (RSTARR) THEN
@@ -179,10 +179,10 @@ C
 C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "optinf.h"
       LOGICAL STPSCL
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION HESS(NCRD,NCRD), HESINV(ICRD,ICRD)
@@ -484,10 +484,10 @@ C
 C     Makes image function and sorts coordinates.
 C     It is also used to restore and resort coordinates.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dummy.h"
       DIMENSION EVAL(MCRD), GRDDIA(MCRD), STPDIA(MCRD)
       SAVE ENEG, GNEG, ISORT
       LOGICAL RESTOR
@@ -539,10 +539,10 @@ C     (in Cartesian coordinates) with the largest overlap with
 C     the previous mode. In redundant coordinates we have to check
 C     that the selected mode corresponds to non-zero diagonal element.
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <optinf.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "optinf.h"
       DIMENSION EVEC(MXRCRD,MXRCRD), WILBMT(MXRCRD,MXCOOR)
       DIMENSION VECMOD(MXCOOR), TMPVEC(MXCOOR), TMPVC2(MXCOOR)
       LOGICAL INTERN, REMAIN
