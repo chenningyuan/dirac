@@ -1552,6 +1552,7 @@ C
 C
     6 CONTINUE
          IRDERR = IRDERR + 1
+         IREC = IREC + 1
          WRITE (LUPRI, '(/A,I6,A,I7)')
      &      ' >>> ERROR reading rec. no.',IREC,'; IOSTAT value',IOSVAL
          IF (IRDERR .LT. 5) GO TO 1
