@@ -3,7 +3,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbham.h
-C SOURCE  : $Source$
 C
 C*****************************************************************************
 C  DCBHAM:  Hamiltonian used for generation of wavefunction
@@ -15,6 +14,7 @@ C     IPMOLFLD   - Pointer to nuclear attraction in DCBXPR
 C     IPKINERG   - Pointer to kinetic energy in DCBXPR
 C     N1OPER     - Number of additional operators (finite field calculations)
 C     IPR1OP     - Pointer to DCBXPR for additional operators
+C     QED        - use QED Hamiltonian (filled positronic levels)
 C     ONESYS     - No two-electron operators
 C     FREEPJ     - Hamiltonian embedded in free particle projections
 C     VEXTPJ     - Hamiltonian embedded in molecular field projections
@@ -24,6 +24,7 @@ C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
 C     SSMTRC     - Scaling factor for SS overlap matrix
 C     SPINFR     - Neglect spin-orbit coupling
+C     SPINFR2    - Neglect 2-electron spin-orbit coupling
 C     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 C     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 C     SMLV1C     - Neglect two-center blocks of VSS
@@ -33,6 +34,7 @@ C                  ONECAP type 1 model. One-center (SS|SS) and (LL|SS).
 C                  Correction made to one-electron Fock-matrix.
 C                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 C                  Correction made to two-electron Fock-matrix.
+C     ONECOFF    - internal flag for turning off ONECAP
 C
       PARAMETER(MAX1OPER=10,MPRJREF=6)
       CHARACTER PRJFIL*6,VCPROJ*72
@@ -41,13 +43,14 @@ C
      &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
      &              NPRJREF,ICTLV1C(2)
       EQUIVALENCE (INTV1C, ICTLV1C(1))
-      LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,
-     &        PROJEC,PROOWN,DFTHAM,ONECAP,ONECOFF
+      LOGICAL QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
+     &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
+     &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF
       PARAMETER (NDCLHAM=17)
-      COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,PROJEC,
-     &        PROOWN,DFTHAM,ONECAP,ONECOFF
+      COMMON/DCLHAM/
+     &        QED,ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
+     &        INERSI,INERSF,SPINFR,SPINFR2,ZORA,ZORA4,ZORASC,
+     &        PROJEC,PROOWN,DFTHAM,SMLV1C,ONECAP,ONECOFF
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC,ONECNV
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
