@@ -22,12 +22,14 @@ C     URKBAL     - Unrestricted kinetic balance
 C     LEVYLE     - Levy-Leblond Hamiltonian
 C     SSMTRC     - Scaling factor for SS overlap matrix
 C     SPINFR     - Neglect spin-orbit coupling
+C     ZORAFC     - Make ZORA-like approximation : scaling factor
+C     SMLV1C     - Neglect two-center blocks of VSS
 C
       PARAMETER(MAX1OPER=10)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
      &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL
       LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &        INERSI,INERSF,SPINFR
+     &        INERSI,INERSF,SPINFR,ZORAFC,SMLV1C
       COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
-     &              INERSI,INERSF,SPINFR
+     &              INERSI,INERSF,SPINFR,ZORAFC,SMLV1C
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV
