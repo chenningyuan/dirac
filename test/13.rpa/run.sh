@@ -8,6 +8,4 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-echo $PAM_PATH
-/usr/bin/time $PAM_PATH/pam -rmscr -rmwrk -mw 10 $MPIARG H2O rpa
-
+time $PAM_PATH/pam -rmscr -rmwrk -mw 10 $MPIARG H2O rpa
