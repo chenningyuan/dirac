@@ -138,9 +138,9 @@ C        END IF
             ATMARR(2,I) = CORD(2,I)
             ATMARR(3,I) = CORD(3,I)
             ATMARR(4,I) = ANINT(CHARGE(I))
-            ATMARR(5,I) = FLOAT(I)
+            ATMARR(5,I) = I
 #ifndef PRG_DIRAC
-            ATMARR(6,I) = FLOAT(ISOTOP(I))
+            ATMARR(6,I) = ISOTOP(I)
 #else
             ATMARR(6,I) = 1.D0
 #endif
@@ -248,8 +248,8 @@ C ::: The reduced coordinates are moved back. :::
 C           ... IOLD .ge. I after CALL SRTOLD
             CHARGE(I) = CHARGE(IOLD)
 C           GNUEXP(I) and MULBSI(I) have been added (WK/UniKA/04-11-2002).
-#ifndef PRG_DIRAC
             GNUEXP(I) = GNUEXP(IOLD)
+#ifndef PRG_DIRAC
             MULBSI(I) = MULBSI(IOLD)
 #endif
             NCLINE(I) = NCLINE(IOLD)
@@ -593,7 +593,6 @@ C ::                                                               ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
          DIMENSION ARR(6,0:IUPPER)
-         DIMENSION ATM1(3), ATM2(3)
          LOGICAL SORTED
          N = NINT(ARR(1,0))
          I = 1
@@ -602,18 +601,12 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          IF ((I .LT. N) .AND. (.NOT. SORTED)) THEN
             SORTED = .TRUE.
             DO 200 J = 1, N-I
-               ATM1(1)=ARR(1,J)
-               ATM1(2)=ARR(2,J)
-               ATM1(3)=ARR(3,J)
-               ATM2(1)=ARR(1,J+1)
-               ATM2(2)=ARR(2,J+1)
-               ATM2(3)=ARR(3,J+1)
                IF (NINT(ARR(5,J)) .GT. NINT(ARR(5,J+1))) THEN
                   DO 300 K = 1, 6
                      TEMP = ARR(K,J)
                      ARR(K,J) = ARR(K,J+1)
                      ARR(K,J+1) = TEMP
- 300                 CONTINUE
+ 300              CONTINUE
                   SORTED = .FALSE.
                END IF
  200        CONTINUE
