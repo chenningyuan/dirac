@@ -49,8 +49,14 @@ usage ()
 {
    echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
    echo '   Flags:'
+   echo '     -mpi n                 : Run MPI with n nodes; default sequential'
+   echo '     -mw mem                : Set memory (in megawords) for master (and nodes if "-nw mem" not specified)'
+   echo '     -nw mem                : Set memory (in megawords) for the nodes'
+   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
+   echo '     -wrkdir name           : Directory for work area; default "'$SCR/$MOL.$$'"'
+   echo '     -clean                 : Clean work area before calculation'
+   echo '     -rmwrk                 : Remove work area after calculation'
    echo '     -copy "file1 file2 .." : Copy files to work area'
-   echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
    echo '     -get "file1 file2 .."  : Get files from work area'
    echo '     -incmo                 : Copy DFCOEF to   work area'
    echo '     -utcmo                 : Save DFCOEF from work area'
@@ -58,19 +64,13 @@ usage ()
    echo '     -utfck                 : Save DFFCK2 from work area'
    echo '     -inxvc                 : Copy PAMXV1 to   work area'
    echo '     -utxvc                 : Save PAMXV1 from work area'
-   echo '     -mw mem                : Set memory (in megawords) for master (and nodes if "-nw mem" not specified)'
-   echo '     -nw mem                : Set memory (in megawords) for the nodes'
-   echo '     -rmscr                 : Remove work area before calculation'
-   echo '     -rmwrk                 : Remove work area after calculation'
+   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
-   echo '     -scr name              : Directory root for work area; default "'$SCR/$MOL'"'
-   echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -nice                  : execute Dirac with nice/npri'
-   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
    echo '     -notify                : Notify when finished to user starting job'
    echo '     -user e-mail           : Notify when finished using specified e-mail address'
-   echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
-   echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
+   echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
+   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
    echo '                              (path must be included if executable is not in input directory)'
    echo '     -help                  : More help on pam than this'
 # only for SYS_SX (NEC SX systems)
@@ -371,7 +371,7 @@ set_work_dir()
    # Remove contents of $WRK if requested ( RMSCR )
    #
    if [ -n "$RMSCR" ]; then
-      rm -f $WRK/* 2> /dev/null || echo "RM error\!"
+      rm -f $WRK/* 2> /dev/null || echo "rm $WRK error\!"
    fi
 }
 #
@@ -700,7 +700,7 @@ while [ -n "$1" ]; do
          shift
          let NODE_MEMORY=$1*1000000
          ;;
-      -rmscr)
+      -clean|-rmscr)
          RMSCR=1
          ;;
       -rmwrk)
@@ -710,7 +710,7 @@ while [ -n "$1" ]; do
          shift
          RUN=$1
          ;;
-      -scr|-scratch)
+      -wrkdir|-scr|-scratch)
          shift
          SCR_DIR=$1
          ;;
