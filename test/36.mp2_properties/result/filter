@@ -1,0 +1,14 @@
+$ERROR 0.000000001
+Nlines 2:Sum of all contributions to the energy
+
+$ERROR 0.0000001
+Nlines 7:MP2 results
+
+$ERROR 0.001
+From:MP2 expectation values are documented
+ToI:Total EPV =
+
+$ERROR 0.00001
+From:* Electric field at nuclei:
+To:1 a.u. = 234.96474170 MHz
+
