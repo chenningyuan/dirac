@@ -594,8 +594,8 @@ C
 C
       DIMENSION GAOXX(KCKTA), GAOXY(KCKTA), GAOXZ(KCKTA),
      &          GAOYY(KCKTA), GAOYZ(KCKTA), GAOZZ(KCKTA),
-     &          CAOXX(KCKTA), CAOXY(KCKTA), CAOXZ(KCKTA),
-     &          CAOYY(KCKTA), CAOYZ(KCKTA), CAOZZ(KCKTA)
+     &          CAOXX(MXAQN), CAOXY(MXAQN), CAOXZ(MXAQN),
+     &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
 #include <lmns.h>
 #include <onecom.h>
