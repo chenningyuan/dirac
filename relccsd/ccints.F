@@ -463,7 +463,7 @@ C
       WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
      &                'VOVV',NV5,'VVVV',NV6
       ELSE
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
      &                'VOVV',NV5
       ENDIF
 C
