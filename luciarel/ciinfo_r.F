@@ -742,9 +742,9 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
      &        NORB,0,IDUM,IDUM)
 *
          IF(IBLTP(IASM).EQ.2) THEN
-            IRESTR = 1
+            IRESTR_ANA = 1
          ELSE
-            IRESTR = 0
+            IRESTR_ANA = 0
          END IF
 *
          NIA = NSSOA(IASM,IATP)
@@ -775,7 +775,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
             IABAS = 1
 *
             DO IB = IBBAS,IBBAS+NIB-1
-               IF(IRESTR.EQ.1.AND.IATP.EQ.IBTP) THEN
+               IF(IRESTR_ANA.EQ.1.AND.IATP.EQ.IBTP) THEN
                   MINIA = IB - IBBAS + IABAS
                ELSE
                   MINIA = IABAS
@@ -841,9 +841,9 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
          IBSM = IBLOCK(4,JBLOCK)
 *
          IF(IBLTP(IASM).EQ.2) THEN
-            IRESTR = 1
+            IRESTR_ANA = 1
          ELSE
-            IRESTR = 0
+            IRESTR_ANA = 0
          END IF
 *. Occupation class corresponding to given occupation
          JOCCLS = 0
@@ -870,7 +870,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
          IF(IMZERO.EQ.0) THEN
 
             DO IB = IBBAS,IBBAS+NIB-1
-               IF(IRESTR.EQ.1.AND.IATP.EQ.IBTP) THEN
+               IF(IRESTR_ANA.EQ.1.AND.IATP.EQ.IBTP) THEN
                   MINIA = IB - IBBAS + IABAS
                ELSE
                   MINIA = IABAS
