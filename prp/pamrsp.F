@@ -412,16 +412,10 @@ C     of sigma-vectors. The parameter is before change equal to the value
 C     used in the wave function optimization and after the change to that
 C     which should be used for properties. Both these values can be user
 C     specified. Furthermore, if the trial vectors are NOT normalized then
-C     the screening threshold is modified by the norm of the gradient. 
+C     the screening threshold is modified by the norm of the gradient
+C     further down. 
 C
       SCRSAV = SCRFCK
-      IF (LINEQ .AND. .NOT.TKNORM) THEN
-        SCRFCK = SCRFCK*GPTNRM
-        WRITE (LUPRI,'(A,1P,D12.4)')
-     &     '* Screening threshold in LR solver scaled with norm of'//
-     &     ' property vector:',GPTNRM,
-     &     '  and changed to:',SCRFCK
-      ENDIF
 C
 C     If   (not user specified SCRFCK)
 C     then SCRFCK may be dynamically determined
@@ -451,6 +445,17 @@ C
      &         ' divided by 10 * sqrt(N2BBAST):',SCRFAC
          END IF
       END IF
+C
+      IF (LINEQ .AND. .NOT.TKNORM) THEN
+C       ... asking for relative convergence
+C           thus screening threshold must also be scaled
+C           otherwise we may screen (far) too much away!
+        SCRFCK = SCRFCK*GPTNRM
+        WRITE (LUPRI,'(A,1P,D12.4)')
+     &     '* Screening threshold in LR solver scaled with norm of'//
+     &     ' property vector:',GPTNRM,
+     &     '  and changed to:',SCRFCK
+      ENDIF
 C
 C     Handle case of no new start vectors
 C     ===================================
@@ -2112,7 +2117,7 @@ C
 #if defined (MOD_XPP)
         CALL EIGRED(NFREQ,NZRED,NREDM,REDE,REDS,EVALR,EVECR,
      &          IERR,IPRXRS,WORK,KFREE,LFREE)
-        IF (IPRXRS .GE. 3) THEN
+        IF (IPRXRS .GE. 1) THEN
           WRITE(LUPRI,'(/A,I4,A,I4/,(5F15.5))')
      &      'XRSSOL:',NFREQ,
      &      ' excitation frequencies (in a.u.) at iteration:',ITMIC,
@@ -2925,8 +2930,8 @@ C
         IF(DIAGHE) THEN
           GPTMP = DNRM2(NVARQ,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
-          IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
-     &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
+          IF (IPRXRS.GE.3) WRITE(LUPRI,'(A,1P,D12.5)')
+     &       ' Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
           DO IP = 1,NFREQ
             IM = IP + NFREQ
             IBTYP(1,IBOFF+IP)     = NBTYP
@@ -3126,11 +3131,12 @@ C
       REWIND LU
       IF(FNDLAB16('END_OF_THIS_FILE',LU)) THEN
         BACKSPACE LU
+        ERGRSP = 0
+CHJ TODO: note that ERGRSP was not defined, what is the idea ????
         WRITE(LU) LAB1,LAB2,TYP1,TYP2,
      &          FREQ1,FREQ2,JSYMOP1,JSYMOP2,
      &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
      &          ERGRSP,NTBAS(0),NORBT
-CHJ TODO: note that ERGRSP not defined, what is the idea ????
         CALL WRITT(LU,LEN,RSPVEC)
         WRITE(LU) 'END_OF_THIS_FILE'
       ELSE
