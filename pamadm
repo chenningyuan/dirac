@@ -111,16 +111,15 @@ setup()
       echo " - ERI two-electron integral module"
    fi
    #
-   #
+   # Defining the tarfile that is used for export
    #
    if [ "$TARFIL" = "make" ]; then
       GENTAR=
    fi
    if [ "$TARFIL" = "export" ]; then
-      if [ -a DIRAC.new.tar.gz ]; then
-         rm DIRAC.new.tar.gz
-      fi
-      TARFIL=DIRAC.new
+      szCurrDir=`pwd`
+      szCurrDir=${szCurrDir##*/}
+      TARFIL=$szCurrDir.tar
    fi
    echo
 }
@@ -137,25 +136,21 @@ backup()
    if [ -n "$GENTAR" ]; then
       echo "*** Backing up old files ..." 
       echo
-      temp=
-      if [ -a DIRAC.new.tar.gz ]; then
-         temp="$temp DIRAC.new.tar.gz"
+      if [  ! -d backup ]; then
+         mkdir backup
       fi
-      if [ -a configure ]; then
-         temp="$temp configure"
-      fi
-      if [ -a export ]; then
-         temp="$temp export"
-      fi
-      if [ -a Makefile ]; then
-         temp="$temp Makefile"
-      fi
-      for file in $temp; do
-         echo " - $file --> $file.buf"
-         mv $file $file.buf 
+#     Take three backup copies of the derived files and the tarfile. This should be sufficient.
+      for i in $TARFIL.gz configure export Makefile ; do
+          if [ -f "${i}" ]; then
+              cd backup
+              if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
+              if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
+              if [ -f ../"${i}" ]; then mv -f ../"${i}" "${i}.0" ; fi
+              cd ..
+          fi
       done
+      echo
    fi
-   echo
 }
 #
 #
@@ -175,35 +170,19 @@ restore()
       echo "*** Making tar-file ..."
       echo
       ./export
-      if [ -a DIRAC.new.tar.gz ]; then
-         if [ "$TARFIL" != "DIRAC.new" ]; then
-            mv DIRAC.new.tar.gz $TARFIL.tar.gz
-         fi
-      else
-         echo "Fatal error: No DIRAC.new.tar.gz"
-      fi
       #
-      #
-      #
-      echo "*** Restoring old files ..." 
-      echo
-      temp=
-      if [ -a DIRAC.new.tar.gz.buf ]; then
-         temp="$temp DIRAC.new.tar.gz"
-      fi
-      if [ -a configure.buf ]; then
-         temp="$temp configure"
-      fi
-      if [ -a export.buf ]; then
-         temp="$temp export"
-      fi
-      if [ -a Makefile.buf ]; then
-         temp="$temp Makefile"
-      fi
-      for file in $temp; do
-         echo " - $file.buf --> $file"
-         mv $file.buf $file
+#     In case that a file is missing or has zero length : restore the old file.
+      for i in $TARFIL.gz configure export Makefile ; do
+          if [ ! -s "${i}" ]; then
+              echo "Warning : Restoring old file ${i} ..." 
+              cd backup
+              if [ -f "${i}.0" ]; then mv -f "${i}.0" ../"${i}" ; fi
+              if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.0"; fi
+              if [ -f "${i}.2" ]; then mv -f "${i}.1" "${i}.1"; fi
+              cd ..
+          fi
       done
+      echo
    fi
 }
 #
@@ -312,6 +291,7 @@ EOF
       echo " - gzip'ing archive..."
       echo
       gzip -9v \$szCurrDir.tar
+      mv \$szCurrDir.tar.gz \$szCurrDir/\$szCurrDir.tar.gz
 EOF
    chmod +x ./export
 }
@@ -612,7 +592,6 @@ cat <<EOF>> Makefile
 #  Export target
 #
 export:
-	-rm -f DIRAC.new.tar.gz
 	./export
 #
 #  Objects
