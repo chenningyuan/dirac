@@ -1,5 +1,8 @@
 C
-C $Id$
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dirscf.F
+C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
