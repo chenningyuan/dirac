@@ -475,7 +475,7 @@ static int
 bp86_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &B88CorrFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &P86cFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &PZ81Functional,  1.0);
     dft_set_hf_weight(0);
