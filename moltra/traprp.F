@@ -38,6 +38,7 @@ C
 C     Driver routine for property integral transformations
 C
 C     Written by L. Visscher Jul 1997
+C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
 #include <implicit.h>
@@ -144,7 +145,7 @@ C
          ACHAR(25:32) = PRPNAM(INDXPR)(1:8)
          CALL MEMGET('REAL',KPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
          CALL PRPMAT(INDXPR,IOPSY,WORK(KPRPMO),WORK(KCMO),
-     &               WORK,KFREE,LFREE,IPRTRP)
+     &               ICMOQ,NORB,WORK,KFREE,LFREE,IPRTRP)
 C
 C        Select the set that we need
 C
