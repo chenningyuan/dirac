@@ -499,7 +499,7 @@ C
  8030 FORMAT(7(I4,I4,2X),:,' >')
       END
 C  /* Deck pridis */
-      SUBROUTINE PRIDIS (NAMEX,MATRIX,NROW)
+      SUBROUTINE PRIDIS (NAMEX,DISMAT,NROW)
 C
 C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C (based on OUTPAK by Nelson H.F. Beebe)
@@ -509,9 +509,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER (ZERO=0.D00, KCOL=6)
-      DOUBLE PRECISION MATRIX(1)
       INTEGER BEGIN
       CHARACTER*6 NAMEX(*)
+      DIMENSION DISMAT(*)
 C
       LAST = MIN(NROW,KCOL)
       NCOL = 1
@@ -522,7 +522,7 @@ C
       DO 40 K = BEGIN,NROW
          KTOTAL = (K*(K-1))/2 + BEGIN - 1
          WRITE (LUPRI,2000) ' ',NAMEX(3*K)(1:4),
-     *      (MATRIX(KTOTAL+J),J = 1,NCOL)
+     *      (DISMAT(KTOTAL+J),J = 1,NCOL)
          IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
    40 CONTINUE
       WRITE (LUPRI,'()')
