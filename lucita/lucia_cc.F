@@ -1,4 +1,4 @@
-*fordeck lucia_cc $Revision$
+*fordeck lucia_cc
 
 * single- and double- amplitudes
 *

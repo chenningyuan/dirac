@@ -1,4 +1,4 @@
-*fordeck lucia_icci $Revision$
+*fordeck lucia_icci
       SUBROUTINE CHK_S_FOR_SING(S,NDIM,NSING,X,SCR)
 *
 * Check overlap matrix S for singularities

@@ -3,7 +3,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck abtor2 $Revision$
       SUBROUTINE ABTOR2(SKII,CKJJ,NKA,NIB,NJB,NKB,RHO2B,
      &                  NI,NJ,NK,NL,MAXK,
      &                  KBIB,XKBIB,KBJB,XKBJB,IKORD,
@@ -113,7 +112,6 @@ C     CALL QEXIT('ABTOR')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adtor2 $Revision$
       SUBROUTINE ADTOR2(RHO2,RHO2T,ITYPE,
      &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 *
@@ -359,7 +357,6 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck densi2 $Revision$
       SUBROUTINE DENSI2(I12,RHO1,RHO2,L,R,LUL,LUR,EXPS2)
 *
 * Density matrices between L and R
@@ -730,7 +727,6 @@ C     WRITE(6,*) ' Leaving DENSI '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasdn2 $Revision$
       SUBROUTINE GASDN2(I12,RHO1,RHO2,
      &           L,R,CB,SB,C2,ICOCOC,ISOCOC,ICSMOS,ISSMOS,
      &           ICBLTP,ISBLTP,NACOB,NSSOA,ISSOA,NSSOB,ISSOB,
@@ -1092,7 +1088,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getd1 $Revision$
       SUBROUTINE GETD1(RHO1B,ISM,IGAS,JSM,JGAS)
 *
 * Extract TS block of one-electron density matrix
@@ -1138,7 +1133,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getd2 $Revision$
       SUBROUTINE GETD2(RHO2B,ISM,IGAS,JSM,JGAS,KSM,KGAS,LSM,LGAS,
      &                 ICOUL)
 *. Extract given TS block from the 2e-density matrix
@@ -1194,7 +1188,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getd2e $Revision$
       FUNCTION GETD2E(I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM)
 *
 * Obtain element of two-electron density matrix
@@ -1243,7 +1236,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsbbd1 $Revision$
       SUBROUTINE GSBBD1(RHO1,NACOB,ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,
      &                  NGAS,ISEL,ICEL,
      &                  SB,CB,
@@ -1523,7 +1515,6 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsbbd2a $Revision$
       SUBROUTINE GSBBD2A(RHO2,NACOB,ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,
      &                  NGAS,ISEL,ICEL,SB,CB,
      &                  ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
@@ -1870,7 +1861,6 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsbbd2b $Revision$
       SUBROUTINE GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                  IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -2107,7 +2097,6 @@ C?              call prsym(rho2,NORB*NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsdnbb2 $Revision$
       SUBROUTINE GSDNBB2(I12,RHO1,RHO2,
      &                  IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                  NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -2349,7 +2338,6 @@ C    &                  MXTSOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pertdn $Revision$
       SUBROUTINE PERTDN
      &(N,LU0,LUN,ISM,ISPC,VEC1,VEC2,RHO1N,RHO2N,LUSC1,LUSC2)
 *
@@ -2468,8 +2456,6 @@ CTOBE   END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck reorho1 $Revision$
-*
       SUBROUTINE REORHO1(RHO1I,RHO1O,IRHO1SM)
 *
 * The density matric rho1 is given in complete form
@@ -2527,7 +2513,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rho1_hh $Revision$
       SUBROUTINE RHO1_HH(RHO1,XLR)
 *
 * Add terms from hole-hole commutator to one-particle density matrix :
@@ -2564,7 +2549,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traden $Revision$
       SUBROUTINE TRADEN(I12,RHO1,RHO2,NL,NR,LUL,LUR)
 *
 * Transition density matrices between the NL states stored on LUL
