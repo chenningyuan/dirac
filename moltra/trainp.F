@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -90,7 +90,7 @@ C
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
       THROUT = 1.0D-16
-C     Default orbital strings is all occupied and all virtuals 
+C     Default orbital strings is all occupied and all virtuals
       DO I = 1,NFSYM
         MP2_INDSTR(1,I) = ' '
         MP2_INDSTR(2,I) = ' '
@@ -160,7 +160,11 @@ C&&&& String of active virtual pairs in MP2 module
                GO TO 100
     4          CONTINUE
 C&&&& Integral classes not included in 4-index transformation
-                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  IF (IGTINT .EQ. 1) THEN
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  END IF
                   MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     5          CONTINUE
@@ -187,13 +191,15 @@ C
 C   'LS' gives the (LL|SS) contribution to the MP2 energy
 C   'SL' gives the (SS|LL) contribution to the MP2 energy
 C
+                  IF (LEVYLE) CALL QUIT(
+     &         '.SPECIAL testing in MP2 not allowed for Levy-Leblond')
                   READ(LUCMD,'(A2)') WS
                   IF (WS.EQ.'LS') THEN
                      TESTLS = .TRUE.
                   ELSEIF (WS.EQ.'SL') THEN
                      TESTSL = .TRUE.
                   ELSE
-                     CALL QUIT('Unrecognized in .SPECIAL, MP2...')
+                     CALL QUIT('Unrecognized .SPECIAL option for MP2')
                   ENDIF
                GO TO 100
    10          CONTINUE
@@ -234,7 +240,7 @@ C     =============
 C
       IF(.NOT.DOMP2) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      &   'MP2INP: Set-up for RMP2 calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRMP2
@@ -242,35 +248,37 @@ C
          ILLINT = 0
          ISSINT = 0
          ILSINT = 1
+         IGTINT = 0
          MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      +     '* Testing (LL|SS) ONLY in MP2.'
       ENDIF
       IF(TESTSL) THEN
          ILLINT = 0
          ISSINT = 0
          ILSINT = 1
+         IGTINT = 0
          MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
       IF (LEVYLE) MP2_INTFLG = ILLINT
       IF(SCRMP2.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRMP2
-      ELSE 
+      ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
-      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals Not included.'
-      IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS Integrals Not included.'
-      IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals Not included.'
-      IF (IJTSK.GT.0) WRITE(LUPRI,'(1X,A,I4)') 
+      IF (IJTSK.GT.0) WRITE(LUPRI,'(1X,A,I4)')
      +     '* Max number of Kramers pairs I (J) in task: ', IJTSK
       IF (MP2_MSOUT) THEN
-         WRITE(LUPRI,'(1X,A)') 
+         WRITE(LUPRI,'(1X,A)')
      +        '* 4-index transformed integrals written to file.'
          CALL QUIT('MSOUT not implemented in MP2 program')
       ENDIF
@@ -296,10 +304,10 @@ C     Active occupied and virtual space: only electrons allowed
         CALL  NUMLST(MP2_INDSTR(1,I),IDUMMY,NFBAS(I,IC),
      &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
+          WRITE(LUPRI,'(4X,A)')
      &       '- Occupied space : No electrons'
         ELSE
-          WRITE(LUPRI,'(4X,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A72)')
      &       '- Occupied space : ', MP2_INDSTR(1,I)
         ENDIF
         IF(DMP2_VIRTHR.NE.DUMMY) MP2_INDSTR(2,I) = 'all '
@@ -307,25 +315,25 @@ C     Active occupied and virtual space: only electrons allowed
         CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
      &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
+          WRITE(LUPRI,'(4X,A)')
      &       '- Virtual  space : No electrons'
         ELSE
-          WRITE(LUPRI,'(4X,A,A72)') 
+          WRITE(LUPRI,'(4X,A,A72)')
      &       '- Virtual  space : ', MP2_INDSTR(2,I)
         ENDIF
       ENDDO
 C
-      IF(DMP2_VIRTHR.NE.DUMMY) WRITE(LUPRI,'(1X,A,F7.2,A)') 
+      IF(DMP2_VIRTHR.NE.DUMMY) WRITE(LUPRI,'(1X,A,F7.2,A)')
      &     '* Only virtuals with energy below ', DMP2_VIRTHR,
      &     ' a.u. included in active space.'
-      IF(MAXSCL.NE.0) WRITE(LUPRI,'(2(1X,A),I10,F10.3,A)') 
+      IF(MAXSCL.NE.0) WRITE(LUPRI,'(2(1X,A),I10,F10.3,A)')
      &     '* Max memory available for scalar two electron',
-     &     'integrals:',MAXSCL,MAXSCL*8./(1024.*1024.),' Mb' 
+     &     'integrals:',MAXSCL,MAXSCL*8./(1024.*1024.),' Mb'
 C
-      IF (ISTRMP2.NE.2) 
+      IF (ISTRMP2.NE.2)
      &     CALL QUIT('Can currently only do MP2 with .SCHEME 2')
 
-C     
+C
  999  CONTINUE
       RETURN
       END
@@ -347,7 +355,7 @@ C*****************************************************************************
       PARAMETER (NDIR = 4, NTABLE = 25)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
-      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
@@ -370,6 +378,7 @@ C
      &            '.PAR4BS','.SCATTE','.MDCINT','xXXXXXX','xXXXXXX'/
       DATA SET/.FALSE./
 C
+#include "ibtfun.h"
 #include "memint.h"
       IF (SET) RETURN
       SET = .TRUE.
@@ -386,11 +395,12 @@ C
       IPRTRA  = 0
       ISTRAT = 4
       ITRA_INTFLG = INTGEN
+      IGTINT = IBTAND(INTGEN/8,1)
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       IPAR4BS = -1
       DO I = 1,NFSYM
-        WRITE(TRA_CORSTR(I),'(A)') 'not specified' 
+        WRITE(TRA_CORSTR(I),'(A)') 'not specified'
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
         DO J = 1,2
           WRITE(TRA2_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
@@ -483,11 +493,15 @@ C&&&& Range of ACTIVE orbitals in 4-index transformation module
                GO TO 100
     3          CONTINUE
 C&&&& INTFLG - Integral classes not included in transformation
-                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  IF (IGTINT .EQ. 1) THEN
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  END IF
                   ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
-C&&&& Anti-Symmetrize integrals 
+C&&&& Anti-Symmetrize integrals
 C     aug 2001 hjaaj TODO: disabled this option because not implemented
                   TRA_ANTIS = .TRUE.
                GO TO 100
@@ -581,12 +595,20 @@ C
                GO TO 100
    14          CONTINUE
 C&&&& INTFL2 - Integral classes not included in 2-index transformation
-                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  IF (IGTINT .EQ. 1) THEN
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  END IF
                   ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    15          CONTINUE
 C&&&& INTFL4 - Integral classes not included in 4-index transformation
-                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  IF (IGTINT .EQ. 1) THEN
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  END IF
                   ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
    16          CONTINUE
@@ -604,7 +626,7 @@ C&&&& RCORBS - Recanonize orbitals before transforming
    19          CONTINUE
 C&&&& NOMDCINT - Don't write MDCINT file, instead save scratch files
 C              and write an additional MDINFO file which contains various
-C              pointers'n'stuff. This options is used within the MCSCF 
+C              pointers'n'stuff. This options is used within the MCSCF
 C              program to avoid the generation of the enourmous MDCINT file.
                   NOMDCINT = .TRUE.
                GO TO 100
@@ -719,7 +741,7 @@ C     =============
 C
       WRITE (LUPRI,'(//)')
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      &   'TRAINP: Set-up for index transformation'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',IPRTRA
@@ -750,16 +772,16 @@ cluuk IF (NTVEC(1).EQ.0) THEN
 cluuk    CALL QUIT('TRAINP: Error defining active orbitals')
 cluuk ENDIF
 C
-      WRITE(LUPRI,'(/1X,A)') 
+      WRITE(LUPRI,'(/1X,A)')
      &   '* Set-up for 2-index transformation'
-      IF (MOD(ITRA_INTFL2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL2,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals not included in core Fock-matrix'
-      IF (MOD(ITRA_INTFL2/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL2/2,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS Integrals not included in core Fock-matrix'
-      IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals not included in core Fock-matrix'
 CLuuk : activate output when Gaunt is ready and active
-CLuuk IF (MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+CLuuk IF (MOD(ITRA_INTFL2/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
 CLuuk+     '* Gaunt Integrals not included in core Fock-matrix'
 C
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
@@ -771,17 +793,17 @@ C
           CALL  NUMLST(TRA2_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
      &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
           IF(NVEC.EQ.0) THEN
-            WRITE(LUPRI,'(4X,A,I2)') 
+            WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J
           ELSE
-            WRITE(LUPRI,'(4X,A,I2,A,A72)') 
+            WRITE(LUPRI,'(4X,A,I2,A,A72)')
      &      '- Index ',J,':  ',TRA2_INDSTR(J,I)
           ENDIF
           NTVEC(J) = NTVEC(J) + NVEC
         ENDDO
       ENDDO
 C
-      WRITE(LUPRI,'(/1X,A)') 
+      WRITE(LUPRI,'(/1X,A)')
      &   '* Set-up for 4-index transformation'
       WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRAT
       GOTO (501,502,503,504) ISTRAT
@@ -804,21 +826,21 @@ C
   500 CONTINUE
       IF(SCRTRA.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold :',SCRTRA
-      ELSE   
+      ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
-      IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals not transformed'
-      IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LS Integrals not transformed.'
-      IF (MOD(ITRA_INTFL4/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+      IF (MOD(ITRA_INTFL4/4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals not transformed.'
 CLuuk : activate output when Gaunt is ready and active
-Cluuk IF (MOD(ITRA_INTFL4/8,2).NE.1) WRITE(LUPRI,'(1X,A)') 
+Cluuk IF (MOD(ITRA_INTFL4/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
 Cluuk+     '* Gaunt Integrals not transformed.'
-      IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)') 
+      IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
-      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)') 
+      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')
      +     '* 4-index transformed integrals written to file.'
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,4)
@@ -829,10 +851,10 @@ Cluuk+     '* Gaunt Integrals not transformed.'
           CALL  NUMLST(TRA4_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
      &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
           IF(NVEC.EQ.0) THEN
-            WRITE(LUPRI,'(4X,A,I2)') 
+            WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J
           ELSE
-            WRITE(LUPRI,'(4X,A,I2,A,A72)') 
+            WRITE(LUPRI,'(4X,A,I2,A,A72)')
      &      '- Index ',J,':  ',TRA4_INDSTR(J,I)
           ENDIF
           NTVEC(J) = NTVEC(J) + NVEC
@@ -984,7 +1006,7 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ICHANG.GT.0) THEN
         WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRTRP
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &  '*The following operators will be transformed:'
       ENDIF
       IF(NTRPP.GT.0) THEN
@@ -992,20 +1014,20 @@ C
           INDXPR = LTRPP(I)
           CALL WRIXPR(I,INDXPR)
         ENDDO
-      ENDIF  
-      IF(DIPOLE) THEN    
+      ENDIF
+      IF(DIPOLE) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Dipole moment'
       ENDIF
-      IF(QUADRU) THEN    
+      IF(QUADRU) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Quadrupole moment'
       ENDIF
-      IF(EFG) THEN    
+      IF(EFG) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field gradient'
       ENDIF
-      IF(NQCC) THEN    
+      IF(NQCC) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Nuclear Quadrupole Coupling Constant'
       ENDIF
@@ -1107,11 +1129,15 @@ C&&&& PRINT - print level in resolve module
                GO TO 100
     2          CONTINUE
 C&&&& Integral classes included in 4-indextransformation
-                  READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  IF (IGTINT .EQ. 1) THEN
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+                  ELSE
+                     READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+                  END IF
                GO TO 100
     3          CONTINUE
 C&&&& SCREEN: Screening threshold for 4-index transformation
-               READ(LUCMD,*) SCRRES
+                  READ(LUCMD,*) SCRRES
                GO TO 100
     4          CONTINUE
 C&&&& SCHEME - Choose transformation scheme
@@ -1138,19 +1164,20 @@ C
       IF (LEVYLE) THEN
         ILSINT = 0
         ISSINT = 0
+        IGTINT = 0
       ENDIF
-      INTRES = ILLINT + 2*ILSINT + 4*ISSINT
+      INTRES = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
 C
 C     Print section
 C     =============
 C
       IF(.NOT.DORES) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
+      WRITE(LUPRI,'(1X,A)')
      &   'RESINP: Set-up for resolution of open-shell states:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRRES
-      WRITE(LUPRI,'(1X,A,I3)') 
+      WRITE(LUPRI,'(1X,A,I3)')
      &  '* 4-index transformation follows scheme      : ',ISTRES
       GOTO (501,502,503,504) ISTRES
   501 CONTINUE
@@ -1172,16 +1199,19 @@ C
   500 CONTINUE
       IF(SCRRES.GT.D0) THEN
         WRITE(LUPRI,'(1X,A,1P,E8.2)') '* Screening threshold : ',SCRRES
-      ELSE 
+      ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
-      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
-     +     '* LL Integrals Not included.'
-      IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
-     +     '* LS Integrals Not included.'
-      IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
-     +     '* SS Integrals Not included.'
+      IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* LL integrals not included.'
+      IF (.NOT.LEVYLE) THEN
+         IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* LS integrals not included.'
+         IF (ISSINT.NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* SS integrals not included.'
+         IF (IGTINT.NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* Gaunt integrals not included.'
+      END IF
  999  CONTINUE
       RETURN
       END
-
