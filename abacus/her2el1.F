@@ -699,6 +699,13 @@ C     Case (i): No contraction
 C     ========================
 C
       IF (NOCNT) THEN
+#ifndef OLD_NOCONT
+C980827-hjaaj: now the NOCNT flag is controlled in CCDRIV
+C              and it checks if a segmented contr. is uncontracted
+         CALL DCOPY(NTUV*NUC34*NORB12,HCPRIM,1,HCCNT,1)
+#else
+C980827-hjaaj: old .NOCONT did not work, I have made
+C              TWOINT stop if NOCONT is set.
          DO 100 TUV = 1, NTUV
          IF (IODDHR(TUV) .EQ. IODDCH) THEN
             IF (TPRI12) THEN
@@ -717,6 +724,7 @@ C
             END IF
          END IF
   100    CONTINUE
+#endif
 C
 C     Case (ii): General contraction
 C     ==============================

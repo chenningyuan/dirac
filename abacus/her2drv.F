@@ -78,6 +78,12 @@ C
 #include <twosta.h>
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
+C980827-hjaaj : "old" NOCONT does not work in this version
+      IF (NOCONT) THEN
+         WRITE (LUPRI,*)
+     &      'TWOINT ERROR, .NOCONT is not implemented in this version'
+         CALL QUIT('TWOINT: .NOCONT is not implemented in this version')
+      END IF
 C
       TKTIME = TTIME
 C
@@ -3230,7 +3236,7 @@ C
      &          NPCO1(*), NPCO2(*), NPCO3(*), NPCO4(*),
      &          INDHSQ(*), IODDHR(*), NPNT12(*), NPNT34(*),
      &          LMNV12(KCKMX,5,2), LMNV34(KCKMX,5,2),
-     &          NRED12(*), NRED34(*)
+     &          NRED12(*), NRED34(*), NUCS12(*), NUCS34(*)
 #include <twoao.h>
 #include <crsdir.h>
 #include <twosta.h>
@@ -3261,11 +3267,37 @@ C
       MWTOT  = MAX(MWTOT,LWTOT)
 C
       CALL GETODA(WORK(KODD12),WORK(KODD34),LMNV12,LMNV34,IPRINT)
+      IF (.NOT. GEN12) THEN
+C     ... 980826-hjaaj: check if no contraction
+         NOCNT = .TRUE.
+         DO IJ = 1,NORB12
+            IF (NUCS12(IJ) .NE. 1) THEN
+               NOCNT = .FALSE.
+               GO TO 100
+            END IF
+         END DO
+  100    IF (IPRINT .GT. 5) WRITE (LUPRI,*) 'NOCNT for C1DRIV:', NOCNT
+      ELSE
+         NOCNT = .FALSE.
+      END IF
       CALL C1DRIV(HERINT,INDHER,WORK(KHCINT),COEF12,CONT1(1,2),
      &            CONT2(1,2),WORK(KFREE),LFREE,NPCO1,NPCO2,NUCS12,
      &            INDHSQ,
      &            IODDHR,IPRINT,LMNV12,WORK(KODD12),NPNT12,NRED12,
      &            NHCINT)
+      IF (.NOT. GEN34) THEN
+C     ... 980826-hjaaj: check if no contraction
+         NOCNT = .TRUE.
+         DO IJ = 1,NORB34
+            IF (NUCS34(IJ) .NE. 1) THEN
+               NOCNT = .FALSE.
+               GO TO 200
+            END IF
+         END DO
+  200    IF (IPRINT .GT. 5) WRITE (LUPRI,*) 'NOCNT for C2DRIV:', NOCNT
+      ELSE
+         NOCNT = .FALSE.
+      END IF
       CALL C2DRIV(AOINT,WORK(KHCINT),COEF34,INDHER,CONT3,CONT4,
      &            WORK(KFREE),LFREE,NPCO3,NPCO4,NUCS34,IPRINT,LMNV12,
      &            LMNV34,WORK(KODD12),WORK(KODD34),NPNT34,NRED34)

@@ -1422,6 +1422,13 @@ C     Case (i): No contraction
 C     ========================
 C
       IF (NOCNT) THEN
+#ifndef OLD_NOCONT
+C980827-hjaaj: now the NOCNT flag is controlled in CCDRIV
+C              and it checks if a segmented contr. is uncontracted
+         CALL DCOPY(NINT12*NORB34,CCPRIM,1,CCONT,1)
+#else
+C980827-hjaaj: old .NOCONT did not work, I have made
+C              TWOINT stop if NOCONT is set.
          IF (TPRI34) THEN
             N34D = NUC4*(NUC4 + 1)/2
             CALL DCOPY(NINT12*N34D,CCPRIM,1,CCONT,1)
@@ -1436,6 +1443,7 @@ C
    20          CONTINUE
    10       CONTINUE
          END IF
+#endif
 C
 C     Case (ii): General contraction
 C     ==============================
