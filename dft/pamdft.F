@@ -11,7 +11,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 10)
+      PARAMETER (NTABLE = 12)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -30,7 +30,7 @@ C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
-     &            '.ANGMIN','.ATSIZE'/
+     &            '.ANGMIN','.ATSIZE','.DFTELS','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -81,7 +81,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9, 10),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -137,6 +137,14 @@ C            partitioning scheme from atomic contributions
 C            to the density.
                  ATSIZE = .TRUE.
                  GO TO 100
+ 11              CONTINUE
+C&&& DFTELS: Threshold for accepted error in integrated number of electrons
+                 READ(LUCMD,*) DFTELS
+                 GO TO 100
+ 12              CONTINUE
+C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
+                 READ(LUCMD,*) ANGMIN
+                 GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -164,6 +172,8 @@ C
      &     '     R.Lindh, P.-Aa. Malmqvist and L.Gagliardi'
       WRITE(LUPRI,'(A,E12.5)') 
      &     '  Precision of radial quadrature set to: ', RADINT
+      WRITE(LUPRI,'(A,E12.5)') 
+     &     '  Accepted error in integrated number of electrons: ',DFTELS
       WRITE(LUPRI,'(A)')
      &     '* Angular quadrature according to Lebedev scheme.'
       WRITE(LUPRI,'(A,I2)')
