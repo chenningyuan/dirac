@@ -4751,18 +4751,23 @@ C
       DIMENSION TMPMAT(MXCOOR)
       CHARACTER*12 FILENM
       CLOSE(LUMOL)
+#if    defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) \
+    || defined (SYS_PARAGON) || defined (SYS_CRAY)   || defined (SYS_IRIX) \
+    || defined (SYS_SUN)     || defined (SYS_LINUX)  || defined (SYS_HPUX) 
+#define SYS_MANY
+#endif
 #if defined (SYS_VAX)
       OPEN(LUMOL,STATUS='NEW',FORM='FORMATTED',
      &                                 CARRIAGECONTROL='LIST')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_SUN)
+#ifdef SYS_MANY
       OPEN(LUMOL,FILE='MOLECULE.INP',STATUS='UNKNOWN',
      &                                          FORM='FORMATTED')
 #endif
 #if defined (SYS_IBM)
       OPEN(LUMOL,FILE='MOLINP',STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_SUN)
+#ifndef SYS_MANY
       OPEN(LUMOL,STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
       DO 200 IMLINE = 1,NMLINE
@@ -4774,12 +4779,15 @@ C
       IF (ITRNMR .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
       IF (ITRNMR .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
       IF (ITRNMR .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_SUN)
+#ifdef SYS_MANY
       OPEN(LUMOL,FILE=FILENM, STATUS='UNKNOWN',FORM='FORMATTED')
       DO 300 IMLINE = 1,NMLINE
          WRITE(LUMOL,'(A)') MLINE(IMLINE)
  300  CONTINUE
       CLOSE(LUMOL)
+#endif
+#ifdef SYS_MANY
+#undef SYS_MANY
 #endif
       RETURN
       END
@@ -5053,18 +5061,23 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
+#if    defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) \
+    || defined (SYS_PARAGON) || defined (SYS_CRAY)   || defined (SYS_IRIX) \
+    || defined (SYS_SUN)     || definbed(SYS_LINUX)  || defined (SYS_HPUX) 
+#define SYS_MANY
+#endif
 #if defined (SYS_VAX)
          OPEN(LUMOL,STATUS='NEW',FORM='FORMATTED',
      *        CARRIAGECONTROL='LIST')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN)
+#ifdef (SYS_MANY)
          OPEN(LUMOL,FILE='MOLECULE.INP',STATUS='UNKNOWN',
      &        FORM='FORMATTED')
 #endif
 #if defined (SYS_IBM)
          OPEN(LUMOL,FILE='ABAMOL',STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN)
+#ifndef SYS_MANY
          OPEN(LUMOL,STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
          REWIND (LUMOL)
@@ -5084,6 +5097,9 @@ C
  9200 FORMAT (A4,3F20.10,7X,A1)
  9300 FORMAT (A4,3F20.16,7X,A1)
 C
+#ifdef SYS_MANY
+#undef SYS_MANY
+#endif
       RETURN
       END   
 #endif
