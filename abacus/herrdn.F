@@ -108,7 +108,7 @@ C
 #if defined (SYS_PARAGON) || defined (SYS_T3D)
       PARAMETER ( NTABLE = 8, MAXPRD = 14 )
 #else
-      PARAMETER ( NTABLE = 8, MAXPRD = 22 )
+      PARAMETER ( NTABLE = 8, MAXPRD = 50 )
 #endif
       PARAMETER (D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
@@ -246,7 +246,7 @@ C
 #if defined (SYS_PARAGON) || defined (SYS_T3D)
       PARAMETER (MAXPRD = 14)
 #else
-      PARAMETER (MAXPRD = 22)
+      PARAMETER (MAXPRD = 50)
 #endif
       LOGICAL RELCAL, TSTINP
 #include <maxaqn.h>
@@ -764,13 +764,13 @@ C*****************************************************************************
 #include <units.h>
 #include <cbirea.h>
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,ANG,NOORBTS,ZMTTST
+      LOGICAL SEG,ANG,NOORBTS,ZMTTST,CNTBAS
       DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
      &          SEG(KBLOCK,2),NOINT(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*6
+      CHARACTER SPDCAR*1,BSET*5,ZMATL*6,BASFIL*20
       DIMENSION IBLOCK(2)
 #include <molinp.h>
 #include <ccom.h>
@@ -780,7 +780,9 @@ C*****************************************************************************
 #include <huckel.h>
 #include <aosotr.h>
 #include <ibtfun.h>
+#include <gencon.h>
 C
+      CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
       IBLOCK(1) = 1
@@ -791,6 +793,8 @@ C     Run over atomic centers
 C     =======================
 C
       DO 100 I = 1, NONTYP
+         LARGECON(I) = .FALSE.
+         SMALLCON(I) = .FALSE.
          NOORBTS = .TRUE.
          INUC = NUCIND
 C
@@ -865,19 +869,45 @@ C
 C
              ELSE
 C
-C            Read basis set from file
-C            ========================
+C            Read basis set info from file MOLECULE.INP
+C            ==========================================
+C
+C              Start with LARGE Component
+C              ==========================
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(BN,A5,12I5)')
      &               BSET,IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
-               CALL GTOINP(LUINFO,IQM(I,1),JCO(1,I,1),
-     &              NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
-     &              SEG(IBLOCK(1),1),NOINT(IBLOCK(1),1),
-     &              ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
-     &              CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
-     &              NBLOCK,KAOVEC,KPRIM)
-               NBLCK(I,1) = NBLOCK
+               IF ((BSET.NE.'LARGE').AND.(BSET.NE.'LBFIL')) GOTO 5100
+C
+C              Test BSET: 
+C              If BSET.eq.LARGE read LC basis from MOLECULE.INP
+C              If BSET.eq.LBFIL read LC basis from file to be 
+C                               read from next line
+C              ================================================
+C
+               IF (BSET.EQ.'LARGE') THEN
+                  CALL GTOINP(LUINFO,IQM(I,1),JCO(1,I,1),
+     &                 NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
+     &                 SEG(IBLOCK(1),1),NOINT(IBLOCK(1),1),
+     &                 ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),
+     &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
+     &                 NBLOCK,KAOVEC,KPRIM)
+                  NBLCK(I,1) = NBLOCK
+               ELSE
+                  CALL RDLINE(LUINFO)
+                  READ (MLINE(NMLINE),'(BN,A20)') BASFIL
+                  KBFPR = 1
+                  KBFCO = KBFPR + MXPRIM
+                  KLAST = KBFCO + MXCORB*MXPRIM
+                  IF (KLAST.GT.LWORK) 
+     &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+                  LARGECON(I) = .TRUE.
+                  CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
+     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
+     &                 KAOVEC)
+               ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,1).EQ.0
                IF (IQM(I,1).GT.0) THEN
                  IF(INPTST) THEN
@@ -890,12 +920,62 @@ C
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
-C              Generate small components using kinetic balance relation
-C              ========================================================
+C              Check if large component basis is contracted 
+C              ============================================
 C
-               CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &              IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
-     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+               DO 210 JBLCK = 1, NBLCK(I,1)
+                  IF ((NUC(JBLCK,1).NE.NRC(JBLCK,1)).AND.
+     &                (NRC(JBLCK,1).GT.0)) CNTBAS = .TRUE.
+  210          CONTINUE
+C
+C              Next is the SMALL Component 
+C              ==========================
+C
+               IF (.NOT.CNTBAS) THEN
+C
+C              When uncontracted we generate the small component basis 
+C              using the kinetic balance relation
+C              =======================================================
+C
+                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                 IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM)
+               ELSE
+                  CALL RDLINE(LUINFO)
+                  READ (MLINE(NMLINE),'(BN,A5,12I5)')
+     &                  BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                  IF ((BSET.NE.'SMALL').AND.(BSET.NE.'SBFIL')) GOTO 5200
+C
+C              Test BSET: 
+C              If BSET.eq.SMALL read SC basis from MOLECULE.INP
+C              If BSET.eq.SBFIL read SC basis from file to be 
+C                               read from next line
+C              ================================================
+C
+                  IF (BSET.EQ.'SMALL') THEN
+                     CALL GTOINP(LUINFO,IQM(I,2),JCO(1,I,2),
+     &                    NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),
+     &                    SEG(IBLOCK(2),2),NOINT(IBLOCK(2),2),
+     &                    ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),
+     &                    CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),
+     &                    NBLOCK,KAOVEC,KPRIM)
+                     NBLCK(I,2) = NBLOCK
+                  ELSE
+                     CALL RDLINE(LUINFO)
+                     READ (MLINE(NMLINE),'(BN,A20)') BASFIL
+                     KBFPR = 1
+                     KBFCO = KBFPR + MXPRIM
+                     KLAST = KBFCO + MXCORB*MXPRIM
+                     IF (KLAST.GT.LWORK) 
+     &                  CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
+                     SMALLCON(I) = .TRUE.
+                     CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),
+     &                    WORK(KBFCO),
+     &                    IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &                    NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
+     &                    KAOVEC)
+                  ENDIF
+               ENDIF
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
                IBLOCK(2)  = IBLOCK(2) + NBLCK(I,2)
                NOORBTS    = NOORBTS.AND.IQM(I,1).EQ.0
@@ -983,6 +1063,10 @@ C
      &     SPDCAR(MXQN-1),
      &     ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
         CALL QUIT('Too high angular specified in input.')
+ 5100 CONTINUE
+        CALL QUIT('Error reading keyword LARGE or LBFIL.')
+ 5200 CONTINUE
+        CALL QUIT('Error reading keyword SMALL or SBFIL.')
       END
 C  /* Deck cntinp */
       SUBROUTINE CNTINP(LUINFO,NONT,Q,QEXP,NSYMOP,ANG)
@@ -1345,7 +1429,7 @@ C
          IF (IQM(I,1).GT.0) THEN
             CALL BASTYP(IQM(I,1),JCO(1,I,1),NRC(IBLOCK,1),
      &                  NUC(IBLOCK,1),
-     &                  KAOVEC,NPRIM,NBAS,TSTRING)
+     &                  KAOVEC,NPRIM,NBAS,TSTRING,1,I)
          ELSE
             IF (IPREAD .GT. 0) THEN
                WRITE (LUPRI,'(10X,A)') 'No large orbitals attached.'
@@ -1355,7 +1439,7 @@ C
          NBASS = 0
          IF (IQM(I,2).GT.0) THEN
             CALL BASTYP(IQM(I,2),JCO(1,I,2),NRC(IBLCKS,2),
-     +                  NUC(IBLCKS,2),KAOVEC,NPRIMS,NBASS,TSTRIN2)
+     +                  NUC(IBLCKS,2),KAOVEC,NPRIMS,NBASS,TSTRIN2,2,I)
          ELSE IF (DIRAC) THEN
             IF (IPREAD .GT. 0) THEN
                WRITE (LUPRI,'(10X,A)') 'No small orbitals attached.'
@@ -1476,17 +1560,20 @@ C
       CALL AOTOAO(IAOAO,IPREAD)
       END
 C  /* Deck bastyp */
-      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NBLOCK,NPRIM,NBAS,TSTRING)
+      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NBLOCK,NPRIM,NBAS,TSTRING,ICP,
+     &                  IATM)
 C*****************************************************************************
 C
 C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
 #include <implicit.h>
+#include <mxcent.h>
 #include <maxaqn.h>
       CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
       DIMENSION JCO(IQM),NRC(NBLOCK),NUC(NBLOCK)
 #include <ccom.h>
+#include <gencon.h>
 C*****************************************************************************
       IND = 1
       TSTRING(IND:IND) = '['
@@ -1499,11 +1586,26 @@ C*****************************************************************************
          IPRIM  = 0
          ISHELL = 0
          NCOMP = KHK(I)
+C
+C        If general contracted use data read from input.
+C
+         IF (ICP.EQ.1.AND.LARGECON(IATM)) THEN
+            IPRIM = ILARGEC(IATM,I)
+            NPRIM = NPRIM + NCOMP*ILARGEC(IATM,I)
+         ELSEIF (ICP.EQ.2.AND.SMALLCON(IATM)) THEN
+            IPRIM = ISMALLC(IATM,I)
+            NPRIM = NPRIM + NCOMP*ISMALLC(IATM,I)
+         ELSE
+C
+C        Deal with uncontracted basis set
+C
          DO 200 J = 1,JCO(I)
             IBLOCK = IBLOCK + 1
             IPRIM  = IPRIM  + NUC(IBLOCK)
             NPRIM = NPRIM + NCOMP*NUC(IBLOCK)
   200    CONTINUE
+         ENDIF
+C
          IF (IPRIM.GT.0) THEN
             IF (IPRIM.GE.10) THEN
                NDIG = INT(LOG10(FLOAT(IPRIM))+1)
@@ -3951,7 +4053,7 @@ C  /* Deck rdline */
 #include <infpar.h>
    10 CONTINUE
       NMLINE = NMLINE + 1
-      IF (.NOT. PARHER) READ (LUINFO,'(A)') MLINE(NMLINE)
+      IF (.NOT. PARHER) READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &      ' READIN ERROR: Too many lines in input -,',
@@ -3960,6 +4062,8 @@ C  /* Deck rdline */
       END IF
       IF((MLINE(NMLINE)(1:1).EQ.'#') .OR. (MLINE(NMLINE)(1:1).EQ.'!'))
      &         GOTO 10
+      RETURN
+   11 MLINE(NMLINE)='        '
       RETURN
       END
 C  /* Deck wronel */
@@ -5354,6 +5458,255 @@ C
       VP(2)=X(3)*Y(1)-X(1)*Y(3)
       VP(3)=X(1)*Y(2)-X(2)*Y(1)
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bfginp */
+      SUBROUTINE BFGINP(IAT,IBLCK,ICP,ALPIN,CPRIN,
+     &              IQM,JCO,NUC,NRC,SEG,NOINT,ALPHA,CPRIM,CPRIMU,
+     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM,KAOVEC)
+C***********************************************************************
+C
+C      Read contracted basis set from a MOLFDIR type basis set file
+C      (defined in FILNAM). IC tells us which component to read.
+C      ICP = 1 : Read large component
+C      ICP = 2 : Read small component
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <infpar.h>
+#include <molinp.h>
+C
+      LOGICAL SEG,TOBE,SEGIJ
+      CHARACTER*15 FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE,FORMATC
+      DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
+     &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
+     &          NOINT(KBLOCK,2),ALPHA(KPRIM,KBLOCK,2),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
+     &          ALPIN(MXPRIM),CPRIN(MXPRIM*MXCORB)
+#include <ibtfun.h>
+#include <cbirea.h>
+#include <ccom.h>
+#include <gencon.h>
+      PARAMETER (DSM=1.0D-30)
+C     
+      LUBFIL = 55
+      NTYP   = 0
+      NBLOCK = IBLCK
+C
+C     We now deal with general contracted basis sets: 
+C     Use Unrestricted kinetic balance.
+C     ===============================================
+C
+C     URKBAL = .TRUE.
+C     This doesn't work because it is reset in HAMINP
+C
+C     Look if basis set file exists and, if so, read in data  
+C     ======================================================
+C
+      IF (.NOT. PARHER) THEN
+         INQUIRE (FILE = FILNAM, EXIST = TOBE)
+         IF (.NOT.TOBE) GOTO 5025
+         OPEN (LUBFIL,FILE=FILNAM,FORM='FORMATTED',STATUS='OLD')
+         REWIND (LUBFIL)
+      ENDIF
+C
+C     Read two line header of basis set file
+C     ======================================
+C
+      CALL RDLINE(LUBFIL)
+      READ (MLINE(NMLINE),'(A80)',END=5020) TEXT
+      CALL RDLINE(LUBFIL)
+      READ (MLINE(NMLINE),'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
+     &      DATE1,TIME1,FORMATE,NE,FORMATC,NC,DCHRG,DEXPO
+C
+C     Read component, l-type and number of functions:
+C     ICOMP  = 1 (large) or 2 (small)
+C     ITYP   = l + 1
+C     NPRIM  = # of primitives
+C     NCONTR = # of contracted functions
+C     NUNC   = # number of uncontracted functions
+C     ===============================================
+C
+  301 CALL RDLINE(LUBFIL)
+      IF (MLINE(NMLINE)(1:5).EQ.'     ') GOTO 390
+      READ (MLINE(NMLINE),'(6I4)',END=390)
+     &      ICOMP,ITYP,NPRIM,NCONTR,IDUM,NUNC
+C
+C     Skip large component lines which we don't need in the small
+C     component case
+C     ===========================================================
+C
+      IF (ICOMP.NE.ICP) THEN
+         IF (ICP.EQ.2) THEN
+            NSTEP = NPRIM/NE + (NPRIM * NCONTR)/NC
+            IF (MOD(NPRIM,NE).NE.0) NSTEP = NSTEP + 1
+            IF (MOD(NCONTR*NPRIM,NC).NE.0) NSTEP = NSTEP + 1
+            DO 310 INIT = 1, NSTEP
+               IF (.NOT.PARHER) READ (LUBFIL,*,END=5020)
+  310       CONTINUE
+            GOTO 301
+         ELSE
+            GOTO 390
+         ENDIF
+      ENDIF
+      IQM(IAT,ICP) = ITYP
+      IF (ICP.EQ.1) ILARGEC(IAT,ITYP) = NPRIM
+      IF (ICP.EQ.2) ISMALLC(IAT,ITYP) = NPRIM
+C
+C     Check dimensions of arrays
+C     ==========================
+C
+      IF (NPRIM.GT.MXPRIM) GOTO 5010
+      IF (NPRIM.GT.KPRIM) GOTO 5040
+      IF (NCONTR.GT.MXCORB) GOTO 5050
+      IF (NCONTR.GT.KPRIM) GOTO 5060
+C
+C     Read in primitives and contraction coefficients
+C
+C     Number of exponents and contraction coefficients on a line is 4
+C     ===============================================================
+C
+      DO I = 1, NPRIM, 4
+         CALL RDLINE(LUBFIL)
+         READ (MLINE(NMLINE),FORMATE,ERR=5020,END=391)
+     &         (ALPIN(IND),IND=I,MIN(I+3,NPRIM))
+      ENDDO
+      DO I = 1, NPRIM*NCONTR, 4
+         CALL RDLINE(LUBFIL)
+         READ (MLINE(NMLINE),FORMATC,ERR=5020,END=391)
+     &         (CPRIN(IND),IND=I,MIN(I+3,NPRIM*NCONTR))
+      ENDDO
+C
+C     We cannot split the primitives in blocks. However, we can 
+C     split up the contracted functions making that the leading
+C     dimension. The number of contracted functions in a block 
+C     depends on the # of angular components and is set to a max.
+C     of MXCON_PARAM (gencon.h)
+C     ==========================================================
+C
+      MXDUM = MXCON_PARAM - MOD(MXCON_PARAM,(NPRIM*KHK(ITYP)))
+      MXCONTR = MAX((MXDUM/(NPRIM*KHK(ITYP))),1)
+      JCO(ITYP,IAT,ICP) = MAX(((NCONTR-MOD(NCONTR,MXCONTR))/MXCONTR),1)
+C
+C     Put the entire list of ITYP primitives and contracted functions
+C     into KPRIM long blocks
+C     ===============================================================
+C
+      ICONS = 1
+      ICONE = 0
+      DO 501 JBLCK = 1, JCO(ITYP,IAT,ICP)
+         IF (JBLCK*MXCONTR.LE.NCONTR) THEN
+            ICONE = ICONE + MXCONTR
+         ELSE
+            ICONE = NCONTR
+         ENDIF
+         IF(NBLOCK.GT.KAOVEC) GOTO 5000
+         CALL DZERO(ALPHA (1,  NBLOCK,ICP),KPRIM)
+         CALL DZERO(CPRIMU(1,1,NBLOCK,ICP),KPRIM*KPRIM)
+         CALL DZERO(CPRIM (1,1,NBLOCK,ICP),KPRIM*KPRIM)
+         IPRI = 0
+         DO 502 JPRI = 1, NPRIM
+            IPRI = IPRI + 1
+            ALPHA(IPRI,NBLOCK,ICP) = ALPIN(JPRI)
+            ICON = 0
+            DO 503 JCON = ICONS, ICONE 
+               ICON = ICON + 1
+               CPRIMU(IPRI,ICON,NBLOCK,ICP) = CPRIN(NPRIM*(JCON-1)+JPRI)
+  503       CONTINUE
+  502    CONTINUE
+         NUCIJ = NPRIM 
+         NRCIJ = ICONE - ICONS + 1
+         SEGIJ = NRCIJ .GE. 0
+C
+C        Remove exponents with all zero coefficients from block
+C        This happens in SC in case of different primitives from
+C        l+1 and l-1. It also happens with uncontracted functions
+C
+  600    CONTINUE
+         DO 601 JPRI = 1, NUCIJ
+            NZ = 0
+            DO 602 JCON = 1, NRCIJ
+               IF (ABS(CPRIMU(JPRI,JCON,NBLOCK,ICP)).GT.DSM) NZ = NZ + 1
+  602       CONTINUE
+            IF (NZ.EQ.0) THEN
+               DO 603 IPRI = JPRI+1, NUCIJ
+                  ALPHA(IPRI-1,NBLOCK,ICP) = ALPHA(IPRI,NBLOCK,ICP)
+                  DO 604 JCON = 1, NRCIJ
+                     CPRIMU(IPRI-1,JCON,NBLOCK,ICP) = 
+     &                      CPRIMU(IPRI,JCON,NBLOCK,ICP)
+  604             CONTINUE
+  603          CONTINUE
+               ALPHA(NUCIJ,NBLOCK,ICP) = 0.0D0
+               DO 605 JCON = 1, NRCIJ
+                  CPRIMU(NUCIJ,JCON,NBLOCK,ICP) = 0.0D0
+  605          CONTINUE
+               NUCIJ = NUCIJ - 1
+               GOTO 600
+            ENDIF
+  601    CONTINUE
+C
+C        Identify segmented contractions
+C
+         CALL SEGORB(SEGIJ,NUCIJ,NRCIJ,CPRIMU(1,1,NBLOCK,ICP),KPRIM,DSM)
+         SEG(NBLOCK,ICP) = SEGIJ
+C
+C        Reorder primitive orbitals
+C
+         CALL PRIORD(ALPHA(1,NBLOCK,ICP),CPRIMU(1,1,NBLOCK,ICP),NUCIJ,
+     &               NRCIJ,SEG(NBLOCK,ICP),KPRIM,DSM)
+C
+C        Normalize orbitals
+C
+         CALL NRMORB(ITYP,NRCIJ,NUCIJ,ALPHA(1,NBLOCK,ICP),
+     &               CPRIM(1,1,NBLOCK,ICP),
+     &               CPRIMU(1,1,NBLOCK,ICP),KPRIM,NBLOCK)
+C
+         NUC(NBLOCK,ICP) = NUCIJ
+         NRC(NBLOCK,ICP) = NRCIJ
+         NBLOCK = NBLOCK + 1
+         ICONS = ICONE + 1
+  501 CONTINUE
+      GOTO 301
+  390 CONTINUE
+      NBLCK(IAT,ICP) = NBLOCK - IBLCK
+  391 CLOSE (LUBFIL)
+      RETURN
+ 5000 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)')
+     *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
+     *  '                   current maximum number         ',KAOVEC
+        CALL QUIT('Too many AO-blocks')
+ 5010 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)') 
+     *  ' >>> BFGINP error, number of primitives           ',NPRIM,
+     * '                    current maximum number         ',MXPRIM
+        CALL QUIT('Too many primitives')
+ 5020 CONTINUE
+        WRITE (LUPRI,'(/A,A20)') 'Error in basis set file : ',FILNAM
+        CALL QUIT('Error reading contents of basis set file.')
+ 5025 CONTINUE
+        WRITE (LUPRI,'(/A,A20)') 'Cannot find file : ',FILNAM
+        CALL QUIT('Error reading MOLFDIR type basis set file.')
+ 5040 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)') 
+     *  ' >>> BFGINP error, number of primitives           ',NPRIM,
+     * '                    current maximum number (MAXPRI)',KPRIM
+        CALL QUIT('Too many primitives, increase MAXPRI in input.')
+ 5050 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)') 
+     *  ' >>> BFGINP error, number of contracted functions ',NCONTR,
+     * '                    current maximum number         ',MXCORB
+        CALL QUIT('Too many contracted functions.')
+ 5060 CONTINUE
+        WRITE (LUPRI,'(/A,I6/A,I6)') 
+     *  ' >>> BFGINP error, number of contracted functions ',NCONTR,
+     * '                    current maximum number (MAXPRI)',KPRIM
+        CALL QUIT('Too many contracted fun., increase MAXPRI in input.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kinbal */
