@@ -167,7 +167,7 @@ setup_command()
 #  Parallel run ($MPIARG allows any MPI run argument):
       DIRAC_CMD="$MPIRUN $MPIARG"
 #     Set number of processors:      
-      if [ "$MPIRUN" = "mpirun" ]; then
+      if [ "$MPIRUN" = 'mpirun' ]; then
         DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC"
 #       Include machinefile
         if [ -n "$MACH_FILE" ]; then
