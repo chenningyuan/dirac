@@ -893,15 +893,18 @@ C            ==================================================
 C
              NQ = NINT(Q + 0.01D0)
              IF ((LCMMAX .GT. -1) .AND. (NQ .EQ. 0)) THEN
-               WRITE(LUPRI,'(A)') 'Not implemented !'
+               WRITE(LUPRI,'(/A)') 'BASINP: CM basis not implemented !'
+               CALL QUIT('BASINP: CM basis not implemented in Dirac !')
 C
 C            Get basis set from basis set library
 C            ===================================
 C
              ELSE IF (BASIS) THEN
-               WRITE(LUPRI,'(A)') 
-     &           'Basis library not yet implemented in DIRAC !'
-              CALL QUIT('BASINP: Basis library not in DIRAC !')
+               WRITE(LUPRI,'(/A/A)') 
+     &           'BASINP: "BASIS" in first line not allowed in Dirac.',
+     &           'Use "LARGE BASIS <basis>" for each atom type instead."
+               CALL QUIT(
+     &           'BASINP: "BASIS" in first line not allowed in Dirac!')
 C
              ELSE
 C
