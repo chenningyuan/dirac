@@ -1180,7 +1180,7 @@ C
      &          CMO(*),EIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
-      DATA BLANK16/'                  '/
+      DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
 #include "chrnos.h"
@@ -1213,6 +1213,8 @@ C
           NDIG = 1
         ELSEIF(INDPRB.LT.100) THEN
           NDIG = 2
+        ELSEIF(INDPRB.LT.1000) THEN
+          NDIG = 3
         ELSE
           WRITE(LUPRI,'(A,I5)') 'GETLR1 ERROR: INDPRB = ',INDPRB
           CALL QUIT('GETLR1: Inappropriate INDPRB !')
