@@ -350,7 +350,7 @@ C
 C        error branch IF (MEMCK(1) .NE. MEMID(1)) THEN
 C
  8001    WRITE (LUWMEM,'(/A/2A/A,3I10,2(/A,I25))')
-     *      ' MEMCHK ERROR, not a valid memget id in work(kfree)',
+     *      ' MEMCHK ERROR, not a valid memget id in work(kfree-1)',
      *      ' Text from calling routine : ',TEXT,
      *      ' KFIRST,KFREE,IALLOC =',KFIRST,KFREE,IALLOC,
      *      ' found memory check :',MEMCK(1),
