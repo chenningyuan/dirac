@@ -18,41 +18,80 @@ CONTAINS
 !---------------------------------------------------------------------
 ! 
 ! Initialize the settings for the embedding module  
+! (turn everything of)
 !
-! Has to be called AFTER DHFINP and HAMINP since it relies
-! on input from these parts (DFT and frozen orbitals) 
-!
-! What it does for now is:
-! Turn embedding (using the frozen orbitals) on if there are
-! frozen orbitals and if the "embedding" functional is
-! selected in the DFT part. 
+! This is called at the beginning of HAMINP
 !
 !---------------------------------------------------------------------
  
     SUBROUTINE init_embedding ()
-#include "priunit.h"
+      IMPLICIT NONE
 
-#include "dcbham.h"
-#include "dcbdhf.h"
-
-      LOGICAL, EXTERNAL :: DFTISEMB         ! external function from dft/functionals.c
-
-      IF (DFTHAM .AND. DFTISEMB) THEN       ! DFT is used and an embedding functional is selected
-          Do_Embedding = .TRUE. 
-      ELSE
-          Do_Embedding = .FALSE.
-          Emb_Mode = EMB_MODE_OFF
-      END IF
-
-      IF (Do_Embedding) THEN                                   ! Decide which mode to use
-          IF (NFRO_DHF(1) + NFRO_DHF(2) > 0) THEN 
-              Emb_Mode = EMB_MODE_FROZEN_ORBITALS
-          ELSE
-              Do_Embedding = .FALSE.                    ! No suitable mode found, turn embedding off
-          END IF
-      END IF
-
+      Do_Embedding = .FALSE.
+      Emb_Mode = EMB_MODE_OFF
+      
     END SUBROUTINE init_embedding
+
+
+    SUBROUTINE input_embedding (word)
+      IMPLICIT NONE
+
+#include <priunit.h>
+
+      CHARACTER(len=7), INTENT(INOUT)  :: word
+
+      LOGICAL           :: done
+      INTEGER           :: inperr
+      CHARACTER(len=70) :: line
+
+      done = .false.
+
+      ! turn embedding on and set defaults
+      Do_Embedding = .TRUE.
+      Emb_Mode = EMB_MODE_FROZEN_ORBITALS
+
+      DO WHILE (.NOT.done)
+
+         read(LUCMD, '(A7)') word
+
+         if (word(1:1) == '*') then
+            done = .true.
+         else if ((word(1:1) /= '!') .and. (word(1:1) /= '#')) then
+            
+            SELECT CASE (word)
+               CASE ('.PRORBS')  ! use the projected-out orbitals as frozen density
+                                 ! (Since this is the only optin right now, it is also 
+                                 !  the default)
+                  emb_Mode = EMB_MODE_FROZEN_ORBITALS
+               CASE ('.XCFUN ')  ! non-additive XC-functional
+                  read (lucmd, '(A70)') line
+                  inperr = 0
+                  call dft_emb_set_xcfunc (line, inperr)  
+                  if (inperr > 0) then
+                     call quit("Unknown functional in *EMBEDDING .XCFUNC")
+                  end if
+
+               CASE ('.KINFUN')  ! non-additive kinetic energy functional
+
+                  read (lucmd, '(A70)') line
+                  inperr = 0
+                  call dft_emb_set_kinfunc (line, inperr) 
+                  if (inperr > 0) then
+                     call quit("Unknown functional in *EMBEDDING .KINFUNC")
+                  end if
+
+               CASE DEFAULT
+                  write (lupri, '(/,3A,/)') 'Prompt "', word, '" not recognized in emb_input'
+                  call quit("Illegal prompt in emb_input")
+            END SELECT
+
+         end if
+
+      END DO
+ 
+      ! Check if we have got everything we need, set defaults if needed
+
+    END SUBROUTINE input_embedding
 
 
 !---------------------------------------------------------------------
@@ -61,14 +100,41 @@ CONTAINS
 !
 ! Print some information on the embedding scheme used 
 !
+! I also (mis)use it to make some consistency checks
+!
+! Has to be called AFTER DHFINP and HAMINP since it relies
+! on input from these parts (DFT and frozen orbitals) 
+!
 !---------------------------------------------------------------------
 
     SUBROUTINE report_embedding ()
+      IMPLICIT NONE
+
 #include "priunit.h"
+#include "dcbham.h"
+#include "dcbdhf.h"
+
+      write (lupri, *) " "
+      write (lupri, *) "****** Embedding *******"
 
       IF (Do_Embedding) THEN
           WRITE (LUPRI, *) "Embedding is switched ON"
           WRITE (LUPRI, *) "Embedding mode : ", Emb_Mode
+
+          ! some consistency checks
+
+          IF (.not. DFTHAM) THEN
+             CALL quit ("embedding only works with DFT at the moment")
+          end IF
+
+          IF (Emb_Mode == EMB_MODE_FROZEN_ORBITALS) THEN
+             IF (NFRO_DHF(1) + NFRO_DHF(2) == 0) THEN
+                call quit ("EMB_MODE_FROZEN_ORBITALS selected, but no frozen orbitals")
+             end IF
+          END IF
+
+          call DftEmbReport ()
+
       ELSE
           WRITE (LUPRI, *) "Embedding is switched OFF"
       END IF

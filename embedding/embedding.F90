@@ -6,7 +6,7 @@ MODULE Embedding
   IMPLICIT NONE
   PRIVATE 
 
-  PUBLIC :: Do_Embedding, init_embedding, report_embedding                 ! From MODULE Emb_Settings 
+  PUBLIC :: Do_Embedding, init_embedding, input_embedding, report_embedding  ! From MODULE Emb_Settings 
 
   PUBLIC :: start_Embedding, end_Embedding
   PUBLIC :: Get_Frozen_Rho, Get_Frozen_Grad_Rho
@@ -14,6 +14,7 @@ MODULE Embedding
 CONTAINS
 
   SUBROUTINE start_Embedding ()
+    IMPLICIT NONE
 
     IF (Do_Embedding) THEN
         SELECT CASE (Emb_Mode)
@@ -28,6 +29,7 @@ CONTAINS
 
 
   SUBROUTINE end_Embedding ()
+    IMPLICIT NONE
 
     IF (Do_Embedding) THEN
         SELECT CASE (Emb_Mode)
@@ -43,6 +45,8 @@ CONTAINS
 
   
   SUBROUTINE Get_Frozen_Rho (Frozen_Rho, GAO)
+    IMPLICIT NONE
+
 #include "dcbbas.h"
     
     REAL*8,                      Intent(OUT) :: Frozen_Rho
@@ -62,6 +66,8 @@ CONTAINS
 
 
   SUBROUTINE Get_Frozen_Grad_Rho (Frozen_Grad_Rho, GAO, GAO1)
+    IMPLICIT NONE
+
 #include "dcbbas.h"
 
     REAL*8, Dimension(3),           Intent(OUT)   :: Frozen_Grad_Rho

@@ -12,6 +12,8 @@ MODULE Emb_Frozen_Orbitals
 CONTAINS
 
   SUBROUTINE init_Emb_Frozen_Orbitals ()
+    IMPLICIT NONE
+
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -36,6 +38,8 @@ CONTAINS
 
 
   SUBROUTINE init_Frozen_DMat ()
+    IMPLICIT NONE
+
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -125,6 +129,7 @@ CONTAINS
 
 
   SUBROUTINE dealloc_Emb_Frozen_Orbitals ()
+    IMPLICIT NONE
 
     INTEGER :: ierr
 
@@ -136,6 +141,8 @@ CONTAINS
 
 
   SUBROUTINE Get_Rho_Frozen_Orbitals (Frozen_Rho, GAO)
+    IMPLICIT NONE
+
 #include "dcbbas.h"
 #include "dgroup.h"
     
@@ -149,6 +156,8 @@ CONTAINS
 
 
   SUBROUTINE Get_Grad_Rho_Frozen_Orbitals (Frozen_Grad_Rho, GAO, GAO1)
+    IMPLICIT NONE
+
 #include "dcbbas.h"
 #include "dgroup.h"
 
