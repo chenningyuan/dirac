@@ -264,7 +264,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
-     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO)
+     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -290,9 +290,7 @@ C
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
-      REAL*8 DMO(*)
       REAL*8 XVO(*),XOV(*)
-      REAL*8 XMO(*)
       REAL*8 EVO(*),EOV(*)
       REAL*8 EPS(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*),CBUF(*)
@@ -324,10 +322,7 @@ C     No relaxation if there are no virtuals within the right irrep
 C
       IF (NFVO.EQ.0) RETURN
 C
-      IF (DOMP2GOLD) THEN ! old code generation Lagrangian
-C
 C     Calculate X-intermediate
-C     (Old code!!!)
 C
       CALL XCOPY (NDIMX,A0,0,XVO,1)
 C--------------------------------------------
@@ -384,7 +379,65 @@ C
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
 C
-      ENDIF !old code generation Lagrangian
+C     Solve Z-vector equations by calling the RPA routine
+C
+      NAME = 'MP2-GRAD'
+      DO EOPER = 1, NEOPER
+         EOFF = (EOPER-1)*NDIMX*RCW+1
+         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
+     &               EPHASE(EOPER),EVO(EOFF),EOV(EOFF),DUM,DUM)
+      ENDDO
+C
+C     Silence RPA routine when the print level is smaller than one
+C
+      IF (IPRNT.GE.1) THEN
+         JPRNT = IPRNT
+      ELSE
+         JPRNT = -1
+      ENDIF
+C
+      BDONE = .FALSE.
+      MAXIT = MXITGR
+      CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
+     &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
+     &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Solve Z-vector equations at the MP2 level, using the AO based 
+C     implementation.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T2(*)
+      REAL*8 DMO(*)
+      REAL*8 XMO(*)
+      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
 C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
@@ -419,38 +472,9 @@ C
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
 C
-      IF (DOMP2GOLD) THEN
-C
-C     Solve Z-vector equations by calling the RPA routine
-C     (Old code!!!)
-C
-      NAME = 'MP2-GRAD'
-      DO EOPER = 1, NEOPER
-         EOFF = (EOPER-1)*NDIMX*RCW+1
-         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
-     &               EPHASE(EOPER),EVO(EOFF),EOV(EOFF),DUM,DUM)
-      ENDDO
-C
-C     Silence RPA routine when the print level is smaller than one
-C
-      IF (IPRNT.GE.1) THEN
-         JPRNT = IPRNT
-      ELSE
-         JPRNT = -1
-      ENDIF
-C
-      BDONE = .FALSE.
-      MAXIT = MXITGR
-      CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
-     &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
-     &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
-      ENDIF
-C
-C###########################################
-C
-C     Solve Z-vector equations by using XRPA
-C
-C###########################################
+C     +----------------------------------------+
+C     | Solve Z-vector equations by using XRPA |
+C     +----------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW

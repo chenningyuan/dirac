@@ -274,7 +274,7 @@ C
      &              MPI_COMM_WORLD,IREQ,IERR)
 C
     1    CONTINUE
-         CALL SLEEP(5)
+         CALL SLEEP(1)
          CALL MPI_IPROBE(MPARID,30,MPI_COMM_WORLD,CCEND,ISTAT,IERR)
          IF (.NOT.CCEND) GOTO 1
 C
