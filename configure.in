@@ -202,7 +202,7 @@ echo '   configure $Revision$'
 #
 #
 #
-dirlist='/lib /usr/lib /usr/local/lib'
+dirlist="$userlib /lib /usr/lib /usr/local/lib"
 #
 # GUESS SYSTEM
 #
@@ -394,9 +394,7 @@ if [ "$par" = "yes" ]; then
    fi
    echo 'Parallel message passing: '$mesp
 #
-#  The only computer I can think of with a separate compiler for parallel
-#  MPI code is IBMs xlf
-#  ...and HPUX (mpif77)
+#  Check whether we have a parallel compiler available
 #
    if [ "$mesp" = "mpi" ]; then
       case $machine in
@@ -422,6 +420,13 @@ if [ "$par" = "yes" ]; then
             parlib='yes'
             parinc='yes'
             mpirun='dmpirun'
+            ;;
+         i[3-6]86-*)
+            parlib='yes'
+            parinc='yes'
+            complist='mpif77 $complist'
+            cclist='mpicc $cclist' 
+            mpirun='mpirun'
             ;;
          *)
             parlib='yes'
@@ -678,15 +683,15 @@ for testdir in $dirlist; do
          if test -f $testdir/$testlib$ext; then
             echo "Library found  $testdir/$testlib$ext"
             case $testlib in
-               libesslp2) LIB="$LIB -lesslp2";;
-               libessl) LIB="$LIB -lessl";;
-               libblas) LIB="$LIB -lblas";;
-               libdxml) LIB="$LIB -ldxml";;
-               libcomplib.sgimath) LIB="$LIB -lcomplib.sgimath";;
-               libveclib) LIB="$LIB -lveclib";;
-               libmath) LIB="$LIB -lmath -lm -nx";;
-               libatlas) LIB="$LIB -latlas";;
-#TODO Intel Math Kernel Library         libMKL) LIB="$LIB -lMKL";;
+               libesslp2) LIB="$LIB -L$testdir -lesslp2";;
+               libessl) LIB="$LIB -L$testdir -lessl";;
+               libblas) LIB="$LIB -L$testdir -lblas";;
+               libdxml) LIB="$LIB -L$testdir -ldxml";;
+               libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
+               libveclib) LIB="$LIB -L$testdir -lveclib";;
+               libmath) LIB="$LIB -L$testdir -lmath -lm -nx";;
+               libatlas) LIB="$LIB -L$testdir -latlas";;
+#TODO Intel Math Kernel Library         libMKL) LIB="$LIB -L$testdir -lMKL";;
             esac
             break
          fi
@@ -843,7 +848,7 @@ else
       exit 1
    fi
 fi
-echo 'Scratch directory: '$worksp'/$USER$'
+echo 'Scratch directory: '$worksp'/$USER'
 echo
 #
 #
@@ -1108,8 +1113,6 @@ case $machine in
 #
    i[3-6]86-*)
       echo 
-      echo "Get the BLAS routines. See 'Known issues and problems' at"
-      echo "http://dirac.chem.sdu.dk"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1118,7 +1121,12 @@ case $machine in
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
+#LV : if mpif77 is available there one should not specify the include dir
+         if [ "$F77" = "mpif77" ]; then
+            mpi_inc="-I$INCLUDE_DIR"
+         else
+            mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+         fi
       fi
 #
 # Ask user whether the large file option can be set
@@ -1135,6 +1143,9 @@ case $machine in
       esac
       case "$F77" in
       g77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         ;;
+      mpif77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
          ;;
       pgf90)
@@ -1190,7 +1201,7 @@ esac
 #  Add VAR_G77 is compiler is g77
 #  and add INSTALL_WRKMEM to the ccp-flags.
 #
-if [ "$F77" = "g77" ]; then
+if [[ "$F77" = "g77" || "$F77" = "mpif77" ]]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
