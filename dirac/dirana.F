@@ -422,7 +422,7 @@ C       Calculate gross populations
 C       ===========================
 C
         CALL GRSPOP(POPG,PMAT,NPOPLAB)
-        CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF)
+        CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
 C
 CJTH    D2 should be replaced by ??? for average of conf.
 C
@@ -664,7 +664,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrpopg */
-      SUBROUTINE WRPOPG(POPG,LAB,NLAB,IEFF)
+      SUBROUTINE WRPOPG(POPG,LAB,NLAB,IEFF,IPRINT)
 C*****************************************************************************
 C
 C     Output routine for Mulliken gross population
@@ -724,6 +724,13 @@ C
      &       ' beta  |',(POPG(IEFF(NOFF+I),2),I=1,NPRI)
         NOFF = NOFF + NPRI
       ENDDO
+C
+      IF(IPRINT.GE.1) THEN
+        WRITE(LUPRI,'(A)') '* Gross populations (all):'
+        DO I = 1,NLAB
+          WRITE(LUPRI,'(A12,2E16.8)') LAB(I),POPG(I,1),POPG(I,2)
+        ENDDO
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
