@@ -1866,7 +1866,7 @@ C
 C        Reorder coefficients
 C
          CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTEMP),NFBAS(I,0),NORB(I),NZ,
-     &              IMOORD(1,I),IREORD(I),NPSH(I))
+     &              IMOORD(1,I),IREORD(I),NPSH(I),NESH(I))
 C
 C        Release memory
 C
@@ -1887,7 +1887,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reor1 */
       SUBROUTINE REOR1(CMO,CMOBCK,NBASI,NORBI,NZ,IORDER,NORDER,
-     &                 NPOSITRON)
+     &                 NPOSITRON,NELECTRON)
 C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
@@ -1908,7 +1908,9 @@ C
          DO IZ = 1,NZ
             IORB_S = I+NPOSITRON
             IORB_D = IORDER(I)+NPOSITRON
-            CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,CMO(1,IORB_D,IZ),1)
+            IF (IORB_D .LE. NELECTRON)
+               CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
+     &                          CMO(1,IORB_D,IZ),1)
          END DO
       END DO
 C
