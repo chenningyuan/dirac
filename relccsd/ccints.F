@@ -136,8 +136,15 @@ C           The newer MOLFDIR file format = identical to older DIRAC
          END IF
 #endif
       ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
+         IF (MYPROC.EQ.MASTER) THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
+         ENDIF
+         IF (NMPROC .GT. 1) THEN
+            CALL MPI_BCAST(NKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+            CALL MPI_BCAST(KR,2*NSP+1,MPI_INTEGER,
+     &                     MASTER,MPI_COMM_WORLD,IERR)
+         END IF
       ELSE
          WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
          CALL QUIT('Adapt RDINTS')
@@ -288,7 +295,7 @@ C ----------------------------
       NSEC = N5*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N5*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MASTER) THEN
          CLOSE (MDINT,STATUS='KEEP')
          IF (BREIT.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
@@ -394,7 +401,7 @@ C --------------------------
       NSEC = N6*IRW*RCW / NWORDS_ON_RECORD
       IF (MOD(N6*IRW*RCW,NWORDS_ON_RECORD).NE.0) NSEC = NSEC + 1
 C
-      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MASTER) THEN
          CLOSE (MDINT,STATUS='KEEP')
          IF (BREIT.AND.ITRSGN.EQ.-1) THEN
              OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
@@ -798,7 +805,7 @@ C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
    1  CONTINUE
-      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+      IF (MYPROC.EQ.MASTER) THEN
 C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
@@ -832,7 +839,7 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       ENDIF
       ENDIF
 #if defined (VAR_MPI)
-      IF (NMPROC.GT.1 .AND. INTERFACE(1:7).EQ.'MOLFDIR') THEN
+      IF (NMPROC.GT.1 ) THEN
       CALL MPI_BCAST(IKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(JKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(NONZR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
@@ -1339,7 +1346,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 XSUM
+      REAL*8 CSUM(2)
 C
 C---------------Executable code--------------------------------------
 C
@@ -1362,7 +1369,8 @@ C---------------------------------------------------------------------
             II = 0
             DO IREP = 1, NREP
                IF (K.LE.NE(KREP)) THEN
-                  E1 = E1 - XSUM(NE(IREP),BUF2(II+KK),NO(IREP)+1)
+                  CALL XSUM(CSUM,NE(IREP),BUF2(II+KK),NO(IREP)+1)
+                  E1 = E1 - CSUM(1)
                ENDIF
                II = II + NO(IREP) * NO(IREP) * RCW
             ENDDO
@@ -1376,7 +1384,8 @@ C  E0 = E0 + FOO(I,I)
 C---------------------------------------------------------------------
       II = 1
       DO IREP = 1, NREP
-         E0 = E0 + XSUM(NE(IREP),FOO(II),NO(IREP)+1)
+         CALL XSUM(CSUM,NE(IREP),FOO(II),NO(IREP)+1)
+         E0 = E0 + CSUM(1)
          II = II + NO(IREP) * NO(IREP) * RCW
       ENDDO
 C

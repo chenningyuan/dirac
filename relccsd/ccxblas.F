@@ -250,7 +250,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      REAL*8 FUNCTION XSUM (N,X,INCX)
+      SUBROUTINE XSUM (RESULT,N,X,INCX)
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -259,8 +259,6 @@ C
 C     Generic version of BLAS routines SSUM, DSUM, CSUM, ZSUM
 C     Depending of the value of CARITH and the machine specification
 C     the appropriate routine is called.
-C     Note that the imaginary part of the result is always assumed to
-C     be zero.
 C
 C---------------Routines called----------------------------------------
 C
@@ -272,7 +270,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER N,INCX
       REAL*8 X(*)
-      COMPLEX*16 YSUM,ZSUM,CSUM
+      REAL*8 RESULT(*),DSUM
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -284,19 +282,10 @@ C
 C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
-         YSUM = ZSUM (N,X,INCX)
-C64B     YSUM = CSUM (N,X,INCX)
-         IF (ABS(DIMAG(YSUM)).GT.ACCUR) THEN
-C64B     IF ( ABS(AIMAG(YSUM)).GT.ACCUR) THEN
-            PRINT*, "IMAGINARY PART OF XSUM :",DIMAG(YSUM)
-C64B        PRINT*, "IMAGINARY PART OF XSUM :",AIMAG(YSUM)
-c           CALL QUIT("RESULT OF XSUM IS NOT REAL")
-         ENDIF
-         XSUM = DBLE(YSUM)
-C64B     XSUM = REAL(YSUM)
+         RESULT(1) = DSUM (N,X(1),2*INCX) 
+         RESULT(2) = DSUM (N,X(2),2*INCX) 
       ELSE
-         XSUM = DSUM (N,X,INCX)
-C64B     XSUM = SSUM (N,X,INCX)
+         RESULT(1) = DSUM (N,X,INCX) 
       ENDIF
 C
       RETURN
@@ -380,4 +369,62 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
+      SUBROUTINE XDOTC (RESULT,N,X,INCX,Y,INCY)
+C
+      IMPLICIT REAL*8 (A-H, O-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Generic version of BLAS routines DOTC and DOTU
+C     Depending of the value of CARITH and the machine specification
+C     the appropriate routine is called
+C
+C     Note : The routine was written due to problems with the BLAS 
+C            ZDOTC and ZDOTU functions, be careful if reintroducing them
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C     Date : 25-9-2003
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER N,INCX,INCY
+      REAL*8 X(*),Y(*)
+      REAL*8 DDOT, RESULT(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IF (CARITH) THEN
+         RESULT(1) = DDOT (N,X(1),2*INCX,Y(1),2*INCY) 
+     &             + DDOT (N,X(2),2*INCX,Y(2),2*INCY)
+         RESULT(2) = DDOT (N,X(1),2*INCX,Y(2),2*INCY) 
+     &             - DDOT (N,X(2),2*INCX,Y(1),2*INCY)
+      ELSE
+         RESULT(1) = DDOT (N,X,INCX,Y,INCY)
+      ENDIF
+C
+      RETURN
+C
+      ENTRY XDOTU (RESULT,N,X,INCX,Y,INCY)
+C
+      IF (CARITH) THEN
+         RESULT(1) = DDOT (N,X(1),2*INCX,Y(1),2*INCY) 
+     &             - DDOT (N,X(2),2*INCX,Y(2),2*INCY)
+         RESULT(2) = DDOT (N,X(1),2*INCX,Y(2),2*INCY) 
+     &             + DDOT (N,X(2),2*INCX,Y(1),2*INCY)
+      ELSE
+         RESULT(1) = DDOT (N,X,INCX,Y,INCY)
+      ENDIF
+C
+      RETURN
+C
+      END

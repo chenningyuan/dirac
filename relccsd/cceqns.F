@@ -174,10 +174,9 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 CPU,CPU4V,CPUH1,CPUH2
       LOGICAL TEQ,FOCKSP,PRENE
-      real*8 ddot,sdot
-      complex*16 zdotc,cdotc
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
+      REAL*8 DDOT
 C
 C---------------Executable code--------------------------------------
 C
@@ -316,17 +315,12 @@ C
       CALL XTIME(5,1,'- T2 equations                  ')
 
       
-      if (carith.and.debug) then
-      write (*,111)"ho",MYPROC,zdotc(nfoo,ho,1,ho,1)
-      write (*,111)"hv",MYPROC,zdotc(nfvv,hv,1,hv,1)
-      write (*,111)"hov",MYPROC,zdotc(ndimt1,hov,1,hov,1)
-      write (*,111)"s1",MYPROC,zdotc(ndimt1,s1,1,s1,1)
-      elseif (debug) then
-      write (*,111)"ho",MYPROC,ddot(nfoo,ho,1,ho,1)
-      write (*,111)"hv",MYPROC,ddot(nfvv,hv,1,hv,1)
-      write (*,111)"hov",MYPROC,ddot(ndimt1,hov,1,hov,1)
-      write (*,111)"s1",MYPROC,ddot(ndimt1,s1,1,s1,1)
-      endif
+      IF (DEBUG) THEN
+        WRITE (*,111) "ho ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
+        WRITE (*,111) "hv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
+        WRITE (*,111) "hov",MYPROC,DDOT(RCW*NDIMT1,HOV,1,HOV,1)
+        WRITE (*,111) "s1 ",MYPROC,DDOT(RCW*NDIMT1,S1,1,S1,1)
+      ENDIF
 C
 C  EVALUATE T2 INTERMEDIATES
 C
@@ -366,22 +360,7 @@ C ... we collect the H array
         IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
         CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
         CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
-c
-cluuk : old code below, that uses two steps
-c       CALL XTIME(4,1,'-- adding partial HINTM via MPI_REDUCE')
-c       CALL MPI_REDUCE(H,BUF3,RCW*IVOVO(NREP+1),
-c    &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
-c       IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
-c       CALL XTIME(4,2,'-- adding partial HINTM via MPI_REDUCE')
-c       CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
 
-C ... and redistribute it
-
-c       CALL XTIME(4,1,'-- distributing HINTM via MPI_BCAST')
-c       CALL MPI_BCAST(H,RCW*IVOVO(NREP+1),MPI_DOUBLE_PRECISION,
-c    &     MASTER,MPI_COMM_WORLD,IERR)
-c       IF(IERR.GT.0) CALL QUIT('MPI_BCAST ERROR !')
-c       CALL XTIME(4,2,'-- distributing HINTM via MPI_BCAST')
       ENDIF
 
 #endif
@@ -389,17 +368,14 @@ c       CALL XTIME(4,2,'-- distributing HINTM via MPI_BCAST')
       ENDIF
 
 C
-      if (carith.and.debug) then
-      write (*,111)"go",MYPROC,zdotc(nfoo,ho,1,ho,1)
-      write (*,111)"gv",MYPROC,zdotc(nfvv,hv,1,hv,1)
-      write (*,111)"az",MYPROC,a2*a2*zdotc(ioooott(nrep+1),az,1,az,1)
-      write (*,111)"h ",MYPROC,zdotc(ivovo(nrep+1),h,1,h,1)
-      elseif (debug) then
-      write (*,111)"go",MYPROC,ddot(nfoo,ho,1,ho,1)
-      write (*,111)"gv",MYPROC,ddot(nfvv,hv,1,hv,1)
-      write (*,111)"az",MYPROC,4.d0*ddot(ioooott(nrep+1),az,1,az,1)
-      write (*,111)"h ",MYPROC,ddot(ivovo(nrep+1),h,1,h,1)
-      endif
+      IF (DEBUG) THEN
+         WRITE (*,111)"go ",MYPROC,DDOT(RCW*NFOO,HO,1,HO,1)
+         WRITE (*,111)"gv ",MYPROC,DDOT(RCW*NFVV,HV,1,HV,1)
+         LEN = IOOOOTT(NREP+1)
+         WRITE (*,111)"az ",MYPROC,4.D0*DDOT(RCW*LEN,AZ,1,AZ,1)
+         LEN = IVOVO(NREP+1)
+         WRITE (*,111)"h  ",MYPROC,DDOT(RCW*LEN,H,1,H,1)
+      ENDIF
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
@@ -411,21 +387,18 @@ C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
 C
-      if (carith.and.debug) then
-      write (*,111)"s2",MYPROC,zdotc(ndimt2,s2,1,s2,1)
-      elseif (debug) then
-      write (*,111)"s2",MYPROC,ddot(ndimt2,s2,1,s2,1)
-      endif
+      IF (DEBUG) THEN
+         WRITE (*,111)"s2 ",MYPROC,DDOT(RCW*NDIMT2,S2,1,S2,1)
+      ENDIF
 C      
       CALL XTIME(5,1,'-- BINTM                       ')
       CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
       CALL XTIME(5,2,'-- BINTM                       ')
 
-      if (carith.and.debug) then
-      write (*,111)"s2 after bintm",MYPROC,zdotc(ndimt2,s2,1,s2,1)
-      elseif (debug) then
-      write (*,111)"s2 after bintm",MYPROC,ddot(ndimt2,s2,1,s2,1)
-      endif
+      IF (DEBUG) THEN
+         WRITE (*,111)"s2 after bintm",MYPROC,DDOT(RCW*NDIMT2,S2,1,S2,1)
+      ENDIF
+C
       CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
@@ -445,26 +418,20 @@ C
       CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
       CALL XTIME(4,2,'- adding partial T1/T2 amplitudes ')
 C
+      IF (DEBUG) THEN
+        WRITE (*,111)"s2 after parts",MYPROC,DDOT(RCW*NDIMT2,S2,1,S2,1)
+        WRITE (*,111)"s1 after parts",MYPROC,DDOT(RCW*NDIMT1,S1,1,S1,1)
+      ENDIF
+C
       IF (FOCKSP) THEN
 C       Adding folded diagrams, use HOV and H as scratch arrays
         CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
      &               S1,S2)     
-        if (carith.and.debug) then
-        write (iw,111)"s1 after folded",MYPROC,zdotc(ndimt1,s1,1,s1,1)
-        write (iw,111)"s2 after folded",MYPROC,zdotc(ndimt2,s2,1,s2,1)
-        elseif (debug) then
-        write (iw,111)"s1 after folded",MYPROC,ddot(ndimt1,s1,1,s1,1)
-        write (iw,111)"s2 after folded",MYPROC,ddot(ndimt2,s2,1,s2,1)
-        endif
+        IF (DEBUG) THEN
+        WRITE (*,111)"s1 after folded",MYPROC,DDOT(RCW*NDIMT1,S1,1,S1,1)
+        WRITE (*,111)"s2 after folded",MYPROC,DDOT(RCW*NDIMT2,S2,1,S2,1)
+        ENDIF
       ENDIF
-C
-      if (carith.and.debug) then
-      write (*,111)"s2 after parts",MYPROC,zdotc(ndimt2,s2,1,s2,1)
-      write (*,111)"s1 after parts",MYPROC,zdotc(ndimt1,s1,1,s1,1)
-      elseif (debug) then
-      write (*,111)"s2 after parts",MYPROC,ddot(ndimt2,s2,1,s2,1)
-      write (*,111)"s1 after parts",MYPROC,ddot(ndimt1,s1,1,s1,1)
-      endif
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
 C
@@ -642,7 +609,6 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ,USEDZ,RIGHT
       REAL*8 SDOT,DDOT
-      COMPLEX*16 CDOTU,ZDOTU
 C
 C---------------Executable code--------------------------------------
 C
@@ -1892,7 +1858,7 @@ C---------------Local variables--------------------------------------
 C 
       REAL*8 XM,XMAX,XEN,XFAC,XADD,DET
       REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT
-      COMPLEX*16 CSUM1,ZSUM,CSUM,ZDOTC,CDOTC,CFAC
+      COMPLEX*16 CFAC
 C     
 C---------------Executable code--------------------------------------
 C
@@ -1946,16 +1912,23 @@ C
       ITC = ITC + 1
       IF(ITC.GT.MAXDIM) ITC = 1
 C
+C     Calculate the difference between the input and output amplitudes
+C     This is our error vector. Below we will consider the real and 
+C     imaginary differences as independent so that we can work with
+C     a real error vector that is twice as long in complex as in real
+C     cases.
+C
       CALL XAXPY (NDIMT1,-A1,T1N,1,T1O,1)
       CALL XAXPY (NDIMT2,-A1,T2N,1,T2O,1)
       CALL XSCAL (NDIMT1,-A1,T1O,1)
       CALL XSCAL (NDIMT2,-A1,T2O,1)
+C
       IF (CARITH) THEN
-         CSUM1 = ZSUM (NDIMT1,T1O,1)
-         SUM2 = ZDOTC (NDIMT1,T1O,1,T1O,1)
-         CSUM1 = CSUM1 + ZSUM (NDIMT2,T2O,1)
-         SUM2 = SUM2 + ZDOTC (NDIMT2,T2O,1,T2O,1)
-         RMS = DCONJG(CSUM1)*CSUM1
+         SUM1 = DSUM (RCW*NDIMT1,T1O,1)
+         SUM2 = DDOT (RCW*NDIMT1,T1O,1,T1O,1)
+         SUM1 = SUM1 + DSUM (RCW*NDIMT2,T2O,1)
+         SUM2 = SUM2 + DDOT (RCW*NDIMT2,T2O,1,T2O,1)
+         RMS = SUM1 * SUM1
       ELSE
          SUM1 = DSUM (NDIMT1,T1O,1)
          SUM2 = DDOT (NDIMT1,T1O,1,T1O,1)
@@ -1981,9 +1954,8 @@ C
       CALL RREAD(ITAMPD,T2N,INTOWP(NDIMT2*RCW),SECT2)
 C
       IF (CARITH) THEN
-         CSUM1 = ZDOTC (NDIMT1,T1N,1,T1O,1)
-         CSUM1 = CSUM1 + ZDOTC (NDIMT2,T2N,1,T2O,1)
-         SUM2 = DBLE(CSUM1) + DIMAG(CSUM1)
+         SUM2 = DDOT (RCW*NDIMT1,T1N,1,T1O,1)
+         SUM2 = SUM2 + DDOT (RCW*NDIMT2,T2N,1,T2O,1)
       ELSE
          SUM2 = DDOT (NDIMT1,T1N,1,T1O,1)
          SUM2 = SUM2 + DDOT (NDIMT2,T2N,1,T2O,1)
@@ -2096,25 +2068,23 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
+#include "files.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      COMPLEX*16 CECC1,CECC2
-      COMPLEX*16 ZDOTC
-      REAL*8 DDOT,SDOT
+      REAL*8 CECC1(2),CECC2(2)
 C
 C---------------Executable code--------------------------------------
 C
       CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
       CALL DELFCK ('VO','DD',BUF1)
 C
+      CALL XDOTC(CECC1,NFVO,BUF1,1,T1,1)
+      ECC = CECC1(1)
       IF (CARITH) THEN
-         CECC1 = ZDOTC (NFVO,BUF1,1,T1,1)
-         IF (ABS(DIMAG(CECC1)).GT.ACCUR) 
-     &      WRITE (6,1000) 'T1',DIMAG(CECC1)
-      ELSE
-         ECC = DDOT (NFVO,BUF1,1,T1,1)
+         IF (ABS(CECC1(2)).GT.ACCUR) 
+     &      WRITE (IW,1000) 'T1',CECC1(2)
       ENDIF
 C
 c     print*,'T1 contribution to CC energy',ecc
@@ -2122,13 +2092,12 @@ C
       CALL GETVVOO (BUF1)
       CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
       CALL GETTAU  (T1,T2,BUF2)
+C
+      CALL XDOTC(CECC2,NDIMT2,BUF1,1,BUF2,1)
+      ECC = ECC + CECC2(1)
       IF (CARITH) THEN
-         CECC2 = ZDOTC (NDIMT2,BUF1,1,BUF2,1)
-         IF (ABS(DIMAG(CECC2)).GT.ACCUR) 
-     &      WRITE (6,1000) 'T2',DIMAG(CECC2)
-         ECC = DBLE(CECC1 + CECC2)
-      ELSE
-         ECC = ECC +  DDOT (NDIMT2,BUF1,1,BUF2,1)
+         IF (ABS(CECC2(2)).GT.ACCUR) 
+     &      WRITE (IW,1000) 'T2',CECC2(2)
       ENDIF
 C
       RETURN
@@ -2163,34 +2132,30 @@ C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "symm.inc"
+#include "files.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      COMPLEX*16 CEMP21,CEMP22
-      COMPLEX*16 CDOTC,ZDOTC
-      REAL*8 DDOT,ZDOT
+      REAL*8 CEMP21(2),CEMP22(2)
 C
 C---------------Executable code--------------------------------------
 C
+      CALL XDOTC(CEMP21,NFVO,FVO,1,T1,1)
+      EMP2 = CEMP21(1)
       IF (CARITH) THEN
-         CEMP21 = ZDOTC (NFVO,FVO,1,T1,1)
-         IF (ABS(DIMAG(CEMP21)).GT.ACCUR) 
-     &      WRITE (6,1000) 'T1',DIMAG(CEMP21)
-      ELSE
-         EMP2 = DDOT (NFVO,FVO,1,T1,1)
+         IF (ABS(CEMP21(2)).GT.ACCUR)    
+     &      WRITE (IW,1000) 'T1',CEMP21(2)
       ENDIF
 C
 c     print*,'T1 contribution to MP2 energy',emp2
 C
       CALL GETVVOO(BUF1)
+      CALL XDOTC(CEMP22,NDIMT2,BUF1,1,T2,1)
+      EMP2 = EMP2 + CEMP22(1)
       IF (CARITH) THEN
-         CEMP22 = ZDOTC (NDIMT2,BUF1,1,T2,1)
-         IF (ABS(DIMAG(CEMP22)).GT.ACCUR) 
-     &      WRITE (6,1000) 'T2',DIMAG(CEMP22)
-         EMP2 = DBLE(CEMP21 + CEMP22)
-      ELSE
-         EMP2 = EMP2 + DDOT (NDIMT2,BUF1,1,T2,1)
+         IF (ABS(CEMP22(2)).GT.ACCUR)    
+     &      WRITE (IW,1000) 'T2',CEMP22(2)
       ENDIF
 C
       RETURN
@@ -2368,7 +2333,6 @@ C---------------Local variables--------------------------------------
 C
       INTEGER SUM
       REAL*8 RSUM,DDOT,SDOT
-      COMPLEX*16 ZDOTC,CDOTC
 C
 C---------------Executable code--------------------------------------
 C
@@ -2381,12 +2345,7 @@ C
       ENDDO
       RSUM = DBLE(SUM)
 C
-      IF (CARITH) THEN
-         DIAG = DBLE(ZDOTC (NDIMT1,BUF1,1,BUF1,1))
-      ELSE
-         DIAG = DDOT (NDIMT1,BUF1,1,BUF1,1)
-      ENDIF
-C
+      DIAG = DDOT (RCW*NDIMT1,BUF1,1,BUF1,1)
       DIAG =  SQRT(DIAG/RSUM)
 C
       RETURN
@@ -2504,7 +2463,6 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       REAL*8 SDOT,DDOT
-      COMPLEX*16 CDOTU,ZDOTU,CT1
 C
 C---------------Executable code--------------------------------------
 C
@@ -2535,24 +2493,30 @@ C ** NINT is updated on exit of GETVOVV !
                     AK = (IIVO(IREP,KREP)+(K-1)*NV(IREP)+A-1) * RCW + 1
                     T1AI = (IVO(IREP)+(I-1)*NV(IREP)+A-1) * RCW + 1
                     IF (CARITH) THEN
-                       CT1 = ZDOTU(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
-                       S1(T1AI) = S1(T1AI) + DBLE(CT1)
-                       S1(T1AI+1) = S1(T1AI+1) + DIMAG(CT1)
+                       S1(T1AI) = S1(T1AI)
+     &            + DDOT(NINT,BUF1(CDIK),RCW,BUF3(AK),RCW*NVO(IRP))
+     &            - DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AK+1),RCW*NVO(IRP))
+                       S1(T1AI+1) = S1(T1AI+1)
+     &            + DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AK),RCW*NVO(IRP))
+     &            + DDOT(NINT,BUF1(CDIK),RCW,BUF3(AK+1),RCW*NVO(IRP))
                     ELSE
                        S1(T1AI) = S1(T1AI)
-     &                     + DDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
+     &            + DDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
                     ENDIF
                  ENDDO
                  DO A = 1, NV(KREP)
                     AI = (IIVO(KREP,IREP)+(I-1)*NV(KREP)+A-1) * RCW + 1
                     T1AK = (IVO(KREP)+(K-1)*NV(KREP)+A-1) * RCW + 1
                     IF (CARITH) THEN
-                       CT1 = ZDOTU(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
-                       S1(T1AK) = S1(T1AK) - DBLE(CT1)
-                       S1(T1AK+1) = S1(T1AK+1) - DIMAG(CT1)
+                       S1(T1AK) = S1(T1AK)
+     &            - DDOT(NINT,BUF1(CDIK),RCW,BUF3(AI),RCW*NVO(IRP))
+     &            + DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AI+1),RCW*NVO(IRP))
+                       S1(T1AK+1) = S1(T1AK+1)
+     &            - DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AI),RCW*NVO(IRP))
+     &            - DDOT(NINT,BUF1(CDIK),RCW,BUF3(AI+1),RCW*NVO(IRP))
                     ELSE
                        S1(T1AK) = S1(T1AK)
-     &                     - DDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
+     &            - DDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
                     ENDIF
                  ENDDO
               ENDDO

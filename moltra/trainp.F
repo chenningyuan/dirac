@@ -418,11 +418,7 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       PRPTRA = .FALSE.
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
-#if defined (SYS_LOCALDISKS)
-      MDCSCAT = .TRUE.
-#else
       MDCSCAT = .FALSE.
-#endif
       THROUT = 1.0D-16
       SCRTRA = -1.0D0
 C

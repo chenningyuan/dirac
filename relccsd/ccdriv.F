@@ -745,7 +745,7 @@ C
 C   
 C     Print timings
 C
-      CALL XTIME(0,4,' RELCCSD                     ')
+      CALL XTIME(0,4,' RELCCSD                         ')
       CALL FLSHFO (IW)
       CALL GETTIM(CPUTOT,WALLTOT)
       CPUTOT = CPUTOT - CPU0
