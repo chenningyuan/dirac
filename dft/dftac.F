@@ -108,6 +108,7 @@ c         switch function
 #include "implicit.h"
 #include "dcbham.h"
 #include "dftbuf.h"
+#include "dftcom.h"
 #include "functionals.h"
 #include "priunit.h"
       PARAMETER (b=0.05d0)
@@ -164,6 +165,7 @@ c gradient regulated asymptotic correction (closed-shell version)
 c see: M. Gr\"uning et al. JCP 114 (2001) p. 652
 #include "implicit.h"
 #include "dcbham.h"
+#include "dftcom.h"
 #include "dftbuf.h"
 #include "functionals.h"
 #include "priunit.h"
