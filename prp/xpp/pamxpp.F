@@ -638,12 +638,17 @@ C
 C        calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
+      IF(LEVYLE.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
+C     ... no positronic orbitals for Levy-Leblond or no-pair
+      IF (XPP_SKIPEE .AND. XPP_SKIPEP) THEN
+         WRITE(LUPRI,'(/A)') 'INPUT ERROR: both SKIPEE and SKIPEP'
+         INPERR = INPERR + 1
+      END IF
       IF(QED .AND. XPP_SKIPEP) THEN
          WRITE(LUPRI,'(/A)')
-     &  ' Input WARNING for *EXCITA: .SKIPEP ignored because of .QED'
-         XPP_SKIPEP = .FALSE.
+     &  ' INPUT ERROR: QED invalid for Levy-Leblond/no-pair/.SKIPEP'
+         INPERR = INPERR + 1
       END IF
-      IF(LEVYLE) XPP_SKIPEP = .TRUE.
 C
 C     Print section
 C     =============
@@ -656,9 +661,8 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I5)')
      &   '* Print level                 :',IPRXPP
-      IF(XPPANA) THEN
-        WRITE(LUPRI,'(1X,A)') '* Analysis of solution vectors.'
-      ENDIF
+      IF(XPPANA) WRITE(LUPRI,'(A)')
+     &   ' * Analysis of solution vectors.'
       IF(ORBXPP) WRITE(LUPRI,'(A)')
      &   ' * Analysis of individual orbital contributions.'
       IF(XPPFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A,A6)')
@@ -671,10 +675,11 @@ C
       WRITE(LUPRI,'(A,I5)')
      &   ' * Max. size of reduced matrix :',MAXRM
       IF(XPP_SKIPEE) WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
-      IF(XPP_SKIPEP .AND. .NOT.LEVYLE) WRITE(LUPRI,'(A)')
-     &     ' * NB!!! No rotations between electrons and positrons.'
+      IF(XPP_SKIPEP .AND. .NOT.(LEVYLE.OR.FREEPJ.OR.VEXTPJ))
+     &   WRITE(LUPRI,'(A)')
+     &   ' * NB!!! No rotations between electrons and positrons.'
       IF(QED) WRITE(LUPRI,'(A)')
-     & ' * QED: Rotations between positrons and all electron orbitals.'
+     &  ' * QED: Rotations between positrons and all electron orbitals.'
       IF(.NOT.DOXPP) THEN
         DOXPP = DOXPP.OR.XPPANA
         GOTO 999
@@ -711,9 +716,9 @@ C     Number of excitations
 C     =====================
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(A,8I5)')
+      WRITE(LUPRI,'(A,8(/10X,A,I2,3A,I5))')
      &   ' * No. of excitations evaluated in each boson symmetry:',
-     &   (KEXCNV(J),J=1,NBSYM)
+     &   (' boson symmetry',J,' (',REP(J-1),') :',KEXCNV(J),J=1,NBSYM)
 C
 C     A operators
 C     ===========
@@ -1244,7 +1249,7 @@ C
                END IF
 C
                IF (ORBXPP) THEN
-                  WRITE(LUPRI,'(2X,A)') ' * Orbital analysis:'
+                  WRITE(LUPRI,'(/3X,A)') '* Orbital analysis:'
                   IND = 0
                   DO IFRP = 1,NFSYM
 C - positronic orbitals

@@ -3055,13 +3055,8 @@ C
 C     Electronic part
 C
       IF(NZXOPE.GT.0) THEN
-         IF(STERNH) THEN
-            FAC = DM2*CVAL*CVAL
-            CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
-         ELSE
-            CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
+         CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
      &           WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
-         ENDIF
          CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')

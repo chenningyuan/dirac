@@ -88,7 +88,7 @@ C
             CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
-     &           'Unknown wave funciton: ' // WF)
+     &           'Unknown wave function: ' // WF)
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)

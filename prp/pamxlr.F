@@ -609,7 +609,7 @@ C&&&& ANALYZe: Analyze individual contributions to response functions
                   XLRANA = .TRUE.
                GO TO 100
  27            CONTINUE
-C&&&& STERNH: Diagonal part of ep,ep-Hessian approximated by -2mc^2
+C&&&& STERNH: The ep,ep-Hessian approximated by -2mc^2 diagonal matrix
                   XSTERN = .TRUE.
                GO TO 100
  28            CONTINUE
@@ -647,14 +647,15 @@ C
 C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(QED .AND. XLR_SKIPEP) THEN
-         WRITE(LUPRI,'(/A)')
-     &  ' Input WARNING for *LINEAR: .SKIPEP ignored because of .QED'
-         XLR_SKIPEP = .FALSE.
-      END IF
-      IF(LEVYLE) XLR_SKIPEP = .TRUE.
-C       ... to make sure diamagnetic terms are calculated for magn.prop.
+      IF(LEVYLE.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
+C     ... no positrons for Levy-Leblond or no-pair
+C     ... also to make sure diamagnetic terms are calculated for magn.prop.
 C           (see PRPDEF) /hj jan 2001
+      IF(QED .AND. XLR_SKIPEP) THEN
+         WRITE(LUPRI,'(/A)') ' FATAL ERROR for *LINEAR: '//
+     &   'QED invalid for Levy-Leblond/no-pair/.SKIPEP'
+         INPERR = INPERR + 1
+      END IF
 C
 C     Print section
 C     =============
@@ -662,15 +663,25 @@ C
       DOXLR = DOXLR.OR.(NLRAPT.GT.0.AND.NLRBPT.GT.0.AND.NBFREQ.GT.0)
       IF(.NOT.(DOXLR.OR.XLRANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &    'XLRINP: Electronic linear reponse properties'
+      WRITE(LUPRI,'(A)')
+     &   ' XLRINP: Electronic linear reponse properties'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,I5)')
-     &   '* Print level                 :',IPRXLR
-      IF(XLRANA) THEN
-        WRITE(LUPRI,'(1X,A)') '* Analysis of solution vectors.'
-      ENDIF
+      WRITE(LUPRI,'(A,I5)')
+     &   ' * Print level                 :',IPRXLR
+      IF(XLRANA) WRITE(LUPRI,'(A)')
+     &   ' * Analysis of solution vectors.'
       IF(XSTERN .AND. DOXLR) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &'* Sternheimer: Approximating Hessian for ep-rotations by -2mc^2',
+     &'  and ignoring coupling between e-e and e-p rotations.',
+     &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
+     &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
+        IF (LEVYLE .OR. FREEPJ .OR. VEXTPJ .OR. XLR_SKIPEP) THEN
+           WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
+     &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
+           CALL QUIT(
+     &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP')
+        END IF
 Chj Oct 2000: check if .STERNH should invoke the following:
         XLRDIH = .TRUE.
         XLR_SKIPEE = .TRUE.
@@ -678,48 +689,29 @@ Chj Oct 2000: check if .STERNH should invoke the following:
         ITRXLR = 0
         XLR_XVCFIL = 'NORXVC'
 Chj Oct 2000 end
-        WRITE(LUPRI,'(1X,A)')
-     &'* Sternheimer: Approximating Hessian for ep-rotations by -2mc^2',
-     &'  and ignoring coupling between e-e and e-p rotations.',
-     &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
-     &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE) THEN
-C HJAaJ TODO: check for no positron orbitals in addition to LEVYLE
-           WRITE (LUPRI,'(/A)')
-     &'   FATAL ERROR: .STERNH not defined for Levy-Leblond'
-          CALL QUIT('.STERNH not defined for Levy-Leblond')
-        END IF
       END IF
-      IF(XLR_SKIPEE) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* NB!!! No e-e rotations'
-      ENDIF
-      IF(XLR_SKIPEP .AND. .NOT. LEVYLE) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* NB!!! No rotations between electrons and positrons.'
-      ENDIF
-      IF(QED) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &     '* QED: rotations between positrons and secondary orbitals.'
-      ENDIF
+      IF(XLR_SKIPEE) WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No e-e rotations'
+      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.FREEPJ.OR.VEXTPJ))
+     &     WRITE(LUPRI,'(A)')
+     &     ' * NB!!! No rotations between electrons and positrons.'
+      IF(QED) WRITE(LUPRI,'(A)')
+     &     ' * QED: rotations between positrons and secondary orbitals.'
       IF(.NOT.DOXLR) THEN
         DOXLR = DOXLR.OR.XLRANA
         GOTO 999
       ENDIF
-      IF(XLR_XVCFIL.NE.'NORXVC') THEN
-        WRITE(LUPRI,'(1X,A,A,A6)')
-     &    '* The program will attempt restart from solution vectors ',
+      IF(XLR_XVCFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A6)')
+     &    ' * The program will attempt restart from solution vectors '//
      &    'on file ',XLR_XVCFIL
-      ENDIF
-      WRITE(LUPRI,'(1X,A,I5)')
-     &   '* Maximum number of iterations:',ITRXLR
-      WRITE(LUPRI,'(1X,A,1P,D12.6)')
-     &   '* Threshold for convergence   :',THCLR
-      WRITE(LUPRI,'(1X,A,I5)')
-     &   '* Max. size of reduced matrix :',MAXRM
-      IF(TRIAB) THEN
-        WRITE(LUPRI,'(1X,A)') '* Assuming <<A;B>> to be symmetric.'
-      ENDIF
+      WRITE(LUPRI,'(A,I5)')
+     &   ' * Maximum number of iterations:',ITRXLR
+      WRITE(LUPRI,'(A,1P,D12.6)')
+     &   ' * Threshold for convergence   :',THCLR
+      WRITE(LUPRI,'(A,I5)')
+     &   ' * Max. size of reduced matrix :',MAXRM
+      IF(TRIAB) WRITE(LUPRI,'(A)')
+     &   ' * Assuming <<A;B>> to be symmetric.'
       IF(THRCOM.NE.D0) THEN
         WRITE(LUPRI,'(1X,A/1X,A/1X,A,1P,D12.6)')
      &  '* Reducing orbital parameters by deleting rotations for which',
@@ -727,12 +719,10 @@ C HJAaJ TODO: check for no positron orbitals in addition to LEVYLE
      &  '  threshold ',THRCOM
       ENDIF
 C
-      IF(ALLCMB) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &  '* All combinations of A and B operators will be formed,'//
+      IF(ALLCMB) WRITE(LUPRI,'(A)')
+     &  ' * All combinations of A and B operators will be formed,'//
      &  ' even if not real.'
-      ENDIF
-      WRITE(LUPRI,'(1X,A)') '* Include contributions from '//
+      WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF(ISLINT.EQ.1) THEN
@@ -753,28 +743,28 @@ C
      +    '- SS-integrals from iteration ',ITRILR(2)
         ENDIF
       ENDIF
-      IF(.NOT.XLR_LSFG(1)) WRITE(LUPRI,'(1X,A)')
-     &     '* Debug: Only calling FMOLI in sigma-vector routine...'
-      IF(.NOT.XLR_LSFG(2)) WRITE(LUPRI,'(1X,A)')
-     &     '* Debug: Only calling GMOLI in sigma-vector routine...'
-      IF(XLRNRM) WRITE(LUPRI,'(1X,A)')
-     &     '* Trial vectors will be normalized.'
+      IF(.NOT.XLR_LSFG(1)) WRITE(LUPRI,'(A)')
+     &     ' * Debug: Only calling FMOLI in sigma-vector routine...'
+      IF(.NOT.XLR_LSFG(2)) WRITE(LUPRI,'(A)')
+     &     ' * Debug: Only calling GMOLI in sigma-vector routine...'
+      IF(XLRNRM) WRITE(LUPRI,'(A)')
+     &     ' * Trial vectors will be normalized.'
       IF(XLRDIH) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &  '* Initial trial vectors will be preconditioned.'
+        WRITE(LUPRI,'(A)')
+     &  ' * Initial trial vectors will be preconditioned.'
       ELSE
-        WRITE(LUPRI,'(1X,A)')
-     &  '* No preconditioning of initial trial vectors.'
+        WRITE(LUPRI,'(A)')
+     &  ' * No preconditioning of initial trial vectors.'
       ENDIF
-      IF(MXLOAD.NE.0) WRITE(LUPRI,'(1X,A,I5)')
-     &  '* Maximum number of trial vectors to be loaded'//
+      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)')
+     &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
 C     A operators
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** A operators **'
+      WRITE(LUPRI,'(A)') ' ** A operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NLRAPT
         INDXPR = LLRAPU(I)
@@ -785,7 +775,7 @@ C     B operators
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** B operators **'
+      WRITE(LUPRI,'(A)') ' ** B operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
       DO I = 1,NLRBPT
         INDXPR = LLRBPU(I)
@@ -796,14 +786,18 @@ C     Frequencies
 C     ===========
 C
       CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &'* Linear response functions evaluated at the following '//
+      WRITE(LUPRI,'(A)')
+     &' * Linear response functions evaluated at the following '//
      &   'frequencies:'
       DO J = 1,NBFREQ
         FMT = MXFORM(BFREQ(J),12)
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
       ENDDO
   999 CONTINUE
+      IF (XLR_SKIPEE .AND. XLR_SKIPEP) THEN
+         INPERR = INPERR + 1
+         WRITE(LUPRI,'(/A)') ' FATAL ERROR: both SKIPEE and SKIPEP'
+      END IF
       IF (INPERR.GT.0) CALL QUIT('Input error in *LINEAR RESPONSE')
       RETURN
 C
@@ -914,12 +908,10 @@ C     =============
 C
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') 'NMRINP: '
+         WRITE(LUPRI,'(A)') ' *NMR input: '
          CALL PRSYMB(LUPRI,'=',75,0)
-         IF (GORG) THEN
-            WRITE(LUPRI,'(/,A,3F12.6,/)') 'User defined gauge '//
+         WRITE(LUPRI,'(/,A,3F12.6,/)') 'User defined gauge '//
      &           'origin used:',(GAGORG(I), I = 1, 3)
-         END IF
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       END IF
   999 CONTINUE
