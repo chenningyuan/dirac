@@ -334,6 +334,7 @@ make_makefile()
    #
    cat <<EOF> Makefile
 include ./Makefile.config
+include lucita/Makefile.sub
 
 OBJS = \\
 dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
@@ -364,7 +365,8 @@ moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o \\
-dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
+dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
+\$(LL)
 
 C_OBJS = \\
 main/alloc_mem.o    main/csectid.o \\
@@ -385,6 +387,8 @@ RELCCSD_MAIN = relccsd/ccmain.o
 
 DIRRCI_OBJS = \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
+
+LUCITA_OBJS = \$(LL)
 
 DIRRCI_MAIN = dirrci/cimain.o
 
@@ -467,12 +471,12 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) 
+TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(LUCITA_OBJS)
 
 NOCPPFS = \$(TOTOBJS:.o=.i)
 
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ CI_OBJ $AUXMAK 
+	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	$AUXOBJ \\
@@ -490,7 +494,7 @@ EOF
 #
 cat <<EOF>> Makefile
 dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
+	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	\$(OBJSLAVE) $AUXOBJ \\
@@ -559,6 +563,7 @@ clean   :
 	cd moltra   ; \$(MAKE) clean
 	cd relccsd  ; \$(MAKE) clean
 	cd dirrci  ; \$(MAKE) clean
+	cd lucita  ; \$(MAKE) clean
 EOF
 if [ -n "$DFTMOD" ]; then
    echo '	cd dft      ; $(MAKE) clean' >> Makefile
@@ -612,6 +617,9 @@ SLAVE_OBJ :
 
 CI_OBJ:
 	cd dirrci ; \$(MAKE) all
+
+LUCITA_OBJ:
+	cd lucita ; \$(MAKE) all
 
 EOF
 if [ -n "$ESRMOD" ]; then
@@ -681,7 +689,7 @@ EOF
 #
 #  Add makedepend targets
 #
-TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci"
+TEMP="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita"
 if [ -n "$CCFOCKSPMOD" ]; then
    TEMP="$TEMP relccsd/ccfocksp"
 fi

@@ -114,3 +114,17 @@
 - BGFINP should write out when it blocks the basis set
 
 - Use BASDIR for molfdir basis sets as well.
+
+
+********************
+*** LUCITA tasks ***
+********************
+
+- Has eliminated large allocations from common blocks.
+  Remaining significant allocations in common blocks
+  (should they also be elminated -- "hard work" ???) /Timo :
+
+  gasstr.inc : ISPGPFTP,NELFSPGP,NSTFSMSPGP,NSTFSMGP,MINMAX_SM_GP
+  stinf.inc  : ISTAC
+  strbas.inc : KSTSTM
+  (total roughly 30.000 integers)
