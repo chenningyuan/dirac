@@ -1,11 +1,15 @@
 C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   "Dalton, an ab initio electronic structure program, Release 1.0
+C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
+C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
+C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
+C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
+C...   P. R. Taylor, and O. Vahtras"
 C...
 C...   This source code is provided under a written licence and may be 
 C...   used, copied, transmitted, or stored only in accord with that
@@ -14,54 +18,56 @@ C...
 C...   In particular, no part of the source code or compiled modules may 
 C...   be distributed outside the research group of the licence holder. 
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
+C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence. 
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dalton-admin@kjemi.uio.no
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : abawalk.F
-C SOURCE  : $Source$
+C$Id$
 C
-C
-#ifdef UNDEF
-/* Comdeck log */
+C#include <single.h>
+#ifdef REVLOG
+$Log$
+Revision 1.5  2000/09/18 09:57:23  jth
+New files from Dalton1.1. Before merge with Dirac.
+
+961019-kruud: Added ROA changes from Gilbert Hangartner
+960417-hjaaj: Rudimentary initial implementation of .RESTART
 950601-vebjorn:
-      A flag for geometry convergence has been added in common block GNRINF.
-941114-hjaaj: shortened lines so max 72 char (CALL WLKNUM had a comman
-in column 73; other modifications were just removal of trailing blanks)
+  A flag for geometry convergence has been added in common block GNRINF.
 #endif
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER ( NTABLE = 35, NWKTYP = 7, NSCTYP = 3,
+      PARAMETER ( NTABLE = 38, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( TRSTI = 1.2D0, TRSTD = 0.7D0, TRSTDR = 0.5D0 )
 C
       LOGICAL NEWDEF, SETRAD
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, WRDTMP*4
       DIMENSION IDOREP(0:7), IWKVEC(NWKTYP), ISCVEC(NSCTYP)
 #include <abainf.h>
+#include <nuclei.h>
 #include <cbiwlk.h>
 C
-      DATA TABLE /'.START ', '.PRINT ', '.INDEX ', '.TRUST ',
-     &            '.XXXXXX', '.DISPLA', '.SCALE ', '.MODE  ',
+      DATA TABLE /'.RESTAR', '.PRINT ', '.INDEX ', '.TRUST ',
+     &            '.ANHARM', '.DISPLA', '.SCALE ', '.MODE  ',
      &            '.TOLERA', '.STRICT', '.NOPRED', '.MAXNUC',
      &            '.KEEPSY', '.REJECT', '.RATLIM', '.NEWTON',
      &            '.VIBCNV', '.GRDEXT', '.MODFOL', '.MASSES',
      &            '.REPS  ', '.ZERGRD', '.EIGEN ', '.DYNAMI',
      &            '.NOGRAD', '.MOMENT', '.NUMERI', '.HARMON',
      &            '.FRAGME', '.IMAGE ', '.ISOTOP', '.IRC   ',
-     &            '.MAXTRU', '.NOORTH', '.NATCON'/
+     &            '.MAXTRU', '.NOORTH', '.NATCON', '.VIBAVE',
+     &            '.NORMAL', '.ECKART'/
 C
       CHARACTER*42 WLKTYP(7)
       DATA WLKTYP /'Level-shifted Newton walk (mode following)',
@@ -72,11 +78,14 @@ C
      *             'Numerical differentiation                 ',
      *             'Intrinsic reaction path                   '/
 C
+      CALL QENTER('WLKINP')
+C
       SETRAD = .FALSE.
       NIP    = 0
       NIS    = 0
       IRCSGN = 1
       TRUMAX = 0.10D0
+      TRUMX1 = TRUMAX
       CALL IZERO(IWKVEC,NWKTYP)
       CALL IZERO(ISCVEC,NSCTYP)
 C
@@ -97,7 +106,7 @@ C
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                      11,12,13,14,15,16,17,18,19,20,
      &                      21,22,23,24,25,26,27,28,29,30,
-     &                      31,32,33,34,35), I
+     &                      31,32,33,34,35,36,37,38), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -109,20 +118,22 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in WLKINP.')
     1          CONTINUE
-                  START = .TRUE.
+                  START = .FALSE.
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(I5)') IPRWLK
+                  READ (LUCMD,*) IPRWLK
                   IF (IPRWLK .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
     3          CONTINUE
-                  READ (LUCMD, '(I5)') IWKIND
+                  READ (LUCMD,*) IWKIND
                GO TO 100
     4          CONTINUE
                   READ (LUCMD,*) TRUSTR, TRUSTI, TRUSTD
                   SETRAD = .TRUE.
                GO TO 100
     5          CONTINUE
+                  V3CAL = .TRUE.
+                  IWKVEC(6) = 1
                GO TO 100
     6          CONTINUE
                   READ (LUCMD,*) DISPLC
@@ -139,7 +150,7 @@ C
  7100             CONTINUE
                GO TO 100
     8          CONTINUE
-                  READ (LUCMD,'(I5)') IMODE
+                  READ (LUCMD,*) IMODE
                GO TO 100
     9          CONTINUE
                   READ (LUCMD,*) TOLST
@@ -238,6 +249,20 @@ C
    35          CONTINUE
                   NATCON = .TRUE.
                   GO TO 100
+ 36            CONTINUE
+                  VIBAVE = .TRUE.
+                  IWKVEC(6) = 1
+                  GO TO 100
+ 37            CONTINUE
+                  NMODIF = .TRUE.
+                  GO TO 100
+ 38            CONTINUE
+                  ECKART = .TRUE.
+                  DO I = 1, NUCDEP
+                     READ (LUCMD,'(7X,F17.10,2F24.10)') 
+     &                    (ECKGEO(J,I), J = 1, 3)
+                  END DO
+                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -252,7 +277,7 @@ C
       IF (.NOT.DOWALK) THEN
          IF (ICHANG .GT. 0) WRITE (LUPRI,'(//A/)')
      &      ' Walk not requested, *WLKINP input ignored.'
-         RETURN
+         GO TO 9999
       END IF
 C
       IF (.NOT.SETRAD .AND. IWKIND .GT. 0) THEN
@@ -269,6 +294,7 @@ C
       IF (IMAGE .AND. IMODE .EQ. 0) THEN
          IMODE = 1
       END IF
+      IF (NMODIF .AND. .NOT. V3CAL) NMODIF = .FALSE.
 C
       CALL HEADER('Changes of defaults for WALK:',0)
 C
@@ -308,6 +334,17 @@ C
          CALL QUIT('ERROR in WLKINP.')
       END IF
       WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IWKTYP)
+      IF (V3CAL) WRITE (LUPRI,'(A)') ' Anharmonic force field '//
+     &     'calculated using numerical differentiation'
+      IF (NMODIF) WRITE(LUPRI,'(A)') ' Numerical differentiation '//
+     &     'will be performed in normal coordinates'
+      IF (VIBAVE) WRITE (LUPRI,'(A)') ' Vibrational averaging of '//
+     &     ' molecular properties at an effective geometry'
+      IF (ECKART) THEN
+         WRITE (LUPRI,'(A)') ' Molecular properties transformed to'
+     &        //' the following Eckart frame'
+         CALL PRIGEO(ECKGEO)
+      END IF
       IF (IMAGE) THEN
          WRITE (LUPRI,'(A)') ' Minimization of image surface '
          IF (START) WRITE (LUPRI,'(A,I2)') ' Initial image mode:',IMODE
@@ -431,7 +468,7 @@ C
      *            ' and the trust radius read in will be reduced.'
             ELSE
                WRITE (LUPRI,'(/A)')
-     *     ' .REJECT has no meaning when .START is specified.'
+     *     ' .REJECT has only meaning when .RESTART is specified.'
             END IF
          END IF
          IF (IWKTYP .NE. 6) THEN
@@ -464,10 +501,11 @@ C
      &                        '(symmetric is default).'
          END IF
          IF (.NOT. START) THEN
-            WRITE (LUPRI,'(/A)') ' Information from old LUWLK not read.'
+            WRITE (LUPRI,'(/A)') ' Information from old LUWLK read.'
          END IF
          WRITE (LUPRI,'(/)')
       END IF
+ 9999 CALL QEXIT('WLKINP')
       RETURN
       END
 C  /* Deck wlkini */
@@ -504,6 +542,11 @@ C
       IPRWLK = IPRDEF
       IMAGE  = .FALSE.
       STRICT = .FALSE.
+      V3CAL  = .FALSE.
+      VIBAVE = .FALSE.
+      NMODIF = .FALSE.
+      ECKART = .FALSE.
+      CALL DZERO(ECKGEO,MXCOOR)
       NSTMOM = 0
       IWKIND = 0
       IMODE  = 0
@@ -532,25 +575,26 @@ C
       NATCON = .FALSE.
       RETURN
       END
-Cjth - if !...
-#if !defined(PRG_DIRAC)
 C  /* Deck wlkdrv */
-      SUBROUTINE WLKDRV(WORK,LWORK)
+      SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
 C
-      DIMENSION WORK(LWORK)
+      DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
+     &          WORK(LWORK)
 C
 #include <cbiwlk.h>
 #include <cbisol.h>
+#include <cbilnr.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <trkoor.h>
 #include <prkoor.h>
 C
+      CALL QENTER('WLKDRV')
       IF (IPRWLK .GT. 3) CALL TIMER ('START ',TIMEIN,TIMOUT)
       IF (IPRWLK .GT. 2) CALL TITLER('Output from WLKDRV','*',103)
 C
@@ -622,39 +666,113 @@ C
       KTRDI = KGRDX + NCART
       KANHR = KTRDI + NCART
       KEDIA = KANHR + NCART
-      KWRK  = KEDIA + NCRTOT
+      KAFD  = KEDIA + NCRTOT
+      KGND  = KAFD  + 9*MXFR*MXCOOR
+      KGLD  = KGND  + 9*MXFR*MXCOOR
+      KAD   = KGLD  + 9*MXFR*MXCOOR
+      KAFU  = KAD   + 27*MXFR*MXCOOR
+      KGNU  = KAFU  + 9*MXFR
+      KGLU  = KGNU  + 9*MXFR
+      KAU   = KGLU  + 9*MXFR
+      KFMATF= KAU   + 27*MXFR
+      IF (V3CAL) THEN
+         KDIPMF = KFMATF+ NCART*NCART*NCART
+      ELSE
+         KDIPMF = KFMATF
+      END IF
+      IF (VIBAVE) THEN
+         KSUST0 = KDIPMF
+         KSUSTF = KSUST0 + 9
+         KGFAC0 = KSUSTF + 9*NCART
+         KGFACF = KGFAC0 + 9
+         KQUAD0 = KGFACF + 9*NCART
+         KQUADF = KQUAD0 + 9
+         KQUADT = KQUADF + 9*NCART
+         KSIGM0 = KQUADT + 9
+         KSIGMF = KSIGM0 + 3*MXCOOR
+         KSRC0  = KSIGMF + 3*MXCOOR*NCART
+         KSRCF  = KSRC0  + 3*MXCOOR
+         KSIGMT = KSRCF  + 9*MXCENT*NCART
+         KCSTRA = KSIGMT + 9*MXCENT
+         KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+         KPOLA0 = KSCTRA + 9*NUCDEP*NUCDEP
+         KPOLAF = KPOLA0 + 9
+         KEFG0  = KPOLAF + 9*NCART
+         KEFGF  = KEFG0  + 9*MXCENT
+         KSSJ0  = KEFGF  + 9*MXCENT*NCART
+         KSSJF  = KSSJ0  + MXCOOR*MXCOOR
+         KWRK   = KSSJF  + MXCOOR*MXCOOR*NCART
+      ELSE
+         KSUST0 = KDIPMF
+         KSUSTF = KDIPMF
+         KGFAC0 = KDIPMF
+         KGFACF = KDIPMF
+         KQUAD0 = KDIPMF
+         KQUADF = KDIPMF
+         KQUADT = KDIPMF
+         KSIGM0 = KDIPMF
+         KSIGMF = KDIPMF
+         KSIGMT = KDIPMF
+         KCSTRA = KDIPMF
+         KSCTRA = KDIPMF
+         KSRC0  = KDIPMF
+         KSRCF  = KDIPMF
+         KPOLA0 = KDIPMF
+         KPOLAF = KDIPMF
+         KEFG0  = KDIPMF
+         KEFGF  = KDIPMF
+         KSSJ0  = KDIPMF
+         KSSJF  = KDIPMF
+         KWRK   = KDIPMF
+      END IF
       LWRK  = LWORK - KWRK + 1
       IF (KWRK .GT. LWORK) CALL STOPIT('WLKDRV',' ',KWRK,LWORK)
-      CALL WLKDR1(WORK(KGRD),WORK(KHES),WORK(KEVAL),WORK(KEVEC),
-     &            WORK(KGRDI),WORK(KTMAT),WORK(KCOR),WORK(KSTPS),
-     &            WORK(KSTPC),WORK(KSTPD),WORK(KSCAL),WORK(KEVCX),
-     &            WORK(KPMD),WORK(KPMDX),WORK(KPMCR),WORK(KPMCX),
-     &            WORK(KOVLP),WORK(KGRD0),WORK(KHES0),WORK(KCOR0),
-     &            WORK(KGRDN),WORK(KHESN),WORK(KEVLX),WORK(KSTPX),
-     &            WORK(KDPG0),WORK(KDPGF),WORK(KDIPM),WORK(KDIP0),
-     &            WORK(KSTDX),WORK(KGRDX),WORK(KTRDI),WORK(KANHR),
-     &            WORK(KEDIA),WORK(KWRK),LWRK,NCRIND,
-     &            NCRTOT,N2CRT,NTMAT,NCART)
+      CALL WLKDR1(POLDD,POLDQ,POLDL,POLDA,WORK(KGRD),WORK(KHES),
+     &            WORK(KEVAL),WORK(KEVEC),WORK(KGRDI),WORK(KTMAT),
+     &            WORK(KCOR),WORK(KSTPS),WORK(KSTPC),WORK(KSTPD),
+     &            WORK(KSCAL),WORK(KEVCX),WORK(KPMD),WORK(KPMDX),
+     &            WORK(KPMCR),WORK(KPMCX),WORK(KOVLP),WORK(KGRD0),
+     &            WORK(KHES0),WORK(KCOR0),WORK(KGRDN),WORK(KHESN),
+     &            WORK(KEVLX),WORK(KSTPX),WORK(KDPG0),WORK(KDPGF),
+     &            WORK(KDIPM),WORK(KDIP0),WORK(KSTDX),WORK(KGRDX),
+     &            WORK(KTRDI),WORK(KANHR),WORK(KEDIA),WORK(KAFD),
+     &            WORK(KGND),WORK(KGLD),WORK(KAD),WORK(KAFU),
+     &            WORK(KGNU),WORK(KGLU),WORK(KAU),WORK(KFMATF),
+     &            WORK(KSUST0),WORK(KSUSTF),WORK(KGFAC0),WORK(KGFACF),
+     &            WORK(KQUAD0),WORK(KQUADF),WORK(KQUADT),WORK(KSIGM0),
+     &            WORK(KSIGMF),WORK(KSIGMT),WORK(KCSTRA),WORK(KSCTRA),
+     &            WORK(KSRC0),WORK(KSRCF),WORK(KPOLA0),WORK(KPOLAF),
+     &            WORK(KEFG0),WORK(KEFGF),SPNTOT,
+     &            WORK(KSSJ0),WORK(KSSJF),WORK(KWRK),
+     &            LWRK,NCRIND,NCRTOT,N2CRT,NTMAT,NCART)
       IF (IPRWLK.GT.3) CALL TIMER ('WLKDRV',TIMEIN,TIMOUT)
+      CALL QEXIT('WLKDRV')
       RETURN
       END
 C  /* Deck wlkdr1 */
-      SUBROUTINE WLKDR1(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,COOR,
-     &                  STPSYM,STPCAR,STPDIA,SCAL,EVECX,PMDIA,PMDIAX,
-     &                  PMCAR,PMCARX,OVLPMA,GRAD0,HESS0,COOR0,GRADF,
-     &                  HESSF,EVALX,STPSYX,DIPG0,DIPGF,DIPM,DIPM0,
-     &                  STPDIX,GRDDIX,TRSDIA,ANHARM,ERGDIA,WORK,
-     &                  LWORK,NCRIND,NCRTOT,N2CRT,NTMAT,NCART)
+      SUBROUTINE WLKDR1(POLDD,POLDQ,POLDL,POLDA,GRDCAR,HESCAR,EVAL,EVEC,
+     &                  GRDDIA,TMAT,COOR,STPSYM,STPCAR,STPDIA,SCAL,
+     &                  EVECX,PMDIA,PMDIAX,PMCAR,PMCARX,OVLPMA,GRAD0,
+     &                  HESS0,COOR0,GRADF,HESSF,EVALX,STPSYX,DIPG0,
+     &                  DIPGF,DIPM,DIPM0,STPDIX,GRDDIX,TRSDIA,ANHARM,
+     &                  ERGDIA,ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,
+     &                  ROAGNU,ROAGLU,ROAAU,FMATF,SUSTO0,SUSTF,GFAC0,
+     &                  GFACF,QUAD0,QUADF,QUADT,SIGMA0,SIGMAF,SIGMAT,
+     &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
+     &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
+     &                  NCRTOT,N2CRT,NTMAT,NCART)
 #include <implicit.h>
 #include <priunit.h>
+#include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
       LOGICAL INDXOK, OLD, STOP, STATPO, WLKEND, OLDREA, DOHESS, DODIP,
-     &        PRJTRO, DONWTN
+     &        PRJTRO, DONWTN, NOTALL
 C
+      DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), EVAL(NCRTOT),
      *          EVEC(N2CRT), TMAT(NTMAT), COOR(NCRIND), STPCAR(NCRIND),
      *          WORK(LWORK), CNDHES(0:7), INDHES(0:7), GRDDIA(NCRTOT),
@@ -665,11 +783,16 @@ C
      *          HESSF(NCART,NCART), EVALX(NCART), STPSYX(NCRIND),
      *          DIPG0(3,NCART), DIPGF(3,NCART), DIPM(3), DIPM0(3),
      *          PMDIAX(NCRTOT), STPDIX(NCART), GRDDIX(NCART),
-     *          TRSDIA(NCART), ANHARM(NCART)
+     *          TRSDIA(NCART), ANHARM(NCART), ROAAFD(*), ROAGND(*),
+     *          ROAGLD(*), ROAAD(*), ROAAFU(*), ROAGNU(*), ROAGLU(*),
+     *          ROAAU(*), FMATF(*), SUSTO0(*), SUSTF(*), GFAC0(*),
+     *          GFACF(*), QUAD0(*), QUADF(*), QUADT(*), SIGMA0(*),
+     *          SIGMAF(*), SIGMAT(*), CSTRA(*), SCTRA(*), SRC0(*),
+     *          SRCF(*), POLAR0(*), POLARF(*),
+     *          EFG0(*), EFGF(*), SPNTOT(*), SSJ0(*), SSJF(*)
 C
 #include <cbiwlk.h>
 #include <abainf.h>
-#include <nuctap.h>
 #include <nuclei.h>
 #include <symmet.h>
 #include <trkoor.h>
@@ -710,12 +833,21 @@ C
      &               ESTART,TACCUM,DISPLC,STPSYX,STPNRX,STPDIX,GRDDIX,
      &               EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,IWKTYP,
      &               IWKIND,IMODEX,ISCTYP,IPOINT,ISTIND,ISTTPX,NXYZ,
-     &               DODIP,IMAGE,ISOTPS,AACCUM,IPRWLK)
+     &               DODIP,IMAGE,ISOTPS,AACCUM,ROAAFD,ROAGND,ROAGLD,
+     &               ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,FMATF,VIBAVE,
+     &               SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,QUADF,SIGMA0,SIGMAF,
+     &               SRC0,SRCF,POLAR0,POLARF,EFG0,EFGF,SSJ0,
+     &               SSJF,NUMMOD,IPRWLK)
          IMODE  = IMODEX
          TRUSTR = TRUSTX
+         IF (VIBAVE .OR. NMODIF) THEN
+            CALL DCOPY(NCART*NCART,EVECX,1,EVEC,1)
+            CALL DCOPY(NCART,EVALX,1,EVAL,1)
+         END IF
       ELSE
          TRUSTX = TRUSTR
-         IF (DIPDER .AND. (IWKTYP .EQ. 6)) THEN
+         IF (DIPDER .AND. (IWKTYP .EQ. 6 .AND. .NOT. 
+     &                    (V3CAL .OR. VIBAVE))) THEN
             NXYZ = 0
             DO 100 I = 1, 3
                IF (ISYMAX(I,1) .EQ. 0) NXYZ = NXYZ + 1
@@ -729,6 +861,7 @@ C
       IF (IPRWLK .GT. 2) WRITE (LUPRI,'(A,I5)') ' Walk type: ',IWKTYP
       PRJTRO = (IWKTYP .NE. 3) .AND. (IWKTYP .NE. 7)
       DOHESS = .NOT. (IWKTYP .EQ. 6 .AND. OLD)
+      IF (V3CAL .AND. .NOT. NMODIF) DOHESS = .TRUE.
 C
 C     *******************************************************
 C     ***** Cartesian coordinates, gradient and Hessian *****
@@ -749,6 +882,35 @@ C
      &               THRLDP,THRIND,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &               DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,PRJTRO,
      &               ISOTPS,IPRWLK)
+      END IF
+      IF (IWKTYP .EQ. 6 .AND. (VIBAVE .OR. NMODIF) .AND. START) THEN
+C
+C        Generate normal coordinates for numerical differentiation
+C
+         KAMASS = 1
+         KNATYP = KAMASS + NUCDEP
+         KORIG  = KNATYP + (NUCDEP + 1)/IRAT
+         KGEOM  = KORIG  + 3
+         KDKIN  = KGEOM  + 3*NUCDEP
+         KHESMW = KDKIN  + NCART
+         KEVECS = KHESMW + NCART*(NCART + 1)/2
+         KTRROV = KHESMW + NCART*NCART
+         KWRK1  = KTRROV + 6*NCART
+         LWRK1  = LWORK  - KWRK1 + 1
+         IF (LWRK1 .LE. 0) CALL STOPIT('WLKVIB',' ',KWRK1,LWORK)
+C
+         CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),
+     &               ISOTOP,IPRWLK)
+C
+C     Project out translation and rotational motion from the Hessian
+C
+         CALL VIBHES(IPRWLK,NCART,WORK(KGEOM),KTRRO,GRDCAR,HESCAR,
+     &               WORK(KTRROV),WORK(KNATYP),WORK(KWRK1))
+         NOTALL = .FALSE.
+Chjaaj:  ... assume full hessian for all symmetries has been calculated.
+         CALL VIBNOR(HESCAR,WORK(KAMASS),WORK(KDKIN),WORK(KHESMW),
+     &               EVAL,EVEC,WORK(KEVECS),WORK(KWRK1),LWRK1,NCART,
+     &               NUMMOD,NNEG,NOTALL,IPRWLK)
       END IF
 C
 C     **************************************
@@ -787,7 +949,7 @@ C     ***** Check for convergence *****
 C     *********************************
 C
       STOP = WLKEND(GRDCAR,GRDNRM,NCRREP(0,1),INDHES,INDEX,INDXOK,
-     *              STATPO,ISTIND,IPOINT)
+     *              STATPO,ISTIND,IPOINT,NUMMOD)
 C
 C     a) Stop walk
 C     ============
@@ -796,8 +958,13 @@ C
          IPOINT = IPOINT + 1
          IF (VIBCNV) VIB = .TRUE.
          IF (IWKTYP .EQ. 6) THEN
-            CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,IPOINT,
-     *                  IPRWLK)
+            IF (VIBAVE .OR. NMODIF) THEN
+               CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
+     &                     EVEC,IPOINT,NUMMOD,IPRWLK)
+            ELSE
+               CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,
+     *                     IPOINT,IPRWLK)
+            END IF
             CALL WLKMOL(COOR)
             IF (WFPRED) CALL WLKSAV(ERGSEC,COOR,WORK,LWORK)
          END IF
@@ -851,8 +1018,22 @@ C        ************************
 C
          IF (.NOT.(START .OR. REJECT)) IPOINT = IPOINT + 1
          IF (IWKTYP .EQ. 6) THEN
-            CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,IPOINT,
-     *                  IPRWLK)
+C
+C     Normal coordinate or Cartesian displacements
+C
+            IF (VIBAVE .OR. NMODIF) THEN
+               CALL WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,
+     &                     EVEC,IPOINT,NUMMOD,IPRWLK)
+            ELSE
+               CALL WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,
+     *                     IPOINT,IPRWLK)
+            END IF
+C
+C     The step should be so small that no important change in energy 
+C     should occur, and prediction of the new energy should be zero energy
+C     change. KR, July-97
+C
+            ERGSEC = 0.0D0
          ELSE
             STPNRM = TRUSTR
             CALL WLKGEO(STPNRM,GRDDIA,EVAL,EVEC,STPDIA,STPSYM,STPCAR,
@@ -860,15 +1041,15 @@ C
      &                  ERGSEC,SGNMOD,ANHRAD,ZERGRD,TRSDIA,NCART,
      &                  NINTER,NCRIND,INDHES(0),IMODE,IWKIND,KEEPSY,
      &                  STATPO,WFPRED,START,INDXOK,IPRWLK,IWKTYP,ISTTYP,
-     &                  IMAGE,DONWTN)
+     &                  IMAGE,DONWTN,TRUSTD)
             IF (IWKTYP .EQ. 7) THEN
 C
 C      Comment: I cannot see why this should not always be done!
 C
                TRUSTR = STPNRM
+               AACCUM = AACCUM + STPNRM
             END IF
-            TACCUM = TACCUM + TIMSTP
-            AACCUM = AACCUM + STPNRM
+            IF (IWKTYP .EQ. 3) TACCUM = TACCUM + TIMSTP
 C           CALL WLKPRD(ERGSEC,GRDCAR,HESCAR,STPSYM,NCART)
          END IF
 C
@@ -906,13 +1087,31 @@ C     ***** Numerical differentiation *****
 C     *************************************
 C
       ELSE
-         IF (.NOT.(VROA .OR. RAMAN)) THEN
+         IF (V3CAL .AND. NMODIF) THEN
+            CALL WLKV3N(GRDCAR,GRAD0,GRADF,EVEC,
+     &                 FMATF,WORK,ERGMOL,ESTART,DISPLC,
+     &                 LWORK,NCRTOT,NCART,NUMMOD,IPOINT,IPRWLK)
+         ELSE IF (V3CAL) THEN
+            CALL WLKV3(GRDCAR,HESCAR,GRAD0,HESS0,GRADF,HESSF,
+     &                 FMATF,WORK,ERGMOL,ESTART,DISPLC,
+     &                 LWORK,NCRTOT,N2CRT,NCART,IPOINT,
+     &                 IPRWLK)
+         ELSE IF (VIBAVE) THEN
+            CALL WLKVIB(GRDCAR,HESCAR,GRAD0,HESS0,EVAL,
+     &                  DIPM0,GRADF,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
+     &                  QUADF,QUADT,SIGMA0,SIGMAF,SIGMAT,CSTRA,SCTRA,
+     &                  SRC0,SRCF,POLAR0,POLARF,POLDD,ROAAFD,ROAGND,
+     &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,ERGMOL,WORK,
+     &                  LWORK,NCART,NCRTOT,NUMMOD,IPOINT,IPRWLK)
+         ELSE IF (.NOT.(VROA .OR. RAMAN)) THEN
             CALL WLKNUM(GRDCAR,HESCAR,DIPG0,GRAD0,HESS0,GRADF,HESSF,
      &                  DIPGF,WORK,ERGMOL,ESTART,DIPM,DIPM0,DISPLC,
      &                  LWORK,DODIP,NXYZ,NCRTOT,N2CRT,NCART,IPOINT,
      &                  IPRWLK)
          ELSE
-            CALL WLKROA(WORK,LWORK,NXYZ,NCART,IPOINT,DISPLC,IPRWLK)
+            CALL WLKROA(ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,
+     &                  ROAAU,POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,NXYZ,
+     &                  NCART,IPOINT,DISPLC,IPRWLK)
          END IF
          IF (STOP) THEN
             WRITE (LUPRI,'(/A)')' Numerical differentiation complete.'
@@ -929,7 +1128,26 @@ C
      &            DISPLC,STPSYM,STPNRM,STPDIA,GRDDIA,EKIN0,TRUMAX,
      &            NCRTOT,N2CRT,NCRIND,NCART,IWKTYP,IWKIND,IMODE,ISCTYP,
      &            ISTIND,ISTTYP,NXYZ,DODIP,IMAGE,IPOINT,AACCUM,ISOTPS,
-     &            WORK,LWORK)
+     &            ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
+     &            FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,QUADF,
+     &            SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
+     &            EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
+      IF ((IPOINT .EQ. 2*NUMMOD) .AND. (V3CAL .AND. NMODIF)) THEN
+         KFMATF = 1
+         KFMATT = KFMATF + NCART*NCART*NCART
+         KCORR  = KFMATT + NCART*NCART*NCART
+         KPOS   = KCORR  + NUMMOD
+         KFREQA = KPOS   + NCART
+         KLAST  = KFREQA + NCART
+         LLEFT  = LWORK  - KLAST
+         DO I = 1, NUMMOD
+            WORK(KFREQA + I - 1) = SQRT(ABS(EVAL(I)))
+         END DO
+         CALL DCOPY(NCART,COOR,1,CORD,1)
+         CALL VIBV3(EVEC,WORK(KFREQA),WORK(KFMATF),
+     &              WORK(KFMATT),WORK(KCORR),WORK(KPOS),WORK(KLAST),
+     &              LLEFT,NCART,NUMMOD,NMODIF)
+      END IF
       RETURN
       END
 C  /* Deck wlkdia */
@@ -950,6 +1168,8 @@ C
      &          ISOTPS(NUCIND)
 C
 #include <nuclei.h>
+C
+      CALL QENTER('WLKDIA')
 C
 C     ************************
 C     ***** Mass scaling *****
@@ -974,10 +1194,9 @@ C
       CALL WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,THRIND,
      &            WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,DOREPW,NCRTOT,
      &            N2CRT,NTMAT,PRJTRO,IPRINT)
+      CALL QEXIT('WLKDIA')
       RETURN
       END
-Cjth
-#endif
 C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
@@ -1091,8 +1310,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#if !defined (PRG_DIRAC)
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
@@ -1373,9 +1590,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#endif
-Cjth
 C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
@@ -1567,9 +1781,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#if !defined(PRG_DIRAC)
-Cjth
 C  /* Deck wlkrad */
       SUBROUTINE WLKRAD(ERGMOL,ERGMLX,ERGSCX,STPNRX,OVLPWM,COFMOD,
      *                  RATIO,ISTTPX,IPRINT)
@@ -1592,12 +1803,9 @@ C     ****************************************
 C
       IF (REJECT) THEN
          TRUSTR = TRUSTD*STPNRX
-         IF (IPRINT .GT. 2) THEN
-            WRITE (LUPRI,'(/A)')
-     *         ' Trust radius has been reduced as requested in input.'
-            WRITE (LUPRI,'(/A,F12.6/)') ' Updated trust radius :',
-     *          TRUSTR
-         END IF
+         IF (IPRINT .GT. 2) WRITE (LUPRI,'(/A/A,F12.6/)')
+     &      ' Trust radius has been reduced because step was rejected.',
+     &      ' Updated trust radius :', TRUSTR
 C
 C     *********************************************
 C     ***** Calculate ratio, reject or update *****
@@ -1796,9 +2004,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#endif
-Cjth
 C  /* Deck wlkmol */
       SUBROUTINE WLKMOL(COONEW)
 C
@@ -1808,9 +2013,13 @@ C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
 #include <mxcent.h>
-      PARAMETER (LUMOL = 7, D0 = 0.0D0, D100 = 100.00D00)
+#include <maxorb.h>
+      PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
       CHARACTER NAME*4
       LOGICAL BIG
@@ -1822,13 +2031,13 @@ C  /NUCLEI/: NUCIND
 C  /CBISOL/: SOLVNT,NCNTCV
 C
 #include <molinp.h>
+#include <inftap.h>
+#include <symmet.h>
+#include <infinp.h>
 #include <nuclei.h>
 #include <cbisol.h>
+#include <ibtfun.h>
 C
-#if defined (SYS_VAX)
-      CALL DATE(MLINE(2)(55:63))
-      CALL TIME(MLINE(2)(65:72))
-#endif
 C
 C Write new coordinates into MOLECULE input
 C
@@ -1838,13 +2047,43 @@ C     ... make a translation of center of cavity to (0,0,0)
          CCAVY = COONEW(2,NCNTCV)
          CCAVZ = COONEW(3,NCNTCV)
          IF (CCAVX .NE. D0 .OR. CCAVY .NE. D0 .OR. CCAVZ .NE. D0) THEN
-            WRITE (LUPRI,*) 'Center of solvent cavity moved to (0,0,0)'
-            WRITE (LUPRI,*) '   from',CCAVX,CCAVY,CCAVZ
+            WRITE (LUPRI,'(/A/A,3F20.10)')
+     &         'WLKMOL INFO: Center of solvent cavity moved to (0,0,0)',
+     &         '   from',CCAVX,CCAVY,CCAVZ
          END IF
       ELSE
          CCAVX = D0
          CCAVY = D0
          CCAVZ = D0
+         IF (NFIELD .GT. 0) THEN
+            TOTCHR = D0
+C
+C     If we have a finite field, we must ensure that there is a zero
+C     contribution from the nuclear part of the dipole moment to the 
+C     total charge. Thus move center-of nuclear charge to the origin
+C
+            DO IATOM = 1, NUCIND
+               DO IREP = 0, MAXREP
+                  IF (IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+                     CCAVX = CCAVX + PT(IBTAND(ISYMAX(1,1),IREP))
+     &                              *COONEW(1,IATOM)*CHARGE(IATOM)
+                     CCAVY = CCAVY + PT(IBTAND(ISYMAX(2,1),IREP))
+     &                              *COONEW(2,IATOM)*CHARGE(IATOM)
+                     CCAVZ = CCAVZ + PT(IBTAND(ISYMAX(3,1),IREP))
+     &                              *COONEW(3,IATOM)*CHARGE(IATOM)
+                     TOTCHR = TOTCHR + CHARGE(IATOM)
+                  END IF
+               END DO
+            END DO
+            CCAVX = CCAVX/TOTCHR
+            CCAVY = CCAVY/TOTCHR
+            CCAVZ = CCAVZ/TOTCHR
+            IF(CCAVX .NE. D0 .OR. CCAVY .NE. D0 .OR. CCAVZ .NE. D0) THEN
+               WRITE (LUPRI,'(/A/A,3F20.10)')
+     &         'WLKMOL INFO: Center of nuclear charge moved to (0,0,0)',
+     &         '   from',CCAVX,CCAVY,CCAVZ
+            END IF
+         END IF
       END IF
 C
 C     Coordinates written are always in atomic units
@@ -1876,31 +2115,17 @@ C
 C
 C Punch MOLECULE input with updated coordinates to LUMOL
 C
-#if defined (SYS_VAX)
-      OPEN(LUMOL,STATUS='NEW',FORM='FORMATTED',
-     *     CARRIAGECONTROL='LIST')
-#endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_T3D)
-      OPEN(LUMOL,FILE='ABACUS.MOL',STATUS='UNKNOWN',FORM='FORMATTED')
-#endif
-#if defined (SYS_IBM)
-      OPEN(LUMOL,FILE='ABAMOL',STATUS='UNKNOWN',FORM='FORMATTED')
-#endif
-#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_T3D)
-      OPEN(LUMOL,STATUS='UNKNOWN',FORM='FORMATTED')
-#endif
+      CALL GPOPEN(LUMOL,'ABACUS.MOL','UNKNOWN',' ','FORMATTED',IDUMMY,
+     &            .FALSE.)
       DO 200 IMLINE = 1,NMLINE
          WRITE (LUMOL,'(A)') MLINE(IMLINE)
   200 CONTINUE
-      CLOSE (UNIT=LUMOL)
+      CALL GPCLOSE(LUMOL,'KEEP')
 C
 C End of WLKMOL
 C
       RETURN
       END
-Cjth
-#if !defined(PRG_DIRAC)
-Cjth
 C  /* Deck wlkanh */
       SUBROUTINE WLKANH(ANHFAC,GRDDIA,EVAL,EVALX,EVEC,EVECX,STPDIX,
      &                  OVLPMA,ANHARM,TRSDIA,NCART,OLD,IPRINT)
@@ -1974,25 +2199,40 @@ C  /* Deck wlkrea */
      &                  ESTART,TACCUM,DISPLC,STPSYM,STPNRM,STPDIX,
      &                  GRDDIX,EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,
      &                  IWKTYP,IWKIND,IMODE,ISCTYP,IPOINT,ISTIND,ISTTYP,
-     &                  NXYZ,DODIP,IMAGE,ISOTPS,AACCUM,IPRINT)
+     &                  NXYZ,DODIP,IMAGE,ISOTPS,AACCUM,ROAAFD,ROAGND,
+     &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
+     &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
+     &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
+     &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,IPRINT)
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
 C
-      LOGICAL DODIP,IMAGE
+      LOGICAL DODIP,IMAGE,VIBAVE
       DIMENSION EVAL(NCART), EVEC(NCART,NCART), PMCAR(NCRTOT),
      &          GRAD0(NCART), HESS0(NCART,NCART), COOR0(NCRIND),
      &          GRADF(NCART), HESSF(NCART,NCART), STPSYM(NCART),
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
-     &          STPDIX(NCART), GRDDIX(NCART), ISOTPS(NUCIND)
+     &          STPDIX(NCART), GRDDIX(NCART), ISOTPS(NUCIND),
+     &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
+     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3), 
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3), POLARF(3,3,NCART),
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART)
 C
-#include <nuctap.h>
+#include <inftap.h>
 #include <nuclei.h>
 #include <cbilnr.h>
-#include <roacom.h>
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+     &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
-      OPEN (UNIT=LUWLK,FILE=ABAWLK,STATUS='OLD',
-     *      ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+      CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       REWIND LUWLK
       READ (LUWLK) IWKTYP,IWKIND,IMODE,ISCTYP,
      &             ERGMOL,GRDNRM,ERGSEC,TRUSTR,STPNRM,
@@ -2005,9 +2245,13 @@ C
      &                                DIPM0, DIPG0, DIPGF, NXYZ, DODIP
       IF (IWKTYP .EQ. 6) READ (LUWLK) NFRVAL, FRVAL,
      &                                ROAAFU,ROAAFD,ROAGNU,ROAGND,
-     &                                ROAGLU,ROAGLD,ROAAU, ROAAD,
-     &                                DIPU,  DIPD, DIPANA
-      CLOSE (LUWLK,STATUS='KEEP')
+     &                                ROAGLU,ROAGLD, ROAAU, ROAAD
+      IF (IWKTYP .EQ. 6) READ (LUWLK) NUMMOD, FMATF
+      IF (IWKTYP .EQ. 6 .AND. VIBAVE) READ (LUWLK) SUSTO0, SUSTF, GFAC0,
+     &                                GFACF, QUAD0, QUADF, SIGMA0, 
+     &                                SIGMAF, SRC0, SRCF, POLAR0, 
+     &                                POLARF, EFG0, EFGF, SSJ0, SSJF
+      CALL GPCLOSE(LUWLK,'KEEP')
 C
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from WLKREA','*',103)
@@ -2046,28 +2290,42 @@ C  /* Deck wlkwrt */
      &                  HESCAR,STPCAR,DISPLC,STPSYM,STPNRM,STPDIA,
      &                  GRDDIA,EKIN0,TRUMAX,NCRTOT,N2CRT,NCRIND,NCART,
      &                  IWKTYP,IWKIND,IMODE,ISCTYP,ISTIND,ISTTYP,NXYZ,
-     &                  DODIP,IMAGE,IPOINT,AACCUM,ISOTPS,WORK,LWORK)
+     &                  DODIP,IMAGE,IPOINT,AACCUM,ISOTPS,ROAAFD,ROAGND,
+     &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU,
+     &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
+     &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
+     &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <dummy.h>
 C
-      LOGICAL DODIP, IMAGE
+      LOGICAL DODIP, IMAGE, VIBAVE
       DIMENSION EVAL(NCART), EVEC(NCART,NCART), PMCAR(NCRTOT),
      &          COOR(NCRIND), GRDCAR(NCRTOT), HESCAR(N2CRT),
      &          GRAD0(NCART), HESS0(NCART,NCART), COOR0(NCRIND),
      &          GRADF(NCART), HESSF(NCART,NCART), STPSYM(NCART),
      &          DIPM0(3), DIPG0(3,NCART), DIPGF(3,NCART),
      &          STPDIA(NCART),GRDDIA(NCART), ISOTPS(NUCIND),
+     &          FMATF(NCART,NCART,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
+     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
+     &          QUADF(3,3,NCART), SIGMA0(3,3,MXCENT), 
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          SRCF(3,3,MXCENT,NCART), POLAR0(3,3), POLARF(3,3,NCART),
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          SSJ0(MXCOOR,MXCOOR), SSJF(MXCOOR,MXCOOR,NCART),
      &          WORK(LWORK)
 C
-#include <nuctap.h>
+#include <inftap.h>
 #include <nuclei.h>
 #include <cbilnr.h>
-#include <roacom.h>
+      DIMENSION ROAAFD(3,3,MXFR,MXCOOR), ROAGND(3,3,MXFR,MXCOOR), 
+     &          ROAGLD(3,3,MXFR,MXCOOR), ROAAD(3,3,3,MXFR,MXCOOR),
+     &          ROAAFU(3,3,MXFR), ROAGNU(3,3,MXFR), 
+     &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
-      OPEN (UNIT=LUWLK,FILE=ABAWLK,STATUS='UNKNOWN',
-     &      ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+      CALL GPOPEN(LUWLK,ABAWLK,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
       REWIND LUWLK
       WRITE (LUWLK) IWKTYP,IWKIND,IMODE,ISCTYP,
      &              ERGMOL,GRDNRM,ERGSEC,TRUSTR,STPNRM,
@@ -2080,15 +2338,20 @@ C
      &                                 DIPM0, DIPG0, DIPGF, NXYZ, DODIP
       IF (IWKTYP .EQ. 6) WRITE (LUWLK) NFRVAL, FRVAL,
      &                                 ROAAFU,ROAAFD,ROAGNU,ROAGND,
-     &                                 ROAGLU,ROAGLD,ROAAU, ROAAD,
-     &                                 DIPU,  DIPD, DIPANA
-      CLOSE (LUWLK,STATUS='KEEP')
+     &                                 ROAGLU,ROAGLD,ROAAU, ROAAD
+      IF (IWKTYP .EQ. 6) WRITE (LUWLK) NUMMOD, FMATF
+      IF (IWKTYP .EQ. 6 .AND. VIBAVE)  WRITE (LUWLK) SUSTO0, SUSTF, 
+     &                                 GFAC0, GFACF, QUAD0, QUADF, 
+     &                                 SIGMA0, SIGMAF, SRC0, SRCF,
+     &                                 POLAR0, POLARF, EFG0, EFGF,
+     &                                 SSJ0, SSJF
+      CALL GPCLOSE(LUWLK,'KEEP')
 C
 C     Write information on LUTRJ
 C
       IF (IWKTYP .EQ. 3) THEN
-         OPEN (UNIT=LUWLK,FILE=ABATRJ,STATUS='UNKNOWN',
-     *         ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+         CALL GPOPEN(LUWLK,ABATRJ,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
          REWIND LUWLK
          IF (IPOINT .EQ. 0) THEN
             CALL NEWLAB('POINT   ',LUWLK,LUPRI)
@@ -2101,13 +2364,13 @@ C
          WRITE (LUWLK) ERGMOL, ERGSEC, EKINTO, EKINPA, TDET
          WRITE (LUWLK) COOR, GRDCAR, HESCAR, STPCAR, PMCAR
          CALL NEWLAB('POINT   ',LUWLK,LUPRI)
-         CLOSE (LUWLK,STATUS='KEEP')
+         CALL GPCLOSE(LUWLK,'KEEP')
 C
 C     Write information on LUIRC
 C
       ELSE IF (IWKTYP .EQ. 7) THEN
-         OPEN (UNIT=LUWLK,FILE=ABAIRC,STATUS='UNKNOWN',
-     *         ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+         CALL GPOPEN(LUWLK,ABAIRC,'UNKNOWN','SEQUENTIAL','UNFORMATTED',
+     &               IDUMMY,.FALSE.)
          REWIND LUWLK
          IF (IPOINT .EQ. 0) THEN
             CALL NEWLAB('POINT   ',LUWLK,LUPRI)
@@ -2118,7 +2381,7 @@ C
          END IF
          CALL WLKIRW(IPOINT,AACCUM,STPNRM,ISOTPS,WORK,LWORK,IPRINT)
          CALL NEWLAB('POINT   ',LUWLK,LUPRI)
-         CLOSE (LUWLK,STATUS='KEEP')
+         CALL GPCLOSE(LUWLK,'KEEP')
       END IF
       RETURN
       END
@@ -2129,31 +2392,34 @@ C  /* Deck wlkirw */
 #include <mxcent.h>
       DIMENSION ISOTPS(NUCIND), WORK(LWORK)
 #include <nuclei.h>
-      KMASS = 1
-      KCOOR = KMASS + NUCDEP
-      KGRAD = KCOOR + MXCOOR
-      KHESS = KGRAD + MXCOOR
-      KLAST = KHESS + MXCOOR*MXCOOR
+      KMASS  = 1
+      KCOOR  = KMASS  + NUCDEP
+      KGRAD  = KCOOR  + MXCOOR
+      KHESS  = KGRAD  + MXCOOR
+      KCSTRA = KHESS  + MXCOOR*MXCOOR
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (KLAST .GT. LWORK) CALL STOPIT('WLKIRW',' ',KLAST,LWORK)
       CALL WLKIR1(IPOINT,AACCUM,STPNRM,WORK(KCOOR),WORK(KGRAD),
-     &            WORK(KHESS),ISOTPS,WORK(KMASS),IPRINT)
+     &            WORK(KHESS),ISOTPS,WORK(KMASS),WORK(KCSTRA),
+     &            WORK(KSCTRA),IPRINT)
       RETURN
       END
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
-     &                  DMASS,IPRINT)
+     &                  DMASS,CSTRA,SCTRA,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
 #include <mxcent.h>
 #include <mxorb.h>
 #include <maxaqn.h>
-#include <nuctap.h>
+#include <inftap.h>
 #include <symmet.h>
 #include <nuclei.h>
 #include <taymol.h>
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          ISOTPS(NUCIND), DMASS(NUCDEP)
+     &          ISOTPS(NUCIND), DMASS(NUCDEP), CSTRA(*), SCTRA(*)
 #include <ibtfun.h>
 C
       NCOOR = 3*NUCDEP
@@ -2177,8 +2443,8 @@ C
             END IF
   200    CONTINUE
   100 CONTINUE
-      CALL TRAGRD(GRDMOL,CGRAD,NCRREP(0,1),NCOOR)
-      CALL TRAHES(HESMOL,MXCOOR,CHESS,MXCOOR,NCOOR,1)
+      CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
+      CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM
       WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY
       WRITE (LUWLK) ARC, ERGMOL, DUMMY, DUMMY
@@ -2203,6 +2469,7 @@ C
 C     Print of results
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -2244,22 +2511,22 @@ C
       IPRTYP = IWKTYP
       IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = 0
       IF (IMAGE) IPRTYP = 8
-      WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IPRTYP)
-      WRITE (LUPRI,'(/A,I3)') ' Iteration number:', IPOINT
+      WRITE (LUPRI,'(/2A)') '  Walk type: ', WLKTYP(IPRTYP)
+      WRITE (LUPRI,'(/A,I3)') '  Iteration number:', IPOINT
       IF (REJECT) WRITE (LUPRI,'(/A)')
-     &      ' Previous step was rejected - attempting shorter step.'
-      WRITE (LUPRI,'(/A,F17.10)') ' Norm of molecular gradient:', GRDNRM
-      WRITE (LUPRI,'(/A,F17.10)') ' Energy at current point:', ERGMOL
+     &      '@ Previous step was rejected - attempting shorter step.'
+      WRITE (LUPRI,'(/A,F17.10)') '  Norm of molecular gradient:',GRDNRM
+      WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:', ERGMOL
       IF (IPOINT .GT. 0) THEN
          WRITE (LUPRI,'( A,F17.10)')
-     &                      ' Energy at initial point:', ESTART
-         WRITE (LUPRI,'(/A,F13.10,A,2(/,38X,F13.2,A))')
-     &         ' Change in energy since start of walk:',
+     &                      '  Energy at initial point:', ESTART
+         WRITE (LUPRI,'(/A,F13.10,A,2(/,39X,F13.2,A))')
+     &         '  Change in energy since start of walk:',
      &                   ERGMOL - ESTART,  ' au',
      &                   XKJMOL*(ERGMOL - ESTART), ' kJ/mol',
-     &                   XKCMOL*(ERGMOL - ESTART), ' kCal/mol'
+     &                   XKCMOL*(ERGMOL - ESTART), ' kcal/mol'
          IF (.NOT.REJECT) WRITE (LUPRI,'(/A,F6.2)')
-     &      ' Ratio between actual and predicted energies:',
+     &      '@ Ratio between actual and predicted energies:',
      &       (ERGMOL - ERGMLX)/ERGSCX
       END IF
 C
@@ -2279,10 +2546,10 @@ C
 C
       IF (IWKTYP .EQ. 3) THEN
          IF (CMDIF .GT. D0) WRITE (LUPRI,'(/A,2(F12.6,A))')
-     &      ' Distance between centers of mass ', CMDIF,' au  ',
-     &                                      XTANG*CMDIF,' Angstrom'
+     &      '@ Distance between centers of mass ', CMDIF,' au  ',
+     &      XTANG*CMDIF,' Angstrom'
          WRITE (LUPRI,'(/A,F12.2,A,1P,E12.2,A)')
-     &      ' Accumulated time before step: ',
+     &      '@ Accumulated time before step: ',
      &        TACCUM - TIMSTP, ' au  ',D15*XFSEC*(TACCUM - TIMSTP),' fs'
          EKINX = EKIN0 + ESTART - ERGMOL
          WRITE (LUPRI,'(/A,1P,E12.6)')
@@ -2299,24 +2566,24 @@ C
      &        ' (',ERROR,'% error)'
          END IF
          IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E12.6,A,0P,F6.2,A)')
-     &      ' Relative velocity before step            : ', ABS(VREL),
+     &      '@ Relative velocity before step            : ', ABS(VREL),
      &      ' (',DM13*ABS(VREL)*XTANG/XFSEC, 'km/s)'
          IF (ABS(EKINPA) .GT. D0) THEN
             WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
-     &      ' Relative translational energy before step: ', EKINPA,
+     &      '@ Relative translational energy before step: ', EKINPA,
      &      ' (',D100*EKINPA/EKINTO,'% of total)'
          END IF
 C
 C        Analysis
 C
-         CALL WLKDAN(PMCARX,NCART,WORK,LWORK,IPRWLK)
+         CALL WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
       END IF
       IF (IWKTYP .EQ. 7) THEN
          WRITE (LUPRI,'(/A,F10.4,A)')
-     &      ' Accumulated arc length (mass weighted) before step: ',
+     &      '@ Accumulated arc length (mass weighted) before step: ',
      &        AACCUM - STPNRM, ' au  '
          IF (STOP) THEN
-            WRITE (LUPRI,'(/A)')' Geometry optimization has converged.'
+            WRITE (LUPRI,'(/A)')'@ Geometry optimization has converged.'
          END IF
       END IF
       IF (DOHESS) THEN
@@ -2329,18 +2596,18 @@ C
                END IF
   50        CONTINUE
             WRITE (LUPRI,'(/A,I2)')
-     *        ' Hessian index of totally symmetric representation:',
+     *        '@ Hessian index of totally symmetric representation:',
      *          INDHES(0)
             IF (NOTALL) THEN
                WRITE (LUPRI,'(A)')
-     *           ' Hessian index of all representations             : ?'
+     *          '  Hessian index of all representations             : ?'
             ELSE
                WRITE (LUPRI,'(A,I2)')
-     *           ' Hessian index of all representations             :',
+     *          '@ Hessian index of all representations             :',
      *             INDEX
             END IF
          ELSE
-            WRITE (LUPRI,'(/A,I2)') ' Hessian index:', INDEX
+            WRITE (LUPRI,'(/A,I2)') '@ Hessian index:', INDEX
          END IF
          IF (IMAGE .AND. .NOT.STOP) THEN
             IMGIND = INDHES(0)
@@ -2349,58 +2616,58 @@ C
             ELSE
                IMGIND = IMGIND - 1
             END IF
-            WRITE (LUPRI,'(A,I2)') ' Image index:  ', IMGIND
+            WRITE (LUPRI,'(A,I2)') '@ Image index:  ', IMGIND
          END IF
       END IF
       IF (IWKTYP .LT. 3) THEN
          IF (STOP) THEN
-            WRITE (LUPRI,'(/A)')' Geometry optimization has converged.'
+            WRITE (LUPRI,'(/A)')'@ Geometry optimization has converged.'
          ELSE
             IF (IWKTYP .EQ. 1 .AND. (IWKIND .GT. 0 .OR. IMAGE)) THEN
-               WRITE (LUPRI,'(A,I2)') ' Initial index:',ISTIND
+               WRITE (LUPRI,'(A,I2)') '  Initial index:',ISTIND
                IF (IMAGE) THEN
                   IWKINX = 1
                ELSE
                   IWKINX = IWKIND
                END IF
-               WRITE (LUPRI,'(A,I2)') ' Target index: ',IWKINX
+               WRITE (LUPRI,'(A,I2)') '  Target index: ',IWKINX
             ELSE
-               WRITE (LUPRI,'(/A,I2)') ' Index of initial point:',ISTIND
+               WRITE (LUPRI,'(/A,I2)')'  Index of initial point:',ISTIND
             END IF
          END IF
          IF (IMODE .GT. 0) THEN
             IF (IMAGE) THEN
                IF (.NOT.STOP) WRITE (LUPRI,'(/A,I2,/)')
-     &                  ' Image mode:',IMODE
+     &                  '@ Image mode:',IMODE
             ELSE
-               WRITE (LUPRI,'(/A,I2,/)') ' Eigenmode followed:',IMODE
+               WRITE (LUPRI,'(/A,I2,/)') '@ Eigenmode followed:',IMODE
             END IF
          END IF
       ELSE IF (IWKTYP .EQ. 5) THEN
-         WRITE (LUPRI,'(/A,I2)') 'Eigenvector selected:',IMODE
+         WRITE (LUPRI,'(/A,I2)') '@ Eigenvector selected:',IMODE
       END IF
       IF (.NOT.STOP) THEN
          IF (IWKTYP.EQ.2) THEN
             STPPAR = ABS(STPDIA(IMODE))
             STPPER = SQRT(STPNRM*STPNRM - STPPAR*STPPAR)
             IF (STPNRM .GT. 1.0D-10) WRITE (LUPRI,'(/A,F6.2,A)')
-     *          ' Angle between step and walk mode:    ',
+     *          '@ Angle between step and walk mode:    ',
      *            FACANG*ACOS(ABS(STPPAR/STPNRM)), ' deg '
          END IF
          IF ((IWKTYP.EQ.1 .AND. IWKIND.GT.0) .OR. (IWKTYP.EQ.2)
      &                                       .OR. IMAGE) THEN
             IF (OLDREA) THEN
                WRITE (LUPRI,'(A,F6.2,A)')
-     *            ' Angle between gradient and walk mode:',
+     *            '@ Angle between gradient and walk mode:',
      *               FACANG*ACOS(ABS(COFMOD)), ' deg '
                WRITE (LUPRI,'(A,F6.2,A)')
-     *            ' Angle between old and new walk modes:',
+     *            '@ Angle between old and new walk modes:',
      *              FACANG*ACOS(ABS(MIN(OVLPWM,D1))), ' deg '
                DOTNO = DDOT(NCART,STPSYM,1,STPSYX,1)
                DNRMN = DNRM2(NCART,STPSYM,1)
                DNRMO = DNRM2(NCART,STPSYX,1)
                WRITE (LUPRI,'(A,F6.2,A)')
-     *            ' Angle between old and new steps:     ',
+     *            '@ Angle between old and new steps:     ',
      *              FACANG*ACOS(ABS(DOTNO/(DNRMN*DNRMO))), ' deg '
                IF (IPRINT .GT. 5) THEN
                   CALL HEADER
@@ -2458,9 +2725,9 @@ C
      *      ' @-------------------------------------------------------'
          ELSE
             CALL AROUND('Analysis in diagonal representation')
-            WRITE (LUPRI,'(2(/A))') '  @iter   sym     mode      '
+            WRITE (LUPRI,'(2(/A))') '@  iter   sym     mode      '
      *        //'gradient     eigenvalue       step        energy ',
-     *        '  @-------------------------'
+     *        '@  -------------------------'
      *        //'---------------------------------------------------'
          END IF
          DO 150 I = 1, NCRTOT
@@ -2481,7 +2748,7 @@ C
                DO 210 I = 1, NVEC
                   II = IOFF + I
                   IF (STOP) THEN
-                     WRITE (LUPRI,'(12X,A,I2,10X,I2,4X,2F17.10)')
+                     WRITE (LUPRI,'(12X,A,I2,I12,4X,2F17.10)')
      &                  '@',IREP + 1, I, GRDDIA(II), EVAL(II)
                   ELSE
                      STARM = ' '
@@ -2495,7 +2762,7 @@ C
                      IF (II .EQ. MAXSTP) STARS = '<'
                      IF (II .EQ. MAXERG) STARE = '<'
                      WRITE
-     &                  (LUPRI,'(2X,A,I3,4X,I2,6X,I2,A,2X,4(F13.8,A))')
+     &                  (LUPRI,'(A,I5,I6,I8,A,2X,4(F13.8,A))')
      &                  '@',IPOINT, IREP + 1, I,STARM,GRDDIA(II),STARG,
      &                  EVAL(II),STARH, STPDIA(II),STARS,
      &                  ERGDIA(II),STARE
@@ -2622,7 +2889,8 @@ C
          CALL AROUND('Final geometry')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(CORD)
-         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,WORK,LWORK)
+         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &               WORK,LWORK)
       ELSE
          IF (OLDREA) THEN
             WRITE(LUPRI,'(/,A,F12.6)')
@@ -2647,26 +2915,25 @@ C
          CALL AROUND('Change in geometry')
          CALL HEADER('Cartesian displacements (au)',-1)
          CALL PRIGEO(STPCAR)
-         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,.FALSE.,WORK,LWORK)
-         CALL GEOANA(COOR,.TRUE.,.TRUE.,NBONDS,.FALSE.,WORK,LWORK)
+         CALL GEOANA(CORD,.FALSE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &               WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE.,.TRUE.,NBONDS,.FALSE.,IDUMMY,
+     &               WORK,LWORK)
          CALL AROUND('Geometry after step')
          CALL HEADER('Cartesian coordinates (au)',-1)
          CALL PRIGEO(COOR)
-         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,.FALSE.,WORK,LWORK)
+         CALL GEOANA(COOR,.TRUE.,.FALSE.,NBONDS,.FALSE.,IDUMMY,
+     &               WORK,LWORK)
       END IF
 C
       RETURN
       END
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
-     *                        INDXOK,STATPO,ISTIND,IPOINT)
+     *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
 #include <implicit.h>
 #include <priunit.h>
-#ifdef PRG_DIRAC
-#include <dcbgen.h>
-#else
 #include <gnrinf.h>
-#endif
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
@@ -2702,7 +2969,11 @@ C
          WLKEND = .FALSE.
          GEOCNV = WLKEND
       ELSE IF (IWKTYP .EQ. 6) THEN
-         WLKEND = IPOINT .EQ. 2*NCART - 1
+         IF (VIBAVE .OR. NMODIF) THEN
+            WLKEND = IPOINT .EQ. 2*NUMMOD - 1
+         ELSE
+            WLKEND = IPOINT .EQ. 2*NCART - 1
+         END IF
          GEOCNV = WLKEND
       ELSE IF (IWKTYP .EQ. 7) THEN
          WLKEND = (IPOINT .EQ. ITERMX - 1) .OR. (STATPO .AND. INDXOK)
@@ -2868,9 +3139,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#endif
-Cjth
 C  /* Deck wlkinc */
       SUBROUTINE WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,IPOINT,
      *                  IPRINT)
@@ -2938,9 +3206,67 @@ C
       END IF
       RETURN
       END
-Cjth
-#if !defined (PRG_DIRAC)
-Cjth
+C  /* Deck wlknci */
+      SUBROUTINE WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,EVEC,
+     *                  IPOINT,NUMMOD,IPRINT)
+C
+C     Atomic displacements along normal modes for numerical differentiation
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <codata.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      PARAMETER (D2 = 2.0D0)
+C
+      DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
+C
+#include <nuclei.h>
+#include <symmet.h>
+C
+C     ***** STPCAR *****
+C     Note: This only works without symmetry. If possible to include symmetry,
+C           compare with structure in WLKINC. K.Ruud-March 1999
+C
+      DISPNC = DISPLC*SQRT(XFAMU)
+      CALL DZERO(STPCAR,NCRIND)
+      DO 100 IATOM = 1, NUCIND
+         DO 110 ICOOR = 1, 3
+            ICCOOR = 3*(IATOM - 1) + ICOOR
+            IF (IPOINT .EQ. 0) THEN
+               STPCAR(ICCOOR) = EVEC(ICCOOR,1)*DISPNC
+            ELSE IF (IPOINT .EQ. 2*NUMMOD) THEN
+               STPCAR(ICCOOR) = EVEC(ICCOOR,NUMMOD)*DISPNC
+            ELSE IF (MOD(IPOINT,2) .EQ. 1) THEN
+               STPCAR(ICCOOR) = -D2*EVEC(ICCOOR,(IPOINT + 1)/2)*DISPNC
+            ELSE
+               STPCAR(ICCOOR) = EVEC(ICCOOR,(IPOINT + 1)/2)*DISPNC
+     &                        + EVEC(ICCOOR,(IPOINT + 2)/2)*DISPNC
+            END IF
+ 110     CONTINUE
+ 100  CONTINUE
+C
+C     ***** COOR *****
+C
+      IJ = 1
+      DO 200 IATOM = 1, NUCIND
+         DO 210 ICOOR = 1, 3
+            COOR(IJ) = CORD(ICOOR,IATOM) + STPCAR(IJ)
+            IJ = IJ + 1
+ 210     CONTINUE
+ 200  CONTINUE
+C
+C     ***** Print *****
+C
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('STPCAR in WLKNCI',1)
+         CALL OUTPUT(STPCAR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+         CALL HEADER('COOR in WLKNCI',1)
+         CALL OUTPUT(COOR,1,1,1,NCRIND,1,NCRIND,1,LUPRI)
+      END IF
+      RETURN
+      END
 C  /* Deck wlknum */
       SUBROUTINE WLKNUM(GRDCAR,HESCAR,DIPG0,GRAD0,HESS0,GRADF,HESSF,
      *                  DIPGF,WORK,ERGMOL,ESTART,DIPM,DIPM0,DISPLC,
@@ -3119,13 +3445,824 @@ C
       END IF
       RETURN
       END
+C  /* Deck wlkv3 */
+      SUBROUTINE WLKV3(GRDCAR,HESCAR,GRAD0,HESS0,GRADF,HESSF,
+     *                 FMATF,WORK,ERGMOL,ESTART,DISPLC,
+     *                 LWORK,NCRTOT,N2CRT,NCART,IPOINT,
+     *                 IPRINT)
+C
+C     Determine anharmonic force field by numerical differentiation
+C     Currently the entire anharmonic is determined only, using 
+C     numerical differentiation of the Hessian. In the future V_imm should 
+C     be determined in internal coordinates, using numerical differentiation
+C     of the gradient. This can be used for speeding of the determination 
+C     of the effective geometry needed for rovibrational averaging.
+C     
+C     K.Ruud, San Diego March 1999
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+C
+      LOGICAL FINAL
+      DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCART),
+     *          HESS0(NCART,NCART), GRADF(NCART), HESSF(NCART,NCART),
+     *          FMATF(NCART,NCART,NCART), WORK(LWORK)
+C
+#include <nuclei.h>
+#include <symmet.h>
+C
+#include <chrsgn.h>
+C
+      FINAL = IPOINT .EQ. 2*NCART
+      IF (IPOINT .EQ. 0) THEN
+         CALL DCOPY (NCART,GRDCAR,1,GRAD0,1)
+         CALL DCOPY (NCART*NCART,HESCAR,1,HESS0,1)
+         CALL DZERO(FMATF,NCART*NCART*NCART)
+      ELSE
+         I = (IPOINT+1)/2
+         IF (MOD(IPOINT,2) .EQ. 1) THEN
+            DO J = 1, NCART
+               DO K = 1, NCART
+                  FMATF(J,K,I) = (HESCAR(J,K)-HESS0(J,K))/DISPLC
+               END DO
+            END DO
+         ELSE
+            DO J = 1, NCART
+               DO K = 1, NCART
+                  FMATF(J,K,I) = DP5*(FMATF(J,K,I)
+     &                         - (HESCAR(J,K)-HESS0(J,K))/DISPLC)
+               END DO
+            END DO
+         END IF
+      END IF
+C
+C     ***** Print *****
+C
+      CALL TITLER('ABACUS - NUMERICAL DIFFERENTIATION','*',118)
+      IF (IPOINT .EQ. 0) THEN
+         WRITE (LUPRI,'(A,F17.10)')
+     *         ' Energy at reference geometry:',ERGMOL
+         CALL HEADER('Analytical gradient at reference geometry',1)
+         CALL OUTPUT(GRDCAR,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL HEADER('Analytical Hessian at reference geometry',1)
+         CALL OUTPUT(HESCAR,1,NCART,1,NCART,NCART,NCART,1,LUPRI)
+      ELSE
+         ICUR = (IPOINT+1)/2
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+     *         ' Coordinate displaced in this calculation:    ',
+     *         NAMEX(IPTCOR(ICUR,1)),
+     *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
+         IF (IPRINT .GE. 2) THEN
+            CALL HEADER('Analytical gradient at displaced geometry',1)
+            CALL OUTPUT(GRDCAR,1,1,1,NCART,1,NCART,1,LUPRI)
+            CALL HEADER('Analytical Hessian at displaced geometry',1)
+            CALL OUTPUT(HESCAR,1,NCART,1,NCART,NCART,NCART,1,LUPRI)
+         END IF
+         IF (FINAL) THEN
+            WRITE (LUPRI,'(/A)')
+     *       ' All displacements are now done'//
+     *       ' - numerical differentiation is complete.'
+
+            DO I = 1, NCART
+               WRITE (LUPRI,'(/A,I5,/A)') 
+     &              ' Anharmonic force constants (*,*,I):', I,
+     &              ' ----------------------------------------'
+               CALL OUTPUT(FMATF(1,1,I),1,NCART,1,NCART,NCART,NCART,
+     &                     1,LUPRI)
+            END DO
+Ckr
+Ckr      Print anharmonic force field and analyze in terms of normal
+Ckr      coordinates. Need also some consistency check for the accuray of
+Ckr      of the numerical differentiation, qua what is done for the symmetric
+Ckr      nature of the Hessian.
+Ckr            
+         END IF
+C
+      END IF
+      RETURN
+      END
+C  /* Deck wlkv3n */
+      SUBROUTINE WLKV3N(GRDCAR,GRAD0,GRADIN,EVEC,
+     &                 FMATF,WORK,ERGMOL,ESTART,DISPLC,
+     &                 LWORK,NCRTOT,NCART,NUMMOD,IPOINT,IPRINT)
+C
+C     Determine anharmonic force field by numerical differentiation
+C     along normal coordinates. Only the anharmonic force constants
+C     needed for determining an effective geometry is considered.
+C     
+C     K.Ruud, San Diego March 1999
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+C
+      LOGICAL FINAL
+      DIMENSION GRDCAR(NCRTOT), GRAD0(NCART), GRADIN(NCART),
+     *          FMATF(NCART,NCART,NCART), EVEC(NCART,NCART), WORK(LWORK)
+C
+#include <nuclei.h>
+#include <symmet.h>
+C
+#include <chrsgn.h>
+C
+      FINAL = IPOINT .EQ. 2*NUMMOD
+C      
+      CALL MPAB(GRDCAR,1,NCART,1,NCART,
+     &          EVEC,NCART,NUMMOD,NCART,NCART,
+     &          GRADIN,1,NUMMOD)
+      IF (IPOINT .EQ. 0) THEN
+         CALL DCOPY (NUMMOD,GRADIN,1,GRAD0,1)
+         CALL DZERO(FMATF,NCART*NCART*NCART)
+      ELSE
+         I = (IPOINT+1)/2
+         IF (MOD(IPOINT,2) .EQ. 1) THEN
+            DO J = 1, NUMMOD
+               FMATF(I,I,J) = (GRADIN(J)-GRAD0(J))/DISPLC**2
+            END DO
+         ELSE
+            DO J = 1, NUMMOD
+               FMATF(I,I,J) = FMATF(I,I,J)
+     &                      + (GRADIN(J)-GRAD0(J))/DISPLC**2
+            END DO
+         END IF
+      END IF
+C
+C     ***** Print *****
+C
+      CALL TITLER('ABACUS - NUMERICAL DIFFERENTIATION','*',118)
+      IF (IPOINT .EQ. 0) THEN
+         WRITE (LUPRI,'(A,F17.10)')
+     *         ' Energy at reference geometry:',ERGMOL
+         CALL HEADER('Analytical gradient at reference geometry',1)
+         CALL OUTPUT(GRDCAR,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL HEADER('Analytical gradient at reference geometry'//
+     &        '(normal coordinate basis)',1)
+         CALL OUTPUT(GRADIN,1,1,1,NUMMOD,1,NCART,1,LUPRI)
+      ELSE
+         ICUR = (IPOINT+1)/2
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+     *         ' Coordinate displaced in this calculation:    ',
+     *         NAMEX(IPTCOR(ICUR,1)),
+     *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
+         IF (IPRINT .GE. 2) THEN
+            CALL HEADER('Analytical gradient at displaced geometry'//
+     &           '(normal coordinate basis)',1)
+            CALL OUTPUT(GRADIN,1,1,1,NUMMOD,1,NCART,1,LUPRI)
+         END IF
+         IF (FINAL) THEN
+            WRITE (LUPRI,'(/A)')
+     *       ' All displacements are now done'//
+     *       ' - numerical differentiation is complete.'
+
+            DO I = 1, NUMMOD
+               WRITE (LUPRI,'(/A,I5,/A)') 
+     &              ' Anharmonic force constants (*,*,I):', I,
+     &              ' ----------------------------------------'
+               CALL OUTPUT(FMATF(1,1,I),1,NUMMOD,1,NUMMOD,NCART,NCART,
+     &                     1,LUPRI)
+            END DO
+Ckr
+Ckr      Print anharmonic force field and analyze in terms of normal
+Ckr      coordinates. Need also some consistency check for the accuray of
+Ckr      of the numerical differentiation, qua what is done for the symmetric
+Ckr      nature of the Hessian.
+Ckr            
+         END IF
+C
+      END IF
+      RETURN
+      END
+C  /* Deck wlkvib */
+      SUBROUTINE WLKVIB(GRDCAR,HESCAR,GRAD0,HESS0,EVAL,
+     &                  DIPM0,DIPMF,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
+     &                  QUADF,QUADT,SIGMA0,SIGMAF,TMAT,CSTRA,SCTRA,SRC0,
+     &                  SRCF,POLAR0,POLARF,POLDD,ALFA0,ALFAF,EFG0,EFGF,
+     &                  SPNTOT,SSJ0,SSJF,ERGMOL,WORK,LWORK,NCART,
+     &                  NCRTOT,NUMMOD,IPOINT,IPRINT)
+C
+C     Determine second-derivative of molecular properties along the normal
+C     coordinates of the molecule at the effective molecular geometry.
+C
+C     K.Ruud, San Diego March 1999
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <codata.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
+      PARAMETER (FACTOR = 1.D6*ALPHA2, PRMASS = 1.007276470D0)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+     &                   *6.5796838999D15)
+C
+      LOGICAL FINAL
+#include <cbilnr.h>
+      DIMENSION GRDCAR(NCRTOT), HESCAR(NCART,NCART), GRAD0(NCRTOT),
+     &          HESS0(NCART,NCART), DIPM0(3), EVAL(NCART),
+     &          DIPMF(3,NCART), SUSTO0(3,3), SUSTF(3,3,NCART),
+     &          GFAC0(3,3), GFACF(3,3,NCART), QUAD0(3,3),
+     &          QUADF(3,3,NCART), QUADT(3,3), SIGMA0(3,3,MXCENT),
+     &          SIGMAF(3,3,MXCENT,NCART), SRC0(3,3,MXCENT), 
+     &          SRCF(3,3,MXCENT,NCART), TMAT(3,3,MXCENT), CSTRA(*), 
+     &          SCTRA(*), POLAR0(3,3), POLARF(3,3,NCART), 
+     &          POLDD(3,3,MXFR), ALFA0(3,3,MXFR), ALFAF(3,3,MXFR,NCART),
+     &          EFG0(3,3,MXCENT), EFGF(3,3,MXCENT,NCART), 
+     &          SPNTOT(MXCOOR,MXCOOR), SSJ0(MXCOOR,MXCOOR), 
+     &          SSJF(MXCOOR,MXCOOR,NCART), WORK(LWORK)
+C
+#include <nuclei.h>
+#include <symmet.h>
+#include <abainf.h>
+C
+#include <moldip.h>
+#include <suscpt.h>
+#include <molgfa.h>
+#include <quadru.h>
+#include <sigma.h>
+#include <spinro.h>
+#include <nqcc.h>
+#include <chrsgn.h>
+#include <cbiwlk.h>
+C
+      IF (MAGSUS) THEN
+         DO I = 1, 3
+            DO J = 1 ,3
+               IF (NOLOND) THEN
+                  SUSTOT(I,J) = SUSDIA(I,J) + SUSREL(I,J)
+               ELSE
+                  SUSTOT(I,J) = SUSREL(I,J) + SUSDIA(I,J)
+     &                        + SUS2EL(I,J) + SUSFS (I,J)
+     &                        + SUSFSY(I,J)
+               END IF
+            END DO
+         END DO
+      END IF
+      IF (QUADRU) THEN
+         CALL DCOPY(9,QDRNUC,1,QUADT,1)
+         CALL DAXPY(9,DM1,QDREL,1,QUADT,1)
+      END IF
+      IF (SHIELD) THEN
+         CALL TRADIP(SIGMAT,TMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
+         CALL DSCAL(9*MXCENT,FACTOR,TMAT,1)
+      END IF
+      IF (SPNSPN) CALL DSCAL(MXCOOR*MXCOOR,AUTOHZ,SPNTOT,1)
+C
+C     Transform properties to the Eckart frame
+C
+      IF (ECKART) THEN
+         KGEOMI = 1
+         KAMASS = KGEOMI + 3*MXCENT
+         KNATTY = KAMASS + MXCENT
+         KECKGE = KNATTY + MXCENT
+         KGEOM2 = KECKGE + 3*MXCENT
+         KLAST  = KGEOM2 + 3*MXCENT
+         LWRK   = LWORK - KLAST + 1
+         CALL ECKTRN(GRDCAR,HESCAR,DIP0,SUSTOT,GTRAN,QUADT,TMAT,GTRANT,
+     &               POLARS,POLDD,ELNQC,SPNTOT,MAGSUS,MOLGFA,QUADRU,
+     &               SHIELD,SPINRO,POLAR,ALFA,NQCC,SPNSPN,
+     &               NCART,NCRTOT,MXFR,NFRVAL,FRVAL,WORK(KGEOMI),
+     &               WORK(KAMASS),WORK(KNATTY),WORK(KECKGE),
+     &               WORK(KGEOM2),IPRINT,WORK(KLAST),LWRK)
+      END IF
+      IF (IPOINT .EQ. 0) THEN
+         FINAL = .FALSE.
+         CALL DCOPY (NCART,GRDCAR,1,GRAD0,1)
+         CALL DCOPY (NCART*NCART,HESCAR,1,HESS0,1)
+         CALL DCOPY(3,DIP0,1,DIPM0,1)
+         IF (MAGSUS) THEN
+            CALL DCOPY(9,SUSTOT,1,SUSTO0,1)
+            CALL DSCAL(9,DM1,SUSTO0,1)
+         END IF
+         IF (MOLGFA) CALL DCOPY(9,GTRAN,1,GFAC0,1)
+         IF (QUADRU) CALL DCOPY(9,QUADT,1,QUAD0,1)
+         IF (SHIELD) CALL DCOPY(9*MXCENT,TMAT,1,SIGMA0,1)
+         IF (SPINRO) CALL DCOPY(9*MXCENT,GTRANT,1,SRC0,1)
+         IF (POLAR)  CALL DCOPY(9,POLARS,1,POLAR0,1)
+         IF (ALFA)   CALL DCOPY(9*MXFR,POLDD,1,ALFA0,1)
+         IF (NQCC)   CALL DCOPY(9*MXCENT,ELNQC,1,EFG0,1)
+         IF (SPNSPN) CALL DCOPY(MXCOOR*MXCOOR,SPNTOT,1,SSJ0,1)
+C
+C     Should we transform the normal coordinates to an Eckart frame?
+C
+      ELSE
+         FINAL = IPOINT .EQ. 2*NUMMOD
+         I = (IPOINT+1)/2
+         IF (MOD(IPOINT,2) .EQ. 1) THEN
+            DO ICOOR = 1, 3
+               DIPMF(ICOOR,I) = (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
+            END DO
+            IF (MAGSUS) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     SUSTF(ICOOR,JCOOR,I) = (-SUSTOT(ICOOR,JCOOR) -
+     &                    SUSTO0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (MOLGFA) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     GFACF(ICOOR,JCOOR,I) = (GTRAN(ICOOR,JCOOR) -
+     &                    GFAC0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (QUADRU) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     QUADF(ICOOR,JCOOR,I) = (QUADT(ICOOR,JCOOR) -
+     &                    QUAD0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (SHIELD) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        SIGMAF(ICOOR,JCOOR,IATOM,I) = 
+     &                        (TMAT(ICOOR,JCOOR,IATOM) -
+     &                         SIGMA0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (SPINRO) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        SRCF(ICOOR,JCOOR,IATOM,I) = 
+     &                       (GTRANT(ICOOR,JCOOR,IATOM) -
+     &                       SRC0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (POLAR) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     POLARF(ICOOR,JCOOR,I) = (POLARS(ICOOR,JCOOR)
+     &                    - POLAR0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (ALFA) THEN
+               DO IFRQR = 1, NFRVAL
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        ALFAF(ICOOR,JCOOR,IFRQR,I) = 
+     &                       (POLDD(ICOOR,JCOOR,IFRQR)
+     &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (NQCC) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     EFGF(ICOOR,JCOOR,IATOM,I) = 
+     &                    (ELNQC(ICOOR,JCOOR,IATOM)
+     &                    - EFG0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                  END DO
+                  END DO
+               END DO
+            END IF
+            IF (SPNSPN) THEN
+               DO ICOOR = 1, 3*NUCDEP
+                  DO JCOOR = 1, 3*NUCDEP
+                     SSJF(ICOOR,JCOOR,I) = (SPNTOT(ICOOR,JCOOR)
+     &                    - SSJ0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+         ELSE
+            DO ICOOR = 1, 3
+               DIPMF(ICOOR,I) = DIPMF(ICOOR,I)
+     &                        + (DIP0(ICOOR)-DIPM0(ICOOR))/DISPLC**2
+            END DO
+            IF (MAGSUS) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     SUSTF(ICOOR,JCOOR,I) = SUSTF(ICOOR,JCOOR,I)
+     &                    + (-SUSTOT(ICOOR,JCOOR) 
+     &                    - SUSTO0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (MOLGFA) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     GFACF(ICOOR,JCOOR,I) = GFACF(ICOOR,JCOOR,I) 
+     &                    + (GTRAN(ICOOR,JCOOR) 
+     &                    -  GFAC0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (QUADRU) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     QUADF(ICOOR,JCOOR,I) = QUADF(ICOOR,JCOOR,I) 
+     &                    + (QUADT(ICOOR,JCOOR) 
+     &                    -  QUAD0(ICOOR,JCOOR))/DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (SHIELD) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        SIGMAF(ICOOR,JCOOR,IATOM,I) = 
+     &                       SIGMAF(ICOOR,JCOOR,IATOM,I) 
+     &                    + (TMAT(ICOOR,JCOOR,IATOM) 
+     &                    -  SIGMA0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (SPINRO) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        SRCF(ICOOR,JCOOR,IATOM,I) = 
+     &                       SRCF(ICOOR,JCOOR,IATOM,I) 
+     &                    + (GTRANT(ICOOR,JCOOR,IATOM) 
+     &                    -  SRC0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (POLAR) THEN
+               DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     POLARF(ICOOR,JCOOR,I) = POLARF(ICOOR,JCOOR,I) +
+     &                    (POLARS(ICOOR,JCOOR) - POLAR0(ICOOR,JCOOR))/
+     &                     DISPLC**2
+                  END DO
+               END DO
+            END IF
+            IF (ALFA) THEN
+               DO IFRQR = 1, NFRVAL
+                  DO ICOOR = 1, 3
+                     DO JCOOR = 1, 3
+                        ALFAF(ICOOR,JCOOR,IFRQR,I) = 
+     &                       ALFAF(ICOOR,JCOOR,IFRQR,I) +
+     &                       (POLDD(ICOOR,JCOOR,IFRQR) 
+     &                       - ALFA0(ICOOR,JCOOR,IFRQR))/DISPLC**2
+                     END DO
+                  END DO
+               END DO
+            END IF
+            IF (NQCC) THEN
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                  DO JCOOR = 1, 3
+                     EFGF(ICOOR,JCOOR,IATOM,I) = 
+     &                    EFGF(ICOOR,JCOOR,IATOM,I) +
+     &                    (ELNQC(ICOOR,JCOOR,IATOM) 
+     &                    - EFG0(ICOOR,JCOOR,IATOM))/DISPLC**2
+                  END DO
+                  END DO
+               END DO
+            END IF
+            IF (SPNSPN) THEN
+               DO ICOOR = 1, 3*NUCDEP
+                  DO JCOOR = 1, 3*NUCDEP
+                     SSJF(ICOOR,JCOOR,I) = SSJF(ICOOR,JCOOR,I) +
+     &                    (SPNTOT(ICOOR,JCOOR) - SSJ0(ICOOR,JCOOR))
+     &                    /DISPLC**2
+                  END DO
+               END DO
+            END IF
+         END IF
+      END IF
+C
+C     ***** Print *****
+C
+      CALL TITLER('ABACUS - VIBRATIONAL AVERAGING','*',118)
+      IF (IPOINT .EQ. 0) THEN
+         WRITE (LUPRI,'(A,F17.10)')
+     *         ' Energy at effective geometry:',ERGMOL
+         CALL HEADER('Analytical gradient at effective geometry',1)
+         CALL OUTPUT(GRDCAR,1,1,1,NCART,1,NCART,1,LUPRI)
+         CALL HEADER('Analytical Hessian at effective geometry',1)
+         CALL OUTPUT(HESCAR,1,NCART,1,NCART,NCART,NCART,1,LUPRI)
+         CALL HEADER('Dipole moment at effective geometry',1)
+         CALL OUTPUT(DIP0,1,1,1,3,1,3,1,LUPRI)
+         IF (MAGSUS) THEN
+            CALL HEADER('Magnetizabilities at effective geometry',1)
+            CALL POLPRI(SUSTO0,'   ',-2)
+         END IF
+         IF (MOLGFA) THEN
+            CALL HEADER('Rotational g tensor at effective geometry',1)
+            CALL POLPRI(GFAC0,'   ',-2)
+         END IF
+         IF (QUADRU) THEN
+            CALL HEADER('Molecular quadrupole moment at effective '//
+     &                  'geometry',1)
+            CALL POLPRI(QUAD0,'   ',-2)
+         END IF
+         IF (SHIELD) THEN
+            CALL HEADER('Chemical shielding tensors at effective '//
+     &                  'geometry',1)
+            DO IATOM = 1, NUCDEP
+               WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+               DO ICOOR = 1, 3
+                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 (SIGMA0(K,ICOOR,IATOM),K=1,3)
+               END DO
+            END DO
+         END IF
+         IF (SPINRO) THEN
+            CALL HEADER('Nuclear spin-rotation tensors at effective '//
+     &                  'geometry',1)
+            DO IATOM = 1, NUCDEP
+               WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+               DO ICOOR = 1, 3
+                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 (SRC0(K,ICOOR,IATOM),K=1,3)
+               END DO
+            END DO
+         END IF
+         IF (POLAR) THEN
+            CALL HEADER('Polarizability at effective geometry',1)
+            CALL POLPRI(POLAR0,'   ',-2)
+         END IF
+         IF (ALFA) THEN
+            CALL HEADER('Polarizability at effective geometry',1)
+            DO IFRQR = 1, NFRVAL
+               WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',FRVAL(IFRQR)
+               CALL POLPRI(ALFA0(1,1,IFRQR),'   ',-2)
+            END DO
+         END IF
+         IF (NQCC) THEN
+            CALL HEADER('Nuclear quadrupole moments at effective '//
+     &                  'geometry',1)
+            WRITE (LUPRI,'(18X,3(A,13X),/)') 'XX', 'YY', 'ZZ'
+            DO IATOM = 1, NUCDEP
+               DO ICOOR = 1, 3
+                  WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                 NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                 (EFG0(K,ICOOR,IATOM),K=1,3)
+               END DO
+            END DO
+         END IF
+         IF (SPNSPN) THEN
+            CALL HEADER('Spin-spin coupling constants at effective '//
+     &                  'geometry',1)
+            CALL PRIHES(SSJ0,'SPNSPN',CSTRA,SCTRA)
+         END IF
+      ELSE
+         ICUR = (IPOINT+1)/2
+         WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
+     *         ' Coordinate displaced in this calculation:    ',
+     *         NAMEX(IPTCOR(ICUR,1)),
+     *         ' Displacement:', CHRSGN(2*MOD(IPOINT,2)-1), DISPLC
+         IF (IPRINT .GE. 4) THEN
+            CALL HEADER('Dipole moment at displaced '//
+     &                  'geometry',1)
+            CALL OUTPUT(DIP0,1,1,1,3,1,3,1,LUPRI)
+            IF (MAGSUS) THEN
+               CALL HEADER('Magnetizabilities at displaced geometry',1)
+               CALL POLPRI(SUSTOT,'   ',-2)            
+            END IF
+            IF (MOLGFA) THEN
+               CALL HEADER('Rotational g tensor at displaced '//
+     &                     'geometry',1)
+               CALL POLPRI(GTRAN,'   ',-2)            
+            END IF
+            IF (QUADRU) THEN
+               CALL HEADER('Molecular quadrupole moment at displaced '//
+     &                     'geometry',1)
+               CALL POLPRI(QUADT,'   ',-2)            
+            END IF
+            IF (SHIELD) THEN
+               CALL HEADER('Chemical shielding tensors at displaced '//
+     &                     'geometry',1)
+               DO IATOM = 1, NUCDEP
+                  WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+                  DO ICOOR = 1, 3
+                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    (TMAT(K,ICOOR,IATOM),K=1,3)
+                  END DO
+               END DO
+            END IF
+            IF (SPINRO) THEN
+               CALL HEADER('Nuclear spin-rotation tensors at '//
+     &                     'displaced geometry',1)
+               DO IATOM = 1, NUCDEP
+                  WRITE (LUPRI,'(18X,3(A,13X),/)') 'Bx', 'By', 'Bz'
+                  DO ICOOR = 1, 3
+                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    (GTRANT(K,ICOOR,IATOM),K=1,3)
+                  END DO
+               END DO
+            END IF
+            IF (POLAR) THEN
+               CALL HEADER('Polarizability at displaced geometry',1)
+               CALL POLPRI(POLARS,'   ',-2)            
+            END IF
+            IF (ALFA) THEN
+               CALL HEADER('Polarizability at displaced geometry',1)
+               DO IFRQR = 1, NFRVAL
+                  WRITE (LUPRI,'(/1X,A,F8.5)') 'Frequency:   ',
+     &                 FRVAL(IFRQR)
+                  CALL POLPRI(POLDD(1,1,IFRQR),'   ',-2)
+               END DO
+            END IF
+            IF (NQCC) THEN
+               CALL HEADER('Nuclear quadrupole moments at displaced '//
+     &                     'geometry',1)
+               WRITE (LUPRI,'(18X,3(A,13X),/)') 'XX', 'YY', 'ZZ'
+               DO IATOM = 1, NUCDEP
+                  DO ICOOR = 1, 3
+                     WRITE (LUPRI,'(2X,A6,3F15.8)')
+     &                    NAMDPX(3*(IATOM-1)+ICOOR), 
+     &                    (ELNQC(K,ICOOR,IATOM),K=1,3)
+                  END DO
+               END DO
+            END IF
+            IF (SPNSPN) THEN
+               CALL HEADER('Spin-spin coupling constants at effective'//
+     &                     ' geometry',1)
+               CALL PRIHES(SPNTOT,'SPNSPN',CSTRA,SCTRA)
+            END IF
+         END IF
+         IF (FINAL) THEN
+            WRITE (LUPRI,'(/A)')
+     *       ' All displacements are now done'//
+     *       ' - numerical differentiation is complete.'
+            WRITE (LUPRI,'(/A,/A)') 
+     &           ' Dipole moment second derivatives:',
+     &           ' ---------------------------------'
+            WRITE (LUPRI,'(5X,A4,5X,3(5X,A1,11X))') 'Mode','X',
+     &           'Y','Z'
+            DO IMOD = 1, NUMMOD
+               WRITE (LUPRI,'(/6X,I2,6X,F12.6,5X,F12.6,5X,F12.6)')
+     &              IMOD,(DIPMF(ICOOR,IMOD),ICOOR = 1, 3)
+            END DO
+            IF (MAGSUS) THEN
+               WRITE (LUPRI,'(/A,/A)') 
+     &              ' Magnetizability tensor second derivatives:',
+     &              ' ------------------------------------------'
+               WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &              'YY','XZ','YZ','ZZ'
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &               ((SUSTF(ICOOR,JCOOR,IMOD), ICOOR = 1, JCOOR),
+     &                                          JCOOR = 1, 3)
+               END DO
+            END IF
+            IF (MOLGFA) THEN
+               WRITE (LUPRI,'(/A,/A)') 
+     &              ' Rotational g tensor second derivatives:',
+     &              ' ---------------------------------------'
+               WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &              'YY','XZ','YZ','ZZ'
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &               ((GFACF(ICOOR,JCOOR,IMOD), ICOOR = 1, JCOOR),
+     &                                          JCOOR = 1, 3)
+               END DO
+            END IF
+            IF (QUADRU) THEN
+               WRITE (LUPRI,'(/A,/A)') 
+     &              ' Molecular quadrupole moment second derivatives:',
+     &              ' -----------------------------------------------'
+               WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &              'YY','XZ','YZ','ZZ'
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &               ((QUADF(ICOOR,JCOOR,IMOD), ICOOR = 1, JCOOR),
+     &                                          JCOOR = 1, 3)
+               END DO
+            END IF
+            IF (SHIELD) THEN
+               DO IATOM = 1, NUCDEP
+                  WRITE (LUPRI,'(/A,A,/A)')
+     &             ' Nuclear shielding tensor second derivatives for: ',
+     &              NAMDEP(IATOM),' --------------------------------'//
+     &                 '------------------------'
+                  WRITE (LUPRI,'(/1X,A4,1X,9(2X,A4,2X))') 'Mode','Bxmx',
+     &              'Bxmy','Bxmz','Bymx','Bymy','Bymz','Bzmx','Bzmy',
+     &              'Bzmz'
+                  DO IMOD = 1, NUMMOD
+                     WRITE (LUPRI,'(2X,I2,2X,9F8.3)') IMOD,
+     &                    ((SIGMAF(K,I,IATOM,IMOD),I=1,3),K=1,3)
+                  END DO
+               END DO
+            END IF
+            IF (SPINRO) THEN
+               DO IATOM = 1, NUCDEP
+                  WRITE (LUPRI,'(/A,A,/A)')
+     &             ' Nuclear spin-rotation tensor second derivatives '//
+     &                 'for: ', NAMDEP(IATOM),
+     &                 ' --------------------------------'//
+     &                 '----------------------------'
+                  WRITE (LUPRI,'(/1X,A4,1X,9(2X,A4,2X))') 'Mode','Jxmx',
+     &              'Jxmy','Jxmz','Jymx','Jymy','Jymz','Jzmx','Jzmy',
+     &              'Jzmz'
+                  DO IMOD = 1, NUMMOD
+                     WRITE (LUPRI,'(2X,I2,2X,9F8.3)') IMOD,
+     &                    ((SRCF(K,I,IATOM,IMOD),I=1,3),K=1,3)
+                  END DO
+               END DO
+            END IF
+            IF (POLAR) THEN
+               WRITE (LUPRI,'(/A,/A)') 
+     &              ' Polarizability second derivatives:',
+     &              ' ----------------------------------'
+               WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &              'YY','XZ','YZ','ZZ'
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &               ((POLARF(ICOOR,JCOOR,IMOD), ICOOR = 1, JCOOR),
+     &                                           JCOOR = 1, 3)
+               END DO
+            END IF
+            IF (ALFA) THEN
+               DO IFRQR = 1, NFRVAL
+                  WRITE (LUPRI,'(/A,2X,F8.5,/A)') 
+     &              ' Polarizability second derivatives for frequency:',
+     &              FRVAL(IFRQR),
+     &              ' -----------------------------------------------'//
+     &              '-----------'
+                  WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &                 'YY','XZ','YZ','ZZ'
+                  DO IMOD = 1, NUMMOD
+                     WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &                    ((ALFAF(ICOOR,JCOOR,IFRQR,IMOD), 
+     &                    ICOOR = 1, JCOOR), JCOOR = 1, 3)
+                  END DO
+               END DO
+            END IF
+            IF (NQCC) THEN
+               DO IATOM = 1, NUCDEP
+                  WRITE (LUPRI,'(/A,A,/A)')
+     &             ' Nuclear quadrupole moment tensor second '//
+     &                 'derivatives for: ', NAMDEP(IATOM),
+     &                 ' --------------------------------'//
+     &                 '----------------------------'
+                  WRITE (LUPRI,'(/1X,A4,6(6X,A2,4X))') 'Mode','XX','XY',
+     &                 'YY','XZ','YZ','ZZ'
+                  DO IMOD = 1, NUMMOD
+                     WRITE (LUPRI,'(2X,I2,1X,6(2X,F10.6))') IMOD,
+     &               ((EFGF(ICOOR,JCOOR,IATOM,IMOD), ICOOR = 1, JCOOR),
+     &                                               JCOOR = 1, 3)
+                  END DO
+               END DO
+            END IF
+            IF (SPNSPN) THEN
+               DO IMOD = 1, NUMMOD
+                  WRITE (LUPRI,'(/A,I4,/A)') 'Spin-spin coupling '//
+     &                 'constant second derivatives for mode',IMOD,
+     &                 '----------------------------------------'//
+     &                 '------------------'
+                  CALL PRIHES(SSJF(1,1,IMOD),'SPNSPN',CSTRA,SCTRA)
+               END DO
+            END IF
+C
+C     Calculate rovibrational correction to properties.
+C     Note: This relies on the calculation being done at the effective
+C           geometry.
+C
+            KSUSAV = 1
+            KGFACA = KSUSAV + 9
+            KSRCA  = KGFACA + 9
+            KPOLAV = KSRCA  + 9*MXCENT
+            KALFAV = KPOLAV + 9
+            KEFGAV = KALFAV + 9*MXFR
+            KSSJAV = KEFGAV + 9*MXCENT
+            KLAST  = KSSJAV + MXCOOR*MXCOOR
+            CALL PRPVAV(EVAL,NUMMOD,DIPM0,DIPMF,SUSTO0,SUSTF,
+     &                  WORK(KSUSAV),GFAC0,GFACF,WORK(KGFACA),
+     &                  QUAD0,QUADF,QUADT,SIGMA0,SIGMAF,TMAT,SRC0,SRCF,
+     &                  WORK(KSRCA),POLAR0,POLARF,WORK(KPOLAV),ALFA0,
+     &                  ALFAF,WORK(KALFAV),EFG0,EFGF,WORK(KEFGAV),
+     &                  SSJ0,SSJF,WORK(KSSJAV),CSTRA,SCTRA)
+         END IF
+C
+      END IF
+      RETURN
+      END
 C  /* Deck wlkgeo */
       SUBROUTINE WLKGEO(RADIUS,GRDDIA,EVAL,EVEC,STPDIA,STPSYM,STPCAR,
      &                  COOR,PMDIAX,PMDIA,PMCAR,SCAL,XMXNUC,TIMSTP,RNU,
      &                  ERGSEC,SGNMOD,ANHRAD,ZERGRD,TRSDIA,
      &                  NCART,NINTER,NCRIND,NNEG,IMODE,IWKIND,KEEPSY,
      &                  STATPO,WFPRED,START,INDXOK,IPRINT,IWKTYP,ISTTYP,
-     &                  IMAGE,DONWTN)
+     &                  IMAGE,DONWTN,TRUSTD)
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -3584,10 +4721,6 @@ C
       END IF
       RETURN
       END
-C
-Cjth
-#endif
-Cjth
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
 #include <implicit.h>
@@ -3621,9 +4754,6 @@ C
       END IF
       RETURN
       END
-Cjth
-#if !defined (PRG_DIRAC)
-Cjth
 C  /* Deck wlkpcr */
       SUBROUTINE WLKPCR(PMDIA,EVEC,PMCAR,SCAL,NCART,IPRINT)
 #include <implicit.h>
@@ -3683,9 +4813,9 @@ C
          REDFAC = DP99*XMXNUC/ADPMAX
       END IF
       IF ((IPRINT.GT.2) .OR. (.NOT.ADPOK)) THEN
-         WRITE(LUPRI,'(A,F15.10,/,A,I3,A)')
+         WRITE(LUPRI,'(/A,F15.10,/,A,I3,A)')
      *       ' Largest atomic displacement:',ADPMAX,
-     *       ' Reduction of trust radius  :   ',100*INT(D1 - REDFAC),'%'
+     *       ' Reduction of trust radius  :',NINT(100*(D1 - REDFAC)),'%'
       END IF
       RETURN
       END
@@ -4415,7 +5545,7 @@ C
          Q(K) = WLKQT(TDET,Q0,P0,GRDDIA(K),EVAL(K))
          P(K) = WLKPT(TDET,Q0,P0,GRDDIA(K),EVAL(K))
          IF (IPRINT .GT. 2) THEN
-            WRITE (6,'(1X,I3,2X,6D12.5)')
+            WRITE (LUPRI,'(1X,I3,2X,6D12.5)')
      *         K, GRDDIA(K), EVAL(K), Q0, Q(K), P0, P(K)
          END IF
  500  CONTINUE
@@ -4745,17 +5875,18 @@ C
 C     Save second-order MC prediction for found step
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
-      PARAMETER (D1 = 1.0D0, DUMMY = 1.0D20)
+      PARAMETER (D1 = 1.0D0)
 C
       DIMENSION COOR(3,*), WORK(LWORK)
 C
 C Used from common blocks:
 C
 C   CBIWLK : STEP, STEPCO(3,*), SCALCO(3,*), IPRWLK, ENRSEC
-C   NUCTAP : LUMC
+C   INFTAP : LUSIFC
 C   NUCLEI : NUCDEP,CORD(3,*)
 C   INFDIM : LBUFMA
 C   INFVAR : NCONF,NWOPT,NVAR
@@ -4763,7 +5894,7 @@ C   INFORB : N2BAST,NCMOT
 C   INFOPT : EMCSCF,EMCOLD,DEPRED,REJWMI,REJWMA, NREDL
 C
 #include <cbiwlk.h>
-#include <nuctap.h>
+#include <inftap.h>
 #include <nuclei.h>
 #include <infdim.h>
 #include <infvar.h>
@@ -4775,7 +5906,10 @@ C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
 #include <infinp.h>
       flag(15) = .false.
-      CALL ABAVAR(1)
+C
+      CALL QENTER('WLKSAV')
+C
+      CALL ABAVAR(1,.FALSE.,0,WORK,LWORK)
 C
 C     A) Core allocation
 C
@@ -4792,12 +5926,12 @@ C
 C     B) Calculate predicted reference CI vector for new geometry
 C        Call abavar to make sure perturbation symmetry is one.
 C
-      REWIND LUMC
-      CALL MOLLAB('SIR IPH ',LUMC,LUPRI)
-      READ (LUMC) EPOT,EMY,EACTIV,EMCSCF
+      REWIND LUSIFC
+      CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+      READ (LUSIFC) EPOT,EMY,EACTIV,EMCSCF
       POTNUC = EPOT
-      READ (LUMC)
-      CALL READT (LUMC,NCMOT,WORK(KCMO))
+      READ (LUSIFC)
+      CALL READT (LUSIFC,NCMOT,WORK(KCMO))
       IF (NCONF .GT. 1) THEN
 C
 C        No first-order correction has been obtained in this version,
@@ -4806,12 +5940,12 @@ C        implemented.
 C
          CALL DZERO(WORK(KCSTEP),NCONF)
 C        skip DV, F, PV, FC, FV
-         READ (LUMC)
-         READ (LUMC)
-         READ (LUMC)
-         READ (LUMC)
-         READ (LUMC)
-         CALL READT (LUMC,NCONF,WORK(KCREF))
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         READ (LUSIFC)
+         CALL READT (LUSIFC,NCONF,WORK(KCREF))
 C
          CALL DAXPY(NCONF,D1,WORK(KCREF),1,WORK(KCSTEP),1)
          CNRM = DDOT(NCONF,WORK(KCSTEP),1,WORK(KCSTEP),1)
@@ -4829,7 +5963,7 @@ C     C) In SIRSAV:
 C     Save predicted reference CI vector and energy change,
 C     rotate orbitals and save them
 C
-      EMCOLD = EMCSCF
+      IF (.NOT. REJECT) EMCOLD = EMCSCF
       DEPRED = ERGSEC
       REJWMI = REJMIN
       REJWMA = REJMAX
@@ -4842,14 +5976,18 @@ C     has been implemented.
 C
       CALL DZERO(WORK(KOSTEP),NWOPT)
 C
-C     Orthongalize new orbitals
+C     Orthogonalize new orbitals
 C
       IF (.NOT.NOORTH) THEN
          CALL WLKORT(WORK(KCMO),WORK(KCMO),COOR,WORK(KWRK),LWRK,IPRWLK)
       END IF
 C
+      CALL GPOPEN(LUIT1,'SIRIUS.RST','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       CALL SIRSAV ('GEOSAVE',WORK(KCMO),DUMMY,DUMMY,DUMMY,
-     *             WORK(KOSTEP),DUMMY,WORK(KWSAV),LWSAV)
+     &             WORK(KOSTEP),DUMMY,WORK(KWSAV),LWSAV)
+      CALL GPCLOSE(LUIT1,'KEEP')
+      CALL QEXIT('WLKSAV')
       RETURN
       END
 C  /* Deck wlkder */
@@ -4868,7 +6006,7 @@ C     STEP = -GDDIA / (HESDIA+RNU)
 C     STEP'=  GDDIA / ((HESDIA+RNU)**2)
 C
 #include <implicit.h>
-      DIMENSION GDDIA(2),HESDIA(2)
+      DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( D0=0.0D0 )
       WLKDER=D0
       DEL   =D0
@@ -4880,9 +6018,6 @@ C
       WLKDER = WLKDER/DEL
       RETURN
       END
-Cjth
-#endif
-Cjth
 C  /* Deck wlkstl */
       FUNCTION WLKSTL(GDDIA,HESDIA,RNU,NCORD,RTRUST)
 C
@@ -4898,7 +6033,7 @@ C
 C        STEP = - GDDIA/(HESDIA+RNU)
 C
 #include <implicit.h>
-      DIMENSION GDDIA(2),HESDIA(2)
+      DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER( D0=0.0D0 )
       STEP = D0
       DO 100 K=1,NCORD
@@ -4923,7 +6058,7 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include <implicit.h>
-      DIMENSION GDDIA(2),HESDIA(2)
+      DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
       IFAIL = 0
@@ -4948,9 +6083,6 @@ C
       IFAIL=5
       RETURN
       END
-Cjth
-#if !defined (PRG_DIRAC)
-Cjth
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
 #include <implicit.h>
@@ -5019,7 +6151,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
 #include <maxorb.h>
-      DIMENSION STPCOO(2),STPMC(2),WRK(2)
+      DIMENSION STPCOO(*),STPMC(*),WRK(*)
       LOGICAL OLDGD, OLDRD, GDMOD, GDOK
 #include <iratdef.h>
       PARAMETER ( DP5 = 0.5D0 )
@@ -5029,7 +6161,7 @@ C
 C Used from common blocks:
 C  ABAINF: GDALL
 C  CBIWLK: WFPRED, ENRSEC, TRUSTR
-C  NUCTAP: LURDR,LRRDR
+C  INFTAP: LURDR,LRRDR
 C  NUCLEI: DCORD(*,3), DCORGD(*,3)
 C  ANRINF: THRNR
 C  INFVAR: NCONF,NWOPT,NVAR
@@ -5039,7 +6171,7 @@ C
 #include <inflin.h>
 #include <cbiwlk.h>
 #include <taymol.h>
-#include <nuctap.h>
+#include <inftap.h>
 #include <nuclei.h>
 #include <dorps.h>
 #include <anrinf.h>
@@ -5090,7 +6222,7 @@ C        equations
 C
          CALL HEADER('Solution of one set of linear equations for'//
      *      ' MC prediction',1)
-         CALL OPENDX(LUGDR,ABAGDR,IRAT*NVARMA,0,'OLD',LRGDR,NBGDR,OLDGD)
+         CALL GPOPEN(LUGDR,ABAGDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDGD)
          IF (.NOT. OLDGD) THEN
             WRITE (LUPRI,'(/A)') ' Failed to open LUGDR in WLKMC1.'
             GO TO 8000
@@ -5108,7 +6240,7 @@ C
             FAC = STPCOO(I)
             IF (ABS(FAC) .GT. THRFAC) THEN
                IREC = IOFF + I
-               CALL READDX(LUGDR,LRGDR,IREC,IRAT*NVARMA,WRK(1+NVAR))
+               CALL READDX(LUGDR,IREC,IRAT*NVARMA,WRK(1+NVAR))
                CALL DAXPY(NVAR,FAC,WRK(1+NVAR),1,WRK,1)
                IF (IPRWLK .GT. 30) THEN
                   WRITE (LUPRI,'(//A,I3/A,F15.8/A)')
@@ -5176,7 +6308,7 @@ C
 C
 C        Open LURDR file
 C
-         CALL OPENDX(LURDR,ABARDR,IRAT*NVARMA,0,'OLD',LRRDR,NBRDR,OLDRD)
+         CALL GPOPEN(LURDR,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDRD)
          CALL DZERO(STPMC,NVAR)
          IREC   = 0
          ISTART = 1
@@ -5188,7 +6320,7 @@ C
                FAC = STPCOO(ISTPCO)
                IF ( ABS(FAC) .GT. THRFAC ) THEN
                   IF ( DCORD(IATOM,ICOOR,1) ) THEN
-                     CALL READDX(LURDR,LRRDR,IREC,IRAT*NVAR,WRK)
+                     CALL READDX(LURDR,IREC,IRAT*NVAR,WRK)
                      CALL DAXPY(NVAR,FAC,WRK,1,STPMC,1)
                   ELSE
                      WRITE (LUPRI,'(/A,I3,A,A)')
@@ -5208,9 +6340,9 @@ C
 C close LUGDR/LURDR
 C
       IF (GDMOD) THEN
-         CLOSE(LUGDR,STATUS='DELETE')
+         CALL GPCLOSE(LUGDR,'DELETE')
       ELSE
-         CLOSE(LURDR,STATUS='DELETE')
+         CALL GPCLOSE(LURDR,'DELETE')
       END IF
 C
 C     End of WLKMC1
@@ -5282,7 +6414,7 @@ C
       KBVELR = KBCORR + 3*NB
       KBVLRT = KBVELR + 3*NB
       KWRK   = KBVLRT + 3*NB
-      IF (KWRK .GT. LWORK) CALL STOPIT('WLKDAN',' ',KLAST,LWORK)
+      IF (KWRK .GT. LWORK) CALL STOPIT('WLKDAN',' ',KWRK,LWORK)
       LWRK = LWORK - KWRK + 1
       CALL WLKDA1(PMCARX,NCART,NT,NA,NB,WORK(KWRK),LWRK,IPRINT,
      &            WORK(KTMASS),WORK(KTCOR),WORK(KTVEL),WORK(KTCORR),
@@ -5315,17 +6447,14 @@ C
      &          TCORR(NT,3), TVELR(NT,3), TVLROT(NT,3),
      &          TCMXYZ(3), TVLXYZ(3), TVBANG(3),
      &          TLXYZ(3), TOMEGA(3), TINERT(3,3),
-C
      &          AMASS(NA), ACOR(NA,3), AVEL(NA,3),
      &          ACORR(NA,3), AVELR(NA,3), AVLROT(NA,3),
      &          ACMXYZ(3), AVLXYZ(3), AVBANG(3),
      &          ALXYZ(3), AOMEGA(3), AINERT(3,3),
-C
      &          BMASS(NB), BCOR(NB,3), BVEL(NB,3),
      &          BCORR(NB,3), BVELR(NB,3), BVLROT(NB,3),
      &          BCMXYZ(3), BVLXYZ(3), BVBANG(3),
      &          BLXYZ(3), BOMEGA(3), BINERT(3,3),
-C
      &          VECTOR(3)
 #include <cbiwlk.h>
 #include <nuclei.h>
@@ -5820,7 +6949,9 @@ C  /* Deck wlkcrs */
       RETURN
       END
 C  /* Deck wlkroa */
-      SUBROUTINE WLKROA(WORK,LWORK,NXYZ,NCART,IPOINT,DISPLC,IPRINT)
+      SUBROUTINE WLKROA(ROAAFD,ROAGND,ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,
+     &                  ROAAU,ROAAFP,ROAAP,ROAGLP,ROAGNP,WORK,LWORK,
+     &                  NXYZ,NCART,IPOINT,DISPLC,IPRINT)
 C
 C     Numerical differentiation for Raman properties
 C
@@ -5829,7 +6960,12 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+#include <chrsgn.h>
+#include <codata.h>
+C
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2=2.0D0,DE3=1.0D3)
+      PARAMETER (XFRAIN = XTANG**6,
+     &           XFOAIN = ALPHAC*XTANG**6*1.0D6)
 C
       LOGICAL FINAL, DODIP
       CHARACTER*9 TYPE
@@ -5840,21 +6976,22 @@ C
 #include <cbilnr.h>
 #include <nuclei.h>
 #include <symmet.h>
-#include <moldip.h>
-#include <roacom.h>
 C
-#include <chrsgn.h>
+      DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),
+     &          ROAAFD(3,3,MXFR,MXCOOR),
+     &          ROAGNU(3,3,MXFR),  ROAGNP(3,3,MXFR),
+     &          ROAGND(3,3,MXFR,MXCOOR),
+     &          ROAGLU(3,3,MXFR),  ROAGLP(3,3,MXFR),
+     &          ROAGLD(3,3,MXFR,MXCOOR),
+     &          ROAAU(3,3,3,MXFR), ROAAP(3,3,3,MXFR),
+     &          ROAAD(3,3,3,MXFR,MXCOOR)
 C
-      CALL DCOPY(3,DIP0,1,DIPP,1)
       FINAL = IPOINT .EQ. 2*NCART
       IF (IPOINT .EQ. 0) THEN
-         CALL DCOPY (3,DIPP,1,DIPU,1)
-         CALL DCOPY (3*NCART,DIPFLT,1,DIPANA,1)
          CALL DCOPY (9*MXFR,ROAAFP,1,ROAAFU,1)
          CALL DCOPY (9*MXFR,ROAGNP,1,ROAGNU,1)
          CALL DCOPY (9*MXFR,ROAGLP,1,ROAGLU,1)
          CALL DCOPY (27*MXFR,ROAAP,1,ROAAU,1)
-         CALL DZERO(DIPD  , 3*MXCOOR)
          CALL DZERO(ROAAFD, 9*MXFR*MXCOOR)
          CALL DZERO(ROAGND, 9*MXFR*MXCOOR)
          CALL DZERO(ROAGLD, 9*MXFR*MXCOOR)
@@ -5863,7 +7000,6 @@ C
          X = (IPOINT+1)/2
          IF (MOD(IPOINT,2) .EQ. 1) THEN
             DO 100 I = 1, 3
-               DIPD(I,X) = (DIPP(I) - DIPU(I))/DISPLC
             DO 100 J = 1, 3
             DO 100 F = 1, NFRVAL
                ROAAFD(I,J,F,X) = (ROAAFP(I,J,F) - ROAAFU(I,J,F))/DISPLC
@@ -5874,7 +7010,6 @@ C
   100       CONTINUE
          ELSE
             DO 200 I = 1, 3
-               DIPD(I,X) = DP5*(DIPD(I,X) - (DIPP(I) -DIPU(I))/DISPLC)
             DO 200 J = 1, 3
             DO 200 F = 1, NFRVAL
                ROAAFD(I,J,F,X) = DP5*
@@ -5893,9 +7028,7 @@ C
 C     ***** Print *****
 C
       CALL TITLER('ABACUS - Numerical differentiation for VROA','*',114)
-      IF (IPOINT .EQ. 0) THEN
-         WRITE (LUPRI,'(A,3F17.10)')
-     *         ' Dipole moment at reference geometry:',(DIPU(I),I=1,3)
+      IF (IPOINT .EQ. 0 .AND. IPRINT .GT. 0) THEN
          CALL HEADER('Polarizability tensor at reference geometry',1)
          DO 300 F = 1, NFRVAL
             WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
@@ -5918,7 +7051,70 @@ C
                CALL OUTPUT(ROAAU(1,1,1,F),1,3,1,9,3,9,1,LUPRI)
   330       CONTINUE
          END IF
-      ELSE
+C
+C     ******* Prints Rayleigh Invariants and scattering parameters
+C
+         CALL HEADER('Rayleigh properties for parent molecule '//
+     &               '(in A**6)',1)
+         DO 340 F = 1, NFRVAL
+            WRITE (LUPRI,'(2X,A,F8.6,A,F6.2,A,/2X,A)') 
+     &         'frequency: ',FRVAL(F),' a.u. = ',XTNM/FRVAL(F),' nm',
+     &         '----------------------------------'
+            ALMN  = ALFMN  (ROAAFU(1,1,F))
+            BAL   = BETAAL (ROAAFU(1,1,F))
+            IF (RAMAN) THEN
+               RMIN  = RAMINL (ALMN,BAL)
+               DPOLR = DEPOLL (ALMN,BAL)
+               WRITE (LUPRI,'(/1X,A)') '** Intensities and Depol.'//
+     &             ' Ratio for linear polarized incident light **'
+               WRITE (LUPRI,'(/5X,A)') 'Alpha**2      '//
+     &                'Beta(a)**2    Pol.Int.      Depol.Int.'//
+     &                '     Dep.Ratio'
+               WRITE (LUPRI,'(5F14.4)') ALMN**2*XFRAIN, BAL*XFRAIN,
+     &              RMIN*XFRAIN,RMIN*DPOLR*XFRAIN,DPOLR
+            END IF
+            IF (VROA) THEN
+               RMIN  = RAMINN (ALMN,BAL)
+               DPOLR = DEPOLN (ALMN,BAL)
+               BGML   = BETAGM (ROAAFU(1,1,F),ROAGLU(1,1,F))
+               BGMNL  = BETAGM (ROAAFU(1,1,F),ROAGNU(1,1,F))
+               GMMNL  = GMMN   (ROAGLU(1,1,F))
+               GMMNNL = GMMN   (ROAGNU(1,1,F))
+               BA     = BETAA  (ROAAFU(1,1,F),ROAAU(1,1,1,F),
+     &                  FRVAL(F))
+               DZL    = DELTAZ (BGML,BA)
+               DXL    = DELTAX (BGML,BA,ALMN,GMMNL)
+               D0L    = DELTA0 (BGML,BA,ALMN,GMMNL)
+               DBL    = DELTAB (BGML,BA)
+               CZL    = CID(DZL,RMIN*DPOLR)
+               CXL    = CID(DXL,RMIN)
+               C0L    = CID(D0L,D2*RMIN)
+               CBL    = CID(DBL,D2*RMIN)
+               WRITE (LUPRI,'(/1X,A)') '** Intensities and Depol.'//
+     &             ' Ratio for circular polarized incident light **'
+               WRITE (LUPRI,'(/5X,A)') 'Alpha**2      '//
+     &                'Beta(a)**2    Pol.Int.      Depol.Int.'//
+     &                '     Dep.Ratio'
+               WRITE (LUPRI,'(5F14.4)') ALMN**2*XFRAIN, BAL*XFRAIN,
+     &              RMIN*XFRAIN,RMIN*DPOLR*XFRAIN,DPOLR
+               WRITE (LUPRI,'(/1X,A)') '** Optical active '//
+     &                'Invariants (*E6) **'
+               WRITE (LUPRI,'(/7X,A)') ' a*Gm(Lon)     a*Gm(noL)'//
+     &                '     Beta(G)**2 (Lon/NoLon)   Beta(A)**2'
+               WRITE (LUPRI,'(5F14.4)') ALMN*GMMNL*XFOAIN,
+     &             ALMN*GMMNNL*XFOAIN,BGML*XFOAIN,BGMNL*XFOAIN,BA*XFOAIN
+               WRITE (LUPRI,'(/1X,A)') '** Difference para'//
+     &                'meters L-R (1st line) and '//            
+     &                'chirality number (2nd line,*E3) **'          
+               WRITE (LUPRI,'(/6X,A,2(/2X,4F14.6),/)') 
+     &           'DELTApar(Lon) DELTAperp(Lon) DELTA0(Lon)   '//
+     &           'DELTA180(Lon)',
+     &           DZL*XFRAIN, DXL*XFRAIN,D0L*XFRAIN,DBL*XFRAIN,
+     &           CZL*DE3,CXL*DE3,C0L*DE3,CBL*DE3
+            END IF
+ 340     CONTINUE
+C     ***********End Rayleigh (G. Hangartner 24.12.1996)
+      ELSE IF (FINAL .OR. (IPRINT.GT.1)) THEN
          ICUR = (IPOINT+1)/2
          WRITE (LUPRI,'(2A,/,A,10X,21X,A,F12.10)')
      &         ' Coordinate displaced in this calculation:    ',
@@ -5928,30 +7124,6 @@ C
             WRITE (LUPRI,'(/A)')
      &       ' All displacements are now done'//
      &       ' - numerical differentiation is complete.'
-         END IF
-C
-         CALL AROUND('Analytical and numerical dipole gradients')
-         CALL HEADER('Analytical dipole gradient',1)
-         CALL OUTPUT(DIPANA,1,NXYZ,1,NCART,3,NCART,1,LUPRI)
-         CALL HEADER('Numerical dipole gradient',1)
-         CALL OUTPUT(DIPD,1,NXYZ,1,ICUR,3,NCART,1,LUPRI)
-         IJ = 0
-         DIFMAX = D0
-         DO 600 X = 1, ICUR
-            DO 610 J = 1, NXYZ
-               IJ = IJ + 1
-               DIFFER = DIPANA(J,X) - DIPD(J,X)
-               DIFMAX = MAX(DIFMAX,ABS(DIFFER))
-               WORK(IJ) = DIFFER
-  610       CONTINUE
-  600    CONTINUE
-         IF (IJ .GT. LWORK) CALL STOPIT('WLKROA',' ',IJ,LWORK)
-         CALL HEADER('Difference between analytical and numerical '//
-     *               'dipole gradients',1)
-         CALL OUTPUT(WORK,1,NXYZ,1,ICUR,NXYZ,NCART,1,LUPRI)
-         IF (MOD(IPOINT,2) .EQ. 0) THEN
-            WRITE (LUPRI,'(/,A,1P,D7.1//)') '  Largest difference: ',
-     *         DIFMAX
          END IF
 C
          CALL HEADER('Polarizability tensor (alpha) gradient',1)
@@ -5986,13 +7158,14 @@ C  /* Deck ircpot */
 #if defined (VAR_IRCPOT)
       PROGRAM IRCPOT
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
-      PARAMETER (LUTRJ = 10)
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
-      OPEN (UNIT=LUTRJ,FILE='ABACUS.IRC',STATUS='UNKNOWN',
-     &      ACCESS='SEQUENTIAL',FORM='UNFORMATTED')
+      LUTRJ = 0
+      CALL GPOPEN(LUTRJ,'ABACUS.IRC','OLD','SEQUENTIAL','UNFORMATTED',
+     &            IDUMMY,.FALSE.)
       NPOINT = 2
       REWIND LUTRJ
       DO 100 JPOINT = 1, NPOINT
@@ -6015,6 +7188,7 @@ C  /* Deck ircpot */
          CALL HEADER('Hessian',-1)
          CALL OUTPUT(CHESS,1,NCOOR,1,NCOOR,MXCOOR,MXCOOR,1,LUPRI)
   100 CONTINUE
+      CALL GPCLOSE(LUTRJ,'KEEP')
       STOP
       END
 #endif
@@ -6104,7 +7278,7 @@ C
          IJ = IJ + 1
          UMO(I,J) = CMO(IJ)
   100 CONTINUE
-      IF (IPRINT .GT. 3) THEN
+      IF (IPRINT .GT. 5) THEN
          CALL HEADER('UMOs in WLKOR1',-1)
          CALL OUTPUT(UMO,1,NBAST,1,NORBT,NBAST,NORBT,1,LUPRI)
       END IF
@@ -6304,7 +7478,7 @@ C
       CALL MPAB(UMO,NBAST,NORBT,NBAST,NORBT,
      &          TMAT,NORBT,NORBT,NORBT,NPRBT,
      &          OMO,NBAST,NORBT)
-      IF (IPRINT .GT. 3) THEN
+      IF (IPRINT .GT. 5) THEN
          CALL HEADER('OMOs in WLKOR1',-1)
          CALL OUTPUT(OMO,1,NBAST,1,NORBT,NBAST,NORBT,1,LUPRI)
       END IF
@@ -6425,6 +7599,3 @@ C
 C
       RETURN
       END
-Cjth
-#endif
-Cjth
