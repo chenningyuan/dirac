@@ -3589,7 +3589,8 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include <implicit.h>
-      PARAMETER(D0=0.0D0,D1=1.0D0,TOL=1.0D-12)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(TOL=1.0D-16)
       DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
 C
       NORDER = ND-1
@@ -3619,7 +3620,7 @@ C     Edit the singular values: Note that this is done to B !!
       DO I = 1,ND
         IF(W(I).GT.WA) WA=W(I)
       ENDDO
-      WA = TOL*WA*ND
+      WA = TOL*WA
       ISKIP = 0
       DO I = 1,ND
         IF(W(I).LT.WA) THEN
