@@ -820,6 +820,12 @@ C
          WRITE(LUPRI,'(/X,A)') 
      &      '- No small-small nuclear attraction integrals.'
          NOINFO = .FALSE.
+         GRD_NOSMLV = .TRUE.
+      END IF
+      IF (SMLV1C) THEN
+         WRITE(LUPRI,'(/X,A)') 
+     &      '- Only one-center contributions to d/dXA Vss.'
+         NOINFO = .FALSE.
       END IF
 C
       IF ( DOLVC .AND. LBIT( IGRD_INTBUF, 3 ) ) THEN
@@ -1086,7 +1092,7 @@ C
 C
       ELSE
          CALL MEMGET ('REAL',KGABRAO, 0, WORK, KFREE, LFREE )
-         CALL MEMGET ('REAL',KDMRRAO, 0, WORK, KFREE, LFREE )
+         CALL MEMGET ('REAL',KDMRAO, 0, WORK, KFREE, LFREE )
       END IF
       CALL GETTIM(CPU2,WALL2)
       CPUGAB = CPU2 - CPU1
