@@ -1399,6 +1399,12 @@ C
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
+C     tsaue - 
+C     Temporary fix: load HF occupation numbers into dcborb.h
+C     
+      CALL TDHFORB
+
+C
 C     Print section
 C     =============
 C
