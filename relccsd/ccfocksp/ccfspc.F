@@ -1222,7 +1222,6 @@ c
 c
                   DO BCV=1,3
                   DO B = IVB(BCV-1)+1, IVB(BCV)
-                     BB = BB + 1
                      ACVMIN=1
                      IF (ARP.EQ.BRP) ACVMIN = BCV
                      DO ACV=ACVMIN,3
