@@ -8,4 +8,4 @@
  *
  */
 
-void end_mpi(int mparid, int mytid, int errhandler)
+void end_mpi(int mparid, int mytid, unsigned int errhandler)

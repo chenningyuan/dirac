@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #if defined (VAR_MPI)
-#include <infmpi.h>
 #include <mpi.h>
 #endif
 

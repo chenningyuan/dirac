@@ -9,11 +9,11 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #if defined (VAR_MPI)
 #define schedmode 13
 #define sgs_gang   4
-#include <infmpi.h>
 #include <mpi.h>
 #endif /* VAR_MPI */
 
@@ -39,14 +39,14 @@
 #if defined (VAR_MPI)
 
    int par,lwrkmm,ierr;
+   char *dirpar;
 
    /*
     * Check if this is a parallel calculation or not;
     * check for DIRPAR in environment
     */
 
-   par = 0
-   dirpar = diracmalloc(2);
+   par = 0;
    dirpar = getenv("DIRPAR");
 
    if (dirpar != NULL)
@@ -59,34 +59,34 @@
       par = 0;
    }
 
-   free(dirpar);
-
    /*
     * MPI start
     */
 
-   if ( ! ierr = MPI_Init(NULL,NULL) )
-      printf(stderr,"MPI_Init error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Init(NULL,NULL)) )
+      printf("MPI_Init error %i in ini_mpi()\n",ierr);
 
    /*
     * Set up MPI error handler
     */
 
-   if ( ! ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler) )
-      printf(stderr,"MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
+      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
-   if ( ! ierr = MPI_Errhandler_set(MPI_Comm_world,errhandler) )
-      printf(stderr,"MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
+      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
    
    /*
     * Get number of nodes and the number of this node
     */
 
-   if ( ! ierr = MPI_Comm_rank(mpi_comm_world,mytid) )
-      printf(stderr,"MPI_Comm_rank error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
+      printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
 
-   if ( ! ierr = MPI_Comm_size(mpi_comm_world,numnod) )
-      printf(stderr,"MPI_Comm_size error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
+      printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
+
+   printf("ini_mpi %i %i\n",*mytid,*numnod);
 
 #if defined (SYS_IRIX)
    /*
@@ -94,14 +94,15 @@
     * when high system load
     *
     */
-   if ( (mytid == 0) || (schedctl(schedmode,sgs_gang,0) < 0) )
+   if ( (mytid == 0) && (schedctl(schedmode,sgs_gang,0) < 0) )
    {
       printf("*** ERROR gang scheduling\n");
-      quit("Error in gang scheduling!");
+      exit(1);
    }
 #endif /* SYS_IRIX */
    (*numnod)--;
    *mparid = 0;
+   *parcal = 1;
     
 #else  /* VAR_MPI */
    *mytid =  0;

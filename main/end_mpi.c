@@ -11,7 +11,6 @@
 #include <stdio.h>
 
 #if defined (VAR_MPI)
-#include <infmpi.h>
 #include <mpi.h>
 #endif /* VAR_MPI */
 
@@ -34,29 +33,26 @@
        */
 
       int nfinis = -1;
-      if ( ! ierr = MPI_Bcast(&nfinis,1,mpi_integer,mparid,mpi_comm_world) )
+      if ( (ierr = MPI_Bcast(&nfinis,1,MPI_INTEGER,mparid,MPI_COMM_WORLD)) )
          printf("MPI_Bcast error %i in end_mpi()\n",ierr);
    }
-   else
-   {
 
-      /*
-       *  Finalize MPI
-       */
+   /*
+    *  Finalize MPI
+    */
       
 #if defined (SYS_IRIX)
       sleep(1);
 #endif
 
-      if ( ! ierr = MPI_Finalize() )
-         printf("MPI_Finalize error %i in end_mpi()\n",ierr);
-   }
+   if ( ( ierr = MPI_Finalize()) )
+      printf("MPI_Finalize error %i in end_mpi()\n",ierr);
 
    /*
     * Free MPI error handler
     */
 
-   if ( ! ierr = MPI_Errhandler_Free(&errhandler) )
+   if (  ( ierr = MPI_Errhandler_free(&errhandler)) )
       printf("MPI_Errhandler_Free error %i in end_mpi()\n",ierr);
 
 #endif  /* VAR_MPI */

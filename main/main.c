@@ -30,7 +30,8 @@ void main()
 
 {
 
-   int mytid, size, parcal, mparid, numnod, errhandler;
+   int mytid, size, parcal, mparid, numnod;
+   unsigned int errhandler;
    int *mempointer;
    get_time_struct *gt_first, *gt_last;
 
@@ -38,6 +39,7 @@ void main()
     * Start timing
     */
 
+   sleep(5);
    gt_first = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
    gt_last  = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
    get_time(gt_first);
@@ -60,9 +62,6 @@ void main()
 
    print_logo(mytid);
   
-   sysinf();
- 
-
    /*
     * Execute dirac
     */

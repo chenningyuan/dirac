@@ -8,4 +8,4 @@
  *
  */
 
-void ini_mpi(int *parcal, int *mytid, int *mparid, int *numnod, int *errhandler)
+void ini_mpi(int *parcal, int *mytid, int *mparid, int *numnod, unsigned int *errhandler)
