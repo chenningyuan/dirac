@@ -2,12 +2,12 @@
 include ../Makefile.config
 
 F77_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o grtest.o \
-	Lebedev-Laikov.o
+	Lebedev-Laikov.o dftac.o
 
 F90_OBJS =
 
 C_OBJS = functionals.o emb-functional.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
-	fun-pw86x.o fun-p86c.o fun-kin_tf.o fun-kin_vw.o
+	fun-pw86x.o fun-p86c.o fun-kin_tf.o fun-kin_vw.o fun-pbe.o fun-pbex.o fun-pw91c.o fun-pw92.o
 
 F77_CPPS = $(F77_OBJS:.o=.i)
 

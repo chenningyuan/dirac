@@ -65,7 +65,7 @@ static const real BETA = 0.05;
 static real
 lb94_energy(const DftDensProp* dp)
 {
-    return DiracFunctional.func(dp)+VWNFunctional.func(dp);
+    return SlaterFunctional.func(dp)+VWNFunctional.func(dp);
 }
 
 __inline__ double
@@ -85,8 +85,26 @@ lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
     ds->df1000 += vx*factor;
     ds->df0100 += vx*factor;
 
-    DiracFunctional.first(ds, factor, dp);
+    SlaterFunctional.first(ds, factor, dp);
     VWNFunctional.first(ds,   factor, dp);
+}
+
+void
+lb94pot_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
+{
+    FirstFuncDrv drvs;
+    DftDensProp dp;
+    /* HP does not grok C99's { *rhoa, *rhob, *grada, *gradb }; */
+    dp.rhoa  = dp.rhob  = *rho  *0.5;
+    dp.grada = dp.gradb = *grad *0.5;
+    dp.gradab = dp.grada * dp.gradb;
+    dp.subsystem[0] = NULL; dp.subsystem[1] = NULL;
+    drv1_clear(&drvs);
+    lb94_first(&drvs, *weight, &dp);
+    /* we should really use a separate structure here
+     * but this time, we cheat */
+    ds->fR = drvs.df1000;
+    ds->fZ = drvs.df0010 + 0.5*drvs.df00001* *grad;
 }
 
 static void
@@ -130,7 +148,7 @@ lb94_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
     ds->df0110 += x15*factor;
     ds->df0101 += x16*factor;
 #endif    
-    DiracFunctional.second(ds, factor, dp);
+    SlaterFunctional.second(ds, factor, dp);
     VWNFunctional.second(ds,   factor, dp);
 }
 
@@ -138,7 +156,7 @@ lb94_second(SecondFuncDrv *ds, real factor, const DftDensProp* dp)
 static void
 lb94_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 {
-    DiracFunctional.third(ds, factor, dp);
+    SlaterFunctional.third(ds, factor, dp);
     VWNFunctional.third(ds,   factor, dp);
 }
 
@@ -146,7 +164,7 @@ lb94_third(ThirdFuncDrv *ds, real factor, const DftDensProp* dp)
 static void
 lb94_fourth(FourthFuncDrv *ds, real factor, const DftDensProp* dp)
 {
-    DiracFunctional.fourth(ds, factor, dp);
+    SlaterFunctional.fourth(ds, factor, dp);
     VWNFunctional.fourth(ds,   factor, dp);
 }
 #endif

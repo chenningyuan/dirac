@@ -85,6 +85,9 @@ Functional* available_functionals[] = {
     &LYPFunctional,
     &PW86xFunctional,
     &P86cFunctional,
+    &pbexFunctional,
+    &pw91cFunctional,
+    &PW92Functional,
     /* mixed functionals */
     &XAlphaFunctional,
     &LDAFunctional,
@@ -92,6 +95,7 @@ Functional* available_functionals[] = {
     &BLYPFunctional,
     &B3LYPFunctional,
     &WAHFunctional,
+    &PBE0Functional,
 
     /* generic embedding functional */
     &EmbeddingFunctional,
@@ -470,6 +474,15 @@ wah_read(const char* conf_line)
     return 1;
 }
 
+static int
+pbe0_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 0.75);
+    gga_fun_list = add_functional(gga_fun_list, &pw91cFunctional,1.0);
+    dft_set_hf_weight(0.25);
+    return 1;
+}
+
 /* gga_key_read:
    read general GGA input: 
 */
@@ -652,6 +665,17 @@ Functional WAHFunctional = {
   "WAH",      /* name */
   gga_isgga,     /* gga-corrected */
   wah_read,
+  gga_report,
+  gga_energy, 
+  gga_first,
+  gga_second,
+  gga_third
+};
+
+Functional PBE0Functional = {
+  "PBE0",      /* name */
+  gga_isgga,     /* gga-corrected */
+  pbe0_read,
   gga_report,
   gga_energy, 
   gga_first,

@@ -523,6 +523,17 @@ C
            IF(DOGGA) THEN
              VX(FZ0) = D2*VX(FZ0)/RHOGRD
            ENDIF
+C begin GRAC
+           IF(DFTGRAC) THEN
+              r=SQRT(CORX(IPNT)**2+CORY(IPNT)**2+CORZ(IPNT)**2)
+              CALL dft_grac(vx,wght,rho,rho13,rhogrd,r)
+*test
+c              CALL dft_grac_old(vx,wght,rho,rhogrd,r)
+c              write(lupri,'(a,1x,2e13.5)') 'vx',r,vx(fr0)/wght
+c              write(lupri,'(i4,2e13.5)') ipnt,vx(fr0),vx(fz0)
+*test
+           ENDIF
+C end GRAC
         ENDIF
 C
 C       Exchange-correlation contribution to Kohn-Sham matrix

@@ -255,6 +255,8 @@ extern Functional PBEFunctional;
 extern Functional PW86xFunctional;
 extern Functional P86cFunctional;
 extern Functional PW92Functional;
+extern Functional pbexFunctional;
+extern Functional pw91cFunctional;
 
 /* mixed functionals */
 extern Functional XAlphaFunctional;
@@ -264,6 +266,7 @@ extern Functional GGAKeyFunctional;
 extern Functional BLYPFunctional;
 extern Functional B3LYPFunctional;
 extern Functional WAHFunctional;
+extern Functional PBE0Functional;
 
 /* generic functionals for embedding */
 extern Functional EmbeddingFunctional;

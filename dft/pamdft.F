@@ -45,7 +45,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 13)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -59,12 +59,14 @@ C
 #include "dcbham.h"
 #include "dfterg.h"
 #include "dftcom.h"
+#include "dftbuf.h"
 #include "functionals.h"
 C
       SAVE SET
       DATA TABLE /'.XXXXXX','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
-     &            '.ANGMIN','.ATSIZE','.ERRELS','.XXXXXX'/
+     &            '.ANGMIN','.ATSIZE','.ERRELS','.GRAC  ',
+     &            '.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "memint.h"
@@ -89,6 +91,7 @@ C          geometry in a geometry optimization) /hjaaj
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
+      DFTGRAC= .FALSE.
       RADINT = 1.0D-13
       ANGINT = 41
       INTCHK = 0
@@ -176,6 +179,11 @@ C&&& ERRELS: Threshold for accepted error in integrated number of electrons
                  READ(LUCMD,*) DFTELS
                  GO TO 100
  12              CONTINUE
+C&&& GRAC: gradient regulated asymptotic correction
+                 DFTGRAC = .TRUE.
+                 READ(LUCMD,*) GRACDELT, GRACALPHA, GRACBETA
+                 GO TO 100
+ 13              CONTINUE
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -220,6 +228,15 @@ C
       END IF
 C
   999 CONTINUE
+C
+      IF(dftgrac) THEN
+         WRITE(lupri,'(1x,a)') 
+     >          '* Gradient regulated asymptotic correction:'
+         WRITE(lupri,'(3x,a,f12.6)') 'shift=',GRACDELT
+         WRITE(lupri,'(3x,a,f12.6)') 'alpha=',GRACALPHA
+         WRITE(lupri,'(3x,a,f12.6)') 'beta= ',GRACBETA
+      ENDIF
+C
       RETURN
 C
       END
