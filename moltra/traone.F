@@ -539,15 +539,6 @@ C
             ORBMO(II)  = ORBE(IK)
             IBSPI(II)  = IBORB(IK)
          ENDDO
-C
-C        Skip the marker : We have a marker inbetween because the
-C        2-d array was allocated as two separate one-dimensional arrays
-C        However, if the first array has an odd number of elements
-C        we need to skip one more because MEMGET allocates on real
-C        word boundaries. 
-C        NB the allocation in question is done in trapam
-C
-         IK = IK + 2 + MOD(NSTR(I),2)
       ENDDO
 C
 C     Fill in complete core-Fock matrix in complex form
