@@ -441,17 +441,25 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #if defined (SYS_VAX)
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
+#else
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
-#elif defined (SYS_IRIX)
+#else
+#if defined (SYS_IRIX)
 C     SGI IRIX counts recl in *4 words
       IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#elif defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX)
+#else
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#elif defined (SYS_IBM)
+#else
+#if defined (SYS_IBM)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #else
      ===== insert definition for specification of record length
+#endif
+#endif
+#endif
+#endif
 #endif
 C
       IRECLEN = IRECL
