@@ -528,7 +528,7 @@ C
 C        read LUTMAT rec#2 with SAOMO
         ISIZE = 0
         DO I = 1,NFSYM
-           ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0)
+           ISIZE = ISIZE + NZT*NORB(I)*NFBAS(I,0) ! NZT=number of tranf.matrixes
         END DO
         CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
         CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
