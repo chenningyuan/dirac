@@ -1965,7 +1965,7 @@ C
 #include <dcbgrd.h>
 #include <dcbprp.h>
 C
-      LOGICAL SET, NEWDEF, RESET
+      LOGICAL SET, NEWDEF, RESET, LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8, STR*3
       DIMENSION PFAC(3),II(3)
