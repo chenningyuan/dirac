@@ -3,7 +3,7 @@ $ERROR 0.0000001
 From:Nuclear repulsion + core energy
 ToI:SCF energy
 
-From:This is output from  XRPA
+From:Expectation values
 To:    s0 = T : Expectation value zero by point group symmetry.
 
 From:DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS

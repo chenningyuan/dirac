@@ -5,7 +5,7 @@ ToI:SCF energy
 From:RPA results
 To:Timing of routine RPAA
 
-From:This is output from  XRPA
+From:Expectation values
 To:    s0 = T : Expectation value zero by point group symmetry.
 
 From:DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS
