@@ -1199,10 +1199,6 @@ C     3) Loop over distributions, transform 2 indices and write to disk
 C        Loop over transformed indices and transform last 2 indices
 C     4) Like 3, but 2-index transformed integrals written to disk in
 C        batches; parallel scheme.
-C     5) -)Perform 3/4 transformation and contract with T amplitudes to
-C          construct Lagrangian. First 1/2 halftransformation Like 4,
-C          but not written to disk.
-C        -)Transform 2nd index of Lagrangian
 C
 C     In all cases we transform in mulliken notation
 C
@@ -1238,14 +1234,6 @@ C
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
-     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
-      ELSEIF (ISTRAT.EQ.5) THEN
-c         CALL QUIT('PAMTR1: strategy 5 is still under construction')
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 5')
-          IF (LMP2)
-     &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 5')
-          CALL TRDR5T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
