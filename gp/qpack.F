@@ -135,14 +135,16 @@ C
       ENTRY QEXIT(IDENT)
 Chj1  IDENT8 = IDENT//BLANK8
 Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
-      IF (QNAMES(LEVELQ) .EQ. IDENT) THEN
+Cjth: check only first 8 letters in IDENT
+      ICHECK = MIN(8,LEN(IDENT))
+      IF (QNAMES(LEVELQ) .EQ. IDENT(1:ICHECK)) THEN
          LEVELQ = LEVELQ - 1
       ELSE
          WRITE (LUPRI,'(//A/A,I6,2(/2A),//A)')
      *      ' QEXIT error, exit ID does not match entry ID',
      *      ' ----- stack pt =',LEVELQ,
      *      ' ----- entry ID =',QNAMES(LEVELQ),
-     *      ' ----- exit  ID =',IDENT8,
+     *      ' ----- exit  ID =',IDENT,
      *      ' Stack dump follows:'
          CALL QDUMP(LUPRI)
          CALL QUIT('QEXIT error, exit ID does not match entry ID')
