@@ -1,4 +1,3 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -255,18 +254,30 @@ C
 *
 #include "units.inc"
 *
+      NTESTL = 0
+      if (NTESTL.ge.1) then
+        write(6,*) ' INFO FROM CHAR_TO_INTEGER'
+        write(6,'(A)') ' CHARACTER INPUT ', CHAR_X
+      end if
+*
       LU_INTERNAL = LUSC_INT
+*
+      Open(Unit=LU_INTERNAL,
+     &     File='LUSCDL',
+     &     Status='NEW',
+     &     Form='FORMATTED')
+*
       REWIND(LU_INTERNAL)
       WRITE(LU_INTERNAL,'(A)') CHAR_X
       REWIND(LU_INTERNAL)
       READ(LU_INTERNAL,*) INT_X
 *
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' INFO FROM CHAR_TO_INTEGER'
-        WRITE(6,'(A)') ' CHARACTER INPUT ', CHAR_X
-        WRITE(6,*) ' INTEGER OUTPUT ', INT_X
-      END IF
+      Close(Unit=LU_INTERNAL,
+     &      Status='DELETE')
+*
+      if (NTESTL.ge.1) then
+        write(6,*) ' INTEGER OUTPUT ', INT_X
+      end if
 *
       RETURN
       END

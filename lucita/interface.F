@@ -1,4 +1,3 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -4775,6 +4774,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(2,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=3,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
               end if
             end do
           else if (WAFFCT.eq.'RASSCF') then
@@ -4784,8 +4787,12 @@ CC        IVFLEV = 1               ! could be made more flexible
                 NSHPGS(1,ISYM) = NASH(ISYM)
                 NSHPGS(2,ISYM) = NEXT(ISYM)
                 if (NSHPGS(2,ISYM).gt.MXTSOB) then
-                    call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
-     &                            MXTSOB,NGAS,IPRT)
+                  call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
+     &                          MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=3,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
                 end if
               end do
             else if (IRETISH.eq.0) then
@@ -4797,6 +4804,10 @@ CC        IVFLEV = 1               ! could be made more flexible
                 if (NSHPGS(3,ISYM).gt.MXTSOB) then
                   call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                          MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=4,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
                 end if
               end do
             else
@@ -4822,6 +4833,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(3,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=4,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
               end if
             end do
           else if (WAFFCT.eq.'RASSCF') then
@@ -4847,6 +4862,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(4,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=5,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
               end if
             end do
           end if
@@ -5094,6 +5113,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(2,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=3,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do 
               end if
             end do
           else if (WAFFCT.eq.'RASSCF') then
@@ -5105,6 +5128,10 @@ CC        IVFLEV = 1               ! could be made more flexible
                 if (NSHPGS(2,ISYM).gt.MXTSOB) then
                     call gassplit(NSHPGS(1,ISYM),2,MXPNGAS,
      &                            MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=3,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
                 end if
               end do
             else if (IRETISH.eq.0) then
@@ -5116,6 +5143,10 @@ CC        IVFLEV = 1               ! could be made more flexible
                 if (NSHPGS(3,ISYM).gt.MXTSOB) then
                   call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                          MXTSOB,NGAS,IPRT)
+                else
+                  do IGAS=4,NGAS,1
+                    NSHPGS(IGAS,ISYM) = 0
+                  end do
                 end if
               end do
             else
@@ -5141,6 +5172,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(3,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),3,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=4,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
               end if
             end do
           else if (WAFFCT.eq.'RASSCF') then
@@ -5166,6 +5201,10 @@ CC        IVFLEV = 1               ! could be made more flexible
               if (NSHPGS(4,ISYM).gt.MXTSOB) then
                 call gassplit(NSHPGS(1,ISYM),4,MXPNGAS,
      &                        MXTSOB,NGAS,IPRT)
+              else
+                do IGAS=5,NGAS,1
+                  NSHPGS(IGAS,ISYM) = 0
+                end do
               end if
             end do
           end if
@@ -7605,6 +7644,7 @@ c
           NSSH_L(ISYM) = NSSH_L(ISYM) + 1
         end do
       end do
+*     ^ End loop over fermion symmetries.
 *
       if (NTEST.ge.5) then
         write(6,*) 'transf_dirac information:'
@@ -7613,17 +7653,20 @@ c
         write(6,'(A,8I3)') 'NSSH_L ',(NSSH_L(I),I=1,NBSYM,1)
       end if
 *
+      IERROR = 0
       IRETISH = -1
       do ISM = 1,NBSYM,1
         NOCC_L(ISM) = NISH_L(ISM) + NASH_L(ISM)
+        if (NOCC_L(ISM).gt.MXTSOB) then
+          write(6,*) ' Too many occupied orbitals per symmetry.'
+          write(6,*) ' NOCC_L(ISM=',ISM,') = ', NOCC_L(ISM)
+          write(6,*) ' Use GASCI setup (user option) '
+          write(6,*) '  or increase parameter MXTSOB from: ',MXTSOB
+          stop 'Quitting.'
+        end if
         NORB_L(ISM) = NOCC_L(ISM) + NSSH_L(ISM)
         if ((ICT(ISM)/2).ne.NORB_L(ISM)) then
-          write(6,*) 'Problem in transf_dirac.'
-          write(6,*) 'ICT(ISM)/2 for ISM =',ISM,' is ',ICT(ISM)/2
-          write(6,*) ' NISH_L(ISM) is ',NISH_L(ISM)
-          write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
-          write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
-          stop 'Quitting.'
+          IERROR = 1
         end if
         if (NISH_L(ISM).gt.0) IRETISH = 0
         if (NISH_L(ISM).lt.0) then
@@ -7632,6 +7675,16 @@ c
           stop 'Quitting.'
         end if
       end do
+      if (IERROR.ne.0) then
+        write(6,*) 'Problem in transf_dirac.'
+        do ISM = 1,NBSYM,1
+          write(6,*) 'ICT(ISM)/2 for ISM =',ISM,' is ',ICT(ISM)/2
+          write(6,*) ' NISH_L(ISM) is ',NISH_L(ISM)
+          write(6,*) ' NOCC_L(ISM) is ',NOCC_L(ISM)
+          write(6,*) ' NORB_L(ISM) is ',NORB_L(ISM)
+        end do
+        stop 'Quitting.'
+      end if
 *
 * Determine double group label
       if (NFSYM.eq.1) then

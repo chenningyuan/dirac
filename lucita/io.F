@@ -1,4 +1,3 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -245,8 +244,8 @@ C
 *. Dumping 1- and 2- electron integrals in formatted form
 * ( LU90 just defined here, it is not exported )
       LU90  = 88
-*. Dumping symmmetry info, MO-AO expansion matrix and property integrals
-      LU91 = 89
+*. Dumping symmmetry info, MO-AO expansion matrix and property integral
+      LU91 = 69
 *. CC amplitudes in formatted form
       LU_CCAMP = 90
       RETURN
@@ -675,10 +674,6 @@ C
 *
 * Scratch file
       LUSC_INT = LU91
-      Open(Unit=LUSC_INT,
-     &     File='LUSCDL',
-     &     Status='UNKNOWN',
-     &     Form='FORMATTED')
 * Input for LUCITA, converted
       LUINP = LUSC1
 * COMFILE from MOLCAS-SCF

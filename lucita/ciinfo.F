@@ -1,4 +1,3 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -903,7 +902,7 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
       RETURN
       END
 ***********************************************************************
-*                                                                     *
+*                                                                    *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
@@ -4812,7 +4811,7 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
 *                                                                     *
 ***********************************************************************
 *fordeck symcm2 $Revision$
-      SUBROUTINE  SYMCM2
+      SUBROUTINE SYMCM2(IDUM1,IDUM2,IDUM3,IDUM4,IDUM5)
       WRITE(6,*) ' Entering dummy SYMCM2 is fatal for me'
       Call Abend2( ' Dummy SYMCM2' )
       END
