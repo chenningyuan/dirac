@@ -395,8 +395,6 @@ C     ********************************************
 C
       KATOM  = MXCENT
       KANG   = MXAQN
-      KAOVEC = MXAOVC
-      KBLOCK = KATOM*KAOVEC
       KPRIM  = MAXPRI
       KCMAT  = KPRIM*KPRIM
       KNONT  = 1
@@ -404,7 +402,18 @@ C
       KBLCK  = KIQM   +  KATOM*2
       KJCO   = KBLCK  +  KATOM*2
       KJCO2  = KJCO   +  KATOM*KANG*2
-      KNUC   = KJCO2  +  KATOM*KANG
+      KLAST  = KJCO2  +  KATOM*KANG
+C hjj: take as many blocks as fit in memory
+      LWRK   = LWORK  -  KLAST + 1
+      LBLOCK = 6 + 2*KPRIM + 4*KCMAT
+C      (we reserve size of one block for later allocations)
+      LRESRV = MAX(LBLOCK, 3*MXAQN+MXCORB) + 10000
+C                          ^- for sympro
+      KBLOCK = (LWRK-LRESRV)/LBLOCK
+      KBLOCK = MAX(KBLOCK,10)
+C              ... minimum 10 blocks
+C
+      KNUC   = KLAST
       KNRC   = KNUC   +  KBLOCK*2
       KSEG   = KNRC   +  KBLOCK*2
       KA     = KSEG   +  KBLOCK*2
@@ -421,8 +430,7 @@ C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
      &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),WORK(KNUC),
      &            WORK(KNRC),WORK(KSEG),WORK(KA),
-     &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM,KAOVEC,
-     &            HERMIT)
+     &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM, HERMIT)
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
@@ -444,7 +452,7 @@ C5030 CONTINUE
 C  /* Deck readi1 */
       SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,NUC,
      &           NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &           KPRIM,KAOVEC,HERMIT)
+     &           KPRIM,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -628,7 +636,7 @@ C
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NSYMOP,NONT,
      &            IQM,NBLCK,JCO,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
-     &            KATOM,KANG,KBLOCK,KPRIM,KAOVEC,ANG,ZMAT)
+     &            KATOM,KANG,KBLOCK,KPRIM,ANG,ZMAT)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -636,7 +644,7 @@ C     *************************************************
 C
       IF (ZMAT) CALL BUILDZ(IPREAD,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &                  KBLOCK,KPRIM,KAOVEC,DOOWN)
+     &                  KBLOCK,KPRIM,DOOWN)
 
 C
 C     *************************************************
@@ -668,7 +676,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,KPRIM,
-     &            KAOVEC,DOOWN)
+     &            DOOWN)
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****
@@ -676,7 +684,7 @@ C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &            ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &            KBLOCK,KPRIM,KAOVEC,HERMIT)
+     &            KBLOCK,KPRIM,HERMIT)
 C
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of input to READIN',0)
@@ -698,7 +706,7 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *   ' >>> READI1 error, no. of atomic types    ',NONTYP,
-     *   '                    current maximum number ',KATOM
+     *   '                   current maximum number ',KATOM
       CALL QUIT('Too many atomic types')
       END
 C  /* Deck baspar */
@@ -768,7 +776,7 @@ C
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
      &                  JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
-     &                  KATOM,KANG,KBLOCK,KPRIM,KAOVEC,ANG,ZMTTST)
+     &                  KATOM,KANG,KBLOCK,KPRIM,ANG,ZMTTST)
 C*****************************************************************************
 C
 C       Read orbital and geometry input data
@@ -980,6 +988,7 @@ C
 C
 C                 Read explicitly given basis set.
 C
+                  KAOVEC = KBLOCK + 1 - IBLOCK(1)
                   CALL GTOINP(LUINFO,IQM(I,1),JCO(1,I,1),
      &                 NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
      &                 SEG(IBLOCK(1),1),
@@ -993,19 +1002,19 @@ C
 C                 Molfdir basis set
 C
                   KBFPR = 1
-                  KBFCO = KBFPR + MXPRIM
-                  KLAST = KBFCO + MXCORB*MXPRIM
+                  KBFCO = KBFPR + KPRIM
+                  KLAST = KBFCO + KPRIM*KPRIM
                   IF (KLAST.GT.LWORK) 
      &               CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   DIRCON = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
-     &                 KAOVEC)
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
                ELSE IF ( IBSFLAG .EQ. 3 ) THEN
 C     
                   BASNAM = BASFIL
 C
+                  KAOVEC = KBLOCK + 1 - IBLOCK(1)
                   CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(IBLOCK(1),1),
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
@@ -1017,6 +1026,7 @@ C
 C
 C                 Generate well-temperered/family basis set
 C
+                  KAOVEC = KBLOCK + 1 - IBLOCK(1)
                   CALL FAMBAS(LUINFO,IQM(I,1),JCO(1,I,1),
      &                 NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),
      &                 SEG(IBLOCK(1),1),
@@ -1109,6 +1119,7 @@ C
 C
 C                 Read explicitly given small component basis set.
 C
+                  KAOVEC = KBLOCK + 1 - IBLOCK(2)
                   CALL GTOINP(LUINFO,IQM(I,2),JCO(1,I,2),
      &                 NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),
      &                 SEG(IBLOCK(2),2),
@@ -1122,15 +1133,13 @@ C
 C                 Read molfdir small component basis set.
 C
                   KBFPR = 1
-                  KBFCO = KBFPR + MXPRIM
-                  KLAST = KBFCO + MXCORB*MXPRIM
+                  KBFCO = KBFPR + KPRIM
+                  KLAST = KBFCO + KPRIM*KPRIM
                   IF (KLAST.GT.LWORK) 
      &                 CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
-                  CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),
-     &                 WORK(KBFCO),
+                  CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),WORK(KBFCO),
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
-     &                 KAOVEC)
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL)
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
@@ -1172,6 +1181,7 @@ C
                NQ = NINT(Q + 0.01D0)
                IF ((LCMMAX .GT. -1) .AND. (NQ .EQ. 0)) THEN
                   IQM(I,J) = LCMMAX + 1
+                  KAOVEC = KBLOCK + 1 - IBLOCK(J)
                   CALL CMBAS(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                 NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                 ALPHA(1,IBLOCK(J),J),
@@ -1182,7 +1192,8 @@ C              Get basis set from basis set library
 C              ===================================
 C
                ELSE IF ((BASIS .OR. (ADDSTO .AND. J .EQ. 2))) THEN
-                 CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
+                  KAOVEC = KBLOCK + 1 - IBLOCK(2)
+                  CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
@@ -1192,8 +1203,9 @@ C
 C
 C              Read basis set from file
 C              ========================
-C
-                 CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
+C 
+                  KAOVEC = KBLOCK + 1 - IBLOCK(J)
+                  CALL GTOINP(LUINFO,IQM(I,J),JCO(1,I,J),
      &                NUC(IBLOCK(J),J),NRC(IBLOCK(J),J),
      &                SEG(IBLOCK(J),J),
      &                ALPHA(1,IBLOCK(J),J),CPRIM(1,1,IBLOCK(J),J),
@@ -1378,7 +1390,7 @@ C
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &                  KBLOCK,KPRIM,KAOVEC,DOOWN)
+     &                  KBLOCK,KPRIM,DOOWN)
 C
 C*****************************************************************************
 C
@@ -1533,18 +1545,18 @@ C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, number of shells                    ',KMAX,
-     *  '                   current maximum number              ',MXSHEL
+     *  '                   current maximum number (MXSHEL)     ',MXSHEL
         CALL QUIT('BASPRO: Too many shells')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, number of contracted basis functions',
      *  NBASIS,
-     *  '                   current maximum number              ',MXCORB
+     *  '                   current maximum number (MXCORB)     ',MXCORB
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
      *  ' >>> BASPRO error, number of primitive basis functions',NPBAS,
-     *  '                   current maximum number             ',MXPRIM
+     *  '                   current maximum number (MXPRIM)    ',MXPRIM
         CALL QUIT('BASPRO: Too many primitives')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
@@ -1552,7 +1564,7 @@ C
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,
      &                  SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
-     &                  KBLOCK,KPRIM,KAOVEC,HERMIT)
+     &                  KBLOCK,KPRIM,HERMIT)
 C*****************************************************************************
 C
 C     Print orbital and geometry input data
@@ -1615,7 +1627,7 @@ C
          IF (IQM(I,1).GT.0) THEN
             CALL BASTYP(IQM(I,1),JCO(1,I,1),NRC(IBLOCK,1),
      &                  NUC(IBLOCK,1),
-     &                  KAOVEC,NPRIM,NBAS,TSTRING,1,I)
+     &                  NPRIM,NBAS,TSTRING,1,I)
          ELSE
             IF (IPREAD .GT. 0) THEN
                WRITE (LUPRI,'(10X,A)') 'No large orbitals attached.'
@@ -1625,7 +1637,7 @@ C
          NBASS = 0
          IF (IQM(I,2).GT.0) THEN
             CALL BASTYP(IQM(I,2),JCO(1,I,2),NRC(IBLCKS,2),
-     +                  NUC(IBLCKS,2),KAOVEC,NPRIMS,NBASS,TSTRIN2,2,I)
+     +                  NUC(IBLCKS,2),NPRIMS,NBASS,TSTRIN2,2,I)
          ELSE IF (DIRAC) THEN
             IF (IPREAD .GT. 0) THEN
                WRITE (LUPRI,'(10X,A)') 'No small orbitals attached.'
@@ -1746,7 +1758,7 @@ C
       CALL AOTOAO(IAOAO,IPREAD)
       END
 C  /* Deck bastyp */
-      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NBLOCK,NPRIM,NBAS,TSTRING,ICP,
+      SUBROUTINE BASTYP(IQM,JCO,NRC,NUC,NPRIM,NBAS,TSTRING,ICP,
      &                  IATM)
 C*****************************************************************************
 C
@@ -1757,7 +1769,7 @@ C*****************************************************************************
 #include <mxcent.h>
 #include <maxaqn.h>
       CHARACTER TSTRING*(6*MXAQN+3),SPDCAR*1
-      DIMENSION JCO(IQM),NRC(NBLOCK),NUC(NBLOCK)
+      DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include <ccom.h>
 #include <gencon.h>
 C*****************************************************************************
@@ -1838,6 +1850,7 @@ C*****************************************************************************
 C*****************************************************************************
       IND = IND + 1
       TSTRING(IND:IND) = ']'
+      RETURN
       END
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
@@ -2002,9 +2015,10 @@ C
 C     Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   number of blocks not used yet  ',KAOVEC,
+     *  '                ** Increase WRKMEM and try again!'
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
@@ -2097,9 +2111,10 @@ C
 C     Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6/A,I6,A)')
      *  ' >>> FAMBAS error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   number of blocks not used yet  ',KAOVEC,
+     *  '                ** Increase WRKMEM and try again!'
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
@@ -2216,9 +2231,10 @@ C
 C     Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' >>> CMBAS  error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   number of blocks not used yet  ',KAOVEC,
+     *  '                ** Increase WRKMEM and try again!'
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
@@ -2233,6 +2249,8 @@ C
      *  '                   current maximum number              ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
+#ifdef NOT_USED
+C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
@@ -2306,9 +2324,10 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+     *  '                   number of blocks not used yet  ',KAOVEC,
+     *  '                ** Increase WRKMEM and try again!'
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
@@ -2323,6 +2342,7 @@ C
      *  '                   current maximum number              ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
+#endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
 #include <implicit.h>
@@ -2518,6 +2538,7 @@ C
                   KBCH = KBCH + 1
                   NCONT = NRC(KBCH)
                   IF(NCONT.GT.MXCONT) GOTO 5000
+C                 ...  dimension PRICCF(MXPRIM,MXCONT)
                   DO 50 KK = 1, NCONT
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
@@ -2566,7 +2587,6 @@ C*****************************************************************************
                      IPRIM = IPRIM + 1
 C*****************************************************************************
 C       PRIEXP  - exponent of primitive shell
-C       CCO     - unnormalized contraction coefficient
 C       PRICCF  - normalized contraction coefficient
 C       PRICRX  - x-coordinate of center
 C       PRICRY  - y-coordiante of center
@@ -5809,7 +5829,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bfginp */
       SUBROUTINE BFGINP(IAT,IBLCK,ICP,ALPIN,CPRIN,
      &              IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM,KAOVEC)
+     &              NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,FILNAM)
 C***********************************************************************
 C
 C      Read contracted basis set from a MOLFDIR type basis set file
@@ -5820,7 +5840,6 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <infpar.h>
@@ -5829,13 +5848,13 @@ C
       PARAMETER (DSM=1.0D-30)
 C
       LOGICAL SEG,TOBE,SEGIJ
-      CHARACTER*15 FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE,FORMATC
+      CHARACTER FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE*10,FORMATC*10
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
-     &          ALPIN(MXPRIM),CPRIN(MXPRIM*MXCORB)
+     &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
 #include <cbirea.h>
 #include <ccom.h>
 #include <gencon.h>
@@ -5856,6 +5875,8 @@ C     Look if basis set file exists and, if so, read in data
 C     ======================================================
 C
       IF (.NOT. PARHER) THEN
+C        ... this is the master, slaves will read from lines
+C        read into MLINE(*) by master
          INQUIRE (FILE = FILNAM, EXIST = TOBE)
          IF (.NOT.TOBE) GOTO 5025
          OPEN (LUBFIL,FILE=FILNAM,FORM='FORMATTED',STATUS='OLD')
@@ -5894,7 +5915,7 @@ C
             IF (MOD(NPRIM,NE).NE.0) NSTEP = NSTEP + 1
             IF (MOD(NCONTR*NPRIM,NC).NE.0) NSTEP = NSTEP + 1
             DO 310 INIT = 1, NSTEP
-               IF (.NOT.PARHER) READ (LUBFIL,*,END=5020)
+               IF (.NOT.PARHER) READ (LUBFIL,*,END=5021)
   310       CONTINUE
             GOTO 301
          ELSE
@@ -5906,9 +5927,7 @@ C
 C     Check dimensions of arrays
 C     ==========================
 C
-      IF (NPRIM.GT.MXPRIM) GOTO 5010
       IF (NPRIM.GT.KPRIM) GOTO 5040
-      IF (NCONTR.GT.MXCORB) GOTO 5050
       IF (NCONTR.GT.KPRIM) GOTO 5060
 C
 C     Read in primitives and contraction coefficients
@@ -5936,9 +5955,7 @@ C     ==========================================================
 C
       MXDUM = MXCON_PARAM - MOD(MXCON_PARAM,(NPRIM*KHK(ITYP)))
       MXCONTR = MAX((MXDUM/(NPRIM*KHK(ITYP))),1)
-      JCO(ITYP,IAT,ICP) = NCONTR/MXCONTR
-      IF (MOD(NCONTR,MXCONTR).NE.0)  
-     &JCO(ITYP,IAT,ICP) = JCO(ITYP,IAT,ICP) + 1
+      JCO(ITYP,IAT,ICP) = 1 + (NCONTR-1)/MXCONTR
 C
 C     Put the entire list of ITYP primitives and contracted functions
 C     into KPRIM long blocks
@@ -5952,7 +5969,7 @@ C
          ELSE
             ICONE = NCONTR
          ENDIF
-         IF(NBLOCK.GT.KAOVEC) GOTO 5000
+         IF(NBLOCK.GT.KBLOCK) GOTO 5000
          CALL DZERO(ALPHA (1,  NBLOCK,ICP),KPRIM)
          CALL DZERO(CPRIMU(1,1,NBLOCK,ICP),KPRIM*KPRIM)
          CALL DZERO(CPRIM (1,1,NBLOCK,ICP),KPRIM*KPRIM)
@@ -6024,35 +6041,29 @@ C
   391 CLOSE (LUBFIL)
       RETURN
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
-     *  '                   current maximum number         ',KAOVEC
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' >>> BFGINP error, number of AO-blocks            ',NBLOCK,
+     *  '                   max. number (KBLOCK in READIN) ',KBLOCK,
+     *  '                ** Increase WRKMEM and try again!'
         CALL QUIT('Too many AO-blocks')
- 5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)') 
-     *  ' >>> BFGINP error, number of primitives           ',NPRIM,
-     * '                    current maximum number         ',MXPRIM
-        CALL QUIT('Too many primitives')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,A20)') 'Error in basis set file : ',FILNAM
-        CALL QUIT('Error reading contents of basis set file.')
+        WRITE (LUPRI,'(/A/A/2A)')
+     &     'Error reading the following line :',MLINE(NMLINE),
+     &     'in MOLFDIR type basis set file : ',FILNAM
+ 5021   CALL QUIT('Error reading contents of MOLFDIR basis set file.')
  5025 CONTINUE
-        WRITE (LUPRI,'(/A,A20)') 'Cannot find file : ',FILNAM
-        CALL QUIT('Error reading MOLFDIR type basis set file.')
+        WRITE (LUPRI,'(/2A)')
+     &     'Cannot find MOLFDIR type basis set file : ',FILNAM
+        CALL QUIT('Error finding MOLFDIR type basis set file.')
  5040 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)') 
      *  ' >>> BFGINP error, number of primitives           ',NPRIM,
-     * '                    current maximum number (MAXPRI)',KPRIM
+     *  '                   current maximum number (MAXPRI)',KPRIM
         CALL QUIT('Too many primitives, increase MAXPRI in input.')
- 5050 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)') 
-     *  ' >>> BFGINP error, number of contracted functions ',NCONTR,
-     * '                    current maximum number         ',MXCORB
-        CALL QUIT('Too many contracted functions.')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)') 
      *  ' >>> BFGINP error, number of contracted functions ',NCONTR,
-     * '                    current maximum number (MAXPRI)',KPRIM
+     *  '                   current maximum number (MAXPRI)',KPRIM
         CALL QUIT('Too many contracted fun., increase MAXPRI in input.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6165,23 +6176,19 @@ C
 C
   100 CONTINUE
       END DO
+      IF (NUC(IBL,1) .NE. NUC_IBS) THEN
+         WRITE(LUPRI,'(A,I3,A,I3)')
+     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
+     &   ' small functions in a block out of',NUC(IBL,1)
+      END IF
       IF (NUC_IBS .EQ. 0) THEN
 C
 C        We've deleted all functions from this block.
 C        This might happen for (dual) family basis sets.
 C        Decrement IBS and return.
 C
-         WRITE(LUPRI,'(A,I3,A,I3)')
-     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
-     &   ' small functions in a block out of',NUC(IBL,1)
-C
          IBS = IBS - 1
          RETURN
-      END IF
-      IF (NUC(IBL,1) .NE. NUC_IBS) THEN
-         WRITE(LUPRI,'(A,I3,A,I3)')
-     &   ' INFO: GENSML deleted',NUC(IBL,1) - NUC_IBS,
-     &   ' small functions in a block out of',NUC(IBL,1)
       END IF
       NUC(IBS,2) = NUC_IBS
       NRC(IBS,2) = NUC_IBS
@@ -6322,11 +6329,12 @@ C                       This should never happen, since GENSML deletes
 C                       functions it already know.
 C
                         IF(ISH2M.NE.0) CALL QUIT
-     &                      ('RKBREL:Error, two identical functions')
+     &                      ('RKBREL: Error, two identical S functions')
 C
 C                       Note that we use ISHS and not IPRIMS, since RKBLOW
 C                       in dirone.F wants shell number, and not primitive
-C                       number.
+C                       number. This is not the same if L Component basis
+C                       set is contracted.
 C
                         ISH2M = ISHS + (IPRIMS - iPrimSmallStart)
                      ENDIF
@@ -6334,15 +6342,16 @@ C
 C                    L+1 small function....
 C
                      IF(NHKTS.EQ.NHKTL+1) THEN
-                        IRKB(IPRIML) = ISH2M
                         IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
-                           WRITE(LUPRI,'(A)') 
-     &                         'S Component Function with' //
-     $                         'no Partner at L-2'
+                           WRITE(LUPRI,'(A/A,I5,F20.10)') 
+     &                         'S Component Function with no Partner '//
+     &                         'at L-2', 'L quantum number, exponent:',
+     &                         NHKTS-1,PRIEXS
                            CALL QUIT('S Component Function'// 
      &                          ' with no Partner at L-2')
                         ELSE
                            IRKB(IPRIMS) = IPRIML
+                           IRKB(IPRIML) = ISH2M
                         ENDIF
                      ENDIF
                   ENDIF
@@ -6367,8 +6376,8 @@ C/* Deck Getpot */
 C***********************************************************************
 C
 C     Get nuclear potential energy
-C     Point charges are not included. /June2000,jth+hjaaj
 C     Surgery by T.Saue June 7 1997
+C     Point charges are not included. /June2000,jth+hjaaj
 C
 C***********************************************************************
 #include <implicit.h>
@@ -6501,7 +6510,7 @@ C
 C
          IF ( INPTST ) THEN
             WRITE(LUPRI,'(A,/,4(A,F20.10,/),A,I3)')
-     $           'Parameters for well-temperered progression: ',
+     $           'Parameters for well-tempered progression: ',
      $           'alpha = ',FAMPAR(1),
      $           'beta  = ',FAMPAR(2),
      $           'gamma = ',FAMPAR(3),
