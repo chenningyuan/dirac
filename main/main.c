@@ -25,20 +25,14 @@
 #include "get_time.struct"
 #include "get_time.head"
  ;
-#if defined (VAR_MPI)
-#include <mpi.h>
-#endif /* VAR_MPI */
+#include "mpi_errtrap.h"
 
 void main()
 
 {
 
    int mytid, size, parcal, mparid, numnod;
-#if defined (VAR_MPI)
-   MPI_Errhandler errhandler;
-#else /* VAR_MPI */
-   int errhandler;
-#endif
+   errhandler_type errhandler;
    int *mempointer;
    get_time_struct *gt_first, *gt_last;
 
@@ -46,7 +40,6 @@ void main()
     * Start timing
     */
 
-   sleep(20);
    gt_first = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
    gt_last  = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
    get_time(gt_first);
