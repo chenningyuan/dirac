@@ -2171,3 +2171,37 @@ C
       WRITE (LUPRI, '()')
       RETURN
       END
+      SUBROUTINE RPRIGEO(COORD,CFIRST)
+C
+C     Jun 29 1988 tuh
+C     Slight modified Feb 17 1998 jth
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+C
+      DIMENSION COORD(3,*)
+      CHARACTER CFIRST*1
+C
+#include <nuclei.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      IATOM = 0
+      DO 100 ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO 200 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               IATOM = IATOM + 1
+               WRITE (LUPRI,'(A1,A,F17.10,2F24.10)') 
+     *           CFIRST,NAMDEP(IATOM),
+     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+            END IF
+  200    CONTINUE
+  100 CONTINUE
+      WRITE (LUPRI,'(//)')
+      RETURN
+      END
+
