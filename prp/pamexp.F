@@ -279,7 +279,7 @@ C
           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ENDIF
         CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
-        IF (ORBFLG) THEN
+        IF (.NOT. ORBFLG) THEN
            DO IOPEN = 0,NOPEN
               EXPVAL = EXPVAL + DF(IOPEN)
      &           *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
