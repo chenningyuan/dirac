@@ -86,8 +86,6 @@
 
 - PAMPRP memory leak: alloc foer PAMEXP, men ingen dealloc?
 
-- AUTOCC a la dalton <-- NEM AT LAVE!!!
-
 - aktivering af SYMADD i herrdn.F
 
 - redundant kald til MVODEN i MVOGEN (dirscf.F)
