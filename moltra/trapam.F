@@ -713,7 +713,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck lagtau */
-      SUBROUTINE LAGTAU(TMATRX1,TMATRX2,WORK,LWORK)
+      SUBROUTINE LAGTAU(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 C***********************************************************************
 C
 C     Driver routine for tau dependent part of the Lagrangian
@@ -736,6 +736,7 @@ C
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
       DIMENSION TMATRX1(*),TMATRX2(*)
+      DIMENSION XMO(*)
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -979,7 +980,7 @@ C     Call driver for 4-index transformation
 C     --------------------------------------
 C
       IF (.NOT.NO4IND)
-     &   CALL LAGTAU1(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRTRA,KQ,KE,
+     &   CALL LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRTRA,KQ,KE,
      &               KIBE,NDMOQR,ICMOQR,NSTR,
      &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
@@ -1249,8 +1250,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lagtau1 */
-      SUBROUTINE LAGTAU1(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,KQ,KE,
-     &           KIBE,NDMOQR,ICMOQR,NSTR,MSOUT,ANTIS,INTFLG)
+      SUBROUTINE LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,KQ,
+     &                   KE,KIBE,NDMOQR,ICMOQR,NSTR,MSOUT,ANTIS,INTFLG)
 C***********************************************************************
 C       
 C     Subdriver for 4index transformation.
@@ -1286,6 +1287,7 @@ C
 C
       LOGICAL MSOUT,ANTIS
       DIMENSION TMATRX1(*),TMATRX2(*)
+      DIMENSION XMO(*)
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
 C    
@@ -1317,8 +1319,8 @@ C
          CALL QUIT('LAGTAU1: .ANTIS is not implemented!')
       ENDIF
 C
-      CALL TRDR5T(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
-     &            ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+      CALL TRDR5T(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &            NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C
       CALL MEMREL('LAGTAU1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('LAGTAU1')

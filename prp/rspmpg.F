@@ -25,6 +25,7 @@ C
 #include "dcbxlr.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcbxrs.h"
 #include "dummy.h"
       dimension work(*)
       DIMENSION DMO(*)
@@ -80,6 +81,10 @@ C
       XLR_XVCFIL    = 'NORXVC'
       orbxlr    = .false.       !is this an orbital response problem
       xstern    = .false.
+C
+C     Make sure common block dcbidx is set
+C
+      CALL SETDCBIDX()
 C
 C     set work array to zero
 C     ======================

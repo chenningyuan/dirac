@@ -1,6 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tr5ini */
-      SUBROUTINE TR5INI(TMATRX1,TMATRX2,WORK,LWORK)
+      SUBROUTINE TR5INI(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 C
 C     Because we come from RELCCSD we have to call PAMTRA again
 C
@@ -12,19 +12,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION WORK(*)
+      DIMENSION XMO(*)
 C
       CALL QENTER('TR5INI')
 #include "memint.h"
 C
-      CALL LAGTAU(TMATRX1,TMATRX2,WORK,LWORK)
+      CALL LAGTAU(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 C
       CALL QEXIT('TR5INI')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck trdr5t */
-      SUBROUTINE TRDR5T(TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+      SUBROUTINE TRDR5T(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,
+     &                  INTFLG,NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
 C     Driver for scheme 5: Based on scheme 4
@@ -64,7 +65,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 #include "mxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
@@ -82,6 +83,7 @@ C***********************************************************************
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION TMATRX1(*),TMATRX2(*)
+      DIMENSION XMO(*)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
 C     
@@ -268,6 +270,11 @@ C
 C     Put the two tau dependent parts of the Lagrangian together to
 C     the final Lagrangian
 C     -------------------------------------------------------------
+      CALL ADDTAUL(WORK(KXMO1),WORK(KXMO2),XMO)
+C
+C     Now finally the tau dependent Lagrangian has to be scaled by -1
+C     ---------------------------------------------------------------
+      CALL DSCAL(NORBT*NORBT*NZ,-D1,XMO,1)
 C             
 C     Screening statistics
 C
@@ -511,7 +518,7 @@ C      we do really need it as the upper triangle (ITRIANG=1), in the
 C      2nd call we need it as a lower triangle (ITRIANG=2).
 C
 C
-C      Create the first tau dependent part of the Lagrangian
+C      Create the 1st tau dependent part of the Lagrangian
 C      -----------------------------------------------------
 C
         DO ITRIANG = 1, 2
@@ -521,7 +528,7 @@ C
      &                 WORK(KINDXL),ITRIANG,1)
         ENDDO
 C
-C      Create the first tau dependent part of the Lagrangian
+C      Create the 2nd tau dependent part of the Lagrangian
 C      -----------------------------------------------------
 C
         DO ITRIANG = 1, 2
@@ -1697,15 +1704,15 @@ C
         ENDDO !ireprs
       ENDDO !irepal
 C
-      print*,'printen van de bende'
-      print*,'de 1e T matrix!!!!!'
-      do i =1, NTMATR1
-        print*,'i=, T=',i,TMATRX1(i)
-      enddo
-      print*,'de 2e T matrix!!!!!'
-      do i =1, NTMATR2
-        print*,'i=, T=',i,TMATRX2(i)
-      enddo
+c     print*,'printen van de bende'
+c     print*,'de 1e T matrix!!!!!'
+c     do i =1, NTMATR1
+c       print*,'i=, T=',i,TMATRX1(i)
+c     enddo
+c     print*,'de 2e T matrix!!!!!'
+c     do i =1, NTMATR2
+c       print*,'i=, T=',i,TMATRX2(i)
+c     enddo
 C
       RETURN 
       END
@@ -2029,7 +2036,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1=1.0D0, D4 = 4.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0, D4 = 4.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -2063,12 +2070,14 @@ C     +-----------------------------------------+
 C     | The L_i'j part has to be scaled by -1   |
 C     +-----------------------------------------+
 C     
+      print*,'!!!! Waarschuwing, L_i`j tijdelijk op 0 !!!!'
+c     dus -D1 -> D0
       DO IZ = 1, NZ
         IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
         DO IFSYM = 1, NFSYM
           DO J = 1, NAOCC(IFSYM)
             IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM) + NAOCC(IFSYM)
-            CALL DSCAL(NIOCC(IFSYM),-D1,XMO1(IOFF),1)
+            CALL DSCAL(NIOCC(IFSYM),D0,XMO1(IOFF),1)
           ENDDO   ! j
           IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
@@ -2115,7 +2124,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1=1.0D0, D4 = 4.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0, D4 = 4.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -2154,13 +2163,30 @@ C     +-----------------------------------------+
 C     | The L_ab' part has to be scaled by -1   |
 C     +-----------------------------------------+
 C
+      print*,'!!!! Waarschuwing, L_ab` tijdelijk op 0 !!!!'
+c     dus -D1 -> D0
+c
       DO IZ = 1, NZ
         IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
         DO IFSYM = 1, NFSYM
           DO IB = 1, NIVIR(IFSYM)
             IOFF = IOFFSYM + (IB-1)*NAVIRT 
      &           + (NORB(IFSYM)-NIVIR(IFSYM))*NAVIRT
-            CALL DSCAL(NAVIR(IFSYM),-D1,XMO2(IOFF),1)
+            CALL DSCAL(NAVIR(IFSYM),D0,XMO2(IOFF),1)
+          ENDDO   ! ib
+          IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
+      print*,'!!!! Waarschuwing, L_ax tijdelijk op 0 !!!!'
+c     dus -D1 -> D0    
+c
+      DO IZ = 1, NZ
+        IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
+        DO IFSYM = 1, NFSYM
+          DO IB = 1, NPSH(IFSYM)
+            IOFF = IOFFSYM + (IB-1)*NAVIRT
+            CALL DSCAL(NAVIR(IFSYM),D0,XMO2(IOFF),1)
           ENDDO   ! ib
           IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         ENDDO     ! ifsym
@@ -2187,6 +2213,73 @@ C
          print*,'i=,xmo2=',i,xmo2(i)
       enddo
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck addtaul*/
+      SUBROUTINE ADDTAUL(XMO1,XMO2,XMO)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C       
+C     Written by Joost van Stralen september 2003.
+C         
+C     PURPOSE : Put the two tau dependent parts of the Lagrangian
+C               together to the final Lagrangian
+C           
+C     Input :   XMO1 - The 1st tau dependent part of the Lagrangian in
+C                      spinor basis 
+C               XMO2 - The 2nd tau dependent part of the Lagrangian in
+C                      spinor basis
+C     Output :  XMO -  The sum of the 1st and 2nd tau dependent parts
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0)
+C     
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION XMO1(*), XMO2(*), XMO(*)
+C
+C     Put the XMO1 in XMO
+C     -------------------
+C
+      DO IZ = 1, NZ
+        IOFF1A = (IZ-1)*NORBT*NAOCCT + 1
+        IOFFA = (IZ-1)*NORBT*NORBT + 1
+        DO IFSYM = 1, NFSYM
+          DO I = 1, NAOCC(IFSYM)
+            IOFF1B = IOFF1A + (I-1)*NORBT
+            IOFFB = IOFFA + (I-1)*NORBT
+     &            + (NPSH(IFSYM) + NIOCC(IFSYM))*NORBT
+            CALL DAXPY(NORB(IFSYM),D1,XMO1(IOFF1B),1,XMO(IOFFB),1)
+          ENDDO   ! i
+          IOFF1A = IOFF1A + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
+          IOFFA = IOFFA + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
+C     Put the XMO2 in XMO
+C     -------------------
+C
+      DO IZ = 1, NZ
+        IOFF2A = (IZ-1)*NAVIRT*NORBT + 1
+        IOFFA = (IZ-1)*NORBT*NORBT + 1
+        DO IFSYM = 1, NFSYM
+          DO I = 1, NORB(IFSYM)
+            IOFF2B = IOFF2A + (I-1)*NAVIRT
+            IOFFB = IOFFA + (I-1)*NORBT + NOCC(IFSYM) + NPSH(IFSYM)
+            CALL DAXPY(NAVIR(IFSYM),D1,XMO2(IOFF2B),1,XMO(IOFFB),1)
+          ENDDO   ! i
+          IOFF2A = IOFF2A + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
+          IOFFA = IOFFA + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
+      print*,'xmo'
+      do i = 1, norbt*norbt*nz
+        print*,'i, xmo',i, xmo(i)
+      enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
