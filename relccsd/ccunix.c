@@ -68,7 +68,7 @@ extern char  *getenv();
 #define OLD             3
 
 typedef struct
-{ long  fd, addr, size;
+{ int  fd, addr, size;
   char fname[15];
 } FILE_DEFINITION;
 
@@ -92,11 +92,11 @@ void closec();
 
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
-void openc_(unit,fname,size,status) long *unit, *size, *status; char *fname;
+void openc_(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void openc(unit,fcd,status) long *unit, *status; _fcd fcd;
+void openc(unit,fcd,status) int *unit, *status; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
-void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
+void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #else
 ????
 #endif
@@ -104,7 +104,7 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
 { char *cp, *env ;
   char  name[PATHMAX]; 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  long *size;
+  int *size;
   char *fname;
 
   *size = _fcdlen(fcd);
@@ -117,7 +117,7 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
         }
   cp=fname+strlen(fname)-1;
   if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }
-  if (strlen(fname)-1>MAXLENGTH) fprintf(stderr,"openc: filename too long >15\n");
+  if (strlen(fname)-1>MAXLENGTH) fprintf(stderr,"openc: filename too int >15\n");
        /*  Get alternate file name from environment, 
            if it exists, use it, if not, use program supplied name 
         */  
@@ -154,18 +154,18 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
-void wrabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
+void wrabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void wrabsf(unit,fcd,p) long *unit,*p; _fcd fcd;
+void wrabsf(unit,fcd,p) int *unit,*p; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX) 
-void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
+void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 #else
 ???
 #endif
 
-{ long addr, m, n;
+{ int addr, m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  long *l;
+  int *l;
   char *a;
 
   *l = _fcdlen(fcd);
@@ -195,18 +195,18 @@ void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
-void rdabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
+void rdabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void rdabsf(unit,fcd,p) long *unit, *p; _fcd fcd;
+void rdabsf(unit,fcd,p) int *unit, *p; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
-void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
+void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 #else
 ????
 #endif
 
-{ long addr, m, n;
+{ int addr, m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  long *l;
+  int *l;
   char *a;
 
   *l = _fcdlen(fcd);
@@ -236,9 +236,9 @@ void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
 }
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
-void closec_(unit) long *unit;
+void closec_(unit) int *unit;
 #elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_AIX) || defined (SYS_HPUX)
-void closec(unit) long *unit;
+void closec(unit) int *unit;
 #else
 ????
 #endif
