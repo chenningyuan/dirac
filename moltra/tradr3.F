@@ -53,13 +53,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION IJP12(0:7)
+      DIMENSION IJP12(0:7), IOFFB(0:7)
       DIMENSION IJP34(2)
       DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),MHTM(2),NHTM(2)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*)
 C
-      CALL QENTER('TRDRV3')
+      CALL QENTER('TRDR3T')
       KFRSAV = KFREE
 C
 C     Define the packing of the 2-index transformed integrals
@@ -202,6 +202,10 @@ C
         KGAB  = KFREE
       ENDIF
 C
+C     note: IOFFB is only used in tradr4.F (when SUB4 in MS4IN1D true)
+C
+      CALL IZERO(IOFFB,8)
+C
 C     Loop over (XX|LL) and (XX|SS) integrals
 C
 C     ----------------
@@ -316,12 +320,12 @@ C
 C           De-allocate buffers and allocate GMAT if necessary.
 C
             IF (NPASS.GT.1) THEN
-               CALL MEMREL('TRDRV3.1',WORK,1,KALGBUF,KFREE,LFREE)
+               CALL MEMREL('TRDR3T.1',WORK,1,KALGBUF,KFREE,LFREE)
                CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
                CALL DZERO(WORK(KGMAT),NSIZG)
             ENDIF
 C
-            CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.FALSE.,.FALSE.,
+            CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.FALSE.,.FALSE.,IOFFB,
      &                  WORK(KALGREC),ICS,ICF,
      &                  IC,TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
      &                  WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
@@ -330,7 +334,7 @@ C
      &                  IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
      &                  WORK(KLBUF1))
 C
-            CALL MEMREL('TRDRV3.2',WORK,1,KFRSAV3,KFREE,LFREE)
+            CALL MEMREL('TRDR3T.2',WORK,1,KFRSAV3,KFREE,LFREE)
 C
 C           Delete scalar integral buffer file
 C
@@ -356,14 +360,14 @@ C     De-allocate buffer space
 C
       CALL FINABUF (IRECC,NBFSZ,NBUF,IBOFF,
      &              WORK(KJBOFF),WORK(KRBUF),WORK(KLBUF1))
-      CALL MEMREL('TRDRV3.3',WORK,1,KJBOFF,KFREE,LFREE)
+      CALL MEMREL('TRDR3T.3',WORK,1,KJBOFF,KFREE,LFREE)
 C
 C     Initialize MOLFDIR integral file
 C
       CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
       CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDRV3.4',WORK,1,KIKRA,KFREE,LFREE)
+      CALL MEMREL('TRDR3T.4',WORK,1,KIKRA,KFREE,LFREE)
 C
 C     Second half-transformation
 C
@@ -386,8 +390,8 @@ C
 C
 C     Release all memory and exit
 C
-      CALL MEMREL('TRDRV3.5',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('TRDRV3')
+      CALL MEMREL('TRDR3T.5',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('TRDR3T')
 C
       RETURN
 C
@@ -398,8 +402,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MS4INW*/
-      SUBROUTINE MS4INW (WORK,KFREE,LFREE,IPRINT,
-     &                   SUB3,SUB4,IC,IHM,MHTM,IHTM,INDX,INDXAB,IPASS,
+      SUBROUTINE MS4INW (WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,IOFF4,
+     &                   IC,IHM,MHTM,IHTM,INDX,INDXAB,IPASS,
      &                   HMAT,IRECC,JBOFF,IBOFF,NBUF,NIJBUF,NBFSZ,
      &                   RBUF,LBUF1)
 
@@ -423,7 +427,7 @@ C
 C
       PARAMETER (HALF=0.5D0)
 C
-      DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
+      DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IOFF4(0:7)
       DIMENSION IHTM(0:7),IHM(0:7),MHTM(2)
       DIMENSION HMAT(*)
       DIMENSION WORK(*)
@@ -461,7 +465,7 @@ C
             INDA1 = INDA - ICOS(IREPA+1,IC) ! Absolute position
             INDB1 = INDB - ICOS(IREPB+1,IC) ! Absolute position
             IF (SUB3) INDA1 = INDX(3,INDA)  ! Relative position
-            IF (SUB4) INDB1 = INDX(3,INDB)  ! Relative position
+            IF (SUB4) INDB1 = IOFF4(IREPB) + INDX(3,INDB)  ! Relative position
 C
 C           The offset within the untransformed indexes. These were
 C           the right-hand side (slowest varying) and are sorted to
@@ -773,6 +777,23 @@ C                    Do the actual transformation.
      &                       Q3S(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPRI),
      &                       Q4S(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPSI),
      &                       WORK(KFREE),LFREE,IPRINT)
+#if 0
+                        if ( ij .eq. 1 ) then
+                           call header('ij = 1',-1 )
+                           write(6,*) 'hmat'
+                           call prqmat(hmat(ioff),nr,ns,nr,ns,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'khtmp'
+                           call prqmat(work(khtmp),nk,nl,nk,nl,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q4s'
+                           call prqmat(q3s(koff),nr,nl,nrq3,ncq3,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q3s'
+                           call prqmat(q4s(loff),ns,nk,nrq4,ncq4,
+     $                          nz,ipqtoq(1,0),6)
+                        end if
+#endif
 C
 C                       Order the integrals with NKL as first and IZ2
 C                       as second index
@@ -813,6 +834,23 @@ C
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
+#ifdef UNDEF
+                        if ( ij .eq. 1 ) then
+                           call header('ij = 1',-1 )
+                           write(6,*) 'ktrmat'
+                           call prqmat(work(ktrmat),ns,nr,ns,nr,
+     $                          1,ipqtoq(1,0),6)
+                           write(6,*) 'khtmp'
+                           call prqmat(work(khtmp),nk,nl,nk,nl,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q3t'
+                           call prqmat(q3t(koff),ns,nk,nrq3,ncq3,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q4t'
+                           call prqmat(q4t(loff),nr,nl,nrq4,ncq4,
+     $                          nz,ipqtoq(1,0),6)
+                        end if
+#endif
                         CALL MEMREL('MS4IN2P',WORK,1,KTRMAT,KFREE,LFREE)
 C
 C                       Order the integrals with NKL as first and IZ2
@@ -845,6 +883,7 @@ C
      &                  NSTR3,NSTR4,NKL,WORK(KHMAT),
      &                  WORK,KFREE,LFREE)
         ELSEIF (ISTRAT.EQ.4) THEN
+c          write(6,*) 'updating record ',IJS+IJ,WORK(KHMAT)
            CALL MDSCRU(IPRINT,IREPIJ,IJS+IJ,NKL,WORK(KHMAT)
      &                 ,WORK,KFREE,LFREE)
         ENDIF
@@ -985,7 +1024,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1D*/
-      SUBROUTINE MS4IN1D(WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,LGREC,
+      SUBROUTINE MS4IN1D(WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,IOFF4,LGREC,
      &                   ICS,ICF,IC,
      &                   TRIAN,NSTR1,NSTR2,
      &                   IJPASS,Q1,Q2,
@@ -1044,7 +1083,7 @@ C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
       DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
-      DIMENSION IJPASS(0:7,NPASS),INDX(3,*)
+      DIMENSION IJPASS(0:7,NPASS),INDX(3,*),IOFF4(0:7)
       LOGICAL   SUB3,SUB4
 C
 C     For the buffered input
@@ -1104,7 +1143,7 @@ C
 C        Scatter half-transformed integrals to the right position
 C        Write them out to disk 
 C
-         CALL MS4INW (WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,
+         CALL MS4INW (WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,IOFF4,
      &                IC,IHM,MHTM,IHTM,INDX,INDXAB,IPASS,
      &                WORK(KHMAT),IRECC,JBOFF,IBOFF,NBUF,NIJBUF,
      &                NBFSZ,RBUF,LBUF1)

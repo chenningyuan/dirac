@@ -138,32 +138,46 @@ C
         END IF
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
+C     - reverse order of IC and ISHLA to get better load balancing
+C       - S blocks are generally bigger than L blocks
+C       - if IBSTEP is big the load is generally larger for bigger ISHLA
+C         because ISHLB loop in TRDRV4 must end at ISHLA
+C         
+C       FIXME: calculate IBSTEP dynamically based on number of nodes
+C       and size of shells.
+C       (currently, it is just an input parameter for the wizards)
+        IBSTEP = IPAR4BS
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 1, 2
+        DO IC = 2, 1, -1
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-           DO ISHLA = IASTRT, IASMAX
+           DO ISHLA = IASMAX, IASTRT, -1
               CALL GETTIM(CPUST,WALLST)
               WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
      &           '- Starting shell A no. ',ISHLA,' after ',
      &           WALLST - WALLBEF, ' seconds.'
               CALL FLSHFO(LUPRI)
-           DO ISHLB = IBSTRT, ISHLA
+           DO ISHLB = IBSTRT, ISHLA, IBSTEP
+C
+              IBEND = MIN(ISHLB+IBSTEP-1,ISHLA)
+C
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
               CALL GETTIM(CPUST,WALLST)
               IF (IPRINT .GE. 3) THEN
-                 WRITE(LUPRI,'(3X,3(A,I4),A,F14.2,A)') 
+                 WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
      &              '- Sending shells (',ISHLA,',',ISHLB,
-     &              ') to ',NWHO,
-     &              ' after ',WALLST-WALLBEF,' seconds'
+     &              '-',IBEND,') to node',NWHO,
+     &              ' after',WALLST-WALLBEF,' seconds'
                  CALL FLSHFO(LUPRI)
               END IF
               CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
+     &                      MPI_COMM_WORLD,IERR)
+              CALL MPI_SEND(IBEND,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
@@ -196,10 +210,10 @@ C
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F14.2,A/34X,A,F14.2,A)') 
-     &           '- Beginning with task ',ISHLA,' of ',IASMAX,
-     &           ' after ',WALLST-WALLBEF,' seconds',
-     &        'and after ',CPUST-CPUBEF,' CPU-seconds'
+              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
+     &           '- Beginning with task',ISHLA,' of',IASMAX,
+     &           ' after',WALLST-WALLBEF,' seconds',
+     &        'and after',CPUST-CPUBEF,' CPU-seconds'
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
@@ -343,7 +357,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
-      DIMENSION IHTM(0:7),MHTM(2),NHTM(2)
+      DIMENSION IHTM(0:7),MHTM(2),NHTM(2), IOFFB(0:7)
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
 C
@@ -372,37 +386,47 @@ C     Set up symmetry packing for reduced shell space in the second
 C     half transformation. The fourth index is taken completely, the
 C     third has only one shell active.
 C
-      CALL ICOPY (24,NBBAS,1,NBBAS4,1)
-      CALL ICOPY (24,IBBAS,1,IBBAS4,1)
-      CALL ICOPY ( 2,IBAS, 1,IBAS4, 1)
-      CALL GISPCK(NSPCK34,ISPCK34,ISHLA,0,NBBAS3,IDUM,IBBAS3,IDUM,
-     &            IBAS3,IDUM)
+C     Now with range for B index /may 2001 jth+hjaaj
+C
+      CALL GISPCK(NSPCK34,ISPCK34,ISHLA,IBSTRT,IBEND,
+     &     NBBAS3,NBBAS4,IBBAS3,IBBAS4,IBAS3,IBAS4)
 C
 C     Generate pointers for reduced coefficient matrices
 C
       NQ3S = 0
+      NQ4S = 0
+      NQ3T = 0
       NQ4T = 0
       DO IFSYM = 1, NFSYM
-         NROW = 0
+         NROW3 = 0
+         NROW4 = 0
          DO IREPR = 0, NBSYM-1 
             IF (IFSYM.EQ.JBTOF(IREPR,IC)) THEN
-               NROW = NROW + NBBAS3(IREPR,IC)
+               NROW3 = NROW3 + NBBAS3(IREPR,IC)
+               NROW4 = NROW4 + NBBAS4(IREPR,IC)
             ENDIF
          ENDDO
-         NDMOQS(1,IFSYM,3) = NROW
+         NDMOQS(1,IFSYM,3) = NROW3
          NDMOQS(2,IFSYM,3) = NDMOQR(2,IFSYM,3)
-         NDMOQS(1,IFSYM,4) = NDMOQR(1,IFSYM,4)
+C
+         NDMOQS(1,IFSYM,4) = NROW4
          NDMOQS(2,IFSYM,4) = NDMOQR(2,IFSYM,4)
-         NDMOQT(1,IFSYM,3) = NDMOQR(1,IFSYM,3)
+C
+         NDMOQT(1,IFSYM,3) = NROW4
          NDMOQT(2,IFSYM,3) = NDMOQR(2,IFSYM,3)
-         NDMOQT(1,IFSYM,4) = NROW
+C
+         NDMOQT(1,IFSYM,4) = NROW3
          NDMOQT(2,IFSYM,4) = NDMOQR(2,IFSYM,4)
+C
          ICMOQS(IFSYM,3) = NQ3S + 1
-         ICMOQS(IFSYM,4) = ICMOQR(IFSYM,4)
-         ICMOQT(IFSYM,3) = ICMOQR(IFSYM,3)
+         ICMOQS(IFSYM,4) = NQ4S + 1
+         ICMOQT(IFSYM,3) = NQ3T + 1
          ICMOQT(IFSYM,4) = NQ4T + 1
-         NQ3S = NQ3S + NROW * NDMOQR(2,IFSYM,3) * NZ
-         NQ4T = NQ4T + NROW * NDMOQR(2,IFSYM,4) * NZ
+C
+         NQ3S = NQ3S + NROW3 * NDMOQR(2,IFSYM,3) * NZ
+         NQ4S = NQ4S + NROW4 * NDMOQR(2,IFSYM,4) * NZ
+         NQ3T = NQ3T + NROW4 * NDMOQR(2,IFSYM,3) * NZ
+         NQ4T = NQ4T + NROW3 * NDMOQR(2,IFSYM,4) * NZ
       ENDDO
 C
 C     Make index array for half-transformed integrals
@@ -545,6 +569,7 @@ C           ...(SS|LL) + (SS|SS) integrals
 C
 C     Loop over the shells
 C
+      CALL IZERO(IOFFB,8)
       DO ISHLB = IBSTRT, IBEND
 C
          KFRSAV3 = KFREE
@@ -624,8 +649,8 @@ C
             IF (IPRINT .GE. 3) THEN
                WRITE(LUPRI,'(A,I3,A,4(A,I9))')
      &         '       - Memory estimate iteration no. ',IT,' : ',
-     &         '         Free: ',MFREE,', Hermit: ',MXHER,
-     &         ', HMAT ',MWHMAT,', GMAT ',GMAT
+     &         '         Free: ',MFREE,', Hermit: ',MWHER,
+     &         ', HMAT ',MWHMAT,', GMAT ',NSIZG
             END IF
             CALL FLSHFO(LUPRI)
             IF ( (NSIZG + MAX(MWHMAT,MWHER) ) .GT. MFREE ) THEN
@@ -705,7 +730,7 @@ C
             CALL DZERO(WORK(KGMAT),NSIZG)
          ENDIF
 C
-         CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.TRUE.,.FALSE.,
+         CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.TRUE.,.TRUE.,IOFFB,
      &                WORK(KALGREC),ICS12,ICF12,IC,
      &                TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
      &                WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
@@ -722,6 +747,9 @@ C
             CALL DELGBUF(LGFIL)
          ENDIF
 C
+         DO IREPB = 0,NBSYM-1
+            IOFFB(IREPB) = IOFFB(IREPB) + NINSH(ISHLB,IREPB,INDX,IPRINT)
+         END DO
       ENDDO
 C
 C     Write out last set of buffers
@@ -737,24 +765,36 @@ C
 C     Get the reduced coefficient matrices (only active shells)
 C
       CALL MEMGET('REAL',KQ3S,NQ3S,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KQ4S,NQ4S,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KQ3T,NQ3T,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQ4T,NQ4T,WORK,KFREE,LFREE)
 C
       DO IFSYM = 1, NFSYM
+C       index A (3S and 4T)
         IF(NDMOQR(2,IFSYM,3)*NDMOQS(2,IFSYM,3).NE.0) THEN
-          CALL QREDUC (ISHLA,IFSYM,
-     &                WORK(KQ(IFSYM,3)),
+          CALL QREDUC (ISHLA,ISHLA,IFSYM,WORK(KQ(IFSYM,3)),
      &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
      &                WORK(KQ3S+ICMOQS(IFSYM,3)-1),
      &                NDMOQS(1,IFSYM,3),NDMOQS(2,IFSYM,3))
         ENDIF
-c    &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
-c    &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
-c    &                NZ,IPQTOQ(1,0),LUPRI)
         IF(NDMOQR(2,IFSYM,4)*NDMOQT(2,IFSYM,4).NE.0) THEN
-         CALL QREDUC (ISHLA,IFSYM,WORK(KQ(IFSYM,4)),
+         CALL QREDUC (ISHLA,ISHLA,IFSYM,WORK(KQ(IFSYM,4)),
      &                NDMOQR(1,IFSYM,4),NDMOQR(2,IFSYM,4),
      &                WORK(KQ4T+ICMOQT(IFSYM,4)-1),
      &                NDMOQT(1,IFSYM,4),NDMOQT(2,IFSYM,4))
+        ENDIF
+C       index B (4S and 3T)
+        IF(NDMOQR(2,IFSYM,4)*NDMOQS(2,IFSYM,4).NE.0) THEN
+          CALL QREDUC (IBSTRT,IBEND,IFSYM,WORK(KQ(IFSYM,4)),
+     &                NDMOQR(1,IFSYM,4),NDMOQR(2,IFSYM,4),
+     &                WORK(KQ4S+ICMOQS(IFSYM,4)-1),
+     &                NDMOQS(1,IFSYM,4),NDMOQS(2,IFSYM,4))
+        ENDIF
+        IF(NDMOQR(2,IFSYM,3)*NDMOQT(2,IFSYM,3).NE.0) THEN
+         CALL QREDUC (IBSTRT,IBEND,IFSYM,WORK(KQ(IFSYM,3)),
+     &                NDMOQR(1,IFSYM,3),NDMOQR(2,IFSYM,3),
+     &                WORK(KQ3T+ICMOQT(IFSYM,3)-1),
+     &                NDMOQT(1,IFSYM,3),NDMOQT(2,IFSYM,3))
         ENDIF
       ENDDO
 C
@@ -775,8 +815,8 @@ C
 C
       CALL MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS34,ICF34,
      &             NSTR(1,0,3),NSTR(1,0,4),
-     &             WORK(KQ3S),WORK(KQ(1,4)),WORK(KQ(1,3)),
-     &             WORK(KQ4T),
+     &             WORK(KQ3S),WORK(KQ4S),
+     &             WORK(KQ3T),WORK(KQ4T),
      &             IRECC,NBFSZ,NBUF,NIJBUF,MHTM,WORK(KDXKR12),
      &             WORK(KDXB12),WORK(KDXB34))
 C
@@ -792,10 +832,8 @@ C
 C
       RETURN
 C
- 1000 FORMAT (/' Storing all half-transformed integrals to disk',
-     & /' Disk requirements ',F10.3,' Megabytes')
- 1001 FORMAT (/' Storing all fully-transformed integrals to memory',
-     & /' Memory requirements ',F10.3,' Megabytes')
+c1000 FORMAT (/' Storing all half-transformed integrals to disk',
+c    & /' Disk requirements ',F10.3,' Megabytes')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DRV4SYM*/
@@ -914,13 +952,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qreduc */
-      SUBROUTINE QREDUC (ISHELA1,IFSYM,QM,NDIM1,NDIM2,
-     &                                 QMR,NDIMR1,NDIMR2)
+      SUBROUTINE QREDUC (ISHELSTA,ISHELEND,IFSYM,
+     &                   QM,NDIM1,NDIM2,QMR,NDIMR1,NDIMR2)
 C
 C     Takes out active rows of coefficient matrix for a given irrep.
 C     NDIM and NDIMR is now NDIM1,NDIM2,NDIMR1 and NDIMR2
 C
 C     Luuk Visscher, 25-8-97
+C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
 #include <implicit.h>
 #include <priunit.h>
@@ -938,15 +977,18 @@ C
 C
 #include <ibtfun.h>
 C
-      ICA    = LCLASH(ISHELA1)
-      NHKTA1 = NHKTSH(ISHELA1)
-      KHKTA1 = KHKTSH(ISHELA1)
-      MULA1  = ISTBSH(ISHELA1)
-      NORBA1 = NORBSH(ISHELA1)
-      NSTRA1 = IORBSB(IORBSH(ISHELA1,1))
-C
       INDA2 = 0
       DO IREPA1 = 0, MAXREP
+C
+         DO ISHELA1 = ISHELSTA, ISHELEND
+C
+            ICA    = LCLASH(ISHELA1)
+            NHKTA1 = NHKTSH(ISHELA1)
+            KHKTA1 = KHKTSH(ISHELA1)
+            MULA1  = ISTBSH(ISHELA1)
+            NORBA1 = NORBSH(ISHELA1)
+            NSTRA1 = IORBSB(IORBSH(ISHELA1,1))
+C
 C
 C        Loop over components
 C
@@ -974,8 +1016,14 @@ C
                ENDDO
             ENDIF
          ENDDO
+C        ... end do NA
       ENDDO
-C
+C     ... end do IREPA1
+      ENDDO
+C     ... end do ISHELA1
+      IF (INDA2 .NE. NDIMR1) THEN
+         CALL QUIT('QREDUC: program error INDA2 .ne. NDIMR1')
+      END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1035,9 +1083,14 @@ C
          CALL MPI_RECV(ISHLA,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          IF (ISHLA.EQ.-1) GOTO 200
-         CALL MPI_RECV(ISHLBX,1,MPI_INTEGER,MPARID,30,
+C
+C        ISHLB range:
+C
+         CALL MPI_RECV(ISHLBS,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-C        do not use ISHLB because in common and used in TRDRV4
+         CALL MPI_RECV(ISHLBE,1,MPI_INTEGER,MPARID,30,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+C
          CALL MPI_RECV(IC,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,30,
@@ -1045,7 +1098,7 @@ C        do not use ISHLB because in common and used in TRDRV4
 #endif
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &               KQ,KE,KIBE,IC,I2TYP,ISHLBX,ISHLBX,
+     &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
      &               WORK(KDRIJ),WORK(KGAB),DINTSKP)
          GOTO 100
   200 CONTINUE

@@ -822,7 +822,7 @@ C
 C     Set up symmetry packing information.
 C
       CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
-      CALL GISPCK(NSPCK,ISPCK,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
+      CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
       MXINSH = NINSH(0,-1,WORK(KINDX),IPRINT)
 C
 C     Define the MS integral types that we are going to make
@@ -952,7 +952,7 @@ C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('SETDC2: Distribution of symmetry orbitals '//
      &     'among fermion ircops',-1)
-        WRITE(LUPRI,'(7X,3A5)')
+ 1      WRITE(LUPRI,'(7X,3A5)')
      &       'Total',' Lbas',' Sbas'
         WRITE(LUPRI,'(A3,4X,3I5)')
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
@@ -1218,7 +1218,7 @@ C
 C
       CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,NFSYM,IDUMMY,IDUMMY,GMAT,INDX,
      &            INDXAB,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
-     &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,
+     &            TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RTNTWO,
      &            IDUMMY,I2TYP,IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY,DINTSKP,
      &            .TRUE.,DUMMY,DUMMY)
 C
@@ -1310,12 +1310,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gispck */
-      SUBROUTINE GISPCK(NSPCK,ISPCK,ISHELA,ISHELB,NBBASA,NBBASB,
-     &                  IBBASA,IBBASB,IBASA,IBASB)
+      SUBROUTINE GISPCK(NSPCK,ISPCK,ISHELA,ISHELBS,ISHELBE,
+     &                  NBBASA,NBBASB,IBBASA,IBBASB,IBASA,IBASB)
 C*****************************************************************************
 C
 C     Make arrays needed for symmetry packing in 4-index transformation.
 C     Luuk Visscher, january 1997
+C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1366,11 +1367,15 @@ C
       ENDIF
 C
       ICB = 0
-      IF (ISHELB.NE.0) THEN
-         IF (ISHELB.LE.NLRGBL) THEN
+      IF (ISHELBS.NE.0) THEN
+         IF (ISHELBS.GT.ISHELBE)
+     &      CALL QUIT('GISPCK: ISHELBS .gt. ISHELBE')
+         IF (ISHELBE.LE.NLRGBL) THEN
             ICB = 1
-         ELSE
+         ELSE IF (ISHELBS.GT.NLRGBL) THEN
             ICB = 2
+         ELSE
+            CALL QUIT('GISPCK: ISHELB both L and S type!')
          ENDIF
 C
 C        We generate the basis function pointer arrays.
@@ -1380,7 +1385,10 @@ C
             IBASB(IFSYM) = IBASI
             DO IREPB = 0, NBSYM-1
                IF (IFSYM.EQ.JBTOF(IREPB,ICB)) THEN
-                  NBB = NINSH(ISHELB,IREPB,INDX,0)
+                  NBB = 0
+                  DO ISHELB = ISHELBS,ISHELBE
+                     NBB = NBB + NINSH(ISHELB,IREPB,INDX,0)
+                  END DO
                   NBBASB(IREPB,0)     = NBB
                   NBBASB(IREPB,ICB)   = NBB
                   NBBASB(IREPB,3-ICB) = 0
@@ -1411,7 +1419,7 @@ C
                ELSE
                   NBA = NBBASA(IREPA,IC)
                ENDIF
-               IF (ISHELB.EQ.0) THEN
+               IF (ISHELBS.EQ.0) THEN
                   NBB = NBBAS(IREPB,IC)
                ELSE
                   NBB = NBBASB(IREPB,IC)
@@ -1675,8 +1683,15 @@ C                             Check whether we should start a new batch
 C
                               IF (IOFF+NSPCK(IREPAB,IC).GT.NWDS) THEN
 C
-                                 IF (IOFF.EQ.0) CALL QUIT (
-     &                           ' Maximum size of GMAT too small ')
+                                 IF (IOFF.EQ.0) THEN
+                                    write(6,*) 'maximum size of gmat',
+     &                                  NWDS
+                                    write(6,*) 'size of block',
+     &                                  NSPCK(IREPAB,IC)
+                                    write(6,*) 'ic, irepab=',ic,irepab
+                                    CALL QUIT (
+     &                       ' Maximum size of GMAT too small ')
+                                 END IF
 C
 C                                If this happens one should either
 C                                decrease the shell size or increase the
@@ -3527,6 +3542,7 @@ C
       NUMELM = 8
       CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
 C
 C
 C     HERMIT memory estimates
