@@ -1,0 +1,1003 @@
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmcinp */
+      SUBROUTINE KRMCINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Input section for KRMSCF-module
+C
+C     Written by J. Thyssen - Oct 26 1998
+C     Last revision: 
+C         Max. no. of active orbitals only for GOSCI
+C                T. Fleig   - May 24, 2002
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxash.h>
+C
+C#include <mxcent.h>
+C#include <mxorb.h>
+C#include <symmet.h>
+C
+      PARAMETER (NTABLE = 30)
+      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
+C
+      LOGICAL SET, NEWDEF, LBIT, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER CTEMP*72, LINE*80, TEXT*20, REPA(8)*4
+      DIMENSION WORK(LWORK)
+C
+      INTEGER IKWSET(NTABLE)
+C
+#include <dcbgen.h>
+#include <dcbpsi.h>
+#include <dcbham.h>
+#include <dcborb.h>
+#include <dcbkrmc.h>
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <pgroup.h>
+C
+      SAVE SET
+      DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
+     &            '.NEO AL','.STATE ','.XXXXXX','.MAX BA','.MAKE C',
+     &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
+     &            '.NO CI ','.THRPCI','.CI BOS','.MIN MK','.MAX MK',
+     &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
+     &            '.CI PRO','.INACTI','.ACTIVE','.ACT EL','.SYMMET'/
+      DATA SET/.FALSE./
+C
+C
+#include <ibtfun.h>
+#include <sdpre.h>
+C
+#include <memint.h>
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+      CALL IZERO(IKWSET,NTABLE)
+C
+C     Initialize /CBLKRMC/
+C     ===================
+C
+      DO I = 1,NMCFLAG
+         MCFLAG(I) = .FALSE.
+      END DO
+      KRMC_SKIPEE = .FALSE.
+      KRMC_SKIPEP = .FALSE.
+      KRMC_NOCI   = .FALSE.
+      KRMC_UCIBOS = .FALSE.
+      KRMC_MKCNST = .FALSE.
+C
+C     Initialize /CBIKRMC/
+C     ===================
+C
+      IPRKRMC   = IPRGEN
+      MKRMC_MXMICRO   = 50
+      MKRMC_MXMACRO   = 25
+      MKRMC_MAXBCK    = 5
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
+      IKRMC_INTBUF    = 0
+      IKRMC_INTFLG    = 0
+      IKRMC_ITRINT(1) = 0
+      IKRMC_ITRINT(2) = 0
+      IKRMC_ISTATE    = 1
+      IKRMC_SYMMETRY  = 1
+      NKRMCGAS        = 0
+      NKRMC_MK2REF    = 0
+      NKRMC_MK2DEL    = 0
+      NKRMC_MINMK2    = 0
+      NKRMC_MAXMK2    = 0
+C
+C     Initialize /CBRKRMC/
+C     ===================
+C
+      DKRMC_CNVINT(1) = DUMMY
+      DKRMC_CNVINT(2) = DUMMY
+      DKRMC_THRGRD = 0.5D-5
+      DKRMC_THRPCI = 1.0D-3
+C
+C     Initialize /DCOKRMC/
+C     ===================
+C
+      DO I = 1,2
+         NKRMCISH(I) = 0
+         NKRMCASH(I) = 0
+         NKRMCOCC(I) = 0
+         NKRMCSSH(I) = 0
+         NKRMCPSH(I) = 0
+         NKRMCFRO(I) = 0
+         NKRMCELEC(I) = 0
+         DO J = 1, MXMCGAS
+            NKRMCGSH(I,J) = 0
+         END DO
+      END DO
+      NKRMCAELEC = 0
+C
+C     Initialize /DCCKRMC/
+C     ===================
+C
+      KRMC_CIPROGRAM = 'GOSCI'
+      KRMC_FRZSTR(1) = ' '
+      KRMC_FRZSTR(2) = ' '
+C
+C     Process input for KRMCS
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*KRMCSC')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16,17,18,19,20,
+     &                     21,22,23,24,25,26,27,28,29,30), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in KRMCINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in KRMCINP.')
+    1          CONTINUE
+C&&& THRESHOLD : convergence threshold
+                  READ(LUCMD,*) DKRMC_THRGRD
+               GO TO 100
+    2          CONTINUE
+C&&& PRINT : General print level in KRMC-module
+                  READ(LUCMD,*) IPRKRMC
+               GO TO 100
+    3          CONTINUE
+C&&& MAX MACRO ITERATIONS: Maximum number of macro iterations 
+                    READ(LUCMD,*) MKRMC_MXMACRO
+               GO TO 100
+    4          CONTINUE
+C&&& MAX MICRO ITERATIONS: Maximum number of micro iterations
+                  READ(LUCMD,*) MKRMC_MXMICRO
+               GO TO 100
+    5          CONTINUE
+C&&& .NR ALWAYS: Always use NR-iterations
+                  MCFLAG(1) = .TRUE.
+               GO TO 100
+    6          CONTINUE
+C&&& .NEO ALWAYS: Always use NEO-iterations
+                  MCFLAG(2) = .TRUE.
+               GO TO 100
+    7          CONTINUE
+C&&& .STATE : which state to converge to
+               READ(LUCMD,*) IKRMC_ISTATE
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+    9          CONTINUE
+C&&& .MAX BACKSTEPS : max. number of backsteps
+               READ(LUCMD,*) MKRMC_MAXBCK
+               GO TO 100
+   10          CONTINUE
+C&&& .MAKE COFFEE: 
+               WRITE(LUPRI,'(1X,A)')
+     &              '*** ERROR in KRMCINP *** ',
+     &              'Don''t know how to make coffee yet!'
+               CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &              'Don''t know how to make coffee yet!')
+               GO TO 100
+   11          CONTINUE
+C&&& SKIPEE: skip e-e rotations in the gradient and Hessian
+                  KRMC_SKIPEE = .TRUE.
+               GO TO 100
+   12          CONTINUE
+C&&& SKIPEP: skip e-p rotations in the gradient and Hessian
+                  KRMC_SKIPEP = .TRUE.
+               GO TO 100
+   13          CONTINUE
+C&&& CNVINT: Convergence thresholds for adding SL- and SS-integrals
+                  READ(LUCMD,*) DKRMC_CNVINT(1),DKRMC_CNVINT(2)
+               GO TO 100
+   14          CONTINUE
+C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
+                  READ(LUCMD,*) IKRMC_ITRINT(1),IKRMC_ITRINT(2)
+               GO TO 100
+   15          CONTINUE
+C&&& INTFLG: Specify what two-itegrals should be included in this run
+                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+               GO TO 100
+   16          CONTINUE
+C&&& NO CI : debug flag: no CI rotations.
+               KRMC_NOCI = .TRUE.
+               GO TO 100
+   17          CONTINUE
+C&&& THRPCI: 
+                  READ(LUCMD,*) KRMC_THRPCI
+               GO TO 100
+   18          CONTINUE
+C&&& CI BOSON SYMMETRY: use boson symmetry for CI expansion
+               KRMC_UCIBOS = .TRUE.
+               IKWSET(18) = 1
+               GO TO 100
+   19          CONTINUE
+C&&& MIN MK2: minimum value of 2 * MK
+               READ(LUCMD,*) NKRMC_MINMK2
+               IKWSET(19) = 1
+               GO TO 100
+   20          CONTINUE
+C&&& MAX MK2: maximum value of 2 * MK
+               READ(LUCMD,*) NKRMC_MAXMK2
+               IKWSET(20) = 1
+               GO TO 100
+   21          CONTINUE
+C&&& GASSH: GAS setup
+                  IF (NKRMCGAS .GT. 0) THEN
+                     CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'You cannot specify both .GASSH and .ACTIVE')
+                  END IF
+                  READ(LUCMD,*) NKRMCGAS
+                  IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
+                     CALL QUIT('*** ERROR in KRMCINP *** ' // 
+     &                         'illegal value of NGAS')  
+                  END IF
+                  DO I = 1, NKRMCGAS
+                     READ(LUCMD,*) (NKRMCGSH(J,I),J=1,NFSYM)
+                  END DO
+               GO TO 100
+   22          CONTINUE
+C&&& GASSPC: GAS space constraints
+                  IF (NKRMCGAS .EQ. 0) THEN
+                     WRITE(LUPRI,'(1X,2A)') '*** ERROR in KRMCINP ***',
+     &                  ' .GASSH must be specified before .GASSP!'
+                     CALL QUIT('*** ERROR in KRMCINP ***')
+                  END IF
+                  DO I = 1, NKRMCGAS
+                     READ(LUCMD,*) (NKRMCGSP(J,I),J=1,2)
+                  END DO
+               GO TO 100
+   23          CONTINUE
+C&&& MK2REFERENCE: 2 * M_K reference
+                  READ(LUCMD,*) NKRMC_MK2REF
+                  IKWSET(23) = 1
+               GO TO 100
+   24          CONTINUE
+C&&& MK2DELTA: 2 * DELTA M_K
+                  READ(LUCMD,*) NKRMC_MK2DEL
+                  IKWSET(24) = 1
+               GO TO 100
+ 25            CONTINUE
+C&&& FREEZE ORBITALS:
+                  DO I = 1, NFSYM
+                     READ(LUCMD,'(A72)') KRMC_FRZSTR(I)
+                  END DO
+               GO TO 100
+ 26            CONTINUE
+C&&&  CI PROGRAM: which CI program to use
+               write(6,*) '"',KRMC_CIPROGRAM,'"'
+               READ(LUCMD,'(A)') KRMC_CIPROGRAM
+               write(6,*) '"',KRMC_CIPROGRAM,'"'
+               GO TO 100
+ 27            CONTINUE
+C&&&  INACTIVE ORBITALS
+               READ(LUCMD,*) (NKRMCISH(I),I=1,NFSYM)
+               GO TO 100
+ 28            CONTINUE
+C&&&  ACTIVE ORBITALS
+C     this defines a CAS space   - TODO: remove ??? HJAaJ
+C              fixme: error if NGAS > 0
+               IF (NKRMCGAS .GT. 0) THEN
+                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'You cannot specify both .GASSH and .ACTIVE')
+               END IF
+               NKRMCGAS = 1
+               READ(LUCMD,*) (NKRMCASH(I),I=1,NFSYM)
+               GO TO 100
+ 29            CONTINUE
+C&&&  ACT ELECTRONS: number of active electrons
+C     primarily for a CAS space TODO: remove ??? HJAaJ
+               READ(LUCMD,*) NKRMCAELEC
+               GO TO 100
+ 30            CONTINUE
+C&&&  SYMMETRY: symmetry of the wave function
+               READ(LUCMD,*) IKRMC_SYMMETRY
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in KRMCINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in KRMCINP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+      IF (.NOT.DOKRMC) GO TO 9999
+C
+      IF(DOLVC) ISSINT = 0
+      IF (LEVYLE) THEN
+        ISLINT = 0
+        ISSINT = 0
+      ENDIF
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+      ENDIF
+      IKRMC_INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
+      IF(DKRMC_CNVINT(1).LT.DUMMY) IKRMC_ITRINT(1) = 1
+      IF(DKRMC_CNVINT(2).LT.DUMMY) IKRMC_ITRINT(2) = 1
+C
+      IF (NKRMCGAS .GT. 0) THEN
+         NKRMCASHT = 0
+         DO J = 1, NFSYM
+            NKRMCASH(J) = 0
+            DO I = 1, NKRMCGAS
+               NKRMCASH(J) = NKRMCASH(J) + NKRMCGSH(J,I)
+            END DO
+            NKRMCASHT = NKRMCASHT + NKRMCASH(J)
+         END DO
+      END IF
+C
+C
+C     Check that the number of orbitals is less than MAXASH
+C     -----------------------------------------------------
+C
+C
+      NTEST = 0
+      DO J = 1, NFSYM
+         NTEST = NTEST + NKRMCASH(J)
+      END DO
+      IF (NTEST .GT. MAXASH) THEN
+         WRITE(LUPRI,'(1X,A,I5,/,10X,A,I4)')
+     &        '*** ERROR in KRMCINP *** Too many active orbitals: ',
+     &        NTEST, ' -- max is ',MAXASH
+         CALL QUIT('*** ERROR in KRMCINP *** To many active orbitals!')
+      END IF
+C
+      DO I = 1,NFSYM
+         NKRMCOCC(I) = NKRMCISH(I) + NKRMCASH(I)
+      END DO
+C
+C     Use boson symmetry for CI expansion for the spin-free and
+C     the Levy-Leblond Hamiltonian.
+C
+      IF (.NOT. KRMC_UCIBOS .AND. (SPINFR.OR.LEVYLE)) THEN
+         KRMC_UCIBOS = .TRUE.
+      END IF
+c     krmc_ucibos = .false.
+C
+C
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &   'KRMCINP: Set-up for KR-MCSCF calculation:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+      WRITE(LUPRI,'(1X,A,I4)') '* General print level   : ',IPRKRMC
+      WRITE(LUPRI,'(1X,A,2I4)')
+     $     '* Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(1X,A,2I4)')
+     $     '* Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
+      IF (NKRMCGAS .GT. 0) THEN
+         WRITE(LUPRI,'(1X,A,I3,A)')
+     &        '* GAS space setup for ',NKRMCGAS,' GAS space(s) : '
+         DO I = 1, NKRMCGAS
+            WRITE(LUPRI,'(1X,A,I3,A,2I4)')
+     $           '* GAS space ',I,'       : ',
+     &           (NKRMCGSH(J,I),J=1,NFSYM)
+            WRITE(LUPRI,'(1X,A,I3,A1,I3,A)')
+     &      '   (constraints: min/max active electrons after space : ',
+     &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
+         END DO
+         NAE = NKRMCGSP(2,NKRMCGAS)
+         IF (NKRMCAELEC .NE. 0 .AND. NAE .NE. NKRMCAELEC)
+     &        CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &        'Inconsistency between .GASSP and .ACTIVE ELEC')
+         NKRMCAELEC = NAE
+      END IF
+      WRITE(LUPRI,'(1X,A,I4)')
+     $     '* Active electrons      : ',NKRMCAELEC
+      WRITE(LUPRI,'(1X,A,I4)')
+     $     '* State number          : ',IKRMC_ISTATE
+      WRITE(LUPRI,'(1X,2A)')
+     $     '* CI program used       : ',KRMC_CIPROGRAM
+C     
+C     Symmetry of the wave function:
+C     ------------------------------
+C     
+      IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
+         WRITE(LUPRI,'(1X,2A)')
+     $        '* Symmetry (boson) of wave function: ',
+     $        REP ( IKRMC_SYMMETRY - 1 )
+      ELSE
+         WRITE(LUPRI,'(1X,2A)')
+     $        '* Symmetry (fermion) of wave function: ',
+     $        FREP ( IKRMC_SYMMETRY - NBSYM )
+      END IF 
+C
+C     MK constraints in the CI expansion.
+C
+      IF (IKWSET(19) .EQ. 1 .AND. IKWSET(20) .EQ. 1) THEN
+C
+C        MINMK2/MAXMK2 explicitly set
+C
+      ELSE
+         IF (IKWSET(23) .EQ. 1 .AND. IKWSET(24) .EQ. 1) THEN
+C
+C           MK2REF/MK2DEL set, transform to MINMK2/MAXMK2
+C
+            KRMC_MKCNST = .TRUE.
+            NKRMC_MINMK2 = NKRMC_MK2REF - NKRMC_MK2DEL
+            NKRMC_MAXMK2 = NKRMC_MK2REF + NKRMC_MK2DEL
+C
+         ELSE
+C
+C           Assign default values for MINMK2/MAXMK2
+C
+            NKRMC_MAXMK2 = 2*MIN(NKRMCAELEC,NKRMCASHT) - NKRMCAELEC
+            NKRMC_MINMK2 = NKRMCAELEC-2*MIN(NKRMCAELEC,NKRMCASHT)
+            NKRMC_MK2REF = 0
+            NKRMC_MK2DEL = NKRMC_MAXMK2
+         END IF
+      END IF
+C
+      WRITE(LUPRI,'(1X,A,I4,A,I4)')
+     $     '* Allowed interval of 2 * MK ',
+     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+C
+C     Boson symmetry in the CI expansion
+C
+      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         WRITE(LUPRI,'(1X,A)') '* Boson symmetry used in CI expansion.'
+      END IF
+      IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        '* ``Approximate'''' boson symmetry used in CI expansion.'
+      END IF
+C
+      WRITE(LUPRI,'(1X,A,I4)')
+     +   '* Maximum number of macro iterations  : ',MKRMC_MXMACRO
+      WRITE(LUPRI,'(1X,A,I4)')
+     +   '* Maximum number of micro iterations  : ',MKRMC_MXMICRO
+      WRITE(LUPRI,'(1X,A,1P,D15.6)')
+     +   '* Convergence threshold               : ',DKRMC_THRGRD
+      IF (MCFLAG(1) .AND. MCFLAG(2)) MCFLAG(1) = .FALSE.
+      IF (MCFLAG(1)) WRITE(LUPRI,'(1X,A)') 
+     &   '* Only Newton-Raphson iterations.'
+      IF (MCFLAG(2)) WRITE(LUPRI,'(1X,A)') 
+     &   '* Only NEO iterations.'
+      WRITE(LUPRI,'(1X,A)')
+     +    '* Contributions from 2-electron integrals to Fock matrix:'
+      IF(LBIT(IKRMC_INTDEF,1)) THEN
+        WRITE(LUPRI,'(3X,A)') 'LL-integrals.'
+      ENDIF
+      IF(LBIT(IKRMC_INTDEF,2)) THEN
+        IF(DKRMC_CNVINT(1).LT.DUMMY) THEN
+          WRITE(LUPRI,'(3X,A,E8.1)')
+     +    'SL-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(1)
+        ELSE
+          WRITE(LUPRI,'(3X,A,I4)')
+     +    'SL-integrals from iteration ',IKRMC_ITRINT(1)
+        ENDIF
+      ENDIF
+      IF(LBIT(IKRMC_INTDEF,3)) THEN
+        IF(DKRMC_CNVINT(2).LT.DUMMY) THEN
+          WRITE(LUPRI,'(3X,A,E8.1)')
+     +    'SS-integrals  below KR-MCSCF convergence ',DKRMC_CNVINT(2)
+        ELSE
+          WRITE(LUPRI,'(3X,A,I4)')
+     +    'SS-integrals from iteration ',IKRMC_ITRINT(2)
+        ENDIF
+      ENDIF
+      IF(KRMC_SKIPEE) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &     '* NB!!! No e-e rotations in 2nd order optimization'
+      ENDIF
+      IF(KRMC_SKIPEP) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &     '* NB!!! No rotations between electrons and positrons'//
+     &     ' in 2nd order optimization.'
+      ENDIF
+C
+C     Frozen orbitals:
+C     ----------------
+C
+      NVECT = 0
+      DO I = 1, NFSYM
+         NVEC = 0
+         CALL NUMLST(KRMC_FRZSTR(I),IDUMMY,NFBAS(I,0),
+     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+         NVECT = NVECT + NVEC
+      END DO
+      IF (NVECT .GT. 0) THEN
+         WRITE(LUPRI,'(A)') ' * Frozen orbitals: '
+         WRITE(LUPRI,'(A,I1,2A)')
+     &        ('   - symmetry ',I,' : ',KRMC_FRZSTR(I),I=1,NFSYM)
+      END IF
+C
+ 9999 CONTINUE
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck roptinp */
+      SUBROUTINE RSTPINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Input section for STEP CONTROL-module
+C
+C     Written by J. Thyssen - Nov 11 1998
+C     Last revision: 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <consts.h>
+C
+#include <dummy.h>
+      PARAMETER (NTABLE = 16)
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+#include <dcbgen.h>
+#include <dcbopt.h>
+C
+      SAVE SET
+      DATA TABLE /'.DAMPIN','.MAX DA','.MIN DA','.NO EXT','.GOOD R',
+     &            '.MIN RA','.REJECT','.TRUST ','.TOLERA','.INCREM',
+     &            '.MAX ST','.DECREM','.TIGHT ','.THQMIN','.THQLIN',
+     &            '.THQKVA'/
+      DATA SET/.FALSE./
+C
+#include <sdpre.h>
+#include <memint.h>
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Process input for STEP CONTROL
+C     ==============================
+C
+      NEWDEF = (WORD .EQ. '*STEP C')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in DHFINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in STEP CONTROL.')
+    1          CONTINUE
+C *** Option 1 >DAMPIN <  Initial value of damping (BETA)
+                  READ(LUCMD,*) BETA
+               GO TO 100
+    2          CONTINUE
+C *** Option 2 >MAX DA<  Maximum damping value
+                  READ(LUCMD,*) BETMAX
+               GO TO 100
+    3          CONTINUE
+C *** Option 3 >MIN DA<  Minimum damping value
+                  READ(LUCMD,*) BETMIN
+               GO TO 100
+    4          CONTINUE
+C *** Option 4 >NO TER<  Skip extra termination tests
+                  FLAG(20) = .TRUE.
+               GO TO 100
+    5          CONTINUE
+C *** Option 5 >GOOD R<  "Good" trust radius
+                  READ(LUCMD,*) RATGOD
+               GO TO 100
+    6          CONTINUE
+C *** Option 6 >MIN RA<  "Bad" trust radius
+                  READ(LUCMD,*) RATBAD
+               GO TO 100
+    7          CONTINUE
+C *** Option 7 >REJ RA<  Ratio predicted/actual step that rejects step
+                  READ(LUCMD,*) RATREJ
+               GO TO 100
+    8          CONTINUE
+C *** Option 8 >TRUST <  Initial trust radius
+                  READ(LUCMD,*) RTRUST
+               GO TO 100
+    9          CONTINUE
+C *** Option 9 >TOLERA<  Tolerable trust radius
+                  READ(LUCMD,*) RTTOL
+               GO TO 100
+   10          CONTINUE
+C *** Option 10 >INCREM<  Increment factor on trust radius
+                  READ(LUCMD,*) STPINC
+               GO TO 100
+   11          CONTINUE
+C *** Option 11 >MAX ST<  Maximum acceptable step length
+                  READ(LUCMD,*) STPMAX
+               GO TO 100
+   12          CONTINUE
+C *** Option 12 >DECREM<  Decrement factor on trust radius
+                  READ(LUCMD,*) STPRED
+               GO TO 100
+   13          CONTINUE
+C *** Option 13 >TIGHT <  Tight step contol for ground state also
+                  FLAG(19) = .TRUE.
+               GO TO 100
+   14          CONTINUE
+C *** Option 14 >THQMIN<
+                  READ(LUCMD,*) THQMIN
+               GO TO 100
+   15          CONTINUE
+C *** Option 15 >THQLIN<
+                  READ(LUCMD,*) THQLIN
+               GO TO 100
+   16          CONTINUE
+C *** Option 16 >THQKVA<
+                  READ(LUCMD,*) THQKVA
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in STEP CONTROL.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in STEP CONTROL.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C
+      IF (THQKVA .LE. D0) THQKVA = 8.0D00
+
+C
+C     Print section
+C     =============
+C
+      IF (.NOT. NEWDEF) GOTO 400
+C
+C     print stuff
+C
+C
+  400 RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck roptinp */
+      SUBROUTINE ROPTINP(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Various optimization input.
+C
+C     Written by J. Thyssen - Dec 29 2000
+C     Last revision: 17.05.2002
+C                    Added CI keyword CIROOT. Timo Fleig
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER (NTABLE = 16)
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+#include <dcbgen.h>
+#include <dcbopt.h>
+C
+      SAVE SET
+      DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
+     &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.XXXXXX',
+     &            '.NO PFQ','.NO FQX','.XXXXXX','.CIROOT','.MXCIVE',
+     &            '.KTRLVL'/
+      DATA SET/.FALSE./
+C
+#include <sdpre.h>
+#include <memint.h>
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C     Initialization
+C     --------------
+C
+      MAXCIT = 8
+      MXCIV = 0
+      IOPTST = 1515
+      KTRLVL = 3
+      OPT_NOPFQ = .FALSE.
+      OPT_NOFQX = .FALSE.
+      IKRMCCNO = -2
+      NATONL = .FALSE.
+      FOCKON = .FALSE.
+      COMPROT = .FALSE.
+      COMPFAC = 0.01D00
+      NCIROOT = 1
+C
+C
+C     Process input for *OPTIMIZE
+C     ===========================
+C
+      NEWDEF = (WORD .EQ. '*OPTIMI')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                     11,12,13,14,15,16), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in ROPTINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in OPTIMIZE.')
+    1          CONTINUE
+C&&& .MAX CI ITER...: maximum number of initial CI iterations.
+                  READ(LUCMD,*) MAXCIT
+               GO TO 100
+    2          CONTINUE
+C&&& .IOPTST: restart flag
+C             (FIXME: make this human readable)
+                   READ(LUCMD,*) IOPTST
+               GO TO 100
+    3          CONTINUE
+C&&& .TRACI: call rtraci for transform of CI vectors
+                  IKRMCCNO = 1
+               GO TO 100
+    4          CONTINUE
+C&&& .NO TRACI: don't call rtraci for transform of CI vectors
+                  IKRMCCNO = -1
+               GO TO 100
+    5          CONTINUE
+C&&& .NATONL: only natural orbitals (no canonical orbitals)
+                  IKRMCCNO = 1
+                  NATONL = .TRUE.
+                  FOCKON = .FALSE.
+               GO TO 100
+    6          CONTINUE
+C&&& .FOCKON: only Fock-type orbitals (no natural orbitals)
+                  IKRMCCNO = 1
+                  FOCKON = .TRUE.
+                  NATONL = .FALSE.
+               GO TO 100
+    7          CONTINUE
+C&&& .NO TRSNS: no transformation of orbitals
+                  IKRMCCNO = -2
+               GO TO 100
+    8          CONTINUE
+C&&& .COMPROT: compress rotations
+                  COMPROT = .TRUE.
+               GO TO 100
+    9          CONTINUE
+C&&& .COMP FACTOR: threshold factor for removal of orbitals
+                  READ(LUCMD,*) COMPFAC
+               GO TO 100
+   10          CONTINUE
+               GO TO 100
+   11          CONTINUE
+C&&& .NO PFQ: no positronic FQ
+                  OPT_NOPFQ = .TRUE.
+               GO TO 100
+   12          CONTINUE
+C&&& .NO FQXT: no FQX and FQT (approximate with DV * FV)
+                  OPT_NOFQX = .TRUE.
+               GO TO 100
+   13          CONTINUE
+               GO TO 100
+   14          CONTINUE
+C&&& .CIROOT: Number of CI roots to be optimized 
+C             Program stops after start guess if > 1
+                  READ(LUCMD,*) NCIROOT
+               GO TO 100
+   15          CONTINUE
+C&&& .MXCIVE: Number of CI vectors allowed for subspace
+                  READ(LUCMD,*) MXCIV
+               GO TO 100
+   16          CONTINUE
+C&&& .KTRLVL: default integral transformation level.
+                  READ(LUCMD,*) KTRLVL
+                  IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 4) THEN
+                     WRITE(LUPRI,'(//,2A,I10)')
+     &                    '*** ERROR in ROPTINP *** ',
+     &                    'Illegal transformation level: ',KTRLVL
+                     CALL QUIT('*** ERROR in ROPTINP *** ' //
+     &                    'Illegal transformation level')
+                  END IF
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in STEP CONTROL.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in STEP CONTROL.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+      IF (.NOT. NEWDEF) GOTO 400
+C
+C     If OPT_NOFQX then we only need 1st order integrals transformation:
+C
+      IF (OPT_NOFQX) THEN
+         KTRLVL = 1
+      END IF
+C
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)')
+     &   'ROPTINP: Set-up for wave function optimization'
+      CALL PRSYMB(LUPRI,'=',75,0)
+C
+      IF (MAXCIT .GE. 0) THEN
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Maximum number of initial CI iterations: ',MAXCIT
+      ELSE
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* CI start guess is full CI '
+      END IF
+C
+      IF (NCIROOT.GT.1) THEN
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Number of CI roots optimized: ',NCIROOT
+         IF (MAXCIT.EQ.-1) THEN
+            CALL QUIT(' COMHAM option always treats ALL roots. ')
+         END IF
+      END IF
+C
+      IF (MXCIV.GT.0) THEN
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Maximum subspace dimension set to ',MXCIV
+      END IF
+C
+      WRITE(LUPRI,'(1X,A,I4)')
+     &        '* Start guess: ',IOPTST
+C
+      IF ( OPT_NOPFQ ) WRITE (LUPRI, '(1X,A)' )
+     $     '* Positronic part of positronic FQX ignored.'
+C
+      IF ( OPT_NOFQX ) WRITE (LUPRI, '(1X,A)' )
+     $     '* FQX and FQT approximate with DV * FV.'
+C
+C     Transformation of CI vectors and orbitals.
+C     ------------------------------------------
+C
+      IF (IKRMCCNO .EQ. -1) THEN
+         FOCKON = .TRUE.
+      END IF
+C
+      IF ( IKRMCCNO .GE. -1 ) THEN
+         IF ( IKRMCCNO .GE. 1 ) WRITE(LUPRI, '(1X,A)' )
+     &        '* Call RTRACI for transformation of CI vectors.'
+         IF ( IKRMCCNO .EQ. 0 ) WRITE(LUPRI, '(1X,A)' )
+     &        '* Call RTRACI for transformation of CI vectors ' //
+     &        '(if necesary)'
+         IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI, '(1X,A)' )
+     &        '* Do not call RTRACI for transformation of CI vectors.'
+C        
+         IF ( FOCKON ) THEN
+            WRITE(LUPRI, '(1X,A)' )
+     &           '  - transform to Fock-type orbitals.'
+         ELSE IF (NATONL) THEN
+            WRITE(LUPRI, '(1X,A)' )
+     &           '  - transform to natural orbitals.'
+         ELSE
+            WRITE(LUPRI, '(1X,A)' )
+     &           '  - transform to Fock-type and natural orbitals.'
+         END IF
+      ELSE
+         WRITE(LUPRI, '(1X,A)' )
+     &        '* No transformation of orbitals to Fock-type or NO'
+      END IF
+C
+      IF (COMPROT) WRITE(LUPRI,'(1X,A/A,1P,D12.2,A)')
+     &     '* Compress orbital rotations during optimization',
+     &     '  (threshold is ',COMPFAC,' * 1-norm(g)).'
+C
+      WRITE(LUPRI,'(1X,A,I2)')
+     &     '* Default integral transformation level  : ',KTRLVL
+C
+  400 RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck optini */
+      SUBROUTINE OPTINI()
+C***********************************************************************
+C     
+C     Initialize data in dcbopt.h
+C     Written by J. Thyssen - Nov 11 1998
+C     Last revision: 
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbopt.h>
+C
+C     Initialize parameter info  pointers to negative value (for "not defined")
+C
+      KZCONF = -1
+      KZXOPE = -1
+      KZXOPP = -1
+      LZCONF = -1
+      LZXOPE = -1
+      LZXOPP = -1
+C
+C     Default values for STPINP
+C
+      BETA   = 1.0D0
+      BETMIN = 0.2D0
+      BETMAX = 1.D6
+      RTTOL  = 1.02D0
+      RATREJ = 0.25D0
+      RATMIN = 0.40D0
+      RATGOD = 0.80D0
+      STPMAX = 0.70D0
+      STPINC = 1.2D0
+      STPRED = 0.67D0
+      RTRUST = STPMAX
+      THQMIN = 0.1D0
+      THQLIN = 0.2D0
+      THQKVA = -1.0D0
+
+      RETURN
+      END
