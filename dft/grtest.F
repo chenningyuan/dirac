@@ -64,8 +64,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
       CHARACTER*12 MXLB1,MXLB2,RMXLB1,RMXLB2
-      INTEGER MAXI, MAXJ, MAXIR, MAXJR, NLSOS, NSSOS        
-      DOUBLE PRECISION ERRAV, ERRAB, ERRMX, RERRAV, RERRAB, RERRMX,
+      INTEGER MAXI,MAXJ,MAXIR,MAXJR,NLSOS,NSSOS        
+      DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,RERRAV,RERRAB,RERRMX,
      &                 SMATDF, SMATAN, SMATFR
 
 #include "dcbgen.h"
@@ -141,12 +141,14 @@ C
 C     Analyze the difference matrix:
 C
 C     ERRAV = average error
-C     ERRAB = absolute average werror
+C     ERRAB = absolute average error
+C     RMS   = root mean square deviation
 C     ERRMX = largest error
 C     (MAXI, MAXJ) = overlap integral with error ERRMAX
 
       ERRAV = 0.0D0
       ERRAB = 0.0D0
+      RMS = 0.0D0
       ERRMX = 0.0D0
       MAXI = 0
       MAXJ = 0
@@ -182,6 +184,7 @@ C
 C
                   ERRAV = ERRAV + SMATDF
                   ERRAB = ERRAB + ABS(SMATDF)
+                  RMS = RMS + SMATDF*SMATDF
                   IF(ABS(SMATDF) .GT. ABS(ERRMX)) THEN
                      ERRMX = SMATDF
                      MAXI = IS
@@ -232,11 +235,13 @@ C
       IF(LEVYLE) THEN
          ERRAV = ERRAV/DBLE(NLSOS)
          ERRAB = ERRAB/DBLE(NLSOS)
+         RMS = DSQRT(RMS/DBLE(NLSOS))
          RERRAV = RERRAV/DBLE(NTBAS(1))
          RERRAB = RERRAB/DBLE(NTBAS(1))
       ELSE
          ERRAV = ERRAV/(DBLE(NLSOS) + DBLE(NSSOS))
          ERRAB = ERRAB/(DBLE(NLSOS) + DBLE(NSSOS))
+         RMS = DSQRT(RMS/(DBLE(NLSOS) + DBLE(NSSOS)))
          RERRAV = RERRAV/DBLE(NTBAS(0))
          RERRAB = RERRAB/DBLE(NTBAS(0))
       END IF
@@ -247,11 +252,13 @@ C
 C
       WRITE(LUPRI,'(/A)') '* Errors: '
 C
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Average SMAT error               : ', ERRAV
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Absolute average SMAT error      : ', ERRAB      
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
+     &      ' RMS deviation                    : ', RMS     
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Largest error                    : ', ERRMX
       WRITE (LUPRI,'( 2X,A,A,I4,A,I4,A)')
      &      ' Position of largest error        : ', 
@@ -262,11 +269,11 @@ C
 C
       WRITE(LUPRI,'(/A)')'* Relative errors (diagonal elements only) : '
 C
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Average SMAT error               : ', RERRAV
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Absolute average SMAT error      : ', RERRAB      
-      WRITE (LUPRI,'( 2X,A,E10.4)')
+      WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Largest error                    : ', RERRMX
       WRITE (LUPRI,'( 2X,A,A,I4,A,I4,A)')
      &      ' Position of largest error        : ', 
