@@ -4258,6 +4258,7 @@ C     r_ref for all bonds)
 C
 #include "implicit.h"
 #include "mxcent.h"
+#include "codata.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH
@@ -4275,7 +4276,7 @@ C
       IF (ORIG_LINDH) THEN
          RREFIJ = DIST(IROWI,IROWJ)
       ELSE
-         RREFIJ = ATMARR(I,5) + ATMARR(J,5)
+         RREFIJ = (ATMARR(I,5) + ATMARR(J,5))/XTANG
       END IF
 
       RHOIJ = EXP( ALFA(IROWI,IROWJ)*(RREFIJ*RREFIJ - V2) )

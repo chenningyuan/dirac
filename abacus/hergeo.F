@@ -536,6 +536,7 @@ C
 C  /* Deck radius */
       FUNCTION RADIUS(NCHARGE)
 #include "implicit.h"
+C     Returns atomic radius in Angstrom;
 C     based on covalent radii and metallic radii. 
 C     Returns radius of MAXCHR when data not available.
 C     Revision March 17 1999 - Trond Saue
