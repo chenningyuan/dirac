@@ -243,7 +243,7 @@ C
 C       Reorder orbitals if requested
 C
         IF (LMOORD) THEN
-          CALL REORD(CMO,WORK(KFREE),LFREE)
+          CALL REORD(CMO,IMOORD,IREORD,MXREORD,WORK(KFREE),LFREE)
 C         
 C         Make sure that reordered coefficients are written back
 C         to file.
@@ -1130,6 +1130,17 @@ C     **********************************
 C
  30   CONTINUE
 C
+C     Reorder converged orbitals if requested
+C
+      IF (LMOORF) THEN
+         CALL REORD(CMO,IMOORF,IREORF,MXREORD,WORK(KFREE),LFREE)
+C         
+C        Make sure that reordered coefficients are written back
+C        to file.
+C
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      END IF
+C
 C     Phase-adjustment of coefficients, if requested...
 C
       IF(PHCOEF) THEN
@@ -1783,7 +1794,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
-      SUBROUTINE REORD(CMO,WORK,LWORK)
+      SUBROUTINE REORD(CMO,IMOORD,IREORD,MXREORD,WORK,LWORK)
 C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
@@ -1795,9 +1806,9 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION WORK(LWORK),CMO(*)
+      DIMENSION IMOORD(MXREORD,2),IREORD(2)
 #include <dcborb.h>
 #include <dcbbas.h>
-#include <dcbreo.h>
 #include <dgroup.h>
 #include <dcbdhf.h>
 C

@@ -646,7 +646,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 30)
+      PARAMETER (NTABLE = 31)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13)
 C
@@ -670,7 +670,8 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO'/
+     &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
+     &            '.POST D'/
       DATA SET/.FALSE./
 C
 #include <sdpre.h>
@@ -774,6 +775,7 @@ C     Initialize /CBIREO/
 C     ===================
 C
       LMOORD    = .FALSE.
+      LMOORF    = .FALSE.
 C
 C     Process input for DHFCAL
 C     ========================
@@ -793,7 +795,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30), I
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1013,6 +1016,22 @@ C&&& DIISAO: Do jth Dalton like DIIS
 #else
                   CALL QUIT('DIISAO NOT IN THIS DISTRIBUTION')
 #endif
+               GO TO 100
+   31          CONTINUE
+C&&& POST DHF REORDER: 
+C                 Reorder finished MO orbitals
+C                 First read the number of orbital reorderings
+C                 in each fermion corep.
+C
+                  LMOORF = .TRUE.
+                  IREORF(1) = 0
+                  IREORF(2) = 0
+                  DO I = 1,NFSYM
+                     READ(LUCMD,'(A72)') CTEMP
+                     IREORF(I) = -1
+                     CALL NUMLST(CTEMP,IMOORF(1,I),MXREORD,1,MXREORD,
+     &                           IREORF(I),WORK,LWORK)
+                  END DO
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1238,13 +1257,26 @@ C
      &     DAMPFC
       ENDIF
       IF (LMOORD) THEN
-         WRITE(LUPRI,'(1X,A)') '* Reorder orbitals...'
-         WRITE(LUPRI,'(3X,A)') '- new ordering of orbitals...'
+         WRITE(LUPRI,'(1X,A)') '* Reorder start orbitals rbitals...'
+         WRITE(LUPRI,'(3X,A)') '- new ordering of start orbitals...'
          DO I = 1,NFSYM
             WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
             IF (IREORD(I) .GT. 0) THEN
                WRITE(LUPRI,'(5X,50(I3,A))') 
      &            (IMOORD(J,I),',',J=1,IREORD(I))
+            ELSE
+               WRITE(LUPRI,'(5X,A)') 'No reordering'
+            END IF
+         END DO
+      END IF
+      IF (LMOORF) THEN
+         WRITE(LUPRI,'(1X,A)') '* Reorder converged orbitals...'
+         WRITE(LUPRI,'(3X,A)') '- new ordering of converged orbitals...'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
+            IF (IREORF(I) .GT. 0) THEN
+               WRITE(LUPRI,'(5X,50(I3,A))') 
+     &            (IMOORF(J,I),',',J=1,IREORF(I))
             ELSE
                WRITE(LUPRI,'(5X,A)') 'No reordering'
             END IF

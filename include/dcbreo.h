@@ -5,3 +5,9 @@ C     IREORD, IMOORD: orbital reordering
       LOGICAL LMOORD
       COMMON /CBIREO/ IMOORD(MXREORD,2),IREORD(2)
       COMMON /CBLREO/ LMOORD
+C
+C     LMOORF: Post-DHF Reorder orbitals?
+C     IREORF, IMOORF: orbital reordering
+      LOGICAL LMOORF
+      COMMON /CBIREO/ IMOORF(MXREORD,2),IREORF(2)
+      COMMON /CBLREO/ LMOORF
