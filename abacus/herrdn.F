@@ -1736,7 +1736,6 @@ C
             NUCIJ = ABS(NUCIJ)
             NRCIJ = ABS(NRCIJ)
             DIRCON = DIRCON .OR. (NRCIJ .GT. 0)
-            write(6,*) 'dircon nrcij',dircon,nrcij
             IF (NUCIJ.GT.KPRIM) GOTO 5010
             IF (NRCIJ.GT.KPRIM) GOTO 5020
             IF ((ISPHTR.EQ.3).AND.(NRCIJ.NE.0)) THEN
