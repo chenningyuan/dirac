@@ -578,17 +578,18 @@ C S(AB,CD) =  S(AB,CD) - PAB [ T(B,K) * W(AK,CD) * TAU(CD,IJ) ]
 C--------------------------------------------------------------
       OFF1 = 1
       OFF2 = 1
+      CALL XCOPY (NV2,A0,0,BUF2,1)
       DO 130 IRP = 1, NREP
          ISTART = 0
          IF (NVVT(IRP).EQ.0.OR.NVO(IRP).EQ.0) GOTO 130
-         NINT = NBUF2/NVO(IRP)
+         NINT = NBUF3/NVO(IRP)
  110     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
          M = NVO (IRP)
          N = NOOT(IRP)
          K = NINT
          KD = NVVT(IRP)
          CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),KD,
-     &               A0,BUF2(OFF2),M)
+     &               A1,BUF2(OFF2),M)
          IF (.NOT.DONE) THEN
             ISTART = ISTART + NINT
             GOTO 110
