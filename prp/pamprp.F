@@ -1223,6 +1223,12 @@ C
         CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
+C     Magnetizabilities
+C
+      IF(MSUSCP) THEN
+        CALL DEF_MSUSCP(WORK,LWORK)   
+      ENDIF
+C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
       IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
@@ -3997,6 +4003,57 @@ C
           ENDIF
         ENDDO
       END IF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck DEF_MSUSCP */
+      SUBROUTINE DEF_MSUSCP(WORK,LWORK)   
+C***********************************************************************
+C
+C     Define operators for magnetizabilities
+C
+C     T. Saue Jan 20 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbxlr.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(2)
+C
+      PFAC(1)  = -0.5D0*CVAL
+      PFAC(2)  = -0.5D0*CVAL
+      NPCOMP = 2
+C X component of B-field
+      PNAME     = 'MAGFLDX1'
+      IPTYP     = 5
+      PLABEL(1) = 'ZDIPLEN'
+      PLABEL(2) = 'YDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('XMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      CALL OP1IND('XMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
+C Y component of B-field
+      PNAME     = 'MAGFLDY2'
+      IPTYP     = 6
+      PLABEL(1) = 'XDIPLEN'
+      PLABEL(2) = 'ZDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('YMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      CALL OP1IND('YMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
+C Z component of B-field
+      PNAME     = 'MAGFLDZ3'
+      IPTYP     = 7
+      PLABEL(1) = 'YDIPLEN'
+      PLABEL(2) = 'XDIPLEN'
+      CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+      CALL OP1IND('ZMAGNA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
+      CALL OP1IND('ZMAGNB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
 C
       RETURN
       END
