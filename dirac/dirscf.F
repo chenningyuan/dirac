@@ -649,8 +649,7 @@ C
      &            DM1 = -1.00D00, D2 = 2.00D00)
       LOGICAL CHKCNV,DOSEL
       DIMENSION FMO(*),EIG(*),FAO(*),DMAT(*),BMAT(*),
-     &          WORK(LWORK),IQBF(4)
-      CHARACTER CTMP*1
+     &          WORK(LWORK)
 C
 #include <memint.h>
 C
@@ -945,7 +944,6 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      LOGICAL TOBE
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK) 
