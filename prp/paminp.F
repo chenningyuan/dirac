@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : paminp.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
@@ -2228,11 +2227,11 @@ C     =============
          WRITE(LUPRI,'(A)')
      &        ' * Contributions to the molecular gradient from'
          IF ( LBIT( IGRD_INTFLG, 1 ) )
-     &        WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
+     &         WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
          IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
             IF ( DOTRCK ) THEN
                WRITE(LUPRI,'(3X,A)')
-     &              '- LS-integrals (skipped if estimated to be small).'
+     &            '- LS-integrals (skipped if estimated to be small).'
             ELSE
                WRITE(LUPRI,'(3X,A)') '- LS-integrals.'
             END IF
@@ -2240,18 +2239,18 @@ C     =============
          IF ( LBIT( IGRD_INTFLG, 3 ) ) THEN
             IF ( DOTRCK ) THEN
                WRITE(LUPRI,'(3X,A)')
-     &              '- SS-integrals (skipped if estimated to be small).'
+     &            '- SS-integrals (skipped if estimated to be small).'
             ELSE
                WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
             END IF
          END IF
          IF(SCRGRD.GT.D0) THEN
             WRITE(LUPRI,'(A,1P,E8.2)')
-     &           ' * Screening threshold in gradient calculation ',SCRGRD
+     &         ' * Screening threshold in gradient calculation ',SCRGRD
          ELSE
             WRITE(LUPRI,'(A)')
-     &           ' * No screening in the calculation of '//
-     &           'two-electron integrals.'
+     &         ' * No screening in the calculation of '//
+     &         'two-electron integrals.'
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
       END IF

@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamexp.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
@@ -156,7 +155,7 @@ C
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
      &        DMAT,PMAT,PTRI,OP1INT,FIRST,ORBANA,WORK,LWORK,IPREXP)
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
+          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
      &       LEXPST(1,I),LEXPST(2,I)
           CALL FLSHFO(LUPRI)
@@ -176,7 +175,7 @@ C
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
-          CALL PRSYMB(LUPRI,'-',60,4)          
+          CALL PRSYMB(LUPRI,'-',60,4)
           WRITE(LUPRI,'(4X,A16,A44)')
      &          PRPNAM(INDXPR),
      &          ' : Expectation value for individual orbitals'
@@ -192,18 +191,18 @@ C
               EXPBUF = EXPBUF*DF(IOPEN)
               EXPVAL(I) = EXPVAL(I) + EXPBUF
               FMT = MXFORM(EXPBUF,15)
-              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')   
+              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')
      &          FREP(IFRP),J,EXPBUF,'a.u.'
               CALL FLSHFO(LUPRI)
             ENDDO
  10       CONTINUE
  20       CONTINUE
-          CALL PRSYMB(LUPRI,'-',60,4)          
+          CALL PRSYMB(LUPRI,'-',60,4)
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A8,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
+          WRITE(LUPRI,'(4X,A8,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
      &     'Total : ',EXPVAL(I),'a.u.',
      &     LEXPST(1,I),LEXPST(2,I)
-          CALL PRSYMB(LUPRI,'-',60,4)          
+          CALL PRSYMB(LUPRI,'-',60,4)
         ENDDO
 C        CALL PRSYMB(LUPRI,'-',76,0)
         WRITE(LUPRI,'(4X,A)')
@@ -268,7 +267,7 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)      
+      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
@@ -277,7 +276,7 @@ C
       IF(.NOT.FIRST(IZ)) THEN
         IQ = IPQTOQ(IZ,IREP)
         IH = IHQMAT(IQ,ITIM)
-        IF(IH.EQ.1) THEN        
+        IF(IH.EQ.1) THEN
           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ELSEIF(IH.EQ.2) THEN
           CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
@@ -301,12 +300,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_efg */
       SUBROUTINE NUC_EFG(IPRINT,DOATOM,AXIS,TMP)
 C*****************************************************************************
-C     
+C
 C     Calculates nuclear contribution to electric field gradients
-C     
+C
 C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by W.A. de Jong - April 1999
-C     
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -388,7 +387,7 @@ C
  20      CONTINUE
  10   CONTINUE
 C
-C     This part of the code is incorrect: one cannot split the 
+C     This part of the code is incorrect: one cannot split the
 C     electronic and nuclear contributions and diagonalize them
 C
 C     diagonalize efg tensor
@@ -425,24 +424,24 @@ C              CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
 C           END IF
 C        ENDDO
 C     END IF
-C     
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
 C*****************************************************************************
-C     
+C
 C     Which shell does electron orbital IORBITAL belong to?
-C     
+C
 C     Written by J. Thyssen - Feb 11 1999
-C     
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcborb.h"
-      IF (IORBITAL .LT. 1) 
+      IF (IORBITAL .LT. 1)
      &   CALL QUIT('illegal value in GETIOPEN(neg)')
 C
       IF (IORBITAL .LE. NISH(IFRP)) THEN
