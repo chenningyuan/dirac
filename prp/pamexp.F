@@ -709,9 +709,9 @@ C*****************************************************************************
       PARAMETER (D3 = 3.0D0)
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
+#include "ibtfun.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
