@@ -1351,7 +1351,9 @@ C  /* Deck bstobu */
       SUBROUTINE BSTOBU(AMAT,MZ,WORK,LWORK)
 C*****************************************************************************
 C
-C     Matrix transform:  from sorted basis to unsorted basis
+C     Matrix transform:
+C     from class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C     to symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
@@ -1409,7 +1411,9 @@ C  /* Deck butobs */
       SUBROUTINE BUTOBS(AMAT,MZ,WORK,LWORK)
 C*****************************************************************************
 C
-C     Matrix transform:  from sorted basis to unsorted basis
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
@@ -1426,7 +1430,7 @@ C
 #include <symmet.h>
 C
       DIMENSION AMAT(*),WORK(LWORK)
-      CALL QENTER('BSTOBU')
+      CALL QENTER('BUTOBS')
 #include <memint.h>
 C
 
@@ -1454,8 +1458,8 @@ C
         IZOFF = IZOFF + N2BBASX
       ENDDO
 C
-      CALL MEMREL('BSTOBU',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT ('BSTOBU')
+      CALL MEMREL('BUTOBS',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT ('BUTOBS')
       RETURN
 C
       END
