@@ -9,8 +9,10 @@ C*****************************************************************************
 #include <implicit.h>
 #include <dummy.h>
 #include <priunit.h>
-#include <dcbxqr.h>
 #include <mxcent.h>
+C
+#include <dcbxqr.h>
+#include <dcbgen.h>
 #include <dcbham.h>
 #include <dcbprp.h>
 #include <mxorb.h>
@@ -50,10 +52,11 @@ C
 C
 C     Local initialization
 C
-      ILLINT = 1
-      ISLINT = 1
-      ISSINT = 1
-      INPERR = 0
+chjMAERKE: ought to be dependent on wave function INTFLG ??
+C
+      ILLINT = IBTAND(INTGEN,1)
+      ISLINT = IBTAND(INTGEN/2,1)
+      ISSINT = IBTAND(INTGEN/4,1)
 C
 C     Initialize /XCBQR/
 C
@@ -65,7 +68,7 @@ C
       BQRFR(1) = D0
       CQRFR(1) = D0
       IPRXQR = 0
-      THCQR = 1.0D-5
+      THCQR  = 1.0D-5
       RESXQR = DMIL
       CNVXQR(1) = DUMMY
       CNVXQR(2) = DUMMY
@@ -76,19 +79,21 @@ C
       ITRIQR(2) = 1
       XQRNRM = .FALSE.
       XQRDIH = .TRUE.
-      QREP = .TRUE.
       QREE = .TRUE.
-C
-      CALL IZERO(LQROP,3*MAXLQR*2)
       IF (LEVYLE) THEN
          INTXQR = ILLINT
          QREP = .FALSE.
+      ELSE
+         QREP = .TRUE.
       END IF
+C
+      CALL IZERO(LQROP,3*MAXLQR*2)
 C
 C     Process input from CBIXQR
 C
       NEWDEF = (WORD .EQ. '*QUADRA')
       ICHANG = 0
+      INPERR = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
@@ -144,10 +149,10 @@ C     B Frequencies
                   READ (LUCMD,*) (BQRFR(J),J=1,NBQRFR)
                ELSE
                   INPERR = INPERR + 1
-                  WRITE (LUPRI,'(3(/,A,I5),/)')
-     &                 '@Number of B frequencies specified :',
+                  WRITE (LUPRI,'(2(/A,I5),/)')
+     &                 'ERROR: Number of B frequencies specified  :',
      &                 NBQRFR,
-     &                 '@is greater than the allowed number :',
+     &                 'ERROR: is greater than the allowed number :',
      &                 MAXFQR
                   READ (LUCMD,*) (BQRFR(J),J=1,MAXFQR),
      &                 (FFFF,J=MAXFQR+1,NBQRFR)
@@ -163,10 +168,10 @@ C     C Frequencies
                   READ (LUCMD,*) (CQRFR(J),J=1,NCQRFR)
                ELSE
                   INPERR = INPERR + 1
-                  WRITE (LUPRI,'(3(/,A,I5),/)')
-     &                 '@Number of C frequencies specified :',
+                  WRITE (LUPRI,'(2(/A,I5),/)')
+     &                 'ERROR: Number of C frequencies specified  :',
      &                 NBQRFR,
-     &                 '@is greater than the allowed number :',
+     &                 'ERROR: is greater than the allowed number :',
      &                 MAXFQR
                   READ (LUCMD,*) (CQRFR(J),J=1,MAXFQR),
      &                 (FFFF,J=MAXFQR+1,NCQRFR)
@@ -346,6 +351,7 @@ C
       ENDDO
 C
   999 CONTINUE
+      IF (INPERR.GT.0) CALL QUIT('Input error in *QUADRATIC RESPONSE')
 C
       RETURN
       END
