@@ -1245,7 +1245,6 @@ C
 C.....dcborb.h
       IF(MYTID.EQ.0) THEN
         NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-        WRITE(LUPRI,*) 'dcborb...',NUMELM,NDCBORB
       ENDIF
       CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1254,7 +1253,6 @@ C.....dcborb.h
 C.....dcbbas.h
       IF(MYTID.EQ.0) THEN
         NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-        WRITE(LUPRI,*) 'dcbbas...',NUMELM,NDCBBAS
       ENDIF
       CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1263,7 +1261,6 @@ C.....dcbbas.h
 C.....dgroup.h
       IF(MYTID.EQ.0) THEN
         NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-        WRITE(LUPRI,*) 'dgroup...',NUMELM,NDGROUP
       ENDIF
       CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1272,7 +1269,6 @@ C.....dgroup.h
 C.....symmet.h
       IF(MYTID.EQ.0) THEN
         NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-        WRITE(LUPRI,*) 'symmet...',NUMELM,NSYMMTI
       ENDIF
       CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
