@@ -572,7 +572,7 @@ NOCPPFS = \$(TOTOBJS:.o=.i)
 
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	$AUXMAK 
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	$AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
@@ -592,7 +592,7 @@ cat <<EOF>> Makefile
 dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ \\
 	PD_OBJ  SLAVE_OBJ \\
 	$AUXMAK
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	\$(OBJSLAVE) $AUXOBJ \\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
