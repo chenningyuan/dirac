@@ -628,32 +628,9 @@ c         CALL DENSTY(FAO,CMO,IPRINT)
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
-CTROND: sjekk....
-           CALL GENDEN(FAO,CMO,1,IPRINT)
-           CALL DCOPY(N2BBASX,FAO,1,WORK(KBUF),1)           
-           IOFF = 1
-           DO ISHELL = 1, NOPEN
-             IOFF = IOFF + N2BBASXQ
-             CALL DAXPY(N2BBASX,DF(ISHELL),FAO(IOFF),1,WORK(KBUF),1)
-           ENDDO
-           CALL DSCAL(N2BBASX,D2,WORK(KBUF),1)
-#if defined (VAR_MPI)
-           IF(PARCAL) THEN
-             IRNTYP = 7
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FMO,WORK(KBUF),NFMAT,
-     &          IDUM,IDUM,
-     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
-     &          IDUM,DUM,DUM,DUM,DUM,DUM)
-           ELSE
-#endif
-             CALL DFTEXC(WORK(KBUF),DUM,FMO,1,0,.TRUE.,.FALSE.,
+             CALL GENDEN(FAO,CMO,1,IPRINT)
+             CALL DFTEXC(FAO,DUM,FMO,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRINT)
-#if defined (VAR_MPI)
-           ENDIF
-#endif
-           CALL MEMREL('GETFC1.dft',WORK,KBUF,KBUF,KFREE,LFREE)
          ENDIF
 #endif
 C
