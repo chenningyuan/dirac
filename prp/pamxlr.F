@@ -159,6 +159,9 @@ C***********************************************************************
 C
 C     Called by PRPXLR (see PRPXLR for description of task)
 C
+C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
+C     calculation of magnetic properties
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -167,10 +170,15 @@ C
 #include "dcbgen.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
+#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
+#include "mxcent.h"
+#include "dcbprp.h"
+#include "dcbnmr.h"
+
 C
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
@@ -202,6 +210,22 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
+
+CMI ... when London atomic orbitals are in use...
+      IF (LONDON) THEN
+C   ... allocate memmory for MO coefficients and boson irreps info
+C       (needed dcborb.h, dcbbas.h common blocks)
+        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+C   ... accumulate 1-el. contrubution; get MO coeff+boson irreps info
+        CALL ONELON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
+C   ... calculate two-electron contribution
+        IF (.NOT.NOTWOL)
+     &     CALL TWOLON(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
+C   ... calculate reorthonormalization contribution
+        IF (.NOT.NOONEI)
+     &     CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
+      ENDIF
 C
 C     Memory allocation
 C     =================
@@ -403,7 +427,9 @@ C
       MXLOAD     = 0
       ITRXLR     = 50
       INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
-      IF (LEVYLE) INTXLR = ILLINT
+CMI ... set up only LL class of integrals 
+C        as the default for LevyLe/BSS
+      IF (LEVYLE.OR.BSS) INTXLR = ILLINT
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0
@@ -653,7 +679,7 @@ C
 C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
+      IF(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
 C     ... no positrons for Levy-Leblond or no-pair
 C     ... also to make sure diamagnetic terms are calculated for magn.prop.
 C           (see PRPDEF) /hj jan 2001
@@ -682,7 +708,7 @@ C
      &'  and ignoring coupling between e-e and e-p rotations.',
      &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
      &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE .OR. FREEPJ .OR. VEXTPJ .OR. XLR_SKIPEP) THEN
+        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP) THEN
            WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
            CALL QUIT(
@@ -696,11 +722,28 @@ Chj Oct 2000: check if .STERNH should invoke the following:
         XLR_XVCFIL = 'NORXVC'
 Chj Oct 2000 end
       END IF
-      IF(XLR_SKIPEE) WRITE(LUPRI,'(A)')
-     &     ' * NB!!! No e-e rotations'
-      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.FREEPJ.OR.VEXTPJ))
+      IF (XLR_SKIPEE) THEN
+        WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
+      ELSE
+        WRITE(LUPRI,'(A)')
+     &  ' * e-e rotations are allowed in the linear response function.'
+      ENDIF
+      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+     &  WRITE(LUPRI,'(A)')
+     &  ' * No rotations between electrons and positrons,'// 
+     &  ' which are expelled.'
+      IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
+     &  ' * e-p rotations are allowed in the linear response function.'
+      IF (LEVYLE) WRITE(LUPRI,'(A)')
+     &  ' * You are running in the nonrelativistic (Levy-Leblond) mode.'
+      IF (BSS) WRITE(LUPRI,'(A)')
+     &  ' * You are running in the 2-component BSS relativistic mode.'
+      IF (DOPCT) WRITE(LUPRI,'(A)')
+     &  '   with activated picture change transformation'//
+     &  ' of four-component property operators.'
       IF(QED) WRITE(LUPRI,'(A)')
      &     ' * QED: rotations between positrons and secondary orbitals.'
       IF(.NOT.DOXLR) THEN
@@ -731,6 +774,13 @@ C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+      IF ((LEVYLE.OR.BSS).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
+        WRITE(LUPRI,'(3X,A)')
+     & 'Only LL integrals are allowed for LevyLe/BSS!'
+        ISLINT=0
+        ISSINT=0
+        INTXLR=1
+      ENDIF
       IF(ISLINT.EQ.1) THEN
         IF(CNVXLR(1).LT.DUMMY) THEN
           WRITE(LUPRI,'(3X,A,1P,D8.1)')
@@ -810,13 +860,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
-      SUBROUTINE NMRINP(WORD,RESET)
+      SUBROUTINE NMRINPX(WORD,RESET)
 C***********************************************************************
 C
 C     Input section for NMR properties
 C
 C     Written by T.Enevoldsen - Nov 1997
 C     Last revision:
+C
+C MI/2004 This is deactivated because Thomas has written a new subroutine
+C  when London atomic orbitals are employed for magnetic properties.
 C
 C***********************************************************************
 #include "implicit.h"

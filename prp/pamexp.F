@@ -71,12 +71,16 @@ C     Memory allocation
       CALL MEMGET('LOGI',KEXPST ,2*NEXPP   ,WORK,KFREE,LFREE)
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,N2BBASX   ,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KPMAT  ,N2BBASX   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT  ,N2BBASX*NZ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
+CMI ... Needed for SQUARE matrixes of some property operators!
+      CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
 C
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
+     &            WORK(KONEIN),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
 C
 C
@@ -90,7 +94,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
-     &                  FIRST,WORK,LWORK)
+     &                   OP1INT,FIRST,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -106,7 +110,7 @@ C***********************************************************************
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(NNBBASX,NZ),
-     &          EIG(*),WORK(LWORK),NP(2,0:2)
+     &          EIG(*),WORK(LWORK),NP(2,0:2),OP1INT(*)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
       INTEGER   GETIOPEN
@@ -264,12 +268,13 @@ C
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
 C.........generate property matrix in SO-basis
+CMI ... extended parameter list by the OP1INT array for square matrixes
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &                IREP,ITIM,PTRI,PMAT,FIRST,
+     &                IREP,ITIM,PTRI,PMAT,OP1INT,FIRST,
      &                WORK(KFREE),LFREE,IPREXP)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 C.............calculate expectation value
-          CALL PRPEX3(EXPVAL(I),IREP,ITIM,
+          CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
      &        WORK(KFREE),LFREE,IPREXP)
           IF(PRJANA) THEN
@@ -316,15 +321,16 @@ C
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
 C.........generate property matrix in SO-basis
+CMI ... extended parameter list by the OP1INT array for square matrixes
             CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
-     &                  IREP,ITIM,PTRI,PMAT,FIRST,
+     &                  IREP,ITIM,PTRI,PMAT,OP1INT,FIRST,
      &                  WORK(KFREE),LFREE,IPREXP)
             IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
             DO J = 1,NOCC(IFRP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
               EXPBUF = D0
 C.............calculate expectation value
-              CALL PRPEX3(EXPBUF,IREP,ITIM,
+              CALL PRPEX3(EXPBUF,INDXPR,IREP,ITIM,
      &          DMAT,PMAT,PTRI,FIRST,ORBANA,
      &          WORK(KFREE),LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
@@ -375,7 +381,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
       SUBROUTINE PRPEX2(LU1INT,INDXPR,EXPVAL,LEXPST,IREP,ITIM,
-     &                  PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+     &                  PTRI,PMAT,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     For totally symmetric operators return property matrix;
@@ -400,8 +406,12 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
-      DIMENSION PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
+      DIMENSION PTRI(NNBBASX,NZ),PMAT(N2BBASX,NZ),
+     &  OP1INT(*),
      &          WORK(LWORK)
+
+      CALL QENTER('PRPEX2')
+
       EXPVAL = D0
 C
 C     Check symmetry
@@ -415,39 +425,65 @@ C
 C     2. Time reversal symmetry
 C
       ITIM = IPRPTIM(INDXPR)
-      IF(ITIM.NE.1) LEXPST(2) = .TRUE.
+CMI   IF(ITIM.NE.1) LEXPST(2) = .TRUE.
+      IF(ITIM.EQ.-1) LEXPST(2) = .TRUE.
+
+CMI ... control output...
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,'(/2X,A,/1X,A,I2,1X,A,A,2I2)')
+     & '*** Output from PRPEX2  ***: ',
+     & ' Operator index and name:',
+     &  INDXPR,PRPNAM(INDXPR),
+     & ' IREP,ITIM:',IREP,ITIM
+       IF (LEXPST(1)) WRITE(LUPRI,'(1X,A)')
+     & ' Operator not symmetric! Do not calculate exp.value!'
+      ENDIF
+
 C
 C     If not totally symmetric, return with zero value
 C
-      IF (LEXPST(1).OR.LEXPST(2)) RETURN
+CMI   IF (LEXPST(1).OR.LEXPST(2)) RETURN
+      IF (LEXPST(1)) GOTO 90 
+
 C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      IF (ITIM.EQ.0) THEN
+       CALL PRPMAOSQ(LU1INT,INDXPR,PMAT,OP1INT,
+     &              FIRST,WORK,LWORK,IPRINT)
+      ELSE
+       CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,
+     &              FIRST,WORK,LWORK,IPRINT)
+      ENDIF
 C
 C     
 C
+ 90   CONTINUE     
+      CALL QEXIT('PRPEX2')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
-      SUBROUTINE PRPEX3(EXPVAL,IREP,ITIM,
+      SUBROUTINE PRPEX3(EXPVAL,INDXPR,IREP,ITIM,
      &           DMAT,PMAT,PTRI,FIRST,ORBFLG,WORK,LWORK,IPRINT)
-C***********************************************************************
+C*****************************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
-C***********************************************************************
+C     MI entry for LAO-project,  May 2003
+C
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
+#include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -455,35 +491,85 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2),ORBFLG
-      DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX),
+      DIMENSION DMAT(N2BBASX,NZ,*),
+     &          PMAT(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),WORK(LWORK)
+
+      CALL QENTER('PRPEX3')
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
 C
-      CALL DZERO(PMAT,N2BBASX)
+CMI June/2004): After performing the picture change transformation
+C of the four-component  property operator, U+XU, which has certain matrixes zero,
+C the resulting TWO-component property operator has usually all matrixes non-zero as
+C the picture change transformation matrix has usually all quatern. matrixex non-zero
+         DO IZ = 1,NZ
+         IF(.NOT.FIRST(IZ)) THEN
+           IQ = IPQTOQ(IZ,IREP)
+           IH = IHQMAT(IQ,ITIM)
+           IF(IH.EQ.1) THEN
+             CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
+           ELSEIF(IH.EQ.2) THEN
+             CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
+           ELSE
+CMI    ... here this is OK, because we have the PMAT as the full square matrix
+CMI         after the PRPMAOSQ routine, so there is no need of unpacking
+           ENDIF
+           CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
+         ELSE 
+CMI ... zeored out non-used quaternionic blocks of property matrixes...
+           CALL DZERO(PMAT(1,IZ),N2BBASX)  
+         ENDIF
+         END DO
+         CALL MEMCHK('PRPEX3 1.0',WORK,1)
+
+         IF (IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(/A,A16)')
+     & 'PRPEX3: Total AO-matrix of property ',PRPNAM(INDXPR)
+         CALL PRQMAT(PMAT,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                 IPQTOQ(1,IREP),LUPRI)
+         ENDIF        
+
+CMI ... do the picture change transformation of ALL operator matrixes
+C   ...  ALL quaternion operator matrixes are in general non-zero
+         CALL DOPCTRA(INDXPR,PMAT,NZ,'S',WORK,LWORK)
+         IF (DOPCT) THEN
+          DO IZ=1, NZ
+            FIRST(IZ)=.FALSE.
+          ENDDO
+         ENDIF
+C
+C     Get expectation value, using ONLY the matrices containing
+C     integrals (ensured by logical FIRST(1..NZ) )
+C
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
-        IQ = IPQTOQ(IZ,IREP)
-        IH = IHQMAT(IQ,ITIM)
-        IF(IH.EQ.1) THEN
-          CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT)
-        ELSEIF(IH.EQ.2) THEN
-          CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT)
-        ENDIF
-        CALL BUTOBS(PMAT,1,WORK,LWORK)
-        IF (.NOT. ORBFLG) THEN
+         IF (.NOT. ORBFLG) THEN
            DO IOPEN = 0,NOPEN
               EXPVAL = EXPVAL + DF(IOPEN)
-     &           *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT,1)
-            END DO
+     &          *DDOT(N2BBASX,DMAT(1,IZ,IOPEN+1),1,PMAT(1,IZ),1)
+           END DO
          ELSE
-            EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT,1)
+           EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT(1,IZ),1)
          END IF
-      END IF
-      END DO
+CMI ... test ouput - print the PMAT and DMAT matrixes
+         IF (IPRINT.GE.5) THEN
+           WRITE(LUPRI,'(2X,A,I1)') 'PRPEX3: PMAT of IZ=',IZ
+           CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+     &                   NTBAS(0),NTBAS(0),1,LUPRI)
+           WRITE(LUPRI,'(2X,A,I1)') 'PRPEX3: DMAT of IZ=',IZ
+           CALL OUTPUT(DMAT(1,IZ,1),1,NTBAS(0),1,NTBAS(0),
+     &                   NTBAS(0),NTBAS(0),1,LUPRI)
+           WRITE(LUPRI,*)
+     &   ' == PRPEX3: acummulated EXPVAL after IZ',IZ,2*EXPVAL
+         ENDIF
+      ENDIF
+      ENDDO
       EXPVAL = EXPVAL + EXPVAL
+      CALL MEMCHK('PRPEX3 2.0',WORK,1)
 C
+      CALL QEXIT('PRPEX3')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -837,15 +923,20 @@ C     -----------------
       CALL MEMGET('REAL',KEIG ,NORBT      ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT ,NZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT ,N2BBASX,WORK,KFREE,LFREE)
+CMI   CALL MEMGET('REAL',KPMAT ,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,N2BBASX*NZ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
       CALL MEMGET('REAL',KEXP  ,NEXPP     ,WORK,KFREE,LFREE)
+CMI ... Needed for SQUARE matrixes of some property operators!
+      CALL MEMGET('REAL',KONEIN ,   N2BBASX,WORK,KFREE,LFREE)
+
 C
       CALL MEMCHK('voor prpex1_mp2',WORK,1)
       CALL PRPEX1_MP2(WORK(KEXP),WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
+     &            WORK(KONEIN),
      &            DMO,WORK(KFIRST),WORK,
      &            KFREE,LFREE)
 C
@@ -860,7 +951,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1_mp2 */
       SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
-     &                      DMO,FIRST,WORK,KFREE,LFREE)
+     &                      OP1INT,DMO,FIRST,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate correlation contribution to static first order properties
@@ -881,7 +972,7 @@ C*****************************************************************************
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(*),
-     &          EIG(*),DMO(*),WORK(*)
+     &          EIG(*),DMO(*),WORK(*),OP1INT(*)
       CHARACTER MXFORM*6,FMT*6
 C
 #include "dgroup.h"
@@ -931,6 +1022,7 @@ C     Transform DMO to 'orthonormal SO' basis
 C     =======================================
 C
       CALL DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
+      CALL MEMCHK('PRPEX1_MP2 1',WORK,1)
 C  
 C     Calculate correlation contribution to property
 C     ==============================================
@@ -940,19 +1032,25 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
       DO I = 1,NEXPP
         INDXPR = LEXPP(I)
+CMI .... extended by the OP1INI parameter for 
+C      square propert matrixes (London atomic orbitals...)
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &                IREP,ITIM,PTRI,PMAT,FIRST,
+     &                IREP,ITIM,PTRI,PMAT,OP1INT,FIRST,
      &                WORK(KFREE),LFREE,IPREXP)
+      CALL MEMCHK('PRPEX1_MP2 2',WORK,1)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
-          CALL PRPEX3(EXPVAL(I),IREP,ITIM,
+          CALL PRPEX3(EXPVAL(I),INDXPR,IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
      &        WORK(KFREE),LFREE,IPREXP)
+      CALL MEMCHK('PRPEX1_MP2 3',WORK,1)
  30       CONTINUE
+      CALL MEMCHK('PRPEX1_MP2 4',WORK,1)
         FMT = MXFORM(EXPVAL(I),15)
         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
      &     PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
      &     LEXPST(1,I),LEXPST(2,I)
         CALL FLSHFO(LUPRI)
+       CALL MEMCHK('PRPEX1_MP2 5',WORK,1)
       ENDDO
       CALL MEMCHK('na verwachtingswaarde',WORK,1)
 C

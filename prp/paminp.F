@@ -53,9 +53,10 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 25)
+      PARAMETER (NDIR = 8, NTABLE = 26)
 #include "maxorb.h"
 #include "mxcent.h"
+#include "dcbham.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, WRDSRC*7
@@ -72,7 +73,7 @@ C
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
-     &             '.VERDET'/
+     &             '.VERDET','.ROTG  '   /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -104,6 +105,8 @@ C
       NQCC     = .FALSE.
       DSO      = .FALSE.
       NSTDIA   = .FALSE.
+      ROTG     = .FALSE.
+      LONDON   = .TRUE.
       PVC      = .FALSE.
       RHONUC   = .FALSE.
       ABUND    = D1
@@ -113,6 +116,20 @@ C
       ESRANISO = .FALSE.
       NPRPWF   = 1
       PRPWF(1) = 'DHF'
+
+CMI ... activate the  picture change
+C   transformation of four-component property matrixes 
+C   in the two-component BSS mode.
+C   This is possible only for the BSS infinite order of relativity 
+C   not for lower orders...
+C TODO with TS/HJJ: BSS spin-free picture change transformation
+      IF (BSS.AND.IBSS.GE.99) THEN
+        DOPCT=.TRUE.
+        WRITE(LUPRI,'(/3X,A/)')
+     &'PRPINP: Picture change transformation of properties activated !'
+      ELSE
+        DOPCT=.FALSE.
+      ENDIF
 C
 C     Read menu file
 C     ==============
@@ -153,7 +170,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123,124,125),I
+     &                117,118,119,120,121,122,123,124,125,126),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -300,11 +317,17 @@ C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
             CALL QUIT('TPA not included in this version')
 #endif
             GO TO 100
-C&&&& .VERDET - Calculates the Verdet constant with the QR module
  125     CONTINUE
+C&&&& .VERDET - Calculates the Verdet constant with the QR module
             DOVER = .TRUE.
             DOXQR = .TRUE.
             CALL DEF_VERDET(WORK,LWORK)
+            GO TO 100
+ 126     CONTINUE
+C&&&& ROTG rotational g-tensor
+CMI   ... at present it's empty
+            ROTG  = .TRUE.
+            DOXLR = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -380,7 +403,8 @@ C
         CALL GRDINP(WORD,.FALSE.)
         GO TO 200
     6 CONTINUE
-        CALL NMRINP(WORD,.FALSE.)
+CMI ... change for LAO-based magnetic properties
+        CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
 #if defined (MOD_ESR)
@@ -397,11 +421,18 @@ C
       WORD = 'INITLZE'
       IF(DOEXP) CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
-      CALL NMRINP(WORD,.TRUE.)
+CMI ... read again the input
+      CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
       CALL GRDINP(WORD,.TRUE.)
 #if defined (MOD_XPP)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
+CMI ... no quandratic response whin BSS yet
+      IF (BSS.AND.DOXQR) THEN
+        WRITE(LUPRI,'(2X,A)')
+     &'No quadratic response with BSS Hamitonian yet.'
+        DOXQR=.FALSE.
+      ENDIF 
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_ESR)
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
@@ -1055,6 +1086,8 @@ C
 C  Add property to list of properties in COMMON block XCBPRP
 C  Copyright (c) 6-Feb-1995 Hans Joergen Aa. Jensen
 C
+C  MI (&HAaaJ), 2003,2004: Extended for LAO integral types
+C               as well as other integrals
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1072,18 +1105,47 @@ C
       CHARACTER*4 PCOMB
 C
       CALL QENTER('XPRADD')
+
 C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C
-      IF (PLABEL(1)(1:7).EQ.'BETAMAT') THEN
+
+      IF (IPRINT .GT. 6) THEN
+         WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
+     &   'XPRADD called for specifying PCOMB;',
+     &   '  PNAME   =',PNAME,
+     &   '  IPTYP   =',IPTYP,
+     &   '  NPCOMP  =',NPCOMP,
+     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
+         WRITE (LUPRI,'(A,3(A8,2X))')
+     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
+      END IF
+
+CMI  List of exceptions:
+      IF ((PLABEL(1)(1:7).EQ.'BETAMAT').OR.(PNAME(6:10).EQ.'RM1H1')
+     &      .OR.(PNAME(7:11).EQ.'RM2H1')) THEN
+CMI (&TEC): RM1H1/RM2H1 is first/second London derivative of BETAMAT
 Chj      PCOMB = 'FFFT'
          PCOMB = '000+'
+CMI/HJAaJ
+C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
+      ELSE IF (PNAME(7:13).EQ.'RDSUSLL'.AND.LEVYLE) THEN
+C ... fix the LS block for the LevyLe option
+         PCOMB = '00+0'
+        IF (IPRINT.GT.6) WRITE(LUPRI,'(A)')
+     &   '  Only the LS block for the LevyLe-RDSUSLL operator!'
+      ELSE IF ((PNAME(1:5).EQ.'d|S>/'.OR.PNAME(1:3).EQ.'dS/').AND.BSS)
+     &     THEN
+         PCOMB='+000'
+        IF (IPRINT.GT.6) WRITE(LUPRI,'(A)')
+     & '  Only the LL block for connection matrixes in two-comp.mode!'
       ELSE
          IF (IPTYP.LT.1 .OR. IPTYP.GT.18)
-     &      CALL QUIT('Illegal IPTYP')
+     &      CALL QUIT('XPRADD: Illegal IPTYP (not 1-18)!')
          GO TO (1,2,2,2,2,2,2,2,2,
      &          1,1,1,3,3,3,4,4,4),IPTYP
+C
 C
 C        DIAGONAL and SIGMA:
 C
@@ -1118,27 +1180,19 @@ C
          GO TO 100
 C
   100    CONTINUE
-         IF (LEVYLE) THEN
-           DELSS=.FALSE.
-           IF (PCOMB(4:4).NE.'0') DELSS=.TRUE.
-           PCOMB(4:4) = '0'
-         ENDIF
+CMI  ... for the Levy-Leblond mode cancel the SS block!
+CMI ... check first if PLABEL(1) is not operator from
+CMI ... pilot Dirac bare nucleus (from subroutine OP1INI)
+        IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '
+     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.
+     &       PLABEL(1).NE.'BETAMAT ' ) PCOMB(4:4) = '0'
+
       END IF
 
-      IF (IPRINT .GE. 7) THEN
-         WRITE (LUPRI,'(/A/2A,/A,A4,/A,I5/A,I5/A,1P,3(D20.10))')
-     &   'XPRADD called, property operator parameters:',
-     &   '  PNAME   =',PNAME,
-     &   '  PCOMB   =',PCOMB,
-     &   '  IPTYP   =',IPTYP,
-     &   '  NPCOMP  =',NPCOMP,
-     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
-         WRITE (LUPRI,'(A,3(A8,2X))')
-     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
-         IF (DELSS) WRITE(LUPRI,'(2X,A)')
-     &    'Levy-Leblond nonrelativistic mode, SS block zeroed!'
+CMI ... inform about the assigned PCOMB
+      IF (IPRINT .GT. 6) THEN
+         WRITE(LUPRI,'(A,A4)') ' assigned PCOMB:',PCOMB
       END IF
-
 C
 C     Define property
 C
@@ -1221,7 +1275,7 @@ C
         CLASSLB = 'BETAMAT'
         IORDER   = 0
       ELSE
-        CALL GETCLS(PLABEL,CLASSLB,IORDER)
+        CALL GETCLS(PLABEL,CLASSLB,IORDER,IPRINT)
         IF(CLASSLB.EQ.'Unknown') THEN
           WRITE(LUPRI,'(A,A8)')
      &    '***** INDXPL ERROR ***** No class label found for ',
@@ -1258,7 +1312,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getcls */
-      SUBROUTINE GETCLS(LABINT,CLASSLB,IORDER)
+      SUBROUTINE GETCLS(LABINT,CLASSLB,IORDER,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given a file label for a given integral, this subroutine
@@ -1268,56 +1322,53 @@ C     as well.
 C
 C     Jan-18-1995 - tsaue
 C
+C  2003, MI,HJAaJ extended list for integrals over LAO
+C        for NMR shielding and magnetic susceptibilities
+C
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER LABINT*8,CLASSLB*7
+
+      CALL QENTER('GETCLS')
+
+C     write(lupri,*) 'GETCLS: IPRINT=',IPRINT
+C     write(lupri,*) 'GETCLS: LABINT=',LABINT
 C
 C     Overlap integral
 C
       IF(LABINT.EQ.'OVERLAP') THEN
         CLASSLB = 'OVERLAP'
-        RETURN
-      ENDIF
 C
 C     Dipole length/velocity integrals
 C
-      IF(LABINT(2:4).EQ.'DIP') THEN
+      ELSE IF(LABINT(2:4).EQ.'DIP') THEN
         IF(LABINT(5:7).EQ.'VEL') THEN
           CLASSLB = 'DIPVEL '
         ELSE
           CLASSLB = 'DIPLEN '
         ENDIF
-        RETURN
-      ENDIF
 C
 C     Quadrupole moments integrals
 C
-      IF(LABINT(3:8).EQ.'QUADRU') THEN
+      ELSE IF(LABINT(3:8).EQ.'QUADRU') THEN
         CLASSLB = 'QUADRUP'
-        RETURN
-      ENDIF
 C
 C     Spin-orbit integrals
 C
-      IF(LABINT(3:8).EQ.'SPNORB') THEN
+      ELSE IF(LABINT(3:8).EQ.'SPNORB') THEN
         CLASSLB = 'SPNORB '
-        RETURN
-      ENDIF
 C
 C     Second moments integrals
 C
-      IF(LABINT(3:8).EQ.'SECMOM') THEN
+      ELSE IF(LABINT(3:8).EQ.'SECMOM') THEN
         CLASSLB = 'SECMOM '
-        RETURN
-      ENDIF
 C
 C     Traceless theta quadrupole integrals
 C
-      IF(LABINT(3:7).EQ.'THETA') THEN
+      ELSE IF(LABINT(3:7).EQ.'THETA') THEN
         CLASSLB = 'THETA  '
-        RETURN
-      ENDIF
 C
 C     Cartesian/spherical/electronic solvent moments integrals
 C
@@ -1332,58 +1383,46 @@ C
           CLASSLB = 'SPHMOM '
           READ(LABINT(3:4),'(I2)') IORDER
         ENDIF
-        RETURN
       ENDIF
 C
 C     One-electron Fermi contact integrals
 C
-      IF(LABINT(1:2).EQ.'FC') THEN
+      ELSE IF(LABINT(1:2).EQ.'FC') THEN
         CLASSLB = 'FERMI C'
-        RETURN
-      ENDIF
 C
 C     Paramagnetic spin-orbit integrals
 C
-      IF(LABINT(1:3).EQ.'PSO') THEN
+      ELSE IF(LABINT(1:3).EQ.'PSO') THEN
         CLASSLB = 'PSO    '
-        RETURN
-      ENDIF
 C     
 C     Spin-dipole integrals
 C
-      IF(LABINT(1:2).EQ.'SD') THEN
+      ELSE IF(LABINT(1:2).EQ.'SD') THEN
 C
 C     Spin-dipole + Fermi contact integrals
 C
         IF(LABINT(3:3).EQ.'C') THEN
           CLASSLB = 'SDFC   '
-          RETURN
         ELSE
 C     
 C     Spin-dipole integrals
 C
           CLASSLB = 'SPIN-DI'
         ENDIF
-        RETURN
-      ENDIF
 C
 C     Diamagnetic spin-orbit integrals
 C
-      IF(LABINT(1:3).EQ.'DSO') THEN
+      ELSE IF(LABINT(1:3).EQ.'DSO') THEN
         CLASSLB = 'DSO    '
-        RETURN
-      ENDIF
 C
 C     Half-derivative overlap integrals
 C
-      IF(LABINT(1:3).EQ.'HDO') THEN
+      ELSE IF(LABINT(1:3).EQ.'HDO') THEN
         CLASSLB = 'HDO   '
-        RETURN
-      ENDIF
 C
 C     Contribution from overlap matrix to magnetic properties
 C
-      IF(LABINT(1:5).EQ.'dS/dB') THEN
+      ELSE IF(LABINT(1:5).EQ.'dS/dB') THEN
         IF(LABINT(6:6).EQ.'2') THEN
 C
 C       Contribution from overlap matrix to magnetic properties
@@ -1396,47 +1435,35 @@ C       magnetic properties
 C
           CLASSLB = 'S1MAG  '
         ENDIF
-        RETURN
-      ENDIF
 C
 C     Angular momentum around the nuclei
 C
-      IF(LABINT(2:7).EQ.'ANGLON') THEN
+      ELSE IF(LABINT(2:7).EQ.'ANGLON') THEN
         CLASSLB = 'ANGLON '
-        RETURN
-      ENDIF
 C
 C     Electronic angular momentum around origin
 C
-      IF(LABINT(2:7).EQ.'ANGMOM') THEN
+      ELSE IF(LABINT(2:7).EQ.'ANGMOM') THEN
         CLASSLB = 'ANGMOM '
-        RETURN
-      ENDIF
 C
 C     London orbital contribution to angular momentum
 C
-      IF(LABINT(2:7).EQ.'LONMOM') THEN
+      ELSE IF(LABINT(2:7).EQ.'LONMOM') THEN
         CLASSLB = 'LONMOM '
-        RETURN
-      ENDIF
 C
 C     One-electron contributions to magnetic moment
 C
-      IF(LABINT(1:5).EQ.'dh/dB') THEN
+      ELSE IF(LABINT(1:5).EQ.'dh/dB') THEN
         CLASSLB = 'MAGMOM '
-        RETURN
-      ENDIF
 C
 C     Electronic kinetic energy
 C
-      IF(LABINT(1:7).EQ.'KINENER') THEN   
+      ELSE IF(LABINT(1:7).EQ.'KINENER') THEN   
         CLASSLB = 'KINENER'
-        RETURN
-      ENDIF
 C
 C     Diamagnetic susceptibility
 C
-      IF(LABINT(4:6).EQ.'SUS') THEN
+      ELSE IF(LABINT(4:6).EQ.'SUS') THEN
         IF    (LABINT(7:8).EQ.'NL') THEN
 C
 C         Diamagnetic susceptibility without London contribution
@@ -1455,192 +1482,173 @@ C       susceptibility
 C
           CLASSLB = 'DSUSLH'
         ENDIF
-        RETURN
-      ENDIF
 C
 C     Angular London orbital contribution to diamagnetic susceptibility
 C
-      IF(LABINT(3:8).EQ.'dh/dB2') THEN
+      ELSE IF(LABINT(3:8).EQ.'dh/dB2') THEN
         CLASSLB = 'DIASUS '
-        RETURN
-      ENDIF
 C
 C     Nuclear shielding integrals without London orbital contribution
 C
-      IF(LABINT(3:6).EQ.'NSNL') THEN
+      ELSE IF(LABINT(3:6).EQ.'NSNL') THEN
         CLASSLB = 'NUCSNLO'
-        RETURN
-      ENDIF
 C
 C     London orbital contribution to nuclear shielding tensor integrals
 C
-      IF(LABINT(3:6).EQ.'NSLO') THEN
+      ELSE IF(LABINT(3:6).EQ.'NSLO') THEN
         CLASSLB = 'NUCSLO '
-        RETURN
-      ENDIF
 C
 C     Nuclear shielding tensor integrals
-C
-      IF(LABINT(4:6).EQ.'NST') THEN
+CMI ... use this rather than 'NST'
+      ELSE IF(LABINT(3:6).EQ.' NST') THEN
         CLASSLB = 'NUCSHI '
-        RETURN
-      ENDIF
 C
 C     Electric field at the individual nuclei
 C
-      IF(LABINT(1:3).EQ.'NEF') THEN
+      ELSE IF(LABINT(1:3).EQ.'NEF') THEN
         CLASSLB = 'NEFIELD'
-        RETURN
-      ENDIF
 C
 C     traceless electric field third derivatives
 C
-      IF(LABINT(5:5).EQ.'V') THEN
+      ELSE IF(LABINT(5:5).EQ.'V') THEN
         CLASSLB = 'EFT    '
-        RETURN
-      ENDIF
 C
 C     Parity violation - chirality operator
 C
-      IF(LABINT(1:3).EQ.'PVC') THEN
+      ELSE IF(LABINT(1:3).EQ.'PVC') THEN
         CLASSLB = 'PVC    '
-        RETURN
-      ENDIF
 C
 C     Electric field gradient at the individual nuclei, spherical
 C
-      IF(LABINT(3:5).EQ.'FGS') THEN
+      ELSE IF(LABINT(3:5).EQ.'FGS') THEN
         CLASSLB = 'ELFGRDS'
-        RETURN
-      ENDIF
 C
 C     Bra-differentiation of overlap matrix with respect to magnetic 
 C     field
 C
-      IF(LABINT(1:7).EQ.'d<S|/dB') THEN
+      ELSEIF(LABINT(1:7).EQ.'d<S|/dB') THEN
         CLASSLB = 'S1MAGL'
-        RETURN
-      ENDIF
 C
 C     Ket-differentiation of overlap matrix with respect to 
 C     magnetic field
 C
-      IF(LABINT(1:7).EQ.'d|S>/dB') THEN
+      ELSE IF(LABINT(1:7).EQ.'d|S>/dB') THEN
         CLASSLB = 'S1MAGR'
-        RETURN
-      ENDIF
 C
 C     Ket-differentation of HDO-integrals with respect to magnetic field
 C
-      IF(LABINT(4:6).EQ.'HDB') THEN
+      ELSE IF(LABINT(4:6).EQ.'HDB') THEN
         CLASSLB = 'HDOBR  '
-        RETURN
-      ENDIF
 C
 C     Potential energy at the nuclei
 C
-      IF(LABINT(1:5).EQ.'POT.E') THEN
+      ELSE IF(LABINT(1:5).EQ.'POT.E') THEN
         CLASSLB = 'NUCPOT '
-        RETURN
-      ENDIF
 C
 C     Half B-differentiated overlap matrix
 C
-      IF(LABINT(2:5).EQ.'HBDO') THEN
+      ELSE IF(LABINT(2:5).EQ.'HBDO') THEN
         CLASSLB = 'HBDO   '
-        RETURN
-      ENDIF
 C
 C     Half-derivative overlap integrals not to be antisymmetrized
 C
-      IF(LABINT(1:5).EQ.'SQHDO') THEN
+      ELSE IF(LABINT(1:5).EQ.'SQHDO') THEN
         CLASSLB = 'SQHDO  '
-        RETURN
-      ENDIF
 C
 C     Diamagnetic susceptibility with common gauge origin
 C
-      IF(LABINT(3:8).EQ.'SUSCGO') THEN
+      ELSE IF(LABINT(3:8).EQ.'SUSCGO') THEN
         CLASSLB = 'DSUSCGO'
-        RETURN
-      ENDIF
 C
 C     Nuclear shielding integrals with common gauge origin
 C
-      IF(LABINT(3:6).EQ.'NSCO') THEN
+      ELSE IF(LABINT(3:6).EQ.'NSCO') THEN
         CLASSLB='NSTCGO '
-        RETURN
-      ENDIF
 C
 C     Cosine and sine integrals
 C
-      IF(LABINT(2:7).EQ.'COSINE'.OR.LABINT(2:5).EQ.'SINE') THEN
+      ELSE IF(LABINT(2:7).EQ.'COSINE'.OR.LABINT(2:5).EQ.'SINE') THEN
         CLASSLB = 'EXPIKR '
-        RETURN
-      ENDIF
 C
 C     Mass velocity integrals
 C
-      IF(LABINT.EQ.'MASSVELO') THEN
+      ELSE IF(LABINT.EQ.'MASSVELO') THEN
         CLASSLB = 'MASSVEL'
-        RETURN
-      ENDIF
 C
 C     Darwin type integrals
 C
-      IF(LABINT(1:6).EQ.'DARWIN') THEN
+      ELSE IF(LABINT(1:6).EQ.'DARWIN') THEN
         CLASSLB = 'DARWIN '
-        RETURN
-      ENDIF
 C
 C     First order magnetic field derivatives of electric field
 C
-      IF(LABINT(3:5).EQ.'CM1') THEN
+      ELSE IF(LABINT(3:5).EQ.'CM1') THEN
         CLASSLB = 'CM1    '
-        RETURN
-      ENDIF
 C
 C     Second order magnetic field derivatives of electric field
 C
-      IF(LABINT(3:5).EQ.'CM2') THEN
+      ELSE IF(LABINT(3:5).EQ.'CM2') THEN
         CLASSLB = 'CM2    '
-        RETURN
-      ENDIF
 C
 C     Half-derivative overlap integrals not to be anti-symmetrized
 C
-      IF(LABINT(1:6).EQ.'SQHDOR') THEN
+      ELSE IF(LABINT(1:6).EQ.'SQHDOR') THEN
         CLASSLB = 'SQHDOR '
-        RETURN
-      ENDIF
 C
 C
 C
-      IF(LABINT.EQ.'SQOVLAP') THEN
+      ELSE IF(LABINT.EQ.'SQOVLAP') THEN
         CLASSLB = 'SQOVLAP'
-        RETURN
-      ENDIF
 C
 C     non-traceless electric field third derivatives
 C
-      IF(LABINT(5:5).EQ.'v') THEN
+      ELSE IF(LABINT(5:5).EQ.'v') THEN
         CLASSLB = 'EFTNTL '
-        RETURN
-      ENDIF
 C
 C     Electric field gradient at the individual nuclei, cartesian
 C
-      IF(LABINT(3:5).EQ.'EFG') THEN
+      ELSE IF(LABINT(3:5).EQ.'EFG') THEN
         CLASSLB = 'ELFGRDC'
-        RETURN
-      ENDIF
+CMI
+      ELSE IF(LABINT(2:6).EQ.'RM1H2') THEN
+        CLASSLB = 'RM1H2'
+CMI
+      ELSE IF(LABINT(3:7).EQ.'RM2H2') THEN
+        CLASSLB = 'RM2H2'
+CMI
+      ELSE IF(LABINT(2:6).EQ.'RM1H3') THEN
+        CLASSLB = 'RM1H3'
+CMI
+      ELSE IF(LABINT(3:7).EQ.'RM2H3') THEN
+        CLASSLB = 'RM2H3'
+
+CMI ...contributions from RDSUSLL term
+      ELSE IF(LABINT(3:7).EQ.'RDSUL') THEN
+        CLASSLB = 'RDSUSLL'
+CMI
+      ELSE IF(LABINT(2:6).EQ.'RM1RN') THEN
+        CLASSLB = 'RM1RN'
+
+CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
+      ELSE IF(LABINT(3:6).EQ.'RNST') THEN
+        CLASSLB = 'RM1N1H '
 C
 C     Unknown LABINT
+C   
+      ELSE
+       CLASSLB = 'Unknown'
+      ENDIF
+
+C  Control print out
+      IF (IPRINT.GE.5) THEN
+       WRITE(LUPRI,'(2A)')
+     & 'GETCLS called: for LABINT=',LABINT
+       WRITE(LUPRI,'(7X,2A)')
+     & '     assigned the CLASSLB=',CLASSLB
+      ENDIF
 C
-      CLASSLB = 'Unknown'
-C
+      CALL QEXIT('GETCLS')
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpldef */
@@ -1709,6 +1717,7 @@ C
      &        DOATOM(*)
       CHARACTER PLABEL*8,CLASSLB*7,LABINT*8,PCOMB*4
       DIMENSION INTREP(*),INTADR(*),LABINT(*),WORK(LWORK)
+      CALL QENTER('XPLDE1')
 C
 C
 C     Get information on this class of integrals
@@ -1737,9 +1746,19 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
+
+C       WRITE(LUPRI,'(2X,A)') 'XPLDE1 before PR1DIR calling'
+C       WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
+C       WRITE(LUPRI,'(2X,A,I3)') 'IPRINT=',IPRINT
+C       WRITE(LUPRI,*) 'CLASSLB=',CLASSLB
+
         CALL PR1DIR(WORK,LWORK,CLASSLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
+C       IF (IPRINT.GE.5) THEN
+C         WRITE(LUPRI,'(2X,A)') 'XPLDE1 after PR1DIR calling'
+C         WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
+C       ENDIF
       ENDIF
 C
 C     Loop over components of operator class
@@ -1779,14 +1798,17 @@ C
 C     Property label is not among the listed labels
 C
       IF(LABERR) THEN
-        WRITE(LUPRI,'(A,A8,A)') '*** XPLDEF ERROR: Property label ',
+        WRITE(LUPRI,'(A,A8,A)') '*** XPLDE1 ERROR: Property label ',
      &        PLABEL,' not found ! *****'
         WRITE(LUPRI,'(A,A7)') 'Class label      : ',CLASSLB
         WRITE(LUPRI,'(A,A8)') '  Property labels: ',LABINT(1)
         WRITE(LUPRI,'(19X,A8)') (LABINT(I),I=2,NOPTYP)
-        CALL QUIT('XPLDEF: Label error')
+        CALL QUIT('XPLDE1: Label error')
       ENDIF
+
+CMi ... some control print out would be useful....
 C
+      CALL QEXIT('XPLDE1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1809,6 +1831,9 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
+C    MI,HJAaJ(TEC),2003 - added changes for LAO  integrals
+C     - removing the program stop when indeterminate symmetry of operator
+C     - print out
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1862,13 +1887,6 @@ C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total operator
       ICTIM(1) = IATIM*IBTIM
-      IF(ICTIM(1).EQ.0) THEN
-        CALL HEADER('PRPSYM: Abort !!!',-1)
-        WRITE(LUPRI,'(A,I5,A)') 
-     &    'Operator no.',INDXPR,
-     &    ' has indeterminate time reversal symmetry !'
-        CALL QUIT('PRPSYM: Indeterminate time reversal symmetry !')
-      ENDIF
 C
 C     Check against other components of operator
 C     ==========================================
@@ -1910,7 +1928,7 @@ C
       IPRPSYM(INDXPR) = ICREP(1)+1
       IPRPTIM(INDXPR) = ICTIM(1)
 C
-      IF(IPRINT.GE.10) THEN
+      IF(IPRINT.GE.7) THEN
         CALL HEADER('Output from PRPSYM',-1)
         CALL WRIXPR(0,INDXPR)
       ENDIF

@@ -213,6 +213,10 @@ C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, new parameter list for PRPMAT)
 C
+C     MI,HJAaJ(&TEC), march 2003: added new routine calling
+C     that gets the total property gradient dH(B)/dB|B=0 when using
+C     London atomic orbitals
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -223,6 +227,8 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
+#include "mxcent.h"
+#include "dcbprp.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
@@ -252,8 +258,18 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
-     &            WORK,KFREE,LFREE,IPRINT)
+CMI... distinguish between standard and LAO-based atomic orbitals
+CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
+CMI This has to be adapted also for LAO properties !
+      IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
+        IB = 7 ! 0111 = full H(B) prop. gradient
+        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
+     &                    WORK,KFREE,LFREE,IPRINT)
+      ELSE
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
+     &              WORK,KFREE,LFREE,IPRINT)
+      ENDIF
+
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
@@ -479,12 +495,12 @@ C
       IREP = ISYM - 1
       ITIM = IPRPTIM(INDXPR)
 
-C ... check for anti-/symmetry of the property matrix/MI
+C ... check for anti-/symmetricity of the property matrix/MI
 
       IF (.NOT.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
        WRITE(LUPRI,'(/A,I3,1X,2A)')
      & '  PRPMA1: Property operator no.',INDXPR,PRPNAM(INDXPR),
-     & ' is NOT (anti-)hermitian!'
+     & ' is NOT hermitian nor antihermitian !'
        CALL QUIT('PRPMA1: Non-hermitian property!')
       ENDIF
 
@@ -511,6 +527,16 @@ C
         ENDIF
       ENDDO
       CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
+
+      IF (IPRINT.GE.7) THEN
+         WRITE(LUPRI,'(A,A16)')
+     &'PRPMA1: Four-comp. tot. AO-matrix of property ',PRPNAM(INDXPR)
+        CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,IREP),LUPRI)
+      ENDIF
+
+      CALL MEMCHK('before call DOPCT',WORK,1)
+      CALL DOPCTRA(INDXPR,PRPAO,NZ,'S',WORK(KFREE),LFREE)
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
@@ -591,9 +617,11 @@ C
 C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
+C  MI,HJ (march 2003) - added routine calling for cumulationg the dH/dB prop.gradient with LAO
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -679,6 +707,7 @@ C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
+C     MI/2003,2004- add dH/dB prop.gradient accumulation when using LAO
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -688,6 +717,8 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
+#include "mxcent.h"
+#include "dcbprp.h"
 C
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
      &          IBEIG(*),JXOP(NXOP),WORK(*)
@@ -706,8 +737,15 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
+      IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
+        IB = 7 ! 111
+        CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
+     &                    WORK,KFREE,LFREE,IPRINT)
+      ELSE
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
+      ENDIF
+
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
