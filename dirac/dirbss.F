@@ -3722,22 +3722,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbqal.h"
+C#include "dcbgen.h"
+C#include "dcbbas.h"
+C#include "dcborb.h"
+C#include "dgroup.h"
+C#include "dcbqal.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dummy.h"
-C
-C Used from COMMON blocks:
-C    SHELLS: KMAX
-C    SPHCOM:
-C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "nuclei.h"
-#include "aosotr.h"
+C#include "aosotr.h"
 #include "shells.h"
 #include "dcbsph.h"
 #include "chrnos.h"
@@ -3768,6 +3763,7 @@ C  ... this failes !!!
 C     CALL MEMCHK('AMFIIN 1 ',WORK,1)
 
 C   ... fill IZTNUCS
+      WRITE(LUPRI,'(2X,A)') 'Total list of nucleis:'
       IX = 1
       DO I=1,NUCIND
       DO J=1,NUCDEG(I)
@@ -3780,6 +3776,9 @@ C   ... fill IZTNUCS
 C     CALL QUIT('amfiin')
 
 C    .. make ready the IPTYPAO, INDXLM,IPNUC
+      IF (IPRINT.GE.1) THEN
+       WRITE(LUPRI,'(/2X,A)') 'List of shells of the system:' 
+      ENDIF
       IOFF = 1
       JOFF = 1
       IX = 1
@@ -3802,10 +3801,12 @@ C        ... find out the nuclei
            ENDDO
          ENDDO
 
-         write(lupri,*) ' L=',NHKT(ISHELL),
+         IF (IPRINT.GE.1) THEN
+          write(lupri,*) 'SHELL L=',NHKT(ISHELL),
      &  ' ICENT=',NCENT(ISHELL),' charge:',CHARGE(ICENT),
      &  ' IDEG/NDEG=',IDEG,'/',NUCDEG(ICENT),' centre=',INUCPOS,
      &  ' INDXLM=',INDX
+         ENDIF
 
         
 C      ... specify IPTYPAO,  INDX_L_ML and center
@@ -3929,24 +3930,17 @@ C          write(lupri,*) 'IX set to:',IX
       ENDDO
       ENDDO
 
-C     CALL MEMCHK('before AMFI1',WORK,1)
+C       .... fails !
+C     CALL MEMCHK('before A',WORK,1)
 
       IF ((IX-1).NE.NSPH) THEN
         write(lupri,*) 'AMFFIN: IX-1=',IX-1, 'NSPH=',NSPH
-        CALL QUIT('amfiin')
+        CALL QUIT('AMFIIN: IX-1<>NSPH ! CHECK IT !')
       ENDIF
 
-C     write(lupri,*) (LABINT(i),i=1,25)
-      write(lupri,*)
-      write(lupri,*) 'Order of basis functions in spher. AO basis:'
-
-C     DO I=1, NSPH
-C       write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
-C    &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
-C     ENDDO
-
 C ... rearange INDXLM for splitted basis sets...
-      CALL UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,INDXLM,ISTNUCTYP)
+      CALL UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,
+     &                   INDXLM,ISTNUCTYP,IPRINT)
 
 
       IF (IPRINT.GE.6) THEN
@@ -3955,12 +3949,16 @@ C ... rearange INDXLM for splitted basis sets...
         CALL PRQMAT(H2SAO,NB,NB,NB,NB,4,IQDEF,LUPRI)    
       ENDIF
 
+C       ... failes !!
 C     CALL MEMCHK('before AMFI2',WORK,1)
 C ... TODO: find out the "best" optimal allocation for AMFI !
 C     LAMFI = N2BBASXQ*N2BBASXQ
 C     LAMFI = N2BBASXQ*4
-      LAMFI = N2BBASXQ*32
-      CALL MEMGET('REAL',KAMFI,LAMFI,WORK,KFREE,LFREE)
+C      .... this worked before.... with dcbbas.h
+CMI   LAMFI = N2BBASXQ*32
+C     CALL MEMGET('REAL',KAMFI,LAMFI,WORK,KFREE,LFREE)
+C        ... this works ONLY AFTER MEMGET !!
+C     CALL MEMCHK('before AMFI 3',WORK,1)
 
 C     Open Mean-field input file generated in READIN      
       LUTMP2 = 0
@@ -3980,7 +3978,7 @@ C     ... skip text
       READ(LUTMP2,*) 
 C     ... read number of unique nuclei
       READ(LUTMP2,*) NUNUC
-      write(lupri,*) 'MNF.INP - number of unique nuclei:',NUNUC
+      write(lupri,*) 'MNF.INP - read number of unique nuclei:',NUNUC
 
       TOTDIFX=D0
       TOTDIFY=D0
@@ -4031,11 +4029,15 @@ CMI   ... gauss.nucleus (for SO1) does not work in AMFI !!!!
         ENDIF
        ENDIF
 
+C         ... works !
+C     CALL MEMCHK('before AMFI',WORK,1)
+
        CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
-     &             IC_AMFI,WORK(KAMFI),LAMFI)
+C    &             IC_AMFI,WORK(KAMFI),LAMFI)
+     &             IC_AMFI,WORK(KFREE),LFREE)
 
 C      ...... this works...
-      CALL MEMCHK('after AMFI',WORK,1)
+C     CALL MEMCHK('after AMFI',WORK,1)
 
 C      ... read AOPROPER.MNF file...
 C    numballcart... total no of functions per centre...
@@ -4284,7 +4286,7 @@ C        ... release memmory...
       CALL MEMREL('KSOZ',WORK,KWORK,KSOZ,KFREE,LFREE)
       CALL MEMREL('KSOY',WORK,KWORK,KSOY,KFREE,LFREE)
       CALL MEMREL('KSOX',WORK,KWORK,KSOX,KFREE,LFREE)
-      CALL MEMREL('AMFI',WORK,KWORK,KAMFI,KFREE,LFREE)
+C     CALL MEMREL('AMFI',WORK,KWORK,KAMFI,KFREE,LFREE)
 
       CALL GPCLOSE(MNFPRP,'KEEP')
 
@@ -4337,8 +4339,9 @@ CMI  ... called from AMFI/contandmult
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck amfi_stuff */
-      SUBROUTINE UNITE_INDXS(NSPH,LABINT,IPNUC,IPTYPAO,INDXLM,ISTNUCTYP)
+C  /* Deck UNITE_INDXS */
+      SUBROUTINE UNITE_INDXS(NSPH,LABINT,IPNUC,
+     &                   IPTYPAO,INDXLM,ISTNUCTYP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE: If the basis set is splitted, do unite the INDXLM so that their fit
@@ -4357,12 +4360,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('UNITE_INDXS')
 
-      write(lupri,*) ' '
-      DO I=1, NSPH
+      IF (IPRINT.GE.2) THEN
+       write(lupri,'(/2X,A)')
+     & 'Entering order of basis functions in spher. AO basis:'
+       write(lupri,*) ' '
+       DO I=1, NSPH
         write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
      &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
-      ENDDO
-      write(lupri,*) ' '
+       ENDDO
+       write(lupri,*) ' '
+      ENDIF
 
 C    ... list of stored INUC&IPTYP
       IT = 0 
@@ -4393,19 +4400,22 @@ C     ... check out indexes from J
       IF (INUC.EQ.IPNUC(J).AND.IPTYP.EQ.IPTYPAO(J).AND.J.LE.NSPH) THEN
       JJ = JJ + 1
       IT = IT + 1
+        IF (IPRINT.GE.2) THEN
         write(lupri,*) 'I=',I,' J=',J,
      &   ' for INUC=',INUC,' IPTYP=',IPTYP,
      &   ' indexes:', JJ,INDXLM(J)
+        ENDIF
+
         IF (INDXLM(J).NE.JJ) THEN
-         write(lupri,*) 'difference in indexes !'
+         IF (IPRINT.GE.2) THEN
+          write(lupri,*) 'difference in indexes !'
+         ENDIF
 C          ... change the index !
-            INDXLM(J)=JJ
+           INDXLM(J)=JJ
         ENDIF
       ENDIF
       IF (J.LT.NSPH) GOTO 235 
       IF (I.LT.NSPH) GOTO 234
-
-      write(lupri,*) 'IT=',IT,' NSPH=',NSPH
 
       IF (IT.NE.NSPH) THEN
         write(lupri,*) 'IT=',IT,' NSPH=',NSPH
@@ -4413,14 +4423,16 @@ C          ... change the index !
       ENDIF
 
 C     ... when indexes are changed, print them out....
-      write(lupri,*) ' '
-      DO I=1, NSPH
-        write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
-     &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
-      ENDDO
+      IF (IPRINT.GE.1) THEN
+       write(lupri,'(2X,A)')
+     &  'UNITE_INDXS: Order of spher.atomic basis functions:'
+       DO I=1, NSPH
+         write(lupri,*) I,'.fu center:',IPNUC(I),' at.fu.type(indx):',
+     &   LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
+       ENDDO
+      ENDIF
 
 
-C     CALL QUIT('UNITE_ENDXS ')
       CALL QEXIT('UNITE_INDXS')
       RETURN
       END
