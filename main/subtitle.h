@@ -19,11 +19,12 @@ char *strsubtitle = "\
 ******************************************************************************\n\
 *                                                                            *\n\
 * Written by:                                                                *\n\
-*    Trond Saue,              IRSAMC, Universite Paul Sabatier, France       *\n\
+*    Trond Saue,              The University of Tromsoe,        Norway       *\n\
+*    Vebjoern Bakken,         University of Oslo,               Norway       *\n\
 *    Thomas Enevoldsen,       Odense University,                Denmark      *\n\
 *    Trygve Helgaker,         University of Oslo,               Norway       *\n\
 *    Hans Joergen Aa. Jensen, Odense University,                Denmark      *\n\
-*    Jon K. Laerdahl,         University of Auckland,           New Zealand  *\n\
+*    Jon K. Laerdahl,         University of Oslo                Norway       *\n\
 *    Kenneth Ruud,            University of Oslo,               Norway       *\n\
 *    Joern Thyssen,           Odense University,                Denmark      *\n\
 *    Luuk Visscher,           Vrije Universiteit, Amsterdam,    Netherlands  *\n\
@@ -40,10 +41,11 @@ char *strsubtitle = "\
 *    If results obtained with this code are published, an                    *\n\
 *    appropriate citation would be:                                          *\n\
 *                                                                            *\n\
-*    T. Saue, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen, J. Laerdahl,     *\n\
-*    K. Ruud, J. Thyssen, and L. Visscher:                                   *\n\
+*    T. Saue, V. Bakken, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,       *\n\
+*    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *\n\
 *    \"Dirac, a relativistic ab initio electronic structure program,          *\n\
-*    Release 3.1 (1998)\"                                                     *\n\
+*    Release 3.2 (2000)\"                                                     *\n\
+*    (for a suitable BibTEX entry, see <URL:\"insert URL here\">)               *\n\
 *                                                                            *\n\
 ******************************************************************************\n";
 
