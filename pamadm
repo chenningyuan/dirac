@@ -295,7 +295,7 @@ cat <<EOF>> Makefile
 export:
 	-rm -f DIRAC.new.tar.Z
 	tar cvf DIRAC.new.tar \
-	configure config.sub config.guess doc/dirdoc.ps \
+	configure config.sub config.guess doc/doc.html \
 	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile dirac/include \
 	prp/*.F prp/Makefile prp/include \
 	abacus/*.F abacus/Makefile abacus/include \
