@@ -32,80 +32,85 @@ C
 C$Id$
 C
 C#include "single.h"
-#ifdef REVLOG
-$Log$
-Revision 1.15  2003/12/10 09:50:25  tsaue
-tsaue: Modified JCO(IQM) to JCO(*) i routine BASLIB to avoid stop
-due to array bounds check
-
-Revision 1.14  2003/12/10 08:41:01  luuk
-LV: Bugfixes related to the renaming of common blocks that was done yesterday.
-Mainly insertion of the renamed block mx2orb.h in places where MAXORB is required.
-
-Revision 1.13  2003/12/09 16:07:58  tsaue
-tsaue: NB ! NB!
-The COMMON mxorb.h has been renamed maxorb.h consistent with DALTON.
-The previous global maxorb.h has been moved to krmc and renamed mx2orb.h.
-To globally replace all mxorb.h with maxorb.h I used
-  perl -pi -e 's/mxorb.h/maxorb.h/g' */*/*.F
-
-Revision 1.12  2003/12/09 16:00:12  tsaue
-tsaue: Removed all unnecessary inclusions to maxorb.h
-
-Revision 1.11  2003/06/12 12:07:09  fleig
-TF:
-
- KRMC MERGE !
-
- - Complete MCSCF program including all changes in other relevant
-   program parts.
-
- - Entire LUCIAREL program module.
-
- - LUCITA/LUCIAREL merge: eliminated duplicate code, introduced
-   new library file gp/gplucia.F with common routines.
-
- - Some restructuring in dcb... include files.
-
- - New standard test cases added:
-  -- 26.krmc_gosci: MCSCF test with GOSCI module (Be atom)
-  -- 28.luciarel_medium: LUCIAREL standalone test in MCSCF
-                         framework (F atom)
-
-Revision 1.10.2.1  2003/02/17 19:17:31  fleig
-TF:
- - krmc: abacus
-
-Revision 1.10  2002/11/21 12:44:54  hjj
-HJAaJ:
-1) abaopt.F: revised some output text
-2) changed '<xxx.h>' to '"xxx.h"'
-   (they were missed by the perl script because they had space in '# include')
-
-Revision 1.9  2002/08/20 15:49:34  tsaue
-tsaue: Local abacus COMMON blocks added to abacus directory.
-       Fortran files modified to allow cpp include local files
-       using the command
-          perl -pi -e '/^#include/ and s,<(.*?)>,"$1",g' *.F
-       Thanks, Pawel !
-
-Revision 1.8  2001/08/31 12:05:14  panor
-Changed from infpri.h to priunit.h
-
-Revision 1.7  2000/09/29 13:34:56  jth
-Initialize LUMOL before use.
-
-Revision 1.6  2000/09/18 14:14:17  jth
-New geometry optimization module from Dalton1.1.
-
-Revision 1.5  2000/09/18 09:57:23  jth
-New files from Dalton1.1. Before merge with Dirac.
-
-961019-kruud: Added ROA changes from Gilbert Hangartner
-960417-hjaaj: Rudimentary initial implementation of .RESTART
-950601-vebjorn:
-  A flag for geometry convergence has been added in common block GNRINF.
-#endif
+C#ifdef REVLOG
+C$Log$
+CRevision 1.16  2004/02/11 16:56:35  tsaue
+Ctsaue: Introduced modification to allow smooth compilation with the Intel efc
+Ccompiler (shorten some cpp statements etc.)
+C
+CRevision 1.15  2003/12/10 09:50:25  tsaue
+Ctsaue: Modified JCO(IQM) to JCO(*) i routine BASLIB to avoid stop
+Cdue to array bounds check
+C
+CRevision 1.14  2003/12/10 08:41:01  luuk
+CLV: Bugfixes related to the renaming of common blocks that was done yesterday.
+CMainly insertion of the renamed block mx2orb.h in places where MAXORB is required.
+C
+CRevision 1.13  2003/12/09 16:07:58  tsaue
+Ctsaue: NB ! NB!
+CThe COMMON mxorb.h has been renamed maxorb.h consistent with DALTON.
+CThe previous global maxorb.h has been moved to krmc and renamed mx2orb.h.
+CTo globally replace all mxorb.h with maxorb.h I used
+C  perl -pi -e 's/mxorb.h/maxorb.h/g' */*/*.F
+C
+CRevision 1.12  2003/12/09 16:00:12  tsaue
+Ctsaue: Removed all unnecessary inclusions to maxorb.h
+C
+CRevision 1.11  2003/06/12 12:07:09  fleig
+CTF:
+C
+C KRMC MERGE !
+C
+C - Complete MCSCF program including all changes in other relevant
+C   program parts.
+C
+C - Entire LUCIAREL program module.
+C
+C - LUCITA/LUCIAREL merge: eliminated duplicate code, introduced
+C   new library file gp/gplucia.F with common routines.
+C
+C - Some restructuring in dcb... include files.
+C
+C - New standard test cases added:
+C  -- 26.krmc_gosci: MCSCF test with GOSCI module (Be atom)
+C  -- 28.luciarel_medium: LUCIAREL standalone test in MCSCF
+C                         framework (F atom)
+C
+CRevision 1.10.2.1  2003/02/17 19:17:31  fleig
+CTF:
+C - krmc: abacus
+C
+CRevision 1.10  2002/11/21 12:44:54  hjj
+CHJAaJ:
+C1) abaopt.F: revised some output text
+C2) changed '<xxx.h>' to '"xxx.h"'
+C   (they were missed by the perl script because they had space in '# include')
+C
+CRevision 1.9  2002/08/20 15:49:34  tsaue
+Ctsaue: Local abacus COMMON blocks added to abacus directory.
+C       Fortran files modified to allow cpp include local files
+C       using the command
+C          perl -pi -e '/^#include/ and s,<(.*?)>,"$1",g' *.F
+C       Thanks, Pawel !
+C
+CRevision 1.8  2001/08/31 12:05:14  panor
+CChanged from infpri.h to priunit.h
+C
+CRevision 1.7  2000/09/29 13:34:56  jth
+CInitialize LUMOL before use.
+C
+CRevision 1.6  2000/09/18 14:14:17  jth
+CNew geometry optimization module from Dalton1.1.
+C
+CRevision 1.5  2000/09/18 09:57:23  jth
+CNew files from Dalton1.1. Before merge with Dirac.
+C
+C961019-kruud: Added ROA changes from Gilbert Hangartner
+C960417-hjaaj: Rudimentary initial implementation of .RESTART
+C950601-vebjorn:
+C  A flag for geometry convergence has been added in common block GNRINF.
+C#endif
+#ifndef PRG_DIRAC
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include "implicit.h"
@@ -3897,7 +3902,7 @@ C
                   END DO
                END DO
             END IF
-#ifndef PRG_DIRAC
+C#ifndef PRG_DIRAC
  include/nqcc.h: Dalton .ne. Dirac should be fixed.
             IF (NQCC) THEN
                DO IATOM = 1, NUCDEP
@@ -3910,7 +3915,7 @@ C
                   END DO
                END DO
             END IF
-#endif
+C#endif
             IF (SPNSPN) THEN
                DO ICOOR = 1, 3*NUCDEP
                   DO JCOOR = 1, 3*NUCDEP
@@ -3996,7 +4001,7 @@ C
                   END DO
                END DO
             END IF
-#ifndef PRG_DIRAC
+C#ifndef PRG_DIRAC
             IF (NQCC) THEN
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
@@ -4009,7 +4014,7 @@ C
                   END DO
                END DO
             END IF
-#endif
+C#endif
             IF (SPNSPN) THEN
                DO ICOOR = 1, 3*NUCDEP
                   DO JCOOR = 1, 3*NUCDEP
@@ -4159,7 +4164,7 @@ C
                   CALL POLPRI(POLDD(1,1,IFRQR),'   ',-2)
                END DO
             END IF
-#ifndef PRG_DIRAC
+C#ifndef PRG_DIRAC
             IF (NQCC) THEN
                CALL HEADER('Nuclear quadrupole moments at displaced '//
      &                     'geometry',1)
@@ -4172,7 +4177,7 @@ C
                   END DO
                END DO
             END IF
-#endif
+C#endif
             IF (SPNSPN) THEN
                CALL HEADER('Spin-spin coupling constants at effective'//
      &                     ' geometry',1)

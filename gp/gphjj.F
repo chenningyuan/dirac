@@ -670,7 +670,14 @@ C  /* Deck trace */
 C
 C Written 4-Dec-1983 hjaaj
 C
-#if !defined (SYS_VAX) && !defined (VAR_SECSEC) && !defined (SYS_CRAY) && !defined (SYS_IBM) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined(SYS_DEC) && !defined (SYS_SX)
+#if !defined (SYS_VAX) && !defined (VAR_SECSEC)\
+&& !defined (SYS_CRAY) && !defined (SYS_IBM)\
+&& !defined (SYS_ALLIANT) && !defined (SYS_CONVEX)\
+&& !defined (SYS_AIX) && !defined (SYS_IRIX)\
+&& !defined (SYS_PARAGON) && !defined (SYS_T3D)\
+&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
+&& !defined (SYS_HPUX) && !defined(SYS_DEC)\
+&& !defined (SYS_SX)
       INTEGER A,B,C
       SAVE    A,B,C
       DATA    A/1/,B/0/,C/0/

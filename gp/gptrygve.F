@@ -266,7 +266,14 @@ C
       WRITE (LUPRI,'(/A)') STRING
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
-#if defined (SYS_CRAY) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_T90) || defined (SYS_SX) || defined (SYS_DARWIN)
+#if defined (SYS_CRAY) || defined (SYS_CONVEX)\
+|| defined (SYS_UNIX) || defined (SYS_AIX)\
+|| defined (SYS_HPUX) || defined (SYS_IRIX)\
+|| defined (SYS_NEC) || defined (SYS_DEC)\
+|| defined (SYS_T3D) || defined (SYS_LINUX)\
+|| defined (SYS_SUN) || defined (SYS_HPUX)\
+|| defined (SYS_HAL) || defined (SYS_T90)\
+|| defined (SYS_SX) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
 #endif
@@ -409,7 +416,13 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90) && !defined(SYS_DARWIN)
+#if !defined (SYS_CRAY) && !defined (SYS_CONVEX)\
+&& !defined (SYS_AIX) && !defined (SYS_HPUX)\
+&& !defined (SYS_DEC) && !defined (SYS_IRIX)\
+&& !defined (SYS_NEC) && !defined (SYS_T3D)\
+&& !defined (SYS_LINUX) && !defined (SYS_SUN)\
+&& !defined (SYS_HAL) && !defined (SYS_T90)\
+&& !defined(SYS_DARWIN)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN
