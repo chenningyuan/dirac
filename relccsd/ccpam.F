@@ -33,8 +33,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMCCM (CC,MAXCOR)
 C
-      IMPLICIT INTEGER (A-Z)
-C
 C---------------Description-----------------------------------------------
 C
 C    Double group symmetry adapted unrestricted coupled cluster code
@@ -50,6 +48,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+#include <implicit.h>
 #include <mxorb.h>
 #include <priunit.h>
 #include <dgroup.h>
@@ -61,6 +60,7 @@ C
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
       INCLUDE "ccpar.inc"
+      INCLUDE "symm.inc"
       INCLUDE "files.inc"
       INCLUDE "complex.inc"
 C
@@ -84,7 +84,8 @@ C
       IN = LUCMD
       IW = LUPRI
       INTFCE = 'DIRAC     '
-      CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
+      SPFR = SPINFR.OR.LEVYLE 
+      CA = NZ.GE.2.AND..NOT.SPFR
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
@@ -179,6 +180,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <mxorb.h>
+#include <dcbham.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
 #include <infpar.h>
@@ -188,6 +190,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <priunit.h>
 #include <dgroup.h>
       INCLUDE "ccpar.inc"
+      INCLUDE "symm.inc"
       INCLUDE "files.inc"
       CHARACTER*10 INTFCE
       LOGICAL CA,CCEND
@@ -202,7 +205,8 @@ C
       NMPROC = NUMNOD + 1
 
       INTFCE = 'DIRAC     '
-      CA = NZ.GE.2
+      SPFR = SPINFR.OR.LEVYLE 
+      CA = NZ.GE.2.AND..NOT.SPFR
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one

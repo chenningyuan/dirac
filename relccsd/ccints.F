@@ -56,7 +56,7 @@ C
       INTEGER NVT,NSP
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
       REAL*8 FOO(*),FVO(*),FVV(*)
       REAL*8 VOOOO(RCW,*),VOOOOA(RCW,*),VVOOO(RCW,*),VVOOOA(RCW,*)
       REAL*8 VVVOO(RCW,*),VVVOOA(RCW,*),VVOVO(RCW,*),VVOVOA(RCW,*)
@@ -522,7 +522,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NSP,IREPSPI(NSP,8,2)
+      INTEGER NSP,IREPSPI(NSP,16,2)
       REAL*8 AVO(*),AOV(*),AOO(*),AVV(*)
       REAL*8 PROP(2,NSP,NSP)
       REAL*8 APHASE(2)
@@ -1370,7 +1370,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2),INDEX(NSP,NSP,4)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2),INDEX(NSP,NSP,4)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1531,7 +1531,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2),INDEX(NSP,NSP,4,4)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2),INDEX(NSP,NSP,4,4)
 C
 C---------------Common Blocks--------------------------------------
 C

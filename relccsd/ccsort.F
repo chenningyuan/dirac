@@ -46,6 +46,8 @@ C triangular packing (I>J) can be used in IJ or IJK.
 C
 C 9-12-97 : Introduced systematic names for most of the routines,
 C           some special sorters remain.
+C 1-3-01 : Note that MXREP is still hardwired, better to have a small
+C          common block that just contains NREP and MULTB ?
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1TT4 (NREP,MULTB,FIRST,DOINV,
@@ -69,9 +71,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
       LOGICAL FIRST,DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -184,9 +186,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
       LOGICAL FIRST
 C
 C---------------Common Blocks--------------------------------------
@@ -264,9 +266,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -324,9 +326,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -394,9 +396,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
-      INTEGER OFF(NREP+1),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF2(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -467,10 +469,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -523,10 +525,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -581,9 +583,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -643,9 +645,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
-      INTEGER OFF(NREP+1),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF2(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -752,9 +754,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
       LOGICAL FIRST, DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -817,9 +819,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -873,9 +875,9 @@ C
       LOGICAL USEDZ
       INTEGER NBUF1
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP,MULTB(16,16,2),IJPAIR(NREP)
+      INTEGER NREP,MULTB(64,64,2),IJPAIR(NREP)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -976,10 +978,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1A(NREP),NPAIR1B(NREP),NPAIR2(NREP)
       INTEGER IFIE(NREP),JFIE(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1039,9 +1041,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1099,10 +1101,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1162,9 +1164,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -1223,9 +1225,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
       LOGICAL FIRST,DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -1309,9 +1311,9 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP),KFIE(NREP),LFIE(NREP),NPAIR2(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32)
       LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
@@ -1375,9 +1377,9 @@ C
       LOGICAL USEDZ
       INTEGER NBUF1
       REAL*8 BUF1(*),T1(*),GV(*)
-      INTEGER NREP,MULTB(16,16,2),IJPAIR(NREP)
+      INTEGER NREP,MULTB(64,64,2),IJPAIR(NREP)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
 C
 C---------------Common Blocks--------------------------------------
 C

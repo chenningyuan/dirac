@@ -2373,7 +2373,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      DIMENSION NINDX(0:2,8,2)
+      DIMENSION NINDX(0:2,MXREP,2)
 C
 C---------------Executable code--------------------------------------
 C
@@ -2493,7 +2493,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      DIMENSION NINDX(0:2,8,4)
+      DIMENSION NINDX(0:2,MXREP,4)
       LOGICAL TRIANG(2),ALLOWED,ALLOW1,ALLOW2
 C
 C---------------Executable code--------------------------------------

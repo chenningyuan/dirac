@@ -374,7 +374,7 @@ C
       REAL*8 CC(MAXCORE)
 #endif
       PARAMETER (MAXSP=1000)
-      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*16)
+      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*16*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUE,CPUS,CPUFO,CPUSO,CPUVAR
@@ -491,7 +491,7 @@ C
 C     
 C     Check whether the Fock space CC module is included in this version
 C
-#ifndef MOD_FOCKSPCC
+#if !defined (MOD_FOCKSPCC)
       IF (DOFSPC) THEN
          CALL QUIT('FOCK SPACE CC NOT AVAILABLE IN THIS VERSION')
       ENDIF
@@ -525,7 +525,7 @@ C
       CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOEXC) MXCORR = MAX0(MXCORR,MXCORR1)
 C
-#ifdef MOD_FOCKSPCC
+#if defined (MOD_FOCKSPCC)
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
      &            IREPSP,IREPSPI,MREMAIN)
@@ -631,7 +631,7 @@ C
      &                        NSP,IREPSPI)
       CALL FLSHFO (IW)
 C
-#ifdef MOD_FOCKSPCC
+#if defined (MOD_FOCKSPCC)
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI,MREMAIN)
       CALL FLSHFO (IW)
@@ -720,7 +720,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
       INTEGER NELEC(16),NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
       LOGICAL FOCKSP,REPORT
@@ -737,7 +737,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-      INTEGER NOOOT2(8),NVVVT2(8)
+      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
 C
 C---------------Executable code--------------------------------------
 C
@@ -947,9 +947,20 @@ C
          WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
          WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
-         WRITE (IW,1001) (REPNA(I),I=1,NREP)
-         WRITE (IW,1002) 'occupied',(NO(I),I=1,NREP)
-         WRITE (IW,1002) 'virtual ',(NV(I),I=1,NREP)
+         IF (SPFR) THEN
+            NREP1 = 1
+            NREP2 = MIN0(NREP/2,8)
+  10        WRITE (IW,1001) (REPNA(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'occupied',(NO(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'virtual ',(NV(I),I=NREP1,NREP2)
+            NREP1 = NREP1 + 8
+            NREP2 = MIN0(NREP/2,NREP2+8)
+            IF (NREP1.LE.NREP/2) GOTO 10
+         ELSE
+            WRITE (IW,1001) (REPNA(I),I=1,NREP)
+            WRITE (IW,1002) 'occupied',(NO(I),I=1,NREP)
+            WRITE (IW,1002) 'virtual ',(NV(I),I=1,NREP)
+         ENDIF
       ENDIF
 C
       IF (NFROZEN.GT.0.AND.REPORT) THEN
@@ -970,11 +981,24 @@ C
      &                   (NINACT(I)+NACT(I)-NELEC(I),I=1,NSYMRP)
          WRITE (IW,1002) 'inactive virtual ',(NELEC(I)+NVIRT(I)-
      &                    NINACT(I)-NACT(I),I=1,NSYMRP)
-         WRITE (IW,1001) (REPNA(I),I=1,NREP)
-         WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
-         WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
-         WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
-         WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
+         IF (SPFR) THEN
+            NREP1 = 1
+            NREP2 = MIN0(NREP/2,8)
+   11       WRITE (IW,1001) (REPNA(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=NREP1,NREP2)
+            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=NREP1,NREP2)
+            NREP1 = NREP1 + 8
+            NREP2 = MIN0(NREP/2,NREP2+8)
+            IF (NREP1.LE.NREP/2) GOTO 11
+          ELSE
+            WRITE (IW,1001) (REPNA(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
+            WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
+            WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
+            WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
+         ENDIF
       ENDIF
 C
 C
@@ -1338,7 +1362,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
       REAL*8 EPS(*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,16,2)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1759,6 +1783,8 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
+      DIMENSION IREPSPI(*)
+C
 C---------------Common Blocks--------------------------------------
 C
       INCLUDE "param.inc"
@@ -2067,6 +2093,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
       REAL*8 EPS(*)
+      DIMENSION IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2266,7 +2293,7 @@ C
 1011  FORMAT (//" Random Phase Approximation : ",
      &        /" Calculate",I3," excitation energies for irrep ",A4)
       END
-#ifdef MOD_FOCKSPCC
+#if defined (MOD_FOCKSPCC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                  NSP,IREPSP,IREPSPI,MREMAIN)
@@ -2293,6 +2320,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
       REAL*8 EPS1(*),EPS(*)
+      DIMENSION IREPSP(*),IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2875,12 +2903,12 @@ C
          CALL MPI_BCAST(ECORE,1,MPI_DOUBLE_PRECISION,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NSYMRP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(REPN,64,MPI_CHARACTER,MASTER,
+         CALL MPI_BCAST(REPN,NSYMRP*4,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NREP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(REPNA,64,MPI_CHARACTER,MASTER,
+         CALL MPI_BCAST(REPNA,2*NREP*4,MPI_CHARACTER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
-         CALL MPI_BCAST(MULTB,512,MPI_INTEGER,MASTER,
+         CALL MPI_BCAST(MULTB,MXREP*MXREP*8,MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(IREPSP,2*NSP,MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
