@@ -1221,7 +1221,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
 #include "priunit.h"   
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, THRNULL=1.0D-7 ) 
+      PARAMETER(D1 = 1.0D0, D0 = 0.0D0 ) 
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1350,9 +1350,6 @@ C ... do always print the average difference for RKB free-particle e-p pairing !
      & 'Average difference for e-p pairing of '//
      & 'free particle eigenvalues (fsym ',I,
      & '/',NFSYM,') : ',TOTDIFF
-       IF (TOTDIFF.GE.THRNULL) THEN
-         WRITE(LUPRI,'(A)') 'DIAG_FP: Big difference e-p!'
-       ENDIF
 
        IF (IPRHAM.GE.7) THEN
         CALL HEADER(
