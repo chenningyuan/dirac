@@ -350,7 +350,6 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER(D2=2.0D0)
 C
-#include <dcbgen.h>
 #include <cbihr2.h>
 #include <dcbxrs.h>
 #include <dcborb.h>
@@ -410,34 +409,11 @@ C     Construct Kohn-Sham contribution
 C     ================================
       IF(DFTADD) THEN
 C       Generate standard density matrix
+        IREPOP = JSYMOP-1
         CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
         CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-CTROND        CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
-CTROND        IOFF = 1
-CTROND        DO ISHELL = 1, NOPEN
-CTROND          IOFF = IOFF + N2BBASXQ
-CTROND          CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
-CTROND        ENDDO
-        CALL DSCAL(N2BBASX,D2,WORK(KBUF),1)
-#if defined (VAR_MPI)
-        IF(PARCAL) THEN
-CTROND: This must be fixed !
-          CALL QUIT('Not yet implemented !')
-          IRNTYP = 7
-          CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
-     &          IDUM,IDUM,
-     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
-     &          IDUM,DUM,DUM,DUM,DUM,DUM)
-        ELSE
-#endif
-          IREPOP = JSYMOP-1
-          CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,IREPOP,
-     &               .FALSE.,.FALSE.,.FALSE.,.TRUE.,
-     &               WORK(KFREE),LFREE,IPRXRS)
-#if defined (VAR_MPI)
-        ENDIF
-#endif
+        CALL DFTRPA(WORK(KBUF),FMO,FAO,IREPOP,NOSIM,
+     &              IPRXRS,WORK,KFREE,LFREE)
         CALL MEMREL('GMOLI1.dft',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
 #endif
