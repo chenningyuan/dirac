@@ -121,8 +121,6 @@ C&&& RADINT: Give relative precision of the radial integration
 C&&& PRINT: Print level for DFT-module
                  READ(LUCMD,*) IPRDFT
                  GO TO 100
-              CONTINUE
-                 GO TO 100
  7            CONTINUE
                  GO TO 100
  8            CONTINUE
