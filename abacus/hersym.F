@@ -806,11 +806,11 @@ C        Add mirror planes to TMPARR
          IF ((ITURN .LT. 2) .AND. (I .LE. NTOT)) THEN
             IBEF = I
  250        CONTINUE
-            IF ((I .LE. NTOT) .AND. (ABS(TMPARR(3,I)) .GT. 1.0D-8)) THEN
+            IF (I .GT. NTOT) THEN
+               I = IBEF
+            ELSE IF (ABS(TMPARR(3,I)) .GT. 1.0D-8) THEN
                I = I + 1
                GOTO 250
-            ELSE IF (I .GT. NTOT) THEN
-               I = IBEF
             END IF
             V1(1) = TMPARR(1,I)
             V1(2) = TMPARR(2,I)
