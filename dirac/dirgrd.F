@@ -373,7 +373,7 @@ C
       CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
 C
       CALL GETTIM(CPU1,WALL1)
-      IF (IGTHRS .GT. 0) THEN
+      IF (IGTHRS .LT. 16) THEN
 C
 C     Prepare screening
 C        =================
