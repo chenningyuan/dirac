@@ -185,6 +185,7 @@ C
       CALL DIRAC_PARCTL( 0 )
       RETURN
       END
+#if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck CCNOD */
       SUBROUTINE CCNOD(CC,MAXCOR)
@@ -288,3 +289,4 @@ C
 C
       RETURN
       END
+#endif    /* ifdef VAR_MPI */
