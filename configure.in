@@ -892,10 +892,10 @@ case $machine in
 #
     *-cray)
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}' "
          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
       else
-         cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=\${WRKMEM}' ,$parop"
+         cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
       fi
       for mod in $MODS; do
