@@ -398,7 +398,7 @@ C
          ELSE
            CALL DZERO(DINTSKP,3*14*3)
          END IF
-        IF(IFTHRS.GT.0) THEN
+        IF(IFTHRS.LT.16) THEN
           DOSCRN = .TRUE.
           FCKTHR = -IFTHRS
           FCKTHR = 10.0D0**FCKTHR
