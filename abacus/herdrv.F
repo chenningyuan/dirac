@@ -660,8 +660,6 @@ C&&& JENGIN - activate J-engine
          WRITE (LUPRI,'(3X,A)')
      &     ' Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
-CTROND
-         STOP 'End of ERI test..'
       ENDIF
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
