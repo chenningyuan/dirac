@@ -183,16 +183,23 @@ aug 2002 luuk+hjaaj
 ****
 *********************************************
 Feb 2003 HJJ + TF
- - Many other tasks not to be mentioned ...
-   Oh yes, we will:
-  -- Problems running odd electron KRMC (PtH, symmetry?)
-  -- 2-electron density matrix ordering KRMC-LUCIAREL (!!)
-     (to be revised)
-  -- Integral interface: Quaternion / NZ,3 format with LUCIAREL ?
-  -- Problems reported by Henryk Witek
-  -- Adapt quaternion symmetry groups in LUCIAREL (C1,Ci), mainly
-     integral interface/densities
-  -- Implement real matrix groups
-  -- Spot the CPU-eater, general speed-up (Jeppe!)
-     (we want to do REALLY large calculations.)
-  (PUH.) /Timo
+Jun 2003 TF
+
+KRMC related:
+  - Problems running odd electron KRMC (PtH, symmetry?)
+  - Problems reported by Henryk Witek
+  - Symmetry:
+   -- Implement quaternion matrix groups
+   -- Careful with complex groups: buggy
+   -- Real groups: C2v, D2 well-tested
+                   D2h not well-tested, no known problems
+  
+LUCIAREL related:
+  - 2-electron density matrix ordering KRMC-LUCIAREL (!!)
+    (to be revised)
+  - Integral interface: Quaternion / NZ,3 format with LUCIAREL ?
+  - Adapt quaternion symmetry groups in LUCIAREL (C1,Ci), mainly
+    integral interface/densities
+  - Implement real matrix groups
+  - Spot the CPU-eater, general speed-up (Jeppe!)
+    (we want to do REALLY large calculations.)
