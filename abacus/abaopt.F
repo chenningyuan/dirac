@@ -52,7 +52,7 @@ Cjth
 #include <gnrinf.h>
 #include <infinp.h>
 #endif
-      PARAMETER (NTABLE = 44, ITRMX = 25, MXREJ = 5, D0 = 0.0D0,
+      PARAMETER (NTABLE = 48, ITRMX = 25, MXREJ = 5, D0 = 0.0D0,
      &                              DEFTHR = 1.0D-6, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, FIRST
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, STR*3
@@ -69,7 +69,8 @@ C
      &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
      &            '.NOREIN', '.BAKER ', '.M-BFGS', '.CARTES',
      &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
-     &            '.GRDINI', '.DISPLA', '.DOTRCK', '.TWOGRD'/
+     &            '.GRDINI', '.DISPLA', '.DOTRCK', '.TWOGRD',
+     &            '.IGTHRS', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
 C
@@ -115,10 +116,11 @@ C
 #if defined(PRG_DIRAC)
       FSTORD = .TRUE.
       SNDORD = .FALSE.
-      GRDTCK = .TRUE.
-      TWOGRD(1) = .TRUE.
-      TWOGRD(2) = .TRUE.
-      TWOGRD(3) = .TRUE.
+C
+C     Initialize dcbgrd.h
+C
+      CALL INIGRD
+      DOTRCK = .TRUE.
 #else
       FSTORD = .FALSE.
       SNDORD = .TRUE.
@@ -190,7 +192,7 @@ C
      &                  11,12,13,14,15,16,17,18,19,20,
      &                  21,22,23,24,25,26,27,28,29,30,
      &                  31,32,33,34,35,36,37,38,39,40,
-     &                  41,42,43,44), I
+     &                  41,42,43,44,45,46,47,48), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -308,21 +310,30 @@ Cjth - removed ??            GOTO 100
             GOTO 100
  43         READ (LUCMD,*) ITEMP
             IF ( ITEMP .GT. 0) THEN
-               GRDTCK = .TRUE.
+               DOTRCK = .TRUE.
             ELSE
-               GRDTCK = .FALSE.
+               DOTRCK = .FALSE.
             END IF
             GOTO 100
  44         CONTINUE
             READ(LUCMD,*) II(1),II(2),II(3)
             DO III=1,3
                IF ( II(III) .GT. 0 ) THEN
-                  TWOGRD(III) = .TRUE.
+                  DO2GRD(III) = .TRUE.
                ELSE
-                  TWOGRD(III) = .FALSE.
+                  DO2GRD(III) = .FALSE.
                END IF
              END DO
              GOTO 100
+ 45         CONTINUE
+            READ(LUCMD,*) IGTHRS
+            GOTO 100
+ 46         CONTINUE
+            GOTO 100
+ 47         CONTINUE
+            GOTO 100
+ 48         CONTINUE
+            GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
          ELSE
@@ -705,18 +716,26 @@ C
          WRITE(LUPRI,*)
       END IF
 #ifdef PRG_DIRAC
-      CALL CYESNO(STR,TWOGRD(1))
+      CALL CYESNO(STR,DO2GRD(1))
       WRITE(LUPRI,'(1X,A,A)') 'Calculate LL-two-electron gradient: ',
      &                           STR
-      CALL CYESNO(STR,TWOGRD(2))
+      CALL CYESNO(STR,DO2GRD(2))
       WRITE(LUPRI,'(1X,A,A)') 'Calculate LS-two-electron gradient: ',
      &                           STR
-      CALL CYESNO(STR,TWOGRD(3))
+      CALL CYESNO(STR,DO2GRD(3))
       WRITE(LUPRI,'(1X,A,A)') 'Calculate SS-two-electron gradient: ',
      &                           STR
-      CALL CYESNO(STR,GRDTCK)
+      CALL CYESNO(STR,DOTRCK)
       WRITE(LUPRI,'(1X,A,A)') 'Skip LS/SS-two-el. grd. if small  : ',
      &                           STR
+      DTMP = 10.0D00**(-IGTHRS)
+      WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &   'Screening threshold in gradient calculation ',DTMP
+      IF (IGTHRS .GE. 16) THEN
+         WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &      'WARNING: Screening turned off...'
+         IGTHRS    = 0
+      END IF
 #endif
 C
       RETURN
@@ -1819,27 +1838,10 @@ C     Get gradient
 C
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EGRAD,MXCOOR)
-C 
-C     Copy information from optinf.h to dcbgrd.h
-C     Save current dcbgrd.h information
-C
-      LSAVE1 = DOTRCK
-      DOTRCK = GRDTCK
-      DO I = 1,3 
-         LSAVE2(I) = DO2GRD(I)
-         DO2GRD(I) = TWOGRD(I)
-      END DO
 C
 C     Calculate gradient
 C
       CALL PSIGRD(WORK(IWOFF+1),LWORK)
-C
-C     Restore dcbgrd.h information
-C
-      DOTRCK = LSAVE1
-      DO I = 1,3
-         DO2GRD(I) = LSAVE2(I)
-      END DO
 C
       EXABA = .TRUE.
       ENERGY = DHFERG
