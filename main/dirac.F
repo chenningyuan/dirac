@@ -305,7 +305,7 @@ C
       CALL GETBASDIR()
 C
 chj   write (0,*) 'Calling mpi_iprobe for node',mytid
-      call flush(0)
+chj   call flush(0)
  100  CONTINUE
 #if defined (VAR_MPI)
       CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
