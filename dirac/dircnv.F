@@ -825,7 +825,7 @@ C     column
 C
       ID = 3
       DO J = 3,NELMBM
-        DO I = 3,NELMBM
+        DO I = 3,J
           IJ = ID + I
           BMAT(IJ-J) = BMAT(IJ)
         ENDDO
