@@ -593,7 +593,7 @@ C
             I = I + 1
             TEGN = B(I:I)
             IF (TEGN .NE. 'o') GOTO 950
-            IF (NEG1 .EQ -1) THEN
+            IF (NEG1 .EQ. -1) THEN
                NUM1 = -IRNGE1
             ELSE
                NUM1 = IRNGE2
@@ -631,7 +631,7 @@ C              ... read end of range
                   I = I + 1
                   TEGN = B(I:I)
                   IF (TEGN .NE. 'o') GOTO 950
-                  IF (NEG2 .EQ -1) THEN
+                  IF (NEG2 .EQ. -1) THEN
                      NUM1 = -IRNGE1
                   ELSE
                      NUM1 = IRNGE2
