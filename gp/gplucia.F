@@ -4740,7 +4740,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
         write(6,*) '  LENGTH,LBLOCK ',LENGTH,LBLOCK
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
         call rmemchk
-        stop ' In PART_CIV2. '
+        call quit( ' Insufficient buffer space in PART_CIV2. ' )
       ELSE
 *. This batch is finished, goto next batch
         GOTO 2000
