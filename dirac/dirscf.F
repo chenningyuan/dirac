@@ -720,7 +720,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.4) THEN
+      IF(IPRINT.GE.10) THEN
         CALL TITLER('Output from DENSTY','*',103)
         DO 20 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 20
@@ -1095,6 +1095,12 @@ C
 C     Reorder converged orbitals if requested
 C
       IF (LMOORF) THEN
+C
+C        It looks like CMO is trashed at this point, so we re-read
+C        the orbitals from DFCOEF:
+C
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,2)
+C
          CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
      &        WORK(KFREE),LFREE)
 C         
@@ -1788,18 +1794,20 @@ C
    
       DO 10 I = 1,NFSYM
          IF (IREORD(I).EQ.0) GOTO 10
-         IF (IPRSCF.GE.10) THEN
+         IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: before reordering',-1)
-            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
-            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &                  NFBAS(I,0),NORB(I),
-     &                  NZ,IPQTOQ(1,0),LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
             CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
      &                  NESH(I),1,1,LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Boson classification...'
-            CALL OUTPUT(IBEIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
-     &                  NESH(I),1,1,LUPRI)
+            WRITE(LUPRI,'(3X,I4)') 
+     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),NORB(I))
+         END IF
+         IF (IPRSCF.GE.10) THEN
+            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
          END IF
 C
 C        Save coefficients
@@ -1823,18 +1831,20 @@ C        Release memory
 C
          CALL MEMREL('REORD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-         IF (IPRSCF.GE.10) THEN
+         IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: after reordering',-1)
-            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
-            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &               NFBAS(I,0),NORB(I),
-     &               NZ,IPQTOQ(1,0),LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
             CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
      &                  NESH(I),1,1,LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Boson classification...'
-            CALL OUTPUT(IBEIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
-     &                  NESH(I),1,1,LUPRI)
+            WRITE(LUPRI,'(3X,I4)') 
+     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),NORB(I))
+         END IF
+         IF (IPRSCF.GE.10) THEN
+            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
+            CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &               NFBAS(I,0),NORB(I),
+     &               NZ,IPQTOQ(1,0),LUPRI)
          END IF
  10   CONTINUE
       CALL FLSHFO(LUPRI)
