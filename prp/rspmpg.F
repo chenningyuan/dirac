@@ -283,7 +283,7 @@ C
                gpcnrm=dnrm2(nzconfq,work(kgpci),1)
                gpenrm=dnrm2(nzxopeq,work(kgpoe),1)
                gppnrm=dnrm2(nzxoppq,work(kgpop),1)
-               gptnrm=sqrt(gpcnrm**2+gpenrm**2+gpprnm**2)
+               gptnrm=sqrt(gpcnrm**2+gpenrm**2+gppnrm**2)
 c               write(lupri,'(a,f18.10)') 'Gnorm',gptnrm
                if(gptnrm.lt.gpthrs)then
                   goto 30
@@ -672,7 +672,8 @@ C
       iopt=4
       lubuf=22
       call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
-      call reacmo(lubuf,'DFCOEF',work(kcmo),dum,dum,toterg,iopt)
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,IOPT,
+     &            WORK,KFREE,LFREE)
       close(lubuf,status='KEEP')
 C
 C     Solution vector (e-e) part
@@ -687,7 +688,7 @@ c        PRINT*, 'in getlrf_mpg'
          call memget('REAL',kxvec,nzxopeq*nfreq,work,kfree,lfree)
          call memget('REAL',kbbuf,      nzxopeq,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,        NESIM,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,ioff+1),jbendx,evecr,evalr,RCNV,
+         call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
      &               work(kcmo),iorbcl,eig,work(kzxope),WORK(KIVEC),
@@ -746,7 +747,7 @@ C
          call memget('REAL',kgvec,nzxoppq      ,work,kfree,lfree)
          call memget('REAL',kbbuf,nzxoppq      ,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,ioff+1),jbpndx,evecr,evalr,RCNV,IBTYP,
+         call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
      &               work(kcmo),iorbcl,eig,work(kzxopp),WORK(KIVEC),
      &               work,kfree,lfree)
