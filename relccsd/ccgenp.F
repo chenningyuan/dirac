@@ -118,7 +118,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 #if defined (SYS_IRIX)
       Call Date(Datum)
-      Call ChTime(Tijd)
+      Call Time(Tijd)
 #endif
 #if defined (SYS_AIX) 
       Call fdate_ (String)
