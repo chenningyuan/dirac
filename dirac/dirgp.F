@@ -119,6 +119,7 @@ C     IOPT:
 C       1 - read coefficients and eigenvalues
 C       2 - read coefficients and eigenvalues - give restart info
 C       3 - read coefficients only - give info
+C       >3 - read coefficients only, no info
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -159,7 +160,7 @@ C
       ENDIF
 C     Read coefficients
       READ (IUNIT,END=30,ERR=40) CMO
-      IF(IOPT.EQ.3) RETURN
+      IF(IOPT.GE.3) RETURN
 C     Read eigenvalues
       READ (IUNIT,END=50,ERR=60) EIG
 C
