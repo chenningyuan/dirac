@@ -1921,8 +1921,11 @@ C
 #include <mxcent.h>
 C
 #include <dcbgrd.h>
+#include <dcbgen.h>
 #include <dcbham.h>
 #include <dcbprp.h>
+C
+#include <ibtfun.h>
 C
 C     Initialize /CBIGRD/
 C     ===================
@@ -1933,13 +1936,8 @@ C     RELGRD is used in DHFGRD to control integrals
 C
       RELGRD = .FALSE.
       DONGRD = .FALSE.
-      DO2GRD(1) = .TRUE.
-      DO2GRD(2) = .TRUE.
-      DO2GRD(3) = .TRUE.
-      IF (LEVYLE) THEN
-         DO2GRD(2) = .FALSE.
-         DO2GRD(3) = .FALSE.
-      ENDIF
+      IGRD_INTFLG = INTGEN
+      IF (LEVYLE) IGRD_INTFLG = IBTAND ( 1, IGRD_INTFLG )
       DOTRCK    = .FALSE.
       SCRGRD    = -1.0D0      
 C
@@ -2023,14 +2021,8 @@ C&&&& PRINT:  Print level
                GO TO 100
     2          CONTINUE
 C&&&& INTFLG: Which two-electron gradient to calculate
-                  READ(LUCMD,*) II(1),II(2),II(3)
-                  DO III=1,3
-                     IF ( II(III) .GT. 0 ) THEN
-                        DO2GRD(III) = .TRUE.
-                     ELSE
-                        DO2GRD(III) = .FALSE.
-                     END IF
-                  END DO
+                  READ(LUCMD,*) ILL, ILS, ISS
+                  IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS
                GO TO 100
     3          CONTINUE
                   DOTRCK = .TRUE.
@@ -2057,26 +2049,35 @@ C     =============
          WRITE(LUPRI,'(1X,A)') 'GRDINP: Calculation of molecular '//
      &                         'gradient.'
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A,I3)')'Print level                       : ',
-     &                            IPRGRD
-         CALL CYESNO(STR,DO2GRD(1))
-         WRITE(LUPRI,'(1X,A,A)') 'Calculate LL-two-electron gradient: ',
-     &                           STR
-         CALL CYESNO(STR,DO2GRD(2))
-         WRITE(LUPRI,'(1X,A,A)') 'Calculate LS-two-electron gradient: ',
-     &                           STR
-         CALL CYESNO(STR,DO2GRD(3))
-         WRITE(LUPRI,'(1X,A,A)') 'Calculate SS-two-electron gradient: ',
-     &                           STR
-         CALL CYESNO(STR,DOTRCK)
-         WRITE(LUPRI,'(1X,A,A)') 'Skip LS/SS-two-el. grd. if small  : ',
-     &                           STR
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Print level                       : ', IPRGRD
+         WRITE(LUPRI,'(1X,A)')
+     &        '* Contributions to the molecular gradient from'
+         IF ( LBIT( IGRD_INTFLG, 1 ) )
+     &        WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
+         IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
+            IF ( DOTRCK ) THEN
+               WRITE(LUPRI,'(3X,A)')
+     &              '- LS-integrals (skipped if estimated to be small).'
+            ELSE
+               WRITE(LUPRI,'(3X,A)') '- LS-integrals.'
+            END IF
+         END IF
+         IF ( LBIT( IGRD_INTFLG, 3 ) ) THEN
+            IF ( DOTRCK ) THEN
+               WRITE(LUPRI,'(3X,A)')
+     &              '- SS-integrals (skipped if estimated to be small).'
+            ELSE
+               WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
+            END IF
+         END IF
          IF(SCRGRD.GT.D0) THEN
            WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &       '* Screening threshold in gradient calculation ',SCRGRD
+     &           '* Screening threshold in gradient calculation ',SCRGRD
          ELSE
             WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &       'WARNING: Screening turned off...'
+     &           '* No screening in the calcualtion of '//
+     &           'two-electron integrals.'
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
       END IF
