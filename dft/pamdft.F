@@ -11,7 +11,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 9)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -32,7 +32,8 @@ C
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
-     &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN'/
+     &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
+     &            '.ANGMIN'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -60,6 +61,7 @@ C
       ANGINT = 41
       INTCHK = 0
       NOPRUN = .FALSE.
+      ANGMIN = 15  
 C
 C     Process input for DFTCAL
 C     ========================
@@ -77,7 +79,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -129,6 +131,10 @@ C&&& INTCHK: Test grid by analyzing numerical SMAT
  8               CONTINUE
 C&&& NOPRUN: Turn off pruning of angular grid.
               NOPRUN = .TRUE.
+                 GO TO 100
+ 9               CONTINUE
+C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
+                 READ(LUCMD,*) ANGMIN
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

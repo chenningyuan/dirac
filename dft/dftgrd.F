@@ -15,6 +15,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include <mxorb.h>
 #include <nuclei.h>
 #include <dftcom.h>
+#include <prune.h>
 #include <gridtest.h>
 #include <symmet.h>
 #include <ccom.h>
@@ -67,6 +68,7 @@ C
       RNDMAX = 20.0D0
       RADERR = RADINT
       NSCHEME = ANGINT
+      LEBMIN = ANGMIN
 
 C
 C     *******************************************
@@ -654,14 +656,29 @@ C
 C     Chose the Lebedev grid to use as a function of the radius (rnode)
 C     closer to the nuclei scale the number of angular points as
 
+      WRITE(6,*) 'NSCHEME1 = ', NSCHEME
+      WRITE(6,*) 'NTOT1 = ', NTOT
       NOLD=NSCHEME
-      IF (NSCHEME.GT.9.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
+      IF(NSCHEME.GT.LEBMIN.AND.RNODE.LT.RBRAGG.AND..NOT.NOPRUN) THEN
          IANG=NINT(NTOT*RNODE/RBRAGG)
          NTOT=MIN(NTOT,IANG)
          NSCHEME=NLEBSET(NTOT)
-         NTOT=NLEB(NSCHEME)  
+         NTOT=NLEB(NSCHEME)
+C
+C     If the pruned value of NSCHEME is less than LEBMIN, we set 
+C     NSCHEME = LEBMIN, map NSCHEME to NTOT and then we map NTOT
+C     back to a Lebedev scheme that exists on the list.
+C
+         IF(NSCHEME.LT.LEBMIN) THEN
+            NSCHEME = LEBMIN
+            NTOT = NLEB(NSCHEME)
+            NSCHEME = NLEBSET(NTOT)
+         END IF 
       ENDIF
-      
+
+      WRITE(6,*) 'NSCHEME2 = ', NSCHEME
+      WRITE(6,*) 'NTOT2 = ', NTOT
+
       DO K=1,NTOT
          X(K)=0.0D0
          Y(K)=0.0D0
