@@ -1070,7 +1070,7 @@ C
 C
 C        Now fill in the matrix and calculate E0.
 C
-         E0 = A0
+         E0 = 0.D0
          I = 1
          II = 1
          DO IREP = 1, NREP

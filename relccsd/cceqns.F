@@ -2307,7 +2307,7 @@ C
 C---------------Executable code--------------------------------------
 C
       IF (CPU4V.EQ.0.0) RETURN
-      MFLOP = 0.0
+      MFLOP = 0.D0
 C
       DO IRP = 1, NREP
          MFLOP = MFLOP + NVVT(IRP) * NVVT(IRP) * NOOT(IRP) * 2 * RCW**2
@@ -2316,7 +2316,7 @@ C
          MFLOP = MFLOP + NVVT(IRP) * NOOT(IRP) * RCW
       ENDDO 
 C
-      MFLOP = MFLOP * 0.000001
+      MFLOP = MFLOP * 0.000001D0
       MFLOPS = MFLOP * NIT / CPU4V
       WRITE (IW,1000) MFLOP,MFLOPS
 C

@@ -1292,7 +1292,8 @@ C
 C----------------------------------------------
 C D(CJ,AB) =  VVOVV(CJ,AB) + T*(J,D) * W(CD,AB)
 C----------------------------------------------
-         CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3)
+         MINT = NBUF3/NVVT(IRP)
+         CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          IF (CARITH) THEN
             CALL CONJUGA (NINT*NVVT(IRP),BUF3,1)
          ENDIF
