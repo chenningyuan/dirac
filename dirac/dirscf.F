@@ -62,28 +62,17 @@ C
 C
 C     Memory allocation
 C
-C     SMOAO is left index transformed overlap matrix. It is
-C       used in DIIS.
+C     KCMO is N2BBASXQ because it is used for Fock matrix in PREDHF.
 C    
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2TMT         ,WORK,KFREE,LFREE)
-      IF (DIISAO) THEN
-         ISIZE = 0
-         DO I = 1,NFSYM
-            ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
-         END DO
-         CALL MEMGET('REAL',KSMOAO,ISIZE        ,WORK,KFREE,LFREE)
-      ELSE
-         KSMOAO = 0
-      END IF
 C
 C     Solve DHF-equations
 C     ===================
 C
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KFOCK),
-     &            WORK(KTMAT),WORK(KSMOAO),WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE)
 C
 C     Memory deallocation
       CALL MEMREL('PSIDHF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
@@ -115,8 +104,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck predhf */
-      SUBROUTINE PREDHF(CMO,EIG,FOCK,TMAT,DMAT,BMAT,
-     &                  NPOS,SMOAO,WORK,LWORK)
+      SUBROUTINE PREDHF(CMO,EIG,FOCK,DMAT,BMAT,
+     &                  NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Obtain orthonormal trial vectors for Dirac-Fock
@@ -160,13 +149,14 @@ C
 #include <dcbreo.h>
       LOGICAL TOBE,CHKCNV,DOSEL,DSCFON,BARNUC
       CHARACTER CPUTID*12,DAYTID*24,SECTID*12
-      DIMENSION FOCK(*),EIG(*),CMO(*),TMAT(*),
+      DIMENSION FOCK(*),EIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
-     &          SMOAO(*),NPOS(*),WORK(LWORK),
+     &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 C
 #include <memint.h>
 C
+      CALL MEMGET('REAL',KTMAT,N2TMT         ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDTMP,NFMAT*N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     If overlap selection save overlap matrix
@@ -200,6 +190,14 @@ C
 C     * Check for trial function
 C     --------------------------
 C
+        IF(TRIFCK .AND. NASHT.GT.0) THEN
+C           jth April 98
+            WRITE(LUPRI,'(/A/A/)') '*** WARNING *** '//
+     &      'Trial 2-electron Fock matrix not possible for open shell.',
+     &      'Looking for trial vectors instead'
+           TRIFCK = .FALSE.
+           TRIVEC = .TRUE.
+        END IF
         IF(TRIFCK) THEN
           INQUIRE(FILE='DFFCK2',EXIST=TOBE)
           IF(TOBE) THEN
@@ -345,22 +343,29 @@ C     Get MO-transformation matrix
 C     ============================
 C
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-      CALL READT(LUTMAT,N2TMT,TMAT)
-      CLOSE(LUTMAT,STATUS='KEEP')
+      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 C
       IF (DIISAO) THEN
 C
 C        Construct left index transformed density matrix: Smoao = Ct Sao
+C        and save it as rec. #2 on LUTMAT.
 C        This matrix is used in DIIS and in the construction of the MO
 C        Fock matrix in case of some open shells.
 C
 #ifdef MOD_OPEN
-         CALL MKSMOAO(SMOAO,TMAT,IPRSCF,WORK(KFREE),LFREE)
+         ISIZE = 0
+         DO I = 1,NFSYM
+            ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
+         END DO
+C        ISIZE .le. N2BBASXQ .le. size of DTMP
+         CALL MKSMOAO(WORK(KDTMP),WORK(KTMAT),IPRSCF,WORK(KFREE),LFREE)
+         CALL WRITT(LUTMAT,ISIZE,WORK(KDTMP))
 #else
          CALL QUIT('SUBROUTINE MKSMOAO NOT IN THIS DISTRIBUTION!')
 #endif
 C
       END IF
+      CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
@@ -450,7 +455,7 @@ C
         IF(OVLSEL) THEN
           DOSEL = .TRUE.
           INQUIRE(FILE='DFSMOS',EXIST=TOBE)
-          IF(.NOT.TOBE) CALL SMOGEN(CMO,TMAT,WORK(KFREE),LWORK)
+          IF(.NOT.TOBE) CALL SMOGEN(CMO,WORK(KTMAT),WORK(KFREE),LWORK)
         ENDIF
         CALL WRIDNS(LUDENS,DMAT)
         CALL WRIFCK(LUFCK2,WORK(KDTMP),NFMAT)
@@ -489,12 +494,13 @@ C     **************************************************************************
 C
 C
       IF (TRIVEC) THEN
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,TMAT,BMAT,CHKCNV,
-     &               DOSEL,SMOAO,WORK(KFREE),LWORK)
+         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,
+     &               DOSEL,WORK(KFREE),LWORK)
       ELSE
-         CALL DCOPY(NCMOTQ,TMAT,1,CMO,1)
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,TMAT,BMAT,CHKCNV,DOSEL,
-     &            SMOAO,WORK(KFREE),LWORK)
+Cjth     CALL DCOPY(NCMOTQ,WORK(KTMAT),1,CMO,1)
+Cjth 980406 skal vistnok ikke bruges ?? (TRIFCK du'r ikke for nasht>0)
+         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,CHKCNV,DOSEL,
+     &            WORK(KFREE),LWORK)
       END IF
       IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG)
 C
@@ -547,13 +553,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfsolv */
-      SUBROUTINE DFSOLV(FMO,EIG,FAO,DMAT,TMAT,BMAT,CHKCNV,DOSEL,
-     &                  SMOAO,WORK,LWORK)
+      SUBROUTINE DFSOLV(FMO,EIG,FAO,DMAT,BMAT,CHKCNV,DOSEL,
+     &                  WORK,LWORK)
 C*****************************************************************************
 C
 C     Solve Dirac-Fock eigenvalue equation
 C     On input:
-C       CMO - MO-coefficients from previous iteration
+C       FMO - MO-coefficients from previous iteration
 C       FAO - Fock-matrix in AO-basis
 C     On output:
 C       FMO - MO-coefficients from current iteration
@@ -576,32 +582,48 @@ C
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
       LOGICAL CHKCNV,DOSEL
-      DIMENSION FMO(*),EIG(*),FAO(*),DMAT(*),TMAT(*),BMAT(*),
-     &          SMOAO(*),WORK(LWORK),IQBF(4)
+      DIMENSION FMO(*),EIG(*),FAO(*),DMAT(*),BMAT(*),
+     &          WORK(LWORK),IQBF(4)
       CHARACTER CTMP*1
 C
 #include <memint.h>
 C
       CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTMAT ,N2TMT         ,WORK,KFREE,LFREE)
+      CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+#ifdef MOD_OPEN
       IF (NASHT.GT.0) THEN
          CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-         CALL DCOPY(NCMOTQ,FMO,1,WORK(KCMOSAV),1)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,TOTERG,4)
       END IF
-#ifdef MOD_OPEN
-      CALL MKMOFK(FMO,FAO,DMAT,TMAT,WORK(KCMOSAV),SMOAO,
+      IF (DIISAO .OR. NASHT.GT.0) THEN
+C        read LUTMAT rec#2 with SMOAO
+         ISIZE = 0
+         DO I = 1,NFSYM
+            ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
+         END DO
+         CALL MEMGET('REAL',KSMOAO,ISIZE,WORK,KFREE,LFREE)
+         CALL READT(LUTMAT,ISIZE,WORK(KSMOAO))
+      ELSE
+         CALL MEMGET('REAL',KSMOAO,0,WORK,KFREE,LFREE)
+      END IF
+      CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),WORK(KSMOAO),
      &            WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
 #else
       IF (NASHT .GT. 0) 
      &   CALL QUIT('SUBROUTINE MKMOFK NOT IN THIS DISTRIBUTION')
-      CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
+      CALL MEMGET('REAL',KSMOAO,0,WORK,KFREE,LFREE)
+      CALL MKMOFK2(FMO,FAO,WORK(KTMAT),WORK(KFREE),LFREE)
 #endif
+      CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Convergence control/acceleration
 C     ================================
 C
-      CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),TMAT,BMAT,
-     &            CHKCNV,SMOAO,WORK(KFREE),LFREE)
+      CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
+     &            BMAT,CHKCNV,WORK(KSMOAO),WORK(KFREE),LFREE)
 C     
 C     Release memory 
 C
@@ -652,7 +674,7 @@ C
         CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
      &              NORB(I),NZ,IPQTOQ(1,0),NORB(I),1,NFBAS(I,0),
-     &              TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
+     &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
      &              IPQTOQ(1,0),IPRSCF)
  40   CONTINUE
 C
@@ -670,7 +692,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfscf */
-      SUBROUTINE DHFSCF(CMO,EIG,FOCK,TMAT,SMOAO,WORK,LWORK)
+      SUBROUTINE DHFSCF(CMO,EIG,FOCK,WORK,LWORK)
 C*****************************************************************************
 C
 C*****************************************************************************
@@ -684,7 +706,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <cbihr1.h>
-      DIMENSION FOCK(*),EIG(*),CMO(*),TMAT(*),SMOAO(*),
+      DIMENSION FOCK(*),EIG(*),CMO(*),
      &          WORK(LWORK)
 C
 C     Generate one-electron Fock matrix and write to file
@@ -699,14 +721,14 @@ C
 C     Solve one-electron system ...
 C     =============================
 C 
-        CALL PREDHF(CMO,EIG,FOCK,TMAT,DUMMY,DUMMY,
-     &              IDUMMY,SMOAO,WORK,LWORK)
+        CALL PREDHF(CMO,EIG,FOCK,DUMMY,DUMMY,
+     &              IDUMMY,WORK,LWORK)
       ELSE
 C
 C     ... or perform SCF-cycle
 C     ========================
 C 
-        CALL SCFCYC(CMO,EIG,FOCK,TMAT,SMOAO,WORK,LWORK)
+        CALL SCFCYC(CMO,EIG,FOCK,WORK,LWORK)
       ENDIF                                                        
 C
       RETURN
@@ -770,7 +792,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcyc */
-      SUBROUTINE SCFCYC(CMO,EIG,FOCK,TMAT,SMOAO,WORK,LWORK)
+      SUBROUTINE SCFCYC(CMO,EIG,FOCK,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -783,8 +805,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <aovec.h>
 #include <mxorb.h>
-      DIMENSION FOCK(*),EIG(*),CMO(*),
-     &          TMAT(*),SMOAO(*),WORK(LWORK)
+      DIMENSION FOCK(*),EIG(*),CMO(*), WORK(LWORK)
 #include <dcbgen.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
@@ -796,7 +817,6 @@ C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDTMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBMAT,(MXDIIS*(MXDIIS+1))/2,
      &            WORK,KFREE,LFREE)
       NPOS = 0
@@ -809,16 +829,16 @@ C
 C
 C     Initiate/restart SCF-cycle
 C 
-      CALL SCFCY1(CMO,EIG,FOCK,TMAT,WORK(KDMAT),WORK(KBMAT),WORK(KDTMP),
-     &            WORK(KPOS),SMOAO,WORK(KFREE),LFREE)
+      CALL SCFCY1(CMO,EIG,FOCK,WORK(KDMAT),WORK(KBMAT),
+     &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('SCFCYC.SCFCY1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT ('SCFCYC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck scfcy1 */
-      SUBROUTINE SCFCY1(CMO,EIG,FOCK,TMAT,DMAT,BMAT,DTMP,
-     &                  NPOS,SMOAO,WORK,LWORK)
+      SUBROUTINE SCFCY1(CMO,EIG,FOCK,DMAT,BMAT,
+     &                  NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -842,8 +862,8 @@ C
 #include <dgroup.h>
       LOGICAL TOBE
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
-      DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),DTMP(*),
-     &          SMOAO(*),BMAT(*),TMAT(*),NPOS(*),WORK(LWORK) 
+      DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),
+     &          BMAT(*),NPOS(*),WORK(LWORK) 
       DIMENSION DVOVLP(MXOPEN)
       CALL QENTER('SCFCY1')
 #include <memint.h>
@@ -855,8 +875,8 @@ C     ***********************************
 C
 C     Initiate/restart SCF cycle
 C
-      CALL PREDHF(CMO,EIG,FOCK,TMAT,DMAT,BMAT,
-     &            NPOS,SMOAO,WORK,LWORK)
+      CALL PREDHF(CMO,EIG,FOCK,DMAT,BMAT,
+     &            NPOS,WORK,LWORK)
 C
 C     Start cycle
 C
@@ -886,6 +906,7 @@ C
             CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
          END DO
 C
+C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
 C        Construct two-electron Fock matrix
 C        (stored in FOCK)
@@ -893,19 +914,21 @@ C        ==================================
 C
          TDF2 = SECOND()
          IF(DODSCF.AND.INTFLG.EQ.INTBUF) THEN
-            CALL READNS(LUDENS,DTMP)
+C           *** Differential density matrix code ***
+C           read old density matrix in FOCK before saving new density matrix/hj
+            CALL READNS(LUDENS,FOCK)
+            CALL WRIDNS(LUDENS,DMAT)
             IF (NISHT .GT. 0) THEN
                IF(FIXDIF) THEN
                   DCOVLP = D1
                ELSE
-                  DCOVLP = DDOT(N2BBASXQ,DTMP,1,DTMP,1)
-                  DCOVLP = DDOT(N2BBASXQ,DMAT,1,DTMP,1) / DCOVLP
+                  DCOVLP = DDOT(N2BBASXQ,FOCK,1,FOCK,1)
+                  DCOVLP = DDOT(N2BBASXQ,DMAT,1,FOCK,1) / DCOVLP
                ENDIF
                WRITE(LUPRI,'(I5,A,F6.4)') NITER,
      &            ' *** Differential density matrix. DCOVLP     =',
      &            DCOVLP
-               CALL DSCAL(N2BBASXQ,(-DCOVLP),DTMP,1)
-               CALL DAXPY(N2BBASXQ,D1,DMAT,1,DTMP,1)
+               CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
             END IF
             IF (NASHT.GT.0) THEN
                DO IOPEN = 1,NOPEN
@@ -913,39 +936,41 @@ C
                      DVOVLP(IOPEN) = D1
                   ELSE
                      DVOVLP(IOPEN) = 
-     &                  DDOT(N2BBASXQ,DTMP(1+N2BBASXQ*IOPEN),1,
-     &                                DTMP(1+N2BBASXQ*IOPEN),1)
+     &                  DDOT(N2BBASXQ,FOCK(1+N2BBASXQ*IOPEN),1,
+     &                                FOCK(1+N2BBASXQ*IOPEN),1)
                      DVOVLP(IOPEN) = 
      &                  DDOT(N2BBASXQ,DMAT(1+N2BBASXQ*IOPEN),1,
-     &                  DTMP(1+N2BBASXQ*IOPEN),1) / DVOVLP(IOPEN)
+     &                  FOCK(1+N2BBASXQ*IOPEN),1) / DVOVLP(IOPEN)
                   END IF
                   WRITE(LUPRI,'(I5,A,I2,A,F6.4)') NITER,
      &               ' *** Differential density matrix. DVOVLP(',
      &               IOPEN,') =',DVOVLP(IOPEN)
-                  CALL DSCAL(N2BBASXQ,(-DVOVLP(IOPEN)),
-     &               DTMP(1+N2BBASXQ*IOPEN),1)
-                  CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ*IOPEN),1,
-     &                                   DTMP(1+N2BBASXQ*IOPEN),1)
+                  CALL DAXPY(N2BBASXQ,(-DVOVLP(IOPEN)),
+     &               FOCK(1+N2BBASXQ*IOPEN),1,DMAT(1+N2BBASXQ*IOPEN),1)
                END DO
             END IF
 C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
-            CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DTMP,NFMAT,
+            CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
-            CALL REAFCK(LUFCK2,DTMP,.FALSE.,NFMAT)
+C           read old Fock matrix in DMAT to finish new Fock matrix/hj
+            CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
             IF (NISHT .GT. 0) 
-     &         CALL DAXPY(N2BBASXQ,DCOVLP,DTMP,1,FOCK,1)
+     &         CALL DAXPY(N2BBASXQ,DCOVLP,DMAT,1,FOCK,1)
             IF (NASHT .GT. 0) THEN
                DO IOPEN = 1,NOPEN
                   CALL DAXPY(N2BBASXQ,DVOVLP(IOPEN),
-     &               DTMP(1+N2BBASXQ*IOPEN),1,
+     &               DMAT(1+N2BBASXQ*IOPEN),1,
      &               FOCK(1+N2BBASXQ*IOPEN),1)
                END DO
             END IF
+C           restore density matrix in DMAT/hj
+            CALL READNS(LUDENS,DMAT)
          ELSE
+            CALL WRIDNS(LUDENS,DMAT)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
          ENDIF
@@ -956,25 +981,22 @@ C
 C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
-         CALL WRIDNS(LUDENS,DMAT)
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-C        Read one-electron Fock matrix from file
-C        =======================================
+C        Read one-electron Fock matrix from file into CMO
+C        ================================================
 C
-         CALL MEMGET('REAL',KDTEMP,N2BBASXQ,WORK,KFREE,LFREE)
-         CALL REAFCK(LUFCK1,WORK(KDTEMP),.FALSE.,1)
+         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
 C        Calculate total energy
 C        ======================
 C
-         CALL ERGCAL(WORK(KDTEMP),FOCK,DMAT)
+         CALL ERGCAL(CMO,FOCK,DMAT)
 C
 C        Add one-electron Fock matrix to two-electron matrix
 C        ===================================================
 C
-         CALL DAXPY(N2BBASXQ,D1,WORK(KDTEMP),1,FOCK,1)
-         CALL MEMREL('SCFCY1',WORK,KWORK,KWORK,KFREE,LFREE)
+         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
 C
 C        Add active two-electron Fock matrices
 C
@@ -1005,13 +1027,11 @@ C        Solve DF eigenvalue problem
 C        ===========================
 C        Input:  FOCK - Total Fock matrix on AO-basis
 C                DMAT - Density matrix
-C                TMAT - MO transformation matrix
 C                BMAT - DIIS matrix
-C                SMOAO- Left index transformed overlap matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-         CALL DFSOLV(CMO,EIG,FOCK,DMAT,TMAT,BMAT,.TRUE.,
-     &               OVLSEL,SMOAO,WORK(KFREE),LFREE)
+         CALL DFSOLV(CMO,EIG,FOCK,DMAT,BMAT,.TRUE.,
+     &               OVLSEL,WORK(KFREE),LFREE)
         IF(IPRSCF.GE.1) THEN
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
