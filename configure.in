@@ -1204,7 +1204,7 @@ $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 
 .c.o:
-$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 esac
 
@@ -1230,7 +1230,7 @@ $tab mv \$*.i \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 .c.o:
-$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 
 EOF
 #
@@ -1245,7 +1245,7 @@ EOF
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .c.o:
-$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
     fi
 esac
@@ -1268,7 +1268,7 @@ cat <<EOF>> Makefile.config
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .c.o:
-$tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 esac
 #
@@ -1374,17 +1374,10 @@ done
 #
 #  Move write-protection if super-user (pamadm)
 #
-if [ $PAMADM = 1 ]; then
-   echo "You're a Dirac superuser, so I'll remove write proctection..."
-   chmod -R u+w *
-fi
-#
-#  Move write-protection if super-user (pamadm)
-#
-if [ $PAMADM = 1 ]; then
-   echo "You're a Dirac superuser, so I'll remove write proctection..."
-   chmod -R u+w *
-fi
+#if [ $PAMADM = 1 ]; then
+#   echo "You're a Dirac superuser, so I'll remove write proctection..."
+#   chmod -R u+w *
+#fi
 echo
 
 
