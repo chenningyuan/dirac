@@ -25,7 +25,7 @@ C
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D2PI = D2*PI,D4=4.0D0,CENT=1.0D2)
       PARAMETER(NITER=10)
-      PARAMETER(MORDER=10,MP=50,MXPRP=5)
+      PARAMETER(MORDER=16,MP=50,MXPRP=5)
       PARAMETER(MDIM=MORDER+1)
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
@@ -94,10 +94,6 @@ C
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
-      IF(NP.LT.5) THEN
-        WRITE(LUPRI,'(A)') '* You must have at least five points !'
-        STOP 'Too few points for a quartic fit !'
-      ENDIF
       DO I = 1,NP
        X(I) = X(I)/XTANG
       ENDDO
@@ -158,12 +154,16 @@ C
       WRITE(LUPRI,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
       WRITE(ILOGG,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
       WRITE(LUPRI,'(A)') 
-     &  'Polynomial fit: Give order of polynomial (.ge.4)'
+     &  'Polynomial fit: Give order of polynomial '
       READ(LUCMD,*) NORDER
-      IF(NORDER.LT.4) THEN
+      IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
      &    '* This program requires at least a quartic fit.'
         STOP 'Too low order fit !'
+      ENDIF
+      IF(NORDER.LT.4) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '* WARNING: a quartic fit is needed for full functionality.'
       ENDIF
       IF(NP.LE.NORDER) THEN
         WRITE(LUPRI,'(A,I3)') 
@@ -263,12 +263,16 @@ C
      &   '* WARNING : ',IOUT,' points lie outside interval...',
      &   'This may reduce the quality of your spectroscopic constants.'
       ENDIF
+      IF(NORDER.LT.4) GOTO 666 
 C
 C     Anharmonic constant
 C     ===================
 C
       V3 = POLNDER(NORDER,C,XOPT,3)
       V4 = POLNDER(NORDER,C,XOPT,4)
+      WRITE(ILOGG,'(A,D20.10)')
+     &   '* Third derivative : ', V3,
+     &   '* Fourth derivative: ', V4
       TEMP = D1/UM/OMEGA
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
