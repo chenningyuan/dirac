@@ -1,0 +1,559 @@
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck pamgrd */
+      SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
+     &                  JOPSY,JCONF,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
+     &                  WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct gradient for property of index INDXPR in /XCBPRP/
+C     GPC - configurational part
+C     GPO - orbital part
+C
+C     Written by T.Saue - July 1996
+C     Last revision: Jul 10 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbxpr.h>
+C
+      DIMENSION GPCI(*),GPOE(*),GPOP(*),JCONF(*),JXOPE(*),JXOPP(*),
+     &          WORK(*)
+      CALL QENTER('PAMGRD')
+C
+C     Consistency check
+C
+      ISYM  = IPRPSYM(INDXPR)
+      IOPSY = JBTOF(ISYM-1,1)
+      IF(IOPSY.NE.JOPSY) THEN
+        WRITE(LUPRI,'(A)') 
+     &    '*** ERROR(PAMGRD): Incorrect fermion ircop of property ',
+     &    PRPNAM(INDXPR)
+        CALL QUIT('*** ERROR(PAMGRD) Incorrect fermion ircop')
+      ENDIF
+C
+C     Configurational part
+C     ====================
+C
+      IF(NCONF.GT.0) THEN
+C        CALL GRDCI(INDXPR,GPC,WORK,KFREE,LFREE,IPRINT)
+      ENDIF      
+C
+C     Orbital part
+C     ============
+C
+      NXOPT = NXOPE + NXOPP
+      IF(NXOPT.GT.0) THEN
+        CALL GRDORB(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
+     &              WORK,KFREE,LFREE,IPRINT)
+      ENDIF
+C
+      CALL QEXIT('PAMGRD')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck grdorb */
+      SUBROUTINE GRDORB(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
+     &                  WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct orbital part of gradient for property INDXPR 
+C     listed in /XCBXPR/
+C
+C     The property gradient is defined by
+C
+C
+C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
+C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C
+C     In RPA q = a(+)m, where a is occupied and m secondary.
+C     This routine will construct e[1]_Q*
+C
+C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
+C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
+C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C
+C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     Indices are therefore permuted...
+C
+C     Written by T.Saue - July 1996
+C     Last revision: Jul 10 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbxpr.h>
+#include <dcborb.h>
+C
+      DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),WORK(*)
+C
+      CALL QENTER('GRDORB')
+      KFRSAV = KFREE
+C
+      CALL MEMGET('REAL',KPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO  ,NCMOTQ ,WORK,KFREE,LFREE)
+C
+      CALL GRDOR1(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
+     &            WORK(KPRPMO),WORK(KCMO),WORK,KFREE,LFREE,IPRINT) 
+C
+      CALL MEMREL('GRDORB',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('GRDORB')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck grdor1 */
+      SUBROUTINE GRDOR1(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
+     &                  PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct orbital part of gradient for property INDXPR 
+C     listed in /XCBXPR/
+C
+C     Construct orbital part of gradient for property INDXPR 
+C     listed in /XCBXPR/
+C
+C     The property gradient is defined by
+C
+C
+C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
+C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C
+C     In RPA q = a(+)m, where a is occupied and m secondary.
+C     This routine will construct e[1]_Q*
+C
+C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
+C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
+C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C
+C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     Indices are therefore permuted...
+C
+C     Written by T.Saue July 1996
+C     Last revision: July 10 1996
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER(DM1 = -1.0D0)
+C
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbgen.h>
+#include <dcbxpr.h>
+C
+      DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
+     &          PRPMO(NORBT,NORBT,NZ),CMO(*),WORK(*)
+C
+      CALL QENTER('GRDOR1')
+C
+C     Read coefficients
+C     =================
+C
+      IOPT = 3
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,TOTERG,IOPT)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Get property matrix and scale by factor -1
+C     ==========================================
+C
+#if defined (SYS_IBM)
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
+C     Construct gradient - electronic part
+C     ====================================
+C
+CTROND
+      WRITE(LUPRI,'(A)') 'Gee'
+CTROND
+      IF(NXOPE.GT.0) THEN
+        CALL XOPGAT(GPOE,JXOPE,NXOPE,PRPMO,NORBT,NZ)
+        CALL DSCAL(NZ*NXOPE,DM1,GPOE,1)
+      ENDIF
+C
+C     Construct gradient - positronic part
+C     ====================================
+C
+      IF(NXOPP.GT.0) THEN
+        CALL XOPGAT(GPOP,JXOPP,NXOPP,PRPMO,NORBT,NZ)
+        CALL DSCAL(NZ*NXOPP,DM1,GPOP,1)
+      ENDIF
+C
+C     Print section
+C     =============
+C
+      IF(IPRINT.GE.4) THEN
+        CALL HEADER('Output from GRDORB',-1)
+        IREP = IPRPSYM(INDXPR)-1
+        IF(NXOPE.GT.0) THEN
+          WRITE(LUPRI,'(A,A16)') 
+     &    '* Gradient (e-e) of property ',PRPNAM(INDXPR)
+          CALL PRQMAT(GPOE,NXOPE,1,NXOPE,1,NZ,IPQTOQ(1,IREP),
+     &                LUPRI)
+        ENDIF
+        IF(NXOPP.GT.0) THEN
+          WRITE(LUPRI,'(A,A16)') 
+     &    '* Gradient (e-p) of property ',PRPNAM(INDXPR)
+          CALL PRQMAT(GPOP,NXOPP,1,NXOPP,1,NZ,IPQTOQ(1,IREP),
+     &                LUPRI)
+        ENDIF
+      ENDIF
+      CALL QEXIT ('GRDOR1')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck xopgat */
+      SUBROUTINE XOPGAT(QVEC,JXOP,NXOP,QMAT,NDIM,NZ)
+C*****************************************************************************
+C
+C     Gather matrix elements into vector using JXOP
+C
+C     Written by T.Saue August 2 1996
+C     Last revision Aug 2 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
+C
+      DO IZ = 1,NZ
+#include <ivdep.h>
+        DO IXOP = 1,NXOP
+          IA = JXOP(1,IXOP)
+          IM = JXOP(2,IXOP)
+          QVEC(IXOP,IZ) = QMAT(IM,IA,IZ)
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck xopsct */
+      SUBROUTINE XOPSCT(QVEC,JXOP,NXOP,QMAT,NDIM,NZ)
+C*****************************************************************************
+C
+C     Scatter vector elements into matrix using JXOP
+C
+C     Written by T.Saue August 2 1996
+C     Last revision Aug 2 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
+C
+      DO IZ = 1,NZ
+#include <ivdep.h>
+        DO IXOP = 1,NXOP
+          IA = JXOP(1,IXOP)
+          IM = JXOP(2,IXOP)
+          QMAT(IM,IA,IZ) = QVEC(IXOP,IZ)
+        ENDDO
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpmat */
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
+C
+C     Written by T.Saue July 1996
+C     Last revision: July 10 1996
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+C
+      DIMENSION PRPMO(*),CMO(*),WORK(*)
+C
+      CALL QENTER('PRPMAT')
+      KFRSAV = KFREE
+C
+C     Memory allocation
+C
+      CALL MEMGET('REAL',KPRPAO ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
+C
+      CALL PRPMA1(INDXPR,PRPMO,CMO,WORK(KPRPAO),WORK(KPTRI),
+     &            WORK(KONEIN),WORK(KFIRST),
+     &            WORK,KFREE,LFREE,IPRINT)
+
+      CALL MEMREL('PRPMAT',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('PRPMAT')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck prpma1 */
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,PRPAO,PTRI,OP1INT,
+     &                  FIRST,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
+C
+C     Written by T.Saue July 1996
+C     Last revision: July 10 1996
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER(D0 = 0.0D0)
+C
+#include <dcbgen.h>
+#include <dgroup.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dcbxpr.h>
+C
+      LOGICAL FIRST(*)
+      DIMENSION PRPMO(N2ORBX,NZ),CMO(*),PRPAO(N2BBASX,NZ),
+     &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
+     &          WORK(*),IQBF(4)
+C
+      CALL QENTER('PRPMA1')
+C
+C     Extract symmetry information
+C     =============================
+C
+      ISYM = IPRPSYM(INDXPR)
+      IREP = ISYM - 1
+      ITIM = IPRPTIM(INDXPR)
+C
+C
+C     Get property matrix in AO-basis
+C     ===============================
+C     
+      CALL LSET(NZ,.TRUE.,FIRST)
+      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK(KFREE),
+     &           LFREE,IPRINT)   
+C
+      DO IZ = 1,NZ
+        IF(FIRST(IZ)) THEN
+          CALL DZERO(PRPAO(1,IZ),N2BBASX)
+        ELSE
+          IQ = IPQTOQ(IZ,IREP)
+          IH = IHQMAT(IQ,ITIM)
+          IF    (IH.EQ.1) THEN
+            CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
+          ELSEIF(IH.EQ.2) THEN
+            CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PRPAO(1,IZ))
+          ENDIF
+        ENDIF
+      ENDDO
+      CALL BUTOBS(PRPAO,NZ,WORK(KFREE),LFREE)
+C
+C     Transform to MO-basis only the blocks of correct fermion symmetry
+C     =================================================================
+C         
+      CALL DZERO(PRPMO,N2ORBXQ)
+      IOPSY = JBTOF(IREP,1)
+      DO I1 = 1,NFSYM
+         I2  = MOD(I1+IOPSY,2) + 1
+         CALL QTRANS('AOMO','S',D0,
+     &           NFBAS(I1,0),NFBAS(I2,0),NORB(I1),NORB(I2),
+     &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
+     &           IPQTOQ(1,IREP),
+     &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NBF,IQBF,
+     &           CMO(ICMOQ(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           CMO(ICMOQ(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
+     &     '*** WARNING *** PRPMA1: NBF.NE.NZ !'
+      ENDDO
+C
+C     Print section
+C     =============
+C
+      IF(IPRINT.GE.6) THEN
+        CALL HEADER('Output from PRPMA1',-1)
+        WRITE(LUPRI,'(A,A16)') 
+     &    '*MO-matrix of property ',PRPNAM(INDXPR)
+        CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
+     &              IPQTOQ(1,IREP),LUPRI)
+        IF(IPRINT.GE.7) THEN
+          WRITE(LUPRI,'(A,A16)') 
+     &    '*AO-matrix of property ',PRPNAM(INDXPR)
+        CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &              IPQTOQ(1,IREP),LUPRI)
+        ENDIF
+      ENDIF
+C
+      CALL QEXIT('PRPMA1')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gpget */
+      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,ITYP,
+     &                 WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct orbital part of gradient for property INDXPR 
+C     listed in /XCBXPR/
+C
+C     The property gradient is defined by
+C
+C
+C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
+C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C
+C     In RPA q = a(+)m, where a is occupied and m secondary.
+C     This routine will construct e[1]_Q*
+C
+C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
+C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
+C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C
+C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     Indices are therefore permuted...
+C
+C     Written by T.Saue - July 1996
+C     Last revision: Jul 10 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+#include <dcbxpr.h>
+#include <dcborb.h>
+#include <dcbbas.h>
+#include <dcbibn.h>
+      DIMENSION GP(*),CMO(*),JXPAR(*),WORK(*)
+C
+      CALL QENTER('GPGET')
+      KFRSAV = KFREE
+C
+      ISYM  = IPRPSYM(INDXPR)
+      IOPSY = JBTOF(ISYM-1,1)
+      IF(ITYP.EQ.JBENDX) THEN
+        IF(NXPAR.GE.0) THEN
+          CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
+     &                WORK,KFREE,LFREE,IPRINT)
+          CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
+          IF(IPRINT.GE.4) THEN
+            CALL HEADER('Output from GPGET',-1)
+            IREP = ISYM - 1
+            WRITE(LUPRI,'(A,A16)') 
+     &      '* Gradient (e-e) of property ',PRPNAM(INDXPR)
+            CALL PRQMAT(GP,NXPAR,1,NXPAR,1,NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+          ENDIF
+        ENDIF
+      ELSEIF(ITYP.EQ.JBPNDX) THEN
+        IF(NXPAR.GE.0) THEN
+          CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
+     &                WORK,KFREE,LFREE,IPRINT)
+          CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
+          IF(IPRINT.GE.4) THEN
+            IREP = ISYM-1
+            WRITE(LUPRI,'(A,A16)') 
+     &      '* Gradient (e-p) of property ',PRPNAM(INDXPR)
+              CALL PRQMAT(GP,NXPAR,1,NXPAR,1,NZ,
+     &                    IPQTOQ(1,IREP),LUPRI)
+          ENDIF
+        ENDIF
+      ELSEIF(ITYP.EQ.JBCNDX) THEN
+        WRITE(LUPRI,'(A)') 
+     &    'GPGET ERROR: Configurational part not yet written !'
+        CALL QUIT('GPGET: Configurational part not yet written !')
+      ELSE
+        WRITE(LUPRI,'(A,A,I5)') 'GPGET ERROR: ',
+     &    'unknown ITYP = ',ITYP
+        CALL QUIT('GPGET: Unknown ITYP !')
+      ENDIF
+C
+C
+      CALL QEXIT('GPGET')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GPOGET */
+      SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
+     &                  WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C
+C     Construct orbital part of gradient for property INDXPR 
+C     listed in /XCBXPR/
+C
+C     The property gradient is defined by
+C
+C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
+C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C
+C     In RPA q = a(+)m, where a is occupied and m secondary.
+C     This routine will construct e[1]_Q*
+C
+C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
+C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
+C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C
+C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     Indices are therefore permuted...
+C
+C     Written by T.Saue July 1996
+C     Last revision: July 10 1996
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER(DM1 = -1.0D0)
+C
+#include <dgroup.h>
+#include <dcborb.h>
+#include <dcbgen.h>
+#include <dcbxpr.h>
+C
+      DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
+     &          JXOP(NXOP),WORK(*)
+C
+      CALL QENTER('GRDOR1')
+C
+C     Get property matrix and scale by factor -1
+C     ==========================================
+C
+      ISYM  = IPRPSYM(INDXPR)
+      IOPSY = JBTOF(ISYM-1,1)
+#if defined (SYS_IBM)
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+      CLOSE(LU1INT,STATUS = 'KEEP')
+      CALL XOPGAT(GPO,JXOP,NXOP,PRPMO,NORBT,NZ)
+      CALL DSCAL(NZ*NXOP,DM1,GPO,1)
+      CALL QEXIT ('GRDOR1')
+      RETURN
+      END
