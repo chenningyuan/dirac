@@ -244,7 +244,7 @@ C       ============================================
 C
         NVEC = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
-        CALL  NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
+        CALL NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
      &             -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
@@ -306,7 +306,7 @@ C
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+     &                  NFBAS(IFRP,0))
           ELSE
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
@@ -318,7 +318,7 @@ C
      &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                  NFBAS(IFRP,0),NORB(IFRP))
             CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+     &                  NFBAS(IFRP,0))
             CALL MEMREL('MULPO1.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
         ENDIF
@@ -410,29 +410,24 @@ C
       NVEC = NPVEC + NEVEC
       CALL MEMGET('REAL',KFRAC,NVEC,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KFRAC),NVEC)
-      LWRK   = LWORK - KFREE + 1
       DO I = 1,NVEC
 c
 c       Find fractional occupation for each requested orbital string
 c
         NVORB =  NISH(IFRP)
+        DO IOPEN=1,NOPEN
 c     ... open shell
-        DO 100 IOPEN=1,NOPEN
            NVORB =  NVORB + NACSH(IFRP,IOPEN)
            IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
               WORK(KFRAC-1+I) = DF(IOPEN)
               GO TO 100
            ENDIF
-100     CONTINUE
-c     ... closed shell
+        END DO
         IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
+c     ... closed shell
            WORK(KFRAC-1+I) = DF(0)
         ENDIF
-c     ... virtual
-        IF (NSSH(IFRP) .GT. 0 .AND. JVEC(I).GT.NVORB)  THEN
-           WORK(KFRAC-1+I) = D0
-        ENDIF
-c
+100     CONTINUE
 c
         IF(I.GT.NPVEC) THEN
           II = NPSH(IFRP)+JVEC(I)
@@ -453,7 +448,7 @@ C       Calculate SO population matrix
 C       ==============================
 C
         CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVEC,
-     &              IPGRS,NPOPLAB,NCBAS,WORK(KFREE),LWRK,IPRPOP)
+     &              IPGRS,NPOPLAB,NCBAS,WORK(KFREE),LFREE,IPRPOP)
 C
 C       Calculate gross populations
 C       ===========================
@@ -1674,26 +1669,37 @@ C
 #include "dcbrho1.h"
 #include "dcbbas.h"
 C
+C for NFMAT:
+#include "dcbdhf.h"
+C
       CALL QENTER('GT1RHO')
 #include "memint.h"
 C
       CALL TITLER('Density along bonds','*',122)
+      IF (NFMAT .GT. 1) THEN
+        WRITE(LUPRI,'(/A)')
+     &  '--> Not implemented for open shell yet, nothing done.'
+        GO TO 9999
+      END IF
 C
 C     Check if coefficients are on file
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
+      IF(.NOT.TOBE) THEN
+        WRITE(LUPRI,'(/A)')'GT1RHO: Coefficient file DFCOEF not found !'
+        CALL QUIT('GT1RHO: Coefficients not found !')
+      END IF
 C     Memory allocation
 CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAOS ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOOR ,6       ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAOS,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCOOR,6       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Read coefficients
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GT1RHO')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
      &            TOTERG,4,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -1712,11 +1718,8 @@ C
 C     Memory deallocation
       CALL MEMREL('GT1RHO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('GT1RHO')
+ 9999 CALL QEXIT('GT1RHO')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'GT1RHO: Coefficient file not found !'
-      CALL QUIT('GT1RHO: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
