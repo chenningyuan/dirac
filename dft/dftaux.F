@@ -247,7 +247,7 @@ CTROND         END IF
       RETURN
       END
 
-      SUBROUTINE FORT_WRT(str, slength)
+      SUBROUTINE FORTWRT(str, slength)
 #include "priunit.h"
       INTEGER unit, slength
       CHARACTER str(slength)

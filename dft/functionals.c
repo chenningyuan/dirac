@@ -83,7 +83,7 @@ drv3_clear(ThirdFuncDrv* gga)
 
 /* fortran (and not only) functional stub routines */
 int
-dft_is_gga_(void)
+dftisgga_(void)
 {
     return selected_func->is_gga();
 }
@@ -112,7 +112,7 @@ dft_check_consistency()
    be done by a separate routine.  
 */
 void
-dft_report_(void)
+dftreport_(void)
 {
     fort_print("\n     This is a DFT calculation of type: %s",
                selected_func->name);
@@ -131,13 +131,14 @@ fort_print(const char* format, ...)
     va_list a;
 
 /* DEC does not recognize the vsnprintf command */
+/* unless when linked with -ldb */
 #ifndef SYS_DEC
 
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
-    fort_wrt_(line, &len);
+    fortwrt_(line, &len);
 #endif
 }
 
@@ -163,7 +164,7 @@ dftlistfuncs_(void)
 */
 static char* DftConfString = NULL;
 int
-dft_input_(char* line, int len)
+dftinput_(char* line, int* success, int len)
 {
     char func_name[20];
     int i;
@@ -178,11 +179,12 @@ dft_input_(char* line, int len)
     for(i=0; available_functionals[i]; i++)
         if(strcasecmp(available_functionals[i]->name, func_name)==0) {
             selected_func = available_functionals[i];
-            return selected_func->read ?
+            *success = selected_func->read ?
                 selected_func->read(line+strlen(func_name)) : 1;
+            return;
         }
     fort_print("Unknown functional '%s'. Aborting.\n", func_name);
-    return 0; /* failed to find */
+    *success = 0; /* failed to find */
 }
 
 
@@ -525,7 +527,7 @@ Functional WAHFunctional = {
    a sum of functionals.
 */
 void
-dft_sync_func_(int* amImaster)
+dftsyncfunc_(int* amImaster)
 {
 #ifdef VAR_MPI
     static int Initialized = 0;

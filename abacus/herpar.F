@@ -557,7 +557,7 @@ C       Transfer dftcom
         LSEND(6) = DFTASC
         CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
 C       Transfer functionals
-        CALL DFT_SYNC_FUNC(1)
+        CALL DFTSYNCFUNC(1)
 C       send density matrix
         ISEND(1) = NDMAT
         ISEND(2) = NFMAT
@@ -1352,7 +1352,7 @@ C       Receive some dftcom variables
         DFTORD = LSEND(5)
         DFTASC = LSEND(6)
 C       Receive functionals
-        CALL DFT_SYNC_FUNC(0)
+        CALL DFTSYNCFUNC(0)
 C       Receive density matrix (scaled by a factor two!)
         CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         NDMAT = ISEND(1)

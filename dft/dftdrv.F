@@ -135,7 +135,7 @@ C
          NDER = 0
       END IF
 C
-      DOGGA = DFT_IS_GGA()
+      DOGGA = DFTISGGA()
 CTROND
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
@@ -1001,7 +1001,7 @@ CTROND: This is temporary fix to have DFTenergy work in parallell...
          NDER = 0
       END IF
 C
-      DOGGA = DFT_IS_GGA()
+      DOGGA = DFTISGGA()
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
 C

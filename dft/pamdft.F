@@ -15,7 +15,7 @@ C*****************************************************************************
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
@@ -91,7 +91,8 @@ C
  1             CONTINUE
 C&&&: DFT functional selection.
                READ(LUCMD,'(A80)') LINE
-               IF(.NOT.DFT_INPUT(LINE)) THEN
+               CALL DFTINPUT(LINE, SUCCESS)
+               IF(.NOT.SUCCESS) THEN
                   CALL DFTLISTFUNCS
                   CALL QUIT("DFT FUNCTIONAL Read failed.")
                ENDIF
@@ -154,7 +155,7 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I5)') '* Print level: ',IPRDFT
 C
-      CALL DFT_REPORT()
+      CALL DFTREPORT()
  90   CONTINUE
       WRITE(LUPRI,'(A)')
      &     '* Radial quadrature according to ',

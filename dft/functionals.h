@@ -134,7 +134,7 @@ struct Functional_ {
     ThirdOrderFun   third;
 };
 
-int  dft_is_gga(void);
+int  dftisgga(void);
 void dftreport_(void);
 void fort_print(const char* format, ...);
 void dftlistfuncs_(void);
@@ -175,8 +175,8 @@ extern Functional* available_functionals[];
 #endif /* _FUNCTIONALS_H_ */
 #else /* THE FORTRAN VERSION OF THE HEADERS */
 
-      LOGICAL  DFT_IS_GGA, DFT_INPUT
-      EXTERNAL DFT_IS_GGA, DFT_INPUT
+      LOGICAL  DFTISGGA
+      EXTERNAL DFTISGGA, DFTINPUT
 c     The derivatives with respect to rho and zeta
       INTEGER FR0, FZ0, FRR, FRZ, FZZ, FRRR, FRRZ, FRZZ, FZZZ
       INTEGER DERVS1, DERVS2, DERVS3

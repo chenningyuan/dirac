@@ -1,3 +1,9 @@
+2003-04-28  Pawel Salek  <pawel.salek@kjemi.uio.no>
+
+	* configure: remove need for -fno-double-underscore
+	* abacus/herpar.F, dft/dftaux.F, dft/dftdrv.F, dft/pamdft.F:
+	* dft/functionals.[hc]: remove underscores from routines' names.
+
 2002-06-24  Pawel Salek  <pawel.salek@kjemi.uio.no>
 
 	Merge new functional code from olav_dft branch:

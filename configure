@@ -1141,13 +1141,13 @@ case $machine in
       esac
       case "$F77" in
       g77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
          ;;
       f77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
          ;;
       mpif77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
          ;;
       pgf90)
          opt='-fastsse'; ccp="$ccp -DVAR_PGCC"
@@ -1188,7 +1188,7 @@ case $machine in
       esac
       case "$F77" in
       g77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
 	 c_opt='-O3'
          ;;
       esac
