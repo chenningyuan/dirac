@@ -1150,7 +1150,6 @@ CMI  List of exceptions:
       IF ((PLABEL(1)(1:7).EQ.'BETAMAT').OR.(PNAME(6:10).EQ.'RM1H1')
      &      .OR.(PNAME(7:11).EQ.'RM2H1')) THEN
 CMI (&TEC): RM1H1/RM2H1 is first/second London derivative of BETAMAT
-Chj      PCOMB = 'FFFT'
          PCOMB = '000+'
 CMI/HJAaJ
 C ... NEWS for LAO-ccRDSUSLL in Levy-Leblond - cancel the SL(2,1) block
@@ -1174,13 +1173,10 @@ C
 C        DIAGONAL and SIGMA:
 C
     1    PCOMB = '+00+'
-Chj      PCOMB = 'TFFT'
-Chj      IF (LEVYLE) PCOMB = 'TFFF'
 CJTH DEBUG!!
 #ifdef UNDEF
          write(6,*) 'debug debug: operator ',PNAME
          IF (PNAME(1:2) .EQ. 'EF') THEN
-Chj         PCOMB = 'TFFF'
             PCOMB = '+000'
             write(6,*) '           : setting comp to',pcomb
          END IF
@@ -1196,6 +1192,7 @@ C
 C        BETA and BETA SIGMA:
 C
     3    PCOMB = '+00-'
+         IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 C
 C        i BETA ALPHA and i BETA GAMMA5:
