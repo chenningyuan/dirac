@@ -2576,12 +2576,15 @@ C     =======================
 C
       DO 30 I = 1,NFSYM
         IF(NFMO(1,I).EQ.0) GOTO 30
+#ifdef MOD_SPF
         IF (.NOT.SPINFR) THEN
+#endif
            CALL QDIAG(NZ,NFMO(1,I),FMO(IFMO(I)+1),
      &             NFMO(1,I),NFMO(2,I),
      &             WORK(KE(I)),1,
      &             FAO(IFMO(I)+1),NFMO(1,I),NFMO(2,I),
      &             WORK(KFREE),LFREE,IERR)
+#ifdef MOD_SPF
         ELSE
            NFMO2 = NFMO(1,I)*NFMO(1,I)
            CALL DZERO(FAO(1+IFMO(I)),NFMO2*NZ)
@@ -2593,6 +2596,7 @@ C
            CALL IDBOS (NBO,WORK(KIBE(I)),WORK(KIBEIG2),FAO(IFMO(I)+1))
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
         ENDIF
+#endif
    30 CONTINUE
       call memchk ('na diago',work,1)
 C
@@ -2835,10 +2839,12 @@ C     4. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
       CALL DAXPY(N2BBASXQ,D1,CMO,1,FAO,1) 
+#ifdef MOD_SPF
 C
 C     Make the matrix spinfree if desired.
 C
       IF (SPINFR) CALL SPFAO (CMO,FAO,WORK(KFREE),LFREE)
+#endif
 C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GTVFCK:Total Fock matrix in AO-basis',-1)
