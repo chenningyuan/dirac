@@ -188,7 +188,7 @@ C
 C     Read coefficients
 C     =================
 C
-      IOPT = 4
+      IOPT = 6
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
       CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,IOPT,
      &            WORK,KFREE,LFREE)
