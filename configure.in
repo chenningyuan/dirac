@@ -1396,10 +1396,10 @@ $echo 'Copying dhf shell script to '$INSTALL_DIR' : \c'
 cat <<EOF > $INSTALL_DIR/dhf
 #!/bin/ksh
 #
-set QUEUESYS    = $queuesys
-set SCR_DEFAULT = $worksp
-set BIN_DIR     = $INSTALL_DIR
-set SRC_DIR     = `pwd`
+QUEUESYS=$queuesys
+SCR_DEFAULT=$worksp
+BIN_DIR=$INSTALL_DIR
+SRC_DIR=`pwd`
 EOF
 cat ./dhf.in >> $INSTALL_DIR/dhf
 chmod a+rx $INSTALL_DIR/dhf
