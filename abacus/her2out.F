@@ -1600,7 +1600,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dt2out */
-      SUBROUTINE DT2OUT(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+      SUBROUTINE DT2OUT(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
 C*****************************************************************************
 C
@@ -1631,7 +1631,7 @@ C
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
 C
       IF (NPASS.EQ.1) THEN
-         CALL DT2UT1(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+         CALL DT2UT1(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &               NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
       ELSE
 C
@@ -1639,7 +1639,7 @@ C        In this case GMAT functions as a structure in which the
 C        buffer arrays and information are stored. The pointers are
 C        kept in the common block comdis.
 C
-         CALL DT2UT2(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+         CALL DT2UT2(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &               NINDAB,NINDCD,IPRINT,INDX,INDXAB,
      &               GMAT(KLGREC),GMAT(KLGBUF),GMAT(KRGBUF),
      &               GMAT(KIGBUF))
@@ -1649,7 +1649,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dt2ut1 */
-      SUBROUTINE DT2UT1(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+      SUBROUTINE DT2UT1(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
 C*****************************************************************************
 C
@@ -1727,7 +1727,7 @@ C
              DO ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
-              IF (ABS(SOINT) .GT. 1.0D-14) THEN
+              IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1782,7 +1782,7 @@ C
              DO 300 ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
-              IF (ABS(SOINT) .GT. 1.0D-14) THEN
+              IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1813,7 +1813,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dt2ut2 */
-      SUBROUTINE DT2UT2(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+      SUBROUTINE DT2UT2(SO,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,
      &                  LGREC,LGBUF,RGBUF,IGBUF)
 C*****************************************************************************
@@ -1897,7 +1897,7 @@ C
              DO ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
-              IF (ABS(SOINT) .GT. 1.0D-14) THEN
+              IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)
@@ -1981,7 +1981,7 @@ C
              DO 300 ICD = 1, NORBCD
                INT   = INT + 1
                SOINT = SO(ISOFF+INT)
-              IF (ABS(SOINT) .GT. 1.0D-14) THEN
+              IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
                INDC  = IPTSYM(NSTRNC + IC,IREPC)

@@ -2226,7 +2226,7 @@ C        ===============================
 C
          ELSE IF (DISTRI) THEN
             IF (TKTIME) TIMSTR = SECOND()
-            CALL DT2OUT (SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
+            CALL DT2OUT (SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,THRESH,
      &                  NINDAB,NINDCD,IPRINT,INDX,INDXAB,GMAT)
             IF (TKTIME) TFCKOU = TFCKOU + SECOND() - TIMSTR
             FIRST = .FALSE.
