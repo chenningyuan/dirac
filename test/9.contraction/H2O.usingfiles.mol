@@ -1,0 +1,18 @@
+INTGRL
+Water                                                                   
+cc-pVDZ basis (note that a tight p has NOT been added)
+C   2    2  X  Y
+        8.    1
+O      .0000000000        0.0000000000        -.2249058930
+LBFIL
+O.ccpvdz.bas
+SBFIL
+O.ccpvdz.bas
+        1.    1
+H     1.4523499293         .0000000000         .8996235720
+LBFIL
+H.ccpvdz.bas
+SBFIL
+H.ccpvdz.bas
+FINISH
+

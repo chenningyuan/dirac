@@ -1,0 +1,30 @@
+! Contracted "MOLFDIR" type basis set should only be used with URKBAL and
+! .SPHTRA 1 0. Other options may give spurious results.
+**DIRAC
+.TITLE
+Water molecule. Unrestricted kinetic balance because of contracted basis sets
+.WAVE F
+**GENERAL
+.SPHTRA
+ 1 0
+.DIRECT
+1 1 1
+**INTEGRALS
+*TWOINT
+.SOFOCK
+.SCREEN
+ 1.0D-11
+**HAMILTONIAN
+.URKBAL
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.CLOSED SHELL
+10
+.INTFLG
+1 1 0
+.EVCCNV
+1.0E-8
+.CNVINT
+0.01 0.0001
+*END OF

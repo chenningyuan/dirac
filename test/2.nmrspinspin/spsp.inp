@@ -1,0 +1,124 @@
+!
+! This test calculates the NMR spin-spin couplings in the water molecule
+! The no-pair approach is used, so that we calculate the DSO term via the
+! Sternheimer approximation. The same calculation can then also be done 
+! via the RELCCSD code and serves as an extra check.
+! Note that we consistently leave out the SS integrals.
+!
+**DIRAC
+.TITLE
+Water molecule. Restricted kinetic balance. Spin-spin couplings
+.WAVE F
+.PROPER
+.4INDEX
+**GENERAL
+.DIRECT
+1 1 1
+**INTEGRALS
+*TWOINT
+.SOFOCK
+.SCREEN
+1.0D-11
+**WAVE FUNCTIONS
+.DHF
+.RELCCSD
+*DHFCAL
+.CLOSED SHELL
+10
+.INTFLG
+1 1 0
+.EVCCNV
+1.0E-8
+.CNVINT
+0.01 0.0001
+**PROPERTIES
+.SPIN-SPIN
+.DSO
+*LINEAR RESPONSE
+.INTFLG
+1 1 0
+.SKIPEP
+.CNVINT
+0.01 0.0001
+**MOLTRA
+.INTFLG
+1 1 0
+.ACTIVE
+all
+.SCHEME
+4
+.PRPTRA
+*PRPTRA
+.OPERATOR
+ 'SPI01H'
+ YAVECTOR
+ 'NEF 02'
+ 'NEF 06'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI02O'
+ YAVECTOR
+ 'NEF 04'
+ 'NEF 01'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI03H'
+ YAVECTOR
+ 'NEF 05'
+ 'NEF 03'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI04O'
+ XAVECTOR
+ 'NEF 01'
+ 'NEF 07'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI05H'
+ XAVECTOR
+ 'NEF 03'
+ 'NEF 08'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI06H'
+ ZAVECTOR
+ 'NEF 09'
+ 'NEF 02'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI07O'
+ ZAVECTOR
+ 'NEF 07'
+ 'NEF 04'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI08H'
+ XAVECTOR
+ 'NEF 06'
+ 'NEF 09'
+ COMFACTOR
+ -137.0359895
+.OPERATOR
+ 'SPI09H'
+ ZAVECTOR
+ 'NEF 08'
+ 'NEF 05'
+ COMFACTOR
+ -137.0359895
+*END OF
+
+ &RELCCSD NELEC=5,5, TIMING=T,
+          DOSORT=T, DOENER=F, DOFOPR=F, DOEXC=F, DOSOPR=T &END
+ &CCSOPR NAOPER=9, NBOPER=6, 
+   NAMEA='SPI01H','SPI02O','SPI03H','SPI04O','SPI05H','SPI06H',
+         'SPI07O','SPI08H','SPI09H',
+   NAMEB='SPI01H','SPI03H','SPI05H','SPI06H','SPI08H','SPI09H',
+ &END
+
