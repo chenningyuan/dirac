@@ -1,3 +1,10 @@
+* October 15 1999
+
+  - relccsd bugfixes (luuk)
+  - new parity non-conservating operator (gamma5 * rho_N) (jth, jonkl)
+  - Calculation and output of EFG's (and NQCC's) were not handled
+    correct for some symmetries (jth)
+
 * September 23 1999
 
   - Open shell RPA (jth)
