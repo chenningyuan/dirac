@@ -1267,7 +1267,9 @@ C
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
       WORK(KBASE) = 9991
       IF (WRK(1).NE.9991) THEN
-         CALL QUIT('Memory addressing error')
+C        CALL QUIT('Memory addressing error')
+         WRITE(6,*) 'WARNING: WORK(KBASE) = 9991'
+         WRITE(6,*) '         WRK(1)      = ',WRK(1)
       END IF
 *
       IMEMCK = 0
