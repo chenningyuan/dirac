@@ -1273,6 +1273,7 @@ C     Written by Luuk Visscher, February 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+#include <implicit.h>
 #include <dcbgen.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
