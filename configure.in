@@ -948,6 +948,14 @@ for makefile in $dirs; do
    cp $makefile/Makefile.in $makefile/Makefile
 done
 echo
+#
+#  Make links to include
+#
+for link in $dirs; do
+   echo "Making link from include to $link/include"
+   ln -sf ../include $link/include
+done
+echo
 
 
 echo "Before you run make, please check Makefile.config and edit"
