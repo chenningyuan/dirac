@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : trainp.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mp2inp */
       SUBROUTINE MP2INP(WORD,WORK,LWORK)
@@ -25,6 +31,7 @@ C
 #include <dgroup.h>
 #include <dcbmp2.h>
 #include <dcbmpt.h>
+#include <dcbham.h>
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
@@ -59,6 +66,7 @@ C     Default orbital strings is all occupied and all virtuals
         WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
+      IF (LEVYLE) MP2_INTFLG = ILLINT
       MP2_ANTIS  = .TRUE.
       MP2_MSOUT  = .FALSE.
       NOPAIR = .TRUE.
@@ -205,6 +213,7 @@ C
      +     '* Testing (SS|LL) ONLY in MP2.'
       ENDIF
 C
+      IF (LEVYLE) MP2_INTFLG = ILLINT
       IF (ILLINT.NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* LL Integrals Not included.'
       IF (ILSINT.NE.1) WRITE(LUPRI,'(1X,A)') 
@@ -297,6 +306,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <dcbtra.h>
+#include <dcbham.h>
 C
       SAVE SET
       DATA TABDIR /'*END OF','*PRPTRA','*XXXXXX','*XXXXXX'/
@@ -509,7 +519,7 @@ C&&&& INTFL2 - Integral classes not included in 2-index transformation
    15          CONTINUE
 C&&&& INTFL4 - Integral classes not included in 4-index transformation
                   READ(LUCMD,*) ILLINT,ILSINT,ISSINT
-                  ITRA_INTFL2 = ILLINT + 2*ILSINT + 4*ISSINT
+                  ITRA_INTFL4 = ILLINT + 2*ILSINT + 4*ISSINT
                GO TO 100
    16          CONTINUE
 C&&&& PRPTRA - Transform property integrals to MO basis
@@ -590,6 +600,10 @@ C
 C
       IF (ITRA_INTFL4.EQ.-8) THEN
          ITRA_INTFL4 = ITRA_INTFLG
+      ENDIF
+      IF (LEVYLE) THEN
+         ITRA_INTFL2 = MOD(ITRA_INTFL2,2)
+         ITRA_INTFL4 = MOD(ITRA_INTFL4,2)
       ENDIF
 C
       IF(NOPAIR) THEN
