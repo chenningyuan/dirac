@@ -500,13 +500,24 @@ C
 C     Closed shell Hartree - Fock
 C     ===========================
 C
-      NFMAT = 1
-C     Totally symmetric operator
-      ISYMOP(1) = 1
-C     Fock matrix type
-      IFCKOP(1) = 1
-C     Hermitian operator
-      IHRMOP(1) = 1
+      IF (NOPEN.GT.0) THEN
+         NFMAT = NOPEN+1
+      ELSE
+         IF (NASHT.GT.0) THEN
+            NFMAT = 2
+         ELSE
+            NFMAT = 1
+         END IF
+      END IF
+      DO I = 1,NFMAT
+C        Totally symmetric operator
+         ISYMOP(I) = 1
+C        Fock matrix type
+         IFCKOP(I) = 1
+C        Hermitian operator
+         IHRMOP(I) = 1
+      END DO
+C
 C
       RETURN
 C
