@@ -2011,7 +2011,6 @@ C     =============
          IF (IGTHRS .GE. 16) THEN
             WRITE(LUPRI,'(1X,A,1P,E8.2)')
      &         'WARNING: Screening turned off...'
-            IGTHRS    = 0
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
       END IF
