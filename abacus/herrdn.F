@@ -1253,9 +1253,10 @@ C
  5200 CONTINUE
         CALL QUIT('Error reading keyword SMALL or SBFIL.')
  9000 CONTINUE
-         WRITE(LUPRI,'(A,I3,/,A)')
-     $     '*** ERROR in READIN ***: error reading line ',NMLINE,
-     $     MLINE(NMLINE)
+      WRITE(LUPRI,'(A,/,A,I3,/,A)')
+     $     '*** ERROR in READIN ***',
+     &     'Error reading line ',NMLINE,
+     &     MLINE(LINE)
          CALL QUIT('*** ERROR in READIN ***')
       END
 C  /* Deck cntinp */
@@ -1305,11 +1306,9 @@ C
            WRITE(LUPRI,*) 'WARNING!!!'            
            WRITE(LUPRI,*) 'Nuclear gaussian exponent small: ',GEXP
         END IF
-        IF (INPTST) THEN
-           WRITE(LUPRI,'(3X,A,F7.3,A,1P,D20.10)') 
-     &        'Nuclear Gaussian exponent for atom of charge ',
-     &        Q,': ',GEXP
-        END IF
+        WRITE(LUPRI,'(3X,A,F7.3,A,1P,D20.10)') 
+     &       'Nuclear Gaussian exponent for atom of charge ',
+     &       Q,': ',GEXP
       ELSE
          GEXP = D0
       END IF
