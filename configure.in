@@ -1420,7 +1420,7 @@ QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
-BAS_DIR=`pwd`/basis/
+BAS_DIR=`pwd`/basis/:./
 MPIRUN=$mpirun
 DEBUGGER=$debug
 EOF
