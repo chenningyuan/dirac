@@ -190,7 +190,7 @@ abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\
 abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o \
+gp/gpjth.o          gp/gpjth_c.o \
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
 prp/pamgrd.o 
 
@@ -312,26 +312,26 @@ export:
 	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess doc/doc.html \
 	include/*.h Makefile Makefile.config \
-	dirac/*.F dirac/*.c dirac/Makefile.in dirac/include \
-	prp/*.F prp/Makefile.in  prp/include \
-	abacus/*.F abacus/Makefile.in abacus/include \
-	gp/Makefile.in gp/*.F gp/include \
-	pdpack/Makefile.in pdpack/*.F pdpack/include
+	dirac/*.F dirac/*.c dirac/Makefile.in \
+	prp/*.F prp/Makefile.in \
+	abacus/*.F abacus/Makefile.in \
+	gp/Makefile.in gp/*.F \
+	pdpack/Makefile.in pdpack/*.F 
 EOF
 if($ERITAR) then
-echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in eri/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in ' >> Makefile
 endif
 if($CCTAR) then
-echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c relccsd/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c ' >> Makefile
 endif
 if($RSPTAR) then
-echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in prp/rsp/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
 endif
 if($TRATAR) then
-echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in moltra/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
 endif
 if($PARTAR) then
-echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in abacus/par/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in ' >> Makefile
 endif
 if($PAMADM) then
 echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
