@@ -170,7 +170,7 @@ OBJS = \
 dirac/dirac.o  dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \
-dirac/dirgeo.o dirac/dirgrd.o\
+dirac/dirgeo.o dirac/dirgrd.o dirac/dirac_linux.o \
 abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\
@@ -304,7 +304,7 @@ export:
 	-rm -f DIRAC.new.tar.Z
 	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess doc/doc.html \
-	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile.in dirac/include \
+	include/*.h Makefile Makefile.config dirac/*.F dirac/*.c dirac/Makefile.in dirac/include \
 	prp/*.F prp/Makefile.in  prp/include \
 	abacus/*.F abacus/Makefile.in abacus/include \
 	gp/Makefile.in gp/*.F gp/include \
