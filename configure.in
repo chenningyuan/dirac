@@ -1076,7 +1076,9 @@ case $machine in
             c_inc="-Wc,-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
          esac
-         opt='-O3 -qstrict';;
+         opt='-O3 -qstrict'
+         ldflag='-bmaxdata:0x80000000'
+         ;;
 #
 #  IRIX
 #
@@ -1154,6 +1156,9 @@ fi
 if [ "$c_opt" = "" ]; then
    c_opt="\$(OPTFLAGS)"
 fi
+if [ "$ldflag" = "" ]; then
+   ldflag="\$(OPTFLAGS)"
+fi
 #
 #  Make Makefile.config
 #
@@ -1180,6 +1185,7 @@ OPTFLAGS    = $opt
 OPTGFLAGS   = $opt -g
 OPTIFLAGS   = -E
 C_OPTFLAGS  = $c_opt
+LDFLAGS     = $ldflag
 CHEKFLAGS  = -nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet \\
  -noargumants -arguments=number \\
  -usage=var-unitialized
