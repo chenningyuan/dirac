@@ -236,6 +236,28 @@ C
       WRITE(ILOGG,'(A,F10.4,A)') 
      &   '* Mean displacement in harmonic ground state:',TEMP,
      &   ' Angstroms'
+C
+C     Anharmonic constant
+C     ===================
+C
+      V3 = POLNDER(NORDER,B,XMIN,3)
+      V4 = POLNDER(NORDER,B,XMIN,4)
+      TEMP = D1/UM/OMEGA
+      T2   = TEMP*TEMP
+      WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
+      WRITE(LUPRI,'(A,1P,E10.3,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+      WRITE(ILOGG,'(A,1P,E10.3,A)') 
+     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+      DE = OMEGA*OMEGA/WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, 'kJ/mol'
+      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
+      D0 = DE-(OMEGA/D2)+WXE/D4
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XTEV, 'eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
+     &       D0*XKJMOL, 'kJ/mol'
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
       IF(NPRP.EQ.0) GOTO 666
 C      
