@@ -26,7 +26,7 @@ C        18. [betaalp_z]p  * z-component of beta alpha times scalar operator
 C
 C       IPRPLBL - pointers to property labels
 C       IPRPSYM - boson symmetry of operator  (1 - 8)
-C       IPRPTIM - symmetry under time reversal (1,2)
+C       IPRPTIM - symmetry under time reversal (+1,-1)
 C       PRPNAM  - user specified name of operator
 C
       PARAMETER ( MAXPRPS = 200 )
