@@ -1437,8 +1437,12 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRGEN)
-        IF (IPRHAM.GE.5) THEN
-           CALL HEADER('Free particle matrix in orthon. basis',-1)
+        IF (IPRHAM.GE.6) THEN
+           IF(VEXTPJ) THEN
+             CALL HEADER('Bare nucleus matrix in orthon. basis',-1)
+           ELSE
+             CALL HEADER('Free particle matrix in orthon. basis',-1)
+           ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
            CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
      &                 NFORB(I,0),NZ,IPQTOQ(1,0),LUPRI)
@@ -1481,6 +1485,11 @@ C
               JMAT = JMAT + NFORB(I,0)
               JBUF = JBUF + NFORB(I,0)
             ENDDO
+            IF (IPRHAM.GE.6) THEN
+             CALL HEADER('Transformation matrix in orthon. basis',-1)
+             CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
+     &                   NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
             IMAT = IMAT + NFORB(I,0) * NFORB(I,0)
             IBUF = IBUF + NFORB(I,0) * NORB(I)
           ENDDO
@@ -1499,12 +1508,6 @@ C
         IOFV = 1
         DO 30 I = 1,NFSYM
           IF(NORB(I).EQ.0) GOTO 30
-          IF (IPRHAM.GE.5) THEN
-             CALL HEADER('Transformation matrix in orthon. basis',-1)
-             CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NFORB(I,1),
-     &                   NFORB(I,0),NFORB(I,1),
-     &                   NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
           CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NFORB(I,1),
      &                TBUF(IBUF),NFORB(I,0),NFORB(I,1),
      &                NFORB(I,0),NZ,
@@ -1558,7 +1561,7 @@ C
      &          'N','N',IPQTOQ(1,0),TMAT(JSL),NFORB(I,0),NFORB(I,0),NZ,
      &          D0,IPQTOQ(1,0),WORK(KSMT),
      &          NBORB(ISYM,I,1),NBORB(ISYM,I,1),1)
-            IF (IPRHAM.GE.5) THEN
+            IF (IPRHAM.GE.7) THEN
               WRITE(LUPRI,'(A,A3)') ' * Boson irrep: ',REP(IREP)
               CALL HEADER('Kinetic energy matrix in orthon. basis',-1)
               CALL PRQMAT(WORK(KSMT),NBORB(ISYM,I,1),NBORB(ISYM,I,1),
@@ -1566,14 +1569,14 @@ C
      &                    1,IPQTOQ(1,0),LUPRI)
             ENDIF
             CALL LOWGEN(WORK(KSMT),NBORB(ISYM,I,1),WORK(IVMT),NEFFI,
-     &                  NBORB(ISYM,I,1),STOL(2),IPRHAM,EIG,
+     &                  NBORB(ISYM,I,1),STOL(2),IPRONE,EIG,
      &                  WORK(KFREE),LFREE)
             IF (NEFFI.LT.NBORB(ISYM,I,1)) WRITE(LUPRI,'(A)') 
      &            '*** WARNING *** Linear dependence in RKB basis'
             NEFF = NEFF + NEFFI
             NBORB(ISYM,I,2) = NEFFI
-             IF (IPRHAM.GE.5) THEN
-              CALL HEADER('Transformation matrix in orthon. basis',-1)
+             IF (IPRHAM.GE.7) THEN
+              CALL HEADER('Ext.transf. matrix in orthon. basis',-1)
               CALL PRQMAT(WORK(IVMT),NBORB(ISYM,I,1),NBORB(ISYM,I,2),
      &                    NBORB(ISYM,I,1),NBORB(ISYM,I,2),
      &                    1,IPQTOQ(1,0),LUPRI)
@@ -1622,59 +1625,163 @@ C
             IVMT = IVMT + NBORB(ISYM,I,1)*NBORB(ISYM,I,2)
           ENDIF
           ENDDO
+          IF (IPRHAM.GE.6) THEN
+           CALL HEADER('Transformation matrix in orthon. basis',-1)
+           CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
+     &                 NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
           IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
           IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
    40   CONTINUE
         CALL MEMREL('DELPOS',WORK,KSMT,KSMT,KFREE,LFREE)
 C
+        IF(VEXTPJ.OR.FREEPJ) THEN
+C
+C       Deleting positronic solutions of:
+C       =================================
+C         FREEPJ - free particle matrix
+C         VEXTPJ - bare nucleus matrix          
+C
+          LWRK  = 0
+Ctsaue:   These variables are later set by SETDC2, but needed here
+C         in modified form....
+          N2TMT  = 0
+          NORBT  = 0
+          N2ORBT = 0
+          DO I = 1,NFSYM
+            I2TMT(I) = N2TMT
+            N2TMT    = N2TMT + NFORB(I,0)*NORB(I)*NZT
+            IORB(I)  = NORBT
+            NORBT    = NORBT  + NORB(I)
+            I2ORBT(I)= N2ORBT*NZ
+            N2ORBT   = N2ORBT + NFBAS(I,0)*NORB(I)
+          ENDDO
+          CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+C
+C         Transform to free particle/bare nucleus matrix
+C         to modified Dirac form; 
+          IMAT = 1
+          IBUF = 1
+          IOFT = 1
+          IOFV = 1
+          DO 50 I = 1,NFSYM
+            IF(NORB(I).EQ.0) GOTO 50
+            IBUF = KBUF + I2ORBT(I)
+            CALL QTRANS('AOMO','S',D0,NFORB(I,0),NFORB(I,0),
+     &           NORB(I),NORB(I),
+     &           TMAT(IOFT),NFORB(I,0),NFORB(I,0),NZ,IPQTOQ(1,0),
+     &           WORK(IBUF),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &           TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRHAM)
+          IF (IPRHAM.GE.6) THEN
+            IF(VEXTPJ) THEN
+              CALL HEADER('Bare nucleus matrix in mod.MO-basis',-1)
+            ELSE
+              CALL HEADER('Free particle matrix in mod.MO-basis',-1)
+            ENDIF
+            CALL PRQMAT(WORK(IBUF),NORB(I),NORB(I),
+     &                 NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+C         get full transformation as well !
+            CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                  TBUF(1+I2TMT(I)),NFORB(I,0),NORB(I),
+     &                  NFORB(I,0),NZ,
+     &                  NORB(I),1,NFBAS(I,0),
+     &                  VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
+     &                  IPRHAM)
+            IF (IPRHAM.GE.6) THEN
+              CALL HEADER('Transformation matrix',-1)
+              CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
+            IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+            IOFT = IOFT + NFORB(I,0)*NFORB(I,0)*NZ
+            IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+            IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
+ 50       CONTINUE
+C
+C         Diagonalize
+C
+          CALL DFDIAG (WORK(KBUF),EIG,WORK(KBEIG),TBUF,
+     &                 WORK,KFREE,LFREE)
+C
+C         Backtransform only electronic solutions
+C
+          N2TMT = 0
+          IBUF = KBUF
+          IMAT = 1
+          NBUF = 0
+          DO 60 I = 1,NFSYM
+          IF(NESH(I).EQ.0) GOTO 60
+          I2TMT(I) = N2TMT
+          N2TMT = NFBAS(I,0)*NORB(I)*NZ
+          IF(IPRHAM.GE.5) THEN
+            CALL HEADER('Eigenvalues',-1)
+            WRITE(LUPRI,'(I5,E16.8)') (J,EIG(IORB(I)+J),J=1,NORB(I))
+          ENDIF
+          CALL BCKTRA(WORK(IBUF),NFBAS(I,0),NESH(I),
+     &              TBUF(I2ORBT(I)+1),NORB(I),NORB(I),
+     &              NORB(I),NZ,NESH(I),(NPSH(I)+1),NFBAS(I,0),
+     &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
+     &              IPRHAM)
+          NPSH(I) = 0
+          NORB(I) = NESH(I)
+          NBUF = NFBAS(I,0)*NESH(I)*NZ
+          CALL DCOPY(NBUF,WORK(IBUF),1,TMAT(IMAT),1)
+          IBUF = IBUF + NBUF
+          IMAT = IMAT + NBUF
+C         Finish by adjusting the number of positron solutions to zero
+          DO ISYM = 1, NSYM
+            NBORB(ISYM,I,2) = 0
+            NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+          ENDDO
+ 60       CONTINUE
+          CALL MEMREL('DELPOS',WORK,KWORK,KWORK,KFREE,LFREE)
+        ELSE      
+C
 C       Generate transformation matrix
 C       ==============================
 C
-        IMAT = 1
-        IBUF = 1
-        IOFV = 1
-        DO 50 I = 1,NFSYM
-          IF(NFORB(I,0).EQ.0) GOTO 50
-          IF (IPRHAM.GE.5) THEN
-            CALL HEADER('Transformation matrix in orthon. basis',-1)
-            CALL PRQMAT(TBUF(IBUF),NFORB(I,0),NORB(I),
-     &                  NFORB(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
-          CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                TBUF(IBUF),NFORB(I,0),NORB(I),
-     &                NFORB(I,0),NZ,
-     &                NORB(I),1,NFBAS(I,0),
-     &                VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
-     &                IPRGEN)
-          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-          IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
-          IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
-   50   CONTINUE
+          IMAT = 1
+          IBUF = 1
+          IOFV = 1
+          DO 70 I = 1,NFSYM
+            IF(NFORB(I,0).EQ.0) GOTO 70
+            CALL BCKTRA(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                  TBUF(IBUF),NFORB(I,0),NORB(I),
+     &                  NFORB(I,0),NZ,
+     &                  NORB(I),1,NFBAS(I,0),
+     &                  VMAT(IOFV),NFBAS(I,0),NFORB(I,0),1,
+     &                  IPRGEN)
+            IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+            IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+            IOFV = IOFV + NFORB(I,0)*NFBAS(I,0)
+   70     CONTINUE
+        ENDIF
       ENDIF      
 C
 C     Print section
 C
       CALL HEADER('Output from DELPOS',-1)
-      IF(LEVYLE) THEN
+      IF(LEVYLE.OR.VEXTPJ.OR.FREEPJ) THEN
         WRITE(LUPRI,'(A)') '* All positronic solutions deleted !'
       ELSE
         WRITE(LUPRI,'(A)') '* Applied strict kinetic balance !'
       ENDIF
+      IF(IPRHAM.GE.5) THEN
+        CALL HEADER('Final transformation matrix ',-1)
+        IMAT = 1
+        DO 80 I = 1,NFSYM
+          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
+          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+ 80     CONTINUE
+      ENDIF
       CALL FLSHFO(LUPRI)
       RETURN
-CTROND        ELSE
-CTRONDC
-CTRONDC          Diagonalize Fock-matrix in MO-basis
-CTRONDC          ===================================
-CCTROND
-CTROND    IF(DOJACO) THEN
-CTROND             CALL RSJACO(NFORB(I,0),NFORB(I,0),NFORB(I,0),TMAT(IOFT),
-CTROND     &                   EIG(IEIG),1,1,0,TBUF(IOFT),WORK,LWORK)
-CTROND           ELSE
-CTROND             CALL QDIAG(NZ,NFORB(I,0),TMAT(IOFT),NFORB(I,0),NFORB(I,0),
-CTROND     &                EIG(IEIG),1,TBUF(IOFT),NFORB(I,0),
-CTROND     &                NFORB(I,0),WORK,LWORK,IERR)
-CTROND           ENDIF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck prprea */
