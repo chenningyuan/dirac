@@ -2924,8 +2924,8 @@ C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE) NSP,BREIT,ECORE
-       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),
-     &                (NELEC(IRP),IRP=1,NSYMRP)
+       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
+     &                ,(NELEC(IRP),IRP=1,NSYMRP)
        READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
@@ -3126,8 +3126,8 @@ C
          MVOTOT=MVO(JREP)
          NBTCH = MVOTOT / NMPROC
          NREST = MOD(MVOTOT,NMPROC)
+         IOFF = J2VOVO(IREP)*RCW + 1
          JOFF = J2VOVO(JREP)*RCW + 1
-         IOFF = JOFF
          DO I = 1, NMPROC
  
 C           Create even distribution, the higher nodes get the remains
@@ -3352,6 +3352,47 @@ C           Process-local information
          ENDDO
       ENDDO
 
+C
+C
+C *******************************
+C *** HINTM  contraction in T2EQN
+C *******************************
+C
+      OFF1 = 1
+      OFF2 = 1
+      OFF3 = 1
+      DO IREP = 1, NREP
+         JREP=MULTB(IREP+NREP,1+NREP,2)
+         M=MVO(IREP)
+         N=MVO(JREP)
+         K=MVO(IREP)
+         MVOTOT=MVO(IREP)
+         NBTCH = MVOTOT / NMPROC
+         NREST = MOD(MVOTOT,NMPROC)
+         IOFF = OFF1
+         JOFF = OFF2
+         DO I = 1, NMPROC
+
+C           Create even distribution, the higher nodes get the remains
+
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+
+C           Process-local information
+
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,10,JREP) = NBTCH
+               IDIST(2,10,JREP) = IOFF
+               IDIST(3,10,JREP) = JOFF
+            ENDIF
+            IOFF = IOFF + M*NBTCH*RCW
+            JOFF = JOFF + NBTCH*RCW
+         ENDDO
+C
+         OFF1 = OFF1 + M * K * RCW
+         OFF2 = OFF2 + K * N * RCW
+         OFF3 = OFF3 + M * N * RCW
+      ENDDO
+C
       RETURN
       END
 

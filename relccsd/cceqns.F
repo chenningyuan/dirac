@@ -1241,11 +1241,11 @@ C-----------------------------------------------------------------------
       DO IREP = 1, NREP
          JREP = MULTB(IREP+NREP,1+NREP,2)
          M    = MVO(IREP)
-         N    = MVO(IREP)
-         KLD  = MVO(JREP)
-         K    = IDIST(1,4,JREP)
-         OFF1 = IDIST(2,4,JREP)
-         OFF2 = IDIST(3,4,JREP)
+         N    = MVO(JREP)
+         KLD  = MVO(IREP)
+         K    = IDIST(1,10,JREP)
+         OFF1 = IDIST(2,10,JREP)
+         OFF2 = IDIST(3,10,JREP)
          CALL XGEMM ('N','N',M,N,K,A1,H(OFF1),M,BUF1(OFF2),KLD,
      &                A0,BUF2(OFF3),M)
          OFF3 = OFF3 + M * N * RCW

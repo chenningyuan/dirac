@@ -600,23 +600,23 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      DIMENSION BUFF(RSRCLEN)
-      DATA BUFF /RSRCLEN*0/
+      REAL*8 BUFF(RSRCLEN)
+      DATA BUFF /RSRCLEN*0.D0/
 C
 C---------------Executable code--------------------------------------
 C
-      IRECL = IRECLEN (0,RSRCLEN,0)
+      IRECL = IRECLEN (RSRCLEN,0,0)
       OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
 C
-      NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
+      NRECT1 = NDIMT1*RCW / RSRCLEN + 1
       IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
-      NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
+      NRECT2 = NDIMT2*RCW / RSRCLEN + 1
 C
       IREC = IRECT1
       N = NDIMT1
       IOFF = 1
-    1 NBUF = MIN0(N,(RSRCLEN/INTOWP(RCW)))
+    1 NBUF = MIN0(N,(RSRCLEN/RCW))
       CALL XCOPY (NBUF,T1(IOFF),1,BUFF,1)
       WRITE (MCCRES,REC=IREC) BUFF
       IREC = IREC + 1
@@ -627,7 +627,7 @@ C
       IREC = IRECT2
       N = NDIMT2
       IOFF = 1
-    2 NBUF = MIN0(N,(RSRCLEN/INTOWP(RCW)))
+    2 NBUF = MIN0(N,(RSRCLEN/RCW))
       CALL XCOPY (NBUF,T2(IOFF),1,BUFF,1)
       WRITE (MCCRES,REC=IREC) BUFF
       IREC = IREC + 1
@@ -666,23 +666,23 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      DIMENSION BUFF(RSRCLEN)
-      DATA BUFF /RSRCLEN*0/
+      REAL*8 BUFF(RSRCLEN)
+      DATA BUFF /RSRCLEN*0.D0/
 C
 C---------------Executable code--------------------------------------
 C
-      IRECL = IRECLEN (0,RSRCLEN,0)
+      IRECL = IRECLEN (RSRCLEN,0,0)
       OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
 C
-      NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
+      NRECT1 = NDIMT1*RCW / RSRCLEN + 1
       IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
-      NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
+      NRECT2 = NDIMT2*RCW / RSRCLEN + 1
 C
       IREC = IRECT1
       N = NDIMT1
       IOFF = 1
-    1 NBUF = MIN0(N,(RSRCLEN/INTOWP(RCW)))
+    1 NBUF = MIN0(N,(RSRCLEN/RCW))
       READ (MCCRES,REC=IREC) BUFF
       CALL XCOPY (NBUF,BUFF,1,T1(IOFF),1)
       IREC = IREC + 1
@@ -693,7 +693,7 @@ C
       IREC = IRECT2
       N = NDIMT2
       IOFF = 1
-    2 NBUF = MIN0(N,(RSRCLEN/INTOWP(RCW)))
+    2 NBUF = MIN0(N,(RSRCLEN/RCW))
       READ (MCCRES,REC=IREC) BUFF
       CALL XCOPY (NBUF,BUFF,1,T2(IOFF),1)
       IREC = IREC + 1
