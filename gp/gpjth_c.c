@@ -26,15 +26,12 @@
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #include <fortran.h>
 #define frac2i FRAC2I
-#define sysinf SYSINF
 #elif defined (SYS_HPUX)
 /* nothing */
 #elif defined (SYS_AIX)
 #define frac2i frac2i
-#define sysinf sysinf
 #else
 #define frac2i frac2i_
-#define sysinf sysinf_
 #endif /*CRAY*/
 
 void c_frac2i();
