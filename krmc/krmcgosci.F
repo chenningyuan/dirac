@@ -35,7 +35,6 @@ C
 C     The core Hamiltonian is the active-active part of FC,
 C     a.k.a. FCAC.
 C
-      write(6,*) 'gosci_startvec',norbt,n2orbxq,n2ashxq
       CALL MEMGET('REAL',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
 C
@@ -56,53 +55,31 @@ C
 C
       CALL MEMREL('after RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-C     Allocate memory for matrices:
-C
-      NASHT4 = ( 2 * NASHT ) ** 4
-      CALL MEMGET('INTE',KINDTWR,NASHT4,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDTWI,NASHT4,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDGAR,0,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDGAI,0,WORK,KFREE,LFREE)
-      NZCONF2 = NZCONF ** 2
-      CALL MEMGET('REAL',KHR,NZCONF2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHI,NZCONF2,WORK,KFREE,LFREE)
-      MAXINT = ( LFREE - KFREE - 10 ) / 2
-      IF ( MAXINT .LE. 0 ) THEN
-         WRITE(LUPRI,'(A,/,2(A,I10))')
-     $        '*** ERROR in GOSCI_STARTVEC ***',
-     $        'MAXINT < 0, LFREE = ',LFREE,', KFREE = ',KFREE
-         CALL QUIT('*** ERROR in GOSCI_STARTVEC ***')
-      END IF
-      CALL MEMGET('REAL',KTWOINR,MAXINT+1,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTWOINI,MAXINT+1,WORK,KFREE,LFREE)
-C
 C     Read two-electron integrals:
 C     ----------------------------
 C
-C     If level of previous integrals transformation was 0, use RDTWO
-C     from cigosc.F.
 C
-C     If level was -1, i.e., the full transformation use our own RDTWOFULL.
+      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
 C
-      IF ( JTRLVL .EQ. 0 ) THEN
-         CALL RDTWO(WORK(KINDTWR),WORK(KINDTWI),
-     $        WORK(KINDGAR),WORK(KINDGAI),
-     $        WORK(KTWOINR),WORK(KTWOINI),MAXINT)
-      ELSE 
-         WRITE(LUPRI,'(A,/,A,I1)')
-     $        '*** ERROR in GOSCI_STARTVEC ***',
-     $        'Cannot read two-electron integrals with JTRLVL = ',JTRLVL
-         CALL QUIT('*** ERROR in GOSCI_STARTVEC ***')
-      END IF
+C
+      CALL MEMGET('REAL',KVUUUU,NASHT**4 * 4, WORK,KFREE,LFREE)
+      CALL REAINTS(WORK(KVUUUU),DUMMY,DUMMY,DUMMY,NASHT,NORBT,1,JTRLVL,
+     &     IPRNT,WORK(KFREE),LFREE)
+      CALL D2MUUUU(WORK(KVUUUU),WORK(KMUUUU),10)
+      CALL MEMREL('GOSCI_STARTVEC.D2MUUU',WORK,KWORK,KVUUUU,KFREE,LFREE)
+C
+C     Allocate memory for matrices:
+C
+      NZCONF2 = NZCONF ** 2
+      CALL MEMGET('REAL',KHR,NZCONF2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHI,NZCONF2,WORK,KFREE,LFREE)
 C
 C     Construct Hamiltonian:
 C     ----------------------
 C
       CALL DZERO(WORK(KHR),NZCONF2)
       CALL DZERO(WORK(KHI),NZCONF2)
-      CALL MAKEH(WORK(KHR),WORK(KHI),
-     $     WORK(KINDTWR),WORK(KINDTWI),WORK(KINDGAI),WORK(KINDGAR),
-     $     WORK(KTWOINR),WORK(KTWOINI),MAXINT)
+      CALL GOSCI_MAKEH(WORK(KHR),WORK(KHI), WORK(KMUUUU))
 C
 C
 C     Diagonalize Hamiltonian:
@@ -1557,8 +1534,11 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      DIMENSION IOFF(4,*)
+      DIMENSION IOFF(4,3,*)
       DIMENSION IOFFP(2), IOFFT(2)
+      CHARACTER CBARRED(2)*8
+C
+      DATA CBARRED /'unbarred','barred'/
 C
 #include <dgroup.h>
 #include <dcborb.h>
@@ -1588,14 +1568,29 @@ C
       IOFF1 = 0
       IOFFJ = 0
 C
-      CALL IZERO ( IOFF, 8 * IOFFTT )
+      CALL IZERO ( IOFF, 16 * IOFFTT )
 C
       DO IFSYM = 1,NFSYM
+C        set p:
+         DO J = 1, IOFFT(IFSYM)
+            DO I = 1, NGENERAL
+               IOFF(I,2,J+IOFFJ) = 1
+               IOFF(I,3,J+IOFFJ) = J
+            END DO
+         END DO
+C        set pbar:
+         DO J = IOFFT(IFSYM) + 1, IOFFT(IFSYM) * 2
+            DO I = 1, NGENERAL
+               IOFF(I,2,J+IOFFJ) = -1
+               IOFF(I,3,J+IOFFJ) = J - IOFFT(IFSYM)
+            END DO
+         END DO
 C        active: u
          DO J = IOFFP(IFSYM) + NISH(IFSYM)+1, IOFFP(IFSYM) + NOCC(IFSYM)
             IOFF1 = IOFF1 + 1
             DO I = 1, NGENERAL
-               IOFF(I,J + IOFFJ) = IOFF1
+               IOFF(I,1,J + IOFFJ) = IOFF1
+               IOFF(I,2,J + IOFFJ) = 1
             END DO
          END DO
 C        active: ubar
@@ -1603,7 +1598,8 @@ C        active: ubar
      $        IOFFT(IFSYM) + IOFFP(IFSYM) + NOCC(IFSYM)
             IOFF1 = IOFF1 + 1
             DO I = 1, NGENERAL
-               IOFF(I,J + IOFFJ) = IOFF1
+               IOFF(I,1,J + IOFFJ) = IOFF1
+               IOFF(I,2,J+ IOFFJ) = -1
             END DO
          END DO
          IOFFJ = IOFFJ + 2 * IOFFT(IFSYM)
@@ -1616,7 +1612,14 @@ C
       DO IFSYM = 1, NFSYM
          DO J = 1, NASH(IFSYM)
             DO I = NGENERAL + 1, 4
-               IOFF(I,J + IOFFJ) = J + IOFFJ
+               IOFF(I,1,J + IOFFJ) = J + IOFFJ
+               IOFF(I,2,J + IOFFJ) = 1
+            END DO
+         END DO
+         DO J = NASH(IFSYM) + 1, NASH(IFSYM) * 2
+            DO I = NGENERAL + 1, 4
+               IOFF(I,1,J + IOFFJ) = J + IOFFJ
+               IOFF(I,2,J + IOFFJ) = -1
             END DO
          END DO
          IOFFJ = IOFFJ + 2 * NASH(IFSYM)
@@ -1628,17 +1631,207 @@ C
             WRITE(LUPRI,'(A,I3,A)')
      $           'Orbital   corresponding active orbital (index ',J,')'
             DO I = 1, 2 * IOFFTT
-               IF ( IOFF(J,I) .GT. 0 ) THEN
-                  WRITE(LUPRI,9001) I,IOFF(J,I)
+               IF ( IOFF(J,1,I) .GT. 0 ) THEN
+                  WRITE(LUPRI,9001) I,IOFF(J,1,I),
+     &                 CBARRED((3-IOFF(J,2,I))/2), IOFF(J,3,I)
                ELSE
-                  WRITE(LUPRI,9002) I,'none'
+                  WRITE(LUPRI,9002) I,'none',
+     &                 CBARRED((3-IOFF(J,2,I))/2), IOFF(J,3,I)
                END IF
             END DO
          END DO
          CALL FLSHFO(LUPRI)
       END IF
- 9001 FORMAT(2X,I3,13X,I3)
- 9002 FORMAT(2X,I3,13X,A)
+ 9001 FORMAT(2X,I3,13X,I3,10X,A10,5X,I3)
+ 9002 FORMAT(2X,I3,13X,A4,9X,A10,5X,I3)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gosci_makeh */
+      SUBROUTINE GOSCI_MAKEH(HR,HI,VMUUUU)
+C*****************************************************************************
+C
+C     Construct Hamiltonian for use in gosci.
+C
+C     Input:
+C        VMUUUU - two electron integrals.
+C
+C     Output:
+C        HR - real part of Hamiltonian
+C        HI - imag part of Hamiltonian
+C
+C     Written by J. Thyssen - Nov 6 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
+      DIMENSION VMUUUU(NORB,NORB,NORB,NORB,*)
+#include "../dirrci/goscom.inc"
+C
+      DO I = 1, NDET
+        DO J = 1, I
+          CALL GOSCI_HMAT (IDET(I),IDET(J),HR(I,J),HI(I,J),VMUUUU)
+          HR (J,I) =  HR (I, J)
+          HI (J,I) = -HI (I, J)
+        ENDDO
+      ENDDO
+      PRINT*, ' ** HR **'
+      DO 100 I=1,NDET
+        WRITE(6,1010) (HR(I,J),J=1,NDET)
+100     CONTINUE
+      PRINT*, ' ** HI **'
+      DO 110 I=1,NDET
+        WRITE(6,1010) (HI(I,J),J=1,NDET)
+110   CONTINUE
+CTROND
+ 1010 FORMAT(15F8.4)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gosci_hmat */
+      SUBROUTINE GOSCI_HMAT(ID,JD,HMR,HMI,VMUUUU)
+C*****************************************************************************
+C
+C     Construct Hamiltonian element I,J.
+C
+C     Input:
+C        ID, JD: bit strings for determinant I and J.
+C        HMR, HMI: Hamiltonian matrix elements
+C        VMUUUU - two electron integrals.
+C
+C     Output:
+C        HMR, HMI: Hamiltonian matrix elements
+C
+C     Written by J. Thyssen - Nov 6 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      DIMENSION VMUUUU(NORB,NORB,NORB,NORB,*)
+#include "../dirrci/goscom.inc"
+C
+#include <ibtfun.h>
+C
+      HMR = 0.0D0
+      HMI = 0.0D0
+C
+      IDV = IBTXOR (ID, JD)
+      IT = NBITS (IDV)
+C
+      IF (IT .EQ. 0) THEN
+C
+C     ======================
+C     DETERMINANTS ARE EQUAL
+C     ======================
+C
+         DO 30 I = 1, NORB
+            IF (IBTAND (ID, IBTSHL (1, I - 1)) .NE. 0) THEN
+               HMR = HMR + ONER (I, I)
+               DO 20 J = I + 1, NORB
+                  IF (IBTAND (ID, IBTSHL (1, J - 1)) .NE. 0) THEN
+C---------------------
+C                    H = H + (I, I, J, J)
+C---------------------
+                     HMR = HMR + VMUUUU(I,I,J,J,1)
+                     HMI = HMI + VMUUUU(I,I,J,J,2)
+C---------------------
+C                    H = H - (I, J, J, I)
+C---------------------
+                     HMR = HMR + VMUUUU(I,J,J,I,1)
+                     HMI = HMI + VMUUUU(I,J,J,I,2)
+                  ENDIF
+ 20            CONTINUE
+            END IF
+ 30      CONTINUE
+         RETURN
+      END IF
+C
+      IF(IT.EQ.2) THEN
+C
+C        ===================================
+C        DETERMINANTS DIFFER BY ONE FUNCTION
+C        ===================================
+C
+         IA = IBTAND (IDV, ID)
+         IB = IBTAND (IDV, JD)
+         DO 35 I = 1, NORB
+            IF (IBTAND (IA, IBTSHL (1, I - 1)) .NE. 0) K = I
+            IF (IBTAND (IB, IBTSHL (1, I - 1)) .NE. 0) L = I
+ 35      CONTINUE
+C        
+         HMR = HMR + ONER (K, L)
+         HMI = HMI + ONEI (K, L)
+C
+         DO 40 I = 1, NORB
+            IF ((I .EQ. K) .OR. (I .EQ. L)) GO TO 40
+            IF (IBTAND (ID, IBTSHL (1, I - 1)) .NE. 0) THEN
+C---------------------
+C              H = H + (I, I, K, L)
+C---------------------
+               HMR = HMR + VMUUUU(I,I,K,L,1)
+               HMI = HMI + VMUUUU(I,I,K,L,2)
+C---------------------
+C              H = H - (I, L, K, I)
+C---------------------
+               HMR = HMR + VMUUUU(I,L,K,I,1)
+               HMI = HMI + VMUUUU(I,L,K,I,2)
+            END IF
+ 40      CONTINUE
+         PH = PHASE (K, ID) * PHASE (L, JD)
+         HMR = PH * HMR
+         HMI = PH * HMI
+         RETURN
+      END IF
+C
+      IF(IT.EQ.4) THEN
+C
+C        ====================================
+C        DETERMINANTS DIFFER BY TWO FUNCTIONS
+C        ====================================
+C        
+         IA = IBTAND (IDV, ID)
+         IB = IBTAND (IDV, JD)
+         L = 0
+         N = 0
+         DO 50 I = 1, NORB
+            IF (IBTAND (IA, IBTSHL (1, I - 1)) .NE. 0) THEN
+               K = L
+               L = I
+            END IF
+            IF (IBTAND (IB, IBTSHL (1, I - 1)) .NE. 0) THEN
+               M = N
+               N = I
+            END IF
+ 50      CONTINUE
+C
+C---------------------
+C        H = H + (K, M, L, N)
+C---------------------
+         HMR = HMR + VMUUUU(K,M,L,N,1)
+         HMI = HMI + VMUUUU(K,M,L,N,2)
+C---------------------
+C        H = H - (K, N, L, M)
+C---------------------
+         HMR = HMR - VMUUUU(K,N,L,M,1)
+         HMI = HMI - VMUUUU(K,N,L,M,2)
+         PH = PHASE (K, ID) * PHASE (L, ID) *
+     +        PHASE (M, JD) * PHASE (N, JD)
+         HMR = HMR * PH
+         HMI = HMI * PH
+         RETURN
+      END IF
+C
+C     =============================================
+C     DETERMINANTS DIFFER BY MORE THEN TWO FUNCTIONS
+C     ==============================================
+C     
+      HMR = 0.0D0
+      HMI = 0.0D0
       RETURN
       END
 #ifdef UNDEF
