@@ -698,14 +698,58 @@ C
 #include <gnrinf.h>
 #endif
 C
-      STRING = BASDIR(1:LENBAS)//BASNAM
+C     The environment variable is a : separated string, e.g.:
+C     /programs/Dirac/basis:/programs/Dalton/basis:.
+C
+C     We loop over these directories in search for the basis set and
+c     element given.
+C
+      ISTART = 1
+C     
+ 10   CONTINUE
+C     
+C     Find next colon in BASDIR
+C     
+      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+C     
+C     In there are no colons, we are the last directory in BASDIR
+C     
+      IF ( ICOLON .EQ. ISTART - 1 ) THEN
+C        
+C        Find end of string
+C        
+         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
+C        
+C        If end of string = start of string there are no more
+C        directories, so we gracefully die...
+C
+         IF ( ICOLON .EQ. ISTART ) 
+     &        GOTO 300
+      END IF
+      IEND = ICOLON - 1
+      STRING = BASDIR(ISTART:IEND)
+      ISTART = ICOLON + 1
+C
+C     Add trailing slash if not present.
+C
+      IEND = INDEX ( STRING(1:), ' ') - 1
+      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+         IEND = IEND + 1
+         STRING(IEND:IEND) = '/'
+      END IF
+      STRING = STRING(1:IEND)//BASNAM
+      IEND = INDEX(STRING(1:),' ') - 1
+      WRITE(LUPRI,'(A/,A1,A,A1)')
+     &     'Trying basis set file: ','"',STRING(1:IEND),'"'
+C
+C     Inquire if "/path/basis-set" exists.
+C
       INQUIRE (FILE = STRING, EXIST = EXST)
-      IEND = INDEX(STRING(1:),' ')
       IF (EXST) THEN
          OPEN(LUBAS, FILE=STRING)
 C
 C
-C Searching the file for the element.
+C        Searching the file for the element.
 C
  20      CONTINUE
          READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
@@ -722,22 +766,24 @@ C
          ELSE 
             GOTO 20
          END IF   
-      ELSE
-         LSTR=1
-         DO J = 140,1,-1
-            IF (STRING(J:J) .NE. ' ') THEN
-               LSTR = J
-               GO TO 300
-            END IF
-         END DO
-  300    WRITE (LUPRI,'(/,3A)')
-     +      'Basis "',STRING(1:LSTR),'" doesn''t exist'
-         IF (BASNAM(1:6) .EQ. 'Huckel') THEN
-            WRITE (LUPRI,'(A)')
-     +      'NB! Basis Huckel must be available to use Huckel guess!'
-         END IF
-         CALL QUIT('Non-existing basis set in HERBAS')
       END IF
+      GOTO 10
+ 300  CONTINUE
+      LSTR = 1
+      DO J = LEN(BASNAM), 1, -1
+         IF ( BASNAM(J:J) .NE. ' ' ) THEN
+            LSTR = J
+            GOTO 301
+         END IF
+      END DO
+ 301  CONTINUE
+      WRITE (LUPRI,'(/,3A)')
+     +     'Basis "',BASNAM(1:LSTR),'" doesn''t exist'
+      IF (BASNAM(1:6) .EQ. 'Huckel') THEN
+         WRITE (LUPRI,'(A)')
+     +        'NB! Basis Huckel must be available to use Huckel guess!'
+      END IF
+      CALL QUIT('Non-existing basis set in HERBAS')
 C
 C Errormessages 
 C
