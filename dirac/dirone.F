@@ -2593,7 +2593,8 @@ C           skip if no partner found
 C
             JL = IRKB(JP)
             IF(JL.EQ.0) GOTO 15
-            IROW = NSTRT(JP) + IFUN(LOFF+1,1)
+            IROW = NSTRT(JA + JP - JP1) + IFUN(LOFF+1,1)
+C                        ^- to get correct shell number
             IROW = IPTSYM(IROW,IREP) - ISOFF
 C
 C           Fill in standard spherical transformation matrix
