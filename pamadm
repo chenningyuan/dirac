@@ -537,13 +537,13 @@ cat <<EOF>> Makefile
 
 utils	: GP_OBJ PD_OBJ UTIL_OBJ 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \\
-	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/labread.x \\
-	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/rspread.x \\
 	utils/rspread.o 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
-	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 
 EOF
 #
