@@ -540,6 +540,8 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/labread.x \\
 	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/rspread.x \\
+	utils/rspread.o 
 
 EOF
 #
