@@ -57,6 +57,9 @@
  ;
 #include "mpi_errtrap.h"
 
+#include "diracmalloc.head"
+ ;
+
 #if defined (SYS_DEC)
 extern int MAIN__( int argc, char** argv )
 #elif defined (SYS_SX)
@@ -75,6 +78,7 @@ extern int main( int argc, char** argv )
    /*
     * Start timing
     */
+
 
 #if defined (SYS_SX)
    gt_first = (get_time_struct *) malloc(sizeof(get_time_struct));
@@ -98,13 +102,12 @@ extern int main( int argc, char** argv )
     */
 
    mempointer = alloc_mem(mytid,&size);
-
    /*
     * Print logo, sysinfo etc.
     */
 
    if ( mytid == 0 ) print_logo(parcal);
-  
+
    /*
     * Execute dirac
     */
