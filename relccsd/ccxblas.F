@@ -1,6 +1,3 @@
-C
-C $Id$
-C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XAXPY (N,A,X,INCX,Y,INCY)
 C
@@ -274,7 +271,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_AIX) || defined (SYS_IRIX) 
+#if defined (SYS_AIX)
       REAL*8 FUNCTION DSUM (N,X,INCX)
       REAL*8 X(*),SUM
       II = 1
@@ -288,7 +285,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 #endif
 C
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX)
+#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_LINUX)
+C
       COMPLEX*16 FUNCTION ZSUM (N,X,INCX)
       COMPLEX*16 X(*),SUM
       SUM = DCMPLX(0.D0,0.D0)
@@ -350,6 +348,4 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
 

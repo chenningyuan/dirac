@@ -710,7 +710,6 @@ C---------------Description--------------------------------------------
 C
 C     Sort array BUF1(IJ,KL:KLREP) to array BUF2(IL,KJ:KJREP)
 C     If (FIRST) take only the totally symmetric (first) irrep.
-      LOGICAL DOINV
 C
 C---------------Routines called----------------------------------------
 C

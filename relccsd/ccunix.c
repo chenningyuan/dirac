@@ -66,11 +66,12 @@ typedef struct
 FILE_DEFINITION files[MAXUNIT];
 int nwords=0, nio=0;
 
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX)
 void openc_(unit,fname,size,status) long *unit, *size, *status; char *fname;
-#endif
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_HPUX)
+#elif defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_HPUX)
 void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
+#else
+????
 #endif
 
 { char *cp, *env ;
@@ -119,11 +120,12 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
   files[*unit].addr= -1;
 }
 
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || (SYS_LINUX)
 void wrabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
-#endif
-#if defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
+#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX) 
 void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
+#else
+???
 #endif
 
 { long addr, m, n;
@@ -150,11 +152,12 @@ void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || (SYS_LINUX)
 void rdabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
-#endif
-#if defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
+#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
 void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
+#else
+????
 #endif
 
 { long addr, m, n;
@@ -181,11 +184,12 @@ void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || (SYS_LINUX)
 void closec_(unit) long *unit;
-#endif
-#if defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
+#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
 void closec(unit) long *unit;
+#else
+????
 #endif
 
 { if (*unit>MAXUNIT || *unit<0)
