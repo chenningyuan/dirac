@@ -667,6 +667,8 @@ C
      &        SPDCAR(NHKTSH(ISHELD)-1),')',
      &        MWMAX
 C
+      MXHERMEM(I2TYP) = MWMAX
+C
       RETURN
       END
 

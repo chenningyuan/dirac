@@ -6,4 +6,4 @@
      &                LWTOT,  MWTOT,  MWFCAB, MWFCCD, MWPSO,  MWSOIN,
      &                MWAOIN, MWHRIN, MWHRND, MWHCIN, MWRJ00, MWHRSQ,
      &                MWSCR1, MWC1DR, MWC2DR, MWC2HI, MWC2EI, MWINTE,
-     &                MWPPRI, MWDRSY, N2WRIT
+     &                MWPPRI, MWDRSY, N2WRIT, MXHERMEM(0:3)
