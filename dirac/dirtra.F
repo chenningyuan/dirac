@@ -2338,9 +2338,9 @@ C
           CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I6/A,I6)')
-     &   ' >>> READI1 error, need work space    ',NBUF,
-     &   '                   current work sapce ',LBUF
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
           ENDIF
 C
 C         First part of transformation: W = FC
@@ -2367,9 +2367,9 @@ C
           CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I6/A,I6)')
-     &   ' >>> READI1 error, need work space    ',NBUF,
-     &   '                   current work sapce ',LBUF
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
           ENDIF
 
 C
@@ -2408,9 +2408,9 @@ C
           CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
           NBUF = NRMO*NCAO*NZW
           IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I6/A,I6)')
-     &   ' >>> READI1 error, need work space    ',NBUF,
-     &   '                   current work sapce ',LBUF
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
           ENDIF
 C
 C         First part of transformation: W = F(C+)
@@ -2430,9 +2430,9 @@ C
           CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
           NBUF = NRAO*NCMO*NZW
           IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I6/A,I6)')
-     &   ' >>> READI1 error, need work space    ',NBUF,
-     &   '                   current work sapce ',LBUF
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
           ENDIF
 C
 C         First part of transformation: W = CF
