@@ -1537,6 +1537,6 @@ echo "   http://dirac.chem.sdu.dk"
 echo "to see hints or/and problems concerning your platform."
 echo
 echo "Then run "
-echo "   make depend (not necesary)"
+echo "   make depend (not necessary)"
 echo "   make"
 echo "Then Dirac should be ready to run..."
