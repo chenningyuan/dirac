@@ -1808,13 +1808,13 @@ C FIXME: Direct handling hardwired for the moment. Later, this
 C        should be made dynamical and controlled from the outside.
 C        Possibly also integrals reside on file in LUCIAREL
       IO_RCIST_IN = 0
-      IF (IO_RCIST_IN.EQ.1) THEN
-        CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
-     &                  WORK(KFCACM),N2ASHXQ,WORK(KMUUUU),
-     &                  (2*NASHT)**4*2,
-     &                  DUMMY,DUMMY,2,IRIQ,
-     &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-      END IF
+CC    IF (IO_RCIST_IN.EQ.1) THEN
+CC      CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
+CC   &                  WORK(KFCACM),N2ASHXQ,WORK(KH2AC),
+CC   &                  (2*NASHT)**4*2,
+CC   &                  DUMMY,DUMMY,2,IRIQ,
+CC   &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+CC    END IF
 C
 C     Call LUCIAREL
       CALL KRMC_LUCI(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,ECORE,
