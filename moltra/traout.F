@@ -337,8 +337,7 @@ C
          IRECL = IRECLEN(NCLASS*NFPCK34(IREPIJ),0,0)
          IRECL = MAX0(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
-         call quit('the statement below cannot be executed')
-c        FNODE = LFNAM(FNAM)
+         FNODE = LFNAM(FNAM)
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)

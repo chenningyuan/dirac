@@ -265,12 +265,12 @@ C           for GMAT. We assume that HMAT is not more than twice GMAT,
 C           and reserve the same memory also for use in HERMIT.
 C
             NSIZG = LFREE / 3
+            LDXAB = 5*NINSHA*NINSHB
+            CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
      &                       .FALSE.,INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
 C
 C
-            LDXAB = 5*NINSHA*NINSHB
-            CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
 C           Set INDXAB and INDPASS
@@ -903,6 +903,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dcbtra.h>
 #include <dgroup.h>
       DIMENSION NBFSZ(2),NBUF(2),JBOFF(2,0:*),IRECC(2)
+      CHARACTER*10 LFNAM,FNODE,FNAME*5
 C
       DO IRREP = 1, NFSYM
          NWORDS = NBFSZ(IRREP)
@@ -911,7 +912,9 @@ C     The record size needs to be nwords real + nwords + 1 integer
 C
          IRECL = IRECLEN(NWORDS,NWORDS+1,0)
          LUTRA11 = LUTRA1 + IRREP
-         OPEN (UNIT=LUTRA11,ACCESS='DIRECT',RECL=IRECL)
+         WRITE (FNAME,'(A4,I1)') 'HTIN',IRREP
+         FNODE = LFNAM(FNAME)
+         OPEN (UNIT=LUTRA11,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          IRECC(IRREP) = 1
       ENDDO
 C
@@ -1214,14 +1217,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck INITGBF */
       SUBROUTINE INITGBF(LGFIL,NGBFSZ,NPASS,IREC,LGREC,LGBUF)
 C
-C     Initialize the buffer file and index arrays for the half-
-C     transformed integrals
+C     Initialize the buffer file and index arrays for the scalar
+C     integrals
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
+      CHARACTER*10 FNODE,LFNAM
 C
       NWORDS = NGBFSZ
 c     print*,'NGBFSZ',NGBFSZ
@@ -1230,7 +1234,8 @@ C     The record size needs to be nwords real + (nwords + 2) integer
 C
       IRECL = IRECLEN(NWORDS,NWORDS+2,0)
 C
-      OPEN (UNIT=LGFIL,ACCESS='DIRECT',RECL=IRECL)
+      FNODE = LFNAM('SCLIN')
+      OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
 C
       IREC = 0
       CALL IZERO(LGREC,NPASS)
@@ -1250,6 +1255,41 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <priunit.h>
 C
       CLOSE (UNIT=LGFIL,STATUS='DELETE')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LFNAM */
+      CHARACTER*10 FUNCTION LFNAM (FILNAM)
+C
+C     Add the node identification to the file name for shared disk systems
+C     Written by Luuk Visscher, February 1998
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+#include <dcbgen.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+      INCLUDE 'mpif.h'
+#else
+#include <fpvm3h.h>
+#endif
+      CHARACTER*5  FILNAM
+      CHARACTER*10 LFILNAM
+C
+      IF (PARCAL) THEN
+         NODE = MYTID
+      ELSE
+         NODE = 0
+      ENDIF
+C
+ 1000 FORMAT (A5,I5)
+      WRITE (LFILNAM,1000) FILNAM,NODE
+      DO I = 6, 10
+         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
+      ENDDO
+C
+      LFNAM = LFILNAM
 C
       RETURN
       END
