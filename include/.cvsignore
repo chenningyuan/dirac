@@ -1,0 +1,13 @@
+.deps
+Makefile
+configure
+pam
+export
+dirac.x
+Makefile.config
+*.o
+*.i
+*.bak
+*.rej
+*.orig
+compinfo.h
