@@ -1540,30 +1540,29 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      INTEGER NISHB_CNT(MAX_BOS_BL), NASHB_CNT(MAX_BOS_BL), JOCC(2)
+      INTEGER NISHB_CNT(MAX_BOS_BL), NACSHB_CNT(MAX_BOS_BL), JOCC(2)
 C
       CALL QENTER('BOSSEL')
 C
       CALL ICOPY(MAX_BOS_BL,NISH_BOS,1,NISHB_CNT,1)
-      CALL ICOPY(MAX_BOS_BL,NASH_BOS,1,NASHB_CNT,1)
-      NISHB_T = ISUM(MAX_BOS_BL,NISHB_CNT,1)
-      NASHB_T = ISUM(MAX_BOS_BL,NASHB_CNT,1)
       DO I = 1,NFSYM
          JOCC(I) = NPSH(I)
-      IF(NISH_DHF(I).NE.0) THEN
+      IF(NISH_DHF(I).GT.0) THEN
         CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &              CFU(I2ORBT(I)+1),NORB(I),JOCC(I),NISHB_CNT)
       ENDIF
       ENDDO
-      IF (NOPEN .GT. 0) THEN
+      DO IOPEN = 1,NOPEN
          DO I = 1,NFSYM
-C           JOCC(I) = NPSH(I) + NISH(I) from loop above
-         IF(NASH_DHF(I).NE.0) THEN
+C           JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
+         IF(NACSH(I,IOPEN).GT.0) THEN
+           CALL ICOPY(MAX_BOS_BL,NACSH_BOS(1,IOPEN),1,NACSHB_CNT,1)
            CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
-     &                 CFU(I2ORBT(I)+1),NORB(I),JOCC(I),NASHB_CNT)
+     &                 CFU(I2ORBT(I)+1),NORB(I),JOCC(I),
+     &                 NACSHB_CNT)
          ENDIF
+         ENDDO
       ENDDO
-      END IF
       CALL QEXIT('BOSSEL')
       RETURN
       END

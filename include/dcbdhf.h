@@ -58,7 +58,7 @@
       INTEGER NISH_DHF(2), NASH_DHF(2), NSSH_DHF(2), NESH_DHF(2),       &
      &        NPSH_DHF(2), NFRO_DHF(2), NELEC_DHF(2), NELECT_DHF,       &
      &        NAELEC_DHF, NACSH(2, MXOPEN), NOPEN,                      &
-     &        NISH_BOS(MAX_BOS_BL), NASH_BOS(MAX_BOS_BL)
+     &        NISH_BOS(MAX_BOS_BL), NACSH_BOS(MAX_BOS_BL,MXOPEN)
       COMMON /DCODHF/ DF, DA, DALPHA, NISH_DHF, NASH_DHF, NSSH_DHF,     &
      &                NESH_DHF, NPSH_DHF, NFRO_DHF, NELEC_DHF,          &
      &                NELECT_DHF, NAELEC_DHF, NACSH, NOPEN,             &

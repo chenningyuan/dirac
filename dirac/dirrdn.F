@@ -687,7 +687,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 40)
+      PARAMETER (NTABLE = 41)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -714,7 +714,8 @@ C
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
-     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS'/
+     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',
+     &            '.NSUBBL'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -759,6 +760,11 @@ C
       OVLSEL    = .FALSE.
       DYNSEL    = .FALSE.
       DOBOSSEL  = .FALSE.
+      NSUBBL    = NBSYM
+C     ... hjaaj: default = # boson sym.s
+C         must be changed with .NSUBBL for LINEAR
+C         this can not be tested if correct because 
+C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
       AUTOCC    = .FALSE.
@@ -827,7 +833,7 @@ C
       NASH_DHF(1)  = 0
       NASH_DHF(2)  = 0
       CALL IZERO(NISH_BOS,MAX_BOS_BL)
-      CALL IZERO(NASH_BOS,MAX_BOS_BL)
+      CALL IZERO(NACSH_BOS,MAX_BOS_BL*MXOPEN)
       CALL IZERO(NACSH,2*MXOPEN)
       NOPEN    = 0
       NFRO_DHF(1)  = 0
@@ -898,11 +904,11 @@ C&&& MAXITR: Maximum number of SCF-iterations
     4          CONTINUE
 C&&& ERGCNV: Convergence on energy difference
                   READ(LUCMD,'(A80)') LINE
-                  READ(LINE,*,END=41,ERR=41) SCFCNV(1),SCFCNV(2)
-                  GOTO 42
-   41             READ(LINE,*) SCFCNV(1)
+                  READ(LINE,*,END=401,ERR=401) SCFCNV(1),SCFCNV(2)
+                  GOTO 402
+  401             READ(LINE,*) SCFCNV(1)
                   SCFCNV(2) = SCFCNV(1)
-   42             CONTINUE
+  402             CONTINUE
                   EVCCNV = .FALSE.
                   ERGCNV = .TRUE.
                   FCKCNV = .FALSE.
@@ -1167,7 +1173,7 @@ C&&& MAX BACKSTEPS: max. number of backsteps
 C&&& PRJTHR: Smallest norm accepted in projection step
                   READ(LUCMD,*) PRJTHR
                GOTO 100
- 39               CONTINUE
+ 39            CONTINUE
 C&&& FROZEN: Frozen orbitals
                DO I = 1,NFSYM
                  READ(LUCMD,'(A72)') VCFROZ(I)
@@ -1176,15 +1182,20 @@ C&&& FROZEN: Frozen orbitals
                  NFRO_DHF(I)=NFRO_DHF(I)-NZERO
                ENDDO
                GOTO 100
- 40               CONTINUE
+ 40            CONTINUE
 C&&& BOSONS: Selection based on (approx.) boson symmetry
                DOBOSSEL = .TRUE.
-               READ(LUCMD,*) (NISH_BOS(I),I=1,NBSYM)
-               IF (NOPEN .GT. 0)
-     &         READ(LUCMD,*) (NASH_BOS(I),I=1,NBSYM)
+               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+               DO IOPEN = 1,NOPEN
+                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+               END DO
 C ... hjaaj 19.oct.2004, initial implementation for boson symmetriex
 C     can later be extended to linear symmetry
                GOTO 100
+ 41            CONTINUE
+C&&& .NSUBBL: # of subblocks for .BOSONS (p.t. for linear sym.)
+               READ(LUCMD,*) NSUBBL
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1194,6 +1205,7 @@ C     can later be extended to linear symmetry
                CALL QUIT('Illegal prompt in DHFINP.')
             END IF
       END IF
+               
   300 CONTINUE
 C
 C     Determine occupation
@@ -1586,12 +1598,17 @@ C     .BOSONS was programmed by hjaaj Oct 2004
             WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS currently'//
      &           'only works with at most one open shell'
          END IF
-         WRITE(LUPRI,'(A/4X,8I4)')
+         WRITE(LUPRI,'(A/A/4X,8I4)')
      *      ' * Vector selection based on (approximate) boson symmetry',
-     &      (NISH_BOS(J),J=1,NBSYM)
-         IF (NOPEN.GT.0) WRITE(LUPRI,'(4X,8I4)') (NASH_BOS(J),J=1,NBSYM)
+     &      '   - inactive shell:',(NISH_BOS(J),J=1,NSUBBL)
+         IF (NOPEN.GT.0) THEN
+            WRITE(LUPRI,'(A)') '   - active shell(s):'
+            DO IOPEN = 1,NOPEN
+               WRITE(LUPRI,'(4X,8I4)') (NACSH_BOS(J,IOPEN),J=1,NSUBBL)
+            END DO
+         END IF
 C  TODO HJAAJ: check sum(NISH_BOS) = sum(NISH_DHF) 
-C  TODO HJAAJ: check sum(NASH_BOS) = sum(NASH_DHF) 
+C  TODO HJAAJ: check sum(NACSH_BOS) = sum(NACSH) 
 C  TODO HJAAJ: check parity (IFSYM) of each boson symmetry
       END IF
       IF (AUTOCC .AND. NASHT_DHF .GT. 1) THEN
