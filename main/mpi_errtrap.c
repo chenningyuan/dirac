@@ -38,7 +38,7 @@
    fprintf(stdout,"******************************************\n");
 
    len = strlen(errmesg);
-   quit(errmesg,&len);
+   quit(errmesg,len);
    
 #else /* SYS_AIX */
 
@@ -56,9 +56,9 @@
 
    len = 0;
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
-   QUIT(NULL,&len);
+   QUIT(NULL,len);
 #else /* SYS_CRAY etc. */
-   quit_(NULL,&len);
+   quit_(NULL,len);
 #endif /* SYS_CRAY etc. */
 
 
