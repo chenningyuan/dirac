@@ -3019,8 +3019,20 @@ C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE) NSP,BREIT,ECORE
-       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
+       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
      &                ,(NELEC(IRP),IRP=1,NSYMRP)
+       GOTO 11
+C---- Keep OLD (MOLFDIR) format here for compatibility
+   10     WRITE (IW,*) "No occupation info on MRCONEE, I assume"//
+     &    " this is a MOLFDIR file and try to continue.."
+          INTERFACE='MOLFDIR'
+          REWIND(MRCONEE)
+          READ (MRCONEE) NSP,BREIT,ECORE
+          READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
+          DO IRP = 1, NSYMRP
+             NELEC(IRP) = 0
+          ENDDO
+   11  CONTINUE
        READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
