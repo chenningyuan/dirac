@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -30,7 +30,7 @@ C DATE    : $Date$
 C FILE    : cigosc.F
 C SOURCE  : $Source$
 C
-      SUBROUTINE PAMGOS
+      SUBROUTINE PAMGOS(CI,MAXCORE)
 C     ===============================================================
 C     SMALL CI PROGRAM TO PERFORM COMPLETE OPEN SHELL CI CALCULATIONS
 C     METHOD DESCRIBED IN JCP 96, 2910, (1992).
@@ -42,6 +42,7 @@ C     ==========================================================
 C
       INCLUDE 'goscom.inc'
 C
+      DIMENSION CI(MAXCORE)
       CHARACTER*8 DATEX*10,TIMEX
 C
       EXTERNAL INIT
@@ -49,25 +50,63 @@ C
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
       CALL READGOS
-      CALL RDTWO
+C
+C     Set pointers to allocate blocks in memory
+C
+      KINDTWR = 1
+      KINDTWI = KINDTWR + NORB**4
+      IF (BREIT) THEN
+         KINDGAR = KINDTWI + NORB**4  
+         KINDGAI = KINDGAR + NORB**4  
+         KTOP =  KINDGAI + NORB**4
+      ELSE
+         KTOP =  KINDTWI + NORB**4
+         KINDGAR = KTOP  
+         KINDGAI = KTOP
+      ENDIF
+C
+      DO IRP=1, NREP
+        NDETMX = 1
+        IRRP = IRP
+        IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
+        CALL GENDET(IRP,IRRP)
+        NDETMX = MAX0(NDETMX,NDET)
+      ENDDO
+C
+      KHR = KTOP
+      KHI = KHR + NDETMX**2
+      KTOP = KHI + NDETMX**2  
+      MAXINT = (MAXCORE - KTOP - 2) / 2
+C
+C     Check if this still fits in the available memory
+C
+      IF (MAXINT.LE.0)  CALL Q2JOB (3,'P.PAMGOS','MAXINT',NORB**4)
+C
+      KTWOINR = KTOP
+      KTWOINI = KTWOINR + MAXINT
+      KTOP = KTWOINI + MAXINT 
+C
+      CALL RDTWO(CI(KINDTWR),CI(KINDTWI),CI(KINDGAI),CI(KINDGAR),
+     &           CI(KTWOINR),CI(KTWOINI),MAXINT)
       DO 10 IRP=1,NREP
         IRRP = IRP
         IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
-        CALL CPUUSED(SEC0)
+	CALL CPUUSED(SEC0)
         CALL GENDET(IRP,IRRP)
         IF (NDET.EQ.0) GOTO 10
-        CALL CPUUSED(SEC1)
-        CALL MAKEH
-        CALL CPUUSED(SEC2)
-        CALL DIAGH(IRP)
-        CALL CPUUSED(SEC3)
-        CALL WRVEC(IRP,IRRP)
-        CALL CPUUSED(SEC4)
+	CALL CPUUSED(SEC1)
+        CALL MAKEH(CI(KHR),CI(KHI),CI(KINDTWR),CI(KINDTWI),
+     &       CI(KINDGAI),CI(KINDGAI),CI(KTWOINR),CI(KTWOINI),MAXINT)
+	CALL CPUUSED(SEC2)
+        CALL DIAGH(IRP,CI(KHR),CI(KHI))
+	CALL CPUUSED(SEC3)
+        CALL WRVEC(IRP,IRRP,CI(KHR),CI(KHI))
+	CALL CPUUSED(SEC4)
         WRITE (6,1010) SEC1-SEC0,SEC2-SEC1,SEC3-SEC2,SEC4-SEC3
-        CALL PRTOUT(IRP,IRRP)
+        CALL PRTOUT(IRP,IRRP,CI(KHR),CI(KHI))
  10     CONTINUE
       INTREP = MOD(NELEC,2)
-      CALL PRTOUT(0,INTREP)
+      CALL PRTOUT(0,INTREP,CI(KHR),CI(KHI))
       CALL CPUUSED(SEC5)
       WRITE (6,1020) SEC5-SEC
  1000 FORMAT(///1X,'GOSCIP (Version 1.8)'//
@@ -114,16 +153,17 @@ C              LV (June 28, 1994)
 C VERSION 1.8: Now also real groups can be handled al real
       END
 C
-C     =====================
-      SUBROUTINE DIAGH(IRP)
-C     =====================
+C     ===========================
+      SUBROUTINE DIAGH(IRP,HR,HI)
+C     ===========================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       INCLUDE 'goscom.inc'
 C
       REAL*8 E(N2),EE(N2,2)
 C
-      CALL CRDIAG (N2,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
+      CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
       RETURN
       END
 
@@ -159,11 +199,15 @@ c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE)
  1010 FORMAT(1X,I4,32I2)
       END
 C
-C     ================================
-      SUBROUTINE HMAT (ID, JD, HMR, HMI)
-C     ================================
+C     ===========================================================
+      SUBROUTINE HMAT (ID,JD,HMR,HMI,INDTWR,INDTWI,INDGAR,INDGAI,
+     &                 TWOINR,TWOINI,MAXINT)
+C     ===========================================================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
+      DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
+      DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
+      DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
       INCLUDE 'goscom.inc'
 C
 #include <ibtfun.h>
@@ -392,9 +436,6 @@ C
       DATA REPNA / N5A * '    ' /
       DATA MULTB / N5B * 0 /
       DATA ONER, ONEI / N3 * 0.0D0, N3 * 0.0D0 /
-      DATA TWOINR, TWOINI / 0.0D0, N4A * 0.0D0, 0.0D0, N4A * 0.0D0 /
-      DATA INDTWR, INDTWI / N4 * 0, N4 * 0 /
-      DATA INDGAR, INDGAI / N4 * 0, N4 * 0 /
       DATA IDET / N2 * 0 /
       END
 C
@@ -418,15 +459,21 @@ C
       END
 C
 C     ================
-      SUBROUTINE MAKEH
+      SUBROUTINE MAKEH(HR,HI,INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,
+     &                 TWOINI,MAXINT)
 C     ================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
+      DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
+      DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
+      DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
       INCLUDE 'goscom.inc'
 C
       DO 10 I = 1, NDET
         DO 10 J = 1, I
-          CALL HMAT (IDET (I), IDET (J), HR (I, J), HI (I, J))
+          CALL HMAT (IDET(I),IDET(J),HR(I,J),HI(I,J),INDTWR,INDTWI,
+     &               INDGAR,INDGAI,TWOINR,TWOINI,MAXINT)
           HR (J, I) = HR (I, J)
           HI (J, I) = - HI (I, J)
  10       CONTINUE
@@ -439,7 +486,7 @@ C     PRINT*, ' ** HI **'
 C     DO 110 I=1,NDET
 C       WRITE(6,1010) (HI(I,J),J=1,I)
 C110    CONTINUE
-C1010 FORMAT(15F8.4)
+ 1010 FORMAT(15F8.4)
       RETURN
       END
 C
@@ -476,10 +523,12 @@ C
       RETURN
       END
 C
-C     ===========================
-      SUBROUTINE PRTOUT(IRP,IRRP)
-C     ===========================
+C     =================================
+      SUBROUTINE PRTOUT(IRP,IRRP,HR,HI)
+C     =================================
       IMPLICIT REAL*8 (A-H, O-Z)
+C
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
       INCLUDE 'goscom.inc'
 C
@@ -606,23 +655,43 @@ C
       RETURN
       END
 C
-C     ================
-      SUBROUTINE RDTWO
-C     ================
+C     ===========================================================
+      SUBROUTINE RDTWO(INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,TWOINI,
+     &                 MAXINT)
+C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
       INCLUDE 'goscom.inc'
 C
       PARAMETER(D0 = 0.0D0)
       CHARACTER*10 DATEX,TIMEX*8
+      DIMENSION INDTWR(NORB,NORB,NORB,NORB)
+      DIMENSION INDTWI(NORB,NORB,NORB,NORB)
+      DIMENSION INDGAR(NORB,NORB,NORB,NORB)
+      DIMENSION INDGAI(NORB,NORB,NORB,NORB)
+      DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION KR(-N1:N1)
       COMPLEX*16 RPHASE(N1),ONE
       INTEGER INDK(N3),INDL(N3)
 C
       MDINT = 1
-      NUNIQ = 1
+      NUNIQ = 0
       TWOINR(0) = D0
       TWOINI(0) = D0
+
+      DO L = 1, NORB
+      DO K = 1, NORB
+      DO J = 1, NORB
+      DO I = 1, NORB
+         INDTWR(I,J,K,L) = 0
+         INDTWI(I,J,K,L) = 0
+         IF (BREIT) INDGAR(I,J,K,L) = 0
+         IF (BREIT) INDGAI(I,J,K,L) = 0
+      ENDDO
+      ENDDO
+      ENDDO
+      ENDDO
+C
       OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
       Read (mdint,err=10000,end=10000) datex,timex,nkr,
      &                                 (KR(I),KR(-I),I=1,NKR) 
@@ -631,7 +700,7 @@ C--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   10  read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
      &             (indk(inz),indl(inz),inz=1,nz),
      &             (twoinr(inz),twoini(inz),inz=nuniq+1,nuniq+nz)
-      If (nuniq+nz.GT.N4A) Call Q2Job (3,'P.RDTWO','N4A',nuniq+nz)
+      If (nuniq+nz.GT.MAXINT) Call Q2Job (3,'P.RDTWO','MAXINT',nuniq+nz)
       If (ikr.EQ.0) GoTo 20 ! End of File
 C-->  Distribute this set and generate time-reversed integrals.
 C-->  K|ia> = |ib> ; K|ib> = - |ia>
@@ -884,9 +953,9 @@ C
       RETURN
       END
 C
-C     ===========================
-      SUBROUTINE WRVEC (IRP,IRRP)
-C     ===========================
+C     =================================
+      SUBROUTINE WRVEC (IRP,IRRP,HR,HI)
+C     =================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 C     WRITE TRIAL VECTORS FOR DIRRCI TO FILE MRCTRIV
@@ -895,6 +964,7 @@ C     RECORD 2 : BIT REPRESENTATION DETERMINANTS
 C     RECORD 3 : FIRST VECTOR
 C     RECORD 4 : SECOND VECTOR, ETC.
 C
+      DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       INCLUDE 'goscom.inc'
 C
       CHARACTER*11 VECFIL
