@@ -2199,9 +2199,9 @@ C
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALY'/
+     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.DENSIT','.WT1   ','.LOCALY','.XXXXXX'/
+     &             '.DENSIT','.WT1   ','.LOCALI','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2297,7 +2297,7 @@ C&&&& RHO1: Punch Becke integration weights along the lines between atomic cente
             NJOBS = NJOBS +1
             GO TO 100
   107    CONTINUE
-C&&&& LOCALYSE : Molecular orbital localization
+C&&&& LOCALIZE : Molecular orbital localization
             DOLOC = .TRUE.
             GO TO 100
   108    CONTINUE
@@ -3154,6 +3154,7 @@ C
       DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       DFTHAM  = .FALSE.
+      ALDAON  = .FALSE.
       SOLVEN  = .FALSE.
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
@@ -3336,6 +3337,7 @@ C             projection scheme
   116      CONTINUE
 C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
              DFTHAM = .TRUE.
+             ALDAON = .TRUE.
 #if defined (MOD_DFT)
              CALL DOALDA(.TRUE.)
 #endif
@@ -4443,7 +4445,7 @@ C
          WRITE (*,'(A,A)') ' * WARNING : Orbital localization not yet',
      S   ' implemented'
          WRITE (*,'(A)') '             for other groups than C1 !!!'
-         WRITE (*,'(A)') '   -> LOCALYSE ignored'
+         WRITE (*,'(A)') '   -> LOCALISE ignored'
          DOLOC = .FALSE.
       ENDIF
 C
@@ -4952,7 +4954,7 @@ C
 C     Process input from CBILOC
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*LOCALY')
+      NEWDEF = (WORD .EQ. '*LOCALI')
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
