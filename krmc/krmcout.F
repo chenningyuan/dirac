@@ -284,14 +284,8 @@ C        ------------------------------
 C
 C        Also, transform orbitals to NO.
 C
-         IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
-           WRITE(LUPRI,*) ' LUCIAREL not prepared for '
-           WRITE(LUPRI,*) ' 1-particle densities only '
-           WRITE(LUPRI,*) ' Skipping RGETNO in KRMCOU1. '
-         ELSE
-           CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &                 .TRUE.,MOISNO,IPROPT,WORK,KFREE,LFREE)
-         END IF
+         CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
+     &               .TRUE.,MOISNO,IPROPT,WORK,KFREE,LFREE)
       END IF
 C
 C     Write orbital back to KRMCSCF

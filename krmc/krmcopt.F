@@ -975,7 +975,9 @@ C
 C
 C        Calculate density matrices in MOLFDIR format
 C
-         IF (CALCPV) THEN
+         IF (CALCPV .OR. OPT_CIPROGRAM.eq.'LUCIAREL') THEN
+C  TODO FOR TIMO: remove check for LUCIAREL when it has been
+C                 implemented in LUCIAREL to only calc. 1-del. d.m.
             LPV = (2*NASHT)**4 * MIN(2,NZ)
          ELSE
             LPV = 0
@@ -1153,7 +1155,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "orbene.h"
 #include "dcbfir.h"
 #include "blocks.h"
 #include "dcborb.h"
@@ -1362,14 +1363,23 @@ C
          END IF
   100 CONTINUE
       CALL MEMREL('RFCKMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+
+#ifdef MCSCF_ORBENE
+! NOTE JANUARY 2005 TF+HJAAJ:
+!   BEFORE REACTIVATING THIS, THE QDIAG CALL SHOULD BE
+!   CHANGED TO CALLS FOR BLOCKDIAGONALIZATION OF EACH
+!   OCCUPATION CLASS. THE CURRENT CODE WILL MIX INACTIVE
+!   AND ACTIVE as well as ACTIVE AND VIRTUALS.
+!   Also consider if this should not rather be calculated
+!   in krmccan.F .........
+!
 C
 C  Diagonalize complete Fock matrix FT:
 C
 C  Total Fock matrix FC + FV:
 C
       CALL MEMGET('REAL',KFT,N2ORBXQ,WORK,KFREE,LFREE)
-      NORBQU = NORBT*NORBT*NZ
-      DO ISM = 1,NORBQU,1
+      DO ISM = 1,N2ORBXQ
         WORK(KFT+ISM-1) = FC(ISM) + FV(ISM)
       END DO
 C
@@ -1408,7 +1418,7 @@ C     Define offsets and lengths ...
       END DO
 C
 C     ... and reorder
-      IRN = 1
+      IRN = 0
 C     Loop over symmetries
       DO IFS = 1,NFSYM,1
 C       Loop over particle type
@@ -1417,8 +1427,8 @@ C         Loop over internal spaces
           DO IINTSP = 1,NINTSP,1
 C           Loop over orbital block
             DO IORBRN = 1,NOPSST(IFS,IINTSP,IPAR),1
-             ORBENE(IRN) = WORK(KEIGHL+IOPSST(IFS,IINTSP,IPAR)+IORBRN-1)
              IRN = IRN + 1
+             ORBENE(IRN) = WORK(KEIGHL+IOPSST(IFS,IINTSP,IPAR)+IORBRN-1)
             END DO
           END DO
         END DO
@@ -1432,6 +1442,7 @@ C
      &          ' OrbEn (',IPR,') = ',ORBENE(IPR)
         END DO
       END IF
+#endif   /* MCSCF_ORBENE */
 C
 c      call getmat('FCMO',FC,10,.TRUE.,WORK(KFREE),LFREE)
 c      call prqmat(fc,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
@@ -3714,7 +3725,7 @@ C
          GOTO 100
 #ifdef UNDEF
       ELSE
-         write(6,*) 'krmcsol: steplen acceptedlen, level shift',
+         write(6,*) 'krmcsol: steplen accepted, level shift',
      &        STPL,DLVLSH
 #endif
       END IF
