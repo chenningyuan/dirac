@@ -65,6 +65,7 @@ usage ()
    echo '     -user                  : Which user to notify'
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
    echo '                              dirac'
+   echo '     -help                  : Help on pam'
 }
 #
 #
@@ -550,6 +551,14 @@ while [ -n "$1" ]; do
       -dirac)
          shift
          ALT_DIRAC=$1
+         ;;
+      -help)
+         if [ -z "$PAGER" ]; then
+            PAGER=more
+         fi
+         nroff -man $SRC_DIR/pam.1 | $PAGER
+         EXIT=0
+         exitfunc
          ;;
       -*)
          echo "$1 not recognized"
