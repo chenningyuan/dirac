@@ -135,12 +135,11 @@
 
 - include resources for generation of matrix elements
 of transformed two-component relativistic Hamiltonians (DK1,DK2,DKinf=BSS;
-scalar or spin-free); check the performance in SCF and correlated calculations (CC,CI)
+scalar or spin-free); 
 
 - continue with RPA picture change transformed calculations of properties
 
-- try to interface DKn(n=1,2,inf) with the DFT to run two-component DFT
-  (similar to the ADF or PARAGAUSS implementations) 
+- try to interface DKn(n=1,2,inf) with the DFT module to run two-component DFT/RPA
 
 changed routine (file):
 --------------------------
@@ -150,7 +149,18 @@ PSIDHF (dirscf.F)
 ONEFCK (dirone.F)
 GMOTRA (dirone.F)  
 common file: dcbham.h
+added file: dirdkh.F 
 
-to add: dirdkh.F 
+*********************************************
+****     Implementation of relativistic
+****   London atomic orbitals (LAO) in Dirac
+***             MI & HJAaJ (& TEC)        
+*********************************************
+
+- move TEC's (old) coding into the actual (new) version of DIRAC
+- debugg it
+
+changed dir: abacus - definitions of new integrals (1- and 2-electron)
+             prp    - do 4comp. RPA with LAO based property gradient
 
 
