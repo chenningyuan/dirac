@@ -227,6 +227,7 @@ make_export()
      \$szCurrDir/main/*.struct \\
      \$szCurrDir/test \\
      \$szCurrDir/testlast \\
+     \$szCurrDir/basis \\
      \$szCurrDir/utils 2> export.log
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
