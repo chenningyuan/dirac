@@ -261,6 +261,12 @@ C
       RMS = 1.D0
       ECCSD = 0.D0
 C
+C
+C     Zero amplitudes if the NOCCX options are specified
+C
+      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
+      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
+C
       CALL T1DIAG(DIAG,T1,BUF1)
       CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
       IF (DEBUG.OR.IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
@@ -326,6 +332,11 @@ C
          ENDIF
       ENDIF
       CPUT1 = CPUT1 + CPUDELTA()
+
+C
+C     In case of NOCCD we can skip the calculation of T2 amplitudes 
+C
+      IF (TEQ.AND.NOCCD) GOTO 100
 
       
       if (carith.and.debug) then
@@ -411,8 +422,6 @@ C
      &             BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(12,2,'T2 EQNS                       ')
       CPUT2 = CPUT2 + CPUDELTA()
-
-
 C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
@@ -433,6 +442,8 @@ C
       write (*,111)"s2 after bintm",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
       CPU4V = CPU4V + CPUDELTA()
+C
+ 100  CONTINUE
 C
 C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
 C
@@ -465,6 +476,11 @@ C
       write (*,111)"s2 after parts",MYPROC,ddot(ndimt2,s2,1,s2,1)
       write (*,111)"s1 after parts",MYPROC,ddot(ndimt1,s1,1,s1,1)
       endif
+C
+C     Zero amplitudes if the NOCCX options are specified
+C
+      IF (TEQ.AND.NOCCS) CALL XCOPY (NDIMT1,A0,0,S1,1)
+      IF (TEQ.AND.NOCCD) CALL XCOPY (NDIMT2,A0,0,S2,1)
 C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
@@ -574,7 +590,12 @@ C
       IF (TEQ) THEN
          ETOT = ESCF + ECCSD
          WRITE(IW,6072) ESCF
-         WRITE(IW,6074) ECCSD
+         IF (.NOT.(NOCCD.OR.NOCCS)) THEN
+            WRITE(IW,6074) ECCSD
+         ELSE
+            IF (NOCCS) WRITE(IW,6084) ECCSD
+            IF (NOCCD) WRITE(IW,6085) ECCSD
+         ENDIF
          WRITE(IW,6076) ETOT
          IF (IPRNT.GE.2) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
       ENDIF
@@ -622,6 +643,8 @@ C
  6072 FORMAT(' SCF energy :',T40,F25.15)
  6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
  6074 FORMAT(' CCSD correlation energy :',T40,F25.15)
+ 6084 FORMAT(' CCD correlation energy :',T40,F25.15)
+ 6085 FORMAT(' CCS correlation energy :',T40,F25.15)
  6075 FORMAT(' Total MP2 energy :',T40,F25.15)
  6076 FORMAT(' Total CCSD energy :',T40,F25.15)
  6077 FORMAT(' T1 diagnostic :',T40,F25.15)

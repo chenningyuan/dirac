@@ -298,7 +298,12 @@ C ----------------------------
       IF (MOD(N5*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
 C
       IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
-         REWIND (MDINT)
+         CLOSE (MDINT,STATUS='KEEP')
+         IF (BREIT.AND.ITRSGN.EQ.-1) THEN
+             OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
+         ELSE
+             OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
+         ENDIF
          READ (MDINT)
       ENDIF
 C
@@ -402,7 +407,12 @@ C --------------------------
       IF (MOD(N6*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
 C
       IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
-         REWIND (MDINT)
+         CLOSE (MDINT,STATUS='KEEP')
+         IF (BREIT.AND.ITRSGN.EQ.-1) THEN
+             OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
+         ELSE
+             OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
+         ENDIF
          READ (MDINT)
       ENDIF
 C
@@ -471,12 +481,6 @@ C
       CALL RWRIT(ITAPT+6,VVVVV,N6*RCW*IRW,NSEC6)
       NSEC6 = NSEC6 + NSEC
 C
-C    for debugging purposes: count nonzero VVVV ints in this batch.
-C
-C     DO IX=1,N6
-C       IF(VVVVV(1,IX).NE.0.0d0) N6CTL=N6CTL+1
-C     ENDDO
-C
 C     end of IPASS loop for the VVVV
 C --------------------------
       ENDDO
@@ -486,19 +490,6 @@ C
       WRITE(IW,*) 'VVVV sorting done.'
 
 C
-C  ... debugging ...
-C
-C     IF(N6CTL.NE.NV6) THEN
-C       WRITE(IW,*) 'VVVV diff. in #:',N6CTL,NV6
-C     ELSE
-C       WRITE(IW,*) 'VVVV numbers ok.'
-C     ENDIF
-C
-C     IF(N5CTL.NE.NV5) THEN
-C       WRITE(IW,*) 'VOVV diff. in #:',N5CTL,NV5
-C     ELSE
-C       WRITE(IW,*) 'VOVV numbers ok.'
-C     ENDIF
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
 C  Breit is only used with MOLFDIR in this version

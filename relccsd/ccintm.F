@@ -671,7 +671,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
@@ -689,26 +688,6 @@ C---------------------------------------------
       ELSE
          CALL XCOPY  (NDIMT2,T2,1,BUF1,1)
       ENDIF
-
-C****************************************************
-C**
-C**   DEBUGGING PURPOSES:
-C**   VERIFYING TAU MATRIX
-C**
-C     write(*,*) '== IN BINTM: TAU MATRIX: =='
-C     OFF1=1
-C     DO IRP=1,NREP
-C       M=NVVT(IRP)
-C       N=NOOT(IRP)
-C       write(*,*) 'IRP,M,N:',IRP,M,N
-C       write(*,'(A,I5,F30.15)') 'TAU(IREP)',IRP,
-C    >  ddot(M*N*RCW,BUF1(OFF1),1,BUF1(OFF1),1)
-C       OFF1=OFF1 + M*N*RCW
-C     ENDDO
-C**
-C**
-C****************************************************
-
       OFF1 = 1
       OFF2 = 1
       DO 30 IRP = 1, NREP
@@ -726,45 +705,10 @@ C****************************************************
             ISTART = ISTART + NINT
             GOTO 10
          ENDIF
-
- 111  format (a,i6,2f30.15)
-C     write(iw,111) '------>>> VVVV/IRP contraction in IRP:',IRP,
-C    >    ddot(M*N*RCW,S2(OFF2),1,S2(OFF2),1)
-
          OFF1 = OFF1 + M * N * RCW
          OFF2 = OFF2 + M * N * RCW
  30   CONTINUE
-
-C******************************************************
-C**
-C**     DEBUGGING PURPOSES
-C**     construct absolute norm of VOVV per IRREP
-C**
-C**
-C******************************************************
-C     DO 37 IRP = 1, NREP
-C        write(iw,*) '=========='
-C        write(iw,*) '== IRREP:',IRP
-C        write(iw,*) '=========='
-C        ISTART=0
-C        MINT = NBUF3/NVO(IRP)
-C        INX=1
-C38      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-C        DO IJNV=1,NINT   ! loop over all IJ combinations in this irrep
-C          DO IKS=1,NO(IRP)
-C           DO IAS=1,NV(IRP)
-C            write(iw,'(2I5,E25.16)') INX,IJNV,BUF3(INX)
-C            INX=INX+1
-C           ENDDO
-C          ENDDO
-C        ENDDO
-C        IF (.NOT.DONE) THEN
-C           ISTART = ISTART + NINT
-C           GOTO 38
-C        ENDIF
-C37    CONTINUE
-C      call quit('now compare integrals !')
-
+C
 C--------------------------------------------------------------
 C S(AB,IJ) =  S(AB,IJ) - PAB [ T(B,K) * W(AK,CD) * TAU(CD,IJ) ]
 C--------------------------------------------------------------
@@ -797,18 +741,6 @@ C ** will be added in this IRREP.
             ISTART = ISTART + NINT
             GOTO 110
          ENDIF
-
-
-C******************************************************
-C**
-C**     DEBUGGING PURPOSES
-C
-C     write(iw,111) '--------->> VOVV contraction in IRP:',IRP,
-C    >    ddot(M*N*RCW,BUF2(OFF2),1,BUF2(OFF2),1)
-C**
-C**
-C******************************************************
-
          OFF1 = OFF1 + KD * N * RCW
          OFF2 = OFF2 + M * N * RCW
  130  CONTINUE
