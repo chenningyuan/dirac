@@ -23,14 +23,6 @@
 {
    char *sectid;
 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
-    FLSHFO(stdout);
-#elif defined (SYS_AIX)
-   flshfo(stdout);
-#else
-   flshfo_(stdout);
-#endif
-
    if ( ! mytid )
       printf("*****************************************************\n");
    sectid = (char *) malloc(30);

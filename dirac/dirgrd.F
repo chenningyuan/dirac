@@ -160,7 +160,7 @@ C
       CHARACTER*8 GABLAB
       LOGICAL   DOINT(2,2)
       LOGICAL   DOLS,DOSS,LBIT
-      LOGICAL   NODV,NOPV,FIRST,NOCONT,ICEDIF
+      LOGICAL   NODV,NOPV,FIRST,NOCONT
 C     Timing variables
       DOUBLE PRECISION DPRTIM(4,2)
       SAVE DPRTIM
@@ -474,7 +474,6 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 1
       INTCLASS  = 0
-      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
@@ -585,7 +584,6 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 2
       INTCLASS  = 1
-      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
@@ -702,7 +700,6 @@ C     NPOS   = IDUMMY
       MTOTTK = NSMLBL*(NSMLBL+1)/2
       I2TYP  = 3
       INTCLASS  = 2
-      ICEDIF = .FALSE.
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C

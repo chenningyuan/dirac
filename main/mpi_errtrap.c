@@ -29,7 +29,7 @@
 
 #if defined (SYS_AIX)
 
-   flshfo(stdout);
+/*   flshfo(stdout); */
 
    fprintf(stdout,"******************************************\n");
    fprintf(stdout,"MPI ERROR: error no. %d\n",*err);
@@ -46,8 +46,10 @@
 
 #else /* SYS_AIX */
 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
     FLSHFO(stdout);
+#elif defined (SYS_AIX)  || defined (SYS_HPUX)
+   flshfo(stdout);
 #else
    flshfo_(stdout);
 #endif

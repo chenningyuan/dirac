@@ -33,7 +33,7 @@
        */
 
       int nfinis = -1;
-      if ( (ierr = MPI_Bcast(&nfinis,1,MPI_INTEGER,mparid,MPI_COMM_WORLD)) )
+      if ( (ierr = MPI_Bcast(&nfinis,1,MPI_INT,mparid,MPI_COMM_WORLD)) )
          printf("MPI_Bcast error %i in end_mpi()\n",ierr);
    }
 

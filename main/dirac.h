@@ -8,10 +8,10 @@
  *
  */
 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
 #define MACRO_DIRAC DIRAC
 #define MACRO_DIRNOD DIRNOD
-#elif defined (SYS_AIX)
+#elif defined (SYS_AIX) || defined (SYS_HPUX)
 #define MACRO_DIRAC dirac
 #define MACRO_DIRNOD dirnod
 #else

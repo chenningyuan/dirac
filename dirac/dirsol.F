@@ -120,15 +120,11 @@ C
 C     
 C     Reindex real part of density matrix to unsorted basis
 C     and insert hal-phases
-C      CALL BSTOBU(DMAT,1,RLMMAT,N2BBASX)
       DO I = 1,NFMAT
         CALL BSTOBU(DMAT(1,1,I),1,WORK,LWORK)
         IF(NZ.LT.4) CALL Q2PHASE('D',1,1,DMAT(1,1,I))
         CALL BSTOBU(FOCK(1,1,I),1,WORK,LWORK)
       ENDDO
-      CALL BSTOBU(DMAT,1,WORK,LWORK)
-      CALL BSTOBU(FOCK,1,WORK,LWORK)
-      IF(NZ.LT.4) CALL Q2PHASE('D',1,1,DMAT)
 C
 C     Loop over orders in spherical expansion
 C     =======================================
@@ -267,7 +263,6 @@ C
 C     Reindex to sorted basis
 C     -----------------------
 C
-C      CALL BUTOBS(DMAT,1,RLMMAT,N2BBASX)
       DO I = 1,NFMAT
         IF(NZ.LT.4) CALL Q2PHASE('D',1,1,DMAT(1,1,I))
         CALL BUTOBS(DMAT(1,1,I),1,WORK,LWORK)

@@ -1589,6 +1589,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
+#include <memint.h>
 C
 C
 C     Initialize /CBIPOP/
@@ -2259,7 +2260,7 @@ C         if reading input from a terminal
   920 CONTINUE
          CALL QUIT('Error reading LUCMD, no HAMIL input found')
   930 CONTINUE
-      WORD1 = WORD
+      WORD1 = WORD(1:1)
 C
 C     Process input for COMMON  /CBIHAM/
 C     ==================================

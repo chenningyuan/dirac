@@ -27,6 +27,6 @@
    printf("%s",strlogo);
    printf("%s",strsubtitle);
 
-   sysinf();
+   sysinf(parcal);
    
 }

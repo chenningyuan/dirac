@@ -8,4 +8,4 @@
  *
  */
 
-void print_logo(int mytid)
+void print_logo(int mytid, int parcal)

@@ -60,7 +60,7 @@ void main()
     * Print logo, sysinfo etc.
     */
 
-   print_logo(mytid);
+   print_logo(mytid,parcal);
   
    /*
     * Execute dirac

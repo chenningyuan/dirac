@@ -3990,7 +3990,7 @@ C
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL SCRSTA('Sofock:SS',DNTSKP,CPU)
+        CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
       ENDIF

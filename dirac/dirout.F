@@ -883,9 +883,6 @@ C
           DO IZ = 1,NZ
             A(IZ) =  VEC(IB,J,IZ)/DB
           ENDDO
-CTROND
-          WRITE(LUPRI,'(A,5(5X,E12.6))') '* PHATRA:',DB,(A(K),K=1,4)
-CTROND
           DO I = 1,NDIM
             B(1)       = VEC(I,J,2)*A(1) - VEC(I,J,1)*A(2)
      &                 + VEC(I,J,4)*A(3) - VEC(I,J,3)*A(4)
