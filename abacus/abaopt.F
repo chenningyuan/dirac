@@ -1750,7 +1750,7 @@ C
          ELSE IF (DODHF) THEN
             ENERGY = DHFERG
          ELSE
-            call quit('no wave function...???')
+            call quit('no wave function...')
          END IF
          EXHER = .TRUE.
          EXSIR = .TRUE.
@@ -5092,9 +5092,9 @@ C
                GRDMOL(I) = DP5*(GRDMOL(I) 
      &                   - SCLFCK*(ECORR - ESTART)/DISPLA)
             END IF
-            write(6,'(A,3E)') 
-     &         'jth ECOOR,ESTART,DISPLA',ECORR,ESTART,DISPLA
-            write(6,*) 'jth GRDMOL(',I,')',GRDMOL(I)
+C
+CJTH - print out gradient
+C
          END IF
          CALL WLKINC(WORK(KSTPSY),WORK(KSTPCA),COOR,DISPLA,NCART,
      &               NCRIND,IPOINT,IPRINT)
