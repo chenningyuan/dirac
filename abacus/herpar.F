@@ -522,6 +522,8 @@ C........note that with icommsize COMMON blocks must be sent as integers...
 C
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
      &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MAXPRI,1,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .FALSE.
       ELSE
          NFINIS = 0
@@ -1208,6 +1210,8 @@ C........inforb.h
      &                  MPI_COMM_WORLD,IERR)
 C........
          CALL MPI_BCAST(UNCONT,1,MPI_LOGICAL,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(MAXPRI,1,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
          NEWGEO = .TRUE.
       ELSE

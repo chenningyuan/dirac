@@ -285,7 +285,6 @@ C
 C
       IPREAD = IPRDEF
       LUMLCL = 9
-      MAXPRI = MAXPRD
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
@@ -310,9 +309,11 @@ C
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
          UNCONT = .FALSE.
+         MAXPRI = MAXPRD
       ENDIF
 #else
       UNCONT = .FALSE.
+      MAXPRI = MAXPRD
 #endif
       RETURN
       END
