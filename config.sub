@@ -850,6 +850,9 @@ case $basic_machine in
 		basic_machine=c4x-none
 		os=-coff
 		;;
+	SX*)
+		basic_machine=SX4-NEC
+		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
 		exit 1
@@ -984,6 +987,9 @@ case $os in
 		;;
 	-xenix)
 		os=-xenix
+		;;
+	-SUPERUX*)
+		os=-SUPERUX
 		;;
         -*mint | -*MiNT)
 	        os=-mint

@@ -379,7 +379,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 C 
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,NBAST)
 #else
@@ -533,7 +533,7 @@ C  DGROUP: NZ
 #include <dgroup.h>
 #include <dcbpop.h>
 C
-#ifdef VAR_G77
+#if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
       DIMENSION SMAT(NBAST,NBAST),PBUF(NBAST,NBAST,*)
 #else
