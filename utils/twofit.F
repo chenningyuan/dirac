@@ -93,7 +93,7 @@ C
  40   CONTINUE
       WRITE(LUPRI,'(A,I5)') '* Number of points read:',NP
       WRITE(ILOGG,'(A,A6)') '* Points read from ',POTFIL
-      WRITE(ILOGG,'(3X,F6.3,4X,E18.8)') (X(I),Y(I),I=1,NP)
+      WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
       IF(NP.LT.5) THEN
         WRITE(LUPRI,'(A)') '* You must have at least five points !'
         STOP 'Too few points for a quartic fit !'
@@ -194,29 +194,29 @@ C     ============
 C
 C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
-      IYMIN = IDMIN(NP,Y,1)
-      XMIN = X(IYMIN)
-      CALL NEWRAP(NORDER,DTOL,B,XMIN,NITER,IERR)
+      IYOPT = IDMIN(NP,Y,1)
+      XOPT = X(IYOPT)
+      CALL NEWRAP(NORDER,DTOL,B,XOPT,NITER,IERR)
       IF(IERR.EQ.1) THEN
         WRITE(ILOGG,'(A)') 'Newtons method failed'
         STOP 'Did not find minimum. Newtons method failed...'
       ELSE
-        YMIN = POLVAL(NORDER,B,XMIN)
-        TEMP = XMIN*XTANG
+        YOPT = POLVAL(NORDER,B,XOPT)
+        TEMP = XOPT*XTANG
         WRITE(LUPRI,'(A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms'
         WRITE(ILOGG,'(A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms'
         WRITE(LUPRI,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YMIN,' Hartrees'
+     &    '* Expected energy :',YOPT,' Hartrees'
         WRITE(ILOGG,'(A,1P,E18.10,A)') 
-     &    '* Expected energy :',YMIN,' Hartrees'
+     &    '* Expected energy :',YOPT,' Hartrees'
       ENDIF
 C
 C     Harmonic constant
 C     ==================
 C
-      FORCE = POL2DER(NORDER,B,XMIN)
+      FORCE = POL2DER(NORDER,B,XOPT)
       TEMP  = FORCE*XTJ/XTM/XTM
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
@@ -229,19 +229,37 @@ C
       WRITE(ILOGG,'(A,1P,E10.3,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
      &   '                   ',OMEGA*XTCM,' cm-1'
-      TEMP = XTANG/SQRT(D2*UM*OMEGA)
-      WRITE(LUPRI,'(A,F10.4,A)') 
+      XDEV=D1/SQRT(D2*UM*OMEGA)
+      XMIN=XOPT-XDEV
+      XMAX=XOPT+XDEV
+      WRITE(LUPRI,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
      &   '* Mean displacement in harmonic ground state:',TEMP,
-     &   ' Angstroms'
-      WRITE(ILOGG,'(A,F10.4,A)') 
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      WRITE(ILOGG,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
      &   '* Mean displacement in harmonic ground state:',TEMP,
-     &   ' Angstroms'
+     &   ' Angstroms',
+     &   '  corresponding to interval: ',
+     &   '[',XMIN*XTANG,',',XMAX*XTANG,']'
+      IOUT=0
+      DO I = 1,NP
+        IF(X(I).LT.XMIN.OR.X(I).GT.XMAX) IOUT=IOUT+1
+      ENDDO
+      IF(IOUT.GT.0) THEN
+        WRITE(LUPRI,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+        WRITE(ILOGG,'(A,I5,A/A)')
+     &   '* WARNING : ',IOUT,' points lie outside interval...',
+     &   'This may reduce the quality of your spectroscopic constants.'
+      ENDIF
 C
 C     Anharmonic constant
 C     ===================
 C
-      V3 = POLNDER(NORDER,B,XMIN,3)
-      V4 = POLNDER(NORDER,B,XMIN,4)
+      V3 = POLNDER(NORDER,B,XOPT,3)
+      V4 = POLNDER(NORDER,B,XOPT,4)
       TEMP = D1/UM/OMEGA
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
@@ -268,7 +286,7 @@ C
       WRITE(ILOGG,'(/A/)') '** PROPERTIES **'
       MAXIT = 10
       ACC=1.0D-6
-      XEFF = XMIN
+      XEFF = XOPT
       UMS= SQRT(UM)
       AA = D1/D4/UMS
       DO IT = 1,MAXIT
@@ -320,7 +338,7 @@ C
      &        BP(I),I=1,NDIM)  
         WRITE(ILOGG,'(A,E9.4)') '* Fit :  ',VAR      
 C
-        PMIN = POLVAL(NORDER,BP,XMIN)
+        PMIN = POLVAL(NORDER,BP,XOPT)
         WRITE(LUPRI,'(A,1P,E18.10)') 
      &    '* Expectation value at local minimum     : ', PMIN
         WRITE(ILOGG,'(A,1P,E18.10)') 
