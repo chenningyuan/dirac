@@ -179,24 +179,47 @@ C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
 C
+C     Compatibility check for NFSYM and NFBAS
+C
+      IERR = 0
+      IF(NSYM .NE. NFSYM) THEN
+         IERR = IERR + 1
+         INFO = .TRUE.
+         WRITE(LUPRI,'(/A/A,2I5)')
+     &      'REACMO FATAL ERROR: Incompatible number of fermion ircops',
+     &      ' from file and in this run:',NSYM,NFSYM
+      ELSE
+         DO IFRP = 1,NFSYM
+           IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
+         END DO
+         IF (IERR.GT.0) THEN
+           INFO = .TRUE.
+           WRITE(LUPRI,'(/A/A,2(/A,I2,2I5))')
+     &     'REACMO FATAL ERROR. Incompatible number of basis functions',
+     &     ' from file and in this run:', (' Fermion ircop no.',IFRP,
+     &     IDIM(3,IFRP),NFBAS(IFRP,0),IFRP=1,NFSYM)
+         END IF
+      END IF
+C
       IF(INFO) THEN
         FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(/A,I5,3X,A,'//FMT//')')
-     &   'REACMO: Coefficients read from unit',IUNIT,
-     &   '- Total energy: ',TOTERG
+        WRITE(LUPRI,'(/3A,'//FMT//')')
+     &   '* REACMO: Coefficients read from file ',CMOFIL,
+     &   ' - Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
       ENDIF
+C
+      IF (IERR.GT.0) CALL QUIT(
+     &'REACMO: old DFCOEF file is not consistent with this calculation')
+C
       IF(IOPT.EQ.0) RETURN
 C
-C     Compatibility test
-      IF(NSYM.NE.NFSYM) 
-     &   CALL QUIT('REACMO: Incompatible number of fermion ircops')
+C     Compatibility tests for number of orbitals
+C
       TEST = .FALSE.
       NC = 0
       NO = 0
       DO IFRP = 1,NFSYM
-        IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) 
-     &    CALL QUIT('REACMO: Incompatible number of basis functions')
         IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
         IF(IDIM(3,IFRP).NE.NORB(IFRP)) TEST=.TRUE.
         NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
@@ -204,6 +227,7 @@ C     Compatibility test
       ENDDO
 C
 C     Read coefficients
+C
       IF(IOPT.EQ.5) THEN
         READ(IUNIT)
       ELSEIF(TEST) THEN
@@ -252,21 +276,21 @@ C
 C     Error messages
 C
  10   CONTINUE
-      CALL QUIT('REACMO: END reading TEXT')
+      CALL QUIT('REACMO: END OF FILE reading TEXT')
  20   CONTINUE
       CALL QUIT('REACMO: ERROR reading TEXT')
  30   CONTINUE
-      CALL QUIT('REACMO: END reading coefficients')
+      CALL QUIT('REACMO: END OF FILE reading coefficients')
  40   CONTINUE
       CALL QUIT('REACMO: ERROR reading coefficients')
  50   CONTINUE
-      CALL QUIT('REACMO: END reading eigenvalues')
+      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
  60   CONTINUE
 c     CALL QUIT('REACMO: ERROR reading eigenvalues')
-      WRITE(LUPRI,'(A)') 'WARNING !!! No eigenvalues read'
+      WRITE(LUPRI,'(/A)') 'REACMO: WARNING !!! No eigenvalues read'
       RETURN
  70   CONTINUE
-      CALL QUIT('REACMO: END reading irrep identification')
+      CALL QUIT('REACMO: END OF FILE reading irrep identification')
  80   CONTINUE
       CALL QUIT('REACMO: ERROR reading irrep identification')
       RETURN
@@ -395,7 +419,7 @@ C  /* Deck wrifck */
       SUBROUTINE WRIFCK(IUNIT,FOCK,N)
 C*****************************************************************************
 C
-C     Write AO - Fock matrix to unformatted file
+C     Write N AO - Fock matrices to unformatted file
 C
 C     Written by T.Saue Sept 1 1995
 C
@@ -414,13 +438,14 @@ C
       CALL GTINFO(TEXT(51:74))
       REWIND IUNIT
       WRITE(IUNIT) TEXT
+      WRITE(IUNIT) N2BBASXQ,N
       WRITE(IUNIT) FOCK
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reafck */
-      SUBROUTINE REAFCK(IUNIT,FOCK,RESTART,N)
+      SUBROUTINE REAFCK(IUNIT,FOCK,INFO,N)
 C*****************************************************************************
 C
 C     Read AO Fock matrix from unformatted file
@@ -432,18 +457,27 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <dcbdhf.h>
-      LOGICAL RESTART
-      CHARACTER TEXT*74
+      LOGICAL INFO
+      CHARACTER TEXT*74, FILNAM*20
       DIMENSION FOCK(N2BBASXQ*N)
 C
       REWIND IUNIT
       READ(IUNIT,END=10,ERR=20) TEXT
-      IF(RESTART) THEN
-        CALL HEADER('REAFCK: Restart from two-electron Fock matrix',-1)
-        WRITE(LUPRI,'(A,I5)')
-     &   '* Fock matrix read from unit ',IUNIT
+      READ(IUNIT) M2BBASXQ,M
+      IF (N2BBASXQ .NE. M2BBASXQ .OR. N .GT. M) INFO = .TRUE.
+      IF(INFO) THEN
+        INQUIRE(UNIT=IUNIT, NAME=FILNAM)
+        WRITE(LUPRI,'(/2A)')
+     &   '* REAFCK: Fock matrix read from file ',FILNAM
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
       ENDIF
+      IF (N2BBASXQ .NE. M2BBASXQ .OR. N .GT. M) THEN
+         WRITE(LUPRI,'(/A,2(/A,2I10))') '*** FATAL ERROR ***',
+     &      'Fock matrix size in this run and size on file: ',
+     &      N2BBASXQ,M2BBASXQ,
+     &      'Number of Fock matrices in this run and on file:',N,M
+         CALL QUIT('REAFCK: inconsistent dimensions on file'//FILNAM)
+      END IF
       READ (IUNIT,END=10,ERR=20) FOCK
 C
       RETURN
