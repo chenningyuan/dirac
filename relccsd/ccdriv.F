@@ -2165,17 +2165,6 @@ C
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
 C
-C     Report memory usuage before BUF3 because that one will always eat up
-C     the rest of the available memory.
-C
-      IF (DOMP2G.OR.DOMP2GOLD) MXCORR = KFREE
-      IF (ICALC.EQ.1) THEN
-         WRITE (IW,1001) "Gradient calculation",KFREE
-         KFREE = KFRSAV
-         LFREE = LFRSAV
-         RETURN
-      ENDIF
-C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
@@ -2184,6 +2173,14 @@ C
 C     Allocate now also this remaining work array
 C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
+C
+      IF (DOMP2G.OR.DOMP2GOLD) MXCORR = KFREE
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient calculation",KFREE
+         KFREE = KFRSAV
+         LFREE = LFRSAV
+         RETURN
+      ENDIF
 C
 C     Read the Fock matrix from file
 C
