@@ -124,9 +124,9 @@ C
         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
 C
         JSTA  = NIND(1,2,JSYM) + 1
-        JENDA = NIND(1,2,JSYM) + NIND(2,2,ISYM)
+        JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
         JSTS  = NIND(1,3,JSYM) + 1
-        JENDS = NIND(1,3,JSYM) + NIND(2,3,ISYM)
+        JENDS = NIND(1,3,JSYM) + NIND(2,3,JSYM)
 C
         IF(NIND(1,1,ISYM).NE.0) THEN
           WRITE(LUPRI,'(A,I5)')
