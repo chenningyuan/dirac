@@ -964,7 +964,7 @@ C
               WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
      &             'independent centres: ',NONT(I)
            ENDIF
-           CALL CNTINP(LUINFO,NONT(I),Q,QEXP,NSYMOP,ANG)
+           CALL CNTINP(LUINFO,NONT(I),Q,QEXP,ANG)
 C
 C
 C          Initialize reference strings for this atom type.
@@ -1700,7 +1700,7 @@ C
          CALL QUIT('*** ERROR in READIN ***')
       END
 C  /* Deck cntinp */
-      SUBROUTINE CNTINP(LUINFO,NONT,Q,QEXP,NSYMOP,ANG)
+      SUBROUTINE CNTINP(LUINFO,NONT,Q,QEXP,ANG)
 C*****************************************************************************
 C
 C        Read and process data about symmetry independent centers

@@ -40,6 +40,11 @@ C       Loop over expansion centers and read coordinates and basis set informati
 C
 C       Revised version of BASINP, L. Visscher, december 2003.
 C
+C       Descripption of some of the arguments :
+C       LUINFO : File from which the input is read (MOLECULE.INP, the .mol file in pam)
+C       NONTYP : Number of different atom types defined by the user.
+C       NONTYP : Number of different atom types defined by the user.
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
