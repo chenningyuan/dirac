@@ -771,7 +771,7 @@ C
 C     Solve one-electron system ...
 C     =============================
 C 
-        CALL PREDHF(CMO,EIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
+        CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
       ELSE
 C
 C     ... or perform SCF-cycle
