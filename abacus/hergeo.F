@@ -296,10 +296,10 @@ C
             DISTAN = SQRT(DISTAN)
             DIST2(I,J) = DISTAN
             DIST2(J,I) = DISTAN
-            IF (DIF) THEN
-               DIST(IJ) = DISTAN - DIST(IJ)
-            ELSE
+            IF (.NOT.DIF) THEN
                DIST(IJ) = DISTAN
+            ELSE
+               DIST(IJ) = DISTAN - DIST(IJ)
             END IF
   300    CONTINUE
   400 CONTINUE
@@ -425,10 +425,10 @@ C
                ANG = ANG / DIST2(I2,I1) / DIST2(I2,I3)
                IF (ABS(ANG) .GT. D1) ANG = SIGN(D1,ANG)
                ANG = ARCCOS(ANG)
-               IF (DIF) THEN
-                  ANGLE(I) = ANG - ANGLE(I)
-               ELSE
+               IF (.NOT.DIF) THEN
                   ANGLE(I) = ANG
+               ELSE
+                  ANGLE(I) = ANG - ANGLE(I)
                END IF
                IF (PRINT) WRITE (LUPRI,'(5X,A4,7X,A4,7X,A4,F20.3)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),ANGLE(I)
@@ -477,10 +477,10 @@ C
                ANG = ANG / SQRT(DDD)
                IF (ABS(ANG) .GT. D1) ANG = SIGN(D1,ANG)
                ANG = SENSE*ARCCOS(ANG)
-               IF (DIF) THEN
-                  DIHED(I) = ANG - DIHED(I)
-               ELSE
+               IF (.NOT.DIF) THEN
                   DIHED(I) = ANG
+               ELSE
+                  DIHED(I) = ANG - DIHED(I)
                END IF
                IF (PRINT) WRITE(LUPRI,'(5X,A4,7X,A4,7X,A4,7X,A4,F20.3)')
      *            NUCNAM(1),NUCNAM(2),NUCNAM(3),NUCNAM(4),DIHED(I)
