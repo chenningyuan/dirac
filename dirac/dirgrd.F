@@ -264,6 +264,8 @@ C
      &         'WARNING: small-small nuclear attraction integrals AND',
      &         ' Levy-Leblond Hamiltonian: Inconsistent...'
          END IF
+         DO2GRD(2) = .FALSE.
+         DO2GRD(3) = .FALSE.
       ELSE IF (NOSMLV) THEN
          WRITE(LUPRI,'(/X,A)') 
      &      '- No small-small nuclear attraction integrals.'
