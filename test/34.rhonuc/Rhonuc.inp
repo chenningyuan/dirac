@@ -6,6 +6,10 @@ Carbon monoxide
 .PROPERTIES
 **GENERAL
 .LVCORR
+**INTEGRQLS
+*READIN
+.UNCONT
+# uncontracting the basis set...
 **HAMILTONIAN
 .DFT
 B3LYP

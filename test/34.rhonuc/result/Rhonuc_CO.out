@@ -117,7 +117,7 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  Size of COMMON= 192
  Basis set dir.    : /home/saue/Dirac/test/34.rhonuc/:/home/saue/Dirac/basis/:/home/saue/dalton/basis
 
- Date and time (Linux) : Tue May 11 23:41:56 2004
+ Date and time (Linux) : Wed May 12 00:03:18 2004
 
 
  *************************************************************************
@@ -161,6 +161,22 @@ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  *************************************************************************
  ****************** Output from HERMIT input processing ******************
  *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
 
 
 
@@ -290,15 +306,15 @@ Represented as: C2v
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C           1       6      27      15      L  - [9s4p1d|3s2p1d]                                    
+  C           1       6      27      27      L  - [9s4p1d|9s4p1d]                                    
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                              
-  F           1       8      27      15      L  - [9s4p1d|3s2p1d]                                    
+  F           1       8      27      27      L  - [9s4p1d|9s4p1d]                                    
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                              
   ----------------------------------------------------------------------
-                             54      30   L - large components
+                             54      54   L - large components
                             136     136   S - small components
   ----------------------------------------------------------------------
-  total:      2      14     190     166
+  total:      2      14     190     190
 
   Cartesian basis used.
   Threshold for integrals:  1.00E-15
@@ -412,37 +428,37 @@ Represented as: C2v
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           74    40    40    12
-  Number of large orbitals in each symmetry:     16     6     6     2
+  Number of orbitals in each symmetry:           90    44    44    12
+  Number of large orbitals in each symmetry:     32    10    10     2
   Number of small orbitals in each symmetry:     58    34    34    10
 
 * Large component functions
 
   Symmetry  A1 ( 1)
 
-        3 functions:    C  s   
-        2 functions:    C  pz  
+        9 functions:    C  s   
+        4 functions:    C  pz  
         1 functions:    C  dxx 
         1 functions:    C  dyy 
         1 functions:    C  dzz 
-        3 functions:    F  s   
-        2 functions:    F  pz  
+        9 functions:    F  s   
+        4 functions:    F  pz  
         1 functions:    F  dxx 
         1 functions:    F  dyy 
         1 functions:    F  dzz 
 
   Symmetry  B1 ( 2)
 
-        2 functions:    C  px  
+        4 functions:    C  px  
         1 functions:    C  dxz 
-        2 functions:    F  px  
+        4 functions:    F  px  
         1 functions:    F  dxz 
 
   Symmetry  B2 ( 3)
 
-        2 functions:    C  py  
+        4 functions:    C  py  
         1 functions:    C  dyz 
-        2 functions:    F  py  
+        4 functions:    F  py  
         1 functions:    F  dyz 
 
   Symmetry  A2 ( 4)
@@ -520,7 +536,7 @@ Represented as: C2v
                         B88Corr:    0.72000
                          Slater:    0.80000
  * Basis set:
-   - contracted large component basis set
+   - uncontracted large component basis set
    - uncontracted small component basis set
 
 
@@ -538,9 +554,9 @@ Represented as: C2v
  Maximum memory load for two-electron integral processing:
 ===========================================================================
  * LL-integrals:
-   4(F    Ls)   1(C    Ls)   4(F    Ls)   1(C    Ls)               62158
+   5(F    Lp)   2(C    Lp)   5(F    Lp)   2(C    Lp)               86285
  * SL-integrals:
-  13(F    Sp)   8(C    Sp)   4(F    Ls)   1(C    Ls)              289290
+  13(F    Sp)   8(C    Sp)   5(F    Lp)   2(C    Lp)              420320
  * SS-integrals:
   13(F    Sp)   8(C    Sp)  13(F    Sp)   8(C    Sp)             2097905
 
@@ -663,9 +679,9 @@ Represented as: C2v
   ************************* Orbital dimensions *************************
   **********************************************************************
 
-No. of electronic orbitals (NESH):    28
-No. of positronic orbitals (NPSH):    28
-Total no. of orbitals      (NORB):    56
+No. of electronic orbitals (NESH):    52
+No. of positronic orbitals (NPSH):    52
+Total no. of orbitals      (NORB):   104
 
 
                             Output from LINSYM
@@ -673,8 +689,8 @@ Total no. of orbitals      (NORB):    56
 
 
  Parity   MJ  Functions(total) Functions(LC) Functions(SC)
-     1    1/2         36           18           18
-     1   -3/2         16            8            8
+     1    1/2         76           38           38
+     1   -3/2         24           12           12
      1    5/2          4            2            2
 
 
@@ -687,17 +703,17 @@ Total no. of orbitals      (NORB):    56
                 Improved by a crude estimate of the two-electron repulsion.
 
 
-########## START ITERATION NO.   1 ##########   Tue May 11 23:41:57 2004
+########## START ITERATION NO.   1 ##########   Wed May 12 00:03:18 2004
 
-It.   1    -46.79207153476      1.00E+20  0.00E+00  0.00E+00               0.13999999s   Bare nuc.   Tue May 11
+It.   1    -46.96489371495      1.00E+20  0.00E+00  0.00E+00               0.19000000s   Bare nuc.   Wed May 12
 
-########## START ITERATION NO.   2##########   Tue May 11 23:41:57 2004
+########## START ITERATION NO.   2##########   Wed May 12 00:03:19 2004
 
 
 * GETGAB: label "GABAOXXX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.21000010s
-SOfock:SL  1.00E-12    0.00%    5.73%    0.00%    0.00%   2.23999977s
+SOfock:LL  1.00E-12    0.00%    7.25%    0.00%    0.00%   0.22000003s
+SOfock:SL  1.00E-12    0.00%   12.50%    0.00%    0.00%   2.54999983s
 
 
  ********************************************************************************
@@ -728,197 +744,217 @@ F       1   0.571E-06   0.856E+01   0.117E+00     124   29156
 
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999998297469048
-   DFT exchange-correlation energy:                 -11.7233957263238331
+   Number of electrons:                    13.9999998735190072
+   DFT exchange-correlation energy:                 -11.9447388237222469
 
- >>>> Time used in DFTDRV:  20.89 seconds
+ >>>> Time used in DFTDRV:  27.36 seconds
 
->>> Total wall time:23.00000000s
->>> Total CPU-time :23.67000085s
+>>> Total wall time:30.00000000s
+>>> Total CPU-time :30.49000084s
 
-########## END ITERATION NO.   2 ##########   Tue May 11 23:41:57 2004
+########## END ITERATION NO.   2 ##########   Wed May 12 00:03:19 2004
 
-It.   2    -112.9834513270      6.62E+01  1.29E+00  1.26E+00              23.67000085s   LL SL       Tue May 11
+It.   2    -112.7401366539      6.58E+01  2.70E+00  2.69E+00              30.49000084s   LL SL       Wed May 12
 
-########## START ITERATION NO.   3##########   Tue May 11 23:42:20 2004
+########## START ITERATION NO.   3##########   Wed May 12 00:03:49 2004
 
-    3 *** Differential density matrix. DCOVLP     = 0.4709
+    3 *** Differential density matrix. DCOVLP     = 0.7928
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.20999908s
-SOfock:SL  1.00E-12    0.00%    7.04%    0.00%    0.00%   2.23999977s
+SOfock:LL  1.00E-12    0.00%    7.31%    0.00%    0.00%   0.22999954s
+SOfock:SL  1.00E-12    0.00%   12.87%    0.00%    0.00%   2.53999710s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999998839570576
-   DFT exchange-correlation energy:                 -10.7436347245856716
+   Number of electrons:                    13.9999998394600578
+   DFT exchange-correlation energy:                 -10.6093333237076060
 
- >>>> Time used in DFTDRV:  45.22 seconds
+ >>>> Time used in DFTDRV:  57.84 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.73000526s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.730s
 
-########## END ITERATION NO.   3 ##########   Tue May 11 23:42:20 2004
+########## END ITERATION NO.   3 ##########   Wed May 12 00:03:49 2004
 
-It.   3    -113.0127155098      2.93E-02 -8.45E-01  1.31E+00   DIIS   3   47.73000526s   LL SL       Tue May 11
+It.   3    -112.8774957223      1.37E-01 -1.86E+00  1.67E+00   DIIS   3    1min 0.730s   LL SL       Wed May 12
 
-########## START ITERATION NO.   4##########   Tue May 11 23:43:08 2004
+########## START ITERATION NO.   4##########   Wed May 12 00:04:50 2004
 
-    4 *** Differential density matrix. DCOVLP     = 1.1066
+    4 *** Differential density matrix. DCOVLP     = 0.9378
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.21000671s
-SOfock:SL  1.00E-12    0.00%    7.18%    0.00%    0.00%   2.23999786s
+SOfock:LL  1.00E-12    0.00%    7.70%    0.00%    0.00%   0.22999573s
+SOfock:SL  1.00E-12    0.00%   13.26%    0.00%    0.00%   2.54000092s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999417165633
-   DFT exchange-correlation energy:                 -11.2779722844199348
+   Number of electrons:                    13.9999998927883009
+   DFT exchange-correlation energy:                 -11.4699254679851794
 
- >>>> Time used in DFTDRV:  45.23 seconds
+ >>>> Time used in DFTDRV:  57.71 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.73999786s
+>>> Total wall time: 1min 0.000s
+>>> Total CPU-time : 1min 0.610s
 
-########## END ITERATION NO.   4 ##########   Tue May 11 23:43:08 2004
+########## END ITERATION NO.   4 ##########   Wed May 12 00:04:50 2004
 
-It.   4    -113.2645714599      2.52E-01  6.23E-01  6.02E-01   DIIS   4   47.73999786s   LL SL       Tue May 11
+It.   4    -113.0960956730      2.19E-01  1.46E+00  1.21E+00   DIIS   4    1min 0.610s   LL SL       Wed May 12
 
-########## START ITERATION NO.   5##########   Tue May 11 23:43:56 2004
+########## START ITERATION NO.   5##########   Wed May 12 00:05:50 2004
 
-    5 *** Differential density matrix. DCOVLP     = 1.0085
+    5 *** Differential density matrix. DCOVLP     = 0.9178
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.20999908s
-SOfock:SL  1.00E-12    0.00%    7.56%    0.00%    0.00%   2.23000336s
+SOfock:LL  1.00E-12    0.00%    8.23%    0.00%    0.00%   0.22000122s
+SOfock:SL  1.00E-12    0.00%   14.31%    0.00%    0.00%   2.55999756s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999236812123
-   DFT exchange-correlation energy:                 -11.2020058177157562
+   Number of electrons:                    13.9999999095967027
+   DFT exchange-correlation energy:                 -11.2247124642584062
 
- >>>> Time used in DFTDRV:  45.25 seconds
+ >>>> Time used in DFTDRV:  57.78 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.76000214s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.690s
 
-########## END ITERATION NO.   5 ##########   Tue May 11 23:43:56 2004
+########## END ITERATION NO.   5 ##########   Wed May 12 00:05:50 2004
 
-It.   5    -113.3403551346      7.58E-02 -1.49E-01  3.33E-02   DIIS   5   47.76000214s   LL SL       Tue May 11
+It.   5    -113.3435641368      2.47E-01 -5.35E-01  1.75E-01   DIIS   5    1min 0.690s   LL SL       Wed May 12
 
-########## START ITERATION NO.   6##########   Tue May 11 23:44:44 2004
+########## START ITERATION NO.   6##########   Wed May 12 00:06:51 2004
 
-    6 *** Differential density matrix. DCOVLP     = 0.9949
+    6 *** Differential density matrix. DCOVLP     = 1.0023
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.20999146s
-SOfock:SL  1.00E-12    0.00%    9.53%    0.00%    0.00%   2.24000549s
+SOfock:LL  1.00E-12    0.00%    9.47%    0.00%    0.00%   0.22999573s
+SOfock:SL  1.00E-12    0.00%   15.96%    0.00%    0.00%   2.54000854s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999252340910
-   DFT exchange-correlation energy:                 -11.1911818596044572
+   Number of electrons:                    13.9999999111373175
+   DFT exchange-correlation energy:                 -11.1939373445564616
 
- >>>> Time used in DFTDRV:  45.20 seconds
+ >>>> Time used in DFTDRV:  57.79 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.69998169s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.680s
 
-########## END ITERATION NO.   6 ##########   Tue May 11 23:44:44 2004
+########## END ITERATION NO.   6 ##########   Wed May 12 00:06:51 2004
 
-It.   6    -113.3405984059      2.43E-04 -1.19E-02  4.19E-03   DIIS   6   47.69998169s   LL SL       Tue May 11
+It.   6    -113.3500256257      6.46E-03 -7.21E-02  1.45E-02   DIIS   6    1min 0.680s   LL SL       Wed May 12
 
-########## START ITERATION NO.   7##########   Tue May 11 23:45:32 2004
+########## START ITERATION NO.   7##########   Wed May 12 00:07:52 2004
 
-    7 *** Differential density matrix. DCOVLP     = 0.9998
+    7 *** Differential density matrix. DCOVLP     = 0.9993
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.21000671s
-SOfock:SL  1.00E-12    0.00%   11.87%    0.00%    0.00%   2.23999023s
+SOfock:LL  1.00E-12    0.00%   12.61%    0.00%    0.00%   0.22000122s
+SOfock:SL  1.00E-12    0.00%   19.95%    0.00%    0.00%   2.52999878s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999253017471
-   DFT exchange-correlation energy:                 -11.1910957718170643
+   Number of electrons:                    13.9999999111859950
+   DFT exchange-correlation energy:                 -11.1950401984733325
 
- >>>> Time used in DFTDRV:  45.19 seconds
+ >>>> Time used in DFTDRV:  57.83 seconds
 
->>> Total wall time:47.00000000s
->>> Total CPU-time :47.69000244s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.700s
 
-########## END ITERATION NO.   7 ##########   Tue May 11 23:45:32 2004
+########## END ITERATION NO.   7 ##########   Wed May 12 00:07:52 2004
 
-It.   7    -113.3406016325      3.23E-06  4.71E-04  8.12E-04   DIIS   7   47.69000244s   LL SL       Tue May 11
+It.   7    -113.3500637147      3.81E-05  4.36E-03  2.92E-03   DIIS   7    1min 0.700s   LL SL       Wed May 12
 
-########## START ITERATION NO.   8##########   Tue May 11 23:46:19 2004
+########## START ITERATION NO.   8##########   Wed May 12 00:08:53 2004
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.00%    0.00%    0.00%   0.21002197s
-SOfock:SL  1.00E-12    0.00%   16.19%    0.00%    0.00%   2.23999023s
+SOfock:LL  1.00E-12    0.00%   16.71%    0.00%    0.00%   0.22000122s
+SOfock:SL  1.00E-12    0.00%   25.14%    0.00%    0.00%   2.50997925s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999253706182
-   DFT exchange-correlation energy:                 -11.1913041324571267
+   Number of electrons:                    13.9999999113622593
+   DFT exchange-correlation energy:                 -11.1957104317265213
 
- >>>> Time used in DFTDRV:  45.19 seconds
+ >>>> Time used in DFTDRV:  57.97 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.70001221s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.820s
 
-########## END ITERATION NO.   8 ##########   Tue May 11 23:46:19 2004
+########## END ITERATION NO.   8 ##########   Wed May 12 00:08:53 2004
 
-It.   8    -113.3406017610      1.28E-07  2.58E-04  1.80E-05   DIIS   8   47.70001221s   LL SL       Tue May 11
+It.   8    -113.3500651850      1.47E-06  1.19E-03  1.96E-04   DIIS   8    1min 0.820s   LL SL       Wed May 12
 
-########## START ITERATION NO.   9##########   Tue May 11 23:47:07 2004
+########## START ITERATION NO.   9##########   Wed May 12 00:09:55 2004
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.03%    0.00%    0.00%   0.19998169s
-SOfock:SL  1.00E-12    0.00%   24.05%    0.00%    0.21%   2.22000122s
+SOfock:LL  1.00E-12    0.00%   22.23%    0.00%    0.00%   0.22000122s
+SOfock:SL  1.00E-12    0.00%   32.37%    0.00%    0.00%   2.48999023s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999253716112
-   DFT exchange-correlation energy:                 -11.1913075336292209
+   Number of electrons:                    13.9999999113742302
+   DFT exchange-correlation energy:                 -11.1957350506687501
 
- >>>> Time used in DFTDRV:  45.20 seconds
+ >>>> Time used in DFTDRV:  58.08 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.68002319s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.910s
 
-########## END ITERATION NO.   9 ##########   Tue May 11 23:47:07 2004
+########## END ITERATION NO.   9 ##########   Wed May 12 00:09:55 2004
 
-It.   9    -113.3406017610      6.86E-11  5.32E-06  1.45E-06   DIIS   9   47.68002319s   LL SL       Tue May 11
+It.   9    -113.3500651918      6.83E-09  7.90E-05  4.34E-05   DIIS   9    1min 0.910s   LL SL       Wed May 12
 
-########## START ITERATION NO.  10##########   Tue May 11 23:47:55 2004
+########## START ITERATION NO.  10##########   Wed May 12 00:10:56 2004
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.18%    0.00%    0.00%   0.21002197s
-SOfock:SL  1.00E-12    0.00%   30.97%    0.00%    1.83%   2.21997070s
+SOfock:LL  1.00E-12    0.00%   25.89%    0.00%    0.00%   0.22000122s
+SOfock:SL  1.00E-12    0.00%   38.32%    0.00%    0.06%   2.47000122s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999253716236
-   DFT exchange-correlation energy:                 -11.1913073602877127
+   Number of electrons:                    13.9999999113722655
+   DFT exchange-correlation energy:                 -11.1957303033738071
 
- >>>> Time used in DFTDRV:  45.19 seconds
+ >>>> Time used in DFTDRV:  57.99 seconds
 
->>> Total wall time:47.00000000s
->>> Total CPU-time :47.66998291s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.810s
 
-########## END ITERATION NO.  10 ##########   Tue May 11 23:47:55 2004
+########## END ITERATION NO.  10 ##########   Wed May 12 00:10:56 2004
 
-It.  10    -113.3406017610      3.41E-13 -2.12E-07  3.11E-07   DIIS  10   47.66998291s   LL SL       Tue May 11
+It.  10    -113.3500651922      3.81E-10 -1.41E-05  2.51E-06   DIIS  10    1min 0.810s   LL SL       Wed May 12
 
-########## START ITERATION NO.  11##########   Tue May 11 23:48:42 2004
+########## START ITERATION NO.  11##########   Wed May 12 00:11:57 2004
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    1.21%    0.00%    0.00%   0.20999146s
-SOfock:SL  1.00E-12    0.00%   41.68%    0.00%   12.53%   2.19000244s
+SOfock:LL  1.00E-12    0.00%   35.67%    0.00%    0.00%   0.21002197s
+SOfock:SL  1.00E-12    0.00%   47.51%    0.00%    0.95%   2.45001221s
 
    Number of quadrature points:                          58888
-   Number of electrons:                    13.9999999253716734
-   DFT exchange-correlation energy:                 -11.1913073052673191
+   Number of electrons:                    13.9999999113721447
+   DFT exchange-correlation energy:                 -11.1957298394963445
 
- >>>> Time used in DFTDRV:  45.23 seconds
+ >>>> Time used in DFTDRV:  57.93 seconds
 
->>> Total wall time:48.00000000s
->>> Total CPU-time :47.66998291s
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.720s
 
-########## END ITERATION NO.  11 ##########   Tue May 11 23:48:42 2004
+########## END ITERATION NO.  11 ##########   Wed May 12 00:11:57 2004
 
-It.  11    -113.3406017610     -8.53E-14 -8.21E-08  1.57E-08   DIIS  10   47.66998291s   LL SL       Tue May 11
+It.  11    -113.3500651922      5.68E-13 -7.94E-07  6.21E-07   DIIS  10    1min 0.720s   LL SL       Wed May 12
+
+########## START ITERATION NO.  12##########   Wed May 12 00:12:58 2004
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00E-12    0.00%   42.39%    0.00%    0.00%   0.22003174s
+SOfock:SL  1.00E-12    0.00%   56.96%    0.00%    5.35%   2.41003418s
+
+   Number of quadrature points:                          58888
+   Number of electrons:                    13.9999999113726226
+   DFT exchange-correlation energy:                 -11.1957297454351128
+
+ >>>> Time used in DFTDRV:  58.01 seconds
+
+>>> Total wall time: 1min 1.000s
+>>> Total CPU-time : 1min 0.730s
+
+########## END ITERATION NO.  12 ##########   Wed May 12 00:12:58 2004
+
+It.  12    -113.3500651922      3.41E-13 -2.28E-07  3.14E-08   DIIS  10    1min 0.730s   LL SL       Wed May 12
 
 
                                SCF - CYCLE
@@ -934,35 +970,36 @@ It.  11    -113.3406017610     -8.53E-14 -8.21E-08  1.57E-08   DIIS  10   47.669
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -46.79207153476      1.00E+20  0.00E+00  0.00E+00               0.13999999s   Bare nuc.   Tue May 11
-It.   2    -112.9834513270      6.62E+01  1.29E+00  1.26E+00              23.67000085s   LL SL       Tue May 11
-It.   3    -113.0127155098      2.93E-02 -8.45E-01  1.31E+00   DIIS   3   47.73000526s   LL SL       Tue May 11
-It.   4    -113.2645714599      2.52E-01  6.23E-01  6.02E-01   DIIS   4   47.73999786s   LL SL       Tue May 11
-It.   5    -113.3403551346      7.58E-02 -1.49E-01  3.33E-02   DIIS   5   47.76000214s   LL SL       Tue May 11
-It.   6    -113.3405984059      2.43E-04 -1.19E-02  4.19E-03   DIIS   6   47.69998169s   LL SL       Tue May 11
-It.   7    -113.3406016325      3.23E-06  4.71E-04  8.12E-04   DIIS   7   47.69000244s   LL SL       Tue May 11
-It.   8    -113.3406017610      1.28E-07  2.58E-04  1.80E-05   DIIS   8   47.70001221s   LL SL       Tue May 11
-It.   9    -113.3406017610      6.86E-11  5.32E-06  1.45E-06   DIIS   9   47.68002319s   LL SL       Tue May 11
-It.  10    -113.3406017610      3.41E-13 -2.12E-07  3.11E-07   DIIS  10   47.66998291s   LL SL       Tue May 11
-It.  11    -113.3406017610     -8.53E-14 -8.21E-08  1.57E-08   DIIS  10   47.66998291s   LL SL       Tue May 11
+It.   1    -46.96489371495      1.00E+20  0.00E+00  0.00E+00               0.19000000s   Bare nuc.   Wed May 12
+It.   2    -112.7401366539      6.58E+01  2.70E+00  2.69E+00              30.49000084s   LL SL       Wed May 12
+It.   3    -112.8774957223      1.37E-01 -1.86E+00  1.67E+00   DIIS   3    1min 0.730s   LL SL       Wed May 12
+It.   4    -113.0960956730      2.19E-01  1.46E+00  1.21E+00   DIIS   4    1min 0.610s   LL SL       Wed May 12
+It.   5    -113.3435641368      2.47E-01 -5.35E-01  1.75E-01   DIIS   5    1min 0.690s   LL SL       Wed May 12
+It.   6    -113.3500256257      6.46E-03 -7.21E-02  1.45E-02   DIIS   6    1min 0.680s   LL SL       Wed May 12
+It.   7    -113.3500637147      3.81E-05  4.36E-03  2.92E-03   DIIS   7    1min 0.700s   LL SL       Wed May 12
+It.   8    -113.3500651850      1.47E-06  1.19E-03  1.96E-04   DIIS   8    1min 0.820s   LL SL       Wed May 12
+It.   9    -113.3500651918      6.83E-09  7.90E-05  4.34E-05   DIIS   9    1min 0.910s   LL SL       Wed May 12
+It.  10    -113.3500651922      3.81E-10 -1.41E-05  2.51E-06   DIIS  10    1min 0.810s   LL SL       Wed May 12
+It.  11    -113.3500651922      5.68E-13 -7.94E-07  6.21E-07   DIIS  10    1min 0.720s   LL SL       Wed May 12
+It.  12    -113.3500651922      3.41E-13 -2.28E-07  3.14E-08   DIIS  10    1min 0.730s   LL SL       Wed May 12
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   11 iterations.
+* Convergence after   12 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints :    0.00000000s
-      LL SL     :   45.30000000s
+      No 2-ints :    1.00000000s
+      LL SL     :   58.09090909s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy                        :    -135.85233559677326
+   Electronic energy                        :    -135.86179902795902
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      22.51173289776066
    SS Coulombic correction                  :       0.00000093798887
 
    Sum of all contributions to the energy
-   Total energy                             :    -113.34060176102372
+   Total energy                             :    -113.35006519220948
 
 
                                Eigenvalues
@@ -971,38 +1008,44 @@ It.  11    -113.3406017610     -8.53E-14 -8.21E-08  1.57E-08   DIIS  10   47.669
 
 * Block   1 in E1 :  Omega =  1/2
   * Closed shell, f = 1.0000
--19.26635470612952  ( 2)   -10.30505702353143  ( 2)    -1.16455060847474  ( 2)    -0.57107118801839  ( 2)    -0.46971667864495  ( 2)
- -0.36955122403880  ( 2)
+   -19.25247386804  ( 2)      -10.29371190347  ( 2)       -1.16772655381  ( 2)       -0.57397314142  ( 2)       -0.47267058785  ( 2)
+    -0.37318486322  ( 2)
   * Virtual eigenvalues, f = 0.0000
- -0.01850534497862  ( 2)     0.24546714478695  ( 2)     0.45869985260983  ( 2)     0.54615872703451  ( 2)     0.75045701166062  ( 2)
-  0.81630977949702  ( 2)     0.94066964143443  ( 2)     1.29468616210626  ( 2)     1.66007609760268  ( 2)     1.99440232995988  ( 2)
-  3.04235639265432  ( 2)     3.45922635049288  ( 2)
+    -0.02117823070  ( 2)        0.23933185352  ( 2)        0.42839495440  ( 2)        0.49101488453  ( 2)        0.70226201895  ( 2)
+     0.77300034097  ( 2)        0.88795327295  ( 2)        1.28943749056  ( 2)        1.49472710916  ( 2)        1.86076775523  ( 2)
+     2.81328490560  ( 2)        3.19741985957  ( 2)        3.26963642389  ( 2)        3.40876572491  ( 2)        5.52174881577  ( 2)
+     6.09112291054  ( 2)        7.25923534557  ( 2)       12.43604237625  ( 2)       17.21482251311  ( 2)       17.47638538910  ( 2)
+    32.17463196961  ( 2)       32.64638502785  ( 2)       34.37806418820  ( 2)       60.11443004723  ( 2)      130.73638648802  ( 2)
+   227.91028990349  ( 2)      489.81873061130  ( 2)      847.77455058598  ( 2)     2021.38924010858  ( 2)     3403.81720279194  ( 2)
+  9962.42985181168  ( 2)    15456.84694856186  ( 2)
 
 * Block   2 in E1 :  Omega =  3/2
   * Closed shell, f = 1.0000
- -0.46907005488475  ( 2)
+    -0.47200244897  ( 2)
   * Virtual eigenvalues, f = 0.0000
- -0.01809251838690  ( 2)     0.45896656800436  ( 2)     0.94167165899150  ( 2)     1.11123284471710  ( 2)     1.29482200912712  ( 2)
-  2.57030893075227  ( 2)     3.04252252413309  ( 2)
+    -0.02074783980  ( 2)        0.42856883886  ( 2)        0.88863584183  ( 2)        1.10783931441  ( 2)        1.28953763074  ( 2)
+     2.56640956731  ( 2)        2.81404197894  ( 2)        3.19779444432  ( 2)        5.52533828544  ( 2)       17.22409209366  ( 2)
+    32.20754801826  ( 2)
 
 * Block   3 in E1 :  Omega =  5/2
   * Virtual eigenvalues, f = 0.0000
-  1.11127539767821  ( 2)     2.57058922513480  ( 2)
+     1.10788106378  ( 2)        2.56668596397  ( 2)
 
 * Occupation in fermion symmetry E1 
   * Inactive orbitals
      1/2 1/2 1/2 1/2 1/2 3/2 1/2
   * Virtual orbitals
      1/2 3/2 1/2 1/2 3/2 1/2 1/2 1/2 1/2 3/2 3/2 5/2 1/2 3/2 1/2 1/2 3/2 5/2
-     1/2 3/2 1/2
+     1/2 3/2 1/2 3/2 1/2 1/2 1/2 3/2 1/2 1/2 1/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2
+     1/2 1/2 1/2 1/2 1/2 1/2 1/2 1/2 1/2
 
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -0.01850534 au (symmetry E1 )
-  - E(HOMO) :    -0.36955122 au (symmetry E1 )
+    E(LUMO) :    -0.02117823 au (symmetry E1 )
+  - E(HOMO) :    -0.37318486 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.35104588 au
+    gap     :     0.35200663 au
 
 
 
@@ -1016,57 +1059,57 @@ It.  11    -113.3406017610     -8.53E-14 -8.21E-08  1.57E-08   DIIS  10   47.669
                             -----------------
 
 
-* Electronic eigenvalue nr.  1: -19.266354706130       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  1: -19.252473868039       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 C  dzz    L A1 F  s      A1 F  _small   B1 F  _small   B2 F  _small
---------------------------------------------------------------------------------------------------------------------------------
- alpha    0.9995  |      0.0003         0.0003        -0.0001         0.9988         0.0003         0.0000         0.0000
- beta     0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0003         0.0003
+Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 F  s      A1 F  _small   B1 F  _small   B2 F  _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.9995  |      0.0001         0.0001         0.9991         0.0003         0.0000         0.0000
+ beta     0.0005  |      0.0000         0.0000         0.0000         0.0000         0.0003         0.0003
 
-* Electronic eigenvalue nr.  2: -10.305057023531       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  2: -10.293711903467       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A1 C  s      L A1 C  dzz    L A1 F  s      L A1 F  pz     A1 C  _small   B1 C  _small   B2 C  _small
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.9997  |      1.0011         0.0001        -0.0006        -0.0009         0.0001         0.0000         0.0000
+ alpha    0.9997  |      1.0004         0.0001        -0.0003        -0.0005         0.0001         0.0000         0.0000
  beta     0.0003  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0001         0.0001
 
-* Electronic eigenvalue nr.  3: -1.1645506084747       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  3: -1.1677265538071       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 C  dxx    L A1 C  dyy    L A1 C  dzz    L A1 F  s      L A1 F  pz  
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.9999  |      0.1701         0.1269        -0.0067        -0.0067         0.0271         0.6219         0.0656
+ alpha    0.9999  |      0.1519         0.1128        -0.0053        -0.0053         0.0216         0.6479         0.0740
  beta     0.0001  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
 
 Gross  | L A1 F  dxx    L A1 F  dyy    L A1 F  dzz 
 -----------------------------------------------------
- alpha |  -0.0052        -0.0052         0.0122
+ alpha |  -0.0067        -0.0067         0.0157
  beta  |   0.0000         0.0000         0.0000
 
-* Electronic eigenvalue nr.  4: -0.5710711880184       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  4: -0.5739731414208       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
 Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 C  dxx    L A1 C  dyy    L A1 C  dzz    L A1 F  s      L A1 F  pz  
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    1.0000  |      0.1789         0.0271        -0.0004        -0.0004         0.0006         0.2372         0.5544
- beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+ alpha    0.9999  |      0.1726         0.0273        -0.0006        -0.0006         0.0008         0.2338         0.5638
+ beta     0.0001  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
 
 Gross  | L A1 F  dxx    L A1 F  dyy    L A1 F  dzz 
 -----------------------------------------------------
- alpha |   0.0039         0.0039        -0.0052
+ alpha |   0.0041         0.0041        -0.0055
  beta  |   0.0000         0.0000         0.0000
 
-* Electronic eigenvalue nr.  5: -0.4697166786450       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  5: -0.4726705878453       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
@@ -1074,14 +1117,14 @@ Gross  | L A1 F  dxx    L A1 F  dyy    L A1 F  dzz
 Gross     Total   |    L B1 C  px     L B1 C  dxz    L B1 F  px     L B1 F  dxz    L B2 C  py     L B2 C  dyz    L B2 F  py  
 --------------------------------------------------------------------------------------------------------------------------------
  alpha    0.0001  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
- beta     0.9999  |      0.1354         0.0095         0.3534         0.0016         0.1354         0.0095         0.3534
+ beta     0.9999  |      0.1346         0.0095         0.3542         0.0016         0.1346         0.0095         0.3542
 
 Gross  | L B2 F  dyz 
 -----------------------
  alpha |   0.0000
  beta  |   0.0016
 
-* Electronic eigenvalue nr.  6: -0.4690700548848       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  6: -0.4720024489670       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
@@ -1089,37 +1132,42 @@ Gross  | L B2 F  dyz
 Gross     Total   |    L B1 C  px     L B1 C  dxz    L B1 F  px     L B1 F  dxz    L B2 C  py     L B2 C  dyz    L B2 F  py  
 --------------------------------------------------------------------------------------------------------------------------------
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
- beta     1.0000  |      0.1358         0.0095         0.3530         0.0016         0.1358         0.0095         0.3530
+ beta     1.0000  |      0.1350         0.0095         0.3538         0.0016         0.1350         0.0095         0.3538
 
 Gross  | L B2 F  dyz 
 -----------------------
  alpha |   0.0000
  beta  |   0.0016
 
-* Electronic eigenvalue nr.  7: -0.3695512240388       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  7: -0.3731848632160       (Occupation : f = 1.0000)
 ================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 C  dxx    L A1 C  dyy    L A1 C  dzz    L A1 F  pz     L A1 F  dzz 
+Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 C  dxx    L A1 C  dyy    L A1 C  dzz    L A1 F  s      L A1 F  pz  
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    1.0000  |      0.5530         0.3530         0.0090         0.0090        -0.0139         0.0896         0.0002
+ alpha    1.0000  |      0.5927         0.3255         0.0060         0.0060        -0.0094        -0.0087         0.0872
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L A1 F  dxx    L A1 F  dyy    L A1 F  dzz 
+-----------------------------------------------------
+ alpha |   0.0001         0.0001         0.0003
+ beta  |   0.0000         0.0000         0.0000
 
 
 *** Total gross population ***
 
 Gross      Total    |    L A1 C  s      L A1 C  pz     L A1 C  dxx    L A1 C  dyy    L A1 C  dzz    L A1 F  s      L A1 F  pz  
 --------------------------------------------------------------------------------------------------------------------------------
- total    14.00000  |      3.80654        1.01442        0.00357        0.00357        0.02744        3.71472        1.41748
+ total    14.00000  |      3.83558        0.93142        0.00013        0.00013        0.02612        3.74352        1.44901
 
 Gross  | L A1 F  dxx    L A1 F  dyy    L A1 F  dzz    L B1 C  px     L B1 C  dxz    L B1 F  px     L B1 F  dxz    L B2 C  py  
 --------------------------------------------------------------------------------------------------------------------------------
- total |  -0.00250       -0.00250        0.01447        0.54248        0.03812        1.41291        0.00639        0.54248
+ total |  -0.00487       -0.00487        0.02104        0.53930        0.03814        1.41591        0.00654        0.53930
 
 Gross  | L B2 C  dyz    L B2 F  py     L B2 F  dyz    A1 C  _small   A1 F  _small   B1 C  _small   B1 F  _small   B2 C  _small
 --------------------------------------------------------------------------------------------------------------------------------
- total |   0.03812        1.41291        0.00639        0.00036        0.00074        0.00032        0.00061        0.00032
+ total |   0.03814        1.41591        0.00654        0.00036        0.00075        0.00032        0.00061        0.00032
 
 Gross  | B2 F  _small
 -----------------------
@@ -1177,15 +1225,15 @@ Gross  | B2 F  _small
                 Expectation value for individual orbitals
                 -----------------------------------------
 
-    E1     1    0.45059112E-05 a.u.
-    E1     2    116.4214494649 a.u.
-    E1     3    1.397715986915 a.u.
-    E1     4    1.778124110951 a.u.
-    E1     5    0.11179753E-03 a.u.
-    E1     6    0.16807018E-30 a.u.
-    E1     7    2.052172928561 a.u.
+    E1     1    0.14045160E-07 a.u.
+    E1     2    117.7189934900 a.u.
+    E1     3    1.454720973656 a.u.
+    E1     4    1.955952631799 a.u.
+    E1     5    0.12714203E-03 a.u.
+    E1     6    0.19884017E-27 a.u.
+    E1     7    2.089064943277 a.u.
     ------------------------------------------------------------
-    Total :     121.6495787947 a.u.      F   F
+    Total :     123.2188591948 a.u.      F   F
     ------------------------------------------------------------
     ------------------------------------------------------------
 
@@ -1198,22 +1246,22 @@ Gross  | B2 F  _small
                 Expectation value for individual orbitals
                 -----------------------------------------
 
-    E1     1    283.2721044747 a.u.
-    E1     2    0.34717057E-04 a.u.
-    E1     3    10.77152668545 a.u.
-    E1     4    3.422178053727 a.u.
-    E1     5    0.89166671E-03 a.u.
-    E1     6    0.13398133E-30 a.u.
-    E1     7    0.47926498E-01 a.u.
+    E1     1    287.6622497321 a.u.
+    E1     2    0.41529002E-04 a.u.
+    E1     3    11.14234826610 a.u.
+    E1     4    3.618576965386 a.u.
+    E1     5    0.95491155E-03 a.u.
+    E1     6    0.21002368E-27 a.u.
+    E1     7    0.54474140E-01 a.u.
     ------------------------------------------------------------
-    Total :     297.5146620960 a.u.      F   F
+    Total :     302.4786455439 a.u.      F   F
     ------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
 ----------------------------------------------------------------------------
 
- Date and time (Linux) : Tue May 11 23:49:30 2004
+ Date and time (Linux) : Wed May 12 00:13:59 2004
 *****************************************************
->>>> Total CPU  time used in DIRAC:  7min33.830s
->>>> Total WALL time used in DIRAC:  7min35.000s
+>>>> Total CPU  time used in DIRAC: 10min38.960s
+>>>> Total WALL time used in DIRAC: 10min42.000s
 ********** E N D   of   D I R A C  output  **********
