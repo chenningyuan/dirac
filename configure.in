@@ -1096,12 +1096,15 @@ EOF
 #jth: parlib=-mpi 
 #if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
 if [ "$mesp" = "mpi" ]; then
+   if [ ! -z "$parlibp" ] then
+      parlibp=-L$parlibp
+   fi
     cat <<EOF >> Makefile.config
 #
 # Parallel initialization
 #
 MPI_INCLUDE_DIR = $parinc
-MPI_LIB_PATH    = -L$parlibp
+MPI_LIB_PATH    = $parlibp
 MPI_LIB         = $parlib
 INCLUDE_DIR     = $inc \$(MPI_INCLUDE_DIR)
 #
