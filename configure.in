@@ -797,14 +797,14 @@ case $machine in
        echo "hp"
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' "
-          ccp="-DSYS_HPUX"
+          ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
           def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_HPUX"
+          ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -823,14 +823,14 @@ case $machine in
     860-intel-osf1) 
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' "
-          ccp="-DSYS_PARAGON"
+          ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
             cpp=`echo $cpp $mod`
           done
           def='dirmpi.x'
        else
           cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_PARAGON"
+          ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -848,14 +848,14 @@ case $machine in
     alpha-dec|mips-dec|vax-dec)
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' "
-          ccp="-DSYS_DEC"
+          ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
             cpp=`echo $cpp $mod`
           done
           def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_DEC"
+          ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -874,10 +874,10 @@ case $machine in
     t3e-cray) 
        if [ "$mesp" = "dummy" ]; then
           cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST"
-          ccp="-DSYS_T3D"
+          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}'"
        else
           cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
-          ccp="-DSYS_T3D"
+          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}'"
        fi
        for mod in $MODS; do
           cpp=`echo $cpp $mod`
@@ -893,15 +893,16 @@ case $machine in
     *-cray)
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_CRAY, -D'INSTALL_WRKMEM=\${WRKMEM}' "
-         ccp="-DSYS_CRAY"
+         ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
       else
          cpp="-DPRG_DIRAC -DSYS_CRAY,-D'INSTALL_WRKMEM=\${WRKMEM}' ,$parop"
-         ccp="-DSYS_CRAY"
+         ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
       fi
       for mod in $MODS; do
          cpp=`echo $cpp,$mod`
       done
-      opt="-Wf\"-i 64 -a stack -dp\" -Wl\"-i ./equivalences\" -Wp\"-F\""
+      opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
+      c_opt="-i 64 -a stack -dp"
       inc="-I$INCLUDE_DIR"
       LIB="crilib.cld $LIB"
       def='dirac.x';;
@@ -911,14 +912,14 @@ case $machine in
    c*-convex)
       if [ "$mesp" = "dummy" ]; then
          cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' "
-         ccp="-DSYS_CONVEX"
+         ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
          def='dirac.x'
       else
          cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_CONVEX"
+         ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
@@ -932,14 +933,14 @@ case $machine in
    sparc-sun|m68k-sun)  
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         ccp="-DSYS_SUN"
+         ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}'"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
          def='dirac.x'
       else
          cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_SUN"
+         ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}'"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
@@ -959,14 +960,14 @@ case $machine in
          aix2*) 
             if [ "$mesp" = "dummy" ]; then
                cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
-               ccp="-DSYS_AIX -DSYS_AIX23"
+               ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}'"
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                done
                def='dirac.x'
             else
                cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-               ccp="-DSYS_AIX -DSYS_AIX23"
+               ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}'"
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                done
@@ -980,14 +981,14 @@ case $machine in
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
-               ccp="-DSYS_AIX"
+               ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
                done
                def='dirac.x'
             else
                cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}',-D$parop"
-               ccp="-DSYS_AIX"
+               ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
                done
@@ -1033,14 +1034,14 @@ case $machine in
          esac
          if [ "$mesp" = "dummy" ]; then
             cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-            ccp="-DSYS_IRIX"
+            ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
             done
             def='dirac.x'
          else
             cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-            ccp="-DSYS_IRIX"
+            ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
             for mod in $MODS; do
                cpp=`echo $cpp $mod`
             done
@@ -1064,7 +1065,7 @@ case $machine in
          def='dirac.x'
       else
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_LINUX"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          if [ "$mesp" = "mpi" ]; then
             def='dirmpi.x'
          else
@@ -1087,7 +1088,7 @@ esac
 #
 if [ "$F77" = "g77" ]; then
    cpp="$cpp -DVAR_G77"
-   ccp="$ccp -DVAR_G77 -D'INSTALL_WRKMEM=\${WRKMEM}'"
+   ccp="$ccp -DVAR_G77"
 fi
 # 
 #  Make Makefile.config
@@ -1335,7 +1336,7 @@ echo
 #
 echo
 echo "Making Makefiles..."
-dirs="dirac prp abacus gp pdpack"
+dirs="dirac prp abacus gp pdpack dirac/main"
 if [ -z "$ERIFLG" ] ; then
    ERIFLG=0
 fi
