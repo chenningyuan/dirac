@@ -646,11 +646,13 @@ C*****************************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOOWN  = CRT. EQ. 'X'
       IF (DIRAC .AND. .NOT. (DOCART .OR. DOOWN)) THEN
-         WRITE(LUPRI,'(/3(A/))')
+         IF (IPREAD .GT. 0) THEN
+            WRITE(LUPRI,'(/3(A/))')
      &      'WARNING!!! Cartesian Gaussians must be specified',
      &      '           in molecule input file.',
      &      '           DIRAC proceeds with readin assuming '//
      &      '           Cartesian Gaussians.'
+         ENDIF
          DOCART = .TRUE.
       END IF
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN)
@@ -1780,7 +1782,7 @@ C
 C
 C     Print the references to the basis sets
 C
-      CALL PRBASREF(LUPRI,NONTYP,BASREF)
+      IF (IPREAD .GT. 0) CALL PRBASREF(LUPRI,NONTYP,BASREF)
 C
 C     ******************************************
 C     ***** Printing of atomic coordinates *****

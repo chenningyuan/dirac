@@ -37,9 +37,9 @@ C* This is the procedures that controls the reading from     *
 C* file, and calls all the other subroutines.                *
 C* It returns a bunch of variables. It returns:              *
 C*     IQM - (Highest anglar quantumnumber) + 1              *
-C*     JCO - Redundant variable that gives how many blocks   *
-C*           the primitives and contraction coeffecients are *
-C*           given in (will be set to one) (array)           *
+C*     JCO - Variable that gives how many blocks             *
+C*           the primitives and contraction coefficients are *
+C*           given in (array)                                *
 C*     NUC - Number of primitives for a given                *
 C*           (quantumnuber + 1)                              *
 C*     NRC - Number of coloumns with contraction-coeffecients*
@@ -53,9 +53,8 @@ C*     CPRIMU - Matrix (3D) with the NOT normalized          *
 C*              contraction coeffecients (for a given        *
 C*              (quantumnumber + 1)).                        *
 C*     CPRIM - Like CPRIMU, but this time the contraction    *
-C*             -coeffecients are normalized.                 *
-C*     NBLOCK - For some reason is this defined as the same  *
-C*              as IQM                                       *
+C*             -coefficients are normalized.                 *
+C*     NBLOCK - Number of function blocks                    *
 C*     KAOVEC, KPRIM, Q, DSM are max (angular quantumnumber  *
 C*             + 1), max number of primitives, nuclear       *
 C*             charge, highest number to be accepted as zero *
@@ -93,11 +92,19 @@ C
       CHARACTER BASTMP*80, BASSAV*80
       CHARACTER*80 BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, BLANK, NQVD
+C     Define a maximum number of primitives that can go in one block
+C     for UNCONTRACTED basis sets. The value given is for s-functions
+C     that generate 3 small component p-functions. The maximum for
+C     other types of functions is scaled down by KHK(IQM+1) that
+C     gives the number of functions in the small component for that type.
+      PARAMETER (MAX_IN_BLOCK=3*15)
+      LOGICAL SPLIT
 C
       BASTMP = '                                        '//
      &         '                                        '
       BASSAV = BASNAM
       INTQ   = NINT(Q)
+      IQM    = 0
       NBLOCK = 0
       IAUG   = 0
       LUBAS = 20
@@ -222,11 +229,34 @@ Chj-aug99: MAERKE find out how to implement UNCONT for ano or sadlej !
          END IF
 C
          IF ( .NOT. NEWEL) THEN
+            IQM = IQM + 1
+            JCO(IQM) = 1
+  11        CONTINUE
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
                CALL QUIT('Too many AO blocks'//
      &            ' for this program version; increase WRKMEM')
             END IF
+C
+C           We should not make blocks of primitives too large in case of uncontracted sets
+C           Compute maximum size (should of course always be one, hence the MAX in the 
+C           determination step).
+C
+            KHK_SC = (IQM+1)*(IQM+2)/2
+            MAXPRIM_IN_BLOCK = MAX(1,MAX_IN_BLOCK/KHK_SC)
+C
+            IF (INTORB.LE.0.AND.INTEXP.GT.MAXPRIM_IN_BLOCK) THEN
+               IF (ANO .OR. SADLEJ) THEN
+                  SPLIT = .FALSE.
+               ELSE
+                  INTEXP_2 = INTEXP - MAXPRIM_IN_BLOCK
+                  INTEXP = MAXPRIM_IN_BLOCK
+                  JCO(IQM) = JCO(IQM) + 1
+                  SPLIT = .TRUE.
+               ENDIF
+            ELSE
+               SPLIT = .FALSE.
+            ENDIF
 C     
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
@@ -272,7 +302,7 @@ C           me half a day to figure out......)
 C
             IF (ISET .EQ. 1) THEN
 #endif
-               CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
+               CALL NRMORB(IQM, NRC(NBLOCK), NUC(NBLOCK), 
      +                     ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
      +                     CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
 #ifdef STO3G_HUCKEL
@@ -281,6 +311,13 @@ C
      &                    CPRIM(1,1,NBLOCK),1)
             END IF
 #endif
+C Go back to read additional exponents in case of block splitting
+C
+            IF (SPLIT) THEN
+               INTORB = 0
+               INTEXP = INTEXP_2
+               GOTO 11
+            ENDIF
 C
 C Define the type of the next relevant line in file
 C
@@ -293,6 +330,7 @@ C
  32      CONTINUE
          INTEXP = 0
          INTORB = 0
+         IQM = IQM + 1
          NBLOCK = NBLOCK + 1
          FOUND = .FALSE.
          ISTART = IPOLST
@@ -301,7 +339,7 @@ C
          IF (.NOT. BLANK) THEN
             CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
-            IF (IQUANT .EQ. NBLOCK) THEN
+            IF (IQUANT .EQ. IQM) THEN
                FOUND  = .TRUE.
                INTEXP = INTEXP + 1
                INTORB = INTORB + 1
@@ -320,7 +358,7 @@ C
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
-            CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK), 
+            CALL NRMORB(IQM, NRC(NBLOCK), NUC(NBLOCK), 
      +                  ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK), 
      +                  CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
             GOTO 32
@@ -328,14 +366,7 @@ C
             NBLOCK = NBLOCK - 1
          END IF
       END IF
-      IQM = NBLOCK
 C
-C Setting JCO to one.
-C
-      DO I = 1, IQM
-         JCO(I) = 1
-      END DO
-C      
 C Find reference information for the basis set. 
 C
       CALL FINREF (BASREF,LUBAS)
@@ -746,8 +777,9 @@ C
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1
-      WRITE(LUPRI,'(A/,A1,A,A1)')
-     &     ' Searching basis : trying file: ','"',STRING(1:IEND),'"'
+Cluuk Activate when debugging basis set search (should not be on by default)
+CLuuk WRITE(LUPRI,'(A/,A1,A,A1)')
+CLuuk&     ' Searching basis : trying file: ','"',STRING(1:IEND),'"'
 C
 C     Inquire if "/path/basis-set" exists.
 C
