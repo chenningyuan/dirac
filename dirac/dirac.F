@@ -1,5 +1,9 @@
 C  /* Deck dirac */
+#ifndef SYS_LINUX
       PROGRAM DIRAC
+#else
+      SUBROUTINE DIRAC(WORK,LWORK,STR_DIRWRK)
+#endif
 C*****************************************************************************
 C     
 C     Direct Iterative Relativistic All-electron Calculations
@@ -69,6 +73,9 @@ CTROND      INCLUDE 'sys/schedctl.h'
       LOGICAL DOLOGO
 #if defined (SYS_T3D)
       PARAMETER (LWORK = 10 000 000)
+#elif defined (SYS_LINUX)
+      DIMENSION WORK(LWORK)
+      CHARACTER STR_DIRWRK*(80)
 #else
       PARAMETER (LWORK = INSTALL_WRKMEM)
 #endif
@@ -89,7 +96,7 @@ C
 #else
 #if defined (SYS_CONVEX)
       DIMENSION WORK(2)
-#else
+#elif !defined (SYS_LINUX)
 C
 C     Static memory allocation
 C
@@ -106,7 +113,7 @@ C
       CALL QENTER('DIRAC')
 C
 C
-#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
+#if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
 C
 C     Dynamic allocation of memory;check for DIRWRK in environment
 C     ============================================================
@@ -120,6 +127,7 @@ C
          LMWORK = 0
    20 CONTINUE
 #endif
+#ifndef SYS_LINUX
 C
 C     Either use default memory size
 C     
@@ -180,7 +188,7 @@ C
 C     HPALLOC IERR codes:
 C     -1 : length allocated smaller than zero
 C     -2 : no memory left for the system
-C     -7 : memory corrputed.
+C     -7 : memory corrupted.
 C     HPALLOC IABORT .ne. 0: abort on error
       IABORT = 0
       CALL HPALLOC(WADDR,LMWORK+2,IERR,IABORT)
@@ -202,6 +210,18 @@ C     IBM VM/CMS: 212 : disable end of record error for formatted I/O
 C     (such that variable length input records may be read)
 C     
       CALL ERRSET(212,256,-1,1)
+#endif
+#endif
+#ifdef SYS_LINUX
+C
+C     Check memory allocation
+C
+      LMWORK = LWORK
+      DIRWRK = STR_DIRWRK
+      IF (WORK(1).NE.10101.0) 
+     &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
+      IF (LWORK.NE. INSTALL_WRKMEM )
+     &   CALL QUIT('MEMORY ALLOCATION ERROR (LWORK)')
 #endif
 C
 C     Run DIRAC
