@@ -1558,6 +1558,8 @@ C
       IREC = 0
       IERR = 0
       IVEC = 0
+      IPAR = 0
+      NDIM = 0
       LBUF = '                '
       PBUF = ' '
       TOBE = .FALSE.
