@@ -3111,7 +3111,11 @@ C
 C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
-      DOINT(2,2) = .TRUE.
+      IF (NOSMLV) THEN
+         DOINT(2,2) = .FALSE.
+      ELSE
+         DOINT(2,2) = .TRUE.
+      END IF
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
 C
