@@ -1631,8 +1631,13 @@ C
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1
       TMPNRG = 0.0D0
-      CALL HEADER('Final geometry',-1)
+#ifdef PRG_DIRAC
+      CALL HEADE2('Final geometry','@',-1)
+      CALL RPRIGEO(CORD,'@')
+#else
+      CALL HEADER('Final geometry','@',-1)
       CALL PRIGEO(CORD)
+#endif
       WRITE(LUPRI,*)
      & 'Iter     Energy     Change    GradNorm  Index   StepLen'
      & // '    TrustRad #Rej'
