@@ -169,6 +169,187 @@ C
 C
 C     Local variables
 C
+      DIMENSION IPB(4)
+      LOGICAL   LBUF(4)      
+C
+      EXTERNAL BDQALGEBRA
+C
+C     Initialize LBUF
+C     ===============
+C
+      CALL LSET(4,.FALSE.,LBUF)
+C
+C     Make pointer IPB
+C     ================
+C
+      CALL IZERO(IPB,4)
+      DO IZB = 1,NZB
+        IPB(IQPB(IZB)) = IZB
+      ENDDO
+C
+C     MATRIX A
+C
+
+C     Determine FX:
+C     =============
+C     Normal matrix...
+      IF    (FA.EQ.'N') THEN
+        OA  = 'N'
+        IFA = 1
+C     Transpose...
+      ELSEIF(FA.EQ.'T') THEN
+        OA  = 'T'
+        IFA = 1
+C     Complex conjugate....
+      ELSEIF(FA.EQ.'C') THEN
+        OA  = 'N'
+        IFA = 2
+C     Hermitian conjugate...
+      ELSEIF(FA.EQ.'H') THEN
+        OA  = 'T'
+        IFA = 2
+      ELSE
+        CALL QUIT('QGEMM:Unknown FA '//FA//' of matrix A!')
+      ENDIF
+C     Determine TX:
+C     =============
+C     No transform
+      IF    (TA.EQ.'N') THEN
+        ITA = 1
+C     i-transform
+      ELSEIF(TA.EQ.'I') THEN
+        ITA = 2
+C     j-transform
+      ELSEIF(TA.EQ.'J') THEN
+        ITA = 3
+C     k-transform
+      ELSEIF(TA.EQ.'K') THEN
+        ITA = 4
+      ELSE
+        CALL QUIT('QGEMM:Unknown TA '//TA//' of matrix A!')
+      ENDIF
+C
+C     MATRIX B
+C
+C     Determine FX:
+C     =============
+C     Normal matrix...
+      IF    (FB.EQ.'N') THEN
+        OB  = 'N'
+        IFB = 1
+C     Transpose...
+      ELSEIF(FB.EQ.'T') THEN
+        OB  = 'T'
+        IFB = 1
+C     Complex conjugate....
+      ELSEIF(FB.EQ.'C') THEN
+        OB  = 'N'
+        IFB = 2
+C     Hermitian conjugate...
+      ELSEIF(FB.EQ.'H') THEN
+        OB  = 'T'
+        IFB = 2
+      ELSE
+        CALL QUIT('QGEMM:Unknown format '//FA//' of matrix B!')
+      ENDIF
+C     Determine TX:
+C     =============
+C     No transform
+      IF    (TB.EQ.'N') THEN
+        ITB = 1
+C     i-transform
+      ELSEIF(TB.EQ.'I') THEN
+        ITB = 2
+C     j-transform
+      ELSEIF(TB.EQ.'J') THEN
+        ITB = 3
+C     k-transform
+      ELSEIF(TB.EQ.'K') THEN
+        ITB = 4
+      ELSE
+        CALL QUIT('QGEMM:Unknown TB '//TB//' of matrix B!')
+      ENDIF
+C
+      DO 10 IZC = 1,NZC
+        IQC = IQPC(IZC)
+        DO 20 IZA = 1,NZA
+          IQA = IQPA(IZA)
+          IQB = IQMULT(IQA,IQC,1)
+          IZB = IPB(IQB)
+          IF(IZB.EQ.0) GOTO 20
+          FACA = ALPHA*(IQSIGN(IQA,IFA,ITA)*IQSIGN(IQB,IFB,ITB)
+     &                *IQPHASE(IQA,IQB,1))
+          IF(LBUF(IZC)) THEN
+            FACB = D1
+          ELSE
+            FACB = BETA
+          ENDIF
+          CALL DGEMM(OA,OB,M,N,K,FACA,A(1,IZA),LRA,B(1,IZB),LRB,
+     &               FACB,C(1,IZC),LRC)
+          LBUF(IZC) = .TRUE.
+   20   CONTINUE
+   10 CONTINUE
+C
+C     Check that matrix C is filled
+C
+      DO IZC = 1,NZC
+      IF(.NOT.LBUF(IZC)) 
+     &    WRITE(LUPRI,'(A,I5)') '* WARNING(QGEMM): Not filled: ',IZC
+      ENDDO
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qgeold */
+      SUBROUTINE QGEOLD(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA,
+     &                             FB,TB,IQPB,B,LRB,LCB,NZB,
+     &                              BETA,IQPC,C,LRC,LCC,NZC)
+C*****************************************************************************
+C
+C     Performs matrix-matrix operations on general matrices:
+C
+C     C := alpha * op(A) * op(B) + beta * C
+C
+C     where alpha and beta are real constants. A,B and C
+C     are matrices that may be real(NZ = 1), complex(NZ = 2)
+C     or quaternionic (NZ = 4). Calls BLAS routine DGEMM.
+C
+C     LRX and LCX are leading rows and columns of matrix X.
+C     op(A) is an M by K matrix, op(B) is a K by N matrix
+C     and C an M by N matrix.
+C
+C     op(X) is determined by the corresponding character variable
+C     FX:
+C       FX = 'N'        Normal matrix
+C       FX = 'T'        Transpose..
+C       FX = 'C'        Complex conjugate
+C       FX = 'H'        Hermitian conjugate
+C     and TX
+C       TX = 'N'        No transform    a+bj
+C       TX = 'I'        i-transform   -i(a+bj)i = a - bj
+C       TX = 'J'        j-transform   -j(a+bj)j = a*+b*j
+C       TX = 'K'        k-transform   -k(a+bj)k = a*-b*j
+C
+C     AFUL and BFUL indicates on input what components of
+C     matrices A and B are non-zero, whereas CFUL on output
+C     indicates what components of C are non-zero.
+C
+C     Written by T.Saue, University of Oslo, Nov. 1994
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbqal.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+C     Global variables
+C
+      DIMENSION A(LRA*LCA,NZA),B(LRB*LCB,NZB),C(LRC*LCC,NZC),
+     &          IQPA(NZA),IQPB(NZB),IQPC(NZC)
+      CHARACTER  FA*1,FB*1,TA*1,TB*1,OA*1,OB*1
+C
+C     Local variables
+C
       LOGICAL   LBUF(4)      
       DIMENSION IPC(4)
 C
@@ -1410,6 +1591,7 @@ C*******************************************************************C
 C     CONTINUED FRACTION REPRESENTATION                             C
 C*******************************************************************C
       PARAMETER (ITMAX=100,EPS=1.D-12,D0 = 0.0D0,D1 = 1.0D0)
+#include <sdpre.h>
       GLN=GAMMLN(A)
       GOLD=D0
       A0=D1
@@ -1418,7 +1600,7 @@ C*******************************************************************C
       B1=D1
       FAC=D1
       DO 11 N=1,ITMAX
-        AN=FLOAT(N)
+        AN=SDPRE(N)
         ANA=AN-A
         A0=(A1+A0*ANA)*FAC
         B0=(B1+B0*ANA)*FAC
@@ -2533,7 +2715,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION IPY(4)
+      DIMENSION IPA(4)
 C
       EXTERNAL BDQALGEBRA
       IF (N.LE.0)       RETURN
@@ -2541,16 +2723,13 @@ C
       IF(N*INCX.GT.NX) CALL QUIT('QAXPY:N*INCX.GT.NX')
       IF(N*INCY.GT.NY) CALL QUIT('QAXPY:N*INCY.GT.NY')
 C
-C     Make pointer IPY
+C     Make pointer IPA
 C     ================
 C
-      CALL IZERO(IPY,4)
-C      CALL IZERO(IPC,4)
-      DO IZY = 1,NZY
-        IPY(IQPY(IZY)) = IZY
+      CALL IZERO(IPA,4)
+      DO IZA = 1,NZA
+        IPA(IQPA(IZA)) = IZA
       ENDDO
-      IF(NZA.GT.NZY) CALL QUIT('QAXPY:NZA.GT.NZY')
-      IF(NZX.GT.NZY) CALL QUIT('QAXPY:NZX.GT.NZY')
 C
 C     Constant A
 C
@@ -2585,19 +2764,13 @@ C     k-transform
         CALL QUIT('QAXPY:Unknown TA '//TA//' of scalar A!')
       ENDIF
 C
-      DO 10 IZA = 1,NZA
-        IF(A(IZA).EQ.D0) GOTO 10
-        IQA = IQPA(IZA)
+      DO 10 IZY = 1,NZY
+        IQY = IQPY(IZY)
         DO 20 IZX = 1,NZX
           IQX = IQPX(IZX)
-          IQY = IQMULT(IQA,IQX,1)
-          IZY = IPY(IQY)
-          IF(IZY.EQ.0) THEN
-            WRITE(LUPRI,'(A)') 'QAXPY: Error in IZY !'
-            WRITE(LUPRI,'(A,4I5)') 'IQPY: ',(IQPY(I),I=1,NZY)
-            WRITE(LUPRI,'(A,4I5)') 'IPY : ',(IPY(I), I=1,4)
-            CALL QUIT('QAXPY: Error in IPY !')
-          ENDIF
+          IQA = IQMULT(IQX,IQY,1)
+          IZA = IPA(IQA)
+          IF(IZY.EQ.0) GOTO 20
           AA = A(IZA)*(IQSIGN(IQA,IFA,ITA)*IQPHASE(IQA,IQX,1))
           CALL DAXPY(N,AA,X(1,IZX),INCX,Y(1,IZY),INCY)
    20   CONTINUE
@@ -2647,7 +2820,7 @@ C
 C
 C     Local variables
 C
-      DIMENSION IPY(4)
+      DIMENSION IPA(4)
 C
       EXTERNAL BDQALGEBRA
       IF (N.LE.0)       RETURN
@@ -2655,15 +2828,13 @@ C
       IF(N*INCX.GT.NX) CALL QUIT('QXAPY:N*INCX.GT.NX')
       IF(N*INCY.GT.NY) CALL QUIT('QXAPY:N*INCY.GT.NY')
 C
-C     Make pointer IPY
+C     Make pointer IPA
 C     ================
 C
-      CALL IZERO(IPC,4)
-      DO IZY = 1,NZY
-        IPY(IQPY(IZY)) = IZY
+      CALL IZERO(IPA,4)
+      DO IZA = 1,NZA
+        IPA(IQPA(IZA)) = IZA
       ENDDO
-      IF(NZA.GT.NZY) CALL QUIT('QXAPY:NZA.GT.NZY')
-      IF(NZX.GT.NZY) CALL QUIT('QXAPY:NZX.GT.NZY')
 C
 C     Constant A
 C
@@ -2698,19 +2869,13 @@ C     k-transform
         CALL QUIT('QXAPY:Unknown TA '//TA//' of scalar A!')
       ENDIF
 C
-      DO 10 IZA = 1,NZA
-        IF(A(IZA).EQ.D0) GOTO 10
-        IQA = IQPA(IZA)
+      DO 10 IZY = 1,NZY
+        IQY = IQPY(IZY)
         DO 20 IZX = 1,NZX
-        IQX = IQPX(IZX)
-          IQY = IQMULT(IQA,IQX,1)
-          IZY = IPY(IQY)
-          IF(IZY.EQ.0) THEN
-            WRITE(LUPRI,'(A)') 'QXAPY: Error in IZY !'
-            WRITE(LUPRI,'(A,4I5)') 'IQPY: ',(IQPY(I),I=1,NZY)
-            WRITE(LUPRI,'(A,4I5)') 'IPY : ',(IPY(I), I=1,4)
-            CALL QUIT('QXAPY: Error in IPY !')
-          ENDIF
+          IQX = IQPX(IZX)
+          IQA = IQMULT(IQX,IQY,1)
+          IZA = IPA(IQA)
+          IF(IZY.EQ.0) GOTO 20
           AA = A(IZA)*(IQSIGN(IQA,IFA,ITA)*IQPHASE(IQX,IQA,1))
           CALL DAXPY(N,AA,X(1,IZX),INCX,Y(1,IZY),INCY)
    20   CONTINUE
