@@ -42,13 +42,13 @@
 !                   (1,2(i),3(j),4(k))
 !     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !
-!     OPERATORS (18 types):
+!     OPERATORS (19 types):
 !
 !     MCMP  - number of components for a given operator
 !     JM4   - pointer to matrix operator for a given component
 !     JCOM  - coefficient of component
 !
-      INTEGER MCMP(18), JM4(3, 18), JCOM(3, 18), JM4REP(0:7),           &
+      INTEGER MCMP(19), JM4(3, 19), JCOM(3, 19), JM4REP(0:7),           &
      &        JM4POS(0:7), JM4FAS(0:7)
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
 

@@ -5951,6 +5951,14 @@ C
       JM4 (1,18)=  1
       JCOM(1,18)=  1
 C
+C
+C     19. beta         * scalar operator
+C     ==================================
+C
+      MCMP(19)  = 1
+      JM4 (1,19)= 0
+      JCOM(1,19)= 1
+C
 C     Matrix symmetry
 C     ===============
 C

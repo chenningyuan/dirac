@@ -723,6 +723,9 @@ C
 C   18. ZiBETAAL
 C       i[betaalp_z]p * z-component of beta alpha times scalar operator
 C
+C   19. BETA   
+C       [beta]P * beta times scalar operator
+C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
 C  of the alpha matrices and some scalar operator.
 C
@@ -740,7 +743,7 @@ C
 #include "priunit.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 23)
+      PARAMETER (NTABKW = 24)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -755,7 +758,7 @@ C
      &           'YAVECTOR', 'ZAVECTOR', 'ALPHADOT', 'GAMMA5  ',
      &           'XSIGMA  ', 'YSIGMA  ', 'ZSIGMA  ', 'XBETASIG',
      &           'YBETASIG', 'ZBETASIG', 'XiBETAAL', 'YiBETAAL',
-     &           'ZiBETAAL', 'CFACTORS', 'COMCFACT'/
+     &           'ZiBETAAL', 'BETA    ', 'CFACTORS', 'COMCFACT'/
 C
       CALL QENTER('XPRINP')
 C
@@ -864,7 +867,7 @@ C
               NFAC  = 0
               IKW = 2
            END IF
-           GO TO (4,5,6,1,1,1,1,2,2,2,3,1,1,1,1,1,1,1,1,1,1), I
+           GO TO (4,5,6,1,1,1,1,2,2,2,3,1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -873,7 +876,7 @@ C
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1162,10 +1165,10 @@ C ... fix the LS block for the LevyLe option
         IF (IPRINT.GT.6) WRITE(LUPRI,'(A)')
      & '  Only the LL block for connection matrixes in two-comp.mode!'
       ELSE
-         IF (IPTYP.LT.1 .OR. IPTYP.GT.18)
-     &      CALL QUIT('XPRADD: Illegal IPTYP (not 1-18)!')
+         IF (IPTYP.LT.1 .OR. IPTYP.GT.19)
+     &      CALL QUIT('XPRADD: Illegal IPTYP (not 1-19)!')
          GO TO (1,2,2,2,2,2,2,2,2,
-     &          1,1,1,3,3,3,4,4,4),IPTYP
+     &          1,1,1,3,3,3,4,4,4,3),IPTYP
 C
 C
 C        DIAGONAL and SIGMA:
@@ -1998,7 +2001,7 @@ C     Operator type
 C     =============
 C
       ITYP = IPRPTYP(INDXPR)
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 ), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 ), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2073,6 +2076,9 @@ C
    18 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'ZiBETAAL : i[beta alpha_z]P'
+   19 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'BETA     : scalar operator'
       GOTO 20
 C
    20 CONTINUE
