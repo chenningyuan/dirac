@@ -78,7 +78,7 @@ C
       DO IFRP = 1,NFSYM
         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
         NSPC(IFRP,0) = 1
-        CALL  NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
+        CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               NSPC(IFRP,0),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
@@ -96,6 +96,8 @@ C
 C     Print section
 C     =============
 C
+      WRITE(LUPRI,'(/A)')
+     &     '* Core orbital ranges for 2-index transformation:'
       DO I = 1, NFSYM
          CALL TRAPRI(1,I,WORK(KVEC(I,1)),DUM,DUM,DUM,NSPC)
       ENDDO
@@ -183,8 +185,9 @@ C
 C     Print section
 C     =============
 C
+      WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
+         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
 C
@@ -894,10 +897,13 @@ C
          CALL TITLER('Transformation of core Fock matrix','*',116)
       ELSEIF (IMODUL.EQ.3) THEN
          CALL TITLER('Transformation of 2-electron integrals','*',116)
+      ELSEIF (IMODUL.EQ.4) THEN
+         CALL TITLER('Transformation of MCSCF 2-electron integrals',
+     &        '*',116)
       ENDIF
 C
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/A,A24)') ' Transformation started at :',DAYTID
+      WRITE(LUPRI,'(/A,A24)') ' Transformation started at :', DAYTID
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('SETDC2: Distribution of symmetry orbitals '//
@@ -908,16 +914,18 @@ C
      &        (FREP(I),(NFBAS(I,J),J=0,2),I = 1,NFSYM)
       ENDIF
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-         CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,DUM,TOTERG,0,
-     &               DUM,IDUM,IDUM)
-         CLOSE(LUCOEF,STATUS='KEEP')
-      ENDIF
+      IF (IMODUL .NE. 4) THEN
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF (.NOT.TOBE) THEN
+            WRITE(LUPRI,'(A)') 'Coefficient file not present'
+            CALL QUIT('TRAPAM: No coefficients !')
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,DUM,TOTERG,0,
+        &               DUM,IDUM,IDUM)
+            CLOSE(LUCOEF,STATUS='KEEP')
+         ENDIF
+      END IF
 C
       RETURN
       END
