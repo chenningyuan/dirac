@@ -1110,8 +1110,6 @@ C        We return if we found a REFERENCE line but no more $ lines.
 C
       GOTO 20
 C
-      RETURN
-C
 C No documentation when end of file is found
 C
  200  CONTINUE
