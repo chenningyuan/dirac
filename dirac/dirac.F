@@ -217,6 +217,8 @@ C
 C     Check memory allocation
 C
       LMWORK = LWORK
+      NBYTES = (LMWORK+2) * 8
+      XMBYTES = NBYTES
       DIRWRK = STR_DIRWRK
       IF (WORK(1).NE.10101.0) 
      &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
