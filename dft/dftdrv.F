@@ -266,13 +266,13 @@ C
       IF (DOERG) THEN
         EDFTY = ERGDRC + ERGVWN + EXCTRO + ERGBCK + ERGLYP
      &         - DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
-CTROND        DO I = 1, NBAST
-CTROND          DO J = 1, I - 1 
-CTROND            AVERAG = DP5*(EXCMAT(I,J,1) + EXCMAT(J,I,1))
-CTROND            EXCMAT(I,J,1) = AVERAG 
-CTROND            EXCMAT(J,I,1) = AVERAG 
-CTROND          ENDDO
-CTROND        ENDDO
+        DO I = 1, NBAST
+          DO J = 1, I - 1 
+            AVERAG = DP5*(EXCMAT(I,J,1) + EXCMAT(J,I,1))
+            EXCMAT(I,J,1) = AVERAG 
+            EXCMAT(J,I,1) = AVERAG 
+          ENDDO
+        ENDDO
       END IF 
 CTROND      IF (DOATR) THEN
 CTROND        DO I = 1, NBAST
