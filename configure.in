@@ -695,10 +695,9 @@ case $machine in
 #   Linux
 #
    i[3-5]86-*)
-      echo "If your version includes the relativistic coupled cluster"
-      echo "you have to get the BLAS routines."
-      echo "They are available in a precompiled version from"
-      echo "ftp://sunsite.unc.edu/pub/Linux/devel/fortran/lapack*"
+      echo 
+      echo "Get the BLAS routines. See 'Known issues and problems' at"
+      echo "http://assens.chem.ou.dk/Dirac"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=$memsiz' "
          ccp="-DSYS_LINUX"
