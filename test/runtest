@@ -46,10 +46,10 @@ usage () {
    $echo
 }
 
-arg_tests=
+arg_tests=short
 arg_pampath=
 arg_dirac=
-arg_tag=
+arg_tag=runtest
 arg_mpi=
 
 while [ $# != 0 ]; do
@@ -181,7 +181,8 @@ echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
-         tests=$short_test
+         tests=$short_test;
+         RUNTYPE="short"; export RUNTYPE
          ;;
       "all")
          tests=$all_test
@@ -195,6 +196,10 @@ else
 fi
 $echo " Using tests: $tests \c"
 echo
+
+if [ -e logs/${arg_tag}_dif.txt ]; then
+   rm logs/${arg_tag}_dif.txt
+fi
 
 for tt in $tests; do
    if [ ! -d $tt ]; then
