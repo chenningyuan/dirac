@@ -5899,15 +5899,20 @@ C
 C
       LOGICAL SEG,TOBE,SEGIJ
       CHARACTER FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE*10,FORMATC*10
+      CHARACTER STRING*100, SZ(2)*5
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
      &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
+#include <dcbgen.h>
 #include <cbirea.h>
 #include <ccom.h>
 #include <gencon.h>
+C
+      DATA SZ / 'large', 'small' /
+C
 #include <ibtfun.h>
 C     
       LUBFIL = 55
@@ -5927,9 +5932,58 @@ C
       IF (.NOT. PARHER) THEN
 C        ... this is the master, slaves will read from lines
 C        read into MLINE(*) by master
-         INQUIRE (FILE = FILNAM, EXIST = TOBE)
-         IF (.NOT.TOBE) GOTO 5025
-         OPEN (LUBFIL,FILE=FILNAM,FORM='FORMATTED',STATUS='OLD')
+C        
+C        The environment variable is a : separated string, e.g.:
+C        /programs/Dirac/basis:/programs/Dalton/basis:.
+C        
+C        We loop over these directories in search for the basis set and
+c        element given.
+C        
+         ISTART = 1
+C        
+ 10      CONTINUE
+C        
+C        Find next colon in BASDIR
+C        
+         ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
+C        
+C        In there are no colons, we are the last directory in BASDIR
+C        
+         IF ( ICOLON .EQ. ISTART - 1 ) THEN
+C           
+C           Find end of string
+C           
+            ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ' ' )
+C           
+C           If end of string = start of string there are no more
+C           directories, so we gracefully die...
+C           
+            IF ( ICOLON .EQ. ISTART )
+     &           GOTO 5025
+         END IF
+         IEND = ICOLON - 1
+         STRING = BASDIR(ISTART:IEND)
+         ISTART = ICOLON + 1
+C        
+C        Add trailing slash if not present.
+C        
+         IEND = INDEX ( STRING(1:), ' ') - 1
+         IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+            IEND = IEND + 1
+            STRING(IEND:IEND) = '/'
+         END IF
+         STRING = STRING(1:IEND)//FILNAM
+         IEND = INDEX(STRING(1:),' ') - 1
+         WRITE(LUPRI,'(3A/,A1,A,A1)')
+     &        'BFGINP: Trying basis set file for ',
+     &        SZ(ICP),' component: ',
+     &        '"',STRING(1:IEND),'"'
+C        
+C        Inquire if "/path/basis-set" exists.
+C        
+         INQUIRE (FILE = STRING, EXIST = TOBE)
+         IF (.NOT.TOBE) GOTO 10
+         OPEN (LUBFIL,FILE=STRING,FORM='FORMATTED',STATUS='OLD')
          REWIND (LUBFIL)
       ENDIF
 C
