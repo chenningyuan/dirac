@@ -654,6 +654,7 @@ C     Solve one-electron system ...
 C     =============================
 C 
         CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUM,DUM,IDUM,WORK,LWORK)
+        SUCCES = .TRUE.
       ELSE
 C
 C     ... or perform SCF-cycle
@@ -2564,8 +2565,7 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
-     &            DM1 = -1.00D00, D2 = 2.00D00)
+      PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL SPECIAL
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
 C
