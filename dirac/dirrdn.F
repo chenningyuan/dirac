@@ -505,7 +505,12 @@ C&&& HEINZ: Solve one-electronsystems using free-particle projection operators
             GO TO 100
  111     CONTINUE
 C&&&& MINIMIZE: Geometry optimization
+#ifdef MOD_GEO
             MINIMI = .TRUE.
+#else
+            CALL QUIT('Geometry optimization module not distributed '//
+     &                'in this version')
+#endif
             GOTO 100
  112     CONTINUE
             GOTO 100
