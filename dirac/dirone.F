@@ -2901,6 +2901,12 @@ C
 C     Generate Lowdin matrix
 C     (Lowdin's canonical orthonormalization)
 C
+C     V_ij = U_ij/s_j where U_ij is the matrix that diagonalizes
+C     the overlap matrix S and s_j is eigenvalue j.
+C     Linear dependence is removed by eliminating columns of V
+C     corresponding to eigenvalues of the overlap matric beyond
+C     the given threshold.
+C
 C     Written by T.Saue Sep 11 1995
 C     Last revision Apr 1 1998 - tsaue
 C*****************************************************************************
@@ -3613,6 +3619,9 @@ C
           DO IZ = 1,NZ
             P(IZ) = -P(IZ)
           ENDDO
+CTROND
+          WRITE(6,*) '<VREF|IVEC>: ',IREF,IVEC,(P(IZ),IZ=1,NZ)
+CTROND
 C
 C         Form VECS = VECS -VREF<VREF|VECS>
 C
