@@ -1691,7 +1691,7 @@ C     ================
 C
       CALL DSPTSI(NTBAS(0),WORK(KSTRI),WORK(KSBUF))
 C
-      CALL DZERO(SMAT,N2BAST)
+      CALL DZERO(SMAT,N2BBASX)
       NBRP     = 4/NZ
       IOFF = 0
       DO I = 1,NFSYM
