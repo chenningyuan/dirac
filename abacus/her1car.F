@@ -270,13 +270,11 @@ Cjth
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
             END IF
-#if !defined (PRG_DIRAC)
             IF (SOLVNT) THEN
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &                     RLMINT,RLMTAB,CORPX,CORPY,CORPZ,MAXDIF,
      &                     EXPPI,FCM,WORK,LWORK,IPRINT)
             END IF
-#endif
   200    CONTINUE
   100 CONTINUE
 C
