@@ -45,7 +45,7 @@ C
       DIMENSION CI(MAXCORE)
       CHARACTER*8 DATEX*10,TIMEX
 C
-      EXTERNAL INIT
+      EXTERNAL BDGOSCI
       CALL DAYTIME(DATEX,TIMEX)
       WRITE(6,1000) DATEX,TIMEX
       CALL CPUUSED(SEC)
@@ -151,7 +151,7 @@ C VERSION 1.6: Cleaned up, Ported to IBM RS6000
 C              LV (April 8, 1994)
 C VERSION 1.7: Uses time-reversal unique canonical list of integrals
 C              LV (June 28, 1994)
-C VERSION 1.8: Now also real groups can be handled al real
+C VERSION 1.8: Now also real groups can be handled all real
       END
 C
 C     ===========================
@@ -186,7 +186,7 @@ c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE)
         IF ((NBITS(I).EQ.NELEC).AND.(NBITS(IBTAND(I,IREF)).EQ.IREFE)
      +     .AND.(IRPDET(I).EQ.IRRP))  THEN
           NDET = NDET + 1
-          IF (NDET .GT. N2) STOP ' N2 TOO SMALL'
+          IF (NDET .GT. N2) CALL QUIT(' GOSCI GENDET: N2 TOO SMALL')
           IDET (NDET) = I
           DO 20 J=1,NORB
             N(J)=0
@@ -196,8 +196,8 @@ c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE)
         ENDIF
  10     CONTINUE
       RETURN
- 1000 FORMAT(/1X,'LIST OF DETERMINANTS WITH SYMMETRY ',A4,':'//)
- 1010 FORMAT(1X,I4,32I2)
+ 1000 FORMAT(/' List of determinants with symmetry ',A4,':'//)
+ 1010 FORMAT(I5,32I2)
       END
 C
 C     ===========================================================
@@ -428,7 +428,8 @@ C
       END
 C
 C     ===============
-      BLOCK DATA INIT
+      BLOCK DATA BDGOSCI
+C     was : BLOCK DATA INIT, but INIT is too general a word ...
 C     ===============
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -568,8 +569,8 @@ C
  70     CONTINUE
 C
       WRITE(6,1006) REPNA(IRRP),MX
- 1006 FORMAT(/1X,'POPULATION ANALYSIS FOR REPRESENTATION ',A4/
-     +        1X,'           THE FIRST ',I4,' VECTORS ARE ANALYZED'//)
+ 1006 FORMAT(/' Population analysis for representation ',A4
+     +       /'            The first ',I4,' vectors are analyzed'//)
 C
       DO 30 I=1,MX
         WRITE(6,1000) D(I,IRP)+ECORE
@@ -624,9 +625,12 @@ C
       EW=0.0D0
       EWF=DS(1)
       NEW=0
+      DO JRP = NREP1, NREP2
+         IND(JRP) = 0
+      END DO
       DO 140 I=1,NDETT
         IF (ABS(DS(I)-EW).GT.DEGEN) THEN
-         IF (NEW.NE.0)
+          IF (NEW.NE.0)
      &      WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
      &                    (IND(JRP),JRP=NREP1,NREP2)
           DO 130 JRP = NREP1, NREP2
@@ -645,18 +649,18 @@ C
       IF (NEW.NE.0) WRITE(6,1030) ILEVEL,EVOLT*(EW-EWF),CM*(EW-EWF),
      &              (IND(JRP),JRP=NREP1,NREP2)
       ENDDO
- 1000 FORMAT(1X,F16.8)
+ 1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
- 1005 FORMAT(//1X,'ENERGY EIGENVALUES IN ATOMIC UNITS'
-     +            //1X,'LEVEL   REL EIGENVALUE     ',
-     +            'ABS EIGENVALUE  DEGENERACY'/)
- 1010 FORMAT(1X,I4,1X,F16.12,F20.12,1X,'(',I4,' * )')
- 1020 FORMAT(//1X,'TOTAL AVERAGE: ',F20.10)
- 1025 FORMAT(//1X,'RELATIVE EIGENVALUES IN OTHER UNITS;'/' SYMMETRY',
-     +       ' CLASSIFICATION IN THE ABELIAN SUBGROUP',
-     +       //1X,'LEVEL  EIGENVALUE (EV) ',
-     +      ' EIGENVALUE (CM-1)',2X,8A4/)
- 1030 FORMAT(1X,I4,1X,F18.9,F18.6,1X,8(I3,1X))
+ 1005 FORMAT(//' Energy eigenvalues in atomic units'
+     +            //' Level   Rel eigenvalue     ',
+     +            'Abs eigenvalue  Degeneracy'/)
+ 1010 FORMAT(I5,F17.12,F20.12,' (',I4,' * )')
+ 1020 FORMAT(//' Total average: ',F20.10)
+ 1025 FORMAT(//' Relative eigenvalues in other units;'/' Symmetry',
+     +       ' Classification in the Abelian subgroup',
+     +       //' Level  eigenvalue (eV) ',
+     +      ' Eigenvalue (cm-1)',2X,8A4/)
+ 1030 FORMAT(I5,F19.9,F18.6,8(I4))
       RETURN
       END
 C
@@ -910,14 +914,14 @@ C
  300  CONTINUE
 C
       RETURN
- 1200 FORMAT(//1X,'ALL INFORMATION READ FROM MRCONEE (AND INPUT)')
- 1210 FORMAT(//1X,'NUMBER OF ELECTRONS: ',I4/
-     +         1X,'DECIMAL REPRESENTATION OF FROZEN ORBITALS:',I4)
- 1220 FORMAT(//1X,'BREIT INTERACTION INCLUDED :',T50,L1
-     +        /1X,'CORE ENERGY :',T30,G20.10
-     +        /1X,'NUMBER OF ACTIVE ORBITALS :',T47,I4
-     +       //1X,'ORBITAL',T10,'REPRESENTATION',T32,'ORBITAL ENERGY')
- 1230 FORMAT(2X,I4,T10,A14,T30,G20.10)
+ 1200 FORMAT(//' All information read from MRCONEE (and input)')
+ 1210 FORMAT(//' Number of electrons:',I5/
+     +         ' Decimal representation of frozen orbitals:',I4)
+ 1220 FORMAT(//' Breit interaction included :',T50,L1
+     +        /' Core energy :',T30,G20.10
+     +        /' Number of active orbitals :',T47,I4
+     +       //' Orbital',T10,'Representation',T32,'Orbital energy')
+ 1230 FORMAT(I6,T10,A14,T30,G20.10)
       END
 C
 C     ==============================================
@@ -1014,6 +1018,6 @@ C
       CLOSE (10)
       WRITE (6,1000) REPNA(IRRP),NVEC,VECFIL,(DV(IVEC),IVEC=1,NVEC)
       RETURN
- 1000 FORMAT (/' REPRESENTATION ',A4,'; ',I2,
-     &' VECTORS WRITTEN TO FILE ',A12//' EIGENVALUES ',(T20,F20.12))
+ 1000 FORMAT (/' Representation ',A4,'; ',I2,
+     &' vectors written to file ',A12//' Eigenvalues',(T20,F20.12))
       END
