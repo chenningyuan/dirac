@@ -2497,14 +2497,11 @@ C
       IF(RECAN) THEN
         CALL HEADER('Recanonization of virtual orbitals',-1)
 C
-C     Get hold of the slaves if we run in parallel.
+C       Get hold of the slaves if we run in parallel.
+C        ( ITASK = 1 for Fock matrices )
 C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+C
         NELM = 0
         DO IFRP = 1,NFSYM
           IFMO(IFRP) = NELM
@@ -2518,15 +2515,11 @@ C
      &       INTDEF,CMO,WORK(KFMO),NFMO,IFMO,WORK(KFAO))
         CALL MEMREL('VIRCAN',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
-C     Release the slaves if we run in parallel.
+C       Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
 C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
-      ENDIF
+        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+      END IF
 C
       CALL QEXIT('VIRCAN')
       RETURN
@@ -3076,13 +3069,9 @@ C
         CALL TRAHI(IPRRES,2)  
 C
 C       Get hold of the slaves if we run in parallel.
+C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) THEN
-           ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-        ENDIF
+        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -3099,13 +3088,9 @@ C
      &              WORK,KFREE,LFREE)
 C
 C       Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
 C
-        IF (PARCAL) THEN
-          ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-        ENDIF
+        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
       ENDIF
 C
 C     Release buffer memory
@@ -3598,16 +3583,16 @@ C
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)') 
-     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallell.'
-         CALL QUIT('TRANOD: No parallell strategy !')
+     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy !')
       ELSEIF (ISTRAT.EQ.2) THEN
           CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &         KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
      &         DINTSKP,TIM1)
       ELSEIF (ISTRAT.EQ.3) THEN
          WRITE(LUPRI,'(A)') 
-     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallell.'
-         CALL QUIT('TRANOD: No parallell strategy !')
+     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy !')
       ELSEIF (ISTRAT.EQ.4) THEN
           CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,

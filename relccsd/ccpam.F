@@ -121,23 +121,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <mxorb.h>
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include <dcbgen.h>
-#include <infpar.h>
 C
-      IF (.NOT.PARCAL) RETURN
+C     ITASK = 3 for parallel RELCCSD
 C
-      ITASK = 3
-#if defined (VAR_MPI)
-      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
+      IF (PARCAL) CALL DIRAC_PARCTL( 3 ) 
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -174,6 +163,9 @@ C
 #endif
       ENDDO
 C
+C     Let the slaves sleep (if relevant for this operating system)
+C
+      CALL DIRAC_PARCTL( 0 )
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

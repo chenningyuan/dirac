@@ -109,17 +109,17 @@ C
         KGAB = KFREE
       ENDIF
 C
-C     *******************************************
-C     ****** P A R A L L E L L    C O D E  ******
-C     *******************************************
+C     *****************************************
+C     ****** P A R A L L E L    C O D E  ******
+C     *****************************************
 C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
 C
 C       Get hold of the slaves
+C       ( ITASK = 2 for parallel integral transformation )
 C
-        ITASK = 2
-        CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL DIRAC_PARCTL( 2 )
 C       
 C       Initialize
 C
@@ -163,9 +163,9 @@ C
         CALL TR2TIM(WORK(KTIM),NODES,LMP2)
 C
 C     Release the slaves...
+C        (ITASK = -1)
 C
-         ITASK = -1
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+         CALL DIRAC_PARCTL( -1 )
       ELSE
 #endif
 C
@@ -1137,7 +1137,7 @@ C/* Deck tskchk */
       SUBROUTINE TSKCHK(MAXTSK,LENTSK,NSTR,LWORK,NODES,NSTRT,IPRINT)
 C
 C     Written by Jon Laerdahl, June 1997
-C     Parallell polish by T.Saue Sep 18 1998
+C     Parallel polish by T.Saue Sep 18 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>

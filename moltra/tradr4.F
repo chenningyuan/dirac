@@ -113,17 +113,17 @@ C
         KGAB  = KFREE
       ENDIF
 C
-C     *******************************************
-C     ****** P A R A L L E L L    C O D E  ******
-C     *******************************************
+C     *****************************************
+C     ****** P A R A L L E L    C O D E  ******
+C     *****************************************
 C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
 C
 C       Get hold of the slaves
+C       ( ITASK = 2 for parallel integral transformation )
 C
-        ITASK = 2
-        CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+        CALL DIRAC_PARCTL( 2 )
 C       
 C       Initialize
 C
@@ -244,13 +244,9 @@ C
       CALL MDINTF
 C
 C     Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
 C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
 C
       CALL MEMREL('TRDR4T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR4T')

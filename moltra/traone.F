@@ -43,12 +43,7 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-#endif
 #include <mxorb.h>
-#include <infpar.h>
 #include <dcbtra.h>
 #include <dcbtr3.h>
 #include <dcbbas.h>
@@ -63,13 +58,9 @@ C
       KFRSAV = KFREE
 C
 C     Get hold of the slaves if we run in parallel.
+C        ( ITASK = 1 for Fock matrices )
 C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL( 1 )
 C
       CALL TRAHI(IPRTRA,2)
 C
@@ -88,13 +79,9 @@ C
      &            WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
 C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
 C
       CALL MEMREL('TRAONE',WORK,KFRSAV,KFMO,KFREE,LFREE)
       CALL QEXIT('TRAONE')

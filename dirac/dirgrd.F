@@ -43,10 +43,6 @@ C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
 #include <implicit.h>
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-#endif
 #include <priunit.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -55,7 +51,6 @@ C*****************************************************************************
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include <infpar.h>
 #include <ccom.h>
 #include <dcbgen.h>
 #include <dcbdhf.h>
@@ -101,28 +96,15 @@ C
       CALL TITLER('Calculation of molecular gradient','*',110)
 C
 C     Get hold of the slaves if we run in parallel.
+C     ( ITASK = 1 for integrals with HER_PARDRV )
 C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL(1)
 C
 C     Calculate gradient
 C
       CALL DHFGRD(WORK(KCMO),WORK(KDMAT),WORK(KFOCK),
      &            WORK(KTMAT),WORK(KGABRA),WORK(KDMRAO),
      &            WORK(KFCTYP),WORK(KFREE),LFREE,IPRGRD)
-C
-C     Release the slaves if we run in parallel.
-C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
 C
 C     Output of gradient
 C
@@ -533,8 +515,8 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
+     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
      &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
@@ -643,8 +625,8 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
+     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
      &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE
@@ -759,8 +741,8 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
+     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
      &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
      &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
       ELSE

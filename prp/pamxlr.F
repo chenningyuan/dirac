@@ -232,16 +232,9 @@ C
       KFRSAV = KFREE
 C
 C     Get hold of the slaves if we run in parallel.
+C        ( ITASK = 1 for Fock matrices )
 C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL( 1 )
 C
 C     ****************************
 C     *** I N I T I A L I Z E  ***
@@ -390,16 +383,9 @@ C
 C
 C
 C     Release the slaves if we run in parallel.
+C        ( ITASK = -1 )
 C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
-      ENDIF
+      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
       CALL QEXIT('PRPXL1')
       RETURN
       END

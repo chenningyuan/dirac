@@ -3275,7 +3275,7 @@ C   CCOM  : THRS,NHTYP,KHK
 C   DHFIOU: LUINTA
 C   SHELLS: KMAX
 C   DCBBAS: NTBAS(0),N2BBASX
-C   GNLPAM: PARCAL
+C   DCBGEN: PARCAL
 C
 #include <ccom.h>
 #include <dcbgen.h>
@@ -3343,8 +3343,12 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
@@ -3356,13 +3360,13 @@ C
               TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
      &             CPUTID,'/',WALLTID
               END IF
            END IF
@@ -3399,8 +3403,12 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
@@ -3413,14 +3421,14 @@ C
               TOTTID = SECTID(TOTWAL)
 C
               WRITE(LUPRI,'(A,A12)')
-     &             '>>>> Total wall time used in PARDRV so far   :',
-     &             TOTTID
+     &         '>>>> Total wall time used in HER_PARDRV so far   :',
+     &         TOTTID
               IF (IPRINT .GT. 5) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3458,11 +3466,16 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
+C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3470,14 +3483,14 @@ C
               TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
-     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3897,11 +3910,16 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
+C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3909,14 +3927,14 @@ C
               TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
-     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3945,11 +3963,16 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            CALL GETTIM(CPU1,WALL1)
-           CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
+C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
@@ -3957,14 +3980,14 @@ C
               TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
               WRITE(6,'(A,A12)')
-     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
-     &            '>>>> CPU/wall  time used in PARDRV last iteration :',
-     &             CPUTID,'/',WALLTID
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -3996,9 +4019,13 @@ C
 #if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
            IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-           CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
+           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
@@ -4012,12 +4039,12 @@ C
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
                  WRITE(LUPRI,'(A,A12)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                INTTID
+     &            '>>>> CPU  time used in HER_PARDRV last iteration :',
+     &            INTTID
                  INTTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12)')
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                INTTID
+     &            '>>>> Wall time used in HER_PARDRV last iteration :',
+     &            INTTID
               END IF
            END IF
         ELSE

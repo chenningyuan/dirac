@@ -681,7 +681,7 @@ C
 C
          IF (KPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-         CALL PARDRV(WORK(KLAST),LWRK,FMAT,WORK(KDAO),NDMAT,ISYMDM,
+         CALL HER_PARDRV(WORK(KLAST),LWRK,FMAT,WORK(KDAO),NDMAT,ISYMDM,
      &               IFCTYP,ITYPE,MAXDER,IATOM,NODV,NOPV,NOCONT,
      &               TKTIME,RETUR,WORK(KNSTAT),WORK(KINDEX),
      &               WORK(KSORT),WORK(KTIMES))
@@ -704,13 +704,13 @@ C
             ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
 C
             WRITE(6,'(A,I5.2,A,I2.2,A,I2.2)')
-     &           '>>>> Total wall time used in PARDRV so far   :',
+     &           '>>>> Total wall time used in HER_PARDRV so far   :',
      &              IHOURS,':',IMINS,':',ISECS
             IF (KPRINT .GT. 5) THEN
                WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &           '>>>> CPU  time used in PARDRV last iteration :',
+     &           '>>>> CPU  time used in HER_PARDRV last iteration :',
      &             CPU,
-     &           '>>>> Wall time used in PARDRV last iteration :',
+     &           '>>>> Wall time used in HER_PARDRV last iteration :',
      &             WALL
             END IF
          END IF
