@@ -1533,9 +1533,10 @@ C
 C       Memory allocation
         CALL MEMGET('REAL',KSBUF,NESH(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCBUF,NESH(I)*NORB(I)*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KRSEL,NESH(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KCSEL,NESH(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),WORK(KSBUF),
-     &              WORK(KCBUF),WORK(KCSEL),ISELM,
+     &              WORK(KCBUF),WORK(KRSEL),WORK(KCSEL),ISELM,
      &              NORB(I),NOCC(I),NESH(I),
      &              WORK(KFREE),LFREE)
 C     Memory deallocation
@@ -1547,7 +1548,7 @@ C     Memory deallocation
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose2 */
-      SUBROUTINE SMOSE2(IFRP,CFU,SMO,SBUF,CBUF,ICSEL,ISELM,
+      SUBROUTINE SMOSE2(IFRP,CFU,SMO,SBUF,CBUF,RCSEL,ICSEL,ISELM,
      &                  KNORB,KNOCC,KNESH,WORK,LWORK)
 C*****************************************************************************
 C
@@ -1576,7 +1577,8 @@ C
      &          SMO(KNORB,KNOCC,NZ),
      &          SBUF(KNESH,KNOCC,NZ),
      &          CBUF(KNORB,KNESH,NZ),
-     &          ICSEL(KNESH),WORK(LWORK)
+     &          RCSEL(KNESH),ICSEL(KNESH),
+     &          WORK(LWORK)
 C
 C     Form product CFU * (SMAT * COCC)
 C
@@ -1630,6 +1632,7 @@ C
         JJ = NPSH(IFRP) + J
         ISEL = IDAMAX(NESH(IFRP),SBUF(1,J,1),1)
         ICSEL(J) = ISEL
+        RCSEL(J) = SBUF(ISEL,J,1)
         ISELM = MAX(ISELM,ISEL)
 C       Zero out the selected overlap
         CALL DCOPY(NOCC(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
@@ -1647,6 +1650,7 @@ C
           JJ = NPSH(IFRP) + J
           ISEL = IDAMAX(ISELM,SBUF(1,J,1),1)
           ICSEL(J) = ISEL
+          RCSEL(J) = SBUF(ISEL,J,1)
 C         Zero out the selected overlap
           CALL DCOPY(NOCC(IFRP),D0,0,SBUF(ISEL,1,1),NESH(IFRP))
 C         Copy buffer into vector
@@ -1665,12 +1669,14 @@ C
       DO J = 1,NOCC(IFRP)
       IF(ICSEL(J).NE.J) THEN
         NVEC = NVEC + 1
-        WRITE(LUPRI,'(I5,A,I5)') J,' --> ',ICSEL(J)
+        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') J,' --> ',ICSEL(J),' OVERLAP '
+     &                                    ,RCSEL(J)
       ENDIF
       ENDDO
       IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering'
       IF(IPRSCF.GE.2) THEN
         WRITE(LUPRI,'(20I6)') (ICSEL(I),I=1,NOCC(IFRP))
+        WRITE(LUPRI,'(10F12.3)') (RCSEL(I),I=1,NOCC(IFRP))
       ENDIF
       RETURN
       END
@@ -1809,7 +1815,7 @@ C
      &                  NESH(I),1,1,LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Boson classification...'
             WRITE(LUPRI,'(3X,I4)') 
-     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),NORB(I))
+     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
@@ -1846,7 +1852,7 @@ C
      &                  NESH(I),1,1,LUPRI)
             WRITE(LUPRI,'(3X,A)') '* Boson classification...'
             WRITE(LUPRI,'(3X,I4)') 
-     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),NORB(I))
+     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
@@ -1882,9 +1888,9 @@ C
       CALL QENTER('REOR1')
 C
       DO I = 1,NORDER
+         IORB_S = I+NPOSITRON
+         IORB_D = IORDER(I)+NPOSITRON
          DO IZ = 1,NZ
-            IORB_S = I+NPOSITRON
-            IORB_D = IORDER(I)+NPOSITRON
             IF (IORB_D .LE. NELECTRON+NPOSITRON) THEN
 C
 C              Copy eigenvector
