@@ -33,18 +33,23 @@ MPI_ERRTRAP_OBJS = mpi_errtrap.o
 PR_TIMING_SRC    = pr_timing.c
 PR_TIMING_OBJS   = pr_timing.o
 
+GET_TIME_SRC     = get_time.c
+GET_TIME_OBJS    = get_time.o
+
 DIRAC_SRC        = dirac.F
 DIRAC_OBJS       = dirac.o
 
 MAIN_OBJS        = $(DIRACMALLOC_OBJS) $(ALLOC_MEM_OBJS)  $(GET_MEMSIZE_OBJS) \
                    $(DIRAC_MAIN_OBJS)  $(PRINT_LOGO_OBJS) $(DIRAC_OBJS) \
                    $(INI_MPI_OBJS)     $(END_MPI_OBJS)    $(CSECTID_OBJS) \
-                   $(EXEC_DIRAC_OBJS)  $(PR_TIMING_OBJS)  $(MPI_ERRTRAP_OBJS)
+                   $(EXEC_DIRAC_OBJS)  $(PR_TIMING_OBJS)  $(MPI_ERRTRAP_OBJS) \
+                   $(GET_TIME_OBJS)
 
 MAIN_SRC         = $(DIRACMALLOC_SRC) $(ALLOC_MEM_SRC)  $(GET_MEMSIZE_SRC) \
                    $(DIRAC_MAIN_SRC)  $(PRINT_LOGO_SRC) $(DIRAC_SRC) \
                    $(INI_MPI_SRC)     $(END_MPI_SRC)    $(CSECTID_SRC) \
-                   $(EXEC_DIRAC_SRC)  $(PR_TIMING_SRC)  $(MPI_ERRTRAP_SRC)
+                   $(EXEC_DIRAC_SRC)  $(PR_TIMING_SRC)  $(MPI_ERRTRAP_SRC) \
+                   $(GET_TIME_SRC)
 
 all:	$(MAIN_OBJS)
 
