@@ -42,7 +42,7 @@ C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
      &        ADISTR,DOINT(2,2),SOFOCK
-      DIMENSION GABM(NBASIS,NBASIS), WORK(LWORK)
+      DIMENSION GABM(NBASIS,NBASIS,*), WORK(LWORK)
 C
       CALL QENTER('GABDRV')
 #include <memint.h>
@@ -52,7 +52,18 @@ C
 C
 C     Threshold for integrals
 C
-      THRESH = 1.00D-15
+C     Because we take the square root of the integrals
+C     we need to have a higher threshold.
+C     Because elements of value 1.0D10 are not unlikely
+C     we set threshold to 1.0D-40, since
+C         SQRT (1.0D10 * 1.0D-40) = 1.0D-15
+C     which is the threshold we want.
+C     The change of threshold have no influence on the time
+C     taken to calculate the GAB matrix; we are just going
+C     to avoid some numerical instabilities. /Jan 9 1998 - jth
+C
+C      THRESH = 1.00D-15
+      THRESH = 1.0D-40
 C
 C     Determine run type
 C
@@ -90,7 +101,9 @@ C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
 C     
-      CALL DZERO(GABM,NBASIS*NBASIS)
+      IMAT = 1
+      IF (MAXDER.GE.1) IMAT = 3
+      CALL DZERO(GABM,NBASIS*NBASIS*IMAT)
       JTOP  = 4*(NHTYP - 1) + MAXDER
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
@@ -323,13 +336,17 @@ C     Print section
 C
       IF(IPRINT.GE.5) THEN
         IF(IJOB.EQ.0) THEN
-          CALL HEADER('Full GAB-matrix in AO basis',-1)
-          CALL OUTPUT(GABM,1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &              1,LUPRI)
+          NMAT = 1
+          IF (MAXDER.GE.1) NMAT = 3
+          DO IMAT = 1,NMAT
+             CALL HEADER('Full GAB-matrix in AO basis',-1)
+             CALL OUTPUT(GABM(1,1,IMAT),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
+     &                 -4,LUPRI)
+          END DO
         ELSE
           CALL HEADER('Full GAB-matrix in SO basis',-1)
           CALL OUTPUT(GABM,1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &              1,LUPRI)
+     &              -4,LUPRI)
         ENDIF
       ENDIF
       CALL MEMREL('GABDRV',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -468,7 +485,13 @@ C     Electron 2
 C
 C     Number of SO integrals
 C
-      IF (EXPECT .OR. DIRFCK .OR. DDFOCK) THEN
+      IF (EXPECT .AND. MAXDER .GE. 1) THEN
+         NINTS     = NMBOSO(SQ12EL,0)
+         NINTMX    = NINTS
+         NINTSR(1) = NINTS
+C         CALL NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
+C     &               IPRINT)
+      ELSE IF (EXPECT .OR. DIRFCK .OR. DDFOCK) THEN
          NINTS  = 0
          NINTMX = 0
       ELSE
@@ -544,7 +567,7 @@ C
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        ONECEN, SQ12EL, SOP000, IPNTLG(3,*),SOFOCK, 
-     &        LONDON, SUSCEP, ADISTR
+     &        LONDON, SUSCEP, ADISTR, DOGAB
       DIMENSION GABM(*),SOINT(NSOINT),WORK(LWORK),
      &          INDHSQ(*),IODDHR(*),INDHER(*),LMNVLS(*),
      &          IPNTAO(*), IPNTOP(3,*), IPNTNO(4,*), IPNTRP(3,*),
@@ -576,6 +599,9 @@ C
 C
       IF (.NOT.DDFOCK.AND. NSOINT.EQ.0) GOTO 400
 C
+C     This is a GAB-run
+      DOGAB = .TRUE.
+C
       IOFF = 0
       DO I = 0, MAXOPR
       IF(IBTAND(I,MULA).EQ.0) THEN
@@ -601,7 +627,11 @@ C
 C     ***** Both distributions *****
 C
       JMAX0  = MAXAB + MAXCD
-      HKABCD = FMULT(IBTAND(MULAB,MULCD))
+c     HKABCD is a symmetry factor, which determines how many different integrals
+c     have the same value. This symmetry factor is not factorizable 
+c     between AB and CD, and must therefore not be included in GAB/YAB matrix. 
+c     HKABCD = FMULT(IBTAND(MULAB,MULCD)). /Feb 19 1998 - jth
+      HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB) THEN
          DOX = .TRUE.
@@ -663,8 +693,14 @@ C        ***** Charge Distributions for First Electron *****
 C        ***************************************************
 C
          TPRIAB = .FALSE.
+c not CAEQCB for derivative GAB matrix, because we
+c need one-center integrals to be calculated by
+c two-center code because no one-center derivative code
+c is programmed (normally one-center is skipped because
+c the total contribution is zero).  /jan.98-hjaaj,jth
          CAEQCB = .NOT.BIGVEC .AND. ICENTA .EQ. ICENTB
      &                        .AND. IATOM  .NE. NCENTA
+     &                        .AND. MAXDER .EQ. 0
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),
      &             WORK(KFREE),LFREE,
      &             JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
@@ -755,11 +791,14 @@ C
               END IF
 C
 C             c) one-center integrals
+C                We actually need one-center integrals for
+C                the GAB-matrix for screening of the gradient
 C
               ONECEN = (ICENTA .EQ. ICENTB) .AND.
      &                 (ICENTA .EQ. ICENTC) .AND.
      &                 (ICENTA .EQ. ICENTD) .AND.
      &                 (ICENTA .NE. 0)
+              ONECEN = ONECEN .AND. .NOT. DOGAB
               IF (ONECEN) THEN
                 IF (MAXDER .EQ. 0) THEN
                   IF (IBTAND(JMAX0,1).EQ.1)              GO TO 100
@@ -824,7 +863,7 @@ C
      &                   SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                   SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                   NCCINT,MAXDER,EXPECT,LONDON,SPNORB,IATOM,
-     &                   MULTE,NINTYP,IPRINT)
+     &                   MULTE,NINTYP,DOGAB,IPRINT)
 C
 C            ************************
 C            ***** AO integrals *****
@@ -851,17 +890,33 @@ C
      &                   NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY)
+     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY,DOGAB)
 C
 C            ********************************
 C            ***** Process AO integrals *****
 C            ********************************
 C
              IF(IJOB.EQ.0) THEN
-                CALL GAOGAT(GABM,WORK(KAOINT),NCCINT,NINTYP,
-     &                      HKABCD,ICORBA,ICORBB,ICORBC,ICORBD,
-     &                      IEFFA,IEFFB,
-     &                      ISYMR,IPRINT,NINDAB,NINDCD,SUSCEP)
+                IF (MAXDER.EQ.0) THEN
+                   CALL GAOGAT(GABM,WORK(KAOINT),DUMMY,NCCINT,NINTYP,
+     &                         HKABCD,ICORBA,ICORBB,ICORBC,ICORBD,
+     &                         IEFFA,IEFFB,
+     &                         ISYMR,IPRINT,NINDAB,NINDCD,SUSCEP,MAXDER)
+                ELSE
+                   DO 111 I = 1,3
+                      IF (.NOT. DOXYZ(I)) GOTO 111
+                      IOFF  = (I-1)*NCCINT
+                      IOFF2 = (I-1)*NBASIS*NBASIS
+                      IOFF3 = (I+2)*NCCINT
+                      CALL GAOGAT(GABM(1+IOFF2),WORK(KAOINT+IOFF),
+     &                            WORK(KAOINT+IOFF3),
+     &                            NCCINT,NINTYP,HKABCD,
+     &                            ICORBA,ICORBB,ICORBC,ICORBD,
+     &                            IEFFA,IEFFB,
+     &                            ISYMR,IPRINT,NINDAB,NINDCD,SUSCEP,
+     &                            MAXDER)
+ 111               CONTINUE
+                END IF
              ENDIF
              CALL MEMREL('GABDR2',WORK,KWORK,KWORK,KFREE,LFREE)
            END IF
@@ -984,9 +1039,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gaogat */
-      SUBROUTINE GAOGAT(GABM,AOINT,NCCINT,NINTYP,SYMFAC,
+      SUBROUTINE GAOGAT(GABM,AOINT,AOINT2,NCCINT,NINTYP,SYMFAC,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,IEFFA,IEFFB,ISYMR,
-     &                  IPRINT,NINDAB,NINDCD,SUSCEP)
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,MAXDER)
 C*****************************************************************************
 C
 C  Gather AO-Cauchy-Schwartz-integrals
@@ -1006,6 +1061,7 @@ C*****************************************************************************
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),
      &          ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), GABM(NBASIS,NBASIS),
+     &          AOINT2(NCCINT),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
 #include <twocom.h>
@@ -1019,6 +1075,7 @@ C
       IF(SYMFAC.NE.D1) CALL DSCAL(NCCINT,SYMFAC,AOINT,1)
       IOFF = 0
       IF(SUSCEP) THEN
+#ifdef UNDEF
         DO ICOMPA = 1,KHKTA
                       KHKTBB = KHKTB
           IF (DIAGAB) KHKTBB = ICOMPA
@@ -1042,12 +1099,12 @@ C
                       DO ISYMA = 0, MAXOPR
                       IF(IBTAND(ISYMA,MULA).EQ.0) THEN
                          ISYMB = IBTXOR(ISYMR,ISYMA)
-                         A = IORBSH(ISHELA,IORBA) 
+                         IA = IORBSH(ISHELA,IORBA) 
      &                       + IEFFA(ISYMA) + ICOMPA
-                         B = IORBSH(ISHELB,IORBB) 
+                         IB = IORBSH(ISHELB,IORBB) 
      &                       + IEFFB(ISYMB) + ICOMPB
-                         GABM(A,B) = AOBUF
-                         GABM(B,A) = AOBUF
+                         GABM(IA,IB) = AOBUF
+                         GABM(IB,IA) = AOBUF
                       END IF
                       ENDDO
                     ENDIF
@@ -1058,6 +1115,9 @@ C
             ENDDO
           ENDDO
         ENDDO
+#else
+        call quit('gaogat not implemented')
+#endif
       ELSE
         IOFF   = 0
         DO ICOMPA = 1,KHKTA
@@ -1080,16 +1140,29 @@ C
                     C = ICORBC(IORBC) + ICOMPC
                     D = ICORBD(IORBD) + ICOMPD
                     IF(A.EQ.C.AND.B.EQ.D) THEN
-                      AOBUF     = AOINT(IOFF+IORBCD)
-                      DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULA).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMA)
-                         A = IORBSH(ISHELA,IORBA) 
-     &                     + IEFFA(ISYMA) + ICOMPA
-                         B = IORBSH(ISHELB,IORBB) 
+                      AOBUF     = AOINT (IOFF+IORBCD)
+                      IF (NINTYP .EQ. 6 .AND. MAXDER .EQ. 2) THEN
+                         AOBUF2    = AOINT2(IOFF+IORBCD)
+                      ELSE
+                         AOBUF2    = AOBUF
+                      END IF
+                      DO ISYMX = 0, MAXOPR
+                      IF(IBTAND(ISYMX,MULA).EQ.0) THEN
+                         ISYMB = IBTXOR(ISYMR,ISYMX)
+                         IA = IORBSH(ISHELA,IORBA) 
+     &                     + IEFFA(ISYMX) + ICOMPA
+                         IB = IORBSH(ISHELB,IORBB) 
      &                     + IEFFB(ISYMB) + ICOMPB
-                         GABM(A,B) = AOBUF
-                         GABM(B,A) = AOBUF
+                         GABM(IA,IB) = AOBUF
+                         GABM(IB,IA) = AOBUF2
+                      ELSE IF(IBTAND(ISYMX,MULB).EQ.0) THEN
+                         ISYMA = IBTXOR(ISYMR,ISYMX)
+                         IA = IORBSH(ISHELA,IORBA) 
+     &                     + IEFFA(ISYMA) + ICOMPA
+                         IB = IORBSH(ISHELB,IORBB) 
+     &                     + IEFFB(ISYMX) + ICOMPB
+                         GABM(IA,IB) = AOBUF
+                         GABM(IB,IA) = AOBUF2
                       END IF
                       ENDDO
                     ENDIF
@@ -1436,6 +1509,162 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck scrgds */
+      SUBROUTINE SCRGDS(TEXT,DINTSKP,IPRINT)
+C*****************************************************************************
+C
+C     Provide statistics about screening of gradient
+C
+C          DINTSKP(1,I,1) - total number of integrals, x direction
+C          DINTSKP(1,I,2) - total number of integrals, y direction
+C          DINTSKP(1,I,3) - total number of integrals, z direction
+C
+C          Step n (n = 1,2)
+C          DINTSKP(n+1,I,1) - number of integrals skipped, x direction
+C          DINTSKP(n+1,I,2) - number of integrals skipped, y direction
+C          DINTSKP(n+1,I,3) - number of integrals skipped, z direction
+C
+C     Written by J. Thyssen, Jan 16, 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION DINTSKP(3,14,3)
+      CHARACTER TEXT*6
+C
+      CHARACTER*7 CSTEP(7)
+      CHARACTER*7 CTEMP
+      CHARACTER*6 CCENT(4)
+      CHARACTER*4 CTYPE(7,3)
+      DIMENSION NTYPE(3)
+      DIMENSION DTOTAL(2,0:3,3)
+      DATA CCENT /'ONECEN','TWOCEN','THRCEN','FOUCEN'/
+      DATA CTYPE /'1122','1212','1221','1222','1211','1112','1121',
+     &            '1213','1223','1231','1232','1123','1233','xxxx',
+     &            '1234','xxxx','xxxx','xxxx','xxxx','xxxx','xxxx'/
+      DATA NTYPE /7,6,1/
+C
+      DO I =1,3 
+      DO J =1,14
+      DO K =1,3
+      WRITE(6,*) DINTSKP(I,J,K)
+      END DO
+      END DO
+      END DO
+      ITURN = 0
+ 10   CONTINUE
+      IF (ITURN .EQ. 0) THEN
+         WRITE(LUPRI,'(A)') 'Step 1 Screening'
+      ELSE
+         WRITE(LUPRI,'(A)') 'Step 1 + Step 2 Screening'
+      END IF
+      WRITE(LUPRI,'(A)') '* Gradient screening statistics:'
+      CALL DZERO(DTOTAL,2*4*3)
+      IOFF = 0
+      DO ICEN = 1,3
+         DO J = 1,NTYPE(ICEN)
+            IOFF = IOFF + 1
+            DO I = 1,3
+               DO K = 1,2 
+                  DTOTAL(K,0,I) = DTOTAL(K,0,I) + DINTSKP(K,IOFF,I)
+                  DTOTAL(K,ICEN,I) = DTOTAL(K,ICEN,I) 
+     &                             + DINTSKP(K,IOFF,I)
+               END DO
+            END DO
+         END DO
+      END DO
+C
+C     Total screening in X,Y and Z direction
+C
+      DO I = 1,3
+         IF(DTOTAL(1,0,I).GT.D0) THEN
+            DTEMP = DTOTAL(2,0,I) / DTOTAL(1,0,I) * DC
+            WRITE(CSTEP(I),'(F6.2,A1)') DTEMP,'%'
+         ELSE
+            WRITE(CSTEP(I),'(A7)') '  N/A  '
+         ENDIF
+      END DO
+      WRITE(LUPRI,'(6X,3(5X,A8))') '    X   ','    Y   ','    Z   '
+      WRITE(LUPRI,'(A6,3(6X,A7))') TEXT,(CSTEP(I),I=1,3)
+C
+C     Screening on center type ICEN
+C
+c      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GE. 0) THEN
+         WRITE(LUPRI,'(/A/)') 'Detailed screening statistics'
+         WRITE(LUPRI,'(8X,A7,2X,A4,2X,A7,3(2X,A7))')
+     &      '  %int  ','Type','  %int  ','   X   ','   Y   ','   Z   '
+         IOFF = 0
+         DO ICEN = 1,3
+C
+C           DTEMP1 is number of integrals of type ICEN
+C
+            DTEMP1 = DTOTAL(1,ICEN,1) +
+     &               DTOTAL(1,ICEN,2) +
+     &               DTOTAL(1,ICEN,3)
+C
+C           DTEMP2 is total number of integrals
+C
+            DTEMP2 = DTOTAL(1,0,1) +
+     &               DTOTAL(1,0,2) +
+     &               DTOTAL(1,0,3)
+C
+            IF (DTEMP2 .GT. D0) THEN
+               WRITE(CTEMP,'(F6.2,A1)') DTEMP1/DTEMP2*DC,'%'
+            ELSE
+               WRITE(CTEMP,'(A7)') '  N/A  '
+            END IF
+            DO I = 1,3
+               IF (DTOTAL(1,ICEN,I) .GT. 0) THEN
+                  WRITE(CSTEP(I),'(F6.2,A1)') 
+     &               DTOTAL(2,ICEN,I)/DTOTAL(1,ICEN,I)*DC,'%'
+               ELSE
+                  WRITE(CSTEP(I),'(A7)') '  N/A  '
+               END IF
+            END DO
+            WRITE(LUPRI,'(A6,2X,A7,15X,3(2X,A7))') 
+     &         CCENT(ICEN+1),CTEMP,(CSTEP(I),I=1,3)
+C
+C
+C
+            WRITE(LUPRI,'(/)')
+            DO I = 1,NTYPE(ICEN)
+               IOFF = IOFF + 1
+               DTEMP2 = DINTSKP(1,IOFF,1) +
+     &                  DINTSKP(1,IOFF,2) +
+     &                  DINTSKP(1,IOFF,3)
+               IF (DTEMP1 .GT. D0) THEN
+                  WRITE(CTEMP,'(F6.2,A1)') DTEMP2/DTEMP1*DC,'%'
+               ELSE
+                  WRITE(CSTEP(I),'(A7)') '  N/A  '
+               END IF
+               DO K = 1,3
+                  IF (DINTSKP(1,IOFF,K) .GT. 0) THEN
+                     WRITE(CSTEP(K),'(F6.2,A1)') 
+     &                  DINTSKP(2,IOFF,K)/DINTSKP(1,IOFF,K)*DC,'%'
+                  ELSE
+                     WRITE(CSTEP(K),'(A7)') '  N/A  '
+                  END IF
+               END DO
+               WRITE(LUPRI,'(17X,A4,2X,A7,3(2X,A7))') 
+     &            CTYPE(I,ICEN),CTEMP,(CSTEP(K),K=1,3)
+            END DO
+            WRITE(LUPRI,'(/)')
+         END DO
+      ENDIF
+      ITURN = ITURN + 1
+      IF (ITURN .EQ. 1) THEN
+         DO I = 1,14
+            DO J = 1,3
+               DINTSKP(2,I,J) = DINTSKP(2,I,J) + DINTSKP(3,I,J)
+            END DO
+         END DO
+         GOTO 10
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabge1 */
       SUBROUTINE GABGE1(IJOB,GABM,ITYPE,IGTYP,
      &                  MAXDIF,JATOM,NOCONT,WORK,LWORK,IPRINT)
@@ -1464,7 +1693,7 @@ C
 C
 CTROND      CALL PAOVEC(WORK,LWORK,0,IPRINT)
       CALL GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,
-     &            MAXDIF,JATOM,NOCONT,IPRTWO)
+     &            MAXDIF,JATOM,NOCONT,IPRINT)
 C
       RETURN
 C
@@ -1503,23 +1732,34 @@ C
 #include <mxcent.h>
 #include <nuclei.h>
 #include <blocks.h>
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT
-      CHARACTER GABLAB*8,RTNLBL(2)*8
+#include <chrxyz.h>
+      LOGICAL EXTST,OPTST,FNDLAB,NOCONT,LFND
+      CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       CALL QENTER('GABGEN')
 #include <memint.h>
       IF(ITYPE.EQ.0) THEN
-        GABLAB = 'GABXXXXX'
+         NGAB = 1
+         GABLAB(1) = 'GABXXXXX'
+      ELSE IF (ITYPE .EQ.10) THEN
+         NGAB = 3
+         DO I = 1,NGAB
+            GABLAB(I) = 'GABXXX'//CHAR(MAXDIF+48)//CHRXYZ(-I)
+         END DO
       ELSE
-        WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid ITYPE = ',ITYPE
+         WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid ITYPE = ',ITYPE
+         CALL QUIT('GABGEN: Invalid ITYPE')
       ENDIF
-      IF    (IJOB.EQ.0) THEN
-        GABLAB(4:5) = 'AO'
-      ELSEIF(IJOB.EQ.1) THEN
-        GABLAB(4:5) = 'SO'
-      ELSE
-        WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid IJOB = ',IJOB
-      ENDIF
+      DO I = 1,NGAB
+         IF    (IJOB.EQ.0) THEN
+            GABLAB(I)(4:5) = 'AO'
+         ELSEIF(IJOB.EQ.1) THEN
+            GABLAB(I)(4:5) = 'SO'
+         ELSE
+            WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid IJOB = ',IJOB
+            CALL QUIT('GABGEN: Invalid IJOB')
+         ENDIF
+      END DO
       CALL GETDAT(RTNLBL(1),RTNLBL(2))     
 C
 C     Check if file AOPROPER is present
@@ -1528,49 +1768,60 @@ C
       INQUIRE(FILE='AOPROPER',EXIST=EXTST)
       IF(EXTST) THEN
 C     File AOPROPER present; see if it is opened
-        INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-        IF(OPTST) THEN
-C       File AOPROPER is opened; get unit number
-          INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-        ELSE
-C       File AOPROPER is not opened; open it
-          LUPROP = 19
+         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
+         IF(OPTST) THEN
+C        File AOPROPER is opened; get unit number
+            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
+         ELSE
+C           File AOPROPER is not opened; open it
+            LUPROP = 19
 #if defined (SYS_IBM)
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
+            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &            FILE='APROPER')
 #else
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
+            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &            FILE='AOPROPER')
 #endif
-        ENDIF
-        REWIND LUPROP
+         ENDIF
+         REWIND LUPROP
 C
 C       Search for GAB-integrals; return if they are there
 C
-        IF(FNDLAB(GABLAB,LUPROP)) GOTO 999
-        REWIND LUPROP
-        IF(FNDLAB('EOFLABEL',LUPROP)) THEN
-          BACKSPACE LUPROP
-        ELSE
-          WRITE(LUPRI,'(A)')
-     &    'GABGEN: EOFLABEL not found on AOPROPER !'
-          CALL QUIT('GABGEN: EOFLABEL not found !')
-        ENDIF
+         LFND = .TRUE.
+         DO I = 1,NGAB
+            LFND = LFND .AND. (FNDLAB(GABLAB,LUPROP)) 
+            IF (.NOT. LFND) GOTO 10
+         END DO
+         IF (LFND) GOTO 999
+ 10      CONTINUE
+         REWIND LUPROP
+         IF(FNDLAB('EOFLABEL',LUPROP)) THEN
+            BACKSPACE LUPROP
+         ELSE
+            WRITE(LUPRI,'(A)')
+     &      'GABGEN: EOFLABEL not found on AOPROPER !'
+            CALL QUIT('GABGEN: EOFLABEL not found !')
+         ENDIF
       ELSE
-          LUPROP = 19
+         LUPROP = 19
 #if defined (SYS_IBM)
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
 #else
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-        REWIND LUPROP                
+         REWIND LUPROP                
       ENDIF
 C
 C     Generate GAB-integrals
 C
-      NBUF = NBASIS*NBASIS
+      IF (MAXDIF.EQ.0) THEN
+         NRGAB = 1
+      ELSE
+         NRGAB = 3
+      END IF
+      NBUF = NRGAB*NBASIS*NBASIS
       CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)     
       CALL GABGE1(IJOB,WORK(KBUF),ITYPE,IGTYP,
      &            MAXDIF,JATOM,NOCONT,WORK(KFREE),LFREE,IPRINT)
@@ -1579,17 +1830,22 @@ C
 C     GAB-matrix in AO-basis
 C
       IF(IJOB.EQ.0) THEN
-        N2GAB = NSYMBL*NSYMBL
-        CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)     
-        CALL MKDRAO(WORK(KBUF),WORK(KGAB),1,WORK(KFREE),LFREE,IPRINT)
-        DO I = 0,N2GAB-1
-          WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
-        ENDDO
-        IF(IPRINT.GE.4) THEN
-          CALL HEADER('GABGEN:Reduced GAB-matrix in AO basis',-1)
-          CALL OUTPUT(WORK(KGAB),1,NSYMBL,1,NSYMBL,NSYMBL,NSYMBL,
-     &                1,LUPRI)
-        ENDIF
+         N2GAB = NSYMBL*NSYMBL
+         CALL MEMGET('REAL',KGAB,NGAB*N2GAB,WORK,KFREE,LFREE)     
+         DO 123 IGAB = 1,NGAB
+            IOFF1 = (IGAB-1)*NBASIS*NBASIS
+            IOFF2 = (IGAB-1)*NSYMBL*NSYMBL
+            CALL MKDRAO(WORK(KBUF+IOFF1),WORK(KGAB+IOFF2),1,
+     &                  WORK(KFREE),LFREE,IPRINT)
+            DO I = 0,N2GAB-1
+               WORK(KGAB+I+IOFF2) = SQRT(ABS(WORK(KGAB+I+IOFF2)))
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+               CALL HEADER('GABGEN:Reduced GAB-matrix in AO basis',-1)
+               CALL OUTPUT(WORK(KGAB+IOFF2),1,NSYMBL,1,NSYMBL,
+     &                   NSYMBL,NSYMBL,-4,LUPRI)
+            ENDIF
+ 123     CONTINUE
       ELSEIF(IJOB.EQ.1) THEN
 C
 C     GAB-matrix in SO-basis
@@ -1605,18 +1861,34 @@ C
           CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
      &              1,LUPRI)
         ENDIF
+         N2GAB = MAXSHL*MAXSHL
+         CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+         CALL MKDRSO(WORK(KGAB),WORK(KBUF),1,WORK(KFREE),LFREE,IPRINT)
+         DO I = 0,N2GAB-1
+            WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
+         ENDDO
+         IF(IPRINT.GE.0) THEN
+c        IF(IPRINT.GE.4) THEN
+            CALL HEADER('GABGEN:Reduced GAB-matrix in SO basis',-1)
+            CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
+     &                  -4,LUPRI)
+         ENDIF
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'GABGEN: Unknown IJOB = ',IJOB
-        CALL QUIT('GABDRV: Unknown IJOB !')
+         WRITE(LUPRI,'(A,I5)') 'GABGEN: Unknown IJOB = ',IJOB
+         CALL QUIT('GABDRV: Unknown IJOB !')
       ENDIF
 C
 C
 C     Write label
 C
-      CALL NEWLB2(GABLAB,RTNLBL,LUPROP,LUPRI)
-      LEN = MAX(4,N2GAB)
-      CALL WRITT(LUPROP,LEN,WORK(KGAB))
-      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
+      IOFF = 0
+      DO I = 1,NGAB
+         CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
+         LEN = MAX(4,N2GAB)
+         CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
+         CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
+         IOFF = IOFF + N2GAB
+      END DO
 C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
 C
@@ -1672,12 +1944,13 @@ C
       IF(FNDLAB(GABLAB,LUPROP)) THEN
          READ(LUPROP,ERR=10,END=20) GABM
       ELSE
-CTROND        WRITE(LUPRI,'(A,A8,A)')
-CTROND     &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-CTROND        CALL QUIT('GETGAB: No GAB on AOPROPER !')
-         WRITE(LUPRI,'(A,A,A8,A)') '*** WARNING: ',
-     &        'GETGAB: ',GABLAB,' not found on AOPROPER. Regenerating.'
-         CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
+         WRITE(LUPRI,'(A,A8,A)')
+     &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
+         CALL QUIT('GETGAB: No GAB on AOPROPER !')
+c         WRITE(LUPRI,'(A,A,A8,A)') '*** WARNING: ',
+c     &        'GETGAB: ',GABLAB,' not found on AOPROPER. Regenerating.'
+c we don't know if this is the matrix we want
+c        CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
          REWIND LUPROP
          IF(FNDLAB(GABLAB,LUPROP)) THEN
             READ(LUPROP,ERR=10,END=20) GABM
@@ -1696,7 +1969,3 @@ C
       WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
         CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END
-
-
-
-
