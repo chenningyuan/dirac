@@ -54,9 +54,11 @@ void main()
    printf("DIRAC(%s %s): \n\tAllocating:                 %10i words\n",
       un->sysname,un->machine,lwork);
    (int) work = malloc(8*lwork);
+   printf("work %i %i \n",work,lwork);
    if ( work == NULL )
    {
-      printf("Memory could not be allocated.");
+      fprintf(stderr,"\n\nSEVERE ERROR\n");
+      fprintf(stderr,"  REQUESTED MEMORY COULD NOT BE ALLOCATED.\n\n");
       _exit(-1);
    }
 
