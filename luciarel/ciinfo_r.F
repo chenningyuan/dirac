@@ -561,15 +561,14 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 **. Info on block structure of space
 *
 *
-CTF       IF( ICISTR .NE. 1 ) CALL REWINO(LUC)
+CTF       IF (ICISTR.NE.1) CALL REWINO(LUC)
 *. Number of terms to be printed
-          IF(IPRWFC.EQ.0) THEN
-            THRES = 0.02
-            MAXTRM = 200
-          ELSE
+          IF (NTEST.GE.100) THEN
             THRES = 0.0D0
-*. Well atmost 100000 coefs - to save disk ..
             MAXTRM = 100000
+          ELSE
+            THRES = 0.02
+            MAXTRM = 500
           END IF
 *
           IUSLAB = 0
