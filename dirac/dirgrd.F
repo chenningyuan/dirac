@@ -116,7 +116,6 @@ C
 C
 C     Calculate gradient
 C
-      write(6,*) 'jth.PSIGRD - NFMAT',NFMAT
       CALL DHFGRD(WORK(KCMO),WORK(KDMAT),WORK(KFOCK),
      &            WORK(KTMAT),WORK(KGABRA),WORK(KDMRAO),
      &            WORK(KFCTYP),WORK(KFREE),LFREE,IPRGRD)
