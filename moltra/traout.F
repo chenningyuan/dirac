@@ -52,6 +52,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "infpar.h"
       DIMENSION NSTR(2),IKRA(*),IKRB(*)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
