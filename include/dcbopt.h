@@ -57,7 +57,7 @@ C
      &                EACTIV,RATREJ,STPLEN,STPMAX,STPINC,STPRED,
      &                THQMIN,THQLIN,THQKVA,GAMMA,RBETA,
      &                ITMAC,ITMICT,STPC,STPO,ECORR,OPT_THRGRD,
-     &                STPLCI, STPLEE, STPLEP
+     &                STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI
 C
       LOGICAL OPT_SKIPEE,OPT_SKIPEP,OPT_NOPFQ
       LOGICAL OPT_NOCI
@@ -71,3 +71,30 @@ C
      $     OPT_CIPROGRAM
 C
       COMMON /DCMOPT/ KZCONF,KZXOPE,KZXOPP
+C
+C
+C
+      PARAMETER ( NOPTTIM = 20 )
+C
+C     Detailed timings are saved in CPUOPT and WLLOPT.
+C
+C     01: time in ROPTST     (wf. start guess)
+C     02: time in RCIST      (CI start guess)
+C     03: time in RGETH2     (FQ and H2AC)
+C     04: time in RGETH2TX   (FQX, FQT, and H2ACX)
+C     05: time in GMOLITX    (FCX, FVX, and FVT)
+C     06: time in FMOLI      (one index transforms)
+C     07: time in RTRACTL    (MO 4-index transformation)
+C     08: time in RMAKDM     (density matrices)
+C     09: time in RGRAD      (gradient)
+C     10: time in RCIGRAD    (CI gradient)
+C     11: time for CI sigma vectors
+C     12: time for RFCKMAT   (FC and FV)
+C     13: time for XRSSEP    (orbital parts of orbital and conf. sigma vec)
+C     14: time for XRSTDM    (transition density matrices)
+C     15: time in RTR1H1     (one index transforms)
+C     16: time for RSIGOC, RSIGOO (orbital sigma vectors)
+C     17: time for RSIGCO    (conf part of orbital sigma vectors)
+C     18: time for XRSSVC    (sigma vectors)
+C
+      COMMON /DCTOPT/ CPUOPT(NOPTTIM), WLLOPT(NOPTTIM)
