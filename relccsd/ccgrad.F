@@ -222,15 +222,20 @@ C continue on the master.
 C
 #if defined (VAR_MPI)
       IF(NMPROC.GT.1) THEN
+C
+C     LV 16-10-2002
+C     The next statements might be combined to an MPI_ALLREDUCE
+C     but I found the SGI implementation to give a runtime error.
+C
         CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
      &    MPI_COMM_WORLD,IERR)
         CALL XCOPY(NDIMX,BUF1,1,XVO,1)
+        CALL MPI_BCAST (XVO,RCW*NDIMX,
+     &    MPI_DOUBLE_PRECISION,MASTER,
+     &    MPI_COMM_WORLD,IERR)
       ENDIF
 #endif
-      IF (MYPROC.NE.MASTER) THEN
-      RETURN
-      ELSE
 C--------------------------------------------
 C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
@@ -271,10 +276,6 @@ C
       CALL RPAA (NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
-C
-C     End of part executed only on the master
-C
-      ENDIF
 C
       RETURN
       END
