@@ -2352,19 +2352,34 @@ C
 C
 #include "ibtfun.h"
 C
+#ifndef OLDCODE
+      IELEC = 0
+      CALL IZERO(IASTR,NASHT)
+      CALL IZERO(IBSTR,NASHT)
+      DO J = 1, NASHT
+         IF (LBIT(IA,J) .OR. LBIT(IB,J)) THEN
+            IELEC = IELEC + 1
+            IF (LBIT(IA,J)) IASTR(IELEC) = J
+            IF (LBIT(IB,J)) IBSTR(IELEC) = J
+         END IF
+      END DO
+      IAELEC = IELEC
+      IBELEC = IELEC
+#else
       IAELEC = 0
       IBELEC = 0
 C
       DO J = 1, NASHT
          IF (LBIT(IA,J)) THEN
             IAELEC = IAELEC + 1
-            IASTR(IAELEC) = IPTA2O(J)
+            IASTR(IAELEC) = J
          END IF
          IF (LBIT(IB,J)) THEN
             IBELEC = IBELEC + 1
-            IBSTR(IBELEC) = IPTB2O(J)
+            IBSTR(IBELEC) = J
          END IF
       END DO
+#endif
 C
       RETURN
       END
@@ -2428,9 +2443,9 @@ C
      &                 CREF(I,1),' + ',CREF(I,2),' i; weight ',DI
                END IF
                CALL IDET2STR(IDET(1,I),IDET(2,I),IASTR,IBSTR,IA,IB)
-               WRITE(LUPRI,'(3X,A,40I4)')
+               WRITE(LUPRI,'(5X,A,40I4)')
      &              'P-string     : ',(IASTR(J),J=1,IA)
-               WRITE(LUPRI,'(3X,A,40I4/)')
+               WRITE(LUPRI,'(5X,A,40I4/)')
      &              'P(bar)-string: ',(IBSTR(J),J=1,IB)
             END IF
          END DO
