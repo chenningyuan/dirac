@@ -1913,10 +1913,9 @@ C
         WRITE(LUPRI,'(A)') ' Jobs in this run (in execution order):'
       ENDIF
       IF(DODHF) WRITE(LUPRI,'(A)') ' * Hartree-Fock calculation'
-#if defined (MOD_DFT)
       IF(DODFT) WRITE(LUPRI,'(A)') ' * Density functional '//
      &    'calculation (Kohn-Sham method)'
-#else
+#ifndef MOD_DFT
       IF(DODFT) THEN
         CALL QUIT('*** DFT is not included in this version')        
       ENDIF
@@ -1928,6 +1927,10 @@ C
      &   ' * Generate modified virtual orbitals'
       IF(DOKRMC) WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted MCSCF calculation'
+#ifndef MOD_KRMC
+      IF(DOKRMC .OR. DOLUCIAR)
+     &  CALL QUIT('*** KRMCSCF is not included in this version')        
+#endif
       IF(DOLUCIAR) THEN
 C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI 
          WRITE(LUPRI,'(A)') ' * Run LUCIAREL CI code'
@@ -1976,13 +1979,19 @@ C
         CALL RESINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
+#ifdef MOD_KRMC
         CALL KRMCINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     8 CONTINUE
+#ifdef MOD_KRMC
         CALL RSTPINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     9 CONTINUE
+#ifdef MOD_KRMC
         CALL ROPTINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
 C
     1 CONTINUE
@@ -1999,9 +2008,11 @@ C     IF (DOMP2) CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL RESINP(WORD,.TRUE.,WORK,LWORK)
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
+#ifdef MOD_KRMC
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
       CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
+#endif
 C
 C     Input of relccsd module
 C
@@ -3100,7 +3111,9 @@ C     Initialize XCBXPR - list of properties
 C     ======================================
       NPRPS        = 0
 C
+#ifdef MOD_KRMC
       CALL OPTINI()
+#endif
 C
       RETURN
       END
@@ -3333,7 +3346,9 @@ C             projection scheme
   116      CONTINUE
 C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
              DFTHAM = .TRUE.
+#if defined (MOD_DFT)
              CALL DOALDA(.TRUE.)
+#endif
              GOTO 100
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian

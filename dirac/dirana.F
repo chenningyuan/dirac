@@ -1610,7 +1610,7 @@ C
 #include "dgroup.h"
 #include "consts.h"
 C
-      LOGICAL TOBE_D,TOBE_K
+      LOGICAL TOBE
       DIMENSION WORK(*)
       DIMENSION IOFPFS(2,2)
 #include "memint.h"
@@ -1619,13 +1619,13 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
+#ifdef MOD_KRMC
 C
-C     Check if coefficients are on file
+C     Check if MCSCF coefficients are on file
 C
-      INQUIRE (FILE ='KRMCSCF',EXIST=TOBE_K)
-      INQUIRE (FILE='DFCOEF',EXIST=TOBE_D)
+      INQUIRE (FILE ='KRMCSCF',EXIST=TOBE)
 C
-      IF(.NOT.TOBE_K) GOTO 990
+      IF(.NOT.TOBE) GOTO 990
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
 C
@@ -1652,8 +1652,13 @@ C
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
+#endif /* MOD_KRMC */
 C
- 990  IF(.NOT.TOBE_D) GOTO 1000
+C     No MCSCF, then check if RHF on DFCOEF :
+C
+ 990  CONTINUE
+      INQUIRE (FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
 C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
@@ -1683,8 +1688,8 @@ C     Memory deallocation
 C
       RETURN
  1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'ANAVEC: Coefficient file not found !'
-      CALL QUIT('ANAVEC: Coefficients not found !')
+      WRITE(LUPRI,'(//A)') 'ANAVEC: Coefficient file not found !'
+      CALL QUIT('ANAVEC: Coefficient file not found !')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrpopt */
