@@ -13,8 +13,9 @@ OBJS =	dirac.o  \
 	dirgp.o\
 	dirgeo.o\
 	dirgrd.o\
-	dirden.o \
-	dirac_linux.o
+	dirden.o
+
+LINUX_OBJS = dirac_linux.o
 
 all:	$(OBJS) 
 
@@ -23,6 +24,6 @@ clean :
 
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) ($LINUX_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
