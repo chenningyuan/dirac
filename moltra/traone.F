@@ -580,7 +580,7 @@ C
         IOFF3 = IOFF3 + NSTR(IFSYM)
       ENDDO
 C
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Core Fock matrix ***'
           CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MIN0(NZ,2),
      &                IPQTOQ(1,0),LUPRI)
