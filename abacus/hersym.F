@@ -326,7 +326,8 @@ C ::: than one. ACOS is undefined for these values, so we have to round  :::
 C ::: them off, removing the "excess", accumulated numerical error.      :::
 C ::: Also, ACOS is extremely sensitive around +/-1, so we round off     :::
 C ::: numbers close to these values
-            IF (ABS(ABS(TEMP)-1.0D0) .LT. ZERTOL) THEN
+            IF ((ABS(ABS(TEMP)-1.0D0) .LT. ZERTOL)
+     &          .OR. (ABS(TEMP).GT.1.0D0)) THEN
                TEMP = ANINT(TEMP)
             END IF
             VECANG = ACOS(TEMP)

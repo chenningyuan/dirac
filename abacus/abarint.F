@@ -3387,7 +3387,7 @@ C
             CALL NRMLVC(VEC3)
             IF ((DDOT(3,VEC1,1,VEC1,1) .GT. 1.0D-16) .AND.
      &           (DDOT(3,VEC3,1,VEC3,1) .GT. 1.0D-16)) THEN
-               VALINT(IC) = VECANG(VEC1,VEC3)
+               VALINT(IC) = VECANG(VEC1,VEC3)  
                IF (ABS(VALINT(IC)) .GT. DEG175) THEN
                   CALL VECPRD(VEC1,VEC2,VEC4)
                   CALL NRMLVC(VEC4)
@@ -3397,7 +3397,7 @@ C
                IF (DDOT(3,VEC2,1,VEC4,1) .LT. 0.0D0)
      &              VALINT(IC) = -VALINT(IC)
             ELSE
-               VALINT(IC) = D0
+               VALINT(IC) = D0 
             END IF
          END IF
  10   CONTINUE
