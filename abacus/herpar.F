@@ -507,6 +507,7 @@ C........inforb.h
          NUMELM=ICOMMSIZE(I1_INFORB,I2_INFORB)
          CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C........note that with icommsize COMMON blocks must be sent as integers...
          CALL MPI_BCAST(I1_INFORB,NUMELM,MPI_INTEGER,MPARID,
      &                  MPI_COMM_WORLD,IERR)
 C
@@ -537,6 +538,7 @@ C     Send parint.h
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
       CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C........note that with icommsize COMMON blocks must be sent as integers...
       CALL MPI_BCAST(I1_PARINT,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ISEND(1) = NDMAT
