@@ -1653,8 +1653,6 @@ C
 C                
 #include <ibtfun.h>
 C
-#include <memint.h>
-C     
       CALL QENTER('PRP_EFT')
 C     
       CALL PRSYMB(LUPRI,'-',76,0)
@@ -1823,10 +1821,10 @@ C
             EFTEL( 2,IATOM) = EFTEL( 2,IATOM) - D3/D7*DTREL(2)
             EFTEL( 3,IATOM) = EFTEL( 3,IATOM) - D3/D7*DTREL(3)
             EFTEL( 4,IATOM) = EFTEL( 4,IATOM) +
-     &          -D4/D35*DTREL(1) -  D4/D35*DTREL(4) +  D1/D35*DTREL(6)
+     &          (-D4/D35)*DTREL(1) -  D4/D35*DTREL(4) +  D1/D35*DTREL(6)
             EFTEL( 5,IATOM) = EFTEL( 5,IATOM) - D1/D7*DTREL(5)
             EFTEL( 6,IATOM) = EFTEL( 6,IATOM) +
-     &          -D4/D35*DTREL(1) +  D1/D35*DTREL(4) -  D4/D35*DTREL(6)
+     &          (-D4/D35)*DTREL(1) +  D1/D35*DTREL(4) -  D4/D35*DTREL(6)
             EFTEL( 7,IATOM) = EFTEL( 7,IATOM) - D3/D7*DTREL(2)
             EFTEL( 8,IATOM) = EFTEL( 8,IATOM) - D1/D7*DTREL(3)
             EFTEL( 9,IATOM) = EFTEL( 9,IATOM) - D1/D7*DTREL(2)
@@ -2227,7 +2225,7 @@ C
       WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
       NATOM = 0
       DO 120 IATOM = 1, NUCIND
-         IF (.NOT. DOATOM(IATOM)) GOTO 110
+         IF (.NOT. DOATOM(IATOM)) GOTO 120
          DO IREP = 0 ,MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
                NATOM =  NATOM + 1
