@@ -58,15 +58,12 @@ C function of the close is that it empties the output buffer.
      X      INITIALSIZE=24,EXTENDSIZE=24,
      X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX)
 C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
 C
       CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_HPUX)
-CTROND      CALL FFLUSH(IUNIT)
 #endif
 #if defined (SYS_AIX)
 C     AIX XL FORTRAN version 2.3+
