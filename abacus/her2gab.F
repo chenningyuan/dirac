@@ -117,11 +117,6 @@ C
         DOINT(2,1) = .FALSE.
         DOINT(1,2) = .FALSE.
         DOINT(2,2) = .TRUE.  
-      ELSEIF(IGTYP.EQ.2) THEN
-        DOINT(1,1) = .TRUE.
-        DOINT(2,1) = .TRUE.
-        DOINT(1,2) = .TRUE.
-        DOINT(2,2) = .TRUE.  
       ELSE
         WRITE(LUPRI,'(A,I5)') 'GABDRV:Unknown IGTYP ',IGTYP
         CALL QUIT('GABDRV:Unknown IGTYP !')
@@ -1478,7 +1473,7 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
-      CHARACTER SECTID*12, INTTID*12,TEXT*14
+      CHARACTER SECTID*12, INTTID*12,TEXT*9
 #include <twocom.h>
 C
 C Current format of output (Jan 2001/hjaaj):
@@ -1505,7 +1500,7 @@ C
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
       INTTID = SECTID(CPUSEC)
-      WRITE(LUPRI,'(A14,1P,D10.2,0P,4(F8.2,A1),2X,A12)') 
+      WRITE(LUPRI,'(A9,1P,D10.2,0P,4(F8.2,A1),2X,A12)') 
      &     TEXT,SCRTHR,(DSTEP(I),'%',I=1,4),INTTID
       RETURN
       END

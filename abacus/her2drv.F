@@ -462,8 +462,6 @@ C           ... no Coulomb term for antisymmetric density matrix
       ENDIF
 C
       IF(I2TYP.EQ.0) THEN
-C     Non-relativistic calculation:
-C       all integrals (ab|cd) for which (ab).ge.(cd)
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -473,7 +471,6 @@ C       all integrals (ab|cd) for which (ab).ge.(cd)
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSEIF(I2TYP.EQ.1) THEN
-C     (LL|LL) - integrals
         IASTRT = 1
         IBSTRT = 1
         ICSTRT = 1
@@ -483,7 +480,6 @@ C     (LL|LL) - integrals
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.2) THEN
-C     (SS|LL) - integrals
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = 1
@@ -493,7 +489,6 @@ C     (SS|LL) - integrals
         ICSMAX = NLRGBL
         IDSMAX = NLRGBL
       ELSEIF(I2TYP.EQ.3) THEN
-C     (SS|SS) - integrals
         IASTRT = NLRGBL+1
         IBSTRT = NLRGBL+1
         ICSTRT = NLRGBL+1
@@ -502,16 +497,6 @@ C     (SS|SS) - integrals
         IBSMAX = MAXSHL
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
-      ELSEIF(I2TYP.EQ.4) THEN
-C     (SL|SL) - integrals
-        IASTRT = NLRGBL+1
-        IBSTRT = 1
-        ICSTRT = NLRGBL+1
-        IDSTRT = 1
-        IASMAX = MAXSHL
-        IBSMAX = NLRGBL
-        ICSMAX = MAXSHL
-        IDSMAX = NLRGBL
       ELSE
         WRITE(LUPRI,'(A,I5)') 'TWOLOP: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
@@ -545,9 +530,7 @@ C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
-         IBMAX = ISHELA
-         IF(I2TYP.EQ.4) IBMAX = NLRGBL
-         DO 200 ISHELB = IBSTRT,IBMAX
+         DO 200 ISHELB = IBSTRT,ISHELA
 C
             ICB    = LCLASH(ISHELB)
 C
@@ -619,8 +602,6 @@ C              ***** Fourth Shell Index *****
 C              ******************************
 C
                IDMAX = ISHELC
-               IF(I2TYP.EQ.4) IDMAX = NLRGBL
-C              Note that the test above must come before the next one (tsaue)
                IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
                DO 400 ISHELD = IDSTRT,IDMAX
 C

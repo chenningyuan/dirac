@@ -54,7 +54,6 @@ C
 #include <dcbgen.h>
 #include <dcbbas.h>
 #include <dgroup.h>
-#include <dcbham.h>
 #include <blocks.h>
 #include <dcbtra.h>
 #include <dcbtr3.h>
@@ -113,8 +112,6 @@ C
          IJOB   = 0
          ITYPE  = 0
          IGTYP  = 1
-         IF(LEVYLE) IGTYP = 0
-         IF(GAUNT) IGTYP = 2
          MAXDF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)

@@ -61,7 +61,7 @@ C
 C     General input 
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
-CTROND      CALL GENINP(WORK,LWORK)
+      CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
 C     Integral and basis input
@@ -84,12 +84,6 @@ C     Redefine INTGEN if e.g. Levy-Leblond
 C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
-      CLOSE(LUCMD)
-C
-C     General input 
-C
-      OPEN(LUCMD,FILE = 'DIRAC.INP')
-      CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
 C
 C     Give estimate of memory needed for two-electron integrals
@@ -177,7 +171,6 @@ C
 #include <dcbgen.h>
 #include <dcbxpr.h>
 #include <dcbprl.h>
-#include <dcbham.h>
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
@@ -195,12 +188,6 @@ C
       ILLINT = 1
       ILSINT = 1
       ISSINT = 1
-      IGTINT = 0
-      IF(GAUNT) IGTINT = 1
-      ILLDIR = 1
-      ILSDIR = 1
-      ISSDIR = 1
-      IGTINT = 0
       DOLVC   = .FALSE.
       LVNEW   = .FALSE.
       DOTSC   = .FALSE.
@@ -255,16 +242,13 @@ C
             CALL QUIT('Illegal keyword in GENINP.')
   101    CONTINUE
 C&&&& DIRECT: Direct calculation
-            IF(LEVYLE) THEN
-              READ(LUCMD,*) ILLDIR
-              ISLDIR = 0
-              ISSDIR = 0
-              IGTDIR = 0
-            ELSE
-              READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
-              IGTDIR = 0
-              IF(GAUNT) IGTDIR = 1
-            ENDIF
+                 READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
+                 IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+                 IF(IDFLAG.GT.0) THEN
+                   DIRCAL = .TRUE.
+                 ELSE
+                   DIRCAL = .FALSE.
+                 ENDIF
             GO TO 100
   102    CONTINUE
 C&&&& CVALUE: Set a different value of light
@@ -272,16 +256,7 @@ C&&&& CVALUE: Set a different value of light
             GO TO 100
   103    CONTINUE
 C&&& INTFLG: Specify what two-itegrals should be included in this run
-            IF(LEVYLE) THEN
-              READ(LUCMD,*) ILLINT
-              ISLINT = 0
-              ISSINT = 0
-              IGTINT = 0
-            ELSE
-              READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-              IGTINT = 0
-              IF(GAUNT) IGTINT = 1
-            ENDIF
+            READ(LUCMD,*) ILLINT,ILSINT,ISSINT
             GO TO 100
   104    CONTINUE
 C&&& DOJACO: Do Jacobi diagonalization if real group
@@ -376,35 +351,15 @@ ctec we require that it is a direct calculation
          ILLDIR = 1
          ISLDIR = 1
          ISSDIR = 1
-         IGTDIR = 0
+         IDFLAG = 7
       ENDIF
-C     Special cases
+C
       IF(DOLVC) ISSINT = 0
       IF(DOTSC) ISSINT = 0
-      IF(GAUNT) THEN
-        IGTDIR = 1
-        IGTINT = 1
-      ENDIF
-      IF(LEVYLE) THEN
-        ILSINT = 0
-        ISSINT = 0
-        ILSDIR = 0
-        ISSDIR = 0
-      ENDIF
-      IF (ZORA.AND..NOT.ZORA4) THEN
-        ISSINT = 0
-        IGTINT = 0
-      ENDIF
 C
 C     Set integral flags
 C
-      INTGEN = ILLINT+2*ILSINT+4*ISSINT+8*IGTINT
-      IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
-      IF(IDFLAG.GT.0) THEN
-        DIRCAL = .TRUE.
-      ELSE
-        DIRCAL = .FALSE.
-      ENDIF
+      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT
 C
 C
 C     Print section
@@ -420,23 +375,12 @@ C
      +   ' to : ',CVAL
       ENDIF
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
-C
-C     Write information about default integrals flags
-C
-      WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
-      WRITE(LUPRI,9002) ' (LL|LL): ',ILLINT
-      WRITE(LUPRI,9002) ' (SS|LL): ',ILSINT
-      WRITE(LUPRI,9002) ' (SS|SS): ',ISSINT
-      WRITE(LUPRI,9002) ' (SL|SL): ',ISSINT
- 9001 FORMAT(1X,A)
- 9002 FORMAT(3X,A,L1)
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
      +    'the following two-electron integrals:'
-        IF(ILLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '(LL|LL)'
-        IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '(SS|LL)'
-        IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '(SS|SS)'
-        IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '(SL|SL)'
+        IF(ILLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
+        IF(ISLDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SL-integrals'
+        IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
       ENDIF
 C
 C     Write info about the modelling of SS interactions
@@ -465,6 +409,15 @@ C
      &   '  Interatomic Coulombic SS-contributions modelled ',
      &   '  by  nuclear attraction integrals using ',
      &   '  small component atomic charges.'
+C
+C     Write information about default integrals flags
+C
+      WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
+      WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
+      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
+      WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
+ 9001 FORMAT(1X,A)
+ 9002 FORMAT(3X,A,L1)
 C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -2956,7 +2909,6 @@ C
       ZORA4   = .FALSE.
       ZORASC  = .FALSE.
       SMLV1C  = .FALSE.
-      GAUNT   = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
       HFXFAC  = D1
@@ -3035,7 +2987,8 @@ C&&&& OPERATOR: Read in operator
            GO TO 100
   104    CONTINUE
 C&&&& GAUNT: Gaunt operator
-            GAUNT = .TRUE.
+CTROND          Must be implemented......                  
+            CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
 C&&&& PROJECtion: Reduce transformation matrix by projection
@@ -3190,6 +3143,20 @@ C
          CALL QUIT('*** ERROR in HAMINP ****')
       END IF
 C
+C     Remove integral classes not needed for this Hamiltonian
+C
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
+      IF (LEVYLE) THEN
+        ISLINT = 0
+        ISSINT = 0
+      ENDIF
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+      ENDIF
+      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT
+C
       IF(URKBAL) THEN
         WRITE(LUPRI,'(1X,A)') '* Unrestricted kinetic balance'
       ELSE
@@ -3243,9 +3210,7 @@ C
          CALL QUIT('HAMINP: Wrong ISPHTR!')
       ENDIF
 C
-      IF(IGTINT.EQ.1) THEN
-        WRITE(LUPRI,'(1X,A)') '* Dirac-Coulomb-Gaunt Hamiltonian'
-      ELSEIF(.NOT.LEVYLE) THEN
+      IF(.NOT.LEVYLE) THEN
         WRITE(LUPRI,'(1X,A)') '* Dirac-Coulomb Hamiltonian'
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Levy-Leblond Hamiltonian'
@@ -3521,7 +3486,6 @@ C***********************************************************************
 #include <maxaqn.h>
 C
 #include <dcbgen.h>
-#include <dcbham.h>
 #include <cbihr2.h>
 C
       DIMENSION WORK(LWORK)
@@ -3541,7 +3505,6 @@ C
       DIRFCK = .FALSE.
       WRITE(LUPRI,'(1X,A)') '* LL-integrals:'
       CALL MEMLOP(1,DIRFCK)  
-      IF(LEVYLE) RETURN
       WRITE(LUPRI,'(1X,A)') '* SL-integrals:'
       CALL MEMLOP(2,DIRFCK)  
       WRITE(LUPRI,'(1X,A)') '* SS-integrals:'

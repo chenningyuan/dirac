@@ -385,7 +385,7 @@ C
 C     **********************************
 C     ***** Contract Fock matrices *****
 C     **********************************
-C       IFCTYP = GXY
+C       IFCTYP = XY
 C         X indicates symmetry about diagonal
 C           X = 0 No symmetry
 C           X = 1 Symmetric
@@ -394,16 +394,13 @@ C         Y indicates contributions
 C           Y = 1 Coulomb
 C           Y = 2 Exchange
 C           Y = 3 Coulomb + Exchange
-C         G = 1 is a switch for Gaunt contributions
 C
       TFCK = SECOND()
       DO 400 I = 1,NDMAT
         FCM = DNSBUF(1,I)*AOMAX
         FEM = DNSBUF(2,I)*AOMAX
         IY = MOD(IFCTYP(I),10)
-        IG = (IFCTYP(I)-IY)/10
-        IX = MOD(IG,10)
-        IG = (IG-IX)/10
+        IX = (IFCTYP(I)-IY)/10
         IC = MOD(IY,2)
         IE = IY - IC
 CTROND        IF (IX.EQ.2) IC = 0
