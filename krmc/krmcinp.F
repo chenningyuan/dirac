@@ -36,6 +36,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : krmcinp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcinp */
@@ -59,7 +60,7 @@ C#include "mxcent.h"
 C#include "maxorb.h"
 C#include "symmet.h"
 C
-      PARAMETER (NTABLE = 30)
+      PARAMETER (NTABLE = 31)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
@@ -84,9 +85,10 @@ C
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
      &            '.NEO AL','.STATE ','.XXXXXX','.MAX BA','.MAKE C',
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
-     &            '.NO CI ','.THRPCI','.CI BOS','.MIN MK','.MAX MK',
+     &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
-     &            '.CI PRO','.INACTI','.ACTIVE','.ACT EL','.SYMMET'/
+     &            '.CI PRO','.INACTI','.ACTIVE','.ACT EL','.SYMMET',
+     &            '.RELSYM'/
       DATA SET/.FALSE./
 C
 C
@@ -188,7 +190,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30), I
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -270,7 +273,11 @@ C&&& THRPCI:
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
-C&&& CI BOSON SYMMETRY: use boson spinor symmetry for CI expansion
+C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
+               IF (IKWSET(18) .EQ. 1) THEN
+                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'You cannot specify both .RELSYM and .NR SYM')
+               END IF
                KRMC_UCIBOS = .TRUE.
                IKWSET(18) = 1
                GO TO 100
@@ -354,6 +361,16 @@ C     primarily for a CAS space TODO: remove ??? HJAaJ
 C&&&  SYMMETRY: symmetry of the wave function
                READ(LUCMD,*) IKRMC_SYMMETRY
                GO TO 100
+ 31            CONTINUE
+C&&&  RELSYM: use relativistic double group symmetry of the wave function
+C              including spin in symmetry
+               IF (IKWSET(18) .EQ. 1) THEN
+                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                 'You cannot specify both .RELSYM and .NR SYM')
+               END IF
+               KRMC_UCIBOS = .FALSE.
+               IKWSET(18) = 1
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -407,9 +424,9 @@ C
       END IF
 C
 C     Use boson symmetry for CI expansion for the spin-free and
-C     the Levy-Leblond Hamiltonian.
+C     the Levy-Leblond Hamiltonian, if KRMC_UCIBOS not set in input.
 C
-      IF (.NOT. KRMC_UCIBOS .AND. (SPINFR.OR.LEVYLE)) THEN
+      IF (IKWSET(18).EQ.0 .AND. (SPINFR.OR.LEVYLE)) THEN
          KRMC_UCIBOS = .TRUE.
       END IF
 c     krmc_ucibos = .false.
@@ -429,6 +446,8 @@ C
      &     ' * Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
       WRITE(LUPRI,'(A,2I4)')
      &     ' * Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * Active electrons      : ',NKRMCAELEC
       IF (NKRMCGAS .GT. 0) THEN
          WRITE(LUPRI,'(A,I3,A)')
      &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
@@ -447,8 +466,6 @@ C
          NKRMCAELEC = NAE
       END IF
       WRITE(LUPRI,'(A,I4)')
-     &     ' * Active electrons      : ',NKRMCAELEC
-      WRITE(LUPRI,'(A,I4)')
      &     ' * State number          : ',IKRMC_ISTATE
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRMC_CIPROGRAM
@@ -456,24 +473,6 @@ C
 C     Symmetry of the wave function:
 C     ------------------------------
 C
-      IF (SPINFR.OR.LEVYLE) THEN
-         CALL GMULTSF(NREP,REPNA,MULTB_TMP)
-      ELSE
-         CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
-      ENDIF
-C
-      IRP = IKRMC_SYMMETRY
-      IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
-         IRRP = NREP + IRP
-         WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (boson) of wave function: ',
-     &        REPNA(IRRP)
-      ELSE
-         IRRP = IRP
-         WRITE(LUPRI,'(2A)')
-     &        ' * Symmetry (fermion) of wave function: ',
-     &        REPNA(IRRP)
-      END IF
 C
 C     MK constraints in the CI expansion.
 C
@@ -501,22 +500,53 @@ C
          END IF
       END IF
 C
-      WRITE(LUPRI,'(A,I4,A,I4)')
-     &     ' * Allowed interval of 2 * MK ',
-     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
-C
 C     Boson symmetry in the CI expansion
 C
-      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) WRITE(LUPRI,'(A)')
-     &   ' * Boson spinor symmetry used in CI expansion.'
-      IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) WRITE(LUPRI,'(A)')
-     &   ' * Approximate boson spinor symmetry used in CI expansion.'
+      IF ((SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * Boson spatial spinor symmetry used in CI expansion.'
+         WRITE(LUPRI,'(2A)')
+     &     ' * Spatial symmetry (boson) of wave function : ',
+     &     REP ( IKRMC_SYMMETRY - 1 )
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of 2 * MS :',
+     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+      ELSE IF (.NOT.(SPINFR.OR.LEVYLE).AND.KRMC_UCIBOS) THEN
+         WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
+     &     ' symmetry (as non-rel) used in CI expansion.'
+         WRITE(LUPRI,'(2A)')
+     &    ' * Approximate spatial symmetry (boson) of wave function : ',
+     &     REP ( IKRMC_SYMMETRY - 1 )
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of approximate 2 * MS :',
+     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+      ELSE
+         IF (SPINFR.OR.LEVYLE) THEN
+            CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+         ELSE
+            CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+         ENDIF
+         IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
+            IRRP = NREP + IKRMC_SYMMETRY
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (boson) of wave function: ',
+     &        REPNA(IRRP)
+         ELSE
+            WRITE(LUPRI,'(2A)')
+     &        ' * Symmetry (fermion) of wave function: ',
+     &        REPNA(IKRMC_SYMMETRY)
+         END IF
+         WRITE(LUPRI,'(A,I4,A,I3)')
+     &     ' * Allowed interval of 2 * MK :',
+     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+      END IF
+C
 C
       WRITE(LUPRI,'(A,I4)')
      +   ' * Maximum number of macro iterations  : ',MKRMC_MXMACRO
       WRITE(LUPRI,'(A,I4)')
      +   ' * Maximum number of micro iterations  : ',MKRMC_MXMICRO
-      WRITE(LUPRI,'(A,1P,D15.6)')
+      WRITE(LUPRI,'(A,1P,D10.2)')
      +   ' * Convergence threshold               : ',DKRMC_THRGRD
       IF (MCFLAG(1) .AND. MCFLAG(2)) MCFLAG(1) = .FALSE.
       IF (MCFLAG(1)) WRITE(LUPRI,'(A)')
@@ -888,7 +918,7 @@ C&&& .MXCIVE: Number of CI vectors allowed for subspace
 C&&& .KTRLVL: default integral transformation level.
                   READ(LUCMD,*) KTRLVL
                   IF (KTRLVL .LE. -2 .OR. KTRLVL .GT. 4) THEN
-                     WRITE(LUPRI,'(//,2A,I10)')
+                     WRITE(LUPRI,'(//2A,I10)')
      &                    '*** ERROR in ROPTINP *** ',
      &                    'Illegal transformation level: ',KTRLVL
                      CALL QUIT('*** ERROR in ROPTINP *** ' //
@@ -898,7 +928,7 @@ C&&& .KTRLVL: default integral transformation level.
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+               WRITE (LUPRI,'(/3A/)') ' Prompt "',WORD,
      *            '" not recognized in STEP CONTROL.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in STEP CONTROL.')
@@ -919,44 +949,42 @@ C     Print section
 C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)')
-     &   'ROPTINP: Set-up for wave function optimization'
+      WRITE(LUPRI,'(A)')
+     &   ' ROPTINP: Set-up for wave function optimization'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       IF (MAXCIT .GE. 0) THEN
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* Maximum number of initial CI iterations: ',MAXCIT
+         WRITE(LUPRI,'(A,I3)')
+     &     ' * Maximum number of initial CI iterations: ',MAXCIT
       ELSE
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* CI start guess is full CI '
+         WRITE(LUPRI,'(A,I3)')
+     &     ' * CI start guess is based on full CI '
       END IF
 C
       IF (IRESTRK.EQ.1) THEN
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* Restarting CI from C vector on file '
+         WRITE(LUPRI,'(A,I3)')
+     &     ' * Restarting CI from C vector on LUCIAREL file '
       END IF
 C
       IF (NCIROOT.GT.1) THEN
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* Number of CI roots optimized: ',NCIROOT
+         WRITE(LUPRI,'(A,I3)')
+     &        ' * Number of CI roots optimized: ',NCIROOT
          IF (MAXCIT.EQ.-1) THEN
             CALL QUIT(' COMHAM option always treats ALL roots. ')
          END IF
       END IF
 C
-      IF (MXCIV.GT.0) THEN
-         WRITE(LUPRI,'(1X,A,I3)')
-     &        '* Maximum subspace dimension set to ',MXCIV
-      END IF
+      IF (MXCIV.GT.0) WRITE(LUPRI,'(A,I3)')
+     &     ' * Maximum subspace dimension set to ',MXCIV
 C
-      WRITE(LUPRI,'(1X,A,I4)')
-     &        '* Start guess: ',IOPTST
+      WRITE(LUPRI,'(A,I4)')
+     &     ' * Start guess code : ',IOPTST
 C
-      IF ( OPT_NOPFQ ) WRITE (LUPRI, '(1X,A)' )
-     &     '* Positronic part of positronic FQX ignored.'
+      IF ( OPT_NOPFQ ) WRITE (LUPRI, '(A)' )
+     &     ' * Positronic part of positronic FQX ignored.'
 C
-      IF ( OPT_NOFQX ) WRITE (LUPRI, '(1X,A)' )
-     &     '* FQX and FQT approximate with DV * FV.'
+      IF ( OPT_NOFQX ) WRITE (LUPRI, '(A)' )
+     &     ' * FQX and FQT approximate with DV * FV.'
 C
 C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------
@@ -966,35 +994,35 @@ C
       END IF
 C
       IF ( IKRMCCNO .GE. -1 ) THEN
-         IF ( IKRMCCNO .GE. 1 ) WRITE(LUPRI, '(1X,A)' )
-     &        '* Call RTRACI for transformation of CI vectors.'
-         IF ( IKRMCCNO .EQ. 0 ) WRITE(LUPRI, '(1X,A)' )
-     &        '* Call RTRACI for transformation of CI vectors ' //
-     &        '(if necesary)'
-         IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI, '(1X,A)' )
-     &        '* Do not call RTRACI for transformation of CI vectors.'
+         IF ( IKRMCCNO .GE. 1 ) WRITE(LUPRI,'(A)')
+     &        ' * Call RTRACI for transformation of CI vectors.'
+         IF ( IKRMCCNO .EQ. 0 ) WRITE(LUPRI,'(A)')
+     &        ' * Call RTRACI for transformation of CI vectors ' //
+     &        '(if necesary).'
+         IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI,'(A)')
+     &        ' * Do not call RTRACI for transformation of CI vectors.'
 C
          IF ( FOCKON ) THEN
-            WRITE(LUPRI, '(1X,A)' )
-     &           '  - transform to Fock-type orbitals.'
+            WRITE(LUPRI,'(A)')
+     &           '   - transform to Fock-type orbitals.'
          ELSE IF (NATONL) THEN
-            WRITE(LUPRI, '(1X,A)' )
-     &           '  - transform to natural orbitals.'
+            WRITE(LUPRI,'(A)')
+     &           '   - transform to natural orbitals.'
          ELSE
-            WRITE(LUPRI, '(1X,A)' )
-     &           '  - transform to Fock-type and natural orbitals.'
+            WRITE(LUPRI,'(A)')
+     &           '   - transform to Fock-type and natural orbitals.'
          END IF
       ELSE
-         WRITE(LUPRI, '(1X,A)' )
-     &        '* No transformation of orbitals to Fock-type or NO'
+         WRITE(LUPRI,'(A)') ' * No transformation of orbitals'//
+     &                      ' to Fock-type or natural orbitals.'
       END IF
 C
-      IF (COMPROT) WRITE(LUPRI,'(1X,A/A,1P,D12.2,A)')
-     &     '* Compress orbital rotations during optimization',
-     &     '  (threshold is ',COMPFAC,' * 1-norm(g)).'
+      IF (COMPROT) WRITE(LUPRI,'(A/A,1P,D12.2,A)')
+     &     ' * Compress orbital rotations during optimization',
+     &     '   (threshold is ',COMPFAC,' * 1-norm(g)).'
 C
-      WRITE(LUPRI,'(1X,A,I2)')
-     &     '* Default integral transformation level  : ',KTRLVL
+      WRITE(LUPRI,'(A,I3)')
+     &     ' * Default integral transformation level  :',KTRLVL
 C
   400 RETURN
       END
