@@ -476,7 +476,7 @@ dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(C_CCOBJS) \\
 	$AUXOBJ \\
-	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	\$(OBJSMXM) \$(PDLIB) \$(LIB_LIST) 
 #
 # Run ftnchek on Dirac
 #
