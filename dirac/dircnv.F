@@ -56,7 +56,7 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAL OLDFMO
+      LOGICAL OLDFMO, DAMPON
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),SAOMO(*),WORK(LWORK), FAO(*)
 C
