@@ -64,8 +64,8 @@ C     One or more open shells that do NOT couple:
 C     -------------------------------------------
 C
 C     Note: t stands for hermitian conjungation
-C     Fmo      = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
-C              = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
+C     Fmo = FDmo + DVmo * FVmo * (DCmo - DSmo)t + H.C.
+C         = FDmo + Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
 C     where beta  = alpha*f
 C     and   gamma = a-1
 C
@@ -96,7 +96,7 @@ C
         ENDIF
         IF(IPRSCF.GE.10) THEN
            WRITE(CTMP,'(I1)') I
-           CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
+           CALL HEADER('MKMOFK: D Fock matrix in MO-basis'//
      &                 ', corep '//CTMP,-1)
            CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
      &                 NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -125,9 +125,9 @@ C
          GAMMA = DA(IOPEN)-D1
          IF (IPRSCF.GE.5) THEN
             WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'DFSOLV: BETA  factor, open shell ',IOPEN,' : ',BETA
+     &         'MKMOFK: BETA  factor, open shell ',IOPEN,' : ',BETA
             WRITE(LUPRI,'(A,I1,A,F10.6)') 
-     &         'DFSOLV: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
+     &         'MKMOFK: GAMMA factor, open shell ',IOPEN,' : ',GAMMA
          END IF
 C
 C
@@ -274,7 +274,7 @@ C
 C              
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: coupling operator in AO-basis'//
+                  CALL HEADER('MKMOFK: coupling operator in AO-basis'//
      &               ', corep '//CTMP,-1)
                   CALL PRQMAT(DTEMP2(1+I2BASX(I,I)),
      &               NFBAS(I,0),NFBAS(I,0),
@@ -293,7 +293,7 @@ C
      &           WORK(KFREE),LFREE,IPRSCF)
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
+                  CALL HEADER('MKMOFK: Correction matrix in MO-basis'//
      &               ' step 1, corep '//CTMP,-1)
                   CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -305,7 +305,7 @@ C
      &                  NORB(I),NORB(I))
                IF ( IPRSCF .GE. 10 ) THEN
                   WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
+                  CALL HEADER('MKMOFK: Correction matrix in MO-basis'//
      &               ' step 2, corep '//CTMP,-1)
                   CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -320,7 +320,7 @@ C
      &            IPQTOQ(1,0),NZ)
                IF ( IPRSCF .GE. 10 ) THEN
                   WRITE(CTMP,'(I1)') I
-                  CALL HEADER('DFSOLV: Total Fock matrix in MO-basis'//
+                  CALL HEADER('MKMOFK: Total Fock matrix in MO-basis'//
      &               ', corep '//CTMP,-1)
                   CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
