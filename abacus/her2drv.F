@@ -515,11 +515,9 @@ C
          NSTRA  = IORBSB(IORBSH(ISHELA,1))
          NUCA   = NUCOSH(ISHELA)
          NORBA  = NORBSH(ISHELA)
-         IF (.NOT.BIGVEC) THEN
-            CORAX0 = CENTSH(ISHELA,1)
-            CORAY0 = CENTSH(ISHELA,2)
-            CORAZ0 = CENTSH(ISHELA,3)
-         END IF
+         CORAX0 = CENTSH(ISHELA,1)
+         CORAY0 = CENTSH(ISHELA,2)
+         CORAZ0 = CENTSH(ISHELA,3)
          PRINTA = .TRUE.
          IF ((ISHELA .NE. IPRNTA).AND.(IPRNTA .NE. 0)) PRINTA = .FALSE.
 C
@@ -541,11 +539,9 @@ C
             NSTRB  = IORBSB(IORBSH(ISHELB,1))
             NUCB   = NUCOSH(ISHELB)
             NORBB  = NORBSH(ISHELB)
-            IF (.NOT.BIGVEC) THEN
-               CORBX0 = CENTSH(ISHELB,1)
-               CORBY0 = CENTSH(ISHELB,2)
-               CORBZ0 = CENTSH(ISHELB,3)
-            END IF
+            CORBX0 = CENTSH(ISHELB,1)
+            CORBY0 = CENTSH(ISHELB,2)
+            CORBZ0 = CENTSH(ISHELB,3)
             GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
             IGENAB = 1
             IF (.NOT.GENAB) IGENAB = 2
@@ -580,11 +576,9 @@ C
                NSTRC  = IORBSB(IORBSH(ISHELC,1))
                NUCC   = NUCOSH(ISHELC)
                NORBC  = NORBSH(ISHELC)
-               IF (.NOT.BIGVEC) THEN
-                  CORCX0 = CENTSH(ISHELC,1)
-                  CORCY0 = CENTSH(ISHELC,2)
-                  CORCZ0 = CENTSH(ISHELC,3)
-               END IF
+               CORCX0 = CENTSH(ISHELC,1)
+               CORCY0 = CENTSH(ISHELC,2)
+               CORCZ0 = CENTSH(ISHELC,3)
                PRINTC = PRINTB
                IF ((ISHELC.NE.IPRNTC).AND.(IPRNTC.NE.0)) PRINTC=.FALSE.
 C
@@ -608,11 +602,9 @@ C
                   NSTRD  = IORBSB(IORBSH(ISHELD,1))
                   NUCD   = NUCOSH(ISHELD)
                   NORBD  = NORBSH(ISHELD)
-                  IF (.NOT.BIGVEC) THEN
-                     CORDX0 = CENTSH(ISHELD,1)
-                     CORDY0 = CENTSH(ISHELD,2)
-                     CORDZ0 = CENTSH(ISHELD,3)
-                  END IF
+                  CORDX0 = CENTSH(ISHELD,1)
+                  CORDY0 = CENTSH(ISHELD,2)
+                  CORDZ0 = CENTSH(ISHELD,3)
                   GENCD = .NOT.(SEGMSH(ISHELC) .AND. SEGMSH(ISHELD))
                   IGENCD = 1
                   IF (.NOT.GENCD) IGENCD = 2
@@ -842,11 +834,9 @@ C
       NSTRA  = IORBSB(IORBSH(ISHELA,1))
       NUCA   = NUCOSH(ISHELA)
       NORBA  = NORBSH(ISHELA)
-      IF (.NOT.BIGVEC) THEN
-         CORAX0 = CENTSH(ISHELA,1)
-         CORAY0 = CENTSH(ISHELA,2)
-         CORAZ0 = CENTSH(ISHELA,3)
-      END IF
+      CORAX0 = CENTSH(ISHELA,1)
+      CORAY0 = CENTSH(ISHELA,2)
+      CORAZ0 = CENTSH(ISHELA,3)
       PRINTA = .TRUE.
       IF ((ISHELA .NE. IPRNTA).AND.(IPRNTA .NE. 0)) PRINTA = .FALSE.
 C
@@ -865,11 +855,9 @@ C
          NSTRB  = IORBSB(IORBSH(ISHELB,1))
          NUCB   = NUCOSH(ISHELB)
          NORBB  = NORBSH(ISHELB)
-         IF (.NOT.BIGVEC) THEN
-            CORBX0 = CENTSH(ISHELB,1)
-            CORBY0 = CENTSH(ISHELB,2)
-            CORBZ0 = CENTSH(ISHELB,3)
-         END IF
+         CORBX0 = CENTSH(ISHELB,1)
+         CORBY0 = CENTSH(ISHELB,2)
+         CORBZ0 = CENTSH(ISHELB,3)
          GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
          IGENAB = 1
          IF (.NOT.GENAB) IGENAB = 2
@@ -898,11 +886,9 @@ C
             NSTRC  = IORBSB(IORBSH(ISHELC,1))
             NUCC   = NUCOSH(ISHELC)
             NORBC  = NORBSH(ISHELC)
-            IF (.NOT.BIGVEC) THEN
-               CORCX0 = CENTSH(ISHELC,1)
-               CORCY0 = CENTSH(ISHELC,2)
-               CORCZ0 = CENTSH(ISHELC,3)
-            END IF
+            CORCX0 = CENTSH(ISHELC,1)
+            CORCY0 = CENTSH(ISHELC,2)
+            CORCZ0 = CENTSH(ISHELC,3)
             PRINTC = PRINTB
             IF ((ISHELC.NE.IPRNTC).AND.(IPRNTC.NE.0)) PRINTC=.FALSE.
 C
@@ -923,11 +909,9 @@ C
                NSTRD  = IORBSB(IORBSH(ISHELD,1))
                NUCD   = NUCOSH(ISHELD)
                NORBD  = NORBSH(ISHELD)
-               IF (.NOT.BIGVEC) THEN
-                  CORDX0 = CENTSH(ISHELD,1)
-                  CORDY0 = CENTSH(ISHELD,2)
-                  CORDZ0 = CENTSH(ISHELD,3)
-               END IF
+               CORDX0 = CENTSH(ISHELD,1)
+               CORDY0 = CENTSH(ISHELD,2)
+               CORDZ0 = CENTSH(ISHELD,3)
                GENCD = .NOT.(SEGMSH(ISHELC) .AND. SEGMSH(ISHELD))
                IGENCD = 1
                IF (.NOT.GENCD) IGENCD = 2
@@ -1023,11 +1007,9 @@ C
       NSTRA  = IORBSB(IORBSH(ISHELA,1))
       NUCA   = NUCOSH(ISHELA)
       NORBA  = NORBSH(ISHELA)
-      IF (.NOT.BIGVEC) THEN
-         CORAX0 = CENTSH(ISHELA,1)
-         CORAY0 = CENTSH(ISHELA,2)
-         CORAZ0 = CENTSH(ISHELA,3)
-      END IF
+      CORAX0 = CENTSH(ISHELA,1)
+      CORAY0 = CENTSH(ISHELA,2)
+      CORAZ0 = CENTSH(ISHELA,3)
 C
 C     Second Shell Index
 C     ==================
@@ -1044,18 +1026,18 @@ C
       NSTRB  = IORBSB(IORBSH(ISHELB,1))
       NUCB   = NUCOSH(ISHELB)
       NORBB  = NORBSH(ISHELB)
-      IF (.NOT.BIGVEC) THEN
-         CORBX0 = CENTSH(ISHELB,1)
-         CORBY0 = CENTSH(ISHELB,2)
-         CORBZ0 = CENTSH(ISHELB,3)
-      END IF
+      CORBX0 = CENTSH(ISHELB,1)
+      CORBY0 = CENTSH(ISHELB,2)
+      CORBZ0 = CENTSH(ISHELB,3)
       GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
       IGENAB = 1
       IF (.NOT.GENAB) IGENAB = 2
       NSETA  = NSETSH(ISHELA,IGENAB)
       NSETB  = NSETSH(ISHELB,IGENAB)
       SHAEQB = ISHELA .EQ. ISHELB
-      DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+      DIAGAB = SHAEQB
+C     DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+C aug2000: BIGVEC removed because obsolete
 C
       CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,GABRAO,DMRAO,DINTSKP,SCREEN,
      &            WORK,LWORK,MAXDER,EXPECT,
@@ -1171,11 +1153,9 @@ C
          NSTRC  = IORBSB(IORBSH(ISHELC,1))
          NUCC   = NUCOSH(ISHELC)
          NORBC  = NORBSH(ISHELC)
-         IF (.NOT.BIGVEC) THEN
-            CORCX0 = CENTSH(ISHELC,1)
-            CORCY0 = CENTSH(ISHELC,2)
-            CORCZ0 = CENTSH(ISHELC,3)
-         END IF
+         CORCX0 = CENTSH(ISHELC,1)
+         CORCY0 = CENTSH(ISHELC,2)
+         CORCZ0 = CENTSH(ISHELC,3)
          PRINTC = PRINTB
          IF ((ISHELC.NE.IPRNTC).AND.(IPRNTC.NE.0)) PRINTC=.FALSE.
 C
@@ -1199,11 +1179,9 @@ C
             NSTRD  = IORBSB(IORBSH(ISHELD,1))
             NUCD   = NUCOSH(ISHELD)
             NORBD  = NORBSH(ISHELD)
-            IF (.NOT.BIGVEC) THEN
-               CORDX0 = CENTSH(ISHELD,1)
-               CORDY0 = CENTSH(ISHELD,2)
-               CORDZ0 = CENTSH(ISHELD,3)
-            END IF
+            CORDX0 = CENTSH(ISHELD,1)
+            CORDY0 = CENTSH(ISHELD,2)
+            CORDZ0 = CENTSH(ISHELD,3)
             JDIS = IDIS(ICA,ICB,ICC,ICD)
             GENCD = .NOT.(SEGMSH(ISHELC) .AND. SEGMSH(ISHELD))
             IGENCD = 1
@@ -1266,7 +1244,7 @@ C
       CALL QENTER('TWOODS')
 #include <memint.h>
       IF (IPRINT .GT. 5) THEN
-      CALL TITLER('Output from TWOODS','*',103)
+         CALL TITLER('Output from TWOODS','*',103)
          WRITE (LUPRI,'(/2X,A,4I3)')
      &      'Shell quadruplet: ',ISHELA,ISHELB,ISHELC,ISHELD
       END IF
@@ -1280,8 +1258,11 @@ C
       MAXCD  = NHKTC + NHKTD - 2
       TCONAB = SHAEQB .AND. MAXAB .EQ. 0
       TCONCD = SHCEQD .AND. MAXCD .EQ. 0
-      DIAGAB = SHAEQB .AND. .NOT.BIGVEC
-      DIAGCD = SHCEQD .AND. .NOT.BIGVEC
+      DIAGAB = SHAEQB
+      DIAGCD = SHCEQD
+C     DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+C     DIAGCD = SHCEQD .AND. .NOT.BIGVEC
+C aug2000: BIGVEC removed because obsolete
       SPHRAB = SPHRA .OR. SPHRB
       SPHRCD = SPHRC .OR. SPHRD
       DIACAB = DIAGAB .AND. .NOT.SPHRAB
@@ -1759,8 +1740,7 @@ C        ***** Charge Distributions for First Electron *****
 C        ***************************************************
 C
          TPRIAB = .FALSE.
-         CAEQCB = .NOT.BIGVEC .AND. ICENTA .EQ. ICENTB
-     &                        .AND. IATOM  .NE. NCENTA
+         CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),WORK,
      &               LWORK,JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
      &               NUCB,NUCAB,MXUCAB,NORBA,NORBB,NPCOA,NPCOB,
@@ -1832,8 +1812,7 @@ C
                SIGNDX = XAND(ISYMTS)
                SIGNDY = YAND(ISYMTS)
                SIGNDZ = ZAND(ISYMTS)
-               CCEQCD = .NOT.BIGVEC .AND. (ICENTC .EQ. ICENTD)
-     &                              .AND. (NCENTC .NE. IATOM)
+               CCEQCD = (ICENTC .EQ. ICENTD) .AND. (NCENTC .NE. IATOM)
 C
 C              If necessary change sign of expansion coefficients
 C              ==================================================
@@ -1997,7 +1976,7 @@ c    &                               GABRAO(ISYBLA,ISYBLB,IXX)*
 c    &                               GABRAO(ISYBLC,ISYBLD,0),
 c    &                               GABRAO(ISYBLA,ISYBLB,IX*
 c    &                               GABRAO(ISYBLC,ISYBLD,IX)
-c     and so on ....
+c     and so on .... /jth
 c                    END IF
                      DNSMAX   = D0
                      DO I = 1,NDMAT 
@@ -2107,15 +2086,9 @@ C
 C              Local symmetries
 C              ================
 C
-               IF (BIGVEC) THEN
-                  CALL CORDIF(NSETA,NSETC,THRESH,ABADX,ABADY,ABADZ,
-     &                        IPRINT,NPCOA(1,1,NSYMR),NPCOC(1,1,NSYMS),
-     &                        JSTRA,JSTRC)
-               ELSE
-                  ABADX  = ABS(CORAX0 - XAND(ISYMT)*CORCX0) .LT. THRESH
-                  ABADY  = ABS(CORAY0 - YAND(ISYMT)*CORCY0) .LT. THRESH
-                  ABADZ  = ABS(CORAZ0 - ZAND(ISYMT)*CORCZ0) .LT. THRESH
-               END IF
+               ABADX  = ABS(CORAX0 - XAND(ISYMT)*CORCX0) .LT. THRESH
+               ABADY  = ABS(CORAY0 - YAND(ISYMT)*CORCY0) .LT. THRESH
+               ABADZ  = ABS(CORAZ0 - ZAND(ISYMT)*CORCZ0) .LT. THRESH
                ISAMEX = 0
                ISAMEY = 0
                ISAMEZ = 0
@@ -2447,43 +2420,63 @@ C
  1110 FORMAT(   '  NUCAB-CD  ',2I5)
       END
 C  /* Deck paovec */
-      SUBROUTINE PAOVEC(WORK,LWORK,IATOM,IPRINT)
+      SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
 #include <implicit.h>
 #include <aovec.h>
 #include <mxorb.h>
       DIMENSION WORK(LWORK)
 #include <shells.h>
+#include <blocks.h>
 C
       CALL QENTER('PAOVEC')
+C
+C aug2000 th+hjaaj: if (SEGMEN) then make as small vector shell blocks
+C          as possible
+C
+      IF (IATOM1 .EQ. -10000) THEN
+C        PAOVEC for generating GAB matrix
+         SEGMEN = .TRUE.
+         IATOM = 0
+      ELSE
+         SEGMEN = .FALSE.
+         IATOM = IATOM1
+      END IF
+C
 #include <memint.h>
+C
       CALL MEMGET('LOGI',KORBOU,KMAX       ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KALONE,KMAX       ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPRVO,KMAX       ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPRVP,KMAX       ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJORBS,KMAX*MXAOVC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KKORBS,KMAX*MXAOVC,WORK,KFREE,LFREE)
 C
-      CALL PAOVE2(IATOM,IPRINT,
-     &            WORK(KORBOU),WORK(KALONE),WORK(KIPRVO),
-     &            WORK(KIPRVP),WORK(KJORBS),WORK(KKORBS))
+      CALL PAOVE2(IATOM,IPRINT,WORK(KORBOU),
+     &            WORK(KIPRVO),WORK(KIPRVP),WORK(KJORBS),WORK(KKORBS))
 C
       CALL MEMREL('PAOVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('PAOVEC')
       RETURN
       END
 C  /* Deck paove2 */
-      SUBROUTINE PAOVE2(IATOM,IPRINT,
-     &                  ORBOUT,ALONE,IPRVOR,IPRVPR,
-     &                  JORBSH,KORBSH)
+      SUBROUTINE PAOVE2(IATOM,IPRINT,ORBOUT,
+     &                  IPRVOR,IPRVPR,JORBSH,KORBSH)
+C
+CHJMAERKE
+C hjaaj aug2000: possibilities:
+C                here we can also split a contracted block
+C                in more blocks, if needed for memory
+C
 #include <implicit.h>
 #include <maxaqn.h>
 #include <aovec.h>
 #include <mxorb.h>
 #include <mxcent.h>
 
-      LOGICAL ORBOUT(KMAX), ALONE(KMAX), ALLSHR, ALLSEG
+      PARAMETER (DSM = 1.0D-10)
+      LOGICAL ORBOUT(KMAX)
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
+
 #ifdef PRG_DIRAC
 #include <dcbgen.h>
 #else
@@ -2494,28 +2487,35 @@ C  /* Deck paove2 */
 #include <blocks.h>
 #include <symmet.h>
 #include <nuclei.h>
-      BIGVEC = .FALSE.
-      SEGMEN = .FALSE.
+#include <primit.h>
+C
+C
       MXAOSH = 0
       NLRGBL = 0
 C
-C     First assign each shell to a vector
+C     Set up information needed below
 C
-      DO 100 I = 1, KMAX
-         ORBOUT(I) = .FALSE.
+      IORB = 0
+      INUC = 0
+      DO 100 IA = 1, KMAX
+C     ... sum over symmetry independent orbital shells
+C
+         ORBOUT(IA) = .FALSE.
+C
+C        ... find off-set to this sym. indep. orb. shell
+C            in total list of contracted orbitals
+         IPRVOR(IA) = IORB
+         IORB = IORB + KHKT(IA)*MULT(ISTBAO(IA))
+C
+C        ... find off-set to input block of primitives used for
+C            this sym. indep. orb. shell
+         IPRVPR(IA) = INUC
+         IF (IA.LT.KMAX) THEN
+            IF (NUMCF(IA + 1) .EQ. 1) INUC = INUC + NUCO(IA)
+         END IF
  100  CONTINUE
 C
-C     Determine ALONE() and ALLSEG
-C
-      ALLSEG = .TRUE.
-      ALLSHR = .TRUE.
-      DO 110 I = 1, KMAX
-         ALLSEG = ALLSEG .AND. SEGM(I)
-         ALLSHR = ALLSHR .AND. .NOT.SHARE(I)
- 110  CONTINUE
-      DO 130 I = 1, KMAX
-         ALONE(I) = .NOT.ALLSHR .AND. .NOT.SHARE(I)
- 130  CONTINUE
+C     Assign each orbital shell to a vector orbital shell
 C
       MAXSHL = 0
       NAOOUT = 0
@@ -2530,11 +2530,8 @@ C
                NBCHA  = NBCH(IA)
                NUCA   = NUCO(IA)
                MAXSHL = MAXSHL + 1
-               NUCSH  = 0
                LCLASH(MAXSHL) = LCLASS(IA)
-               IF(RELCAL) THEN
-                 IF(LCLASS(IA).EQ.1) NLRGBL = NLRGBL + 1
-               ENDIF
+               IF(LCLASS(IA).EQ.1) NLRGBL = NLRGBL + 1
                NHKTSH(MAXSHL) = NHKTA
                KHKTSH(MAXSHL) = KHKTA
                KCKTSH(MAXSHL) = KCKTA
@@ -2549,63 +2546,97 @@ C
                  NSYMBL = NSYMBL + 1
                  ISYMBL(MAXSHL,IDEG) = NSYMBL
                ENDDO
-               IF (BIGVEC) THEN
-                  IF (NCENTA .EQ. IATOM) THEN
-                     NCNTSH(MAXSHL) = NCENTA
-                  ELSE
-                     NCNTSH(MAXSHL) = 0
-                  END IF
-                  IF (MXAOSH .EQ. 0) THEN
-                      IF (NHKTA .EQ. 1) MAXVC = 10
-                      IF (NHKTA .EQ. 2) MAXVC = 5
-                      IF (NHKTA .GE. 3) MAXVC = 3
-                  ELSE
-                      MAXVC = MXAOSH
-                  END IF
+               NCNTSH(MAXSHL)   = NCENTA
+               CENTSH(MAXSHL,1) = CENT(IA,1,1)
+               CENTSH(MAXSHL,2) = CENT(IA,2,1)
+               CENTSH(MAXSHL,3) = CENT(IA,3,1)
+C
+               IF (SEGMEN) THEN
+C aug2000 hjaaj   Task: make vector shells as small as possible
+C                 for calc. of GAB matrix. That is, for segmented
+C                 blocks we keep just one orbital shell in each
+C                 vector orbital shell.
+C
+                  NAOOUT     = NAOOUT + 1
+                  ORBOUT(IA) = .TRUE.
+                  IPTSHL(IA) = MAXSHL
+                  IORB       = 1
+                  JORBSH(MAXSHL,IORB) = IA
+C
+C                 find first and last primitive shell
+C                 contributing to this orbital shell
+C
+                  K = NUMCF(IA)
+                  JSTR  = IPRVPR(IA)
+                  IOFF  = NUCA
+                  ILAST = 0
+                  DO I = 1,NUCA
+                     IF (ABS(PRICCF(JSTR+I,K)) .GT. DSM) THEN
+                        IOFF  = MIN(IOFF,I-1)
+                        ILAST = MAX(ILAST,I)
+                     END IF
+                  END DO
+                  NPRI = ILAST - IOFF
+                  NUCOSH(MAXSHL) = NPRI
+C
+C                 set gen.cont. shell info
+                  NSET       = 1
+                  KORBSH(MAXSHL,NSET) = IA
+                  NSETSH(MAXSHL,1) = NSET
+                  NPRIMS(MAXSHL,NSET,1) = NPRI
+                  NCONTS(MAXSHL,NSET,1) = 1
+                  JSTRSH(MAXSHL,NSET,1) = JSTR+IOFF
+C
+C                 as we only use one contracted at a time
+C                 this can always be treated in code for segm.cont.
+                  SEGMSH(MAXSHL) = .TRUE.
+C
+C                 set segm.cont. shell info
+                  NSETSH(MAXSHL,2) = NSET
+                  NPRIMS(MAXSHL,NSET,2) = NPRI
+                  NCONTS(MAXSHL,NSET,2) = -K
+C                 ... used for getting PRICCF(IPRIM,-K)
+                  JSTRSH(MAXSHL,NSET,2) = JSTR+IOFF
+C
                ELSE
-                  NCNTSH(MAXSHL) = NCENTA
-                  CENTSH(MAXSHL,1) = CENT(IA,1,1)
-                  CENTSH(MAXSHL,2) = CENT(IA,2,1)
-                  CENTSH(MAXSHL,3) = CENT(IA,3,1)
+C aug2000 hjaaj   Task: which orbital shells should we treat together
+C                 with IA in TWOINT ?
+C                 if (mxaosh .eq. 0) then
+C                    use the blocking specified by user in input
+C                 else
+C                    try to merge compatible user specified blocks
+C                    for higher efficiency in TWOINT
+C                 end if
+C
+C aug2000 th+hjj: the next section can be used to collect
+C                 input blocks for efficiency, e.g. by
+C                 defining max MXAOSH = 50 in a block;
                   IF (MXAOSH .EQ. 0) THEN
                       MAXVC = NUCA
+C aug2000             ... keep shell blocking from input
                   ELSE
-                      MAXVC = MXAOSH
+                      NPRIA = KHKTA * MULT( ISTBSH(MAXSHL) )
+C                     each primitive gives NPRIA basis functions
+                      MAXVC = MAX(NUCA, MXAOSH / NPRIA)
+C aug2000             we divide by NPRIA so MXAOSH is max number
+C                     of primitive basis fu. in a shell
                   END IF
-               END IF
-               IORB = 1
-               NSET = 0
-               LBCH = 0
-               DO 210 IB = 1, KMAX
-                  IF (ORBOUT(IB))                              GO TO 210
-                  IF (NHKT(IB) .NE. NHKTA)                     GO TO 210
-                  IF (KHKT(IB) .NE. KHKTA)                     GO TO 210
-                  IF (NCENT(IB) .NE. NCENTA) THEN
-                     IF (.NOT.BIGVEC)                          GO TO 210
-                     IF (BIGVEC .AND. ALONE(IA))               GO TO 210
-                     IF (BIGVEC .AND. ALONE(IB))               GO TO 210
-                  END IF
-                  IF (NCENTA.EQ.IATOM.AND.NCENT(IB).NE.IATOM)  GO TO 210
-                  IF (NCENTA.NE.IATOM.AND.NCENT(IB).EQ.IATOM)  GO TO 210
-                  IF (RELCAL.AND.(LCLASS(IB).NE.LCLASS(IA)))   GO TO 210
+                  NUCSH  = 0
+                  IORB = 1
+                  NSET = 0
+                  LBCH = 0
+                  DO 210 IB = IA, KMAX
+                     IF (ORBOUT(IB))                 GO TO 210
+                     IF (NHKT(IB) .NE. NHKTA)        GO TO 210
+                     IF (KHKT(IB) .NE. KHKTA)        GO TO 210
+                     IF (NCENT(IB) .NE. NCENTA)      GO TO 210
+                     IF (LCLASS(IB).NE.LCLASS(IA))   GO TO 210
 C
-C                 Correct orbital type
+C                    Orbital type is correct ..
 C
-                  NUCB = NUCO(IB)
-                  IF (SEGMEN) THEN
-                     IF (NUCSH + NUCB .LE. MAXVC) THEN
-                        ORBOUT(IB) = .TRUE.
-                        IPTSHL(IB) = MAXSHL
-                        JORBSH(MAXSHL,IORB) = IB
-                        IORB       = IORB   + 1
-                        NAOOUT     = NAOOUT + 1
-                        NUCSH      = NUCSH  + NUCB
-                        NSET       = 1
-                     END IF
-                  ELSE
+                     NUCB  = NUCO(IB)
                      NBCHB = NBCH(IB)
-                     IF (NBCHB .EQ. LBCH .OR.
-     *                  NUCSH + NUCB .LE. MAXVC) THEN
+                     IF (NBCHB.EQ.LBCH .OR. NUCSH+NUCB.LE.MAXVC) THEN
                         ORBOUT(IB) = .TRUE.
                         IPTSHL(IB) = MAXSHL
                         JORBSH(MAXSHL,IORB) = IB
@@ -2618,10 +2649,10 @@ C
                            KORBSH(MAXSHL,NSET) = IB
                         END IF
                      END IF
-                  END IF
-  210          CONTINUE
-               NUCOSH(MAXSHL) = NUCSH
-               NSETSH(MAXSHL,1) = NSET
+  210             CONTINUE
+                  NUCOSH(MAXSHL) = NUCSH
+                  NSETSH(MAXSHL,1) = NSET
+               END IF
                IF (NAOOUT .LT. KMAX) THEN
                    GO TO 1000
                ELSE
@@ -2655,12 +2686,6 @@ C 500 CONTINUE
 C
 C     Determine IORBSH(MAXSHL,NORBSH)
 C
-      IORB = 0
-      IPRVOR(1) = 0
-      DO 800 I = 1, KMAX - 1
-         IORB = IORB + KHKT(I)*MULT(ISTBAO(I))
-         IPRVOR(I + 1) = IORB
-  800 CONTINUE
       DO 810 I = 1, MAXSHL
          DO 820 J = 1, NORBSH(I)
             IORBSH(I,J) = IPRVOR(JORBSH(I,J))
@@ -2680,51 +2705,52 @@ C
   920       CONTINUE
   910    CONTINUE
   900 CONTINUE
-      NTOTAL = IORBB + 1
-      CALL PAOSET(KORBSH,IPRVPR)
+      NTOT = IORBB
+C
+      IF (.NOT. SEGMEN) CALL PAOSET(KORBSH,IPRVPR)
+C     ... PAOSET work is done in 200 loop for SEGMEN
 C
 C     Print Section
 C
-      IF (IPRINT .GE. 5) THEN
+      IF (IPRINT .GE. 3) THEN
          CALL HEADER('Output from PAOVEC',-1)
-         WRITE (LUPRI,'(1X,A,L5)') ' BIGVEC ', BIGVEC
-         WRITE (LUPRI,'(1X,A,I5)') ' MAXSHL ', MAXSHL
-         WRITE (LUPRI,'(1X,A,(5I5))') ' NHKTSH ',(NHKTSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5I5))') ' KHKTSH ',(KHKTSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5L5))') ' SPHRSH ',(SPHRSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5I5))') ' KCKTSH ',(KCKTSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5I5))') ' NUCOSH ',(NUCOSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5I5))') ' NORBSH ',(NORBSH(I),I=1,MAXSHL)
-C        WRITE (LUPRI,'(1X,A,(5I5))') ' NSTRSH ',(NSTRSH(I),I=1,MAXSHL)
-         WRITE (LUPRI,'(1X,A,(5I5))')' IORBSB ',(IORBSB(I-1),I=1,NTOTAL)
-         IF (BIGVEC) THEN
-            WRITE (LUPRI,'(1X,A,(10I5))')
-     *            ' NCNTSH ',(NCNTSH(I),I=1,MAXSHL)
-         END IF
+         WRITE (LUPRI,'(A,L5)') ' SEGMEN ', SEGMEN
+         WRITE (LUPRI,'(A,I5)') ' MAXSHL ', MAXSHL
+         WRITE (LUPRI,'(A,(T11,10I5))') ' NHKTSH',(NHKTSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' KHKTSH',(KHKTSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10L5))') ' SPHRSH',(SPHRSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' KCKTSH',(KCKTSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' NUCOSH',(NUCOSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' NORBSH',(NORBSH(I),I=1,MAXSHL)
+C        WRITE (LUPRI,'(A,(T11,10I5))') ' NSTRSH',(NSTRSH(I),I=1,MAXSHL)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' IORBSB',(IORBSB(I),I=0,NTOT)
+         WRITE (LUPRI,'(A,(T11,10I5))') ' NCNTSH',(NCNTSH(I),I=1,MAXSHL)
          DO 2000 I = 1, MAXSHL
-            WRITE (LUPRI,'(1X,A,I5)')'JSTRSH (gen. con.) for ISHELL =',I
-            WRITE (LUPRI,'(1X,15I5)')(JSTRSH(I,J,1),J=1,NORBSH(I))
-            WRITE (LUPRI,'(1X,A,I5)')'JSTRSH (seg. con.) for ISHELL =',I
-            WRITE (LUPRI,'(1X,15I5)')(JSTRSH(I,J,2),J=1,NORBSH(I))
+            WRITE (LUPRI,'(A,I5)')'JSTRSH (gen. con.) for ISHELL =',I
+            WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,1),J=1,NORBSH(I))
+            WRITE (LUPRI,'(A,I5)')'JSTRSH (seg. con.) for ISHELL =',I
+            WRITE (LUPRI,'(15I5)')(JSTRSH(I,J,2),J=1,NORBSH(I))
  2000    CONTINUE
          DO 2001 I = 1, MAXSHL
-            WRITE (LUPRI,'(1X,A,I5)')'NPRIMS (gen. con.) for ISHELL =',I
-            WRITE (LUPRI,'(1X,15I5)')(NPRIMS(I,J,1),J=1,NORBSH(I))
-            WRITE (LUPRI,'(1X,A,I5)')'NPRIMS (seg. con.) for ISHELL =',I
-            WRITE (LUPRI,'(1X,15I5)')(NPRIMS(I,J,2),J=1,NORBSH(I))
+            WRITE (LUPRI,'(A,I5)')'NPRIMS (gen. con.) for ISHELL =',I
+            WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,1),J=1,NORBSH(I))
+            WRITE (LUPRI,'(A,I5)')'NPRIMS (seg. con.) for ISHELL =',I
+            WRITE (LUPRI,'(15I5)')(NPRIMS(I,J,2),J=1,NORBSH(I))
  2001    CONTINUE
          DO 2002 I = 1, MAXSHL
-            WRITE (LUPRI,'(1X,A,I5)')'CENTSH for ISHELL =',I
-            WRITE (LUPRI,'(1X,3F20.10)')
+            WRITE (LUPRI,'(A,I5)')'CENTSH for ISHELL =',I
+            WRITE (LUPRI,'(3F20.10)')
      *             CENTSH(I,1),CENTSH(I,2),CENTSH(I,3)
  2002    CONTINUE
          DO 2003 I = 1, MAXSHL
-            WRITE (LUPRI,'(1X,A,I5)')'IORBSH for ISHELL =',I
-            WRITE (LUPRI,'(1X,15I5)')(IORBSH(I,J),J=1,NORBSH(I))
+            WRITE (LUPRI,'(A,I5)')'IORBSH for ISHELL =',I
+            WRITE (LUPRI,'(15I5)')(IORBSH(I,J),J=1,NORBSH(I))
  2003    CONTINUE
       END IF
       RETURN
       END
+#ifdef BIGVEC
+C aug2000: th+hjaaj: CORDIF is used for BIGVEC option which is "dead"
 C  /* Deck cordif */
       SUBROUTINE CORDIF(NORBA,NORBB,THRESH,D0X,D0Y,D0Z,
      &                  IPRINT,NUCOA,NUCOB,JSTRA,JSTRB)
@@ -2819,6 +2845,7 @@ C
  1060 FORMAT(  '  D0X/Y/Z: ',3L5)
       RETURN
       END
+#endif
 C  /* Deck nintso */
       SUBROUTINE NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
      &                  IPRINT)
@@ -3375,6 +3402,7 @@ C
       CALL QEXIT('CCDRIV')
       RETURN
       END
+#ifdef NOT_USED
 C  /* Deck ndistr */
       FUNCTION NDISTR(INDXAB,MAXDIS,IPRINT)
 C
@@ -3444,6 +3472,7 @@ C
       END IF
       RETURN
       END
+#endif
 C  /* Deck paoset */
       SUBROUTINE PAOSET(KORBSH,IPRVPR)
 #include <implicit.h>
@@ -3463,12 +3492,6 @@ C
 C     Determine NPRIMS(MAXSHL,NSETSH,2), NCONTS(MAXSHL,NSETSH,2),
 C           and JSTRSH(MAXSHL,NSETSH,2)
 C
-      INUC = 0
-      IPRVPR(1) = 0
-      DO 100 I = 1, KMAX - 1
-         IF (NUMCF(I + 1) .EQ. 1) INUC = INUC + NUCO(I)
-         IPRVPR(I + 1) = INUC
-  100 CONTINUE
       DO 200 I = 1, MAXSHL
 #include <scalar.h>
          DO 300 J = 1, NSETSH(I,1)
