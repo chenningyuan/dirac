@@ -3790,6 +3790,7 @@ Ctec Is FIRST needed??
      &          IFCKOP(NFMAT),NPOS(*),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
 #include <dgroup.h>
+#include <cbihr2.h>
 #include <dcbbas.h>
 #include <blocks.h>
 C
