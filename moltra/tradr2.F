@@ -1657,7 +1657,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Tr2par */
-      SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,
+      SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
      &        EMP2,DINTSKP,TIM1)
 C***********************************************************************
@@ -1685,7 +1685,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       LOGICAL ANTIS,LMP2
-      DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4)
+      DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4),TRIAN(2)
       DIMENSION WORK(*),TIM1(7),DINTSKP(8)
 C
