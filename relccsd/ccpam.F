@@ -108,8 +108,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <gnrinf.h>
 #include <infpar.h>
@@ -119,9 +117,6 @@ C
       ITASK = 3
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       RETURN
       END
@@ -139,8 +134,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <gnrinf.h>
 #include <infpar.h>
@@ -177,8 +170,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <gnrinf.h>
 #include <infpar.h>
@@ -189,14 +180,6 @@ C
       CALL QENTER('CCNOD')
 #include <memint.h>
       KFRSAV = KFREE
-#if defined (VAR_PVM)
-      CALL PVMFMYTID(MYTID)
-      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
-C
-      CALL PVMFPARENT(MPARID)
-      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
-C
-#endif
 C
 C     At the moment this is a dummy routine, letting the slaves
 C     sleep so that they do not consume CPU-time idling for tasks.
