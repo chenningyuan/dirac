@@ -479,15 +479,6 @@ C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
-C     Option 3) :
-C     IH - equation I. Divide parts of T1 and T2 that correspond to WF I by denominators. Zero up Pi -> Q transitions
-C     Parts that correspond to the effective Hamiltonian are untouched.
-C     Option 4) :
-C     IH - equation II. Divide parts of T1 and T2 that correspond to WF II by MODIFIED denominators (Q(E-H0)Q).
-C     Parts that correspond to the effective Hamiltonian are untouched.
-C     Option 5) :
-C     IH - equation II. MULTIPLY parts of T1 and T2 that correspond to WF II to MODIFIED denominators (Q(E-H0)Q).
-C     Parts that correspond to the effective Hamiltonian are untouched.
 C
 C---------------Routines called----------------------------------------
 C
@@ -557,14 +548,10 @@ c
       DO I = IOI(ico-1)+1, IOI(ico)
          II = II + 1
          FAC1 = EPS(II)
-         IF (ICURFSS.EQ.01) THEN
-             IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC1=CIH
-             IF (OPTION.EQ.3.AND.IPIORB(II).EQ.1) THEN
-                DIH=0.D0
-             ELSE
-                DIH=1.D0
+         DIH=1.D0
+             IF (DOIH.AND.IPIORB(II).EQ.1) THEN
+                IF (ICURFSS.EQ.01.AND.ICO.EQ.3) DIH=0.D0
              ENDIF
-         ENDIF
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -603,28 +590,15 @@ C
          DO A = IVA(acv-1)+1, IVA(acv)
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
-             IF (ICURFSS.EQ.10) THEN
-                IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC=FAC1-CIH
-                IF (OPTION.EQ.3.AND.IPIORB(AA).EQ.1) THEN
-                   DIH=0.D0
-                ELSE
-                   DIH=1.D0
+                IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
+                   IF (ICURFSS.EQ.10.AND.ACV.EQ.3) DIH=0.D0
                 ENDIF
-             ENDIF
              AI = AI + 1
              IF (DENO) THEN
                 IF (CARITH) THEN
-                   IF (OPTION.EQ.5) THEN
-                       CT1(AI) = CT1(AI)*FAC
-                   ELSE
                        CT1(AI) = DIH*CT1(AI)/FAC
-                   ENDIF
-               ELSE
-                   IF (OPTION.EQ.5) THEN
-                       T1(AI) = T1(AI)*FAC
-                   ELSE
+                 ELSE
                        T1(AI) = DIH*T1(AI)/FAC
-                   ENDIF
                 ENDIF
              ENDIF
 C
@@ -644,6 +618,7 @@ C
 
 c T2 part:
       ABIJ = 0
+      DIH=1.D0
 c
       DO IJRP = 1, NREP
       DO 10 JRP = 1, NREP
@@ -668,13 +643,11 @@ c
           DO J = IOJ(jco-1)+1, IOJ(jco)
             JJ = JJ + 1
             FAC1 = EPS(JJ)
-            IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.2) THEN
-               IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC1=CIH
-               IF (OPTION.EQ.3.AND.IPIORB(JJ).EQ.1) THEN
-                  DIH=0.D0
-               ELSE
-                  DIH=1.D0
-                ENDIF
+            DIH=1.D0
+            IF (DOIH.AND.IPIORB(JJ).EQ.1) THEN
+               IF ((ICURFSS.EQ.1.OR.ICURFSS.EQ.2).AND.JCO.EQ.3)
+     1         DIH=0.D0
+               IF (ICURFSS.EQ.11.AND.JCO.EQ.2) DIH=0.D0
             ENDIF
             icomin=1
             IF (IRP.EQ.JRP) icoMIN = jco
@@ -684,11 +657,10 @@ c
             DO I = IMIN, IOI(ico)
                II = IOFF + I
                FAC2 = EPS(II) + FAC1
-               IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.2) THEN
-                  IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC2=FAC1+CIH
-                  IF (OPTION.EQ.3.AND.IPIORB(II).EQ.1) THEN
-                     DIH=0.D0
-                  ENDIF
+               IF (DOIH.AND.IPIORB(II).EQ.1) THEN
+                  IF ((ICURFSS.EQ.1.OR.ICURFSS.EQ.2).AND.ICO.EQ.3)
+     1            DIH=0.D0
+                  IF (ICURFSS.EQ.11.AND.ICO.EQ.2.AND.JCO.NE.2) DIH=0.D0
                ENDIF
 c
              DO 20 BRP = 1, NREP
@@ -712,13 +684,10 @@ c
                   DO B = IVB(bcv-1)+1, IVB(bcv)
                      BB = BB + 1
                      FAC3 = FAC2 - EPS(BB)
-                     IF (ICURFSS.EQ.10.OR.ICURFSS.EQ.20) THEN
-                        IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC3=FAC2-CIH
-                        IF (OPTION.EQ.3.AND.IPIORB(BB).EQ.1) THEN
-                           DIH=0.D0
-                        ELSE
-                           DIH=1.D0
-                        ENDIF
+                     IF (DOIH.AND.IPIORB(BB).EQ.1) THEN
+                       IF((ICURFSS.EQ.10.OR.ICURFSS.EQ.20).AND.BCV.EQ.3) 
+     1                 DIH=0.D0
+                       IF (ICURFSS.EQ.11.AND.BCV.EQ.1) DIH=0.D0
                      ENDIF
                      acvMIN=1
                      IF (ARP.EQ.BRP) acvMIN = Bcv
@@ -764,11 +733,11 @@ C                    This will zero out Hamiltonian elements
                         DO A = AMIN, IVA(acv)
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
-                           IF (ICURFSS.EQ.10.OR.ICURFSS.EQ.20) THEN
-                            IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC=FAC3-CIH
-                            IF (ICURFSS.EQ.10) DIH=1.D0
-                            IF (OPTION.EQ.3.AND.IPIORB(JJ).EQ.1) 
-     &                         DIH=0.D0
+                           IF (DOIH.AND.IPIORB(AA).EQ.1) THEN
+                            IF((ICURFSS.EQ.10.OR.ICURFSS.EQ.20).
+     &                          AND.ACV.EQ.3)   DIH=0.D0
+                            IF (ICURFSS.EQ.11.AND.
+     &                          ACV.EQ.1.AND.BCV.NE.1) DIH=0.D0
                            ENDIF
                            ABIJ = ABIJ + 1
                            IF (DENO) THEN
@@ -782,17 +751,9 @@ C                            Check for zero denominators
                                 CALL QUIT('Zero denominator in DENOMF')
                              ENDIF
                              IF (CARITH) THEN
-                                IF (OPTION.EQ.5) THEN
-                                   CT2(ABIJ) = CT2(ABIJ)*FAC
-                                ELSE
                                    CT2(ABIJ) = DIH*CT2(ABIJ)/FAC
-                                ENDIF
-                             ELSE
-                                IF (OPTION.EQ.5) THEN
-                                   T2(ABIJ) = T2(ABIJ)*FAC
-                                ELSE
+                              ELSE
                                    T2(ABIJ) = DIH*T2(ABIJ)/FAC
-                                ENDIF
                              ENDIF
 C-----------------------------------------------------------------------
 CThis may cause large output : activate when debugging..
@@ -850,6 +811,7 @@ C
      &/' Energies    : ',4F15.5,
      &/' Absolute value ',E15.5)
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C

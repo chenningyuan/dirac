@@ -508,12 +508,7 @@ C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
       IF (FOCKSP) THEN
-        IDN=1
-        IF( DOIH) THEN
-          IDN=3
-          IF (IHEQ.GT.1) IDN=4 
-        ENDIF
-        CALL DENOMF (EPS,S1,S2,S1,S2,IDN)
+        CALL DENOMF (EPS,S1,S2,S1,S2,1)
       ELSE
         CALL DENOM (EPS,S1,S2,S1,S2)
       ENDIF
@@ -754,16 +749,6 @@ C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
         CALL XCOPY (NDIMT1,FVO,1,S1,1)
-        IF (DOIH.AND.IHEQ.EQ.2) THEN
-           CALL GETAMPT (BUF1,BUF2)
-cluuk : I think we need to divide because on disk are the amplitudes
-cluuk : that are NOT scaled by denominators. The denomf then gives
-cluuk : the true wave function part.
-cluuk      CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
-cluuk
-           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
-           CALL XAXPY (NFVO,A1,BUF1,1,S1,1)
-        ENDIF
 C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
@@ -1042,16 +1027,6 @@ C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
         CALL GETVVOO (S2)
-        IF (DOIH.AND.IHEQ.EQ.2) THEN
-           CALL GETAMPT (BUF1,BUF2)
-cluuk : I think we need to divide because on disk are the amplitudes
-cluuk : that are NOT scaled by denominators. The denomf then gives
-cluuk : the true wave function part.
-cluuk      CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,3)
-cluuk
-           CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
-           CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-         ENDIF
       ENDIF
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
