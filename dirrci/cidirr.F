@@ -2788,6 +2788,7 @@ C
       DIMENSION KR(-N3:N3)
 C
       CHARACTER*10 DATEX,DATEXB,TIMEX*8,TIMEXB*8
+      CHARACTER*8 NEXTFIL
 C
       REALAR = .TRUE.
       TRESINT = 1.D-12
@@ -2830,7 +2831,17 @@ C
          IF (ABS(RKLI(INZ)).GT.TRESINT) REALAR = .FALSE.
       ENDDO
       MINT = MINT + NZ
-      If (ikr.EQ.0) GoTo 40 ! End of File
+      IF (IKR.EQ.0) THEN
+         IF (JKR.EQ.0) THEN
+            NZ = -1
+         ELSE
+            READ (MDCINT) NEXTFIL
+            CLOSE (MDCINT,STATUS='KEEP')
+            OPEN(MDCINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            GOTO 30
+         ENDIF
+      ENDIF
+      If (nz.EQ.-1) GoTo 40 ! End of File
       i = indmo(kr(ikr))
       j = indmo(kr(jkr))
       itr = indmo(kr(-ikr))
