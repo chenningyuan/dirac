@@ -7539,12 +7539,24 @@ C
 #include <nuclei.h>
 #include <primit.h>
 #include <molinp.h>
+
+#if defined (VAR_MPI)
+#include "dcbgen.h"
+#include "mpif.h"
+#include "infpar.h"
+#endif
+
       LOGICAL SEG, NRMPRI
       CHARACTER KASYM(3,3)*1, CRT*1
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &     JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &     CPRIMU(KPRIM,KPRIM,KBLOCK),SEG(KBLOCK)
       DIMENSION IPCON(KPRIM)
+
+C     .... only for master or single process !!! 
+#if defined (VAR_MPI)
+      IF ((PARCAL.AND..NOT.SLAVE).OR..NOT.PARCAL) THEN
+#endif
 C
       LUTMP2 = 0
       CALL GPOPEN(LUTMP2,'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
@@ -7638,9 +7650,12 @@ C
       CALL GPCLOSE(LUTMP2,'KEEP')
 
       WRITE(LUPRI,'(/,2X,A)')
-     &       'MNF.INP input file (for the AMFI stuff) is ready.'
+     &    'MNF.INP input file (for the AMFI stuff) is ready.'
+      CALL FLSHFO(LUPRI)
+
+#if defined (VAR_MPI)
+      ENDIF
+#endif
 
       RETURN
       END
-
-
