@@ -147,85 +147,21 @@ C/* Deck PRPXL1 */
       SUBROUTINE PRPXL1(ABLRF,RCNV,IORBCL,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C     Calculate linear response values defined in /XCBXLR/
-C
-C     Linear response functions are defined as:
-C
-C        <<A,;B>>_w = -(E[1]_A)^{+}(E[2] - wS[2])^{-1}(E[1]_B)
-C
-C        E[1]_A   is gradient of perturbation operator A  (h|A)
-C        E[1}_B   is gradient of perturbation operator B  (h|B)
-C        E[2]     is the molecular Hessian                (h|H|h)
-C        S[2]     is a metric                             (h|h)
-C     
-C     where h is the operator manifold. In RPA h is limited to single 
-C     excitations.
-C
-C     The linear response functions are found by iterative techniques.
-C     We write
-C
-C        (E[2] - wS[2])^{-1}(E[1]_B) = X
-C
-C     which can be rearranged to the linear response equation
-C
-C        (E[2] - wS[2])X = E[1]_B
-C       
-C     The linear reponse equation is solved by projecting X onto
-C     a reduced space of trial vectors:
-C
-C        X = (b_i)a_i           B = [(b_1)  (b_2)  ...  (b_n)]
-C
-C     and solving the reduced equation
-C
-C        (RE[2] - wRS[2])a = RE[1]_B
-C
-C     in which
-C
-C       RE[2] = B^{+}E[2]B
-C       RS[2] = B^{+}S[2]B
-C       RE[1] = B^{+}E[1}
-C    
-C
-C     The evaluation of linear reponse functions thus proceeds in
-C     three steps:
-C
-C       1. Generate property gradient      : E[1]_B
-C       2. Solve reduced response equation : (RE[2] - wRS[2])a = RE[1]_B
-C       3. Generate full solution vector   : X
-C
-C
-C     Each operator A and B is assumed to span a given boson irrep
-C     and be either symmetric(+) or antisymmetric(-) with respect
-C     to time reversal.
-C
-C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
-C     Last revision Nov 26 1997 - tsaue - tsaue
+C     Called by PRPXLR (see PRPXLR for description of task)
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-#endif
-#if defined (VAR_PVM)
-#include <fpvm3h.h>
-#endif
-#include <aovec.h>
-#include <mxorb.h>
-#include <infpar.h>
 C
 #include <dcbgen.h>
 #include <dcbxlr.h>
-#include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <pgroup.h>
 #include <dcbxpr.h>
 #include <dcbxrs.h>
 C
-#include <blocks.h>
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          IORBCL(4,*),WORK(*)
@@ -410,13 +346,12 @@ C*****************************************************************************
 #include <dummy.h>
 #include <mxorb.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 32,DMIL = 1.0D3)
+      PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
 C
 #include <dcbgen.h>
 #include <dcbprp.h>
 #include <dcbxlr.h>
 #include <dcborb.h>
-#include <dcbbas.h>
 #include <dcbham.h>
 #include <dgroup.h>
 #include <pgroup.h>
@@ -455,7 +390,6 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
-      INPERR = 0
 C
 C
 C     Initialize /XCBLR/
@@ -464,10 +398,10 @@ C
       IPRXLR     = 0
       THCLR      = 1.0D-5
       THRCOM     = D0
-      RESXLR     = DMIL
+      RESXLR     = DRESFAC
       CNVXLR(1)  = DUMMY
       CNVXLR(2)  = DUMMY
-      MAXRM      = 200
+      MAXRM      = -1
       MXLOAD     = 0
       ITRXLR     = 50
       INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
@@ -490,6 +424,9 @@ C
       XLRDIH     = .TRUE.
       TRIAB      = .FALSE.
       XVCFIL     = 'NORXVC'
+      ORBXLR     = .FALSE.
+C     .... hjaaj: ORBXLR was not defined any more, but referenced
+C     .... TODO: Trond, should ORBXLR be removed completely ? /hjaaj July 2001
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
       DO I = 1,NFSYM
@@ -517,6 +454,7 @@ C     =========================
 C
       NEWDEF = (WORD .EQ. '*LINEAR')
       ICHANG = 0
+      INPERR = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -578,9 +516,9 @@ C&&&& B FREQuency
                     ELSE
                        INPERR = INPERR + 1
                        WRITE (LUPRI,'(3(/,A,I5),/)')
-     &                 '@Number of B frequencies specified :',
+     &                 '@ Number of B frequencies specified  :',
      &                 NBFREQ,
-     &                 '@is greater than the allowed number :',
+     &                 '@ is greater than the allowed number :',
      &                 MAXFLR
                        READ (LUCMD,*) (BFREQ(J),J=1,MAXFLR),
      &                              (FFFF,J=MAXFLR+1,NBFREQ)
@@ -690,7 +628,7 @@ C&&&& SKIPEE: Skip all e-e rotations
                   SKIPEE = .TRUE.
                GO TO 100
  29            CONTINUE
-C&&&& MALOAD: Maximum number of trial vectors to be loaded in each microiteration
+C&&&& MXLOAD: Maximum number of trial vectors to be loaded in each microiteration
                   READ(LUCMD,*) MXLOAD
                GO TO 100
  30            CONTINUE
@@ -715,9 +653,19 @@ C     ===============
 C
       IF(CNVXLR(1).LT.DUMMY) ITRILR(1) = 1
       IF(CNVXLR(2).LT.DUMMY) ITRILR(2) = 1
+C
+      IF (MAXRM.LT.0) MAXRM = MAX(200,100+NBFREQ*ITRXLR)
+C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(QEDRUN) SKIPEP = .FALSE.      
+      IF(QEDRUN .AND. SKIPEP) THEN
+         WRITE(LUPRI,'(/A)')
+     &  ' Input WARNING for *LINEAR: .SKIPEP ignored because of .QEDRUN'
+         SKIPEP = .FALSE.      
+      END IF
+      IF(LEVYLE) SKIPEP = .TRUE.
+C       ... to make sure diamagnetic terms are calculated for magn.prop.
+C           (see PRPDEF) /hj jan 2001
 C
 C     Print section
 C     =============
@@ -737,7 +685,7 @@ C
         WRITE(LUPRI,'(1X,A)') 
      &     '* NB!!! No e-e rotations'
       ENDIF
-      IF(SKIPEP) THEN
+      IF(SKIPEP .AND. .NOT. LEVYLE) THEN
         WRITE(LUPRI,'(1X,A)') 
      &     '* NB!!! No rotations between electrons and positrons.'
       ENDIF
@@ -749,9 +697,28 @@ C
         DOXLR = DOXLR.OR.XLRANA
         GOTO 999
       ENDIF
+      IF(XSTERN) THEN
+Chj Oct 2000: check if .STERNH should invoke the following:
+        XLRDIH = .TRUE.
+        SKIPEE = .TRUE.
+        SKIPEP = .FALSE.
+        ITRXLR = 0
+        XVCFIL = 'NORXVC'
+Chj Oct 2000 end
+        WRITE(LUPRI,'(1X,A)') 
+     &'* Sternheimer: Approximating Hessian for ep-rotations by -2mc^2',
+     &'  and ignoring coupling between e-e and e-p rotations.',
+     &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
+     &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
+        IF (LEVYLE) THEN
+           WRITE (LUPRI,'(/A)')
+     &'   FATAL ERROR: .STERNH not defined for Levy-Leblond'
+          CALL QUIT('.STERNH not defined for Levy-Leblond')
+        END IF
+      END IF
       IF(XVCFIL.NE.'NORXVC') THEN
         WRITE(LUPRI,'(1X,A,A,A6)')
-     &    '* The program will attemp restart on solution vectors ',
+     &    '* The program will attempt restart from solution vectors ',
      &    'on file ',XVCFIL
       ENDIF
       WRITE(LUPRI,'(1X,A,I5)') 
@@ -761,11 +728,7 @@ C
       WRITE(LUPRI,'(1X,A,I5)') 
      &   '* Max. size of reduced matrix :',MAXRM
       IF(TRIAB) THEN
-        WRITE(LUPRI,'(4X,A)') '* Assuming <<A;B>> to be symmetric.'
-      ENDIF
-      IF(XSTERN) THEN
-        WRITE(LUPRI,'(4X,A)') 
-     &    '* Approximating diagonal Hessian for ep-rotations by -2mc^2'
+        WRITE(LUPRI,'(1X,A)') '* Assuming <<A;B>> to be symmetric.'
       ENDIF
       IF(THRCOM.NE.D0) THEN
         WRITE(LUPRI,'(1X,A/1X,A/1X,A,D12.6)')
@@ -776,34 +739,34 @@ C
 C
       IF(ALLCMB) THEN
         WRITE(LUPRI,'(1X,A)') 
-     &  '* All combinations of A and B operators will be formed,',
-     &  '   even if not real.'
+     &  '* All combinations of A and B operators will be formed,'//
+     &  ' even if not real.'
       ENDIF
       WRITE(LUPRI,'(1X,A)') '* Include contributions from '//
      +    'the following two-electron integrals:'
-      IF(ILLINT.EQ.1) WRITE(LUPRI,'(6X,A)') '- LL-integrals'
+      IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
       IF(ISLINT.EQ.1) THEN
         IF(CNVXLR(1).LT.DUMMY) THEN
-          WRITE(LUPRI,'(6X,A,E8.1)')
-     +    '- SL-integrals  below convergence ',CNVXLR(1)
+          WRITE(LUPRI,'(3X,A,1P,E8.1)')
+     +    '- SL-integrals below convergence ',CNVXLR(1)
         ELSE
-          WRITE(LUPRI,'(6X,A,I4)')
+          WRITE(LUPRI,'(3X,A,I4)')
      +    '- SL-integrals from iteration ',ITRILR(1)
         ENDIF
       ENDIF
       IF(ISSINT.EQ.1) THEN
         IF(CNVXLR(2).LT.DUMMY) THEN
-          WRITE(LUPRI,'(3X,A,E8.1)')
-     +    '- SS-integrals  below convergence ',CNVXLR(2)
+          WRITE(LUPRI,'(3X,A,1P,E8.1)')
+     +    '- SS-integrals below convergence ',CNVXLR(2)
         ELSE
           WRITE(LUPRI,'(3X,A,I4)')
      +    '- SS-integrals from iteration ',ITRILR(2)
         ENDIF
       ENDIF
       IF(.NOT.LSFG(1)) WRITE(LUPRI,'(1X,A)')
-     &     '* Only calling FMOLI in sigma-vector routine...'
+     &     '* Debug: Only calling FMOLI in sigma-vector routine...'
       IF(.NOT.LSFG(2)) WRITE(LUPRI,'(1X,A)')
-     &     '* Only calling GMOLI in sigma-vector routine...'
+     &     '* Debug: Only calling GMOLI in sigma-vector routine...'
       IF(XLRNRM) WRITE(LUPRI,'(1X,A)')
      &     '* Trial vectors will be normalized.'
       IF(XLRDIH) THEN
@@ -813,11 +776,9 @@ C
         WRITE(LUPRI,'(1X,A)')
      &  '* No preconditioning of initial trial vectors.'
       ENDIF
-      IF(MXLOAD.NE.0) THEN
-        WRITE(LUPRI,'(1X,A,I5)') 
-     &  '* Maximum number of trial loaded in each microtieration:',
-     &  MXLOAD
-      ENDIF
+      IF(MXLOAD.NE.0) WRITE(LUPRI,'(1X,A,I5)') 
+     &  '* Maximum number of trial vectors to be loaded'//
+     &  ' in each microiteration:', MXLOAD
 C
 C     A operators
 C     ===========
@@ -853,6 +814,7 @@ C
         WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
       ENDDO        
   999 CONTINUE
+      IF (INPERR.GT.0) CALL QUIT('Input error in *LINEAR RESPONSE')
       RETURN
 C
       END
@@ -990,7 +952,6 @@ C
 #include <dgroup.h>
 #include <dcbxlr.h>
 #include <dcbgen.h>
-#include <dcbbas.h>
 #include <dcborb.h>
 #include <dcbxrs.h>
 C
@@ -1122,7 +1083,7 @@ C     Get coefficients
 C     ----------------
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      IOPT  = 4
+      IOPT  = 6
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,IOPT,
@@ -1209,7 +1170,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D4 = 4.0D0,D0 = 0.0D0,DM4 = -4.0D0, D2 = 2.0D00)
+      PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
 C
 #include <dcbibn.h>
 #include <dcbxrs.h>
@@ -1526,8 +1487,7 @@ C
 #include <dgroup.h>
 #include <dcbxlr.h>
 #include <dcbxrs.h>
-#include <dcbbas.h>
-#include <dcborb.h>
+C
       DIMENSION WORK(*)
 C
       CALL QENTER('XLRPAR')
@@ -1554,6 +1514,12 @@ C     ==========================
 C
       NZVAR    = NZCONF + NZXOPT
       NZVARQ   = NZVAR*NZ
+C
+      IF (IPRINT .GE. 3) THEN
+         WRITE (LUPRI,'(/A,3I10)')
+     &   'No. of configuration, e-e, and e-p variables:',
+     &   NZCONF,NZXOPE,NZXOPP
+      END IF
 C
       CALL QEXIT('XLRPAR')      
       RETURN
@@ -1604,11 +1570,15 @@ C     Set orbital strings and classify orbitals
       KLOOP=KFREE
 C
 C     WHILE DO - loop
+C     1) find how many vectors of same LAB1 and PTYPE
+C     2) then analyze these vectors
+C     3) if not 'END_OF_THIS_FILE' go back to 1)
 C
     1 CONTINUE
         READ (LUINP,END=3,ERR=2) LAB1
         IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
           IF(TOBE) THEN
+C           Analyze NVEC solution vectors from last parameter class
             NVEC = IVEC+1-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
@@ -1637,8 +1607,8 @@ C
 C       New parameter class
         IF(TYP1(1:1).NE.PBUF.OR.LAB1.NE.LBUF) THEN
           IF(TOBE) THEN
-C           Analyze solution vectors
-            NVEC = IVEC-IPAR
+C           Analyze NVEC solution vectors from previous parameter class
+            NVEC = IVEC+1-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 30
@@ -1659,6 +1629,7 @@ C           Analyze solution vectors
      &              ERGRSP,NBAS,NORBS
           ENDIF
  30       CONTINUE
+C         collect type, first vector, and length for this parameter class
           PBUF = TYP1(1:1)
           IPAR = IVEC
           NDIM = LEN
@@ -1937,5 +1908,3 @@ C       Give major orbital rotations in excitations
       ENDDO
       RETURN
       END
-
-
