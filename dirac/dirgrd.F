@@ -31,7 +31,7 @@ C FILE    : dirgrd.F
 C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck molgrd */
+C  /* Deck rmolgrd */
       SUBROUTINE RMOLGRD(WORK,LWORK)
 C*****************************************************************************
 C
@@ -65,7 +65,7 @@ C
 #include <memint.h>
 C
 C
-C     Start by writing information to file MOLGRD:
+C     Start by writing information to file RMOLGRD:
 C
 C     - Non-folded and Folded contravariant density matrices in AO basis
 C     - Folded contravariant real part of Fock matrix
@@ -117,7 +117,7 @@ C
 C
 C     Output of gradient
 C
-      CALL GRDOUT(IPRGRD)
+      CALL GRDOUT(WORK(KFREE),LFREE,IPRGRD)
 C
 C
 C
@@ -145,7 +145,7 @@ C        3 * NZ * N2BBASX  (3 Fock matrices)
 C     2. Transformation to MO basis:
 C     3. Transformation to contravariant AO basis
 C     4. Fold matrix
-C     5. Insert half phaces
+C     5. Insert half phases
 C     6. Transform from QO to AO basis
 C        2 * NZ   N2BBASX  +  2 * NZ * N2ORBT (4 Fock matrices)
 C     
@@ -816,51 +816,64 @@ C
       GRD_NOSMLV = .FALSE.
       GRD_NOSMLS = .FALSE.
 C    
-      DO I = 1,2
-         DO J = 1,2
+      DO J = 1,2
+         DO I = 1,2
             DOINT(I,J) = .TRUE.
          END DO
       END DO
-      WRITE(LUPRI,'(1X,A,A)') 
-     &   'Special information about calculation ',
+      WRITE(LUPRI,'(A)') 
+     &   ' Special information about calculation '//
      &   'of the molecular gradient:'
       IF (LEVYLE) THEN
-         WRITE(LUPRI,'(/1X,A,2(/,4X,A))') 
-     &      'Levy-Leblond Hamiltonian: ',
+         WRITE(LUPRI,'(/A,2(/,4X,A))') 
+     &      ' Levy-Leblond Hamiltonian: ',
      &      '- No small-small nuclear attraction integrals.',
      &      '- No small-small reorthonormalization gradient'
          NOINFO = .FALSE.
          GRD_NOSMLS = .TRUE.
          GRD_NOSMLV = .TRUE.
          IF (.NOT. NOSMLV) THEN
-            WRITE(LUPRI,'(/1X,2A)')
-     &         'WARNING: small-small nuclear attraction integrals AND',
+            WRITE(LUPRI,'(/2A)')
+     &         ' WARNING: small-small nuclear attraction integrals AND',
      &         ' Levy-Leblond Hamiltonian: Inconsistent...'
          END IF
          IGRD_INTBUF = IBTAND( 1, IGRD_INTBUF )
       ELSE IF (NOSMLV) THEN
-         WRITE(LUPRI,'(/X,A)') 
-     &      '- No small-small nuclear attraction integrals.'
+         WRITE(LUPRI,'(/A)') 
+     &      ' - No small-small nuclear attraction integrals.'
          NOINFO = .FALSE.
          GRD_NOSMLV = .TRUE.
       END IF
       IF (SMLV1C) THEN
-         WRITE(LUPRI,'(/X,A)') 
-     &      '- Only one-center contributions to d/dXA Vss.'
+         WRITE(LUPRI,'(/A)') 
+     &      ' - Only one-center contributions to d/dXA Vss.'
+         NOINFO = .FALSE.
+      END IF
+C
+      IF (N1OPER .GT. 0) THEN
+         WRITE(LUPRI,'(/A,I3)') 
+     &      ' - Number of finite field operators:',N1OPER
+C TODO   insert list of finite fields here ??? /hjaaj
          NOINFO = .FALSE.
       END IF
 C
       IF ( DOLVC .AND. LBIT( IGRD_INTBUF, 3 ) ) THEN
          IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
-         WRITE(LUPRI,'(/1X,A)')
-     &      'INFO: LVCORR used in wavefunction, but not in gradient =>'
-         WRITE(LUPRI,'(1X,A/)') 
-     &      'LVCORR gradient used (SS-gradient is not calculated)'
+         WRITE(LUPRI,'(/A/A/)')
+     &     ' INFO: LVCORR used in wavefunction, but not in gradient =>',
+     &     ' LVCORR gradient used (SS-gradient is not calculated)'
          NOINFO = .FALSE.
       END IF
-      IF (NOINFO) WRITE(LUPRI,'(1X,A)') 'No special information.'
+      IF (NOINFO) WRITE(LUPRI,'(A)') ' No special information.'
 C
-C     Do totally symmetric contributions (RSETSYM(.FALSE.)
+      IF (N1OPER .GT. 0) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' ERROR: molecular gradient has not been implemented yet'//
+     &   ' for finite field calculations.'
+         CALL QUIT('Molecular grad. not implemented for finite fields')
+      END IF
+C
+C     Do totally symmetric contributions (RSETSYM(.FALSE.,...)
 C     and calculate translation/rotation invariance
 C
       DO I = 1, 3*MXCENT
@@ -869,18 +882,19 @@ C
       END DO
       FTRONV = .TRUE.
       RELGRD = .TRUE.
-      CALL RSETSYM(.FALSE.)
+      CALL RSETSYM(.FALSE.,RELGRD,.FALSE.,.FALSE.)
       CALL RTROINI(.FALSE.)
       CALL TROINV(WORK(KFREE),LFREE)
-      RELGRD = .FALSE.
 C
 C     Nuclear repulsion
 C     =================
 C
-      RELGRD = .TRUE.
       CALL NUCINI
-      CALL NUCREP
-      RELGRD = .FALSE.
+      CALL MEMGET('REAL',KHESNN,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL NUCREP(WORK(KHESNN),WORK(KCSTRA),WORK(KSCTRA))
+      CALL MEMREL('RMOLGRD1.NUCREP',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Set IFCTYP
 C     ==========
@@ -921,7 +935,7 @@ C
       ELSE
          WRITE(LUPRI,'(/A/A)')
      $        '*** ERROR in RMOLGRD1 ***',
-     $        'label "FKFLDCT1" not found on file MOLGRD'
+     $        'label "FKFLDCT1" not found on file RMOLGRD'
          CALL QUIT('*** ERROR in RMOLGRD1 ***')
       END IF
 C
@@ -939,7 +953,7 @@ C
             WRITE(LUPRI,'(/A/A)')
      $           '*** ERROR in RMOLGRD1 ***',
      $           'label "DTFLDCT'//CHAR(I+48)//'"'//
-     &           ' not found on file MOLGRD'
+     &           ' not found on file RMOLGRD'
             CALL QUIT('*** ERROR in RMOLGRD1 ***')
          END IF
          IOFF = IOFF + N2BBASX
@@ -1023,7 +1037,7 @@ C
      $              '*** ERROR in RMOLGRD1 ***',
      $              'label "D'//CHAR(IMAT+48)//'   CT'//
      &              CHAR(I+48)//'"'//
-     &              ' not found on file MOLGRD'
+     &              ' not found on file RMOLGRD'
                CALL QUIT('*** ERROR in RMOLGRD1 ***')
             END IF
             IOFF = IOFF + N2BBASX
@@ -1047,11 +1061,9 @@ C
             DOPERT(I,2) = .TRUE.
          END DO
          FTRONV = .TRUE.
-         RELGRD = .TRUE.
-         CALL RSETSYM(.TRUE.)
+         CALL RSETSYM(.TRUE.,RELGRD,.FALSE.,.FALSE.)
          CALL RTROINI(.TRUE.)
          CALL TROINV(WORK(KFREE),LFREE)
-         RELGRD = .FALSE.
 C
 C        Read/generate undiff. GAB matrices
 C
@@ -1097,11 +1109,9 @@ C
             DOPERT(I,2) = .TRUE.
          END DO
          FTRONV = .TRUE.
-         RELGRD = .TRUE.
-         CALL RSETSYM(.FALSE.)
+         CALL RSETSYM(.FALSE.,RELGRD,.FALSE.,.FALSE.)
          CALL RTROINI(.FALSE.)
          CALL TROINV(WORK(KFREE),LFREE)
-         RELGRD = .FALSE.
 C
       ELSE
 C     ... no screening on gradient
@@ -1159,7 +1169,6 @@ C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
       NEWBAS = .TRUE. 
-      RELGRD = .TRUE.
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
@@ -1182,7 +1191,6 @@ C
 #if defined (VAR_MPI)
       END IF
 #endif
-      RELGRD = .FALSE.
 C
 C     Symmetrization of GRADEE
 C
@@ -1271,7 +1279,6 @@ C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
       NEWBAS = .TRUE.
-      RELGRD = .TRUE.
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
@@ -1295,7 +1302,6 @@ C
       END IF
 #endif
       CALL FLSHFO(LUPRI)
-      RELGRD = .FALSE.
 C
 C     Symmetrization of GRADEE
 C
@@ -1391,7 +1397,6 @@ C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
       NEWBAS = .TRUE.
-      RELGRD = .TRUE.
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
@@ -1415,7 +1420,6 @@ C
       END IF
 #endif
       CALL FLSHFO(LUPRI)
-      RELGRD = .FALSE.
 C
 C     Dispose memory
 C
@@ -1524,6 +1528,12 @@ C
       DPRTIM(3,2) = WLLTLS
       DPRTIM(4,2) = WLLTSS
 C
+C     Finished gradient, reset RELGRD to .FALSE.
+C     also reset MOLGRD in abainf.h to false
+C
+      RELGRD = .FALSE.
+      CALL RSETSYM(.FALSE.,RELGRD,.FALSE.,.FALSE.)
+C
       CALL QEXIT('RMOLGRD1')
       CALL FLSHFO(LUPRI)
 C
@@ -1533,26 +1543,26 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsetsym */
-      SUBROUTINE RSETSYM(ALLSYM)
+      SUBROUTINE RSETSYM(ALLSYM,RELGRD,RELHES,RELDIPD)
 C*****************************************************************************
 C
 C     Temporary subroutine: sets DOSYM-array from abainf.h
 C
-C     jth, 1997/24/04
+C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <abainf.h>
-      LOGICAL ALLSYM
-C      DO I=1,8
-C         DOSYM(I) = .TRUE.
-C      END DO
+      LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
       DO I=2,8
          DOSYM(I) = ALLSYM
       END DO
+      MOLGRD = RELGRD
+      MOLHES = RELHES
+      DIPDER = RELDIPD
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1654,7 +1664,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck grdout */
-      SUBROUTINE GRDOUT(IPRINT)
+      SUBROUTINE GRDOUT(WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     (c) 1997/05/28 by J. Thyssen
@@ -1674,11 +1684,15 @@ C
 #include <dcbpsi.h>
 #include <dcbgrd.h>
 C
-      DIMENSION CSTRA(9*MXCOOR*MXCOOR),SCTRA(9*MXCOOR*MXCOOR)
       LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
 C
       CALL QENTER('GRDOUT')
+C
+#include <memint.h>
+C
+      CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
 C
       CALL TITLER('Final output from PSIGRD','*',110)
 C
@@ -1699,7 +1713,7 @@ C
         CALL HEADER('Kinetic energy integral gradient',-1)
         LABEL(1) = 'Momentum'
         LABEL(2) = 'Beta mtx.'
-        CALL PRIGDR(GRADKN,2,CSTRA,SCTRA,LABEL,' ')
+        CALL PRIGDR(GRADKN,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
 C
 C       Nuclear attraction
 C       ==================
@@ -1707,7 +1721,7 @@ C
         CALL HEADER('Nuclear attraction integral gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
-        CALL PRIGDR(GRADNU,2,CSTRA,SCTRA,LABEL,' ')
+        CALL PRIGDR(GRADNU,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
 C
 C       Reorthonormalization gradient
 C       =============================
@@ -1715,7 +1729,7 @@ C
         CALL HEADER('Reorthonormalization gradient',-1)
         LABEL(1) = 'LL'
         LABEL(2) = 'SS'
-        CALL PRIGDR(GRADRO,2,CSTRA,SCTRA,LABEL,' ')
+        CALL PRIGDR(GRADRO,2,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
 C
 C       Two-electron gradient
 C       =====================
@@ -1724,7 +1738,7 @@ C
         LABEL(1) = 'LL'
         LABEL(2) = 'LS'
         LABEL(3) = 'SS'
-        CALL PRIGDR(GRADER,3,CSTRA,SCTRA,LABEL,' ')
+        CALL PRIGDR(GRADER,3,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
 C
 C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
@@ -1741,13 +1755,13 @@ C
               WRITE(LUPRI,'(/A)') 'SCC gradient is used, since '//
      &                            'SS-gradient is NOT calculated.'
            END IF 
-           CALL PRIGDR(GRADLV,0,CSTRA,SCTRA,LABEL,' ')
+           CALL PRIGDR(GRADLV,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
         END IF
 C       Nuclear repulsion
 C       =================
 C
         CALL HEADER('Nuclear repulsion gradient',-1)
-        CALL PRIGDR(GRADNN,0,CSTRA,SCTRA,LABEL,' ')
+        CALL PRIGDR(GRADNN,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
 C
 C
       END IF
@@ -1764,9 +1778,10 @@ C
          CALL ADDGRD(GRADLV)
       END IF
       CALL HEADE2('Total molecular gradient','@',-1)
-      CALL PRIGDR(GRDMOL,0,CSTRA,SCTRA,LABEL,'@')
+      CALL PRIGDR(GRDMOL,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,'@')
 C
 C
+      CALL MEMREL('GRDOUT',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('GRDOUT')
       RETURN
@@ -2372,20 +2387,19 @@ C
       IPRINT = IPRGEN
       THRESH = 0.1D00
       COMPAR = LCOMPA
-c      SKIP   = .NOT. ((RELGRD .OR. MOLGRD .OR. MOLHES .OR. DIPDER)
-c     &                .AND. DOSYM(1))
+c     SKIP   = .NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER) .AND. DOSYM(1))
       SKIP   = .FALSE.
       CUT    = .FALSE.
-      NOROT  = .FALSE.
+      NOROT1 = .FALSE.
       HESTRO = .TRUE.
       GDALL  = .FALSE.
       GDTRO  = .FALSE.
       RDTRO  = .FALSE.
-c      TROGRD = MOLGRD .OR. RELGRD
+c     TROGRD = MOLGRD .AND. .NOT. (NFIELD .GT. 0)
       TROGRD = .TRUE.
-c      TROHES = MOLHES
+c     TROHES = MOLHES
       TROHES = .FALSE.
-c      TRODIP = DIPDER
+c     TRODIP = DIPDER
       TRODIP = .FALSE.
       RETURN
       END
