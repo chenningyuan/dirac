@@ -236,7 +236,7 @@ C
       RELGRD = .TRUE.
       CALL RSETSYM(.FALSE.)
       CALL RTROINI(.FALSE.)
-      CALL TROINV(WORK(KFREE),LWORK)
+      CALL TROINV(WORK(KFREE),LFREE)
       RELGRD = .FALSE.
 C
 C     Nuclear repulsion
@@ -265,7 +265,7 @@ C
 C     "SS-integral contribution by classical repulsion of 
 C      small component atomic charges"-gradient
 C
-      CALL LVCGRD(IPRINT,WORK(KFREE),LWORK)
+      CALL LVCGRD(IPRINT,WORK(KFREE),LFREE)
 C    
 C     One electron part of gradient
 C     =============================
@@ -285,7 +285,7 @@ C
 C     Get contravariant Fock matrix and density matrix
 C     in symmetry distinct AO-basis
 C
-      CALL GTCNVF(FOCK,DMAT,CMO,IPRINT,WORK(KFREE),LWORK)
+      CALL GTCNVF(FOCK,DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
 C
 C
 C     Call ONEDRV for construction of gradient
@@ -298,7 +298,6 @@ C
       CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
-      LWRK   = LWORK - KFREE + 1
 C
 C     PROPTY = .TRUE.
 C     MAXDIF = 1
@@ -312,7 +311,7 @@ C     Make one-electron part of gradient
 C
       CALL ONEDR1(WORK(KSTHMA),DMAT,FOCK,WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
-     &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LWRK,
+     &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LFREE,
      &            IPRONE,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
      &            NNBBASX,NNBBAST,DOINT,.FALSE.)
 C
@@ -345,7 +344,7 @@ C
 C
 C     Get contravariant density matrix, no folding
 C
-      CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LWORK)
+      CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
 C
       CALL GETTIM(CPU1,WALL1)
       IF (IGTHRS .GT. 0) THEN
@@ -363,7 +362,7 @@ C
          RELGRD = .TRUE.
          CALL RSETSYM(.TRUE.)
          CALL RTROINI(.TRUE.)
-         CALL TROINV(WORK(KFREE),LWORK)
+         CALL TROINV(WORK(KFREE),LFREE)
          RELGRD = .FALSE.
 C        Make GAB matrices
 C
@@ -424,7 +423,7 @@ C
          RELGRD = .TRUE.
          CALL RSETSYM(.FALSE.)
          CALL RTROINI(.FALSE.)
-         CALL TROINV(WORK(KFREE),LWORK)
+         CALL TROINV(WORK(KFREE),LFREE)
          RELGRD = .FALSE.
 C
       END IF
@@ -930,10 +929,9 @@ C
          END DO
       END IF
 C
-      LWRK   = LWORK - KFREE + 1
 C
       CALL GTCNV1(FOCK,DMAT,WORK(KTMP1),WORK(KTMP2),CMO,
-     &            IPRINT,WORK(KFREE),LWRK)
+     &            IPRINT,WORK(KFREE),LFREE)
 C
 C     Dispose memory
 C
