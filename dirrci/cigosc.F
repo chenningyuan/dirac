@@ -366,7 +366,7 @@ C
       DATA REPNA / N5A * '    ' /
       DATA MULTB / N5B * 0 /
       DATA ONER, ONEI / N3 * 0.0D0, N3 * 0.0D0 /
-      DATA TWOINR, TWOINI / (N4A+1) * 0.0D0, (N4A+1) * 0.0D0 /
+      DATA TWOINR, TWOINI / 0.0D0, N4A * 0.0D0, 0.0D0, N4A * 0.0D0 /
       DATA INDTWR, INDTWI / N4 * 0, N4 * 0 /
       DATA INDGAR, INDGAI / N4 * 0, N4 * 0 /
       DATA IDET / N2 * 0 /
