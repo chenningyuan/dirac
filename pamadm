@@ -445,7 +445,7 @@ gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gpjth_c.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
-prp/pamgrd.o
+prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o
 
 PDLIB = pdpack/pdlib.a
 EOF
@@ -840,6 +840,7 @@ while [ -n "$1" ]; do
    esac
    shift
 done
+unset noclobber
 #
 # Setup variables
 #
