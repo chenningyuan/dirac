@@ -242,7 +242,9 @@ C         if reading input from a terminal
          GOTO 1
   920 CONTINUE
          CALL REAINI(IPRDEF,RELCAL,TSTINP)
+#if defined (MOD_ERI)
          CALL ER2INI
+#endif
          WORD = '*END OF'
          GOTO 1
   930 CONTINUE
@@ -656,11 +658,13 @@ C&&& JENGIN - activate J-engine
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
+#if defined (MOD_ERI)
       IF (RUNERI) THEN
          WRITE (LUPRI,'(3X,A)')
      &     ' Integrals are calculated using ERI '//
      &     'instead of HERMIT (where possible)'
       ENDIF
+#endif
       IF(GAUNUC) THEN
         WRITE(LUPRI,'(A)') ' Nuclear model: '//
      &    'Gaussian charge distribution.'
@@ -917,7 +921,9 @@ C     **** Process input for various program sections  *****
 C
   200 CONTINUE
       CALL REAINI(IPRDEF,RELCAL,TSTINP)
+#if defined (MOD_ERI)
       CALL ER2INI
+#endif
  201  PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -2232,7 +2238,9 @@ C     ********************************
 C     ***** New integral program *****
 C     ********************************
 C
+#if defined (MOD_ERI)
       IF (RUNERI) THEN
+#endif
 #if defined (VAR_MPI)
       CALL QUIT('No ERI 2-el. integrals in parallel version')
 #else
