@@ -1,0 +1,51 @@
+=========================================================
+README file for DIRAC04 release (last revision Sep. 2004)
+=========================================================
+
+You can find more detailed installation instructions in the
+manual on the Dirac home page "http://dirac.chem.sdu.dk".
+
+The manual is not included in the tar-file and should be
+downloaded separately from "http://dirac.chem.sdu.dk".
+
+After running "configure":
+ 
+1) Before you run make, please check the "Makefile.config" and
+   "pam" files (created by "configure"). Compiler options are
+   set in this file, based on our best knowledge of this 
+   architecture in september 2004 and may be outdated by
+   the time that you install the program.
+
+2) In Makefile.config:
+   please make sure that the mathematical libraries used have been
+   compiled with the same compiler you are using now, otherwise it
+   might be necessary to link to additional runtime libraries
+    
+3) Please check 'Known issues and problems' at
+   "http://dirac.chem.sdu.dk"
+   to see hints or/and problems concerning your platform.
+
+4) Then run "make" and
+   DIRAC04 should be ready to run..."
+
+5) If you are using a queing system, you may want to check
+   the "pamq" script as well.
+
+If you have checked 'Known issues and problems' and
+still have installation problems, send an e-mail to
+dirac-admin@dirac.chem.sdu.dk describing the problem,
+and we will see if we can help.
+
+If you have questions concerning input and running jobs, send
+an e-mail to the user mailing list dirac@dirac.chem.sdu.dk.
+
+If you later change a parameter as e.g. MXCENT in
+include/mxcent.h (MXCENT is the max. number of nuclei)
+then run
+   make depend # requires that "makedepend" has been installed
+   make
+or
+   make clean
+   make
+
+=========================================================
