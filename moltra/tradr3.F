@@ -35,376 +35,19 @@ C/* Deck TRDR3T */
      &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,KIBE,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
-C     Screening introduced by T.Saue Sep 1998
+C     Removed by Luuk Visscher, july 2002
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
-#include "iratdef.h"
-#include "mxorb.h"
-#include "dcbgen.h"
-#include "dcbtra.h"
-#include "dcbtr3.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
+#include <implicit.h>
+#include <priunit.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION IJP12(0:7), IOFFB(0:7)
-      DIMENSION IJP34(2)
-      DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),MHTM(2),NHTM(2)
-      DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
       DIMENSION WORK(*)
 C
-      CALL QENTER('TRDR3T')
-      KFRSAV = KFREE
-C
-C     Define the packing of the 2-index transformed integrals
-C
-      TRIAN(1) = ISAME(2).EQ.ISAME(1)
-      TRIAN(2) = .FALSE.
-      CALL PCK2IN(NSTR,TRIAN,IPRINT)
-C
-      CALL ICOPY (32,NSPCK,1,NSPCK12,1)
-      CALL ICOPY (32,NSPCK,1,NSPCK34,1)
-      CALL ICOPY (192,ISPCK,1,ISPCK12,1)
-      CALL ICOPY (192,ISPCK,1,ISPCK34,1)
-      CALL ICOPY (24,NBBAS,1,NBBAS1,1)
-      CALL ICOPY (24,NBBAS,1,NBBAS2,1)
-      CALL ICOPY (24,NBBAS,1,NBBAS3,1)
-      CALL ICOPY (24,NBBAS,1,NBBAS4,1)
-      CALL ICOPY (24,IBBAS,1,IBBAS1,1)
-      CALL ICOPY (24,IBBAS,1,IBBAS2,1)
-      CALL ICOPY (24,IBBAS,1,IBBAS3,1)
-      CALL ICOPY (24,IBBAS,1,IBBAS4,1)
-      CALL ICOPY (2,IBAS,1,IBAS1,1)
-      CALL ICOPY (2,IBAS,1,IBAS2,1)
-      CALL ICOPY (2,IBAS,1,IBAS3,1)
-      CALL ICOPY (2,IBAS,1,IBAS4,1)
-      CALL ICOPY (16,NDMOQR,1,NDMOQS,1)
-      CALL ICOPY (16,NDMOQR,1,NDMOQT,1)
-      CALL ICOPY (8,ICMOQR,1,ICMOQS,1)
-      CALL ICOPY (8,ICMOQR,1,ICMOQT,1)
-C
-      CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
-      CALL MKINDXKR (NSTR,TRIAN(1),WORK(KDXKR12))
-      CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
-     &              TRIAN(1),WORK(KDXB12))
-      CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
-     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
-     &              TRIAN(2),WORK(KDXB34))
-C
-C     Make index array for half-transformed integrals
-C
-      NHTMT = 0
-      DO IREPIJ = 1, NFSYM
-         MHTM(IREPIJ) = 0
-         NHTM(IREPIJ) = 0
-         DO IREPAB = 0, NBSYM-1
-            IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-               IHTM(IREPAB) = MHTM(IREPIJ) + NHTMT
-               MHTM(IREPIJ) = MHTM(IREPIJ) + NSPCK(IREPAB,0)*NZ
-            ENDIF
-            NHTM(IREPIJ) = MHTM(IREPIJ)*NFPCK12(IREPIJ)
-         ENDDO
-         NHTMT = NHTMT + NHTM(IREPIJ)
-      ENDDO
-C
-C     Calculate disk space for half transformed integrals
-C
-      IF (IPRINT .GE. 0) WRITE (LUPRI,1000) REAL(NHTMT)*16./(1024.**2)
-C
-      NSIZET = 0
-      NBUFM = 0
-      DO IREPIJ = 1, NFSYM
-C
-C
-         IF (NHTM(IREPIJ).EQ.0) THEN
-            NIJBUF(IREPIJ) = 0 
-            NHTIM (IREPIJ) = 0 
-            NBUF  (IREPIJ) = 0
-            NBFSZ (IREPIJ) = 0
-            GOTO 90 
-         ENDIF
-C
-C        Maximum size of the number of half-transformed integrals
-C        that we can keep in core. Fix it to 1 million.
-C
-         NHTIM(IREPIJ) = 1 000 000
-         NHTIM(IREPIJ) = MIN0(NHTM(IREPIJ),NHTIM(IREPIJ))
-C
-C        Calculate the maximum number of ij-pairs that we can handle
-C
-         NIJBUF(IREPIJ) = NHTIM(IREPIJ) / MHTM(IREPIJ)
-C
-C        We can now deduce the actual size of NHTIM(IREPIJ)
-C
-         NHTIM(IREPIJ) = NIJBUF(IREPIJ) * MHTM(IREPIJ)
-C
-C        Calculate the number of buffers
-C
-         NBUF(IREPIJ) = NFPCK12(IREPIJ) / NIJBUF(IREPIJ)
-         IF (MOD(NFPCK12(IREPIJ),NIJBUF(IREPIJ)).NE.0) THEN
-            NBUF(IREPIJ) = NBUF(IREPIJ) + 1
-         ENDIF
-         NBUFM = MAX0(NBUFM,NBUF(IREPIJ)+1)
-C
-C        Choose the size of the buffer array : it should be a multiple
-C        (named NB) of the number of ij-pairs in one batch multiplied 
-C        by NZ
-C
-         NSIZE = 100 000
-         NSIZE = MIN0(NHTM(IREPIJ),NSIZE)
-         NB = NSIZE / (NIJBUF(IREPIJ)*NBUF(IREPIJ)*NZ)
-         IF (NB.LT.1) NB = 1
-         NSIZE = NB * NIJBUF(IREPIJ) * NBUF(IREPIJ) * NZ
-C
-C        Pointer to the begin of buffer blocks for this irrep
-C        All buffers are stored in one 1-dimensional array, but you may
-C        think of it as NFSYM sets of 2-dimensional matrices, with the
-C        first dimension the size of the buffer and the second the
-C        number of buffers for this fermion irrep
-C
-         IBOFF(IREPIJ) = NSIZET+1
-         NSIZET = NSIZET + NSIZE
-         NBFSZ(IREPIJ) = NB * NIJBUF(IREPIJ) * NZ
-  90     CONTINUE
-         IF (IPRINT .GE. 2) WRITE (LUPRI,'(//,4(1X,A,I8,/))')
-     &              'Buffer information for parity :',irepij,
-     &              'Number of buffers :',nbuf(irepij),
-     &              'Pairs in  buffers :',nijbuf(irepij),
-     &              'Size   of buffers :',nbfsz(irepij) 
-      ENDDO
-C
-C     Get the memory for the buffers
-C
-      CALL MEMGET('REAL',KJBOFF,2*NBUFM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRBUF,NSIZET,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLBUF1,NSIZET,WORK,KFREE,LFREE)
-C
-      CALL INITBUF (IRECC,NBFSZ,NBUF,WORK(KJBOFF))
-C
-C     Prepare for screening
-C
-      IF(SCRTRA.GT.D0) THEN
-        CALL PR4SCR(KGAB,KDRIJ,WORK,KFREE,LFREE,DINTSKP,
-     &              WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &              NDMOQR,ICMOQR,NSTR,ISAME,IPRINT)
-      ELSE
-        KDRIJ = KFREE
-        KGAB  = KFREE
-      ENDIF
-C
-C     note: IOFFB is only used in tradr4.F (when SUB4 in MS4IN1D true)
-C
-      CALL IZERO(IOFFB,8)
-C
-C     Loop over (XX|LL) and (XX|SS) integrals
-C
-C     ----------------
-      DO 100 IC = 1, 2
-C     ----------------
-C
-         CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-         IF (I2TYP.LT.0) THEN
-            GOTO 100
-         ELSEIF (I2TYP.EQ.1) THEN
-            ICS = 1
-            ICF = 1
-         ELSEIF (I2TYP.EQ.2) THEN
-            ICS = 2
-            ICF = 2
-         ELSE
-            ICS = 1
-            ICF = 2
-         ENDIF
-C
-C        Loop over the shells
-C
-         DO ISHLA = IASTRT, IASMAX
-         DO ISHLB = IBSTRT, ISHLA
-C
-            KFRSAV3 = KFREE
-            NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
-            NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
-C
-C           Set up gather array for distributions, 
-C           calculate memory requirements for this batch.
-C
-C           NOTE : The actual dimension of INDXAB is kept in the
-C           common block dcbtra.h. When we want to parallelize it may
-C           be better to allocate it always as MXINSH*MXINSH*4,
-C           or (even better) to send it also down to HERMIT.
-C           Luuk. TODO
-C
-C           First a dummy run to calculate the memory requirements
-C           for GMAT. We assume that HMAT is not more than twice GMAT,
-C           and reserve the same memory also for use in HERMIT.
-C           HJAAJ Aug 2001: modified to use max mem for Hermit
-C           to be sure that enough space for Hermit.
-C
-            MWHER = MXMEMHER(IC,I2TYP)
-            NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
-C           subtract max mem needed in Hermit and 10%/1Mw for anything else
-            NSIZG = MIN(NSIZG, LFREE/3)
-C           assume HMAT is not more than twice GMAT
-C           TODO: could be improved with same scheme as in tradr4.F
-            LDXAB = 5*NINSHA*NINSHB
-            CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                       .FALSE.,INDX,WORK(KDXAB),
-     &                       IJP12,NSIZG,IDUM)
-C
-C
-            CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
-C
-C           Set INDXAB and INDPASS
-C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &               INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
-C
-            IF (IPRINT .GE. 3) THEN
-               WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
-     &         ' Calculation of integral distribution set:',ISHLA,ISHLB
-               WRITE (LUPRI,'(//,4(1X,A,I8,/))')
-     &         ' Number of distributions in this set:     ',NUMDIS,
-     &         ' Maximum size of scalar integral batch:   ',NSIZG,
-     &         ' Number of passes :                       ',NPASS
-            END IF
-C
-            IF (NPASS.GT.1) THEN
-C
-C              Initialize scalar integral buffer file and arrays
-C              Use the space reserved for GMAT now as buffer storage
-C
-               LGFIL = LUTRA2
-               NGBFSZ = (IRAT*NSIZG)/((1+IRAT)*NPASS)
-C
-C              Allocate the buffer arrays in WORK and set KGMAT to the
-C              start of this allocation section. We now only need to
-C              send down GMAT into HERMIT to find this section.
-C
-               CALL MEMGET('INTE',KALGREC,NPASS,WORK,KFREE,LFREE)
-               CALL MEMGET('INTE',KALGBUF,NPASS,WORK,KFREE,LFREE)
-               CALL MEMGET('INTE',KAIGBUF,NPASS*NGBFSZ,WORK,KFREE,LFREE)
-               CALL MEMGET('REAL',KARGBUF,NPASS*NGBFSZ,WORK,KFREE,LFREE)
-C
-C              As we refer to the places inside the section we need
-C              to subtract KGMAT.
-C
-               KGMAT  = KALGREC
-               KLGREC = KALGREC - KGMAT + 1
-               KLGBUF = KALGBUF - KGMAT + 1
-               KIGBUF = KAIGBUF - KGMAT + 1
-               KRGBUF = KARGBUF - KGMAT + 1
-            ELSE
-C
-C              Write directly into the array GMAT
-C
-               CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
-               CALL DZERO(WORK(KGMAT),NSIZG)
-               KLGBUF = 1
-            ENDIF
-C
-C           Get distributions
-C
-            NODV = NASHT.EQ.0
-            NOPV = NASHT.LT.2
-            CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &               NODV,NOPV,WORK(KGAB),WORK(KDRIJ),DINTSKP,SCRTRA,
-     &               WORK(KFREE),LFREE,IPRINT)
-C
-C           Do the transformation of the first index pair and sort the
-C           half-transformed integrals to file.
-C
-C           De-allocate buffers and allocate GMAT if necessary.
-C
-            IF (NPASS.GT.1) THEN
-               CALL MEMREL('TRDR3T.1',WORK,1,KALGBUF,KFREE,LFREE)
-               CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
-               CALL DZERO(WORK(KGMAT),NSIZG)
-            ENDIF
-C
-            CALL MS4IN1D(WORK,KFREE,LFREE,IPRINT,.FALSE.,.FALSE.,IOFFB,
-     &                  WORK(KALGREC),ICS,ICF,
-     &                  IC,TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
-     &                  WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                  WORK(KGMAT),NSIZG,MHTM,IHTM,
-     &                  INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
-     &                  IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
-     &                  WORK(KLBUF1))
-C
-            CALL MEMREL('TRDR3T.2',WORK,1,KFRSAV3,KFREE,LFREE)
-C
-C           Delete scalar integral buffer file
-C
-            IF (NPASS.GT.1) THEN
-               CALL DELGBUF(LGFIL)
-            ENDIF
-C
-         ENDDO
-         ENDDO
-C
-C----------------
- 100     CONTINUE
-C----------------
-C
-C     Screening statistics
-C
-      IF(SCRTRA.GT.0) THEN
-        CALL ST4SCR(DINTSKP)
-      ENDIF
-C
-C     Write out last set of buffers
-C     De-allocate buffer space
-C
-      CALL FINABUF (IRECC,NBFSZ,NBUF,IBOFF,
-     &              WORK(KJBOFF),WORK(KRBUF),WORK(KLBUF1))
-      CALL MEMREL('TRDR3T.3',WORK,1,KJBOFF,KFREE,LFREE)
-C
-C     Initialize MOLFDIR integral file
-C
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDR3T.4',WORK,1,KIKRA,KFREE,LFREE)
-C
-C     Second half-transformation
-C
-      ICS = 1
-      ICF = 2
-      CALL MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS,ICF,
-     &             NSTR(1,0,3),NSTR(1,0,4),
-     &             WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &             WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &             IRECC,NBFSZ,NBUF,NIJBUF,MHTM,
-     &             WORK(KDXKR12),WORK(KDXB12),WORK(KDXB34))
-C
-C     Delete half-transformed integral files
-C
-      CALL DELEBUF
-C
-C     Close integral file and delete intermediary file
-C
-      CALL MDINTF
-C
-C     Release all memory and exit
-C
-      CALL MEMREL('TRDR3T.5',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('TRDR3T')
+      CALL QUIT ("ASKED FOR OBSOLETE STRATEGY 3")
 C
       RETURN
-C
- 1000 FORMAT (/' Storing all half-transformed integrals to disk',
-     & /' Disk requirements ',F10.3,' Megabytes')
- 1001 FORMAT (/' Storing all fully-transformed integrals to memory',
-     & /' Memory requirements ',F10.3,' Megabytes')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MS4INW*/
@@ -447,6 +90,10 @@ C
 C
 #include "ibtfun.h"
 C
+C     Find out the component type of the functions
+C
+      CALL ICTYPES(IC,IC1,IC2)
+C
 C     Loop over the functions inside the shell-block.
 C     We do it this way rather than just over the boson irreps of the
 C     density and then over the pairs within that irrep, because we
@@ -462,14 +109,15 @@ C
             IREPAB = INDXAB(INDAR,INDBR,3)
             IPAB   = INDXAB(INDAR,INDBR,4)
             IREPIJ = JBTOF(IREPAB,1)
+            IF (IC.EQ.3) IREPIJ = JBTOF(IREPAB,2)
             IOFF = (IHM(IREPAB)+(IPAB-1)*NFPCK12(IREPIJ))*NZ+1
             CALL IUNPCK(INDAB,2,IND)
             INDA = IND(1)
             INDB = IND(2)
             IREPA = INDX(2,INDA)
             IREPB = INDX(2,INDB)
-            INDA1 = INDA - ICOS(IREPA+1,IC) ! Absolute position
-            INDB1 = INDB - ICOS(IREPB+1,IC) ! Absolute position
+            INDA1 = INDA - ICOS(IREPA+1,IC1) ! Absolute position
+            INDB1 = INDB - ICOS(IREPB+1,IC2) ! Absolute position
             IF (SUB3) INDA1 = INDX(3,INDA)  ! Relative position
             IF (SUB4) INDB1 = IOFF4(IREPB) + INDX(3,INDB)  ! Relative position
 C
@@ -481,7 +129,7 @@ C           left triangular), but we scale the diagonal elements to
 C           avoid double counting.
 C
             JOFFAB = ISPCK34(IREPA,IREPB,IC)
-     &             + (INDB1-1)*NBBAS3(IREPA,IC)+INDA1
+     &             + (INDB1-1)*NBBAS3(IREPA,IC1)+INDA1
             JOFF1 = IHTM(IREPAB) + JOFFAB
             IF (INDA.EQ.INDB) 
      &         CALL DSCAL (NZ*NFPCK12(IREPIJ),HALF,HMAT(IOFF),1)
@@ -531,7 +179,7 @@ C
                JBOFF(IREPIJ,IBUF) = JBUF
 C
                IOFF  = IOFF  + NFPCK12(IREPIJ)
-               JOFF1 = JOFF1 + NSPCK34(IREPAB,0)
+               JOFF1 = JOFF1 + NSPCK34(IREPAB,IC)
             ENDDO
 C
 C           When the buffers are full we write them to disk
@@ -702,6 +350,7 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
+      LOGICAL CORRECT_PARITY
 C
       CALL QENTER('MS4IN2P')
       KFRSAV = KFREE
@@ -728,9 +377,10 @@ C        for MDSCRU and for NFSYM.gt.1
       NR = 0
       NS = 0
       DO IC = ICS,ICF
+         CALL ICTYPES(IC,IC3,IC4)
          DO IREPRS = 0,NBSYM-1
-            NR = MAX(NR,NBBAS3(IREPRS,IC))
-            NS = MAX(NS,NBBAS4(IREPRS,IC))
+            NR = MAX(NR,NBBAS3(IREPRS,IC3))
+            NS = MAX(NS,NBBAS4(IREPRS,IC4))
          END DO
       END DO
       CALL MEMGET('REAL',KTRMAT,NR*NS,WORK,KFREE,LFREE)
@@ -744,10 +394,14 @@ C
         IF (NFSYM.EQ.1) CALL DZERO(WORK(KGMAT),NKL*NZ*NZ*NBSYMP)
 C
 C       Loop over all boson irreps. On the next line we pick out the
-C       ones with the right parity.
+C       ones with the right parity. Note that for Gaunt we need to take
+C       into account the difference in parity between large and small
+C       components by using JBTOF(..,2) instead of JBTOF(..,1).
 C
         DO IREPRS = 0, NBSYM-1
-          IF (IREPIJ.EQ.JBTOF(IREPRS,1)) THEN
+          CORRECT_PARITY = IREPIJ.EQ.JBTOF(IREPRS,1)
+          IF (ICS.EQ.3) CORRECT_PARITY = IREPIJ.EQ.JBTOF(IREPRS,2)
+          IF (CORRECT_PARITY) THEN
 C
 C           Loop over the quaternion units of the first transformed
 C           density (this is IZ1 in my notes).
@@ -760,6 +414,7 @@ C              untransformed density.
 C
                IF (ICS.EQ.2) IOFF = IOFF + NSPCK34(IREPRS,1)
                DO IC = ICS, ICF
+                  CALL ICTYPES(IC,IC3,IC4)
 C
 C                 Loop over the boson symmetries of the fourth
 C                 (untransformed) index. Get the fermion symmetry
@@ -768,24 +423,27 @@ C                 of the third index.
 C
                   DO IREPS = 0, NBSYM-1
                      IREPR = IBTXOR(IREPRS,IREPS)
-                     NR = NBBAS3(IREPR,IC)
-                     NS = NBBAS4(IREPS,IC)
-                     IF (IC.EQ.1) THEN
+                     NR = NBBAS3(IREPR,IC3)
+                     NS = NBBAS4(IREPS,IC4)
+                     IF (IC3.EQ.1) THEN
                         IREPRI = IREPR
-                        IREPSI = IREPS
                      ELSE
                         IREPRI = IBTXOR(IXYZ,IREPR)
+                     ENDIF
+                     IF (IC4.EQ.1) THEN
+                        IREPSI = IREPS
+                     ELSE
                         IREPSI = IBTXOR(IXYZ,IREPS)
                      ENDIF
 C
-                     IREPK =  JBTOF(IREPR,IC)
-                     IREPL =  JBTOF(IREPS,IC)
+                     IREPK =  JBTOF(IREPR,IC3)
+                     IREPL =  JBTOF(IREPS,IC4)
                      NK = NSTR3(IREPK)
                      NL = NSTR4(IREPL)
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
-                        KOFF = ICMOQS(IREPK,3) + IBBAS3(IREPR,IC)
+                        KOFF = ICMOQS(IREPK,3) + IBBAS3(IREPR,IC3)
      &                       - IBAS3(IREPK)
-                        LOFF = ICMOQS(IREPL,4) + IBBAS4(IREPS,IC)
+                        LOFF = ICMOQS(IREPL,4) + IBBAS4(IREPS,IC4)
      &                       - IBAS4(IREPL)
                         NRQ3 = NDMOQS(1,IREPK,3)
                         NCQ3 = NDMOQS(2,IREPK,3)
@@ -819,14 +477,14 @@ C                    AO-matrix (the half-transformed integrals were
 C                    triangular in the AO-indices). Diagonal elements
 C                    are scaled before storage to avoid double-counting.
 C                    
-                     IREPK =  JBTOF(IREPS,IC)
-                     IREPL =  JBTOF(IREPR,IC)
+                     IREPK =  JBTOF(IREPS,IC4)
+                     IREPL =  JBTOF(IREPR,IC3)
                      NK = NSTR3(IREPK)
                      NL = NSTR4(IREPL)
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
-                        KOFF = ICMOQT(IREPK,3) + IBBAS4(IREPS,IC)
+                        KOFF = ICMOQT(IREPK,3) + IBBAS4(IREPS,IC4)
      &                       - IBAS4(IREPK)
-                        LOFF = ICMOQT(IREPL,4) + IBBAS3(IREPR,IC)
+                        LOFF = ICMOQT(IREPL,4) + IBBAS3(IREPR,IC3)
      &                       - IBAS3(IREPL)
                         NRQ3 = NDMOQT(1,IREPK,3)
                         NCQ3 = NDMOQT(2,IREPK,3)
@@ -890,7 +548,6 @@ C
      &                  NSTR3,NSTR4,NKL,WORK(KGMAT),
      &                  WORK,KFREE,LFREE)
         ELSEIF (ISTRAT.EQ.4) THEN
-c          write(6,*) 'updating record ',IJS+IJ,WORK(KGMAT)
            CALL MDSCRU(IREPIJ,IJS+IJ,LGMAT,WORK(KGMAT),WORK(KGTMP))
         ENDIF
       ENDDO
@@ -1296,3 +953,145 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ICTYPES */
+      SUBROUTINE ICTYPES(IC,IC1,IC2)
+C
+C     Get the individual components from the compound IC label
+C     Written by Luuk Visscher, July 2002
+C
+      IF (IC.LE.2) THEN
+         IC1 = IC
+         IC2 = IC
+      ELSEIF (IC.EQ.3) THEN
+         IC1 = 2
+         IC2 = 1
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck gauntr */
+      SUBROUTINE GAUNTR(FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,
+     &                  BUF,LBUF,IPRINT)
+C*****************************************************************************
+C
+C     Dedicated routine based on QTRANS to do transformation of a vector
+C     of spin matrices as required in the transformation of the Gaunt
+C     integrals. Only AO-to-MO-transformation.
+C
+C     ADDF gives the possibility of adding the results
+C
+C     The unitary C-matrix has a time-symmetric structure.
+C
+C     The AO-to-MO-transformation can be set up quaternionically as
+C
+C       FMO = [(Ca+)-t(CbT)j][(FAOa)+(FAOb)j][(Ca)+(Cb)j]
+C
+C       F(NBAS,NBAS,NZ) --->  F(NORB,NORB,NZ)
+C
+C     Written by L.Visscher : July 2002
+C****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+      DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
+     &          FMO(LRMO,LCMO,NZMO,3),IQMO(*),
+     &          TM1(LR1,LC1,*),IQTM1(*),
+     &          TM2(LR2,LC2,*),IQTM2(*),
+     &          BUF(LBUF)
+      DIMENSION IQW(4),IQWA(4)
+C
+      CALL QENTER('GAUNTR')
+C
+C     *******************************************************
+C     *****  AO - to - MO -transformation : F' = (C+)FC *****
+C     *******************************************************
+C
+C
+C     Look for the most efficient transformation
+C       ------------------------------------------
+C
+      IF(NCAO.GE .NRAO) THEN
+C
+C       Perform the two steps:
+C         1. W  = FC
+C         2. F' = (C+)W
+C
+        CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
+        NBUF = NRAO*NCMO*NZW
+        IF(NBUF.GT.LBUF) THEN
+           WRITE (LUPRI,'(/A,I10/A,I10)')
+     & ' >>> GAUNTR error, need work space    ',NBUF,
+     & '                   current work space ',LBUF
+        ENDIF
+C
+C       First part of transformation: W = FC
+C       ------------------------------------
+C
+        CALL QGEMM(NRAO,NCMO,NCAO,D1,
+     &           'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
+     &           'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &      D0,IQW,BUF,NRAO,NCMO,NZW)
+C
+C       Second part of transformation: H = (C+)W
+C       ----------------------------------------
+C
+        DO IALPHA = 2, 4
+C
+C         Multiply the one-index transformed matrix
+C         by the quaternion unit corresponding to the
+C         alpha matrix.
+C
+          CALL IQPACK(IALPHA,1,IQW,NZW,IQWA,NZWA)
+          CALL QGEMM(NRMO,NCMO,NRAO,D1,
+     &       'H','N',IQTM1,TM1 ,LR1,LC1,NZTM1,
+     &       'N','N',IQWA,BUF,NRAO,NCMO,NZWA,
+     &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
+        ENDDO
+      ELSE
+C
+C       Perform the two steps:
+C         1. W  = (C+)F
+C         2. F' = WC
+C
+        CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
+        NBUF = NRMO*NCAO*NZW
+        IF(NBUF.GT.LBUF) THEN
+           WRITE (LUPRI,'(/A,I10/A,I10)')
+     & ' >>> GAUNTR error, need work space    ',NBUF,
+     & '                   current work space ',LBUF
+        ENDIF
+C
+C       First part of transformation: W = (C+)F
+C       ----------------------------------------
+C
+        CALL QGEMM(NRMO,NCAO,NRAO,D1,
+     &     'H','N',IQTM1,TM1,LR1,LC1,NZTM1,
+     &     'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
+     &      D0,IQW,BUF,NRMO,NCAO,NZW)
+C
+C       Second part of transformation: H = WC
+C       -------------------------------------
+C
+        DO IALPHA = 2, 4
+          CALL IQPACK(IQW,NZW,IALPHA,1,IQWA,NZWA)
+          CALL QGEMM(NRMO,NCMO,NCAO,D1,
+     &       'N','N',IQWA,BUF,NRMO,NCAO,NZWA,
+     &       'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
+C
+        ENDDO
+      ENDIF
+C
+      CALL QEXIT('GAUNTR')
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

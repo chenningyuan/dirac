@@ -1041,7 +1041,7 @@ C
 C     Input :
 C
 C     - IPRINT       Print flag
-C     - ICS          First class of integrals 1 : (LL|XX), 2 : (SS|XX)
+C     - ICS          First class of integrals 1 : (LL|XX), 2 : (SS|XX), 3 : (SL|XX)
 C     - ICL          Last class of integrals
 C     - TRIAN        Store the transformed integrals as a lower triangle
 C     - NSTR1        Number of active spinors for index 1
@@ -1116,7 +1116,14 @@ C
 C     Loop over the boson symmetries of the densities
 C
       DO IREPPQ = 0, NBSYM-1
+C
+C        The parity of the spinor product to which this density
+C        contributes need to be established. Since the large and
+C        small component have opposite parity the assignment is
+C        different in case of Gaunt integrals.
+C
          IREPIJ = JBTOF(IREPPQ,1)
+         IF (ICS.EQ.3) IREPIJ = JBTOF(IREPPQ,2)
 C
          IF (NFSYM.GT.1) CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
 C
@@ -1125,11 +1132,12 @@ C        shell-block batch
 C
          DO IJ = 1, IJPAIRS(IREPPQ)
 C
-C           Loop over the compound component (LL, SS) of the lefthand
+C           Loop over the compound component (LL, SS, SL) of the lefthand
 C           densities
 C
             IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
             DO IC = ICS, ICF
+               CALL ICTYPES (IC,IC1,IC2)
 C
 C              Loop over the boson symmetries of the second
 C              (untransformed) index. Get the fermion symmetry (parity)
@@ -1138,25 +1146,28 @@ C              of the first index.
 C
                DO IREPQ = 0, NBSYM-1
                   IREPP = IBTXOR(IREPPQ,IREPQ)
-                  IREPI =  JBTOF(IREPP,IC)
-                  IREPJ =  JBTOF(IREPQ,IC)
-                  KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC)
+                  IREPI =  JBTOF(IREPP,IC1)
+                  IREPJ =  JBTOF(IREPQ,IC2)
+                  KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC1) 
      &                 - IBAS(IREPI)
-                  LOFF = ICMOQR(IREPJ,2) + IBBAS(IREPQ,IC)
+                  LOFF = ICMOQR(IREPJ,2) + IBBAS(IREPQ,IC2) 
      &                 - IBAS(IREPJ)
-                  NP = NBBAS(IREPP,IC)
-                  NQ = NBBAS(IREPQ,IC)
+                  NP = NBBAS(IREPP,IC1)
+                  NQ = NBBAS(IREPQ,IC2)
                   NI = NSTR1(IREPI)
                   NJ = NSTR2(IREPJ)
                   NRQ1 = NDMOQR(1,IREPI,1)
                   NCQ1 = NDMOQR(2,IREPI,1)
                   NRQ2 = NDMOQR(1,IREPJ,2)
                   NCQ2 = NDMOQR(2,IREPJ,2)
-                  IF (IC.EQ.1) THEN
+                  IF (IC1.EQ.1) THEN
                      IREPPI = IREPP
-                     IREPQI = IREPQ
                   ELSE
                      IREPPI = IBTXOR(IXYZ,IREPP)
+                  ENDIF
+                  IF (IC2.EQ.1) THEN
+                     IREPQI = IREPQ
+                  ELSE
                      IREPQI = IBTXOR(IXYZ,IREPQ)
                   ENDIF
 C
@@ -3971,10 +3982,12 @@ C     Memory requirements for HERMIT:
 C
 C     IC = 1: (LL|**) integrals
 C     IC = 2: (SS|**) integrals
+C     IC = 3: (SL|**) integrals
 C
 C     I2TYP =  1: (**|LL) integrals
 C     I2TYP =  2: (**|SS) integrals
 C     I2TYP = 12: (**|LL) + (**|SS) integrals
+C     I2TYP =  4: (**|SL) integrals
 C
       IF ( I2TYP .EQ. 0 ) THEN
 C        ...(GG|GG) integrals
@@ -4003,6 +4016,11 @@ C           ...(LL|LL) + (LL|SS) integrals
 C           ...(SS|LL) + (SS|SS) integrals
             MWHER = MAX(MXHERMEM(2),MXHERMEM(3))
          END IF
+      ELSE IF ( I2TYP .EQ. 4 ) THEN
+C        ...(SL|SL) integrals
+Cluuk    MWHER = MXHERMEM(4)
+Cluuk   not yet implemented use value for SS
+         MWHER = MXHERMEM(3)
       ELSE
          CALL QUIT('MXHERMEM: unknown I2TYP')
       END IF

@@ -835,9 +835,8 @@ C
      +     '* LS Integrals not transformed.'
       IF (MOD(ITRA_INTFL4/4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* SS Integrals not transformed.'
-CLuuk : activate output when Gaunt is ready and active
-Cluuk IF (MOD(ITRA_INTFL4/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
-Cluuk+     '* Gaunt Integrals not transformed.'
+      IF (MOD(ITRA_INTFL4/8,2).NE.1) WRITE(LUPRI,'(1X,A)')
+     +     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
       IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')

@@ -157,7 +157,7 @@ C
         END IF
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 2, 1, -1
+        DO IC = 3, 1, -1
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASMAX, IASTRT, -1
@@ -166,10 +166,15 @@ C
      &           '- Starting shell A no. ',ISHLA,' after ',
      &           WALLST - WALLBEF,' seconds.'
               CALL FLSHFO(LUPRI)
+              IF (IC.LE.2) THEN
+                 IBLAST = ISHLA
+              ELSE
+                 IBLAST = IBSMAX
+              ENDIF
 C             Distribute number of B's evenly
-              NBSTEP = (ISHLA-IBSTRT)/MXIBSTEP + 1
-              IBSTEP = -(ISHLA-IBSTRT)/NBSTEP - 1
-           DO IBEND = ISHLA, IBSTRT, IBSTEP
+              NBSTEP = (IBLAST-IBSTRT)/MXIBSTEP + 1
+              IBSTEP = -(IBLAST-IBSTRT)/NBSTEP - 1
+           DO IBEND = IBLAST, IBSTRT, IBSTEP
 C
               ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
 C
@@ -223,19 +228,29 @@ C
         CALL MDSCRI(WORK,KFREE,LFREE)
 C
         CALL GETTIM(CPUBEF,WALLBEF)
-        DO IC = 1, 2
+        DO IC = 1, 3
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
-              WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
-     &           '- Beginning with task',ISHLA,' of',IASMAX,
-     &           ' after',WALLST-WALLBEF,' seconds',
-     &        'and after',CPUST-CPUBEF,' CPU-seconds'
+              IF (IC.LE.2) THEN
+                 IBEND = ISHLA
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
+     &              '- Beginning with task',ISHLA,' of',IASMAX,
+     &              ' after',WALLST-WALLBEF,' seconds',
+     &              'and after',CPUST-CPUBEF,' CPU-seconds'
+              ELSE
+                 IBEND = IBSMAX
+                 WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)') 
+     &              '- Beginning with Gaunt task',ISHLA-IASTRT+1,
+     &              ' of',IASMAX-IASTRT+1,
+     &              ' after',WALLST-WALLBEF,' seconds',
+     &              'and after',CPUST-CPUBEF,' CPU-seconds'
+              ENDIF
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,ISHLA,
+     &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
            ENDDO
         ENDDO
@@ -409,6 +424,17 @@ C
       CALL GISPCK(NSPCK34,ISPCK34,ISHLA,IBSTRT,IBEND,
      &     NBBAS3,NBBAS4,IBBAS3,IBBAS4,IBAS3,IBAS4)
 C
+C     Determine the type of the transformed indices :
+C     Coulomb is LL or SS, Gaunt is SL.
+C
+      IF (IC.LE.2) THEN
+         IC3 = IC
+         IC4 = IC
+      ELSE
+         IC3 = 2
+         IC4 = 1
+      ENDIF
+C
 C     Generate pointers for reduced coefficient matrices
 C
       NQ3S = 0
@@ -419,9 +445,11 @@ C
          NROW3 = 0
          NROW4 = 0
          DO IREPR = 0, NBSYM-1 
-            IF (IFSYM.EQ.JBTOF(IREPR,IC)) THEN
-               NROW3 = NROW3 + NBBAS3(IREPR,IC)
-               NROW4 = NROW4 + NBBAS4(IREPR,IC)
+            IF (IFSYM.EQ.JBTOF(IREPR,IC3)) THEN
+               NROW3 = NROW3 + NBBAS3(IREPR,IC3)
+            ENDIF
+            IF (IFSYM.EQ.JBTOF(IREPR,IC4)) THEN
+               NROW4 = NROW4 + NBBAS4(IREPR,IC4)
             ENDIF
          ENDDO
          NDMOQS(1,IFSYM,3) = NROW3
@@ -448,20 +476,42 @@ C
       ENDDO
 C
 C     Make index array for half-transformed integrals
+C     For the Coulomb integrals we have a real operator
+C     multiplied by one quaternion B-matrix (see 
+C     L. Visscher, J. Comp Chem, 2002). For the Gaunt
+C     integrals the operator is now q-imaginary, so we
+C     need to store three times more. Note also
+C     the change of parity of SL relative to LL or SS. 
 C
-      NHTMT = 0
-      DO IREPIJ = 1, NFSYM
-         MHTM(IREPIJ) = 0
-         NHTM(IREPIJ) = 0
-         DO IREPAB = 0, NBSYM-1
-            IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-               IHTM(IREPAB) = MHTM(IREPIJ) + NHTMT
-               MHTM(IREPIJ) = MHTM(IREPIJ) + NSPCK34(IREPAB,0)*NZ
-            ENDIF
+      IF (IC.LE.2) THEN
+        NHTMT = 0
+        DO IREPIJ = 1, NFSYM
+           MHTM(IREPIJ) = 0
+           NHTM(IREPIJ) = 0
+           DO IREPAB = 0, NBSYM-1
+              IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
+                 IHTM(IREPAB) = MHTM(IREPIJ) + NHTMT
+                 MHTM(IREPIJ) = MHTM(IREPIJ) + NSPCK34(IREPAB,IC)*NZ
+              ENDIF
             NHTM(IREPIJ) = MHTM(IREPIJ)*NFPCK12(IREPIJ)
-         ENDDO
-         NHTMT = NHTMT + NHTM(IREPIJ)
-      ENDDO
+           ENDDO
+           NHTMT = NHTMT + NHTM(IREPIJ)
+        ENDDO
+      ELSE
+        NHTMT = 0
+        DO IREPIJ = 1, NFSYM
+           MHTM(IREPIJ) = 0
+           NHTM(IREPIJ) = 0
+           DO IREPAB = 0, NBSYM-1
+              IF (IREPIJ.EQ.JBTOF(IREPAB,2)) THEN
+                 IHTM(IREPAB) = MHTM(IREPIJ) + NHTMT
+                 MHTM(IREPIJ) = MHTM(IREPIJ) + NSPCK34(IREPAB,IC)*NZ*3
+              ENDIF
+            NHTM(IREPIJ) = MHTM(IREPIJ)*NFPCK12(IREPIJ)
+           ENDDO
+           NHTMT = NHTMT + NHTM(IREPIJ)
+        ENDDO
+      ENDIF
 C
       NSIZET = 0
       NBUFM = 0
@@ -540,6 +590,9 @@ C
       ELSEIF (I2TYP.EQ.2) THEN
          ICS12 = 2
          ICF12 = 2
+      ELSEIF (I2TYP.EQ.4) THEN
+         ICS12 = 3
+         ICF12 = 3
       ELSE
          ICS12 = 1
          ICF12 = 2
@@ -1166,17 +1219,18 @@ C     transformation will grow with a factor equal
 C     to the number of blocks of B shells done for
 C     a fixed A shell.
 C
-C     TODO: note that this code assumes only LL and SS
-C           shells, no LS shells, fix when introducing
-C           Gaunt or Breit
-C
 #include "implicit.h"
 #include "priunit.h"
 C
 C     get NA1 = number of S A-shells and NA2 = number of L A-shells
+C     NA3 = number of S A-shells for Gaunt when active; otherwise
+C     it is zero
 C
+      CALL SHRNGE (3,INTFLG,I2TYP,IASTR3,IBSTR3,IASMA3,IBSMA3)
       CALL SHRNGE (2,INTFLG,I2TYP,IASTR2,IBSTR2,IASMA2,IBSMA2)
       CALL SHRNGE (1,INTFLG,I2TYP,IASTR1,IBSTR1,IASMA1,IBSMA1)
+      NA3 = IASMA3-IASTR3 + 1
+      NB3 = IBSMA3-IBSTR3 + 1
       NA2 = IASMA2-IASTR2 + 1
       NA1 = IASMA1-IASTR1 + 1
       NDTASK = 2*NODES
@@ -1186,11 +1240,23 @@ C         (we try 2 times the number of nodes)
    10 CONTINUE
          MXIBSTEP = MXIBSTEP - 1
          NTASKS = 0
+C
+C        For Coulomb type integrals the second shell index
+C        should always be smaller than the first so the number
+C        of B-shells depend on the value of A.
+C
          DO I = 1,NA1
             NTASKS = NTASKS + (I-1)/MXIBSTEP + 1
          END DO
          DO I = 1,NA2
             NTASKS = NTASKS + (I-1)/MXIBSTEP + 1
+         END DO
+C
+C        For Gaunt type integrals the second shell index
+C        runs always over the full set of L-shells
+C
+         DO I = 1,NA3
+            NTASKS = NTASKS + NB3/MXIBSTEP + 1
          END DO
       IF (NTASKS .LT. NDTASK .AND. MXIBSTEP.GT.1) GO TO 10
       NTR4BSTEP = MXIBSTEP
