@@ -594,7 +594,7 @@ C     ------------------------------------
 C
  110  CALL SORTEW (DS,NDETT,IRPS)
       WRITE(6,1005)
-      ILEVEL=0
+      ILEVEL=1
       EW=0.0D0
       EWF=DS(1)
       NEW=0
@@ -926,6 +926,10 @@ C
 C
       REAL*8 DS(N2*N5)
       INTEGER NDETT,IND(N5),IRPS(N2*N5)
+C
+      DO IRP = 1, NREP
+         IF (NDETI(IRP).LT.1) D(1,IRP)=1.D12
+      ENDDO
 C
       INDEX = 1
       IRPMIN = 1
