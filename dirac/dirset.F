@@ -146,6 +146,7 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbfir.h"
+#include "inftap.h"
       CHARACTER COMP(2)*1
 C
       IF(IPRINT.GE.2) CALL TITLER('Output from SETDC1','*',103)
@@ -293,6 +294,7 @@ C
       LUTMAT = 3
       LU1INT = 19
       LUPMAT = 20
+      LUINTR = 0
 C
 C     *****************************************
 C     ***** COMMON/FIRSTN/ -              *****
