@@ -83,7 +83,7 @@ C
          OPEN(IUNIT,FILE='KRMC MATRICES',STATUS='NEW',
      &        FORM='UNFORMATTED',ACCESS='SEQUENTIAL')
          REWIND(IUNIT)
-         CALL NEWLAB('SODLABEL',IUNIT,LUERR)
+         CALL NEWLAB('SODLABEL',IUNIT,LUPRI)
       END IF
 C
   100 CONTINUE
@@ -93,7 +93,7 @@ C
          CCOPT = COPT(IPOSOLD:IPOS-1)
          IPOSOLD = IPOS + 1
          IF (IPRINT .GE. 5)
-     &      WRITE(LUPRI,'(3A)') 'GETMAT, option <',CCOPT,'>'
+     &      WRITE(LUPRI,'(/3A)') 'GETMAT, option <',CCOPT,'>'
 C
          IF (CCOPT .EQ. 'FCMO' .OR. CCOPT .EQ. 'FVMO') THEN
 C
@@ -174,7 +174,7 @@ C
             END IF
             IOFF = IOFF + N2ASHTQ
          ELSE
-            WRITE(LUPRI,'(3A)') 'GETMAT: Unknown option: <',CCOPT,'>'
+            WRITE(LUPRI,'(/3A)') 'GETMAT: Unknown option: <',CCOPT,'>'
             CALL QUIT('argh, ralle ralle in GETMAT')
          END IF
 C
@@ -234,13 +234,13 @@ C
 C
 C     Write label
 C
-      CALL NEWLAB(LABEL,LUNIT,LUERR)
+      CALL NEWLAB(LABEL,LUNIT,LUPRI)
 C
 C     Write vector
 C
       LEN = MAX(4,ISIZE)
       CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
-      CALL NEWLAB('EOFLABEL',LUNIT,LUERR)
+      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
 C
