@@ -703,7 +703,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
-     &          GPCI(*),GPOE(*),GPOP(*),IVECS(NFREQ,NVPAR),
+     &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),WORK(*)
 C
 #include <dcbibn.h>
