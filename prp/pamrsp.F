@@ -2927,27 +2927,29 @@ C
 C
 C     Give summary of calculations
 C
-      WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(2X,A2,A6))')
-     &  'Freq.(au)','Total norm',(BVTYP(I),' norm ',I=1,NVPAR)
-      NCOL = 36 + NVPAR*10
-      REWIND LUCYCL
-      DO ITR = 1,ITMIC
-        CALL PRSYMB(LUPRI,'=',NCOL,0)
-        READ(LUCYCL,'(I3,2X,A9,6(2X,A3,I3))')
-     &     JTR,XRS_INTTYP,(WORD,ISIM(I),I=1,NVPAR)
-        READ(LUCYCL,'(6D10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
-        READ(LUCYCL,'(A12)') CPUTID
-        WRITE(LUPRI,'(A5,I3,2X,A12,1X,A,A9,A,6(5X,A1,I3,A1))') 
+      IF(MAXITR.GT.0) THEN
+        WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(2X,A2,A6))')
+     &    'Freq.(au)','Total norm',(BVTYP(I),' norm ',I=1,NVPAR)
+        NCOL = 36 + NVPAR*10
+        REWIND LUCYCL
+        DO ITR = 1,ITMIC
+          CALL PRSYMB(LUPRI,'=',NCOL,0)
+          READ(LUCYCL,'(I3,2X,A9,6(2X,A3,I3))')
+     &       JTR,XRS_INTTYP,(WORD,ISIM(I),I=1,NVPAR)
+          READ(LUCYCL,'(6D10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
+          READ(LUCYCL,'(A12)') CPUTID
+          WRITE(LUPRI,'(A5,I3,2X,A12,1X,A,A9,A,6(5X,A1,I3,A1))') 
      &        '* It.',ITR,CPUTID,' (',XRS_INTTYP,')',
      &        ('[',ISIM(I),']',I=1,NVPAR)
-        CALL PRSYMB(LUPRI,'-',NCOL,0)
-        DO IFREQ = 1,NFREQ
-           RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
-           WRITE(LUPRI,'(10X,F10.6,A3,1P,D10.2,A3,6(D10.2))') 
-     &     EVALR(IFREQ),' : ',RTNORM,' | ',(RNORM(I,IFREQ),I=1,NVPAR)
+          CALL PRSYMB(LUPRI,'-',NCOL,0)
+          DO IFREQ = 1,NFREQ
+             RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
+             WRITE(LUPRI,'(10X,F10.6,A3,1P,D10.2,A3,6(D10.2))') 
+     &       EVALR(IFREQ),' : ',RTNORM,' | ',(RNORM(I,IFREQ),I=1,NVPAR)
+          ENDDO
         ENDDO
-      ENDDO
-      CALL PRSYMB(LUPRI,'=',NCOL,0)
+        CALL PRSYMB(LUPRI,'=',NCOL,0)
+      ENDIF
 C
       RETURN
       END
@@ -3437,8 +3439,10 @@ c$$$#endif
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
-                BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-                CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
+                IF(MAXITR.NE.0) THEN
+                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
+                ENDIF
                 IVEC(IP) = 1
                 IVEC(IM) = 0
               ELSE
@@ -3451,10 +3455,12 @@ C               tsaue:         retain norm for numerical stability !
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
-                BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-                CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
-                BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IM),1)
-                CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IM),1)
+                IF(MAXITR.NE.0) THEN
+                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IP),1)
+                  BNRM = GPTMP/DNRM2(NVARQ,BVEC(1,1,IM),1)
+                  CALL DSCAL(NVARQ,BNRM,BVEC(1,1,IM),1)
+                ENDIF
                 IVEC(IP) = 1
                 IVEC(IM) = 1
               END IF
