@@ -488,7 +488,7 @@ relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o \\
 relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o \\
-relccsd/ccgrad.o
+relccsd/ccgrad.o relccsd/ccfspc.o
 
 C_CCOBJS = relccsd/ccunix.o
 EOF
