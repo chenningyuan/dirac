@@ -1351,6 +1351,44 @@ C
      &            WORK(KFREE),LFREE)
       ENDIF
 C
+C     Output
+C
+      CALL HEADER('Output from GMOTRA',-1)
+      IF ( NFSYM .EQ. 1 ) THEN
+         WRITE(LUPRI,'(40X,A)') 'Irrep 1'
+         WRITE(LUPRI,'(A,I)')
+     &        'No. of electronic orbitals (NESH): ',NESH(1)
+         WRITE(LUPRI,'(A,I)')
+     &        'No. of positronic orbitals (NPSH): ',NPSH(1)
+         WRITE(LUPRI,'(A,I)')
+     &        'Total no. of orbitals      (NORB): ',NORB(1)
+      ELSE
+         WRITE(LUPRI,'(35X,5(A5,1X,I1,1X))') 
+     &        ('Irrep',I,I=1,NFSYM),'Sum'
+         J = 0
+         DO I = 1, NFSYM
+            J = J + NESH(I)
+         END DO
+         WRITE(LUPRI,'(A,5(I5,3X))')
+     &        'No. of electronic orbitals (NESH): ',
+     &        (NESH(I),I=1,NFSYM),J
+         J = 0
+         DO I = 1, NFSYM
+            J = J + NPSH(I)
+         END DO
+         WRITE(LUPRI,'(A,5(I5,3X))')
+     &        'No. of positronic orbitals (NPSH): ',
+     &        (NPSH(I),I=1,NFSYM),J
+         J = 0
+         DO I = 1, NFSYM
+            J = J + NORB(I)
+         END DO
+         WRITE(LUPRI,'(A,5(I5,3X)/)')
+     &        'Total no. of orbitals      (NORB): ',
+     &        (NORB(I),I=1,NFSYM),J
+      END IF
+C
+C
 C     Write the transformation matrix.
 C
       N2TMT = 0
