@@ -1,21 +1,51 @@
-#!/bin/ksh
-# Calculate carbon atom
-pam -mw 60 -nw 60 -utcmo -rmwrk -mpi 8 C C
-cp DFCOEF DFC1AT
-# Calculate hydrogen atom
-/home/u1/trondsau/Dirac/pam -mw 60 -nw 60 -utcmo -mpi 8 -rmwrk H H
-cp DFCOEF DFH1AT
-ln -f -s DFH1AT DFH2AT
-ln -f -s DFH1AT DFH3AT
-ln -f -s DFH1AT DFH4AT
-# Calculate methane
-/home/u1/trondsau/Dirac/pam -mw 60 -nw 60 -utcmo -rmwrk -mpi 8 CH4 CH4
-cp DFCOEF cf.CH4
+#
+#!/bin/sh
+#
+# Run calculation for carbon atom
+#
+MOL=C;
+MENU=C;
+export MOL;
+export MENU;
+../run.sh -outcmo
+mv DFCOEF cf.C
+ln -f -s cf.C DFC1AT
+#
+# Run calculation for hydrogen
+#
+MOL=H;
+MENU=H;
+export MOL;
+export MENU;
+../run.sh -outcmo
+mv DFCOEF cf.H
+ln -f -s cf.H DFH1AT
+ln -f -s cf.H DFH2AT
+ln -f -s cf.H DFH3AT
+ln -f -s cf.H DFH4AT
+#
+# Run calculation for methane
+#
+MOL=CH4;
+MENU=CH4;
+export MOL;
+export MENU;
+../run.sh -outcmo
+#
 # Pipek-Mezey localization using Mulliken population analysis
-/home/u1/trondsau/Dirac/pam -mw 60 -nw 60 -incmo -utcmo -rmwrk -mpi 8 -rmwrk CH4 CH4locmul
-cp DFCOEF cf.CH4locmul
+#
+MOL=CH4;
+MENU=CH4locmul;
+export MOL;
+export MENU;
+../run.sh -incmo
+#
 # Pipek-Mezey localization using projection analysis
-cp cf.CH4 DFCOEF
-/home/u1/trondsau/Dirac/pam -nw 60 -mw 60 -incmo -copy DFC1AT -copy DFH1AT -copy DFH2AT -copy DFH3AT -copy DFH4AT -utcmo -rmwrk CH4 CH4locprj
-cp DFCOEF cf.CH4locprj
+#
+MOL=CH4;
+MENU=CH4locprj;
+export MOL;
+export MENU;
+../run.sh -incmo -copy DFC1AT -copy DFH1AT -copy DFH2AT -copy DFH3AT -copy DFH4AT
+rm cf.C cf.H DFCOEF DFC1AT DFH1AT DFH2AT DFH3AT DFH4AT
 exit 0
