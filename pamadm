@@ -11,6 +11,7 @@
 #   Master script for administrator of DIRAC
 #   Written by Trond Saue Oct 1 1997
 #   Polish by Thomas Enevoldsen Oct 2 1997
+#   Additional polish and new features by J .Thyssen 1998
 #
 if ($#argv == 0) then
       echo 'Usage: pamadm [flags] tarfile'
@@ -203,6 +204,7 @@ echo RSPFLG=$RSPTAR >> configure
 echo TRAFLG=$TRATAR >> configure
 echo PARFLG=$PARTAR >> configure
 echo OPENFLG=$OPENTAR >> configure
+echo PAMADM=$PAMADM >> configure
 echo CIFLG=$CITAR >> configure
 #
 #

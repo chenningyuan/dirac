@@ -2326,7 +2326,7 @@ C
                   READ(LUCMD,*) (NACSH(J,IOPEN),J=1,NFSYM)
                   READ(LUCMD,'(A)') A
                   CALL FRAC2I(DF(IOPEN),A)
-                  IF (DF(IOPEN).GT.(D1+DTHR)) THEN
+                  IF (DF(IOPEN).GT.(D1+DTHRS)) THEN
                      WRITE(LUPRI,'(A,I2,A,F6.4,A)')
      &                  'HAMINP: Frac. occ. for shell ',IOPEN,
      &                  ' greater than 1 (',DF(IOPEN),')'
@@ -2418,7 +2418,7 @@ C        We do     allow fractional occupation of 1
 C           This corresponds to a inactive electron
 C           and gives DALPHA = 0
 C
-         IF (ABS(DF(IOPEN)-D1).LE.DTHR) THEN
+         IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
             WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
      &         'WARNING: Open shell no. ',IOPEN,
      &         ' has frac. occ. of ',DF(IOPEN)

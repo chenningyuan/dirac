@@ -149,7 +149,7 @@ while [ $# != 0 ]; do
          fi
          memdef="$val"
          ;;
-      "install_dir" | "inst_dir" | "install" | "install_directory" )
+      "install_dir" | "inst_dir" | "install" )
          if [ "${valomitted}" = "yes" ]; then
             echo  'Syntax error: Option "'${optname}'" is not allowed' \
                   'without an argument'
@@ -1353,6 +1353,13 @@ for link in $dirs; do
    fi
    ln -sf ../include $link/include
 done
+#
+#  Move write-protection if super-user (pamadm)
+#
+if [ $PAMADM = 1 ]; then
+   echo "You're a Dirac superuser, so I'll remove write proctection..."
+   chmod -R u+w *
+fi
 #
 #  Move write-protection if super-user (pamadm)
 #
