@@ -722,6 +722,7 @@ C*****************************************************************************
 C
 #include <ccom.h>
 #include <dcbgen.h>
+#include <dcbham.h>
 #include <dcborb.h>
 #include <dgroup.h>
 #include <pgroup.h>
@@ -738,7 +739,7 @@ C
 C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
-      CALL GTOVLT(SMAT,D1,WORK,LWORK)
+      CALL GTOVLT(SMAT,SSMTRC,WORK,LWORK)
 C
 C     If spherical transformations, get general transformation matrix
 C     ===============================================================
@@ -1805,7 +1806,7 @@ C     ================
 C
       CALL DSPTSI(NTBAS(0),WORK(KSTRI),WORK(KSBUF))
 C
-      CALL DZERO(SMAT,N2BBASX)
+      CALL DZERO(SMAT,N2BAST)
       NBRP     = 4/NZ
       IOFF = 0
       DO I = 1,NFSYM
@@ -1848,7 +1849,7 @@ C
 C     Memory deallocation
 C     ===================
 C
-      CALL MEMREL('GTOVLX',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('GTOVLT',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GTOVLT')
       RETURN
       END

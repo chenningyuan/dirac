@@ -172,7 +172,7 @@ C
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
-     &                   WORK(KVEC(IFRP,I)),
+     &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
           ENDIF
@@ -380,8 +380,8 @@ C
         ISAME(I)   = I
         DO IFRP = 1, NFSYM
           CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),
-     &         IFRP,WORK(KQ(IFRP,I)),WORK(KVEC(IFRP,I)),
-     &         NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &         IFRP,WORK(KQ(IFRP,I)),NSTR(IFRP,0,I),
+     &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &         NFBAS(IFRP,0),NORB(IFRP))
           CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
@@ -2860,7 +2860,7 @@ C     ======================
 C
       DO IFRP = 1, NFSYM
         CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
-     &       IFRP,WORK(KQ(IFRP,1)),WORK(KVEC(IFRP,1)),
+     &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
      &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
      &       NFBAS(IFRP,0),NORB(IFRP))
         CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
@@ -2875,7 +2875,7 @@ C       ======================
 C
         DO IFRP = 1, NFSYM
           CALL SELCFS (WORK(KBUF+ICMOQ(IFRP)),
-     &         IFRP,WORK(KQC(IFRP)),WORK(KVEC(IFRP,2)),
+     &         IFRP,WORK(KQC(IFRP)),NSPC(IFRP,0),WORK(KVEC(IFRP,2)),
      &         NSPC(IFRP,2),NSPC(IFRP,1),
      &         NFBAS(IFRP,0),NORB(IFRP))
         ENDDO

@@ -2035,12 +2035,12 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
 C
-      LOGICAL SET, NEWDEF,ORBDEF(2), RESET
+      LOGICAL SET, NEWDEF,ORBDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.REFFIL','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.WGPOP','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2059,10 +2059,10 @@ C     ===================
 C
       IPRPRJ   = 0
 C     Default is to project all occupied vectors onto all reference vectors
-      ORBDEF(1) = .TRUE.
-      ORBDEF(2) = .TRUE.
-      REFFIL   = 'DFCOEF'
+      ORBDEF = .TRUE.
+      NREFS    = 0
       PROTHR   = 1.0D-3
+      LWGPOP = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -2102,16 +2102,25 @@ C&&&& PROTHR: Threshold for printout of projection coefficients
     3          CONTINUE
 C&&&& VECPRJ: Spinors to project onto reference vectors
                   READ(LUCMD,'(A72)') (VECPRJ(I),I=1,NFSYM)
-                  ORBDEF(1) = .FALSE.
+                  ORBDEF = .FALSE.
                GO TO 100
     4          CONTINUE
 C&&&& VECREF: Reference vectors
-                  READ(LUCMD,'(A72)') (VECREF(I),I=1,NFSYM)
-                  ORBDEF(2) = .FALSE.
+                  READ(LUCMD,*) NREFS
+                  IF(NREFS.GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of reference fragments specified:',NREFS,
+     &         '* Current maximum                        :',MAXREF
+                    CALL QUIT('PRJINP:Too many fragments !')
+                  ENDIF
+                  DO J = 1,NREFS
+                    READ(LUCMD,'(A6)') REFFIL(J)
+                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                  ENDDO
                GO TO 100
     5          CONTINUE
-C&&&& REFFIL: Name file of reference vectors
-                 READ(LUCMD,'(A6)') REFFIL
+C&&& WGPOP: Split overlap densities according to weight of contributions
+                 LWGPOP = .TRUE.
                GO TO 100
     6          CONTINUE
                GO TO 100
@@ -2132,7 +2141,7 @@ C&&&& REFFIL: Name file of reference vectors
 C
 C     Process section
 C
-      IF(ORBDEF(1)) THEN
+      IF(ORBDEF) THEN
         DO I = 1,NFSYM
           VECPRJ(I) = ' '
           IF(NOCC(I).GT.0) THEN
@@ -2144,11 +2153,6 @@ C
           ENDIF
         ENDDO
       ENDIF
-      IF(ORBDEF(2)) THEN
-        DO I = 1,NFSYM
-          VECREF(I) = 'all spinors'
-        ENDDO
-      ENDIF
 C
 C     Print section
 C     =============
@@ -2157,8 +2161,6 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'PRJINP: Projection onto another solution'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,A6)') '* Current solution projected '//
-     &       'down onto coefficients read from file ',REFFIL
       WRITE(LUPRI,'(1X,A,1P,E9.2)')
      &       '* Threshold for printing projection coefficients:',PROTHR
       WRITE(LUPRI,'(1X,A)') '* Number of spinors projected:'
@@ -2174,19 +2176,24 @@ C
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
-      WRITE(LUPRI,'(1X,A)') '* Reference spinors :'
-      DO I = 1,NFSYM
-        NVEC = 0
-        CALL  NUMLST(VECREF(I),IDUMMY,NFBAS(I,0),
+      DO J = 1,NREFS
+        WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+        WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+        DO I = 1,NFSYM
+          NVEC = 0
+          CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
      &              -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A,A3)') 
-     &       '- No orbitals in fermion ircop ',FREP(I)
-        ELSE
-          WRITE(LUPRI,'(4X,A,A3,A,A72)') 
-     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I)
-        ENDIF
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A,A3)') 
+     &         '- No orbitals in fermion ircop ',FREP(I)
+          ELSE
+            WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+          ENDIF
+        ENDDO
       ENDDO
+      IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
+     &  'between contributions according to their weight.'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRPRJ
   999 CONTINUE
       RETURN
@@ -2483,11 +2490,10 @@ C
 #include <dcbxpr.h>
 #include <dcbprl.h>
 C
-      LOGICAL SYMSTP,LBIT, NOINPUT
+      LOGICAL SYMSTP,NOINPUT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
      &          WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
-      CHARACTER A*80
 C
       DATA TABDIR /'*END OF','*SOLVEN','XXXXXXX','XXXXXXX',
      &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/

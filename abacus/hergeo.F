@@ -564,6 +564,8 @@ C     Revision March 17 1999 - Trond Saue
 C
       IF(NCHARGE.GT.MAXCHR) THEN
         RADIUS = DPH*RAD(MAXCHR)
+      ELSEIF(NCHARGE.LE.0) THEN
+        RADIUS = -1.0D0
       ELSE
         RADIUS = DPH*RAD(NCHARGE)
       ENDIF

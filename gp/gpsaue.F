@@ -310,8 +310,6 @@ C       This is a driver routine for the diagonalization of
 C         * real symmetric matrices                     NZ = 1
 C         * complex Hermitian matrices                  NZ = 2
 C         * quaternionic Hermitian matrices             NZ = 4
-C       NB: The quaternionic case is restricted to unfolded complex
-C           problems, so that VEC(*,3) is scaled with minus one...!
 C
 C       INPUT:
 C
@@ -359,8 +357,6 @@ C
       IF    (NZ.EQ.4) THEN
         CALL  QHTRID(A,N,LRA,LCA,EIG,
      &               WORK(KFV1),WORK(KFV2),WORK(KTAU))
-C       CALL  QHTRID1(N,N,A(1,1,1),A(1,1,2),A(1,1,3),A(1,1,4),EIG,
-C     &              WORK(KFV1),WORK(KFV2),WORK(KTAU))
         IF(MATZ.NE.0) GO TO 10
       ELSEIF(NZ.EQ.2) THEN
         CALL  HTRIDI(LRA,N,A(1,1,1),A(1,1,2),EIG,
@@ -387,7 +383,7 @@ C       FIND BOTH EIGENVALUES AND EIGENVECTORS
 C       ======================================
 C
    10 CONTINUE
-      CALL DUNIT(VEC(1,1,1),N)
+      CALL DUNIT2(VEC(1,1,1),LRV,N)
 C
 C       Find eigenvalues/vectors of real symmetric
 C       tridiagonal matrix
@@ -401,13 +397,6 @@ C       quaternionic Hermitian matrix
 C
       IF    (NZ.EQ.4) THEN
         CALL  QHTRBK(A,N,LRA,LCA,WORK(KTAU),VEC,N,LRV,LCV)
-C        CALL QHTRBK1(LRA,N,A(1,1,1),A(1,1,2),A(1,1,3),A(1,1,4),
-C     &               WORK(KTAU),N,VEC(1,1,1),VEC(1,1,2),
-C     &               VEC(1,1,3),VEC(1,1,4))
-C
-C       Eigenvectors come as u - v*j compared to analogous
-C       complex problem. You may phase adjust to get u + vj.
-C        CALL DSCAL (N*N,DM1,VEC(1,1,3),1)
       ELSEIF(NZ.EQ.2) THEN
         CALL  HTRIBK(LRA,N,A(1,1,1),A(1,1,2),WORK(KTAU),N,
      &               VEC(1,1,1),VEC(1,1,2))
@@ -457,6 +446,7 @@ C
       DIMENSION A(LRA,LCA,4),D(N),E(N),E2(N),TAU(4,N)
 C*****************************************************************************
 C
+
 C       Trond Saue, University of Tromsoe, Norway , December 1993
 C
 C       This subroutine is a quaternionic analogue of the
@@ -2906,3 +2896,229 @@ C
   100 CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck qchold */
+      SUBROUTINE QCHOLD(A,N,NZ,LRA,LCA,D,IERR)
+C***********************************************************************
+C
+C     This routine performs Cholesky decomposition of
+C         * real symmetric matrices                     NZ = 1
+C         * complex Hermitian matrices                  NZ = 2
+C         * quaternionic Hermitian matrices             NZ = 4
+C     
+C     Written by T.Saue March 25 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER(DTOL=1.0D-15)
+      DIMENSION A(LRA,LCA,NZ),D(N),P(4)
+C
+C     Initialization
+C
+      NA = LRA*LCA
+C
+C     Decomposition
+C
+      IF(A(1,1,1).LE.DTOL) THEN
+        IERR = 1
+        RETURN
+      ENDIF
+      D(1) = SQRT(A(1,1,1))
+      DO I = 2,N
+        DO IZ = 1,NZ
+          A(1,I,IZ) = A(1,I,IZ)/D(1)
+        ENDDO
+      ENDDO
+      DO J = 2,N
+        KMAX = J-1
+        D(J) = A(J,J,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
+        IF(D(J).LE.DTOL) THEN
+          IERR = J
+          RETURN
+        ENDIF
+        D(J) = SQRT(D(J))
+        DO I = (J+1),N
+          CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
+          A(J,I,1) = (A(I,J,1)-P(1))/D(J)
+          DO IZ = 2,NZ
+            A(J,I,IZ) = (P(IZ)-A(I,J,IZ))/D(J)
+          ENDDO
+        ENDDO
+      ENDDO
+      IERR = 0
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qdot */
+      SUBROUTINE QDOT(P,N,NZ,FX,X,NX,INCX,FY,Y,NY,INCY)
+C***********************************************************************
+C
+C     Performs generally real,complex or quaternion dot product
+C     (determined by NZ)
+C     FX/FY = 'N' : Normal vectors
+C     FX/FY = 'H' : Hermitian conjugate
+C
+C     Written by T.Saue March 25 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbqal.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      DIMENSION X(NX,NZ),Y(NY,NZ),P(NZ)
+      CHARACTER  FX*1,FY*1
+C
+      EXTERNAL BDQALGEBRA
+C
+C     Initialization
+C
+      IFX = 1
+      IF(FX.EQ.'H') IFX = 2
+      IFY = 1
+      IF(FY.EQ.'H') IFY = 2
+      DO I = 1,NZ
+        P(I) = D0
+      ENDDO
+C
+      DO IZX = 1,NZ
+        DO IZY = 1,NZ
+          IZP = IQMULT(IZX,IZY,1)
+          FAC = IQSIGN(IZX,IFX,1)*IQSIGN(IZY,IFY,1)*IQPHASE(IZX,IZY,1)
+          P(IZP) = P(IZP) + FAC*DDOT(N,X(1,IZX),INCX,Y(1,IZY),INCY)
+        ENDDO
+      ENDDO
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qnrm2 */
+      FUNCTION QNRM2(N,NZ,X,NX,INCX)
+C***********************************************************************
+C
+C     Gives squared norm of real,complex or quaternion vector
+C     (determined by NZ)
+C
+C     Written by T.Saue March 25 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0)
+      DIMENSION X(NX,NZ)
+C
+      QNRM2 = D0
+      DO IZ = 1,NZ
+        QNRM2 = QNRM2 + DDOT(N,X(1,IZ),INCX,X(1,IZ),INCX)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck qchols */
+      SUBROUTINE QCHOLS(A,N,NSIM,NZ,LRA,LCA,D,
+     &                  B,LRB,LCB,X,LRX,LCX)
+C***********************************************************************
+C
+C     This routine solves the NSIM simultaneous equations
+C         A(n,n,nz)*x(n,nsim,nz) = b(n,nsim,nz)
+C     where A and D is output from the Cholesky decomposition
+C     routine QCHOLD. The upper triagonal of A contains the 
+C     upper triangular Cholesky matrix and the the diagonal
+C     and lower triangle is the original matrix A
+C         * a real symmetric matrix                     NZ = 1
+C         * a complex Hermitian matrix                  NZ = 2
+C         * a quaternion Hermitian matrix               NZ = 4
+C     The vector D contains the diagonal elements of the
+C     Cholesky matrix.
+C
+C     The system of linear equations is written as
+C
+C        Ax = U(dagger)Ux = U(dagger)y = b ; Ux = y
+C     
+C     Written by T.Saue March 26 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0=0.0D0)
+      DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ)
+      DIMENSION P(4),IQA(4),IQB(4)
+C
+C     Initialization
+C
+      DO IZ = 1,NZ
+        IQA(IZ) = IZ
+        IQB(IZ) = IZ
+      ENDDO
+      NA = LRA*LCA
+      NB = LRB*LCB
+      NX = LRX*LCX
+C
+C     First solve U(dagger)y = b by forward substitution
+C
+      DO J = 1,NSIM
+        DO IZ = 1,NZ
+          X(1,J,IZ) = B(1,J,IZ)/D(1)
+        ENDDO
+        DO I = 2,N
+          KMAX = I-1
+          CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',X(1,J,1),NX,1)
+          DO IZ = 1,NZ
+            X(I,J,IZ) = (B(I,J,IZ)-P(IZ))/D(I)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+C     Solve Ux = y by backsubstitution
+C
+      DO J = 1,NSIM
+        DO IZ = 1,NZ
+          X(N,J,IZ) = X(N,J,IZ)/D(N)
+        ENDDO
+      ENDDO
+      DO I = (N-1),1,-1
+        P(2) = D1/D(I)
+        P(1) = DM1*P(2)
+        NELM = N-I
+        KINT = I+1
+        CALL QGEMM(1,NSIM,NELM,P(1),
+     &             'N','N',IQA,A(I,KINT,1),LRA,LCA,NZ,
+     &             'N','N',IQA,X(KINT,1,1),LRX,LCX,NZ,
+     &                P(2),IQB,X(I,1,1),LRX,LCX,NZ)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* qhmrst */
+      SUBROUTINE QHMRST(A,N,NZ,LRA,LCA)
+C***********************************************************************
+C
+C     In input is given a (real/complex/quaternion) Hermitian
+C     matrix where the upper diagonal has been destroyed. Restore.
+C
+C     Written by T.Saue March 26 1999
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      DIMENSION A(LRA,LCA,NZ)
+C
+      DO J = 1,N
+        DO I = 1,(J-1)
+          A(I,J,1) = A(J,I,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1,N
+          DO I = 1,(J-1)
+            A(I,J,IZ) = -A(J,I,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+

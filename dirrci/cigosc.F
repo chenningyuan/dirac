@@ -53,38 +53,39 @@ C
 C
 C     Set pointers to allocate blocks in memory
 C
+      NRB4    = NORB**4
       KINDTWR = 1
-      KINDTWI = KINDTWR + NORB**4
+      KINDTWI = KINDTWR + NRB4
       IF (BREIT) THEN
-         KINDGAR = KINDTWI + NORB**4  
-         KINDGAI = KINDGAR + NORB**4  
-         KTOP =  KINDGAI + NORB**4
+         KINDGAR = KINDTWI + NRB4  
+         KINDGAI = KINDGAR + NRB4  
+         KTOP    = KINDGAI + NRB4
       ELSE
-         KTOP =  KINDTWI + NORB**4
+         KTOP    =  KINDTWI + NRB4
          KINDGAR = KTOP  
          KINDGAI = KTOP
       ENDIF
 C
+      NDETMX = 1
       DO IRP=1, NREP
-        NDETMX = 1
         IRRP = IRP
         IF (MOD(NELEC,2).EQ.0) IRRP = IRP + NREP
         CALL GENDET(IRP,IRRP)
         NDETMX = MAX0(NDETMX,NDET)
       ENDDO
 C
-      KHR = KTOP
-      KHI = KHR + NDETMX**2
-      KTOP = KHI + NDETMX**2  
+      KHR  = KTOP
+      KHI  = KHR + NDETMX*NDETMX
+      KTOP = KHI + NDETMX*NDETMX
       MAXINT = (MAXCORE - KTOP - 2) / 2
 C
 C     Check if this still fits in the available memory
 C
-      IF (MAXINT.LE.0)  CALL Q2JOB (3,'P.PAMGOS','MAXINT',NORB**4)
+      IF (MAXINT.LE.0)  CALL Q2JOB (3,'P.PAMGOS','MAXINT',NRB4)
 C
       KTWOINR = KTOP
       KTWOINI = KTWOINR + MAXINT
-      KTOP = KTWOINI + MAXINT 
+      KTOP    = KTWOINI + MAXINT 
 C
       CALL RDTWO(CI(KINDTWR),CI(KINDTWI),CI(KINDGAI),CI(KINDGAR),
      &           CI(KTWOINR),CI(KTWOINI),MAXINT)
@@ -470,23 +471,24 @@ C
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
       INCLUDE 'goscom.inc'
 C
-      DO 10 I = 1, NDET
-        DO 10 J = 1, I
+      DO I = 1, NDET
+        DO J = 1, I
           CALL HMAT (IDET(I),IDET(J),HR(I,J),HI(I,J),INDTWR,INDTWI,
      &               INDGAR,INDGAI,TWOINR,TWOINI,MAXINT)
-          HR (J, I) = HR (I, J)
-          HI (J, I) = - HI (I, J)
- 10       CONTINUE
-
-C     PRINT*, ' ** HR **'
-C     DO 100 I=1,NDET
-C       WRITE(6,1010) (HR(I,J),J=1,I)
-C100    CONTINUE
-C     PRINT*, ' ** HI **'
-C     DO 110 I=1,NDET
-C       WRITE(6,1010) (HI(I,J),J=1,I)
-C110    CONTINUE
- 1010 FORMAT(15F8.4)
+          HR (J,I) =  HR (I, J)
+          HI (J,I) = -HI (I, J)
+        ENDDO
+      ENDDO
+C      PRINT*, ' ** HR **'
+C      DO 100 I=1,NDET
+C        WRITE(6,1010) (HR(I,J),J=1,NDET)
+C100     CONTINUE
+C      PRINT*, ' ** HI **'
+C      DO 110 I=1,NDET
+C        WRITE(6,1010) (HI(I,J),J=1,NDET)
+C110   CONTINUE
+CTROND
+C 1010 FORMAT(15F8.4)
       RETURN
       END
 C
@@ -758,7 +760,7 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
       Goto 10
  20   Continue
       CLOSE(1)
-      Write (6,1000) "Coulomb",datex,timex,nuniq-1
+      Write (6,1000) "Coulomb",datex,timex,nuniq
       If (.NOT.BREIT) Return
       NUNIQC = NUNIQ
       OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')

@@ -255,15 +255,16 @@ C
             NCBF2 = NTBAS(0)*NVEC*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+            LCB = NPVEC+NEVEC
             IF(NBSYM.EQ.1) THEN
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
               CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
      &                    NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    WORK(KJVEC),NPVEC,NEVEC,
+     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
               CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP,
      &                    NFBAS(IFRP,0))
@@ -289,8 +290,9 @@ C
             NCBF2 = NCBF*NZ
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+            LCB = NPVEC+NEVEC
             CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  WORK(KJVEC),NPVEC,NEVEC,
+     &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                  NFBAS(IFRP,0),NORB(IFRP))
             CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
      &                  NFBAS(IFRP,0))
@@ -778,7 +780,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELCFS(CMO,IFRP,CBUF,JVEC,NPVEC,NEVEC,
+      SUBROUTINE SELCFS(CMO,IFRP,CBUF,LCB,JVEC,NPVEC,NEVEC,
      &                 KNFBAS,KNORB)
 C***********************************************************************
 C     Pick out a set of vectors from CMO according to array JVEC
@@ -797,9 +799,7 @@ C
 C     KNFBAS = NFBAS(IFRP,0)
 C     KNORB  = NORB(IFRP)
 C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),
-     &          CBUF(KNFBAS,NPVEC+NEVEC,NZ),
-     &          JVEC(*)
+      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
       DO IZ = 1,NZ
