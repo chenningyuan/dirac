@@ -68,7 +68,7 @@ C
      &          WORD1*7
       DIMENSION WORK(LWORK)
 C
-<#ifdef PRG_DIRAC
+#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
