@@ -31,50 +31,6 @@ C FILE    : dirac.F
 C SOURCE  : $Source$
 C
 C*****************************************************************************
-C     
-C     Direct Iterative Relativistic All-electron Calculations
-C     
-C     Original version written by:
-C     Trond Saue, University of Oslo, Norway, 1992
-C
-C     Further contributions by:
-C
-C     NOTE
-C
-C     This is an experimental code for the relativistic calculation of
-C     atomic and molecular electronic wavefunctions.
-C     The author accept no responsibility for the performance of the code
-C     or for the correctness of the results.
-C
-C     The code (in whole or part) is not to be reproduced for
-C     further distribution without the written permission of the author.
-C
-C     If results obtained with this code are published, an appropriate
-C     citation would be:
-C     T.Saue:"DIRAC(Direct Iterative Relativistic All-electron
-C     Calculations), a program for relativistic molecular calculations".
-C
-C     This note is not to be removed or altered.
-C
-C*****************************************************************************
-C
-C     R E V I S I O N S:
-C
-C     3.0 - Property module:
-C            - Expectation values
-C
-C     2.0 - September 1995: T.Saue
-C           Symmetry implemented: D2H and subgroups + time reversal
-C           Dynamic allocation implemented using environmental variable DIRWRK
-C             (modelled after the ABACUS code)
-C           Convergence acceleration DIIS implemented (J.Laerdahl & T.Saue)
-C
-C
-C*****************************************************************************
-C
-C     PAM - Paul Adrien Maurice
-C
-C*****************************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
 #include <implicit.h>
 C
@@ -153,15 +109,11 @@ C**** M A I N    S E C T I O N  **********************************************
 C*****************************************************************************
 C
       IF(.NOT.DOHRM) THEN
-#ifdef MOD_GEO
          IF (MINIMI) THEN
             CALL PAMGEO(WORK,LWORK)
          ELSE
             CALL PAMDRV(WORK,LWORK)
          ENDIF
-#else
-         CALL PAMDRV(WORK,LWORK)
-#endif
       END IF
 C
 C******************************************************************************
@@ -249,7 +201,6 @@ C*****************************************************************************
 C
       IF(DODHF .AND. DOPSI) CALL PSIDHF(WORK,LWORK)
       IF(DOMVO) CALL MVOGEN(WORK,LWORK)
-#if defined (MOD_TRA)
 C
 C*****************************************************************************
 C***** R E S O L V E    O P E N - S H E L L  S T A T E S *********************
@@ -268,16 +219,12 @@ C***** I N D E X  T R A N S F O R M A T I O N*********************************
 C*****************************************************************************
 C
       IF(DOTRA) CALL PAMTRA(WORK,LWORK)
-#endif
-#if defined (MOD_CC)
 C
 C*****************************************************************************
 C***** R E L C C S D  M O D U L E ********************************************
 C*****************************************************************************
 C
       IF(DOCCM) CALL PAMCCM(WORK,LWORK)
-#endif
-#if defined (MOD_CI)
 C
 C*****************************************************************************
 C***** D I R R C I   M O D U L E ********************************************
@@ -285,8 +232,6 @@ C*****************************************************************************
 C
       IF(DOCIM) CALL PAMCIM(WORK,LWORK)
 C
-#endif
-
 C
       CALL QEXIT('PAMPSI')
       RETURN
@@ -414,20 +359,12 @@ C
 C
 C        Start calculating integrals for MOLTRA.
 C
-#ifdef MOD_TRA
           CALL TRANOD(WORK,LWORK)
-#else
-          CALL QUIT('*** MOLTRA is not in this version')
-#endif
       ELSE IF (ITASK .EQ. 3) THEN
 C
 C        Start coupled cluster calculation.
 C
-#ifdef MOD_CC
          CALL CCNOD(WORK,LWORK)
-#else
-          CALL QUIT('*** RELCCSD is not in this version')
-#endif
       ELSE
 C
 C        Unknown task. Abort execution.
