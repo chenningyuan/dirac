@@ -355,7 +355,7 @@ if($RSPTAR) then
 echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
 endif
 if($OPENTAR) then
-echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in dirac/open/*.c ' >> Makefile
+echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in ' >> Makefile
 endif
 if($TRATAR) then
 echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
