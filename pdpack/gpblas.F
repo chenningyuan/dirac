@@ -9545,7 +9545,7 @@ c     applies a plane rotation.
 c     jack dongarra, linpack, 3/11/78.
 c     modified 12/3/93, array(1) declarations changed to array(*)
 c
-      double precision dx(*),dy(*),dtemp,c,s
+      real*8 dx(*),dy(*),dtemp,c,s
       integer i,incx,incy,ix,iy,n
 c
       if(n.le.0)return
