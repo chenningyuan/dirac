@@ -220,6 +220,10 @@ C
  10      CONTINUE
          IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
+            IF (NBLOCK .GT. KAOVEC) THEN
+               CALL QUIT('Too many AO blocks'//
+     &            ' for this program version; increase WRKMEM')
+            END IF
 C     
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
@@ -803,6 +807,10 @@ C
                   IF (IP .NE. IPPRIM) GO TO 20
                END IF
                NBLOCK = NBLOCK + 1
+               IF (NBLOCK .GT. KAOVEC) THEN
+                  CALL QUIT('Too many AO blocks'//
+     &               ' for this program version; increase WRKMEM')
+            END IF
 C
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
 C
