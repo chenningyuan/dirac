@@ -2707,14 +2707,14 @@ C
   110    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
   100 CONTINUE
- 1000 FORMAT(/2X,A4,A2,1X,A4,I3,1X,E15.10,2X,5F8.4)
- 1010 FORMAT(/2X,A4,3X,      A4,I3,1X,E15.10,2X,5F8.4)
- 1020 FORMAT( 3X,A10,           I3,1X,E15.10,2X,5F8.4)
- 1030 FORMAT(13X,               I3,1X,E15.10,2X,5F8.4)
- 1005 FORMAT(/2X,A4,A2,1X,A4,I3,1X,E15.10,2X,5F8.4/,(34X,5F8.4))
- 1015 FORMAT(/2X,A4,3X,      A4,I3,1X,E15.10,2X,5F8.4/,(34X,5F8.4))
- 1025 FORMAT( 3X,A10,           I3,1X,E15.10,2X,5F8.4/,(34X,5F8.4))
- 1035 FORMAT(13X,               I3,1X,E15.10,2X,5F8.4/,(34X,5F8.4))
+ 1000 FORMAT(/2X,A4,A2,1X,A4,I4,1P,D16.10,0P,2X,5F8.4)
+ 1010 FORMAT(/2X,A4,3X,   A4,I4,1P,D16.10,0P,2X,5F8.4)
+ 1020 FORMAT( 3X,A10,        I4,1P,D16.10,0P,2X,5F8.4)
+ 1030 FORMAT(13X,            I4,1P,D16.10,0P,2X,5F8.4)
+ 1005 FORMAT(/2X,A4,A2,1X,A4,I4,1P,D16.10,0P,2X,5F8.4/,(35X,5F8.4))
+ 1015 FORMAT(/2X,A4,3X,   A4,I4,1P,D16.10,0P,2X,5F8.4/,(35X,5F8.4))
+ 1025 FORMAT( 3X,A10,        I4,1P,D16.10,0P,2X,5F8.4/,(35X,5F8.4))
+ 1035 FORMAT(13X,            I4,1P,D16.10,0P,2X,5F8.4/,(35X,5F8.4))
 C
       IF (NRMPRI) RETURN
 C
@@ -4280,6 +4280,7 @@ C
   100 CONTINUE
 C
       IF (DOCART) THEN
+         CALL CARPOW
          CALL CARLAB(MXQN-1,GTOTYP)
       ELSE
          CALL DZERO(CSP,NCSP)
@@ -4554,15 +4555,15 @@ C
 #include <aosotr.h>
 C
       CALL HEADER('Test output from REAPRI',-1)
-      WRITE (LUPRI,'(1X,A,F12.6)') ' THRS  ', THRS
-      WRITE (LUPRI,'(1X,A,I5)')    ' NHTYP ', NHTYP
-      WRITE (LUPRI,'(1X,A,L5)')    ' DOCART', DOCART
+      WRITE (LUPRI,'(A,1P,D15.6)') ' THRS  ', THRS
+      WRITE (LUPRI,'(A,I5)') ' NHTYP ', NHTYP
+      WRITE (LUPRI,'(A,L5)') ' DOCART', DOCART
+      print *, 'nucind,nucdep',NUCIND, NUCDEP
       print *, 'charge ',(CHARGE(i),i=1,nucind)
       print *, 'cord1',(cord(1,i),i=1,nucind)
       print *, 'cord2',(cord(2,i),i=1,nucind)
       print *, 'cord2',(cord(3,i),i=1,nucind)
       print *, 'noorbt ',(noorbt(i),i=1,nucind)
-      print *, 'nucind,nucdep',NUCIND, NUCDEP, NUCNUM(i,8)
       print *, 'nucpre ',(nucpre(i),i=1,nucind)
       print *, 'nucnum ',((NUCNUM(i,j),i=1,nucind),j=1,8)
       print *, 'nucdeg ',(nucdeg(i),i=1,nucind)
