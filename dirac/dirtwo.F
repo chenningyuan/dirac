@@ -3798,7 +3798,7 @@ C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK,LWORK)
+      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,WORK(KFREE),LFREE)
 C
       CALL DIRSO1(FMAT,DSO,NFMAT,
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
