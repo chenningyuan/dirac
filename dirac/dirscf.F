@@ -2722,9 +2722,9 @@ C
 C
 C       Construct density matrix for chosen vectors
 C
-        CALL DENMVO(DMAT,CMO,FOCK,WORK(KFREE),LFREE)
         IF(ADDREP) THEN
           CALL DENMVO(FOCK,CMO,DMAT,WORK(KFREE),LFREE)
+C         ... generate inactive density matrix
           CALL GENDEN(DMAT,CMO,1,IPRMVO)
           CALL DAXPY(N2BBASXQ,DM2,FOCK,1,DMAT,1)
         ELSE
@@ -2872,7 +2872,7 @@ C
 C     Get the density matrix
 C
 CTROND
-      CALL DZERO(DMAT,N2BBASXQ)                                                                                                                            
+      CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 10
         CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
