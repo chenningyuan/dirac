@@ -218,27 +218,27 @@ C     ***************************************************
 C     *** Calculate CI matrix times reference vector. ***
 C     ***************************************************
 C
+      CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
+C
 C     Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
 C     ---------------------------------------------------------------
 C
       CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN(NZ,2),
-     $     WORK,KFREE,LFREE)
+     &            WORK,KFREE,LFREE)
       CALL QFC2MFC(FCAC,WORK(KMOLFFC),1,1,IPROPT)
-C
-C     Transform integrals from Dirac (NZ,3) basis to Molfdir basis
-C     ------------------------------------------------------------
-C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KMUUUU),(2*NASHT)**4 * 2)
-C
-      CALL DNZ32M(H2AC,WORK(KMUUUU),IPROPT)
 C
 C     Calculate CI matrix times reference vector
 C     ------------------------------------------
-C
-      CALL MEMGET('REAL',KDIAG,NZCONF,WORK,KFREE,LFREE)
-C
       IF ( OPT_CIPROGRAM .EQ. 'GOSCI') THEN
+C
+C        Transform integrals from Dirac (NZ,3) basis to Molfdir basis
+C        ------------------------------------------------------------
+C
+         CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KMUUUU),(2*NASHT)**4 * 2)
+C
+         CALL DNZ32M(H2AC,WORK(KMUUUU),IPROPT)
+C
 C        Calculate CI gradient with CI program GOSCI.
          CALL GOSCI_SVC(.TRUE.,WORK(KDIAG),GCI,WORK(KZCONF),CREF,
      &        WORK(KMOLFFC),WORK(KMUUUU))
@@ -246,7 +246,7 @@ C        CALL GOSCI_SVC(SAVDIA,DIAG,SCVEC,IDET,BCVEC,HCORE,VMUUUU)
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C
          CALL LUCI_SIGMA(.TRUE.,WORK(KDIAG),CREF,GCI,
-     &                   WORK(KMOLFFC),WORK(KMUUUU),WORK,KFREE,LFREE)
+     &                   WORK(KMOLFFC),H2AC,WORK,KFREE,LFREE)
 C
       ELSE
          WRITE(LUPRI,'(/A/2A)')

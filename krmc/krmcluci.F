@@ -900,7 +900,7 @@ C
       IF (CTLSTR.EQ.'MXCIV ') THEN
          IF (MXCIV.EQ.0) THEN
             IVAR(1) = 3*NCIROOT
-            print*,'set MXCIV to ',3*NCIROOT
+            write(LUPRI,'(A,I4)') '   Setting MXCIV to ',3*NCIROOT
          ELSE
             IVAR(1) = MXCIV
          END IF
@@ -1771,9 +1771,11 @@ C
 C     Read two-electron integrals:
 C     ----------------------------
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
+CCC   CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
      &             WORK,KFREE,LFREE)
+      print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
+      print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
 C
 C     Read integrals from 4IND1XXXX0:
 C
@@ -1789,8 +1791,8 @@ C     FIXME:
 C     Nope, transform to a list of integrals...
 C
 C
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
-      CALL MEMREL('LUCI_RCIST.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
+CCC   CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPROPT)
+CCC   CALL MEMREL('LUCI_RCIST.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
 C     Transfer data to LUCIAREL common blocks.
       CALL LUCI_TRACOM(CIRUN)
@@ -1812,7 +1814,7 @@ C        Possibly also integrals reside on file in LUCIAREL
       END IF
 C
 C     Call LUCIAREL
-      CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,ECORE,
+      CALL KRMC_LUCI(WORK(KFCACM),WORK(KH2AC),WORK(KFREE),LFREE,ECORE,
      &               CIRUN)
 C
 C     Read CI vector from LUCIARELs file

@@ -185,6 +185,7 @@ c                   IBU = 2
           end do
 *
           call memmar(KT_CC,NINT_CC,'ADDS  ',2,'KT_CC ')
+          print*,'Allocating KT_CC : ',NINT_CC
 C FIXME: Add symmetry savings
           write(6,*) 'NOTE:'
           write(6,*) 'Allocation should be modified to account '

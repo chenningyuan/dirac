@@ -957,7 +957,7 @@ C
 C        Get FQ and active two-electron integrals.
 C
          CALL RGETH21(.TRUE.,.TRUE.,PV,FQ,H2AC,
-     &        WORK(KFREE),LFREE,IPROPT)
+     &                WORK(KFREE),LFREE,IPROPT)
 C
       ELSE
          WRITE(LUPRI,'(/,A,/,2A)')

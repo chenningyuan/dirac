@@ -204,7 +204,7 @@ C     PARAMETER(IRAT = 2 )
       JH = J
       I = JH * INDFAC
       J = IH * INDFAC
-      IFAC = IFAC * IFLOC
+C     IFAC = IFAC * IFLOC
 *
       if (NTESTL.ge.1) then
         write(6,*) 'INDEX_EXCH : output indices ',I,J

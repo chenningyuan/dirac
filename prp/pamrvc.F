@@ -229,13 +229,17 @@ C
      &             WORK,KFREE,LFREE)
       CALL QFC2MFC(FCAC,WORK(KMOLFFC),1,1,IPRXRS)
 C
-C     Transform integrals from Dirac (NZ,3) basis to Molfdir basis
-C     ------------------------------------------------------------
+      IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KMUUUU),(2*NASHT)**4 * 2)
+C        Transform integrals from Dirac (NZ,3) basis to Molfdir basis
+C        ------------------------------------------------------------
 C
-      CALL DNZ32M(H2AC,WORK(KMUUUU),IPRXRS)
+         CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KMUUUU),(2*NASHT)**4 * 2)
+C
+         CALL DNZ32M(H2AC,WORK(KMUUUU),IPRXRS)
+C
+      END IF
 C
 C     Loop over trial vectors
 C     -----------------------
@@ -247,10 +251,11 @@ C        -------------------------------------------------
 C
          IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
             CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I+NOSIM),
-     &           WORK(KZCONF),BCVEC(1,I),WORK(KMOLFFC),WORK(KMUUUU))
+     &                     WORK(KZCONF),BCVEC(1,I),
+     &                     WORK(KMOLFFC),WORK(KMUUUU))
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,BCVEC(1,I),SCVEC(1,I+NOSIM),
-     &                      WORK(KMOLFFC),WORK(KMUUUU),WORK,KFREE,LFREE)
+     &                      WORK(KMOLFFC),H2AC,WORK,KFREE,LFREE)
          ELSE
             CALL QUIT('Unknown CI program requested!')
          END IF
@@ -4993,13 +4998,17 @@ C        Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
 C
          CALL QFC2MFC(WORK(KFCACX),WORK(KMOLFFC),JSYMOP,JTIMOP,IPRXRS)
 C
-C        Transform integrals from Dirac (NZ,3) basis to Molfdir basis
+         IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
 C
-C        debug
-c        CALL CHKNZ3R(H2ACX(1,I))
-C        end debug
+C           Transform integrals from Dirac (NZ,3) basis to Molfdir basis
 C
-         CALL DNZ32M(H2ACX(1,I),WORK(KMUUUU),IPRXRS)
+C           debug
+c           CALL CHKNZ3R(H2ACX(1,I))
+C           end debug
+C
+            CALL DNZ32M(H2ACX(1,I),WORK(KMUUUU),IPRXRS)
+C
+         END IF
 C
 C        Calculate sigma vector
 C
@@ -5008,7 +5017,7 @@ C
      &         WORK(KMOLFFC),WORK(KMUUUU))
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,CREF,SCVEC(1,I),
-     &                      WORK(KMOLFFC),WORK(KMUUUU),WORK,KFREE,LFREE)
+     &                      WORK(KMOLFFC),H2ACX(1,I),WORK,KFREE,LFREE)
          ELSE
             CALL QUIT('Unknown CI PROGRAM requested!')
          END IF

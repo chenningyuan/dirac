@@ -1903,6 +1903,29 @@ C    &     I_BLK_TO_CLS(IBLK)
 * LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
 *                                                                     *
 ***********************************************************************
+      subroutine findlow(IARRAY,LENGTH,MVALUE,MPOS)
+*
+*  Find lowest integer on IARRAY
+*  Positive integers assumed, smaller than 1 million
+*
+      implicit real*8(A-H,O-Z)
+*
+      dimension IARRAY(LENGTH)
+*
+      MVALUE = 1000000
+      do I=LENGTH,1,-1
+         if (IARRAY(I).lt.MVALUE) THEN
+           MVALUE = IARRAY(I)
+           MPOS = I
+         end if
+      end do
+      return
+      end
+***********************************************************************
+*                                                                     *
+* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
+*                                                                     *
+***********************************************************************
       subroutine findhigh(IARRAY,LENGTH,MVALUE)
 *
 *  Find highest integer on IARRAY

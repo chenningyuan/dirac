@@ -533,8 +533,9 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
       IDUM = 1
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GTDIA2')
       NINT12 = N1ELINT+N2ELINT
-      call memmar(KINDEX,NINT12*4,'ADDL  ',1,'KINDEX')
-      call read_indices(WORK(KINDEX),NINT12)
+C     call memmar(KINDEX,NINT12*4,'ADDL  ',1,'KINDEX')
+C     print*,'Allocating KINDEX : ',NINT12*4
+C     call read_indices(WORK(KINDEX),NINT12)
 *
 * UUUUC and UUUUE obtained from integral list 3
 *
@@ -621,11 +622,13 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
                 do I = 1+IOFF,NI+IOFF,1
                   do J = 1+JOFF,NJ+JOFF,1
                     call geth2dia_sigden(UUUUC(I,J),
-     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   WORK(KT_CC),
      &                                   I,J,
      &                                   'COUL',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS,NTEST)
+     &                                   IREOTS,IREOTS,
+     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   N1DIAINT,NDIAINT,NTEST)
                   end do
                 end do
               end do
@@ -718,11 +721,13 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
                 do I = 1+IOFF,NI+IOFF,1
                   do J = 1+JOFF,NJ+JOFF,1
                     call geth2dia_sigden(UUUUE(I,J),
-     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   WORK(KT_CC),
      &                                   I,J,
      &                                   'EXC1',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS,NTEST)
+     &                                   IREOTS,IREOTS,
+     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   N1DIAINT,NDIAINT,NTEST)
                   end do
                 end do
               end do
@@ -819,11 +824,13 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
                   do I = 1+IOFF,NI+IOFF,1
                     do J = 1+JOFF,NJ+JOFF,1
                       call geth2dia_sigden(UBBUE(I,J),
-     &                                   WORK(KT_CC),WORK(KINDEX),
+     &                                   WORK(KT_CC),
      &                                   I,J,
      &                                   'EXC2',WORK(KLIBSOBEX),NINT12,
      &                                   I2DIATP,IKFAC,IKPERM,
-     &                                   IREOTS,IREOTS2,NTEST)
+     &                                   IREOTS,IREOTS2,
+     &                                   WORK(KMDIASV),WORK(KPOSDIA),
+     &                                   N1DIAINT,NDIAINT,NTEST)
                     end do
                   end do
                 end do
@@ -911,8 +918,8 @@ c     stop 'After 1st exchange type diagonal 2-particle integrals.'
       call memmar(KLH1,NTOOB**2,'ADDL  ',2,'H1BL  ')
 *
 * Read in indices from INDICES file
-      call memmar(KINDEX,N1ELINT*4,'ADDL  ',1,'KINDEX')
-      call read_indices(WORK(KINDEX),N1ELINT)
+C     call memmar(KINDEX,N1ELINT*4,'ADDL  ',1,'KINDEX')
+C     call read_indices(WORK(KINDEX),N1ELINT)
 *
       if (SIGDEN_ROUTE.eq.'TRADIT') then
 *
@@ -1008,14 +1015,14 @@ C                COPDIA(A,VEC,NDIM,IPACK)
             if (MXNELGS(IGAS).ne.0) then
               IUB = 1
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
-     &                             WORK(KINDEX),
-     &                             N1ELINT,NGSSH(ISMOB,IGAS),
+     &                             WORK(KMDIASV),WORK(KPOSDIA),
+     &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS,NTEST)
               call copvec(WORK(KLH1),H1DIA_U(IOFFSD),NGSSH(ISMOB,IGAS))
               IUB = 2
               call geth1dia_sigden(IUB,WORK(KLH1),WORK(KT_CC),
-     &                             WORK(KINDEX),
-     &                             N1ELINT,NGSSH(ISMOB,IGAS),
+     &                             WORK(KMDIASV),WORK(KPOSDIA),
+     &                             N1ELINT,N1DIAINT,NGSSH(ISMOB,IGAS),
      &                             ISTART,IEND,IREOTS2,NTEST)
               call copvec(WORK(KLH1),H1DIA_B(IOFFSD),NGSSH(ISMOB,IGAS))
             else
@@ -1049,13 +1056,14 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 ***********************************************************************
 * Get diagonal one-electron integrals in SIGDEN formalism.
 *
-      subroutine geth1dia_sigden(IUB,XOUT,XINT,INDEX,N1E,NUMINT,
+      subroutine geth1dia_sigden(IUB,XOUT,XINT,
+     &                           MDIASV,IPOSDIA,N1E,N1DIAINT,NUMINT,
      &                           ISTART,IEND,IREOTS,IPRNT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
 *
-      dimension INDEX(4,N1E),IREOTS(*)
+      dimension IREOTS(*),MDIASV(4,*),IPOSDIA(*)
       dimension XINT(N1E),XOUT(*)
 *
       NTESTL = 000
@@ -1068,15 +1076,22 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 *
 * Rename to SYMM-TYPE ordering on external list:
         ISEA_REO = IREOTS(ISEA)
-        do INT=1,N1E,1
-          if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
-     &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
+C       do INT=1,N1E,1
+        do INT=1,N1DIAINT,1
+C         if (INDEX(IUB,INT).eq.ISEA_REO.and.INDEX(IUB+2,INT).eq.
+C    &        ISEA_REO.and.INDEX(IUB+1,INT).eq.IZERO) then
+          if (MDIASV(IUB,INT).eq.ISEA_REO.and.MDIASV(IUB+2,INT).eq.
+     &        ISEA_REO.and.MDIASV(IUB+1,INT).eq.IZERO) then
             if (NTEST.ge.100) then
+C             write(6,'(A,I5,A,I5,A,1F18.12)') 
+C    &                'Writing integral no. ',INT,'to ',ICT,
+C    &                '  Integral ',XINT(INT)
               write(6,'(A,I5,A,I5,A,1F18.12)') 
-     &                'Writing integral no. ',INT,'to ',ICT,
-     &                '  Integral ',XINT(INT)
+     &                'Writing integral no. ',IPOSDIA(INT),'to ',ICT,
+     &                '  Integral ',XINT(IPOSDIA(INT))
             end if
-            XOUT(ICT) = XINT(INT)
+C           XOUT(ICT) = XINT(INT)
+            XOUT(ICT) = XINT(IPOSDIA(INT))
             ICT = ICT + 1
             goto 10
           end if
@@ -1107,17 +1122,18 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 * Revised routine.
 *   Timo Fleig, February 2002
 *
-      subroutine geth2dia_sigden(XOUT,XINT,INDEX,ISEA,JSEA,TYPE,
+      subroutine geth2dia_sigden(XOUT,XINT,ISEA,JSEA,TYPE,
      &                           IOFF2,N12,I2DIATP,IKFAC,IKPERM,
-     &                           IREOTS,IREOTS2,IPRNT)
+     &                           IREOTS,IREOTS2,
+     &                           MDIASV,IPOSDIA,N1DIAINT,NDIAINT,IPRNT)
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
 *
       character*4 TYPE
 *
-      dimension INDEX(4,N12),IAC(2),JAC(2),IOFF2(*),IKPERM(4),
-     &          IREOTS(*),IREOTS2(*)
+      dimension IAC(2),JAC(2),IOFF2(*),IKPERM(4),
+     &          IREOTS(*),IREOTS2(*),MDIASV(4,*),IPOSDIA(*)
       dimension XINT(N12)
 *
       NTESTL = 000
@@ -1125,22 +1141,35 @@ C                COPDIA(A,VEC,NDIM,IPACK)
 *
       IERROR = 1
       N2B = IOFF2(I2DIATP)
-      do INT = N2B,N12,1
+C     do INT = N2B,N12,1
+      do INT = N1DIAINT+1,NDIAINT,1
         if (TYPE.eq.'COUL') then
-          I = INDEX(IKPERM(1),INT)
-          J = INDEX(IKPERM(2),INT)
-          K = INDEX(IKPERM(3),INT) * IKFAC
-          L = INDEX(IKPERM(4),INT) * IKFAC
+C         I = INDEX(IKPERM(1),INT)
+C         J = INDEX(IKPERM(2),INT)
+C         K = INDEX(IKPERM(3),INT) * IKFAC
+C         L = INDEX(IKPERM(4),INT) * IKFAC
+          I = MDIASV(IKPERM(1),INT)
+          J = MDIASV(IKPERM(2),INT)
+          K = MDIASV(IKPERM(3),INT) * IKFAC
+          L = MDIASV(IKPERM(4),INT) * IKFAC
         else if (TYPE.eq.'EXC1') then
-          I = INDEX(IKPERM(1),INT)
-          J = INDEX(IKPERM(4),INT) * IKFAC
-          K = INDEX(IKPERM(2),INT)
-          L = INDEX(IKPERM(3),INT) * IKFAC
+C         I = INDEX(IKPERM(1),INT)
+C         J = INDEX(IKPERM(4),INT) * IKFAC
+C         K = INDEX(IKPERM(2),INT)
+C         L = INDEX(IKPERM(3),INT) * IKFAC
+          I = MDIASV(IKPERM(1),INT)
+          J = MDIASV(IKPERM(4),INT) * IKFAC
+          K = MDIASV(IKPERM(2),INT)
+          L = MDIASV(IKPERM(3),INT) * IKFAC
         else if (TYPE.eq.'EXC2') then
-          I = INDEX(IKPERM(1),INT)
-          J = INDEX(IKPERM(4),INT)
-          K = INDEX(IKPERM(2),INT) * IKFAC
-          L = INDEX(IKPERM(3),INT) * IKFAC
+C         I = INDEX(IKPERM(1),INT)
+C         J = INDEX(IKPERM(4),INT)
+C         K = INDEX(IKPERM(2),INT) * IKFAC
+C         L = INDEX(IKPERM(3),INT) * IKFAC
+          I = MDIASV(IKPERM(1),INT)
+          J = MDIASV(IKPERM(4),INT)
+          K = MDIASV(IKPERM(2),INT) * IKFAC
+          L = MDIASV(IKPERM(3),INT) * IKFAC
         end if
 *
 * Rename: External ST ordering, internal TS ordering:
@@ -1149,12 +1178,17 @@ C                COPDIA(A,VEC,NDIM,IPACK)
      &      K.eq.IREOTS2(JSEA).and.
      &      L.eq.IREOTS2(JSEA)) then
           if (NTEST.ge.100) then
+C           write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
+C    &            'Diagonal int type ',TYPE,
+C    &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
             write(6,'(A,X,A,I5,3X,4I3,1F18.10)') 
      &            'Diagonal int type ',TYPE,
-     &             INT,(INDEX(II,INT),II=1,4),XINT(INT)
+     &             IPOSDIA(INT),(MDIASV(II,IPOSDIA(INT)),II=1,4),
+     &             XINT(IPOSDIA(INT))
             write(6,*)
           end if
-          XOUT = XINT(INT)
+C         XOUT = XINT(INT)
+          XOUT = XINT(IPOSDIA(INT))
           IERROR = 0
 * and exit.
           goto 10
@@ -1162,7 +1196,8 @@ C                COPDIA(A,VEC,NDIM,IPACK)
       end do
       if (IERROR.eq.1) then
         write(6,*) 'No integral found in geth2dia_sigden.'
-        write(6,*) 'N2B,N12 = ',N2B,N12
+C       write(6,*) 'N2B,N12 = ',N2B,N12
+        write(6,*) 'Type of integral = ',TYPE
         write(6,*) 'Index pair ',IREOTS(ISEA),IREOTS2(JSEA)
         write(6,*) 'Indices ',I,J,K,L
         stop 'Quitting.'

@@ -38,7 +38,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE CSPAOSF_FROM_MOAO(CSPAOSF,NBSPFSM,NUSPFSM,IBSPEXP,
-     &           CMOAO,NAOFSM,NMOFSM)
+     &                             CMOAO,NAOFSM,NMOFSM)
 *
 * Obtain spinor-ao*spinfunction transformation from
 * mo-ao transformation matrix
@@ -78,7 +78,8 @@ C
 #include "input.inc"
       DIMENSION CMOAO(*)
       INTEGER NMOFSM(*),NAOFSM(*)
-*. Number of barred and unbarred spinors per symmetry - actually recomputed
+*. Number of barred and unbarred spinors per symmetry 
+*  - actually recomputed
       INTEGER NBSPFSM(*), NUSPFSM(*)
 *
 * =======
@@ -1736,13 +1737,10 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
      &          +(SYMDIM(1)+SYMDIM(2))) /2
 *
       NTRSM_FULL = 0
-      NDIM_FULL = 0
       NDIM_TOT = 0
       do ISYM=1,NIRR_PN,1
-        NDIM_FULL = NDIM_FULL + NORB_FULL(ISYM)
         NDIM_TOT = NDIM_TOT + SYDI(ISYM)
       end do
-      NTRSM_FULL = (NDIM_FULL**2 + NDIM_FULL) / 2
 *
       call isetvc(SYMDIM_F,0,NIRR_DG)
       if (DOUGRP.lt.7.and.DOUGRP.ge.4) then
@@ -1808,6 +1806,13 @@ C     &                  ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO         )
           call memmar(KBOSYM,2*NDIM_TOT,'ADDS  ',1,'IBOSUM')
           call memmar(KISREO,2*NDIM_TOT,'ADDS  ',1,'IISREO')
         end if
+      end if
+*
+      if (SIGDEN_ROUTE.eq.'SIGDEN') then
+        NDIAMINT = 2*NDIM_TOT + 3*((2*NDIM_TOT)**2)
+        call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
+        call memmar(KPOSDIA,NDIAMINT,'ADDS  ',1,'POSDIA')
+        write(6,*) ' Allocating for ',NDIAMINT,' diagonal integrals.'
       end if
 *
 *
@@ -2411,8 +2416,8 @@ C            call memmar(KPICDAO,IALLOCDIM**2,'ADDL  ',2,'IPIDAO')
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
      &                            WORK(KISTR_AA),WORK(KISTR_AB),
-C    &                            WORK(KINDEX),
-     &                            NDIM_TOT2,F1,F2,IBOSYM,
+     &                            NDIM_TOT2,F1,F2,
+     &                            WORK(KMDIASV),WORK(KPOSDIA),IBOSYM,
      &                            WORK(KLIBSOBEX),
      &                            WORK(KLABEXTP),CIRUN,NTEST)
 C     subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,

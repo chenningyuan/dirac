@@ -1684,8 +1684,8 @@ C     &                    ISPINFREE)
       END DO
 *
       write(6,*)
-      write(6,'(A46,I10)')
-     &      'The largest block of two-electron integrals is',LMAXE2LST
+      write(6,'(A,I10)')
+     &   '   The largest block of two-electron integrals is',LMAXE2LST
 *
       NBINT1 = NSMOB
       NBINT2 = NSMOB ** 3
@@ -4715,10 +4715,10 @@ CTF No variability in thsi version.
 c     IRAT = RTOI
       IRAT = 1
 *
-      WRITE(6,*)
-      WRITE(6,'(1H ,6X,A,I2)')
-     &'Ratio between Integer and Real word length ', IRAT
-      WRITE(6,*)
+C     WRITE(6,*)
+C     WRITE(6,'(1H ,6X,A,I2)')
+C    &'Ratio between Integer and Real word length ', IRAT
+C     WRITE(6,*)
 *
       RETURN
       END

@@ -1253,7 +1253,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
 C    &                            INDEX,
-     &                            NASHT,F1,F2,IBOSYM,
+     &                            NASHT,F1,F2,MDIASV,IPOSDIA,IBOSYM,
      &                            IBSPOBEX_TP,LABEL,CIRUN,IPRNT)
 *
 #include "implicit.inc"
@@ -1275,7 +1275,8 @@ C    &                            INDEX,
       dimension ISOBEX(NGAS,4,NSPOBEX_TP),
 C    &          INDEX(4,NINT_CC),
      &          IBSPOBEX_TP(NSPOBEX_TP),LABEL(4,NSPOBEX_TP)
-      dimension I_ADD(4),INDEX(4)
+      dimension I_ADD(4),INDEX(4),IND_SAVE(4),
+     &          MDIASV(4,*),IPOSDIA(*)
 *
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
@@ -1288,7 +1289,6 @@ C    &          INDEX(4,NINT_CC),
 *
       NTESTL = 0
       NTEST = max(NTESTL,IPRNT)
-      IZERO = 0
 *
 * Constants
       IZERO = 0
@@ -1357,6 +1357,9 @@ C   formalism !
 *
 * Loop over real/imaginary part
       ICOUNT = 1
+      NDIAINT = 0
+      N1DIAINT = 0
+      N2DIAINT = 0
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
@@ -1680,7 +1683,6 @@ C   formalism !
 *
                           else
                             write(6,*) 'Impossible number of creators.'
-*  Apply only to 2-electron integrals:
                             write(6,*) 'NEL_C = ',NEL_C
                             call abend2('Quitting.')
                           end if
@@ -1707,6 +1709,7 @@ C   formalism !
 * Index reordering and second integral in exchange case:
 * (Reason: CACA string generated e.g. for two alpha excitations,
 *          but this does not correspond to index ordering in integral!)
+*  Apply only to 2-electron integrals:
 *
                           YXINT = ZERO
                           YINT = ZERO
@@ -1774,6 +1777,69 @@ C   formalism !
                               end if
                             end if
 *
+* Check for diagonal integrals
+                            if (IRI.eq.1) then
+                              ICNT = 0
+                              do IR = 1,4,1
+                                if (INDEX(IR).ne.0) then
+                                  ICNT = ICNT + 1
+                                  IND_SAVE(ICNT) = INDEX(IR)
+                                end if
+                              end do
+                              if (ICNT.eq.2) then
+                                if (IND_SAVE(1).eq.IND_SAVE(2)) then
+                                  if (INDEX(1).ne.IZERO) IUBDIA = 1
+                                  if (INDEX(2).ne.IZERO) IUBDIA = 2
+                                  if (IUBDIA.eq.1) then
+                                    NDIAINT = NDIAINT + 1
+                                    N1DIAINT = N1DIAINT + 1
+                                    IPOSDIA(NDIAINT) = ICOUNT
+                                    MDIASV(1,NDIAINT) = IND_SAVE(1)
+                                    MDIASV(2,NDIAINT) = IZERO
+                                    MDIASV(3,NDIAINT) = IND_SAVE(2)
+                                    MDIASV(4,NDIAINT) = IZERO
+C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
+C    &             ' at ',ICOUNT
+                                  else if (IUBDIA.eq.2) then
+                                    NDIAINT = NDIAINT + 1
+                                    N1DIAINT = N1DIAINT + 1
+                                    IPOSDIA(NDIAINT) = ICOUNT
+                                    MDIASV(1,NDIAINT) = IZERO
+                                    MDIASV(2,NDIAINT) = IND_SAVE(1)
+                                    MDIASV(3,NDIAINT) = IZERO
+                                    MDIASV(4,NDIAINT) = IND_SAVE(2)
+C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
+C    &             ' at ',ICOUNT
+                                  end if
+                                end if
+                              else if (ICNT.eq.4) then
+                                if ((INDEX(1).eq.INDEX(4)).and.
+     &                              (INDEX(2).eq.INDEX(3)).or.
+     &                              (INDEX(1).eq.INDEX(2)).and.
+     &                              (INDEX(3).eq.INDEX(4)).or.
+     &                              (INDEX(1).eq.-INDEX(3)).and.
+     &                              (INDEX(2).eq.-INDEX(4))) then
+                                  NDIAINT = NDIAINT + 1
+                                  N2DIAINT = N2DIAINT + 1
+                                  IPOSDIA(NDIAINT) = ICOUNT
+                                  do IR = 1,4,1
+                                    MDIASV(IR,NDIAINT) = INDEX(IR)
+                                  end do
+C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
+C    &             ' at ',ICOUNT
+                                end if
+                              else
+                                write(6,*) ' Diagonal check failed in '
+                                write(6,*) ' dist_ints_sigden.        '
+                                write(6,*) '  ICNT = ',ICNT
+                                stop 'Quitting.'
+                              end if
+                            end if
+*
+*                           Write INDEX sequence to line in file
+*                           for use in diagonal routine (saving memory):
+                            write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
+*
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
      &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
@@ -1808,10 +1874,6 @@ C   formalism !
      &                                       T(ICOUNT)
                               end if
                             end if
-*
-*                           Write INDEX sequence to line in file
-*                           for use in diagonal routine (saving memory):
-                            write(LUINSV,'(4I4)') (INDEX(JJ),JJ=1,4)
                           end if
                           ICOUNT = ICOUNT + 1
 *
@@ -1838,6 +1900,12 @@ C   formalism !
       if (NTEST.ge.1) close(LUINGR)
       close(LUINSV)
       NALLINT = ICOUNT - 1
+*
+      write(6,*) ' DIST_INTS_SIGDEN reporting   : '
+      write(6,*) '  Total number of integrals   : ',NALLINT
+      write(6,*) '  Number of diagonal integrals: ',NDIAINT
+      write(6,*) '    Number of diagonal 1-el. integrals: ',N1DIAINT
+      write(6,*) '    Number of diagonal 2-el. integrals: ',N2DIAINT
 *
       return
       end
@@ -2943,13 +3011,13 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.5) then
-        write(6,*) 
+        write(6,*)
         write(6,*) ' GETIND_MOLF : INDEX array'
         write(6,*) (INDEX(I),I=1,4,1)
       end if
 *
       if (NTEST.ge.20) then
-        write(6,*) '1-el. integral array in getind_sigden:'
+        write(6,*) '1-el. integral array in getind_molf:'
         call wrtmat(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
       end if
 *
@@ -2975,13 +3043,16 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
         YINT = DMFC(IIN)
 *
 * Sign for imaginary 1-electron integrals:
-* (According to h_(IJ) = -h_(I_J_). 
+* (According to h_(IJ) = -h_(I_J_).
 *  Reference are the unbarred spinors.)
         if (IRI.eq.2.and.INDEX(1).eq.0) YINT = - YINT
 *
         if (NTEST.ge.2) write(6,'(2I3,2X,1F18.10)') I,J,YINT
 *
       else if (NCT.eq.4) then
+c       print*,'INDEX : ',(INDEX(IP),IP=1,4,1)
+c       print*,'INVREO : ',(INVREO(IP),IP=-3,3,1)
+c       print*,'KR : ',(KR(IP),IP=-3,3,1)
         I = KR(INVREO(INDEX(1)))
         J = KR(INVREO(INDEX(2)))
         K = KR(INVREO(INDEX(3)))
@@ -2997,7 +3068,217 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
           write(6,*) 'Index quad ',I,J,K,L,' address :',IIN
         end if
         YINT = VMUUUU(IIN)
-        if (NTEST.ge.2) write(6,'(4I3,2X,1F18.10)') I,J,K,L,YINT
+        if (NTEST.ge.2) write(6,'(A,4I3,2X,1F18.10)')
+     &                  'MOLF: ',I,J,K,L,YINT
+c       stop
+*
+      else
+        write(6,*) 'No QFT implemented YET in LUCIAREL.'
+        write(6,*) 'you specified ',NCT,' indices.'
+        call abend2('Quitting.')
+      end if
+*
+      return
+      end
+***********************************************************************
+*                                                                     *
+* LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
+*                                                                     *
+***********************************************************************
+* Determine 1- or 2- particle integral
+* Fetch integral.
+*
+*=========================
+* Timo Fleig, Oct 20, 2004
+*=========================
+*
+      subroutine getind_nz3(YINT,INDEX,IRI,IDIM,INVREO,
+     &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
+*
+#include "implicit.inc"
+#include "ipoist8.inc"
+#include "include/dgroup.h"
+*
+C     dimension DMFC(*),H2AC(*)
+      dimension DMFC(*),H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
+      dimension ICSAVE(4),INDEX(4),INVREO(-IDIM:IDIM),KR(-IDIM:IDIM),
+     &          INDEX_LOC(4)
+*
+      do IL = 1,4,1
+        INDEX_LOC(IL) = INDEX(IL)
+      end do
+*
+      NTESTL = 0
+      NTEST = max(NTESTL,IPRNT)
+*
+      if (IRI.eq.1) then
+        MZ = 1
+      else if (IRI.eq.2) then
+        MZ = NZ
+      end if
+*
+      if (NTEST.ge.2) then
+        write(6,*)
+        write(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
+      end if
+      if (NTEST.ge.5) then
+        write(6,*) 
+        write(6,*) ' GETIND_NZ3 : '
+        write(6,*) '  NZ,MZ : ',NZ,MZ
+        write(6,*) '  No. of active orbitals : ',NASHT/2
+        write(6,*) '  Compound index dimension: ',NNASHX
+      end if
+*
+      if (NTEST.ge.20) then
+        write(6,*)
+        write(6,*) '1-el. integral array in getind_nz3:'
+        call wrtmat(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+        write(6,*)
+        write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
+        call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
+      end if
+*
+      NCT = 0
+      do IC=1,4,1
+        if (INDEX_LOC(IC).ne.0) then
+          NCT = NCT + 1
+          ICSAVE(NCT) = IC
+        end if
+      end do
+*
+      if (NCT.eq.2) then
+        if (NTEST.ge.10) write(6,*) '1-electron integral.'
+        I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
+        J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
+* Compute input address
+        IIN =  (IRI-1)*NASHT*NASHT +
+     &          (J-1) *NASHT +
+     &           I
+        if (NTEST.ge.5) then
+          write(6,*) 'Index pair ',I,J,' address :',IIN
+        end if
+        YINT = DMFC(IIN)
+*
+* Sign for imaginary 1-electron integrals:
+* (According to h_(IJ) = -h_(I_J_). 
+*  Reference are the unbarred spinors.)
+        if (IRI.eq.2.and.INDEX_LOC(1).eq.0) YINT = - YINT
+*
+        if (NTEST.ge.2) write(6,'(2I3,2X,1F18.10)') I,J,YINT
+*
+      else if (NCT.eq.4) then
+*
+* Interface to (NZ,3) format for 2-electron integrals
+*
+* Use Kramers symmetry/particle symmetry to generate a stored  
+* index sequence on (NZ,3) format:
+*  NZ3TP = 1     (pq|rs)
+*  NZ3TP = 2     (pq_|rs_)
+*  NZ3TP = 3     (p_q|rs_)
+          IRIFAC = 1
+          ISEQTP = 0
+          if (INDEX_LOC(1).lt.0.and.INDEX_LOC(2).lt.0.and.
+     &        INDEX_LOC(3).lt.0.and.INDEX_LOC(4).lt.0) then
+            call index_exch(INDEX_LOC(1),INDEX_LOC(2),1,-1,1)
+            call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,-1,1)
+            NZ3TP = 1
+            ISEQTP = 1
+          else if (INDEX_LOC(1).gt.0.and.INDEX_LOC(2).gt.0.and.
+     &             INDEX_LOC(3).gt.0.and.INDEX_LOC(4).gt.0) then
+            NZ3TP = 1
+            ISEQTP = 2
+          else if (INDEX_LOC(1).gt.0.and.INDEX_LOC(2).gt.0.and.
+     &             INDEX_LOC(3).lt.0.and.INDEX_LOC(4).lt.0) then
+            call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,-1,1)
+            NZ3TP = 1
+            ISEQTP = 3
+          else if (INDEX_LOC(1).gt.0.and.INDEX_LOC(2).lt.0.and.
+     &             INDEX_LOC(3).lt.0.and.INDEX_LOC(4).gt.0) then
+            call index_exch(INDEX_LOC(1),INDEX_LOC(3),1,1,1)
+            call index_exch(INDEX_LOC(2),INDEX_LOC(4),1,1,1)
+            INDEX_LOC(1) = -INDEX_LOC(1)
+            INDEX_LOC(4) = -INDEX_LOC(4)
+            NZ3TP = 3
+            ISEQTP = 4
+          else if (INDEX_LOC(1).gt.0.and.INDEX_LOC(2).lt.0.and.
+     &             INDEX_LOC(3).gt.0.and.INDEX_LOC(4).lt.0) then
+            INDEX_LOC(2) = -INDEX_LOC(2)
+            INDEX_LOC(4) = -INDEX_LOC(4)
+            NZ3TP = 2
+            ISEQTP = 5
+          else if (INDEX_LOC(1).lt.0.and.INDEX_LOC(2).gt.0.and.
+     &             INDEX_LOC(3).lt.0.and.INDEX_LOC(4).gt.0) then
+            if (IRI.eq.2) IRIFAC = -1
+            call index_exch(INDEX_LOC(1),INDEX_LOC(2),1,1,1)
+            call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,1,1)
+            INDEX_LOC(2) = -INDEX_LOC(2)
+            INDEX_LOC(4) = -INDEX_LOC(4)
+            NZ3TP = 2
+            ISEQTP = 6
+          end if
+          if (NTEST.ge.2) write(6,'(A,X,4I3)') 
+     &       '  After 3 list step:', (INDEX_LOC(I),I=1,4,1)
+*
+* Find smallest index and its position in Mulliken notation
+          call findlow(INDEX_LOC,4,ILOW,IPOS)
+*
+* Transfer smallest to fourth index by using 
+*   particle symmetry 
+*   Kramers symmetry
+*   complex conjugation symmetry (IRIFAC2 = -1 if imaginary part)
+*   CAUTION HERE:
+*    The sign has to be derived from the original index sequence!
+*    Thus the below sign arrangements may look queer.
+*    They are nevertheless correct.
+*
+          IRIFAC2 = 1
+          if (IPOS.eq.1) then 
+            call index_exch(INDEX_LOC(1),INDEX_LOC(3),1,1,1)
+            call index_exch(INDEX_LOC(2),INDEX_LOC(4),1,1,1)
+            if (IRI.eq.2.and.NZ3TP.ne.2) IRIFAC2 = -1
+            call index_exch(INDEX_LOC(1),INDEX_LOC(2),1,1,1)
+            call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,1,1)
+          else if (IPOS.eq.2) then
+            if (IRI.eq.2.and.NZ3TP.eq.3) IRIFAC2 = -1
+            call index_exch(INDEX_LOC(1),INDEX_LOC(3),1,1,1)
+            call index_exch(INDEX_LOC(2),INDEX_LOC(4),1,1,1)
+          else if (IPOS.eq.3) then
+            if (IRI.eq.2.and.NZ3TP.eq.1) IRIFAC2 = -1
+            call index_exch(INDEX_LOC(1),INDEX_LOC(2),1,1,1)
+            call index_exch(INDEX_LOC(3),INDEX_LOC(4),1,1,1)
+          end if
+          if (NTEST.ge.2) write(6,'(A,X,4I3)') 
+     &       '  After posit. step:', (INDEX_LOC(I),I=1,4,1)
+*
+* Determine address in (NZ,3) format
+          NASHTH = NASHT/2
+*
+* Determine compound index KL: NDIM2
+          NDIM2 = 0
+          do IC = 1,INDEX_LOC(3),1
+            if (IC.eq.INDEX_LOC(3)) then
+              JCEND = INDEX_LOC(4)
+            else if (IC.ne.INDEX_LOC(3)) then
+              JCEND = IC
+            end if
+            do JC = 1,JCEND,1
+              NDIM2 = NDIM2 + 1
+            end do
+          end do
+*
+          IIN = (NZ3TP-1)        *MZ*NNASHX*NASHTH*NASHTH +
+     &          (MZ-1)           *NNASHX*NASHTH*NASHTH +
+     &          (NDIM2-1)        *NASHTH*NASHTH +
+     &          (INDEX_LOC(1)-1) *NASHTH +
+     &           INDEX_LOC(2)
+*
+C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
+          YINT = H2AC(INDEX_LOC(1),INDEX_LOC(2),NDIM2,MZ,NZ3TP) 
+     &                * IRIFAC * IRIFAC2
+          if (NTEST.ge.2) write(6,'(A,4I3,2X,4I3,2X,1F18.10)') 
+     &                    'MZ,NZ3TP,IRIFAC,IRIFAC2  integral',
+     &                     MZ,NZ3TP,IRIFAC,IRIFAC2,
+     &                    (INDEX_LOC(ID),ID=1,4,1),YINT
 *
       else
         write(6,*) 'No QFT implemented YET in LUCIAREL.'
@@ -4382,7 +4663,11 @@ C     STOP ' Jeppe forced me to stop in GETINT '
 #include "crun.inc"
 #include "symm.inc"
 *
+      logical NZ3FORM
       dimension INDEX(4)
+*
+* New (memory saving) (NZ,3) integral interface (if true)
+      NZ3FORM = .TRUE.
 *
       if (INTIMP.eq.5) then
         write(6,*) 'MOLCAS sigden import under development.'
@@ -4407,14 +4692,24 @@ c       call getinm_sigden()
      &                     WORK(KDITWOE+IRIOFF2),WORK(KDIONEE+IRIOFF1),
      &                     IPRNT)
       else if (INTIMP.eq.7) then
+        if (.not.NZ3FORM) then
 *
 * Define the KR array (which is usually read from the MOLFDIR file
 * in standalone calculations!)
-        call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
+          call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
 *
 * MOLFDIR format full spinor list
-        call getind_molf(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
-     &                   WORK(KKR),NASHT,F1,F2,IPRNT)
+          call getind_molf(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
+     &                     WORK(KKR),NASHT,F1,F2,IPRNT)
+*
+        else if (NZ3FORM) then
+*
+* DIRAC (NZ,3) format
+          call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
+          NNASHX = ((NASHT/2) * ((NASHT/2)+1)) / 2
+          call getind_nz3(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
+     &                    WORK(KKR),NASHT,NNASHX,F1,F2,IPRNT)
+        end if
       end if
 *
       return
