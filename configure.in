@@ -261,7 +261,8 @@ case $machine in
    i[3-6]86-*)
       liblist='libatlas libblas'
 #TODO liblist='libMKL libatlas libblas'
-      complist='ifc g77'
+      complist='ifc g77 pgf90'
+      cclist='cc gcc pgcc'
       debug='gdb';;
 
    Power-Macintosh)
@@ -1116,8 +1117,8 @@ case $machine in
       else
          cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-	  def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
+         def='dirmpi.x'
+         mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
 #
 # Ask user whether the large file option can be set
@@ -1126,6 +1127,7 @@ case $machine in
       read largefiles
       case "$largefiles" in
       "yes" | "y" | "Y" )
+          ccp="$ccp -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
           ;;
        *)
          ccp="$cpp -DSMALL_CFILES"
@@ -1134,6 +1136,9 @@ case $machine in
       case "$F77" in
       g77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         ;;
+      pgf90)
+         opt='-fastsse'; ccp="$ccp -DVAR_PGCC"
          ;;
       ifc)
          opt='-O3'; ccp="$ccp -DVAR_IFC"
