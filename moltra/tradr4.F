@@ -870,12 +870,15 @@ C
      &              TRIAN(2),WORK(KDXB34))
 C
       NIJOFF = 0
+      NKLOFF = 0
       DO IREPIJ = 1, NFSYM
          NIJ = NFPCK12(IREPIJ)
+         NKL = NFPCK34(IREPIJ)
          CALL DRV4SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
      &                IREPIJ,NIJ,IQMO,WORK(KDXKR12),NIJOFF,
-     &                WORK(KDXB12),WORK(KDXB34))
+     &                WORK(KDXB12),WORK(KDXB34),NKLOFF)
          NIJOFF = NIJOFF + NIJ
+         NKLOFF = NKLOFF + NKL
       ENDDO
 C
 C     Delete direct access file
