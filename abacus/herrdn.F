@@ -811,6 +811,7 @@ C*****************************************************************************
 #include <huckel.h>
 #include <aosotr.h>
 #include <gencon.h>
+#include <dcbgen.h>
 #include <ibtfun.h>
 C
       CNTBAS = .FALSE.
@@ -1121,7 +1122,7 @@ C
                   IBSFLAG = 4
                ELSE
                   IF ( BSET .EQ. 'SMALL' ) THEN
-C                    Assume it is 'LARGE   2    1....'
+C                    Assume it is 'SMALL   2    1....'
                      IBSFLAG = 1
                      READ (MLINE(NMLINE),'(BN,A5,12I5)')
      &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
@@ -1138,6 +1139,14 @@ C
                   END IF
                END IF
 C
+C
+               IF ( IBSFLAG .NE. 4 .AND. ISPHTR .EQ. 3 ) THEN
+                  WRITE(LUPRI,'(1X,A)')
+     &               'INFO: Explicitly given small basis set and '//
+     &               '.SPHTRA 1 1 not implemented,',
+     &               'INFO: .SPHTRA reset to 1 0.'
+                  ISPHTR = 1
+               END IF
 C
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
@@ -1556,7 +1565,12 @@ C
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
 C
-C FIXME: only is small component is NOT contracted...
+C FIXME: In principle kinetic balance can be made for contracted
+C FIXME: basis sets iff the small component basis set exponents
+C FIXME: are kinetically balanced. Currently, the code resets
+C FIXME: ISPHTR if the small component basis set is explicitly given
+C FIXME: (IBSFLAG .NE. 4, see INFO: above)./hjaaj+jth sep 2000
+C
       IF (DIRAC.AND.ISPHTR.EQ.3)
      $     CALL RKBREL(IPREAD)
 C
