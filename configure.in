@@ -1419,55 +1419,31 @@ echo
 echo
 echo "Making Makefiles..."
 dirs="dirac prp abacus gp pdpack dirac/main"
-if [ -z "$ERIFLG" ] ; then
-   ERIFLG=0
-fi
-if [ -z "$CCFLG" ] ; then
-   CCFLG=0
-fi
-if [ -z "$RSPFLG" ] ; then
-   RSPFLG=0
-fi
-if [ -z "$TRAFLG" ] ; then
-   TRAFLG=0
-fi
-if [ -z "$PARFLG" ] ; then
-   PARFLG=0
-fi
-if [ -z "$OPENFLG" ] ; then
-   OPENFLG=0
-fi
-if [ -z "$SPFFLG" ] ; then
-   SPFFLG=0
-fi
-if [ -z "$CIFLG" ] ; then
-   CIFLG=0
-fi
-if [ $ERIFLG != 0 ]; then
+if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
-if [ $CCFLG != 0 ]; then
+if [ -n "$CCFLG" ]; then
    dirs="$dirs relccsd"
 fi
-if [ $RSPFLG != 0 ]; then
+if [ -n "$RSPFLG" ]; then
    dirs="$dirs prp/rsp"
 fi
-if [ $TRAFLG != 0 ]; then
+if [ -n "$TRAFLG" ]; then
    dirs="$dirs moltra"
 fi
-if [ $PARFLG != 0 ]; then
+if [ -n "$PARFLG" ]; then
    dirs="$dirs abacus/par"
 fi
-if [ $OPENFLG != 0 ]; then
+if [ -n "$OPENFLG" ]; then
    dirs="$dirs dirac/open"
 fi
-if [ $SPFFLG != 0 ]; then
+if [ -n "$SPFFLG" ]; then
    dirs="$dirs dirac/spinfree"
 fi
-if [ $CIFLG != 0 ]; then
+if [ -n "$CIFLG" ]; then
    dirs="$dirs dirrci"
 fi
-if [ $GEOFLG != 0 ]; then
+if [ -n "$GEOFLG" ]; then
    dirs="$dirs dirac/geom"
 fi
 for makefile in $dirs; do
