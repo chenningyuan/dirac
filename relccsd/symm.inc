@@ -17,7 +17,7 @@ C
       CHARACTER*4 REPN,REPNA
       COMMON /SYML/ SPFR
       LOGICAL SPFR
-      INTEGER*8 IVVVVTT,NV5,NV6
+      INTEGER*8 NV5,NV6
       COMMON /DIMS/ NDIMT1,NDIMT2,NFOO,NFVO,NFVV,NV1,NV2,NV3,NV4,NV5,NV6
      &              ,NDIMX,NDIMY
 C     Sub dimensions of symmetry packed arrays.

@@ -50,7 +50,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      PARAMETER (MAXCOR = 1 000 000 000)
+      PARAMETER (MAXCOR = 100 000 000)
 #include "files.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
