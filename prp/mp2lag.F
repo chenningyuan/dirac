@@ -1,16 +1,20 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mpglvc */
-      SUBROUTINE MPGLVC(DMO,XLAGRAN,WORK,KFREE,LFREE)
+      SUBROUTINE MPGLVC(DMO,XMO,WORK,KFREE,LFREE,KFLG)
 C***********************************************************************
 C
 C     Written by J. van Stralen - Feb 2003
 C
 C     PURPOSE: Driver routine for the construction of the MP2
-C              Lagrangian.
+C              Lagrangian or construction of active virtual-positronic
+C              density matrix (D_ax), depending on flag KFLG
 C
 C     INPUT:   DMO - second order density matrix, not sym. packed
+C              KFLG - 1: Calculate D dependent Lagrangian
+C                   - 2: Calculate D_ax
 C
-C     OUTPUT:  XLAGRAN - The Lagrangian, not sym. packed
+C     OUTPUT:  XMO - 1: The Lagrangian, not sym. packed
+C                    2: D_ax, not sym packed
 C
 C     REMARKS: -
 C
@@ -22,24 +26,23 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
       DIMENSION DMO(*)
-      DIMENSION XLAGRAN(*)
+      DIMENSION XMO(*)
       DIMENSION WORK(*)
 C
       CALL QENTER('MPGLVC')
 C
-      CALL DZERO(XLAGRAN,NORBT*NORBT*NZ)
 C
 C     Calculate density matrix dependent part of Lagrangian
 C     =====================================================
 C
-      CALL LVCDEN(DMO,XLAGRAN,WORK,KFREE,LFREE)
+      CALL LVCDEN(DMO,XMO,WORK,KFREE,LFREE,KFLG)
 C
       CALL QEXIT('MPGLVC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcden */
-      SUBROUTINE LVCDEN(DMO,XLAGRAN,WORK,KFREE,LFREE)
+      SUBROUTINE LVCDEN(DMO,XMO,WORK,KFREE,LFREE,KFLG)
 C***********************************************************************
 C
 C     Written by J. van Stralen - Feb 2003
@@ -47,8 +50,11 @@ C
 C     PURPOSE: generate density matrix dependent part of Lagrangian
 C
 C     INPUT:   DMO - second order density matrix
+C              KFLG - 1: Calculate D dependent Lagrangian
+C                   - 2: Calculate D_ax
 C
-C     OUTPUT:  XLAGRAN - The Lagrangian
+C     OUTPUT:  XMO - 1: The Lagrangian, not sym. packed
+C                        2: D_ax
 C
 C     REMARKS: 
 C
@@ -87,6 +93,16 @@ C              a Fock type matrix) used in the sigma vector, which is
 C              used in RPA (See eq 67 of T.Saue and H.J.Aa Jensen,
 C              J. Chem. Phys. 118, 522 (2003)
 C
+C              -------------------------------------------------
+C
+C              If we have KFLG = 2:
+C              D_(ax)=-<aj"||xv>DM_(vj") - <av||xj">DM_(vj")^(*)
+C
+C              with: j" all occupied
+C                    a  active virtuals
+C                    v  all virtuals + positronic
+C                    x  positronic
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -102,7 +118,7 @@ C
 #include "dcbfir.h"
 C
       DIMENSION DMO(*)
-      DIMENSION XLAGRAN(*)
+      DIMENSION XMO(*)
       DIMENSION WORK(*)
 C
       CALL QENTER('LVCDEN')
@@ -127,9 +143,10 @@ C     ====================================================
       CALL MEMGET('REAL',KCMO   ,N2BBASXQ  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KXLAGAO,NZ*N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KXLAGRAN,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C
-      CALL LVCDEN1(DMO,XLAGRAN,WORK(KCMO),WORK(KDMAT),WORK(KXLAGAO),
-     &             WORK,KFREE,LFREE)
+      CALL LVCDEN1(DMO,XMO,WORK(KXLAGRAN),WORK(KCMO),WORK(KDMAT),
+     &             WORK(KXLAGAO),WORK,KFREE,LFREE,KFLG)
 C
 C     Release memory
 C     ==============
@@ -140,7 +157,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcden1 */
-      SUBROUTINE LVCDEN1(DMO,XLAGRAN,CMO,DMAT,XLAGAO,WORK,KFREE,LFREE)
+      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,WORK,KFREE,
+     &                   LFREE,KFLG)
 C***********************************************************************
 C
 C     Written by J. van Stralen - Feb 2003
@@ -148,8 +166,11 @@ C
 C     PURPOSE: generate density matrix dependent part of Lagrangian
 C
 C     INPUT:   DMO - second order density matrix
+C              KFLG - 1: Calculate D dependent Lagrangian
+C                   - 2: Calculate D_ax
 C
-C     OUTPUT:  XLAGRAN - The Lagrangian in spinor (mo) basis
+C     OUTPUT:  XLAGRAN - 1: The Lagrangian, not sym. packed
+C                        2: D_ax
 C
 C     Other arguments:
 C              CMO  - spinor (mo) coefficients
@@ -162,7 +183,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 #include "cbihr2.h"
 #include "dcborb.h"
@@ -173,7 +194,7 @@ C
 C
       LOGICAL TOBE
       DIMENSION DMO(*)
-      DIMENSION XLAGRAN(*)
+      DIMENSION XMO(*), XLAGRAN(*)
       DIMENSION CMO(*), DMAT(*), XLAGAO(N2BBASXQ)
       DIMENSION WORK(*)
 C
@@ -199,7 +220,7 @@ C
 C     c) Generate AO Lagrangian
 C     -------------------------
 C
-C     jvs: put integral flag now by hand, later via commonblock
+      print*,'jvs: put integral flag now by hand, later via commonblock'
 C
       ILL = 1
       ILS = 1
@@ -217,10 +238,28 @@ C
      &            XLAGAO,DMAT,NRFMAT,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
 C
-C     d) Transform Lagrangian to MO basis
-C     -----------------------------------
+      IF(KFLG.EQ.1) THEN
 C
+C     d') Transform Lagrangian to MO basis
+C     ------------------------------------
+C
+      CALL DZERO(XLAGRAN,NORBT*NORBT*NZ)
       CALL LTAOMO(XLAGAO,XLAGRAN,CMO,WORK,KFREE,LFREE)
+C
+C     add D dependent part of Lagrangian to the rest of the Lagrangian
+C
+      CALL DAXPY(NORBT*NORBT*NZ,D1,XLAGRAN,1,XMO,1)
+C
+      ENDIF
+C
+      IF(KFLG.EQ.2) THEN
+C
+C     d") Transform Density matrix to MO basis
+C     ----------------------------------------
+C
+      CALL DTAOMO(XLAGAO,XMO,CMO,WORK,KFREE,LFREE)
+C
+      ENDIF
 C
       CALL QEXIT('LVCDEN1')
       RETURN
@@ -397,5 +436,80 @@ c     CALL PRQMAT(XLAGRAN,NORBT,NORBT,NORBT,NORBT,NZ,
 c    &            IPQTOQ(1,0),LUPRI)
 C
       CALL QEXIT('LTAOMO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dtaomo */
+      SUBROUTINE DTAOMO(DAOAX,DMOAX,CMO,WORK,KFREE,LFREE)
+C***********************************************************************
+C        
+C     Written by J. van Stralen - Feb 2003
+C      
+C     PURPOSE: Transform density matrix from AO-basis to MO-basis
+C    
+C     INPUT:   DAOAX - Density matrix in AO-basis
+C              CMO   - spinor (MO) coefficients
+C    
+C     OUTPUT:  DMOAX - The Density matrix in spinor (MO) basis, not
+C                      symmetry packed
+C    
+C     REMARKS:
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h" 
+      PARAMETER(D0 = 0.0D0, D1=1.0D0)
+C
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+C
+      DIMENSION DMOAX(NORBT,NORBT,NZ)
+      DIMENSION DAOAX(N2BBASXQ), CMO(*)
+      DIMENSION WORK(*)
+C
+      CALL QENTER('DTAOMO')
+C
+C     +--------------+
+C     |   e-e part   |
+C     +--------------+
+C
+      DO IFSYM = 1,NFSYM
+C
+C        Parameters for 1st index: active virtuals
+C
+         NS = NAVIR(IFSYM)   ! nr of active virtuals for ifsym
+         IS = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM) + 1
+         JS = ICMOQ(IFSYM) + (NPSH(IFSYM)+NOCC(IFSYM))*NFBAS(IFSYM,0) +1
+C    
+C        Parameters for 2nd index: positronic
+C     
+         NI = NPSH(IFSYM)
+         II = IORB(IFSYM)  + 1
+         JI = ICMOQ(IFSYM) + 1
+C              
+       IF(NS.NE.0.AND.NI.NE.0) THEN
+          CALL QTRANS('AOMO','S',D0,
+     &                NFBAS(IFSYM,0),NFBAS(IFSYM,0),NS,NI,
+     &                DAOAX(I2BASX(IFSYM,IFSYM)+1),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),
+     &                DMOAX(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,0),
+     &                CMO(JS),NFBAS(IFSYM,0),NORB(IFSYM),NZ,IPQTOQ(1,0),
+     &                CMO(JI),NFBAS(IFSYM,0),NORB(IFSYM),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,1) ! last one is printlevel
+       ENDIF
+      ENDDO
+c     do iz = 1, nz
+c        do j = 1, norbt
+c           do i= 1, norbt
+c              print*, 'lagr=', iz, i, j, DMOAX(i,j,iz)
+c           enddo
+c        enddo 
+c     enddo
+c     print*,'lagrangian'
+c     CALL PRQMAT(DMOAX,NORBT,NORBT,NORBT,NORBT,NZ,
+c    &            IPQTOQ(1,0),LUPRI)
+C
+      CALL QEXIT('DTAOMO')
       RETURN
       END

@@ -421,13 +421,6 @@ c     endif
 C
 c     call convxm(buf1,buf2,xvo,xmo)
 c
-c     jvs: temporarily to test generation of Lagrangian
-c     deactivated because checking in to trunk
-c     
-c     KFREE=1
-c     LFREE=NBUF3*RCW 
-c     CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE)
-c     print*,'jvs: D via joost'
 C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
@@ -449,8 +442,31 @@ c     CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
 c     CALL SRTT1T2(BUF2,BUF1)
 c     print*,'jvs: T-dependent part of Lagrangian'
 C     deactivated because checking in to trunk
+C
+C     +---------------------------------------------------+
+C     | Generate the tau dependent part of the Lagrangian |
+C     +---------------------------------------------------+
+C
 c     LFREE=NBUF3*RCW
 c     CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
+C
+C     +-------------------------------------------------------+
+C     | Calculate the ji' and b'a parts of the density matrix |
+C     +-------------------------------------------------------+
+C     deactivated because checking in to trunk
+C
+c     KFREE=1
+c     LFREE=NBUF3*RCW
+c     CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
+C
+C     +-------------------------------------------------+
+C     | Generate the D dependent part of the Lagrangian |
+C     +-------------------------------------------------+
+C     deactivated because checking in to trunk
+C
+c     KFREE=1 
+c     LFREE=NBUF3*RCW
+c     CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
 C
 C     Solve Z-vector equations by calling the RPA routine
 C

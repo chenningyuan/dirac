@@ -11,6 +11,9 @@ C              part of the D^2 matrix. It starts by setting up parameters
 C              that the normal response program gets from the input file 
 C              or default settings.This includes setting up an operator.
 C
+C              Also D_ax parts of the density 
+C              matrix are calculated
+C
 C     INPUT:   DMO - second order density matrix 
 C              XMO - the Lagrangian
 C
@@ -19,6 +22,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -72,7 +76,7 @@ c     qedrun    = .TRUE.        !not implemented
       xlr_lsfg(1) = .true.        !Generate G-matrix in MO basis
       xlr_lsfg(2) = .true.        !Generate G-matrix in MO basis
       xlrnrm    = .true.        !normalize solutionvector
-      xLRDIH    = .TRUE.        !pre-conditioning of trail vectors
+      XLRDIH    = .TRUE.        !pre-conditioning of trail vectors
 C                                
       orbdef(1) = .true.
       orbdef(2) = .true.
@@ -135,12 +139,9 @@ C
 C     Allocate memory
 C     ===============
 C     
-C{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
-      ifrp = 1
-C{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
       nrspf=nlrbpt*nbfreq
       if(orbxlr)then
-         call memget('INTE',klro,2*norb(ifrp),work,kfree,lfree)
+         CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
          call deforb(work(klro),ncls_xlr,3,xlr_indstr,
      &        work,kfree,lfree,iprxlr)
          ni=0
@@ -172,6 +173,11 @@ C
 C
       call prpxl1_mpg(work(klrf),work(kcnv),work(klro),DMO,XMO,
      &                work,kfree,lfree)
+C
+C     Calculate D_ax
+C     ==============
+C
+      CALL CALCDAX(DMO,XMO,WORK,KFREE,LFREE)
 C
       call qexit('PRPXLR_MPG')
       return
@@ -502,14 +508,6 @@ C
       dimension work(*)
 C
       call qenter('GRDORB_MPG')
-c     print*,'in GRDORB_MPG'
-c     do iz =1, nz
-c        do j=1,norbt
-c           do i=1,norbt
-c              print*,'XMO=',i,j,iz,XMO(i,j,iz)
-c           enddo
-c        enddo
-c     enddo
 C
 #if defined (SYS_IBM)
       open(lu1int,status='OLD',form='UNFORMATTED',file='APROPER')
@@ -528,7 +526,7 @@ C     + ---------------+
 C
       if(nxope.gt.0)then
          call xopgat(gpoe,jxope,nxope,XMO,norbt,nz)
-         call dscal(nz*nxope,-D2,gpoe,1)
+         call dscal(nz*nxope,D2,gpoe,1)
       endif
 C
 C     +-----------------+
@@ -537,7 +535,7 @@ C     +-----------------+
 C
       if(nxopp.gt.0)then
          call xopgat(gpop,jxopp,nxopp,XMO,norbt,nz)
-         call dscal(nz*nxopp,-D2,gpop,1)
+         call dscal(nz*nxopp,D2,gpop,1)
       endif
 C     ====================
 C
@@ -712,7 +710,7 @@ C
                IO2 = IO2 + NPSH(IFRP) + NOCC(IFRP)
                DO I = 1, NOCC(IFRP)
                   II = I + IO1
-                  CALL DCOPY(NSSH(IFRP),WORK(KXVEC+K),   1,
+                  CALL DCOPY(NSSH(IFRP),WORK(KXVEC+K),1,
      &                                  DMO(1+IO2,II,IZ),1)
                   K = K + NSSH(IFRP)
                ENDDO
@@ -768,7 +766,7 @@ C
                IO1 = IO1 + NPSH(IFRP)
                DO I = 1, NOCC(IFRP)
                   II = I + IO1
-                  CALL DCOPY(NPSH(IFRP),WORK(KXVEC+K),   1,
+                  CALL DCOPY(NPSH(IFRP),WORK(KXVEC+K),1,
      &                                  DMO(1+IO2,II,IZ),1)
                   K = K + NPSH(IFRP)
                ENDDO
@@ -798,5 +796,359 @@ c                    write(lupri,'(2i3,f18.10)') IA,II,DMO(IA,II,IZ)
       CALL MEMCHK('einde rspmpg',WORK,1)
       CALL QEXIT('GETLRF_MPG')
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck calcdax */
+      SUBROUTINE CALCDAX(DMO,XMO,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by Joost van Stralen september 2003.
+C
+C     PURPOSE : Calculate D_ax
+C
+C     Input :   
+C
+C     Output :
+C
+C     Remarks: 
+C              D_(ax)=[L_(ax)-<aj"||xv>D_(vj") + <av||xj">D_(vj")^*]/DIV
+C
+C              with
+C
+C              DIV = eig_x - eig_a
+C            
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+      LOGICAL FILEX
+      DIMENSION DMO(*)
+      DIMENSION XMO(*)
+      DIMENSION WORK(*)
+C
+      CALL QENTER('CALCDAX')
+C
+      KFRSAV=KFREE
+C
+C     Allocate memory for D_ax and D_vj" density matrix. Note that we
+C     allocate for the complete norbt*norbt*nz size because
+C     this size is needed by MPGLVC. The other parts will be put to 0
+C     ===============================================================
+C
+      CALL MEMGET('REAL',KDAX,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDVJ,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
+C
+C     We also need the eigenvalues
+C     ============================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) GOTO 1000
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDAX')
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL MEMCHK('na reacmo',WORK,1)
+C
+      CALL CALC1_DAX(DMO,XMO,WORK(KDAX),WORK(KDVJ),WORK(KEIG),WORK,
+     &               KFREE,LFREE)
+      CALL MEMCHK('na calc1_dax',WORK,1)
+C
+      CALL MEMREL('CALCDAX',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('CALCDAX')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'CALCDAX: Coefficient file not found !'
+      CALL QUIT('CALCDAX: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck calc1_dax */
+      SUBROUTINE CALC1_DAX(DMO,XMO,DAX,DVJ,EIG,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by Joost van Stralen september 2003.
+C
+C     PURPOSE : Calculate D_ax
+C     
+C     Input :
+C
+C     Output :
+C            
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D2 = 2.0D0)
+C
+#include "dcborb.h"
+#include "dgroup.h"
+C     
+      DIMENSION DMO(*), DAX(*), DVJ(*)
+      DIMENSION XMO(*), EIG(*)
+      DIMENSION WORK(*)
+C
+      CALL QENTER('CALC1_DAX')
+C
+C     put DAX and DVJ to zero
+C     =======================
+C
+      CALL DZERO(DAX,NORBT*NORBT*NZ)
+      CALL DZERO(DVJ,NORBT*NORBT*NZ)
+C
+C     Copy the right parts of DMO to DVJ
+C     ==================================
+C
+C     first the x - j" part
+C     ---------------------
+C
+      DO IZ = 1,NZ
+        IOFF1 = (IZ-1)*NORBT*NORBT*NZ
+        IOFF2 = IOFF1
+        DO IFSYM = 1,NFSYM
+          IOFF2 = IOFF2 + NORBT*NPSH(IFSYM)
+          IOFF3 = IOFF2 + 1
+          DO J = 1,NOCC(IFSYM)
+            CALL DCOPY(NPSH(IFSYM),DMO(IOFF3),1,DVJ(IOFF3),1)
+            IOFF3 = IOFF3 + NORBT
+          ENDDO ! j
+          IOFF2 = IOFF1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO   ! ifsym
+      ENDDO     ! iz
+C
+C     next the a" - j" part
+C     ---------------------
+C
+      DO IZ = 1,NZ
+        IOFF1 = (IZ-1)*NORBT*NORBT*NZ
+        IOFF2 = IOFF1
+        DO IFSYM = 1,NFSYM
+          IOFF2 = IOFF2 + NORBT*NPSH(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFF3 = IOFF2 + 1
+          NV = NAVIR(IFSYM) + NIVIR(IFSYM)
+          DO J = 1,NOCC(IFSYM)
+            CALL DCOPY(NV,DMO(IOFF3),1,DVJ(IOFF3),1)
+            IOFF3 = IOFF3 + NORBT
+          ENDDO ! j
+          IOFF2 = IOFF1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO   ! ifsym
+      ENDDO     ! iz
+C
+C     Calculate the 2-electron dependent part of D_ax
+C     ===============================================
+C
+      CALL MPGLVC(DVJ,DAX,WORK,KFREE,LFREE,2)
+C
+C     Add L_ax and divide by spinor energies
+C     ======================================
+C
+C
+      DO IZ = 1,NZ
+        IOFD1 = (IZ-1)*NORBT*NORBT
+        IOFD2 = IOFD1
+        DO IFSYM = 1,NFSYM
+          IOFD2 = IOFD2 + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFD3 = IOFD2
+          IOFEGA1 = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM) 
+          IOFEGX1 = IORB(IFSYM)
+          DO IX =1,NPSH(IFSYM)
+            IOFD4 = IOFD3
+            IOFEGX2 = IOFEGX1 + IX
+            DO IA = 1,NAVIR(IFSYM)
+              IOFD4 = IOFD4 + 1
+              IOFEGA2 = IOFEGA1 + IA
+              DIV = (EIG(IOFEGA2) - EIG(IOFEGX2))
+              DMO(IOFD4) = (D2*XMO(IOFD4) - DAX(IOFD4))/DIV
+            ENDDO !ia
+            IOFD3 = IOFD3 + NORBT
+          ENDDO   !ix
+          IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM) 
+        ENDDO     !ifsym
+      ENDDO       !iz
+C
+      CALL QEXIT('CALC1_DAX')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck calcdji */
+      SUBROUTINE CALCDJI(DMO,XMO,WORK,KFREE,LFREE)
+C***********************************************************************
+C     
+C     Written by Joost van Stralen september 2003.
+C
+C     PURPOSE : Calculate D_ji' and D_b'a
+C
+C               D_ji' = L_i'j/(eig_j - eig_i')
+C
+C               D_b'a = L_ab'/(eig_b' - eig_a)
+C
+C     Input :  XMO - The Lagrangian (L)
+C     
+C     Output : DMO - D_ji' and D_b'a
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+      LOGICAL FILEX
+      DIMENSION DMO(*)
+      DIMENSION XMO(*)
+      DIMENSION WORK(*)
+C     
+      CALL QENTER('CALCDJI')
+C
+      KFRSAV=KFREE
+C
+C     Open the coefficient file and read the eigenvalues
+C     ==================================================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) GOTO 1000
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Calculate D_ji' and D_b'a
+C     =========================
+C
+      CALL CALC1_DJI(DMO,XMO,WORK(KEIG),WORK,KFREE,LFREE)
+C
+C     Create also the Hermitian counterpart of D_ji' and D_b'a
+C     ========================================================
+C
+      CALL QHMRST(DMO,NORBT,NZ,NORBT,NORBT)
+C
+      CALL MEMREL('CALCDJI',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('CALCDJI')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'CALCDJI: Coefficient file not found !'
+      CALL QUIT('CALCDJI: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck calc1_dji */
+      SUBROUTINE CALC1_DJI(DMO,XMO,EIG,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by Joost van Stralen september 2003.
+C
+C     PURPOSE : Calculate D_ji' and D_b'a
+C
+C               D_ji' = L_i'j/(eig_j - eig_i')
+C
+C               D_b'a = L_ab'/(eig_b' - eig_a)
+C
+C     Input :  XMO - The Lagrangian (L)
+C
+C     Output : DMO - D_ji' and D_b'a
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0, D2 = 2.0D0)
+C     
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION DMO(*)
+      DIMENSION XMO(*)
+      DIMENSION WORK(*)
+      DIMENSION EIG(*)
+C     
+C     
+      CALL QENTER('CALC1_DJI')
+C
+C     Generate D_ji'
+C     ==============
+C
+      IF(NIOCCT.GT.0) THEN
+C
+      DO IZ =1,NZ
+        IOFD1 = (IZ-1)*NORBT*NORBT
+        IOFX1 = (IZ-1)*NORBT*NORBT
+        IOFD2 = IOFD1
+        IOFX2 = IOFX1
+	DO IFSYM=1, NFSYM
+          IOFD2 = IOFD2 + NORBT*NPSH(IFSYM) + NPSH(IFSYM) + NIOCC(IFSYM)
+          IOFD3 = IOFD2
+          IOFX2 = IOFX2 + NORBT*(NPSH(IFSYM)+NIOCC(IFSYM)) + NPSH(IFSYM)
+          IOFX3 = IOFX2
+          IOFEGI1 = IORB(IFSYM) + NPSH(IFSYM)
+          IOFEGJ1 = IORB(IFSYM) + NPSH(IFSYM) + NIOCC(IFSYM)
+          DO I = 1, NIOCC(IFSYM)
+            IOFD4 = IOFD3
+            IOFX3 = IOFX3 + 1
+            IOFX4 = IOFX3
+            IOFEGI2= IOFEGI1 + I
+            DO J = 1, NAOCC(IFSYM)
+              IOFD4 = IOFD4 + 1
+              IOFEGJ2 = IOFEGJ1 + J
+              DIV = (EIG(IOFEGJ2) - EIG(IOFEGI2))
+              DMO(IOFD4) = -XMO(IOFX4)/DIV
+              IOFX4 = IOFX4 + NORBT
+            ENDDO ! j
+            IOFD3 = IOFD3 + NORBT
+          ENDDO   ! i'
+          IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+          IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! nz
+C
+      ENDIF
+C
+C     Generate D_b'a
+C     ==============
+C
+      IF(NIVIRT.GT.0) THEN
+C
+      DO IZ =1,NZ
+        IOFD1 = (IZ-1)*NORBT*NORBT
+        IOFX1 = (IZ-1)*NORBT*NORBT
+        IOFD2 = IOFD1
+        IOFX2 = IOFX1
+        DO IFSYM=1, NFSYM
+          IOFD2 = IOFD2 + NORBT*(NPSH(IFSYM) + NOCC(IFSYM)) 
+     &          + NPSH(IFSYM) + NOCC(IFSYM) + NAVIR(IFSYM)
+          IOFD3 = IOFD2
+          IOFX2 = IOFX2 + NORBT*(NPSH(IFSYM)+NOCC(IFSYM)+NAVIR(IFSYM)) 
+     &          + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFX3 = IOFX2
+          IOFEGA1 = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFEGB1 = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM) 
+     &            + NAVIR(IFSYM)
+          DO IA = 1, NAVIR(IFSYM)
+            IOFD4 = IOFD3
+            IOFX3 = IOFX3 + 1
+            IOFX4 = IOFX3
+            IOFEGA2= IOFEGA1 + IA
+            DO IB = 1, NIVIR(IFSYM)
+              IOFD4 = IOFD4 + 1
+              IOFEGB2 = IOFEGB1 + IB
+              DIV = (EIG(IOFEGB2) - EIG(IOFEGA2))
+              DMO(IOFD4) = -XMO(IOFX4)/DIV
+              IOFX4 = IOFX4 + NORBT
+            ENDDO ! ib'
+            IOFD3 = IOFD3 + NORBT
+          ENDDO   ! ia
+          IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+          IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! nz
+C
+      ENDIF
+C
+      CALL QEXIT('CALC1_DJI')
       RETURN
       END

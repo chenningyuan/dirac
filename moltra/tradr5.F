@@ -89,7 +89,6 @@ C***********************************************************************
 C     
       CALL QENTER('TRDR5T')
       KFRSAV = KFREE
-      print*,'trdr5t'
 C     
 C     Define the packing of the 4-index transformed integrals
 C
@@ -270,11 +269,9 @@ C
 C     Put the two tau dependent parts of the Lagrangian together to
 C     the final Lagrangian
 C     -------------------------------------------------------------
+      CALL DZERO(XMO,NORBT*NORBT*NZ)
       CALL ADDTAUL(WORK(KXMO1),WORK(KXMO2),XMO)
 C
-C     Now finally the tau dependent Lagrangian has to be scaled by -1
-C     ---------------------------------------------------------------
-      CALL DSCAL(NORBT*NORBT*NZ,-D1,XMO,1)
 C             
 C     Screening statistics
 C
@@ -651,11 +648,6 @@ C
 C        Do first step of index transformation :
 C        Transform first pair of indices
 C
-         IF(TRIAN) THEN
-           print*,'driehoekig'
-         ELSE
-           print*,'niet driehoekig'
-         ENDIF
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &                TRIAN,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
@@ -1672,10 +1664,8 @@ C
               IREPA = MOD(IREPL + IREPAL,2) + 1
               IOFFT1A = IOFFTM1(IREPL,IREPRS,IREPAL) + 1
               IOFFT2A = IOFFTM2(IREPA,IREPRS,IREPAL) + 1
-              print*,'irepl=, irepa=',irepl, irepa
               NL = NAOCC(IREPL)
               NA = NAVIR(IREPA)
-              print*,'nl=, na= ',nl, na
               NKC = 0
               DO IREPC = 1, NFSYM
                 NC = NAVIR(IREPC)
@@ -1683,7 +1673,6 @@ C
                 NK = NAOCC(IREPK)
                 NKC = NKC + NK*NC*NZ
               ENDDO !irepc
-              print*,'nkc=',nkc
               DO IZ = 1, NZ
                 IOFFT1B = IOFFT1A + (IZ-1)*NKC*NA*NL
                 IOFFT2B = IOFFT2A + (IZ-1)*NKC*NA*NL
@@ -1704,15 +1693,6 @@ C
         ENDDO !ireprs
       ENDDO !irepal
 C
-c     print*,'printen van de bende'
-c     print*,'de 1e T matrix!!!!!'
-c     do i =1, NTMATR1
-c       print*,'i=, T=',i,TMATRX1(i)
-c     enddo
-c     print*,'de 2e T matrix!!!!!'
-c     do i =1, NTMATR2
-c       print*,'i=, T=',i,TMATRX2(i)
-c     enddo
 C
       RETURN 
       END
@@ -2070,14 +2050,12 @@ C     +-----------------------------------------+
 C     | The L_i'j part has to be scaled by -1   |
 C     +-----------------------------------------+
 C     
-      print*,'!!!! Waarschuwing, L_i`j tijdelijk op 0 !!!!'
-c     dus -D1 -> D0
       DO IZ = 1, NZ
         IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
         DO IFSYM = 1, NFSYM
           DO J = 1, NAOCC(IFSYM)
-            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM) + NAOCC(IFSYM)
-            CALL DSCAL(NIOCC(IFSYM),D0,XMO1(IOFF),1)
+            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM)
+            CALL DSCAL(NIOCC(IFSYM),-D1,XMO1(IOFF),1)
           ENDDO   ! j
           IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
@@ -2091,18 +2069,13 @@ C
         IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
         DO IFSYM = 1, NFSYM
           DO J = 1, NAOCC(IFSYM)
-            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM)
+            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM) + NIOCC(IFSYM)
             CALL DZERO(XMO1(IOFF),NAOCC(IFSYM))
           ENDDO   ! j
           IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
       ENDDO       ! iz   
 C     
-      print*,'voor het printen van xmo1'
-      print*,'norbt=,naocct=,nz=',norbt,naocct,nz
-      do i = 1, norbt*naocct*nz
-         print*,'i=,xmo1=',i,xmo1(i)
-      enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2153,18 +2126,11 @@ C
         IOFF = IOFF + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
-c     print*,'voor het schalen van xmo2'
-c     print*,'norbt=,navirt=,nz=',norbt,navirt,nz
-c     do i = 1, norbt*navirt*nz
-c        print*,'i=,xmo2=',i,xmo2(i)
-c     enddo
 C
 C     +-----------------------------------------+
 C     | The L_ab' part has to be scaled by -1   |
 C     +-----------------------------------------+
 C
-      print*,'!!!! Waarschuwing, L_ab` tijdelijk op 0 !!!!'
-c     dus -D1 -> D0
 c
       DO IZ = 1, NZ
         IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
@@ -2172,21 +2138,19 @@ c
           DO IB = 1, NIVIR(IFSYM)
             IOFF = IOFFSYM + (IB-1)*NAVIRT 
      &           + (NORB(IFSYM)-NIVIR(IFSYM))*NAVIRT
-            CALL DSCAL(NAVIR(IFSYM),D0,XMO2(IOFF),1)
+            CALL DSCAL(NAVIR(IFSYM),-D1,XMO2(IOFF),1)
           ENDDO   ! ib
           IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         ENDDO     ! ifsym
       ENDDO       ! iz
 C
-      print*,'!!!! Waarschuwing, L_ax tijdelijk op 0 !!!!'
-c     dus -D1 -> D0    
 c
       DO IZ = 1, NZ
         IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
         DO IFSYM = 1, NFSYM
           DO IB = 1, NPSH(IFSYM)
             IOFF = IOFFSYM + (IB-1)*NAVIRT
-            CALL DSCAL(NAVIR(IFSYM),D0,XMO2(IOFF),1)
+            CALL DSCAL(NAVIR(IFSYM),D1,XMO2(IOFF),1)
           ENDDO   ! ib
           IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         ENDDO     ! ifsym
@@ -2207,11 +2171,6 @@ C
           IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         ENDDO     ! ifsym
       ENDDO       ! iz
-      print*,'voor het printen van xmo2'
-      print*,'norbt=,navirt=,nz=',norbt,navirt,nz
-      do i = 1, norbt*navirt*nz
-         print*,'i=,xmo2=',i,xmo2(i)
-      enddo
 C
       RETURN
       END
@@ -2276,10 +2235,11 @@ C
         ENDDO     ! ifsym
       ENDDO       ! iz
 C
-      print*,'xmo'
-      do i = 1, norbt*norbt*nz
-        print*,'i, xmo',i, xmo(i)
-      enddo
+c
+c     print*,'xmo'
+c     do i = 1, norbt*norbt*nz
+c       print*,'i, xmo',i, xmo(i)
+c     enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
