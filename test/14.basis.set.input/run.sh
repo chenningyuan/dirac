@@ -8,8 +8,8 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-time $PAM_PATH/pam -rmscr -mw 3 $MPIARG ch4_basis ch4
-time $PAM_PATH/pam -rmscr -mw 3 $MPIARG ch4_temp ch4
-time $PAM_PATH/pam -rmscr -mw 3 $MPIARG ch4_explicit ch4
-time $PAM_PATH/pam -rmscr -mw 3 $MPIARG ch4_family ch4
-time $PAM_PATH/pam -rmscr -mw 3 $MPIARG ch4_dualfamily ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_basis ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_temp ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_explicit ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_family ch4
+time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_dualfamily ch4
