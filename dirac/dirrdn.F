@@ -2837,7 +2837,7 @@ C
      &           '*** WARNING ****',
      &           ' RKB pre-projection without removing unphysical '//
      &           'solutions for no external field',
-     &           ' I HOPE YOU NOW WHAT YOU ARE DOING!'
+     &           ' I HOPE YOU KNOW WHAT YOU ARE DOING!'
          ENDIF
       ELSEIF(ISPHTR.EQ.1) THEN
          IF(.NOT.URKBAL) THEN
@@ -2852,7 +2852,7 @@ C
      &           '*** WARNING ****',
      &           ' Spherical large component basis and Cartesian'//
      &           ' small components',
-     &           ' I HOPE YOU NOW WHAT YOU ARE DOING!'
+     &           ' I HOPE YOU KNOW WHAT YOU ARE DOING!'
          ENDIF
       ELSEIF(ISPHTR.EQ.0) THEN
          IF(.NOT.URKBAL) THEN
