@@ -120,7 +120,7 @@ C
       IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
          IF (MYPROC.EQ.MASTER) THEN
             READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
-     &       (IDUM,I=1,4*NKR),(KR(I),KR(-I),I=1,NKR)
+     &       (KR(I),KR(-I),I=1,NKR)
          ENDIF
 #if defined (VAR_MPI)
          IF (NMPROC .GT. 1) THEN
