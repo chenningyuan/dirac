@@ -2426,7 +2426,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.XXXXXX',
-     &            '.PRINT ','.ADDSML','.NETPOP','.XXXXXX'/
+     &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2446,7 +2446,7 @@ C     ===================
 C
       IPRPOP    = 0
       DONETP  = .FALSE.
-      ADDSML  = .FALSE.
+      ADDSML  = .TRUE.
       ORBDEF  = .TRUE.
       ILABDF  = 2
 C
@@ -2502,8 +2502,8 @@ C&&&& IPRPOP: Print level
                   READ(LUCMD,*) IPRPOP
                GO TO 100
     6          CONTINUE
-C&&&& ADDSML: Add default group label for small components
-                  ADDSML = .TRUE.
+C&&&& INDSML: Do not collect labels of small components of given center/symmetry
+                  ADDSML = .FALSE.
                GO TO 100
     7          CONTINUE
 C&&&& NETPOP: Mulliken Net populations
@@ -2552,8 +2552,8 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on SO-labels'
       ENDIF
-      IF(ADDSML) WRITE(LUPRI,'(3X,A)')
-     &      '(default small component groups labels will be added)'
+      IF(.NOT.ADDSML) WRITE(LUPRI,'(3X,A)')
+     &      '(individual small component labels will be used)'
       WRITE(LUPRI,'(1X,A)') '* Number of spinors analyzed:'
       DO I = 1,NFSYM
         NVEC = 0
