@@ -891,6 +891,18 @@ C
 C     This routine reads orbital strings and classifies
 C     and indexes orbitals
 C
+C     Three types are defined:
+C     ITYP = 1   inactive
+C     ITYP = 2   active
+C     ITYP = 3   secondary
+C
+C     IORB is the absolute index of the orbital
+C     IORBCL(1,IORB) - ITYP
+C     IORBCL(2,IORB) - index within fermion irrep
+C     IORBCL(3,IORB) - fermion irrep IFRP
+C     IORBCL(4,IORB) - absolute index for given type ITYP
+C                      and electron/positron
+C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************

@@ -1707,23 +1707,27 @@ C
       CALL MEMGET('REAL',KBUF2,NBDIM        ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBTYP,NVEC         ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFLAG,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
       NI = 0
       NV = 0
       IF(IC.EQ.1) THEN
         DO IFRP = 1,NFSYM
+C...inactive electron orbitals
           NI = NI + NCLS(2,1,IFRP)
+C...secondary electron orbitals
           NV = NV + NCLS(2,3,IFRP)
         ENDDO
       ELSEIF(IC.EQ.2) THEN
         DO IFRP = 1,NFSYM
+C...inactive electron orbitals
           NI = NI + NCLS(2,1,IFRP)
+C...secondary positron orbitals
           NV = NV + NCLS(1,3,IFRP)
         ENDDO
       ELSE
         CALL QUIT('ANAXR1: Unknown IC !')
       ENDIF
+      NDIM = MAX(NI,NV)
+      CALL MEMGET('INTE',KINDX,NDIM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
@@ -1755,7 +1759,7 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
-     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM),
+     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(*),JXOP(2,NBDIM),
      &          IORBCL(4,*),IIBF(NI),IVBF(NV),RIBF(NI),RVBF(NV)
 C     Local variables
       CHARACTER TYP(3)*1
