@@ -543,6 +543,11 @@ C
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+C        Open and delete first in order to overwrite possible old files,
+C        leaving out the next two lines leads to errors in MCSCF where the record
+C        length changes as the calculation continues
+         OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
+         CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
