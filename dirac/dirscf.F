@@ -422,7 +422,7 @@ C
       CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,CHKCNV,
      &            DOSEL,WORK(KFREE),LFREE)
 C
-      IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG)
+      IF(BARNUC.OR.TRIFCK) CALL ONEERG(EIG,IBEIG)
 C
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
@@ -2108,6 +2108,7 @@ C
       ENDIF
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)      
       NPOS = 0
@@ -2118,7 +2119,8 @@ C
       ENDIF
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
-      CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KFOCK),WORK(KDMAT),
+      CALL MVOGE1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
+     &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -2137,7 +2139,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mvoge1 */
-      SUBROUTINE MVOGE1(CMO,EIG,FOCK,DMAT,NPOS,WORK,LWORK)
+      SUBROUTINE MVOGE1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
 C***********************************************************************
 C     Generate modified virtual orbitals
 C
@@ -2148,7 +2150,7 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-1.0D0,D2=2.0D0)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
 C
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -2157,7 +2159,7 @@ C
 #include <dcbmvo.h>
 #include <dcbham.h>
       LOGICAL TOBE
-      DIMENSION CMO(*),EIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
+      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
       DIMENSION IQBF(4),IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
       CALL QENTER('MVOGEN')
@@ -2181,7 +2183,7 @@ C
          CALL QUIT('MVOGEN: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,TOTERG,2)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2)
       ENDIF
       IF(IONMVO) THEN
 C
@@ -2284,7 +2286,7 @@ C
         CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
       END IF
       END DO
-      CALL WRICMO(LUCOEF,CMO,EIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL QEXIT('MVOGEN')
@@ -2347,6 +2349,7 @@ C     Select the set that we need
 C
       DO IFRP = 1, NFSYM
          CALL SELCFS (CMO(ICMOQ(IFRP)+1),IFRP,BUF(ICMV(IFRP)+1),
+     &                NVEC(IFRP,0),
      &                WORK(KVEC(IFRP,1)),NVEC(IFRP,2),NVEC(IFRP,1),
      &                NFBAS(IFRP,0),NORB(IFRP))
       ENDDO

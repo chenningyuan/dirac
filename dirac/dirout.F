@@ -1026,6 +1026,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+      PARAMETER(D0=0.0D0)
 #include <pgroup.h>
 C
       DIMENSION EIG(*),IBEIG(*)
