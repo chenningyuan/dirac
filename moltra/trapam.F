@@ -1065,29 +1065,6 @@ C
 C
       KFRSAV = KFREE
 C
-C     Allocate memory for temporary storage of unsorted block of
-C     half-transformed integrals. Allocate absolute maximum instead
-C     of the exact maximum size.
-C
-      IF (NFSYM .GT. 1) THEN
-         LHTMP = MAX(NFPCK12(1),NFPCK12(2))*NZ
-      ELSE
-         LHTMP = 0
-      END IF
-      CALL MEMGET ('REAL',KHTMP,LHTMP,WORK,KFREE,LFREE)
-      IF (TRIAN) THEN
-         IF (NFSYM .EQ. 1) THEN
-            NI = NSTR1(1)
-            NJ = NSTR2(1)
-         ELSE
-            NI = MAX(NSTR1(1),NSTR1(2))
-            NJ = MAX(NSTR2(1),NSTR2(2))
-         END IF
-         CALL MEMGET('REAL',KBMAT,NI*NJ*NZ,WORK,KFREE,LFREE)
-      ELSE
-         CALL MEMGET('REAL',KBMAT,0,WORK,KFREE,LFREE)
-      END IF
-C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Transform lefthand indices to molecular spinor basis
@@ -1100,7 +1077,12 @@ C
       DO IREPPQ = 0, NBSYM-1
          IREPIJ = JBTOF(IREPPQ,1)
 C
-         IF (NFSYM.GT.1) CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
+C        Allocate memory for temporary storage of unsorted block of
+C        half-transformed integrals. Allocate absolute maximum instead
+C        of the exact maximum size.
+C
+         CALL MEMGET ('REAL',KHTMP,NFPCK12(IREPIJ)*NZ,WORK,KFREE,LFREE)
+         CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
 C
 C        Loop over the distributions with this boson symmetry in this
 C        shell-block batch
@@ -1110,8 +1092,8 @@ C
 C           Loop over the compound component (LL, SS) of the lefthand
 C           densities
 C
-            IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
             DO IC = ICS, ICF
+               IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
 C
 C              Loop over the boson symmetries of the second
 C              (untransformed) index. Get the fermion symmetry (parity)
@@ -1149,7 +1131,6 @@ C
 C                 Square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
-                     IF (NFSYM.GT.1) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
      &                    WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
@@ -1167,14 +1148,6 @@ C
                           CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
                        ENDDO
-                     ELSE
-                       CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
-     &                    HMAT(JOFF),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
-     &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
-     &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
-     &                    WORK(KFREE),LFREE,IPRINT)
-                     ENDIF
                      ENDIF
 C
                   ELSEIF (TRIAN.AND.IREPI.EQ.IREPJ) THEN
@@ -1182,6 +1155,9 @@ C
 C                 Triangular storage after square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
+                       CALL MEMGET('REAL',KBMAT,NI*NJ*NZ,WORK,
+     &                              KFREE,LFREE)
+                       CALL DZERO(WORK(KBMAT),NI*NJ*NZ)
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                  GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
      &                  WORK(KBMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
@@ -1189,9 +1165,10 @@ C
      &                  Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                  WORK(KFREE),LFREE,IPRINT)
                        NII = NI*(NI+1)/2
-                     IF (NFSYM.GT.1) THEN
                        CALL QTRIAN('PACK',D0,NI,NZ,WORK(KBMAT),NI,NJ,
      &                             WORK(KHTMP),NII)
+                       CALL MEMREL('MS4IN1',WORK,KFRSAV,KBMAT,
+     &                             KFREE,LFREE)
 C
 C                      Order the integrals with NKL as first and IZ
 C                      as second index
@@ -1203,24 +1180,16 @@ C
                           CALL DAXPY(NII,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
                        ENDDO
-                     ELSE
-                       CALL QTRIAN('PACK',D1,NI,NZ,WORK(KBMAT),NI,NJ,
-     &                             HMAT(JOFF),NII)
-                     ENDIF
                      ENDIF
                   ENDIF
                   IOFF = IOFF + NP * NQ
                ENDDO
-C              ... END DO IREPQ
             ENDDO
-C           ... END DO IC
             JOFF = JOFF + NFPCK12(IREPIJ)*NZ
          ENDDO
-C        ... END DO IJ
+         CALL MEMREL('MS4IN1',WORK,KFRSAV,KHTMP,KFREE,LFREE)
       ENDDO
-C     ... END DO IREPPQ
 C
-      CALL MEMREL('MS4IN1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('MS4IN1')
 C
       RETURN
