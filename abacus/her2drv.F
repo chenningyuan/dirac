@@ -557,6 +557,16 @@ C
                IPRINT = 0
             END IF
 C
+C           Skip two-center SS contributions if requested
+C           This test is provisory, in SYMLOP we take out more integrals
+C           in case of symmetry-degenerate nuclei. Testing at this place,
+C           will, however, take out the work in ODCVEC and EXCOEF that 
+C           otherwise would cause a quartic scaling term.
+C
+            IF (SMLV1C) THEN
+               IF (NCENTA.NE.NCENTB.AND.ICA.EQ.2.AND.ICB.EQ.2) GO TO 200
+            ENDIF
+C
 C           *****************************
 C           ***** Third Shell Index *****
 C           *****************************
@@ -624,6 +634,11 @@ C
                   SHAEQB = ISHELA .EQ. ISHELB
                   SHCEQD = ISHELC .EQ. ISHELD
                   SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
+C
+                  IF (SMLV1C) THEN
+                     IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2)
+     &                  GO TO 400
+                  ENDIF
 C
 C                 *******************************
 C                 ***** Calculate integrals *****
@@ -985,7 +1000,9 @@ C
 #include <twocom.h>
 #include <inforb.h>
 #include <symmet.h>
-C
+#ifdef PRG_DIRAC
+#include <dcbham.h>
+#endif
 #include <comdis.h>
 C
       CALL QENTER('TWODIS')
@@ -1038,8 +1055,16 @@ C
       NSETB  = NSETSH(ISHELB,IGENAB)
       SHAEQB = ISHELA .EQ. ISHELB
       DIAGAB = SHAEQB
-C     DIAGAB = SHAEQB .AND. .NOT.BIGVEC
-C aug2000: BIGVEC removed because obsolete
+C
+C     Skip two-center SS contributions if requested
+C     This test is provisory, in SYMLOP we take out more integrals
+C     in case of symmetry-degenerate nuclei. Testing at this place,
+C     will, however, take out the work in ODCVEC and EXCOEF that
+C     otherwise would cause a quartic scaling term.
+C
+      IF (SMLV1C) THEN
+         IF (NCENTA.NE.NCENTB.AND.ICA.EQ.2.AND.ICB.EQ.2) GO TO 999
+      ENDIF
 C
       CALL DISLOP(GMAT,FMAT,DMAT,NDMAT,GABRAO,DMRAO,DINTSKP,SCREEN,
      &            WORK,LWORK,MAXDER,EXPECT,
@@ -1083,6 +1108,7 @@ C
 #include <nuclei.h>
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
+#include <dcbham.h>
 #else
 #include <energy.h>
 #endif
@@ -1200,6 +1226,9 @@ C
             ELSE
                IPRINT = 0
             END IF
+            IF (SMLV1C) THEN
+               IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2) GO TO 200
+            ENDIF
 C
 C           *******************************
 C           ***** Calculate integrals *****
@@ -2063,9 +2092,10 @@ C                 or all directions screened away
 C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
 C
-Cluuk : testing neglect of off-diagonal Coulomb elements
 C
 C              f) Skip two-center SS contributions if requested
+C                 This test is rigorous because the symmetry-degeneracy of
+C                 the  nuclei is taken into account.
 C
                IF (SMLV1C) THEN
                   IF ((ICENTA.NE.ICENTB.AND.LCLASH(ISHELA).EQ.2

@@ -1,4 +1,3 @@
-C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -764,7 +763,6 @@ C
       IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       IR(2) = IBTXOR(IREPDM,IFXYZ)
       ISTRA = 1
-C      CALL DZERO(AAO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
@@ -944,7 +942,6 @@ C
       IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       IR(2) = IBTXOR(IREPDM,IFXYZ)
       ISTRA = 1
-C      CALL DZERO(AAO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
@@ -3159,3 +3156,104 @@ C
 C
       RETURN
       END
+C*****************************************************************************
+C  /* Deck indaoc */
+      SUBROUTINE INDAOC (INDAO,INDAOS,INDNAO)
+C*****************************************************************************
+C
+C      Sort AO-matrix from the default shell ordering to one where all 
+C      functions of a given center are consecutive (but keep L, S overall
+C      structure).
+C
+C      Written by L. Visscher august 2001
+C      Last revision: Aug 15 2001 - LV 
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+C
+#include <symmet.h>
+#include <aosotr.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <dcbbas.h>
+#include <ccom.h>
+      DIMENSION INDAO(*),INDAOS(*)
+      DIMENSION INDNAO(2,*)
+C
+C     Create index arrays from shell order to center order
+C     ====================================================
+C
+C     NAORB  gives the position of the function in the default order
+C     NAORBC gives the position of the function in the new order
+C     The index arrays can be used to sort (INDAO and INDAOS) or
+C     to give the start of the set of functions for a given center
+C     (INDNAO). 
+C
+      NAORBC = 0
+C
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ  = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          INDNAO(1,JCENTD) = NAORBC
+          NAORB = 0
+          DO ISHELL = 1,NLRGSH
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   INDAOS(NAORB) = NAORBC
+                   INDAO(NAORBC) = NAORB
+                ENDIF
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      INDNAO(1,JCENTD+1) = NAORBC
+      NAORBL = NAORB
+C
+      JCENTD = 0
+      DO JCENT = 1, NUCIND
+        NDEGJ = NUCDEG(JCENT)
+        DO JDEG = 1, NDEGJ
+          JCENTD = JCENTD + 1
+          INDNAO(2,JCENTD) = NAORBC
+          NAORB = NAORBL
+          DO ISHELL = NLRGSH+1,KMAX
+            ICENT = NCENT(ISHELL)
+            LVAL  = NHKT(ISHELL)
+            NDEGI  = NUCDEG(ICENT)
+            DO IDEG = 1,NDEGI
+              DO ICOMP = 1,KHK(LVAL)
+                NAORB = NAORB + 1
+                IF (ICENT.EQ.JCENT.AND.IDEG.EQ.JDEG) THEN
+                   NAORBC = NAORBC + 1
+                   INDAOS(NAORB) = NAORBC
+                   INDAO(NAORBC) = NAORB
+                ENDIF
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      INDNAO(2,JCENTD+1) = NAORBC
+C
+C     Sanity check : every function belongs to a center, which
+C     means that the numbers NAORB and NAORBC should match at the end.
+C
+      IF (NAORB.NE.NAORBC) CALL QUIT ("Error in INDAOC")
+C
+      RETURN
+C
+      END
+C*****************************************************************************

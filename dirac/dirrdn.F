@@ -3154,7 +3154,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D1=1.0D0,DM2 = -2.0D0)
+      PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
 C
 #include <dcbgen.h>
 #include <dcbham.h>

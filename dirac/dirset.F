@@ -298,6 +298,7 @@ C
       LUOVLP = 2
       LUTMAT = 3
       LU1INT = 19
+      LUPMAT = 20
 C
 C     *****************************************
 C     ***** COMMON/FIRSTN/ -              *****

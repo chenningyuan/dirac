@@ -1,5 +1,5 @@
 C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C..   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of 
@@ -399,6 +399,8 @@ C
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
+#include <memint.h>
+C
 C     Initialize
 C
 #if defined (SYS_IBM)
@@ -414,19 +416,20 @@ C     Nuclear attraction integrals
 C     ============================
 C
       IOP = IPMOLFLD
-      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK,LWORK,IPRHAM)
+      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
+      IF (SMLV1C) CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM) 
 C
 C     Beta matrix
 C     ===========
 C
       IOP = IPBETAMT
-      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK,LWORK,IPRHAM)
+      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
 C
 C     Kinetic energy
 C     ==============
 C
       IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK,LWORK,IPRHAM)
+      CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
 C
 C     Finite field: 
 C     Loop through list of one-electron operators in CBIHAM
@@ -434,7 +437,8 @@ C     =====================================================
 C
       DO I = 1,N1OPER
         IOP = IPR1OP(I)
-        CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK,LWORK,IPRHAM)
+        CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,
+     &              WORK(KFREE),LFREE,IPRHAM)
       ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -459,7 +463,7 @@ C
 C     Reindex to sorted basis
 C     =======================
 C
-      CALL BUTOBS(FOCK,NZ,WORK,LWORK)
+      CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
 C
 C     Output section
 C     ==============
@@ -930,109 +934,6 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck mkovlp */
-      SUBROUTINE MKOVLP(WORK,LWORK)
-C*****************************************************************************
-C
-C     Generate sorted overlap matrix
-C
-C     Written by T.Saue Sep 1995
-C     Last revision: Sep 11 1995 - tsaue
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C Used from COMMON blocks
-C  DCBBAS: N2BBASX
-C  PAMIOU: LUOVLP
-C
-#include <dcbbas.h>
-#include <dcbgen.h>
-      DIMENSION WORK(LWORK)
-#include <memint.h>
-C     Memory allocation
-      CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSBUF,NNBBASX,WORK,KFREE,LFREE)
-C
-C     Generate sorted overlap matrix
-C     ==============================
-C
-      CALL MKOVL1(WORK(KSMAT),WORK(KSBUF),WORK(KFREE),LFREE)
-C
-C     Write overlap matrix to file
-C     ============================
-C
-      CALL OPNFIL(LUOVLP,'DFOVLP','UNKNOWN','MKOVLP')
-      CALL WRITT(LUOVLP,N2BBASX,WORK(KSMAT))
-      CLOSE(LUOVLP,STATUS='KEEP')
-C
-C     Memory deallocation
-C     ===================
-C
-      CALL MEMREL('MKOVLP.MKOVL1',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck mkovl1 */
-      SUBROUTINE MKOVL1(SMAT,SBUF,WORK,LWORK)
-C*****************************************************************************
-C
-C     Generate sorted overlap matrix
-C
-C     Written by T.Saue Sep 1995
-C     Last revision: Sep 11 1995 - tsaue
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-C Used from COMMON blocks:
-C  DCBBAS: NTBAS(0)
-C
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbbas.h>
-#include <cbihr1.h>
-      DIMENSION SMAT(*),SBUF(*),WORK(LWORK)
-C
-C     Read triangular batch of overlap integrals from file
-C     ====================================================
-C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
-      CALL PRPREA(LU1INT,'OVERLAP ','TFFT',SBUF,NNBBASX,IPRONE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C     
-C     Make full matrix
-C     ================
-C
-      CALL DSPTSI(NTBAS(0),SBUF,SMAT)
-C
-      IF(IPRONE.GE.5) THEN
-        CALL HEADER('Unsorted overlap matrix',-1)
-        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &              NTBAS(0),1,LUPRI)
-      ENDIF
-C
-C     Reindex overlap matrix to sorted basis
-C     ======================================
-C
-      CALL BUTOBS(SMAT,1,WORK,LWORK)
-      IF(IPRONE.GE.4) THEN
-        CALL HEADER('Overlap matrix',-1)
-        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),
-     &              NTBAS(0),1,LUPRI)
-      ENDIF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vfsort */
       SUBROUTINE VFSORT(NLEFF,NSEFF,VMAT,VBUF,WORK,LWORK)
 C*****************************************************************************
@@ -1316,6 +1217,11 @@ C   PAMIOU: LUTMAT
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
 #include <memint.h>
+C
+C     Make one-center projection matrix
+C     =================================
+C
+      IF (SMLV1C) CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
 C
 C     Get Lowdin matrix
 C     =================
@@ -2942,6 +2848,16 @@ C
      &   'LOWGEN: Smallest ".LINDEP" test value of a kept orbital:',
      &   EIG(NV)
       IF(IPRINT.GE.6) THEN
+        CALL HEADER('LOWGEN: Lowdin input matrix:',-1)
+        CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,1,LUPRI)
+      ENDIF
+C
+      IF(IPRINT.GE.3) THEN
+        CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
+        CALL OUTPUT(EIG,1,NS,1,1,NS,1,1,LUPRI)
+      ENDIF
+C
+      IF(IPRINT.GE.6) THEN
         CALL HEADER('LOWGEN: Canonical Lowdin matrix:',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
@@ -3546,5 +3462,538 @@ C
       NESH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,1),1)
       NPSH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,2),1)
       NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
+      RETURN
+      END
+C*****************************************************************************
+C  /* Deck mk1cex */
+      SUBROUTINE MK1CEX (WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C     PURPOSE:
+C        Construct one-center expansion coefficients
+C        
+C        Written by L.Visscher
+C        Last revision: Aug 16 2001 - lv
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+      PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
+C
+#include <ccom.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <pgroup.h>
+#include <dcbbas.h>
+#include <mxcent.h>
+#include <nuclei.h>
+      DIMENSION WORK(*)
+C
+      CALL QENTER('MK1CEX')
+      KSAVE = KFREE
+C
+      LDM = NTBAS(0)
+      LDM2 = LDM * LDM
+      CALL MEMGET('REAL',KSMAT1,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSMAT2,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDAO,LDM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDAOS,LDM,WORK,KFREE,LFREE)
+      NIND = 2 * NUCDEP + 2
+      CALL MEMGET('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
+C
+C     Get overlap matrix
+C     ==================
+C
+      CALL GTOVLX(WORK(KSMAT1),D1,WORK(KFREE),LFREE)
+C
+C     Backtransform overlap matrix to AO-basis
+C     ========================================
+C
+      CALL MTBSBU(WORK(KSMAT1),WORK(KSMAT2))
+      CALL MTSOAO(WORK(KSMAT2),WORK(KSMAT1),NTBAS(0),0,IPRINT)
+C
+C     Get index arrays to sort on expansion centers (nuclei)
+C     ======================================================
+C
+      CALL INDAOC (WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO))
+C
+C     Sort the overlap matrix to this order
+C     =====================================
+C
+      CALL REORMT (WORK(KSMAT1),WORK(KSMAT2),LDM,LDM,
+     &             WORK(KINDAO),WORK(KINDAO))
+C
+C     Construct the projection operator and put it in SMAT1
+C     =====================================================
+C
+      CALL MK1CEX2 (LDM,WORK(KSMAT2),WORK(KSMAT1),WORK(KINDNAO),
+     &              WORK,KFREE,LFREE,IPRINT)
+C
+C     Sort the projection operator back to the standard AO order
+C     ========================================================
+C
+      CALL REORMT (WORK(KSMAT1),WORK(KSMAT2),LDM,LDM,
+     &             WORK(KINDAOS),WORK(KINDAOS))
+C
+C     Write the projection operator to file for later use
+C     ===================================================
+C
+      CALL OPNFIL(LUPMAT,'DFPMAT','UNKNOWN','MK1CEX')
+      CALL WRITT(LUPMAT,N2BBASX,WORK(KSMAT2))
+      CLOSE(LUPMAT,STATUS='KEEP')
+C
+      CALL MEMREL('MK1CEX',WORK,KSAVE,KSAVE,KFREE,LFREE)
+C
+      CALL QEXIT('MK1CEX')
+      RETURN
+      END
+C*****************************************************************************
+C  /* Deck mk1cex2 */
+      SUBROUTINE MK1CEX2 (LDM,STOT,PTOT,INDNAO,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C     PURPOSE:
+C        Construct one-center expansion coefficients
+C        
+C        Written by L.Visscher
+C        Last revision: Aug 16 2001 - lv
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+      PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
+C
+#include <ccom.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <pgroup.h>
+#include <dcbbas.h>
+#include <mxcent.h>
+#include <nuclei.h>
+      DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
+      DIMENSION WORK(*)
+      DIMENSION INDNAO(2,*)
+C
+      CALL QENTER('MK1CEX2')
+      KSAVE = KFREE
+      CALL DZERO (PTOT,LDM*LDM)
+C
+C     Loop over large/small component
+C     Only the small part is considered because the
+C     one-center approximation is not used in the 
+C     large component.
+C 
+      DO IC = 2, 2
+         NB0 = INDNAO(IC,1)+1
+C
+C        Loop over expansion centers
+C
+         DO IEXPC = 1, NUCDEP
+           NB1 = INDNAO(IC,IEXPC)+1
+           NB2 = INDNAO(IC,IEXPC+1)
+           NLOC = NB2-NB1+1
+           NV = NLOC*LDM
+           NW = NLOC*NLOC
+           CALL MEMGET('REAL',KEIG,NLOC,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KV,NV,WORK,KFREE,LFREE)
+           CALL MEMGET('REAL',KW,NW,WORK,KFREE,LFREE)
+C
+C          Make the local projection operator
+C
+           CALL MK1CEX3 (STOT(NB1,NB0),STOT(NB1,NB1),PTOT(NB1,NB0),LDM,
+     &                   NTBAS(IC),NLOC,
+     &                   WORK(KV),WORK(KW),WORK(KEIG),STOL(IC),
+     &                   IPRINT,WORK,KFREE,LFREE)
+           CALL MEMREL('MK1CEX2',WORK,KEIG,KEIG,KFREE,LFREE)
+C
+C          This operator contains also the projection on the functions of the same
+C          center which should be (close to) the unit matrix. Make this part zero.
+C
+C          TODO : check that this part is indeed the unit matrix.
+C
+           DO I = NB1, NB2
+              CALL DZERO(PTOT(NB1,I),NLOC)
+           ENDDO
+         ENDDO
+      ENDDO
+C
+      IF(IPRINT.GE.5) THEN
+        CALL HEADER('Projection operator in AOC basis',-1)
+        CALL OUTPUT(PTOT,1,LDM,1,LDM,LDM,LDM,1,LUPRI)
+      ENDIF
+C
+      CALL MEMREL('MK1CEX2',WORK,KSAVE,KSAVE,KFREE,LFREE)
+      CALL QEXIT('MK1CEX2')
+      RETURN
+      END
+C*****************************************************************************
+C  /* Deck mk1cex3 */
+      SUBROUTINE MK1CEX3 (STOT,SLOC,PTOT,LDM,NTOT,NLOC,V,W,EIG,STOL,
+     &                    IPRINT,WORK,KFREE,LFREE)
+C*****************************************************************************
+C     PURPOSE:
+C        Make projection operator for this center. 
+C        We reduce the basis if the overlap matrix on this
+C        center is nearly singular. This may happen as we work in
+C        the untransformed non-orthogonal AO basis. STOL should be
+C        consistent with the values used in LOWDIN !!
+C        
+C        On input :
+C           STOT : The complete overlap matrix
+C           SLOC : The overlap matrix for the current center
+C           LDM : Leading dimension (should be NBAST)
+C           NTOT : The total number of functions to be projected 
+C                  (now all large or small functions in the molecule
+C                   but generalization to domains is easy)
+C           NLOC : The number of functions on the current center
+C           STOL : Linear dependency treshold
+C
+C        On output :
+C           PTOT : The updated projection operator matrix (added the
+C                  rows for the current center)
+C
+C        NB : STOT and PTOT should be positioned such that the current
+C             center is the first row !
+C 
+C        Scratch arrays : V, W, EIG
+C 
+C        Written by L.Visscher
+C        Last revision: Aug 16 2001 - lv
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+C
+      DIMENSION WORK(*)
+      DIMENSION STOT(LDM,*),PTOT(LDM,*)
+      DIMENSION SLOC(LDM,NLOC),V(LDM,NLOC),W(NLOC,NLOC),EIG(NLOC)
+C
+      IF(IPRINT.GE.7) THEN
+        CALL HEADER('Local overlap matrix',-1)
+        CALL OUTPUT(SLOC,1,NLOC,1,NLOC,LDM,NLOC,1,LUPRI)
+      ENDIF
+C
+C     Form (Sloc)**-1/2 * U
+C
+      CALL LOWGEN(SLOC,NLOC,V,NV,LDM,STOL,IPRINT,EIG,WORK(KFREE),LFREE)
+C
+      IF(IPRINT.GE.7) THEN
+        CALL HEADER('Local Lowdin matrix',-1)
+        CALL OUTPUT(V,1,NLOC,1,NV,LDM,NLOC,1,LUPRI)
+      ENDIF
+C
+C     Form (Sloc)**-1/2 * U * U+ * (Sloc)**-1/2 = (Sloc)**-1
+C
+      CALL DGEMM('N','T',NLOC,NLOC,NV,D1,V,LDM,V,LDM,D0,W,NLOC)
+C
+      IF(IPRINT.GE.7) THEN
+        CALL HEADER('Local inverse overlap matrix',-1)
+        CALL OUTPUT(W,1,NLOC,1,NLOC,NLOC,NLOC,1,LUPRI)
+      ENDIF
+C
+C     Make (Sloc)**-1  * Stot : the projection operator  
+C
+      CALL DGEMM('N','N',NLOC,NTOT,NLOC,D1,W,NLOC,STOT,LDM,D0,PTOT,LDM)
+C
+      IF(IPRINT.GE.7) THEN
+        CALL HEADER('Local projection operator',-1)
+        CALL OUTPUT(PTOT,1,NLOC,1,NTOT,LDM,NLOC,1,LUPRI)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck PR1CEX1 */
+      SUBROUTINE PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRINT)
+C*****************************************************************************
+C     Correct for neglect of multicenter integrals in symmetry packed SO matrix
+C
+C     Written by L. Visscher, august 2001
+C     Last revision: Aug 16, 2001
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dgroup.h>
+#include <dcbqal.h>
+#include <dcbgen.h>
+#include <dcbham.h>
+C
+      LOGICAL FIRST(NZ)
+      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),
+     &          WORK(*)
+C
+C     Make full matrix
+C     ================
+C
+      DO IZ = 1,NZ
+        IF(FIRST(IZ)) THEN
+          CALL DZERO(FOCK(1,IZ),N2BBASX)
+        ELSE
+          IQ = IPQTOQ(IZ,0)
+          IH = IHQMAT(IQ,1)
+          IF(IH.EQ.1) THEN        
+            CALL DSPTSI(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
+          ELSEIF(IH.EQ.2) THEN
+            CALL DAPTGE(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
+          ENDIF
+        ENDIF
+      ENDDO
+C
+C     Allocate work space to store the projection operator and
+C     a work array.
+C
+      CALL MEMGET('REAL',KPROJ,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
+C
+C     Get the projection operator
+C
+      CALL OPNFIL(LUPMAT,'DFPMAT','OLD','PR1CEX1')
+      CALL READT(LUPMAT,N2BBASX,WORK(KPROJ))
+      CLOSE(LUPMAT,STATUS='KEEP')
+C
+C     Add contributions from missing multicenter integrals
+C     ====================================================
+C
+      IREP = 0
+      CALL PR1CEX2 (NTBAS(0),IREP,FOCK,WORK(KPROJ),WORK(KBUF1),IPRINT)
+C
+C     Release the memory
+C
+      CALL MEMREL('PR1CEX1',WORK,KPROJ,KPROJ,KFREE,LFREE)
+C
+C     Pack matrix
+C     ===========
+C
+      DO IZ = 1,NZ
+        IF(.NOT.FIRST(IZ)) THEN
+          IQ = IPQTOQ(IZ,0)
+          IH = IHQMAT(IQ,1)
+          IF(IH.EQ.1) THEN        
+            CALL DSITSP(NTBAS(0),FOCK(1,IZ),FTRI(1,IZ))
+          ELSEIF(IH.EQ.2) THEN
+            CALL DGETAP(NTBAS(0),FOCK(1,IZ),FTRI(1,IZ))
+          ENDIF
+        ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck PR1CEX2 */
+      SUBROUTINE PR1CEX2 (NB,IREP,FOCK,PROJ,BUF1,IPRINT)
+C***********************************************************************
+******
+C     Correct for neglect of multicenter integrals in SO matrix
+C
+C     A basis function |q> can be projected on the set of functions
+C     |r> on center A using the projection operators P(r,q) 
+C     made in MK1CEX1. 
+C
+C     We use this to correct the input matrix F(p,q) that contains
+C     only the one-center contributions (F1) because the multicenter
+C     contributions (F2) were neglected.
+C 
+C     F(p,q) = F1(p,q) + F2(p,q)
+C
+C     FR(p,q) = F1(p,r) * P(r,q)
+C     FL(p,q) = P+(p,r) * F1(r,q) 
+C
+C     F(p,q) is approximated by F1(p,q) + 1/2 (FL(p,q) + FR(p,q)) 
+C     We use the average of the left and right projected matrices to
+C     preserve the permutation symmetry.
+C
+C     Written by L. Visscher, august 2001
+C     Last revision: Aug 16, 2001
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dgroup.h>
+#include <dcbqal.h>
+C
+      PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
+      DIMENSION FOCK(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
+C
+C     Transform Fock matrix to AO-basis
+C     ==================================
+C
+      IF (IPRINT.GE.5) THEN
+         CALL HEADER('PR1CEX2: Fock matrix in SO basis',-1)
+         CALL PRQMAT(FOCK,NB,NB,NB,NB,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      IPAR = JBTOF(IREP,1)
+      DO IZ = 1,4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+         CALL MTSOAO(FOCK(1,1,IPQ),BUF1(1,1,IZ),NB,IREPD,IPRINT)
+      ENDDO
+C
+      DO IZ = 1, 4
+         IF (IPRINT.GE.8) THEN
+            CALL HEADER('PR1CEX2: Fock matrix in AO basis',-1)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+C
+C        Construct the right projected fock matrix and store it in FOCK
+C
+         CALL DGEMM('N','N',NB,NB,NB,D1,BUF1(1,1,IZ),NB,PROJ,NB,
+     &               D0,FOCK,NB)
+C
+C        Construct and add the left projected fock matrix
+C
+         CALL DGEMM('T','N',NB,NB,NB,D1,PROJ,NB,BUF1(1,1,IZ),NB,
+     &               D1,FOCK,NB)
+C
+C        Add the correction to the Fock matrix
+C 
+         IF (IPRINT.GE.10) THEN
+            CALL HEADER('PR1CEX2 : Projection operator',-1)
+            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL HEADER('PR1CEX2: Correction to Fock matrix (*2)',-1)
+            CALL OUTPUT(FOCK,1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+C
+         NB2 = NB * NB
+         CALL DAXPY (NB2,HALF,FOCK,1,BUF1(1,1,IZ),1)
+C
+         IF (IPRINT.GE.8) THEN
+            CALL HEADER('PR1CEX2: Corrected Fock matrix',-1)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+      ENDDO
+C     
+C     Transform Fock matrix to SO-basis
+C     =================================
+C
+      CALL DZERO(FOCK,NB2*NZ)
+      DO IZ = 1,4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+         CALL MTAOSO(BUF1(1,1,IZ),FOCK(1,1,IPQ),NB,IREPD,IPRINT)
+      ENDDO
+C
+      IF (IPRINT.GE.5) THEN
+         CALL HEADER('PR1CEX2: Corrected Fock matrix in SO basis',-1)
+         CALL PRQMAT(FOCK,NB,NB,NB,NB,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck PR1CEX3 */
+      SUBROUTINE PR1CEX3 (NB,IREP,DENS,PROJ,BUF1,IPRINT)
+C***********************************************************************
+******
+C     Correct for neglect of multicenter integrals in SO matrix
+C     Note that this routines resembles PR1CEX2 that is used for
+C     Fock matrix (contributions). This one is good for densities
+C     where the transpose of P needs to be used and the transformation
+C     to AO basis requires a different routine.
+C
+C     A basis function |q> can be projected on the set of functions
+C     |r> on center A using the projection operators P(r,q) 
+C     made in MK1CEX1. 
+C
+C     We use this to correct the input matrix D(q,p) to map multicenter
+C     contributions to the calculated one-center integrals
+C 
+C     D(q,p) = D1(q,p) + D2(q,p)
+C
+C     DR(q,p) = D1(q,r) * P+(r,p)
+C     DL(q,p) = P(q,r) * D1(r,p) 
+C
+C     D(q,p) is approximated by F1(q,p) + 1/2 (DL(q,p) + DR(q,p)) 
+C     We use the average of the left and right projected matrices to
+C     preserve the permutation symmetry.
+C
+C     Written by L. Visscher, august 2001
+C     Last revision: Aug 17, 2001
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dgroup.h>
+#include <dcbqal.h>
+C
+      PARAMETER (D0=0.D0, D1=1.D0, HALF=0.5D0)
+      DIMENSION DENS(NB,NB,NZ),PROJ(NB,NB),BUF1(NB,NB,4)
+C
+C     Transform density matrix to AO-basis
+C     =====================================
+C
+      IF (IPRINT.GE.5) THEN
+         CALL HEADER('PR1CEX3: Density matrix in SO basis',-1)
+         CALL PRQMAT(DENS,NB,NB,NB,NB,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      IPAR = JBTOF(IREP,1)
+      DO IZ = 1,4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+         CALL DTSOAO(DENS(1,1,IPQ),BUF1(1,1,IZ),NB,IREPD,IPRINT)
+      ENDDO
+C
+      DO IZ = 1, 4
+         IF (IPRINT.GE.8) THEN
+            CALL HEADER('PR1CEX3: Density matrix in AO basis',-1)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+C
+C        Construct the right projected fock matrix and store it in DENS
+C
+         CALL DGEMM('N','T',NB,NB,NB,D1,BUF1(1,1,IZ),NB,PROJ,NB,
+     &               D0,DENS,NB)
+C
+C        Construct and add the left projected fock matrix
+C
+         CALL DGEMM('N','N',NB,NB,NB,D1,PROJ,NB,BUF1(1,1,IZ),NB,
+     &               D1,DENS,NB)
+C
+C        Add the correction to the density matrix
+C 
+         IF (IPRINT.GE.10) THEN
+            CALL HEADER('PR1CEX3 : Projection operator',-1)
+            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL HEADER('PR1CEX3: Correction to density matrix (*2)',-1)
+            CALL OUTPUT(DENS,1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+C
+         NB2 = NB * NB
+         CALL DAXPY (NB2,HALF,DENS,1,BUF1(1,1,IZ),1)
+C
+         IF (IPRINT.GE.8) THEN
+            CALL HEADER('PR1CEX3: Corrected density matrix',-1)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+         ENDIF
+      ENDDO
+C     
+C     Transform density matrix to SO-basis
+C     ====================================
+C
+      CALL DZERO(DENS,NB2*NZ)
+      DO IZ = 1,4
+         IREPD = IRQMAT(IZ,IREP)
+         IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
+         IPQ   = IQTOPQ(IQ,IREP)
+         CALL DTAOSO(BUF1(1,1,IZ),DENS(1,1,IPQ),NB,IREPD,IPRINT)
+      ENDDO
+C
+      IF (IPRINT.GE.5) THEN
+         CALL HEADER('PR1CEX3: Corrected density matrix in SO basis',-1)
+         CALL PRQMAT(DENS,NB,NB,NB,NB,NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
       RETURN
       END

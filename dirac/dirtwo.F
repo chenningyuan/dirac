@@ -57,6 +57,7 @@ C
 #include <dcbham.h>
 #include <cbihr2.h>
 #include <dgroup.h>
+#include <dcbqal.h>
 #include <dcbbas.h>
 #include <ccom.h>
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
@@ -66,16 +67,12 @@ C
 C
       CALL QENTER('TWOFCK')
 #include <memint.h>
+C
       IF(IPRTWO.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
       ENDIF
-C
-C     Initialize
-C     ==========
-C
-      CALL DZERO(FMAT,N2BBASXQ*NFMAT)
 C 
-C     In approximate density ZORA only the LL part of the densitry matrix
+C     In approximate density ZORA only the LL part of the density matrix
 C     is to be used
 C
       IF (ZORA.AND..NOT.ZORA4) THEN
@@ -116,6 +113,36 @@ C
         CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
       ENDDO
 C
+C     ================
+      IF (SMLV1C) THEN
+C     ================
+C
+C        Adapt density matrix in the case that we are going to neglect
+C        multicenter integrals in the VSS part. Save original density
+C        matrix to file as it should be unchanged once we leave the
+C        routine. Use Fock matrix to store projector.
+C        TODO : reduce memory use for DMAT in AO basis
+C
+         CALL MEMGET ('REAL',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
+         CALL OPNFIL(LUPMAT,'DFPMAT','OLD','TWOFCK')
+         CALL READT (LUPMAT,N2BBASX,FMAT)
+         CALL WRITT (LUPMAT,N2BBASXQ*NFMAT,DMAT)
+         CLOSE(LUPMAT,STATUS='KEEP')
+         DO I = 1,NFMAT
+            IREP = ISYMOP(I)-1
+            CALL PR1CEX3 (NTBAS(0),IREP,DMAT(1,1,I),
+     &                    FMAT,WORK(KBUF1),IPRINT)
+         ENDDO
+         CALL MEMREL('TWOFCK',WORK,KBUF1,KBUF1,KFREE,LFREE)
+C     =====
+      ENDIF
+C     =====
+C
+C     Initialize Fock matrix
+C     ======================
+C
+      CALL DZERO(FMAT,N2BBASXQ*NFMAT)
+C
 C     *************************************************
 C     *****  D i r e c t  c o n s t r u c t i o n *****
 C     *****  o f   F o c k   m a t r i c e s      *****
@@ -147,6 +174,35 @@ C
         CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
      &              IPRINT,WORK,LWORK)
       ENDIF
+C
+C     ================
+      IF (SMLV1C) THEN
+C     ================
+C
+C        Correct for neglected multi-center contributions via a 1-center
+C        expansion that approximates the missing integrals. Restore 
+C        density matrix after using it as scratch space.
+C        TODO : Reduce memory usage 
+C
+         CALL MEMGET ('REAL',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
+         CALL OPNFIL(LUPMAT,'DFPMAT','OLD','TWOFCK')
+C
+C        CAUTION: Here we read the projector in the scratch array DMAT !
+C
+         CALL READT(LUPMAT,N2BBASX,DMAT)
+         DO I = 1,NFMAT
+            IREP = ISYMOP(I)-1
+            CALL PR1CEX2 (NTBAS(0),IREP,FMAT,DMAT,WORK(KBUF1),IPRINT)
+         ENDDO
+C
+C        Now we do read the original (full) DMAT !
+C
+         CALL READT(LUPMAT,N2BBASXQ*NFMAT,DMAT)
+         CLOSE(LUPMAT,STATUS='KEEP')
+         CALL MEMREL('TWOFCK',WORK,KBUF1,KBUF1,KFREE,LFREE)
+C     =====
+      ENDIF
+C     =====
 C
 C     Insert half-phases and symmetrize
 C     =================================

@@ -64,7 +64,7 @@ PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
-     &                  TKTIME,RETUR,FIRST,NPOS,MTOTTK,I2TYP,
+     &                  TKTIME,RETUR,FIRST,NPOS,NTOTTK,I2TYP,
      &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
@@ -140,7 +140,7 @@ C
 #include <infpar.h>
 C
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK), 
-     &          NPOS(MTOTTK), IREPDM(*), IFCTYP(*),
+     &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
 C
@@ -169,28 +169,14 @@ C
 C
 C     Take calculation time of each IJ pair?
 C
-CTROND      TIMING = FIRST .OR. NEWBAS
       TIMING = .TRUE.
-CTROND With screening it could be advantageous to do continuous timimng !
 C
 C     Determine total number of tasks - MTOTTK.
-CTROND: This is now reduced to consistency check !
-      IF    (I2TYP.EQ.0) THEN
-        NTOTTK = MAXSHL*(MAXSHL+1)/2
-      ELSEIF(I2TYP.EQ.1) THEN
-        NTOTTK = NLRGBL*(NLRGBL+1)/2
-      ELSEIF(I2TYP.EQ.2) THEN
-        NTOTTK = NLRGBL*(NLRGBL+1)/2
-      ELSEIF(I2TYP.EQ.3) THEN
-        NTOTTK = NSMLBL*(NSMLBL+1)/2
-      ELSE
-        WRITE(LUPRI,'(A,I5)') 'HER_PARDRV: Unknown I2TYP =' ,I2TYP
-        CALL QUIT('Unknown I2TYP !!!')
-      ENDIF
-      IF(NTOTTK.NE.MTOTTK) THEN
+      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+      IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
-        WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be',NTOTTK,
-     &      ' for I2TYP =',I2TYP
+        WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
+     &   NTOTTK,' for I2TYP =',I2TYP
         CALL QUIT('HER_PARDRV: Inconsistent MTOTTK !!!')
       ENDIF
 C
@@ -347,29 +333,7 @@ C
       ENDIF
 C
       IF (NEWBAS .OR. DOFIRST) THEN
-C
-C       I2TYP = 3     (SS|SS) - integrals
-C
-         IF(I2TYP.EQ.3)THEN
-            IOFF = NLRGBL + 1
-            IND  = MTOTTK
-            DO I = MAXSHL,IOFF,-1
-               DO J = I,IOFF,-1
-                  IJ  = (I*(I-1))/2 + J
-                  NPOS(IND) = IJ
-                  IND = IND - 1
-               ENDDO
-            ENDDO
-C
-C       I2TYP = 0     (XX|XX) - integrals
-C       I2TYP = 1     (LL|LL) - integrals
-C       I2TYP = 2     (LL|SS) - integrals
-C
-         ELSE
-            DO I = MTOTTK, 1, -1
-               NPOS(I) = I
-            ENDDO
-         ENDIF
+         CALL DET_TASK (I2TYP,2,MTOTTK,NPOS)
       ENDIF
 C
 C     Distribute jobs on nodes
@@ -1348,21 +1312,10 @@ C
       END IF
 C
 C     Determine total number of tasks - MTOTTK.
-CTROND: This is now reduced to consistency check !
-      IF    (I2TYP.EQ.0) THEN
-        NTOTTK = MAXSHL*(MAXSHL+1)/2
-      ELSEIF(I2TYP.EQ.1) THEN
-        NTOTTK = NLRGBL*(NLRGBL+1)/2
-      ELSEIF(I2TYP.EQ.2) THEN
-        NTOTTK = NLRGBL*(NLRGBL+1)/2
-      ELSEIF(I2TYP.EQ.3) THEN
-        NTOTTK = NSMLBL*(NSMLBL+1)/2
-      ELSE
-        WRITE(LUPRI,'(A,I5)') 'HERNOD: Unknown I2TYP =' ,I2TYP
-        CALL QUIT('Unknown I2TYP !!!')
-      ENDIF
-      CALL MEMGET('INTE',KINDEX,NTOTTK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTIMES,NTOTTK,WORK,KFREE,LFREE)
+      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+C
+      CALL MEMGET('INTE',KINDEX,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)
 C
 C     ********************************
 C     ***** Initialize workspace *****
@@ -1837,6 +1790,7 @@ C
 #include <nuclei.h>
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
+#include <dcbham.h>
 #else
 #include <energy.h>
 #endif
@@ -2093,6 +2047,11 @@ C
                SHAEQB = ISHELA .EQ. ISHELB
                SHCEQD = ISHELC .EQ. ISHELD
                SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
+C
+               IF (SMLV1C) THEN
+                  IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2)
+     &               GO TO 500
+               ENDIF
 C
 C              *******************************
 C              ***** Calculate integrals *****
@@ -2574,6 +2533,94 @@ C
       DO I = 1,NDIM
         NPOS(I) = INDEX(NPOS(I))
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck det_task */
+      SUBROUTINE DET_TASK (I2TYP,IMODE,MTOTTK,NPOS)
+C*****************************************************************************
+C
+C     Determine tasks that are to be distributed. 
+C     IMODE 1 : Determine only total number
+C     IMODE 2 : Fill the array NPOS
+C
+C     Written by Luuk Visscher, august 2001
+C*****************************************************************************
+#include <implicit.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <mxorb.h>
+#include <nuclei.h>
+#ifdef PRG_DIRAC
+#include <dcbham.h>
+#endif
+#include <blocks.h>
+C
+      DIMENSION NPOS(*)
+C
+      IF(I2TYP.EQ.0) THEN
+        IASTRT = 1
+        IBSTRT = 1
+        IASMAX = MAXSHL
+        IBSMAX = MAXSHL
+      ELSEIF(I2TYP.EQ.1) THEN
+        IASTRT = 1
+        IBSTRT = 1
+        IASMAX = NLRGBL
+        IBSMAX = NLRGBL
+      ELSEIF(I2TYP.EQ.2) THEN
+        IASTRT = 1
+        IBSTRT = 1
+        IASMAX = NLRGBL
+        IBSMAX = NLRGBL
+      ELSEIF(I2TYP.EQ.3) THEN
+        IASTRT = NLRGBL+1
+        IBSTRT = NLRGBL+1
+        IASMAX = MAXSHL
+        IBSMAX = MAXSHL
+      ELSE
+        WRITE(LUPRI,'(A,I5)') 'DET_TOTTK: Unknown I2TYP =' ,I2TYP
+        CALL QUIT('Unknown I2TYP !!!')
+      ENDIF
+C
+C     *****************************
+C     ***** First Shell Index *****
+C     *****************************
+C
+      IND = 0
+      DO 100 ISHELA = IASTRT,IASMAX
+C
+         ICA    = LCLASH(ISHELA)
+         NCENTA = NCNTSH(ISHELA)
+C
+C        ******************************
+C        ***** Second Shell Index *****
+C        ******************************
+C
+         DO 200 ISHELB = IBSTRT,ISHELA
+C
+            ICB    = LCLASH(ISHELB)
+            NCENTB = NCNTSH(ISHELB)
+C
+C           Skip two-center SS contributions if requested
+C           This test is provisory, in SYMLOP we take out more integrals
+C           in case of symmetry-degenerate nuclei. Testing at this place,
+C           will, however, take out the work in ODCVEC and EXCOEF that 
+C           otherwise would cause a quartic scaling term.
+C
+            IF (SMLV1C) THEN
+               IF (NCENTA.NE.NCENTB.AND.ICA.EQ.2.AND.ICB.EQ.2) GO TO 200
+            ENDIF
+C
+            IJ  = (ISHELA*(ISHELA-1))/2 + ISHELB
+            IF (IMODE.EQ.2) NPOS(MTOTTK-IND) = IJ
+            IND = IND + 1
+C
+  200    CONTINUE
+  100 CONTINUE
+C
+      IF (IMODE.EQ.1) MTOTTK = IND
 C
       RETURN
       END
