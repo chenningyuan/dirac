@@ -2246,221 +2246,6 @@ C                  END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck qtrans */
-      SUBROUTINE QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
-     &                  FAO,LRAO,LCAO,NZAO,IQAO,
-     &                  FMO,LRMO,LCMO,NZMO,IQMO,
-     &                  TM1,LR1,LC1,NZTM1,IQTM1,
-     &                  TM2,LR2,LC2,NZTM2,IQTM2,
-     &                  BUF,LBUF,IPRINT)
-C***********************************************************************
-C
-C     This routine performs unitary transformations indicated by TYP:
-C
-C       TYP = AOMO : AO-to-MO-transformation  FMO = (C+)FAOC
-C       TYP = MOAO : MO-to-AO-transformation  FAO = CFMO(C+)
-C
-C     FADD gives the possibility of adding the results
-C
-C     TREV indicates symmetry of F-matrix under timereversal
-C
-C       TREV = 'S' - symmetric     (t =  1)
-C       TREV = 'A' - anti-symmtric (t = -1)
-C
-C     The unitary C-matrix has a time-symmetric structure.
-C
-C     The AO-to-MO-transformation can be set up quaternionically as
-C
-C       FMO = [(Ca+)-t(CbT)j][(FAOa)+(FAOb)j][(Ca)+(Cb)j]
-C
-C       F(NBAS,NBAS,NZ) --->  F(NORB,NORB,NZ)
-C
-C     and the MO-to-Ao-transformation can be set up as:
-C
-C       FAO = [(Ca)+t(Cb)j][(FMOa)+(FMOb)j][(Ca+)-(Cb)j]
-C
-C       F(NORB,NORB,NZ) --->  F(NBAS,NBAS,NZ)
-C
-C     Written by T.Saue,January 1995
-C     Last revision: 29 January 1997 : Luuk Visscher
-C**********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
-C
-      CHARACTER TREV*1,TRA*1,TYP*4
-      DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
-     &          FMO(LRMO,LCMO,*),IQMO(*),
-     &          TM1(LR1,LC1,*),IQTM1(*),
-     &          TM2(LR2,LC2,*),IQTM2(*),
-     &          BUF(LBUF)
-      DIMENSION IQW(4)
-C
-      CALL QENTER('QTRANS')
-C
-C     Add the results on to the contents of the MO matrix ?
-C
-#ifdef DEBUG
-      print*, 'QTRANS: The AO matrix'
-      CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM1'
-      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
-      print*, 'QTRANS: The transformation matrix TM2'
-      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
-#endif
-C
-C     Time reversal symmetry of F-matrix
-C
-      IF    (TREV.EQ.'S') THEN
-        TRA = 'N'
-      ELSEIF(TREV.EQ.'A') THEN
-        TRA = 'I'
-      ELSE
-        CALL QUIT('QTRANS: Unknown keyword TREV '//TREV)
-      ENDIF
-C
-C     *******************************************************
-C     *****  AO - to - MO -transformation : F' = (C+)FC *****
-C     *******************************************************
-C
-      IF(TYP.EQ.'AOMO') THEN
-C
-C       Look for the most efficient transformation
-C       ------------------------------------------
-C
-        IF (NCAO.GE.NRAO) THEN
-C
-C         Perform the two steps:
-C           1. W  = FC
-C           2. F' = (C+)W
-C
-          CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
-          NBUF = NRAO*NCMO*NZW
-          IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
-     &   '                   current work space ',LBUF
-          ENDIF
-C
-C         First part of transformation: W = FC
-C         ------------------------------------
-C
-          CALL QGEMM(NRAO,NCMO,NCAO,D1,
-     &              'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
-     &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &               D0,IQW,BUF,NRAO,NCMO,NZW)
-C
-C         Second part of transformation: H = (C+)W
-C         ----------------------------------------
-C
-          CALL QGEMM(NRMO,NCMO,NRAO,D1,
-     &               'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
-     &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
-     &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
-        ELSE
-C
-C         Perform the two steps:
-C           1. W  = (C+)F
-C           2. F' = WC
-C
-          CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
-          NBUF = NRMO*NCAO*NZW
-          IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
-     &   '                   current work space ',LBUF
-          ENDIF
-
-C
-C         First part of transformation: W = (C+)F
-C         ----------------------------------------
-C
-          CALL QGEMM(NRMO,NCAO,NRAO,D1,
-     &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
-     &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
-     &        D0,IQW,BUF,NRMO,NCAO,NZW)
-C
-C         Second part of transformation: H = WC
-C         -------------------------------------
-C
-          CALL QGEMM(NRMO,NCMO,NCAO,D1,
-     &       'N','N',IQW ,BUF,NRMO,NCAO,NZW,
-     &       'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
-C
-        ENDIF
-C        IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
-C
-C     *******************************************************
-C     *****  MO - to - AO -transformation : F' = CF(C+) *****
-C     *******************************************************
-C
-      ELSEIF(TYP.EQ.'MOAO') THEN
-C
-C       Look for the most efficient transformation
-C       ------------------------------------------
-C
-        IF(NCMO.GE.NRMO) THEN
-          CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
-          NBUF = NRMO*NCAO*NZW
-          IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
-     &   '                   current work space ',LBUF
-          ENDIF
-C
-C         First part of transformation: W = F(C+)
-C
-          CALL QGEMM(NRMO,NCAO,NCMO,D1,
-     &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
-     &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &       D0,IQW,BUF,NRMO,NCAO,NZW)
-C
-C         Second part of transformation: H = CW
-C
-          CALL QGEMM(NRAO,NCAO,NRMO,D1,
-     &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
-     &       'N','N',IQW ,BUF,NRMO,NCAO,NZW,
-     &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
-        ELSE
-          CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
-          NBUF = NRAO*NCMO*NZW
-          IF(NBUF.GT.LBUF) THEN
-             WRITE (LUPRI,'(/A,I10/A,I10)')
-     &   ' >>> QTRANS error, need work space    ',NBUF,
-     &   '                   current work space ',LBUF
-          ENDIF
-C
-C         First part of transformation: W = CF
-C
-          CALL QGEMM(NRAO,NCMO,NRMO,D1,
-     &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
-     &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
-     &       D0,IQW,BUF,NRAO,NCMO,NZW)
-C
-C         Second part of transformation: H = CW
-C
-          CALL QGEMM(NRAO,NCAO,NCMO,D1,
-     &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
-     &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
-        ENDIF
-C       IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
-      ELSE
-        CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
-      ENDIF
-C
-      CALL QEXIT('QTRANS')
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bcktra */
       SUBROUTINE BCKTRA(COFT,LRT,LCT,COFU,LRU,LCU,NORB,NZC,
      &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IPRINT)
@@ -3293,4 +3078,313 @@ C
       ENDIF
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qbtrans */
+      SUBROUTINE QBTRANS(KREP,TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
+     &                  FAO,LRAO,LCAO,NZAO,IQAO,
+     &                  FMO,LRMO,LCMO,NZMO,IQMO,
+     &                  TM1,LR1,LC1,NZTM1,IQTM1,IB1,
+     &                  TM2,LR2,LC2,NZTM2,IQTM2,IB2,
+     &                  BUF,LBUF,IPRINT)
+C***********************************************************************
+C
+C     This routine performs unitary transformations indicated by TYP:
+C
+C       TYP = AOMO : AO-to-MO-transformation  FMO = (C+)FAOC
+C       TYP = MOAO : MO-to-AO-transformation  FAO = CFMO(C+)
+C
+C     FADD gives the possibility of adding the results
+C
+C     TREV indicates symmetry of F-matrix under timereversal
+C
+C       TREV = 'S' - symmetric     (t =  1)
+C       TREV = 'A' - anti-symmtric (t = -1)
+C
+C     The unitary C-matrix has a time-symmetric structure.
+C
+C     The AO-to-MO-transformation can be set up quaternionically as
+C
+C       FMO = [(Ca+)-t(CbT)j][(FAOa)+(FAOb)j][(Ca)+(Cb)j]
+C
+C       F(NBAS,NBAS,NZ) --->  F(NORB,NORB,NZ)
+C
+C     and the MO-to-Ao-transformation can be set up as:
+C
+C       FAO = [(Ca)+t(Cb)j][(FMOa)+(FMOb)j][(Ca+)-(Cb)j]
+C
+C       F(NORB,NORB,NZ) --->  F(NBAS,NBAS,NZ)
+C
+C     Written by T.Saue,January 1995
+C     Last revision: 29 January 1997 : Luuk Visscher
+C**********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+C
+      CHARACTER TREV*1,TRA*1,TYP*4
+      DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
+     &          FMO(LRMO,LCMO,*),IQMO(*),
+     &          TM1(LR1,LC1,*),IQTM1(*),IB1(*),
+     &          TM2(LR2,LC2,*),IQTM2(*),IB2(*),
+     &          BUF(LBUF)
+      DIMENSION IQW(4)
+C
+#include "ibtfun.h"
+      CALL QENTER('QTRANS')
+C
+C     Add the results on to the contents of the MO matrix ?
+C
+#ifdef DEBUG
+      print*, 'QTRANS: The AO matrix'
+      CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM1'
+      CALL PRQMAT(TM1,NRAO,NCMO,LR1,LC1,NZTM1,IQTM1,LUPRI)
+      print*, 'QTRANS: The transformation matrix TM2'
+      CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
+#endif
+      IF((NCMO.EQ.0).OR.(NRMO.EQ.0)) GOTO 999
+C
+C     Time reversal symmetry of F-matrix
+C
+      IF    (TREV.EQ.'S') THEN
+        TRA = 'N'
+      ELSEIF(TREV.EQ.'A') THEN
+        TRA = 'I'
+      ELSE
+        CALL QUIT('QTRANS: Unknown keyword TREV '//TREV)
+      ENDIF
+C
+C     *******************************************************
+C     *****  AO - to - MO -transformation : F' = (C+)FC *****
+C     *******************************************************
+C
+      IF(TYP.EQ.'AOMO') THEN
+C
+C       Look for the most efficient transformation
+C       ------------------------------------------
+C
+        IF (NCAO.GE.NRAO) THEN
+C
+C         Perform the two steps:
+C           1. W  = FC
+C           2. F' = (C+)W
+C
+          CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
+          NBUF = NRAO*NCMO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
+          ENDIF
+C
+C         First part of transformation: W = FC
+C         ------------------------------------
+C
+          CALL QGEMM(NRAO,NCMO,NCAO,D1,
+     &              'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
+     &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &               D0,IQW,BUF,NRAO,NCMO,NZW)
+C
+C         Second part of transformation: H = (C+)W
+C         ----------------------------------------
+C
+          IF(KREP.LT.0) THEN
+C...     ...general case (spin-orbit)
+            CALL QGEMM(NRMO,NCMO,NRAO,D1,
+     &                 'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
+     &                 'N','N',IQW,BUF,NRAO,NCMO,NZW,
+     &                 FADD,IQMO,FMO,LRMO,LCMO,NZMO)
+          ELSE
+C...     ...spin-free case: transform only symmetry blocks
+C           of the real part corresponding to operator symmetry
+            JREP = IBTXOR(KREP,IB2(1))
+            NJ = 0
+            IJ = 1
+            DO J = 1,NCMO
+              IF(J.EQ.NCMO) THEN
+                IBJ = -1
+              ELSE
+                IBJ = IBTXOR(KREP,IB2(J+1))
+              ENDIF
+              NJ = NJ + 1
+              IF(JREP.NE.IBJ) THEN
+                IREP = IB1(1)
+                NI = 0
+                II = 1
+                DO I = 1,NRMO
+                  IF(I.EQ.NRMO) THEN
+                   IBI = -1
+                  ELSE
+                   IBI = IB1(I+1)
+                  ENDIF  
+                  NI = NI + 1
+                  IF(IREP.NE.IBI) THEN
+                    IF(IREP.EQ.JREP) THEN
+C...             ...transform this block (only real part)
+                      IW = NRAO*(IJ-1)+1
+                      CALL QGEMM(NI,NJ,NRAO,D1,
+     &                   'H',TRA,IQTM1,TM1(1,II,1),LR1,LC1,NZTM1,
+     &                   'N','N',IQW,BUF(IW),NRAO,NCMO,NZW,
+     &                   FADD,IQMO,FMO(II,IJ,1),LRMO,LCMO,1)
+                    ENDIF
+                    IREP = IBI
+                    NI = 0
+                    II = I + 1
+                  ENDIF
+                ENDDO
+                JREP = IBJ
+                NJ = 0
+                IJ = J + 1
+              ENDIF
+            ENDDO
+          ENDIF
+        ELSE
+C
+C         Perform the two steps:
+C           1. W  = (C+)F
+C           2. F' = WC
+C
+          CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
+          NBUF = NRMO*NCAO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
+          ENDIF
+
+C
+C         First part of transformation: W = (C+)F
+C         ----------------------------------------
+C
+          CALL QGEMM(NRMO,NCAO,NRAO,D1,
+     &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
+     &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
+     &        D0,IQW,BUF,NRMO,NCAO,NZW)
+C
+C         Second part of transformation: H = WC
+C         -------------------------------------
+C
+          IF(KREP.LT.0) THEN
+C...     ...general case (spin-orbit)
+            CALL QGEMM(NRMO,NCMO,NCAO,D1,
+     &         'N','N',IQW ,BUF,NRMO,NCAO,NZW,
+     &         'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &         FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
+          ELSE
+C...     ...spin-free case: transform only symmetry blocks
+C           of the real part corresponding to operator symmetry
+            JREP = IBTXOR(KREP,IB2(1))
+            NJ = 0
+            IJ = 1
+            DO J = 1,NCMO
+              IF(J.EQ.NCMO) THEN
+                IBJ = -1
+              ELSE
+                IBJ = IBTXOR(KREP,IB2(J+1))
+              ENDIF
+              NJ = NJ + 1
+              IF(JREP.NE.IBJ) THEN
+                IREP = IB1(1)
+                NI = 0
+                II = 1
+                DO I = 1,NRMO
+                  IF(I.EQ.NRMO) THEN
+                   IBI = -1
+                  ELSE
+                   IBI = IB1(I+1)
+                  ENDIF  
+                  NI = NI + 1
+                  IF(IREP.NE.IBI) THEN
+                    IF(IREP.EQ.JREP) THEN
+C...             ...transform this block (only real part)
+                      CALL QGEMM(NI,NJ,NCAO,D1,
+     &                 'N','N',IQW ,BUF(II),NRMO,NCAO,NZW,
+     &                 'N','N',IQTM2,TM2(1,IJ,1),LR2,LC2,NZTM2,
+     &                 FADD,IQMO,FMO(II,IJ,1),LRMO,LCMO,1)
+                    ENDIF
+                    IREP = IBI
+                    NI = 0
+                    II = I + 1
+                  ENDIF
+                ENDDO
+                JREP = IBJ
+                NJ = 0
+                IJ = J + 1
+              ENDIF
+            ENDDO
+          ENDIF
+C
+        ENDIF
+C        IF(IPRINT.GE.5) THEN
+C          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
+C          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IPQTOQ(1,0,1),LUPRI)
+C        ENDIF
+C
+C     *******************************************************
+C     *****  MO - to - AO -transformation : F' = CF(C+) *****
+C     *******************************************************
+C
+      ELSEIF(TYP.EQ.'MOAO') THEN
+C
+C       Look for the most efficient transformation
+C       ------------------------------------------
+C
+        IF(NCMO.GE.NRMO) THEN
+          CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
+          NBUF = NRMO*NCAO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
+          ENDIF
+C
+C         First part of transformation: W = F(C+)
+C
+          CALL QGEMM(NRMO,NCAO,NCMO,D1,
+     &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
+     &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &       D0,IQW,BUF,NRMO,NCAO,NZW)
+C
+C         Second part of transformation: H = CW
+C
+          CALL QGEMM(NRAO,NCAO,NRMO,D1,
+     &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
+     &       'N','N',IQW ,BUF,NRMO,NCAO,NZW,
+     &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
+        ELSE
+          CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
+          NBUF = NRAO*NCMO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I10/A,I10)')
+     &   ' >>> QTRANS error, need work space    ',NBUF,
+     &   '                   current work space ',LBUF
+          ENDIF
+C
+C         First part of transformation: W = CF
+C
+          CALL QGEMM(NRAO,NCMO,NRMO,D1,
+     &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
+     &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
+     &       D0,IQW,BUF,NRAO,NCMO,NZW)
+C
+C         Second part of transformation: H = CW
+C
+          CALL QGEMM(NRAO,NCAO,NCMO,D1,
+     &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
+     &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
+        ENDIF
+C       IF(IPRINT.GE.5) THEN
+C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
+C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
+C        ENDIF
+      ELSE
+        CALL QUIT('FTRANS: Unknown keyword TYP '//TYP)
+      ENDIF
+C
+ 999  CONTINUE
+      CALL QEXIT('QTRANS')
+      RETURN
+C
       END
