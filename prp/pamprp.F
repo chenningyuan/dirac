@@ -1377,6 +1377,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       DIMENSION EXPVAL(*),WORK(*)
+      LOGICAL TOBE
 #include "dcbprp.h"
 #include "dcbexp.h"
 C
@@ -1400,7 +1401,11 @@ C
 C     Read correlation contribution to expectation value
 C     ==================================================
 C
-      CALL READEXPV(WORK(KEXP_CORR))
+      CALL READEXPV(WORK(KEXP_CORR),TOBE)
+      IF (.NOT.TOBE) THEN
+         CALL MEMREL('PRPOUT_CORR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+         RETURN
+      ENDIF
 C
 C     Calculate total expectation value
 C     (HF + correlation)

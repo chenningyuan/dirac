@@ -951,7 +951,6 @@ C     Write expectation values to file
 C     ================================
 C
       CALL WEXPVTOF(EXPVAL)
-c     CALL READEXPV(EXPVAL)
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(4X,A)')
@@ -998,7 +997,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readexpv */
-      SUBROUTINE READEXPV(EXPVAL)
+      SUBROUTINE READEXPV(EXPVAL,TOBE)
 C*****************************************************************************
 C
 C     read expectation values from file
@@ -1011,6 +1010,7 @@ C*****************************************************************************
 #include "mxcent.h"
 C
       DIMENSION EXPVAL(*)
+      LOGICAL TOBE
 #include "dcbexp.h"
 #include "dcbprp.h"
 C
@@ -1018,12 +1018,20 @@ C
 C
       CALL DZERO(EXPVAL,NEXPP)
 C
-      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='OLD')
-      REWIND (LUCORP)
-      READ (LUCORP) (EXPVAL(I),I=1,NEXPP)
-      CLOSE (LUCORP)
+      INQUIRE(FILE='CORPROP',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE (LUPRI,1000)
+      ELSE
+         OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='OLD')
+         REWIND (LUCORP)
+         READ (LUCORP) (EXPVAL(I),I=1,NEXPP)
+         CLOSE (LUCORP)
+      ENDIF
 C
       CALL QEXIT('READEXPV')
+C
+ 1000 FORMAT (//" WARNING : correlation contribution was not calculated"
+     &/" did you remember to specify DOFOPR=T in RELCCSD ?"//)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
