@@ -935,16 +935,16 @@ C
  1000 FORMAT (3(1X,I4),1X,G22.12,1X,G18.12,2(1X,G10.4))
  1010 FORMAT (//' End of iterations : ',A25)
  1020 FORMAT (/' --- Root',I4,' ---'/
-     &' (MR)CI-SD Energy :    ',F30.12/
-     &' Correlation energy :  ',F30.12/
-     &' Davidson correction : ',F30.12/
-     &' (MR)CI-SD+Q energy:   ',F30.12/
-     &' Residue :             ',F30.12)
+     &'@ (MR)CI-SD Energy :    ',F30.12/
+     &'@ Correlation energy :  ',F30.12/
+     &'@ Davidson correction : ',F30.12/
+     &'@ (MR)CI-SD+Q energy:   ',F30.12/
+     &'@ Residue :             ',F30.12)
  1021 FORMAT (/' --- Root',I4,' ---'/
-     &' CI Total Energy :       ',F30.12/
-     &' Relative to reference : ',F30.12/
-     &' 1 - Reference weight :  ',F30.12/
-     &' Residue :               ',F30.12)
+     &'@ CI Total Energy :       ',F30.12/
+     &'@ Relative to reference : ',F30.12/
+     &'@ 1 - Reference weight :  ',F30.12/
+     &'@ Residue :               ',F30.12)
  1030 FORMAT (/' Total CPU time :     ',F10.3)
 C
       END
