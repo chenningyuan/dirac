@@ -146,7 +146,18 @@ C
 C       FIXME: calculate IBSTEP dynamically based on number of nodes
 C       and size of shells.
 C       (currently, it is just an input parameter for the wizards)
-        IBSTEP = IPAR4BS
+        MXIBSTEP = IPAR4BS
+        IF (MXIBSTEP .LE. 0) THEN
+C           ... determine MXIBSTEP based on number of nodes and
+C               number of shell pairs to give optimal load balancing
+C               (minimize N**5*nbstep in second half transformation
+C                while having work for all nodes) /LV+HJAaJ Aug 2001
+C
+           MXIBSTEP = NTR4BSTEP(INTFLG,I2TYP,NODES)
+           WRITE(LUPRI,'(/A,I4)')
+     &     ' * Max no. of B shells in a task determined to be',
+     &     MXIBSTEP
+        END IF
 C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 2, 1, -1
@@ -158,13 +169,18 @@ C
      &           '- Starting shell A no. ',ISHLA,' after ',
      &           WALLST - WALLBEF, ' seconds.'
               CALL FLSHFO(LUPRI)
-           DO ISHLB = IBSTRT, ISHLA, IBSTEP
+C             Distribute number of b's evenly
+              NBSTEP = (ISHLA-IBSTRT)/MXIBSTEP + 1
+              IBSTEP = -(ISHLA-IBSTRT)/NBSTEP - 1
+           DO IBEND = ISHLA, IBSTRT, IBSTEP
 C
-              IBEND = MIN(ISHLB+IBSTEP-1,ISHLA)
+              ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
 C
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
+              IF (ITEST .EQ. 1) THEN
+C             ... slave wants new set of A,B pairs
               CALL GETTIM(CPUST,WALLST)
               IF (IPRINT .GE. 3) THEN
                  WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
@@ -183,6 +199,11 @@ C
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
+              ELSE IF (ITEST .EQ. 2) THEN
+C             ... slave wants to lock file
+              ELSE
+                 CALL QUIT('Illegal ITEST')
+              END IF
            ENDDO
            ENDDO
         ENDDO
@@ -1078,7 +1099,9 @@ C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
 #if defined (VAR_MPI)
-         CALL MPI_SEND(MYTID,1,MPI_INTEGER,MPARID,20,
+         ITEST = 1
+C        ... ask for new set of A,B shells
+         CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
          CALL MPI_RECV(ISHLA,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
@@ -1171,4 +1194,45 @@ C
       END DO
       MWHMATCALC = NZ * MSIZH
       RETURN 
+      END
+      FUNCTION NTR4BSTEP(INTFLG,I2TYP,NODES)
+C
+C     HJAaJ+LV Aug 2001
+C
+C     Calculate max number of B shells for fair
+C     load balancing. The tradeoff is between
+C     work to all nodes, and that the second half
+C     transformation will grow with a factor equal
+C     to the number of blocks of B shells done for
+C     a fixed A shell.
+C
+C     TODO: note that this code assumes only LL and SS
+C           shells, no LS shells, fix when introducing
+C           Gaunt or Breit
+C
+#include <implicit.h>
+#include <priunit.h>
+C
+C     get NA1 = number of S A-shells and NA2 = number of L A-shells
+C
+      CALL SHRNGE (2,INTFLG,I2TYP,IASTR2,IBSTR2,IASMA2,IBSMA2)
+      CALL SHRNGE (1,INTFLG,I2TYP,IASTR1,IBSTR1,IASMA1,IBSMA1)
+      NA2 = IASMA2-IASTR2 + 1
+      NA1 = IASMA1-IASTR1 + 1
+      NDTASK = 2*NODES
+C     ... desired number of tasks
+C         (we try 2 times the number of nodes)
+      MXIBSTEP = MAX(NA1,NA2) + 1
+   10 CONTINUE
+         MXIBSTEP = MXIBSTEP - 1
+         NTASKS = 0
+         DO I = 1,NA1
+            NTASKS = NTASKS + (I-1)/MXIBSTEP + 1
+         END DO
+         DO I = 1,NA2
+            NTASKS = NTASKS + (I-1)/MXIBSTEP + 1
+         END DO
+      IF (NTASKS .LT. NDTASK .AND. MXIBSTEP.GT.1) GO TO 10
+      NTR4BSTEP = MXIBSTEP
+      RETURN
       END

@@ -381,7 +381,7 @@ C
       ITRA_INTFLG = INTGEN
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
-      IPAR4BS = 1
+      IPAR4BS = -1
       DO I = 1,NFSYM
         WRITE(TRA_CORSTR(I),'(A)') 'not specified' 
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
@@ -817,8 +817,15 @@ C
 C
 C     Batch size of strategy 4.
 C
-      IF (PARCAL) WRITE(LUPRI,'(1X,A,I4)')
-     &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
+      IF (PARCAL) THEN
+        IF (IPAR4BS .GT. 0) THEN
+          WRITE(LUPRI,'(1X,A,I4)')
+     &    '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
+        ELSE
+          WRITE(LUPRI,'(1X,A,I4)')
+     &    '* Size of batches for strategy 4 determined dynamically.'
+        END IF
+      END IF
 C
   999 CONTINUE
       RETURN

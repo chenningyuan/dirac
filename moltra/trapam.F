@@ -86,6 +86,8 @@ C
         ENDDO
       ENDIF
 C
+C     NSTR(I): Number of Spinors to be TRansformed for index I
+C
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
