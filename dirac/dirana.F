@@ -2508,13 +2508,13 @@ C     PRJLOC = FALSE localization with Mulliken analysis
       DIFF  =     DINVM - DINVMO
       DIFFA = ABS(DINVM - DINVMO)
       IF (DIFF .LT. D0) THEN
-         WRITE(LUPRI,'(/5X,A)'),'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-         WRITE(LUPRI,'(5X,A)'), '!!! WARNING : DINVM - DINVMO < 0 !!!'
-         WRITE(LUPRI,'(5X,A)'), '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+         WRITE(LUPRI,'(/5X,A)') '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+         WRITE(LUPRI,'(5X,A)')  '!!! WARNING : DINVM - DINVMO < 0 !!!'
+         WRITE(LUPRI,'(5X,A)')  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       ENDIF
       IF (.NOT. FLAG .AND. DIFFA .LE. HESTHR) THEN
          FLAG = .TRUE.
-         WRITE(LUPRI,'(/5X,A)'), '!!! Hessian activated !!!'
+         WRITE(LUPRI,'(/5X,A)')  '!!! Hessian activated !!!'
       ENDIF
       IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 200
       IF(DIFFA .LE. THRLOC) THEN
