@@ -608,13 +608,13 @@ C***********************************************************************
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
-Ctec
+C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
-Ctec
+C
       ITYP = 0
       IPTYP     = 1
       NPCOMP    = 1
@@ -1155,6 +1155,15 @@ C
         WRITE(LUPRI,'(1X,A)') 'Electric field gradients'
         CALL PRSYMB(LUPRI,'=',75,0)
         CALL DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Electronic density at nuclei
+C
+      IF(RHONUC) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Electronic density at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Parity violation - Chirality
@@ -4659,3 +4668,84 @@ C
  110  CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_RHONUC */
+      SUBROUTINE DEF_RHONUC(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electronic density at nuclei
+C
+C     Written by T.Saue May 8 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     INTTYP = 9: One-electron Fermi contact integrals
+      CALL SETATM(WORK(KDATOM),NATOM,9)
+      CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_RHONU1 */
+      SUBROUTINE DEF_RHONU1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define electronic density at nuclei
+C     Written by T.Saue May 8 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "gfac.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0)
+      PARAMETER (DFAC = D4*GFAC*PI/D3)
+C
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "ibtfun.h"
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1/DFAC
+      DO 100 IREP = 0, MAXREP
+        DO 200 IATOM = 1, NUCIND
+        IF (DOATOM(IATOM)) THEN
+          IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                        //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+            PNAME = 'Rho at nuc '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                            //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                            //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+            CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                   INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+            CALL OP1IND('RHONUC',IDUM,LEXPP,NEXPP,INDXPR,MAXEXP)
+          END IF
+        END IF
+  200   CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+

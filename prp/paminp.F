@@ -44,7 +44,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 21)
+      PARAMETER (NDIR = 8, NTABLE = 24)
 #include "maxorb.h"
 #include "mxcent.h"
 C
@@ -62,7 +62,7 @@ C
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
-     &             '.WAVE F'/
+     &             '.WAVE F','.RHONUC','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -93,6 +93,7 @@ C
       DSO      = .FALSE.
       NSTDIA   = .FALSE.
       PVC      = .FALSE.
+      RHONUC   = .FALSE.
       ABUND    = D1
       NDSOINT  = 0
       MGRAD    = .FALSE.
@@ -140,7 +141,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121),I
+     &                117,118,119,120,121,122,123,124),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -269,6 +270,15 @@ C&&&& WAVE FUNCTIONS - define which wave functions we should use
                READ(LUCMD,'(1X,A4)') PRPWF(I)
             END DO
             GOTO 100
+ 122     CONTINUE
+C&&&& RHONUC - electronic density at nuclei
+            RHONUC   = .TRUE.
+            DOEXP    = .TRUE.
+            GO TO 100
+ 123     CONTINUE
+            GO TO 100
+ 124     CONTINUE
+            GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
