@@ -711,9 +711,8 @@ C     -----------------
       CALL MEMGET('REAL',KEIG ,NORBT      ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT ,NZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT ,NZ*N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,NNBBASX   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
       CALL MEMGET('REAL',KEXP  ,NEXPP     ,WORK,KFREE,LFREE)
@@ -721,7 +720,7 @@ C
       CALL MEMCHK('voor prpex1_mp2',WORK,1)
       CALL PRPEX1_MP2(WORK(KEXP),WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
-     &            WORK(KONEIN),DMO,WORK(KFIRST),WORK,
+     &            DMO,WORK(KFIRST),WORK,
      &            KFREE,LFREE)
 C
 C
@@ -734,7 +733,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1_mp2 */
-      SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,OP1INT,
+      SUBROUTINE PRPEX1_MP2(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
      &                      DMO,FIRST,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -756,7 +755,7 @@ C*****************************************************************************
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(*),
-     &          OP1INT(*),EIG(*),DMO(*),WORK(*)
+     &          EIG(*),DMO(*),WORK(*)
       CHARACTER MXFORM*6,FMT*6
 C
 #include "dgroup.h"
@@ -817,8 +816,14 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
       DO I = 1,NEXPP
         INDXPR = LEXPP(I)
-        CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &      DMAT,PMAT,PTRI,OP1INT,FIRST,ORBANA,WORK,LWORK,IPREXP)
+          CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
+     &        IREP,ITIM,PTRI,PMAT,FIRST,
+     &        WORK(KFREE),LFREE,IPREXP)
+          IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
+          CALL PRPEX3(EXPVAL(I),IREP,ITIM,
+     &        DMAT,PMAT,PTRI,FIRST,ORBANA,
+     &        WORK(KFREE),LFREE,IPREXP)
+ 30       CONTINUE
         FMT = MXFORM(EXPVAL(I),15)
         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
      &     PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
