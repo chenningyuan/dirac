@@ -1388,7 +1388,7 @@ esac
 cat <<EOF>> Makefile.config
 .F.a:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
-$tab\$(AR) \$@ \$*.o
+$tab\$(AR) \$(ARFLAGS) \$@ \$*.o
 $tab@ rm -f \$*.o
 EOF
 #
