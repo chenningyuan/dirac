@@ -74,6 +74,7 @@ C
       CALL SETDC1(IPREAD)
 C
 C     Define Hamiltonian
+C     Redefine INTGEN if e.g. Levy-Leblond
 C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
@@ -87,7 +88,7 @@ C
 C     Wave function input
 C
 C     Call PSIINP always to get wave function information for
-C     other modules. This could be change if wave function information
+C     other modules. This could be changed if wave function information
 C     is saved on file. 
 C
       IF ( DOPSI .OR. .NOT. INPTES ) THEN
@@ -2672,6 +2673,7 @@ C&&&& OPERATOR: Read in operator
   104    CONTINUE
 C&&&& GAUNT: Gaunt operator
 CTROND          Must be implemented......                  
+            CALL QUIT('.GAUNT not implemented')
             GO TO 100
   105     CONTINUE
             GO TO 100
@@ -2789,7 +2791,19 @@ C
          CALL QUIT('*** ERROR in HAMINP ****')
       END IF
 C
+C     Remove integral classes not needed for this Hamiltonian
 C
+      ILLINT    = IBTAND(INTGEN,1)
+      ISLINT    = IBTAND(INTGEN/2,1)
+      ISSINT    = IBTAND(INTGEN/4,1)
+      IF (LEVYLE) THEN
+        ISLINT = 0
+        ISSINT = 0
+      ENDIF
+      IF (ZORA.AND..NOT.ZORA4) THEN
+        ISSINT = 0
+      ENDIF
+      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT
 C
       IF(URKBAL) THEN
         WRITE(LUPRI,'(1X,A)') '* Unrestricted kinetic balance'
