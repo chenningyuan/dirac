@@ -775,10 +775,7 @@ C
 C
 COld Code
 C
-      IF (DIISMO) THEN
-         BIJELM = DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
-         BIJELM = BIJELM + BIJELM
-      ELSE
+      IF (DIISAO .OR. NASHT.GT.0 .OR. NAELEC.GT.0) THEN
 C   
 C     jth: The new errorvector is half as big as in DALTON
 C       => the trace of two matrices is one fourth as big
@@ -786,6 +783,9 @@ C       => we multiply by four (old code multiplied by two, so
 C                               a total of 8)
 C
          BIJELM = D8*DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
+      ELSE
+         BIJELM = DDOT(N2EVECTQ,EVEC1,1,EVEC2,1)
+         BIJELM = BIJELM + BIJELM
       END IF
 
       RETURN
