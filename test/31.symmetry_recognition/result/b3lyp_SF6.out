@@ -11,72 +11,61 @@ Master : DIRAC allocating 10000000 words of memory
 *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
 *                                                                            *
 *                                                                            *
-MMMMMMMMMMMMMMMMMMMMMMMMMMP!<<~"<<<<<!<<<<!!!!!<~"!****MMHMMMMMMMMX?HMXMMX9M?H
-MMMMMMMMMMMMMMMMMMMMMMMM!M!<<<<<<:<<<<<<<<<<~<<< <<~~~<!!MMMMMMMMMMH%XX%!XMMXX
-MMMMMMMMMMMMMMMMMMMMMMM!<!!!<<<<<<<<<<<<<<< <~<~~~~    ~<~!!??MSMMMM!tXX!9HtSM
-MMMMMMMMMMMMMMMMMMMMMMM!:!<<<<!!!<<<<<<~<`<~~~     `     <<<~!*MMHM9XXMMHSHMMM
-MMMMMMMMMMMMMMMMMMMMMMM%?<<<<<<<<<<~~<~'~<~'             `<<<!~!MMMMMMMXMMMMMM
-MMMMMMMMMMMMMMMMMMMMMM!!!X<<<<<<<<<~     ~                 `<<<<!?MMMMMMMMMMMM
-MMMMMMMMMMMMMMMMMMMMMMX<<!!<!<<<~~<<<                       `~<<<~?MMMMMMMMMMM
-MMMMMMMMMMMMMMMMMMMMM?M:<<<<<<<~ <<<<      :                  `<<<!MMMMMMMMMMM
-MMMMMMMMMMMMMMMMMMMM!!!!<<<<<<<~ <<~ '<::<<<<<<:                `<<MMMMMMMMMMM
-MMMMMMMMMMMMMMMMMMMX<<<<<<<<<<<:<<  <`<<<<<:nnnhnn:              ~<!MMMMMMMMMM
-MMMMMMMMMMMMMMMMMMMXxnnnnxnxi:<<<<<<<<<<<<xHMMMMMMnx:              `"??MMMMMMM
-MMMMMMMMMMMMMMMMMMX8NN888MMMMXXx:::xxHMMMMMMMMMMMMMMH::              <!!?MMMMM
-MMMMMMMMMMMMMMMM?9$$$$$$$NM8MMMMMMMMMMMMMMMMMMMMMMMMMMH:            '!!!!MMMMM
-MMMMMMMMMMMMMMMXt$$$$$$$$$$$N8MMMMMNNMMMMMMMMMMMMMMMMMMh<            <<<!?MMMM
-MMMMMMMMMMMMMMXN$$$$$$$$$$$$$$$NN$$$$NN8N9MMMMMMMMMMMMMX<~            `~<<!MSM
-MMMMMMMMMMMM!~t$$$$$$$$$$$$$$$$$$$$$$$BMMMMMMMMMMMMMMMMM>               `<XMMM
-MMMMMMMMMMMMXX$$$$$$$$$$$$$$$$$$$$$$R$RMMMMMMMMMMMMMMMMM%<               <XMSt
-MMMMMMMMMMMMXN$$$$$$$$$$$$$$$$$$$$MMMMMMMMMMMMMMMMMMMMMMf<<  :          :<?MMH
-MMMMMMMMMMMMX$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMMMMMMMMM!<<<            `<MMMM
-MMMMMMMMMMMM9$$$$$$$$$$$$$$$RMMMMMB8MMMMMMMMMMMMMMMMMMMM!<<<            <!HXSt
-MMMMMMMMMMMM9$$$$$$$$$$$$N$8MMM8NN$$8NNMMMMMMMMMMMMMMMM!<<<<            <!MMMX
-MMMMMMMMMMMM$$$$$$$$$$$$$$NN8N$$$$$$$$$MMMMMMMMMMMMMMMMX<<<<            <XXMMM
-MMMMMMMMMMMM9$$$$$$$$$$$$$$$$$$$$$$$$$RRMMMMMMMMMMMMMMMMx<<<            <XMXMX
-MMMMMMMMMMMMM$$$$$$$$$$$$$$$RR$RRRRM*!"""!*MMMMMMMMMMMMMH><~           ::MMMHM
-MMMMMMMMMMMMMRRRRR$$$RM$$RRMMMM*!"!~<<<<<::X??MMMMMMMMMMMf~        :xnx:?MMMHM
-MMMMMMMMMMMMMM*!"""?*MMMMMMMM!!    <<<<<!*MMMMMMMMMMMMMMMf:       <HM!<<!XMMX!
-MMMMMMMMMMMMMMi<<<~~<"!MMMMMM<<<<<<  ~~<<~"!MMMMMMMMMMMMM!<<:~   <HMHx:<!M!t?!
-MMMMMMMMMMMMMMf<<~~ `~~!M8MMHi<<<<<::: :<:<<!H9MMMMMMMMMMk:<~ ::nHMMMMX<<X!?XX
-MMMMMMMMMMMMMMh<::< <x<<M$$MMM::<<<!h:::HMMMMMMMMMMMMMMMMMMhixMMMf?*MMXM!MX!?!
-MMMMMMMMMMMMMMMHMh::n?::8$RMMMHM+<+HMMhMMMMMMMMMMMMMMMMMMMMMMMMM?X:~?MX?!??!!!
-MMMMMMMMMMMMMM9NMMMMMHM8$$MMMMMMHnHnHHHHMMMMMMMMMMMMMMMMMMMMMMMMMMh:<?M!M!!!!!
-MMMMMMMMMMMMMM9$BMMMMMN$$RMMMMMMMN88MMMMMMMMMMMMMMMMMMMMMM%!MMMMMMM!<HHH!!!!~!
-MMMMMMMMMMMMMM9$$B888N$$$MMMMMMMMM$$$N8MMMMMMMMMMMMMMMMMMX!HMMMMMMMH!?!!!<!<<!
-MMMMMMMMMMMMMMM$$$$$$$$$RMMMMMMMMM$$$$$MMMMMMMMMMMMMMMMMM??!MMMMMMMMXH!!!~<~!!
-MMMMMMMMMMMMMMM$$$$$$$$$MMMMMMMMMMR$$$$NMMMMMMMMMMMMMMMM!!!!?MHHMMMM!!<~~~<!!<
-MMMMMMMMMMMMMMM9$$$$$$$$RMMRMMMMMMMMMMRMMMMMMMMMMMMMMMMM!!!!!!*MM*!!~<<<<~::!!
-MMMMMMMMMMMMMMM9$$$$RRRMM****MMMMMMMMMMMMMMMMMMMMMMMMMMHH!!!!<`!!<<< ~~<<<!!?!
-MMMMMMMMMMMMMMMM$$$$MMS!"<<:<<~9MMMMMMMMMMMMMMMMMMMMMMMMX!<!!<<<<<<<    ~~<<!~
-MMMMMMMMMMMMMMMM$$$B$$Mi!<~!<!!?MMMMMMMMMMMMMMMMMMMMMMMMM!<<<::<<::<         `
-MMMMMMMMMMMMMMMMR$$$RRMM<<<<<<<<2??!*MMMMMMMMMMMMMMMMMM?!<<<<!:<x!X<          
-MMMMMMMMMMMMMMMMM$$RMMMHn:::xxHMMMHx:<?MMMMMMMMMMMMMMMM!!<<<!!!X?Xf           
-MMMM?M%?X9MMMMMMMM$$MM*!!M*!""?""?"!"!!MMMMMMMMMMMMMM!!!<<<<<!!XXH!           
-MMMSX?!H??MMMMMMMM$$MHsi:!%+!+!!+!<::xXMMMMMMMMMMMMM?!<<<<<<<!!MMM~           
-MM??!?!!!!?M9MMMMMM$RM$$NbiiiinnHMMMMMMMMMMMMMMMMM!!!!<<<<<<<!!9MM            
-?!?!!!?!!<??tHMMMMMM@N$$R$$$$RRMMMMMMMMMMMMMMM??!!!!<<<<<<<<<!XMMM            
-X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M            
-!!!:!<<<<<~!!!!!"!<<?MMRMHnixxHMMMMMMMMMMMMM?!!<<<<<<<<<<<<<!!X9$f            
-!!!!!<<<<<<<!!!<<<<<~tMMMN$$MMMMMMMMMMMMMM!"!<<<<<<<<<<<<<<<<X9$R!            
-<<<<<<<<<<<<!<<~     ~?MMRRMMMMMMMMMMMM!"!<<~      <<<<<<<<<<H$$f             
-<<<<<<<<<<<<<<~       ~MMMMMMMMMMM**M?"<<~         <<<<<<<<:HM$R"             
-<<<<<<<<<<<<<~         `***!"?"!!!<<<<~           :<<<<<<<HMMMRP              
-<<<<<<<<<<<<<             `~ ` ~~    :            ~<<<<<xHMMMMM"              
-<<<<<<<<<<<<~                       <<:            ~ <<:HMMMMMf               
-<<<<<<<<<<<<                        `Hn:             <xMMMMMMM"               
-<<<<<<<<<<<                          !MMi          <xXMMMMMMM!                
-<<<<<<<<<<<                           !MM:        :!MMMMMMMMM~                
-<<<<<<<<<<:                            "MMr::  :xnHMMMMMMMMM!                 
-<<<<<<<<<<                              `"  `~~~?MMMMMMMMM?!                  
-<<<<<<<<<<                                      `"*MP*?XMM!~                  
-<<<<<<<<<<                                        `"!<!MMf~                   
-<<<<<<<<<~                                          `~!!?!                    
-<<<<<<<<<                                            `<~!~                    
-<<<<<<<<<                                          <:<<`~                     
-<<<<<<<<<~                                         ::<<                      :
-<<<<<<<<<<                                        'MHk<                      <
-:<<<<<<<<<                                        `MMH:                   < <<
+%}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+$?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+(%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+$S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::':/://:/::-::
+?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+(?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+$S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:'::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+$SZ?MMMMMMMMMMMMMMMMMH?.                                        "&((/?//?|::::
+$%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/??/!:/:|:
+(??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+$%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+%$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+$$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+4$($S$M//::S?ZHMMMMMH/:.':::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|::
+)[$S$S($|_i:#>::*H&?/::.::/:"://:?>>':&HMHSMMMM$:'-   MMHMMMMHHT .)i/?////:::/
+$$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.'   `H?$T*" `  /%?>%:)://ii|
+$&=&/ZS}$RF<:?/-.|%r/:::/:/:'.-.-..|::S//!`"``          >??:    `SS<S:)!/////|
+Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. '-.'  `                         ,>%%%:>/>/!|:/
+$$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+&$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+=[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+$&>1MHHMMMM6M9MMMM$Z$}$S%/:::.'.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&''     ../>%;/?>??:<::>
+MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..'.  .|//1d/`://?*/*/"` '     .:/(SS$%(S%)):%~
+MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.':;&&b/D/$p=qpv//b/~'   :/~~%%??$=$)Z$S+;
+MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:`'???bD&{b<<-'     .,:/)|SS(}Z/$$?/<S
+MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::'  `` .             SS?SS?Z/]1$/&$c/$S
+MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/??/''"    _MMHk/7S/]dq&1S<&&></
+MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// '         ,MMMMMMM&/Z6H]DkH]1$&&
+MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#':MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR' dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM' .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
 ******************************************************************************
 *                                                                            *
 *         =======================================================            *
@@ -120,14 +109,14 @@ X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 3.2 (patchlevel 1) 
- Hostname          : radon.chem.vu.nl
- Operating system  : Darwin 6.8
- Machine           : Power Macintosh
+ Hostname          : oddgs3.chem.uit.no
+ Operating system  : Linux 2.4.20-8
+ Machine           : i686
  Run               : Sequential
- Last compilation  : 09:11:23 11/17/03 (by visscher@radon.chem.vu.nl)
- Basis set dir.    : /Users/visscher/sources/Dirac.latest/test/31.symmetry_recognition/:/Users/visscher/sources/Dirac.latest/basis/:/Users/visscher/sources/basis
+ Last compilation  : 11:23:07 Mar  4 2004 (by tsaue@oddgs3.chem.uit.no)
+ Basis set dir.    : /home/tsaue/Dirac/test/31.symmetry_recognition/:/home/tsaue/Dirac/basis/:/home/tsaue/Dirac/basis_dalton/
 
- Date and time (Darwin) : Mon Nov 17 10:05:16 2003
+ Date and time (Linux) : Thu Mar  4 11:38:14 2004
 
 
  *************************************************************************
@@ -324,14 +313,14 @@ Represented as: D2h
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  S           1      16      27       9      L - [9s6p|3s2p]                                        
-                             69      69      S - [6s9p6d|6s9p6d]                                    
-  F           2       9      15       5      L - [6s3p|2s1p]                                        
-                             39      39      S - [3s6p3d|3s6p3d]                                    
-  F           2       9      15       5      L - [6s3p|2s1p]                                        
-                             39      39      S - [3s6p3d|3s6p3d]                                    
-  F           2       9      15       5      L - [6s3p|2s1p]                                        
-                             39      39      S - [3s6p3d|3s6p3d]                                    
+  S           1      16      27       9      L  - [9s6p|3s2p]                                        
+                             69      69      S  - [6s9p6d|6s9p6d]                                    
+  F           2       9      15       5      L  - [6s3p|2s1p]                                        
+                             39      39      S  - [3s6p3d|3s6p3d]                                    
+  F           2       9      15       5      L  - [6s3p|2s1p]                                        
+                             39      39      S  - [3s6p3d|3s6p3d]                                    
+  F           2       9      15       5      L  - [6s3p|2s1p]                                        
+                             39      39      S  - [3s6p3d|3s6p3d]                                    
   ----------------------------------------------------------------------
                             117      39   L - large components
                             303     303   S - small components
@@ -706,19 +695,8 @@ Represented as: D2h
  ***************************************************************************
 
  * Print level :    0
- * Basis set:
-   - contracted large component basis set
-   - uncontracted small component basis set
- * Restricted kinetic balance
- * Default RKB projection:
-   1: Pre-projection on scalar basis
-   2: Removing unphysical solutions for no external field
  * Levy-Leblond Hamiltonian
    - Spin-orbit interactions neglected
-===========================================================================
- DFTINP: Set-up for Kohn-Sham calculation:
-===========================================================================
- * Print level:     2
  
      This is a DFT calculation of type: B3LYP
  Weighted mixed functional:
@@ -727,11 +705,13 @@ Represented as: D2h
                             LYP:    0.81000
                         B88Corr:    0.72000
                          Slater:    0.80000
-* Radial quadrature according to 
-     R.Lindh, P.-Aa. Malmqvist and L.Gagliardi
-  Precision of radial quadrature set to:  0.10000E-07
-* Angular quadrature according to Lebedev scheme.
-  Angular integration exact up to order L = 41
+ * Basis set:
+   - contracted large component basis set
+   - uncontracted small component basis set
+ * Restricted kinetic balance
+ * Default RKB projection:
+   1: Pre-projection on scalar basis
+   2: Removing unphysical solutions for no external field
 ===========================================================================
  Maximum memory load for two-integral processing in HERMIT:
 ===========================================================================
@@ -758,9 +738,6 @@ Represented as: D2h
  DHFINP: Set-up for Kohn-Sham calculation:
 ===========================================================================
  * Number of fermion irreps: 2
- * Number of frozen shells:
-   Fermion irrep  1:     0
-   Fermion irrep  2:     0
  * General print level   :   0
  ***** TRIAL FUNCTION *****
  * Trial vectors read from file DFCOEF
@@ -772,14 +749,17 @@ Represented as: D2h
  ***** CONVERGENCE CONTROL *****
  * Fock matrix constructed using differential density matrix
     with optimal parameter.
- * DIIS (dirac-like)
+ * DIIS (in AO basis)
  * DIIS will be activated when convergence reaches : 1.00E+20
    - Maximum size of B-matrix:   10
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
- * No quadratic convergent Hartree-Fock
- * DHF occupation is allowed to change during SCF cycles.
+ * Quadratic convergent Hartree-Fock
+   - Maximum number of macro iterations: 25
+   - Maximum number of micro iterations: 25
+ WARNING! .AUTOCC and NASHT > 1 does not work
+  ==> turning .AUTOCC off
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
  ***** OUTPUT CONTROL *****
@@ -843,7 +823,7 @@ Total no. of orbitals      (NORB):    18      21      39
                 Improved by a crude estimate of the two-electron repulsion.
 
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Thu Mar  4 11:38:15 2004
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -851,14 +831,14 @@ Total no. of orbitals      (NORB):    18      21      39
  * Closed shell DHF calculation with   70 electrons in
       17 orbitals in Fermion irrep 1
       18 orbitals in Fermion irrep 2
-It.   1     32.42331532148      1.00E+20  0.00E+00  0.00E+00               0.20999992s   Bare nuc.             
+It.   1     32.42331532148      1.00E+20  0.00E+00  0.00E+00               0.15999997s   Bare nuc.   Thu Mar  4
 
-########## START ITERATION NO.   2##########                           
+########## START ITERATION NO.   2##########   Thu Mar  4 11:38:15 2004
 
 
 * GETGAB: label "GABAOXXX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    0.95%    0.00%    0.13%   1.60999966s
+SOfock:LL  1.00E-12    0.00%    0.95%    0.00%    0.13%   1.08000016s
 
 
  ********************************************************************************
@@ -893,181 +873,181 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
 
 ** Atom S   
 * Grid spacing
- Value chosen:  0.180
+ Value chosen:  0.123
  AH =   1066.2512
- RADERR =   1.E-08
-* Inner grid point: 1.24296E-04
+ RADERR =   1.E-13
+* Inner grid point: 2.67787E-06
 * Outer point:
- Value chosen:  7.941
-Constant c: 0.63010E-03
-Number of points:   52
-S     1   14600      52     590
+ Value chosen:  9.546
+Constant c: 0.20428E-04
+Number of points:  106
+S     1   24788     106     590
 ** Atom F   
 * Grid spacing
- Value chosen:  0.180
+ Value chosen:  0.123
  AH =   333.35826
- RADERR =   1.E-08
-* Inner grid point: 2.22296E-04
+ RADERR =   1.E-13
+* Inner grid point: 4.78921E-06
 * Outer point:
- Value chosen:  5.348
-Constant c: 0.11269E-02
-Number of points:   47
-F     2   15178      47     590
+ Value chosen:  6.428
+Constant c: 0.36534E-04
+Number of points:   98
+F     2   25324      98     590
 ** Atom F   
 * Grid spacing
- Value chosen:  0.180
+ Value chosen:  0.123
  AH =   333.35826
- RADERR =   1.E-08
-* Inner grid point: 2.22296E-04
+ RADERR =   1.E-13
+* Inner grid point: 4.78921E-06
 * Outer point:
- Value chosen:  5.348
-Constant c: 0.11269E-02
-Number of points:   47
-F     2   15178      47     590
+ Value chosen:  6.428
+Constant c: 0.36534E-04
+Number of points:   98
+F     2   25324      98     590
 ** Atom F   
 * Grid spacing
- Value chosen:  0.180
+ Value chosen:  0.123
  AH =   333.35826
- RADERR =   1.E-08
-* Inner grid point: 2.22296E-04
+ RADERR =   1.E-13
+* Inner grid point: 4.78921E-06
 * Outer point:
- Value chosen:  5.348
-Constant c: 0.11269E-02
-Number of points:   47
-F     2   15178      47     590
+ Value chosen:  6.428
+Constant c: 0.36534E-04
+Number of points:   98
+F     2   25324      98     590
 
-   Number of grid points in quadrature:     60134 (100.0%)
-
-
- >>>> Time used in DFTGRD:   0.63 seconds
+   Number of grid points in quadrature:    100760 (100.0%)
 
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008917392883916
-   DFT exchange-correlation energy:                 -72.2170857420873631
+ >>>> Time used in DFTGRD:   0.42 seconds
 
- >>>> Time used in DFTDRV:  1 minute   7 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 1min10.860s
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000648989506118
+   DFT exchange-correlation energy:                 -72.2167742229710683
 
-########## END ITERATION NO.   2 ##########                           
+ >>>> Time used in DFTDRV:  58.95 seconds
 
-It.   2    -983.1431405289      1.02E+03  9.43E-01  3.38E-01               1min10.860s   LL                    
+>>> Total wall time: 1min 3.000s
+>>> Total CPU-time : 1min 1.220s
 
-########## START ITERATION NO.   3##########                           
+########## END ITERATION NO.   2 ##########   Thu Mar  4 11:38:15 2004
+
+It.   2    -983.1428290097      1.02E+03 -9.43E-01  3.38E-01               1min 1.220s   LL          Thu Mar  4
+
+########## START ITERATION NO.   3##########   Thu Mar  4 11:39:18 2004
 
     3 *** Differential density matrix. DCOVLP     = 1.0079
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    2.77%    0.00%    0.13%   1.63999939s
+SOfock:LL  1.00E-12    0.00%    2.77%    0.00%    0.13%   1.08000183s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008199312933499
-   DFT exchange-correlation energy:                 -72.1368903295001331
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617320522593
+   DFT exchange-correlation energy:                 -72.1365386655570262
 
- >>>> Time used in DFTDRV:  2 minutes 50 seconds
+ >>>> Time used in DFTDRV:  2 minutes 39 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min51.960s
+>>> Total wall time: 2min47.000s
+>>> Total CPU-time : 2min40.700s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Thu Mar  4 11:39:18 2004
 
-It.   3    -983.1555267158      1.24E-02  1.20E-01  8.75E-02   DIIS   3    2min51.960s   LL                    
+It.   3    -983.1552455800      1.24E-02  1.20E-01  8.76E-02   DIIS   3    2min40.700s   LL          Thu Mar  4
 
-########## START ITERATION NO.   4##########                           
+########## START ITERATION NO.   4##########   Thu Mar  4 11:42:05 2004
 
     4 *** Differential density matrix. DCOVLP     = 0.9934
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    2.97%    0.00%    0.13%   1.63000488s
+SOfock:LL  1.00E-12    0.00%    2.97%    0.00%    0.13%   1.05999756s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008333300705772
-   DFT exchange-correlation energy:                 -72.1590556347096452
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617032498269
+   DFT exchange-correlation energy:                 -72.1587257958183699
 
- >>>> Time used in DFTDRV:  2 minutes 50 seconds
+ >>>> Time used in DFTDRV:  2 minutes 39 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min51.710s
+>>> Total wall time: 2min57.000s
+>>> Total CPU-time : 2min40.270s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Thu Mar  4 11:42:05 2004
 
-It.   4    -983.1574849631      1.96E-03 -5.95E-02  2.92E-02   DIIS   4    2min51.710s   LL                    
+It.   4    -983.1572095868      1.96E-03 -5.96E-02  2.92E-02   DIIS   4    2min40.270s   LL          Thu Mar  4
 
-########## START ITERATION NO.   5##########                           
+########## START ITERATION NO.   5##########   Thu Mar  4 11:45:02 2004
 
     5 *** Differential density matrix. DCOVLP     = 1.0016
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.00%    4.01%    0.00%    0.13%   1.66998291s
+SOfock:LL  1.00E-12    0.00%    4.01%    0.00%    0.13%   1.07000732s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008297932797063
-   DFT exchange-correlation energy:                 -72.1536708646962097
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617204654247
+   DFT exchange-correlation energy:                 -72.1533365075743092
 
- >>>> Time used in DFTDRV:  2 minutes 49 seconds
+ >>>> Time used in DFTDRV:  2 minutes 40 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min51.020s
+>>> Total wall time: 4min27.000s
+>>> Total CPU-time : 2min41.210s
 
-########## END ITERATION NO.   5 ##########                           
+########## END ITERATION NO.   5 ##########   Thu Mar  4 11:45:02 2004
 
-It.   5    -983.1577384145      2.53E-04  1.52E-02  3.12E-04   DIIS   5    2min51.020s   LL                    
+It.   5    -983.1574637688      2.54E-04  1.52E-02  3.13E-04   DIIS   5    2min41.210s   LL          Thu Mar  4
 
-########## START ITERATION NO.   6##########                           
+########## START ITERATION NO.   6##########   Thu Mar  4 11:49:29 2004
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.22%   10.91%    0.00%    0.13%   1.61999512s
+SOfock:LL  1.00E-12    0.22%   10.91%    0.00%    0.13%   1.09997559s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008297675165778
-   DFT exchange-correlation energy:                 -72.1537198384843634
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617171783261
+   DFT exchange-correlation energy:                 -72.1533856313918989
 
- >>>> Time used in DFTDRV:  2 minutes 48 seconds
+ >>>> Time used in DFTDRV:  2 minutes 41 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min50.300s
+>>> Total wall time: 5min43.000s
+>>> Total CPU-time : 2min42.420s
 
-########## END ITERATION NO.   6 ##########                           
+########## END ITERATION NO.   6 ##########   Thu Mar  4 11:49:29 2004
 
-It.   6    -983.1577384540      3.95E-08 -1.42E-04  1.51E-05   DIIS   6    2min50.300s   LL                    
+It.   6    -983.1574638085      3.97E-08 -1.43E-04  1.51E-05   DIIS   6    2min42.420s   LL          Thu Mar  4
 
-########## START ITERATION NO.   7##########                           
+########## START ITERATION NO.   7##########   Thu Mar  4 11:55:12 2004
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    0.98%   17.47%    0.00%    0.13%   1.61999512s
+SOfock:LL  1.00E-12    0.98%   17.47%    0.00%    0.13%   1.07000732s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008297624665659
-   DFT exchange-correlation energy:                 -72.1537195996025531
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617170568091
+   DFT exchange-correlation energy:                 -72.1533853939680228
 
- >>>> Time used in DFTDRV:  2 minutes 49 seconds
+ >>>> Time used in DFTDRV:  2 minutes 40 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min50.830s
+>>> Total wall time: 5min47.000s
+>>> Total CPU-time : 2min41.270s
 
-########## END ITERATION NO.   7 ##########                           
+########## END ITERATION NO.   7 ##########   Thu Mar  4 11:55:12 2004
 
-It.   7    -983.1577384542      1.56E-10  4.08E-06  6.77E-07   DIIS   7    2min50.830s   LL                    
+It.   7    -983.1574638087      1.60E-10  4.09E-06  6.79E-07   DIIS   7    2min41.270s   LL          Thu Mar  4
 
-########## START ITERATION NO.   8##########                           
+########## START ITERATION NO.   8##########   Thu Mar  4 12:00:59 2004
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    8.20%   29.66%    0.00%    0.14%   1.55999756s
+SOfock:LL  1.00E-12    8.20%   29.64%    0.00%    0.14%   1.00000000s
 
-   Number of quadrature points:                          60134
-   Number of electrons:                    70.0008297624800662
-   DFT exchange-correlation energy:                 -72.1537197569740840
+   Number of quadrature points:                         100760
+   Number of electrons:                    70.0000617170510679
+   DFT exchange-correlation energy:                 -72.1533855517534448
 
- >>>> Time used in DFTDRV:  2 minutes 49 seconds
+ >>>> Time used in DFTDRV:  2 minutes 42 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 2min50.740s
+>>> Total wall time: 6min 0.000s
+>>> Total CPU-time : 2min43.810s
 
-########## END ITERATION NO.   8 ##########                           
+########## END ITERATION NO.   8 ##########   Thu Mar  4 12:00:59 2004
 
-It.   8    -983.1577384542      1.43E-11 -3.25E-07  2.09E-08   DIIS   7    2min50.740s   LL                    
+It.   8    -983.1574638087      1.34E-11 -3.27E-07  2.08E-08   DIIS   7    2min43.810s   LL          Thu Mar  4
 
 
                                SCF - CYCLE
@@ -1083,31 +1063,31 @@ It.   8    -983.1577384542      1.43E-11 -3.25E-07  2.09E-08   DIIS   7    2min5
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1     32.42331532148      1.00E+20  0.00E+00  0.00E+00               0.20999992s   Bare nuc.             
-It.   2    -983.1431405289      1.02E+03  9.43E-01  3.38E-01               1min10.860s   LL                    
-It.   3    -983.1555267158      1.24E-02  1.20E-01  8.75E-02   DIIS   3    2min51.960s   LL                    
-It.   4    -983.1574849631      1.96E-03 -5.95E-02  2.92E-02   DIIS   4    2min51.710s   LL                    
-It.   5    -983.1577384145      2.53E-04  1.52E-02  3.12E-04   DIIS   5    2min51.020s   LL                    
-It.   6    -983.1577384540      3.95E-08 -1.42E-04  1.51E-05   DIIS   6    2min50.300s   LL                    
-It.   7    -983.1577384542      1.56E-10  4.08E-06  6.77E-07   DIIS   7    2min50.830s   LL                    
-It.   8    -983.1577384542      1.43E-11 -3.25E-07  2.09E-08   DIIS   7    2min50.740s   LL                    
+It.   1     32.42331532148      1.00E+20  0.00E+00  0.00E+00               0.15999997s   Bare nuc.   Thu Mar  4
+It.   2    -983.1428290097      1.02E+03 -9.43E-01  3.38E-01               1min 1.220s   LL          Thu Mar  4
+It.   3    -983.1552455800      1.24E-02  1.20E-01  8.76E-02   DIIS   3    2min40.700s   LL          Thu Mar  4
+It.   4    -983.1572095868      1.96E-03 -5.96E-02  2.92E-02   DIIS   4    2min40.270s   LL          Thu Mar  4
+It.   5    -983.1574637688      2.54E-04  1.52E-02  3.13E-04   DIIS   5    2min41.210s   LL          Thu Mar  4
+It.   6    -983.1574638085      3.97E-08 -1.43E-04  1.51E-05   DIIS   6    2min42.420s   LL          Thu Mar  4
+It.   7    -983.1574638087      1.60E-10  4.09E-06  6.79E-07   DIIS   7    2min41.270s   LL          Thu Mar  4
+It.   8    -983.1574638087      1.34E-11 -3.27E-07  2.08E-08   DIIS   7    2min43.810s   LL          Thu Mar  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
       No 2-ints :    0.00000000s
-      LL        :    0.00000000s
+      LL        :    4min 6.286s
 
 
                                TOTAL ENERGY
                                ------------
 
-   Electronic energy                        :    -1580.1040983096348
+   Electronic energy                        :    -1580.1038236641646
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      596.9463598554682
+   Nuclear repulsion energy                 :      596.9463598554684
 
    Sum of all contributions to the energy
-   Total energy                             :     -983.1577384541665
+   Total energy                             :     -983.1574638086962
 
 
                                Eigenvalues
@@ -1116,70 +1096,70 @@ It.   8    -983.1577384542      1.43E-11 -3.25E-07  2.09E-08   DIIS   7    2min5
 
 * Boson symmetry Ag 
   * Closed shell, f = 1.0000
--88.41135828200368  ( 2)   -24.32895647553325  ( 2)   -24.32796212863625  ( 4)    -8.21941861089621  ( 2)    -1.39448177985929  ( 2)
- -1.09599633037491  ( 4)    -0.62407701831577  ( 2)    -0.27395630533452  ( 4)
+-88.41125813552547  ( 2)   -24.32897176410194  ( 2)   -24.32797690454738  ( 4)    -8.21934372279672  ( 2)    -1.39442103126830  ( 2)
+ -1.09592974749458  ( 4)    -0.62408381191386  ( 2)    -0.27390964327829  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  0.26667991083853  ( 2)
+  0.26672100908927  ( 2)
 
 * Boson symmetry B1g
   * Closed shell, f = 1.0000
- -0.31769263912879  ( 2)    -0.20201435011699  ( 2)
+ -0.31773289783555  ( 2)    -0.20205824107727  ( 2)
 
 * Boson symmetry B2g
   * Closed shell, f = 1.0000
- -0.31769263912879  ( 2)    -0.20201435011699  ( 2)
+ -0.31773289783557  ( 2)    -0.20205824107730  ( 2)
 
 * Boson symmetry B3g
   * Closed shell, f = 1.0000
- -0.31769263912880  ( 2)    -0.20201435011700  ( 2)
+ -0.31773289783548  ( 2)    -0.20205824107719  ( 2)
 
 * Boson symmetry B3u
   * Closed shell, f = 1.0000
--24.32874765568429  ( 2)    -6.16672115769591  ( 2)    -1.21052449324593  ( 2)    -0.52193627052770  ( 2)    -0.24606730327064  ( 2)
- -0.23849073230120  ( 2)
+-24.32876281889158  ( 2)    -6.16664037398705  ( 2)    -1.21045616842568  ( 2)    -0.52193950037107  ( 2)    -0.24610959852805  ( 2)
+ -0.23850808507411  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.38545964169894  ( 2)
+  0.38546863894285  ( 2)
 
 * Boson symmetry B2u
   * Closed shell, f = 1.0000
--24.32874765568430  ( 2)    -6.16672115769591  ( 2)    -1.21052449324591  ( 2)    -0.52193627052768  ( 2)    -0.24606730327065  ( 2)
- -0.23849073230122  ( 2)
+-24.32876281889128  ( 2)    -6.16664037398699  ( 2)    -1.21045616842558  ( 2)    -0.52193950037088  ( 2)    -0.24610959852813  ( 2)
+ -0.23850808507413  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.38545964169886  ( 2)
+  0.38546863894279  ( 2)
 
 * Boson symmetry B1u
   * Closed shell, f = 1.0000
--24.32874765568434  ( 2)    -6.16672115769597  ( 2)    -1.21052449324594  ( 2)    -0.52193627052769  ( 2)    -0.24606730327064  ( 2)
- -0.23849073230120  ( 2)
+-24.32876281889138  ( 2)    -6.16664037398706  ( 2)    -1.21045616842561  ( 2)    -0.52193950037095  ( 2)    -0.24610959852810  ( 2)
+ -0.23850808507412  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.38545964169893  ( 2)
+  0.38546863894283  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
-    Ag  Ag  Ag  Ag  Ag  Ag  Ag  Ag  Ag  B3g B1g B2g Ag  Ag  B3g B1g B2g 
+    Ag  Ag  Ag  Ag  Ag  Ag  Ag  Ag  Ag  B2g B1g B3g Ag  Ag  B2g B1g B3g 
   * Virtual orbitals
     Ag  
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-    B1u B2u B3u B1u B3u B2u B1u B3u B2u B3u B1u B2u B2u B3u B1u B2u B1u B3u 
+    B3u B1u B2u B1u B3u B2u B3u B1u B2u B3u B1u B2u B2u B1u B3u B2u B1u B3u 
   * Virtual orbitals
     B2u B1u B3u 
 
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.26667991 au (symmetry Ag )
-  - E(HOMO) :    -0.20201435 au (symmetry B2g)
+    E(LUMO) :     0.26672101 au (symmetry Ag )
+  - E(HOMO) :    -0.20205824 au (symmetry B3g)
   ------------------------------------------
-    gap     :     0.46869426 au
+    gap     :     0.46877925 au
 
 
- Date and time (Darwin) : Mon Nov 17 10:26:57 2003
+ Date and time (Linux) : Thu Mar  4 12:06:59 2004
 *****************************************************
->>>> Total CPU  time used in DIRAC: 18min19.050s
->>>> Total WALL time used in DIRAC:  0.00000000s
+>>>> Total CPU  time used in DIRAC: 17min12.050s
+>>>> Total WALL time used in DIRAC: 28min46.000s
 ********** E N D   of   D I R A C  output  **********
