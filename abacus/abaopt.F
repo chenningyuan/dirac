@@ -1033,22 +1033,22 @@ C
          END IF
       END IF
       IF (GRDTHR .NE. DEFTH2) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for gradient set to : ', GRDTHR
          IF ((GRDTHR .LT. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
-     &           ' Threshold reset to:', DEFTH2
+            WRITE(LUPRI,'(A/A,1P,D13.2)')
+     &           ' - Threshold negative or larger than 0.1',
+     &           ' - Threshold reset to:', DEFTH2
             GRDTHR = DEFTH2
          END IF
       END IF
       IF (THRERG .NE. DEFTHE) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+         WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for energy set to   : ', THRERG
          IF ((THRERG .LT. D0) .OR. (THRERG .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
-     &           ' Threshold reset to:', DEFTHE
+            WRITE(LUPRI,'(A/A,1P,D13.2)')
+     &           ' - Threshold negative or larger than 0.1',
+     &           ' - Threshold reset to:', DEFTHE
             THRERG = DEFTHE
          END IF
       END IF
@@ -1056,9 +1056,9 @@ C
          WRITE(LUPRI,'(A,D13.2)')
      &        ' Convergence threshold for step set to     : ', THRSTP
          IF ((THRSTP .LT. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
-            WRITE(LUPRI,*) 'Threshold negative or larger than 0.1'
-            WRITE(LUPRI,'(A,D13.2)')
-     &           ' Threshold reset to:', DEFTH2
+            WRITE(LUPRI,'(A/A,1P,D13.2)')
+     &           ' - Threshold negative or larger than 0.1',
+     &           ' - Threshold reset to:', DEFTH2
             THRSTP = DEFTH2
          END IF
       END IF
@@ -1071,18 +1071,14 @@ C
          WRITE(LUPRI,'(A,I3)')
      &        ' Number of convergence criteria set to     : ', ICONDI
          IF ((ICONDI .LT. 1) .OR. (ICONDI .GT. 3)) THEN
-            WRITE(LUPRI,*) 'Acceptable values are 1, 2 and 3.'
             ICONDI = 2
-            WRITE(LUPRI,'(A,I3)')
-     &           ' Number reset to:', ICONDI
+            WRITE(LUPRI,'(A/A,I3)')
+     &           ' - Acceptable values are 1, 2 and 3.',
+     &           ' - Number reset to:', ICONDI
          END IF
       END IF
-      IF (BAKER) THEN
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)')
+      IF (BAKER) WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
-         WRITE(LUPRI,*)
-      END IF
       IF (CONOPT) THEN
          WRITE(LUPRI,'(A)')
      &        ' Constrained optimization has been requested.'
@@ -1102,11 +1098,10 @@ C
  333        CONTINUE
             IF (.NOT. NOBRKS) THEN
                NOBRKS = .TRUE.
-               WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Symmetry will not be broken during '
-     &              // 'a constrained optimization.'
+               WRITE(LUPRI,'(/A/)')
+     &            ' Symmetry will not be broken during '
+     &         // 'a constrained optimization.'
             END IF
-            WRITE(LUPRI,*)
          END IF
       END IF
       IF (REMCRD) THEN
@@ -1170,13 +1165,23 @@ C
             WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
          END IF
       END IF
-      IF(SCRGRD.GT.D0) THEN
-         WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &        '* Screening threshold in gradient calculation ',SCRGRD
+      IF (SCRGRD.GT.D0) THEN
+         WRITE(LUPRI,'(A,1P,D8.2)')
+     &        ' * Screening threshold in gradient calculation ',SCRGRD
+      ELSE IF (SCRGRD.LT.D0) THEN
+C hjaaj July 2003: SCRGRD.lt.0 signals: use a default value
+C                 (SCRGRD is initialized to -1 in INIGRD)
+C  --- TODO: the factor of 1.0D-6 is ad hoc and just a guess for a reasonable value
+C            this should be tested ...
+C            I made so small to be on the safe side (I hope!) /hjaaj July 2003
+         SCRGRD = 1.0D-6*GRDTHR
+         WRITE(LUPRI,'(A,1P,D8.2/A)')
+     &   ' * Screening threshold in gradient calculation ',SCRGRD,
+     &   '   (default value of 1.0e-6 * gradient convergence threshold)'
       ELSE
-         WRITE(LUPRI,'(1X,A)')
-     &        '* No screening in the calculation of '//
-     &        'two-electron integrals.'
+         WRITE(LUPRI,'(A)')
+     &        ' * No screening in the calculation of'//
+     &        ' two-electron gradient integrals.'
       END IF
 #endif
       RETURN
@@ -2281,7 +2286,7 @@ C
             ENERGY = RGETCCSD()
          ELSE IF (DOMP2) THEN
             ENERGY = EMP2+DHFERG
-         ELSE IF (DODHF) THEN
+         ELSE IF (DODHF.OR.DODFT) THEN
             ENERGY = DHFERG
          ELSE
             call quit('no wave function...')
@@ -7336,6 +7341,7 @@ C     Performs a numerical differentiation in order to get an
 C     finite-difference molecular gradient for use in geometry optimization
 C     of MP2, CI or CC wave functions for which there does not exist 
 C     analytical implementations
+C     (DFT added Jun. 2003 /jkp)
 C
 C     If I have understood WLKINC correctly, it will do a totally symmetric
 C     gradient estimation (thus all we need for a geometry optimization, and
@@ -7375,7 +7381,7 @@ C
          ECORR = RGETCCSD()
       ELSE IF (DOMP2) THEN
          ECORR = DHFERG+EMP2
-      ELSE IF (DODHF) THEN
+      ELSE IF (DODHF.OR.DODFT) THEN
          ECORR = DHFERG
       ELSE
          call quit('unknown wave function...')
@@ -7472,7 +7478,7 @@ C
             ECORR = RGETCCSD()
          ELSE IF (DOMP2) THEN
             ECORR = DHFERG+EMP2
-         ELSE IF (DODHF) THEN
+         ELSE IF (DODHF.OR.DODFT) THEN
             ECORR = DHFERG
          ELSE
             call quit('unknown wave function...')
@@ -7486,7 +7492,7 @@ C
      &            'gradient',-1)
 C
       DO I = 1,NCRREP(0,1)
-         WRITE(6,*) 'Gradient ',I,'   ',GRDMOL(I)
+         WRITE(LUPRI,*) 'Gradient ',I,'   ',GRDMOL(I)
       END DO
 C
  9100 FORMAT (A4)
