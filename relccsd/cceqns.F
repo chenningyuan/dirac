@@ -1410,7 +1410,6 @@ C call SRT23 with appropriate arguments
      &            BUF4,VVVO,NVVVOTMX)
       IF (CARITH) CALL CONJUGA (KVVVOT(NREP+1),VVVO,1)
 #endif
-
 C
 C     Put TAU3 in block BUF4 for use in evaluating -T correction
 C

@@ -1276,7 +1276,7 @@ C       write(iw,*) 'irep,jrep,llvvvt(i,j),llt3vvvt(i,j):',
 C    &    irep,jrep,llvvvt(irep,jrep),llt3vvvt(irep,jrep)
 C     ENDDO
 C     ENDDO
-      
+C     
 C----------------------------------------------
 C----- F O C K   S P A C E   A R R A Y S ------
 C----------------------------------------------

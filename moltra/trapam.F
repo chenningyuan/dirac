@@ -3402,6 +3402,7 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <dcbtra.h>
 #include <dcbtr3.h>
 #include <dcbbas.h>
@@ -3428,10 +3429,11 @@ C     No F77 standard says that elements in a common block are
 C     consequtive, and, in fact, with -Ofast on SGI the compiler
 C     may pad common blocks with junk. /jth Feb 12 2001
 C
-C     A better, but still not optimal, solution is to 
-C     calculate the address difference between the first
-C     element and the last element in the common block, and
-C     transfer all data inbetween.
+C     This routine should be improved, the problem is that the slaves
+C     do not read input so do not get their common blocks initialized.
+C     A rigorous solution is to transfer the input file to all nodes
+C     and have the slaves go though it as well. This requires some
+C     non-trivial changes of the parallelization setup. LV 18-5-01 
 C
 C     dcborb.h
 C     --------
@@ -3445,6 +3447,13 @@ C     --------
 C
       NUMELM = NDCBBAS
       CALL MPI_BCAST(NBBAS,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C
+C     dcbham.h
+C     --------
+C
+      NUMELM = NDCLHAM
+      CALL MPI_BCAST(ONESYS,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dgroup.h
