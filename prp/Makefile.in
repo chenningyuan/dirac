@@ -10,7 +10,6 @@ include ../Makefile.config
 OBJS =paminp.o \
         pamprp.o \
 	pamexp.o \
-	pamesr.o \
         pamgrd.o \
         pamogrd.o \
         pamfck.o \
