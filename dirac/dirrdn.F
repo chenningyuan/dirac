@@ -2500,7 +2500,7 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            'XXXXXXX','XXXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.SPINFR','.ZORAFC','.SMLV1C','.XXXXXX'/
 C
       SYMSTP = .FALSE.
       CALL TITLER('Hamiltonian defined','*',127)      
@@ -2518,6 +2518,8 @@ C
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
       SOLVEN  = .FALSE.
+      ZORAFC  = .FALSE.
+      SMLV1C  = .FALSE.
       N1OPER  = 0
       SSMTRC  = D1
       CALL OP1INI(WORK,LWORK)
@@ -2645,9 +2647,16 @@ C&&& SPINFREE : Zero out spin-orbit terms
 
                GOTO 100
   114      CONTINUE
-              GOTO 100
+C&&& ZORAFC : Use ZORA-like approximation
+             ZORAFC = .TRUE.
+             READ (LUCMD,*) SSMTRC
+             ICHANG = ICHANG + 1
+             GO TO 100
   115      CONTINUE
-              GOTO 100
+C&&& SMLV1C : Neglect potential for off-diagonal SS-blocks
+             SMLV1C = .TRUE.
+             ICHANG = ICHANG + 1
+             GO TO 100
   116      CONTINUE
               GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -2798,8 +2807,12 @@ C         Operator must be symmetric under time reversal
            WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
      &          'solutions projected out'
          ENDIF
+         IF(ZORAFC) WRITE(LUPRI,'(1X,A,E8.2)')
+     &      '* ZORA-like approximation with scaling factor :',SSMTRC
          IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
      &      '* No nuclear attraction integrals for small components !'
+         IF(SMLV1C) WRITE(LUPRI,'(1X,A)')
+     &      '* Only one-center contributions to Vss !'
       ENDIF
       IF (NOINPUT) GOTO 500
 C
