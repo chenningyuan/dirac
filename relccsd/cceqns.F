@@ -356,19 +356,18 @@ C
 
         IF(NBUF3.LT.IVOVO(NREP+1)) 
      &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
-        CALL XCOPY (NBUF3,A0,0,BUF3,1)
 
 C ... we collect the H array
 
         CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
-        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
-        CALL MPI_ALLREDUCE(BUF3,H,RCW*IVOVO(NREP+1),
+        CALL XCOPY (NBUF3,A0,0,BUF3,1)
+        CALL MPI_ALLREDUCE(H,BUF3,RCW*IVOVO(NREP+1),
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,IERR)
         IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
+        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
         CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
 c
 cluuk : old code below, that uses two steps
-c       CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
 c       CALL XTIME(4,1,'-- adding partial HINTM via MPI_REDUCE')
 c       CALL MPI_REDUCE(H,BUF3,RCW*IVOVO(NREP+1),
 c    &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
