@@ -410,9 +410,11 @@ Ctec
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME        = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
-     *                 //CHRNOS(IATOM/10)//CHRNOS(IATOM)//CHRNOS(IOFF)
+     *                 //CHRNOS(IATOM/10)
+     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
-     &                 CHRNOS(IATOM/10)//CHRNOS(IATOM)//CHRNOS(IOFF)
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
