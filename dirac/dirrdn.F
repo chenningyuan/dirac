@@ -4442,10 +4442,10 @@ C
 C     Check for C1 symmetry if localization requested
 C
       IF(DOLOC .AND. (NBSYM .GT. 1)) THEN
-         WRITE (*,'(A,A)') ' * WARNING : Orbital localization not yet',
-     S   ' implemented'
-         WRITE (*,'(A)') '             for other groups than C1 !!!'
-         WRITE (*,'(A)') '   -> LOCALIZE ignored'
+         WRITE (LUPRI,'(/2A)') ' * WARNING : Orbital localization not',
+     S   ' yet implemented'
+         WRITE (LUPRI,'(A)') '             for other groups than C1 !!!'
+         WRITE (LUPRI,'(A)') '   -> LOCALIZE ignored'
          DOLOC = .FALSE.
       ENDIF
 C
