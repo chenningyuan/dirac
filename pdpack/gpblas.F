@@ -30901,4 +30901,6 @@ c       code for both increments equal to 1
 *     End of ZTRSV .
 *
       END
+#else
+      END
 #endif
