@@ -2149,7 +2149,7 @@ C
             REDMRK = '#'
             RED = .TRUE.
          END IF
-         WRITE(LUPRI,'(I4,A1,F12.6,2F11.6,I5,F12.6,A1,F11.6,I4,A1)')
+         WRITE(LUPRI,'(I4,A1,E12.5,2E11.4,I5,E12.5,A1,E11.4,I4,A1)')
      &        I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK
