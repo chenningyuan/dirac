@@ -862,18 +862,20 @@ C
 #endif
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 #include <dcbibt.h>
-
 C
 C     Get array ICLAB which maps small component basis functions onto
 C     atomic centers.
-C      
-      IOFF = NTBAS(1)
-      DO ISBAS  = 1,NTBAS(2)
-         JSBAS  = ISBAS + IOFF
-         IOLAV  = IATTR(IPLAB(JSBAS,2),2)
-         ICENT  = JGET(IOLAV)
-         ICLAB(ISBAS) = ICENT
-      ENDDO   
+C
+      I = 0
+      DO IFRP = 1,NFSYM
+         IOFF = IBAS(IFRP) + NFBAS(IFRP,1)
+         DO ISBAS  = IOFF+1,IOFF+NFBAS(IFRP,2)
+            I = I + 1
+            IOLAV  = IATTR(IPLAB(ISBAS,2),2)
+            ICENT  = JGET(IOLAV)
+            ICLAB(I) = ICENT
+         ENDDO
+      ENDDO
 C
 C     Calculate the gross population of each small component basis
 C     function
