@@ -1134,8 +1134,10 @@ C.......ntot   = nmol + nref
           CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
           IVEC = IVEC + NSTR(IFRP,0,I)
         ENDDO
+        N2REF = NREF*NREF
+        CALL MEMGET('REAL',KPMAT,N2REF,WORK,KFREE,LFREE)
         CALL PRJAN1(IFRP,NMOL,NREF,NTOT,
-     &       KQ,KE,WORK(KAMAT),WORK(KBV(IFRP)),
+     &       KQ,KE,WORK(KAMAT),WORK(KBV(IFRP)),WORK(KPMAT),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
      &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
         POLT = POLT + POL(IFRP)
@@ -1178,8 +1180,9 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
-      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,AMAT,BVEC,GVEC,
-     &           JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,WORK,KFREE,LFREE)
+      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,AMAT,BVEC,PMAT,
+     &                  GVEC,JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
@@ -1205,7 +1208,7 @@ C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
-     &          KE(2,2),KQ(2,2),AMAT(NTOT,NTOT,NZ),
+     &          KE(2,2),KQ(2,2),AMAT(NTOT,NTOT,NZ),PMAT(NREF,NREF),
      &          BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
 C
       KFRSAV = KFREE
@@ -1229,7 +1232,7 @@ C
         IF(IPRPRJ.GE.3) THEN
           WRITE(LUPRI,'(A,A3)') 
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
-          CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,NTOT,SMAT,GVEC,AMAT,BVEC,
+          CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,2)),NSTR,
      &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
         ENDIF
@@ -1243,6 +1246,7 @@ C
      &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRPRJ)
+
 C
 C       Print overlaps
 C
@@ -1309,14 +1313,14 @@ C
 C
 C     Mulliken-type population analysis
 C
-      CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,SMAT,GVEC,AMAT,BVEC,
+      CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,2)),NSTR,
      &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
 C
 C     Löwdin type population analysis
 C
       IF(DOPOP) CALL ANAPR3(AMAT,BVEC,NMOL,NREF,NTOT,WORK(KE(IFRP,1)),
-     &                      JREF,WORK,KFREE,LFREE)
+     &                      JREF,GVEC,WORK,KFREE,LFREE)
       CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -1500,8 +1504,8 @@ C
               DO I = 1,(J-1)
                 CW = PMAT(I,I) + PMAT(J,J)
                 IF(CW.GT.D0) THEN
-                  GVEC(J,2) = GVEC(J,2) + D2*(PMAT(J,J)/CW)*PMAT(I,J)
-                  GVEC(I,2) = GVEC(I,2) + D2*(PMAT(I,I)/CW)*PMAT(I,J)
+                 GVEC(J,2) = GVEC(J,2) + D2*(PMAT(J,J)/CW)*PMAT(I,J)
+                 GVEC(I,2) = GVEC(I,2) + D2*(PMAT(I,I)/CW)*PMAT(I,J)
                 ENDIF              
               ENDDO
             ENDDO
@@ -2390,8 +2394,8 @@ C
 C Get overlap matrix 
 C
       CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE) 
-      IF(IPRLOC.GE.5) THEN
-         WRITE(LUPRI,'(/A)') '* ORBLOC: Coefficients matrix'
+      IF(IPRLOC.GE.6) THEN
+         WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
          CALL PRQMAT(WORK(KCMO),NFBAS(IFRP,0),NORB(IFRP),
      S               NFBAS(IFRP,0),NORB(IFRP),4,
      S               IPQTOQ(1,0),LUPRI)
@@ -2408,7 +2412,7 @@ C
       CALL SELCFS(WORK(KCMO),IFRP,WORK(KSCOEF),NISH(IFRP),WORK(KSEL),
      S            D0,NISH(IFRP),NFBAS(IFRP,0),NORB(IFRP))
       IF(IPRLOC.GE.5) THEN
-         WRITE(LUPRI,'(/A)') '* ORBLO1: Electronic coefficients matrix'
+         WRITE(LUPRI,'(/A)') '* ORBLO1: Selected molecular coefficients'
          CALL PRQMAT(WORK(KSCOEF),NFBAS(IFRP,0),NISH(IFRP),
      S        NFBAS(IFRP,0),NISH(IFRP),4,
      S        IPQTOQ(1,0),LUPRI)
@@ -2757,13 +2761,18 @@ C
             CALL QUIT('PRJANA: No reference coefficients !')
          ENDIF
          CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','PRJANA')
-         IF(IPRLOC .GE. 5) WRITE(LUPRI,'(A,A6)') 
-     &        '* Coefficients for reference ',REFFIL(I)
          IF(OWNBAS) THEN
             CALL SELOWN(2,WORK(KCMO),IDUM,IDUM,
      &           I,LUCOEF,REFFIL(I),NQ,IDUM,IDUM,
      &           NVECS(1,1),KVEC(1,I),
      &           NSTR(1,0,I),WORK,KFREE,LFREE)
+            IF(IPRLOC .GE. 5) THEN
+              WRITE(LUPRI,'(A,A6)') 
+     &        '* Selected coefficients for reference ',REFFIL(I)
+              CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),
+     &        NB,NSTR(IFRP,0,I),4,
+     S        IPQTOQ(1,0),LUPRI)
+           ENDIF
 C     DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,I).GT.0) THEN
                NQ = NQ + NSTR(IFRP,0,I)*NB
@@ -2777,6 +2786,13 @@ C     DO IFRP = 1, NFSYM
                CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(NQ),
      &              NVECS(IFRP,1),WORK(KVEC(IFRP,I)),
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I),NB,NORB(IFRP))
+              IF(IPRLOC .GE. 5) THEN
+                WRITE(LUPRI,'(A,A6)') 
+     &          '* Selected coefficients for reference ',REFFIL(I)
+                CALL PRQMAT(WORK(NQ),NB,NSTR(IFRP,0,I),
+     &            NB,NSTR(IFRP,0,I),4,
+     S            IPQTOQ(1,0),LUPRI)
+               ENDIF
                NQ = NQ + NSTR(IFRP,0,I)*NB
             ENDIF
 C     ENDDO
@@ -3246,9 +3262,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anapr3 */
       SUBROUTINE ANAPR3(AMAT,BVEC,NMOL,NREF,NTOT,EREF,JREF,
-     &                  WORK,KFREE,LFREE)
+     &                  PSUM,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C      Do Loewdin symmetric orthonormalization
+C      Written by T. Saue Oct 2004
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3259,7 +3277,7 @@ C
 #include "dcbprj.h"
       CHARACTER OTYP(2)*1
       DIMENSION AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
-     &          JREF(3,*),EREF(*),WORK(*)
+     &          JREF(3,*),EREF(*),PSUM(NREFS),WORK(*)
       DATA OTYP/'E','P'/
       SAVE OTYP
 C
@@ -3296,12 +3314,20 @@ C
       ENDIF
       WRITE(LUPRI,'(/A)') 
      &   '* Occupations in symmetry orthonormalized basis:'
+      CALL DZERO(PSUM,NREFS)
       DO I = 1,NREF
         KORB = JREF(1,I)
         KTYP = JREF(2,I)
         KREF = JREF(3,I)
         WRITE(LUPRI,110)
      &   REFFIL(KREF),OTYP(KTYP),KORB,D2*AMAT(I,I,1),EREF(I)
+        PSUM(KREF) = PSUM(KREF) + D2*AMAT(I,I,1)
+      ENDDO
+      WRITE(LUPRI,'(/A)') 
+     &   '* Fragment occupations in symmetry orthonormalized basis:'
+      DO I = 1,NREFS
+        WRITE(LUPRI,'(3X,A6,8X,3X,F7.4)')
+     &      REFFIL(I),PSUM(I)
       ENDDO
       CALL MEMREL('ANAPR3',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
