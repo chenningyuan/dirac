@@ -417,7 +417,7 @@ C
       RETURN
       END
 C  /* Deck er2int */
-      SUBROUTINE ER2INT(CCFBT,INDXBT,WORK,LWORK)
+      SUBROUTINE ER2INT(CCFBT,INDXBT,NCENTS,ICENTS,ICLASSES,WORK,LWORK)
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -426,7 +426,8 @@ C  /* Deck er2int */
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "dummy.h"
-      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
+      DIMENSION CCFBT(*), INDXBT(*),NCENTS(4),ICENTS(2,4),ICLASSES(4),
+     &          WORK(LWORK)
 CTROND: check this !, CSMAT(NBAST,NBAST)
       LOGICAL WRTINT_SAVE
 #include "ccom.h"
@@ -486,7 +487,7 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-      CALL PICKAO(IPRINT)
+      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
 C
 C     Information about distributions
 C     ===============================

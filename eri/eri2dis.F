@@ -233,7 +233,7 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-      CALL PICKAO(IPRINT)
+      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
 C
 C     Information about distributions
 C     ===============================
@@ -348,7 +348,7 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-      CALL PICKAO(IPRINT)
+      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
 C
 C     Information about distributions
 C     ===============================
@@ -455,7 +455,20 @@ C
       RETURN
       END
 C  /* Deck pickao */
-      SUBROUTINE PICKAO(IPRINT)
+      SUBROUTINE PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
+C*****************************************************************************
+C    
+C     Define active batches in call to ERI.
+C        
+C     First written by T. Helgaker
+C     NCENTS,ICENTS,ICLASSES introduced by Luuk Visscher, october 2004
+C     Polish by T. Saue, Nov 2004
+C     
+C     Arrays needed to pick the active batches:
+C     - NCENTS :   the number of active centers for a given index (maximally 2)
+C     - ICENTS :   the corresponding center indices 
+C     - ICLASSES : the active class (can only be one at a time).
+C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -467,18 +480,33 @@ C  /* Deck pickao */
 #include "erisel.h"
 #include "aobtch.h"
 C
-      DO J = 1, 4
+      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4)
+C
       DO I = 1, NAOBCH
-         IF (KCLSBT(I).EQ.1) THEN
-             ACTVBT(I,J) = .TRUE.
-          ELSE
-             ACTVBT(I,J) = .FALSE.
-          ENDIF
-      END DO
+         ICENT = NCNTBT(I)
+         ICLASS = KCLSBT(I)
+         DO J = 1, 4
+C           The shell must be of the right class
+            IF (ICLASS.EQ.ICLASSES(J)) THEN
+C              The center must be active (ncents=0 means all centers active)
+               IF (NCENTS(J).EQ.0) THEN
+                  ACTVBT(I,J) = .TRUE.
+               ELSEIF (NCENTS(J).EQ.1.OR.NCENTS(J).EQ.2) THEN
+                  ACTVBT(I,J) = .FALSE.
+                  DO K = 1, NCENTS(J)
+                     IF (ICENTS(K,J).EQ.ICENT) ACTVBT(I,J) = .TRUE.
+                  ENDDO
+               ELSE
+                  CALL QUIT ("Wrong value for NCENTS in PICKAO")
+               ENDIF
+            ELSE
+               ACTVBT(I,J) = .FALSE.
+            ENDIF
+         END DO
       END DO
 C
 C     First orbital
-C
+C     CTROND: This must be looked at !
       DO J = 1, 4
          NSET = NSELCT(J)
          IF (NSET .GT. 0) THEN
@@ -904,7 +932,7 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-      CALL PICKAO(IPRINT)
+      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
 C
 C     Information about distributions
 C     ===============================

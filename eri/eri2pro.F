@@ -132,7 +132,7 @@ C
 C     Select integrals to be calculated
 C     =================================
 C
-      CALL PICKAO(IPRINT)
+      CALL PICKAO(NCENTS,ICENTS,ICLASSES,IPRINT)
 C
 C     Information about distributions
 C     ===============================

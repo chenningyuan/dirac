@@ -4326,7 +4326,7 @@ C
 #include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
-      DIMENSION WORK(LWORK)
+      DIMENSION NCENTS(4),ICENTS(2,4),ICLASSES(4),WORK(LWORK)
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
 C      DIMENSION WORK(LWORK),FMAT(*),DMAT(*),IREPDM(*),IFCTYP(*),
@@ -4338,11 +4338,45 @@ C
 #if defined (MOD_ERI)
       IF(RUNERI) THEN
 C.......Allocate:
-C       CCFBT - normalized contractin coefficients
+C       CCFBT - normalized contraction coefficients
         CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
 C       INDXBT - orbital indices for AO batches
         CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
+C       Pick active AO-batches
+C       NCENTS=0 means all centers active
+C       Index 1
+        NCENTS(1)   = 0
+        ICENTS(1,1) = 0
+C       Index 2
+        NCENTS(2)   = 0
+        ICENTS(1,2) = 0
+C       Index 3
+        NCENTS(3)   = 0
+        ICENTS(1,3) = 0
+C       Index 4
+        NCENTS(4)   = 0
+        ICENTS(1,4) = 0
+        IF(I2TYP.EQ.1) THEN
+C         (LL|LL)-integrals
+          ICLASSES(1) = 1
+          ICLASSES(2) = 1
+          ICLASSES(3) = 1
+          ICLASSES(4) = 1
+        ELSEIF(I2TYP.EQ.2) THEN
+C         (SS|LL)-integrals
+          ICLASSES(1) = 2
+          ICLASSES(2) = 2
+          ICLASSES(3) = 1
+          ICLASSES(4) = 1
+        ELSEIF(I2TYP.EQ.3) THEN
+C         (SS|SS)-integrals
+          ICLASSES(1) = 2
+          ICLASSES(2) = 2
+          ICLASSES(3) = 2
+          ICLASSES(4) = 2
+        ENDIF
+        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),NCENTS,ICENTS,ICLASSES,
+     &              WORK(KFREE),LFREE)
         CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE
 #endif
