@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dalton,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -564,17 +564,6 @@ C
 C
 #include <dcbibt.h>
 C
-C     Stop execution here when a complex group is specified.
-C     The symmetrization still needs to be debugged for that case.
-C
-      IF (NZ.EQ.2) THEN
-         WRITE (LUPRI,1) 
-         CALL QUIT ('Can not run with complex point groups')
-    1    FORMAT (//' We cannot guarantee that the transformation code',
-     & ' produces correct results for this point group.'/
-     & ' Please do not use complex point groups (Cs, C2 and C2h).'/
-     & ' You can use the quaternionic point groups (C1 or Ci) instead.')
-      ENDIF
       KFRSAV = KFREE
 C
 C     Set up symmetry packing information.
@@ -1586,22 +1575,6 @@ C
 #include <implicit.h>
 #include <dcbtra.h>
 #include <dgroup.h>
-C
-C     In the compex groups, the quaternion units may need to be 
-C     reordered to use the defined classes. This is done via the
-C     the array IQCMPL.
-C
-      CALL IZERO(IQCMPL,4)
-      JZ = 0
-      DO IBSYM = 0, NBSYM-1
-         DO IZ = 1, NZ
-            IQ = IPQTOQ(IZ,IBSYM)
-            IF (IQCMPL(IQ).EQ.0) THEN
-               JZ = JZ + 1
-               IQCMPL(IQ) = JZ
-            ENDIF
-         ENDDO
-      ENDDO
 C
       CALL IZERO (ICLARR,16*NCLASS)
 C
