@@ -3026,9 +3026,14 @@ C
 C     Determine number of active electrons
 C
       IF(NAELEC.EQ.0) RETURN
+      IF (NAELEC.EQ.0) THEN
+         WRITE(LUPRI,'(A)')
+     &   '*WARNING: No open-shell electrons, no states to resolve!'
+         GOTO 9999
+      END IF
 C
 C     Check for necessary files:
-C       MRCONEE - one-electron integrasls and other information
+C       MRCONEE - one-electron integrals and other information
 C       MDCINT  - two-electron integrals
 C
       INQUIRE(FILE='MRCONEE',EXIST=SKPONE)
@@ -3043,7 +3048,7 @@ C
       ENDIF 
       IF(SKPONE.AND.SKPTWO) GOTO 10
 C
-C     Transfer information from DCBMP2 to DCBTRA
+C     Transfer information from DCBRES to DCBTRA
 C     ==========================================
 C
       TRANOP = NOPAIR
@@ -3278,7 +3283,7 @@ C
       ISTRAT = ISTBUF
       THROUT = THRBUF
 C
-      CALL QEXIT('RESOLV')
+ 9999 CALL QEXIT('RESOLV')
 C
       RETURN
       END      
