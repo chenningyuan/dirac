@@ -60,7 +60,7 @@ void main()
 
    print_logo(mytid);
   
-   /* sysinf(); */
+   sysinf();
  
 
    /*
