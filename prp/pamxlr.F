@@ -1231,7 +1231,7 @@ C     Get coefficients
 C     ----------------
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      IOPT  = 3
+      IOPT  = 4
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,IOPT)
