@@ -297,26 +297,26 @@ export:
 	-rm -f DIRAC.new.tar.Z
 	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess doc/doc.html \
-	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile dirac/include \
-	prp/*.F prp/Makefile prp/include \
-	abacus/*.F abacus/Makefile abacus/include \
-	gp/Makefile gp/*.F gp/include \
-	pdpack/Makefile pdpack/*.F pdpack/include
+	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile.in dirac/include \
+	prp/*.F prp/Makefile.in  prp/include \
+	abacus/*.F abacus/Makefile.in abacus/include \
+	gp/Makefile.in gp/*.F gp/include \
+	pdpack/Makefile.in pdpack/*.F pdpack/include
 EOF
 if($ERITAR) then
-echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile eri/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in eri/include' >> Makefile
 endif
 if($CCTAR) then
-echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile relccsd/*.inc relccsd/*.c relccsd/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c relccsd/include' >> Makefile
 endif
 if($RSPTAR) then
-echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile prp/rsp/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in prp/rsp/include' >> Makefile
 endif
 if($TRATAR) then
-echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile moltra/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in moltra/include' >> Makefile
 endif
 if($PARTAR) then
-echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile abacus/par/include' >> Makefile
+echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in abacus/par/include' >> Makefile
 endif
 if($PAMADM) then
 echo '	tar rvf DIRAC.new.tar adm/configure.in adm/config.guess' >> Makefile
