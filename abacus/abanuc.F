@@ -386,3 +386,29 @@ C
       CALL QEXIT('NUCREP')
       RETURN
       END
+C  /* Deck number_of_nuclei */
+      INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
+#include "implicit.h"
+C
+C     Purpose : report total number of nuclei (expansion centers) in the molecule.
+C               this data is also stored in a common block, but access via a function 
+C               is cleaner and more in line with the f90 programming used in density fitting. 
+C
+C     IPAR    1 : number of symmetry independent nuclei
+C             2 : total number of nuclei
+C
+C     Written by L. Visscher, november 2003.
+C
+#include "mxcent.h"
+#include "nuclei.h"
+C
+      IF (IPAR.EQ.1) THEN
+         NUMBER_OF_NUCLEI = NUCIND
+      ELSE IF (IPAR.EQ.2) THEN
+         NUMBER_OF_NUCLEI = NUCDEP
+      ELSE
+         CALL QUIT ('UNKNOWN OPTION IN NUMBER_OF_NUCLEI')
+      ENDIF
+C
+      RETURN
+      END
