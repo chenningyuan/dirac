@@ -1472,7 +1472,7 @@ C
 C     Write coefficients etc. to file
 C     ===============================
 C
-      CALL OPNFIL(LUCOEF,'DFACMO','NEW','ACMOUT')
+      CALL OPNFIL(LUCOEF,'DFACMO','UNKNOWN','ACMOUT')
       DO I = 1,2
         IDIM(I) = 0
       ENDDO
