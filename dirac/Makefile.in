@@ -28,8 +28,6 @@ dirac.x:
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)

@@ -2515,8 +2515,11 @@ C
 C     Initialization
 C
       LUBUF = 22
+C     full Fock matrix
       IFCMVO = 1
+C     only direct (Coulomb) contributions 
       IF(IF2MVO.EQ.1) IFCMVO = 2
+C     only exchange contributions
       IF(IF2MVO.EQ.2) IFCMVO = 3
       ISYMVO = 1
       IHRMVO = 1
