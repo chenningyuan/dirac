@@ -1,5 +1,5 @@
 C  /* Deck mxm */
-#if !defined (SYS_CRAY) && !defined (VAR_MOTECC)
+#if !defined (SYS_CRAY) && !defined (VAR_MOTECC) && !defined (SYS_T3D)
       SUBROUTINE MXM(A,NAR,B,NAC,C,NBC)
 #include <implicit.h>
       DIMENSION A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)
@@ -96,4 +96,11 @@ C
       END
 #endif
 #endif
+#else
+C
+C     This is only to avoid the object file being empty, causing problems
+C     on Cray C90./jth 980716
+C
+      SUBROUTINE GNYF
+      END
 #endif
