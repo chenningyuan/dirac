@@ -658,20 +658,19 @@ C
          IF (FSTORD) THEN
             REDINT = .TRUE.
             WRITE(LUPRI,'(A)') ' Optimization will be performed ' //
-     &           'in redundant internal coordinates.'
+     &           'in redundant internal coordinates (by default).'
          ELSE
             CARTCO = .TRUE.
             WRITE(LUPRI,'(A)') ' Optimization will be performed ' //
-     &           'in Cartesian coordinates.'
+     &           'in Cartesian coordinates (by default).'
          END IF
       ELSE IF (ITYP .GT. 1) THEN
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A)') ' WARNING! More than one ' //
-     &        'coordinate system has been selected.'
-         WRITE(LUPRI,'(A)') ' Aborting.'            
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(A)') ' ERROR! More than one ' //
+     &        'coordinate system has been selected for optimization.'
+         WRITE(LUPRI,'(A/)') ' Aborting.'            
          CALL QUIT
-     &        ('More than one coordinate system chosen in OPINPU.')
+     &        ('More than one coordinate system chosen under *OPTIMI.')
       END IF
       IF (NOAUX) THEN
             WRITE(LUPRI,'(A)') ' No extra (auxilliary) bonds will ' //
@@ -687,13 +686,23 @@ C
      &     (EVLINI .GT. -0.9D0))) THEN
          IF (SADDLE) THEN
 #ifdef PRG_DIRAC
-            INMDHS = .TRUE.
+            INRDHS = .TRUE.
+C           INMDHS = .TRUE.
+C           TODO: the model hessian is currently not appropriate for
+C           heavy elements /hjaaj May 2002
 #else
             INITHS = .TRUE.
 #endif
             NOAUX  = .TRUE.
          ELSE
+#ifdef PRG_DIRAC
+            INRDHS = .TRUE.
+C           INMDHS = .TRUE.
+C           TODO: the model hessian is currently not appropriate for
+C           heavy elements /hjaaj May 2002
+#else
             INMDHS = .TRUE.
+#endif
          END IF
       END IF
 C
