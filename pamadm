@@ -30,8 +30,7 @@ usage()
    echo '     -xpp          : Include PP excitation energy module'
    echo '     -xqr          : Include quadratic response module'
    echo '     -dft          : Include DFT module'
-   echo '     -krmc         : Include KR-MCSCF module'
-   echo '     -luciarel     : Include LUCIAREL module'
+   echo '     -krmc         : Include KR-MCSCF and LUCIAREL modules'
    echo '     tarfile=make  : only generate new Makefile'
    echo '     tarfile=export: Make DIRAC.new.tar.gz'
 }
@@ -61,7 +60,6 @@ setup()
       XPPMOD=1
       DFTMOD=1
       KRMCMOD=1
-      LUCIARELMOD=0
       echo " - DIRAC administrator ..."
    fi
    #
@@ -105,24 +103,16 @@ setup()
       echo " - Excitation energy module (XPP)"
    fi
    #
-   #  KRMC
+   #  KRMC and LUCIAREL
    #
    if [ -n "$KRMCMOD" ]; then
       KRMCFLG='-DMOD_KRMC'
       KRMCOBJ='$(KRMCOBJS)'
       KRMCMAK=KRMC_OBJ
-      KRMCTAR=1
-      echo " - KR-MCSCF module (KRMC)"
-   fi
-   #
-   #  LUCIAREL
-   #
-   if [ -n "$LUCIARELMOD" ]; then
-      LUCIARELFLG='-DMOD_LUCIAREL'
       LUCIARELOBJ='$(LUCIARELOBJS)'
       LUCIARELMAK=LUCIAREL_OBJ
-      LUCIARELTAR=1
-      echo " - LUCIAREL module (LUCIAREL)"
+      KRMCTAR=1
+      echo " - KR-MCSCF and LUJCAREL modules (KRMC)"
    fi
    #
    #
@@ -216,31 +206,6 @@ restore()
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# MAKE CONFIGURE
-#
-#
-make_configure()
-{
-   echo "*** Making ./configure"
-   echo 
-   echo "#!/bin/sh" > configure
-   echo "MODS=\" $ERIFLG $CCFOCKSPFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG $KRMCFLG $LUCIARELFLG\"" >> configure
-   echo DFTFLG=$DFTTAR >> configure
-   echo ERIFLG=$ERITAR >> configure
-   echo CCFOCKSPFLG=$CCFOCKSPTAR   >> configure
-   echo ESRFLG=$ESRTAR >> configure
-   echo XQRFLG=$XQRTAR >> configure
-   echo XPPFLG=$XPPTAR >> configure
-   echo KRMCFLG=$KRMCTAR >> configure
-   echo LUCIARELFLG=$LUCIARELTAR >> configure
-   cat ./configure.in >> configure
-   chmod +x configure
-}
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
 # MAKE EXPORT SHELL SCRIPT
 #
 #
@@ -311,10 +276,6 @@ EOF
    if [ "$KRMCTAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/krmc/{*.F,Makefile.in} 2>> export.log
-EOF
-   fi
-   if [ "$LUCIARELTAR" ]; then
-      cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.f,*.F,Makefile.in,*.inc,*.c} 2>> export.log
 EOF
    fi
@@ -495,7 +456,7 @@ EOF
 fi
 
 #
-# Object files for KRMCSCF
+# Object files for KRMCSCF and LUCIAREL
 #
 if [ -n "$KRMCMOD" ]; then
 cat <<EOF>> Makefile
@@ -504,14 +465,6 @@ KRMCOBJS = \\
 krmc/krmc_gradient.o krmc/krmcgosci.o krmc/krmcopt.o krmc/krmcout.o \\
 krmc/krmctra.o krmc/krmcvec.o krmc/krmcsav.o krmc/krmccan.o \\
 krmc/krmcinp.o krmc/krmcmlf.o krmc/krmcgp.o krmc/krmcluci.o
-EOF
-fi
-
-#
-# Object files for LUCIAREL
-#
-if [ -n "$LUCIARELMOD" ]; then
-cat <<EOF>> Makefile
 
 LUCIARELOBJS = \$(SS)
 
@@ -562,7 +515,7 @@ TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \\
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
 dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ LUCIAREL_OBJ $AUXMAK 
+	TRA_OBJ CCM_OBJ CI_OBJ LUCITA_OBJ $AUXMAK 
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \\
 	 $AUXOBJ \\
@@ -580,7 +533,7 @@ EOF
 #
 cat <<EOF>> Makefile
 dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
-	TRA_OBJ CCM_OBJ LUCITA_OBJ LUCIAREL_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
+	TRA_OBJ CCM_OBJ LUCITA_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirac.x \\
 	\$(OBJS) \$(C_OBJS) \$(OBJSLAVE) \\
 	$AUXOBJ \\
@@ -671,8 +624,6 @@ if [ -n "$CCFOCKSPMOD" ]; then
 fi
 if [ -n "$KRMCMOD" ]; then
    echo '	cd krmc ; $(MAKE) clean' >> Makefile
-fi
-if [ -n "$LUCIARELMOD" ]; then
    echo '	cd luciarel ; $(MAKE) clean' >> Makefile
 fi
 
@@ -735,18 +686,14 @@ XPP_OBJ :
 	cd prp/xpp ; \$(MAKE) all
 EOF
 fi
-if [ -n "$LUCIARELMOD" ]; then
-cat <<EOF>> Makefile
-
-LUCIAREL_OBJ :
-	cd luciarel ; \$(MAKE) all
-EOF
-fi
 if [ -n "$KRMCMOD" ]; then
 cat <<EOF>> Makefile
 
 KRMC_OBJ :
 	cd krmc ; \$(MAKE) all
+
+LUCIAREL_OBJ :
+	cd luciarel ; \$(MAKE) all
 EOF
 fi
 if [ -n "$CCFOCKSPMOD" ]; then
@@ -812,10 +759,7 @@ if [ -n "$ERIMOD" ]; then
    TEMP="$TEMP eri"
 fi
 if [ -n "$KRMCMOD" ]; then
-   TEMP="$TEMP krmc"
-fi
-if [ -n "$LUCIARELMOD" ]; then
-   TEMP="$TEMP luciarel"
+   TEMP="$TEMP krmc luciarel"
 fi
 
 cat <<EOF>> Makefile
@@ -862,14 +806,17 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG"
-MODS_IBM="$ERIFLG,$DFTFLG,$ESRFLG,$XQRFLG,$XPPFLG"
-dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci krmc lucita luciarel utils"
+MODS="$ERIFLG $DFTFLG $KRMCFLG $ESRFLG $XQRFLG $XPPFLG"
+MODS_IBM="$ERIFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XQRFLG,$XPPFLG"
+dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
 fi
 if [ -n "$DFTFLG" ]; then
    dirs="$dirs dft"
+fi
+if [ -n "$KRMCFLG" ]; then
+   dirs="$dirs krmc luciarel"
 fi
 if [ -n "$ESRFLG" ]; then
    dirs="$dirs prp/esr"
@@ -919,9 +866,6 @@ while [ -n "$1" ]; do
          ;;
       -krmc|-krm|-kr|-k)
          KRMCMOD=1
-         ;;
-      -luciarel|-luciare|-luciar|-lucia|-luci|-luc|-lu|-l)
-         LUCIARELMOD=1
          ;;
       -*)
          echo "Option \"$1\" not recognized."
