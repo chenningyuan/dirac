@@ -93,11 +93,14 @@
    fprintf(stdout,"Error string         %s\n",errorstring);
    fprintf(stdout,"******************************************\n");
 
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
    QUIT(errorstring,len);
-#else /* SYS_CRAY etc */
-   quit_(errorstring,len);
-#endif /* SYS_CRAY etc */
+#elif defined (SYS_AIX)  || defined (SYS_HPUX)
+   quit(errorstring,len);
+#else
+   quit_(errorstring);
+#endif
+
    free(errorstring);
 
 #endif /* SYS_AIX */
