@@ -48,10 +48,6 @@ C        *************************************************
 C
 C
 C
-Cjth     remove WFCONV = .false.
-c         wfconv = .false.
-         wfconv = .true.
-         write(6,*) ' (DIRPSI) wfconv : ',wfconv
          IF ( .NOT. NOQCDHF .AND. 
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
             CALL PSIOPT(WORK,LWORK)
