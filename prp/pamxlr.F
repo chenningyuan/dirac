@@ -1591,6 +1591,7 @@ C
       IERR = 0
       IVEC = 0
       LBUF = '                '
+      PBUF = ' '
       TOBE = .FALSE.
       JFRP = -1
       CALL OSTRING(WORK,KFREE,LFREE)
@@ -1601,7 +1602,7 @@ C
         READ (LUINP,END=3,ERR=2) LAB1
         IF(LAB1.EQ.'END_OF_THIS_FILE') THEN
           IF(TOBE) THEN
-            NVEC = IVEC-IPAR
+            NVEC = IVEC+1-IPAR
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 20
@@ -1751,12 +1752,16 @@ C     Read vectors
      &     '** ',TYP1(1:1),'-solution vectors : ',LAB1,
      &     ' Irrep: ',REP(IREP),' Trev: ',JTIMOP1,
      &     ' Length: ',NBDIM
+CTROND
+      WRITE(LUPRI,*) 'Vectors: ',NVEC,FREQ1
       BACKSPACE LUINP
       DO I = 1,NVEC
         READ (LUINP) LAB1,LAB2,TYP1,TYP2,
      &        FREQ(I),FREQ2,JSYMOP1,JSYMOP2,
      &        JTIMOP1,JTIMOP2,RNORM(I),LEN,INTFLG,
      &        ERGRSP,NBAS,NORB
+CTROND
+      WRITE(LUPRI,*) 'READ: ',TYP1,FREQ(I),LAB1
         IF(TYP1(2:2).EQ.'+') THEN
           IBTYP(I) = 1
         ELSEIF(TYP1(2:2).EQ.'-') THEN
