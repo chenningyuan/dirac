@@ -285,11 +285,13 @@ C
         GO TO 200
     4 CONTINUE
 #if defined (MOD_XPP)
-         CALL XPPINP(WORD,WORK,LWORK)
+        CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('*EXCITA not included in this version')
 #endif
         GO TO 200
     5 CONTINUE
-         CALL GRDINP(WORD,.FALSE.)
+        CALL GRDINP(WORD,.FALSE.)
         GO TO 200
     6 CONTINUE
         CALL NMRINP(WORD,.FALSE.)
@@ -297,11 +299,15 @@ C
     7 CONTINUE
 #if defined (MOD_ESR)
         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('*ESR    not included in this version')
 #endif
         GO TO 200
     8 CONTINUE
 #if defined (MOD_XQR)
         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('*QUADRA not included in this version')
 #endif
         GO TO 200
 C
@@ -311,7 +317,7 @@ C
       CALL NMRINP(WORD,.TRUE.)
       CALL GRDINP(WORD,.TRUE.)
 #if defined (MOD_XPP)
-      CALL XPPINP(WORD,WORK,LWORK)
+      CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 #if defined (MOD_XQR)
       CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
@@ -377,8 +383,8 @@ C
 C     Initialize /CBIEXP/
 C     ===================
 C
-      IPREXP   = 0
-      NEXPP   = 0
+      IPREXP = 0
+      NEXPP  = 0
       ORBANA = .FALSE.
 C
 C     Process input from CBIEXP
@@ -497,6 +503,7 @@ C
 C
       CALL PRSYMB(LUPRI,'-',75,0)
   999 CONTINUE
+      IF (INPERR.GT.0) CALL QUIT('Input error in *EXPECT')
       RETURN
 C
       END
@@ -2078,7 +2085,7 @@ C&&&& INTFLG: Which two-electron gradient to calculate
                   DOTRCK = .TRUE.
                GO TO 100
     4          CONTINUE
-C&&&& IGTHRS: Threshold for screening on the gradient
+C&&&& SCREEN: Threshold for screening on the gradient
                READ (LUCMD,*) SCRGRD
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -2125,8 +2132,8 @@ C     =============
            WRITE(LUPRI,'(1X,A,1P,E8.2)')
      &           '* Screening threshold in gradient calculation ',SCRGRD
          ELSE
-            WRITE(LUPRI,'(1X,A,1P,E8.2)')
-     &           '* No screening in the calcualtion of '//
+            WRITE(LUPRI,'(1X,A)')
+     &           '* No screening in the calculation of '//
      &           'two-electron integrals.'
          END IF
          CALL PRSYMB(LUPRI,'-',75,0)
