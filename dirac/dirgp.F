@@ -265,7 +265,7 @@ C
             CALL ADAEIG(
      &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         WORK(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JC = JC + IDIM(3,IFRP)
+            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
           ENDDO
           CALL MEMREL('REACMO.eig',WORK,KO,KO,KFREE,LFREE)
         ELSE
