@@ -318,7 +318,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif
 C
 #if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
- || defined (SYS_HPUX) || defined (SYS_T3D)
+ || defined (SYS_HPUX) || defined (SYS_T3D)  || defined (SYS_SUN)
 C
       COMPLEX*16 FUNCTION ZSUM (N,X,INCX)
       COMPLEX*16 X(*),SUM
