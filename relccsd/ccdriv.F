@@ -172,7 +172,6 @@ C
       MIOBUF = 0
       REWIND (IN)
       DO I = 1, 16
-         NELEC(I) = 0
          NFROZ(I) = 0
       ENDDO
       IPRNT = 0
@@ -413,7 +412,7 @@ C
 C
 C     Read symmetry information
 C
-      CALL RDSYMI (NSP,BREIT,EPS1,IREPSP)
+      CALL RDSYMI (NSP,EPS1,IREPSP)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
@@ -2896,7 +2895,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDSYMI (NSP,BREIT,EPS1,IREPSP)
+      SUBROUTINE RDSYMI (NSP,EPS1,IREPSP)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2922,6 +2921,7 @@ C
       INCLUDE "files.inc"
       INCLUDE "results.inc"
       INCLUDE "symm.inc"
+      INCLUDE "inpt.inc"
       INCLUDE "complex.inc"
       INCLUDE "ccpar.inc"
 #if defined (VAR_MPI)
@@ -2932,7 +2932,6 @@ C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
-      LOGICAL BREIT
 C
 C---------------Executable code--------------------------------------
 C
@@ -2941,7 +2940,8 @@ C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE) NSP,BREIT,ECORE
-       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)
+       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),
+     &                (NELEC(IRP),IRP=1,NSYMRP)
        READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
        READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
 C      IREPSP is to be used as 2-dimensional array, read it like that
@@ -2994,6 +2994,8 @@ C
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NSYMRP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(REPN,NSYMRP*4,MPI_CHARACTER,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(NELEC,NSYMRP,MPI_INTEGER,MASTER,
      &                  MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(NREP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
          CALL MPI_BCAST(REPNA,2*NREP*4,MPI_CHARACTER,MASTER,

@@ -80,7 +80,7 @@ C
 C
       CALL MRCONE(WORK(KFMO),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &  WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &  NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
+     &  NSPC,NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
@@ -355,7 +355,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcone */
       SUBROUTINE MRCONE(FMO,ORBE,ORBE1,ORBE2,IBORB,IBORB1,IBORB2,
-     &                  NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
+     &                  NSPC,NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Write core Fock-matrix and other information in MRCONEE format 
@@ -378,7 +378,7 @@ C
       DIMENSION FMO(NORBT,NORBT,NZ)
       DIMENSION ORBE(*),IBORB(*),WORK(*)
       DIMENSION ORBE1(*),ORBE2(*),IBORB1(*),IBORB2(*)
-      DIMENSION NSTR(2,0:2,2),NSTRT(2)
+      DIMENSION NSPC(2,0:2),NSTR(2,0:2,2),NSTRT(2)
 C
       CALL QENTER('MRCONE')
       KFRSAV = KFREE
@@ -412,7 +412,7 @@ C
       ENDDO
 C
       CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
-     &            WORK(KIRPAMO),WORK(KORBMO),WORK(KIBSPI),
+     &            WORK(KIRPAMO),WORK(KORBMO),WORK(KIBSPI),NSPC,
      &            IPRINT,WORK,KFREE,LFREE)
 C
       CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
@@ -422,7 +422,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
       SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
-     &                  ORBMO,IBSPI,IPRINT,WORK,KFREE,LFREE)
+     &                  ORBMO,IBSPI,NSPC,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
@@ -446,7 +446,7 @@ C
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
       DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
       DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
-      DIMENSION NSTR(2),IPHS(4)
+      DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64)
       DATA IPHS/ 1,-1,-1, 1/
 C
@@ -499,6 +499,13 @@ C
       ELSE
          CALL GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB)
       ENDIF
+C
+C     Set the number of active electrons
+C
+      DO IREP = 1, NSYMRP
+         IFRP = (IREP+1) / 2
+         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP,1)
+      ENDDO
 C
 C     The correlation codes do not use TR symmetry, write Kramers
 C     pairs as spinors
@@ -590,7 +597,8 @@ C     Write MRCONEE file
 C
       OPEN (LUMLF1,FILE='MRCONEE',FORM='UNFORMATTED')
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG
-      WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP)
+      WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
+     &              (NAEL(IRP),IRP=1,NSYMRP)
       WRITE (LUMLF1) NSYMRPA,(REPA(IRPA),IRPA=1,NSYMRPA*2)
       WRITE (LUMLF1) ((MULTB(I,J),I=1,2*NSYMRPA),J=1,2*NSYMRPA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),

@@ -662,7 +662,7 @@ C
           NVEC = 1
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                 NVEC,WORK(KFREE),LFREE)
+     &                 IFRP,NVEC,WORK(KFREE),LFREE)
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
@@ -919,7 +919,7 @@ C
           NVEC = 1
           CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                NVEC,WORK(KFREE),LFREE)
+     &                IFRP,NVEC,WORK(KFREE),LFREE)
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C

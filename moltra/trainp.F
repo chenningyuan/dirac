@@ -288,7 +288,7 @@ C     Active occupied and virtual space: only electrons allowed
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(1,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Occupied space : No electrons'
@@ -299,7 +299,7 @@ C     Active occupied and virtual space: only electrons allowed
         IF(DMP2_VIRTHR.NE.DUMMY) MP2_INDSTR(2,I) = 'all '
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Virtual  space : No electrons'
@@ -381,13 +381,13 @@ C
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       DO I = 1,NFSYM
-        TRA_CORSTR(I) = ' '
-        WRITE(TRA_INDSTR(I),'(A)') 'all allowed orbitals'
+        WRITE(TRA_CORSTR(I),'(A)') 'not specified' 
+        WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
         DO J = 1,2
-          WRITE(TRA2_INDSTR(J,I),'(A)') 'all allowed orbitals'
+          WRITE(TRA2_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
         ENDDO
         DO J = 1,4
-          WRITE(TRA4_INDSTR(J,I),'(A)') 'all allowed orbitals'
+          WRITE(TRA4_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
@@ -706,17 +706,17 @@ C
         NVEC = 0
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         CALL  NUMLST(TRA_INDSTR(I),IDUMMY,NFBAS(I,IC),
-     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+     &             IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') ' No orbitals specified '
+          WRITE(LUPRI,'(4X,A)') ' No explicit orbitals specified '
         ELSE
           WRITE(LUPRI,'(4X,A72)') TRA_INDSTR(I)
         ENDIF
         NTVEC(1) = NTVEC(1) + NVEC
       ENDDO
-      IF (NTVEC(1).EQ.0) THEN
-         CALL QUIT('TRAINP: Error defining active orbitals')
-      ENDIF
+cluuk IF (NTVEC(1).EQ.0) THEN
+cluuk    CALL QUIT('TRAINP: Error defining active orbitals')
+cluuk ENDIF
 C
       WRITE(LUPRI,'(/1X,A)') 
      &   '* Set-up for 2-index transformation'
@@ -727,19 +727,6 @@ C
       IF (MOD(ITRA_INTFL2/4,2).NE.1) WRITE(LUPRI,'(1X,A)') 
      +     '* SS Integrals not included in core Fock-matrix'
 C
-      WRITE(LUPRI,'(1X,A)') '* Core orbitals:'
-      DO I = 1,NFSYM
-        NVEC = 0
-        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
-        CALL  NUMLST(TRA_CORSTR(I),IDUMMY,NFBAS(I,IC),
-     &             IR(1,I),IR(2,I),NVEC,WORK,LWORK)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') ' No orbitals specified '
-        ELSE
-          WRITE(LUPRI,'(4X,A72)') TRA_CORSTR(I)
-        ENDIF
-      ENDDO
-C
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,2)
       DO I = 1,NFSYM
@@ -747,21 +734,16 @@ C
         DO J = 1,2
           NVEC = 0
           CALL  NUMLST(TRA2_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)') 
-     &      ' No orbitals specified for index ',J
+     &      ' No explicit orbitals specified for index ',J
           ELSE
             WRITE(LUPRI,'(4X,A,I2,A,A72)') 
      &      '- Index ',J,':  ',TRA2_INDSTR(J,I)
           ENDIF
           NTVEC(J) = NTVEC(J) + NVEC
         ENDDO
-      ENDDO
-      DO J = 1, 2
-         IF (NTVEC(J).EQ.0) THEN
-            CALL QUIT('TRAINP: Error defining active orbitals')
-         ENDIF
       ENDDO
 C
       WRITE(LUPRI,'(/1X,A)') 
@@ -807,21 +789,16 @@ C
         DO J = 1,4
           NVEC = 0
           CALL  NUMLST(TRA4_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)') 
-     &      ' No orbitals specified for index ',J
+     &      ' No explicit orbitals specified for index ',J
           ELSE
             WRITE(LUPRI,'(4X,A,I2,A,A72)') 
      &      '- Index ',J,':  ',TRA4_INDSTR(J,I)
           ENDIF
           NTVEC(J) = NTVEC(J) + NVEC
         ENDDO
-      ENDDO
-      DO J = 1, 4
-         IF (NTVEC(J).EQ.0) THEN
-            CALL QUIT('TRAINP: Error defining active orbitals')
-         ENDIF
       ENDDO
 C
   999 CONTINUE

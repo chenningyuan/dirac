@@ -1028,7 +1028,7 @@ C
                      READ(LUCMD,'(A72)') CTEMP
                      IREORD(I) = -1
                      CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
-     &                           IREORD(I),WORK,LWORK)
+     &                           I,IREORD(I),WORK,LWORK)
                   END DO
                GO TO 100
    29          CONTINUE
@@ -1055,7 +1055,7 @@ C
                      READ(LUCMD,'(A72)') CTEMP
                      IREORF(I) = -1
                      CALL NUMLST(CTEMP,IMOORF(1,I),MXREORD,1,MXREORD,
-     &                           IREORF(I),WORK,LWORK)
+     &                           I,IREORF(I),WORK,LWORK)
                   END DO
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -2106,7 +2106,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPOP(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)') 
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -2280,7 +2280,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPRJ(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)') 
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -2301,7 +2301,7 @@ C
           DO I = 1,NFSYM
             NVEC = 0
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     &                -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
             IF(NVEC.EQ.0) THEN
               WRITE(LUPRI,'(4X,A,A3)') 
      &           '- No orbitals in fermion ircop ',FREP(I)
@@ -2318,7 +2318,7 @@ C
           DO I = 1,NFSYM
             NVEC = 0
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     &                -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
             IF(NVEC.EQ.0) THEN
               WRITE(LUPRI,'(4X,A,A3)') 
      &           '- No orbitals in fermion ircop ',FREP(I)
@@ -2474,7 +2474,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)') 
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -3057,7 +3057,7 @@ C         Operator must be symmetric under time reversal
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(4X,A,A3)') 
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -3074,7 +3074,7 @@ C         Operator must be symmetric under time reversal
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(4X,A,A3)') 
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -3326,7 +3326,7 @@ C
         LINE = ' '
         READ(IUNIT,'(A72)') LINE
         LAB(I) = LINE(1:12)
-        CALL NUMLST(LINE(12:72),IBUF,NDIM,1,NDIM,NGRP,WORK,LWORK)
+        CALL NUMLST(LINE(12:72),IBUF,NDIM,1,NDIM,1,NGRP,WORK,LWORK)
         DO J = 1,NGRP
           ILAB(IBUF(J)) = I
         ENDDO
@@ -3509,7 +3509,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECMVO(I),IDUMMY,NFBAS(I,0),
-     &            -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+     &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)') 
      &       '- No orbitals in fermion ircop ',FREP(I)

@@ -52,8 +52,8 @@ C
 #include <dgroup.h>
 #include <dcbgen.h>
       CHARACTER*24 DAYTID
-      LOGICAL TOBE,TRASAM
-      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
+      LOGICAL TOBE,TRASAM,ACTIVE
+      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
@@ -64,88 +64,6 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
-C
-C     Set up index arrays for core orbitals
-C     =====================================
-C
-      IC   = 1
-      DO I = 1,NFSYM
-        NR(I)   = NESH(I)
-        IR(1,I) = 1
-        IR(2,I) = NESH(I)
-      ENDDO
-C
-      DO IFRP = 1,NFSYM
-         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
-         NSPC(IFRP,0) = 1
-         CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
-     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               NSPC(IFRP,0),WORK(KFREE),LFREE)
-         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
-     &               NSPC(IFRP,2),NSPC(IFRP,1))
-         NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
-         CALL MEMREL('TRAPAM',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
-         CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
-     &               WORK,KFREE,LFREE)
-         NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
-         NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
-         NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
-         NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
-      ENDDO
-C
-C     Print section
-C     =============
-C
-      WRITE(LUPRI,'(/A)')
-     &     '* Core orbital ranges for 2-index transformation:'
-      DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,1)),DUM,DUM,DUM,NSPC)
-      ENDDO
-C
-C     Calculate dimensions of the coefficient array
-C
-C     ICMOQC : Index to start of representation in the coefficient array
-C
-      NQT(1) = 0
-      ICMOQC(1,1) = 1
-      DO IFRP = 1, NFSYM
-         NQ(IFRP,1) = NFBAS(IFRP,0)*NSPC(IFRP,0)*NZ
-         NQT(1) = NQT(1) + NQ(IFRP,1)
-         IF (IFRP.LT.NFSYM) ICMOQC(IFRP+1,1) = ICMOQC(IFRP,1)+NQ(IFRP,1)
-      ENDDO
-C
-C     Allocate the memory for the coefficients
-C
-      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
-      KQC(2) = KQC(1) + NQ(1,1)
-C
-C     Get all coefficients
-C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(A)') 'Coefficient file not present'
-         CALL QUIT('TRAPAM: No coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPAM')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
-      ENDIF
-C
-C     Select the set that we need
-C
-      DO IFRP = 1, NFSYM
-         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
-     &                NSPC(IFRP,0),WORK(KVEC(IFRP,1)),
-     &                NSPC(IFRP,2),NSPC(IFRP,1),
-     &                NFBAS(IFRP,0),NORB(IFRP))
-      ENDDO
-C
-C     Throw away the complete set, keep only the selected sets
-C
-      CALL MEMREL('TRAPAM',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Set up index arrays for active orbitals
 C     =======================================      
@@ -168,10 +86,10 @@ C
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
           CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
-          NSTR(IFRP,0,I) = 1
+          NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -181,6 +99,8 @@ C
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO      
+C
+      KFRSAV = KFREE
 C
 C     Print section
 C     =============
@@ -308,6 +228,99 @@ C        Overdimension KCMO because it is used as Focksize scratch space
          CALL MEMREL('TRADRV',WORK,KFRSAV,KCMO,KFREE,LFREE)
       ENDIF
 C
+C     Set up index arrays for core orbitals
+C     =====================================
+C
+      IC   = 1
+      DO I = 1,NFSYM
+        NR(I)   = NESH(I)
+        IR(1,I) = 1
+        IR(2,I) = NESH(I)
+      ENDDO
+C
+      DO IFRP = 1,NFSYM
+         CALL MEMGET('INTE',KVEC(IFRP,5),NR(IFRP),WORK,KFREE,LFREE)
+         NSPC(IFRP,0) = - 1
+C
+C        If the user did not specify the core index range explictly we
+C        take the occupied orbitals that do not belong to the active
+C        set. 
+C
+         IF (INDEX(TRA_CORSTR(IFRP),'not specified').NE.0) THEN
+            CALL NUMCOR (NOCC(IFRP),NSTR(IFRP,1,1),WORK(KVEC(IFRP,1)),
+     &                   NSPC(IFRP,1),WORK(KVEC(IFRP,5)))
+            NSPC(IFRP,2) = 0
+         ELSE
+            CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
+     &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+            CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
+     &                  NSPC(IFRP,2),NSPC(IFRP,1))
+         ENDIF
+         NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+         CALL MEMREL('TRAPAM',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
+         CALL MEMGET('INTE',KVEC(IFRP,5),NSPC(IFRP,0),
+     &               WORK,KFREE,LFREE)
+         NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
+         NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
+      ENDDO
+C
+C     Print section
+C     =============
+C
+      WRITE(LUPRI,'(/A)')
+     &     '* Core orbital ranges for 2-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,5)),DUM,DUM,DUM,NSPC)
+      ENDDO
+C
+C     Calculate dimensions of the coefficient array
+C
+C     ICMOQC : Index to start of representation in the coefficient array
+C
+      NQT(1) = 0
+      ICMOQC(1,1) = 1
+      DO IFRP = 1, NFSYM
+         NQ(IFRP,1) = NFBAS(IFRP,0)*NSPC(IFRP,0)*NZ
+         NQT(1) = NQT(1) + NQ(IFRP,1)
+         IF (IFRP.LT.NFSYM) ICMOQC(IFRP+1,1) = ICMOQC(IFRP,1)+NQ(IFRP,1)
+      ENDDO
+C
+C     Allocate the memory for the coefficients
+C
+      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
+      KQC(2) = KQC(1) + NQ(1,1)
+C
+C     Get all coefficients
+C
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(A)') 'Coefficient file not present'
+         CALL QUIT('TRAPAM: No coefficients !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPAM')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Select the set that we need
+C
+      DO IFRP = 1, NFSYM
+         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
+     &                NSPC(IFRP,0),WORK(KVEC(IFRP,5)),
+     &                NSPC(IFRP,2),NSPC(IFRP,1),
+     &                NFBAS(IFRP,0),NORB(IFRP))
+      ENDDO
+C
+C     Throw away the complete set, keep only the selected sets
+C
+      CALL MEMREL('TRAPAM',WORK,KFRSAV,KCMO,KFREE,LFREE)
+C
       CALL FLSHFO(LUPRI)
 C
       IF (PRPTRA) CALL TRAPRP(WORK,KFREE,LFREE)
@@ -358,6 +371,37 @@ C
 C
       RETURN
       END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck NUMCOR */
+      SUBROUTINE NUMCOR (NO,NA,KAVEC,NC,KCVEC)
+
+C***********************************************************************
+C
+C     Routine to find the core orbitals, given the positions of the
+C     active orbitals and the number of occupied orbitals
+C
+C     Written  L.Visscher May 2001
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      INTEGER KAVEC(NA),KCVEC(NO)
+      LOGICAL CORE
+C
+      NC = 0
+      DO I = 1, NO
+         CORE = .TRUE.
+         DO J = 1, NA
+            IF (KAVEC(J).EQ.I) CORE = .FALSE.
+         ENDDO
+         IF (CORE) THEN
+            NC = NC + 1
+            KCVEC(NC) = I
+         ENDIF
+      ENDDO
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PSIMP2 */
       SUBROUTINE PSIMP2(WORK,LWORK)
@@ -427,10 +471,10 @@ C
         ENDIF
 C     
         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
-        NSTR(IFRP,0,1) = 1
+        NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1)   = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
@@ -452,10 +496,10 @@ C
         ENDIF
 C     
         CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
-        NSTR(IFRP,0,2) = 1
+        NSTR(IFRP,0,2) = - 1
         CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+     &               IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)

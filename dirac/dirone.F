@@ -3062,7 +3062,7 @@ C     AND normal coefficients
           NSTR(IFRP,0,I) = 1
           CALL NUMLST(VCPROJ(IFRP,I),WORK(KVEC(IFRP,I)),
      &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)

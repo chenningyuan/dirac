@@ -554,10 +554,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck numlst */
-      SUBROUTINE NUMLST(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK,LWORK)
+      SUBROUTINE NUMLST(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP,WORK,LWORK)
 C*****************************************************************************
 C
-C     Reads the numbers in the string A which has
+C     Original purpose was to read the numbers in the string A which has
 C     the format : '3..6, 8, -27..2, 123, 14..15'.
 C     
 C     !! Number 0 (Zero) NOT counted or stored !!
@@ -577,14 +577,23 @@ C     If the string starts with 'all', all elements in the range enters.
 C
 C                           Jon K. Laerdahl 30.12.96
 C     Minor polish T.Saue Jan 7 1997
+
+C     Additional feature (LV, 15-5-2001) : Determine list based on energy or
+C     other criteria. This is more user-friendly for standard cases.
+C
+C     This option is toggled by starting the string by energy, followed by the
+C     lower treshold, upper treshold and minimal gap (to prevent cutting through
+C     quasi-degenerate orbitals).
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <dcborb.h>
+#include <dcbgen.h>
+C
       CHARACTER A*(*)
       DIMENSION ILIST(NLIST),WORK(LWORK)
-C
-C#include <memint.h>
+      LOGICAL TOBE
 C
 C     Memory initialization
 C     =====================
@@ -593,8 +602,36 @@ C
       KFREE = KWORK
       LFREE = LWORK
 C
-      CALL MEMGET('INTE',KITM,IRNGE2-IRNGE1+1,WORK,KFREE,LFREE)
-      CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KITM))
+C     Distinguish between the two branches
+C
+      NA = LEN(A)
+      IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
+         CALL MEMGET('INTE',KITM,IRNGE2-IRNGE1+1,WORK,KFREE,LFREE)
+         CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KITM))
+      ELSE
+         CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIBG,NORBT,WORK,KFREE,LFREE)
+C
+C        Get eigenvalues from DFCOEF
+C
+         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+         IF(.NOT.TOBE) THEN
+C
+C           DFCOEF does not (yet) exist, put IP = - 666, which makes 
+C           NUMLS2 return with an empty list
+C
+            IP = - 666
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG+IOFF))
+         ELSE
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBG),DUM,5,
+     &                  WORK,KFREE,LFREE)
+            CLOSE(LUCOEF,STATUS='KEEP')
+            IOFF = IORB(IFRP)+NPSH(IFRP)
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG+IOFF))
+         ENDIF
+      ENDIF
+C
       CALL MEMREL('NUMLST',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       RETURN
@@ -834,6 +871,107 @@ C
       CALL QUIT('NUMLST: Character string beyond 72') 
  950  CONTINUE
       CALL QUIT('NUMLST: oo must be two consecutive characters.')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck numls2 */
+      SUBROUTINE NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
+C*****************************************************************************
+C
+C     Gives the list of oribitals that fulfill the energy criteria
+C
+C     Input: 
+C           IP = 0: Only IP as OUTPUT
+C           IP > 0: Give also list
+C           IP < 0: Exit after printing the criteria 
+C
+C     Output:
+C           IP : number of elements in the list A.
+C
+C     IRNGE1..IRNGE2 is range of allowed values in A.
+C     EIG   : List of eigenvalues
+C
+C     L. Visscher, May 2001
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      CHARACTER A*(*)
+      DIMENSION EIG(*)
+      DIMENSION ILIST(NLIST)
+      LOGICAL CHMIN,CHMAX
+C     
+C     Determine begin and end of the part of the string that contains
+C     the energy values
+C
+      NA = LEN(A)
+      MA = INDEX(A(1:NA),'energy') + 6
+C     
+      READ (A(MA:NA),*,END=900,ERR=900) ELOW,EHIGH,EGAP
+C
+      IF (IP.EQ.-666) THEN
+         IP = 0
+         RETURN
+      ENDIF
+C
+      WRITE (LUPRI,1000) ELOW,EHIGH,EGAP
+C
+C     Check that the specified ELOW and EHIGH are separated by a 
+C     large enough gap from the next lower/higher energies
+C
+   1  EMIN = 1.E16
+      EMAX = - 1.E16
+C
+      DO I = IRNGE1, IRNGE2
+        EI = EIG(I)
+        IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
+           IF (EMIN.GT.EI) EMIN = EI
+           IF (EMAX.LT.EI) EMAX = EI
+        ENDIF
+      ENDDO
+C
+      CHMIN = .FALSE.
+      CHMAX = .FALSE.
+C
+      DO I = IRNGE1, IRNGE2
+        EI = EIG(I)
+        IF (EI.LT.EMIN.AND.EI.GE.EMIN-EGAP) THEN
+           IF (ELOW.GT.EI) ELOW = EI
+           CHMIN = .TRUE.
+        ENDIF
+        IF (EI.GT.EMAX.AND.EI.LE.EMAX+EGAP) THEN
+           IF (EHIGH.LT.EI) EHIGH = EI
+           CHMAX = .TRUE.
+        ENDIF
+      ENDDO
+C
+      IF (CHMIN) WRITE (LUPRI,1001) 'minimum',ELOW
+      IF (CHMAX) WRITE (LUPRI,1001) 'maximum',EHIGH
+C
+      IF (CHMIN.OR.CHMAX) GOTO 1
+C
+C     Determine the orbitals that fall within this energy range
+C
+      ICNT = 0
+      DO I = IRNGE1, IRNGE2
+        EI = EIG(I)
+        IF (EI.GE.ELOW.AND.EI.LE.EHIGH) THEN
+           ICNT = ICNT + 1
+           IF (IP.NE.0) ILIST(ICNT) = I
+        ENDIF
+      ENDDO
+C
+      IP = ICNT
+      RETURN
+C
+ 900  CONTINUE
+      WRITE(LUPRI,'(//A)')
+     & 'NUMLST2: Error reading energy criteria, the string is ',A(1:NA)
+      CALL QUIT('NUMLST2: Error in Input')
+ 1000 FORMAT (5X,'Energy selection of active orbitals :',
+     & F8.2,' < Eps. < ',F8.2,' with a mininum gap of ',F8.4,' au.')
+ 1001 FORMAT (/' Changed ',A7,' energy for active orbital range to ',
+     & F10.4,' because of near-degeneracies.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readnm */

@@ -3923,7 +3923,7 @@ C       -----------------
 C
         NVEC = 0
         CALL  NUMLST(XLR_INDSTR(1,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -3937,7 +3937,7 @@ C       ---------------
 C
         NVEC = 0
         CALL  NUMLST(XLR_INDSTR(2,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
@@ -3951,7 +3951,7 @@ C       ------------------
 C
         NVEC = 0
         CALL  NUMLST(XLR_INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
+     &            IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Secondary orbitals : No electrons'

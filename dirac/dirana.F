@@ -234,7 +234,7 @@ C
         NVEC = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL  NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),NVEC,WORK(KFREE),LFREE)
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
@@ -864,7 +864,7 @@ C
         NSTR(IFRP,0,0) = 1
         CALL NUMLST(VECPRJ(IFRP),WORK(KVEC(IFRP,0)),
      &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              NSTR(IFRP,0,0),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,0),WORK(KFREE),LFREE)
         CALL ORBCNT(WORK(KVEC(IFRP,0)),NSTR(IFRP,0,0),IFRP,
      &              NSTR(IFRP,2,0),NSTR(IFRP,1,0))
         NSTR(IFRP,0,0) = NSTR(IFRP,1,0) + NSTR(IFRP,2,0)
@@ -884,7 +884,7 @@ C
           NSTR(IFRP,0,I) = 1
           CALL NUMLST(VECREF(IFRP,I),WORK(KVEC(IFRP,I)),
      &              NORB(IFRP),-NPSH(IFRP),NESH(IFRP),
-     &              NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
