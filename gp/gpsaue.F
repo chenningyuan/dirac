@@ -3059,13 +3059,19 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck qchold */
-      SUBROUTINE QCHOLD(A,N,NZ,LRA,LCA,D,IERR)
+      SUBROUTINE QCHOLD(A,N,NZ,LRA,LCA,D,STOL,NEFF,JOB,IPIVOT)
 C***********************************************************************
 C
-C     This routine performs Cholesky decomposition of
+C     This routine performs upper triangle Cholesky decomposition of
 C         * real symmetric matrices                     NZ = 1
 C         * complex Hermitian matrices                  NZ = 2
 C         * quaternionic Hermitian matrices             NZ = 4
+C     On input/output A contains the lower triangle and diagonal of
+C     the Hermitian matrix to be decomposed.
+C     On output the upper triangle of the Cholesky matrix is stored
+C     in the upper triangle of A, and the diagonal in D.
+C     With pivoting(JOB.ne.0) the Choleksy matrix has been scrambled
+C     according to the ordering indicated by IPIVOT.
 C     
 C     Written by T.Saue March 25 1999
 C
@@ -3073,42 +3079,128 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
-      PARAMETER(DTOL=1.0D-15)
-      DIMENSION A(LRA,LCA,NZ),D(N),P(4)
+      DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4)
 C
 C     Initialization
 C
       NA = LRA*LCA
+      NEFF = 0
+      J = 1
+      KMAX = J-1
 C
-C     Decomposition
+C     Decomposition without pivoting
 C
-      IF(A(1,1,1).LE.DTOL) THEN
-        IERR = 1
-        RETURN
-      ENDIF
-      D(1) = SQRT(A(1,1,1))
-      DO I = 2,N
-        DO IZ = 1,NZ
-          A(1,I,IZ) = A(1,I,IZ)/D(1)
-        ENDDO
-      ENDDO
-      DO J = 2,N
-        KMAX = J-1
-        D(J) = A(J,J,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
-        IF(D(J).LE.DTOL) THEN
-          IERR = J
-          RETURN
-        ENDIF
-        D(J) = SQRT(D(J))
-        DO I = (J+1),N
-          CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
-          A(J,I,1) = (A(I,J,1)-P(1))/D(J)
+      IF(JOB.EQ.0) THEN
+        IF(A(J,J,1).LE.STOL) RETURN
+        NEFF = J
+        D(J) = SQRT(A(J,J,1))
+        DO I = 2,N
+          A(J,I,1) = A(I,J,1)/D(1)
           DO IZ = 2,NZ
-            A(J,I,IZ) = (P(IZ)-A(I,J,IZ))/D(J)
+            A(J,I,IZ) = -A(I,J,IZ)/D(1)
           ENDDO
         ENDDO
-      ENDDO
-      IERR = 0
+        DO J = 2,N
+          KMAX = J-1
+          D(J) = A(J,J,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
+          IF(D(J).LE.STOL) RETURN
+          NEFF = J
+          D(J) = SQRT(D(J))
+          DO I = (J+1),N
+            CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
+            A(J,I,1) = (A(I,J,1)-P(1))/D(J)
+            DO IZ = 2,NZ
+              A(J,I,IZ) = (P(IZ)-A(I,J,IZ))/D(J)
+            ENDDO
+          ENDDO
+        ENDDO
+      ELSE
+C
+C     Cholesky decomposition with full pivoting
+C
+C...intialize pivot array
+        DO I = 1,N
+          IPIVOT(I) = I
+        ENDDO
+C...scan diagonal  of matrix A for largest element
+        D(J) = A(J,J,1)
+        JJ   = J
+        DO K = 2,N
+          IF(A(K,K,1).GT.D(J)) THEN
+            D(J) = A(K,K,1)
+            JJ   = K
+          ENDIF
+        ENDDO
+        IF(D(J).LE.STOL) RETURN
+        IF(JJ.NE.J) THEN
+          NEFF = IPIVOT(JJ)
+          IPIVOT(JJ) = IPIVOT(J)
+          IPIVOT(J)  = NEFF
+          JJ = NEFF
+        ENDIF
+        NEFF = J
+C...generate elements of Cholesky matrix
+        D(J) = SQRT(D(J))
+        DO I = 2,N
+          II = IPIVOT(I)
+          IF(II.GE.JJ) THEN
+            A(J,I,1) = A(II,JJ,1)/D(J)
+            DO IZ = 2,NZ
+              A(J,I,IZ) = -A(II,JJ,IZ)/D(J)
+            ENDDO
+          ELSE
+            A(J,I,1) = A(JJ,II,IZ)/D(J)
+            DO IZ = 2,NZ
+              A(J,I,IZ) = A(JJ,II,IZ)/D(J)
+            ENDDO
+          ENDIF
+        ENDDO
+C...iterate
+        DO J = 2,N
+          KMAX = J-1
+C...      generate diagonal elements of Cholesky matrix
+C...      and find largest element
+          JJ = IPIVOT(J)
+          D(J) = A(JJ,JJ,1) - QNRM2(KMAX,NZ,A(1,J,1),NA,1)
+          DO K = (J+1),N
+            KK = IPIVOT(K)
+            D(K) = A(KK,KK,1) - QNRM2(KMAX,NZ,A(1,K,1),NA,1)
+            IF(D(K).GT.D(J)) THEN
+              D(J) = D(K)
+              JJ   = K
+            ENDIF
+          ENDDO
+          IF(D(J).LE.STOL) RETURN
+C..       if pivoting, interchange columns of previous rows of Cholesky matrix
+          IF(JJ.NE.IPIVOT(J)) THEN
+            DO IZ = 1,NZ
+              CALL DSWAP(KMAX,A(1,J,IZ),1,A(1,JJ,IZ),1)
+            ENDDO
+            NEFF = IPIVOT(JJ)
+            IPIVOT(JJ) = IPIVOT(J)
+            IPIVOT(J)  = NEFF
+            JJ = NEFF
+          ENDIF
+          NEFF = J
+C...      generate elements of Cholesky matrix
+          D(J) = SQRT(D(J))
+          DO I = (J+1),N
+            II = IPIVOT(I)
+            CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',A(1,J,1),NA,1)
+            IF(II.GE.JJ) THEN
+              A(J,I,1) = (A(II,JJ,1)-P(1))/D(J)
+              DO IZ = 2,NZ
+                A(J,I,IZ) = (P(IZ)-A(II,JJ,IZ))/D(J)
+              ENDDO
+            ELSE
+              A(J,I,1) = (A(JJ,II,1)-P(1))/D(J)
+              DO IZ = 2,NZ
+                A(J,I,IZ) = (P(IZ)+A(JJ,II,IZ))/D(J)
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3178,8 +3270,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck qchols */
-      SUBROUTINE QCHOLS(A,N,NSIM,NZ,LRA,LCA,D,
-     &                  B,LRB,LCB,X,LRX,LCX)
+      SUBROUTINE QCHOLS(A,N,NEFF,NSIM,NZ,LRA,LCA,D,
+     &                  B,LRB,LCB,X,LRX,LCX,JOB,IPIVOT,W)
 C***********************************************************************
 C
 C     This routine solves the NSIM simultaneous equations
@@ -3197,6 +3289,9 @@ C
 C     The system of linear equations is written as
 C
 C        Ax = U(dagger)Ux = U(dagger)y = b ; Ux = y
+C
+C     JOB.NE.0 means that full pivoting should be used....
+C     W(N) is a work array needed for sorting in case of pivot.
 C     
 C     Written by T.Saue March 26 1999
 C
@@ -3204,7 +3299,8 @@ C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
       PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0=0.0D0)
-      DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ)
+      DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
+     &          IPIVOT(*),W(*)
       DIMENSION P(4),IQA(4),IQB(4)
 C
 C     Initialization
@@ -3220,10 +3316,21 @@ C
 C     First solve U(dagger)y = b by forward substitution
 C
       DO J = 1,NSIM
+C
+C       In case of pivot, reorder coefficient array b
+C
+        IF(JOB.NE.0) THEN
+          DO IZ = 1,NZ
+            CALL DCOPY(N,B(1,J,IZ),1,W,1)
+            DO I = 1,NEFF
+              B(I,J,IZ) = W(IPIVOT(I))
+            ENDDO
+          ENDDO
+        ENDIF
         DO IZ = 1,NZ
           X(1,J,IZ) = B(1,J,IZ)/D(1)
         ENDDO
-        DO I = 2,N
+        DO I = 2,NEFF
           KMAX = I-1
           CALL QDOT(P,KMAX,NZ,'H',A(1,I,1),NA,1,'N',X(1,J,1),NX,1)
           DO IZ = 1,NZ
@@ -3236,19 +3343,35 @@ C     Solve Ux = y by backsubstitution
 C
       DO J = 1,NSIM
         DO IZ = 1,NZ
-          X(N,J,IZ) = X(N,J,IZ)/D(N)
+          X(NEFF,J,IZ) = X(NEFF,J,IZ)/D(NEFF)
         ENDDO
       ENDDO
-      DO I = (N-1),1,-1
+      DO I = (NEFF-1),1,-1
         P(2) = D1/D(I)
         P(1) = DM1*P(2)
-        NELM = N-I
+        NELM = NEFF-I
         KINT = I+1
         CALL QGEMM(1,NSIM,NELM,P(1),
      &             'N','N',IQA,A(I,KINT,1),LRA,LCA,NZ,
      &             'N','N',IQA,X(KINT,1,1),LRX,LCX,NZ,
      &                P(2),IQB,X(I,1,1),LRX,LCX,NZ)
       ENDDO
+C
+C     In case of pivot, reorder solution vectors
+C
+      IF(JOB.NE.0) THEN
+        DO J = 1,NSIM
+          DO IZ = 1,NZ
+            CALL DCOPY(NEFF,X(1,J,IZ),1,W,1)
+            DO I = 1,NEFF
+              X(IPIVOT(I),J,IZ) = W(I)
+            ENDDO
+            DO I = (NEFF+1),N
+              X(IPIVOT(I),J,IZ) = D0
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDIF
 C
       RETURN
       END

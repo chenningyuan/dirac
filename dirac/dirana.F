@@ -1024,6 +1024,7 @@ C
           KAMAT = KFREE
         ENDIF
         CALL MEMGET('INTE',KJREF,NREF*3,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIPIV,NREF  ,WORK,KFREE,LFREE)
         IVEC = 0
         DO I = 1,NREFS
           CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
@@ -1031,7 +1032,7 @@ C
         ENDDO
         CALL PRJAN1(IFRP,NMOL,NREF,KQ,KE,WORK(KAMAT),WORK(KBVEC),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &       WORK(IS),WORK,KFREE,LFREE)
+     &       WORK(IS),WORK(KIPIV),WORK,KFREE,LFREE)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDDO
@@ -1043,7 +1044,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
       SUBROUTINE PRJAN1(IFRP,NMOL,NREF,KQ,KE,AMAT,BVEC,GVEC,
-     &           JMOL,JREF,NSTR,SMAT,WORK,KFREE,LFREE)
+     &           JMOL,JREF,NSTR,SMAT,IPIVOT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
@@ -1053,7 +1054,7 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0=0.0D0)
+      PARAMETER(D0=0.0D0,DC=1.0D-2)
 C
 #include <dcbprj.h>
 #include <dgroup.h>
@@ -1064,10 +1065,11 @@ C
       LOGICAL DOPOP
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
      &          KE(2,2),KQ(2,2),AMAT(NREF,NREF,NZ),
-     &          BVEC(NREF,NMOL,NZ),SMAT(*),GVEC(*),WORK(*)
+     &          BVEC(NREF,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
 C
       KFRSAV = KFREE
       DOPOP = NREFS.GT.1
+      PTOL = PROTHR*DC
 C
 C     Make projection vector
 C
@@ -1100,18 +1102,6 @@ C
      &           WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NREF,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRPRJ)
 C
-C       Solve linear system by Cholesky decomposition
-C        --> notice that overlap matrix SMAT is destroyed !
-C
-        CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,IERR)
-
-        CALL QCHOLS(AMAT,NREF,NMOL,NZ,NREF,NREF,SMAT,
-     &              BVEC,NREF,NMOL,BVEC,NREF,NMOL)
-C
-C       Restore overlap matrix
-C
-        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
-C
 C       Print overlaps
 C
         JOFF = 1
@@ -1128,6 +1118,24 @@ C
           ENDDO
           JOFF = JOFF + NSTR(IFRP,0,J)
         ENDDO
+C
+C       Solve linear system by Cholesky decomposition
+C       with full pivoting
+C        --> notice that overlap matrix SMAT is destroyed !
+C
+      CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,1,IPIVOT)
+      CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,
+     &              BVEC,NREF,NMOL,BVEC,NREF,NMOL,1,IPIVOT,SMAT(1+NREF))
+      IF(NEFF.LT.NREF) THEN
+        WRITE(LUPRI,'(A,A)') '* WARNING: ',
+     &   ' linear dependencies detected in Cholesky decomposition'
+        WRITE(LUPRI,'(11X,A,I5,A,I5)') 
+     &   ' Reduced dimensionality: ',NREF,' --> ',NEFF
+      ENDIF
+C
+C       Restore overlap matrix
+C
+        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
       ENDIF
 C
 C     Population analysis
