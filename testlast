@@ -37,8 +37,6 @@ fi
 usage='Usage: '$0'\n'\
 '--help\n'\
 '\tPrint this\n'\
-'--branch=BRANCH\n'\
-'\tBranch that is to be tested (default: current branch)\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run\n'\
 '--testdir=TESTDIR\n'\
@@ -77,11 +75,6 @@ while [ $# != 0 ]; do
       "testdir")
          if [ "${valomitted}" = "no" ]; then
             testdir="$val"
-         fi
-         ;;
-      "branch")
-         if [ "${valomitted}" = "no" ]; then
-            branch="$val"
          fi
          ;;
       "tests")
@@ -145,12 +138,6 @@ runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
 htmlog=${run}_dif.htm;
 #
-if [ ! -z "$branch" ]; then
-   for i in $makelog $cvslog $txtlog $htmlog ; do
-   i=${i}_$branch ;
-   done
-fi
-#
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
@@ -173,23 +160,13 @@ done
 cd ${pampath};
 #
 if [ "${cvs}" = "yes" ]; then
-  if [  -z "$branch" ]; then 
-     echo ' Starting CVS Update ... ' ;
-     cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
+  echo ' Starting CVS Update ... ' ;
+  cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
   { echo " CVS update failed" ; \
     echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
     cat ${testdir}/logs/$cvslog ; \
     exit 1 ;\
   }
-  else
-     echo " Switching working copy to branch $branch and updating ..."
-     cvs update -P -d -r $branch > ${testdir}/logs/$cvslog 2>&1 || \
-  { echo " CVS update failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
-    cat ${testdir}/logs/$cvslog ; \
-    exit 1 ;\
-  }
-  fi
 #
 #
   echo ' Making the Makefiles (running pamadm) ...'
