@@ -1,0 +1,31 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : Makefile.in
+# SOURCE  : $Source$
+#
+
+include ../Makefile.config
+include Makefile.sub
+
+LUCITA_OBJS = $L
+
+dirac.x:
+	cd .. ; $(MAKE) dirac.x
+
+dirmpi.x:
+	cd .. ; $(MAKE) dirmpi.x
+
+dirpvm.x:
+	cd .. ; $(MAKE) dirpvm.x
+
+all:	$(LUCITA_OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(LUCITA_OBJS:.o=.F) 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
