@@ -155,7 +155,6 @@ C
 C     Initialize:
       CALL DZERO(WORK(KPPF),N2PPF)
       CALL DZERO(WORK(KOMEGA),NEXCF)
-C
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
      &            WORK,KFREE,LFREE)
 C
@@ -207,11 +206,6 @@ C
 C
       CALL QENTER('PRPXP1')
       KFRSAV = KFREE
-C
-C     Get hold of the slaves if we run in parallel.
-C        ( ITASK = 1 for Fock matrices )
-C
-      IF (PARCAL) CALL DIRAC_PARCTL( 1 )
 C
 C     If orbital analysis; extract relevant orbital energies
 C     ======================================================
