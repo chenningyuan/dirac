@@ -188,7 +188,7 @@ C
 C
 #include <memint.h>
 C
-      TEST = DIISAO.OR.NASHT.GT.0
+      TEST = DIISAO.OR.NASHT.GT.0.OR.NAELEC.GT.0
       IF(TEST) THEN
         CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       ELSE 
@@ -243,16 +243,17 @@ C
 C       Reorder orbitals if requested
 C
         IF (LMOORD) THEN
-          CALL REORD(CMO,IMOORD,IREORD,MXREORD,WORK(KFREE),LFREE)
+           CALL REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,
+     &          WORK(KFREE),LFREE)
 C         
 C         Make sure that reordered coefficients are written back
 C         to file.
 C
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         END IF
         IF(OVLSEL) THEN
-          DOSEL = .TRUE.
-          INQUIRE(FILE='DFSMOS',EXIST=TOBE)
+           DOSEL = .TRUE.
+           INQUIRE(FILE='DFSMOS',EXIST=TOBE)
         ENDIF
       ENDIF
 C
@@ -522,10 +523,11 @@ C
       LOGICAL CHKCNV,DOSEL,TEST
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
+      DIMENSION NISHOLD(2),NASHOLD(2)
 C
 #include <memint.h>
 C
-      TEST = NASHT.GT.0.OR.DIISAO
+      TEST = NASHT.GT.0.OR.DIISAO.OR.NAELEC.GT.0
       IF (TEST) THEN
         CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
@@ -701,6 +703,57 @@ C
  30   CONTINUE
       TDDG = SECOND() - TDDG
 C
+C
+C     Automatic occupation
+C
+      IF (AUTOCC .OR. INIOCC) THEN
+C
+C        Save old occupation
+C
+         CALL ICOPY(2,NISH,1,NISHOLD,1)
+         CALL ICOPY(2,NASH,1,NASHOLD,1)
+C
+C        Determine new occupation
+C
+         CALL FNDOCC(EIG)
+C
+C
+C
+         TEST = .FALSE.
+         DO I = 1,NFSYM
+            TEST = TEST .OR. (NISH(I) .NE. NISHOLD(I))
+            TEST = TEST .OR. (NASH(I) .NE. NASHOLD(I))
+         END DO
+         IF (TEST .OR. INIOCC) THEN
+C
+C           AUTOCC has changed occupation...
+C
+C           Update common block info about N2ISHT,...
+C
+            CALL SETDC2(0)
+            CALL SETDHF(0)
+C
+            IF (INIOCC) THEN
+               INIOCC = .FALSE.
+               WRITE(LUPRI,'(/A/)')
+     &            '* AUTOCC( 0) : Initial occupation:'
+            ELSE
+               NEWOCC = NEWOCC + 1
+               WRITE(LUPRI,'(/A,I2,A/)')
+     &            '* AUTOCC(',NEWOCC,') : New occupation:'
+            END IF
+C
+            CALL PROCC()
+C
+            IF (NEWOCC .GT. 10) THEN
+               WRITE(LUPRI,'(/A,/A,I2,A)') 
+     &            'Problems with AUTOCC:',
+     &            'DHF occupation has changed ',NEWOCC, ' times.'
+               CALL QUIT('DHF occupation has changed too many times.')
+            END IF
+         END IF
+C
+      END IF
 C
 C     Overlap selection
 C
@@ -907,6 +960,7 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
+#include <dcbreo.h>
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK) 
@@ -1133,7 +1187,8 @@ C
 C     Reorder converged orbitals if requested
 C
       IF (LMOORF) THEN
-         CALL REORD(CMO,IMOORF,IREORF,MXREORD,WORK(KFREE),LFREE)
+         CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
+     &        WORK(KFREE),LFREE)
 C         
 C        Make sure that reordered coefficients are written back
 C        to file.
@@ -1794,7 +1849,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
-      SUBROUTINE REORD(CMO,IMOORD,IREORD,MXREORD,WORK,LWORK)
+      SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,WORK,LWORK)
 C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
@@ -1805,7 +1860,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION WORK(LWORK),CMO(*)
+      DIMENSION WORK(LWORK),CMO(*),EIG(*),IBEIG(*)
       DIMENSION IMOORD(MXREORD,2),IREORD(2)
 #include <dcborb.h>
 #include <dcbbas.h>
@@ -1823,19 +1878,33 @@ C
          IF (IREORD(I).EQ.0) GOTO 10
          IF (IPRSCF.GE.10) THEN
             CALL HEADER('REORD: before reordering',-1)
+            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &                  NFBAS(I,0),NORB(I),
      &                  NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
+            CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
+     &                  NESH(I),1,1,LUPRI)
+            WRITE(LUPRI,'(3X,A)') '* Boson classification...'
+            CALL OUTPUT(IBEIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
+     &                  NESH(I),1,1,LUPRI)
          END IF
 C
 C        Save coefficients
 C
-         CALL MEMGET('REAL',KTEMP,NCMOQ(I),WORK,KFREE,LFREE)
-         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,WORK(KTEMP),1)
+         CALL MEMGET('REAL',KTCMO,NCMOQ(I),WORK,KFREE,LFREE)
+         CALL DCOPY(NCMOQ(I),CMO(1+ICMOQ(I)),1,WORK(KTCMO),1)
+         CALL MEMGET('REAL',KTEIG,NORB(I),WORK,KFREE,LFREE)
+         CALL DCOPY(NORB(I),EIG(1+IORB(I)),1,WORK(KTEIG),1)
+         CALL MEMGET('REAL',KTIBE,NORB(I),WORK,KFREE,LFREE)
+         CALL DCOPY(NORB(I),IBEIG(1+IORB(I)),1,WORK(KTIBE),1)
 C
 C        Reorder coefficients
 C
-         CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTEMP),NFBAS(I,0),NORB(I),NZ,
+         CALL REOR1(CMO(1+ICMOQ(I)),WORK(KTCMO),
+     &              EIG(1+IORB(I)),WORK(KTEIG),
+     &              IBEIG(1+IORB(I)),WORK(KTIBE),
+     &              NFBAS(I,0),NORB(I),NZ,
      &              IMOORD(1,I),IREORD(I),NPSH(I),NESH(I))
 C
 C        Release memory
@@ -1844,9 +1913,16 @@ C
 C
          IF (IPRSCF.GE.10) THEN
             CALL HEADER('REORD: after reordering',-1)
+            WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
             CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
      &               NFBAS(I,0),NORB(I),
      &               NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
+            CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
+     &                  NESH(I),1,1,LUPRI)
+            WRITE(LUPRI,'(3X,A)') '* Boson classification...'
+            CALL OUTPUT(IBEIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
+     &                  NESH(I),1,1,LUPRI)
          END IF
  10   CONTINUE
       IPRSCF = IPRJTH
@@ -1856,19 +1932,21 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reor1 */
-      SUBROUTINE REOR1(CMO,CMOBCK,NBASI,NORBI,NZ,IORDER,NORDER,
+      SUBROUTINE REOR1(CMO,CMOBCK,EIG,EIGBCK,IBEIG,IBEIGBCK,
+     &                 NBASI,NORBI,NZ,IORDER,NORDER,
      &                 NPOSITRON,NELECTRON)
 C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
 C
-C        Written by J. Thyssen
-C        Last revision: Nov 27 1997
+C        Written by J. Thyssen Nov 27 1997
+C        Last revision: Aug 13 1999
 C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       DIMENSION CMO(NBASI,NORBI,NZ), CMOBCK(NBASI,NORBI,NZ),
+     &          EIG(*),EIGBCK(*), IBEIG(*), IBEIGBCK(*),
      &          IORDER(NORDER)
 C
 C
@@ -1878,9 +1956,19 @@ C
          DO IZ = 1,NZ
             IORB_S = I+NPOSITRON
             IORB_D = IORDER(I)+NPOSITRON
-            IF (IORB_D .LE. NELECTRON+NPOSITRON)
-     &         CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
+            IF (IORB_D .LE. NELECTRON+NPOSITRON) THEN
+C
+C              Copy eigenvector
+C
+               CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
      &                          CMO(1,IORB_D,IZ),1)
+C
+C              Copy eigenvalue and boson classification
+C
+               write(6,*) 'jth d,s',iorb_d,iorb_s,eigbck(iorb_s)
+               EIG(IORB_D)   = EIGBCK(IORB_S)
+               IBEIG(IORB_D) = IBEIGBCK(IORB_S)
+            END IF
          END DO
       END DO
 C
@@ -2436,6 +2524,7 @@ C
         RETURN
       ENDIF
 C
+C
 C     2. Many-electron system
 C     =======================
 C
@@ -2567,9 +2656,82 @@ C
      &                  DUMMY,CNVINT,NITER,ITRINT,INTTYP)
       ENDIF
 C
+      IF (AUTOCC .AND. .NOT. BARNUC) THEN
+         WRITE(LUPRI,'(//,1X,A,//)')
+     &      'Currently AUTOCC does not work with restart.'
+         CALL QUIT(
+     &      'Currently AUTOCC does not work with restart.')
+      END IF
+C
       RETURN
  1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
      &       3X,A10)
  1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
      &       3X,A10)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck fndocc */
+      SUBROUTINE FNDOCC(EIG)
+C***********************************************************************
+C
+C     Find DHF occupation based on eigenvalues
+C     using the build-up principle.
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION EIG(*)
+      DIMENSION IEIGMIN(2)
+C
+      DO I = 1,NFSYM
+         IEIGMIN(I) = 1+IORB(I) + NPSH(I)
+         NISH(I) = 0
+         NASH(I) = 0
+         NACSH(I,1) = 0
+      END DO
+C
+      NELEC2GO = NELECT
+      IF ((NELECT+1)/2 .GT. NESHT) THEN
+         WRITE(LUPRI,'(I3,A,I3,A)')
+     &      NELECT,' electrons but only ',NESHT,' orbitals.'
+         CALL QUIT('ERROR: Not enough eigenvalues for FNDOCC.')
+      END IF
+C
+ 100  CONTINUE
+         IEIGSYM = 0
+ 110     IEIGSYM = IEIGSYM + 1
+            IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
+C
+         J = IEIGSYM
+         DO I = J+1,NFSYM
+            IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM))) 
+     &         IEIGSYM = I
+         END DO
+         NISH(IEIGSYM) = NISH(IEIGSYM) + 1
+         IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
+         NELEC2GO = NELEC2GO - 2
+      IF (NELEC2GO .GT. 0) GOTO 100
+C
+      IF (NAELEC .GT. 0) THEN
+         IEIGSYM = 0
+ 200     IEIGSYM = IEIGSYM + 1
+            IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
+         J = IEIGSYM
+         DO I = J+1,NFSYM
+            IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM))) 
+     &         IEIGSYM = I
+         END DO
+         NASH(IEIGSYM) = 1
+         NACSH(IEIGSYM,1) = 1
+      END IF
+C
+      DO I = 1, NFSYM
+         NOCC(I) = NISH(I) + NASH(I)
+      END DO
+C
+      RETURN
       END
