@@ -7,9 +7,9 @@ C*****************************************************************************
 C  DCBEXP:  Expectation values
 C
       PARAMETER(MAXEXP=350)
-      LOGICAL ORBANA
+      LOGICAL ORBANA,PRJANA
       COMMON/DCBEXP/IPREXP,NEXPP,LEXPP(MAXEXP),
      &              IPDIPOLE(3),IPQUADRU(6),IPEFG(6*MXCENT),
      &              IPPVC(MXCENT),IPEFT(15*MXCENT),IPEFTNTL(15*MXCENT),
-     &              IPEFN(3*MXCENT),ORBANA
+     &              IPEFN(3*MXCENT),ORBANA,PRJANA
 

@@ -379,7 +379,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.XXXXXX',
+      DATA TABLE /'.PRINT ','.OPERAT','.ORBANA','.PROJEC',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -400,6 +400,7 @@ C
       IPREXP = 0
       NEXPP  = 0
       ORBANA = .FALSE.
+      PRJANA = .FALSE.
 C
 C     Process input from CBIEXP
 C     =========================
@@ -448,6 +449,8 @@ C&&&& ORBANA: Analyze expectation value in terms of individual orbitals
                ORBANA = .TRUE.
                GO TO 100
     4          CONTINUE
+C&&&& PROJEC: Analyze expectation value in terms of fragment orbitals
+               PRJANA = .TRUE.
                GO TO 100
     5          CONTINUE
                GO TO 100
@@ -473,6 +476,12 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' EXPINP: Expectation values'
+      IF(ORBANA.OR.PRJANA) THEN
+        WRITE(LUPRI,'(A)') 
+     &   '* Expectation values analyzed in terms of '
+        IF(ORBANA) WRITE(LUPRI,'(3X,A)') '- individual orbitals'
+        IF(PRJANA) WRITE(LUPRI,'(3X,A)') '- fragment orbitals'
+      ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ICHANG.GT.0) THEN
         WRITE(LUPRI,'(A)') 
