@@ -3120,7 +3120,7 @@ C     On input/output A contains the lower triangle and diagonal of
 C     the Hermitian matrix to be decomposed.
 C     On output the upper triangle of the Cholesky matrix is stored
 C     in the upper triangle of A, and the diagonal in D.
-C     With pivoting(JOB.ne.0) the Choleksy matrix has been scrambled
+C     With pivoting(JOB.ne.0) the Cholesky matrix has been scrambled
 C     according to the ordering indicated by IPIVOT.
 C     
 C     Written by T.Saue March 25 1999
@@ -4039,3 +4039,101 @@ C
       RETURN
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Sqstra */
+      SUBROUTINE SQSTRA(IOPT,A,N,LRA,LCA,NZA,WORK,LWORK)
+C***********************************************************************
+C
+C     IOPT = -1:
+C     Generate the matrix  Inv{Sqrt(S)} to be used in 
+C     symmetric orthonormalization
+C   
+C     IOPT = +1:
+C     Generate the matrix Sqrt(S)
+C
+C     NOTE that matrix A gets destroyed in the process !
+C
+C     Written by T. Saue Oct 10 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LRA,LCA,NZA),WORK(LWORK)
+C
+C     Memory allocation
+C
+#include "memint.h"
+      IF((IOPT*IOPT).NE.1) CALL QUIT('SQSMAT: Invalid IOPT!')
+      N2DIM = N*N*NZA
+      CALL MEMGET('REAL',KEVEC,N2DIM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEVAL,N,WORK,KFREE,LFREE)
+C
+      CALL SQSTR2(IOPT,A,N,LRA,LCA,NZA,WORK(KEVEC),WORK(KEVAL),
+     &            WORK,KFREE,LFREE)
+C
+      CALL MEMREL('SQSTRA',WORK,KWORK,KWORK,KFREE,LFREE)      
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Sqstr2 */
+      SUBROUTINE SQSTR2(IOPT,A,N,LRA,LCA,NZA,EVEC,EVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     IOPT = -1:
+C     Generate the matrix  Inv{Sqrt(S)} to be used in 
+C     symmetric orthonormalization
+C   
+C     IOPT = +1:
+C     Generate the matrix Sqrt(S)
+C
+C     NOTE that matrix A gets destroyed in the process !
+C
+C     Written by T. Saue Oct 10 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0,D0=0.0D0)
+      DIMENSION A(LRA,LCA,NZA),EVEC(N,N,NZA),EVAL(N),WORK(*)
+#include "dgroup.h"
+      KFRSAV = KFREE
+C
+C     First diagonalize the matrix and save eigenvectors 
+C
+      CALL QDIAG(NZA,N,A,LRA,LCA,EVAL,1,EVEC,N,N,
+     &           WORK(KFREE),LFREE,IERR)
+      N2DIM = N*N*NZA
+      CALL MEMGET('REAL',KBUF,N2DIM,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,EVEC,1,WORK(KBUF),1)
+C
+C     Then form Lowdin matrix for canonical orthonormalization
+C     (here one should perhaps introduce a check on linear
+C     dependency)
+      IF(IOPT.EQ.-1) THEN
+        DO J = 1,N
+          FAC = D1/SQRT(EVAL(J))
+          DO JZ = 1,NZA
+            CALL DSCAL(N,FAC,EVEC(1,J,JZ),1)
+          ENDDO
+        ENDDO
+      ELSEIF(IOPT.EQ.1) THEN
+        DO J = 1,N
+          FAC = SQRT(EVAL(J))
+          DO JZ = 1,NZA
+            CALL DSCAL(N,FAC,EVEC(1,J,JZ),1)
+          ENDDO
+        ENDDO
+      ENDIF
+C
+C     Finally get the full matrix
+C
+      CALL QGEMM(N,N,N,D1,'N','N',IQDEF,WORK(KBUF),N,N,NZA,
+     &                    'H','N',IQDEF,EVEC      ,N,N,NZA,
+     &                         D0,IQDEF,A,LRA,LCA,NZA)
+C
+      CALL MEMREL('SQSTR2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)              
+C
+      RETURN
+      END
+
+
