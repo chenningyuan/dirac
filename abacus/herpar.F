@@ -2548,6 +2548,7 @@ C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
 #include <implicit.h>
+#include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
