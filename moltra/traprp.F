@@ -107,7 +107,7 @@ C     Print section
 C     =============
 C
       DO I = 1, NFSYM
-         CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),DUM,DUM,NSTR)
+         CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),0,0,NSTR)
       ENDDO
 C
 C     Get all coefficients and eigenvalues

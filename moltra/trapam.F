@@ -60,7 +60,6 @@ C
       CALL QENTER('PAMTRA')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
@@ -314,7 +313,7 @@ C
       WRITE(LUPRI,'(/A)')
      &     '* Core orbital ranges for 2-index transformation:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,5)),DUM,DUM,DUM,NSPC)
+         CALL TRAPRI(1,I,WORK(KVEC(I,5)),0,0,0,NSPC)
       ENDDO
 C
 C     Calculate dimensions of the coefficient array
@@ -378,7 +377,7 @@ C     --------------------------------------
 C
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
@@ -744,7 +743,6 @@ C
       CALL QENTER('LAGTAU')
 #include "memint.h"
       KFRSAV = KFREE
-      DUM = DUMMY
 C     
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,5)
@@ -3649,11 +3647,11 @@ C
       WRITE(LUPRI,'(A,I5)') '- Number of active electrons:',NAELEC
       WRITE(LUPRI,'(A)')    '- Active orbitals:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,1)),IDUM,IDUM,IDUM,NSTR)
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),0,0,0,NSTR)
       ENDDO
       WRITE(LUPRI,'(A)')    '- Core orbitals:'
       DO I = 1, NFSYM
-         CALL TRAPRI(1,I,WORK(KVEC(I,2)),IDUM,IDUM,IDUM,NSPC)
+         CALL TRAPRI(1,I,WORK(KVEC(I,2)),0,0,0,NSPC)
       ENDDO
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
@@ -3754,7 +3752,7 @@ C       Call driver for 4-index transformation
 C       --------------------------------------
 C
         CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
-     &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &              .TRUE.,.FALSE.,INTRES)
 C
 C        Print timing information
@@ -4038,18 +4036,14 @@ C
 C     dcborb.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)
       CALL MPI_BCAST(I1_DCBORB,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
 C     dcbbas.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
       CALL MPI_BCAST(I1_DCBBAS,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
@@ -4063,9 +4057,7 @@ C
 C     dgroup.h
 C     --------
 C
-      IF(MYTID.EQ.0) NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
       CALL MPI_BCAST(I1_DGROUP,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 C
