@@ -1286,7 +1286,7 @@ case $machine in
          else 
             CCreal=mpicc
          fi
-s         ;;
+         ;;
       *)
          CCreal=$CC
          ;;
