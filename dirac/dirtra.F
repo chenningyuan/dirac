@@ -336,7 +336,8 @@ C
                 KFAC = JFAC*IQPHASE(K1,K2,IQ)*IQPH(K1,2)*IQPH(K2,1)
               ENDIF
               IF(KFAC.EQ.-1) THEN
-                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
+CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
+                IOFF = I2BBASX(IRP1,IRP2,IC1,IC2)
                 DO 50 ICOL = 1,NB2
                   CALL DSCAL(NB1,DM1,AMAT(IOFF+1),1)
                   IOFF = IOFF + NTBAS(0)
