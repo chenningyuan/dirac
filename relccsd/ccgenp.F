@@ -93,10 +93,12 @@ C
 #if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
  || defined (SYS_HPUX)
       Sec = MCLOCK()/100.D0
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
+#else 
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       Sec = Second()
 #else
       Does MCLOCK exist on your computer???
+#endif
 #endif
 C
       Return
@@ -126,19 +128,25 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
-#elif defined (SYS_HPUX)
+#else 
+#if defined (SYS_HPUX)
       STRING(1:24) = FDATE()
       DATUM = STRING(1:10)
       TIJD  = STRING(12:19)
-#elif defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
+#else
+#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
       Call Date(Datum)
       Call Time(Tijd)
-#elif defined (SYS_AIX) 
+#else 
+#if defined (SYS_AIX) 
       Call fdate_ (String)
       Datum = String(1:10)
       Tijd  = String(12:19)
 #else
       Date and time on your computer???
+#endif
+#endif
+#endif
 #endif
       Return
       End
