@@ -1326,6 +1326,7 @@ C
      &          CMO(*),EIG(*),IORBCL(2,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),WORK(*)
+      CHARACTER*1 TTYPXV(2)
 C
 #include <chrnos.h>
       CALL QENTER('GETLR1')
@@ -1346,9 +1347,9 @@ C
         MEMTYP = 'GETLRP'
         TYP    = 'P'
       ELSE
-        WRITE(LUPRI,'(A,A,I5)') 'GETLRF ERROR: ',
+        WRITE(LUPRI,'(A,A,I5)') 'GETLR1 ERROR: ',
      &    'unknown NBTYP = ',NBTYP
-        CALL QUIT('GETLRF: Unknown NBTYP !')
+        CALL QUIT('GETLR1: Unknown NBTYP !')
       ENDIF
 C
       INDPRB = LLRBPU(INDBP)
@@ -1358,12 +1359,12 @@ C
         ELSEIF(INDPRB.LT.100) THEN
           NDIG = 2
         ELSE
-          WRITE(LUPRI,'(A,I5)') 'GETLRF ERROR: INDPRB = ',INDPRB
-          CALL QUIT('GETLRF: Inappropriate INDPRB !')
+          WRITE(LUPRI,'(A,I5)') 'GETLR1 ERROR: INDPRB = ',INDPRB
+          CALL QUIT('GETLR1: Inappropriate INDPRB !')
         ENDIF
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'GETLRF ERROR: INDPRB = ',INDPRB
-        CALL QUIT('GETLRF: Inappropriate INDPRB !')
+        WRITE(LUPRI,'(A,I5)') 'GETLR1 ERROR: INDPRB = ',INDPRB
+        CALL QUIT('GETLR1: Inappropriate INDPRB !')
       ENDIF
 C
 C     First get solution vector
@@ -1371,17 +1372,34 @@ C     =========================
 C      
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
-      ITYP = JTIMOP
+      ITIM = JTIMOP
+Chj: TTYPXV(iround) = type of part of B solution vector in round iround
+      IF (ITIM .EQ. 1) THEN
+         TTYPXV(1) = '+'
+         TTYPXV(2) = '-'
+      ELSE IF (ITIM .EQ. -1) THEN
+         TTYPXV(1) = '-'
+         TTYPXV(2) = '+'
+      ELSE
+         write(lupri,*) 'GETLR1 error: JTIMOP =',ITIM
+         CALL QUIT('GETLR1: Illegal JTIMOP')
+      END IF
       NXDIM = NBDIM*NFREQ
+C
+Chj:  If static we have one round with ITIM = JTIMOP, if 
+C     non-zero freq. then we have a second round with ITIM = -JTIMOP
+C
+      IROUND = 0
+  100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
-      CALL XRSXV1(ITYP,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,BBUF)
+      CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,BBUF)
 C
 C     Print section
 C     -------------
 C
-      IF(IPRXLR.GE.5) THEN
-        WRITE(LUPRI,'(/I5,A1,A)') NFREQ,
-     &    TYP,'-type X(+) solution vectors:'
+      IF(IPRXLR.GE.10) THEN
+        WRITE(LUPRI,'(/1X,A1,3A,I3,A)') TYP,'-type X(',TTYPXV(IROUND),
+     &    ') part of solution vectors for',NFREQ,' frequencies:'
         CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -1389,10 +1407,10 @@ C
 C     Next form linear response functions
 C     ===================================
 C     (for now we form only combinations between
-C      operators with same opint group symmetry)
+C      operators with same point group symmetry)
 C
       IF(ALLCMB) THEN
-        WRITE(LUPRI,'(A)') 'GETLRF WARNING: Sorry, not yet written !'
+        WRITE(LUPRI,'(A)') 'GETLR1 WARNING: Sorry, not yet written !'
         ALLCMB = .FALSE.
       ENDIF
       IF(.NOT.ALLCMB) THEN
@@ -1402,32 +1420,29 @@ C
           INDAP  = LLAPSU(JOPA+IOPA)
           INDPRA = LLRAPU(INDAP)
           KTIMOP = IPRPTIM(INDPRA)
-          IF(KTIMOP.EQ.-1.AND.JTIMOP.EQ.1) THEN
-            FAC = DM4
-          ELSE
-            FAC = D4
-          ENDIF
 C
 C         Get gradient
 C         ------------
 C
-          CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
-     &               CMO,NBTYP,WORK,KFREE,LFREE,IPRXLR)
+          IF (KTIMOP .EQ. ITIM) THEN
+             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
+     &                  CMO,NBTYP,WORK,KFREE,LFREE,IPRXLR)
+          END IF
 C
 C         Form linear reponse function
 C         ----------------------------
 C
           DO IFREQ = 1,NFREQ
-            ABLRF(IFREQ,INDAP,INDBP,1)  =
-     &        FAC*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
+            IF (KTIMOP .EQ. ITIM) ABLRF(IFREQ,INDAP,INDBP,1)  =
+     &        D4*DDOT(NBDIM,GPO,1,XPO(1,1,IFREQ),1)
             IF(IPRXLR.GE.2) THEN
               FREQ = EVALR(IFREQ)
               WRITE(LUPRI,1000) 
      &            '<<',INDAP,',',INDBP,'>>:',ABLRF(IFREQ,INDAP,INDBP,1),
-     &            ' a.u.,  ',TYP,'-contribution at frequency',
-     &            FREQ,' a.u.'
+     &            ' a.u.,  ',TYP,'(',TTYPXV(IROUND),
+     &            ')-contribution at frequency',FREQ,' a.u.'
             ENDIF            
-            IF(ORBXLR) THEN
+            IF(ORBXLR .AND. KTIMOP.EQ.ITIM) THEN
               DO IZ = 1,NZ
                 DO I = 1,NXPAR
                   I1 = JXOP(1,I)
@@ -1450,63 +1465,38 @@ C
       BACKSPACE LUXVC
       CALL GETDAT(XRSLBL(1),XRSLBL(2))
       WRITE(XRSLBL(2)(1:1),'(A1)') TYP
-      WRITE(XRSLBL(2)(2:2),'(A1)') '+'
+      WRITE(XRSLBL(2)(2:2),'(A1)') TTYPXV(IROUND)
       WRITE(XRSLBL(2)(5:5),'(I1)') JSYMOP
-      WRITE(XRSLBL(2)(6:7),'(I2)') JTIMOP
+      WRITE(XRSLBL(2)(6:7),'(I2)') ITIM
       WRITE(XRSLBL(2)(8:8),'(I1)') INTFLG
 C
       IF(NBDIM.LT.4) THEN
         CALL MEMGET('REAL',KBUF,4,WORK,KFREE,LFREE)
         CALL DZERO(WORK(KBUF),4)
       ENDIF
-      IF(NBDIM.LT.4) THEN
-        DO IFREQ = 1,NFREQ
+      DO IFREQ = 1,NFREQ
+        FREQ = EVALR(IFREQ)
+        IF (IROUND.EQ.1 .OR. FREQ.NE.D0) THEN
           XRSLBL(2)(3:3) = CHRNOS(IFREQ/10)
           XRSLBL(2)(4:4) = CHRNOS(MOD(IFREQ,10))
           CALL NEWLB2(XRSLBL(3),XRSLBL,LUXVC,LUPRI)
-          CALL DCOPY(NBDIM,XPO(1,1,IFREQ),1,WORK(KBUF),1)          
-          CALL WRITT(LUXVC,4,WORK(KBUF))
-        ENDDO
-      ELSE
-        DO IFREQ = 1,NFREQ
-          XRSLBL(2)(3:3) = CHRNOS(IFREQ/10)
-          XRSLBL(2)(4:4) = CHRNOS(MOD(IFREQ,10))
-          CALL NEWLB2(XRSLBL(3),XRSLBL,LUXVC,LUPRI)
-          CALL WRITT(LUXVC,NBDIM,XPO(1,1,IFREQ))
-        ENDDO
-      ENDIF
+          IF(NBDIM.LT.4) THEN
+            CALL DCOPY(NBDIM,XPO(1,1,IFREQ),1,WORK(KBUF),1)          
+            CALL WRITT(LUXVC,4,WORK(KBUF))
+          ELSE
+            CALL WRITT(LUXVC,NBDIM,XPO(1,1,IFREQ))
+          END IF
+        END IF
+      ENDDO
 C
-C     Construct the X(-) vectors and write them to file
+C     IF not static, then now calculate the part of the
+C     B solution vector which is of -JTIMOP symmetry,
+C     calculate contribution to properties and write them to file also.
 C
-      IF(.NOT.STATIC) THEN
-        ITYP = -ITYP
-        WRITE(XRSLBL(2)(2:2),'(A1)') '-'
-        CALL DZERO(XPO,NXDIM)
-        CALL XRSXV1(ITYP,NBTYP,XPO,EVECR,NFREQ,
-     &              IBTYP,IBVEC,BBUF)
-        IF(NBDIM.LT.4) THEN
-          DO IFREQ = 1,NFREQ
-            FREQ = EVALR(IFREQ)
-            IF(FREQ.NE.D0) THEN
-              XRSLBL(2)(3:3) = CHRNOS(IFREQ/10)
-              XRSLBL(2)(4:4) = CHRNOS(MOD(IFREQ,10))
-              CALL NEWLB2(XRSLBL(3),XRSLBL,LUXVC,LUPRI)
-              CALL DCOPY(NBDIM,XPO(1,1,IFREQ),1,WORK(KBUF),1)          
-              CALL WRITT(LUXVC,4,WORK(KBUF))
-            ENDIF
-          ENDDO
-        ELSE
-          DO IFREQ = 1,NFREQ
-            FREQ = EVALR(IFREQ)
-            IF(FREQ.NE.D0) THEN
-              XRSLBL(2)(3:3) = CHRNOS(IFREQ/10)
-              XRSLBL(2)(4:4) = CHRNOS(MOD(IFREQ,10))
-              CALL NEWLB2(XRSLBL(3),XRSLBL,LUXVC,LUPRI)
-              CALL WRITT(LUXVC,NBDIM,XPO(1,1,IFREQ))
-            ENDIF
-          ENDDO
-        ENDIF
-      ENDIF
+      IF(.NOT.STATIC .AND. IROUND.EQ.1) THEN
+        ITIM = -ITIM
+        GO TO 100
+      END IF
 C
 C     We add an extra label to signify EOF
 C
@@ -1516,7 +1506,7 @@ C
 C
       CALL QEXIT('GETLR1')      
       RETURN
- 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,A1,A,F16.10,A)
+ 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,3A1,A,F16.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */

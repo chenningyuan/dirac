@@ -154,6 +154,8 @@ C
 #include <dcbxrs.h>
 #include <blocks.h>
 C
+      CHARACTER*1 TTYPEG, TTYPSG
+C
       CALL QENTER('XRSCTL')
       KFRSAV = KFREE
       IF(LINEQ) THEN
@@ -175,35 +177,46 @@ C
 C
 C     Fix the number of variational parameters
 C
+C     TTYPEG: time reversal type of E[2] G
+C     TTYPSG: time reversal type of S[2] G
+C
+      IF (JTIMOP .GT. 0) THEN
+         TTYPEG = '+'
+         TTYPSG = '-'
+      ELSE
+         TTYPEG = '-'
+         TTYPSG = '+'
+      END IF
+C
       NVPAR = 0
       IF(NZXOPE.GT.0) THEN
         NVPAR        = NVPAR + 1
         IPEP         = NVPAR
-        BVTYP(NVPAR) = 'E+'
+        BVTYP(NVPAR) = 'E'//TTYPEG
         IF(.NOT.STATIC) THEN
           NVPAR        = NVPAR + 1
           IPEM         = NVPAR
-          BVTYP(NVPAR) = 'E-'
+          BVTYP(NVPAR) = 'E'//TTYPSG
         ENDIF
       ENDIF
       IF(NZXOPP.GT.0) THEN
         NVPAR        = NVPAR + 1
         IPPP         = NVPAR
-        BVTYP(NVPAR) = 'P+'
+        BVTYP(NVPAR) = 'P'//TTYPEG
         IF(.NOT.STATIC) THEN
           NVPAR      = NVPAR + 1
           IPPM       = NVPAR
-        BVTYP(NVPAR) = 'P-'
+        BVTYP(NVPAR) = 'P'//TTYPSG
         ENDIF
       ENDIF
       IF(NZCONF.GT.0) THEN
         NVPAR        = NVPAR + 1
         IPCP         = NVPAR
-        BVTYP(NVPAR) = 'C+'
+        BVTYP(NVPAR) = 'C'//TTYPEG
         IF(.NOT.STATIC) THEN
           NVPAR        = NVPAR + 1
           IPCM         = NVPAR
-          BVTYP(NVPAR) = 'C-'
+          BVTYP(NVPAR) = 'C'//TTYPSG
         ENDIF
       ENDIF
       CALL MEMGET('REAL',KRNORM,NVPAR*NFREQ,WORK,KFREE,LFREE)
