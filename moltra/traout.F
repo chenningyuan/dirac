@@ -1,3 +1,6 @@
+C
+C $Id$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
       SUBROUTINE MDINTI(NSTR,IKRA,IKRB,IPRINT)
