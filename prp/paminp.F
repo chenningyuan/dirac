@@ -957,13 +957,13 @@ C
          PCOMB = 'TFFT'
          IF (LEVYLE) PCOMB = 'TFFF'
 CJTH DEBUG!!
-C#ifdef UNDEF
+#ifdef UNDEF
          write(6,*) 'debug debug: operator ',PNAME
          IF (PNAME(1:2) .EQ. 'EF') THEN
             PCOMB = 'TFFF'
             write(6,*) '           : setting comp to',pcomb
          END IF
-C#endif
+#endif
       ELSE
          PCOMB = 'FTTF'
       END IF
