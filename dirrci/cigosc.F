@@ -676,6 +676,9 @@ C--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
      &                (indk(inz),indl(inz),inz=1,nz),
      &                (twoinr(inz),inz=nuniq+1,nuniq+nz)
+         do inz = nuniq+1,nuniq+nz
+            twoini(inz) = D0
+         enddo
       ELSE
          read (mdint,ERR=10010,END=10010) ikr,jkr,nz,
      &                (indk(inz),indl(inz),inz=1,nz),
