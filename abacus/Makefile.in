@@ -16,7 +16,7 @@ herdirect.o  herdrv.o     hergam.o     hergeo.o\
 hergp.o      herrdn.o     hersol.o\
 hersym.o     hertst.o     her2gab.o    hermem.o\
 abanuc.o     abatro.o     abaopt.o abaortvec.o \
-abarint.o abavrml.o abawalk.o
+abarint.o abavrml.o abawalk.o abaop2.o
 
 SLAVE_OBJS = herpar.o
 

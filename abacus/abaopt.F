@@ -45,14 +45,14 @@ C  /* Deck mininp */
 #include <maxorb.h>
 #include <optinf.h>
 #include <cbiwlk.h>
-#ifndef PRG_DIRAC
-#include <dcbgrd.h>
-#include <dcbgen.h>
+#ifdef PRG_DIRAC
+#   include <dcbgrd.h>
+#   include <dcbgen.h>
 #else
-#include <infinp.h>
-#include <gnrinf.h>
+#   include <infinp.h>
+#   include <gnrinf.h>
 #endif
-      PARAMETER (NTABLE = 60, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
+      PARAMETER (NTABLE = 64, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-5, DEFDSP = 1.0D-3)
       LOGICAL NEWDEF, TRSTCH, TRSTFC, FIRST, REMCRD
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -72,7 +72,8 @@ C
      &            '.REMOVE', '.INIMOD', '.FINDRE', '.CMBMOD',
      &            '.RF    ', '.GDIIS ', '.DELINT', '.XXXXXX',
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
-     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL'/
+     &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
+     &            '.XXXXXX', '.NO SKI', '.GRD IN', '.GRD SC'/
 C
       DATA FIRST /.TRUE./
 C
@@ -191,6 +192,11 @@ C
          INDHES(I) = 0
  123  CONTINUE
 C
+#if defined (PRG_DIRAC)
+      CALL INIGRD()
+      DOTRCK = .TRUE.
+#endif
+C
       IF (NEWDEF) THEN
          WORD1 = WORD
  100     CONTINUE
@@ -207,7 +213,8 @@ C
      &                  21,22,23,24,25,26,27,28,29,30,
      &                  31,32,33,34,35,36,37,38,39,40,
      &                  41,42,43,44,45,46,47,48,49,50,
-     &                  51,52,53,54,55,56,57,58,59,60), I
+     &                  51,52,53,54,55,56,57,58,59,60,
+     &                  61,62,63,64), I
                END IF
  200        CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -391,6 +398,28 @@ C
  59         READ (LUCMD,*) NSPMOD
             GOTO 100
  60         BOFILL = .TRUE.
+            GOTO 100
+ 61         CONTINUE
+            GOTO 100
+C           .NO SKIP: Don't skip SSLL or SSSS gradients when small
+ 62         CONTINUE
+#if defined (PRG_DIRAC)
+            DOTRCK = .FALSE.
+#endif
+            GOTO 100
+C           .GRD INTFLG: INTFLG to pass to gradient routines
+ 63         CONTINUE
+#if defined (PRG_DIRAC)
+            READ (LUCMD,*) ILL, ILS, ISS
+            IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS
+#endif
+            GOTO 100
+C           .GRD SCREEN: screening threshold in gradient calc.
+#if defined (PRG_DIRAC)
+            READ (LUCMD,*) SCRGRD
+#endif
+
+ 64         CONTINUE
             GOTO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GOTO 300
@@ -1064,6 +1093,38 @@ C
          IF (VRVIBA) WRITE(LUPRI,'(A)')
      &        ' Eigenvectors will be visualized.'
       END IF
+C     
+#if defined (PRG_DIRAC)
+C     
+      WRITE(LUPRI,'(1X,A)')
+     &     '* Contributions to the molecular gradient from'
+      IF ( LBIT( IGRD_INTFLG, 1 ) )
+     &     WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
+      IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
+         IF ( DOTRCK ) THEN
+            WRITE(LUPRI,'(3X,A)')
+     &           '- LS-integrals (skipped if estimated to be small).'
+         ELSE
+            WRITE(LUPRI,'(3X,A)') '- LS-integrals.'
+         END IF
+      END IF
+      IF ( LBIT( IGRD_INTFLG, 3 ) ) THEN
+         IF ( DOTRCK ) THEN
+            WRITE(LUPRI,'(3X,A)')
+     &           '- SS-integrals (skipped if estimated to be small).'
+         ELSE
+            WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
+         END IF
+      END IF
+      IF(SCRGRD.GT.D0) THEN
+         WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &        '* Screening threshold in gradient calculation ',SCRGRD
+      ELSE
+         WRITE(LUPRI,'(1X,A,1P,E8.2)')
+     &        '* No screening in the calcualtion of '//
+     &        'two-electron integrals.'
+      END IF
+#endif
       RETURN
       END
 
@@ -1191,9 +1252,11 @@ C
                STOP '*** End of visualization ***'
             END IF
          ELSE
+#ifndef PRG_DIRAC
             CALL HERINP(WORK,LWORK)
             CALL GPCLOSE(LUONEL,'KEEP')
             WORK(IWOFF+1) = WRKDLM
+#endif
             CALL FNDRED(WILBMT,HESOLD)
             CALL QUIT('*** Coordinates determined ***')
             STOP '*** Coordinates determined ***'
@@ -1660,6 +1723,8 @@ C
 C
 C     We check to see if there is any properties to be calculated
 C
+#ifndef PRG_DIRAC
+C
          WORK(IWOFF+1) = WRKDLM
          WRINDX = .TRUE.
 Chj aug 99: reset IPRUSR to original level
@@ -1690,6 +1755,16 @@ C
  134     CONTINUE 
          IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
 C
+#else /* PRG_DIRAC */
+C
+C        Do wave function analysis and properties
+C        at converged geometry.
+C
+         CALL MINANA(WORK(IWOFF+2),LWORK)
+         CALL MINPRP(WORK(IWOFF+2),LWORK)
+C
+#endif
+C
 C     Single point energy is calculated if requested.
 C
          WORK(IWOFF+1) = WRKDLM
@@ -1698,7 +1773,9 @@ C
 C
 C     Final results are printed, partially through PRIINF.
 C
+#ifndef PRG_DIRAC
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
+#endif
          CALL TITLER(' End of Minimization ','<',120)
          CALL PRIINF(GEINFO)
          WRITE(LUPRI,*)
@@ -1943,13 +2020,23 @@ C
 #include <mxcent.h>
 #include <maxorb.h>
 #include <infopt.h>
-#include <infinp.h>
 #include <optinf.h>
-#include <gnrinf.h>
 #include <siripc.h>
+#ifndef PRG_DIRAC
+#  include <infinp.h>
+#  include <gnrinf.h>
+#else /* PRG_DIRAC */
+#  include <dcbdhf.h>
+#  include <dcbgen.h>
+#  include <dcbmp2.h>
+#  include <dcbpsi.h>
+#endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
+C
+#ifndef PRG_DIRAC
+C
       WORK(IWOFF+1) = WRKDLM
       IF (.NOT. EXHER) THEN
          CALL EXEHER(WORK,LWORK,IWOFF,WRKDLM)
@@ -2016,6 +2103,55 @@ ckr#endif
       ELSE
          ENERGY = EMCSCF
       END IF
+#else /* PRG_DIRAC */
+C
+C     Geometry optimization for Dirac
+C
+C     Execute Dirac, and retrieve energy.
+C
+      IF ( .NOT. EXSIR ) THEN
+         CALL EXEDIR(WORK(IWOFF+1),LWORK)
+         IF (DOCCM) THEN
+            ENERGY = RGETCCSD()
+         ELSE IF (DOMP2) THEN
+            ENERGY = EMP2+DHFERG
+         ELSE IF (DODHF) THEN
+            ENERGY = DHFERG
+         ELSE
+            call quit('no wave function...')
+         END IF
+         EXHER = .TRUE.
+         EXSIR = .TRUE.
+      END IF
+      NEWGEO = .TRUE.
+C
+C
+C     In Dirac THRGRD is called SCFCNV if EVCCNV is .true.
+C     FIXME: this threshold should be a function of wavefunction
+c     convergence and possibly screening thresholds (e.g. for MP2),
+C     and not just the SCF threshold which is used here.
+C
+      IF ( EVCCNV .OR. FCKCNV ) THEN
+         THRGRD = SCFCNV
+      ELSE
+         THRGRD = SQRT(SCFCNV)
+      END IF
+C 
+      IF ((2.0D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN
+         GRDTHR = 2.0D0*THRGRD
+         THRSTP = GRDTHR
+         THRERG = GRDTHR
+         THRSYM = SQRT(THRERG)
+         WRITE (LUPRI,'(/A)') ' WARNING>>>> Due to convergence '//
+     &        'thresholds for the wave function'
+         WRITE (LUPRI,'(A)') ' WARNING>>>> thresholds for convergence'
+     &        //' of geometry optimization has been reset'
+         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+     &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
+     &        'Energy change  ',THRERG
+      END IF
+C
+#endif /* PRG_DIRAC */
       CALL QEXIT('GTNRGY')
       RETURN
       END
@@ -2036,10 +2172,19 @@ C
 #include <maxaqn.h>
 #include <symmet.h>
 #include <nuclei.h>
-#include <infinp.h>
 #include <abainf.h>
-#include <gnrinf.h>
 #include <optinf.h>
+#ifndef PRG_DIRAC
+#  include <gnrinf.h>
+#  include <infinp.h>
+#else
+#  include <dcbgrd.h>
+#  include <dcbham.h>
+#  include <dcbdhf.h>
+#  include <dcbgen.h>
+#  include <dcbmp2.h>
+#  include <dcbpsi.h>
+#endif
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -2047,6 +2192,20 @@ C
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
       CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+C
+#ifdef PRG_DIRAC
+C
+C     Calculate gradient
+C
+      IF(DONGRD) THEN
+         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      ELSE
+         CALL RMOLGRD(WORK(IWOFF+1),LWORK)
+      ENDIF
+C
+      EXABA = .TRUE.
+C
+#else /* PRG_DIRAC */
       CLOSE (13)
 C
 C     Let's see if this is a wave function we know, if not: Do it numerically
@@ -2068,6 +2227,7 @@ C
          MOLGRD = .FALSE.
          HELFEY = .FALSE.
       END IF
+#endif /* PRG_DIRAC */
       CALL TRAGRD(GRDMOL,EGRAD,WORK(IWOFF + 2),
      &            WORK(IWOFF + MXCOOR*MXCOOR + 2),NCRREP(0,1),3*NUCDEP)
       CALL QEXIT('GTGRAD')
@@ -2099,6 +2259,9 @@ C
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
+#ifdef PRG_DIRAC
+      CALL QUIT('GTHESS not implemented',-1)
+#else
       WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
@@ -2125,6 +2288,7 @@ C
       IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
          CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
       END IF
+#endif /* PRG_DIRAC */
       CALL QEXIT('GTHESS')
       RETURN
       END
@@ -6478,10 +6642,28 @@ C
 #include <taymol.h>
 #include <symmet.h>
 #include <nuclei.h>
-#include <gnrinf.h>
 #include <optinf.h>
 #include <infopt.h>
+#ifdef PRG_DIRAC
+#  include <dcbdhf.h>
+#  include <dcbgen.h>
+#  include <dcbmp2.h>
+#  include <dcbpsi.h>
+#else
+#  include <gnrinf.h>
+#endif
 C
+#ifdef PRG_DIRAC
+      IF (DOCCM) THEN
+         ECORR = RGETCCSD()
+      ELSE IF (DOMP2) THEN
+         ECORR = DHFERG+EMP2
+      ELSE IF (DODHF) THEN
+         ECORR = DHFERG
+      ELSE
+         call quit('unknown wave function...')
+      END IF
+#endif
       ESTART = ECORR
       NCART  = NCRREP(0,1)
       NCRIND = 3*NUCIND
@@ -6568,6 +6750,26 @@ C
          EXABA = .FALSE.
          RDINPC = .FALSE.
          CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+#ifdef PRG_DIRAC
+         IF (DOCCM) THEN
+            ECORR = RGETCCSD()
+         ELSE IF (DOMP2) THEN
+            ECORR = DHFERG+EMP2
+         ELSE IF (DODHF) THEN
+            ECORR = DHFERG
+         ELSE
+            call quit('unknown wave function...')
+         END IF
+#endif
+      END DO
+C
+C     Print out gradient
+C
+      CALL HEADER('Total finite-field (approximate) molecular '//
+     &            'gradient',-1)
+C
+      DO I = 1,NCRREP(0,1)
+         WRITE(6,*) 'Gradient ',I,'   ',GRDMOL(I)
       END DO
 C
  9100 FORMAT (A4)

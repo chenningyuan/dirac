@@ -1,3 +1,4 @@
+#ifndef PRG_DIRAC
 C
 C...   Copyright (c) 1997 by the authors of Dalton (see below).
 C...   All Rights Reserved.
@@ -34,6 +35,9 @@ C
 C#include <single.h>
 #ifdef REVLOG
 $Log$
+Revision 1.6  2000/09/18 14:14:17  jth
+New geometry optimization module from Dalton1.1.
+
 Revision 1.5  2000/09/18 09:57:23  jth
 New files from Dalton1.1. Before merge with Dirac.
 
@@ -1197,6 +1201,7 @@ C
       CALL QEXIT('WLKDIA')
       RETURN
       END
+#endif
 C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
@@ -1310,6 +1315,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
@@ -1590,6 +1596,7 @@ C
       END IF
       RETURN
       END
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
@@ -1781,6 +1788,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkrad */
       SUBROUTINE WLKRAD(ERGMOL,ERGMLX,ERGSCX,STPNRX,OVLPWM,COFMOD,
      *                  RATIO,ISTTPX,IPRINT)
@@ -2004,6 +2012,7 @@ C
       END IF
       RETURN
       END
+#endif /* ! PRG_DIRAC */
 C  /* Deck wlkmol */
       SUBROUTINE WLKMOL(COONEW)
 C
@@ -2126,6 +2135,7 @@ C End of WLKMOL
 C
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkanh */
       SUBROUTINE WLKANH(ANHFAC,GRDDIA,EVAL,EVALX,EVEC,EVECX,STPDIX,
      &                  OVLPMA,ANHARM,TRSDIA,NCART,OLD,IPRINT)
@@ -3139,6 +3149,7 @@ C
       END IF
       RETURN
       END
+#endif
 C  /* Deck wlkinc */
       SUBROUTINE WLKINC(STPSYM,STPCAR,COOR,DISPLC,NCART,NCRIND,IPOINT,
      *                  IPRINT)
@@ -3206,6 +3217,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlknci */
       SUBROUTINE WLKNCI(STPCAR,COOR,DISPLC,NCART,NCRIND,EVEC,
      *                  IPOINT,NUMMOD,IPRINT)
@@ -3824,6 +3836,8 @@ C
                   END DO
                END DO
             END IF
+#ifndef PRG_DIRAC
+ include/nqcc.h: Dalton .ne. Dirac should be fixed.
             IF (NQCC) THEN
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
@@ -3835,6 +3849,7 @@ C
                   END DO
                END DO
             END IF
+#endif
             IF (SPNSPN) THEN
                DO ICOOR = 1, 3*NUCDEP
                   DO JCOOR = 1, 3*NUCDEP
@@ -3920,6 +3935,7 @@ C
                   END DO
                END DO
             END IF
+#ifndef PRG_DIRAC
             IF (NQCC) THEN
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3
@@ -3932,6 +3948,7 @@ C
                   END DO
                END DO
             END IF
+#endif
             IF (SPNSPN) THEN
                DO ICOOR = 1, 3*NUCDEP
                   DO JCOOR = 1, 3*NUCDEP
@@ -4081,6 +4098,7 @@ C
                   CALL POLPRI(POLDD(1,1,IFRQR),'   ',-2)
                END DO
             END IF
+#ifndef PRG_DIRAC
             IF (NQCC) THEN
                CALL HEADER('Nuclear quadrupole moments at displaced '//
      &                     'geometry',1)
@@ -4093,6 +4111,7 @@ C
                   END DO
                END DO
             END IF
+#endif
             IF (SPNSPN) THEN
                CALL HEADER('Spin-spin coupling constants at effective'//
      &                     ' geometry',1)
@@ -4721,6 +4740,7 @@ C
       END IF
       RETURN
       END
+#endif
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
 #include <implicit.h>
@@ -4754,6 +4774,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkpcr */
       SUBROUTINE WLKPCR(PMDIA,EVEC,PMCAR,SCAL,NCART,IPRINT)
 #include <implicit.h>
@@ -6045,6 +6066,7 @@ C
       WLKSTL = SQRT(STEP) - RTRUST
       RETURN
       END
+#endif
 C  /* Deck wlkbis */
       SUBROUTINE WLKBIS(XMAX,XMIN,XDET,GDDIA,HESDIA,TRUSTR,
      *                  NCORD,FUNCT,IFAIL)
@@ -6083,6 +6105,7 @@ C
       IFAIL=5
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
 #include <implicit.h>
@@ -7599,3 +7622,4 @@ C
 C
       RETURN
       END
+#endif

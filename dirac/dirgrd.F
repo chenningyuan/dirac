@@ -98,12 +98,6 @@ C
 C
       END IF
 C
-C     Save DO2GRD
-C
-      DO I = 1,3
-         LSAVE(I) = DO2GRD(I)
-      END DO
-C
 C
       CALL TITLER('Calculation of molecular gradient','*',110)
 C
@@ -114,6 +108,7 @@ C
 C
 C     Calculate gradient
 C
+      IGRD_INTBUF = IGRD_INTFLG
       CALL RMOLGRD1(WORK(KFREE),LFREE,IPRGRD)
 C
       CLOSE (LUMGRD, STATUS = 'DELETE' )
@@ -122,12 +117,6 @@ C     Output of gradient
 C
       CALL GRDOUT(IPRGRD)
 C
-C
-C     Restore DO2GRD
-C
-      DO I = 1,3
-         DO2GRD(I) = LSAVE(I)
-      END DO
 C
 C
 C     Memory deallocation
@@ -769,6 +758,8 @@ C
 #include <symmet.h>
 #include <chrxyz.h>
 C
+#include <ibtfun.h>
+C
       CALL QENTER('DHFGRD')
 C
 #include <memint.h>
@@ -810,23 +801,20 @@ C
      &      '- No small-small reorthonormalization gradient'
          NOINFO = .FALSE.
          GRD_NOSMLS = .TRUE.
-         IF (NOSMLV) THEN
-            GRD_NOSMLV = .TRUE.
-         ELSE
+         IF (.NOT. NOSMLV) THEN
             WRITE(LUPRI,'(/1X,2A)')
      &         'WARNING: small-small nuclear attraction integrals AND',
      &         ' Levy-Leblond Hamiltonian: Inconsistent...'
          END IF
-         DO2GRD(2) = .FALSE.
-         DO2GRD(3) = .FALSE.
+         IGRD_INTBUF = IBTXOR( 2+4, IGRD_INTBUF )
       ELSE IF (NOSMLV) THEN
          WRITE(LUPRI,'(/X,A)') 
      &      '- No small-small nuclear attraction integrals.'
          NOINFO = .FALSE.
       END IF
 C
-      IF ( DOLVC .AND. DO2GRD(3) ) THEN
-         DO2GRD(3) = .FALSE.
+      IF ( DOLVC .AND. LBIT( IGRD_INTBUF, 3 ) ) THEN
+         IGRD_INTBUF = IBTXOR ( 4, IGRD_INTBUF )
          WRITE(LUPRI,'(/1X,A)')
      &      'INFO: LVCORR used in wavefunction, but not in gradient =>'
          WRITE(LUPRI,'(1X,A/)') 
@@ -1101,12 +1089,12 @@ C
 C
 C
       CALL HEADER('DHFGRD: LL-Two-electron part',-1)
-      CALL CYESNO(STR,DO2GRD(1))
+      CALL CYESNO(STR,LBIT( IGRD_INTBUF, 1 ))
       WRITE(LUPRI,'(1X,2A/)') 'Calculate LL-Two-electron gradient: ',
      &                        STR
 C
 C
-      IF ( DO2GRD(1) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 1 ) ) THEN
          IF ( DPRTIM(2,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -1208,13 +1196,17 @@ C
       CALL HEADER('DHFGRD: LS-Two-electron part',-1)
       IF ( DOTRCK ) THEN
          CALL ESTGLS(DOLS)
-         DO2GRD(2) = DO2GRD(2) .AND. DOLS
+         IF ( .NOT. DOLS ) THEN
+            IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 2 )
+         ELSE
+            IGRD_INTBUF = IBTOR  ( IGRD_INTBUF, 2 )
+         END IF
       END IF
-      CALL CYESNO(STR,DO2GRD(2))
+      CALL CYESNO(STR, LBIT ( IGRD_INTBUF, 2 ) )
       WRITE(LUPRI,'(/1X,2A/)') 'Calculate LS-Two-electron gradient: ',
      &                        STR
 C
-      IF ( DO2GRD(2) ) THEN
+      IF ( LBIT ( IGRD_INTBUF, 2 ) ) THEN
          IF ( DPRTIM(3,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -1314,19 +1306,24 @@ C
       CALL HEADER('DHFGRD: SS-Two-electron part',-1)
       IF ( DOTRCK .AND. .NOT. DOLVC) THEN
          CALL ESTGSS(DOSS)
-         DO2GRD(3) = DOSS .AND. DO2GRD(3)
+         IF ( .NOT. DOSS ) THEN
+            IGRD_INTBUF = IBTXOR ( IGRD_INTBUF, 4 )
+         ELSE
+            IGRD_INTBUF = IBTOR  ( IGRD_INTBUF, 4 )
+         END IF
       END IF
 C
-      IF ( DO2GRD(3) .AND. .NOT. DO2GRD(2) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 3 ) .AND.
+     &     .NOT. LBIT( IGRD_INTBUF, 2 ) ) THEN
          WRITE(LUPRI,'(/1X,A/)') 'WARNING: SS-gradient .NOT. '//
      &       'calculated since LS-gradient is not calculated.'
-         DO2GRD(3) = .FALSE.
+         IGRD_INTBUF = IBTAND ( IGRD_INTBUF, 1+2 )
       END IF
-      CALL CYESNO(STR,DO2GRD(3))
+      CALL CYESNO(STR, LBIT( IGRD_INTBUF, 3 ) )
       WRITE(LUPRI,'(1X,2A/)') 'Calculate SS-Two-electron gradient: ',
      &                        STR
 C
-      IF ( DO2GRD(3) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
          IF ( DPRTIM(4,1) .GT. D0 ) THEN
             CALL TIMDAT
             WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -1440,7 +1437,7 @@ C
      &     'GAB matrix for screening         CPU  :',CPUGAB,' seconds.'
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &     '                                 WALL :',WLLGAB,' seconds.'
-      IF ( DO2GRD(1) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 1 ) ) THEN
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'LL-Two-electron part of gradient CPU  :',CPUTLL,' seconds.'
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
@@ -1449,7 +1446,7 @@ C
          WRITE(LUPRI,'(1X,A)') 
      &      'LL-Two-electron part SKIPPED!'
       END IF
-      IF ( DO2GRD(2) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 2 ) ) THEN
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'LS-Two-electron part of gradient CPU  :',CPUTLS,' seconds.'
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
@@ -1458,7 +1455,7 @@ C
          WRITE(LUPRI,'(1X,A)') 
      &      'LS-Two-electron part SKIPPED!'
       END IF
-      IF ( DO2GRD(3) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
      &      'SS-Two-electron part of gradient CPU  :',CPUTSS,' seconds.'
          WRITE(LUPRI,'(1X,A,F10.4,A)') 
@@ -1645,6 +1642,7 @@ C
 #include <dcbgrd.h>
 C
       DIMENSION CSTRA(9*MXCOOR*MXCOOR),SCTRA(9*MXCOOR*MXCOOR)
+      LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
 C
       CALL QENTER('GRDOUT')
@@ -1699,11 +1697,11 @@ C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
 C       ===================================================
 C
-        IF ( DO2GRD(2) ) THEN
+        IF ( LBIT( IGRD_INTBUF, 2 ) ) THEN
            CALL HEADE3('"SS-integral contribution by classical ',
      &                 'repulsion of small component atomic ',
      &                 'charges"-gradient',-1)
-           IF ( DO2GRD(3) ) THEN
+           IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
               WRITE(LUPRI,'(/A)') 'SCC gradient is NOT used, since '//
      &                            'SS-gradient is calculated.'
            ELSE
@@ -1728,7 +1726,8 @@ C
       CALL ADDGRD(GRADRO(1,0))
       CALL ADDGRD(GRADER(1,0))
       CALL ADDGRD(GRADNN)
-      IF ( DO2GRD(2) .AND. .NOT. DO2GRD(3) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 2 ) .AND.
+     &     .NOT. LBIT ( IGRD_INTBUF, 3 ) ) THEN
          CALL ADDGRD(GRADLV)
       END IF
       CALL HEADE2('Total molecular gradient','@',-1)

@@ -160,3 +160,27 @@ C
       CALL QEXIT('EXEDIR')
       RETURN
       END
+C  /* Deck rgetccsd */
+      FUNCTION RGETCCSD()
+#include <implicit.h>
+#include <priunit.h>
+C
+C     Get energy from RELCCSD
+C
+      CHARACTER CENERGY*40
+#include "../relccsd/results.inc" 
+#include "../relccsd/inpt.inc" 
+      IF (DOCCSDT) THEN
+         CENERGY = 'CCSD(T) energy from RELCCSD'
+      ELSE IF (DOCCSD) THEN
+         CENERGY = 'CCSD energy from RELCCSD'
+      ELSE IF (DOMP2) THEN
+         CENERGY = 'MP2 energy from RELCCSD'
+      ELSE
+         call quit('no energy from RELCCSD')
+      END IF
+      WRITE(LUPRI,'(2A,1P,E20.10)')
+     &   CENERGY,' = ',ETOT
+      RGETCCSD = ETOT
+      RETURN
+      END

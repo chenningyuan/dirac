@@ -7,7 +7,8 @@ C
 C Depencies: mxcent.h
 C
 C*** RELGRD is true if we want to calculate a relativistic gradient
-C     DO2GRD    : Do LL (1), LS(2) and SS(3) gradient.
+C     IGRD_INTFLG: INTFLG for gradient
+C     IGRD_INTBUF: buffer to INTFLG
 C     DOTRCK    : Estimate LS and SS gradient and skip them if "small"
 C                 Default for gradient calculation is: .FALSE.
 C                 Default for geometry-optimization is: .TRUE.
@@ -30,10 +31,11 @@ C
 C     DMXWLT: Max wall time for slaves
 C     DMXCPT: Max cpu time for slaves
 C
-      LOGICAL RELGRD,DOTRCK,DO2GRD(3),DODERM,GRD_NOSMLV,
+      LOGICAL RELGRD,DOTRCK,DODERM,GRD_NOSMLV,
      &        GRD_NOSMLS,DONGRD
-      COMMON /CBIGRD/ IPRGRD,INTCLASS,LUMGRD
-      COMMON /CBLGRD/ RELGRD,DO2GRD,DOTRCK,DODERM,GRD_NOSMLV,
+      COMMON /CBIGRD/ IPRGRD,INTCLASS,LUMGRD,
+     &     IGRD_INTFLG, IGRD_INTBUF
+      COMMON /CBLGRD/ RELGRD,DOTRCK,DODERM,GRD_NOSMLV,
      &                GRD_NOSMLS,DONGRD
       COMMON /CBRGRD/ GRADKN(MXCOOR,0:2),
      &                GRADNU(MXCOOR,0:2),
