@@ -5,7 +5,7 @@ if ( $#argv != 1 ) then
    exit 1
 endif
 
-if ( ! -e Makefile.config ) then
+if ( ! -a Makefile.config ) then
    exit 1
 endif
 echo `grep "$argv[1] .*= " Makefile.config | sed 's/.*= //'`
