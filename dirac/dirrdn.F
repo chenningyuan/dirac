@@ -3551,7 +3551,7 @@ C
 C
       IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
-      IF (RESOLV.AND.DOTRA)
+      IF (DORES.AND.DOTRA)
      &   CALL QUIT ('Either RESOLV OR 4INDEX should be specified')
 C
       RETURN
