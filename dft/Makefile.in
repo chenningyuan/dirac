@@ -25,9 +25,6 @@ dirac.x:
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
-
 fun-tester: fun-tester.c fun-slater.c fun-vwn.c fun-becke.c fun-lyp.c functionals.c fun-lb94.c \
 	emb-functional.c fun-p86c.c fun-pw86x.c fun-kin_tf.c fun-kin_vw.c
 	$(CC) -g -O -I../include -DNO_BACKWARD_COMP $^ -o $@  -lm
