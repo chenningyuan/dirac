@@ -1,7 +1,21 @@
 #
-pam -rmwrk -utcmo -run std O O
+#!/bin/sh
+#
+# Run calculation for oxygen atom
+#
+MOL=O;
+MENU=O;
+export MOL;
+export MENU;
+../run.sh -utcmo
 mv DFCOEF cf.O
-ln -f -s cf.O DFPROJ
-pam -rmwrk -copy DFPROJ -nice -run f1s2s_geo H2O H2O
+ln -s cf.O DFPROJ
+#
+# Run calculation for water
+#
+MOL=H2O;
+MENU=H2O;
+export MOL;
+export MENU;
+../run.sh -copy DFPROJ 
 rm DFPROJ cf.O
-exit 0
