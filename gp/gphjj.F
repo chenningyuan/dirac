@@ -1267,7 +1267,7 @@ C  /* Deck writdi */
       RETURN
       END
 C  /* Deck writt */
-      SUBROUTINE WRITT (IT,N,X)
+      SUBROUTINE WRITT(IT,N,X)
 #include <implicit.h>
       DIMENSION X(N)
       WRITE (IT) X

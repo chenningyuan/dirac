@@ -532,8 +532,6 @@ C
 #include <infmpi.h>
 #include <infpar.h>
       INCLUDE 'mpif.h'
-
-
 C
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST

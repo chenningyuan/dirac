@@ -2333,8 +2333,10 @@ C  /* Deck readac */
       SUBROUTINE READAC (IT,N,X,IREC)
 #include <implicit.h>
       DIMENSION X(N)
-      READ (IT, REC=IREC) X
+      READ (IT, REC=IREC, IOSTAT=IOS, ERR=10) X
       RETURN
+ 10   CONTINUE
+      CALL QUIT('READT: Error reading file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prmutc */

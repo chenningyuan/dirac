@@ -200,7 +200,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0)
+      PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
@@ -270,12 +270,12 @@ C
 C     Dimensions of reduced system
 C
       KXLR = KFREE
-      NEVECR    = NREDM*NEXSIM
+      NEVECR    = NREDM*NFREQ
       CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBPVC,NREDM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVALR,NEXSIM ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEVALR,NFREQ  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEVECR,NEVECR ,WORK,KFREE,LFREE)
 C
 C     Transfer frequencies to EVALR
@@ -323,9 +323,9 @@ C
 C           Check norm of property gradient; skip if below threshold
 C           ========================================================
 C        
-            GPCNRM = DNRM2(NZCONFQ,WORK(KGPCI),1)
-            GPENRM = DNRM2(NZXOPEQ,WORK(KGPOE),1)
-            GPPNRM = DNRM2(NZXOPPQ,WORK(KGPOP),1)
+            GPCNRM = D2*DNRM2(NZCONFQ,WORK(KGPCI),1)
+            GPENRM = D2*DNRM2(NZXOPEQ,WORK(KGPOE),1)
+            GPPNRM = D2*DNRM2(NZXOPPQ,WORK(KGPOP),1)
             GPTNRM = SQRT(GPCNRM**2+GPENRM**2+GPPNRM**2)
             IF(GPTNRM.LT.GPTHRS) THEN
               WRITE(LUPRI,'(A,A16)') 
@@ -406,7 +406,7 @@ C*****************************************************************************
 #include <dummy.h>
 #include <mxorb.h>
 #include <mxcent.h>
-      PARAMETER (NTABLE = 28,DMIL = 1.0D3)
+      PARAMETER (NTABLE = 32,DMIL = 1.0D3)
 C
 #include <dcbgen.h>
 #include <dcbprp.h>
@@ -430,7 +430,8 @@ C
      &            '.ONLYSF','.ONLYSG','.INTFLG','.NOPREC',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.COMPRE',
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
-     &            '.RESFAC','.ORBANA','.STERNH','.SKIPEE'/
+     &            '.RESFAC','.ORBANA','.STERNH','.SKIPEE',
+     &            '.MXLOAD','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <ibtfun.h>
@@ -463,6 +464,7 @@ C
       CNVXLR(1)  = DUMMY
       CNVXLR(2)  = DUMMY
       MAXRM      = 20
+      MXLOAD     = 0
       ITRXLR     = 30
       INTXLR     = ILLINT + 2*ISLINT + 4*ISSINT
       IF (LEVYLE) INTXLR = ILLINT
@@ -525,7 +527,7 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28), I
+     &                     21,22,23,24,25,26,27,28,29,30,31,32), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -683,6 +685,16 @@ C&&&& STERNH: Diagonal part of ep,ep-Hessian approximated by -2mc^2
 C&&&& SKIPEE: Skip all e-e rotations
                   SKIPEE = .TRUE.
                GO TO 100
+ 29            CONTINUE
+C&&&& MALOAD: Maximum number of trial vectors to be loaded in each microiteration
+                  READ(LUCMD,*) MXLOAD
+               GO TO 100
+ 30            CONTINUE
+               GO TO 100
+ 31            CONTINUE
+               GO TO 100
+ 32            CONTINUE
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -793,6 +805,11 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)')
      &  '* No preconditioning of initial trial vectors.'
+      ENDIF
+      IF(MXLOAD.NE.0) THEN
+        WRITE(LUPRI,'(1X,A,I5)') 
+     &  '* Maximum number of trial loaded in each microtieration:',
+     &  MXLOAD
       ENDIF
 C
 C     A operators
@@ -1133,9 +1150,7 @@ C
       RESFAC    = RESXLR
       MAXITR    = ITRXLR
       NFREQ     = NBFREQ
-      NEXSIM    = NFREQ
-      NEXSTV    = NFREQ
-      NEXCNV    = NFREQ
+      MAXSIM    = MXLOAD
       NREDM     = MAXRM
       N2REDM    = MAXRM*MAXRM
       LOFFTY    = 0
@@ -1246,9 +1261,10 @@ C
         CALL MEMGET('REAL',KGVEC,NZXOPEQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPEQ      ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIVEC,NESIM        ,WORK,KFREE,LFREE)
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPE),
+     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPE),WORK(KIVEC),
      &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
@@ -1269,9 +1285,10 @@ C
         CALL MEMGET('REAL',KXVEC,NZXOPPQ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGVEC,NZXOPPQ      ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBBUF,NZXOPPQ      ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPP),
+     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPP),WORK(KIVEC),
      &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
@@ -1299,7 +1316,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
       SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,IBTYP,IBVEC,
      &                  GPO,XPO,BBUF,NXPAR,
-     &                  CMO,IORBCL,EIG,JXOP,WORK,KFREE,LFREE)
+     &                  CMO,IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Get linear response function for orbital rotation parameter
@@ -1323,7 +1340,7 @@ C
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
      &          CMO(*),EIG(*),IORBCL(2,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
-     &          JXOP(2,*),WORK(*)
+     &          JXOP(2,*),IVECS(*),WORK(*)
       CHARACTER*1 TTYPXV(2)
 C
 #include <chrnos.h>
@@ -1370,6 +1387,9 @@ C     =========================
 C      
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
+      REWIND LUXVC
+      CALL FNDLAB('EOFLABEL',LUXVC)      
+      BACKSPACE LUXVC
       ITIM = JTIMOP
 Chj: TTYPXV(iround) = type of part of B solution vector in round iround
       IF (ITIM .EQ. 1) THEN
@@ -1390,7 +1410,7 @@ C
       IROUND = 0
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
-      CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,BBUF)
+      CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVECS,BBUF)
 C
 C     Print section
 C     -------------
@@ -1459,14 +1479,12 @@ C
 C
 C     Write solution vectors to unformatted file for restart
 C
-      REWIND LUXVC
-      CALL FNDLAB('EOFLABEL',LUXVC)      
-      BACKSPACE LUXVC
       CALL GETDAT(XRSLBL(1),XRSLBL(2))
       WRITE(XRSLBL(2)(1:1),'(A1)') TYP
       WRITE(XRSLBL(2)(2:2),'(A1)') TTYPXV(IROUND)
       WRITE(XRSLBL(2)(5:5),'(I1)') JSYMOP
-      WRITE(XRSLBL(2)(6:7),'(I2)') ITIM
+CTROND      WRITE(XRSLBL(2)(6:7),'(I2)') ITIM
+      WRITE(XRSLBL(2)(6:7),'(I2)') JTIMOP
       WRITE(XRSLBL(2)(8:8),'(I1)') INTFLG
 C
       IF(NBDIM.LT.4) THEN

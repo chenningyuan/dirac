@@ -1478,8 +1478,6 @@ C
      &                CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRXRS)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** GMOLI3: NBF.NE.NZ !'
           ENDIF
         ENDIF
  10   CONTINUE
@@ -1989,21 +1987,21 @@ C     e-e rotations
 C      
       IF(NERED.GT.0) THEN
         CALL XRSXV1(ITYP,JBENDX,XEVEC,EVECR,MFREQ,
-     &              IBTYP,IBEVC,BEBUF)
+     &              IBTYP,IBEVC,IVECS,BEBUF)
       ENDIF
 C
 C     e-p rotations
 C      
       IF(NPRED.GT.0) THEN
         CALL XRSXV1(ITYP,JBPNDX,XPVEC,EVECR,MFREQ,
-     &              IBTYP,IBPVC,BPBUF)
+     &              IBTYP,IBPVC,IVECS,BPBUF)
       ENDIF
 C
 C     Configurational parameters
 C      
       IF(NCRED.GT.0) THEN
         CALL XRSXV1(ITYP,JBCNDX,XCVEC,EVECR,MFREQ,
-     &              IBTYP,IBCVC,BCBUF)
+     &              IBTYP,IBCVC,IVECS,BCBUF)
       ENDIF
 C
       CALL QEXIT('XRSXVC')
@@ -2011,7 +2009,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Xrsxv1 */
-      SUBROUTINE XRSXV1(ITYP,NBTYP,XVEC,EVECR,MFREQ,IBTYP,IBVEC,BVBUF)
+      SUBROUTINE XRSXV1(ITYP,NBTYP,XVEC,EVECR,MFREQ,IBTYP,IBVEC,
+     &                  IVECS,BVBUF)
 C*****************************************************************************
 C
 C     Form electronic/positronic/configurational
@@ -2025,8 +2024,9 @@ C*****************************************************************************
 C
 #include <dcbxrs.h>      
 #include <dcbibn.h>
+      PARAMETER(DTOL=1.0D-10)
       DIMENSION XVEC(*),EVECR(NREDM,MFREQ),
-     &               IBTYP(2,*),IBVEC(*),BVBUF(*)
+     &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
 C
 C
       IF    (NBTYP.EQ.JBCNDX) THEN
@@ -2047,6 +2047,7 @@ C
         CALL QUIT('XRSXVC: Unknown NBTYP !')
       ENDIF
 C
+      CALL IZERO(IVECS,MFREQ)
       CALL DZERO(XVEC,NBDIM*MFREQ)
       DO IREC = 1,NBRED
         IND = IBVEC(IREC)
@@ -2055,8 +2056,11 @@ C
           CALL READAC(LUBVEC,NBDIM,BVBUF,IREC)
           IBOFF = 1
           DO IFREQ = 1,MFREQ
-            CALL DAXPY(NBDIM,EVECR(IND,IFREQ),
-     &                   BVBUF,1,XVEC(IBOFF),1)
+            IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
+              IVECS(IFREQ) = IVECS(IFREQ) + 1
+              CALL DAXPY(NBDIM,EVECR(IND,IFREQ),
+     &                     BVBUF,1,XVEC(IBOFF),1)
+            ENDIF
             IBOFF = IBOFF + NBDIM
           ENDDO
         ENDIF
@@ -2289,7 +2293,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/*Deck xrsne1 */
       SUBROUTINE XRSNE1(BEVEC,BPVEC,BCVEC,MFREQ,EVALR,EVECR,
      &                  GPOE,GPOP,GPCI,IBTYP,IBCVC,IBEVC,IBPVC,
-     &                  BEBUF,BPBUF,BCBUF,RCNV,RNORM,XNORM,IBVEC,
+     &                  BEBUF,BPBUF,BCBUF,RCNV,RNORM,XNORM,IVECS,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -2307,7 +2311,7 @@ C
       DIMENSION BEVEC(*),BPVEC(*),BCVEC(*),EVALR(*),
      &          EVECR(NREDM,*),GPOE(*),GPOP(*),GPCI(*),
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
-     &          BEBUF(*),BPBUF(*),BCBUF(*),IBVEC(MFREQ,NVPAR),
+     &          BEBUF(*),BPBUF(*),BCBUF(*),IVECS(MFREQ,NVPAR),
      &          RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),WORK(*)
 C
       IF(IPRXRS.GE.3) CALL HEADER('Output from XRSNE1',-1)
@@ -2343,7 +2347,7 @@ C
           CALL DZERO(BEVEC,NESIM*NZXOPEQ)
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC,EVECR,MFREQ,
-     &                  IBTYP,IBEVC,BEBUF)
+     &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
             CALL XVCNRM(XNORM(1,IPEP),BEVEC,NZXOPEQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
@@ -2381,7 +2385,7 @@ C
           CALL DZERO(BPVEC,NPSIM*NZXOPPQ)
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC,EVECR,MFREQ,
-     &                  IBTYP,IBPVC,BPBUF)
+     &                  IBTYP,IBPVC,IVECS(1,IPPP),BPBUF)
             CALL XVCNRM(XNORM(1,IPPP),BPVEC,NZXOPPQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
@@ -2419,7 +2423,7 @@ C
           CALL DZERO(BCVEC,NCSIM*NZCONFQ)
           IF(NCRED.GT.0) THEN
             CALL XRSXV1(IPX,JBCNDX,BCVEC,EVECR,MFREQ,
-     &                  IBTYP,IBCVC,BCBUF)
+     &                  IBTYP,IBCVC,IVECS(1,IPCP),BCBUF)
             CALL XVCNRM(XNORM(1,IPCP),BCVEC,NZCONFQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
@@ -2476,9 +2480,9 @@ C
           CALL DZERO(BEVEC,NESIM*NZXOPEQ)
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC      ,EVECR,MFREQ,
-     &                  IBTYP,IBEVC,BEBUF)
+     &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
-     &                  IBTYP,IBEVC,BEBUF)
+     &                  IBTYP,IBEVC,IVECS(1,IPEM),BEBUF)
             CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ,MFREQ)
             CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ,MFREQ)
 C           Print section
@@ -2532,9 +2536,9 @@ C
           CALL DZERO(BPVEC,NPSIM*NZXOPPQ)
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC      ,EVECR,MFREQ,
-     &                  IBTYP,IBPVC,BPBUF)
+     &                  IBTYP,IBPVC,IVECS(1,IPPP),BPBUF)
             CALL XRSXV1(IMX,JBPNDX,BPVEC(KBP2),EVECR,MFREQ,
-     &                  IBTYP,IBPVC,BPBUF)
+     &                  IBTYP,IBPVC,IVECS(1,IPPM),BPBUF)
             CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ,MFREQ)
             CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ,MFREQ)
 C           Print section
@@ -2588,9 +2592,9 @@ C
           CALL DZERO(BCVEC,NCSIM*NZCONFQ)
           IF(NCRED.GT.0) THEN
             CALL XRSXV1(IPX,JBCNDX,BCVEC      ,EVECR,MFREQ,
-     &                  IBTYP,IBCVC,BCBUF)
+     &                  IBTYP,IBCVC,IVECS(1,IPCP),BCBUF)
             CALL XRSXV1(IMX,JBCNDX,BCVEC      ,EVECR,MFREQ,
-     &                  IBTYP,IBCVC,BCBUF)
+     &                  IBTYP,IBCVC,IVECS(1,IPCM),BCBUF)
             CALL XVCNRM(XNORM(1,IPCP),BCVEC      ,NZCONFQ,MFREQ)
             CALL XVCNRM(XNORM(1,IPCM),BCVEC(KBC2),NZCONFQ,MFREQ)
             IF(IPRXRS.GE.3) THEN
@@ -2789,7 +2793,7 @@ C
       CALL XRSBVC(BEVEC,BEBUF,IBEVC,
      &            BPVEC,BPBUF,IBPVC,
      &            BCVEC,BCBUF,IBCVC,
-     &            MFREQ,IBTYP,IBVEC,EVALR,EVECR,RCNV,RNORM,XNORM,
+     &            MFREQ,IBTYP,IVECS,EVALR,EVECR,RCNV,RNORM,XNORM,
      &            WORK,KFREE,LFREE)
       RETURN
       END
@@ -2820,7 +2824,7 @@ C/* Deck XRSBVC */
       SUBROUTINE XRSBVC(BEVEC,BEBUF,IBEVC,
      &                  BPVEC,BPBUF,IBPVC,
      &                  BCVEC,BCBUF,IBCVC,
-     &                  MFREQ,IBTYP,IBVEC,EVALR,EVECR,RCNV,RNORM,XNORM,
+     &                  MFREQ,IBTYP,IVECS,EVALR,EVECR,RCNV,RNORM,XNORM,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -2862,7 +2866,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D5=5.0D0)
 C
 #include <dcbxrs.h>
 #include <dcbibn.h>
@@ -2870,16 +2874,14 @@ C
       DIMENSION BEVEC(NZXOPEQ,*),BEBUF(*),IBEVC(NREDM),
      &          BPVEC(NZXOPPQ,*),BPBUF(*),IBPVC(NREDM),
      &          BCVEC(NZCONFQ,*),BCBUF(*),IBCVC(NREDM),
-     &          IBTYP(2,NREDM),IBVEC(MFREQ,NVPAR),EVALR(*),EVECR(*),
+     &          IBTYP(2,NREDM),IVECS(MFREQ,NVPAR),EVALR(*),EVECR(*),
      &          RCNV(*),RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),
      &          WORK(*)
 C
       CNVMAX = D0
-      IF(IPRXRS.GE.0) THEN
-        WRITE(LUPRI,'(/A)') '* XRSBVC: Norm of residual vectors:'
-        WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')  
-     &      '* Frequency    ','Total   ',(BVTYP(I),' part ',I=1,NVPAR)
-      ENDIF
+      WRITE(LUPRI,'(/A)') '* Norm of residual vectors:'
+      WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')  
+     &      '  Frequency    ','Total   ',(BVTYP(I),' part ',I=1,NVPAR)
       DO IFREQ = 1,MFREQ
 C
 C      ************************************
@@ -2890,10 +2892,10 @@ C       Orbital (e-e) part
 C       ------------------
 C
         IF(NZXOPE.GT.0) THEN
-          IBVEC(IFREQ,IPEP) = 1
+          IVECS(IFREQ,IPEP) = 1
           RNORM(IPEP,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,IFREQ),1)
           IF(.NOT.STATIC) THEN
-            IBVEC(IFREQ,IPEM) = 1
+            IVECS(IFREQ,IPEM) = 1
             IOFF = IFREQ + MFREQ
             RNORM(IPEM,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,IOFF),1)
           ENDIF           
@@ -2903,11 +2905,11 @@ C       Orbital (e-p) part
 C       ------------------
 C
         IF(NZXOPP.GT.0) THEN
-          IBVEC(IFREQ,IPPP) = 1
+          IVECS(IFREQ,IPPP) = 1
           RNORM(IPPP,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,IFREQ),1)
           IF(.NOT.STATIC) THEN
             IOFF = IFREQ + MFREQ
-            IBVEC(IFREQ,IPPM) = 1
+            IVECS(IFREQ,IPPM) = 1
             RNORM(IPPM,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,IOFF),1)
           ENDIF           
         ENDIF
@@ -2916,11 +2918,11 @@ C       Configurational part
 C       --------------------
 C
         IF(NZCONF.GT.0) THEN
-          IBVEC(IFREQ,IPCP) = 1
+          IVECS(IFREQ,IPCP) = 1
           RNORM(IPCP,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,IFREQ),1)
           IF(.NOT.STATIC) THEN
             IOFF = IFREQ + MFREQ
-            IBVEC(IFREQ,IPCM) = 1
+            IVECS(IFREQ,IPCM) = 1
             RNORM(IPCM,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,IOFF),1)
           ENDIF           
         ENDIF
@@ -2945,18 +2947,20 @@ C
         IF(RTNORM.LE.(XTNORM*THCXRS)) THEN
 C         ... this root converged
           DO I = 1,NVPAR
-            IBVEC(IFREQ,I) = 0
+            IVECS(IFREQ,I) = 0
           ENDDO
         ELSE
-C         ... check each type separately
+C       hjj+patrick:
+C       Check each type separately whether residual norm is less than 
+C       a fraction of the maximun residual norm, or if less than
+C       a fraction (0.2) of convergence threshold.
           DO I = 1,NVPAR
-            IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX) IBVEC(IFREQ,I) = 0
+            IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX.OR.
+     &         D5*RNORM(I,IFREQ).LE.XTNORM*THCXRS) IVECS(IFREQ,I) = 0
           ENDDO
         ENDIF
-        IF(IPRXRS.GE.1) THEN
-            WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
+        WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
      &        EVALR(IFREQ),RTNORM,(RNORM(I,IFREQ),I=1,NVPAR)
-        ENDIF
       ENDDO
 C
 C     Check what integral classes contribute
@@ -2972,7 +2976,7 @@ C     Check whether calculation has converged
 C     =======================================
 C
       IF(.NOT.USEXVC) THEN
-        KCONV = ISUM(NTSIM,IBVEC,1)
+        KCONV = ISUM(NTSIM,IVECS,1)
         IF(KCONV.EQ.0) RETURN
       ENDIF
 C
@@ -3026,7 +3030,7 @@ C     Orbital (e-e) type trial vectors
 C
       IF(NZXOPE.GT.0) THEN
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),EVALR,EVECR,
-     &              IBTYP,IBEVC,IBVEC(1,IPEP),
+     &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,NESIM,IBOFF,NEPREV,NZXOPE,
      &              BEBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NESIM
@@ -3036,7 +3040,7 @@ C     Orbital (e-p) type trial vectors
 C
       IF(NZXOPP.GT.0) THEN
         CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),EVALR,EVECR,
-     &              IBTYP,IBPVC,IBVEC(1,IPPP),
+     &              IBTYP,IBPVC,IVECS(1,IPPP),
      &              MFREQ,JBPNDX,NPSIM,IBOFF,NPPREV,NZXOPP,
      &              BPBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NPSIM
@@ -3046,7 +3050,7 @@ C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
-     &              IBTYP,IBCVC,IBVEC(1,IPCP),
+     &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,NCSIM,IBOFF,NCPREV,NZCONF,
      &              BCBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NCSIM
@@ -3061,19 +3065,10 @@ C
         RETURN
       ENDIF
 C
-C     Zero reduced space if USEXVC
-C     ============================
-C   
-      IF(USEXVC) THEN
-        NERED = 0
-        NPRED = 0
-        NCRED = 0
-        NZRED = 0
-      ENDIF
-C
 C     Check dimension of reduced space
 C     ================================
 C
+      IF(USEXVC) RETURN
       MREDM = NZRED + NTSIM
       IF(MREDM.GT.NREDM) THEN
         KCONV = -2
@@ -3083,7 +3078,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XBVGEN */
-      SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,EVALR,EVECR,IBTYP,IBVEC,IVEC,
+      SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,EVALR,EVECR,IBTYP,IBVEC,IVECS,
      &            MFREQ,JBTYP,NBNEW,IBOFF,NBPREV,NVAR,BBUF,
      &            WORK,KFREE,LFREE)
 C*****************************************************************************
@@ -3102,7 +3097,7 @@ C
 C
       LOGICAL USEXVC,TEST
       DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),
-     &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
+     &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVECS(*),
      &          BBUF(*),WORK(*)
 C
       TEST = DIAGHE.AND.(.NOT.USEXVC)
@@ -3113,13 +3108,33 @@ C     L I N E A R   R E S P O N S E   F U N C T I O N S
 C     =================================================
 C
         IF(USEXVC) THEN
+C         New integral class added; 
+C         start from present solution vector
           CALL XRSXV1(IPX,JBTYP,BVEC,EVECR,MFREQ,
-     &                    IBTYP,IBVEC,BBUF)
+     &                    IBTYP,IBVEC,IVECS,BBUF)
+          DO IP = 1,MFREQ
+            IBTYP(1,IBOFF+IP) = JBTYP
+            IBTYP(2,IBOFF+IP) = IPX
+            IBVEC(NBPREV +IP) = IBOFF + IP
+            IF(IVECS(IP).GT.0) IVECS(IP) = 1
+          ENDDO
           IF(.NOT.STATIC) THEN
-            CALL XRSXV1(IMX,JBTYP,BEVEC,EVECR,MFREQ,
-     &                    IBTYP,IBVEC,BBUF)
+            CALL XRSXV1(IMX,JBTYP,BVEC(1,1,(MFREQ+1)),EVECR,MFREQ,
+     &                    IBTYP,IBVEC,IVECS(MFREQ+1),BBUF)
+            DO IP = 1,MFREQ
+              IM = IP + MFREQ
+              FREQ = EVALR(IP)
+              IBTYP(1,IBOFF+IM) = JBTYP
+              IBTYP(2,IBOFF+IM) = IMX
+              IBVEC(NBPREV +IM) = IBOFF + IM
+              IF(FREQ.EQ.D0) THEN
+                IVECS(IM) = 0
+              ELSE
+                IF(IVECS(IM).GT.0) IVECS(IM) = 1
+              ENDIF
+            ENDDO
           ENDIF
-          CALL ICOPY(NBNEW,1,0,IVEC,1)
+          GOTO 10
         ENDIF
         DO IP = 1,MFREQ
           IM = IP + MFREQ
@@ -3129,20 +3144,24 @@ C           X(+) - vector
             IBTYP(1,IBOFF+IP) = JBTYP
             IBTYP(2,IBOFF+IP) = IPX
             IBVEC(NBPREV +IP) = IBOFF + IP
-            IF(TEST.AND.IVEC(IP).EQ.1) THEN
+            IF(TEST.AND.IVECS(IP).EQ.1) THEN
+              BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
               DO IZ = 1,NZ
                 DO IVAR = 1,NVAR
                   BVEC(IVAR,IZ,IP) = 
      &              (DM1/HDIAG(IVAR))*BVEC(IVAR,IZ,IP)
                 ENDDO
               ENDDO
+              BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+C             retain norm for numerical stability !
+              CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
             ENDIF
 C           No X(-) - vector              
             IF(.NOT.STATIC) THEN
               IBTYP(1,IBOFF+IM) = JBTYP
               IBTYP(2,IBOFF+IM) = IMX
               IBVEC(NBPREV+IM)  = IBOFF + IM
-              IVEC(IM)          = 0
+              IVECS(IM)          = 0
             ENDIF
           ELSE
             IBTYP(1,IBOFF+IP)     = JBTYP
@@ -3152,37 +3171,69 @@ C           No X(-) - vector
             IBTYP(2,IBOFF+IM)     = IMX
             IBVEC(NBPREV+IM)      = IBOFF + IM
             IF(TEST) THEN
-              IF(IVEC(IP).EQ.1.AND.IVEC(IM).EQ.1) THEN
+C
+Chj-nov99 
+C     Preconditioning: multiply with minus the elements of
+C
+C      / hdiag  -freq \ -1      / hdiag*fac   freq*fac \
+C     |                |     = |                        |
+C      \ -freq  hdiag /         \  freq*fac  hdiag*fac /
+C
+C     where fac = (hdiag**2 - freq**2)**(-1)
+C     for the res(ip), res(im) pair
+C
+              FREQ2 = FREQ**2
+              IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
+                BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
+                BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = (FREQ**2-HDIAG(IVAR)**2)
-                    BVEC(IVAR,IZ,IP) = (HDIAG(IVAR)/FAC)
-     &                             *BVEC(IVAR,IZ,IP)
-                    BVEC(IVAR,IZ,IM) = (FREQ/FAC)*BVEC(IVAR,IZ,IM)
+                    FAC = D1/(FREQ2-HDIAG(IVAR)**2)
+                    BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
+     &                 + FREQ * FAC * BVEC(IVAR,IZ,IM)
+                    BM = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IM)
+     &                 + FREQ * FAC * BVEC(IVAR,IZ,IP)
+                    BVEC(IVAR,IZ,IP) = BP
+                    BVEC(IVAR,IZ,IM) = BM
                   ENDDO
                 ENDDO
-              ELSEIF(IVEC(IP).EQ.1) THEN
+                BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+                BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
+C               retain norm for numerical stability !
+                CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+                CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
+              ELSEIF(IVECS(IP).EQ.1) THEN
+                BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = (FREQ**2-HDIAG(IVAR)**2)
-                    BVEC(IVAR,IZ,IP) = (HDIAG(IVAR)/FAC)
-     &                               *BVEC(IVAR,IZ,IP)
+                    FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
+                    BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
+Chj:    Here bvec(ivar,iz,im) should be negligible
                   ENDDO
                 ENDDO
-              ELSEIF(IVEC(IM).EQ.1) THEN
+                BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+C               retain norm for numerical stability !
+                CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
+              ELSEIF(IVECS(IM).EQ.1) THEN
+                BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = (FREQ**2-HDIAG(IVAR)**2)
-                    BVEC(IVAR,IZ,IM) = (FREQ/FAC)*BVEC(IVAR,IZ,IM)
+                    FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
+                    BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
+Chj:    Here bvec(ivar,iz,ip) should be negligible
                   ENDDO
+                BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
+C               retain norm for numerical stability !
+                CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
                 ENDDO
               ENDIF
             ENDIF
           ENDIF
         ENDDO          
 C
+ 10     CONTINUE
         CALL XRSORT(BVEC,JBTYP,NBNEW,NBPREV,
-     &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
+     &            IBVEC,IBTYP,IVECS,WORK,KFREE,LFREE)
       ELSE
 C
 C     E X C I T A T I O N  E N E R G I E S etc.

@@ -308,7 +308,7 @@ C*****************************************************************************
       DIMENSION WORK(LWORK),PFAC(3)
 #include <dcbibt.h>
 C
-      PNAME     = 'Dipole length: X'
+      PNAME     = 'X-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1
@@ -320,7 +320,7 @@ C
       CALL OP1IND('XEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IPEPOLAR(1,2) = INDOP1
 C
-      PNAME     = 'Dipole length: Y'
+      PNAME     = 'Y-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1
@@ -332,7 +332,7 @@ C
       CALL OP1IND('YEPOLB',INDOP1,LLRBPU,NLRBPT,INDXPR,MAXLLR)
       IPEPOLAR(1,2) = INDOP1
 C
-      PNAME     = 'Dipole length: Z'
+      PNAME     = 'Z-Dipole length '
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1
