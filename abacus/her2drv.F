@@ -360,6 +360,9 @@ C       ICEFLG gives information about separate screening of
 C              Coulomb/exchange for each DMAT
 C       NCM    is the number of DMAT requiring Coulomb-contributions
 C       NEM    is the number og DMAT requiring exchange-contributions
+C
+C       SOFOCK .OR. DIRFCK:
+C
 C       Screening proceeds in three steps as documented by DINTSKP:
 C         Step 1: Screening on integral batches
 C           DINTSKP(1,1) - total number of integrals
@@ -377,9 +380,24 @@ C           DINTSKP(1,4) - NEM times number of integrals remaining
 C                         after step 2
 C           DINTSKP(2,4) - NEM times number of integrals skipped
 C
+C       EXPECT .AND. (MAXDER.EQ.1):
+C
+C          I = 1,14 
+C          DINTSKP(1,I,1) - total number of integrals, x direction
+C          DINTSKP(1,I,2) - total number of integrals, y direction
+C          DINTSKP(1,I,3) - total number of integrals, z direction
+C
+C          DINTSKP(2,I,1) - number of integrals skipped, x direction
+C          DINTSKP(2,I,2) - number of integrals skipped, y direction
+C          DINTSKP(2,I,3) - number of integrals skipped, z direction
+C
       DOSCRN = .FALSE.
-      IF(DIRFCK.OR.SOFOCK)  THEN
-        CALL DZERO(DINTSKP,8)
+      IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
+         IF (DIRFCK.OR.SOFOCK) THEN
+           CALL DZERO(DINTSKP,8)
+         ELSE
+           CALL DZERO(DINTSKP,3*14*3)
+         END IF
         IF(IFTHRS.GT.0) THEN
           DOSCRN = .TRUE.
           FCKTHR = -IFTHRS
@@ -1526,13 +1544,14 @@ C  /* Deck symlop */
 #include <mxcent.h>
 #include <aovec.h>
 #include <mxorb.h>
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00, D2= 2.0D00)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        ONECEN, FIRST, LAST, SQ12EL, SOP000, IPNTLG(3,*),
-     &        LONDON, SUSCEP, ADISTR, SOFOCK
+     &        LONDON, SUSCEP, ADISTR, SOFOCK, DOGAB,
+     &        DOXSAV, DOYSAV, DOZSAV
       DIMENSION SOINT(NSOINT), PSO(NPMAT), PSA(NPMAT), WORK(LWORK),
      &          DMAT(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), FMAT(*), GMAT(*),
@@ -1553,8 +1572,8 @@ C  /* Deck symlop */
      &          NPNTAB(NUCA*NUCB,2,NODCAB), NPNTCD(NUCC*NUCD,2,NODCCD),
      &          NREDAB(*), NREDCD(*), WRKBUF(*),
      &          IEFFB(0:7), IEFFC(0:7), IEFFD(0:7),
-     &          GABRAO(NSYMBL,NSYMBL),DMRAO(NSYMBL,NSYMBL,NDMAT),
-     &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,4),IREPDM(*),
+     &          GABRAO(NSYMBL,NSYMBL,0:7),DMRAO(NSYMBL,NSYMBL,NDMAT),
+     &          DMRSO(*),DNSBUF(2,NDMAT),DINTSKP(2,*),IREPDM(*),
      &          INDX(2,*),INDXAB(*)
 #include <twocom.h>
 #include <blocks.h>
@@ -1568,6 +1587,7 @@ C  /* Deck symlop */
 #include <energy.h>
 #endif
 #include <doxyz.h>
+#include <chrxyz.h>
 #include <ibtfun.h>
       IBTAXO(I,J) = IBTAND(I,IBTXOR(I,J))
       XAND(I)     = PT(IBTAND(ISYMAX(1,1),I))
@@ -1619,9 +1639,9 @@ C
          DOZ = DOCOOR(3,NCENTA) .OR. DOCOOR(3,NCENTB)  .OR.
      &         DOCOOR(3,NCENTC) .OR. DOCOOR(3,NCENTD)
       END IF
-      DOXYZ(1) = DOX
-      DOXYZ(2) = DOY
-      DOXYZ(3) = DOZ
+      DOXSAV = DOX
+      DOYSAV = DOY
+      DOZSAV = DOZ
 C
       INTS = .FALSE.
 C
@@ -1771,24 +1791,35 @@ C                         non-symmetric density matrices
                   IF(DIRFCK.OR.SOFOCK) THEN
                     DINTSKP(1,1) = DINTSKP(1,1) + NCCINT
                     IF(DOSCRN) THEN
-                      ULINT = GABRAO(ISYBLA,ISYBLB)*
-     &                        GABRAO(ISYBLC,ISYBLD)
+                      ULINT = GABRAO(ISYBLA,ISYBLB,0)*
+     &                        GABRAO(ISYBLC,ISYBLD,0)
                       DNSMAX   = D0
                       DO I = 1,NDMAT 
 C Largest Coulomb contribution
-                        DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
-     &                                    DMRAO(ISYBLB,ISYBLA,I),
-     &                                    DMRAO(ISYBLC,ISYBLD,I),
-     &                                    DMRAO(ISYBLD,ISYBLC,I))
+                        IY  = MOD(IFCTYP(I),10)
+                        IC  = MOD(IY,2)
+                        IE  = (IY - IC)/2
+                        IF (IC .EQ. 1) THEN
+                          DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
+     &                                      DMRAO(ISYBLB,ISYBLA,I),
+     &                                      DMRAO(ISYBLC,ISYBLD,I),
+     &                                      DMRAO(ISYBLD,ISYBLC,I))
+                        ELSE
+                          DNSBUF(1,I) = D0
+                        END IF
 C Largest exchange contribution
-                        DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
-     &                                    DMRAO(ISYBLA,ISYBLC,I),
-     &                                    DMRAO(ISYBLC,ISYBLB,I),
-     &                                    DMRAO(ISYBLB,ISYBLC,I),
-     &                                    DMRAO(ISYBLD,ISYBLA,I),
-     &                                    DMRAO(ISYBLA,ISYBLD,I),
-     &                                    DMRAO(ISYBLB,ISYBLD,I),
-     &                                    DMRAO(ISYBLD,ISYBLB,I))
+                        IF (IE .EQ. 1) THEN
+                          DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
+     &                                      DMRAO(ISYBLA,ISYBLC,I),
+     &                                      DMRAO(ISYBLC,ISYBLB,I),
+     &                                      DMRAO(ISYBLB,ISYBLC,I),
+     &                                      DMRAO(ISYBLD,ISYBLA,I),
+     &                                      DMRAO(ISYBLA,ISYBLD,I),
+     &                                      DMRAO(ISYBLB,ISYBLD,I),
+     &                                      DMRAO(ISYBLD,ISYBLB,I))
+                        ELSE
+                          DNSBUF(2,I) = D0
+                        END IF
                         DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
                       ENDDO
                       FCKMAX = DNSMAX*ULINT
@@ -1839,7 +1870,117 @@ C
      &                (ICENTC .EQ. ICENTD)) GO TO 300
                END IF
 C
-C              d) none of the directions are requested
+C              d) screening of gradient and hessian 
+C                 expectation value (static term) calculation
+C                 for RHF and ROHF /980113-hjaaj+jth
+C                 Extension to MCSCF requires that max value
+C                 of PV is found (or safely approximated).
+C
+               DOX = DOXSAV
+               DOY = DOYSAV
+               DOZ = DOZSAV
+               IF (MAXDER .EQ. 1 .AND. EXPECT .AND. NOPV) THEN
+C     No screening for Hessian because this requires
+C     4'th derivative integrals in GAB, and this is
+C     not implemented. /980116-hjaaj/jth
+                     IT = IMULTI(ICENTA,ICENTB,ICENTC,ICENTD,ICEN)
+                     DO IXYZ = 1,3
+                        IF (DOXYZ(IXYZ)) 
+     &                     CALL ADDDINT(DINTSKP,NCCINT,ICEN,1,IXYZ)
+                     END DO
+                  IF (DOSCRN) THEN
+                     IF (MAXDER .GE. 1) THEN
+                        CALL SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
+     &                              IT,ULXINT,ULYINT,ULZINT,IPRINT)
+                     END IF
+C
+c                    IF (MAXDER .EQ. 2) THEN
+c                       UXXINT = MAX(GABRAO(ISYBLA,ISYBLB,0)*
+c    &                               GABRAO(ISYBLC,ISYBLD,IXX),
+c    &                               GABRAO(ISYBLA,ISYBLB,IXX)*
+c    &                               GABRAO(ISYBLC,ISYBLD,0),
+c    &                               GABRAO(ISYBLA,ISYBLB,IX*
+c    &                               GABRAO(ISYBLC,ISYBLD,IX)
+c     and so on ....
+c                    END IF
+                     DNSMAX   = D0
+                     DO I = 1,NDMAT 
+                        IY  = MOD(IFCTYP(I),10)
+                        IC  = MOD(IY,2)
+                        IE  = (IY - IC)/2
+C Largest Coulomb contribution to gradient/Hessian expectation value
+                        IF (IC .EQ. 1) THEN
+                           DNSBUF(1,I) = DMRAO(ISYBLA,ISYBLB,I)
+     &                                  *DMRAO(ISYBLC,ISYBLD,I)
+c DMRAO is always symmetric here.
+c                          DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
+c    &                                       DMRAO(ISYBLB,ISYBLA,I))
+c    &                                  *MAX(DMRAO(ISYBLC,ISYBLD,I),
+c    &                                       DMRAO(ISYBLD,ISYBLC,I))
+                        ELSE
+                           DNSBUF(1,I) = D0
+                        END IF
+C Largest exchange contribution to gradient/Hessian expectation value
+                        IF (IE .EQ. 1) THEN
+C                          DNS21       = DMRAO(ISYBLC,ISYBLA,I)
+C    &                                  *DMRAO(ISYBLB,ISYBLD,I)
+c                          DNS21       = MAX(DMRAO(ISYBLC,ISYBLA,I),
+c    &                                       DMRAO(ISYBLA,ISYBLC,I))
+c    &                                  *MAX(DMRAO(ISYBLB,ISYBLD,I),
+c    &                                       DMRAO(ISYBLD,ISYBLB,I))
+c                          DNS22       = MAX(DMRAO(ISYBLD,ISYBLA,I),
+c    &                                       DMRAO(ISYBLA,ISYBLD,I))
+c    &                                  *MAX(DMRAO(ISYBLC,ISYBLB,I),
+c    &                                       DMRAO(ISYBLB,ISYBLC,I))
+                           DNSBUF(2,I) = DMRAO(ISYBLC,ISYBLA,I)
+     &                                  *DMRAO(ISYBLD,ISYBLB,I)
+     &                                 + DMRAO(ISYBLD,ISYBLA,I)
+     &                                  *DMRAO(ISYBLC,ISYBLB,I)
+                        ELSE
+                           DNSBUF(2,I) = D0
+                        END IF
+                        DNSMAX = DNSMAX+DNSBUF(1,I)+DP25*DNSBUF(2,I)
+c                       DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
+                     ENDDO
+Cjth - we may introduce a expectation value threshold later
+                     EXPTHR = FCKTHR
+C
+                     DO 20 I = 1,3
+C
+C                    If direction requested then check if
+C                    integral gives a contribution.
+C
+                        IF (.NOT. DOXYZ(I)) GOTO 20
+                        IF (I.EQ.1) ULINT = ULXINT
+                        IF (I.EQ.2) ULINT = ULYINT
+                        IF (I.EQ.3) ULINT = ULZINT
+                        EXPMAX = DNSMAX*ULINT
+                        IF(EXPMAX.LT.EXPTHR) THEN
+                           DOXYZ(I) = .FALSE.
+                           CALL ADDDINT(DINTSKP,NCCINT,ICEN,2,I)
+                           IF(IPRINT.GE.2) THEN
+                              WRITE(LUPRI,
+     &              '(A,A1,A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
+     &        '*GrdSkip (',CHRXYZ(I),'): ',EXPMAX,
+     &        ISYBLA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
+     &        SPDCAR(NHKTSH(ISHELA)-1),')',
+     &        ISYBLB,'(',NAMDEP(ICENTB),COMP(LCLASH(ISHELB)),
+     &        SPDCAR(NHKTSH(ISHELB)-1),')',
+     &        ISYBLC,'(',NAMDEP(ICENTC),COMP(LCLASH(ISHELC)),
+     &        SPDCAR(NHKTSH(ISHELC)-1),')',
+     &        ISYBLD,'(',NAMDEP(ICENTD),COMP(LCLASH(ISHELD)),
+     &        SPDCAR(NHKTSH(ISHELD)-1),')'
+                           ENDIF
+C                          Item (e) below makes sure we jump to 300 
+C                          if DOX = DOY = DOZ = FALSE
+                        END IF
+ 20                  CONTINUE
+                  ENDIF
+               END IF
+ 21            CONTINUE
+C
+C              e) none of the directions are requested
+C                 or all directions screened away
 C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
 C
@@ -1895,13 +2036,17 @@ C              *******************************
 C              ***** Integral Directives *****
 C              *******************************
 C
+C
+C              DOGAB is only true when called from GABDR2
+C
+               DOGAB = .FALSE.
                CALL DIRECT(BIGVEC,ICENTA,ICENTB,ICENTC,ICENTD,
      &                     NCENTA,NCENTB,NCENTC,NCENTD,
      &                     0,     ISYMR, ISYMT, ISYMTS,
      &                     SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                     SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                     NCCINT,MAXDER,EXPECT,LONDON,SPNORB,IATOM,
-     &                     MULTE,NINTYP,IPRINT)
+     &                     MULTE,NINTYP,DOGAB,IPRINT)
 C
 C              ************************
 C              ***** AO integrals *****
@@ -1931,7 +2076,7 @@ C
      &                     NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                     SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                     NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP)
+     &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB)
                LWTOT  = LWTOT - KFREE + 1
                CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
@@ -2025,7 +2170,7 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  DNSBUF,DINTSKP)
+     &                  DNSBUF,DINTSKP,DOGAB)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
@@ -2033,7 +2178,7 @@ C  /* Deck caoint */
 #include <maxaqn.h>
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
-     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK
+     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, DOGAB
       DIMENSION AOINT(NCCINT,NINTYP), SOINT(*), PSO(*),PSA(*),COEFAB(*),
      &          COEFCD(*), COORAB(*), COORCD(*), EXPAB(*), EXPCD(*),
      &          CONTA(*), CONTB(*), CONTC(*), CONTD(*), FACAB(*),
@@ -2140,14 +2285,15 @@ C
      &                     FMAT(1,1,IADRA),NINDAB,NINDCD,NCCINT,
      &                     NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                     ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
-     &                     NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK)
+     &                     NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
+     &                     DINTSKP)
                IF (TKTIME) TINTEX = TINTEX + SECOND() - TIMSTR
             END IF
 C
 C        e) Contributions to expectation values
 C        ======================================
 C
-         ELSE IF (EXPECT .OR. DDFOCK) THEN
+         ELSE IF ((EXPECT.AND..NOT. DOGAB) .OR. DDFOCK) THEN
             IF (TKTIME) TIMSTR = SECOND()
             IF (PERTUR) THEN
                IADRT = 1
@@ -2160,7 +2306,8 @@ C
      &                  FMAT(1,1,IADRA),NINDAB,NINDCD,NCCINT,
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
-     &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK)
+     &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
+     &                  DINTSKP)
             IF (TKTIME) TINTEX = TINTEX + SECOND() - TIMSTR
 C
 C        f) Contributions to Fock matrices
@@ -3702,10 +3849,11 @@ C
 C
 C     Differentiated integrals for expectation values
 C
-      ELSE IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 6) THEN
+      ELSE IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 6 .OR. ITYPE .EQ. 10) THEN
          DO 220 IREPE = 0, MAXREP
             DOPREP(IREPE) = DOREPS(IREPE)
   220    CONTINUE
+         IF (ITYPE .EQ. 10) DOPREP(0) = .TRUE.
 C
 C     Spin-orbit integrals
 C
@@ -3932,6 +4080,13 @@ C
          MULTE  = MULT(MULE)
          DDFOCK = .TRUE.
 C
+C     l) integrals for GAB
+C     ============================================
+C
+      ELSE IF (ITYPE .EQ. 10) THEN
+         MAXDER = MAXDIF
+         EXPECT = .TRUE.
+C
 C     x) Error
 C     ========
 C
@@ -3962,4 +4117,496 @@ C
 C
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck imulti */
+      INTEGER FUNCTION IMULTI(ICENTA,ICENTB,ICENTC,ICENTD,ICEN)
+C*****************************************************************************
+C
+C     Determine type of multicenter integral
+C
+C     Written by J. Thyssen - Jan 22 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+      IF(ICENTA.EQ.ICENTB) THEN
+         IF(ICENTA.EQ.ICENTC) THEN
+            IF(ICENTA.EQ.ICENTD) THEN
+               IMULTI = 1111
+               ICEN   = 0
+            ELSE
+               IMULTI = 1112
+               ICEN   = 6
+            END IF
+         ELSE
+            IF(ICENTA.EQ.ICENTD) THEN
+               IMULTI = 1121
+               ICEN   = 7
+            ELSE IF(ICENTC.EQ.ICENTD) THEN
+               IMULTI = 1122
+               ICEN   = 1
+            ELSE
+               IMULTI = 1123
+               ICEN   = 12
+            END IF
+         END IF
+      ELSE
+         IF(ICENTA.EQ.ICENTC) THEN
+            IF(ICENTA.EQ.ICENTD) THEN
+               IMULTI = 1211
+               ICEN   = 5
+            ELSE IF(ICENTB.EQ.ICENTD) THEN
+               IMULTI = 1212
+               ICEN   = 2
+            ELSE
+               IMULTI = 1213
+               ICEN   = 8
+            END IF
+         ELSE IF(ICENTB.EQ.ICENTC) THEN
+            IF(ICENTA.EQ.ICENTD) THEN
+               IMULTI = 1221
+               ICEN   = 3
+            ELSE IF(ICENTB.EQ.ICENTD) THEN
+               IMULTI = 1222
+               ICEN   = 4
+            ELSE
+               IMULTI = 1223
+               ICEN   = 9
+            END IF
+         ELSE
+            IF(ICENTA.EQ.ICENTD) THEN
+               IMULTI = 1231
+               ICEN   = 10
+            ELSE IF(ICENTB.EQ.ICENTD) THEN
+               IMULTI = 1232
+               ICEN   = 11
+            ELSE IF(ICENTC.EQ.ICENTD) THEN
+               IMULTI = 1233
+               ICEN   = 13
+            ELSE
+               IMULTI = 1234
+               ICEN   = 14
+            END IF
+         END IF
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck scrint */
+      SUBROUTINE SCRINT(GABRAO,ISYBLA,ISYBLB,ISYBLC,ISYBLD,
+     &                  IT,ULXINT,ULYINT,ULZINT,IPRINT)
+C*****************************************************************************
+C
+C     Calculate ULXINT, ULYINT og ULZINT for screening of gradient
+C     See technical notes by J. Thyssen (Available by request)
+C
+C     Written by J. Thyssen - Jan 22 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <mxorb.h>
+#include <blocks.h>
+      PARAMETER (D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00)
+      DIMENSION GABRAO(NSYMBL,NSYMBL,0:3)
+C
+      ULXINT = D0
+      ULYINT = D0
+      ULZINT = D0
+C 
+C     Please note that
+C        GABRAO(I,J,1) = ( I_x J | I_x J )
+C     while
+C        GABRAO(J,I,1) = ( I J_x | I J_x )
+C
+C     ( 1 2 | 3 4 ) or ( 1 1 | 2 2 )
+C
+      IF (IT .EQ. 1234) THEN
+C
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+C
+C     ( 1 1 | 2 2 )
+C
+      ELSE IF (IT .EQ. 1122) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+C
+C     ( 1 2 | 1 2 )
+C
+      ELSE IF (IT .EQ. 1212) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3))
+C
+C     ( 1 2 | 2 1 )
+C
+      ELSE IF (IT .EQ. 1221) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 2 | 1 3 )
+C
+      ELSE IF (IT .EQ. 1213) THEN
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3))
+C
+C     ( 1 2 | 2 3 ) 
+C
+      ELSE IF (IT .EQ. 1223) THEN
+         ULXINT = MAX(GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MAX(GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MAX(GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 2 | 3 1 ) 
+C
+      ELSE IF (IT .EQ. 1231) THEN
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 2 | 3 2 ) 
+C
+      ELSE IF (IT .EQ. 1232) THEN
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 2 | 2 2 ) 
+C
+      ELSE IF (IT .EQ. 1222) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 2 | 1 1 ) 
+C
+      ELSE IF (IT .EQ. 1211) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLB,ISYBLA,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLB,ISYBLA,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLB,ISYBLA,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0))
+C
+C     ( 1 1 | 1 2 ) 
+C
+      ELSE IF (IT .EQ. 1112) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3))
+C
+C     ( 1 1 | 2 1 ) 
+C
+      ELSE IF (IT .EQ. 1121) THEN
+         ULXINT = MIN(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MIN(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2))
+         ULZINT = MIN(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0)+
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+C
+C     ( 1 1 | 2 3 ) 
+C
+      ELSE IF (IT .EQ. 1123) THEN
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,1))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,2)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,2),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,2))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLD,ISYBLC,3))
+C
+C     ( 1 2 | 3 3 ) 
+C
+      ELSE IF (IT .EQ. 1233) THEN
+         ULXINT = MAX(GABRAO(ISYBLA,ISYBLB,1)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,1))
+         ULYINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+         ULZINT = MAX(GABRAO(ISYBLA,ISYBLB,3)*
+     &                GABRAO(ISYBLC,ISYBLD,0),
+     &                GABRAO(ISYBLB,ISYBLA,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3),
+     &                GABRAO(ISYBLA,ISYBLB,0)*
+     &                GABRAO(ISYBLC,ISYBLD,3))
+      ELSE
+         WRITE(LUPRI,'(A,I4)') 'SCRINT ERROR: Unknown IT ',IT
+         WRITE(LUPRI,'(A)') 'Please report to Joern Thyssen'
+         CALL QUIT('SCRINT ERROR: Unknown IT')
+      END IF
+      IF (IPRINT .LE. 30) RETURN
+      WRITE(LUPRI,'(A,2X,I4,2X,3F17.13)') 
+     &   'SCRINT IT UL?INT',IT,ULXINT,ULYINT,ULZINT
+      RETURN 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck adddint */
+      SUBROUTINE ADDDINT(DINTSKP,NCCINT,ICEN,IFLAG,IXYZ)
+C*****************************************************************************
+C
+C     Add NCCINT to the proper DINTSKP element
+C
+C     Written by J. Thyssen - Feb 6 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+      DIMENSION DINTSKP(3,14,3)
+C
+      DINTSKP(IFLAG,ICEN,IXYZ) = DINTSKP(IFLAG,ICEN,IXYZ) + NCCINT
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prdint */
+      SUBROUTINE PRDINT(DINTSKP)
+C*****************************************************************************
+C
+C     Written by J. Thyssen - Jun 2 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <chrxyz.h>
+      DIMENSION DINTSKP(3,14,3)
+C
+      DO I = 1,3
+         CALL HEADER('Screening statistic '//CHRXYZ(I)//'-direction',-1)
+         CALL OUTPUT(DINTSKP(1,1,I),1,3,1,14,3,14,1,LUPRI)
+      END DO
+      RETURN
+      END
