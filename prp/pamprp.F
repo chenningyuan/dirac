@@ -103,12 +103,17 @@ C
       CALL MEMGET('REAL',KESR,4*NESRP,WORK,KFREE,LFREE)
       IF(DOESR) CALL PRPESR(WORK(KESR),WORK(KFREE),LFREE)
 C
+#if defined (MOD_RSP)
+C*****************************************************************************
+C*****  P P   E X C I T A T I O N   E N E R G I E S  *************************
+C*****************************************************************************
+C
+      IF(DOXPP) CALL PRPXPP(WORK,KFREE,LFREE)
 C
 C*****************************************************************************
 C*****  L I N E A R   R E S P O N S E  ***************************************
 C*****************************************************************************
 C
-#if defined (MOD_RSP)
       IF(DOXLR) THEN
         CALL PRPXLR(WORK,KLRF,KCNV,KLRO,KFREE,LFREE)
       ELSE
@@ -116,6 +121,11 @@ C
         KLRF = KFREE
         KCNV = KFREE
       ENDIF
+C
+C*****************************************************************************
+C*****  Q U A D R A T I C   R E S P O N S E  *********************************
+C*****************************************************************************
+C
       IF (DOXQR) THEN
         CALL PRPXQR(WORK(KFREE),LFREE)
       ENDIF
@@ -126,11 +136,19 @@ C
 #endif
 C
 C*****************************************************************************
-C*****  P R O P E R T Y   O U T P U T  ***************************************
+C*****  standardized P R O P E R T Y   O U T P U T  **************************
 C*****************************************************************************
 C
-      CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KCNV),
+C hjaaj sep2000:
+C     in this version only for DOEXP and for DOXLR;
+C     maybe a good idea to assemble final output from various
+C     sections in a file which is then copied to output here ?
+C
+      IF (DOEXP .OR. DOXLR) THEN
+         CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KCNV),
      &            WORK,KFREE,LFREE)
+      END IF
+C
       CALL QEXIT('PAMPRP')
 C
       RETURN
@@ -1114,13 +1132,13 @@ C
 C
 C                    Change to GHz when abs values bigger then 1.0D4
 C
-                     HZUNIT = ' MHz'
-                     DBUNIT = 1.0D0
                      IF ((ABS(EFGTOT(1,1,IATOM))*FACT.GT.1.0D4).OR.
-     &                  (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
-     &                  (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
-                        DBUNIT = 1.0D3
+     &                   (ABS(EFGTOT(2,2,IATOM))*FACT.GT.1.0D4).OR.
+     &                   (ABS(EFGTOT(3,3,IATOM))*FACT.GT.1.0D4)) THEN
+                        FACT   = FACT * 1.0D-3
                         HZUNIT = ' GHz'
+                     ELSE
+                        HZUNIT = ' MHz'
                      ENDIF
                      SPIN = DISOTP(NUCCHA,ISO,'SPIN')
                      MASS = NINT(DISOTP(NUCCHA,ISO,'A'))
@@ -1131,7 +1149,7 @@ C
                      DO I=1,3
                         WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
      &                     'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
-     &                     EFGTOT(I,I,IATOM)*FACT/DBUNIT,HZUNIT
+     &                     EFGTOT(I,I,IATOM)*FACT,HZUNIT
                      ENDDO
                      WRITE (LUPRI,'(2X,A3,9X,F16.8)')
      &                  'Eta', ETA
@@ -1316,9 +1334,8 @@ C     Electronic contribution to dipole moment
 C     ========================================
 C
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(A/)')
-     &     '* Electric field gradients :'
-     
+      WRITE(LUPRI,'(A/)') '* Electric field gradients :'
+C    
       CALL EL_EFG(IPREXP,EXPVAL,DOATOM,AXIS,TEMP)
       CALL NUC_EFG(IPREXP,DOATOM,AXIS,TEMP)
 C     
