@@ -3225,7 +3225,7 @@ C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
      &            '.XXXXXX','.XXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.ZORA  ','.SMLV1C','.XXXXXX',
+     &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','XXXXXXX','XXXXXXX'/
 C
@@ -3403,6 +3403,9 @@ C             projection scheme
              ICHANG = ICHANG + 1
              GO TO 100
   116      CONTINUE
+C&&& ALDA   : Kohn-Sham (DFT) Hamiltonian w/ LDA functional for LR.
+             DFTHAM = .TRUE.
+             CALL DOALDA(.TRUE.)
              GOTO 100
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian

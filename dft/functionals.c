@@ -201,6 +201,7 @@ dftlistfuncs_(void)
    http://math-atlas.sourceforge.net/errata.html#RH7.0
 */
 static char* DftConfString = NULL;
+static int do_alda = 0;
 int
 dftinput_(char* line, int* success, int len)
 {
@@ -225,6 +226,11 @@ dftinput_(char* line, int* success, int len)
     *success = 0; /* failed to find */
 }
 
+void
+doalda_(const int *alda)
+{
+    do_alda = *alda;
+}
 
 void
 dftpot0_(FirstDrv *ds, const real* weight, const real* rho, const real* grad)
@@ -254,7 +260,10 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     dp.rhoa  = dp.rhob  = *rho *0.5;
     dp.grada = dp.gradb = *grad*0.5; 
     dp.gradab = dp.grada * dp.gradb;
-    selected_func->second(&drvs, *w, &dp);
+    if(do_alda)
+        LDAFunctional.second(&drvs, *w, &dp);
+    else
+        selected_func->second(&drvs, *w, &dp);
          
     ds->fR  = 0; /* NOT USED */
     ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
@@ -501,6 +510,33 @@ gga_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
         lst->func->third(ds, factor*lst->weight, dp);
 }
 
+static real
+lda_energy(DftDensProp* dp)
+{
+    return SlaterFunctional.func(dp) + VWNFunctional.func(dp);
+}
+
+static void
+lda_first(FirstFuncDrv *ds, real factor, DftDensProp* dp) 
+{
+    SlaterFunctional.first(ds, factor, dp);
+    VWNFunctional.first   (ds, factor, dp);
+}
+
+static void
+lda_second(SecondFuncDrv *ds, real factor, DftDensProp* dp)
+{
+    SlaterFunctional.second(ds, factor, dp);
+    VWNFunctional.second   (ds, factor, dp);
+}
+
+static void
+lda_third(ThirdFuncDrv *ds, real factor, DftDensProp* dp)
+{
+    SlaterFunctional.third(ds, factor, dp);
+    VWNFunctional.third   (ds, factor, dp);
+}
+
 Functional XAlphaFunctional = {
   "XAlpha",       /* name */
   fun_false,   /* gga-corrected */
@@ -517,10 +553,10 @@ Functional LDAFunctional = {
   fun_false,     /* not gga-corrected */
   lda_read,
   NULL,
-  gga_energy, 
-  gga_first,
-  gga_second,
-  gga_third
+  lda_energy,
+  lda_first,
+  lda_second,
+  lda_third
 };
 
 Functional GGAKeyFunctional = {
@@ -589,6 +625,7 @@ dftsyncfunc_(int* amImaster)
     
     if(infpar_.nodes==1||Initialized) return;
 
+    MPI_Bcast(&do_alda,      1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
     MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
     if(dft_conf_len>0) {
         char* line = malloc(dft_conf_len);
