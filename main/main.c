@@ -22,6 +22,9 @@
  ;
 #include "pr_timing.head"
  ;
+#include "get_time.struct"
+#include "get_time.head"
+ ;
 
 void main()
 
@@ -29,16 +32,15 @@ void main()
 
    int mytid, size, parcal, mparid, numnod, errhandler;
    int *mempointer;
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-   real cpu_start, cpu_end, wall_start, wall_end;
-#else
-   double cpu_start, cpu_end, wall_start, wall_end;
-#endif
+   get_time_struct *gt_first, *gt_last;
+
    /*
     * Start timing
     */
 
-   gettim_(&cpu_start,&wall_start);
+   gt_first = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
+   gt_last  = (get_time_struct *) diracmalloc(sizeof(get_time_struct));
+   get_time(gt_first);
 
    /*
     * Initialize MPI stuff
@@ -68,26 +70,34 @@ void main()
    exec_dirac(&parcal,&mytid,&mparid,&numnod,mempointer,&size);
 
    /*
-    * Free memory
-    */
-
-   free(mempointer);
-
-   /*
     * End timing
     */
 
-   gettim_(&cpu_end,&wall_end);
+   get_time(gt_last);
 
    /*
     * Write out timing
     */
 
-   pr_timing(cpu_end - cpu_start, wall_end - wall_start, numnod, mytid);
+   pr_timing(gt_first, gt_last, numnod, mytid);
 
    /*
     * End MPI
     */
 
    end_mpi(mparid,mytid,errhandler);
+
+   /*
+    * Free memory
+    */
+
+   free(mempointer);
+   free(gt_first);
+   free(gt_last);
+
+   /*
+    * End
+    */
+
+   exit(0);
 }
