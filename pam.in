@@ -63,6 +63,7 @@ usage ()
    echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -notify                : Notify user'
    echo '     -user                  : Which user to notify'
+   echo '     -basdir directory      : Set basis set directory'
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
    echo '                              dirac'
    echo '     -multi "config file"   : Run MPI on MULTI NODEs'
@@ -492,6 +493,8 @@ initialize()
    NOTIFY_USER=
 
    ALT_DIRAC=
+
+   BASDIR=$BAS_DIR; export BASDIR
 }
 #
 #
@@ -515,6 +518,10 @@ fi
 
 while [ -n "$1" ]; do
    case $1 in
+      -basdir)
+         shift
+         BASDIR=$1; export BASDIR
+         ;;
       -copy)
          shift
          COPY_FILES="$COPY_FILES $1"
