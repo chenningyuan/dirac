@@ -1210,6 +1210,7 @@ C
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
+          CALL QUIT('PAMTR1: strategy 5 is still under construction')
           IF (.NOT.MSOUT)
      &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 5')
           IF (LMP2)
