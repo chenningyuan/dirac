@@ -1,6 +1,5 @@
 !
-! This test calculates the spin-orbit components of the 2P state of Fluorine,
-! using a CISD wavefunction.
+! Diagonalizes the Dirac matrix for F9+ (no 2-electron interactions)
 !
 **DIRAC
 .TITLE

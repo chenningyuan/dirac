@@ -26,6 +26,8 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 .ACTIVE
 energy -1.0 2.0 0.2
 .PRPTRA
+.PRINT 
+3
 *PRPTRA
 .OPERATOR
  'X-DIP'

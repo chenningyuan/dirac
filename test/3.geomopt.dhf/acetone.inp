@@ -1,4 +1,5 @@
-! $Id$
+! Non-relativistic optimization of the acetone molecule. We use the point nucleus
+! model to facilitate comparison with nonrelativistic results.
 **DIRAC
 .OPTIMIZE
 *OPTIMIZE
@@ -6,16 +7,8 @@
 **INTEGRALS
 .NUCMOD
  1
-*TWOINT
-.SCREEN
- 1.0D-11
 **HAMILTONIAN
 .LEVY-LEBLOND
 **WAVE FUNCTIONS
 .DHF
-*DHFCAL
-.CLOSED SHELL
- 32
-.EVCCNV
- 1.0D-8
 *END OF 

@@ -1,6 +1,6 @@
 !
-! This test calculates the spin-orbit components of the 2P state of Fluorine,
-! using a CISD wavefunction.
+! Do a free-particle projection before diagonalizing the Dirac matrix (no 2-e interactions)
+! Illustrates the errors that are introduced by such explicit projectors.
 !
 **DIRAC
 .TITLE

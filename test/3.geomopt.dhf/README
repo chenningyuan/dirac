@@ -1,4 +1,4 @@
 !
-! This test performs a geometry optimization of HeH+
-! It also calculated some properties at the final geometry
+! This test performs geometry optimizations for different molecules.
+! It also illustrates calculation of properties at the final geometry
 !

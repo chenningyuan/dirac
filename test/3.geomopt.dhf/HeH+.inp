@@ -1,4 +1,5 @@
-! $Id$
+! Very short test for geometry optimization. Detailed print out and molecular properties
+! at optimized structure.
 **DIRAC
 .TITLE
 HeH+ molecule
