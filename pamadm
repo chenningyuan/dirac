@@ -387,7 +387,8 @@ cat <<EOF>> Makefile
 export:
 	-rm -f DIRAC.new.tar.gz
 	tar cvf DIRAC.new.tar \
-	configure config.sub config.guess config.status doc/doc.html crilib.cld \
+	configure config.sub config.guess config.status \
+	doc/doc.html crilib.cld C90lib.cld \
 	include/*.h Makefile Makefile.config \
 	dirac/*.F dirac/Makefile.in \
 	prp/*.F prp/Makefile.in \
