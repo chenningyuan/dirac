@@ -1742,8 +1742,8 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','XXXXXXX','XXXXXXX','XXXXXXX'/
-      DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.LVCORR',
-     &             '.TSCORR','.RELCCS','.DIRRCI','.MVO   ',
+      DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.XXXXXX',
+     &             '.XXXXXX','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.LUCITA','.LUCIAR','.KRMCSC'/
 C
       NJOBS = 0
@@ -1754,9 +1754,7 @@ C
       DOSCF   = .FALSE.
       DODHF   = .FALSE.
       DODFT   = .FALSE.
-      DOLVC   = (ONECAP .AND. INTV1C.EQ.2)
       DOMP2   = .FALSE.
-      DOTSC   = .FALSE.
       DORES   = .FALSE.
       DOCCM   = .FALSE.
       DOCIM   = .FALSE.
@@ -1829,16 +1827,10 @@ C&&&& LUCITA: Perform spinfree CI calculation
             NJOBS = NJOBS + 1
             GO TO 100
   104    CONTINUE
-C&&&& LVCORR: Model interatomic SS-integral contribution by classical
-C             repulsion of small component atomic charges
-C     This option should be specified in the general section as
-C     it has nothing to do with the generation of the wave function....
-            CALL QUIT ('LVCORR option now in general input section !')
+C&&&& XXXXXX: Empty space for new option (removed LVCOR here)
             GO TO 100
   105    CONTINUE
-C&&&& TSCORR: Model SS-integrals by SS nuclear attraction integrals
-C             using small component atomic charges
-            CALL QUIT ('TSCORR option now in general input section !')
+C&&&& XXXXXX: Empty space for new option (removed TSCOR here)
             GO TO 100
   106    CONTINUE
 C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
@@ -1920,15 +1912,11 @@ C
             WRITE(LUPRI,'(1X,A)') '- using KRMC-GOSCI code'
          END IF
       END IF
-c
-      IF(DOLVC.AND. .NOT.ONECAP) WRITE(LUPRI,'(1X,A)')
-     &    '* SS integrals neglected:',
-     &    '  Interatomic Coulombic SS-contributions modelled ',
-     &    '  by classical repulsion of small component atomic charges.'
-c
 C
 C   ... Check that the selected One-center model is reasonable,
 C       and write appropriate output.
+C   LV: This part has nothing to do with the wave function and should go
+C       under Hamiltonian or General (TODO)
 C
       IF(.NOT.LEVYLE .AND. ONECAP) THEN
          IF (INTV1C .LE. 0 .OR. INTV1C .GT. 4) THEN
@@ -2027,17 +2015,7 @@ C
      &       ONECNV
          END IF
 C
-C        Calculate LV-correction
-C        (SS integrals modelled by Coulombic correction)
-C        ===============================================
-C
-CTROND         CALL LVCORR(WORK,LWORK,IPRGEN)
       END IF
-      IF(DOTSC) WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  nuclear attraction integrals using ',
-     &   '  small component atomic charges.'
 C
 C     Process input for various program sections
 C     ==========================================
