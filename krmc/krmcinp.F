@@ -87,7 +87,7 @@ C
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
      &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
-     &            '.CI PRO','.INACTI','.ACTIVE','.ACT EL','.SYMMET',
+     &            '.CI PRO','.INACTI','.CASSCF','xxxxxxx','.SYMMET',
      &            '.RELSYM'/
       DATA SET/.FALSE./
 C
@@ -163,7 +163,7 @@ C
             NKRMCGSH(I,J) = 0
          END DO
       END DO
-      NKRMCAELEC = 0
+      NKRMCAELEC = -1
 C
 C     Initialize /DCCKRMC/
 C     ===================
@@ -295,7 +295,7 @@ C&&& MAX MK2: maximum value of 2 * MK
 C&&& GASSH: GAS setup
                   IF (NKRMCGAS .GT. 0) THEN
                      CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &                 'You cannot specify both .GASSH and .ACTIVE')
+     &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRMCGAS
                   IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
@@ -316,6 +316,7 @@ C&&& GASSPC: GAS space constraints
                   DO I = 1, NKRMCGAS
                      READ(LUCMD,*) (NKRMCGSP(J,I),J=1,2)
                   END DO
+                  IF (NKRMCAELEC.LT.0) NKRMCAELEC = NKRMCGSP(2,NKRMCGAS)
                GO TO 100
    23          CONTINUE
 C&&& MK2REFERENCE: 2 * M_K reference
@@ -342,20 +343,19 @@ C&&&  INACTIVE ORBITALS
                READ(LUCMD,*) (NKRMCISH(I),I=1,NFSYM)
                GO TO 100
  28            CONTINUE
-C&&&  ACTIVE ORBITALS
-C     this defines a CAS space   - TODO: remove ??? HJAaJ
-C              fixme: error if NGAS > 0
+C&&&  CASSCF -- this defines a CAS space
                IF (NKRMCGAS .GT. 0) THEN
                   CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &                 'You cannot specify both .GASSH and .ACTIVE')
+     &                 'You cannot specify both .GASSH and .CASSCF')
                END IF
-               NKRMCGAS = 1
+               READ(LUCMD,*) NKRMCAELEC
                READ(LUCMD,*) (NKRMCASH(I),I=1,NFSYM)
+               NKRMCGAS = 1
+               NKRMCGSP(1,NKRMCGAS) = NKRMCAELEC
+               NKRMCGSP(2,NKRMCGAS) = NKRMCAELEC 
                GO TO 100
  29            CONTINUE
-C&&&  ACT ELECTRONS: number of active electrons
-C     primarily for a CAS space TODO: remove ??? HJAaJ
-               READ(LUCMD,*) NKRMCAELEC
+C&&&  xxxxx
                GO TO 100
  30            CONTINUE
 C&&&  SYMMETRY: symmetry of the wave function
@@ -383,6 +383,7 @@ C              including spin in symmetry
   300 CONTINUE
 C
       IF (.NOT.DOKRMC) GO TO 9999
+C
 C
       IF(DOLVC) ISSINT = 0
       IF (LEVYLE) THEN
@@ -417,8 +418,8 @@ C
          NTEST = NTEST + NKRMCASH(J)
       END DO
       IF (NTEST .GT. MAXASH) THEN
-        WRITE(LUPRI,'(1X,A,I5,/,10X,A,I4)')
-     &       '*** ERROR in KRMCINP *** Too many active orbitals: ',
+        WRITE(LUPRI,'(A,I5/10X,A,I4)')
+     &       ' *** ERROR in KRMCINP *** Too many active orbitals: ',
      &       NTEST, ' -- max is ',MAXASH
         CALL QUIT('*** ERROR in KRMCINP *** Too many active orbitals!')
       END IF
@@ -459,11 +460,9 @@ C
      &      '    (constraints: min/max active electrons after space : ',
      &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
          END DO
-         NAE = NKRMCGSP(2,NKRMCGAS)
-         IF (NKRMCAELEC .NE. 0 .AND. NAE .NE. NKRMCAELEC)
+         IF (NKRMCGSP(2,NKRMCGAS) .NE. NKRMCAELEC)
      &        CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &        'Inconsistency between .GASSP and .ACTIVE ELEC')
-         NKRMCAELEC = NAE
+     &        'Inconsistency between .GASSP and .CASSCF')
       END IF
       WRITE(LUPRI,'(A,I4)')
      &     ' * State number          : ',IKRMC_ISTATE
