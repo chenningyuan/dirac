@@ -214,8 +214,8 @@ void distribute_env(const char* name, int mytid)
     equal to that of the master if it was not defined on the slave
     Written by Luuk Visscher, october 2002                          */
 
- #if !defined (VAR_MPI)
-  return
+#if !defined (VAR_MPI)
+  return;
 #else
 #include <mpi.h>
   char *env_local, *env_master, *newname;
