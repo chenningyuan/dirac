@@ -250,8 +250,31 @@ make_export()
    cd ..
    echo " - adding files to tar-achive..."
    echo
+# First add the files that are at the main level or are special.
    tar cvf \$szCurrDir.tar \\
-     \$szCurrDir/{configure,config.sub,config.guess,config.status,C90lib.cld,crilib.cld,pam.in,pam.1,Makefile,abacus/*.F,abacus/Makefile.in,basis,dirac/*.F,dirac/Makefile.in,dirrci/*.F,dirrci/Makefile.in,dirrci/*.inc,doc/doc.html,gp/*.F,gp/*.c,gp/Makefile.in,include/*.h,main/Makefile.in,main/*.c,main/*.F,main/*.h,main/*.head,main/*.struct,moltra/*.F,moltra/Makefile.in,pdpack/Makefile.in,pdpack/*.F,prp/*.F,prp/Makefile.in,relccsd/*.F,relccsd/*.inc,relccsd/*.c,relccsd/Makefile.in,lucita/*.F,lucita/*.inc,lucita/*.c,lucita/Makefile.in,lucita/Makefile.sub,test,utils} 2> export.log
+     \$szCurrDir/configure \\
+     \$szCurrDir/config.sub \\
+     \$szCurrDir/config.guess \\
+     \$szCurrDir/config.status \\
+     \$szCurrDir/C90lib.cld \\
+     \$szCurrDir/crilib.cld \\
+     \$szCurrDir/pam.in \\
+     \$szCurrDir/pam.1 \\
+     \$szCurrDir/Makefile \\
+     \$szCurrDir/doc/doc.html \\
+     \$szCurrDir/include/*.h \\
+     \$szCurrDir/main/*.h \\
+     \$szCurrDir/main/*.head \\
+     \$szCurrDir/main/*.struct \\
+     \$szCurrDir/lucita/Makefile.sub
+     \$szCurrDir/test \\
+     \$szCurrDir/testlast \\
+     \$szCurrDir/utils 2> export.log
+# Now add the standard files from each active directory (module).
+   for module in $dirs; do
+      MDir=\$szCurrDir/\$module
+      tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.inc \$MDir/Makefile \$MDir/include 2>> export.log
+   done
 EOF
    #
    # Active modules
@@ -281,9 +304,10 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/prp/xqr/{*.F,Makefile.in} 2>> export.log
 EOF
    fi
+# A DIRAC administrator should have everything
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/{configure.in,pamadm,WHATSNEW} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/configure.in \$szCurrDir/pamadm \$szCurrDir/WHATSNEW 2>> export.log
 EOF
    fi
    if [ "$EXPORTTAR" ]; then
@@ -709,6 +733,58 @@ for ff in $TEMP; do
 	cd $ff; \$(MAKE) depend
 EOF
 done
+echo
+echo "Making module Makefiles..."
+for makefile in $dirs; do
+   echo "Making $makefile/Makefile from $makefile/Makefile.in"
+# make backup first !
+   if [ -f $makefile/Makefile ]; then
+      rm -f $makefile/Makefile
+   fi
+   cp $makefile/Makefile.in $makefile/Makefile
+done
+#
+#  Make links to include
+#
+echo
+for link in $dirs; do
+   echo "Making link from include to $link/include"
+   if [ -d $link/include ]; then
+      rm -f $link/include
+   fi
+   ln -sf ../include $link/include
+done
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Determine the active modules (directories)
+#
+which_modules()
+{
+#  
+#
+dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
+if [ -n "$ERIFLG" ]; then
+   dirs="$dirs eri"
+fi
+if [ -n "$DFTFLG" ]; then
+   dirs="$dirs dft"
+fi
+if [ -n "$CCFOCKSPFLG" ]; then
+   dirs="$dirs relccsd/ccfocksp"
+fi
+if [ -n "$ESRFLG" ]; then
+   dirs="$dirs prp/esr"
+fi
+if [ -n "$XPPFLG" ]; then
+   dirs="$dirs prp/xpp"
+fi
+if [ -n "$XQRFLG" ]; then
+   dirs="$dirs prp/xqr"
+fi
 }
 #
 #
@@ -767,11 +843,15 @@ setup
 #
 backup
 #
+# Find the active modules
 #
+which_modules
+#
+# Make configure script
 #
 make_configure
 #
-# Make makefile
+# Make the makefiles
 #
 make_makefile
 #

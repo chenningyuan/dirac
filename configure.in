@@ -259,8 +259,15 @@ case $machine in
       complist='f77 f90';;
 
    i[3-6]86-*)
-      liblist='libblas'
+      liblist='libatlas libblas'
+#TODO liblist='libMKL libatlas libblas'
       complist='ifc g77'
+      debug='gdb';;
+
+   Power-Macintosh)
+      liblist='libatlas libblas'
+      complist='g77'
+      cclist='gcc'
       debug='gdb';;
 
    sparc-sun|m68k-sun)  
@@ -677,6 +684,8 @@ for testdir in $dirlist; do
                libcomplib.sgimath) LIB="$LIB -lcomplib.sgimath";;
                libveclib) LIB="$LIB -lveclib";;
                libmath) LIB="$LIB -lmath -lm -nx";;
+               libatlas) LIB="$LIB -latlas";;
+#TODO Intel Math Kernel Library         libMKL) LIB="$LIB -lMKL";;
             esac
             break
          fi
@@ -1188,9 +1197,48 @@ case $machine in
          ;;
       esac
       inc="-I$INCLUDE_DIR";;
+#
+#   Darwin
+#
+   Power-Macintosh)
+      echo 
+      echo "Get the BLAS routines. See 'Known issues and problems' at"
+      echo "http://dirac.chem.sdu.dk"
+      if [ "$mesp" = "dummy" ]; then
+         cpp="-DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         ccp="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         def='dirac.x'
+      else
+         cpp="-DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+	  def='dirmpi.x'
+          mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
+      fi
+#
+# Ask user whether the large file option can be set
+#
+      $echo 'Can your Darwin system handle files longer than 2 GB ? y/[n] \c'
+      read largefiles
+      case "$largefiles" in
+      "yes" | "y" | "Y" )
+          ;;
+       *)
+         ccp="$cpp -DSMALL_CFILES"
+         ;;
+      esac
+      for mod in $MODS; do
+         cpp=`echo $cpp $mod`
+      done
+      case "$F77" in
+      g77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+	 c_opt='-O3'
+         ;;
+      esac
+      inc="-I$INCLUDE_DIR";;
    
    *)
-      echo "aaarggh"
+      echo "$machine is not recognized : check configure.in file"
       exit 1
 esac
 #
@@ -1480,62 +1528,7 @@ chmod a+rx $INSTALL_DIR/pam
 echo "ok"
 echo
 #
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# Make makefile in all directories
-#
-#
 echo
-echo "Making Makefiles..."
-dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
-if [ -n "$ERIFLG" ]; then
-   dirs="$dirs eri"
-fi
-if [ -n "$DFTFLG" ]; then
-   dirs="$dirs dft"
-fi
-if [ -n "$CCFOCKSPFLG" ]; then
-   dirs="$dirs relccsd/ccfocksp"
-fi
-if [ -n "$ESRFLG" ]; then
-   dirs="$dirs prp/esr"
-fi
-if [ -n "$XPPFLG" ]; then
-   dirs="$dirs prp/xpp"
-fi
-if [ -n "$XQRFLG" ]; then
-   dirs="$dirs prp/xqr"
-fi
-for makefile in $dirs; do
-   echo "Making $makefile/Makefile from $makefile/Makefile.in"
-   if [ -f $makefile/Makefile ]; then
-      rm -f $makefile/Makefile
-   fi
-   cp $makefile/Makefile.in $makefile/Makefile
-done
-echo
-#
-#  Make links to include
-#
-for link in $dirs; do
-   echo "Making link from include to $link/include"
-   if [ -d $link/include ]; then
-      rm -f $link/include
-   fi
-   ln -sf ../include $link/include
-done
-#
-#  Move write-protection if super-user (pamadm)
-#
-#if [ $PAMADM = 1 ]; then
-#   echo "You're a Dirac superuser, so I'll remove write proctection..."
-#   chmod -R u+w *
-#fi
-echo
-
-
 echo "Before you run make, please check Makefile.config and edit"
 echo "it if you wish."
 echo

@@ -9,7 +9,7 @@
 pampath=`pwd`
 dirac=`pwd`/dirac.x
 testdir=`pwd`/test
-cvs="yes"
+cvs="no"
 queue="none"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -42,7 +42,7 @@ usage='Usage: '$0'\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: -testdir=test)\n'\
 '--cvs=yes/no\n'\
-'\tRun cvs prior to compilation (default: -cvs=yes)\n'\
+'\tRun cvs prior to compilation (default: -cvs=no)\n'\
 '--queue=QUEUE\n'\
 '\tQueue to be used in qsub (default: -queue=none meaning run interactively)\n'
 
