@@ -1988,32 +1988,35 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
       END DO
 *     ^ End of loop over MS2 spaces
 *
-      WRITE(6,*)
-     &' Number of internal combinations per symmetry '
-      WRITE(6,*)
-     & ' =========================================== '
-*
-      DO 200 ICI = 1, NCMBSPC
-          WRITE(6,*) ' CI space ', ICI
-          CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
-  200 CONTINUE
-      WRITE(6,*) ' Largest symmetry block           ',MXSB
+* Check for minimum size of resolution matrices:
       if (MXSB.gt.LCSBLK) then
         write(6,*) ' Exceeds space for resolution matrices: ',LCSBLK
         write(6,*) ' Increase LCSBLK (in krmcluci) to at least ',MXSB
         call quit ('Stop in LCISPC_REL.')
       end if
-      WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
 *
-      WRITE(6,*)
-     &' Number of TTS subblocks per CI expansion '
-      WRITE(6,*)
-     & ' ======================================== '
+      if (NTEST.ge.1) then
+        WRITE(6,*)
+     &  ' Number of internal combinations per symmetry '
+        WRITE(6,*)
+     &  ' =========================================== '
 *
-      DO  ICI = 1,  NCMBSPC
+        DO 200 ICI = 1, NCMBSPC
+          WRITE(6,*) ' CI space ', ICI
+          CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
+  200   CONTINUE
+        WRITE(6,*) ' Largest symmetry block           ',MXSB
+        WRITE(6,*) ' Largest Symmetry-type-type block ',MXSOOB
+*
+        WRITE(6,*) ' Number of TTS subblocks per CI expansion '
+        WRITE(6,*) ' ======================================== '
+*
+        DO ICI = 1,  NCMBSPC
           WRITE(6,*) ' Internal CI space ', ICI
           CALL IWRTMA(NBLKIC(1,ICI),1,NSMCI,1,NSMCI)
-      END DO
+        END DO
+      end if
+*
 *. Largest number of BLOCKS in a CI expansion
       MXNTTS = 0
       DO ICI = 1,NCMBSPC
@@ -2022,19 +2025,15 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
        END DO
       END DO
 *
-      WRITE(6,*) ' Largest number of blocks in CI expansion',
-     &MXNTTS
-*
       IF(NTEST.GE.5) THEN
-      WRITE(6,*)
-     &' Number of columns per CI expansion '
-      WRITE(6,*)
-     & ' =================================== '
+        WRITE(6,*) ' Largest number of blocks in CI expansion',MXNTTS
+        WRITE(6,*) ' Number of columns per CI expansion '
+        WRITE(6,*) ' =================================== '
 *
-      DO  ICI = 1,  NCMBSPC
+        DO ICI = 1,NCMBSPC
           WRITE(6,*) ' Internal CI space ', ICI
           CALL IWRTMA(LCOLIC(1,ICI),1,NSMCI,1,NSMCI)
-      END DO
+        END DO
       END IF
 *
       CALL QEXIT('LCISP')
@@ -3182,7 +3181,8 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
        END IF
       END IF
 *.Information about spinor symmetries
-      write(6,*)
+      if (NTEST.ge.1) then
+        write(6,*)
         WRITE(LUOUT,'(A)')
      &  '  Spin-up Spinors in Double group symmetry  '
         WRITE(LUOUT,'(A)')
@@ -3212,7 +3212,8 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
      &    '        GAS',IGAS,'          ',
      &    (NGSOB2(IRREP,IGAS),IRREP = 1, NSMOB )
         END DO
-
+      end if
+*
 ********************************************
 *                                          *
 * Part 2 : Reordering arrays for orbitals  *

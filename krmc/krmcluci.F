@@ -199,7 +199,7 @@ C 62: No combinations of degenerate initial vectors
       INIDEG = 0
 C
 C 64: Length of batches of C vectors
-      LCSBLK = 1 000 000
+      LCSBLK = 2 000 000
 C
 C 74: Density matrices requested
       CALL LUCI_TRAVA(CIRUN,'DENSI ',IDENSI,DUMMY)
@@ -978,8 +978,7 @@ C     GAS shells.
 C
       IF (CTLSTR .EQ. 'GASSH ') THEN
 C
-c        IF (IPROPT .GE. 3) THEN
-         IF (IPROPT .GE. 0) THEN
+         IF (IPROPT .GE. 3) THEN
             WRITE(LUPRI,'(/,1X,A)') '(LUCI_TRAVA) Dirac GAS shells: '
             DO I = 1, NGAS
                WRITE(LUPRI,'(1X,A,I3,4X,2I4)')
@@ -1019,8 +1018,10 @@ C              find first ungerade irrep
 C    FIXME: This is hardwired now to be irrep number 3.
 C           Should be made flexible later on to account for
 C           different symmetry generator setup.
+            if (CIRUN.eq.'CIINII') then
             write(lupri,*) 'WARNING FIXME: IBOSYM hardwired to irrep 3'
             write(lupri,*) 'You have problems if irrep 3 not ungerade!!'
+            end if
                   IBOSYMI = IFSYM
                END IF
                IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+IOFF)=IBOSYMI
@@ -1038,8 +1039,7 @@ C
                END DO
             END DO
          END DO
-c        IF (IPROPT .GE. 3) THEN
-         IF (IPROPT .GE. 0) THEN
+         IF (IPROPT .GE. 3) THEN
             WRITE(LUPRI,'(/A)') ' (LUCI_TRAVA) LUCIAREL GAS shells: '
             WRITE(LUPRI,'(10X,8(1X,A4,I2))') ('GAS ',I,I=1,NGAS)
             CALL IWRTMA(IVAR,NBSYM,NGAS,MXPIRR,MXPNGAS)
@@ -1273,7 +1273,7 @@ C 32 bit:  *kbase = (int) (wrk-work+1);
 C 64 bit:  *kbase = (long) (wrk-work+1);
 C
       WORK(KBASE) = 9991.
-      IF (WRK(1).NE.9991.) THEN
+      IF ((WRK(1).NE.9991.).AND.(CIRUN.EQ.'CIINII')) THEN
         write(6,*) ' WARNING from KRMC_LUCI:'
         WRITE(6,'(A,3X,I22)')     '      KBASE  = ',KBASE
         WRITE(6,'(A,3X,1F22.16)') ' WORK(KBASE) = ',WORK(KBASE)
@@ -1287,6 +1287,7 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
       KADD = MXPWRD
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
 *
+      NTEST = 0
       IMEMCK = 0
       MCSCF = .true.
 *
@@ -1407,17 +1408,19 @@ c       CALL QUIT('Memory addressing error in KRMCLUCI')
 *
 *. Perform GASCI/GASPT calculation for internal space ICISPC
 *
-            WRITE(6,*)
-            WRITE(6,'(A)')
-     &      ' =============================================='
-            WRITE(6,'(A,I3)')
-     &      ' Information on calculations in space ', JCMBSPC
-            WRITE(6,'(A)')
-     &      ' =============================================='
-            WRITE(6,*)
-            WRITE(6,'(A,I3)')
-     &      ' Number of calculation in this CI space ',
-     &        NSEQCI(JCMBSPC)
+            if (NTEST.ge.1) then
+              WRITE(6,*)
+              WRITE(6,'(A)')
+     &        ' =============================================='
+              WRITE(6,'(A,I3)')
+     &        ' Information on calculations in space ', JCMBSPC
+              WRITE(6,'(A)')
+     &        ' =============================================='
+              WRITE(6,*)
+              WRITE(6,'(A,I3)')
+     &        ' Number of calculation in this CI space ',
+     &          NSEQCI(JCMBSPC)
+            end if
 *
             IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
               WRITE(6,*)
@@ -1557,14 +1560,18 @@ C***********************************************************************
 C
       character*6 CIRUN
 *
-      write(LUPRI,*)
-      write(LUPRI,*) ' ////////////////////////////////// '
-      write(LUPRI,*) ' //                              // '
-      write(LUPRI,*) ' //                              // '
-      write(LUPRI,*) ' //  KR-MCSCF calling LUCIAREL   // '
-      write(LUPRI,*) ' //                              // '
-      write(LUPRI,*) ' //                              // '
-      write(LUPRI,*) ' ////////////////////////////////// '
+      NTEST = 0
+*
+      if (NTEST.ge.1) then
+        write(LUPRI,*)
+        write(LUPRI,*) ' ////////////////////////////////// '
+        write(LUPRI,*) ' //                              // '
+        write(LUPRI,*) ' //                              // '
+        write(LUPRI,*) ' //  KR-MCSCF calling LUCIAREL   // '
+        write(LUPRI,*) ' //                              // '
+        write(LUPRI,*) ' //                              // '
+        write(LUPRI,*) ' ////////////////////////////////// '
+      end if
 *
       if (CIRUN.eq.'NDET  ') then
         write(LUPRI,*)

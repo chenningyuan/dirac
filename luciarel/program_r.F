@@ -338,7 +338,7 @@ CTF
             write(6,*)
             write(6,*) '  Computing spin-dependent'
             write(6,*) '  one- and two-particle densities.'
-            write(6,*) '  I hope you have set SIGDEN_ROUTE = SIGDEN!'
+C           write(6,*) '  I hope you have set SIGDEN_ROUTE = SIGDEN!'
           else
             write(6,*) 'IDENSI =  ',IDENSI
             Call Abend2( 'Problemo in gasci. Quitting.' )
@@ -420,7 +420,10 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
 *     ^ CIRUN cases for MCSCF calls.
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
 *
-      write(6,'(A)') 'I have completed my task'
+      write(6,*) 
+      write(6,'(A24,A6)') ' I have completed task  ',CIRUN
+      write(6,*) ' Returning to KRMC.'
+      write(6,*) 
 *
       call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI')
       RETURN

@@ -3436,7 +3436,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
       CALL QENTER('STRIN')
 *
-      NTESTL = 001
+      NTESTL = 000
       NTEST = MAX(NTESTL,IPRNT)
 *
 **.2 : Number of classes per string type and mappings between
@@ -3867,7 +3867,7 @@ C    &       ' annihilation map from ',ISTTYP,' to ',ISTTYPA
         END IF
       END DO
 *
-      WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
+C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
       CALL LMEMCHK
 *
       CALL QEXIT('STRIN')

@@ -70,13 +70,13 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
             END IF
             WRITE(6,*) ' IROOT NDEG ', IROOT,NDEG
 *
-            IF(INIDEG.EQ.0.AND.NDEG.GT.1) THEN
+            IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
               WRITE(6,*) ' WARNING WARNING WARNING WARNING ! '
               WRITE(6,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-              WRITE(6,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
-              WRITE(6,*) ' CONSIDERATION SINCE  INIDEG = 0 '
-              WRITE(6,*)
-              WRITE(6,*) ' I hope you know what you are doing '
+C             WRITE(6,*) ' I AM NOT ALLOWED TO TAKE THIS INTO '
+C             WRITE(6,*) ' CONSIDERATION SINCE  INIDEG = 0 '
+C             WRITE(6,*)
+C             WRITE(6,*) ' I hope you know what you are doing '
               NDEG = 1
             END IF
 
@@ -699,17 +699,20 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
 *
+      if (NTEST.ge.1) then
+        write(6,*)
+        write(6,*) '----------------------------------------------'
+        write(6,*) ' I´ll take you to a place '
+        write(6,*) ' Where we shall find our'
+        write(6,*) '  ROOTS, BLOODY ROOTS '
+        write(6,*)
+        write(6,*) '               Sepultura '
+        write(6,*) '----------------------------------------------'
+        write(6,*)
+      end if
+*
       write(6,*)
-      write(6,*) '----------------------------------------------'
-      write(6,*) ' I´ll take you to a place '
-      write(6,*) ' Where we shall find our'
-      write(6,*) '  ROOTS, BLOODY ROOTS '
-      write(6,*)
-      write(6,*) '               Sepultura '
-      write(6,*) '----------------------------------------------'
-      write(6,*)
-      write(6,*) ' Print flag, Nuclear repulsion energy'
-      write(6,*) ' IPRT, EIGSHF ',IPRT,EIGSHF
+      write(6,*) ' Nuclear repulsion energy: ',EIGSHF
 *
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(6,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
@@ -821,7 +824,7 @@ C                 INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
           END IF
 *. Diagonalize initial projected matrix
 C             CEIGEN(HR,HI,NDIM,EIG,C,SCR
-         print*,'NINVEC FOR CEIGEN ',NINVEC
+C?       write(6,*) 'NINVEC FOR CEIGEN ',NINVEC
          CALL CEIGEN(APROJR,APROJI,NINVEC,EIG(1,1),AVEC,WORK)
 *
          IF(IPRT .GE. 3.OR.IPREDZN.NE.0 ) THEN
