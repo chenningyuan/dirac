@@ -15,5 +15,5 @@ C        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       COMMON /INFPAR/ TOTWAL,
      &                ICOUNT, KPRINT, MTIDS(MAXNOD), MPARID, MYTID,
      &                NODE, NODES, NUMNOD, NTASK, NCODE, PARHER, TIMING,
-     &                SLAVE
+     &                SLAVE, NODTOT, NDEGDI
 #endif
