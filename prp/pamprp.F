@@ -2598,7 +2598,7 @@ C This is done to avoid numerical insatbilities
             SKEW = -D1
          END IF
       END IF
-      IF (ABS((PVAL(IZ) - AVETOT)).LT.THCLR) THEN ASYM = D1
+      IF (ABS((PVAL(IZ) - AVETOT)).LT.THCLR) ASYM = D1
 C
       IF (IPRINT.GE.1) THEN
       CALL TITLER('Chemical shielding for '//NAME//':','=',1)

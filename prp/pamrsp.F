@@ -2471,7 +2471,8 @@ C
 C         Max no of microiterations reached
 C         ---------------------------------
 C
-          NWARN = NWARN + 1
+c NWARN is not used anywhere./Feb 9 1998 - jth
+c         NWARN = NWARN + 1
           WRITE(LUPRI,'(/A,I4,A)')
      *      ' *** WARNING-Maximum number of microiterations,',
      *      ITMIC,', reached'
