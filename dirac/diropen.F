@@ -166,7 +166,7 @@ C
                   WRITE(CTMP,'(I1)') I
                   CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
      &               ' step 1, corep '//CTMP,-1)
-                  CALL PRQMAT(DTEMP2(1+I2ORBT(I)),NORB(I),NORB(I),
+                  CALL PRQMAT(DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
@@ -183,9 +183,12 @@ C
                END IF
 C
 C              Sum up FD + A
-C              Remember to divide by D2 (from TWOFCK)
 C
-               CALL QAXPY(N2ORB(I),'N','N',DP5,IPQTOQ(1,0),1,
+C              Remember to divide by D2 (from TWOFCK)
+C              Mult. by 2*f (QVao = f * Fock-matrix)
+C              Total factor: f
+C
+               CALL QAXPY(N2ORB(I),'N','N',DF(IOPEN),IPQTOQ(1,0),1,
      &            DTEMP1(1+I2ORBT(I),1),N2ORB(I),1,
      &            IPQTOQ(1,0),NZ,
      &            FMO(1+I2ORBT(I)),N2ORB(I),1,
