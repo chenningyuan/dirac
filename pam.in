@@ -108,9 +108,9 @@ setup_command()
    # MPI?
    #
    if [ -n "$PARCAL" ]; then
-      DIRAC_CMD=mpirun -np $MPI_NPROC $DIRAC
+      DIRAC_CMD="mpirun -np $MPI_NPROC $DIRAC"
    else
-      DIRAC_CMD=$DIRAC
+      DIRAC_CMD="$DIRAC"
    fi
    #
    # Debug
@@ -392,7 +392,7 @@ set_work_memory()
       export DIRWRK
    fi
    if [ -n "$NODE_MEMORY" ]; then
-      DIRNOD=$$NODE_MEMORY
+      DIRNOD=$NODE_MEMORY
       export DIRNOD
    fi
 }
