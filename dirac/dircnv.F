@@ -117,6 +117,13 @@ C
       IF(ABS(CONVRG).LT.SCFCNV) WFCONV = .TRUE.
       IF(WFCONV.OR.(KITER.GT.MAXITR)) EXIT = .TRUE.
 C
+C     If wave function converged or EXIT is true, then
+C     return to avoid an extra diagonalization of the Fock matrix.
+C
+C
+      IF ( EXIT ) RETURN
+C
+C
 C     Convergence acceleration
 C     ========================
 C
@@ -342,11 +349,15 @@ C
             IOFF = IOFF + NORB(I)*NORB(I)*NZ
  10      CONTINUE     
 C
-C        The error vector is now 0.25 as in SIRIUS, so multiply with 4
-C        But in SIRIUS the norm is taken of the triangular matrix
-C           so we divide by SQRT(2). 
+C        The factor:
 C
-         EVCVAL = D4*DNRM2(N2EVECTQ,EVEC,1)/SQRT(D2)
+C        Missing 2 in density matrices    : 2
+C        from g,g* norm to g norm         : 1/sqrt(2)
+C        --------------------------------------------
+C        total factor to get g norm         sqrt(2)
+C
+         EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1)
+C
 C
 C
       ELSE
@@ -410,7 +421,10 @@ C
 C        Find total max element in EVEC
 C        ===============================
 C
-         EVCVAL = D2*DNRM2(N2EVECTQ,EVEC,1)
+C        See comment above for the calculation of
+C        the factor sqrt(2).
+C
+         EVCVAL = SQRT(D2)*DNRM2(N2EVECTQ,EVEC,1)
 C
       END IF
 C
