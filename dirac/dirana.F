@@ -1026,6 +1026,7 @@ C
         NQ(IFRP) = KQ(IFRP,1)
         NE(IFRP) = KE(IFRP,1)
       ENDDO
+      II = 1
       DO I = 1,NREFS
         INQUIRE(FILE=REFFIL(I),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
@@ -1038,7 +1039,7 @@ C
      &       '* Coefficients for reference ',REFFIL(I)
         IF(OWNBAS) THEN
           CALL SELOWN(7,WORK(KCMO),WORK(KEIG),WORK(KIBE),
-     &                I,LUCOEF,REFFIL(I),NQ,NE,IDUM,
+     &                II,NPROJNUC(I),LUCOEF,REFFIL(I),NQ,NE,IDUM,
      &                NVECS(1,0),KVEC(1,I),
      &                NSTR(1,0,I),WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
@@ -1064,6 +1065,7 @@ C
           ENDDO
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
+        II = II + NPROJNUC(I)
       ENDDO
 C
 C     Get molecular coefficients and eigenvalues

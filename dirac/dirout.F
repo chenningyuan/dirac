@@ -1561,8 +1561,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,IUNIT,CMOFIL,KQ,KE,KI,
-     &                  NVECS,KVEC,NSTR,WORK,KFREE,LFREE)
+      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL,KQ,
+     &                  KE,KI,NVECS,KVEC,NSTR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1603,6 +1603,7 @@ C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+
 C
 C     File info
 C     =========
@@ -1613,6 +1614,8 @@ C
      &   'SELOWN: Coefficients read from file ',CMOFIL,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
+        WRITE(LUPRI, '(2A, I8)'), '- number of symmetry independent',  
+     &   ' nuclei in this fragment : ', NNUC      
         WRITE(LUPRI,'(A,2I8)')
      &   '- Positrons : ',(IDIM(1,I),I=1,NFSYM)
         WRITE(LUPRI,'(A,2I8)')
@@ -1669,7 +1672,7 @@ C
         NVEC = IDIM(1,IFRP)+IDIM(2,IFRP)
 C       Generate pointer array for bases
         CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
-        CALL SELOWI(INUC,IFRP,WORK(KBAS),NSBAS)
+        CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
         IF(NSBAS.NE.IDIM(3,IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',
@@ -1836,11 +1839,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selow4 */
-      SUBROUTINE SELOWI(INUC,IFRP,JBAS,NSBAS)
+      SUBROUTINE SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C
 C     Make index array pointing from basis functions of
-C     symmetry independent center INUC to the full
+C     symmetry independent centers INUC..INUC+NNUC-1 to the full
 C     molecular basis
 C
 C     Written by T.Saue Sep 25 2000
@@ -1860,7 +1863,7 @@ C
         II = IBAS(IFRP) + I
         ILAB = IPLAB(II,2)
         ICENT = JGET(IATTR(ILAB,2))
-        IF(ICENT.EQ.INUC) THEN
+        IF ((ICENT.GE.INUC).AND.(ICENT.LT.(INUC+NNUC))) THEN
           NSBAS = NSBAS + 1
           JBAS(NSBAS) = I
         ENDIF

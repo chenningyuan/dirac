@@ -893,6 +893,7 @@ C&&&& PROJECtion: Reduce transformation matrix by projection
                ENDIF
                DO J = 1,NPRJREF
                  READ(LUCMD,'(A6)') PRJFIL(J)
+                 READ(LUCMD,'(I6)') NPRJNUC(J)
                  READ(LUCMD,'(A72)') (VCPROJ(I,J),I=1,NFSYM)
                ENDDO
                GO TO 100
@@ -2812,8 +2813,9 @@ C&&&& VECREF: Reference vectors
                   ENDIF
                   DO J = 1,NREFS
                     READ(LUCMD,'(A6)') REFFIL(J)
+                    READ(LUCMD, '(I8)') NPROJNUC(J)
                     READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
-                  ENDDO
+                 ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
     5          CONTINUE

@@ -34,13 +34,13 @@
      &        ITRSCF(0:7), NFMAT, ISYMOP(MFMAT), IFCKOP(MFMAT),         &
      &        IHRMOP(MFMAT), NEWOCC, MXMACRO, MXMICRO, MAXBCK, NPRJREF, &
      &        NTMO(2), I2TMOT(2), N2TMOTQ, NISHMF(2),                   &
-     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2)
+     &        NACSHMF(2, MXOPEN), NASHMFT, NOCCMF(2), NPRJNUC(MPRJREF)
       COMMON /DCIDHF/ NITER, MAXITR, IPRSCF, KITER, MXDIIS, ITDIIS,     &
      &                NELMBM, INTDEF, INTFLG, INTBUF, ITRINT, IPREIG,   &
      &                NEVEC, N2EVECQ, I2EVECTQ, N2EVECTQ, NSMOTQ, ISMOQ,&
      &                ITRSCF, NFMAT, ISYMOP, IFCKOP, IHRMOP, NEWOCC,    &
      &                MXMACRO, MXMICRO, MAXBCK, NPRJREF, NTMO, I2TMOT,  &
-     &                N2TMOTQ, NISHMF, NACSHMF, NASHMFT, NOCCMF
+     &                N2TMOTQ, NISHMF, NACSHMF, NASHMFT, NOCCMF, NPRJNUC
 !..number of closed and open shell orbitals with frozen ones subtracted
 
       REAL*8 SCFCNV(2), ERGVAL, EVCVAL, FCKVAL, DHFERG, ELERGY, E1PART, &

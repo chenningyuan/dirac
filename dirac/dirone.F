@@ -3832,6 +3832,7 @@ C
       DO IFRP = 1,NFSYM
         NQ(IFRP) = KQ(IFRP)
       ENDDO
+      II = 1
       DO 10 I = 1,NPRJREF
         NVECT = 0
         DO IFRP = 1,NFSYM
@@ -3853,7 +3854,7 @@ C
      &       '* Coefficients for reference ',PRJFIL(I)
         IF(PROOWN) THEN
           CALL SELOWN(IOPT,WORK(KCMO),DUM,WORK(KIBE),
-     &                I,LUCOEF,PRJFIL(I),NQ,IDUM,KI,
+     &                II, NPRJNUC(I),LUCOEF,PRJFIL(I),NQ,IDUM,KI,
      &                NVECS,KVEC(1,I),NSTR(1,0,I),WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,I).GT.0) THEN
@@ -3880,6 +3881,7 @@ C               Spin-free case: Fill array with boson irrep info
           ENDDO
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
+        II = II + NPRJNUC(I)
  10   CONTINUE
 C
 C     Throw away the full set of coefficients and eigenvalues
