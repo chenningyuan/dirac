@@ -1503,14 +1503,14 @@ C
       IF(ITYPE.EQ.0) THEN
         GABLAB = 'GABXXXXX'
       ELSE
-        WRITE(LUPRI,'(A)') 'GABGEN: Invalid ITYPE = ',ITYPE
+        WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid ITYPE = ',ITYPE
       ENDIF
       IF    (IJOB.EQ.0) THEN
         GABLAB(4:5) = 'AO'
       ELSEIF(IJOB.EQ.1) THEN
         GABLAB(4:5) = 'SO'
       ELSE
-        WRITE(LUPRI,'(A)') 'GABGEN: Invalid IJOB = ',IJOB
+        WRITE(LUPRI,'(A,I2)') 'GABGEN: Invalid IJOB = ',IJOB
       ENDIF
       CALL GETDAT(RTNLBL(1),RTNLBL(2))     
 C
