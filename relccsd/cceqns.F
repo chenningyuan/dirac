@@ -100,7 +100,7 @@ C
      &/' Total time in MP2EQN :',T30,F12.3,' seconds')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCEQN(EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,H,
+      SUBROUTINE CCEQN(EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,CZ,H,
      &                 HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3)
@@ -123,6 +123,7 @@ C     Intermediaries etc.
 C
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
       REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
 C
 C     for diis ...
@@ -196,6 +197,7 @@ C
 C
 C     Calculate fixed intermediaries for Lambda equations
 C
+      call memchk ('before Lambda intermediates',t1(0),1)
       IF (.NOT.TEQ) THEN
          CALL GETAMPT (S1,S2)
          CALL HOINTM (FOO,S1,S2,BUF1,BUF2,BUF3,HO)
@@ -204,9 +206,12 @@ C
          CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
          CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
          CALL AINTM (S1,S2,BUF1,BUF2,AZ)
+         CALL CINTM (T1,T2,FVO,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
+         CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
          CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
          CPUINT = CPUINT + CPUDELTA()
       ENDIF
+      call memchk ('before iterations',t1(0),1)
 C
 C  START ITERATIVE PROCEDURE
 C
@@ -233,10 +238,10 @@ C
       IF (NDIMT1.GT.0) THEN
          IF (TEQ) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
-          CALL T1EQNS (FVO,T1,T2,HO,HV,HOV,H,GOO,GVV,
+          CALL T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
          ELSE
-          CALL T1EQNS (HOV,T1,T2,HO,HV,HOV,H,GOO,GVV,
+          CALL T1EQNS (HOV,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
          ENDIF
       ENDIF
@@ -286,7 +291,10 @@ C
 C
 C  INTERMEDIATES FORMED --- T2 EQUATIONS
 C
-      CALL T2EQNS (T1,T2,HO,HV,HOV,H,AZ,GOO,GVV,BUF1,BUF2,BUF3,NBUF3,S2)
+      call memchk ('before t2eqns',t1(0),1)
+      CALL T2EQNS (T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
+     &             BUF1,BUF2,BUF3,NBUF3,S2)
+      call memchk ('after t2eqns',t1(0),1)
       CPUT2 = CPUT2 + CPUDELTA()
 C
 C
@@ -298,10 +306,7 @@ C
       write (iw,111)"s2",ddot(ndimt2,s2,1,s2,1)
       endif
 C      
-C     Use HOV array as buffer to store T1 amplitudes, when we
-C     are solving the lambda equations
-C
-      CALL BINTM (T1,T2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
+      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
       if (carith.and.debug) then
       write (iw,111)"s2",zdotc(ndimt2,s2,1,s2,1)
       elseif (debug) then
@@ -342,9 +347,10 @@ C
  2000 CONTINUE
       CALL T1DIAG(DIAG,T1)
       CPUE = CPUE + CPUDELTA()
+      WRITE(IW,6071)
+C
       IF (TEQ) THEN
          ETOT = ESCF + ECCSD
-         WRITE(IW,6071)
          WRITE(IW,6072) ESCF
          WRITE(IW,6074) ECCSD
          WRITE(IW,6076) ETOT
@@ -390,8 +396,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE T1EQNS (FVO,T1,T2,HO,HV,HOV,H,GOO,GVV,BUF1,BUF2,BUF3,
-     &                   NBUF3,S1)
+      SUBROUTINE T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
+     &                   BUF1,BUF2,BUF3,NBUF3,S1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -412,7 +418,7 @@ C
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
       REAL*8 HO(*),HV(*),HOV(*),H(*)
-      REAL*8 GOO(*),GVV(*)
+      REAL*8 GOO(*),GVV(*),CZ(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -424,7 +430,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL DONE,TEQ
+      LOGICAL DONE,TEQ,USEDZ
       REAL*8 SDOT,DDOT
       COMPLEX*16 CDOTU,ZDOTU,CT1
 C
@@ -466,8 +472,8 @@ C------------------------------------------------------------
 C-----------------------------------------------------------------
 C S(A,I) = S(A,I) + HOV(CK) * T2(A,C,I,K)
 C-----------------------------------------------------------------
-         CALL SRT1 (NREP,MULTB,NV,NV,NO,NO,MVO,JVOVO,JJVO,JJVO,
-     &              T2,BUF1,T2,BUF1)
+         CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
+     &                 MVO,JVOVO,JJVO,JJVO,T2,BUF1)
          M = MVO(1)
          K = MVO(1)
          CALL XGEMV ('N',M,K,A1,BUF1,M,HOV,1,A1,S1,1)
@@ -475,35 +481,11 @@ C-----------------------------------------------------------------
 C-----------------------------------------------
 C S(A,I) = S(A,I) + HV(A,C) * T(C,I)
 C-----------------------------------------------
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NV(IRP)
-         N = NO(IRP)
-         K = NV(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,HV(OFF1),M,T1(OFF2),K,
-     &                A1,S1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
+      CALL CNTRCT ('N','N',NV,NO,NV,A1,HV,T1,A1,S1,NREP)
 C-----------------------------------------------
 C S(A,I) = S(A,I) - T(A,K) * HO(K,I)
 C-----------------------------------------------
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NV(IRP)
-         N = NO(IRP)
-         K = NO(IRP)
-         CALL XGEMM ('N','N',M,N,K,-A1,T1(OFF1),M,HO(OFF2),K,
-     &                A1,S1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
+      CALL CNTRCT ('N','N',NV,NO,NO,-A1,T1,HO,A1,S1,NREP)
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
@@ -519,7 +501,16 @@ C--------------------------------------------
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
       ELSE
-         CALL XCOPY (NDIMT2,T2,1,BUF1,1)
+C -------------------------------------------
+C TAU'(CD,IK) = L(CD,IK) +  G(C,B) * T(BD,IK)
+C -------------------------------------------
+         CALL GETAMPT (BUF1,BUF2)
+         CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &                BUF2,BUF1)
+         CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GVV,BUF1,A0,BUF2,NREP)
+         CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &                BUF2,BUF1)
+         CALL XAXPY (NDIMT2,A1,T2,1,BUF1,1)
       ENDIF
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)
 C--------------------------------------
@@ -527,7 +518,7 @@ C S(A,I) = S(A,I) - W(A,K,C,I) * T(C,K)
 C--------------------------------------
       IF (TEQ) THEN
          CALL GETVOVO (BUF1)
-         CALL SRT7 (NREP,MULTB,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+         CALL SRT16 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &              BUF1,BUF2,BUF1,BUF2)
       ELSE
          CALL XCOPY (JVOVO(2),H,1,BUF2,1)
@@ -539,10 +530,42 @@ C------------------------------------
 C Terms specific for Lamba1 equations
 C------------------------------------
       IF (.NOT.TEQ) THEN
-C--------------------------------------
-C S(A,I) = S(A,I) - TV(C,D,L,K) * G(C,D)
-C--------------------------------------
-c and more see notes
+C----------------------------------------------------
+C S(A,I) = S(A,I) - T(A,L) * V(K,L,C,D) * L(C,D,K,I)
+C        = S(A,I) - T(A,L) * V*(C,D,K,L) * L(C,D,K,I)
+C----------------------------------------------------
+      CALL GETVVOO(BUF2)
+      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             BUF2,BUF1)
+      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             T2,BUF2)
+      CALL CNTRCT ('C','N',NO,NO,NVVOT,A1,BUF1,BUF2,A0,BUF3,NREP)
+      CALL GETAMPT (BUF1,BUF2)
+      CALL CNTRCT ('N','N',NV,NO,NO,-A1,BUF1,BUF3,A1,S1,NREP)
+C----------------------------------------------------
+C S(A,I) = S(A,I) - L(A,C,K,L) * V(K,L,D,C) * T(D,I)
+C        = S(A,I) - L(A,C,K,L) * V*(D,C,K,L) * T(D,I)
+C----------------------------------------------------
+      CALL GETVVOO(BUF2)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF2,BUF1)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             T2,BUF2)
+      CALL CNTRCT ('N','C',NV,NV,NVOOT,A1,BUF2,BUF1,A0,BUF3,NREP)
+      CALL GETAMPT (BUF1,BUF2)
+      OFF1 = 1
+      OFF2 = 1
+      OFF3 = 1
+      DO IRP =1 , NREP
+         M = NV(IRP)
+         N = NO(IRP)
+         K = NV(IRP)
+         CALL XGEMM ('N','N',M,N,K,-A1,BUF3(OFF1),M,BUF1(OFF2),K,
+     &               A1,S1(OFF3),M)
+         OFF1 = OFF1 + M * K * RCW
+         OFF2 = OFF2 + K * N * RCW
+         OFF3 = OFF3 + M * N * RCW
+      ENDDO
 C--------------------------------------
 C S(A,I) = S(A,I) - W(C,A,D,I) * G(C,D)
 C--------------------------------------
@@ -551,24 +574,37 @@ C--------------------------------------
       IF (NBUF3.LT.JVVVO(2)) THEN
          STOP " OUT OF CORE STEP IN GV NOT IMPLEMENTED"
       ENDIF
+      USEDZ = .TRUE.
       CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,BUF3)
+     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
       CALL XGEMV ('C',M,N,-A1,BUF3,M,GVV,1,A1,S1,1)
 C--------------------------------------
 C S(A,I) = S(A,I) + W(A,K,L,I) * G(K,L)
 C--------------------------------------
-      CALL GETVOOO (BUF1)
-      CALL SRT2 (NREP,MULTB,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &           BUF1,BUF2)
+      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+     &              CZ,BUF2)
       M = NFVO
       K = NFOO
       CALL XGEMV ('N',M,K,A1,BUF2,M,GOO,1,A1,S1,1)
+C---------------------------------------------------
+C S(A,I) = S(A,I) + G(C,B) * W(B,K,C,D) * T(A,D,K,I)
+C---------------------------------------------------
+      USEDZ = .FALSE.
+      CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
+      CALL XGEMV ('C',M,N,A1,BUF3,M,GVV,1,A1,BUF1,1)
+      CALL GETAMPT (BUF3,BUF2)
+      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
+     &              MVO,JVOVO,JJVO,JJVO,BUF2,BUF3)
+      M = MVO(1)
+      K = MVO(1)
+      CALL XGEMV ('N',M,K,A1,BUF3,M,BUF1,1,A1,S1,1)
       ENDIF
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE T2EQNS (T1,T2,GO,GV,HOV,H,AZ,GOO,GVV,
+      SUBROUTINE T2EQNS (T1,T2,GO,GV,HOV,H,AZ,CZ,GOO,GVV,
      &                   BUF1,BUF2,BUF3,NBUF3,S2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -592,7 +628,7 @@ C
       REAL*8 S2(*)
       REAL*8 GO(*),GV(*),HOV(*)
       REAL*8 GOO(*),GVV(*)
-      REAL*8 AZ(*),H(*)
+      REAL*8 AZ(*),H(*),CZ(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -630,47 +666,29 @@ C---------------------------------------------
       ELSE
          CALL XCOPY (NDIMT2,T2,1,BUF1,1)
       ENDIF
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NVVT(IRP)
-         N = NOOT(IRP)
-         K = NOOT(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,AZ(OFF2),K,
-     &               A1,S2(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
+      CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
 C----------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
 C----------------------------------------------------------------
-      CALL SRT4 (NREP,MULTB,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF1)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP =1 , NREP
-         M = NVVOT(IRP)
-         N = NO(IRP)
-         K = NO(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,GO(OFF2),K,
-     &               A0,BUF2(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT10 (NREP,MULTB,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF2,BUF1)
+      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             T2,BUF1)
+      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GO,A0,BUF2,NREP)
+      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             BUF2,BUF1)
       CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
-C-------------------------------------------------------------------------
+C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
-C-------------------------------------------------------------------------
+C-----------------------------------------------------------------------
       DO 30 IRP = 1, NREP
          IF (NVO(IRP).EQ.0) GOTO 30
          DONE = .FALSE.
          ISTART = 0
          NINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+  10     IF (TEQ) THEN
+            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         ELSE
+            CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
+         ENDIF
          IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
          IJ = 0
          DO 20 JREP = 1, NREP
@@ -723,26 +741,15 @@ C--------------------------------
 C Terms specific for T2 equations
 C--------------------------------
       IF (TEQ) THEN
-C----------------------------------------------------------------------------
+C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
-C----------------------------------------------------------------------------
+C-----------------------------------------------------------------------
          CALL GETVOVO (BUF1)
          CALL SRT19 (NREP,MULTB,NVO,NV,NO,NVOO,KVOOV,KKVOO,
      &               BUF1,BUF2)
-         OFF1 = 1
-         OFF2 = 1
-         OFF3 = 1
-         DO IRP =1 , NREP
-            M = NVOO(IRP)
-            N = NO(IRP)
-            K = NV(IRP)
-            CALL XGEMM ('N','N',M,N,K,A1,BUF2(OFF1),M,T1(OFF2),K,
-     &                  A0,BUF1(OFF3),M)
-            OFF1 = OFF1 + M * K * RCW
-            OFF2 = OFF2 + K * N * RCW
-            OFF3 = OFF3 + M * N * RCW
-         ENDDO
-         CALL SRT10 (NREP,MULTB,NVO,NO,NO,NVOO,KVOOO,KKVOO,BUF1,BUF3)
+         CALL CNTRCT ('N','N',NVOO,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
+         CALL SRT1T3 (NREP,MULTB,LTR,NVO,NO,NO,NVOO,KVOOO,KKVOO,
+     &                BUF1,BUF3)
 C-------------------------------------------------------------------
 C        Integrals are now in VO,OOT format : combine with next term
 C-------------------------------------------------------------------
@@ -750,44 +757,26 @@ C-------------------------------------------------------------------
 C----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ) - T1(A,K) *W(KB,IJ) ]
 C----------------------------------------------------------------------
-      CALL SRT5 (NREP,MULTB,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP =1 , NREP
-         M = NV(IRP)
-         N = NVOOT(IRP)
-         K = NV(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,GV(OFF1),M,BUF2(OFF2),K,
-     &               A0,BUF1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL GETVOOO (BUF2)
-      IF (TEQ) CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
-      CALL SRT11 (NREP,MULTB,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
-      CALL SRT13 (NREP,MULTB,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,BUF3,BUF2)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP =1 , NREP
-         M = NV(IRP)
-         N = NVOOT(IRP)
-         K = NO(IRP)
-         CALL XGEMM ('N','N',M,N,K,-A1,T1(OFF1),M,BUF2(OFF2),K,
-     &               A1,BUF1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT12 (NREP,MULTB,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,BUF1,BUF2)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
+      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
+      IF (TEQ) THEN
+         CALL GETVOOO (BUF2)
+         CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
+      ELSE
+         CALL XCOPY (NV2,CZ,1,BUF2,1)
+      ENDIF
+      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
+      CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
+     &             BUF3,BUF2)
+      CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
+      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF1,BUF2)
       CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-C----------------------------------------------------------------------------
+C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
-C----------------------------------------------------------------------------
-      CALL SRT17 (NREP,MULTB,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,T2,BUF1,
-     &            T2,BUF1)
+C-----------------------------------------------------------------------
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              T2,BUF1)
       CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
       OFF1 = 1
       OFF2 = 1
@@ -803,13 +792,21 @@ C----------------------------------------------------------------------------
          OFF2 = OFF2 + K * N * RCW
          OFF3 = OFF3 + M * N * RCW
       ENDDO
-      CALL SRT18 (NREP,MULTB,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,BUF2,BUF1,
-     &            BUF2,BUF1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              BUF2,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
 C------------------------------------
 C Terms specific for Lamba2 equations
 C------------------------------------
       IF (.NOT.TEQ) THEN
+C-------------------------------------------------------
+C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * V(KL,CD) * L(CD,IJ)
+C-------------------------------------------------------
+      CALL GETAMPT (BUF1,BUF2)
+      CALL GETTAU (BUF1,BUF2,BUF3)
+      CALL GETVVOO (BUF1)
+      CALL CNTRCT ('C','N',NOOT,NOOT,NVVT,A1,BUF1,T2,A0,BUF2,NREP)
+      CALL CNTRCT ('N','N',NOOT,NOOT,NVVT,A1,BUF3,BUF2,A1,S2,NREP)
 C-----------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ. [T(A,I)*H(B,J)]
 C-----------------------------------------------
@@ -818,43 +815,47 @@ C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB. [G(A,C)*W(CB,IJ)]
 C---------------------------------------------
       CALL GETVVOO (BUF1)
-      CALL SRT5 (NREP,MULTB,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,BUF1,BUF2)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NV(IRP)
-         N = NVOOT(IRP)
-         K = NV(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,GVV(OFF1),M,BUF2(OFF2),K,
-     &               A0,BUF1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT12 (NREP,MULTB,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,BUF1,BUF2)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF1,BUF2)
+      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GVV,BUF2,A0,BUF1,NREP)
+      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF1,BUF2)
       CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ. [W(AB,IK)*G(K,J)]
 C---------------------------------------------
       CALL GETVVOO(BUF2)
-      CALL SRT4 (NREP,MULTB,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF2,BUF1)
+      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             BUF2,BUF1)
+      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GOO,A0,BUF2,NREP)
+      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+     &             BUF2,BUF1)
+      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+C-----------------------------------------------------------------------
+C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [L(D,I)*V(AK,CD)*T2(BC,KJ)]
+C-----------------------------------------------------------------------
+      CALL GETAMPT (BUF1,BUF3)
+      CALL DINTM2 (T1,BUF1,BUF3,NBUF3,BUF2)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              BUF3,BUF1)
+      CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF3,1)
       OFF1 = 1
       OFF2 = 1
       OFF3 = 1
       DO IRP =1 , NREP
-         M = NVVOT(IRP)
-         N = NO(IRP)
-         K = NO(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,GOO(OFF2),K,
-     &               A0,BUF2(OFF3),M)
+         JRP = MULTB(IRP+NREP,1+NREP,2)
+         M = MVO(IRP)
+         N = MVO(JRP)
+         K = MVO(IRP)
+         CALL XGEMM ('N','N',M,N,K,A1,BUF2(OFF1),M,BUF1(OFF2),K,
+     &               A0,BUF3(OFF3),M)
          OFF1 = OFF1 + M * K * RCW
          OFF2 = OFF2 + K * N * RCW
          OFF3 = OFF3 + M * N * RCW
       ENDDO
-      CALL SRT10 (NREP,MULTB,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF2,BUF1)
-      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
-C
+      CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+     &              BUF3,BUF1)
+      CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
       ENDIF
 C
       RETURN
@@ -918,16 +919,22 @@ C
       ET2 = A0
       ET3 = A0
 C
+      call memchk ('entering T3CORR',fvo(0),1)
       CALL GETVOOO(VOOO)
       CALL GETVVOO(VVOO)
 C
 C     Bring arrays in correct order
 C
-      CALL SRT21 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,T2,T2S)
+      call memchk ('before sorts srt23',fvo(0),1)
+      CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,T2,T2S)
+      call memchk ('after srt1ls1',fvo(0),1)
       CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,T2,T2T)
+      call memchk ('after srt22',fvo(0),1)
       CALL SRT23 (NREP,MULTB,NVO,NV,NO,NVVT,NVVVT,KVVVOT,LLVVVT,
      &            BUF4,VVVO)
+      call memchk ('after srt23',fvo(0),1)
       IF (CARITH) CALL CONJUGA (KVVVOT(NREP+1),VVVO,1)
+      call memchk ('after sorts',fvo(0),1)
 C
 C     Put TAU3 in block BUF4 for use in evaluating -T correction
 C
@@ -1043,9 +1050,9 @@ C
 C
       CPU2 = CPU2 + CPUDELTA()
 C
-C-------------------------------------------------------------------------
+C-------------------------------------
 C U(ABC) = U'(ABC) - U'(BAC) + U'(CAB)
-C-------------------------------------------------------------------------
+C-------------------------------------
       DO BCREP = 1, NREP
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       DO 10 CREP = 1, NREP
@@ -1079,11 +1086,11 @@ C-------------------------------------------------------------------------
       ENDDO
  10   CONTINUE
       ENDDO
-C-------------------------------------------------------------------------
+C-------------------------------------------------
 C Y2'(ABC) = V(AB:IJ) * T(C:K) + T(AB:IJ) * F(C:K)
 C          + V(AB:JK) * T(C:I) + T(AB:JK) * F(C:I)
 C          - V(AB:IK) * T(C:J) - T(AB:IK) * F(C:J)
-C-------------------------------------------------------------------------
+C-------------------------------------------------
       CALL XCOPY (IVVVT(NREP+1,IJKREP),A0,0,BUF2,1)
       ABIJ = IJOFF3 * RCW + 1
       ABJK = JKOFF3 * RCW + 1
@@ -1110,9 +1117,9 @@ C-------------------------------------------------------------------------
          IF (CARITH) VMIN(2) = - FVO(CJ+1)
          CALL XAXPY (NVVT(IKREP),VMIN,T2  (ABIK),1,BUF2(ABC),1)
       ENDDO
-C-------------------------------------------------------------------------
+C-----------------------------------------
 C Y2(ABC) = Y2'(ABC) + Y2'(BCA) - Y2'(ACB)
-C-------------------------------------------------------------------------
+C-----------------------------------------
       DO BCREP = 1, NREP
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       DO 20 CREP = 1, NREP
@@ -1148,10 +1155,10 @@ C-------------------------------------------------------------------------
       ENDDO
  20   CONTINUE
       ENDDO
-C-------------------------------------------------------------------------
+C-----------------------------------------
 C DE(+T)   = - U(ABC) * U(ABC) / EPS(ABC)
 C DE'((T)) = - U(ABC) * Y2(ABC) / EPS(ABC)
-C-------------------------------------------------------------------------
+C-----------------------------------------
       DO BCREP = 1, NREP
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       DO 30 CREP = 1, NREP
@@ -1183,11 +1190,11 @@ C-------------------------------------------------------------------------
       ENDDO
  30   CONTINUE
       ENDDO
-C-------------------------------------------------------------------------
+C--------------------------------
 C Y3'(ABC) = TAU3(AB:IJ) * T(C:K)
 C          + TAU3(AB:JK) * T(C:I)
 C          - TAU3(AB:IK) * T(C:J)
-C-------------------------------------------------------------------------
+C--------------------------------
       CALL XCOPY (IVVVT(NREP+1,IJKREP),A0,0,BUF2,1)
       ABIJ = IJOFF3 * RCW + 1
       ABJK = JKOFF3 * RCW + 1
@@ -1209,9 +1216,9 @@ C-------------------------------------------------------------------------
          IF (CARITH) VMIN(2) = - T1(CJ+1)
          CALL XAXPY (NVVT(IKREP),VMIN,BUF4(ABIK),1,BUF2(ABC),1)
       ENDDO
-C-------------------------------------------------------------------------
+C-----------------------------------------
 C Y3(ABC) = Y3'(ABC) + Y3'(BCA) - Y3'(ACB)
-C-------------------------------------------------------------------------
+C-----------------------------------------
       DO BCREP = 1, NREP
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       DO 40 CREP = 1, NREP
@@ -1247,9 +1254,9 @@ C-------------------------------------------------------------------------
       ENDDO
  40   CONTINUE
       ENDDO
-C-------------------------------------------------------------------------
+C-----------------------------
 C DE'(-T) = + U(ABC) * Y3(ABC)
-C-------------------------------------------------------------------------
+C-----------------------------
       DO BCREP = 1, NREP
       AREP = MULTB(BCREP+NREP,IJKREP,2)
       DO 50 CREP = 1, NREP
@@ -1280,6 +1287,7 @@ C-------------------------------------------------------------------------
       ENDDO
 C
       CPU3 = CPU3 + CPUDELTA()
+      call memchk ('triple loop',fvo(0),1)
 C
       ENDDO
       ENDDO
@@ -1894,16 +1902,7 @@ C
       CALL CPUUSED(CPU0)
       CPUINT = A0
       CPU4V = A0
-C
-C  Add extra term to H-intermediate
-C
-      CALL HLINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
       CPU4INT = CPU4INT + CPUDELTA()
-C
-C  Form BL intermediate
-C
-      CALL BLINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
-      CPU4V = CPU4V + CPUDELTA()
 C
       CALL CPUUSED (CPUTOT)
       CPUTOT = CPUTOT - CPU0
@@ -1954,7 +1953,8 @@ C
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
-      CALL SRT5 (NREP,MULTB,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,BUF3,BUF1)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF3,BUF1)
       CALL GETVOOO (BUF3)
 C     --------------------------------
 C     Sort from 12,34 to 134,2 (VOO,O)
@@ -1965,19 +1965,7 @@ C     ------------------------
 C     V(K,L,C,I) = V*(C,I,K,L)
 C     ------------------------
       IF (CARITH) CALL CONJUGA (LOVOOT(NREP+1),BUF2,1)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NV(IRP)
-         N = NO(IRP)
-         K = NVOOT(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
-     &                A1,S1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
+      CALL CNTRCT ('N','N',NV,NO,NVOOT,A1,BUF1,BUF2,A1,S1,NREP)
 C
       RETURN
       END

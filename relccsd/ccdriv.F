@@ -41,6 +41,8 @@ C
 C
       RETURN
 C---------------Record of modifications made in the code-------------
+C     11-12-97 : MP2 gradients works, CCSD Lambda equations written
+C--------------------------------------------------------------------
 C     October 1997 : major restructuring
 C     Split the code in energy, gradient and second derivative modules
 C     Final version should contain energies and 1st and 2nd order
@@ -568,7 +570,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-      INTEGER NVVVT2(8)
+      INTEGER NOOOT2(8),NVVVT2(8)
 C
 C---------------Executable code--------------------------------------
 C
@@ -634,10 +636,12 @@ C
          NOOOT(IREP) = 0
          NVOOT(IREP) = 0
          NVVOT(IREP) = 0
+         NOOVT(IREP) = 0
          NVVVT(IREP) = 0
          NVOO (IREP) = 0
          NOVO (IREP) = 0
          NOVVT(IREP) = 0
+         NOOOT2(IREP) = 0
          NVVVT2(IREP) = 0
       ENDDO
 C
@@ -730,9 +734,11 @@ C
             IJKREP = MULTB(KREP,IJREP+NREP,2)
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
+            KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
             KKVOO (IJREP,KREP) = NVOO (IJKREP)
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
+            NOOVT(IJKREP) = NOOVT(IJKREP) + NOOT(IJREP)*NV(KREP)
             NVVVT(IJKREP) = NVVVT(IJKREP) + NVVT(IJREP)*NV(KREP)
             NVOO (IJKREP) = NVOO (IJKREP) + NVO (IJREP)*NO(KREP)
          ENDDO
@@ -742,12 +748,14 @@ C
          DO KREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
             LLOVO (KREP,IJREP) = NOVO (IJKREP)
+            LLOOOT(KREP,IJREP) = NOOOT(IJKREP)
             LLVOOT(KREP,IJREP) = NVOOT(IJKREP)
             LLOVVT(KREP,IJREP) = NOVVT(IJKREP)
             LLVVVT(KREP,IJREP) = NVVVT2(IJKREP)
             NOVO (IJKREP) = NOVO (IJKREP) + NVO(IJREP)*NO(KREP)
             NVOOT(IJKREP) = NVOOT(IJKREP) + NOOT(IJREP)*NV(KREP)
             NOVVT(IJKREP) = NOVVT(IJKREP) + NVVT(IJREP)*NO(KREP)
+            NOOOT2(IJKREP) = NOOOT2(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVVT2(IJKREP) = NVVVT2(IJKREP) + NVVT(IJREP)*NV(KREP)
          ENDDO
       ENDDO
@@ -787,6 +795,7 @@ C
       IVVOO  (1) = 0
       IVVOOT (1) = 0
 C
+      NVVVOTMX = 1
       DO IREP = 1, NREP
          IOO    (IREP+1) = IOO    (IREP) + NO  (IREP)*NO  (IREP)
          IVO    (IREP+1) = IVO    (IREP) + NV  (IREP)*NO  (IREP)
@@ -799,6 +808,8 @@ C
          IVVVVTT(IREP+1) = IVVVVTT(IREP) + NVVT(IREP)*NVVT(IREP)
          IVVOO  (IREP+1) = IVVOO  (IREP) + NVV (IREP)*NOO (IREP)
          IVVOOT (IREP+1) = IVVOOT (IREP) + NVV (IREP)*NOOT(IREP)
+         IF (NVVT(IREP)*NVO(IREP).GT.NVVVOTMX) 
+     &         NVVVOTMX=NVVT(IREP)*NVO(IREP)
       ENDDO
 C
       NV1 = IOOOOTT(NREP+1)
@@ -831,22 +842,24 @@ C
       KVOOO (1) = 0
       KOOOOT(1) = 0
       KVVOOT(1) = 0
+      KOOVOT(1) = 0
       KOOOVT(1) = 0
+      KOOVVT(1) = 0
       KVVVOT(1) = 0
-      NVVVOTMX = 1
       DO IREP = 1, NREP
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)
          KOOOOT (IREP+1) = KOOOOT (IREP) + NOOOT(IREP)*NO(IREP)
          KVVOOT (IREP+1) = KVVOOT (IREP) + NVVOT(IREP)*NO(IREP)
+         KOOVOT (IREP+1) = KOOVOT (IREP) + NOOVT(IREP)*NO(IREP)
          KOOOVT (IREP+1) = KOOOVT (IREP) + NOOOT(IREP)*NV(IREP)
+         KOOVVT (IREP+1) = KOOVVT (IREP) + NVOOT(IREP)*NV(IREP)
          KVVVOT (IREP+1) = KVVVOT (IREP) + NVVVT(IREP)*NO(IREP)
-         IF (NVVVT(IREP)*NO(IREP).GT.NVVVOTMX) 
-     &         NVVVOTMX=NVVVT(IREP)*NO(IREP)
       ENDDO
 C
       LOOVO (1) = 0
       LVOVO (1) = 0
+      LOOOOT(1) = 0
       LVVOOT(1) = 0
       LOVOOT(1) = 0
       LVOOOT(1) = 0
@@ -854,6 +867,7 @@ C
       DO IREP = 1, NREP
          LOOVO  (IREP+1) = LOOVO  (IREP) + NO(IREP)*NOVO (IREP)
          LVOVO  (IREP+1) = LVOVO  (IREP) + NV(IREP)*NOVO (IREP)
+         LOOOOT (IREP+1) = LOOOOT (IREP) + NO(IREP)*NOOOT(IREP)
          LVVOOT (IREP+1) = LVVOOT (IREP) + NV(IREP)*NVOOT(IREP)
          LOVOOT (IREP+1) = LOVOOT (IREP) + NO(IREP)*NVOOT(IREP)
          LVOOOT (IREP+1) = LVOOOT (IREP) + NV(IREP)*NOOOT(IREP)
@@ -950,6 +964,7 @@ C
 C  Allocate core for integral sorting step
 C
       KFRSAV = KFREE
+      LFRSAV = LFREE
       CALL MEMOPT('INTE',KR,2*NSP+2,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('INTE',INDEX,NSP*NSP*4,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('INTE',INDK,NSP*NSP,CC,KFREE,LFREE,ALLOC)
@@ -970,19 +985,28 @@ C     We cannot reuse the memory when the bound checking is active
 C     Here is room for improvement if the memory requirements become
 C     large for this step. Start after VVOO arrays.
 C
-      NVT = (LFREE-2) / (2 * RCW )
-      IF (NVT.GT.MAX0(NV5,NV6)) THEN
-         NVT = MAX0(NV5,NV6)
+C     We must be able to store at least a NV4 size array, check that.
+C     Since we use this array as work in MAKEFM we also need to store the
+C     first representation of the sorted (non-triangular) OOOO and VOOO ints
+C
+C     The maximum necessary size is
+C
+      NVT = MAX0(NV5,NV6)
+      NVT = MAX0(NVT,NV4)
+      NVT = MAX0(NVT,JOOOO(2))
+      NVT = MAX0(NVT,JVOOO(2))
+C
+C     The remaining space is
+C
+      NVF = (LFREE-2) / (2 * RCW )
+C
+      IF (NVT.LT.NVF) THEN
          NBUF = NVT / MINBUF + 1
       ELSE
-         NBUF = NVT / MINBUF
+         NBUF = NVF / MINBUF
       ENDIF
       IF (NBUF.LT.1) NBUF = 1
       NVT = NBUF * MINBUF
-C
-C     We must be able to store at least a NV4 size array, check that.
-C
-      NVT = MAX0(NV4,NVT)
 C
       CALL MEMOPT('REAL',VT ,NVT*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',VTA,NVT*RCW,CC,KFREE,LFREE,ALLOC)
@@ -992,6 +1016,8 @@ C
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
+         KFREE = KFRSAV
+         LFREE = LFRSAV
          RETURN
       ENDIF
 C
@@ -1004,7 +1030,7 @@ C
      &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,FOO,FVO,
      &            FVV,BREIT,DOCCSD,INTERFACE,MREMAIN)
 C
-      CALL MEMREL('CCSORT',CC,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('CCSETI',CC,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -1061,6 +1087,7 @@ C
 C Allocate space for the calculation of the amplitudes
 C
       KFRSAV = KFREE
+      LFRSAV = LFREE
       CALL MEMOPT('REAL',T1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',T2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
       KFRSAV1 = KFREE
@@ -1133,11 +1160,13 @@ C
       BUF2B = BUF1B + IVVVTMX*RCW + RCW
       BUF3B = BUF2B + IVVVTMX*RCW + RCW
       BUF4B = BUF3B + IVVVTMX*RCW + RCW
-      TOP = BUF4B + MAX0(NVVVOTMX,IVVVTMX)*RCW + RCW
+      TOP = BUF4B + MAX0(NVVVOTMX,NDIMT2)*RCW + RCW
       IF(ICALC.EQ.1) WRITE (IW,1001) "in core evaluation of triples",TOP
       IF (DOCCSDT) MXCORR = MAX0(MXCORR,TOP)
 C
       IF (ICALC.EQ.1) THEN
+         KFREE = KFRSAV
+         LFREE = LFRSAV
          RETURN
       ENDIF
 C
@@ -1204,7 +1233,7 @@ C
          CALL CCDUMP
 C
          CALL CCEQN(EPS,FOO,FVO,FVV,CC(T1),CC(S1),
-     &           CC(T2),CC(S2),CC(AZ),CC(H),CC(HO),CC(HV),CC(HOV),
+     &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
      &           TOL,NBUF2,NBUF3)
@@ -1235,7 +1264,7 @@ C
          CALL MEMOPT('REAL',BUF1,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF2,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
          CALL MEMOPT('REAL',BUF3,IVVVTMX*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',BUF4,MAX0(NVVVOTMX,IVVVTMX)*RCW,
+         CALL MEMOPT('REAL',BUF4,MAX0(NVVVOTMX,NDIMT2)*RCW,
      &               CC,KFREE,LFREE,ALLOC)
 C
 C        Check if CCSD amplitudes are available
@@ -1251,7 +1280,7 @@ C
          ENDIF
 C
          CALL T3CORR (FVO,EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
-     &                CC(BUF1B),CC(BUF2B),CC(BUF3B),CC(BUF4B),
+     &                CC(BUF1),CC(BUF2),CC(BUF3),CC(BUF4),
      &                CC(VVVO),CC(VVOO),CC(VOOO))
 C
 C     This is a restart point : update status.
@@ -1327,25 +1356,101 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      if (doccsdg) then
+         print*
+         print*,' CCSD gradient not yet implemented,'
+     &         ,' calculate MP2 gradient instead'
+         print*
+         doccsdg = .false.
+         domp2g = .true.
+      endif
       ALLOC = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
+C
+C The DIIS algorithm is used for the Z-vector and Lamda-equations
+C Allocate the workarrays only once with the maximum dimensions
+C
+      MAXIT  = MXITGR
+      MAXDIM = MXDIMGR
+      IF (DOCCSDG) MAXIT = MAX0(MAXIT,MXITCC)
+      IF (DOCCSDG) MAXDIM = MAX0(MAXDIM,MXDIMCC)
 C
 C Allocate space for the calculation of the gradient
 C
       KFRSAV = KFREE
+      LFRSAV = LFREE
+      CALL MEMOPT('REAL',T1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',T2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',S1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',S2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',XOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',XVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DVO,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',DOV,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',D2VO,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',D2OV,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',XVO,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',XOV,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',EVO,NEOPER*NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',EOV,NEOPER*NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',EOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',EVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',DG ,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
+      NBUF1 = MAX0(JOOOO(NREP+1),JVOOO(NREP+1),
+     &             JVVOO(NREP+1),JVOVO(NREP+1))
+      CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
 C
-      MXCORR = KFREE
+C     Calculate size of 2nd and 3rd work arrays
+C
+      NV4IRP = 1
+      DO IRP = 1, NREP
+         NV4IRP = MAX0(NV4IRP,NVV(IRP)*NVVT(IRP))
+      ENDDO
+      NBUF2 = (LFREE - 2) / (2 * RCW)
+      IF (NBUF2.GT.NV4IRP) NBUF2 = NV4IRP
+      NBUF2 = MAX0(NBUF1,NBUF2)
+      NBUF3 = NBUF2
+C
+      IF (NBUF3.LT.JVVVO(2)) THEN
+C
+C        We need to increase the size of BUF3 for the in-core sort
+C        in GVINTM. Move some memory from BUF2 to BUF3.
+C
+         NBUF3D = JVVVO(2) - NBUF3
+         NBUF3  = NBUF3 + NBUF3D
+         NBUF2  = NBUF2 - NBUF3D
+C        Check minimum size of BUF2
+         NBUF2 = MAX0(NBUF1,NBUF2)
+      ENDIF
+C
+C     Allocate the work arrays
+C
+      CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
+C
+      IF (DOCCSDG) THEN
+         CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+         CALL MEMOPT('REAL',CZ,NV2*RCW,CC,KFREE,LFREE,ALLOC)
+      ENDIF
+C
+      IF (DOCCSDG) MXCORR = KFREE
 C
       IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient calculation",KFREE
+         KFREE = KFRSAV
+         LFREE = LFRSAV
          RETURN
       ENDIF
 C
@@ -1355,7 +1460,7 @@ C
 C
 C     Start with SCF (reference determinant) expectation values
 C
-      WRITE (IW,1002)
+      WRITE (IW,1002) '    SCF'
       CALL XCOPY (NFOO,A0,0,CC(DOO),1)
       CALL XCOPY (NFVV,A0,0,CC(DVV),1)
       CALL XCOPY (NDIMX,A0,0,CC(DVO),1)
@@ -1363,13 +1468,116 @@ C
 C
       DO EOPER = 1, NEOPER
          EOFF = (EOPER-1)*NDIMX*RCW+1
-         CALL RDPROP(NAMEE(EOPER),NSP,.TRUE.,CC(CBUF),IREPSPI,
+         CALL RDPROP(NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
      &               EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
          CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
      &               CC(EOO),CC(EVV),CC(EVO),CC(EOV),
      &               EPHASE,CEXPA)
          WRITE (IW,1004) NAMEE(EOPER),CEXPA
       ENDDO
+C
+C     Get MP2 relaxed density matrix
+C
+      IF (DOMP2G) THEN
+C
+C        Solve relativistic MP2 lambda equations
+C
+         CALL MP2EQN(EPS,FVO,CC(T1),CC(S1),CC(T2),CC(S2))
+C
+C        Get amplitude part of density matrix
+C
+         CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
+     &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
+     &                 CC(DVO),CC(DOV))
+C
+C        Solve Z-vector equations
+C
+         TOL = 10.0D0**(-NTOLGR)
+         MAXIT  = MXITGR
+         MAXDIM = MXDIMGR
+         CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
+     &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
+     &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
+     &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+C
+         WRITE (IW,1002) '    MP2'
+         DO EOPER = 1, NEOPER
+            EOFF = (EOPER-1)*NDIMX*RCW+1
+            CALL RDPROP(NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
+     &                  EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
+            CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                  CC(EOO),CC(EVV),CC(EVO),CC(EOV),
+     &                  EPHASE,CEXPA)
+            WRITE (IW,1004) NAMEE(EOPER),CEXPA
+         ENDDO
+C
+      ENDIF
+C
+C     Get CCSD relaxed density matrix
+C
+      IF (DOCCSDG) THEN
+C
+C        Solve relativistic CCSD lambda equations
+C
+C        The CCSD energy calculation should be completed
+C
+         IF (IMSTAT(5).NE.3) THEN
+            WRITE (IW,1009) 
+            RETURN
+         ENDIF
+C
+C        No restart: start by copying T1 and T2 amplitdues to L1 and L2
+C
+         CALL GETAMPT (CC(T1),CC(T2))
+C
+         WRITE (IW,1008) MXITCC,MXDIMCC,10.0D0**(-NTOLCC)
+         MAXDIM = MXDIMCC
+         MAXIT  = MXITCC
+         TOL = 10.0D0**(-NTOLCC)
+         NINTSB = 20
+         CALL RFILE(ITAPL,NINTSB)
+C
+         CALL CCEQN(EPS,FOO,FVO,FVV,CC(T1),CC(S1),
+     &           CC(T2),CC(S2),CC(AZ),CC(CZ),CC(H),CC(HO),CC(HV),
+     &           CC(HOV),CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
+     &           CC(CCC),CC(BB1),CC(BB2),
+     &           TOL,NBUF2,NBUF3)
+C
+C        Put T1 and T2 amplitudes back in place
+C        L1 and L2 amplitudes are in S1, S2
+C
+         CALL GETAMPT(CC(T1),CC(T2))
+C
+C        Get amplitude part of density matrix
+C
+         CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
+     &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
+     &                 CC(DVO),CC(DOV))
+C
+C        Solve Z-vector equations
+C
+         TOL = 10.0D0**(-NTOLGR)
+         MAXIT  = MXITGR
+         MAXDIM = MXDIMGR
+c        CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
+c    &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
+c    &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+c    &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
+c    &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+C
+         WRITE (IW,1002) '   CCSD'
+         DO EOPER = 1, NEOPER
+            EOFF = (EOPER-1)*NDIMX*RCW+1
+            CALL RDPROP(NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
+     &                  EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
+            CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                  CC(EOO),CC(EVV),CC(EVO),CC(EOV),
+     &                  EPHASE,CEXPA)
+            WRITE (IW,1004) NAMEE(EOPER),CEXPA
+         ENDDO
+C
+      ENDIF
 C
       CALL MEMREL('CCGRAD',CC,1,KFRSAV,KFREE,LFREE)
 C
@@ -1383,9 +1591,16 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1002  FORMAT(//,' SCF Gradient results',//3X,'Expectation value',13X,
+1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
      & 'Real part',8X,'Imaginary part')
 1004  FORMAT('  <',A8,'> ',T30,2F20.13)
+1008  FORMAT (//" CCSD lambda-equations :"
+     &        /" Maximum number of iterations :",T40,I5
+     &        /" Maximum size of DIIS space :",T40,I5
+     &        /" Convergence criterium :",T38,E7.1)
+1009  FORMAT (/" WARNING : Cannot solve CCSD lambda equations :",
+     &         " T1 and T2 amplitudes are not available "/
+     &         " Check that you specified DOENER and DOCCSD !")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -1424,6 +1639,7 @@ C
       INCLUDE "diis.inc"
       INCLUDE "inpt.inc"
       INCLUDE "symm.inc"
+      INCLUDE "param.inc"
       INCLUDE "complex.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1440,6 +1656,8 @@ C
 C
 C Allocate space for the calculation of the hessian
 C
+      KFRSAV = KFREE
+      LFRSAV = LFREE
       CALL MEMOPT('REAL',X1,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',X2,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',Y1,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1461,6 +1679,8 @@ C
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "RPA calculation",KFREE
+         KFREE = KFRSAV
+         LFREE = LFRSAV
          RETURN
       ENDIF
 C
@@ -1472,12 +1692,12 @@ C
       MAXDIM = MXDIMRP
       DO AOPER = 1, NAOPER
          AOFF = (AOPER-1)*NDIMX*RCW
-         CALL RDPROP(NAMEA(AOPER),NSP,.FALSE.,CC(CBUF),IREPSPI,
+         CALL RDPROP(NAMEA(AOPER),NSP,LFA,CC(CBUF),IREPSPI,
      &               APHASE(AOPER),CC(AVO+AOFF),CC(AOV+AOFF),DUM,DUM)
       ENDDO
       DO BOPER = 1, NBOPER
          BDONE = .FALSE.
-         CALL RDPROP(NAMEB(BOPER),NSP,.FALSE.,CC(CBUF),IREPSPI,
+         CALL RDPROP(NAMEB(BOPER),NSP,LFA,CC(CBUF),IREPSPI,
      &               BPHASE,CC(BVO),CC(BOV),DUM,DUM)
          DO IFREQ = 1, NFREQ
             IF (IPRNT.GE.1) WRITE (IW,1010) NAMEB(BOPER),EFREQ(IFREQ)
@@ -1554,6 +1774,8 @@ C
 C
 C Allocate space for the excitation energy calculation
 C
+      KFRSAV = KFREE
+      LFRSAV = LFREE
       CALL MEMOPT('REAL',X1,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',X2,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',Y1,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1573,6 +1795,8 @@ C
       MXCORR = KFREE
 C
       IF (ICALC.LE.1) THEN
+         KFREE = KFRSAV
+         LFREE = LFRSAV
          WRITE (IW,1001) "excitation energies",KFREE
          RETURN
       ENDIF
