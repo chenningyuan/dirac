@@ -1575,7 +1575,7 @@ C       Generate pointer array for bases
      &      'for symmetry independent center ',NAMN(INUC),' no. ',INUC
           WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
-     &      'Number of basis functions in coeffcient file:',
+     &      'Number of basis functions in coefficient file:',
      &       IDIM(3,IFRP)
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
