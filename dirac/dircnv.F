@@ -41,7 +41,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfcnv */
       SUBROUTINE DHFCNV(FMO,FAO,DMAT,EVEC,FBUF,TMAT,BMAT,
-     &                  ICHKCNV,SAOMO,WORK,LWORK)
+     &                  ICHKCNV,TINV,WORK,LWORK)
 C*****************************************************************************
 C     Driver routine for checking convergence etc.
 C
@@ -67,7 +67,7 @@ C
 #include "dcbgen.h"
       LOGICAL OLDFMO, DAMPON
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
-     &          DMAT(*),SAOMO(*),WORK(LWORK), FAO(*)
+     &          DMAT(*),TINV(*),WORK(LWORK), FAO(*)
 C
 C     Calculate error vector for this iteration
 C     =========================================
@@ -75,11 +75,12 @@ C             FMO   - Fock matrix in MO-basis
 C             FAO   - Fock matrix in AO-basis (FDao and FVao)
 C             DMAT  - Density matrix in AO-basis (DCao and DVao)
 C             TMAT  - MO-transformation matrix
-C             SAOMO - Right index transformed overlap matrix
+C             TINV  - Right index transformed overlap matrix; 
+C             correponds to the inverse of the transformation matrix
 C             FBUF  - work area
 C
       IF (ICHKCNV .NE. 0)
-     &   CALL DIISER(EVEC,FMO,FAO,DMAT,SAOMO,FBUF,TMAT,WORK,LWORK)
+     &   CALL DIISER(EVEC,FMO,FAO,DMAT,TINV,FBUF,TMAT,WORK,LWORK)
 C
 C
 C     Read MO Fock matrix from previous cycle into FBUF...
@@ -238,7 +239,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diiser */
-      SUBROUTINE DIISER(EVEC,FMO,FAO,DMAT,SAOMO,EBUF,TMAT,WORK,LWORK)
+      SUBROUTINE DIISER(EVEC,FMO,FAO,DMAT,TINV,EBUF,TMAT,WORK,LWORK)
 C****************************************************************************
 C
 C     Last revision 971029-jth
@@ -263,7 +264,7 @@ C
 C     Note that EBUF has dimension NFMAT*N2BBASXQ
 C
       DIMENSION FAO(*),DMAT(*),EVEC(*),EBUF(*),TMAT(*),
-     &          SAOMO(*),WORK(LWORK), FMO(*)
+     &          TINV(*),WORK(LWORK), FMO(*)
       CHARACTER*1 CTMP
 C
 #include "memint.h"
@@ -348,7 +349,7 @@ C           Transform to MO-basis.: Ct Sao A C
 C           use FAO as buffer
 C
             IF(SUB_BL) THEN
-              CALL TSUBBL(I,EBUF,EVEC,SAOMO,TMAT,
+              CALL TSUBBL(I,EBUF,EVEC,TINV,TMAT,
      &                      WORK(KFREE),LFREE,IPRSCF)
             ELSE
               CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -356,7 +357,7 @@ C
      &                EBUF(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
      &                                    NZ,IPQTOQ(1,0),
      &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
-     &                SAOMO(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
+     &                TINV(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                NZT,IPQTOQ(1,0),
      &                TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                                 NZT,IPQTOQ(1,0),
@@ -388,6 +389,8 @@ C
             IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NTMO(I)
             IOFF = IOFF + NTMO(I)*NTMO(I)*NZ
  10      CONTINUE
+C ....Dubillard
+C     To be discussed !
 C
 C        The factor:
 C
@@ -412,10 +415,10 @@ C        ====================================
 C
          REWIND LUCMOS
          CALL READT(LUCMOS,N2TMOTQ,EVEC)
-C        Observe that we use NISHMF which is the number or inactive orbitals
+C        Observe that we use NISHMF which is the number of inactive orbitals
 C        minus those that are frozen
          DO 20 I = 1,NFSYM
-            IF(NOCC(I).EQ.0) GOTO 20
+            IF(NISHMF(I).EQ.0) GOTO 20
             IOFF = I2TMOT(I)+NTMO(I)*NPSH(I)+1
             CALL QGEMM(NTMO(I),NTMO(I),NISHMF(I),D1,
      &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
