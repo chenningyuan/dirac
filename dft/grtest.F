@@ -36,8 +36,10 @@ C
       CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBUF,NBAST*4,WORK,KFREE,LFREE)
+COLAV
+      CALL MEMGET('INTE',KICLAB,NBAST,WORK,KFREE,LFREE)
       CALL GRTES1(WORK(KSMAT),WORK(KGAO),WORK(KGA1),WORK(KGA2),
-     &     WORK(KGB1),WORK(KCNT),WORK(KDST),WORK(KBUF),
+     &     WORK(KGB1),WORK(KCNT),WORK(KDST),WORK(KBUF),WORK(KICLAB),
      &     WORK(KFREE),LFREE,LUQUAD,IPRDFT)
       CALL MEMREL('GRTES1',WORK,KWORK,KWORK,KFREE,LFREE)
 
@@ -48,7 +50,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C /* Deck dftdrv */
       SUBROUTINE GRTES1(SMAT,GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,WORK,LWORK,LUQUAD,IPRINT)
+     &                  NCNT,DST,BUF,ICLAB,WORK,LWORK,LUQUAD,IPRINT)
 C                                                                      C
 C     T. Helgaker sep 99                                               C
 C     Modified for grid testing by Olav Fossgaard July 2002.           C
@@ -63,10 +65,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-      CHARACTER*12 MXLB1,MXLB2,RMXLB1,RMXLB2
-      INTEGER MAXI,MAXJ,MAXIR,MAXJR,NLSOS,NSSOS        
-      DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,RERRAV,RERRAB,RERRMX,
-     &                 SMATDF, SMATAN, SMATFR
+      LOGICAL SSOVER,PPOVER,DDOVER,FFOVER
+
+      CHARACTER*12 MXLB1,MXLB1S,MXLB1P,MXLB1D,MXLB1F,MXLB2,MXLB2S,
+     &     MXLB2P,MXLB2D,MXLB2F,RMXLB1,RMXLB2
+      CHARACTER*1 ORB1,ORB2
+      INTEGER CENT1,CENT2,MAXI,MAXIS,MAXIP,MAXID,MAXIF,MAXJ,MAXJS,
+     &     MAXJP,MAXJD,MAXJF,MAXIR,MAXJR,NLSOS,NSSOS        
+      DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,MAXS,MAXP,MAXD,MAXF,
+     &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -85,16 +92,49 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION SMAT(NBAST,NBAST,2)
+      DIMENSION SMAT(NBAST,NBAST,2),ICLAB(NBAST)
 #else
-      DIMENSION SMAT(NTBAS(0),NTBAS(0),2)
+      DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0)
 #endif
 
       DIMENSION GAO(*), GAO1(*), 
      &          GAO2(*), GAB1(*), WORK(LWORK), 
      &          NCNT(*), DST(*), BUF(*)
 
+#include "dcbibt.h"
 #include "memint.h"
+
+C
+C     Map basis functions onto atomic centers in array ICLAB
+C
+
+C     Large components:
+      I = 0
+      DO IFRP = 1,NFSYM
+         IOFF = IBAS(IFRP)
+         DO ILBAS  = IOFF+1,IOFF+NFBAS(IFRP,1)
+            I = I + 1
+            IOLAV  = IATTR(IPLAB(ILBAS,2),2)
+            ICENT  = JGET(IOLAV)
+            ICLAB(I) = ICENT
+         ENDDO
+      ENDDO
+
+C     Small components
+      J = I
+      DO IFRP = 1,NFSYM
+         IOFF = IBAS(IFRP) + NFBAS(IFRP,1)
+         DO ISBAS  = IOFF+1,IOFF+NFBAS(IFRP,2)
+            J = J + 1
+            IOLAV  = IATTR(IPLAB(ISBAS,2),2)
+            ICENT  = JGET(IOLAV)
+            ICLAB(J) = ICENT
+         ENDDO   
+      ENDDO   
+
+C      DO I = 1,NTBAS(0)
+C         WRITE(6,*) 'ICLAB(',I,') = ',ICLAB(I)
+C      ENDDO
 
 C
 C     Get analytical SMAT(I,J,2)
@@ -148,18 +188,38 @@ C     (MAXI, MAXJ) = overlap integral with error ERRMAX
 
       ERRAV = 0.0D0
       ERRAB = 0.0D0
-      RMS = 0.0D0
+      RMS   = 0.0D0
       ERRMX = 0.0D0
-      MAXI = 0
-      MAXJ = 0
+      MAXI  = 0
+      MAXJ  = 0
+C
+C     Analysis of interatomic (s|s), (p|p), (d|d) and (f|f) overlap errors
+C
+      SSOVER = .FALSE.
+      PPOVER = .FALSE.
+      DDOVER = .FALSE.
+      FFOVER = .FALSE.
+
+      MAXS  = 0.0D0
+      MAXIS = 0
+      MAXJS = 0
+      MAXP  = 0.0D0
+      MAXIP = 0
+      MAXJP = 0
+      MAXD  = 0.0D0
+      MAXID = 0
+      MAXJD = 0
+      MAXF  = 0.0D0
+      MAXIF = 0
+      MAXJF = 0
 C
 C     Relative values (only calculated for diagonal elements)
 C
       RERRAV = 0.0D0
       RERRAB = 0.0D0
       RERRMX = 0.0D0
-      MAXIR = 0
-      MAXJR = 0
+      MAXIR  = 0
+      MAXJR  = 0
 C
       SMATDF = 0.0D0
       SMATAN = 0.0D0
@@ -177,14 +237,57 @@ C
          DO IRP = 0,MAXREP
             DO I = 1,NBBAS(IRP,IC)
                IS = IBBAS(IRP,IC) + I
+               CENT1 = ICLAB(IS)
+               ORB1 = PLABEL(IPLAB(IS,2),2)(9:9)
                DO J = 1,NBBAS(IRP,IC)
                   JS = IBBAS(IRP,IC) + J
+                  CENT2 = ICLAB(JS)
+                  ORB2 = PLABEL(IPLAB(JS,2),2)(9:9)
+C                  WRITE(6,*)'CENTER(',IS,',',JS,') = ',
+C     &                 '(',CENT1,',',CENT2,')'
                   SMATDF = SMAT(IS,JS,1)
                   SMATAN = SMAT(IS,JS,2)
 C
                   ERRAV = ERRAV + SMATDF
                   ERRAB = ERRAB + ABS(SMATDF)
                   RMS = RMS + SMATDF*SMATDF
+                  
+                  IF(CENT1.NE.CENT2) THEN 
+C     Find largest internuclear (s|s) error
+                     IF(ORB1.EQ.'s'.AND.ORB2.EQ.'s') THEN
+                        SSOVER = .TRUE.
+                        IF(ABS(SMATDF).GT.ABS(MAXS)) THEN
+                           MAXS = SMATDF
+                           MAXIS = IS
+                           MAXJS = JS
+                        ENDIF
+C     Find largest internuclear (p|p) error
+                     ELSEIF(ORB1.EQ.'p'.AND.ORB2.EQ.'p') THEN
+                        PPOVER = .TRUE.
+                        IF(ABS(SMATDF).GT.ABS(MAXP)) THEN
+                           MAXP = SMATDF
+                           MAXIP = IS
+                           MAXJP = JS
+                        ENDIF
+C     Find largest internuclear (d|d) error
+                     ELSEIF(ORB1.EQ.'d'.AND.ORB2.EQ.'d') THEN
+                        DDOVER = .TRUE.
+                        IF(ABS(SMATDF).GT.ABS(MAXD)) THEN
+                           MAXD = SMATDF
+                           MAXID = IS
+                           MAXJD = JS
+                        ENDIF
+C     Find largest internuclear (f|f) error
+                     ELSEIF(ORB1.EQ.'f'.AND.ORB2.EQ.'f') THEN
+                        FFOVER = .TRUE.
+                        IF(ABS(SMATDF).GT.ABS(MAXF)) THEN
+                           MAXF = SMATDF
+                           MAXIF = IS
+                           MAXJF = JS
+                        ENDIF
+                     ENDIF 
+                  ENDIF
+C     Find largest error
                   IF(ABS(SMATDF) .GT. ABS(ERRMX)) THEN
                      ERRMX = SMATDF
                      MAXI = IS
@@ -195,14 +298,6 @@ C
                      SMATFR = SMATDF/SMATAN
                      RERRAV = RERRAV + SMATFR
                      RERRAB = RERRAB + ABS(SMATFR)
-C
-COLAV                     MXLB1 = PLABEL(IPLAB(is,2),2)
-COLAV                     MXLB2 = PLABEL(IPLAB(js,2),2) 
-COLAV                     write(lupri,'(2(I4,A12),E30.20,2F10.4)') 
-COLAV     &                    IS, MXLB1, JS, MXLB2,SMATAN, 
-COLAV     &                    LOG10(ABS(SMATFR)),
-COLAV     &                    LOG10(ABS(D1-SMATAN))
-C                    
                      IF (ABS(SMATFR) .GT. ABS(RERRMX)) THEN
                         RERRMX = SMATFR
                         MAXIR = IS
@@ -219,6 +314,14 @@ C     Get labels of maximum error overlap SO's
 C
       MXLB1 = PLABEL(IPLAB(MAXI,2),2)
       MXLB2 = PLABEL(IPLAB(MAXJ,2),2) 
+      MXLB1S= PLABEL(IPLAB(MAXIS,2),2)
+      MXLB2S= PLABEL(IPLAB(MAXJS,2),2)
+      MXLB1P= PLABEL(IPLAB(MAXIP,2),2)
+      MXLB2P= PLABEL(IPLAB(MAXJP,2),2)
+      MXLB1D= PLABEL(IPLAB(MAXID,2),2)
+      MXLB2D= PLABEL(IPLAB(MAXJD,2),2)
+      MXLB1F= PLABEL(IPLAB(MAXIF,2),2)
+      MXLB2F= PLABEL(IPLAB(MAXJF,2),2) 
       RMXLB1 = PLABEL(IPLAB(MAXIR,2),2)
       RMXLB2 = PLABEL(IPLAB(MAXJR,2),2)
 C
@@ -257,15 +360,41 @@ C
       WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Absolute average SMAT error      : ', ERRAB      
       WRITE (LUPRI,'( 2X,A,E16.10)')
-     &      ' RMS deviation                    : ', RMS     
-      WRITE (LUPRI,'( 2X,A,E16.10)')
-     &      ' Largest error                    : ', ERRMX
-      WRITE (LUPRI,'( 2X,A,A,I4,A,I4,A)')
-     &      ' Position of largest error        : ', 
-     &      '(',MAXI,',',MAXJ,')'
-      WRITE (LUPRI,'( 2X,A,A,A12,A,A12,A)')
-     &      ' Labels for largest error integral: ', 
-     &      '(',MXLB1,',',MXLB2,')'
+     &      ' RMS deviation                    : ', RMS
+      WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &      '',' Largest error                    : ', ERRMX
+      WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &      ' Position and label               : (',
+     &      MAXI,',',MAXJ,') = (',MXLB1,',',MXLB2,')'
+      IF(SSOVER) THEN
+         WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &        '',' Largest internuclear (s|s) error : ', MAXS
+         WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &        ' Position and label               : (',
+     &        MAXIS,',',MAXJS,') = (',MXLB1S,',',MXLB2S,')'
+      ENDIF
+      IF(PPOVER) THEN
+         WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &        '',' Largest internuclear (p|p) error : ', MAXP
+         WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &        ' Position and label               : (',
+     &        MAXIP,',',MAXJP,') = (',MXLB1P,',',MXLB2P,')'
+      ENDIF
+      IF(DDOVER) THEN
+         WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &        '',' Largest internuclear (d|d) error : ', MAXD
+         WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &        ' Position and label               : (',
+     &        MAXID,',',MAXJD,') = (',MXLB1D,',',MXLB2D,')'
+      ENDIF
+      IF(FFOVER) THEN
+         WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &        '',' Largest internuclear (f|f) error : ', MAXF
+         WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &        ' Position and label               : (',
+     &        MAXIF,',',MAXJF,') = (',MXLB1F,',',MXLB2F,')'
+      ENDIF
+
 C
       WRITE(LUPRI,'(/A)')'* Relative errors (diagonal elements only) : '
 C
@@ -273,14 +402,11 @@ C
      &      ' Average SMAT error               : ', RERRAV
       WRITE (LUPRI,'( 2X,A,E16.10)')
      &      ' Absolute average SMAT error      : ', RERRAB      
-      WRITE (LUPRI,'( 2X,A,E16.10)')
-     &      ' Largest error                    : ', RERRMX
-      WRITE (LUPRI,'( 2X,A,A,I4,A,I4,A)')
-     &      ' Position of largest error        : ', 
-     &      '(',MAXIR,',',MAXJR,')'
-      WRITE (LUPRI,'( 2X,A,A,A12,A,A12,A)')
-     &      ' Labels for largest error integral: ', 
-     &      '(',RMXLB1,',',RMXLB2,')'
+      WRITE (LUPRI,'(/A,2X,A,E16.10)')
+     &      '',' Largest error                    : ', ERRMX
+      WRITE(LUPRI,'(2X,A,I4,A,I4,A,A12,A,A12,A)')
+     &      ' Position and label               : (',
+     &      MAXIR,',',MAXJR,') = (',RMXLB1,',',RMXLB2,')'
 
       IF (INTCHK.GE.2) THEN
          CALL HEADER('Errors in numerical SMAT ', -1)
