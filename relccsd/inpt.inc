@@ -18,8 +18,8 @@ C-----For the DIRAC interface
 C-----For the MOLFDIR interface
       COMMON/CCMLF/MWORD
 C-----For the integral sorting module
-      COMMON/CCSORL/SRTALL,USEOE,NORECMP
-      LOGICAL SRTALL,USEOE,NORECMP
+      COMMON/CCSORL/USEOE,NORECMP
+      LOGICAL USEOE,NORECMP
 C-----For the energy module
       COMMON/CCENEI/NTOLCC,MXDIMCC,MXITCC
       COMMON/CCENEL/DOMP2,DOCCSD,DOCCSDT

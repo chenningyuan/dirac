@@ -152,7 +152,7 @@ C
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE,
      &                  MIOBUF
-      NAMELIST/CCSORT/ SRTALL,USEOE,NORECMP
+      NAMELIST/CCSORT/ USEOE,NORECMP
       NAMELIST/CCENER/ DOMP2,DOCCSD,DOCCSDT,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
      &                 MAXIT,MAXDIM,NTOL
@@ -297,7 +297,6 @@ C
 C
 C     Input for the sorting routine.
 C
-      SRTALL = .TRUE.
       USEOE = .TRUE.
       NORECMP = .FALSE.
       REWIND (IN)
@@ -1455,7 +1454,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL ALLOC
+      LOGICAL ALLOC,SRTALL
 C
 C---------------Executable code--------------------------------------
 C
@@ -1542,12 +1541,15 @@ C
 C
 C  Read integrals & make fock matrices
 C
+      SRTALL = .TRUE.
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD
+C
       CALL RDINTS(IPRNT,NSP,CC(INDEX),CC(KR),CC(INDK),CC(INDL),
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
      &            IREPSPI,CC(V1),CC(V1A),
      &            CC(V2),CC(V2A),CC(V3),CC(V3A),CC(V4),CC(V4A),
      &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,CC(FOO),CC(FVO),
-     &            CC(FVV),BREIT,DOCCSD,INTERFACE,MREMAIN,cc)
+     &            CC(FVV),BREIT,SRTALL,INTERFACE,MREMAIN,cc)
 C
       CALL MEMREL('CCSETI',CC,1,KFRSAV,KFREE,LFREE)
 C
@@ -2703,7 +2705,7 @@ C     When restarting the previous status is retained if the module
 C     was on the menu.
 C
       IF (DOSORT.AND.IMSTAT(1).EQ.0)             IMSTAT(1) = 1
-      IF (DOSORT.AND.SRTALL.AND.IMSTAT(2).EQ.0)  IMSTAT(2) = 1
+      IF (DOSORT.AND.IMSTAT(2).EQ.0)             IMSTAT(2) = 1
       IF (DOSORT.AND.IMSTAT(3).EQ.0)             IMSTAT(3) = 1
       IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(4) = 1
       IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(5) = 1
