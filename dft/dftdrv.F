@@ -254,7 +254,7 @@ C
      &      ' Number of electrons:               ', ELCTRN
          IF (DOERG) THEN
 CPAWSA            CALL DFT_ENE_REPORT()
-            WRITE (LUPRI,'(2X,A,13X,F14.6)') 
+            WRITE (LUPRI,'(2X,A,13X,F24.16)') 
      &          ' DFT exchange-correlation energy:', 
      &          DENERGY
          END IF
@@ -1075,6 +1075,7 @@ C
 #include "maxaqn.h"
 #include "dcborb.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "infpar.h"
