@@ -2675,7 +2675,7 @@ C
          ELSE
             CALL E2ODI1(HPDIAG,WORK(KFMO),WORK(KDV),JXOPP,NZXOPP)
          ENDIF
-         CALL S2ODI1(SPDIAG,WORK(KDV),JXOPE,NZXOPE)
+         CALL S2ODI1(SPDIAG,WORK(KDV),JXOPE,NZXOPP)
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-p):'
             WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
