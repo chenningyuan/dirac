@@ -1428,8 +1428,8 @@ C     Check if increase of gradient norm should cause reinitialization of Hessia
 C     Reinitialization occurs when the norm of the gradient is larger than the
 C     norm of the gradient two iterations earlier.
 C
-         IF (GRDINI .AND. (ITRNMR .GE. 2) .AND.
-     &        (GEINFO(ITRNMR,2) .GE. GEINFO(ITRNMR-2,2))) THEN
+         IF (GRDINI.AND.(ITRNMR .GE. 2)) THEN
+           IF(GEINFO(ITRNMR,2).GE.GEINFO(ITRNMR-2,2)) THEN
             WRITE(LUPRI,*)
             WRITE(LUPRI,*)'***** NOTE! *****'
             WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
@@ -1439,6 +1439,7 @@ C
      &           TMPMT3,TMPMT4,WILBMT,BMTINV,HESINT)
             TRSTRA = GEINFO(0,5)
             GEINFO(ITRNMR+1,5) = TRSTRA
+         END IF
          END IF
 C
          IF (INTRAC) WRITE(LUERR,'(A,F14.6,A,F10.6,A,F10.6,A,I2)')
@@ -4733,7 +4734,7 @@ C
       END
  
 C  /* Deck pncmol */
-      SUBROUTINE PNCMOL(TMPMAT)
+      SUBROUTINE PNCMOL
 C     
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
@@ -4750,12 +4751,12 @@ C
 #endif
 #include <priunit.h>
       PARAMETER (LUMOL = 9)
-      DIMENSION TMPMAT(MXCOOR)
       CHARACTER*12 FILENM
       CLOSE(LUMOL)
 #if    defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) \
     || defined (SYS_PARAGON) || defined (SYS_CRAY)   || defined (SYS_IRIX) \
-    || defined (SYS_SUN)     || defined (SYS_LINUX)  || defined (SYS_HPUX) 
+    || defined (SYS_SUN)     || defined (SYS_LINUX)  || defined (SYS_HPUX) \
+    || defined (SYS_T3D)
 #define SYS_MANY
 #endif
 #if defined (SYS_VAX)
@@ -4769,7 +4770,7 @@ C
 #if defined (SYS_IBM)
       OPEN(LUMOL,FILE='MOLINP',STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
-#ifndef SYS_MANY
+#if !defined (SYS_MANY) && !defined (SYS_VAX) && !defined (SYS_IBM)
       OPEN(LUMOL,STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
       DO 200 IMLINE = 1,NMLINE
@@ -4822,13 +4823,18 @@ C
       OPEN(LUHES,STATUS='NEW',FORM='FORMATTED',
      &                                 CARRIAGECONTROL='LIST')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_SUN)
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) \
+ || defined (SYS_PARAGON) || defined (SYS_CRAY)   || defined (SYS_IRIX) \
+ || defined (SYS_SUN)     || defined (SYS_LINUX)  || defined (SYS_T3D)
+#define SYS_MANY
+#endif
+#ifdef SYS_MANY
       OPEN(LUHES,FILE='DALTON.HES',STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
 #if defined (SYS_IBM)
       OPEN(LUHES,FILE='MOLHES',STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IBM) && !defined (SYS_IRIX) && !defined (SYS_SUN)
+#if !defined (SYS_MANY) && !defined (SYS_IBM)
       OPEN(LUHES,STATUS='UNKNOWN',FORM='FORMATTED')
 #endif
       IF (REDINT) THEN

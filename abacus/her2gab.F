@@ -890,7 +890,7 @@ C
      &                   NUCSAB(1,NSYMR), NUCSCD(1,NSYMS),
      &                   SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                   NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
-     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DUMMY,DOGAB)
+     &                   NREDAB,NREDCD,IDUMMY,DUMMY,DUMMY,DOGAB)
 C
 C            ********************************
 C            ***** Process AO integrals *****
@@ -1953,6 +1953,7 @@ c        CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
          END IF
       ENDIF
 C
+      CLOSE(LUPROP,STATUS='KEEP')
       RETURN
  10   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB

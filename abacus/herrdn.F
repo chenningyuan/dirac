@@ -4452,25 +4452,56 @@ C
         ENDIF
    30 CONTINUE
 C
+C     Align rotations and quaternion irreps,
+C     for complex groups this is important....
+C
+      IQ1 = 3
+      IQ2 = 2
+      IQ3 = 1
+      IZQ = 2
+      IYQ = 3
+      IXQ = 4
+      IF(NZ.EQ.2) THEN
+        IF(ITOT.EQ.1) THEN
+          IQ1 = 1
+          IQ2 = 3
+          IQ3 = 2
+          IXQ = 2
+          IZQ = 3
+          IYQ = 4
+        ELSEIF(ITOT.EQ.2) THEN
+          IQ1 = 2
+          IQ2 = 1
+          IQ3 = 3
+          IYQ = 2
+          IXQ = 3
+          IZQ = 4
+        ENDIF
+      ENDIF
+C
+C
 C     Set up direct product table for fermion ircops
 C     ==============================================
+C
+C     IF there is a totally symmetric irrep, it should be the
+C     symmetry of Im(p_1,q_1)......
 C
 C     Re(p_1,q_1)
       IFDIRP(1,1) = 0
 C     Im(p_1,q_1)
-      IFDIRP(2,1) = ISYMAX(3,2)
+      IFDIRP(2,1) = ISYMAX(IQ1,2)
 C     Re(p_1,Q_1)
-      IFDIRP(3,1) = ISYMAX(2,2)
+      IFDIRP(3,1) = ISYMAX(IQ2,2)
 C     Im(p_1,Q_1)
-      IFDIRP(4,1) = ISYMAX(1,2)
+      IFDIRP(4,1) = ISYMAX(IQ3,2)
 C     Re(p_1,q_2)
       IFDIRP(1,2) = IXYZ
 C     Im(p_1,q_2)
-      IFDIRP(2,2) = ISYMAX(3,1)
+      IFDIRP(2,2) = ISYMAX(IQ1,1)
 C     Re(p_1,Q_2)
-      IFDIRP(3,2) = ISYMAX(2,1)
+      IFDIRP(3,2) = ISYMAX(IQ2,1)
 C     Im(p_1,Q_2)
-      IFDIRP(4,2) = ISYMAX(1,1)
+      IFDIRP(4,2) = ISYMAX(IQ3,1)
 C
 C
 C     Determine distribution of boson irreps in spinors
@@ -4541,7 +4572,6 @@ C
 C     Complex groups:
 C
       ELSEIF(NZ.EQ.2) THEN
-        IF    (ITOT.EQ.3) THEN
 C
 C       Totally symmetric Z-rotation
 C
@@ -4549,38 +4579,11 @@ C
           JMROI (3) = 4
           JMROI (4) = 4
 C         ..non-totally symmetric rotation
-          IRNT           = ISYMAX(1,2)
+        IRNT           = ISYMAX(IQ2,2)
           IPQTOQ(1,0   ) = 1
           IPQTOQ(2,0   ) = 2
           IPQTOQ(1,IRNT) = 4
           IPQTOQ(2,IRNT) = 3
-        ELSEIF(ITOT.EQ.2) THEN
-C
-C       Totally symmetric Y-rotation
-C
-          JMROI (2) = 2
-          JMROI (3) = 1
-          JMROI (4) = 2
-C         ..non-totally symmetric rotation
-          IRNT           = ISYMAX(3,2)
-          IPQTOQ(1,0   ) = 1
-          IPQTOQ(2,0   ) = 3
-          IPQTOQ(1,IRNT) = 2
-          IPQTOQ(2,IRNT) = 4
-        ELSEIF(ITOT.EQ.1) THEN
-C
-C       Totally symmetric X-rotation
-C
-          JMROI (2) = 3
-          JMROI (3) = 3
-          JMROI (4) = 1
-C         ..non-totally symmetric rotation
-          IRNT           = ISYMAX(2,2)
-          IPQTOQ(1,0   ) = 1
-          IPQTOQ(2,0   ) = 4
-          IPQTOQ(1,IRNT) = 3
-          IPQTOQ(2,IRNT) = 2
-        ENDIF
         IF(NFSYM.EQ.2) THEN
           IRNU = IBTXOR(IRNT,IXYZ)
           DO IZ = 1,NZ
@@ -4665,21 +4668,21 @@ C     i(alpha_z)   -->  i(sigma_x)
 C     ==========================
 C
       JM4REP(1) =  ISYMAX(3,1)
-      JM4POS(1) =  2
+      JM4POS(1) =  IZQ
       JM4FAS(1) =  1
 C
 C     i(alpha_y)   --> j(sigma_x)
 C     ===========================
 C
       JM4REP(2) =  ISYMAX(2,1)
-      JM4POS(2) =  3
+      JM4POS(2) =  IYQ
       JM4FAS(2) =  1
 C
 C     i(alpha_x)   --> k(sigma_x)
 C     ==========================
 C
       JM4REP(3) =  ISYMAX(1,1)
-      JM4POS(3) =  4
+      JM4POS(3) =  IXQ
       JM4FAS(3) =  1
 C
 C     ***************************************

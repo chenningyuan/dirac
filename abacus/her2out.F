@@ -453,8 +453,13 @@ C Largest exchange contribution
      &                    DMRSO(ISHELD,ISHELB,I))
         DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
       ENDDO
-      FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
       NSOINT = NINTS*NOABCD
+      IF(DNSMAX.EQ.D0) THEN
+        DINTSKP(1,2) = DINTSKP(1,2) + NSOINT
+        DINTSKP(2,2) = DINTSKP(2,2) + NSOINT
+        RETURN
+      ENDIF
+      FCKTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       DO I = 1, NINTS
         NBUF   = 0
