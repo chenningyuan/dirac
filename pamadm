@@ -186,20 +186,6 @@ restore()
 }
 #
 #
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# MAKE CONFIGURE
-#
-#
-make_configure()
-{
-   echo "*** Making ./configure"
-   echo 
-   echo "#!/bin/sh" > configure
-   cat ./configure.in >> configure
-   chmod +x configure
-}
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -279,7 +265,7 @@ EOF
 # A DIRAC administrator should have everything
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/configure.in \$szCurrDir/pamadm \$szCurrDir/WHATSNEW 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/pamadm \$szCurrDir/WHATSNEW 2>> export.log
 EOF
    fi
    if [ "$EXPORTTAR" ]; then
@@ -313,7 +299,7 @@ make_makefile()
    # Write current Makefile
    #
    cat <<EOF> Makefile
-MODS="$MODS"
+MODS=$MODS
 include ./Makefile.config
 
 #
@@ -490,7 +476,7 @@ dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 #
 # Run ftnchek on Dirac
 #
-pre: \$(F_CPPS)
+pre:	\$(F_CPPS)
 
 ftnchek: pre
 	ftnchek \$(CHEKFLAGS) \$(F_CPPS) > dirac.ftnchek
@@ -820,10 +806,6 @@ backup
 # Find the active modules
 #
 which_modules
-#
-# Make configure script
-#
-make_configure
 #
 # Make the makefiles
 #

@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # FILE    : configure.in
 #
@@ -1470,7 +1471,7 @@ EOF
 #
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 cat <<EOF > $INSTALL_DIR/pam
-#!/bin/ksh
+#!/bin/sh
 #
 QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp
