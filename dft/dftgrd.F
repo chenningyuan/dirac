@@ -19,9 +19,7 @@ C
       PARAMETER (D0=0.0D0)
       LOGICAL TEST
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-      LOGICAL KHNSHM,DFTGRA,GRDWT
-      COMMON /DFTCWM/ DFTGRA,GRDWT,RNDMAX,RADERR,
-     &        IQUAD,NRHX,NROX,NRSX,NTMAXX,NPHIX,KHNSHM
+#include <dftwrk.h>
       COMMON /DFTOZER/ NRTYPF
       COMMON /DFTAML/ NSCHEME
 C
@@ -57,9 +55,12 @@ C       as well
          ENDIF
       ENDDO
 C
-C     DFTCWM
+C     DFTWRK
 C     ======
 C
+      SPCDIV = IQDTYP .GT. 0 .AND. MAXOPR .GT. 0
+CTROND
+      spcdiv = .false.
       IQUAD = IQDTYP
       IF (IQUAD.NE.1) THEN
          NRHX   = 12345
@@ -171,10 +172,8 @@ C
 C
       PARAMETER (MAXCEN=100)
       CHARACTER SPDCAR*1
+#include <dftwrk.h>
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-      LOGICAL KHNSHM,DFTGRA,GRDWT
-      COMMON /DFTCWM/ DFTGRA,GRDWT,RNDMAX,RADERR,
-     &        IQUAD,NRHX,NROX,NRSX,NTMAXX,NPHIX,KHNSHM
       COMMON /DFTOZER/ NRTYPF
       COMMON /DFTAML/ NSCHEME
 #include <dummy.h>
@@ -248,10 +247,13 @@ C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/
 C 
 C
+#include <sdpre.h>
+#include <ibtfun.h>
+C
 C
       IF (DFTGRA) CALL DZERO(WRKSP(NUM+1),NUM*3)
 C
-C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTCWM TO DEFINE THE TYPE
+C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
 C     OF QUADRATURE
 C
 C     Experimental value of NTRANS
@@ -304,12 +306,25 @@ C
 C     Loop over atoms
 C     ===============
 C 
+      IF (SPCDIV) THEN
+         MXOPR = MAXOPR
+      ELSE
+         MXOPR = 0
+      END IF
       NTOTAL = 0
+      NALL = 0
       BOHR   = 0.529177249D0
       NATOM = 1
 CTROND: define scaling factor for Bragg: set to one !!!!
       TFAC = 1.0D0
       DO 10 IATOM = 1, NUCIND
+      DO 10 ISYMOP = 0, MXOPR         
+      IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+         IF (SPCDIV) THEN
+            NDEG = 1
+         ELSE
+            NDEG  = MULT(ISTBNU(IATOM))
+         END IF
 C
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
@@ -320,6 +335,7 @@ C
          INDEX = 0
          NDEX  = 1
          NTHIS = 0
+         NTHAT = 0
 C
 C        Euler-Maclaurin radial quadrature
 C        =================================
@@ -467,28 +483,35 @@ CVT         NTOTAL = NTOTAL + IPT
             INDEX  = INDEX  - JPT + IPT
             IPT = 0
          END IF
-CTROND
-         IF(NDEG.GT.0) THEN
+         IF(.NOT.SPCDIV .AND. NDEG.GT.0) THEN
 C          Scale weights with multiplicity of center
-           FAC = FMULT(MULA)
+           FAC = SDPRE(NDEG) 
            CALL DSCAL(NTHIS,FAC,WT8,1)
          ENDIF
+         NTHAT = NTHIS
+         IF (SPCDIV) THEN
+            CALL CMPRSQ(X8,Y8,Z8,WT8,NTHIS,KPOINT)
+            NTHIS = KPOINT
+         END IF
 C
 C        Write to file LUQUAD
 C        ====================
 C
          CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NTHIS)
          NTOTAL = NTOTAL + NTHIS
+         NALL = NALL + NTHAT
          NATOM = NATOM + NDEG
          WRITE(LUPRI,'(A4,I3,3I8)') NAMN(IATOM),NDEG,NTHIS,NR,NANG
 C
+      END IF
 10    CONTINUE
 C
       NLAST = -1
       CALL WRTQUA(X8,Y8,Z8,WT8,LUQUAD,NLAST)
 C
-      WRITE (LUPRI,'(/,2X,A,I10/)') 
-     &  ' Number of grid points in quadrature:',NTOTAL
+      WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
+     &  ' Number of grid points in quadrature:',NTOTAL,
+     &  ' (',FLOAT(100*NTOTAL)/FLOAT(NALL),'%)'
 C
 C     Print file
 C
@@ -535,9 +558,7 @@ C  /* Deck assig */
 #include <implicit.h> 
 #include <priunit.h> 
 C
-      LOGICAL KHNSHM,DFTGRA,GRDWT
-      COMMON /DFTCWM/ DFTGRA,GRDWT,RNDMAX,RADERR,
-     &        IQUAD,NRHX,NROX,NRSX,NTMAXX,NPHIX,KHNSHM
+#include <dftwrk.h>
 C
       COMMON /DFTAML/ NSCHEME
       DIMENSION NRAR(6)
@@ -1847,4 +1868,63 @@ C     Newton-Raphson searc
         ENDIF
       ENDDO
       STOP 'Error in OUTERR'
+      END
+C  /* Deck cmprsq */
+      SUBROUTINE CMPRSQ(X,Y,Z,WT,NPOINT,KPOINT)
+C
+C     T. Helgaker
+C
+#include <implicit.h> 
+      DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
+#include <sdpre.h>
+      J = 0
+      DO I = 1, NPOINT
+         NDEG = MLTPNT(X(I),Y(I),Z(I))
+         IF (NDEG.GT.0) THEN
+            J = J + 1 
+            X(J) = X(I)
+            Y(J) = Y(I)
+            Z(J) = Z(I)
+            WT(J) = SDPRE(NDEG)*WT(I) 
+         END IF
+      END DO
+      KPOINT = J
+      RETURN
+      END
+C /* Deck mltpnt */
+      FUNCTION MLTPNT(PX,PY,PZ)
+C
+C     Symmetry multiplicity of a point in space
+C
+C     T. Helgaker  Feb 01
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
+      PARAMETER (A0 = 1.0D-8)
+      LOGICAL LBTAX
+#include <symmet.h>
+#include <ibtfun.h>
+      LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
+C
+      IF (MAXREP.EQ.0) NSYMOP = 0 
+      IF (MAXREP.EQ.1) NSYMOP = 1 
+      IF (MAXREP.EQ.3) NSYMOP = 2 
+      IF (MAXREP.EQ.7) NSYMOP = 3 
+      ISTAB = 0
+      DO I = 1, NSYMOP
+         IF(LBTAX(I,1) .AND. ABS(PX).GT.A0) GOTO 100
+         IF(LBTAX(I,2) .AND. ABS(PY).GT.A0) GOTO 100
+         IF(LBTAX(I,3) .AND. ABS(PZ).GT.A0) GOTO 100
+            ISTAB = ISTAB + 2**(I-1)
+ 100     CONTINUE 
+      END DO
+      MLTPNT = MULT(ISTAB)
+      DO I = 1, NSYMOP
+         IF(LBTAX(I,1) .AND. PX.LT.-A0) MLTPNT = 0
+         IF(LBTAX(I,2) .AND. PY.LT.-A0) MLTPNT = 0
+         IF(LBTAX(I,3) .AND. PZ.LT.-A0) MLTPNT = 0
+      END DO
+      RETURN
       END
