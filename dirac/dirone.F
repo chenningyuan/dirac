@@ -118,13 +118,13 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
-      LOGICAL DOINT(4),TOFILE,TRIANG
-      CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
-      DIMENSION WORK(LWORK)
 #include "dcbgen.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "cbiher.h"
+      LOGICAL DOINT(4),TOFILE
+      CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
+      DIMENSION WORK(LWORK)
 C
       CALL QENTER('OP1GEN')
 #include "memint.h"
