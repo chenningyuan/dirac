@@ -98,7 +98,23 @@ C
         CALL MAKEH(CI(KHR),CI(KHI),CI(KINDTWR),CI(KINDTWI),
      &       CI(KINDGAI),CI(KINDGAI),CI(KTWOINR),CI(KTWOINI),MAXINT)
 	CALL CPUUSED(SEC2)
+C
+        IF (IPRNT .GE. 11) THEN
+          CALL HEADER('Real part of total H',-1)
+          CALL OUTPUT(CI(KHR),1,NDET,1,NDET,NDET,NDET,1,6)
+          CALL HEADER('Imag part of total H',-1)
+          CALL OUTPUT(CI(KHI),1,NDET,1,NDET,NDET,NDET,1,6)
+        END IF
+C
         CALL DIAGH(IRP,CI(KHR),CI(KHI))
+C
+        IF (IPRNT .GE. 11) THEN
+          CALL HEADER('Real part of diagonalized H',-1)
+          CALL OUTPUT(CI(KHR),1,NDET,1,NDET,NDET,NDET,1,6)
+          CALL HEADER('Imag part of diagonalized H',-1)
+          CALL OUTPUT(CI(KHI),1,NDET,1,NDET,NDET,NDET,1,6)
+        END IF
+C
 	CALL CPUUSED(SEC3)
         CALL WRVEC(IRP,IRRP,CI(KHR),CI(KHI))
 	CALL CPUUSED(SEC4)
@@ -181,7 +197,7 @@ C
 C
       NDET = 0
       DO 10 I = 1, 2 ** NORB
-c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE)
+c       IF ((NBITS(I).EQ.NELEC).AND.(NBITS(I.AND.IREF).EQ.IREFE) 
         IF ((NBITS(I).EQ.NELEC).AND.(NBITS(IBTAND(I,IREF)).EQ.IREFE)
      +     .AND.(IRPDET(I).EQ.IRRP))  THEN
           NDET = NDET + 1
@@ -773,7 +789,29 @@ C--> Particle interchanged and complex conjugated plus time-reversed partners
       Goto 10
  20   Continue
       CLOSE(1)
+C
       Write (6,1000) "Coulomb",datex,timex,nuniq
+      IF (IPRNT .GT. 20) THEN
+        call header('two electron integrals',-1)
+        do l = 1,norb
+        do k = 1,norb
+        do j = 1,norb
+        do i = 1,norb
+           ii = indtwr(i,j,k,l)
+           is = sign(1,ii)
+           ii = abs(ii)
+           ji = indtwi(i,j,k,l)
+           js = sign(1,ji)
+           ji = abs(ji)
+           if (twoinr(ii) .ne. 0.0d0 .or. twoini(ji) .ne. 0.0d0)
+     &    write(6,'(1P,1X,4I3,4X,2(D14.7,1X))') i,j,k,l,
+     &        is*twoinr(ii),js*twoini(ji)
+         end do
+         end do
+         end do
+         end do
+      END IF
+C
       If (.NOT.BREIT) Return
       NUNIQC = NUNIQ
       OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
@@ -917,15 +955,22 @@ C
       CLOSE (MRCONEE)
 C
       DO 250 I = 1, 2 * NREP
-      MULTB(I,0) = I
+        MULTB(I,0) = I
   250 CONTINUE
 C
       WRITE(6,1200)
       WRITE(6,1210) NELEC,IREF
       WRITE(6,1220) BREIT,ECORE,NORB
       DO 300 I=1,NORB
-      WRITE(6,1230) I,REPN(IRPMO(I)),EPS(I)
+        WRITE(6,1230) I,REPN(IRPMO(I)),EPS(I)
  300  CONTINUE
+C
+      IF (IPRNT .GE. 11) THEN
+        CALL HEADER('Real part of core H',-1)
+        CALL OUTPUT(ONER,1,NORB,1,NORB,N1,N1,1,6)
+        CALL HEADER('Imag part of core H',-1)
+        CALL OUTPUT(ONEI,1,NORB,1,NORB,N1,N1,1,6)
+      END IF
 C
       RETURN
  1200 FORMAT(//' All information read from MRCONEE (and input)')
