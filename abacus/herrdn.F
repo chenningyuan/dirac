@@ -2064,6 +2064,8 @@ C
             CALL DZERO(CPRIMU(1,1,NBLOCK),KPRIM*KPRIM)
             CALL DZERO(CPRIM (1,1,NBLOCK),KPRIM*KPRIM)
 C
+            ISGEN (NBLOCK) = 0
+C
 C           Get exponents
 C     
             CALL FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA(1,NBLOCK),
