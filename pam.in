@@ -202,7 +202,7 @@ exitfunc()
       echo "   *** ABNORMAL EXIT"
    fi
    if [ -n "$NOTIFY" ]; then
-      notify_user()
+      notify_user
    fi
    exit $EXIT
 }
