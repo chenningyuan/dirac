@@ -2265,10 +2265,12 @@ C
 C
 C         Slaves will only help in the integral calculation.
 C
+#if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
              IF (ICALC.EQ.2) CALL DIRNOD2(CC(KFRSAV),LFRSAV)
              RETURN
           ENDIF
+#endif
 C
 C        Solve relativistic MP2 lambda equations
 C
