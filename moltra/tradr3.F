@@ -242,11 +242,13 @@ C           NOTE : The actual dimension of INDXAB is kept in the
 C           common block dcbtra.h. When we want to parallelize it may
 C           be better to allocate it always as MXINSH*MXINSH*4,
 C           or (even better) to send it also down to HERMIT.
-C           Luuk.
+C           Luuk. TODO
 C
 C           First a dummy run to calculate the memory requirements
 C           for GMAT. We assume that HMAT is not more than twice GMAT,
 C           and reserve the same memory also for use in HERMIT.
+C
+C           HJAAJ TODO: should be modified as in tradr4.F
 C
             NSIZG = LFREE / 3
             LDXAB = 5*NINSHA*NINSHB
@@ -709,15 +711,33 @@ C
 C     Transform indices 3 and 4 to molecular spinor basis
 C
       NKL = NFPCK34(IREPIJ)
-      CALL MEMGET('REAL',KHMAT,NKL*NZ*NZ*NBSYMP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHTMP,NKL*NZ,WORK,KFREE,LFREE)
+      LGMAT = NKL*NZ*NZ*NBSYMP
+      CALL MEMGET('REAL',KGMAT,LGMAT,WORK,KFREE,LFREE)
+      IF (ISTRAT.EQ.4) THEN
+C        for MDSCRU and for NFSYM.gt.1
+         CALL MEMGET('REAL',KGTMP,LGMAT,WORK,KFREE,LFREE)
+      ELSE IF (NFSYM.GT.1) THEN
+         CALL MEMGET('REAL',KGTMP,NKL*NZ,WORK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KGTMP,     0,WORK,KFREE,LFREE)
+      END IF
+      NR = 0
+      NS = 0
+      DO IC = ICS,ICF
+         DO IREPRS = 0,NBSYM-1
+            NR = MAX(NR,NBBAS3(IREPRS,IC))
+            NS = MAX(NS,NBBAS4(IREPRS,IC))
+         END DO
+      END DO
+      CALL MEMGET('REAL',KTRMAT,NR*NS,WORK,KFREE,LFREE)
 C
       IOFF = 1
 C
 C     Loop over the number of right hand side (12) batches.
 C
       DO IJ = 1, NIJ
-        JOFF = 0
+        JGMAT = KGMAT
+        IF (NFSYM.EQ.1) CALL DZERO(WORK(KGMAT),NKL*NZ*NZ*NBSYMP)
 C
 C       Loop over all boson irreps. On the next line we pick out the
 C       ones with the right parity.
@@ -729,7 +749,7 @@ C           Loop over the quaternion units of the first transformed
 C           density (this is IZ1 in my notes).
 C
             DO IZ = 1, NZ
-               CALL DZERO (WORK(KHTMP),NKL*NZ)
+               IF (NFSYM.GT.1) CALL DZERO (WORK(KGTMP),NKL*NZ)
 C
 C              Loop over the compound component (LL/SS) of the second
 C              untransformed density.
@@ -744,20 +764,8 @@ C                 of the third index.
 C
                   DO IREPS = 0, NBSYM-1
                      IREPR = IBTXOR(IREPRS,IREPS)
-                     IREPK =  JBTOF(IREPR,IC)
-                     IREPL =  JBTOF(IREPS,IC)
-                     KOFF = ICMOQS(IREPK,3) + IBBAS3(IREPR,IC)
-     &                    - IBAS3(IREPK)
-                     LOFF = ICMOQS(IREPL,4) + IBBAS4(IREPS,IC)
-     &                    - IBAS4(IREPL)
                      NR = NBBAS3(IREPR,IC)
                      NS = NBBAS4(IREPS,IC)
-                     NK = NSTR3(IREPK)
-                     NL = NSTR4(IREPL)
-                     NRQ3 = NDMOQS(1,IREPK,3)
-                     NCQ3 = NDMOQS(2,IREPK,3)
-                     NRQ4 = NDMOQS(1,IREPL,4)
-                     NCQ4 = NDMOQS(2,IREPL,4)
                      IF (IC.EQ.1) THEN
                         IREPRI = IREPR
                         IREPSI = IREPS
@@ -766,14 +774,33 @@ C
                         IREPSI = IBTXOR(IXYZ,IREPS)
                      ENDIF
 C
-C                    Do the actual transformation. 
-C                    Because QTRANS will generate them in a different order
-C                    for cases with inversion symmetry, we write to the
-C                    temporary array KHTMP and sort later on
-C
-                     KLOFF = KHTMP + IFPCK34(IREPK,IREPL)*NZ
-C
+                     IREPK =  JBTOF(IREPR,IC)
+                     IREPL =  JBTOF(IREPS,IC)
+                     NK = NSTR3(IREPK)
+                     NL = NSTR4(IREPL)
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
+                        KOFF = ICMOQS(IREPK,3) + IBBAS3(IREPR,IC)
+     &                       - IBAS3(IREPK)
+                        LOFF = ICMOQS(IREPL,4) + IBBAS4(IREPS,IC)
+     &                       - IBAS4(IREPL)
+                        NRQ3 = NDMOQS(1,IREPK,3)
+                        NCQ3 = NDMOQS(2,IREPK,3)
+                        NRQ4 = NDMOQS(1,IREPL,4)
+                        NCQ4 = NDMOQS(2,IREPL,4)
+C
+C                       Do the actual transformation. 
+C
+C                       Because QTRANS will generate them in a different order
+C                       for cases with inversion symmetry, we write to the
+C                       temporary array KGTMP and sort later on
+C                       ELSE: place them directly in array KGMAT
+C
+                        IF (NFSYM.GT.1) THEN
+                           KLOFF = KGTMP + IFPCK34(IREPK,IREPL)*NZ
+                        ELSE
+                           KLOFF = JGMAT
+                        END IF
+C
                         CALL QTRANS('AOMO','S',D1,NR,NS,NK,NL,
      &                       HMAT(IOFF),NR,NS,1,IPQTOQ(1,0),
      &                       WORK(KLOFF),NK,NL,
@@ -790,22 +817,24 @@ C                    are scaled before storage to avoid double-counting.
 C                    
                      IREPK =  JBTOF(IREPS,IC)
                      IREPL =  JBTOF(IREPR,IC)
-                     KOFF = ICMOQT(IREPK,3) + IBBAS4(IREPS,IC)
-     &                    - IBAS4(IREPK)
-                     LOFF = ICMOQT(IREPL,4) + IBBAS3(IREPR,IC)
-     &                    - IBAS3(IREPL)
                      NK = NSTR3(IREPK)
                      NL = NSTR4(IREPL)
-                     NRQ3 = NDMOQT(1,IREPK,3)
-                     NCQ3 = NDMOQT(2,IREPK,3)
-                     NRQ4 = NDMOQT(1,IREPL,4)
-                     NCQ4 = NDMOQT(2,IREPL,4)
-C
-                     KLOFF = KHTMP + IFPCK34(IREPK,IREPL)*NZ
-C
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
-                        CALL MEMGET('REAL',KTRMAT,NR*NS,
-     &                              WORK,KFREE,LFREE)
+                        KOFF = ICMOQT(IREPK,3) + IBBAS4(IREPS,IC)
+     &                       - IBAS4(IREPK)
+                        LOFF = ICMOQT(IREPL,4) + IBBAS3(IREPR,IC)
+     &                       - IBAS3(IREPL)
+                        NRQ3 = NDMOQT(1,IREPK,3)
+                        NCQ3 = NDMOQT(2,IREPK,3)
+                        NRQ4 = NDMOQT(1,IREPL,4)
+                        NCQ4 = NDMOQT(2,IREPL,4)
+C
+                        IF (NFSYM.GT.1) THEN
+                           KLOFF = KGTMP + IFPCK34(IREPK,IREPL)*NZ
+                        ELSE
+                           KLOFF = JGMAT
+                        END IF
+C
                         CALL MTRSP (NR,NS,HMAT(IOFF),NR,WORK(KTRMAT),NS)
                         CALL QTRANS('AOMO','S',D1,NS,NR,NK,NL,
      &                       WORK(KTRMAT),NS,NR,1,IPQTOQ(1,0),
@@ -813,7 +842,6 @@ C
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
-                        CALL MEMREL('MS4IN2P',WORK,1,KTRMAT,KFREE,LFREE)
                      ENDIF
 C
                      IOFF = IOFF + NR * NS
@@ -822,21 +850,25 @@ C                 ... ENDDO IREPS loop
                ENDDO
 C              ... ENDDO IC loop
 C
-C              Order the integrals with NKL as first and IZ2
-C              as second index
+               IF (NFSYM.GT.1) THEN
 C
-               DO IZ2 = 1, NZ
-                  DO IREPK = 1, NFSYM
-                     IREPL = MOD(IREPK+IREPIJ,2) + 1
-                     JOFF1 = JOFF+(IZ2-1)*NKL+IFPCK34(IREPK,IREPL)
-                     JOFF2 = KHTMP + IFPCK34(IREPK,IREPL)*NZ
-     &                             + (IZ2-1)*NK*NL
-                     CALL DCOPY(NK*NL,WORK(JOFF2),1,
-     &                                WORK(KHMAT+JOFF1),1)
-
+C                 Order the integrals with NKL as first and IZ2
+C                 as second index
+C
+                  DO IZ2 = 1, NZ
+                     DO IREPK = 1, NFSYM
+                        IREPL = MOD(IREPK+IREPIJ,2) + 1
+                        NK = NSTR3(IREPK)
+                        NL = NSTR4(IREPL)
+                        JOFF1 = JGMAT+(IZ2-1)*NKL+IFPCK34(IREPK,IREPL)
+                        JOFF2 = KGTMP + IFPCK34(IREPK,IREPL)*NZ
+     &                                + (IZ2-1)*NK*NL
+                        CALL DCOPY(NK*NL,WORK(JOFF2),1,WORK(JOFF1),1)
+                     ENDDO
                   ENDDO
-               ENDDO
-               JOFF = JOFF + NKL*NZ
+               ENDIF
+C
+               JGMAT = JGMAT + NKL*NZ
             ENDDO
 C           ... ENDDO IZ loop
 C
@@ -851,12 +883,11 @@ C
            IKR = INDXKR(1,IJ)
            JKR = INDXKR(2,IJ)
            CALL SYMFINT(IPRINT,IREPIJ,INDXB12(1,IJ),INDXB34,IJ,IKR,JKR,
-     &                  NSTR3,NSTR4,NKL,WORK(KHMAT),
+     &                  NSTR3,NSTR4,NKL,WORK(KGMAT),
      &                  WORK,KFREE,LFREE)
         ELSEIF (ISTRAT.EQ.4) THEN
-c          write(6,*) 'updating record ',IJS+IJ,WORK(KHMAT)
-           CALL MDSCRU(IPRINT,IREPIJ,IJS+IJ,NKL,WORK(KHMAT)
-     &                 ,WORK,KFREE,LFREE)
+c          write(6,*) 'updating record ',IJS+IJ,WORK(KGMAT)
+           CALL MDSCRU(IREPIJ,IJS+IJ,LGMAT,WORK(KGMAT),WORK(KGTMP))
         ENDIF
       ENDDO
 C     ... ENDDO IJ loop

@@ -84,11 +84,24 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbtra.h>
+#if defined (VAR_MPI)
+#include <dcbgen.h>
+#include <infmpi.h>
+#endif
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
-      WRITE (LUPRI,1000)
 C
- 1000 FORMAT (//' MOLFDIR file MDCINT is written')
+#if defined (VAR_MPI)
+      IF (PARCAL) THEN
+         WRITE (LUPRI,1001) MYTID
+      ELSE
+         WRITE (LUPRI,1000)
+      END IF
+ 1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
+#else
+      WRITE (LUPRI,1000)
+#endif
+ 1000 FORMAT (' - MOLFDIR file MDCINT was written.')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -439,6 +452,7 @@ C/* Deck MDSCRI */
 C
 C     Initialize MDINT scratch files
 C     Written by Luuk Visscher, May 1997
+C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
@@ -450,94 +464,100 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       NQQCLASS = NZ * NZ * NBSYM / NFSYM
 C
+      KFRSAV = KFREE
+      NKL = NFPCK34(1)
+      IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2))
+      LFMAT = NQQCLASS*NKL
+      CALL MEMGET('REAL',KFTMAT,LFMAT,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KFTMAT),LFMAT)
+C
 C     Open direct access scratch file for 4-indexed transformed integrals
 C
       DO IREPIJ = 1, NFSYM
-         IRECL = IRECLEN(NQQCLASS*NFPCK34(IREPIJ),0,0)
-         IRECL = MAX0(IRECL,IRECLEN(1,0,0))
+         LFMAT = NQQCLASS*NFPCK34(IREPIJ)
+         IRECL = IRECLEN(LFMAT,0,0)
+         IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
-         NKL = NFPCK34(IREPIJ)
-         CALL MEMGET('REAL',KFTMAT,NKL*NQQCLASS,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KFTMAT),NKL*NQQCLASS)
-         DO IJ = 1, NIJ
-            WRITE (LUMLF3+IREPIJ,REC=IJ) 
-     &            (WORK(IX),IX=KFTMAT,KFTMAT+NKL*NQQCLASS-1)
-         ENDDO
-         CALL MEMREL('MDSCRI',WORK,1,KFTMAT,KFREE,LFREE)
+         CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
       ENDDO
 C
+      CALL MEMREL('MDSCRI',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C/* Deck MDSCRI1 */
+      SUBROUTINE MDSCRI1(LU,NIJ,LFMAT,FMAT)
+C
+C     HJAaJ Aug 2001
+C
+#include <implicit.h>
+      DIMENSION FMAT(LFMAT)
+      DO IJ = 1, NIJ
+         WRITE (LU,REC=IJ) FMAT
+      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRR */
-      SUBROUTINE MDSCRR(IPRINT,IREPIJ,IJ,NKL,FMAT,WORK,KFREE,LFREE)
+      SUBROUTINE MDSCRR(IREPIJ,IJ,LFMAT,FMAT)
 C
 C     Read the final integrals from the scratch file
 C
 C     Written by Luuk Visscher, July 1997
+C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
-#include <priunit.h>
 #include <dcbtra.h>
-#include <dgroup.h>
-      DIMENSION WORK(*)
-      DIMENSION FMAT(*)
+      DIMENSION FMAT(LFMAT)
 C
 C     Read integrals.
 C
-      READ (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
+      READ (LUMLF3+IREPIJ,REC=IJ) FMAT
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRU */
-      SUBROUTINE MDSCRU(IPRINT,IREPIJ,IJ,NKL,FMAT,WORK,KFREE,LFREE)
+      SUBROUTINE MDSCRU(IREPIJ,IJ,LFMAT,FMAT,FTMP)
 C
 C     Update the scratch file with final integrals
 C
 C     Written by Luuk Visscher, July 1997
+C     Revised HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
-#include <priunit.h>
 #include <dcbtra.h>
-#include <dgroup.h>
-      DIMENSION WORK(*)
-      DIMENSION FMAT(*)
+      DIMENSION FMAT(LFMAT), FTMP(LFMAT)
 C
 C     Read integrals from previous batch and add up.
 C
-      CALL MEMGET('REAL',KFTMAT,NKL*NQQCLASS,WORK,KFREE,LFREE)
-      READ (LUMLF3+IREPIJ,REC=IJ) (WORK(IX),IX=KFTMAT,
-     &                              KFTMAT+NKL*NQQCLASS-1)
-      FACTR = 1
-      CALL DAXPY (NQQCLASS*NKL,FACTR,WORK(KFTMAT),1,FMAT,1)
-      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
-      CALL MEMREL('MDSCRU',WORK,1,KFTMAT,KFREE,LFREE)
+      READ (LUMLF3+IREPIJ,REC=IJ) FTMP
+      DO I = 1,LFMAT
+         FTMP(I) = FTMP(I) + FMAT(I)
+      END DO
+      WRITE (LUMLF3+IREPIJ,REC=IJ) FTMP
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRW */
-      SUBROUTINE MDSCRW(IPRINT,IREPIJ,IJ,NKL,FMAT,WORK,KFREE,LFREE)
+      SUBROUTINE MDSCRW(IREPIJ,IJ,LFMAT,FMAT)
 C
 C     Write the final integrals to scratch file.
 C
 C     Written by Luuk Visscher, July 1997
+C     Modified HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
-#include <priunit.h>
 #include <dcbtra.h>
-#include <dgroup.h>
-      DIMENSION WORK(*)
-      DIMENSION FMAT(*)
+      DIMENSION FMAT(LFMAT)
 C
-      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
+      WRITE (LUMLF3+IREPIJ,REC=IJ) FMAT
 C
       RETURN
       END
@@ -550,7 +570,6 @@ C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
-#include <priunit.h>
 #include <dcbtra.h>
 #include <dgroup.h>
 C
@@ -677,9 +696,9 @@ C     The rest of the file is written in various places. The contents is:
 C
 C     Number of IJ indices for each fermion symmetry
 C     Number of KL indices for each fermion symmetry
-C     I and J indeces
-C     Boson irrep for IJ indeces
-C     Boson irrep for KL indeces
+C     I and J indices
+C     Boson irrep for IJ indices
+C     Boson irrep for KL indices
 C
 C
       RETURN

@@ -359,8 +359,8 @@ C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
-     &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOMDCS',
-     &            '.PAR4BS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
+     &            '.PAR4BS','.SCATTE','.MDCINT','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -400,7 +400,11 @@ C
       PRPTRA = .FALSE.
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
+#if defined (SYS_LOCALDISKS)
       MDCSCAT = .TRUE.
+#else
+      MDCSCAT = .FALSE.
+#endif
       THROUT = 1.0D-16
       SCRTRA = -1.0D0
 C
@@ -594,16 +598,19 @@ C              program to avoid the generation of the enourmous MDCINT file.
                   NOMDCINT = .TRUE.
                GO TO 100
    20          CONTINUE
-C&&&& NOMDCS - Don't Scatter MDCINT to all nodes
+C&&&& NOSCATTER - Don't Scatter MDCINT/4IND to all nodes
                   MDCSCAT = .FALSE.
                GO TO 100
    21          CONTINUE
-C&&&& .PAR4BS  - size of batches for strategy 4 (parallel only)
+C&&&& PAR4BS  - size of batches for strategy 4 (parallel only)
                   READ(LUCMD,*) IPAR4BS
                GO TO 100
    22          CONTINUE
+C&&&& SCATTER - Do Scatter MDCINT/4IND to all nodes
+                  MDCSCAT = .TRUE.
                GO TO 100
    23          CONTINUE
+C&&&& MDCINT - Do write the MDCINT file in MOLFDIR format
                GO TO 100
    24          CONTINUE
                GO TO 100
@@ -705,12 +712,12 @@ C
      &   'TRAINP: Set-up for index transformation'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(/1X,A,I3)') '* General print level   : ',IPRTRA
+      IF(RCORBS) WRITE(LUPRI,'(1X,A)') '* Recanonization of orbitals.'
       IF(NOPAIR) WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
       IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
       IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
-      IF(RCORBS) WRITE(LUPRI,'(1X,A)') '* Recanonization of orbitals.'
       IF(NOMDCINT) WRITE(LUPRI,'(1X,A)')
-     &     '* MDCINT is not going to be written.'
+     &     '* MDCINT is not going to be written, 4IND1* is kept.'
       IF(MDCSCAT) WRITE(LUPRI,'(1X,2A)')
      &     '* MDCINT (and in principle the 4IND*-files) ',
      &     '  will be scattered to all nodes.'
@@ -817,7 +824,7 @@ C
 C
 C     Batch size of strategy 4.
 C
-      IF (PARCAL) THEN
+      IF (PARCAL .AND. ISTRAT.EQ.4) THEN
         IF (IPAR4BS .GT. 0) THEN
           WRITE(LUPRI,'(1X,A,I4)')
      &    '* Size of batches for strategy 4 (parallel only): ', IPAR4BS

@@ -130,11 +130,10 @@ C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
-C       Initialize scratch file.
+C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
-        IF (.NOT. MDCSCAT) THEN
-           NODE = 0
-           CALL MDSCRI(WORK,KFREE,LFREE,NODE)
+        IF (NOMDCINT) THEN
+           CALL MDSCRI(WORK,KFREE,LFREE)
         END IF
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
@@ -167,9 +166,9 @@ C
               CALL GETTIM(CPUST,WALLST)
               WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
      &           '- Starting shell A no. ',ISHLA,' after ',
-     &           WALLST - WALLBEF, ' seconds.'
+     &           WALLST - WALLBEF,' seconds.'
               CALL FLSHFO(LUPRI)
-C             Distribute number of b's evenly
+C             Distribute number of B's evenly
               NBSTEP = (ISHLA-IBSTRT)/MXIBSTEP + 1
               IBSTEP = -(ISHLA-IBSTRT)/NBSTEP - 1
            DO IBEND = ISHLA, IBSTRT, IBSTEP
@@ -179,8 +178,8 @@ C
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
-              IF (ITEST .EQ. 1) THEN
-C             ... slave wants new set of A,B pairs
+              IF (ITEST .EQ. 0) THEN
+C             ... slave wants new set of A,B shells
               CALL GETTIM(CPUST,WALLST)
               IF (IPRINT .GE. 3) THEN
                  WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
@@ -199,8 +198,8 @@ C             ... slave wants new set of A,B pairs
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
-              ELSE IF (ITEST .EQ. 2) THEN
-C             ... slave wants to lock file
+              ELSE IF (ABS(ITEST) .LE. 2) THEN
+C             ... slave wants to lock or free file
               ELSE
                  CALL QUIT('Illegal ITEST')
               END IF
@@ -222,8 +221,7 @@ C
 C
 C     Initialize scratch output file for final integrals
 C
-        NODE = 0
-        CALL MDSCRI(WORK,KFREE,LFREE,NODE)
+        CALL MDSCRI(WORK,KFREE,LFREE)
 C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 2
@@ -315,17 +313,17 @@ C
 C
 C        Write pointers etc. to MDINFO file.
 C
-C        Number of IJ indeces for each fermion symmetry
+C        Number of IJ indices for each fermion symmetry
          WRITE(LUMLF2) NFPCK12,NFPCK12T
-C        Number of KL indeces for each fermion symmetry
+C        Number of KL indices for each fermion symmetry
          WRITE(LUMLF2) NFPCK34,NFPCK34T
 C        Offsets
          WRITE(LUMLF2) NSTR
-C        I and J indeces
+C        I and J indices
          CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXKR12))
-C        Boson irrep for IJ indeces
+C        Boson irrep for IJ indices
          CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXB12))
-C        Boson irrep for KL indeces
+C        Boson irrep for KL indices
          CALL WRITI(LUMLF2,NFPCK34T*2,WORK(KDXB34))
 C        Boson irreps for each index
          DO I = 1, 4
@@ -550,43 +548,7 @@ C
 C
 C     Memory requirements for HERMIT:
 C
-C     IC = 1: (LL|**) integrals
-C     IC = 2: (SS|**) integrals
-C
-C     I2TYP =  1: (**|LL) integrals
-C     I2TYP =  2: (**|SS) integrals
-C     I2TYP = 12: (**|LL) + (**|SS) integrals
-C
-      IF ( I2TYP .EQ. 0 ) THEN
-C        ...(GG|GG) integrals
-         MWHER = MAX(MXHERMEM(1),MXHERMEM(2),MXHERMEM(3))
-      ELSE IF ( I2TYP .EQ. 1 ) THEN
-         IF ( IC .EQ. 1 ) THEN
-C           ...(LL|LL) integrals
-            MWHER = MXHERMEM(1)
-         ELSE
-C           ...(SS|LL) integrals
-            MWHER = MXHERMEM(2)
-         END IF
-      ELSE IF ( I2TYP .EQ. 2 ) THEN
-         IF ( IC .EQ. 1 ) THEN
-C           ...(LL|SS) integrals
-            MWHER = MXHERMEM(2)
-         ELSE
-C           ...(SS|SS) integrals
-            MWHER = MXHERMEM(3)
-         END IF
-      ELSE IF ( I2TYP .EQ. 12 ) THEN
-         IF ( IC .EQ. 1 ) THEN
-C           ...(LL|LL) + (LL|SS) integrals
-            MWHER = MAX(MXHERMEM(1),MXHERMEM(2))
-         ELSE
-C           ...(SS|LL) + (SS|SS) integrals
-            MWHER = MAX(MXHERMEM(2),MXHERMEM(3))
-         END IF
-      ELSE
-         CALL QUIT('TRDRV4: unknown I2TYP')
-      END IF
+      MWHER = MXMEMHER(IC,I2TYP)
 C
 C     Loop over the shells
 C
@@ -609,7 +571,7 @@ C           NOTE : The actual dimension of INDXAB is kept in the
 C           common block dcbtra.h. When we want to parallelize it may
 C           be better to allocate it always as MXINSH*MXINSH*4,
 C           or (even better) to send it also down to HERMIT.
-C           Luuk.
+C           Luuk. TODO
 C
 C           First a dummy run to calculate the memory requirements
 C           for GMAT. We assume that HMAT is not more than twice GMAT,
@@ -904,9 +866,10 @@ C
 C     Size of integral batches.
 C
       NKL = NFPCK34(IREPIJ)
-      CALL MEMGET('REAL',KHMAT,NKL*NZ*NZ*NBSYMP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHMATS,NKL*NZ*NZ*NBSYMP,WORK,KFREE,LFREE)
-      CALL DZERO (WORK(KHMAT),NKL*NZ*NZ*NBSYMP)
+      LHMAT = NKL*NZ*NZ*NBSYMP
+      CALL MEMGET('REAL',KHMAT,LHMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KHMATS,LHMAT,WORK,KFREE,LFREE)
+      CALL DZERO (WORK(KHMAT),LHMAT)
 C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
@@ -917,12 +880,11 @@ C
 C         Read integrals on all slaves.
 C
           IF (MYTID.NE.MPARID)
-     &       CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),
-     &                   WORK,KFREE,LFREE)
+     &       CALL MDSCRR(IREPIJ,IJ,LHMAT,WORK(KHMAT))
 C
 C         Sum up all contribution on the master node.
 C
-          CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+          CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),LHMAT,
      &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
      &                    MPI_COMM_WORLD,IERR)
 C
@@ -930,7 +892,7 @@ C         Put integrals on all nodes
 C
           IF (MDCSCAT) THEN
 C
-             CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+             CALL MPI_BCAST(WORK(KHMATS),LHMAT,
      &                      MPI_DOUBLE_PRECISION,MPARID,
      &                      MPI_COMM_WORLD,IERR)
 C
@@ -945,8 +907,7 @@ C
              END IF
           ELSE
              IF (MYTID .EQ. MPARID .OR. MDCSCAT) THEN
-                CALL MDSCRW(IPRINT,IREPIJ,IJ,NKL,WORK(KHMATS),
-     &                      WORK,KFREE,LFREE)
+                CALL MDSCRW(IREPIJ,IJ,LHMAT,WORK(KHMATS))
              END IF
           END IF
         ENDDO
@@ -956,8 +917,7 @@ C
             DO IJ = 1, NIJ
                IKR = INDXKR(1,IJ+NIJOFF)
                JKR = INDXKR(2,IJ+NIJOFF)
-               CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),
-     &                     WORK,KFREE,LFREE)
+               CALL MDSCRR(IREPIJ,IJ,LHMAT,WORK(KHMAT))
                CALL SYMFINT(IPRINT,IREPIJ,
      &                      INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
      &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
@@ -1093,7 +1053,7 @@ C
 C
 C     Initialize output file for final integrals
 C
-      CALL MDSCRI(WORK,KFREE,LFREE,MYTID)
+      CALL MDSCRI(WORK,KFREE,LFREE)
 C
 C     Wait for tasks until we receive the end message
 C
@@ -1142,13 +1102,15 @@ C
       CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
      &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
      &              TRIAN(2),WORK(KDXB34))
+      IF (MDCSCAT) THEN
 C
-C     Initialize MOLFDIR integral file
+C        Initialize MOLFDIR integral file on slave
 C
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
+         CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
+         CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
+         CALL MEMREL('TR4PAR',WORK,1,KIKRA,KFREE,LFREE)
+      END IF
 C
       NIJOFF = 0
       NKLOFF = 0
@@ -1164,9 +1126,10 @@ C
 C
 C     Close MOLFDIR integral file and delete direct access file
 C
-      CALL MDINTF
-      CALL MDSCRF
+      IF (MDCSCAT) CALL MDINTF
 C
+ 1000 CONTINUE
+      CALL MDSCRF
       CALL MEMREL('TR4PAR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
 C

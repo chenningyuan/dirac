@@ -1009,6 +1009,7 @@ C     - IJPAIRS      Number of blocks for each boson symmetry
 C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
 C     - GMAT         Symmetry packed scalar integrals
+C     - HMAT         Zero matrix
 C
 C     Output :
 C
@@ -1037,6 +1038,29 @@ C
 C
       KFRSAV = KFREE
 C
+C     Allocate memory for temporary storage of unsorted block of
+C     half-transformed integrals. Allocate absolute maximum instead
+C     of the exact maximum size.
+C
+      IF (NFSYM .GT. 1) THEN
+         LHTMP = MAX(NFPCK12(1),NFPCK12(2))*NZ
+      ELSE
+         LHTMP = 0
+      END IF
+      CALL MEMGET ('REAL',KHTMP,LHTMP,WORK,KFREE,LFREE)
+      IF (TRIAN) THEN
+         IF (NFSYM .EQ. 1) THEN
+            NI = NSTR1(1)
+            NJ = NSTR2(1)
+         ELSE
+            NI = MAX(NSTR1(1),NSTR1(2))
+            NJ = MAX(NSTR2(1),NSTR2(2))
+         END IF
+         CALL MEMGET('REAL',KBMAT,NI*NJ*NZ,WORK,KFREE,LFREE)
+      ELSE
+         CALL MEMGET('REAL',KBMAT,0,WORK,KFREE,LFREE)
+      END IF
+C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Transform lefthand indices to molecular spinor basis
@@ -1049,12 +1073,7 @@ C
       DO IREPPQ = 0, NBSYM-1
          IREPIJ = JBTOF(IREPPQ,1)
 C
-C        Allocate memory for temporary storage of unsorted block of
-C        half-transformed integrals. Allocate absolute maximum instead
-C        of the exact maximum size.
-C
-         CALL MEMGET ('REAL',KHTMP,NFPCK12(IREPIJ)*NZ,WORK,KFREE,LFREE)
-         CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
+         IF (NFSYM.GT.1) CALL DZERO (WORK(KHTMP),NFPCK12(IREPIJ)*NZ)
 C
 C        Loop over the distributions with this boson symmetry in this
 C        shell-block batch
@@ -1064,8 +1083,8 @@ C
 C           Loop over the compound component (LL, SS) of the lefthand
 C           densities
 C
+            IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
             DO IC = ICS, ICF
-               IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
 C
 C              Loop over the boson symmetries of the second 
 C              (untransformed) index. Get the fermion symmetry (parity)
@@ -1103,6 +1122,7 @@ C
 C                 Square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
+                     IF (NFSYM.GT.1) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
      &                    WORK(KHTMP),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
@@ -1120,6 +1140,14 @@ C
                           CALL DAXPY(NI*NJ,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
                        ENDDO
+                     ELSE
+                       CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
+     &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                    HMAT(JOFF),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                    Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
+     &                    Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
+     &                    WORK(KFREE),LFREE,IPRINT)
+                     ENDIF
                      ENDIF
 C
                   ELSEIF (TRIAN.AND.IREPI.EQ.IREPJ) THEN
@@ -1127,19 +1155,16 @@ C
 C                 Triangular storage after square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
-                       CALL MEMGET('REAL',KBMAT,NI*NJ*NZ,WORK,
-     &                              KFREE,LFREE)
-                       CALL DZERO(WORK(KBMAT),NI*NJ*NZ)
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                  GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
      &                  WORK(KBMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
      &                  Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
      &                  Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
      &                  WORK(KFREE),LFREE,IPRINT)
+                       NII = NI*(NI+1)/2
+                     IF (NFSYM.GT.1) THEN
                        CALL QTRIAN('PACK',D0,NI,NZ,WORK(KBMAT),NI,NJ,
-     &                             WORK(KHTMP),NI*(NI+1)/2)
-                       CALL MEMREL('MS4IN1',WORK,KFRSAV,KBMAT,
-     &                             KFREE,LFREE)
+     &                             WORK(KHTMP),NII)
 C
 C                      Order the integrals with NKL as first and IZ
 C                      as second index
@@ -1147,20 +1172,28 @@ C
                        DO IZ = 1, NZ
                           JOFF1 = JOFF + (IZ-1)*NFPCK12(IREPIJ) +
      &                                   IFPCK12(IREPI,IREPJ)
-                          JOFF2 = KHTMP + (IZ-1)*NI*(NI+1)/2
-                          CALL DAXPY(NI*(NI+1)/2,D1,WORK(JOFF2),1,
+                          JOFF2 = KHTMP + (IZ-1)*NII
+                          CALL DAXPY(NII,D1,WORK(JOFF2),1,
      &                               HMAT(JOFF1),1)
                        ENDDO
+                     ELSE
+                       CALL QTRIAN('PACK',D1,NI,NZ,WORK(KBMAT),NI,NJ,
+     &                             HMAT(JOFF),NII)
+                     ENDIF
                      ENDIF
                   ENDIF
                   IOFF = IOFF + NP * NQ
                ENDDO
+C              ... END DO IREPQ
             ENDDO
+C           ... END DO IC
             JOFF = JOFF + NFPCK12(IREPIJ)*NZ
          ENDDO
-         CALL MEMREL('MS4IN1',WORK,KFRSAV,KHTMP,KFREE,LFREE)
+C        ... END DO IJ
       ENDDO
+C     ... END DO IREPPQ
 C
+      CALL MEMREL('MS4IN1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('MS4IN1')
 C
       RETURN
@@ -2611,7 +2644,6 @@ C
 #include <dgroup.h>
 #include <dcborb.h>
 #include <dcbbas.h>
-CTROND#include <dcbdhf.h>
 #include <dcbham.h>
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),FAO(*),FMO(*),WORK(*)
@@ -2836,7 +2868,7 @@ C
 C
 C       Closed shell Hartree - Fock
 C       ===========================
-CTROND: This must be generalized !!!
+CTROND: This must be generalized !!! TODO
         NFMAT = 1
 C       Totally symmetric operator
         ISYMOP(1) = 1
@@ -3676,6 +3708,10 @@ C       If screening receive GAB-matrix and screening matrix
           CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
           CALL MPI_BCAST(WORK(KDRIJ),NDRIJ,MPI_DOUBLE_PRECISION,
      &                   MPARID,MPI_COMM_WORLD,IERR)
+        ELSE
+C         to not get e.g. WORK(nan) in calls in TRANOD
+          CALL MEMGET('REAL',KGABAO,0,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KDRIJ,0,WORK,KFREE,LFREE)
         ENDIF
       ENDIF
 #endif
@@ -3720,31 +3756,31 @@ C
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)') 
-     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallel.'
-         CALL QUIT('TRANOD: No parallel strategy !')
+     &     'TRANOD: Strategy 1 not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy 1 (yet)!')
       ELSEIF (ISTRAT.EQ.2) THEN
           CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &         KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
      &         DINTSKP,TIM1)
       ELSEIF (ISTRAT.EQ.3) THEN
          WRITE(LUPRI,'(A)') 
-     &     'TRANOD: Strategy ',ISTRAT,' not implemented in parallel.'
-         CALL QUIT('TRANOD: No parallel strategy !')
+     &     'TRANOD: Strategy 3 not implemented in parallel.'
+         CALL QUIT('TRANOD: No parallel strategy 3 (yet)!')
       ELSEIF (ISTRAT.EQ.4) THEN
           CALL TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,
      &             LMP2,EMP2,DINTSKP)
       ELSE
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A,I10,A)') 
      &     'TRANOD: Strategy ',ISTRAT,' not implemented'
-         CALL QUIT('PAMTR1: Unknown strategy !')
+         CALL QUIT('TRANOD: Unknown strategy !')
       ENDIF
 C
 C     We check whether all the work is done and return to the 
 C     main slave menu.
 C
       CALL MPI_BCAST(NTEST,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      IF (NTEST.NE.-1) CALL QUIT('Received wrong message')
+      IF (NTEST.NE.-1) CALL QUIT('TRANOD: Received wrong NTEST message')
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRANOD')
@@ -3797,8 +3833,13 @@ C
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
         NTEST = -1
         DO I = 1,NODES
-          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+  100     CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
+          IF (ITEST .NE. 0) THEN
+C         ... this node not finished yet, is asking to get or release file lock
+             CALL QUIT('TRARES: file lock not implemented yet')
+             GO TO 100
+          END IF
           NWHO = ISTAT(MPI_SOURCE)
           CALL GETTIM(CPUST,WALLST)
           WRITE(LUPRI,'(3X,(A,I4),A,F14.2,A)')
@@ -3814,7 +3855,6 @@ C
             CALL MPI_RECV(EBUF,1,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
             EMP2 = EMP2 + EBUF
-C           Should it be MPI_REAL instead? /jth - Dec 1 2000
             CALL MPI_RECV(TIM1(1,NODE),7,MPI_DOUBLE_PRECISION,
      &            NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           ENDIF
@@ -3831,7 +3871,6 @@ C
         IF(LMP2) THEN
           CALL MPI_SEND(EMP2,1,MPI_DOUBLE_PRECISION,
      &          MPARID,40,MPI_COMM_WORLD,IERR)
-C           Should it be MPI_REAL instead? /jth - Dec 1 2000
           CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
      &          MPARID,40,MPI_COMM_WORLD,IERR)
         ENDIF
@@ -3842,4 +3881,55 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C& End of parallel section : activitate compilation only when necessary
 #endif
-
+C/* Deck MXMEMHER */
+      FUNCTION MXMEMHER(IC,I2TYP)
+C
+C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
+C                 type of integrals specified with IC, I2TYP
+C
+#include <implicit.h>
+#include <maxaqn.h>
+#include <twosta.h>
+C
+C     Memory requirements for HERMIT:
+C
+C     IC = 1: (LL|**) integrals
+C     IC = 2: (SS|**) integrals
+C
+C     I2TYP =  1: (**|LL) integrals
+C     I2TYP =  2: (**|SS) integrals
+C     I2TYP = 12: (**|LL) + (**|SS) integrals
+C
+      IF ( I2TYP .EQ. 0 ) THEN
+C        ...(GG|GG) integrals
+         MWHER = MAX(MXHERMEM(1),MXHERMEM(2),MXHERMEM(3))
+      ELSE IF ( I2TYP .EQ. 1 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|LL) integrals
+            MWHER = MXHERMEM(1)
+         ELSE
+C           ...(SS|LL) integrals
+            MWHER = MXHERMEM(2)
+         END IF
+      ELSE IF ( I2TYP .EQ. 2 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|SS) integrals
+            MWHER = MXHERMEM(2)
+         ELSE
+C           ...(SS|SS) integrals
+            MWHER = MXHERMEM(3)
+         END IF
+      ELSE IF ( I2TYP .EQ. 12 ) THEN
+         IF ( IC .EQ. 1 ) THEN
+C           ...(LL|LL) + (LL|SS) integrals
+            MWHER = MAX(MXHERMEM(1),MXHERMEM(2))
+         ELSE
+C           ...(SS|LL) + (SS|SS) integrals
+            MWHER = MAX(MXHERMEM(2),MXHERMEM(3))
+         END IF
+      ELSE
+         CALL QUIT('MXHERMEM: unknown I2TYP')
+      END IF
+      MXMEMHER = MWHER
+      RETURN
+      END

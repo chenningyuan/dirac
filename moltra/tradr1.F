@@ -60,7 +60,7 @@ C     of spinors
 C
 C     CALL DRV1T (WORK,KFREE,LFREE,MAXTSK,NSTR,NTASK,NSTR1,NSTRS)
 C
-C     NOTE 1 :
+C     NOTE 1 TODO :
 C     DRV1T remains to be written, number of tasks will depend on memory
 C     availabe and required for the three-index transformed integrals
 C     At the moment : assume that we need only one run through.
@@ -69,7 +69,7 @@ C
       call icopy (24,NSTR(1,0,1),1,NSTR1(1,0,1,1),1)
       call icopy (8,1,0,NSTRS,1)
 C
-C     NOTE 2 :
+C     NOTE 2 TODO :
 C     Obviously the best place to parallelize this scheme is over this
 C     loop, if the number of task is sufficiently large compared to the 
 C     number of processors. More fine-grain parallelization is possible
@@ -130,7 +130,7 @@ C
 C
 C     Define the packing of the 2-index transformed integrals
 C
-CTROND      TRIAN(1) = ISAME(2).EQ.ISAME(1) - can we use this ?
+CTROND      TRIAN(1) = ISAME(2).EQ.ISAME(1) - can we use this ? TODO
       TRIAN(1) = .FALSE.
       TRIAN(2) = .FALSE.
       CALL PCK2IN(NSTR,TRIAN,IPRINT)
@@ -200,7 +200,7 @@ C
 C           Set up gather array for distributions, 
 C           calculate memory requirements for this batch.
 C
-C           NOTE : The actual dimension of INDXAB is kept in the
+C           NOTE TODO : The actual dimension of INDXAB is kept in the
 C           common block dcbtra.h. When we want to parallelize it may
 C           be better to allocate it always as MXINSH*MXINSH*4,
 C           or (even better) to send it also down to HERMIT.
@@ -208,7 +208,9 @@ C           Luuk.
 C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
-            NSIZG = LFREE
+C           Get memory needed for Hermit
+            MWHER = MXHERMEM(IC,I2TYP)
+            NSIZG = LFREE - MWHER
             NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.FALSE.,.TRUE.,
      &                       INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
             NSIZH = 0
@@ -227,8 +229,6 @@ C
      &         ' Size of half-transformed integral batch: ',NSIZH
             END IF
 C
-            CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
-            CALL DZERO(WORK(KHMAT),NSIZH*NZ)
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
 C
@@ -243,6 +243,8 @@ C
 C           Do first step of 4-index transformation :
 C           Transform first pair of indices
 C 
+            CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
+            CALL DZERO(WORK(KHMAT),NSIZH*NZ)
             CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,.FALSE.,
      &                   NSTR(1,0,1),NSTR(1,0,2),
      &                   NDMOQR,ICMOQR,IJP12,
