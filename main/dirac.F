@@ -530,6 +530,7 @@ C
 #if defined (VAR_MPI)
 
 #include <infmpi.h>
+#include <infpar.h>
       INCLUDE 'mpif.h'
 
 
