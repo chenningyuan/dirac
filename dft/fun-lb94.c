@@ -71,6 +71,8 @@ lb94_energy(const DftDensProp* dp)
 static void
 lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
 {
+  real vx;
+
     real rho    = dp->rhoa + dp->rhob;
     real rho13 = pow(rho, 1.0/3.0);
     real grad = dp->grada + dp->gradb;
@@ -80,7 +82,7 @@ lb94_first(FirstFuncDrv *ds, real factor, const DftDensProp* dp)
     sg2   = scaled_grad*scaled_grad;
 
 
-    real vx = -BETA*rho13*sg2/
+    vx = -BETA*rho13*sg2/
         (1+3*BETA*scaled_grad*asinh(scaled_grad));
 
     ds->df1000 += vx*factor;
