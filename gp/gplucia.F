@@ -2103,6 +2103,8 @@ C
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
  
+      SAVE LBATCH
+      DATA LBATCH/0/
 C
       IPACK = 1
       IF(IPACK.NE.0) THEN
@@ -2134,9 +2136,7 @@ C1000 CONTINUE
 *. The next LPBLK elements 
   999   CONTINUE
           NBATCH = NBATCH + 1
-          IF(NBATCH.NE.1) THEN
-            LBATCHP = LBATCH
-          END IF
+          LBATCHP = LBATCH
 *. Read next batch
           READ(IFILE) LBATCH
           IF(LBATCH.GT.0) THEN
@@ -2211,6 +2211,9 @@ C
       PARAMETER(LPBLK=50000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
+
+      SAVE LBATCH
+      DATA LBATCH/0/
  
       IMZERO = 0
 C
@@ -2242,9 +2245,7 @@ C1000 CONTINUE
 *. The next LPBLK elements 
   999   CONTINUE
           NBATCH = NBATCH + 1
-          IF(NBATCH.NE.1) THEN
-            LBATCHP = LBATCH
-          END IF
+          LBATCHP = LBATCH
 *. Read next batch
           READ(IFILE) LBATCH
           IF(LBATCH.GT.0) THEN
@@ -2817,6 +2818,8 @@ C?      write(6,*) ' LBL = ', LBL
           NAST = NSASO(IASM,IATP)
           NBST = NSBSO(IBSM,IBTP)
           IF(LBL.NE.0) THEN
+            isgvst = 0
+C           ... not used, just to silence ftnchek warning /Aug 2004
             CALL SDCMRF(CTT,SCR,2,IATP,IBTP,IASM,IBSM,NAST,NBST,
      &           IDC,PSSIGN,PLSIGN,ISGVST,LDET,LCOMB,ISCALE,SCLFAC)
           ELSE
@@ -4676,6 +4679,9 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 *.Output
       DIMENSION JATP(4),JBTP(4),JASM(4),JBSM(4),ISGN(4),ITRP(4)
 *
+      SAVE LSIGN, LTRP
+      DATA LSIGN, LTRP/0,0/
+*
       NPERM = 0
       DO 100 IPERM = 1, 4
         ISET = 0
@@ -5702,7 +5708,7 @@ C
 ***********************************************************************
 *  Dummy routine for normal compilations
 *
-      subroutine sqfile
+      subroutine sqfile(i,j,k,l)
       return
       end
 ***********************************************************************
