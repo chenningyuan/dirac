@@ -176,6 +176,7 @@ C
 #include "diis.inc"
 #include "eqns.inc"
 #include "inpt.inc"
+#include "ihm.inc"
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -495,7 +496,12 @@ C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
       IF (FOCKSP) THEN
-        CALL DENOMF (EPS,S1,S2,S1,S2,1)
+        IDN=1
+        IF( DOIH) THEN
+          IDN=3
+          IF (IHEQ.GT.1) IDN=4 
+        ENDIF
+        CALL DENOMF (EPS,S1,S2,S1,S2,IDN)
       ELSE
         CALL DENOM (EPS,S1,S2,S1,S2)
       ENDIF
@@ -713,6 +719,7 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "ihm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 C
@@ -747,6 +754,11 @@ C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
         CALL XCOPY (NDIMT1,FVO,1,S1,1)
+         IF (DOIH.AND.IHEQ.EQ.2) THEN
+          CALL GETAMPT (BUF1,BUF2)
+          CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
+          CALL XAXPY (NFVO,A1,BUF1,1,S1,1)
+         ENDIF
 C
 C       Delete zeroth order Hamiltonian parts
 C       for Fockspace
@@ -999,6 +1011,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
+#include "ihm.inc"
 #include "symm.inc"
 #include "ccpar.inc"
 C
@@ -1032,6 +1045,11 @@ C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
         CALL GETVVOO (S2)
+         IF (DOIH.AND.IHEQ.EQ.2) THEN
+          CALL GETAMPT (BUF1,BUF2)
+          CALL DENOMF(EPS,BUF1,BUF2,BUF1,BUF2,5)
+          CALL XAXPY (NFVO,A1,BUF2,1,S2,1)
+         ENDIF
       ENDIF
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)

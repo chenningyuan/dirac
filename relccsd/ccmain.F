@@ -87,8 +87,11 @@ C
       MYPROC = 0
       NMPROC = 1
 #endif
-C
+#if defined (CC_ALONE)
+      CALL CCMAIN(MAXCOR,IN,IW,CA,INTFCE)
+#else
       CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+#endif
 C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC

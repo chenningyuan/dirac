@@ -142,11 +142,13 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "inpt.inc"
+#include "ihm.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL REWINP,DOEA,DOIE
+      REAL*8 SHIFT,EIMIN,EIMAX
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
      &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
@@ -161,11 +163,13 @@ C
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFSPC/ DOEA,DOIE,FSSECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL
+     &                 MAXIT,MAXDIM,NTOL,DOIH
+      NAMELIST/CCIH/ NACTHI,NACTPI,EIMIN,EIMAX,SHIFT
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
       DIMENSION NACTH(16),NACTP(16)
+      DIMENSION NACTHI(16),NACTPI(16)
 C
 C---------------Executable code--------------------------------------
 C
@@ -183,6 +187,7 @@ C
       DOSOPR  = .FALSE.
       DOEXC   = .FALSE.
       DOFSPC  = .FALSE.
+      DOIH  = .FALSE.
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
@@ -314,6 +319,23 @@ C
          FSSECT(3) = 1
       ENDIF
 C
+C     Input for IH procedure
+C
+      EIMIN=1000.D0
+      EIMAX=100.D0
+      SHIFT=-3.D0
+      DO I = 1, 16
+         NACTHI(I) = 0
+         NACTPI(I) = 0
+      ENDDO
+      REWIND (IN)
+      READ (IN,CCIH,END=22,ERR=21)
+      GOTO 22
+   21 CALL QUIT('Error exit while reading namelist CCIH')
+   22 CONTINUE
+      ER_IH(1,1) = EIMIN
+      ER_IH(2,1) = EIMAX
+      CIH = SHIFT
 C     Input for the sorting routine.
 C
       USEOE = .TRUE.
@@ -754,6 +776,7 @@ C
 #include "symm.inc"
 #include "freeze.inc"
 #include "complex.inc"
+#include "ihm.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1399,6 +1422,14 @@ C
                I = IO(NREP+1) + IV(IREP) - II
             ENDIF
             EPS(I) = EPS1(ISP)
+C           Always fill this array, used in intermediate Hamiltonian formalism
+            IF (I.LE.MAXSPIM) THEN
+               IPIORB(I)=0
+               IF(EPS(I).LE.ER_IH(2,1).AND.
+     &            EPS(I).GE.ER_IH(1,1)) IPIORB(I)=1
+            ELSE
+               CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
+            ENDIF
          ENDDO
       ENDIF
 C
@@ -2416,6 +2447,7 @@ C
 #include "files.inc"
 #include "iobuf.inc"
 #include "diis.inc"
+#include "ihm.inc"
 #include "eqns.inc"
 #include "results.inc"
 #include "inpt.inc"
@@ -2540,11 +2572,16 @@ C
       MAXIT  = MXITFS
       TOL = 10.0D0**(-NTOLFS)
 C
+
 C     Initialize T1 and T2 amplitudes
 C
       CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
       CALL GETVVOO (CC(T2))
+	IF (DOIH) THEN
+      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),3)
+	ELSE
       CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
+	ENDIF
 C     Save the zeroth order wave function & Hamiltonian
       CALL PUTAMPT (CC(T1),CC(T2))
 C
@@ -2562,6 +2599,7 @@ C
       ICURFSS = IFSS(ISECT)
       IF (ICURFSS.LE.10) THEN
         WRITE (IW,1009) ICURFSS
+	IHEQ=1
         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
@@ -2569,6 +2607,16 @@ C
      &             TOL,NBUF2,NBUF3)
 C       Save the updated wave function & Hamiltonian
         CALL PUTAMPT (CC(T1),CC(T2))
+	IF (DOIH) THEN
+ 	   IHEQ=2
+           CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+     &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
+     &             CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
+     &             CC(CCC),CC(BB1),CC(BB2),
+     &             TOL,NBUF2,NBUF3)
+C       Save the updated wave function & Hamiltonian
+            CALL PUTAMPT (CC(T1),CC(T2))
+	    ENDIF
       ELSE
         WRITE (IW,1010) ICURFSS
       ENDIF

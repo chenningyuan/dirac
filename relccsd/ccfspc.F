@@ -34,6 +34,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "ihm.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -59,7 +60,12 @@ C-------------------------------------------
 C       Extract the Hamiltonian
         CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
 C       Extract the wave function
-        CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
+	    IF (DOIH.AND.IHEQ.EQ.2) THEN
+	        CALL GETAMPT (BUF3,BUF2)
+              CALL EXTRT1 (BUF3,BUF2,2,2,3,3,LFA)
+	    ELSE
+              CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
+	    ENDIF
 C       Calculate the diagram
         CALL CNTRCT ('N','N',NIV,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
 C       Insert the updated wave function
@@ -73,7 +79,12 @@ C-------------------------------------------
 C       Extract the wave function, the Hamiltonian is still in BUF1
 C       Sort and contract, after contraction put updated wf back.
 C-------------------------------------------
-        CALL EXTRT2R(T2,BUF3,1,2,1,2,3,3,LFA)
+          IF (DOIH.AND.IHEQ.EQ.2) THEN
+	      CALL GETAMPT (BUF3,BUF2)
+              CALL EXTRT1 (BUF2,BUF3,2,2,3,3,LFA)
+	    ELSE
+              CALL EXTRT2R(T2,BUF3,1,2,1,2,3,3,LFA)
+	    ENDIF
         CALL SRT1S3 (NREP,MULTB,LFA,NSVSVT,NSO,NAV,NSVSVSOT,
      &               KSVSVSOAVT,KKSVSVSOT,BUF3,BUF2)
         CALL CNTRCT('N','N',NSVSVSOT,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
@@ -96,7 +107,12 @@ C-------------------------------------------
 C       Extract the Hamiltonian
         CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
 C       Extract the wave function
-        CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+           CALL GETAMPT (BUF3,BUF2)
+           CALL EXTRT1 (BUF3,BUF2,2,2,3,3,LFA)
+        ELSE
+           CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
+        ENDIF
         CALL CNTRCT ('N','N',NAO,NIO,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
 C       Insert the updated wave function
         CALL EXTRT1 (S1,BUF3,3,3,1,1,LTR)
@@ -109,7 +125,12 @@ C-------------------------------------------
 C       Extract the wave function, the Hamiltonian is still in BUF1
 C       Sort and contract, after contraction put updated wf back.
 C-------------------------------------------
-        CALL EXTRT2L(T2,BUF3,3,3,1,2,1,2,LFA)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+	   CALL GETAMPT (BUF3,BUF2)
+           CALL EXTRT2L(BUF2,BUF3,3,3,1,2,1,2,LFA)
+	ELSE
+           CALL EXTRT2L(T2,BUF3,3,3,1,2,1,2,LFA)
+	ENDIF
         CALL SRT1S2 (NREP,MULTB,LFA,NAOSV,NAO,NSV,NSOSOT,LAOSVSOSOT,
      &               LLSVSOSOT,BUF3,BUF2)
         CALL CNTRCT ('N','N',NAO,NSVSOSOT,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
@@ -135,8 +156,14 @@ C             +T1(A,G)*DELTA(B,H)-T1(A,H)*DELTA(B,G)
 C-------------------------------------------
       IF (ICURFSS.EQ.02) THEN
 C       Make T2TAU including the spurious Hamiltonian parts
-        CALL GETTAU (T1,T2,BUF2)
-        CALL GETTAU2(T1,BUF1,BUF2,1)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+            CALL GETAMPT (BUF1,BUF3)
+            CALL GETTAU (BUF1,BUF3,BUF2)
+            CALL GETTAU2(BUF1,BUF3,BUF2,1)
+        ELSE
+            CALL GETTAU (T1,T2,BUF2)
+            CALL GETTAU2(T1,BUF1,BUF2,1)
+        ENDIF
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
         CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
@@ -149,7 +176,12 @@ C       Extract the 2-particle Hamiltonian
 C       Insert the updated wave function
         CALL EXTRT2T(S2,BUF2,1,2,3,3,LTR)
 C       Get the wave function for term (2)
-        CALL XCOPY (NDIMT2,T2,1,BUF2,1)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+	    CALL GETAMPT (BUF1,BUF3)
+            CALL XCOPY (NDIMT2,BUF3,1,BUF2,1)
+	ELSE
+	     CALL XCOPY (NDIMT2,T2,1,BUF2,1)
+	ENDIF
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
         CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
@@ -184,10 +216,16 @@ C             +T1(O,I)*DELTA(P,J)-T1(O,J)*DELTA(P,I)
 C-------------------------------------------
       IF (ICURFSS.EQ.20) THEN
 C       Make T2TAU including the spurious Hamiltonian parts
-        CALL GETTAU (T1,T2,BUF2)
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+	    CALL GETAMPT (BUF1,BUF3)
+            CALL GETTAU (BUF1,BUF3,BUF2)
+            CALL GETTAU2(BUF1,BUF3,BUF2,1)
+        ELSE
+           CALL GETTAU (T1,T2,BUF2)
         print*,"t1 before gettau2",ddot(ndimt1,t1,1,t1,1)
-        CALL GETTAU2(T1,BUF1,BUF2,1)
-C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+           CALL GETTAU2(T1,BUF1,BUF2,1)
+	ENDIF
+C       Delete Hamiltonian parts (BUF1 is changed
 C       but irrelevant here)
         CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
@@ -201,8 +239,13 @@ C       Insert the updated wave function
         CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
         print*,"t2 after term 1",ddot(ndimt2,s2,1,s2,1)
 C       Get the wave function for term (2)
-        CALL XCOPY (NDIMT2,T2,1,BUF2,1)
-C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+        IF (DOIH.AND.IHEQ.EQ.2) THEN
+           CALL GETAMPT (BUF1,BUF3)
+           CALL XCOPY (NDIMT2,BUF3,1,BUF2,1)
+        ELSE
+           CALL XCOPY (NDIMT2,T2,1,BUF2,1)
+        ENDIF
+C       Delete Hamiltonian parts (BUF1 is changed
 C       but irrelevant here)
         CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
@@ -448,6 +491,15 @@ C     Divide parts of T1 and T2 that correspond to WF by denominators
 C     Parts that correspond to the effective Hamiltonian are untouched.
 C     Option 2) :
 C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
+C     Option 3) :
+C     IH - equation I. Divide parts of T1 and T2 that correspond to WF I by denominators. Zero up Pi -> Q transitions
+C     Parts that correspond to the effective Hamiltonian are untouched.
+C     Option 4) :
+C     IH - equation II. Divide parts of T1 and T2 that correspond to WF II by MODIFIED denominators (Q(E-H0)Q).
+C     Parts that correspond to the effective Hamiltonian are untouched.
+C     Option 5) :
+C     IH - equation II. MULTIPLY parts of T1 and T2 that correspond to WF II to MODIFIED denominators (Q(E-H0)Q).
+C     Parts that correspond to the effective Hamiltonian are untouched.
 C
 C---------------Routines called----------------------------------------
 C
@@ -463,16 +515,18 @@ C
       REAL*8 T1(*),T2(*)
       COMPLEX*16 CT1(*),CT2(*)
 C
-C---------------Common Blocks--------------------------------------
+C---------------Common Blocks--------------------------------------					
 C
 #include "symm.inc"
 #include "files.inc"
 #include "complex.inc"
 #include "param.inc"
+#include "ihm.inc"
+#include "eqns.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,DIH
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
@@ -500,6 +554,7 @@ C
 C T1 part:
 C
 c
+      DIH=1.D0
       II = 0
       AI = 0
 C
@@ -514,6 +569,14 @@ c
       DO I = IOI(ico-1)+1, IOI(ico)
          II = II + 1
          FAC1 = EPS(II)
+         IF (ICURFSS.EQ.01) THEN
+             IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC1=CIH
+             IF (OPTION.EQ.3.AND.IPIORB(II).EQ.1) THEN
+                DIH=0.D0
+             ELSE
+                DIH=1.D0
+             ENDIF
+         ENDIF
          AOFF = IO(NREP+1) + IV(IRP)
 c
          IVA(0)=0
@@ -524,7 +587,7 @@ c
          do acv=1,3
 C        Find out whether we need to divide by the denominators
 C        leave Hamiltonian matrix elements untouched.
-         IF (OPTION.EQ.1) THEN
+         IF (OPTION.NE.2) THEN
             IF ((ICO.EQ.3.AND.ACV.EQ.1).OR.
      &          (ICO.EQ.2.AND.ACV.EQ.3)) THEN
                 DENO = .FALSE.
@@ -551,12 +614,28 @@ C
          DO A = IVA(acv-1)+1, IVA(acv)
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
+             IF (ICURFSS.EQ.10) THEN
+                IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC=FAC1-CIH
+                IF (OPTION.EQ.3.AND.IPIORB(AA).EQ.1) THEN
+                   DIH=0.D0
+                ELSE
+                   DIH=1.D0
+                ENDIF
+             ENDIF
              AI = AI + 1
              IF (DENO) THEN
                 IF (CARITH) THEN
-                   CT1(AI) = CT1(AI)/FAC
-                ELSE
-                   T1(AI) = T1(AI)/FAC
+                   IF (OPTION.EQ.5) THEN
+                       CT1(AI) = CT1(AI)*FAC
+                   ELSE
+                       CT1(AI) = DIH*CT1(AI)/FAC
+                   ENDIF
+               ELSE
+                   IF (OPTION.EQ.5) THEN
+                       T1(AI) = T1(AI)*FAC
+                   ELSE
+                       T1(AI) = DIH*T1(AI)/FAC
+                   ENDIF
                 ENDIF
              ENDIF
 C
@@ -600,14 +679,28 @@ c
           DO J = IOJ(jco-1)+1, IOJ(jco)
             JJ = JJ + 1
             FAC1 = EPS(JJ)
+            IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.2) THEN
+               IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC1=CIH
+               IF (OPTION.EQ.3.AND.IPIORB(JJ).EQ.1) THEN
+                  DIH=0.D0
+               ELSE
+                  DIH=1.D0
+                ENDIF
+            ENDIF
             icomin=1
             IF (IRP.EQ.JRP) icoMIN = jco
             do ico=icoMIN,3
             IMIN = IOI(ico-1)+1
             IF (IRP.EQ.JRP.and.ico.eq.jco) IMIN = J + 1
-               DO I = IMIN, IOI(ico)
-                  II = IOFF + I
-                  FAC2 = EPS(II) + FAC1
+            DO I = IMIN, IOI(ico)
+               II = IOFF + I
+               FAC2 = EPS(II) + FAC1
+               IF (ICURFSS.EQ.1.OR.ICURFSS.EQ.2) THEN
+                  IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC2=FAC1+CIH
+                  IF (OPTION.EQ.3.AND.IPIORB(II).EQ.1) THEN
+                     DIH=0.D0
+                  ENDIF
+               ENDIF
 c
              DO 20 BRP = 1, NREP
              BB = IV(BRP) + IO(NREP+1)
@@ -630,12 +723,20 @@ c
                   DO B = IVB(bcv-1)+1, IVB(bcv)
                      BB = BB + 1
                      FAC3 = FAC2 - EPS(BB)
+                     IF (ICURFSS.EQ.10.OR.ICURFSS.EQ.20) THEN
+                        IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC3=FAC2-CIH
+                        IF (OPTION.EQ.3.AND.IPIORB(BB).EQ.1) THEN
+                           DIH=0.D0
+                        ELSE
+                           DIH=1.D0
+                        ENDIF
+                     ENDIF
                      acvMIN=1
                      IF (ARP.EQ.BRP) acvMIN = Bcv
                      do acv=acvMIN,3
 C                    Find out whether we need to divide by the denoms
 C                    leave Hamiltonian matrix elements untouched.
-                     IF (OPTION.EQ.1) THEN
+                     IF (OPTION.NE.2) THEN
                  IF ( (ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.1)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.1)
@@ -674,6 +775,12 @@ C                    This will zero out Hamiltonian elements
                         DO A = AMIN, IVA(acv)
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
+                           IF (ICURFSS.EQ.10.OR.ICURFSS.EQ.20) THEN
+                            IF (OPTION.EQ.4.OR.OPTION.EQ.5) FAC=FAC3-CIH
+                            IF (ICURFSS.EQ.10) DIH=1.D0
+                            IF (OPTION.EQ.3.AND.IPIORB(JJ).EQ.1) 
+     &                         DIH=0.D0
+                           ENDIF
                            ABIJ = ABIJ + 1
                            IF (DENO) THEN
 C                            Check for zero denominators
@@ -686,9 +793,17 @@ C                            Check for zero denominators
                                 CALL QUIT('Zero denominator in DENOMF')
                              ENDIF
                              IF (CARITH) THEN
-                                CT2(ABIJ) = CT2(ABIJ)/FAC
+                                IF (OPTION.EQ.5) THEN
+                                   CT2(ABIJ) = CT2(ABIJ)*FAC
+                                ELSE
+                                   CT2(ABIJ) = DIH*CT2(ABIJ)/FAC
+                                ENDIF
                              ELSE
-                                T2(ABIJ) = T2(ABIJ)/FAC
+                                IF (OPTION.EQ.5) THEN
+                                   T2(ABIJ) = T2(ABIJ)*FAC
+                                ELSE
+                                   T2(ABIJ) = DIH*T2(ABIJ)/FAC
+                                ENDIF
                              ENDIF
 C-----------------------------------------------------------------------
 CThis may cause large output : activate when debugging..
@@ -724,11 +839,8 @@ C
                enddo
           ENDDO
          enddo
-c
-c
  10   CONTINUE
       ENDDO
-
 C
       IF (ABIJ.NE.NDIMT2) CALL QUIT ('ERROR in DENOMF')
 C
