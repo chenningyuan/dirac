@@ -2107,5 +2107,7 @@ C  /* Deck eripri */
      &                   ' @@ ', ISCOOR, I, J, K, L, BUF(INT)
          END IF
       END DO
+      WRITE (LUPRI,'(/1X,A,I10)')
+     &   'Number of two-electron integrals printed:',ICOUNT
       RETURN
       END
