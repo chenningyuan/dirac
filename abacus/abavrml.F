@@ -37,7 +37,7 @@ C#include <single.h>
 960319-vebjornb: New module for visualization with VRML models.
 #endif
 C  /* Deck mkvrml */
-      SUBROUTINE MKVRML(LAST,ATMARR,EVEC)
+      SUBROUTINE MKVRML(LAST, ATMARR, EDIM, EVEC, EVC1, EVC2)
 C     
 C     Punch out geometry to VRML-file
 C
@@ -53,8 +53,8 @@ C
 #include <priunit.h>
 #include <symmet.h>
       LOGICAL LAST
-      DIMENSION ATMARR(MXCENT,8), EVEC(MXRINT,MXRINT)
-      DIMENSION EVC1(MXCOOR)
+      DIMENSION ATMARR(MXCENT,8), EVEC(EDIM,EDIM)
+      DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
       CHARACTER*12 FILENM
 #include <ibtfun.h>
 C
@@ -138,7 +138,7 @@ C
                      CALL DRWATM(LUVRML,INDX,IATOM,.TRUE.,ATMARR)
                      IF (VRBOND)
      &                    CALL DRWBND(LUVRML,INDX,IATOM,.TRUE.,ATMARR)
-                     CALL DRWEIG(LUVRML,INDX,ATMARR,EVC1,IREP,NCR)
+                     CALL DRWEIG(LUVRML,INDX,ATMARR,EVC1,EVC2,IREP,NCR)
                      CALL VREND(LUVRML)
                      IF (IPRINT .GT. 0) THEN
                         WRITE(LUPRI,'(I5,A,A12,A,I1,A,F16.6)')
@@ -167,17 +167,16 @@ C
 #include <priunit.h>
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
-      KTMPMT = KATMAR + 8*MXCENT
-      KLAST  = KTMPMT + MXRINT*MXRINT
+      KLAST = KATMAR + 8*MXCENT
       IF (KLAST .GT. LWORK) CALL STOPIT('MKVRVB',' ',KLAST,LWORK) 
       CALL MKVRV1(NCORD,IATOM,GVEC,EVEC,ATCHRG,MODENR,FREQ,
-     &     WORK(KATMAR),WORK(KTMPMT))
+     &     WORK(KATMAR))
       RETURN
       END
 
 C  /* Deck mkvrv1 */
       SUBROUTINE MKVRV1(NCORD,IATOM,GVEC,EVEC,ATCHRG,
-     &     MODENR,FREQ,ATMARR,TMPMAT)
+     &     MODENR,FREQ,ATMARR)
 C     
 C     Punch out geometry to VRML-file
 C
@@ -194,7 +193,7 @@ C
 #include <symmet.h>
 #include <codata.h>
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
-      DIMENSION ATMARR(MXCENT,8), TMPMAT(MXRINT*MXRINT)
+      DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
 #include <ibtfun.h>
 C
@@ -285,16 +284,15 @@ C
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION WORK(LWORK)
       KATMAR = 1
-      KTMPMT = KATMAR + 8*MXCENT
-      KLAST  = KTMPMT + MXRINT*MXRINT
+      KLAST  = KATMAR + 8*MXCENT
       IF (KLAST .GT. LWORK) CALL STOPIT('MKVRSY',' ',KLAST,LWORK)
       CALL MKVRS1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,
-     &     WORK(KATMAR),WORK(KTMPMT))
+     &     WORK(KATMAR))
       RETURN
       END
 
 C  /* Deck mkvrs1 */
-      SUBROUTINE MKVRS1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,ATMARR,TMPMAT)
+      SUBROUTINE MKVRS1(ATM,DRTAXS,MAXAXS,DMRPLN,MAXMIR,ATMARR)
 C     
 C     Punch out geometry to VRML-file
 C
@@ -312,7 +310,7 @@ C
 #include <codata.h>
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
-      DIMENSION ATMARR(MXCENT,8), TMPMAT(MXRINT,MXRINT)
+      DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC(3)
       CHARACTER*12 FILENM
       LOGICAL TURN
@@ -696,7 +694,7 @@ C
       END
 
 C  /* Deck drweig */
-      SUBROUTINE DRWEIG(LUVRML,INDX,ATMARR,EVEC1,IREP,NCR)
+      SUBROUTINE DRWEIG(LUVRML,INDX,ATMARR,EVEC1,EVEC2,IREP,NCR)
 C
 C     Draws vectors to illustrate vibrational modes
 C
@@ -709,13 +707,13 @@ C
 #include <symmet.h>
 #include <trkoor.h>
       DIMENSION ATMARR(MXCENT,8)
-      DIMENSION EVEC1(MXRINT), EVEC2(MXRINT)
+      DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
 #include <ibtfun.h>
 C
-      CALL DZERO(EVEC2,MXRINT)
+      CALL DZERO(EVEC2,MXCOOR)
       CALL DAXPY(NCR,1.0D0,EVEC1,1,EVEC2,1)
-      CALL DZERO(EVEC1,MXRINT)
+      CALL DZERO(EVEC1,MXCOOR)
       DO 10 I = 1, NCR
          EVEC1(I) = EVEC2(I)*1.0D0
  10   CONTINUE
@@ -723,7 +721,7 @@ C
 C     The eigenvector in symmetry basis is transformed to
 C     cartesian coordinates.
 C
-      CALL DZERO(EVEC2,MXRINT)
+      CALL DZERO(EVEC2,MXCOOR)
       DO 20 IAT = 1, NUCIND
          DO 30 ICO = 1, 3
             ICCOOR = 3*(IAT - 1) + ICO

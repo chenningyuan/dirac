@@ -459,7 +459,7 @@ C
 C <<< Job input for DIRAC >>>
 C
 C     Written by Trond Saue May 1996
-C     Last revision: 1997/09/15 - jth (MINIMIZE added)
+C     Last revision: 1997/09/15 - jth (OPTIMIZE added)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -471,11 +471,11 @@ C
 C
 #include <dcbgen.h>
 C
-      DATA TABDIR /'*END OF','*MINIMI','*XXXXXX','*XXXXXX'/
+      DATA TABDIR /'*END OF','*OPTIMI','*XXXXXX','*XXXXXX'/
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.XXXXXX','.XXXXXX','.MINIMI','.XXXXXX'/
+     &             '.XXXXXX','.XXXXXX','.OPTIMI','.XXXXXX'/
 C
       NJOBS = 0
 C
@@ -567,8 +567,8 @@ C&&& HEINZ: Solve one-electronsystems using free-particle projection operators
   110    CONTINUE
             GO TO 100
  111     CONTINUE
-C&&&& MINIMIZE: Geometry optimization
-            MINIMI = .TRUE.
+C&&&& OPTIMIZE: Geometry optimization
+            OPTIMI = .TRUE.
             GOTO 100
  112     CONTINUE
             GOTO 100
@@ -605,7 +605,7 @@ C
       IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
      &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
-      IF(MINIMI)  WRITE(LUPRI,'(3X,A,/,3X,A)') '* Geometry optimi'//
+      IF(OPTIMI)  WRITE(LUPRI,'(3X,A,/,3X,A)') '* Geometry optimi'//
      &    'zation of DHF-wavefunction','  IMPORTANT'//
      &    ': *WAVE F must be present for readin of wavefunction.'
 C
@@ -634,14 +634,14 @@ C
          CALL QUIT('Program stopped in JOBINP, error in prompt.')
       END IF
     2 CONTINUE
-        CALL MININP(WORD)
+        CALL OPINPU(WORD)
         GO TO 200
     3 CONTINUE
         GO TO 200
     4 CONTINUE
         GO TO 200
     1 CONTINUE
-      CALL MININP(WORD)
+      CALL OPINPU(WORD)
 C
       RETURN
       END
@@ -2513,7 +2513,7 @@ C
       DOTRA    = .FALSE.
       DOCCM    = .FALSE.
       DOCIM    = .FALSE.
-      MINIMI   = .FALSE.
+      OPTIMI   = .FALSE.
       IPRGEN   = 0
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR

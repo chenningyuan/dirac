@@ -38,8 +38,8 @@ C#include <single.h>
                  coordinates. The procedures are called from abaopt.F
 #endif
 C  /* Deck inired */
-      SUBROUTINE INIRED(WILBMT,BMTRAN,BMTINV,PJINMT,TMPMAT,TMPMT2,
-     &                  TMPMT3,TMPMT4)
+      SUBROUTINE INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,PJINMT,
+     &                TMPMAT,TMPMT2,TMPMT3,TMPMT4)
 C
 C     Initializes everything that has to do with redundant internal
 C     coordinates.
@@ -48,9 +48,10 @@ C
 #include <mxcent.h>
 #include <optinf.h>
 #include <priunit.h>
-      DIMENSION WILBMT(*), BMTRAN(*), BMTINV(*), PJINMT(*)
-      DIMENSION TMPMAT(MXRINT,MXRINT), TMPMT2(MXRINT,MXRINT)
-      DIMENSION TMPMT3(MXRINT,MXRINT), TMPMT4(MXRINT,MXRINT)
+      DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
+      DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
+      DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
+      DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
 C     First we have to determine the redundant internal coordinates.
@@ -59,22 +60,23 @@ C
 C
 C     Then we construct Wilsons B matrix
 C
-      CALL GETWIL(TMPMAT,WILBMT,BMTRAN,TMPMT2)
+      CALL GETWIL(MXRCRD,MX2CRD,TMPMAT,WILBMT,BMTRAN,TMPMT2)
 C
 C     ... and the derivative of the B matrix
 C
-      IF (IPRINT .GE. IPRDBG) CALL GETDWL(TMPMAT,TMPMT2,TMPMT3,WILBMT)
+      IF (IPRINT .GE. IPRDBG)
+     &     CALL GETDWL(MXRCRD,TMPMAT,TMPMT2,TMPMT3,WILBMT)
 C
 C     We also need the inverse of the rectangular B matrix.
 C
-      CALL GTBINV(TMPMAT,TMPMT2,TMPMT3,TMPMT4,WILBMT,
+      CALL GTBINV(MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,WILBMT,
      &     BMTRAN,BMTINV,PJINMT)
       RETURN
       END
 
 C  /* Deck fndred */
       SUBROUTINE FNDRED(ATMARR,IBOND)
-C     
+C
 C     Finds natural redundant internal coordinates.
 C
 #include <implicit.h>
@@ -87,8 +89,10 @@ C
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       CALL QENTER('FNDRED')
+      IPRSAV = IPRINT
+      IF (FINDRE) IPRINT = MAX(IPRINT,IPRMIN)
       CALL DZERO(ATMARR,8*MXCENT)
-      CALL IZERO(INTCRD,6*MXRINT)
+      CALL IZERO(INTCRD,48*MXCENT)
       CALL IZERO(IBOND,MXCENT*MXCENT)
       IINTCR = 0
       IF (IPRINT .GE. IPRMIN) THEN
@@ -96,7 +100,7 @@ C
       END IF
 C
 C     First we initialize the ATMARR array.
-C      
+C
       CALL ATMINI(ATMARR,IATOM,.FALSE.)
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Expanded array of atoms (Aangstrom)',-1)
@@ -114,22 +118,22 @@ C
 C
 C     Finally all dihedral angles
 C
-      CALL FNDIHD(ATMARR,IBOND,IATOM)
+      IF (.NOT. NODIHE) CALL FNDIHD(ATMARR,IBOND,IATOM)
 C
-C     Determine value of the various coordinates
+C Determine value of the various coordinates
 C
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
       ITMP = IREDIC
       IREDIC = IINTCR
-      CALL GETINT(IATOM,ATMARR,CRDIN1)
-      IREDIC = ITMP
+      CALL GETINT(IATOM,8*MXCENT,ATMARR,CRDIN1)
+      IREDIC = ITMPC
 C
 C     Output
 C
       IF (IPRINT .GE. IPRMIN) CALL PRNRED(IINTCR,CRDIN1)
-      IF (IINTCR .GT. MXRINT) 
+      IF (IINTCR .GT. 8*MXCENT) 
      &     CALL QUIT('Too many internal ccordinates!')
-      IF ((RATFUN .OR. GDIIS) .AND. (IINTCR+1 .GT. MXRINT)) 
+      IF ((RATFUN .OR. GDIIS) .AND. (IINTCR+1 .GT. 8*MXCENT)) 
      &     CALL QUIT('Too many internal ccordinates!')
       IC = 1
  20   CONTINUE
@@ -147,13 +151,14 @@ C
          END IF
          GOTO 20
       END IF
+      IPRINT = IPRSAV
       CALL QEXIT('FNDRED')
       RETURN
       END
 
 C  /* Deck prnred */
       SUBROUTINE PRNRED(ICRD,VALINT)
-C     
+C
 C     Prints out information about redundant internal coordinates.
 C
 #include <implicit.h>
@@ -162,7 +167,7 @@ C
 #include <optinf.h>
 #include <codata.h>
 #include <pi.h>
-      DIMENSION VALINT(MXRINT)
+      DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
 C
@@ -182,8 +187,9 @@ C
             IF (INTCRD(I,1) .EQ. 1) CRDTXT='Regular bond'
             IF (INTCRD(I,1) .EQ. 3) CRDTXT='Interfragment bond'
             IF (INTCRD(I,1) .EQ. 5) CRDTXT='Hydrogen bond'
-            IF (INTCRD(I,1) .EQ. 7) CRDTXT='Extra bond'
-            WRITE(LUPRI,'(A,I3,2A,A22,2I4,A,F14.5,A5)') EMPTXT,I,
+            IF (INTCRD(I,1) .EQ. 7) CRDTXT='Auxiliary bond'
+            IF ((INTCRD(I,1) .NE. 7) .OR. (IPRINT .GE. 3))
+     &           WRITE(LUPRI,'(A,I3,2A,A22,2I4,A,F14.5,A5)') EMPTXT,I,
      &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),EMPTXT,
      &           XTANG*VALINT(I),UNTTXT
          ELSE IF (INTCRD(I,1) .GT. 20) THEN
@@ -196,7 +202,7 @@ C
          ELSE
             UNTTXT = ' deg.'
             IF (INTCRD(I,1) .EQ. 11) CRDTXT='Regular angle'
-            IF (INTCRD(I,1) .EQ. 12) CRDTXT='Additional angle'
+            IF (INTCRD(I,1) .EQ. 12) CRDTXT='Extra angle'
             WRITE(LUPRI,'(A,I3,2A,A22,3I4,A,F14.3,A5)') EMPTXT,I,
      &           MARK,'  ',CRDTXT,INTCRD(I,2),INTCRD(I,3),
      &           INTCRD(I,4),EMPTXT(1:4),1.8D2*VALINT(I)/PI,UNTTXT
@@ -216,9 +222,9 @@ C
       END
 
 C  /* Deck redvib */
-      SUBROUTINE REDVIB(NCORD,NMODE,EVEC,IFRQCM,IMAGIN,ATMARR,CRDRIN,
-     &     WILBMT,BMTRAN,TMPMAT,TMPMT2)
-C     
+      SUBROUTINE REDVIB(NCORD,NMODE,MXRCRD,MX2CRD,EVEC,IFRQCM,IMAGIN,
+     &     ATMARR,CRDRIN,WILBMT,BMTRAN,TMPMAT,TMPMT2)
+C
 C     Converts normal coordinates to redundant internal coordinates.
 C
 #include <implicit.h>
@@ -235,9 +241,9 @@ C
 #include <nuclei.h>
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
       DIMENSION IMAGIN(NCORD), ATMARR(MXCENT,8)
-      DIMENSION CRDRIN(MXRINT), WILBMT(MXRINT,MXCOOR)
-      DIMENSION BMTRAN(MXRINT,MXRINT), TMPMAT(MXRINT,MXRINT)
-      DIMENSION TMPMT2(MXRINT,MXRINT)
+      DIMENSION CRDRIN(MXRCRD), WILBMT(MXRCRD,MXCOOR)
+      DIMENSION BMTRAN(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
+      DIMENSION TMPMT2(MX2CRD,MX2CRD)
       CHARACTER*4 CRDTXT
       CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
@@ -251,7 +257,7 @@ C
       IC = IINTCR
       IF (DELINT) IC = IREDIC
       DELINT = .FALSE.
-      CALL DZERO(TMPMT2,MXRINT*MXRINT)
+      CALL DZERO(TMPMT2,MX2CRD*MX2CRD)
       CALL HEADER('Analysis in redundant internal coordinates',1)
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
 C
@@ -268,10 +274,10 @@ C
 C     We have to calculate the Wilson B matrix and the
 C     values of all redundant internal coordinates.
 C
-      CALL GETINT(IATOM,ATMARR,CRDRIN)
+      CALL GETINT(IATOM,MXRCRD,ATMARR,CRDRIN)
       IP = IPRINT
       IPRINT = -1
-      CALL GETWIL(ATMARR,WILBMT,BMTRAN,TMPMAT)
+      CALL GETWIL(MXRCRD,MX2CRD,ATMARR,WILBMT,BMTRAN,TMPMAT)
       IPRINT = IP
       CALL HEADER('Expanded array of atoms (Bohr)',-1)
       CALL OUTPUT(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
@@ -287,8 +293,8 @@ C
 C
 C     Finally the eigenvectors are transformed
 C
-      CALL DZERO(TMPMAT,MXRINT*MXRINT)
-      CALL DZERO(TMPMT2,MXRINT*MXRINT)
+      CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
+      CALL DZERO(TMPMT2,MX2CRD*MX2CRD)
       DO 40 IMODE = 1, NMODE
          DO 45 II = 1, IC
             DO 47 ICOOR = 1, 3*IATOM
@@ -313,8 +319,9 @@ C
             CRDTXT = 'bend'
             IF (INTCRD(ICOOR,1) .LT. 10) CRDTXT = 'stre'
             IF (INTCRD(ICOOR,1) .GE. 20) CRDTXT = 'tors'
-            WRITE (LUPRI,'(I5,1X,A4,(T13,5F12.6))') ICOOR,CRDTXT,
-     &         (TMPMAT(ICOOR,II),II=ISTR,IEND)
+            IF (INTCRD(ICOOR,1) .NE. 7)
+     &           WRITE (LUPRI,'(I5,1X,A4,(T13,5F12.6))') ICOOR,CRDTXT,
+     &           (TMPMAT(ICOOR,II),II=ISTR,IEND)
  110     CONTINUE
          ISTR = ISTR + 5
  100  CONTINUE
@@ -325,7 +332,7 @@ C
 
 C  /* Deck fndbnd */
       SUBROUTINE FNDBND(ATMARR,IBOND,IATOM)
-C     
+C
 C     Finds all bonds.
 C
 #include <implicit.h>
@@ -403,7 +410,7 @@ C
          CALL OUTPUT(ATMARR,1,IATOM,6,6,MXCENT,8,1,LUPRI)
       END IF
       IF (ICHANG .GT. 0) GOTO 25
-C      
+C
       II = 1
  32   CONTINUE
       IF ((II .LE. IATOM) .AND. (ATMARR(II,6) .GT. 0.5D0)) THEN
@@ -421,7 +428,7 @@ C
          WRITE(LUPRI,'(A,I4)') 
      &        ' Number of separate fragments found: ', IFRAG
       END IF
-C     
+C
 C     Two fragments get connected through the shortest interfragment distance.
 C     All distances shorter than the minimum of 2.0 Ang. and this distance
 C     are also marked as interfragment bonds.
@@ -574,45 +581,48 @@ C
 C     We also determine "extra bonds" between atoms. These will
 C     not generate angles and dihedral angles, but they seem to
 C     make geometry optimization in redundant coordinates more
-C     efficient.
+C     efficient. Only used for approx. Hessians.
 C
       IBEFOR = IINTCR
-      IF (IPRINT .GE. IPRMAX) THEN
-         CALL HEADER('Extra bonds',-1)
-      END IF
-      DO 80 I = 1, IATOM - 1
-         DO 85 J = I + 1, IATOM
-            RADI = ATMARR(I,5)
-            RADJ = ATMARR(J,5)            
-            VEC1(1) = ATMARR(I,2)-ATMARR(J,2)
-            VEC1(2) = ATMARR(I,3)-ATMARR(J,3)
-            VEC1(3) = ATMARR(I,4)-ATMARR(J,4)
-            DIST = SQRT(DDOT(3,VEC1,1,VEC1,1))
+C      IF (.NOT. NOAUX) THEN
+      IF (.NOT. NOAUX .AND. (MODHES .OR. CMBMOD .OR. INMDHS)) THEN
+         IF (IPRINT .GE. IPRMAX) THEN
+            CALL HEADER('Auxiliary bonds',-1)
+         END IF
+         DO 80 I = 1, IATOM - 1
+            DO 85 J = I + 1, IATOM
+               RADI = ATMARR(I,5)
+               RADJ = ATMARR(J,5)            
+               VEC1(1) = ATMARR(I,2)-ATMARR(J,2)
+               VEC1(2) = ATMARR(I,3)-ATMARR(J,3)
+               VEC1(3) = ATMARR(I,4)-ATMARR(J,4)
+               DIST = SQRT(DDOT(3,VEC1,1,VEC1,1))
 C
 C     Extra bonds have dist. less than 2.5 times sum of cov. radii
 C
-            IF ((DIST .LE. 2.5D0*(RADI+RADJ)) .AND.
-     &           (IBOND(I,J) .NE. 1)) THEN
-               IINTCR = IINTCR + 1
-               INTCRD(IINTCR,1) = 7
-               INTCRD(IINTCR,2) = I
-               INTCRD(IINTCR,3) = J
-               IF (IPRINT .GE. IPRMAX) THEN
-                  WRITE(LUPRI,'(A,2I4)')
-     &                 ' Extra bond between atoms: ',i,j
+               IF ((DIST .LE. 2.5D0*(RADI+RADJ)) .AND.
+     &              (IBOND(I,J) .NE. 1)) THEN
+                  IINTCR = IINTCR + 1
+                  INTCRD(IINTCR,1) = 7
+                  INTCRD(IINTCR,2) = I
+                  INTCRD(IINTCR,3) = J
+                  IF (IPRINT .GE. IPRMAX) THEN
+                     WRITE(LUPRI,'(A,2I4)')
+     &                    ' Auxiliary bond between atoms: ',i,j
+                  END IF
                END IF
-            END IF
- 85      CONTINUE
- 80   CONTINUE
-      IF ((IPRINT .GE. IPRMAX) .AND. (IBEFOR .EQ. IINTCR)) THEN
-         WRITE(LUPRI,'(A)') ' None were added.'
+ 85         CONTINUE
+ 80      CONTINUE
+         IF ((IPRINT .GE. IPRMAX) .AND. (IBEFOR .EQ. IINTCR)) THEN
+            WRITE(LUPRI,'(A)') ' None were added.'
+         END IF
       END IF
       RETURN
       END
 
 C  /* Deck fndang */
       SUBROUTINE FNDANG(ATMARR,IBOND,IATOM)
-C     
+C
 C     Finds all angles.
 C
 #include <implicit.h>
@@ -681,7 +691,7 @@ C
 
 C  /* Deck fndihd */
       SUBROUTINE FNDIHD(ATMARR,IBOND,IATOM)
-C     
+C
 C     Finds all dihedral angles.
 C
 #include <implicit.h>
@@ -865,7 +875,7 @@ C
 
 C  /* Deck rredun */
       SUBROUTINE RREDUN
-C     
+C
 C     Reduces the redundancy of the redundant internal coordinates.
 C
 #include <implicit.h>
@@ -946,8 +956,8 @@ C
       END
 
 C  /* Deck getwil */
-      SUBROUTINE GETWIL(ATMARR,WILBMT,BMTRAN,TMPMAT)
-C     
+      SUBROUTINE GETWIL(MXRCRD,MX2CRD,ATMARR,WILBMT,BMTRAN,TMPMAT)
+C
 C     Constructs the Wilson B matrix used for transformations between
 C     Cartesian and redundant natural internal coordinates.
 C
@@ -957,15 +967,15 @@ C
 #include <gnrinf.h>
 #include <priunit.h>
 #include <pi.h>
-      DIMENSION ATMARR(MXCENT,8), WILBMT(MXRINT,MXCOOR)
-      DIMENSION BMTRAN(MXRINT,MXRINT), TMPMAT(MXRINT,MXRINT)
+      DIMENSION ATMARR(MXCENT,8), WILBMT(MXRCRD,MXCOOR)
+      DIMENSION BMTRAN(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
       CHARACTER TXT*32
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (DEG175 = 175D0*PI/180D0)
 C
-      CALL DZERO(WILBMT,MXRINT*MXCOOR)
+      CALL DZERO(WILBMT,MXRCRD*MXCOOR)
       CALL DZERO(ATMARR,8*MXCENT)
       IF (IPRINT .GE. IPRMIN) THEN
          CALL TITLER('Output from GETWIL','*',103)
@@ -979,7 +989,7 @@ C
          CALL OUTPUT(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       ICRTCR = 3*IATOM
-C      
+C
       IF (REBILD) THEN
          IINTCR = IREDIC
          IREDIC = -1
@@ -996,7 +1006,7 @@ C
             VEC1(2) = ATMARR(INTCRD(IC,2),3) - ATMARR(INTCRD(IC,3),3)
             VEC1(3) = ATMARR(INTCRD(IC,2),4) - ATMARR(INTCRD(IC,3),4)
             CALL NRMLVC(VEC1)
-            DO 25 II = 1, 3 
+            DO 25 II = 1, 3
                WILBMT(IC,(INTCRD(IC,2)-1)*3+II) =  VEC1(II)
                WILBMT(IC,(INTCRD(IC,3)-1)*3+II) = -VEC1(II)
  25         CONTINUE
@@ -1177,14 +1187,14 @@ C
                VEC3(3) = ATMARR(INTCRD(IC,5),4) - ATMARR(INTCRD(IC,4),4)
                CALL NRMLVC(VEC2)
                CMPNT1 = DDOT(3,VEC1,1,VEC2,1)
-               VEC1(1) = VEC1(1) - CMPNT1*VEC2(1) 
-               VEC1(2) = VEC1(2) - CMPNT1*VEC2(2) 
-               VEC1(3) = VEC1(3) - CMPNT1*VEC2(3) 
+               VEC1(1) = VEC1(1) - CMPNT1*VEC2(1)
+               VEC1(2) = VEC1(2) - CMPNT1*VEC2(2)
+               VEC1(3) = VEC1(3) - CMPNT1*VEC2(3)
                CALL NRMLVC(VEC1)
                CMPNT2 = DDOT(3,VEC3,1,VEC2,1)
-               VEC3(1) = VEC3(1) - CMPNT2*VEC2(1) 
-               VEC3(2) = VEC3(2) - CMPNT2*VEC2(2) 
-               VEC3(3) = VEC3(3) - CMPNT2*VEC2(3) 
+               VEC3(1) = VEC3(1) - CMPNT2*VEC2(1)
+               VEC3(2) = VEC3(2) - CMPNT2*VEC2(2)
+               VEC3(3) = VEC3(3) - CMPNT2*VEC2(3)
                CALL NRMLVC(VEC3)
                DIHED = VECANG(VEC1,VEC3)
                IF (ABS(DIHED) .GT. DEG175) THEN
@@ -1207,32 +1217,32 @@ C
                      ATMARR(II,JJ+1) = ATMARR(II,JJ+1) + 1.0D-6
                      VEC1(1) = ATMARR(INTCRD(IC,2),2)
      &                    - ATMARR(INTCRD(IC,3),2)
-                     VEC1(2) = ATMARR(INTCRD(IC,2),3) 
+                     VEC1(2) = ATMARR(INTCRD(IC,2),3)
      &                    - ATMARR(INTCRD(IC,3),3)
-                     VEC1(3) = ATMARR(INTCRD(IC,2),4) 
+                     VEC1(3) = ATMARR(INTCRD(IC,2),4)
      &                    - ATMARR(INTCRD(IC,3),4)
-                     VEC2(1) = ATMARR(INTCRD(IC,4),2) 
+                     VEC2(1) = ATMARR(INTCRD(IC,4),2)
      &                    - ATMARR(INTCRD(IC,3),2)
-                     VEC2(2) = ATMARR(INTCRD(IC,4),3) 
+                     VEC2(2) = ATMARR(INTCRD(IC,4),3)
      &                    - ATMARR(INTCRD(IC,3),3)
-                     VEC2(3) = ATMARR(INTCRD(IC,4),4) 
+                     VEC2(3) = ATMARR(INTCRD(IC,4),4)
      &                    - ATMARR(INTCRD(IC,3),4)
-                     VEC3(1) = ATMARR(INTCRD(IC,5),2) 
+                     VEC3(1) = ATMARR(INTCRD(IC,5),2)
      &                    - ATMARR(INTCRD(IC,4),2)
-                     VEC3(2) = ATMARR(INTCRD(IC,5),3) 
+                     VEC3(2) = ATMARR(INTCRD(IC,5),3)
      &                    - ATMARR(INTCRD(IC,4),3)
-                     VEC3(3) = ATMARR(INTCRD(IC,5),4) 
+                     VEC3(3) = ATMARR(INTCRD(IC,5),4)
      &                    - ATMARR(INTCRD(IC,4),4)
                      CALL NRMLVC(VEC2)
                      CMPNT1 = DDOT(3,VEC1,1,VEC2,1)
-                     VEC1(1) = VEC1(1) - CMPNT1*VEC2(1) 
-                     VEC1(2) = VEC1(2) - CMPNT1*VEC2(2) 
-                     VEC1(3) = VEC1(3) - CMPNT1*VEC2(3) 
+                     VEC1(1) = VEC1(1) - CMPNT1*VEC2(1)
+                     VEC1(2) = VEC1(2) - CMPNT1*VEC2(2)
+                     VEC1(3) = VEC1(3) - CMPNT1*VEC2(3)
                      CALL NRMLVC(VEC1)
                      CMPNT2 = DDOT(3,VEC3,1,VEC2,1)
-                     VEC3(1) = VEC3(1) - CMPNT2*VEC2(1) 
-                     VEC3(2) = VEC3(2) - CMPNT2*VEC2(2) 
-                     VEC3(3) = VEC3(3) - CMPNT2*VEC2(3) 
+                     VEC3(1) = VEC3(1) - CMPNT2*VEC2(1)
+                     VEC3(2) = VEC3(2) - CMPNT2*VEC2(2)
+                     VEC3(3) = VEC3(3) - CMPNT2*VEC2(3)
                      CALL NRMLVC(VEC3)
                      IF (FAC .LT. D0) THEN
                         FAC = D1
@@ -1251,7 +1261,7 @@ C
                      END IF
                      CHANGE = FAC*(DIHED2-DIHED)/1.0D-6
                      ATMARR(II,JJ+1) = ATMARR(II,JJ+1) - 1.0D-6
-                     WRITE(LUPRI,'(2I5,3F16.6)') II,JJ,CHANGE,CH1,CH2                     
+                     WRITE(LUPRI,'(2I5,3F16.6)') II,JJ,CHANGE,CH1,CH2
  98               CONTINUE
  97            CONTINUE
             END IF
@@ -1262,11 +1272,11 @@ C
             WRITE(TXT(28:32),'(I5)') IC
             CALL HEADER(TXT,-1)
             DO 99 K = 1, IATOM
-               WRITE(LUPRI,'(I25,A,F16.6)') 
+               WRITE(LUPRI,'(I25,A,F16.6)')
      &              K,'x',WILBMT(IC,(K-1)*3+1)
-               WRITE(LUPRI,'(I25,A,F16.6)') 
+               WRITE(LUPRI,'(I25,A,F16.6)')
      &              K,'y',WILBMT(IC,(K-1)*3+2)
-               WRITE(LUPRI,'(I25,A,F16.6)') 
+               WRITE(LUPRI,'(I25,A,F16.6)')
      &              K,'z',WILBMT(IC,(K-1)*3+3)
  99         CONTINUE
          END IF
@@ -1274,20 +1284,20 @@ C
 C
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Wilson B matrix [B(ij) = dq(i)/dx(j)]',-1)
-         CALL OUTPUT(WILBMT,1,NRIC,1,ICRTCR,MXRINT,MXCOOR,1,LUPRI)
+         CALL OUTPUT(WILBMT,1,NRIC,1,ICRTCR,MXRCRD,MXCOOR,1,LUPRI)
       END IF
 C
 C     If we're using delocalized internal coordinates, we make
 C     the transformation to the active space.
 C
       IF (DELINT .AND. (IREDIC .GT. 0)) THEN
-         CALL DZERO(TMPMAT,MXRINT*MXRINT)
+         CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
          DO 100 I = 1, NRIC
             DO 102 J = 1, ICRTCR
                TMPMAT(I,J) = WILBMT(I,J)
  102        CONTINUE
  100     CONTINUE
-         CALL DZERO(WILBMT,MXRINT*MXCOOR)
+         CALL DZERO(WILBMT,MXRCRD*MXCOOR)
          DO 120 I = 1, IINTCR
             DO 122 J = 1, ICRTCR
                DO 124 K = 1, IREDIC
@@ -1298,15 +1308,15 @@ C
          IF (IPRINT .GE. IPRMIN) THEN
             CALL HEADER('Active space B matrix',-1)
             CALL OUTPUT(WILBMT,1,IINTCR,1,ICRTCR,
-     &           MXRINT,MXCOOR,1,LUPRI)
+     &           MXRCRD,MXCOOR,1,LUPRI)
          END IF
       END IF
       RETURN
       END
 
 C  /* Deck getdwl */
-      SUBROUTINE GETDWL(DWILBM,ATMARR,TMPMAT,WILBMT)
-C     
+      SUBROUTINE GETDWL(MXRCRD,DWILBM,ATMARR,TMPMAT,WILBMT)
+C
 C     Constructs the derivative of the Wilson B matrix used for transformations
 C     between Cartesian and redundant natural internal coordinates.
 C
@@ -1315,7 +1325,7 @@ C
 #include <optinf.h>
 #include <gnrinf.h>
 #include <priunit.h>
-      DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRINT,MXCOOR)
+      DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRCRD,MXCOOR)
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
       CHARACTER TXT*32
@@ -1356,7 +1366,7 @@ C
      &                    - ATMARR(INTCRD(IC,3),4)
                      CALL NRMLVC(VEC1)
                      CALL DZERO(VEC2,3)
-                     DO 40 J = 1, 3 
+                     DO 40 J = 1, 3
                         VEC2(J) = 1.0D0
                         COMPNT = DDOT(3,VEC1,1,VEC2,1)
                         TMPMAT((INTCRD(IC,II)-1)*3+JJ,
@@ -1378,7 +1388,7 @@ C
      &                          (TMPMAT((INTCRD(IC,KK)-1)*3+LL,
      &                          (INTCRD(IC,II)-1)*3+JJ) -
      &                          WILBMT(IC,(INTCRD(IC,II)-1)*3+JJ))
-     &                          /1.0D-6                           
+     &                          /1.0D-6
  54                     CONTINUE
  53                  CONTINUE
  51               CONTINUE
@@ -1395,10 +1405,10 @@ C
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
-C     
+C
 C     Analytically:
 C
-            CALL GTDWLM(IC,DWILBM,ATMARR,WILBMT)
+            CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
@@ -1430,9 +1440,9 @@ C
                      BNDL2 = SQRT(DDOT(3,VEC2,1,VEC2,1))
                      CALL NRMLVC(VEC1)
                      CALL NRMLVC(VEC2)
-C     
+C
 C     All regular angles
-C     
+C
                      IF (INTCRD(IC,1) .EQ. 11) THEN
                         CALL VECPRD(VEC1,VEC2,VEC3)
                         VNRM = SQRT(DDOT(3,VEC3,1,VEC3,1))
@@ -1442,9 +1452,9 @@ C
                            VEC3(3) = -VEC1(1)-VEC1(2)
                         END IF
                         CALL NRMLVC(VEC3)
-C     
+C
 C     Second coordinate of angles larger than 175 degrees.
-C     
+C
                      ELSE
                         CALL VECPRD(VEC1,VEC3,VEC4)
                         CALL NRMLVC(VEC4)
@@ -1452,12 +1462,12 @@ C
                         VEC3(2) = VEC4(2)
                         VEC3(3) = VEC4(3)
                      END IF
-C     
+C
                      CALL VECPRD(VEC1,VEC3,VEC4)
                      CALL NRMLVC(VEC4)
                      CALL VECPRD(VEC3,VEC2,VEC5)
                      CALL NRMLVC(VEC5)
-C     
+C
                      DO 70 J = 1, 3
                         TMPMAT((INTCRD(IC,II)-1)*3+JJ,
      &                       (INTCRD(IC,2)-1)*3+J) =  (VEC4(J)/BNDL1)
@@ -1471,7 +1481,7 @@ C
      &                    ATMARR(INTCRD(IC,II),JJ+1) - 1.0D-6
  65               CONTINUE
  60            CONTINUE
-C     
+C
                DO 90 II = 2, 4
                   DO 91 JJ = 1, 3
                      DO 93 KK = 2, 4
@@ -1498,10 +1508,10 @@ C
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
-C     
+C
 C     Analytically:
 C
-            CALL GTDWLM(IC,DWILBM,ATMARR,WILBMT)
+            CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
@@ -1529,7 +1539,7 @@ C
      &                    - ATMARR(INTCRD(IC,3),3)
                      VEC2(3) = ATMARR(INTCRD(IC,4),4)
      &                    - ATMARR(INTCRD(IC,3),4)
-                     VEC3(1) = ATMARR(INTCRD(IC,5),2) 
+                     VEC3(1) = ATMARR(INTCRD(IC,5),2)
      &                    - ATMARR(INTCRD(IC,4),2)
                      VEC3(2) = ATMARR(INTCRD(IC,5),3)
      &                    - ATMARR(INTCRD(IC,4),3)
@@ -1546,10 +1556,10 @@ C
                      CALL VECPRD(VEC1,VEC2,VEC4)
                      CALL VECPRD(VEC2,VEC3,VEC5)
                      CALL VECPRD(VEC3,VEC2,VEC6)
-C     
+C
 C     Check for linearity. The dihedral angle is undefined if three
 C     or four of the atoms are linear.
-C     
+C
                      IF ((DDOT(3,VEC4,1,VEC4,1) .GT. 1.0D-16) .AND.
      &                    (DDOT(3,VEC5,1,VEC5,1) .GT. 1.0D-16)) THEN
                         DO 120 J = 1, 3
@@ -1575,7 +1585,7 @@ C
      &                    ATMARR(INTCRD(IC,II),JJ+1) - 1.0D-6
  105              CONTINUE
  100           CONTINUE
-C     
+C
                DO 200 II = 2, 5
                   DO 210 JJ = 1, 3
                      DO 220 KK = 2, 5
@@ -1605,7 +1615,7 @@ C
 C
 C     Analytically:
 C
-            CALL GTDWLM(IC,DWILBM,ATMARR,WILBMT)
+            CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
                CALL HEADER('Analytically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
@@ -1617,7 +1627,8 @@ C
       END
 
 C  /* Deck gtdwl0 */
-      SUBROUTINE GTDWL0(IC,DWILBM,ATMARR,WILBMT,BMTRAN,WORK,LWORK)
+      SUBROUTINE GTDWL0(MXRCRD,IC,DWILBM,ATMARR,WILBMT,BMTRAN,
+     &     WORK,LWORK)
 C
 C     Ths subroutine determines the coordinate system in work, and
 C     allocates memory if needed.
@@ -1628,24 +1639,24 @@ C
 #include <gnrinf.h>
 #include <priunit.h>
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTRAN(MXRINT,MXRINT)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
       IF (.NOT. DELINT) THEN
-         CALL GTDWLM(IC,DWILBM,ATMARR,WILBMT)
+         CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
       ELSE
          KMTRED = 1
          KMTDEL = KMTRED + IREDIC*ICRTCR*ICRTCR
          KWRK   = KMTDEL + IINTCR*ICRTCR*ICRTCR
          IF (KWRK .GT. LWORK) CALL STOPIT('GTDWL0',' ',KWRK,LWORK)
-         CALL GTDWL1(IC,DWILBM,ATMARR,WILBMT,BMTRAN,
+         CALL GTDWL1(MXRCRD,IC,DWILBM,ATMARR,WILBMT,BMTRAN,
      &        WORK(KMTRED),WORK(KMTDEL),IREDIC,IINTCR,ICRTCR)
       END IF
       RETURN
       END
 
 C  /* Deck gtdwl1 */
-      SUBROUTINE GTDWL1(IC,DWILBM,ATMARR,WILBMT,BMTRAN,REDMAT,DELMAT,
-     &     IRED,IDEL,ICRT)
+      SUBROUTINE GTDWL1(MXRCRD,IC,DWILBM,ATMARR,WILBMT,BMTRAN,REDMAT,
+     &     DELMAT,IRED,IDEL,ICRT)
 C
 C     Ths subroutine acts as a buffer for the subroutine GTDWLM when
 C     delocalized internal coordinates are used.
@@ -1656,7 +1667,7 @@ C
 #include <gnrinf.h>
 #include <priunit.h>
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTRAN(MXRINT,MXRINT)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION REDMAT(IRED,ICRT,ICRT)
       DIMENSION DELMAT(IDEL,ICRT,ICRT)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
@@ -1667,7 +1678,7 @@ C
          CALL DZERO(REDMAT,IRED*ICRT*ICRT)
          CALL DZERO(DELMAT,IDEL*ICRT*ICRT)
          DO 10 IR = 1, IRED
-            CALL GTDWLM(IR,DWILBM,ATMARR,WILBMT)
+            CALL GTDWLM(MXRCRD,IR,DWILBM,ATMARR,WILBMT)
             DO 20 I = 1, ICRT
                DO 22 J = 1, ICRT
                   REDMAT(IR,I,J) = DWILBM(I,J)
@@ -1676,12 +1687,12 @@ C
  10      CONTINUE
 C
 C     Then we transform it to delocalized coordinates.
-C         
+C
          DO 30 I1 = 1, IDEL
             DO 32 J1 = 1, IRED
                DO 34 K1 = 1, ICRT
                   DO 36 K2 = 1, ICRT
-                     DELMAT(I1,K1,K2) = DELMAT(I1,K1,K2) 
+                     DELMAT(I1,K1,K2) = DELMAT(I1,K1,K2)
      &                    + BMTRAN(J1,I1)*REDMAT(J1,K1,K2)
  36               CONTINUE
  34            CONTINUE
@@ -1698,7 +1709,7 @@ C
       END
 
 C  /* Deck gtdwlm */
-      SUBROUTINE GTDWLM(IC,DWILBM,ATMARR,WILBMT)
+      SUBROUTINE GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
 C
 C     Returns the derivative of the Wilson B matrix for _one_
 C     redundant internal coordinate (IC).
@@ -1709,7 +1720,7 @@ C
 #include <gnrinf.h>
 #include <priunit.h>
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
-      DIMENSION WILBMT(MXRINT,MXCOOR)
+      DIMENSION WILBMT(MXRCRD,MXCOOR)
       DIMENSION VEC1(3),VEC2(3),VEC3(3),VEC4(3),VEC5(3)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
@@ -1782,7 +1793,7 @@ C     displacements (II = JJ) and not the atoms.
 C
                   FACIJ = D0
                   IF (II .EQ. JJ) FACIJ = D1
-C     
+C
 C     We only need a few "building blocks" to make all expressions.
 C
                   CMPUU  = (VEC1(II)*VEC2(JJ) + VEC1(JJ)*VEC2(II)
@@ -1797,7 +1808,7 @@ C
                   CMPWW2 = (VEC2(II)*VEC2(JJ) + VEC1(II)*VEC1(JJ)
      &                 - COSA*VEC2(II)*VEC1(JJ)
      &                 - FACIJ)/(SINA*BNDL1*BNDL2)
-C     
+C
 C     All the different elements are constructed.
 C
                   DWILBM((INTCRD(IC,2)-1)*3+II,(INTCRD(IC,2)-1)*3+JJ)
@@ -1822,9 +1833,9 @@ C
  27            CONTINUE
  25         CONTINUE
 C
-C     If the second derivative is undefined (sin(q) ~ 0), we set the matrix equal to
-C     the zero matrix.
-C     
+C     If the second derivative is undefined (sin(q) ~ 0), we set the
+C     matrix equal to the zero matrix.
+C
          ELSE
             DO 30 I = 1, ICRTCR
                DO 32 J = 1, ICRTCR
@@ -1878,9 +1889,9 @@ C
 C                                 i
 C                              1  2  3
 C                             ---------
-C                           1| 0  +  - 
-C                         j 2| -  0  + 
-C                           3| +  -  0 
+C                           1| 0  +  -
+C                         j 2| -  0  +
+C                           3| +  -  0
 C
                   FACIJ = (JJ-II)*(-0.5D0)**(ABS(JJ-II))
 C
@@ -1888,7 +1899,7 @@ C     For some of the elements we need the third Cartesian direction,
 C     that is k =/ i,j.
 C
                   KK = 6-II-JJ
-C     
+C
 C     With the following "building blocks" all expressions can be constructed:
 C
                   CMPUU  = (VEC4(II)*(UW*VEC2(JJ)-VEC1(JJ))
@@ -1954,7 +1965,7 @@ C
 C
 C     If the second derivative is undefined (sin(q) ~ 0), we set the
 C     matrix equal to the identity matrix.
-C     
+C
          ELSE
             DO 50 I = 1, ICRTCR
                DWILBM(I,I) = D1
@@ -1965,8 +1976,9 @@ C
       END
 
 C  /* Deck gtbinv */
-      SUBROUTINE GTBINV(UMAT,WMAT,VMAT,VAL,WILBMT,BMTRAN,BMTINV,PJINMT)
-C     
+      SUBROUTINE GTBINV(MXRCRD,UMAT,WMAT,VMAT,VAL,WILBMT,BMTRAN,
+     &     BMTINV,PJINMT)
+C
 C     Decomposes the transpose of Wilson's B matrix, then one can
 C     construct the inverse of the rectangulat matrix.
 C
@@ -1974,29 +1986,30 @@ C
 #include <mxcent.h>
 #include <optinf.h>
 #include <priunit.h>
-      DIMENSION UMAT(MXCOOR,MXRINT), WMAT(MXRINT,MXRINT)
-      DIMENSION VMAT(MXRINT,MXRINT), VAL(MXRINT)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTRAN(MXRINT,MXRINT)
-      DIMENSION BMTINV(MXRINT,MXCOOR), PJINMT(MXRINT,MXRINT)
+      DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
+      DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
+      DIMENSION BMTINV(MXRCRD,MXCOOR), PJINMT(MXRCRD,MXRCRD)
       PARAMETER (D0 = 0.0D0)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       IF (IPRINT .GE. IPRMED) CALL TITLER('Output from GTBINV','*',103)
       IDIM1 = ICRTCR
       IDIM2 = IINTCR
-      CALL DECOMP(IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,WILBMT,BMTINV,PJINMT)
+      CALL DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,WILBMT,
+     &     BMTINV,PJINMT)
 C
 C     Some output
 C
       IF (IPRINT .GE. IPRDBG) THEN
-         CALL HEADER('U matrix in GTBINV',-1) 
-         CALL OUTPUT(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRINT,1,LUPRI)
-         CALL HEADER('W matrix in GTBINV',-1) 
-         CALL OUTPUT(WMAT,1,IDIM2,1,IDIM2,MXRINT,MXRINT,1,LUPRI)
-         CALL HEADER('V matrix in GTBINV',-1) 
-         CALL OUTPUT(VMAT,1,IDIM2,1,IDIM2,MXRINT,MXRINT,1,LUPRI)
+         CALL HEADER('U matrix in GTBINV',-1)
+         CALL OUTPUT(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
+         CALL HEADER('W matrix in GTBINV',-1)
+         CALL OUTPUT(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+         CALL HEADER('V matrix in GTBINV',-1)
+         CALL OUTPUT(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
       END IF
-C     
+C
 C     Based on the singular value decomposition of the B matrix,
 C     we can construct a non-redundant B matrix mixing the various
 C     internal primitives. The eigenvectors is stored in BMTRAN.
@@ -2005,7 +2018,7 @@ C
 C
 C     The redundant B matrix is copied to BMTRAN.
 C
-         CALL DZERO(BMTRAN,MXRINT*MXRINT)
+         CALL DZERO(BMTRAN,MXRCRD*MXRCRD)
          DO 540 I = 1, IDIM2
             DO 545 J = 1, IDIM1
                BMTRAN(I,J) = WILBMT(I,J)
@@ -2036,19 +2049,19 @@ C
             GOTO 550
          END IF
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('Reduced U matrix',-1) 
-            CALL OUTPUT(UMAT,1,IDIM1,1,IDIM3,MXCOOR,MXRINT,1,LUPRI)
-            CALL HEADER('Reduced W matrix',-1) 
-            CALL OUTPUT(WMAT,1,IDIM3,1,IDIM3,MXRINT,MXRINT,1,LUPRI)
+            CALL HEADER('Reduced U matrix',-1)
+            CALL OUTPUT(UMAT,1,IDIM1,1,IDIM3,MXCOOR,MXRCRD,1,LUPRI)
+            CALL HEADER('Reduced W matrix',-1)
+            CALL OUTPUT(WMAT,1,IDIM3,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
             CALL HEADER('Reduced V matrix (non-redund. eigenvectors)'
-     &           ,-1) 
-            CALL OUTPUT(VMAT,1,IDIM2,1,IDIM3,MXRINT,MXRINT,1,LUPRI)
+     &           ,-1)
+            CALL OUTPUT(VMAT,1,IDIM2,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
          END IF
 C
 C     We calculate the weights of the different primitives
 C
          IF (IPRINT .GE. IPRMAX) THEN
-            CALL HEADER('Primitive weights in final space',-1) 
+            CALL HEADER('Primitive weights in final space',-1)
             DO 600 IPRIM = 1, IDIM2
                WG = 0.0D0
                DO 610 I = 1, IDIM3
@@ -2061,7 +2074,7 @@ C
 C     We construct the B matrix for the delocalized
 C     internal coordinates.
 C
-         CALL DZERO(WILBMT,MXRINT*MXCOOR)
+         CALL DZERO(WILBMT,MXRCRD*MXCOOR)
          DO 620 I = 1, IDIM3
             DO 622 J = 1, IDIM1
                DO 624 K = 1, IDIM2
@@ -2070,13 +2083,13 @@ C
  622        CONTINUE
  620     CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('B matrix of active space',-1) 
-            CALL OUTPUT(WILBMT,1,IDIM3,1,IDIM1,MXRINT,MXCOOR,1,LUPRI)
+            CALL HEADER('B matrix of active space',-1)
+            CALL OUTPUT(WILBMT,1,IDIM3,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
          END IF
 C
 C     The eigenvectors (V matrix) is stored in BMTRAN
 C
-         CALL DZERO(BMTRAN,MXRINT*MXRINT)
+         CALL DZERO(BMTRAN,MXRCRD*MXRCRD)
          DO 630 I = 1, IDIM2
             DO 635 J = 1, IDIM3
                BMTRAN(I,J) = VMAT(I,J)
@@ -2089,15 +2102,15 @@ C
 C     Then we start the decomposition again with this matrix
 C     (which now should have no singular values).
 C
-         CALL DECOMP(IDIM1,IDIM3,UMAT,WMAT,VMAT,VAL,
+         CALL DECOMP(MXRCRD,IDIM1,IDIM3,UMAT,WMAT,VMAT,VAL,
      &        WILBMT,BMTINV,PJINMT)
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('Non-redundant U matrix in GTBINV',-1) 
-            CALL OUTPUT(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRINT,1,LUPRI)
-            CALL HEADER('Non-redundant W matrix in GTBINV',-1) 
-            CALL OUTPUT(WMAT,1,IDIM2,1,IDIM2,MXRINT,MXRINT,1,LUPRI)
-            CALL HEADER('Non-redundant V matrix in GTBINV',-1) 
-            CALL OUTPUT(VMAT,1,IDIM2,1,IDIM2,MXRINT,MXRINT,1,LUPRI)
+            CALL HEADER('Non-redundant U matrix in GTBINV',-1)
+            CALL OUTPUT(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
+            CALL HEADER('Non-redundant W matrix in GTBINV',-1)
+            CALL OUTPUT(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+            CALL HEADER('Non-redundant V matrix in GTBINV',-1)
+            CALL OUTPUT(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
          END IF
       END IF
 C
@@ -2121,7 +2134,7 @@ C
 C     A projection operator that will be used later,
 C     is also constructed: P = V W W^-1 V^t
 C
-      CALL DZERO(PJINMT,MXRINT*MXRINT)
+      CALL DZERO(PJINMT,MXRCRD*MXRCRD)
       DO 140 I = 1, IDIM2
          DO 142 J = 1, IDIM2
             DO 144 K = 1, IDIM2
@@ -2131,12 +2144,12 @@ C
  142     CONTINUE
  140  CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
-         CALL HEADER('Projection matrix',-1) 
-         CALL OUTPUT(PJINMT,1,IDIM2,1,IDIM2,MXRINT,MXRINT,1,LUPRI)
+         CALL HEADER('Projection matrix',-1)
+         CALL OUTPUT(PJINMT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
       END IF
 C
 C     We construct (1/w_ii) U^t
-C      
+C
       DO 160 I = 1, IDIM2
          DO 162 J = 1, IDIM1
             DO 164 K = 1, IDIM2
@@ -2147,7 +2160,7 @@ C
 C
 C     Then V (1/w_ii) U^t
 C
-      CALL DZERO(WMAT,MXRINT*MXRINT)
+      CALL DZERO(WMAT,MXRCRD*MXRCRD)
       DO 170 I = 1, IDIM2
          DO 172 J = 1, IDIM1
             DO 174 K = 1, IDIM2
@@ -2155,15 +2168,15 @@ C
  174        CONTINUE
  172     CONTINUE
  170  CONTINUE
-      CALL DZERO(BMTINV,MXRINT*MXCOOR)
+      CALL DZERO(BMTINV,MXRCRD*MXCOOR)
       DO 180 J = 1, IDIM1
          DO 182 I = 1, IDIM2
             BMTINV(I,J) = WMAT(I,J)
  182     CONTINUE
  180  CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
-         CALL HEADER('Inverse of B^t',-1) 
-         CALL OUTPUT(BMTINV,1,IDIM2,1,IDIM1,MXRINT,MXCOOR,1,LUPRI)
+         CALL HEADER('Inverse of B^t',-1)
+         CALL OUTPUT(BMTINV,1,IDIM2,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
          WRITE(LUPRI,*)
@@ -2180,26 +2193,26 @@ C
       END
 
 C  /* Deck decomp */
-      SUBROUTINE DECOMP(IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,
+      SUBROUTINE DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,
      &     WILBMT,BMTINV,PJINMT)
-C     
+C
 C     Decomposes the transpose of Wilson's B matrix.
 C
 #include <implicit.h>
 #include <mxcent.h>
 #include <optinf.h>
 #include <priunit.h>
-      DIMENSION UMAT(MXCOOR,MXRINT), WMAT(MXRINT,MXRINT)
-      DIMENSION VMAT(MXRINT,MXRINT), VAL(MXRINT)
-      DIMENSION WILBMT(MXRINT,MXCOOR)
-      DIMENSION BMTINV(MXRINT,MXCOOR), PJINMT(MXRINT,MXRINT)
+      DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
+      DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
+      DIMENSION WILBMT(MXRCRD,MXCOOR)
+      DIMENSION BMTINV(MXRCRD,MXCOOR), PJINMT(MXRCRD,MXRCRD)
       PARAMETER (D0 = 0.0D0)
 C
-      CALL DZERO(BMTINV,MXRINT*MXCOOR)
-      CALL DZERO(UMAT,MXRINT*MXCOOR)
-      CALL DZERO(WMAT,MXRINT*MXRINT)
-      CALL DZERO(VMAT,MXRINT*MXRINT)
-      CALL DZERO(VAL,MXRINT)
+      CALL DZERO(BMTINV,MXRCRD*MXCOOR)
+      CALL DZERO(UMAT,MXRCRD*MXCOOR)
+      CALL DZERO(WMAT,MXRCRD*MXRCRD)
+      CALL DZERO(VMAT,MXRCRD*MXRCRD)
+      CALL DZERO(VAL,MXRCRD)
 C
 C     The transpose is placed in UMAT
 C
@@ -2222,8 +2235,8 @@ C
          SGNFAC = D0
          SUM    = D0
          II = I + 1
-         IF (I .LE. IDIM1) THEN 
-            DO 25 J = I, IDIM1 
+         IF (I .LE. IDIM1) THEN
+            DO 25 J = I, IDIM1
                SCL = SCL + ABS(UMAT(J,I))
  25         CONTINUE
             IF (SCL .NE. D0) THEN
@@ -2363,7 +2376,7 @@ C
                   FY = UMAT(L,KK)
                   FZ = UMAT(L,I)
                   UMAT(L,KK) = FY*FC + FZ*SUM
-                  UMAT(L,I)  = FZ*FC - FY*SUM  
+                  UMAT(L,I)  = FZ*FC - FY*SUM
  114           CONTINUE
  112        CONTINUE
  902        CONTINUE
@@ -2408,7 +2421,7 @@ C
                   FX = VMAT(M,L)
                   FZ = VMAT(M,I)
                   VMAT(M,L) = (FX*FC) + (FZ*SUM)
-                  VMAT(M,I) =-(FX*SUM) + (FZ*FC) 
+                  VMAT(M,I) =-(FX*SUM) + (FZ*FC)
  122           CONTINUE
                FZ = SQRT(FAC*FAC + FAC2*FAC2)
                WMAT(L,L) = FZ
@@ -2423,7 +2436,7 @@ C
                   FY = UMAT(M,L)
                   FZ = UMAT(M,I)
                   UMAT(M,L) = (FY*FC) + (FZ*SUM)
-                  UMAT(M,I) = -(FY*SUM) + (FZ*FC) 
+                  UMAT(M,I) = -(FY*SUM) + (FZ*FC)
  124           CONTINUE
  120        CONTINUE
             VAL(K) = D0
@@ -2436,7 +2449,7 @@ C
       END
 
 C  /* Deck gq2gx */
-      SUBROUTINE GQ2GX(GRADQ,GRADX,WILBMT)
+      SUBROUTINE GQ2GX(MXRCRD,GRADQ,GRADX,WILBMT)
 C
 C     Transforms the gradient in redundant internal coordinates to
 C     Cartesian coordinates:
@@ -2445,7 +2458,7 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <optinf.h>
-      DIMENSION GRADQ(MXRINT), GRADX(MXCOOR), WILBMT(MXRINT,MXCOOR)
+      DIMENSION GRADQ(MXRCRD), GRADX(MXCOOR), WILBMT(MXRCRD,MXCOOR)
       CALL DZERO(GRADX,MXCOOR)
       DO 10 I = 1, ICRTCR
          DO 12 J = 1, IINTCR
@@ -2456,7 +2469,7 @@ C
       END
 
 C  /* Deck gx2gq */
-      SUBROUTINE GX2GQ(GRADX,GRADQ,BMTINV)
+      SUBROUTINE GX2GQ(MXRCRD,GRADX,GRADQ,BMTINV)
 C
 C     Transforms the gradient in Cartesian coordinates to redundant
 C     internal coordinates:
@@ -2465,8 +2478,8 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <optinf.h>
-      DIMENSION GRADX(MXCOOR), GRADQ(MXRINT), BMTINV(MXRINT,MXCOOR)
-      CALL DZERO(GRADQ,MXRINT)
+      DIMENSION GRADX(MXCOOR), GRADQ(MXRCRD), BMTINV(MXRCRD,MXCOOR)
+      CALL DZERO(GRADQ,MXRCRD)
       DO 10 I = 1, IINTCR
          DO 12 J = 1, ICRTCR
             GRADQ(I) = GRADQ(I) + BMTINV(I,J)*GRADX(J)
@@ -2476,8 +2489,8 @@ C
       END
 
 C  /* Deck hq2hx */
-      SUBROUTINE HQ2HX(ATMARR,TMPMAT,TMPMT2,HESSQ,GRADQ,HESSX,
-     &     WILBMT,BMTRAN,WORK,LWORK)
+      SUBROUTINE HQ2HX(MXRCRD,MX2CRD,ATMARR,TMPMAT,TMPMT2,HESSQ,
+     &     GRADQ,HESSX,WILBMT,BMTRAN,WORK,LWORK)
 C
 C     Transforms the Hessian in redundant internal coordinates to
 C     Cartesian coordinates:
@@ -2486,21 +2499,21 @@ C
 #include <implicit.h>
 #include <mxcent.h>
 #include <optinf.h>
-      DIMENSION ATMARR(MXCENT,8), TMPMAT(MXRINT,MXRINT)
-      DIMENSION TMPMT2(MXRINT,MXRINT), HESSQ(MXRINT,MXRINT)
-      DIMENSION GRADQ(MXRINT), HESSX(MXCOOR,MXCOOR)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTRAN(MXRINT,MXRINT)
+      DIMENSION ATMARR(MXCENT,8), TMPMAT(MX2CRD,MX2CRD)
+      DIMENSION TMPMT2(MX2CRD,MX2CRD), HESSQ(MXRCRD,MXRCRD)
+      DIMENSION GRADQ(MXRCRD), HESSX(MXCOOR,MXCOOR)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
-      CALL DZERO(TMPMAT,MXRINT*MXRINT)
+      CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
       DO 10 IC = 1, IINTCR
-         CALL GTDWL0(IC,HESSX,ATMARR,WILBMT,BMTRAN,WORK,LWORK)
+         CALL GTDWL0(MXRCRD,IC,HESSX,ATMARR,WILBMT,BMTRAN,WORK,LWORK)
          DO 12 I = 1, ICRTCR
             DO 14 J = 1, ICRTCR
                TMPMAT(I,J) = TMPMAT(I,J) + HESSX(I,J)*GRADQ(IC)
  14         CONTINUE
  12      CONTINUE
  10   CONTINUE
-      CALL DZERO(TMPMT2,MXRINT*MXRINT)
+      CALL DZERO(TMPMT2,MX2CRD*MX2CRD)
       DO 20 I = 1, IINTCR
          DO 22 J = 1, ICRTCR
             DO 24 K = 1, IINTCR
@@ -2529,8 +2542,8 @@ C
       END
 
 C  /* Deck hx2hq */
-      SUBROUTINE HX2HQ(ATMARR,TMPMAT,TMPMT2,TMPMT3,HESSX,GRADQ,HESSQ,
-     &                 WILBMT,BMTINV,BMTRAN,WORK,LWORK)
+      SUBROUTINE HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMAT,TMPMT2,TMPMT3,
+     &     HESSX,GRADQ,HESSQ,WILBMT,BMTINV,BMTRAN,WORK,LWORK)
 C
 C     Transforms the Hessian in Cartesian coordinates to redundant
 C     internal coordinates:
@@ -2541,16 +2554,16 @@ C
 #include <optinf.h>
 #include <priunit.h>
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
-      DIMENSION TMPMT2(MXRINT,MXRINT), TMPMT3(MXRINT,MXRINT)
-      DIMENSION HESSX(MXCOOR,MXCOOR), GRADQ(MXRINT)
-      DIMENSION HESSQ(MXRINT,MXRINT)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTINV(MXRINT,MXCOOR)
-      DIMENSION BMTRAN(MXRINT,MXRINT), WORK(LWORK)
+      DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
+      DIMENSION HESSX(MXCOOR,MXCOOR), GRADQ(MXRCRD)
+      DIMENSION HESSQ(MXRCRD,MXRCRD)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTINV(MXRCRD,MXCOOR)
+      DIMENSION BMTRAN(MXRCRD,MXRCRD), WORK(LWORK)
       LOGICAL INCLGT
-      CALL DZERO(HESSQ,MXRINT*MXRINT)
+      CALL DZERO(HESSQ,MXRCRD*MXRCRD)
       CALL DZERO(TMPMAT,MXCOOR*MXCOOR)
-      CALL DZERO(TMPMT2,MXRINT*MXRINT)
-      CALL DZERO(TMPMT3,MXRINT*MXRINT)
+      CALL DZERO(TMPMT2,MX2CRD*MX2CRD)
+      CALL DZERO(TMPMT3,MX2CRD*MX2CRD)
 C
 C     INCLGT determines wether the gradient term in the transformation
 C     is included. There seems to be no reason NOT to include it!!
@@ -2560,8 +2573,9 @@ C
       INCLGT = .TRUE.
 C     
       IF (INCLGT) THEN
-         DO 10 IC = 1, IINTCR 
-            CALL GTDWL0(IC,TMP MAT,ATMARR,WILBMT,BMTRAN,WORK,LWORK)
+         DO 10 IC = 1, IINTCR
+            CALL GTDWL0(MXRCRD,IC,TMP MAT,ATMARR,WILBMT,BMTRAN,
+     &           WORK,LWORK)
             DO 12 I = 1, ICRTCR
                DO 14 J = 1, ICRTCR
                   TMPMT2(I,J) = TMPMT2(I,J) + TMPMAT(I,J)*GRADQ(IC)
@@ -2592,8 +2606,8 @@ C
       END
 
 C  /* Deck cghint */
-      SUBROUTINE CGHINT(SCLVEC,HESTMP,TMPMAT,TMPMT2,TMPMT3,TMPMT4,
-     &                  WILBMT,BMTINV,BMTRAN,HESINT,WORK,LWORK)
+      SUBROUTINE CGHINT(MXRCRD,MX2CRD,SCLVEC,HESTMP,TMPMAT,TMPMT2,
+     &     TMPMT3,TMPMT4,WILBMT,BMTINV,BMTRAN,HESINT,WORK,LWORK)
 C
 C     Transforms Cartesian gradient and Hessian to redundant internal
 C     coordinates.
@@ -2608,12 +2622,12 @@ C
 #include <nuclei.h>
 #include <symmet.h>
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
-      DIMENSION TMPMAT(MXRINT,MXRINT), TMPMT2(MXRINT,MXRINT)
-      DIMENSION TMPMT3(MXRINT,MXRINT), TMPMT4(MXRINT,MXRINT)
-      DIMENSION WILBMT(MXRINT,MXCOOR), BMTINV(MXRINT,MXCOOR)
-      DIMENSION BMTRAN(MXRINT,MXRINT)
-      DIMENSION HESINT(MXRINT,MXRINT), WORK(LWORK)
-      PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
+      DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
+      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTINV(MXRCRD,MXCOOR)
+      DIMENSION BMTRAN(MXRCRD,MXRCRD)
+      DIMENSION HESINT(MXRCRD,MXRCRD), WORK(LWORK)
+      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2639,9 +2653,9 @@ C
          END IF
       END IF
       IF (MAXREP .GT. 0) THEN
-         CALL DZERO(TMPMAT,MXRINT*MXRINT)
+         CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
          CALL TRAGRD(GRDMOL,TMPMAT,TMPMT2,TMPMT3,NCRREP(0,1),3*NUCDEP)
-         CALL GX2GQ(TMPMAT,GRDINT,BMTINV)
+         CALL GX2GQ(MXRCRD,TMPMAT,GRDINT,BMTINV)
          GRADNM = SQRT(DDOT(ICRTCR,TMPMAT,1,TMPMAT,1))
          IF (IPRINT .GE. IPRMED) THEN
             CALL HEADER('Cartesian gradient',-1)
@@ -2650,21 +2664,21 @@ C
          CALL DZERO(HESTMP,MXCOOR*MXCOOR)
          CALL TRAHES(HESMOL,MXCOOR,HESTMP,TMPMT2,TMPMT3,MXCOOR,
      &               3*NUCDEP,1)
-         CALL HX2HQ(TMPMAT,TMPMT2,TMPMT3,TMPMT4,HESTMP,GRDINT,HESINT,
-     &              WILBMT,BMTINV,BMTRAN,WORK,LWORK)
+         CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,HESTMP,
+     &        GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,WORK,LWORK)
          IF (IPRINT .GE. IPRMED) THEN
             CALL HEADER('Cartesian Hessian',-1)
             CALL OUTPUT(HESTMP,1,ICRTCR,1,ICRTCR,MXCOOR,MXCOOR,1,LUPRI)
          END IF
       ELSE
-         CALL GX2GQ(GRDMOL,GRDINT,BMTINV)
+         CALL GX2GQ(MXRCRD,GRDMOL,GRDINT,BMTINV)
          GRADNM = SQRT(DDOT(ICRTCR,GRDMOL,1,GRDMOL,1))
          IF (IPRINT .GE. IPRMED) THEN
             CALL HEADER('Cartesian gradient',-1)
             CALL OUTPUT(GRDMOL,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
          END IF
-         CALL HX2HQ(TMPMAT,TMPMT2,TMPMT3,TMPMT4,HESMOL,GRDINT,HESINT,
-     &              WILBMT,BMTINV,BMTRAN,WORK,LWORK)
+         CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,HESMOL,
+     &        GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,WORK,LWORK)
          IF (IPRINT .GE. IPRMED) THEN
             CALL HEADER('Cartesian Hessian',-1)
             CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,MXCOOR,MXCOOR,1,LUPRI)
@@ -2672,15 +2686,15 @@ C
       END IF
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Internal gradient',-1)
-         CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          CALL HEADER('Internal Hessian',-1)
-         CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,MXRINT,MXRINT,1,LUPRI)
+         CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
 
 C  /* Deck prjint */
-      SUBROUTINE PRJINT(NDIM,PJINMT,CONMAT,HESINT,TMPMT1,TMPMT2,
+      SUBROUTINE PRJINT(MXRCRD,NDIM,PJINMT,CONMAT,HESINT,TMPMT1,TMPMT2,
      &     TMPMT3,TMPMT4,WORK,LWORK)
 C
 C     Because of possible redundancies, we have to project
@@ -2692,8 +2706,8 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <optinf.h>
-      DIMENSION PJINMT(MXRINT,MXRINT), CONMAT(MXRINT,MXRINT)
-      DIMENSION HESINT(MXRINT,MXRINT), TMPMT1(NDIM,NDIM)
+      DIMENSION PJINMT(MXRCRD,MXRCRD), CONMAT(MXRCRD,MXRCRD)
+      DIMENSION HESINT(MXRCRD,MXRCRD), TMPMT1(NDIM,NDIM)
       DIMENSION TMPMT2(NDIM,NDIM), TMPMT3(NDIM,NDIM)
       DIMENSION TMPMT4(NDIM,NDIM), WORK(LWORK)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -2705,7 +2719,7 @@ C
 C     The matrix of constraints is constructed if necessary.
 C
       IF (CONOPT) THEN
-         CALL DZERO(CONMAT,MXRINT*MXRINT)
+         CALL DZERO(CONMAT,MXRCRD*MXRCRD)
          CALL DZERO(TMPMT1,NDIM2)
          CALL DZERO(TMPMT2,NDIM2)
          CALL DZERO(TMPMT3,NDIM2)
@@ -2728,22 +2742,22 @@ C
  15            CONTINUE
             END IF
  10      CONTINUE
-C     
+C
 C     We find the inverse of CP'C
 C
          CALL DGEINV(NDIM,TMPMT1,TMPMT2,TMPMT3,WORK,INFO)
 C
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('Matrix of constraints',-1) 
-            CALL OUTPUT(CONMAT,1,NDIM,1,NDIM,MXRINT,MXRINT,1,LUPRI)
-            CALL HEADER('CP''C',-1) 
+            CALL HEADER('Matrix of constraints',-1)
+            CALL OUTPUT(CONMAT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
+            CALL HEADER('CP''C',-1)
             CALL OUTPUT(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-            CALL HEADER('Inverse of CP''C',-1) 
+            CALL HEADER('Inverse of CP''C',-1)
             CALL OUTPUT(TMPMT2,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
          END IF
 C
 C     We find CP' and P'C
-C         
+C
          CALL DZERO(TMPMT1,NDIM2)
          CALL DZERO(TMPMT3,NDIM2)
          DO 20 I = 1, NDIM
@@ -2758,9 +2772,9 @@ C
  20      CONTINUE
 C
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('CP''',-1) 
+            CALL HEADER('CP''',-1)
             CALL OUTPUT(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
-            CALL HEADER('P''C',-1) 
+            CALL HEADER('P''C',-1)
             CALL OUTPUT(TMPMT3,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
          END IF
 C
@@ -2788,9 +2802,9 @@ C
  42            CONTINUE
             END IF
  40      CONTINUE
-C     
+C
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('(CP''C)^-1 CP''',-1) 
+            CALL HEADER('(CP''C)^-1 CP''',-1)
             CALL OUTPUT(TMPMT4,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
             CALL HEADER('P''C (CP''C)^-1 CP''',-1)
             CALL OUTPUT(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
@@ -2811,13 +2825,13 @@ C
          ELSE
             CALL HEADER('Projection matrix',-1)
          END IF
-         CALL OUTPUT(PJINMT,1,NDIM,1,NDIM,MXRINT,MXRINT,1,LUPRI)
+         CALL OUTPUT(PJINMT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       IF (IPRINT .GE. IPRMAX) THEN
-         CALL HEADER('Unprojected gradient',-1) 
-         CALL OUTPUT(GRDINT,1,1,1,NDIM,1,MXRINT,1,LUPRI)
-         CALL HEADER('Unprojected Hessian',-1) 
-         CALL OUTPUT(HESINT,1,NDIM,1,NDIM,MXRINT,MXRINT,1,LUPRI)
+         CALL HEADER('Unprojected gradient',-1)
+         CALL OUTPUT(GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
+         CALL HEADER('Unprojected Hessian',-1)
+         CALL OUTPUT(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
 C
 C     First we project the gradient
@@ -2832,8 +2846,8 @@ C
          GRDINT(I) = TMPMT1(I,1)
  75   CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
-         CALL HEADER('Projected gradient',-1) 
-         CALL OUTPUT(GRDINT,1,1,1,NDIM,1,MXRINT,1,LUPRI)
+         CALL HEADER('Projected gradient',-1)
+         CALL OUTPUT(GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
       END IF
 C
 C     Then the Hessian
@@ -2846,7 +2860,7 @@ C
  84         CONTINUE
  82      CONTINUE
  80   CONTINUE
-      CALL DZERO(HESINT,MXRINT*MXRINT)
+      CALL DZERO(HESINT,MXRCRD*MXRCRD)
       DO 85 I = 1, NDIM
          DO 87 J = 1, NDIM
             DO 89 K = 1, NDIM
@@ -2868,15 +2882,15 @@ C 95      CONTINUE
 C         HESINT(I,I) = HESINT(I,I) + 1.0D4
 C 90   CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
-         CALL HEADER('Projected Hessian',-1) 
-         CALL OUTPUT(HESINT,1,NDIM,1,NDIM,MXRINT,MXRINT,1,LUPRI)
+         CALL HEADER('Projected Hessian',-1)
+         CALL OUTPUT(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
 
 C  /* Deck diaint */
-      SUBROUTINE DIAINT(NCRDHS,EVEC,EVCTMP,HESPCK,TMPHES,TMPMAT,
-     &     THRIND,HESINT)
+      SUBROUTINE DIAINT(MXRCRD,MX2CRD,NCRDHS,EVEC,EVCTMP,HESPCK,
+     &     TMPHES,TMPMAT,THRIND,HESINT)
 C
 C     The Hessian in redundant internal coordinates is diagonalized.
 C
@@ -2884,9 +2898,9 @@ C
 #include <mxcent.h>
 #include <priunit.h>
 #include <optinf.h>
-      DIMENSION EVEC(MXRINT,MXRINT), EVCTMP(NCRDHS,NCRDHS)
+      DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS,NCRDHS)
       DIMENSION HESPCK(NCRDHS*NCRDHS), TMPHES(NCRDHS,NCRDHS)
-      DIMENSION TMPMAT(MXRINT*MXRINT), HESINT(MXRINT,MXRINT)
+      DIMENSION TMPMAT(MX2CRD*MX2CRD), HESINT(MXRCRD,MXRCRD)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
       DO 10 J = 1, IINTCR
@@ -2894,7 +2908,7 @@ C
             TMPHES(I,J) = HESINT(I,J)
  12      CONTINUE
  10   CONTINUE
-      IF (RATFUN) THEN
+      IF (RATFUN .AND. (.NOT. SADDLE)) THEN
          DO 15 I = 1, IINTCR
             TMPHES(I,NCRDHS) = GRDINT(I)
             TMPHES(NCRDHS,I) = GRDINT(I)
@@ -2906,24 +2920,24 @@ C
       IF (IPRINT .GE. IPRMIN) THEN
          CALL TITLER('Output from DIAINT','*',103)
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('Internal gradient',-1) 
-            CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
-               CALL HEADER('Internal Hessian',-1) 
+            CALL HEADER('Internal gradient',-1)
+            CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+               CALL HEADER('Internal Hessian',-1)
                CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,
-     &              MXRINT,MXRINT,1,LUPRI)
-            IF (RATFUN) THEN
-               CALL HEADER('Augmented internal Hessian',-1) 
+     &              MXRCRD,MXRCRD,1,LUPRI)
+            IF (RATFUN .AND. (.NOT. SADDLE)) THEN
+               CALL HEADER('Augmented internal Hessian',-1)
                CALL OUTPUT(TMPHES,1,NCRDHS,1,NCRDHS,
      &              NCRDHS,NCRDHS,1,LUPRI)
             END IF
-            CALL HEADER('Packed Hessian',-1) 
+            CALL HEADER('Packed Hessian',-1)
             CALL OUTPUT(HESPCK,1,1,1,(NCRDHS*(NCRDHS+1))/2,
      &           1,NCRDHS*NCRDHS,1,LUPRI)
          END IF
       END IF
       CALL DUNIT(EVCTMP,NCRDHS)
       CALL JACO(HESPCK,EVCTMP,NCRDHS,NCRDHS,NCRDHS,
-     &     TMPMAT(1),TMPMAT(MXRINT*MXCOOR+1))
+     &     TMPMAT(1),TMPMAT(MX2CRD*MXCOOR+1))
       INDTOT = 0
       DO 20 J = 1, NCRDHS
          EVAL(J) = HESPCK(J*(J+1)/2)
@@ -2935,11 +2949,11 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Eigenvalues in DIAINT',-1)
-         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
          CALL HEADER('Eigenvectors in DIAINT',-1)
-         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MXRINT,MXRINT,1,LUPRI)
+         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
          CALL HEADER('Gradient (diagonal rep.) in DIAINT',-1)
-         CALL OUTPUT(GRDDIA,1,1,1,NCRDHS,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
       END IF
 C
 C     The eigenvalues are sorted
@@ -2958,31 +2972,31 @@ C
  35      CONTINUE
          IF (JMIN .NE. I) THEN
             CALL DSWAP(1,  EVAL  (I),1,EVAL  (JMIN),1)
-            CALL DSWAP(MXRINT,EVEC(1,I),1,EVEC(1,JMIN),1)
+            CALL DSWAP(MX2CRD,EVEC(1,I),1,EVEC(1,JMIN),1)
             CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
          END IF
  30   CONTINUE
-      IF (RATFUN .AND. (EVAL(1) .LT. D0) .AND. INDTOT .GT. 0)
-     &     INDTOT = INDTOT - 1
+      IF (RATFUN .AND. (.NOT. SADDLE) .AND. (EVAL(1) .LT. D0)
+     &     .AND. INDTOT .GT. 0) INDTOT = INDTOT - 1
       DO 40 I = 1, NCRDHS
          IF (ABS((ABS(EVAL(I)) - 1.0D5)) .LT. 1.0D-3)
      &        EVAL(I) = EVAL(I) -  1.0D5
  40   CONTINUE
       IF (IPRINT .GE. IPRMIN) THEN
          CALL HEADER('Sorted eigenvalues in WLKEI1',-1)
-         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
          CALL HEADER('Sorted eigenvectors in WLKEI1',-1)
-         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MXRINT,MXRINT,1,LUPRI)
+         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
          CALL HEADER('Gradient (sorted) in WLKEI1',-1)
-         CALL OUTPUT(GRDDIA,1,1,1,NCRDHS,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
 
 C  /* Deck fnstin */
-      SUBROUTINE FNSTIN(NCRDHS,SCLVEC,HESINT,EVEC,TMPMAT,TMPMT2,TMPMT3,
-     &     TMPMT4,TMPMT5,CSTEP,WILBMT,BMTRAN,BMTINV,GRDARR,STPARR,
-     &     ACTIVE,EMOD,VECMOD,STPLIN)
+      SUBROUTINE FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,EVEC,
+     &     TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,CSTEP,WILBMT,BMTRAN,
+     &     BMTINV,GRDARR,STPARR,ACTIVE,EMOD,VECMOD,STPLIN)
 C
 C     We determine the step in redundant internal coordinates,
 C     then we find the corresponding step vector in
@@ -2995,21 +3009,21 @@ C
 #include <pi.h>
 #include <cbiwlk.h>
       DIMENSION SCLVEC(MXCOOR)
-      DIMENSION HESINT(MXRINT,MXRINT),EVEC(MXRINT,MXRINT)
-      DIMENSION TMPMAT(MXRINT*MXRINT), TMPMT2(MXRINT*MXRINT)
-      DIMENSION TMPMT3(MXRINT*MXRINT), TMPMT4(MXRINT,MXRINT)
-      DIMENSION TMPMT5(MXRINT,MXRINT)
-      DIMENSION CSTEP(MXCOOR), BMTRAN(MXRINT,MXRINT)
-      DIMENSION BMTINV(MXRINT,MXCOOR)
-      DIMENSION GRDARR(25,MXRINT), STPARR(MXRINT,MXRINT)
-      DIMENSION STPLIN(MXRINT), VECMOD(MXCOOR)
-      LOGICAL INSIDE,ACTIVE
+      DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
+      DIMENSION TMPMAT(MX2CRD*MX2CRD), TMPMT2(MX2CRD*MX2CRD)
+      DIMENSION TMPMT3(MX2CRD*MX2CRD), TMPMT4(MX2CRD,MX2CRD)
+      DIMENSION TMPMT5(MX2CRD,MX2CRD)
+      DIMENSION CSTEP(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
+      DIMENSION BMTINV(MXRCRD,MXCOOR)
+      DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
+      DIMENSION STPLIN(MXRCRD), VECMOD(MXCOOR)
+      LOGICAL INSIDE,ACTIVE,DOSCAL
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       NVEC = IINTCR - NPROJ
       IF (LNSRCH .AND. (.NOT. RATFUN) .AND. (ITRNMR .GT. 0))
-     &     CALL LINSRC(IINTCR,MXRINT,GRDINT,GRDARR(1,1),STPLIN,
+     &     CALL LINSRC(IINTCR,MXRCRD,GRDINT,GRDARR(1,1),STPLIN,
      &     STPARR(1,1),TMPMAT,TMPMT2,ACTIVE,EMOD)
       IF (ACTIVE) THEN
          DO 5 J = 1, IINTCR
@@ -3022,7 +3036,7 @@ C
          IF (.NOT. RATFUN) THEN
             IF (IPRINT .GT. 5) THEN
                CALL HEADER('Diagonal interpolated gradient',1)
-               CALL OUTPUT(GRDDIA,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+               CALL OUTPUT(GRDDIA,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
             END IF
          END IF
       END IF
@@ -3035,14 +3049,13 @@ C
 C
 C     For saddle point optimizations, we construct the image function.
 C
-
          IF (SADDLE) THEN
             IMODE = NSPMOD
 C
 C     We can follow a specific eigenvector if needed...
 C
             IF (NSPMOD .GT. 0) THEN
-               CALL FNDMOD(.TRUE.,EVEC,WILBMT,VECMOD,
+               CALL FNDMOD(.TRUE.,MXRCRD,EVEC,WILBMT,VECMOD,
      &              TMPMT2,TMPMT3,IMODE)
             ELSE
 C
@@ -3065,13 +3078,13 @@ C
      &              'the sign of mode ',IMODE
                WRITE(LUPRI,*)
             END IF
-            CALL MAKIMG(IINTCR,NVEC,MXRINT,EVAL,GRDDIA,
+            CALL MAKIMG(IINTCR,NVEC,MXRCRD,EVAL,GRDDIA,
      &           STPDIA,IMODE,.FALSE.)
          END IF
 C
 C     First we find the internal step in diagonal representation.
-C     
-         CALL DZERO(STPDIA,MXRINT)
+C
+         CALL DZERO(STPDIA,MXRCRD)
          DO 10 I = 1, IINTCR
 C
 C     The eigenvalue threshold was changed from 1.0D-8 due to
@@ -3086,9 +3099,9 @@ C
          STPNRM = SQRT(DDOT(IINTCR,STPDIA,1,STPDIA,1))
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Newton step',-1) 
-            CALL OUTPUT(STPDIA,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+            CALL OUTPUT(STPDIA,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          END IF
-C     
+C
 C     If Newton step is larger that trust radius, we take a step
 C     to the boundary. If the Hessian index is larger than zero,
 C     the level-shifted step will also be employed, provided the
@@ -3097,7 +3110,7 @@ C     employ the level-shift when the index is different from 1.
 C
          IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST)) .OR.
      &        ((.NOT. SADDLE) .AND. (INDTOT .GT. 0) .AND.
-     &        (STPNRM .GE. 0.5D-3)) .OR. ((SADDLE) .AND. 
+     &        (STPNRM .GE. 0.5D-3)) .OR. ((SADDLE) .AND.
      &        (INDTOT .NE. 1))) THEN
             IF (IPRINT .GE. IPRMED) THEN
                WRITE(LUPRI,'(/A,F15.10)')' Norm of Newton step:', STPNRM
@@ -3113,23 +3126,32 @@ C
                WRITE(LUPRI,'(/A,F15.10)')' Norm, boundary step:', STPNRM
             END IF
          END IF
-C     
+C
 C     For saddle point optimizations, we restore the original function.
-C     
+C
          IF (SADDLE) THEN
-            CALL MAKIMG(IINTCR,NVEC,MXRINT,EVAL,GRDDIA,
+            DOSCAL = (.NOT. NEWTON)
+            IF (INITHS .AND. (ITRNMR .EQ. 0)) DOSCAL = .FALSE.
+            IF (DOSCAL) THEN
+               CMPLIM = MAX(TRSTRA*0.67D0, 0.5D0)
+               DO 35 I = 1, IINTCR
+                  IF (ABS(STPDIA(I)) .GT. CMPLIM)
+     &                 STPDIA(I) = SIGN(CMPLIM,STPDIA(I))
+ 35            CONTINUE
+            END IF
+            CALL MAKIMG(IINTCR,NVEC,MXRCRD,EVAL,GRDDIA,
      &           STPDIA,IMODE,.TRUE.)
          END IF
 C
 C     Energy is predicted, will be used later to update trust radius.
-C     
+C
          ERGPRD = DDOT(IINTCR,GRDDIA,1,STPDIA,1)
      &        + 0.5D0*DV3DOT(IINTCR,STPDIA,EVAL,STPDIA)
-C     
+C
 C     If the predicted energy is positive, it means the Newton step is
 C     towards a maximum/saddle point. We then simply reverse the
 C     step direction (a bit dirty, but seems to work).
-C     
+C
          IF ((.NOT. SADDLE) .AND. (ERGPRD .GT. 0.0D0)) THEN
             WRITE(LUPRI,*) 'Reversing step!'
             DO 40 I = 1, IINTCR
@@ -3144,45 +3166,50 @@ C
          END IF
          IF (IPRINT .GE. IPRMIN) THEN
             IF (IPRINT .GE. IPRDBG) THEN
-               CALL HEADER('Internal diagonal gradient',-1) 
-               CALL OUTPUT(GRDDIA,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
-               CALL HEADER('Eigenvalues',-1) 
-               CALL OUTPUT(EVAL,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+               CALL HEADER('Internal diagonal gradient',-1)
+               CALL OUTPUT(GRDDIA,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
+               CALL HEADER('Eigenvalues',-1)
+               CALL OUTPUT(EVAL,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
             END IF
             IF (IPRINT .GE. IPRMED) THEN
-               CALL HEADER('Internal diagonal step',-1) 
-               CALL OUTPUT(STPDIA,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+               CALL HEADER('Internal diagonal step',-1)
+               CALL OUTPUT(STPDIA,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
             END IF
             WRITE (LUPRI,'(/A,F25.15)') ' Predicted energy change',
      &           ERGPRD
          END IF
-C     
+C
 C     The diagonal step is converted to ordinary internal
 C     coordinates.
-C     
-         CALL DZERO(STPINT,MXRINT)
+C
+         CALL DZERO(STPINT,MXRCRD)
          DO 20 I = 1, IINTCR
             DO 22 J = 1, IINTCR
                STPINT(I) = STPINT(I) + STPDIA(J)*EVEC(I,J)
  22         CONTINUE
-C     
+C
 C     For angles and dihedral angles we have to avoid step components
 C     giving multiples of 2*pi.
-C     
+C
             IF (REDINT .AND. INTCRD(I,1) .GT. 10)
      &           STPINT(I) = MOD(STPINT(I),2.0D0*PI)
             IF (ABS(STPINT(I)) .LE. 1.0D-8) STPINT(I) = D0
  20      CONTINUE
          IF (IPRINT .GE. IPRMIN) THEN
-            CALL HEADER('Step in internal coordinates',-1) 
-            CALL OUTPUT(STPINT,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+            CALL HEADER('Step in internal coordinates',-1)
+            CALL OUTPUT(STPINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          END IF
 C
 C     The rational function method
 C
       ELSE IF (RATFUN) THEN
-         CALL RFSTP(NCRDHS,MXRINT,IINTCR,EVEC,STPINT,GRDINT,
-     &     TMPMAT,HESINT)
+         IF (SADDLE) THEN
+            CALL PRFSTI(MXRCRD,MX2CRD,NCRDHS,HESINT,EVEC,
+     &           TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,VECMOD)
+         ELSE
+            CALL RFSTP(MX2CRD,NCRDHS,MXRCRD,IINTCR,EVEC,STPINT,GRDINT,
+     &           TMPMAT,HESINT)
+         END IF
          IF (IPRINT .GE. IPRMIN) THEN
             WRITE (LUPRI,'(/A,F25.15)')
      &           ' Predicted energy change', ERGPRD
@@ -3191,8 +3218,8 @@ C
 C     The Geometrical DIIS method
 C
       ELSE IF (GDIIS) THEN
-         CALL DZERO(TMPMAT,MXRINT*MXRINT)
-         CALL DZERO(TMPMT4,MXRINT*MXRINT)
+         CALL DZERO(TMPMAT,MX2CRD*MX2CRD)
+         CALL DZERO(TMPMT4,MX2CRD*MX2CRD)
 C
 C     First we have to construct the inverse Hessian.
 C
@@ -3214,8 +3241,8 @@ C
 C
 C     Then the DIIS-step is determined
 C
-         CALL GDISTP(MXRINT,IINTCR,STPDIA,GRDINT,HESINT,TMPMAT,TMPMT2,
-     &        TMPMT3,TMPMT4,TMPMT5,GRDARR,STPARR)
+         CALL GDISTP(MXRCRD,IINTCR,MXRCRD,MX2CRD,STPDIA,GRDINT,HESINT,
+     &        TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,GRDARR,STPARR)
          IF (IPRINT .GE. IPRMIN) THEN
             WRITE (LUPRI,'(/A,F25.15)')
      &           ' Predicted energy change', ERGPRD
@@ -3237,52 +3264,52 @@ C
      &        ' Modified energy prediction due to line search', ERGPRD
       END IF
       STPNRM = SQRT(DDOT(IINTCR,STPINT,1,STPINT,1))
-C     
+C
 C     Find Cartesian step vector.
 C
-      CALL STPI2C(SCLVEC,TMPMAT(1),TMPMAT(8*MXCENT+1),
+      CALL STPI2C(MXRCRD,SCLVEC,TMPMAT(1),TMPMAT(8*MXCENT+1),
      &     TMPMAT(16*MXCENT+1),TMPMT2(1),
-     &     TMPMT2(MXRINT+1),TMPMT2(2*MXRINT+1),TMPMT2(3*MXRINT+1),
-     &     TMPMT2(4*MXRINT+1),CSTEP,BMTRAN,BMTINV,TMPMT3(1),
+     &     TMPMT2(MX2CRD+1),TMPMT2(2*MX2CRD+1),TMPMT2(3*MX2CRD+1),
+     &     TMPMT2(4*MX2CRD+1),CSTEP,BMTRAN,BMTINV,TMPMT3(1),
      &     TMPMT3(1+MXCOOR*MXCOOR),.FALSE.)
 C
 C     If the optimization is constrained, we take a small step to
 C     reimpose the constraints.
 C
       IF (CONOPT) THEN
-         CALL STPI2C(SCLVEC,TMPMAT(1),TMPMAT(8*MXCENT+1),
+         CALL STPI2C(MXRCRD,SCLVEC,TMPMAT(1),TMPMAT(8*MXCENT+1),
      &        TMPMAT(16*MXCENT+1),TMPMT2(1),
-     &        TMPMT2(MXRINT+1),TMPMT2(2*MXRINT+1),TMPMT2(3*MXRINT+1),
-     &        TMPMT2(4*MXRINT+1),CSTEP,BMTRAN,BMTINV,TMPMT3(1),
+     &        TMPMT2(MX2CRD+1),TMPMT2(2*MX2CRD+1),TMPMT2(3*MX2CRD+1),
+     &        TMPMT2(4*MX2CRD+1),CSTEP,BMTRAN,BMTINV,TMPMT3(1),
      &        TMPMT3(1+MXCOOR*MXCOOR),.FALSE.)
          IF (IPRINT .GE. IPRMAX) THEN
-            CALL HEADER('Internal values before step',-1) 
-            CALL OUTPUT(TMPMT2(1),1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+            CALL HEADER('Internal values before step',-1)
+            CALL OUTPUT(TMPMT2(1),1,1,1,IINTCR,1,MX2CRD,1,LUPRI)
          END IF
          IF (IPRINT .GE. IPRMED) THEN
-            CALL HEADER('Internal values after step',-1) 
-            CALL OUTPUT(TMPMT2(2*MXRINT+1),1,1,1,IINTCR,1,
-     &           MXRINT,1,LUPRI)
+            CALL HEADER('Internal values after step',-1)
+            CALL OUTPUT(TMPMT2(2*MX2CRD+1),1,1,1,IINTCR,1,
+     &           MX2CRD,1,LUPRI)
          END IF
       ELSE
          IF (IPRINT .GE. IPRMAX) THEN
             NRIC = IINTCR
-            CALL HEADER('Internal values before step',-1) 
-            CALL OUTPUT(TMPMT2(MXRINT+1),1,1,1,IINTCR,1,
-     &           MXRINT,1,LUPRI)
+            CALL HEADER('Internal values before step',-1)
+            CALL OUTPUT(TMPMT2(MX2CRD+1),1,1,1,IINTCR,1,
+     &           MX2CRD,1,LUPRI)
          END IF
          IF (IPRINT .GE. IPRMED) THEN
-            CALL HEADER('Internal values after step',-1) 
-            CALL OUTPUT(TMPMT2(2*MXRINT+1),1,1,1,IINTCR,1,
-     &           MXRINT,1,LUPRI)
+            CALL HEADER('Internal values after step',-1)
+            CALL OUTPUT(TMPMT2(2*MX2CRD+1),1,1,1,IINTCR,1,
+     &           MX2CRD,1,LUPRI)
          END IF
       END IF
       RETURN
       END
       
 C  /* Deck getint */
-      SUBROUTINE GETINT(IATOM,ATMCRD,VALINT)
-C     
+      SUBROUTINE GETINT(IATOM,MXRCRD,ATMCRD,VALINT)
+C
 C     Determines the value of all redundant internal coordinates.
 C
 #include <implicit.h>
@@ -3290,10 +3317,10 @@ C
 #include <optinf.h>
 #include <priunit.h>
 #include <pi.h>
-      DIMENSION ATMCRD(MXCENT,8), VALINT(MXRINT)
+      DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
       PARAMETER (D0 = 0.0D0, DEG175 = 175D0*PI/180D0)
-      CALL DZERO(VALINT,MXRINT)
+      CALL DZERO(VALINT,MXRCRD)
       NRIC = IINTCR
       IF (DELINT) NRIC = IREDIC
       DO 10 IC = 1, NRIC
@@ -3309,9 +3336,9 @@ C
             VEC2(1) = ATMCRD(INTCRD(IC,4),2) - ATMCRD(INTCRD(IC,3),2)
             VEC2(2) = ATMCRD(INTCRD(IC,4),3) - ATMCRD(INTCRD(IC,3),3)
             VEC2(3) = ATMCRD(INTCRD(IC,4),4) - ATMCRD(INTCRD(IC,3),4)
-C     
+C
 C     Regular angles
-C     
+C
             IF (INTCRD(IC,1) .EQ. 11) THEN
                CALL VECPRD(VEC1,VEC2,VEC3)
                VNRM = SQRT(DDOT(3,VEC3,1,VEC3,1))
@@ -3321,9 +3348,9 @@ C
                   VEC3(3) = -VEC1(1)-VEC1(2)
                END IF
                CALL NRMLVC(VEC3)
-C     
+C
 C     Second coordinate of angles larger than 175 degrees.
-C     
+C
             ELSE
                CALL VECPRD(VEC1,VEC3,VEC4)
                CALL NRMLVC(VEC4)
@@ -3336,9 +3363,9 @@ C
             VALINT(IC) = VECANG(VEC1,VEC2)
             IF ((INTCRD(IC,1) .EQ. 12) .OR. (INTCRD(IC+1,1) .EQ. 12))
      &           VALINT(IC) = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC2)
-C     
+C
 C     Dihedral angles
-C     
+C
          ELSE
             VEC1(1) = ATMCRD(INTCRD(IC,2),2) - ATMCRD(INTCRD(IC,3),2)
             VEC1(2) = ATMCRD(INTCRD(IC,2),3) - ATMCRD(INTCRD(IC,3),3)
@@ -3351,14 +3378,14 @@ C
             VEC3(3) = ATMCRD(INTCRD(IC,5),4) - ATMCRD(INTCRD(IC,4),4)
             CALL NRMLVC(VEC2)
             CMPNT1 = DDOT(3,VEC1,1,VEC2,1)
-            VEC1(1) = VEC1(1) - CMPNT1*VEC2(1) 
-            VEC1(2) = VEC1(2) - CMPNT1*VEC2(2) 
-            VEC1(3) = VEC1(3) - CMPNT1*VEC2(3) 
+            VEC1(1) = VEC1(1) - CMPNT1*VEC2(1)
+            VEC1(2) = VEC1(2) - CMPNT1*VEC2(2)
+            VEC1(3) = VEC1(3) - CMPNT1*VEC2(3)
             CALL NRMLVC(VEC1)
             CMPNT2 = DDOT(3,VEC3,1,VEC2,1)
-            VEC3(1) = VEC3(1) - CMPNT2*VEC2(1) 
-            VEC3(2) = VEC3(2) - CMPNT2*VEC2(2) 
-            VEC3(3) = VEC3(3) - CMPNT2*VEC2(3) 
+            VEC3(1) = VEC3(1) - CMPNT2*VEC2(1)
+            VEC3(2) = VEC3(2) - CMPNT2*VEC2(2)
+            VEC3(3) = VEC3(3) - CMPNT2*VEC2(3)
             CALL NRMLVC(VEC3)
             IF ((DDOT(3,VEC1,1,VEC1,1) .GT. 1.0D-16) .AND.
      &           (DDOT(3,VEC3,1,VEC3,1) .GT. 1.0D-16)) THEN
@@ -3380,9 +3407,10 @@ C
       END
 
 C  /* Deck stpi2c */
-      SUBROUTINE STPI2C(SCLVEC,CRDORG,CRDOLD,CRDNEW,VALORG,VALOLD,
-     &     VALNEW,DIFF,TMPVEC,CSTEP,BMTRAN,BMTINV,CSTRA,SCTRA,CORREC)
-C     
+      SUBROUTINE STPI2C(MXRCRD,SCLVEC,CRDORG,CRDOLD,CRDNEW,VALORG,
+     &     VALOLD,VALNEW,DIFF,TMPVEC,CSTEP,BMTRAN,BMTINV,
+     &     CSTRA,SCTRA,CORREC)
+C
 C     Transforms internal step to Cartesian step iteratively.
 C     The logical parameter CORREC indicates if the internal step
 C     is a small correctional step to reimpose constraints in a
@@ -3394,10 +3422,10 @@ C
 #include <optinf.h>
 #include <pi.h>
       DIMENSION SCLVEC(MXCOOR), CRDORG(MXCENT,8), CRDOLD(MXCENT,8)
-      DIMENSION CRDNEW(MXCENT,8), VALOLD(MXRINT), VALORG(MXRINT)
-      DIMENSION VALNEW(MXRINT), DIFF(MXRINT)
+      DIMENSION CRDNEW(MXCENT,8), VALOLD(MXRCRD), VALORG(MXRCRD)
+      DIMENSION VALNEW(MXRCRD), DIFF(MXRCRD)
       DIMENSION TMPVEC(MXCOOR), CSTEP(MXCOOR)
-      DIMENSION BMTRAN(MXRINT,MXRINT), BMTINV(MXRINT,MXCOOR)
+      DIMENSION BMTRAN(MXRCRD,MXRCRD), BMTINV(MXRCRD,MXCOOR)
       DIMENSION CSTRA(MXCOOR*MXCOOR), SCTRA(MXCOOR*MXCOOR)
       LOGICAL CORREC, ADJUST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
@@ -3419,11 +3447,11 @@ C     delocalized internals, we transform the step to redundant
 C     internals. VALORG is used to store the non-redundant step.
 C
       IF (DELINT) THEN
-         CALL DZERO(VALORG,MXRINT)
+         CALL DZERO(VALORG,MXRCRD)
          DO 100 I = 1, NNNRIC
             VALORG(I) = STPINT(I)
  100     CONTINUE
-         CALL DZERO(STPINT,MXRINT)
+         CALL DZERO(STPINT,MXRCRD)
          DO 105 I = 1, NRIC
             DO 107 J = 1, NNNRIC
                STPINT(I) = STPINT(I) + BMTRAN(I,J)*VALORG(J)
@@ -3437,7 +3465,7 @@ C     the values of the internal coordinates after the major step.
 C
       IF (.NOT. CORREC) THEN
          CALL ATMINI(CRDOLD,IATOM,.TRUE.)
-         CALL GETINT(IATOM,CRDOLD,VALOLD)
+         CALL GETINT(IATOM,MXRCRD,CRDOLD,VALOLD)
          RMSLIM = 1.0D-6
       ELSE
          DO 3 I = 1, NRIC
@@ -3453,20 +3481,20 @@ C
          RMSLIM = 1.0D-9
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
-         CALL HEADER('Previous coordinates',-1) 
+         CALL HEADER('Previous coordinates',-1)
          CALL OUTPUT(CRDOLD,1,IATOM,1,4,MXCENT,8,1,LUPRI)
          IF (DELINT) THEN
-            CALL HEADER('Previous primitive internal values',-1) 
+            CALL HEADER('Previous primitive internal values',-1)
          ELSE
-            CALL HEADER('Previous internal values',-1) 
+            CALL HEADER('Previous internal values',-1)
          END IF
-         CALL OUTPUT(VALOLD,1,1,1,NRIC,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(VALOLD,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
          IF (DELINT) THEN
-            CALL HEADER('Step to take (primitives)',-1) 
+            CALL HEADER('Step to take (primitives)',-1)
          ELSE
             CALL HEADER('Step to take',-1)
          END IF
-         CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
 C
 C     First estimate of Cartesian step.
@@ -3509,7 +3537,7 @@ C
  12      CONTINUE
          DO 13 I = 1, ICRTCR
             DO 14 J = 1, NRIC
-               TMPVEC(I) = TMPVEC(I) + BMTINV(J,I)*SCTRA(J) 
+               TMPVEC(I) = TMPVEC(I) + BMTINV(J,I)*SCTRA(J)
  14         CONTINUE
  13      CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
@@ -3518,8 +3546,8 @@ C
          END IF
       END IF
       IF (IPRINT .GE. IPRDBG) THEN
-         CALL HEADER('Inverse of B^t',-1) 
-         CALL OUTPUT(BMTINV,1,IINTCR,1,ICRTCR,MXRINT,MXCOOR,1,LUPRI)
+         CALL HEADER('Inverse of B^t',-1)
+         CALL OUTPUT(BMTINV,1,IINTCR,1,ICRTCR,MXRCRD,MXCOOR,1,LUPRI)
          CALL HEADER('First estimate of Cartesian step',-1)
          CALL OUTPUT(TMPVEC,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
       END IF
@@ -3533,18 +3561,18 @@ C
             CRDNEW(I,J+1) = CRDOLD(I,J+1) + TMPVEC((I-1)*3+J)
  17      CONTINUE
  15   CONTINUE
-      CALL GETINT(IATOM,CRDNEW,VALNEW)
+      CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
       IF (IPRINT .GE. IPRDBG) THEN
-         CALL HEADER('New coordinates',-1) 
+         CALL HEADER('New coordinates',-1)
          CALL OUTPUT(CRDNEW,1,IATOM,1,4,MXCENT,8,1,LUPRI)
          IF (DELINT) THEN
-            CALL HEADER('New primitive internal values',-1) 
+            CALL HEADER('New primitive internal values',-1)
          ELSE
-            CALL HEADER('New internal values',-1) 
+            CALL HEADER('New internal values',-1)
          END IF
-         CALL OUTPUT(VALNEW,1,1,1,NRIC,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(VALNEW,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
-      CALL DZERO(DIFF,MXRINT)
+      CALL DZERO(DIFF,MXRCRD)
       RMSINT = D0
       IF (.NOT. CORREC) THEN
          DO 18 I = 1, NRIC
@@ -3577,25 +3605,25 @@ C
             RMSINT = RMSINT + DIFF(I)*DIFF(I)
  19      CONTINUE
       END IF
-C     
+C
 C     The difference wich will be used for the next iteration is
 C     transformed back to delocalized internals.
 C
       IF (IPRINT .GE. IPRDBG) THEN
          IF (DELINT) THEN
-            CALL HEADER('Difference to wanted step (primitives)',-1) 
+            CALL HEADER('Difference to wanted step (primitives)',-1)
          ELSE
-            CALL HEADER('Difference to wanted step',-1) 
+            CALL HEADER('Difference to wanted step',-1)
          END IF
-         CALL OUTPUT(DIFF,1,1,1,NRIC,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(DIFF,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
       IF (DELINT) THEN
-         CALL DZERO(SCTRA,MXRINT)
+         CALL DZERO(SCTRA,MXCOOR*MXCOOR)
          RMSINT = 0.0D0
          DO 200 I = 1, NRIC
             SCTRA(I) = DIFF(I)
  200     CONTINUE
-         CALL DZERO(DIFF,MXRINT)
+         CALL DZERO(DIFF,MXRCRD)
          DO 205 I = 1, NNNRIC
             DO 207 J = 1, NRIC
                DIFF(I) = DIFF(I) + BMTRAN(J,I)*SCTRA(J)
@@ -3603,18 +3631,18 @@ C
             RMSINT = RMSINT + DIFF(I)*DIFF(I)
  205     CONTINUE
          IF (IPRINT .GE. IPRDBG) THEN
-            CALL HEADER('Difference to wanted step',-1) 
-            CALL OUTPUT(DIFF,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+            CALL HEADER('Difference to wanted step',-1)
+            CALL OUTPUT(DIFF,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          END IF
       END IF
       RMSINT = SQRT(RMSINT/(1.0D0*NRIC))
-      IF (RMS1ST .LT. D0) RMS1ST = RMSINT 
+      IF (RMS1ST .LT. D0) RMS1ST = RMSINT
       DIFRMS = ABS(RMSOLD-RMSINT)
       RMSOLD = RMSINT
       IF (IPRINT .GE. IPRDBG) THEN
-         CALL HEADER('Root-mean-square of difference',-1) 
+         CALL HEADER('Root-mean-square of difference',-1)
          WRITE(LUPRI,'(A,G16.6)') 'Value:    ',RMSINT
-         CALL HEADER('Change in root-mean-square of difference',-1) 
+         CALL HEADER('Change in root-mean-square of difference',-1)
          WRITE(LUPRI,'(A,G16.6)') 'Value:    ',DIFRMS
       END IF
       IF ((RMSINT .GE. RMSLIM) .AND. (RMSINT .LE. 1.0D2)
@@ -3627,7 +3655,7 @@ C
          IF (IPRINT .GE. IPRDBG) THEN
             STPTXT = 'Updated step #XX'
             WRITE(STPTXT(15:16),'(I2)') ITRCRD
-            CALL HEADER(STPTXT,-1) 
+            CALL HEADER(STPTXT,-1)
             CALL OUTPUT(TMPVEC,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
          END IF
          ITRCRD = ITRCRD + 1
@@ -3664,7 +3692,7 @@ C      ELSE IF ((ITRCRD .GE. ITRLIM) .OR. (RMSINT .GE. 1.0D2)) THEN
          ELSE
             DO 35 I = 1, ICRTCR
                DO 37 J = 1, NRIC
-                  TMPVEC(I) = TMPVEC(I) + BMTINV(J,I)*SCTRA(J) 
+                  TMPVEC(I) = TMPVEC(I) + BMTINV(J,I)*SCTRA(J)
  37            CONTINUE
  35         CONTINUE
          END IF
@@ -3673,7 +3701,7 @@ C      ELSE IF ((ITRCRD .GE. ITRLIM) .OR. (RMSINT .GE. 1.0D2)) THEN
                CRDNEW(I,J+1) = CRDOLD(I,J+1) + TMPVEC((I-1)*3+J)
  42         CONTINUE
  40      CONTINUE
-         CALL GETINT(IATOM,CRDNEW,VALNEW)
+         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
          DO 45 I = 1, NRIC
             STPINT(I) = VALNEW(I) - VALOLD(I)
             IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
@@ -3692,11 +3720,11 @@ C     transform the values. SCTRA is used for temporary storage.
 C
          IF (DELINT) THEN
             ADJUST = .TRUE.
-            CALL DZERO(SCTRA,MXRINT)
+            CALL DZERO(SCTRA,MXRCRD)
             DO 300 I = 1, NRIC
                SCTRA(I) = STPINT(I)
  300        CONTINUE
-            CALL DZERO(STPINT,MXRINT)
+            CALL DZERO(STPINT,MXRCRD)
             DO 305 I = 1, NNNRIC
                DO 307 J = 1, NRIC
                   STPINT(I) = STPINT(I) + BMTRAN(J,I)*SCTRA(J)
@@ -3704,12 +3732,12 @@ C
  305        CONTINUE
          END IF
          IF (IPRINT .GE. IPRMAX) THEN
-            CALL HEADER('Adjusted step',-1) 
-            CALL OUTPUT(STPINT,1,1,1,IINTCR,1,MXRINT,1,LUPRI)
+            CALL HEADER('Adjusted step',-1)
+            CALL OUTPUT(STPINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          END IF
       END IF
       IF (CORREC) THEN
-         CALL GETINT(IATOM,CRDNEW,VALNEW)
+         CALL GETINT(IATOM,MXRCRD,CRDNEW,VALNEW)
          DO 50 I = 1, NRIC
             STPINT(I) = VALNEW(I) - VALORG(I)
             IF (INTCRD(I,1) .GT. 10) STPINT(I) = MOD(STPINT(I),2.0D0*PI)
@@ -3723,8 +3751,8 @@ C
             END IF
  50      CONTINUE
          IF (IPRINT .GE. IPRMAX) THEN
-            CALL HEADER('Adjusted step',-1) 
-            CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRINT,1,LUPRI)
+            CALL HEADER('Adjusted step',-1)
+            CALL OUTPUT(STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
          END IF
          DO 60 I = 1, IATOM
             DO 62 J = 1, 3
@@ -3736,7 +3764,7 @@ C
 C     The step in delocs is moved back to STPINT
 C
       IF (DELINT .AND. (.NOT. ADJUST)) THEN
-         CALL DZERO(STPINT,MXRINT)
+         CALL DZERO(STPINT,MXRCRD)
          DO 800 I = 1, IINTCR
             STPINT(I) = VALORG(I)
  800     CONTINUE
@@ -3744,7 +3772,7 @@ C
 C
 C     We symmetrize the step, and scale it appropriately.
 C
-      CALL DZERO(STPSYM,MXRINT)
+      CALL DZERO(STPSYM,MXRCRD)
 C
       CALL TRACOR(CSTRA,SCTRA,1,ICRTCR,0)
       CALL MPAB(CSTRA ,ICRTCR,ICRTCR,ICRTCR,ICRTRC,
@@ -3758,8 +3786,8 @@ C
       END
 
 C  /* Deck dobrki */
-      SUBROUTINE DOBRKI(EXHER,EXSIR,EXABA,GEINFO,EVEC,BMTINV,
-     &     CSTEP,TMPVEC,TMPMAT,NONT)
+      SUBROUTINE DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,EVEC,
+     &     BMTINV,CSTEP,TMPVEC,TMPMAT,NONT)
 C
 C     This procedure does the actual breaking of symmetry.
 C
@@ -3780,12 +3808,12 @@ C
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONT(MXCENT)
-      DIMENSION EVEC(MXRINT,MXRINT), BMTINV(MXRINT,MXCOOR)
+      DIMENSION EVEC(MX2CRD,MX2CRD), BMTINV(MXRCRD,MXCOOR)
       DIMENSION CSTEP(MXCOOR)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
       SAVE INDOLD
 #include <ibtfun.h>
-      CALL DZERO(STPDIA,MXRINT)
+      CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       CALL DZERO(TMPVEC,IINTCR)
       CALL DZERO(TMPMAT,IINTCR*IINTCR)
@@ -3801,16 +3829,16 @@ C
       IF ((ITRBRK .EQ. ITRNMR-1) .AND. (INDOLD .EQ. INDTOT))
      &     CALL QUIT
      &     ('*** DOBRK *** Breaking of symmetry was unsuccesful.')
-C     
+C
       WRITE(LUPRI,*)
       WRITE(LUPRI,*)'***** NOTE! *****'
       WRITE(LUPRI,*) 'Due to non-zero index of total ' //
      &     'Hessian, the geometry has to be altered!'
       WRITE(LUPRI,*)
-C     
+C
 C     The eigenvectors of the symmetry to be broken, are copied
 C     to TMPMAT.
-C     
+C
       NCR = 0
       IJ = 1
       DO 20 J = 1, IINTCR
@@ -3829,7 +3857,7 @@ C
          CALL HEADER('Geometry before break of symmetry',1)
          CALL PRIGEO(CORD)
          CALL HEADER('Step in diagonal representation',1)
-         CALL OUTPUT(STPDIA,1,1,1,NCR,1,MXRINT,1,LUPRI)
+         CALL OUTPUT(STPDIA,1,1,1,NCR,1,MXRCRD,1,LUPRI)
       END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Eigenvector basis',1)
@@ -3908,7 +3936,7 @@ C
       WRITE(TMPLN(10:20), '(A11)') '           '
       II = 0
       DO 49 J = 0, ITRNMR-1
-         IF ((GEINFO(J,3) .LT. -0.5D0) .AND. 
+         IF ((GEINFO(J,3) .LT. -0.5D0) .AND.
      &        (ABS(ENERGY-GEINFO(J,1)) .LT. THRERG*10)) II=II+1
  49   CONTINUE
       IF (II .GT. 0) BRKALS = .TRUE.
@@ -3957,7 +3985,7 @@ C
          WRITE(TMPLN(11:15),'(I5)') NONT(ITYP) + IXTRA
          MLINE(NCLINE(IATOM - NONT(ITYP)) - 1) = TMPLN
  60   CONTINUE
-C     
+C
 C     Write updated geometry to files.
 C
       CALL PNCMOL
@@ -3993,9 +4021,232 @@ C
       RETURN
       END
 
+C  /* Deck prfsti */
+      FUNCTION PRFSTI(MXRCRD,MX2CRD,NCRDHS,HESINT,EVEC,
+     &     TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,VECMOD)
+C
+C     Controls saddle point optimization in redundant internal
+C     coordinates using the partitioned rational function approach.
+C
+#include <implicit.h>
+#include <mxcent.h>
+#include <priunit.h>
+#include <optinf.h>
+      DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
+      DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD*MX2CRD)
+      DIMENSION TMPMT3(MX2CRD*MX2CRD),TMPMT4(MX2CRD,MX2CRD)
+      DIMENSION TMPMT5(MX2CRD,MX2CRD)
+      DIMENSION VECMOD(MXCOOR)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
+      PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+C
+C     For saddle point optimizations, we can follow a specific eigenvector.
+C     Due to the fact that we are separating one mode for maximization,
+C     NCRDHS is temporarily reduced by one.
+C
+      IMODE = NSPMOD
+      NCRDHS = NCRDHS-1
+      IF (NSPMOD .GT. 0) THEN
+         CALL FNDMOD(.FALSE.,MXRCRD,EVEC,TMPMAT,VECMOD,
+     &        TMPMT2,TMPMT3,IMODE)
+C
+C     If the lowest mode has a gradient element of zero, we have to pick
+C     another mode for maximization (or we will end up in a minimum!).
+C
+      ELSE
+         IMODE = 1
+ 50      CONTINUE
+         IF ((ABS(GRDDIA(IMODE)) .LT. 1.0D-10) .AND.
+     &        (IMODE .LT. NCRDHS)) THEN
+            IMODE = IMODE + 1
+            GOTO 50
+C     
+C     If we find no such mode, we just set IMODE = 1, because we must
+C     be at a stationary point.
+C     
+         ELSE IF (ABS(GRDDIA(IMODE)) .LT. 1.0D-10) THEN
+            IMODE = 1
+         END IF
+      END IF
+      IF (IPRINT .GE. IPRMAX) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Mode ',IMODE,' will be partitioned ' //
+     &        'out and maximized.'
+         WRITE(LUPRI,*)
+      END IF
+C
+C     The selected mode is placed at the very end.
+C
+      CALL DZERO(TMPMT5,MX2CRD*MX2CRD)
+      CALL DZERO(TMPMT4,MX2CRD*MX2CRD)
+      DO 400 I = 1, NCRDHS
+         DO 402 J = 1, IMODE-1
+            TMPMT5(I,J) = EVEC(I,J)
+ 402     CONTINUE
+         DO 403 J = IMODE, NCRDHS-1
+            TMPMT5(I,J) = EVEC(I,J+1)
+ 403     CONTINUE
+         TMPMT4(1,I) = EVAL(I)
+         TMPMT4(2,I) = GRDDIA(I)
+         TMPMT5(I,NCRDHS) = EVEC(I,IMODE)
+ 400  CONTINUE
+      TMPVAL = TMPMT4(1,IMODE)
+      DO 406 I = IMODE, NCRDHS-1
+         TMPMT4(1,I) = TMPMT4(1,I+1)
+         TMPMT4(2,I) = TMPMT4(2,I+1)
+ 406  CONTINUE
+      TMPMT4(1,NCRDHS) = TMPVAL
+      TMPMT4(2,NCRDHS) = GRDDIA(IMODE)
+C
+C     We then make the augmented Hessian that will be minimized.
+C
+      CALL DZERO(TMPMT2,NCRDHS*NCRDHS)
+      DO 410 I = 1, NCRDHS-1
+         TMPMT2(I+(I-1)*NCRDHS) = TMPMT4(1,I)
+         TMPMT2(I+(NCRDHS-1)*NCRDHS) = TMPMT4(2,I)
+         TMPMT2(NCRDHS+(I-1)*NCRDHS) = TMPMT4(2,I)
+ 410  CONTINUE
+      TMPMT2(NCRDHS+(NCRDHS-1)*NCRDHS) = D0
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER('Augmented Hessian',-1)
+         CALL OUTPUT(TMPMT2,1,NCRDHS,1,NCRDHS,NCRDHS,
+     &        NCRDHS,1,LUPRI)
+      END IF
+      CALL DZERO(TMPMT3,MX2CRD*MX2CRD)
+      CALL DSITSP(NCRDHS,TMPMT2,TMPMT3)
+      CALL DUNIT(TMPMT2,NCRDHS)
+      CALL JACO(TMPMT3,TMPMT2,NCRDHS,NCRDHS,NCRDHS,
+     &     TMPMAT(1),TMPMAT(MX2CRD+1))
+      DO 420 J = 1, NCRDHS
+         EVAL(J) = TMPMT3(J*(J+1)/2)
+         DO 425 I = 1, NCRDHS
+            EVEC(I,J) = TMPMT2(I+(J-1)*NCRDHS)
+ 425     CONTINUE
+ 420  CONTINUE
+C
+C     We add 1.0D5 to all eigenvalues that are essentially zero
+C     for the sorting.
+C
+      DO 427 I = 1, NCRDHS
+         IF (ABS(EVAL(I)) .LE. 1.0D-8) EVAL(I) = EVAL(I) + 1.0D5
+ 427  CONTINUE
+      DO 430 I = 1, NCRDHS
+         JMIN = I
+         EMIN = EVAL(I)
+         DO 435 J = (I + 1), NCRDHS
+            IF (EVAL(J) .LT. EMIN) THEN
+               EMIN = EVAL(J)
+               JMIN = J
+            END IF
+ 435     CONTINUE
+         IF (JMIN .NE. I) THEN
+            CALL DSWAP(1,  EVAL  (I),1,EVAL  (JMIN),1)
+            CALL DSWAP(MX2CRD,EVEC(1,I),1,EVEC(1,JMIN),1)
+C     CALL DSWAP(1,GRDDIA(I),1,GRDDIA(JMIN),1)
+         END IF
+ 430  CONTINUE
+      DO 440 I = 1, NCRDHS
+         IF (ABS(ABS(EVAL(I))-1.0D5) .LT. 1.0D-3)
+     &        EVAL(I) = EVAL(I) - 1.0D5
+ 440  CONTINUE
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER('RF-eigenvalues',-1)
+         CALL OUTPUT(EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         CALL HEADER('RF-eigenvectors',-1)
+         CALL OUTPUT(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+      END IF
+      CALL PRFSTP(MX2CRD,NCRDHS,MXRCRD,EVEC,STPINT,GRDINT,
+     &     TMPMAT,HESINT,1)
+C
+C     In the case of saddle point optimization, we also need
+C     to take care of the second partition and combine the two.
+C
+      CMPLIM = MAX(TRSTRA*0.67D0, 0.30D0)
+      DO 500 I = 1, NCRDHS-1
+         IF (ABS(STPINT(I)) .GT. CMPLIM)
+     &        STPINT(I) = SIGN(CMPLIM,STPINT(I))
+         TMPMT4(3,I) = STPINT(I)
+ 500  CONTINUE
+      NCRDHS = NCRDHS + 1
+C
+C     We then make the augmented Hessian that will be maximized.
+C
+      CALL DZERO(TMPMT2,NCRDHS*NCRDHS)
+      TMPMT2(1) = TMPMT4(1,NCRDHS-1)
+      TMPMT2(2) = TMPMT4(2,NCRDHS-1)
+      TMPMT2(3) = TMPMT4(2,NCRDHS-1)
+      TMPMT2(4) = D0
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER('Augmented Hessian',-1)
+         CALL OUTPUT(TMPMT2,1,2,1,2,2,2,1,LUPRI)
+      END IF
+      CALL DZERO(TMPMT3,MX2CRD*MX2CRD)
+      CALL DSITSP(2,TMPMT2,TMPMT3)
+      CALL DUNIT(TMPMT2,2)
+      CALL JACO(TMPMT3,TMPMT2,2,2,2,TMPMAT(1),TMPMAT(1+MX2CRD))
+      DO 510 J = 1, 2
+         EVAL(J) = TMPMT3(J*(J+1)/2)
+         DO 515 I = 1, 2
+            EVEC(I,J) = TMPMT2(I+(J-1)*2)
+ 515     CONTINUE
+ 510  CONTINUE
+      DO 517 I = 1, 2
+         IF (ABS(EVAL(I)) .LE. 1.0D-8) EVAL(I) = EVAL(I) + 1.0D5
+ 517  CONTINUE
+C
+C     The eigenvalues are sorted
+C
+      IF (EVAL(1) .GT. EVAL(2)) THEN
+         CALL DSWAP(1,  EVAL  (1),1,EVAL  (2),1)
+         CALL DSWAP(MX2CRD,EVEC(1,1),1,EVEC(1,2),1)
+      END IF
+      DO 520 I = 1, 2
+         IF (ABS(ABS(EVAL(I))-1.0D5) .LT. 1.0D-3)
+     &        EVAL(I) = EVAL(I) - 1.0D5
+ 520  CONTINUE
+      CALL PRFSTP(MX2CRD,2,IINTCR,EVEC,STPINT,GRDINT,
+     &     TMPMAT,HESINT,2)
+      TMPVAL = STPINT(1)
+      IF (ABS(TMPVAL) .GT. CMPLIM)
+     &     TMPVAL = SIGN(CMPLIM,TMPVAL)
+      CALL DZERO(STPSYM,MXCOOR)
+      DO 530 I = 1, NCRDHS-2
+         STPSYM(I) = TMPMT4(3,I)
+ 530  CONTINUE
+      STPSYM(NCRDHS-1) = TMPVAL
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER('Diagonal RF-step',-1)
+         CALL OUTPUT(STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
+      END IF
+C
+C     The symmetry step is constructed from the original eigenvectors
+C     (of the normal Hessian) and the diagonal RF-step.
+C
+      CALL DZERO(STPINT,MXRCRD)
+      CALL DZERO(EVEC,MX2CRD*MX2CRD)
+      DO 540 I = 1, NCRDHS-1
+         DO 545 J = 1, NCRDHS-1
+            EVEC(I,J) = TMPMT5(I,J)
+ 545     CONTINUE
+         EVAL(I) = TMPMT4(1,I)
+ 540  CONTINUE
+      DO 550 I = 1, NCRDHS-1
+         DO 555 J = 1, NCRDHS-1
+            STPINT(I) = STPINT(I) + EVEC(I,J)*STPSYM(J)
+ 555     CONTINUE
+ 550  CONTINUE
+C
+C     The final call to RFSTP to do scaling with respect to the
+C     trust radius.
+C
+      CALL PRFSTP(MX2CRD,NCRDHS,MXRCRD,EVEC,STPINT,GRDINT,
+     &     TMPMAT,HESINT,3)
+      RETURN
+      END
+
 C  /* Deck rhoij */
       FUNCTION RHOIJ(ATMARR,I,J,ALFA,DIST)
-C     
+C
 C     Calculates the function
 C     rho_ij = exp[alfa_ij (r_ref,ij^2 - r_ij^2)]
 C
@@ -4021,8 +4272,8 @@ C
       END
 
 C  /* Deck bldhes */
-      SUBROUTINE BLDHES(ATMARR,HESINT,ALFA,DIST)
-C     
+      SUBROUTINE BLDHES(MXRCRD,ATMARR,HESINT,ALFA,DIST)
+C
 C     Builds a simple model Hessian in redundant internal coordinates.
 C
 #include <implicit.h>
@@ -4031,9 +4282,9 @@ C
 #include <gnrinf.h>
 #include <optinf.h>
 #include <nuclei.h>
-      DIMENSION ATMARR(MXCENT,8), HESINT(MXRINT,MXRINT)
+      DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
       DIMENSION ALFA(3,3), DIST(3,3)
-      CALL DZERO(HESINT,MXRINT*MXRINT)
+      CALL DZERO(HESINT,MXRCRD*MXRCRD)
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
 C
 C     Here we assign all the necessary parameters
@@ -4089,7 +4340,7 @@ C
 
 C  /* Deck nrmlvc */
       SUBROUTINE NRMLVC(VEC)
-C     
+C
 C     Normalizes a three-dimensional vector.
 C
 #include <implicit.h>
@@ -4103,7 +4354,7 @@ C
 
 C  /* Deck nrmlvx */
       SUBROUTINE NRMLVX(ICRD,VEC)
-C     
+C
 C     Normalizes any vector.
 C
 #include <implicit.h>
@@ -4118,7 +4369,7 @@ C
 
 C  /* Deck vecprd */
       SUBROUTINE VECPRD(VEC1,VEC2,VPRD)
-C     
+C
 C     Finds the vector product of two three-dimensional vectors.
 C
 #include <implicit.h>

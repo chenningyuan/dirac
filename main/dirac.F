@@ -109,7 +109,7 @@ C**** M A I N    S E C T I O N  **********************************************
 C*****************************************************************************
 C
       IF(.NOT.DOHRM) THEN
-         IF (MINIMI) THEN
+         IF (OPTIMI) THEN
             CALL PAMGEO(WORK,LWORK)
          ELSE
             CALL PAMDRV(WORK,LWORK)
