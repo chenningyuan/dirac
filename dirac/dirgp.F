@@ -1163,7 +1163,7 @@ C
         CALL ADAIBO(
      &         IBO1(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         IBO2(I2),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-          I2 = I2 + IDIM(3,IFRP)
+          I2 = I2 + IDIM(2,IFRP)+IDIM(1,IFRP)
       ENDDO
 C
       RETURN
