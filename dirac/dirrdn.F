@@ -2179,7 +2179,6 @@ C
       LOGICAL SYMSTP,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
-      DIMENSION IN(MXOPEN),ID(MXOPEN)
       CHARACTER A*80
 C
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -2295,6 +2294,9 @@ C&&&& Number of electrons
             READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
             GO TO 100
   106     CONTINUE
+#ifndef MOD_OPEN
+               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
+#else
 C&&& ACTIVE SHELLS: read in number of active shells
 C                   and their occupation
 C             Read in number of open shells
@@ -2312,14 +2314,7 @@ C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,*) (NACSH(J,IOPEN),J=1,NFSYM)
                   READ(LUCMD,'(A)') A
-                  CALL FRAC2I(A,IN(IOPEN),ID(IOPEN),IERR)
-                  IF (IERR.LT.0) 
-     &               CALL QUIT('HAMINP: Error reading occupation.')
-                  IF (ID(IOPEN).EQ.0) 
-     &               CALL QUIT('HAMINP: Frac. occ. denumerator = 0')
-                  IF (IN(IOPEN).EQ.0) 
-     &               CALL QUIT('HAMINP: Frac. occ. enumerator = 0')
-                  DF(IOPEN) = D1*IN(IOPEN) / (D1*ID(IOPEN))
+                  CALL FRAC2I(DF(IOPEN),A)
                   IF (DF(IOPEN).GT.(D1+DTHR)) THEN
                      WRITE(LUPRI,'(A,I2,A,F6.4,A)')
      &                  'HAMINP: Frac. occ. for shell ',IOPEN,
@@ -2327,6 +2322,7 @@ C
                      CALL QUIT('HAMINP ERROR: Open shell error!')
                   END IF
                END DO
+#endif
             GO TO 100
   107     CONTINUE
             GO TO 100
@@ -2382,7 +2378,7 @@ C
          DO IOPEN = 1,NOPEN
             NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
             DTEMP        = DTEMP +
-     &                     NACSH(IFRP,IOPEN)*D2*IN(IOPEN)/(D1*ID(IOPEN))
+     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
          END DO
          NAELEC(IFRP) = NINT(DTEMP)
          IF (NELEC(IFRP).LT.0) 
