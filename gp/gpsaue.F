@@ -3530,7 +3530,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CURVE(NORDER,NPOINTS,A,B,X,Y,VAR,KVPT)
+C/* Deck curve */
+      SUBROUTINE CURVE(NORDER,NPOINTS,A,B,X,Y,AVDEV,KVPT)
 #include <implicit.h>
       PARAMETER (D0=0.0D0)
       DIMENSION A(*),B(*),KVPT(*)
@@ -3567,7 +3568,7 @@ C* Solve linear equations
       ENDDO
       B(1) = B(1) + YMEAN
 C*    Estimate fit
-      VAR = MAX(DFIT(NPOINTS,NORDER,X,Y,B),1D-14)
+      AVDEV = DFIT(NPOINTS,NORDER,X,Y,B)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NEWRAP(NORDER,DTOL,B,XVAL,NITER,IERR)
@@ -3576,8 +3577,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION B(NORDER + 1)
       IERR = 0
       NSTEP = 0
-      WRITE(LUPRI,'(A,E12.6,A,E8.2)') 'NEWTON: Start value:',XVAL,
-     +   '   Tolerance:  ',DTOL
+CTROND      WRITE(LUPRI,'(A,E12.6,A,E8.2)') 'NEWTON: Start value:',XVAL,
+CTROND     +   '   Tolerance:  ',DTOL
    10 CONTINUE
       NSTEP = NSTEP + 1
       XOLD = XVAL  
@@ -3708,14 +3709,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION DFIT(NPOINTS,NORDER,X,Y,B)
+C     Calculate average deviation
 #include <implicit.h>
+      PARAMETER(D0=0.0D0,DM=1.0D2)
       DIMENSION B(NORDER+1)
       DIMENSION X(NPOINTS),Y(NPOINTS)
-      DFIT = 0
+      DFIT = D0
+      DOBS = D0
       DO 10 I = 1,NPOINTS
         DIFF = Y(I) - POLVAL(NORDER,B,X(I))
         DFIT = DFIT + DIFF*DIFF
+        DOBS = DOBS + Y(I)*Y(I)
    10 CONTINUE     
+      DFIT = DM*SQRT(DFIT/DOBS)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETMSS(IZ,DMASS,ABUND,INFO)

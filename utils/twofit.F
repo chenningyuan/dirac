@@ -157,9 +157,10 @@ C
  60   CONTINUE
       WRITE(LUPRI,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
       WRITE(ILOGG,'(/A/)') '** SPECTROSCOPIC CONSTANTS:'
-      NORDER = 4
-CTROND      WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
-CTROND      READ(LUCMD,*) NORDER
+CTROND      NORDER = 4
+      WRITE(LUPRI,'(A)') 
+     &  'Polynomial fit: Give order of polynomial (.ge.4)'
+      READ(LUCMD,*) NORDER
       IF(NORDER.LT.4) THEN
         WRITE(LUPRI,'(A)') 
      &    '* This program requires at least a quartic fit.'
@@ -180,14 +181,18 @@ C* Estimate fit:
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
       WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      B(I),I=1,NDIM)  
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Fit :  ',VAR      
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Average deviation :  ',VAR      
 C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
       WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
       WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      B(I),I=1,NDIM)  
-      WRITE(ILOGG,'(3X,A,E9.4)') '* Fit :  ',VAR      
+      DO I = 1,NP
+        YP = (POLVAL(NORDER,B,X(I))-Y(I))/Y(I)
+        WRITE(LUPRI,'(3X,F6.3,4X,E12.4)') XTANG*X(I),YP
+      ENDDO
+      WRITE(ILOGG,'(3X,A,E9.4)') '* Average deviation :  ',VAR      
 C
 C     Find minimum
 C     ============
@@ -232,6 +237,7 @@ C
       XDEV=D1/SQRT(D2*UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
+      TEMP=XDEV*XTANG
       WRITE(LUPRI,'(A,F10.4,A/A,A1,F10.4,A1,F10.4,A1)') 
      &   '* Mean displacement in harmonic ground state:',TEMP,
      &   ' Angstroms',
