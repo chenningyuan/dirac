@@ -361,6 +361,8 @@ EOF
       cat <<EOF>> ./export
       tar rvf DIRAC.new.tar dirac/geom/*.F dirac/geom/Makefile.in \\
               2>> export.log
+      tar rvf DIRAC.new.tar abacus/geom/*.F abacus/geom/Makefile.in \\
+              2>> export.log
 EOF
    fi
    if [ "$PARTAR" ]; then
@@ -430,8 +432,7 @@ abacus/her2out.o    abacus/her2sup.o    abacus/her2sym.o    abacus/herbas.o\\
 abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\\
 abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
 abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
-abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\\
-abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\\
+abacus/abanuc.o     abacus/abatro.o \\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o          gp/gpjth_c.o \\
@@ -527,7 +528,9 @@ if [ -n "$GEOMOD" ]; then
 cat <<EOF>> Makefile
 
 GEOOBJS = \\
-dirac/geom/dirgeo.o
+dirac/geom/dirgeo.o \\
+abacus/geom/abaopt.o   abacus/geom/abawalk.o   abacus/geom/abarint.o \\
+abacus/geom/abavrml.o  abacus/geom/abaortvec.o
 EOF
 fi
 #
@@ -617,6 +620,7 @@ if [ -n "$CIMOD" ]; then
 fi
 if [ -n "$GEOMOD" ]; then
    echo '	cd dirac/geom ; $(MAKE) clean' >> Makefile
+   echo '	cd abacus/geom; $(MAKE) clean' >> Makefile
 fi
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
@@ -716,6 +720,7 @@ if [ -n "$GEOMOD" ]; then
 cat <<EOF>> Makefile
 GEO_OBJ:
 	cd dirac/geom ; \$(MAKE) all
+	cd abacus/geom; \$(MAKE) all
 EOF
 fi
 cat <<EOF>> Makefile
@@ -752,7 +757,7 @@ if [ -n "$CIMOD" ]; then
    TEMP="$TEMP dirrci"
 fi
 if [ -n "$GEOMOD" ]; then
-   TEMP="$TEMP dirac/geom"
+   TEMP="$TEMP dirac/geom abacus/geom"
 fi
 
 cat <<EOF>> Makefile
