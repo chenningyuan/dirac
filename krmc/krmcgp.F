@@ -545,8 +545,6 @@ C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ,NZ,*)
 C
-      DIMENSION JCOL(2), NCOL(2)
-      DIMENSION JROW(2), NROW(2)
       LOGICAL DOFULL
 C
       IF (JTRLVL .EQ. 0) THEN
@@ -602,6 +600,23 @@ C
          IQ1 = IPQTOQ(IZ1,IREPAB)
          DO IREPL = 1, NFSYM
             IREPK = MOD (IREPL + IREPIJ, 2) + 1
+         IF (DOFULL) THEN
+            IF (IQ1 .EQ. 1) THEN
+               QFAC = 1.0D0
+            ELSE
+               QFAC = -1.0D0
+            END IF
+            DO ICOL = 1, NIDX4(IREPL)
+               JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
+               DO IROW = 1, NIDX3(IREPK)
+                  II = IDXT2G(IROW+IIDX3(IREPK),3)
+                  IKL = IKL + 1
+                  HTVALUE = HT(IKL,IZ1,IZ2,IREPABR)
+                  HX(II,JJ,IZ1,IZ2,IREPABR) = HTVALUE
+                  HX(JJ,II,IZ1,IZ2,IREPABR) = QFAC*HTVALUE
+               END DO
+            END DO
+         ELSE
             DO ICOL = 1, NIDX4(IREPL)
                JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
                DO IROW = 1, NIDX3(IREPK)
@@ -611,6 +626,8 @@ C
      &                 HT(IKL,IZ1,IZ2,IREPABR)
                END DO
             END DO
+         END IF
+#ifdef HJ_DISABLED_18jun2004
 C
             IF (DOFULL) THEN
 C
@@ -636,6 +653,7 @@ C
                   END DO
                END IF
             END IF
+#endif
          END DO
       END DO
 C
@@ -1226,7 +1244,7 @@ C
 C     Input:
 C
 C     Output:
-C        DV - in-active density matrix with dimenion N2ORBX
+C        DC - inactive density matrix with dimension N2ORBX
 C
 C     Written by J. Thyssen - Nov 24 2000
 C
@@ -1465,7 +1483,7 @@ C
 C
 #include "memint.h"
 C
-      CALL QENTER('ROTFC')
+      CALL QENTER('ROTORB')
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
@@ -1485,8 +1503,8 @@ C
          CALL MATSCT(WORK(KU),NORBT,NORBT,U,NSSHT,NSSHT,IDXV2G,NZ)
       ELSE
          WRITE(LUPRI,'(2A)')
-     &        '*** ERROR in ROTFC *** Unknown control character: ',C
-         CALL QUIT('*** ERROR in ROTFC *** Unknown control character')
+     &        '*** ERROR in ROTORB *** Unknown control character: ',C
+         CALL QUIT('*** ERROR in ROTORB *** Unknown control character')
       END IF
 C
 C     Calculate CMO(new) = CMO(old) U
@@ -1503,8 +1521,8 @@ C
      &        CMO(1+ICMOQ(I)),NBASI,NORBI,NZ)
       END DO
 C
-      CALL MEMREL('ROTFC',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('ROTORB',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-      CALL QEXIT('ROTFC')
+      CALL QEXIT('ROTORB')
       RETURN
       END
