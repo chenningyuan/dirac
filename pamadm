@@ -27,6 +27,7 @@ usage()
    echo 'Usage: pamadm [flags] tarfile'
    echo '   Flags:'
    echo '     -adm          : Include ALL modules (administrator)'
+   echo '     -dft          : Include DFT module'
    echo '     -eri          : Include ERI integral routines'
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
