@@ -21,6 +21,7 @@ if ($#argv == 0) then
       echo '     -rsp          : Include response module'
       echo '     -cc           : Include CCSD module'
       echo '     -tra          : Include 4-index transformation module'
+      echo '     -open         : Include open shell module'
       echo '     tarfile=make  : only generate new Makefile'
       exit 0
 endif
@@ -61,6 +62,12 @@ set ERITAR = 0
 set ERIFLG =
 set ERIOBJ =
 set ERIMAK =
+# Open shell module
+set OPENMOD = 0
+set OPENTAR = 0
+set OPENFLG =
+set OPENOBJ =
+set OPENMAK =
 #
 while($#argv)
    switch($argv[1])
@@ -107,6 +114,7 @@ if($PAMADM) then
   set ERITAR = 1
   set PARMOD = 1
   set PARTAR = 1
+  set OPENMOD = 1
 endif
 #
 #  RELCCSD-module
@@ -145,6 +153,13 @@ if($ERIMOD) then
         set ERITAR = 1
 endif
 #
+if($OPENMOD) then
+        set OPENFLG = '-DMOD_OPEN'
+        set OPENOBJ = '$(OPENOBJS)'
+        set OPENMAK = OPEN_OBJ
+        set OPENTAR = 1
+endif
+#
 #  Safeguard files
 #
 if($GENTAR) then
@@ -161,12 +176,13 @@ echo CCFLG=$CCTAR   >> configure
 echo RSPFLG=$RSPTAR >> configure
 echo TRAFLG=$TRATAR >> configure
 echo PARFLG=$PARTAR >> configure
+echo OPENFLG=$OPENTAR >> configure
 #
 #
 cat configure.in >> configure
 chmod +x configure
-set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ"
-set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK"
+set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ"
+set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK"
 #
 #  Write current Makefile
 #
@@ -190,7 +206,7 @@ abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\
 abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\
 gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o          gp/gpjth_c.o \
+gp/gpjth.o \
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
 prp/pamgrd.o 
 
@@ -244,6 +260,16 @@ eri/eri2cft.o       eri/eri2her.o       eri/eri2sym.o \
 eri/eri2aob.o       eri/eri2dis.o       eri/eri2odb.o     eri/eri2vec.o \
 eri/eri2car1.o      eri/eri2drv.o       eri/eri2out.o \
 eri/eri2car2.o      eri/eri2fck.o       eri/eri2sph.o    
+EOF
+endif
+#
+#  Object files for Open shells module
+#
+if ($OPENMOD) then
+cat <<EOF>> Makefile
+
+OPENOBJS = \
+dirac/open/gpjth_c.o        dirac/open/diropen.o
 EOF
 endif
 #
@@ -315,7 +341,7 @@ export:
 	dirac/*.F dirac/*.c dirac/Makefile.in \
 	prp/*.F prp/Makefile.in \
 	abacus/*.F abacus/Makefile.in \
-	gp/Makefile.in gp/*.F gp/*.c \
+	gp/Makefile.in gp/*.F \
 	pdpack/Makefile.in pdpack/*.F 
 EOF
 if($ERITAR) then
@@ -326,6 +352,9 @@ echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relcc
 endif
 if($RSPTAR) then
 echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
+endif
+if($OPENTAR) then
+echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in dirac/open/*.c ' >> Makefile
 endif
 if($TRATAR) then
 echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
@@ -407,12 +436,19 @@ PVM_OBJ :
 SLAVE_OBJ :
 	cd abacus/par  ; \$(MAKE) slave
 EOF
+endif
+#
+if ($OPENMOD) then
+cat <<EOF>> Makefile
+OPEN_OBJ:
+	cd dirac/open ; \$(MAKE) all
+EOF
+endif
 #if($ERIMOD) then
 #cat <<EOF>> Makefile
 #       cd eri/par ; \$(MAKE) slave
 #EOF
 #endif
-endif
 cat <<EOF>> Makefile
 
 PD_OBJ:
@@ -436,6 +472,9 @@ if ($TRAMOD) then
 endif
 if ($ERIMOD) then
    set TEMP = ($TEMP 'eri')
+endif
+if ($OPENMOD) then
+   set TEMP = ($TEMP 'dirac/open')
 endif
 
 cat <<EOF>> Makefile
