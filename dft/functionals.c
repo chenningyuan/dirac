@@ -130,11 +130,15 @@ fort_print(const char* format, ...)
     int len;
     va_list a;
 
+/* DEC does not recognize the vsnprintf command */
+#ifndef SYS_DEC
+
     va_start(a, format);
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
     fort_wrt_(line, &len);
+#endif
 }
 
 void

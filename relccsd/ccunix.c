@@ -49,7 +49,7 @@ extern char  *getenv();
 
 /* Check that the large file option is enabled, if not use normal lseek */
 
-#if defined SMALL_CFILES
+#if defined (SMALL_CFILES) || (SYS_DEC)
 typedef off_t off64_t;
 #define lseek64 lseek
 #endif

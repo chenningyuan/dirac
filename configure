@@ -1202,7 +1202,13 @@ esac
 #  Add VAR_G77 is compiler is g77
 #  and add INSTALL_WRKMEM to the ccp-flags.
 #
-if [[ "$F77" = "g77" || "$F77" = "mpif77" ]]; then
+echo "F77 $F77"
+if [ "$F77" = "g77" ]; then
+echo "F77 $F77"
+   cpp="$cpp -DVAR_G77"
+   ccp="$ccp -DVAR_G77"
+fi
+if [ "$F77" = "mpif77" ]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
