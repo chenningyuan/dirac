@@ -1514,8 +1514,8 @@ C
             DIISAO = .TRUE.
             DIISMO = .FALSE.
          ENDIF
-         IF (DIISMO) WRITE(LUPRI,'(A)') ' * DIIS (dirac-like)'
-         IF (DIISAO) WRITE(LUPRI,'(A)') ' * DIIS (dalton-like)'
+         IF (DIISMO) WRITE(LUPRI,'(A)') ' * DIIS (in MO basis)'
+         IF (DIISAO) WRITE(LUPRI,'(A)') ' * DIIS (in AO basis)'
          WRITE(LUPRI,'(A,1P,D8.2)')
      &      ' * DIIS will be activated when convergence reaches : ',
      &      DIISTH
