@@ -714,7 +714,7 @@ C
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
-     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.NOMKMO'/
+     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -769,8 +769,6 @@ C
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
-C Seb
-      USE_MKMOFK = .TRUE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1176,8 +1174,6 @@ C&&& FROZEN: Frozen orbitals
                ENDDO
                GOTO 100
  40               CONTINUE
-C Seb NOMKMO: avoid use of MKMOFK for construction of the fock matrix
-                  USE_MKMOFK = .FALSE.
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
