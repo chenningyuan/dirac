@@ -146,12 +146,47 @@ C
       ENDIF
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C
-      CALL MEMGET('REAL',KRNORM,7*NFREQ,WORK,KFREE,LFREE)
+C
+C     Fix the number of variational parameters
+C
+      NVPAR = 0
+      IF(NZXOPE.GT.0) THEN
+        NVPAR        = NVPAR + 1
+        IPEP         = NVPAR
+        BVTYP(NVPAR) = 'E+'
+        IF(.NOT.STATIC) THEN
+          NVPAR        = NVPAR + 1
+          IPEM         = NVPAR
+          BVTYP(NVPAR) = 'E-'
+        ENDIF
+      ENDIF
+      IF(NZXOPP.GT.0) THEN
+        NVPAR        = NVPAR + 1
+        IPPP         = NVPAR
+        BVTYP(NVPAR) = 'P+'
+        IF(.NOT.STATIC) THEN
+          NVPAR      = NVPAR + 1
+          IPPM       = NVPAR
+        BVTYP(NVPAR) = 'P-'
+        ENDIF
+      ENDIF
+      IF(NZCONF.GT.0) THEN
+        NVPAR        = NVPAR + 1
+        IPCP         = NVPAR
+        BVTYP(NVPAR) = 'C+'
+        IF(.NOT.STATIC) THEN
+          NVPAR        = NVPAR + 1
+          IPCM         = NVPAR
+          BVTYP(NVPAR) = 'C-'
+        ENDIF
+      ENDIF
+      CALL MEMGET('REAL',KRNORM,NVPAR*NFREQ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KISIM ,NVPAR      ,WORK,KFREE,LFREE)
 C
       CALL XRSCT1(GPCI,GPOE,GPOP,RCNV,
      &            IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &            WORK(KREDE),WORK(KREDS),WORK(KREDGP),
-     &            WORK(KRNORM),WORK(KPOS),
+     &            WORK(KRNORM),WORK(KISIM),WORK(KPOS),
      &            WORK,KFREE,LFREE)
 C
       CALL MEMREL('XRSCTL.XRSRED',WORK,1,KFRSAV,KFREE,LFREE)
@@ -164,7 +199,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSCT1 */
       SUBROUTINE XRSCT1(GPCI,GPOE,GPOP,RCNV,
      &                  IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
-     &                  REDE,REDS,REDGP,RNORM,
+     &                  REDE,REDS,REDGP,RNORM,ISIM,
      &                  NPOS,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -278,35 +313,18 @@ C*****************************************************************************
 C
       PARAMETER(D1 = 1.0D0)
 C
-      CHARACTER CPUTID*12,SECTID*12,TYP(6)*2
-      DIMENSION GPCI(*), GPOE(*),GPOP(*),ISIM(6),
-     &          IBTYP(2,*), IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
-     &          EVALR(*),EVECR(NREDM,NFREQ),
-     &          RNORM(7,NFREQ),NPOS(*),WORK(*)         
-C
-C HJMAERKE: prepared for OPTORB, ORBSPC
-      LOGICAL OPTORB,ORBSPC
-      PARAMETER (ORBSPC=.FALSE.)
-      DATA OPTORB/.FALSE./
-C HJMAERKE: end
-      DATA TYP/'E+','P+','C+','E-','P-','C-'/
-C
-#include <dcbibn.h>
-C
-C Used from common blocks:
-C   XCBINF : MAXRM
-C   XCBORB : N2ORBX
-C   XCBDBG : ABCHK
-C   XCBIO  : LUXXX*
-C   XCBPRI : IPRINT, LUPRI, ?
-C   WRKXRS : JSYMOP,LZYVAR,LZXOP*,?
-C
-C
 #include <dcbxrs.h>
 #include <pgroup.h>
 #include <dgroup.h>
 #include <dcborb.h>
 C
+      CHARACTER CPUTID*12,SECTID*12,DAYTID*24
+      DIMENSION GPCI(*), GPOE(*),GPOP(*),
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
+     &          EVALR(*),EVECR(NREDM,NFREQ),
+     &          RNORM(NVPAR,NFREQ),ISIM(NVPAR),NPOS(*),WORK(*)
+C
+#include <dcbibn.h>
       LOGICAL BINMEM
       CHARACTER LAB123(3)*8,RESTAR*8
 C
@@ -399,12 +417,10 @@ C     trial vectors
 C     ===========================================
 C
       IF (NZRED.GT.0.AND.NTSIM.LE.0) THEN
-         IF (IPRXRS.GE.1) THEN
-CTROND Restart warning from XRSST.....
-           WRITE(LUPRI,'(/A,I5,A)') 
-     &        ' ** XRSCTL Microiteration number',ITMIC,' **'
-           CALL PRSYMB(LUPRI,'-',40,0)
-         ENDIF
+         CALL GTINFO(DAYTID)
+         WRITE(LUPRI,'(A,I4,A,3X,A24/)')
+     +   '########## START MICROITERATION NO.',ITMIC,' ##########',
+     +   DAYTID
          TIMITR = SECOND()
          GO TO 30
       END IF
@@ -435,10 +451,10 @@ C     **********************************************
         TIMITR = SECOND()
         CALL FLSHFO(LUPRI)
         ITMIC = ITMIC + 1
-        IF (IPRXRS.GE.1) WRITE(LUPRI,'(/A,I5,A)') 
-     &    ' ** XRSCTL microiteration number',ITMIC,' **'
-        WRITE(LUPRI,'(A,A9)') '* Integral contributions: ',INTTYP
-        CALL PRSYMB(LUPRI,'-',40,0)
+        CALL GTINFO(DAYTID)
+        WRITE(LUPRI,'(A,I4,A,3X,A24/)')
+     +  '########## START MICROITERATION NO.',ITMIC,' ##########',
+     +  DAYTID
 C
 CTROND       Check BINMEM !!!!!
 C
@@ -533,8 +549,9 @@ C
         IF (IPRXRS.GE.7) THEN
           WRITE(LUPRI,'(/A,I5)')' Trial vectors for restart:',KTOT
         ENDIF
-        WRITE(LURSP)LAB123,RESTAR
-        WRITE(LURSP)JSYMOP,JTIMOP,KTOT,(IBTYP(1,I),IBTYP(2,I),I=1,KTOT)
+        WRITE(LURSP) LAB123,RESTAR
+        WRITE(LURSP) JSYMOP,JTIMOP,KTOT,
+     &               (IBTYP(1,I),IBTYP(2,I),I=1,KTOT)
         REWIND (LURSP)
 C
 C       Update matrices and vectors of reduced RSP equation
@@ -593,9 +610,9 @@ C       Write info to PAMCYC
 C       ====================
 C
         WRITE(LUCYCL,'(I3,2X,A9,6(2X,A2,A1,I3))')
-     &     ITMIC,INTTYP,(TYP(I),':',ISIM(I),I=1,6)
-        WRITE(LUPRI,'(A,6(A2,A1,I3))') 
-     &     '* New trial vectors: ',(TYP(I),':',ISIM(I),I=1,6)
+     &     ITMIC,INTTYP,(BVTYP(I),':',ISIM(I),I=1,NVPAR)
+        WRITE(LUPRI,'(A,6(2X,A2,A1,I3))') 
+     &     '* New trial vectors: ',(BVTYP(I),':',ISIM(I),I=1,NVPAR)
 C
 C       Solve reduced RSP equation
 C       ==========================
@@ -628,7 +645,7 @@ C
 C        Write info to PAMCYC
 C        ====================
 C
-         WRITE(LUCYCL,'(6E10.2)') ((RNORM(I,J),I=1,6),J=1,NFREQ)
+         WRITE(LUCYCL,'(6E10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
          WRITE(LUCYCL,'(A12)') CPUTID
          IF(IPRXRS.GE.1) THEN
            WRITE(LUPRI,'(/A,I5,A,A12/)')
@@ -652,7 +669,7 @@ C****                                            ****
 C****************************************************
 C
  40   CONTINUE
-      CALL XRSOUT(RCNV,RNORM,EVALR,IBTYP)
+      CALL XRSOUT(RCNV,RNORM,ISIM,EVALR,IBTYP)
       IF(NZCONF.GT.0) THEN
         CLOSE(LUBCI,STATUS = 'KEEP')
         CLOSE(LUSCI,STATUS = 'DELETE')
@@ -699,20 +716,19 @@ C
       KFRSAV = KFREE
 C
       IF(LINEQ) THEN
+        NESIM = 0
+        NPSIM = 0
+        NCSIM = 0
         IF(DIAGHE.OR.RSREST) THEN
           NVEC = NFREQ
         ELSE
           NVEC = 1
         ENDIF
-        IF(STATIC) THEN
-          NESIM = NVEC
-          NPSIM = NVEC
-          NCSIM = NVEC
-        ELSE
-          NESIM = NVEC*2
-          NPSIM = NVEC*2
-          NCSIM = NVEC*2
-        ENDIF
+        IFAC = 1
+        IF(.NOT.STATIC) IFAC = 2
+        IF(NZXOPE.GT.0) NESIM = NVEC*IFAC
+        IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC
+        IF(NZCONF.GT.0) NCSIM = NVEC*IFAC
         NTSIM = NESIM + NPSIM + NCSIM
         NBTOT = NESIM*NZXOPEQ + NPSIM*NZXOPPQ + NCSIM*NZCONFQ
         CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
@@ -840,8 +856,6 @@ C
         CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,EVALR,IBTYP,IBEVC,IEVEC,
      &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
         IND = IND + NESIM
-      ELSE
-        NESIM = 0
       END IF
 C
 C     Orbital (e-p) type trial vector
@@ -851,8 +865,6 @@ C
         CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,EVALR,IBTYP,IBPVC,IPVEC,
      &              JBPNDX,NPSIM,IND,NPRED,NZXOPP,WORK,KFREE,LFREE)
         IND = IND + NPSIM
-      ELSE
-        NPSIM = 0
       END IF
 C
 C     Configurational type trial vector
@@ -862,8 +874,6 @@ C
         CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,EVALR,IBTYP,IBCVC,ICVEC,
      &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
         IND = IND + NCSIM
-      ELSE
-        NCSIM = 0
       END IF
 C
       BINMEM = .TRUE.
@@ -1556,7 +1566,7 @@ C
       CALL DZERO(REDE,N2REDM)
       CALL DZERO(REDS,N2REDM)
       IF (LINEQ) CALL DZERO(REDGP,NREDM)
-      NRNORM = 7*NFREQ
+      NRNORM = NVPAR*NFREQ
       CALL DZERO(RNORM,NRNORM)
       FIRST1 = .TRUE.
       FIRST2 = .TRUE.
@@ -2043,10 +2053,11 @@ C     Print section
 C
       IPAR = INERT(2) + INERT(3)
       IF(IPRINT.GE.2.OR.IPAR.GT.0) THEN
-        WRITE(LUPRI,'(A,F12.5,A)') 
-     &    'LINRED: Solution vector at frequency:',W,' a.u.'
-C        WRITE(LUPRI,'(5X,5F12.5)') (X(I),I=1,N)
-        CALL PRIRVC(X,N,IBTYP)
+        IF(IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(A,F12.5,A)') 
+     &      'LINRED: Solution vector at frequency:',W,' a.u.'
+          CALL PRIRVC(X,N,IBTYP)
+        ENDIF
         WRITE(LUPRI,'(/3X,A)') '* Reduced matrix:'
         WRITE(LUPRI,'(5X,A,I5)')
      &    '* Number of positive eigenvalues:',INERT(1),
@@ -2136,51 +2147,40 @@ C
 #include <dcbxrs.h>
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
      &          EVALR(*),EVECR(NREDM,*),GPCI(*),GPOE(*),GPOP(*),
-     &          RNORM(7,NFREQ),WORK(*)
+     &          RNORM(NVPAR,NFREQ),WORK(*)
       CALL QENTER('XRSNEX')
       KFRSAV = KFREE
+      NESIM = 0
+      NPSIM = 0
+      NCSIM = 0
 C
 C       Memory allocation 
 C
-      IFAC = 2
-      IF(STATIC) THEN
-        NESIM = NFREQ
-        NPSIM = NFREQ
-        NCSIM = NFREQ
-      ELSE
-        NESIM = NFREQ*2
-        NPSIM = NFREQ*2
-        NCSIM = NFREQ*2
-      ENDIF
-      NTSIM = NESIM + NPSIM + NCSIM
-      NBTOT = NESIM*NZXOPEQ + NPSIM*NZXOPPQ + NCSIM*NZCONFQ
       IFREQ = 1
-      MFREQ = NFREQ
+      MFREQ =NFREQ
+      IF(STATIC) THEN
+        NSIM = MFREQ
+      ELSE
+        NSIM = MFREQ + MFREQ
+      ENDIF
+      NBTOT = NSIM*(NZXOPEQ+NZXOPPQ+NZCONFQ)
       CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
       KFIRST = KBTOT
-C
       KBOE   = KFIRST
-      KFIRST = KFIRST + NZXOPEQ*NESIM
-
-C
+      KFIRST = KFIRST + NZXOPEQ*NSIM
       KBOP   = KFIRST
-      KFIRST = KFIRST + NZXOPPQ*NPSIM
-C
+      KFIRST = KFIRST + NZXOPPQ*NSIM
       KBCI   = KFIRST
-      KFIRST = KFIRST + NZCONFQ*NCSIM
+      KFIRST = KFIRST + NZCONFQ*NSIM
 C
 C     Allocate buffers
 C
       KFRBUF = KFREE
-      CALL MEMGET('REAL',KBEBF,NZXOPEQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBPBF,NZXOPPQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBCBF,NZCONFQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KECNV,NESIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPCNV,NPSIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCCNV,NCSIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KEVEC,NESIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KPVEC,NPSIM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KCVEC,NCSIM  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBEBUF,NZXOPEQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBPBUF,NZXOPPQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBCBUF,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KXNORM,NVPAR*MFREQ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBVEC,NVPAR*MFREQ,WORK,KFREE,LFREE)
 C
 C     Generate new trial vectors
 C     ==========================
@@ -2188,10 +2188,9 @@ C
       CALL XRSNE1(WORK(KBOE),WORK(KBOP),WORK(KBCI),
      &            MFREQ,EVALR(IFREQ),EVECR(1,IFREQ),
      &            GPOE,GPOP,GPCI,IBTYP,IBCVC,IBEVC,IBPVC,
-     &            WORK(KBEBF),WORK(KBPBF),WORK(KBCBF),RCNV,
-     &            WORK(KECNV),WORK(KPCNV),WORK(KCCNV),
-     &            WORK(KEVEC),WORK(KPVEC),WORK(KCVEC),
-     &            RNORM(1,IFREQ),WORK,KFREE,LFREE)
+     &            WORK(KBEBUF),WORK(KBPBUF),WORK(KBCBUF),RCNV,
+     &            RNORM(1,IFREQ),WORK(KXNORM),WORK(KIBVEC),
+     &            WORK,KFREE,LFREE)
 C
 C     Compress trial vectors in memory
 C     ================================
@@ -2270,33 +2269,36 @@ C*****************************************************************************
 C
 #include <dcbxrs.h>
 #include <dcbibn.h>
-      DIMENSION IBTYP(2,NBVEC),ISIM(6)
+      DIMENSION IBTYP(2,NBVEC),ISIM(*)
 C
 C     Initialize
 C
-      CALL IZERO(ISIM,6)
+      CALL IZERO(ISIM,NVPAR)
 C
 C     Count vectors
 C
       DO I = 1,NBVEC
         IBV = IBTYP(1,I)
         IBH = IBTYP(2,I)
-        IF(IBH.EQ.1) THEN
-C       X(+)-vectors
-          IBH = 0
-        ELSE
-C       X(-)-vectors
-          IBH = 3
-        ENDIF
         IF    (IBV.EQ.JBENDX) THEN
-          IBV = 1
+          IF(IBH.EQ.IPX) THEN
+            ISIM(IPEP) = ISIM(IPEP) + 1
+          ELSE
+            ISIM(IPEM) = ISIM(IPEM) + 1
+          ENDIF
         ELSEIF(IBV.EQ.JBPNDX) THEN
-          IBV = 2
+          IF(IBH.EQ.IPX) THEN
+            ISIM(IPPP) = ISIM(IPPP) + 1
+          ELSE
+            ISIM(IPPM) = ISIM(IPPM) + 1
+          ENDIF
         ELSEIF(IBV.EQ.JBCNDX) THEN
-          IBV = 3
+          IF(IBH.EQ.IPX) THEN
+            ISIM(IPCP) = ISIM(IPCP) + 1
+          ELSE
+            ISIM(IPCM) = ISIM(IPCM) + 1
+          ENDIF
         ENDIF
-        IBV = IBV + IBH
-        ISIM(IBV) = ISIM(IBV) + 1
       ENDDO
 C
       RETURN
@@ -2402,18 +2404,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSOUT */
-      SUBROUTINE XRSOUT(RCNV,RNORM,EVALR,IBTYP)
+      SUBROUTINE XRSOUT(RCNV,RNORM,ISIM,EVALR,IBTYP)
 C*****************************************************************************
 C
 C     Final output from XRSCTL
 C       RCNV  - total norm of residual relative to norm of solution vector
 C       RNORM - residual norm
-C             1: norm of E(+)-part
-C             2: norm of P(+)-part
-C             3: norm of C(+)-part
-C             4: norm of E(-)-part
-C             5: norm of P(-)-part
-C             6: norm of C(-)-part
 C
 C     Written by T.Saue Nov 19 1996
 C
@@ -2424,8 +2420,8 @@ C
 #include <dcbxrs.h>
 C
       CHARACTER CPUTID*12,WORD*3
-      DIMENSION RNORM(7,NFREQ),EVALR(NFREQ),
-     &          RCNV(NFREQ),IBTYP(2,NREDM),ISIM(6)
+      DIMENSION RNORM(NVPAR,NFREQ),EVALR(NFREQ),ISIM(*),
+     &          RCNV(NFREQ),IBTYP(2,NREDM)
 C
       CALL HEADER('Final output from XRSCTL',-1)
 C
@@ -2477,8 +2473,6 @@ C
 C         Max no of microiterations reached
 C         ---------------------------------
 C
-c NWARN is not used anywhere./Feb 9 1998 - jth
-c         NWARN = NWARN + 1
           WRITE(LUPRI,'(/A,I4,A)')
      *      ' *** WARNING-Maximum number of microiterations,',
      *      ITMIC,', reached'
@@ -2487,26 +2481,27 @@ c         NWARN = NWARN + 1
 C
 C     Give summary of calculations
 C
+      WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(1X,A2,A6,5X))')
+     &  'Freq.(au)','Total norm',(BVTYP(I),' norm ',I=1,NVPAR)
+      NCOL = 36 + NVPAR*14
       REWIND LUCYCL
-      WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(1X,A9,4X))')
-     &  'Freq.(au)','Total norm',' E+ norm ',' P+ norm ',' C+ norm ',
-     &  ' E- norm ',' P- norm ',' C- norm '
       DO ITR = 1,ITMIC
-        CALL PRSYMB(LUPRI,'=',120,0)
+        CALL PRSYMB(LUPRI,'=',NCOL,0)
         READ(LUCYCL,'(I3,2X,A9,6(2X,A3,I3))')
-     &     JTR,INTTYP,(WORD,ISIM(I),I=1,6)
-        READ(LUCYCL,'(6E10.2)') ((RNORM(I,J),I=1,6),J=1,NFREQ)
+     &     JTR,INTTYP,(WORD,ISIM(I),I=1,NVPAR)
+        READ(LUCYCL,'(6E10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
         READ(LUCYCL,'(A12)') CPUTID
         WRITE(LUPRI,'(A5,I3,3X,A12,A,A9,A)') 
      &        '* It.',ITR,CPUTID,' (',INTTYP,')'
-        CALL PRSYMB(LUPRI,'-',120,0)
+        CALL PRSYMB(LUPRI,'-',NCOL,0)
         DO IFREQ = 1,NFREQ
+           RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
            WRITE(LUPRI,'(10X,F10.6,A3,E10.2,A3,6(E10.2,A1,I2,A1))') 
-     &     EVALR(IFREQ),' : ',RNORM(1,IFREQ),' | ',
-     &     (RNORM(I,IFREQ),'(',ISIM(I-1),')',I=2,7)
+     &     EVALR(IFREQ),' : ',RTNORM,' | ',
+     &     (RNORM(I,IFREQ),'(',ISIM(I),')',I=1,NVPAR)
         ENDDO
       ENDDO
-      CALL PRSYMB(LUPRI,'=',120,0)
+      CALL PRSYMB(LUPRI,'=',NCOL,0)
 C
       RETURN
       END
@@ -2580,7 +2575,12 @@ C
 C     Electronic part
 C
       IF(NZXOPE.GT.0) THEN
-        CALL E2ODI1(HEDIAG,WORK(KFMO),JXOPE,NZXOPE)
+        IF(STERNH) THEN
+          FAC = DM2*CVAL*CVAL
+          CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
+        ELSE
+          CALL E2ODI1(HEDIAG,WORK(KFMO),JXOPE,NZXOPE)
+        ENDIF
         IF(IPRXRS.GE.5) THEN
           WRITE(LUPRI,'(/A)') '** E2ODIA: Diagonal Hessian (e-e):'
           WRITE(LUPRI,'(2I5,3X,1P,E18.10)')
