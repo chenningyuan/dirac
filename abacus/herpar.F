@@ -62,7 +62,7 @@ CALINT: call TWOINT directly instead of CALL HERFCK
 PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #endif
 C  /* Deck pardrv */
-      SUBROUTINE PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
+      SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
      &                  TKTIME,RETUR,FIRST,NPOS,MTOTTK,I2TYP,
      &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
@@ -144,7 +144,7 @@ C
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
 C
-      CALL QENTER('PARDRV')
+      CALL QENTER('HER_PARDRV')
 C
 C
 C     Ensure that NODES .LE. MAXNOD
@@ -154,10 +154,10 @@ C
      &    'ERROR: Number of nodes allocated has exceeded hardcoded',
      &    'limit. Reduce number of nodes or recompile program. ',
      &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
-         CALL QUIT('Number of nodes requested/allocated is too large.')        
-      ELSE
+         CALL QUIT('Number of nodes requested/allocated is too large.')
+      ELSE IF (KPRINT .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
-     &    'PARDRV: Number of nodes allocated:', NODES
+     &    'HER_PARDRV: Number of nodes allocated:', NODES
       ENDIF
 C
 C     Take calculation time of each IJ pair?
@@ -177,14 +177,14 @@ CTROND: This is now reduced to consistency check !
       ELSEIF(I2TYP.EQ.3) THEN
         NTOTTK = NSMLBL*(NSMLBL+1)/2
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'PARDRV: Unknown I2TYP =' ,I2TYP
+        WRITE(LUPRI,'(A,I5)') 'HER_PARDRV: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
       ENDIF
       IF(NTOTTK.NE.MTOTTK) THEN
-        WRITE(LUPRI,'(A,I8)') 'PARDRV: Inconsistent MTOTTK:',MTOTTK
+        WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be',NTOTTK,
      &      ' for I2TYP =',I2TYP
-        CALL QUIT('PARDRV: Inconsistent MTOTTK !!!')
+        CALL QUIT('HER_PARDRV: Inconsistent MTOTTK !!!')
       ENDIF
 C
 C     Allocate local variables
@@ -255,10 +255,19 @@ C
 C
 C--------------------------------------
 C     Receive final results from nodes.
+C     Release nodes from this task
+C      and let them return to main menu.
 C--------------------------------------
 C
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,WORK(KTIMES),DINTSKP,LDINTSKP)
+      ITASK = -1
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#else
+      call quit('PVM not implemented in HER_PARDRV')
+#endif
+
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -276,8 +285,8 @@ C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
-      CALL MEMREL('PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('PARDRV')
+      CALL MEMREL('HER_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('HER_PARDRV')
       RETURN
       END
 C  /* Deck indeks */
@@ -415,6 +424,7 @@ C
 #include <mxorb.h>
 #if defined (PRG_DIRAC)
 #include <dcbgen.h>
+#include <dcbham.h>
 #else
 #include <gnrinf.h>
 #endif
@@ -533,6 +543,11 @@ C     Send Panas value
 C     Send screening threshold
       CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+#if defined (PRG_DIRAC)
+C     Send SMLV1C
+      CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+#endif
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -979,7 +994,7 @@ C
 C
 #include <infpar.h>
 C
-      DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)        
+      DIMENSION  TIMES(MTOTTK), NPOS(0:MTOTTK+1), SORTED(0:MTOTTK+1)
 C
 C------------------------------------------------------
 C     The array TIMES containing CPU-times is sorted by
@@ -1138,21 +1153,17 @@ C
       END IF
 #endif
 C
-      WRITE(6,'(/A,A12)')
-     &     '>>>> Total CPU  time used in HERNOD so far   :',
+      WRITE(LUPRI,'(/A,A12)')
+     &     '>>>> Total CPU  time used in Hermit nodes so far :',
      &     INTTID
 C
       RETURN
       END
 C  /* Deck hernod */
-#if defined (PRG_DIRAC)
-      SUBROUTINE HERNOD(WORK,MWORK)
-#else
 #if !defined (VAR_PVM)
       SUBROUTINE HERNOD(WORK,MWORK)
 #else
       PROGRAM HERNOD
-#endif
 #endif
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
@@ -1363,6 +1374,7 @@ C
 #include <symmet.h>
 #if defined (PRG_DIRAC)
 #include <dcbgen.h>
+#include <dcbham.h>
 #else
 #include <gnrinf.h>
 #endif
@@ -1404,6 +1416,11 @@ C
 C     Receive screening threshold
       CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+#if defined (PRG_DIRAC)
+C     Receive SMLV1C
+      CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+#endif
 C
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -1837,6 +1854,7 @@ C        *****************************
 C        ***** First Shell Index *****
 C        *****************************
 C
+         ICA    = LCLASH(ISHELA)
          NHKTA  = NHKTSH(ISHELA)
          KHKTA  = KHKTSH(ISHELA)
          KCKTA  = KCKTSH(ISHELA)
@@ -1859,6 +1877,7 @@ C        ******************************
 C        ***** Second Shell Index *****
 C        ******************************
 C
+         ICB    = LCLASH(ISHELB)
          NHKTB  = NHKTSH(ISHELB)
          KHKTB  = KHKTSH(ISHELB)
          KCKTB  = KCKTSH(ISHELB)
@@ -1895,6 +1914,7 @@ C
          IF (SPNORB.OR.I2TYP.EQ.2) ICMAX = MAXSHL
          DO 400 ISHELC = ICSTRT,ICMAX
 C
+            ICC    = LCLASH(ISHELC)
             NHKTC  = NHKTSH(ISHELC)
             KHKTC  = KHKTSH(ISHELC)
             KCKTC  = KCKTSH(ISHELC)
@@ -1921,6 +1941,7 @@ C
             IF (.NOT.SPNORB.AND.(ISHELA.EQ.ISHELC)) IDMAX = ISHELB
             DO 500 ISHELD = IDSTRT,IDMAX
 C
+               ICD    = LCLASH(ISHELD)
                NHKTD  = NHKTSH(ISHELD)
                KHKTD  = KHKTSH(ISHELD)
                KCKTD  = KCKTSH(ISHELD)
