@@ -1190,7 +1190,9 @@ C  /* Deck runopt */
 #include <prkoor.h>
 #include <trkoor.h>
 #include <cbiwlk.h>
+#if ! defined (PRG_DIRAC)
 #include <molde.h>      
+#endif
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP
       CHARACTER TMPLIN*80, WRDRSP*7
