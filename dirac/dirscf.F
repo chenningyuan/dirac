@@ -247,7 +247,7 @@ C            ... new order for overlap selection if reordered (LMOORD)
         ENDIF
 C
 C        Generate density matrix/matrices
-C        Be aware: All density matrices are normed to 1,
+C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
          CALL GENDEN(DMAT,CMO,1,IPRSCF)
@@ -320,26 +320,28 @@ C
         IF(DOTSC) CALL TSCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
 C
 C
-C        Write current two-electron Fock matrix to file
-C        ==============================================
+C       Write current two-electron Fock matrix to file
+C       ==============================================
 C
-         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+        CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 C
-        TDF2 = SECOND() - TDF2
+        TDXC = SECOND()
+        TDF2 = TDXC - TDF2
 #if defined (MOD_DFT)
-C        Construct Kohn-Sham contribution
-C        ================================
-         IF(DFTADD) THEN
-C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-             CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
+C       Construct Kohn-Sham contribution
+C       ================================
+        IF(DFTADD) THEN
+C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
+           CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
-         ENDIF
+           TDXC = SECOND() - TDXC
+        ENDIF
 #endif
 C
 C       Solvent contribution
 C
         IF(SOLVEN) THEN
-          CALL SOLFCK(FOCK,DMAT,1,ESOLVE,ESOLVN,
+           CALL SOLFCK(FOCK,DMAT,1,ESOLVE,ESOLVN,
      &                 WORK(KFREE),LFREE,IPRSOL)
         ENDIF
       ENDIF
@@ -392,7 +394,7 @@ C
           END IF
           DO IOPEN = 1,NOPEN
             CALL HEADER('Total FV matrix',-1)
-            WRITE(LUPRI,'(X,A,I2)') 'Matrix number ',IOPEN
+            WRITE(LUPRI,'(A,I3)') ' Matrix number',IOPEN
             CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
      &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
           END DO
@@ -444,6 +446,11 @@ C
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
+          IF(DFTADD) THEN
+          CPUTID = SECTID(TDXC)
+          WRITE(LUPRI,'(3X,A,A12)')
+     &      '* DFT xc matrix             (CPU):',CPUTID
+          ENDIF
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -521,8 +528,8 @@ C
         KDEVEC = KFREE
       ENDIF
 C
-C     Transform AO Fock matrix to MO basis
-C     ==================================== 
+C     Transform AO Fock matrix to reference MO basis
+C     ============================================== 
 C
       CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
@@ -563,6 +570,7 @@ C
         CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,ICHKCNV,
      &              DUM,WORK(KFREE),LFREE)
       ENDIF
+      IF (DHFEXIT) GO TO 9999
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -616,7 +624,7 @@ C
         CALL SMOGEN(FMO,WORK(KTMAT),WORK(KFREE),LFREE)
       ENDIF
 C
-      CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
+ 9999 CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
       END
@@ -808,6 +816,7 @@ C     ***********************************
 C
 C     Initiate/restart SCF cycle
 C
+      DHFEXIT = .FALSE.
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
       IF(DHFEXIT) GOTO 30
@@ -1011,13 +1020,6 @@ C
          ICHKCNV = 1
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &               OVLSEL,WORK(KFREE),LFREE)
-        IF (ONECOFF) THEN
-          WRITE(LUPRI,'(/A,1P,D15.6,/2A/)') 
-     &   ' ** INFO : ONECAP. Wavefunction converged beyond : ONECNV = ',
-     &     ONECNV,'          ONECAP will be turned off, and integrals',
-     &     ' evaluated on the fly !'
-C            ONECOFF = .FALSE.
-        END IF
         IF(IPRSCF.GE.1) THEN
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
@@ -1051,15 +1053,25 @@ C            ONECOFF = .FALSE.
      &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
 C
-        IF(DHFEXIT) GOTO 30
-C       ... reset intbuf if one-center app. has been turned off
+C       switch off onecap approximation ?
         IF (ONECOFF) THEN
-           INTBUF = 0
            ONECOFF = .FALSE.
+C          do continue even if it was converged with ONECAP :
+           DHFEXIT = .FALSE.
+C          reset intbuf so no old Fock matrices are used :
+           INTBUF = 0
+           WRITE(LUPRI,'(/A,1P,D15.6/2A/)') 
+     &  ' ** INFO : ONECAP. Wave function converged beyond : ONECNV = ',
+     &     ONECNV,'          ONECAP will be turned off, and integrals',
+     &     ' evaluated on the fly !'
         ELSE
            INTBUF = INTFLG
         END IF
+C
+        IF(DHFEXIT) GOTO 30
  10   CONTINUE
+      WRITE(LUPRI,'(/A)')
+     &' ** Exit SCF because maximum number of iterations reached.'
 C
 C     **********************************
 C     ***** End of SCF-iterations ******
