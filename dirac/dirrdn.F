@@ -86,11 +86,15 @@ C
 C
 C     Wave function input
 C
-      IF(DOPSI.OR.MINIMI) THEN
+C     Call PSIINP always to get wave function information for
+C     other modules. This could be change if wave function information
+C     is saved on file. 
+C
+C     IF(DOPSI.OR.MINIMI) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PSIINP(WORK,LWORK)
          CLOSE(LUCMD)
-      ENDIF
+C     ENDIF
 C
 C     Input of wave function analysis module
 C
@@ -636,11 +640,11 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
       PARAMETER (NTABLE = 30)
-      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0)
+      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      CHARACTER CTEMP*72
+      CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
 C
 #include <dcbgen.h>
@@ -656,11 +660,12 @@ C
       DATA TABLE /'.XXXXXX','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
-     &            '.TRIVEC','.TRIFCK','.XXXXXX','.EIGPRI','.XXXXXX',
+     &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO'/
       DATA SET/.FALSE./
 C
+#include <sdpre.h>
 #include <memint.h>
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -741,6 +746,21 @@ C
       CNVINT(2) = DUMMY
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
+C
+C     Initialize /DCBORB/
+C     ===================
+C
+      NELEC(1) = 0
+      NELEC(2) = 0
+      NASH(1)  = 0
+      NASH(2)  = 0
+      CALL IZERO(NACSH,2*(1+MXOPEN))
+      NOPEN    = 0
+      NFRO(1)  = 0
+      NFRO(2)  = 0
+      CALL DZERO(DA,1+MXOPEN)
+      CALL DZERO(DF,1+MXOPEN)
+      CALL DZERO(DALPHA,1+MXOPEN)
 C
 C     Initialize /CBIREO/
 C     ===================
@@ -855,6 +875,8 @@ C&&& TRIFCK: Start on two-electron Fock matrix read from file
                   TRIVEC = .FALSE.
                GO TO 100
    18          CONTINUE
+C&&&& number of closed shell electrons
+            READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
                GO TO 100
    19          CONTINUE
 C&&&& EIGPRI: Print control for electron and positron solutions
@@ -862,6 +884,72 @@ C&&&& EIGPRI: Print control for electron and positron solutions
                   IPREIG = IL+2*IS
                GO TO 100
    20          CONTINUE
+C&&& ACTIVE SHELLS: read in number of active shells
+C                   and their occupation
+C             Read in number of open shells
+C
+#ifndef MOD_OPEN
+               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
+#else
+               READ(LUCMD,*) NOPEN
+               IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
+                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
+     &               'DHFINP: NOPEN must be between ',
+     &               1,' and ',MXOPEN
+                  CALL QUIT('DHFINP ERROR: Open shell error!')
+               END IF
+C
+C              Read in number of active shells and their occ.
+C              Format: 
+C              If inversion symmetry: A/K,L
+C              If not               : A/K
+C              If inversion symmetry and the format is specified
+C              as A/K then L is assumed to be zero.
+C
+               DO IOPEN = 1,NOPEN
+                  READ(LUCMD,'(A80)') LINE
+                  ISLASH = INDEX(LINE,'/')
+                  IPERIOD= INDEX(LINE,',')
+C
+                  TEXT = LINE(1:ISLASH-1)
+                  READ (TEXT,'(I20)') IELEC
+C
+                  IF (IPERIOD .GT. 0) THEN
+                     IF (IPERIOD .LE. ISLASH+1) THEN
+                        CALL QUIT('ERROR: Misplaced /')
+                     END IF
+                     TEXT = LINE(ISLASH+1:IPERIOD-1)
+                     READ (TEXT,'(I20)') IAC1
+                     TEXT = LINE(IPERIOD+1:)
+                     READ (TEXT,'(I20)') IAC2
+                  ELSE
+                     TEXT = LINE(ISLASH+1:)
+                     READ (TEXT,'(I20)') IAC1
+                     IAC2 = 0
+                  END IF
+                  IF (NFSYM .EQ. 1) IAC2 = 0
+                  IF ( (MOD(IAC1,2) .NE. 0) .OR.
+     &                 (MOD(IAC2,2) .NE. 0) .OR.
+     &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
+     &                 (IAC1+IAC2 .EQ. 0)) THEN
+                     WRITE(LUPRI,'(A,2I)')
+     &                  'ERROR: Number of spinors must be a '//
+     &                  'positive even number:',IAC1,IAC2
+                     CALL QUIT('ERROR: Number of spinors must be '//
+     &                         'a positive even number')
+                  END IF
+                  IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
+                     WRITE(LUPRI,'(A,I,A,I)')
+     &                  'ERROR: Number of electrons (',IELEC,
+     &                  ') must be a positive even number less than',
+     &                  IAC1+IAC2
+                     CALL QUIT('ERROR: in number of electrons')
+                  END IF
+                  NACSH(1,IOPEN) = IAC1/2
+                  NACSH(2,IOPEN) = IAC2/2
+                  DF(IOPEN) = SDPRE(IELEC)/SDPRE(IAC1+IAC2)
+               END DO
+#endif
                GO TO 100
    21          CONTINUE
                GO TO 100
@@ -934,6 +1022,56 @@ C&&& DIISAO: Do jth Dalton like DIIS
       END IF
   300 CONTINUE
 C
+C     Determine occupation
+C     ====================
+C
+      DF(0) = D1
+      DA(0) = D1
+      DALPHA(0) = D0
+      DTEMP = D0
+      DO IFRP = 1,NFSYM
+         DO IOPEN = 1,NOPEN
+            NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
+            DTEMP        = DTEMP +
+     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
+         END DO
+         IF (NELEC(IFRP).LT.0) 
+     &      CALL QUIT('DHFINP: negative number of '//
+     &                'closed shell electrons!')
+         IF (MOD(NELEC(IFRP),2).NE.0) 
+     &      CALL QUIT('DHFINP: odd number of '//
+     &                'closed shell electrons!')
+         NISH(IFRP)  = NELEC(IFRP)/2
+         NOCC(IFRP)  = NISH(IFRP) + NASH(IFRP)
+      END DO
+      NAELEC = NINT(DTEMP)
+      DO IOPEN = 1,NOPEN
+C
+C        We do     allow fractional occupation of 1
+C           This corresponds to a inactive electron
+C           and gives DALPHA = 0
+C
+         IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
+            WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
+     &         'WARNING: Open shell no. ',IOPEN,
+     &         ' has frac. occ. of ',DF(IOPEN)
+            WRITE(LUPRI,'(X,A)')
+     &         'This corresponds to an inactive shell. So ALPHA and '//
+     &         'A is reset.'
+            DA(IOPEN)     = D1
+            DF(IOPEN)     = D1
+            DALPHA(IOPEN) = D0
+         ELSE
+            DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
+            DN        = DM*DF(IOPEN)
+            DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1)) 
+            DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
+         END IF
+      ENDDO
+      NASHT = NASH(1) + NASH(2)
+      NFROT = NFRO(1) + NFRO(2)
+      NELECT  = NELEC(1) + NELEC(2)
+C
 C     If no DIIS set MXDIIS to zero
 C     =============================
 C
@@ -950,11 +1088,86 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DODHF) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
-     &   'DHFINP: Set-up for Dirac-Fock calculation:'
+     &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
+C
+C     Print info about #electrons etc.
+C
+      WRITE(LUPRI,'(1X,A,I1)') '* Number of fermion irreps: ',NFSYM
+C
+      IF (NASHT .EQ. 0) THEN
+         WRITE(LUPRI,'(1X,A,I4,A)') 
+     &      '* Closed shell DHF calculation with ',NELECT,
+     &      ' electrons in'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(3X,I5,A,I1)')
+     &          NISH(I),' orbitals in Fermion irrep ',I
+         END DO
+      ELSE
+         WRITE(LUPRI,'(1X,A)') 
+     &      '* Open shell DHF calculation.'
+         WRITE(LUPRI,'(1X,A/)') 
+     &      '* Shell specifications:'
+         WRITE(LUPRI,'(40X,A)') 
+     &      'Orbitals'
+         WRITE(LUPRI,'(24X,A,/,24X,A)') 
+     &      '#electrons  irrep 1  irrep 2     f        a      alpha',
+     &      '----------  -------  -------  -------  -------  -------'
+         IF (NFSYM .EQ. 1) THEN
+            WRITE(LUPRI,1001) 
+     &         NELECT,NISH(1),DF(0),DA(0),DALPHA(0)
+         ELSE
+            WRITE(LUPRI,1002) 
+     &         NELECT,NISH(1),NISH(2),DF(0),DA(0),DALPHA(0)
+         END IF
+         DO IOPEN = 1,NOPEN
+            IF (NFSYM .EQ. 1) THEN
+               WRITE(LUPRI,1011) 
+     &            IOPEN,
+     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
+            ELSE
+               WRITE(LUPRI,1012) 
+     &            IOPEN,
+     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            NACSH(1,IOPEN),NACSH(2,IOPEN),
+     &            DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
+            END IF
+         END DO
+         WRITE(LUPRI,1020)
+         IF (NFSYM .EQ. 1) THEN
+            WRITE(LUPRI,1031)
+     &         NELECT+NAELEC,NISH(1)+NASH(1)
+         ELSE
+            WRITE(LUPRI,1032)
+     &         NELECT+NAELEC,NISH(1)+NASH(1),NISH(2)+NASH(2)
+         END IF
+         WRITE(LUPRI,'(/,3X,A,/)')
+     &      'f is the fraction occupation; a and alpha open shell '//
+     &      'coupling coefficients.'
+      END IF
+ 1001 FORMAT(3X,'Closed shell',12X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
+ 1002 FORMAT(3X,'Closed shell',12X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1011 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
+ 1012 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1020 FORMAT(3X,76('-'))
+ 1031 FORMAT(3X,'Total',19X,I4,7X,I4)
+ 1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
+      IF(NFROT.GT.0) THEN
+        WRITE(LUPRI,'(1X,A)') '* Number of frozen shells:'
+        WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
+     &   ('Fermion irrep ',I,':',NFRO(I),I=1,NFSYM)
+      ENDIF
+      IF (NELEC(1)+NELEC(2)+NAELEC .EQ. 0) THEN
+         CALL QUIT('DHFINP: Zero electrons not allowed!')
+      END IF
+C
+C
+      IF(.NOT.DODHF) GOTO 999
+C
+C
       WRITE(LUPRI,'(1X,A,I3)') '* General print level   : ',IPRSCF
       WRITE(LUPRI,'(1X,A)') '***** TRIAL FUNCTION *****'
       IF   (TRIFCK) THEN
@@ -1078,6 +1291,9 @@ C
 C
   999 CONTINUE
       RETURN
+ 1000 CONTINUE
+      CALL QUIT('OCCINP:Inconsistency between electrons '//
+     &          'and active shells!')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1242,7 +1458,7 @@ C
      *         ' Keyword ',WORD,' not recognized in PSIINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
-C&&&& DHF: Perform Dirac-Fock calculation
+C&&&& DHF: Perform Dirac-Hartree-Fock calculation
   101    CONTINUE
             DODHF = .TRUE.
             NJOBS = NJOBS +1
@@ -1295,7 +1511,7 @@ C
       IF(NJOBS.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
       ENDIF
-      IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Fock calculation'
+      IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Hartree-Fock calculation'
       IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
      &    'calculation (Panas method)'
 #if defined (MOD_TRA)
@@ -1360,7 +1576,11 @@ C        CALL DFTINP(WORD)
         GO TO 200
 C
     1 CONTINUE
-      IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+C     Always initialize DHF, properties will then be
+C     for zero electrons if user has forgotten to specify
+C     wave function
+Cjth  IF (DODHF) CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
+      CALL DHFINP(WORD,.TRUE.,WORK,LWORK)
 #if defined (MOD_TRA)
       IF (DOMP2) CALL MP2INP(WORD,WORK,LWORK)
 #endif
@@ -2227,17 +2447,17 @@ C
 #include <dcbxpr.h>
 #include <dcbprl.h>
 C
-      LOGICAL SYMSTP,LBIT
+      LOGICAL SYMSTP,LBIT, NOINPUT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION KSOP(0:7),WORK(LWORK)
       CHARACTER A*80
 C
-      DATA TABDIR /'*END OF','*SOLVEN','*XXXXXX','*XXXXXX',
-     &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
+      DATA TABDIR /'*END OF','*SOLVEN','XXXXXXX','XXXXXXX',
+     &             'XXXXXXX','XXXXXXX','XXXXXXX','XXXXXXX'/
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
-     &            '.NELECT','.OPEN S','.SOLVEN','.FREEPJ',
+     &            'XXXXXXX','XXXXXXX','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
-     &            '.SPINFR','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.SPINFR','XXXXXXX','XXXXXXX','XXXXXXX'/
 C
       SYMSTP = .FALSE.
       CALL TITLER('Hamiltonian defined','*',127)      
@@ -2258,23 +2478,7 @@ C
       N1OPER  = 0
       SSMTRC  = D1
       CALL OP1INI(WORK,LWORK)
-C
-C     Initialize /DCBORB/
-C     ===================
-C
-      NELEC(1) = 0
-      NELEC(2) = 0
-      NASH(1)  = 0
-      NASH(2)  = 0
-      NAELEC(1)= 0
-      NAELEC(2)= 0
-      CALL IZERO(NACSH,2*(1+MXOPEN))
-      NOPEN    = 0
-      NFRO(1)  = 0
-      NFRO(2)  = 0
-      CALL DZERO(DA,1+MXOPEN)
-      CALL DZERO(DF,1+MXOPEN)
-      CALL DZERO(DALPHA,1+MXOPEN)
+      NOINPUT = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -2283,12 +2487,15 @@ C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
-  900 READ (LUCMD,'(A7)',END=300,ERR=920) WORD
+  900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
       IF (WORD .EQ. '**HAMIL') THEN
          GO TO 930
       ELSE
          GO TO 900
       END IF
+  910 CONTINUE
+         NOINPUT = .TRUE.
+         GOTO 300
   920 CONTINUE
          CALL QUIT('Error reading LUCMD, no HAMIL input found')
   930 CONTINUE
@@ -2347,39 +2554,8 @@ C&&&& GAUNT: Gaunt operator
 CTROND          Must be implemented......                  
             GO TO 100
   105     CONTINUE
-C&&&& Number of electrons
-            READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
             GO TO 100
   106     CONTINUE
-C&&& ACTIVE SHELLS: read in number of active shells
-C                   and their occupation
-C             Read in number of open shells
-C
-#ifndef MOD_OPEN
-               CALL QUIT('OPEN SHELL NOT AVAILABLE IN THIS VERSION')
-#else
-               READ(LUCMD,*) NOPEN
-               IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I2,A,I2)') 
-     &               'HAMINP: NOPEN must be between ',
-     &               1,' and ',MXOPEN
-                  CALL QUIT('HAMINP ERROR: Open shell error!')
-               END IF
-C
-C              Read in number of active shells and their occ.
-C
-               DO IOPEN = 1,NOPEN
-                  READ(LUCMD,*) (NACSH(J,IOPEN),J=1,NFSYM)
-                  READ(LUCMD,'(A)') A
-                  CALL FRAC2I(DF(IOPEN),A)
-                  IF (DF(IOPEN).GT.(D1+DTHRS)) THEN
-                     WRITE(LUPRI,'(A,I2,A,F6.4,A)')
-     &                  'HAMINP: Frac. occ. for shell ',IOPEN,
-     &                  ' greater than 1 (',DF(IOPEN),')'
-                     CALL QUIT('HAMINP ERROR: Open shell error!')
-                  END IF
-               END DO
-#endif
             GO TO 100
   107     CONTINUE
 C&&& SOLVENT: Solvent effects modelled by spherical cavity in dielectric medium
@@ -2440,61 +2616,6 @@ C&&& SPINFREE : Zero out spin-orbit terms
       END IF
   300 CONTINUE
 C
-C     Determine occupation
-C     ====================
-C
-      DF(0) = D1
-      DA(0) = D1
-      DALPHA(0) = D0
-      DO IFRP = 1,NFSYM
-         NISH(IFRP)  = NELEC(IFRP)
-         DTEMP = D0
-         DO IOPEN = 1,NOPEN
-            NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
-            DTEMP        = DTEMP +
-     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
-         END DO
-C         IF (ABS(MOD(DTEMP,D1)).GE.1.0D-10) THEN
-C            WRITE(LUPRI,'(A,F,A)') 
-C     &         'ERROR! Number of active electrons not an integer (',
-C     &         DTEMP,')'
-C            CALL QUIT('HAMINP ERROR: Open shell error!')
-C         END IF
-         NAELEC(IFRP) = NINT(DTEMP)
-         IF (NELEC(IFRP).LT.0) 
-     &      CALL QUIT('HAMINP: negative number of '//
-     &                'closed shell electrons!')
-         IF(MOD(NELEC(IFRP),2).EQ.1) GOTO 1000
-         NISH(IFRP)  = NELEC(IFRP)/2
-         NOCC(IFRP)  = NISH(IFRP) + NASH(IFRP)
-      END DO
-      DO IOPEN = 1,NOPEN
-C
-C        We do     allow fractional occupation of 1
-C           This corresponds to a inactive electron
-C           and gives DALPHA = 0
-C
-         IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
-            WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
-     &         'WARNING: Open shell no. ',IOPEN,
-     &         ' has frac. occ. of ',DF(IOPEN)
-            WRITE(LUPRI,'(X,A)')
-     &         'This corresponds to an inactive shell. So ALPHA and '//
-     &         'A is reset.'
-            DA(IOPEN)     = D1
-            DF(IOPEN)     = D1
-            DALPHA(IOPEN) = D0
-         ELSE
-            DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
-            DN        = DM*DF(IOPEN)
-            DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1)) 
-            DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
-         END IF
-      ENDDO
-      NASHT = NASH(1) + NASH(2)
-      NFROT = NFRO(1) + NFRO(2)
-      NELECT  = NELEC(1) + NELEC(2)
-C
 C     Remove inconsistencies
 C     =====================
 C
@@ -2514,44 +2635,6 @@ C     Print section
 C     =============
 C
  400  CONTINUE
-      WRITE(LUPRI,'(1X,A)') '* Number of inactive electrons:'
-      WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
-     &   ('Fermion corep ',I,':',NELEC(I),I=1,NFSYM)
-      WRITE(LUPRI,'(1X,A)') '* Number of active electrons:'
-      WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
-     &   ('Fermion corep ',I,':',NAELEC(I),I=1,NFSYM)
-      WRITE(LUPRI,'(1X,A)') '* Total number of electrons:'
-      WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
-     &   ('Fermion corep ',I,':',NAELEC(I)+NELEC(I),I=1,NFSYM)
-      IF (NFSYM.GT.1) THEN
-         ISUM = 0
-         DO I = 1,NFSYM
-            ISUM = ISUM + NAELEC(I)+NELEC(I)
-         END DO
-         WRITE(LUPRI,'(3X,A,3X,I3)')
-     &      'Sum of coreps   :',ISUM
-      END IF
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(1X,A)') '* Number of inactive shells:'
-      WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
-     &   ('Fermion irrep ',I,':',NISH(I),I=1,NFSYM)
-      WRITE(LUPRI,'(1X,A,I2)')
-     &   '* Number of open shells : ',NOPEN
-      DO IOPEN = 1,NOPEN
-         WRITE(LUPRI,'(3X,A,I2)') 'Open shell number ',IOPEN
-         WRITE(LUPRI,'(5X,A)') 'Number of active shells:'
-         WRITE(LUPRI,'(5X,A,I2,A,3X,I3)')
-     &      ('Fermion irrep ',I,':',NACSH(I,IOPEN),I=1,NFSYM)
-         WRITE(LUPRI,'(7X,A,F6.4,A/7X,A,F6.4,A/7X,A,F6.4,A)')
-     &       '(Fractional occupation :      ',DF(IOPEN),',',
-     &       ' Coupling coefficient ALPHA : ',DALPHA(IOPEN),',',
-     &       ' Coupling coefficient A     : ',DA(IOPEN),')'
-      END DO
-      IF(NFROT.GT.0) THEN
-        WRITE(LUPRI,'(1X,A)') '* Number of frozen shells:'
-        WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
-     &   ('Fermion irrep ',I,':',NFRO(I),I=1,NFSYM)
-      ENDIF
       WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRHAM
 C
       IF(URKBAL) THEN
@@ -2674,6 +2757,7 @@ C         Operator must be symmetric under time reversal
          IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
      &      '* No nuclear attraction integrals for small components !'
       ENDIF
+      IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
 C     ==========================================
@@ -2721,15 +2805,12 @@ C     Calculate LV-correction
 C     (SS integrals modelled by Coulombic correction)
 C     ===============================================
 C
-      CALL LVCORR(WORK,LWORK,IPRHAM)
+ 500  CALL LVCORR(WORK,LWORK,IPRHAM)
 C
       IF(SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator !')
 C
       RETURN
 C
- 1000 CONTINUE
-      CALL QUIT('OCCINP:Inconsistency between electrons '//
-     &          'and active shells!')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
