@@ -78,8 +78,6 @@ C***********************************************************************
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <infpar.h>
 #include <dcbgen.h>
@@ -235,9 +233,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
 C
@@ -657,8 +652,6 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 #include <dcbgen.h>
 #include <infpar.h>
@@ -693,9 +686,6 @@ C
      &    CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
 #else
           CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
-#endif
-#if defined (VAR_PVM)
-          write pvm code
 #endif
 #if defined (VAR_MPI)
           CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
@@ -803,7 +793,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C Start of parallel section : activitate compilation only when necessary
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (VAR_PVM) || defined (VAR_MPI)
+#if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Tr4par */
       SUBROUTINE TR4PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
@@ -824,8 +814,6 @@ C
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <infpar.h>
 #include <dcbgen.h>

@@ -3330,7 +3330,7 @@ C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
@@ -3365,7 +3365,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
@@ -3386,7 +3386,7 @@ C
         I2TYP  = 2
         THRBUF = THRS
         THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
@@ -3422,7 +3422,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
@@ -3445,7 +3445,7 @@ C
         I2TYP  = 3
         THRBUF = THRS
         THRS   = THRS*THRFAC(2)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
@@ -3479,7 +3479,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
@@ -3884,7 +3884,7 @@ C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
@@ -3918,7 +3918,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
@@ -3932,7 +3932,7 @@ C
         I2TYP  = 2
         THRBUF = THRS
         THRS   = THRS*THRFAC(1)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            CALL GETTIM(CPU1,WALL1)
@@ -3966,7 +3966,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
@@ -3983,7 +3983,7 @@ C
         THRBUF = THRS
         THRS   = THRS*THRFAC(2)
         CALL TIMER('START ',TIMSTR,TIMEND)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         IF (PARCAL) THEN
 C
            IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
@@ -4019,7 +4019,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
         ENDIF
 #endif
         CALL SCRSTA('SOfock:SS',DNTSKP,CPU)

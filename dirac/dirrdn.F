@@ -441,7 +441,7 @@ C
 C
     1 CONTINUE
   300 CONTINUE
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       CALL PRLINP(WORD)
 #endif
       RETURN

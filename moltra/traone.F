@@ -46,8 +46,6 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 #include <mxorb.h>
 #include <infpar.h>
@@ -70,9 +68,6 @@ C
          ITASK = 1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
 C
@@ -98,9 +93,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
 C

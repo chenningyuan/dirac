@@ -2456,9 +2456,6 @@ C***********************************************************************
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 #endif
-#if defined (VAR_PVM)
-#include <fpvm3h.h>
-#endif
 #include <dummy.h>
 #include <aovec.h>
 #include <mxorb.h>
@@ -2470,7 +2467,7 @@ C
 #include <dcbbas.h>
 #include <dcbdhf.h>
 #include <blocks.h>
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
 #include <infpar.h>
 #endif
       LOGICAL RECAN
@@ -2507,9 +2504,6 @@ C
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 #endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
       ENDIF
         NELM = 0
         DO IFRP = 1,NFSYM
@@ -2530,9 +2524,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
       ENDIF
@@ -2900,9 +2891,6 @@ C***********************************************************************
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 #endif
-#if defined (VAR_PVM)
-#include <fpvm3h.h>
-#endif
 C
 #include <mxorb.h>
 #include <dcbtra.h>
@@ -2912,7 +2900,7 @@ C
 #include <dgroup.h>
 #include <dcbres.h>
 #include <dcbgen.h>
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
 #include <infpar.h>
 #endif
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
@@ -3094,9 +3082,6 @@ C
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 #endif
-#if defined (VAR_PVM)
-           CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
         ENDIF
 C
 C       Transform core-fock matrix to active MO basis
@@ -3119,9 +3104,6 @@ C
           ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-          CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
         ENDIF
       ENDIF
@@ -3258,7 +3240,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C Start of parallel section : activitate compilation only when necessary
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (VAR_PVM) || defined (VAR_MPI)
+#if defined (VAR_MPI)
 C/* Deck TRAPARI*/
       SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &                   KINDX,KGABAO,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
@@ -3277,8 +3259,6 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 C
 #include <priunit.h>
@@ -3306,14 +3286,6 @@ C
 C
       FINISH = .FALSE.
 C
-#if defined (VAR_PVM)
-      CALL PVMFMYTID(MYTID)
-      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
-C
-      CALL PVMFPARENT(MPARID)
-      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
-C
-#endif
       IF (MYTID.EQ.0) THEN
 C
 C        **********************************************************
@@ -3397,8 +3369,6 @@ C
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 #include <priunit.h>
 #include <mxorb.h>
@@ -3419,14 +3389,6 @@ C
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*)
 C
-#if defined (VAR_PVM)
-      CALL PVMFMYTID(MYTID)
-      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
-C
-      CALL PVMFPARENT(MPARID)
-      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
-C
-#endif
 #if defined (VAR_MPI)
 C
 C     ********************************
@@ -3475,52 +3437,6 @@ C
       NUMELM = 8
       CALL MPI_BCAST(ICMOQR,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-C
-C     ********************************
-C     ****** Send COMMON blocks ******
-C     ********************************
-C
-      NUMELM = NDCBORB
-      CALL PVMFPACK(INTEGER4,NORB,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NDCBBAS
-      CALL PVMFPACK(INTEGER4,NBBAS,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NDGROUP
-      CALL PVMFPACK(INTEGER4,NZ,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NDCBTRI
-      CALL PVMFPACK(INTEGER4,IPRTRA,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NCOMDIS
-      CALL PVMFPACK(INTEGER4,NSPCK,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NSYMMTI
-      CALL PVMFPACK(INTEGER4,MAXREP,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = NSYMMTR
-      CALL PVMFPACK(REAL8,FMULT,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 1
-      CALL PVMFPACK(INTEGER4,INTFLG,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 1
-      CALL PVMFPACK(LOGICAL,ANTIS,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 1
-      CALL PVMFPACK(LOGICAL,LMP2,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 24
-      CALL PVMFPACK(INTEGER4,NSTR,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 16
-      CALL PVMFPACK(INTEGER4,NDMOQR,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-      NUMELM = 8
-      CALL PVMFPACK(INTEGER4,ICMOQR,NUMELM,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
 #endif
 C
 #if defined (VAR_MPI)
@@ -3641,9 +3557,6 @@ C       If screening receive GAB-matrix and screening matrix
         ENDIF
       ENDIF
 #endif
-#if defined (VAR_PVM)
-      write pvm code for this part
-#endif
 C
       RETURN
       END
@@ -3661,8 +3574,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 #include <infpar.h>
 #include <dcbgen.h>
@@ -3737,8 +3648,6 @@ C
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 C
 #include <priunit.h>

@@ -46,9 +46,6 @@ C*****************************************************************************
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 #endif
-#if defined (VAR_PVM)
-#include <fpvm3h.h>
-#endif
 #include <priunit.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -62,7 +59,7 @@ C
 #include <dcborb.h>
 #include <blocks.h>
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
 #include <infpar.h>
 #endif
 C
@@ -79,9 +76,6 @@ C
          ITASK = 1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
       CALL FLSHFO(LUPRI)
@@ -120,9 +114,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
 C
@@ -2159,9 +2150,6 @@ C***********************************************************************
 #include <infmpi.h>
       INCLUDE 'mpif.h'
 #endif
-#if defined (VAR_PVM)
-#include <fpvm3h.h>
-#endif
 C
 #include <mxorb.h>
 #include <aovec.h>
@@ -2173,7 +2161,7 @@ C
 #include <dcbgen.h>
 #include <dcbmvo.h>
 #include <blocks.h>
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
 #include <infpar.h>
 #endif
       LOGICAL BF1,BF2,BF3
@@ -2188,9 +2176,6 @@ C
          ITASK = 1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2226,9 +2211,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
       RETURN

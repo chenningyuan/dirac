@@ -46,8 +46,6 @@ C*****************************************************************************
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
-#else
-#include <fpvm3h.h>
 #endif
 #include <priunit.h>
 #include <maxaqn.h>
@@ -109,9 +107,6 @@ C
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
 #endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
-#endif
       ENDIF
 C
 C     Calculate gradient
@@ -126,9 +121,6 @@ C
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-         CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       ENDIF
 C
@@ -538,7 +530,7 @@ C
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
@@ -552,7 +544,7 @@ C
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       END IF
 #endif
       RELGRD = .FALSE.
@@ -648,7 +640,7 @@ C
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
@@ -662,7 +654,7 @@ C
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       END IF
 #endif
       CALL FLSHFO(LUPRI)
@@ -764,7 +756,7 @@ C
       NDMAT   = NFMAT*4
       CALL DZERO(DNTSKP,3*14*3)
       CALL FLSHFO(LUPRI)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
@@ -778,7 +770,7 @@ C
      &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
      &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       END IF
 #endif
       CALL FLSHFO(LUPRI)

@@ -49,8 +49,6 @@ C
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <infpar.h>
 #include <dcbgen.h>
@@ -1666,7 +1664,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C Start of parallel section : activitate compilation only when necessary
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (VAR_PVM) || defined (VAR_MPI)
+#if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Tr2par */
       SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,
@@ -1688,8 +1686,6 @@ C
 #include <infmpi.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include <fpvm3h.h>
 #endif
 #include <infpar.h>
 #include <dcbgen.h>
