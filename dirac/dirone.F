@@ -436,7 +436,7 @@ C
       CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
-         CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM) 
+         CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
       ENDIF
 C
 C     Beta matrix
@@ -2951,8 +2951,9 @@ C*****************************************************************************
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 C
-      LOGICAL DOINT(2,2)
       DIMENSION WORK(LWORK),CBUF(2),GBUF(2),FMAT(*)
+      LOGICAL DOINT(2,2)
+      CHARACTER OMITVNUC(2)*4
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "nuclei.h"
@@ -2972,6 +2973,8 @@ CTROND
         GNUEXP(I) = 0.0D0
       ENDDO
       call quit('TSCORR not properly implemented in this version')
+C     HJAaJ: this is only for a specific datomic!!! (TeSr ??)
+C
       CHARGE(1) = -0.1812D0
       CHARGE(2) = -0.0832D0
 C
@@ -2981,8 +2984,12 @@ C
       DOINT(2,2) = .TRUE.
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
+
+      OMITVNUC(1) = 'TTTT'
+      OMITVNUC(2) = 'FFFF'
       CALL NUCAT1(WORK(KONEIN),WORK(KFREE),LFREE,
-     &            DOINT,IPRINT)
+     &            DOINT,OMITVNUC,IPRINT)
+C
       CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
       CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
       IF(IPRINT.GE.6) THEN
