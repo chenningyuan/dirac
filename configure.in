@@ -656,7 +656,7 @@ case $machine in
                     prc="non-10000"
             if [ "$prc" = "non-10000" ]; then
                echo "Non R10000 IRIX64"
-               opt='-O2 -64 -mips3 -G 0'
+               opt='-O2 -n32 -mips3 -G 0'
             else
                echo "R10000 IRIX64"
                opt='-O2 -64 -mips4 -G 0'
