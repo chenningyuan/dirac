@@ -853,7 +853,23 @@ C     --------------------------------------------
               DO IREPS = 0, NBSYM -1
               IF(IREPI.EQ.JBTOF(IREPS,IC)) THEN
                 IF(NTQINT(IREPCI,IREPRS,IREPS,IC).NE.0) THEN
-                  K = NFPCK12(IREPCI)*NZ*NSTR3(IREPI)
+C
+C  Determine the irreps, for the small component we need to
+C  account for the difference in parity relative to the L.C.
+C
+                  IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPC = JBTOF(IREPR,IC)
+                  IF (IC.EQ.1) THEN
+                     IREPR2 = IREPR
+                     IREPS2 = IREPS
+                  ELSE
+                     IREPR2 = IBTXOR(IXYZ,IREPR)
+                     IREPS2 = IBTXOR(IXYZ,IREPS)
+                  ENDIF
+C
+C Determine the size of the matrices that need be transformed
+C
+                  K = NFPCK12(IREPCI)*NZ*NSTR3(IREPC)
                   IF(ITRIANG.EQ.1) THEN
                     M = NBBASB(IREPS,IC)
                   ELSE
@@ -864,23 +880,11 @@ C     --------------------------------------------
                   IOFFB = IOFFTM1(IREPI,IREPRS,IREPCI) + 1
                   IOFFC = ILTMOFF(IREPS,IREPI)
 C
-C  Determine the irreps, for the small component we need to
-C  account for the difference in parity relative to the L.C.
-C
-                  IREPR = IBTXOR(IREPRS,IREPS)
-                  IF (IC.EQ.1) THEN
-                     IREPR2 = IREPR
-                     IREPS2 = IREPS
-                  ELSE
-                     IREPR2 = IBTXOR(IXYZ,IREPR)
-                     IREPS2 = IBTXOR(IXYZ,IREPS)
-                  ENDIF
-C
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,irepr2),
+                  CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,IREPR2),
      &                 WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                 'N','N',IPQTOQ(1,ireprs),TMATRX(IOFFB),K,N,NZ,
-     &                  D1,IPQTOQ(1,ireps2),WORK(KTMPLAM+IOFFC),M,N,NZ)
+     &                 'N','N',IPQTOQ(1,IREPRS),TMATRX(IOFFB),K,N,NZ,
+     &                  D1,IPQTOQ(1,IREPS2),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF
                 ENDIF
               ENDIF
@@ -902,21 +906,12 @@ C     --------------------------------------------
               DO IREPS = 0, NBSYM -1
               IF(IREPA.EQ.JBTOF(IREPS,IC)) THEN
                 IF(NTQINT(IREPLA,IREPRS,IREPS,IC).NE.0) THEN
-                  K = NFPCK12(IREPLA)*NZ*NSTR3(IREPA)
-                  IF(ITRIANG.EQ.1) THEN
-                    M = NBBASB(IREPS,IC)
-                  ELSE
-                    M = NBBASA(IREPS,IC)
-                  ENDIF
-                  N = NAVIR(IREPA)
-                  IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
-                  IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
-                  IOFFC = ILTMOFF(IREPS,IREPA)
 C
 C  Determine the irreps, for the small component we need to
 C  account for the difference in parity relative to the L.C.
 C
                   IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPL = JBTOF(IREPR,IC)
                   IF (IC.EQ.1) THEN
                      IREPR2 = IREPR
                      IREPS2 = IREPS
@@ -924,12 +919,25 @@ C
                      IREPR2 = IBTXOR(IXYZ,IREPR)
                      IREPS2 = IBTXOR(IXYZ,IREPS)
                   ENDIF
+C
+C Determine the size of the matrices that need be transformed
+C
+                  K = NFPCK12(IREPLA)*NZ*NSTR3(IREPL)
+                  IF(ITRIANG.EQ.1) THEN
+                    M = NBBASB(IREPS,IC)
+                  ELSE
+                    M = NBBASA(IREPS,IC)
+                  ENDIF
+                  N = NAVIR(IREPA)
+                  IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
+                  IOFFB = IOFFTM2(IREPA,IREPRS,IREPLA) + 1
+                  IOFFC = ILTMOFF(IREPS,IREPA)
 c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,irepr2),
+                  CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,IREPR2),
      &                 WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                 'C','N',IPQTOQ(1,ireprs),TMATRX(IOFFB),K,N,NZ,
-     &                 D1,IPQTOQ(1,ireps2),WORK(KTMPLAM+IOFFC),M,N,NZ)
+     &                 'C','N',IPQTOQ(1,IREPRS),TMATRX(IOFFB),K,N,NZ,
+     &                 D1,IPQTOQ(1,IREPS2),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF      
                 ENDIF
               ENDIF
@@ -1646,7 +1654,7 @@ C
               NS = NBBASS(IREPS,IC)
               NR = NBBASR(IREPR,IC)
               IF (NR.EQ.0) GOTO 11
-                NPTQLAG = NPTQLAG + NIJ*NSTR3(IREPK)*NS*NZ*NZ
+              NPTQLAG = NPTQLAG + NIJ*NSTR3(IREPK)*NS*NZ*NZ
               NTQINT(IREPIJ,IREPRS,IREPS,IC) = NIJ*NSTR3(IREPK)*NS*NZ*NZ
 11          CONTINUE !ireps
           ENDIF
@@ -1795,8 +1803,8 @@ C
      &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
                   XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
                 ENDDO !inds
+                IOFF5 = IOFF5 + NBBAS(IREPS,IC)
               ENDIF
-              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
             ENDDO !ireps
           ENDDO !i
         ENDDO !iz
@@ -1822,8 +1830,8 @@ C
      &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
                   XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
                 ENDDO !inds
+                IOFF5 = IOFF5 + NBBAS(IREPS,IC)
               ENDIF
-              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
             ENDDO !ireps
           ENDDO !i
         ENDDO !iz
