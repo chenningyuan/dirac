@@ -401,6 +401,7 @@ C
      *         FORM='FORMATTED',ERR=5000)
 #endif
       END IF
+      ATOMDF  = .FALSE.
 C
       IF (.NOT.PARHER) REWIND(LUINFO)
       NMLINE = 0
@@ -1973,6 +1974,11 @@ C
 C*****************************************************************************
 C       Process fit set data for first (LL or LL+SS) density fitset
 C*****************************************************************************
+      IF (ATOMDF) THEN
+CTROND
+      ELSE
+        KMAXTOT = KMAX  
+      ENDIF   
       LCOMP_FIT  = 1
       ISHELL_FIT = 0
       IPRIM_FIT  = 0
