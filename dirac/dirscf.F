@@ -320,18 +320,24 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-           CALL DSCAL(N2BBASX,D2,DMAT,1)
+           CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
+           IOFF = 1
+           DO ISHELL = 1, NOPEN
+             IOFF = IOFF + N2BBASXQ
+             CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
+           ENDDO
+           CALL DSCAL(N2BBASX,D2,CMO,1)
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
              IRNTYP = 7
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-             CALL DFTEXC(DMAT,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+             CALL DFTEXC(CMO,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF
@@ -957,23 +963,28 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-           CALL DSCAL(N2BBASX,D2,DMAT,1)
+           CALL DCOPY(N2BBASX,DMAT,1,CMO,1)           
+           IOFF = 1
+           DO ISHELL = 1, NOPEN
+             IOFF = IOFF + N2BBASXQ
+             CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
+           ENDDO
+           CALL DSCAL(N2BBASX,D2,CMO,1)
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
              IRNTYP = 7
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,FIRST,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-           CALL DFTEXC(DMAT,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
+           CALL DFTEXC(CMO,1,FOCK,1,.TRUE.,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF
 #endif
-           CALL DSCAL(N2BBASX,DP5,DMAT,1)
          ENDIF
 #endif
 C
