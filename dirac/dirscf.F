@@ -728,12 +728,22 @@ C
         ENDIF
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
         IF(IPRSCF.GE.3) THEN
-          CALL HEADER('ELECTRON STATES - eigenvalues',-1)
-          IVAL = NPSH(I)
-          CALL PREIGV(EIG(IORB(I)+1),NESH(I),IVAL,WORK(KFREE),LFREE)
-          CALL HEADER('POSITRON STATES - eigenvalues',-1)
-          IVAL = 0
-          CALL PREIGV(EIG(IORB(I)+1),NPSH(I),IVAL,WORK(KFREE),LFREE)
+            CALL HEADER('ELECTRON STATES - eigenvalues',-1)
+            IF (NESH(I) .GT. 0) THEN
+               IVAL = NPSH(I)
+               CALL PREIGV(EIG(IORB(I)+1),NESH(I),IVAL,
+     &                     WORK(KFREE),LFREE)
+            ELSE
+               WRITE(LUPRI,'(/5X,A/)') 'No electron eigenvalues'
+            END IF
+            IF (NPSH(I) .GT. 0) THEN
+               CALL HEADER('POSITRON STATES - eigenvalues',-1)
+               IVAL = 0
+               CALL PREIGV(EIG(IORB(I)+1),NPSH(I),IVAL,
+     &                     WORK(KFREE),LFREE)
+            ELSE
+               WRITE(LUPRI,'(/5X,A/)') 'No positron eigenvalues'
+            END IF
         ENDIF
  30   CONTINUE
       TDDG = SECOND() - TDDG
