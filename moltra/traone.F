@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : traone.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
       SUBROUTINE TRAONE(WORK,LWORK)
@@ -397,6 +403,7 @@ C
 C       Closed shell Hartree - Fock
 C       ===========================
         NFMAT = 1
+        NOPEN = 0
 C       Totally symmetric operator
         ISYMOP(1) = 1
 C       Fock matrix type
