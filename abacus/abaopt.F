@@ -1732,13 +1732,18 @@ C
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
 C
-C     jth - relativistic
+#ifdef PRG_DIRAC
+C     relativistic
 C
 C
 C     Integral and basis input
 C
       IF ( .NOT. EXSIR ) THEN
+#ifdef MOD_MIN
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
+#else
+         CALL QUIT('No EXEDIR in this distribution.')
+#endif
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
          ELSE IF (DOMP2) THEN
@@ -1752,6 +1757,7 @@ C
          EXSIR = .TRUE.
       END IF
       NEWGEO = .TRUE.
+#endif
 C
 C      DIMENSION WORK(LWORK)
 C      IF (.NOT. EXHER) THEN
