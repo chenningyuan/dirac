@@ -227,7 +227,7 @@ C
 C
       ENDDO
       IF (LMP2) THEN
-         WRITE(LUPRI,'(A)') ''
+         WRITE(LUPRI,'(/)') 
          CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(1X,A)') 
      &        'Final Relativistic Direct MP2 results:'

@@ -454,7 +454,7 @@ C
         WRITE(LUPRI,'(6X,A)') 
      &     '- No active virtual orbitals'
       ENDIF
-      WRITE(LUPRI,'(A)') ''
+      WRITE(LUPRI,'(/)')
 C
  1002 FORMAT (6X,10I5)
       RETURN
