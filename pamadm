@@ -219,10 +219,15 @@ cat <<EOF > Makefile
 include ./Makefile.config
 
 OBJS = \
-dirac/dirac.o  dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \
+dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \
-dirac/dirgeo.o dirac/dirgrd.o dirac/dirsol.o dirac/dirac_linux.o \
+dirac/dirgeo.o dirac/dirgrd.o dirac/dirsol.o \
+dirac/main/alloc_mem.o    dirac/main/csectid.o    dirac/main/dirac.o \
+dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \
+dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \
+dirac/main/mpi_errtrap.o  dirac/main/pr_timing.o  dirac/main/print_logo.o \
+dirac/main/get_time.o \
 abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\
@@ -317,7 +322,7 @@ endif
 if($PARMOD) then
 cat <<EOF>> Makefile
 
-OBJSLAVE = abacus/par/herpar.o
+OBJSLAVE = abacus/par/herpar.o 
 
 OBJSPVM = abacus/par/dumpvm.o
 EOF
@@ -326,18 +331,18 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-dirac.x: DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  $AUXMAK
+dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  $AUXMAK
 	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \$(OBJS)  $AUXOBJ\
         \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 
 EOF
 if($PARMOD) then
 cat <<EOF>> Makefile
-dirmpi.x: DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  SLAVE_OBJ $AUXMAK
+dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  SLAVE_OBJ $AUXMAK
 	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirmpi.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(MPI_LIB_PATH) \$(MPI_LIB)
 
-dirpvm.x: DIR_OBJ PRP_OBJ HER_OBJ PVM_OBJ  $AUXMAK\
+dirpvm.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ PVM_OBJ  $AUXMAK\
 	GP_OBJ MXM_OBJ PD_OBJ    
 	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirpvm.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
 	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
@@ -351,6 +356,7 @@ clean   :
 	cd dirac    ; \$(MAKE) clean
 	cd abacus   ; \$(MAKE) clean
 	cd prp      ; \$(MAKE) clean
+	cd dirac/main ; \$(MAKE) clean
 EOF
 if($ERIMOD) then
 echo '	cd eri      ; $(MAKE) clean' >> Makefile
@@ -388,6 +394,8 @@ export:
 	abacus/*.F abacus/Makefile.in \
 	gp/Makefile.in gp/*.F gp/*.c \
 	pdpack/Makefile.in pdpack/*.F \
+	dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \
+	dirac/main/*.h dirac/main/*.head dirac/main/*.struct \
 	dhf.in 
 EOF
 if($ERITAR) then
@@ -433,6 +441,9 @@ if($CIMOD) then
 echo '	$(RM) -r dirrci' >> Makefile
 endif
 cat <<EOF>> Makefile
+
+MAIN_OBJ:
+	cd dirac/main ; \$(MAKE) all
 
 DIR_OBJ :
 	cd dirac ; \$(MAKE) all
@@ -516,7 +527,7 @@ EOF
 #
 #  Add makedepend target
 #
-set TEMP = ('dirac' 'prp' 'abacus' 'gp' 'pdpack')
+set TEMP = ('dirac' 'prp' 'abacus' 'gp' 'pdpack' 'dirac/main')
 if ($PARMOD) then
    set TEMP = ($TEMP 'abacus/par')
 endif
