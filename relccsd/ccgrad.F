@@ -334,6 +334,7 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
+c     print*,'1e tau relccsd uit'
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
 c     print*,'jvs: 1e tau part RELCCSD'
 C
@@ -380,8 +381,20 @@ C
 C--------------------------------------------
 C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
+c     print*,'jvs: 2e tau part RELCCSD'
       CALL XCOPY (NDIMT2,S2,1,BUF3,1)
       CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
+c
+c     if (rcw.EQ.2) then
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(2*i-1)
+c        print*,'imag xvo',i,xvo(2*i)
+c     enddo
+c     else
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(i)
+c     enddo
+c     endif
 C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------

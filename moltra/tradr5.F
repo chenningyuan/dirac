@@ -233,7 +233,7 @@ C
      &                   NSTR,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,ISHLA,
      &                   WORK(KDRIJ),WORK(KGAB),DINTSKP,
-     &                   TMATRX1,TMATRX2,WORK(KXAOMO))
+     &                   TMATRX1,TMATRX2,WORK(KXAOMO),WORK(KZAOMO))
            ENDDO            
         ENDDO               
 #if defined (VAR_MPI)
@@ -291,7 +291,7 @@ C/* Deck TRDRV5 */
       SUBROUTINE TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,INDX,TRIAN,KQ,KE,KIBE,
      &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,
-     &                  DINTSKP,TMATRX1,TMATRX2,XAOMO)
+     &                  DINTSKP,TMATRX1,TMATRX2,XAOMO,ZAOMO)
 C
 C     This is a modified version of TRDRV4 that makes the
 C     Lagrangian in a mixed AO,MO form.
@@ -321,7 +321,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION IJP12(0:7)
       DIMENSION IHM(0:7)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
-      DIMENSION TMATRX1(*),TMATRX2(*),XAOMO(*)
+      DIMENSION TMATRX1(*),TMATRX2(*),XAOMO(*),ZAOMO(*)
 C
       CALL QENTER('TRDRV5')
       KFRSAV = KFREE
@@ -511,11 +511,24 @@ C      we do really need it as the upper triangle (ITRIANG=1), in the
 C      2nd call we need it as a lower triangle (ITRIANG=2).
 C
 C
+C      Create the first tau dependent part of the Lagrangian
+C      -----------------------------------------------------
+C
         DO ITRIANG = 1, 2
            CALL MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,NSTR(1,0,3),
      &                 WORK(KQ(1,3)),IBEND,ISHLB,
      &                 INDX,WORK(KDXAB),WORK(KHMAT),TMATRX1,XAOMO,
-     &                 WORK(KINDXL),ITRIANG)
+     &                 WORK(KINDXL),ITRIANG,1)
+        ENDDO
+C
+C      Create the first tau dependent part of the Lagrangian
+C      -----------------------------------------------------
+C
+        DO ITRIANG = 1, 2
+           CALL MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,NSTR(1,0,4),
+     &                 WORK(KQ(1,4)),IBEND,ISHLB,
+     &                 INDX,WORK(KDXAB),WORK(KHMAT),TMATRX2,ZAOMO,
+     &                 WORK(KINDXL),ITRIANG,2)
         ENDDO
 C
          CALL MEMREL('TRDRV5.3',WORK,1,KFRSAV3,KFREE,LFREE)
@@ -653,8 +666,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck ms3in2*/ 
       SUBROUTINE MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,
-     &                  NSTR3,Q3,ISHEL1,ISHEL2,
-     &                  INDX,INDXAB,HMAT,TMATRX1,XAOMO,INDXL,ITRIANG)
+     &                  NSTR3,Q3,ISHEL1,ISHEL2,INDX,
+     &                  INDXAB,HMAT,TMATRX,XAOMO,INDXL,ITRIANG,IFLGTAU)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     
 C     Written by Joost van Stralen march 2003.
@@ -681,6 +694,12 @@ C     - ITRIANG      1: We are dealing with the upper triangle of
 C                       the halftransformed integrals (we are talking
 C                       about the AO part)
 C                    2: We are dealing ... lower triangle of ... 
+C     - IFLGTAU      1: We calculate the 1st tau dependent part of
+C                       the Lagrangian
+C                    L = (i^t)*T
+C
+C                    2: We calculate the 2nd ... the Lagrangian
+C                    L = (i^t)*T^*
 C
 C     Output :
 C
@@ -709,7 +728,7 @@ C
       DIMENSION WORK(*)
       DIMENSION IND(2)
       DIMENSION INDXAS(0:7), INDXBS(0:7)
-      DIMENSION TMATRX1(*), XAOMO(*)
+      DIMENSION TMATRX(*), XAOMO(*)
       DIMENSION ILOFF(0:7)
       DIMENSION ILTMOFF(0:7,2)
       DIMENSION NBBASA(0:7,0:2), NBBASB(0:7,0:2)
@@ -847,18 +866,34 @@ C
 C
 C     Offset for Coeffs
 C
-            IF(ITRIANG.EQ.1) THEN
-              KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
-     &              - IBAS(IREPK) + INDA1 - 1
+            IF(IFLGTAU.EQ.1) THEN
+              IF(ITRIANG.EQ.1) THEN
+                KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
+     &                - IBAS(IREPK) + INDA1 - 1
+              ELSE
+                KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
+     &                - IBAS(IREPK) + INDB1 - 1
+              ENDIF
             ELSE
-              KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
-     &              - IBAS(IREPK) + INDB1 - 1
+              IF(ITRIANG.EQ.1) THEN
+                KOFF1 = ICMOQR(IREPK,4) + IBBAS(IREPR,IC)
+     &                - IBAS(IREPK) + INDA1 - 1
+              ELSE
+                KOFF1 = ICMOQR(IREPK,4) + IBBAS(IREPR,IC)
+     &                - IBAS(IREPK) + INDB1 - 1
+              ENDIF
             ENDIF
 C
 C     Dimensions of Q3
 C
-            NRQ1 = NDMOQR(1,IREPK,3)
-            NCQ1 = NDMOQR(2,IREPK,3)
+            IF(IFLGTAU.EQ.1) THEN
+              NRQ1 = NDMOQR(1,IREPK,3)
+              NCQ1 = NDMOQR(2,IREPK,3)
+            ELSE
+              NRQ1 = NDMOQR(1,IREPK,4)
+              NCQ1 = NDMOQR(2,IREPK,4)
+            ENDIF
+C
             IF (IC.EQ.1) THEN
                IREPR2 = IREPR
             ELSE
@@ -910,11 +945,14 @@ C
       CALL IZERO(ILTMOFF,16)
 C
       IF(ITRIANG.EQ.1) THEN
-        CALL LTMPOFF(NBBASB,ILTMOFF,IC)
+        CALL LTMPOFF(NBBASB,ILTMOFF,IC,IFLGTAU)
       ELSE
-        CALL LTMPOFF(NBBASA,ILTMOFF,IC)
+        CALL LTMPOFF(NBBASA,ILTMOFF,IC,IFLGTAU)
       ENDIF
 C   
+C     The 1st tau dependent part of the Lagrangian
+C     --------------------------------------------
+      IF(IFLGTAU.EQ.1) THEN
       DO IREPCI = 1, NFSYM
         DO IREPRS = 0, NBSYM -1     
           IF(IREPCI.EQ.JBTOF(IREPRS,1)) THEN
@@ -940,22 +978,22 @@ c                   ELSE
 c                     IREPRS2 = IBTXOR(IXYZ,IREPRS)
 c                   ENDIF
                   IQ = IPQTOQ(1,IREPRS2)
-                  IF(IQ.GT.1) THEN
-                    CALL DSCAL(K*N*NZ,-D1,TMATRX1(IOFFB),1)
-                  ENDIF
+                    IF(IQ.GT.1) THEN
+                      CALL DSCAL(K*N*NZ,-D1,TMATRX(IOFFB),1)
+                    ENDIF
                   ENDIF
 c
                   IF(NZ.EQ.2) THEN
                     IQ = IPQTOQ(2,IREPRS)
                     IF(IQ.EQ.3) THEN
-                      CALL DSCAL(K*N,-D1,TMATRX1(IOFFB),1)
+                      CALL DSCAL(K*N,-D1,TMATRX(IOFFB),1)
                     ENDIF
                   ENDIF
 c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
                   CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,0),
      &                       WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                       'N','N',IPQTOQ(1,0),TMATRX1(IOFFB),K,N,NZ,
+     &                       'N','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
      &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF
                 ENDIF
@@ -965,17 +1003,55 @@ c
           ENDIF
         ENDDO !ireprs
       ENDDO !irepci
+C
       CALL MEMCHK('voor ltmptofinal',WORK,1)
+      ELSE
+C
+C     The 2nd tau dependent part of the Lagrangian
+C     --------------------------------------------
+      DO IREPLA = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1
+          IF(IREPLA.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPA = 1, NFSYM
+              DO IREPS = 0, NBSYM -1
+              IF(IREPA.EQ.JBTOF(IREPS,IC)) THEN
+                IF(NTQINT(IREPLA,IREPRS,IREPS,IC).NE.0) THEN
+                  K = NFPCK12(IREPLA)*NZ*NSTR3(IREPA)
+                  IF(ITRIANG.EQ.1) THEN
+                    M = NBBASB(IREPS,IC)
+                  ELSE
+                    M = NBBASA(IREPS,IC)
+                  ENDIF
+                  N = NAVIR(IREPA)
+                  IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
+                  IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
+                  IOFFC = ILTMOFF(IREPS,IREPA)
+                  IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
+                  CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,0),
+     &                       WORK(KTQMAT+IOFFA),K,M,NZ,
+     &                       'N','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
+     &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
+                  ENDIF      
+                ENDIF
+              ENDIF
+              ENDDO ! ireps
+            ENDDO !irepa
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepla
+C
+      ENDIF ! iflgtau
+c
 C
 C     put data from temp Laomo to final Laomo
 C     =======================================
 C
       IF(ITRIANG.EQ.1) THEN 
         CALL LTMPTOLFINAL(WORK(KTMPLAM),XAOMO,NBBASB,ILTMOFF,INDXL,
-     &                  ILOFF,IC)
+     &                  ILOFF,IC,IFLGTAU)
       ELSE
         CALL LTMPTOLFINAL(WORK(KTMPLAM),XAOMO,NBBASA,ILTMOFF,INDXL,
-     &                    ILOFF,IC)
+     &                    ILOFF,IC,IFLGTAU)
       ENDIF
 C           
 C     release memory
@@ -1723,12 +1799,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck ltmpoff*/
-      SUBROUTINE LTMPOFF(NBBASA,ILTMOFF,IC)
+      SUBROUTINE LTMPOFF(NBBASA,ILTMOFF,IC,IFLGTAU)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen june 2003.
 C
-C     PURPOSE : 
+C     PURPOSE : Determine the offset for the temp Laomo
 C
 C     Input :   -
 C
@@ -1748,8 +1824,12 @@ C
       DO IFSYM = 1, NFSYM
         DO IREPS = 0, NBSYM -1
           IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN      
-          ILTMOFF(IREPS,IFSYM) = ILTMOFF(IREPS,IFSYM) + NTMPLAM
-          NTMPLAM = NTMPLAM + NBBASA(IREPS,IC)*NAOCC(IFSYM)*NZ
+            ILTMOFF(IREPS,IFSYM) = ILTMOFF(IREPS,IFSYM) + NTMPLAM
+            IF(IFLGTAU.EQ.1) THEN
+              NTMPLAM = NTMPLAM + NBBASA(IREPS,IC)*NAOCC(IFSYM)*NZ
+            ELSE
+              NTMPLAM = NTMPLAM + NBBASA(IREPS,IC)*NAVIR(IFSYM)*NZ
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
@@ -1759,12 +1839,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck ltmptolfinal*/
       SUBROUTINE LTMPTOLFINAL(TMPLAM,XAOMO,NBBASA,ILTMOFF,INDXL,ILOFF,
-     &                        IC)
+     &                        IC,IFLGTAU)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen june 2003.
 C
-C     PURPOSE :
+C     PURPOSE : put data from temp Laomo to final Laomo
 C
 C     Input :   -
 C
@@ -1790,8 +1870,13 @@ C     -------
         DO IREPS = 0, NBSYM -1
           IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN
             DO IZ = 1, NZ
-              IOFT1(IZ,IREPS,IFSYM) = (IZ-1)*NBBASA(IREPS,IC)
-     &                                 *NAOCC(IFSYM)
+              IF(IFLGTAU.EQ.1) THEN
+                IOFT1(IZ,IREPS,IFSYM) = (IZ-1)*NBBASA(IREPS,IC)
+     &                                   *NAOCC(IFSYM)
+              ELSE
+                IOFT1(IZ,IREPS,IFSYM) = (IZ-1)*NBBASA(IREPS,IC)
+     &                                   *NAVIR(IFSYM)
+              ENDIF
             ENDDO !iz
           ENDIF
         ENDDO
@@ -1801,6 +1886,8 @@ C     -------
 C
       IOFF1 = 0
       IOFF4 = 0
+C
+      IF(IFLGTAU.EQ.1) THEN ! the 1st tau dependent part of the Lagr.
 C
       DO IFSYM = 1, NFSYM
         DO IZ = 1, NZ
@@ -1826,6 +1913,35 @@ C
         ENDDO !iz
         IOFF1 = IOFF1 + NZ*NAOCC(IFSYM)*NFBAS(IFSYM,0)
       ENDDO !ifsym
+c
+      ELSE ! the 2nd tau dependent part of the Lagrangian
+C
+      DO IFSYM = 1, NFSYM
+        DO IZ = 1, NZ
+          IOFF2 = (IZ-1)*NAVIR(IFSYM)*NFBAS(IFSYM,0)
+          DO IA = 1, NAVIR(IFSYM)
+            IOFF3 = (IA-1)*NFBAS(IFSYM,0)
+            IF (IC.EQ.2) IOFF4 = NFBAS(IFSYM,1)
+            IOFF5 = 0
+            DO IREPS = 0, NBSYM -1
+              IOFT2 = (IA-1)*NBBASA(IREPS,IC)
+              IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN
+                DO INDS = 1, NBBASA(IREPS,IC)
+                  IOFF6 = INDXL(INDS+ILOFF(IREPS))
+                  IOFFLF = IOFF1 + IOFF2 + IOFF3 + IOFF4 + IOFF5 + IOFF6
+                  IOFFLT = ILTMOFF(IREPS,IFSYM)
+     &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
+                  XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
+                ENDDO !inds
+              ENDIF
+              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
+            ENDDO !ireps
+          ENDDO !i
+        ENDDO !iz
+        IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
+      ENDDO !ifsym
+C
+      ENDIF ! iflgtau
 C
       RETURN
       END
@@ -2028,6 +2144,11 @@ C
         IOFF = IOFF + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
+      print*,'voor het schalen van xmo2'
+      print*,'norbt=,navirt=,nz=',norbt,navirt,nz
+      do i = 1, norbt*navirt*nz
+         print*,'i=,xmo2=',i,xmo2(i)
+      enddo
 C
 C     +-----------------------------------------+
 C     | The L_ab' part has to be scaled by -1   |
@@ -2060,6 +2181,11 @@ C
           IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         ENDDO     ! ifsym
       ENDDO       ! iz
+      print*,'voor het printen van xmo2'
+      print*,'norbt=,navirt=,nz=',norbt,navirt,nz
+      do i = 1, norbt*navirt*nz
+         print*,'i=,xmo2=',i,xmo2(i)
+      enddo
 C
       RETURN
       END
