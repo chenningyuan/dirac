@@ -76,21 +76,21 @@ C
       ENDDO
 C
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
-        NSPC(IFRP,0) = 1
-        CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
+         CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+         NSPC(IFRP,0) = 1
+         CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               NSPC(IFRP,0),WORK(KFREE),LFREE)
-        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
-     &              NSPC(IFRP,2),NSPC(IFRP,1))
-        NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
-        CALL MEMREL('TRAPAM',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
-     &              WORK,KFREE,LFREE)
-        NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
-        NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
-        NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
-        NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
+         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
+     &               NSPC(IFRP,2),NSPC(IFRP,1))
+         NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+         CALL MEMREL('TRAPAM',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
+         CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
+     &               WORK,KFREE,LFREE)
+         NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
+         NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
+         NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
       ENDDO
 C
 C     Print section
@@ -903,7 +903,7 @@ C
       ENDIF
 C
       CALL GTINFO(DAYTID)
-      WRITE(LUPRI,'(/A,A24)') ' Transformation started at :', DAYTID
+      WRITE(LUPRI,'(/A,A24)') ' Transformation started at : ',DAYTID
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('SETDC2: Distribution of symmetry orbitals '//
