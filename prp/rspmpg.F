@@ -1089,9 +1089,8 @@ C     ==============
 C
       IF(NIOCCT.GT.0) THEN
 C
-      DO IZ =1,NZ
-        IOFD1 = (IZ-1)*NORBT*NORBT
-        IOFX1 = (IZ-1)*NORBT*NORBT
+        IOFD1 = (1-1)*NORBT*NORBT
+        IOFX1 = (1-1)*NORBT*NORBT
         IOFD2 = IOFD1
         IOFX2 = IOFX1
 	DO IFSYM=1, NFSYM
@@ -1118,7 +1117,41 @@ C
           IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
           IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
-      ENDDO       ! nz
+C     
+C     In case we have complex or quaternion groups
+C     --------------------------------------------
+      IF(NZ.GT.1) THEN
+      DO IZ =2,NZ 
+        IOFD1 = (IZ-1)*NORBT*NORBT
+        IOFX1 = (IZ-1)*NORBT*NORBT
+        IOFD2 = IOFD1
+        IOFX2 = IOFX1
+        DO IFSYM=1, NFSYM
+          IOFD2 = IOFD2 + NORBT*NPSH(IFSYM) + NPSH(IFSYM) + NIOCC(IFSYM)
+          IOFD3 = IOFD2
+          IOFX2 = IOFX2 + NORBT*(NPSH(IFSYM)+NIOCC(IFSYM)) + NPSH(IFSYM)
+          IOFX3 = IOFX2
+          IOFEGI1 = IORB(IFSYM) + NPSH(IFSYM)
+          IOFEGJ1 = IORB(IFSYM) + NPSH(IFSYM) + NIOCC(IFSYM)
+          DO I = 1, NIOCC(IFSYM)
+            IOFD4 = IOFD3
+            IOFX3 = IOFX3 + 1
+            IOFX4 = IOFX3
+            IOFEGI2= IOFEGI1 + I
+            DO J = 1, NAOCC(IFSYM)
+              IOFD4 = IOFD4 + 1
+              IOFEGJ2 = IOFEGJ1 + J
+              DIV = (EIG(IOFEGJ2) - EIG(IOFEGI2))
+              DMO(IOFD4) = +XMO(IOFX4)/DIV
+              IOFX4 = IOFX4 + NORBT
+            ENDDO ! j
+            IOFD3 = IOFD3 + NORBT
+          ENDDO   ! i'
+          IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+          IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+      ENDIF
 C
       ENDIF
 C
@@ -1127,9 +1160,10 @@ C     ==============
 C
       IF(NIVIRT.GT.0) THEN
 C
-      DO IZ =1,NZ
-        IOFD1 = (IZ-1)*NORBT*NORBT
-        IOFX1 = (IZ-1)*NORBT*NORBT
+C       Re
+C      ----
+        IOFD1 = (1-1)*NORBT*NORBT
+        IOFX1 = (1-1)*NORBT*NORBT
         IOFD2 = IOFD1
         IOFX2 = IOFX1
         DO IFSYM=1, NFSYM
@@ -1159,7 +1193,44 @@ C
           IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
           IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
         ENDDO     ! ifsym
-      ENDDO       ! nz
+C
+C     In case we have complex or quaternion groups
+C     --------------------------------------------
+      IF(NZ.GT.1) THEN
+      DO IZ = 2,NZ
+        IOFD1 = (IZ-1)*NORBT*NORBT
+        IOFX1 = (IZ-1)*NORBT*NORBT
+        IOFD2 = IOFD1
+        IOFX2 = IOFX1
+        DO IFSYM=1, NFSYM
+          IOFD2 = IOFD2 + NORBT*(NPSH(IFSYM) + NOCC(IFSYM))
+     &          + NPSH(IFSYM) + NOCC(IFSYM) + NAVIR(IFSYM)
+          IOFD3 = IOFD2
+          IOFX2 = IOFX2 + NORBT*(NPSH(IFSYM)+NOCC(IFSYM)+NAVIR(IFSYM))
+     &          + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFX3 = IOFX2
+          IOFEGA1 = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
+          IOFEGB1 = IORB(IFSYM) + NPSH(IFSYM) + NOCC(IFSYM)
+     &            + NAVIR(IFSYM)
+          DO IA = 1, NAVIR(IFSYM)
+            IOFD4 = IOFD3
+            IOFX3 = IOFX3 + 1
+            IOFX4 = IOFX3
+            IOFEGA2= IOFEGA1 + IA
+            DO IB = 1, NIVIR(IFSYM)
+              IOFD4 = IOFD4 + 1
+              IOFEGB2 = IOFEGB1 + IB
+              DIV = (EIG(IOFEGB2) - EIG(IOFEGA2))
+              DMO(IOFD4) = +XMO(IOFX4)/DIV
+              IOFX4 = IOFX4 + NORBT
+            ENDDO ! ib'
+            IOFD3 = IOFD3 + NORBT
+          ENDDO   ! ia
+          IOFD2 = IOFD1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+          IOFX2 = IOFX1 + NORBT*NORB(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+      ENDIF
 C
       ENDIF
 C
