@@ -847,10 +847,15 @@ C           read old density matrix in FOCK before saving new density matrix/hj
                ELSE
                   DCOVLP = DDOT(N2BBASXQ,FOCK,1,FOCK,1)
                   DCOVLP = DDOT(N2BBASXQ,DMAT,1,FOCK,1) / DCOVLP
-               ENDIF
+               END IF
                WRITE(LUPRI,'(I5,A,F7.4)') NITER,
      &            ' *** Differential density matrix. DCOVLP     =',
      &            DCOVLP
+               IF (DCOVLP .LT. D0 .OR. DCOVLP .GT. D2) THEN
+                  WRITE(LUPRI,'(A)') ' INFO: Useless value for DCOVLP,'
+     &               //' value reset to: 1.0D0'')
+                  DCOVLP = D1
+               END IF
                CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
             END IF
             IF (NASHT.GT.0) THEN
@@ -871,9 +876,6 @@ C           read old density matrix in FOCK before saving new density matrix/hj
                   CALL DAXPY(N2BBASXQ,(-DVOVLP(IOPEN)),
      &               FOCK(1+N2BBASXQ*IOPEN),1,DMAT(1+N2BBASXQ*IOPEN),1)
                END DO
-            END IF
-            IF (DCOVLP .LT. D0 .OR. DCOVLP .GT. D2) THEN
-               CALL QUIT('ERROR: unreasonable value for DCOVLP')
             END IF
 C
 C           Note that all Fock matrices are multiplied with 2
