@@ -461,7 +461,8 @@ if [ -n "$RSPMOD" ]; then
 cat <<EOF>> Makefile
 
 RSPOBJS = \\
-prp/rsp/pamxlr.o   prp/rsp/pamrsp.o   prp/rsp/pamrvc.o prp/rsp/pamxqr.o
+prp/rsp/pamxlr.o   prp/rsp/pamrsp.o   prp/rsp/pamrvc.o prp/rsp/pamxqr.o \\
+prp/rsp/pamxpp.o
 EOF
 fi
 #
