@@ -29,12 +29,12 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamgrd.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd */
       SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
      &                  JOPSY,JCONF,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct gradient for property of index INDXPR in /XCBPRP/
 C     GPC - configurational part
@@ -43,7 +43,7 @@ C
 C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -85,11 +85,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck grdorb */
       SUBROUTINE GRDORB(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
      &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
 C     listed in /XCBXPR/
@@ -113,7 +113,7 @@ C
 C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -138,11 +138,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck grdor1 */
       SUBROUTINE GRDOR1(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
      &                  PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
 C     listed in /XCBXPR/
@@ -169,7 +169,7 @@ C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, new parameter list for PRPMAT)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -220,8 +220,8 @@ C     ====================================
 C
       KFRSAV = KFREE
       IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
-         CALL GETMAT('DVMO',WORK(KDV),IPRINT,WORK(KFREE),LFREE)
+         CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,.FALSE.,WORK(KFREE),LFREE)
       ELSE
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF
@@ -268,17 +268,17 @@ C
       CALL QEXIT ('GRDOR1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xopgat */
       SUBROUTINE XOPGAT(QVEC,JXOP,NXOP,QMAT,NDIM,NZ)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Gather matrix elements into vector using JXOP
 C
 C     Written by T.Saue August 2 1996
 C     Last revision Aug 2 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -294,17 +294,17 @@ C
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xopsct */
       SUBROUTINE XOPSCT(QVEC,JXOP,NXOP,QMAT,NDIM,NZ)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Scatter vector elements into matrix using JXOP
 C
 C     Written by T.Saue August 2 1996
 C     Last revision Aug 2 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -320,26 +320,33 @@ C
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmat */
-      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IMO,NMO,
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IPCMO,NPMO,
      &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
+C     -- NPMO(i) is dimension of output property matrix 
+C                in fermion symmetry i
+C     -- IPCMO(i) is off-set to first MO-coeff in fermion symmetry i
+C        NPMO = NORB and IPCMO = ICMOQ gives full PRPMO matrix
+C        NPMO = NASH and IPCMO = xxxxx gives      PRPMO matrix over 
+C                                active orbitals
 C
 C     Written by T.Saue July 1996
 C     Revisions:
-C       Feb 17 2000 (hjaaj, IMO(2), NMO(2) parameters for partial MO transf.)
+C       Feb 17 2000 (hjaaj, IPCMO(2), NPMO(2) parameters for 
+C                    partial MO transf.)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      DIMENSION PRPMO(*),CMO(*),IMO(*),NMO(*),WORK(*)
+      DIMENSION PRPMO(*),CMO(*),IPCMO(*),NPMO(*),WORK(*)
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
@@ -351,8 +358,17 @@ C
       CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C
-      CALL PRPMA1(INDXPR,PRPMO,CMO,IMO,NMO,WORK(KPRPAO),WORK(KPTRI),
-     &            WORK(KONEIN),WORK(KFIRST),
+      NPMOT = NPMO(1)
+      IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
+      N2PMOX = NPMOT*NPMOT
+      IF (IPRINT .GE. 5) THEN
+         WRITE(LUPRI,'(/A,4I10)')
+     &      ' Input to PRPMAT: IPCMO, NPMO:',
+     &      (IPCMO(I),NPMO(I),I = 1,NFSYM)
+D        WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
+      END IF
+      CALL PRPMA1(INDXPR,PRPMO,CMO,IPCMO,NPMO,N2PMOX,
+     &            WORK(KPRPAO),WORK(KPTRI),WORK(KONEIN),WORK(KFIRST),
      &            WORK,KFREE,LFREE,IPRINT)
 
       CALL MEMREL('PRPMAT',WORK,1,KFRSAV,KFREE,LFREE)
@@ -360,18 +376,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IMO,NMO,PRPAO,PTRI,OP1INT,
-     &                  FIRST,WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IPCMO,NPMO,N2PMOX,PRPAO,PTRI,
+     &                  OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
+C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
 C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -383,11 +399,26 @@ C
 #include "dcbxpr.h"
 C
       LOGICAL FIRST(*)
-      DIMENSION PRPMO(N2ORBX,NZ),CMO(*),IMO(*),NMO(*),PRPAO(N2BBASX,NZ),
-     &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
-     &          WORK(*)
+      DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IPCMO(2),NPMO(2),
+     &          PRPAO(N2BBASX,NZ),PTRI(NNBBASX,NZ),
+     &          OP1INT(NNBBASX),WORK(*)
+      DIMENSION IPMO(2), I2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
+C
+C     Set up index information for PRPMO(N2PMOX,NZ)
+C
+      IPMO(1) = 0
+      IPMO(2) = NPMO(1)
+      NPMOT = NPMO(1)
+      IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
+      IOFF = 0
+      DO J = 1,NFSYM
+        DO I = 1,NFSYM
+          I2PMOX(I,J) = IOFF + IPMO(I)
+        END DO
+        IOFF = IOFF + NPMO(J)*NPMOT
+      END DO
 C
 C     Extract symmetry information
 C     =============================
@@ -422,17 +453,17 @@ C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
 C         
-      CALL DZERO(PRPMO,N2ORBXQ)
+      CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
          CALL QTRANS('AOMO','S',D0,
-     &           NFBAS(I1,0),NFBAS(I2,0),NMO(I1),NMO(I2),
+     &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &           CMO(IMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &           CMO(IMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &           PRPMO(I2PMOX(I1,I2)+1,1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
+     &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
       ENDDO
 C
@@ -443,9 +474,9 @@ C
         CALL HEADER('Output from PRPMA1',-1)
         WRITE(LUPRI,'(A,A16)') 
      &    '*MO-matrix of property ',PRPNAM(INDXPR)
-        CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
+        CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
-        IF(IPRINT.GE.7) THEN
+        IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,A16)') 
      &    '*AO-matrix of property ',PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
@@ -457,11 +488,11 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gpget */
       SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,ITYP,
      &                 WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
 C     listed in /XCBXPR/
@@ -485,7 +516,7 @@ C
 C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -545,11 +576,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GPOGET */
       SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
      &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
 C     listed in /XCBXPR/
@@ -572,7 +603,7 @@ C
 C     Written by T.Saue July 1996
 C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -618,8 +649,8 @@ C     ====================================
 C
       KFRSAV = KFREE
       IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDV,N2ASHT*NZ,WORK,KFREE,LFREE)
-         CALL GETMAT('DVMO',WORK(KDV),IPRINT,WORK(KFREE),LFREE)
+         CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,.FALSE.,WORK(KFREE),LFREE)
       ELSE
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF
@@ -632,10 +663,10 @@ c       no scaling
       CALL QEXIT ('GPOGET')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prporb */
       SUBROUTINE PRPORB(QVEC,JXOP,NXOP,QMAT,NDIM,DV,NZ,IH)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct 1-eletron property gradient
 C
@@ -650,13 +681,16 @@ C
 C     Written by J. Thyssen May 7 1999
 C     Last revision 
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "maxorb.h"
+#include "maxash.h"
 C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
 #include "dcborb.h"
+#include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),
      &          DV(*)
@@ -671,12 +705,14 @@ C
       DO IG = 1,NXOP
          K = JXOP(1,IG)
          L = JXOP(2,IG)
-         CALL IOBTYP(K,ITYPK,ISYMK)
-         CALL IOBTYP(L,ITYPL,ISYML)
+         ITYPK = IOBTYP(K)
+         ITYPL = IOBTYP(L)
+         ISYMK = IFSMO(K)
+         ISYML = IFSMO(L)
 C
 C        First index:
 C
-         IF (ITYPK .EQ. 2) THEN
+         IF (ITYPK .EQ. JTINAC) THEN
 C
 C        ...inactive
 C
@@ -684,11 +720,11 @@ C
                QVEC(IG,IZ) = QVEC(IG,IZ) + D2 * QMAT(L,K,IZ)
             END DO
 C
-         ELSE IF (ITYPK .EQ. 3) THEN
-CTROND
-            CALL QUIT('PRPORB: Open shell needs testing !')
+         ELSE IF (ITYPK .EQ. JTACT) THEN
 C
 C        ...active
+C           TODO : this code is written for MCSCF, it is not tested
+C                  for open shell RPA /Trond 2001, hjaaj July 2002
 C
             KDV = K - (NPSH(ISYMK) + NISH(ISYMK)) - IORB(ISYMK)
             JDV = I2ASHT(ISYMK) + (KDV-1)*NASH(ISYMK) + 1
@@ -702,11 +738,11 @@ C
 C
 C        Second index:
 C
-         IF (ITYPL .EQ. 3) THEN
-CTROND
-            CALL QUIT('PRPORB: Open shell needs testing !')
+         IF (ITYPL .EQ. JTACT) THEN
 C
 C           ...active
+C           TODO : this code is written for MCSCF, it is not tested
+C                  for open shell RPA /Trond 2001, hjaaj July 2002
 C
             KDV = L - (NPSH(ISYML) + NISH(ISYML)) - IORB(ISYML)
             JDV = I2ASHT(ISYML) + (KDV-1)*NASH(ISYML) + 1

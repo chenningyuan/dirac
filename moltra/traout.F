@@ -63,10 +63,14 @@ C
          JJ = JJ + NSTR(IFSYM)
       ENDDO
 C           
+      write (lupri,*) 'mdinti called, opening MDCINT LUMLF2=',LUMLF2
+      call flshfo(lupri)
       OPEN (LUMLF2,FILE='MDCINT',FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
       NTKL = 0
       N2EFIL = 0
+      write (lupri,*) 'rec 1 on MDCINT: ',datex, timex, 'ii =',II
+      call flshfo(lupri)
 C
       IF (IPRINT.GE.5) WRITE (LUPRI,'(//3X,A)') 'Integrals written :'
 C
@@ -83,24 +87,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
-#if defined (VAR_MPI)
 #include "dcbgen.h"
-#include "infpar.h"
-#endif
+      write (lupri,*) 'mdintf called, closing MDCINT LUMLF2=',LUMLF2
+      call flshfo(lupri)
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
 C
-#if defined (VAR_MPI)
       IF (PARCAL) THEN
          WRITE (LUPRI,1001) MYTID
       ELSE
          WRITE (LUPRI,1000)
       END IF
- 1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
-#else
-      WRITE (LUPRI,1000)
-#endif
+      call flshfo(lupri)
  1000 FORMAT (' - MOLFDIR file MDCINT was written.')
+ 1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -129,10 +129,14 @@ C     This solves the 2Gb problem on Linux.
          ELSE
             STOP "100 integral files is enough !"
          ENDIF
+      write (lupri,*) 'mdintn called, closing MDCINT LUMLF2=',LUMLF2
+      call flshfo(lupri)
          WRITE (LUMLF2) 0,N2EFIL,0
          WRITE (LUMLF2) NEXTFIL
          CLOSE (LUMLF2,STATUS='KEEP')
          OPEN (LUMLF2,FILE=NEXTFIL,FORM='UNFORMATTED')
+      write (lupri,*) 'mdintn called, reopened MDCINT LUMLF2=',LUMLF2
+      call flshfo(lupri)
          NTKL = 0
       ENDIF
 C
@@ -235,6 +239,7 @@ C     We may  exceed the maximum file length. Check !
 C
       CALL MDINTN (NZKL)
 C
+      call flshfo(lupri)
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),
      &               (RKL(INZ),INZ=1,NZKL*RCW)
@@ -701,6 +706,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
+#include "priunit.h"
 C
       CHARACTER*8 DATEX,TIMEX
 C
@@ -710,10 +716,12 @@ C
 C
 C     Write date and time
 C
+      call flshfo(lupri)
       CALL GETDAT (DATEX,TIMEX)
       WRITE (LUMLF2) DATEX,TIMEX
 C
-C     The rest of the file is written in various places. The contents is:
+C     The rest of the file is written in various places. 
+C     The contents is:
 C
 C     Number of IJ indices for each fermion symmetry
 C     Number of KL indices for each fermion symmetry

@@ -725,7 +725,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.MAX CI','.IOPTST','.TRACI ','.NO TRA','.NATONL',
-     &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.XXXXXX',
+     &            '.FOCKON','.NO TRS','.COMPRE','.COMP F','.RSTRCI',
      &            '.NO PFQ','.NO FQX','.XXXXXX','.CIROOT','.MXCIVE',
      &            '.KTRLVL'/
       DATA SET/.FALSE./
@@ -757,6 +757,7 @@ C
       COMPROT = .FALSE.
       COMPFAC = 0.01D00
       NCIROOT = 1
+      IRESTRK = 0
 C
 C
 C     Process input for *OPTIMIZE
@@ -829,6 +830,8 @@ C&&& .COMP FACTOR: threshold factor for removal of orbitals
                   READ(LUCMD,*) COMPFAC
                GO TO 100
    10          CONTINUE
+C&&& .RSTRCI: Restart CI from vector on file (1) or not (0)
+                  READ(LUCMD,*) IRESTRK
                GO TO 100
    11          CONTINUE
 C&&& .NO PFQ: no positronic FQ
@@ -894,6 +897,11 @@ C
       ELSE
          WRITE(LUPRI,'(1X,A,I3)')
      &        '* CI start guess is full CI '
+      END IF
+C
+      IF (IRESTRK.EQ.1) THEN
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Restarting CI from C vector on file '
       END IF
 C
       IF (NCIROOT.GT.1) THEN

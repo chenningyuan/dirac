@@ -1,10 +1,8 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fi $Revision$
       SUBROUTINE FI(FIMAT,ECC,IDOH2)
 *
 *. Construct inactive fockmatrix + core-core interaction energy.
@@ -24,7 +22,6 @@
       DIMENSION FIMAT(*)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
@@ -42,7 +39,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fifam $Revision$
       SUBROUTINE FIFAM(FIFA)
 *
 *. Construct inactive + active fock matrix
@@ -50,12 +46,11 @@
 *. On input FIFAM Should be the inactive Fock matrix, in symmetry packed form
 *
 * Jeppe Olsen
-      ImplICIT REAL*8(A-H,O-Z)
+      IMPLICIT REAL*8(A-H,O-Z)
 *
       DIMENSION FIFA(*)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
@@ -66,16 +61,14 @@
      &            NTOOBS,NACOB,NTOOB,IREOST)
 *
       RETURN
-      END
+      END 
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fifams $Revision$
-*
-      SUBROUTINE FIFAMS(FIFA,RHO1,IOBSM,NSMOb,lOBSM,NACOB,
-     &            NORBt,ISTOb)
+      SUBROUTINE FIFAMS(FIFA,RHO1,IOBSM,NSMOB,LOBSM,NACOB,
+     &                  NORBT,ISTOB)
 *
 * Update inactive fock matrix with active contributions
 *
@@ -129,7 +122,6 @@ C?            write(6,*) ' IP JP ', IP,JP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fih $Revision$
 *
       SUBROUTINE FIH(FI,ECC,IOBSM,NSMOB,ITPFSO,IPHGAS,LOBSM,NORBT,ISTOB,
      &               IDOH2)
@@ -238,7 +230,6 @@ C?    WRITE(6,*) ' one-electron part to ECC ', ECC
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fock_mat $Revision$
       SUBROUTINE FOCK_MAT(F,I12)
 *
 * Construct Fock matrix
@@ -253,7 +244,6 @@ C?    WRITE(6,*) ' one-electron part to ECC ', ECC
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -434,7 +424,6 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ptfock $Revision$
       SUBROUTINE PTFOCK(LU0,LUN,N,ISM,ISPC)
 *
 * Perturbation expansion of general fock matrix
@@ -456,7 +445,6 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"

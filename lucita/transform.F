@@ -1,10 +1,8 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_row_to_h $Revision$
       SUBROUTINE T_ROW_TO_H(T,H,K,TKK)
 *
 * Set H integrals
@@ -20,7 +18,6 @@
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "glbbas.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -68,7 +65,6 @@ C       TKK = 1.0D0
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_to_nk_vec $Revision$
       SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
 *
 * Evaluate T**(NK_operator) times vector on file LUIN
@@ -89,7 +85,6 @@ C       TKK = 1.0D0
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "strinp.inc"
 #include "orbinp.inc"
@@ -144,7 +139,6 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_to_nk_vecs $Revision$
       SUBROUTINE T_TO_NK_VECS(T,KORB,C,LUCIN,LUCOUT,NSSOA,NSSOB,
      &                 NBLOCK,IBLOCK,
      &                 NAEL,NBEL,IASTR,IBSTR,IBLTP,NSMST,
@@ -271,7 +265,6 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra1_simple $Revision$
       SUBROUTINE TRA1_SIMPLE(C)
 *
 * Transform one-electron integrals
@@ -284,7 +277,6 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
       IMPLICIT REAL*8(A-H,O-Z)
 *. General Input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "wrkspc.inc"
 #include "lucinp.inc"
@@ -327,7 +319,6 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra2_simple $Revision$
       SUBROUTINE TRA2_SIMPLE(C)
 *
 * Trivial 2-electron integral transformation
@@ -338,7 +329,6 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
@@ -430,7 +420,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra_2el_blk_simple $Revision$
       SUBROUTINE TRA_2EL_BLK_SIMPLE(XINT,CI,NI,CJ,NJ,CK,NK,CL,NL,SCR)
 *
 * Transform 2-electron integral block
@@ -490,7 +479,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traci $Revision$
       SUBROUTINE TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *
 * A rotation matrix X is defining expansion from
@@ -516,7 +504,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
@@ -573,7 +560,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traci_ctl $Revision$
       SUBROUTINE TRACI_CTL
 *
 * Master routine for transforming CI vectors to new orbital basis
@@ -586,7 +572,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "clunit.inc"
 #include "crun.inc"
@@ -672,7 +657,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tracid $Revision$
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
      &           VEC1,VEC2)
 *
@@ -690,7 +674,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 * each transformation is
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "oper.inc"
@@ -778,7 +761,6 @@ C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck trah1 $Revision$
       SUBROUTINE TRAH1(NBAS,NORB,NSM,HAO,C,HMO,IHSM,SCR)
 *
 *. Transform one-electron integrals from ao's to mo's.
@@ -844,7 +826,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traint $Revision$
       SUBROUTINE TRAINT
 *
 * Very simple integral transformation for LUCIA
@@ -856,7 +837,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "lucinp.inc"
 #include "wrkspc.inc"
@@ -893,7 +873,6 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
 *
 * Transform a blocked symmetric matrix AIN with blocked matrix
@@ -952,7 +931,6 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat2 $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT2(AIN,X,NBLOCK,LBLOCK,AOUT,SCR,ISYM)
 *
 * Transform a blocked matrix AIN with blocked matrix
@@ -1023,7 +1001,6 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat3 $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT3
      &(AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 *
@@ -1102,50 +1079,6 @@ C?     CALL WRTMAT(SCR(K1),LXC,LXC,LXC,LXC)
         WRITE(6,*) ' ==============================='
         WRITE(6,*)
         CALL APRBLM2(AOUT,LX_COL,LX_COL,NBLOCK,ISYM)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck travcd $Revision$
-      SUBROUTINE TRAVCD(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
-     &                  ICOPY,LBLK,LUSCR1,LUSCR2)
-*
-* NVECIN vectors reside on LU1, Transform these vectors,
-*  using LUSCR1 and  LUSCR2  as
-* scratch files,  with matrix X to produce output file LUOUT.
-*
-* Since LUIN is accessed several times it is always
-* REWINDED. LUOUT is written to from current start.
-*
-* I ICOPY .ne. 0 the transformed vectors are written back to LUIN
-*
-* Jeppe Olsen, April 1997
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION X(NVECIN,NVECOUT)
-*. Scratch
-      DIMENSION VEC1(*),VEC2(*)
-*
-C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
-      DO IVECOUT = 1, NVECOUT
-         CALL MVCSMD(LUIN,X(1,IVECOUT), LUSCR1,LUSCR2,VEC1,VEC2,
-     &               NVECIN,1,LBLK)
-         CALL REWINO(LUSCR1)
-         CALL COPVCD(LUSCR1,LUOUT,VEC1,0,LBLK)
-      END DO
-*
-      IF(ICOPY.EQ.1) THEN
-        CALL REWINO(LUIN)
-        CALL REWINO(LUOUT)
-        DO IVECOUT = 1, NVECOUT
-          CALL COPVCD(LUOUT,LUIN,VEC1,0,LBLK)
-        END DO
       END IF
 *
       RETURN

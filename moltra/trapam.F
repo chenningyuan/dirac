@@ -50,6 +50,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM,ACTIVE
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
@@ -1191,28 +1192,28 @@ C
       ENDIF
       IF (ISTRAT.EQ.1) THEN
           IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 1')
+     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 1')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 1')
           CALL TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.2) THEN
           IF (MSOUT)
-     &    CALL QUIT('PAMTR1: .MSOUT not implemented for strategy 2')
+     &    CALL QUIT('PAMTR1: MSOUT not implemented for strategy 2')
           IF (.NOT.LMP2)
      &    CALL QUIT('PAMTR1: Only MP2 implemented for strategy 2')
           CALL TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,EMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.3) THEN
           IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 3')
+     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 3')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 3')
           CALL TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,WORK(KINDX),KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.4) THEN
           IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 4')
+     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 4')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
@@ -1341,8 +1342,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN1 */
-      SUBROUTINE MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,TRIAN,
-     & NSTR1,NSTR2,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,GMAT,HMAT)
+      SUBROUTINE MS4IN1(WORK,KFREE,LFREE,IPRINT,ICS,ICF,TRIAN,
+     &                  NSTR1,NSTR2,NDMOQR,ICMOQR,IJPAIRS,Q1,Q2,
+     &                  GMAT,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -1524,30 +1526,30 @@ C                 Triangular storage after square transformation
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
-     &                  GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
-     &                  WORK(KBMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
-     &                  Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
-     &                  Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
-     &                  WORK(KFREE),LFREE,IPRINT)
+     &                           GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),
+     &                           WORK(KBMAT),NI,NJ,NZ,IPQTOQ(1,IREPPQ),
+     &                           Q1(KOFF),NRQ1,NCQ1,NZ,IPQTOQ(1,IREPPI),
+     &                           Q2(LOFF),NRQ2,NCQ2,NZ,IPQTOQ(1,IREPQI),
+     &                           WORK(KFREE),LFREE,IPRINT)
                        NII = NI*(NI+1)/2
-                     IF (NFSYM.GT.1) THEN
-                       CALL QTRIAN('PACK',D0,NI,NZ,WORK(KBMAT),NI,NJ,
-     &                             WORK(KHTMP),NII)
+                       IF (NFSYM.GT.1) THEN
+                         CALL QTRIAN('PACK',D0,NI,NZ,WORK(KBMAT),NI,NJ,
+     &                               WORK(KHTMP),NII)
 C
-C                      Order the integrals with NKL as first and IZ
-C                      as second index
+C                        Order the integrals with NKL as first and IZ
+C                        as second index
 C
-                       DO IZ = 1, NZ
-                          JOFF1 = JOFF + (IZ-1)*NFPCK12(IREPIJ) +
-     &                                   IFPCK12(IREPI,IREPJ)
-                          JOFF2 = KHTMP + (IZ-1)*NII
-                          CALL DAXPY(NII,D1,WORK(JOFF2),1,
-     &                               HMAT(JOFF1),1)
-                       ENDDO
-                     ELSE
-                       CALL QTRIAN('PACK',D1,NI,NZ,WORK(KBMAT),NI,NJ,
-     &                             HMAT(JOFF),NII)
-                     ENDIF
+                         DO IZ = 1, NZ
+                            JOFF1 = JOFF + (IZ-1)*NFPCK12(IREPIJ) +
+     &                                     IFPCK12(IREPI,IREPJ)
+                            JOFF2 = KHTMP + (IZ-1)*NII
+                            CALL DAXPY(NII,D1,WORK(JOFF2),1,
+     &                                 HMAT(JOFF1),1)
+                         ENDDO
+                       ELSE
+                         CALL QTRIAN('PACK',D1,NI,NZ,WORK(KBMAT),NI,NJ,
+     &                               HMAT(JOFF),NII)
+                       ENDIF
                      ENDIF
                   ENDIF
                   IOFF = IOFF + NP * NQ
@@ -3532,8 +3534,9 @@ C     ====================================
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
-         CALL QUIT('RESOLV: No MO coefficient file !')
+         WRITE(LUPRI,'(/A)')
+     &      'RESOLV ERROR: MO coefficient file not present'
+         CALL QUIT('RESOLV: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
@@ -3631,9 +3634,8 @@ C
      &      ' Total wall time used in RESOLV :',CPUTID
         CPUTID = SECTID(CPU)
         WRITE(LUPRI,'(A,A12)')
-     &        ' Total CPU  time used in RESOLV :',CPUTID
+     &      ' Total CPU  time used in RESOLV :',CPUTID
 C
-        WRITE(LUPRI,'(/A,F20.6)')
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
       ENDIF

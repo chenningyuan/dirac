@@ -93,9 +93,9 @@ C
         REWIND LUCYCL
         DO 10 I = 1,NITER
           READ(LUCYCL,1020) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
-     &                 CACC,CPUTID,INTTYP,DAYTID
+     &                 CACC,CPUTID,DHF_INTTYP,DAYTID
           WRITE(LUPRI,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,INTTYP,DAYTID
+     &                CACC,CPUTID,DHF_INTTYP,DAYTID
    10   CONTINUE
         CLOSE(LUCYCL,STATUS='KEEP')
         CALL PRSYMB(LUPRI,'-',128,0)
@@ -111,21 +111,21 @@ C
      +       '* No convergence after',NITER,' iterations'
         ENDIF
         WRITE(LUPRI,'(A)') '* Average elapsed time per iteration: '
-        INTTYP = 'No 2-ints'
+        DHF_INTTYP = 'No 2-ints'
         IF(ITRSCF(0).GT.0) THEN
           SCFTID(0) = SCFTID(0)/ITRSCF(0)
           CPUTID    = SECTID(SCFTID(0))
-          WRITE(LUPRI,'(6X,A,A,3X,A12)') INTTYP,' :',CPUTID
+          WRITE(LUPRI,'(6X,A,A,3X,A12)') DHF_INTTYP,' :',CPUTID
         ENDIF
         DO I = 1,7
         IF(ITRSCF(I).GT.0) THEN
           SCFTID(I) = SCFTID(I)/ITRSCF(I)
           CPUTID    = SECTID(SCFTID(I))
-          INTTYP    = '         '
-          IF(LBIT(I,1)) INTTYP(1:2) = 'LL'
-          IF(LBIT(I,2)) INTTYP(4:5) = 'SL'
-          IF(LBIT(I,3)) INTTYP(7:8) = 'SS'
-          WRITE(LUPRI,'(6X,A,A,3X,A12)') INTTYP,' :',CPUTID
+          DHF_INTTYP= '         '
+          IF(LBIT(I,1)) DHF_INTTYP(1:2) = 'LL'
+          IF(LBIT(I,2)) DHF_INTTYP(4:5) = 'SL'
+          IF(LBIT(I,3)) DHF_INTTYP(7:8) = 'SS'
+          WRITE(LUPRI,'(6X,A,A,3X,A12)') DHF_INTTYP,' :',CPUTID
         ENDIF
         ENDDO
         CALL HEADER('TOTAL ENERGY',-1)
@@ -169,11 +169,11 @@ C
 C
       RETURN
 C
- 1000 FORMAT(11X,'Energy',15X,'ERGVAL    FCKVAL    EVCVAL',6X,
-     &       'Conv.acc    CPU',10X,'Integrals   Time stamp')
+ 1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
+     &       'Conv.acc',4X,'CPU',10X,'Integrals',3X,'Time stamp')
  1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
- 1020 FORMAT(4X    ,I3,   D23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
-C     ... 1020 is used for reading from LUCYCL thus no '1P' !!!
+ 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+C     ... 1020 is used for reading, thus no '1P' factor !
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1088,6 +1088,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dcbham.h"
 C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*),

@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -29,10 +29,79 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamprp.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
+C
+C     Driver for PAMPR1.
+C
+C     Loop over wave functions and call PAMPR1 for each of them.
+C
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbgen.h"
+#include "dcbpsi.h"
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+C
+      DIMENSION WORK(LWORK)
+C
+      CHARACTER WF*4
+C
+      CALL QENTER('PAMPRP')
+#include "memint.h"
+C
+      CALL TITLER('Property module','*',125)
+      WRITE(LUPRI,9000)
+ 9000 FORMAT(//,
+     &     3X,'This is output from the Dirac property module:',/,
+     &     3X,'First order properties',/,
+     &     3X,'Trond Saue',//,
+     &     3X,'KR-RPA second-order properties',/,
+     &     3X,'Hans Joergen Aa. Jensen and Trond Saue',//,
+     &     3X,'KR-QR third order properties',/,
+     &     3X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
+     &     3X,'Molecular gradient',/,
+     &     3X,'Joern Thyssen',//,
+     &     3X,'First-order ESR properties',/,
+     &     3X,'Hans Joergen Aa. Jensen and Anette Noerager',//,
+     &     3X,'Additional contributions from:',/,
+     &     3X,'Thomas Enevoldsen and Luuk Visscher'//)
+C
+C
+      DO I = 1, NPRPWF
+         WF = PRPWF(I)
+C
+         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
+            CALL TDHFORB
+            CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'KRMC') THEN
+            CALL TKRMCORB
+            CALL SETDC2(0)
+         ELSE
+            CALL QUIT('*** ERROR in PAMPRP *** ' //
+     &           'Unknown wave funciton: ' // WF)
+         END IF
+         CALL TITLER('Properties for ' // WF // ' wave function',
+     &        '*',110)
+         CALL PAMPR1(WF,WORK,LWORK)
+      END DO
+C
+      CALL QEXIT('PAMPRP')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck pamprp */
+      SUBROUTINE PAMPR1(WF,WORK,LWORK)
+C***********************************************************************
 C
 C     NOTE
 C
@@ -57,7 +126,7 @@ C
 C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -68,84 +137,107 @@ C
 #include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
+#include "dcbpsi.h"
 C
       DIMENSION WORK(LWORK)
-      CALL QENTER('PAMPRP')
+      CHARACTER WF*4
+C
+      CALL QENTER('PAMPR1')
+C
 #include "memint.h"
 C
-      CALL TITLER('Property module','*',125)
-      WRITE (LUPRI,'(A,//,T26,A,/,2(/T12,A))')
-     *   '  This is output from  XRPA   -  '//
-     *   'a second-order KR-RPA property program ',
-     *   ' written by',
-     *   ' Hans Joergen Aa. Jensen, University of Odense, Denmark',
-     *   ' Trond Saue,              University of Oslo,   Norway.'
-C*** Version number ***
-C     WRITE (LUPRI,'(/T12,A)')
-C    &   ' Version 1.0 ( Release Date:  July 1996 )'
+C     Make sure common block dcbidx is set
 C
-C*****************************************************************************
-C*****  M O L E C U L A R    G R A D I E N T *********************************
-C*****************************************************************************
+      CALL SETDCBIDX()
 C
-      IF (MGRAD) CALL RMOLGRD(WORK(KFREE),LFREE)
+C***********************************************************************
+C*****  M O L E C U L A R    G R A D I E N T ***************************
+C***********************************************************************
 C
-C*****************************************************************************
-C*****  E X P E C T A T I O N  V A L U E S ***********************************
-C*****************************************************************************
+      IF (MGRAD) THEN
+         IF (WF .NE. 'DHF') THEN
+            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &           'Molecular gradient not implemented for ' // WF )
+         END IF
+         CALL RMOLGRD(WORK(KFREE),LFREE)
+      END IF
+C
+C***********************************************************************
+C*****  E X P E C T A T I O N  V A L U E S *****************************
+C***********************************************************************
 C
       CALL MEMCHK('begin pamprp',WORK,1)
       CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-      IF(DOEXP) CALL PRPEXP(WORK(KEXP),WORK(KFREE),LFREE)
+      IF (DOEXP) THEN
+         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+      END IF
 C
-C*****************************************************************************
-C*****  E S R   P R O P E R T I E S      *************************************
-C*****************************************************************************
+C***********************************************************************
+C*****  E S R   P R O P E R T I E S      *******************************
+C***********************************************************************
 C
 #if defined (MOD_ESR)
       IF (DOESR) THEN
-         NCIESR = 2
-C        TODO: set NCIESR -- currently fixed to one open shell /May 2002
+         KFRSAV = KFREE
+         CALL ESR_INIT(WF,IPRESR,NCIESR,WORK,KFREE,LFREE)
+C
          CALL MEMGET('REAL',KESR,2*NCIESR*NCIESR*NESRP,WORK,KFREE,LFREE)
-         CALL PRPESR(WORK(KESR),WORK(KFREE),LFREE)
-         CALL MEMREL('for PRPESR',WORK,KWORK,KESR,KFREE,LFREE)
+         CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
+         CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
       END IF
 #endif
 C
-C*****************************************************************************
-C*****  P P   E X C I T A T I O N   E N E R G I E S  *************************
-C*****************************************************************************
+C***********************************************************************
+C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
+C***********************************************************************
 C
 #if defined (MOD_XPP)
-      IF(DOXPP) CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KFREE,LFREE)
+      IF (DOXPP) THEN
+         IF (WF. EQ. 'DHF') THEN
+            CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KFREE,LFREE)
+         ELSE
+            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &           'PP excitation energies not implemented for ' // WF )
+         END IF
+      END IF
 #endif
 C
-C*****************************************************************************
-C*****  L I N E A R   R E S P O N S E  ***************************************
-C*****************************************************************************
+C***********************************************************************
+C*****  L I N E A R   R E S P O N S E  *********************************
+C***********************************************************************
 C
       IF(DOXLR) THEN
-        CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
+         IF (WF. EQ. 'DHF') THEN
+            CALL PRPXLR(WORK,KLRF,KCNV,KLRO,KFREE,LFREE)
+         ELSE
+            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &           'Linear response not implemented for ' // WF )
+         END IF
       ELSE
         KLRO   = KFREE
         KLRF   = KFREE
         KLRCNV = KFREE
       ENDIF
 C
-C*****************************************************************************
-C*****  Q U A D R A T I C   R E S P O N S E  *********************************
-C*****************************************************************************
+C***********************************************************************
+C*****  Q U A D R A T I C   R E S P O N S E  ***************************
+C***********************************************************************
 C
 #if defined (MOD_XQR)
       IF (DOXQR) THEN
-        CALL PRPXQR(WORK(KFREE),LFREE)
+         IF (WF. EQ. 'DHF') THEN
+            CALL PRPXQR(WORK(KFREE),LFREE)
+         ELSE
+            CALL QUIT('*** ERROR in PAMPR1 *** ' //
+     &           'Quadratic response not implemented for ' // WF )
+         END IF
       ENDIF
 #endif
 C
-C*****************************************************************************
-C*****  standardized P R O P E R T Y   O U T P U T  **************************
-C*****************************************************************************
+C***********************************************************************
+C*****  standardized P R O P E R T Y   O U T P U T  ********************
+C***********************************************************************
 C
 C hjaaj sep2000:
 C     in this version only for DOEXP and for DOXLR;
@@ -162,20 +254,20 @@ c        END IF
       END IF
 C
       CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('PAMPRP')
+      CALL QEXIT('PAMPR1')
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dipol */
       SUBROUTINE DEF_DIPOLE(INDDIP,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define dipole moment operator
 C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -223,16 +315,16 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_quadru */
       SUBROUTINE DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define quadrupole moment operator
 C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -316,17 +408,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_epolar */
       SUBROUTINE DEF_EPOLAR(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
 C
 C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -496,16 +588,16 @@ C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
       CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
       SUBROUTINE DEF_EFG1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define electric field gradient
 C     Written by T.Enevoldsen - Sep 1996
 C     Last revision: J. Thyssen - Oct 13 1998
 
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -593,16 +685,16 @@ C     PVC: INTTYP = 62
       CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_pvc */
       SUBROUTINE DEF_PVC1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define operator for parity violation - chirality
 C
 C     Written by J. Thyssen - Oct 7 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -692,18 +784,18 @@ C     EFTINT: INTTYP = 52 or INTTYP = 53
       CALL MEMREL('DEF_EFT',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_efg */
       SUBROUTINE DEF_EFT1(PNAME,PLABEL,PFAC,DOATOM,TRLESS,
      &                    WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
-C     Define operator for fourth derivative nuclear attraction 
+C     Define operator for fourth derivative nuclear attraction
 C     integrals.
 C
 C     Written by: J. Thyssen - Sept 30 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -711,7 +803,7 @@ C*****************************************************************************
 #include "maxmom.h"
 #include "mxorb.h"
       PARAMETER(D1 = 1.0D0)
-      CHARACTER PNAME*16, PLABEL(3)*8, 
+      CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND),TRLESS
@@ -754,7 +846,7 @@ Ctec
      &               CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//
      &               CHRNOS(IATOM/10)//
      &               CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
-                  PLABEL(1) = 
+                  PLABEL(1) =
      &                 CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//
      &                 CHRXYZ(ICOOR3)//CHRXYZ(ICOOR4)//
      &                 PLBNAME//
@@ -899,7 +991,7 @@ C             ITYP = ITYP + 1
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
-     &          WRITE(LUPRI,'(A,5I5)') 
+     &          WRITE(LUPRI,'(A,5I5)')
      &          'DEF_SPNSPN: sym. error !',IATOM1,ICOOR1,IC1,IC2
               PLABEL(1)= 'NEF '//CHRNOS(IS1/10)
      &                     //CHRNOS(MOD(IS1,10))//'  '
@@ -954,7 +1046,7 @@ C
       WRITE(LUPRI,'(1X,A)') 'NMR indirect spin-spin coupling:'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(TRIAB) THEN
-        WRITE(LUPRI,'(A)') 
+        WRITE(LUPRI,'(A)')
      &    '*** WARNING ! Assuming symmetry J(AB) = J(BA)'
       ENDIF
       WRITE (LUPRI,'(A,E9.2)')
@@ -1080,7 +1172,7 @@ C     Non-traceless electric field third derivatives
 C
       IF(EFTNTL) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &     'Non-traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
         CALL DEF_EFT(PNAME,PLABEL,PFAC,.FALSE.,WORK,LWORK,IPRPRP)
@@ -1090,7 +1182,7 @@ C     Traceless electric field third derivatives
 C
       IF(EFT) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &     'Traceless electric field third derivatives'
         CALL PRSYMB(LUPRI,'=',75,0)
         CALL DEF_EFT(PNAME,PLABEL,PFAC,.TRUE.,WORK,LWORK,IPRPRP)
@@ -1118,7 +1210,7 @@ C     Diamagnetic spin-orbit
 C
       IF(DSO) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &    'NMR diamagnetic spin-orbit contribution:'
         CALL PRSYMB(LUPRI,'=',75,0)
         CALL DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
@@ -1140,7 +1232,7 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
-        WRITE(LUPRI,'(1X,A)') 
+        WRITE(LUPRI,'(1X,A)')
      &    'NMR diamagnetic shielding contribution:'
         CALL PRSYMB(LUPRI,'=',75,0)
 CMI     CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
@@ -1269,7 +1361,7 @@ C     Output of static 1st order properties at correlated level
 C
 C     Needs to be generalized
 C
-C     Written by Joost van Stralen June 2002 
+C     Written by Joost van Stralen June 2002
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1280,7 +1372,7 @@ C***********************************************************************
 #include "dcbexp.h"
 C
       CALL PRSYMB(LUPRI,'-',76,0)
-C 
+C
       CALL TITLER('MP2 expectation values','*',124)
 C
       KFRSAV=KFREE
@@ -1295,11 +1387,11 @@ C     Read correlation contribution to expectation value
 C     ==================================================
 C
       CALL READEXPV(WORK(KEXP_CORR))
-C     
+C
 C     Calculate total expectation value
 C     (HF + correlation)
 C     ==================================================
-C    
+C
       CALL EXPTOT(EXPVAL,WORK(KEXP_CORR),WORK(KEXP_TOT))
 C
 C     Dipole moment
@@ -1358,13 +1450,13 @@ C  /* Deck prp_dipol */
       SUBROUTINE PRP_DIPOLE(EXPVAL,EXP_CORR,CORR,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C      Calculate dipole moment 
+C      Calculate dipole moment
 C
 C      Written by T.Saue - May 30 1996
 C      Revision July 8 1996 - tsaue
 C      Last revision Joost van Stralen - June 11 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "debye.h"
@@ -1425,7 +1517,7 @@ C
          ENDDO
       ELSE
         DO I = 1,3
-           WRITE(LUPRI,'(A1,3(3X,F16.8,A))') 
+           WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
      &          CHAR(IOFF+I),(DEBYE*DIPME(I)),' Debye',
      &                     (DEBYE*DIPMN(I)),' Debye',
      &          (DEBYE*(DIPME(I)+DIPMN(I))),' Debye'
@@ -1471,17 +1563,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prp_nqcc */
       SUBROUTINE PRP_NQCC1(EXPVAL,EXP_CORR,CORR,DOATOM,AXIS,TEMP)
-C*****************************************************************************
+C***********************************************************************
 C
 C      Calculate nuclear quadrupole coupling constants
 C
 C      Written by T.Enevoldsen  - Sep 1996
 C      Last revision by Joost van Stralen - June 11 2002
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1518,7 +1610,7 @@ C
          IF (CORR) THEN
             CALL CORR_EFG(0,EXP_CORR,DOATOM,TEMP)
          ENDIF
-C     
+C
       ENDIF
 C
 C print section
@@ -1607,7 +1699,7 @@ C
      &                        'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
      &                        EFG_METHOD(I,I,IATOM)*FACT,HZUNIT
                         ELSE
-                           WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))') 
+                           WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
      &                        'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
      &                        EFGTOT(I,I,IATOM)*FACT,HZUNIT
                         ENDIF
@@ -1620,24 +1712,24 @@ C
  110     CONTINUE
  100  CONTINUE
       CALL PRSYMB(LUPRI,'-',72,2)
-      WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz' 
+      WRITE(LUPRI,'(/A,F12.8,A)') '  1 a.u. = ',CONV,' MHz'
       RETURN
- 9000 FORMAT (/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/) 
+ 9000 FORMAT (/2X,A9,A4,3X,A6,I3,3X,A6,F4.1,3X,A19,F12.7,/)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
       SUBROUTINE EL_EFG(IPRINT,EXPVAL,DOATOM,TEMP)
-C*****************************************************************************
-C     
+C***********************************************************************
+C
 C     Calculates electronic contribution to electric field gradients
-C     
+C
 C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision 
-C     
-C*****************************************************************************
+C     Last revision
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
@@ -1696,16 +1788,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck corr_efg */
       SUBROUTINE CORR_EFG(IPRINT,EXPVAL_CORR,DOATOM,TEMP)
 C*****************************************************************************
-C     
+C
 C     Calculates electronic contribution to electric field gradients
-C     
+C
 C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision 
-C     
+C     Last revision
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
@@ -1795,20 +1887,20 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRP_EFG1(EXPVAL,EXP_CORR,DOATOM,AXIS,TEMP,CORR,IPRINT)
-C*****************************************************************************
-C     
+C***********************************************************************
+C
 C     Calculate nuclear quadrupole coupling constants
-C     
+C
 C     Written by T.Enevoldsen  - Sep 1996
 C     Revision by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
-C     
-C*****************************************************************************
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "mxorb.h"
@@ -1820,17 +1912,17 @@ C
 #include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
-C     
-C     
+C
+C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field gradients :'
-C    
+C
       CALL EL_EFG(IPREXP,EXPVAL,DOATOM,TEMP)
       CALL NUC_EFG(IPREXP,DOATOM)
       IF (CORR) THEN
          CALL CORR_EFG(IPREXP,EXP_CORR,DOATOM,TEMP)
       END IF
-C     
+C
 C     print section
       IOFF = ICHAR('w')
       CALL PRSYMB(LUPRI,'-',72,2)
@@ -1856,7 +1948,7 @@ C     print section
                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
               EFG_METHOD(I,J,IATOM)=EFGTOT(I,J,IATOM)+EFGCORR(I,J,IATOM)
                IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+     &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGTOT(I,J
      &              ,IATOM),' au ',EFGCORR(I,J,IATOM),' au '
      &              ,EFG_METHOD(I,J,IATOM),' au '
@@ -1905,7 +1997,7 @@ C
             WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
             DO I=1,3
                IF (CORR) THEN
-                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))') 
+                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &                 ,EFG_METHOD(I,I,IATOM),' au '
                ELSE
@@ -1925,8 +2017,8 @@ C
             END IF
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
-      WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
-     &      '  1 a.u. = ',9.71736E21,' V*m**-2' 
+      WRITE(LUPRI,'(/A,1PE12.5,A,/)')
+     &      '  1 a.u. = ',9.71736E21,' V*m**-2'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1990,8 +2082,8 @@ C***********************************************************************
 #include "mxorb.h"
 #include "mxcent.h"
 C
-      PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00, 
-     &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00, 
+      PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
+     &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
      &           D35 = 35.0D00, DTHR = 1.0D-10)
 C
 #include "dcbprp.h"
@@ -2010,11 +2102,11 @@ C
      &            4,11,13,
      &            5,12,14,
      &            6,13,15/
-C                
+C
 #include "ibtfun.h"
 C
       CALL QENTER('PRP_EFT')
-C     
+C
       CALL PRSYMB(LUPRI,'-',76,0)
       IF (TRLESS) THEN
          WRITE(LUPRI,'(/A/)')
@@ -2023,18 +2115,18 @@ C
          WRITE(LUPRI,'(/A/)')
      &        '* Non-traceless electric field third derivative :'
       END IF
-C     
+C
 C     **************************************
 C     ***  Nuclear contribution to EFT:  ***
 C     **************************************
 C
       CALL NUCEFT(EFTNUC)
-C     
+C
 C     *****************************************
 C     ***  Electronic contribution to EFT:  ***
 C     *****************************************
 C
-C     Gather expectation values and take 
+C     Gather expectation values and take
 C     symmetry combinations.
 C
       CALL DZERO(TEMPEFT    ,15*NUCIND)
@@ -2145,7 +2237,7 @@ C     EFT correlated method
                EFTHF = EFTNUC(IELEM,IATOM)+EFTEL(IELEM,IATOM)
                EFT_METHOD = EFTHF + EFTCORR(IELEM,IATOM)
                IF (ABS(EFT_METHOD).GT.1.0D-12)
-     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))') 
+     &            WRITE(LUPRI,'(2X,A5,3(3X,1P,D16.9,A))')
      &                 'h'//CHRXYZ(-ICOOR1)//CHRXYZ(-ICOOR2)
      &                    //CHRXYZ(-ICOOR3)//CHRXYZ(-ICOOR4),
      &                 EFTHF                  ,' au ',
@@ -2181,11 +2273,11 @@ C          Trace 6 = V_zzaa = V_xxzz + V_yyzz + V_zzzz
 C          (aa is short for sum over xx,yy, and zz)
 C
            DO I = 1,6
-               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) + 
-     &                     EFTNUC(ITR(2,I),IATOM) + 
+               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) +
+     &                     EFTNUC(ITR(2,I),IATOM) +
      &                     EFTNUC(ITR(3,I),IATOM)
-               DTREL(I)  = EFTEL (ITR(1,I),IATOM) + 
-     &                     EFTEL (ITR(2,I),IATOM) + 
+               DTREL(I)  = EFTEL (ITR(1,I),IATOM) +
+     &                     EFTEL (ITR(2,I),IATOM) +
      &                     EFTEL (ITR(3,I),IATOM)
                IF (CORR) THEN
                DTRCORR(I)  = EFTCORR (ITR(1,I),IATOM) +
@@ -2340,11 +2432,11 @@ C
          IF (DOATOM(IATOM)) THEN
 C
             DO I = 1,6
-               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) + 
-     &                     EFTNUC(ITR(2,I),IATOM) + 
+               DTRNUC(I) = EFTNUC(ITR(1,I),IATOM) +
+     &                     EFTNUC(ITR(2,I),IATOM) +
      &                     EFTNUC(ITR(3,I),IATOM)
-               DTREL(I)  = EFTEL (ITR(1,I),IATOM) + 
-     &                     EFTEL (ITR(2,I),IATOM) + 
+               DTREL(I)  = EFTEL (ITR(1,I),IATOM) +
+     &                     EFTEL (ITR(2,I),IATOM) +
      &                     EFTEL (ITR(3,I),IATOM)
                IF (DTREL (I) .GE. DTHR .OR.
      &             DTRNUC(I) .GE. DTHR) THEN
@@ -2360,7 +2452,7 @@ C
 C
 C
       END DO
-C     
+C
 C
       CALL QEXIT('PRP_EFT')
 C
@@ -2428,15 +2520,15 @@ C
                            R7 = R5*R2
                            R9 = R7*R2
 C
-C                          V_xxxx 
+C                          V_xxxx
 C
                            EFTNUC( 1,NATOM) = EFTNUC( 1,NATOM)
      &                        + CHARGE(I2) * (
-     &                            D9 / R5 
+     &                            D9 / R5
      &                        -  D90 * (XCOOR**2) / R7
      &                        + D105 * (XCOOR**4) / R9 )
 C
-C                          V_xxxy 
+C                          V_xxxy
 C
                            EFTNUC( 2,NATOM) = EFTNUC( 2,NATOM)
      &                        + CHARGE(I2) * (
@@ -2455,15 +2547,15 @@ C
                            EFTNUC( 4,NATOM) = EFTNUC( 4,NATOM)
      &                        + CHARGE(I2) * (
      &                            D3 / R5
-     &                        -  D15 * XCOOR**2 / R7     
-     &                        -  D15 * YCOOR**2 / R7     
+     &                        -  D15 * XCOOR**2 / R7
+     &                        -  D15 * YCOOR**2 / R7
      &                        + D105 * (XCOOR**2) * (YCOOR**2) / R9 )
 C
 C                          V_xxyz
 C
                            EFTNUC( 5,NATOM) = EFTNUC( 5,NATOM)
      &                        + CHARGE(I2) * (
-     &                        -  D15 * YCOOR * ZCOOR / R7     
+     &                        -  D15 * YCOOR * ZCOOR / R7
      &                        + D105 * (XCOOR**2) * YCOOR * ZCOOR / R9 )
 C
 C                          V_xxzz
@@ -2471,8 +2563,8 @@ C
                            EFTNUC( 6,NATOM) = EFTNUC( 6,NATOM)
      &                        + CHARGE(I2) * (
      &                            D3 / R5
-     &                        -  D15 * XCOOR**2 / R7     
-     &                        -  D15 * ZCOOR**2 / R7     
+     &                        -  D15 * XCOOR**2 / R7
+     &                        -  D15 * ZCOOR**2 / R7
      &                        + D105 * (XCOOR**2) * (ZCOOR**2) / R9 )
 C
 C                          V_xyyy
@@ -2486,14 +2578,14 @@ C                          V_xyyz
 C
                            EFTNUC( 8,NATOM) = EFTNUC( 8,NATOM)
      &                        + CHARGE(I2) * (
-     &                        -  D15 * XCOOR * ZCOOR / R7     
+     &                        -  D15 * XCOOR * ZCOOR / R7
      &                        + D105 * (YCOOR**2) * XCOOR * ZCOOR / R9 )
 C
 C                          V_xyzz
 C
                            EFTNUC( 9,NATOM) = EFTNUC( 9,NATOM)
      &                        + CHARGE(I2) * (
-     &                        -  D15 * XCOOR * YCOOR / R7     
+     &                        -  D15 * XCOOR * YCOOR / R7
      &                        + D105 * (ZCOOR**2) * XCOOR * YCOOR / R9 )
 C
 C                          V_xzzz
@@ -2507,7 +2599,7 @@ C                          V_yyyy
 C
                            EFTNUC(11,NATOM) = EFTNUC(11,NATOM)
      &                        + CHARGE(I2) * (
-     &                            D9 / R5 
+     &                            D9 / R5
      &                        -  D90 * (YCOOR**2) / R7
      &                        + D105 * (YCOOR**4) / R9 )
 C
@@ -2523,8 +2615,8 @@ C
                            EFTNUC(13,NATOM) = EFTNUC(13,NATOM)
      &                        + CHARGE(I2) * (
      &                            D3 / R5
-     &                        -  D15 * YCOOR**2 / R7     
-     &                        -  D15 * ZCOOR**2 / R7     
+     &                        -  D15 * YCOOR**2 / R7
+     &                        -  D15 * ZCOOR**2 / R7
      &                        + D105 * (YCOOR**2) * (ZCOOR**2) / R9 )
 C
 C                          V_yzzz
@@ -2538,7 +2630,7 @@ C                          V_zzzz
 C
                            EFTNUC(15,NATOM) = EFTNUC(15,NATOM)
      &                        + CHARGE(I2) * (
-     &                            D9 / R5 
+     &                            D9 / R5
      &                        -  D90 * (ZCOOR**2) / R7
      &                        + D105 * (ZCOOR**4) / R9 )
                         END IF
@@ -2588,18 +2680,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRP_PVC1(EXPVAL,DOATOM,DMPV,QW,IS,TEMP,IPRINT)
-C*****************************************************************************
-C     
+C***********************************************************************
+C
 C     Calculate parity violation - chirality
-C     
+C
 C     Written by J. Thyssen - Oct 12 1999
-C     
-C*****************************************************************************
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
       PARAMETER (D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00, D4 = 4.0D00)
 C
 #include "mxcent.h"
@@ -2613,7 +2705,7 @@ C
 #include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
-C     
+C
       CALL QENTER('PRP_PVC')
 C
 C     Gather expectation values into TEMP
@@ -2632,7 +2724,7 @@ C
 c              write(6,*) 'jth iatom',
 c    &            iatom,ippvc(ityp),ityp,
 c    &            expval(ippvc(ityp)),nucdeg(iatom)
-               TEMP(IATOM) = TEMP(IATOM) + 
+               TEMP(IATOM) = TEMP(IATOM) +
      &            EXPVAL(IPPVC(ITYP)) / NUCDEG(IATOM)
             END IF
          END DO
@@ -2653,7 +2745,7 @@ C
                NPROTON  = ICHARGE
                NNEUTRON = IMASS - ICHARGE
                IS(NATOM) = IMASS
-               QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON - 
+               QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON -
      &            D1 * NNEUTRON
                DTOT = DTOT + DMPV(NATOM)*QW(NATOM)*DFAC
             END IF
@@ -2667,7 +2759,7 @@ C
      &     '* Parity violation - chirality E(PV):'
       CALL PRSYMB(LUPRI,'-',76,0)
 C
-      WRITE(LUPRI,9000) 
+      WRITE(LUPRI,9000)
      &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
       WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
       NATOM = 0
@@ -2676,7 +2768,7 @@ C
          DO IREP = 0 ,MAXREP
             IF (IBTAND(ISTBNU(IATOM),IREP).EQ.0) THEN
                NATOM =  NATOM + 1
-               WRITE(LUPRI,9010) 
+               WRITE(LUPRI,9010)
      &            NAMDEP(NATOM),IS(NATOM),DMPV(NATOM),QW(NATOM),
      &            DMPV(NATOM)*QW(NATOM)*DFAC
             END IF
@@ -2740,7 +2832,7 @@ C
       CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
      &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
-     &                WORK(KIBUF),WORK,KFREE,LFREE)      
+     &                WORK(KIBUF),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_SPNSPN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -2830,10 +2922,10 @@ C
           IATINF(3,NSPEC+1) = NISO
 C          WRITE(LUPRI,'
           WRITE(LUPRI,
-     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
           DO J = 2,NISO
-            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
           ENDDO
           DO K = 2,IDEG
@@ -2883,7 +2975,7 @@ C
         IF(BFREQ(IFREQ).EQ.D0) THEN
 C          WRITE(LUPRI,'(A)') '*** Static values:'
         ELSE
-          WRITE(LUPRI,'(A,F15.8,2X,A)') 
+          WRITE(LUPRI,'(A,F15.8,2X,A)')
      &    '*** Frequency    :',BFREQ(IFREQ),'a.u.'
         ENDIF
 C
@@ -2896,8 +2988,8 @@ C
           DO IA = 1,NA
             JA = IBUF(IA,1)
             KA = IPSPNSPN(1,JA)
-            SPNMAT(JA,JB) = ABLRF(IFREQ,KA,KB) 
-            IF(TRIAB) SPNMAT(JB,JA) = ABLRF(IFREQ,KA,KB) 
+            SPNMAT(JA,JB) = ABLRF(IFREQ,KA,KB)
+            IF(TRIAB) SPNMAT(JB,JA) = ABLRF(IFREQ,KA,KB)
           ENDDO
         ENDDO
 #if defined (XH4)
@@ -2938,7 +3030,7 @@ C
       SPNMAT( 9,10)   = SPNMAT(7,6)
       SPNMAT(14,14)   = SPNMAT(5,5)
       SPNMAT(11,11)   = SPNMAT(5,5)
-#endif 
+#endif
         IF (IPRPRP.GE.4) THEN
           CALL HEADER('Raw coupling constants',1)
           CALL PRIH2S (SPNMAT,'SPNSPN',WORK,KFREE,LFREE)
@@ -2981,7 +3073,7 @@ CTROND  Insert dimensions !!
             DO I3 = 1,IISO
               IF(IATOM1.EQ.IATOM2) THEN
                 J3END = I3 - 1
-              ELSE 
+              ELSE
                 J3END = JISO
               ENDIF
               DO J3 = 1,J3END
@@ -2998,7 +3090,7 @@ CTROND  Insert dimensions !!
           ENDDO
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
-C        
+C
       ENDDO
       CALL QEXIT('PRP_SPNSP1')
       RETURN
@@ -3093,7 +3185,7 @@ C
          CALL QUIT('Incorrect keyword in PRIH2S.')
       END IF
       NDIM = NROW*NROW
-      CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)      
+      CALL MEMGET('REAL',KBUF,NDIM,WORK,KFREE,LFREE)
       CALL PRIH21(SHESS,WORK(KBUF),NROW,ITYPE,WORK(KFREE),LFREE)
       CALL MEMREL('PRIH2S',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -3194,15 +3286,15 @@ C
  1000 FORMAT (8X,6(3X,A6,3X),(3X,A6,3X))
  2000 FORMAT (1X,A6,6F12.6)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dso */
       SUBROUTINE DEF_DSO(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3348,7 +3440,7 @@ C
       CALL PRP_DSO1(EXPVAL,
      &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
-     &              WORK(KIBUF),WORK,KFREE,LFREE)      
+     &              WORK(KIBUF),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_DSO',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -3437,10 +3529,10 @@ C
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
           WRITE(LUPRI,
-     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+     &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
           DO J = 2,NISO
-            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
+            WRITE(LUPRI,'(A1,19X,I3,3X,F10.6,3X,F9.3,3X,F10.6)')
      &         '@',J,(RATINF(K,J,NSPEC+1),K=1,3)
           ENDDO
           DO K = 2,IDEG
@@ -3487,7 +3579,8 @@ C
 C     Transform to non-symmetry basis
 C
       CALL DZERO(CHESS,NCHES)
-Cjth - changed because of the new version of TRACOR ( => new version of TRAHES)
+Cjth - changed because of the new version of TRACOR
+C      ( => new version of TRAHES)
       CALL TRAHES2(SPNMAT,NSCOOR,CHESS,NSCOOR,NSCOOR,2,
      &               WORK(KFREE),LFREE)
       IF (IPRPRP.GE.4) THEN
@@ -3518,7 +3611,7 @@ CTROND  Insert dimensions !!
           DO I3 = 1,IISO
             IF(IATOM1.EQ.IATOM2) THEN
               J3END = I3 - 1
-            ELSE 
+            ELSE
               J3END = JISO
             ENDIF
             DO J3 = 1,J3END
@@ -3535,20 +3628,20 @@ CTROND  Insert dimensions !!
         ENDDO
       ENDDO
       CALL PRSYMB(LUPRI,'-',100,0)
-C        
+C
       CALL QEXIT('PRP_DSO1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck trahes2 */
       SUBROUTINE TRAHES2(SHESS,NDIMS,CHESS,NDIMC,NCOOR,ITYPE,
      &                   WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Interface between the old version of TRAHES and the new version.
 C     Written by J. Thyssen - 1997/09/18
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 C
 #include "mxcent.h"
@@ -3595,10 +3688,10 @@ C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
       CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_shield1 */
       SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define operators for shieldings
 C     DEF_SPNSP1 by T. Saue used as skeleton
@@ -3606,7 +3699,7 @@ C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
 C                    22. Mar. 2000 (added ESR options, Anette Noerager + HJAaJ)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -3673,7 +3766,7 @@ C
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
-     &          WRITE(LUPRI,'(A,5I5)') 
+     &          WRITE(LUPRI,'(A,5I5)')
      &          'DEF_SHIELD: sym. error !',IATOM1,ICOOR1,IC1,IC2
               PLABEL(1)= 'NEF '//CHRNOS(IS1/10)
      &                     //CHRNOS(MOD(IS1,10))//'  '
@@ -3722,6 +3815,15 @@ C X component of B-field
          CALL OP1IND('X g_1 magfield',IPESR(1+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
+      IF (DOESR) THEN
+C        Sigma_X:
+         PNAME    =  'x-spin'
+         IPTYP    =  10
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('x spin',IPSIGMA(1),LESRP,NESRP,INDXPR,MAXESR)
+      END IF
 #if !defined (XH4)
 C Y component of B-field
       PNAME     = 'MAGFLDY2'
@@ -3743,6 +3845,15 @@ C Y component of B-field
          CALL OP1IND('Y g_1 magfield',IPESR(2+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
       END IF
+      IF (DOESR) THEN
+C        Sigma_Y:
+         PNAME    =  'y-spin'
+         IPTYP    =  11
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('y spin',IPSIGMA(2),LESRP,NESRP,INDXPR,MAXESR)
+      END IF
 C Z component of B-field
       PNAME     = 'MAGFLDZ3'
       IPTYP     = IOP(3)
@@ -3762,6 +3873,15 @@ C Z component of B-field
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          CALL OP1IND('Z g_1 magfield',IPESR(3+MXCOOR,2),
      &      LESRP,NESRP,INDXPR,MAXESR)
+      END IF
+      IF (DOESR) THEN
+C        Sigma_Z:
+         PNAME    =  'z-spin'
+         IPTYP    =  12
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,0.5D0,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('z spin',IPSIGMA(3),LESRP,NESRP,INDXPR,MAXESR)
       END IF
 #endif
 C
@@ -3879,15 +3999,15 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NSTDIA */
       SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define diamagnetic contribution to shieldings
 C     Written by T. Enevoldsen Oct. 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3985,17 +4105,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD */
       SUBROUTINE PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
 C***********************************************************************
-C     
+C
 C     Output routine for NMR shieldings
 C     This routine is modelled after PRP_SPNSPN
 C
 C     Written by T.Enevoldsen Nov. 7 1997
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-C     
+C
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
@@ -4019,14 +4139,14 @@ C
       CALL MEMGET('REAL',KCSTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
-C     
+C
       CALL SETATM(WORK(KATOM),NATOM,29)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
      &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
       CALL MEMREL('PRP_SHIELD',WORK,1,KFRSAV,KFREE,LFREE)
-C     
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4035,11 +4155,11 @@ C     /* Deck PRP_SHIELD1 */
      &     ,DISO,PISO,ANIS,ASYM,SKEW,SPAN,IBUFA
      &     ,DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
 C***********************************************************************
-C     
+C
 C     Output routine for NMR shieldings
 C     C
 C     Written by T.Enevoldsen Nov. 7 1997
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4062,17 +4182,17 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
-C     
+C
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
-C     
+C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
       NCMAT = 9*NUCDEP
       CALL DZERO(TMPMAT,NCMAT)
       CALL DZERO(DMAT,NCMAT)
-C     
+C
 C     Extract Diamagnetic part if e-p rotations are not included
-C     
+C
       IF(XLR_SKIPEP) THEN
          CALL DZERO(DMAT(1,1,1),NCMAT)
          DO I = 1,NNSTIN
@@ -4089,9 +4209,9 @@ C
          ENDIF
          CALL TRADIP(TMPMAT,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
       END IF
-C     
+C
 C     *** Extract shieldings ***
-C     
+C
       NA = 0
       NB = 0
       DO I = 1,NSCOOR
@@ -4100,7 +4220,7 @@ C
             IBUFA(NA) = I
          ENDIF
       END DO
-C     
+C
       DO I = 1, 3
          IF(IPSHIELD(I+MXCOOR).GT.0) THEN
             NB = NB + 1
@@ -4108,17 +4228,17 @@ C
          ENDIF
       END DO
 
-C     
+C
 C     Fill shielding matrices
-C     
+C
 #if defined (XH4)
       WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
 #endif
       DO IFREQ = 1,NBFREQ
-C     
+C
          CALL PRSYMB(LUPRI,'-',72,2)
          IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
-            WRITE(LUPRI,'(A,F15.8,2X,A)') 
+            WRITE(LUPRI,'(A,F15.8,2X,A)')
      &           '*** Frequency    :',BFREQ(IFREQ),'a.u.'
          ENDIF
 
@@ -4129,7 +4249,7 @@ C
             DO IA = 1,NA
                JA = IBUFA(IA)
                KA = IPSHIELD(JA)
-               TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB) 
+               TMPMAT(IPTAX(JB,2),JA) = ABLRF(IFREQ,KA,KB)
             ENDDO
          ENDDO
 #if defined (XH4)
@@ -4147,21 +4267,23 @@ C
      &           ' in symmetry coordinates (ppm)',1)
             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
          ENDIF
-C     
+C
 C     Transform to non-symmetry basis
-C     
+C
          CALL DZERO(PMAT(1,1,1),NCMAT)
          CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-C     
+C
 C     Analyze results
-C     
+C
          CALL DCOPY(9*NUCDEP,PMAT,1,TMAT,1)
          IF (XLR_SKIPEP) CALL DAXPY(9*NUCDEP,D1,DMAT,1,TMAT,1)
          IATOM = 0
+         print*,'NUCIND ',NUCIND
          DO 100 I = 1, NUCIND
             DO 200 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
+                  print*,'IATOM after increment ',IATOM
                   IF (DOATOM(IATOM)) THEN
                      CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
      &                 PMAT(1,1,IATOM),TISO(IATOM),DISO(IATOM),
@@ -4172,7 +4294,7 @@ C
                END IF
  200        CONTINUE
  100     CONTINUE
-C     
+C
          CALL AROUND('Summary of chemical shieldings')
          WRITE (LUPRI,'(1X,A)') 'Definitions from J.Mason, Solid '//
      &        'state Nuc.Magn.Res. 2 (1993), 285'
@@ -4201,7 +4323,7 @@ C
          WRITE(LUPRI,'(A,/)')
      &        '@-----------------------------------------------------'//
      &        '-----------------------'
-C     
+C
       END DO
       RETURN
       END
@@ -4210,12 +4332,12 @@ C     /* Deck SHIANA */
       SUBROUTINE SHIANA(TMAT,DMAT,PMAT,AVETOT,AVEDIA,AVEPAR,ANIS,ASYM,
      &                  SKEW,SPAN,NAME,NAMEX,IPRINT)
 C***********************************************************************
-C     
+C
 C     Analyze routine for NMR shieldings
 C     This routine is modelled after SHIANA in DALTON
 C
 C     Written by T.Enevoldsen Nov. 14 1997
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4272,8 +4394,8 @@ C
 C This is done to avoid numerical insatbilities
       IF (ABS(SPAN).LT.THCLR) THEN
          SPAN = D0
-         SKEW = D0      
-         ANIS = D0      
+         SKEW = D0
+         ANIS = D0
          ASYM = D1
       ELSE
          IF (ABS(PVAL(IY)-PVAL(IX)).LT.THCLR) THEN
@@ -4290,7 +4412,7 @@ C
       WRITE (LUPRI,'(5(/,1X,A,F12.4,A))')
      &   ' Shielding constant:',AVETOT,' ppm',
      &   ' Anisotropy:        ',ANIS,  ' ppm',
-     &   ' Span:              ',SPAN,  ' ppm', 
+     &   ' Span:              ',SPAN,  ' ppm',
      &   ' Asymmetry:         ',ASYM,  '    ',
      &   ' Skew:              ',SKEW,  '    '
       CALL HEADER('Total shielding tensor (ppm):',1)
@@ -4300,7 +4422,7 @@ C
      &          NAMEX(ICOOR), (TMAT(K,ICOOR),K=1,3)
   400 CONTINUE
 C
-      IF (XLR_SKIPEP) THEN 
+      IF (XLR_SKIPEP) THEN
       CALL HEADER('Diamagnetic and paramagnetic contributions (ppm):',1)
       WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X),/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'

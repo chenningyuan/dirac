@@ -28,16 +28,16 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirtra.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getlab */
       SUBROUTINE GETLAB(WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C      Generate primitive labels for basis functions in dcblab.h
 C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -220,10 +220,10 @@ C
      *   ' current maximum number                  ',MAXLAB
       CALL QUIT('GETLAB:Too many labels !!!')
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qnphase */
       SUBROUTINE QNPHASE(IM,JSYMOP,ONEINT,IDOINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Quaternion phase insertion in lower triangular matrix
 C       Phase: (e_K1*)(e_IM)(e_K2)
@@ -232,7 +232,7 @@ C
 C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
 C     Last revision: Nov 7 2001 - hjaaj
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -285,10 +285,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck q2phase */
       SUBROUTINE Q2PHASE(TYP,IM,JFAC,AMAT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Quaternion phase insertion in square matrix
 C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
@@ -297,7 +297,7 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -350,10 +350,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck q2bphase */
       SUBROUTINE Q2BPHASE(TYP,IM,JFAC,AMAT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Quaternion phase insertion in square matrix
 C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
@@ -362,7 +362,7 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -416,12 +416,12 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rpgen */
       SUBROUTINE RPGEN(IREPA)
-C*****************************************************************************
+C***********************************************************************
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -442,16 +442,16 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtqoso */
       SUBROUTINE MTQOSO(AQO,ASO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix Transform: QO-basis to SO-basis
 C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -491,16 +491,16 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtsoqo */
       SUBROUTINE MTSOQO(ASO,AQO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to QO-basis
 C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -540,15 +540,15 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtqoso */
       SUBROUTINE VTQOSO(AQO,ASO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector Transform: QO-basis to SO-basis
 C     Last revision: Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -589,16 +589,16 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtsoqo */
       SUBROUTINE VTSOQO(ASO,AQO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector transform: SO-basis to QO-basis
 C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -638,10 +638,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtsoao */
       SUBROUTINE MTSOAO(ASO,AAO,NBAST,IREPDM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -649,7 +649,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -731,10 +731,10 @@ CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtaoso */
       SUBROUTINE MTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -742,7 +742,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -821,10 +821,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dtsoao */
       SUBROUTINE DTSOAO(ASO,AAO,NBAST,IREPDM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -832,7 +832,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -910,10 +910,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dtaoso */
       SUBROUTINE DTAOSO(AAO,ASO,NBAST,IREPDM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -921,7 +921,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -1001,10 +1001,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ntaoso */
       SUBROUTINE NTAOSO(AAO,ASO,NBAST,IREPM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix Transform:  AO-basis to SO-basis
 C     This routine is based on HERMIT routine DAOTSO (880418  PRT)
@@ -1013,7 +1013,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1083,10 +1083,10 @@ C      CALL DZERO(ASO,NBAST*NBAST)
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtsoao */
       SUBROUTINE VTSOAO(ASO,AAO,NBAST,NVEC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -1094,7 +1094,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1144,10 +1144,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wtsoao */
       SUBROUTINE WTSOAO(ASO,AAO,IFRP,KNFBAS,NBAST,NVEC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector transform: SO-basis to AO-basis (in sorted basis !)
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -1155,7 +1155,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Jan 7 1998 (jth: NFBAS(IFRP,0) now parameter)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1219,10 +1219,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wtaoso */
       SUBROUTINE WTAOSO(AAO,ASO,NBAST,NVEC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector Transform:  AO-basis to SO-basis
 C     VTAOSO/WTAOSO are covariant/contarvariant versions
@@ -1232,7 +1232,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1283,10 +1283,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtaoso */
       SUBROUTINE VTAOSO(AAO,ASO,NBAST,NVEC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector Transform:  AO-basis to SO-basis
 C     This routine is based on HERMIT routine DAOTSO (880418  PRT)
@@ -1295,7 +1295,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1347,10 +1347,10 @@ C
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bstobu */
       SUBROUTINE BSTOBU(AMAT,MZ,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform:
 C     from class/symmetry sorted basis ("sorted basis" = Dirac sorted)
@@ -1359,7 +1359,7 @@ C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1407,10 +1407,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck butobs */
       SUBROUTINE BUTOBS(AMAT,MZ,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform:
 C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
@@ -1419,7 +1419,7 @@ C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1464,17 +1464,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtbubs */
       SUBROUTINE VTBUBS(VBU,VBS,NVEC)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector transform:  from unsorted basis to sorted basis
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1509,17 +1509,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtbsbu */
       SUBROUTINE VTBSBU(VBS,VBU,NVEC)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Vector transform:  from sorted basis to unsorted basis
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1552,17 +1552,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtbsbu */
       SUBROUTINE MTBSBU(AMS,AMU)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform:  from sorted basis to unsorted basis
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1597,17 +1597,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtbubs */
       SUBROUTINE MTBUBS(AMU,AMS)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform:  from unsorted basis to sorted basis
 C
 C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -1641,10 +1641,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphgen */
       SUBROUTINE SPHGEN(WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Generate coefficients for transforming from Cartesian to
 C     spherical components
@@ -1655,7 +1655,7 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision: Sep 19 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1785,10 +1785,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtaocs */
       SUBROUTINE VTAOCS(AOV,LDA,CSV,LDC,NVEC,LCOMP,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Transform NVEC vectors from Cartesian AO basis to Spherical
 C     Components
@@ -1803,7 +1803,7 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -1866,10 +1866,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mtaocs */
       SUBROUTINE MTAOCS(AOM,LDA,CSM,LDC,LCOMP,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Transform NVEC vectors from Cartesian AO basis to Spherical
 C     Components
@@ -1884,7 +1884,7 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -1947,10 +1947,10 @@ C
       CALL QEXIT ('MTAOCS')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck vtcsao */
       SUBROUTINE VTCSAO(CSV,LDC,AOV,LDA,NVEC,LCOMP,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Transform NVEC vectors from Spherical Components to Cartesian
 C     AO basis.
@@ -1967,7 +1967,7 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -2028,10 +2028,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nsphcm */
       FUNCTION NSPHCM(LCOMP)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Count the number of spherical functions
 C
@@ -2043,7 +2043,7 @@ C
 C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -2085,14 +2085,14 @@ C
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphtst */
       SUBROUTINE SPHTST(WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Check normalization of tranformation matrix
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2126,7 +2126,7 @@ C
       CALL MEMREL('SPHTST',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphts1 */
       SUBROUTINE SPHTS1(AMAT,BMAT,NSPH,WORK,LWORK,IPRINT)
 #include "implicit.h"
@@ -2156,10 +2156,10 @@ C
       CALL VTCSAO(BMAT,NSPH,AMAT,NTBAS(0),NTBAS(0),0,IPRINT)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mmsoao */
       SUBROUTINE MMSOAO(ASO,AAO,NBAST,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Matrix transform: SO-basis to AO-basis
 C     Based on HERMIT routine DSOTAO (880418  PRT)
@@ -2167,7 +2167,7 @@ C
 C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -2245,7 +2245,7 @@ C                  END IF
       END IF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qtrans */
       SUBROUTINE QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
      &                  FAO,LRAO,LCAO,NZAO,IQAO,
@@ -2253,14 +2253,14 @@ C  /* Deck qtrans */
      &                  TM1,LR1,LC1,NZTM1,IQTM1,
      &                  TM2,LR2,LC2,NZTM2,IQTM2,
      &                  BUF,LBUF,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine performs unitary transformations indicated by TYP:
 C
 C       TYP = AOMO : AO-to-MO-transformation  FMO = (C+)FAOC
 C       TYP = MOAO : MO-to-AO-transformation  FAO = CFMO(C+)
 C
-C     ADDF gives the possibility of adding the results
+C     FADD gives the possibility of adding the results
 C
 C     TREV indicates symmetry of F-matrix under timereversal
 C
@@ -2283,7 +2283,7 @@ C       F(NORB,NORB,NZ) --->  F(NBAS,NBAS,NZ)
 C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
-C****************************************************************************
+C**********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
@@ -2328,7 +2328,7 @@ C
 C       Look for the most efficient transformation
 C       ------------------------------------------
 C
-        IF(NCAO.GE .NRAO) THEN
+        IF (NCAO.GE.NRAO) THEN
 C
 C         Perform the two steps:
 C           1. W  = FC
@@ -2346,17 +2346,17 @@ C         First part of transformation: W = FC
 C         ------------------------------------
 C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
-     &             'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
-     &             'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &        D0,IQW,BUF,NRAO,NCMO,NZW)
+     &              'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
+     &              'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
+     &               D0,IQW,BUF,NRAO,NCMO,NZW)
 C
 C         Second part of transformation: H = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
-     &       'H',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
-     &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
-     &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
+     &               'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
+     &               'N','N',IQW,BUF,NRAO,NCMO,NZW,
+     &               FADD,IQMO,FMO,LRMO,LCMO,NZMO)
         ELSE
 C
 C         Perform the two steps:
@@ -2460,26 +2460,29 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bcktra */
       SUBROUTINE BCKTRA(COFT,LRT,LCT,COFU,LRU,LCU,NORB,NZC,
      &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
-C     PURPOSE: Transform vectors (basis) from one-representation to the other
+C     PURPOSE: Transform vectors (basis) from one-representation 
+C              to the other
 C
 C     METHOD: Uses blas routine QGEMM
 C
 C     INPUT:
 C	NORB - number of vectors to be tranformed
-C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZC)
-C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
+C	COFU - array of untransformed vectors of dimension 
+C              (NORB,NORB,NZC)
+C	COFT - array of backtransformed vectors of dimension 
+C              (NBAS,NVEC,NZC)
 C       TMAT - transformation matrix of dimension (NBAS,NORB,NZT)
 C
 C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
@@ -2514,10 +2517,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck delsph */
       SUBROUTINE DELSPH(AMAT,LCOMP,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Delete totally symmetric contributions of spherical transformation
 C     from LL or SS-block of matrix
@@ -2528,7 +2531,7 @@ C
 C     Written June 20 1996 - Trond Saue
 C     Last revision June 20 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2590,17 +2593,17 @@ C      ENDIF
       CALL QEXIT('DELSPH')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mksphc */
       SUBROUTINE MKSPHC(WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates an orthogonal transformation from Cartesian
 C     to solid harmonics
 C
 C     Written by T.Saue Aug 15 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2626,18 +2629,18 @@ C
       CALL QEXIT('MKSPHC')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mksph1 */
       SUBROUTINE MKSPH1(INADR,INIJK,IX,JY,KZ,LOFF,DFAC,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates an orthogonal transformation from Cartesian
 C     to solid harmonics
 C
 C     Written by T.Saue Aug 15 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -2684,18 +2687,18 @@ C
       CALL QEXIT('MKSPH1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mksph2 */
       SUBROUTINE MKSPH2(LVAL,INADR,INIJK,LOFF,DFAC,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates an orthogonal transformation from Cartesian
 C     to solid harmonics for a given l-value.
 C
 C     Written by T.Saue Aug 15 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -2720,19 +2723,19 @@ C
       CALL QEXIT('MKSPH2')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mksph3 */
       SUBROUTINE MKSPH3(LVAL,INADR,INIJK,LOFF,DFAC,
      &                  SXYZ,COEF,BUF,IBUF,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This routine generates an orthogonal transformation from Cartesian
 C     to solid harmonics for a given l-value.
 C
 C     Written by T.Saue Aug 15 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -2769,15 +2772,15 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mksxyz */
       SUBROUTINE MKSXYZ(LVAL,SXYZ,INADR,LOFF,DFAC,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Make lower triangular row-packed overlap matrix in minimal 
 C     Cartesian Gaussian basis for angular momentum value L
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1 = 1.0D0)
@@ -2856,17 +2859,17 @@ C                   that all coefficients are integers.
       RETURN
 C     
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck keepll */
       SUBROUTINE KEEPLL(AMAT,MZ,BASIS)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Delete all parts of the matrix, except the LL block.
 C
 C     Written by L.Visscher, 6-1-2000
 C     Last revision : 6-1-2000 - lvisscher
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -2952,10 +2955,10 @@ CTROND Nz can be taken away....
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSMOAO */
       SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Old: Construct half transformed overlap matrix, Smoao = Ct Sao
 C        New: Construct half transformed overlap matrix, Smoao = Sao C
@@ -2964,7 +2967,7 @@ C        Written by J. Thyssen
 C        Modified by T.Saue Aug 2000
 C        Last revision: Jan 2 1998
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
@@ -3019,16 +3022,16 @@ C
       CALL QEXIT('MKSMOAO')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSAOMO */
       SUBROUTINE MKSAOMO(SAOMO,TMAT,IPRINT,WORK,LWORK)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Construct half transformed overlap matrix, Saomo = Sao C
 C
 C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
@@ -3164,10 +3167,10 @@ C
 C
       RETURN
       END
-C*****************************************************************************
+C***********************************************************************
 C  /* Deck indaoc */
       SUBROUTINE INDAOC (INDAO,INDAOS,INDNAO)
-C*****************************************************************************
+C***********************************************************************
 C
 C      Sort AO-matrix from the default shell ordering to one where all 
 C      functions of a given center are consecutive (but keep L, S overall
@@ -3175,7 +3178,7 @@ C      structure).
 C
 C      Written by L. Visscher august 2001
 C      Last revision: Aug 15 2001 - LV 
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3264,4 +3267,4 @@ C
       RETURN
 C
       END
-C*****************************************************************************
+C***********************************************************************

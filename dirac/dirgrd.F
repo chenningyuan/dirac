@@ -75,7 +75,9 @@ C
       LUMGRD = 80
       CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      IF (DODHF .OR. .NOT. (DOMP2 .OR. DODFT) ) THEN
+      IF (DODHF) THEN
+chj   IF (DODHF .OR. .NOT. (DOMP2 .OR. DODFT) ) THEN
+chj 03-Jul-2002: only for DODHF
 C
 C        Initialize some variables
 C
@@ -129,7 +131,8 @@ C
       END IF
 C
 C
-      CALL TITLER('Calculation of molecular gradient','*',110)
+      CALL TITLER('Analytical calculation of molecular gradient',
+     &            '*',110)
 C
 C     Calculate gradient
 C
@@ -2539,6 +2542,7 @@ C
 C
 #include <dcbgen.h>
 #include <dcbbas.h>
+#include <dcbdhf.h>
 #include <dcborb.h>
 C
 #include <memint.h>

@@ -4,7 +4,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dia0trm_gas $Revision$
       SUBROUTINE DIA0TRM_GAS(ITASK,LUIN,LUOUT,VEC,VEC2,
      &                       FACTOR)
 *
@@ -19,7 +18,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -156,19 +154,17 @@ C    &              NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLVIOIO),
 C    &              ISMOST(1,ISM),
 C    &              NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
 C    &              WORK(KLVI1BT), WORK(KLVIBT),1)
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLVBLTP),WORK(KNSTSO(IATP)),
      &               WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,
      &               NSMST,LSCR1,WORK(KLVIOIO),ISMOST(1,ISM),
      &               NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
-     &               WORK(KLVI1BT),WORK(KLVIBT),1)
-     &
+     &               WORK(KLVI1BT),WORK(KLVIBT),1,ITTSS_ORD)
 C    PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
 C    &                  NSMST,MXLNG,IOCOC,ISMOST,
-C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
+C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP,
+C    &                  ITTSS_ORD)
 *
-C     PART_CIV(IDC,IBLTP,NOOS,NOOSP,NOCTPA,NOCTPB,
-C    &                  NSMST,MXLNG,IOCOC,ISMOST,
-C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
       NBLOCKT = IFRMR(WORK(KLVLBT),1,1)
 C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 
@@ -199,7 +195,6 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diablk $Revision$
       SUBROUTINE DIABLK(IASM,IATP,IBSM,IBTP,IFULL,DIAG)
 *
 * Obtain diagonal block of determinant block
@@ -217,7 +212,6 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 *./ORBINP/ : NACOB used
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -333,7 +327,6 @@ C     COMMON/OPER/I12,IPERTOP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diablks $Revision$
       SUBROUTINE DIABLKS(NAEL,IASTR,NBEL,IBSTR,
      &                  NORB,NSMST,H,
      &                  ISMOST,IBLTP,XA,XB,SCR,RJ,RK,
@@ -371,7 +364,8 @@ C     COMMON/OPER/I12,IPERTOP
 *. Output
       DIMENSION DIAG(*)
 *
-      NTEST = MAX(NTEST,IPRNT)
+      NTESTL = 000
+      NTEST = MAX(NTESTL,IPRNT)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' DIABLKS in action '
@@ -493,7 +487,6 @@ C     COMMON/OPER/I12,IPERTOP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterm2_gas $Revision$
       SUBROUTINE DIATERM2_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,J12,JDC)
 * = DIATERM_GAS, just J12 added !
@@ -510,7 +503,6 @@ C     COMMON/OPER/I12,IPERTOP
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -626,7 +618,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterm_gas $Revision$
       SUBROUTINE DIATERM_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,I0CHK,I0BLK)
 *
@@ -644,7 +635,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -773,7 +763,6 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterms_gas $Revision$
       SUBROUTINE DIATERMS_GAS(NAEL,IASTR,NBEL,IBSTR,
      &                  NORB,VEC,NSMST,H,
      &                  IDC,XA,XB,SCR,RJ,RK,
@@ -1013,7 +1002,6 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasdias $Revision$
       SUBROUTINE GASDIAS(NAEL,IASTR,NBEL,IBSTR,
      &           NORB,DIAG,NSMST,H,XA,XB,SCR,RJ,RK,
      &           NSSOA,NSSOB,LUDIA,ECORE,
@@ -1206,11 +1194,10 @@ C     REAL * 8  INPROD
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasdiat $Revision$
 C     GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12,
-C    &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
+C    &        WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
       SUBROUTINE GASDIAT(DIAG,LUDIA,ECORE,ICISTR,I12,
-     &           IBLTP,NBLOCK,IBLKFO)
+     &                   IBLTP,NBLOCK,IBLKFO)
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -1227,7 +1214,6 @@ C    &               WORK(KLCBLTP),NBLOCK,WORK(KLCIBT))
 *./ORBINP/ : NACOB used
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -1332,7 +1318,6 @@ C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_diag_bloc_mat $Revision$
       SUBROUTINE GET_DIAG_BLOC_MAT(A,ADIAG,NBLOCK,LBLOCK,ISYM)
 *
 * Obtain diagonal elements from symmetry blocked matrix
@@ -1383,7 +1368,6 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gt1dia $Revision$
       SUBROUTINE GT1DIA(H1DIA)
 *
 * Obtain diagonal of one electron matrix over active
@@ -1392,7 +1376,6 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 *. Dec 97 : obtained from KINT1O
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 
 *.GLobal pointers
@@ -1414,7 +1397,6 @@ CINA &            ISMFTO,IBSO,NACOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gt1dis $Revision$
       SUBROUTINE GT1DIS(H1DIA,IREOTS,IPNT,H,ISMFTO,IBSO,NACOB)
 *
 * diagonal of one electron integrals over active orbitals

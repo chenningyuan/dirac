@@ -29,10 +29,10 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : paminp.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpinp */
       SUBROUTINE PRPINP(WRDSRC,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C <<< Property Input for DIRAC >>>
 C
@@ -40,11 +40,11 @@ C
 C       Written by Trond Saue and Hans J.Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 8, NTABLE = 20)
+      PARAMETER (NDIR = 8, NTABLE = 21)
 #include "mxorb.h"
 #include "mxcent.h"
 C
@@ -60,7 +60,8 @@ C
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
-     &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   '/
+     &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
+     &             '.WAVE F'/
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -96,6 +97,8 @@ C
       MGRAD    = .FALSE.
       ESRGTENS = .FALSE.
       ESRANISO = .FALSE.
+      NPRPWF   = 1
+      PRPWF(1) = 'DHF'
 C
 C     Read menu file
 C     ==============
@@ -136,7 +139,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120),I
+     &                117,118,119,120,121),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -251,7 +254,20 @@ C&&&& SHIELD: NMR shielding constants with PVC contributions
 C&&&& EFN: Electric field at nuclei
             DOEXP = .TRUE.
             EFN   = .TRUE.
-            GO TO 100
+            GOTO 100
+  121    CONTINUE
+C&&&& WAVE FUNCTIONS - define which wave functions we should use
+            READ(LUCMD,*) NPRPWF
+            IF (NPRPWF .LT. 1 .OR. NPRPWF .GT. MXPRPWF) THEN
+               WRITE(LUPRI,'(1X,2A,I10)')
+     &              '*** ERROR in PRPINP *** ',
+     &              'Illegal value for NPRPWF: ',NPRPWF
+               CALL QUIT('*** ERROR in PRPINP ***')
+            END IF
+            DO I = 1, NPRPWF
+               READ(LUCMD,'(1X,A4)') PRPWF(I)
+            END DO
+            GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
@@ -265,8 +281,13 @@ C     Print section
 C     =============
 C
       CALL TITLER('Property module','*',129)
-      WRITE(LUPRI,'(A,I3)') ' * Print level:',IPRPRP
+      WRITE(LUPRI,'(1X,A,I3)') '* Print level:',IPRPRP
       WRITE(LUPRI,'(2A)')   ' * Input label:',WRDSRC
+      WRITE(LUPRI,'(1X,A)')
+     &     '* Properties calculated for the following wave functions: '
+      DO I = 1, NPRPWF
+         WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
+      END DO
 C
 C     Process input for various program sections
 C     ==========================================
@@ -349,17 +370,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck expinp */
       SUBROUTINE EXPINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for expectation values
 C
 C     Written by T.Saue - May 1996
 C     Last revision: May 26  - 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -534,11 +555,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprinp */
       SUBROUTINE XPRINP(LUCMDX,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Last revision: May 14 1996 - tsaue
@@ -912,11 +933,11 @@ C
  9999 CALL QEXIT('XPRTKN')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xprind */
       SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-C***************************************************************************** 
+C*********************************************************************** 
 C  Given a 4-component operator this routine returns an index
 C  INDXPR to the list of operators in COMMON block XCBPRP and
 C  returns its symmetry under time reversal(ITRXPR) and its
@@ -924,7 +945,7 @@ C  spatial symmetry(ISYXPR)
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Revised May 14 1996 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
@@ -977,16 +998,16 @@ C
       CALL QEXIT('XPRIND')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpradd */
       SUBROUTINE XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C  Add property to list of properties in COMMON block XCBPRP
 C  Copyright (c) 6-Feb-1995 Hans Joergen Aa. Jensen
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
@@ -1090,10 +1111,10 @@ C
       CALL QEXIT('XPRADD')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck indxpl */
       INTEGER FUNCTION INDXPL(PLABEL,PCOMB,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     9-Mar-1995 hjaaj
 C     Complete revision : May 14 1996 - tsaue
@@ -1106,7 +1127,7 @@ C
 C     If INDXPL .le. 0 then no match was found.
 C
 C     Last revision: May 15 1996 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER PLABEL*8, PCOMB*4,CLASSLB*7
@@ -1175,10 +1196,10 @@ C
      &'    PDOINT   = ',PDOINT(I)
       STOP 'INDXPL ERROR: illegal PCOMB or PDOINT(I)'
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getcls */
       SUBROUTINE GETCLS(LABINT,CLASSLB,IORDER)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given a file label for a given integral, this subroutine
 C     returns the label for the general class of integrals
@@ -1187,7 +1208,7 @@ C     as well.
 C
 C     Jan-18-1995 - tsaue
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER LABINT*8,CLASSLB*7
@@ -1310,7 +1331,8 @@ C
           CLASSLB = 'S2MAG  '
         ELSE
 C
-C       Second order contribution from overlap matrix to magnetic properties
+C       Second order contribution from overlap matrix to 
+C       magnetic properties
 C
           CLASSLB = 'S1MAG  '
         ENDIF
@@ -1368,7 +1390,8 @@ C
           CLASSLB = 'DSUSLAN'
         ELSE
 C
-C       Angular London orbital contribution to diamagnetic susceptibility
+C       Angular London orbital contribution to diamagnetic 
+C       susceptibility
 C
           CLASSLB = 'DSUSLH'
         ENDIF
@@ -1431,14 +1454,16 @@ C
         RETURN
       ENDIF
 C
-C     Bra-differentiation of overlap matrix with respect to magnetic field
+C     Bra-differentiation of overlap matrix with respect to magnetic 
+C     field
 C
       IF(LABINT(1:7).EQ.'d<S|/dB') THEN
         CLASSLB = 'S1MAGL'
         RETURN
       ENDIF
 C
-C     Ket-differentiation of overlap matrix with respect to magnetic field
+C     Ket-differentiation of overlap matrix with respect to 
+C     magnetic field
 C
       IF(LABINT(1:7).EQ.'d|S>/dB') THEN
         CLASSLB = 'S1MAGR'
@@ -1557,17 +1582,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpldef */
       SUBROUTINE XPLDEF(PLABEL,CLASSLB,IORDER,PCOMB,INDX,
      &                  WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define property label: symmetries etc..
 C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1602,17 +1627,17 @@ C
       CALL QEXIT('XPLDEF')      
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xplde1 */
       SUBROUTINE XPLDE1(PLABEL,CLASSLB,PCOMB,IORDER,INTREP,INTADR,
      &           LABINT,INDX,DOATOM,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Define property label: symmetries etc..
 C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1704,10 +1729,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpsym */
       SUBROUTINE PRPSYM(INDXPR,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     This subroutine finds the symmetry of the unique operator no.
 C     INDXPR in COMMON /SCBPRP/.
@@ -1724,7 +1749,7 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1833,17 +1858,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrixpr */
       SUBROUTINE WRIXPR(IND,INDXPR)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Write out data on a operator specified by pointer INDXPR
 C
 C     Written by T.Saue - May 1996
 C     Last revision: May 18 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -1982,10 +2007,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1ind */
       SUBROUTINE OP1IND(OP1KEY,IND1OP,IPR1OP,N1OPER,INDXPR,MAX1OP)
-C*****************************************************************************
+C***********************************************************************
 C
 C     INDXPR points to an operator in XCBPRP. Search through
 C     IPR1OP for elements pointing to this operator. If not found,
@@ -1994,7 +2019,7 @@ C
 C     Written by T.Saue June 28 1996
 C     Last revision: July 8 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER OP1KEY*6
@@ -2024,18 +2049,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1srt */
       SUBROUTINE OP1SRT(OP1KEY,IPOP1U,IPOP1S,NOP1T,NOP1,JOP1,
      &           WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Sort a list of operators in symmetries
 C
 C     Written by T.Saue June 28 1996
 C     Last revision - June 26 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2051,17 +2076,17 @@ C
 C   
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1sr1 */
       SUBROUTINE OP1SR1(IPOP1U,IPOP1S,NOP1T,NOP1,JOP1,IBUF)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Sort a list of operators in symmetries
 C
 C     Written by T.Saue June 28 1996
 C     Last revision - June 26 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2101,14 +2126,14 @@ C
       END
 C  /* Deck INIGRD */
       SUBROUTINE INIGRD
-C*****************************************************************************
+C***********************************************************************
 C
 C     Initialization for molecular gradient
 C
 C     Written by J. Thyssen - 1997/09/01
 C     Last revision: jth - 1997/09/01
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 C
 #include "mxorb.h"
@@ -2137,24 +2162,24 @@ C
 C
       RETURN
       END
-C*****************************************************************************
+C***********************************************************************
 C  /* Deck grdinp */
       SUBROUTINE GRDINP(WORD,RESET)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for molecular gradient
 C
 C     Written by J. Thyssen - 1997/07/09
 C     Last revision: jth - 1997/07/09
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dummy.h"
 #include "mxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 4)
+      PARAMETER (NTABLE = 5)
 C
 #include "dcbgrd.h"
 #include "dcbprp.h"
@@ -2165,7 +2190,7 @@ C
       DIMENSION PFAC(3),II(3)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.INTFLG','.TRICK ','.SCREEN'/
+      DATA TABLE /'.PRINT ','.INTFLG','.TRICK ','.SCREEN','.NUMGRA'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2198,7 +2223,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4), I
+                     GO TO (1,2,3,4,5), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -2219,11 +2244,16 @@ C&&&& INTFLG: Which two-electron gradient to calculate
                   IGRD_INTFLG = ILL + 2 * ILS + 4 * ISS
                GO TO 100
     3          CONTINUE
+C&&&& TRICK : Skip LS- and SS- integrals if contribution negligible
                   DOTRCK = .TRUE.
                GO TO 100
     4          CONTINUE
 C&&&& SCREEN: Threshold for screening on the gradient
-               READ (LUCMD,*) SCRGRD
+                  READ (LUCMD,*) SCRGRD
+               GO TO 100
+    5          CONTINUE
+C&&&& NUMGRA: Use numerical gradient
+                  DONGRD = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2243,10 +2273,17 @@ C     =============
          WRITE(LUPRI,'(A)')
      &        ' GRDINP: Calculation of molecular gradient.'
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(A,I3)')
-     &        ' * Print level                       : ', IPRGRD
-         WRITE(LUPRI,'(A)')
-     &        ' * Contributions to the molecular gradient from'
+         WRITE(LUPRI,'(1X,A,I3)')
+     &        '* Print level                       : ', IPRGRD
+         IF ( DONGRD ) THEN
+            WRITE(LUPRI,'(1X,A)')
+     &         '* Gradient evaluated with numerical differentiation.'
+         ELSE
+            WRITE(LUPRI,'(1X,A)')
+     &         '* Gradient evaluated analytically.'
+         END IF
+         WRITE(LUPRI,'(1X,A)')
+     &        '* Contributions to the molecular gradient from'
          IF ( LBIT( IGRD_INTFLG, 1 ) )
      &         WRITE(LUPRI,'(3X,A)') '- LL-integrals.'
          IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
@@ -2279,10 +2316,10 @@ C     =============
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck minprp */
       SUBROUTINE MINPRP(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C     Calculate specified properties at final, converged geometry
 C     (called when .OPTIMIZE specified if geometry converges)
 C
@@ -2292,7 +2329,7 @@ C
 #include "dcbgen.h"
 C
       DIMENSION WORK(LWORK)
-      LOGICAL OPEN
+      LOGICAL FOPEN
 C
       CALL QENTER('MINPRP')
 C
@@ -2302,8 +2339,8 @@ C
 C     Open LU1INT if not opened
 C
       IF (DOPRP) THEN
-         INQUIRE(FILE='AOPROPER',OPENED=OPEN)
-         IF (.NOT. OPEN) THEN
+         INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
+         IF (.NOT. FOPEN) THEN
 #if defined (SYS_IBM)
             OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='APROPER')
@@ -2322,12 +2359,12 @@ C
 C        Close AOPROPER if it was closed on entry to
 C        MINPRP.
 C
-         IF (.NOT. OPEN) CLOSE(LU1INT,STATUS = 'KEEP')
+         IF (.NOT. FOPEN) CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C
-C*****************************************************************************
-C*****  R E S P O N S E    M O D U L E  **************************************
-C*****************************************************************************
+C***********************************************************************
+C*****  R E S P O N S E    M O D U L E  ********************************
+C***********************************************************************
 C
          CALL PAMPRP(WORK,LWORK)
 C
@@ -2337,4 +2374,4 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

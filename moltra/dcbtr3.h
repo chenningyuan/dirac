@@ -12,4 +12,4 @@ C
      &              NDMOQC(2,2,2),ICMOQC(2,2),
      &              NDMOQR(2,2,4),ICMOQR(2,4),
      &              NDMOQS(2,2,4),ICMOQS(2,4),
-     &              NDMOQT(2,2,4),ICMOQT(2,4) 
+     &              NDMOQT(2,2,4),ICMOQT(2,4)

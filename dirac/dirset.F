@@ -29,15 +29,15 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirset.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamset */
       SUBROUTINE PAMSET(WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Subroutine for setting dimensions and generate overlap and Lowdin
 C     matrices
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxorb.h"
@@ -416,8 +416,11 @@ C
       NCMOT  = 0
       NCAOT  = 0
       DO 100 IFRP = 1,NFSYM
+C
         IORB(IFRP)  = NORBT
         IASH(IFRP)  = NASHT
+        IOCC(IFRP)  = NOCCT
+C
         N2ORB(IFRP) = NORB(IFRP)*NORB(IFRP)
         NORBT       = NORBT  + NORB(IFRP)
         I2ORBT(IFRP)= N2ORBT*NZ
@@ -426,13 +429,17 @@ C
         NFROT       = NFROT  + NFRO(IFRP)
         NISHT       = NISHT  + NISH(IFRP)
         N2ISHT      = N2ISHT + N2ISH(IFRP)
+C
         N2ASH(IFRP) = NASH(IFRP)*NASH(IFRP)
         NASHT       = NASHT  + NASH(IFRP)
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
+C
         N2OCC(IFRP) = NOCC(IFRP)*NOCC(IFRP)
         NOCCT       = NOCCT  + NOCC(IFRP)
+        I2OCCT(IFRP)= N2OCCT * NZ
         N2OCCT      = N2OCCT + N2OCC(IFRP)
+C
         NSSH(IFRP)  = NESH(IFRP) - NOCC(IFRP)
         N2SSH(IFRP) = NSSH(IFRP)*NSSH(IFRP)
         NSSHT       = NSSHT  + NSSH(IFRP)
@@ -458,6 +465,9 @@ C
  300    CONTINUE
         IOFF = IOFF + NORB(J)*NORBT
  200  CONTINUE
+C
+C     Calculate I2ASHX
+C
       IOFF = 0
       DO J = 1,NFSYM
          DO I = 1,NFSYM
@@ -465,10 +475,23 @@ C
          END DO
          IOFF = IOFF + NASH(J)*NASHT
       END DO
+C
+C     Calculate I2OCCX
+C
+      IOFF = 0
+      DO J = 1,NFSYM
+         DO I = 1,NFSYM
+            I2OCCX(I,J) = IOFF + IOCC(I)
+         END DO
+         IOFF = IOFF + NOCC(J)*NOCCT
+      END DO
+      N2ORBX  = NORBT*NORBT
       N2ORBX  = NORBT*NORBT
       N2ORBXQ = NZ*N2ORBX
       N2ISHX  = NISHT*NISHT
       N2ASHX  = NASHT*NASHT
+      N2ASHXQ = N2ASHX * NZ
+      NNASHX = NASHT * (NASHT+1) / 2
       N2OCCX  = NOCCT*NOCCT
       N2SSHX  = NSSHT*NSSHT
       N2ESHX  = NESHT*NESHT
@@ -486,7 +509,7 @@ C
      &     I = 1,NFSYM)
       ENDIF
 C
-C     Sanety check if NOCC > NORB
+C     Sanity check if NOCC > NORB
 C
       DO I = 1,NFSYM
          IF (NOCC(I) .GT. NORB(I)) THEN
@@ -725,7 +748,7 @@ C
 #include "nuclei.h"
 #include "shells.h"
 #include "dcbbas.h"
-#include "dcborb.h"     
+#include "dcbdhf.h"     
 #include "dcbgen.h"
 #include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)

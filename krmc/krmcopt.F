@@ -31,7 +31,7 @@ C FILE    : diropt.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
-      SUBROUTINE PSIOPT(WFTYP,WORK,LWORK)
+      SUBROUTINE PSIOPT(WFTYP,WFCONV,WORK,LWORK)
 C***********************************************************************
 C
 C     Driver routine to PSIOP1
@@ -48,6 +48,7 @@ C***********************************************************************
 #include "maxorb.h"
 C
       CHARACTER WFTYP*(*)
+      LOGICAL   WFCONV
       DIMENSION WORK(LWORK)
 C
 #include "dcbidx.h"
@@ -166,7 +167,7 @@ C
       CALL PSIOP1(WORK(KCMO),WORK(KDV),WORK(KPV),WORK(KFC),
      &            WORK(KFV),WORK(KFQ),WORK(KFCAC),WORK(KCREF),
      &            WORK(KH2AC),WORK(KGCI),WORK(KGOEE),WORK(KGOEP),
-     &            WORK,KFREE,LFREE)
+     &            WFCONV,WORK,KFREE,LFREE)
 C
 C
 C     ***************************************************
@@ -209,7 +210,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOP1(CMO,DV,PV,FC,FV,FQ,FCAC,CREF,H2AC,GCI,GOEE,GOEP,
-     &                  WORK,KFREE,LFREE)
+     &                  WFCONV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Get second order optimized wave function.
@@ -234,6 +235,7 @@ C
 #include "dcborb.h"
 #include "frame.h"
 C
+      LOGICAL   WFCONV
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
      &          H2AC(*),GCI(*),GOEE(*),GOEP(*)
@@ -268,7 +270,7 @@ C     ... MCTYPE .lt. JMCMIN is SCF
       EMCOLD = D0
       DEPRED = D0
       STPLEN = D0
-      ICONV  = 0
+      WFCONV = .FALSE.
 C
       NRALW = FLAG(1)
       NEOALW = FLAG(2)
@@ -478,8 +480,8 @@ C        *** Converged ??? *********************************
 C        ***************************************************
 C
          IF (GNORM(5) .LE. OPT_THRGRD) THEN
-            ICONV = 1
             ISTEP = -2
+            WFCONV = .TRUE.
          END IF
 C
 C
@@ -509,7 +511,7 @@ C
 C
 C        Exit if converged
 C
-         IF (ICONV .EQ. 1) GOTO 1000
+         IF (WFCONV) GOTO 1000
 C
          IF (ISTEP .EQ. 2) THEN
             WRITE(LUPRI,9050)
@@ -596,7 +598,7 @@ C
  9100    FORMAT(/'>>> CPU (WALL) TIME FOR MACRO IT. ',
      &        I3,':',A,'(',A,')')
          CALL FLSHFO(LUPRI)
-         IF (ICONV .GT. 0) GOTO 2000 
+         IF (WFCONV) GOTO 2000 
          IF ( (ITBCK .EQ. 0 .AND. ITMAC .LT. MOPT_MXMACRO) .OR.
      &        (ITBCK .GT. 0 .AND. ITBCK .LE. MOPT_MAXBCK ) ) THEN
             IOPT_INTBUF = IOPT_INTFLG
@@ -1683,9 +1685,8 @@ C
 #include "dcbnrt.h"
 #include "dcbidx.h"
 C
-      DIMENSION WORK(*)
-C
-      DIMENSION ILIST(MAXORB)
+      DIMENSION WORK(*), ILIST(MAXORB)
+      LOGICAL   GASWF
 C
       CALL QENTER('RSETWOP')
 C
@@ -1783,15 +1784,13 @@ C
 C     Always totally symmetric rotations (=> JOPSY = 1)
 C
       JOPSY = 1
-      CALL SETXOP(OPT_INDSTR,JOPSY,
-     &     NZXOPE,NZHOPE,KZXOPE,
-     &     NZXOPP,KZXOPP,
-     &     WORK,KFREE,LFREE,
-     &     OPT_SKIPEP,OPT_SKIPEE,.FALSE.,NGAS.GT.0,IPROPT,NOROT)
-C     CALL SETXOP(INDSTR,IOPSY,NXOPE,NHOPE,KXOPE,
-C                 NXOPP,KXOPP,
-C                 WORK,KFREE,LFREE,
-C                 SKIPEP,SKIPEE,QED,GAS,IPRINT,NOROT) 
+      GASWF = NGAS.GT.1
+      CALL SETXOP(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,NOROT,
+     &     NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
+     &     WORK,KFREE,LFREE, IPROPT)
+C     CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,
+C    &     NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,
+C    &     WORK,KFREE,LFREE,IPRINT)
 C
 C     Define LZXOPE to integer length of work(KZXOPE)
 C     Define LZXOPP to integer length of work(KZXOPP)
@@ -1808,7 +1807,7 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
-      write(6,*) 'frozen orbitals'
+      write(LUPRI,*) 'frozen orbitals'
       CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
 C
 C     Evaluate all derived NZX* and NZH* info in dcbopt.h;
@@ -2834,7 +2833,7 @@ C
 C        Remove rotations.
 C
          CALL RMROT(NOROTC,GOEE,WORK(KZXOPE),NZXOPE,NZHOPE,
-     &        GOEP,WORK(KZXOPE),NZXOPP,IPRINT,WORK(KFREE),LFREE)
+     &        GOEP,WORK(KZXOPE),NZXOPP,IPROPT,WORK(KFREE),LFREE)
 C
          NZXOPPQ = NZXOPP*NZ
          NZXOPEQ = NZXOPE*NZ
@@ -3999,7 +3998,7 @@ C
       DOUBLE PRECISION A(N),B(N)
       DMX = D0
       DO I = 1,N
-         DEL = ABS(A(N) - B(N))
+         DEL = ABS(A(I) - B(I))
          DMX = MAX(DMX,DEL)
       END DO
       DABSMAXDIFF = DMX
@@ -4944,6 +4943,21 @@ C
      &     3X,'``Aha!''''                             ',
      &     '- Fysiska poem, Linkoepings Universitet',///,
      &     1X,78('*'),//)
+*
+      WRITE(LUPRI,9110)
+ 9110 FORMAT(/,
+     &     1X,'This module is published in:',/,
+     &     4X,'KRMC-GOSCI: J Thyssen, H J Aa Jensen, and T Fleig',/,
+     &     7X,'         manuscript, (J Chem Phys, 2003)',/,
+     &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
+     &     7X,'                manuscript, (subm. J Chem Phys, 2003)',/,
+     &     4X,'                T Fleig, J Olsen, and C M Marian',/,
+     &     7X,'                JCP 114,11 (2001) 4775-4790 ',/,
+     &     4X,'KRMC-LUCIAREL: T Fleig, L Visscher, J Olsen,',/,
+     &     4X,'               J Thyssen, and H J Aa Jensen',/,
+     &     7X,'               in preparation, (2003)',
+     &     ///,
+     &     1X,78('*'),//)
 C
       RETURN
       END
@@ -5500,7 +5514,8 @@ C
       CALL MEMGET('REAL',KBEP,NXOPP*NZ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHEE,NXOPE,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHEP,NXOPP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFPV,NASHT*NORBT*NZ,WORK,KFREE,LFREE)
+      LFPV = NASHT*NORBT*NZ
+      CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal part of Hessian
 C
@@ -5569,7 +5584,6 @@ C
       DFAC(1) = D1
       DFAC(2) = DM1
 C
-      LFPV = NZ*NASHT*NORBT
       IF (NXOPE .GT. 0) THEN
          CALL DZERO(GOEE,NZ*NXOPE)
          CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEE,
@@ -5608,17 +5622,14 @@ C***********************************************************************
 #include "maxorb.h"
 C
 #include "consts.h"
+#include "dummy.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
 C
       CHARACTER*1 C
-      LOGICAL DOGRAD, DOTRI
-      DIMENSION GO(*), BO(*)
-      DIMENSION JXOP(2,*)
-      DIMENSION U(*)
-      DIMENSION NOROT(*)
-      DIMENSION WORK(*)
+      LOGICAL   DOGRAD, DOTRI
+      DIMENSION GO(*), BO(*), JXOP(2,*), U(*), NOROT(*), WORK(*)
 C
 #include "memint.h"
 C
@@ -5654,7 +5665,7 @@ C
      &           BO,DUMMY,JXOP,NXOP,U,NOROT,
      &           WORK(KVEC),NISHT+NASHT,NDIM,WORK(KFREE),LFREE)
          ELSE
-            write(6,*) 'both DOGRAD and DOTRI false!'
+            write(LUPRI,*) 'SVLDE1 ERROR: both DOGRAD and DOTRI false!'
             call quit('*** ERROR in SVLDE1 ***')
          END IF
       END IF
@@ -5729,7 +5740,7 @@ C
          END DO
 C
       ELSE
-         call quit('write me')
+         call quit('SVLDE2: only C="E" implemented yet, write me!')
       END IF
 C
       CALL MEMGET('REAL',KVEC,NC*NC*NZ,WORK,KFREE,LFREE)
@@ -5768,14 +5779,14 @@ C
          END IF
       END IF
 C
-      write(6,*) 'eigenvalues'
-      CALL OUTPUT(WORK(KEIG),1,NC,1,1,NC,1,1,6)
+      write(LUPRI,*) 'SVLDE2: eigenvalues'
+      CALL OUTPUT(WORK(KEIG),1,NC,1,1,NC,1,1,LUPRI)
 C
       IF (C .EQ. 'E') THEN
          DO I = 1, NSSHT
             IF ( ABS(WORK(KEIG+I-1)) .LE. THRZER) THEN
                II = IDXV2G(I)
-               write(6,*) 'removing virtual ',I,II
+               write(LUPRI,*) 'removing virtual ',I,II
                NOROT(II) = 1
             END IF
          END DO
@@ -5783,7 +5794,7 @@ C
          DO I = 1, NPSHT
             IF ( ABS(WORK(KEIG+I-1)) .LE. THRZER) THEN
                II = IDXP2G(I)
-               write(6,*) 'removing positronic ',I,II
+               write(LUPRI,*) 'removing positronic ',I,II
                NOROT(II) = 1
             END IF
          END DO

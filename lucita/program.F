@@ -3,7 +3,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasci $Revision$
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF)
 *
@@ -15,7 +14,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
       EXTERNAL MV7
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -167,12 +165,13 @@ CTF
       CALL ZBLTP(ISMOST(1,ISM),NSMST,IDC,WORK(KLCBLTP),ISYMS)
 *
 *. Batches  of C vector
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &              ISMOST(1,ISM),
      &              NBATCH,WORK(KLCLBT),WORK(KLCLEBT),
-     &              WORK(KLCI1BT),WORK(KLCIBT),0)
+     &              WORK(KLCI1BT),WORK(KLCIBT),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
@@ -325,6 +324,9 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
 *
 *. Explicit Hamiltonian
 *
+*  This part is not tested and thus excluded by flag:
+*
+#ifdef PERTURBATION_LUCITA
       IF(IPROCC. NE. 0 .OR. MXP1+MXP2+MXQ .NE. 0 ) THEN
         WRITE(6,*) ' EXPHAM not implemented for GAS '
         WRITE(6,*) ' EXPHAM not implemented for GAS '
@@ -381,6 +383,8 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
 *
 C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       END IF
+#endif  /* PERTURBATION_LUCITA */
+*
 *
 *. Transfer control to optimization routine
 *
@@ -589,7 +593,6 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck inpctl $Revision$
       SUBROUTINE INPCTL(LUIN,LUCMOL,LUOUT)
 *
 * Read and check input for LUCIA
@@ -605,7 +608,6 @@ C      CALL SLASK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lucia $Revision$
 *
       SUBROUTINE PAMLUCITA(WRK,LWRK)
 *
@@ -705,7 +707,6 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
       IF(PNTGRP.GT.1) CALL MLSM(IREFSM,IREFPA,IREFSM,'CI',1)
       IF(NOINT.EQ.1) THEN
         WRITE(6,*) ' End of calculation without integrals'
-        CALL QSTAT('    ')
         Call Abend2(' End of calculation without integrals')
       END IF
 *
@@ -1031,7 +1032,6 @@ C     I_RESTRT_CC.EQ.1
 *
 c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       CALL QEXIT('REST ')
-      CALL QSTAT('    ')
 *
 * Eliminate scratch units:
       close(unit=LUSC1,status='DELETE')
@@ -1048,33 +1048,6 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prtitl $Revision$
-      SUBROUTINE PRTITL(LINES)
-*
-* Print title cards
-*
-      CHARACTER*72 LINES
-      DIMENSION LINES(3)
-      CHARACTER*80 STARS
-*
-      STARS(1:1) = ' '
-      DO 80 I = 2, 80
-        STARS(I:I) = '*'
-   80 CONTINUE
-      WRITE(6,'(A)') STARS
-      WRITE(6,'(3A)') ' *  ',LINES(1),'  *'
-      WRITE(6,'(3A)') ' *  ',LINES(2),'  *'
-      WRITE(6,'(3A)') ' *  ',LINES(3),'  *'
-      WRITE(6,'(A)') STARS
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck readin $Revision$
 *
       SUBROUTINE LREADIN(LUIN,LUCMOL,LUOUT)
 *
@@ -1143,7 +1116,6 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
 *.Largest allowed number of allowed irreps for orbs
 
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "cstate.inc"
 #include "crun.inc"
@@ -5037,9 +5009,7 @@ C    &  '      Core energy : ', ECORE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrthd $Revision$
       SUBROUTINE WRTHD(LUOUT)
-CJO-Start
 *
 * Introduce LUCIA
 *

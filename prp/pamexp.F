@@ -29,22 +29,23 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamexp.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
-      SUBROUTINE PRPEXP(EXPVAL,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK)
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
+      CHARACTER WF*4
 C
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -59,12 +60,13 @@ C     Memory allocation
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KEXPST ,2*NEXPP   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*(NOPEN+1),WORK,KFREE,LFREE)
+CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
+      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT  ,N2BBASX   ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
 C
-      CALL PRPEX1(EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
+      CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
      &            WORK(KFIRST),WORK(KFREE),LFREE)
 C
@@ -76,18 +78,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
-      SUBROUTINE PRPEX1(EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
+      SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PMAT,PTRI,
      &                  FIRST,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -97,7 +99,9 @@ C
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(NNBBASX,NZ),
      &          EIG(*),WORK(LWORK),NP(2,2),NR(MREFS,2)
       CHARACTER MXFORM*6,FMT*6
+      CHARACTER WF*4
       INTEGER   GETIOPEN
+      LOGICAL FNDLAB
 C
 #include "cbihr1.h"
 #include "dgroup.h"
@@ -131,12 +135,68 @@ C
 C     Generate density matrix
 C     =======================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-     &            WORK,KFREE,LFREE)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
+         INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+         IF(.NOT.FILEX) GOTO 1000
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
+     &               WORK,KFREE,LFREE)
+         CLOSE(LUCOEF,STATUS='KEEP')
+         IF (.NOT. ORBANA) THEN
+            CALL GENDEN(DMAT,CMO,1,IPREXP)
+            DO IOPEN = 1, NOPEN
+               CALL ACTDEN(DMAT(1+N2BBASXQ),CMO,IOPEN,IPREXP)
+               CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
+            END DO
+         END IF
+      ELSE IF (WF .EQ. 'KRMC') THEN
+C
+         IF (ORBANA) 
+     &        CALL QUIT('*** ERROR in PRPEX1 *** '
+     &        // 'ORBANA not implemented for MCSCF')
+C
+         INQUIRE(FILE='KRMCSCF', EXIST=FILEX)
+C
+         IF (.NOT. FILEX) 
+     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
+     &        'file "KRMCSCF" not found!')
+C
+         CALL OPNFIL(LUCOEF,'KRMCSCF','OLD','PRPEXP')
+         CALL REAKRMC(LUCOEF,'NEWORB  ',CMO,NCMOTQ)
+         CLOSE(LUCOEF,STATUS='KEEP')
+C
+         INQUIRE(FILE='KRMC_FOCK', EXIST=FILEX)
+C
+         IF (.NOT. FILEX) 
+     &      CALL QUIT('*** ERROR in PRPEX1 *** ' //
+     &        'file "KRMC_FOCK" not found!')
+C
+         CALL OPNFIL(LUCOEF,'KRMC_FOCK','OLD','PRPEXP')
+         CALL REAKRMC(LUCOEF,'DTMO    ',DMAT(1+N2BBASXQ),N2ORBXQ)
+         CLOSE(LUCOEF,STATUS='KEEP')
+C
+C        Get AO density matrix.
+C
+         DO I = 1, NFSYM
+            CALL QTRANS('MOAO','S',D0,
+     &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &           DMAT(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &           DMAT(1+N2BBASXQ+I2ORBX(I,I)),
+     &           NORBT,NORBT,NZ,IPQTOQ(1,0),
+     &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK,LWORK,0)
+         END DO
+C
+C        Result is scaled by 2 in PRPEX2...
+C
+         CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
+C
+      ELSE
+         WRITE(LUPRI,'(1X,2A)')
+     &        '*** ERROR in PRPEX1 *** Unknown wave function: ',WF
+         CALL QUIT('*** ERROR in PRPEX1 *** Unknown wave function')
+      END IF
 C
 C     Projection analysis
 C     ===================
@@ -191,19 +251,15 @@ C     Expectation values normal procedure
 C     ===================================
 C
       IF(.NOT.ORBANA) THEN
-        CALL GENDEN(DMAT,CMO,1,IPREXP)
-        DO IOPEN = 1,NOPEN
-           CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPREXP)
-        END DO
         CALL TITLER('Expectation values','*',127)
         WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &        IREP,ITIM,PTRI,PMAT,FIRST,
-     &        WORK(KFREE),LFREE,IPREXP)
-CMI  &        WORK(KFREE),LFREE,IPRONE)
+     &                IREP,ITIM,PTRI,PMAT,FIRST,
+     &                WORK(KFREE),LFREE,IPREXP)
+CMI  &                WORK(KFREE),LFREE,IPRONE)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
           CALL PRPEX3(EXPVAL(I),IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
@@ -247,8 +303,8 @@ C
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
             CALL PRPEX2(LU1INT,INDXPR,EXPBUF,LEXPST(1,I),
-     &          IREP,ITIM,PTRI,PMAT,FIRST,
-     &          WORK(KFREE),LFREE,IPREXP)
+     &                  IREP,ITIM,PTRI,PMAT,FIRST,
+     &                  WORK(KFREE),LFREE,IPREXP)
             IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
             DO J = 1,NOCC(IFRP)
               CALL DENORB(DMAT,J,1,IFRP,CMO,IPREXP)
@@ -297,11 +353,11 @@ C
       CALL QUIT('PRPEXP: Coefficients not found !')
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
       SUBROUTINE PRPEX2(LU1INT,INDXPR,EXPVAL,LEXPST,IREP,ITIM,
-     &           PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-C*****************************************************************************
+     &                  PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+C***********************************************************************
 C
 C     For totally symmetric operators return property matrix;
 C     for other symmetries return .FALSE. in
@@ -311,7 +367,7 @@ C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -322,6 +378,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
@@ -354,18 +411,18 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex3 */
       SUBROUTINE PRPEX3(EXPVAL,IREP,ITIM,
      &           DMAT,PMAT,PTRI,FIRST,ORBFLG,WORK,LWORK,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
 C
 C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -376,6 +433,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2),ORBFLG
       DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX),
@@ -403,23 +461,23 @@ C
          ELSE
             EXPVAL = EXPVAL + DDOT(N2BBASX,DMAT(1,IZ,1),1,PMAT,1)
          END IF
-      ENDIF
-      ENDDO
+      END IF
+      END DO
       EXPVAL = EXPVAL + EXPVAL
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex1 */
       SUBROUTINE PRJEX1(PFO,PTRI,PAO,RVEC,INDXPR,IREP,ITIM,NREF,
      &                  FIRST,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Transform property matrix to fragment orbital basis
 C
 C     Written by Trond Saue Apr 27 2003 
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
@@ -566,17 +624,17 @@ C
       ENDDO
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_efg */
       SUBROUTINE NUC_EFG(IPRINT,DOATOM)
-C*****************************************************************************
-C
+C***********************************************************************
+C     
 C     Calculates nuclear contribution to electric field gradients
 C
 C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by W.A. de Jong - April 1999
-C
-C*****************************************************************************
+C     
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -657,20 +715,22 @@ C
  10   CONTINUE
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck getiopen */
       INTEGER FUNCTION GETIOPEN(IORBITAL,IFRP)
-C*****************************************************************************
-C
+C***********************************************************************
+C     
 C     Which shell does electron orbital IORBITAL belong to?
 C
 C     Written by J. Thyssen - Feb 11 1999
-C
-C*****************************************************************************
+C     
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbdhf.h"
 #include "dcborb.h"
+C
       IF (IORBITAL .LT. 1)
      &   CALL QUIT('illegal value in GETIOPEN(neg)')
 C
@@ -837,8 +897,8 @@ C
       DO I = 1,NEXPP
         INDXPR = LEXPP(I)
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
-     &        IREP,ITIM,PTRI,PMAT,FIRST,
-     &        WORK(KFREE),LFREE,IPREXP)
+     &                IREP,ITIM,PTRI,PMAT,FIRST,
+     &                WORK(KFREE),LFREE,IPREXP)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
           CALL PRPEX3(EXPVAL(I),IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,

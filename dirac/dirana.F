@@ -250,12 +250,12 @@ C
 C       Find number of electronic/positronic vectors
 C       ============================================
 C
-        NVEC = 1
+        NVECS = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECPOP(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVEC,WORK(KFREE),LFREE)
-        CALL ORBCNT(WORK(KJVEC),NVEC,IFRP,NPVEC,NEVEC)
-        IF(NVEC.EQ.0) GOTO 20
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS,WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
+        IF(NVECS.EQ.0) GOTO 20
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
 C
         IF(ILABDF.EQ.1) THEN
@@ -264,43 +264,43 @@ C       Extract/expand coefficients in AO-basis
 C       =======================================
 C
           NCBAS = NTBAS(0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
+          IF(NVECS.EQ.NORB(IFRP)) THEN
             IF(NBSYM.EQ.1) THEN
-              NCBF1 = NTBAS(0)*NVEC*4
+              NCBF1 = NTBAS(0)*NVECS*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
-              NCBF1 = NTBAS(0)*NVEC*4
-              NCBF2 = NFBAS(IFRP,0)*NVEC*4
+              NCBF1 = NTBAS(0)*NVECS*4
+              NCBF2 = NFBAS(IFRP,0)*NVECS*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
+     &                    NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
+     &                    NFBAS(IFRP,0),NTBAS(0),NVECS*4,IPRPOP)
               CALL MEMREL('MULPO1.AO',WORK,1,KCBF2,KFREE,LFREE)
             ENDIF
           ELSE
-            NCBF1 = NTBAS(0)*NVEC*4
-            NCBF2 = NTBAS(0)*NVEC*4
+            NCBF1 = NTBAS(0)*NVECS*4
+            NCBF2 = NTBAS(0)*NVECS*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVEC+NEVEC
+            LCB = NPVECS+NEVECS
             IF(NBSYM.EQ.1) THEN
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
+     &                    LCB,WORK(KJVEC),NPVECS,NEVECS,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVECS,IFRP,
+     &                    NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
+     &                    LCB,WORK(KJVEC),NPVECS,NEVECS,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVECS,IFRP,
+     &                    NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRPOP)
+     &                    NFBAS(IFRP,0),NTBAS(0),NVECS*4,IPRPOP)
             ENDIF
           ENDIF
         ELSE
@@ -309,23 +309,23 @@ C       Extract/expand coefficients in SO-basis
 C       =======================================
 C
           NCBAS = NFBAS(IFRP,0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
-            NCBF  = NFBAS(IFRP,0)*NVEC
+          IF(NVECS.EQ.NORB(IFRP)) THEN
+            NCBF  = NFBAS(IFRP,0)*NVECS
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                  IFRP,NFBAS(IFRP,0))
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVECS,IFRP,
+     &                  NFBAS(IFRP,0))
           ELSE
-            NCBF  = NFBAS(IFRP,0)*NVEC
+            NCBF  = NFBAS(IFRP,0)*NVECS
             NCBF1 = NCBF*4
             NCBF2 = NCBF*NZ
-            LCB = NPVEC+NEVEC
+            LCB = NPVECS+NEVECS
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
             CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
+     &                  LCB,WORK(KJVEC),NPVECS,NEVECS,
      &                  NFBAS(IFRP,0),NORB(IFRP))
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
+            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVECS,IFRP,
      &                  NFBAS(IFRP,0))
             CALL MEMREL('MULPO1.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
@@ -336,7 +336,7 @@ C       ====================================
 C
         CALL MEMGET('REAL',KOCC,NVEC,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
-     &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,
+     &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
      &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE)
         CALL MEMREL('MULPO1.occ',WORK,KOCC,KOCC,KFREE,LFREE)
  20     CONTINUE
@@ -368,7 +368,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mulpo2 */
       SUBROUTINE MULPO2(PMAT,IFRP,SMAT,CMO,EIG,IPGRS,POPG,IEFF,
-     &           PGTOT,PNTOT,NPVEC,NEVEC,NCBAS,JVEC,OCC,WORK,LWORK)
+     &           PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,JVEC,OCC,WORK,LWORK)
 C*****************************************************************************
 C
 C     This routine generates net and gross Mulliken populations
@@ -393,12 +393,14 @@ C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
 C  DGROUP: NZ
+C  DCBDHF: NOPEN
 C
 #include "dcbgen.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbdhf.h"
 C 
 #if defined (VAR_G77) || defined (SYS_SX)
       EQUIVALENCE (NBAST,NTBAS(0))
@@ -408,7 +410,7 @@ C
 #endif
       CHARACTER FMT*6,MXFORM*6
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),
-     &          CMO(NCBAS,NPVEC+NPVEC,NZ),EIG(*),IPGRS(*),
+     &          CMO(NCBAS,NPVECS+NPVECS,NZ),EIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
@@ -417,7 +419,7 @@ C
 #include "memint.h"
 C
       N2LAB = NPOPLAB*NPOPLAB
-      NVEC = NPVEC + NEVEC
+      NVEC = NPVECS + NEVECS
       CALL DZERO(OCC,NVEC)
       DO I = 1,NVEC
 c
@@ -438,7 +440,7 @@ c     ... closed shell
         ENDIF
 100     CONTINUE
 c
-        IF(I.GT.NPVEC) THEN
+        IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
@@ -456,7 +458,7 @@ C
 C       Calculate SO population matrix
 C       ==============================
 C
-        CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVEC,
+        CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVECS,
      &              IPGRS,NPOPLAB,NCBAS,WORK(KFREE),LFREE,IPRPOP)
 C
 C       Calculate gross populations
@@ -517,7 +519,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popmat */
-      SUBROUTINE POPMAT(IFRP,IVEC,PMAT,SMAT,CMO,NVEC,IGLAB,NGLAB,
+      SUBROUTINE POPMAT(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,IGLAB,NGLAB,
      &                  NCBAS,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
@@ -542,7 +544,7 @@ C
 C     Memory allocation
       CALL MEMGET('REAL',KPBUF,2*N2BBASX,WORK,KFREE,LFREE)
 C
-      CALL POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVEC,WORK(KPBUF),
+      CALL POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,WORK(KPBUF),
      &     IGLAB,NGLAB,NCBAS,IPRINT)
 C
 C     Memory deallocation
@@ -554,7 +556,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popma1 */
-      SUBROUTINE POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVEC,PBUF,
+      SUBROUTINE POPMA1(IFRP,IVEC,PMAT,SMAT,CMO,NVECS,PBUF,
      &                  IGLAB,NGLAB,NCBAS,IPRINT)
 C*****************************************************************************
 C
@@ -586,7 +588,7 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),PBUF(NTBAS(0),NTBAS(0),*)
 #endif
-      DIMENSION PMAT(NGLAB,NGLAB,2),CMO(NCBAS,NVEC,4),IGLAB(*)
+      DIMENSION PMAT(NGLAB,NGLAB,2),CMO(NCBAS,NVECS,4),IGLAB(*)
 C
 C     Generate population matrix for basis
 C     ====================================
@@ -1296,7 +1298,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
+     &                  JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
 C*****************************************************************************
 C
 C
@@ -1322,6 +1324,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
+#include "dcbdhf.h"
 C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1

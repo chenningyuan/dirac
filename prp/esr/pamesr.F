@@ -29,17 +29,17 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamesr.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck ESRINP */
       SUBROUTINE ESRINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for ESR properties
 C
 C     Written by A.Noerager - Mar 2000
 C     Last revision: 
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -84,7 +84,7 @@ C
 C     Process input 
 C     =========================
 C
-      NEWDEF = (WORD .EQ. '*ESR')
+      NEWDEF = (WORD .EQ. '*ESR   ')
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
@@ -167,16 +167,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesr */
-      SUBROUTINE PRPESR(ESRVAL,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE PRPESR(WF,ESRVAL,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIESR/
 C
 C     Written by Anette Noerager - Mar 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -186,35 +186,69 @@ C     for PRQMAT print of complex matrices:
       SAVE IQINDX
       DATA IQINDX /1,2/
 C
-      DIMENSION ESRVAL(NCIESR,NCIESR,NZCMPLX,*),WORK(LWORK)
-      DIMENSION GTENSOR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),GEVEC(3,3),
-     &          GCOR(3)
+      DIMENSION ESRVAL(NCIESR,NCIESR,NZCMPLX,*),WORK(*)
+      CHARACTER WF*4
+      LOGICAL   FILEX
+      DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
+     &          GEVEC(3,3), GCOR(3),JMS(-5:5)
 C
-      PARAMETER (D3 = 3.0D0, D4 = 4.0D0)
+      PARAMETER (D2=2.0D0, D3 = 3.0D0, D4 = 4.0D0)
 C
+C Used from common blocks:
+C  dcbgen : LUCOEF
+C
+#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbesr.h"
 #include "gfac.h"
 #include "dcbprp.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
+#include "codata.h"
 C
       CALL QENTER('PRPESR')
-#include "memint.h"
 C
-C     Memory allocation
+      KFRSAV = KFREE
+      print *,'PRPESR  KFREE,LFREE',KFREE,LFREE
+      call memchk('prpesr 1',work,1)
+C
+      IF (WF(1:3) .NE. 'DHF' .AND. WF(1:3) .NE. 'DFT') THEN
+         WRITE (LUPRI,'(/2A/A)')
+     &   ' WARNING: ESR properties are only'//
+     &   ' implemented for open shell DHF; not for ',WF,
+     &   ' WARNING: .ESR request is ignored !'
+         GO TO 9999
+      END IF
+C
+C     Retrieve molecular orbitals
+C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT  ,NZ*N2BBASX*(NOPEN+1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT  ,NZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN ,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST ,NZ        ,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) GOTO 1000
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,1,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      CALL MEMREL('PRPESR.REACMO',WORK,1,KEIG,KFREE,LFREE)
 C
+C     Solve ESR CI problem
+C     on exit: WORK(KEIGVL) - NZCONF CI eigenvalues
+C              WORK(KEIGVC) - NZCONF CI eigenvectors (NZCONF,NZCONF,MZ)
+C
+      CALL ESR_RESOLVE(WORK(KCMO),IPRESR,WORK,KEIGVL,KEIGVC,KFREE,LFREE)
+C
+C     Memory allocation for PRPESR1
+C
+      CALL MEMGET('LOGI',KESRST ,2*NESRP   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT  ,NZ*N2ASHX ,WORK,KFREE,LFREE)
+C
+      call memchk('prpesr 2',work,1)
       IF (IPRESR .GT. 1) THEN
-        WRITE(LUPRI,'(/A)')'PRPESR called with the following operators:'
+        WRITE(LUPRI,'(/A)')
+     &    '* PRPESR called with the following operators:'
         DO I = 1,NESRP
           INDXPR = LESRP(I)
           CALL PRSYMB(LUPRI,'.',75,0)
@@ -225,13 +259,13 @@ C
         ENDDO
       END IF
 C
-      CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KEIG),
-     &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
-     &            WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
-     &            LFREE)
+      CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
+     &             WORK(KEIGVL),WORK(KEIGVC),WORK,KFREE,LFREE)
+      call memchk('prpesr 3',work,1)
 C
-      IF (IPRESR .GT. 1) THEN
-        WRITE(LUPRI,'(/A)') 'PRPESR results (test output):'
+      IF (IPRESR .GT. 2) THEN
+        CALL HEADER('PRPESR results in CI eigenvector basis'//
+     &           ' (test output)',1)
         DO I = 1,NESRP
           INDXPR = LESRP(I)
           CALL PRSYMB(LUPRI,'.',75,0)
@@ -248,7 +282,11 @@ cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
 C
       IF (ESRGTENS) THEN
 C
+      IF (NAELEC .EQ. 1) THEN
+C     ....doublet molecules
+C      
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
+C     (2) Get the QED correction in GCORR
 C
       DO K = 1,3
 C        ... for B field in direction k (x,y,z)
@@ -256,8 +294,71 @@ C        ... for B field in direction k (x,y,z)
          GTENSOR(K,1) =  D4*ESRVAL(1,2,1,I)
          GTENSOR(K,2) = -D4*ESRVAL(1,2,2,I)
          GTENSOR(K,3) =  D4*ESRVAL(1,1,1,I)
+         J = IPESR(MXCOOR+K,2)
+         GCORR(K,1)   =  D4*ESRVAL(1,2,1,J)
+         GCORR(K,2)   = -D4*ESRVAL(1,2,2,J)
+         GCORR(K,3)   =  D4*ESRVAL(1,1,1,J)
       ENDDO
-
+C
+      ELSE IF (NAELEC .EQ. 2) THEN
+C     .... triplet molecules
+C        Find Sigma_Z expectation values for the three states:
+         I = IPSIGMA(3)
+         WRITE (LUPRI,*) 'Analysis to find triplet components'
+         JMS(-1) = -1
+         JMS( 0) = -1
+         JMS( 1) = -1
+         DO K = 1,3
+            SZK  = ESRVAL(K,K,1,I)
+            ISZK = NINT(SZK)
+            WRITE (LUPRI,*)'State, <Sigma_Z>, S_Z(eff)',K,SZK,ISZK
+            IF (ISZK .GT. 1 .OR. ISZK .LT. -1) THEN
+               CALL QUIT('error: S_Z(eff) too big to triplet')
+            ELSE IF (JMS(ISZK) .NE. -1) THEN
+               CALL QUIT('error: same S_Z(eff) twice!!!')
+            END IF
+            JMS(ISZK) = K
+         END DO
+         jm1 = jMS(-1)
+         j0  = jMS( 0)
+         jp1 = jMS( 1)
+C
+C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
+C     (2) Get the QED correction in GCORR
+C
+      D2SQRT2 = D2*SQRT(D2)
+      DO K = 1,3
+C        ... for B field in direction k (x,y,z)
+         I = IPESR(MXCOOR+K,1)
+         GTENSOR(K,1) = -D2SQRT2*ESRVAL(jp1,j0 ,1,I)
+         GTENSOR(K,2) =  D2SQRT2*ESRVAL(jm1,j0 ,2,I)
+         GTENSOR(K,3) =  D2*ESRVAL(jp1,jp1,1,I)
+c??      GTENSOR(K,3) =  ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
+         J = IPESR(MXCOOR+K,2)
+         GCORR(K,1)   =  -D2SQRT2*ESRVAL(jp1,j0,1,J)
+         GCORR(K,2)   =   D2SQRT2*ESRVAL(jm1,j0,2,J)
+         GCORR(K,3)   =   D2*ESRVAL(jp1,jp1,1,J)
+      ENDDO
+C
+C     ***************************************
+C     Zero-field-splitting parameters D and E
+C     ***************************************
+C
+      ZFS_D = -(WORK(KEIGVL) - (WORK(KEIGVL+1)+WORK(KEIGVL+2))/D2)
+C..   ZFS_D = EIGVAL(1) - (EIGVAL(2)+EIGVAL(3))/D2
+      ZFS_E = (WORK(KEIGVL+1)-WORK(KEIGVL+2))/D2
+      ZFS_DCM = ZFS_D*XTKAYS
+      ZFS_ECM = ZFS_E*XTKAYS
+      CALL HEADER('Zero field splitting parameters:',1)
+         WRITE (LUPRI,'(5(/,1X,A,F15.8,A))')
+     &   'ZFS parameter D:                ',ZFS_DCM,  '(cm-1) '
+         WRITE (LUPRI,'(5(/,1X,A,F15.8,A))')
+     &   'ZFS parameter E:                ',ZFS_ECM,  '(cm-1) '
+c     print *, 'ZERO-FIELD D= ',ZFS_DCM, '(cm-1)'
+      ELSE
+         call quit('Only doublet and triplet implemented yet')
+      END IF
+C
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   ' The g-tensor for H(Zeeman) = 1/2c B g Seff :',
      &   ((GTENSOR(I,K),K=1,3),I=1,3)
@@ -310,13 +411,11 @@ C
 C
 C     (3) Get the corrected g values by adding correction term
 C
+      DO I = 1,3
       DO K = 1,3
 C        ... for B field in direction k (x,y,z)
-         I = IPESR(MXCOOR+K,1)
-         J = IPESR(MXCOOR+K,2)
-         GTENSOR(K,1) =  D4*(ESRVAL(1,2,1,I)+ESRVAL(1,2,1,J))
-         GTENSOR(K,2) = -D4*(ESRVAL(1,2,2,I)+ESRVAL(1,2,2,J))
-         GTENSOR(K,3) =  D4*(ESRVAL(1,1,1,I)+ESRVAL(1,1,1,J))
+         GTENSOR(K,I) =  GTENSOR(K,I) + GCORR(K,I)
+      ENDDO
       ENDDO
 
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
@@ -356,6 +455,7 @@ C
      &   ' The corresponding eigenvectors:',
      &   ((GEVEC(I,K),K=1,3),I=1,3)
 
+      call memchk('prpesr 4',work,1)
       ENDIF
 C     .. end if (ESRGTENS) then
 C
@@ -366,66 +466,72 @@ C
 C
 C     Memory deallocation
 C
-      CALL MEMREL('PRPESR',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('PRPESR')
-C
+      CALL MEMREL('PRPESR',WORK,1,KFRSAV,KFREE,LFREE)
+ 9999 CALL QEXIT('PRPESR')
       RETURN
+C
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'PRPESR: Coefficient file not found !'
+      CALL QUIT('PRPESR: Coefficients not found !')
+C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesr1 */
-      SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,EIG,DMAT,PMAT,PTRI,OP1INT,
-     &                  FIRST,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,PMAT,
+     &                   CIENER,CIEVEC,WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIESR/
 C
 C     A. Noerager - Mar 2000
 C     Based on prpex1 by Trond Saue May 27 1996
+C     Revised August 2002 Hans Joergen Aa. Jensen
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
-      LOGICAL FIRST(NZ),LESRST(2,*),FILEX
-      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),CMO(*),DMAT(*),PMAT(*),
-     &          PTRI(*),OP1INT(*),EIG(*),WORK(LWORK)
+      LOGICAL LESRST(2,*),REAL_PMLF
+      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),CMO(*),PMAT(*),
+     &          CIENER(NCIESR), CIEVEC(NCIESR,NCIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
-      INTEGER   GETIOPEN, IMO(2), NMO(2)
+      INTEGER   GETIOPEN, IPCMO(2), IPCMPL(2)
+      DATA IPCMPL/1,2/
+C
+C Used from common blocks:
+C  dcbgen : LU1INT,?
+C  dcbopt : KZCONF,NZCONF
 C
 #include "dgroup.h"
-ctec dcborb included
+#include "dcbgen.h"
+#include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbesr.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
 #include "dcbdhf.h"
 C
+      KFRSAV = KFREE
+      call memchk('prpesr1 1',work,1)
 C
-#include "memint.h"
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &      FILE='AOPROPER')
 C
 C     Initialize
 C     ==========
 C
-      CALL DZERO(ESRVAL,NCIESR*NCIESR*2*NESRP)
+      IF (NCIESR .NE. NZCONF) CALL QUIT('NCIESR .ne. NZCONF')
+      N2CIESR = NCIESR*NCIESR
+      CALL DZERO(ESRVAL,N2CIESR*2*NESRP)
       N2ESR = 2*NESRP
       CALL LSET(N2ESR,.FALSE.,LESRST)
 C
 C     Generate density matrix
 C     =======================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
       CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
      &            WORK,KFREE,LFREE)
@@ -434,13 +540,23 @@ C
 C     Expectation values normal procedure
 C    ************************************
 C
-c       CALL GENDEN(DMAT,CMO,1,IPRESR)
+c       CALL MEMGET('REAL',KDMAT,NZ*N2BBASX*(NOPEN+1),WORK,KFREE,LFREE)
+c       CALL GENDEN(work(kDMAT),CMO,1,IPRESR)
 c       DO IOPEN = 1,NOPEN
-c          CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRESR)
+c          CALL ACTDEN(work(kDMAT+N2BBASXQ*IOPEN),CMO,IOPEN,IPRESR)
 c       END DO
 c       CALL TITLER('Expectation values','*',127)
 c       WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
 c       CALL PRSYMB(LUPRI,'-',76,0)
+C
+C       Allocate memory for property matrix in molfdir format:
+        MZ = MIN(2,NZ)
+        CALL MEMGET('REAL',KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KMUUUU ,0              ,WORK,KFREE,LFREE)
+        LPCI = N2CIESR
+        IF (MZ .EQ. 2) LPCI = 2*LPCI
+        CALL MEMGET('REAL',KPR    ,LPCI           ,WORK,KFREE,LFREE)
+        KPI = KPR + N2CIESR
 C
         DO I = 1,NESRP
           INDXPR = LESRP(I)
@@ -452,25 +568,24 @@ C
           IREP = ISYM - 1
           ITIM = IPRPTIM(INDXPR)
           IOPSY = JBTOF(ISYM-1,1)
-          IF (IPRESR.GT.1 .OR. ITIM.GE.0) WRITE(LUPRI,'(A,I3,A,A16)')
-     &    '* PRPESR1: calculating property no.',I,' : ',PRPNAM(INDXPR)
+chj       IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
+          IF (IPRESR.GT.1) THEN
+             CALL PRSYMB(LUPRI,'=',75,0)
+             WRITE(LUPRI,'(A,I3,A,A16/A,3I5)')
+     &       '* PRPESR1: calculating property no.',I,' : ',
+     &         PRPNAM(INDXPR),
+     &       '  Boson symmetry, g/u symmetry, time reversal :',
+     &         ISYM,IOPSY,ITIM
+          END IF
 C
-          IF (ITIM .GE. 0) CALL QUIT(
-     &    'PRPESR1 only implemented for time-antisymmetric operators')
+chj       IF (ITIM .GE. 0) CALL QUIT(
+chj  &    'PRPESR1 only implemented for time-antisymmetric operators')
 C
 
+          IPCMO(1) = icmoq(1) + nfbas(1,0)*(npsh(1)+nish(1))
+          IPCMO(2) = icmoq(2) + nfbas(2,0)*(npsh(2)+nish(2))
 Chj-start test output
-          kfree = 1
-          lfree = lwork
-          iprtst = 10
-          imo(1) = icmoq(1) + nfbas(1,0)*(npsh(1)+nish(1))
-          nmo(1) = nash(1)
-          imo(2) = icmoq(2) + nfbas(2,0)*(npsh(2)+nish(2))
-          nmo(2) = nash(2)
-c     imo(1) = icmoq(1)
-c     nmo(1) = norb(1)
-c     imo(2) = icmoq(2)
-c     nmo(2) = norb(2)
+c         iprtst = 10
 c
 c      print *, ' ..... test output of property matrix in MO basis ...'
 c      print *, 'isym,iopsy:',isym,iopsy
@@ -478,23 +593,96 @@ c      print *, 'icmoq  :',icmoq
 c      print *, 'nfbas  :',nfbas(1,0),nfbas(2,0)
 c      print *, 'npsh   :',npsh
 c      print *, 'nish   :',nish
-c      print *, 'imo,nmo:',imo,nmo
+c      print *, 'IPCMO,nash:',IPCMO,nash
 C
-          CALL PRPMAT(INDXPR,IOPSY,pmat,CMO,imo,nmo,
+c     call memchk('prpesr1 2',work,1)
+          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IPCMO,NASH,
      &                WORK,KFREE,LFREE,IPRESR)
+c    &                WORK,KFREE,LFREE,10)
+      call memchk('prpesr1 3',work,1)
+          CALL QFC2MFC(PMAT,WORK(KPMLF),ISYM,ITIM,40)
+chjdbg    CALL QFC2MFC(PMAT,WORK(KPMLF),ISYM,ITIM,IPRESR)
 C
-          IF ( MOD(NAELEC,2) .EQ. 1) THEN
-C         ... odd number of electrons
-             CALL PRPESRODD(NMO,ESRVAL(1,1,1,I),IREP,PMAT)
+C         Calculate CI property matrix over determinants
+C
+          IF (NZ.GT.1) THEN
+             IHRM = 1
+             REAL_PMLF = .TRUE.
           ELSE
-C         ... even number of electrons
-             CALL PRPESREVEN(NMO,ESRVAL(1,1,1,I),IREP,PMAT)
+             JQ = IPQTOQ(1,IREP)
+             REAL_PMLF = JQ.EQ.1 .OR. JQ.EQ.3
+             IF (ITIM.EQ.-1) REAL_PMLF = .NOT. REAL_PMLF
+             IF (REAL_PMLF) THEN
+                IHRM = 1
+             ELSE
+                IHRM = -1
+             END IF
           END IF
+          CALL GOSCI_MAKEH(.FALSE.,IHRM,WORK(KZCONF),
+     &         WORK(KPR),WORK(KPI),WORK(KPMLF),WORK(KMUUUU))
+          IF (ITIM.EQ.1) THEN
+             WRITE (LUPRI,*)' WARNING: Inactive contribution not added!'
+C TODO
+c            DO I = 1,NZCONF
+c               JPR = KPR + (I-1)*NCIESR + (I-1)
+c               WORK(JPR) = WORK(JPR) + PCORE
+c            END DO
+          END IF
+c         IF (IPRESR .GT. 5) THEN
+             IF (MZ .EQ. 2) THEN
+                WRITE (LUPRI,'(/A)')
+     &          ' Real part of det-CI property matrix'
+             ELSE IF (REAL_PMLF) THEN
+                WRITE (LUPRI,'(/A)')
+     &          ' Real det-CI property matrix'
+             ELSE
+                WRITE (LUPRI,'(/A)')
+     &          ' Imaginary det-CI property matrix'
+             END IF
+             CALL OUTPUT(WORK(KPR),1,NCIESR,1,NCIESR,
+     &           NCIESR,NCIESR,1,LUPRI)
+             IF (MZ .EQ. 2) THEN
+                WRITE (LUPRI,'(/A)')
+     &          ' Imag part of det-CI property matrix'
+                CALL OUTPUT(WORK(KPI),1,NCIESR,1,NCIESR,
+     &              NCIESR,NCIESR,1,LUPRI)
+             END IF
+c         END IF
+C
+C         Transform to eigenvector basis
+C
+          IF (MZ .EQ. 2) THEN
+             JZ = 1
+          ELSE IF (REAL_PMLF) THEN
+             JZ = 1
+Cunoedvendig CALL DZERO(ESRVAL(1,1,2,I),N2CIESR)
+          ELSE
+             JZ = 2
+Cunoedvendig CALL DZERO(ESRVAL(1,1,1,I),N2CIESR)
+          END IF
+      
+          CALL QTRANS('AOMO','S',D0,NCIESR,NCIESR,NCIESR,NCIESR,
+     &        WORK(KPR),NCIESR,NCIESR,MZ,IPCMPL(JZ),
+     &        ESRVAL(1,1,1,I),NCIESR,NCIESR,2,IPCMPL,
+     &        CIEVEC,NCIESR,NCIESR,MZ,IPCMPL,
+     &        CIEVEC,NCIESR,NCIESR,MZ,IPCMPL,
+     &        WORK(KFREE),LFREE,-1)
+C
+ccc       IF ( MOD(NAELEC,2) .EQ. 1) THEN
+C         ... odd number of electrons
+ccc          CALL PRPESRODD(ESRVAL(1,1,1,I),IREP,ITIM,WORK(KPMLF))
+ccc       ELSE
+C         ... even number of electrons
+ccc          CALL PRPESREVEN(ESRVAL(1,1,1,I),IREP,ITIM,WORK(KPMLF))
+ccc       END IF
 c      print *, ' ..... end of test output of MO prp. matrix ...'
 Chj-end test output
 
+c         CALL MEMGET('REAL',KPTRI  ,NZ*NNBBASX,WORK,KFREE,LFREE)
+c         CALL MEMGET('REAL',KOP1INT,   NNBBASX,WORK,KFREE,LFREE)
 c         CALL PRPESR2(LU1INT,INDXPR,ESRVAL(I),LESRST(1,I),
-c    &        DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPRESR)
+c    &        work(kDMAT),PMAT,work(kPTRI),work(kOP1INT),
+c    &        WORK(KFREE),LFREE,IPRESR)
 c         FMT = MXFORM(ESRVAL(I),15)
 c         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')   
 c    &       PRPNAM(INDXPR),' : ',ESRVAL(I),'a.u.',
@@ -509,23 +697,16 @@ c    &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
+      call memchk('prpesr1 4',work,1)
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PRPESR: Coefficient file not found !'
-      CALL QUIT('PRPESR: Coefficients not found !')
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesrodd */
-      SUBROUTINE PRPESRODD(NMO,ESRVAL,IREP,PMAT)
-C*****************************************************************************
+      SUBROUTINE PRPESRODD(ESRVAL,IREP,ITIM,PMLF)
+C***********************************************************************
 C
-C    
-C
-C    
-C     
-C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -535,18 +716,43 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION ESRVAL(NCIESR,NCIESR,2),PMAT(*)
-      INTEGER   NMO(*)
+      DIMENSION ESRVAL(NCIESR,NCIESR,2),PMLF(NASHT,2,NASHT,2,*)
+      LOGICAL   REAL_PMLF
 C
-          if (nmo(1) .eq. 1 .and. nmo(2) .eq. 0) then
+      if (2*NASHT .ne. NCIESR) then
+         print *, 'PRPESRODD error'
+         print *,'NCIESR,NASHT',NCIESR,NASHT
+         stop 'PRPESRODD error'
+      end if
+      MZ = MIN(2,NZ)
+      N = NCIESR*NCIESR*MZ
+      IF (MZ .EQ. 2) THEN
+         call dcopy(N,PMLF,1,ESRVAL,1)
+      ELSE
+C        ... real group, MZ = NZ = 1
+C        Find out if matrix is pure real or pure imaginary
+C        (See QFC2MFC)
+         JQ = IPQTOQ(1,IREP)
+         REAL_PMLF = JQ.EQ.1 .OR. JQ.EQ.3
+         IF (ITIM.EQ.-1) REAL_PMLF = .NOT. REAL_PMLF
+         IF (REAL_PMLF) THEN
+            call dcopy(N,PMLF,1,ESRVAL(1,1,1),1)
+            call dzero(ESRVAL(1,1,2),N)
+         ELSE
+            call dzero(ESRVAL(1,1,1),N)
+            call dcopy(N,PMLF,1,ESRVAL(1,1,2),1)
+         END IF
+      END IF
+#ifdef OLDCODE
+          if (nash(1) .eq. 1 .and. nash(2) .eq. 0) then
              JMOSY = 1
-          else if (nmo(1) .eq. 0 .and. nmo(2) .eq. 1) then
+          else if (nash(1) .eq. 0 .and. nash(2) .eq. 1) then
              JMOSY = 2
           else
              call quit('Only one open shell implemented yet!')
           end if
           DO J = 1,NZ
-             PVAL = PMAT(1+I2ORBX(JMOSY,JMOSY)+N2ORBX*(J-1))
+             PVAL = PMAT(1+I2ASHX(JMOSY,JMOSY)+N2ASHX*(J-1))
              JQ = IPQTOQ(J,IREP)
              IF (JQ .EQ. 2) THEN
                 ESRVAL(1,1,1) =  PVAL
@@ -565,43 +771,61 @@ C               ... JQ .eq. 1
      &             JQ,J,IREP,JMOSY,PVAL
              END IF
           END DO
+#endif
           RETURN
           END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesreven */
-      SUBROUTINE PRPESREVEN(NMO,ESRVAL,IREP,PMAT)
-C*****************************************************************************
+      SUBROUTINE PRPESREVEN(ESRVAL,IREP,ITIM,PMLF)
+C***********************************************************************
 C
-C
-C
-C
-C
-C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
-      DIMENSION ESRVAL(*),PMAT(*)
-      INTEGER   NMO(*)
+#include <dcbesr.h>
+#include <dgroup.h>
+#include <dcborb.h>
 C
-      CALL QUIT('only implemented for odd number of active electrons')
+      DIMENSION ESRVAL(NCIESR,NCIESR,2),PMLF(NASHT,2,NASHT,2,*)
+      LOGICAL   REAL_PMLF
+C
+      CALL QUIT(
+     &'ESR only implemented for odd number of active electrons')
+      MZ = MIN(2,NZ)
+      N = NCIESR*NCIESR*MZ
+      IF (MZ .EQ. 2) THEN
+C
+      ELSE
+C        ... real group, MZ = NZ = 1
+C        Find out if matrix is pure real or pure imaginary
+C        (See QFC2MFC)
+         JQ = IPQTOQ(1,IREP)
+         REAL_PMLF = JQ.EQ.1 .OR. JQ.EQ.3
+         IF (ITIM.EQ.-1) REAL_PMLF = .NOT. REAL_PMLF
+         IF (REAL_PMLF) THEN
+C
+         ELSE
+C
+         END IF
+      END IF
       RETURN
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #ifdef WORK_IN_PROGRESS
 C  /* Deck PRPESR2 */
       SUBROUTINE PRPESR2(LU1INT,INDXPR,PVAL,LESRST,
-     &           DMAT,PMAT,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-C*****************************************************************************
+     &           DMAT,PMAT,PTRI,OP1INT,WORK,LWORK,IPRINT)
+C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIESR/
 C
 C     A. Noerager - Mar 2000
 C     Based on prpex2 by Trond Saue May 27 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -613,7 +837,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      LOGICAL FIRST(NZ),LESRST(2), RODHF
+      LOGICAL   FIRST(4),LESRST(2), RODHF
       DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
@@ -715,7 +939,7 @@ C
       CALL SETATM(WORK(KATOM),NATOM,29)
       CALL PRP_ESR1(ESRVAL,WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
      &     WORK(KIATM),WORK(KRATM),WORK(KIBUF),
-     &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA),WORK,KFREE,LFREE)
+     &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA) )
       CALL MEMREL('PRP_ESR',WORK,1,KFRSAV,KFREE,LFREE)
 C     
       RETURN
@@ -723,7 +947,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_ESR1 */
       SUBROUTINE PRP_ESR1(ESRVAL,TMPMAT,TMAT,TISO,IATINF,RATINF,
-     &      IBUFA,DOATOM,CSTRA,SCTRA,WORK,KFREE,LFREE)
+     &                    IBUFA,DOATOM,CSTRA,SCTRA)
 C***********************************************************************
 C     
 C     Output routine for ESR properties
@@ -748,7 +972,7 @@ C
       DIMENSION ESRVAL(NCIESR,NCIESR,2,*), TMPMAT(3,*),TMAT(3,3,NUCDEP),
      &          TISO(NUCDEP),IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
      &          IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
-     &          SCTRA(NUCDEP*NUCDEP*9),WORK(*)
+     &          SCTRA(NUCDEP*NUCDEP*9)
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -818,7 +1042,6 @@ C
         RETURN
       ENDIF
 C     
-      KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
       NCMAT  = 9*NUCDEP
       CALL DZERO(TMPMAT,NCMAT)

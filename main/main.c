@@ -66,6 +66,8 @@ extern int MAIN__( int argc, char** argv )
 extern int c_main_( int argc, char** argv )
 #elif defined (VAR_PGCC)
 extern int MAIN_( int argc, char** argv )
+#elif defined (LF95)
+extern int MAIN__( int argc, char** argv )
 #else
 extern int main( int argc, char** argv )
 #endif

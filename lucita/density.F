@@ -1,4 +1,3 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -396,7 +395,6 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -630,11 +628,12 @@ CTF
       CALL MEMMAN(KLI1BTL,NTTS  ,'ADDL  ',1,'I1BT_L ')
       CALL MEMMAN(KLIBTL ,8*NTTS,'ADDL  ',1,'IBT_L  ')
       CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
      &     WORK(KSIOIO),ISMOST(1,ISSM),
      &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
-     &     WORK(KLI1BTL),WORK(KLIBTL),0)
+     &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCKL = IFRMR(WORK(KLI1BTL),1,NBATCHL)
      &         + IFRMR(WORK(KLLBTL),1,NBATCHL) - 1
@@ -645,11 +644,12 @@ CTF
       CALL MEMMAN(KLI1BTR,NTTS  ,'ADDL  ',1,'I1BT_R ')
       CALL MEMMAN(KLIBTR ,8*NTTS,'ADDL  ',1,'IBT_R  ')
       CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
      &     WORK(KCIOIO),ISMOST(1,ICSM),
      &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
-     &     WORK(KLI1BTR),WORK(KLIBTR),0)
+     &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCKR = IFRMR(WORK(KLI1BTR),1,NBATCHR)
      &         + IFRMR(WORK(KLLBTR),1,NBATCHR) - 1
@@ -1102,7 +1102,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       IMPLICIT REAL*8(A,H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -1151,7 +1150,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       IMPLICIT REAL*8(A-H,O-Z)
 *. Initial implementation, KISS to the MAX !!!
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -1193,6 +1191,11 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
       RETURN
       END
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
 *fordeck getd2e $Revision$
       FUNCTION GETD2E(I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM)
 *
@@ -1203,7 +1206,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -2365,7 +2367,6 @@ C    &                  MXTSOB)
 *
 *. Should not be called with ICISTR = 1
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -2481,7 +2482,6 @@ CTOBE   END IF
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "multd2h.inc"
@@ -2542,7 +2542,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "orbinp.inc"
 *Input and output
@@ -2591,7 +2590,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cicisp.inc"
 #include "strbas.inc"
@@ -2826,11 +2824,12 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       CALL MEMMAN(KLI1BTL,NTTS  ,'ADDL  ',1,'I1BT_L ')
       CALL MEMMAN(KLIBTL ,8*NTTS,'ADDL  ',1,'IBT_L  ')
       CALL MEMMAN(KLSCLFCL,NTTS, 'ADDL  ',2,'SCLF_L')
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
      &     WORK(KSIOIO),ISMOST(1,ISSM),
      &     NBATCHL,WORK(KLLBTL),WORK(KLLEBTL),
-     &     WORK(KLI1BTL),WORK(KLIBTL),0)
+     &     WORK(KLI1BTL),WORK(KLIBTL),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCKL = IFRMR(WORK(KLI1BTL),1,NBATCHL)
      &         + IFRMR(WORK(KLLBTL),1,NBATCHL) - 1
@@ -2841,11 +2840,12 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
       CALL MEMMAN(KLI1BTR,NTTS  ,'ADDL  ',1,'I1BT_R ')
       CALL MEMMAN(KLIBTR ,8*NTTS,'ADDL  ',1,'IBT_R  ')
       CALL MEMMAN(KLSCLFCR,NTTS, 'ADDL  ',2,'SCLF_R')
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KCBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LSCR1,
      &     WORK(KCIOIO),ISMOST(1,ICSM),
      &     NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),
-     &     WORK(KLI1BTR),WORK(KLIBTR),0)
+     &     WORK(KLI1BTR),WORK(KLIBTR),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCKR = IFRMR(WORK(KLI1BTR),1,NBATCHR)
      &         + IFRMR(WORK(KLLBTR),1,NBATCHR) - 1
@@ -2906,7 +2906,8 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
      &       WORK(KLIBTL),
      &       NBATCHR,WORK(KLLBTR),WORK(KLLEBTR),WORK(KLI1BTR),
      &       WORK(KLIBTR),WORK(KCONSPA),WORK(KCONSPB),
-     &       WORK(KLSCLFCL),WORK(KLSCLFCR),S2_TERM1,IUSE_PH,IPHGAS)
+     &       WORK(KLSCLFCL),WORK(KLSCLFCR),S2_TERM1,IUSE_PH,IPHGAS,
+     &       MXTSOB)
       END IF
 *
       END DO

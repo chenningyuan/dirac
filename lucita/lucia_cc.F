@@ -77,7 +77,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 *. Specific input/output
@@ -143,7 +142,6 @@ C?      WRITE(6,*) ' IBLK and L ', IBLK,L
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -317,7 +315,6 @@ C?   &                    I,J,K,L,IJKL
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
@@ -439,7 +436,6 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
       IMPLICIT REAL*8(A-H,O-Z)
 *. Generel input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
       DIMENSION CC(*)
 *
@@ -501,7 +497,6 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
       DIMENSION VEC1(*),VEC2(*)
 *.
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
@@ -598,7 +593,6 @@ C?    WRITE(6,'(A,F25.12)') ' Coupled Cluster Energy ', E_CC
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *. Input
       DIMENSION H(*)
@@ -638,7 +632,6 @@ C?    WRITE(6,'(A,F25.12)') ' Coupled Cluster Energy ', E_CC
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -703,7 +696,6 @@ C                 I_SX_CCACT(IGAS,JGAS)
       DIMENSION SCR(*)
 *. General information
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *
       NI = NOBPTS(IGAS,ISM)
@@ -906,7 +898,6 @@ C     WRITE(6,*) ' NI NJ NK NL NIK NJL', NI,NJ,NK,NL,NIK,NJL
       DIMENSION CBLK(*)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *. Local scratch (dirty, but simple)
       DIMENSION SCR(200,200)
@@ -1013,7 +1004,6 @@ C?    CALL WRTMAT(C,1,5,1,5)
 *
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -1164,7 +1154,6 @@ C?   &                   IGAS,JGAS,KGAS,LGAS,IJKL_OFF
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -1330,7 +1319,6 @@ C                  SCLDIA(A,FACTOR,NDIM,IPACK)
 
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -1435,7 +1423,6 @@ C     WRITE(6,*)
 * Diagonal elements are divided with two.
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "multd2h.inc"
@@ -1577,7 +1564,6 @@ C?   &                    I,J,K,L,IJ,KL,IJKL_EXP,IJKL_COM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -1625,7 +1611,6 @@ C                 I_SX_CCACT(IGAS,JGAS)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -1708,7 +1693,6 @@ C                 I_SX_CCACT(IGAS,JGAS)
       INTEGER IEXC_OP(*)
 *. Scratch
 #include "mxpdim.inc"
-*include <mxpdim.fh>
       INTEGER IORB(MXPORB),IEL(MXPORB)
 *
       NTEST = 100
@@ -1797,7 +1781,6 @@ C                 I_SX_CCACT(IGAS,JGAS)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "strinp.inc"
 *
@@ -1850,7 +1833,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
       IMPLICIT REAL*8(A-H,O-Z)
       COMMON/CC_EXC/ICC_EXC
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "orbinp.inc"
 *
@@ -1880,7 +1862,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
       IMPLICIT REAL*8(A-H,O-Z)
       COMMON/CC_EXC/ICC_EXC
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "orbinp.inc"
 *
@@ -1936,7 +1917,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "multd2h.inc"
 #include "csm.inc"
@@ -2048,7 +2028,6 @@ C     WRITE(6,*) ' NELEC(1), NELEC(2) ', NELEC(1),NELEC(2)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 *(    ^contains number of single and double excitations and N_CC_AMP)
 #include "clunit.inc"
@@ -2098,7 +2077,6 @@ C            WRT_CC_VEC(CC,LU)
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPRDD
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"

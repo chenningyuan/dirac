@@ -470,6 +470,23 @@ C
      &                       Q3S(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPRI),
      &                       Q4S(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPSI),
      &                       WORK(KFREE),LFREE,IPRINT)
+#if 0
+                        if ( ij .eq. 1 ) then
+                           call header('ij = 1',-1 )
+                           write(6,*) 'hmat'
+                           call prqmat(hmat(ioff),nr,ns,nr,ns,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'khtmp'
+                           call prqmat(work(khtmp),nk,nl,nk,nl,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q4s'
+                           call prqmat(q3s(koff),nr,nl,nrq3,ncq3,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q3s'
+                           call prqmat(q4s(loff),ns,nk,nrq4,ncq4,
+     $                          nz,ipqtoq(1,0),6)
+                        end if
+#endif
                      ENDIF
 C
 C                    Repeat this transformation with the transposed
@@ -504,6 +521,23 @@ C
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
+#ifdef UNDEF
+                        if ( ij .eq. 1 ) then
+                           call header('ij = 1',-1 )
+                           write(6,*) 'ktrmat'
+                           call prqmat(work(ktrmat),ns,nr,ns,nr,
+     $                          1,ipqtoq(1,0),6)
+                           write(6,*) 'khtmp'
+                           call prqmat(work(khtmp),nk,nl,nk,nl,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q3t'
+                           call prqmat(q3t(koff),ns,nk,nrq3,ncq3,
+     $                          nz,ipqtoq(1,0),6)
+                           write(6,*) 'q4t'
+                           call prqmat(q4t(loff),nr,nl,nrq4,ncq4,
+     $                          nz,ipqtoq(1,0),6)
+                        end if
+#endif
                      ENDIF
 C
                      IOFF = IOFF + NR * NS

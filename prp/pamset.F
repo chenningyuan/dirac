@@ -29,12 +29,12 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamset.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxop */
-      SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,IOPSY,
-     &                  NXOPE,KXOPE,NXOPP,KXOPP,
+      SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,IOPSY,NOROT,
+     &                  NXOPE,NHOPE,KXOPE, NXOPP,KXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Set orbital rotation index vectors
 C
@@ -48,19 +48,20 @@ C     Ordering is:
 C       e-e rotations: (skipped if SKIPEE = T)
 C          IA : inactive-active   
 C          IS : inactive-secondary
-C          AB : active-active
 C          AS : active-secondary
+C          AB : active-active
 C       e-p rotations: (skipped if SKIPEP = T)
 C          IP : inactive-positronic
 C          AP : active-positronic
 C         (SP : secondary-positronic   -  only for QED=T)
 C
-C          
+C     NXOPE is the number of non-redundant e-e rotations.
+C     NHOPE is the total number of rotations.
 C
 C     Written by  Hans Joergen Aa. Jensen and T.Saue 27-Jan-1995
 C     Last revision: July 21 1997 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -74,28 +75,22 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 C
+      LOGICAL SKIPEP,SKIPEE,GAS
       CHARACTER INDSTR(3,2)*72
-      LOGICAL SKIPEP,SKIPEE
       DIMENSION WORK(*),NSTR(0:2,3,2)
+      DIMENSION NOROT(*)
 C
       CALL QENTER('SETXOP')
       KXOPE = KFREE
       KXOPP = KFREE
       NXOPE = 0
       NXOPP = 0
+      NHOPE = 0
 C
 C     Allocate buffer areas
 C     =====================
 C
       NBUF = N2BBASX
-      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,MXFBAS*3*NFSYM,WORK,KFREE,LFREE)
-C
-C     Unpack strings
-C     ==============
-C
-      CALL UNPSTR(INDSTR,3,WORK(KIBUF),MXFBAS,NSTR,
-     &            WORK,KFREE,LFREE,IPRINT)
 C
 C     ***********************************
 C     *** Electron-electron rotations ***
@@ -103,12 +98,17 @@ C     ***********************************
 C      
  10   CONTINUE
       IF(SKIPEE) GOTO 20
-      CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,WORK(KIBUF),NSTR,IPRINT)
-      IF(NXOPE.GT.0) THEN
+      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,MXFBAS*3*NFSYM,WORK,KFREE,LFREE)
+C     ... Unpack strings
+      CALL UNPSTR(INDSTR,3,WORK(KIBUF),MXFBAS,NSTR,
+     &            WORK,KFREE,LFREE,IPRINT)
+      CALL SETXEE(WORK(KBUF),IOPSY,NXOPE,NHOPE,WORK(KIBUF),
+     &     NSTR,GAS,IPRINT,NOROT)
+      IF(NHOPE.GT.0) THEN
         CALL MEMREL('SETXOP.e-e',WORK,1,KBUF,KFREE,LFREE)
-        CALL MEMGET('INTE',KXOPE,2*NXOPE,WORK,KFREE,LFREE)
-        NBUF = N2BBASX - 2*(NXOPE+1)
-        CALL MEMGET('INTE',KBUF ,NBUF,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KXOPE,2*NHOPE,WORK,KFREE,LFREE)
+        NBUF = N2BBASX - 2*(NHOPE+1)
       ENDIF
 C
 C     ***********************************
@@ -117,7 +117,13 @@ C     ***********************************
 C      
  20   CONTINUE
       IF(SKIPEP) GOTO 30
-      CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,WORK(KIBUF),NSTR,IPRINT)
+      CALL MEMGET('INTE',KBUF ,NBUF          ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,MXFBAS*3*NFSYM,WORK,KFREE,LFREE)
+C     ... Unpack strings
+      CALL UNPSTR(INDSTR,3,WORK(KIBUF),MXFBAS,NSTR,
+     &            WORK,KFREE,LFREE,0)
+      CALL SETXEP(WORK(KBUF),IOPSY,NXOPP,QED,WORK(KIBUF),NSTR,IPRINT,
+     &     NOROT)
       CALL MEMREL('SETXOP.e-p',WORK,1,KBUF,KFREE,LFREE)
       CALL MEMGET('INTE',KXOPP,2*NXOPP,WORK,KFREE,LFREE)
 C
@@ -128,8 +134,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck setxee */
-      SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,IND,NIND,IPRINT)
-C***********************************************************************
+      SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,NHOPE,IND,NIND,GAS,IPRINT,
+     &                  NOROT)
 C   
 C     Generate electron-electron rotations
 C
@@ -138,111 +144,192 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
 C
+#include "dcbidx.h"
+#include "dcbibn.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 C
       DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      DIMENSION NOROT(*)
+      LOGICAL GAS
+C
+      DIMENSION JACAC(MAXASH,MAXASH)
 C
       CALL QENTER('SETXEE')
-
+C
+C
+C     ************************************
+C     *** Find non-redundant rotations ***
+C     ************************************
+C
+C     No active-active rotations are included here,
+C     if not CAS (told with GAS variable) these are added
+C     in RASGWOP below.
+C     
       NXOPE = 0
       DO 10 ISYM = 1,NFSYM
-        JSYM  = MOD(ISYM+IOPSY,2) + 1
-C
-        ISTI  = NIND(1,1,ISYM) + 1
-        IENDI = NIND(1,1,ISYM) + NIND(2,1,ISYM)
-        ISTA  = NIND(1,2,ISYM) + 1
-        IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-C
-        JSTA  = NIND(1,2,JSYM) + 1
-        JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
-        JSTS  = NIND(1,3,JSYM) + 1
-        JENDS = NIND(1,3,JSYM) + NIND(2,3,JSYM)
-C
-        IF(NIND(1,1,ISYM).NE.0) THEN
-          WRITE(LUPRI,'(A,I5)')
-     &      '*** WARNING(SETXEE): Inactive positrons detected:',
-     &      NIND(1,1,ISYM)
-        ENDIF
-        IF(NIND(2,1,ISYM).EQ.0) GOTO 300
-C
-C       Inactive - active elements
-C       ==========================
-C
- 100    CONTINUE
-        IF(NIND(1,2,JSYM).NE.0) THEN
-          WRITE(LUPRI,'(A,I5)')
-     &      '*** WARNING(SETXEE): Active positrons detected:',
-     &      NIND(1,2,JSYM)
-        ENDIF
-        IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 200
-        DO IN = ISTI,IENDI
-          DO JA = JSTA,JENDA
-            NXOPE          = NXOPE + 1
-            JXOPE(1,NXOPE) = IND(IN,1,ISYM)
-            JXOPE(2,NXOPE) = IND(JA,2,JSYM)
-          ENDDO
-        ENDDO
-C
-C       Inactive-secondary elements
-C       ===========================
-C
- 200    CONTINUE
-        IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 250
-        DO IN = ISTI,IENDI
-          DO JS = JSTS,JENDS
-            NXOPE          = NXOPE + 1
-            JXOPE(1,NXOPE) = IND(IN,1,ISYM)
-            JXOPE(2,NXOPE) = IND(JS,3,JSYM)
-          ENDDO
-        ENDDO
-C
-C       Active-active elements
-C       ===========================
-C
- 250    CONTINUE
-        IF (ISYM .EQ. JSYM) THEN
-           IF (NIND(2,2,ISYM).LE.1) GO TO 300
-C          hjaaj: at most one active - i.e. no act-act rotations!
-           CALL QUIT('Act-act rot. not implemented, fix me!')
-C          TODO hjaaj: we need to know which are redundant
-        ELSE
-           IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 300
-           CALL QUIT('Act-act rot. not implemented, fix me!')
-C          TODO hjaaj: we need to know which are redundant
-        END IF
-C
-C       Active-secondary elements
-C       =========================
-C
- 300    CONTINUE
-        IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 10
-        DO IA = ISTA,IENDA
-          DO JS = JSTS,JENDS
-            NXOPE          = NXOPE+1
-            JXOPE(1,NXOPE) = IND(IA,2,ISYM)
-            JXOPE(2,NXOPE) = IND(JS,3,JSYM)
-          ENDDO
-        ENDDO
+         JSYM  = MOD(ISYM+IOPSY,2) + 1
+C        
+         ISTI  = NIND(1,1,ISYM) + 1
+         IENDI = NIND(1,1,ISYM) + NIND(2,1,ISYM)
+         ISTA  = NIND(1,2,ISYM) + 1
+         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
+C        
+         JSTA  = NIND(1,2,JSYM) + 1
+         JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
+         JSTS  = NIND(1,3,JSYM) + 1
+         JENDS = NIND(1,3,JSYM) + NIND(2,3,JSYM)
+C        
+         IF(NIND(1,1,ISYM).NE.0) THEN
+            WRITE(LUPRI,'(A,I5)')
+     &           '*** WARNING(SETXEE): Inactive positrons detected:',
+     &           NIND(1,1,ISYM)
+         ENDIF
+         IF(NIND(2,1,ISYM).EQ.0) GOTO 300
+C        
+C        Inactive - active elements
+C        ==========================
+C        
+ 100     CONTINUE
+         IF(NIND(1,2,JSYM).NE.0) THEN
+            WRITE(LUPRI,'(A,I5)')
+     &           '*** WARNING(SETXEE): Active positrons detected:',
+     &           NIND(1,2,JSYM)
+         ENDIF
+         IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 200
+         DO IN = ISTI,IENDI
+            INDI = IND(IN,1,ISYM)
+            DO JA = JSTA,JENDA
+               INDA = IND(JA,2,JSYM)
+               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDA) .EQ. 0) THEN
+                  NXOPE          = NXOPE + 1
+                  JXOPE(1,NXOPE) = INDI
+                  JXOPE(2,NXOPE) = INDA
+               END IF
+            ENDDO
+         ENDDO
+C        
+C        Inactive-secondary elements
+C        ===========================
+C        
+ 200     CONTINUE
+         IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 300
+         DO IN = ISTI,IENDI
+            INDI = IND(IN,1,ISYM)
+            DO JS = JSTS,JENDS
+               INDS = IND(JS,3,ISYM)
+               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDS) .EQ. 0) THEN
+                  NXOPE          = NXOPE + 1
+                  JXOPE(1,NXOPE) = INDI
+                  JXOPE(2,NXOPE) = INDS
+               END IF
+            ENDDO
+         ENDDO
+C        
+C        Active-secondary elements
+C        =========================
+C        
+ 300     CONTINUE
+         IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 10
+         DO IA = ISTA,IENDA
+            INDA = IND(IA,2,ISYM)
+            DO JS = JSTS,JENDS
+               INDS = IND(JS,3,JSYM)
+               IF (NOROT(INDA) .EQ. 0 .AND. NOROT(INDS) .EQ. 0) THEN
+                  NXOPE          = NXOPE+1
+                  JXOPE(1,NXOPE) = INDA
+                  JXOPE(2,NXOPE) = INDS
+               END IF
+            ENDDO
+         ENDDO
  10   CONTINUE
-C
+C     
+C     
+C     **********************************************
+C     *** Find redundant active-active rotations ***
+C     **********************************************
+C     
+C     
+      NHOPE = NXOPE
+      CALL IZERO(JACAC,MAXASH**2)
+C     
+      IF (GAS) THEN
+C        
+C        Find non-redundant active-active rotations.
+C        
+         CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,100,NOROT)
+c        CALL RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
+C        
+      END IF
+C     
+      NHOPE = NXOPE
+C     
+      DO 20 ISYM = 1,NFSYM
+         JSYM  = MOD(ISYM+IOPSY,2) + 1
+         IF (JSYM .LT. ISYM) GOTO 20
+C        
+         ISTA  = NIND(1,2,ISYM) + 1
+         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
+C        
+         JSTA  = NIND(1,2,JSYM) + 1
+         JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
+C        
+C        Active-active elements
+C        ----------------------
+C        
+         IF (ISYM .EQ. JSYM) THEN
+            IF (NIND(2,2,ISYM).LE.1) GO TO 20
+            DO IA = ISTA, IENDA
+               DO JA = IA + 1, IENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
+     &                 NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
+                     NHOPE = NHOPE + 1
+                     JXOPE(1,NHOPE) = IAA
+                     JXOPE(2,NHOPE) = JAA
+                  END IF
+               END DO
+            END DO
+         ELSE
+            IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 20
+            DO IA = ISTA,IENDA
+               DO JA = JSTA,JENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
+     &                 NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
+                     NHOPE = NHOPE + 1
+                     JXOPE(1,NHOPE) = IAA
+                     JXOPE(2,NHOPE) = JAA
+                  END IF
+               ENDDO
+            ENDDO
+         END IF
+ 20   CONTINUE
+C     
 C     Print section
 C     =============
-C
+C     
       IF(IPRINT.GE.4) THEN
-        CALL HEADER('Output from SETXEE',-1)        
-        WRITE(LUPRI,'(A,I10)') 'e-e rotations: ',NXOPE
-        WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
+         CALL HEADER('Output from SETXEE',-1)        
+         WRITE(LUPRI,'(A,I10)') 'e-e rotations (non-redundant): ',NXOPE
+         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
+         WRITE(LUPRI,'(A,I10)') 'extra e-e rotations (redundant): ',
+     &        NHOPE - NXOPE
+         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
       ENDIF
-C
+C     
       CALL QEXIT('SETXEE')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck setxep */
-      SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT)
+      SUBROUTINE SETXEP(JXOPP,IOPSY,NXOPP,QED,IND,NIND,IPRINT,NOROT)
 C***********************************************************************
 C   
 C     Generate electron-positron rotations
@@ -259,6 +346,7 @@ C
 C
       LOGICAL QED
       DIMENSION JXOPP(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      DIMENSION NOROT(*)
 C
       CALL QENTER('SETXEP')
 C
@@ -270,51 +358,63 @@ C
         IENDI = NIND(1,1,ISYM) + NIND(2,1,ISYM)
         ISTA  = NIND(1,2,ISYM) + 1
         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
-C
+C       
 C       Inactive-positronic elements
 C       ===========================
-C
+C       
  100    CONTINUE 
         IF (NIND(2,1,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 200
         DO IN = ISTI,IENDI
-          DO JP = 1,NIND(1,3,JSYM)
-            NXOPP          = NXOPP+1
-            JXOPP(1,NXOPP) = IND(IN,1,ISYM)
-            JXOPP(2,NXOPP) = IND(JP,3,JSYM)
-          ENDDO
+           INDI =  IND(IN,1,ISYM)
+           DO JP = 1,NIND(1,3,JSYM)
+              INDP = IND(JP,3,JSYM)
+              IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
+                 NXOPP          = NXOPP+1
+                 JXOPP(1,NXOPP) = INDI
+                 JXOPP(2,NXOPP) = INDP
+              END IF
+           ENDDO
         ENDDO
-C
+C       
 C       Active-positronic elements
 C       ==========================
-C
+C       
  200    CONTINUE
         IF (NIND(2,2,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 300
         DO IA = ISTA,IENDA
-          DO JP = 1,NIND(1,3,JSYM)
-            NXOPP          = NXOPP+1
-            JXOPP(1,NXOPP) = IND(IA,2,ISYM)
-            JXOPP(2,NXOPP) = IND(JP,3,JSYM)
-          ENDDO
+           INDA = IND(IA,2,ISYM)
+           DO JP = 1,NIND(1,3,JSYM)
+              INDP = IND(JP,3,JSYM)
+              IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
+                 NXOPP          = NXOPP+1
+                 JXOPP(1,NXOPP) = INDA
+                 JXOPP(2,NXOPP) = INDP
+              END IF
+           ENDDO
         ENDDO
-C
+C       
 C       Secondary-positronic elements
 C       =============================
-C
+C       
  300    CONTINUE
         IF (QED) THEN
-          IF (NIND(1,3,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 10
-          ISTS  = NIND(1,3,ISYM) + 1
-          IENDS = NIND(1,3,ISYM) + NIND(2,3,ISYM)
-          DO IS = ISTS,IENDS
-            DO JP = 1,NIND(1,3,JSYM)
-              NXOPP          = NXOPP+1
-              JXOPP(1,NXOPP) = IND(IS,1,ISYM)
-              JXOPP(2,NXOPP) = IND(JP,3,JSYM)
-            ENDDO
-          ENDDO
+           IF (NIND(1,3,ISYM).EQ.0.OR.NIND(1,3,JSYM).EQ.0) GO TO 10
+           ISTS  = NIND(1,3,ISYM) + 1
+           IENDS = NIND(1,3,ISYM) + NIND(2,3,ISYM)
+           DO IS = ISTS,IENDS
+              INDS = IND(IS,1,ISYM)
+              DO JP = 1,NIND(1,3,JSYM)
+                 INDP = IND(JP,3,JSYM)
+                 IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDP) .EQ. 0) THEN
+                    NXOPP          = NXOPP+1
+                    JXOPP(1,NXOPP) = INDS
+                    JXOPP(2,NXOPP) = INDP
+                 END IF
+              ENDDO
+           ENDDO
         ENDIF
-C
-   10 CONTINUE
+C       
+ 10   CONTINUE
 C
 C     Print section
 C     =============
@@ -328,16 +428,16 @@ C
       CALL QEXIT('SETXEP')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck getfck */
       SUBROUTINE GETFCK(FMO,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Get Fock-matrix in MO-basis; use coefficients for MO-transformation
 C
 C     Written by T.Saue, Sep 16 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -400,16 +500,16 @@ C
       CALL QEXIT('GETFCK')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETFC1 */
       SUBROUTINE GETFC1(FMO,FAO,CMO,IPRINT,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C     
 C     Get Fock-matrix in MO-basis
 C
 C     Written by T.Saue, Sep 16 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -872,7 +972,7 @@ C
 C     Allocate buffer areas
 C     =====================
 C
-      CALL MEMGET('INTE',KIND ,MXFBAS*NTYP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIND ,MXFBAS,WORK,KFREE,LFREE)
       CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
@@ -910,7 +1010,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(4,NORBT),IND(MXFBAS,NTYP),
+      DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
      &          NIND(2,NTYP,2),WORK(KFREE)
 C
       NDIM = NORBT*3
@@ -924,19 +1024,18 @@ C
         KOFP = 0
         DO IFRP = 1,NFSYM
           NVEC = 1
-          CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP),
+          CALL NUMLST(INDSTR(ITYP,IFRP),IND,
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                IFRP,NVEC,WORK(KFREE),LFREE)
-          CALL ORBCNT(IND(1,ITYP),NVEC,IFRP,
-     &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
+          CALL ORBCNT(IND,NVEC,IFRP,NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
 C
           IOFF = NPSH(IFRP)+IORB(IFRP)+1
           DO I = 1,NIND(1,ITYP,IFRP)
-            J           = IOFF+IND(I,ITYP)
+            J           = IOFF+IND(I)
             IORBCL(1,J) = ITYP
-            IORBCL(2,J) = NPSH(IFRP)+IND(I,ITYP)+1
+            IORBCL(2,J) = NPSH(IFRP)+IND(I)+1
             IORBCL(3,J) = IFRP
             KOFP = KOFP + 1
             IORBCL(4,J) = KOFP
@@ -949,9 +1048,9 @@ C
           JOFF = NIND(1,ITYP,IFRP)
           DO I = 1,NIND(2,ITYP,IFRP)
             II = I + JOFF
-            J = IOFF + IND(II,ITYP) 
+            J = IOFF + IND(II) 
             IORBCL(1,J) = ITYP
-            IORBCL(2,J) = IND(II,ITYP)
+            IORBCL(2,J) = IND(II)
             IORBCL(3,J) = IFRP
             KOFE = KOFE + 1
             IORBCL(4,J) = KOFE
@@ -970,6 +1069,185 @@ C
      &     I = 1,NORB(IFRP))
         ENDDO
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck rgaswop */
+      SUBROUTINE RGASWOP(JXOPE,IOPSY,NXOPE,IND,NIND,JACAC,IPRINT,NOROT)
+C***********************************************************************
+C   
+C     Generate non-redundant active-active rotations.
+C
+C     Written by J. Thyssen - Jan 18 2001
+C
+C     Revised GAS setup, Timo Fleig, May 2002
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+#include "maxorb.h"
+C
+#include "dcbidx.h"
+#include "dcbibn.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+C
+      DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
+      DIMENSION JACAC(MAXASH,MAXASH)
+      DIMENSION NOROT(*)
+C
+      DIMENSION IGAS(MAXASH)
+      LOGICAL GASCAS(MXMCGAS)
+C
+C
+      NXOPES = NXOPE
+C
+C     Set up help arrays
+C     ------------------
+C
+C     IGAS point from active orbital to which GAS space it belongs.
+C
+      II = 0
+      DO ISYM = 1, NFSYM
+         DO I = 1, NGAS
+            DO J = 1, NGSH(ISYM,I)
+               II = II + 1
+               IGAS(II) = I
+            END DO
+         END DO
+      END DO
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('Output from RGASWOP',-1)
+         WRITE(LUPRI,'(1X,A)')
+     &        'Pointer from active orbitals to GAS spaces:'
+         DO I = 1, NASHT
+            WRITE(LUPRI,'(5X,A,I3,A,I3)')
+     &           'Orbital ',I,' is in GAS space ',IGAS(I)
+         END DO
+      END IF
+C
+C     Determine whether a GAS space is a CAS space:
+C
+      DO I = 1, NGAS
+C
+C        Number of orbitals in this GAS shell
+C
+         NGST = 0
+         DO ISYM = 1, NFSYM
+            NGST = NGST + NGSH(ISYM,I)
+         END DO
+C
+C        Minimum number of electrons in this GAS space:
+C
+         MINCAS = 2*NGST - (NGSP(2,I) - NGSP(1,I)) 
+         IF (I.EQ.NGAS.AND.NGAS.GT.1) THEN
+           MINCAS = NAELEC - NGSP(2,I-1)
+         ELSE IF (I.EQ.NGAS.AND.NGAS.EQ.1) then
+           MINCAS = NAELEC
+         END IF
+C
+C        Maximum number of holes in this GAS space:
+C
+         MAXCAS = 2*NGST - MINCAS
+C
+C        This is a GAS space if the minimum number of electrons 
+C        after this space is less than MINCAS - and -
+C        if the maximum number of holes in this GAS space is larger
+C        than MAXCAS:
+C
+         IF ( (NGSP(1,I) .LE. MINCAS .AND.
+     &        (NGSP(2,I) - NGSP(1,I)) .GE. MAXCAS) .OR.
+     &        I .EQ. NGAS ) THEN
+            GASCAS(I) = .TRUE.
+         ELSE
+            GASCAS(I) = .FALSE.
+         END IF
+      END DO
+      IF (IPRINT .GE. 10) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &        'GAS space is a CAS space?'
+         DO I = 1, NGAS
+            WRITE(LUPRI,'(5X,A,I3,A,L1)')
+     &           'GAS space ',I,' : ',GASCAS(I)
+         END DO
+      END IF
+C
+C     Algorithm:
+C     ----------
+C
+C     No inter-GAS-space active-active rotations
+C     No active-active rotations into CAS spaces
+C     No active-active rotations from a CAS space into the NEXT GAS space.
+C
+C     Active-active elements
+C     ----------------------
+C
+      DO 20 ISYM = 1,NFSYM
+         JSYM  = MOD(ISYM+IOPSY,2) + 1
+         IF (JSYM .LT. ISYM) GOTO 20
+C        
+         ISTA  = NIND(1,2,ISYM) + 1
+         IENDA = NIND(1,2,ISYM) + NIND(2,2,ISYM)
+C        
+         JSTA  = NIND(1,2,JSYM) + 1
+         JENDA = NIND(1,2,JSYM) + NIND(2,2,JSYM)
+         IF (ISYM .EQ. JSYM) THEN
+            IF (NIND(2,2,ISYM).LE.1) GO TO 20
+            DO IA = ISTA, IENDA
+               DO JA = IA + 1, IENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
+     &                 IGAS(IDXG2U(IAA)) .NE. IGAS(IDXG2U(JAA)) .AND.
+     &                 .NOT. GASCAS(IGAS(IDXG2U(JAA))) .AND.
+     &                 .NOT. (
+     &                    GASCAS(IGAS(IDXG2U(IAA))) .AND.
+     &                 IGAS(IDXG2U(JAA)) .LE. IGAS(IDXG2U(IAA)+1)) .AND.
+     &                 NOROT(IAA) .EQ. 0 .AND. NOROT(JAA) .EQ. 0) THEN
+                     NXOPE = NXOPE + 1
+                     JXOPE(1,NXOPE) = IAA
+                     JXOPE(2,NXOPE) = JAA
+                     JACAC(IDXG2U(IAA),IDXG2U(JAA)) = 1
+                     JACAC(IDXG2U(JAA),IDXG2U(IAA)) = 1
+                  END IF
+               END DO
+            END DO
+         ELSE
+            IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 20
+            DO IA = ISTA,IENDA
+               DO JA = JSTA,JENDA
+                  IAA = IND(IA,2,ISYM)
+                  JAA = IND(JA,2,JSYM)
+                  IF (JACAC(IDXG2U(IAA),IDXG2U(JAA)) .EQ. 0 .AND.
+     &                 IGAS(IDXG2U(IAA)) .NE. IGAS(IDXG2U(JAA)) .AND.
+     &                 .NOT. GASCAS(IDXG2U(JAA)) .AND.
+     &                 .NOT. (
+     &                    GASCAS(IDXG2U(IAA)) .AND.
+     &                 IGAS(IDXG2U(JAA)) .LE. IGAS(IDXG2U(IAA)+1))) THEN
+                     NXOPE = NXOPE + 1
+                     JXOPE(1,NXOPE) = IAA
+                     JXOPE(2,NXOPE) = JAA
+                     JACAC(IDXG2U(IAA),IDXG2U(JAA)) = 1
+                     JACAC(IDXG2U(JAA),IDXG2U(IAA)) = 1
+                  END IF
+               ENDDO
+            ENDDO
+         END IF
+ 20   CONTINUE
+C
+C     
+      IF (IPRINT .GE. 10) THEN
+         WRITE(LUPRI,'(1X,A,I3,A)')
+     &        'The following ',NXOPE - NXOPES,
+     &        ' active-active rotations were considered non-redundant: '
+         DO I = NXOPES + 1, NXOPE
+            WRITE(LUPRI,'(5X,2I4)')
+     &           JXOPE(1,I), JXOPE(2,I)
+         END DO
+      END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

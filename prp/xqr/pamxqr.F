@@ -1755,8 +1755,8 @@ C
 C     Scatter the response vector into matrix using index for RPA. 
 C
       CALL DZERO(ZYMAT,N2ORBXQ)
-      CALL VECTOMAT(ZYMAT,VECEE,MZYEE,NZEE,WORK(KZXOPE))
-      CALL VECTOMAT(ZYMAT,VECEP,MZYEP,NZEP,WORK(KZXOPP))
+      CALL VEC2MAT(ZYMAT,VECEE,MZYEE,NZEE,WORK(KZXOPE))
+      CALL VEC2MAT(ZYMAT,VECEP,MZYEP,NZEP,WORK(KZXOPP))
 C
 C     Print section
 C
@@ -1771,7 +1771,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE VECTOMAT(ZYMAT,VEC,LVEC,N,INDEX)
+      SUBROUTINE VEC2MAT(ZYMAT,VEC,LVEC,N,INDEX)
 C*****************************************************************************
 C
 C     Scatter the response vector into a  matrix.

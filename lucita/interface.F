@@ -984,14 +984,12 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dmpint $Revision$
       SUBROUTINE DMPINT(LUINT)
 *
 * Dump integrals in WORK(KINT1),WORK(KINT2) on file LUINT
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "glbbas.inc"
 #include "wrkspc.inc"
 *
@@ -1015,7 +1013,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_cmoao $Revision$
       SUBROUTINE GET_CMOAO(CMO)
 *
 * Obtain AO-MO transformation matrix
@@ -1025,7 +1022,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 #include "cgas.inc"
 #include "lucinp.inc"
@@ -1055,7 +1051,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_cmoao_dalton $Revision$
       SUBROUTINE GET_CMOAO_DALTON(CMO,NBAS,NMO,NSM)
 *
 * Obtain MO-AO expansion matrix from SIRIUS/DALTON file SIRGEOM
@@ -1107,14 +1102,12 @@ C    *              (IWRK(KEIGSY+I-1),I=1,NORBT)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_cmoao_lucia $Revision$
       SUBROUTINE GET_CMOAO_LUCIA(CMO,NMOS,NAOS,LUH)
 *
 * Obtain CMOAO expansion matrix from LUCIA formatted file LUH
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "crun.inc"
@@ -1161,7 +1154,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_cmomo $Revision$
       SUBROUTINE GET_CMOMO(CMOMO)
 *
 * Obtain MO-MO transformation matrix CMOMO for transforming to
@@ -1184,7 +1176,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
@@ -1218,7 +1209,7 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
         CALL FIFAM(WORK(KMAT1))
       ELSE IF(ITRACI_CN(1:4).EQ.'NATU' ) THEN
 *. Symmetry order density matrix
-        CALL TYPE_TO_SYM_REO_MAT(WORK(KRHO1),WORK(KMAT2),0)
+        CALL TYPE_TO_SYM_REO_MAT(WORK(KRHO1),WORK(KMAT2))
 *. Pack to triangular form
         CALL TRIPAK_BLKM(WORK(KMAT2),WORK(KMAT1),1,NTOOBS,NSMOB)
 *. multiply by minus one to get natural orbitals
@@ -1290,7 +1281,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_h1ao $Revision$
 *
 * Obtain property integrals with LABEL LABEL from LU91,
 * LUCIA format
@@ -1305,7 +1295,6 @@ C            PRHONE(C,NFUNC,M,NSM,IPACK)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 #include "orbinp.inc"
 #include "wrkspc.inc"
@@ -1335,7 +1324,6 @@ C            GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_h1ao_dalton $Revision$
       SUBROUTINE GET_H1AO_DALTON(LABEL,H1AO,IHSM,SCR,NBAS,NSM)
 *
 *. Obtain one-electron integrals in ao basis from dalton
@@ -1456,7 +1444,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_h1ao_lucia $Revision$
       SUBROUTINE GET_H1AO_LUCIA(LABEL,H1,LUH)
 *
 *
@@ -1467,7 +1454,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "crun.inc"
@@ -1561,7 +1547,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_orb_dim_env $Revision$
       SUBROUTINE GET_ORB_DIM_ENV(ECORE_ENV)
 *
 * Obtain number of orbitals and basis functions from the
@@ -1574,7 +1559,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "crun.inc"
@@ -1615,7 +1599,6 @@ C       CALL GETOBS2(ECORE_ENV,NAOS_ENV,NMOS_ENV)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_propint $Revision$
 *
       SUBROUTINE GET_PROPINT(H,IHSM,LABEL,SCR,NMO,NBAS,NSM,ILOW)
 *
@@ -1690,7 +1673,7 @@ C            TRAH1(NBAS,NORB,NSYM,HAO,C,HMO,IHSM,SCR)
             NELMNT_OUT = LDIM * (LDIM + 1)/2
             CALL COPVEC(H(IOFF_IN),SCR(KLSCR),NELMNT_IN)
             SIGN = 1.0D0
-            CALL TRIPAK(SCR(KLSCR),H(IOFF_OUT),1,LDIM,LDIM)
+            CALL TRIPAK(SCR(KLSCR),H(IOFF_OUT),1,LDIM,LDIM,SIGN)
             IOFF_IN = IOFF_IN + NELMNT_IN
             IOFF_OUT = IOFF_OUT + NELMNT_OUT
           ELSE IF(ISM.LT.JSM) THEN
@@ -1740,7 +1723,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck geth0 $Revision$
       Subroutine GetH0(H)
 ************************************************************************
 *                                                                      *
@@ -1756,7 +1738,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
       Implicit Real*8 (A-H,O-Z)
 *
       Include 'SysDef.inc'
-*include <SysDef.fh>
 *
       Parameter( LuOne = 14)
 *
@@ -1790,7 +1771,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck geth0s $Revision$
       Subroutine GetH0S(H,NTORB)
 ************************************************************************
 *                                                                      *
@@ -1810,7 +1790,6 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
       Dimension H(*)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 *
       IDUM = 1
@@ -1849,7 +1828,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck geth1 $Revision$
       SUBROUTINE GETH1(H,ISM,ITP,JSM,JTP)
 *
 * One-electron integrals over orbitals belonging to
@@ -1858,7 +1836,8 @@ C
 *
 * The orbital symmetries  are used to obtain the total
 * symmetry of the one-electron integrals.
-* It is therefore assumed that ISM, JSM represents a correct symmetry block
+* It is therefore assumed that ISM, JSM represents 
+*   a correct symmetry block
 * of the integrals
 *
 * Jeppe Olsen, Version of fall 97
@@ -1866,7 +1845,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 *.Global pointers
 #include "glbbas.inc"
@@ -1912,7 +1890,6 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck geth1e $Revision$
       FUNCTION GETH1E(IORB,ITP,ISM,JORB,JTP,JSM)
 *
 * One-electron integral for active
@@ -1922,7 +1899,6 @@ C           GET_SX_BLK(HBLK,H,IGAS,ISM,JGAS,JSM)
 * total symmetry of the operator
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *
@@ -1958,7 +1934,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck geth1i $Revision$
       FUNCTION GETH1I(IORB,JORB)
 *
 * Obtain one -electron integral H(IORB,JOB)
@@ -1966,7 +1941,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * Interface from EXPHAM to LUCIA
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *
       ISM = ISMFTO(IORB)
@@ -1994,7 +1968,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getincn2 $Revision$
       SUBROUTINE GETINCN2(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
      &                  IXCHNG,IKSM,JLSM,INTLST,IJKLOF,NSMOB,I2INDX,
      &                  ICOUL)
@@ -2023,7 +1996,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *. Integral list
       Real * 8 Intlst(*)
@@ -2301,7 +2273,6 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getint $Revision$
       SUBROUTINE LGETINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM,
      &                  IXCHNG,IKSM,JLSM,ICOUL)
 
@@ -2311,7 +2282,6 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "csm.inc"
@@ -2417,7 +2387,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getmoao $Revision$
       SUBROUTINE GETMOAO(CMOAO)
 *
 * Obtain MOAO matrix and save in CMOAO
@@ -2426,7 +2395,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
@@ -2445,7 +2413,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getmoao_molcas $Revision$
       SUBROUTINE GETMOAO_MOLCAS(CMOAO,LU)
 *
 * THE MO-AO file is assumed to be a NBAS X NBAS file in LUMORB format
@@ -2494,7 +2461,6 @@ C     Call Abend2( ' Jeppe forced me to stop in GETINT ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getmolinf $Revision$
 *
       subroutine getmolinf(WAFFCT,IPRT,NACRAS,CARD,ITEM,MXITEM,
      &                     IRETISH,IDBGRP)
@@ -2543,7 +2509,6 @@ C    & ' Orbital info from file ............... ','JOBIPH'
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getobs_dalton $Revision$
       SUBROUTINE GETOBS_DALTON(ECORE_ENV,NAOS_ENV,NMOS_ENV)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 *. Scratch
@@ -2600,7 +2565,6 @@ C?    WRITE(6,*) ' NORBT, NCMOT = ', NORBT,NCMOT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getobs_lucia $Revision$
        SUBROUTINE GETOBS_LUCIA(NAOS_ENV,NMOS_ENV)
 *
 * Obtain info on orbital dimensions from LU91 - LUCIA format
@@ -2627,90 +2591,6 @@ C?    WRITE(6,*) ' NORBT, NCMOT = ', NORBT,NCMOT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gijkll $Revision$
-      FUNCTION GIJKLL(IREOTS,IPNTR,ISL,XINT,ISMFTO,IBSO,NACOB,NSMOB,
-     &         NOCOBS,I,J,K,L)
-*
-* Obtain (IJ!KL), Lucas order
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION IREOTS(*),IPNTR(NSMOB,NSMOB,NSMOB)
-      DIMENSION ISL(NSMOB,NSMOB,NSMOB)
-      DIMENSION IBSO(*),NOCOBS(*) ,ISMFTO(*)
-      DIMENSION XINT(*)
-*
-C?    write(6,*) ' Hi from GIJKLL'
-      II = IREOTS(I)
-C?    write(6,*) ' II ',II
-      ISM = ISMFTO(I)
-C?    write(6,*) ' ISM ',ISM
-      NI = NOCOBS(ISM)
-C?    write(6,*) ' NI ',NI
-      IREL = II - IBSO(ISM) + 1
-C?    write(6,*) ' IREL ',IREL
-      JJ = IREOTS(J)
-      JSM = ISMFTO(J)
-      JREL = JJ - IBSO(JSM) + 1
-      NJ = NOCOBS(JSM)
-      IJ = (IREL-1)*NJ + JREL
-      JI = (JREL-1)*NI + IREL
-      NJI = NI * NJ
-      IJSM = (ISM-1)*NSMOB + JSM
-*
-      KK = IREOTS(K)
-      KSM = ISMFTO(K)
-      KREL = KK - IBSO(KSM) + 1
-      NK = NOCOBS(KSM)
-      LL = IREOTS(L)
-      LSM = ISMFTO(L)
-      LREL = LL - IBSO(LSM) + 1
-      NL = NOCOBS(LSM)
-      LK = (LREL-1)*NK + KREL
-      KL = (KREL-1)*NL + LREL
-      NLK = NK * NL
-      KLSM = (KSM-1)*NSMOB + LSM
-C?    WRITE(6,*) ' IJSM KLSM ', IJSM,KLSM
-C?    WRITE(6,*) ' ISM JSM KSM LSM ',ISM,JSM,KSM,LSM
-
-      IF(  (IJSM.GE.KLSM.AND.LSM.NE.ISL(ISM,JSM,KSM))
-     &.OR. (IJSM.LT.KLSM.AND.JSM.NE.ISL(KSM,LSM,ISM)) )   THEN
-        GIJKLL = 0.0D0
-        write(6,*) ' Symmetry zero returned '
-      ELSE
-*
-        IF(IJSM.GT.KLSM) THEN
-C         IJKLO = (IJ-1)*NKL + KL + IPNTR(ISM,JSM,KSM)-1
-          IJKLO = (LK-1)*NJI + JI + IPNTR(ISM,JSM,KSM)-1
-        ELSE IF(IJSM.LT.KLSM) THEN
-C         IJKLO = (KL-1)*NIJ + IJ + IPNTR(KSM,LSM,ISM)-1
-          IJKLO = (JI-1)*NLK + LK + IPNTR(KSM,LSM,ISM)-1
-        ELSE IF( IJSM.EQ.KLSM) THEN
-C         IF(IJ.GE.KL) THEN
-          IF(JI.GE.LK) THEN
-C           IJKLO = IJ*(IJ-1)/2+KL + IPNTR(ISM,JSM,KSM)-1
-            IJKLO = JI*(JI-1)/2+LK + IPNTR(ISM,JSM,KSM)-1
-          ELSE
-C           IJKLO = KL*(KL-1)/2+IJ + IPNTR(ISM,JSM,KSM)-1
-            IJKLO = LK*(LK-1)/2+JI + IPNTR(ISM,JSM,KSM)-1
-          END IF
-        END IF
-        GIJKLL = XINT(IJKLO)
-      END IF
-*
-      NTEST = 0
-      IF(NTEST.NE.0) THEN
-        WRITE(6,'(A,5I4,3X,E18.12)')
-     &  ' GIJKLL I J K L ,IJKLO,(IJ!KL) ', I,J,K,L,IJKLO,GIJKLL
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck gmijkl $Revision$
       FUNCTION GMIJKL(IORB,JORB,KORB,LORB,INTLST,IJKLOF)
 *
 * Obtain integral (IORB JORB ! KORB LORB) MOLCAS version
@@ -2732,7 +2612,6 @@ C    &              NTSOB(3,MXPOBS),IBTSOB(3,MXPOBS),ITSOB(MXPORB),
 C    &              NOBPTS(6+MXPR4T,MXPOBS),IOBPTS(6+MXPR4T,MXPOBS),
 C    &              ITOOBS(MXPOBS)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "lucinp.inc"
 *. Integral list
@@ -2888,63 +2767,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gth1es $Revision$
-      FUNCTION GTH1ES(IREOTS,IPNT,H,IBSO,MXPNGAS,
-     &           IBTSOB,NACOBS,IORB,ITP,ISM,JORB,JTP,JSM,IJSM)
-*
-* one electron integral between orbitals (iorb,itp,ism,jorb,jsm,jtp)
-* correct combination of row and column symmetry is assumed
-* IJSM = 1 => Lower triangular packed
-*      else=> No triangular packing
-*
-* Last Revision January 98 (IJSM added )
-      IMPLICIT REAL*8(A-H,O-Z)
-*.Input
-      INTEGER IREOTS(*),IPNT(*),IBTSOB(MXPNGAS,*),IBSO(*)
-      INTEGER NACOBS(*)
-      DIMENSION H(*)
-*
-      IABS = IORB+IBTSOB(ITP,ISM)-1
-      IREO = IREOTS(IABS)
-      JABS = JORB+IBTSOB(JTP,JSM)-1
-      JREO = IREOTS(JABS)
-C?    write(6,*) ' GTH1ES : IREO JREO ',IREO,JREO
-*
-C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
-      IF(IJSM.EQ.1) THEN
-        IF(ISM.GT.JSM) THEN
-          NI = NACOBS(ISM)
-          IJ = IPNT(ISM)-1+(JREO-IBSO(JSM))*NI+IREO-IBSO(ISM)+1
-        ELSE IF(ISM.EQ.JSM) THEN
-          IJMAX = MAX(IREO-IBSO(ISM)+1,JREO-IBSO(JSM)+1)
-          IJMIN = MIN(IREO-IBSO(ISM)+1,JREO-IBSO(JSM)+1)
-          IJ = IPNT(ISM)-1+IJMAX*(IJMAX-1)/2+IJMIN
-        ELSE IF (ISM.LT.JSM) THEN
-          NJ = NACOBS(JSM)
-          IJ = IPNT(JSM)-1+(IREO-IBSO(ISM))*NJ+JREO-IBSO(JSM)+1
-        END IF
-      ELSE
-         NI = NACOBS(ISM)
-         IJ = IPNT(ISM)-1+(JREO-IBSO(JSM))*NI+IREO-IBSO(ISM)+1
-      END IF
-*
-      GTH1ES = H(IJ)
-      NTEST = 0
-      IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' one electron integral '
-        WRITE(6,*) ' IORB ITP ISM ',IORB,ITP,ISM
-        WRITE(6,*) ' JORB JTP JSM ',JORB,JTP,JSM
-        WRITE(6,*) ' IJ and H(IJ) ', IJ,H(IJ)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck gtijkl $Revision$
       FUNCTION GTIJKL(I,J,K,L)
 *
 * Obtain  integral (I J ! K L )
@@ -2953,7 +2775,6 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *.GLobal pointers
@@ -2985,7 +2806,6 @@ CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gtjk $Revision$
       SUBROUTINE GTJK(RJ,RK,NTOOB,SCR,IREOTS)
 *
 * Interface routine for obtaining Coulomb (RJ) and
@@ -2998,7 +2818,6 @@ CINA &           ISMFTO,IBSO,NACOB,NSMOB,NOCOBS,I,J,K,L)
 C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,NP1,NP2,NQ,INCORE,MXCIV,ICISTR,
 C    &            NOCSF,IDIAG
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 *.Input
       DIMENSION IREOTS(*)
@@ -3043,7 +2862,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gtjkl $Revision$
       SUBROUTINE GTJKL(RJ,RK,NTOOB)
 *
 * Obtain Coulomb  integrals (II!JJ)
@@ -3073,7 +2891,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gtjkm $Revision$
       Subroutine GTJKM(RJ,RK)
 *
 *     Gather all integrals RJ(I,J) = (II!JJ)
@@ -3082,10 +2899,8 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
       IMPLICIT REAL*8(A-H,O-Z)
 
       Include 'SysDef.inc'
-*include <SysDef.fh>
 
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "lucinp.inc"
 *.LUNDIO
@@ -3193,8 +3008,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gtjks $Revision$
-
 * Working on EXPHAM
 * some known problems :
 *     1 : if CSF are used diagonal is not delivered to H0mat
@@ -3220,7 +3033,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hello $Revision$
       subroutine hello
 ************************************************************************
 *                                                                      *
@@ -3237,8 +3049,6 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *     history: none                                                    *
 *                                                                      *
 ************************************************************************
-*include <configinfo.fh>
-*include <buildinfo.fh>
       Character*8   Fmt
       Character*120  Line,BlLine,StLine
 *----------------------------------------------------------------------*
@@ -3398,7 +3208,6 @@ c       Write(*,Fmt) '*'//Line//'*'
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hello_moluc $Revision$
       subroutine hello_moluc
 ************************************************************************
 *                                                                      *
@@ -3415,8 +3224,6 @@ c       Write(*,Fmt) '*'//Line//'*'
 *     history: none                                                    *
 *                                                                      *
 ************************************************************************
-*include <configinfo.fh>
-*include <buildinfo.fh>
       Character*8   Fmt
       Character*120  Line,BlLine,StLine
 *----------------------------------------------------------------------*
@@ -3492,7 +3299,6 @@ c       Write(*,Fmt) '*'//Line//'*'
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck i2ead $Revision$
       Function I2EAD(IORB,JORB,KORB,LORB)
 *
 * Find adress of integral in LUCIA order
@@ -3500,7 +3306,6 @@ c       Write(*,Fmt) '*'//Line//'*'
       IMPLICIT REAL*8           (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
 C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 
@@ -3518,7 +3323,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck i2eads $Revision$
       FUNCTION I2EADS(IORB,JORB,KORB,LORB,IJKLOF)
 *
 * Obtain address of integral (IORB JORB ! KORB LORB) in MOLCAS order
@@ -3529,7 +3333,6 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 #include "lucinp.inc"
 *
@@ -3711,12 +3514,14 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
       read(LU1INT) IDUMMY,(DUMCHA(ID),ID=1,IDUMMY),
      &                    (IDUM2(ID),ID=1,IDUMMY),
      &                    (NSTR(I),I=1,NFSYM),
+     &                    (IDUM2(ID),ID=1,NFSYM),
      &                    (NCORE(I),I=1,NFSYM),
+     &                    (IDUM2(ID),ID=1,NFSYM),
      &                    (NDELE(I),I=1,NFSYM)
       read(LU1INT)
       read(LU1INT)
       read(LU1INT) (IDUMAR(ID),IDUMAR(ID),DUMAR(ID),ID=1,MORB,1),
-     &             (IDUMAR(I),I=1,MORB,1),NBREPD
+     &             (IDUMAR(I),I=1,MORB,1),(IDUM2(ID),ID=1,NFSYM),NBREPD
       close(LU1INT)
 *
       if (NTEST.ge.1)
@@ -3762,7 +3567,6 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck infsir $Revision$
       SUBROUTINE INFSIR(IWRK,WRK,LWRK)
 C
 C     Written by Henrik Koch 06-09-89
@@ -3939,7 +3743,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck intim $Revision$
       SUBROUTINE INTIM(IPRNT)
 *
 * Interface to external integrals
@@ -3951,7 +3754,6 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
@@ -4095,7 +3897,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck intimm $Revision$
 *
       SUBROUTINE INTIMM(XINT,MAXSYM)
 *
@@ -4105,11 +3906,9 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
       IMPLICIT REAL*8(A-H,O-Z)
 
       Include 'SysDef.inc'
-*include <SysDef.fh>
 
 *.ORBINP
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *.LUNDIO
       Parameter ( mxBatch = 106  )
@@ -4200,7 +3999,6 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck luciwrt $Revision$
 *  Create usual input file for LUCITA by writing keywords and
 *  values to unit ..
 *
@@ -4487,7 +4285,6 @@ CTF      write(LUINP,'(X,A6)') MACHINE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mklundio $Revision$
       Subroutine MkLundIO
 ************************************************************************
 *                                                                      *
@@ -4546,7 +4343,6 @@ CTF      write(LUINP,'(X,A6)') MACHINE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mol2luc $Revision$
 *  Conversion routine from 'dummy' MOLCAS input for LUCITA to
 *  true LUCITA input. This routine creates the required
 *  default settings and processes the input already given by
@@ -6087,7 +5883,6 @@ CC        IVFLEV = 1               ! could be made more flexible
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck putint $Revision$
       SUBROUTINE PUTINT(XINT,ITP,ISM,JTP,JSM,KTP,KSM,LTP,LSM)
 *
 * Put integrals in permanent integral list
@@ -6097,7 +5892,6 @@ CC        IVFLEV = 1               ! could be made more flexible
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "wrkspc.inc"
@@ -6176,7 +5970,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck putmoao $Revision$
       SUBROUTINE PUTMOAO(CMOAO)
 *
 * SAVE   MOAO matrix CMOAO on LUMOUT
@@ -6185,7 +5978,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
@@ -6204,7 +5996,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck putmoao_molcas $Revision$
       SUBROUTINE PUTMOAO_MOLCAS(CMOAO,LU)
 *
 * WRITE MOAO matrix CMOAO on file LU in MOLCAS LUMORB format
@@ -6220,8 +6011,9 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 *
       LOCC = 0
 *. Full NBAS X NBAS assumed
-      CALL WRVEC('CIAORB',LU,NSYM,NBAS,NBAS,CMOAO,OCC,LOCC,
-     &           ' MO orbitals obtained from LUCIA ')
+* Routine with the same name exists in DIRAC.
+C     CALL WRVEC('CIAORB',LU,NSYM,NBAS,NBAS,CMOAO,OCC,LOCC,
+C    &           ' MO orbitals obtained from LUCIA ')
       WRITE(6,*) ' Mo coefficients written to ', LU
 *
       RETURN
@@ -6369,7 +6161,6 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rdmoluc $Revision$
 *  Input routine for LUCIA under MOLCAS 4
 *  A simplified MOLCAS-type input is read and converted to
 *  the usual LUCIA requirements.
@@ -6395,9 +6186,7 @@ C?         WRITE(6,*) ' KINT2-1+INT_OUT = ',KINT2-1+INT_OUT
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
       include 'SysDef.inc'
-*include <SysDef.fh>
 #include "luci.inc"
 #include "units.inc"
 *
@@ -7411,7 +7200,6 @@ C?    write(6,*) 'ISYMOFF = ',ISYMOFF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck readmo $Revision$
       SUBROUTINE READMO(WRK,LWRK,XIJKL)
 C
 C     Written by Henrik Koch 27-Mar-1990
@@ -7467,7 +7255,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck redmo1 $Revision$
       SUBROUTINE REDMO1(TWOMO,BUF,IBUF,LBUF,NORBT)
 C
 C     Written by Henrik Koch 27-Mar-1990.
@@ -7534,14 +7321,12 @@ c
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sclh2 $Revision$
       SUBROUTINE SCLH2(XLAMBDA)
 *
 *. Scale two electron integrals
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2

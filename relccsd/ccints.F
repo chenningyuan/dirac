@@ -803,12 +803,12 @@ C
 C     A number of different formats are possible. 
       IF (CARITH) THEN 
 C     For complex groups we read the real and imaginary part.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
       ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN
 C     For real groups we read only the real part in DIRAC format.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),INZ=1,NONZR) 
 cluuk : The old code is given below, use this instead of the line above when restarting from old
@@ -816,7 +816,7 @@ cluuk : MDCINT files.
 cluuk&        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ELSEIF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
 C     For real groups we skip the zero imaginary part in MOLFDIR format.
-         READ (MDINT,END=10010,ERR=10010) IKR,JKR,NONZR,
+         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
@@ -1017,7 +1017,14 @@ C                            Skip unnecessary integrals
       ENDIF
 C
       RETURN
-10010 CALL QUIT('ERROR READING 2-E INTEGRALS')
+10010 WRITE(6,'(/A/A,L10,2A)')
+     & 'END OF FILE branch taken when reading 2-e integrals',
+     & 'CARITH =',CARITH,', INTERFACE =',INTERFACE
+      CALL QUIT('END OF FILE READING 2-E INTEGRALS')
+10020 WRITE(6,'(/A/A,L10,2A)')
+     & 'ERROR branch taken when reading 2-e integrals',
+     & 'CARITH =',CARITH,', INTERFACE =',INTERFACE
+      CALL QUIT('ERROR READING 2-E INTEGRALS')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETFM (INDEX,NSP,EPS,BUF1,BUF2,VBUF1,VBUF2,

@@ -643,7 +643,8 @@ C&&&& SCATTER - Do Scatter MDCINT/4IND to all nodes
                   MDCSCAT = .TRUE.
                GO TO 100
    23          CONTINUE
-C&&&& MDCINT - Do write the MDCINT file in MOLFDIR format
+C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
+                  NOMDCINT = .FALSE.
                GO TO 100
    24          CONTINUE
                GO TO 100
@@ -871,6 +872,11 @@ C
      &    '* Size of batches for strategy 4 determined dynamically.'
         END IF
       END IF
+C
+C     Batch size of strategy 4.
+C
+      WRITE(LUPRI,'(1X,A,I4)')
+     &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
 C
   999 CONTINUE
       RETURN

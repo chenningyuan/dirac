@@ -20372,6 +20372,7 @@ c
             ELSE
                JX = KX
                DO 160, J = 1, N
+
                   TEMP = X( JX )
                   KX   = KX      + INCX
                   IX   = KX

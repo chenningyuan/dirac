@@ -27,7 +27,12 @@ Water molecule. Levy-Leblond calculation. Spin-spin couplings
 .EVCCNV
 1.0E-8
 **PROPERTIES
+#.PRINT 
+#  6
 .SPIN-SPIN
 .DSO
+*LINEAR
+#.PRINT
+#  6
 *END OF
 

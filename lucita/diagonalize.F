@@ -1,10 +1,8 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck cieig5 $Revision$
       SUBROUTINE CIEIG5(MV7,INICI,EROOT,VEC1,
      &           VEC2,MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
      &           NDIM,NBLK,NROOT,MAXVEC,MXCIIT,LUINCI,
@@ -244,7 +242,6 @@ C?       WRITE(6,*) ' ISKIPEI before call to PICO2',ISKIPEI
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck class_trunc $Revision$
       SUBROUTINE CLASS_TRUNC(NCLS,ICLS_L,CLS_CT,CLS_ET,CLS_C,CLS_E,
      &                       E_CONV,ICLS_A,N_TRN_CLS,E_TRUNC,W_TRUNC,
      &                       IPRNT)
@@ -529,7 +526,6 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck cls_to_base $Revision$
 C        newden.f propint.f newrou.f  reo.f annstr.f\
 C        adast.f decode_line.f rsbb2bn.f adaada.f rsbb2an.f\
 C        advice_sigma.f traci.f  rsbb2bvn.f
@@ -580,41 +576,6 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck cls_to_blk $Revision$
-      SUBROUTINE CLS_TO_BLK(NBLOCK,IBLK_TO_CLS,ICLS_A,IBLK_A)
-*
-* an array ICLS_A is given for each class as well as
-* a block to class array IBLK_TO_CLS.
-* Obtain ICLS_A in block form (Well, I am bit tired and my
-* pedagogical explanations can be pretty lousy even when I
-* am awake !A)
-*
-* Jeppe Olsen, Jan. 1997
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*.input
-      DIMENSION ICLS_A(*),IBLK_TO_CLS(*)
-*.output
-      INTEGER IBLK_A(*)
-*
-      DO IBLK = 1, NBLOCK
-        IBLK_A(IBLK) = ICLS_A(IBLK_TO_CLS(IBLK))
-      END DO
-*
-      NTEST = 000
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' CLS_TO BLK : IBLKS_a array '
-        CALL IWRTMA(IBLK_A,1,NBLOCK,1,NBLOCK)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck diag_blks $Revision$
       SUBROUTINE DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,
      &                     SCR1,SCR2)
 *
@@ -725,239 +686,6 @@ C         CALL EIGEN(WORK(KMAT1-1+IOFFP),WORK(KMAT2-1+IOFFC),LORB,0,1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck eigen $Revision$
-      SUBROUTINE EIGEN(A,R,N,MV,MFKR)
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      DIMENSION A(1),R(1)
-      DATA TESTIT/1.D-20/
-      DATA TESTX/1.D-26/
-      DATA TESTY/1.D-18/
-C
-C        PURPOSE
-C           COMPUTE EIGENVALUES AND EIGENVECTORS OF A REAL SYMMETRIC
-C           MATRIX
-C
-C        USAGE
-C           CALL EIGEN(A,R,N,MV,MFKR)
-C
-C        DESCRIPTION OF PARAMETERS
-C           A - ORIGINAL MATRIX (SYMMETRIC), DESTROYED IN COMPUTATION.
-C               RESULTANT EIGENVALUES ARE DEVELOPED IN DIAGONAL OF
-C               MATRIX A IN ASSCENDING ORDER.
-C           R - RESULTANT MATRIX OF EIGENVECTORS (STORED COLUMNWISE,
-C               IN SAME SEQUENCE AS EIGENVALUES)
-C           N - ORDER OF MATRICES A AND R
-C           MV- INPUT CODE
-C   0   COMPUTE EIGENVALUES AND EIGENVECTORS
-C   1   COMPUTE EIGENVALUES ONLY (R NEED NOT BE
-C       DIMENSIONED BUT MUST STILL APPEAR IN CALLING
-C       SEQUENCE)
-C           MFKR=0 NO SORT
-C               =1 SORT
-C
-C        REMARKS
-C           ORIGINAL MATRIX A MUST BE REAL SYMMETRIC (STORAGE MODE=1)
-C           MATRIX A CANNOT BE IN THE SAME LOCATION AS MATRIX R
-C
-C        SUBROUTINES AND FUNCTION SUBPROGRAMS REQUIRED
-C           NONE
-C
-C        METHOD
-C           DIAGONALIZATION METHOD ORIGINATED BY JACOBI AND ADAPTED
-C           BY VON NEUMANN FOR LARGE COMPUTERS AS FOUND IN ?MATHEMATICAL
-C           METHODS FOR DIGITAL COMPUTERS?, EDITED BY A. RALSTON AND
-C           H.S. WILF, JOHN WILEY AND SONS, NEW YORK, 1962, CHAPTER 7
-C
-C     ..................................................................
-C
-C
-C        ...............................................................
-C
-C        IF A DOUBLE PRECISION VERSION OF THIS ROUTINE IS DESIRED, THE
-C        C IN COLUMN 1 SHOULD BE REMOVED FROM THE DOUBLE PRECISION
-C        STATEMENT WHICH FOLLOWS.
-C
-C     DOUBLE PRECISION A,R,ANORM,ANRMX,THR,X,Y,SINX,SINX2,COSX,
-C    1 COSX2,SINCS,RANGE
-C
-C        THE C MUST ALSO BE REMOVED FROM DOUBLE PRECISION STATEMENTS
-C        APPEARING IN OTHER ROUTINES USED IN CONJUNCTION WITH THIS
-C        ROUTINE.
-C
-C        THE DOUBLE PRECISION VERSION OF THIS SUBROUTINE MUST ALSO
-C        CONTAIN DOUBLE PRECISION FORTRAN FUNCTIONS.  SQRT IN STATEMENTS
-C        40, 68, 75, AND 78 MUST BE CHANGED TO DSQRT.  ABS IN STATEMENT
-C        62 MUST BE CHANGED TO DABS. THE CONSTANT IN STATEMENT 5 SHOULD
-C        BE CHANGED TO 1.0D-12.
-C
-C        ...............................................................
-C
-C        GENERATE IDENTITY MATRIX
-C
-    5 RANGE=1.0D-12
-      IF(MV-1) 10,25,10
-   10 IQ=-N
-      DO 20 J=1,N
-      IQ=IQ+N
-      DO 20 I=1,N
-      IJ=IQ+I
-      R(IJ)=0.0D+00
-      IF(I-J) 20,15,20
-   15 R(IJ)=1.0D+00
-   20 CONTINUE
-C
-C        COMPUTE INITIAL AND FINAL NORMS (ANORM AND ANORMX)
-C
-   25 ANORM=0.0D+00
-      DO 35 I=1,N
-      DO 35 J=I,N
-      IF(I-J) 30,35,30
-   30 IA=I+(J*J-J)/2
-      ANORM=ANORM+A(IA)*A(IA)
-   35 CONTINUE
-      IF(ANORM) 165,165,40
-   40 ANORM=1.414D+00*DSQRT(ANORM)
-      ANRMX=ANORM*RANGE/DFLOAT(N)
-C
-C        INITIALIZE INDICATORS AND COMPUTE THRESHOLD, THR
-C
-      IND=0
-      THR=ANORM
-   45 THR=THR/DFLOAT(N)
-      IF(THR.LT.TESTY)THR=0.D0
-   50 L=1
-   55 M=L+1
-C
-C        COMPUTE SIN AND COS
-C
-   60 MQ=(M*M-M)/2
-      LQ=(L*L-L)/2
-      LM=L+MQ
-      IF(DABS(A(LM)).LT.TESTY)A(LM)=0.D0
-      IF(DABS(A(LM)).EQ.0.D0.AND.THR.EQ.0.D0)GO TO 130
-   62 IF( DABS(A(LM))-THR) 130,65,65
-   65 IND=1
-      LL=L+LQ
-      MM=M+MQ
-      X=0.5D+00*(A(LL)-A(MM))
-      AJUK=(A(LM)*A(LM)+X*X)
-      AJUK=DSQRT(AJUK)
-      IF(DABS(AJUK).LT.TESTIT)WRITE(6,3000)TESTIT,AJUK,A(LM)
- 3000 FORMAT(1H0,'***DENOMINATOR LT ',D12.6,'. VALUE=',D14.8,
-     ['. NUMERATOR=',D14.8)
-      Y=0.D0
-      IF(DABS(AJUK).LT.TESTIT)GO TO 67
-      Y=-A(LM)/AJUK
-   67 CONTINUE
-   68 CONTINUE
-C  68 Y=-A(LM)/ DSQRT(A(LM)*A(LM)+X*X)
-      IF(X) 70,75,75
-   70 Y=-Y
-   75 AJUK=(1.D0-Y*Y)
-      IF(AJUK.LT.0.D0)WRITE(6,3001) AJUK
- 3001 FORMAT(1H0,'***DSQRT OF ',D14.8)
-      IF(AJUK.LT.0.D0)AJUK=0.D0
-      AJUK=DSQRT(AJUK)
-      AJUK=2.D0*(1.D0+AJUK)
-      AJUK=DSQRT(AJUK)
-      SINX=Y/AJUK
-   76 CONTINUE
-C     SINX=Y/ DSQRT(2.0D+00*(1.0D+00+( DSQRT(1.0D+00-Y*Y))))
-      SINX2=SINX*SINX
-C  78 COSX= DSQRT(1.0D+00-SINX2)
-   78 CONTINUE
-      AJUK=1.D0-SINX2
-      IF(AJUK.LT.TESTX)AJUK=0.D0
-      COSX=DSQRT(AJUK)
-      COSX2=COSX*COSX
-      SINCS =SINX*COSX
-C
-C        ROTATE L AND M COLUMNS
-C
-      ILQ=N*(L-1)
-      IMQ=N*(M-1)
-      DO 125 I=1,N
-      IQ=(I*I-I)/2
-      IF(I-L) 80,115,80
-   80 IF(I-M) 85,115,90
-   85 IM=I+MQ
-      GO TO 95
-   90 IM=M+IQ
-   95 IF(I-L) 100,105,105
-  100 IL=I+LQ
-      GO TO 110
-  105 IL=L+IQ
-  110 X=A(IL)*COSX-A(IM)*SINX
-      A(IM)=A(IL)*SINX+A(IM)*COSX
-      A(IL)=X
-  115 IF(MV-1) 120,125,120
-  120 ILR=ILQ+I
-      IMR=IMQ+I
-      X=R(ILR)*COSX-R(IMR)*SINX
-      R(IMR)=R(ILR)*SINX+R(IMR)*COSX
-      R(ILR)=X
-  125 CONTINUE
-      X=2.0D+00*A(LM)*SINCS
-      Y=A(LL)*COSX2+A(MM)*SINX2-X
-      X=A(LL)*SINX2+A(MM)*COSX2+X
-      A(LM)=(A(LL)-A(MM))*SINCS+A(LM)*(COSX2-SINX2)
-      A(LL)=Y
-      A(MM)=X
-C
-C        TESTS FOR COMPLETION
-C
-C        TEST FOR M = LAST COLUMN
-C
-  130 IF(M-N) 135,140,135
-  135 M=M+1
-      GO TO 60
-C
-C        TEST FOR L = SECOND FROM LAST COLUMN
-C
-  140 IF(L-(N-1)) 145,150,145
-  145 L=L+1
-      GO TO 55
-  150 IF(IND-1) 160,155,160
-  155 IND=0
-      GO TO 50
-C
-C        COMPARE THRESHOLD WITH FINAL NORM
-C
-  160 IF(THR-ANRMX) 165,165,45
-C
-C        SORT EIGENVALUES AND EIGENVECTORS
-C
-  165 IQ=-N
-      IF(MFKR.EQ.0)GO TO 186
-  166 CONTINUE
-      DO 185 I=1,N
-      IQ=IQ+N
-      LL=I+(I*I-I)/2
-      JQ=N*(I-2)
-      DO 185 J=I,N
-      JQ=JQ+N
-      MM=J+(J*J-J)/2
-      IF(A(MM)-A(LL)) 170,185,185
-  170 X=A(LL)
-      A(LL)=A(MM)
-      A(MM)=X
-      IF(MV-1) 175,185,175
-  175 DO 180 K=1,N
-      ILR=IQ+K
-      IMR=JQ+K
-      X=R(ILR)
-      R(ILR)=R(IMR)
-  180 R(IMR)=X
-  185 CONTINUE
-186   CONTINUE
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck ektpert $Revision$
       SUBROUTINE EKTPERT(F,S,NDIM,NORD,EN,C,
      &                   VEC1,VEC2,VEC3,AMAT1,AMAT2,AMAT3)
 *
@@ -1266,7 +994,6 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0diag $Revision$
       SUBROUTINE H0DIAG(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,NROOT,
      &           EIGVAL,EIGVEC,SCR,NTESTG,ECORE)
 *
@@ -1421,10 +1148,9 @@ C           DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 *.
 C?      write(6,*) ' PHQ (QHQ-E)-1 QHP matrix '
 C?      CALL WRTMAT(SCR(KLPP1),NP1DM,NP1DM,NP1DM,NP1DM)
-
-C                TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
           CALL SETVEC(SCR(KLPP2),0.0D0,NPDM*(NPDM+1)/2)
-          CALL TRIPAK(SCR(KLPP1),SCR(KLPP2),1,NP1DM,NP1DM)
+          SIGNTP = 1.0
+          CALL TRIPAK(SCR(KLPP1),SCR(KLPP2),1,NP1DM,NP1DM,SIGNTP)
           CALL VECSUM(SCR(KLPP1),SCR(KLPP2),PHP,-1.0D0,1.0D0,
      &                NPDM*(NPDM+1)/2)
           IF(NTEST.GE.5) THEN
@@ -1536,11 +1262,14 @@ C?         CALL WRTMAT(EIGVEC(1,IROOT),1,NPQDM,1,NPQDM)
         ICISTR = 1
         IDIAG = 1
         THRES= 1.0D-8
-        CALL CIEIG5(HPQTVM,INICI,EIGVAL,SCR(KLV1),SCR(KLV2),
-     &            MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,NPQDM ,
-     &            NBLK,NROOT,MXVCCI,MAXCIT,LU1,IPRTCI,
-     &            DUMMY,0,DUMMY,IDUMMY,
-     &            0,0,0,DUMMY,ECORE,ICISTR,NPQDM,IDIAG,DUMMY,THRES)
+* FIXME !!!
+C  Only 33 arguments in this call, 70 are required.
+C
+c       CALL CIEIG5(HPQTVM,INICI,EIGVAL,SCR(KLV1),SCR(KLV2),
+c    &            MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,NPQDM ,
+c    &            NBLK,NROOT,MXVCCI,MAXCIT,LU1,IPRTCI,
+c    &            DUMMY,0,DUMMY,IDUMMY,
+c    &            0,0,0,DUMMY,ECORE,ICISTR,NPQDM,IDIAG,DUMMY,THRES)
 C       CALL CIEIG5(HPQTVM,INICI,ENOT,SCR(KLV1),SCR(KLV2),
 C    &            MINST,LUDIA,LU1,LU2,LU3,LU4,LU5,NPQDM ,
 C    &            NBLK,NROOT,MXVCCI,MAXCIT,LU1,IPRTCI,
@@ -1553,7 +1282,6 @@ C    &            0,0,0,DUMMY,0.0D0,1,NPQDM,1,DUMMY)
       END IF
 *
       CALL QEXIT('H0DIA')
-      CALL QSTAT('    ')
 *
       RETURN
       END
@@ -1562,7 +1290,6 @@ C    &            0,0,0,DUMMY,0.0D0,1,NPQDM,1,DUMMY)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0intspc $Revision$
       SUBROUTINE H0INTSPC(IH0SPC,NPTSPC,IOCPTSPC,NOCTPA,NOCTPB,
      &                    IOCA,IOCB,NGAS,MXPNGAS,INTH0SPC,NELFTP)
 *
@@ -1648,7 +1375,6 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0lnsl $Revision$
       SUBROUTINE H0LNSL(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,
      &           X,RHS,S,SCR,NTESTG)
 *
@@ -1763,15 +1489,16 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
 * ===============================
 C          XDIXT2(XDX,X,DIA,NXRDM,NXCDM,SHIFT,SCR)
       CALL XDIXT2(SCR(KLPP1),PHQ,QHQ,NP1DM,NQDM,S,SCR(KLV2))
-C                TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
+C                TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
           CALL SETVEC(SCR(KLPP2),0.0D0,NPDM*(NPDM+1)/2)
-          CALL TRIPAK(SCR(KLPP1),SCR(KLPP2),1,NP1DM,NP1DM)
+          SIGNTP = 1.0
+          CALL TRIPAK(SCR(KLPP1),SCR(KLPP2),1,NP1DM,NP1DM,SIGNTP)
           CALL VECSUM(SCR(KLPP1),SCR(KLPP2),PHP,-1.0D0,1.0D0,
      &                NPDM*(NPDM+1)/2)
 C                ADDDIA(A,FACTOR,NDIM,IPACK)
           CALL ADDDIA(SCR(KLPP1),S,NPDM,1)
 *. Pack to full matrix
-          CALL TRIPAK(SCR(KLPP2),SCR(KLPP1),2,NPDM,NPDM)
+          CALL TRIPAK(SCR(KLPP2),SCR(KLPP1),2,NPDM,NPDM,SIGNTP)
           IF(NTEST.GE.5) THEN
             WRITE(6,*) ' Partitioned matrix '
             CALL WRTMAT(SCR(KLPP2),NPDM,NPDM,NPDM,NPDM)
@@ -1851,7 +1578,6 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0m1td $Revision$
       SUBROUTINE H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
@@ -1994,7 +1720,6 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0m1tv $Revision$
       SUBROUTINE H0M1TV(DIAG,VECIN,VECUT,NVAR,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,NTESTG)
@@ -2129,7 +1854,6 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0mat $Revision$
       SUBROUTINE H0MAT(INTSPC,NROOT,ONEBOD,H0,SBEVC,SBEVL,ISBDET,
      &                 ISBIA,ISBIB,ISBCNF,
      &                 LUHDIA,LBLK,
@@ -2153,7 +1877,6 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 *
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "strbas.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
@@ -2266,7 +1989,6 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0sd $Revision$
       SUBROUTINE H0SD(LUDIA,LBLK,CIDIA,IWAY,MXPRDT,NAEL,NBEL,
      &                ISMOST,IOCOC,
      &                IHSYM,HAMIL,ONEBOD,NORB,
@@ -2313,7 +2035,6 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
       DIMENSION IA(MXPRDT),IB(MXPRDT)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *
@@ -2581,7 +2302,6 @@ C     END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hintv $Revision$
       SUBROUTINE HINTV(LURHS,LUX,SHIFT,SHIFT_DIA,VECIN,VECOUT,
      &                LBLK,LUPROJ,LUPROJ2)
 *
@@ -2602,7 +2322,6 @@ C     END IF
       LOGICAL CONVER
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 #include "wrkspc.inc"
@@ -2675,11 +2394,13 @@ C     END IF
       LBLOCK = MAX(LBLOCK,LCSBLK)
 *
 *. Batches  of C vector
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &              WORK(KNSTSO(IBTP)),
      &              NOCTPA,NOCTPB,NSMST,LBLOCK,WORK(KLCIOIO),
      &              ISMOST(1,ISSM),NBATCH,WORK(KLCLBT),
-     &              WORK(KLCLEBT),WORK(KLCI1BT),WORK(KLCIBT),0)
+     &              WORK(KLCLEBT),WORK(KLCI1BT),WORK(KLCIBT),0,
+     &              ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCK = IFRMR(WORK(KLCI1BT),1,NBATCH)
      &         + IFRMR(WORK(KLCLBT),1,NBATCH) - 1
@@ -2769,7 +2490,6 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hmatapr $Revision$
       SUBROUTINE HMATAPR(IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                   IABSPC,JABSPC,IABOP,JABOP,IIF,JDOH2,
      &                   IDOH2,IMZERO,IDIAG)
@@ -2785,7 +2505,6 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
@@ -2848,7 +2567,6 @@ C       IDOH2 = JDOH2
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck htv $Revision$
       SUBROUTINE HTV(VECIN,VECOUT,LUIN,LUOUT)
 *
 * Full operator times vector
@@ -2870,7 +2588,6 @@ C       IDOH2 = JDOH2
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck invert_by_diag $Revision$
       SUBROUTINE INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
 *
 * Invert symmetric  - hopefully nonsingular - matrix A
@@ -2886,8 +2603,9 @@ C       IDOH2 = JDOH2
 *
       NTEST = 01
 *. Reform a to symmetric packed form
-C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
-      CALL TRIPAK(A,SCR,1,NDIM,NDIM)
+C          TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGNTP)
+      SIGNTP = 1.0
+      CALL TRIPAK(A,SCR,1,NDIM,NDIM,SIGNTP)
 *. Diagonalize
       CALL EIGEN(SCR,B,NDIM,0,1)
       CALL COPDIA(SCR,VEC,NDIM,1)
@@ -2920,7 +2638,6 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matpert $Revision$
       SUBROUTINE MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3,ECORE)
 *
 * Perturbation expansion of simple  eigenvalue problem
@@ -3032,14 +2749,13 @@ C?      CALL WRTMAT(C(1,IORD+1),1,NDIM,1,NDIM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck micdv5 $Revision$
       SUBROUTINE MICDV5(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
      &                  NVAR,LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
      &                  THRES_E)
 *
-* Davidson algorithm , requires two blocks in core
+* Davidson algorithm, requires two blocks in core
 * Multi root version
 *
 *
@@ -3079,67 +2795,73 @@ C?      CALL WRTMAT(C(1,IORD+1),1,NDIM,1,NDIM)
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
 *
-       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-       DIMENSION VEC1(*),VEC2(*)
-       REAL * 8   INPROD
-       DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
-       DIMENSION APROJ(*),AVEC(*),WORK(*)
-       DIMENSION H0(*),IPNTR(1)
-       DIMENSION H0SCR(*)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      DIMENSION VEC1(*),VEC2(*)
+      REAL * 8   INPROD
+      DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
+      DIMENSION APROJ(*),AVEC(*),WORK(*)
+      DIMENSION H0(*),IPNTR(1)
+      DIMENSION H0SCR(*)
 *
 * Dimensioning required of local vectors
-*      APROJ  : MAXVEC*(MAXVEC+1)/2
-*      AVEC   : MAXVEC ** 2
-*      WORK   : MAXVEC*(MAXVEC+1)/2
-*      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
+*     APROJ  : MAXVEC*(MAXVEC+1)/2
+*     AVEC   : MAXVEC ** 2
+*     WORK   : MAXVEC*(MAXVEC+1)/2
+*     H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
-       DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10)
-       REAL*8 INPRDD
+      DIMENSION FINEIG(1)
+      LOGICAL CONVER,RTCNV(10)
+      REAL*8 INPRDD
 *
-       WRITE(6,*) ' MICDV5, LU3 = ', LU3
-       IF(NROOT.NE.1) THEN
-         WRITE(6,*)
-     &   ' MICDV5 is wrong path, since NROOT .ne. 1, NROOT =',
-     &     NROOT
-         Call Abend1( 20 )
-       END IF
-       IF(MAXVEC.NE.2) THEN
-         WRITE(6,*)
-     &   ' MICDV5 is wrong path, since MAXVEC.ne. 2, MAXVEC=',
-     &     MAXVEC
-         Call Abend1( 20 )
-       END IF
-       IF(NINVEC.NE.1) THEN
-         WRITE(6,*) ' Several input vectors ', NINVEC
-         WRITE(6,*) ' Only the first will be used '
-       END IF
+      write(6,*) ' Entering MICDV5. Testing required. '
+      write(6,*) ' Initialization of IADD missing.'
+      call quit('Stop in MICDV5')
 *
-       IPICO = 0
-       IOLSTM = 1
-       IF(IPICO.NE.0) THEN
-C?       WRITE(6,*) ' Perturbative solver '
-         MAXVEC = MIN(MAXVEC,2)
-       ELSE IF(IPICO.EQ.0) THEN
-C?       WRITE(6,*) ' Variational  solver '
-       END IF
-       IF(IPRT.GT.1.AND.IOLSTM.NE.0)
+      NTESTL = 3
+      IPRT = max(NTESTL,IPRTXX)
+*
+      IADD = 0
+*
+      WRITE(6,*) ' MICDV5, LU3 = ', LU3
+      IF(NROOT.NE.1) THEN
+        WRITE(6,*)
+     &  ' MICDV5 is wrong path, since NROOT .ne. 1, NROOT =',
+     &    NROOT
+        Call Abend1( 20 )
+      END IF
+      IF(MAXVEC.NE.2) THEN
+        WRITE(6,*)
+     &  ' MICDV5 is wrong path, since MAXVEC.ne. 2, MAXVEC=',
+     &    MAXVEC
+        Call Abend1( 20 )
+      END IF
+      IF(NINVEC.NE.1) THEN
+        WRITE(6,*) ' Several input vectors ', NINVEC
+        WRITE(6,*) ' Only the first will be used '
+      END IF
+*
+      IPICO = 0
+      IOLSTM = 1
+      IF(IPICO.NE.0) THEN
+C?      WRITE(6,*) ' Perturbative solver '
+        MAXVEC = MIN(MAXVEC,2)
+      ELSE IF(IPICO.EQ.0) THEN
+C?      WRITE(6,*) ' Variational  solver '
+      END IF
+      IF(IPRT.GT.1.AND.IOLSTM.NE.0)
      & WRITE(6,*) ' Inverse iteration modified Davidson '
-       IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
+      IF(IPRT.GT.1.AND.IOLSTM.EQ.0)
      & WRITE(6,*) ' Normal Davidson method '
 *
-
-       IPRT = 3
+      IF(IPRT.GE.1) THEN
+        WRITE(6,*) ' Convergence threshold for eigenvalues', THRES_E
+      END IF
 *
-       IF(IPRT.GE.1) THEN
-         WRITE(6,*) ' Convergence threshold for eigenvalues', THRES_E
-       END IF
-*
-       KAPROJ = 1
-       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
-       CONVER = .FALSE.
-       IROOT = 1
+      KAPROJ = 1
+      KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+      TEST = 1.0D-8
+      CONVER = .FALSE.
+      IROOT = 1
 *
 * ===================
 *.Initial iteration
@@ -3445,7 +3167,6 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck micdv6 $Revision$
       SUBROUTINE MICDV6(VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,NVAR,
      &                  LU3,LU4,LU5,LU6,LU7,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRTXX,
@@ -4335,7 +4056,6 @@ C      END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck micgcg $Revision$
       SUBROUTINE MICGCG(MV8,LU1,LU2,LU3,LU4,LU5,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,LUPROJ2,IPRT)
@@ -4582,7 +4302,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mindv4 $Revision$
       SUBROUTINE MINDV4(MV7,
      &                  VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,NVAR,
      &                  LU3,LUDIA,NROOT,MAXVEC,NINVEC,
@@ -5138,7 +4857,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mingcg $Revision$
       SUBROUTINE MINGCG(MV8,LU1,LU2,LU3,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,IPRT)
@@ -5331,7 +5049,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mixhone $Revision$
       SUBROUTINE MIXHONE(H1,H2,NREPTP,IREPTP,NOBTP,NSMOB)
 *
 * Replace selected type blocks of H1 with the corresponding blocks
@@ -5345,7 +5062,6 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *. Specific input
       DIMENSION IREPTP(*)
@@ -5422,7 +5138,6 @@ C       APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck oneel_mat_disc $Revision$
       SUBROUTINE ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
 *
 * Transfer one-electron matrix H between memory and disc file in
@@ -5473,7 +5188,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pertctl $Revision$
 *
       SUBROUTINE PERTCTL(ISM,ISPC,EREF)
 *
@@ -5484,7 +5198,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
       IMPLICIT REAL*8(A-H,O-Z)
       EXTERNAL MV7
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -5776,7 +5489,10 @@ C             MIXHONE(H1,H2,NSMOB,NREPTP,IREPTP,NSMOB,NOBTP)
           I12 = 2
         END IF
         ECOREP = ECORE_H
-        CALL GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12)
+* FIXME !!!
+        call quit('Wrong invocation of GASDIAT (8 arguments needed)')
+C       CALL GASDIAT(WORK(KVEC1),LUDIA,ECOREP,ICISTR,I12)
+* FIXME !!!
         IF(NOCSF.EQ.1.AND.ICISTR.EQ.1) THEN
           CALL REWINO(LUDIA)
           CALL TODSC(WORK(KVEC1),NVAR,-1,LUDIA)
@@ -5851,7 +5567,6 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pico3 $Revision$
       SUBROUTINE PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,RNRM,EIG,FINEIG,MAXIT,
      &                 NBATCH,LLBATCHB,LLBATCHE,LBLOCK,IBLOCK,IPRTXX,
      &                 NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
@@ -6693,7 +6408,6 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck simprt $Revision$
       SUBROUTINE SIMPRT(LURF,LUN,LUVN,
      &           EN,SCR,MAXORD,VEC1,VEC2,LU1,LU2,
      &           LBLK,IH0DIA,LUH0,S,V,H0,ECORE,ECORE_H,ECORE_HEX,

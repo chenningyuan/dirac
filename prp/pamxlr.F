@@ -29,10 +29,10 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamxlr.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXLR */
       SUBROUTINE PRPXLR(WORK,KLRF,KCNV,KLRO,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C
 C     Calculate linear response values defined in /XCBXLR/
@@ -89,7 +89,7 @@ C
 C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
 C     Last revision July 9 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -142,14 +142,14 @@ C
       CALL QEXIT('PRPXLR')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXL1 */
       SUBROUTINE PRPXL1(ABLRF,RCNV,IORBCL,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Called by PRPXLR (see PRPXLR for description of task)
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
@@ -330,17 +330,17 @@ C
       CALL QEXIT('PRPXL1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xlrinp */
       SUBROUTINE XLRINP(WORD,RESET,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for linear response  <<A;B>>
 C
 C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -553,11 +553,9 @@ C&&&&
 C&&&& XLRNRM: normalize trial vectors
                  XLRNRM = .TRUE.
                GOTO 100
-C&&&& ONLYSF: debug keyword: only call FMOLI in sigmavector routine
  13            CONTINUE
                   XLR_LSFG(1) = .FALSE.
                GOTO 100
-C&&&& ONLYSG: debug keyword: only call GMOLI in sigmavector routine
  14            CONTINUE
                   XLR_LSFG(2) = .FALSE.
                GOTO 100
@@ -818,17 +816,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
       SUBROUTINE NMRINP(WORD,RESET)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Input section for NMR properties
 C
 C     Written by T.Enevoldsen - Nov 1997
 C     Last revision:
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
@@ -933,10 +931,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxlr */
       SUBROUTINE SETXLR(WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Linear response module:
 C       Initialize variables/Open necessary files etc.
@@ -944,7 +942,7 @@ C
 C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -980,6 +978,7 @@ C     *** Transfer information from XCBXLR to WRKXRS ***
 C     **************************************************
 C
       LINEQ     = .TRUE.
+      FKRMC     = .FALSE.
       LSVCFG(1) = XLR_LSFG(1)
       LSVCFG(2) = XLR_LSFG(2)
       TKNORM    = XLRNRM
@@ -1000,6 +999,12 @@ C
       ITRINT(2) = ITRILR(2)
       INTDEF    = INTXLR
       STERNH    = XSTERN
+C
+C     Restart info used by MCSCF program.
+C
+      IXRSTB(-1) = 0
+      IXRSTB(+1) = 0
+      IXRSTB(+2) = 0
 C
 C     Indicate from vectors are read...
 C
@@ -1028,17 +1033,17 @@ C
       CALL QEXIT('SETXLR')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLRF */
       SUBROUTINE GETLRF(ABLRF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
      &                  EVALR,EVECR,IORBCL,EIG,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Evaluate linear response functions <<A;B>>.
 C
 C     Written by T.Saue Oct 22 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1151,12 +1156,12 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
       SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
      &                  GPO,XPO,BBUF,NXPAR,
      &                  CMO,IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Get linear response function for orbital rotation parameter
 C       contribution from given variational parameter type
@@ -1164,7 +1169,7 @@ C       specified by NBTYP
 C
 C     Written by T.Saue Oct 22 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
@@ -1331,16 +1336,16 @@ C
       RETURN
  1000 FORMAT(/A,I2,A,I2,A,F16.10,A,3X,A2,A,F16.10,A)
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */
       SUBROUTINE XLROUT(ABLRF,RCNV,EIG,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Final output from linear response module
 C
 C     Written by T.Saue Oct 31 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1484,26 +1489,47 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
+#include "dcborb.h"
 #include "dcbxrs.h"
 C
       CHARACTER INDSTR(3,2)*72
       LOGICAL   SKIPEE,SKIPEP
       DIMENSION WORK(*)
+      LOGICAL GASWF
 C
       CALL QENTER('XRSPAR')
 C
 C     Configurational parameters
 C     ==========================
 C
-      KZCONF   = KFREE
       NZCONF   = 0
       NZCONFQ  = NZCONF *NZ
+C     ... I guess it should be *MZ where MZ = MIN(2,NZ) ??? /hjaaj mar 2003
+      CALL MEMGET('REAL',KZCONF,NZCONFQ,WORK,KFREE,LFREE)
 C
 C     Orbital parameters
 C     ==================
 C
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,JOPSY,
-     &            NZXOPE,KZXOPE,NZXOPP,KZXOPP,WORK,KFREE,LFREE,IPRINT)
+C===TODO start
+C     hjaaj June 2001: NOROT should be 
+C     taken from common block dcbnrt.h
+C     but is not defined for DHF/DFT yet (only for KRMC now)
+C     hjaaj June 2001: GASWF should be based on either
+C     MCSCF common block or that this WF is not KRMC
+C
+      CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KNOROT),NORBT)
+      GASWF = .FALSE.
+      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GAS,JOPSY,WORK(KNOROT),
+     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            WORK,KFREE,LFREE,IPRINT)
+C     No CALL MEMREL here!!!!
+C     NZXOPE, NZHOPE, NZXOPP and the
+C     pointers KZXOPE and KXZOPP are defined in SETXOP
+C     THEY MUST NOT BE RELEASED WITH MEMREL !
+C     We must p.t. live with KNOROT allocation ...
+C
+C===TODO end
       NZXOPEQ  = NZXOPE *NZ
       NZXOPPQ  = NZXOPP *NZ
       NZXOPT   = NZXOPE + NZXOPP
@@ -1543,7 +1569,7 @@ C
 #include "dcbbas.h"
 C
       CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP,TOBE
+      LOGICAL   SKIPEE,SKIPEP,TOBE,GASWF
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
@@ -1599,8 +1625,8 @@ C           Analyze NVEC solution vectors from last parameter class
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    NCLS,WORK,KFREE,LFREE,IPRINT)
             ENDIF
-            GOTO 20
           ENDIF
+          GOTO 20
         ENDIF
         BACKSPACE LUINP
         READ (LUINP,END=3,ERR=2) LAB1,LAB2,TYP1,TYP2,
@@ -1635,7 +1661,8 @@ CTROND            NVEC = IVEC+1-IPAR
      &              ERGRSP,NBAS,NORBS
           ENDIF
  30       CONTINUE
-C         collect type, first vector, and length for this parameter class
+C         collect type, first vector, and length for this parameter 
+C         class
           PBUF = TYP1(1:1)
           IPAR = IVEC
           NDIM = LEN
@@ -1650,9 +1677,15 @@ C         Generate orbital rotation operator
             IF(TOBE) THEN
               CALL MEMREL('ANAXRS',WORK,KLOOP,KLOOP,KFREE,LFREE)
             ENDIF
-            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,IFRP,
-     &                  NZXOPE,KZXOPE,NZXOPP,KZXOPP,
-     &                  WORK,KFREE,LFREE,IPRINT)
+            CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
+            CALL IZERO(WORK(KNOROT),NORBT)
+            GASWF = .FALSE.
+            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
+     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+     &            WORK,KFREE,LFREE,IPRINT)
+C           No CALL MEMREL here for KNOROT, because
+C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
+C           be preserved!!!
             JFRP = IFRP
           ENDIF
 C

@@ -1810,10 +1810,10 @@ C
       CALL FLSHFO(LUPRI)
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Read property integrals from file with label PRPLBL
 C     and class blocks defined by COMB 
@@ -1822,7 +1822,7 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: May 19 1996 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL FNDLB3
@@ -1849,17 +1849,17 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fndlb3 */
       LOGICAL FUNCTION FNDLB3(SRCLBL,COMB,RTNLBL,LU)
-C*****************************************************************************
+C***********************************************************************
 C
 C  18-Jan-1995 tsaue
 C  1. Find MOLECULE label and block COMB on unformatted file LU
 C       a)Cannot find label: return FALSE
 C       b)Finds label      : continues
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL FNDLB2
@@ -3216,7 +3216,7 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0)
 C
-#include "dcborb.h"
+#include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
       CHARACTER FMT*6,MXFORM*6

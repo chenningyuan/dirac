@@ -4,7 +4,6 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dirdir $Revision$
       SUBROUTINE DIRDIR(INSPC,IUTSPC,ISM,LUIN,LEVEL,E0,LUSCR,LUSCR2,
      &                  LU1)
 
@@ -30,7 +29,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "cgas.inc"
 #include "crun.inc"
@@ -122,7 +120,6 @@ C         ECORE = ECORE_ORIG + ECCP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dirdir1n $Revision$
       SUBROUTINE DIRDIR1N(EREF,ECORE,INSPC,IIUTSPC,ISM,LUC,
      &             S11,S01,RES0,E2,
      &             NOCCLS,IOCCLS,NACTI,IACTI,
@@ -147,7 +144,6 @@ C         ECORE = ECORE_ORIG + ECCP
       REAL*8 INPROD, INPRDD
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -426,12 +422,13 @@ C    &                WORK(KLI1BT2), WORK(KLIBT2),0)
 C     PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
 C    &                  NSMST,MXLNG,IOCOC,ISMOST,
 C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
+        ITTSS_ORD = 2
         CALL PART_CIV2(IDC,WORK(KLBLTP2),WORK(KNSTSO(IATP)),
      &       WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,
      &       NSMST,LSCR1,WORK(KLIOIO2),
      &       ISMOST(1,ISM),
      &       NBATCH2,WORK(KLLBT2),WORK(KLLEBT2),
-     &       WORK(KLI1BT2), WORK(KLIBT2),0)
+     &       WORK(KLI1BT2), WORK(KLIBT2),0,ITTSS_ORD)
         WRITE(6,*) ' Number of batches for |2>   ', NBATCH2
         CALL MXRESC(WORK(KLIOIO2),IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &              NSMST,NSTFSMSPGP,MXPNSMST,
@@ -468,12 +465,13 @@ C    &              WORK(KLSI1BT), WORK(KLSIBT),0)
 C     PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
 C    &                  NSMST,MXLNG,IOCOC,ISMOST,
 C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),
      &     NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLSIOIO),
      &     ISMOST(1,ISM),
      &     NSBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &     WORK(KLSI1BT), WORK(KLSIBT),0)
+     &     WORK(KLSI1BT), WORK(KLSIBT),0,ITTSS_ORD)
       WRITE(6,*) ' Number of batches for |1>   ', NSBATCH
 *. Obtain partitionings of C vector
       CALL MEMMAN(KLCLBT ,NTTS  ,'ADDL  ',1,'CLBT  ')
@@ -493,12 +491,13 @@ C    &              NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLCIOIO),
 C    &              ISMOST(1,ISM),
 C    &              NBATCHC,WORK(KLCLBT),WORK(KLCLEBT),
 C    &              WORK(KLCI1BT),WORK(KLCIBT),1)
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KLCBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),
      &     NOCTPA,NOCTPB,NSMST,LSCR1,WORK(KLCIOIO),
      &     ISMOST(1,ISM),
      &     NBATCHC,WORK(KLCLBT),WORK(KLCLEBT),
-     &     WORK(KLCI1BT),WORK(KLCIBT),1)
+     &     WORK(KLCI1BT),WORK(KLCIBT),1,ITTSS_ORD)
 C     PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
 C    &                  NSMST,MXLNG,IOCOC,ISMOST,
 C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
@@ -1329,7 +1328,6 @@ C    &              NBLOCKIO,IBLCKIO,VECIO )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_batch_of_first $Revision$
       SUBROUTINE GET_BATCH_OF_FIRST
      &           (N1BLOCK,I1OFF,N1ELMNT,I1BLOCK,I1SM,I1SPC,
      &            E0,E1,ALPHA,LU0,IDC,
@@ -1554,7 +1552,6 @@ C     Call Abend2( 'before call to SBLOCK' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_batch_of_second $Revision$
       SUBROUTINE GET_BATCH_OF_SECOND
      &           (N2BLOCK,I2OFF,N2ELMNT,I2BLOCK,I2SM,I2SPC,
      &            N1BATCH,N1BLOCK,L1BLOCK,I1BLOCK,I1SM,I1SPC,
@@ -1836,7 +1833,6 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sbatch2_from_cbatch $Revision$
       SUBROUTINE SBATCH2_FROM_CBATCH(NLBLOCK,ILOFF,NRBLOCK,IROFF,
      &                               ILBLOCK,IRBLOCK,
      &                               CB,HCB,IRESTRICT)
@@ -1858,7 +1854,6 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 *
 * =====
 *.Input

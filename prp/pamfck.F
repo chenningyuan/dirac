@@ -29,24 +29,26 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamfck.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getmat */
-      SUBROUTINE GETMAT(COPT,DMAT,IPRINT,WORK,LWORK)
-C*****************************************************************************
+      SUBROUTINE GETMAT(COPT,DMAT,IPRINT,FKRMC,WORK,LWORK)
+C***********************************************************************
 C
-C     Read DMAT from file KRMC MATRICES
+C     Read DMAT from file 
+C     - KRMC MATRICES if doing linear response
+C     - KRMC FOCK if solving KRMCSCF linear equations
 C
 C     IOPT:
 C
 C     'FCMO' - Read inactive Fock matrix in MO basis (FCmo)
 C     'FVMO' - Read active Fock matrix in MO basis (FVmo)
 C     'DVMO' - Read 1-electron active density matrix (DVmo)
+C     'FGEN_PV' - generalized Fock matrix in MO basis
 C
 C
-C     Written by  Hans Joergen Aa. Jensen and T.Saue 27-Jan-1995
-C     Last revision: July 21 1997 - tsaue
+C     Written by J. Thyssen - Nov 22 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -54,32 +56,38 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 C
-      CHARACTER COPT*(*), CCOPT*8,LABEL*8
+      CHARACTER COPT*(*), CCOPT*8,LABEL*8, FILENAME*20
       DIMENSION DMAT(*),WORK(*)
-      LOGICAL   FEXIST, FOPEN, FNDLAB
+      LOGICAL   FEXIST, FOPEN, FNDLAB, FKRMC
 C
 #include "memint.h"
       CALL QENTER('GETMAT')
 C
-      IUNIT = 40
+      IF ( FKRMC ) THEN
+         FILENAME = 'KRMC_FOCK'
+         IUNIT = 53
+      ELSE
+         FILENAME = 'KRMC_MATRICES'
+         IUNIT = 40
+      END IF
+C
       IPOSOLD = 1
       IOFF = 1
       LCOPT = LEN(COPT)
-      N2ASHTQ = N2ASHT*NZ
       IF (LCOPT .EQ. 0) GOTO 1000
 C
 C     Check if file exists
 C
-      INQUIRE(FILE='KRMC MATRICES',EXIST=FEXIST)
+      INQUIRE(FILE=FILENAME,EXIST=FEXIST)
       IF (FEXIST) THEN
-         INQUIRE(FILE='KRMC MATRICES',OPENED=FOPEN)
+         INQUIRE(FILE=FILENAME,OPENED=FOPEN)
          IF (.NOT. FOPEN) THEN
-            OPEN(IUNIT,FILE='KRMC MATRICES',STATUS='UNKNOWN',
+            OPEN(IUNIT,FILE=FILENAME,STATUS='UNKNOWN',
      &           FORM='UNFORMATTED',ACCESS='SEQUENTIAL')
          END IF
       ELSE
          FOPEN = .FALSE.
-         OPEN(IUNIT,FILE='KRMC MATRICES',STATUS='NEW',
+         OPEN(IUNIT,FILE=FILENAME,STATUS='NEW',
      &        FORM='UNFORMATTED',ACCESS='SEQUENTIAL')
          REWIND(IUNIT)
          CALL NEWLAB('SODLABEL',IUNIT,LUPRI)
@@ -147,33 +155,134 @@ C              Matrix not present in file
 C
 C              Generate matrix
 C
-               CALL MEMGET('REAL',KDV,N2ASHTQ,WORK,KFREE,LFREE)
-               CALL RMAKDM(DUMMY,WORK(KDV),DUMMY,DUMMY,WORK,LWORK)
+               CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+c              CALL RMAKDM(.TRUE.,.FALSE.,DUMMY,WORK(KDV),DUMMY,DUMMY,
+c    &              WORK,LWORK)
+c              RMAKDM need to be called "...,WORK,KFREE,LFREE)"
+               CALL QUIT('ralle ralle')
 C
 C              Write it to file
 C
-               CALL WRTKRMC(IUNIT,LABEL,WORK(KDV),N2ASHTQ)
-               CALL DCOPY(N2ASHTQ,WORK(KDV),1,DMAT(IOFF),1)
+               CALL WRTKRMC(IUNIT,LABEL,WORK(KDV),N2ASHXQ)
+               CALL DCOPY(N2ASHXQ,WORK(KDV),1,DMAT(IOFF),1)
                CALL MEMREL('GETMAT.DVMO',WORK,KWORK,KWORK,KFREE,LFREE)
             ELSE
 C
 C              ...or matrix present in file
 C
-               CALL READT(IUNIT,N2ASHTQ,DMAT(IOFF))
+               CALL READT(IUNIT,N2ASHXQ,DMAT(IOFF))
             END IF
 C
 C           Print section
 C
             IF (IPRINT .GE. 10) THEN
                CALL HEADER('Output from GETMAT: DVMO',-1)
-               DO I = 1,NFSYM
-                  CALL PRQMAT(DMAT(IOFF+I2ASHT(I)),NASH(I),NASH(I),
-     &                        NASH(I),NASH(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(DMAT,NASHT,NASHT,NASHT,NASHT,
+     &              NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+            IOFF = IOFF + N2ASHXQ
+         ELSE IF (CCOPT .EQ. 'FGENPV') THEN
+C
+C           Read generalized Fock matrix in MO basis
+C
+            LABEL = 'FGENPV  '
+            REWIND(IUNIT)
+            IF (.NOT. FNDLAB(LABEL,IUNIT)) THEN
+C
+C              Matrix not present in file
+C
+               CALL QUIT('*** Not implemented ***')
+C
+            ELSE
+C
+C              ...or matrix present in file
+C
+               CALL READT(IUNIT,NORBT * NASHT * NZ, DMAT(IOFF))
+C
+            END IF
+            IF (IPRINT .GE. 10) THEN
+               CALL HEADER('Output from GETMAT: '//LABEL,-1)
+               CALL PRQMAT(DMAT(IOFF),NORBT,NASHT,
+     &                        NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+            IOFF = IOFF + NASHT * NORBT * NZ
+         ELSE IF (CCOPT .EQ. 'FCAC') THEN
+C
+C           Read active-active part of FC Fock matrix
+C
+            LABEL = 'FCAC    '
+            REWIND(IUNIT)
+            IF (.NOT. FNDLAB(LABEL,IUNIT)) THEN
+C
+C              Matrix not present in file
+C
+               CALL QUIT('*** Not implemented ***')
+C
+            ELSE
+C
+C              ...or matrix present in file
+C
+               CALL READT(IUNIT,N2ASHXQ, DMAT(IOFF))
+C
+            END IF
+            IF (IPRINT .GE. 10) THEN
+               CALL HEADER('Output from GETMAT: '//LABEL,-1)
+               CALL PRQMAT(DMAT(IOFF),NASHT,NASHT,
+     &                        NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+            IOFF = IOFF + N2ASHXQ
+         ELSE IF (CCOPT .EQ. 'H2AC' .OR. CCOPT .EQ. 'PVMO') THEN
+C
+C           Read two-electron integrals or density matrix
+C
+            IF (CCOPT .EQ. 'H2AC') THEN
+               LABEL = 'H2AC    '
+            ELSE
+               LABEL = 'PVMO    '
+            END IF
+            REWIND(IUNIT)
+            IF (.NOT. FNDLAB(LABEL,IUNIT)) THEN
+C
+C              Matrix not present in file
+C
+               CALL QUIT('*** Not implemented ***')
+C
+            ELSE
+C
+C              ...or matrix present in file
+C
+               CALL READT(IUNIT,
+     &              NASHT * NASHT * NNASHX * NZ * 3, DMAT(IOFF))
+C
+            END IF
+C
+ 9000 FORMAT(1P,1X,4I3,4X,3(D14.7,1X),3(/,16X,3(D14.7,1X)))
+C
+            IF (IPRINT .GE. 10) THEN
+               CALL HEADER('Output from GETMAT: '//LABEL,-1)
+               IJ = 0
+               DO I = 1,NASHT
+                  DO J = 1,I
+                     IJ = IJ + 1
+                     DO K = 1,NASHT
+                        DO L = 1,NASHT
+                           WRITE(LUPRI,9000)
+     &                          K,L,I,J,
+     &                          ((DMAT(IOFF 
+     &                          + (ICL-1) * NASHT * NASHT * NNASHX * NZ
+     &                          + (IZ-1) * NASHT * NASHT * NNASHX
+     &                          + (IJ-1) * NASHT * NASHT
+     &                          + (L-1) * NASHT
+     &                          + (K-1)),
+     &                          IZ = 1,NZ),ICL=1,3)
+                        END DO
+                     END DO
+                  END DO
                END DO
             END IF
-            IOFF = IOFF + N2ASHTQ
+            IOFF = IOFF + NASHT * NASHT * NNASHX * NZ * 3
          ELSE
-            WRITE(LUPRI,'(/3A)') 'GETMAT: Unknown option: <',CCOPT,'>'
+            WRITE(LUPRI,'(3A)') 'GETMAT: Unknown option: <',CCOPT,'>'
             CALL QUIT('argh, ralle ralle in GETMAT')
          END IF
 C
@@ -182,115 +291,5 @@ C
  1000 CONTINUE
       IF (.NOT. FOPEN) CLOSE(IUNIT)
       CALL QEXIT('GETMAT')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck wrtkrmc */
-      SUBROUTINE WRTKRMC(LUNIT,LABEL,VECTOR,ISIZE)
-C*****************************************************************************
-C
-C     Write VECTOR to LUKRMC under label LABEL.
-C
-C     Input:
-C        VECTOR  - vector of size ISIZE
-C        LABEL   - the label
-C        LUNIT   - unit number
-C
-C     Output:
-C
-C     Written by J. Thyssen - Nov 24 1998
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "iratdef.h"
-C
-      DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
-      LOGICAL   FNDLAB
-C
-      REWIND(LUNIT)
-      IF (FNDLAB(LABEL,LUNIT)) THEN
-C
-C     Label exists.
-C     Seek to label SODLABEL and write from there.
-C
-         REWIND(LUNIT)
-         IF (.NOT. FNDLAB('SODLABEL',LUNIT)) THEN
-            CALL QUIT('WRTKRMC: wrong structure in file')
-         END IF
-      ELSE
-C
-C     Label do not exist
-C     Seek to label EOFLABEL and write from there
-C
-         REWIND(LUNIT)
-         IF (FNDLAB('EOFLABEL',LUNIT))
-     &      BACKSPACE LUNIT
-C
-      END IF
-C
-C     Write label
-C
-      CALL NEWLAB(LABEL,LUNIT,LUPRI)
-C
-C     Write vector
-C
-      LEN = MAX(4,ISIZE)
-      CALL WRITSQ(LUNIT,IRAT*LEN,VECTOR)
-      CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
-C
-      REWIND LUNIT
-C
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rmakdm */
-      SUBROUTINE RMAKDM(CREF,DV,PV,INDXCI,WORK,LWORK)
-C*****************************************************************************
-C
-C     Construct one- and two-electron active density matrix
-C
-C     Input:
-C        CMO     - the orbitals for the CEP
-C        CREF    - CI vector
-C
-C     Output:
-C        DV      - one electron active density matrix
-C        PV      - two electron active density matrix
-C
-C     Written by J. Thyssen - Oct 22 1998
-C     Last revision :
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D1 = 1.0D00, D0 = 0.0D00)
-C
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-C
-      DIMENSION CREF(*),DV(*),PV(*),INDXCI(*)
-      DIMENSION WORK(LWORK)
-C
-C
-#include "memint.h"
-C
-      CALL QENTER('RMAKDM')
-C
-      IF (NASHT .EQ. 1) THEN
-         DV(1) = D1
-         DO IZ = 2,NZ
-            DV(IZ) = D0
-         END DO
-      ELSE
-         CALL QUIT('RMAKDM: MASHT .GT. 1 not implemented yet')
-      END IF
-C
-C
-      CALL QEXIT('RMAKDM')
       RETURN
       END

@@ -587,6 +587,9 @@ C  /* Deck diavc2 */
 C
 C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
 C
+C Set VECOUT = 0 if VECIN = 0
+C   Timo Fleig, 18-12-2002
+C
 #include "implicit.h"
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
@@ -594,7 +597,11 @@ C
       DO 100 I=1,NDIM
       DIVIDE=DIAG(I)+SHIFT
       IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
-      VECOUT(I)=VECIN(I)/DIVIDE
+      IF(VECIN(I).EQ.0.0D0) THEN
+        VECOUT(I) = 0.0D0
+      ELSE
+        VECOUT(I)=VECIN(I)/DIVIDE
+      END IF
   100 CONTINUE
       RETURN
       END

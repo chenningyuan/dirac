@@ -29,17 +29,17 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirscf.F
 C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
       SUBROUTINE PSIDHF(WFCONV,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Solve DHF - equations; print results
 C
 C     Written by T.Saue November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -49,10 +49,10 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbpsi.h"
 #include "blocks.h"
 C
       LOGICAL   WFCONV
@@ -62,7 +62,7 @@ C
 #include "memint.h"
 C
       WFCONV = .FALSE.
-      IF(DFTHAM) THEN
+      IF(DODFT) THEN
         CALL TITLER('Kohn - Sham calculation','*',125)
       ELSE
         CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
@@ -457,9 +457,9 @@ C
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,INTTYP,DAYTID
+     &                CACC,CPUTID,DHF_INTTYP,DAYTID
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,INTTYP,DAYTID
+     &                CACC,CPUTID,DHF_INTTYP,DAYTID
       ENDIF
 C
       IF (TRIFCK) THEN
@@ -834,7 +834,7 @@ C        Check what integral types contribute
 C        ====================================
 C
          CALL INTCON(INTFLG,INTBUF,INTDEF,
-     &               ERGVAL,CNVINT,NITER,ITRINT,INTTYP)
+     &               ERGVAL,CNVINT,NITER,ITRINT,DHF_INTTYP)
 C
 C        Construct density matrix
 C        ========================
@@ -1070,9 +1070,9 @@ C            ONECOFF = .FALSE.
      +    '########## END ITERATION NO.',NITER,' ##########',
      &    DAYTID
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,INTTYP,DAYTID(1:10)
+     &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,INTTYP,DAYTID(1:10)
+     &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
 C
         IF(DHFEXIT) GOTO 30
@@ -1292,11 +1292,11 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intcon */
       SUBROUTINE INTCON(INTFLG,INTOLD,INTDEF,
      &                  CNV,CNVINT,ITR,ITRINT,INTTYP)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Check what integrals contribute in a given SCF-iteration
 C       CNVINT has precedence over ITRINT !!!
@@ -1309,7 +1309,7 @@ C
 C     Written by T.Saue Mar 09 1995
 C     Last revision: Aug 24 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1362,17 +1362,17 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smogen */
       SUBROUTINE SMOGEN(CMO,TMAT,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Multiply overlap matrix onto occupied vectors and write to file;
 C     this forms the basis for overlap selection
 C
 C     Written by T.Saue Nov 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1404,10 +1404,10 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smoge1 */
       SUBROUTINE SMOGE1(SMO,CMO,TMAT,SMAT,BUF,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Multiply overlap matrix onto occupied vectors and write to file;
 C     this forms the basis for overlap selection
@@ -1422,7 +1422,7 @@ C     using the current CMO-coefficients in MO-basis.
 C
 C     Written by T.Saue Nov 11 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -1477,17 +1477,17 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smosel */
       SUBROUTINE SMOSEL(EIG,IBEIG,CFU,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Select vectors based on overlap.
 C     Input is coefficients in MO-basis.
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
@@ -1505,16 +1505,16 @@ C     Memory deallocation
       CALL QEXIT('SMOSEL')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose1 */
       SUBROUTINE SMOSE1(EIG,IBEIG,CFU,SMO,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
@@ -1555,18 +1555,18 @@ C     Memory deallocation
       CALL QEXIT('SMOSE1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose2 */
       SUBROUTINE SMOSE2(IFRP,EIG,IBEIG,CFU,SMO,EBUF,IBEBUF,CBUF,SBUF,
      &                  RCSEL,ICSEL,ISELM,KNORB,KNOCC,KNESH,WORK,LWORK)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
 C     Major revisions: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
 C                      May 2002 hjaaj: EIG and IBEIG added
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
@@ -1700,17 +1700,17 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck denorb */
       SUBROUTINE DENORB(DMAT,JVEC,NVEC,IFRP,CMO,IPRINT)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Construct density matrix for NVEC orbitals of fermion corep IFRP
 C     starting with orbital JVEC (with respect to NPSH(IFRP))
 C
 C     Written by T.Saue Oct 22 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0,D0=0.0D0)
@@ -1736,16 +1736,16 @@ C
       ENDIF
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck oneerg */
       SUBROUTINE ONEERG(EIG,IBEIG)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Calculate one-electron energy as sum of eigenvalues
 C
 C        Written by T.Saue Jan 28 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2=2.0D0)
@@ -1801,16 +1801,16 @@ C
       RETURN
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reord */
       SUBROUTINE REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,WORK,LWORK)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Reorder orbitals
 C
 C        Written by J. Thyssen Nov 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK),CMO(*),EIG(*),IBEIG(*)
@@ -1884,18 +1884,18 @@ C
       CALL QEXIT('REORD')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reor1 */
       SUBROUTINE REOR1(CMO,CMOBCK,EIG,EIGBCK,IBEIG,IBEIGBCK,
      &                 NBASI,NORBI,NZ,IORDER,NORDER,
      &                 NPOSITRON,NELECTRON)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Reorder orbitals
 C
 C        Written by J. Thyssen Nov 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION CMO(NBASI,NORBI,NZ), CMOBCK(NBASI,NORBI,NZ),
@@ -1930,9 +1930,11 @@ C
          END IF
       END DO
 C
-C     Make sure we are not copying more than one orbital to the same destination,
+C     Make sure we are not copying more than one orbital to the same 
+C     destination,
 C     or that IORDER(I) does not belong to 1..NORDER
-C     (not 100% test: if user specified e.g. IORDER=2,2,2 this would not catch it,
+C     (not 100% test: if user specified e.g. IORDER=2,2,2 this would 
+C     not catch it,
 C     but that is quite unlikely) /hjaaj May 2002
 C
       IF (ICHK_S .NE. ICHK_D) THEN
@@ -1942,10 +1944,10 @@ C
       CALL QEXIT('REOR1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
       SUBROUTINE MKMOFK2(FMO,FAO,TMAT,WORK,LWORK)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
 C        Construct MO Fock matrix from Fock matrices in AO-basis
 C     WARNING:
@@ -1954,7 +1956,7 @@ C           with the open shell code.
 C
 C        Written by J. Thyssen Dec 1997
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
@@ -1999,20 +2001,21 @@ C
       CALL QEXIT('MKMOFK2')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck EXTRSB */
       SUBROUTINE EXTRSB (IMODE,I,ISYM,JSYM,ICOMP,JCOMP,IZS,IZE,
      &                   FSUB,MSUB,NSUB,NZS,
      &                   FFUL,MFUL,NFUL)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
-C        Extract or insert a sub block out of the full matrix that is ordered
-C        on boson irreps for both the left and the right index
+C        Extract or insert a sub block out of the full matrix 
+C        that is ordered on boson irreps for both the left and 
+C        the right index
 C
 C        Written by L. Visscher
 C        August 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -2048,10 +2051,12 @@ C
          JSE = JSYM
       ENDIF
 C
-C     Extract the subblock by looping over both indices in the right order
-C     while using different counting variables for the full and the sub matrices
-C     Whenever we encounter a block that fulfills the criteria we copy it into
-C    or out from the subbblock.
+C     Extract the subblock by looping over both indices in 
+C     the right order
+C     while using different counting variables for the full 
+C     and the sub matrices
+C     Whenever we encounter a block that fulfills the criteria 
+C     we copy it into or out from the subbblock.
 C
       DO IZ = IZS, IZE
         JXF = 0
@@ -2072,8 +2077,9 @@ C                Only when we are in a subblock we update this pointer
                  JXS = JXS + 1
               ELSE
 C
-C             We are not going to run the loops for the left index and have
-C             already updated JXF so we might as well skip the inner loops
+C             We are not going to run the loops for the left index 
+C             and have already updated JXF so we might as well skip 
+C             the inner loops
 C
                  GOTO 100
               ENDIF
@@ -2111,21 +2117,21 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck EXTRSBR */
       SUBROUTINE EXTRSBR (IMODE,I,ISYM,JSYM,ICOMP,JCOMP,IZS,IZE,
      &                    FSUB,MSUB,NSUB,NZS,
      &                    FFUL,MFUL,NFUL)
-C****************************************************************************
+C**********************************************************************
 C     PURPOSE:
-C        Extract or insert a sub block out of the full matrix that is ordered
-C        on boson irreps for the left and on small, large or positron, electron
-C        on the right index.
+C        Extract or insert a sub block out of the full matrix 
+C        that is ordered on boson irreps for the left and on small, 
+C        large or positron, electron on the right index.
 C
 C        Written by L. Visscher
 C        September 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -2161,10 +2167,10 @@ C
          JSE = JSYM
       ENDIF
 C
-C     Extract the subblock by looping over both indices in the right order
-C     while using different counting variables for the full and the sub matrices
-C     Whenever we encounter a block that fulfills the criteria we copy it into
-C    or out from the subbblock.
+C     Extract the subblock by looping over both indices in the 
+C     right order while using different counting variables for the 
+C     full and the sub matrices. Whenever we encounter a block that 
+C     fulfills the criteria we copy it into or out from the subbblock.
 C
       DO IZ = IZS, IZE
         JXF = 0
@@ -2185,8 +2191,9 @@ C                Only when we are in a subblock we update this pointer
                  JXS = JXS + 1
               ELSE
 C
-C             We are not going to run the loops for the left index and have
-C             already updated JXF so we might as well skip the inner loops
+C             We are not going to run the loops for the left index 
+C             and have already updated JXF so we might as well skip 
+C             the inner loops
 C
                  GOTO 100
               ENDIF
@@ -2227,14 +2234,14 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selbos */
       SUBROUTINE SELBOS (IFRP,NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
-C****************************************************************************
+C***********************************************************************
 C     PURPOSE:
 C        Sort eigenvectors from boson ordering to energy ordering
 C
 C        Written by L. Visscher
 C        April 1999
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -2276,7 +2283,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck appbos */
       SUBROUTINE APPBOS (IFRP,NO,INDX,IBEIG,EVEC,RDUM)
-C****************************************************************************
+C***********************************************************************
 C     PURPOSE:
 C        Identify vectors by their largest boson character
 C        This approximate labeling can be used in the CI code.
@@ -2287,7 +2294,7 @@ C
 C        Written by L. Visscher
 C        October 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -2725,7 +2732,7 @@ C         jth April 98
       IF(TRIFCK) THEN
         INQUIRE(FILE='DFFCK2',EXIST=TOBE)
         IF(TOBE) THEN
-          INTTYP = 'Old FOCK2'
+          DHF_INTTYP = 'Old FOCK2'
           BARNUC = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A/)')
@@ -2766,7 +2773,7 @@ C
         REWIND LUCYCL
  10     CONTINUE
         READ(LUCYCL,1020,END=20) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &              CACC,CPUTID,INTTYP,DAYTID
+     &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
 #if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
@@ -2776,17 +2783,17 @@ C        at the end of the file
 #endif
         WRITE(LUPRI,'(A)') '*** WARNING *** : SCFCYC restart info:'
         WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &            CACC,CPUTID,INTTYP,DAYTID
+     &            CACC,CPUTID,DHF_INTTYP,DAYTID
         ILLINT = 0
-        IF(INTTYP(1:2).EQ.'LL') ILLINT = 1
+        IF(DHF_INTTYP(1:2).EQ.'LL') ILLINT = 1
         ISLINT = 0
-        IF(INTTYP(4:5).EQ.'SL') ISLINT = 1
+        IF(DHF_INTTYP(4:5).EQ.'SL') ISLINT = 1
         ISSINT = 0
-        IF(INTTYP(7:8).EQ.'SS') ISSINT = 1
+        IF(DHF_INTTYP(7:8).EQ.'SS') ISSINT = 1
         INTBUF = ILLINT + 2*ISLINT + 4*ISSINT
         NITER = NITER + 1
         CALL INTCON(INTFLG,INTBUF,INTDEF,
-     &            ERGVAL,CNVINT,NITER,ITRINT,INTTYP)
+     &            ERGVAL,CNVINT,NITER,ITRINT,DHF_INTTYP)
 C
 C       * Check on convergence acceleration
 C       -----------------------------------
@@ -2834,7 +2841,7 @@ C
         OPEN(LUCYCL,FILE ='DFCYCL',STATUS='UNKNOWN',
      &     ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
         IF(TRIVEC) CALL INTCON(INTFLG,INTBUF,INTDEF,
-     &                  DUMMY,CNVINT,NITER,ITRINT,INTTYP)
+     &                  DUMMY,CNVINT,NITER,ITRINT,DHF_INTTYP)
       ENDIF
 C
       IF (AUTOCC .AND. .NOT. BARNUC) THEN
@@ -2846,7 +2853,7 @@ C
 C
       RETURN
  1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
- 1020 FORMAT(4X,    I3,   D23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1020 FORMAT(4X,    I3,   G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
 C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2862,6 +2869,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 C
       DIMENSION EIG(*)
@@ -2915,10 +2923,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfdiag */
       SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Diagonalize Dirac-Fock matrix
 C     On input:
@@ -2930,7 +2938,7 @@ C
 C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
 C     Last revision: Jan 10 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3227,12 +3235,12 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck zoradg */
       SUBROUTINE ZORADG(NZS,NL,NS,FLL,FLS,FSS,VLL,VSL,VSS,
      &                  WLL,WLS,WSL,WSS,EIGE,EIGP,
      &                  WORK,KFREE,LFREE)
-C*****************************************************************************
+C***********************************************************************
 C
 C     Diagonalize the Dirac matrix using the ZORA approximation :
 C     first fold in the small components and build an effective large
@@ -3241,7 +3249,7 @@ C
 C     Taken out of DFDIAG and modified by L.Visscher Aug 28 2000
 C     Last revision: Aug 28 2000
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C

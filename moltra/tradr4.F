@@ -437,6 +437,7 @@ C
 C
 C     Generate pointers for reduced coefficient matrices
 C
+C
       NQ3S = 0
       NQ4S = 0
       NQ3T = 0

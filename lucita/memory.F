@@ -1,10 +1,8 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck alloc $Revision$
       SUBROUTINE ALLOC
 *
 * Dimensions and
@@ -35,7 +33,6 @@
 *. Input
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -168,21 +165,6 @@ CADDE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck memchk $Revision$
-      SUBROUTINE LMEMCHK
-*
-* Check memory allocated  with the memory manager
-*
-      CALL MEMMAN(IDUM,IDUM,'CHECK ',IDUM,'IDUM  ')
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck memman $Revision$
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
 *
 * Memory manager routine
@@ -221,7 +203,6 @@ CADDE
       DATA PAD2/0.987654321D0/
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "irat.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"

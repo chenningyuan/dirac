@@ -1680,6 +1680,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION SVEC(*), BVEC(*)
       DIMENSION VMUUUU(*), HCORE(*)

@@ -258,7 +258,7 @@ case $machine in
    i[3-6]86-*)
       liblist='libatlas libblas'
 #TODO liblist='libMKL libatlas libblas'
-      complist='ifc g77 pgf90 f77'
+      complist='g77 ifc pgf90 f77'
       cclist='cc gcc pgcc'
       debug='gdb';;
 

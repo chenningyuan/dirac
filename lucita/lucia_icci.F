@@ -40,7 +40,6 @@ C     DIAG_SYM_MAT(A,X,SCR,NDIM,ISYM)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -142,7 +141,6 @@ C                IADR_DX(ISM,JSM,KSM,LSM,IOB,JOB,KOB,LOB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "orbinp.inc"
 *. Jeppe + Erik,  Sept. 98
 *
@@ -219,7 +217,6 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "oper.inc"
 #include "cc_exc.inc"
@@ -321,7 +318,6 @@ C     IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV)
       DIMENSION RHS(*)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "crun.inc"
 #include "wrkspc.inc"
 #include "clunit.inc"
@@ -446,7 +442,6 @@ C     END IF
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*6 CALC
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "cands.inc"
 #include "oper.inc"
@@ -636,7 +631,6 @@ C       CALL CASPT_CHECK
       DIMENSION VEC1(*),VEC2(*)
 *.
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
@@ -876,7 +870,8 @@ C    &(AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
       NTEST = 1
 *. Reform to packed matrix
       IF(ISYM.EQ.0) THEN
-        CALL TRIPAK(A,SCR,1,NDIM,NDIM)
+        SIGNTP = 1.0
+        CALL TRIPAK(A,SCR,1,NDIM,NDIM,SIGNTP)
       ELSE
         CALL COPVEC(A,SCR,NDIM*(NDIM+1)/2)
       END IF

@@ -1,84 +1,8 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck add_skaiib $Revision$
-C                ADD_SKAIIB(SB,NI,NIA,SIRES,NKABTC,NIB,
-C    &                          II,I3(1,II),XI3S(1,II) )
-      SUBROUTINE ADD_SKAIIB(SB,NI,NIA,SKAIIB,NKA,NIB,
-     &                          I,ISCA,SSCA)
-*
-* Update Transposed sigma block with contributions for given orbital index j
-* from the matrix S(Ka,i,Ib)
-*
-* S(Ib,Isca(Ka)) =  S(Ib,Isca(Ka)) + Ssca(Ka)*S(Ka,I,Ib)
-*
-*
-* For efficient processing of alpha-beta loop
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-       DIMENSION SKAIIB(*),SSCA(*),ISCA(*)
-*. Input and Output
-       DIMENSION SB(NIB,NIA)
-*
-C     LBLK = 100
-      LBLK = 40
-      NBLK = NIB/LBLK
-      IF(LBLK*NBLK.LT.NIB) NBLK = NBLK + 1
-      DO ICBL = 1, NBLK
-        IF(ICBL.EQ.1) THEN
-          ICOFF = 1
-        ELSE
-          ICOFF = ICOFF + LBLK
-        END IF
-        ICEND = MIN(ICOFF+LBLK-1,NIB)
-        ICONST = NKA*NI
-        IADR0 =  (I-1)*NKA+(ICOFF-1-1)*NKA*NI
-        IF(ICEND.GT.ICOFF) THEN
-*. Use form with Inner loop over IB
-          DO KA  = 1, NKA
-            IF(ISCA(KA).NE.0) THEN
-              S = SSCA(KA)
-              IROW = ISCA(KA)
-C             IADR = KA + (I-1)*NKA+(ICOFF-1-1)*NKA*NI
-              IADR = IADR0 + KA
-              DO IB = ICOFF,ICEND
-*. Adress of S(Ka,i,Ib)
-                IADR = IADR + ICONST
-                SB(Ib,IROW) = SB(Ib,IROW)+S*SKAIIB(IADR)
-              END DO
-            END IF
-          END DO
-        ELSE
-*. Form with no loop over IB
-          DO KA  = 1, NKA
-            IF(ISCA(KA).NE.0) THEN
-              S = SSCA(KA)
-              IROW = ISCA(KA)
-              IADR = IADR0 + KA + ICONST
-C             DO IB = ICOFF,ICEND
-*. Adress of S(Ka,i,Ib)
-C               IADR = IADR + ICONST
-                SB(ICOFF,IROW) = SB(ICOFF,IROW)+S*SKAIIB(IADR)
-C             END DO
-            END IF
-          END DO
-        END IF
-*       ^ End of test of ICOFF=ICEND
-      END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck advice_sigma $Revision$
-*
       SUBROUTINE ADVICE_SIGMA(IAOCC,IBOCC,JAOCC,JBOCC,ITERM,LADVICE)
 *
 * Advice Sigma routine about best route to take
@@ -91,9 +15,11 @@ C             END DO
 *
 * For ITERM = 1 :
 *           LADVICE = 1 : Business as usual, no transpose of matrix
-*                         (resolution on alpha strings, direct exc on beta)
+*                         (resolution on alpha strings, direct exc 
+*                         on beta)
 *           LADVICE = 2 = Transpose matrices
-*                         (resolution on beta strings, direct exc on alpha)
+*                         (resolution on beta strings, direct exc on 
+*                         alpha)
 *
 * Jeppe Olsen, Tirstrup Airport, Jan 12, 98
 *
@@ -101,7 +27,6 @@ C             END DO
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "gasstr.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -242,7 +167,6 @@ C     WRITE(6,*) ' MEMCHECK passed '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck alg_routerx $Revision$
       SUBROUTINE ALG_ROUTERX(ILOC,IROC,NOP,IOP_TYP,IOP_AC,IOP_REO,
      &                      SIGN)
 *
@@ -270,7 +194,6 @@ C     WRITE(6,*) ' MEMCHECK passed '
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cgas.inc"
 *. Specific input, I*OC : Contains number of electrons in each space
 *  (not used !!!)
@@ -465,7 +388,6 @@ C     WRITE(6,*) ' MEMCHECK passed '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ckajjb_pa $Revision$
       SUBROUTINE CKAJJB_PA(CKAJJB,CKAJJBPA,IWAY,NKA,NJ,NJB,
      &                     IREO,NJB_PAS,NJB_ACT,NSMST,SIGN,
      &                     I_ADD_COPY)
@@ -598,51 +520,6 @@ CT    CALL QEXIT('CKA_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck comprs2lst $Revision$
-      SUBROUTINE COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
-*
-* Two lists of excitations/annihilations/creations are given.
-* Compress to common nonvanishing entries
-*
-* Jeppe Olsen, November 1996
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION I1(NKIN,N1),XI1(NKIN,N1)
-      DIMENSION I2(NKIN,N2),XI2(NKIN,N2)
-*
-      NKOUT = 0
-      DO K = 1, NKIN
-        I1ACT  = 0
-        DO I = 1, N1
-          IF(I1(K,I).NE.0) I1ACT = 1
-        END DO
-        I2ACT = 0
-        DO I = 1, N2
-          IF(I2(K,I).NE.0) I2ACT = 1
-        END DO
-        IF(I1ACT.EQ.1.AND.I2ACT.EQ.1) THEN
-          NKOUT = NKOUT + 1
-          IF(NKOUT.NE.K) THEN
-            DO I = 1, N1
-               I1(NKOUT,I) = I1(K,I)
-              XI1(NKOUT,I) =XI1(K,I)
-            END DO
-            DO I = 1, N2
-               I2(NKOUT,I) = I2(K,I)
-              XI2(NKOUT,I) =XI2(K,I)
-            END DO
-          END IF
-        END IF
-      END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck dihdj $Revision$
       SUBROUTINE DIHDJ(IASTR,IBSTR,NIDET,
      &                 JASTR,JBSTR,NJDET,
      &                 NAEL,NBEL,
@@ -1149,94 +1026,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_ckajjb $Revision$
-C               GET_CKAJJB(CB,NJ,NJA,CJRES,NKABTC,NJB,
-C    &                          JJ,I1(1,JJ),XI1S(1,JJ)
-      SUBROUTINE GET_CKAJJB(CB,NJ,NJA,CKAJJB,NKA,NJB,
-     &                          J,ISCA,SSCA)
-*
-* Obtain for given orbital index j the gathered matrix
-*
-* C(Ka,j,Jb) = SSCA(Ka)C(Jb,ISCA(Ka))
-*
-* For efficient processing of alpha-beta loop
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-*. Input
-      DIMENSION CB(NJB,NJA), SSCA(*),ISCA(*)
-*. Output
-      DIMENSION CKAJJB(*)
-*
-C?    WRITE(6,*) ' From GET_CKAJJB'
-C     LBLK = 100
-      LBLK = 40
-      NBLK = NJB/LBLK
-      IF(LBLK*NBLK.LT.NJB) NBLK = NBLK + 1
-      DO ICBL = 1, NBLK
-        IF(ICBL.EQ.1) THEN
-          ICOFF = 1
-        ELSE
-          ICOFF = ICOFF + LBLK
-        END IF
-        ICEND = MIN(ICOFF+LBLK-1,NJB)
-        ICONST = NKA*NJ
-        IADR0 =  (J-1)*NKA+(ICOFF-1-1)*NKA*NJ
-        IF(ICEND.GT.ICOFF) THEN
-*. Inner loop over JB
-          DO KA  = 1, NKA
-            IF(ISCA(KA).NE.0) THEN
-              S = SSCA(KA)
-              IROW = ISCA(KA)
-C             IADR = KA + (J-1)*NKA+(ICOFF-1-1)*NKA*NJ
-              IADR = IADR0 + KA
-              DO JB = ICOFF,ICEND
-*. Adress of C(Ka,j,Jb)
-                IADR = IADR + ICONST
-                CKAJJB(IADR) = S*CB(JB,IROW)
-              END DO
-            ELSE
-              IADR = IADR0 + KA
-              DO JB = ICOFF,ICEND
-C               IADR = KA + (J-1)*NKA+(JB-1)*NKA*NJ
-                IADR = IADR + ICONST
-                CKAJJB(IADR) = 0.0D0
-              END DO
-            END IF
-          END DO
-        ELSE
-*. No inner loop over JB
-          DO KA  = 1, NKA
-            IF(ISCA(KA).NE.0) THEN
-              S = SSCA(KA)
-              IROW = ISCA(KA)
-C             IADR = KA + (J-1)*NKA+(ICOFF-1-1)*NKA*NJ
-              IADR = IADR0 + KA
-C             DO JB = ICOFF,ICEND
-*. Adress of C(Ka,j,Jb)
-                IADR = IADR + ICONST
-                CKAJJB(IADR) = S*CB(ICOFF,IROW)
-C             END DO
-            ELSE
-              IADR = IADR0 + KA
-C             DO JB = ICOFF,ICEND
-C               IADR = KA + (J-1)*NKA+(JB-1)*NKA*NJ
-                IADR = IADR + ICONST
-                CKAJJB(IADR) = 0.0D0
-C             END DO
-            END IF
-          END DO
-        END IF
-*       ^ End of test ICEND,ICOFF
-      END DO
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck mv7 $Revision$
       SUBROUTINE MV7(C,HC,LUC,LUHC)
 *
 * Outer routine for sigma vector generation
@@ -1247,7 +1036,6 @@ C             END DO
 * has been eliminated.
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 *
 * =====
 *.Input
@@ -1330,11 +1118,12 @@ C             END DO
         LBLOCK = MXSOOB
       END IF
       LBLOCK = MAX(LBLOCK,LCSBLK)
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,WORK(KSBLTP),WORK(KNSTSO(IATP)),
      &     WORK(KNSTSO(IBTP)),NOCTPA,NOCTPB,NSMST,LBLOCK,
      &     WORK(KSIOIO),ISMOST(1,ISSM),
      &     NBATCH,WORK(KLSLBT),WORK(KLSLEBT),
-     &     WORK(KLSI1BT),WORK(KLSIBT),0)
+     &     WORK(KLSI1BT),WORK(KLSIBT),0,ITTSS_ORD)
 *. Number of BLOCKS
         NBLOCK = IFRMR(WORK(KLSI1BT),1,NBATCH)
      &         + IFRMR(WORK(KLSLBT),1,NBATCH) - 1
@@ -1375,7 +1164,6 @@ C    &       LUC,LUHC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mxresc $Revision$
       SUBROUTINE MXRESC(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,
      &                  MXPNSMST,
@@ -1404,7 +1192,7 @@ C    &       LUC,LUHC)
       DIMENSION NTSOB(MXPTOB,NSMOB)
       DIMENSION NEL1234(MXPTOB,*)
 *
-      NTESTL = 00
+      NTESTL = 000
       NTEST = MAX(NTESTG,NTESTL)
       IF(NTEST.GE.100) WRITE(6,*) ' MXRESC : MXPKA ', MXPKA
 *
@@ -1414,6 +1202,11 @@ C    &       LUC,LUHC)
 *         constructing C(J,Ia,Kb)
       MXCJ = 0
       MXADKBLK = 0
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Doing C(j,Ka,Ib)'
+        write(6,*)
+      end if
       DO 100 IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA-1
         DO 200 IBTP = 1, NOCTPB
@@ -1458,6 +1251,12 @@ C    &       LUC,LUHC)
   100 CONTINUE
 *
 * matrix C(j,Ia,Kb)
+*
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Doing C(j,Ia,Kb)'
+        write(6,*)
+      end if
 *
       DO IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA-1
@@ -1509,6 +1308,12 @@ C    &       LUC,LUHC)
 * both Ka and Ib blocked
 *
       MXCIJA = 0
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Doing C(ij,Ka,Ib)'
+        write(6,*)
+      end if
+*
       DO  IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA -1
         DO  IBTP = 1, NOCTPB
@@ -1564,8 +1369,15 @@ C    &       LUC,LUHC)
       END IF
 *
 *
-* matrix C(ij,Ia,kb)
+* matrix C(ij,Ia,Kb)
 * both Ka and Ib blocked
+*
+      IF(NTEST.GE.100) WRITE(6,*) ' MXCIJB under development '
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Doing C(ij,Ia,Kb)'
+        write(6,*)
+      end if
 *
       MXCIJB = 0
       DO  IATP = 1, NOCTPA
@@ -1622,10 +1434,16 @@ C    &       LUC,LUHC)
       END IF
 *
 *
-* matrix C(ij,Ka,kb)
+* matrix C(ij,Ka,Kb)
 * both Ka and Kb blocked
 *
       MXCIJAB = 0
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Doing C(ij,Ka,Kb)'
+        write(6,*)
+      end if
+*
       DO  IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA - 1
         DO  IBTP = 1, NOCTPB
@@ -1682,6 +1500,13 @@ C    &       LUC,LUHC)
 * Largest block of creations : a+i !kstring> where K string is
 * obtained as single annihilations
       MXSXBL = 0
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Largest block of creations a+i |kstring>'
+        write(6,*) 'alpha strings'
+        write(6,*)
+      end if
+*
 *. For alpha strings :
       DO  IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA - 1
@@ -1722,6 +1547,13 @@ C    &       LUC,LUHC)
       END DO
 *
 *. For beta  strings :
+      if (NTEST.ge.100) then
+        write(6,*)
+        write(6,*) 'Largest block of creations a+i |kstring>'
+        write(6,*) 'beta strings'
+        write(6,*)
+      end if
+*
       DO  IBTP = 1, NOCTPB
         IBTPABS = IBTP + IOCTPB - 1
         MXIB = 0
@@ -1770,7 +1602,6 @@ C    &       LUC,LUHC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mxrescph $Revision$
       SUBROUTINE MXRESCPH(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,
      &                  MXPNSMST,
@@ -2222,7 +2053,6 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rassg3 $Revision$
       SUBROUTINE RASSG3(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &           LUC,LUHC)
 *
@@ -2287,7 +2117,6 @@ C?        write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb1e $Revision$
       SUBROUTINE RSBB1E(ISCSM,ISCTP,ISBCTP,ICCSM,ICCTP,ICBCTP,
      &                  IGRP,NROW,
      &                  NGAS,ISEL,ICEL,
@@ -2296,13 +2125,10 @@ C?        write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
      &                  MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                  SSCR,CSCR,I1,XI1S,I2,XI2S,H,
      &                  NSMOB,NSMST,NSMSX,MXPOBS,MOC,
-     &                  NSCOL,MXSXST,IEXSTR,FACSTR,IH2TRM,SCLFAC,
+     &                  NSCOL,MXSXST,SCLFAC,
      &                  IUSE_PH,IPHGAS,NTESTG)
 *
 * One electron excitations on column strings
-*. If IH2TRM .ne. 0 then the diagonal and one-electron
-*  excitations arising from the two body operator is also
-* included
 *
 * =====
 * Input
@@ -2367,7 +2193,6 @@ C?        write(6,*) 'RASSG3 : IOFF, SB(IOFF)',IOFF,SB(IOFF)
 *.Scatch
       DIMENSION SSCR(*),CSCR(*),I1(*),XI1S(*),H(*)
       DIMENSION I2(*),XI2S(*)
-      DIMENSION IEXSTR(MXSXST,*),FACSTR(MXSXST,*)
 *.Local arrays ( assume MPNGAS = 16 ) !!!
       DIMENSION ITP(16),JTP(16)
       DIMENSION ISGRP(16),ICGRP(16)
@@ -2388,7 +2213,7 @@ C     MOC = 1
         WRITE(6,*) ' Information from RSBB1E '
         WRITE(6,*) ' ======================= '
         WRITE(6,*)
-        WRITE(6,*) ' RSBB1E : MOC,IH2TRM,IUSE_PH ', MOC,IH2TRM,IUSE_PH
+        WRITE(6,*) ' RSBB1E : MOC,IUSE_PH ', MOC,IUSE_PH
         WRITE(6,*) ' ISEL : '
         CALL IWRTMA(ISEL,1,NGAS,1,NGAS)
         WRITE(6,*) ' ICEL : '
@@ -2581,7 +2406,6 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2a $Revision$
       SUBROUTINE RSBB2A(ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,NSCOL,
      &                  NGAS,ISOC,ICOC,
      &                  SB,CB,
@@ -3457,7 +3281,6 @@ CT                  CALL QEXIT ('MATCS')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2b $Revision$
       SUBROUTINE RSBB2B(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                  JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                  IAGRP,IBGRP,NGAS,
@@ -3716,7 +3539,6 @@ C         END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2bn $Revision$
       SUBROUTINE RSBB2BN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                   JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                   IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -4114,7 +3936,6 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2bvn $Revision$
       SUBROUTINE RSBB2BVN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                   JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                   IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -4613,7 +4434,6 @@ C?              WRITE(6,*) SIGNPA
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rssbcb $Revision$
 C                 CALL RSSBCB(IASM,IATP,IOCTPA,
 C    &                 IBSM,IBTP,IOCTPB,
 C    &                 LLASM,LLATP,LLBSM,LLBTP,NGAS,
@@ -4646,6 +4466,8 @@ C    &                 MXSXBL,MXSXST,MOCAA,MOCAB,IAPR,IPRNT)
 *
 * Contributions to sigma block (iasm iatp, ibsm ibtp ) from
 * C block (jasm jatp , jbsm, jbtp)
+*
+* Calls to RSBB1E and RSBB2A now all with correct argument lists.
 *
 * =====
 * Input
@@ -4796,15 +4618,15 @@ C?    CALL MEMCHK
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB1E'
           CALL RSBB1E(IBSM,IBTP,IOCTPB,JBSM,JBTP,IOCTPB,
-     &         IJBGRP,NIA,
-     &         NGAS,IBOC,JBOC,
-     &         SB,CB,
-     &         ADSXA,SXSTST,STSTSX,
-     &         MXPNGAS,NOBPTS,IOBPTS,
-     &         ITSOB,MAXI,MAXK,
-     &         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &         NIB,MXSXST,CJRES(1),CJRES(1+MXSXBL),MOCAA,SCLFAC,NTEST)
+     &                IJBGRP,NIA,
+     &                NGAS,IBOC,JBOC,
+     &                SB,CB,
+     &                ADSXA,SXSTST,STSTSX,
+     &                MXPNGAS,NOBPTS,IOBPTS,
+     &                ITSOB,MAXI,MAXK,
+     &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &                NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
+     &                NIB,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB after RSBB1E, first element '
              call wrtmat(sb,1,1    ,nia,nib)
@@ -4825,7 +4647,8 @@ C?    CALL MEMCHK
      &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,0,0)
+     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTESTG,
+     &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB after RSBB2A, first element '
              call wrtmat(sb,1,1    ,nia,nib)
@@ -4917,16 +4740,15 @@ C     IF(IUSEAB.EQ.0) THEN
         IF(NTEST.GE.101)
      &  WRITE(6,*) ' I am going to call RSBB1E (last time )'
         CALL RSBB1E(IASM,IATP,IOCTPA,JASM,JATP,IOCTPA,
-     &                   IJAGRP,NIB,
-     &                   NGAS,IAOC,JAOC,
-     &                   SB,CB,
-     &                   ADSXA,SXSTST,STSTSX,
-     &                   MXPNGAS,NOBPTS,IOBPTS,
-     &                   ITSOB,MAXI,MAXK,
-     &                   SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &                   NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &                   NIA,MXSXST,CJRES(1),CJRES(1+MXSXBL),
-     &                   MOCAA,SCLFAC,NTEST)
+     &              IJAGRP,NIB,
+     &              NGAS,IAOC,JAOC,
+     &              SB,CB,
+     &              ADSXA,SXSTST,STSTSX,
+     &              MXPNGAS,NOBPTS,IOBPTS,
+     &              ITSOB,MAXI,MAXK,
+     &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &              NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
+     &              NIA,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB transposed after RSBB1, first element '
              call wrtmat(sb,1,1    ,nia,nib)
@@ -4942,13 +4764,14 @@ C     IF(IUSEAB.EQ.0) THEN
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB2A (last time )'
           CALL RSBB2A(IASM,IATP,JASM,JATP,IJAGRP,NIB,NIA,
-     &         NGAS,IAOC,JAOC,
-     &         SB,CB,
-     &         ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
-     &         NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
-     &         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &         NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &         CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,0,0)
+     &                NGAS,IAOC,JAOC,
+     &                SB,CB,
+     &                ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
+     &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
+     &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
+     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTESTG,
+     &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
         END IF
 *
            IF(NTEST.GE.101) THEN
@@ -4992,7 +4815,6 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rssbcb2 $Revision$
       SUBROUTINE RSSBCB2(IASM,IATP,IOCPTA,IBSM,IBTP,IOCTPB,
      &                  JASM,JATP,JBSM,JBTP,NGAS,
      &                  IAOC,IBOC,JAOC,JBOC,NAEL,NBEL,
@@ -5174,13 +4996,12 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB1E'
           CALL RSBB1E(IBSM,IBTP,IOCTPB,JBSM,JBTP,IOCTPB,
-     &         IJBGRP,NIA,NGAS,IBOC,JBOC,
-     &         SB,CB,ADSXA,SXSTST,STSTSX,
-     &         MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
-     &         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &         NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &         NIB,MXSXST,CJRES(1),CJRES(1+MXSXBL),MOCAA,SCLFAC,
-     &         IUSE_PH,IPHGAS,NTEST)
+     &                IJBGRP,NIA,NGAS,IBOC,JBOC,
+     &                SB,CB,ADSXA,SXSTST,STSTSX,
+     &                MXPNGAS,NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
+     &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &                NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
+     &                NIB,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB after RSBB1E'
              call wrtmat(sb,nib,nia,nib,nia)
@@ -5196,8 +5017,8 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
      &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
      &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
      &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,0,0,
-     &                IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
+     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,
+     &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB after RSBB2a'
              call wrtmat(sb,nib,nia,nib,nia)
@@ -5318,16 +5139,15 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
         IF(NTEST.GE.101)
      &  WRITE(6,*) ' I am going to call RSBB1E (last time )'
         CALL RSBB1E(IASM,IATP,IOCTPA,JASM,JATP,IOCTPA,
-     &                   IJAGRP,NIB,
-     &                   NGAS,IAOC,JAOC,
-     &                   SB,CB,
-     &                   ADSXA,SXSTST,STSTSX,
-     &                   MXPNGAS,NOBPTS,IOBPTS,
-     &                   ITSOB,MAXI,MAXK,
-     &                   SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &                   NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
-     &                   NIA,MXSXST,CJRES(1),CJRES(1+MXSXBL),
-     &                   MOCAA,SCLFAC,IUSE_PH,IPHGAS,NTEST)
+     &              IJAGRP,NIB,
+     &              NGAS,IAOC,JAOC,
+     &              SB,CB,
+     &              ADSXA,SXSTST,STSTSX,
+     &              MXPNGAS,NOBPTS,IOBPTS,
+     &              ITSOB,MAXI,MAXK,
+     &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &              NSMOB,NSMST,NSMSX,MXPOBS,MOCAA,
+     &              NIA,MXSXST,SCLFAC,IUSE_PH,IPHGAS,NTEST)
            IF(NTEST.GE.101) THEN
              WRITE(6,*) ' SB transposed after RSBB1, first element '
              call wrtmat(sb,1,1    ,nia,nib)
@@ -5343,14 +5163,14 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB2A (last time )'
           CALL RSBB2A(IASM,IATP,JASM,JATP,IJAGRP,NIB,NIA,
-     &         NGAS,IAOC,JAOC,
-     &         SB,CB,
-     &         ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
-     &         NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
-     &         SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &         NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
-     &         CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,0,0,
-     &         IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
+     &                NGAS,IAOC,JAOC,
+     &                SB,CB,
+     &                ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
+     &                NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
+     &                SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+     &                NSMOB,NSMST,NSMSX,NSMDX,MXPOBS,
+     &                CJRES,SIRES,MXSXST,MXSXBL,MOCAA,SCLFAC,NTEST,
+     &                0,0,IUSE_PH,IPHGAS,MXTSOB,SOMESCR)
         END IF
 *
            IF(NTEST.GE.101) THEN
@@ -5419,7 +5239,6 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sblock $Revision$
       SUBROUTINE SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
      &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END)
 *
@@ -5442,7 +5261,6 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 *
 * =====
 *.Input
@@ -5766,7 +5584,6 @@ CINSERT_START
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sblocks $Revision$
       SUBROUTINE SBLOCKS(NSBLOCK,ISBLOCK,CB,SB,C2,
      &           ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
      &           NAEL,IAGRP,NBEL,IBGRP,
@@ -5902,9 +5719,10 @@ CME   CALL MEMCHK
 *. Find batches of C - strings
 *. Should be changed to REPART or ??
 *. Not neccesary, all zero blocks detected otherwise
+      ITTSS_ORD = 2
       CALL PART_CIV2(IDC,ICBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,NSMST,
      &              LC,ICOCOC,ICSMOS,NCBATCH,LCBLOCK,LECBLOCK,
-     &              I1CBLOCK,ICBLOCK,0)
+     &              I1CBLOCK,ICBLOCK,0,ITTSS_ORD)
 *. Find the active blocks on LUC, store info in SCLFAC
 C     SUBROUTINE FIND_ACTIVE_BLOCKS(LUIN,LBLK,BLK_A,SEGMNT)
 *     \/ Change to accomodate for ICBAT_RES
@@ -6268,7 +6086,6 @@ C?    CALL MEMCHK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sblocks2 $Revision$
       SUBROUTINE SBLOCKS2(NSBLOCK,ISBLOCK,NCBLOCK,ICBLOCK,CB,SB,C2,
      &                  ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
      &                  NAEL,IAGRP,NBEL,IBGRP,
@@ -6617,7 +6434,6 @@ C?    write(6,*) ' checked passed '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck skickj $Revision$
       SUBROUTINE SKICKJ(SKII,CKJJ,NKA,NIB,NJB,NKB,XIJKL,
      &                  NI,NJ,NK,NL,MAXK,
      &                  KBIB,XKBIB,KBJB,XKBJB,IKORD,

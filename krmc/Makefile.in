@@ -2,12 +2,11 @@
 # VERSION : $Revision$
 # DATE    : $Date$
 # FILE    : Makefile.in
-# SOURCE  : $Source$
 #
 
 include ../Makefile.config
 
-OBJS =	krmcopt.o \
+F_OBJS =	krmcopt.o \
 	krmcvec.o \
 	krmcsav.o \
 	krmcout.o \
@@ -22,7 +21,14 @@ OBJS =	krmcopt.o \
 
 C_OBJS = gendet.o
 
-all:	$(OBJS) $(C_OBJS)
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre:	$(F_CPPS)
+
+ftnchek:pre
+	ftnchek $(CHEKFLAGS) $(F_CPPS) > ftnchek.out
+
+all:	$(F_OBJS) $(C_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
@@ -37,5 +43,5 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(C_OBJS:.o=.c)
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.

@@ -156,6 +156,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 #include "maxorb.h"
+#include "dummy.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -163,9 +164,8 @@ C
 C
       CHARACTER C*4
       CHARACTER*(*) SZTRA(2,4)
-      LOGICAL USENOROT
-      DIMENSION NOROT(*)
-      DIMENSION ILIST(MAXORB,2), NLIST(2), IDX(MAXORB)
+      LOGICAL   USENOROT
+      DIMENSION NOROT(*), ILIST(MAXORB,2), NLIST(2), IDX(MAXORB)
 C
 C     *******************
 C     *** Index 1 & 2 ***
@@ -192,8 +192,10 @@ C
             IF (.NOT. USENOROT .OR. NOROT(IDXE2G(J)) .EQ. 0) IT = IT + 1
          END DO
          IOFFE = IT
+      ELSE
+         IOFFG = 0
+         IOFFE = 0
       END IF
-D     print *,'hj: IOFFG, IOFFE:',IOFFG,IOFFE
 C
 C
       IF (C(1:2) .EQ. 'AA') THEN
@@ -212,7 +214,7 @@ C
 C        
       ELSE IF (C(1:2) .EQ. 'GA') THEN
 C
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
      &        NASH,IOFFG,USENOROT,NOROT,IIDX2,NIDX2)
@@ -220,23 +222,23 @@ C
       ELSE IF (C(1:2) .EQ. 'EE') THEN
 C        
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,1),NIDXT(1),
-     &        NESH,INT0,USENOROT,NOROT,IIDX1,NIDX1)
+     &        NESH,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
-     &        NESH,INT0,USENOROT,NOROT,IIDX2,NIDX2)
+     &        NESH,IOFF0,USENOROT,NOROT,IIDX2,NIDX2)
 C        
       ELSE IF (C(1:2) .EQ. 'GE') THEN
 C        
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
-     &        NORB,INT0,USENOROT,NOROT,IIDX1,NIDX1)
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
+     &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
-     &        NESH,INTG,USENOROT,NOROT,IIDX2,NIDX2)
+     &        NESH,IOFFG,USENOROT,NOROT,IIDX2,NIDX2)
 C        
       ELSE IF (C(1:2) .EQ. 'GG') THEN
 C        
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
-     &        NORB,INT0,USENOROT,NOROT,IIDX1,NIDX1)
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,2),NIDXT(2),
-     &        NORB,INT0,USENOROT,NOROT,IIDX2,NIDX2)
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
+     &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,2),NIDXT(2),
+     &        NORB,IOFF0,USENOROT,NOROT,IIDX2,NIDX2)
       ELSE
          CALL QUIT('*** ERROR in INISZ1 *** ' //
      &        'C(3:4) not implemented ' // C(3:4) )
@@ -245,9 +247,9 @@ C
 chj#ifdef UNDEF
       do j = 1, 2
          write(6,*) 'index ',j, ' t --> g pointer'
-         do i = 1, nidxt(j)
-            write(6,*) i,idxt2g(i,j)
-         end do
+CTF      do i = 1, nidxt(j)
+CTF         write(6,*) i,idxt2g(i,j)
+CTF      end do
       end do
 chj#endif
 C     
@@ -256,8 +258,8 @@ C
 C
 chj#ifdef UNDEF
       do j = 1, nfsym
-         write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-         write(6,*) 'sztra = ',sztra(j,1)
+CTF      write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
+CTF      write(6,*) 'sztra = ',sztra(j,1)
       end do
 chj#endif
 C     
@@ -266,8 +268,8 @@ C
 C
 chj#ifdef UNDEF
       do j = 1, nfsym
-         write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-         write(6,*) 'sztra = ',sztra(j,2)
+CTF      write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
+CTF      write(6,*) 'sztra = ',sztra(j,2)
       end do
 chj#endif
 C
@@ -296,7 +298,7 @@ C
 C        
       ELSE IF (C(3:4) .EQ. 'GA') THEN
 C
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NASH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
@@ -310,16 +312,16 @@ C
 C        
       ELSE IF (C(3:4) .EQ. 'GE') THEN
 C        
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
 C        
       ELSE IF (C(3:4) .EQ. 'GG') THEN
 C        
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
-         CALL INISZ2(DUMMY,.FALSE.,IDXT2G(1,4),NIDXT(4),
+         CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,4),NIDXT(4),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
       ELSE
          CALL QUIT('*** ERROR in INISZ1 *** ' //
@@ -329,9 +331,9 @@ C
 #ifdef UNDEF
       do j = 3, 4
          write(6,*) 'index ',j, ' t --> g pointer'
-         do i = 1, nidxt(j)
-            write(6,*) i,idxt2g(i,j)
-         end do
+CTF      do i = 1, nidxt(j)
+CTF         write(6,*) i,idxt2g(i,j)
+CTF      end do
       end do
 #endif
 C     
@@ -377,13 +379,8 @@ C***********************************************************************
 C
 #include "dgroup.h"
 C
-      DIMENSION IDX(*)
-      LOGICAL IDXFLG
-      DIMENSION IDXT2G(*)
-      DIMENSION NORB(*)
-      LOGICAL USENOROT
-      DIMENSION NOROT(*)
-      DIMENSION IIDX(2), NIDX(2)
+      LOGICAL   IDXFLG, USENOROT
+      DIMENSION IDX(*), IDXT2G(*), NORB(*), NOROT(*), IIDX(2), NIDX(2)
 C
       IA = 0
       IT = 0
@@ -596,7 +593,7 @@ C
       CHARACTER SZ(2,4)*(*)
       LOGICAL LNOPAIR
 C
-#include "dcbtra.h"
+#include "../moltra/dcbtra.h"
 C     
 C     /DCBTC/
 C
@@ -618,9 +615,19 @@ C
       ITRA_INTFLG = INTFLG
       ITRA_INTFL2 = INTFLG
       ITRA_INTFL4 = INTFLG
-c     IPRTRA = IPRINT - 2
-C TODO debug : extra print because no integrals for Levy-Leblond /hjaaj aug 2002
-      IPRTRA = 4
+      IPRTRA = IPRINT - 2
+C TODO debug : extra print because no integrals for Levy-Leblond 
+C              /hjaaj aug 2002
+      print*,'+++++++++++++++++++++++++++++++++++++'
+      print*,'+++++++++++++++++++++++++++++++++++++'
+      print*,'+++++++++++++++++++++++++++++++++++++'
+      print*,' RESET PRINT FLAG FOR PAMTR TO NORMAL'
+      print*,'  Levy-Leblond integrals need debug.'
+      print*,'  T.F.                              '
+      print*,'+++++++++++++++++++++++++++++++++++++'
+      print*,'+++++++++++++++++++++++++++++++++++++'
+      print*,'+++++++++++++++++++++++++++++++++++++'
+CTF   IPRTRA = 4
       ISTRAT = 4
 C
 C     /DCBTRL/
@@ -663,8 +670,8 @@ C***********************************************************************
 #include "dummy.h"
 C
 #include "mxorb.h"
-#include "dcbtra.h"
-#include "dcbtr3.h"
+#include "../moltra/dcbtra.h"
+#include "../moltra/dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -773,9 +780,11 @@ C                    otherwise it points to IFSYM = 2.
          ENDDO
 C
          IF (ISAME(I).EQ.I) THEN
+C           new coefficient matrix
 c           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
+C           same coefficient matrix as before
             KQ(1,I) = KQ(1,ISAME(I))
          ENDIF
          KQ(2,I) = KQ(1,I) + NQ(1,I)

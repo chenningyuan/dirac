@@ -15,6 +15,9 @@ C    NFREQ  - number of frequencies
 C    NEXSIM - number of simultaneous solutions
 C    NEXSTV - number of start vectors
 C
+C    FKRMC  - is this a KR-MCSCF optimization
+C    ENRGY - energy
+C
 C    THCXRS - threshold for convergence of reduced response equations
 C     
 C    Configuration and orbital rotation parameters
@@ -25,20 +28,32 @@ C
 C     (b_1)^T = [ Z  Y^*]     (b_2)^T  =  [Y   Z^*]
 C
 C    
-      CHARACTER INTTYP*9,BVTYP*2,RSPLAB*16
-      COMMON/ XRSCCB/ INTTYP,BVTYP(6),RSPLAB
-      LOGICAL RSREST, STATIC, LINEQ, LSVCFG, TKNORM, DIAGHE,STERNH
+      CHARACTER XRS_INTTYP*9,BVTYP*2,RSPLAB*16, XRS_CIPROGRAM*8
+      COMMON/ XRSCCB/ XRS_INTTYP,BVTYP(6),RSPLAB, XRS_CIPROGRAM
+C
+C     Parameters for MCTYPE:
+C
+      PARAMETER ( JDHF  = 0,
+     &            JODHF = 1,
+     &            JCAS  = 2, JMCMIN = JCAS,
+     &            JGAS  = 3)
+C
+      LOGICAL RSREST, STATIC, LINEQ, LSVCFG, TKNORM, DIAGHE,STERNH,
+     &        FKRMC, XRS_NOPFQ, XRS_NOFQX
       COMMON /XRSICB/ IPRXRS,JSYMOP,JTIMOP,JOPSY,MAXITR,ITMIC,NFREQ,
      &                NEXSIM,NEXSTV,NEXCNV,LOFFTY,IPX,IMX,MAXSIM,
      &                NZVAR, NZVARQ ,NZCONF,NZCONFQ,NTYP,
      &                NZXOPT,NZXOPTQ,NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,
+     &                NZHOPE,
      &                NVPAR ,IPEP,IPEM,IPPP,IPPM,IPCP,IPCM,
      &                NREDM ,N2REDM ,NZRED, NCRED ,NERED  ,NPRED, 
      &                KCONV ,NCSIM, NESIM, NPSIM, NOSIM, NTSIM,
-     &                IZRED,ICRED,IERED,IPRED,LSVCFG(2),INTXRS,
-     &                INTFLG,INTDEF,INTBUF,ITRINT(2),NFOCKMAT
-      COMMON /XRSRCB/ THCXRS,CNVINT(2),RESFAC,GPTNRM
-      COMMON /WRKFLG/ STATIC, RSREST, LINEQ, TKNORM, DIAGHE,STERNH
+     &                IZRED,ICRED,IERED,IPRED,INTXRS,
+     &                INTFLG,INTDEF,INTBUF,ITRINT(2),NFOCKMAT,
+     &                IXRSTB(-1:2),MCTYPE,JTRLVL
+      COMMON /XRSRCB/ THCXRS,CNVINT(2),RESFAC,GPTNRM, ENRGY
+      COMMON /WRKFLG/ STATIC, RSREST, LINEQ, LSVCFG(2), TKNORM, DIAGHE,
+     &                STERNH, FKRMC, XRS_NOPFQ, XRS_NOFQX
       COMMON /MEMXRS/ KBTOT,KBCI,KBOE,KBOP,KZCONF,KZXOPE,KZXOPP
       COMMON /XRSIOU/ LUBCI,LUBOE,LUBOP,LUSCI,LUSOE,LUSOP,LURSP,LUXVC,
      &                LURST,LUCYCL

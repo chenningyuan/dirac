@@ -138,11 +138,11 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reacmo */
       SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT,
-     &                   WORK,KFREE,LFREE)
-C*****************************************************************************
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
 C     Read option is provided from bit-packed IOPT:
@@ -157,7 +157,7 @@ C     IDIM(3,J) - number of AO-basis functions
 C
 C     Written by T.Saue Sept 1 1995
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C

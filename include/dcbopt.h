@@ -2,18 +2,17 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbopt.h
-C SOURCE  : $Source$
 C
 C*** 2nd order opt. ***
 C     IPROPT    - print level
-C     IOPT_ITRINT    - LS/SS integrals from iteration ITRINT(1)/ITRINT(2)
+C     IOPT_ITRINT   - LS/SS integrals from iteration ITRINT(1)/ITRINT(2)
 C     IOPT_INTDEF    - default INTFLG
 C     IOPT_INTFLG    - LL/SL/SS integrals (packed in bits 0-2)
 C     IOPT_INTBUF    - value of INTFLG from last macro iteration
 C     OPT_INTTYP     - string with integral types
-C     IHMROP    - Hermitian symmetry of Fock matrices
-C     ISYMOP    - Symmetry of Fock matrices
-C     IFCKOP    - 
+C     IOPT_IHMROP    - Hermitian symmetry of Fock matrices
+C     IOPT_ISYMOP    - Symmetry of Fock matrices
+C     IOPT_IFCKOP    - Type of Fock matrices
 C     
 C     NZVAR     - total number of variables
 C     NZCONF    - number of configurational parameters
@@ -38,11 +37,13 @@ C                 (2)  Always NEO iterations
 C                 (19) Tight step contol for ground state also
 C                 (20) Skip extra termination tests
 C
-      PARAMETER (NOPTFLAGS = 20)
-      LOGICAL FLAG(NOPTFLAGS)
-      CHARACTER OPT_INTTYP*9, OPT_CIPROGRAM*8
-      COMMON /DCLOPT/ FLAG
-      COMMON /DCCOPT/ OPT_INTTYP
+C     Parameters for MCTYPE:
+C
+      PARAMETER ( JDHF  = 0,
+     &            JODHF = 1,
+     &            JCAS  = 2, JMCMIN = JCAS,
+     &            JGAS  = 3)
+C
       COMMON /DCIOPT/
      &     IPROPT,IOPT_ITRINT(2),IOPT_INTDEF,
      &     IOPT_INTFLG,IOPT_INTBUF,
@@ -51,31 +52,37 @@ C
      &     NZXOPT,NZXOPTQ,NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,
      &     NZHOPT,NZHOPTQ,NZHOPE,NZHOPEQ,
      &     MOPT_MXMICRO,MOPT_MXMACRO,MOPT_MAXBCK,
-     &     IOPT_ISTATE,
-     $     IOPT_SYMMETRY, KTRLVL,JTRLVL, LENPV,
+     &     NCIROOT,MXCIV,IRESTRK,IOPT_ISTATE,
+     &     IOPT_SYMMETRY, KTRLVL,JTRLVL, LENPV,
      &     ITMAC,ITMICT,ITBCK,ITABS,ITMACN,
-     &     MAXCIT,IOPTST
+     &     MAXCIT,IOPTST,MK2DEL,MK2REF,MCTYPE,JHESSIAN,IKRMCCNO,
+     &     MAXMK2, MINMK2
 C
       COMMON /DCROPT/ OPT_CNVINT(2),GNORM(5),EMCSCF,EMCOLD,DEPRED,BETA,
      &                BETMIN,BETMAX,RTRUST,RTTOL,RATMIN,RATGOD,EMY,
      &                EACTIV,RATREJ,STPLEN,STPMAX,STPINC,STPRED,
      &                THQMIN,THQLIN,THQKVA,GAMMA,RBETA,
      &                STPC,STPO,ECORR,OPT_THRGRD,
-     &                STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI
+     &                STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI,
+     &                COMPFAC
 C
-      LOGICAL OPT_SKIPEE,OPT_SKIPEP,OPT_NOPFQ
-      LOGICAL OPT_NOCI
-      LOGICAL DONR,FROZCI,LDIRNR
-      COMMON /DCLOPT/ OPT_SKIPEE,OPT_SKIPEP,OPT_NOPFQ,OPT_NOCI,
-     &     DONR,FROZCI,LDIRNR
+      PARAMETER (NOPTFLAGS = 20)
+      LOGICAL FLAG(NOPTFLAGS)
+      LOGICAL OPT_SKIPEE,OPT_SKIPEP,OPT_NOPFQ,OPT_NOFQX
+      LOGICAL OPT_NOCI,OPT_UCIBOS,OPT_MKCNST
+      LOGICAL DONR,FROZCI,LDIRNR,NATONL,FOCKON,COMPROT
+      COMMON /DCLOPT/ OPT_SKIPEE,OPT_SKIPEP,OPT_NOPFQ,OPT_NOFQX,
+     &     OPT_NOCI,OPT_UCIBOS,OPT_MKCNST,DONR,FROZCI,LDIRNR,FLAG,
+     &     NATONL,FOCKON,COMPROT
 C
       CHARACTER*72 OPT_INDSTR(3,2)
+      CHARACTER OPT_INTTYP*9, OPT_CIPROGRAM*8
+      CHARACTER*72 OPT_FRZSTR(2)
       COMMON /DCCOPT/
-     $     OPT_INDSTR,
-     $     OPT_CIPROGRAM
+     $     OPT_INTTYP,OPT_INDSTR,OPT_CIPROGRAM,OPT_FRZSTR
 C
-      COMMON /DCMOPT/ KZCONF,KZXOPE,KZXOPP
-C
+      COMMON /DCMOPT/ KZCONF,KZXOPE,KZXOPP,LZCONF,LZXOPE,LZXOPP
+C     lzconf is integer length of WORK(KZCONF) etc.
 C
 C
       PARAMETER ( NOPTTIM = 20 )

@@ -81,21 +81,22 @@ C     Based on DALTON/FCKDEN
 C
 C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
+C                    2002/09/26 - tf : minor cleanup
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION DVAO(*),CMO(*),DV(*)
-      DIMENSION WORK(LWORK)
-      PARAMETER ( D1 = 1.0 D00, D0 = 0.0 D00 )
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-#include "memint.h"
-C
+      DIMENSION DVAO(*),CMO(*),DV(NASHT,NASHT,NZ)
+      DIMENSION WORK(LWORK)
+      PARAMETER ( D1 = 1.0 D00, D0 = 0.0 D00 )
 C
       CALL QENTER('DENSDV')
-      IF ( IPRINT .GE. 4 ) CALL HEADER('Output from DENSDV',-1) 
+#include "memint.h"
+C
+      IF ( IPRINT .GE. 10 ) CALL HEADER('Output from DENSDV',-1) 
 C
 C     Get active density matrix
 C
@@ -109,51 +110,32 @@ C
 C 
 C     Allocate memory for temp. DVMO matrix
 C
-      CALL MEMGET('REAL',KTEMP,N2ORBTQ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KTEMP),N2ORBTQ)
+      CALL MEMGET('REAL',KTEMP,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KTEMP),N2ORBXQ)
 C
 C
+      CALL DVSCT(DV,WORK(KTEMP))
 C
-      IOFF1 = 0
-      DO IF = 1,NFSYM
-         DO I = 1,NASH(IF)
-            DO J = 1,NASH(IF)
-               IADR1 = I + (J-1) * NASH(IF) + IOFF1
-               II = NISH(IF)+NPSH(IF)+I-1
-               JJ = NISH(IF)+NPSH(IF)+J-1
-               IADR2 = I2ORBT(IF) + II + JJ * NORB(IF)
-               DO IZ = 1,NZ
-                  WORK(KTEMP+IADR2) = DV(IADR1)
-                  IADR1 = IADR1 + N2ASH(IF)
-                  IADR2 = IADR2 + N2ORB(IF)
-               END DO
-            END DO
-         END DO
-         IOFF1 = IOFF1 + NASH(IF)*NASH(IF)
-         IF ( IPRINT .GE. 4 ) THEN
-            CALL HEADER('DENSDV "Expanded" DVMO',-1)
-            WRITE(LUPRI,*) '*** Fermion ircop ',IF
-            CALL PRQMAT(WORK(KTEMP+I2ORBT(IF)),NORB(IF),NORB(IF),
-     &                  NORB(IF),NORB(IF),
-     &                  NZ,IPQTOQ(1,0),LUPRI)
-         END IF
-      END DO
+      IF ( IPRINT .GE. 10 ) THEN
+         CALL HEADER('DENSDV "Expanded" DVMO',-1)
+         CALL PRQMAT(WORK(KTEMP),NORBT,NORBT,NORBT,NORBT,
+     &        NZ,IPQTOQ(1,0),LUPRI)
+      END IF
 C
       DO I = 1,NFSYM
-         IADR1 = KTEMP + I2ORBT(I)
          IF ( NASH(I) .GT. 0 ) THEN
             CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &               NORB(I),NORB(I),
      &               DVAO(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),
      &                   NZ,IPQTOQ(1,0),
-     &               WORK(IADR1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &               WORK(KTEMP+I2ORBX(I,I)),NORBT,NORBT,NZ,IPQTOQ(1,0),
      &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPRINT)
          END IF
       END DO
 C
-      IF ( IPRINT .GE. 4 ) THEN
+      IF ( IPRINT .GE. 10 ) THEN
          CALL HEADER('DENSDV: Active density matrix',-1)
          DO I = 1,NFSYM
             WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
@@ -322,6 +304,7 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ACTDEN')
 C

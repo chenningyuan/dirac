@@ -35,6 +35,30 @@ C
 C#include "single.h"
 #ifdef REVLOG
 $Log$
+Revision 1.11  2003/06/12 12:07:09  fleig
+TF:
+
+ KRMC MERGE !
+
+ - Complete MCSCF program including all changes in other relevant
+   program parts.
+
+ - Entire LUCIAREL program module.
+
+ - LUCITA/LUCIAREL merge: eliminated duplicate code, introduced
+   new library file gp/gplucia.F with common routines.
+
+ - Some restructuring in dcb... include files.
+
+ - New standard test cases added:
+  -- 26.krmc_gosci: MCSCF test with GOSCI module (Be atom)
+  -- 28.luciarel_medium: LUCIAREL standalone test in MCSCF
+                         framework (F atom)
+
+Revision 1.10.2.1  2003/02/17 19:17:31  fleig
+TF:
+ - krmc: abacus
+
 Revision 1.10  2002/11/21 12:44:54  hjj
 HJAaJ:
 1) abaopt.F: revised some output text

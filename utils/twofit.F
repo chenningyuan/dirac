@@ -68,10 +68,10 @@ C
       WRITE(LUPRI,'(A)') 
      &  'Note that bond lengths should be given in Angstroms',
      &  ' and all other quantities in atomic units !'
-      OPEN(IUNIT,NAME=POTFIL,STATUS='OLD',FORM='FORMATTED',
+      OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
       RESFIL = POTFIL//'.res'
-      OPEN(ILOGG,NAME=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
+      OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL')
       GOTO 30
  20   CONTINUE

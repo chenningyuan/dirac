@@ -1,8 +1,14 @@
 C *** Wave function module ***
-C  DODHF - perform Dirac-Fock calculation
-C  DOMP2 - perform second-order Moeller-Plesset calculation
+C  DOSCF - either DODHF or DODFT true
+C  DODHF - perform Dirac-Hartee-Fock calculation
+C  DOMP2 - perform direct second-order Moeller-Plesset calculation
 C  DODFT - perform Kohn-Sham DFT calculation
-C  DORES - resolution of open-shell manifold by GOSCIP
+C  DORES - resolution of open-shell manifold with GOSCIP
 C  DOMVO - make modified virtual orbitals
-      LOGICAL DODHF,DOMP2,DODFT,DOMVO,DORES,DOSCF
-      COMMON/DCLPSI/DODHF,DOMP2,DODFT,DOMVO,DORES,DOSCF
+C  DOCCM - perform coupled-cluster calculation with RELCCSD
+C  DOCIM - perform CI calculation with DIRRCI/GOSCIP
+C  DOLUCT- perform CI calculation with LUCITA
+      LOGICAL       DOSCF,DODHF,DODFT, DOMP2, DOMVO,DORES,
+     &              DOCCM,DOCIM,DOLUCT,DOKRMC,DOLUCIAR
+      COMMON/DCLPSI/DOSCF,DODHF,DODFT, DOMP2, DOMVO,DORES,
+     &              DOCCM,DOCIM,DOLUCT,DOKRMC,DOLUCIAR

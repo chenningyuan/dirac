@@ -27,6 +27,7 @@ C
 C
 C VERSION : $Revision$
 C DATE    : $Date$
+C FILE    : traone.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
@@ -460,7 +461,7 @@ C
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
       DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
       DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
-      DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2)
+      DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64)
       DATA IPHS/ 1,-1,-1, 1/
 C
@@ -525,7 +526,7 @@ C     Set the number of active electrons
 C
       DO IREP = 1, NSYMRP
          IFRP = (IREP+1) / 2
-         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP)
+         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP,1)
       ENDDO
 C
 C     The correlation codes (RELCCSD, DIRRCI, LUCITA) do not use 
@@ -597,8 +598,10 @@ C     number of deleted spinors.
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
-     &                      (NSPC(IRP),IRP=1,NFSYM),
-     &  (NESH(IRP)-NSTR(IRP)-NSPC(IRP),IRP=1,NFSYM)
+     &                      (NSPC(IRP,0),IRP=1,NFSYM),
+     &                      (NSPC(IRP,1),IRP=1,NFSYM),
+     &                      (NSPC(IRP,2),IRP=1,NFSYM),
+     &  (NESH(IRP)-NSTR(IRP)-NSPC(IRP,0),IRP=1,NFSYM)
 C     Number of fermion irreps in the Abelian subgroup,
 C     names of these irreps.
       WRITE (LUMLF1) NSYMRPA,(REPA(IRPA),IRPA=1,NSYMRPA*2)
@@ -613,7 +616,7 @@ C     - Approximate boson irrep identification (needed in LUCIAREL
 C       and LUCITA)
 C     - Number of boson symmetry reps (for LUCITA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),
-     &               (IBSPI(I),I=1,2*NSTRT),NBSYMRP
+     &               (IBSPI(I),I=1,2*NSTRT),(NORB(I),I=1,NFSYM),NBSYMRP
 C     Matrix elements over the core Fock operator.
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
      &                 J=1,NSTRT*2),I=1,NSTRT*2)
@@ -969,6 +972,7 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbtr3.h"
+#include "dcbmp2.h"
 C
       DIMENSION XMO(NORBT,NORBT,NZ)
       DIMENSION XMOM(NFVO,IRCW)

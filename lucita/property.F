@@ -1,10 +1,86 @@
-
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ci_respons $Revision$
+      SUBROUTINE GENH1(XLAMBDA_X)
+*
+* Construct the general one-electron operator
+*
+* H = XLAMBDA*H(NORMAL) + (1-XLAMBDA)FIFA
+*
+*
+* Where H(Normal) is the normal one-electron operator
+* and FIFA is the sum of the inactive and active Fock matrices 
+* used in CASPTN theory
+*
+* The correct one-electron density is assumed in place
+*
+* Jeppe Olsen, March 1996
+*
+*. Note : Correct Lambda is transferred through CRUN as of Feb. 98
+*
+      IMPLICIT REAL*8(A-H,O-Z)
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "glbbas.inc"
+#include "lucinp.inc"
+#include "orbinp.inc"
+#include "oper.inc"
+#include "crun.inc"
+      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
+*
+*. Construct FIFA in WORK(KFI)
+*
+      IF(IPART.NE.3) THEN
+*. Normal M-P Partitioning
+        WRITE(6,*) 'Normal MP partitioning'
+        WRITE(6,*) 'Normal MP partitioning'
+        WRITE(6,*) 'Normal MP partitioning'
+        CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
+        CALL FIFAM(WORK(KFI))
+        CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
+        ECORE_H = 0.0D0
+        IF(IUSE_PH.EQ.1) THEN
+          CALL FI(WORK(KFI),ECORE_H,0)
+          ECORE = ECORE_ORIG + ECORE_H 
+        END IF
+*. And write to disc
+        LU18 = 18
+        REWIND (LU18)
+        WRITE(6,*) ' H0 written to disc '
+        CALL TODSC(WORK(KFI),NINT1,-1,LU18)
+      ELSE IF(IPART.EQ.3) THEN
+        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        LU18 = 18
+        REWIND (LU18)
+        CALL FRMDSC(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
+      END IF
+*
+*. And obtain modified operator in KINT1 ( No return !! )
+*
+      FAC2 = 1.0D0 - XLAMBDA
+      CALL VECSUM(WORK(KINT1),WORK(KINT1),WORK(KFI),XLAMBDA,FAC2,
+     &            NINT1)
+*
+      CALL COPVEC(WORK(KINT1),WORK(KINT1O),NINT1)
+      NTEST = 100
+      IF(NTEST.GE.100) THEN
+       WRITE(6,*) 'Modified matrix as delivered by GENH1 '
+       WRITE(6,*) '======================================'
+       CALL APRBLM2(WORK(KINT1),NTOOBS,NTOOBS,NSMOB,1)
+      END IF
+*
+      RETURN
+      END 
+***********************************************************************
+*                                                                     *
+* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
+*                                                                     *
+***********************************************************************
       SUBROUTINE CI_RESPONS(LU1,LU2,LU3,LU4,LU5,LU6,LU7,LUC,LUDIA,
      &                      VEC1,VEC2,ENOT,CCALC)
 *
@@ -12,7 +88,6 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "lucinp.inc"
 #include "glbbas.inc"
@@ -155,13 +230,11 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dump_1el_info $Revision$
       SUBROUTINE DUMP_1EL_INFO(LUH)
 *
 *. Dump one-electron information  on file LUH, LUCIA format
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "crun.inc"
@@ -307,8 +380,6 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck extkop $Revision$
-
       SUBROUTINE EXTKOP
 *
 * Use Extended Koopmaans' theorem to obtain ionization energies
@@ -319,7 +390,6 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -410,7 +480,8 @@ COLD  CALL SCALVE(WORK(KFOCK),TWO,NTOOB**2)
            IBASE2 = IBASE2 + NTOOBS(ISM-1)**2
         END IF
 *. Pack block of Fock matrix to complete form
-C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
+C       SIGNTP = 1.0
+C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N,SIGNTP)
 *. Already in complete form so
         CALL COPVEC(WORK(KFOCK-1+IBASE2),WORK(KLFEXP),N**2)
         WRITE(6,*) ' Outpacked block of FOCK '
@@ -428,7 +499,8 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
         write(6,*) ' Transformed matrix'
         call wrtmat(work(KLFEXP),n,n,n,n)
 *. Diagonalize
-        CALL TRIPAK(WORK(KLFEXP),WORK(KLSCR),1,N,N)
+        SIGNTP = 1.0
+        CALL TRIPAK(WORK(KLFEXP),WORK(KLSCR),1,N,N,SIGNTP)
         CALL EIGEN(WORK(KLSCR),WORK(KLFP),N,0,1)
         WRITE(6,*)
      &  ' Eigenvalues of Extended Koopmans Equation for ISM = ',ISM
@@ -445,87 +517,6 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck genh1 $Revision$
-      SUBROUTINE GENH1(XLAMBDA_X)
-*
-* Construct the general one-electron operator
-*
-* H = XLAMBDA*H(NORMAL) + (1-XLAMBDA)FIFA
-*
-*
-* Where H(Normal) is the normal one-electron operator
-* and FIFA is the sum of the inactive and active Fock matrices
-* used in CASPTN theory
-*
-* The correct one-electron density is assumed in place
-*
-* Jeppe Olsen, March 1996
-*
-*. Note : Correct Lambda is transferred through CRUN as of Feb. 98
-*
-      IMPLICIT REAL*8(A-H,O-Z)
-#include "mxpdim.inc"
-*include <mxpdim.fh>
-#include "wrkspc.inc"
-#include "glbbas.inc"
-#include "lucinp.inc"
-#include "orbinp.inc"
-#include "oper.inc"
-#include "crun.inc"
-      COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*
-*. Construct FIFA in WORK(KFI)
-*
-      IF(IPART.NE.3) THEN
-*. Normal M-P Partitioning
-        WRITE(6,*) 'Normal MP partitioning'
-        WRITE(6,*) 'Normal MP partitioning'
-        WRITE(6,*) 'Normal MP partitioning'
-        CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
-        CALL FIFAM(WORK(KFI))
-        CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
-        ECORE_H = 0.0D0
-        IF(IUSE_PH.EQ.1) THEN
-          CALL FI(WORK(KFI),ECORE_H,0)
-          ECORE = ECORE_ORIG + ECORE_H
-        END IF
-*. And write to disc
-        LU18 = 18
-        REWIND (LU18)
-        WRITE(6,*) ' H0 written to disc '
-        CALL TODSC(WORK(KFI),NINT1,-1,LU18)
-      ELSE IF(IPART.EQ.3) THEN
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        LU18 = 18
-        REWIND (LU18)
-        CALL FRMDSC(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
-      END IF
-*
-*. And obtain modified operator in KINT1 ( No return !! )
-*
-      FAC2 = 1.0D0 - XLAMBDA
-      CALL VECSUM(WORK(KINT1),WORK(KINT1),WORK(KFI),XLAMBDA,FAC2,
-     &            NINT1)
-*
-      CALL COPVEC(WORK(KINT1),WORK(KINT1O),NINT1)
-      NTEST = 100
-      IF(NTEST.GE.100) THEN
-       WRITE(6,*) 'Modified matrix as delivered by GENH1 '
-       WRITE(6,*) '======================================'
-       CALL APRBLM2(WORK(KINT1),NTOOBS,NTOOBS,NSMOB,1)
-      END IF
-*
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
-*fordeck get_prop_rank $Revision$
       SUBROUTINE GET_PROP_RANK(PROPER,IRANK)
 *
 * Obtain rank for property PROPERTY (gives as CHAR*6 as usual)
@@ -559,7 +550,6 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gndbptfreq $Revision$
       SUBROUTINE GNDBPTFREQ(V,W,IRFSM,ERF,LURF,
      &           IVRFSM,MAXV,IWRFSM,MAXW,IDRFSM,IVSM,IWSM,
      &           LUN,VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
@@ -1572,7 +1562,6 @@ C?           WRITE(6,*) ' FAC1, FAC2, NCOMB ',FAC1,FAC2, NCOMB
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ndim_1el_mat $Revision$
       FUNCTION NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,NSM,IPACK)
 *
 * Length of one-electron matrix with symmetry IHSM
@@ -1607,7 +1596,6 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck one_el_prop $Revision$
       SUBROUTINE ONE_EL_PROP
 *
 * Calculate one-electron properties
@@ -1618,7 +1606,6 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "multd2h.inc"
@@ -1785,7 +1772,6 @@ C               END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prop_natorb $Revision$
 *
       SUBROUTINE PROP_NATORB(HDIAG,OCCNUM,NTOOBS,NSMOB)
 *
@@ -1833,7 +1819,6 @@ C               END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prop_pert $Revision$
       SUBROUTINE PROP_PERT(LU0,LUN,N,ISM,ISPC)
 *
 * Perturbation expansion of one-electron properties
@@ -1855,7 +1840,6 @@ C               END IF
       REAL *8 INPRDD
 *
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -2071,7 +2055,6 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ptekt $Revision$
       SUBROUTINE PTEKT(LU0,LUN,N,ISM,ISPC)
 *
 * Perturbation analysis of the Extended Koopmans' theorem
@@ -2102,7 +2085,6 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *. Should not be called with ICISTR = 1
 *. Nor with inactive orbitals
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "cicisp.inc"
 #include "wrkspc.inc"
 #include "orbinp.inc"
@@ -2374,7 +2356,6 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traprp $Revision$
       SUBROUTINE LTRAPRP
 *
 * Calculate one-electron transition properties
@@ -2383,7 +2364,6 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-*include <mxpdim.fh>
 #include "wrkspc.inc"
 #include "crun.inc"
 #include "multd2h.inc"
