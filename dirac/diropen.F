@@ -158,7 +158,9 @@ C
 C
 C              QVao (beta DCao + gamma DSao) (store in DTEMP1(1,2))
 C
-               CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
+C              QVao = 2*f/2 * Fock(TWOINT) = f * Fock(TWOINT)
+C
+               CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),DF(IOPEN),
      &            'N','N',IPQTOQ(1,0),FAO(1+I2BASX(I,I),1+IOPEN),
      &            NTBAS(0),NTBAS(0),NZ,
      &            'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
@@ -175,7 +177,7 @@ C                 fi = fj?
 C
                   CALL DZERO(DTEMP1,N2BBASXQ)
 C
-                  IF (ABS(DF(IOPEN)-DF(JOPEN)).GT.DFTHR) THEN
+                  IF (ABS(DF(IOPEN)-DF(JOPEN)).LT.DFTHR) THEN
 C
 C                    This is a tough case...
 C                    The gradient is correct, but there might
@@ -186,11 +188,44 @@ C
 C                    If fi = fj = 1 then it corresponds to inactive shells
 C                    so don't make the correction below.
 C
-                     IF (ABS(DF(IOPEN)-D1).LE.DFTHR) THEN
+                     IF (ABS(DF(IOPEN)-D1).GE.DFTHR) THEN
 C
                         CALL DAXPY(N2BBASXQ,-D1,FAO,1,DTEMP1,1)
 C
+C                       add two-electron Fock matrices...
+C
+C                       ( + (ai-1) fi QViao
+C                         - (aj-1) fj QVjao ) DVjao
+C
+                        DSCALE = DF(IOPEN)*
+     &                           (DA(IOPEN)-D1)
+C
+C                       QViao = 2*fi * 1/2 * Fock(TWOINT)
+C
+                        DSCALE = DSCALE * DF(IOPEN)
+C
+                        CALL DAXPY(N2BBASXQ,DSCALE,
+     &                     FAO(1,1+IOPEN),1,DTEMP1,1)
+                        DSCALE = -DF(JOPEN)*
+     &                           (DA(JOPEN)-D1)
+C
+C                       QVjao = 2*fj * 1/2 * Fock(TWOINT)
+C
+                        DSCALE = DSCALE * DF(JOPEN)
+C
+                        CALL DAXPY(N2BBASXQ,DSCALE,
+     &                     FAO(1,1+JOPEN),1,DTEMP1,1)
+                        CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
+     &                     'N','N',IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),1),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     'N','N',IPQTOQ(1,0),
+     &                        DMAT(1+I2BASX(I,I),1+JOPEN),
+     &                     NTBAS(0),NTBAS(0),NZ,
+     &                     D1,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
+     &                     NTBAS(0),NTBAS(0),NZ)
+C
                      END IF
+C
 C           
                   ELSE
 C
@@ -199,10 +234,20 @@ C                      - (aj-1)/(fi-fj) fj QVjao ) DVjao
 C
                      DSCALE = DF(IOPEN)*
      &                        (DA(IOPEN)-D1)/(DF(IOPEN)-DF(JOPEN))
+C
+C                    QViao = 2*fi * 1/2 * Fock(TWOINT)
+C
+                     DSCALE = DSCALE * DF(IOPEN)
+C
                      CALL DAXPY(N2BBASXQ,DSCALE,
      &                  FAO(1,1+IOPEN),1,DTEMP1,1)
                      DSCALE = -DF(JOPEN)*
      &                        (DA(JOPEN)-D1)/(DF(IOPEN)-DF(JOPEN))
+C
+C                    QVjao = 2*fj * 1/2 * Fock(TWOINT)
+C
+                     DSCALE = DSCALE * DF(JOPEN)
+C
                      CALL DAXPY(N2BBASXQ,DSCALE,
      &                  FAO(1,1+JOPEN),1,DTEMP1,1)
                      CALL QGEMM(NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),D1,
@@ -210,10 +255,11 @@ C
      &                  NTBAS(0),NTBAS(0),NZ,
      &                  'N','N',IPQTOQ(1,0),DMAT(1+I2BASX(I,I),1+JOPEN),
      &                  NTBAS(0),NTBAS(0),NZ,
-     &                  D0,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
+     &                  D1,IPQTOQ(1,0),DTEMP1(1+I2BASX(I,I),2),
      &                  NTBAS(0),NTBAS(0),NZ)
 C
                   END IF
+C
  25            CONTINUE
 C
 C              Multiply the lot with DViao (store in DTEMP2)
@@ -277,11 +323,7 @@ C
 C
 C              Sum up FD + A
 C
-C              Remember to divide by D2 (from TWOFCK)
-C              Mult. by 2*f (QVao = f * Fock-matrix)
-C              Total factor: f
-C
-               CALL QAXPY(N2ORB(I),'N','N',DF(IOPEN),IPQTOQ(1,0),1,
+               CALL QAXPY(N2ORB(I),'N','N',D1,IPQTOQ(1,0),1,
      &            DTEMP1(1+I2ORBT(I),1),N2ORB(I),1,
      &            IPQTOQ(1,0),NZ,
      &            FMO(1+I2ORBT(I)),N2ORB(I),1,
