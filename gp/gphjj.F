@@ -650,6 +650,7 @@ C
       DATA    A/1/,B/0/,C/0/
       C = C + A/B
 #endif
+      CALL QTRACE(6)
 #if defined (SYS_ALLIANT)
       WRITE(*,*) 'Alliant does not provide a system traceback facility.'
 #endif
