@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : ./include/dcbmp2.F
+C SOURCE  : $Source$
+C
 C  DCBMP2:  Parameters for MP2 calculation
 C
 C     MP2_NSTR(OCC/VIR, Fermion irrep)   - number of occ/virt pairs
@@ -9,5 +15,6 @@ C
       COMMON/DCCMP2/MP2_INDSTR(2,2)
       COMMON/DCBMP2/DMP2_VIRTHR,IPRMP2,ISTRMP2,MP2_INTFLG,
      &       MP2_NSTR(2,2)
-      COMMON/DCCMPE/EMP2
+      COMMON/DCCMPE/EMP2, DHFEMP
+
 
