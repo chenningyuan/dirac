@@ -122,7 +122,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-                  TOTERG,2)
+     &            TOTERG,2)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get labels for population analysis

@@ -727,7 +727,6 @@ C
 #include <dgroup.h>
 #include <pgroup.h>
 #include <dcbbas.h>
-#include <dcbham.h>
       CHARACTER COMP(2)*1
       DIMENSION VMAT(*),SMAT(*),EIG(*),CSPH(*),ICSP(*),WORK(LWORK)
       LOGICAL LBIT
