@@ -1116,7 +1116,7 @@ C
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
           CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,SMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,1)),NSTR,
-     &            JREF,WORK(KE(IFRP,2)))
+     &            JREF,WORK(KE(IFRP,2)),GROSS)
         ENDIF
 C
 C       Make overlap matrix
