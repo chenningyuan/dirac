@@ -269,13 +269,13 @@ case $machine in
 
    i[3-6]86-*)
       liblist="$liblist libmkl"
-      complist='ifort ifc g77 pgf90 f77'
+      complist='ifort ifc g77 pgf90 pgf77 f77'
       cclist='icc gcc pgcc cc'
       debug='gdb';;
 
     x86_64-*)
 #     liblist=$liblist
-      complist='g77 pgf90 pathf90 f77'
+      complist='g77 pgf90 pgf77 pathf90 f77'
       cclist='gcc pgcc pathcc cc'
       debug='gdb';;
 
@@ -1214,7 +1214,7 @@ case $machine in
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
-            F77real=pgf90
+            F77real=pgf77
          elif "$F77" $mpishowopt | grep -q g77; then
             F77real=g77
          else 
@@ -1241,7 +1241,7 @@ case $machine in
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
          echo 
          ;;
-      pgf90)
+      pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
          ;;
@@ -1368,7 +1368,7 @@ case $machine in
          elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
          elif "$F77" $mpishowopt | grep -q pgf77; then
-            F77real=pgf90
+            F77real=pgf77
          elif "$F77" $mpishowopt | grep -q g77; then
             F77real=g77
          else 
@@ -1393,7 +1393,7 @@ case $machine in
          echo   Could not determine which compiler mpif77 is using, assuming it is g77
          echo 
          ;;
-      pgf90)
+      pgf90|pgf77)
          opt="-fastsse"
          ccp="$ccp -DVAR_PGCC"
          ;;
