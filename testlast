@@ -38,15 +38,16 @@ usage='Usage: '$0'\n'\
 '--help\n'\
 '\tPrint this\n'\
 '--tests=TESTS\n'\
-'\tThe tests that should be run\n'\
+'\tThe tests that should be run (default: --tests=short)\n'\
+'\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
 '--testdir=TESTDIR\n'\
-'\tDirectory in which the tests should be run (default: -testdir=test)\n'\
+'\tDirectory in which the tests should be run (default: --testdir=test)\n'\
 '--cvs=yes/no\n'\
-'\tRun cvs prior to compilation (default: -cvs=no)\n'\
+'\tRun cvs prior to compilation (default: --cvs=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
 '--queue=QUEUE\n'\
-'\tQueue to be used in qsub (default: -queue=none meaning run interactively)\n'
+'\tQueue to be used in qsub (default: --queue=none meaning run interactively)\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -115,6 +116,7 @@ fi
 if [  -z "$tests" ]; then
    run=default_test;
    tests=short;
+   echo ' Will do default tests : ' $tests ;
 else
    case "${tests}" in
       "short")
@@ -125,6 +127,9 @@ else
       ;;
       "long")
       run=long_test;
+      ;;
+      "all")
+      run=all_test;
       ;;
       *)
       run=user_test;
