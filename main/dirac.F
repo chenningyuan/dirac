@@ -32,21 +32,16 @@ C
 C*****************************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,LWORK)
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbgen.h"
 C
-#if defined (VAR_MPI)
-#include "mxorb.h"
 #include "infpar.h"
-#include "infmpi.h"
-#include "priunit.h"
-#endif
 C
       DIMENSION WORK(LWORK)
 C
 C
       PARCAL = (IPARCAL .NE. 0)
-#if defined (VAR_MPI)
 C
 C     Transfer variables to common blocks
 C
@@ -61,7 +56,6 @@ C     Let the slaves sleep for now (where implemented) ...
 C        ( ITASK = 0 )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( 0 )
-#endif
 C
 C     Set basis set directory
 C
@@ -283,14 +277,10 @@ C*****************************************************************************
 #include "dcbgen.h"
 #include "priunit.h"
 C
-#if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       INTEGER ISTAT(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
-#endif
 C
-#include  "mxorb.h"
 #include "infpar.h"
 C
       DIMENSION WORK(MWORK)
@@ -299,7 +289,6 @@ C
       LWORK = MWORK
 #include "memint.h"
 C
-#if defined (VAR_MPI)
 C
 C     Transfer variables to common blocks
 C
@@ -308,7 +297,6 @@ C We count the number of slave nodes, subtract the master
       NUMNOD = INUMNOD - 1
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
-#endif
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
@@ -316,7 +304,6 @@ C
       CALL GETBASDIR()
 C
  100  CONTINUE
-#if defined (VAR_MPI)
 C
 C     Check whether there is a new task waiting : if not
 C     the slave may sleep for one second. This is useful on
@@ -333,7 +320,6 @@ C
          CALL SLEEP(1)
          GO TO 100
       END IF
-#endif
 C
 C     Start timing.
 C
@@ -384,7 +370,7 @@ C
 C
  999  CALL QEXIT('DIRNOD')
       END
-#endif
+#endif /* VAR_MPI */
 C
 #ifdef SYS_SX
 C
@@ -405,7 +391,7 @@ C  /* Deck dirctl */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "infmpi.h"
+#include "infpar.h"
 #include "dcbgen.h"
 C
 C     Check environment variable BASDIR
@@ -433,7 +419,7 @@ C
 C
       END IF
 C
-      IF (MYTID .EQ. 0) WRITE(LUPRI,'(2A)')
+      IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(2A)')
      $     ' Basis set dir.    : ',BASDIR(1:LENBAS)
 C 
       RETURN
@@ -457,7 +443,6 @@ C
 
 #if defined (VAR_MPI)
 
-#include "infmpi.h"
 #include "infpar.h"
       INCLUDE 'mpif.h'
 C
