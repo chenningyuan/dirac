@@ -719,8 +719,13 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 * (-1) in my simple world
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-      DIMENSION VEC1(*),VEC2(*)
       REAL * 8   INPROD,INPRDD
+      character*6 SIGDEN_ROUTE
+      LOGICAL CONVER,RTCNV(100),EXSTOP
+*
+#include "krmcluci_inf.h"
+*
+      DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION H0(*),IPNTR(1)
@@ -734,9 +739,6 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 *      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
       DIMENSION FINEIG(*)
-      character*6 SIGDEN_ROUTE
-      LOGICAL CONVER,RTCNV(100)
-      LOGICAL EXSTOP
       EXTERNAL mv7_rel
 *
       call qenter('CMICDV')
@@ -796,7 +798,6 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
          CALL COMHAM(NVAR,T_CC,SIGDEN_ROUTE)
          Call Abend2( ' After COMHAM  ' )
        END IF
-
 *
 * ===================
 *.Initial iteration
@@ -1328,6 +1329,9 @@ C!?      ITER = ITER - 1
         write(6,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
         write(6,*)
       end if
+*
+      ECI = EIG(1,ITER)
+*
  9000 format(A18,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN

@@ -1047,7 +1047,6 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &  ' Largest block of strings with given symmetry and type',MXSTBL
 *. Largest number of resolution strings and spectator strings
 *  that can be treated simultaneously
-        MAXI = MIN( MXINKA,MXSTBL)
         MAXK = MIN( MXINKA,MXSTBL)
 *.scratch space for projected matrices and a CI block
 *
@@ -1061,12 +1060,12 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
         LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
         LCJRES = LSCR2
 *. Note : LCJRES and MXADKBLK are being save in /CICISP/
-C!!     IF(IPRCIX.GE.2) THEN
+        IF(IPRCIX.GE.2) THEN
           WRITE(6,*) 'GET_3BL: MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL',
      &                         MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL
           WRITE(6,*) 'GET_3BL: MXADKBLK ', MXADKBLK
           WRITE(6,*) ' Space for resolution matrices ',LSCR2
-C!!     END IF
+        END IF
       END DO
 *     ^ End loop over MK2 values
 *
@@ -1085,6 +1084,8 @@ C!!     END IF
 *
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       call memmar(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
+* Is KC2 this required still??
+* FIX E!
       call memmar(KC2,LSCR12,'ADDS  ',2,'C2    ')
 *
       RETURN

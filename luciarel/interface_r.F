@@ -14,7 +14,7 @@
 #include "implicit.inc"
 #include "mxpdim.inc"
 *
-#include "civecinf.h"
+#include "krmcluci_inf.h"
 *
       dimension IBATS(8,NBLOCK),LBATS(NBLOCK),I1BATS(NBLOCK),
      &          LEBATS(NBLOCK),NBAT_MS2(NMS2VAL)
@@ -675,7 +675,7 @@ C?     WRITE(6,*) 'JLIST,  KINT2D(1,JLIST)',JLIST,  KINT2D(1,JLIST)
 *  Real				 	IDGTYP = 1
 *  Complex 		matrix group    IDGTYP = 2
 *  Quaternionic				IDGTYP = 3
-CTF  Only complex implemented for now.
+CTF  Only complex and real (inefficient) implemented for now.
 *
       if (IDBG.le.3) IDGTYP = 1
       if (IDBG.ge.4.and.IDBG.le.6) IDGTYP = 2
@@ -683,7 +683,7 @@ CTF  Only complex implemented for now.
 *
 * Check for inversion symmetry of group
       INVSYM = 0
-      if (IDBG.eq.7.or.IDBG.eq.4) INVSYM = 1
+      if (IDBG.eq.7.or.IDBG.eq.4.or.IDBG.eq.1) INVSYM = 1
 *
 * Check for matching dimensions of boson symmetry functions
       if (ISPINFREE.eq.1) then
@@ -1204,6 +1204,10 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *  Timo Fleig, Mar. 2001 (Ellen Tabea is here!)
 *  Jeppe Olsen modifies it. (Apr. 2001)
 *  In complete form, June 2001, Timo Fleig
+*
+*  Implemented real groups (DIRAC) treated like complex groups
+*  with zero imaginary parts.
+*  Timo Fleig, August 25, 2003
 *----------------------------------------------
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
@@ -1221,6 +1225,8 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
+*
+#include "dgroup.h"
 *
       character*6 CIRUN
       dimension NICA_STR(MXPNGAS),NICB_STR(MXPNGAS),
@@ -1243,10 +1249,21 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
       NTEST = max(NTESTL,IPRNT)
       IZERO = 0
 *
+* Constants
+      IZERO = 0
+      ZERO = 0.D0
+*
 * Double group type
-      if (DOUGRP.le.3) IDGTYP = 1
-      if (DOUGRP.ge.4.and.DOUGRP.le.6) IDGTYP = 2
-      if (DOUGRP.ge.7.and.DOUGRP.le.8) IDGTYP = 3
+      if (NZ.eq.1) then
+        IDGTYP = 1
+        write(6,*) 
+        write(6,*) ' NOTICE from DIST_INTS_SIGDEN: '
+        write(6,*) ' Imaginary parts treated, but zeroed out. '
+      else if (NZ.eq.2) then
+        IDGTYP = 2
+      else if (NZ.eq.4) then
+        IDGTYP = 3
+      end if
 *
 * Check for inversion symmetry of group
       INVSYM = 0
@@ -1263,7 +1280,9 @@ C       call reo_info_molcas()
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
      &                      INVSYM,IDGTYP,ISPINFREE,IPRNT)
 *
-        IRILP = 2    ! Always in LUCIAREL. General r/i vectors.
+        IRILP = 2
+C  FIXME !!
+C   Enforced. Make more efficient !
       else if (INTIMP.eq.7) then
         call reo_info_dirac(NDIM_TOT,NIRR_PN,SYMDIM,IBOSYM,
      &                      SYDI,DOUGRP,WORK(KISREO),WORK(KINVREO),
@@ -1273,7 +1292,10 @@ C       call reo_info_molcas()
         else
           IRILP = 2
         end if
-        IRILP = 2    ! enforced !
+        IRILP = 2    
+C  FIXME !!
+C   Enforced. Make more efficient for real groups and SPINFREE
+C   formalism !
       end if
 *
 * Open ASCII unit for checking integral sorting information
@@ -1640,7 +1662,8 @@ C       call reo_info_molcas()
 * (Reason: CACA string generated e.g. for two alpha excitations,
 *          but this does not correspond to index ordering in integral!)
 *
-                          YXINT = 0.D0
+                          YXINT = ZERO
+                          YINT = ZERO
                           if (IXCH.eq.1) then
 * Index sequence reads:
 *  (IJ|KL) (which is not the operator sequence for the desired int!)
@@ -1669,9 +1692,12 @@ C       call reo_info_molcas()
      &                              I_ADD(IRUN) * 
      &                              LABEL(IRUN,IXTP)
                             end do
-                            if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ')
-     &                      call getint_sigden(YXINT,I_ADD,IRI,
+                            if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
+                              if (CIRUN.ne.'DENS1 '
+     &                            .and.CIRUN.ne.'DENS2 ')
+     &                          call getint_sigden(YXINT,I_ADD,IRI,
      &                                    NDIM_TOT,NASHT,F1,F2,IPRNT)
+                            end if
                           end if
 *
                           if (CIRUN.ne.'DENS1 '.and.
@@ -1701,21 +1727,25 @@ C       call reo_info_molcas()
                                 end if
                               end if
                             end if
-                            call getint_sigden(YINT,INDEX(1,ICOUNT),
-     &                                IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
+*
+                            if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
+                              call getint_sigden(YINT,INDEX(1,ICOUNT),
+     &                                  IRI,NDIM_TOT,NASHT,F1,F2,IPRNT)
+                            end if
+*
                             T(ICOUNT) = YINT - YXINT
+*
 * FIXME !! Uncommented sign here!!
-                            if (IXCH.eq.1) 
-     &                          T(ICOUNT) = - T(ICOUNT)
+                            if (IXCH.eq.1) T(ICOUNT) = - T(ICOUNT)
 * FIXME !! Uncommented sign here!!
 *
-*                           write integral to file (for debugging):
-                            if (NTEST.ge.10 ) 
-     &                          write(6,'(A,I4,A,4I3,A,1F18.12)') 
-     &                                'INTEGRAL no. ',ICOUNT,'(',
-     &                                 (INDEX(M,ICOUNT),M=1,4),
-     &                                ') Value: ',T(ICOUNT)
                             if (NTEST.ge.1) then
+                              if (NTEST.ge.10)
+     &                            write(6,'(A,I4,A,4I3,A,1F18.12)') 
+     &                                  'INTEGRAL no. ',ICOUNT,'(',
+     &                                   (INDEX(M,ICOUNT),M=1,4),
+     &                                  ') Value: ',T(ICOUNT)
+*                           write integral to file (for debugging):
                               if (IXCH.eq.0) then
                                 write(LUINGR,'(I4,4X,4I3,1F18.10)') 
      &                                ICOUNT,INDEX(1,ICOUNT),
@@ -2672,6 +2702,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
           if (JIN.lt.0) then
             I1KSYM = -1
             I2KSYM = 1
+            if (IDGTYP.eq.1) IT = 1  !!?? FIXME: check this
             if (IDGTYP.eq.2) IT = 1  !!?? FIXME: check this
             if (IDGTYP.eq.3) IT = 3
             if (abs(JIN).gt.IIN) then
@@ -2732,7 +2763,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
 *             (uu|bb) DMK = 0
               I1KSYM = 1
               I2KSYM = 1
-              if (IDGTYP.eq.2) then
+              if (IDGTYP.eq.1.or.IDGTYP.eq.2) then
                 if (KRASYM) then
                   IKF = -1
                   call index_exch(KIN,LIN,KRFAC,IKF,I2KSYM)
@@ -2751,6 +2782,7 @@ C                     ilkj=il+(kj-1)*ilPairs-kjOff
           I2KSYM = 1
           if (IIN.lt.0) then
           else
+            if (IDGTYP.eq.1) IT = 1  !!??  FIXME: check this
             if (IDGTYP.eq.2) IT = 1  !!??  FIXME: check this
             if (IDGTYP.eq.3) IT = 3
           end if
@@ -7488,10 +7520,10 @@ C994   Call StkA(0,ComLbl)
 *  Read spin-orbit integrals
 *
       subroutine rdsoint_molecu(SOINXLINE,SOINYLINE,
-     &                   SOINZLINE,
-     &                   HELPMAT,NTRIAEL,
-     &                   LU69,LU70,LU71,
-     &                   LUSGI2,LUSGI3,LUSGI4)
+     &                          SOINZLINE,
+     &                          HELPMAT,NTRIAEL,
+     &                          LU69,LU70,LU71,
+     &                          LUSGI2,LUSGI3,LUSGI4)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -8543,6 +8575,8 @@ Cjan      end do
 #include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
+*
+#include "dgroup.h"
 *
       dimension F1(*),F2(*)
       dimension DENS(NINT_CC),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)

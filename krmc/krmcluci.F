@@ -37,6 +37,21 @@ C     common blocks instead of reading input
 C
 C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
+C      Setting up real groups in inefficient manner
+C      (for quicker progress on testing KRMC-LUCIAREL)
+C      Real group integrals are a real subset of complex group
+C      integrals, so LUCIAREL internally uses a corresponding
+C      complex subgroup according to
+C         KRMC     LUCIAREL
+C         -----------------
+C          D2h      C2h
+C          D2       C2
+C          C2v      C2
+C      Imaginary integrals are zeroed, rest of the code remains
+C      unchanged.
+C      IRIQ (1 for real, 2 for complex and quaternion) controls
+C      real/imaginary mismatch of vector handling in this case.
+C                               T. Fleig         - Aug 25, 2003
 C
 C***********************************************************************
 #include "implicit.h"
@@ -54,8 +69,8 @@ C
 #include "../luciarel/machine.inc"
 #include "../luciarel/cands.inc"
 #include "../luciarel/input.inc"
-C
-      common/LOCSYMS/NIRR_DG_LOC
+*
+#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN
       CHARACTER*72 TITLEC(3)
@@ -73,18 +88,35 @@ C 2:  Double group
       IF (GROUP.eq.'C1 ') THEN
          PNTGRP = 5
          NIRREP = 2
+         IRIQ = 2
       ELSE IF (GROUP.eq.'Ci ') THEN
          PNTGRP = 6
          NIRREP = 4
+         IRIQ = 2
       ELSE IF (GROUP.eq.'Cs ') THEN
          PNTGRP = 7
          NIRREP = 4
+         IRIQ = 2
       ELSE IF (GROUP.eq.'C2 ') THEN
          PNTGRP = 8
          NIRREP = 4
+         IRIQ = 2
       ELSE IF (GROUP.eq.'C2h') THEN
          PNTGRP = 9
          NIRREP = 8
+         IRIQ = 2
+      ELSE IF (GROUP.eq.'C2v') THEN
+         PNTGRP = 8
+         NIRREP = 4
+         IRIQ = 1
+      ELSE IF (GROUP.eq.'D2 ') THEN
+         PNTGRP = 8
+         NIRREP = 4
+         IRIQ = 1
+      ELSE IF (GROUP.eq.'D2h') THEN
+         PNTGRP = 9
+         NIRREP = 8
+         IRIQ = 1
       ELSE
          CALL QUIT('Illegal double group.')
       END IF
@@ -125,7 +157,7 @@ C            Timo
       IPRXT  = 0 * IPROPT
       IPROCC = 2 * IPROPT
       IPRDEN = 2 * IPROPT
-CDEBUGIPRDEN = 100 * IPROPT
+CdebugIPRDEN = 10 * IPROPT
       IPRSIG = 10 * IPROPT
       IPRTRA = 1 * IPROPT
       IPRHAM = 100 * IPROPT
@@ -602,9 +634,14 @@ C    &    '     Spin multiplicity ....  ', MULTS
      &  '     Integrals read in in DALTON/SIRIUS format '
       else if (INTIMP.eq.6) then
         WRITE(LUPRI,'(A)')
-     &  '     Integrals read in in DIRAC format '
+     &  '     Integrals in Kramers reduced spinor list format '
         WRITE(LUPRI,'(A)')
-     &  '       Dirac-Coulomb Hamiltonian curr. assumed '
+     &  '       Dirac-Coulomb Hamiltonian '
+      else if (INTIMP.eq.7) then
+        WRITE(LUPRI,'(A)')
+     &  '     Integrals in full spinor list format '
+        WRITE(LUPRI,'(A)')
+     &  '       Dirac-Coulomb Hamiltonian '
       else if (INTIMP.eq.8) then
         WRITE(LUPRI,'(A)')
      &  '     Integrals read in in MOLECULE-SWEDEN format '
@@ -1293,8 +1330,6 @@ C
             call abend2('Quitting.')
           end if
           ISYM_T = 1
-          print*,'CHECKING ISO1,ISO2 ',ISO1,ISO2
-          print*,'CHECKING IHTYPE,ISYM_T ',IHTYPE,ISYM_T
           call set_hop_dbg(IHTYPE,IPRHAM)
         end if
 *       ^ End if SIGDEN_ROUTE
@@ -1626,6 +1661,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
 C
@@ -1728,7 +1764,7 @@ C        Possibly also integrals reside on file in LUCIAREL
         CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
      &                  WORK(KFCACM),N2ASHXQ,WORK(KMUUUU),
      &                  (2*NASHT)**4*2,
-     &                  DUMMY,DUMMY,2,
+     &                  DUMMY,DUMMY,2,IRIQ,
      &                  IDUMMY,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
@@ -1752,7 +1788,7 @@ C     Read CI vector from LUCIARELs file
         CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,CREF,2*NZCONF,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),DUMMY,1,
+     &                  WORK(KRSCR),DUMMY,1,IRIQ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
@@ -1761,7 +1797,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_SIGMA(SAVDIA,DIAG,CB,SB,FCACM,H2ACM,WORK,LWORK)
+      SUBROUTINE LUCI_SIGMA(SAVDIA,DIAG,CB,SB,FCACM,H2ACM,
+     &                      WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate sigma vector: SB = H CB, where H is the Hamiltonian
@@ -1778,20 +1815,24 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       LOGICAL   SAVDIA
       CHARACTER*6 CIRUN
-      DIMENSION DIAG(*), CB(*), SB(*)
-      DIMENSION FCACM(*), H2ACM(*)
+      DIMENSION DIAG(*),CB(*),SB(*),FCACM(*),H2ACM(*)
       DIMENSION WORK(*)
 C
 #include "../luciarel/clunit.inc"
 C
-#include "memint.h"
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
 C
       CIRUN = 'SIGMA '
-      IF (SAVDIA) then
+      IF (SAVDIA) THEN
         CIRUN = 'SIGMAD'
+      ELSE
+        CIRUN = 'SIGMA '
       END IF
 C
 C     Introduce LUCIAREL action
@@ -1810,44 +1851,47 @@ C
       IO_SIGMA_IN = 1
       IF (IO_SIGMA_IN.eq.1) THEN
         REWIND LUC
-        CALL KR_LUCI_IO(1,0,0,CB,NZCONF*2,
+        CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,0,0,CB,NZCONF*MZ,
      &                        DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  DUMMY,IDUMMY,2,
+     &                  WORK(KRSCR),IDUMMY,2,IRIQ,
      &                  LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
 C     Call LUCIAREL
       CALL KRMC_LUCI(FCACM,H2ACM,WORK(KFREE),LFREE,DUMMY,CIRUN)
 C
-C     Later: Read sigma vector on file to SB array.
+C     Read sigma vector on file to SB array.
       CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
       IO_SIGMA_OUT = 1
       IF (IO_SIGMA_OUT.eq.1) THEN
         CALL KR_LUCI_IO(1,0,0,
      &                  SB,NZCONF*2,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,
+     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
      &                  LUHC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
       IF (SAVDIA) THEN
+C       Read diagonal on file LUDIA to WORK(KDIAG) array.
         CALL MEMGET('REAL',KDIAG,2*NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(0,1,0,
      &                  DUMMY,1,WORK(KDIAG),2*NZCONF,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),IDUMMY,1,
+     &                  WORK(KRSCR),IDUMMY,1,IRIQ,
      &                  IDUMMY,LUDIA,IDUMMY,IDUMMY,IPROPT)
+C       Copy "real part" of diagonal to DIAG.
         CALL DCOPY(NZCONF,WORK(KDIAG),1,DIAG,1)
       END IF
 C
-      CALL MEMREL('LUCI_SIGMA',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('LUCI_SIGMA',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_DENS(CALCR1,CALCR2,RHO1,RHO2,CREFL,CREFR,
-     &                     WORK,LFREE)      
+     &                     WORK,KFREE,LFREE)      
 C***********************************************************************
 C
 C     Read a bra vector CL and a ket vector CR and compute requested
@@ -1871,13 +1915,18 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-C
-#include "../luciarel/clunit.inc"
+#include "krmcluci_inf.h"
 C
       LOGICAL CALCR1,CALCR2
       CHARACTER*6 CIRUN
 C
       DIMENSION WORK(*),RHO1(*),RHO2(*),CREFL(*),CREFR(*)
+C
+#include "../luciarel/clunit.inc"
+C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
 C
       if (CALCR2) then
         CIRUN = 'DENS2 '
@@ -1899,39 +1948,41 @@ C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Initialize density matrices to zero
-      L1 = (2*NASHT)**2 * MIN(NZ,2)
-      L2 = (2*NASHT)**4 * MIN(NZ,2)
+      L1 = (2*NASHT)**2 * MZ
+      L2 = (2*NASHT)**4 * MZ
       CALL DZERO(RHO1,L1)
       CALL DZERO(RHO2,L2)
 C
 C     Write current CI vector(s) to file
       IO_DENS_IN = 1
       IF (IO_DENS_IN.EQ.1) THEN
-        CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*2,
-     &                        CREFR,NZCONF*2,
+        CALL MEMGET('REAL',KRSCR,NZCONF,WORK,KFREE,LFREE)
+        CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
+     &                        CREFR,NZCONF*MZ,
      &                  DUMMY,1,DUMMY,1,
-     &                  DUMMY,IDUMMY,2,
+     &                  WORK(KRSCR),IDUMMY,2,IRIQ,
      &                  LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
+        CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
       END IF
 C
 C     Density run of LUCIAREL only
-      CALL KRMC_LUCI(RHO1,RHO2,WORK,LFREE,DUMMY,CIRUN)
+      CALL KRMC_LUCI(RHO1,RHO2,WORK(KFREE),LFREE,DUMMY,CIRUN)
 C
 C     Write CI densities to file or keep the arrays
 C     Currently, densities are directly passed up to LUCI_DENS.
-      IO_DENS_OUT = 0
-      IF (IO_DENS_OUT.EQ.1) then
+c     IO_DENS_OUT = 0
+c     IF (IO_DENS_OUT.EQ.1) then
 c       CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
 c       CALL KR_LUCI_IO(0,0,1,
 c    &                  DUMMY,1,DUMMY,1,
-c    &                  WORK(KRSCR),IDUMMY,1,
+c    &                  WORK(KRSCR),IDUMMY,1,IRIQ,
 c    &                  LUDUM,IDUMMY,IDUMMY,IDUMMY,IPROPT)
-      END IF
+c     END IF
 C
 C     Do symmetrizations.
 C     FIXME: write me  ??
 C
-C     CALL MEMREL('LUCI_DENS',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('LUCI_DENS',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C  Delete file units with vectors
       close(unit=LUSC61,status='DELETE')
@@ -1996,6 +2047,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -2023,7 +2075,7 @@ C FIXME: Eventually integrals for diagonal to file.
 c       CALL KR_LUCI_IO(0,0,1,DUMMY,1,DUMMY,1,
 c    &                  WORK(KFCACM),N2ASHXQ,WORK(KMUUUU),
 c    &                  (2*NASHT)**4*2,
-c    &                  DUMMY,DUMMY,2,
+c    &                  DUMMY,DUMMY,2,IRIQ,
 c    &                  LUDUM,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
@@ -2036,7 +2088,7 @@ C     Read diagonal vector from LUCIARELs file
         CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
         CALL KR_LUCI_IO(1,0,0,DIAG,2*NZCONF,DUMMY,1,
      &                  DUMMY,1,DUMMY,1,
-     &                  WORK(KRSCR),DUMMY,1,
+     &                  WORK(KRSCR),DUMMY,1,IRIQ,
      &                  LUDIA,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
@@ -2048,7 +2100,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE KR_LUCI_IO(IVA,IVB,II,VA,IDIMA,VB,IDIMB,
      &                      X1,IDIM1,X2,IDIM2,
-     &                      SCR,ISCR,IOTYPE,
+     &                      SCR,ISCR,IOTYPE,IRILP,
      &                      LU1,LU2,LU3,LU4,IPRNT)
 C***********************************************************************
 C
@@ -2080,7 +2132,7 @@ C***********************************************************************
       dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2),SCR(*)
       dimension ISCR(*)
 *
-      NTESTL = 10
+      NTESTL = 00
       NTEST = max(NTESTL,IPRNT)
 *
       if (NTEST.ge.5) then
@@ -2096,7 +2148,7 @@ C***********************************************************************
           write(6,*) '  Integral / density task   '
         end if
 *
-*  A) Output from LUCIAREL (read from file)
+* A) Output from LUCIAREL (read from file)
         if (IOTYPE.eq.1) then
           if (NTEST.ge.1) write(6,*) '  Output from LUCIAREL '
 *
@@ -2109,25 +2161,25 @@ C***********************************************************************
 *
 *===============
 *  Load vectors
-*==============
+*===============
       if (IOTYPE.eq.1) then
 *  Load vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector A ***'
-          call rdvcdc(VA,SCR,LU1,-1,IPRNT)
+          call rdvcdc(VA,SCR,LU1,-1,IRILP,IPRNT)
         end if
 *
 *  Load vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Loading vector B ***'
-          call rdvcdc(VB,SCR,LU2,-1,IPRNT)
+          call rdvcdc(VB,SCR,LU2,-1,IRILP,IPRNT)
         end if
 *
 *  Load 1-particle quantity
 *  Load 2-particle quantity
         if (II.eq.1) then
-          call rdvcdc(X1,SCR,LU3,-1,IPRNT)
-          call rdvcdc(X2,SCR,LU4,-1,IPRNT)
+          call rdvcdc(X1,SCR,LU3,-1,IRILP,IPRNT)
+          call rdvcdc(X2,SCR,LU4,-1,IRILP,IPRNT)
         end if
 *
 *===============
@@ -2138,13 +2190,13 @@ C***********************************************************************
 *  Save vector A (ket)
         if (IVA.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector A ***'
-          call savevcdc(VA,LU1,IPRNT)
+          call savevcdc(VA,SCR,LU1,IRILP,IPRNT)
         end if
 *
 *  Save vector B (bra)
         if (IVB.eq.1) then
           if (NTEST.ge.10) write(6,*) '   *** Saving vector B ***'
-          call savevcdc(VB,LU2,IPRNT)
+          call savevcdc(VB,SCR,LU2,IRILP,IPRNT)
         end if
 *
 *  Save integral quantity

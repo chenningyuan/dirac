@@ -235,7 +235,7 @@ C
      &           WORK(KZCONF),BCVEC(1,I),WORK(KMOLFFC),WORK(KMUUUU))
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,BCVEC(1,I),SCVEC(1,I+NOSIM),
-     &           WORK(KMOLFFC),WORK(KMUUUU),WORK(KFREE),LFREE)
+     &                      WORK(KMOLFFC),WORK(KMUUUU),WORK,KFREE,LFREE)
          ELSE
             CALL QUIT('Unknown CI program requested!')
          END IF
@@ -3276,7 +3276,7 @@ C
          ELSE
 C           LUCIAREL:
             CALL LUCI_DENS(.TRUE.,.TRUE.,WORK(KDVMOLF),WORK(KPVMOLF),
-     &                     CLREF,CRREF,WORK(KFREE),LFREE)
+     &                     CLREF,CRREF,WORK,KFREE,LFREE)
          END IF
 C
 C        Transform matrices from Molfdir format to Dirac format
@@ -4935,7 +4935,7 @@ C
      &         WORK(KMOLFFC),WORK(KMUUUU))
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,CREF,SCVEC(1,I),
-     &         WORK(KMOLFFC),WORK(KMUUUU),WORK(KFREE),LFREE)
+     &                      WORK(KMOLFFC),WORK(KMUUUU),WORK,KFREE,LFREE)
          ELSE
             CALL QUIT('Unknown CI PROGRAM requested!')
          END IF

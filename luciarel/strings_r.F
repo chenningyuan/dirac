@@ -2116,6 +2116,9 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "gasstr.inc"
 #include "strbas.inc"
 #include "csm.inc"
+*
+#include "krmcluci_inf.h"
+*
       INTEGER IZ(NORBT,NEL)
 *. output
       INTEGER ISTR(NEL,*), IREO(*)
@@ -2124,8 +2127,6 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
       INTEGER MAXVAL(MXPNGAS),MINVAL(MXPNGAS)
       INTEGER NNSTSGP(MXPNSMST,MXPNGAS)
       INTEGER IISTSGP(MXPNSMST,MXPNGAS)
-*
-      common/LOCSYMS/NIRR_DG_LOC
 *
       CALL QENTER('GETST')
 *

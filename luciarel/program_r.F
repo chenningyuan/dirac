@@ -229,10 +229,10 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
             call sigden_ctrl(WORK(KVEC1),WORK(KVEC2),LUC,LUHC,
      &                       WORK(KT_CC),1)
-            print*,'C VECTOR'
-            call wrtvcdc(WORK(KVEC1),LUC,1,-1)
-            print*,'SIGMA VECTOR'
-            call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
+C           print*,'C VECTOR'
+C           call wrtvcdc(WORK(KVEC1),LUC,1,-1)
+C           print*,'SIGMA VECTOR'
+C           call wrtvcdc(WORK(KVEC2),LUHC,1,-1)
           else
 *
       CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
@@ -925,10 +925,11 @@ c         CALL FINMO_REL
 #include "cands.inc"
 *     for picasso
 #include "input.inc"
+*
+#include "krmcluci_inf.h"
+*
 *./CECORE/
       COMMON/CECORER/ECORE
-*./for getstr_totsm_spgp
-      common/LOCSYMS/NIRR_DG_LOC
 *. Flag for compatibility with normal MOLCAS input format
       MOLCS = 1
 *

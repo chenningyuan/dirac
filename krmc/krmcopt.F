@@ -464,9 +464,11 @@ C        *** Get Gradient **********************************
 C        ***************************************************
 C
 C
+         call memchk('before CALL RGRAD',WORK,KFREE)
          CALL RGRAD(CMO,CREF,WORK(KZXOPE),WORK(KZXOPP),
      &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
      &              FCAC,H2AC,IPROPT,WORK,KFREE,LFREE)
+         call memchk('after CALL RGRAD',WORK,KFREE)
 C
          GNRMSV = GNORM(5)
          CALL RGRDINF(GCI,GOEE,GOEP)
@@ -737,9 +739,11 @@ C     ***************************************************
 C     *** Calculate active density matrices *************
 C     ***************************************************
 C
+      call memchk('before CALL RMAKDM',WORK,KFREE)
       IF (NASHT .NE. 0) THEN
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
+      call memchk('after CALL RMAKDM',WORK,KFREE)
 C
 C
 C     ***************************************************
@@ -1001,12 +1005,10 @@ c           CALL GOSCI_RMAKDM(CALCDV,CALCPV,WORK(KZCONF),CREF,CREF,
      &           WORK(KDVMOLF),WORK(KPVMOLF),IPROPT)
 C
          ELSE IF (OPT_CIPROGRAM.eq.'LUCIAREL') then
-            CALL MEMCHK('before LUCI_DENS',WORK,KFRSAV)
-            CALL MEMCHK('before LUCI_DENS 2',WORK,1)
             CALL LUCI_DENS(CALCDV,CALCPV,WORK(KDVMOLF),WORK(KPVMOLF),
-     &                     CREF,CREF,WORK(KFREE),LFREE)
-            CALL MEMCHK('after LUCI_DENS',WORK,KFRSAV)
-            CALL MEMCHK('after LUCI_DENS 2',WORK,1)
+     &                     CREF,CREF,WORK,KFREE,LFREE)
+C           CALL  LUCI_DENS(CALCR1,CALCR2,RHO1,RHO2,
+C    &                     CREFL,CREFR,WORK,KFREE,LFREE)
          END IF
 C
 C        Transform to X+, x++ format for DV and PV
@@ -2629,12 +2631,12 @@ C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
                   WRITE(LUPRI,'(/A,I3,A)')
-     $                 ' (ROPTST)  CI start vector generated from',
-     $                 MAXCIT,' CI iterations.'
+     &                 ' (ROPTST)  CI start vector generated from',
+     &                 MAXCIT,' CI iterations.'
                ELSE
                   WRITE(LUPRI,'(/2A)')
-     $                 ' (ROPTST)  CI start vector generated from',
-     $                 ' diag. of full CI matrix.'
+     &                 ' (ROPTST)  CI start vector generated from',
+     &                 ' diag. of full CI matrix.'
                END IF
             END IF
             GO TO 2000
@@ -2650,17 +2652,16 @@ C
 C        Oops, nothing worked:
 C
          WRITE(LUPRI,'(//3A,I3)')
-     $        '*** ERROR in ROPTST *** ',
-     $        'Failed to generate CI start guess; ',
-     $        'value of IRCIST is ',IRCIST
+     &        '*** ERROR in ROPTST *** ',
+     &        'Failed to generate CI start guess; ',
+     &        'value of IRCIST is ',IRCIST
          CALL QUIT('*** ERROR in ROPTST *** No CI start guess')
 C
  2000    CONTINUE
 C
 C        Write CREF to file.
 C
-CFIX     IF (IPRINT .GE. 30) THEN
-         IF (IPRINT .GE.  5) THEN
+         IF (IPRINT .GE. 30) THEN
             MZ = MIN(NZ,2)
             WRITE(LUPRI,'(/A)') ' (ROPTST)  CI start vector:'
             CALL OUTPUT(CREF,1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
@@ -2700,6 +2701,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "krmcluci_inf.h"
 C
       DIMENSION CMO(*), CREF(*), WORK(*)
 C
@@ -2711,9 +2713,9 @@ C
 C     MAXCIT >= 0:
 C
 C     (2.1) Contruct diagonal of CI matrix
-C     (2.2) Pick start vector with zeros everywhere except for the lowest 
-C           value of the diagonal of the CI matrix. If 2 or more diagonal
-C           values are close, pick more start vectors.
+C     (2.2) Pick start vector with zeros everywhere except for the 
+C           lowest value of the diagonal of the CI matrix. If 2 or 
+C           more diagonal values are close, pick more start vectors.
 C     (2.3) Do a couple of Davidson CI iterations.
 C
 C     MAXCIT < 0: 
@@ -2752,6 +2754,7 @@ C
 C
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+         call memchk('after CALL LUCI_RCIST',WORK,KFREE)
 C
       ELSE
          WRITE(LUPRI,'(//3A)')

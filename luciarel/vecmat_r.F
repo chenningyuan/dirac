@@ -1249,7 +1249,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      subroutine rdvcdc(VE,SCR,LU,LBLK,IPRT)
+      subroutine rdvcdc(VE,SCR,LU,LBLK,IRILP,IPRT)
 *
 * Read vector from disc to array
 *
@@ -1274,7 +1274,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
       else
         NASS = 0
         IOFF = 1
-        do IRI = 1,2,1
+        do IRI = 1,IRILP,1
  1000     continue
           call ifrmds(LENGTH,1,LBLK,LU)
           if (LENGTH.ge.0) then
@@ -1290,14 +1290,18 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
             NASS = NASS + LENGTH
             goto 1000
           end if
-        end do
-      end if
 *
-      if (NTEST.ge.5) then
-        write(6,*) ' Read vector in rdvcdc (real):  '
-        call wrtmat(VE(1),1,NASS/2,1,NASS/2)
-        write(6,*) ' Read vector in rdvcdc (imag):  '
-        call wrtmat(VE(1+NASS/2),1,NASS/2,1,NASS/2)
+          if (NTEST.ge.5) then
+            if (IRI.eq.1) then
+              write(6,*) ' Read vector in rdvcdc (real):  '
+              call wrtmat(VE(1),1,NASS,1,NASS)
+            else
+              write(6,*) ' Read vector in rdvcdc (imag):  '
+              call wrtmat(VE(1+NASS/2),1,NASS/2,1,NASS/2)
+            end if
+          end if
+*
+        end do
       end if
 *
       return

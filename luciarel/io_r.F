@@ -299,17 +299,19 @@ C  avoid unit 66. Used in DALTON
 *
 *    Timo Fleig, March 16, 2002
 *
-      subroutine savevcdc(VECT,LU,IPRNT)
+      subroutine savevcdc(VECT,SCR,LU,IRILP_LOC,IPRNT)
 *
 #include "implicit.inc"
 #include "mxpdim.inc"
 *
-#include "civecinf.h"
+#include "krmcluci_inf.h"
 *
-      dimension VECT(*)
+      dimension VECT(*),SCR(*)
 *
       NTESTL = 000
       NTEST = max(NTESTL,IPRNT)
+*
+      ZERO = 0.D0
 *
       if (NTEST.ge.5) then
         write(6,*)
@@ -333,8 +335,9 @@ C  avoid unit 66. Used in DALTON
 *
       JOFF = 1
       LENGTH = 0
-      IRILP = 2
-      DO IRI = 1,IRILP,1
+      IRILP_GLB = 2
+*
+      DO IRI = 1,IRILP_GLB,1
         JBATABS = 0
         if (NTEST.ge.10) write(6,*) '  REAL/IMAG = ',IRI
         DO IMK2 = 1, NMK2VAL
@@ -368,7 +371,15 @@ C  avoid unit 66. Used in DALTON
                 write(6,*) '     Block length:   ',LEN_V
               end if
               call itods(LEN_V,1,-1,LU)
-              call todsc(VECT(JOFF+IOFF-1),LEN_V,-1,LU)
+              if (IRI.eq.2.and.IRILP_GLB.ne.IRILP_LOC) then
+* Write zeroes to imaginary vector parts:
+                do ISCR = 1,LEN_V,1
+                  SCR(ISCR) = ZERO
+                end do
+                call todsc(SCR,LEN_V,-1,LU)
+              else
+                call todsc(VECT(JOFF+IOFF-1),LEN_V,-1,LU)
+              end if
             end do
             JOFF = JOFF + LS
 *
