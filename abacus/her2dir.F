@@ -5,7 +5,7 @@ C  /* Deck direct */
      &                  SIGNAX,SIGNAY,SIGNAZ,SIGNBX,SIGNBY,SIGNBZ,
      &                  SIGNCX,SIGNCY,SIGNCZ,SIGNDX,SIGNDY,SIGNDZ,
      &                  NCCINT,MAXDER,EXPECT,LONDON,SPNORB,
-     &                  IATOM,MULATM,NINTYP,IPRINT)
+     &                  IATOM,MULATM,NINTYP,DOGAB,IPRINT)
 C
 C     This subroutine determines type of two-electron integral
 C     and sets directives for integral calculation.
@@ -15,15 +15,16 @@ C
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       IMPLICIT REAL (F,S), LOGICAL(D)
       REAL ONE, TWO
-      PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00)
+      PARAMETER (ONE = 1.00 E00, TWO = 2.00 E00, ZERO = 0.0 E00)
 #endif
 #if !defined (SYS_CRAY) && !defined (SYS_T3D)
       IMPLICIT DOUBLE PRECISION (F,S), LOGICAL(D)
       DOUBLE PRECISION ONE, TWO
-      PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00)
+      PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00, ZERO = 0.0 D00)
 #endif
 #include <priunit.h>
-      LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, LONDON
+      LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
+     &        LONDON, DOGAB
       CHARACTER*4 ATYPE
 #include <doxyz.h>
 #include <crossd.h>
@@ -194,18 +195,18 @@ C
          DERONE = .TRUE.
          DERTWO = .TRUE.
       END IF
+C
+      IF (.NOT. EXPECT) THEN
+C
 C     If only derivatives with respect to IATOM are needed,
 C     check to see if this atom contributes to the integral.
 C
-      IF (.NOT. EXPECT) THEN
          IF (NCENTA .NE. IATOM .AND. NCENTB .NE. IATOM .AND.
      *       NCENTC .NE. IATOM .AND. NCENTD .NE. IATOM) RETURN
-      END IF
 C
 C     Special case: PERTURB and differentiation on symmetry
 C     related centers. All atoms are differentiated separately.
 C
-      IF (.NOT. EXPECT) THEN
          ATYPE  = '1STD'
          IF (MULATM .EQ. 1) THEN
             NOATMS = 1
@@ -381,7 +382,49 @@ C     ************************************
 C
   111 CONTINUE
          ONECEN = .TRUE.
-      RETURN
+         IF (.NOT. DOGAB) RETURN
+         ONECEN = .TRUE.
+         DPATH1 = .TRUE.
+         DC101  = .TRUE.
+         DC2E1  = .TRUE.
+         CROSS1 = .TRUE.
+         DC1E1  = .TRUE.
+         NINTYP = 0
+C
+C        ***** 1111 *****
+C
+         IF (EXPECT) THEN
+            DHCEX = DOX
+            DHCEY = DOY
+            DHCEZ = DOZ
+            DHCEX1 = DOX
+            DHCEY1 = DOY
+            DHCEZ1 = DOZ
+            DHCEX2 = DOX
+            DHCEY2 = DOY
+            DHCEZ2 = DOZ
+C
+C           Only second derivative integrals of type
+C           ( (AB)_x | (AB)_x ) is needed so everyting else
+C           is thrown away ( = multiplied with 0 )
+C           No numerical instabilities are introduced since
+C           0.0D00 is exact zero./980130-jth
+C
+            CALL DIREA0(1,1,1,ZERO,ZERO,ZERO)
+            CALL DIREB0(1,1,1,ZERO,ZERO,ZERO)
+            CALL DIREC0(1,1,1,ZERO,ZERO,ZERO)
+            CALL DIRED0(1,1,1,ZERO,ZERO,ZERO)
+            CALL DIRGAC(1,1,1,1,2,1,1,1,3,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
+            CALL DIRGAD(1,1,1,1,2,1,1,1,3,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
+            CALL DIRGBC(1,1,1,1,2,1,1,1,3,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
+            CALL DIRGBD(1,1,1,1,2,1,1,1,3,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
+            NINTYP = NINTYP + 3
+         END IF
+         GOTO 200
 C
 C     ************************************
 C     *************** 212 ****************
@@ -657,23 +700,52 @@ C
                SIGN1Z = SIGNAZ
                SIGN2Z = SIGNBZ
                DERECC = .TRUE.
-               IF (DERONE) THEN
-                  CALL DIREA0(1,2,3,ONE,ONE,ONE)
-                  CALL DIREC0(1,2,3,ONE,ONE,ONE)
-                  NINTYP = NINTYP + 3
-               END IF
-               IF (DERTWO) THEN
+               IF (DOGAB) THEN
                   DHCEX = DOX
                   DHCEY = DOY
                   DHCEZ = DOZ
                   DHCEX1 = DOX
                   DHCEY1 = DOY
                   DHCEZ1 = DOZ
-                  CALL DIREAA(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
-                  CALL DIRECC(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
-                  CALL DIREAC(4,5,6,5,7,8,6,8,9,
-     *                        TWO,ONE,ONE,ONE,TWO,ONE,ONE,ONE,TWO)
+                  DHCEX2 = DOX
+                  DHCEY2 = DOY
+                  DHCEZ2 = DOZ
+C
+C                 Only second derivative integrals of type
+C                 ( A_x B | A_x B ) and ( A B_x | A B_x ) 
+C                 is needed so everyting else
+C                 is thrown away ( = multiplied with 0 )
+C                 No numerical instabilities are introduced since
+C                 0.0D00 is exact zero./980130-jth
+C
+                  CALL DIREA0(1,1,1,ZERO,ZERO,ZERO)
+                  CALL DIREB0(1,1,1,ZERO,ZERO,ZERO)
+                  CALL DIREC0(1,1,1,ZERO,ZERO,ZERO)
+                  CALL DIRED0(1,1,1,ZERO,ZERO,ZERO)
+                  CALL DIRGAC(1,1,1,1,2,1,1,1,3,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
+                  CALL DIRGBD(4,1,1,1,5,1,1,1,6,
+     *                  ONE,ZERO,ZERO,ZERO,ONE,ZERO,ZERO,ZERO,ONE)
                   NINTYP = NINTYP + 6
+               ELSE   
+                  IF (DERONE) THEN
+                     CALL DIREA0(1,2,3,ONE,ONE,ONE)
+                     CALL DIREC0(1,2,3,ONE,ONE,ONE)
+                     NINTYP = NINTYP + 3
+                  END IF
+                  IF (DERTWO) THEN
+                     DHCEX = DOX
+                     DHCEY = DOY
+                     DHCEZ = DOZ
+                     DHCEX1 = DOX
+                     DHCEY1 = DOY
+                     DHCEZ1 = DOZ
+                     CALL DIREAA(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
+                     CALL DIRECC(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
+                     CALL DIREAC(4,5,6,5,7,8,6,8,9,
+     *                           TWO,ONE,ONE,ONE,TWO,ONE,ONE,ONE,TWO)
+                     NINTYP = NINTYP + 6
+                  END IF
                END IF
             ELSE
                IF (IATOM .EQ. NCENTA) THEN
@@ -1867,6 +1939,131 @@ C
          FEXYCD =   FAC3
          FEXZCD = - FAC2
          FEYZCD =   FAC1
+      RETURN
+C
+C     Entry used to set directives for GAB integrals for screening of
+C     gradient
+C     Only XX, YY and ZZ derivatives are needed.
+C
+      ENTRY DIRGAC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
+     *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
+         DEXXAC = DOX
+         DEXYAC = .FALSE.
+         DEXZAC = .FALSE.
+         DEXYCA = .FALSE.
+         DEYYAC = DOY
+         DEYZAC = .FALSE.
+         DEXZCA = .FALSE.
+         DEYZCA = .FALSE.
+         DEZZAC = DOZ
+         IEXXAC = INT1
+         IEXYAC = INT2
+         IEXZAC = INT3
+         IEXYCA = INT4
+         IEYYAC = INT5
+         IEYZAC = INT6
+         IEXZCA = INT7
+         IEYZCA = INT8
+         IEZZAC = INT9
+         FEXXAC = FAC1
+         FEXYAC = FAC2
+         FEXZAC = FAC3
+         FEXYCA = FAC4
+         FEYYAC = FAC5
+         FEYZAC = FAC6
+         FEXZCA = FAC7
+         FEYZCA = FAC8
+         FEZZAC = FAC9
+      RETURN
+      ENTRY DIRGAD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
+     *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
+         DEXXAD = DOX
+         DEXYAD = .FALSE.
+         DEXZAD = .FALSE.
+         DEXYDA = .FALSE.
+         DEYYAD = DOY
+         DEYZAD = .FALSE.
+         DEXZDA = .FALSE.
+         DEYZDA = .FALSE.
+         DEZZAD = DOZ
+         IEXXAD = INT1
+         IEXYAD = INT2
+         IEXZAD = INT3
+         IEXYDA = INT4
+         IEYYAD = INT5
+         IEYZAD = INT6
+         IEXZDA = INT7
+         IEYZDA = INT8
+         IEZZAD = INT9
+         FEXXAD = FAC1
+         FEXYAD = FAC2
+         FEXZAD = FAC3
+         FEXYDA = FAC4
+         FEYYAD = FAC5
+         FEYZAD = FAC6
+         FEXZDA = FAC7
+         FEYZDA = FAC8
+         FEZZAD = FAC9
+      RETURN
+      ENTRY DIRGBC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
+     *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
+         DEXXBC = DOX
+         DEXYBC = .FALSE.
+         DEXZBC = .FALSE.
+         DEXYCB = .FALSE.
+         DEYYBC = DOY
+         DEYZBC = .FALSE. 
+         DEXZCB = .FALSE.
+         DEYZCB = .FALSE.
+         DEZZBC = DOZ
+         IEXXBC = INT1
+         IEXYBC = INT2
+         IEXZBC = INT3
+         IEXYCB = INT4
+         IEYYBC = INT5
+         IEYZBC = INT6
+         IEXZCB = INT7
+         IEYZCB = INT8
+         IEZZBC = INT9
+         FEXXBC = FAC1
+         FEXYBC = FAC2
+         FEXZBC = FAC3
+         FEXYCB = FAC4
+         FEYYBC = FAC5
+         FEYZBC = FAC6
+         FEXZCB = FAC7
+         FEYZCB = FAC8
+         FEZZBC = FAC9
+      RETURN
+      ENTRY DIRGBD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
+     *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
+         DEXXBD = DOX
+         DEXYBD = .FALSE.
+         DEXZBD = .FALSE.
+         DEXYDB = .FALSE.
+         DEYYBD = DOY
+         DEYZBD = .FALSE.
+         DEXZDB = .FALSE.
+         DEYZDB = .FALSE.
+         DEZZBD = DOZ
+         IEXXBD = INT1
+         IEXYBD = INT2
+         IEXZBD = INT3
+         IEXYDB = INT4
+         IEYYBD = INT5
+         IEYZBD = INT6
+         IEXZDB = INT7
+         IEYZDB = INT8
+         IEZZBD = INT9
+         FEXXBD = FAC1
+         FEXYBD = FAC2
+         FEXZBD = FAC3
+         FEXYDB = FAC4
+         FEYYBD = FAC5
+         FEYZBD = FAC6
+         FEXZDB = FAC7
+         FEYZDB = FAC8
+         FEZZBD = FAC9
       RETURN
       END
 C  /* Deck dp211 */
