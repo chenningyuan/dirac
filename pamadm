@@ -60,6 +60,7 @@ setup()
       ESRMOD=1
       XQRMOD=1
       XPPMOD=1
+      DFTMOD=1
       echo " - DIRAC administrator ..."
    fi
    if [ -n "$CCFOCKSPMOD" ]; then
