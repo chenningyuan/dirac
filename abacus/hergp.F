@@ -2043,3 +2043,28 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETMSS(IZ,DMASS,ABUND,INFO)
+C***********************************************************************
+C
+C     Get mass of the most abundant isotope of charge IZ
+C
+C***********************************************************************
+#include <implicit.h>
+      PARAMETER (D0=0.0D0)
+      PARAMETER (ISO=1, MAXCHR=109)
+C
+      INFO = -1
+      IF(IZ.GT.MAXCHR) THEN
+        RETURN
+      ENDIF
+C     DISOTP returns the most abundant isotope
+C     for ISO = 1.
+      ABUND = DISOTP(IZ,ISO,'ABUNDANCE')
+      IF (ABUND .GT. D0) THEN
+         INFO = 0
+         DMASS = DISOTP(IZ,ISO,'MASS')
+      END IF
+C
+      RETURN
+      END
