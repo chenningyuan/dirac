@@ -148,7 +148,7 @@ C     ====================================================
       CALL MEMGET('REAL',KXLAGRAN,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C
       CALL LVCDEN1(DMO,XMO,WORK(KXLAGRAN),WORK(KCMO),WORK(KDMAT),
-     &             WORK(KXLAGAO),WORK,KFREE,LFREE,KFLG)
+     &             WORK(KXLAGAO),WORK(KPOS),WORK,KFREE,LFREE,KFLG)
 C
 C     Release memory
 C     ==============
@@ -159,8 +159,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcden1 */
-      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,WORK,KFREE,
-     &                   LFREE,KFLG)
+      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,NPOS,
+     &                   WORK,KFREE,LFREE,KFLG)
 C***********************************************************************
 C
 C     Written by J. van Stralen - Feb 2003
@@ -179,6 +179,7 @@ C              CMO  - spinor (mo) coefficients
 C              DMAT - AO density matrix (or better to say density 
 C                     matrix transformed to 'orthonormal SO' basis 
 C              XLAGAO - Lagrangian transformed to AO basis
+C              NPOS - something needed in parallel twofck
 C
 C     REMARKS:
 C
@@ -196,6 +197,7 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL TOBE
+      DIMENSION NPOS(*)
       DIMENSION DMO(*)
       DIMENSION XMO(*), XLAGRAN(*)
       DIMENSION CMO(*), DMAT(*), XLAGAO(N2BBASXQ)
@@ -216,8 +218,6 @@ C
 C     b) Generate AO density matrix
 C     -----------------------------
 C
-c     CALL PRQMAT(DMO,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
       CALL DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
 C
 C     c) Generate AO Lagrangian
@@ -355,16 +355,6 @@ C
      &                WORK(KFREE),LFREE,1) ! last one is printlevel
        ENDIF
       ENDDO
-c     do iz = 1, nz
-c        do j = 1, norbt
-c           do i= 1, norbt
-c              print*, 'lagr=', iz, i, j, XLAGRAN(i,j,iz) 
-c           enddo
-c        enddo
-c     enddo
-c     print*,'lagrangian'
-c     CALL PRQMAT(XLAGRAN,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
 C
       CALL QEXIT('LTAOMO')
       RETURN
@@ -430,16 +420,6 @@ C
      &                WORK(KFREE),LFREE,1) ! last one is printlevel
        ENDIF
       ENDDO
-c     do iz = 1, nz
-c        do j = 1, norbt
-c           do i= 1, norbt
-c              print*, 'lagr=', iz, i, j, DMOAX(i,j,iz)
-c           enddo
-c        enddo 
-c     enddo
-c     print*,'lagrangian'
-c     CALL PRQMAT(DMOAX,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
 C
       CALL QEXIT('DTAOMO')
       RETURN
