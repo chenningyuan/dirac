@@ -91,7 +91,7 @@ C
 C
 C
 C
-      CALL HEADER('Optimization statistics for Dirac',-1)
+      CALL HEADER('Optimization statistics for Dirac KR-MCSCF',-1)
 C
       CALL TSTAMP(' ',LUPRI)
 C
@@ -219,21 +219,21 @@ C     *** Print energy etc ***
 C     ************************
 C
 C
-      CALL HEADER('Final results from Dirac',-1)
+      CALL HEADER('Final results from Dirac KR-MCSCF module',-1)
 C
       CALL TSTAMP(' ',LUPRI)
 C
       WRITE(LUPRI,'(/)')
       IF (MCTYPE .GE. JMCMIN .OR. IOPT_ISTATE .GT. 1) THEN
 C
-C        Write out KR-KMCSCF energy
+C        Write out KR-MCSCF energy
 C
          WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
      &        EMCSCF,POTNUC,EMCSCF-POTNUC
          WRITE(LUPRI,9220) GRDNRM
       ELSE
 C
-C        Write out KR-KMCSCF energy
+C        Write out KR-SCF energy
 C
          WRITE(LUPRI,9210) EMCSCF,POTNUC,EMCSCF-POTNUC
          WRITE(LUPRI,9220) GRDNRM

@@ -366,10 +366,9 @@ C
  9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
 C
       IF (IPRINT .GE. 30) THEN
-         WRITE(LUPRI,'(/,1X,A,3(1X,L1),/)')
-     &        '(M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM
-         WRITE(LUPRI,'(1X,A)')
-     &        '(M2DNZ3) Input VUUUU matrix in Molfdir format'
+         WRITE(LUPRI,'(/A,3(1X,L1)//A)')
+     &        ' (M2DNZ3) TSYMM, KSYMM, PSYMM = ',TSYMM,KSYMM,PSYMM,
+     &        ' (M2DNZ3) Input VUUUU matrix in Molfdir format'
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
@@ -1097,8 +1096,9 @@ C
  9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
 C
       IF (IPRINT .GE. 30) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &        '(DNZ32M) Output VUUUU matrix in Molfdir format'
+         WRITE(LUPRI,'(A)')
+     &        ' (DNZ32M) Output VUUUU matrix in Molfdir format'
+         MZ = MIN(NZ,2)
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
@@ -1106,7 +1106,7 @@ C
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
      &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
-     &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MIN(2,NZ))
+     &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MZ)
                   END DO
                END DO
             END DO
