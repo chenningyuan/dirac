@@ -18,14 +18,17 @@ C***** NAME ADDMA
 1     CONTINUE                                                          
       RETURN                                                            
       END                                                               
-C     COMPILER (XM=3)                                                   
+C     COMPILER (XM=3)      
+                                             
       SUBROUTINE ALARM                                                  
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
 C     ONE CONFIGURATION                                                 
 C                                                                       
+
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -45,37 +48,37 @@ C
 C                                                                       
       NALAR1=NALARM-1                                                   
       GO TO (20,35,50,65,75,85,95),NALAR1                               
-   20 WRITE(6,25)                                                       
+   20 WRITE(LUPRI,25)                                                       
    25 FORMAT('0',5X,'DIAGONALIZATION DIVERGENCE')                       
-      WRITE (6,30) THRE(N0),N0,DGATH                                    
+      WRITE (LUPRI,30) THRE(N0),N0,DGATH                         
    30 FORMAT(6X, 'THRESHOLD',E9.2,1X,'FOR VECTOR',I2,1X,'GREATER THAN DG
      1ATH', E9.2)                                                       
       GO TO 105                                                         
-   35 WRITE(6,40)                                                       
+   35 WRITE(LUPRI,40)                                                
    40 FORMAT('0',5X,'SELF CONSISTENCE DIVERGENCE')                      
-      WRITE(6,45) THRSCF,SCFAT                                          
+      WRITE(LUPRI,45) THRSCF,SCFAT                               
    45 FORMAT(6X,'SCF THRESHOLD',E9.2,1X,'GREATER THAN SCFAT', E9.2)     
       GO TO 105                                                         
-   50 WRITE(6,55)                                                       
-   55 FORMAT('0',5X,'TOO MANY SCF ITERATIONS')                          
-      WRITE(6,60) NITSCF,MXXTRP                                         
+   50 WRITE(LUPRI,55)                                             
+   55 FORMAT('0',5X,'TOO MANY SCF ITERATIONS')                         
+      WRITE(LUPRI,60) NITSCF,MXXTRP                               
    60 FORMAT(6X,'ITERATIONS NUMBER',I2,1X,'EQUAL MXXTRP',I2)            
       GO TO 105                                                         
-   65 WRITE(6,70) RED,RMNED                                             
-   70 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,                   
+   65 WRITE(LUPRI,70) RED,RMNED                                     
+   70 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,                  
      *'SMALLER THAN RMNED', E9.2)                                       
       GO TO 105                                                         
-   75 WRITE(6,80) RED,RMXED                                             
-   80 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,                   
+   75 WRITE(LUPRI,80) RED,RMXED                                    
+   80 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E9.2,1X,
      *'GREATER THAN RMXED',E9.2)                                        
       GO TO 105                                                         
    85 CONTINUE                                                          
-      WRITE (6,90) ZETA(NBVAR1),NBVAR1,EXPMN                            
+      WRITE (LUPRI,90) ZETA(NBVAR1),NBVAR1,EXPMN                   
    90 FORMAT(6X,'EXPONENT ZETA',F9.5,1X,'FOR ORBITAL',I2,1X, 'SMALLER TH
      1AN EXPMN', F9.5)                                                  
       GO TO 105                                                         
    95 CONTINUE                                                          
-      WRITE (6,100) NBVAR1,IIII,ZETDIF,DMNXP                            
+      WRITE (LUPRI,100) NBVAR1,IIII,ZETDIF,DMNXP       
   100 FORMAT(6X,'EXPONENT REDUNDANCY FOR ORBITALS',I2,1X,'AND',         
      *I2,2X,'ZEDIF',F9.5,1X,'SMALLER THAN DMNXP',F9.5)                  
   105 RETURN                                                            
@@ -86,38 +89,45 @@ C     CHANGE FOLLOWING TWO VALUES TO INCREASE DIMENSIONS OF PROGRAM
 C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS                        
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)  
 C                                                                       
-      PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=300,MXO=65,LDIMC=MXB*MXO*4)                         
+#include"scfarr.h"
       IMPLICIT REAL*8 (A-H,P-Z), INTEGER   (O)                          
+#include"priunit.h"
       DIMENSION S(2),V(2),OS(2)                                         
       COMMON /V10/ GJ0,GK0,ITAPE,JTAPE,MXBAS,MXOCC,MXBF,NBF,NOR,LPQ,    
      *LQM,MX100,TRLO(4),TRHI(4),ISIZE(4),IPARM(3),NEXPND
 C$F   NS=NS/8                                                           
 C//SKIPCc2         SKIP THE NEXT 2 STATEMENTS IN CRAY VERSION           
-      WRITE (JTAPE,100) NS                                              
+CMI   WRITE (JTAPE,100) NS                                              
+      WRITE (LUPRI,100) NS                                              
 Ca100   FORMAT(I10,' FREE IBM+ WORDS'/)                                   
-100   FORMAT(I10,' FREE ALLIANT DOUBLEWORDS'/)  
+100   FORMAT(I14,' FREE ALLIANT DOUBLEWORDS'/)  
 Cc    WRITE (JTAPE,100) NS                                              
 Cc100 FORMAT(I10,' FREE CRAY WORDS'/)                                   
       MXBAS=MXB                                                         
       MXOCC=MXO                                                         
 C##                                                                     
-      WRITE (JTAPE,991) MXBAS,MXOCC                                     
+CMI   WRITE (JTAPE,991) MXBAS,MXOCC                                     
+      WRITE (LUPRI,991) MXBAS,MXOCC                                     
 991   FORMAT(/' MAXIMAL NUMBER OF BASIS FUNCTIONS   =',I10/,            
      *        ' MAXIMAL NUMBER OF OCCUPIED ORBITALS =',I10/)            
       MXBO =MXBAS*MXOCC                                                 
 C                                                                       
 C     10000 CALCULATIONS IN ONE CHUNK SHOULD BE ENOUGH ...              
 C                                                                       
-      DO 10 I=1,10000
-      CALL INPUT(V,NS)                                                  
-      CALL CPU('ATOMSCF ')                                              
-10    CONTINUE                                                          
+CMI   DO 10 I=1,10000
+      CALL INPUT(V,NS)                                
+CMI   CALL CPU('ATOMSCF ')                                              
+CMI 10    CONTINUE                                                          
 C                                                                       
 C     PROGRAM DOES NOT RETURN HERE, BECAUSE STOP IS EXECUTED IN         
 C     SR INPUT IF END OF FILE IS ENCOUNTERED                            
 C                                                                       
       RETURN                                                            
-      END                                                               
+      END     
+
+                                                          
 C     AT34R 1.0 - RELATIVISTIV ROUTINES FOR AT34 - 14.5.87              
 C     BERND HESS                                                        
 C  DELCã                                                              
@@ -134,6 +144,7 @@ C            H     RELATIVISTIC KINETIC ENERGY
 C            EV2   PVP INTEGRALS                                        
 C                                                                       
       IMPLICIT REAL*8(A-H,O-Z)                                          
+#include"priunit.h"
       DIMENSION V(ISIZE),SMAT(ISIZE),MULT(ISIZE),P(ISIZE),G(ISIZE),     
      *H(ISIZE),BU(ISIZE),EV2(ISIZE),                                    
      *EIG(N,N),SINV(N,N),REVT(N,N),AUX(N,N),OVE(N,N),                   
@@ -177,7 +188,7 @@ C.  347 E(I)=EW(I)+CON
 C--------------------------------------------------------------------   
 C     MATRIX REPRESENTATION CALCULATED FROM NONRELATIVISTIC T MATRIX    
 C--------------------------------------------------------------------   
-      CALL DIAG(H,N,EIG,EW,SINV,AUX,0)                                  
+      CALL DIAGX(H,N,EIG,EW,SINV,AUX,0)                                  
       DO 4 I=1,N                                                        
 C                                                                       
 C     IF T SUFFICIENTLY SMALL, USE SERIES EXPANSION TO AVOID CANCELLATIO
@@ -293,7 +304,10 @@ C#    WRITE (6,*) EW
       SUBROUTINE AT3DIM(V,NS,NCOVAR,                                    
      *C,CTRAN,PQN,ZETA,ZETINC,ITRAN,NROW,NBVAR,IORCN)                   
       IMPLICIT REAL*8 (A-H,O-Z)                                         
-      PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+#include"priunit.h"
+CMI   PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=300,MXO=65,LDIMC=MXB*MXO*4)                         
+#include"scfarr.h"
 C                                                                       
 C     VERSION INCLUDING IDK ARRAY                                       
 C                                                                       
@@ -354,7 +368,7 @@ C
       N30=N29+MXLPQ                                                     
       N31=N30+MX100*4                                                   
 C//SKIPCc1                                                              
-      WRITE (6,*) N31,' DOUBLE WORDS ARE REQUIRED TO RUN THIS CASE'     
+      WRITE (LUPRI,*) N31,' DOUBLE WORDS ARE REQUIRED TO RUN THIS CASE' 
 Cc    WRITE (6,*) N31,' CRAY WORDS ARE REQUIRED TO RUN THIS CASE'       
       CALL CHECK(NS,N31,'AT3DIM')                                       
       IF(NCOVAR.NE.0) GO TO 11                                          
@@ -373,6 +387,7 @@ C
       RETURN                                                            
       END                                                               
       SUBROUTINE BESSKA(AVAL,XVAL,KA,KA1)                               
+#include"priunit.h"
       REAL*8 AVAL,XVAL,EPS,KA,KA1                                       
 C                                                                       
 C     SUBROUTINE TO CALCULATE MODIFIED BESSEL FUNCTION OF THE           
@@ -483,6 +498,7 @@ culf      INTEGER*4 N,NA
 19    RETURN                                                            
       END                                                               
       SUBROUTINE CHECK(ICORE,K,TEXT)                                    
+#include"priunit.h"
       CHARACTER*8 TEXT                                                  
       DATA MSK /0/, KSK /5000000/                                       
 C                                                                       
@@ -509,7 +525,7 @@ C
       IF (ICORE.GT.0) GOTO 3                                            
       L=MSK-KSK                                                         
       IC=(L+1023)/1024                                                  
-      WRITE (6,101) L,IC                                                
+      WRITE (LUPRI,101) L,IC                                                
 101   FORMAT(' DYNAMIC CORE USED SO FAR ',I10,' WORDS (',I10,           
      *'K)')                                                             
 3     RETURN                                                            
@@ -519,7 +535,7 @@ C
 4     IC=(MSK+1023)/1024                                                
       KSK=MSK-KSK                                                       
       L=(KSK+1023)/1024                                                 
-      WRITE (6,102) MSK,IC,KSK,L                                        
+      WRITE (LUPRI,102) MSK,IC,KSK,L                                        
 102   FORMAT(' DYNAMIC STORAGE: ',I8,' WORDS (',I5,'K ) - USED ',       
      *I8,' WORDS (',I5,'K)'//,                                          
      *' E N D   O F   C A L C U L A T I O N')                           
@@ -556,6 +572,7 @@ C     ONE CONFIGURATION
 C     COMPUTES THE CONTRACTION MATRICES S,U,T, WITH  SLATER OR  GAUSSIAN
 C     ORBITALS AS BASIS                                                 
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -646,6 +663,7 @@ C     COMPILER (XM=3)
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -708,6 +726,7 @@ C
       END                                                               
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)                       
       implicit DOUBLE PRECISION(A-H,O-Z)
+#include"priunit.h"
 Culf      INTEGER            L,M,N,IA,IB,IC,IER                             
 Culf      DOUBLE PRECISION   A(IA,M),B(IB,N),C(IC,N)                        
 Culf      DOUBLE PRECISION   TEMP                                           
@@ -734,6 +753,7 @@ C     COMPILER (XM=3)
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -981,6 +1001,7 @@ C     COMPILER (XM=3)
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1183,17 +1204,17 @@ C
       IF(K.EQ.NCOPT) GO TO 60                                           
       IF(K.NE.1) GO TO 59                                               
 C                                                                       
-      WRITE(6,100)                                                      
+      WRITE(LUPRI,100)                                                      
   100 FORMAT('1',//1X,'***  FIRST SCF CALCULATION, WITH UNCONTRACTED BAS
      1IS FUNCTIONS  ***')                                               
       GO TO 61                                                          
-   59 WRITE(6,110) KK                                                   
+   59 WRITE(LUPRI,110) KK                                                   
   110 FORMAT('0',///1X,'***  CONTRACTION COEFFICIENT OPTIMIZATION STEP N
      1O.',I3,'  ***')                                                   
       IF(NROW0(K-1).NE.1) GO TO 101                                     
-      WRITE(6,114)                                                      
+      WRITE(LUPRI,114)                                                      
       GO TO 1000                                                        
-  101 WRITE(6,111)                                                      
+  101 WRITE(LURPI,111)                                                      
   111 FORMAT('0',5X,'SYMMETRY SPECIES',12X,'S',5X,'P',5X,'D',5X,'F')    
       WRITE(6,112) (NBCON(I),I=1,NSYM)                                  
   112 FORMAT(6X,'CONTRACTED BASIS FUNCTIONS=',I2,3(4X,I2))              
@@ -1242,7 +1263,7 @@ culf      call teig(P,Q,NSYM,NBAS,NOSH,ZETA,AJMN,U,OCCUP,ndimpq)
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       IF(NCONV.EQ.0) GO TO 80                                           
-   75 CALL ENERGY                                                       
+   75 CALL ENERGYX                                                       
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
@@ -1279,15 +1300,15 @@ C
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
    85 IF(K.EQ.NCOPT) GO TO 200                                          
 C                                                                       
-      WRITE(6,120) NITSCF,THRSCF                                        
+      WRITE(LUPRI,120) NITSCF,THRSCF                                        
   120 FORMAT('0',5X,'FINAL SCF RESULTS OBTAINED AT COMPUTATION NO.',I2, 
      *       5X,'SCF THRESHOLD =',E11.4)                                
-      WRITE(6,125)                                                      
+      WRITE(LUPRI,125)                                                      
   125 FORMAT('0',5X,'TOTAL HF ENERGY',4X,'POTENTIAL ENERGY',4X,'KINETIC 
      1ENERGY',4X,'VIRIAL THEOREM')                                      
-      WRITE(6,130) ENERG,POT,CIN,VIR                                    
+      WRITE(LUPRI,130) ENERG,POT,CIN,VIR                                    
   130 FORMAT(3X,5(D19.10))                                              
-      WRITE(6,131)                                                      
+      WRITE(LUPRI,131)                                                 
   131 FORMAT('0',5X,'ORBITAL ENERGIES, EIGENVECTORS, AND DIAGONALIZATION
      * THRESHOLD')                                                      
       IMAX=0                                                            
@@ -1295,18 +1316,18 @@ C
       IMIN=IMAX+1                                                       
       IMAX=IMAX+8                                                       
       IF(IMAX.GT.NSHT) IMAX=NSHT                                        
-      WRITE(6,165) (EPS(I),I=IMIN,IMAX)                                 
+      WRITE(LUPRI,165) (EPS(I),I=IMIN,IMAX)                                 
   165 FORMAT('0',5X,F11.5,7(4X,F10.5))                                  
       WRITE (6,140)                                                     
   140 FORMAT (' ')                                                      
       DO 185 I=1,NBASM                                                  
-  185 WRITE(6,190) (C(I,J),J=IMIN,IMAX)                                 
+  185 WRITE(LUPRI,190) (C(I,J),J=IMIN,IMAX)                                 
   190 FORMAT(3X,8F14.6)                                                 
   132 CONTINUE                                                          
-      WRITE(6,195) THRSH                                                
+      WRITE(LUPRI,195) THRSH                                                
   195 FORMAT('0',5X,E11.4,7(4X,E10.4))                                  
       GO TO 1000                                                        
-  200 CALL OUTPUT                                                       
+  200 CALL OUTPUTX                                                       
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
@@ -1385,6 +1406,7 @@ C|    END
 C     ONE CONFIGURATION                                                 
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1522,8 +1544,9 @@ C
       DER=SUM                                                           
       RETURN                                                            
       END                                                               
-      SUBROUTINE DIAG(A,N,EIG,EW,SINV,AUX,IC)                           
+      SUBROUTINE DIAGX(A,N,EIG,EW,SINV,AUX,IC)                           
       IMPLICIT REAL*8(A-H,O-Z)                                          
+#include"priunit.h"
       DIMENSION A(2),AUX(N,N),SINV(N,N),EIG(N,N),EW(2)                  
       TOL=1.D-15                                                        
       IJ=0                                                              
@@ -1556,6 +1579,7 @@ C     COMPILER (XM=3)
 C     ONE CONFIGURATION                                                 
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1614,6 +1638,7 @@ C     LENGTH N1
 C     NO DEFINE THE COLUMN CORRESPONDING TO THE VECTOR C IN A MATRIX C  
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),       
@@ -1767,12 +1792,13 @@ C     TEST CONVERGENCE
   135 THRE(N0)=THRE(N0)/2.D0                                            
   140 RETURN                                                            
       END                                                               
-      SUBROUTINE ENERGY                                                 
+      SUBROUTINE ENERGYX                                                 
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -1847,7 +1873,7 @@ CV 15 POT=POT+TERM
 C                                                                       
       IF (NUMVAR.EQ.0) RETURN                                           
 C$C   I=SYS$GETTIME(CPU,CLK)                                            
-      CPU=SECOND()                                                      
+      CPU=SECONDX()                                                      
       WRITE (6,65) NBVAR1,ZETA(NBVAR1),ENERG,CIN,POT,VIR,NITSCF,CPU     
    65 FORMAT(I5,5(1X,D16.10),I5,F14.2)                                  
       RETURN                                                            
@@ -1869,6 +1895,7 @@ C     TT      NONREL. KINETIC ENERGY (DIAGONAL)
 C     AUXF,AUXG,AUXH  SCRATCH ARAYS                                     
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION V(2),G(2),E(N),R(N),A(N),TT(N),AUXF(N,N),               
      *AUXG(N,N),AUXH(N,N)                                               
       M=N                                                               
@@ -2052,6 +2079,7 @@ C     ONE CONFIGURATION
 C     SCF ITERATIONS AND EXTRAPOLATIONS                                 
 C     MODIFIED 17.7.87 - BERND HESS - AVERAGING/ORTHOGONALIZATION       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION SCR(*),                                                 
      *          P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
@@ -2178,6 +2206,7 @@ C
 C***** NAME FILLMA                                                      
       SUBROUTINE FILLMA(N,S,OVE)                                        
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION S(2),OVE(N,N)                                           
       IJ=0                                                              
       DO 1 I=1,N                                                        
@@ -2210,6 +2239,7 @@ C***** NAME FILLMA
       END                                                                      
       SUBROUTINE GAUSS(N,X,W)                                           
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION X(2), W(2)                                              
       DIMENSION GPT(166),GWT(166),P3(2),W3(2)                           
       EQUIVALENCE (P3(1),GPT(165)),(W3(1),GWT(165))                     
@@ -2531,6 +2561,7 @@ CICI
 C     ONE CONFIGURATION                                                 
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),                THRE(2),EPS(2),       
@@ -2709,6 +2740,7 @@ C  DELC@
 C                                                                       
 C     MAIN PROGRAM ONE CONFIGURATION LCAO ATOMIC SCF CALCULATION        
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       integer autoab
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
@@ -2830,7 +2862,7 @@ C
 C     CALCULATE ENERGY, IF APPLICABLE                                   
 C                                                                       
 culf
-      CALL ENERGY(
+      CALL ENERGYX(
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
@@ -2896,13 +2928,13 @@ C
       KPARM=IPARM(JPARM)                                                
       BIAS=5.                                                           
 culf
-       CALL ENERGY                                                       
+       CALL ENERGYX                                                       
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       write(6,*) ' total energy', energ
       GOTO 1006                                                         
-   25 CALL ENERGY                                                       
+   25 CALL ENERGYX                                                       
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
@@ -3081,7 +3113,7 @@ C
   130 CONTINUE                                                          
       RED=ABS((ENERG-ESAV(1))/ESAV(1))                                  
       IF (RED.GE.RMNED) GO TO 140                                       
-  135 WRITE(6,136) RED,RMNED                                            
+  135 WRITE(LUPRI,136) RED,RMNED                                            
   136 FORMAT(6X,'RELATIVE ENERGY DIFFERENCE',E12.2,1X,                  
      *       'SMALLER THAN RMNED',E12.2)                                
       NRUN=1                                                            
@@ -3127,7 +3159,7 @@ C
       DE3=ESAV(3)-ENERG                                                 
       DE2=ESAV(2)-ENERG                                                 
       NRUN=1                                                            
-      WRITE(6,180)                                                      
+      WRITE(LUPRI,180)                                                      
   180 FORMAT(6X,'OPTIMIZED ONE DIMENSION')                              
       ZUMER=DE2*(DZ3**2)-DE3*(DZ2**2)                                   
       ZUMER=ZUMER/(2.D0*(DE2*DZ3-DE3*DZ2))+TERM                         
@@ -3174,7 +3206,7 @@ C
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
 251   CONTINUE                                                          
-      CALL OUTPUT                                                       
+      CALL OUTPUTX                                                       
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
@@ -3183,6 +3215,7 @@ C
 C     COMPILER (XM=3)                                                   
       SUBROUTINE INPAR(NR,N ,A,B,C,X,W,NP,XP,WP)                        
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION N (2),A(2),B(2),C(2),X(2),W(2),NP(2),XP(2),WP(2),       
      1          X1(150),W1(150),X2(12),W2(12)                           
       DATA DMAX/1.D60/                                                  
@@ -3313,8 +3346,11 @@ C     COMPILER (XM=3)
 C*********************************************************************  
       SUBROUTINE INPUT(V,NS)                                            
 C                                                                       
-      PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=300,MXO=65,LDIMC=MXB*MXO*4)                         
+#include"scfarr.h"
       IMPLICIT REAL*8 (A-H,O-Z)              
+#include"priunit.h"
       integer autoab                           
       DIMENSION V(2)                                                    
 C***********************************************************************
@@ -3475,11 +3511,24 @@ CBS   READ (5,2080,END=2002) TITLE
 2080  FORMAT(12A4)                                                      
 CBS   READ (5,ATOM,END=2002)                                            
 CBS   simplify INPUT 
-      read(5,*,END=2002) charge
-      read(5,*) (NBAS(I),I=1,4)
-      read(5,*) (NCSH(I),I=1,4)
-      read(5,*) (NOOC(I),I=1,4)
-      read(5,*) IREL
+
+
+CMI ... read TOSCF !
+CMI   read(5,*,END=2002) charge
+CMI   read(5,*) (NBAS(I),I=1,4)
+CMI   read(5,*) (NCSH(I),I=1,4)
+CMI   read(5,*) (NOOC(I),I=1,4)
+CMI   read(5,*) IREL
+
+      LUTOSCF = 9
+      OPEN(UNIT=LUTOSCF,FILE='TOSCF',STATUS='OLD',FORM='FORMATTED') 
+      READ(LUTOSCF,*,END=2002) charge
+      READ(LUTOSCF,*) (NBAS(I),I=1,4)
+      READ(LUTOSCF,*) (NCSH(I),I=1,4)
+      READ(LUTOSCF,*) (NOOC(I),I=1,4)
+      READ(LUTOSCF,*) IREL
+
+
       if (IREL.eq.0) then
       Iparm(1)=0
       Iparm(2)=0
@@ -3490,7 +3539,10 @@ CBS   simplify INPUT
       Iparm(3)=2
       endif 
       nexp=NBAS(1)+NBAS(2)+NBAS(3)+NBAS(4)
-      read(5,*)(ZETA(I),I=1,nexp)
+CMI   read(5,*)(ZETA(I),I=1,nexp)
+      READ(LUTOSCF,*)(ZETA(I),I=1,nexp)
+      CLOSE(LUTOSCF,STATUS="KEEP")
+
       AUTOAB=0
       NJAN=0
       NFLAG(1)=1
@@ -3552,7 +3604,7 @@ coccup
       NCOVAR=NFLAG(5)                                                   
       ZN=CHARGE                                                         
 C                                                                       
-      WRITE(6,80) (NAME(I),I=1,12)                                      
+      WRITE(LUPRI,80) (NAME(I),I=1,12)                                      
    80 FORMAT ('1',4X,'ATOMIC HARTREE-FOCK PROGRAM '/5X,                 
      1'MODIFIED BY LAURA GIANOLIO IST. DONEGANI'/5X,                    
      2'MONTEDISON SPA NOVARA (ITALY). MARCH 1,1978'/5X,                 
@@ -3562,43 +3614,43 @@ C
      5'UNIVERSITY OF BONN - OCTOBER 26,1986'/,5X,                       
      6//5X,12A4)                                                        
 C                                                                       
-      IF(NFLAG(1).EQ.1) WRITE (6,13)                                    
-      IF(NFLAG(1).EQ.0) WRITE (6,12)                                    
+      IF(NFLAG(1).EQ.1) WRITE (LUPRI,13)                                    
+      IF(NFLAG(1).EQ.0) WRITE (LUPRI,12)                                    
   12  FORMAT ('0',5X,20HTYPE SLATER ORBITALS)                           
   13  FORMAT ('0',5X,19HTYPE GAUSS ORBITALS)                            
-      IF(NSVD.EQ.0)WRITE(6,504)                                         
-      IF(NSVD.EQ.1)WRITE(6,505)                                         
+      IF(NSVD.EQ.0)WRITE(LUPRI,504)                                         
+      IF(NSVD.EQ.1)WRITE(LUPRI,505)                                         
   504 FORMAT('0',5X,'SINGLE VECTOR DIAGONALIZATION')                    
   505 FORMAT ('0',5X,'JACOBI DIAGONALIZATION')                          
       IF(NFLAG2.EQ.1.OR.NFLAG2.EQ.2) WRITE (6,121) CON1,CON2            
   121 FORMAT('0',5X,'CUT OFF PARAMETERS =',F10.6,3X,F10.6)              
-      WRITE(6,85) ZN                                                    
+      WRITE(LUPRI,85) ZN                                                    
    85 FORMAT('0',5X,'CHARGE =',F10.6)                                   
-      WRITE(6,90) BIAS,DGATH                                            
+      WRITE(LUPRI,90) BIAS,DGATH                                            
    90 FORMAT('0',5X,'DIAGONALIZATION SCF THRESHOLD BIAS  =', E10.3,8X,  
      1'DIAGONALIZATION DIVERGENCE =',7X,E10.3)                          
-      WRITE(6,95) NXTRP,SCFAT                                           
+      WRITE(LUPRI,95) NXTRP,SCFAT                                           
    95 FORMAT(6X,'NUMBER OF SCF ITERATIONS            =',I3,16X,         
      *'SCF DIVERGENCE             =',7X,E10.3)                          
-      WRITE(6,100) NDIAG,EXPMN                                          
+      WRITE(LUPRI,100) NDIAG,EXPMN                                          
   100 FORMAT(6X,'NUMBER OF DIAGONALIZATION ITERATIONS=',I3,16X,         
      *'MINIMUM EXPONENT           =',7X,E10.3)                          
-      WRITE(6,105) MXXTRP,DMNXP                                         
+      WRITE(LUPRI,105) MXXTRP,DMNXP                                         
   105 FORMAT(6X,'MAXIMUM NUMBER OF ITERATIONS        =',I3,16X,         
      *'MINIMUM EXPONENT DIFFERENCE=',7X,E10.3)                          
-      WRITE(6,106) RMNED,RMXED                                          
+      WRITE(LUPRI,106) RMNED,RMXED                                          
   106 FORMAT(6X,'RELATIVE MINIMUM ENERGY DIFFERENCE  =', E10.3,         
      *8X,'RELATIVE MAXIMUM ENERGY DIFFERENCE=', E10.3)                  
-      WRITE(6,115) (NBAS(I),I=1,NSYM)                                   
+      WRITE(LUPRI,115) (NBAS(I),I=1,NSYM)                                   
   115 FORMAT ('0',5X,'SYMMETRY SPECIES',11X,'S',5X,'P',5X,'D',5X,'F'/6X,
      1'NUMBER OF BASIS FUNCTIONS=',4(I3,4X))                            
-      WRITE(6,120) (NCSH(I),I=1,NSYM)                                   
+      WRITE(LUPRI,120) (NCSH(I),I=1,NSYM)                                   
   120 FORMAT(6X,'NUMBER OF CLOSED SHELLS  =',10(I1,5X))                 
-      WRITE(6,125 )(NOOC(I) ,I=1,NSYM)                                  
+      WRITE(LUPRI,125 )(NOOC(I) ,I=1,NSYM)                                  
   125 FORMAT(6X,'OPEN SHELL OCCUPATION    =',10(I1,5X))                 
-      WRITE(6,135)                                                      
+      WRITE(LUPRI,135)                                                      
   135 FORMAT ('0',5X,'VECTOR COUPLING COEFFICIENTS K'/ )                
-      WRITE(6,140) (AJMN(I),I=1,24)                                     
+      WRITE(LUPRI,140) (AJMN(I),I=1,24)                                     
       if(njan.eq.0) then
          do 141 i=1,24
  141        ajmn(i)=0.5*ajmn(i)
@@ -3647,7 +3699,7 @@ C
       NBAS1=NBAS(1)                                                     
       IF (NSYM.GT.1) GO TO 155                                          
        DO  170   I=1,NBAS1                                              
-  170 WRITE(6,160)  PQN(I),ZETA(I)                                      
+  170 WRITE(LUPRI,160)  PQN(I),ZETA(I)                                      
        GO TO 215                                                        
 C                                                                       
   155 NBAS2=NBAS(2)                                                     
@@ -3655,11 +3707,11 @@ C
       NBA3=1                                                            
   197 DO 185 I=NBA3,NBAS2                                               
        J=NBAS1+I                                                        
-  185 WRITE(6,160)  PQN(I),ZETA(I),PQN(J),ZETA(J)                       
+  185 WRITE(LUPRI,160)  PQN(I),ZETA(I),PQN(J),ZETA(J)                       
   196 IF (NBAS1.EQ.NBAS2) GO TO 215                                     
        NBA2=NBAS2+1                                                     
        DO  186   I=NBA2,NBAS1                                           
-  186 WRITE(6,160) PQN(I),ZETA(I)                                       
+  186 WRITE(LUPRI,160) PQN(I),ZETA(I)                                       
        GO TO 215                                                        
 C                                                                       
   156 NBAS3=NBAS(3)                                                     
@@ -3668,7 +3720,7 @@ C
   207 DO 195  I=NBA4,NBAS3                                              
        J=NBAS1+I                                                        
        K=NBAS1+NBAS2+I                                                  
-  195 WRITE(6,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K)         
+  195 WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K)         
   206 IF (NBAS3.EQ.NBAS2) GO TO 196                                     
       NBA3=NBAS3+1                                                      
       GO TO 197                                                         
@@ -3678,8 +3730,8 @@ C
       J=NBAS1+I                                                         
       K=NBAS1+NBAS2+I                                                   
       L=NBAS1+NBAS2+NBAS3+I                                             
-  205 WRITE(6,160) PQN(I),ZETA(I),PQN(J),ZETA(J),PQN(K),ZETA(K),PQN(L), 
-     *ZETA(L)                                                           
+  205 WRITE(LUPRI,160) PQN(I),ZETA(I),PQN(J),
+     &   ZETA(J),PQN(K),ZETA(K),PQN(L), ZETA(L)
       IF(NBAS4.EQ.NBAS3) GO TO 206                                      
       NBA4=NBAS4+1                                                      
       GO TO 207                                                         
@@ -3734,18 +3786,18 @@ C
       MXXBF=NBASM                                                       
 CULF
       IF(IVEC.EQ.1) THEN
-      WRITE(6,*) ' INPUT VECTORS'
+      WRITE(LUPRI,*) ' INPUT VECTORS'
          DO 668 I=1,4*MXBF
  668     C(I)=0
          IEND=0
          inquire(FILE='STARTORB',EXIST=EX)
          istartunit=44
-         if (EX) write(6,*) 'starting orbitals read from file'
+         if (EX) write(LUPRI,*) 'starting orbitals read from file'
          if (EX) OPEN(UNIT=istartunit,STATUS='UNKNOWN',FILE='STARTORB')
          if (EX) rewind(istartunit)           
          DO 665 L=1,4
          IF(NBAS(L).EQ.0) GO TO 665
-         WRITE(6,*) ' SYMMETRY',L
+         WRITE(LUPRI,*) ' SYMMETRY',L
          NTT=0
          IF(NOOC(L).GT.0) NTT=1
          NTTC=NCSH(L)+NTT
@@ -3754,7 +3806,7 @@ CULF
          READ(istartunit,*) (CREAD(II),II=1,NBAS(L)*NTTC)
          endif 
          DO 667 I=1,NTTC
-         WRITE(6,*) ' VECTOR',I
+         WRITE(LUPRI,*) ' VECTOR',I
          IBEG=IEND+1
          IEND=IBEG+NBAS(L)-1
          if (EX) then 
@@ -3767,7 +3819,7 @@ CULF
           Enddo
           C(IBEG+I*NBAS(L)/NTTC-1)=1d0
          endif
-         WRITE(6,666) (C(II),II=IBEG,IEND)
+         WRITE(LUPRI,666) (C(II),II=IBEG,IEND)
          IEND=IEND+MXBF-NBAS(L)
  667     CONTINUE
  665     CONTINUE
@@ -3789,7 +3841,7 @@ C
       IF(C(I).NE.0.0D0) GO TO 9                                         
     6 CONTINUE                                                          
       GO TO 214                                                         
-    9 WRITE(6,210)                                                      
+    9 WRITE(LUPRI,210)                                                      
   210 FORMAT ('0',5X,'INPUT TRIAL VECTORS'/)                            
       KMIN=0                                                            
       KMAX=NBASM*(NSHT-1)+NBAS(NSYM)                                    
@@ -3878,6 +3930,7 @@ C
       END                                                               
       SUBROUTINE JACOB(A,B,EIG,N,RANGE,IC)                              
       IMPLICIT REAL*8(A-H,O-Z)                                          
+#include"priunit.h"
 C     IC=1 EIGNEVALUES AND VECTORS REARRANGED                           
 C       =0 LEFT AS THEY ARE                                             
       DIMENSION A(N,N),B(N,N),EIG(2)                                    
@@ -3969,6 +4022,7 @@ C       =0 LEFT AS THEY ARE
       SUBROUTINE JACVAO(A,N,EIVU,EIVR,THRSH)                            
 C     V 2.0 - VECTORIZED VERSION - BERND HESS                           
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION A(N,N),EIVU(N),EIVR(N,N)                                
       IF(N-1) 2,2,1                                                     
     2 EIVR(1,1)=1.0D0                                                   
@@ -4117,6 +4171,7 @@ C     THIS SUBROUTINE  DIAGONALIZES THE HARTREE-FOCK MATRIX  FC AND FO
 C         SYMMETRY BY SYMMETRY,NBAS(N) IS SMALLER OR EQUAL TO 15        
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),V(2),PCAP(2),            
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),W(2),THRE(2),EPS(2),          
@@ -4346,6 +4401,7 @@ CDIR$ SHORTLOOP
       END                                                               
       SUBROUTINE KBR(BETA,X,RESULT)                                     
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
 C                                                                       
 C     PROGRAM TO CALCULATE CONTINUED FRACTION                           
 C     1/1+ A1*X/1+ A2*X/1+ ...                                          
@@ -4383,8 +4439,18 @@ C#    WRITE (6,991) I,SUM
      *D20.10)                                                           
       IF (DEL.GT.THR1) STOP 999                                         
       RETURN                                                            
-      END                                                               
-      PROGRAM MAIN                                                     
+      END
+
+                                                               
+CMI   PROGRAM MAIN                                                     
+      SUBROUTINE INT_AT_SCF
+CMI
+C
+C
+C
+C                                                     
+
+
 C  DELC@                                                                
 C     CRAY CHANGES ARE MARKED BY c                                      
 C     RELATIVISTIC VERSION                                              
@@ -4412,6 +4478,7 @@ C     TO INCREASE DIMENSIONS CHANGE STATEMENTS ENCLOSED BY
 C     C##DIM ... C##                                                    
 C                                                                       
       PARAMETER (MAINST=1500000)                                         
+#include"priunit.h"
       REAL*8 GJ0,GK0                                                    
 CICI
       REAL*8 AMAIN
@@ -4423,9 +4490,11 @@ Ca      EXTERNAL AT34R
       ITAPE=5                                                           
       JTAPE=6                                                           
 C//SKIPCc4                                                              
-      WRITE (JTAPE,100)                                                 
+CMI   WRITE (JTAPE,100)                                                 
+      WRITE (LUPRI,100)                                                 
 100   FORMAT(' *** PROGRAM AT34 - ALLIANT - @V ***'/)                  
       CALL AT3(AMAIN,AMAIN,AMAIN,MAINST)                                
+
 Ca100   FORMAT(' *** PROGRAM AT34 - IBM+ 1.2 - @V ***'/)                  
 Ca      CALL UDRFLW                                                       
 Ca      CALL SYSTEM(AT3)                                                  
@@ -4435,14 +4504,17 @@ Cc    CALL AT3(AMAIN,AMAIN,AMAIN,MAINST)
 C                                                                       
 C     PROGRAM DOES NOT RETURN HERE, ANYWAY, THEREFORE ...               
 C                                                                       
-      STOP 'MIRACLE'                                                    
-      END                                                               
+      RETURN                                                            
+CMI   STOP 'MIRACLE'                                                    
+      END  
+                                                             
       SUBROUTINE OEISG(IPARM,
      * P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,REL,Z100,
      *    S100,T100,U100,ZADD,
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)
       IMPLICIT REAL*8 (A-H,O-Z)
+#include"priunit.h"
 C
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),
@@ -4498,7 +4570,8 @@ C
             I1=I1+1
             NQ=PQN(I1)
             IF (NQ.NE.NP) THEN
-       WRITE (6,*) '##### DIFFERENT PQN NUMBERS WITHIN ONE SHELL ####'
+       WRITE (LUPRI,*)
+     & '##### DIFFERENT PQN NUMBERS WITHIN ONE SHELL ####'
        STOP 'PQN ERROR'
              ENDIF
              IF (ZETA(I1).GT.ZLA) ZLA=ZETA(I1)
@@ -4695,13 +4768,16 @@ culf77       write(6,*) (hcorr(j),j=1,(nbas(l)*(nbas(l)+1))/2)
  31    format(5i5)
       RETURN
       END
-      SUBROUTINE OUTPUT                                                 
+      SUBROUTINE OUTPUTX                                                 
      *(P,Q,S,U,T,DT,DOS,PCAP,QCAP,FC,FO,CM1SCF,CM2SCF,                  
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
-      PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=99,MXO=20,LDIMC=MXB*MXO*4)                         
+CMI   PARAMETER (MXB=300,MXO=65,LDIMC=MXB*MXO*4)                         
+#include"scfarr.h"
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -4747,12 +4823,12 @@ CBS   DO 5034 I=1,NTSHL
  5035 K=K+NTSHL
       close(7)
  5033 FORMAT(8(F9.6,1X))
-      IF(NPVEFA.EQ.1) WRITE(1,503)                                      
-     *              ((C(I,J),I=1,MXBF),J=1,NSHT)                        
+CMI   IF(NPVEFA.EQ.1) WRITE(1,503)                                      
+CMI  *              ((C(I,J),I=1,MXBF),J=1,NSHT)                        
       IF(NPOEFA.EQ.0) GO TO 101                                         
 C     PUNCH ZETA OR CONTRACTION COEFFICIENTS                            
-      IF(IFCONT.EQ.0) WRITE (1,502) (ZETA(I),I=1,NBAST)                 
-      IF(IFCONT.EQ.1) WRITE (1,512) (CTRAN(I),I=1,IDCTR)                
+CMI   IF(IFCONT.EQ.0) WRITE (1,502) (ZETA(I),I=1,NBAST)                 
+CMI   IF(IFCONT.EQ.1) WRITE (1,512) (CTRAN(I),I=1,IDCTR)                
   502 FORMAT(2X,'ZETA=',7X,4(E13.6,','))                                
   503 FORMAT(2X,'C=',2X,4(F17.6,','))                                   
   512 FORMAT(2X,'CTRAN=',2X,6(F10.6,','))                               
@@ -4771,7 +4847,7 @@ C     PUNCH ZETA OR CONTRACTION COEFFICIENTS
   161 JJ=JJ+1                                                           
   162 CONTINUE                                                          
       I=ZN+0.01D0                                                       
-      WRITE (1,163) I,L,K                                               
+CMI   WRITE (1,163) I,L,K                                               
       IF(IFCONT.EQ.0) GO TO 165                                         
       IMAX=NBCON(1)                                                     
       K=IMAX+1                                                          
@@ -4780,14 +4856,14 @@ C     PUNCH ZETA OR CONTRACTION COEFFICIENTS
       LMAX=KMAX+NBCON(3)                                                
       M=LMAX+1                                                          
       MMAX=LMAX+NBCON(4)                                                
-      IF(NSYM.EQ.1) WRITE (1,164) (NROW(I),I=1,IMAX)                    
-      IF(NSYM.EQ.2) WRITE (1,164) (NROW(I),I=1,IMAX),                   
-     1             ((NROW(I),N=1,3),I=K,KMAX)                           
-      IF(NSYM.EQ.3) WRITE (1,164) (NROW(I),I=1,IMAX),                   
-     1           ((NROW(I),N=1,3),I=K,KMAX),((NROW(I),II=1,6),I=L,LMAX) 
-      IF(NSYM.EQ.4) WRITE (1,164) (NROW(I),I=1,IMAX),                   
-     1           ((NROW(I),N=1,3),I=K,KMAX),((NROW(I),II=1,6),I=L,LMAX),
-     2           ((NROW(I),III=1,10),I=M,MMAX)                          
+CMI   IF(NSYM.EQ.1) WRITE (1,164) (NROW(I),I=1,IMAX)                    
+CMI   IF(NSYM.EQ.2) WRITE (1,164) (NROW(I),I=1,IMAX),                   
+CMI  1             ((NROW(I),N=1,3),I=K,KMAX)                           
+CMI   IF(NSYM.EQ.3) WRITE (1,164) (NROW(I),I=1,IMAX),                   
+CMI  1           ((NROW(I),N=1,3),I=K,KMAX),((NROW(I),II=1,6),I=L,LMAX) 
+CMI   IF(NSYM.EQ.4) WRITE (1,164) (NROW(I),I=1,IMAX),                   
+CMI  1           ((NROW(I),N=1,3),I=K,KMAX),((NROW(I),II=1,6),I=L,LMAX),
+CMI  2           ((NROW(I),III=1,10),I=M,MMAX)                          
   163 FORMAT('GAUSSIAN',I3,'  X',2I3)                                   
   164 FORMAT(36I2)                                                      
   165 CONTINUE                                                          
@@ -4801,7 +4877,7 @@ C     PUNCH ZETA OR CONTRACTION COEFFICIENTS
       DO 125 K=KMIN,KMAX                                                
       L=ITRAN(K)                                                        
       IF(IFCONT.EQ.0) L=K                                               
-      WRITE (1,112) LLIE(I),ZETA(L),CTRAN(K)                            
+CMI   WRITE (1,112) LLIE(I),ZETA(L),CTRAN(K)                            
   112 FORMAT(A1,F17.6,4X,F9.6)                                          
   125 CONTINUE                                                          
       KMIN=KMIN+MXCC-1                                                  
@@ -4835,8 +4911,8 @@ C
       JJ=JJ+1                                                           
       ATCO(J)=C(JJ,KK)                                                  
   118 CONTINUE                                                          
-      IF(I*K*L.EQ.1) WRITE(1,122) (ATCO(M),M=1,NGF)                     
-      IF(I*K*L.NE.1) WRITE(1,22) (ATCO(M),M=1,NGF)                      
+CMI   IF(I*K*L.EQ.1) WRITE(1,122) (ATCO(M),M=1,NGF)                     
+CMI   IF(I*K*L.NE.1) WRITE(1,22) (ATCO(M),M=1,NGF)                      
   119 CONTINUE                                                          
    22 FORMAT(11X,6(F10.6,','))                                          
   122 FORMAT(2X,'ATCOEF=',2X,6(F10.6,','))                              
@@ -4986,23 +5062,23 @@ C
       GO TO 207                                                         
 C                                                                       
   215 IF (IFCONT.EQ.0) GO TO 210                                        
-      WRITE (6,2004)                                                    
+      WRITE (LUPRI,2004)                 
       INMIN=0                                                           
  2004 FORMAT ('0',5X,'CONTRACTION COEFFICIENTS (NORMALIZED)',/,' ')     
       DO 2005 I=1,NEWBAS                                                
       INMAX=INMIN+NROW(I)                                               
       INMIN=INMIN+1                                                     
-      WRITE (6,2006) I,(ITRAN(IN),CTRAN(IN),IN=INMIN,INMAX)             
+      WRITE (LUPRI,2006) I,(ITRAN(IN),CTRAN(IN),IN=INMIN,INMAX)   
  2005 INMIN=INMIN+MXCC-1                                                
  2006 FORMAT(6X,'*',I2,'*',5X,7(I2,F12.7,3X),/,(10X,5X,7(I2,F12.7,3X))) 
-  210 WRITE(6,220) NITSCF,THRSCF                                        
+  210 WRITE(LUPRU,220) NITSCF,THRSCF                       
   220 FORMAT('0',5X,'FINAL SCF RESULTS OBTAINED AT COMPUTATION NO',I2,  
      *       5X,'SCF THRESHOLD =',E11.4)                                
       IF(NFLAG2.EQ.1) GO TO 1002                                        
-      IF(NFLAG2.EQ.0.OR.NFLAG2.EQ.3) WRITE (6,1225)                     
-      IF(NFLAG2.EQ.2) WRITE (6,1227)                                    
+      IF(NFLAG2.EQ.0.OR.NFLAG2.EQ.3) WRITE (LUPRI,1225)           
+      IF(NFLAG2.EQ.2) WRITE (LUPRU,1227)                       
       WRITE(6,230) ENERG,POT,CIN,VIR                                    
-      IF(NPENFA.EQ.1) WRITE(1,1230) ENERG,VIR                           
+CMI   IF(NPENFA.EQ.1) WRITE(1,1230) ENERG,VIR                           
  1225 FORMAT('0',5X,'TOTAL HF ENERGY',4X,'POTENTIAL ENERGY',4X,         
      *'KINETIC ENERGY',4X,'VIRIAL THEOREM')                             
  1226 FORMAT('0',5X,'TOTAL HF ENERGY',4X,'POTENTIAL ENERGY',4X,         
@@ -5017,13 +5093,13 @@ C
  1232 FORMAT(2X,'EPS=',5X,5(F12.5,','))                                 
  1233 FORMAT(2X,'WIG=',F12.6,',',2X,'WIGNER=',F12.6,',')                
       GO TO 231                                                         
- 1002 WRITE(6,1226)                                                     
-      WRITE(6,230) ENERG,POT,CIN,VIR,ENCOR                              
-      IF(NPENFA.EQ.1) WRITE(1,1231) ENERG,VIR,ENCOR                     
+ 1002 WRITE(LUPRI,1226)                                         
+      WRITE(LUPRI,230) ENERG,POT,CIN,VIR,ENCOR                              
+CMI   IF(NPENFA.EQ.1) WRITE(1,1231) ENERG,VIR,ENCOR                     
   231 WRITE(6,255)                                                      
   255 FORMAT('0',5X,'ORBITAL ENERGIES, EIGENVECTORS, AND DIAGONALIZATION
      * THRESHOLD')                                                      
-      IF(NPENFA.EQ.1) WRITE(1,1229) POT,CIN                             
+CMI   IF(NPENFA.EQ.1) WRITE(1,1229) POT,CIN                             
       IMAX=0                                                            
       DO 232 LIE=1,NSHT,8                                               
       IMIN=IMAX+1                                                       
@@ -5036,11 +5112,11 @@ C
       DO 285 I=1,NBASM                                                  
   285 WRITE(6,290) (C(I,J),J=IMIN,IMAX)                                 
   290 FORMAT(3X,8F14.6)                                                 
-      IF(NSVD.EQ.0) WRITE(6,295) (THRE(J),J=IMIN,IMAX)                  
+      IF(NSVD.EQ.0) WRITE(LUPRI,295) (THRE(J),J=IMIN,IMAX)   
   295 FORMAT('0',5X,E11.4,7(4X,E10.4))                                  
   232 CONTINUE                                                          
-      IF(NSVD.EQ.1) WRITE(6,295) THRSH                                  
-      IF(NPENFA.EQ.1) WRITE(1,1232) (EPS(I),I=1,NSHT)                   
+      IF(NSVD.EQ.1) WRITE(LUPRI,295) THRSH              
+CMI   IF(NPENFA.EQ.1) WRITE(1,1232) (EPS(I),I=1,NSHT)                   
 C                                                                       
 C     SET UP R FOR ORBITAL OR WIGNER                                    
 C                                                                       
@@ -5193,7 +5269,7 @@ C
      */,' TOTAL     DENSITY =',F12.6,                                   
      */,'0WIGNER CORRECTION =',F12.6,5X,F12.6)                          
 C                                                                       
-      IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER                          
+CMI   IF(NPENFA.EQ.1) WRITE(1,1233) WIG,WIGNER                          
       RETURN                                                            
       END                                                               
       DOUBLE PRECISION FUNCTION PHI(M,N)                                
@@ -5214,6 +5290,7 @@ C
 C     PRINT INTERMEDIATE ITERATION RESULTS                              
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -5274,6 +5351,7 @@ C
       RETURN                                                            
       END                                                               
       SUBROUTINE PRMAT(IUOUT,R,N,M,HEAD)                                
+#include"priunit.h"
       REAL*8 R                                                          
       CHARACTER*8 HEAD                                                  
       DIMENSION R(2)                                                    
@@ -5361,10 +5439,12 @@ C
  1001 FORMAT(' MATRIX PRINTED:',2X,A8)                                  
  1002 FORMAT(' ',5(17X,I4,3X),/)                                        
  1003 FORMAT(' ',I4,5D24.15)                                            
-      END                                                               
-      SUBROUTINE PRVEC(C,TEXT)                                          
+      END         
+CMI ... changed name  PRVEC -> PRVECX                                                     
+      SUBROUTINE PRVECX(C,TEXT)                                          
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION C(MXBF,1)                                               
       CHARACTER*8 TEXT                                                  
       COMMON /DIM/ FACTO(16),FATT(21),AJMN(24),OCCUCS(4),OCCUP(4),      
@@ -5472,6 +5552,7 @@ C      V 1.0 - 12.3.86 - BERND HESS
 C  DELC@                                                                      
       SUBROUTINE RELOP                                                       
       IMPLICIT REAL*8(A-H,O-Z)                                                
+#include"priunit.h"
 C                                                                              
 C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY                    
 C     THE RELOP PACKAGE                                                        
@@ -5525,6 +5606,7 @@ C
       END                                                                      
       SUBROUTINE SCHMID(C,N,NBAS1,MXBF,S,SCR)                           
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
 C  DELC@                                                                
 C     V 1.0 - 17.7.87 - BERND HESS                                      
 C                                                                       
@@ -5572,8 +5654,8 @@ C
       RETURN                                                            
       END                                                               
 C//SKIPCc                                                               
-      REAL FUNCTION SECOND()                                            
-      SECOND=0.                                                         
+      REAL FUNCTION SECONDX()                                            
+      SECONDX=0.                                                         
       RETURN                                                            
       END                                                               
       DOUBLE PRECISION FUNCTION SINHX(XVAL)                             
@@ -5621,6 +5703,7 @@ C     ******************************************************************
       END                                                               
       SUBROUTINE SOG(N,SS,SINV,P,G,A1)                                  
       IMPLICIT REAL*8(A-H,O-Z)                                          
+#include"priunit.h"
       DIMENSION SS(2),P(2),G(2),A1(2),SINV(N,N)                         
 C                                                                       
 C     SUBROUTINE TO CALCULATE TRANSFORMATION TO SCHMIDT-                
@@ -5690,6 +5773,7 @@ C      INTEGRALS ARE CALCULATED BETWEEN   NORMALIZED FUNCTIONS
       DOUBLE PRECISION FUNCTION                                         
      *SQROPY(AA,AB,LA,MA,NA,LB,MB,NB)                                   
       IMPLICIT REAL*8(A-H,O-Z)                                          
+#include"priunit.h"
 C                                                                       
 C     SUBROUTINE SQROPY CALCULATES MATRIXELEMENT BETWEEN FUNCTION       
 C     XA**LA * YA**MA * ZA**NA * EXP(-AA*RA**2) AND                     
@@ -5831,6 +5915,7 @@ C     GINY EXTERNAL, SINY CORRECTED
 C     EXPONENTIATIONS REMOVED (F FUNCTIONS ONLY)                        
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -6077,6 +6162,7 @@ C     ONE CONFIGURATION
 C     MAXIMUM PRINCIPAL QUANTUM NUMBER =5                               
 C                                                                       
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -6087,6 +6173,8 @@ C
      1 RADINC(10),NSIZE(10),NOSH(4),NCSH(4),NBCON(4),NBAS(4),           
      2 NSAVF(4),N1(6)                                                   
       COMMON /V10/ GJ0,GK0                                              
+CMI   COMMON /V10/ GJ0,GK0,ITAPE,JTAPE,MXBAS,MXOCC,MXBF,NBF,NOR,LPQ,    
+CMI  *LQM,MX100,TRLO(4),TRHI(4),ISIZE(4),IPARM(3),NEXPND
       COMMON /NONDIM/ TERM,ZN,BIAS,DGATH,SCFAT,EXPMN,DMNXP,RMNED,RMXED, 
      1  ENERG,POT,CIN,VIR,THRSCF,THRSH,ENORM,RED,ZETDIF,CON1,CON2,ENCOR,
      2  NBAS1,NVAR,NBAST,NBVAR1,NDIAG,NXTRP,MXXTRP,NBLOCK,NSYM,NUMVAR,  
@@ -6397,6 +6485,7 @@ C
       END                                                               
       SUBROUTINE TRSM(A,B,C,N,H,W)                                      
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION A(2),B(N,N),C(2),H(N,N),W(N,N)                          
 C                                                                       
 C     TRANSFORM SYMMETRIC MATRIX A BY UNITARY TRANSFORMATION            
@@ -6433,6 +6522,7 @@ C
       END                                                               
       SUBROUTINE TRSMT(A,B,C,N,H,W)                                     
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION A(2),B(N,N),C(2),H(N,N),W(N,N)                          
 C                                                                       
 C     B*A*BT                                                            
@@ -6475,6 +6565,7 @@ C     COMPILER (XM=3)
      *    CSAV1,CSAV2,GMIN,SMIN,THRE,EPS,EC,CM1,Z1,Z2,DELZ,             
      *    C,ITRAN,CTRAN,NROW,PQN,ZETA,NBVAR,ZETINC,IORCN)               
       IMPLICIT REAL*8 (A-H,O-Z)                                         
+#include"priunit.h"
       DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),          
      *QCAP(2),FC(2),FO(2),CM1SCF(MXBF,1),CM2SCF(MXBF,1),                
      *CSAV1(MXBF,1),CSAV2(MXBF,1),GMIN(2),SMIN(2),THRE(2),EPS(2),       
@@ -6532,7 +6623,7 @@ C
       WRITE(6,30) (Z2(I),I=1,NVAR)                                      
    30 FORMAT('0',6D17.6)                                                
 C$C   I=SYS$GETTIME(CPU,CLK)                                            
-      CPU=SECOND()                                                      
+      CPU=SECONDX()                                                      
       WRITE(6,31) SEN2,VIR,CPU                                          
    31 FORMAT('0',5X,'T.E.=',D17.10,5X,'V.T.=',D17.10,                   
      *5X,'CPU=',F14.2)                                                  
@@ -6560,7 +6651,7 @@ C$C   I=SYS$GETTIME(CPU,CLK)
       WRITE(6,22) (ZETA(I),I=1,NBAST)                                   
    22 FORMAT(1X,6D17.6)                                                 
 C$C   I=SYS$GETTIME(CPU,CLK)                                            
-      CPU=SECOND()                                                      
+      CPU=SECONDX()                                                      
       WRITE(6,31) ENERG,VIR,CPU                                         
       IEX=0                                                             
       NEXTRA=NEXTRA-1                                                   
@@ -6569,6 +6660,7 @@ C$C   I=SYS$GETTIME(CPU,CLK)
       SUBROUTINE TEIG(P,Q,NSYM,NBAS,NOSH,ZETA,ajmn,U,OCCUP,ndimpq,
      *  autoab)
       IMPLICIT REAL*8(A-H,O-Z) 
+#include"priunit.h"
       LOGICAL OPEN,KLNEMN
       integer autoab
 C....................................................................... 
@@ -6879,6 +6971,7 @@ culf      OLDENG = ENERG
       END 
       SUBROUTINE SETABJ(AJMN,NSYM,NOSH,AUTOAB,NCCUP) 
       IMPLICIT REAL*8(A-H,O-Z) 
+#include"priunit.h"
       integer autoab
 C....................................................................... 
 C 

@@ -6,7 +6,8 @@ F77_OBJS =  amfi.o  \
             amfi1.o \
             amfi2.o \
             amfi3.o \
-            symtra.o
+            symtra.o \
+            relscf.o
 
 F90_OBJS =
 

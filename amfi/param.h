@@ -20,7 +20,9 @@ cbs   overlap of normalized functions
      *OVLPinv(MxprimL,MxprimL,0:Lmax),
      *rootOVLP(MxprimL,MxprimL,0:Lmax),
      *rootOVLPinv(MxprimL,MxprimL,0:Lmax),
-     *scratchinv((MxprimL*MxprimL+MxprimL)/2) 
+     *scratchinv((MxprimL*MxprimL+MxprimL)/2),
+     *ovlpcont(MxcontL,MxcontL,0:Lmax),
+     *ovlpcontinv(MxcontL,MxcontL,0:Lmax)
 cbs   defining a big array with enough space for all modified contraction coefficients
 cbs   for each l-value there are five blocks of size (nprimit(l),ncontrac(l)) 
 cbs   the original contraction coefficients (for normalized functions) 

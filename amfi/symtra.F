@@ -8,7 +8,9 @@ cbs   integrals on one file AOPROPER_MF_SYM
 cbs   
 cbs   LUPROP has the atomic integrals, LUPROP2 will have the molecular 
 cbs   integrals    
-cbs   
+cbs
+CMI IPRINT is IPRHAM    
+CMI    
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -250,13 +252,12 @@ CBS
 
 C ... control output of integrals....
 
-      IPRINT=5
       IF (PROPRI .OR. IPRINT .GT. 4) THEN
-         CALL AROUND('Integrals of operator: '//XA(4))
+         CALL AROUND('SYMTRAFO:Integrals of operator: '//XA(4))
          CALL OUTPAK(WRK(IPX),NUMBOFFUNCT,1,LUPRI)
-         CALL AROUND('Integrals of operator: '//YA(4))
+         CALL AROUND('SYMTRAFO:Integrals of operator: '//YA(4))
          CALL OUTPAK(WRK(IPY),NUMBOFFUNCT,1,LUPRI)
-         CALL AROUND('Integrals of operator: '//ZA(4))
+         CALL AROUND('SYMTRAFO:Integrals of operator: '//ZA(4))
          CALL OUTPAK(WRK(IPZ),NUMBOFFUNCT,1,LUPRI)
       END IF
       IPRINT=0

@@ -1745,13 +1745,25 @@ CBS   write(6,*) 'get occupations from DATA-block'
 
       subroutine getAOs2(lhigh)
 #include "implicit.h"
+#include "priunit.h"
 #include "para.h"
 #include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions
       common /nucleus/ charge,Exp_finite
       character*12    occtext
       integer closedshells(0:LMAX),openshells(0:LMAX)
+      logical doscf
+      dimension xorb(MxprimL,MxContL,0:lmax)
+      dimension ovlpprimcont(MxcontL,MxprimL),
+     *dummytrafo(MxcontL,MxprimL)
+
+      data doscf / .true. /
+
+      null=0
+      ione=1   
+
       call getocc_ao(int(charge),closedshells,openshells)
+
       occtext='OCCUPATION: '
       do lrun=0,lhigh
       do irun=1,MxcontL
@@ -1760,6 +1772,127 @@ cbs   get expansions of atomic orbitals in contracted functions
       enddo
       enddo
       enddo
+
+      IF (doscf) THEN
+CMI ... run the relscf.x stuff
+c
+c
+c     getting occupied orbitals from the atomic SCF   
+c
+c
+CBS   PREPARE INPUT FOR SCF-CODE
+      open(unit=17,file='TOSCF',form='formatted',
+     *status='unknown')
+      rewind(17)
+      write(17,*) charge
+      write(17,'(4I3)') (nprimit(i),i=0,Lmax_occ)    
+      write(17,'(4I3)') (closedshells(i),i=0,Lmax_occ)
+      write(17,'(4I3)') (openshells(i),i=0,Lmax_occ)
+CMI   if(breit) then
+CMI   write(17,'(I5)') null   
+CMI   else
+      write(17,'(I5)') ione    
+CMI   endif
+      write(17,'(4(E20.14,X))') ((exponents(irun,L),irun=1,
+     *nprimit(l)),l=0,Lmax_occ)
+      rewind(17)
+CMI   call system('relscf < TOSCF > scf.out')
+CMI ... run integrnal atomic SCF code which reads TOSCF input file
+      CALL INT_AT_SCF
+
+      open(unit=7,file='fort.7',form='formatted',
+     *status='unknown')
+      close(17)
+      rewind(7)
+cbs   set the ocupation numbers 
+      do lrun=0,lhigh
+      do i=1,closedshells(lrun)
+      occup(i,lrun)=2.0
+      enddo
+      noccorb(lrun)=closedshells(lrun)
+      if (openshells(lrun).gt.0) then
+      i=closedshells(lrun)+1
+      occup(i,lrun)=1d0*openshells(lrun)/dfloat(lrun+lrun+1)
+      noccorb(lrun)=i
+      endif
+      enddo
+cbs    
+cbs   read the MO coefficients   
+CMI ======================================================
+      write(LUPRI,*) 'orbitals to be read from fort.7' 
+      write(LUPRI,*) 'lhigh = ',lhigh   
+      do lrun=0,lhigh
+      write(LUPRI,*) 'lrun = ',lrun     
+      if (noccorb(lrun).gt.0) then
+       read(7,*) itest1,itest2 
+      if (itest1.ne.nprimit(lrun)) stop 'fuck 1' 
+      if (itest2.ne.noccorb(lrun)) stop 'fuck 2' 
+      do irun=1,nprimit(lrun)
+       read(7,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
+       WRITE(LUPRI,*) (xorb(irun,jrun,lrun),jrun=1,noccorb(lrun)) 
+      enddo   
+      endif   
+      enddo   
+      write(LUPRI,*) '-- orbitals read from fort.7' 
+      do lrun=0,lhigh
+      if (noccorb(lrun).gt.0) then
+cbs     prepare projection and normalization of SCF-vectors
+cbs     on contracted basis set
+        do irun=1,ncontrac(lrun)
+        do jrun=1,ncontrac(lrun)
+        ovlpcontinv(jrun,irun,lrun)=ovlpcont(jrun,irun,lrun)
+        enddo
+        enddo
+        call invers(ovlpcontinv(1,1,lrun),MxcontL,ncontrac(lrun))
+        do jrun=1,nprimit(lrun)
+        do irun=1,ncontrac(lrun)
+        ovlpprimcont(irun,jrun)=0d0
+        dummytrafo(irun,jrun)=0d0
+        enddo
+        enddo
+        do irun=1,ncontrac(lrun)
+        do jrun=1,nprimit(lrun)
+        do krun=1,nprimit(lrun)
+        dummytrafo(irun,jrun)=dummytrafo(irun,jrun)+
+     *  contrarray(iaddori(lrun)-1+(irun-1)*nprimit(lrun)+
+     *  krun)*normovlp(krun,jrun,lrun)
+        enddo
+        enddo
+        enddo
+        do irun=1,ncontrac(lrun)
+        do jrun=1,ncontrac(lrun)
+        do krun=1,nprimit(lrun)
+        ovlpprimcont(irun,krun)=ovlpprimcont(irun,krun)+
+     *  dummytrafo(jrun,krun)*ovlpcontinv(irun,jrun,lrun)
+        enddo
+        enddo
+        enddo
+        do iorb=1,noccorb(lrun)
+        do irun=1,ncontrac(lrun)
+        xsum=0d0
+        do krun=1,nprimit(lrun)
+        xsum=xsum+xorb(krun,iorb,lrun)*ovlpprimcont(irun,krun)
+        enddo
+        AOcoeffs(irun,iorb,lrun)=xsum
+        enddo
+cbs   normalize orbitals
+      dnorm=getnorm(ncontrac(lrun),AOcoeffs(1,iorb,lrun),
+     *ovlpcont(1,1,lrun),MxcontL)
+      write(LUPRI,*) 'squared overlap of orbital ',iorb,' L-value ',
+     *lrun,dnorm
+      do icont=1,ncontrac(lrun)
+      AOcoeffs(icont,iorb,lrun)=
+     *AOcoeffs(icont,iorb,lrun)/dsqrt(dnorm)
+      enddo
+      enddo
+      endif    
+      Enddo
+C
+
+      ELSE
+CMI ... this part of the code is frozen 
+CMI    as we do not utilize the contractions coefficients as
+CMI    mean-field orbitals
 CBS   write(6,*) 'Orbitals for mean-field'
       do lrun=0,lhigh
 CBS   write(6,'(A3,I3)') 'L= ',lrun
@@ -1782,6 +1915,8 @@ CBS  *iorbital=1,noccorb(lrun))
 CBS   enddo
       endif
       enddo
+
+      ENDIF
       return
       end
 cbs
@@ -2268,12 +2403,12 @@ cbs   initialize some arrays with factors  needed for cfunct(x)
       do irun4=1,nprimit4 
       do irun3=1,nprimit3 
       do irun2=1,nprimit2 
-      	sum24=expo2(irun2)+expo4(irun4)
-      		do irun1=1,nprimit1 
+         sum24=expo2(irun2)+expo4(irun4)
+              do irun1=1,nprimit1 
       		quot1(irun1,irun2,irun3,irun4)= 
      *		1d0/(1d0+(expo1(irun1)+expo3(irun3))/
      *		sum24)                             
-      		enddo
+              enddo
       enddo
       enddo
       enddo
@@ -2291,4 +2426,53 @@ cbs   initialize some arrays with factors  needed for cfunct(x)
       enddo
       return
       end
+
+      double precision function getnorm(norb,
+     *AOcoeffs,ovlpcont,idim)
+      implicit double precision(a-h,o-z)
+      dimension AOcoeffs(*),ovlpcont(idim,*)
+      getnorm=0d0
+      do irun2=1,norb
+      do irun1=1,norb
+      getnorm=getnorm+AOcoeffs(irun2)*AOcoeffs(irun1)*
+     *ovlpcont(irun1,irun2)
+      enddo
+      enddo
+      return
+      end
+
+
+
+C********************************************************************
+      SUBROUTINE INVERS(A,NMAX,N)
+C********************************************************************
+C     THIS SUBROUTINE IS TAKEN FROM ANPASS PROGRAM BY PETER TAYLOR
+C********************************************************************
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+C
+C     THIS SUBROUTINE INVERTS THE MATRIX A OF
+C     REAL DIMENSION N x N AND NOMINAL DIMENSION NMAX x NMAX.
+C     THE INVERTED MATRIX IS RETURNED AS A.
+C
+      DIMENSION A(NMAX,NMAX)
+      D=1.D0
+      DO 80 K=1,N
+        BIGA=A(K,K)
+   48   DO 55 I=1,N
+          IF(I.NE.K)A(I,K)=-A(I,K)/BIGA
+   55   CONTINUE
+        DO 65 I=1,N
+          HOLD=A(I,K)
+          DO 62 J=1,N
+            IF((I.NE.K).AND.(J.NE.K)) A(I,J)=HOLD*A(K,J)+A(I,J)
+   62     CONTINUE
+   65   CONTINUE
+        DO 75 J=1,N
+          IF (J.NE.K) A(K,J)=A(K,J)/BIGA
+   75   CONTINUE
+        D=D*BIGA
+      A(K,K)=1.D0/BIGA
+   80 CONTINUE
+      RETURN
+      END
 

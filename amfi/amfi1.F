@@ -70,21 +70,22 @@ CBS   write(LUPRI,*) 'Symmetry is D2H'
 CBS   write(LUPRI,*) 'check whether order of IRs is correct!!!'
       numbofsym=8    
       if (SAMEORB) then 
-CBS   write(LUPRI,*) 'SAME-ORBIT only'
+      write(LUPRI,*) 'SAME-ORBIT only'
       else
-CBS   write(LUPRI,*) 'OTHER-ORBIT included' 
+      write(LUPRI,*) 'OTHER-ORBIT included' 
       endif 
       if (AIMP) then 
 CBS   write(LUPRI,*) 'CORE removed for use with AIMP' 
-      endif 
+      endif
+CMI ... reading in  
       read(IN,*) charge,Lhigh
       if (Lhigh.gt.Lmax) then 
       write(LUPRI,*) 'Sorry, so far this code deals only ',
      *'with maximum l-values of ',Lmax
       CALL QUIT('Too high angular momentum values in AMFI')            
       endif  
-CBS   write(LUPRI,*) ' Functions will go up to an L-value of : ',Lhigh
-CBS   write(LUPRI,'(A19,F5.2)') chcharge,charge    
+      write(LUPRI,*) ' Functions will go up to an L-value of : ',Lhigh
+      write(LUPRI,'(A19,F5.2)') chcharge,charge    
       call initired
       Do iredrun=1,numbofsym
       do Lrun=0,Lhigh  
@@ -92,9 +93,9 @@ CBS   write(LUPRI,'(A19,F5.2)') chcharge,charge
       enddo 
       enddo 
       do Lrun=0,Lhigh 
-CBS   write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
+      write(LUPRI,*) 'ANGULAR MOMENTUM ',LRUN  
          read(IN,*) nprimit(Lrun),ncontrac(Lrun) 
-CBS   write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
+      write(LUPRI,'(I3,I3)') nprimit(Lrun),ncontrac(Lrun) 
 cbs   check keywords
 cbs   check maximum numbers
          if (nprimit(Lrun).gt.MxprimL) then 
