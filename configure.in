@@ -1394,7 +1394,7 @@ EOF
 #
 $echo 'Copying dhf shell script to '$INSTALL_DIR' : \c'
 cat <<EOF > $INSTALL_DIR/dhf
-#!/bin/csh -f
+#!/bin/ksh
 #
 set QUEUESYS    = $queuesys
 set SCR_DEFAULT = $worksp
