@@ -2034,6 +2034,9 @@ C
       Dimension NSinRep(16),Ndeg(16)
       Character*8 FilNNS,FilVCA,FilNSc
 C
+CLV   NATORB does not work with DIRAC, for use with MOLFDIR : remove
+CLV   the RETURN statement of the next line.
+      RETURN
       Write (6,1000)
       FilVCA = 'MFDVECA'
       FilNSc = 'SCRATCH'
@@ -2131,15 +2134,17 @@ C----------------------------------------------------
                Work1(I) = Work3(Ioff4+I-1)
             ENDDO
          ELSE
-CTROND: TOL is not defined ! now it is /hjaaj June 2001
-            TOL = 1.0D-14
-            CALL F01BCF(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
+Clv         Use NAG if the library is available
+Clv         Better : rewrite as call to CH
+            IFAIL = 1
+C           TOL = 1.0D-14
+C           CALL F01BCF(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
 C64B        CALL F01BCE(NS,TOL,Work1,NS,Work2,NS, Work3(Ioff1),
-     &                  Work3(Ioff2),Work3(Ioff3),Work3(Ioff4))
-            EPSI = X02AJF()
-            CALL F02AYF(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
+C    &                  Work3(Ioff2),Work3(Ioff3),Work3(Ioff4))
+C           EPSI = X02AJF()
+C           CALL F02AYF(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
 C64B        CALL F02AYE(NS,EPSI,Work3(Ioff1),Work3(Ioff2),
-     &                  Work1,NS,Work2,NS,IFail)
+C    &                  Work1,NS,Work2,NS,IFail)
          ENDIF
          IF (IFAIL.NE.0) CALL QUIT('**ERROR-CANNOT DIAGONALISE CMTR**')
          Do IEIGEN = 1, NS
