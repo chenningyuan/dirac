@@ -35,8 +35,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
-     &                  EPS,FOO,FVO,FVV,BREIT,SRTALL,INTERFACE,
-     &                  MREMAIN)
+     &                  EPS,FOO,FVO,FVV,BREIT,SORTVOVV,SRTALL,
+     &                  INTERFACE,MREMAIN)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -64,7 +64,7 @@ C
       REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
       REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
       REAL*8 EPS(*)
-      LOGICAL BREIT,SRTALL
+      LOGICAL BREIT,SRTALL,SORTVOVV
       CHARACTER*10 INTERFACE
 C
 C---------------Common Blocks--------------------------------------
@@ -208,8 +208,17 @@ C
       CALL XCOPY (NV3,A0,0,VVVOOA,1)
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
 C
+      ICNTOLD = 0
+      WRITE(IW,'(A)') 'Reading integrals from MDCINT'
+C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,INDK,INDL,
      &               NZ,CBUF,IBUF)
+      ICNT = ICOUNT / 10000000
+      IF (ICNT .NE. ICNTOLD) THEN
+         WRITE(IW,'(A,I10)') '- integrals read so far: ',icount
+         CALL FLSHFO(IW)
+         ICNTOLD = ICNT
+      END IF
       IF (NZ.LT.0) GOTO 110
       ICOUNT = ICOUNT + NZ
       DO 102 I = 1, NZ
@@ -291,7 +300,7 @@ C
       IMSTAT(1) = 3
       CALL CCDUMP
 C
-      IF (.NOT.SRTALL) GOTO 600
+      IF (.NOT. (SORTVOVV .OR. SRTALL) ) GOTO 590
 C
       NINTSB5 = MAX0(MREMAIN/512,20)
       NINTSB5 = MIN0(NV5*RCW/512+1,NINTSB5)
@@ -314,6 +323,8 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
 C
       DO IPASS = 1, NPASS
+      WRITE (IW,9000) IPASS,NPASS,'VOVV'
+      CALL FLSHFO(IW)
       N5F = N5L + 1
       N5L = MIN0(N5L+NVT,NV5)
       N5 = N5L - N5F + 1
@@ -368,7 +379,11 @@ C
       ENDIF
       CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,NSEC5)
       NSEC5 = NSEC5 + NSEC
+      WRITE (IW,9001) IPASS
+      CALL FLSHFO(IW)
       ENDDO
+ 590  CONTINUE
+      IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
@@ -378,6 +393,8 @@ C
       WRITE (IW,1005) NPASS,'VVVV'
 C
       DO IPASS = 1, NPASS
+      WRITE (IW,9000) IPASS,NPASS,'VVVV'
+      CALL FLSHFO(IW)
       N6F = N6L + 1
       N6L = MIN0(N6L+NVT,NV6)
       N6 = N6L - N6F + 1
@@ -432,6 +449,8 @@ C
       ENDIF
       CALL RWRIT(ITAPT+6,VVVVV,N6*RCW*IRW,NSEC6)
       NSEC6 = NSEC6 + NSEC
+      WRITE (IW,9001) IPASS
+      CALL FLSHFO(IW)
       ENDDO
 C
   500 CLOSE(MDINT)
@@ -461,10 +480,13 @@ C
       CALL CCDUMP
 C
   600 IF (SRTALL) THEN
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                'VOVV',NV5,'VVVV',NV6
+      WRITE (IW,1004) 6,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                  'VOVV',NV5,'VVVV',NV6
+      ELSE IF (SORTVOVV) THEN
+      WRITE (IW,1004) 5,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                  'VOVV',NV5
       ELSE
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
+      WRITE (IW,1004) 4,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
       ENDIF
 C
 C  FORM FOCK MATRIX; ADD TWO-ELECTRON PART
@@ -530,9 +552,9 @@ C
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
-     &/' File time :',T20,A8,/' # of integrals',I8)
+     &/' File time :',T20,A8,/' # of integrals',I12)
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
- 1004 FORMAT (/' Expanded and sorted integrals to 6 types :'/
+ 1004 FORMAT (/' Expanded and sorted integrals to ',I1,' types :'/
      & (' Type ',A4,' :',I10,' integrals'))
  1001 FORMAT (//' Checking the orbital energies, the program uses ',
      & 'the diagonal elements of the'/' reconstructed Fock matrix.',
@@ -548,6 +570,10 @@ C
  1010 FORMAT (/' Skipping integral sorting step 1')
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
+ 9000 FORMAT 
+     &   (' - Pass ',I6,' of ',I6,' passes to sort ',A4,' integrals')
+ 9001 FORMAT (' - Pass ',I6,' finished.')
+
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')

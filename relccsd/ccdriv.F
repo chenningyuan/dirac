@@ -349,6 +349,8 @@ C     Read input
 C
       CALL CCINPT (IN,IW,MIOBUF)
 C
+      CALL FLSHFO(IW)
+C
 C     Number of integer words for REAL*8 and 
 C     number of REAL*8 words per variable (2 for complex groups, 
 C     1 for real)
@@ -505,6 +507,8 @@ C
       ENDIF
 #endif
 #endif
+C
+      CALL FLSHFO(IW)
 C
 C     Start the calculations
 C     ----------------------
@@ -1079,7 +1083,7 @@ C
      &            IREPSPI,CC(V1),CC(V1A),
      &            CC(V2),CC(V2A),CC(V3),CC(V3A),CC(V4),CC(V4A),
      &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,FOO,FVO,
-     &            FVV,BREIT,DOCCSD,INTERFACE,MREMAIN)
+     &            FVV,BREIT,DOMP2G,DOCCSD,INTERFACE,MREMAIN)
 C
       CALL MEMREL('CCSETI',CC,1,KFRSAV,KFREE,LFREE)
 C
