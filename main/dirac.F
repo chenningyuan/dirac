@@ -230,7 +230,12 @@ C        *************************************************
 C
          IF ( .NOT. NOQCDHF .AND. .NOT. DODFT .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
+#ifdef MOD_KRMC
             CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
+#else
+            CALL QUIT(
+     &   'Second order SCF optimization not included in this version')
+#endif
          END IF
          IF(DOANA) CALL PAMANA(WORK,LWORK)
          IF(.NOT.WFCONV) THEN
@@ -281,6 +286,7 @@ C      Do MCSCF before CC and CI because user may want
 C      to do an MR-CC or MR-CI /hjaaj aug 03
 C
       IF(DOKRMC.AND.DOPSI) THEN
+#ifdef MOD_KRMC
 C
 C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
@@ -294,6 +300,10 @@ C        *************************************************
 C
          CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
          IF(DOANA) CALL PAMANA(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  'Second order KMCSCF optimization not included in this version')
+#endif
       END IF
 C
 C***********************************************************************
