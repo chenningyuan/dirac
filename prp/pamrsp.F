@@ -3049,7 +3049,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Rearsp
+C/* Deck Rearsp */
       LOGICAL FUNCTION REARSP(LU,RSPVEC,
      &                  LAB1,TYP1,FREQ1,JSYMOP1,JTIMOP1,
      &                  LAB2,TYP2,FREQ2,JSYMOP2,JTIMOP2,
