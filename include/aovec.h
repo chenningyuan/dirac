@@ -1,5 +1,1 @@
-#if defined (VAR_ABASMALL)
-      PARAMETER (MXAOVC = 10, MXCONT = MXAOVC)
-#else
       PARAMETER (MXAOVC = 25, MXCONT = MXAOVC)
-#endif
