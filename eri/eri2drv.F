@@ -441,59 +441,12 @@ CTROND: check this !, CSMAT(NBAST,NBAST)
 #ifndef PRG_DIRAC
 #include "inforb.h"
 #endif /* ! PRG_DIRAC */
+#include "memint.h"
 C
       IPRINT = IPRERI
-      THRSH  = MAX(THRS,1.00D-15)
-C
-C     Memory
-C
-      MEMOK  = .TRUE.
-      MEMADD = 0
-      MODAB  = 0
-      MODCD  = 0
-C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
-C
-C     AO batches
-C     ==========
-C
-      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
-C
-C     OD batches
-C     ==========
-C
-C     This subroutine returns several arrays for each electron
-C     starting at addresses K????1 and K????2. These are to be
-C     transferred to ODCDRV, see ODCDR1 for details.
-C
-C     IODCL1 and IODCL2 give information specific to each class
-C     KOD(1)  --> IODCL1
-C     KOD(2)  --> IODCL2
-C     IODBC1 and IODBC2 give "integer" information for each OD batch
-C     KOD(3)  --> IODBC1
-C     KOd(4)  --> IODBC2
-C     RODBC1 and RODBC2 give "real" information for each OD batch
-C     KOD(5)  --> RODBC1
-C     KOD(6)  --> RODBC2
-C     IODPP1 and IODPP2 give "integer" information for each OD
-C     KOD(7)  --> IODPP1
-C     KOD(8)  --> IODPP2
-C     RODPP1 and RODPP2 give "real" information for each OD
-C     KOD(9)  --> RODPP1
-C     KOD(10) --> RODPP2
-C
-      CALL ODBCHS(KOD(1),KOD(2),
-     &            KOD(3),KOD(4),KOD(5),KOD(6),
-     &            KOD(7),KOD(8),KOD(9),KOD(10),
-     &            KFREE,LFREE,CCFBT,WORK,
-     &            LWORK,IPRINT)
-C
-      IF (IPRINT .GT. 2) THEN
-         WRITE (LUPRI,'(2(/,2X,A,I10))')
-     &      ' Memory requirements for ODBCHS:',LWORK - LFREE,
-     &      ' Memory left for ODCDRV:        ',LFREE
-      END IF
+      CALL ERIPRP(CCFBT,INDXBT,KOD,IPRINT,WORK,KFREE,LFREE)
 C
       ICALL = 0
       CALL GETDST(ICALL,ICALL,IPRINT)
@@ -508,10 +461,14 @@ C     ===============================
 C
       CALL ERIDSI(INDXBT,IPRINT)
 C
-      KLAST = KFREE
-      LWRK  = LFREE
+C     Set integral threshold
+C     ======================
+C
+      THRSH  = MAX(THRS,1.00D-15)
+
 C
 C     Cauchy-Schwarz factors
+C     ======================
 C
 CTROND      IF (.TRUE.) THEN
       IF (.FALSE.) THEN
@@ -524,7 +481,7 @@ CTROND      IF (.TRUE.) THEN
      &               WORK(KOD(7)),WORK(KOD(8)),
      &               WORK(KOD(9)),WORK(KOD(10)),
      &               CSMAT,DUMMY,1,IDUMMY,DUMMY,IDUMMY,
-     &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
 C
          IF (IPRINT.GT.5) THEN
             CALL HEADER('Cauchy-Schwarz matrix in ER2INT',-1)
@@ -545,7 +502,7 @@ C
      &               WORK(KOD(7)),WORK(KOD(8)),
      &               WORK(KOD(9)),WORK(KOD(10)),
      &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,
-     &               CCFBT,INDXBT,WORK(KLAST),LWRK,IPRINT)
+     &               CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
 C
 C        Error message in case of insufficient memory
 C
@@ -3153,6 +3110,74 @@ C
      &                                   LEUV+LETUV+LCCPRM+LFIRST
      &                                  )
      &                      )
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Eriprp */
+      SUBROUTINE ERIPRP(CCFBT,INDXBT,KOD,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Prepare for ERI run
+C
+C     A cut'n paste job by T. Saue, Nov 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "iratdef.h"
+#include "priunit.h"
+C
+#include "erimem.h"
+      DIMENSION CCFBT(*),INDXBT(*),KOD(10),WORK(*)
+C
+C     Memory
+C
+      MEMOK  = .TRUE.
+      MEMADD = 0
+      MODAB  = 0
+      MODCD  = 0
+      LWORK = LFREE
+C
+C
+C     AO batches
+C     ==========
+C
+      CALL SETAOB(CCFBT,INDXBT,WORK(KFREE),LFREE,IPRINT)
+C
+C     OD batches
+C     ==========
+C
+C     This subroutine returns several arrays for each electron
+C     starting at addresses K????1 and K????2. These are to be
+C     transferred to ODCDRV, see ODCDR1 for details.
+C
+C     IODCL1 and IODCL2 give information specific to each class
+C     KOD(1)  --> IODCL1
+C     KOD(2)  --> IODCL2
+C     IODBC1 and IODBC2 give "integer" information for each OD batch
+C     KOD(3)  --> IODBC1
+C     KOd(4)  --> IODBC2
+C     RODBC1 and RODBC2 give "real" information for each OD batch
+C     KOD(5)  --> RODBC1
+C     KOD(6)  --> RODBC2
+C     IODPP1 and IODPP2 give "integer" information for each OD
+C     KOD(7)  --> IODPP1
+C     KOD(8)  --> IODPP2
+C     RODPP1 and RODPP2 give "real" information for each OD
+C     KOD(9)  --> RODPP1
+C     KOD(10) --> RODPP2
+C
+      CALL ODBCHS(KOD(1),KOD(2),
+     &            KOD(3),KOD(4),KOD(5),KOD(6),
+     &            KOD(7),KOD(8),KOD(9),KOD(10),
+     &            KFREE,LFREE,CCFBT,WORK(KFREE),
+     &            LWORK,IPRINT)
+C
+      IF (IPRINT .GT. 2) THEN
+         WRITE (LUPRI,'(2(/,2X,A,I10))')
+     &      ' Memory requirements for ODBCHS:',LWORK - LFREE,
+     &      ' Memory left for ODCDRV:        ',LFREE
+      END IF
+C
       RETURN
       END
 #ifdef PRG_DIRAC
