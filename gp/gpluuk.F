@@ -368,8 +368,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
-
-#elif defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN) \
+#else
+#if defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN) \
    || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_AIX) \
    || defined (SYS_SUN) || defined (SYS_SX)
       CHARACTER FDATE*24, String*24
@@ -380,10 +380,10 @@ C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
 C     format of DATUM: '13 Sep 86 '
       TIJD  = STRING(12:19)
 C     format of TIJD: '00:00:00'
-
 #else
       Datum = '          '
       Tijd  = '        '
+#endif
 #endif
       Return
       End
