@@ -70,9 +70,12 @@
 
 void c_frac2i();
 void frac2i();
-void sysinf();
-void creadreorder();
-void distribute_env();
+/* void sysinf(); */
+void sysinf(int );
+/* void creadreorder(); */
+void creadreorder(char *, int *, int *, int *);
+/* void distribute_env(); */
+void distribute_env(const char*, int);
 
 /*
  * Take string of tokens and return new ordering
