@@ -42,7 +42,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
 */
 #endif
       SUBROUTINE VSADD(A,LA,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
@@ -51,7 +51,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSMA(A,LA,S,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*S+B(1+LB*I)
@@ -59,7 +59,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSMUL(A,LA,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*S
@@ -67,7 +67,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSQRT(A,LA,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=SQRT(A(1+LA*I))
@@ -75,7 +75,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VSUB(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=B(1+LB*I)-A(1+LA*I)
@@ -83,7 +83,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMOV(A,LA,B,LB,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*)
       DO 10 I=0,N-1
          B(1+I*LB)=A(1+I*LA)
@@ -91,7 +91,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMSA(A,LA,B,LB,S,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*B(1+LB*I)+S
@@ -99,7 +99,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VMUL(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)*B(1+LB*I)
@@ -107,7 +107,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VDIV(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=B(1+LB*I)/A(1+LA*I)
@@ -115,7 +115,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       RETURN
       END
       SUBROUTINE VADD(A,LA,B,LB,C,LC,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*),B(*),C(*)
       DO 10 I=0,N-1
          C(1+LC*I)=A(1+LA*I)+B(1+LB*I)
@@ -124,7 +124,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       END
 #if defined (SYS_CRAY)
       SUBROUTINE VCLR(A,LA,N)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER ( D0 = 0.0D0 )
       DO 10 I=0,N-1
@@ -134,7 +134,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       END
 #endif
       SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
 #if !defined (VAR_ESSL) 
@@ -217,7 +217,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMAA(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
@@ -235,7 +235,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMAM(A,ICA,IRA, B,ICB,IRB, C,ICC,IRC, NROW,NSUM,NCOL)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
  
@@ -253,7 +253,7 @@ C     RETURN
       RETURN
       END
       SUBROUTINE MXMT(A,ICA,IRA, B,ICB,IRB, C, NROW,NSUM)
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION A(*),B(*),C(*)
       IND=0

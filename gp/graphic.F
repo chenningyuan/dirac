@@ -39,23 +39,23 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule coordinate information as well as normal coordinate modes
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-#include <implicit.h>
-#include <codata.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <maxorb.h>
-#include <mxorb.h>
+#include "implicit.h"
+#include "codata.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxorb.h"
 C
       PARAMETER (LUIP = 4)
 C
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       DIMENSION KOLORS(103)
-#include <abainf.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <infinp.h>
-#include <ibtfun.h>
+#include "abainf.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "infinp.h"
+#include "ibtfun.h"
 C
 C
       DATA KOLORS/5,14,          2*11,10,1,4,2,15,14,
@@ -161,14 +161,14 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <mxorb.h>
-#include <pi.h>
-#include <codata.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "mxorb.h"
+#include "pi.h"
+#include "codata.h"
 C
       PARAMETER (LUIP = 4)
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 
@@ -180,11 +180,11 @@ C
 C
       DIMENSION WORK(LWORK)
 C
-#include <shells.h>
-#include <nuclei.h>
-#include <symmet.h>
-#include <primit.h>
-#include <ibtfun.h>
+#include "shells.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "primit.h"
+#include "ibtfun.h"
 C
       DATA (ATMSYM(I),I = 1,103)
      1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',

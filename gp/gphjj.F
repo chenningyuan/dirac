@@ -120,7 +120,7 @@ C Written 18-Dec-1984 Hans Joergen Aa. Jensen
 C
 C Return elapsed CPU time and elapsed real time.
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 #if defined (SYS_VAX)
       REAL*4 WALL0,S0,SECNDS
@@ -375,7 +375,7 @@ C
       END
 #else
       SUBROUTINE SETTIM()
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER ( D0 = 0.0D0 )
       PRINT *,'DUMMY SETTIM called'
       RETURN
@@ -394,7 +394,7 @@ C  /* Deck timtxt */
 C
 C TIMTXT based on TIMER by TUH //900709-hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TEXT
       CHARACTER AHOUR*6, ASEC*8, AMIN*8
 C
@@ -441,7 +441,7 @@ C
 C Purpose: To stamp as many as possible of
 C          text, date, time, computer, and hostname to LUPRIN
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TEXT
 C
 #if defined (SYS_VAX)
@@ -532,7 +532,7 @@ C          but only within the class of vectors having the
 C          same value in the ISS array (which could be the
 C          supersymmetry of the orbital).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -566,7 +566,7 @@ C          in EVEC so EVAL(i+1) .le. EVAL(i) using the infomation
 C          in ISS
 C          (this is opposite order of "ORDRSS")
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -603,7 +603,7 @@ C   29-Jul-1992 hjaaj (only dswap if nevec .gt. 0)
 C    2-Nov-1984 hjaaj (new parameter NEVEC, EVEC(1:NEVEC,1:N))
 C   27-Oct-1984 hjaaj (reduced number of swaps)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -638,7 +638,7 @@ C Revisions:
 C   29-Jul-1992 hjaaj (only dswap if nevec .gt. 0)
 C    5-Aug-1985 hjaaj (first version, based on ORDER)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -748,7 +748,7 @@ C
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
-#include <implicit.h>
+#include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
       KP=MAX(K,L)
@@ -777,7 +777,7 @@ C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
 C  TO A UNIT MATRIX.
 C  /VER 2/ 14-Sep-1983 hjaaj
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       PARAMETER (D1=1.0D00, D0=0.0D00)
 C
@@ -793,7 +793,7 @@ C
       END
 C  /* Deck dzero */
       SUBROUTINE DZERO(DX,LENGTH)
-#include <implicit.h>
+#include "implicit.h"
 C
 C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
 C
@@ -899,13 +899,13 @@ C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
-#include <thrzer.h>
+#include "thrzer.h"
       DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 Cwas: DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
@@ -994,7 +994,7 @@ C
             CX= SQRT(DP5   + T)
             SX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include <ivdep.h>
+#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SX
@@ -1072,7 +1072,7 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SX
   390       CONTINUE
          JAA=(IA-1)*NROWV
          JBB=(IB-1)*NROWV
-#include <ivdep.h>
+#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SX
             V(JBB+I)=-V(JAA+I)*SX + V(JBB+I)*CX
@@ -1099,7 +1099,7 @@ C              RETURN 1       INITIAL VECTORS AT VC LINEARLY
 C                             DEPENDENT WITHIN THRES HOLD (THNORM)
 C         AUXILLIARY ENTRY
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION S(*), VC(*), W(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       IRETUR=0
@@ -1214,7 +1214,7 @@ C  /* Deck readdi */
       END
 C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
       READ (IT,END=10,ERR=20) X
       RETURN
@@ -1259,7 +1259,7 @@ C  /* Deck writdi */
       END
 C  /* Deck writt */
       SUBROUTINE WRITT(IT,N,X)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION X(N)
       WRITE (IT) X
       RETURN
@@ -1272,7 +1272,7 @@ C Revision
 C  26-May-1985 hjaaj (error return if LUERR .lt. 0 on input,
 C                     otherwise stop on error as previously)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION B(4)
       DATA C/8H********/
     1 READ(LU,END=3,ERR=6)B
@@ -1655,7 +1655,7 @@ D 503 FORMAT(' ',Z10/' ',4Z10/' ',I12/(6I12))
       SECOND=IBUF(1)/100.0
 #endif
 #if defined (SYS_PARAGON)
-#include <implicit.h>
+#include "implicit.h"
 C 900521-hjaaj timer for IBM AIX operating system
 C 941013-hjaaj and for Intel Paragon
       integer*4 itime(4),times,idum
@@ -1664,7 +1664,7 @@ C     idum = elapsed time, itime(1:2) = system and user time
       second = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
 #if defined (SYS_IBM)
-#include <implicit.h>
+#include "implicit.h"
       LOGICAL FIRST
       SAVE    FIRST
       DATA    FIRST /.TRUE./
@@ -1678,7 +1678,7 @@ C     idum = elapsed time, itime(1:2) = system and user time
       END IF
 #endif
 #if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
-#include <implicit.h>
+#include "implicit.h"
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)
       SECOND = etime(tarray)
@@ -1709,9 +1709,9 @@ C
 C    where L and U constitute the LU decomposition of the
 C    orthogonal orbital transformation matrix UMO.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION UMO(NMO,NMO)
-#include <priunit.h>
+#include "priunit.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( THRESH = 1.D-4 )
 C
@@ -1803,7 +1803,7 @@ C  2-Jul-1992 hjaaj
 C  This function returns the number of off-diagonal elements
 C  with absolute value greater than THREQL.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(NDIM,NDIM)
 C
       CALL QENTER('NOFDIA')
@@ -1828,7 +1828,7 @@ C
 C Purpose:
 C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
 C
       IF (LWRK .LT. NELMNT) THEN

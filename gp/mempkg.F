@@ -55,7 +55,7 @@ C     Initialize mempkg warning count NWNMEM to zero
 C
 C
       EXTERNAL MEMBKD
-#include <memcb1.h>
+#include "memcb1.h"
 C
       LUWMEM = LUWME1
       LUEMEM = LUEME1
@@ -64,7 +64,7 @@ C
       END
 C  /* Deck membkd */
       BLOCK DATA MEMBKD
-#include <memcb1.h>
+#include "memcb1.h"
       DATA LUWMEM,LUEMEM /6,6/
       END
 C  /* Deck memget */
@@ -79,12 +79,12 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TYPE
       DIMENSION     WORK(*)
 C
-#include <iratdef.h>
-#include <memcb1.h>
+#include "iratdef.h"
+#include "memcb1.h"
 C
       EXTERNAL MEMBKD
 C
@@ -227,12 +227,12 @@ C
 C Check memory allocation from WORK(KFIRST)
 C then free memory from WORK(KREL)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <memcb1.h>
+#include "memcb1.h"
 C
       CHARACTER     TMPTXT*71
       PARAMETER ( LENID = 1/IRAT + 1)
@@ -318,12 +318,12 @@ C
 C Check if memory allocation from WORK(KFIRST) is intact
 C (check if anything has been out of bounds).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
-#include <iratdef.h>
+#include "iratdef.h"
 C
-#include <memcb1.h>
+#include "memcb1.h"
 C
       PARAMETER ( LENID = 1/IRAT + 1)
       DIMENSION     WMEMID(2), WMEMCK(2)
@@ -412,13 +412,13 @@ C     Updated to optimized version. J. Thyssen Aug 25 1998
 C
 C     Memory allocation
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER*(*) TYPE
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
-#include <iratdef.h>
-#include <memcb1.h>
+#include "iratdef.h"
+#include "memcb1.h"
 C
       EXTERNAL MEMBKD
 C

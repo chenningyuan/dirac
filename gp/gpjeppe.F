@@ -63,7 +63,7 @@ C (Note that nonstandard FLOAT is non-generic, so FLOAT(K)
 C gives only single precision accuracy!).
 C
 #endif
-#include <implicit.h>
+#include "implicit.h"
       N1 = MIN(N,M-N)
       FNFAC = 1.0D0
       DO 50 K = 2,N1
@@ -98,7 +98,7 @@ C  /* Deck ifac */
 C
 C N!
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       IF ( N .GE. 0 ) THEN
          IFAC = 1
@@ -129,7 +129,7 @@ C  /* Deck iwrtma */
 C  Jeppe Olsen
 C  Rev. 910722/921202 hjaaj
       DIMENSION IMAT(MAXROW,MAXCOL)
-#include <priunit.h>
+#include "priunit.h"
 C
       IMATMX = 0
       DO 120 J = 1,NCOL
@@ -193,7 +193,7 @@ C  /* Deck setvec */
 C
 C VECTOR(*) = VALUE
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECTOR(NDIM)
 C
       DO 100 I = 1, NDIM
@@ -208,7 +208,7 @@ C
 C 880717 - HJAaJ - written based on a qualified guess
 C                  about Jeppe's original
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECIN(NDIM), VECOUT(NDIM)
       DO 100 I = 1,NDIM
          VECOUT(I) = VECIN(I)
@@ -218,9 +218,9 @@ C
 C  /* Deck wrtmat */
       SUBROUTINE WRTMAT1(AMATRX,NRDIM,NCDIM,NRMAX,NCMAX,ITRANS)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMATRX(NRMAX,NCMAX)
-#include <priunit.h>
+#include "priunit.h"
 C
       IF ( NRDIM .EQ. 1 ) THEN
          WRITE(LUPRI,1011) (AMATRX(1,J),J=1,NCDIM)
@@ -241,7 +241,7 @@ C
 C  /* Deck vecsum */
       SUBROUTINE VECSUM(C,A,B,FACA,FACB,NDIM)
 C
-#include <implicit.h>
+#include "implicit.h"
 C
 C C(*) = FACA*A(*) + FACB*B(*)
 C
@@ -255,7 +255,7 @@ C
       END
 C  /* Deck matvcd */
       SUBROUTINE MATVCD(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
-#include <implicit.h>
+#include "implicit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       REAL MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
 #else
@@ -292,7 +292,7 @@ C  /* Deck memadd */
 C
 C VERY SUBTLE ROUTINE FOR DYNAMIC ALLOCATION
 C
-#include <iratdef.h>
+#include "iratdef.h"
 C
       IF (KADD .GT. 0) THEN
          KBASE = KFREE
@@ -317,7 +317,7 @@ C  /* Deck msaxty */
 C
 C AX(I) = SUM(L=1,NVEC) A(L)*X(I,INDEX(L))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
@@ -384,7 +384,7 @@ C  /* Deck msaxpy */
 C
 C AX(I) = AX(I) + SUM(L=1,NVEC) A(L)*X(I,INDEX(L))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
@@ -431,7 +431,7 @@ C REORDER MATRIX AIN TO GIVE AOUT
 C
 C  AOUT(I,J) = AIN(IROW(I),ICOL(J) )
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AIN(NROW,NCOL),AOUT(NROW,NCOL)
       DIMENSION IROW(NROW),ICOL(NCOL)
 C
@@ -459,7 +459,7 @@ C  /* Deck trpmat */
 C
 C XOUT(I,J) = XIN(J,I)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION XIN(NROW,NCOL),XOUT(NCOL,NROW)
 C
       DO 200 IROW =1, NROW
@@ -475,7 +475,7 @@ C  /* Deck scalve */
 C
 C CALCULATE SCALAR(FACTOR) TIMES VECTOR
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECTOR(*)
 C
       DO 100 I=1,NDIM
@@ -488,7 +488,7 @@ C  /* Deck prsym */
       SUBROUTINE PRSYM(A,MATDIM)
 C PRINT LOWER HALF OF A SYMMETRIC MATRIX OF DIMENSION MATDIM.
 C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
       JSTART=1
       JSTOP=0
@@ -520,7 +520,7 @@ C  /* Deck prsm2 */
 C
 C PRINT LOWER TRIANGULAR MATRIX PACKED IN COLUMN WISE FASHION
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(*)
 C
       DO 100 I=1,NDIM
@@ -537,7 +537,7 @@ C PRINT BLOCKED MATRIX STORED AS LOWER HALF OF A MATRIX
 C
 C JANUARY 1989 , JEPPE OLSEN
 C
-#include <implicit.h>
+#include "implicit.h"
 C
       DIMENSION A(*)
       DIMENSION LRC(NRC),LCC(NCC),IBLK(NRC,NCC)
@@ -568,7 +568,7 @@ C  /* Deck diavc2 */
 C
 C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
 C
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
@@ -585,7 +585,7 @@ C
 C GATHER VECTOR :
 C VECO(I) = VECI(INDEX(I))
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
       DO 100 I = 1, NDIM
@@ -601,10 +601,10 @@ C VECO(INDEX(I)) = VECI(I)
 C
 C NOTE: no dependence assumed for VECO
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
-#include <nosync.h>
+#include "nosync.h"
       DO 100 I = 1, NDIM
   100 VECO(INDEX(I)) = VECI(I)
 C
@@ -619,7 +619,7 @@ C IF ISYM .LE. 0 MATRIX IS ASSUMED STORED IN COMPLETE FORM
 C IF ISYM .GT. 0 MATRIX IS ASSUMED PACKED ROWWISE IN
 C                LOWER TRIANGULAR FORM
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AMAT(*),DIAG(*)
 C
       DO 100 I = 1, NDIM
@@ -642,7 +642,7 @@ C
 C RESULTING VALUE : IVAL
 C PLACE OF RESULTING VALUE : IPLACE
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IVEC(*)
 C
       IVAL = IVEC(1)
@@ -677,7 +677,7 @@ C              from determinant vector in string order,
 C              with sign changes caused by switch from
 C              string order to configuration order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ADET(NDET), BCSF(NDET)
       INTEGER   IORD(NDET)
       DO 100 I = 1,NDET
@@ -696,13 +696,13 @@ C              to determinant vector in string order,
 C              with sign changes caused by switch from
 C              string order to configuration order
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION ADET(NDET), BCSF(NDET)
       INTEGER   IORD(NDET)
       DO 100 I = 1,NDET
          IF (IORD(I) .LT. 0) BCSF(I) = -BCSF(I)
   100 CONTINUE
-#include <nosync.h>
+#include "nosync.h"
       DO 200 I = 1,NDET
          ADET( ABS(IORD(I)) ) = BCSF(I)
   200 CONTINUE
@@ -722,7 +722,7 @@ C     C = A * B(TRANSPOSED) FOR ITRNSP = 2
 C
 C... JEPPE OLSEN, LAST REVISION JULY 24 1987
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
 C
@@ -791,7 +791,7 @@ C  /* Deck vvtov */
 C
 C VECUT(I) = VECIN1(I) * VECIN2(I)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VECIN1(NDIM),VECIN2(NDIM),VECUT(NDIM)
 C
       DO 100 I = 1, NDIM
@@ -808,7 +808,7 @@ C
 C     IWAY = 1 : AOUT(I,J) = DIAG(I)*AIN(I,J)
 C     IWAY = 2 : AOUT(I,J) = DIAG(J)*AIN(I,J)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION AIN(NRDIM,NCDIM),DIAG(*)
       DIMENSION AOUT(NRDIM,NCDIM)
 C
@@ -869,7 +869,7 @@ C  /* Deck inprod */
 C
 C     PURPOSE: CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       REAL INPROD
 #else
@@ -890,7 +890,7 @@ C  /* Deck minprd */
 C
 C VU(I) = SUM(J) A(J,IP(I))*VI(J)
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION VU(*),A(NROW,*),VI(*),IP(*)
 #if defined (SYS_IBM)
 C
@@ -905,7 +905,7 @@ C
 C
       DO 100 I = 1, NPROD
          VU(I) = D0
-#include <prefer_vector.h>
+#include "prefer_vector.h"
          DO 50 J = 1,NROW
             VU(I) = VU(I) + A(J,IP(I))*VI(J)
    50    CONTINUE

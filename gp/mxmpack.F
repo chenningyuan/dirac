@@ -34,7 +34,7 @@ C
 C  /* Deck mxm */
 #if !defined (SYS_CRAY) && !defined (VAR_MOTECC)
       SUBROUTINE MXM(A,NAR,B,NAC,C,NBC)
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)
 #if defined (VAR_F90)
 C
@@ -87,7 +87,7 @@ C
 C     tuh Mar 1988 - Alliant spends a lot of time setting up this call,
 C     it might therefore be best to avoid calling MATMUL
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
       C(1:NARA,:)=MATMUL(A,B(1:NACA,:))
       RETURN
@@ -96,7 +96,7 @@ C
 #if defined (SYS_CONVEX) || defined (VAR_ESSL) || defined (VAR_BLAS3)
       SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
 C     890905 tuh
-#include <implicit.h>
+#include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
       CALL DZERO(C,NAR*NBC)
@@ -109,7 +109,7 @@ C     890905 tuh
 C
 C     Modified MXM by Trygve U. Helgaker
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
 C
 C     C(1:NARA,:)=MATMUL(A,B(1:NACA,:))

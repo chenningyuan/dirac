@@ -108,7 +108,7 @@ C  Package for tracebacks and statistics.
 C
       CHARACTER*(*) IDENT
 C
-#include <priunit.h>
+#include "priunit.h"
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
       PARAMETER (MXQLVL = 100)

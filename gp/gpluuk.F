@@ -39,7 +39,7 @@ C     L. Visscher
 C
 C     August 1997
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       PARAMETER (NBITS=64)
 #else
@@ -73,7 +73,7 @@ C     L. Visscher
 C
 C     August 1997
 C
-#include <implicit.h>
+#include "implicit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       PARAMETER (NBITS=64)
 #else
@@ -187,8 +187,8 @@ C
 C     Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       INTEGER NREAL,NINTE,NLOGI,IRECLEN
 C
 #if defined (SYS_VAX)

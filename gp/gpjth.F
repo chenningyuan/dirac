@@ -42,8 +42,8 @@ C
 C     Written by J. Thyssen, Dec 1, 1997
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0, D2 = 2.00D00)
       DIMENSION AMAT(LRA,LCA,NZ)
 C

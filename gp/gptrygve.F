@@ -34,7 +34,7 @@ C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
 C
       LENGTH = LEN(HEAD)
       IF (IN .GE. 0) THEN
@@ -49,9 +49,9 @@ C
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER TEXT*6
-#include <priunit.h>
+#include "priunit.h"
 C
       IF (TEXT .EQ. 'START ') THEN
          TIMSTR = SECOND()
@@ -72,8 +72,8 @@ C
       END
 C  /* Deck timdat */
       SUBROUTINE TIMDAT
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
       INTEGER CDATE, CTIME
       CDATE = DATE()
@@ -137,10 +137,10 @@ C     AIX XL FORTRAN version 2.3+
       END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER TEXT*6
       PARAMETER (HUN = 100.0D00)
-#include <priunit.h>
+#include "priunit.h"
       SAVE TREST
       DATA TREST /0.0D0/
       IF (TEXT .EQ. 'REST  ') THEN
@@ -164,7 +164,7 @@ C 980826-hjaaj: initialize TREST for next abacus call
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
       CHARACTER HEAD*(*), A
-#include <priunit.h>
+#include "priunit.h"
 C
       LENGTH = LEN(HEAD)
       IF (IN .EQ. 200) THEN
@@ -205,7 +205,7 @@ C
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
       CHARACTER HEAD*(*)
-#include <priunit.h>
+#include "priunit.h"
       LNG = LEN(HEAD) + 2
       IND = (72 - LNG)/2 + 1
       WRITE (LUPRI, '(//,80A)') (' ',I=1,IND), '+', ('-',I=1,LNG), '+'
@@ -219,8 +219,8 @@ C     WRITE (LUPRI, '(80A)')    (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       END
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
@@ -241,14 +241,14 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
-#include <implicit.h>
+#include "implicit.h"
 #if defined (VAR_MPI)
-#include <infmpi.h>
+#include "infmpi.h"
       INCLUDE 'mpif.h'
 #endif
-#include <priunit.h>
+#include "priunit.h"
 #if defined (PRG_DIRAC)
-#include <dcbgen.h>
+#include "dcbgen.h"
 #endif
       CHARACTER TEXT*(*), STRING*70
 C
@@ -310,7 +310,7 @@ C
 C
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
-#include <priunit.h>
+#include "priunit.h"
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
 C
 C     CRAY has 8 byte integers.
@@ -460,15 +460,15 @@ C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 C For direct access read
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <2gbdef.h>
-#include <dummy.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "2gbdef.h"
+#include "dummy.h"
       LOGICAL OLDDX
       CHARACTER*16 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
 #if defined (VAR_SPLITFILES)
@@ -542,15 +542,15 @@ C  /* Deck writdx */
 C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
-#include <implicit.h>
-#include <dummy.h>
-#include <2gbdef.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "2gbdef.h"
+#include "priunit.h"
       LOGICAL OLDDX
       CHARACTER*16 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include <inftap.h>
-#include <chrnos.h>
+#include "inftap.h"
+#include "chrnos.h"
 C
 #if defined (VAR_SPLITFILES)
       INQUIRE(UNIT=LU,RECL=LRECL)
@@ -627,9 +627,9 @@ C                 31-Jul-1996 hjaaj (new NIBUF parameter)
 C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
-#include <implicit.h>
+#include "implicit.h"
       DIMENSION IINDPK(*), IINDX4(4,*)
-#include <ibtdef.h>
+#include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
 C
@@ -709,9 +709,9 @@ C  NBDX     number of physical records per logical record
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
-#include <implicit.h>
-#include <priunit.h>
-#include <chrnos.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "chrnos.h"
       CHARACTER*80 FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       INTEGER FILELN, STATLN, ACCELN, FORMLN
@@ -924,14 +924,14 @@ C  STATUS   Indicate whether the file should be removed or kept
 C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
       CHARACTER*(*) DISP
       CHARACTER*16 FNNAME, FNNM2
       CHARACTER*3 IODIR
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
-#include <chrnos.h>
+#include "chrnos.h"
 C
 C     We first deal with the unit number
 C
@@ -1054,8 +1054,8 @@ C  /* Deck gpioin */
 C
 C 1-Mar-2000 K.Ruud
 C
-#include <priunit.h>
-#include <inftap.h>
+#include "priunit.h"
+#include "inftap.h"
 C
       LUCMD  = 0
       LUPRI  = 0
@@ -1146,7 +1146,7 @@ C     Interface for assigning a unit number to a unit before opening it in
 C     DANAME. Needed to ensure compatibility with use of GPOPEN/GPCLOSE
 C     K.Ruud, March 28 1999
 C
-#include <implicit.h>
+#include "implicit.h"
       CHARACTER NAME*(*)
       COMMON /UNITAR/ IUNTAB(1:99)
 C      
