@@ -8612,7 +8612,7 @@ Cjan      end do
 *   November 12, 2001, Timo Fleig
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
-     &                     SIGN_OPREO,ISF,NASHT,IPRNT)
+     &                     SIGN_OPREO,ISF,NASHT,NIRREP,IPRNT)
 *
 *  Input:  DENS
 *  Output: F1,F2
@@ -8628,6 +8628,7 @@ Cjan      end do
 #include "mxpdim.inc"
 #include "wrkspc.inc"
 #include "glbbas.inc"
+#include "cgas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
@@ -8636,7 +8637,8 @@ Cjan      end do
       dimension DENS(NINT_CC),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
       dimension INDEX(4,NINT_CC),ICSAVE(4),INDEX_L(4),IND_R(4)
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
-     &          IOP_REO(4,NSPOBEX_TP)
+     &          IOP_REO(4,NSPOBEX_TP),IOFFKF(MXPIRR,MXPNGAS,2),
+     &          IREOKF(MXPORB)
 *
       NTESTL = 000
       NTEST = max(IPRNT,NTESTL)
@@ -8660,6 +8662,45 @@ Cjan      end do
         write(6,*) '=========================================='
       end if
 *
+*  Fermion symmetry/Kramers reordering (for output density indexing)
+*  KRMC wants - IFSYM loop
+*              - unbarred/barred loop
+*               - GAS loop
+* Determine offset array
+      IADDKF = 1
+      do IFSM = 1,NIRREP/2
+        do IUBT = 1,2
+          do KGAS = 1,NGAS
+            IOFFKF(IFSM,KGAS,IUBT) = IADDKF
+            IADDKF = IADDKF + NGSSH(IFSM,KGAS)
+          end do
+        end do
+      end do
+      if (NTEST.ge.5) then
+        do IUBT = 1,2
+          if (IUBT.eq.1) write(6,*) ' IOFFKF for unbarred.'
+          if (IUBT.eq.2) write(6,*) ' IOFFKF for   barred.'
+          call iwrtma(IOFFKF(1,1,IUBT),NIRREP/2,NGAS,MXPIRR,MXPNGAS)
+        end do
+      end if
+*
+* Determine reordering array
+      II = 1
+      do IUBT = 1,2
+        do IFSM = 1,NIRREP/2
+          do KGAS = 1,NGAS
+            do IRN = 1,NGSSH(IFSM,KGAS)
+              IREOKF(II) = IOFFKF(IFSM,KGAS,IUBT) + IRN - 1
+              II = II + 1
+            end do
+          end do
+        end do
+      end do
+      if (NTEST.ge.5) then
+        call iwrtma(IREOKF,1,II-1,1,MXPORB)
+      end if
+*
+* Process densities
       do IRI = 1,IRILP,1
         IRUN = 1
         IRIOFF = 0
@@ -8704,10 +8745,10 @@ Cjan      end do
             end do
 *
             if (NCT.eq.2) then
-              I = INDEX_L(ICSAVE(1))  
-     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHT
-              J = INDEX_L(ICSAVE(2))  
-     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHT
+              I = IREOKF(INDEX_L(ICSAVE(1))  
+     &            - (LABEL(IHINDX(1,IXTP),IXTP) - 1)/2 * NASHT)
+              J = IREOKF(INDEX_L(ICSAVE(2))  
+     &            - (LABEL(IHINDX(2,IXTP),IXTP) - 1)/2 * NASHT)
 *
               IOUT =  (IRI-1)*NASHT2*NASHT2 +
      &                 (J-1) *NASHT2 +
@@ -8731,7 +8772,7 @@ Cjan      end do
 *  generated correctly within DIST_INTS_SIGDEN for all excitation 
 *  types. An overall sign for all 2-particle densities is accounted
 *  for in GET_HX_RELA (here called SIGN_OPREO):
-                IND_R(1) = INDEX_L(1) - (LABEL(1,IXTP) - 1)/2 * NASHT
+                IND_R(1) = IREOKF(INDEX_L(1)-(LABEL(1,IXTP)-1)/2*NASHT)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator I '
@@ -8739,7 +8780,7 @@ Cjan      end do
                   write(6,*) ' LABEL(1,IXTP) ',LABEL(1,IXTP)
                 end if
 *
-                IND_R(2) = INDEX_L(2) - (LABEL(2,IXTP) - 1)/2 * NASHT
+                IND_R(2) = IREOKF(INDEX_L(2)-(LABEL(2,IXTP)-1)/2*NASHT)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator L '
@@ -8747,7 +8788,7 @@ Cjan      end do
                   write(6,*) ' LABEL(2,IXTP) ',LABEL(2,IXTP)
                 end if
 *
-                IND_R(3) = INDEX_L(3) - (LABEL(3,IXTP) - 1)/2 * NASHT
+                IND_R(3) = IREOKF(INDEX_L(3)-(LABEL(3,IXTP)-1)/2*NASHT)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator K '
@@ -8755,7 +8796,7 @@ Cjan      end do
                   write(6,*) ' LABEL(3,IXTP) ',LABEL(3,IXTP)
                 end if
 *
-                IND_R(4) = INDEX_L(4) - (LABEL(4,IXTP) - 1)/2 * NASHT
+                IND_R(4) = IREOKF(INDEX_L(4)-(LABEL(4,IXTP)-1)/2*NASHT)
                 if (NTEST.ge.50) then
                   write(6,*)
                   write(6,*) ' operator J '

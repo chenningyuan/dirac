@@ -400,7 +400,7 @@ c           call copvcdc(LUC,LUSC62,WORK(KVEC2),1,LBLK)
             call trnsfdens(F1,F2,WORK(KT_CC),
      &                    WORK(KINDEX),WORK(KLABEXTP),WORK(KLIHIND),
      &                    WORK(KSIGNNHX),WORK(KLOP_REO),WORK(KSIOPREO),
-     &                    IRC_D,NTOOB2,IPRDEN)
+     &                    IRC_D,NTOOB2,NIRREP,IPRDEN)
             close(LUINSV)
 *
           else
@@ -3803,8 +3803,15 @@ c     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
      &  '     This is dangerous. You better think about it! '
       END IF
       IF(IRELACI.EQ.1) THEN
-        IF(ISO1.EQ.1.AND.ISO2.EQ.1) WRITE(LUOUT,'(1H ,A)')
+        IF(ISO1.EQ.1.AND.ISO2.EQ.1) then
+          if (ENVIRO(1:6).eq.'DIRAC ') then
+            WRITE(LUOUT,'(1H ,A)')
+     &  '         Dirac-Coulomb operator '
+          else
+            WRITE(LUOUT,'(1H ,A)')
      &  '         One- and two- electron spin-orbit operator '
+          end if
+        end if
         IF(ISO1.EQ.1.AND.ISO2.EQ.0) then
           if (ENVIRO(1:6).ne.'DIRAC ') then
             WRITE(LUOUT,'(1H ,A)')

@@ -3091,8 +3091,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
      &  '           ========== ',('====',I = 1,NSMOB)
         DO IGAS = 1, NGAS
           WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
-     &    '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB),
-     &    NGSOBT(IGAS)
+     &    '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB)
         END DO
 *
         WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB
@@ -3161,8 +3160,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
      &   '           ========== ',('====',I = 1,NSMOB)
          DO IGAS = 1, NGAS
            WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
-     &     '   GAS',IGAS,'      ',(NGSOB2(I,IGAS),I=1,NSMOB),
-     &     NGSOBT2(IGAS)
+     &     '   GAS',IGAS,'      ',(NGSOB2(I,IGAS),I=1,NSMOB)
          END DO
          WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB2
          WRITE(LUOUT,*) ' Total number of occupied orbitals ', NOCOB2

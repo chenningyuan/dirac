@@ -359,8 +359,15 @@ C
      &  '     This is dangerous. You better think about it! '
       END IF
       IF(IRELACI.EQ.1) THEN
-        IF(ISO1.EQ.1.AND.ISO2.EQ.1) WRITE(LUPRI,'(A)')
+        IF(ISO1.EQ.1.AND.ISO2.EQ.1) then
+          if (ENVIRO(1:6).ne.'DIRAC ') then
+            WRITE(LUPRI,'(A)')
      &  '         One- and two- electron spin-orbit operator '
+          else
+            WRITE(LUPRI,'(A)')
+     &  '         Dirac-Coulomb Hamiltonian        '
+          end if
+        end if
         IF(ISO1.EQ.1.AND.ISO2.EQ.0) then
           if (ENVIRO(1:6).ne.'DIRAC ') then
             WRITE(LUPRI,'(A)')

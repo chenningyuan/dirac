@@ -247,7 +247,7 @@ C
          CALL HEADER('Output from MFC2QFC',-1)
          CALL HEADER('Input matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
-     $        IPQTOQ(1,0),LUPRI)
+     &        IPQTOQ(1,0),LUPRI)
       END IF
 C
 C             -----------
@@ -269,33 +269,33 @@ C
          IOFF3 = IOFF3 + NASH(IFSYM)
          DO J = 1, NASH(IFSYM)
             CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,1), 1,
-     $           DQFC (1+IOFF1,J+IOFF1,1),1 )
+     &           DQFC (1+IOFF1,J+IOFF1,1),1 )
             IF (KSYMM) CALL DAXPY(NASH(IFSYM),D1,
-     $           DMFC(1+IOFF3,J+IOFF3,1),1,
-     $           DQFC(1+IOFF1,J+IOFF1,1),1)
+     &           DMFC(1+IOFF3,J+IOFF3,1),1,
+     &           DQFC(1+IOFF1,J+IOFF1,1),1)
          ENDDO
          IF (NZ.GE.2) THEN
             DO J = 1, NASH(IFSYM)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF2,2), 1,
-     $              DQFC (1+IOFF1,J+IOFF1,2),1 )
+     &              DQFC (1+IOFF1,J+IOFF1,2),1 )
                IF (KSYMM) CALL DAXPY(NASH(IFSYM),DM1,
-     $              DMFC(1+IOFF3,J+IOFF3,2),1,
-     $              DQFC(1+IOFF1,J+IOFF1,2),1)
+     &              DMFC(1+IOFF3,J+IOFF3,2),1,
+     &              DQFC(1+IOFF1,J+IOFF1,2),1)
             ENDDO
          END IF
          IF (NZ.GE.4) THEN
             DO J = 1, NASH(IFSYM)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,1), 1,
-     $              DQFC (1+IOFF1,J+IOFF1,3), 1)
+     &              DQFC (1+IOFF1,J+IOFF1,3), 1)
                CALL DCOPY(NASH(IFSYM), DMFC(1+IOFF2,J+IOFF3,2), 1,
-     $              DQFC (1+IOFF1,J+IOFF1,4), 1)
+     &              DQFC (1+IOFF1,J+IOFF1,4), 1)
                IF (KSYMM) THEN
                   CALL DAXPY(NASH(IFSYM),DM1,
-     $                 DMFC(1+IOFF3,J+IOFF2,1),1,
-     $                 DQFC(1+IOFF1,J+IOFF1,3),1)
+     &                 DMFC(1+IOFF3,J+IOFF2,1),1,
+     &                 DQFC(1+IOFF1,J+IOFF1,3),1)
                   CALL DAXPY(NASH(IFSYM),D1,
-     $                 DMFC(1+IOFF3,J+IOFF2,2),1,
-     $                 DQFC(1+IOFF1,J+IOFF1,4),1)
+     &                 DMFC(1+IOFF3,J+IOFF2,2),1,
+     &                 DQFC(1+IOFF1,J+IOFF1,4),1)
                END IF
             ENDDO
          ENDIF
