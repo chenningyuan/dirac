@@ -2124,6 +2124,7 @@ C
 C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
       PARAMETER (DFAC = XTANG**3)
       CHARACTER CNVTEXT(3)*16
+      INTEGER A,B
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
