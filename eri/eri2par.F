@@ -64,19 +64,14 @@ C GNRINF : BASDIR, LENBAS
 C
 #include "infpar.h"
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifndef PRG_DIRAC
       DATA TOTWAL /0./
       SAVE TOTWAL
-#else /* PRG_DIRAC */
 #endif
 Cdirac      DATA TOTWAL /0./
 Cdirac      SAVE TOTWAL
-#endif /* PRG_DIRAC */
 C
       IPRINT = MAX(IPRINT,IPRPAR)
 C
@@ -251,14 +246,10 @@ C INFORB : N2BASX
 C INFPAR : NODEID(), NODTOT, NCODE, NTASK
 C
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 #include "siripc.h"
 #include "inforb.h"
 #include "infpar.h"
@@ -384,14 +375,10 @@ C INFPAR : *
 C CBIERI : *
 C
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 #include "siripc.h"
 #include "molinp.h"
 #include "inforb.h"
@@ -537,14 +524,10 @@ C SIRIPC : NEWGEO
 C INFPAR : NODTOT, NTASK, TIMING, MAXCL2
 C
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 #include "siripc.h"
 #include "infpar.h"
 C
@@ -821,13 +804,9 @@ C
 C        ELSE IF (IPRTYP.EQ.3) THEN
 C           CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.4) THEN
-#ifndef PRG_DIRAC
             CALL DFT_KSMSLAVE(WORK,MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.5) THEN
             CALL DFT_CSLAVE(WORK,MWORK,IPRINT)
-#else /* PRG_DIRAC */
-            CALL DFT_NODSTR(WORK,MWORK,IPRINT)
-#endif /* PRG_DIRAC */
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODSTR) ERROR on slave',MYTID,
@@ -951,13 +930,9 @@ C INFORB : N2BASX
 C
 #include "infpar.h"
 #include "inforb.h"
-#ifdef PRG_DIRAC
 #if defined (VAR_VECTOR)
-#endif /* PRG_DIRAC */
 #include "veclen.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 C
 #include "memint.h"
 C
@@ -1046,14 +1021,10 @@ C INFPAR : *
 C CBIERI : *
 C
 #ifdef PRG_DIRAC
-#ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
-#endif /* PRG_DIRAC */
 #include "gnrinf.h"
-#ifdef PRG_DIRAC
 #endif
-#endif /* PRG_DIRAC */
 #include "siripc.h"
 #include "molinp.h"
 #include "infpar.h"
