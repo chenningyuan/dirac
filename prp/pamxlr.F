@@ -1726,8 +1726,7 @@ C...secondary positron orbitals
       ELSE
         CALL QUIT('ANAXR1: Unknown IC !')
       ENDIF
-      NDIM = MAX(NI,NV)
-      CALL MEMGET('INTE',KINDX,NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDX,NBDIM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
@@ -1759,7 +1758,7 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
-     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(*),JXOP(2,NBDIM),
+     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM),
      &          IORBCL(4,*),IIBF(NI),IVBF(NV),RIBF(NI),RVBF(NV)
 C     Local variables
       CHARACTER TYP(3)*1
@@ -1899,9 +1898,10 @@ C       Give major orbital rotations in excitations
         CALL INDEXX (NBDIM,BUF2,INDX)
         WRITE(LUPRI,'(3X,A,E10.2/)')
      &   'Excitation amplitudes larger than threshold ',THR
+        THR = THR*THR
         DO J = NBDIM,1,-1
           JJ = INDX(J)
-          IF(BUF2(JJ).LT.THR) GOTO 5
+          IF(ABS(BUF2(JJ)).LT.THR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
           WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
