@@ -37,11 +37,10 @@ C
 C$Id$
 C
 C#include "single.h"
-#ifdef UNDEF
-/* Comdeck log */
-950915-vebjornb: New module taking care of optimizations.
-                 It uses both the old cbiwlk.h and the new optinf.h
-#endif
+! OLD_LOG
+!950915-vebjornb: New module taking care of optimizations.
+!                 It uses both the old cbiwlk.h and the new optinf.h
+!
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
 #include "implicit.h"
@@ -977,7 +976,6 @@ C
          END IF
       END IF
 C
-      IPRGRD = IPRINT
       IF (IPRINT .NE. IPDEF) THEN
          WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
       END IF
