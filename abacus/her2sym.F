@@ -77,9 +77,8 @@ C
      &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
      &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
 #endif
-            DO 110 J = 1,NOABCD
-               SO(J,I) = FAC*AO(J,IAO)
-  110       CONTINUE
+            CALL DCOPY(NOABCD,AO(1,IAO),1,SO(1,I),1)
+            CALL DSCAL(NOABCD,FAC,SO(1,I),1)
   100    CONTINUE
       ELSE
          DO 200 I = 1, NINTX
@@ -95,9 +94,7 @@ C
      &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
      &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
 #endif
-            DO 210 J = 1,NOABCD
-               SO(J,I) = SO(J,I) + FAC*AO(J,IAO)
-  210       CONTINUE
+            CALL DAXPY(NOABCD,FAC,AO(1,IAO),1,SO(1,I),1) 
   200    CONTINUE
       END IF
       IF (IPRINT .GT. 20) THEN
