@@ -97,13 +97,13 @@ C
 C
       END
 C  /* Deck indexx */
+      SUBROUTINE INDEXX(N,ARR,INDX)
 C***********************************************************************
 C
 C     This subroutine goes through array ARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
 C***********************************************************************
-      SUBROUTINE INDEXX(N,ARR,INDX)
       INTEGER N,INDX(N),M,NSTACK
       REAL*8 ARR(N)
       PARAMETER (M=7,NSTACK=50)
