@@ -140,11 +140,13 @@ C           The newer MOLFDIR file format = identical to older DIRAC
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
          ENDIF
+#if defined (VAR_MPI)
          IF (NMPROC .GT. 1) THEN
             CALL MPI_BCAST(NKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
             CALL MPI_BCAST(KR,2*NSP+1,MPI_INTEGER,
      &                     MASTER,MPI_COMM_WORLD,IERR)
          END IF
+#endif
       ELSE
          WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
          CALL QUIT('Adapt RDINTS')
