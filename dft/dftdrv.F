@@ -10,31 +10,58 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 C 
-      PARAMETER (DP5 = 0.5D0)
-      LOGICAL DOERG, DOGRD, DOLND, DOATR
-      DIMENSION DMAT(*),DTRMAT(*),EXCMAT(*),WORK(LWORK)
+      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
 C
-#if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
-#endif
+#include "dcbbas.h"
+#include "dcborb.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
 #endif
-#include "inforb.h"
 #include "nuclei.h"
 #include "dftcom.h"
+#include "dfterg.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      DIMENSION DMAT(N2BBASX,NZ,NFMAT),
+     &          DTRMAT(*),EXCMAT(*),WORK(LWORK)
+C
 #include "memint.h"
 C
-CTROND      LUQUAD = 29
       LUQUAD = 44
+C     Initial expectation value of two-electron matrix
+      IF (DOERG) THEN
+         ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1)
+      END IF 
+C
+      IF(NASHT.GT.0) THEN
+C     In the open shell case:
+C        1) Put real DMAT in a buffer
+C        2) Replace with average density for DFT
+C     This is a preliminary treatment of open shells; 
+C     more refinement must be considered
+        CALL MEMGET('REAL',KDBF,N2BBASX,WORK,KFREE,LFREE)
+        CALL DCOPY(N2BBASX,DMAT,1,WORK(KDBF),1)
+        DO ISHELL = 1, NOPEN
+          CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
+        ENDDO
+      ENDIF
+C
+C     Scale density matrices
+C
+      CALL DSCAL(N2BBASX,D2,DMAT,1)
+      IF (DOATR) THEN
+        CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
+      END IF
 C
 C     Calculate grid
 C
       IF (.NOT.GRDONE) THEN
-         CALL DFTGRD(DMAT,WORK,LWORK,1,.FALSE.)
+         CALL DFTGRD(DMAT,WORK(KFREE),LFREE,1,.FALSE.)
          GRDONE = .TRUE.
       END IF
 #if defined (VAR_MPI)
@@ -48,29 +75,48 @@ C
 C
 C     Integrate
 C
-      CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGB1,3*NBAST,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCNT,NBAST,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAO,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGA1,3*NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGA2,6*NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGB1,3*NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCNT,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDST,NATOMS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF,NBAST*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF,NTBAS(0)*4,WORK,KFREE,LFREE)
       CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
      &            IREPOP,DOERG,DOGRD,DOLND,DOATR,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
-      CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DFTDRV',WORK,KGAO,KGAO,KFREE,LFREE)
 #if defined (VAR_MPI)
       ENDIF
 #endif
+C
+C     Rescale density matrices
+C
+      IF(NASHT.GT.0) THEN
+        CALL DCOPY(N2BBASX,WORK(KDBF),1,DMAT,1)
+        CALL MEMREL('DFTDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+        CALL DSCAL(N2BBASX,DP5,DMAT,1)
+      ENDIF
+      IF (DOATR) THEN
+        CALL DSCAL(N2BBASXQ*NXCMAT,DP5,DTRMAT,1)
+      END IF
+C
+C     Calculate final expectation value of two-electron matrix;
+C     the Kohn-Sham contribution can then be subtracted 
+      IF (DOERG) THEN
+        ERRKS = DDOT(N2BBASX,DMAT,1,EXCMAT,1) - ERRKS
+      END IF 
+C
       RETURN
       END
 C /* Deck dftdrv */
       SUBROUTINE DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
      &                  IREPOP,DOERG,DOGRD,DOLND,DOATR,
-     &                  GAO,GAO1,GAO2,GAB1,
-     &                  NCNT,DST,BUF,WORK,LWORK,LUQUAD,IPRINT)
+     &                  GAO,GAO1,GAO2,GAB1,NCNT,DST,BUF,
+     &                  WORK,LWORK,LUQUAD,IPRINT)
 C
 C     T. Helgaker sep 99
 C
@@ -116,10 +162,6 @@ C
          CALL OUTPUT(DMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 C
-      IF (DOERG) THEN
-         NDER = 0
-         EXCTRO = DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
-      END IF 
       IF (DOGRD) THEN
          NDER = 1
          CALL DZERO(GRADFT,MXCOOR)
@@ -216,8 +258,6 @@ C
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,WORK(KFREE),LFREE,IPRINT)
 #endif
       IF (DOERG) THEN
-        DENERGY = EDFTY
-        EDFTY = EDFTY +EXCTRO-DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
         DO I = 1, NBAST
           DO J = 1, I - 1 
             AVERAG = DP5*(EXCMAT(I,J,1,1) + EXCMAT(J,I,1,1))
@@ -256,7 +296,7 @@ C
 CPAWSA            CALL DFT_ENE_REPORT()
             WRITE (LUPRI,'(2X,A,13X,F24.16)') 
      &          ' DFT exchange-correlation energy:', 
-     &          DENERGY
+     &          EDFTY
          END IF
       END IF
       IF (IPRINT .GE. 100) THEN

@@ -329,25 +329,18 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-           CALL DCOPY(N2BBASX,DMAT,1,CMO,1)
-           IOFF = 1
-           DO ISHELL = 1, NOPEN
-             IOFF = IOFF + N2BBASXQ
-             CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
-           ENDDO
-           CALL DSCAL(N2BBASX,D2,CMO,1)
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
 C            Get hold of slaves
              CALL DIRAC_PARCTL( 1 )
              IRNTYP = 7
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
      &          IDUM,IDUM, IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-             CALL DFTEXC(CMO,DUM,FOCK,1,0,.TRUE.,.FALSE.,
+             CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF
@@ -950,26 +943,19 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-           CALL DCOPY(N2BBASX,DMAT,1,CMO,1)
-           IOFF = 1
-           DO ISHELL = 1, NOPEN
-             IOFF = IOFF + N2BBASXQ
-             CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(IOFF),1,CMO,1)
-           ENDDO
-           CALL DSCAL(N2BBASX,D2,CMO,1)
 #if defined (VAR_MPI)
            IF(PARCAL) THEN
              IRNTYP = 7
 C            Get hold of slaves
              CALL DIRAC_PARCTL( 1 )
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
+             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
      &          IDUM,IDUM,
      &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
 #endif
-           CALL DFTEXC(CMO,DUM,FOCK,1,0,.TRUE.,.FALSE.,
+             CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
 #if defined (VAR_MPI)
            ENDIF
@@ -1209,6 +1195,7 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
+C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
      &         DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,F1(1,IZ),1)
@@ -1216,6 +1203,7 @@ C
      &         DFRAC2*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,
      &                               F2(1,IZ,ISHELL+1),1)
          END DO
+C...     Inter-shell contribution
          DO JSHELL = 0,ISHELL-1
 C
 C           The factor is 0.5 * (2*f_{o1})*(2*f_{o2})
@@ -1225,13 +1213,18 @@ C
             DFRAC1 = DF(ISHELL)*DF(JSHELL)
             DO IZ = 1,NZ
                ETEMP =
-     &            DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,
-     &                                  F2(1,IZ,JSHELL+1),1)
+     &            DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
+     &                                  F2(1,IZ,ISHELL+1),1)
                E(IZ,2,ISHELL) = E(IZ,2,ISHELL) + ETEMP
                E(IZ,2,JSHELL) = E(IZ,2,JSHELL) + ETEMP
             END DO
          END DO
       END DO
+C...  If DFT correct for contribution from Kohn-Sham potential
+C...  to two-electron energy
+      IF(DODFT) THEN
+        E(1,2,0) = E(1,2,0) - ERRKS
+      ENDIF
       DO IZ = 1,NZ
         DO IOPEN = 0,NOPEN
            E1PART = E1PART + E(IZ,1,IOPEN)

@@ -34,8 +34,6 @@ C       Insert half-phases
             ENDDO
           ENDDO
         ENDIF
-        CALL DSCAL(N2BBASX,D2,DMAT,1)
-        CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
 #if defined (VAR_MPI)
         IF(PARCAL) THEN
 CTROND: This must be fixed !
