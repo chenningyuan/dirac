@@ -9,6 +9,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #if defined (VAR_MPI)
 #include <mpi.h>
 #endif
@@ -20,6 +21,8 @@
 #include "mpi_errtrap.head"
 
 {
+   int len;
+
 #if defined (VAR_MPI)
 
 #if defined (SYS_AIX)
@@ -33,7 +36,9 @@
    fprintf(stdout,"????                 %d\n",*oeh1);
    fprintf(stdout,"????                 %d\n",*oeh2);
    fprintf(stdout,"******************************************\n");
-   while(1);
+
+   len = strlen(errmesg);
+   quit(errmesg,&len);
    
 #else /* SYS_AIX */
 
@@ -48,7 +53,14 @@
    fprintf(stdout,"Comm                 %d\n",*comm);
    fprintf(stdout,"The PID is %d\n",getpid());
    fprintf(stdout,"******************************************\n");
-   while(1);
+
+   len = 0;
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
+   QUIT(NULL,&len);
+#else /* SYS_CRAY etc. */
+   quit_(NULL,&len);
+#endif /* SYS_CRAY etc. */
+
 
 #endif /* SYS_AIX */
 
