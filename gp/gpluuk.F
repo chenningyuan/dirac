@@ -110,22 +110,7 @@ C  /* Deck indexx */
       JSTACK=0
       L=1
       IR=N
- 1    IF(IR-L.LT.M)THEN
-         DO J=L+1,IR
-            INDXT=INDX(J)
-            A=ARR(INDXT)
-            DO I=J-1,1,-1
-               IF(ARR(INDX(I)).LE.A)GOTO 2
-               INDX(I+1)=INDX(I)
-            END DO
-            I=0
- 2          INDX(I+1)=INDXT
-         END DO
-         IF(JSTACK.EQ.0)RETURN
-         IR=ISTACK(JSTACK)
-         L=ISTACK(JSTACK-1)
-         JSTACK=JSTACK-2
-      ELSE
+ 1    IF(IR-L.GE.M)THEN
          K=(L+IR)/2
          ITEMP=INDX(K)
          INDX(K)=INDX(L+1)
@@ -174,6 +159,21 @@ C  /* Deck indexx */
             ISTACK(JSTACK-1)=L
             L=I
          ENDIF
+      ELSE
+         DO J=L+1,IR
+            INDXT=INDX(J)
+            A=ARR(INDXT)
+            DO I=J-1,1,-1
+               IF(ARR(INDX(I)).LE.A)GOTO 2
+               INDX(I+1)=INDX(I)
+            END DO
+            I=0
+ 2          INDX(I+1)=INDXT
+         END DO
+         IF(JSTACK.EQ.0)RETURN
+         IR=ISTACK(JSTACK)
+         L=ISTACK(JSTACK-1)
+         JSTACK=JSTACK-2
       ENDIF
       GOTO 1
       END
