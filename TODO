@@ -2,10 +2,11 @@
  
   VERSION : $Revision$
   DATE    : $Date$
-  FILE    : TODOD
-  SOURCE  : $Source$
+  FILE    : TODO
  
  */
+
+- dirac/dirtra.F: save namn(1:4) in PLABEL for output of symmetry orbitals (now only namn(1:3) saved) /may2002 hjaaj
  
 - abacus/her2ave.F: INTEX1:
   "Total Fock matrix" DVAD, DV... etc. are not defined
@@ -66,8 +67,6 @@
   du fikse det ?
 
 - powerpc = ibm (in configure)
-
-- integrate codata.h & units.h (done in dalton, get it from dalton)
 
 - pamexp.F: PRPEXP. Instead of calculating individual density matrices
   calculate the total. DT = DC + sum_O f_O DV_O
