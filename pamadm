@@ -412,7 +412,7 @@ EOF
 #
 make_makefile()
 {
-   echo "*** Making makefile"
+   echo "*** Making Makefile"
    echo
    AUXOBJ="$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $SPFOBJ $CIOBJ $GEOOBJ"
    AUXMAK="$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $SPFMAK $CIMAK $GEOMAK"
