@@ -892,7 +892,11 @@ case $machine in
        c_opt='+O3 -Ae'
        opt='+O3 +U77 +E4 +E5'
        inc="-I$INCLUDE_DIR"
-       LIB="-lV7 $LIB";;
+       LIB="-lV7 $LIB"
+       if [ ! -z "echo $LIB | grep 'veclib'" ]; then
+          cpp="$cpp -DVAR_LIBVECLIB"
+       fi
+       ;;
 #
 #   PARAGON
 #
