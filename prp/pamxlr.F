@@ -1292,6 +1292,7 @@ C
 C     ..not yet written.....tsaue
       ENDIF
 C
+      CALL MEMREL('GETLRF.end',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETLRF')
       RETURN
 C
