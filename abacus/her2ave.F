@@ -1771,6 +1771,45 @@ CMI DALTON  Re  FT(D,B,N) = FT(D,B,N) - ABDC*DAC
 
                            END DO
                         END DO
+CMI  ... control print-out
+                        IF (IPRINT .GT. 30) THEN
+                          WRITE(LUPRI,'(//A,4I5)')
+     &                             ' IORBA...IORBD ',
+     &                           IORBA,IORBB,IORBC,IORBD
+                          WRITE(LUPRI,'(A,4I5,A,I5)')
+     &                     'indexes A,B,C,D',A,B,C,D,
+     &                     ' INT=',INT   
+                          WRITE(LUPRI,'(A)')
+     &                     'actual integrals and Fock matrix elements:'
+                          DO IXYZ=1,3
+                              ABCD = PINT(INT,IXYZ)
+                              ABDC = QINT(INT,IXYZ)
+                           WRITE(LUPRI,'(A,2I3,A,2I3,A,I1,A,D12.6,$)')
+     &                      'int (',A,B,'|',C,D,')_',IXYZ,'=',ABCD
+                           WRITE(LUPRI,'(A,2I3,A,2I3,A,I1,A,D12.6)')
+     &                      '  int (',A,B,'|',D,C,')_',IXYZ,'=',ABDC
+                           DO IMAT=1,NDMAT
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     ' FT(',B,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(B,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     '  FT(',D,',',C,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,C,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6)')
+     &                     '  FT(',C,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(C,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     ' FT(',D,',',A,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,A,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6,$)')
+     &                     '  FT(',C,',',B,',',IMAT,',',IXYZ,')=',
+     &                      FT(C,B,IMAT,IXYZ)
+                        WRITE(LUPRI,'(A,I3,A,I3,A,I1,A,I1,A,D12.6)')
+     &                     '  FT(',D,',',B,',',IMAT,',',IXYZ,')=',
+     &                      FT(D,B,IMAT,IXYZ)
+                           ENDDO
+                          ENDDO
+                        END IF
                         INT = INT + 1
  600                 CONTINUE
  500              CONTINUE
