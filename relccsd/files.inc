@@ -22,4 +22,10 @@ C     The standard input and output units may be redefined in the code
       COMMON /FILES/ IN,IW
 C     Length of the records (integer words) on the restart file
       PARAMETER (RSRCLEN=1024)
-      COMMON/RSFILE/ IRECIN,IRECST,IRECEN,IRECT1,NRECT1,IRECT2,NRECT2
+      COMMON/RSFILE/ IRECIN,IRECST,IRECEN,IRECT1,NRECT1,IRECT2,NRECT2,
+     >               LRSFIL,LCCFIL
+      COMMON/PARNAM/ RSBASF,RSFILN,CCBASF,CCFILN
+      CHARACTER*6  RSBASF      ! generic name for RESTART file
+      CHARACTER*11 RSFILN      ! node-unique RESTART file name of length LRSFIL
+      CHARACTER*11 CCBASF      ! generic name for RELCCSD output file
+      CHARACTER*15 CCFILN      ! node-unique RELCCSD output file name

@@ -2477,6 +2477,13 @@ C---------------Description--------------------------------------------
 C
 C     Initialize the dump file and status information.
 C
+C     Now extended in case of a shared file system: the individual
+C     MCCRES files need unique names ! => node number appended to
+C     file name. ==> inclusion of ccpar.inc which contains the
+C     current MPI data for this specific invocation. We allow for
+C     a node number range of 0..999 (three digit node number) which
+C     corresponds to a maximum of 1000 nodes.
+C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
@@ -2493,6 +2500,7 @@ C
       INCLUDE "symm.inc"
       INCLUDE "param.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2501,23 +2509,54 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C     Check the status of the restart file
+C     If MPI is active generate the node-unique file name
+C     otherwise use file name without further extension.
+C     the global quit routine can be found in gp/gptrygve.F
+C
+C     set generic RESTART file name
+
+      RSBASF='MCCRES'
+
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+         WRITE (RSFILN,'(A6,A1,I1)') RSBASF,'.',MYPROC
+         LRSFIL=8
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (RSFILN,'(A6,A1,I2)') RSBASF,'.',MYPROC
+         LRSFIL=9
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (RSFILN,'(A6,A1,I3)') RSBASF,'.',MYPROC
+         LRSFIL=10
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND CCDINI.F RESTART MODULE")
+      ENDIF
+#else
+      RSFILN=RSBASF
+      LRSFIL=6
+#endif
+C
+C     Check the status of the individual restart file
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      INQUIRE (FILE='MCCRES',EXIST=TOBE)
+      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=TOBE)
 c
-c     Restart is not full-proof yet : disabled 
+c     Restart is not fool-proof yet : disabled
 c
+C here: if a MCCRES.XXX file exists at the beginning of the
+C ccsd(t) run it will be deleted in any case.... this goes out later on....
+
       if (tobe) then
-         OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
-     &         RECL=IRECL)
+         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &         STATUS='OLD',RECL=IRECL)
          close (MCCRES,STATUS='DELETE')
          tobe = .false.
       endif
-c
+
+C here: if  the restart file exists we restart...
+
       IF (TOBE) THEN
-         OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
-     &         RECL=IRECL)
+         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &         STATUS='OLD',RECL=IRECL)
 C
 C         Read the input information from the previous run
 C
@@ -2531,9 +2570,13 @@ C         Read the energies (read the whole common block)
 C
           READ (MCCRES,REC=3) BUFF
           CALL DCOPY(7,BUFF,1,ETOT,1)
+
+C ... if it doesn't exist we create it and write amplitudes out there...
+
       ELSE
-         OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='NEW',
-     &         RECL=IRECL)
+
+         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &         STATUS='NEW',RECL=IRECL)
          CALL DCOPY(7,A0,0,ETOT,1)
          DO I = 1, NSTATS
             IMSTAT(I) = 0
@@ -2563,6 +2606,10 @@ C     length of the amplitude vectors is known.
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C
+C since a unique restart file name was created in CCDINI we do not
+C want to regenerate it in CCDUMP ==> we keep this file name in the
+C COMMON BLOCK
+
       CALL CCDUMP
 C
       RETURN
@@ -2599,8 +2646,8 @@ C
 C---------------Executable code--------------------------------------
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
-     &      RECL=IRECL)
+      OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &      STATUS='OLD',RECL=IRECL)
 C
 C     Dump the input information
 C
@@ -2656,7 +2703,7 @@ C
 C---------------Executable code--------------------------------------
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+      OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
 C
 C     Read the status information

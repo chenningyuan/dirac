@@ -239,8 +239,12 @@ C
 C USE THIS FOR ALL UNFORMATTED FILES
 C
       IMPLICIT INTEGER (A-Z)
+#if defined (VAR_MPI)
+      INCLUDE "ccpar.inc"
+#endif
 C
-      CHARACTER*4 DN,FNAM*8
+      CHARACTER*4 DN, FNAM*8, FTFILN*9
+      INTEGER FTFILL,IZLL
 C
       COMMON /POINTR/ POS(100)
       COMMON /SECT/ SECTOR,MAXLN
@@ -248,10 +252,20 @@ C
 C
       IF (ITAPE.GT.99.OR.ITAPE.LT.1) THEN
       WRITE(6,*) ' INVALID TAPE NUMBER GIVEN: ITAPE=' ,ITAPE
-      CALL QUIT('ccgenp.F line 184')
+      CALL QUIT('ccgenp.F line 251')
       ENDIF
       SECTOR = SEC2I(1)
       MAXLN = SECTOR*1024*1024
+C
+C !! ** attention ** !! for cray systems the file name
+C !! definition has yet to be checked. (WOPEN)
+C !! no complications if all processes share same file system ???
+C
+C for the moment we keep the definitions for the parallel MPI run as they
+C were before and change for non CRAY systems only
+C
+
+#if defined (VAR_MPI)
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       IF (BLOCKS.EQ.0) BLOCKS = 20
       IF (BLOCKS.EQ.1) BLOCKS = 2
@@ -259,7 +273,39 @@ C
       CALL WOPEN(ITAPE,BLOCKS,ISTATS,IERR)
       IF(IERR .NE. 0) THEN
           WRITE(6,*) ' PROBLEMS OPENING FILE ',ITAPE,' IERR =',IERR
-          CALL QUIT('ccgenp line 195')
+          CALL QUIT('ccgenp line 262')
+      END IF
+#else
+      FNAM = DN(ITAPE)   ! contains a string out of 'ft01' ... 'ft99'
+      IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+         WRITE (FTFILN,'(A4,A1,I1)') FNAM,'.',MYPROC
+         FTFILL=6
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (FTFILN,'(A4,A1,I2)') FNAM,'.',MYPROC
+         FTFILL=7
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (FTFILN,'(A4,A1,I3)') FNAM,'.',MYPROC
+         FTFILL=8
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND SUBR. RFILE IN CCGENP.F")
+      ENDIF
+
+      IZLL=FTFILL+1
+      FTFILN(IZLL:IZLL)=CHAR(0)  ! char(0) marks the string end in C!
+
+      SIZE = 0
+      STATUS = 1
+      CALL OPENC(ITAPE,FTFILN,SIZE,STATUS)
+#endif
+#else
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+      IF (BLOCKS.EQ.0) BLOCKS = 20
+      IF (BLOCKS.EQ.1) BLOCKS = 2
+      ISTATS = 1
+      CALL WOPEN(ITAPE,BLOCKS,ISTATS,IERR)
+      IF(IERR .NE. 0) THEN
+          WRITE(6,*) ' PROBLEMS OPENING FILE ',ITAPE,' IERR =',IERR
+          CALL QUIT('ccgenp line 308')
       END IF
 #else
       FNAM = DN(ITAPE)
@@ -268,6 +314,8 @@ C
       STATUS = 1
       CALL OPENC(ITAPE,FNAM,SIZE,STATUS)
 #endif
+#endif
+
 C
 C PLACE THE POINTER OF ITAPE AT THE BEGINNING
 C
@@ -878,7 +926,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RCLOSE(ITAPE,JCODE)
 C
       IMPLICIT INTEGER (A-Z)
+
+#if defined (VAR_MPI)
+      INCLUDE "ccpar.inc"
+#endif
+
       CHARACTER*8 FNAM
+      CHARACTER*9 FTFILN
       CHARACTER*4 DN
 C
       COMMON /POINTR/ POS(100)
@@ -905,6 +959,37 @@ C
       CALL CLOSEC(ITAPE)
 #endif
 C
+#if defined (VAR_MPI)
+      IF(JCODE.EQ.4) THEN
+       FNAM = DN(ITAPE)
+       IF (MYPROC .LT. 10) THEN    !  MPI ID has one digit
+        WRITE (FTFILN,'(A4,A1,I1)') FNAM,'.',MYPROC
+        FTFILL=6
+       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+        WRITE (FTFILN,'(A4,A1,I2)') FNAM,'.',MYPROC
+        FTFILL=7
+       ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+        WRITE (FTFILN,'(A4,A1,I3)') FNAM,'.',MYPROC
+        FTFILL=8
+       ELSE
+        CALL QUIT("NMPROC.GT.1000! EXTEND SUBR. RFILE IN CCGENP.F")
+       ENDIF
+       IZLL=FTFILL+1
+       FTFILN(IZLL:IZLL)=CHAR(0)  ! char(0) marks the string end in C!
+
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+        IF (ITAPE.LT.10) WRITE (FNAM,'(A5,I1,A1)') 'fort.',ITAPE,char(0)
+        IF (ITAPE.GT.10) WRITE (FNAM,'(A5,I2,A1)') 'fort.',ITAPE,char(0)
+        CALL PXFUNLINK(FTFILN,0,STAT)
+#else
+        STAT = UNLINK(FTFILN)
+#endif
+        IF(STAT.NE.0) THEN
+          WRITE(6,*) '  PROBLEMS DELETING FILE ',ITAPE,'  STAT = ',STAT
+          WRITE(6,*) ' DN = ',DN(ITAPE)
+        END IF
+      END IF
+#else
       IF(JCODE.EQ.4) THEN
         FNAM = DN(ITAPE)
         FNAM(5:5)=CHAR(0)
@@ -920,6 +1005,7 @@ C
           WRITE(6,*) ' DN = ',DN(ITAPE)
         END IF
       END IF
+#endif
 C
       RETURN
       END
@@ -927,8 +1013,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       BLOCK DATA FLNAMES
       CHARACTER*4 DN
       COMMON/ FLNAME/ DN(100) 
-      DATA DN /'ft1 ','ft2 ','ft3 ','ft4 ','ft5 ','ft6 ','ft7 ','ft8 ',
-     &  'ft9 ',
+      DATA DN /'ft01','ft02','ft03','ft04','ft05','ft06','ft07','ft08',
+     &  'ft09',
      &  'ft10','ft11','ft12','ft13','ft14','ft15','ft16','ft17','ft18',
      &  'ft19','ft20','ft21','ft22','ft23','ft24','ft25','ft26','ft27',
      &  'ft28','ft29','ft30','ft31','ft32','ft33','ft34','ft35','ft36',

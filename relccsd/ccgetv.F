@@ -602,11 +602,12 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
+      DATA BUFF /RSRCLEN*0/       ! compiler bug on SGI ! => array init.
 C
 C---------------Executable code--------------------------------------
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+      OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
 C
       NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
@@ -671,7 +672,7 @@ C
 C---------------Executable code--------------------------------------
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+      OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
 C
       NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1

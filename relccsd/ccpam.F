@@ -153,19 +153,20 @@ C
 C     Find the slaves and release them
 C
       NTEST = -1
-#if defined (VAR_MPI)
       DO I = 1,NUMNOD
+#if defined (VAR_MPI)
          CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
          CALL MPI_WAIT(IREQ,ISTAT,IERR)
          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
+#else
+#endif
       ENDDO
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
       CALL DIRAC_PARCTL( 0 )
-#endif
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -193,14 +194,47 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       DIMENSION CC(MAXCOR)
 C
+C     arrange for the MPI stuff and correct node number
+C     to the total number of running invocations.
+C
       MASTER = MPARID
       MYPROC = MYTID
-C     Add the master node
       NMPROC = NUMNOD + 1
+
       INTFCE = 'DIRAC     '
       CA = NZ.GE.2
+C
+C     create a node-unique filename as output file. Important on
+C     shared file systems. Otherwise all the output gets mingled in one
+C     file
+C
+      CCBASF="RELCCSD.OUT"
+      
+#if defined (VAR_MPI)
+      IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
+         WRITE (CCFILN,'(A11,A1,I1)') CCBASF,'.',MYPROC
+         LCCFIL=13
+      ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
+         WRITE (CCFILN,'(A11,A1,I2)') CCBASF,'.',MYPROC
+         LCCFIL=14
+      ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
+         WRITE (CCFILN,'(A11,A1,I3)') CCBASF,'.',MYPROC
+         LCCFIL=15
+      ELSE
+         CALL QUIT("NMPROC.GT.1000! EXTEND CCNOD.F MODULE")
+      ENDIF
+#else
+      CCFILN=CCBASF
+      LCCFIL=11
+#endif
+C
+C     open the local input file and the node specific output file.
+C     The associated file handle MSLVOUT is transferred to CCMAIN.
+C     Every access to the local stdout handle then automatically writes
+C     to the corresponding output file.
+C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
-      OPEN(MSLVOUT,FILE = 'RELCCSD.OUT')
+      OPEN(MSLVOUT,FILE = CCFILN(1:LCCFIL))
       CALL CCMAIN(CC,MAXCOR,LUCMD,MSLVOUT,CA,INTFCE)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
