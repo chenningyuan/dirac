@@ -142,3 +142,15 @@ scalar or spin-free); check the performance in SCF and correlated calculations (
 - try to interface DKn(n=1,2,inf) with the DFT to run two-component DFT
   (similar to the ADF or PARAGAUSS implementations) 
 
+changed routine (file):
+--------------------------
+DHFINP (dirrdn.F)
+HAMINP (dirrdn.F)
+PSIDHF (dirscf.F)
+ONEFCK (dirone.F)
+GMOTRA (dirone.F)  
+common file: dcbham.h
+
+to add: dirdkh.F 
+
+
