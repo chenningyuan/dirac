@@ -2845,6 +2845,7 @@ C
 C     MINTEG eq 1 : the spherical components are normalized such
 C                   that all coefficients are integers.
       MORDER = 1
+      SPHNRM = .FALSE.
       MINTEG = 1
       IOFF   = 0
       DO LL = 1, LMAX

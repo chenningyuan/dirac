@@ -2797,23 +2797,23 @@ C
 C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
 C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
-C     MINTEG eq 1 : the spherical components are normalized such
-C                   that all coefficients are integers.
+C     MINTEG eq 0 : old Hermit normalization
+C     MINTEG eq 1 : the smallest coefficient is one (abs.val.).
+C     MINTEG eq 2 : the spherical components are normalized to unity
 C
 C     tuh 11.10.90
 C
 #include "implicit.h"
 #include "priunit.h"
-      LOGICAL INTMAT
       DIMENSION TRAMAT(NXYZ,NLM), WORK(LWORK)
 C
-      INTMAT = MINTEG .EQ. 1
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from SPHCOM','*',103)
          WRITE (LUPRI,'(5X,A,I5)') ' LVAL  ', LVAL
          WRITE (LUPRI,'(5X,A,I5)') ' NLM   ', NLM
          WRITE (LUPRI,'(5X,A,I5)') ' NXYZ  ', NXYZ
-         WRITE (LUPRI,'(5X,A,L5)') ' INTMAT', INTMAT
+         WRITE (LUPRI,'(5X,A,I5)') ' MINTEG', MINTEG
+         CALL FLSHFO(LUPRI)
       END IF
 C
       LCS   = 1
@@ -2821,16 +2821,15 @@ C
       KWORK = LPC + LVAL + 1
       IF (KWORK .GT. LWORK) CALL STOPIT('SPHCOM',' ',KWORK,LWORK)
       CALL SPHCO1(LVAL,TRAMAT,NLM,NXYZ,WORK(LCS),WORK(LPC),
-     &            MORDER,INTMAT,IPRINT)
+     &            MORDER,MINTEG,IPRINT)
       RETURN
       END
 C  /* Deck sphco1 */
-      SUBROUTINE SPHCO1(LVAL,TRAMAT,NLM,NXYZ,COSSIN,PL,MORDER,INTMAT,
+      SUBROUTINE SPHCO1(LVAL,TRAMAT,NLM,NXYZ,COSSIN,PL,MORDER,MINTEG,
      &                  IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
-      LOGICAL INTMAT
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
 #include "sdpre.h"
@@ -2863,6 +2862,7 @@ C
          CALL OUTPUT(PL(0),1,1,1,LVAL1,1,LVAL1,1,LUPRI)
          CALL AROUND('Cosine and sine factors')
          CALL OUTPUT(COSSIN(0,0),1,LVAL1,1,LVAL1,LVAL1,LVAL1,1,LUPRI)
+         CALL FLSHFO(LUPRI)
       END IF
 C
 C     Transformation coefficients
@@ -2872,6 +2872,7 @@ C
       DO 300 M = 0, LVAL
          CM = SQRT(D2*FACULT(LVAL-M)/FACULT(LVAL+M))
          IF (M .EQ. 0) CM = D1
+         IF (MINTEG.EQ.2) CM = CM/SQRT(FACUL2(2*LVAL-1))
          DO 400 K = MOD(LVAL - M,2), LVAL - M, 2
             IF (M .GT. 0) PL(K) = SDPRE((K+1))*PL(K+1)
             CMK = CM*PL(K)
@@ -2898,16 +2899,18 @@ C
   400    CONTINUE
   300 CONTINUE
 C
-C     Renormalize to all integer elements if necessary
+C     Renormalize if requested with MINTEG
 C
-      IF (INTMAT) THEN
+      IF (MINTEG.EQ.1) THEN
+         IOFF = LVAL*LVAL
          DO 800 I = 1, 2*LVAL + 1
             TMIN = TRAMAT(IDAMAX(NXYZ,TRAMAT(1,I),1),I)
             DO 810 J = 1, NXYZ
                TJI = ABS(TRAMAT(J,I))
                IF ((TJI.GT.D0).AND.(TJI.LT.TMIN)) TMIN = TJI
   810       CONTINUE
-            CALL DSCAL(NXYZ,D1/TMIN,TRAMAT(1,I),1)
+            TMIN = D1 / TMIN
+            CALL DSCAL(NXYZ,TMIN,TRAMAT(1,I),1)
   800    CONTINUE
       END IF
       IF (IPRINT .GT. 4) THEN
@@ -2916,6 +2919,7 @@ C
          IXYZ = (LVAL+1)*(LVAL+2)/2
          ILM  = 2*LVAL + 1
          CALL OUTPUT(TRAMAT,1,IXYZ,1,ILM,NXYZ,NLM,1,LUPRI)
+         CALL FLSHFO(LUPRI)
       END IF
       RETURN
       END
@@ -2935,6 +2939,47 @@ C  /* Deck facult */
         DO 100 I = 1, N
            FACULT = FACULT*SDPRE(I)
   100   CONTINUE
+      END IF
+      RETURN
+      END
+C  /* Deck facul2 */
+      FUNCTION FACUL2(N)
+C
+C     tuh
+C
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D1=1.D0)
+#include "sdpre.h"
+C
+C     N < 0
+C
+      IF (N .LT. 0) THEN
+         FACUL2 = SDPRE(N + 2)
+         DO I = N + 4, 1, 2
+            FACUL2 = FACUL2*SDPRE(I)
+         END DO
+         IF (FACUL2 .EQ. SDPRE(0)) THEN
+            WRITE (LUPRI,'(/,A,I10,/A)')
+     &            ' Double factorial undefined for ',N,
+     &            ' Program cannot continue.'
+            CALL QUIT('Illegal argument in FACUL2')
+         ELSE
+            FACUL2 = D1/FACUL2
+         END IF
+C
+C     N = 0
+C
+      ELSE IF (N.EQ.0) THEN
+         FACUL2 = D1
+C
+C     N > 0
+C
+      ELSE
+        FACUL2 = SDPRE(N)
+        DO I = N - 2, 1, -2
+           FACUL2 = FACUL2*SDPRE(I)
+        END DO
       END IF
       RETURN
       END

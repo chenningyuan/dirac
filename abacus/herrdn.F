@@ -4624,6 +4624,8 @@ C
          END IF
   100 CONTINUE
 C
+      SPHNRM = .TRUE.
+C
       IF (DOCART) THEN
          CALL CARPOW
          CALL CARLAB(MXQN-1,GTOTYP)
@@ -4645,8 +4647,10 @@ C
                   CSP (6) = D1
                   CSP(10) = D1
                ELSE
-                  CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,1,WORK(KWRK),
-     &                        LWRK,IPREAD)
+                  MINTEG = 1
+                  SPHNRM = .FALSE.
+                  CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,MINTEG,
+     &                        WORK(KWRK),LWRK,IPREAD)
                   CALL MTRSP(NXYZ,NLM,WORK(KCSPT),NXYZ,
      &                       CSP(ISPADR(LVAL+1)),NLM)
                END IF
