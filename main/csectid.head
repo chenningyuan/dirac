@@ -9,7 +9,7 @@
  */
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-void csectid(real tid, char *sectid)
+void csectid(float tid, char *sectid)
 #else
 void csectid(double tid, char *sectid)
 #endif
