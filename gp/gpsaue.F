@@ -2337,6 +2337,7 @@ C
 C
       RETURN
       END
+
       SUBROUTINE QGETHE(AMAT,NDIM,NZ,LRA,LCA)
 C***********************************************************************
 C
@@ -2373,6 +2374,84 @@ C
       RETURN
       END
 
+      SUBROUTINE QGETHCGE(AMAT,NDIM,NZ,LRA,LCA)
+C*****************************************************************************
+C
+C     Quaternion GEneral matrix To 
+C                HErmitian Conjugate GEneral matrix:
+C
+C     generate the Hermitian conjugate matrix 
+C     of the general matrix AMAT;
+C
+C     return the new general matrix in AMAT 
+C       (so AMAT is owerwritten !)
+C
+C     Written by Miro Ilias, July 2003
+C     (based on QGETHE)
+C
+C*****************************************************************************
+#include <implicit.h>
+      DIMENSION AMAT(LRA,LCA,NZ)
+C
+C  Generate A(dagger), where A(dagger)ij = Aji^*
+C
+      DO J = 1,NDIM
+        DO I = 1, (J-1)
+          AMAT(J,I,1) = AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1,NDIM
+          DO I = 1,(J-1)
+            AMAT(J,I,IZ) = -AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+
+      SUBROUTINE QGETAM(AMAT,NDIM,NZ,LRA,LCA,IQSYM)
+C*****************************************************************************
+C
+C     Quaternion GEneral matrix To Antihermitian matrix:
+C     generate the ANTIHermitian component of the general matrix AMAT
+C     return in AMAT.
+C
+C     Do A + A^dagger, where A is general matrix constructed from
+C     antuhermitian operator - connection matrix T_x/y/z. 
+C
+C     Written by MI, september 2003, Prievidza, Slovakia.
+C
+C*****************************************************************************
+#include <implicit.h>
+      DIMENSION AMAT(LRA,LCA,NZ),IQSYM(4)
+C
+C     Generate A - A(dagger)
+C
+
+      DO IZ = 1, NZ
+       IF (IQSYM(IZ).EQ.2) THEN ! A
+         DO J = 1, NDIM
+          DO I = 1, J
+           AMAT(I,J,IZ) = AMAT(I,J,IZ)-AMAT(J,I,IZ)
+           AMAT(J,I,IZ) = -AMAT(I,J,IZ)
+          ENDDO
+         ENDDO
+       ELSEIF (IQSYM(IZ).EQ.1) THEN ! S
+        DO J = 1, NDIM
+         DO I = 1, J
+           AMAT(I,J,IZ) = (AMAT(I,J,IZ)+AMAT(J,I,IZ))
+           AMAT(J,I,IZ) = AMAT(I,J,IZ)
+         ENDDO
+        ENDDO
+       ELSE
+        CALL QUIT('QGETAM: IQSYM(IZ)<>1,2!')
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrtdac */
       SUBROUTINE WRTDAC (IT,N,X,IREC)
