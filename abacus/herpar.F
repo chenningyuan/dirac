@@ -476,6 +476,7 @@ C     ... not used any more (was used for PVM)
       JTKTIM = 0
       JSOLVN = 0
       JRELCL = 0
+      JLEVYL = 0
       IF (NODV)   JNODV  = 1
       IF (NOPV)   JNOPV  = 1
       IF (NOCONT) JNOCNT = 1
@@ -484,6 +485,7 @@ C     ... not used any more (was used for PVM)
       IF (TIMING) JTIMIN = 1
       IF (SOLVNT) JSOLVN = 1
       IF (RELCAL) JRELCL = 1
+      IF (LEVYLE) JLEVYL = 1
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
 C
@@ -539,7 +541,7 @@ C     Send SMLV1C and ONECAP,INTV1C
 #endif
 C
 C     Send common PARINT
-      NUMELM = 39 + MAXNOD + MXCOOR
+      NUMELM = 40 + MAXNOD + MXCOOR
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #if defined (MOD_DFT)
@@ -1248,7 +1250,7 @@ C     Receive SMLV1C and ONECAP,INTV1C
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
-      NUMELM = 39 + MAXNOD + MXCOOR
+      NUMELM = 40 + MAXNOD + MXCOOR
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
@@ -1278,6 +1280,7 @@ C
       SOLVNT = JSOLVN .EQ. 1
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
+      LEVYLE = JLEVYL .EQ. 1
       ICEDIF = JCEDIF
 C
       CALL IZERO(MTIDS,MAXNOD)
