@@ -718,6 +718,12 @@ Chj  &                   NTBAS(0),NTBAS(0),1,LUPRI)
           END IF
         ENDDO
       ENDIF
+CLuuk:  Here is the right place to generalize the spinfree formalism to
+Cluuk:  properties. Add a call to a generalized version of SPFAO or
+Cluuk:  TBOSON (and backtransformation) here. This will make the 
+Cluuk:  property matrices spinfree once and for all ! (but)
+CLuuk:  In addition you may need to explicity zero out the 2e-so
+CLuuk:  contribution when doing second or higher order calculations
       RETURN
 C
  1000 CONTINUE
