@@ -3713,7 +3713,7 @@ C          ... for AMFI
 C              IFMCH
 C              IC_AMFI
 C
-C On output: H2SAO with mean-field contributions, if wished, or nothing 
+C On output: H2SAO with mean-field contributions (only if wished)
 C            - only comparison made
 C
 C     Written by Miro Ilias, Strasbourg, 2005
@@ -3721,9 +3721,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-CMI        ... it would be good to define thrs param.
-C     PARAMETER(THRNULL=1.D-7)
-      PARAMETER(THRNULL=1.D-5)
+      PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -3761,9 +3759,9 @@ C
 #include "memint.h"
 
       write(lupri,*) 'NUCIND=',NUCIND
+      write(lupri,*) 'NLRGSH=',NLRGSH
       write(lupri,*) 'charge:',(charge(i),i=1,nucind)
       write(lupri,*) 'nuc_deg:',(nucdeg(i),i=1,nucind)
-
       write(lupri,*) 'Total number of centers:',NTNUC
 
 C  ... this failes !!!
@@ -3934,11 +3932,11 @@ C          write(lupri,*) 'IX set to:',IX
 C     CALL MEMCHK('before AMFI1',WORK,1)
 
       IF ((IX-1).NE.NSPH) THEN
-      write(lupri,*) 'IX-1=',IX-1, 'NSPH=',NSPH
+        write(lupri,*) 'AMFFIN: IX-1=',IX-1, 'NSPH=',NSPH
         CALL QUIT('amfiin')
       ENDIF
 
-      write(lupri,*) (LABINT(i),i=1,25)
+C     write(lupri,*) (LABINT(i),i=1,25)
       write(lupri,*)
       write(lupri,*) 'Order of basis functions in spher. AO basis:'
 
@@ -3984,6 +3982,11 @@ C     ... read number of unique nuclei
       READ(LUTMP2,*) NUNUC
       write(lupri,*) 'MNF.INP - number of unique nuclei:',NUNUC
 
+      TOTDIFX=D0
+      TOTDIFY=D0
+      TOTDIFZ=D0
+      ITD=0
+
       DO IATOM = 1, NUNUC
 
       write(lupri,*) 'AMFI - calculating unique nucleus no:',IATOM
@@ -4022,8 +4025,10 @@ C      ... find out the correct index of nuclear exponent
         ENDIF
 
 CMI   ... gauss.nucleus (for SO1) does not work in AMFI !!!!
-        IF (IC_AMFI.EQ.1.OR.IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5) CALL
+        IF (IC_AMFI.EQ.1.OR.IC_AMFI.EQ.4.OR.IC_AMFI.EQ.5) THEN
+          CALL
      &  QUIT('AMFIIN: GNUC is not working in AMFI!')
+        ENDIF
        ENDIF
 
        CALL AMFI(LUTMP2,MNFPRP,OLDNRM,BREIT,GAUNUC,GNUEXP(IATOM1),
@@ -4115,38 +4120,42 @@ C           write(lupri,*) 'stored k=',K,' at pos:',JI
         ENDDO
 
 C   ... write out mapping function correspondance....
+      IF (IPRINT.GE.2) THEN
         write(lupri,*) '*** Mapping AMFI - H2CAO *** '
        IX = 0
        DO I=1,NICHARGE
        DO J=1,numballcart
          IX = IX + 1
-        write(lupri,*) 'amfi :',IANUCS(I),' ',LABINT(IPTA(J)),
-     &                INDXLMA(J),
-     &   ' H2CAO: pos= ',IAMFU(IX), ' nucleus:',
-     &      IPNUC(IAMFU(IX)),' ',LABINT(IPTYPAO(IAMFU(IX))),
-     &      INDXLM(IAMFU(IX))
+        write(lupri,*) 'amfi nuc:',IANUCS(I),
+     &    ' amfi fu:',LABINT(IPTA(J)),'(',
+     &                INDXLMA(J),')',
+     &   '  H2CAO: pos= ',IAMFU(IX), ' nucl:',
+     &      IPNUC(IAMFU(IX)),' fu:',LABINT(IPTYPAO(IAMFU(IX))),
+     &      '(',INDXLM(IAMFU(IX)),')'
        ENDDO
        ENDDO
+        write(lupri,*)
+      ENDIF
 
 C     ... read AMFI integrals...
 C     READ(MNFPRP) xa
       READ(MNFPRP) (WORK(KSOX+irun),irun=0,length3-1)
-       write(lupri,*) ' AMFI X integrals:'
+C      write(lupri,*) ' AMFI X integrals:'
 C      write(lupri,*) (WORK(KSOX+irun),irun=0,length3-1) 
       READ(MNFPRP) ya
       READ(MNFPRP) (WORK(KSOY+irun),irun=0,length3-1)
-       write(lupri,*) ' AMFI Y integrals:'
+C      write(lupri,*) ' AMFI Y integrals:'
 C      write(lupri,*) (WORK(KSOY+irun),irun=0,length3-1) 
 C     READ(MNFPRP) za
       READ(MNFPRP) (WORK(KSOZ+irun),irun=0,length3-1)
-       write(lupri,*) ' AMFI Z integrals:'
+C      write(lupri,*) ' AMFI Z integrals:'
 C      write(lupri,*) (WORK(KSOZ+irun),irun=0,length3-1) 
 
       CALL MEMCHK('after AMFI2',WORK,1)
 
 
 C ************************************************************************
-C     ... do comparison of SO1 integrals if wished
+C     ... do comparison of SO1 integrals if wished (ONLYSO1=.true.)
 C       or add AMFI contributions into H2CAO
 C ************************************************************************
 
@@ -4175,11 +4184,18 @@ C      ... indexes of H2CAO(I1,J1,2-4)
        ENDIF
 
 
+C    ... do only comparison of between AMFI SO1 - BSS SO1 integrals
       IF (ONLYSO1) THEN
 
        DIFSOX = SOXINT-H2SAO(I1,J1,4)
        DIFSOY = SOYINT-H2SAO(I1,J1,3)
        DIFSOZ = SOZINT-H2SAO(I1,J1,2)
+     
+       TOTDIFX=TOTDIFX + DABS(DIFSOX)
+       TOTDIFY=TOTDIFY + DABS(DIFSOY)
+       TOTDIFZ=TOTDIFZ + DABS(DIFSOZ)
+
+       ITD = ITD + 1
 
        IF (DABS(DIFSOX).GE.THRNULL) THEN
            ratio=SOXINT/H2SAO(I1,J1,4)
@@ -4206,34 +4222,44 @@ C      ... indexes of H2CAO(I1,J1,2-4)
          ENDIF
 
          IF (I1.NE.J1) THEN
+
             DIFSOX = SOXINT+H2SAO(J1,I1,4)
             DIFSOY = SOYINT+H2SAO(J1,I1,3)
             DIFSOZ = SOZINT+H2SAO(J1,I1,2)
-         IF (DABS(DIFSOX).GE.THRNULL) THEN
+
+            TOTDIFX=TOTDIFX + DABS(DIFSOX)
+            TOTDIFY=TOTDIFY + DABS(DIFSOY)
+            TOTDIFZ=TOTDIFZ + DABS(DIFSOZ)
+
+            ITD = ITD + 1
+
+C            write(lupri,*) ITD,'<<<',TOTDIFX,TOTDIFY,TOTDIFZ
+
+          IF (DABS(DIFSOX).GE.THRNULL) THEN
            ratio=SOXINT/H2SAO(J1,I1,4)
            write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
      &        INDXLM(J1),')','|SOX|',
      &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
-           write(lupri,*) SOXINT,H2SAO(J1,I1,4),DIFSOX,ratio
-         ENDIF
+           write(lupri,*) SOXINT,-H2SAO(J1,I1,4),DIFSOX,ratio
+          ENDIF
 
-         IF (DABS(DIFSOY).GE.THRNULL) THEN
+          IF (DABS(DIFSOY).GE.THRNULL) THEN
            ratio=SOYINT/H2SAO(J1,I1,3)
            write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
      &        INDXLM(J1),')','|SOY|',
      &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
-           write(lupri,*) SOYINT,H2SAO(J1,I1,3),DIFSOY,ratio
-         ENDIF
+           write(lupri,*) SOYINT,-H2SAO(J1,I1,3),DIFSOY,ratio
+           ENDIF
 
-         IF (DABS(DIFSOZ).GE.THRNULL) THEN
-           ratio=SOZINT/H2SAO(J1,I1,2)
+           IF (DABS(DIFSOZ).GE.THRNULL) THEN
+            ratio=SOZINT/H2SAO(J1,I1,2)
            write(lupri,*) '<',LABINT(IPTYPAO(J1)),'(',
      &        INDXLM(J1),')','|SOZ|',
      &         LABINT(IPTYPAO(I1)),'(',INDXLM(I1),')','>'
-           write(lupri,*) SOZINT,H2SAO(J1,I1,2),DIFSOZ,ratio
-         ENDIF
+           write(lupri,*) SOZINT,-H2SAO(J1,I1,2),DIFSOZ,ratio
+           ENDIF
 
-        ENDIF
+         ENDIF
        ELSE IF (.NOT.ONLYTRA) THEN
 C  ==================================================
 C      ... add AMFI contribution to the H2CAO
@@ -4267,8 +4293,21 @@ C        ... release memmory...
 C    .. close the MNF.INP file
       CALL GPCLOSE(LUTMP2,'KEEP')
 
-      IF (ONLYSO1) 
-     & CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
+      IF (ONLYSO1) THEN
+C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
+        TOTDIFX=TOTDIFX/DFLOAT(ITD)
+        TOTDIFY=TOTDIFY/DFLOAT(ITD)
+        TOTDIFZ=TOTDIFZ/DFLOAT(ITD)
+
+        WRITE(LUPRI,'(/A/)')
+     &  '**** AMFIIN: average differences between AMFI and '//
+     &  'BSS SO1 spin-orbit integrals ****'
+        WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1X integrals:',TOTDIFX
+        WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1Y integrals:',TOTDIFY
+        WRITE(LUPRI,'(2X,A,D20.10)') '....for SO1Z integrals:',TOTDIFZ
+
+        CALL QUIT('AMFIIN: Only BSS-AMFI SO1 integral comparisons !')
+      ENDIF
 
       CALL QEXIT('AMFIIN')
       RETURN
@@ -4318,12 +4357,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       CALL QENTER('UNITE_INDXS')
 
-      write(lupri,*) ''
+      write(lupri,*) ' '
       DO I=1, NSPH
         write(lupri,*) I,'.fu center:',IPNUC(I),' type:',
      &  LABINT(IPTYPAO(I)),'(',INDXLM(I),')'
       ENDDO
-      write(lupri,*) ''
+      write(lupri,*) ' '
 
 C    ... list of stored INUC&IPTYP
       IT = 0 
@@ -4500,7 +4539,7 @@ C   ... find out total number of L-component spherical functions
       CALL MEMCHK('XXX',WORK,1)
       CALL SPHLAB(MXQN-1,LABINT)
        write(lupri,*) 'SPHLAB done, NSPH=',NSPH
-       write(lupri,*) 'NLRGSH=',NLRGSH
+C      write(lupri,*) 'NLRGSH=',NLRGSH
 
 
 C     ...allocations for AMFI integrals: typ and index
@@ -4672,7 +4711,7 @@ C     PARAMETER (NMAX=50)
                 ENDIF
               ELSE IF (IPIV(K).GT.1) THEN
 CMI             PAUSE 'Singular matrix'
-                CALL QUIT('Singular matrix!')
+                CALL QUIT('matrix_inversion: Singular matrix!')
               ENDIF
 12          CONTINUE
           ENDIF
