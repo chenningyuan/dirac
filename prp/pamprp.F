@@ -1386,7 +1386,7 @@ C
 C     Parity-violating contribution to NMR shielding
 C
       IF(PVCSHI) THEN
-C       CALL PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+        CALL PRP_PVCSHI_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF 
 C
 C     Magnetic susceptibilities
@@ -4207,8 +4207,10 @@ C
 C
 C
 C     parity-violating contribution to NMR shielding
+C     ==============================================
 C
-C     written by trond saue - modified by radovan bast
+C     written by Trond Saue - modified by Radovan Bast
+C
 C
       IF(PVCSHI) THEN
         CALL IZERO(IPPVCSHI,MXCOOR)
@@ -4219,15 +4221,21 @@ C
 C       xalpha
         IOP(1) = 2
         PFAC(1) = CVAL
-C        
+C
 C       yalpha
         IOP(2) = 3
         PFAC(2) = CVAL
-C        
+C
 C       zalpha
         IOP(3) = 4
         PFAC(3) = CVAL
-C        
+C
+C       this prefactor (CVAL) has to be here to guarantee
+C       the correct non-relativistic limit
+C       in the output section we will divide by CVEL
+C       for compensation
+C
+C
 C       if point nucleus
         IF(.NOT.GAUNUC) THEN
           DO ICOOR = 1,3
@@ -4257,19 +4265,23 @@ C               if point nucleus
                 PNAME = 'PVCa '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                         //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                         //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C
                 DO ICOOR = 1,3
+C
                   IPTYP = IOP(ICOOR)
                   PNAME(5:5) = CHRNOS(ICOOR)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &                       INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &                        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL OP1IND(PNAME(1:6),INDOP1,LLRAPU,NLRAPT,
-     &                       INDXPR,MAXLLR)
-                  ISCOOR = IPTCNT(3*(IATOM-1) + ICOOR,IREP,2)
+     &                        INDXPR,MAXLLR)
+                  ISCOOR = IPTCNT(3*(IATOM-1)+ICOOR,IREP,2)
                   IF(ISCOOR.GT.0) THEN
                     IPPVCSHI(ISCOOR) = INDOP1
                   ENDIF
                   CALL WRIXPR(INDOP1,INDXPR)
+C
                 ENDDO
+C
               ENDIF
             ENDDO
           ENDIF
@@ -6272,208 +6284,233 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck PRP_PVCSHI */
-      SUBROUTINE PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE) 
-C***********************************************************************
-C        
-C     prepare output for parity-violating contribution to NMR shielding
-C     modelled after PRP_SHIELD and PRP_SPNSPN
-C           
-C     radovan bast november 2004
-C        
-C***********************************************************************
+C     /* deck prp_pvcshi_mem */
+      SUBROUTINE PRP_PVCSHI_MEM(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
+C  *********************************************************************
+C  *                                                                   *
+C  *  prepare output for parity-violating contribution to NMR          *
+C  *  shielding                                                        *
+C  *                                                                   *
+C  *  modelled after PRP_SHIELD and PRP_SPNSPN                         *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              november 2004             07/02/2005   *
+C  *                                                                   *
+C  *********************************************************************
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+C
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
+C
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-      CALL MEMGET('REAL',KTMPMAT ,NUCDEP*4,WORK,KFREE,LFREE)
+C
+C
+C     allocate memory
+C     ===============
+C
+      CALL MEMGET('REAL',KTEMPMAT,NUCDEP*4,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGVALMAT,NUCDEP*5,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KDOATOM ,NUCDEP  ,WORK,KFREE,LFREE)
-C    
+C
+C
 C     INTTYP = 29 (electric field at individual nuclei)
 C     -29: accept .SELECT specification
       CALL SETATM(WORK(KDOATOM),NATOM,-29)
-      CALL PRP_PVCSHI1(EXPVAL,ABLRF,ABCNV,WORK(KTMPMAT),
-     &                 WORK(KGVALMAT),WORK(KDOATOM),WORK,KFREE,LFREE)
-      CALL MEMREL('PRP_PVCSHI',WORK,1,KFREE,KFREE,LFREE)
+C
+C
+C     call
+C     ====
+C
+      CALL PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,
+     &                WORK(KTEMPMAT),WORK(KGVALMAT),WORK(KDOATOM),
+     &                WORK,KFREE,LFREE)
+C
+C
+C     release memory
+C     ==============
+C
+      CALL MEMREL('PRP_PVCSHI_MEM',WORK,1,KFREE,KFREE,LFREE)
+C
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* deck PRP_PVCSHI1 */
-      SUBROUTINE PRP_PVCSHI1(EXPVAL,ABLRF,ABCNV,TMPMAT,GVALMAT,
-     &                       DOATOM,WORK,KFREE,LFREE)
-C***********************************************************************
+C     /* deck prp_pvcshi */
+      SUBROUTINE PRP_PVCSHI(EXPVAL,ABLRF,ABCNV,TEMPMAT,GVALMAT,DOATOM,
+     &                      WORK,KFREE,LFREE)
+C  *********************************************************************
+C  *                                                                   *
+C  *  output for parity-violating contribution to NMR shielding        *
+C  *  shielding                                                        *
+C  *                                                                   *
+C  *  modelled after PRP_SHIELD and PRP_SPNSPN                         *
+C  *                                                                   *
+C  *********************************************************************
+C  *                            written                   revision     *
+C  *  radovan bast              november 2004             07/02/2005   *
+C  *                                                                   *
+C  *********************************************************************
 C
-C     output for parity-violating contribution to NMR shielding
-C     modelled after PRP_SHIELD and PRP_SPNSPN
-C
-C     radovan bast november 2004
-C
-C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "mxcent.h"
+#include "codata.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
+C
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "codata.h"
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
-      LOGICAL TEST,DOATOM(NUCDEP)
-      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),
-     &          TMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),WORK(*)
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
+      LOGICAL TEST,DOATOM(NUCDEP)
+C
+      DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),
+     &          TEMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),
+     &          WORK(*)
+C
+C
       DFAC = -(GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
+C
+C
       CALL AROUND('Parity-violating contribution to NMR shielding')
-      WRITE(LUPRI,'(A)') 'WARNING: still testing'
-      WRITE(LUPRI,'(A)') 'works ONLY in combination with C1'
-      WRITE(LUPRI,'(A)') 'and uncontracted basis'
+      WRITE(LUPRI,'(A)') 'up to now only for C1 symmetry'
       WRITE(LUPRI,*)
-C     DO IFREQ = 1,NBFREQ
+C
+C
       IFREQ = 1
-        CALL DZERO(TMPMAT,NUCDEP*4)
-C       IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
-C         WRITE(LUPRI,*) 'something', BFREQ(IFREQ)
-C       ENDIF
 C
 C
-C       fill temporary matrix
+C     fill temporary matrix
+C     =====================
 C
-        DO INUC = 1,NUCDEP
-          DO ICOOR = 1,3
-            KA = IPPVCSHI((INUC*3)-3+ICOOR)
-            KB = IPSPNSPN(1,(INUC*3)-3+ICOOR)
+      CALL DZERO(TEMPMAT,NUCDEP*4)
+      DO INUC = 1,NUCDEP
+        DO ICOOR = 1,3
+          KA = IPPVCSHI((INUC*3)-3+ICOOR)
+          KB = IPSHIELD(ICOOR+MXCOOR)
 C
-C           e-e
-            TMPMAT(INUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
+C         e-e
+          TEMPMAT(INUC,ICOOR) = ABLRF(IFREQ,KA,KB,2)
 C
-C           don't look for e-p in case of LEVY-LEBLOND
-            IF(.NOT.XLR_SKIPEP) THEN
+C         don't look for e-p in case of LEVY-LEBLOND
+          IF(.NOT.XLR_SKIPEP) THEN
 C
-C             e-p
-              TMPMAT(INUC,ICOOR) = TMPMAT(INUC,ICOOR)
-     &                           + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+C           e-p
+            TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)
+     &                          + ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+          ENDIF
+        ENDDO
+      ENDDO
+C
+C
+C     multiply TEMPMAT with DFAC
+C     ==========================
+C
+      CALL DSCAL(NUCDEP*4,DFAC,TEMPMAT,1)
+C
+C
+C     extract nuclear g factors for magnetogyric ratios
+C     =================================================
+C
+      CALL DZERO(GVALMAT,NUCDEP*5)
+      DO INUC = 1,NUCDEP
+        IDEG = NUCDEG(INUC)
+        IF(DOATOM(INUC)) THEN
+          TEST = .FALSE.
+          IZ = NINT(CHARGE(INUC))
+          NISO = 0
+          DO ISO = 1,5
+            GVAL = DISOTP(IZ,ISO,'GVAL')
+            IF(GVAL.NE.0) THEN
+              ABND = DISOTP(IZ,ISO,'ABUNDANCE')
+              IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
+                TEST = .TRUE.
+                NISO = NISO+1
+                GVALMAT(NISO,INUC) = GVAL
+              ENDIF
             ENDIF
           ENDDO
-        ENDDO
-C
-C
-C       multiply x,y,z components of TMPMAT with DFAC
-C
-        DO INUC = 1,NUCDEP
-          DO ICOOR = 1,3
-            TMPMAT(INUC,ICOOR) = DFAC*TMPMAT(INUC,ICOOR)
-          ENDDO
-        ENDDO
-C
-C
-C       extract g factors
-C
-        CALL DZERO(GVALMAT,NUCDEP*5)
-        NSPEC = 0
-        IDEP = 0
-C
-        DO INUC = 1,NUCDEP
-          IDEG = NUCDEG(INUC)
-          IF(DOATOM(INUC)) THEN
-            TEST = .FALSE.
-            IZ = NINT(CHARGE(INUC))
-            NISO = 0
-            DO ISO = 1,5
-              GVAL = DISOTP(IZ,ISO,'GVAL')
-              IF(GVAL.NE.0) THEN
-                ABND = DISOTP(IZ,ISO,'ABUNDANCE')
-                IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
-                  TEST = .TRUE.
-                  NISO = NISO+1
-                  GVALMAT(NISO,INUC) = GVAL
-                ENDIF
-              ENDIF
-            ENDDO
-C           IF(NISO.GT.0) THEN
-C             DO K = 2,IDEG
-C               DO L = 1,NISO
-C                 GVALMAT(L,NSPEC+K) = GVALMAT(L,NSPEC+1)
-C               ENDDO
-C             ENDDO
-C             NSPEC = NSPEC+IDEG
-C           ENDIF
-          ENDIF
-          IDEP = IDEP+IDEG
-        ENDDO
-C       IF(NSPEC.EQ.0) THEN
-C         WRITE(LUPRI,'(A)') '* No suitable isotopes. Returning'
-C         CALL QEXIT('PRP_PVSSHI1')
-C         RETURN
-C       ENDIF
-C
-C
-C       divide x,y,z components of TMPMAT by magnetogyric ratio
-C
-        DO INUC = 1,NUCDEP
-          DMAGGYR = GVALMAT(1,INUC)/(D2*XFMP)
-          DO ICOOR = 1,3
-            TMPMAT(INUC,ICOOR) = TMPMAT(INUC,ICOOR)/DMAGGYR
-          ENDDO
-        ENDDO
-C
-C
-C       calculate average of trace
-C
-        DO INUC = 1,NUCDEP
-          TMPMAT(INUC,4) = (TMPMAT(INUC,1)
-     &                   +  TMPMAT(INUC,2)
-     &                   +  TMPMAT(INUC,3))/D3
-        ENDDO
-C
-C
-C       printout
-C
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,'(A)') '@'
-        WRITE(LUPRI,'(A)') '@   PV contribution to NMR shielding'
-        WRITE(LUPRI,'(A)') '@'
-        WRITE(LUPRI,*)
-        DO INUC = 1,NUCDEP
-          WRITE(LUPRI,'(A12,A4,A6,E22.8,A4)') '@   Nucleus ',
-     &          NAMDEP(INUC),'xx', TMPMAT(INUC,1), 'ppm'
-          WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
-     &                         'yy', TMPMAT(INUC,2), 'ppm'
-          WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
-     &                         'zz', TMPMAT(INUC,3), 'ppm'
-          WRITE(LUPRI,*)
-          WRITE(LUPRI,'(A3,A24,E17.8,A4)') '@  ',
-     &                    'average', TMPMAT(INUC,4), 'ppm'
-          WRITE(LUPRI,'(A)') '@'
-          WRITE(LUPRI,*)
-        ENDDO
-        WRITE(LUPRI,'(A)') '@   following g factors used:'
-        WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
-     &        NAMDEP(1),GVALMAT(1,1)
-        IF(NUCDEP.GE.2) THEN
-          DO INUC = 2,NUCDEP
-            WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
-     &            NAMDEP(INUC),GVALMAT(1,INUC)
-          ENDDO
         ENDIF
+      ENDDO
+C
+C
+C     divide x,y,z comonents of TEMPMAT by magnetogyric ratio
+C     =======================================================
+C
+      DO INUC = 1,NUCDEP
+        RATIO = GVALMAT(1,INUC)/(D2*XFMP)
+        DO ICOOR = 1,3
+          TEMPMAT(INUC,ICOOR) = TEMPMAT(INUC,ICOOR)/RATIO
+        ENDDO
+      ENDDO
+C
+C
+C     calculate average of trace
+C     ==========================
+C
+      DO INUC = 1,NUCDEP
+        TEMPMAT(INUC,4) = (TEMPMAT(INUC,1)
+     &                  +  TEMPMAT(INUC,2)
+     &                  +  TEMPMAT(INUC,3))/D3
+      ENDDO
+C
+C
+C     printout
+C     ========
+C
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,'(A)') '@   PV contribution to NMR shielding'
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+C
+      DO INUC = 1,NUCDEP
+        WRITE(LUPRI,'(A12,A4,A6,E22.8,A4)') '@   Nucleus ',
+     &        NAMDEP(INUC),'xx', TEMPMAT(INUC,1), 'ppm'
+        WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
+     &                       'yy', TEMPMAT(INUC,2), 'ppm'
+        WRITE(LUPRI,'(A3,A19,E22.8,A4)') '@  ',
+     &                       'zz', TEMPMAT(INUC,3), 'ppm'
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,'(A3,A24,E17.8,A4)') '@  ',
+     &                  'average', TEMPMAT(INUC,4), 'ppm'
         WRITE(LUPRI,'(A)') '@'
         WRITE(LUPRI,*)
-        CALL PRSYMB(LUPRI,'-',46,0)
-C     ENDDO
+      ENDDO
+C
+      WRITE(LUPRI,'(A)') '@   following nuclear g factors used:'
+      WRITE(LUPRI,'(A12,A4,F22.6)') '@   Nucleus ',
+     &      NAMDEP(1),GVALMAT(1,1)
+C
+      IF(NUCDEP.GE.2) THEN
+        DO INUC = 2,NUCDEP
+          WRITE(LUPRI,'(A12,A4,F22.6)') '@           ',
+     &          NAMDEP(INUC),GVALMAT(1,INUC)
+        ENDDO
+      ENDIF
+C
+      WRITE(LUPRI,'(A)') '@'
+      WRITE(LUPRI,*)
+      CALL PRSYMB(LUPRI,'-',46,0)
+C
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
