@@ -4061,7 +4061,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
      &                   TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &                   IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &                   IPRSTR,IPRCIX,IPRORB,IPRDIA,
-     &                   IPRXT,IPRRSP,IPRDEN,IPROCC)
+     &                   IPRXT,IPRRSP,IPRDEN,IPROCC,IPRNCIV)
 *
       implicit real*8 (A-H,O-Z)
 *
@@ -4187,6 +4187,8 @@ CTF      write(*,'(X,A6)') MACHINE
          write(*,'(X,I3)') IPRDEN
          write(*,'(A6)') 'IPROCC'
          write(*,'(X,I3)') IPROCC
+         write(*,'(A6)') 'PRNCIV'
+         write(*,'(X,I3,A)') IPRNCIV
 *
          write(*,'(A6)') 'RESDIM'
          write(*,'(X,I4)') IRESDIM
@@ -4317,6 +4319,8 @@ CTF      write(LUINP,'(X,A6)') MACHINE
          write(LUINP,'(X,I3)') IPRDEN
          write(LUINP,'(A6)') 'IPROCC'
          write(LUINP,'(X,I3)') IPROCC
+         write(LUINP,'(A6)') 'PRNCIV'
+         write(LUINP,'(X,I3)') IPRNCIV
 *
          write(LUINP,'(A6)') 'RESDIM'
          write(LUINP,'(X,I4)') IRESDIM
@@ -5721,7 +5725,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRRSP = 0
          if (IDEMOL.ge.1) IPRDEN = 500
          IPROCC = 00
-         IPRNCIV = 1
+         IPRNCIV = 2
       end if
 *
       if (IDEMOL.ge.1.and.IPRDEN.lt.1) IPRDEN = 1
@@ -5736,7 +5740,7 @@ CC        IVFLEV = 1               ! could be made more flexible
      &             TITLE,MXTIT,NTIT,CALSIZ,IVFLEV,
      &             IUSE_PH,IDEMOL,IRSTRT,IDBGRP,
      &             IPRSTR,IPRCIX,IPRORB,IPRDIA,IPRXT,IPRRSP,
-     &             IPRDEN,IPROCC)
+     &             IPRDEN,IPROCC,IPRNCIV)
 *
       return
       end

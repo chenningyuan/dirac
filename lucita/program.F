@@ -523,7 +523,7 @@ CTF
             end if
           END IF
 *
-          IF(IPRNCIV.EQ.1) THEN
+          IF (IPRNCIV.EQ.2) THEN
              WRITE(6,*)
              WRITE(6,*) ' ======================'
              WRITE(6,*) ' Complete CI expansion '
@@ -1119,7 +1119,7 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
       PARAMETER(MXPKW = 97)
       DIMENSION KEYWOR(MXPKW)
       DIMENSION ISETKW(MXPKW)
-*. Local  scratch for decoding multi-item lines, atmost 32 items per line
+*. Local scratch for decoding multi-item lines, atmost 32 items per line
       PARAMETER(MX_ITEM = 32)
       CHARACTER*72 ITEM(MX_ITEM), CARDX, ITEMX
 *
@@ -2933,7 +2933,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
 *
       IF(CARD(2:7).EQ.'PRNCIV') THEN
          ISETKW(91) = 1
-         IPRNCIV = 1
+         READ(LUCMOL,*) IPRNCIV
          GOTO 999
       END IF
 *
