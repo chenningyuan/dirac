@@ -1311,10 +1311,12 @@ C
          DA(0) = D1
          DALPHA(0) = D0
          DTEMP = D0
+         NASHMFT = 0
          DO IFRP = 1,NFSYM
             DO IOPEN = 1,NOPEN
                NASH_DHF(IFRP) = NASH_DHF(IFRP) + NACSH(IFRP,IOPEN)
                NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
+               NASHMFT = NASHMFT + NACSHMF(IFRP,IOPEN)
                DTEMP          = DTEMP +
      &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
             END DO

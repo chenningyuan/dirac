@@ -1338,7 +1338,6 @@ C
       ENDIF
       N2TMT   = 0
       N2TMOTQ = 0
-      NASHMFT = 0
       DO IFRP = 1,NFSYM
         NISHMF(IFRP) = NISH(IFRP)
         I2TMT(IFRP) = N2TMT
@@ -5420,6 +5419,9 @@ C     Selected orbitals that are not frozen have index zero;
 C     they must be taken out and pointers made to the remaining ones
 C     Write compressed index array to file
 C
+C     We recompute NASHMFT as this value may change if there are frozen open shells
+C
+      NASHMFT = 0
       II = 0
       DO I = 1,NTOT
       IP = IVEC(I)
