@@ -1,5 +1,3 @@
-#!/bin/sh
-MODS=" -DMOD_CC -DMOD_RSP -DMOD_TRA "
 #
 # $Id$
 #
