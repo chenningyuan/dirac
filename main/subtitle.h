@@ -14,20 +14,20 @@ char *strsubtitle = "\
 *          Direct Iterative Relativistic Allelectron Calculations            *\n\
 *         =======================================================            *\n\
 *                                                                            *\n\
-*                        VERSION 3.1     OCTOBER 1998                        *\n\
+*                        VERSION 3.2     OCTOBER 2000                        *\n\
 *                                                                            *\n\
 ******************************************************************************\n\
 *                                                                            *\n\
 * Written by:                                                                *\n\
-*    Trond Saue,              The University of Tromsoe,        Norway       *\n\
+*    Trond Saue,              University of Tromsoe,            Norway       *\n\
 *    Vebjoern Bakken,         University of Oslo,               Norway       *\n\
 *    Thomas Enevoldsen,       SDU, Odense University,           Denmark      *\n\
 *    Trygve Helgaker,         University of Oslo,               Norway       *\n\
 *    Hans Joergen Aa. Jensen, SDU, Odense University,           Denmark      *\n\
-*    Jon K. Laerdahl,         University of Oslo                Norway       *\n\
-*    Kenneth Ruud,            The University of Tromsoe,        Norway       *\n\
+*    Jon K. Laerdahl,         University of Oslo,               Norway       *\n\
+*    Kenneth Ruud,            University of Tromsoe,            Norway       *\n\
 *    Joern Thyssen,           SDU, Odense University,           Denmark      *\n\
-*    Luuk Visscher,           Vrije Universiteit Amsterdam,     Netherlands   *\n\
+*    Luuk Visscher,           Vrije Universiteit Amsterdam,     Netherlands  *\n\
 *                                                                            *\n\
 *                                                                            *\n\
 * Note:                                                                      *\n\
