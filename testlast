@@ -1,0 +1,133 @@
+#!/bin/sh
+#
+# Test latest version of DIRAC by updating the working copy and
+# running the standard testset.
+#
+# Written by Luuk Visscher - May 15 2002
+#
+# Set defaults
+pampath=`pwd`
+dirac=`pwd`/dirac.x
+# Define exit procedure
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# Does 'echo' understand escapes?
+#
+#
+echo_style=sysv
+if [ "	" = "`echo '\t'`" ]; then
+   echo="echo"
+else
+   echo="echo -e"
+fi
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# CHECK OPTIONS
+#
+#
+usage='Usage: '$0'\n'\
+'--help\n'\
+'\tPrint this\n'\
+'--branch=BRANCH\n'\
+'\tBranch that is to be tested\n'\
+'--tests=TESTS\n'\
+'\tThe tests that should be run\n'
+
+while [ $# != 0 ]; do
+   arg="$1"; shift
+   case "${arg}" in
+      -*=*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\([^=]*\)=.*$:\1:'`
+         val=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*[^=]*=\(.*\)$:\1:'`
+         valomitted=no
+         ;;
+      -*)
+         opt=`echo '' ${arg} | sed -e 's:^ ::' -e 's:^-*\(.*\)$:\1:'`
+         val="yes"
+         valomitted=yes
+         ;;
+      *)
+         $echo $usage
+         exit 
+   esac
+   optname="${opt}"
+   opt="`echo '' ${opt} | sed -e 's:^ ::' | tr - _`"
+   case "${opt}" in
+      "help")
+         $echo $usage
+         exit
+         ;;
+      "branch")
+         if [ "${valomitted}" = "no" ]; then
+            branch="$val"
+         fi
+         ;;
+      "tests")
+         if [ "${valomitted}" = "no" ]; then
+            tests="$val"
+         fi
+         ;;
+      *)
+         echo  'Unknown option: '$opt''
+         $echo $usage
+         exit 1
+         ;;
+   esac
+done
+#
+# Define the logfiles
+#
+if [  -z "$testsh" ]; then
+   run=default_test;
+else
+   run=user_test;
+fi
+#
+makelog=make_log;
+cvslog=cvs_log;
+txtlog=${run}_dif.txt;
+htmlog=${run}_dif.htm;
+#
+if [ ! -z "$branch" ]; then
+   for i in $makelog $cvslog $txtlog $htmlog ; do
+   i=${i}_$branch ;
+   done
+fi
+#
+# Make sure that we do not overwrite recent logfiles
+#
+echo " Saving old log files ..." 
+cd test/logs;
+for i in $makelog $cvslog $txtlog $htmlog ; do
+    if [ -f "${i}" ]; then
+        if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
+        if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
+        if [ -f "${i}.4" ]; then mv -f "${i}.4" "${i}.5"; fi
+        if [ -f "${i}.3" ]; then mv -f "${i}.3" "${i}.4"; fi
+        if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.3"; fi
+        if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.2"; fi
+        if [ -f "${i}.0" ]; then mv -f "${i}.0" "${i}.1"; fi
+        if [ -f "${i}" ]; then mv -f "${i}" "${i}.0" ; fi
+    fi
+done
+cd ../..;
+#
+if [  -z "$branch" ]; then
+   echo ' Starting CVS Update ... '
+cvs update -P -d >& test/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+else
+   echo " Switching working copy to branch $branch and updating ..."
+   cvs update -P -d -r $branch >& test/logs/$cvslog || { echo " CVS update failed"; exit 1 } ;
+fi
+#
+echo ' Recompiling ... '
+make >& test/logs/$makelog || { echo " Make failed"; exit 1 } ;
+echo ' Starting test calculations ... '
+cd test;
+#./runtest --tests=$tests --pampath=$pampath --dirac=$dirac --run=$run || { echo " runtest failed"; exit 1 ; } ;
+./runtest --tests=short --pampath=$pampath --dirac=$dirac --run=$run || { echo " runtest failed"; exit 1 ; } ;
+#
