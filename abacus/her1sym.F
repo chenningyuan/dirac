@@ -163,7 +163,8 @@ C
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix
-      IQFULL(I,J,IZ) = I + (J-1) * NTBAS(0) + N2BBASX * (IZ-1) 
+      IQFULL(I,J,IZ) = MAX(I,J) + MIN(I-1,J-1) * NTBAS(0) +
+     &     N2BBASX * (IZ-1) 
 #endif 
       IF (IPRINT .GT. 4) CALL TITLER('Output from ONESO1','*',103)
 C
@@ -173,7 +174,12 @@ C     *****************************************
 C
       IDENB = IDENB0 - KHKTB
       DO 100 ISYMOP = 0, MAXOPR
-      IF (IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+      IF (IBTAND(ISYMOP,MAB) .NE. 0) THEN
+         IF ( IBTAND ( ISYMOP, MULB ) .EQ. 0 ) THEN
+            IDENB  = IDENB + KHKTB
+        END IF
+         GOTO 100
+      ELSE
          IDENB  = IDENB + KHKTB
          ICENTB = NUCNUM(NCENTB,ISYMOP+1)
          ONECEN = ICENTA .EQ. ICENTB
@@ -277,9 +283,7 @@ Cjth - sib                  IF (ONECEN .AND. LDIAG .AND. IORBB.NE.IORBA) FAC = D
                   IF (INTCLASS .EQ. 1) THEN
                      DO IZ = 2, 4
                         IDXAB = IQFULL(IORBA,IORBB,IZ)
-                        IDXBA = IQFULL(IORBB,IORBA,IZ)
-                        DSHELL(MAXCMP,IZ) = FAC*
-     &                                    (DENMAT(IDXAB)-DENMAT(IDXBA))
+                        DSHELL(MAXCMP,IZ) = FAC*DENMAT(IDXAB)
                      END DO
                   ELSE
                      IDXAB = IQFULL(IORBA,IORBB,1)
