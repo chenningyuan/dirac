@@ -341,6 +341,7 @@ C
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
+      LOGICAL CORRECT_PARITY
 #include "mxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -350,7 +351,6 @@ C
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
-      LOGICAL CORRECT_PARITY
 C
       CALL QENTER('MS4IN2P')
       KFRSAV = KFREE
