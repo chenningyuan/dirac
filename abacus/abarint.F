@@ -1,15 +1,11 @@
 C
-C...   Copyright (c) 1997 by the authors of Dalton (see below).
+C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of 
-C...   "Dalton, an ab initio electronic structure program, Release 1.0
-C...   (1997), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
-C...   J. Olsen, K. Ruud, H. Aagren, T. Andersen, K. L. Bak, V. Bakken,
-C...   O. Christiansen, P. Dahle, E. K. Dalskov, T. Enevoldsen,
-C...   H. Heiberg, D. Jonsson, S. Kirpekar, R. Kobayashi, H. Koch,
-C...   K. V. Mikkelsen, P. Norman, M. J. Packer, T.Saue,
-C...   P. R. Taylor, and O. Vahtras"
+C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
+C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
 C...   This source code is provided under a written licence and may be 
 C...   used, copied, transmitted, or stored only in accord with that
@@ -23,13 +19,19 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence. 
 C...
 C...   For questions concerning this copyright write to:
-C...      dalton-admin@kjemi.uio.no
+C...      dirac-admin@dirac.chem.ou.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://www.kjemi.uio.no/software/dalton/dalton.html 
+C...      http://dirac.chem.ou.dk/Dirac
 C
 C
-C$Id$
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : abarint.F
+C SOURCE  : $Source$
+C
+C
 C
 #ifdef UNDEF
 /* Comdeck log */

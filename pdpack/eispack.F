@@ -1,5 +1,11 @@
 C
-C$Id$
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : eispack.F
+C SOURCE  : $Source$
+C
+C
 C
       SUBROUTINE CDIV(AR,AI,BR,BI,CR,CI)
       DOUBLE PRECISION AR,AI,BR,BI,CR,CI

@@ -1,7 +1,11 @@
 C
-C$Id$
 C
-C  /* Deck mpab */
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dirana.F
+C SOURCE  : $Source$
+C
+C
       SUBROUTINE MPAB(A,NROWA,NCOLA,NRDIMA,NCDIMA,
      1                B,NROWB,NCOLB,NRDIMB,NCDIMB,
      2                C,NRDIMC,NCDIMC)

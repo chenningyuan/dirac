@@ -1,5 +1,10 @@
 C
-C$Id$
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dsp.F
+C SOURCE  : $Source$
+C
 C
 C  /* Deck dspsol */
       SUBROUTINE DSPSOL (N,NSIM,AP,B,KPVT,INFO)

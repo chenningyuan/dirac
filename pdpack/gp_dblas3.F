@@ -1,3 +1,11 @@
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : gp_dblas3.F
+C SOURCE  : $Source$
+C
+C
       subroutine dblas3
       call dtrmm
       call dtrsm

@@ -1,5 +1,10 @@
 C
-C$Id$
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dge.F
+C SOURCE  : $Source$
+C
 C
 C  /* Deck dgeinv */
       SUBROUTINE DGEINV(N,A,AINV,IPVT,WRK,INFO)

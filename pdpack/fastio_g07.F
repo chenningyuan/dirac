@@ -1,5 +1,10 @@
 C
-C$Id$
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : fastio_g07.F
+C SOURCE  : $Source$
+C
 C
 #ifdef UNDEF
 /* Comdeck notes */
