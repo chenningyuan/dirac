@@ -777,7 +777,7 @@ C
 C
 #include <ibtfun.h>
 C
-      CALL QENTER('DHFGRD')
+      CALL QENTER('RMOLGRD1')
 C
 #include <memint.h>
 C
@@ -892,7 +892,7 @@ C
 C     One electron part of gradient
 C     =============================
 C
-      CALL HEADER('DHFGRD: One-electron part',-1)
+      CALL HEADER('RMOLGRD1: One-electron part',-1)
       IF ( DPRTIM(1,1) .GT. D0 ) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(/1X,A,F10.4,A)') 
@@ -968,7 +968,7 @@ C
 C
 C     Dispose temp. memory
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C
       CALL GETTIM(CPU2,WALL2)
@@ -984,7 +984,7 @@ C
 C     Two electron part of gradient
 C     =============================
 C
-      CALL HEADER('DHFGRD: Two-electron part',-1)
+      CALL HEADER('RMOLGRD1: Two-electron part',-1)
       CALL GETTIM(CPU11,WALL11)
 C
 C
@@ -1051,32 +1051,29 @@ C
          N2GAB   = NSYMBL*NSYMBL
          CALL MEMGET ('REAL',KGABRAO, 4 * N2GAB, WORK, KFREE, LFREE )
 C
-         IOFF = 0
-C
          IJOB   = 0
          ITYPE  = 0
          IGTYP  = 1
          MAXDF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
-     &        IPRINT,WORK(KGABRAO+IOFF),WORK(KFREE),LFREE)
+     &        IPRINT,WORK(KGABRAO),WORK(KFREE),LFREE)
 C
 C        Read/generate diff. GAB matrices
 C
-         IOFF = IOFF + N2GAB
-         DO I = 1,3
-            IJOB   = 0
-            ITYPE  = 10
-            IGTYP  = 1
-            MAXDF  = 2
-            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
-     &           IPRINT,WORK(KGABRAO+IOFF),WORK(KFREE),LFREE)
-            IF (IPRINT.GE.10) THEN
-               CALL HEADER('DHFGRD: GABRAO-matrix ('//CHRXYZ(I)//')',-1)
-               CALL OUTPUT(WORK(KGABRAO+IOFF),1,NSYMBL,1,NSYMBL,
+         IJOB   = 0
+         ITYPE  = 10
+         IGTYP  = 1
+         MAXDF  = 2
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
+     &        IPRINT,WORK(KGABRAO+N2GAB),WORK(KFREE),LFREE)
+         IF (IPRINT.GE.10) THEN
+            DO I = 1, 3
+               CALL HEADER('RMOLGRD1: GABRAO-matrix ('//CHRXYZ(I)//')',
+     &              -1)
+               CALL OUTPUT(WORK(KGABRAO+N2GAB*I),1,NSYMBL,1,NSYMBL,
      &                     NSYMBL,NSYMBL,1,LUPRI)
-            END IF
-            IOFF = IOFF + N2GAB
-         END DO
+            END DO
+         END IF
 C
 C        Make reduced density matrices
 C
@@ -1112,7 +1109,7 @@ C
 C
 C
 C
-      CALL HEADER('DHFGRD: LL-Two-electron part',-1)
+      CALL HEADER('RMOLGRD1: LL-Two-electron part',-1)
       CALL CYESNO(STR,LBIT( IGRD_INTBUF, 1 ))
       WRITE(LUPRI,'(1X,2A/)') 'Calculate LL-Two-electron gradient: ',
      &                        STR
@@ -1127,7 +1124,7 @@ C
      &                  'Estimated WALL time: ',DPRTIM(2,2),' seconds.'
          END IF
       ELSE
-         CALL HEADER('DHFGRD: Skipping LL-Two-el.',-1)
+         CALL HEADER('RMOLGRD1: Skipping LL-Two-el.',-1)
          GOTO 100
       END IF
 C
@@ -1195,7 +1192,7 @@ C
 C
 C     Memory deallocation
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KSKLTN,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD1',WORK,KWORK,KSKLTN,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
 C
@@ -1218,7 +1215,7 @@ C     Calculate estimated LS- and SS- gradient and skip if
 C     they seem unnecessary.
 C
 C
-      CALL HEADER('DHFGRD: LS-Two-electron part',-1)
+      CALL HEADER('RMOLGRD1: LS-Two-electron part',-1)
       IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 2 ) ) THEN
          CALL ESTGLS(DOLS)
          IF ( .NOT. DOLS ) THEN
@@ -1240,7 +1237,7 @@ C
      &                  'Estimated WALL time: ',DPRTIM(3,2),' seconds.'
          END IF
       ELSE
-         CALL HEADER('DHFGRD: Skipping LS-Two-el.',-1)
+         CALL HEADER('RMOLGRD1: Skipping LS-Two-el.',-1)
          GOTO 200
       END IF
       CALL GETTIM(CPU1,WALL1)
@@ -1308,7 +1305,7 @@ C
 C
 C     Dispose memory
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KSKLTN,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD1',WORK,KWORK,KSKLTN,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
 C
@@ -1329,7 +1326,7 @@ C
       CALL FLSHFO(LUPRI)
  200  CONTINUE
 C
-      CALL HEADER('DHFGRD: SS-Two-electron part',-1)
+      CALL HEADER('RMOLGRD1: SS-Two-electron part',-1)
       IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 )
      &     .AND. .NOT. DOLVC ) THEN
          CALL ESTGSS(DOSS)
@@ -1359,7 +1356,7 @@ C
      &                  'Estimated WALL time: ',DPRTIM(4,2),' seconds.'
          END IF
       ELSE
-         CALL HEADER('DHFGRD: Skipping SS-Two-el.',-1)
+         CALL HEADER('RMOLGRD1: Skipping SS-Two-el.',-1)
          GOTO 300
       END IF
       CALL GETTIM(CPU1,WALL1)
@@ -1414,7 +1411,7 @@ C
 C
 C     Dispose memory
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Symmetrization of GRADEE
 C
@@ -1436,7 +1433,7 @@ C     ===========================
 C
 C     Memory deallocation
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
 C
@@ -1456,7 +1453,7 @@ C
 C
 C     Output of timings
 C
-      CALL HEADER('Timings for DHFGRD',-1)
+      CALL HEADER('Timings for RMOLGRD1',-1)
       WRITE(LUPRI,'(/1X,A,F10.4,A)') 
      &     'One-electron part of gradient    CPU  :',CPUONE,' seconds.'
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
@@ -1502,7 +1499,7 @@ C
       CPUTOT = CPUTO2 - CPUTO1
       WLLTOT = WLLTO2 - WLLTO1
       WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'Total time in DHFGRD                  :',
+     &      'Total time in RMOLGRD1                  :',
      &      CPUTOT,' seconds.'
       WRITE(LUPRI,'(1X,A,F10.4,A/)') 
      &      '                                 WALL :',
@@ -1519,7 +1516,7 @@ C
       DPRTIM(3,2) = WLLTLS
       DPRTIM(4,2) = WLLTSS
 C
-      CALL QEXIT('DHFGRD')
+      CALL QEXIT('RMOLGRD1')
       CALL FLSHFO(LUPRI)
 C
       RETURN
