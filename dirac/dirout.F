@@ -204,7 +204,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prcoef */
-      SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPRCMP,ILABDF,IPRINT,WORK,LWORK)
+      SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPREIG,IPRCMP,ILABDF,IPRINT,
+     &                  WORK,LWORK)
 C***********************************************************************
 C
 C     Print coefficients in
@@ -323,7 +324,7 @@ C       Print coefficients
 C       ==================
 C
         CALL PRCOE1(WORK(KCBF1),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
-     &              NPVEC,NEVEC,NCBAS,IPRCMP,ILABDF)
+     &              NPVEC,NEVEC,NCBAS,IPREIG,IPRCMP,ILABDF)
  20     CONTINUE
         CALL MEMREL('PRCOEF',WORK,1,KWORK,KFREE,LFREE)
  10   CONTINUE
@@ -338,7 +339,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prcoe1 */
       SUBROUTINE PRCOE1(CMO,EIG,IFRP,JVEC,NPVEC,NEVEC,NCBAS,
-     &                  IPRCMP,ILABDF)
+     &                  IPREIG,IPRCMP,ILABDF)
 C***********************************************************************
 C
 C     Print vectors (AO/SO-basis)
@@ -370,17 +371,27 @@ C
       IF(ILABDF.EQ.1) THEN
         DO I = 1,NVEC
           IF(I.GT.NPVEC) THEN
-            II = NPSH(IFRP)+JVEC(I)
-            FMT = MXFORM(EIG(II),16)
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+            IF (IPREIG .EQ. 1) THEN
+              II = NPSH(IFRP)+JVEC(I)
+              FMT = MXFORM(EIG(II),16)
+              WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
      +         '* Electronic eigenvalue nr.',JVEC(I),': ',
      &         EIG(II)
+            ELSE
+              WRITE(LUPRI,'(/A,I3)')
+     +         '* Electronic eigenvalue nr.',JVEC(I)
+            END IF
           ELSE
-            II = NPSH(IFRP)+1+JVEC(I)
-            FMT = MXFORM(EIG(II),16)
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+            IF (IPREIG .EQ. 1) THEN
+              II = NPSH(IFRP)+1+JVEC(I)
+              FMT = MXFORM(EIG(II),16)
+              WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
      +         '* Positronic eigenvalue nr.',II,': ',
      &         EIG(II)
+            ELSE
+              WRITE(LUPRI,'(/A,I3)')
+     +         '* Positronic eigenvalue nr.',JVEC(I)
+            END IF
           ENDIF
           CALL PRSYMB(LUPRI,'=',52,0)
           IOFF = 0
@@ -406,17 +417,27 @@ C
         NBRP = 4/NZ
         DO I = 1,NVEC
           IF(I.GT.NPVEC) THEN
-            II = NPSH(IFRP)+JVEC(I)
-            FMT = MXFORM(EIG(II),16)
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+            IF (IPREIG .EQ. 1) THEN
+              II = NPSH(IFRP)+JVEC(I)
+              FMT = MXFORM(EIG(II),16)
+              WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
      +         '* Electronic eigenvalue nr.',JVEC(I),': ',
      &         EIG(II)
+            ELSE
+              WRITE(LUPRI,'(/A,I3)')
+     +         '* Electronic eigenvalue nr.',JVEC(I)
+            END IF
           ELSE
-            II = NPSH(IFRP)+1+JVEC(I)
-            FMT = MXFORM(EIG(II),16)
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+            IF (IPREIG .EQ. 1) THEN
+              II = NPSH(IFRP)+1+JVEC(I)
+              FMT = MXFORM(EIG(II),16)
+              WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
      +         '* Positronic eigenvalue nr.',II,': ',
      &         EIG(II)
+            ELSE
+              WRITE(LUPRI,'(/A,I3)')
+     +         '* Positronic eigenvalue nr.',JVEC(I)
+            ENDIF
           ENDIF
           CALL PRSYMB(LUPRI,'=',52,0)
           DO IC = 1,2

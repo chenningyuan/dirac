@@ -1642,7 +1642,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxorb.h"
 C
-#include "orbene.h"
 #include "dcbgen.h"
 #include "dcbvec.h"
 #include "dcborb.h"
@@ -1687,8 +1686,10 @@ C
       END IF
 C
       CALL HEADER('Coefficients from KRMCSCF',2)
-      CALL PRCOEF(WORK(KCMO),ORBENE,VECPRI,IPRCMP,ILABDF,
-     &            IPRVEC,WORK(KFREE),LFREE)
+      KEIG = KFREE
+      IPREIG = 0
+      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,
+     &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -1721,8 +1722,9 @@ C
       END IF
 C
       CALL HEADER('Coefficients from DFCOEF',2)
-      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,
-     &            WORK(KFREE),LFREE)
+      IPREIG = 1
+      CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,
+     &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
 C
