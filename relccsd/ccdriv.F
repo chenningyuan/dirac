@@ -1287,11 +1287,13 @@ C
          IMSTAT(5) = 2
          CALL CCDUMP
 C
+         CALL FLSHFO(IW)
          CALL CCEQN(EPS,FOO,FVO,FVV,CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
      &           TOL,NBUF2,NBUF3)
+         CALL FLSHFO(IW)
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -1334,9 +1336,11 @@ C
             GOTO 11
          ENDIF
 C
+         CALL FLSHFO(IW)
          CALL T3CORR (FVO,EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
      &                CC(BUF1),CC(BUF2),CC(BUF3),CC(BUF4),
      &                CC(VVVO),CC(VVOO),CC(VOOO))
+         CALL FLSHFO(IW)
 C
 C     This is a restart point : update status.
 C
