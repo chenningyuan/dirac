@@ -1,16 +1,53 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+C
+C$Id$
+C
+#include <single.h>
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &                  KFREE,LFREE,WORK,LWORK,IPRINT)
+     &                  KFREE,LFREE,CCFBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL SAMEOD, ODALL1, ODALL2
-      DIMENSION WORK(LWORK)
+      DIMENSION CCFBT(*), WORK(LWORK)
 #include <cbieri.h>
 #include <aobtch.h>
 #include <symmet.h>
@@ -20,7 +57,7 @@ C  /* Deck odbchs */
 C
 C     Initialize
 C
-      NITCL = 14
+      NITCL = 20
       NITBC = 4
       NRTBC = 1
       NITPP = 0
@@ -43,6 +80,8 @@ C
       DOSORT(4) =  DIASRT
       DOSORT(5) = MAXREP .GT. 0
       DOSORT(6) = MAXREP .GT. 0
+      DOSORT(7) = .TRUE.
+      DOSORT(8) = .TRUE.
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(2X,A,  I5)') ' NPSORT in ODBCHS ',NPSORT
          WRITE (LUPRI,'(2X,A,10L5)') ' DOSORT in ODBCHS ',
@@ -87,8 +126,8 @@ C
       LWRK   = LWORK  - KLAST + 1
       IF (KLAST.GT.LWORK) CALL STOPIT('ODBCHS','GODBCH 1',KLAST,LWORK)
       CALL GODBCH(WORK(KODBCH),WORK(KODTRA),WORK(KRDBCH),NAOBC2,
-     &            WORK(KODPPR),WORK(KRDPPR),NPRIM2,WORK(KLAST),LWRK,
-     &            ODTRI1,IPRINT)
+     &            WORK(KODPPR),WORK(KRDPPR),NPRIM2,CCFBT,WORK(KLAST),
+     &            LWRK,ODTRI1,IPRINT)
 C
 C     OD classes
 C     ==========
@@ -185,8 +224,8 @@ C
          LWRK   = LWORK  - KLAST + 1
          IF (KLAST.GT.LWORK)CALL STOPIT('ODBCHS','GODBCH 2',KLAST,LWORK)
          CALL GODBCH(WORK(KODBCH),WORK(KODTRA),WORK(KRDBCH),NAOBC2,
-     &               WORK(KODPPR),WORK(KRDPPR),NPRIM2,WORK(KLAST),LWRK,
-     &               ODTRI2,IPRINT)
+     &               WORK(KODPPR),WORK(KRDPPR),NPRIM2,CCFBT,WORK(KLAST),
+     &               LWRK,ODTRI2,IPRINT)
 C
 C        OD classes
 C        ==========
@@ -274,18 +313,18 @@ C  /* Deck itrmat */
       END
 C  /* Deck godbch */
       SUBROUTINE GODBCH(IODBCH,IODTRA,RODBCH,NAOBC2,IODPPR,RODPPR,
-     &                  NPRIM2,WORK,LWORK,ODTRI,IPRINT)
+     &                  NPRIM2,CCFBT,WORK,LWORK,ODTRI,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       LOGICAL ODTRI
       DIMENSION IODBCH(NITBC,NAOBC2), IODTRA(NITTR,NAOBC2),
      &          RODBCH(NRTBC,NAOBC2),
      &          IODPPR(NITPP,NPRIM2), RODPPR(NRTPP,NPRIM2),
-     &          WORK(LWORK)
+     &          CCFBT(*), WORK(LWORK)
 #include <aobtch.h>
 #include <odbtch.h>
 #include <odclss.h>
@@ -299,7 +338,7 @@ C
          DO 200 NHKTB = 1, MAXB
             CALL ODSORT(NHKTA,NHKTB,ODTRI,NBCHAB,IODBCH(1,IBATCH),
      &                  IODTRA(1,IBATCH),RODBCH(1,IBATCH),ICLASS,IODPPR,
-     &                  RODPPR,IPRADR,WORK,LWORK,IPRINT)
+     &                  RODPPR,IPRADR,CCFBT,WORK,LWORK,IPRINT)
             IBATCH = IBATCH + NBCHAB
   200    CONTINUE
   100 CONTINUE
@@ -323,17 +362,19 @@ C
       END
 C  /* Deck odsort */
       SUBROUTINE ODSORT(NHKTA,NHKTB,ODTRI,NBCHAB,IODBCH,IODTRA,RODBCH,
-     &                  ICLASS,IODPPR,RODPPR,IPRADR,WORK,LWORK,IPRINT)
+     &                  ICLASS,IODPPR,RODPPR,IPRADR,CCFBT,WORK,LWORK,
+     &                  IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL ODTRI, TRIBCH
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
-     &          WORK(LWORK), IODPPR(NITPP,*), RODPPR(NRTPP,*)
+     &          WORK(LWORK), IODPPR(NITPP,*), RODPPR(NRTPP,*),
+     &          CCFBT(*)
 #include <odclss.h>
 #include <aobtch.h>
 #include <odbtch.h>
@@ -354,20 +395,20 @@ C
       LWRK   = KLAST - LWORK + 1
       CALL ODSOR1(NHKTA,NHKTB,TRIBCH,NBCH,NBCHAB,IODBCH,IODTRA,RODBCH,
      &            ICLASS,IODPPR,RODPPR,IPRADR,WORK(KISORT),WORK(KDSORT),
-     &            WORK(KSORT),WORK(KDSRT),WORK(KCLASS),WORK(KLAST),LWRK,
-     &            IPRINT)
+     &            WORK(KSORT),WORK(KDSRT),WORK(KCLASS),CCFBT,
+     &            WORK(KLAST),LWRK,IPRINT)
       RETURN
       END
 C  /* Deck odsor1 */
       SUBROUTINE ODSOR1(NHKTA,NHKTB,TRIBCH,NBCH,NBCHAB,IODBCH,IODTRA,
      &                  RODBCH,ICLASS,IODPPR,RODPPR,IPRADR,ISORT,DSORT,
-     &                  NSORT,KODSRT,KCLASS,WORK,LWORK,IPRINT)
+     &                  NSORT,KODSRT,KCLASS,CCFBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       LOGICAL TRIBCH, ODBTGT
       INTEGER A, B
 #include <aobtch.h>
@@ -376,7 +417,7 @@ C  /* Deck odsor1 */
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), RODBCH(NRTBC,*),
      &          ISORT(3,NBCH), DSORT(1,NBCH), NSORT(NPSORT,NBCH),
      &          IODPPR(NITPP,*), RODPPR(NRTPP,*),
-     &          KODSRT(NBCH), KCLASS(NBCH), WORK(LWORK)
+     &          KODSRT(NBCH), KCLASS(NBCH), CCFBT(*), WORK(LWORK)
 C
       CALL IZERO(NSORT,NPSORT*NBCH)
 C
@@ -393,7 +434,8 @@ C
             IA = KAOSRT(KQNBT(NHKTA) - 1 + A)
             IB = KAOSRT(KQNBT(NHKTB) - 1 + B)
             CALL NODDIM(IA,IB,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
-     &                  PRXFAB,IODPPR(1,IPRADR),RODPPR(1,IPRADR))
+     &                  ICMATA,ICMATB,PRXFAB,IODPPR(1,IPRADR),
+     &                  RODPPR(1,IPRADR),CCFBT)
             IF (NPRFAB .GT. 0) THEN
                IBATCH = IBATCH + 1
                ISORT(1,IBATCH) = IA
@@ -406,6 +448,8 @@ C
                IF (DOSORT(4)) NSORT(4,IBATCH) = NGTOAB
                IF (DOSORT(5)) NSORT(5,IBATCH) = ISTBLA
                IF (DOSORT(6)) NSORT(6,IBATCH) = ISTBLB
+               IF (DOSORT(7)) NSORT(7,IBATCH) = ICMATA
+               IF (DOSORT(8)) NSORT(8,IBATCH) = ICMATB 
                IPRADR = IPRADR + NPRFAB
                IF (IPRINT .GT. 5) THEN
                   WRITE (LUPRI,'(2X,A, I5)') ' IBATCH ', IBATCH
@@ -418,6 +462,8 @@ C
      &                                         NCNTAB,NGTOAB
                   WRITE (LUPRI,'(2X,A,2I5)') ' ISTBLA,ISTBLB ',
      &                                         ISTBLA,ISTBLB
+                  WRITE (LUPRI,'(2X,A,2I5)') ' ICMATA,ICMATB ',
+     &                                         ICMATA,ICMATB
                END IF
             END IF
   200    CONTINUE
@@ -496,16 +542,18 @@ C
       END
 C  /* Deck noddim */
       SUBROUTINE NODDIM(A,B,NPRFAB,NCTFAB,NCNTAB,NGTOAB,ISTBLA,ISTBLB,
-     &                  PRXFAB,IODPPR,RODPPR)
+     &                  ICMATA,ICMATB,PRXFAB,IODPPR,RODPPR,CCFBT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
       PARAMETER (D0 = 0.D0)
+      LOGICAL GCNT
       INTEGER A, B, R, R1
       DIMENSION IODPPR(NITPP,*), RODPPR(NRTPP,*), PFAC(8)
+      DIMENSION CCFBT(MXPRIM*MXCONT)
 #include <cbieri.h>
 #include <erithr.h>
 #include <odclss.h>
@@ -524,11 +572,11 @@ C
       MLTPR  = MULT(ISTBLR)
 C
       NCTFAB = NCTFBT(A)*NCTFBT(B)
-      IF (NCTFAB .GT. 1) THEN
-         WRITE (LUPRI,'(2X,A)')
-     &     ' General contraction not implemented '
-         CALL QUIT('General contraction not allowed')
-      END IF
+      ICMATA = KCMTBT(A)
+      ICMATB = KCMTBT(B)
+C
+      GCNT   =  GENCON .OR. NCTFAB .GT. 1
+C
       NCNTAB = 2
       IF (NCNTBT(A) .EQ. NCNTBT(B) .AND. MLTPR.EQ.1) NCNTAB = 1
       NGTOAB = 2
@@ -547,28 +595,29 @@ C
             EXPA = EXPBT(INDXPA)
             EXPB = EXPBT(INDXPB)
             EXPR = EXPA*EXPB/(EXPA + EXPB)
+C
             R1 = 0
             FACMAX = D0
-            DO 300 R = 0, MAXOPR
+            DO R = 0, MAXOPR
             IF (IBTAND(R,ISTBLR) .EQ. 0) THEN
                R1 = R1 + 1
                DST2 = (CORXBT(A) - XPAR(R)*CORXBT(B))**2
      &              + (CORYBT(A) - YPAR(R)*CORYBT(B))**2
      &              + (CORZBT(A) - ZPAR(R)*CORZBT(B))**2
                FAC  = R2PI52*EXP(-EXPR*DST2)/(EXPA + EXPB)
-               IF (NCTFAB .EQ. 1) FAC = CCFBT(INDCFA)*CCFBT(INDCFB)*FAC
+               IF (.NOT.GCNT) FAC = CCFBT(INDCFA)*CCFBT(INDCFB)*FAC
                FACMAX = MAX(FACMAX,ABS(FAC))
                PFAC(R1) = FAC
             END IF
-  300       CONTINUE
+            END DO 
 C
-            IF (FACMAX.GT.THRSH) THEN
+            IF (GCNT .OR. FACMAX.GT.THRSH) THEN
                IJ = IJ + 1
                RODPPR(1,IJ) = EXPA
                RODPPR(2,IJ) = EXPB
-               DO 400 R = 1, MLTPR
+               DO R = 1, MLTPR
                   RODPPR(R+2,IJ) = PFAC(R)
-  400          CONTINUE
+               END DO
                PRXFAB = MAX(PRXFAB,FACMAX)
             END IF
 C
@@ -584,7 +633,7 @@ C  /* Deck odbtgt */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aobtch.h>
 #include <odbtch.h>
       DIMENSION NSORT(NPSORT,*)
@@ -607,7 +656,7 @@ C  /* Deck odcls */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aobtch.h>
 #include <odbtch.h>
       LOGICAL NEWCLS
@@ -621,9 +670,9 @@ C
          N = KODSRT(I-1)
 C
          NEWCLS = .FALSE.
-         DO 200 J = 1, NPSORT
+         DO J = 1, NPSORT
             NEWCLS = NEWCLS .OR. NSORT(J,M) .NE. NSORT(J,N)
-  200    CONTINUE
+         END DO  
          IF (NEWCLS) THEN
             ICLASS = ICLASS + 1
             NCLASS = NCLASS + 1
@@ -639,7 +688,7 @@ C  /* Deck clsinf */
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <aovec.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <odbtch.h>
 #include <aobtch.h>
       DIMENSION IODBCH(NITBC,*), IODTRA(NITTR,*), IODCLS(NITCL,NODCLS),
@@ -651,18 +700,18 @@ C
 C     Number of batches in each class
 C     ===============================
 C
-      DO 100 I = 1, NODBCH
+      DO I = 1, NODBCH
          IODCLS(1,IODBCH(1,I)) = IODCLS(1,IODBCH(1,I)) + 1
-  100 CONTINUE
+      END DO
 C
 C     Pointers to first element in each class
 C     =======================================
 C
       IJ = 1
-      DO 200 I = 1, NODCLS
+      DO I = 1, NODCLS
          IODCLS(2,I) = IJ
          IJ = IJ + IODCLS(1,I)
-  200 CONTINUE
+      END DO  
 C
 C     Class info IODCL1/IODCL2
 C     ========================
@@ -683,15 +732,21 @@ C
          IF (DOSORT(2)) IODCLS(12,I) = IODTRA(2,IPOINT)
          IF (DOSORT(3)) IODCLS(13,I) = IODTRA(3,IPOINT)
          IF (DOSORT(4)) IODCLS(14,I) = IODTRA(4,IPOINT)
+         IODCLS(15,I) = NPRFBT(IA)
+         IODCLS(16,I) = NPRFBT(IB)
+         IODCLS(17,I) = NCTFBT(IA)
+         IODCLS(18,I) = NCTFBT(IB)
+         IODCLS(19,I) = KCCFBT(IA)
+         IODCLS(20,I) = KCCFBT(IB)
   300 CONTINUE
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from CLSINF',-1)
          WRITE (LUPRI,'(1X,A,I5)') ' Number of classes NODCLS:',NODCLS
          CALL HEADER('Array IODCLS in CLSINF',-1)
-         DO 900 I = 1, NODCLS
-            WRITE (LUPRI,'(14I5)') I, (IODCLS(J,I), J=1,NITCL)
-  900    CONTINUE
+         DO I = 1, NODCLS
+            WRITE (LUPRI,'(20I4)') I, (IODCLS(J,I), J=1,NITCL)
+         END DO  
       END IF
 C
       CALL ODSTAT(IODCLS,WORK,LWORK,IPRINT)

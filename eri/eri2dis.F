@@ -1,16 +1,53 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+C
+C$Id$
+C
+#include <single.h>
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,
      &                  KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &                  KFREE,LFREE,KEND,
+     &                  KFREE,LFREE,KEND,CCFBT,INDXBT,
      &                  WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
-      DIMENSION WORK(LWORK)
+#include <maxorb.h>
+      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <ccom.h>
 #include <cbieri.h>
 #include <eribuf.h>
@@ -20,28 +57,17 @@ C  /* Deck eridi1 */
 #include <aobtch.h>
 #include <odbtch.h>
 #include <symmet.h>
-#include <hrunit.h>
 #include <iratdef.h>
+#include <inftap.h>
 C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
+C
       DODIST = .TRUE.
       PMSAB  = .FALSE.
       PMS12  = .FALSE.
-      CANIND = .FALSE.
 C
-      IF (LBFINP .EQ. 600) LBFINP = 20 000
-C
-C     Unit numbers
-C
-      LUINTA = 42
-      LUONEL = 16
-      LUSUPM = 17
-      LUDASP = 24
-      LUSOL  = 31
-      LUINTR = 93
-      LUAORC = 94
 C
 C     Memory
 C
@@ -50,12 +76,9 @@ C
       MODAB  = 0
       MODCD  = 0
 C
-C     Symmetry transformation
-C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
-C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
+      ERGINT = .FALSE.
 C
 C     Pi
 C
@@ -64,36 +87,7 @@ C
 C     AO batches
 C     ==========
 C
-      CALL SETAOB(WORK,LWORK,IPRINT)
-C
-C     Open files
-C
-C     Note: NBASIS is unknown until after SETAOB has been called
-C
-      OPEN (LUINTR,STATUS='UNKNOWN',FORM='UNFORMATTED',FILE='AOTWODIS')
-#if defined (SYS_CRAY)
-      LRECL = 8*LBFINP + 8*LBFINP + 8
-      OPEN(LUAORC,STATUS='UNKNOWN',FORM='UNFORMATTED',ACCESS='DIRECT',
-     &     RECL= LRECL)
-#endif
-#if defined (SYS_AIX)
-      IF (NBASIS .LE. 255) THEN
-         LRECL = 8*LBFINP + 4*LBFINP + 4
-      ELSE
-         LRECL = 8*LBFINP + 8*LBFINP + 4
-      END IF
-      OPEN(LUAORC,STATUS='UNKNOWN',FORM='UNFORMATTED',ACCESS='DIRECT',
-     &     RECL= LRECL)
-#endif
-#if defined (SYS_IRIX)
-      IF (NBASIS .LE. 255) THEN
-         LRECL = 2*LBFINP + LBFINP + 1
-      ELSE
-         LRECL = 2*LBFINP + 2*LBFINP + 1
-      END IF
-      OPEN(LUAORC,STATUS='UNKNOWN',FORM='UNFORMATTED',ACCESS='DIRECT',
-     &     RECL= LRECL)
-#endif
+      CALL SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 C
 C     OD batches
 C     ==========
@@ -105,7 +99,7 @@ C
       CALL ODBCHS(KODCL1,KODCL2,
      &            KODBC1,KODBC2,KRDBC1,KRDBC2,
      &            KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &            KFREE,LFREE,WORK,LWORK,IPRINT)
+     &            KFREE,LFREE,CCFBT,WORK,LWORK,IPRINT)
 C
       KODCL1 = KODCL1 + KEND - 1
       KODCL2 = KODCL2 + KEND - 1
@@ -126,43 +120,62 @@ C
       END IF
 C
       ICALL = 0
-      CALL GETDST(ICALL,IPRINT)
+      CALL GETDST(ICALL,ICALL,IPRINT)
 C
       RETURN
       END
 C  /* Deck eridi2 */
-      SUBROUTINE ERIDI2(ICALL,INDEXA,NUMDIS,
+      SUBROUTINE ERIDI2(ICALL,INDEXA,NUMDIS,NGDER,NBDER,
      &                  IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
-     &                  WORK,LWORK,IPRINT)
+     &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <eridst.h>
 #include <dummy.h>
+      CHARACTER*8 FAODER
       DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
      &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
      &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
      &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
-     &          INDEXA(*), WORK(LWORK)
+     &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <ccom.h>
 #include <cbieri.h>
 #include <ericom.h>
 #include <erithr.h>
 #include <erimem.h>
+#include <eribuf.h>
 #include <aobtch.h>
 #include <odbtch.h>
+#include <nuclei.h>
+#include <chrnos.h>
 #include <odclss.h>
 #include <symmet.h>
-#include <eribuf.h>
 #include <iratdef.h>
+#include <inftap.h>
 C
       IPRINT = IPRERI
+C
+      GDER   = NGDER .GT. 0 
+      BDER   = NBDER .GT. 0 
+      IF (GDER .OR. BDER) THEN
+         UNDIFF = .TRUE.
+      ELSE
+         UNDIFF = .FALSE.
+      END IF
+      WRTINT = .TRUE.
+      FCKINT = .FALSE.
+      ERGINT = .FALSE.
+      EXPERI = .FALSE.
+      CCRUN  = .TRUE.
+      NPDIMA = 0
+      NPDIMB = 0
 C
       NEWDIS = .TRUE.
 C
@@ -173,11 +186,43 @@ C
       MODAB  = 0
       MODCD  = 0
 C
-C     Symmetry transformation
+      IF (LBFINP .EQ. 600) LBFINP = 20 000
 C
-      SYMTRA = DOSTRA .OR. MAXREP .GT. 0
+C     Open files
 C
-      CALL GETDST(ICALL,IPRINT)
+      IF (LUINTR.EQ.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
+     &     'UNFORMATTED',IDUMMY,.FALSE.)
+#if defined (SYS_CRAY) || defined (SYS_T90)
+      LRECL = LBFINP + LBFINP + 1
+#endif
+#if defined (SYS_AIX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL) || defined (SYS_LINUX)
+      IF (NBASIS .LE. 255) THEN
+         LRECL = 2*LBFINP + LBFINP + 1
+      ELSE
+         LRECL = 2*LBFINP + 2*LBFINP + 1
+      END IF
+#endif
+#if defined (SYS_IRIX) || defined (SYS_DEC)
+      IF (NBASIS .LE. 255) THEN
+         LRECL = 2*LBFINP + LBFINP + 1
+      ELSE
+         LRECL = 2*LBFINP + 2*LBFINP + 1
+      END IF
+#endif
+#if defined (SYS_NEC)
+      LRECL = LBFINP + LBFINP/IRAT + 1
+#endif
+      NSCOOR = 0
+      IF (GDER) NSCOOR = 3*NUCDEP
+      IF (BDER) NSCOOR = 6
+      DO ISCOOR = 0, NSCOOR
+         FAODER = 'AO2DIS'//CHRNOS(ISCOOR/10)
+     &                    //CHRNOS(MOD(ISCOOR,10))
+         CALL GPOPEN(LUAORC(ISCOOR),FAODER,'UNKNOWN','DIRECT',
+     &        'UNFORMATTED',LRECL,OLDDX)
+      END DO
+C
+      CALL GETDST(ICALL,0,IPRINT)
 C
 C     Select integrals to be calculated
 C     =================================
@@ -187,7 +232,7 @@ C
 C     Information about distributions
 C     ===============================
 C
-      CALL ERIDSI(IPRINT)
+      CALL ERIDSI(INDXBT,IPRINT)
 C
 C     Transfer information
 C     ====================
@@ -197,7 +242,7 @@ C
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIDI2',2)
          WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
-     &         NDISTR,' distributions in this HERMIT call:',
+     &         NDISTR,' distributions in this ERI call:',
      &         (INDEXA(I),I=1,NDISTR)
       ENDIF
 C
@@ -209,7 +254,8 @@ C
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
-     &               DUMMY,DUMMY,WORK,LWORK,IPRINT)
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,DUMMY,IDUMMY,CCFBT,
+     &               INDXBT,WORK,LWORK,IPRINT)
          IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)
          CALL FLSHFO(LUPRI)
 C
@@ -228,6 +274,106 @@ C
          END IF
       END IF
 C
+      DO ISCOOR = 0, NSCOOR
+         CALL GPCLOSE(LUAORC(ISCOOR),'KEEP')
+      END DO
+C
+      RETURN
+      END
+C  /* Deck eridid */
+      SUBROUTINE ERIDID(ICALL1,ICALL2,D2MAT,ID2MAT,NDIMA,NDIMB,
+     &                  IODCL1,IODCL2,IODBC1,IODBC2,RODBC1,RODBC2,
+     &                  IODPP1,IODPP2,RODPP1,RODPP2,
+     &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <eridst.h>
+#include <dummy.h>
+      DIMENSION IODCL1(NODCL1,NITCL), IODCL2(NODCL2,NITCL),
+     &          IODBC1(NODBC1,NITBC), IODBC2(NODBC2,NITBC),
+     &          RODBC1(NODBC1,NRTBC), RODBC2(NODBC2,NRTBC),
+     &          IODPP1(NODPP1,NITPP), IODPP2(NODPP2,NITPP),
+     &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
+     &          CCFBT(*), INDXBT(*), WORK(LWORK)
+      DIMENSION D2MAT(*), ID2MAT(*)
+#include <ccom.h>
+#include <cbieri.h>
+#include <ericom.h>
+#include <erithr.h>
+#include <erimem.h>
+#include <aobtch.h>
+#include <odbtch.h>
+#include <odclss.h>
+#include <symmet.h>
+#include <eribuf.h>
+#include <iratdef.h>
+C
+      IPRINT = IPRERI
+C
+      GDER   = .TRUE.
+      BDER   = .FALSE.
+      WRTINT = .FALSE.
+      FCKINT = .FALSE.
+      ERGINT = .FALSE.
+      EXPERI = .TRUE.
+      UNDIFF = .FALSE.
+      CCRUN  = .TRUE.
+      NPDIMA = NDIMA
+      NPDIMB = NDIMB
+C
+      NEWDIS = .TRUE.
+C
+C     Memory
+C
+      MEMOK  = .TRUE.
+      MEMADD = 0
+      MODAB  = 0
+      MODCD  = 0
+C
+      CALL GETDST(ICALL1,ICALL2,IPRINT)
+C
+C     Select integrals to be calculated
+C     =================================
+C
+      CALL PICKAO(IPRINT)
+C
+C     Information about distributions
+C     ===============================
+C
+      CALL ERIDSI(INDXBT,IPRINT)
+C
+C     Calculate integrals
+C     ===================
+C
+      IF (.NOT.INTSKP) THEN
+         CALL TIMER('START ',TIMSTR,TIMEND)
+         CALL ODCDRV(IODCL1,IODCL2,
+     &               IODBC1,IODBC2,RODBC1,RODBC2,
+     &               IODPP1,IODPP2,RODPP1,RODPP2,
+     &               DUMMY,DUMMY,IDUMMY,IDUMMY,D2MAT,ID2MAT,CCFBT,
+     &               INDXBT,WORK,LWORK,IPRINT)
+         IF ( IPRINT .GT. 2) CALL TIMER('HERMIT',TIMSTR,TIMEND)
+         CALL FLSHFO(LUPRI)
+C
+C        Error message in case of insufficient memory
+C
+         IF (.NOT.MEMOK) THEN
+            WRITE (LUPRI,'(//,1X,A,3(/,1X,A,I10))')
+     &         ' Not enough memory for this run of ERIDID.',
+     &         ' Available memory in ERIDID:',LWORK,
+     &         ' Required memory for ERIDID:',LWORK + MEMADD,
+     &         ' Increase memory (LWORK) by:',MEMADD
+            WRITE (LUPRI,'(/,1X,A,2I5)')
+     &         ' Memory requirements largest for OD classes :',
+     &           MODAB,MODCD
+            CALL QUIT('Insufficient memory in ERIDID.')
+         END IF
+      END IF
+C
       RETURN
       END
 C  /* Deck eriact */
@@ -237,7 +383,7 @@ C  /* Deck eriact */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
       PARAMETER (D0 = 0.0D0)
       LOGICAL ODTRI
@@ -304,30 +450,31 @@ C  /* Deck pickao */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
 #include <erisel.h>
 #include <aobtch.h>
 C
-      DO 100 J = 1, 4
-      DO 100 I = 1, NAOBCH
+      DO J = 1, 4
+      DO I = 1, NAOBCH
          ACTVBT(I,J) = .TRUE.
-  100 CONTINUE
+      END DO
+      END DO
 C
 C     First orbital
 C
-      DO 200 J = 1, 4
+      DO J = 1, 4
          NSET = NSELCT(J)
          IF (NSET .GT. 0) THEN
-            DO 300 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                ACTVBT(I,J) = .FALSE.
-  300       CONTINUE
-            DO 400 I = 1, NSET
+            END DO
+            DO I = 1, NSET
                ACTVBT(NACTAO(I,J),J) = .TRUE.
-  400       CONTINUE
+            END DO
          END IF
-  200 CONTINUE
+      END DO
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)
@@ -336,9 +483,9 @@ C
      &         ' Number of active AO batches for each electron:',
      &         (NSELCT(I),I=1,4)
             WRITE (LUPRI,'(1X,A,/)') ' ACTVBT in PICKAO:'
-            DO 500 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                WRITE (LUPRI,'(10X,I5,5X,4L5))') I, (ACTVBT(I,J),J=1,4)
-  500       CONTINUE
+            END DO
          ELSE
             WRITE (LUPRI,'(1X,A)') ' All AO batches active.'
          END IF
@@ -347,15 +494,16 @@ C
       RETURN
       END
 C  /* Deck eridsi */
-      SUBROUTINE ERIDSI(IPRINT)
+      SUBROUTINE ERIDSI(INDXBT,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <mxcent.h>
 C
       LOGICAL FIRST
+      DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
 C
 #include <cbieri.h>
 #include <eridst.h>
@@ -369,7 +517,7 @@ C
          NDISTR = 0
          NACDST = 0
          FIRST  = .TRUE.
-         DO 100 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             IF (ACTVBT(I,1)) THEN
                NDISTR = NDISTR + NORBBT(I)
                IF (NDISTR .GT. MXDIST) THEN
@@ -386,6 +534,7 @@ C
                   NHKDST = NHKTBT(I)
                   KHKDST = KHKTBT(I)
                   MLTDST = MULTBT(I)
+                  NCTDST = NCTFBT(I)
 C                 NPRDST = NPRFBT(I)
                   ISTABL = ISTBBT(I)
                   FIRST = .FALSE.
@@ -405,23 +554,26 @@ C    &                   NPRFBT(I).NE.NPRDST .OR.
                   END IF
                END IF
             END IF
-  100    CONTINUE
+         END DO
 C
          IDIST = 0
-         DO 200 IREP = 0, MAXREP
-            IA = 0
-            DO 300 ICMP = 1, KHKDST
-            IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP))).EQ.0)THEN
-               IA = IA + 1
-               DO 400 J = 1, NACDST
-                  IDIST = IDIST + 1
-                  INDA = INDXBT(KNDXBT(IACDST(J)),IREP)+IA-1
-                  INDDST(IDIST) = INDA
-                  INDXDS(INDA) = IDIST
-  400          CONTINUE
-            END IF
-  300       CONTINUE
-  200    CONTINUE
+         DO ICNT = 1, NCTDST 
+            DO IREP = 0, MAXREP
+               IA = 0
+               DO ICMP = 1, KHKDST
+               IF(IBTAND(ISTABL,IBTXOR(IREP,ISYMAO(NHKDST,ICMP))) 
+     &            .EQ. 0) THEN
+                  IA = IA + 1
+                  DO J = 1, NACDST
+                     IDIST = IDIST + 1
+                     INDA = INDXBT(KNDXBT(IACDST(J))-1+ICNT,IREP)+IA-1
+                     INDDST(IDIST) = INDA
+                     INDXDS(INDA) = IDIST
+                  END DO
+               END IF
+               END DO
+            END DO
+         END DO
 C
       ELSE
          NDISTR = 1
@@ -446,11 +598,11 @@ C
       RETURN
       END
 C  /* Deck getdst */
-      SUBROUTINE GETDST(ICLX,IPRINT)
+      SUBROUTINE GETDST(ICLX1,ICLX2,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <eridst.h>
@@ -462,14 +614,22 @@ C
 #include <distcl.h>
 #include <aobtch.h>
 C
+C
+C     ICLX .EQ. 0: initialization call
+C
+      ICLX = ICLX1
       IF (ICLX.EQ.0) THEN
 C
 C        MAXCML
 C
          MAXCML = 0
-         DO 100 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             MAXCML = MAX(MAXCML,NORBBT(KAOSRT(I)))
-  100    CONTINUE
+         END DO
+C
+C        MXDIST: value used in parameter statement for 
+C                common blocks etc. 
+C        MAXDST: input parameter with default
 C
          IF (MAXCML .GT. MXDIST) THEN
             WRITE (LUPRI,'(2X,A,/,2X,A,2I5,/,2X,A)')
@@ -498,7 +658,7 @@ C
          MCLASS(ICLASS) = NORBBT(IOLD)
          KCLASS(ICLASS) = 1
          KLAOBT(1) = 1
-         DO 200 I = 2, NAOBCH
+         DO I = 2, NAOBCH
             INEW = KAOSRT(I)
             IF (AOBTGT(INEW,IOLD)) THEN
                ICLASS = ICLASS + 1
@@ -510,7 +670,7 @@ C
                NCLASS(ICLASS) = NCLASS(ICLASS) + 1
             END IF
             KLAOBT(I) = ICLASS
-  200    CONTINUE
+         END DO
          NTCLAS = ICLASS
 C
          IF (IPRINT .GT. 2) THEN
@@ -534,7 +694,7 @@ C        Determine number of calls to integral program
 C
          IPRVDS = 0
          ICALL = 0
-         DO 300 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             IFIRST = IPRVDS + 1
             ICLASS = KLAOBT(IFIRST)
             MULTPL = MCLASS(ICLASS)
@@ -560,31 +720,44 @@ C
 C
             IPRVDS = ILAST
 C
-            IF (ILAST .EQ. NAOBCH) GO TO 399
+            IF (ILAST .EQ. NAOBCH) GO TO 100
 C
-  300    CONTINUE
-  399    CONTINUE
+         END DO
+  100    CONTINUE
 C
          MXCALL = ICALL
          IF (IPRINT .GT. 1) THEN
             WRITE (LUPRI,'(/,2X,A,I5)')
      &         'Number of calls to integral program ',MXCALL
             IF (IPRINT .GT. 2) THEN
-               DO 400 I = 1, MXCALL
+               DO I = 1, MXCALL
                   WRITE (LUPRI,'(5X,5I5)')
      &                I, ICLFRS(I), ICLLST(I), ICLBCH(I), ICLDST(I)
-  400          CONTINUE
+               END DO
             END IF
          END IF
-      ELSE
+      ELSE IF (ICLX2.EQ.0) THEN
          NSELCT(1) = ICLBCH(ICLX)
          NSELCT(2) = 0
          NSELCT(3) = 0
          NSELCT(4) = 0
          IFIRST = ICLFRS(ICLX)
-         DO 600 I = 1, ICLBCH(ICLX)
+         DO I = 1, ICLBCH(ICLX)
             NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
-  600    CONTINUE
+         END DO
+      ELSE 
+         NSELCT(1) = ICLBCH(ICLX1)
+         NSELCT(2) = ICLBCH(ICLX2)
+         NSELCT(3) = 0
+         NSELCT(4) = 0
+         IFIRST = ICLFRS(ICLX1)
+         DO I = 1, ICLBCH(ICLX1)
+            NACTAO(I,1) = KAOSRT(IFIRST + I - 1)
+         END DO
+         IFIRST = ICLFRS(ICLX2)
+         DO I = 1, ICLBCH(ICLX2)
+            NACTAO(I,2) = KAOSRT(IFIRST + I - 1)
+         END DO
 C
       END IF
 C
@@ -594,11 +767,11 @@ C  /* Deck er2dis */
       SUBROUTINE ER2DIS(WORK,LWORK)
 C
 #include <implicit.h>
+#include <iratdef.h>
 #include <priunit.h>
 C
 #include <maxorb.h>
 #include <maxash.h>
-#include <mxorb.h>
 #include <aovec.h>
 C
       DIMENSION INDEXA(MXCORB), WORK(LWORK)
@@ -606,31 +779,84 @@ C
 #include <cbieri.h>
 #include <distcl.h>
 C
-      KEND1 = 1
-      LWRK1 = LWORK  - KEND1
+      KCCFB1 = 1
+      KINDXB = KCCFB1 + MXPRIM*MXCONT
+      KEND1  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+      LWRK1  = LWORK  - KEND1
+      IF (KEND1 .GT. LWORK) CALL STOPIT('ERIDIS',' ',KEND1,LWORK)
       CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      &            KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &            KFREE,LFREE,KEND1,
+     &            KFREE,LFREE,KEND1,WORK(KCCFB1),WORK(KINDXB),
      &            WORK(KEND1),LWRK1,IPRERI)
       KEND1 = KFREE
       LWRK1 = LFREE
 C
-      DO 100 IDIST = 1, MXCALL
+      DO IDIST = 1, MXCALL
          WRITE (LUPRI,'(A,I5)')
      &      ' Calling ERIDI2 for distribution #',IDIST
          CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL ERIDI2(IDIST,INDEXA,NUMDIS,
+         CALL ERIDI2(IDIST,INDEXA,NUMDIS,0,0,
      &               WORK(KODCL1),WORK(KODCL2),
      &               WORK(KODBC1),WORK(KODBC2),
      &               WORK(KRDBC1),WORK(KRDBC2),
      &               WORK(KODPP1),WORK(KODPP2),
      &               WORK(KRDPP1),WORK(KRDPP2),
+     &               WORK(KCCFB1),WORK(KINDXB),
      &               WORK(KEND1), LWRK1,IPRERI)
          WRITE (LUPRI,'(2X,A,I5)') ' NUMDIS from this call:',NUMDIS
          WRITE (LUPRI,'(1X,A,8I5,/,(30X,8I5))')
      &      ' Distributions:              ',(INDEXA(I),I=1,NUMDIS)
          CALL TIMER('ERIDI2',TIMSTR,TIMEND)
-  100 CONTINUE
+      END DO
+C
+      RETURN
+      END
+C  /* Deck eriidx */
+      SUBROUTINE ERIIDX(ICALL,INDEXA,NUMDIS,INDXBT,IPRINT)
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <aovec.h>
+#include <maxaqn.h>
+#include <maxorb.h>
+#include <eridst.h>
+#include <dummy.h>
+      DIMENSION INDEXA(*), INDXBT(*)
+#include <ccom.h>
+#include <cbieri.h>
+#include <ericom.h>
+#include <erithr.h>
+#include <erimem.h>
+#include <aobtch.h>
+#include <odbtch.h>
+#include <odclss.h>
+#include <symmet.h>
+#include <eribuf.h>
+#include <iratdef.h>
+C
+      CALL GETDST(ICALL,0,IPRINT)
+C
+C     Select integrals to be calculated
+C     =================================
+C
+      CALL PICKAO(IPRINT)
+C
+C     Information about distributions
+C     ===============================
+C
+      CALL ERIDSI(INDXBT,IPRINT)
+C
+C     Transfer information
+C     ====================
+C
+      NUMDIS = NDISTR
+      CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
+      IF ( IPRINT .GT. 2 ) THEN
+         CALL HEADER('Output from ERIIDX',2)
+         WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
+     &         NDISTR,' distributions in this ERI call:',
+     &         (INDEXA(I),I=1,NDISTR)
+      ENDIF
 C
       RETURN
       END

@@ -1,19 +1,52 @@
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
 C
 C$Id$
 C
-C  /* Deck erigam */
-      SUBROUTINE ERIGAM(RJ000,FACINT,EXPPQ,PQXYZ,WORK,LWORK,IPRINT)
+#include <single.h>
+C  /* Deck fmmgam */
+      SUBROUTINE FMMGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
       DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
-     &          EXPPQ(NPPX,2), PQXYZ(NPPX,3),
+     &          ALPHA(NPPX), COORPQ(NPPX,3),
      &          WORK(LWORK)
 #include <ericom.h>
 C-----------------------------------------------------------------------
 C
-C     Allocate ERIGAM
+C     Allocate FMMGAM
 C
       KALPHA = 1
       KWVALU = KALPHA +  NPPX
@@ -22,24 +55,23 @@ C
       IF (KLAST .GT. LWORK) CALL STOPIT('ERIGAM',' ',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
 C
-      CALL ERIGA1(RJ000,FACINT,EXPPQ(1,1),EXPPQ(1,2),PQXYZ,
+      CALL FMMGA1(RJ000,FACINT,ALPHA,COORPQ,
      &            WORK(KALPHA),WORK(KWVALU),WORK(KNDADR),
      &            WORK(KLAST),LWRK,IPRINT)
 C
       RETURN
       END
-C  /* Deck eriga1 */
-      SUBROUTINE ERIGA1(RJ000,FACINT,EXPP,EXPQ,PQXYZ,TALPHA,
+C  /* Deck fmmga1 */
+      SUBROUTINE FMMGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
      &                  WVALU,INDADR,WORK,LWORK,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP5M = -0.5D0)
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = -0.5D0)
 C
-      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),
-     &          EXPP(NPPX),EXPQ(NPPX),
-     &          PQXYZ(NPPX,3),TALPHA(NPPX),
+      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
+     &          COORPQ(NPPX,3),TALPHA(NPPX),
      &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
 #include <ericom.h>
@@ -54,20 +86,146 @@ C     Note: There should be no testing for small integrals since
 C     this may in the case of one-center integrals introduce
 C     numerical instabilities for large exponents.
 C
+      DO 450 J = 0, JMAX
+      DO 450 I = 1, NPPX
+CMAW  Set multi-centre Coulomb integrals to zero (exchange??)
+         RJ000(I,J) = D0
+  450 CONTINUE
+
       IF (IPQXYZ.EQ.7) THEN
-         DO 300 I = 1, NPPX
-            RJ000(I,0) = FACINT(I)/SQRT(EXPP(I) + EXPQ(I))
-  300    CONTINUE
+C         CALL DCOPY(NPPX,FACINT,1,RJ000(1,0),1)
+C         IF (JMAX .GT. 0) THEN
+C            CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
+C            DO 500 J = 1, JMAX
+C               FAC = D1/SDPRE(2*J + 1)
+C               DO 510 I = 1, NPPX
+C            FACINT(I)  = D0 
+C                  RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
+C                  FACINT(I)  = ALPHA(I)*FACINT(I)
+C  510          CONTINUE
+C  500       CONTINUE
+C         END IF
+C
+      ELSE
+         NODS  = 0
+         DO 600 I = 1, NPPX
+            IF (ABS(FACINT(I)) .GT. THRSH) THEN
+               NODS = NODS + 1
+               WVALU(NODS) = DP5*ALPHA(I)
+     &             *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
+               INDADR(NODS) = I
+            ELSE
+               FACINT(I) = D0
+               DO J = 0, JMAX
+                  RJ000(I,J) = D0
+               END DO
+            END IF
+  600    CONTINUE
+C
+C        Calculate gamma function
+C        - In fact returns the Boys Function, Fn(a*RPQ)
+C        ===============================================
+C
+C        Allocate GETGAM
+C
+         KINDAD = 1
+         KWVALS = KINDAD + (3*NPPX - 1)/IRAT + 1
+         KFJW   = KWVALS +  3*NPPX
+         KREXPW = KFJW   +    NPPX*(JMAX + 1)
+         KLAST  = KREXPW +    NPPX
+         IF (KLAST .GT. LWORK) CALL STOPIT('ERIGA1',' ',KLAST,LWORK)
+C         CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
+C     &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
+C
+C        Scale gamma function
+C        i.e. generate (-2a)^n * Fn(a*RPQ^2)
+C        ====================================
+C
+         N = 0
+         DO 800 I = 1, NPPX
+            IF (ABS(FACINT(I)) .GT. THRSH) THEN
+               N = N+1
+               ARG = WVALU(N)
+               DO J = 0, JMAX
+CMAW  Build RJ000 from Asymptotic Long Range Boys Function
+                  RJ000(I,J) = ABOYSF(ARG,J)
+CMAW  Set multi-centre Coulomb integrals to zero (exchange??)
+C            FACINT(I)  = D0 
+                  RJ000(I,J) = FACINT(I)*RJ000(I,J)
+                  FACINT(I)  = ALPHA(I)*FACINT(I)
+               END DO
+             END IF
+CMAW FIXME:  note we divide and multiply by (D2**J) when using LRBOYS
+  800    CONTINUE
+      END IF
+C
+      RETURN
+      END
+C
+C  /* Deck erigam */
+      SUBROUTINE ERIGAM(RJ000,FACINT,ALPHA,COORPQ,WORK,LWORK,IPRINT)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+      DIMENSION RJ000(NPPX,0:JMAX), FACINT(NPPX),
+     &          ALPHA(NPPX), COORPQ(NPPX,3),
+     &          WORK(LWORK)
+#include <ericom.h>
+C-----------------------------------------------------------------------
+C
+C     Allocate ERIGAM
+C
+      KALPHA = 1
+      KWVALU = KALPHA +  NPPX
+      KNDADR = KWVALU +  NPPX
+      KLAST  = KNDADR + (NPPX - 1)/IRAT + 1
+      IF (KLAST .GT. LWORK) CALL STOPIT('ERIGAM',' ',KLAST,LWORK)
+      LWRK   = LWORK - KLAST + 1
+C
+      CALL ERIGA1(RJ000,FACINT,ALPHA,COORPQ,
+     &            WORK(KALPHA),WORK(KWVALU),WORK(KNDADR),
+     &            WORK(KLAST),LWRK,IPRINT)
+C
+      RETURN
+      END
+C  /* Deck eriga1 */
+      SUBROUTINE ERIGA1(RJ000,FACINT,ALPHA,COORPQ,TALPHA,
+     &                  WVALU,INDADR,WORK,LWORK,IPRINT)
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <iratdef.h>
+      PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, DP5 = -0.5D0)
+C
+      DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
+     &          COORPQ(NPPX,3),TALPHA(NPPX),
+     &          WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
+C
+#include <ericom.h>
+#include <erithr.h>
+CMAW
+#include <cbieri.h>
+#include <clsfmm.h>
+#include <sdpre.h>
+C-----------------------------------------------------------------------
+C
+C     One-center Integrals
+C     ====================
+C
+C     Note: There should be no testing for small integrals since
+C     this may in the case of one-center integrals introduce
+C     numerical instabilities for large exponents.
+C
+      IF (IPQXYZ.EQ.7) THEN
+         CALL DCOPY(NPPX,FACINT,1,RJ000(1,0),1)
          IF (JMAX .GT. 0) THEN
-            DO 400 I = 1, NPPX
-               TALPHA(I) = -D2*EXPP(I)*EXPQ(I)/(EXPP(I) + EXPQ(I))
-  400       CONTINUE
-            CALL DCOPY(NPPX,TALPHA,1,FACINT,1)
+            CALL DCOPY(NPPX,ALPHA,1,FACINT,1)
             DO 500 J = 1, JMAX
                FAC = D1/SDPRE(2*J + 1)
                DO 510 I = 1, NPPX
                   RJ000(I,J) = FAC*FACINT(I)*RJ000(I,0)
-                  FACINT(I)  = TALPHA(I)*FACINT(I)
+                  FACINT(I)  = ALPHA(I)*FACINT(I)
   510          CONTINUE
   500       CONTINUE
          END IF
@@ -76,29 +234,24 @@ C     Multicenter Integrals
 C     =====================
 C
       ELSE
-         DO 600 I = 1, NPPX
-            TALPHA(I) = -D2*EXPP(I)*EXPQ(I)/(EXPP(I) + EXPQ(I))
-            FACINT(I) =       FACINT(I)/SQRT(EXPP(I) + EXPQ(I))
-  600    CONTINUE
          NODS  = 0
-C
-C        Make sure this test is OK!
-C
-         DO 700 I = 1, NPPX
+         DO 600 I = 1, NPPX
             IF (ABS(FACINT(I)) .GT. THRSH) THEN
                NODS = NODS + 1
-               WVALU(NODS) = DP5M*TALPHA(I)
-     &            *(PQXYZ(I,1)**2 + PQXYZ(I,2)**2 + PQXYZ(I,3)**2)
+               WVALU(NODS) = DP5*ALPHA(I)
+     &            *(COORPQ(I,1)**2 + COORPQ(I,2)**2 + COORPQ(I,3)**2)
                INDADR(NODS) = I
             ELSE
-               TALPHA(I) = D0
+               FACINT(I) = D0
+               DO J = 0, JMAX
+                  RJ000(I,J) = D0
+               END DO
             END IF
-  700    CONTINUE
-C
-         CALL DZERO(RJ000(1,0),(JMAX+1)*NPPX)
+  600    CONTINUE
 C
 C        Calculate gamma function
-C        ========================
+C        - In fact returns the Boys Function, Fn(a*RPQ)
+C        ==============================================
 C
 C        Allocate GETGAM
 C
@@ -111,13 +264,28 @@ C
          CALL GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NPPX,WORK(KFJW),
      &               WORK(KINDAD),WORK(KWVALS),WORK(KREXPW),IPRINT)
 C
-C        Scale gamma function
-C        ====================
+C        Scale and adjust gamma function
+C        i.e. generate (-2a)^n * Fn(a*RPQ^2) (- long range part)
+C        =======================================================
 C
-         DO 800 J = 0, JMAX
+         N = 0
          DO 800 I = 1, NPPX
-            RJ000(I,J) = FACINT(I)*RJ000(I,J)
-            FACINT(I)  = TALPHA(I)*FACINT(I)
+            IF (ABS(FACINT(I)) .GT. THRSH) THEN
+               IF ( BFCFMM ) THEN
+                  RPQ = COORPQ(I,1)**2+COORPQ(I,2)**2+COORPQ(I,3)**2
+                  RPQ = SQRT(RPQ)
+               END IF
+               N = N+1
+               DO J = 0, JMAX
+                  IF ( BFCFMM .AND. ( (RPQ-RPQMIN).GT.ZERODST) ) THEN
+CMAW                 Subtract off Asymptotic Long Range Boys Function
+                     ARG = WVALU(N)
+                     RJ000(I,J) = RJ000(I,J) - ABOYSF(ARG,J)
+                  END IF
+                  RJ000(I,J) = FACINT(I)*RJ000(I,J)
+                  FACINT(I)  = ALPHA(I)*FACINT(I)
+               END DO
+             END IF
   800    CONTINUE
       END IF
 C
@@ -131,10 +299,8 @@ C
          WRITE (LUPRI,'(2X,A,I10)') 'NPPX:  ', NPPX
          WRITE (LUPRI,'(2X,A,I10)') 'IPQXYZ:', IPQXYZ
          IF (IPRINT .GT. 20) THEN
-            CALL HEADER('TALPHA in ERIGAM',-1)
-            CALL OUTPUT(TALPHA,1,1,1,NPPX,1,NPPX,1,LUPRI)
-            CALL HEADER('PQXYZ in ERIGAM',-1)
-            CALL OUTPUT(PQXYZ,1,NPPX,1,3,NPPX,3,1,LUPRI)
+            CALL HEADER('COORPQ in ERIGAM',-1)
+            CALL OUTPUT(COORPQ,1,NPPX,1,3,NPPX,3,1,LUPRI)
             CALL HEADER('Scaled incomplete gamma function in ERIGAM',-1)
             CALL OUTPUT(RJ000(1,0),1,NPPX,1,JMAX+1,NPPX,JMAX+1,1,LUPRI)
          END IF
@@ -142,13 +308,13 @@ C
       RETURN
       END
 C  /* Deck erituv */
-      SUBROUTINE ERITUV(HERINT,RJ000,PQXYZ,INDHER,IODDHR,
+      SUBROUTINE ERITUV(HERINT,RJ000,COORPQ,INDHER,IODDHR,
      &                  WORK,LWORK,IPRINT)
 C
 #include <implicit.h>
 #include <priunit.h>
       INTEGER T, U, V, TUV
-      DIMENSION HERINT(NPPX,NTUV), RJ000(NPPX,0:JMAX), PQXYZ(NPPX,3),
+      DIMENSION HERINT(NPPX,NTUV), RJ000(NPPX,0:JMAX), COORPQ(NPPX,3),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP),
      &          WORK(LWORK)
 #include <ericom.h>
@@ -181,16 +347,16 @@ C
          IPQX = IPQ0(1) + 1
          IPQY = IPQ0(2) + 1
          IPQZ = IPQ0(3) + 1
-         CALL DZERO(HERINT,NPPX*NTUV)
+C        CALL DZERO(HERINT,NPPX*NTUV)
          DO 200 JVAL = 1, JMAX
             IF (MOD(JMAX-JVAL,2).EQ.0) THEN
                CALL ERIHRC(HERINT,WORK(KHRWRK),JVAL,RJ000,
-     &                     PQXYZ(1,1),PQXYZ(1,2),PQXYZ(1,3),
+     &                     COORPQ(1,1),COORPQ(1,2),COORPQ(1,3),
      &                     INDHER,JMAX,MAXDER,NPPX,NTUV,
      &                     IPQX,IPQY,IPQZ)
             ELSE
                CALL ERIHRC(WORK(KHRWRK),HERINT,JVAL,RJ000,
-     &                     PQXYZ(1,1),PQXYZ(1,2),PQXYZ(1,3),
+     &                     COORPQ(1,1),COORPQ(1,2),COORPQ(1,3),
      &                     INDHER,JMAX,MAXDER,NPPX,NTUV,
      &                     IPQX,IPQY,IPQZ)
             END IF
@@ -383,6 +549,63 @@ C
  1020             CONTINUE
  1010          CONTINUE
  1000       CONTINUE
+         END IF
+      END IF
+      RETURN
+      END
+C  /* Deck eriswp */
+      SUBROUTINE ERISWP(HEROLD,HERNEW,INDHER,IODDHR,IPRINT)
+C
+#include <implicit.h>
+#include <priunit.h>
+      INTEGER T, U, V, TUV
+      DIMENSION INDHER(0:JTOP,0:JTOP,0:JTOP), IODDHR(NRTOP)
+      DIMENSION HEROLD(NPQBCX,NPRFAB,NPRFCD,NTUV),
+     &          HERNEW(NPQBCX,NPRFCD,NPRFAB,NTUV)
+#include <ericom.h>
+#include <hertop.h>
+C
+      DO 100 J = 0, JMAX
+         DO 110 T = J, 0, -1
+            DO 120 U = J - T, 0, -1
+               V = J - T - U
+               TUV = INDHER(T,U,V)
+               IF (IODDHR(TUV) .EQ. 0) THEN
+                  DO 200 K = 1, NPRFAB
+                  DO 200 L = 1, NPRFCD
+                     DO 210 I = 1, NPQBCX
+                        HERNEW(I,L,K,TUV) = HEROLD(I,K,L,TUV)
+  210                CONTINUE
+  200             CONTINUE
+               END IF
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF (IPRINT .GE. 10) THEN
+         CALL TITLER('Output from ERISWP','*',103)
+         WRITE (LUPRI,'(2X,A,I10)') 'JMAX  ', JMAX
+         WRITE (LUPRI,'(2X,A,I10)') 'NPPX  ', NPPX
+         WRITE (LUPRI,'(2X,A,I10)') 'NTUV  ', NTUV
+         IF (IPRINT .GE. 20) THEN
+            CALL HEADER('Transposed Hermite integrals R(t,u,v)',1)
+            DO 300 J = 0, JMAX
+              DO 320 T = J, 0, -1
+                DO 330 U = J - T, 0, -1
+                  V = J - T - U
+                  TUV = INDHER(T,U,V)
+                  IF (IODDHR(TUV) .EQ. 0) THEN
+                    WRITE (LUPRI,'(2X,3(A,I1),A,2X,5F12.8/,
+     &                                                 (12X,5F12.8))')
+     &              'R(',T,',',U,',',V,')', (HERNEW(I,1,1,TUV),I=1,NPPX)
+                  WRITE (LUPRI,'()')
+                  END IF
+  330           CONTINUE
+  320         CONTINUE
+  300      CONTINUE
          END IF
       END IF
       RETURN

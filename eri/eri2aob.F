@@ -1,93 +1,139 @@
+C
+C...   Copyright (c) 2001 by the authors of Dalton (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dalton, a molecular electronic structure program, Release 1.2
+C...   (2001), written by T. Helgaker, H. J. Aa. Jensen, P. Joergensen,
+C...   J. Olsen, K. Ruud, H. Aagren, A.A. Auer, K.L. Bak, V. Bakken,
+C...   O. Christiansen, S. Coriani, P. Dahle, E. K. Dalskov,
+C...   T. Enevoldsen, B. Fernandez, C. Haettig, K. Hald, A. Halkier,
+C...   H. Heiberg, H. Hettema, D. Jonsson, S. Kirpekar, R. Kobayashi,
+C...   H. Koch, K. V. Mikkelsen, P. Norman, M. J. Packer,
+C...   T. B. Pedersen, T. A. Ruden, A. Sanchez, T. Saue, S. P. A. Sauer,
+C...   B. Schimmelpfennig, K. O. Sylvester-Hvid, P. R. Taylor,
+C...   and O. Vahtras"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dalton,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dalton-admin@kjemi.uio.no
+C...
+C...   For information on how to get a licence see:
+C...      http://www.kjemi.uio.no/software/dalton/dalton.html
+C
+C
+C$Id$
+C
+#include <single.h>
 C  /* Deck setaob */
-      SUBROUTINE SETAOB(WORK,LWORK,IPRINT)
+      SUBROUTINE SETAOB(CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
-      DIMENSION WORK(LWORK)
+      DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7),
+     &          WORK(LWORK)
 #include <shells.h>
 #include <symmet.h>
 #include <aobtch.h>
+#include <veclen.h> 
 #include <ibtfun.h>
 C
 C     Number of basis functions
 C
-      NBASIS  = 0
-      DO 100 K = 0, MAXREP
-      DO 100 I = 1, KMAX
-         IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASIS = NBASIS + KHKT(I)
-  100 CONTINUE
+      NBASE  = 0
+      DO K = 0, MAXREP
+      DO I = 1, KMAX
+         IF (IBTAND(K,ISTBAO(I)).EQ.0) NBASE = NBASE + KHKT(I)
+      END DO
+      END DO
+C
+      NODD = 1 - MOD(NBASE,2)
 C
       NGAB = 0
-      DO 110 I = 1, KMAX
+      DO I = 1, KMAX
          NGAB = NGAB + MULT(ISTBAO(I))*NUCO(I)
-  110 CONTINUE
+      END DO
+C
+      IORBRP(0) = 1
+      DO IREPA = 1, MAXREP
+         IORBRP(IREPA) = IORBRP(IREPA-1) + NAOS(IREPA)
+      END DO
 C
 C     AO batches
 C
       NB = 0
       NC = 0
-      IORB = 1
-      IORBRP(0) = 1
-      DO 120 IREPA = 1, MAXREP
-         IORBRP(IREPA) = IORBRP(IREPA-1) + NAOS(IREPA)
-  120 CONTINUE
-      DO 200 ISHELL = 1, KMAX
+      DO ISHELL = 1, KMAX
          IF (NB.NE.NBCH(ISHELL) .OR. NC.NE.NCENT(ISHELL)) THEN
             NB = NBCH(ISHELL)
             NC = NCENT(ISHELL)
-            CALL AOBCH(NB,ISHELL,IORB,WORK,LWORK,IPRINT)
+            CALL AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
          END IF
-C        IORB = IORB + MULT(ISTBAO(ISHELL))*KHKT(ISHELL)
-         DO 210 IREPA = 0, MAXREP
+         DO IREPA = 0, MAXREP
             IORBRP(IREPA) = IORBRP(IREPA)
      &        + MLTCMP(NHKT(ISHELL),KHKT(ISHELL),ISTBAO(ISHELL),IREPA)
-  210    CONTINUE
-  200 CONTINUE
+         END DO
+      END DO
+C
+C     Identity contraction matrices
+C
+      CALL CNTTYP(CCFBT,.TRUE.,IPRINT)
+C
       IF (IPRINT .GT. 2) THEN
          CALL HEADER('Common block AOBTCH in SETAOB',-1)
          WRITE (LUPRI,'(1X,A,I3)') ' Number of batches NAOBCH:',NAOBCH
          CALL HEADER(
-     &       '   #       NORBBT NHKT KCKT KHKT      NPRF NCTF      '//
-     &       'NCNT      ISTB MULT',5)
-         DO 900 I = 1, NAOBCH
-            WRITE (LUPRI,'(5X,I5,I5,5X,3I5,5X,2I5,5X,I5,5X,2I5)')
+     &       '   #  NORB   NHKT KCKT KHKT   NPRF NCTF KCMT  '//
+     &       ' NCNT   ISTB MULT',1)
+         DO I = 1, NAOBCH
+            WRITE (LUPRI,'(1X,2I5,2X,3I5,2X,3I5,2X,I5,2X,2I5)')
      &          I,
      &          NORBBT(I),
      &          NHKTBT(I), KCKTBT(I), KHKTBT(I),
-     &          NPRFBT(I), NCTFBT(I),
+     &          NPRFBT(I), NCTFBT(I), KCMTBT(I),
      &          NCNTBT(I),
      &          ISTBBT(I), MULTBT(I)
-  900    CONTINUE
+         END DO
       END IF
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Exponents and contraction coefficients',-1)
-         DO 910 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             WRITE (LUPRI,'(/,1X,A,I2,A,2I3,/)')
      &         ' Exp. and cont. coef. for AO batch',I,
      &         ' of dimensions',NPRFBT(I),NCTFBT(I)
             KEXP = KEXPBT(I) - 1
             KPRI = KCCFBT(I) - 1
-            DO 920 J = 1, NPRFBT(I)
+            DO J = 1, NPRFBT(I)
                WRITE (LUPRI,'(2X,E8.3,7(2X,E8.2))') EXPBT(KEXP + J),
      &             (CCFBT(KPRI + J + NPRFBT(I)*(K-1)),K=1,NCTFBT(I))
-  920       CONTINUE
-  910    CONTINUE
+            END DO
+         END DO
          CALL HEADER('Coordinates for AO batches',-1)
-         DO 930 I = 1, NAOBCH
+         DO I = 1, NAOBCH
             WRITE (LUPRI,'(2X,I5,5X,3F12.6)')
      &          I, CORXBT(I), CORYBT(I), CORZBT(I)
-  930    CONTINUE
+         END DO
          CALL HEADER('Orbital indices for AO batches',-1)
-         DO 940 IREPA = 0, MAXREP
+         DO IREPA = 0, MAXREP
             WRITE (LUPRI,'(2X,A,I5)') 'Symmetry ',IREPA
-            DO 950 I = 1, NAOBCH
+            DO I = 1, NAOBCH
                WRITE (LUPRI,'(2X,I5,3X,(22I3))')
      &             I, (INDXBT(KNDXBT(I) - 1 + J,IREPA),J=1,NCTFBT(I))
-  950       CONTINUE
-  940    CONTINUE
+            END DO
+         END DO
       END IF
 C
 C     Sort AO batches
@@ -98,17 +144,17 @@ C     MAXQN, KQNBT, NQNBT
 C
       MAXQN = 0
       NHKOLD = 0
-      DO 300 I = 1, NAOBCH
+      DO I = 1, NAOBCH
          NHKTA = NHKTBT(KAOSRT(I))
          IF (NHKTA.NE.NHKOLD) THEN
             KQNBT(NHKTA) = I
             NHKOLD = NHKTA
          END IF
          MAXQN = MAX(MAXQN,NHKTA)
-  300 CONTINUE
-      DO 400 I = 1, MAXQN - 1
+      END DO
+      DO I = 1, MAXQN - 1
          NQNBT(I) = KQNBT(I+1) - KQNBT(I)
-  400 CONTINUE
+      END DO
       NQNBT(MAXQN) = NAOBCH - KQNBT(MAXQN) + 1
 C
       IF (IPRINT .GT. 3) THEN
@@ -123,11 +169,11 @@ C
       RETURN
       END
 C  /* Deck aobch */
-      SUBROUTINE AOBCH(NB,ISHELL,IORB,WORK,LWORK,IPRINT)
+      SUBROUTINE AOBCH(NB,ISHELL,CCFBT,INDXBT,WORK,LWORK,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
-      DIMENSION WORK(LWORK)
+#include <maxorb.h>
+      DIMENSION CCFBT(*), INDXBT(*), WORK(LWORK)
 #include <shells.h>
 C
       NUCA  = NUCO(ISHELL)
@@ -145,16 +191,16 @@ C
 C
       CALL AOBCH1(NB,NMAT,WORK(KMAT),NUCA,NRCA,JSTRA,WORK(KDONE),
      &            WORK(KDIMP),WORK(KDIMC),WORK(KPNTC),WORK(KPNTP),
-     &            ISHELL,IORB,IPRINT)
+     &            ISHELL,CCFBT,INDXBT,IPRINT)
 C
       RETURN
       END
 C  /* Deck aobch1 */
       SUBROUTINE AOBCH1(NB,NMAT,MAT,NUCA,NRCA,JSTRA,IDONE,NDIMP,NDIMC,
-     &                  IPNTC,IPNTP,ISHELL,IORB,IPRINT)
+     &                  IPNTC,IPNTP,ISHELL,CCFBT,INDXBT,IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <aovec.h>
 #include <maxaqn.h>
@@ -162,6 +208,7 @@ C  /* Deck aobch1 */
 C
       DIMENSION MAT(NUCA,NRCA), IDONE(NUCA), NDIMP(NUCA), NDIMC(NUCA),
      &          IPNTC(NUCA,NRCA),IPNTP(NUCA,NUCA)
+      DIMENSION CCFBT(MXPRIM*MXCONT), INDXBT(MXSHEL*MXCONT,0:7)
 C
 #include <symmet.h>
 #include <aobtch.h>
@@ -176,67 +223,70 @@ C     out all elements within each contraction matrix
 C
       CALL IZERO(MAT,NUCA*NRCA)
 C
-      DO 100 I = 1, NUCA
-      DO 100 J = 1, NRCA
+      DO I = 1, NUCA
+      DO J = 1, NRCA
          IF (ABS(PRICCF(JSTRA+I,J)).GT.THR) MAT(I,J) = 1
-  100 CONTINUE
+      END DO
+      END DO
 C
-      DO 200 I = 1, NRCA
-      DO 200 J = 1, NRCA
-       IF (INPRD(MAT(1,I),MAT(1,J),NUCA) .GT. 0) THEN
-            DO 210 K = 1, NUCA
+      DO I = 1, NRCA
+      DO J = 1, NRCA
+         IF (INPRD(MAT(1,I),MAT(1,J),NUCA) .GT. 0) THEN
+            DO K = 1, NUCA
                MAT(K,I) = MAX(MAT(K,I),MAT(K,J))
                MAT(K,J) = MAX(MAT(K,I),MAT(K,J))
-  210       CONTINUE
+            END DO
          END IF
-  200 CONTINUE
+      END DO
+      END DO
 C
 C     NMAT, NDIMP(), NDIMC(), IPNTP(), IPNTC()
 C
       NMAT = 0
       CALL IZERO(IDONE,NUCA)
-      DO 300 I = 1, NRCA
+      DO I = 1, NRCA
          IF (IDONE(I).EQ.0) THEN
 C
             NMAT = NMAT + 1
-            DO 400 J = I, NRCA
+            DO J = I, NRCA
                IDONE(J) =  INPRD(MAT(1,I),MAT(1,J),NUCA)
-  400       CONTINUE
+            END DO
 C
 C           First non-zero primitive
 C
             KCONT = I
-            DO 410 J = 1, NUCA
-            IF (MAT(J,KCONT) .EQ. 1) THEN
-               KPRIM = J
-               GO TO 410
-            END IF
-  410       CONTINUE
+            DO J = 1, NUCA
+               IF (MAT(J,KCONT) .EQ. 1) THEN
+                  KPRIM = J
+                  GO TO 100
+               END IF
+            END DO
+  100       CONTINUE
 C
 C           IPNTP and NDIMP
 C
             IPRI = 0
-            DO 420 J = 1, NUCA
+            DO J = 1, NUCA
             IF (MAT(J,KCONT) .EQ. 1) THEN
                IPRI = IPRI + 1
                IPNTP(NMAT,IPRI) = JSTRA + J
             END IF
-  420       CONTINUE
+            END DO
             NDIMP(NMAT) = IPRI
 C
 C           IPNTC and NDIMC
 C
             ICNT = 0
-            DO 430 J = 1, NRCA
+            DO J = 1, NRCA
             IF (MAT(KPRIM,J) .EQ. 1) THEN
                ICNT = ICNT + 1
                IPNTC(NMAT,ICNT) = J
             END IF
-  430       CONTINUE
+            END DO
             NDIMC(NMAT) = ICNT
 C
          END IF
-  300 CONTINUE
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from AOBCH1',-1)
@@ -245,7 +295,7 @@ C
          CALL OUTPUT(PRICCF(JSTRA+1,1),1,NUCA,1,NRCA,
      &               MXPRIM,NRCA,1,LUPRI)
          WRITE (LUPRI,'(/,1X,A,I3)') ' Number of AO batches:',NMAT
-         DO 900 I = 1, NMAT
+         DO I = 1, NMAT
             WRITE (LUPRI,'(1X,A,I3,A,2I3)')
      &      ' Dimensions (prim. - cont.) for batch',I,':',
      &        NDIMP(I),NDIMC(I)
@@ -253,7 +303,7 @@ C
      &      ' Contributing primitives:  ',(IPNTP(I,J),J = 1,NDIMP(I))
             WRITE (LUPRI,'(1X,A,17I3/,(29X,17I3))')
      &      ' Contributing contracted:  ',(IPNTC(I,J),J = 1,NDIMC(I))
-  900    CONTINUE
+         END DO
       END IF
 C
 C     Assign to COMMON /AOBTCH/
@@ -265,7 +315,7 @@ C
          NBTCH = 0
       END IF
 C
-      DO 500 IMAT = 1, NMAT
+      DO IMAT = 1, NMAT
          IBATCH = NBTCH + IMAT
          CORXBT(IBATCH) = CENT(ISHELL,1,1)
          CORYBT(IBATCH) = CENT(ISHELL,2,1)
@@ -278,38 +328,38 @@ C
          ISTBBT(IBATCH) = ISTBAO(ISHELL)
          MULTBT(IBATCH) = MULT(ISTBAO(ISHELL))
          NCNTBT(IBATCH) = NCENT(ISHELL)
+         NORBBT(IBATCH) = NDIMC(IMAT)*KHKT(ISHELL)*MULT(ISTBAO(ISHELL))
 C
-         NORBBT(IBATCH)   = KHKT(ISHELL)*MULT(ISTBAO(ISHELL))
+C        exponents
 C
          KEXPBT(IBATCH) = IADRP
-         DO 600 IPRI = 1, NDIMP(IMAT)
+         DO IPRI = 1, NDIMP(IMAT)
             EXPBT(IADRP) = PRIEXP(IPNTP(IMAT,IPRI))
             IADRP = IADRP + 1
-  600    CONTINUE
+         END DO
+C
+C        contraction coefficients
 C
          KCCFBT(IBATCH) = IADRC
-         DO 610 ICNT = 1, NDIMC(IMAT)
-         DO 610 IPRI = 1, NDIMP(IMAT)
+         DO ICNT = 1, NDIMC(IMAT)
+         DO IPRI = 1, NDIMP(IMAT)
             CCFBT(IADRC) = PRICCF(IPNTP(IMAT,IPRI),IPNTC(IMAT,ICNT))
             IADRC = IADRC + 1
-  610    CONTINUE
+         END DO
+         END DO
+C
+C        orbital indices
 C
          KNDXBT(IBATCH) = IADRO
-C        DO 620 ICNT = 1, NDIMC(IMAT)
-C           INDXBT(IADRO) = IORB
-C    &          + (IPNTC(IMAT,ICNT)-1)*KHKT(ISHELL)*MULT(ISTBAO(ISHELL))
-C           IADRO = IADRO + 1
-C 620    CONTINUE
-C
-         DO 630 ICNT = 1, NDIMC(IMAT)
-            DO 700 IREPA = 0, MAXREP
+         DO ICNT = 1, NDIMC(IMAT)
+            DO IREPA = 0, MAXREP
                INDXBT(IADRO,IREPA) = IORBRP(IREPA)+(IPNTC(IMAT,ICNT)-1)
      &           *MLTCMP(NHKT(ISHELL),KHKT(ISHELL),ISTBAO(ISHELL),IREPA)
-  700       CONTINUE
+            END DO
             IADRO = IADRO + 1
-  630    CONTINUE
+         END DO
 C
-  500 CONTINUE
+      END DO
 C
       NBTCH = NBTCH + NMAT
       NAOBCH = NBTCH
@@ -331,7 +381,7 @@ C  /* Deck aobsrt */
       SUBROUTINE AOBSRT(IPRINT)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -369,7 +419,7 @@ C  /* Deck aobtgt */
       LOGICAL FUNCTION AOBTGT(IAO,JAO)
 #include <implicit.h>
 #include <priunit.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <aovec.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -408,15 +458,60 @@ C  /* Deck mltcmp */
       FUNCTION MLTCMP(NHKTA,KHKTA,MULA,IREPA)
 #include <implicit.h>
 #include <maxaqn.h>
-#include <mxorb.h>
+#include <maxorb.h>
 #include <mxcent.h>
 #include <symmet.h>
 #include <ibtfun.h>
 C
       MLTCMP = 0
-      DO 100 ICMPA = 1, KHKTA
+      DO ICMPA = 1, KHKTA
          IPARA = IBTXOR(IREPA,ISYMAO(NHKTA,ICMPA))
          IF (IBTAND(MULA,IPARA) .EQ. 0) MLTCMP = MLTCMP + 1
+      END DO
+C
+      RETURN
+      END
+C  /* Deck cnttyp */
+      SUBROUTINE CNTTYP(CCFBT,SAMCOF,IPRINT)
+C
+C     T. Helgaker Jan 2001
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0)
+      PARAMETER (THR = 1.0D-17)
+      LOGICAL SAMCOF
+      DIMENSION CCFBT(*)
+#include <aobtch.h>
+C
+      ITYPE = 0
+      CALL IZERO(KCMTBT,NAOBCH)
+      DO 100 I = 1, NAOBCH
+      IF (KCMTBT(I).EQ.0) THEN
+         ITYPE = ITYPE + 1
+         KCMTBT(I) = ITYPE
+         NPRIMI = NPRFBT(I)
+         NCONTI = NCTFBT(I)
+         KPRI = KCCFBT(I) - 1
+         DO 200 J = I + 1, NAOBCH
+         IF (KCMTBT(J).EQ.0) THEN
+            IF (NPRIMI.EQ.NPRFBT(J) .AND. NCONTI.EQ.NCTFBT(J)) THEN
+               IF (SAMCOF) THEN
+                  DIFMAX = D0
+                  KPRJ = KCCFBT(J) - 1
+                  DO K = 1, NPRIMI*NCONTI
+                     DIFMAX=MAX(DIFMAX,ABS(CCFBT(KPRI+K)-CCFBT(KPRJ+K)))
+                  END DO
+                  IF (DIFMAX .LT. THR) KCMTBT(J) = ITYPE
+               ELSE
+                  KCMTBT(J) = ITYPE
+               END IF
+            END IF
+         END IF
+  200    CONTINUE
+      END IF
   100 CONTINUE
 C
       RETURN
