@@ -558,22 +558,42 @@ C
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-        IF(IQP .LT. 1 .OR. IQP.GT.NZ) THEN
-          WRITE(LUPRI,'(A)') '***** PRPMAO ERROR *****'
-          WRITE(LUPRI,'(A)') PRPLBL(KLBL)
-          WRITE(LUPRI,'(A,I2,A,I2,A)') 'IQP(',IQP,').GT.MZ(',
+        IF(IQP.LE.0) THEN
+          WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
+          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
+          WRITE(LUPRI,'(A,I2,A)') 'IQP(',IQP,').LE.0'
+          CALL WRIXPR(0,IOP)
+          WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
+          WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
+          WRITE(LUPRI,'(A,7I5)')
+     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP :',
+     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP
+          WRITE(LUPRI,'(A)') 'IQTOPQ(1:4,0:NBSYM-1):'
+          DO IZ = 1,4
+             WRITE(LUPRI,'(8I5)') (IQTOPQ(IZ,J),J=0,NBSYM-1)
+          END DO
+          WRITE(LUPRI,'(A)') 'IPQTOQ(1:NZ,0:NBSYM-1):'
+          DO IZ = 1,NZ
+             WRITE(LUPRI,'(8I5)') (IPQTOQ(IZ,J),J=0,NBSYM-1)
+          END DO
+          CALL QUIT('PRPMAO: IQP.LE.0 !!!')
+        END IF
+        IF(IQP.GT.NZ) THEN
+          WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
+          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
+          WRITE(LUPRI,'(A,I2,A,I2,A)') 'IQP(',IQP,').GT.NZ(',
      &          NZ,')'
           CALL WRIXPR(0,IOP)
           WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
           WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          CALL QUIT('PRPMAO: IQP<1 or IQP>NZ !!!')
+          CALL QUIT('PRPMAO: IQP.GT.NZ !!!')
         ENDIF
         IF(IPRINT.GE.4) THEN
           WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
           FMT = MXFORM(PFAC,20)
           WRITE(LUPRI,'(A,4X,'//FMT//')')
      &      'Factor: ',PFAC
-          WRITE(LUPRI,'(A,I5)') 'Integrals enters matrix :',IQP
+          WRITE(LUPRI,'(A,I5)') 'Integrals enter matrix :',IQP
           WRITE(LUPRI,'(A,L1)') 'FIRST = ',FIRST(IQP)
         ENDIF
 C
@@ -622,7 +642,11 @@ C
       IF(IPRINT.GE.8) THEN
         DO IZ = 1,NZ
           WRITE(LUPRI,'(A,I2,A)') '* Triangular prop.matrix(IZ=',IZ,')'
-          CALL OUTPAK(PTRI(1,IZ),NTBAS(0),1,LUPRI)
+          IF (FIRST(IZ)) THEN
+             WRITE(LUPRI,'(/A)') '  --- zero matrix ---'
+          ELSE
+             CALL OUTPAK(PTRI(1,IZ),NTBAS(0),1,LUPRI)
+          END IF
         ENDDO
       ENDIF
       RETURN
@@ -1345,6 +1369,7 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Memory deallocation
+C
       CALL MEMREL('GMOTRA',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('GMOTRA')
       RETURN
