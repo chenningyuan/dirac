@@ -376,8 +376,16 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','DMOLI2')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,DUM,TOTERG,3)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,DUM,TOTERG,4)
       CLOSE(LUBUF,STATUS='KEEP')
+      IF (IPRXRS .GE. 10) THEN
+         CALL HEADER('MO Coefficients',-1)
+         DO I = 1, NFSYM
+            WRITE(LUPRI,'(/1X,A,I/)') '*** Symmetry ',I
+            CALL PRQMAT(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &         NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
 C
 C     b) Set arrays of IHRMOP,IFCKOP,ISYMOP
 C     =====================================
