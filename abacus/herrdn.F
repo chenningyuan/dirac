@@ -955,6 +955,11 @@ C*****************************************************************************
 #include <mxorb.h>
 #include <units.h>
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
+#if defined (SYS_HPUX)
+      PARAMETER (LUERR = 7)
+#else
+      PARAMETER (LUERR = 0)
+#endif
 #include <cbirea.h>
 C
       LOGICAL ANG
@@ -970,6 +975,19 @@ C
         ELSE
           GEXP = QEXP
         ENDIF
+C
+C       Print out warning if GEXP < 1.0D8
+C
+        IF (GEXP .LE. 1.0D8) THEN
+           WRITE(LUERR,*) 'WARNING!!!'            
+           WRITE(LUERR,*) 'WARNING!!!'            
+           WRITE(LUERR,*) 'WARNING!!!'            
+           WRITE(LUERR,*) 'Nuclear gaussian exponent small: ',GEXP
+           WRITE(LUPRI,*) 'WARNING!!!'            
+           WRITE(LUPRI,*) 'WARNING!!!'            
+           WRITE(LUPRI,*) 'WARNING!!!'            
+           WRITE(LUPRI,*) 'Nuclear gaussian exponent small: ',GEXP
+        END IF
       ELSE
          GEXP = D0
       END IF

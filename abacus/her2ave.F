@@ -261,12 +261,21 @@ C
                      IORBB = NINDAB(IORBAB,2)
                      A = ICORBA(IORBA) + ICOMPA
                      B = ICORBB(IORBB) + ICOMPB
-                     DTAB  = DMAT(A,B,1)
-                     DT2AB = DMAT(A,B,2)
-                     DT3AB = DMAT(A,B,3)
-                     DT4AB = DMAT(A,B,4)
-c skal aktiveres naar open shell HF og MCSCF
-c                    IF (DV) DVAB  = DMAT(A,B,2)
+#ifndef PRG_DIRAC
+                     DTAB = DMAT(A,B,1)
+                     IF (DV) DVAB = DMAT(A,B,2)
+#else
+                     DTAB1 = DMAT(A,B,1)
+                     DTAB2 = DMAT(A,B,2)
+                     DTAB3 = DMAT(A,B,3)
+                     DTAB4 = DMAT(A,B,4)
+                     IF (DV) THEN
+                        DVAB1 = DMAT(A,B,5)
+                        DVAB2 = DMAT(A,B,6)
+                        DVAB3 = DMAT(A,B,7)
+                        DVAB4 = DMAT(A,B,8)
+                     END IF
+#endif
                                                       FAB = D1
                      IF (TCONAB .AND. IORBA.NE.IORBB) FAB = D2
                      DO 600 IORBCD = 1, NORBCD
@@ -274,39 +283,75 @@ c                    IF (DV) DVAB  = DMAT(A,B,2)
                         IORBD = NINDCD(IORBCD,2)
                         C = ICORBC(IORBC) + ICOMPC
                         D = ICORBD(IORBD) + ICOMPD
-C
+#ifndef PRG_DIRAC
                         DTAC  = DMAT(A,C,1)
-                        DT2AC = DMAT(A,C,2)
-                        DT3AC = DMAT(A,C,3)
-                        DT4AC = DMAT(A,C,4)
-C
                         DTBC  = DMAT(B,C,1)
-                        DT2BC = DMAT(B,C,2)
-                        DT3BC = DMAT(B,C,3)
-                        DT4BC = DMAT(B,C,4)
-C
                         DTAD  = DMAT(A,D,1)
-                        DT2AD = DMAT(A,D,2)
-                        DT3AD = DMAT(A,D,3)
-                        DT4AD = DMAT(A,D,4)
-C
                         DTCD  = DMAT(C,D,1)
-                        DT2CD = DMAT(C,D,2) 
-                        DT3CD = DMAT(C,D,3)
-                        DT4CD = DMAT(C,D,4)
-C
                         DTBD  = DMAT(B,D,1)
-                        DT2BD = DMAT(B,D,2)
-                        DT3BD = DMAT(B,D,3)
-                        DT4BD = DMAT(B,D,4)
-c skal aktiveres naar open shell HF og MCSCF
-c                       IF (DV) THEN
-c                          DVAC = DMAT(A,C,2)
-c                          DVBC = DMAT(B,C,2)
-c                          DVAD = DMAT(A,D,2)
-c                          DVBD = DMAT(B,D,2)
-c                          DVCD = DMAT(C,D,2)
-c                       END IF
+                        IF (DV) THEN
+                           DVAC = DMAT(A,C,2)
+                           DVBC = DMAT(B,C,2)
+                           DVAD = DMAT(A,D,2)
+                           DVBD = DMAT(B,D,2)
+                           DVCD = DMAT(C,D,2)
+                        END IF
+#else
+                        DTAC1 = DMAT(A,C,1)
+                        DTAC2 = DMAT(A,C,2)
+                        DTAC3 = DMAT(A,C,3)
+                        DTAC4 = DMAT(A,C,4)
+                        IF (DV) THEN
+                           DVAC1 = DMAT(A,C,5)
+                           DVAC2 = DMAT(A,C,6)
+                           DVAC3 = DMAT(A,C,7)
+                           DVAC4 = DMAT(A,C,8)
+                        END IF
+C
+                        DTBC1 = DMAT(B,C,1)
+                        DTBC2 = DMAT(B,C,2)
+                        DTBC3 = DMAT(B,C,3)
+                        DTBC4 = DMAT(B,C,4)
+                        IF (DV) THEN
+                           DVBC1 = DMAT(B,C,5)
+                           DVBC2 = DMAT(B,C,6)
+                           DVBC3 = DMAT(B,C,7)
+                           DVBC4 = DMAT(B,C,8)
+                        END IF
+C
+                        DTAD1 = DMAT(A,D,1)
+                        DTAD2 = DMAT(A,D,2)
+                        DTAD3 = DMAT(A,D,3)
+                        DTAD4 = DMAT(A,D,4)
+                        IF (DV) THEN
+                           DVAD1 = DMAT(A,D,5)
+                           DVAD2 = DMAT(A,D,6)
+                           DVAD3 = DMAT(A,D,7)
+                           DVAD4 = DMAT(A,D,8)
+                        END IF
+C
+                        DTBD1 = DMAT(B,D,1)
+                        DTBD2 = DMAT(B,D,2)
+                        DTBD3 = DMAT(B,D,3)
+                        DTBD4 = DMAT(B,D,4)
+                        IF (DV) THEN
+                           DVBD1 = DMAT(B,D,5)
+                           DVBD2 = DMAT(B,D,6)
+                           DVBD3 = DMAT(B,D,7)
+                           DVBD4 = DMAT(B,D,8)
+                        END IF
+C
+                        DTCD1 = DMAT(C,D,1)
+                        DTCD2 = DMAT(C,D,2)
+                        DTCD3 = DMAT(C,D,3)
+                        DTCD4 = DMAT(C,D,4)
+                        IF (DV) THEN
+                           DVCD1 = DMAT(C,D,5)
+                           DVCD2 = DMAT(C,D,6)
+                           DVCD3 = DMAT(C,D,7)
+                           DVCD4 = DMAT(C,D,8)
+                        END IF
+#endif
                                                        FCD = D1
                         IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
 C
@@ -320,29 +365,40 @@ C                          Expectation values
 C                          ==================
 C
                            IF (EXPECT) THEN
+#ifndef PRG_DIRAC
+oehm
+#else
 C
 C                             For DMAT(1) include both coulombic and 
 C                             exchange contributions
 C                             For DMAT(2) to DMAT(4) include only
 C                             exchange contributions
 C
-                              PVAL = DTAB*DTCD -
-     &                               DP25*(DTAC*DTBD   + DTAD*DTBC
-     &                                   + DT2AC*DT2BD + DT2AD*DT2BC
-     &                                   + DT3AC*DT3BD + DT3AD*DT3BC
-     &                                   + DT4AC*DT4BD + DT4AD*DT4BC)
-c skal aktiveres naar open shell HF og MCSCF
-c                             IF (DV) THEN
-c                                PVAL = PVAL - DVAB*DVCD +
-c    &                                  DP25*(DVAC*DVBD   + DVAD*DVBC
-c    &                                      + DV2AC*DV2BD + DV2AD*DV2BC
-c    &                                      + DV3AC*DV3BD + DV3AD*DV3BC
-c    &                                      + DV4AC*DV4BD + DV4AD*DV4BC)
-c                                IF (.NOT. NOPMAT) THEN
-c                                   PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
-c                                   PVAL = PVAL + PAOVAL
-c                                END IF
-c                             END IF
+                              PVAL = DTAB1*DTCD1 -
+     &                               DP25*(DTAC1*DTBD1
+     &                                   + DTAD1*DTBC1
+     &                                   + DTAC2*DTBD2 
+     &                                   + DTAD2*DTBC2
+     &                                   + DTAC3*DTBD3 
+     &                                   + DTAD3*DTBC3
+     &                                   + DTAC4*DTBD4
+     &                                   + DTAD4*DTBC4)
+                              IF (DV) THEN
+                                 PVAL = PVAL - DVAB1*DVCD1 +
+     &                                  DP25*(DVAC1*DVBD1
+     &                                      + DVAD1*DVBC1
+     &                                      + DVAC2*DVBD2
+     &                                      + DVAD2*DVBC2
+     &                                      + DVAC3*DVBD3
+     &                                      + DVAD3*DVBC3
+     &                                      + DVAC4*DVBD4
+     &                                      + DVAD4*DVBC4)
+                              END IF
+                              IF (.NOT. NOPMAT) THEN
+                                 PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
+                                 PVAL = PVAL + PAOVAL
+                              END IF
+#endif
                               PVAL = DP5*FAB*FCD*FCABCD*PVAL
                               IF (ABS(PVAL) .GT. THRSH) THEN
                                  NODER = .FALSE.
