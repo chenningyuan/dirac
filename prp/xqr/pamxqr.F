@@ -6,21 +6,21 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <dummy.h>
-#include <priunit.h>
-#include <mxcent.h>
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
 C
-#include <dcbxqr.h>
-#include <dcbgen.h>
-#include <dcbham.h>
-#include <dcbprp.h>
-#include <mxorb.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <pgroup.h>
-#include <dcbxpr.h>
+#include "dcbxqr.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbprp.h"
+#include "mxorb.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "dcbxpr.h"
 C
       PARAMETER ( D1=1.0D0, D0=0.0D0 )
       PARAMETER ( NTABLE=28, DMIL=1.0D3 )
@@ -40,7 +40,7 @@ C
      &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE'/
       DATA SET/.FALSE./
 C
-#include <ibtfun.h>
+#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -365,11 +365,11 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXQR),RES_QR(3,MAXQR)
@@ -457,15 +457,15 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxpr.h>
-#include <dcbxlr.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbxlr.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbxrs.h"
 C
       DIMENSION WORK(*)
       LOGICAL DOHYP
@@ -598,10 +598,10 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
+#include "implicit.h"
+#include "priunit.h"
 C
-#include <dcbxqr.h>
+#include "dcbxqr.h"
 C
       PARAMETER ( THRES = 1.0D-6 )
       CALL QENTER('INDQR')
@@ -647,8 +647,8 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "dcbxqr.h"
 C
       PARAMETER (THD = 1.0D-8)
       LOGICAL DOHYP
@@ -658,7 +658,7 @@ C
 C
       DATA N/0/
 C
-#include <muld2h.h>
+#include "muld2h.h"
 C
       CALL QENTER('QRHYPCHK')
 C
@@ -726,14 +726,14 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxpr.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
-#include <pgroup.h>
-#include <dgroup.h>
-#include <cbiqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "cbiqr.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -872,11 +872,11 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
+#include "implicit.h"
 C
-#include <dcbxlr.h>
-#include <dcbxqr.h>
-#include <dcbxrs.h>
+#include "dcbxlr.h"
+#include "dcbxqr.h"
+#include "dcbxrs.h"
 C
       CALL QENTER('SETXQR')
 C
@@ -916,15 +916,15 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <dcbxrs.h>
-#include <dcbxlr.h>
-#include <dcbxqr.h>
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "dcbxrs.h"
+#include "dcbxlr.h"
+#include "dcbxqr.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*)
@@ -996,17 +996,17 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-#include <dcbxrs.h>
-#include <dcbxlr.h>
-#include <dcbxqr.h>
-#include <dcbibn.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "dcbxrs.h"
+#include "dcbxlr.h"
+#include "dcbxqr.h"
+#include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
-#include <dcbxpr.h>
+#include "dcbxpr.h"
 C
       PARAMETER ( D1=1.0D0, DM1=-1.0D0, DH=0.5D0 )
       CHARACTER FILNAM*6,FILRSP*8,TYP*1
@@ -1120,16 +1120,16 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbibn.h>
-#include <dcbxrs.h>
-#include <dcbxpr.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbxqr.h>
-#include <dcbxlr.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbibn.h"
+#include "dcbxrs.h"
+#include "dcbxpr.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbxqr.h"
+#include "dcbxlr.h"
+#include "dcbgen.h"
 C
       PARAMETER ( D4 = 4.0D0 )
 C
@@ -1137,7 +1137,7 @@ C
       DIMENSION VECBEE(MZYEE,NZ),VECBEP(MZYEP,NZ)
       DIMENSION RESULT(3,MAXQR),CMO(*),WORK(*)
 C
-#include <muld2h.h>
+#include "muld2h.h"
 C
       CALL QENTER('LRCALC')
 C
@@ -1325,12 +1325,12 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxpr.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbgen.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbgen.h"
 C
       PARAMETER ( D0=0.0D0 )
       CHARACTER ALAB*8,BLAB*8,CLAB*8
@@ -1442,12 +1442,12 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxpr.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxpr.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
       CHARACTER LAB*8
@@ -1551,12 +1551,12 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D1 = 1.0D0, D4 = 4.0D0 )
 C
@@ -1631,12 +1631,12 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D1 = 1.0D0, D8 = 8.0D0 )
 C
@@ -1716,12 +1716,12 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dcbxrs.h>
-#include <dgroup.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbxrs.h"
+#include "dgroup.h"
+#include "dcbxqr.h"
 C
       DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
       DIMENSION WORK(*)
@@ -1769,10 +1769,10 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C                          
       DIMENSION VEC(LVEC,NZ),ZYMAT(NORBT,NORBT,NZ),INDEX(2,N)
 C
@@ -1824,17 +1824,17 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
       CHARACTER T*1
       DIMENSION A(NORBT,NORBT,NZ),W(NORBT,NORBT,NZ),C(NORBT,NORBT,NZ)
       DIMENSION T(-1:1)
 C
-#include <muld2h.h>
+#include "muld2h.h"
 C
       CALL QENTER('OITMAT')
 C
@@ -1933,11 +1933,11 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ),WORK(*)
 C
@@ -1983,9 +1983,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <dgroup.h>
-#include <dcborb.h>
+#include "implicit.h"
+#include "dgroup.h"
+#include "dcborb.h"
 C                          
       DIMENSION OP(NORBT,NORBT,NZ),G(2*N,NZ),INDEX(2,N)
 C
@@ -2023,13 +2023,13 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -2082,13 +2082,13 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0 )
 C
@@ -2244,13 +2244,13 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 C
       PARAMETER ( D2 = 2.0D0 )
 C
@@ -2312,14 +2312,14 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
@@ -2365,14 +2365,14 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0 )
 C
@@ -2462,21 +2462,21 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
       DIMENSION DEN(N2BBASX,NZ),W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
       DIMENSION CMO(*),WORK(*)
 C
-#include <muld2h.h>
+#include "muld2h.h"
 C
       CALL QENTER('QDENS2')
 C
@@ -2544,14 +2544,14 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
 C
@@ -2656,10 +2656,10 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 C
@@ -2710,14 +2710,14 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbqal.h>
-#include <dcborb.h>
-#include <dcbbas.h>
-#include <dgroup.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbqal.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -2799,10 +2799,10 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
 C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
@@ -2871,12 +2871,12 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxrs.h>
-#include <dcbxqr.h>
-#include <dgroup.h>
-#include <dcbxpr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxrs.h"
+#include "dcbxqr.h"
+#include "dgroup.h"
+#include "dcbxpr.h"
 C
       PARAMETER ( D0 = 0.0D0, THD = 1.0D-9 )
 C
@@ -2945,9 +2945,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
 C
       LOGICAL EXST
       CHARACTER*1 TYP
@@ -3011,9 +3011,9 @@ C
 C     Written by panor 1999
 C
 C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dcbxqr.h>
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbxqr.h"
 C
       LOGICAL EXST
       CHARACTER*1 TYP,TYPDUM
