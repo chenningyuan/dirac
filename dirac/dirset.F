@@ -609,9 +609,9 @@ C***********************************************************************
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
+      SAVE SCCHRG,BFIT
 #include "sdpre.h"
 C
-      SAVE SCCHRG, BFIT
       DATA (SCCHRG(I),I = 1,103)
      1/ 0.0000D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
      2  0.0010D0, 0.0014D0, 0.0020D0, 0.0026D0, 0.0034D0, 

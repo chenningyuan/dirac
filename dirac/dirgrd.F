@@ -2192,8 +2192,8 @@ C
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
-#include "ibtfun.h"
 #include "dcbham.h"
+#include "ibtfun.h"
 C
 C
       CALL QENTER('LVCGRD')
