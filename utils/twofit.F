@@ -1,4 +1,20 @@
       PROGRAM TWOFIT
+C***********************************************************************
+C
+C     Utility program for diatomics
+C     This program will do a quartic fit of potential curve,
+C     then calculate spectroscopic constants:
+C       - equilibrium distance
+C       - harmonic frequency
+C       - anharmonic constant
+C       - mean displacement in harmonic ground state
+C     With property curves also given the program will
+C     calculate vibrational effects on the corresponding
+C     expectation value
+C
+C     Written by T. Saue April 2001
+C
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
@@ -15,13 +31,33 @@ C
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
       CHARACTER POTFIL*6,RESFIL*10,REPLY*1
 C
+C     Heading
+C
+      CALL TITLER('TWOFIT for diatomics : Written by T. Saue ','*',110)
+      WRITE(LUPRI,'(A)')
+     &  'Select one of the following:',
+     &  '  1. Spectroscopic constants.',
+     &  '  2. Spectroscopic constants + properties.',
+      READ(LUCMD,*) I
+      IF(I.EQ.1) THEN
+        WRITE(LUPRI,'(A)') 
+     &    'Name input file with potential curve (A6)'
+        NPRP = 0
+      ELSEIF(I.EQ.2) THEN
+        WRITE(LUPRI,'(A)') 
+     &    'Name input file with potential/property curve (A6)'
+        WRITE(LUPRI,'(A)') 
+     &    'Give number of property curves'
+        READ(LUCMD,*) NPRP
+      ELSE
+        STOP 'Unknown option !'
+      ENDIF
+C
 C     Read points
 C     ===========
 C
       IUNIT = 1
       ILOGG = 2
-      WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential/property curve(A6)'
       READ(LUCMD,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Note that atomic units should used !'
       OPEN(IUNIT,NAME=POTFIL,STATUS='OLD',FORM='FORMATTED',
@@ -34,7 +70,6 @@ C
       STOP 'Error opening POTFIL'
  30   CONTINUE
       NPOINTS = 0
-      READ(IUNIT,*) NPRP
       DO I = 1,MP
         READ(IUNIT,*,END=40) X(I),Y(I),(P(I,J),J=1,NPRP)
         NP = NP + 1

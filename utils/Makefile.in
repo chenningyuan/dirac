@@ -7,9 +7,9 @@
 
 include ../Makefile.config
 
-OBJS =	twofit.o
+OBJS = twofit.o labread.o
 
-twofit:	$(OBJS)
+all: $(OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
