@@ -65,6 +65,18 @@ C
          END IF
       END DO
 C
+C     If not .trivec. then we don't have coefficients to form a density 
+C     matrix, so return.
+C
+      IF (.NOT. TRIVEC) THEN
+C
+C        In next iteration we'll have some coefficients
+C
+         TRIVEC = .TRUE.
+         GOTO 30
+      END IF
+C
+C
 C        
 C     Fmo = Fmo + 
 C           \sum_o Ct Sao DVao FVao (beta DCao + gamma DSao)t Sao C + H.C
@@ -190,6 +202,7 @@ C
  20      CONTINUE
  10   CONTINUE
 C
+ 30   CONTINUE
       CALL QEXIT('MKMOFK')
       CALL FLSHFO(LUPRI)
       RETURN
