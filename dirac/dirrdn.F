@@ -2834,8 +2834,9 @@ C
      &      '  2: Removing unphysical solutions for no external field'
          ELSE
             WRITE(LUPRI,'(1X,A)')
-     &           '*** WARNING ****',
-     &           ' RKB pre-projection without removing unphysical '//
+     &           '*** WARNING ****'//
+     &           ' RKB pre-projection on scalar basis',
+     &           ' without removing unphysical '//
      &           'solutions for no external field',
      &           ' I HOPE YOU KNOW WHAT YOU ARE DOING!'
          ENDIF
