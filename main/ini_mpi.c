@@ -67,7 +67,7 @@
 
 #if defined (VAR_MPI)
 
-   int par,lwrkmm,ierr;
+   int par;
    char *dirpar;
 
    /*

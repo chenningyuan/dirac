@@ -52,7 +52,7 @@
 
 {
    char *strwrk,*str;
-   int lwrkmm,ierr,returncode;
+   int returncode;
 
    str    = (char *) diracmalloc(20);
    if (mytid == 0)
