@@ -780,6 +780,8 @@ while [ -n "$1" ]; do
 done
 #
 EXIT=0
+# Next line is for IBM only but will not hurt other systems
+XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
 set_work_dir
 set_work_memory
 print_header
