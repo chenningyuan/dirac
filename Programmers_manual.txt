@@ -1,6 +1,8 @@
-Programmers manual for DIRAC-2002
+Programmers manual for DIRAC04
 
-Lucas Visscher, 23-8-2002
+Lucas Visscher
+
+CHAPTER 1 : SCRIPTS AND MAINTENANCE
 
 The DIRAC programme system is maintained using the CVS and contains a number of shell 
 scripts in order to extract a distribution version and to insert machine dependent lines.
@@ -22,12 +24,12 @@ added when the program is distributed outside the authors group.
 
 3. The pamadm script.
 This script should always be run when new files or directories are added to the repository.
-It creates all the Makefiles and the configure and exports scripts (see below). 
+It creates all the Makefiles and the pam and export scripts (see below). 
 The author of the new files should take care that this script is modified so that these
 derived files contain proper reference to the new code. It should be rather straightforward
 to do this by looking at the example provide by other (optional) modules.
-DO NEVER EDIT THE MAKEFILE OR CONFIGURE SCRIPTS. They are derived files and are overwritten
-by pamadm. The files to be changed are pamadm and configure.in.
+DO NEVER EDIT THE MAKEFILES OR PAM DIRECTLY. They are derived files and are overwritten
+by pamadm. The files to be changed are pamadm, configure, pam.in and the Makefile.in files.
 
 4. The configure script.
 This script take care of the machine dependent code. Please use this only for this 
@@ -47,5 +49,67 @@ without or with only one of the optional modules active.
 Use this script BEFORE checking in new code to verify that your modifications do not
 affect other functionality. More documentation on this script is to be written.
 
+7. The pam and pamq scripts.
+The pam script is used to run DIRAC on various platforms. It takes care of setting up
+a scratch directory, copying out restart files (if desired), cleaning up, etc.
+Please modify this script if you hit a non-supported platform and check the
+modification in so that others may also benefit from the work you did !
+Pamq is basically a wrapper of pam that works with a number of queue systems.
+
+CHAPTER 2 : PROGRAMMING RULES AND HINTS
+
+Dirac is for historical reasons largely written in FORTRAN77 but in the newer
+parts of the code yoou may also see parts in C or Fortran90. Parallelism is
+achieved via the MPI message passage library allthough some shared memory
+parallelization via preprocessor statements of high-performance-fortran may
+pop up in the future. The program also users other libraries like blas or
+lapack for which a standard (but slow) implementation is found in pdpack. To
+achieve optimal performance one should use optimized libraries at the linking
+stage and use the included versions only when no optimized version is
+available.
+
+1. Use of languages
+Do not introduce a new language before consulting the authors forum
+at dirlab@dirac.chem.sdu.dk. New languages require compilers that may be
+proprietary and consequently not be available to all authors (and users).
+
+2. Use of BLAS and LAPACK
+Try to avoid being creative when hitting a standard linear algebra problem
+and look first in what is already available. The lapack and blas routines
+available via the Atlas distribution provide a fast and stable implementation
+for every platform. Try to use these first and if nothing is suitable check
+for what is done in the gp directory as well. Some Dirac author may already
+have done this before.
+
+3. Hints for using Fortran90.
+You may want to use Fortran90 features when modifying an existing routine.
+Since Fortran90 does support almost all FORTRAN77 features this should be no
+problem in principle. In practise you will hit some problems related to the
+use of #include and preprocessor statments in the old code. A few things to
+make life easier (search also the net typing fortran77 and fortran90 in
+google, you will almost certainly find very relevant websites).
+
+- Use .f90 to identify Fortran90 source code files and use .F for FORTRAN77.
+
+- FORTRAN77 style continuation differs from Fortran90. To keep both compilers happy : 
+  Type an ampersand & in column 73 of the line you want to continue and
+  also one in column 6 of the next. The first is not seen by f77 but read by
+  f90 who then ignores the second. f77 just needs the second & (in column 6).
+  Do not use other continuation characters
+
+- Include works with #include in FORTRAN77 and with include in Fortran90.
+  Make sure to define your include blocks such that they can be used by both
+  f77 and f90. This means : no preprocessor statments and use of continuation
+  as described above.
+
+- Do make use of the modularity that Fortran90 offers. We do, however, need
+  more discussion to define where best to place common modules. Dirac meeting
+  in 2004 ?
+
+- Look at examples already done in f90 and read a good book to get acquainted
+  with the language...
+
+END OF DOCUMENTATION
+
 NOTE : This documentation is the bare minimum. I plan to add more but may not have the time.
-If you have and know what to write, please extend this... (LV,23-8-2002).
+If you have and know what to write, please extend this... (LV).
