@@ -343,7 +343,8 @@ export:
 	prp/*.F prp/Makefile.in \
 	abacus/*.F abacus/Makefile.in \
 	gp/Makefile.in gp/*.F gp/*.c \
-	pdpack/Makefile.in pdpack/*.F 
+	pdpack/Makefile.in pdpack/*.F \
+	dhf.in 
 EOF
 if($ERITAR) then
 echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in ' >> Makefile
