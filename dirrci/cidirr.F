@@ -91,10 +91,12 @@ C     =======================================================================
 C
       INCLUDE 'files.inc'
       INCLUDE 'param.inc'
+      LOGICAL DONE
 C
       MAXCORE = MCORE
       OPEN (5,FILE='DIRAC.INP')
-      CALL SETUP   (CI)
+      CALL SETUP   (CI,DONE)
+      IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
 C
@@ -106,7 +108,7 @@ C
 C
       END
 C
-      SUBROUTINE SETUP (CI)
+      SUBROUTINE SETUP (CI,DONE)
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -122,6 +124,7 @@ C
       INCLUDE 'mempoint.inc'
 C
       CHARACTER*8 TIMEX,DATEX*10
+      LOGICAL DONE
 C
       WRITE (6,'(//80A1)') ('#',I=1,80)
       CALL DAYTIME (DATEX,TIMEX)
@@ -129,7 +132,8 @@ C
       CALL CPUUSED(CPUSET)
 C
       CALL SYMMIN
-      CALL USERIN
+      CALL USERIN (DONE)
+      IF (DONE) RETURN
       CALL ORBSIN
       CALL SORTMEM
       CALL SHUFFLE (CI(ITR),CI(ITI),CI(IIK),
@@ -167,7 +171,7 @@ C
          WRITE (6,1041)
       ELSE
          WRITE (6,1042)
-         CALL QUIT('cidirr line 170')
+         CALL QUIT('cidirr line 174')
       ENDIF
 C
       CALL CPUUSED (SEC)
@@ -211,9 +215,9 @@ C     Version 1.6.4 : Can now run with zero iterations to calculate natural
 C                     spinors after a crash
 C     Version 1.6.5 : Installed explicit real diagonalization routine
 C     Version 2.0   : Large revisions ; Better memory management
-C					Storing as much coupling coeff. as possible
-C					More efficient expansion algorithm
-C					Faster calculation of coupling coeff.
+C                     Storing as much coupling coeff. as possible
+C                     More efficient expansion algorithm
+C                     Faster calculation of coupling coeff.
 C
  1000 FORMAT (' DIRect Relativistic CI program version 2.0'//
      &' Written by Luuk Visscher ',
@@ -2466,7 +2470,7 @@ C64B &   CALL SSCAL (NDET,RR,VECTI(1,IVEC),1)
          WRITE (*,*) ' NORM OF NEW VECTOR < 1.D-12 '
          WRITE (*,*)
          WRITE (*,*) '  -- SILLY END OF PROGRAM -- '
-         CALL QUIT('dirrci line  2469')
+         CALL QUIT('dirrci line  2473')
       ENDIF
       CALL PUTVEC (MVEC+IVEC,VECTR(1,IVEC),VECTI(1,IVEC))
  1000 CONTINUE
@@ -3267,7 +3271,7 @@ C
       RETURN
       END
 C
-      SUBROUTINE USERIN
+      SUBROUTINE USERIN (DONE)
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -3276,16 +3280,28 @@ C
       INCLUDE 'general.inc'
       INCLUDE 'symm.inc'
 C
-      LOGICAL TOBE
+      LOGICAL TOBE,DONE
       CHARACTER*4 IREPNA,VECFIL*11
       DIMENSION NRAS1(16),NRAS2(16)
 C
+      NAMELIST /GOSCIP/ NELEC
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
       NAMELIST /OPTIM/ IGENEX
       NAMELIST /LEADDET/ GETDET,COMIN
       NAMELIST /NATURAL/ MAKENAT
+C
+      NELEC = 0
+      REWIND (5)
+      READ (5,GOSCIP,END=10,ERR=10)
+   10 IF (NELEC.NE.0) THEN
+         CALL PAMGOS
+         DONE = .TRUE.
+         RETURN
+      ELSE
+         DONE = .FALSE.
+      ENDIF
 C
       NELEC = 0
       DO I = 1, NSYMRP
