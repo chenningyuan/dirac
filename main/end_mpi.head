@@ -8,4 +8,14 @@
  *
  */
 
-void end_mpi(int mparid, int mytid, unsigned int errhandler)
+#if defined (VAR_MPI)
+
+#include <mpi.h>
+
+void end_mpi(int mparid, int mytid, MPI_Errhandler errhandler)
+
+#else /* VAR_MPI */
+
+void end_mpi(int mparid, int mytid, int errhandler)
+
+#endif

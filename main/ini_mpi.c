@@ -59,48 +59,59 @@
       par = 0;
    }
 
-   /*
-    * MPI start
-    */
+   if ( ! par )
+   {
+      *mytid =  0;
+      *parcal = 0;
+      *mparid = 0;
+      *numnod = 0;
+   }
+   else
+   {
 
-   if ( (ierr = MPI_Init(NULL,NULL)) )
-      printf("MPI_Init error %i in ini_mpi()\n",ierr);
+      /*
+       * MPI start
+       */
 
-   /*
-    * Set up MPI error handler
-    */
+      if ( (ierr = MPI_Init(NULL,NULL)) )
+         printf("MPI_Init error %i in ini_mpi()\n",ierr);
 
-   if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
-      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+      /*
+       * Set up MPI error handler
+       */
 
-   if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
-      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
-   
-   /*
-    * Get number of nodes and the number of this node
-    */
+      if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
+         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
-   if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
-      printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
+      if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
+         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
-   if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
-      printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
+      /*
+       * Get number of nodes and the number of this node
+       */
+
+      if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
+         printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
+
+      if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
+         printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
 #if defined (SYS_IRIX)
-   /*
-    * Impose gang scheduling to avoid problems with idle nodes
-    * when high system load
-    *
-    */
-   if ( (mytid == 0) && (schedctl(schedmode,sgs_gang,0) < 0) )
-   {
-      printf("*** ERROR gang scheduling\n");
-      exit(1);
-   }
+      /*
+       * Impose gang scheduling to avoid problems with idle nodes
+       * when high system load
+       *
+       */
+      if ( (mytid == 0) && (schedctl(schedmode,sgs_gang,0) < 0) )
+      {
+         printf("*** ERROR gang scheduling\n");
+         exit(1);
+      }
 #endif /* SYS_IRIX */
-   (*numnod)--;
-   *mparid = 0;
-   *parcal = 1;
+      (*numnod)--;
+      *mparid = 0;
+      *parcal = 1;
+   }
     
 #else  /* VAR_MPI */
    *mytid =  0;
