@@ -193,7 +193,7 @@ C
          END DO
          IOFFE = IT
       END IF
-      print *,'hj: IOFFG, IOFFE:',IOFFG,IOFFE
+D     print *,'hj: IOFFG, IOFFE:',IOFFG,IOFFE
 C
 C
       IF (C(1:2) .EQ. 'AA') THEN
@@ -765,18 +765,18 @@ C
       DO I = 1, 4
 C
          DO J = I, 1, -1
-            K = 2
-            IF (NFSYM.EQ.1) K=1
-            IF (TRASAM(WORK(KVEC(1,I)),WORK(KVEC(K,I)),
-     &                 WORK(KVEC(1,J)),WORK(KVEC(K,J)),
-     &          NSTR(1,0,I),NSTR(1,0,J))) ISAME(I) = J
+            IF (TRASAM(WORK(KVEC(1,I)),WORK(KVEC(NFSYM,I)),
+     &                 WORK(KVEC(1,J)),WORK(KVEC(NFSYM,J)),
+     &                 NSTR(1,0,I),NSTR(1,0,J))) ISAME(I) = J
+C           ... note KVEC(NFSYM,I) is same as KVEC(1,I) if NFSYM.eq.1,
+C                    otherwise it points to IFSYM = 2.
          ENDDO
 C
-         IF (ISAME(I).NE.I) THEN
-            KQ(1,I) = KQ(1,ISAME(I))
-         ELSE
+         IF (ISAME(I).EQ.I) THEN
 c           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
+         ELSE
+            KQ(1,I) = KQ(1,ISAME(I))
          ENDIF
          KQ(2,I) = KQ(1,I) + NQ(1,I)
 C
