@@ -2,7 +2,7 @@
      &        DIPVEL, QUADRU, SECMOM, ONEPRP, CARMOM, SPHMOM, OCTUPO,
      &        FERMI, PSO, SPIDIP, DSO, ALLATM, NMRISS, TRIANG, SDFC,
      &        PROPRI, HDO, S1MAG, S2MAG, ANGMOM, ANGLON, LONMOM, 
-     &        MAGMOM,
+     &        MAGMOM, MGCOOR,
      &        S1MAGT, MGMOMT, KINENE, S2MAGT, DSUSNL, DSUSLL, DSUSLH,
      &        DIASUS, DSUTST, NUCSNL, NUCSLO, NUCSHI, NSNLTS, NSLTST,
      &        NELFLD, NSTTST, EFGCAR, EFGSPH, NUCPOT, S1MAGL, S1MAGR,
@@ -24,4 +24,4 @@
      &                MGMO2T, PRTHRS, HBDO, SUSCGO, NSTCGO, EXPIKR,
      &                DIRAC, DARWIN, MASSVL, CM1, CM2, NOTWO,
      &                SQHDOL, SQHDOR, S1ELE, S1ELB, ONEELD, GFACDI,
-     &                THETA
+     &                THETA, MGCOOR

@@ -1911,7 +1911,7 @@ C
       END IF
 C
 C     Print the references to the basis sets
-C
+
       IF (IPREAD .GT. 0) CALL PRBASREF(LUPRI,NONTYP,BASREF)
 C
 C     ******************************************
@@ -1970,7 +1970,8 @@ C
 C
 C     Symmetrized magnetic moments
 C
-      IF (HERMIT) CALL MAGCOR(IPREAD)
+CTROND      IF (HERMIT) CALL MAGCOR(IPREAD)
+      CALL MAGCOR(IPREAD)
 C
 C     ***************************
 C     ***** Determine IAOAO *****
@@ -4244,7 +4245,8 @@ C
 #include "ibtfun.h"
 C
       IF (NMRISS .AND. MAXREP .GT. 0) THEN
-         IF (IPREAD .GT. 0) THEN
+CTROND         IF (IPREAD .GT. 0) THEN
+         IF (IPREAD .GE. 0) THEN
             WRITE (LUPRI,'(/)')
             CALL HEADER('Symmetrized nuclear magnetic moments',1)
          END IF
@@ -4257,7 +4259,8 @@ C
  120           CONTINUE
  110        CONTINUE
  100     CONTINUE
-         IF (IPREAD .GT. 0) THEN
+CTROND         IF (IPREAD .GT. 0) THEN
+         IF (IPREAD .GE. 0) THEN
             WRITE (LUPRI,'(1X,A,8I3)')
      &           ' Number of components in each symmetry: ',
      &           (NRTREP(I),I=0,MAXREP)
@@ -4265,7 +4268,8 @@ C
 C
          DO 200 IREP = 0, MAXREP
          IF (NRTREP(IREP) .GT. 0) THEN
-            IF (IPREAD .GT. 0) THEN
+CTROND            IF (IPREAD .GT. 0) THEN
+            IF (IPREAD .GE. 0) THEN
               WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1/)')
      &           'Symmetry',REP(IREP),'(',IREP,')'
             END IF
@@ -4282,7 +4286,8 @@ C
                         NBASE(NB) = 3*(NUCNUM(ICENT,ISYMOP+1)-1) + ICOOR
                      END IF
  230                 CONTINUE
-                     IF (IPREAD .GT. 0) THEN
+CTROND                     IF (IPREAD .GT. 0) THEN
+                     IF (IPREAD .GE. 0) THEN
                         WRITE (LUPRI,
      &                  '(2X,A,I3,3X,A,2X,A,3X,I2,7(2X,A,1X,I2))')
      &                  'I',ISCOOR, NAMEX(3*ICENT)(1:4), CHRXYZ(-ICOOR),

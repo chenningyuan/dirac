@@ -249,9 +249,7 @@ c
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-CTSAUE
-     &             '.NUCMOD', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
-CTSAUE
+     &             '.NUCMOD', '.MAGCOR', '.XXXXXX', '.XXXXXX'/
 C
 C     Check if input has been processed earlier.
 C
@@ -345,6 +343,7 @@ CTSAUE
       ALLATM = .TRUE.
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
+      MGCOOR = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
@@ -775,6 +774,8 @@ C&&& Nuclear model
             ENDIF
             GO TO 100
  178     CONTINUE
+C MAGCOR - print magnetic coordinates
+            MGCOOR = .TRUE.
             GO TO 100
  179     CONTINUE
             GO TO 100
@@ -788,7 +789,7 @@ C&&& Nuclear model
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
  199  CONTINUE
-      NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC
+      NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(//A,I5/)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only '
       IF(GAUNUC) THEN
