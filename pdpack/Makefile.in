@@ -9,10 +9,11 @@ include ../Makefile.config
 
 OBJS=pdlib.a(arhpack.o) pdlib.a(dge.o) pdlib.a(dsp.o)\
      pdlib.a(fastio_g07.o) pdlib.a(linextra.o) pdlib.a(printpkg.o)\
-     pdlib.a(gpblas.o) pdlib.a(gp_dblas3.o) pdlib.a(eispack.o)
+     pdlib.a(gpblas.o) pdlib.a(gp_dblas3.o) pdlib.a(eispack.o) \
+     pdlib.a(numrep.o) 
 
 SRC=arhpack.F dge.F dsp.F fastio_g07.F linextra.F printpkg.F \
-    gpblas.F gp_dblas3.F eispack.F
+    gpblas.F gp_dblas3.F eispack.F numrep.F
 
 all :	pdlib.a
 
