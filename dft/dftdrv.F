@@ -248,7 +248,7 @@ C
 #endif
            CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
-     &               DOERG,DOGRD,DOLND,DOATR,DFTASC,
+     &               DOERG,DOGRD,DOLND,DOATR,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
 #if defined (VAR_MPI) 
@@ -362,7 +362,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftdr1 */
       SUBROUTINE DFTDR1(CORX,CORY,CORZ,WEIGHT,NPOINT,
      &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
-     &               DOERG,DOGRD,DOLND,DOATR,DFTASC,
+     &               DOERG,DOGRD,DOLND,DOATR,
      &               GAO,GAO1,GAO2,GAB1,
      &               NCNT,DST,BUF,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -382,10 +382,11 @@ C
 #include "inforb.h"
 #include "orgcom.h"
 #include "dftbuf.h"
+#include "dftcom.h"
 #include "dfterg.h"
 #include "functionals.h"
 #include "dgroup.h"
-      LOGICAL DOERG,DOGRD,DOLND,DOATR, DFTASC
+      LOGICAL DOERG,DOGRD,DOLND,DOATR
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
      &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DTRMAT(*),
@@ -415,7 +416,7 @@ C       Density
 C       =======
 C
         CALL GETRHO(RHO,0,GAO,DMAT,BUF)
-CTROND        IF (RHO.LE.THRSH) GO TO 300
+        IF (RHO.LE.DFTHR0) GO TO 300
         RHO13  = RHO**DP3
 C
 C       Gradient of density
@@ -1105,7 +1106,7 @@ C
      &                 MPARID,35,MPI_COMM_WORLD,ISTAT,IERR)
       CALL DFTDR1(WORK(KX),WORK(KY),WORK(KZ),WORK(KW),NPOINT,
      &            DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
-     &            DOERG,DOGRD,DOLND,DOATR,DFTASC,
+     &            DOERG,DOGRD,DOLND,DOATR,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK(KFREE),LFREE,IPRINT)

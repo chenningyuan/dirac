@@ -58,6 +58,9 @@ C          geometry in a geometry optimization) /hjaaj
       RADINT = 1.0D-8
       ANGINT = 41
       INTCHK = 0
+      DFTHR0 = 1.0D-9
+      DFTHRL = 1.0D-10
+      DFTELS = 1.0D-3
       NOPRUN = .FALSE.
       ANGMIN = 15  
       ATSIZE = .FALSE.
