@@ -335,6 +335,18 @@ C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
+c     print*,'jvs: 1e tau part RELCCSD'
+C
+c     if (rcw.EQ.2) then
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(2*i-1)
+c        print*,'imag xvo',i,xvo(2*i)
+c     enddo
+c     else
+c     do i = 1, ndimx
+c        print*,'real xvo',i,xvo(i)
+c     enddo
+c     endif
 C------------------------------------
 C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
 C------------------------------------
@@ -406,6 +418,28 @@ c     LFREE=NBUF3*RCW
 c     CALL MPGLVC(DMO,XLAGRAN,BUF3,KFREE,LFREE)
 c     print*,'jvs: D via joost'
 c     CALL DAXPY(NORBT*NORBT*NZ,A1,XLAGRAN,1,xmo,1)
+C
+C     +------------------------------------------------+
+C     | Generate the T's in the right order for the    |
+C     | contraction with the 3/4 transformed integrals |
+C     +------------------------------------------------+
+C
+C     deactivated because checking in to trunk
+c     print*,'generatie mulliken Ts'
+c     CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+c    &              T2,BUF1)
+c     do i=1,200
+c       print*,'i,T2=',i,T2(i)
+c     enddo
+c     do i=1,200
+c       print*,'i,BUF1(i)=',i,BUF1(i)
+c     enddo
+C     deactivated because checking in to trunk
+c     CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
+c     print*,'jvs: T-dependent part of Lagrangian'
+C     deactivated because checking in to trunk
+c     LFREE=NBUF3*RCW
+c     CALL TR5INI(BUF3,LFREE)
 C
 C     Solve Z-vector equations by calling the RPA routine
 C

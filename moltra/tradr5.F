@@ -77,12 +77,11 @@ C***********************************************************************
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-
+#include "mp1stpr.h"
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
-      DIMENSION IPTQLAG(0:7,0:7,2)
 C     
       CALL QENTER('TRDR5T')
       KFRSAV = KFREE
@@ -207,12 +206,23 @@ C     ****** S E R I A L    C O D E  ******
 C     *************************************
 C
 C
+C       Allocate memory for the T-matrix and XAOMO
+C       ==========================================
+C
+        CALL MEMGET('REAL',KTMATRIX,NTMATR,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXAOMO,NCMOTQ,WORK,KFREE,LFREE)
+C
+        CALL DZERO(WORK(KTMATRIX),NTMATR)
+        CALL DZERO(WORK(KXAOMO),NCMOTQ)
+C
+C       Read the T-matrix from file
+C       ---------------------------
+        CALL READTAU(WORK(KTMATRIX))
+C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 2
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-           CALL MEMGET('REAL',KTQMAT,NPTQLAG,WORK,KFREE,LFREE)
-           CALL DZERO(WORK(KTQMAT),NPTQLAG)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
               WRITE(LUPRI,'(3X,2(A,I4),A,F10.2,A/32X,A,F10.2,A)')
@@ -221,11 +231,11 @@ C
      &        'and after',CPUST-CPUBEF,' CPU-seconds'
               CALL FLSHFO(LUPRI)
               CALL TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                   NSTR,IPTQLAG,NPTQLAG,WORK(KINDX),TRIAN,
+     &                   NSTR,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,ISHLA,
-     &                   WORK(KDRIJ),WORK(KGAB),WORK(KTQMAT),DINTSKP)
+     &                   WORK(KDRIJ),WORK(KGAB),DINTSKP,
+     &                   WORK(KTMATRIX),WORK(KXAOMO))
            ENDDO            
-           CALL MEMREL('TRDR5T1',WORK,1,KTQMAT,KFREE,LFREE)
         ENDDO               
 #if defined (VAR_MPI)
       ENDIF                 
@@ -237,8 +247,12 @@ C      |   Transform the AO index of the Lagrangian      |
 C      |                                                 |
 C      +-------------------------------------------------+
 C          
-C      ...
+C     Allocate memory for the MO Lagrangian
+C     -------------------------------------
+      CALL MEMGET('REAL',KXMO,NORBT*NAOCCT*NZ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KXMO),NORBT*NAOCCT*NZ)
 C
+      CALL LAGTRA(WORK(KXAOMO),WORK(KXMO),WORK,KFREE,LFREE)
 C             
 C     Screening statistics
 C
@@ -260,9 +274,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV5 */
       SUBROUTINE TRDRV5(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,IPTQLAG,NPTQLAG,INDX,TRIAN,KQ,KE,KIBE,
-     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,TQMAT,
-     &                  DINTSKP)
+     &                  NSTR,INDX,TRIAN,KQ,KE,KIBE,
+     &                  IC,I2TYP,IBSTRT,IBEND,DRIJ,GABRAO,
+     &                  DINTSKP,TMATRIX,XAOMO)
 C
 C     This is a modified version of TRDRV4 that makes the
 C     Lagrangian in a mixed AO,MO form.
@@ -290,9 +304,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
-      DIMENSION IHTM(0:7),MHTM(2),NHTM(2), IOFFB(0:7)
-      DIMENSION IRECC(2),NBFSZ(2),NBUF(2),NIJBUF(2),NHTIM(2),IBOFF(2)
+      DIMENSION IHM(0:7)
       DIMENSION WORK(*),GABRAO(*),DRIJ(*),DINTSKP(*)
+      DIMENSION TMATRIX(*), XAOMO(*)
 C
       CALL QENTER('TRDRV5')
       KFRSAV = KFREE
@@ -307,71 +321,6 @@ C
       CALL ICOPY ( 24,IBBAS,1,IBBAS2, 1)
       CALL ICOPY (  2,IBAS, 1,IBAS1,  1)
       CALL ICOPY (  2,IBAS, 1,IBAS2,  1)
-C
-C     Copy the first half of the NDMOQ and ICMOQ arrays
-C
-      CALL ICOPY (8,NDMOQR,1,NDMOQS,1)
-      CALL ICOPY (8,NDMOQR,1,NDMOQT,1)
-      CALL ICOPY (4,ICMOQR,1,ICMOQS,1)
-      CALL ICOPY (4,ICMOQR,1,ICMOQT,1)
-C
-C     Set up symmetry packing for reduced shell space in the second
-C     half transformation. We have one index that has a range of 
-C     active shells and one index that should belong to a particular
-C     shell (ISHLA).
-C
-      CALL GISPCK(NSPCK34,ISPCK34,ISHLA,IBSTRT,IBEND,
-     &     NBBAS3,NBBAS4,IBBAS3,IBBAS4,IBAS3,IBAS4)
-C
-C     Generate pointers for the reduced coefficient matrices
-C     As we leave the last index untransformed we need only
-C     one coefficient matrix and not two as in TRDRV4.
-C     Also we need only the square form as a quater transformation
-C     cannot be done on triangular arrays.
-C
-      NQ4S = 0
-      DO IFSYM = 1, NFSYM
-         NROW4 = 0
-         DO IREPR = 0, NBSYM-1 
-            IF (IFSYM.EQ.JBTOF(IREPR,IC)) THEN
-               NROW4 = NROW4 + NBBAS4(IREPR,IC)
-            ENDIF
-         ENDDO
-C
-         NDMOQS(1,IFSYM,4) = NROW4
-         NDMOQS(2,IFSYM,4) = NDMOQR(2,IFSYM,4)
-C
-         ICMOQS(IFSYM,4) = NQ4S + 1
-         NQ4S = NQ4S + NROW4 * NDMOQR(2,IFSYM,4) * NZ
-      ENDDO
-C
-C     Get the reduced coefficient matrices (only active shells)
-C
-      CALL MEMGET('REAL',KQ4S,NQ4S,WORK,KFREE,LFREE)
-      DO IFSYM = 1, NFSYM
-        IF(NDMOQR(2,IFSYM,4)*NDMOQS(2,IFSYM,4).NE.0) THEN
-          CALL QREDUC (IBSTRT,IBEND,IFSYM,WORK(KQ(IFSYM,4)),
-     &                NDMOQR(1,IFSYM,4),NDMOQR(2,IFSYM,4),
-     &                WORK(KQ4S+ICMOQS(IFSYM,4)-1),
-     &                NDMOQS(1,IFSYM,4),NDMOQS(2,IFSYM,4))
-        ENDIF
-      ENDDO
-C
-C     Make index array for half-transformed integrals
-C
-      NHTMT = 0
-      DO IREPIJ = 1, NFSYM
-         MHTM(IREPIJ) = 0
-         NHTM(IREPIJ) = 0
-         DO IREPAB = 0, NBSYM-1
-            IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-               IHTM(IREPAB) = MHTM(IREPIJ) + NHTMT
-               MHTM(IREPIJ) = MHTM(IREPIJ) + NSPCK34(IREPAB,0)*NZ
-            ENDIF
-            NHTM(IREPIJ) = MHTM(IREPIJ)*NFPCK12(IREPIJ)
-         ENDDO
-         NHTMT = NHTMT + NHTM(IREPIJ)
-      ENDDO
 C
       IF (I2TYP.LT.0) THEN
          GOTO 999
@@ -389,22 +338,17 @@ C
 C     Memory requirements for HERMIT:
 C
       MWHER = MXMEMHER(IC,I2TYP)
-C
+C     
 C     Loop over the shells
-C
-      CALL IZERO(IOFFB,8)
+C     
       DO ISHLB = IBSTRT, IBEND
 C
-         KFRSAV3 = KFREE
-         NINSHA  = NINSH(ISHLA,-1,INDX,IPRINT)
-         NINSHB  = NINSH(ISHLB,-1,INDX,IPRINT)
-         IF (IPRINT .GE. 3) WRITE(LUPRI,'(/A,2I3)')
-     &      '    ---> TRDRV5 : integrals for shell A/B',ISHLA,ISHLB
 C
-         LDXAB = 5*NINSHA*NINSHB
-         CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
+            KFRSAV3 = KFREE
+            NINSHA = NINSH(ISHLA,-1,INDX,IPRINT)
+            NINSHB = NINSH(ISHLB,-1,INDX,IPRINT)
 C
-C           Set up gather array for distributions, 
+C           Set up gather array for distributions,
 C           calculate memory requirements for this batch.
 C
 C           NOTE : The actual dimension of INDXAB is kept in the
@@ -414,83 +358,49 @@ C           or (even better) to send it also down to HERMIT.
 C           Luuk. TODO
 C
 C           First a dummy run to calculate the memory requirements
-C           for GMAT. We assume that HMAT is not more than twice GMAT,
-C           and reserve the same memory also for use in HERMIT.
+C           for GMAT. Max size of GMAT is set in MAXSCL from
+C           .SCLMEM in input or chosen based on MWHER.
 C
-C        The size of HMAT is approximately: 
-C           NUMDIS * NFPCK12(IREPIJ) * NZ / NPASS
 C
-C        (1) overhead: Subtract 10% or 1MW from available memory 
-C
-         MFREE = LFREE - MIN(LFREE/10, 1 000 000)
-C
-C        (2) We must be able to hold
-C            (a) GMAT + HERMIT
-C            (b) GMAT + HMAT
-C            simultaneously in memory.
-C 
-C
-         IF (MWHER .GT. MFREE) CALL QUIT('Not enough memory for HERMIT')
-C            
-         MWHMAT = 0
-         IT = 0
- 2000    CONTINUE
-            IT = IT + 1
-            NSIZG = MFREE - MAX(MWHMAT,MWHER)
-C
-C           Calculate NUMDIS and NSIZG
-C           --------------------------
+               MWHER = MXMEMHER(IC,I2TYP)
+               NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
+C              subtract max mem needed in Hermit and 10%/1Mw for anything else
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,
-     &                       .FALSE.,INDX,WORK(KFREE),IJP12,NSIZG,IDUM)
+     &           .TRUE.,INDX,IDUM,IJP12,NSIZG,IDUM)
 C
-C           Setup INDXAB & IJPASS
-C           ---------------------
-C
+            LDXAB = 5*NINSHA*NINSHB
+            CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
 C
-            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
+C           Set INDXAB and INDPASS
+C
+            NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.TRUE.,
      &                       INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
 C
-C           Calculate MWHMAT:
-C           -----------------
+            NSIZH = 0
+            DO IREPAB = 0, NBSYM-1
+               IHM(IREPAB) = NSIZH
+               IREPIJ      = JBTOF(IREPAB,1)
+               NSIZH       = NSIZH + IJP12(IREPAB)*NFPCK12(IREPIJ)
+            ENDDO
 C
-            MWHMAT = MWHMATCALC(WORK(KIJPASS),NPASS,NFPCK12)
+            CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
+            CALL DZERO (WORK(KHMAT),NSIZH*NZ)
 C
-            CALL MEMREL('TRDRV5.mwhmat calc',WORK,1,KIJPASS,KFREE,LFREE)
-C
-C           Check that we fit in memory
-C           ---------------------------
-C
-            IF (IPRINT .GE. 3) THEN
-               WRITE(LUPRI,'(A,I3,A/4(A,I9))')
-     &         '       - TRDRV5 memory estimate iteration no. ',IT,' :',
-     &         '         Free: ',MFREE,', Hermit: ',MWHER,
-     &         ', HMAT ',MWHMAT,', GMAT ',NSIZG
-            END IF
-            CALL FLSHFO(LUPRI)
-            IF ( (NSIZG + MAX(MWHMAT,MWHER) ) .GT. MFREE ) THEN
-               IF ( MWHMAT .GT. MFREE) THEN
-                  MWHMAT = MFREE * 9 / 10
-               END IF
-               GOTO 2000
-            END IF
-C
-C        Final calculation of INDXAB & IJPASS
-C
-         CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
-C
-         NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.TRUE.,.FALSE.,
-     &                    INDX,WORK(KDXAB),IJP12,NSIZG,WORK(KIJPASS))
-C
-         IF (IPRINT .GE. 3) THEN
-            WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
-     &      ' Calculation of integral distribution set:',ISHLA,ISHLB
-            WRITE (LUPRI,'(//,4(1X,A,I8,/))')
-     &      ' Number of distributions in this set:     ',NUMDIS,
-     &      ' Maximum size of scalar integral batch:   ',NSIZG,
-     &      ' Number of passes :                       ',NPASS
-         END IF
+c           IF (IPRINT .GE. 3) THEN
+               WRITE (LUPRI,
+     &              '(//,1X,A,2I8/,2(1X,A,I8/),2(1X,A,I8,F10.3/))')
+     &         ' Calculation of integral distribution set:',
+     &              ISHLA,ISHLB,
+     &         ' Number of distributions in this set:     ',NUMDIS,
+     &         ' Number of passes :                       ',NPASS,
+     &         ' Size of scalar integral batch:           ',NSIZG,
+     &              NSIZG*8./(1024.*1024.),
+     &         ' Size of half-transformed integral batch: ',NSIZH,
+     &              NSIZH*8./(1024.*1024.)
+               CALL FLSHFO(LUPRI)
+c           END IF
 C
          IF (NPASS.GT.1) THEN
 C
@@ -520,44 +430,80 @@ C
          ELSE
 C
 C           Write directly into the array GMAT
-C
+C           
             CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
             KLGBUF = 1
             KALGREC = KFREE
-         ENDIF
-C
-C        Get distributions
-C
+         ENDIF 
+C    
+C        Get distributions 
+C    
          NODV = NASHT.EQ.0
          NOPV = NASHT.LT.2
          CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
      &               NODV,NOPV,GABRAO,DRIJ,DINTSKP,SCRTRA,
      &               WORK(KFREE),LFREE,IPRINT)
-C
+C           
 C        Do the transformation of the first index pair and continue
 C        by contracting these integrals with the T-amplitudes to obtain
 C        the Lagrangian contributions.
-C        half-transformed integrals to file.
-C
+C        Half-transformed integrals NOT to file.
+C           
 C        De-allocate buffers and allocate GMAT if we had multiple passes.
-C
+C           
          IF (NPASS.GT.1) THEN
             CALL MEMREL('TRDRV5.1',WORK,1,KALGBUF,KFREE,LFREE)
-            CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE) 
             CALL DZERO(WORK(KGMAT),NSIZG)
          ENDIF
 C
-         CALL MS3RLAG(WORK,KFREE,LFREE,IPRINT,.TRUE.,.TRUE.,IOFFB,
-     &                WORK(KALGREC),ICS12,ICF12,IC,
-     &                TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
-     &                WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &                WORK(KGMAT),NSIZG,
-     &                MHTM,IHTM,INDX,WORK(KDXAB),IRECC,WORK(KJBOFF),
-     &                IBOFF,NBUF,NIJBUF,NBFSZ,WORK(KRBUF),
-     &                WORK(KLBUF1))
+C     +-----------------------------------------------+
+C     |                                               |
+C     |      Transformation of the first 2 indices    |
+C     |                                               | 
+C     +-----------------------------------------------+
+C           
+         CALL MS3IN1(WORK,KFREE,LFREE,IPRINT,
+     &               WORK(KALGREC),ICS12,ICF12,IC,
+     &               TRIAN(1),NSTR(1,0,1),NSTR(1,0,2),
+     &               WORK(KIJPASS),WORK(KQ(1,1)),WORK(KQ(1,2)),
+     &               WORK(KGMAT),NSIZG,
+     &               INDX,WORK(KDXAB),WORK(KHMAT))
 C
-         CALL MEMREL('TRDRV5.2',WORK,1,KFRSAV3,KFREE,LFREE)
+         CALL FLSHFO(LUPRI)
+         CALL MEMREL('TRDRV5.2',WORK,1,KGMAT,KFREE,LFREE)
+C
+C     We want to contract with the T's for each 4th AO index seperately
+C     thats why the loop over the 4th AO index runs slower than the 3rd
+C     mo index of the Ts.
+C
+C      +-------------------------------------------------------------+
+C      |                                                             |
+C      |    Transformation of 3rd index to create 3/4 transformed    |
+C      |    integrals and contraction of them with the T amplitudes  |
+C      |                                                             |
+C      +-------------------------------------------------------------+
+C
+C      first allocation of index array, needed for going from relative
+C      to absolute AO nr.
+C
+         CALL MEMGET('INTE',KINDXL,NTBAS(IC),WORK,KFREE,LFREE)
+C
+C      Because we only have the upper triangle of the (ij|rs) integrals
+C      (wrt rs) we have to apply the multiplication with T twice, first
+C      we do really need it as the upper triangle (ITRIANG=1), in the 
+C      2nd call we need it as a lower triangle (ITRIANG=2).
+C
+C
+      DO ITRIANG = 1, 2
+         CALL MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,NSTR(1,0,3),
+     &               WORK(KQ(1,4)),IBEND,ISHLB,
+     &               INDX,WORK(KDXAB),WORK(KHMAT),TMATRIX,XAOMO,
+     &               WORK(KINDXL),ITRIANG)
+      ENDDO
+C
+         CALL MEMREL('TRDRV5.3',WORK,1,KFRSAV3,KFREE,LFREE)
 C
 C        Delete scalar integral buffer file
 C
@@ -565,36 +511,33 @@ C
             CALL DELGBUF(LGFIL)
          ENDIF
 C
-         DO IREPB = 0,NBSYM-1
-            IOFFB(IREPB) = IOFFB(IREPB) + NINSH(ISHLB,IREPB,INDX,IPRINT)
-         END DO
-      ENDDO
-C
+      ENDDO ! ishlb
+C        
 C     Release all memory and exit
-C
+C     
  999  CONTINUE
-      CALL MEMREL('TRDRV5.5',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('TRDRV5.4',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDRV5')
-C
-      RETURN
+C      
+      RETURN                                             
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck MS3RLAG*/ 
-      SUBROUTINE MS3RLAG(WORK,KFREE,LFREE,IPRINT,SUB3,SUB4,IOFF4,LGREC,
+C/* Deck ms3in1*/  
+      SUBROUTINE MS3IN1(WORK,KFREE,LFREE,IPRINT,LGREC,
      &                   ICS,ICF,IC,
-     &                   NSTR1,NSTR2,
-     &                   IJPASS,Q1,Q2,Q3,
-     &                   GMAT,NSIZG,MHTM,IHTM,INDX,INDXAB)
+     &                   TRIAN,NSTR1,NSTR2,
+     &                   IJPASS,Q1,Q2,
+     &                   GMAT,NSIZG,INDX,INDXAB,HMAT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     
-C     Written by Joost van Stralen & Luuk Visscher April 2003.
 C
-C     BASD ON : MS4IN1D
-C     
-C     PURPOSE : Driver for the three-index transformation.
-C               Loop over batches for a given shell combination and
-C               contract the 3/4 transformed integrals with the
-C               T-amplitudes to give a contribution to the Lagrangian.
+C     Written by Joost van Stralen & Luuk Visscher march 2003.
+C
+C     BASED ON : MS4IN1D
+C
+C     PURPOSE : Driver of the transformation of the first pair of
+C               indices. Loop over batches for a given shell
+C               combination and put the halftransformed integrals
+C               in HMAT.
 C     
 C     Input :
 C
@@ -608,31 +551,28 @@ C     - NSTR2        Number of active spinors for index 2
 C     - IJPASS       Number of blocks for each boson symmetry
 C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
-C     - Q3           Coefficients for index 3 (active AOs only)
 C     - GMAT         Symmetry packed scalar integrals
 C     - NSIZG        Size of GMAT array
-C     - MTHM         Number of scalar integral pairs that contribute
-C                    to a given fermion ircop (multiplied with NZ)
-C     - ITHM         Start address of a boson representation on the
-C                    file of half-transformed integrals.
 C     - INDX         For each boson function the boson irrep and the
 C                    position in the shell
 C     - INDXAB       Information for a pair of boson function belonging
-C                    to the current shell pair, 
-C           
-C     Output :
-C           
-C     -              Updated Lagrangian
+C                    to the current shell pair,
+C     - HMAT         Zero matrix
 C
+C     Output :
+C
+C     - HMAT         Symmetry packed half-transformed integrals
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-C
+C     
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
-      DIMENSION Q1(*),Q2(*),GMAT(NSIZG)
-      DIMENSION IJPASS(0:7,NPASS),INDX(3,*),IOFF4(0:7)
-      LOGICAL   SUB3,SUB4
+      DIMENSION Q1(*),Q2(*),GMAT(NSIZG),HMAT(*)
+      DIMENSION IJPASS(0:7,NPASS),INDX(3,*),INDXAB(NINSHA,NINSHB,5)
+      LOGICAL   TRIAN
 C
 C     For the buffered input
 C
@@ -645,9 +585,10 @@ C
 #include "dcbtr3.h"
 #include "dcbibt.h"
 C
-      CALL QENTER('MS4IN1D')
+      CALL QENTER('MS3IN1')
       KFRSAV = KFREE
 C
+      IHOFF = 1
       DO IPASS = 1, NPASS
 C
 C        Get the scalar integrals that are processed in this pass
@@ -663,7 +604,7 @@ C
              CALL MEMREL('MS4IN1D',WORK,KFRSAV,KRBUF,KFREE,LFREE)
          ENDIF
 C
-C        Calculate the size of the H-matrix for this pass
+C        Calculate the offset of the H-matrix for this pass
 C
          NSIZH = 0
          DO IREPAB = 0, NBSYM-1
@@ -672,26 +613,1221 @@ C
             NSIZH = NSIZH + IJPASS(IREPAB,IPASS)*NFPCK12(IREPIJ)
          ENDDO
 C
-         CALL MEMGET('REAL',KHMAT,NSIZH*NZ,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KHMAT),NSIZH*NZ)
-C
-C        Do first step of 4-index transformation :
+C        Do first step of index transformation :
 C        Transform first pair of indices
 C
+         IF(TRIAN) THEN
+           print*,'driehoekig'
+         ELSE
+           print*,'niet driehoekig'
+         ENDIF
          CALL MS4IN1 (WORK,KFREE,LFREE,IPRINT,ICS,ICF,
      &                TRIAN,NSTR1,NSTR2,NDMOQR,
      &                ICMOQR,IJPASS(0,IPASS),Q1,Q2,
-     &                GMAT,WORK(KHMAT))
+     &                GMAT,HMAT(IHOFF))
 C
-C        Contract with amplitudes and update Lagrangian
+C        Offset of the H-matrix
 C
-C        To be written....
-C
-         CALL MEMREL('MS4IN1D',WORK,KFRSAV,KHMAT,KFREE,LFREE)
+         IHOFF = IHOFF + NSIZH*NZ
 C
       ENDDO
 C
-      CALL QEXIT('MS4IN1D')
+      CALL QEXIT('MS3IN1')
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ms3in2*/ 
+      SUBROUTINE MS3IN2(WORK,KFREE,LFREE,IPRINT,IC,IHM,
+     &                  NSTR3,Q3,ISHEL1,ISHEL2,
+     &                  INDX,INDXAB,HMAT,TMATRIX,XAOMO,INDXL,ITRIANG)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     
+C     Written by Joost van Stralen march 2003.
+C     
+C     
+C     PURPOSE : Perform the 3rd index transformation and contract
+C               the 3/4 transformed integrals with the T amplitudes
+C               and add to the Lagrangian which has one index in
+C               AO basis.
+C
+C               the 3/4 transformation is inspired by TQTRNS
+C
+C     Input :
+C
+C     - IPRINT       Print flag
+C     - IC           Component of the right hand : (XX|LL) or (XX|SS)
+C     - Q3           Coefficients for index 3 (active AOs only)
+C     - INDX         For each boson function the boson irrep and the
+C                    position in the shell
+C     - INDXAB       Information for a pair of boson function belonging
+C                    to the current shell pair
+C     - HMAT         Symmetry packed half-transformed integrals
+C     - ITRIANG      1: We are dealing with the upper triangle of
+C                       the halftransformed integrals (we are talking
+C                       about the AO part)
+C                    2: We are dealing ... lower triangle of ... 
+C
+C     Output :
+C
+C     - XAOMO        The Lagrangian with one index in AO basis
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "maxaqn.h"
+#include "dcbtra.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "symmet.h"
+#include "dcbtr3.h"
+#include "mp1stpr.h"
+C
+      PARAMETER (D0 = 0.0D00, D1=1.0D00)
+      DIMENSION NSTR3(2)
+      DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
+      DIMENSION IPTQLAG(2,0:7,0:7,2)
+      DIMENSION IHM(0:7)
+      DIMENSION HMAT(*),Q3(*),QCOF(4)
+      DIMENSION WORK(*)
+      DIMENSION IND(2)
+      DIMENSION INDXAS(0:7), INDXBS(0:7)
+      DIMENSION TMATRIX(*), XAOMO(*)
+      DIMENSION ILOFF(0:7)
+      DIMENSION ILTMOFF(0:7,2)
+      DIMENSION NBBASA(0:7,0:2), NBBASB(0:7,0:2)
+      DIMENSION INDXL(*)
+      DIMENSION NTQINT(2,0:7,0:7,2)
+C
+#include "ibtfun.h"
+C
+      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C
+      CALL QENTER('MS3IN2')
+      NIJMAX = 0
+      KFRSAV1 = KFREE
+C
+C     Allocate memory for a temporary Lagrangian in AO-MO basis
+C     =========================================================
+C
+      CALL MEMGET('REAL',KTMPLAM,NCMOTQ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KTMPLAM),NCMOTQ)
+C
+C     determine the number of functions per boson irrep of shell A and B
+C     ==================================================================
+C
+      CALL NRBASBI(ISHEL2,NBBASB,NBBAS4T,IC)
+      CALL NRBASBI(ISHEL1,NBBASA,NBBAS3T,IC)
+C
+C     initialisation of offset for the final Laomo
+C     ============================================
+C
+      IF(ITRIANG.EQ.1) THEN
+        CALL IZERO(INDXL,NBBAS4T)
+      ELSE
+        CALL IZERO(INDXL,NBBAS3T)
+      ENDIF
+      CALL IZERO(ILOFF,8)
+      CALL LOFFSET(NBBASB,ILOFF,IC)
+C
+C     determine the packing of the 3/4 transformed integrals
+C     ======================================================
+C
+      IF(ITRIANG.EQ.1) THEN
+        CALL PK3INLA(NBBASA,NBBASB,IPTQLAG,NPTQLAG,NTQINT,NSTR3,IC)
+      ELSE
+        CALL PK3INLA(NBBASB,NBBASA,IPTQLAG,NPTQLAG,NTQINT,NSTR3,IC)
+      ENDIF
+C
+C     allocate memory for the 3/4 transformed integrals
+C     -------------------------------------------------
+C
+      CALL MEMGET('REAL',KTQMAT,NPTQLAG,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KTQMAT),NPTQLAG)
+C
+C     do the transformation (loop)
+C     ============================
+C
+      CALL IZERO(INDXAS,8)
+      CALL IZERO(INDXBS,8)
+C     
+C     TQMAT is stored as (ij,iz1,k,s,iz2,Gs,Grs,Gij).
+C     For real groups this is identical to
+C     (ij,iz1,k,iz2,s,Gs,Grs,Gij) which is generated
+C     directly in QAXPY. For non-real groups we first
+C     generate (ij,iz1,k,iz2* which is accumulated in TQMAT.
+C     
+      IF(NZ.GT.1) THEN
+        DO IFRP=1,NFSYM
+           IF(NFPCK12(IFRP)*NZ**2.GT.NIJMAX)
+     &          NIJMAX = NFPCK12(IFRP)*NZ**2
+        ENDDO
+        CALL MEMGET('REAL',KT3MAT,NIJMAX,WORK,KFREE,LFREE)
+        CALL DZERO(WORK(KT3MAT),NIJMAX)
+      ENDIF
+C     
+      INDAR1 = 0
+C
+      DO20 INDAR = 1, NINSHA
+         CALL IZERO(INDXBS,8)
+         DO 10 INDBR = 1, NINSHB
+            INDAB  = INDXAB(INDAR,INDBR,1)
+            IF (INDAB.EQ.0) GOTO 10
+            IREPAB = INDXAB(INDAR,INDBR,3)
+C     Pointer AP   
+            IPAB   = INDXAB(INDAR,INDBR,4)
+            IREPIJ = JBTOF(IREPAB,1)
+            NIJNZ1 = NFPCK12(IREPIJ)*NZ
+            NIJNZ2 = NFPCK12(IREPIJ)*NZ**2                             
+C     IOFF for HMAT
+            IOFF = (IHM(IREPAB)+(IPAB-1)*NFPCK12(IREPIJ))*NZ+1         
+            CALL IUNPCK(INDAB,2,IND)
+            INDA = IND(1)
+            INDB = IND(2)
+            IREPA = INDX(2,INDA)
+            IREPB = INDX(2,INDB)
+            IF(INDAR.GT.INDAR1) INDXAS(IREPA) = INDXAS(IREPA) + 1
+            INDXBS(IREPB) = INDXBS(IREPB) + 1
+C           to check if indar changes
+            INDAR1 = INDAR
+C     This is actual index R and S in this irrep and IC.
+            INDA1 = INDA - ICOS(IREPA+1,IC)
+            INDB1 = INDB - ICOS(IREPB+1,IC)
+C     From the lower triangle we don't want the diagonal part to avoid
+C     double counting
+            IF(ITRIANG.EQ.2) THEN
+              IF (INDA1.EQ.INDB1) GOTO 10
+            ENDIF
+C     Indexing from relative to absolute AO nr, needed for Laomo     
+            IF(ITRIANG.EQ.1) THEN
+              INDXL(ILOFF(IREPB) + INDXBS(IREPB)) = INDB1
+            ELSE
+              INDXL(ILOFF(IREPA) + INDXAS(IREPA)) = INDA1
+            ENDIF
+C
+            IF(ITRIANG.EQ.1) THEN
+              INDR = INDXAS(IREPA)
+              INDS = INDXBS(IREPB)
+              IREPR = IREPA
+              IREPS = IREPB
+              NS = NBBASB(IREPS,IC)
+            ELSE
+              INDR = INDXBS(IREPB)
+              INDS = INDXAS(IREPA)
+              IREPR = IREPB
+              IREPS = IREPA
+              NS = NBBASA(IREPS,IC)
+            ENDIF
+C
+            IREPK = JBTOF(IREPR,IC)
+            NK = NSTR3(IREPK)
+            NIJKS = NK*NS*NIJNZ1
+C
+C     Offset for TQMAT.
+C
+            JOFF1 = IPTQLAG(IREPIJ,IREPAB,IREPS,IC)
+     &            + (INDS-1)*NK*NIJNZ1
+C
+C     Offset for Coeffs
+C
+            IF(ITRIANG.EQ.1) THEN
+              KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
+     &              - IBAS(IREPK) + INDA1 - 1
+            ELSE
+              KOFF1 = ICMOQR(IREPK,3) + IBBAS(IREPR,IC)
+     &              - IBAS(IREPK) + INDB1 - 1
+            ENDIF
+C
+C     Dimensions of Q3
+C
+            NRQ1 = NDMOQR(1,IREPK,3)
+            NCQ1 = NDMOQR(2,IREPK,3)
+            IF (IC.EQ.1) THEN
+               IREPR2 = IREPR
+            ELSE
+               IREPR2 = IBTXOR(IXYZ,IREPR)
+            ENDIF
+C
+C     Start looping over K index
+C
+            DO K = 1,NK
+C
+               JOFF2 = JOFF1 + (K-1)*NIJNZ1
+               KOFF = KOFF1 + (K-1)*NRQ1
+               DO I = 1,NZ
+                  QCOF(I) = Q3(KOFF+(I-1)*NRQ1*NCQ1)
+               ENDDO
+C
+C     Non-real groups
+C
+               IF (NZ.GT.1) THEN
+                  CALL DZERO(WORK(KT3MAT),NIJNZ2)
+                  CALL QAXPY(NIJNZ1,'N','N',QCOF,IPQTOQ(1,IREPR2),
+     &                 NZ,HMAT(IOFF),NIJNZ1,1,IPQTOQ(1,0),1,
+     &                 WORK(KT3MAT),NIJNZ1,1,IPQTOQ(1,IREPR2),
+     &                 NZ)
+C
+                  DO IZ = 1,NZ
+                     JOFF = JOFF2 + (IZ-1)*NIJKS
+                     CALL DAXPY(NIJNZ1,D1,
+     &                    WORK(KT3MAT+NIJNZ1*(IZ-1)),
+     &                    1,WORK(KTQMAT+JOFF),1)
+                  ENDDO
+C
+C     Real groups 
+C                 
+               ELSE
+                  CALL QAXPY(NIJNZ1,'N','N',QCOF,IPQTOQ(1,IREPR2),
+     &                 NZ,HMAT(IOFF),NIJNZ1,1,IPQTOQ(1,0),NZ,
+     &                 WORK(KTQMAT+JOFF2),NIJNZ1,1,IPQTOQ(1,IREPR2),NZ)
+               ENDIF
+            ENDDO
+ 10      CONTINUE 
+ 20   CONTINUE
+C           
+C     contract the integrals with the T's
+C     ===================================
+C              
+C     First determine the offset for the temp Laomo
+C
+      CALL IZERO(ILTMOFF,16)
+C
+      IF(ITRIANG.EQ.1) THEN
+        CALL LTMPOFF(NBBASB,ILTMOFF,IC)
+      ELSE
+        CALL LTMPOFF(NBBASA,ILTMOFF,IC)
+      ENDIF
+C   
+      DO IREPCI = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1     
+          IF(IREPCI.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPI = 1, NFSYM
+              DO IREPS = 0, NBSYM -1
+              IF(IREPI.EQ.JBTOF(IREPS,IC)) THEN
+                IF(NTQINT(IREPCI,IREPRS,IREPS,IC).NE.0) THEN
+                  K = NFPCK12(IREPCI)*NZ*NSTR3(IREPI)
+                  IF(ITRIANG.EQ.1) THEN
+                    M = NBBASB(IREPS,IC)
+                  ELSE
+                    M = NBBASA(IREPS,IC)
+                  ENDIF
+                  N = NAOCC(IREPI)
+                  IOFFA = IPTQLAG(IREPCI,IREPRS,IREPS,IC)
+                  IOFFB = IOFFTM(IREPI,IREPRS,IREPCI) + 1
+                  IOFFC = ILTMOFF(IREPS,IREPI)
+c
+                  IF(NZ.EQ.1) THEN
+c                   IF (IC.EQ.1) THEN
+                      IREPRS2 = IREPRS
+c                   ELSE
+c                     IREPRS2 = IBTXOR(IXYZ,IREPRS)
+c                   ENDIF
+                  IQ = IPQTOQ(1,IREPRS2)
+                  IF(IQ.GT.1) THEN
+                    CALL DSCAL(K*N*NZ,-D1,TMATRIX(IOFFB),1)
+                  ENDIF
+                  ENDIF
+c
+                  IF(NZ.EQ.2) THEN
+                    IQ = IPQTOQ(2,IREPRS)
+                    IF(IQ.EQ.3) THEN
+                      CALL DSCAL(K*N,-D1,TMATRIX(IOFFB),1)
+                    ENDIF
+                  ENDIF
+c
+                  IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
+                  CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,0),
+     &                       WORK(KTQMAT+IOFFA),K,M,NZ,
+     &                       'N','N',IPQTOQ(1,0),TMATRIX(IOFFB),K,N,NZ,
+     &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
+                  ENDIF
+                ENDIF
+              ENDIF
+              ENDDO ! ireps
+            ENDDO !irepi
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepci
+      CALL MEMCHK('voor ltmptofinal',WORK,1)
+C
+C     put data from temp Laomo to final Laomo
+C     =======================================
+C
+      IF(ITRIANG.EQ.1) THEN 
+        CALL LTMPTOLFINAL(WORK(KTMPLAM),XAOMO,NBBASB,ILTMOFF,INDXL,
+     &                  ILOFF,IC)
+      ELSE
+        CALL LTMPTOLFINAL(WORK(KTMPLAM),XAOMO,NBBASA,ILTMOFF,INDXL,
+     &                    ILOFF,IC)
+      ENDIF
+C           
+C     release memory
+C     ==============
+C
+      CALL MEMREL('MS3IN2',WORK,1,KFRSAV1,KFREE,LFREE)
+C
+      CALL QEXIT('MS3IN2')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck nrbasbi*/
+      SUBROUTINE NRBASBI(ISHELX,NBBASA,NBBASAT,IC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C     
+C
+C     PURPOSE : determine the number of basis functions per boson irrep
+C               for shell X
+C               
+C     Input :
+C     
+C     Output :
+C     
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+C
+      DIMENSION NBBASA(0:7,0:2)
+C
+#include "ibtfun.h"
+C
+      NBBASAT = 0
+C
+      DO IFSYM = 1, NFSYM
+        DO IREPA = 0, NBSYM -1
+          IF (IFSYM.EQ.JBTOF(IREPA,IC)) THEN
+            NBA = NINSH(ISHELX,IREPA,INDX,0)
+            NBBASA(IREPA,0) = NBA
+            NBBASA(IREPA,IC) = NBA
+            NBBASA(IREPA,3 - IC) = 0
+            NBBASAT = NBBASAT + NBBASA(IREPA,IC)
+          ENDIF
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck tauinfo*/
+      SUBROUTINE TAUINFO(INFOT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE :
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dgroup.h"
+C
+      INTEGER INFOT(6,4,4,2)
+C
+      CALL IZERO (INFOT,192)
+C
+      IF(NZ.LT.4) THEN
+C
+C     Real classes
+C
+      INFOT(1,1,1,1) = 0 ! no bar for 1st index of first term of T^00
+      INFOT(2,1,1,1) = 0 !                ...
+      INFOT(3,1,1,1) = 0 !                ...
+      INFOT(4,1,1,1) = 0 ! no bar for 4rd index of first term of T^00
+      INFOT(5,1,1,1) = 0 ! we need the real part of tau for T^00
+      INFOT(6,1,1,1) = 0 ! the sign is +
+C
+      INFOT(1,1,1,2) = 0 ! no bar for 1st index of second term of T^00
+      INFOT(2,1,1,2) = 0 !                ...
+      INFOT(3,1,1,2) = 1 ! a bar for 3rd index of second term of T^00
+      INFOT(4,1,1,2) = 1 !                ...
+      INFOT(5,1,1,2) = 0 ! we need the real part of tau for T^00
+      INFOT(6,1,1,2) = 0 ! the sign is +
+C        
+      INFOT(1,2,2,1) = 0 ! no bar for 1st index of first term of T^11
+      INFOT(2,2,2,1) = 0
+      INFOT(3,2,2,1) = 0
+      INFOT(4,2,2,1) = 0
+      INFOT(5,2,2,1) = 0
+      INFOT(6,2,2,1) = 0
+C
+      INFOT(1,2,2,2) = 0 ! no bar for 1st index of second term of T^11
+      INFOT(2,2,2,2) = 0
+      INFOT(3,2,2,2) = 1
+      INFOT(4,2,2,2) = 1
+      INFOT(5,2,2,2) = 0
+      INFOT(6,2,2,2) = 1  ! the sign is -
+C
+      INFOT(1,3,3,1) = 1
+      INFOT(2,3,3,1) = 0
+      INFOT(3,3,3,1) = 1
+      INFOT(4,3,3,1) = 0
+      INFOT(5,3,3,1) = 0
+      INFOT(6,3,3,1) = 1
+C
+      INFOT(1,3,3,2) = 1
+      INFOT(2,3,3,2) = 0
+      INFOT(3,3,3,2) = 0
+      INFOT(4,3,3,2) = 1
+      INFOT(5,3,3,2) = 0
+      INFOT(6,3,3,2) = 0
+C
+      INFOT(1,4,4,1) = 1
+      INFOT(2,4,4,1) = 0
+      INFOT(3,4,4,1) = 1
+      INFOT(4,4,4,1) = 0
+      INFOT(5,4,4,1) = 0
+      INFOT(6,4,4,1) = 0
+C
+      INFOT(1,4,4,2) = 1
+      INFOT(2,4,4,2) = 0 
+      INFOT(3,4,4,2) = 0
+      INFOT(4,4,4,2) = 1 
+      INFOT(5,4,4,2) = 0
+      INFOT(6,4,4,2) = 0
+C
+      IF(NZ.EQ.1) RETURN
+C
+C     Imaginary classes
+C
+      INFOT(1,2,1,1) = 0 ! no bar for 1st index of first term of T^10
+      INFOT(2,2,1,1) = 0 !                ...
+      INFOT(3,2,1,1) = 0 !                ...
+      INFOT(4,2,1,1) = 0 ! no bar for 4rd index of first term of T^10
+      INFOT(5,2,1,1) = 1 ! we need the imaginary part of tau for T^10
+      INFOT(6,2,1,1) = 1 ! the sign is -
+C
+      INFOT(1,2,1,2) = 0 ! no bar for 1st index of second term of T^10
+      INFOT(2,2,1,2) = 0 !                ...
+      INFOT(3,2,1,2) = 1 ! a bar for 3rd index of second term of T^10
+      INFOT(4,2,1,2) = 1 !                ...
+      INFOT(5,2,1,2) = 1 ! we need the imaginary part of tau for T^00
+      INFOT(6,2,1,2) = 0 ! the sign is +
+C
+      INFOT(1,1,2,1) = 0
+      INFOT(2,1,2,1) = 0
+      INFOT(3,1,2,1) = 0
+      INFOT(4,1,2,1) = 0
+      INFOT(5,1,2,1) = 1
+      INFOT(6,1,2,1) = 0
+C
+      INFOT(1,1,2,2) = 0
+      INFOT(2,1,2,2) = 0
+      INFOT(3,1,2,2) = 1
+      INFOT(4,1,2,2) = 1
+      INFOT(5,1,2,2) = 1
+      INFOT(6,1,2,2) = 0
+C
+      INFOT(1,4,3,1) = 1
+      INFOT(2,4,3,1) = 0
+      INFOT(3,4,3,1) = 1
+      INFOT(4,4,3,1) = 0
+      INFOT(5,4,3,1) = 1
+      INFOT(6,4,3,1) = 0
+C
+      INFOT(1,4,3,2) = 1
+      INFOT(2,4,3,2) = 0
+      INFOT(3,4,3,2) = 0
+      INFOT(4,4,3,2) = 1
+      INFOT(5,4,3,2) = 1
+      INFOT(6,4,3,2) = 0
+C     
+      INFOT(1,3,4,1) = 1
+      INFOT(2,3,4,1) = 0
+      INFOT(3,3,4,1) = 1
+      INFOT(4,3,4,1) = 0 
+      INFOT(5,3,4,1) = 1 
+      INFOT(6,3,4,1) = 0 
+C     
+      INFOT(1,3,4,2) = 1 
+      INFOT(2,3,4,2) = 0 
+      INFOT(3,3,4,2) = 0
+      INFOT(4,3,4,2) = 1 
+      INFOT(5,3,4,2) = 1 
+      INFOT(6,3,4,2) = 1 
+C
+      ENDIF
+C     
+      IF(NZ.EQ.2) RETURN 
+C         
+C     Quaternion classes
+C     
+      INFOT(1,1,1,1) = 0 ! no bar for 1st index of first term of T^00
+      INFOT(2,1,1,1) = 0 !                ...
+      INFOT(3,1,1,1) = 0 !                ...
+      INFOT(4,1,1,1) = 0 ! no bar for 4rd index of first term of T^00
+      INFOT(5,1,1,1) = 0 ! we need the real part of tau for T^00
+      INFOT(6,1,1,1) = 0 ! the sign is +
+C     
+      INFOT(1,1,1,2) = 0 ! no bar for 1st index of second term of T^00
+      INFOT(2,1,1,2) = 0 !                ...
+      INFOT(3,1,1,2) = 1 ! a bar for 3rd index of second term of T^00
+      INFOT(4,1,1,2) = 1 !                ...
+      INFOT(5,1,1,2) = 0 ! we need the real part of tau for T^00
+      INFOT(6,1,1,2) = 0 ! the sign is +
+C        
+      INFOT(1,2,2,1) = 0 ! no bar for 1st index of first term of T^11
+      INFOT(2,2,2,1) = 0 
+      INFOT(3,2,2,1) = 0 
+      INFOT(4,2,2,1) = 0 
+      INFOT(5,2,2,1) = 0 
+      INFOT(6,2,2,1) = 0 
+C     
+      INFOT(1,2,2,2) = 0 ! no bar for 1st index of second term of T^11
+      INFOT(2,2,2,2) = 0 
+      INFOT(3,2,2,2) = 1 
+      INFOT(4,2,2,2) = 1 
+      INFOT(5,2,2,2) = 0 
+      INFOT(6,2,2,2) = 1  ! the sign is -
+C     
+      INFOT(1,3,3,1) = 1
+      INFOT(2,3,3,1) = 0
+      INFOT(3,3,3,1) = 1
+      INFOT(4,3,3,1) = 0
+      INFOT(5,3,3,1) = 0
+      INFOT(6,3,3,1) = 1
+C     
+      INFOT(1,3,3,2) = 1
+      INFOT(2,3,3,2) = 0
+      INFOT(3,3,3,2) = 0
+      INFOT(4,3,3,2) = 1
+      INFOT(5,3,3,2) = 0
+      INFOT(6,3,3,2) = 0
+C
+      INFOT(1,4,4,1) = 1
+      INFOT(2,4,4,1) = 0
+      INFOT(3,4,4,1) = 1
+      INFOT(4,4,4,1) = 0
+      INFOT(5,4,4,1) = 0
+      INFOT(6,4,4,1) = 0
+C
+      INFOT(1,4,4,2) = 1
+      INFOT(2,4,4,2) = 0
+      INFOT(3,4,4,2) = 0
+      INFOT(4,4,4,2) = 1
+      INFOT(5,4,4,2) = 0
+      INFOT(6,4,4,2) = 0
+C
+      INFOT(1,2,1,1) = 0 ! no bar for 1st index of first term of T^10
+      INFOT(2,2,1,1) = 0 !                ...
+      INFOT(3,2,1,1) = 0 !                ...
+      INFOT(4,2,1,1) = 0 ! no bar for 4rd index of first term of T^10
+      INFOT(5,2,1,1) = 1 ! we need the imaginary part of tau for T^10
+      INFOT(6,2,1,1) = 1 ! the sign is -
+C
+      INFOT(1,2,1,2) = 0 ! no bar for 1st index of second term of T^10
+      INFOT(2,2,1,2) = 0 !                ...
+      INFOT(3,2,1,2) = 1 ! a bar for 3rd index of second term of T^10
+      INFOT(4,2,1,2) = 1 !                ...
+      INFOT(5,2,1,2) = 1 ! we need the imaginary part of tau for T^00
+      INFOT(6,2,1,2) = 0 ! the sign is +
+C
+      INFOT(1,1,2,1) = 0
+      INFOT(2,1,2,1) = 0
+      INFOT(3,1,2,1) = 0
+      INFOT(4,1,2,1) = 0
+      INFOT(5,1,2,1) = 1
+      INFOT(6,1,2,1) = 0
+C
+      INFOT(1,1,2,2) = 0
+      INFOT(2,1,2,2) = 0
+      INFOT(3,1,2,2) = 1
+      INFOT(4,1,2,2) = 1
+      INFOT(5,1,2,2) = 1
+      INFOT(6,1,2,2) = 0
+C
+      INFOT(1,4,3,1) = 1
+      INFOT(2,4,3,1) = 0
+      INFOT(3,4,3,1) = 1
+      INFOT(4,4,3,1) = 0
+      INFOT(5,4,3,1) = 1
+      INFOT(6,4,3,1) = 0
+C
+      INFOT(1,4,3,2) = 1
+      INFOT(2,4,3,2) = 0
+      INFOT(3,4,3,2) = 0
+      INFOT(4,4,3,2) = 1
+      INFOT(5,4,3,2) = 1
+      INFOT(6,4,3,2) = 0
+C
+      INFOT(1,3,4,1) = 1
+      INFOT(2,3,4,1) = 0
+      INFOT(3,3,4,1) = 1
+      INFOT(4,3,4,1) = 0
+      INFOT(5,3,4,1) = 1
+      INFOT(6,3,4,1) = 0
+C
+      INFOT(1,3,4,2) = 1
+      INFOT(2,3,4,2) = 0
+      INFOT(3,3,4,2) = 0
+      INFOT(4,3,4,2) = 1
+      INFOT(5,3,4,2) = 1
+      INFOT(6,3,4,2) = 1
+C
+      INFOT(1,3,1,1) = 0 ! no bar for 1st index of first term of T^20
+      INFOT(2,3,1,1) = 0 !                ...
+      INFOT(3,3,1,1) = 1 ! a bar for 3rd index of first term of T^20
+      INFOT(4,3,1,1) = 0 ! no bar for 4st index of first term of T^20
+      INFOT(5,3,1,1) = 0 ! we need the real part of tau for T^20
+      INFOT(6,3,1,1) = 0 ! the sign is +
+C     
+      INFOT(1,3,1,2) = 0 ! no bar for 1st index of second term of T^20
+      INFOT(2,3,1,2) = 0 !                ...
+      INFOT(3,3,1,2) = 0 !                ...
+      INFOT(4,3,1,2) = 1 ! a bar for 4rd index of second term of T^20
+      INFOT(5,3,1,2) = 0 ! we need the real part of tau for T^20
+      INFOT(6,3,1,2) = 1 ! the sign is -
+C     
+      INFOT(1,4,1,1) = 0
+      INFOT(2,4,1,1) = 0
+      INFOT(3,4,1,1) = 1
+      INFOT(4,4,1,1) = 0
+      INFOT(5,4,1,1) = 1
+      INFOT(6,4,1,1) = 1
+C     
+      INFOT(1,4,1,2) = 0
+      INFOT(2,4,1,2) = 0
+      INFOT(3,4,1,2) = 0
+      INFOT(4,4,1,2) = 1
+      INFOT(5,4,1,2) = 1
+      INFOT(6,4,1,2) = 1
+C
+      INFOT(1,3,2,1) = 0
+      INFOT(2,3,2,1) = 0
+      INFOT(3,3,2,1) = 1
+      INFOT(4,3,2,1) = 0
+      INFOT(5,3,2,1) = 1
+      INFOT(6,3,2,1) = 0
+C
+      INFOT(1,3,2,2) = 0
+      INFOT(2,3,2,2) = 0
+      INFOT(3,3,2,2) = 0
+      INFOT(4,3,2,2) = 1
+      INFOT(5,3,2,2) = 1
+      INFOT(6,3,2,2) = 1
+C
+      INFOT(1,4,2,1) = 0
+      INFOT(2,4,2,1) = 0
+      INFOT(3,4,2,1) = 1
+      INFOT(4,4,2,1) = 0
+      INFOT(5,4,2,1) = 0
+      INFOT(6,4,2,1) = 0
+C
+      INFOT(1,4,2,2) = 0
+      INFOT(2,4,2,2) = 0
+      INFOT(3,4,2,2) = 0
+      INFOT(4,4,2,2) = 1
+      INFOT(5,4,2,2) = 0
+      INFOT(6,4,2,2) = 0
+C
+      INFOT(1,1,3,1) = 1
+      INFOT(2,1,3,1) = 0
+      INFOT(3,1,3,1) = 0
+      INFOT(4,1,3,1) = 0
+      INFOT(5,1,3,1) = 0
+      INFOT(6,1,3,1) = 1
+C
+      INFOT(1,1,3,2) = 1
+      INFOT(2,1,3,2) = 0
+      INFOT(3,1,3,2) = 1
+      INFOT(4,1,3,2) = 1
+      INFOT(5,1,3,2) = 0
+      INFOT(6,1,3,2) = 1
+C     
+      INFOT(1,2,3,1) = 1
+      INFOT(2,2,3,1) = 0
+      INFOT(3,2,3,1) = 0
+      INFOT(4,2,3,1) = 0
+      INFOT(5,2,3,1) = 1
+      INFOT(6,2,3,1) = 0
+C     
+      INFOT(1,2,3,2) = 1
+      INFOT(2,2,3,2) = 0
+      INFOT(3,2,3,2) = 1
+      INFOT(4,2,3,2) = 1
+      INFOT(5,2,3,2) = 1
+      INFOT(6,2,3,2) = 1
+C     
+      INFOT(1,1,4,1) = 1
+      INFOT(2,1,4,1) = 0
+      INFOT(3,1,4,1) = 0
+      INFOT(4,1,4,1) = 0
+      INFOT(5,1,4,1) = 1
+      INFOT(6,1,4,1) = 0
+C     
+      INFOT(1,1,4,2) = 1
+      INFOT(2,1,4,2) = 0
+      INFOT(3,1,4,2) = 1
+      INFOT(4,1,4,2) = 1
+      INFOT(5,1,4,2) = 1
+      INFOT(6,1,4,2) = 0
+C     
+      INFOT(1,2,4,1) = 1
+      INFOT(2,2,4,1) = 0
+      INFOT(3,2,4,1) = 0
+      INFOT(4,2,4,1) = 0
+      INFOT(5,2,4,1) = 0
+      INFOT(6,2,4,1) = 0
+C     
+      INFOT(1,2,4,2) = 1
+      INFOT(2,2,4,2) = 0
+      INFOT(3,2,4,2) = 1
+      INFOT(4,2,4,2) = 1
+      INFOT(5,2,4,2) = 0
+      INFOT(6,2,4,2) = 1
+C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck init_t*/
+      SUBROUTINE INIT_T(TMATRIX)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE : initialize the T matrix
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "mp1stpr.h"
+C
+      DIMENSION TMATRIX(*)
+C
+      NTMATR = 0
+      CALL IZERO(IOFFTM,32)
+C
+      DO IREPCI = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1
+          IF(IREPCI.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPI = 1, NFSYM
+              IOFFTM(IREPI,IREPRS,IREPCI) = NTMATR
+              NI = NAOCC(IREPI)
+              IREPC = MOD(IREPI + IREPCI,2) + 1
+              NC = NAVIR(IREPC)
+              DO IREPD = 1, NFSYM
+                ND = NAVIR(IREPD)
+                IREPK = MOD(IREPD + IREPCI,2) + 1
+                NK = NAOCC(IREPK)
+                NTMATR = NTMATR + NK*ND*NC*NI*NZ*NZ
+              ENDDO !irepd
+            ENDDO !irepi
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepci
+C
+C     put the T matrix to zero
+C
+      CALL DZERO(TMATRIX,NTMATR)  
+C 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck writetau*/
+      SUBROUTINE WRITETAU(TMATRIX)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     
+C     Written by Joost van Stralen june 2003.
+C     
+C     PURPOSE : Write the T matrix to file
+C     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "mp1stpr.h"
+C     
+      DIMENSION TMATRIX(*)
+C
+      CALL QENTER('WRITETAU')
+C
+      OPEN (LUMPPR,FILE='MP2PRP',FORM='UNFORMATTED',STATUS='NEW')
+      WRITE (LUMPPR) (TMATRIX(I),I=1,NTMATR)
+      CLOSE (LUMPPR,STATUS='KEEP')
+C
+      CALL QEXIT('WRITETAU')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck readtau*/
+      SUBROUTINE READTAU(TMATRIX)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE : Read the T matrix from file
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "mp1stpr.h"
+C
+      DIMENSION TMATRIX(*)
+C
+      CALL QENTER('READTAU')
+C
+      OPEN (LUMPPR,FILE='MP2PRP',FORM='UNFORMATTED',STATUS='OLD')
+      REWIND (LUMPPR)
+      READ (LUMPPR) (TMATRIX(I),I=1,NTMATR)
+      CLOSE (LUMPPR,STATUS='DELETE')
+C
+      CALL QEXIT('READTAU')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck pk3inla*/ 
+      SUBROUTINE PK3INLA(NBBASR,NBBASS,IPTQLAG,NPTQLAG,NTQINT,NSTR3,IC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C       
+C     Written by Joost van Stralen march 2003.
+C
+C     PURPOSE : Define the packing of the 3/4 transformed integrals.
+C     
+C     Input :   NSTR3 - # of active spinors
+C               IC   - Component of the right hand : (XX|LL) or (XX|SS)
+C               NBBAS* - # of basis functions per boson irrep
+C     
+C     Output :  IPTQLAG - pointers for the symmetry packing 
+C               NPTQLAG - total # of 3/4 transf integrals
+C           
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+C     
+#include "dcbtra.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+      DIMENSION IPTQLAG(2,0:7,0:7,2),NSTR3(2)
+      DIMENSION NBBASR(0:7,0:2),NBBASS(0:7,0:2)
+      DIMENSION NTQINT(2,0:7,0:7,2)
+C
+#include "ibtfun.h"
+C     
+      CALL QENTER('PK3INLA')
+C     
+C     Initialize
+C
+      NPTQLAG = 0
+      CALL IZERO(IPTQLAG,256)
+      CALL IZERO(NTQINT,256)
+C
+      DO IREPIJ = 1, NFSYM
+        NIJ = NFPCK12(IREPIJ)
+        DO IREPRS = 0, NBSYM - 1         ! boson symmetry of rs
+          IF (IREPIJ.EQ.JBTOF(IREPRS,1)) THEN
+            DO 11 IREPS = 0, NBSYM - 1
+              IREPR = IBTXOR(IREPRS,IREPS)
+              IREPK = JBTOF(IREPR,IC)    ! parity that r contributes to
+              IPTQLAG(IREPIJ,IREPRS,IREPS,IC) = NPTQLAG
+              NS = NBBASS(IREPS,IC)
+              NR = NBBASR(IREPR,IC)
+              IF (NR.EQ.0) GOTO 11
+                NPTQLAG = NPTQLAG + NIJ*NSTR3(IREPK)*NS*NZ*NZ
+              NTQINT(IREPIJ,IREPRS,IREPS,IC) = NIJ*NSTR3(IREPK)*NS*NZ*NZ
+11          CONTINUE !ireps
+          ENDIF
+        ENDDO ! ireprs
+      ENDDO ! irepij
+C
+      CALL QEXIT('PK3INLA')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck loffset*/ 
+      SUBROUTINE LOFFSET(NBBASA,ILOFF,IC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C       
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE : 
+C     
+C     Input :  
+C     
+C     Output : 
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+C
+      DIMENSION NBBASA(0:7,0:2)
+      DIMENSION ILOFF(0:7)
+C
+      NBBASAT = 0
+C
+      DO IBSYM = 0, NBSYM - 1
+        ILOFF(IBSYM) = ILOFF(IBSYM) + NBBASAT
+        NBBASAT = NBBASAT + NBBASA(IBSYM,IC)
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ltmpoff*/
+      SUBROUTINE LTMPOFF(NBBASA,ILTMOFF,IC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE : 
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION NBBASA(0:7,0:2)
+      DIMENSION ILTMOFF(0:7,2)
+C
+      NTMPLAM = 0
+C
+      DO IFSYM = 1, NFSYM
+        DO IREPS = 0, NBSYM -1
+          IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN      
+          ILTMOFF(IREPS,IFSYM) = ILTMOFF(IREPS,IFSYM) + NTMPLAM
+          NTMPLAM = NTMPLAM + NBBASA(IREPS,IC)*NAOCC(IFSYM)*NZ
+          ENDIF
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ltmptolfinal*/
+      SUBROUTINE LTMPTOLFINAL(TMPLAM,XAOMO,NBBASA,ILTMOFF,INDXL,ILOFF,
+     &                        IC)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen june 2003.
+C
+C     PURPOSE :
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+C
+      DIMENSION NBBASA(0:7,0:2)
+      DIMENSION ILTMOFF(0:7,2)
+      DIMENSION ILOFF(0:7)
+      DIMENSION IOFT1(4,0:7,2)
+      DIMENSION TMPLAM(*), XAOMO(*)
+      DIMENSION INDXL(*)
+C
+C     Offsets
+C     -------
+      DO IFSYM = 1, NFSYM
+        DO IREPS = 0, NBSYM -1
+          IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN
+            DO IZ = 1, NZ
+              IOFT1(IZ,IREPS,IFSYM) = (IZ-1)*NBBASA(IREPS,IC)
+     &                                 *NAOCC(IFSYM)
+            ENDDO !iz
+          ENDIF
+        ENDDO
+      ENDDO
+      IOFFLF = 0
+      IOFFLT = 0
+C
+      IOFF1 = 0
+      IOFF4 = 0
+C
+      DO IFSYM = 1, NFSYM
+        DO IZ = 1, NZ
+          IOFF2 = (IZ-1)*NAOCC(IFSYM)*NFBAS(IFSYM,0)
+          DO I = 1, NAOCC(IFSYM)
+            IOFF3 = (I-1)*NFBAS(IFSYM,0)
+            IF (IC.EQ.2) IOFF4 = NFBAS(IFSYM,1)
+            IOFF5 = 0
+            DO IREPS = 0, NBSYM -1
+              IOFT2 = (I-1)*NBBASA(IREPS,IC)
+              IF(IFSYM.EQ.JBTOF(IREPS,IC)) THEN
+                DO INDS = 1, NBBASA(IREPS,IC)
+                  IOFF6 = INDXL(INDS+ILOFF(IREPS))
+                  IOFFLF = IOFF1 + IOFF2 + IOFF3 + IOFF4 + IOFF5 + IOFF6
+                  IOFFLT = ILTMOFF(IREPS,IFSYM) 
+     &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
+                  XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
+                ENDDO !inds
+              ENDIF
+              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
+            ENDDO !ireps
+          ENDDO !i
+        ENDDO !iz
+        IOFF1 = IOFF1 + NZ*NAOCC(IFSYM)*NFBAS(IFSYM,0)
+      ENDDO !ifsym
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lagtra*/
+      SUBROUTINE LAGTRA(XAOMO,XMO,WORK,KFREE,LFREE)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen april 2003.
+C
+C     PURPOSE : Transform the AO index of the Lagrangian
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+C
+      LOGICAL FILEX
+      DIMENSION WORK(*)
+      DIMENSION XAOMO(*)
+      DIMENSION XMO(*)
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+      CALL QENTER('LAGTRA')
+C
+      KFRSAV=KFREE
+C
+C     Memory allocation
+C     -----------------
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+C
+C     Open the coefficient file
+C     =========================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(.NOT.FILEX) GOTO 1000
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTRA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),IDUM,IDUM,IDUM,2,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     ---------------------
+C     Do the transformation
+C     ---------------------
+C
+      CALL LAGTRA1(WORK(KCMO),XAOMO,XMO)
+C
+C
+C     Memory deallocation
+C     -------------------
+      CALL MEMREL('LAGTRA',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('LAGTRA')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'LAGTRA: Coefficient file not found !'
+      CALL QUIT('LAGTRA: Coefficients not found !')
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lagtra1*/
+      SUBROUTINE LAGTRA1(CMO,XAOMO,XMO)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Joost van Stralen may 2003.
+C
+C     PURPOSE : Transform the AO index of the Lagrangian
+C
+C     Input :   -
+C
+C     Output :
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0, D4 = 4.0D0)
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      DIMENSION CMO(*)
+      DIMENSION XAOMO(*)
+      DIMENSION XMO(*)
+C
+C     +------------------+
+C     |  form L_qj       |
+C     +------------------+
+C
+      IOFF = 1 ! offset for the MO-Lagrangian
+      IOFF1 = 0
+      SCALE = D1 !  ***  CHECK THIS LATER ***
+C
+      DO IFSYM = 1, NFSYM
+        CALL QGEMM(NORB(IFSYM),NAOCC(IFSYM),NFBAS(IFSYM,0),D1,
+     &             'H','N',IPQTOQ(1,0),CMO(ICMOQ(IFSYM)+1),
+     &             NFBAS(IFSYM,0),NORB(IFSYM),NZ,
+     &             'N','N',IPQTOQ(1,0),XAOMO(IOFF1+1),
+     &             NFBAS(IFSYM,0),NAOCC(IFSYM),NZ,
+     &             D1,IPQTOQ(1,0),XMO(IOFF),NORBT,NAOCCT,NZ)
+        IOFF = IOFF + NORBT*NAOCC(IFSYM)+NORB(IFSYM)
+        IOFF1 = IOFF1 + NZ*NAOCC(IFSYM)*NFBAS(IFSYM,0)
+      ENDDO ! IFSYM
+C     
+C
+C     +-----------------------------------------+
+C     | The L_i'j part has to be scaled by -1   |
+C     +-----------------------------------------+
+C     
+      DO IZ = 1, NZ
+        IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
+        DO IFSYM = 1, NFSYM
+          DO J = 1, NAOCC(IFSYM)
+            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM) + NAOCC(IFSYM)
+            CALL DSCAL(NIOCC(IFSYM),-D1,XMO(IOFF),1)
+          ENDDO   ! j
+          IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz
+C
+C     +----------------------------------+
+C     | The L_ij part has to be put to 0 |
+C     +----------------------------------+
+C
+      DO IZ = 1, NZ
+        IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
+        DO IFSYM = 1, NFSYM
+          DO J = 1, NAOCC(IFSYM)
+            IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM)
+            CALL DZERO(XMO(IOFF),NAOCC(IFSYM))
+          ENDDO   ! j
+          IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
+        ENDDO     ! ifsym
+      ENDDO       ! iz   
+C     
+      print*,'voor het printen van xmo'
+      print*,'norbt=,naocct=,nz=',norbt,naocct,nz
+      do i = 1, norbt*naocct*nz
+         print*,'i=,xmo=',i,xmo(i)
+      enddo
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

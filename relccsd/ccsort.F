@@ -1442,3 +1442,185 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRTDIR(NREP,MULTB,NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Joost van Stralen
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP,MULTB(64,64,2)
+      INTEGER NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      INTEGER INFOT(6,4,4,2)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+#include "ccpar.inc"
+#include "dcborb.h"
+#include "dgroup.h"
+C#include "dmp2la.h"      
+C
+C---------------Local variables--------------------------------------
+C
+C
+C---------------Executable code--------------------------------------
+C
+C
+C     Initialize the array with reordered tau's
+C
+      CALL INIT_T(BUF2)
+C
+C     Information needed to convert the relccsd tau's to the moltra 
+C     T's                           
+C
+      CALL TAUINFO(INFOT)
+C
+      ITDIR = 1 ! the pointer for the T needed in moltra
+C
+      DO IREPCI = 1, NFSYM
+        DO IREPRS = 0, NBSYM -1
+          IF(IREPCI.EQ.JBTOF(IREPRS,1)) THEN
+            DO IREPI = 1, NFSYM
+              IREP = 2*IREPI - 1
+              IREPC = MOD(IREPI + IREPCI,2) + 1
+              CREP = 2*IREPC - 1
+              DO IZ2 = 1, NZ
+                IQ2 = IPQTOQ(IZ2,IREPRS)
+                DO I = 1, NAOCC(IREPI)
+                  DO C = 1, NAVIR(IREPC)
+                    DO IZ1 = 1, NZ
+                      IQ1 = IPQTOQ(IZ1,IREPRS)
+                      IF(NZ.LT.4) THEN
+                        CREP1 = CREP + INFOT(1,IQ1,IQ2,1)
+                        IREP1 = IREP + INFOT(2,IQ1,IQ2,1)
+                        CREP2 = CREP + INFOT(1,IQ1,IQ2,2)
+                        IREP2 = IREP + INFOT(2,IQ1,IQ2,2)
+                      ELSE
+                         C1 = C + INFOT(1,IQ1,IQ2,1)*NAVIR(IREPC)
+                         I1 = I + INFOT(2,IQ1,IQ2,1)*NAOCC(IREPI)
+                         C2 = C + INFOT(1,IQ1,IQ2,2)*NAVIR(IREPC)
+                         I2 = I + INFOT(2,IQ1,IQ2,2)*NAOCC(IREPI)
+                      ENDIF
+                      DO IREPD = 1, NFSYM
+                        IREPK = MOD(IREPD + IREPCI,2) + 1
+C
+                        IF(NZ.LT.4) THEN
+C
+                          DREP = 2*IREPD - 1
+                          KREP = 2*IREPK - 1
+                          DREP1 = DREP + INFOT(3,IQ1,IQ2,1)
+                          KREP1 = KREP + INFOT(4,IQ1,IQ2,1)
+                          CIREP1 = MULTB(CREP1,IREP1,2)
+                          DREP2 = DREP + INFOT(3,IQ1,IQ2,2)
+                          KREP2 = KREP + INFOT(4,IQ1,IQ2,2)
+                          CIREP2 = MULTB(CREP2,IREP2,2)
+C
+C
+C     Real and complex groups
+C     =======================
+C
+                          DO D = 1, NAVIR(IREPD)
+                            DO K = 1, NAOCC(IREPK)
+C           The first tau
+                            ICIDK = OFF(CIREP1) + (OFF2(DREP1,KREP1) +
+     &                              (K-1)*NAVIR(IREPD))*NPAIR(CIREP1)
+     &                            + (D-1)*NPAIR(CIREP1)
+     &                            + OFF1(CREP1,IREP1)
+     &                            + (I-1)*NAVIR(IREPC) + C - 1
+                            IF(INFOT(6,IQ1,IQ2,1).EQ.1) THEN
+      BUF2(ITDIR) = BUF2(ITDIR) - BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ELSE
+      BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ENDIF
+c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
+c     print*,'BUF1(ICIDK)=',BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+C           The second tau
+                            ICIDK = OFF(CIREP2) + (OFF2(DREP2,KREP2) +
+     &                              (K-1)*NAVIR(IREPD))*NPAIR(CIREP2)
+     &                            + (D-1)*NPAIR(CIREP2)
+     &                            + OFF1(CREP2,IREP2)
+     &                            + (I-1)*NAVIR(IREPC) + C - 1
+                            IF(INFOT(6,IQ1,IQ2,2).EQ.1) THEN
+      BUF2(ITDIR) = BUF2(ITDIR) - BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ELSE
+      BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ENDIF
+c     print*,'dt',IREPCI,IREPRS,IREPI,IZ2,I,C,IZ1,D,K
+c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
+c     print*,'BUF1(ICIDK)=',BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ITDIR = ITDIR + 1
+                            ENDDO !k
+                          ENDDO !d
+C
+                        ELSE !nz
+C
+C     Quaternion groups
+C     =================
+C
+                          DO D = 1, NAVIR(IREPD)
+                            D1T = D + INFOT(3,IQ1,IQ2,1)*NAVIR(IREPD)
+                            D2T = D + INFOT(3,IQ1,IQ2,2)*NAVIR(IREPD)
+                            DO K = 1, NAOCC(IREPK)
+C           The first tau
+                            K1 = K + INFOT(4,IQ1,IQ2,1)*NAOCC(IREPK)
+                            ICIDK = OFF(IREPCI) + (OFF2(IREPD,IREPK) +
+     &                              (K1-1)*2*NAVIR(IREPD))*NPAIR(IREPCI)
+     &                            + (D1T-1)*NPAIR(IREPCI)
+     &                            + OFF1(IREPC,IREPI)
+     &                            + (I1-1)*2*NAVIR(IREPC) + C1 -1
+                            IF(INFOT(6,IQ1,IQ2,1).EQ.1) THEN
+      BUF2(ITDIR) = BUF2(ITDIR) - BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ELSE
+      BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ENDIF
+c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK*RCW+1,BUF2(ITDIR),ITDIR
+C           The second tau
+                            K2 = K + INFOT(4,IQ1,IQ2,2)*NAOCC(IREPK)
+                            ICIDK = OFF(IREPCI) + (OFF2(IREPD,IREPK) +
+     &                              (K2-1)*2*NAVIR(IREPD))*NPAIR(IREPCI)
+     &                            + (D2T-1)*NPAIR(IREPCI)
+     &                            + OFF1(IREPC,IREPI)
+     &                            + (I2-1)*2*NAVIR(IREPC) + C2 - 1
+                            IF(INFOT(6,IQ1,IQ2,2).EQ.1) THEN
+      BUF2(ITDIR) = BUF2(ITDIR) - BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ELSE
+      BUF2(ITDIR) = BUF2(ITDIR) + BUF1(ICIDK*RCW+1+INFOT(5,IQ1,IQ2,1))
+                            ENDIF
+c     print*,'dt',IREPCI,IREPRS,IREPI,IZ2,I,C,IZ1,D,K
+c     print*,'ICIDK,ITDIR,BUF2(ITDIR)=',ICIDK,BUF2(ITDIR),ITDIR
+                            ITDIR = ITDIR + 1
+C
+                            ENDDO !k
+                          ENDDO !d
+C
+                        ENDIF !nz
+C
+                      ENDDO !irepd
+                    ENDDO !iz1
+                  ENDDO !c
+                ENDDO !i
+              ENDDO !iz2
+            ENDDO !irepi
+          ENDIF
+        ENDDO !ireprs
+      ENDDO !irepci
+C
+C     Write the T's to file
+C
+      CALL WRITETAU(BUF2)
+C
+      RETURN                
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
