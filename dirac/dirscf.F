@@ -181,7 +181,7 @@ C       Initiate SCF cycle
 C
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
-     +  '########## START ITERATION NO.',NITER,'##########',
+     +  '########## START ITERATION NO.',NITER,' ##########',
      +  DAYTID
 C
 C       Open files necessary for Dirac-Fock calculation
@@ -219,27 +219,29 @@ C
 C       Reorder orbitals if requested
 C
         IF (LMOORD) THEN
-           CALL REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,
-     &          WORK(KFREE),LFREE)
+          CALL REORD(CMO,EIG,IBEIG,IMOORD,IREORD,MXREORD,
+     &         WORK(KFREE),LFREE)
 C         
 C         Make sure that reordered coefficients are written back
 C         to file.
 C
-           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         END IF
         IF(OVLSEL) THEN
           DOSEL = .TRUE.
           INQUIRE(FILE='DFSMOS',EXIST=TOBE)
-          IF(.NOT.TOBE) THEN
+          IF(.NOT.TOBE .OR. LMOORD) THEN
+C            ... new order for overlap selection if reordered (LMOORD)
              CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
              CALL READT(LUTMAT,N2TMT,DMAT)
-             CALL SMOGEN(CMO,DMAT,WORK(KFREE),LFREE)
              CLOSE(LUTMAT,STATUS='KEEP')            
+             CALL SMOGEN(CMO,DMAT,WORK(KFREE),LFREE)
           ENDIF
         ENDIF
 C
-C        Generate density matrix
-C        Be aware: Both density matrices are normed to 1
+C        Generate density matrix/matrices
+C        Be aware: All density matrices are normed to 1,
+C                  occupation is in the DF(*) factor
 C
          CALL GENDEN(DMAT,CMO,1,IPRSCF)
          DO IOPEN = 1,NOPEN
@@ -287,7 +289,7 @@ C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
           CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
           IF (NISHT.GT.0)
@@ -304,7 +306,7 @@ C         restore density matrix in DMAT/tsaue
         ELSE
           CALL WRIDNS(LUDENS,DMAT)
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
         ENDIF
 C
         IF(DOTSC) CALL TSCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
@@ -332,8 +334,7 @@ C            Get hold of slaves
              CALL DIRAC_PARCTL( 1 )
              IRNTYP = 7
              CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,CMO,NFMAT,
-     &          IDUM,IDUM,
-     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
+     &          IDUM,IDUM, IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
      &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
      &          IDUM,DUM,DUM,DUM,DUM,DUM)
            ELSE
@@ -443,7 +444,7 @@ C
         CALL GTINFO(DAYTID)
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID
-        WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
+        WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID
       ENDIF
 C
@@ -464,10 +465,7 @@ C
 C
  666  CONTINUE
       RETURN
- 1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
- 1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G20.10,3X,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -613,7 +611,7 @@ C
 C
 C     Overlap selection
 C
-      IF(DOSEL) CALL SMOSEL(FAO,WORK(KFREE),LFREE)
+      IF(DOSEL) CALL SMOSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
 C     Print eigenvalues
 C
@@ -1081,7 +1079,7 @@ C
      &    DAYTID
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID(1:10)
-        WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
+        WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUPRI)
 C
@@ -1136,8 +1134,7 @@ C
 C
       CALL QEXIT('SCFCY1')
       RETURN
- 1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G20.10,3X,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1282,6 +1279,8 @@ C
                END DO
    30          CONTINUE
             ENDIF
+            IF (DODFT) WRITE(LUPRI,'(6X,A,'//FMT//')')
+     +         '* DFT xc energy              :  ',EDFTY
          END IF
       ENDIF
 C
@@ -1456,8 +1455,9 @@ C
      &                     NFBAS(I,0),NORB(I),NZT,
      &             'N','N',IPQTOQ(1,0),BUF,NFBAS(I,0),NOCC(I),NZ,
      &        D0,IPQTOQ(1,0),SMO(ISMOQ(I)+1),NORB(I),NOCC(I),NZ)
-        IF(IPRSCF.GE.4) THEN
-          CALL HEADER('SMOGE1: SMO-matrix',-1)
+        IF(IPRSCF.GE.6) THEN
+          CALL HEADER('SMOGE1: SMO-matrix for overlap selection',-1)
+          IF (NFSYM.GT.1) WRITE(LUPRI,'(A,I2)') ' Fermion symmetry',I
           CALL PRQMAT(SMO(ISMOQ(I)+1),NORB(I),NOCC(I),NORB(I),NOCC(I),
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
@@ -1467,6 +1467,7 @@ C
 C     Write to file
 C
       CALL OPNFIL(LUSMOS,'DFSMOS','UNKNOWN','SMOGE1')
+      REWIND (LUSMOS)
       CALL WRITT(LUSMOS,NSMOTQ,SMO)
       CLOSE(LUSMOS,STATUS='KEEP')
 C
@@ -1474,18 +1475,18 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smosel */
-      SUBROUTINE SMOSEL(CFU,WORK,LWORK)
+      SUBROUTINE SMOSEL(EIG,IBEIG,CFU,WORK,LWORK)
 C*****************************************************************************
 C
 C     Select vectors based on overlap.
 C     Input is coefficients in MO-basis.
 C
 C     Written by T.Saue Nov 11 1995
-C     Last revision Nov 11 1995 - tsaue
+C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION CFU(*),WORK(LWORK)
+      DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
 C  DHFCAL: NSMOTQ
 C
@@ -1494,7 +1495,7 @@ C
 #include <memint.h>
 C     Memory allocation
       CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
-      CALL SMOSE1(CFU,WORK(KSMO),WORK(KFREE),LFREE)
+      CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSEL.SMOSE1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('SMOSEL')
@@ -1502,17 +1503,18 @@ C     Memory deallocation
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose1 */
-      SUBROUTINE SMOSE1(CFU,SMO,WORK,LWORK)
+      SUBROUTINE SMOSE1(EIG,IBEIG,CFU,SMO,WORK,LWORK)
 C*****************************************************************************
 C
 C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
-C     Last revision Nov 11 1995 - tsaue
+C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      DIMENSION CFU(*),SMO(*),WORK(LWORK)
+      DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
+C
 C Used from COMMON blocks:
 C  DCBORB: NSMOTQ,NOCC
 C  DGROUP: NFSYM
@@ -1531,14 +1533,17 @@ C
       DO I = 1,NFSYM
       IF(NOCC(I).NE.0) THEN
 C       Memory allocation
-        CALL MEMGET('REAL',KSBUF,NESH(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEBUF,NESH(I),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBEB,NESH(I),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KCBUF,NESH(I)*NORB(I)*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KSBUF,NESH(I)*NOCC(I)*NZ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KRSEL,NESH(I),WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KCSEL,NESH(I),WORK,KFREE,LFREE)
-        CALL SMOSE2(I,CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),WORK(KSBUF),
-     &              WORK(KCBUF),WORK(KRSEL),WORK(KCSEL),ISELM,
-     &              NORB(I),NOCC(I),NESH(I),
-     &              WORK(KFREE),LFREE)
+        CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+     &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
+     &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
+     &              WORK(KRSEL),WORK(KCSEL),ISELM,
+     &              NORB(I),NOCC(I),NESH(I),WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
@@ -1548,14 +1553,15 @@ C     Memory deallocation
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck smose2 */
-      SUBROUTINE SMOSE2(IFRP,CFU,SMO,SBUF,CBUF,RCSEL,ICSEL,ISELM,
-     &                  KNORB,KNOCC,KNESH,WORK,LWORK)
+      SUBROUTINE SMOSE2(IFRP,EIG,IBEIG,CFU,SMO,EBUF,IBEBUF,CBUF,SBUF,
+     &                  RCSEL,ICSEL,ISELM,KNORB,KNOCC,KNESH,WORK,LWORK)
 C*****************************************************************************
 C
 C     Select vectors based on overlap
 C
 C     Written by T.Saue Nov 11 1995
-C     Last revision: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
+C     Major revisions: Jan 7 1998 - jth NORB(IFRP) etc. is now parameter
+C                      May 2002 hjaaj: EIG and IBEIG added
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -1573,9 +1579,11 @@ C     KNOCC = NOCC(IFRP)
 C     KNESH = NESH(IFRP)
 C
       CHARACTER FSYM*2
-      DIMENSION CFU(KNORB,KNORB,NZ),
+      DIMENSION EIG(KNORB),IBEIG(KNORB),
+     &          CFU(KNORB,KNORB,NZ),
      &          SMO(KNORB,KNOCC,NZ),
      &          SBUF(KNESH,KNOCC,NZ),
+     &          EBUF(KNORB),IBEBUF(KNORB),
      &          CBUF(KNORB,KNESH,NZ),
      &          RCSEL(KNESH),ICSEL(KNESH),
      &          WORK(LWORK)
@@ -1615,7 +1623,7 @@ C
           ENDDO
         ENDDO
       ENDIF
-      IF(IPRSCF.GE.4) THEN
+      IF(IPRSCF.GE.6) THEN
         CALL HEADER('SMOSE1: Squared-matrix',-1)
         CALL PRQMAT(SBUF,NESH(IFRP),NOCC(IFRP),NESH(IFRP),NOCC(IFRP),
      &              1,IPQTOQ(1,0),LUPRI)
@@ -1627,6 +1635,8 @@ C
       DO IZ = 1,NZ
         CALL DCOPY(N2DIM,CFU(1,NPSH(IFRP)+1,IZ),1,CBUF(1,1,IZ),1)
       ENDDO
+      CALL DCOPY(KNORB,EIG,1,EBUF,1)
+      CALL ICOPY(KNORB,IBEIG,1,IBEBUF,1)
       ISELM = 0
       DO J = 1,NOCC(IFRP)
         JJ = NPSH(IFRP) + J
@@ -1640,6 +1650,9 @@ C       Copy buffer into vector
         DO IZ = 1,NZ
           CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
         ENDDO
+C       Copy eigenvalue and (approx.) boson symmetry to new place:
+        EIG(JJ) = EBUF(ISEL)
+        IBEIG(JJ) = IBEBUF(ISEL)
       ENDDO
 C
 C     Copy in missing vectors
@@ -1657,6 +1670,9 @@ C         Copy buffer into vector
           DO IZ = 1,NZ
             CALL DCOPY(NORB(IFRP),CBUF(1,ISEL,IZ),1,CFU(1,JJ,IZ),1)
           ENDDO
+C         Copy eigenvalue and (approx.) boson symmetry to new place:
+          EIG(JJ) = EBUF(ISEL)
+          IBEIG(JJ) = IBEBUF(ISEL)
         ENDDO
       ENDIF
 C
@@ -1669,11 +1685,11 @@ C
       DO J = 1,NOCC(IFRP)
       IF(ICSEL(J).NE.J) THEN
         NVEC = NVEC + 1
-        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') J,' --> ',ICSEL(J),' OVERLAP '
-     &                                    ,RCSEL(J)
+        WRITE(LUPRI,'(I5,A,I5,A,F20.10)') ICSEL(J),' --> ',J,
+     &                                    ' OVERLAP ',RCSEL(J)
       ENDIF
       ENDDO
-      IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering'
+      IF(NVEC.EQ.0) WRITE(LUPRI,'(A)') 'No reordering.'
       IF(IPRSCF.GE.2) THEN
         WRITE(LUPRI,'(20I6)') (ICSEL(I),I=1,NOCC(IFRP))
         WRITE(LUPRI,'(10F12.3)') (RCSEL(I),I=1,NOCC(IFRP))
@@ -1788,8 +1804,7 @@ C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
 C
-C        Written by J. Thyssen
-C        Last revision: Nov 27 1997
+C        Written by J. Thyssen Nov 1997
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1810,12 +1825,12 @@ C
          IF (IREORD(I).EQ.0) GOTO 10
          IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: before reordering',-1)
-            WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
-            CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
-     &                  NESH(I),1,1,LUPRI)
-            WRITE(LUPRI,'(3X,A)') '* Boson classification...'
-            WRITE(LUPRI,'(3X,I4)') 
-     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
+            IF (NFSYM.GT.1) WRITE(LUPRI,'(5X,A,I2/)')
+     &         'for fermion ircop',I
+            WRITE(LUPRI,'(3X,A)')
+     &         '* Electron eigenvalues and boson classification ...'
+            WRITE(LUPRI,'(3X,F15.8,I5)') 
+     &         (EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
@@ -1847,12 +1862,12 @@ C
 C
          IF (IPRSCF.GE.2) THEN
             CALL HEADER('REORD: after reordering',-1)
-            WRITE(LUPRI,'(3X,A)') '* Electron eigenvalues...'
-            CALL OUTPUT(EIG(1+IORB(I)+NPSH(I)),1,NESH(I),1,1,
-     &                  NESH(I),1,1,LUPRI)
-            WRITE(LUPRI,'(3X,A)') '* Boson classification...'
-            WRITE(LUPRI,'(3X,I4)') 
-     &         (IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
+            IF (NFSYM.GT.1) WRITE(LUPRI,'(5X,A,I2/)')
+     &         'for fermion ircop',I
+            WRITE(LUPRI,'(3X,A)')
+     &         '* Electron eigenvalues and boson classification ...'
+            WRITE(LUPRI,'(3X,F15.8,I5)') 
+     &         (EIG(J),IBEIG(J),J=1+IORB(I)+NPSH(I),IORB(I)+NORB(I))
          END IF
          IF (IPRSCF.GE.10) THEN
             WRITE(LUPRI,'(3X,A)') '* Eigenvectors...'
@@ -1874,8 +1889,7 @@ C****************************************************************************
 C     PURPOSE:
 C        Reorder orbitals 
 C
-C        Written by J. Thyssen Nov 27 1997
-C        Last revision: Aug 13 1999
+C        Written by J. Thyssen Nov 1997
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -1887,24 +1901,39 @@ C
 C
       CALL QENTER('REOR1')
 C
+      ICHK_S = 0
+      ICHK_D = 0
       DO I = 1,NORDER
          IORB_S = I+NPOSITRON
          IORB_D = IORDER(I)+NPOSITRON
-         DO IZ = 1,NZ
-            IF (IORB_D .LE. NELECTRON+NPOSITRON) THEN
+         IF (IORB_D .GT. NELECTRON+NPOSITRON) THEN
+            CALL QUIT('REOR1 reordering to non-existent orbital')
+         ELSE
+            ICHK_S = ICHK_S + IORB_S
+            ICHK_D = ICHK_D + IORB_D
 C
-C              Copy eigenvector
+C           Copy eigenvalue and boson classification
 C
+            EIG(IORB_D)   = EIGBCK(IORB_S)
+            IBEIG(IORB_D) = IBEIGBCK(IORB_S)
+C
+C           Copy eigenvector
+C
+            DO IZ = 1,NZ
                CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
      &                          CMO(1,IORB_D,IZ),1)
-C
-C              Copy eigenvalue and boson classification
-C
-               EIG(IORB_D)   = EIGBCK(IORB_S)
-               IBEIG(IORB_D) = IBEIGBCK(IORB_S)
-            END IF
-         END DO
+            END DO
+         END IF
       END DO
+C
+C     Make sure we are not copying more than one orbital to the same destination,
+C     or that IORDER(I) does not belong to 1..NORDER
+C     (not 100% test: if user specified e.g. IORDER=2,2,2 this would not catch it,
+C     but that is quite unlikely) /hjaaj May 2002
+C
+      IF (ICHK_S .NE. ICHK_D) THEN
+         CALL QUIT('REOR1: destination orbs. .ne. source orbitals')
+      END IF
 C
       CALL QEXIT('REOR1')
       RETURN
@@ -1919,8 +1948,7 @@ C     WARNING:
 C        This is a small part of the routine MKMOFK distributed
 C           with the open shell code.
 C
-C        Written by J. Thyssen
-C        Last revision: Dec 30 1997
+C        Written by J. Thyssen Dec 1997
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -2532,7 +2560,7 @@ C
         IF(IPRMVO.GE.2) THEN
           WRITE(LUPRI,'(A,A3)') 
      &     '* Virtual eigenvalues of ircop ',FREP(I)
-          WRITE(LUPRI,'(5D15.8)') (EIG(IE(I)+J),J=0,(NSSH(I)-1))
+          WRITE(LUPRI,'(5F15.8)') (EIG(IE(I)+J),J=0,(NSSH(I)-1))
         ENDIF
 C
 C       Insert new coefficients
@@ -2821,10 +2849,8 @@ C
       END IF
 C
       RETURN
- 1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
- 1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
+ 1010 FORMAT('It. ',I3,1P,G20.10,3X,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1020 FORMAT(4X,    I3,1P,G20.10,3X,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck fndocc */
