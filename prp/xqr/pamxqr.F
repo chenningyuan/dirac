@@ -33,7 +33,7 @@ C
       DATA TABLE /
      &     '.PRINT ','.A OPER','.B OPER','.C OPER',
      &     '.B FREQ','.C FREQ','.THRESH','.MAXITR',
-     &     '.SKIPEP','.MAXRED','.QED   ','.XLRNRM',
+     &     '.SKIPEP','.MAXRED','xXXXXXX','.XQRNRM',
      &     '.XXXXXX','.XXXXXX','.INTFLG','.NOPREC',
      &     '.DIPLEN','.XXXXXX','.XXXXXX','.XXXXXX',
      &     '.ITRINT','.CNVINT','.XXXXXX','.XXXXXX',
@@ -85,13 +85,18 @@ C
       ITRIQR(2) = 1
       XQRNRM = .FALSE.
       XQRDIH = .TRUE.
-      QREE = .TRUE.
+      XQR_SKIPEE = .FALSE.
       IF (LEVYLE) THEN
          INTXQR = ILLINT
-         QREP = .FALSE.
+         XQR_SKIPEP = .TRUE.
       ELSE
-         QREP = .TRUE.
+         XQR_SKIPEP = .FALSE.
       END IF
+      XQR_INDSTR(1,I) = ' '
+      XQR_INDSTR(2,I) = ' '
+      XQR_INDSTR(3,I) = ' '
+C     TODO hjaaj Feb 2004: make possibility to specify in
+C          input as for XLR_INDSTR in pamxlr.F
 C
       CALL IZERO(LQROP,3*MAXLQR*2)
 C
@@ -194,7 +199,7 @@ C     Maximum number of iterations in LR solver
             GO TO 100
  9          CONTINUE
 C     .SKIPEP Exclude all electron-positron rotations
-            QREP = .FALSE.
+            XQR_SKIPEP = .TRUE.
             GOTO 100
  10         CONTINUE
 C     Max dimension of matrix in reduced system
@@ -270,7 +275,7 @@ C
             GO TO 100
  28         CONTINUE
 C     .SKIPEE Skip all e-e rotations
-            QREE = .FALSE.
+            XQR_SKIPEE = .TRUE.
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
             GO TO 300
@@ -321,9 +326,9 @@ C
         WRITE(LUPRI,'(1X,A)')
      &  '* No preconditioning of initial trial vectors.'
       ENDIF
-      IF (.NOT.QREE) WRITE(LUPRI,'(1X,A)')
+      IF (XQR_SKIPEE) WRITE(LUPRI,'(1X,A)')
      &     '* No e-e rotation considered.'
-      IF (.NOT.QREP) WRITE(LUPRI,'(1X,A)')
+      IF (XQR_SKIPEP) WRITE(LUPRI,'(1X,A)')
      &     '* No e-p rotation considered.'
 C
       WRITE(LUPRI,'(1X,A)') 
@@ -463,7 +468,6 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxpr.h"
-#include "dcbxlr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -478,9 +482,7 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-      XLR_SKIPEE = .NOT.QREE
-      XLR_SKIPEP = .NOT.QREP
-      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
 C
       NQROP  = 0
       NQRHYP = 0
@@ -538,7 +540,7 @@ C
          JSYMOP = IPRPSYM(IPT)
          JTIMOP = IPRPTIM(IPT)
          JOPSY  = JBTOF(JSYMOP-1,1)
-         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+         CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &               WORK,KFREE,LFREE,IPRXQR)
          MZYEE = MAX(MZYEE,2*NZXOPE)
          MZYEP = MAX(MZYEP,2*NZXOPP)
@@ -663,25 +665,30 @@ C
 C
       DATA N/0/
 C
-#include "muld2h.h"
+#include "ibtfun.h"
+      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
 C
       CALL QENTER('QRHYPCHK')
 C
-      IF (MULD2H(ISYMA,MULD2H(ISYMB,ISYMC)).NE.1) THEN
+C     Check operator symmetries
+C
+      IF (MULD2H(ISYMA,MULD2H(ISYMB,ISYMC)).EQ.1) THEN
+C        OK: A B C is totally symmetric
+         DOHYP = .TRUE.
+      ELSE
          DOHYP=.FALSE.
          GOTO 100
       END IF
 C
-#ifdef TODO_PANOR
-C     hjaaj aug 2002: this is not used yet because DOHYP = true below
-C     - Please fix, Patrick 
-      DOHYP = .TRUE.
+C     Check permutation symmetries by comparing
+C     to the N previously defined QR functions
+C
       DO I = 1,N
-      DO J = 1,3
-      DO K = 1,3
-      IF (K.NE.J) THEN
-         DO L = 1,3
-         IF (L.NE.K .AND. L.NE.J) THEN
+         DO J = 1,3
+         DO K = 1,3
+         IF (K.NE.J) THEN
+            L = 6 - J - K
+C           ... as 1 + 2 + 3 = 6 and J,K,L must be different
 C
             IF (IAOP.EQ.IOP(I,J) .AND.
      &          IBOP.EQ.IOP(I,K) .AND.
@@ -697,18 +704,13 @@ C
 C
          END IF
          END DO
-      END IF
+         END DO
       END DO
-      END DO
-      END DO
-#endif
-C
-      DOHYP = .TRUE.
 C
 C     If not done before put in list with unique calculations
 C
       IF (DOHYP) THEN
-         N = N+1
+         N = N + 1
          IOP(N,1) = IAOP
          IOP(N,2) = IBOP
          IOP(N,3) = ICOP
@@ -742,7 +744,6 @@ C*****************************************************************************
 #include "dcbxqr.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "cbiqr.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -792,7 +793,7 @@ C
          NZRED  = NCRED+NERED+NPRED
          STATIC = (NFREQ.EQ.1 .AND. QRFREQ(1,IOP).EQ.D0)
 C
-         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+         CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &               WORK,KFREE,LFREE,IPRXQR)
 C
 C     Check if response vectors exist on restart file
@@ -884,7 +885,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 C
-#include "dcbxlr.h"
 #include "dcbxqr.h"
 #include "dcbxrs.h"
 C
@@ -894,8 +894,11 @@ C     Transfer information from XCBXQR to other common blocks
 C     to be used in solving the linear response equations.
 C
       LINEQ = .TRUE.
-      LSVCFG(1) = XLR_LSFG(1)
-      LSVCFG(2) = XLR_LSFG(2)
+C     LSVCFG debug option not implemented in QR /hjaaj
+C     LSVCFG(1) = XQR_LSFG(1)
+C     LSVCFG(2) = XQR_LSFG(2)
+      LSVCFG(1) = .TRUE.
+      LSVCFG(2) = .TRUE.
       TKNORM = XQRNRM
       DIAGHE = XQRDIH
       IPRXRS = IPRXQR
@@ -910,7 +913,9 @@ C
       ITRINT(1) = ITRIQR(1)
       ITRINT(2) = ITRIQR(2)
       INTDEF = INTXQR
-      STERNH = XSTERN
+      STERNH = .FALSE.
+C     Sternheimer approx. not implemented for QR /hjaaj Feb 2004
+C     (cannot be implemented in current form, modify? TODO?)
 C
       CALL QEXIT('SETXQR')
 C
@@ -930,7 +935,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "dcbxrs.h"
-#include "dcbxlr.h"
 #include "dcbxqr.h"
 #include "dcbibn.h"
 #include "dcborb.h"
@@ -1010,7 +1014,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "dcbxrs.h"
-#include "dcbxlr.h"
 #include "dcbxqr.h"
 #include "dcbibn.h"
 #include "dcborb.h"
@@ -1138,7 +1141,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxqr.h"
-#include "dcbxlr.h"
 #include "dcbgen.h"
 C
       PARAMETER ( D4 = 4.0D0 )
@@ -1147,7 +1149,8 @@ C
       DIMENSION VECBEE(MZYEE,NZ),VECBEP(MZYEP,NZ)
       DIMENSION RESULT(3,MAXQR),CMO(*),WORK(*)
 C
-#include "muld2h.h"
+#include "ibtfun.h"
+      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
 C
       CALL QENTER('LRCALC')
 C
@@ -1177,9 +1180,11 @@ C
 C
 C     Open the files with the response vectors
 C
-      IF (QREE) OPEN(LUQREE,FILE='QRVEC.EE',FORM='UNFORMATTED',
+      IF (.NOT.XQR_SKIPEE)
+     &   OPEN(LUQREE,FILE='QRVEC.EE',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*MZYEE*NZ,STATUS='OLD')
-      IF (QREP) OPEN(LUQREP,FILE='QRVEC.EP',FORM='UNFORMATTED',
+      IF (.NOT.XQR_SKIPEP)
+     &   OPEN(LUQREP,FILE='QRVEC.EP',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*MZYEP*NZ,STATUS='OLD')
 C
 C     Start loop over A operators
@@ -1200,7 +1205,7 @@ C
          JSYMOP = ISYMA
          JOPSY  = IFERA
          JTIMOP = ITIMA
-         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+         CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &               WORK,KFREE,LFREE,IPRXQR)
 C
          NZYAEE = 2*NZXOPE
@@ -1238,8 +1243,10 @@ C
                ILRF = ILRF + 1
                FREQ = QRFREQ(IFR,IBOP)
                CALL INDQR(IBPT,ABS(FREQ),IREC)
-               IF (QREE) CALL READAC(LUQREE,MZYEE*NZ,VECBEE,IREC)
-               IF (QREP) CALL READAC(LUQREP,MZYEP*NZ,VECBEP,IREC)
+               IF (.NOT.XQR_SKIPEE)
+     &            CALL READAC(LUQREE,MZYEE*NZ,VECBEE,IREC)
+               IF (.NOT.XQR_SKIPEP)
+     &            CALL READAC(LUQREP,MZYEP*NZ,VECBEP,IREC)
 C     
 C     Compute the LR function value. The response vector Nb is
 C     swapped in QRSPDOT.
@@ -1300,8 +1307,8 @@ C
 C
 C     Close files with response vectors
 C
-      IF (QREE) CLOSE(LUQREE)
-      IF (QREP) CLOSE(LUQREP)
+      IF (.NOT.XQR_SKIPEE) CLOSE(LUQREE)
+      IF (.NOT.XQR_SKIPEP) CLOSE(LUQREP)
 C
 C     Close the property file
 C
@@ -1472,9 +1479,11 @@ C
 C
 C     Open file with response vectors
 C
-      IF (QREE) OPEN(LUQREE,FILE='QRVEC.EE',FORM='UNFORMATTED',
+      IF (.NOT.XQR_SKIPEE)
+     &   OPEN(LUQREE,FILE='QRVEC.EE',FORM='UNFORMATTED',
      &     ACCESS='DIRECT',RECL=8*MZYEE*NZ,STATUS='OLD')
-      IF (QREP) OPEN(LUQREP,FILE='QRVEC.EP',FORM='UNFORMATTED',
+      IF (.NOT.XQR_SKIPEP)
+     &   OPEN(LUQREP,FILE='QRVEC.EP',FORM='UNFORMATTED',
      &     ACCESS='DIRECT',RECL=8*MZYEP*NZ,STATUS='OLD')
 C
 C     Read VECEE and VECEP
@@ -1488,13 +1497,13 @@ C
       JSYMOP = ISYM
       JOPSY  = IFER
       JTIMOP = ITIM
-      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+      CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &            WORK,KFREE,LFREE,IPRXQR)
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(IPT,ABS(FREQ),IREC)
-      IF (QREE) CALL READAC(LUQREE,MZYEE*NZ,VECEE,IREC)
-      IF (QREP) CALL READAC(LUQREP,MZYEP*NZ,VECEP,IREC)
+      IF (.NOT.XQR_SKIPEE) CALL READAC(LUQREE,MZYEE*NZ,VECEE,IREC)
+      IF (.NOT.XQR_SKIPEP) CALL READAC(LUQREP,MZYEP*NZ,VECEP,IREC)
 C
 C     The linear response equations have been solved for positive
 C     frequencies and we retain the correct response vector
@@ -1531,16 +1540,20 @@ C
      &     ' has negative frequency, so solution vector is swapped and',
      &     ' conjugated (ITIM=1) and sign-reversed (ITIM=-1).'
 C
-         IF (QREE) CALL HEADER('VECEE '//LAB//' in HYPINIT',-1)
-         IF (QREE) CALL PRBVEC(LUPRI,VECEE,1,NZYEE)
-         IF (QREP) CALL HEADER('VECEP '//LAB//' in HYPINIT',-1)
-         IF (QREP) CALL PRBVEC(LUPRI,VECEP,1,NZYEP)
+         IF (.NOT.XQR_SKIPEE) THEN
+            CALL HEADER('VECEE '//LAB//' in HYPINIT',-1)
+            CALL PRBVEC(LUPRI,VECEE,1,NZYEE)
+         END IF
+         IF (.NOT.XQR_SKIPEP) THEN
+            CALL HEADER('VECEP '//LAB//' in HYPINIT',-1)
+            CALL PRBVEC(LUPRI,VECEP,1,NZYEP)
+         END IF
       END IF
 C
 C     Close files
 C
-      IF (QREE) CLOSE(LUQREE,STATUS='KEEP')
-      IF (QREP) CLOSE(LUQREP,STATUS='KEEP')
+      IF (.NOT.XQR_SKIPEE) CLOSE(LUQREE,STATUS='KEEP')
+      IF (.NOT.XQR_SKIPEP) CLOSE(LUQREP,STATUS='KEEP')
 C
       CALL QEXIT('HYPINIT')
 C
@@ -1734,7 +1747,6 @@ C*****************************************************************************
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
-#include "dcbxlr.h"
 C
       DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
       DIMENSION WORK(*)
@@ -1750,7 +1762,7 @@ C     Get the index of the excitations for RPA.
 C
       JSYMOP = ISYM
       JOPSY  = JBTOF(JSYMOP-1,1)
-      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+      CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &            WORK,KFREE,LFREE,IPRXQR)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('GTZYMT: Inconsistent orbital rotations')
@@ -1848,7 +1860,8 @@ C
       DIMENSION A(NORBT,NORBT,NZ),W(NORBT,NORBT,NZ),C(NORBT,NORBT,NZ)
       DIMENSION T(-1:1)
 C
-#include "muld2h.h"
+#include "ibtfun.h"
+      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
 C
       CALL QENTER('OITMAT')
 C
@@ -1952,7 +1965,7 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
-#include "dcbxlr.h"
+#include "dcbxqr.h"
 C
       DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ),WORK(*)
 C
@@ -1967,7 +1980,7 @@ C     Get the index to the excitations.
 C
       JSYMOP = ISYMGR
       JOPSY  = JBTOF(JSYMOP-1,1)
-      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+      CALL XRSPAR(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,
      &            WORK,KFREE,LFREE,IPRXQR)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('RSP1GR: Inconsistent orbital rotations')
@@ -2492,7 +2505,6 @@ C
       DIMENSION DEN(N2BBASX,NZ),W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
       DIMENSION CMO(*),WORK(*)
 C
-#include "muld2h.h"
 C
       CALL QENTER('QDENS2')
 C
