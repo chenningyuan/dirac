@@ -161,11 +161,6 @@ C
 #include <memint.h>
 C
       TEST = DIISAO.OR.NASHT.GT.0.OR.NAELEC.GT.0
-      IF(TEST) THEN
-        CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
-      ELSE 
-        KTMAT = KFREE
-      ENDIF
 C
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
@@ -224,39 +219,15 @@ C
            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         END IF
         IF(OVLSEL) THEN
-           DOSEL = .TRUE.
-           INQUIRE(FILE='DFSMOS',EXIST=TOBE)
+          DOSEL = .TRUE.
+          INQUIRE(FILE='DFSMOS',EXIST=TOBE)
+          IF(.NOT.TOBE) THEN
+             CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
+             CALL READT(LUTMAT,N2TMT,DMAT)
+             CALL SMOGEN(CMO,DMAT,WORK(KFREE),LFREE)
+             CLOSE(LUTMAT,STATUS='KEEP')            
+          ENDIF
         ENDIF
-      ENDIF
-C
-C     Intermesso: Using TMAT for
-C        a) matrix for overlap selection
-C        b) SMOAOGEN
-C
-      IF(TEST.OR..NOT.TOBE) THEN
-        CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-        CALL READT(LUTMAT,N2TMT,DMAT)
-        IF(TEST) THEN
-C
-C       Construct left index transformed density matrix: Smoao = Ct Sao
-C       and save it as rec. #2 on LUTMAT.
-C       This matrix is used in DIIS and in the construction of the MO
-C       Fock matrix in case of some open shells.
-C
-#ifdef MOD_OPEN
-          ISIZE = 0
-          DO I = 1,NFSYM
-            ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
-          END DO
-C         ISIZE .le. N2BBASXQ .le. size of DTMP
-          CALL MKSMOAO(FOCK,DMAT,IPRSCF,WORK(KFREE),LFREE)
-          CALL WRITT(LUTMAT,ISIZE,FOCK)
-#else
-          CALL QUIT('SUBROUTINE MKSMOAO NOT IN THIS DISTRIBUTION!')
-#endif
-        ENDIF
-        IF(.NOT.TOBE) CALL SMOGEN(CMO,DMAT,WORK(KFREE),LFREE)
-        CLOSE(LUTMAT,STATUS='KEEP')            
       ENDIF
       IF(TRIVEC) THEN
 C
@@ -518,29 +489,26 @@ C
         KCMOSAV = KFREE
       END IF
       IF (TEST) THEN
-C        read LUTMAT rec#2 with SMOAO
+C        read LUTMAT rec#2 with SAOMO
         ISIZE = 0
         DO I = 1,NFSYM
            ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
         END DO
-        CALL MEMGET('REAL',KSMOAO,ISIZE,WORK,KFREE,LFREE)
-        CALL READT(LUTMAT,ISIZE,WORK(KSMOAO))
+        CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
+        CALL READT(LUTMAT,ISIZE,WORK(KSAOMO))
         CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
-     &              WORK(KSMOAO),WORK(KDTEMP),WORK(KDEVEC),
+     &              WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
      &              WORK(KFREE),LFREE)
       ELSE
-        KSMOAO = KFREE
+        KSAOMO = KFREE
         CALL MKMOFK(FMO,FAO,DUM,WORK(KTMAT),DUM,
      &              DUM,DUM,DUM,WORK(KFREE),LFREE)
       END IF
 #else
       IF (NASHT .GT. 0) 
      &   CALL QUIT('SUBROUTINE MKMOFK NOT IN THIS DISTRIBUTION')
-      KSMOAO = KFREE
+      KSAOMO = KFREE
       CALL MKMOFK2(FMO,FAO,WORK(KTMAT),WORK(KFREE),LFREE)
-#endif
-#ifdef MOD_SPF
-      IF (SPINFR) CALL SPFSCF(FMO,WORK(KFREE),LFREE)
 #endif
       CLOSE(LUTMAT,STATUS='KEEP')
 C
@@ -549,7 +517,7 @@ C     ================================
 C
       IF(TEST) THEN
         CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),WORK(KTMAT),
-     &              BMAT,CHKCNV,WORK(KSMOAO),WORK(KFREE),LFREE)
+     &              BMAT,CHKCNV,WORK(KSAOMO),WORK(KFREE),LFREE)
       ELSE
         CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,CHKCNV,
      &              DUM,WORK(KFREE),LFREE)
@@ -629,9 +597,9 @@ C       ==============================
 C
         CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &              NORB(I),NZ,IPQTOQ(1,0),NORB(I),1,NFBAS(I,0),
+     &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
      &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
-     &              IPQTOQ(1,0),IPRSCF)
+     &              IPRSCF)
  40   CONTINUE
 C
 C     Write coefficients to file
@@ -1858,42 +1826,44 @@ C*****************************************************************************
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
 #include <dcbgen.h>
+#include <dcbham.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*), IQBF(4)
+      LOGICAL SPECIAL
+      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
 #include <memint.h>
 C
       CALL QENTER('MKMOFK')
 C
+      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
+C
+C     Transform FD to MO-basis
+C
       DO I = 1,NFSYM
-C
-C        Transform FD to MO-basis
-C
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                     NORB(I),NORB(I),
-     &                     FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,
-     &                     IPQTOQ(1,0),
-     &                     FMO(I2ORBT(I)+1),NORB(I),NORB(I),NBF,IQBF,
-     &                     TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),
-     &                      NZT,IPQTOQ(1,0),
-     &                     TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),
-     &                      NZT,IPQTOQ(1,0),
-     &                     WORK(KFREE),LFREE,IPRSCF)
-            IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &                 '*** WARNING *** DFSOLV: NBF.NE.NZ !'
-            IF ( IPRSCF .GE. 10 ) THEN
-               WRITE(CTMP,'(I1)') I
-               CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
-     &                     ', corep '//CTMP,-1)
-               CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                           NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
-         END IF
+      IF(NORB(I).GT.0) THEN
+        IF(SPECIAL) THEN
+          CALL TBOSON(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
+        ELSE           
+          CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &            NORB(I),NORB(I),
+     &            FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &            FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            WORK(KFREE),LFREE,IPRSCF)
+        ENDIF
+        IF(IPRSCF.GE.10 ) THEN
+          WRITE(CTMP,'(I1)') I
+          CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
+     &                ', corep '//CTMP,-1)
+          CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
+     &                NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        END IF
+      END IF
       END DO
       CALL QEXIT('MKMOFK')
       RETURN
@@ -1964,8 +1934,9 @@ C
 C
       RETURN
       END
-C
-      SUBROUTINE SELBOS (I,NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck selbos */
+      SUBROUTINE SELBOS (IFRP,NO,INDX,EIG,IBEIG,EVEC,RDUM,IDUM)
 C****************************************************************************
 C     PURPOSE:
 C        Sort eigenvectors from boson ordering to energy ordering
@@ -1975,11 +1946,13 @@ C        April 1999
 C
 C*****************************************************************************
 #include <implicit.h>
+#include <priunit.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
+      NBRP = 4 / NZ
 C
 C     Establish the order
 C
@@ -1994,14 +1967,13 @@ C
 C
 C     Fill an array with the identification of the boson irreps
 C
-      IX = 0
-      NBRP = 4 / NZ
-      DO JZ = 2, 1, -1 
-         DO ISYM = 1, NBRP
-           DO J = 1, NBORB(ISYM,I,JZ)
-              IX = IX + 1
-              IDUM(IX) = JFSYM(ISYM,I) - 1
-           ENDDO
+      IX = 1
+      DO ISYM = 1, NBRP
+        IREP = JFSYM(ISYM,IFRP) - 1
+        DO IC = 2, 1, -1
+          NBO = NBORB(ISYM,IFRP,IC)
+          CALL ICOPY(NBO,IREP,0,IDUM(IX),1)
+          IX = IX + NBO
         ENDDO
       ENDDO
 C
@@ -2105,7 +2077,7 @@ C
 #include <dcbham.h>
       LOGICAL TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
-      DIMENSION IQBF(4),IC(2),IE(2),ID(2)
+      DIMENSION IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
       CALL QENTER('MVOGEN')
 #include <memint.h>
@@ -2176,15 +2148,12 @@ C
         IE(I) = IORB(I) + NOCC(I) + NPSH(I) + 1
         ID(I) = ND
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &               NSSH(I),NSSH(I),
-     &               FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,
-     &               IPQTOQ(1,0),
-     &               DMAT(ID(I)),NSSH(I),NSSH(I),NBF,IQBF,
-     &               CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &               CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &               WORK(KFREE),LFREE,IPRMVO)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &                '*** WARNING *** MVOGEN: NBF.NE.NZ !'
+     &           NSSH(I),NSSH(I),
+     &           FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &           DMAT(ID(I)),NSSH(I),NSSH(I),NZ,IPQTOQ(1,0),
+     &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRMVO)
         IF (IPRMVO.GE.10 ) THEN
           WRITE(CTMP,'(I1)') I
           CALL HEADER('MVOGEN: Fock matrix in virtual MO-basis'//
@@ -2205,9 +2174,9 @@ C
      &             NSSH(I),WORK(KFREE),LFREE,IERR)
         CALL BCKTRA(DMAT(ID(I)),NFBAS(I,0),NSSH(I),
      &              FOCK(ID(I)),NSSH(I),NSSH(I),
-     &              NSSH(I),NZ,IPQTOQ(1,0),NSSH(I),1,NFBAS(I,0),
+     &              NSSH(I),NZ,NSSH(I),1,NFBAS(I,0),
      &              CMO(IC(I)),NFBAS(I,0),NORB(I),NZ,
-     &              IPQTOQ(1,0),IPRMVO)
+     &              IPRMVO)
         IF(IPRMVO.GE.2) THEN
           WRITE(LUPRI,'(A,A3)') 
      &     '* Virtual eigenvalues of ircop ',FREP(I)
@@ -2650,59 +2619,38 @@ C
           NORB2 = NORB(I)*NORB(I)
           CALL DZERO(FAO(1+I2ORBT(I)),NORB2*NZ)
 C
-          IF (NZ.EQ.4) THEN
-            DO J = 1, NORB(I)
-              IBEIG(IORB(I)+J) = I
-            ENDDO
-            IF(DOJACO) THEN
-              CALL RSJACO(NORB(I),NORB(I),NORB(I),FMO(I2ORBT(I)+1),
-     &                    EIG(IORB(I)+1),1,1,0,FAO(I2ORBT(I)+1),
+          NBRP  = 4/NZ
+          IBO = 0
+          DO ISYM = 1, NBRP
+          NBO = NBORB(ISYM,I,0)
+          IF(NBO.GT.0) THEN
+            IMAT = I2ORBT(I) + (NORB(I)+1)*IBO + 1
+            IEIG = IORB(I) + IBO + 1
+C
+C           Diagonalize the block of symmetry isym (and parity i)
+C
+            IF (DOJACO) THEN
+              CALL RSJACO(NORB(I),NBO,NBO,FMO(IMAT),
+     &                    EIG(IEIG),1,1,0,FAO(IMAT),
      &                    WORK(KFREE),LFREE)
             ELSE
-              CALL QDIAG(1,NORB(I),FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                   EIG(IORB(I)+1),1,FAO(I2ORBT(I)+1),NORB(I),
-     &                   NORB(I),WORK(KFREE),LFREE,IERR)
+              CALL QDIAG(1,NBO,FMO(IMAT),NORB(I),NORB(I),
+     &                   EIG(IEIG),1,FAO(IMAT),NORB(I),NORB(I),
+     &                   WORK(KFREE),LFREE,IERR)
             ENDIF
-          ELSE
-            NBRP = 4 / NZ
-            DO 20 ISYM = 1, NBRP
-              NBO = NBORB(ISYM,I,0)
-              IF (NBO.EQ.0) GOTO 20
-              NBO2 = NBO * NBO
-              CALL MEMGET('REAL',KFBOS,NBO2,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KVBOS,NBO2,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KEBOS,NBO ,WORK,KFREE,LFREE)
-C
-C             Extract the block of symmetry isym out of the full matrix
-C
-              CALL FBOSON (1,I,ISYM,WORK(KFBOS),NBO,
-     &                     FMO(I2ORBT(I)+1),NORB(I),
-     &                     WORK(KEBOS),EIG(IORB(I)+1))
-C
-C             Diagonalize the block of symmetry isym (and parity i)
-C
-              IF (DOJACO) THEN
-                CALL RSJACO(NBO,NBO,NBO,WORK(KFBOS),
-     &                      WORK(KEBOS),1,1,0,WORK(KVBOS),
-     &                      WORK(KFREE),LFREE)
-              ELSE
-                CALL QDIAG(1,NBO,WORK(KFBOS),NBO,NBO,
-     &                     WORK(KEBOS),1,WORK(KVBOS),NBO,
-     &                     NBO,WORK(KFREE),LFREE,IERR)
-              ENDIF
-C
-C             Copy the block of symmetry isym in to the full matrix
-C
-              CALL FBOSON (2,I,ISYM,WORK(KVBOS), NBO,
-     &                     FAO(I2ORBT(I)+1),NORB(I),
-     &                     WORK(KEBOS),EIG(IORB(I)+1))
-              CALL MEMREL('DFDIAG',WORK,KFBOS,KFBOS,KFREE,LFREE)
-  20        CONTINUE
+            IBO = IBO + NBORB(ISYM,I,0)
+          ENDIF
+          ENDDO
 C
 C           Sort the eigenvalues according to energy : keep track of
 C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
+          IF (NZ.EQ.4) THEN
+            DO J = 1, NORB(I)
+              IBEIG(IORB(I)+J) = I - 1
+            ENDDO
+          ELSE
             CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
             CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
@@ -3006,7 +2954,7 @@ C
 C
 C             Release the memory used for spinfree
 C
-              CALL MEMREL('DFDIAG',WORK,KFBOS,KFBOS,KFREE,LFREE)
+              Call MEMREL('DFDIAG',WORK,KFBOS,KFBOS,KFREE,LFREE)
   21        CONTINUE
 C
 C           Sort the eigenvalues according to energy : keep track of

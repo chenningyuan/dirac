@@ -2114,7 +2114,7 @@ C  /* Deck qtrans */
      &                  FMO,LRMO,LCMO,NZMO,IQMO,
      &                  TM1,LR1,LC1,NZTM1,IQTM1,
      &                  TM2,LR2,LC2,NZTM2,IQTM2,
-     &                  WORK,LWORK,IPRINT)
+     &                  BUF,LBUF,IPRINT)
 C*****************************************************************************
 C
 C     This routine performs unitary transformations indicated by TYP:
@@ -2155,11 +2155,10 @@ C
      &          FMO(LRMO,LCMO,*),IQMO(*),
      &          TM1(LR1,LC1,*),IQTM1(*),
      &          TM2(LR2,LC2,*),IQTM2(*),
-     &          WORK(LWORK)
+     &          BUF(LBUF)
       DIMENSION IQW(4)
 C
       CALL QENTER('QTRANS')
-#include <memint.h>
 C
 C     Add the results on to the contents of the MO matrix ?
 C
@@ -2198,8 +2197,12 @@ C           1. W  = FC
 C           2. F' = (C+)W
 C
           CALL IQPACK(IQAO,NZAO,IQTM2,NZTM2,IQW,NZW)
-          LWRK = NRAO*NCMO*NZW
-          CALL MEMGET('REAL',KWRK,LWRK,WORK,KFREE,LFREE)
+          NBUF = NRAO*NCMO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I6/A,I6)')
+     &   ' >>> READI1 error, need work space    ',NBUF,
+     &   '                   current work sapce ',LBUF
+          ENDIF
 C
 C         First part of transformation: W = FC
 C         ------------------------------------
@@ -2207,16 +2210,15 @@ C
           CALL QGEMM(NRAO,NCMO,NCAO,D1,
      &             'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
      &             'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &        D0,IQW,WORK(KWRK),NRAO,NCMO,NZW)
+     &        D0,IQW,BUF,NRAO,NCMO,NZW)
 C
 C         Second part of transformation: H = (C+)W
 C         ----------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
      &       'H',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
-     &       'N','N',IQW ,WORK(KWRK),NRAO,NCMO,NZW,
+     &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
-          CALL MEMREL('QTRANS.AOMO',WORK,KWORK,KWORK,KFREE,LFREE)
         ELSE
 C
 C         Perform the two steps:
@@ -2224,8 +2226,13 @@ C           1. W  = (C+)F
 C           2. F' = WC
 C
           CALL IQPACK(IQAO,NZAO,IQTM1,NZTM1,IQW,NZW)
-          LWRK = NRMO*NCAO*NZW
-          CALL MEMGET('REAL',KWRK,LWRK,WORK,KFREE,LFREE)
+          NBUF = NRMO*NCAO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I6/A,I6)')
+     &   ' >>> READI1 error, need work space    ',NBUF,
+     &   '                   current work sapce ',LBUF
+          ENDIF
+
 C
 C         First part of transformation: W = (C+)F
 C         ----------------------------------------
@@ -2233,16 +2240,15 @@ C
           CALL QGEMM(NRMO,NCAO,NRAO,D1,
      &       'H',TRA,IQTM1,TM1,LR1,LC1,NZTM1,
      &       'N','N',IQAO,FAO,LRAO,LCAO,NZAO,
-     &        D0,IQW,WORK(KWRK),NRMO,NCAO,NZW)
+     &        D0,IQW,BUF,NRMO,NCAO,NZW)
 C
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
           CALL QGEMM(NRMO,NCMO,NCAO,D1,
-     &       'N','N',IQW ,WORK(KWRK),NRMO,NCAO,NZW,
+     &       'N','N',IQW ,BUF,NRMO,NCAO,NZW,
      &       'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQMO,FMO ,LRMO,LCMO,NZMO)
-          CALL MEMREL('QTRANS.AOMO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
         ENDIF
 C        IF(IPRINT.GE.5) THEN
@@ -2261,42 +2267,48 @@ C       ------------------------------------------
 C
         IF(NCMO.GE.NRMO) THEN
           CALL IQPACK(IQMO,NZMO,IQTM2,NZTM2,IQW,NZW)
-          LWRK = NRMO*NCAO*NZW
-          CALL MEMGET('REAL',KWRK,LWRK,WORK,KFREE,LFREE)
+          NBUF = NRMO*NCAO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I6/A,I6)')
+     &   ' >>> READI1 error, need work space    ',NBUF,
+     &   '                   current work sapce ',LBUF
+          ENDIF
 C
 C         First part of transformation: W = F(C+)
 C
           CALL QGEMM(NRMO,NCAO,NCMO,D1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
-     &       D0,IQW,WORK(KWRK),NRMO,NCAO,NZW)
+     &       D0,IQW,BUF,NRMO,NCAO,NZW)
 C
 C         Second part of transformation: H = CW
 C
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
-     &       'N','N',IQW ,WORK(KWRK),NRMO,NCAO,NZW,
+     &       'N','N',IQW ,BUF,NRMO,NCAO,NZW,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
-          CALL MEMREL('QTRANS.MOAO',WORK,KWORK,KWORK,KFREE,LFREE)
         ELSE
           CALL IQPACK(IQMO,NZMO,IQTM1,NZTM1,IQW,NZW)
-          LWRK = NRAO*NCMO*NZW
-          CALL MEMGET('REAL',KWRK,LWRK,WORK,KFREE,LFREE)
+          NBUF = NRAO*NCMO*NZW
+          IF(NBUF.GT.LBUF) THEN
+             WRITE (LUPRI,'(/A,I6/A,I6)')
+     &   ' >>> READI1 error, need work space    ',NBUF,
+     &   '                   current work sapce ',LBUF
+          ENDIF
 C
 C         First part of transformation: W = CF
 C
           CALL QGEMM(NRAO,NCMO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
-     &       D0,IQW,WORK(KWRK),NRAO,NCMO,NZW)
+     &       D0,IQW,BUF,NRAO,NCMO,NZW)
 C
 C         Second part of transformation: H = CW
 C
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
-     &       'N','N',IQW ,WORK(KWRK),NRAO,NCMO,NZW,
+     &       'N','N',IQW ,BUF,NRAO,NCMO,NZW,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
-          CALL MEMREL('QTRANS.MOAO',WORK,KWORK,KWORK,KFREE,LFREE)
         ENDIF
 C       IF(IPRINT.GE.5) THEN
 C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
@@ -2755,4 +2767,178 @@ C
 C
       RETURN
 C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck bostra */
+      SUBROUTINE TBOSON(IFRP,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+C***********************************************************************
+C
+C     Perform AO->MO transformation only on blocks of a given
+C     boson irrep IBRP
+C
+C     Very useful for spinfree calculations
+C
+C     Written by T.Saue Aug 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dgroup.h>
+      DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
+C
+      NSYM = 4/NZ
+CTROND Nz can be taken away....
+      CALL DZERO(FMO(I2ORBT(IFRP)+1),N2ORB(IFRP)*NZ)
+      IBORB = 0
+      DO ISYM = 1,NSYM
+      IF(NBORB(ISYM,IFRP,0).GT.0) THEN
+        IAO = I2BASX(IFRP,IFRP)+1
+        IMO = I2ORBT(IFRP) + (NORB(IFRP)+1)*IBORB + 1
+        ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
+        CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &         NBORB(ISYM,IFRP,0),NBORB(ISYM,IFRP,0),
+     &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         FMO(IMO),NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,IPQTOQ(1,0),
+     &         BUF,LBUF,IPRINT)
+          IBORB = IBORB + NBORB(ISYM,IFRP,0)
+      ENDIF
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck MKSMOAO */
+      SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
+C****************************************************************************
+C     PURPOSE:
+C        Old: Construct half transformed overlap matrix, Smoao = Ct Sao
+C        New: Construct half transformed overlap matrix, Smoao = Sao C
+C
+C        Written by J. Thyssen
+C        Modified by T.Saue Aug 2000
+C        Last revision: Jan 2 1998
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+#include <dcbgen.h>
+#include <dcbdhf.h>
+#include <dcbbas.h>
+#include <dcbham.h>
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION SMOAO(*),TMAT(*),WORK(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('MKSMOAO')
+C
+      ISIZE = 0
+      DO I = 1,NFSYM
+         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
+      END DO
+      CALL DZERO(SMOAO,ISIZE)
+C
+C     Get AO overlap matrix
+C
+      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
+C
+      IOFF = 1
+      DO I = 1,NFSYM
+         IF ( NORB(I) .GT. 0 ) THEN
+            CALL QGEMM(NORB(I),NFBAS(I,0),NFBAS(I,0),D1,
+     &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
+     &         NFBAS(I,0),NORB(I),NZT,
+     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
+     &         NTBAS(0),NTBAS(0),1,
+     &         D0,IPQTOQ(1,0),SMOAO(IOFF),
+     &         NORB(I),NFBAS(I,0),NZ)
+C
+            IF ( IPRINT .GE. 10 ) THEN
+               CALL HEADER('PREDHF: Left index transf. overlap'//
+     &            ' matrix Smoao',-1)
+               CALL PRQMAT(SMOAO(IOFF),NFBAS(I,0),NORB(I),
+     &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL FLSHFO(LUPRI)
+            END IF
+         END IF
+      IOFF = IOFF + NZ*NORB(I)*NFBAS(I,0)
+      END DO
+C
+      CALL MEMREL('SMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('MKSMOAO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck MKSAOMO */
+      SUBROUTINE MKSAOMO(SAOMO,TMAT,IPRINT,WORK,LWORK)
+C****************************************************************************
+C     PURPOSE:
+C        Construct half transformed overlap matrix, Saomo = Sao C
+C
+C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+#include <dcbgen.h>
+#include <dcbdhf.h>
+#include <dcbbas.h>
+#include <dcbham.h>
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION SAOMO(*),TMAT(*),WORK(*)
+C
+#include <memint.h>
+C
+      CALL QENTER('MKSAOMO')
+C
+      ISIZE = 0
+      DO I = 1,NFSYM
+         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
+      END DO
+      CALL DZERO(SAOMO,ISIZE)
+C
+C     Get AO overlap matrix
+C
+      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
+C
+      IOFF = 1
+      DO I = 1,NFSYM
+         IF ( NORB(I) .GT. 0 ) THEN
+            CALL QGEMM(NFBAS(I,0),NORB(I),NFBAS(I,0),D1,
+     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
+     &         NTBAS(0),NTBAS(0),1,
+     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
+     &         NFBAS(I,0),NORB(I),NZT,
+     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
+     &         NFBAS(I,0),NORB(I),NZ)
+C
+            IF ( IPRINT .GE. 10 ) THEN
+               CALL HEADER('PREDHF: Right index transf. overlap'//
+     &            ' matrix Smomo',-1)
+               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NORB(I),
+     &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL FLSHFO(LUPRI)
+            END IF
+         END IF
+      IOFF = IOFF + NZ*NFBAS(I,0)*NORB(I)
+      END DO
+C
+      CALL MEMREL('SAOMO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('MKSAOMO')
+      RETURN
       END

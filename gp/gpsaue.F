@@ -1660,10 +1660,11 @@ C                                                               C
 C***************************************************************C
       COMMON/FACTRL/DFACT(30)
 C
+#include <sdpre.h>
       DFACT(1)=D1
       DFACT(2)=D1
       DO 10 M=3,30
-      DFACT(M)=DFLOAT(M-2)*DFACT(M-2)
+      DFACT(M)=SDPRE(M-2)*DFACT(M-2)
 10    CONTINUE
       RETURN
       END

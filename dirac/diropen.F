@@ -32,7 +32,7 @@ C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKMOFK */
-      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SMOAO,DTEMP1,DTEMP2,
+      SUBROUTINE MKMOFK(FMO,FAO,DMAT,TMAT,CMO,SAOMO,DTEMP1,DTEMP2,
      &                  WORK,LWORK)
 C****************************************************************************
 C     PURPOSE:
@@ -48,17 +48,20 @@ C*****************************************************************************
      &            DM1 = -1.00D00, D2 = 2.00D00, DFTHR = 1.0D-12)
 #include <dcbgen.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
+      LOGICAL SPECIAL
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
-     &          DMAT(N2BBASXQ,NFMAT),SMOAO(*),WORK(*),IQBF(4)
+     &          DMAT(N2BBASXQ,NFMAT),SAOMO(*),WORK(*)
       CHARACTER CTMP*3
 C
 #include <memint.h>
 C
       CALL QENTER('MKMOFK')
+      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
 C
 C     One or more open shells that do NOT couple:
 C     -------------------------------------------
@@ -80,31 +83,30 @@ C     See paper by J. Thyssen
 C     (reference: manuscript)
 C     
 C     
-      DO I = 1,NFSYM
 C
 C        Transform FD to MO-basis
 C
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                     NORB(I),NORB(I),
-     &                     FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,
-     &                     IPQTOQ(1,0),
-     &                     FMO(I2ORBT(I)+1),NORB(I),NORB(I),NBF,IQBF,
-     &                     TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),
-     &                      NZT,IPQTOQ(1,0),
-     &                     TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),
-     &                      NZT,IPQTOQ(1,0),
-     &                     WORK(KFREE),LFREE,IPRSCF)
-            IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &                 '*** WARNING *** DFSOLV: NBF.NE.NZ !'
-            IF ( IPRSCF .GE. 10 ) THEN
-               WRITE(CTMP,'(I1)') I
-               CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
-     &                     ', corep '//CTMP,-1)
-               CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                           NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
-         END IF
+      DO I = 1,NFSYM
+      IF(NORB(I).GT.0) THEN
+        IF(SPECIAL) THEN
+          CALL TBOSON(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
+        ELSE           
+          CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &            NORB(I),NORB(I),
+     &            FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &            FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            TMAT(1+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &            WORK(KFREE),LFREE,IPRSCF)
+        ENDIF
+        IF(IPRSCF.GE.10) THEN
+           WRITE(CTMP,'(I1)') I
+           CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
+     &                 ', corep '//CTMP,-1)
+           CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
+     &                 NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        END IF
+      END IF
       END DO
 C
 C     If not .trivec. then we don't have coefficients to form a density 
@@ -151,7 +153,7 @@ C
          CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
 C
 C
-         IOFFSMOAO = 1
+         IOFFSAOMO = 1
          DO 20 I = 1,NFSYM
 C
             IF (NACSH(I,IOPEN).GT.0) THEN
@@ -284,25 +286,16 @@ C
      &               NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
                END IF
 C
-C              Transform with halftransformed Smoao from left and right
-C              Please note I'm using the MOAO transformation type, since I want
-C              to perform Smoao * A * Smoao(t), and since Smoao = Ct Sao
-C              this is equivalent to Ct Sao A Sao C which is precisely
-C              what I want.
+C              Transform with halftransformed Saomo from left and right
 C              Store the result in DTEMP1(1,1)
 C
-               CALL QTRANS('MOAO','S',D0,
-     &            NORB(I),NORB(I),NFBAS(I,0),NFBAS(I,0),
-     &            DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NBF,IQBF,
-     &            DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,
-     &            IPQTOQ(1,0),
-     &            SMOAO(IOFFSMOAO),NORB(I),NFBAS(I,0),
-     &            NZT,IPQTOQ(1,0),
-     &            SMOAO(IOFFSMOAO),NORB(I),NFBAS(I,0),
-     &            NZT,IPQTOQ(1,0),
-     &            WORK(KFREE),LFREE,IPRSCF)
-               IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &            '*** WARNING *** DFSOLV: NBF.NE.NZ !'
+               CALL QTRANS('AOMO','S',D0,
+     &           NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &           DTEMP2(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &           DTEMP1(1+I2ORBT(I),1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           SAOMO(IOFFSAOMO),NFBAS(I,0),NORB(I),NZT,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRSCF)
                IF ( IPRSCF .GE. 15 ) THEN
                   WRITE(CTMP,'(I1)') I
                   CALL HEADER('DFSOLV: Correction matrix in MO-basis'//
@@ -338,77 +331,12 @@ C
      &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                END IF
             END IF
-            IOFFSMOAO = IOFFSMOAO + NZ*NORB(I)*NFBAS(I,0)
+            IOFFSAOMO = IOFFSAOMO + NZ*NORB(I)*NFBAS(I,0)
  20      CONTINUE
  10   CONTINUE
 C
  30   CONTINUE
       CALL QEXIT('MKMOFK')
       CALL FLSHFO(LUPRI)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck MKSMOAO */
-      SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
-C****************************************************************************
-C     PURPOSE:
-C        Construct half transformed overlap matrix, Smoao = Ct Sao
-C
-C        Written by J. Thyssen
-C        Last revision: Jan 2 1998
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-C
-      DIMENSION SMOAO(*),TMAT(*),WORK(*)
-C
-#include <memint.h>
-C
-      CALL QENTER('MKSMOAO')
-C
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
-      END DO
-      CALL DZERO(SMOAO,ISIZE)
-C
-C     Get AO overlap matrix
-C
-      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
-C
-      IOFF = 1
-      DO I = 1,NFSYM
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QGEMM(NORB(I),NFBAS(I,0),NFBAS(I,0),D1,
-     &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NORB(I),NZT,
-     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
-     &         NTBAS(0),NTBAS(0),1,
-     &         D0,IPQTOQ(1,0),SMOAO(IOFF),
-     &         NORB(I),NFBAS(I,0),NZ)
-C
-            IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Left index transf. overlap'//
-     &            ' matrix Smoao',-1)
-               CALL PRQMAT(SMOAO(IOFF),NORB(I),NFBAS(I,0),
-     &            NORB(I),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
-               CALL FLSHFO(LUPRI)
-            END IF
-         END IF
-      IOFF = IOFF + NZ*NORB(I)*NFBAS(I,0)
-      END DO
-C
-      CALL MEMREL('SMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('MKSMOAO')
       RETURN
       END

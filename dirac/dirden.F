@@ -87,7 +87,6 @@ C*****************************************************************************
 #include <priunit.h>
       DIMENSION DVAO(*),CMO(*),DV(*)
       DIMENSION WORK(LWORK)
-      DIMENSION IQBF(4)
       PARAMETER ( D1 = 1.0 D00, D0 = 0.0 D00 )
 #include <dgroup.h>
 #include <dcbbas.h>
@@ -141,23 +140,16 @@ C
          END IF
       END DO
 C
-      NZA = NZ
-      NZB = NZ
-      NZC = NZ
-      NZD = NZ
       DO I = 1,NFSYM
          IADR1 = KTEMP + I2ORBT(I)
          IF ( NASH(I) .GT. 0 ) THEN
             CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &               NORB(I),NORB(I),
      &               DVAO(1+I2BASX(I,I)),NTBAS(0),NTBAS(0),
-     &               NZA,IQBF,
-     &               WORK(IADR1),NORB(I),NORB(I),
-     &               NZB,IPQTOQ(1,0),
-     &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZC,
-     &               IPQTOQ(1,0),
-     &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZD,
-     &               IPQTOQ(1,0),
+     &                   NZ,IPQTOQ(1,0),
+     &               WORK(IADR1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
+     &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &               CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &               WORK(KFREE),LFREE,IPRINT)
          END IF
       END DO

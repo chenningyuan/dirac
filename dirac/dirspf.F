@@ -143,30 +143,20 @@ C
 C     We have no information about the print level : make IPRINT zero
 C
       IPRINT = 0
+      ISIZE = 0
+      DO I = 1,NFSYM
+         ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
+      END DO
+      CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
 C
 C     Get transformation matrix S(-1/2) to go to the orthogonal MO-basis
 C
-      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'DFTMAT','OLD','PREDHF')
-      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
-      CLOSE(LUTMAT,STATUS='KEEP')
+      CALL READT(LUTMAT,N2TMT,WORK(KBUF))
 C
-C     Transform the Fock matrix to MO-basis
+C     Transform the Fock matrix to spinfree MO-basis 
 C
-      CALL MKMOFK2(FMO,FAO,WORK(KTMAT),WORK(KFREE),LFREE)
-C
-C     Make the Fock matrix spinfree
-C
-      IF (IPRINT .GE. 6 ) THEN
-       DO I = 1, NFSYM
-         CALL HEADER('Fock matrix in orth. basis with spin-orbit',-1)
-         CALL PRQMAT(FMO(1+I2ORBT(I)),NORB(I),NORB(I),
-     &               NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-       ENDDO
-      END IF
-C
-      CALL SPFSCF(FMO,WORK(KFREE),LFREE)
-C
+      CALL MKMOFK2(FMO,FAO,WORK(KBUF),WORK(KFREE),LFREE)
       IF (IPRINT .GE. 3 ) THEN
        DO I = 1, NFSYM
          CALL HEADER('Fock matrix in orth. basis without spin-orbit',-1)
@@ -177,12 +167,8 @@ C
 C
 C     Get transformation matrix S(+1/2) to go back to AO-basis
 C
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NORB(I)*NFBAS(I,0)
-      END DO
-      CALL MEMGET('REAL',KSAOMO,ISIZE,WORK,KFREE,LFREE)
-      CALL MKSAOMO(WORK(KSAOMO),WORK(KTMAT),IPRINT,WORK(KFREE),LFREE)
+      CALL READT(LUTMAT,ISIZE,WORK(KBUF))
+      CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Tranform back to AO-basis
 C
@@ -193,80 +179,16 @@ C
      &            IPQTOQ(1,0),
      &            FMO(1+I2ORBT(I)),NORB(I),NORB(I),NZ,
      &            IPQTOQ(1,0),
-     &            WORK(KSAOMO+I2TMT(I)),NFBAS(I,0),NORB(I),
+     &            WORK(KBUF+I2TMT(I)),NFBAS(I,0),NORB(I),
      &            NZT,IPQTOQ(1,0),
-     &            WORK(KSAOMO+I2TMT(I)),NFBAS(I,0),NORB(I),
+     &            WORK(KBUF+I2TMT(I)),NFBAS(I,0),NORB(I),
      &            NZT,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRINT)
       ENDDO
 C
-      CALL MEMREL('KTMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('SPFAO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('SPFAO')
 C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck MKSAOMO */
-      SUBROUTINE MKSAOMO(SAOMO,TMAT,IPRINT,WORK,LWORK)
-C****************************************************************************
-C     PURPOSE:
-C        Construct half transformed overlap matrix, Saomo = Sao C
-C
-C        Written by L. Visscher (based on MKSMOAO by J. Thyssen).
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-#include <dcbgen.h>
-#include <dcbdhf.h>
-#include <dcbbas.h>
-#include <dcbham.h>
-#include <dcborb.h>
-#include <dgroup.h>
-C
-      DIMENSION SAOMO(*),TMAT(*),WORK(*)
-C
-#include <memint.h>
-C
-      CALL QENTER('MKSAOMO')
-C
-      ISIZE = 0
-      DO I = 1,NFSYM
-         ISIZE = ISIZE + NZ*NFBAS(I,0)*NORB(I)
-      END DO
-      CALL DZERO(SAOMO,ISIZE)
-C
-C     Get AO overlap matrix
-C
-      CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSAO),SSMTRC,WORK(KFREE),LFREE)
-C
-      IOFF = 1
-      DO I = 1,NFSYM
-         IF ( NORB(I) .GT. 0 ) THEN
-            CALL QGEMM(NFBAS(I,0),NORB(I),NFBAS(I,0),D1,
-     &         'N','N',IPQTOQ(1,0),WORK(KSAO+I2BASX(I,I)),
-     &         NTBAS(0),NTBAS(0),1,
-     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
-     &         NFBAS(I,0),NORB(I),NZT,
-     &         D0,IPQTOQ(1,0),SAOMO(IOFF),
-     &         NFBAS(I,0),NORB(I),NZ)
-C
-            IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Right index transf. overlap'//
-     &            ' matrix Smomo',-1)
-               CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NORB(I),
-     &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               CALL FLSHFO(LUPRI)
-            END IF
-         END IF
-      IOFF = IOFF + NZ*NFBAS(I,0)*NORB(I)
-      END DO
-C
-      CALL MEMREL('SAOMO',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('MKSAOMO')
       RETURN
       END

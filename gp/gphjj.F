@@ -1225,8 +1225,12 @@ C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
 #include <implicit.h>
       DIMENSION X(N)
-      READ (IT) X
+      READ (IT,END=10,ERR=20) X
       RETURN
+ 10   CONTINUE
+      CALL QUIT('READT: END reading file')
+ 20   CONTINUE
+      CALL QUIT('READT: Error reading file')
       END
 C  /* Deck writi */
       SUBROUTINE WRITI (IT,N,INTX)

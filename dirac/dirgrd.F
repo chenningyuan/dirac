@@ -998,7 +998,6 @@ C
 C
       DIMENSION FOCK(*),CMO(*),WORK(*)
       DIMENSION DTMP2(N2BBASX,NZ,*),DMAT(*),DTMP1(N2BBASXQ)
-      DIMENSION IQBF(4)
       LOGICAL   TOBE
 C
       IFULL(I,J)     = I + (J-1) * NTBAS(0)
@@ -1016,9 +1015,6 @@ C     ===========
 C
 C
       CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDTMP3,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMOAO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KFMO),N2BBASXQ)
 C
 C     Get AO Fock matrices
@@ -1062,16 +1058,14 @@ C
          DO 10 I = 1,NFSYM
             IF (NASH(I).EQ.0) GOTO 10
             CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                  NORB(I),NORB(I),
-     &                  DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                  NZ,IPQTOQ(1,0),
-     &                  DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                  NZA,IQBF,
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,IPRINT)
+     &                NORB(I),NORB(I),
+     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),
+     &                DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
+     &                NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRINT)
             IF (IPRINT.GE.10) THEN
                WRITE(LUPRI,*) 'FC in MO-basis, corep ',I
                CALL PRQMAT(DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
@@ -1097,16 +1091,14 @@ C
          DO 20 I = 1,NFSYM
             IF (NISH(I).EQ.0) GOTO 20
             CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                  NORB(I),NORB(I),
-     &                  DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                  NZ,IPQTOQ(1,0),
-     &                  DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                  NZA,IQBF,
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,IPRINT)
+     &                NORB(I),NORB(I),
+     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),
+     &                DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
+     &                NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRINT)
             IF (IPRINT.GE.10) THEN
                WRITE(LUPRI,*) 'FD in MO-basis, corep ',I
                CALL PRQMAT(DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
@@ -1135,16 +1127,14 @@ C
          IF (NORB(I) .NE. 0) THEN
             NZA = NZ
             CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                  NORB(I),NORB(I),
-     &                  DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                  NZA,IQBF,
-     &                  WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
-     &                  NZ,IPQTOQ(1,0),
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,
-     &                  IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,IPRINT)
+     &                NORB(I),NORB(I),
+     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),
+     &                WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
+     &                NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,IPRINT)
          END IF
       END DO
 C

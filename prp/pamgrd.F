@@ -387,7 +387,7 @@ C
       LOGICAL FIRST(*)
       DIMENSION PRPMO(N2ORBX,NZ),CMO(*),IMO(*),NMO(*),PRPAO(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
-     &          WORK(*),IQBF(4)
+     &          WORK(*)
 C
       CALL QENTER('PRPMA1')
 C
@@ -432,12 +432,10 @@ C
      &           NFBAS(I1,0),NFBAS(I2,0),NMO(I1),NMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NBF,IQBF,
+     &           PRPMO(I2ORBX(I1,I2)+1,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
      &           CMO(IMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           CMO(IMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** PRPMA1: NBF.NE.NZ !'
       ENDDO
 C
 C     Print section

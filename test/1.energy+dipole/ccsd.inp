@@ -16,7 +16,7 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 *TWOINT
 .SOFOCK
 .SCREEN
-1.0D-11
+1.0D-12
 **WAVE FUNCTIONS
 .DHF
 .RELCCSD

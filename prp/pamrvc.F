@@ -808,7 +808,6 @@ C
 #include <dcbxrs.h>
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ),WORK(*)
-      DIMENSION IQBF(4)
       LOGICAL   LBIT
 C
       EXTERNAL BDQALGEBRA
@@ -864,15 +863,15 @@ C
 C          Generate modified density matrix as transformation MO to AO
 C
            IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
-            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+            CALL QTRANS('MOAO','S',D0,
+     &                  NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
-     &                     NBF,IQBF,
-     &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &                  NZ,IPQTOQ(1,IREP),
+     &                  BMAT(IS,II,1),NORBT,NORBT,
+     &                  NZ,IPQTOQ(1,IREP),
      &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                  WORK(KFREE),LFREE,IPRXRS)
-             IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &          '*** WARNING *** DMOLI3: NBF.NE.NZ !'
 C
          ELSE
 C
@@ -887,15 +886,14 @@ C
 C          Generate modified density matrix as transformation MO to AO
 C
            IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
-            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+            CALL QTRANS('MOAO','S',D0,
+     &                  NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
-     &                     NBF,IQBF,
+     &                  NZ,IPQTOQ(1,IREP),
      &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
-     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
-     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),
+     &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,IREP),
      &                  WORK(KFREE),LFREE,IPRXRS)
-             IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &          '*** WARNING *** DMOLI3: NBF.NE.NZ !'
 C
 C
          END IF
@@ -1376,7 +1374,7 @@ C
 #include <dgroup.h>
       LOGICAL EPMIX,LBIT
       DIMENSION FMO(NORBT,NORBT,NZ),CMO(*),
-     &          FAO(N2BBASXQ),WORK(*),IQBF(4)
+     &          FAO(N2BBASXQ),WORK(*)
 C
 C
 C     Transform only blocks of right symmetry combination
@@ -1436,15 +1434,14 @@ c        NI = NESH(I2)
          JI = ICMOQ(I2) + NPSH(I2) * NFBAS(I2,0) + 1
 C
         IF(NS.NE.0.AND.NI.NE.0) THEN
-          CALL QTRANS('AOMO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+          CALL QTRANS('AOMO','S',D0,
+     &                NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &                IPQTOQ(1,IREP),
-     &                FMO(IS,II,1),NORBT,NORBT,NBF,IQBF,
+     &                FMO(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
      &                CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRXRS)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** GMOLI3: NBF.NE.NZ !'
         ENDIF
 C
 C       Transform other block as well, 
@@ -1473,10 +1470,11 @@ C
           JS = ICMOQ(I1) + NPSH(I1)*NFBAS(I1,0) + 1
         ENDIF
           IF(NS.NE.0.AND.NI.NE.0) THEN
-            CALL QTRANS('AOMO','S',D0,NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+            CALL QTRANS('AOMO','S',D0,
+     &                NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &                IPQTOQ(1,IREP),
-     &                FMO(IS,II,1),NORBT,NORBT,NBF,IQBF,
+     &                FMO(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
      &                CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                WORK(KFREE),LFREE,IPRXRS)
@@ -1943,7 +1941,7 @@ C
 C
 C
          J  = IBPVC(I+IPOFF) - ITOFF
-         IF (IPRINT .GE. 20) THEN
+         IF (IPRXRS .GE. 20) THEN
              WRITE(LUPRI,'(A,I2)') 'XRSTEP: contribution to J = ',J
              WRITE(LUPRI,'(I5,3X,1P,E18.10)')
      &         (K,WORK(KOP+K-1), K = 1,NZXOPP)

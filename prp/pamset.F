@@ -430,7 +430,7 @@ C
 #include <cbihr2.h>
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
-      DIMENSION FMO(*),FAO(*),CMO(*),WORK(*),IQBF(4)
+      DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
 C
       CALL QENTER('GETFC1')
       LUBUF = 22
@@ -551,15 +551,13 @@ C
          CALL DZERO(FMO(1+IOFF_MO),N2ORBXQ)
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
-     &              FAO(I2BASX(I,I)+1+IOFF_AO),NTBAS(0),NTBAS(0),NZ,
-     &              IPQTOQ(1,0),
-     &              FMO(I2ORBX(I,I)+1+IOFF_MO),NORBT,NORBT,NBF,IQBF,
-     &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &              WORK(KFREE),LFREE,IPRINT)
-        IF(NBF.NE.NZ) WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** GETFC1: NBF.NE.NZ !'
+        CALL QTRANS('AOMO','S',D0,
+     &      NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &      FAO(I2BASX(I,I)+1+IOFF_AO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &      FMO(I2ORBX(I,I)+1+IOFF_MO),NORBT,NORBT,NZ,IPQTOQ(1,0),
+     &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      WORK(KFREE),LFREE,IPRINT)
  10   CONTINUE
          IOFF_MO = IOFF_MO + N2ORBXQ
          IOFF_AO = IOFF_AO + N2BBASXQ

@@ -1065,16 +1065,16 @@ C
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
      &          KE(2,2),KQ(2,2),AMAT(NREF,NREF,NZ),
      &          BVEC(NREF,NMOL,NZ),SMAT(*),GVEC(*),WORK(*)
-      DIMENSION IQBF(4)
 C
       KFRSAV = KFREE
       DOPOP = NREFS.GT.1
 C
 C     Make projection vector
 C
-      CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),NREF,NMOL,
+      CALL QTRANS('AOMO','S',D0,
+     &            NFBAS(IFRP,0),NFBAS(IFRP,0),NREF,NMOL,
      &            SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),
-     &            BVEC,NREF,NMOL,NBF,IQBF,
+     &            BVEC,NREF,NMOL,NZ,IPQTOQ(1,0),
      &            WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NREF,NZ,IPQTOQ(1,0),
      &            WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NMOL,NZ,IPQTOQ(1,0),
      &            WORK(KFREE),LFREE,IPRPRJ)
@@ -1095,7 +1095,7 @@ C
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &           NREF,NREF,
      &           SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),
-     &           AMAT,NREF,NREF,NBF,IQBF,
+     &           AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
      &           WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NREF,NZ,IPQTOQ(1,0),
      &           WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NREF,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRPRJ)

@@ -409,22 +409,9 @@ C
       N2PSHT = 0
       NCMOT  = 0
       NCAOT  = 0
-      N2TMT  = 0
       DO 100 IFRP = 1,NFSYM
         IORB(IFRP)  = NORBT
         IASH(IFRP)  = NASHT
-        NESH(IFRP)  = NFORB(IFRP,1)
-        IF(URKBAL) THEN
-          NZT         = 1
-          NPSH(IFRP)  = NFORB(IFRP,2)
-        ELSEIF(VEXTPJ.OR.FREEPJ.OR.LEVYLE) THEN
-          NZT         = NZ
-          NPSH(IFRP)  = 0
-        ELSE
-          NZT         = NZ
-          NPSH(IFRP)  = MIN(NFORB(IFRP,1),NFORB(IFRP,2))
-        ENDIF
-        NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
         N2ORB(IFRP) = NORB(IFRP)*NORB(IFRP)
         NORBT       = NORBT  + NORB(IFRP)
         I2ORBT(IFRP)= N2ORBT*NZ
@@ -455,8 +442,6 @@ C
         NCMO(IFRP)  = NFBAS(IFRP,0)*NORB(IFRP)
         NCMOQ(IFRP) = NCMO(IFRP)*NZ
         NCMOT       = NCMOT + NCMO(IFRP)
-        I2TMT(IFRP) = N2TMT
-        N2TMT       = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
   100 CONTINUE
       N2ORBTQ = N2ORBT*NZ
       NCMOTQ  = NCMOT*NZ

@@ -32,7 +32,7 @@ Fluorine atom.
 .MAXITR
 25
 .EVCCNV
-1.0E-8
+5.0E-7
 .CNVINT
 0.01 0.0001
 **MOLTRA
