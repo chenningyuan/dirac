@@ -147,7 +147,8 @@ setup_command()
       DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/rsp -I $SRC_DIR/dirac/open "
       DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/gp -I $SRC_DIR/pdpack "
       DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/eri -I $SRC_DIR/dirac/main $DIRAC"
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/eri -I $SRC_DIR/dirac/main "
+      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
    fi
 }
 #
