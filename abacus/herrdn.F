@@ -6942,6 +6942,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "infpar.h"
 C
       PARAMETER ( ALPTHR = 1.0D-3 )
 C
@@ -6977,7 +6978,7 @@ C
   100 CONTINUE
       END DO
       IF ((JSEND-JSBEG) .NE. NUC_IBS) THEN
-         WRITE(LUPRI,'(A,I3,A,I3)')
+         IF (.NOT.PARHER) WRITE(LUPRI,'(A,I3,A,I3)')
      &   ' INFO: GENSML deleted',(JSEND-JSBEG) - NUC_IBS,
      &   ' small functions in a block out of',(JSEND-JSBEG)
       END IF
