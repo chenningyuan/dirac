@@ -98,7 +98,7 @@ C
 C     Printout of the result
 C     ======================
 C
-      CALL TPA_PRINT(RES_LR,RES_TPA,WORK(KFRRE),LFREE)
+      CALL TPA_PRINT(RES_LR,RES_TPA,WORK(KFREE),LFREE)
 C
       CALL QEXIT('PRPTPA')
       RETURN
