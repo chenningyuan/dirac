@@ -200,7 +200,7 @@ done
 #
 #
 echo
-echo '   Configuring the DIRAC Makefile.config and dhf run script'
+echo '   Configuring the DIRAC Makefile.config and pam run script'
 echo
 echo '   configure $Revision$'
 #
@@ -760,12 +760,8 @@ if [ -z "$worksp" ]; then
       else
          worksp=
       fi
-      if [ $guess = 0 ]; then
-         $echo 'Default scratch space in script ['$worksp'] \c'
-         read answer
-      else
-         answer=
-      fi
+      $echo 'Default scratch space in script ['$worksp'] \c'
+      read answer
       if [ ! -z "$answer" ]; then
          worksp=$answer
       fi
@@ -1390,11 +1386,11 @@ EOF
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-# Make dhf shell script
+# Make pam shell script
 #
 #
-$echo 'Copying dhf shell script to '$INSTALL_DIR' : \c'
-cat <<EOF > $INSTALL_DIR/dhf
+$echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
+cat <<EOF > $INSTALL_DIR/pam
 #!/bin/ksh
 #
 QUEUESYS=$queuesys
@@ -1402,8 +1398,8 @@ SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
 EOF
-cat ./dhf.in >> $INSTALL_DIR/dhf
-chmod a+rx $INSTALL_DIR/dhf
+cat ./pam.in >> $INSTALL_DIR/pam
+chmod a+rx $INSTALL_DIR/pam
 echo "ok"
 echo
 #
@@ -1464,6 +1460,9 @@ if [ $SPFFLG != 0 ]; then
 fi
 if [ $CIFLG != 0 ]; then
    dirs="$dirs dirrci"
+fi
+if [ $GEOFLG != 0 ]; then
+   dirs="$dirs dirac/geom"
 fi
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
