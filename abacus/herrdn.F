@@ -514,7 +514,6 @@ C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -749,7 +748,6 @@ C               MAXOPR - maximum number of operations to loop over
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -810,7 +808,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "mxorb.h"
@@ -1468,7 +1465,6 @@ C*****************************************************************************
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -1642,7 +1638,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -2568,7 +2563,6 @@ C
 C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -2695,7 +2689,6 @@ C  /* Deck orbout */
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -2895,7 +2888,6 @@ C
 C******************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -5576,7 +5568,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "pi.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)
@@ -6259,7 +6250,7 @@ C
                 IBJCO=1+(NUC(IBD,1)-1)/MAXS
                 JSEND = 0
                 DO JBLCK=1, IBJCO
-	          JSBEG = JSEND
+                  JSBEG = JSEND
                   IBS = IBS + 1
                   IF (JBLCK*MAXS.LE.NUC(IBD,1)) THEN
                     JSEND = JSEND + MAXS
