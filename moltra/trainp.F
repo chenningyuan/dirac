@@ -696,7 +696,7 @@ C
       WRITE(LUPRI,'(/1X,A)') 
      &   '* Set-up for 4-index transformation'
       WRITE(LUPRI,'(1X,A,I3)') '* Following scheme      : ',ISTRTRA
-      GOTO (501,502,503,504) ISTRTA
+      GOTO (501,502,503,504) ISTRTRA
   501 CONTINUE
         WRITE(LUPRI,'(A)')
      &    ' - all half-transformed integrals (ij|rs) kept in core'
