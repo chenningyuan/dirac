@@ -670,7 +670,7 @@ initialize()
 #  1) job directory
 #  2) basis set directory in Dirac distribution
 
-   BASDIR="$LOC/:$SRC_DIR/basis/"
+   BASDIR="$LOC/:$BASDIR"
 }
 #
 #

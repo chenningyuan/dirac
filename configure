@@ -1607,6 +1607,7 @@ cat <<EOF>> $INSTALL_DIR/pam
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
+BASDIR=`pwd`/basis/:`pwd`/basis_dalton/
 MPIRUN=$mpirun
 MACH_FILE=$mach_file
 LOCALDISKS=$localdisks
