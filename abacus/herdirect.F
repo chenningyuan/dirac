@@ -2,8 +2,8 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
@@ -461,7 +461,7 @@ C
 #include "aovec.h"
       LOGICAL USEERI, LDUMMY
 C
-      DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
+      DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*),
      &          WORK(*)
 C
 C Used from common blocks:
@@ -483,10 +483,10 @@ C
 C
 C     The new ERI routines haven't been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
-C     USEERI is a temporary flag to check if we actually can in the present 
+C     USEERI is a temporary flag to check if we actually can in the present
 C     passage.
 CNECgh980808: The construction of the Fock Matrix using the Temporary
-C matrices leads to huge bank conflicts in case of an even NBASIS. 
+C matrices leads to huge bank conflicts in case of an even NBASIS.
 C We therefore assure that the first dimension of FCKTMP is always odd.
 C Changes for eri: HERFCK (allocation), HRFCK2 (zero out and summing)
 C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
@@ -507,7 +507,7 @@ C
       ELSE
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
+            CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
             IPRTYP = 2
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
@@ -530,8 +530,8 @@ C
      &                 WORK(KFREE),LFREE)
          END IF
 #else
-         CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)           
-         CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)           
+         CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
 #if defined (VAR_VECTOR)
          CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
      &               WORK,KFREE,LFREE)
@@ -659,7 +659,7 @@ C
 C
 C     Transform density to AO basis
 C     Modified july-97, kr
-C     FMAT still empty, and we use this array to store DMAT in AO-basis 
+C     FMAT still empty, and we use this array to store DMAT in AO-basis
 C     temporarily
 C
       DO 200 IMAT = 1,NDMAT
@@ -672,11 +672,11 @@ C     Prepare for screening
 C     =====================
 C
       N2DRAO = NSYMBL*NSYMBL*NDMAT
-      N2GAB = NSYMBL*NSYMBL      
+      N2GAB = NSYMBL*NSYMBL
       CALL MEMGET('REAL',KGAB ,N2GAB, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDRAO,N2DRAO,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDSKP,8     ,WORK,KFREE,LFREE)
-C     
+C
 C     Get GAB-matrix (Cauchy-Schwartz)
 C
       CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
@@ -838,4 +838,3 @@ C
 C
       RETURN
       END
-

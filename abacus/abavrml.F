@@ -33,8 +33,8 @@ C$Id$
 C
 C#include "single.h"
 #ifdef UNDEF
-/* Comdeck log */
-960319-vebjornb: New module for visualization with VRML models.
+C Principal author of this module: Vebjoern Bakken
+C (960319-vebjornb: New module for visualization with VRML models.)
 #endif
 C  /* Deck mkvrml */
       SUBROUTINE MKVRML(LAST, ATMARR, IEDIM, EVEC, EVC1, EVC2)
@@ -1033,6 +1033,13 @@ C               2 - X coordinate of atom
 C               3 - Y coordinate of atom
 C               4 - Z coordinate of atom
 C               5 - Covalent radius
+C
+C      The remaining three elements are used for VRML and
+C      are not assigned in this routine
+C
+C               6 - X-component of normal mode vector
+C               7 - Y-component of normal mode vector
+C               8 - Z-component of normal mode vector
 C
       FAC = XTANG
       IF (BOHR) FAC = 1.0D0

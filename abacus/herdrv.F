@@ -369,17 +369,6 @@ C
 C
       CALL TITLER('Output from HERMIT input processing','*',118)
 C
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IRIX) && !defined (SYS_T3D) && !defined (SYS_HPUX) && !defined (SYS_SX)
-      IF(RELCAL) THEN
-        OPEN (UNIT=LUCMD,NAME='DIRAC.INP',STATUS='OLD',ERR=9000)
-      ELSE
-        OPEN (UNIT=LUCMD,NAME='DALTON.INP',STATUS='OLD',ERR=9000)
-      ENDIF
-#endif
-#if defined (SYS_VAX)
-      OPEN (UNIT=LUCMD,STATUS='OLD',SHARED,ERR=9000)
-#endif
-C
 C     **** Find Hermit input *****
 C
       REWIND (LUCMD,IOSTAT=IOS)
@@ -800,34 +789,34 @@ C&&& Nuclear model
       END IF
  199  CONTINUE
       NMRISS = FERMI .OR. PSO .OR. SPIDIP .OR. DSO .OR. SDFC
-      WRITE (LUPRI,'(//,A,I5,/)') ' Default print level:    ',IPRDEF
-      IF (TSTINP) WRITE (LUPRI,'(/,A,/)') ' Input test run only '
+      WRITE (LUPRI,'(//A,I5/)') ' Default print level:    ',IPRDEF
+      IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only '
       IF(GAUNUC) THEN
-        WRITE(LUPRI,'(1X,A,A)') '* Nuclear model: ',
+        WRITE(LUPRI,'(A)') ' * Nuclear model: '//
      &    'Gaussian charge distribution.'
       ELSE
-        WRITE(LUPRI,'(1X,A)') '* Nuclear model: Point charge'
+        WRITE(LUPRI,'(A)') ' * Nuclear model: Point charge.'
       ENDIF
       IF (SPNORB .AND. SOTEST) THEN
-         WRITE (LUPRI,'(/,A,/)')
+         WRITE (LUPRI,'(/A/)')
      *    ' Error in input: .SPIN-ORBIT and .SOTEST cannot '/
      *    /'both be specified.'
           CALL QUIT('Error in HERMIT input.')
       END IF
       IF (HAMILT) THEN
           IF (NOTWO) THEN
-             WRITE (LUPRI,'(/,A,/)')
+             WRITE (LUPRI,'(/A/)')
      &          ' Calculation of one-electron Hamiltonian integrals.'
           ELSE
-             WRITE (LUPRI,'(/,A,/)')
+             WRITE (LUPRI,'(/A/)')
      &    ' Calculation of one- and two-electron Hamiltonian integrals.'
           END IF
       ELSE
-         IF (NOTWO) WRITE (LUPRI,'(/,A,/)')
+         IF (NOTWO) WRITE (LUPRI,'(/A/)')
      &          ' Two-electron integrals not calculated.'
       END IF
       IF (ONEPRP) THEN
-         WRITE (LUPRI,'(/,A,/)')
+         WRITE (LUPRI,'(/A/)')
      &  ' The following one-electron property integrals are calculated:'
                      WRITE (LUPRI,'(10X,A)') '- overlap integrals'
          IF (DIPLEN) WRITE (LUPRI,'(10X,A)') '- dipole length integrals'
@@ -1469,9 +1458,9 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
      &           '---> WARNING : Screening turned off !'
               ENDIF
             ENDIF
-            IF(RELCAL) THEN
-              WRITE(LUPRI,'(1X,A,2(/3X,A,E9.3))')
-     +           '* Threshold factors for integrals:',
+            IF(RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
+              WRITE(LUPRI,'(1X,A,2(/3X,A,1P,D9.3))')
+     +           '* Threshold factors for omitting integrals:',
      +           'SL-integrals: ',THRFAC(1),
      +           'SS-integrals: ',THRFAC(2)
             ENDIF
