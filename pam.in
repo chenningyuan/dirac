@@ -13,7 +13,7 @@ set argv_save = "$argv"
 if ( "	" == "`echo '\t'`" ) then
    set _echo = echo
 else
-   set _echo = echo -c
+   set _echo = 'echo -e'
 endif
 #
 # Print usage
