@@ -1248,7 +1248,7 @@ C
         MXFORM(1:1) = 'F'
         NDEC = NDIG - NDEC - 3
       ENDIF
-      IF(NDEC.LE.0) STOP 'MXFORM: NDEC.LE.0'
+      IF(NDEC.LE.0) CALL QUIT('MXFORM: NDEC.LE.0')
       IF(NDIG.LT.10) THEN
         IDIG = ICHAR('0') + NDIG
         MXFORM(2:2) = CHAR(IDIG)
@@ -1548,7 +1548,7 @@ C                                                                C
 C****************************************************************C
       IF(X.LT.D0.OR.A.LE.D0) THEN
          GAMMP=D0
-         STOP 'Negative A or X..'
+         CALL QUIT('GAMMP: Negative A or X..')
       ELSEIF(X.LT.A+D1) THEN
          CALL GSER(GAMMP,A,X,GLN)
       ELSE
@@ -1579,7 +1579,7 @@ C******************************************************************C
         SUM=SUM+DEL
         IF(ABS(DEL).LT.ABS(SUM)*EPS)GO TO 1
 11    CONTINUE
-      STOP 'ITMAX Too Small'
+      CALL QUIT('GSER: ITMAX Too Small')
 C
 1     GAMSER=SUM*EXP(-X+A*LOG(X)-GLN)
       RETURN
@@ -1614,7 +1614,7 @@ C*******************************************************************C
           GOLD=G
         ENDIF
 11    CONTINUE
-      STOP 'ITMAX Too Small'
+      CALL QUIT('GCF: ITMAX Too Small')
 C
 1     GAMMCF=EXP(-X+A*LOG(X)-GLN)*G
       RETURN
@@ -1867,7 +1867,7 @@ COLD      DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       DATA C1,C2,C3,C4,C5,C6/1.D-15,1.D-15,1.D-20,1.D-14,1.D-9,1.D-5/
       IF (NB.LE.1 .OR. NMAX.LE.0) RETURN
 Cwas: IF (NB.EQ.1) RETURN !900727-hjaaj
-      IF(LDM.LT.NROWV) STOP 'JACO2: LDM.LT.NROWV'
+      IF(LDM.LT.NROWV) CALL QUIT('JACO2: LDM.LT.NROWV')
       DO 190 I=1,NB
          JBIGI=0
          J=MIN(I-1,NMAX)
@@ -1916,7 +1916,7 @@ C
       ITJACO = 0
   410 ITJACO = ITJACO + 1
       IF (ITJACO .GT. MXITJA) THEN
-         STOP 'ERROR: JACO did not converge ...'
+         CALL QUIT('ERROR: JACO did not converge ...')
       END IF
 #endif
       T = D0

@@ -355,7 +355,7 @@ C
 #if defined(SYS_T3D)
             CALL STOP_ALL()
 #else
-            STOP
+            CALL QUIT('OPENDX: new file open failed')
 #endif
          ENDIF
   600 CONTINUE
