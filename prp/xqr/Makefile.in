@@ -7,7 +7,7 @@
 
 include ../../Makefile.config
 
-OBJS = pamqr.o
+OBJS = pamxqr.o
 
 all:	$(OBJS)
 
