@@ -1296,7 +1296,7 @@ C
 #endif
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
-     &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.AOFOCK'/
+     &            '.TIME  ', '.ICEDIF', '.SCREEN', '.THRFAC', '.AOFOCK'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -1393,7 +1393,8 @@ C&&&& in direct SCF
                GO TO 100
     8          CONTINUE
 C&&&& Screening threshold in direct construction of Fock matrices
-                  READ (LUCMD,*) IFTHRS
+                  READ (LUCMD,*) DTEMP
+                  IFTHRS = -NINT(LOG10(DTEMP))
                GO TO 100
     9          CONTINUE
 C&&& THRFAC: Factors to multiply LL-integral threshold for SL- and SS - integrals

@@ -1935,7 +1935,7 @@ C
       DIMENSION PFAC(3),II(3)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.TWOGRD','.TRICK ','.IGTHRS'/
+      DATA TABLE /'.PRINT ','.TWOGRD','.TRICK ','.SCREEN'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2004,7 +2004,8 @@ C&&&& TWOGRD: Which two-electron gradient to calculate
                GO TO 100
     4          CONTINUE
 C&&&& IGTHRS: Threshold for screening on the gradient
-               READ(LUCMD,*) IGTHRS
+               READ (LUCMD,*) DTEMP
+               IFTHRS = -NINT(LOG10(DTEMP))
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

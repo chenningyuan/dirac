@@ -75,7 +75,7 @@ C
      &            '.NOREIN', '.BAKER ', '.M-BFGS', '.CARTES',
      &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
      &            '.GRDINI', '.DISPLA', '.DOTRCK', '.TWOGRD',
-     &            '.IGTHRS', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
+     &            '.SCREEN', '.XXXXXX', '.XXXXXX', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
 C
@@ -331,7 +331,8 @@ Cjth - removed ??            GOTO 100
              END DO
              GOTO 100
  45         CONTINUE
-            READ(LUCMD,*) IGTHRS
+                  READ (LUCMD,*) DTEMP
+                  IGTHRS = -NINT(LOG10(DTEMP))
             GOTO 100
  46         CONTINUE
             GOTO 100
