@@ -454,7 +454,7 @@ C       Calculate gross populations
 C       ===========================
 C
         CALL GRSPOP(POPG,PMAT,NPOPLAB)
-        CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
+        IF (IPRPOP.GT.0) CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
 C
 C       Multiply fractional occupation on population.
 C       =============================================
@@ -467,10 +467,12 @@ C       Calculate net populations
 C       ===========================
 C
         IF(DONETP) THEN
-          CALL WRPOPN(PMAT(1,1,1),POPG(1,1),POPLAB,NPOPLAB,
-     &         IEFF,'alpha')
-          CALL WRPOPN(PMAT(1,1,2),POPG(1,2),POPLAB,NPOPLAB,
-     &         IEFF,'beta ')
+          IF (IPRPOP.GT.0) THEN
+            CALL WRPOPN(PMAT(1,1,1),POPG(1,1),POPLAB,NPOPLAB,
+     &           IEFF,'alpha')
+            CALL WRPOPN(PMAT(1,1,2),POPG(1,2),POPLAB,NPOPLAB,
+     &           IEFF,'beta ')
+          END IF
           CALL DAXPY(N2LAB,D2,PMAT(1,1,1),1,PNTOT(1,1,IFRP),1)
           CALL DAXPY(N2LAB,D2,PMAT(1,1,2),1,PNTOT(1,1,IFRP),1)
         ENDIF
@@ -736,6 +738,7 @@ C
       NPRI = MIN(NEFF+1,8)
       NFMT = 8 + 15*NPRI
       NPRI = NPRI - 1
+        WRITE(LUPRI,'(A,F8.5)') '* Gross populations greater than',DTOL
       WRITE(FMT,'(A1,I3,A3)') '(',NFMT,'A1)'
       WRITE(LUPRI,'(/A8,2X,A6,2X,A1,4X,7(A12,3X))')
      &     'Gross   ','Total ','|',(LAB(IEFF(I)),I=1,NPRI)
@@ -762,7 +765,7 @@ C
       IF(IPRINT.GE.1) THEN
         WRITE(LUPRI,'(A)') '* Gross populations (all):'
         DO I = 1,NLAB
-          WRITE(LUPRI,'(A12,2E16.8)') LAB(I),POPG(I,1),POPG(I,2)
+          WRITE(LUPRI,'(A12,1P,2E16.8)') LAB(I),POPG(I,1),POPG(I,2)
         ENDDO
       ENDIF
       RETURN
@@ -1481,7 +1484,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from GETPLB: Group labels',-1)
         WRITE(LUPRI,'(A,I5)') '* Total number : ',NPOPLAB
         WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,POPLAB(I),I=1,NPOPLAB)
@@ -1583,10 +1586,10 @@ C
       NFMT = 8 + 15*NPRI
       NPRI = NPRI - 1
       WRITE(FMT,'(A1,I3,A3)') '(',NFMT,'A1)'
-      WRITE(LUPRI,'(/A8,2X,A6,2X,A1,4X,7(A12,3X))')
+      WRITE(LUPRI,'(/A8,3X,A6,3X,A1,4X,7(A12,3X))')
      &     'Gross   ','Total ','|',(LAB(IEFF(I)),I=1,NPRI)
       WRITE(LUPRI,FMT) ('-',I=1,NFMT)
-      WRITE(LUPRI,'(A8,F8.4,2X,A1,4X,7(F8.4,7X))')
+      WRITE(LUPRI,'(A8,F10.5,2X,A1,4X,7(F9.5,6X))')
      &     ' total  ',SUMA,'|',(POPG(IEFF(I)),I=1,NPRI)
       NOFF = NPRI
       DO J = 2,NROW
@@ -1596,7 +1599,7 @@ C
         WRITE(LUPRI,'(/A8,8(1X,A12,2X))')
      &       'Gross  |',(LAB(IEFF(NOFF+I)),I=1,NPRI)
         WRITE(LUPRI,FMT) ('-',I=1,NFMT)
-        WRITE(LUPRI,'(A8,8(1X,F8.4,6X))')
+        WRITE(LUPRI,'(A8,8(1X,F9.5,5X))')
      &       ' total |',(POPG(IEFF(NOFF+I)),I=1,NPRI)
         NOFF = NOFF + NPRI
       ENDDO

@@ -35,12 +35,13 @@ C  /* Deck onesop */
       SUBROUTINE ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,WORK,LWORK,
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
-     &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD)
+     &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD,
+     &                  LOMITVNUC)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 C
-      LOGICAL SECDER, DIFDIP, PROPTY
+      LOGICAL SECDER, DIFDIP, PROPTY, LOMITVNUC(2,5)
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(*), FOCMAT(*),
      &          FACINT(*), COORC(3,*), JSYMC(*),
@@ -104,7 +105,7 @@ C
      &            PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,DIFDIP,
      &            SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,NCENTC,SIGNC,
      &            GEXP,NNBASX,WORK(KDSHEL),WORK(KFSHEL),WORK(KRLMNT),
-     &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO))
+     &            WORK(KRLMTB),FCM,TLMD,WORK(KLMNO),LOMITVNUC)
       RETURN
       END
 C  /* Deck oneso1 */
@@ -113,7 +114,7 @@ C  /* Deck oneso1 */
      &                  IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
-     &                  RLMINT,RLMTAB,FCM,TLMD,LMNO)
+     &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -121,9 +122,9 @@ C  /* Deck oneso1 */
 #include "iratdef.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (D1 = 1.0D0, DP5 = 0.5D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
-      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI
+      LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, LOMITVNUC(2,5)
       DIMENSION WORK(LWORK)
 #if defined (PRG_DIRAC)
       DIMENSION STHMAT(NNBASX,3), STDER0(KCKTAB,2), STDER1(KCKTAB,6,2),
@@ -131,7 +132,7 @@ C
      &          DSHELL(KHKTAB,4),FSHELL(KHKTAB),
      &          DENMAT(*),FOCMAT(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          FACINT(*), COORC(3,*), JSYMC(*),
+     &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #else 
@@ -140,7 +141,7 @@ C
      &          DSHELL(KHKTAB),FSHELL(KHKTAB),
      &          DENMAT(NNBASX),FOCMAT(NNBASX),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
-     &          FACINT(*), COORC(3,*), JSYMC(*),
+     &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #endif
@@ -192,15 +193,76 @@ C
          CORBZ  = SIGNBZ*CORBZ0
          IF (IPRINT .GE. 05) WRITE (LUPRI, 1010) ISYMOP
          IF (IPRINT .GE. 10) THEN
+            WRITE (LUPRI,'(A,1I8)') ' INTCLASS', INTCLASS
             WRITE (LUPRI,'(A,1F12.6)') ' CORBX    ', CORBX
             WRITE (LUPRI,'(A,1F12.6)') ' CORBY    ', CORBY
             WRITE (LUPRI,'(A,1F12.6)') ' CORBZ    ', CORBZ
          END IF
-C        Check the neglect of multi-center SS integrals
-         IF (.NOT.ONECEN.AND.INTCLASS.EQ.2.AND.SMLV1C) THEN
-            NATOMC1 = 0
-         ELSE
-            NATOMC1 = NATOMC
+C
+C *****
+C   Omit selected terms depending on LOMITVNUC(INTYPE,1-5)
+C   INTTYPE = 1 : Specifies which terms to omit from the
+C   SS-part of the nuclear-atrraction integrals.
+C   INTTYPE = 2 : Specifies terms to omit from the LL-part
+C
+C   LOMITVNUC(INTTYPE,1) true : omit < C | V_C | C > 
+C   LOMITVNUC(INTTYPE,2) true : omit < A | V_C | A > 
+C   LOMITVNUC(INTTYPE,3) true : omit < A | V_C | C > and  < C | V_C | B > 
+C   LOMITVNUC(INTTYPE,4) true : omit < A | V_C | B > 
+C   LOMITVNUC(INTTYPE,5) true : any of the above true
+C /hjaaj July 2001
+C   added seperate treatment of SS- and LL-part     /jkp Sep 2001
+C *****
+         IFACINT = 1
+         IF (INTCLASS .EQ. 0) THEN
+            INTTYP = 1
+         ELSE IF (INTCLASS .EQ. 2) THEN
+            INTTYP = 2
+         END IF
+         IF (LOMITVNUC(INTTYP,5)) THEN
+            IFACINT = 2
+            IF (ONECEN) THEN
+               IF (LOMITVNUC(INTTYP,1) .AND. LOMITVNUC(INTTYP,2)) THEN
+                  CALL DZERO(FACINT(1,2),NATOMC)
+               ELSE IF (LOMITVNUC(INTTYP,1)) THEN
+                  CALL DCOPY(NATOMC,FACINT(1,1),1,FACINT(1,2),1)
+C                 Omit < C | V_C | C >
+                  DO I = 1,NATOMC
+                     IF (NCENTC(I) .EQ. ICENTA)
+     &                  FACINT(I,2) = D0
+                  END DO
+               ELSE IF (LOMITVNUC(INTTYP,2)) THEN
+                  CALL DZERO(FACINT(1,2),NATOMC)
+C                 Include < C | V_C | C >
+                  DO I = 1,NATOMC
+                     IF (NCENTC(I) .EQ. ICENTA)
+     &                  FACINT(I,2) = FACINT(I,1)
+                  END DO
+               ELSE
+                  IFACINT = 1
+               END IF
+            ELSE
+C           not ONECEN
+               IF (LOMITVNUC(INTTYP,3) .AND. LOMITVNUC(INTTYP,4)) THEN
+                  CALL DZERO(FACINT(1,2),NATOMC)
+               ELSE IF (LOMITVNUC(INTTYP,3)) THEN
+                  CALL DCOPY(NATOMC,FACINT(1,1),1,FACINT(1,2),1)
+C                 Omit < A | V_C | C > and < C | V_C | B >
+                  DO I = 1,NATOMC
+                     IF (NCENTC(I).EQ.ICENTA.OR.NCENTC(I).EQ.ICENTB)
+     &                  FACINT(I,2) = D0
+                  END DO
+               ELSE IF (LOMITVNUC(INTTYP,4)) THEN
+                  CALL DZERO(FACINT(1,2),NATOMC)
+C                 Include < A | V_C | C > and < C | V_C | B >
+                  DO I = 1,NATOMC
+                     IF (NCENTC(I).EQ.ICENTA.OR.NCENTC(I).EQ.ICENTB)
+     &                  FACINT(I,2) = FACINT(I,1)
+                  END DO
+               ELSE
+                  IFACINT = 1
+               END IF
+            END IF
          ENDIF
 C
 C        **********************************************
@@ -209,8 +271,8 @@ C        **********************************************
 C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
-     &               NATOMC1,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
-     &               GEXP,JCENTC,NCENTC)
+     &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT(1,IFACINT),
+     &               COORC,GEXP,JCENTC,NCENTC)
 C
 C        *************************************************
 C        ***** Transform to spherical harmonic basis *****
@@ -460,6 +522,7 @@ C
      *         /,2X,'******** Symmetry operation ',I2,' ********',
      *         /,2X,'***************************************',/)
       END
+c
 C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)

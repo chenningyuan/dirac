@@ -610,6 +610,8 @@ C***********************************************************************
       LOGICAL XPOL,IPOL
       DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
 #include "sdpre.h"
+C
+      SAVE SCCHRG, BFIT
       DATA (SCCHRG(I),I = 1,103)
      1/ 0.0000D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
      2  0.0010D0, 0.0014D0, 0.0020D0, 0.0026D0, 0.0034D0, 
@@ -639,35 +641,65 @@ C***********************************************************************
      &         -3.77065743D-09,
      &          1.93958944D-11/
 C
+C
 C     Check that charge is on list
 C            
       DO I = 1,N
         IQ   = NINT(Q(I))
         XPOL = IQ.GT.103
-        IPOL = (Q(I)-SDPRE(IQ)).GT.DTOL.AND.(.NOT.XPOL)
-        IF(XPOL.OR.IPOL) THEN
+c       IPOL = (ABS(Q(I)-SDPRE(IQ)).GT.DTOL).AND.(.NOT.XPOL)
+        IPOL = ABS(Q(I)-SDPRE(IQ)).GT.DTOL .OR. IQ.GT.150
+c       IF(XPOL.OR.IPOL) THEN
+        IF(IPOL) THEN
+C       ... non-integer nuclear charge, assume this is a point charge
+C           However, integer point charges are corrected erroneously !! /HJAaJ
+C           (but if charge is 1.0 then it will be OK because SCQ(1) = 0 !)
+          SCQ(I) = D0
+        ELSEIF(XPOL) THEN
           SCQ(I) = - POLVAL(5,BFIT,Q(I))
         ELSEIF(IQ.GT.0) THEN
           SCQ(I) = - SCCHRG(IQ)
         ELSE
+C       ... this takes care of floating orbitals ! /HJAaJ
           SCQ(I) = D0
         ENDIF
         IF(IPRINT.GE.1) THEN
           IF    (XPOL) THEN
-            WRITE(LUPRI,'(A,F9.4,A,F6.4,A)')
-     &        'Charge: ',Q(I),' --> Small component charge:',SCQ(I),
+            WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
+     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
      &        '(extrapolation)'
           ELSEIF(IPOL) THEN
-            WRITE(LUPRI,'(A,F9.4,A,F6.4,A)')
-     &        'Charge: ',Q(I),' --> Small component charge:',SCQ(I),
-     &        '(interpolation)'
+c           WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
+c    &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
+c    &        '(interpolation)'
+            WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
+     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
+     &        '(INFO: assumes this is a point charge)'
           ELSE
-            WRITE(LUPRI,'(A,F9.4,A,F6.4)')
-     &        'Charge: ',Q(I),' --> Small component charge:',SCQ(I)
+            WRITE(LUPRI,'(A,F9.4,A,F12.8)')
+     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I)
           ENDIF
         ENDIF            
       ENDDO
+      RETURN
 C
+      ENTRY SCQSET(IZ,SCQVAL)
+C
+C     entry SCQSET added 30-Mar-2001 HJAaJ
+C
+      IF ((IZ .GT. 0 .AND. IZ .LE. 103) .AND.
+     &    (SCQVAL .GE. D0)) THEN
+         WRITE(LUPRI,'(/A,F15.10,A,F15.10/A,I5)')
+     &      ' * Tabulated small component charge changed from',
+     &      SCCHRG(IZ),'   to',SCQVAL, '   for nuclei no.',IZ
+         SCCHRG(IZ) = SCQVAL
+      ELSE
+         WRITE(LUPRI,'(/A/A,I5,F15.10)')
+     &      ' ERROR: Illegal input to .SCQSET :',
+     &      ' Z, small component charge:',IZ,SCQVAL
+         CALL QUIT('Illegal input to .SCQSET')
+      END IF
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Lvcorr */
@@ -677,7 +709,7 @@ C
 C     Calculate classic repulsive potential of 
 C     small component charges
 C
-C     Written by O. Fossgaard July 2000     
+C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
@@ -704,15 +736,12 @@ C
         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
 C
 C     Get small component charges
-C     Two options :
+C     Two options (dicided in SCDENS) :
 C     - Old method uses a table lookup with to get the DHF limit
 C       small component charges
 C     - New method uses a Mulliken analysis of the density
 C       THIS WILL NOT WORK FOR PARTIAL DENSITIES AS IN MOLTRA !!!!
 C
-      IF (.NOT.LVNEW) THEN
-        CALL SCDEN2(CHARGE,WORK(KSCQ),NUCIND,IPRINT)
-      ELSE
         IF(NOPEN.GT.1) THEN
           CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
           CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)           
@@ -724,26 +753,21 @@ C
         ELSE
           CALL SCDENS(WORK(KSCQ),DMAT,WORK(KFREE),LFREE,IPRINT)
         ENDIF
-      ENDIF
 C
-C       Calculate nuclear repulsion energy
+C       Calculate electrostatic correction to nuclear repulsion energy
 C     
-        CORRLV = GETPOT(WORK(KSCQ))      
+        CALL LVCOR1(WORK(KSCQ),IPRINT)
         CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
       ENDIF
 C
-C     Print section
-C      
-      IF(IPRINT.GE.1) THEN
-        CALL HEADER('Output from LVCORR',-1)
-        WRITE(LUPRI,'(1X,A)')
-     &    '* Small component atomic charges :'
-        WRITE(LUPRI,'(4X,A4,F10.4)') 
-     &        (NAMN(I),WORK(KSCQ+I-1),I = 1,NUCIND)
-        WRITE(LUPRI,'(1X,A,F18.12)')
-     &    '* Classical repulsion of small component atomic charges:',
-     &    CORRLV
-      ENDIF
+C     Print section (this is now printed in LVCOR1)
+C
+C     IF(IPRINT.GE.1) THEN
+C       CALL HEADER('Output from LVCORR',-1)
+C        WRITE(LUPRI,'(1X,A,F18.12)')
+C     &    '* Classical repulsion of small component atomic charges:',
+C     &    CORRLV
+C     ENDIF
 C
       RETURN
       
@@ -762,6 +786,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
+	  LOGICAL TABSCQ
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -772,43 +797,57 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dcbdhf.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
 #include "memint.h"
+      IF(IPRINT.GE.1) CALL HEADER('Output from SCDENS',-1)
       CALL DZERO(SCQ,NUCIND)
+c     ... when to use tabulated charges :
+          TABSCQ = (.NOT.LVNEW.AND..NOT.ONECAP).OR.
+     &             (ONECAP.AND.(INTV1C .EQ. 2 .OR. INTV1C .EQ. 4)
+     &             .AND. ICTLV1C(2) .EQ. 1)
       IF(.NOT.LEVYLE) THEN
-        CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
-        CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
-        CALL MEMGET('INTE',KICLAB,NTBAS(2),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGROSS,NTBAS(2),WORK,KFREE,LFREE)
-        CALL SCDEN1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
-     &              WORK(KICLAB),WORK(KFREE),LFREE)
-C       Adjust for nuclear multiplicities
-        DO I = 1,NUCIND
-          SCQ(I) = D2*SCQ(I)/FMULT(ISTBNU(I))
-        ENDDO
-        CALL MEMREL('SCDENS',WORK,KWORK,KWORK,KFREE,LFREE)  
-      ENDIF
-      IF(IPRINT.GE.1) THEN
-        CALL HEADER('Output from SCDENS',-1)
-        WRITE(LUPRI,'(1X,A)')
-     &    '* Small component atomic charges:'
-        WRITE(LUPRI,'(4X,A4,F10.4)') (NAMN(I),SCQ(I),I = 1,NUCIND)
+       IF(TABSCQ) THEN
+C       ... use tabulated small component charges
+         IF(IPRINT.GE.1) WRITE(LUPRI,'(A/)')
+     &      ' * Using tabulated small component atomic charges:'
+         CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
+       ELSE
+C       ... use Mulliken small component charges
+         CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL MEMGET('INTE',KICLAB,NTBAS(2),WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KGROSS,NTBAS(2),WORK,KFREE,LFREE)
+         CALL SCDEN1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
+     &               WORK(KICLAB),WORK(KFREE),LFREE)
+C        Adjust for nuclear multiplicities
+         DO I = 1,NUCIND
+           SCQ(I) = D2*SCQ(I)/FMULT(ISTBNU(I))
+         ENDDO
+         CALL MEMREL('SCDENS',WORK,KWORK,KWORK,KFREE,LFREE)  
+         IF(IPRINT.GE.1) THEN
+           WRITE(LUPRI,'(A/)')
+     &       ' * Using Mulliken small component atomic charges:'
+           WRITE(LUPRI,'(4X,A4,F12.8)') (NAMN(I),SCQ(I),I = 1,NUCIND)
+         ENDIF
+       ENDIF
       ENDIF
 C
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Lvcor3 */
-      SUBROUTINE LVCOR3(SCQ,IPRINT)
+C/* Deck Lvcor1 */
+      SUBROUTINE LVCOR1(SCQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate classic repulsive potential of 
-C     small component charges
+C     small component charges (given in SCQ on input)
 C
 C     Written by T.Saue June 1997
+C     Corrected for ONECAP March 2001 HJAaJ
 C
 C***********************************************************************
 #include "implicit.h"
@@ -818,25 +857,30 @@ C
 C
 #include "nuclei.h"
 #include "frame.h"
+#include "dcbham.h"
       DIMENSION SCQ(*)
 C
-C     Get small component charges
+      IF (ONECAP .AND. INTV1C .EQ. 2) THEN
+         DO I = 1,NUCIND
+            SCQ(I) = SCQ(I) + CHARGE(I)
+         END DO
+         CORRLV = GETPOT(SCQ) - POTNUC
+         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
+     &     '* ONECAP model 1 classical repulsion from small component',
+     &     CORRLV
+      ELSE
 C
-      CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
+C        Calculate repulsion energy for small component atomic charges
 C
-C     Calculate nuclear repulsion energy
+         CORRLV = GETPOT(SCQ)
 C
-      CORRLV = GETPOT(SCQ)
+C        Print section
 C
-C     Print section
-C      
-      CALL HEADER('Output from LVCOR3',-1)
-      WRITE(LUPRI,'(1X,A)')
-     &  '* Small component atomic charges:'
-      WRITE(LUPRI,'(4X,A4,F10.4)') (NAMN(I),SCQ(I),I = 1,NUCIND)
-      WRITE(LUPRI,'(1X,A,F18.12)')
-     &  '* Classical repulsion of small component atomic charges:',
-     &  CORRLV
+         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
+     &     '* Classical repulsion of small component atomic charges:',
+     &     CORRLV
+      END IF
+C
       RETURN
 C
       END
@@ -888,8 +932,8 @@ C
             IOLAV  = IATTR(IPLAB(ISBAS,2),2)
             ICENT  = JGET(IOLAV)
             ICLAB(I) = ICENT
-         ENDDO
-      ENDDO
+         ENDDO   
+      ENDDO   
 C
 C     Calculate the gross population of each small component basis
 C     function
@@ -918,4 +962,447 @@ C
       RETURN
 C      
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lcdens */
+      SUBROUTINE LCDENS(QLC,DMAT,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Using density matrix, compute large component charges
+C     based on a Mulliken population analysis
+C
+C     Written by Jesper K. Pedersen Aug. 2001
+C     (based on SCDENS by O. Fossgaard)
+C     
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+C
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dcbham.h>
+#include <dcbdhf.h>
+      DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
+C
+#include <memint.h>
+      CALL DZERO(QLC,NUCIND)
+      CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL MEMGET('INTE',KICLAB,NTBAS(1),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGROSS,NTBAS(1),WORK,KFREE,LFREE)
+      CALL LCDEN1(QLC,DMAT,WORK(KSMAT),WORK(KGROSS),
+     &               WORK(KICLAB),WORK(KFREE),LFREE)
+C        Adjust for nuclear multiplicities
+      DO I = 1,NUCIND
+        QLC(I) = D2*QLC(I)/FMULT(ISTBNU(I))
+      ENDDO
+      CALL MEMREL('LCDENS',WORK,KWORK,KWORK,KFREE,LFREE)  
+      IF(IPRINT.GE.1) THEN
+        CALL HEADER('Output from LCDENS',-1)
+        WRITE(LUPRI,'(/1X,A)')
+     &       '* Large component Mulliken atomic charges:'
+      WRITE(LUPRI,'(4X,A4,F12.8)') (NAMN(I),QLC(I),I = 1,NUCIND)
+      ENDIF
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lcden1 */
+      SUBROUTINE LCDEN1(QLC,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
+C***********************************************************************
+C
+C     Using density matrix, compute large component charges
+C     based on a Mulliken population analysis
+C
+C     Written by Jesper K. Pedersen Aug. 2001
+C     (based on SCDENS by O. Fossgaard)
+C     
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <frame.h>
+C
+#include <dcblab.h>
+#include <symmet.h>
+#include <aosotr.h>
+#include <dgroup.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <dcbbas.h>
+#include <ccom.h>
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
+#else
+      DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION ICLAB(*),GROSS(*),QLC(*)
+#include <dcbibt.h>
 
+C
+C     Get array ICLAB which maps large component basis functions onto
+C     atomic centers.
+C
+      I = 0
+      DO IFRP = 1,NFSYM
+         IOFF = IBAS(IFRP)
+         DO ILBAS  = IOFF+1,IOFF+NFBAS(IFRP,1)
+            I = I + 1
+            IOLAV  = IATTR(IPLAB(ILBAS,2),2)
+            ICENT  = JGET(IOLAV)
+            ICLAB(I) = ICENT
+         ENDDO
+      ENDDO
+C
+C     Calculate the gross population of each large component basis
+C     function
+C
+      IC = 1      
+      DO IBRP = 0,MAXREP
+         IFRP = JBTOF(IBRP,IC)
+         DO I = 1,NBBAS(IBRP,IC)
+            IOFF = IBBAS(IBRP,IC) + I
+            JOFF = IOFF
+            IF (IFRP.EQ.2) THEN
+               JOFF = IOFF - NFBAS(1,2)
+            ENDIF
+            GROSS(JOFF) = DDOT(NBBAS(IBRP,IC),
+     &         SMAT(IBBAS(IBRP,IC) + 1,IOFF),1 ,
+     &         DMAT(IBBAS(IBRP,IC) + 1,IOFF),1)              
+         ENDDO
+      ENDDO  
+C
+C     Calculate the large component charge density on each atom
+C
+      DO I = 1, NTBAS(1)
+	 QLC(ICLAB(I)) = QLC(ICLAB(I)) - GROSS(I)
+      ENDDO
+C
+      RETURN
+C      
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lsqmat */
+      SUBROUTINE LSQMAT(QMAT,DMAT,NMPOLOP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Using density and overlap matrix, compute matrix of large 
+C     component charges, placing the charges on the nuclei and
+C     at points between the nuclei.
+C
+C     Written by Jesper K. Pedersen sep. 2001
+C     
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+C
+#include <symmet.h>
+#include <nuclei.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dcbdhf.h>
+#include <dgroup.h>
+#include <dcbham.h>
+#include <dcbgen.h>
+      DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
+      DIMENSION INDDIP(3)
+      LOGICAL   DIPDONE
+      CHARACTER*8  PLABEL(4), RTNLBL(2)
+      CHARACTER*17 OPNAME(4)
+      DATA PLABEL/'OVERLAP ', 'XDIPLEN ', 'YDIPLEN ', 'ZDIPLEN '/
+      DATA OPNAME/'Charges          ', 'Dipole moment (x)', 
+     &            'Dipole moment (y)', 'Dipole moment (z)'/
+      SAVE DIPDONE
+      DATA DIPDONE /.FALSE./
+C
+#include <memint.h>
+      CALL QENTER('LSQMAT')
+      CALL TIMER('START ',TIMSTR,TIMEND)
+      IF (NMPOLOP .NE. 1 .AND. NMPOLOP .NE. 4) THEN
+         CALL QUIT('LSQMAT: NMPOLOP .ne. 1 nor 4')
+      END IF
+      CALL DZERO(QMAT,NMPOLOP*2*NUCDEP*NUCDEP)
+C
+C     ... Allocate memory for DMAT in AO basis
+C         If necessary, backtransform 
+C         real part of density matrix to AO-basis
+C
+      CALL MEMGET('REAL',KDAO ,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
+      IF(NBSYM.GT.1) THEN
+C
+C     ... transform density matrix
+C
+        CALL MEMGET('REAL',KBUF ,N2BBASX ,WORK,KFREE,LFREE)
+        CALL DCOPY(N2BBASX,DMAT,1,WORK(KBUF),1)
+        CALL BSTOBU(WORK(KBUF),NZ,WORK(KFREE),LFREE)
+        CALL DTSOAO(WORK(KBUF),WORK(KDAO),NTBAS(0),0,IPRINT)
+C
+        CALL MEMREL('LSQMAT.DAOMAT',WORK,KWORK,KBUF,KFREE,LFREE)
+      ELSE
+        CALL DCOPY(N2BBASX,DMAT,1,WORK(KDAO),1)
+      ENDIF
+C
+C     ... Calculate dipole moment integrals (stored on LU1INT)
+C
+      IF (NMPOLOP .GT. 1 .AND. .NOT. DIPDONE) THEN
+         CALL DEF_DIPOLE(INDDIP,WORK(KFREE),LFREE,IPRINT)
+C
+C        ... Open AOPROPER integral file for ONEGEN
+C            (is closed again inside ONEGEN)
+C
+#if defined (SYS_IBM)
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+         CALL ONEGEN(WORK(KFREE),LFREE)
+         DIPDONE = .TRUE.
+      END IF
+C
+C     ... Open AOPROPER integral file (again) for PRPREA
+C
+#if defined (SYS_IBM)
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='APROPER')
+#else
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &         FILE='AOPROPER')
+#endif
+C
+C     ... Allocate memory for RLMMAT in AO basis
+C         (L=0: Overlap, L=1: Dipole)
+C         and for buffer (using NNBBASX for PPRREA,
+C         N2BBASX for NBSYM.gt.1)
+C
+      CALL MEMGET('REAL',KRLMMAT,NTBAS(0)*NTBAS(0),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+C
+C     ... Make list of type (L or S) of each basis function
+C
+      CALL MEMGET('INTE',KICLAB,NTBAS(0),WORK,KFREE,LFREE)
+      CALL LSQMA1(WORK(KICLAB))
+C
+      DO IOP = 1,NMPOLOP
+C
+C     ... Get property matrix
+C
+C        Read integral from file
+C        =======================
+C
+         CALL PRPREA(LU1INT,PLABEL(IOP),RTNLBL,'TFFT',WORK(KBUF),
+     &               NNBBASX,IPRINT)
+C
+C        Make full matrix
+C        ================
+C
+         CALL DSPTSI(NTBAS(0),WORK(KBUF),WORK(KRLMMAT))
+C
+C     ... If necessary, backtransform overlap to AO-basis
+C
+         IF(NBSYM.GT.1) THEN
+           READ(RTNLBL(2)(4:4),'(I1)') IPRPSY
+           IF (IPRPSY .GT. 8 .OR. IPRPSY .LT. 0)
+     &     CALL QUIT('LSQMAT: Illegal symmetry on label '//RTNLBL(2))
+           IPRPSY = IPRPSY - 1
+           CALL DCOPY(N2BBASX,WORK(KRLMMAT),1,WORK(KBUF),1)
+           CALL MTSOAO(WORK(KBUF),WORK(KRLMMAT),NTBAS(0),IPRPSY,IPRINT)
+         ENDIF
+C
+C     ... Calculate the matrix of charges/dipole components.
+C
+         CALL LSQMA2(QMAT(1,1,1,IOP),WORK(KDAO),WORK(KRLMMAT),
+     &               WORK(KICLAB))
+C
+C    Output from LSQMAT
+C
+         IF(IPRINT .GE. 3) CALL HEADER('Output from LSQMAT',-1)
+C
+C    1) Write total atomic charges
+C
+         IF(IPRINT .GE. 1 .AND. IOP.EQ.1) THEN
+            CALL MEMGET('REAL',KACHRG,2*NUCIND,WORK,KFREE,LFREE)
+            CALL DZERO(WORK(KACHRG),2*NUCIND)
+            IOFF = 1
+            QLT  = 0.0D0
+            QST  = 0.0D0
+            DO I = 1,2*NUCIND,2
+               IF (IOFF .GT. NUCDEP)
+     &            CALL QUIT('LSQMAT : IOFF .GT. NUCDEP')
+                  DO J = 1,NUCDEP
+                     WORK(KACHRG-1+I)=WORK(KACHRG-1+I)+QMAT(J,IOFF,1,1)
+                     WORK(KACHRG  +I)=WORK(KACHRG  +I)+QMAT(J,IOFF,2,1)
+                  END DO
+               IOFF = IOFF + FMULT(ISTBNU((I+1)/2))
+               QLT = QLT + WORK(KACHRG-1+I)*FMULT(ISTBNU((I+1)/2))
+               QST = QST + WORK(KACHRG  +I)*FMULT(ISTBNU((I+1)/2))
+            ENDDO
+            WRITE(LUPRI,'(/17X,A/)')
+     &      '** Total atomic charges (Mulliken) **'
+            WRITE(LUPRI,'(A/)') 
+     &      '       Atom(s)               Q_l                     Q_s'
+C           ... first line
+            WRITE(LUPRI,'(4X,A3,1P,I2,A3,A4,1P,2D25.12)') 
+     &      '   ',INT(FMULT(ISTBNU(1))),' x ',NAMN(1),
+     &            WORK(KACHRG),WORK(KACHRG+1)
+C           ... the rest
+            WRITE(LUPRI,'(4X,A3,1P,I2,A3,A4,1P,2D25.12)') 
+     &      (' + ',INT(FMULT(ISTBNU((I+1)/2))),' x ',NAMN((I+1)/2),
+     &      WORK(KACHRG-1+I),WORK(KACHRG+I),I = 3,2*NUCIND,2)
+            WRITE(LUPRI,'(5X,A)')
+     &  '--------------------------------------------------------------'
+            WRITE(LUPRI,'(5X,A,1P,2D25.12)') 
+     &      '=          ',QLT,QST
+         END IF
+C
+C     2) Write the full matrix of charges or dipole moment integrals.
+C
+         IF(IPRINT.GE.3) THEN
+           DO IC = 1,2
+              IF ( IC .EQ. 1) THEN
+                 WRITE(LUPRI,'(/A,A/)') 
+     &           '  ***   Matrix of large component ',
+     &                    OPNAME(IOP)
+              ELSE
+                 WRITE(LUPRI,'(/A,A/)') 
+     &           '  ***   Matrix of small component ',
+     &                    OPNAME(IOP)
+              END IF
+              CALL OUTPUT(QMAT(1,1,IC,IOP),1,NUCDEP,1,NUCDEP,
+     &                    NUCDEP,NUCDEP,1,LUPRI)
+           END DO
+         ENDIF
+      END DO
+      CALL MEMREL('LCQMAT',WORK,KWORK,KWORK,KFREE,LFREE)  
+      CLOSE(LU1INT,STATUS = 'KEEP')
+C
+      CALL TIMER('LSQMAT',TIMSTR,TIMEND)
+      CALL QEXIT('LSQMAT')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lsqma1 */
+      SUBROUTINE LSQMA1(ICLAB)
+C***********************************************************************
+C
+C     ... Make list of type (L or S) that maps each basis function
+C     to a nuclei.
+C
+C     Written by Jesper K. Pedersen sep. 2001
+C     
+C***********************************************************************
+
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <frame.h>
+C
+#include <dcblab.h>
+#include <symmet.h>
+#include <aosotr.h>
+#include <dgroup.h>
+#include <pgroup.h>
+#include <nuclei.h>
+#include <shells.h>
+#include <dcbbas.h>
+#include <ccom.h>
+      DIMENSION ICLAB(*)
+#include <dcbibt.h>
+C
+C     Get array ICLAB which maps AO basis functions (large and small)
+C     onto atomic centers.
+C
+      DO 100 I = 1, NTBAS(0)
+         ITEMP = IATTR(IPLAB(I,1),1)
+         ICENT = JGET(ITEMP)
+         IDEG  = KGET(ITEMP)
+         IF (IDEG .EQ. 1) THEN
+            ICLAB(I) = NUCNUM(ICENT,1)
+         ELSE
+            JDEG = 0
+            DO J = 0, MAXREP
+               IF (NUCNUM(ICENT,J+1) .NE. 0) THEN
+                  JDEG = JDEG + 1
+                  IF (JDEG .EQ. IDEG) THEN
+                     ICLAB(I) = NUCNUM(ICENT,J+1)
+                     GO TO 100
+                  END IF
+               END IF
+            END DO
+         END IF
+  100 CONTINUE
+C
+      RETURN
+C      
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck lsqma2 */
+      SUBROUTINE LSQMA2(QMAT,DMAT,RLMMAT,ICLAB)
+C***********************************************************************
+C
+C     Calculate
+C
+C     Written by Jesper K. Pedersen sep. 2001
+C     
+C***********************************************************************
+
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <dcbbas.h>
+      PARAMETER(D2=2.0D0)
+#include <nuclei.h>
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION RLMMAT(NBAST,*),DMAT(NBAST,*)
+#else
+      DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
+#include <dcbibt.h>
+C
+C     Calculate the population of each large and small component basis
+C     function and add to appropiate element of QMAT(NUCDEP,NUCDEP,IC).
+C
+      JTBEND = 0
+      DO IC = 1,2
+C
+         JTBSTA = JTBEND + 1
+         JTBEND = (JTBSTA - 1) + NTBAS(IC)
+         DO I = JTBSTA, JTBEND
+            ICENTB = ICLAB(I)
+            DO J = JTBSTA, JTBEND
+               ICENTA = ICLAB(J)
+               QMAT(ICENTA,ICENTB,IC) = QMAT(ICENTA,ICENTB,IC) -
+     &                                  D2*RLMMAT(J,I)*DMAT(J,I)
+            ENDDO
+         ENDDO  
+C
+      END DO
+C
+      RETURN
+C      
+      END
+C***********************************************************************

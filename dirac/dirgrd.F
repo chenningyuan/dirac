@@ -85,8 +85,32 @@ C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
 C
          IF (.NOT. DODHF) THEN
-            WRITE(LUPRI,'()')
-     &         'WARNING: Assuming DHF wave function!'
+            WRITE(LUPRI,'(/A)')
+     &         'RMOLGRD WARNING: Assuming DHF wave function!'
+         END IF
+C
+C        Test for DHF wave functions not implemented in RMOLGRD
+C
+C        HJAAJ July 2001: I have discovered that some of these
+C        dirgrd.F routines (e.g. CONMAT_DHF) assume
+C        NOPEN = 1 and DF(1) = 0.5 if NASHT .gt. 0 !!!!
+C
+         IF (NOPEN .EQ. 1) THEN
+            IF (NASHT .GT. 1 .OR. ABS(DF(1)-0.5D0) .GT. 1.0D-14) THEN
+              WRITE(LUPRI,'(/A/A/A)')
+     &        '*** ERROR in RMOLGRD ***',
+     &        'Molecular gradient not implemented for open-shell DHF',
+     &        'with more than one single occupied open-shell orbital.'
+              CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
+     &        ' not implemented for this open-shell DHF')
+            END IF
+         ELSE IF (NOPEN .GT. 1) THEN
+            WRITE(LUPRI,'(/A/A/A)')
+     &        '*** ERROR in RMOLGRD ***',
+     &        'Molecular gradient not implemented for open-shell DHF',
+     &        'with more than one open shell.'
+            CALL QUIT('*** ERROR in RMOLGRD: Molecular gradient' // 
+     &        ' not implemented for this open-shell DHF')
          END IF
 C
          CALL SETDHF(IPRGRD)
@@ -97,9 +121,9 @@ C
 C
       ELSE
 C
-         WRITE(LUPRI,'(/A,/,A)')
-     $        '*** ERROR in RMOLGRD ***',
-     $        'Molecular gradient only implemented for DHF'
+         WRITE(LUPRI,'(/A/A)')
+     &        '*** ERROR in RMOLGRD ***',
+     &        'Molecular gradient only implemented for DHF'
          CALL QUIT('*** ERROR in RMOLGRD: ' // 
      &             'Molecular gradient only implemented for DHF')
 C
@@ -170,6 +194,8 @@ C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
 C
+#include "dcbham.h"
+#include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -200,6 +226,7 @@ C
       CALL MEMGET('REAL',KFAO,N2BBASXQ * 2,WORK,KFREE,LFREE)
       KFCAO = KFAO
       KFVAO = KFAO + N2BBASXQ
+C     ... KFVAO is also used for CMO later
       CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Two-electron Fock matrix/matrices
@@ -233,11 +260,23 @@ C
          CALL ONEFCK(WORK(KH1AO),IPRINT,WORK(KFREE),LFREE)
       END IF
 C
+C     Correct Fock matrices for ONECAP
+C
+      IF (ONECAP) THEN
+         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDSO,N2BBASXQ,WORK,KFREE,LFREE)
+c        ... Get density
+         CALL GETDSO(WORK(KDSO),WORK(KFREE),LFREE,IPRINT)
+c        ... Calculate and add correction.
+         CALL CATCORR(WORK(KH1AO),WORK(KFCAO),WORK(KDSO),
+     &                WORK(KFREE),LFREE,IPRINT)
+      END IF
+C
+C
 C     FCao = H1ao + QCao
 C
       CALL DAXPY(N2BBASXQ,D1,WORK(KH1AO),1,WORK(KFCAO),1)
-C
-      CALL MEMREL('GTCNV1',WORK,KWORK,KH1AO,KFREE,LFREE)
+      CALL MEMREL('CONMAT_DHF 1',WORK,KWORK,KH1AO,KFREE,LFREE)
 C
 C     2. Transform to MO basis
 C     ========================
@@ -277,7 +316,7 @@ C
          CALL DZERO(WORK(KFMO),N2ORBTQ)
 C
          DO 11 I = 1,NFSYM
-            IF (NASH(I).EQ.0) GOTO 10
+            IF (NASH(I).EQ.0) GOTO 11
             IADR = I2ORBT(I)+(NISH(I)+NPSH(I))*NORB(I)
             CALL DCOPY(NASH(I)*NORB(I),WORK(KFMOTMP+IADR),1,
      &                                 WORK(KFMO+IADR),1)
@@ -288,7 +327,7 @@ C
             END IF
  11      CONTINUE
 C
-C        FDao = H1ao + QCao + QVau
+C        FDao = H1ao + QCao + QVao
 C             = FCao + QVao
 C
          CALL DAXPY(N2BBASXQ,DP5,WORK(KFVAO),1,WORK(KFCAO),1)
@@ -473,12 +512,6 @@ C
          CALL DAXPY(N2BBASXQ,DP5,WORK(KDVAO),1,
      &                          WORK(KDCAO),1)
       END IF
-C
-C
-C     "SS-integral contribution by classical repulsion of 
-C      small component atomic charges"-gradient
-C
-      CALL LVCGRD(IPRINT,WORK(KDCAO),WORK(KFREE),LFREE)
 C
 C     Since Trond insists in DC_ij = \sum_a C_ia C_ja^*
 C     and .NOT. DC_ij = 2 \sum C_ia C_ja^*, we multiply with 2.0
@@ -753,11 +786,9 @@ C
       DIMENSION DNTSKP(3,14,3)
       DIMENSION IQBF(4)
       DIMENSION IFCTYP(4*2)
-      CHARACTER*1 CTMP
-      CHARACTER*3 STR
-      CHARACTER*8 GABLAB
+      CHARACTER CTMP*1, STR*3, GABLAB*8, OMITVNUC(2)*4
       LOGICAL   DOINT(2,2)
-      LOGICAL   DOLS,DOSS,LBIT
+      LOGICAL   DOLS,DOSS,LBIT,DOGRADLV
       LOGICAL   NODV,NOPV,FIRST,NOCONT, NOINFO
       LOGICAL   FNDLAB
 C     Timing variables
@@ -815,12 +846,17 @@ C
       NOINFO = .TRUE.
       GRD_NOSMLV = .FALSE.
       GRD_NOSMLS = .FALSE.
+      OMITVNUC(1) = 'FFFF'
+      OMITVNUC(2) = 'FFFF'
+      DOGRADLV  = (ONECAP .AND. INTV1C .EQ.2) .OR. DOLVC .OR.
+     &   ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3 ) )
 C    
       DO J = 1,2
          DO I = 1,2
             DOINT(I,J) = .TRUE.
          END DO
       END DO
+C
       WRITE(LUPRI,'(A)') 
      &   ' Special information about calculation '//
      &   'of the molecular gradient:'
@@ -844,11 +880,6 @@ C
          NOINFO = .FALSE.
          GRD_NOSMLV = .TRUE.
       END IF
-      IF (SMLV1C) THEN
-         WRITE(LUPRI,'(/A)') 
-     &      ' - Only one-center contributions to d/dXA Vss.'
-         NOINFO = .FALSE.
-      END IF
 C
       IF (N1OPER .GT. 0) THEN
          WRITE(LUPRI,'(/A,I3)') 
@@ -857,14 +888,34 @@ C TODO   insert list of finite fields here ??? /hjaaj
          NOINFO = .FALSE.
       END IF
 C
-      IF ( DOLVC .AND. LBIT( IGRD_INTBUF, 3 ) ) THEN
+      IF ( DOLVC .AND. .NOT.(ONECAP.AND.INTV1C.EQ.2) .AND.
+     &   LBIT( IGRD_INTBUF, 3 ) ) THEN
          IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
          WRITE(LUPRI,'(/A/A/)')
      &     ' INFO: LVCORR used in wavefunction, but not in gradient =>',
      &     ' LVCORR gradient used (SS-gradient is not calculated)'
          NOINFO = .FALSE.
       END IF
-      IF (NOINFO) WRITE(LUPRI,'(A)') ' No special information.'
+      IF (ONECAP) THEN
+         IF (INTV1C.EQ.1) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' - Only one-center contributions to d/dXA Vss.'
+            NOINFO = .FALSE.
+         ELSE IF (INTV1C.EQ.2) THEN
+            WRITE(LUPRI,'(/A/A)') 
+     &      ' - ONECAP type 2 : Only atomic contributions to '//
+     &      ' d/dXA Vss (thus no LS ','   and SS 2-electron gradient'//
+     &      ' and no small-small nuclear attraction gradient).'
+            NOINFO = .FALSE.
+         ELSE IF (INTV1C.EQ.3) THEN
+            WRITE(LUPRI,'(/A)') 
+     &      ' - ONECAP type 3 : Only atomic contributions to '//
+     &      ' d/dXA Vss (thus no LS and SS 2-electron gradient '
+            NOINFO = .FALSE.
+         END IF
+      END IF
+      IF (NOINFO) WRITE(LUPRI,'(/1X,A)')
+     &   'No special information in this calculation!'
 C
       IF (N1OPER .GT. 0) THEN
          WRITE (LUPRI,'(/A)')
@@ -896,6 +947,37 @@ C
       CALL NUCREP(WORK(KHESNN),WORK(KCSTRA),WORK(KSCTRA))
       CALL MEMREL('RMOLGRD1.NUCREP',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+C     Calculated GRADLV:
+C     "SS-integral contribution by classical repulsion of 
+C      small component atomic charges"-gradient
+C      or ONECAP model 2 to gradient
+C
+C     GRADLV will only be used if relevant, even if calculated here.
+C
+      IF (DOGRADLV) THEN
+C           ... get small and large component charges
+C               for one-center model 2 (and maybe type3!)
+         CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KDSO,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL GETDSO(WORK(KDSO),WORK(KFREE),LFREE,IPRINT)
+         CALL SCDENS(WORK(KSCQ),WORK(KDSO), WORK(KFREE),LFREE,IPRINT)
+         CALL MEMREL('RMOLGRD1.dolvc',WORK,KWORK,KDSO,KFREE,LFREE)
+         CALL LVCGRD(IPRINT,WORK(KSCQ),WORK(KFREE),LFREE)
+      END IF
+C
+C     One-center model 2 correction to SS-nuclear attration
+C     ================================================
+C     
+C     if one-center model 1 : LVCGRD is called with modified nuclear charges.
+C     The correction is therefore stored in  GRADLV as :   
+C     GRADLV = GRADLV - GRADNN
+C     
+      IF (ONECAP .AND. INTV1C .EQ. 2) THEN
+         DO I = 1,3*NUCDEP
+            GRADLV(I) = GRADLV(I) - GRADNN(I)
+         END DO
+      END IF
+C
 C     Set IFCTYP
 C     ==========
 C
@@ -909,6 +991,58 @@ C        Density matrix 2-4: Only Exchange
          IFCTYP(4+IOFF) = 22
          IOFF = IOFF + 4
       END DO
+C
+C     One-center corrections to the nuclear-attraction gradient.
+C     ===========================================================
+C
+      IF (ONECAP) THEN
+         IF (INTV1C .EQ. 1) THEN
+c           ... one-center model 1 (Luuk's)
+            WRITE(LUPRI,'(/1X,A)') 
+     &      '- Only one-center contributions to d/dXA Vss.'
+            OMITVNUC(1) = 'TFFF'
+            OMITVNUC(2) = 'TFTT'
+         ELSE IF (INTV1C .EQ. 2) THEN
+            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+C           omit all SS, use corrected charges for LL
+            GRD_NOSMLV = .TRUE.
+            OMITVNUC(1)   = 'TFFF'
+            OMITVNUC(2)   = 'TTTT'
+            CALL MEMGET('REAL',KNQ,NUCIND,WORK,KFREE,LFREE)
+C
+C           Store the original nuclear charges for later use,
+C           and make the one-center model 2 corrected nuclear charges.
+C
+            DO I=1,NUCIND
+               WORK(KNQ-1+I) = CHARGE(I)
+               CHARGE(I) = WORK(KSCQ-1+I) + CHARGE(I)
+            END DO
+         ELSE IF (INTV1C .EQ. 3) THEN
+            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+C           use corrected charges for LL and SS 
+C           (Corrections now added to two-electron Fock-matrix - the factor
+C            one half needed is tranferred to the charges here.)   
+C            --- ONCE SS-PART IS IMPLEMENTED !!!
+c            OMITVNUC   = 'TFFF'
+c            CALL MEMGET('REAL',KNQ,NUCIND,WORK,KFREE,LFREE)
+C
+C           Store the original nuclear charges for later use,
+C           and make the one-center model 3 corrected nuclear charges.
+C
+            WRITE(LUPRI,'(/1X,A,A)') 
+     &      ' Warning !!!  Molecuar gradient not implemented for ',
+     &      'one-center model 3 yet.'
+             CALL QUIT('*** ERROR in RMOLGRD1 ***')
+         ELSE 
+            WRITE(LUPRI,'(/1X,A)') 
+     &      '-- Molecular gradient not implemented for specified model!'
+            CALL QUIT('*** ERROR in RMOLGRD1 ***')
+         END IF
+         NOINFO = .FALSE.
+      ELSE
+         OMITVNUC(1) = 'FFFF'
+         OMITVNUC(2) = 'FFFF'
+      END IF
 C    
 C     One electron part of gradient
 C     =============================
@@ -916,9 +1050,9 @@ C
       CALL HEADER('RMOLGRD1: One-electron part',-1)
       IF ( DPRTIM(1,1) .GT. D0 ) THEN
          CALL TIMDAT
-         WRITE(LUPRI,'(/1X,A,F10.4,A)') 
+         WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &               'Estimated CPU time:  ',DPRTIM(1,1),' seconds.'
-         WRITE(LUPRI,'(1X,A,F10.4,A/)') 
+         WRITE(LUPRI,'(1X,A,F10.2,A/)') 
      &               'Estimated WALL time: ',DPRTIM(1,2),' seconds.'
       END IF
 C
@@ -963,7 +1097,7 @@ C
 C     Call ONEDRV for construction of gradient
 C
       CALL MEMGET('REAL',KSTHMA,3*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFACIN,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFACIN,2*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
@@ -976,8 +1110,7 @@ C     MAXDIF = 1
 C     DIFDIP = .FALSE.
 C     SECDER = .FALSE.
 C     NOPV   = .FALSE.
-C     NOCV   = .FALSE.
-C
+C     NODV   = .FALSE.
 C
 C     Make one-electron part of gradient
 C
@@ -985,7 +1118,16 @@ C
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LFREE,
      &            IPRGRD,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
-     &            NNBBASX,NNBBAST,DOINT,.FALSE.)
+     &            NNBBASX,NNBBAST,DOINT,OMITVNUC,.FALSE.)
+C
+C     Restore original nuclear charges changed by ONECAP
+C     for calculating corrected nuclear attraction integrals.
+C
+      IF (ONECAP .AND. INTV1C .EQ. 2) THEN
+         DO I=1,NUCIND
+            CHARGE(I) = WORK(KNQ-1+I)
+         END DO
+      END IF
 C
 C     Dispose temp. memory
 C
@@ -996,7 +1138,7 @@ C
 C
       CPUONE = CPU2 - CPU1
       WLLONE = WALL2 - WALL1
-      WRITE(LUPRI,'(/A,F10.4,A/)') 
+      WRITE(LUPRI,'(/A,F10.2,A/)') 
      &      'Time for one-electron part of gradient    :',
      &      CPUONE,' seconds.'
       CALL FLSHFO(LUPRI)
@@ -1121,7 +1263,7 @@ C     ... no screening on gradient
       CALL GETTIM(CPU2,WALL2)
       CPUGAB = CPU2 - CPU1
       WLLGAB = WALL2 - WALL1
-      WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
+      WRITE(LUPRI,'(/1X,A,F10.2,A/)') 
      &      'Time for GAB matrix                       :',
      &      CPUGAB,' seconds.'
 C
@@ -1136,9 +1278,9 @@ C
       IF ( LBIT( IGRD_INTBUF, 1 ) ) THEN
          IF ( DPRTIM(2,1) .GT. D0 ) THEN
             CALL TIMDAT
-            WRITE(LUPRI,'(/1X,A,F10.4,A)') 
+            WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(2,1),' seconds.'
-            WRITE(LUPRI,'(1X,A,F10.4,A/)') 
+            WRITE(LUPRI,'(1X,A,F10.2,A/)') 
      &                  'Estimated WALL time: ',DPRTIM(2,2),' seconds.'
          END IF
       ELSE
@@ -1219,7 +1361,7 @@ C
          WLLTLL = MAX(WLLTLL,DMXWLT)
       END IF
       IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:LL',DNTSKP,IPRINT)
-      WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
+      WRITE(LUPRI,'(/1X,A,F10.2,A/)') 
      &      'Time for LL-two-electron part of gradient :',
      &      CPUTLL,' seconds.'
 C
@@ -1246,9 +1388,9 @@ C
       IF ( LBIT ( IGRD_INTBUF, 2 ) ) THEN
          IF ( DPRTIM(3,1) .GT. D0 ) THEN
             CALL TIMDAT
-            WRITE(LUPRI,'(/1X,A,F10.4,A)') 
+            WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(3,1),' seconds.'
-            WRITE(LUPRI,'(1X,A,F10.4,A/)') 
+            WRITE(LUPRI,'(1X,A,F10.2,A/)') 
      &                  'Estimated WALL time: ',DPRTIM(3,2),' seconds.'
          END IF
       ELSE
@@ -1329,7 +1471,7 @@ C
          WLLTLS = MAX(WLLTLS,DMXWLT)
       END IF
       IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:LS',DNTSKP,IPRINT)
-      WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
+      WRITE(LUPRI,'(/1X,A,F10.2,A/)') 
      &      'Time for LS-two-electron part of gradient :',
      &      CPUTLS,' seconds.'
 C
@@ -1340,19 +1482,22 @@ C
  200  CONTINUE
 C
       CALL HEADER('RMOLGRD1: SS-Two-electron part',-1)
-      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 ) ) THEN
+      IF ( LBIT( IGRD_INTBUF, 3 ) .AND.
+     &     .NOT. LBIT( IGRD_INTBUF, 2 ) ) THEN
+         WRITE(LUPRI,'(/1X,A/)') 'WARNING: SS-gradient .NOT. '//
+     &       'calculated since LS-gradient is not calculated.'
+         IGRD_INTBUF = IBTAND ( IGRD_INTBUF, 1+2 )
+      END IF
+C
+      IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 )
+     &     .AND. .NOT. DOLVC ) THEN
+CHJAaJ July 2001: Idea: this can be done much better based on GRADLV !!! TODO
          CALL ESTGSS(DOSS)
          IF ( .NOT. DOSS ) THEN
             IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
          END IF
       END IF
 C
-      IF ( LBIT( IGRD_INTBUF, 3 ) .AND.
-     &     .NOT. LBIT( IGRD_INTBUF, 2 ) ) THEN
-         WRITE(LUPRI,'(/1X,A/)') 'WARNING: SS-gradient .NOT. '//
-     &       'calculated since LS-gradient is not calculated.'
-         IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
-      END IF
       CALL CYESNO(STR, LBIT( IGRD_INTBUF, 3 ) )
       WRITE(LUPRI,'(1X,2A/)') 'Calculate SS-Two-electron gradient: ',
      &                        STR
@@ -1360,9 +1505,9 @@ C
       IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
          IF ( DPRTIM(4,1) .GT. D0 ) THEN
             CALL TIMDAT
-            WRITE(LUPRI,'(/1X,A,F10.4,A)') 
+            WRITE(LUPRI,'(/1X,A,F10.2,A)') 
      &                  'Estimated CPU time:  ',DPRTIM(4,1),' seconds.'
-            WRITE(LUPRI,'(1X,A,F10.4,A/)') 
+            WRITE(LUPRI,'(1X,A,F10.2,A/)') 
      &                  'Estimated WALL time: ',DPRTIM(4,2),' seconds.'
          END IF
       ELSE
@@ -1452,7 +1597,7 @@ C
          WLLTSS = MAX(WLLTSS,DMXWLT)
       END IF
       IF (SCRGRD .GT. D0) CALL SCRGDS('SCR:SS',DNTSKP,IPRINT)
-      WRITE(LUPRI,'(/1X,A,F10.4,A/)') 
+      WRITE(LUPRI,'(/1X,A,F10.2,A/)') 
      &      'Time for SS-two-electron part of gradient :',
      &      CPUTSS,' seconds.'
 C
@@ -1462,56 +1607,46 @@ C
 C     Output of timings
 C
       CALL HEADER('Timings for RMOLGRD1',-1)
-      WRITE(LUPRI,'(/1X,A,F10.4,A)') 
-     &     'One-electron part of gradient    CPU  :',CPUONE,' seconds.'
-      WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &     '                                 WALL :',WLLONE,' seconds.'
-      WRITE(LUPRI,'(/1X,A,F10.4,A)') 
-     &     'GAB matrix for screening         CPU  :',CPUGAB,' seconds.'
-      WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &     '                                 WALL :',WLLGAB,' seconds.'
+      WRITE(LUPRI,'(/1X,A,F10.2,A,F10.2,A)') 
+     &   'One-electron part of gradient    CPU  :',CPUONE,'s    WALL :',
+     &   WLLONE,'s'
+      WRITE(LUPRI,'(/1X,A,F10.2,A,F10.2,A,F10.2,A)') 
+     &   'GAB matrix for screening         CPU  :',CPUGAB,'s    WALL :',
+     &   WLLGAB,'s'
       IF ( LBIT( IGRD_INTBUF, 1 ) ) THEN
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'LL-Two-electron part of gradient CPU  :',CPUTLL,' seconds.'
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      '                                 WALL :',WLLTLL,' seconds.'
+         WRITE(LUPRI,'(1X,A,F10.2,A,F10.2,A)') 
+     &   'LL-Two-electron part of gradient CPU  :',CPUTLL,'s    WALL :',
+     &   WLLTLL,'s'
       ELSE
          WRITE(LUPRI,'(1X,A)') 
-     &      'LL-Two-electron part SKIPPED!'
+     &   'LL-Two-electron part SKIPPED!'
       END IF
       IF ( LBIT( IGRD_INTBUF, 2 ) ) THEN
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'LS-Two-electron part of gradient CPU  :',CPUTLS,' seconds.'
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      '                                 WALL :',WLLTLS,' seconds.'
+         WRITE(LUPRI,'(1X,A,F10.2,A,F10.2,A)') 
+     &   'LS-Two-electron part of gradient CPU  :',CPUTLS,'s    WALL :',
+     &   WLLTLS,'s'
       ELSE
          WRITE(LUPRI,'(1X,A)') 
-     &      'LS-Two-electron part SKIPPED!'
+     &    'LS-Two-electron part SKIPPED!'
       END IF
       IF ( LBIT( IGRD_INTBUF, 3 ) ) THEN
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'SS-Two-electron part of gradient CPU  :',CPUTSS,' seconds.'
-         WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      '                                 WALL :',WLLTSS,' seconds.'
+         WRITE(LUPRI,'(1X,A,F10.2,A,F10.2,A)') 
+     &   'SS-Two-electron part of gradient CPU  :',CPUTSS,'s    WALL :',
+     &   WLLTSS,'s'
       ELSE
          WRITE(LUPRI,'(1X,A)') 
-     &      'SS-Two-electron part SKIPPED!'
+     &   'SS-Two-electron part SKIPPED!'
       END IF
-      WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'Total two-electron part of grad. CPU  :',
-     &      CPUTSS+CPUTLS+CPUTLL+CPUGAB,' seconds.'
-      WRITE(LUPRI,'(1X,A,F10.4,A/)') 
-     &      '                                 WALL :',
-     &      WLLTSS+WLLTLS+WLLTLL+WLLGAB,' seconds.'
+      WRITE(LUPRI,'(1X,A,F10.2,A,F10.2,A)') 
+     &    'Total two-electron part of grad. CPU  :',
+     &      CPUTSS+CPUTLS+CPUTLL+CPUGAB,'s    WALL :',
+     &      WLLTSS+WLLTLS+WLLTLL+WLLGAB,'s'
       CALL GETTIM(CPUTO2,WLLTO2)
       CPUTOT = CPUTO2 - CPUTO1
       WLLTOT = WLLTO2 - WLLTO1
-      WRITE(LUPRI,'(1X,A,F10.4,A)') 
-     &      'Total time in RMOLGRD1                  :',
-     &      CPUTOT,' seconds.'
-      WRITE(LUPRI,'(1X,A,F10.4,A/)') 
-     &      '                                 WALL :',
-     &      WLLTOT,' seconds.'
+      WRITE(LUPRI,'(1X,A,F10.2,A,F10.2,A/)') 
+     &   'Total time in RMOLGRD1           CPU  :',CPUTOT,'s    WALL :',
+     &    WLLTOT,'s'
 C
 C     Save timings for later use
 C
@@ -1680,6 +1815,7 @@ C
 #include "dcbpsi.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
+#include "dcbham.h"
 C
       LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
@@ -1742,8 +1878,12 @@ C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
 C       ===================================================
 C
-        IF ( DOLVC .OR.
-     &      (LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3)) ) THEN
+        IF (ONECAP .AND. INTV1C.EQ.2) THEN
+           CALL HEADER(
+     &      'One-center model 2 SS correction to integral gradient',-1)
+           CALL PRIGDR(GRADLV,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,' ')
+        ELSE IF ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3 ) )
+     &     THEN
            CALL HEADE3('"SS-integral contribution by classical ',
      &                 'repulsion of small component atomic ',
      &                 'charges"-gradient',-1)
@@ -1772,16 +1912,20 @@ C
       CALL ADDGRD(GRADRO(1,0))
       CALL ADDGRD(GRADER(1,0))
       CALL ADDGRD(GRADNN)
-      IF ( DOLVC .OR. (LBIT( IGRD_INTBUF, 2 ) .AND.
-     &     .NOT. LBIT ( IGRD_INTBUF, 3 ) .AND.
-     &           LBIT ( IGRD_INTFLG, 3)) ) THEN
-C     if ( dolvc or ( dols and not doss and doss_in_input )
-         write(LUPRI,*) 'adding lv grad'
+      IF ( (ONECAP .AND. INTV1C.EQ.2) .OR. 
+     &   ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT( IGRD_INTFLG, 3 ) .AND.
+     &     .NOT. LBIT ( IGRD_INTBUF, 3 ) ) ) THEN
          CALL ADDGRD(GRADLV)
       END IF
       CALL HEADE2('Total molecular gradient','@',-1)
       CALL PRIGDR(GRDMOL,0,WORK(KCSTRA),WORK(KSCTRA),LABEL,'@')
 C
+      IF (IPRINT .GE. 3) THEN
+C
+C        Print norm of molecular gradient
+C
+         CALL GRDNRM(GRDMOL,WORK(KCSTRA),WORK(KSCTRA),IPRINT)
+      ENDIF
 C
       CALL MEMREL('GRDOUT',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
@@ -2022,42 +2166,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcgrd */
-      SUBROUTINE LVCGRD(IPRINT,DMAT,WORK,LWORK)
-C*****************************************************************************
-C
-C     (c) 1997/09/23 by J. Thyssen
-C
-C     "SS-integral contribution by classical repulsion of
-C      small component atomic charges"-gradient
-C
-C     Last revision: 1997/09/23 jth
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-C
-#include "nuclei.h"
-#include "dcbgen.h"
-#include "frame.h"
-      DIMENSION DMAT(*),WORK(LWORK)
-C
-#include "memint.h"
-C
-      CALL QENTER('LVCGRD')
-C
-      CALL MEMGET('REAL',KSCQ,NUCIND,WORK,KFREE,LFREE)
-      CALL LVCGR1(WORK(KSCQ),DMAT,LVNEW,WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('LVCGRD')
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck lvcgr1 */
-      SUBROUTINE LVCGR1(SCQ,DMAT,LVNEW,WORK,LWORK,IPRINT)
+      SUBROUTINE LVCGRD(IPRINT,SCQ,WORK,LWORK)
 C*****************************************************************************
 C
 C     (c) 1997/09/23 by J. Thyssen
@@ -2081,22 +2190,19 @@ C
 #include "dorps.h"
 #include "symmet.h"
 C
-      DIMENSION SCQ(NUCIND),DMAT(*),WORK(LWORK)
-      LOGICAL LVNEW
+      DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
 #include "ibtfun.h"
+#include "dcbham.h"
 C
 C
-      CALL QENTER('LVCGR1')
+      CALL QENTER('LVCGRD')
 C
-C     Get small component charges
-C
-      CALL FLSHFO(LUPRI)
-      IF (LVNEW) THEN
-        CALL SCDENS(SCQ,DMAT,WORK,LWORK,IPRINT)
-      ELSE
-        CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
-      ENDIF
+      IF (ONECAP .AND. INTV1C .EQ. 2) THEN
+         DO I = 1,NUCIND
+            SCQ(I) = SCQ(I) + CHARGE(I)
+         END DO
+      END IF
 C
 C     This is copied from ABACUS/NUCREP
 C
@@ -2191,8 +2297,14 @@ C
          END IF
   200 CONTINUE
 C
+C      Restore small component charges
 C
-      CALL QEXIT('LVCGR1')
+      IF (ONECAP .AND. INTV1C .EQ. 2) THEN
+         DO I = 1,NUCIND
+            SCQ(I) = SCQ(I) - CHARGE(I)
+         END DO
+      END IF
+      CALL QEXIT('LVCGRD')
 C
       RETURN
       END
@@ -2415,3 +2527,91 @@ c     TRODIP = DIPDER
       TRODIP = .FALSE.
       RETURN
       END
+C
+C
+      SUBROUTINE GETDSO(DSO,WORK,LWORK,IPRINT)
+C
+C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
+C
+C     31-July-2001 HJAaJ
+C
+#include <implicit.h>
+      DIMENSION DSO(*), WORK(LWORK)
+C
+#include <dcbgen.h>
+#include <dcbbas.h>
+#include <dcborb.h>
+C
+#include <memint.h>
+C
+      CALL QENTER('GETDSO')
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Get total density matrix
+C
+      CALL GENDEN(DSO,WORK(KCMO),1,IPRINT)
+      IF (NASHT.GT.0) THEN
+         IF (NOPEN .GE. 1) THEN
+            CALL QUIT('GETDSO only implemented for one open shell')
+         END IF
+         CALL MEMGET('REAL',KDVSO,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL GENDEN(WORK(KDVSO),WORK(KCMO),2,IPRINT)
+         CALL DAXPY(N2BBASXQ,DF(1),WORK(KDVSO),1,DSO,1)
+      END IF
+      CALL MEMREL('GETDSO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('GETDSO')
+      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      RETURN
+      END
+C
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GRDNRM(GRAD,CSTRA,SCTRA,IPRINT)
+C*****************************************************************************
+C
+C     Written by Jesper Pedersen 4/3-2002
+C
+C     Transform molecular gradient and print calculate the norm -
+C     for printing norm of gradient in single-point calculations.
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <mxorb.h>
+C
+#include <abainf.h>
+#include <nuclei.h>
+#include <symmet.h>
+      DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
+C
+C     Transform gradient to Cartesian coordinates
+C
+      CALL TRAGRD(GRAD,CGRAD,CSTRA,SCTRA,NCRREP(0,1),3*NUCDEP)
+      IF(IPRINT .GE. 5) THEN 
+         JOFF=0
+         DO 100 I = 1,NUCDEP
+            WRITE(LUPRI,'(3X,A10,3F21.10)') 
+     &            NAMDEP(I),(CGRAD(JOFF+J),J=1,3)
+            JOFF=JOFF+3
+100      CONTINUE
+         WRITE(LUPRI,'(A,//)') ' '
+      ENDIF
+C
+C     Calculate norm
+C
+      TMP = DDOT(3*NUCDEP,CGRAD,1,CGRAD,1)
+      GRDNORM=SQRT(TMP)
+      CALL HEADER('Norm of total molecular gradient',-1)
+      WRITE(LUPRI,'(17X,A22,F17.10,///)') 
+     &      'Norm of gradient  :  ',GRDNORM
+C
+C
+      RETURN
+      END
+C*****************************************************************************

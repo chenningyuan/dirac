@@ -27,21 +27,28 @@ C     SPINFR     - Neglect spin-orbit coupling
 C     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 C     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 C     SMLV1C     - Neglect two-center blocks of VSS
+C     ONECAP     - Do one-center approximation depending on model INTV1C
+C                  Default is type 2 : Neglect two-center blocks of VSS
+C                  ONECAP type 1 model. One-center (SS|SS) and (LL|SS).
+C                  Correction made to one-electron Fock-matrix.
+C                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
+C                  Correction made to two-electron Fock-matrix.
 C
       PARAMETER(MAX1OPER=10,MPRJREF=6)
       CHARACTER PRJFIL*6,VCPROJ*72
       COMMON/DCCHAM/PRJFIL(MPRJREF),VCPROJ(2,MPRJREF)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
      &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL,
-     &              NPRJREF
+     &              NPRJREF,ICTLV1C(2)
+      EQUIVALENCE (INTV1C, ICTLV1C(1))
       LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,
-     &        PROJEC,PROOWN,DFTHAM
+     &        PROJEC,PROOWN,DFTHAM,ONECAP,ONECOFF
       PARAMETER (NDCLHAM=17)
       COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,PROJEC,
-     &        PROOWN,DFTHAM
-      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC
+     &        PROOWN,DFTHAM,ONECAP,ONECOFF
+      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC,ONECNV
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
 #define MPRJREF 6

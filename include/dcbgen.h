@@ -12,6 +12,10 @@ C
 C  INTGEN - Give top level integral flag
 C  DOLVC  - Treat SS 2-e interaction by point charge model
 C  DOTSC  - Treat SS 2-e interaction by TS point charge model
+C  DIRSET - Conventional OR direct calculation of 2-e integrals 
+C           has been specified manually (used for SMLV1C)
+C  BNCRON - Improved screening of nucleus for bare nucleus starting guess
+C
 C  These flags should be pased on to every module
 C
 C
@@ -21,16 +25,16 @@ C
       LOGICAL FAMILY,INPTES,VACUUM,NUCVAC,DOPSI,DOTRA,NOTRA,DOLUCT,
      &        DOANA,DOPRP,DOHEINZ,DOHRM,DOJACO,DOPIN,DOPUT,
      &        DOCCM,DOCIM,OPTIMI,HRINPC, RDINPC, PARCAL, DIRCAL,
-     &        SEGBAS,NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN,
-     &        DOLVC,LVNEW,DOTSC
+     &        SEGBAS,NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR,
+     &        DOLVC,LVNEW,DOTSC,DIRSET,BNCRON 
       COMMON/GNLPAM/FAMILY,INPTES,VACUUM,DOPSI,NUCVAC,DOTRA,NOTRA,
      &              DOLUCT,DOPRP,DOANA,DOHEINZ,DOHRM,DOJACO,
      &              DOPIN,DOPUT,DOCCM,DOCIM,OPTIMI,
      &              HRINPC, RDINPC, PARCAL, DIRCAL,SEGBAS,
-     &              NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN,
-     &              DOLVC,LVNEW,DOTSC
+     &              NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR,
+     &              DOLVC,LVNEW,DOTSC,BNCRON 
       COMMON/GNIPAM/IPRGEN,ISPHTR,IDFLAG,LENBAS,IPRUSR,KCHARG,
-     &              INTGEN
+     &              INTGEN,ILLDIR,ISLDIR,ISSDIR,DIRSET
       COMMON/GNRPAM/CVAL,STOL(2),PANAS
       COMMON/PAMIOU/LUCOEF,LUOVLP,LUTMAT,LUPMAT,LU1INT
       CHARACTER BASDIR*(LBASDIR)

@@ -566,7 +566,7 @@ C           in case of symmetry-degenerate nuclei. Testing at this place,
 C           will, however, take out the work in ODCVEC and EXCOEF that 
 C           otherwise would cause a quartic scaling term.
 C
-            IF (SMLV1C) THEN
+            IF (ONECAP) THEN
                IF (NCENTA.NE.NCENTB.AND.ICA.EQ.2.AND.ICB.EQ.2) GO TO 200
             ENDIF
 C
@@ -638,7 +638,7 @@ C
                   SHCEQD = ISHELC .EQ. ISHELD
                   SHABAB = (ISHELA.EQ.ISHELC) .AND. (ISHELB.EQ.ISHELD)
 C
-                  IF (SMLV1C) THEN
+                  IF (ONECAP) THEN
                      IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2)
      &                  GO TO 400
                   ENDIF
@@ -1065,7 +1065,7 @@ C     in case of symmetry-degenerate nuclei. Testing at this place,
 C     will, however, take out the work in ODCVEC and EXCOEF that
 C     otherwise would cause a quartic scaling term.
 C
-      IF (SMLV1C) THEN
+      IF (ONECAP) THEN
          IF (NCENTA.NE.NCENTB.AND.ICA.EQ.2.AND.ICB.EQ.2) GO TO 999
       ENDIF
 C
@@ -1236,7 +1236,7 @@ C
             ELSE
                IPRINT = 0
             END IF
-            IF (SMLV1C) THEN
+            IF (ONECAP) THEN
                IF (NCENTC.NE.NCENTD.AND.ICC.EQ.2.AND.ICD.EQ.2) GO TO 200
             ENDIF
 C
@@ -2108,15 +2108,27 @@ C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
 C
 C
-C              f) Skip two-center SS contributions if requested
-C                 This test is rigorous because the symmetry-degeneracy of
-C                 the  nuclei is taken into account.
+C              f) One-center models :
+c
+C                 (i)   Skip two-center SS contributions if requested (type 2)
+C                 (ii)  Skip multicenter SS and LS contributions if requested 
+C                       (type 1 or 3)
+C                 (iii) For type 4 this point is never reached since we 
+C                       have INTFLG = 1 0 0 in this case.
 C
-               IF (SMLV1C) THEN
-                  IF ((ICENTA.NE.ICENTB.AND.LCLASH(ISHELA).EQ.2
+               IF (ONECAP) THEN
+                  IF (INTV1C .NE. 1) THEN
+C                 ... only atomic contributions to SS and LS
+                     IF ((LCLASH(ISHELA).EQ.2 .OR. LCLASH(ISHELB).EQ.2
+     &               .OR. LCLASH(ISHELC).EQ.2 .OR. LCLASH(ISHELD).EQ.2)
+     &              .AND. (.NOT.ONECEN) ) GO TO 300
+                  ELSE IF ((ICENTA.NE.ICENTB.AND.LCLASH(ISHELA).EQ.2
      &               .AND.LCLASH(ISHELB).EQ.2).OR.(ICENTC.NE.ICENTD
      &               .AND.LCLASH(ISHELC).EQ.2.AND.LCLASH(ISHELD).EQ.2))
-     &               GO TO 300
+     &               THEN
+C                 ... only one-center SS distributions
+                     GO TO 300
+                  END IF
                ENDIF
 C
 C              Integral contributes

@@ -29,6 +29,7 @@ usage()
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
    echo '     -xqr          : Include quadratic response module'
+   echo '     -dft          : Include DFT module'
    echo '     tarfile=make  : only generate new Makefile'
    echo '     tarfile=export: Make DIRAC.new.tar.gz'
 }
@@ -308,13 +309,13 @@ include ./Makefile.config
 # 
 
 OBJS = \\
-dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
+dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o dirac/dirv1c.o \\
 dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
 dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
 dirac/dirgrd.o dirac/dirsol.o dirac/dirgeo.o dirac/dirspf.o \\
 dirac/diropen.o dirac/diraos.o\\
 main/dirac.o \\
-abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\\
+abacus/her1ave.o    abacus/her1car.o    abacus/her1cat.o    abacus/her1drv.o    abacus/her1int.o\\
 abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
 abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
 abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\\

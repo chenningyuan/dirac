@@ -1,4 +1,4 @@
-C
+c
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -154,6 +154,8 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00,
      &          D2 = 2.0D0, DP5=0.5D0)
 C
+#include "mxcent.h"
+#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -315,7 +317,9 @@ C         restore density matrix in DMAT/tsaue
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
         ENDIF
 C
+C
         IF(DOTSC) CALL TSCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
+C
 C
 C        Write current two-electron Fock matrix to file
 C        ==============================================
@@ -372,10 +376,22 @@ C     Get one-electron Fock matrix (save in FOCK)
 C     ===========================================
 C
       IF(BARNUC) THEN
-        CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
+        CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)        
+        IF(BNCRON .AND. .NOT. ONESYS) THEN
+           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
+        ENDIF
       ELSE
         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
-        IF(TRIVEC) CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+C        
+C     Calculate correction according to the One-center app. models 
+C     ============================================================
+C
+        IF (TRIVEC) THEN
+           IF (ONECAP.AND. .NOT.SMLV1C) THEN
+              CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
+           END IF 
+           CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+        END IF
         CALL DAXPY(N2BBASXQ,D1,CMO,1,FOCK,1)
 C
 C       Add active two-electron Fock matrices
@@ -621,8 +637,9 @@ C
 C
 C     Print eigenvalues
 C
-      IF (IPRSCF .GE. 3)
-     &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
+C      IF (IPRSCF .GE. 3)
+C     &   CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
+      CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
 C
       DO 40 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 40
@@ -819,6 +836,8 @@ C*****************************************************************************
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00,
      &          D2 = 2.00D00)
 C
+#include "mxcent.h"
+#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbham.h"
@@ -1009,6 +1028,14 @@ C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
+C        
+C        Calculate correction according to the One-center app. models 
+C        ============================================================
+C
+         IF (ONECAP.AND. .NOT.SMLV1C) THEN
+              CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
+         END IF
+C
 C
 C        Calculate total energy
 C        ======================
@@ -1058,6 +1085,13 @@ C        Output: CMO  - MO-coefficients for current iteration
 C
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,.TRUE.,
      &               OVLSEL,WORK(KFREE),LFREE)
+        IF (ONECOFF) THEN
+          WRITE(LUPRI,'(/A,1P,D15.6,/2A/)') 
+     &   ' ** INFO : ONECAP. Wavefunction converged beyond : ONECNV = ',
+     &     ONECNV,'          ONECAP will be turned off, and integrals',
+     &     ' evaluated on the fly !'
+C            ONECOFF = .FALSE.
+        END IF
         IF(IPRSCF.GE.1) THEN
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
@@ -1091,7 +1125,13 @@ C
         CALL FLSHFO(LUPRI)
 C
         IF(EXIT) GOTO 30
-        INTBUF = INTFLG
+C       ... reset intbuf if one-center app. has been turned off
+        IF (ONECOFF) THEN
+           INTBUF = 0
+           ONECOFF = .FALSE.
+        ELSE
+           INTBUF = INTFLG
+        END IF
  10   CONTINUE
 C
 C     **********************************
@@ -1186,7 +1226,8 @@ C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
 C
-      LVCON = DOLVC.AND.(INTFLG.EQ.3)
+	  LVCON = DOLVC.AND.
+     &        ( (INTFLG.EQ.3) .OR. (ONECAP.AND.INTV1C.EQ.2) )
       CALL DZERO(E,8*(MXOPEN+1))
       ERGBUF  = DHFERG
       E1PART  = D0
@@ -1241,7 +1282,12 @@ C
         DHFERG = DHFERG + ERGSOL
       ENDIF
       IF(LVCON) THEN
-         CALL LVCORR(DMAT,WORK,LWORK,IPRSCF)
+         IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
+            JPRINT=0
+         ELSE
+            JPRINT=IPRSCF
+         END IF
+         CALL LVCORR(DMAT,WORK,LWORK,JPRINT)
          DHFERG = DHFERG + CORRLV
       ENDIF
       ELERGY = E1PART + E2PART
@@ -2696,7 +2742,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 C
-      DIMENSION BMAT(MXDIIS,MXDIIS)
+      DIMENSION BMAT(MXDIIS*MXDIIS)
       LOGICAL TOBE,CHKCNV,DSCFON,BARNUC
 C
       BARNUC  = .TRUE.
@@ -2758,9 +2804,12 @@ C
         IF(TOBE) THEN
           BARNUC = .FALSE.
         ELSE
-          WRITE(LUPRI,'(/A/)')
+          WRITE(LUPRI,'(/A)')
      &    '*** WARNING *** No trial vectors found.'//
      &    'Using bare nucleus approximation instead.'
+          IF (BNCRON) WRITE(LUPRI,'(A/)')
+     &    '                Improved by a crude '//
+     &    'estimate of the two-electron repulsion.'
           TRIVEC = .FALSE.
         ENDIF
       ENDIF

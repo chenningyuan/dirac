@@ -75,11 +75,8 @@ void *pointer;
       CALL_QUIT("Dirac could not allocate memory",31); 
    }
 #else
-   Malloc????
+   printf("\n MALLOC not defined for this architecture !\n");
+   exit(1);
 #endif
    return pointer;
 }
-
-
-
-

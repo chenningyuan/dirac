@@ -246,6 +246,7 @@ C
 C&&&& DIRECT: Direct calculation
                  READ(LUCMD,*) ILLDIR,ISLDIR,ISSDIR
                  IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+                 DIRSET = .TRUE.
                  IF(IDFLAG.GT.0) THEN
                    DIRCAL = .TRUE.
                  ELSE
@@ -309,6 +310,8 @@ C             using small component atomic charges
             DOTSC = .TRUE.
             GO TO 100
   113    CONTINUE
+C&&&& BNCRON : Improved screening for use with bare nucleus start guess
+            BNCRON = .TRUE.
             GO TO 100
   114    CONTINUE
 C&&&& VACUUM:QED-Fock (vacuum polarization included)
@@ -720,7 +723,7 @@ C***********************************************************************
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTSET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
@@ -739,7 +742,7 @@ C
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
-     &            '.AUTOCC','.NOSTOP','.XXXXXX','.DIISTH','.DAMPFC',
+     &            '.AUTOCC','.NOSTOP','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D'/
       DATA SET/.FALSE./
@@ -788,6 +791,7 @@ C
       DIISMO    = .TRUE.
       AUTOCC    = .FALSE.
       NOSTOP    = .FALSE.
+      BNCRON    = .TRUE.
       INIOCC    = .TRUE.
 C
 C     Initialize /CBIDHF/
@@ -1062,6 +1066,8 @@ C    NOSTOP: If convergence conditions are not fullfiled, do not stop dirac run!
                   NOSTOP = .TRUE.
                GO TO 100
    23          CONTINUE
+C&&&& BNCRON : Improved screening for use with bare nucleus start guess
+                  BNCRON = .FALSE.
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
@@ -1257,6 +1263,8 @@ C
         MXDIIS = 0
       ENDIF
 C
+      IF(DOLVC .AND. .NOT.(ONECAP.AND.INTV1C.EQ.2
+     &                .OR. ONECAP.AND.INTV1C.EQ.3)) ISSINT = 0
       IF (LEVYLE) THEN
         ISLINT = 0
         ISSINT = 0
@@ -1265,6 +1273,10 @@ C
         ISSINT = 0
       ENDIF
       INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
+      IF (ONECAP.AND.(INTV1C.EQ.4)) THEN
+         INTSET = .TRUE.
+         INTDEF = 1
+      END IF
       IF(CNVINT(1).LT.DUMMY) ITRINT(1) = 1
       IF(CNVINT(2).LT.DUMMY) ITRINT(2) = 1
 C
@@ -1279,9 +1291,16 @@ C
         WRITE(LUPRI,'(1X,A)') 
      &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
       ENDIF 
-      WRITE(LUPRI,'(1X,A)') 
-     &   'DHFINP: Set-up for Dirac-Hartree-Fock calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
+c
+c     We disable evaluation of LS and SS integrals in 
+c     One-center app. type 4 /jkp
+c
+      IF (ONECAP.AND.(INTV1C.EQ.4).AND.INTSET) THEN
+           WRITE(LUPRI,'(1X,A)') 
+     &     '* INTFLG reset to `1 0 0` since ONECAP type 4 has '//
+     &     'been specified'
+      ENDIF
 C
 C     Print info about #electrons etc.
 C
@@ -1444,6 +1463,13 @@ C
      +    'SS-integrals from iteration ',ITRINT(2)
         ENDIF
       ENDIF
+      IF ((ONECNV .NE. D0) .AND. (ONECNV .LT. SCFCNV(1))) THEN
+         WRITE(LUPRI,'(2(/A,D12.6),/A)')
+     &   ' ** ONECAP-WARNING : ONECNV = ',ONECNV,
+     &   '                     SCFCNV(1) = ',SCFCNV(1),
+     &   '                     ONECNV re-initialized to SCFCNV(1)'
+         ONECNV = SCFCNV(1)
+      END IF
 C
       WRITE(LUPRI,'(1X,A)') '***** OUTPUT CONTROL *****'
       IF(IPREIG.EQ.0) WRITE(LUPRI,'(1X,A)')
@@ -1586,7 +1612,9 @@ C
       DOSCF   = .FALSE.
       DODHF   = .FALSE.
       DODFT   = .FALSE.
+      DOLVC   = (ONECAP .AND. INTV1C.EQ.2)
       DOMP2   = .FALSE.
+      DOTSC   = .FALSE.
       DORES   = .FALSE.
 C     next two in dcbgen.h -- inconsistent ? hjaaj Apr 2002 TODO
       DOCCM   = .FALSE.
@@ -1732,11 +1760,108 @@ C
       IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
       IF(DOLUCT)WRITE(LUPRI,'(1X,A)') '* Run LUCITA code'
-      IF(DOLVC) THEN
-         WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  classical repulsion of small component atomic charges.'
+c
+      IF(DOLVC.AND. .NOT.ONECAP) WRITE(LUPRI,'(1X,A)')
+     &    '* SS integrals neglected:',
+     &    '  Interatomic Coulombic SS-contributions modelled ',
+     &    '  by classical repulsion of small component atomic charges.'
+c
+C
+C   ... Check that the selected One-center model is reasonable,
+C       and write appropriate output.
+C
+      IF(.NOT.LEVYLE .AND. ONECAP) THEN
+         IF (INTV1C .LE. 0 .OR. INTV1C .GT. 4) THEN
+            CALL QUIT('  Invalid one-center model specified.')
+         END IF
+         IF(INTV1C.EQ.1) THEN
+            WRITE(LUPRI,'(1X,A)')
+     &      '* Only one-center SS parts of the e-e repulsion and n-e',
+     &      '  attraction are calculated explicitly.'
+            IF (ICTLV1C(2) .EQ. 1)
+     &          WRITE(LUPRI,'(1X,A)')
+     &       '  - Using a projection scheme for the multicenter parts.'
+            IF (ICTLV1C(2) .EQ. 2)
+     &          WRITE(LUPRI,'(1X,A)')
+     &       '  - Testing the simulation of terms neglected in this',
+     &       '    way (cheap alternative to Luuk`s projection scheme)'
+	     ELSE IF (INTV1C .EQ. 2) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &       '* One-center approximation (model 2):',
+     &    '  - Multicenter SS and LS integrals are modelled by',
+     &    '    classical interaction of atomic charges'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.'
+             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using tabulated small component charges.'
+             ELSE IF (ICTLV1C(2) .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Testing HJJs penalty suggestion.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Wrong one-center model specification !'
+                CALL QUIT('    HERRDN : ERROR in readin. ')
+             END IF
+         ELSE IF(INTV1C.EQ.3) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &       '* One-center approximation (model 3):',
+     &    '  - Multicenter SS and LS modelled by Coulomb attraction',
+     &    '    integrals using large and small component charges',
+     &    '    based on the density matrix.'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Charges are distributed on the nuclei and on points',
+     &    '    between the nuclei where the contribution to the',
+     &    '    interaction from the dipole moment is zero.'
+             ELSE IF(ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Option not available (no tabulated large component '//
+     &         'charges).'
+               CALL QUIT('    HERRDN : ERROR in readin. ')
+             ELSE IF(ICTLV1C(2) .EQ. 2) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Using atomic centered Mulliken large and small'//
+     &        ' component charges.'
+             ELSE IF(ICTLV1C(2) .EQ. 3) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &    '  - Charges are distributed on the nuclei and on the ',
+     &    '    midpoints between the nuclei.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Invalid one-center model specified !'
+                CALL QUIT('    ONECAP : ERROR in readin. ')
+             END IF
+         ELSE IF(INTV1C.EQ.4) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &       '* One-center approximation (model 4):',
+     &    '  - All SS and LS integrals modelled by Coulomb attraction',
+     &    '    integrals using small component atomic charges'
+             IF(ICTLV1C(2) .EQ. 0) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using Mulliken small component charges.'
+             ELSE IF (ICTLV1C(2) .EQ. 1) THEN
+                WRITE(LUPRI,'(1X,A)')
+     &          '  - Using tabulated small component charges.'
+             ELSE
+                WRITE(LUPRI,'(1X,/A/)') 
+     &          '    Wrong ONECAP type 4 specification !'
+                CALL QUIT('    HERRDN : ERROR in readin. ')
+             END IF
+         END IF
+         IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
+             WRITE(LUPRI,'(1X,A)')
+     &    '  - Default direct evaluation of all integrals changed',
+     &    '    by ONECAP since nothing was specified in **GENEREL.',
+     &    '    -->  LS and SS integrals are written to disk.'
+         END IF
+         IF(ONECNV .GT. D0) THEN
+           WRITE(LUPRI,'(1X,A,/1X,A,1P,D15.6)')
+     &  '  - One-center app. will be turned off when wavefunction is',
+     &  '    converged beyond the specified threshold of : ONECNV = ',
+     &       ONECNV
+         END IF
 C
 C        Calculate LV-correction
 C        (SS integrals modelled by Coulombic correction)
@@ -2840,7 +2965,16 @@ C
       ELSE
         DIRCAL = .FALSE.
       ENDIF
+C --->
+C
+C     Test : disable automatic conversional evaluation of
+C            one-center LS and SS integrals in ONECAP models. 
+C            These can also take up quite some space !!!   /jkp
+C
+      DIRSET = .TRUE.
+C <---
       IPRUSR = 0
+      USRIPR = .FALSE.
       SEGBAS = .TRUE.
       NEWBAS = .TRUE.
       NEWPRP = .TRUE.
@@ -2917,8 +3051,8 @@ C
      &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
-     &            '.DFT   ','.HFXFAC','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
+     &            '.ONECAP','XXXXXXX','XXXXXXX','XXXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -2945,7 +3079,11 @@ C
       ZORA    = .FALSE.
       ZORA4   = .FALSE.
       ZORASC  = .FALSE.
+      ONECAP  = .FALSE.
       SMLV1C  = .FALSE.
+      ONECOFF = .FALSE.
+      INTV1C  = 0
+      ONECNV  = D0
       N1OPER  = 0
       SSMTRC  = D1
       HFXFAC  = D1
@@ -2987,7 +3125,8 @@ C
          DO 99 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,109,110,
-     &                111,112,113,114,115,116,117,118,119,120),I
+     &                111,112,113,114,115,116,117,118,119,120,
+     &                121,122,123,124),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -3097,14 +3236,19 @@ C&&& ZORA   : Use ZORA approximation
              GO TO 100
   115      CONTINUE
 C&&& SMLV1C : Neglect potential for off-diagonal SS-blocks
+C    jkp    : This keyword enables Luuk's one-center
+C             projection scheme
              SMLV1C = .TRUE.
+             ONECAP = .TRUE.
+             INTV1C = 1
+             ICTLV1C(2) = 1
              ICHANG = ICHANG + 1
              GO TO 100
   116      CONTINUE
 C&&& PRJTHR: Smallest norm accepted in projection step
-              READ(LUCMD,*) PRJTHR
-              GOTO 100
-  117     CONTINUE
+             READ(LUCMD,*) PRJTHR
+             GOTO 100
+  117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
              DFTHAM = .TRUE.
             GO TO 100
@@ -3113,10 +3257,33 @@ C&&& HFXFAC: weight of pure exchange
              READ(LUCMD,*) HFXFAC
             GO TO 100
   119     CONTINUE
+C&&& SCQSET: Reset small component charge for nuclei IZ (for onecap)
+             READ(LUCMD,*) IZ, SCQVAL
+             CALL SCQSET(IZ,SCQVAL)
             GO TO 100
   120     CONTINUE
+C&&& ONECNV: Set threshold for turning off ONECAP model
+            READ(LUCMD,*) ONECNV
             GO TO 100
   121     CONTINUE
+C&&& ONECAP : Neglect potential for off-diagonal SS-blocks
+             READ(LUCMD,*) JNTV1C
+             INTV1C = MOD(JNTV1C,10)
+             ICTLV1C(2) = JNTV1C / 10
+             ONECAP  = .TRUE.
+C
+C   ... Whether to evaluate integrals in a direct or concentional
+C       matter has not been specified in **GENEREL
+C       We write LS and SS integrals to disk by default in the
+C       ONECAP type 2 & 3 model.            /jkp
+C
+             IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
+                ILLDIR = 1
+                ISLDIR = 0
+                ISSDIR = 0
+                IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+             END IF
+             ICHANG = ICHANG + 1
             GO TO 100
   122     CONTINUE
             GO TO 100
@@ -3137,6 +3304,22 @@ C
 C     Remove inconsistencies
 C     =====================
 C
+      IF (NOSMLV .AND. ONECAP) THEN
+        IF(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1) THEN
+          WRITE(LUPRI,'(A)')
+     &  ' INFO: .SMLV1C ignored because .LEVY-L or .NOSMLV specified'
+        ELSE
+          WRITE(LUPRI,'(A)')
+     &  ' INFO: .ONECAP ignored because .LEVY-L or .NOSMLV specified'
+        ENDIF
+        ONECAP = .FALSE.
+      END IF
+      IF (SMLV1C.AND.ONECAP.AND.(INTV1C.NE.1).AND.(ICTLV1C(2).NE.1))THEN
+C     ... User asked for both SMLV1C and a non-equivalent ONECAP model
+C         The ONECAP model overrides SMLV1C !!!
+          WRITE(LUPRI,'(A)') ' INFO: .SMLV1C ignored ',
+     &   'another ONECAP model was specified.'
+      ENDIF
       IF (LEVYLE) THEN
          IF(FREEPJ) CALL QUIT('Conflicting options : LEVYLE & FREEPJ !')
          IF(VEXTPJ) CALL QUIT('Conflicting options : LEVYLE & VEXTPJ !')
@@ -3252,14 +3435,14 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Levy-Leblond Hamiltonian'
       ENDIF
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(1X,A)') 
-     &    'with the following modifications:'
+      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)') 
+     &    '   with the following modifications:'
       IF(SPINFR) THEN
-         WRITE(LUPRI,'(1X,A,A)') '* Spin-orbit terms zeroed out ',
+         WRITE(LUPRI,'(3X,A)') '- Spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
       IF(N1OPER.GT.0) THEN
-        WRITE(LUPRI,'(1X,A,A)') '* The following one-electron ',
+        WRITE(LUPRI,'(3X,A)') '- The following one-electron '//
      &    'operators have been added:'
         DO I = 1,N1OPER
           INDXPR = IPR1OP(I)
@@ -3300,29 +3483,26 @@ C         Operator must be symmetric under time reversal
         ENDDO
       ENDIF      
       IF(ONESYS) THEN
-        WRITE(LUPRI,'(1X,A,A)') '* Two-electron part ignored ',
+        WRITE(LUPRI,'(3X,A)') '- Two-electron part ignored '//
      &   '(one-electron system)'
       ENDIF
       IF (.NOT.LEVYLE) THEN
          IF(FREEPJ) THEN
-           WRITE(LUPRI,'(1X,A)')
-     &        '* Free positronic solutions projected out'
+           WRITE(LUPRI,'(3X,A)')
+     &        '- Free positronic solutions projected out'
          ENDIF
          IF(VEXTPJ) THEN
-           WRITE(LUPRI,'(1X,A)') '* External potential positronic '//
+           WRITE(LUPRI,'(3X,A)') '- External potential positronic '//
      &          'solutions projected out'
          ENDIF
-         IF(ZORA.AND..NOT.ZORA4) WRITE(LUPRI,'(1X,A,1P,D8.2)')
-     &      '* ZORA approximation using approximate density'
-         IF(ZORA4) WRITE(LUPRI,'(1X,A,1P,D8.2)')
-     &      '* ZORA approximation using the full density'
-         IF(ZORASC) WRITE(LUPRI,'(1X,A,1P,D8.2)')
-     &      '* Calculating and printing scaled ZORA orbital energies'
-         IF(NOSMLV) WRITE(LUPRI,'(1X,A)')
-     &      '* No nuclear attraction integrals for small components !'
-         IF(SMLV1C) WRITE(LUPRI,'(1X,A)')
-     &      '* The SS parts of the e-e repulsion and n-e attraction',
-     &      '  are done via a one-center approximation scheme' 
+         IF(ZORA.AND..NOT.ZORA4) WRITE(LUPRI,'(3X,A,1P,D8.2)')
+     &      '- ZORA approximation using approximate density'
+         IF(ZORA4) WRITE(LUPRI,'(3X,A,1P,D8.2)')
+     &      '- ZORA approximation using the full density'
+         IF(ZORASC) WRITE(LUPRI,'(3X,A,1P,D8.2)')
+     &      '- Calculating and printing scaled ZORA orbital energies'
+         IF(NOSMLV) WRITE(LUPRI,'(3X,A)')
+     &      '- No nuclear attraction integrals for small components !'
       ENDIF
 C
       IF(PROJEC) THEN

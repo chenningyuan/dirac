@@ -30,6 +30,24 @@
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
+# Does 'echo' understand backslash commands
+#
+if [ "	" != "`echo '\t'`" ]; then
+   echo='echo -e'
+fi
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# Does 'echo' understand backslash commands
+#
+if [ "	" != "`echo '\t'`" ]; then
+   echo='echo -e'
+fi
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
 #
 # Function usage
 #    - prints usage to stdout
@@ -171,7 +189,7 @@ setup_command()
       fi
    fi
 
-   echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
+   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
 
    #
    # Delete $WRK/$DIRAC if the executable is older than the
@@ -365,7 +383,7 @@ distribute_work_dir()
       cp $PBS_NODEFILE machines
    else
 #    Serial run or shared disk systems
-     cat `hostname` > machines 
+     echo `hostname` > machines 
    fi
 #
 #  Initialize value of master
@@ -403,9 +421,9 @@ save_files()
    #
    if [ -n "$GET_FILES" ]; then
       for file in $GET_FILES; do
-         echo "   Saving $WRK/$file : \c"
+         $echo "   Saving $WRK/$file : \c"
          if [ -a $WRK/$file ]; then
-            cp $WRK/$file $LOC || echo "not \c"
+            cp $WRK/$file $LOC || $echo "not \c"
             echo "ok"
          else
             echo "not found"
@@ -427,7 +445,7 @@ copy_files()
    # COPY MOLECULE AND MENU FILE
    #
    cd $WRK
-   echo "   Copying $LOC/$MOL.mol to working directory : \c"
+   $echo "   Copying $LOC/$MOL.mol to working directory : \c"
 #   if [ -a $LOC/$MOL.mol ]; then
    if [ -f $LOC/$MOL.mol ]; then
       cp $LOC/$MOL.mol MOLECULE.INP || \
@@ -442,7 +460,7 @@ copy_files()
       EXIT=1
       exitfunc
    fi
-   echo "   Copying $LOC/$MENU.inp to working directory : \c"
+   $echo "   Copying $LOC/$MENU.inp to working directory : \c"
 #   if [ -a $LOC/$MENU.inp ]; then
    if [ -f $LOC/$MENU.inp ]; then
       cp $LOC/$MENU.inp DIRAC.INP || \
@@ -462,7 +480,7 @@ copy_files()
    #
    if [ -n "$COPY_FILES" ]; then
       for file in $COPY_FILES; do
-         echo "   Copying $LOC/$file to working directory : \c"
+         $echo "   Copying $LOC/$file to working directory : \c"
          if [ -a $LOC/$file ]; then
             cp $LOC/$file . || \
                ( \
@@ -497,7 +515,7 @@ save_old_output()
    #
 #   if [ -a $OUTPUT_FILE ]; then
    if [ -f $OUTPUT_FILE ]; then
-      echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
+      $echo "   Existing file ${OUTPUT_FILE##*/} renamed to ${OUTPUT_FILE##*/}.bak : \c"
       mv $OUTPUT_FILE $OUTPUT_FILE.bak || \
          ( \
             echo "   Error renaming $OUTPUT_FILE" ; \

@@ -2628,7 +2628,6 @@ C     Data on a given shell in an AO-block:
 C       NCENT   - index of symmetry independent center
 C       NUMCF   - index of shell in AO-block
 C       NBCH    - index of block in AO-vector
-C       LAMN    - name of center
 C       ISTBAO  - stabiliser: basic sym. op. that do not move center
 C       NHKT    - angular quantum number (s=1,p=2,d=3 etc.)
 C       KHKT    - number of spherical (Cartesian) components

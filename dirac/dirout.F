@@ -132,20 +132,23 @@ C
         ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
         FMT = MXFORM(ERGMAX,20)
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +     'Electronic energy       :   ',ELERGY
+     +      'Electronic energy            :   ',ELERGY
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +     'Nuclear repulsion energy:   ',POTNUC
+     +      'Nuclear repulsion energy     :   ',POTNUC
         IF(SOLVEN) THEN
           ERGSOL = ESOLVN + ESOLVE
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +     'Solvent energy          :   ',ERGSOL
-      ENDIF
-        IF(LVCON) THEN
+     +      'Solvent energy               :   ',ERGSOL
+        ENDIF
+        IF (ONECAP .AND. INTV1C.EQ.2) THEN
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +       'SS Coulombic correction:    ',CORRLV
+     +      'ONECAP model 1 SS correction :   ',CORRLV
+        ELSE IF(LVCON) THEN
+          WRITE(LUPRI,'(3X,A,'//FMT//')')
+     +      'SS Coulombic correction      :   ',CORRLV
         ENDIF
         WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +     'Total energy            :   ',DHFERG
+     +      'Total energy                 :   ',DHFERG
       ENDIF
 C
 C     Check that there are no eigenvalues in the gap
@@ -624,7 +627,8 @@ C
       IF(NGAP.GT.0) THEN
         CALL HEADER('WARNING from EIGCHK',-1)
         WRITE(LUPRI,'(3X,I5,A)') NGAP,' positron states intruding'
-        WRITE(LUPRI,'(6X,I5,F18.8)') ((NVAL-I),EIG(NVAL-I),I=0,(NGAP-1))
+        WRITE(LUPRI,'(6X,I5,2F18.8)')
+     *     ((NVAL-I),EIG(NVAL-I),EIG(NVAL-I)-GAP,I=0,(NGAP-1))
       ENDIF
       RETURN
       END

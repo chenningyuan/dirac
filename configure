@@ -1468,10 +1468,22 @@ EOF
 #
 # Make pam shell script
 #
+# ksh is preferred - otherwise use sh
 #
+$echo '\n\nChecking for /bin/ksh or /bin/bash: \c'
+if [ -e /bin/ksh ]; then
+   echo "found /bin/ksh"
+   echo '#!/bin/ksh' > $INSTALL_DIR/pam
+elif [ -e /bin/bash ]; then
+   echo "found /bin/bash"
+   echo '#!/bin/bash' > $INSTALL_DIR/pam
+else
+   echo ""
+   echo "Neither ksh nor bash seems to be installed -> using sh."
+   echo '#!/bin/sh' > $INSTALL_DIR/pam
+fi
 $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
-cat <<EOF > $INSTALL_DIR/pam
-#!/bin/sh
+cat <<EOF>> $INSTALL_DIR/pam
 #
 QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp

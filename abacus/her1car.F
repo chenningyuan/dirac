@@ -94,18 +94,20 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
-      PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, THIRD = D1/D3,
-     &           GNUTHR = 1.D-4,D1P5 = 1.5D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
+     &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
 C
-      LOGICAL PROPTY, KINODC, SECDER, DIFDIP
+      LOGICAL PROPTY, KINODC, SECDER, DIFDIP, DOST, DONA
       DIMENSION WORK(LWORK), STDER0(KCKTAB,2), 
      &          STDER2(KCKTAB,6,2), RLMINT(*), RLMTAB(*), FCM(*),
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), AHGTF(*), NCENTC(*), FACINT(*), COORC(3,*),
      &          GEXP(*), JCENTC(*)
 #ifdef PRG_DIRAC
+      PARAMETER (DOST = .TRUE.)
       DIMENSION STDER1(KCKTAB,6,2)
 #else
+      PARAMETER (DOST = .TRUE., DONA = .TRUE.)
       DIMENSION STDER1(KCKTAB,3,2)
 #endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -121,6 +123,10 @@ C
       DIFABY = CORAY - CORBY
       DIFABZ = CORAZ - CORBZ
       DISTAB = DIFABX*DIFABX + DIFABY*DIFABY + DIFABZ*DIFABZ
+C
+#ifdef PRG_DIRAC
+      DONA = .NOT.DODERM
+#endif
 C
       NATOT  = 0
       IF (PROPTY) THEN
@@ -253,13 +259,17 @@ C
 C
 C           Nuclear attraction integrals
 C
-C           jth - if DODERM then skip
-            IF (.NOT. DODERM) THEN
+            IF (DONA) THEN
                IADR = 1
                DO 300 IATOMC = 1,NATOMC
                   ICENTC = NCENTC(IATOMC)
+                  FACTOR = FACINT(IATOMC)
+                  IF ( FACTOR .EQ. D0 ) THEN
+                     CALL DZERO(AHGTF(IADR),NAHGTF)
+                     IADR = IADR + NAHGTF
+                     GO TO 300
+                  END IF
 C                  IF(.NOT.(PROPTY.AND.ONECEN.AND.ICENTA.EQ.ICENTC)) THEN
-                     FACTOR = FACINT(IATOMC)
                      DIFCPX = COORC(1,IATOMC) - CORPX
                      DIFCPY = COORC(2,IATOMC) - CORPY
                      DIFCPZ = COORC(3,IATOMC) - CORPZ
@@ -287,15 +297,14 @@ C           **********************************************
 C
             IF (PROPTY) THEN
                IF (ONECEN) THEN
-C                 jth - If DODERM then skip
-                  IF (.NOT. DODERM) THEN
+                  IF (DONA) THEN
                      CALL CINT1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,ADER,
      &                          AHGTF,NCENTC,NATOMC,SECDER)
                   END IF
                ELSE
                   CALL CINT2(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
      &                       STDER1,STDER2,ADER,SHGTF,AHGTF,NATOMC,
-     &                       SECDER)
+     &                       SECDER,DOST,DONA)
                END IF
 Cjth
 #if !defined (PRG_DIRAC)
@@ -304,7 +313,7 @@ Cjth
 #endif
             ELSE
                CALL CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,
-     &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT)
+     &                    SHGTF,ADER,AHGTF,NATOMC,IPRINT,DOST,DONA)
             END IF
             IF (SOLVNT) THEN
                CALL SOLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -517,15 +526,17 @@ C
       END
 C  /* Deck cint0 */
       SUBROUTINE CINT0(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,SHGTF,
-     &                 ADER,AHGTF,NATOMC,IPRINT)
+     &                 ADER,AHGTF,NATOMC,IPRINT,DOST,DONA)
 C
 C     TUH
+C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
+      LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
@@ -541,25 +552,30 @@ C
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
+         INT = INT + 1
 C
+C    If DOST true:
 C    **********************************************************
 C    ***** CALCULATE OVERLAP AND KINETIC ENERGY INTEGRALS *****
 C    **********************************************************
 C
+      IF (DOST) THEN
          X0 = ODC(LVALA,LVALB,0,0,0,1)
          Y0 = ODC(MVALA,MVALB,0,0,0,2)
          Z0 = ODC(NVALA,NVALB,0,0,0,3)
          X2 = ODC(LVALA,LVALB,0,2,0,1)
          Y2 = ODC(MVALA,MVALB,0,2,0,2)
          Z2 = ODC(NVALA,NVALB,0,2,0,3)
-         INT = INT + 1
          STDER0(INT,1) = STDER0(INT,1)+SFAC*X0*Y0*Z0
          STDER0(INT,2) = STDER0(INT,2)+TFAC*(X2*Y0*Z0+X0*Y2*Z0+X0*Y0*Z2)
+      END IF
 C
+C     If DONA true:
 C     **************************************************
 C     ***** CALCULATE NUCLEAR ATTRACTION INTEGRALS *****
 C     **************************************************
 C
+      IF (DONA) THEN
          IADRAV = 1
          AINT = D0
          DO 200 IV = 0, NVALA + NVALB
@@ -581,6 +597,7 @@ C
             IADRAV = IADRAV + ISTEPV
   200    CONTINUE
          ADER(INT) = ADER(INT) + AINT
+      END IF
 C
 C        PRINT SECTION
 C
@@ -705,7 +722,7 @@ C
       END
 C  /* Deck cint2 */
       SUBROUTINE CINT2(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,STDER0,STDER1,
-     &                 STDER2,ADER,SHGTF,AHGTF,NATOMC,SECDER)
+     &                 STDER2,ADER,SHGTF,AHGTF,NATOMC,SECDER,DOST,DONA)
 C
 C     TUH
 C
@@ -714,14 +731,14 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
-      LOGICAL SECDER
+      LOGICAL SECDER,DOST,DONA
       DIMENSION STDER0(KCKTAB,2),
-     &          STDER1(KCKTAB,6,2), 
+     &          STDER2(KCKTAB,6,2), 
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
 #ifdef PRG_DIRAC
-      DIMENSION STDER2(KCKTAB,6,2)
+      DIMENSION STDER1(KCKTAB,6,2)
 #else
-      DIMENSION STDER2(KCKTAB,6,2)
+      DIMENSION STDER1(KCKTAB,3,2)
 #endif
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
@@ -741,6 +758,7 @@ C
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
+         INT = INT + 1
 C
 #ifdef PRG_DIRAC
 C    ****************************************************
@@ -752,6 +770,7 @@ C    ***** CALCULATE OVERLAP AND KINETIC ENERGY INTEGRALS *****
 C    **********************************************************
 #endif
 C
+      IF (DOST) THEN
          DERX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
          DERY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
          DERZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
@@ -771,7 +790,6 @@ C
             DERY4 = SHGTF*ODC(MVALA,MVALB,0,4,0,2)
             DERZ4 = SHGTF*ODC(NVALA,NVALB,0,4,0,3)
          END IF
-         INT = INT + 1
 Cjth - is STDER0 ever used?
          STDER0(INT,1)   = STDER0(INT,1)   + DERX0*DERY0*DERZ0
 C        jth - derivatives of the overlap matrix
@@ -826,15 +844,13 @@ C        jth - derivatives of the momentum
      &                                        + DERX0*DERY0*DERZ4)*DP5
          END IF
 #endif
+      END IF
 C
 C     **************************************************
 C     ***** CALCULATE NUCLEAR ATTRACTION INTEGRALS *****
 C     **************************************************
 C
-C        jth - skip if DODERM
-#ifdef PRG_DIRAC
-         IF (DODERM) GOTO 150
-#endif
+      IF (DONA) THEN
          MAXT = LVALA + LVALB + MAXADD
          MAXU = MVALA + MVALB + MAXADD
          MAXV = NVALA + NVALB + MAXADD
@@ -959,9 +975,7 @@ C
   300       CONTINUE
             IADRAV = IADRAV + ISTEPV
   200    CONTINUE
-#ifdef PRG_DIRAC
-  150 CONTINUE
-#endif
+      END IF
   100 CONTINUE
       RETURN
       END

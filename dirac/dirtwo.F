@@ -71,6 +71,11 @@ C
       IF(IPRTWO.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
       ENDIF
+C
+C     Initialize Fock matrix
+C     ======================
+C
+      CALL DZERO(FMAT,N2BBASXQ*NFMAT)
 C 
 C     In approximate density ZORA only the LL part of the density matrix
 C     is to be used
@@ -113,9 +118,9 @@ C
         CALL BSTOBU(DMAT(1,1,I),NZ,WORK,LWORK)
       ENDDO
 C
-C     ================
-      IF (SMLV1C) THEN
-C     ================
+C     ===========================
+      IF (ONECAP.AND.SMLV1C) THEN
+C     ===========================
 C
 C        Adapt density matrix in the case that we are going to neglect
 C        multicenter integrals in the VSS part. Save original density
@@ -175,9 +180,9 @@ C
      &              IPRINT,WORK,LWORK)
       ENDIF
 C
-C     ================
-      IF (SMLV1C) THEN
-C     ================
+C     ===========================
+      IF (ONECAP.AND.SMLV1C) THEN
+C     ===========================
 C
 C        Correct for neglected multi-center contributions via a 1-center
 C        expansion that approximates the missing integrals. Restore 
@@ -1492,6 +1497,7 @@ C*****************************************************************************
 C
 #include "ccom.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "cbihr2.h"
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
@@ -1514,26 +1520,24 @@ C
 C
 C       Check for restart
 C
-        INQUIRE(FILE='DFLLTA',EXIST=TOBE)
-        REGO = TOBE
-        INQUIRE(FILE='DFLLTB',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
-        INQUIRE(FILE='DFLLSA',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
-        INQUIRE(FILE='DFLLSB',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
-        IF(REGO) THEN
-          WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** : TWOGEN - LL-integrals from restart'
-          GOTO 20
-        ENDIF
+cjkp+hjaaj: do not allow restart; we may have a new geometry
+c       INQUIRE(FILE='DFLLSA',EXIST=TOBE)
+c       REGO = TOBE
+c       INQUIRE(FILE='DFLLSB',EXIST=TOBE)
+c       REGO = TOBE.AND.REGO
+c       IF(REGO) THEN
+c         WRITE(LUPRI,'(A)')
+c    &     '*** INFO *** : TWOGEN - LL-integrals from restart'
+c         GOTO 20
+c       ENDIF
+cjkp+hjaaj end
 C
 C       Generate integrals
 C
         I2TYP = 1
         CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
         IF(IPRTWO.GE.2)
-     +     WRITE(LUPRI,'(A,E9.2)') 'LL-int - threshhold:',THRS
+     +     WRITE(LUPRI,'(1P,A,D9.2)') 'LL-int - threshhold:',THRS
         CALL TIMER('START ',TIMSTR,TIMEND)
         CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
      &              IDUM,IDUM,IRNTYP,MAXDIF,JATOM,
@@ -1553,18 +1557,26 @@ C
 C
 C       Check for restart
 C
-        INQUIRE(FILE='DFSLTA',EXIST=TOBE)
-        REGO = TOBE
-        INQUIRE(FILE='DFSLTB',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
         INQUIRE(FILE='DFSLSA',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
+        REGO = TOBE
         INQUIRE(FILE='DFSLSB',EXIST=TOBE)
         REGO = TOBE.AND.REGO
+C
+C       IF one-center model 2,3,4 is used for geometry optimization,
+C       do not generate integrals since these are one-center
+C       and therefore unchanged during minimization.   /jkp
+C
         IF(REGO) THEN
-          WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** : TWOGEN - SL-integrals from restart'
-          GOTO 30
+          IF ((ONECAP.AND.INTV1C.NE.1).AND.OPTIMI) THEN
+            WRITE(LUPRI,'(/2A)')
+     &      '** One-center LS-integrals unchanged in this geometry -->',
+     &      '   Read from disk.'
+            GOTO 30
+cjkp+hjaaj: do not allow restart; we may have a new geometry
+c         ELSE 
+c            WRITE(LUPRI,'(A)')
+c    &      '*** INFO *** : TWOGEN - SL-integrals from restart'
+          ENDIF
         ENDIF
 C
 C       Generate integrals
@@ -1573,7 +1585,7 @@ C
         THRBUF = THRS
         THRS   = THRS*THRFAC(1)
         IF(IPRTWO.GE.2)
-     +     WRITE(LUPRI,'(A,E9.2)') 'SL-int - threshhold:',THRS
+     +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
         CALL OPNFIL(LUINTA,'DFTWSL','UNKNOWN','TWOGE1')          
         CALL TIMER('START ',TIMSTR,TIMEND)
         CALL TWOINT(WORK,LWORK,DUM,DUM,1,IDUM,IDUM,DUM,
@@ -1595,18 +1607,30 @@ C
 C
 C       Check for restart
 C
-        INQUIRE(FILE='DFSSTA',EXIST=TOBE)
-        REGO = TOBE
-        INQUIRE(FILE='DFSSTB',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
+C        INQUIRE(FILE='DFSSTA',EXIST=TOBE)
+C        REGO = TOBE
+C        INQUIRE(FILE='DFSSTB',EXIST=TOBE)
+C        REGO = TOBE.AND.REGO
         INQUIRE(FILE='DFSSSA',EXIST=TOBE)
-        REGO = TOBE.AND.REGO
+        REGO = TOBE
         INQUIRE(FILE='DFSSSB',EXIST=TOBE)
         REGO = TOBE.AND.REGO
+C
+C       IF one-center model 2,3,4 is used for geometry optimization,
+C       do not generate integrals since these are one-center
+C       and therefore unchanged during minimization.   /jkp
+C
         IF(REGO) THEN
-          WRITE(LUPRI,'(A)')
-     &     '*** WARNING *** : TWOGEN - SS-integrals from restart'
-          GOTO 40
+          IF ((ONECAP.AND.INTV1C.NE.1).AND.OPTIMI) THEN
+            WRITE(LUPRI,'(/2A)')
+     &      '** One-center SS-integrals unchanged in this geometry -->',
+     &      '   Read from disk.'
+            GOTO 40
+cjkp+hjaaj: do not allow restart; we may have a new geometry
+c         ELSE 
+c           WRITE(LUPRI,'(A)')
+c    &      '*** INFO *** : TWOGEN - SS-integrals from restart'
+          ENDIF
         ENDIF
 C
 C       Generate integrals
@@ -3402,9 +3426,10 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
            IF (IPRINT .GT. 0) THEN
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
@@ -3426,10 +3451,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
            DO I = 1,NFMAT
               CALL HEADER('Skeleton LL-FOCK',-1)
@@ -3462,11 +3487,11 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
            IF (IPRINT .GT. 0) THEN
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
-C
               WRITE(LUPRI,'(A,A12)')
      &         '>>>> Total wall time used in HER_PARDRV so far   :',
      &         TOTTID
@@ -3487,10 +3512,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SL-FOCK',-1)
@@ -3525,11 +3550,12 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
            IF (IPRINT .GT. 0) THEN
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
-              WRITE(6,'(A,A12)')
+              WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
@@ -3549,10 +3575,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SS-FOCK',-1)
@@ -3989,11 +4015,12 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
            IF (IPRINT .GT. 0) THEN
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
-              WRITE(6,'(A,A12)')
+              WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
@@ -4013,10 +4040,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
       ENDIF
       KPOS = KPOS + MTOTTK
 C
@@ -4042,11 +4069,12 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
            IF (IPRINT .GT. 0) THEN
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
               TOTTID = SECTID(TOTWAL)
-              WRITE(6,'(A,A12)')
+              WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
               IF (IPRINT .GT. 5) THEN
@@ -4066,10 +4094,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -4096,12 +4124,17 @@ C
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
+           WALL   = WALL2 - WALL1
+           TOTWAL = TOTWAL + WALL
+           CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
 C
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
-              WALL   = WALL2 - WALL1
-              TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
+              WRITE(LUPRI,'(A,A12)')
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
+     &             TOTTID
 C     
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
@@ -4123,10 +4156,10 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
            CPU = SECOND() - CPU
+           CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
       ENDIF

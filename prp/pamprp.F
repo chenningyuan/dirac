@@ -162,7 +162,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_dipol */
-      SUBROUTINE DEF_DIPOLE(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_DIPOLE(INDDIP,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Define dipole moment operator
@@ -177,7 +177,7 @@ C*****************************************************************************
 #include "dcbexp.h"
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION INDDIP(3),WORK(LWORK),PFAC(3)
 C
 C
       PNAME     = 'Dipole length: X'
@@ -186,9 +186,7 @@ C
       PFAC(1)   = DM1
       PLABEL(1) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XDIPOL',IPDIPOLE(1),LEXPP,NEXPP,INDXPR,MAXEXP)
-      CALL WRIXPR(1,INDXPR)
+     &            INDDIP(1),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
 C
       PNAME      = 'Dipole length: Y'
       IPTYP      = 1
@@ -196,9 +194,7 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('YDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDXPR,MAXEXP)
-      CALL WRIXPR(1,INDXPR)
+     &            INDDIP(2),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
 C
       PNAME      = 'Dipole length: Z'
       IPTYP      = 1
@@ -206,20 +202,19 @@ C
       PFAC(1)    = DM1
       PLABEL(1)  = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('ZDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDXPR,MAXEXP)
-      CALL WRIXPR(3,INDXPR)
+     &            INDDIP(3),ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
 C
       IF(IPRINT.GE.1) THEN
         DO I = 1,3
-          INDXPR = LEXPP(IPDIPOLE(I))
+          INDXPR = INDDIP(I)
           CALL PRSYMB(LUPRI,'.',75,0)
           WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
-     &       'Component no.',I,':',PRPNAM(INDXPR)
+     &       'Dipole component no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(I,INDXPR)
         ENDDO
       ENDIF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -916,7 +911,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION WORK(LWORK),PFAC(3), INDDIP(3)
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
@@ -940,7 +935,10 @@ C
         CALL PRSYMB(LUPRI,'=',75,0)
         WRITE(LUPRI,'(1X,A)') 'Dipole moment'
         CALL PRSYMB(LUPRI,'=',75,0)
-        CALL DEF_DIPOLE(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+        CALL DEF_DIPOLE(INDDIP,WORK,LWORK,IPRPRP)
+        CALL OP1IND('XDIPOL',IPDIPOLE(1),LEXPP,NEXPP,INDDIP(1),MAXEXP)
+        CALL OP1IND('YDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDDIP(2),MAXEXP)
+        CALL OP1IND('ZDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDDIP(3),MAXEXP)
       ENDIF
 C
 C     Quadrupole moment

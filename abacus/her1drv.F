@@ -196,6 +196,7 @@ C
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
+      CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "shells.h"
@@ -208,6 +209,8 @@ C
       DOINT(2,1) = .TRUE.
       DOINT(1,2) = .TRUE.
       DOINT(2,2) = .TRUE.
+      OMITVNUC(1)   = 'FFFF'
+      OMITVNUC(2)   = 'FFFF'
 C
 C     ***** Number of basis functions *****
 C
@@ -229,7 +232,10 @@ C
       KDENMA = KSTHMA + 3*NNBASX
       KFOCMA = KDENMA +   NNBASX
       KFACIN = KFOCMA +   NNBASX
-      KCOORC = KFACIN +   NUCDEP
+      KCOORC = KFACIN + 2*NUCDEP
+C     allocate for nuclear charge AND an electronic core charge
+C     for modified nuclear attraction (e.g. for the small charge
+C     in relativistic calculations). /Mar2001 hjaaj
       KSIGNC = KCOORC + 3*NUCDEP
       KNCENT = KSIGNC + 3*NUCDEP
       KJSYMC = KNCENT +  (NUCDEP + 1)/IRAT
@@ -246,15 +252,15 @@ C
       CALL ONEDR1(WORK(KSTHMA),WORK(KDENMA),WORK(KFOCMA),WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),WORK(KTLMD),WORK(KLAST),
-     &            LWRK,IPRINT,PROPTY,MAXDIF,
-     &            NODC,NODV,DIFDIP,NBAST,NNBASX,NNBAST,DOINT,.TRUE.)
+     &            LWRK,IPRINT,PROPTY,MAXDIF,NODC,NODV,
+     &            DIFDIP,NBAST,NNBASX,NNBAST,DOINT,OMITVNUC,.TRUE.)
       RETURN
       END
 C  /* Deck onedr1 */
       SUBROUTINE ONEDR1(STHMAT,DENMAT,FOCMAT,FACINT,COORC,SIGNC,NCENTC,
      &                  JSYMC,JCENTC,GEXP,TLMD,WORK,LWORK,IPRINT,
      &                  PROPTY,MAXDIF,NODC,NODV,DIFDIP,
-     &                  NBAST,NNBASX,NNBAST,DOINT,TOFILE)
+     &                  NBAST,NNBASX,NNBAST,DOINT,OMITVNUC,TOFILE)
 C
 C     TUH
 C
@@ -274,12 +280,13 @@ C
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
-      PARAMETER (D0 = 0.00 D00)
+      PARAMETER (D0 = 0.00D00)
 C
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
-     &        TOFILE
+     &        LOMITVNUC(2,5),TOFILE
+      CHARACTER*4 OMITVNUC(2)
       DIMENSION DENMAT(*), FOCMAT(*), STHMAT(NNBASX,3),
-     &          FACINT(NUCDEP), WORK(LWORK), COORC(3,NUCDEP),
+     &          FACINT(NUCDEP,*), WORK(LWORK), COORC(3,NUCDEP),
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
 #include "onecom.h"
@@ -314,6 +321,14 @@ C
          INDMAX = 0
          LENGTH = 0
       END IF
+      DO I = 1,2
+         LOMITVNUC(I,1) = (OMITVNUC(I)(1:1) .EQ. 'T')
+         LOMITVNUC(I,2) = (OMITVNUC(I)(2:2) .EQ. 'T')
+         LOMITVNUC(I,3) = (OMITVNUC(I)(3:3) .EQ. 'T')
+         LOMITVNUC(I,4) = (OMITVNUC(I)(4:4) .EQ. 'T')
+         LOMITVNUC(I,5) = LOMITVNUC(I,1) .OR. LOMITVNUC(I,2)
+     &             .OR. LOMITVNUC(I,3) .OR. LOMITVNUC(I,4)
+      ENDDO
 C
 Cjth
 #if !defined(PRG_DIRAC)
@@ -390,17 +405,16 @@ C
      &               NODV)
          CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),NBAST,IPRINT)
       END IF
+#endif
+      KLAST = 1
+      KFCM  = KLAST
+#if !defined(PRG_DIRAC)
 C
 C     ********************************************************
 C     ***** Preparation for solvent contributions        *****
 C     ***** Calculation of solvent nuclear contributions *****
 C     ********************************************************
 C
-#endif
-C
-      KFCM  = 1
-      KLAST = 1
-#if !defined (PRG_DIRAC)
       IF (PROPTY .AND. SOLVNT) THEN
          KFRSAV = 1
          KFREE  = KFRSAV
@@ -582,7 +596,8 @@ C
             CORCX0 = CORD(1,IATOMC)
             CORCY0 = CORD(2,IATOMC)
             CORCZ0 = CORD(3,IATOMC)
-            FACTOR = - FMULT(IBTAND(MULC,KAB))*CHARGE(IATOMC)/HKAB
+            CHARG1 = CHARGE(IATOMC)
+            FACTOR = - FMULT(IBTAND(MULC,KAB))/HKAB
             DO 130 ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
                   NATOMC = NATOMC + 1
@@ -595,17 +610,20 @@ C
                   COORC(2,NATOMC) = SIGNC(2,NATOMC)*CORCY0
                   COORC(3,NATOMC) = SIGNC(3,NATOMC)*CORCZ0
                   GEXP(NATOMC)    = GNUEXP(IATOMC)
-                  FACINT(NATOMC)  = FACTOR
+                  FACINT(NATOMC,1)= FACTOR*CHARG1
+                  FACINT(NATOMC,2)= D0
                   NCENTC(NATOMC)  = NUCNUM(IATOMC,ISYMOP+1)
                END IF
   130       CONTINUE
   120    CONTINUE
+C         IF (NATOMC.NE.NUCDEP)
+C     &      print *,'ONEDR1 NATOMC, NUCDEP:',NATOMC,NUCDEP
 C
          CALL ONESOP(STHMAT,DENMAT,FOCMAT,FACINT,COORC,
      &               WORK(KLAST),LWRK,
      &               IPRINT,PROPTY,MAXDIF,IDENB0,CORBX0,CORBY0,CORBZ0,
      &               DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,JCENTC,
-     &               NCENTC,SIGNC,GEXP,NNBASX,WORK(KFCM),TLMD)
+     &               NCENTC,SIGNC,GEXP,NNBASX,WORK(KFCM),TLMD,LOMITVNUC)
   110    IDENB0 = IDENB0 + KHKTB*MULTB
          IDENA = IDENA + KHKTA*MULTA
   100 CONTINUE

@@ -9,7 +9,7 @@ include ../Makefile.config
 
 F_OBJS = dircnv.o dirone.o dirout.o dirana.o dirrdn.o dirscf.o dirset.o \
          dirtra.o dirtwo.o dirgp.o  dirgrd.o dirden.o dirsol.o dirspf.o \
-         diropen.o dirgeo.o diraos.o 
+         diropen.o dirgeo.o diraos.o dirv1c.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

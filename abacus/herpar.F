@@ -529,12 +529,18 @@ C
 C     Send Panas value
       CALL MPI_BCAST(PANAS,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-C     Send screening threshold
+C     Send screening threshold and transfer information to twocom.h
+C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+      SCRTHR = SCREEN
 #if defined (PRG_DIRAC)
-C     Send SMLV1C
+C     Send SMLV1C and ONECAP,INTV1C
       CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ONECAP,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
@@ -1261,8 +1267,12 @@ C     Receive screening threshold
       CALL MPI_BCAST(SCREEN,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #if defined (PRG_DIRAC)
-C     Receive SMLV1C
+C     Receive SMLV1C and ONECAP,INTV1C
       CALL MPI_BCAST(SMLV1C,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ONECAP,1,MPI_LOGICAL,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(INTV1C,1,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
 #endif
 C

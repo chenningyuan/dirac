@@ -249,7 +249,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
       LOGICAl DOINT(4)
-      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4
       DIMENSION WORK(LWORK)
 #include "dcbbas.h"
 C
@@ -261,9 +261,11 @@ C
 C     Generate integrals
 C
       READ(COMB,'(4L1)',ERR=1000) (DOINT(I),I=1,4)
+      OMITVNUC(1) = 'FFFF'
+      OMITVNUC(2) = 'FFFF'
       CALL NUCAT1(WORK(KONEIN),WORK(KFREE),LFREE,
-     &            DOINT,IPRINT)
-      IF(IPRINT.GE.6) THEN
+     &            DOINT,OMITVNUC,IPRINT)
+      IF(IPRINT.GE.4) THEN
         CALL HEADER('Nuclear attraction integrals',-1)
         CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
       ENDIF
@@ -295,13 +297,14 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
-      SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,IPRINT)
+      SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
+      CHARACTER*4 OMITVNUC(2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
 #include "nuclei.h"
@@ -313,7 +316,7 @@ C
 #include "memint.h"
 C
       CALL MEMGET('REAL',KSTHMA,3*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFACIN,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFACIN,2*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
@@ -333,16 +336,16 @@ C
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LWRK,
      &            IPRINT,.FALSE.,0,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
-     &            NNBBASX,NNBBAST,DOINT,.FALSE.)
-C
-C     Memory deallocation
-C
-      CALL MEMREL('NUCAT1.ONEDR1',WORK,KWORK,KWORK,KFREE,LFREE)
+     &            NNBBASX,NNBBAST,DOINT,OMITVNUC,.FALSE.)
 C
 C     Symmetry unpack nuclear attraction integrals
 C
       KNUCS = KSTHMA + NNBBASX
       CALL SYMUPK(WORK(KNUCS),OP1INT,1,NNBBASX)
+C
+C     Memory deallocation
+C
+      CALL MEMREL('NUCAT1.ONEDR1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('NUCAT1')
       RETURN
@@ -402,13 +405,15 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dcbdhf.h"
 C
-      LOGICAL FIRST(NZ)
+      LOGICAL FIRST(NZ),TOBE,BARNUC
       DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
@@ -430,7 +435,10 @@ C     ============================
 C
       IOP = IPMOLFLD
       CALL PRPMAO(LU1INT,IOP,FTRI,OP1INT,FIRST,WORK(KFREE),LFREE,IPRHAM)
-      IF (SMLV1C) CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM) 
+      IF (SMLV1C) THEN
+         CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
+         CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM) 
+      ENDIF
 C
 C     Beta matrix
 C     ===========
@@ -514,9 +522,8 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
-      CHARACTER MXFORM*6,FMT*6,JCHR*1
-      LOGICAL FIRST(*)
-Chj   DIMENSION PMAT(N2BBASX,*),OP1INT(NNBBASX),WORK(LWORK)
+      CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
+      LOGICAL FIRST(*), DOINT(4)
       DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
 C
       EXTERNAL BDQALGEBRA
@@ -621,7 +628,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
 C
 C       Get integral from file
 C
-        CALL PRPREA(LU1INT,PRPLBL(KLBL),PDOINT(KLBL),
+        CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,NNBBASX,IPRINT)
         IF(IPRINT.GE.8) THEN
            WRITE(LUPRI,'(A)') '* Integrals from AOPROPER'
@@ -1268,7 +1275,8 @@ C
 C     Make one-center projection matrix
 C     =================================
 C
-      IF (SMLV1C) CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
+      IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)) 
+     &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
 C
 C     Get Lowdin matrix
 C     =================
@@ -1777,10 +1785,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck prprea */
-      SUBROUTINE PRPREA(LU1INT,PRPLBL,PCOMB,PRPINT,NDIM,IPRINT)
+      SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
 C*****************************************************************************
 C
-C     Read property integrals from file
+C     Read property integrals from file with label PRPLBL
+C     and class blocks defined by COMB 
+C     Return integrals in PRPINT and return labels in RTNLBL
 C
 C     Written by T.Saue, January 1995
 C     Last revision: May 19 1996 - tsaue
@@ -1858,6 +1868,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION SMAT(N2BBASX),WORK(LWORK)
+      CHARACTER*8 RTNLBL(2)
       CALL QENTER('GTOVLX')
 #include "memint.h"
 C      
@@ -1876,7 +1887,8 @@ C
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPREA(LU1INT,'OVERLAP ','TFFT',WORK(KSBUF),NNBBASX,IPRONE)
+      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSBUF),NNBBASX,
+     &            IPRONE)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
@@ -1936,6 +1948,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
       DIMENSION SMAT(*),WORK(LWORK)
+      CHARACTER*8 RTNLBL(2)
       CALL QENTER('GTOVLT')
 #include "memint.h"
 C      
@@ -1955,7 +1968,8 @@ C
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPREA(LU1INT,'OVERLAP ','TFFT',WORK(KSTRI),NNBBASX,IPRONE)
+      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSTRI),NNBBASX,
+     &            IPRONE)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
@@ -2992,6 +3006,204 @@ C
       CALL QEXIT('TSCORR')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck bncorr */
+      SUBROUTINE BNCORR(FMAT,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     BNCORR: Generate screened bare nucleus matrix
+C     Aug 2001 Hans Joergen Aa. Jensen (based on TSCORR)
+C     Last revision: Sep 17 2002 - jkp (added timings, adapted for CATDR1)
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+      PARAMETER(D1 = 1.0D0)
+C
+      LOGICAL DOINT(2,2)
+      CHARACTER*4 OMITVNUC
+      DIMENSION WORK(LWORK),FMAT(*)
+      DIMENSION GNUTAB(103)
+      SAVE GNUTAB
+      DATA GNUTAB /2*0.1D0, 8*0.7D0, 8*1.0D0, 18*1.1D0, 18*1.2D0,
+     &             49*2.0D0/
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+C
+      CALL QENTER('BNCORR')
+c
+c     Start timer
+c
+      TIMSTR = SECOND() 
+c
+#include "memint.h"
+C     Memory allocation
+      CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KONEIN, NNBBASX,WORK,KFREE,LFREE)
+      LFCBA = NUCDEP**3
+      CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
+      LWRK   = LWORK - KFREE + 1
+      CALL DZERO(WORK(KCHRG),NUCIND)
+c
+c     ... set charges and gaussian exponents.
+c     
+C       TODO: check for point charges ...
+C       for now we correct them as well
+c
+      IF(IPRINT .GE. 2) THEN
+         WRITE(LUPRI,'(/,2(4X,A/))') 
+     &' *** Entering BNCORR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
+     &'     X=L,S ; G(a,r)=exp(-a*r^2)'
+C
+         WRITE(LUPRI,'(14X,A)')
+     &   ' Nuclei      Charge(-Z)       Exponent(a)'
+         WRITE(LUPRI,'(14X,A)')
+     &   '-----------------------------------------'
+         DO I = 1,NUCIND
+           ICHRG = NINT(CHARGE(I))
+           ICHRG = ABS(ICHRG)
+           IF (ICHRG .GT. 0) THEN
+              WORK(KXGEXP-1+I) =  GNUTAB(ICHRG)
+              WORK(KCHRG-1+I)  = -CHARGE(I)
+           END IF
+           WRITE(LUPRI,'(15X,A5,F15.2,F15.2)')
+     &     NAMN(I),WORK(KCHRG-1+I),WORK(KXGEXP-1+I)
+         ENDDO
+         WRITE(LUPRI,'(14X,A/)')
+     &   '-----------------------------------------'
+      ENDIF
+C
+C     Initialization (calculate LL and SS)
+C
+      DOINT(1,1) = .TRUE.
+      DOINT(2,2) = .TRUE.
+      DOINT(1,2) = .FALSE.
+      DOINT(2,1) = .FALSE.
+C
+C     Omit selected terms depending on OMITVNUC (See CATNUC for details)
+C     In this version one-center terms are calculated with the same
+C     charges/exponents as multi-center terms.
+C
+      OMITVNUC = 'FFFF'
+c
+c     ... Make list of nuclei.
+c
+      CALL CATNUC(NUCDEP,NCENTC,WORK(KCHRG),WORK(KFCBA),WORK(KGEXP),
+     &            WORK(KXGEXP),WORK(KCOORC), WORK(KSIGNC),WORK(KJSYMC),
+     &            WORK(KJCENT),OMITVNUC,IPRINT)
+c
+c    ... Calculate integrals (both LL and SS)
+c
+      CALL DZERO(WORK(KONEMT),N2BBASX)
+      CALL CATDR1(WORK(KONEMT),DUMMY,NCENTC,WORK(KFCBA),
+     &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
+     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRINT,
+     &            .FALSE.,0,NNBBASX,DOINT)
+C
+C     Symmetry unpack integrals
+C
+      CALL SYMUPK(WORK(KONEMT),WORK(KONEIN),1,NNBBASX)
+      CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
+      CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
+C
+      IF(IPRINT.GE.5) THEN
+         CALL HEADER('BNCORR correction FMAT',-1)
+         CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
+     &        NTBAS(0),NTBAS(0),1,LUPRI)
+      END IF
+C
+C     Add correction to Fock-matrix
+C
+      CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,FMAT,1)
+      IF(IPRINT.GE.5) THEN
+         CALL HEADER('BNCORR: screening corrected bare nucleus FMAT',-1)
+         CALL PRQMAT(FMAT,NTBAS(0),NTBAS(0),
+     &               NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     Memory deallocation
+      CALL MEMREL('BNCORR',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C
+c     Stop timer
+c
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      IF (IPRINT.GE.2)
+     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+      CALL QEXIT('BNCORR')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck eonecap */
+      SUBROUTINE EONECAP(FMAT,DMAT,WORK,LWORK,IQ)
+C****************************************************************************
+C     PURPOSE:
+C        Calculate correction to the nuclear attraction energy 
+C        from the one-center models
+C
+C      E = D(IJ)(*)F(IJ)
+C
+C     Sep 2001 : Jesper Kielberg Pedersen
+C     Based on ERGCAL
+C     Revised Juli 2002 : jkp
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D2=2.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+      CHARACTER FMT*6,MXFORM*6
+      DIMENSION FMAT(*), DMAT(*),WORK(LWORK)
+C
+      CALL QENTER('EONECAP')
+C
+      ECORR  = D0
+C
+C        Factor D2 comes from Time-Reversal Symmetry.
+C
+      IF(INTV1C.EQ.3.OR.(INTV1C.EQ.2.AND.ICTLV1C(2).EQ.0)) THEN
+         IF (NOPEN .GE. 1) THEN
+            CALL QUIT('EONECAP not implemented for open shell '//
+     &                'for this ONECAP model yet.')
+         END IF
+      END IF
+      ECORR = D2*DDOT(N2BBASX,DMAT,1,FMAT,1)
+C
+      CALL HEADER('Output from EONECAP',-1)
+      FMT = MXFORM(ABS(ECORR),20)
+      IF (IQ .EQ. 1) THEN
+         WRITE(LUPRI,'(A,'//FMT//')')
+     &  'ONECAP correction to LL-Nuc att.  :  ',ECORR
+      ELSE IF (IQ .EQ. 2) THEN
+         WRITE(LUPRI,'(A,'//FMT//')')
+     &  'ONECAP correction to SS-Nuc att.  :  ',ECORR
+      END IF
+C
+      CALL QEXIT('EONECAP')
+      RETURN
+C
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiprj */
       SUBROUTINE PSIPRJ(TMAT,TINV,IPRINT,WORK,KFREE,LFREE)
@@ -3522,6 +3734,7 @@ C
       NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
       RETURN
       END
+C
 C*****************************************************************************
 C  /* Deck mk1cex */
       SUBROUTINE MK1CEX (WORK,KFREE,LFREE,IPRINT)
@@ -4053,3 +4266,4 @@ C
 C
       RETURN
       END
+C***********************************************************************

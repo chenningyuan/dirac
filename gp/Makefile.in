@@ -29,7 +29,7 @@ setcomp:
 	   rm -f gpc.o; \
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \
-	   echo "#define WHERE_COMPILED \"`hostname`\"" >> compinfo.h ; \
+	   echo "#define WHERE_COMPILED \"${HOST}\"" >> compinfo.h ; \
 	)
 
 mxm:	$(MXM_OBJS)

@@ -54,6 +54,9 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dcbpsi.h"
+#include "dcbham.h"
+#include "dcbgen.h"
       LOGICAl CHKCNV
       DIMENSION FMO(*), EVEC(*),FBUF(*),BMAT(*),TMAT(*),
      &          DMAT(*),SAOMO(*),WORK(LWORK), FAO(*)
@@ -114,6 +117,24 @@ C
       ELSEIF(EVCCNV) THEN
         CONVRG = EVCVAL
       ENDIF
+c     ... check if One-center app. should be turned off     /jkp
+      IF(ONECAP.AND.(ABS(CONVRG).LT.ONECNV)) THEN
+         ONECAP  = .FALSE.
+         DOLVC    = .FALSE.
+         ONECOFF = .TRUE.
+c -->
+c automatic conventional evaluation of one-center
+c LS and SS integrals for ONECAP models disabled.
+c see dirrdn.F
+c         IF (.NOT. DIRSET) THEN
+c            ILLDIR = 1
+c            ISLDIR = 1
+c            ISSDIR = 1
+c            IDFLAG = ILLDIR+2*ISLDIR+4*ISSDIR
+c         ENDIF
+c <--
+      END IF
+c
 C
 C     Check convergence : we have two tresholds, the first one
 C     is the desired treshold, the second one is the allowed
@@ -143,8 +164,9 @@ C
 C
 C     If change in which integral classes included (LL, LS, SS),
 C     then we must restart DIIS
+C     Likewise if One-center app. is turned off in this iteration     /jkp
 C
-      IF (INTFLG.NE.INTBUF) THEN
+      IF (INTFLG.NE.INTBUF.OR.ONECOFF) THEN
         IF(ITDIIS.GT.0) CLOSE(LUDIIS,STATUS='DELETE')
         ITDIIS = 0
       END IF
