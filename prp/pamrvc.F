@@ -364,6 +364,7 @@ C
      &          BEVEC(*),BPVEC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),
      &          CMO(*),ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(*)
+      KFRSAV = KFREE
 C
 C     a) Get coefficients
 C     ===================
@@ -412,9 +413,11 @@ C       Generate standard density matrix
         IREPOP = JSYMOP-1
         CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
         CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-        CALL DFTRPA(WORK(KBUF),FMO,FAO,IREPOP,NOSIM,
+        CALL DFTRPA(WORK(KBUF),FMO,FAO,NOSIM,IREPOP,
      &              IPRXRS,WORK,KFREE,LFREE)
-        CALL MEMREL('GMOLI1.dft',WORK,KBUF,KBUF,KFREE,LFREE)
+        CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
+CTROND
+        WRITE(LUPRI,*) 'So I passed this test....'
       ENDIF
 #endif
 C
