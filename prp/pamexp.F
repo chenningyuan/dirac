@@ -141,7 +141,7 @@ C
       IF(.NOT.ORBANA) THEN
         CALL DENSTY(DMAT,CMO,IPREXP)
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 't0','s0'
+        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
@@ -164,7 +164,7 @@ C    ************************************
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 't0','s0'
+        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
         CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
