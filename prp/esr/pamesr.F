@@ -219,7 +219,7 @@ C
           CALL WRIXPR(I,INDXPR)
         ENDDO
       END IF
-c
+C
       CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KPTRI),
      &            WORK(KONEIN),WORK(KFIRST),WORK(KFREE),
@@ -239,13 +239,13 @@ C
         ENDDO
       END IF
 C
-C     Get g tensor
-C
       IF (ESRGTENS) THEN
+C
+C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C
       DO K = 1,3
 C        ... for B field in direction k (x,y,z)
-         I = IPESR(MXCOOR+K)
+         I = IPESR(MXCOOR+K,1)
          GTENSOR(K,1) = D4*ESRVAL(4,I)
          GTENSOR(K,2) = D4*ESRVAL(3,I)
          GTENSOR(K,3) = D4*ESRVAL(2,I)
@@ -286,7 +286,7 @@ C
      &   ' The corresponding eigenvectors:',
      &   ((GEVEC(I,K),K=1,3),I=1,3)
 C
-C     Get the corrected g values
+C     (2) Get the corrected g values by scaling
 C
       DO I = 1,3
         GCOR(I) = (GEIG(I)/2)*GFAC
@@ -300,6 +300,54 @@ C
      &   (GCOR(I),I =1,3), GISO,
      &   ' The corrected g shifts in ppm (x, y, z, iso):',
      &   (GSHIFT(I),I =1,3), GSHFTISO
+C
+C     (3) Get the corrected g values by adding correction term
+C
+      DO K = 1,3
+C        ... for B field in direction k (x,y,z)
+         I = IPESR(MXCOOR+K,1)
+         J = IPESR(MXCOOR+K,2)
+         GTENSOR(K,1) = D4*( ESRVAL(4,I)+ESRVAL(4,J) )
+         GTENSOR(K,2) = D4*( ESRVAL(3,I)+ESRVAL(3,J) )
+         GTENSOR(K,3) = D4*( ESRVAL(2,I)+ESRVAL(2,J) )
+      ENDDO
+
+      WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
+     &   ' The g_1 corrected g-tensor for H(Zeeman) = 1/2c B g Seff :',
+     &   ((GTENSOR(I,K),K=1,3),I=1,3)
+
+C     Get G-matrix = gtensor*gtensor(transponed)
+C
+      DO I = 1,3
+        DO K = 1,3
+          GMATRIX(I,K) = GTENSOR(I,1)*GTENSOR(K,1)
+     &                 + GTENSOR(I,2)*GTENSOR(K,2)
+     &                 + GTENSOR(I,3)*GTENSOR(K,3)
+        ENDDO
+      ENDDO
+
+
+      WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
+     &   ' The G-matrix = g * g^T :', ((GMATRIX(I,K),K=1,3),I=1,3)
+
+      CALL RSJACO(3,3,3,GMATRIX,GEIG,1,1,0,GEVEC,WORK(KFREE),LFREE)
+
+      DO I = 1,3
+        GEIG(I) = SQRT(GEIG(I))
+        GSHIFT(I) = (GEIG(I) - GFAC)*1.D6
+      ENDDO
+      GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / D3
+      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
+      WRITE (LUPRI,
+     &   '(/A,F13.10//A//5X,4F18.8//A//5X,4F18.1//A/,3(/5X,3F18.8))')
+     &   '* The g_1 corrected Dirac eq. g values corresponding to g_e ='
+     &   ,GFAC,
+     &   ' The g values (x, y, z, iso):',
+     &   (GEIG(I),I =1,3), GISO,
+     &   ' The g shifts in ppm (x, y, z, iso):',
+     &   (GSHIFT(I),I =1,3), GSHFTISO,
+     &   ' The corresponding eigenvectors:',
+     &   ((GEVEC(I,K),K=1,3),I=1,3)
 
       ENDIF
 C     .. end if (ESRGTENS) then
@@ -519,10 +567,7 @@ C
       DO IZ = 1,NZ
       IF(.NOT.FIRST(IZ)) THEN
         IQ = IPQTOQ(IZ,IREP)
-C jeg laver lige lidt fusk ... /hjaaj
         IH = IHQMAT(IQ,ITIM)
-C nej
-Chj     IH = IHQMAT(IQ,+1)
         IF(IH.EQ.1) THEN        
           CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
         ELSEIF(IH.EQ.2) THEN
@@ -699,7 +744,7 @@ C     *** Extract requested nuclear coordinates and B fields ***
 C     
       NA = 0
       DO I = 1,NSCOOR
-         IF(IPESR(I).GT.0) THEN
+         IF(IPESR(I,1).GT.0) THEN
             NA = NA + 1
             IBUFA(NA) = I
          ENDIF
@@ -707,7 +752,7 @@ C
 C     
       NB = 0
       DO I = 1, 3
-         IF(IPESR(I+MXCOOR).GT.0) THEN
+         IF(IPESR(I+MXCOOR,1).GT.0) THEN
             NB = NB + 1
             IBUFB(NB) = I
          ENDIF
@@ -721,7 +766,7 @@ C
          CALL DZERO(TMPMAT,NCMAT)
          DO IA = 1,NA
             JA = IBUFA(IA)
-            KA = IPESR(JA)
+            KA = IPESR(JA,1)
             TMPMAT(IPTAX(1,2),JA) = ESRVAL(4,KA)
             TMPMAT(IPTAX(2,2),JA) = ESRVAL(3,KA)
             TMPMAT(IPTAX(3,2),JA) = ESRVAL(2,KA)

@@ -3166,6 +3166,7 @@ C
 #include <mxorb.h>
 #include <maxaqn.h>
 #include <mxcent.h>
+#include <gfac.h>
 #include <nuclei.h>
 #include <dgroup.h>
 #include <pgroup.h>
@@ -3239,7 +3240,7 @@ C
               END IF
               IF (ESRANISO) THEN
                 CALL OP1IND('ESRANISO',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
-                IPESR(ISCOR1) = INDOP1
+                IPESR(ISCOR1,1) = INDOP1
               END IF
             ENDIF
   300     CONTINUE
@@ -3248,10 +3249,12 @@ C
   100 CONTINUE
 C
 C     Define right hand operators
+C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
       PFAC(1)  = -0.5D0*CVAL
       PFAC(2)  = -0.5D0*CVAL
-C X componete of B-field
+      PFAC(3)  =  0.5D0*G1FAC
+C X component of B-field
       PNAME     = 'MAGFLDX1'
       IPTYP     = IOP(1)
       PLABEL(1) = 'ZDIPLEN'
@@ -3260,10 +3263,19 @@ C X componete of B-field
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IF (SHIELD) CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
-      IF (ESRGTENS) CALL OP1IND('X magfield',IPESR(1+MXCOOR),
+      IF (ESRGTENS) THEN
+         CALL OP1IND('X magfield',IPESR(1+MXCOOR,1),
      &      LESRP,NESRP,INDXPR,MAXESR)
+         PNAME    =  'g_1 MAGFLDX'
+         IPTYP    =  13
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('X g_1 magfield',IPESR(1+MXCOOR,2),
+     &      LESRP,NESRP,INDXPR,MAXESR)
+      END IF
 #if !defined (XH4)
-C Y componete of B-field
+C Y component of B-field
       PNAME     = 'MAGFLDY2'
       IPTYP     = IOP(2)
       PLABEL(1) = 'XDIPLEN'
@@ -3272,9 +3284,18 @@ C Y componete of B-field
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IF (SHIELD) CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
-      IF (ESRGTENS) CALL OP1IND('Y magfield',IPESR(2+MXCOOR),
+      IF (ESRGTENS) THEN
+         CALL OP1IND('Y magfield',IPESR(2+MXCOOR,1),
      &      LESRP,NESRP,INDXPR,MAXESR)
-C Z componete of B-field
+         PNAME    =  'g_1 MAGFLDY'
+         IPTYP    =  14
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('Y g_1 magfield',IPESR(2+MXCOOR,2),
+     &      LESRP,NESRP,INDXPR,MAXESR)
+      END IF
+C Z component of B-field
       PNAME     = 'MAGFLDZ3'
       IPTYP     = IOP(3)
       PLABEL(1) = 'YDIPLEN'
@@ -3283,8 +3304,17 @@ C Z componete of B-field
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IF (SHIELD) CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
      &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
-      IF (ESRGTENS) CALL OP1IND('Z magfield',IPESR(3+MXCOOR),
+      IF (ESRGTENS) THEN
+         CALL OP1IND('Z magfield',IPESR(3+MXCOOR,1),
      &      LESRP,NESRP,INDXPR,MAXESR)
+         PNAME    =  'g_1 MAGFLDZ'
+         IPTYP    =  15
+         PLABEL(1) = 'OVERLAP '
+         CALL XPRIND(PNAME,IPTYP,1,PFAC(3),PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('Z g_1 magfield',IPESR(3+MXCOOR,2),
+     &      LESRP,NESRP,INDXPR,MAXESR)
+      END IF
 #endif
 C
 C     Print section for NMR shielding:
@@ -3334,7 +3364,7 @@ C
         WRITE(LUPRI,'(A)') ' ** ESR g tensor operators **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,3
-          INDOP1 = IPESR(I+MXCOOR)
+          INDOP1 = IPESR(I+MXCOOR,1)
           IF(INDOP1.GT.0) THEN
             INDXPR = LESRP(INDOP1)
             CALL WRIXPR(INDOP1,INDXPR)
@@ -3347,7 +3377,7 @@ C
         WRITE(LUPRI,'(A)') ' ** ESR anisotropy operators **'
         CALL PRSYMB(LUPRI,'-',75,0)
         DO I = 1,NSCOOR
-          INDOP1 = IPESR(I)
+          INDOP1 = IPESR(I,1)
           IF(INDOP1.GT.0) THEN
             INDXPR = LESRP(INDOP1)
             CALL WRIXPR(INDOP1,INDXPR)
