@@ -60,8 +60,8 @@ usage='Usage: '$0'\n'\
 '\tParallel version of Dirac\n'\
 '--libdir=DIR\n'\
 '\tAdd directory DIR to the search list for mathematical libraries\n'\
-'--mathematical-libraries=MATH-LIB\n'\
-'\tChoose the math. lib. MATH-LIB\n'\
+'--math_lib=MATH-LIB\n'\
+'\tChoose the mathematical library MATH-LIB\n'\
 '--memory-size=MEM-SIZE\n'\
 '\tSet memory size to MEM-SIZE words\n'\
 '--install-directory=INST-DIR\n'\
@@ -127,7 +127,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         userlib="$val"
+         userlibdir="$val"
          ;;
       "mathematical_libraries" | "math_lib" )
          if [ "${valomitted}" = "yes" ]; then
@@ -135,7 +135,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         LIB="$val"
+         userlib="$val"
          ;;
       "memory_size" | "memory" | "mem" )
          if [ "${valomitted}" = "yes" ]; then
@@ -211,7 +211,7 @@ echo '   configure $Revision$'
 #
 #
 #
-dirlist="$userlib /lib /usr/lib /usr/local/lib /usr/lib64"
+dirlist="$userlibdir /lib /usr/lib /usr/local/lib /usr/lib64"
 #
 # GUESS SYSTEM
 #
@@ -256,7 +256,7 @@ $echo "Operating system\t: $os"
 #
 debug='dbx'
 cclist='cc'
-liblist='libatlas'
+liblist="$userlib libatlas"
 case $machine in
    *-ibm)
       liblist="$liblist libesslp2 libessl"
@@ -749,7 +749,7 @@ if [ -n "$liblist" ]; then
                libmath) LIB="$LIB -L$testdir -lmath -lm -nx";;
                libmkl) LIB="$LIB -L$testdir -lguide -lpthread -lmkl"
                        optblas=$testdir;;
-               libmkl_ipf) LIB="$LIB -L$testdir -lguide -lpthread -lmkl_ipf"
+               libmkl_ipf) LIB="$LIB -L$testdir -lmkl_lapack -lmkl_ipf -lguide -ldl "
                        optblas=$testdir;;
                libmkl_itp) LIB="$LIB -L$testdir -lguide -lpthread -lmkl_itp"
                        optblas=$testdir;;
@@ -785,8 +785,12 @@ if [ -z "$LIB" ] ; then
 else
    $echo 'Use of an optimized BLAS implementation is very important,'
    $echo 'especially for the performance of MOLTRA and RELCCSD.'
-   $echo "We propose to use the implementation give above. Is this OK ? (Y/n) \c"
-   read defblas
+   if [ $quick = 0 ]; then
+     $echo "We propose to use the implementation give above. Is this OK ? (Y/n) \c"
+     read defblas
+   else
+     defblas=
+   fi
    case "$defblas" in
    "no" | "n" | "N" )
        $echo 'Please inspect and correct LIB_LIST in Makefile.config manually \c'
@@ -1178,10 +1182,14 @@ case $machine in
 #
 # Ask user whether the large file option can be set
 #
-      $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (y/N) \c'
-      read largefiles
+      if [ $quick = 0 ]; then
+        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
+        read largefiles
+      else
+        largefiles=Y
+      fi
       case "$largefiles" in
-      "yes" | "y" | "Y" )
+      "yes" | "y" | "Y"|"" )
          ccp="$ccp -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
          ;;
       esac
@@ -1199,15 +1207,15 @@ case $machine in
             mpishowopt="-showme" 
          fi
 
-         if mpif77 $mpishowopt | grep -q ifc; then
+         if "$F77" $mpishowopt | grep -q ifc; then
             F77real=ifc
-         elif mpif77 $mpishowopt | grep -q ifort; then
+         elif "$F77" $mpishowopt | grep -q ifort; then
             F77real=ifort
-         elif mpif77 $mpishowopt | grep -q pgf90; then
+         elif "$F77" $mpishowopt | grep -q pgf90; then
             F77real=pgf90
-         elif mpif77 $mpishowopt | grep -q pgf77; then
+         elif "$F77" $mpishowopt | grep -q pgf77; then
             F77real=pgf90
-         elif mpif77 $mpishowopt | grep -q g77; then
+         elif "$F77" $mpishowopt | grep -q g77; then
             F77real=g77
          else 
             F77real=mpif77
@@ -1219,6 +1227,161 @@ case $machine in
       esac   
 
 
+      case "$F77real" in
+      g77)
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         ;;
+      f77)
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         ;;
+      mpif77)
+         opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
+         echo
+         echo WARNING:
+         echo   Could not determine which compiler mpif77 is using, assuming it is g77
+         echo 
+         ;;
+      pgf90)
+         opt="-fastsse"
+         ccp="$ccp -DVAR_PGCC"
+         ;;
+      ifc)
+         opt="-O3 -ip -w"
+         ccp="$ccp -DVAR_IFC"
+         ldflag="-O3 -ip"
+# ifc is old, so print a warning
+         echo
+         echo WARNING: 
+         echo   You are using an old version of the Intel Compilers
+         echo   If you experience problems, please update to the most recent version
+         echo  
+         ;;
+      ifort)
+         opt="-O3 -ip -w"
+         ccp="$ccp -DVAR_IFC"
+         ldflag="-O3 -ip -nofor_main"
+         ;;
+      pathf90)
+         ldflag=i"-O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+         ccp="$ccp -DVAR_EKO"
+         ;;
+      esac
+
+      case "$CC" in
+      mpicc)
+         if mpicc -show; then
+            # MPICH
+            mpishowopt="-show"
+         else
+            # LAM MPI
+            mpishowopt="-showme" 
+         fi
+
+         if mpicc $mpishowopt | grep -q icc; then
+            CCreal=icc
+         elif mpicc $mpishowopt | grep -q pgcc; then
+            CCreal=pgcc
+         elif mpicc $mpishowopt | grep -q gcc; then
+            CCreal=gcc
+         else 
+            CCreal=mpicc
+         fi
+s         ;;
+      *)
+         CCreal=$CC
+         ;;
+      esac   
+      case "$CCreal" in
+      gcc|cc)
+         c_opt="-O3 -ffast-math"
+         ;;
+      mpicc)
+         c_opt="-O3 -ffast-math"
+         echo
+         echo WARNING:
+         echo   Could not determine which compiler mpicc is using, assuming it is gcc
+         echo 
+         ;;
+      pgcc)
+         c_opt="-fastsse"
+         ;; 
+      icc)
+         c_opt="-O3 -ip -w"
+         ;;
+      pathcc)
+         c_opt=$opt 
+         ;;
+     esac
+      inc="-I$INCLUDE_DIR";;
+#
+#   Linux on 64 bit Itanium
+#
+   ia64-unknown-linux)
+      echo
+      if [ "$mesp" = "dummy" ]; then
+         cpp="$cpp -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         def='dirac.x'
+      else
+         cpp="$cpp -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         def='dirmpi.x'
+         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+      fi
+
+       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
+          cpp="$cpp -DVAR_MKL"
+       fi
+#
+# Ask user whether the large file option can be set
+#
+      if [ $quick = 0 ]; then
+        $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (Y/n) \c'
+        read largefiles
+      else
+        largefiles=Y
+      fi
+      case "$largefiles" in
+      "yes" | "y" | "Y" |"")
+          ccp="$ccp -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
+          ;;
+      esac
+
+#
+# If we are using mpif77/mpif90/mpicc check which compiler it uses to make
+# sure we use the correct flags
+#
+#CTROND
+      echo 'compiler...' $F77
+      case "$F77" in
+      mpif*)
+         if "$F77" -show >&/dev/null; then
+            # MPICH
+            mpishowopt="-show"
+         else
+            # LAM MPI
+            mpishowopt="-showme" 
+         fi
+
+         if "$F77" $mpishowopt | grep -q ifc; then
+            F77real=ifc
+         elif "$F77" $mpishowopt | grep -q ifort; then
+            F77real=ifort
+         elif "$F77" $mpishowopt | grep -q pgf90; then
+            F77real=pgf90
+         elif "$F77" $mpishowopt | grep -q pgf77; then
+            F77real=pgf90
+         elif "$F77" $mpishowopt | grep -q g77; then
+            F77real=g77
+         else 
+            F77real=mpif77
+         fi
+         ;;
+      *)
+         F77real=$F77
+         ;;
+      esac
+      echo 'real compiler...' $F77real
       case "$F77real" in
       g77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
@@ -1304,120 +1467,6 @@ case $machine in
          c_opt=$opt 
          ;;
      esac
-      inc="-I$INCLUDE_DIR";;
-#
-#   Linux on 64 bit Itanium
-#
-   ia64-unknown-linux)
-      echo
-      if [ "$mesp" = "dummy" ]; then
-         cpp="$cpp -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         def='dirac.x'
-      else
-         cpp="$cpp -DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         def='dirmpi.x'
-         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
-      fi
-
-       if [ ! -z "`echo $LIB | grep 'mkl'`" ]; then
-          cpp="$cpp -DVAR_MKL"
-       fi
-#
-# Ask user whether the large file option can be set
-#
-      $echo 'Can your Linux/BSD system handle files longer than 2 GB ? (y/N) \c'
-      read largefiles
-      case "$largefiles" in
-      "yes" | "y" | "Y" )
-          ccp="$ccp -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
-          ;;
-      esac
-
-#
-# If we are using mpif77/mpicc check which compiler it uses to make
-# sure we use the correct flags
-#
-      case "$F77" in
-      mpif77)
-         if mpif77 -show >&/dev/null; then
-            # MPICH
-            mpishowopt="-show"
-         else
-            # LAM MPI
-            mpishowopt="-showme" 
-         fi
-
-         if mpif77 $mpishowopt | grep -q efc; then
-            F77real=efc
-         elif mpif77 $mpishowopt | grep -q g77; then
-            F77real=g77
-         else 
-            F77real=mpif77
-         fi
-         ;;
-      *)
-         F77real=$F77
-         ;;
-      esac
-
-      case "$F77real" in
-      g77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
-         ;;
-      f77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
-         ;;
-      efc)
-        opt='-O3 -cm -w95'; ccp="$ccp -DVAR_IFC"
-        ;;
-      mpif77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpif77 is using, assuming it is g77
-         echo 
-         ;;
-      esac
-
-      case "$CC" in
-      mpicc)
-         if mpif77 -show >&/dev/null; then
-            # MPICH
-            mpishowopt="-show"
-         else
-            # LAM MPI
-            mpishowopt="-showme" 
-         fi
-
-         if mpicc $mpishowopt | grep -q ecc; then
-            CCreal=ecc
-         elif mpicc $mpishowopt | grep -q gcc; then
-            CCreal=gcc
-         else 
-            CCreal=mpicc
-         fi
-         ;;
-      *)
-         CCreal=$CC
-         ;;
-      esac   
-      case "$CCreal" in
-      gcc|cc)
-         c_opt="-O3 -ffast-math"
-         ;;
-      mpicc)
-         c_opt="-O3 -ffast-math"
-         echo
-         echo WARNING:
-         echo   Could not determine which compiler mpicc is using, assuming it is gcc
-         echo 
-         ;;
-      ecc)
-         c_opt="-O3 -ip -w"
-         ;;
-      esac
 
       inc="-I$INCLUDE_DIR"
    ;;
