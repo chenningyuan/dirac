@@ -3135,6 +3135,8 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
+      PARAMETER ( D0 = 0.0D0 )
+C
 #include <mxorb.h>
 #include <aovec.h>
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
@@ -3781,6 +3783,8 @@ C     Written by T.Saue August 28 1996
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+C
+      PARAMETER ( D0 = 0.0D0 )
 C
 #include <mxorb.h>
 #include <aovec.h>
