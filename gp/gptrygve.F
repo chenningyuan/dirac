@@ -189,23 +189,23 @@ C
          INDENT = MAX(1,(72 - LENGTH)/2 + 1)
       END IF
       IF (IN .EQ. 200) THEN
-         WRITE (LUPRI, '(//,80A)')
+         WRITE (LUPRI, '(//,120A)')
      *      (' ',I=1,INDENT), '.', ('-',I=1,LENGTH), '.'
-         WRITE (LUPRI,'(80A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
-         WRITE (LUPRI, '(80A)')
+         WRITE (LUPRI,'(120A)') (' ',I=1,INDENT),'| ', HEAD, ' |'
+         WRITE (LUPRI, '(120A)')
      *      (' ',I=1,INDENT), '`', ('-',I=1,LENGTH), ''''
       ELSE IF (IN .EQ. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), HEAD
+         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE IF (IN .GT. 100) THEN
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT),
+         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT),
      *      (A,I=1,MARG-1), ' ', HEAD, ' ', (A,I=1,MARG-1)
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       ELSE
-         WRITE (LUPRI, '(//,80A)') (' ',I=1,INDENT), HEAD
-         WRITE (LUPRI, '(80A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
+         WRITE (LUPRI, '(//,120A)') (' ',I=1,INDENT), HEAD
+         WRITE (LUPRI, '(120A)') (' ',I=1,INDENT), (A,I=1,LENGTH)
       END IF
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
@@ -252,19 +252,31 @@ C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
 #include <implicit.h>
 #if defined (VAR_MPI)
+#include <infmpi.h>
       INCLUDE 'mpif.h'
 #endif
 #include <priunit.h>
 #include <dcbgen.h>
-      CHARACTER TEXT*(*)
-      WRITE (LUPRI,'(/A)')
-     *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
+      CHARACTER TEXT*(*), STRING*70
+C
+#if defined (VAR_MPI)
+      IF (MYTID .GT. 0) THEN
+         WRITE (STRING,'(A,I4,A)') ' Slave node',MYTID,
+     &   ' :  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
+      ELSE
+         WRITE (STRING,'(A)')
+     &   '  Master node : --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
+      END IF
+#else
+      WRITE (STRING,'(A)')
+     &   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
+#endif
+      WRITE (LUPRI,'(/A)') STRING
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
 #if defined (SYS_CRAY) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_PARAGON) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_SX)
 C     Write to stderr
-      WRITE (0,'(/A/1X,A)')
-     *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
+      WRITE (0,'(/A/1X,A)') STRING, TEXT
 #endif
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
@@ -275,7 +287,7 @@ C     Write to stderr
       CALL PVMFEXIT(INFO)
 #endif
       CALL TRACE
-      STOP
+      STOP 1000
       END
 C  /* Deck opendx */
       SUBROUTINE OPENDX (LUDX,NAME,NELEM,NREC,STATUS,LRDX,NBDX,OLDDX)
