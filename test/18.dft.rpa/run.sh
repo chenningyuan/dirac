@@ -1,12 +1,10 @@
-#!/bin/ksh
-if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=`which pam`
-   if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
-      echo "pam not found. Please either set the enviroment variable"
-      echo "PAM_PATH or put pam in your path."
-      exit 1
-   fi
-   PAM_PATH=${PAM_PATH%/*}
-fi
-time $PAM_PATH/pam -rmscr -rmwrk -mw 8 $MPIARG HeH+ S51
+#!/bin/sh
+#
+# Set up calculation
+#  
+MENU=S51;
+MOL=HeH+;
+export MENU;
+export MOL;
+../run.sh
 

@@ -33,8 +33,6 @@ usage () {
    $echo '\tPrint this'
    $echo '--version'
    $echo '\tPrint version of runtest'
-   $echo '--quick'
-   $echo '\tDo not prompt user'
    $echo '--tests="tests to run"'
    $echo '\tChoose which tests to run'
    $echo '--pampath="path to pam script"'
@@ -48,7 +46,6 @@ usage () {
    $echo
 }
 
-arg_quick=0
 arg_tests=
 arg_pampath=
 arg_dirac=
@@ -78,9 +75,6 @@ while [ $# != 0 ]; do
       "help")
          usage
          exit
-         ;;
-      "quick")
-         arg_quick=1
          ;;
       "version")
          echo $0
@@ -146,12 +140,11 @@ done
 echo
 echo 'FINDING TESTS...'
 echo
+short_test='1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 8.spinfree.cosci.energy 9.contraction'
 all_test=
-$echo 'Available tests: \c'
 for ff in [0-9]*; do
    if test -d $ff; then
       all_test=$all_test' '$ff
-      $echo $ff' \c'
    fi
 done
 echo
@@ -160,8 +153,8 @@ echo
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # CREATE HTML HEADER IF NCESSARY
 #
-if [ ! -f ${arg_tag}_dif.htm ]; then
-   cat <<\eor > ${arg_tag}_dif.htm
+if [ ! -f logs/${arg_tag}_dif.htm ]; then
+   cat <<\eor > logs/${arg_tag}_dif.htm
 <HTML>
 <TITLE> Error report for DIRAC test runs </TITLE>
 <BODY TEXT="#FFFFFF" BGCOLOR="#000000">
@@ -186,10 +179,21 @@ echo
 echo 'RUNNING TESTS...'
 echo
 if [ ! -z "$arg_tests" ]; then
-   tests=$arg_tests
+   case "${arg_tests}" in
+      "short")
+         tests=$short_test
+         ;;
+      "all")
+         tests=$all_test
+         ;;
+      *)
+         tests=$arg_tests
+         ;;
+   esac
 else
    tests=$all_test
 fi
+$echo ' Using tests: $tests \c'
 
 for tt in $tests; do
    if [ ! -d $tt ]; then

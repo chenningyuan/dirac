@@ -1,16 +1,15 @@
-#!/bin/ksh
-if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=`which pam`
-   if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
-      echo "pam not found. Please either set the enviroment variable"
-      echo "PAM_PATH or put pam in your path."
-      exit 1
-   fi
-   PAM_PATH=${PAM_PATH%/*}
-fi
-time $PAM_PATH/pam -rmscr -rmwrk -basdir `pwd` -mw 4 $MPIARG ethane_1 minimum
-time $PAM_PATH/pam -rmscr -rmwrk -basdir `pwd` -mw 4 $MPIARG ethane_1 saddle
-time $PAM_PATH/pam -rmscr -rmwrk -basdir `pwd` -mw 4 $MPIARG ethane_2 findre
-time $PAM_PATH/pam -rmscr -rmwrk -basdir `pwd` -mw 4 $MPIARG ethane_2 constrained
-exit 0
+#!/bin/sh
+#
+# Set up calculation
+#  
+MOL=ethane_1; export MOL;
+MENU=minimum; export MENU;
+../run.sh
+MENU=saddle; export MENU;
+../run.sh
+MOL=ethane_2; export MOL;
+MENU=findre; export MENU;
+../run.sh
+MENU=constrained; export MENU;
+../run.sh
 

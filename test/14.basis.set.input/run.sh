@@ -1,17 +1,16 @@
-#!/bin/ksh
-if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=`which pam`
-   if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
-      echo "pam not found. Please either set the enviroment variable"
-      echo "PAM_PATH or put pam in your path."
-      exit 1
-   fi
-   PAM_PATH=${PAM_PATH%/*}
-fi
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` ch4_basis ch4
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_temp ch4
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_explicit ch4
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_family ch4
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG ch4_dualfamily ch4
-time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` \
-   -basdir `pwd`/../../basis/MOLFDIR/accpvtz ch4_molfbas ch4
+#!/bin/sh
+#
+# Set up calculation
+#  
+MENU=ch4 export MENU;
+MOL=ch4_temp; export MOL;
+../run.sh
+MOL=ch4_explicit; export MOL;
+../run.sh
+MOL=ch4_family; export MOL;
+../run.sh
+MOL=dualfamily; export MOL;
+../run.sh
+#time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` ch4_basis ch4
+#time $PAM_PATH/pam -rmscr -rmwrk -mw 3 $MPIARG -basdir `pwd` \
+#   -basdir `pwd`/../../basis/MOLFDIR/accpvtz ch4_molfbas ch4
