@@ -1700,7 +1700,7 @@ C        Calculate integrals
 C        ===================
 C
          NDIMD  = 1
-         NOINTS = .FALSE.
+Cdirac         NOINTS = .FALSE.
          CALL ERINTS(WORK(KAOINT),WORK(KHRINT),WORK(KHRIN2),
      &               WORK(KRJ000),WORK(KCPINT),
      &               IPNTPP,INDHER,INDHSQ,IODDHR,LMNPWR,LMNSYM,IPNTUV,
@@ -1712,7 +1712,7 @@ C
      &               WORK(LSTCR2),
      &               LWKGAM,LWKHER,LWKCR1,LWKCR2,
      &               NDIMD,IPRINT)
-         IF (NOINTS) RETURN
+Ctrond         IF (NOINTS) RETURN
 C
 C        Symmetrize
 C        ==========
