@@ -148,14 +148,17 @@ C        END IF
          ATMARR(1,0) = NUCLP
          TEXT = 'Original Coordinates                    '
          CALL PRNARR(TEXT, MXCENT, ATMARR)
+C        Sort atoms after atom number and distance from origo
          CALL SRTATM(MXCENT, 6, ATMARR, .TRUE.)
 #ifndef PRG_DIRAC
          IF (.NOT. NOMOVE) THEN
             CALL CNTRML(MXCENT, ATMARR)
          END IF
 #else
+C        Place molecular center of mass at the origin
          CALL CNTRML(MXCENT, ATMARR)
 #endif
+C        Determine molecular point group
          CALL FNDGRP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
      &                               TMPARR, CLASS)
 C ::: If requested, a VRML representation of :::
@@ -725,13 +728,8 @@ C ::: First we make a new array of vectors, consisting of mirror :::
 C ::: planes, even-ordered rotational axes and atom positions.   :::
          ITURN = 0
          J = 1
+C        Add even-ordered rotation axes to TMPARR
          DO 100 I = 1, NINT(DRTAXS(1,0))
-ckr
-ckr         The following test prevented the molecule from being rotated
-ckr         to standard orientation in case of groups in which the highest
-ckr         rotation axis was of order 2.
-ckr
-ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
             IF ((NINT(DRTAXS(4,I)) .GE. 2) .AND.
      &         (ABS(MOD(DRTAXS(4,I),2.0D0)) .LT. 1.0D-8)) THEN
                DO 105 K = 1, 3
@@ -741,6 +739,7 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
                J = J + 1
             END IF
  100     CONTINUE
+C        Add mirror planes to TMPARR
          DO 110 I = 1, NINT(DMRPLN(1,0))
             DO 115 K = 1, 3
                TMPARR(K,J) = DMRPLN(K,I)
@@ -807,7 +806,7 @@ ckr         IF ((NINT(DRTAXS(4,I)) .GT. 2) .AND.
          IF ((ITURN .LT. 2) .AND. (I .LE. NTOT)) THEN
             IBEF = I
  250        CONTINUE
-            IF ((ABS(TMPARR(3,I)) .GT. 1.0D-8) .AND. (I .LE. NTOT)) THEN
+            IF ((I .LE. NTOT) .AND. (ABS(TMPARR(3,I)) .GT. 1.0D-8)) THEN
                I = I + 1
                GOTO 250
             ELSE IF (I .GT. NTOT) THEN
@@ -1757,6 +1756,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          LOGICAL LINMOL, INVMOL
  111     FORMAT(I1)
  222	 FORMAT(I2)
+C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
