@@ -21,7 +21,9 @@
 #include "mpi_errtrap.head"
 
 {
+
    int len;
+   char *errorstring;
 
 #if defined (VAR_MPI)
 
@@ -32,14 +34,16 @@
    fprintf(stdout,"******************************************\n");
    fprintf(stdout,"MPI ERROR: error no. %d\n",*err);
    fprintf(stdout,"Comm                 %d\n",*comm);
-   fprintf(stdout,"Mesg                 %s\n",errmesg);
-   fprintf(stdout,"????                 %d\n",*oeh1);
-   fprintf(stdout,"????                 %d\n",*oeh2);
+   fprintf(stdout,"Function             %s\n",errmesg);
+   fprintf(stdout,"PID                  %d\n",getpid());
+   len = 100;
+   errorstring = (char *) diracmalloc(len);
+   MPI_Error_string(*err,errorstring,&len);
+   fprintf(stdout,"Error string         %d\n",errorstring);
    fprintf(stdout,"******************************************\n");
+   quit(errorstring,len);
+   free(errorstring);
 
-   len = strlen(errmesg);
-   quit(errmesg,len);
-   
 #else /* SYS_AIX */
 
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
@@ -51,16 +55,19 @@
    fprintf(stdout,"******************************************\n");
    fprintf(stdout,"MPI ERROR: error no. %d\n",*err);
    fprintf(stdout,"Comm                 %d\n",*comm);
-   fprintf(stdout,"The PID is %d\n",getpid());
+   fprintf(stdout,"The PID              %d\n",getpid());
+   len = 100;
+   errorstring = (char *) diracmalloc(len);
+   MPI_Error_string(*err,errorstring,&len);
+   fprintf(stdout,"Error string         %d\n",errorstring);
    fprintf(stdout,"******************************************\n");
 
-   len = 0;
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
-   QUIT(NULL,len);
-#else /* SYS_CRAY etc. */
-   quit_(NULL,len);
-#endif /* SYS_CRAY etc. */
-
+   QUIT(errorstring,len);
+#else /* SYS_CRAY etc */
+   quit_(errorstring,len);
+#endif /* SYS_CRAY etc */
+   free(errorstring);
 
 #endif /* SYS_AIX */
 
