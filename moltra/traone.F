@@ -1120,33 +1120,6 @@ C
             IOFF2 = IOFF2 + 2*NO(IFSYM)*NO(IFSYM)
             IOFF4 = IOFF4 + 1
          ENDDO
-c     print*,'occ-occ D^2'
-c     ioff1=0
-c     ioff4=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
-c        do iz=1,nz
-c           do j=1,no(ifsym+ioff4)
-c              do i=1,no(ifsym+ioff4)
-c     print*,'DMO ',i+ioff1,j+ioff1,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
-c              enddo
-c           enddo
-c        enddo
-c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
-c        ioff4 = ioff4 +1
-c     enddo
-c     print*,'doo eenheidsmatrix'
-c     CALL DZERO(DMO,NORBT*NORBT*NZ)
-c     ioff1=0
-c     ioff4=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
-c              do i=1,no(ifsym+ioff4)
-c              dmo(i+ioff1,i+ioff1,1)=D1
-c              enddo
-c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
-c        ioff4 = ioff4 +1
-c     enddo
       ELSE
          IOFF1 = 0
          IOFF2 = 0
@@ -1175,41 +1148,8 @@ C     k
             IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
             IOFF2 = IOFF2 + NO(IFSYM)*NO(IFSYM)
          ENDDO
-c     print*,'occ-occ D^2'
-c     ioff1=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
-c        do iz=1,nz
-c           do j=1,(no(ifsym)/2)
-c              do i=1,(no(ifsym)/2)
-c                 print*,'DMO ',i,j,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
-c              enddo
-c           enddo
-c        enddo
-c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
-c     enddo
-c     print*,'doo eenheidsmatrix'
-c     CALL DZERO(DMO,NORBT*NORBT*NZ)
-c     ioff1=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + ndmoqc(2,ifsym,1)
-c              do i=1,(no(ifsym)/2)
-c                 dmo(i+ioff1,i+ioff1,1)=D1
-c              enddo
-c        ioff1 = ioff1 - npsh(ifsym) - ndmoqc(2,ifsym,1) + norb(ifsym)
-c     enddo
       ENDIF
 C
-c     print*,'relccsd doo'
-c     do j=1, notot
-c        do i=1, notot
-c           print*,'real dmom',i,j,dmom(i,j,1)
-c           if (rcw.EQ.2) then
-c           print*,'imag dmom',i,j,dmom(i,j,2)
-c           else
-c           endif
-c        enddo 
-c     enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1236,7 +1176,6 @@ C
       DIMENSION DMOM(NFVV,IRCW)
       DIMENSION NV(NREP)
 C
-      print*,'nz=',nz
       IF(NZ.NE.4) THEN
          IOFF1 = 0
          IOFF2 = 0
@@ -1261,21 +1200,6 @@ C
             IOFF2 = IOFF2 + 2*NV(IFSYM)*NV(IFSYM)
             IOFF4 = IOFF4 + 1
          ENDDO
-c     print*,'vir-vir D^2'
-c     ioff1=0
-c     ioff4=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + nocc(ifsym)
-c        do iz=1,nz
-c           do j=1,nv(ifsym+ioff4)
-c              do i=1,nv(ifsym+ioff4)
-c     print*,'DMO ',i+ioff1,j+ioff1,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
-c              enddo
-c           enddo
-c        enddo
-c        ioff1 = ioff1 - npsh(ifsym) - nocc(ifsym) + norb(ifsym)
-c        ioff4 = ioff4 +1
-c     enddo
       ELSE
          IOFF1 = 0
          IOFF2 = 0
@@ -1304,105 +1228,72 @@ C     k
             IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) +NORB(IFSYM)
             IOFF2 = IOFF2 + NV(IFSYM)*NV(IFSYM)
          ENDDO
-c     print*,'vir-vir D^2'
-c     ioff1=0
-c     do ifsym = 1, nfsym
-c        ioff1 = ioff1 + npsh(ifsym) + nocc(ifsym)
-c        do iz=1,nz
-c           do j=1,(nv(ifsym)/2)
-c              do i=1,(nv(ifsym)/2)
-c                 print*,'DMO ',i,j,'iz ',iz,dmo(i+ioff1,j+ioff1,iz)
-c              enddo
-c           enddo
-c        enddo
-c        ioff1 = ioff1 - npsh(ifsym) - nocc(ifsym) + norb(ifsym)
-c     enddo
       ENDIF
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck genden_mp2 */
-      SUBROUTINE GENDEN_MP2(DMO,DMAT,CMO,WORK,KFREE,LFREE,IPRINT)
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dmp2ao */
+      SUBROUTINE DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
+C***********************************************************************
 C
-C     Transform second order densitry matrix to 'orthonormal SO' basis
-C
-C     Written by Joost van Stralen, april 2002
-C
-C*****************************************************************************
+C     Written by J. van Stralen - Feb 2003
+C     
+C     PURPOSE: Transform MO MP2 densitry matrix to quaternionic
+C              symmetry-packed AO matrix 
+C              
+C     INPUT:   DMO  - MO density matrix
+C              CMO  - spinor (MO) coefficients
+C              
+C     OUTPUT:  DMAT - AO MP2 denstity matrix
+C     
+C     REMARKS:
+C     
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-      DIMENSION DMO(*), DMAT(*), CMO(*), WORK(*)
-      CHARACTER CHR*80
-#include "dgroup.h"
+#include "dcbqal.h"
+      PARAMETER(D0 = 0.0D0)
+C         
+#include "dcborb.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-C
-#include "ibtfun.h"
-C
-      CALL QENTER('GENDEN_MP2')
-C
-      KFRSAV = KFREE
-C
-      IOFF1 = 1
-      CALL DZERO(DMAT(IOFF1),N2BBASXQ)
-      DO IFSYM = 1,NFSYM
-         CALL MEMGET('REAL',KTMP,NORB(IFSYM)*NFBAS(IFSYM,0)*NZ,WORK,
-     &                KFREE,LFREE)
-         CHR    = 'GENDEN_MP2: second order density matrix, corep '
-         CALL DENST1_MP2(DMAT(I2BASX(IFSYM,IFSYM)+1),NTBAS(0),
-     &                   NTBAS(0),CMO(ICMOQ(IFSYM)+1),NFBAS(IFSYM,0),
-     &                   NORB(IFSYM),WORK(KTMP),DMO(IOFF1))
-         IF (IPRINT.GE.10) THEN
-            WRITE(LUPRI,'(/3X,I2/)') CHR,IFSYM
-            CALL PRQMAT(DMAT(I2BASX(IFSYM,IFSYM)+1),
-     &                  NFBAS(IFSYM,0),NFBAS(IFSYM,0),
-     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-         END IF
-         CALL MEMREL('GENDEN_MP2',WORK,1,KFRSAV,KFREE,LFREE)
-         IOFF1 = IOFF1 + NORBT*NORB(IFSYM)+NORB(IFSYM)
-      ENDDO
-C
-C
-      CALL QEXIT('GENDEN_MP2')
-      CALL FLSHFO(LUPRI)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck denst1_mp2 */
-      SUBROUTINE DENST1_MP2(DMAT,LRD,LCD,CMO,LRC,LCC,TMP,DMO)
-C*****************************************************************************
-C
-C     Transform second order densitry matrix to 'orthonormal SO' basis
-C     for fermion corep IFSYM
-C
-C     Written by Joost van Stralen, April 2002
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1=1.0D0,D0=0.0D0)
 #include "dgroup.h"
-#include "dcborb.h"
 C
-      DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
-      DIMENSION TMP(LRC,LCC,NZ),DMO(NORBT,NORBT,NZ)
+      DIMENSION DMAT(N2BBASX,NZ),CMO(*),DMO(NORBT,NORBT,NZ),WORK(*)
+C           
+      EXTERNAL BDQALGEBRA
+C     
+      CALL DZERO(DMAT,N2BBASXQ)
+C     
+      DO IFSYM = 1,NFSYM
+C     
+C        Parameters for first index
 C
-C     First transform left index
-C     --------------------------
-      CALL QGEMM(LRC,LCC,LCC,D1,
-     &      'N','N',IPQTOQ(1,0),CMO(1,1,1),LRC  ,LCC  ,NZ,
-     &      'N','N',IPQTOQ(1,0),DMO(1,1,1),NORBT,NORBT,NZ,
-     &           D0,IPQTOQ(1,0),TMP       ,LRC  ,LCC  ,NZ)
+          NS = NORB(IFSYM)
+          IS = IORB(IFSYM) + 1
+          JS = ICMOQ(IFSYM) + 1
 C
-C     Next transform right index
-C     --------------------------
-      CALL QGEMM(LRC,LRC,LCC,D1,
-     &      'N','N',IPQTOQ(1,0),TMP       ,LRC,LCC,NZ,
-     &      'H','N',IPQTOQ(1,0),CMO(1,1,1),LRC,LCC,NZ,
-     &           D0,IPQTOQ(1,0),DMAT      ,LRD,LCD,NZ)
+C        Parameters for first index
 C
+          NI  = NORB(IFSYM) 
+          II  = IORB(IFSYM) + 1
+          JI  = ICMOQ(IFSYM) + 1
+C         
+          CALL QTRANS('MOAO','S',D0,
+     &                NFBAS(IFSYM,0),NFBAS(IFSYM,0),NS,NI,
+     &                DMAT(I2BASX(IFSYM,IFSYM)+1,1),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),
+     &                DMO(IS,II,1),NORBT,NORBT,
+     &                NZ,IPQTOQ(1,0),
+     &                CMO(JS),NFBAS(IFSYM,0),NORB(IFSYM),NZ,IPQTOQ(1,0),
+     &                CMO(JI),NFBAS(IFSYM,0),NORB(IFSYM),NZ,IPQTOQ(1,0),
+     &                WORK(KFREE),LFREE,1)
+C     
+      ENDDO
+c       CALL HEADER('DMP2AO: AO density matrix',-1)
+c       CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+c    &              NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+c       CALL FLSHFO(LUPRI)
+C     
       RETURN
       END

@@ -884,9 +884,7 @@ C
 C     Transform DMO to 'orthonormal SO' basis
 C     =======================================
 C
-      CALL MEMCHK('voor genden_mp2',WORK,1)
-      CALL GENDEN_MP2(DMO,DMAT,CMO,WORK,KFREE,LFREE,IPREXP)
-      CALL MEMCHK('na genden_mp2',WORK,1)
+      CALL DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
 C  
 C     Calculate correlation contribution to property
 C     ==============================================
