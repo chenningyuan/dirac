@@ -135,16 +135,20 @@ C
 C     We send out all the tasks (shells in this case) to the slaves
 C
         DO IC = 1, 2
-          CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-          DO ISHLA = IASTRT, IASMAX
-            CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                    MPI_COMM_WORLD,ISTAT,IERR)
-            NWHO = ISTAT(MPI_SOURCE)
-            CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
-     &                    MPI_COMM_WORLD,IERR)
-            CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,35,
-     &                    MPI_COMM_WORLD,IERR)
-          ENDDO
+           WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
+           CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
+           DO ISHLA = IASTRT, IASMAX
+              WRITE(LUPRI,'(3X,A,I4,A,I4)') 
+     &           '- Task ',ISHLA,' of ',IASMAX
+              CALL FLSHFO(LUPRI)
+              CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                      MPI_COMM_WORLD,ISTAT,IERR)
+              NWHO = ISTAT(MPI_SOURCE)
+              CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
+     &                      MPI_COMM_WORLD,IERR)
+              CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,35,
+     &                      MPI_COMM_WORLD,IERR)
+           ENDDO
         ENDDO
 C
 C       Get the slaves out of the transformation loop
@@ -165,13 +169,17 @@ C
         CALL MDSCRI(WORK,KFREE,LFREE,NODE)
 C
         DO IC = 1, 2
-          CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
-          DO ISHLA = IASTRT, IASMAX
-            CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
-     &                  KQ,KE,KIBE,IC,IQMO,
-     &                  WORK(KDRIJ),WORK(KGAB),DINTSKP)
-          ENDDO
+           WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
+           CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
+           DO ISHLA = IASTRT, IASMAX
+              WRITE(LUPRI,'(3X,A,I4,A,I4)') 
+     &           '- Task ',ISHLA,' of ',IASMAX
+              CALL FLSHFO(LUPRI)
+              CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
+     &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
+     &                   KQ,KE,KIBE,IC,IQMO,
+     &                   WORK(KDRIJ),WORK(KGAB),DINTSKP)
+           ENDDO
         ENDDO
 #if defined (VAR_MPI)
       ENDIF
@@ -185,6 +193,7 @@ C
 C
 C     Initialize MOLFDIR integral file
 C
+      CALL FLSHFO(LUPRI)
       CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
       CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
