@@ -1,0 +1,21 @@
+!
+! This test calculates the spin-orbit components of the 2P state of Fluorine,
+! using a CISD wavefunction.
+!
+**DIRAC
+.TITLE
+Fluorine atom.
+.WAVE F
+**GENERAL
+.DIRECT
+1 1 1
+**HAMILTONIAN
+.ONESYS
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.CLOSED SHELL
+42 38
+*END OF
+
+
