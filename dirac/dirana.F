@@ -334,7 +334,7 @@ C
 C       Perform Mulliken population analysis
 C       ====================================
 C
-        CALL MEMGET('REAL',KOCC,NVEC,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KOCC,NVECS,WORK,KFREE,LFREE)
         CALL MULPO2(PMAT,IFRP,SMAT,WORK(KCBF1),EIG(IORB(IFRP)+1),
      &              IPGRS,POPG,IEFF,PGTOT,PNTOT,NPVECS,NEVECS,NCBAS,
      &              WORK(KJVEC),WORK(KOCC),WORK(KFREE),LFREE)
