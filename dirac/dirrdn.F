@@ -714,7 +714,7 @@ C
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D','.MAX MA','.MAX MI','.NOQCDH','.SKIPEE',
-     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.XXXXXX'/
+     &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.NOMKMO'/
       DATA SET/.FALSE./
 C
 #include "sdpre.h"
@@ -769,6 +769,8 @@ C
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
+C Seb
+      USE_MKMOFK = .TRUE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1174,6 +1176,8 @@ C&&& FROZEN: Frozen orbitals
                ENDDO
                GOTO 100
  40               CONTINUE
+C Seb NOMKMO: avoid use of MKMOFK for construction of the fock matrix
+                  USE_MKMOFK = .FALSE.
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -4922,7 +4926,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 12)
 C
 #include "dcbgen.h"
 #include "dcbana.h"
@@ -4939,7 +4943,8 @@ C
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
-     &            '.VECPRJ','.VECREF','.OWNBAS','.XXXXXX'/
+     S            '.VECPRJ','.VECREF','.OWNBAS','.HESSUN',
+     S            '.HESTHR','.XXXXXX','.XXXXXX','.XXXXXX'/            
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4961,6 +4966,9 @@ C
       THRLOC = 1.0D-6      
       ITRLOC = 100
       IPRLOC = IPRGEN
+      HESLOC = .FALSE.
+      AUTO   = .TRUE.
+      HESTHR = 1.0D-1
 C
 C     Process input from CBILOC
 C     =========================
@@ -4978,7 +4986,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
+                     GO TO (1,2,3,4,5,6,7,8,9), I
                   END IF
  200                        CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -5029,6 +5037,12 @@ C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis s
                OWNBAS = .TRUE.
                GO TO 100
  8                       CONTINUE
+C   HESSIAN is the identity matrix
+               HESLOC = .TRUE.
+ 9                       CONTINUE
+C
+               AUTO = .FALSE.
+               READ(LUCMD,*) HESTHR
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

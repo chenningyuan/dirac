@@ -3,5 +3,5 @@ C     IPRLOC - print level
 C     PRJLOC - localization from projection analysis
 C
 C#include <dcblab.h>
-      LOGICAL PRJLOC
-      COMMON/CBILOC/IPRLOC,PRJLOC,THRLOC,ITRLOC
+      LOGICAL PRJLOC,HESLOC,AUTO
+      COMMON/CBILOC/IPRLOC,AUTO,PRJLOC,HESLOC,THRLOC,HESTHR,ITRLOC

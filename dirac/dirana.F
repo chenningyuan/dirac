@@ -2325,7 +2325,7 @@ C***********************************************************************
 #include "symmet.h"
 #include "cbiher.h"
       PARAMETER(D0 = 0.0D0)
-      LOGICAL TOBE
+      LOGICAL TOBE,FLAG
       DIMENSION WORK(LWORK)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12,DAYTID*24
 C
@@ -2342,7 +2342,9 @@ C
 C
 C Memory allocation
 C
-      CALL MEMGET('REAL',KSCOEF,NISH(IFRP)*NFBAS(IFRP,0)*4,
+      CALL MEMGET('REAL',KSCOEF ,NISH(IFRP)*NFBAS(IFRP,0)*4,
+     S            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCOEFO,NISH(IFRP)*NFBAS(IFRP,0)*4,
      S            WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT ,N2BBASX,
      S            WORK,KFREE,LFREE)
@@ -2418,15 +2420,21 @@ C     PRJLOC = FALSE localization with Mulliken analysis
       ENDIF
       TOBE = .FALSE.
       ITR = 0
+      FLAG = .FALSE.
+      IF (AUTO) THEN
  100    CONTINUE
       ITR = ITR + 1
       CALL GTINFO(DAYTID)
       WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
-     +  '########## START ITERATION NO.', ITR , ' ##########' ,
-     +  DAYTID
+     S  '########## START ITERATION NO.', ITR , ' ##########' ,
+     S  DAYTID
       DINVMO = DINVM
       CALL ORBLO2(WORK(KPMAT),NISH(IFRP),WORK(KXKAPPA),WORK(KHAMAT),
-     S            XNRM,WORK(KFREE),LFREE)
+     S     XNRM,FLAG,WORK(KFREE),LFREE)
+      IF (.NOT. FLAG) THEN
+         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,WORK(KSCOEF),1,
+     S                                        WORK(KSCOEFO),1)
+      ENDIF
       CALL ROTCMO(WORK(KSCOEF),NFBAS(IFRP,0),NISH(IFRP),4,
      S            WORK(KXKAPPA),NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC,
      S            WORK(KFREE),LFREE)
@@ -2441,14 +2449,81 @@ C     PRJLOC = FALSE localization with Mulliken analysis
      S               NFBAS(IFRP,2),NISH(IFRP),WORK(KNFNUC),DINVM,
      S               WORK(KFREE),LFREE)
       ENDIF
-      DIFF = ABS(DINVM - DINVMO)
-      IF(DIFF .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 100
-      IF(DIFF .LE. THRLOC) THEN
+      DIFF  =     DINVM - DINVMO
+      DIFFA = ABS(DINVM - DINVMO)
+      IF (DIFF .LT. D0 .AND. .NOT. FLAG) THEN
+         CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,WORK(KSCOEFO),1,
+     S                                         WORK(KSCOEF),1)
+         DINVM = DINVMO
+         ITR = ITR - 1
+         FLAG = .TRUE.
+       WRITE(LUPRI,'(/5X,A)')'!!! Localization criterion decreases !!!'
+       WRITE(LUPRI,'(5X,A)') '!!! Restart from  previous iteration !!!'
+       WRITE(LUPRI,'(5X,A)') '!!!  and activation of the Hessian   !!!'
+         IF(PRJLOC) THEN
+         CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
+     S               NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
+      ELSE
+         CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
+     S               NFBAS(IFRP,2),NISH(IFRP),WORK(KNFNUC),DINVM,
+     S               WORK(KFREE),LFREE)
+      ENDIF
+         GOTO 100
+      ELSE
+         IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 100
+         IF(DIFFA .LE. THRLOC) THEN
+            WRITE(LUPRI,'(/A,I5,A)') 
+     S           ' >>> Convergence in ' , ITR , ' iterations'
+         ELSE
+            WRITE(LUPRI,'(/A,I5,A)') 
+     S           ' >>> No convergence after ', ITR , ' iterations'
+         ENDIF
+      ENDIF
+      ELSE
+ 200    CONTINUE
+      ITR = ITR + 1
+      CALL GTINFO(DAYTID)
+      WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
+     S  '########## START ITERATION NO.', ITR , ' ##########' ,
+     S  DAYTID
+      DINVMO = DINVM
+      CALL ORBLO2(WORK(KPMAT),NISH(IFRP),WORK(KXKAPPA),WORK(KHAMAT),
+     S     XNRM,FLAG,WORK(KFREE),LFREE)
+      CALL DCOPY(NISH(IFRP)*NFBAS(IFRP,0)*4,WORK(KSCOEF),1,
+     S                                      WORK(KSCOEFO),1)
+      CALL ROTCMO(WORK(KSCOEF),NFBAS(IFRP,0),NISH(IFRP),4,
+     S            WORK(KXKAPPA),NISH(IFRP),IPQTOQ(IFRP,0),IPRLOC,
+     S            WORK(KFREE),LFREE)
+      IF(PRJLOC) THEN
+C     PRJLOC = TRUE localization with projection analysis
+         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
+     S        NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
+      ELSE
+C     PRJLOC = FALSE localization with Mulliken analysis
+         CALL ORBLO1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
+     S               NFBAS(IFRP,2),NISH(IFRP),WORK(KNFNUC),DINVM,
+     S               WORK(KFREE),LFREE)
+      ENDIF
+      DIFF  =     DINVM - DINVMO
+      DIFFA = ABS(DINVM - DINVMO)
+      IF (DIFF .LT. D0) THEN
+         WRITE(LUPRI,'(/5X,A)'),'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+         WRITE(LUPRI,'(5X,A)'), '!!! WARNING : DINVM - DINVMO < 0 !!!'
+         WRITE(LUPRI,'(5X,A)'), '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+      ENDIF
+      IF (.NOT. FLAG .AND. DIFFA .LE. HESTHR) THEN
+         FLAG = .TRUE.
+         WRITE(LUPRI,'(/5X,A)'), '!!! Hessian activated !!!'
+      ENDIF
+      IF(DIFFA .GT. THRLOC .AND. ITR .LT. ITRLOC) GOTO 200
+      IF(DIFFA .LE. THRLOC) THEN
          WRITE(LUPRI,'(/A,I5,A)') 
-     S   ' >>> Convergence in ' , ITR , ' iterations'
+     S        ' >>> Convergence in ' , ITR , ' iterations'
       ELSE
          WRITE(LUPRI,'(/A,I5,A)') 
-     S   ' >>> No convergence after ', ITR , ' iterations'
+     S        ' >>> No convergence after ', ITR , ' iterations'
+      ENDIF
       ENDIF
       TIMEND = SECOND()
       TIME   = TIMEND - TIMSTR
@@ -2907,7 +2982,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck orblo2 */
-      SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,WORK,LWORK)
+      SUBROUTINE ORBLO2(PMAT,NI,XKAPPA,HAMAT,XNRM,FLAG,WORK,LWORK)
 C***********************************************************************
 C
 C     Written by S.Dubillard Jan 21 2004
@@ -2934,6 +3009,7 @@ C***********************************************************************
 C
       DIMENSION PMAT(NI,NI,4,NUCDEP),XKAPPA(NI,NI,4),HAMAT(NI,NI,4),
      S          WORK(LWORK)
+      LOGICAL FLAG
 C
       CALL QENTER('ORBLO2')
 #include "memint.h"
@@ -2962,9 +3038,13 @@ C
             DO I = 1,NI
                DO K = 1,NUCDEP
                   XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) + 2*(
-     S   PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
-                  IF(HAMAT(I,J,1) .LE. -D1) THEN
+     S                 PMAT(I,J,IZ,K)*(PMAT(I,I,1,K) - PMAT(J,J,1,K)))
+                  IF (FLAG) THEN
+                     IF(.NOT. HESLOC) THEN
+                        IF(HAMAT(I,J,1) .LE. -D1) THEN
                      XKAPPA(I,J,IZ) = XKAPPA(I,J,IZ) / (-HAMAT(I,J,1))
+                        ENDIF
+                     ENDIF
                   ENDIF
                ENDDO
             ENDDO
