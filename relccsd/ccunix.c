@@ -94,7 +94,7 @@ void closec();
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
 void openc_(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void openc(unit,fcd,status) int *unit, *status; _fcd fcd;
+void openc(unit,fcd,size,status) int *unit, *status, *size; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
 void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #else
@@ -104,10 +104,8 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
 { char *cp, *env ;
   char  name[PATHMAX]; 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  int *size;
   char *fname;
 
-  *size = _fcdlen(fcd);
   fname = _fcdtocp(fcd);
 #endif
 
@@ -156,7 +154,7 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
 void wrabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void wrabsf(unit,fcd,p) int *unit,*p; _fcd fcd;
+void wrabsf(unit,fcd,l,p) int *unit,*p, *l; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX) 
 void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 #else
@@ -165,10 +163,8 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 
 { int addr, m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  int *l;
   char *a;
 
-  *l = _fcdlen(fcd);
   a = _fcdtocp(fcd);
 #endif
 
@@ -197,7 +193,7 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
 void rdabsf_(unit,a,l,p) int *unit, *l, *p; char *a;
 #elif defined (SYS_CRAY) || defined (SYS_T3D)
-void rdabsf(unit,fcd,p) int *unit, *p; _fcd fcd;
+void rdabsf(unit,fcd,l,p) int *unit, *p, *l; _fcd fcd;
 #elif defined (SYS_AIX) || defined (SYS_HPUX)
 void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 #else
@@ -206,10 +202,8 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 
 { int addr, m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
-  int *l;
   char *a;
 
-  *l = _fcdlen(fcd);
   a = _fcdtocp(fcd);
 #endif
 
