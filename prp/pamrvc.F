@@ -372,11 +372,8 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
-      IF (IPRXRS .GE. 10) THEN
-         IOPT = 4
-      ELSE
-         IOPT = 6
-      END IF
+      IOPT = 2
+      IF (IPRXRS .GE. 10) IOPT = IOPT + 1
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,DUM,TOTERG,IOPT,
      &            WORK,KFREE,LFREE)
       IF (IPRXRS .GE. 10) THEN

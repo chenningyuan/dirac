@@ -669,10 +669,9 @@ C     Get coefficients
 C     ================
 C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
-      iopt=4
       lubuf=22
       call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,IOPT,
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,3,
      &            WORK,KFREE,LFREE)
       close(lubuf,status='KEEP')
 C

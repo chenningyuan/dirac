@@ -195,7 +195,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,2,WORK,KFREE,LFREE)
+     &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -329,7 +329,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Select the set that we need
@@ -591,7 +591,7 @@ C
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &            DHFEMP,2,WORK,KFREE,LFREE)
+     &            DHFEMP,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', DHFEMP
@@ -1018,7 +1018,7 @@ C
             CALL QUIT('TRAHI: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,DUM,TOTERG,0,
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,DUM,TOTERG,1,
      &                  DUM,IDUM,IDUM)
             CLOSE(LUCOEF,STATUS='KEEP')
          ENDIF
@@ -2869,7 +2869,7 @@ C
 C     Read and check eigenvalues
 C
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,5,
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
      &            WORK,KFREE,LFREE)
       DO IFRP = 1,NFSYM
         NSEL = 0
@@ -3214,7 +3214,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,2,WORK,KFREE,LFREE)
+     &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C

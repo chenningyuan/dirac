@@ -145,14 +145,11 @@ C  /* Deck reacmo */
 C*****************************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
-C     IOPT:
-C       0 - read only title
-C       1 - read coefficients and eigenvalues
-C       2 - read coefficients, and eigenvalues and irrep identification
-C       3 - read coefficients and eigenvalues - give restart info
-C       4 - read coefficients only - give info
-C       5 - read only eigenvalues
-C       6 - read coefficients only
+C     Read option is provided from bit-packed IOPT:
+C       0001 - give restart info
+C       0010 - read coefficients
+C       0100 - read eigenvalues
+C       1000 - read boson irrep identification
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -172,13 +169,17 @@ C
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
       DIMENSION IDIM(3,2)
 C
-      INFO = IOPT.EQ.3.OR.IOPT.EQ.0.OR.IOPT.EQ.4
+      IF(IOPT.EQ.0) RETURN
       REWIND IUNIT
+C
+C     Read title line
+C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
 C
 C     Compatibility check for NFSYM and NFBAS
+C     =======================================
 C
       IERR = 0
       IF(NSYM .NE. NFSYM) THEN
@@ -200,7 +201,10 @@ C
          END IF
       END IF
 C
-      IF(INFO) THEN
+C     File info
+C     =========
+C
+      IF(LBIT(IOPT,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/3A,'//FMT//')')
      &   '* REACMO: Coefficients read from file ',CMOFIL,
@@ -211,9 +215,10 @@ C
       IF (IERR.GT.0) CALL QUIT(
      &'REACMO: old DFCOEF file is not consistent with this calculation')
 C
-      IF(IOPT.EQ.0) RETURN
+      IF(IOPT.LT.2) RETURN
 C
 C     Compatibility tests for number of orbitals
+C     ==========================================
 C
       TEST = .FALSE.
       NC = 0
@@ -226,48 +231,66 @@ C
       ENDDO
 C
 C     Read coefficients
+C     =================
 C
-      IF(IOPT.EQ.5) THEN
-        READ(IUNIT)
-      ELSEIF(TEST) THEN
-        CALL MEMGET('REAL',KC,NC,WORK,KFREE,LFREE)
-        CALL READT(IUNIT,NC,WORK(KC))
-        JC = KC 
-        DO IFRP = 1,NFSYM
-          CALL ADACMO(NFBAS(IFRP,0),NZ,
+      IF(LBIT(IOPT,2)) THEN
+        IF(TEST) THEN
+          CALL MEMGET('REAL',KC,NC,WORK,KFREE,LFREE)
+          CALL READT(IUNIT,NC,WORK(KC))
+          JC = KC 
+          DO IFRP = 1,NFSYM
+            CALL ADACMO(NFBAS(IFRP,0),NZ,
      &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         WORK(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-          JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
-        ENDDO
-        CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
+            JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+          ENDDO
+          CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
+        ELSE
+          READ (IUNIT,END=30,ERR=40) CMO
+        ENDIF
+        IF(IOPT.LT.4) RETURN
       ELSE
-        READ (IUNIT,END=30,ERR=40) CMO
+        READ(IUNIT)
       ENDIF
-      IF(IOPT.EQ.4 .OR. IOPT.EQ.6) RETURN
+C
 C     Read eigenvalues
-      IF(TEST) THEN
-        CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
-        CALL READT(IUNIT,NO,WORK(KO))
-        JO = KO 
-        DO IFRP = 1,NFSYM
-          CALL ADAEIG(
+C     ================
+C
+      IF(LBIT(IOPT,3)) THEN
+        IF(TEST) THEN
+          CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
+          CALL READT(IUNIT,NO,WORK(KO))
+          JO = KO 
+          DO IFRP = 1,NFSYM
+            CALL ADAEIG(
      &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &         WORK(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-          JC = JC + IDIM(3,IFRP)
-        ENDDO
-        CALL MEMREL('REACMO.eig',WORK,KO,KO,KFREE,LFREE)
+            JC = JC + IDIM(3,IFRP)
+          ENDDO
+          CALL MEMREL('REACMO.eig',WORK,KO,KO,KFREE,LFREE)
+        ELSE
+          READ (IUNIT,END=50,ERR=60) EIG
+        ENDIF
+        IF(IOPT.LT.8) RETURN
       ELSE
-        READ (IUNIT,END=50,ERR=60) EIG
+        READ(IUNIT)
       ENDIF
-      IF(IOPT.NE.2) RETURN
+C
 C     Read single group irrep (spinfree and Levy-Leblond calcs)
-      IF(TEST) THEN
-        CALL MEMGET('INTE',KO,NO,WORK,KFREE,LFREE)
-        CALL READI(IUNIT,NO,WORK(KO))
-        CALL ADAIBP(IBEIG,WORK(KO),IDIM)
-        CALL MEMREL('REACMO.ibos',WORK,KO,KO,KFREE,LFREE)
+C     =========================================================
+C
+      IF(LBIT(IOPT,4)) THEN
+        IF(TEST) THEN
+          CALL MEMGET('INTE',KO,NO,WORK,KFREE,LFREE)
+          CALL READI(IUNIT,NO,WORK(KO))
+          CALL ADAIBP(IBEIG,WORK(KO),IDIM)
+          CALL MEMREL('REACMO.ibos',WORK,KO,KO,KFREE,LFREE)
+        ELSE
+          READ (IUNIT,END=70,ERR=80) IBEIG
+        ENDIF
+        IF(IOPT.LT.16) RETURN
       ELSE
-        READ (IUNIT,END=70,ERR=80) IBEIG
+        READ(IUNIT)
       ENDIF
 C
       RETURN
@@ -382,7 +405,7 @@ C
           CALL QUIT('PCMOUT: Unformatted file DFCOEF not found !')
       ENDIF
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -623,7 +646,7 @@ C
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBG),DUM,5,
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBG),DUM,4,
      &                  WORK,KFREE,LFREE)
             CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = IORB(IFRP)+NPSH(IFRP)
@@ -1019,11 +1042,10 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT ,WORK,KFREE,LFREE)
-      IOPT  = 2
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,14,WORK,KFREE,LFREE)
       CLOSE(LUBUF,STATUS='KEEP')
       DO I = 1,NORBT
       IF(IORBCL(1,I).EQ.ITYP) THEN

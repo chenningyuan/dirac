@@ -804,11 +804,9 @@ C     special LINEQ variables:
 C
 C     Indicate from vectors are read...
 C
-      IOPT  = 0
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,IOPT,
-     &            DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1,DUM,IDUM,IDUM)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -891,10 +889,9 @@ C     Get coefficients
 C     ----------------
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      IOPT  = 6
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,IOPT,
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,2,
      &            WORK,KFREE,LFREE)
       CLOSE(LUBUF,STATUS='KEEP')
 C

@@ -213,7 +213,7 @@ C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
       IF(TRIVEC) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &              WORK,KFREE,LFREE)
 C
 C       Reorder orbitals if requested
@@ -533,7 +533,7 @@ C
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       IF (NASHT.GT.0.AND.TRIVEC) THEN
         CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,3,
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,7,
      &              WORK,KFREE,LFREE)
       ELSE
         KCMOSAV = KFREE
@@ -1138,7 +1138,7 @@ C
 C        It looks like CMO is trashed at this point, so we re-read
 C        the orbitals from DFCOEF:
 C
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,2,
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,EXXX,14,
      &               WORK,KFREE,LFREE)
 C
          CALL REORD(CMO,EIG,IBEIG,IMOORF,IREORF,MXREORD,
@@ -2282,7 +2282,6 @@ C*****************************************************************************
 #include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
-      NBRP = 4 / NZ
 C
 C     Establish the order
 C
@@ -2297,17 +2296,7 @@ C
 C
 C     Fill an array with the identification of the boson irreps
 C
-      IX = 1
-      DO ISYM = 1, NBRP
-        IREP = JFSYM(ISYM,IFRP) - 1
-        DO IC = 2, 1, -1
-          NBO = NBORB(ISYM,IFRP,IC)
-          IF(NBO.GT.0) THEN
-            CALL ICOPY(NBO,IREP,0,IDUM(IX),1)
-            IX = IX + NBO
-          ENDIF
-        ENDDO
-      ENDDO
+      CALL INIBOS(IDUM,IFRP)
 C
 C     Sort this array
 C
@@ -2522,7 +2511,7 @@ C
          CALL QUIT('MVOGEN: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &               WORK,KFREE,LFREE)
       ENDIF
       IF(IONMVO) THEN
@@ -3396,4 +3385,33 @@ C
       ENDIF
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck inibos */
+      SUBROUTINE INIBOS(IBOS,IFRP)
+C***********************************************************************
+C
+C     Fill an array with boson irrep identification
+C
+C     A Saue cut and paste job, thanks to Luuk ...April 2003
+C
+C***********************************************************************
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION IBOS(*)
+C
+      NBRP = 4 / NZ
+      IX = 1
+      DO ISYM = 1, NBRP
+        IREP = JFSYM(ISYM,IFRP) - 1
+        DO IC = 2, 1, -1
+          NBO = NBORB(ISYM,IFRP,IC)
+          IF(NBO.GT.0) THEN
+            CALL ICOPY(NBO,IREP,0,IBOS(IX),1)
+            IX = IX + NBO
+          ENDIF
+        ENDDO
+      ENDDO
+      RETURN
+C
       END

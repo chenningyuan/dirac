@@ -129,11 +129,11 @@ C     Memory allocation
       CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
-C     Read coefficients
+C     Read coefficients, eigenvalues and irrep identification + restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,2,WORK,KFREE,LFREE)
+     &            TOTERG,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get labels for population analysis
@@ -983,10 +983,11 @@ C
 C     COEFFICIENT SELECTION
 C     =====================
 C
-      ICFS = 1
-      IF(IPRPRJ.GE.4) ICFS = 3
+      ICFS = 6
+      IF(IPRPRJ.GE.4) ICFS = 7
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      KIBE = KFREE
 C
 C     Get molecular coefficients and eigenvalues
 C
@@ -1028,7 +1029,8 @@ C
         IF(IPRPRJ.GE.4) WRITE(LUPRI,'(A,A6)') 
      &       '* Coefficients for reference ',REFFIL(I)
         IF(OWNBAS) THEN
-          CALL SELOWN(2,WORK(KCMO),WORK(KEIG),I,LUCOEF,REFFIL(I),NE,NQ,
+          CALL SELOWN(7,WORK(KCMO),WORK(KEIG),WORK(KIBE),
+     &                I,LUCOEF,REFFIL(I),NQ,NE,IDUM,
      &                NVECS(1,2),KVEC(1,I),
      &                NSTR(1,0,I),WORK,KFREE,LFREE)
           DO IFRP = 1, NFSYM
@@ -1561,7 +1563,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,2,WORK,KFREE,LFREE)
+     &            TOTERG,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 
       CALL PRCOEF(WORK(KCMO),WORK(KEIG),VECPRI,IPRCMP,ILABDF,IPRVEC,
@@ -1724,11 +1726,11 @@ CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KCOOR,6       ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
 C
-C     Read coefficients
+C     Read coefficients + give info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GT1RHO')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,4,WORK,KFREE,LFREE)
+     &            TOTERG,3,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -1960,11 +1962,11 @@ CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
 C
-C     Read coefficients
+C     Read coefficients + give restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,4,WORK,KFREE,LFREE)
+     &            TOTERG,3,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix

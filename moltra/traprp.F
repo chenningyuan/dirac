@@ -122,7 +122,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Get the boson symmetries of the transformed spinors

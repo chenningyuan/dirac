@@ -187,10 +187,8 @@ C
 C     Read coefficients
 C     =================
 C
-      IOPT = 6
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,IOPT,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get property matrix and scale by factor -1
