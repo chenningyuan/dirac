@@ -6360,23 +6360,18 @@ C  *********************************************************************
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
+#include "mxcent.h"
 #include "codata.h"
-C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
-     &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
-C
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "dgroup.h"
-#include "ibtfun.h"
+C
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &           GFERMI = 2.22254D-14,STHETAW2 = 0.2319D0)
 C
       LOGICAL TEST,DOATOM(NUCDEP)
 C
@@ -6384,6 +6379,12 @@ C
      &          ABCNV(NBFREQ,NLRBPT),
      &          TEMPMAT(NUCDEP,4),GVALMAT(5,NUCDEP),
      &          WORK(*)
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "ibtfun.h"
+C
 C
 C
       DFAC = -(GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
