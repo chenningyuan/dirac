@@ -877,8 +877,6 @@ C
 C      
 #include "ibtfun.h"
 C
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO 10 IRP1 = 0,NBSYM-1
         IRP2 = IBTXOR(IRP1,IREPOP)
         DO 20 IC = 1,MC
@@ -932,8 +930,6 @@ C
       DIMENSION VXC(3)
 #include "ibtfun.h"
 C      
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO 10 IRP1 = 0,NBSYM-1
         IRP2 = IBTXOR(IRP1,IREPOP)
         DO 20 IC = 1,MC
@@ -1005,8 +1001,6 @@ C
       DIMENSION ISYMOP(NMAT),IHRMOP(NMAT)
 #include "ibtfun.h"
 C
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO IM = 1,NMAT
       IF(IHRMOP(IM).EQ.1) THEN
         IREPOP = ISYMOP(IM)-1
@@ -1286,6 +1280,14 @@ C     ********************************
 C     ****** Send COMMON blocks ******
 C     ********************************
 C
+C.....dcbham.h
+      IF(MYTID.EQ.0) THEN
+        NUMELM = ICOMMSIZE(I1_HAM,I2_HAM)
+      ENDIF
+      CALL MPI_BCAST(NUMELM,1,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(I1_HAM,NUMELM,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
 C.....dcborb.h
       IF(MYTID.EQ.0) THEN
         NUMELM = ICOMMSIZE(I1_DCBORB,I2_DCBORB)

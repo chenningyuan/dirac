@@ -2012,8 +2012,6 @@ C
 #include "dcbrho1.h"
 C
 #include "sdpre.h"
-      MC = 2
-      IF(LEVYLE) MC = 1      
 C
 C     Calculate distance between centers
 C

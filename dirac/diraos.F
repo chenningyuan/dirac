@@ -57,8 +57,6 @@ C
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 #endif
       RHO = D0
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO IC = 1,MC
          CALL GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
       ENDDO
@@ -137,8 +135,6 @@ C
 C      
 #include "ibtfun.h"
 C      
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO IAX = 1,3
         RHG(IAX) = D0
       ENDDO
@@ -199,8 +195,6 @@ C
       RYZ = D0
       RZZ = D0
 C
-      MC = 2
-      IF(LEVYLE) MC = 1      
       NBRP = 4/NZ
       DO IFRP = 1,NFSYM
         DO IC = 1,MC

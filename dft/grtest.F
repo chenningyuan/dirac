@@ -261,12 +261,6 @@ C
 C
 C     Loop over SO's
 C
-      IF (LEVYLE) THEN
-         MC = 1
-      ELSE
-         MC = 2
-      END IF
-C
       DO IC = 1,MC
          DO IRP = 0,MAXREP
             DO I = 1,NBBAS(IRP,IC)
@@ -556,8 +550,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       
 #include "ibtfun.h"
 
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO 10 IRP1 = 0,NBSYM-1
         DO 20 IRP2 = 0,NBSYM-1
           IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20

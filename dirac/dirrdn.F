@@ -3325,6 +3325,7 @@ C
       SSMTRC  = D1
       BSS     = .FALSE.
       IBSS    = -1
+      MC      = 2
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) HFXFAC  = D1
 C ... get integral flags in advance
@@ -3710,6 +3711,10 @@ C     ENDIF
       IF(DFTHAM) CALL DFTREPORT()
 #endif
       IF(DOLVC) ISSINT = 0
+C
+C     Reset MC if necessary
+C
+      IF(LEVYLE.OR.BSS) MC = 1
 C
 C     Set integral flags
 C

@@ -145,8 +145,6 @@ C
 C      
 #include "ibtfun.h"
 C
-      MC = 2
-      IF(LEVYLE) MC = 1      
       DO 10 IRP1 = 0,NBSYM-1
         DO 20 IRP2 = 0,NBSYM-1
           IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20

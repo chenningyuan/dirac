@@ -14,6 +14,7 @@
 !     IPKINERG   - Pointer to kinetic energy in DCBXPR
 !     IPANGMOM   - Pointer to z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to z-component of spin in DCBXPR
+!     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
 !     IPR1OP     - Pointer to DCBXPR for additional operators
 !     QED        - use QED Hamiltonian (filled positronic levels)
@@ -48,10 +49,10 @@
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS
-      COMMON /DCIHAM/ IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG,   &
-     &                IPANGMOM, IPSPNMOM, N1OPER, IPR1OP, LSOLMX,       &
-     &                IPRSOL, ICTLV1C, IBSS
+     &        ICTLV1C(2), IBSS, MC
+      COMMON /DCIHAM/ I1_HAM,IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,      &
+     &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
+     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC, I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
