@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : tradr3.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR3T */
       SUBROUTINE TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,

@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : trapam.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA(WORK,LWORK)

@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : traprp.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAPRP */
       SUBROUTINE TRAPRP(WORK,LWORK)
