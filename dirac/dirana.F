@@ -1621,6 +1621,7 @@ C***********************************************************************
 C
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
+#include <dcbgen.h>
 #include <dcbrho1.h>
 #include <dcbbas.h>
 C
@@ -1645,7 +1646,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,4)
+     &            TOTERG,4,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -1801,7 +1802,7 @@ C
         PZ  = COORD(3,1) + PP*DZ
 C       Get value of SOs at (PX,PY,PZ)
         CALL GETSOS(GAO,TEMP,TEMP,TEMP,TEMP,PX,PY,PZ,
-     &              BUF,WORK,LWORK,NTBAS(0),0,.FALSE.,IPRINT)
+     &              BUF,WORK(KFREE),LFREE,NTBAS(0),0,.FALSE.,IPRINT)
 C       Get density in this point
         RHO(0) = D0
         DO IC = 1,MC
