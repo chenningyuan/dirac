@@ -892,6 +892,7 @@ C ** additional arrays for parallel triples
 C
 C     Convert input information to abelian subgroup
 C
+      ASSREP = .FALSE. 
       IF (.NOT.FOCKSP) THEN
 C
 C     Single reference calculation : we need only to distinguish
@@ -2679,7 +2680,7 @@ C  Set up symmetry tables and parallel distribution list
 C  for use in Fock space calculations
 C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
-     &             FOCKSP,REPORT)
+     &             FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
 C     Ask for the memory requirements of the modules
 C
