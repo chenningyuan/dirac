@@ -99,7 +99,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pamprp */
+C  /* Deck pampr1 */
       SUBROUTINE PAMPR1(WF,WORK,LWORK)
 C***********************************************************************
 C
@@ -167,9 +167,11 @@ C*****  E X P E C T A T I O N  V A L U E S *****************************
 C***********************************************************************
 C
       CALL MEMCHK('begin pamprp',WORK,1)
-      CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
       IF (DOEXP) THEN
+         CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
          CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+      ELSE
+         KEXP = KFREE
       END IF
 C
 C***********************************************************************
