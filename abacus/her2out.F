@@ -653,6 +653,7 @@ C           X indicates symmetry about diagonal
 C             X = 0 No symmetry
 C             X = 1 Symmetric
 C             X = 2 Anti-symmetric
+C             X = 3 Some blocks symmetric and some antisymmetric
 C           Y indicates contributions
 C             Y = 1 Coulomb
 C             Y = 2 Exchange
@@ -661,14 +662,18 @@ C
         DO 400 K = 1,NDMAT
           IF(IFCTYP(K). EQ. 0) GOTO 400
           IY = MOD(IFCTYP(K),10)
-          IX = (IFCTYP(K)-IY)/10
+          IX = IFCTYP(K)/10
           IC = MOD(IY,2)
           IE = IY - IC
-CTROND          IF (IX.EQ.2) IC = 0
+          IF (IX.EQ.2) IC = 0
 C         ... no Coulomb term for antisymmetric density matrix
           IF (HFXFAC.EQ.D0) IE = 0
-C         check if Coulomb contribution zero by symmetry
-          IF(IREPDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
+C
+          IF(IX.EQ.3 .AND. IREPAB.NE.IREPDM(K)) IC = 0
+C         ... IX.eq.3 in DIRAC: check if Coulomb contribution zero
+C             by symmetry /hjaaj Apr 2002
+C             (IREPDM gives the symmetric component of the packed DMAT)
+C
 C         Screening on Coulomb contributions
           IF(DOC.AND.IC.NE.0) THEN
             FCM = DNSBUF(1,K)*SOMAX
@@ -687,7 +692,7 @@ C         Screening on exchange contributions
           ENDIF
           IY = IE + IC
           IF(IY.EQ.0) GOTO 400
-          IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+          IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
             EXCFAC = DMP25*HFXFAC
 C
 C           Symmetric singlet Fock matrix

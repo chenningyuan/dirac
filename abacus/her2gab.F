@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -97,7 +97,7 @@ C
      &   ITYPE.EQ.6  .OR.  ITYPE.EQ.-6  .OR.
      &   ITYPE.EQ.7  .OR.
      &   ITYPE.EQ.8 ) THEN
-        WRITE(LUPRI,'(A,I3)') 
+        WRITE(LUPRI,'(A,I3)')
      &    'GABDRV does not support  integral type ',ITYPE
         CALL QUIT('GABDRV: Wrong integral type !')
       ENDIF
@@ -115,26 +115,26 @@ C
         DOINT(1,1) = .TRUE.
         DOINT(2,1) = .FALSE.
         DOINT(1,2) = .FALSE.
-        DOINT(2,2) = .TRUE.  
+        DOINT(2,2) = .TRUE.
       ELSE
         WRITE(LUPRI,'(A,I5)') 'GABDRV:Unknown IGTYP ',IGTYP
         CALL QUIT('GABDRV:Unknown IGTYP !')
-      ENDIF        
+      ENDIF
 C
 C
 C     *******************************
 C     ***** Calculate integrals *****
 C     *******************************
-C     
+C
       IMAT = 1
       IF (MAXDER.GE.1) IMAT = 3
       CALL DZERO(GABM,NBASIS*NBASIS*IMAT)
       JTOP  = 4*(NHTYP - 1) + MAXDER
       JTOP3 = (JTOP + 1)**3
       NRTOP = (JTOP + 1)*(JTOP + 2)*(JTOP + 3)/6
-      CALL MEMGET('INTE',KINDHR,  JTOP3,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KINDSQ,  NRTOP,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KIODHR,8*NRTOP,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KINDHR,  JTOP3,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDSQ,  NRTOP,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIODHR,8*NRTOP,WORK,KFREE,LFREE)
       CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
 C
 C     *****************************
@@ -251,36 +251,36 @@ C
 C
           KCKMAX = MAX(KCKTA,KCKTB)
           CALL MEMGET('INTE',KLMNVL,20*KCKMAX        ,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
 C
 C         First electron
 C
           LNPCOA = 2*NSETA*(NODCAB + 1)
           LNPCOB = 2*NSETB*(NODCAB + 1)
-          CALL MEMGET('INTE',KNPCOA,LNPCOA,WORK,KFREE,LFREE)      
-          CALL MEMGET('INTE',KNPCOB,LNPCOB,WORK,KFREE,LFREE)     
+          CALL MEMGET('INTE',KNPCOA,LNPCOA,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KNPCOB,LNPCOB,WORK,KFREE,LFREE)
           CALL IZERO(WORK(KNPCOA),LNPCOA)
           CALL IZERO(WORK(KNPCOB),LNPCOB)
           CALL MEMGET('INTE',KJSTRA,NSETA               ,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KJSTRB,NSETB               ,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
 C
           CALL MEMGET('REAL',KCORAB,9*NUCA*NUCB*NODCAB,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEXPAB,3*NUCA*NUCB*NODCAB,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KFACAB,NUCA*NUCB*NODCAB,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           IF (GENAB) THEN
             CALL MEMGET('REAL',KCONTA,2*NORBA*NUCA*NODCAB,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCONTB,2*NORBB*NUCB*NODCAB,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KPNTAB,2*NUCA*NUCB*NODCAB ,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KREDAB,NORBA*NORBB        ,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             KNCSAB = KFREE
           ELSE
             KCONTA = KFREE
@@ -288,37 +288,37 @@ C
             KPNTAB = KFREE
             KREDAB = KFREE
             CALL MEMGET('INTE',KNCSAB,NORBA*NORBB*NODCAB,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
           ENDIF
 C
 C         Second electron
 C
           LNPCOC = 2*NSETC*(NODCCD + 1)
           LNPCOD = 2*NSETD*(NODCCD + 1)
-          CALL MEMGET('INTE',KNPCOC,LNPCOC,WORK,KFREE,LFREE)      
-          CALL MEMGET('INTE',KNPCOD,LNPCOD,WORK,KFREE,LFREE)      
+          CALL MEMGET('INTE',KNPCOC,LNPCOC,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KNPCOD,LNPCOD,WORK,KFREE,LFREE)
           CALL IZERO(WORK(KNPCOC),LNPCOC)
           CALL IZERO(WORK(KNPCOD),LNPCOD)
           CALL MEMGET('INTE',KJSTRC,NSETC               ,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KJSTRD,NSETD               ,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
 C
           CALL MEMGET('REAL',KCORCD,9*NUCC*NUCD*NODCCD,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEXPCD,3*NUCC*NUCD*NODCCD,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KFACCD,NUCC*NUCD*NODCCD,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           IF (GENCD) THEN
             CALL MEMGET('REAL',KCONTC,2*NORBC*NUCC*NODCCD,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KCONTD,2*NORBD*NUCD*NODCCD,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KPNTCD,2*NUCC*NUCD*NODCCD ,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KREDCD,NORBC*NORBD        ,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
             KNCSCD = KFREE
           ELSE
             KCONTC = KFREE
@@ -326,12 +326,12 @@ C
             KPNTCD = KFREE
             KREDCD = KFREE
             CALL MEMGET('INTE',KNCSCD,NORBC*NORBD*NODCCD,
-     &                                WORK,KFREE,LFREE)      
+     &                                WORK,KFREE,LFREE)
           ENDIF
           CALL MEMGET('INTE',KINDAB,2*NORBA*NORBB,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KINDCD,2*NORBC*NORBD,
-     &                              WORK,KFREE,LFREE)      
+     &                              WORK,KFREE,LFREE)
           CALL GABDR1(GABM,IJOB,WORK(KFREE),LFREE,
      &          UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,
      &          DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
@@ -381,7 +381,7 @@ C               Electron 1
      &          COORAB(NUCA*NUCB,3,3,NODCAB),
      &          EXPAB(NUCA*NUCB,3,NODCAB), FACAB(NUCA*NUCB,NODCAB),
      &          CONTA(*), CONTB(*),
-     &          NPCOA(NSETA,2,0:NODCAB),NPCOB(NSETB,2,0:NODCAB), 
+     &          NPCOA(NSETA,2,0:NODCAB),NPCOB(NSETB,2,0:NODCAB),
      &          NUCSAB(NORBA*NORBB,NODCAB), NUCTAB(8),
      &          JSTRA(NSETA), JSTRB(NSETB),
      &          NINDAB(NORBA*NORBB,2), NORTAB(8),
@@ -390,7 +390,7 @@ C               Electron 2
      &          COORCD(NUCC*NUCD,3,3,NODCCD),
      &          EXPCD(NUCC*NUCD,3,NODCCD), FACCD(NUCC*NUCD,NODCCD),
      &          CONTC(*), CONTD(*),
-     &          NPCOC(NSETC,2,0:NODCCD),NPCOD(NSETD,2,0:NODCCD), 
+     &          NPCOC(NSETC,2,0:NODCCD),NPCOD(NSETD,2,0:NODCCD),
      &          NUCSCD(NORBC*NORBD,NODCCD), NUCTCD(8),
      &          JSTRC(NSETC), JSTRD(NSETD),
      &          NINDCD(NORBC*NORBD,2), NORTCD(8),
@@ -406,10 +406,10 @@ C
       CALL QENTER('GABDR1')
 #include "memint.h"
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR1','*',103)
-      CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCORBC,NORBC,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KCORBD,NORBD,WORK,KFREE,LFREE)      
+      CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCORBC,NORBC,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KCORBD,NORBD,WORK,KFREE,LFREE)
 C
 C     Electron 1
 C
@@ -478,12 +478,12 @@ C
 C     Electron 1
       MXUCAB = IMXVEC(NUCTAB,NODCAB)
       LCOFAB = MXUCAB*(JMAXA+JMAXB+1)*(JMAXA+1)*(JMAXB+1)*3*NCFTYP
-      CALL MEMGET('REAL',KCOFAB,LCOFAB,WORK,KFREE,LFREE)      
+      CALL MEMGET('REAL',KCOFAB,LCOFAB,WORK,KFREE,LFREE)
 C
 C     Electron 2
       MXUCCD = IMXVEC(NUCTCD,NODCCD)
       LCOFCD = MXUCCD*(JMAXC+JMAXD+1)*(JMAXC+1)*(JMAXD+1)*3*NCFTYP
-      CALL MEMGET('REAL',KCOFCD,LCOFCD,WORK,KFREE,LFREE)      
+      CALL MEMGET('REAL',KCOFCD,LCOFCD,WORK,KFREE,LFREE)
 C
 C     Number of SO integrals
 C
@@ -503,12 +503,12 @@ C     &               IPRINT)
       NSOINT = NOABCD*NINTS
       IF (NSOINT .GT. 0) THEN
 C
-        CALL MEMGET('REAL',KSOINT,NSOINT         ,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KPNTAO,  NINTMX*NOPREP,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KPNTOP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KPNTNO,4*NINTMX*NOPREP,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KPNTRP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KPNTLG,3*NINTMX*NOPREP,WORK,KFREE,LFREE)      
+        CALL MEMGET('REAL',KSOINT,NSOINT         ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KPNTAO,  NINTMX*NOPREP,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KPNTOP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KPNTNO,4*NINTMX*NOPREP,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KPNTRP,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KPNTLG,3*NINTMX*NOPREP,WORK,KFREE,LFREE)
         CALL GABDR2(GABM,IJOB,WORK(KSOINT),NSOINT,WORK(KFREE),LFREE,
      &                  UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,
      &                  DDFOCK,DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,
@@ -569,7 +569,7 @@ C
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
-     &        ONECEN, SQ12EL, SOP000, IPNTLG(3,*),SOFOCK, 
+     &        ONECEN, SQ12EL, SOP000, IPNTLG(3,*),SOFOCK,
      &        LONDON, SUSCEP, ADISTR, DOGAB
       DIMENSION GABM(*),SOINT(NSOINT),WORK(LWORK),
      &          INDHSQ(*),IODDHR(*),INDHER(*),LMNVLS(*),
@@ -631,8 +631,8 @@ C     ***** Both distributions *****
 C
       JMAX0  = MAXAB + MAXCD
 c     HKABCD is a symmetry factor, which determines how many different integrals
-c     have the same value. This symmetry factor is not factorizable 
-c     between AB and CD, and must therefore not be included in GAB/YAB matrix. 
+c     have the same value. This symmetry factor is not factorizable
+c     between AB and CD, and must therefore not be included in GAB/YAB matrix.
 c     HKABCD = FMULT(IBTAND(MULAB,MULCD)). /Feb 19 1998 - jth
       HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
@@ -865,7 +865,7 @@ C            ***** AO integrals *****
 C            ************************
 C
              LAOINT = NCCINT*NINTYP
-             CALL MEMGET('REAL',KAOINT,LAOINT,WORK,KFREE,LFREE)      
+             CALL MEMGET('REAL',KAOINT,LAOINT,WORK,KFREE,LFREE)
              CALL CAOINT(SOINT,DUMMY,1,DUMMY,DUMMY,DUMMY,WORK(KAOINT),
      &                   WORK(KFREE),LFREE,COEFAB,COEFCD,
      &                   COORAB(1,1,1,NSYMR),COORCD(1,1,1,NSYMS),
@@ -940,15 +940,15 @@ C        B) Differentiated integrals
 C        ===========================
 C
          ELSE IF (PERTUR .OR. SPNORB) THEN
-            WRITE(LUPRI,'(A)') 'Not yet implemented !'
-            CALL QUIT('Not yet implemented !')
+            WRITE(LUPRI,'(A)') 'PERTUR/SPNORB not yet implemented !'
+            CALL QUIT('PERTUR/SPNORB not yet implemented !')
 C
 C        C) London orbitals
 C        ==================
 C
          ELSE IF (LONDON) THEN
-            WRITE(LUPRI,'(A)') 'Not yet implemented !'
-            CALL QUIT('Not yet implemented !')
+            WRITE(LUPRI,'(A)') 'London not yet implemented !'
+            CALL QUIT('London not yet implemented !')
          END IF
       ENDIF
       CALL QEXIT('GABDR2')
@@ -1098,9 +1098,9 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                       DO ISYMA = 0, MAXOPR
                       IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
                          ISYMB = IBTXOR(ISYMR,ISYMA)
-                         IA = IORBSH(ISHELA,IORBA) 
+                         IA = IORBSH(ISHELA,IORBA)
      &                       + IEFFA(ISYMA) + ICOMPA
-                         IB = IORBSH(ISHELB,IORBB) 
+                         IB = IORBSH(ISHELB,IORBB)
      &                       + IEFFB(ISYMB) + ICOMPB
                          GABM(IA,IB) = AOBUF
                          GABM(IB,IA) = AOBUF
@@ -1143,9 +1143,9 @@ C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
                       DO ISYMA = 0, MAXOPR
                       IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
                          ISYMB = IBTXOR(ISYMR,ISYMA)
-                         IA = IORBSH(ISHELA,IORBA) 
+                         IA = IORBSH(ISHELA,IORBA)
      &                     + IEFFA(ISYMA) + ICOMPA
-                         IB = IORBSH(ISHELB,IORBB) 
+                         IB = IORBSH(ISHELB,IORBB)
      &                     + IEFFB(ISYMB) + ICOMPB
                          GABM(IA,IB) = AOBUF
                          GABM(IB,IA) = AOBUF2
@@ -1169,7 +1169,7 @@ C  /* Deck mkdrao */
 C*****************************************************************************
 C
 C     Compress a matrix DMAT in AO basis to a reduced matrix DRAO
-C     over symmetry unique block indices as defined in 
+C     over symmetry unique block indices as defined in
 C     COMMON block BLOCKS (dimension NSYMBL)
 C
 C     Written by T.Saue Oct 12 1995
@@ -1243,9 +1243,9 @@ C
       COMP(1) = 'L'
       COMP(2) = 'S'
 C
-C     First make pointer from symmetry dependent blocks to 
+C     First make pointer from symmetry dependent blocks to
 C     symmetry independent blocks
-C     
+C
       NBL = 0
       DO I = 1,MAXSHL
         NCENTA = NCNTSH(I)
@@ -1367,7 +1367,7 @@ C  /* Deck mkdrso */
 C*****************************************************************************
 C
 C     Compress a matrix DMAT in SO basis to a reduced matrix DRSO
-C     over symmetry unique block indices as defined in 
+C     over symmetry unique block indices as defined in
 C     COMMON block BLOCKS (dimension MAXSHL)
 C
 C     Written by T.Saue Oct 11 1996
@@ -1447,19 +1447,19 @@ C       Screening proceeds in three steps as documented by DINTSKP:
 C         Step 1: Screening on integral batches
 C           DINTSKP(1,1) - total number of integrals
 C           DINTSKP(2,1) - number of integrals skipped (batchwise)
-C         Step 2: Screening on individual integrals 
+C         Step 2: Screening on individual integrals
 C                 while unpacking indices
 C           DINTSKP(1,2) - number of integrals remaining after step 1
 C           DINTSKP(2,2) - number of integrals skipped
 C         Step 3a: Screening on Coulomb contributions
 C           NCM is the number of Fock matrices with Coulomb contribution
-C           DINTSKP(1,3) - NCM times number of integrals remaining 
+C           DINTSKP(1,3) - NCM times number of integrals remaining
 C                         after step 2
 C           DINTSKP(2,3) - number of integrals skipped,
 C                         the number is obtained by counting the number of
 C                         integrals skipped for each NCM separately
 C         Step 3b: Screening on exchange contributions
-C           DINTSKP(1,4) - NEM times number of integrals remaining 
+C           DINTSKP(1,4) - NEM times number of integrals remaining
 C                         after step 2
 C           DINTSKP(2,4) - number of integrals skipped
 C                         the number is obtained by counting the number of
@@ -1489,17 +1489,17 @@ C
       IF(DINTSKP(1,1).GT.D0) DSTEP(1) = DINTSKP(2,1)/DINTSKP(1,1)
       DA       = D1 - DSTEP(1)
       DSTEP(1) = DC*DSTEP(1)
-      IF(DINTSKP(1,2).GT.D0) DSTEP(2) = 
+      IF(DINTSKP(1,2).GT.D0) DSTEP(2) =
      &         (DINTSKP(2,2)/DINTSKP(1,2))*DA
       DA       = DC*DA*(D1 - DSTEP(2))
       DSTEP(2) = DC*DSTEP(2)
-      IF(DINTSKP(1,3).GT.D0) DSTEP(3) 
+      IF(DINTSKP(1,3).GT.D0) DSTEP(3)
      &         = (DINTSKP(2,3)/DINTSKP(1,3))*DA
-      IF(DINTSKP(1,4).GT.D0) 
+      IF(DINTSKP(1,4).GT.D0)
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
       INTTID = SECTID(CPUSEC)
-      WRITE(LUPRI,'(A9,1P,D10.2,0P,4(F8.2,A1),2X,A12)') 
+      WRITE(LUPRI,'(A9,1P,D10.2,0P,4(F8.2,A1),2X,A12)')
      &     TEXT,SCRTHR,(DSTEP(I),'%',I=1,4),INTTID
       RETURN
       END
@@ -1554,9 +1554,9 @@ C
          DO J = 1,NTYPE(ICEN)
             IOFF = IOFF + 1
             DO I = 1,3
-               DO K = 1,2 
+               DO K = 1,2
                   DTOTAL(K,0,I) = DTOTAL(K,0,I) + DINTSKP(K,IOFF,I)
-                  DTOTAL(K,ICEN,I) = DTOTAL(K,ICEN,I) 
+                  DTOTAL(K,ICEN,I) = DTOTAL(K,ICEN,I)
      &                             + DINTSKP(K,IOFF,I)
                END DO
             END DO
@@ -1605,13 +1605,13 @@ C
             END IF
             DO I = 1,3
                IF (DTOTAL(1,ICEN,I) .GT. 0) THEN
-                  WRITE(CSTEP(I),'(F6.2,A1)') 
+                  WRITE(CSTEP(I),'(F6.2,A1)')
      &               DTOTAL(2,ICEN,I)/DTOTAL(1,ICEN,I)*DC,'%'
                ELSE
                   WRITE(CSTEP(I),'(A7)') '  N/A  '
                END IF
             END DO
-            WRITE(LUPRI,'(A6,2X,A7,15X,3(2X,A7))') 
+            WRITE(LUPRI,'(A6,2X,A7,15X,3(2X,A7))')
      &         CCENT(ICEN+1),CTEMP,(CSTEP(I),I=1,3)
 C
 C
@@ -1629,13 +1629,13 @@ C
                END IF
                DO K = 1,3
                   IF (DINTSKP(1,IOFF,K) .GT. 0) THEN
-                     WRITE(CSTEP(K),'(F6.2,A1)') 
+                     WRITE(CSTEP(K),'(F6.2,A1)')
      &                  DINTSKP(2,IOFF,K)/DINTSKP(1,IOFF,K)*DC,'%'
                   ELSE
                      WRITE(CSTEP(K),'(A7)') '  N/A  '
                   END IF
                END DO
-               WRITE(LUPRI,'(17X,A4,2X,A7,3(2X,A7))') 
+               WRITE(LUPRI,'(17X,A4,2X,A7,3(2X,A7))')
      &            CTYPE(I,ICEN),CTEMP,(CSTEP(K),K=1,3)
             END DO
             WRITE(LUPRI,'(/)')
@@ -1720,7 +1720,7 @@ C/* Deck Gabgen */
      &                  IPRINT,WORK,LWORK)
 C***********************************************************************
 C
-C     This routine will generate the reduced matrix of 
+C     This routine will generate the reduced matrix of
 C     Cauchy-Schwartz integrals and write it to file AOPROPER
 C
 C     Written by T.Saue Mar 19 1997
@@ -1763,7 +1763,7 @@ C
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
-      CALL GETDAT(RTNLBL(1),RTNLBL(2))     
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
 C     Check if file AOPROPER is present
 C
@@ -1812,7 +1812,7 @@ C
          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-         REWIND LUPROP                
+         REWIND LUPROP
       ENDIF
 C
 C     Generate GAB-integrals
@@ -1824,7 +1824,7 @@ C
       END IF
       IF (NRGAB .NE. NGAB) CALL QUIT('GABGEN ERROR: NGAB .ne. NRGAB')
       NBUF = NRGAB*NBASIS*NBASIS
-      CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)     
+      CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
       CALL GABGE1(IJOB,WORK(KBUF),ITYPE,IGTYP,
      &            MAXDIF,JATOM,NOCONT,WORK(KFREE),LFREE,IPRINT)
 C
@@ -1833,7 +1833,7 @@ C     GAB-matrix in AO-basis
 C
       IF(IJOB.EQ.0) THEN
          N2GAB = NSYMBL*NSYMBL
-         CALL MEMGET('REAL',KGAB,NGAB*N2GAB,WORK,KFREE,LFREE)     
+         CALL MEMGET('REAL',KGAB,NGAB*N2GAB,WORK,KFREE,LFREE)
          DO 123 IGAB = 1,NGAB
             IOFF1 = (IGAB-1)*NBASIS*NBASIS
             IOFF2 = (IGAB-1)*NSYMBL*NSYMBL
@@ -1896,11 +1896,11 @@ C     /* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
 C***********************************************************************
-C     
+C
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
-C     
+C
 C     Written by T.Saue Mar 20 1997
-C     
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1914,10 +1914,10 @@ C***********************************************************************
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
 #include "memint.h"
-C     
+C
 C     Construct label
 C     ---------------
-C     
+C
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -1940,10 +1940,10 @@ C
             CALL QUIT('GETGAB: Invalid IJOB')
          ENDIF
       END DO
-C     
+C
 C     Check if file AOPROPER is present
 C     ---------------------------------
-C     
+C
       OPTST = .FALSE.
       INQUIRE(FILE='AOPROPER',EXIST=EXTST)
       IF(EXTST) THEN
@@ -1958,19 +1958,19 @@ C           File AOPROPER is not opened; open it
 #if defined (SYS_IBM)
             OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &           FILE='APROPER')
-#else       
+#else
             OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &           FILE='AOPROPER')
-#endif      
+#endif
          ENDIF
       ELSE
          WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
          CALL QUIT('GETGAB: AOPROPER not found !')
       ENDIF
-C     
+C
 C     Get GAB-matrix
 C     --------------
-C     
+C
       DO IGAB = 1, NGAB
          REWIND LUPROP
          IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
@@ -1983,7 +1983,7 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
                CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
      &                  NSYMBL,NSYMBL,-4,LUPRI)
             ENDIF
-         ELSE 
+         ELSE
             WRITE(LUPRI,'(/4A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
@@ -2001,7 +2001,7 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
 C
 C
       END DO
-C     
+C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       RETURN
  10   CONTINUE
@@ -2011,5 +2011,3 @@ C
       WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
       CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END
-
-

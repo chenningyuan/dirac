@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -222,20 +222,20 @@ C
             IF (DIAGAB) KHKTBB = ICOMPA
             DO ICOMPB = 1,KHKTBB
               FACAB = SFAC
-              IF (DIAGAB.AND.ICOMPA.NE.ICOMPB) 
+              IF (DIAGAB.AND.ICOMPA.NE.ICOMPB)
      &          FACAB = FACAB+FACAB
               DO ICOMPC = 1,KHKTC
                             KHKTDD = KHKTD
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD) 
+                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
                     FAB = FCABCD
                     IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
                     IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
-                    IF (TCONAB.AND.IORBA.NE.IORBB) 
+                    IF (TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
@@ -246,7 +246,7 @@ C
                         IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
                         IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
                         FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD) 
+                        IF (TCONCD.AND.IORBC.NE.IORBD)
      &                     FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
                         AOINT(NBUF) = FABCD*AINT
@@ -310,20 +310,20 @@ CTROND
             IF (DIAGAB) KHKTBB = ICOMPA
             DO ICOMPB = 1,KHKTBB
               FACAB = SFAC
-              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB) 
+              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB)
      &          FACAB = FACAB+FACAB
               DO ICOMPC = 1,KHKTC
                             KHKTDD = KHKTD
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD) 
+                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
                     IORBA = NINDAB(IORBAB,1)
                     IORBB = NINDAB(IORBAB,2)
                     FAB   = FCABCD
-                    IF(TCONAB.AND.IORBA.NE.IORBB) 
+                    IF(TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
@@ -334,7 +334,7 @@ CTROND
                         IORBC = NINDCD(IORBCD,1)
                         IORBD = NINDCD(IORBCD,2)
                         FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD) 
+                        IF (TCONCD.AND.IORBC.NE.IORBD)
      &                    FABCD = FABCD+FABCD
                         AOMAX       = MAX(AOMAX,ABS(AINT))
                         AOINT(NBUF) = FABCD*AINT
@@ -386,9 +386,10 @@ C     ***** Contract Fock matrices *****
 C     **********************************
 C       IFCTYP = XY
 C         X indicates symmetry about diagonal
-C           X = 0 No symmetry
+C           X = 0 General: no symmetry
 C           X = 1 Symmetric
 C           X = 2 Anti-symmetric
+C           X = 3 Mixed: some blocks symmetric and some antisymmetric
 C         Y indicates contributions
 C           Y = 1 Coulomb
 C           Y = 2 Exchange
@@ -399,10 +400,10 @@ C
         FCM = DNSBUF(1,I)*AOMAX
         FEM = DNSBUF(2,I)*AOMAX
         IY = MOD(IFCTYP(I),10)
-        IX = (IFCTYP(I)-IY)/10
+        IX = IFCTYP(I)/10
         IC = MOD(IY,2)
         IE = IY - IC
-CTROND        IF (IX.EQ.2) IC = 0
+        IF (IX.EQ.2) IC = 0
 C       ... no Coulomb term for antisymmetric density matrix
         IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on Coulomb contributions
@@ -415,9 +416,9 @@ C       Screening on exchange contributions
           IE = 0
           DINTSKP(2,4) = DINTSKP(2,4) + NBUF
         ENDIF
-        IY = IE + IC
+        IY = IC + IE
         IF(IY.EQ.0) GOTO 400
-        IF(IX.EQ.1.OR.IX.EQ.2) THEN
+        IF(IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
           EXCFAC = DMP25*HFXFAC
 C
 C         Symmetric singlet Fock matrix
@@ -481,7 +482,7 @@ C
             CALL QUIT(
      &        'ERROR in INTFC1: specified IFCTYP not implemented.')
           ENDIF
-        ELSEIF(IX.EQ.0) THEN
+        ELSE IF (IX.EQ.0) THEN
           EXCFAC = DMP5*HFXFAC
 C
 C         General singlet case - no permutational symmetry
@@ -682,7 +683,7 @@ C*****************************************************************************
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-CTROND#include <inforb.h>
+CTROND#include "inforb.h"
 #include "shells.h"
 #include "symmet.h"
 #include "nuctap.h"
@@ -697,11 +698,11 @@ C     ============================
 C
       IF (DIRFCK) THEN
          NMAT = NDMAT
-         CALL MEMGET('REAL',KSKLTN,NMAT*N2BASX      ,WORK,KFREE,LFREE)         
-         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)         
+         CALL MEMGET('REAL',KSKLTN,NMAT*N2BASX      ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
          NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
-         CALL MEMGET('REAL',KINDEX,NINDEX           ,WORK,KFREE,LFREE)         
-         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)         
+         CALL MEMGET('REAL',KINDEX,NINDEX           ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
          IXYZ = 0
          CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
@@ -721,14 +722,14 @@ C
   100       CONTINUE
          END IF
 C
-         CALL MEMGET('REAL',KSKLTN,3*NMATMX*N2BASX  ,WORK,KFREE,LFREE)         
-         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)         
+         CALL MEMGET('REAL',KSKLTN,3*NMATMX*N2BASX  ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
          NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
-         CALL MEMGET('INTE',KINDEX,NINDEX           ,WORK,KFREE,LFREE)         
-         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)         
-         CALL MEMGET('REAL',KNFAC ,NMATMX*(MAXREP+1),WORK,KFREE,LFREE)         
-         CALL MEMGET('INTE',KNINDX,(MAXREP+1)       ,WORK,KFREE,LFREE)         
-         CALL MEMGET('INTE',KNPINT,NMATMX*(MAXREP+1),WORK,KFREE,LFREE)         
+         CALL MEMGET('INTE',KINDEX,NINDEX           ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KNFAC ,NMATMX*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KNINDX,(MAXREP+1)       ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KNPINT,NMATMX*(MAXREP+1),WORK,KFREE,LFREE)
          IOFF = 0
          IFMAT = 0
          DO 200 ITYPE = 1, 2
@@ -877,7 +878,7 @@ C
       END IF
       DO 100 IMAT = 1, NMAT
          IY = MOD(IFCTYP(IMAT),10)
-         IX = (IFCTYP(IMAT)-IY)/10
+         IX = IFCTYP(IMAT)/10
          FAC = D2I
          IF(IX.EQ.0) FAC = D8I
          CALL DSCAL(NBASIS*NBASIS,FAC,FMAT(1,1,IMAT),1)
@@ -932,7 +933,7 @@ C
   300    CONTINUE
 C
 C        The next paragraph concerns relativistic calculations only !
-C        IPARity is invoked since the operation of inversion 
+C        IPARity is invoked since the operation of inversion
 C        receives a minus sign when acting on small components....
 C
          DO 340 ISHELL = NLRGSH+1,KMAX

@@ -3517,7 +3517,7 @@ C
 #endif
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
-            CALL HEADER('Skeleton SL-FOCK',-1)
+            CALL HEADER('Skeleton LL+SL-FOCK',-1)
             CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  4,IQMULT,LUPRI)
           ENDDO
@@ -3580,7 +3580,7 @@ C
 #endif
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
-            CALL HEADER('Skeleton SS-FOCK',-1)
+            CALL HEADER('Skeleton LL+SL+SS-FOCK',-1)
             CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  4,IQMULT,LUPRI)
           ENDDO
@@ -3757,9 +3757,10 @@ C       Fock matrix type           IFCKOP
 C
 C     IFCTYP = XY
 C       X - symmetry about the diagonal  - based on IPHRM
-C         0 - no symmetry
-C         1 - symmetric
-C         2 - anti-symmetric
+C         0 - G: (General) no symmetry
+C         1 - S: Symmetric
+C         2 - A: Anti-symmetric
+C         3 - M: (Mixed) some blocks symmetric, other blocks anti-symmetric
 C       Y - two-electron contributions   - based on IPFCK
 C         1 - Coulomb
 C         2 - Exchange
@@ -3785,8 +3786,8 @@ C     Local variables
       PARAMETER (D0 = 0.0D0)
       SAVE IPFCK,HTYP
       DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
-      CHARACTER HTYP(0:2)*1
-      DATA HTYP /'G','S','A'/
+      CHARACTER HTYP(0:3)*1
+      DATA HTYP /'G','S','A','M'/
       DATA IPFCK/3,2,2,2,1,0,0,0,2,2,2,2/
 #include "ibtfun.h"
 C
@@ -3797,7 +3798,10 @@ C
       CALL IZERO(IFCTYP,MZ*NFMAT)
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
-C       always 0 (totally symmetric) in this version /May 2001 hjaaj
+C       IREP is always 0 (totally symmetric) for Hartre-Fock
+C       (defined in SETDHF(dirac/dirset.F) and GETFC1(prp/pamset.F))
+C       and it is the irrep of the perturbation operator in response
+C       (defined in SETGMT(prp/pamrvc.F)). /hjaaj Apr 2002
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
@@ -3810,21 +3814,34 @@ C
           IC        = MOD(IY,2)
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)
-C         An anti-symmetric matrix takes no Coulomb contributions
+C         An anti-symmetric matrix gives no Coulomb contributions
           IF(IH.EQ.2) IC = 0
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
           IY   = IC + IE
           IF(MZ.LT.4) THEN
+C           ... we are using .SOFOCK or non-direct (CONSCF)
             IQFCK(IZ)     = IQMULT(1,JQBAS(IRFCK(IZ),IPAR),IZ)
-            IHQ           = IHQMAT(IQFCK(IZ),IHRM)
             IPQ           = IQTOPQ(IQFCK(IZ),IREP)
-            IFCTYP(IPQ,I) = MAX(IFCTYP(IPQ,I),10*IHQ+IY)
+C
+            IYOLD = MOD(IFCTYP(IPQ,I),10)
+            IXOLD = IFCTYP(IPQ,I)/10
+            IFCTYP(IPQ,I) = 10*IBTOR(IXOLD,IH) + IBTOR(IYOLD,IY)
+C           ... hjaaj apr 2002: with IBTOR we are sure we include
+C           all the requested types. If some blocks are symmetric
+C           and some are antisymmetric we end with the new type
+C           of IX = 3 (IFCTYP = 10*IX + IY), which is in a way a
+C           special case of IX = 0 (unsymmetric). /hjaaj Apr 2002
+C
             IREPDM(IPQ,I) = IREP
-C           We know the non-totally symmetric reps are anti-symmetric
-C           thus we only need totally symmetric Coulomb contributions
-C           (IREPDM is used to check for Coulomb contribution) /May 2001 hjaaj
+C           ... MZ.lt.4 means that SOFOCK has been requested, and
+C           the density matrix will be of mixed symmetry. We
+C           use IREPDM to tell FCKOUT(abacus/her2out.F) which
+C           irrep gives symmetric matrix elements and thus
+C           Coulomb contributions. /hjaaj Apr 2002
+C
           ELSE
+C           ... MZ.eq.4: we are using DIRSCF (not .SOFOCK)
             IQFCK(IZ)     = IZ
             IFCTYP(IZ,I)  = 10*IH+IY
             IREPDM(IZ,I) =  IRFCK(IZ)
@@ -3836,18 +3853,18 @@ C
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(A,I5,3X,A,3X,A,A3)') 
      &      '* Fock matrix no.',I,' - ',
-     &      'Irrep:',REP(IREP)
+     &      'Operator irrep:',REP(IREP)
           WRITE(LUPRI,'(A,4(2X,A3))')
      &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,4)
           IF(MZ.LT.4) THEN
-            WRITE(LUPRI,'(A,4(3X,A1,2X))')
+            WRITE(LUPRI,'(A,4(3X,A1,1X))')
      &        'Packing        :',(QUNIT(IQFCK(IZ)),IZ=1,4)
-            WRITE(LUPRI,'(A,4(3X,A1,2X))')
+            WRITE(LUPRI,'(A,4(3X,A1,1X))')
      &        'Eff.   packing :',
      &        (QUNIT(IQTOPQ(IQFCK(IZ),IREP)),IZ=1,4)
           ENDIF
             WRITE(LUPRI,'(A)') 
-     &      '    Mat.  IFC  SYM  Coulomb Exchange '
+     &      '    Mat.  IFC  SYM  Coulomb Exchange Irrep'
           DO IZ = 1,MZ
             IY = MOD(IFCTYP(IZ,I),10)
             IH = (IFCTYP(IZ,I)-IY)/10
@@ -3855,9 +3872,9 @@ C
             IE = IY - IC
             IQ = IZ
             IF(MZ.LT.4) IQ = IPQTOQ(IZ,IREP)
-            WRITE(LUPRI,'(4X,I1,3A1,3X,I2,3X,A1,6X,I1,7X,I1)')
+            WRITE(LUPRI,'(4X,I1,3A1,I5,3X,A1,6X,I1,7X,I1,6X,A3)')
      &        IZ,'(',QUNIT(IQ),')',
-     &        IFCTYP(IZ,I),HTYP(IH),IC,IE/2
+     &        IFCTYP(IZ,I),HTYP(IH),IC,IE/2,REP(IREPDM(IZ,I))
           ENDDO
         ENDIF
       ENDDO

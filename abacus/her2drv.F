@@ -449,10 +449,10 @@ C
          NEM = 0
          DO I = 1,NDMAT
             IY  = MOD(IFCTYP(I),10)
-            IX = (IFCTYP(I)-IY)/10
             IC  = MOD(IY,2)
-            IE  = (IY - IC)/2
-CTROND            IF (IX.EQ.2) IC = 0
+            IE  = IY/2
+            IX = IFCTYP(I)/10
+            IF (IX.EQ.2) IC = 0
 C           ... no Coulomb term for antisymmetric density matrix
             IF (HFXFAC.EQ.D0) IE = 0
             NCM = NCM + IC
@@ -1877,13 +1877,13 @@ C                         non-symmetric density matrices
                       DO I = 1,NDMAT 
 C Largest Coulomb contribution
                         IY  = MOD(IFCTYP(I),10)
-                        IX = (IFCTYP(I)-IY)/10
                         IC  = MOD(IY,2)
-                        IE  = (IY - IC)/2
-CTROND                        IF (IX.EQ.2) IC = 0
+                        IE  = IY/2
+                        IX = IFCTYP(I)/10
+                        IF (IX.EQ.2) IC = 0
 C                       ... no Coulomb term for antisym. density matrix
                         IF (HFXFAC.EQ.D0) IE = 0
-                        IF (IC .EQ. 1) THEN
+                        IF (IC .NE. 0) THEN
                           DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
      &                                      DMRAO(ISYBLB,ISYBLA,I),
      &                                      DMRAO(ISYBLC,ISYBLD,I),
@@ -1892,7 +1892,7 @@ C                       ... no Coulomb term for antisym. density matrix
                           DNSBUF(1,I) = D0
                         END IF
 C Largest exchange contribution
-                        IF (IE .EQ. 1) THEN
+                        IF (IE .NE. 0) THEN
                           DNSBUF(2,I) = MAX(DMRAO(ISYBLC,ISYBLA,I),
      &                                      DMRAO(ISYBLA,ISYBLC,I),
      &                                      DMRAO(ISYBLC,ISYBLB,I),
@@ -2026,12 +2026,13 @@ c                    END IF
                      DO I = 1,NDMAT 
                         IY  = MOD(IFCTYP(I),10)
                         IC  = MOD(IY,2)
-                        IE  = (IY - IC)/2
+                        IE  = IY/2
+                        IX = IFCTYP(I)/10
                         IF (IX.EQ.2) IC = 0
 C                       ... no Coulomb term for antisym. density matrix
                         IF (HFXFAC.EQ.D0) IE = 0
 C Largest Coulomb contribution to gradient/Hessian expectation value
-                        IF (IC .EQ. 1) THEN
+                        IF (IC .NE. 0) THEN
                            DNSBUF(1,I) = DMRAO(ISYBLA,ISYBLB,I)
      &                                  *DMRAO(ISYBLC,ISYBLD,I)
 c DMRAO is always symmetric here.
@@ -2043,7 +2044,7 @@ c    &                                       DMRAO(ISYBLD,ISYBLC,I))
                            DNSBUF(1,I) = D0
                         END IF
 C Largest exchange contribution to gradient/Hessian expectation value
-                        IF (IE .EQ. 1) THEN
+                        IF (IE .NE. 0) THEN
 C                          DNS21       = DMRAO(ISYBLC,ISYBLA,I)
 C    &                                  *DMRAO(ISYBLB,ISYBLD,I)
 c                          DNS21       = MAX(DMRAO(ISYBLC,ISYBLA,I),

@@ -432,6 +432,9 @@ C                          Fock matrices
 C                          =============
 C
                            IF (DDFOCK) THEN
+#ifdef PRG_DIRAC
+                            CALL QUIT('DDFOCK not implemented in Dirac')
+#else
                               CALL DCOPY(NCARTS,AOINT(INT,1),NCCINT,
      &                                   DINT,1)
                               IF (EXPECT) THEN
@@ -467,7 +470,6 @@ C
 C
 C                             Active Fock matrix
 C
-#ifndef PRG_DIRAC
                               IF (DV) THEN
                                  DCD  = DFAC*DVCD
                                  DAB  = DFAC*DVAB
@@ -485,9 +487,7 @@ C
                                     FV(B,D,N) = FV(B,D,N) + DINT(I)*DAC
   810                            CONTINUE
                               END IF
-#endif
                            END IF
-#ifndef PRG_DIRAC
                            IF (IPRINT .GT. 30) THEN
                               WRITE(LUPRI,'(//A,4I5,D12.4)')
      &                              ' IORBA... PAOVAL',
@@ -504,14 +504,17 @@ C
                                  WRITE (LUPRI,'(A,12F6.3)') ' DINT ',
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
-                           END IF
 #endif
+                           END IF
 C
 C                       **************************
 C                       ***** Magnetic field *****
 C                       **************************
 C
                         ELSE
+#ifdef PRG_DIRAC
+                           CALL QUIT('LONDON not implemented in Dirac')
+#else
                            FACTOR = DP125*FAB*FCD*FCABCD
                            IF (SUSCEP) THEN
                               IF (NOPMAT) THEN
@@ -616,6 +619,7 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
+#endif  /* ifdef DIRAC */
                         END IF
                         INT = INT + 1
   600                CONTINUE
