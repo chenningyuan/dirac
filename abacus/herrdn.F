@@ -4343,6 +4343,8 @@ C     We keep track of which line we've read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
 C     that line, and then discard it by decrementing NMLINE. 
 C     Note that we only allow decrements of one /jth-20000621.
+C     (This is used to check if SMALL basis keyword has been specified,
+C     or if default - kinetic balance - should be used.)
 C
       DATA NMLN_LASTREAD /0/
       SAVE NMLN_LASTREAD
@@ -5986,10 +5988,9 @@ C
 C     Read two line header of basis set file
 C     ======================================
 C
-      CALL RDLINE(LUBFIL)
-      READ (MLINE(NMLINE),'(A80)',END=5020) TEXT
-      CALL RDLINE(LUBFIL)
-      READ (MLINE(NMLINE),'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
+      READ (LUBFIL,'(A80)',END=5020) TEXT
+      READ (LUBFIL,'(A80)',END=5021) TEXT
+      READ (TEXT,'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
      &      DATE1,TIME1,FORMATE,NE,FORMATC,NC,DCHRG,DEXPO
 C
 C     Read component, l-type and number of functions:
@@ -6000,9 +6001,10 @@ C     NCONTR = # of contracted functions
 C     NUNC   = # number of uncontracted functions
 C     ===============================================
 C
-  301 CALL RDLINE(LUBFIL)
-      IF (MLINE(NMLINE)(1:5).EQ.'     ') GOTO 390
-      READ (MLINE(NMLINE),'(6I4)',END=390)
+  301 CONTINUE
+      READ (LUBFIL,'(A80)',END=5021) TEXT
+      IF (TEXT(1:5).EQ.'     ') GOTO 390
+      READ (TEXT,'(6I4)',END=390)
      &      ICOMP,ITYP,NPRIM,NCONTR,IDUM,NUNC
 C
 C     Skip large component lines which we don't need in the small
@@ -6036,13 +6038,13 @@ C     Number of exponents and contraction coefficients on a line is 4
 C     ===============================================================
 C
       DO I = 1, NPRIM, 4
-         CALL RDLINE(LUBFIL)
-         READ (MLINE(NMLINE),FORMATE,ERR=5020,END=391)
+         READ (LUBFIL,'(A80)',END=5021) TEXT
+         READ (TEXT,FORMATE,ERR=5020,END=391)
      &         (ALPIN(IND),IND=I,MIN(I+3,NPRIM))
       ENDDO
       DO I = 1, NPRIM*NCONTR, 4
-         CALL RDLINE(LUBFIL)
-         READ (MLINE(NMLINE),FORMATC,ERR=5020,END=391)
+         READ (LUBFIL,'(A80)',END=5021) TEXT
+         READ (TEXT,FORMATC,ERR=5020,END=391)
      &         (CPRIN(IND),IND=I,MIN(I+3,NPRIM*NCONTR))
       ENDDO
 C
@@ -6154,9 +6156,14 @@ C
         CALL QUIT('Too many AO-blocks')
  5020 CONTINUE
         WRITE (LUPRI,'(/A/A/2A)')
-     &     'Error reading the following line :',MLINE(NMLINE),
+     &     'Error reading the following line :',TEXT,
      &     'in MOLFDIR type basis set file : ',FILNAM
- 5021   CALL QUIT('Error reading contents of MOLFDIR basis set file.')
+        CALL QUIT('Error reading contents of MOLFDIR basis set file.')
+ 5021 CONTINUE
+        WRITE (LUPRI,'(/A/A/2A)')
+     &     'Error reading the line following this line :',TEXT,
+     &     'in MOLFDIR type basis set file : ',FILNAM
+        CALL QUIT('Error reading contents of MOLFDIR basis set file.')
  5025 CONTINUE
         WRITE (LUPRI,'(/2A)')
      &     'Cannot find MOLFDIR type basis set file : ',FILNAM
