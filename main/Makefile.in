@@ -59,4 +59,10 @@ depend:
 clean:
 	$(RM) -f *.o *~ *.f *.lst *.i
 
+dirmpi.x:
+	cd .. ; $(MAKE) dirmpi.x
+
+dirac.x:
+	cd .. ; $(MAKE) dirac.x
+
 # DO NOT DELETE
