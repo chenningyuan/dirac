@@ -767,6 +767,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <aovec.h>
 #include <mxorb.h>
+      LOGICAL LBIT
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include <dcbgen.h>
 #include <dcbdhf.h>
@@ -782,9 +783,10 @@ C
       CALL MEMGET('REAL',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
       NPOS = 0
       IF(PARCAL) THEN
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
-        NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        IF(LBIT(INTGEN,1)) NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+        IF(LBIT(INTGEN,2)) NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
+        IF(LBIT(INTGEN,3)) NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
+        IF(LBIT(INTGEN,4)) NPOS = NPOS + NSMLBL*NLRGLBL
       ENDIF
       CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
 C

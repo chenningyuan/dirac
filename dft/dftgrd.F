@@ -801,12 +801,10 @@ C     closer to the nuclei scale the number of angular points as
 
        NOLD=NSCHEME
       IF (NSCHEME.GT.9.AND.RNODE.LT.RBRAGG) THEN
-       IANG=NINT(NTOT*RNODE/RBRAGG)
-      NTOT=MIN(NTOT,IANG)
-
-       NSCHEME=NLEBSET2(NTOT)
-       NTOT=NLEB(NSCHEME)
-
+        IANG=NINT(NTOT*RNODE/RBRAGG)
+        NTOT=MIN(NTOT,IANG)
+        NSCHEME=NLEBSET2(NTOT)
+        NTOT=NLEB(NSCHEME)
       ENDIF
 
       DO K=1,NTOT

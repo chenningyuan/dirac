@@ -53,7 +53,7 @@
    printf("%s",strtitle);
    printf("%s",strlogo);
    printf("%s",strsubtitle);
-
+   fflush(stdout);
    sysinf(parcal);
    
 }

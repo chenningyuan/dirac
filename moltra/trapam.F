@@ -2349,6 +2349,7 @@ C***********************************************************************
 C
 #include <dgroup.h>
 #include <blocks.h>
+#include <dcbham.h>
 C
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
      &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
@@ -2365,6 +2366,8 @@ C
       IJOB   = 0
       ITYPE  = 0
       IGTYP  = 1
+      IF(LEVYLE) IGTYP = 0
+      IF(GAUNT) IGTYP = 2
       MAXDF = 0
       CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
      &     IPRINT,WORK(KGAB),WORK(KFREE),LFREE)

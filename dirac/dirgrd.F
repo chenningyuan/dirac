@@ -1073,6 +1073,8 @@ C
          IJOB   = 0
          ITYPE  = 0
          IGTYP  = 1
+         IF(LEVYLE) IGTYP = 0
+         IF(GAUNT)  IGTYP = 2
          MAXDF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
      &        IPRINT,WORK(KGABRAO),WORK(KFREE),LFREE)
@@ -1082,6 +1084,8 @@ C
          IJOB   = 0
          ITYPE  = 10
          IGTYP  = 1
+         IF(LEVYLE) IGTYP = 0
+         IF(GAUNT)  IGTYP = 2
          MAXDF  = 2
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDF,
      &        IPRINT,WORK(KGABRAO+N2GAB),WORK(KFREE),LFREE)

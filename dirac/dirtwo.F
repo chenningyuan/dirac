@@ -1,28 +1,28 @@
 C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
-C...   All Rights Reserved.
-C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
-C...
-C...   This source code is provided under a written licence and may be 
-C...   used, copied, transmitted, or stored only in accord with that
-C...   written licence.
-C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
-C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dirac,
-C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
-C...
-C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
-C...
-C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...  Copyright (c) 1998 by the authors of Dirac (see below).  All
+C...  Rights Reserved.
+C...  
+C...  The source code in this file is part of "Dirac, a relativistic ab
+C...  initio electronic structure program, Release 3.1 (1998), written
+C...  by T. Saue, T. Enevoldsen, T. Helgaker, H. J. Aa. Jensen,
+C...  J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...  
+C...  This source code is provided under a written licence and may be
+C...  used, copied, transmitted, or stored only in accord with that
+C...  written licence.
+C...  
+C...  In particular, no part of the source code or compiled modules may
+C...  be distributed outside the research group of the licence holder.
+C...  This means also that persons (e.g. post-docs) leaving the research
+C...  group of the licence holder may not take any part of Dirac,
+C...  including modified files, with him/her, unless that person has
+C...  obtained his/her own licence.
+C...  
+C...  For questions concerning this copyright write to:
+C...  dirac-admin@dirac.chem.ou.dk
+C...  
+C...  For information on how to get a licence see:
+C...  http://dirac.chem.ou.dk/Dirac
 C
 C
 C VERSION : $Revision$
@@ -1508,6 +1508,7 @@ C
       CALL RPGEN(IREPA)
 C
 C     LL - integrals
+C     ==============
 C
  10   CONTINUE
       IF(.NOT.LBIT(IDFLAG,1).AND.LBIT(INTGEN,1)) THEN
@@ -1547,6 +1548,7 @@ C
       ENDIF
 C
 C     SL - integrals
+C     ==============
 C
  20   CONTINUE
       IF(.NOT.LBIT(IDFLAG,2).AND.LBIT(INTGEN,2)) THEN
@@ -1589,6 +1591,7 @@ C
       ENDIF
 C
 C     SS - integrals
+C     ==============
 C
  30   CONTINUE
       IF(.NOT.LBIT(IDFLAG,3).AND.LBIT(INTGEN,3)) THEN
@@ -1630,6 +1633,9 @@ C
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
  40   CONTINUE
+      IF(.NOT.LBIT(IDFLAG,4).AND.LBIT(INTGEN,4)) THEN
+        CALL QUIT('Gaunt-integrals to file not yet implemented !')
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3201,6 +3207,7 @@ C
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &          NPOS(*),WORK(LWORK)
+#include <dcbham.h>
 #include <dgroup.h>
 #include <dcbqal.h>
 #include <dcbbas.h>
@@ -3226,9 +3233,11 @@ C     =================================
 C
       IF (SCRFCK .GT. D0) THEN
 C
+         IGTYP = 1
+         IF(LEVYLE) IGTYP = 0
+         IF(GAUNT) IGTYP = 2
          IJOB   = 0
          ITYPE  = 0
-         IGTYP  = 1
          MAXDIF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
@@ -3380,11 +3389,10 @@ C
       KPOS   = 1
       CALL SCRSTA('Header',DUM,DUM)
 C
-C initialize MTOTTK
 C
 C     LL - integrals
+C     ==============
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
 #if defined (VAR_MPI)
@@ -3394,14 +3402,16 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
+           MTOTTK = NLRGBL*(NLRGBL+1)/2
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
+C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
@@ -3429,7 +3439,7 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
+        CALL SCRSTA('AOfock:(LL|LL)',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
            DO I = 1,NFMAT
               CALL HEADER('Skeleton LL-FOCK',-1)
@@ -3438,11 +3448,10 @@ C
            ENDDO
         ENDIF
       ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     SL - integrals
+C     ==============
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
         I2TYP  = 2
         THRBUF = THRS
@@ -3454,14 +3463,16 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
+           MTOTTK = NLRGBL*(NLRGBL+1)/2
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
-C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
+C
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
@@ -3490,7 +3501,7 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
+        CALL SCRSTA('AOfock:(SS|LL)',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SL-FOCK',-1)
@@ -3501,11 +3512,10 @@ C
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
       ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     SS - integrals
+C     ==============
 C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
       IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
         I2TYP  = 3
         THRBUF = THRS
@@ -3517,11 +3527,13 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
+           MTOTTK = NSMLBL*(NSMLBL+1)/2
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
+           KPOS = KPOS + MTOTTK
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
@@ -3552,7 +3564,7 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
+        CALL SCRSTA('AOfock:(SS|SS)',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SS-FOCK',-1)
@@ -3563,7 +3575,68 @@ C
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
       ENDIF
-      KPOS = KPOS + MTOTTK
+C
+C     Gaunt - integrals
+C     =================
+C
+      IF(LBIT(INTFLG,4).AND.LBIT(IDFLAG,4)) THEN
+        I2TYP  = 4
+        THRBUF = THRS
+        THRS   = THRS*THRFAC(1)
+#if defined (VAR_MPI)
+        IF (PARCAL) THEN
+C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
+           MTOTTK = NSMLBL*NLRGLB
+           CALL GETTIM(CPU1,WALL1)
+           CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
+     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
+     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
+           IF (IPRINT .GT. 0) THEN
+              WALL   = WALL2 - WALL1
+              TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
+              WRITE(6,'(A,A12)')
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
+     &             TOTTID
+              IF (IPRINT .GT. 5) THEN
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
+              END IF
+           END IF
+        ELSE
+#endif
+           CPU = SECOND()
+           CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
+     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,IDUM,DUM)
+           CPU = SECOND() - CPU
+#if defined (VAR_MPI)
+        ENDIF
+#endif
+        CALL SCRSTA('AOfock:(SL|SL)',DNTSKP,CPU)
+        IF(IPRINT.GE.5) THEN
+          DO I = 1,NFMAT
+            CALL HEADER('Skeleton Gaunt-FOCK',-1)
+            CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  4,IQMULT,LUPRI)
+          ENDDO
+        ENDIF
+        CALL FLSHFO(LUPRI)
+        THRS = THRBUF
+      ENDIF
 C
 C     Symmetrize Fock matrix
 C     ======================
@@ -3711,7 +3784,9 @@ C
 C
 C     Gaunt-integrals
 C     ===============
-C     to be programmed
+      IF(LBIT(INTFLG,4).AND.(.NOT.LBIT(IDFLAG,4))) THEN
+        CALL QUIT('Gaunt-integrals to file not yet implemented !')       
+      ENDIF
 C
       RETURN
 C
@@ -3861,6 +3936,7 @@ Ctec Is FIRST needed??
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),NPOS(*),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
+#include <dcbham.h>
 #include <dgroup.h>
 #include <cbihr2.h>
 #include <dcbbas.h>
@@ -3890,6 +3966,8 @@ C
          IJOB   = 0
          ITYPE  = 0
          IGTYP  = 1
+         IF(LEVYLE) IGTYP = 0
+         IF(GAUNT)  IGTYP = 2
          MAXDIF = 0
          CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
      &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
@@ -3971,7 +4049,9 @@ C
       KPOS   = 1
       CALL SCRSTA('Header',DUM,DUM)
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
+C     LL - integrals
+C     ==============
+C
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
 #if defined (VAR_MPI)
@@ -3981,6 +4061,7 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
+           MTOTTK = NLRGBL*(NLRGBL+1)/2
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
@@ -3989,6 +4070,7 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
@@ -4016,13 +4098,12 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
+        CALL SCRSTA('SOfock:(LL|LL)',DNTSKP,CPU)
       ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     SL - integrals
+C     ==============
 C
-      MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
         I2TYP  = 2
         THRBUF = THRS
@@ -4034,6 +4115,7 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
+           MTOTTK = NLRGBL*(NLRGBL+1)/2
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
@@ -4042,6 +4124,7 @@ C
 C
            CALL GETTIM(CPU2,WALL2)
            CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
            IF (IPRINT .GT. 0) THEN
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
@@ -4069,15 +4152,14 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
+        CALL SCRSTA('SOfock:(SS|LL)',DNTSKP,CPU)
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
       ENDIF
-      KPOS = KPOS + MTOTTK
 C
 C     SS - integrals
+C     ==============
 C
-      MTOTTK = NSMLBL*(NSMLBL+1)/2
       IF(LBIT(INTFLG,3).AND.LBIT(IDFLAG,3)) THEN
         I2TYP  = 3
         THRBUF = THRS
@@ -4090,28 +4172,28 @@ C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
            CALL DIRAC_PARCTL( 1 )
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           MTOTTK = NSMLBL*(NSMLBL+1)/2
+           CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
-C
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
+              TOTTID = SECTID(TOTWAL)
+              WRITE(6,'(A,A12)')
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
+     &             TOTTID
               IF (IPRINT .GT. 5) THEN
-                 INTTID = SECTID(CPU)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> CPU  time used in HER_PARDRV last iteration :',
-     &            INTTID
-                 INTTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12)')
-     &            '>>>> Wall time used in HER_PARDRV last iteration :',
-     &            INTTID
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
               END IF
            END IF
         ELSE
@@ -4126,11 +4208,67 @@ C
 #if defined (VAR_MPI)
         ENDIF
 #endif
-        CALL SCRSTA('SOfock:SS',DNTSKP,CPU)
+        CALL SCRSTA('SOfock:(SS|SS)',DNTSKP,CPU)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
       ENDIF
-      KPOS = KPOS + MTOTTK
+C
+C     Gaunt - integrals
+C     =================
+C
+      IF(LBIT(INTFLG,4).AND.LBIT(IDFLAG,4)) THEN
+        I2TYP  = 4
+        THRBUF = THRS
+        THRS   = THRS*THRFAC(1)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+#if defined (VAR_MPI)
+        IF (PARCAL) THEN
+C
+C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
+C
+           CALL DIRAC_PARCTL( 1 )
+C
+           MTOTTK = NSMLBL*NLRGLB
+           CALL GETTIM(CPU1,WALL1)
+           CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
+     &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
+     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
+           KPOS = KPOS + MTOTTK
+C
+           IF (IPRINT .GT. 0) THEN
+              WALL   = WALL2 - WALL1
+              TOTWAL = TOTWAL + WALL
+              TOTTID = SECTID(TOTWAL)
+              WRITE(6,'(A,A12)')
+     &             '>>>> Total wall time used in HER_PARDRV so far   :',
+     &             TOTTID
+              IF (IPRINT .GT. 5) THEN
+                 CPUTID = SECTID(CPU)
+                 WALLTID = SECTID(WALL)
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &        '>>>> CPU/wall  time used in HER_PARDRV last iteration :',
+     &         CPUTID,'/',WALLTID
+              END IF
+           END IF
+        ELSE
+#endif
+           CPU = SECOND()
+           CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUM,
+     &          IDUM,IDUM,IRNTYP,MAXDIF,JATOM,.TRUE.,
+     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
+     &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,IDUM,DUM)
+           CPU = SECOND() - CPU
+#if defined (VAR_MPI)
+        ENDIF
+#endif
+        CALL SCRSTA('SOfock:(SL|SL)',DNTSKP,CPU)
+        CALL FLSHFO(LUPRI)
+        THRS = THRBUF
+      ENDIF
 C     
 C     Scale matrices
 C

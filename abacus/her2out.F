@@ -658,13 +658,16 @@ C           Y indicates contributions
 C             Y = 1 Coulomb
 C             Y = 2 Exchange
 C             Y = 3 Coulomb + Exchange
+C             Y > 3 Gaunt
 C
         DO 400 K = 1,NDMAT
           IF(IFCTYP(K). EQ. 0) GOTO 400
-          IY = MOD(IFCTYP(K),10)
-          IX = (IFCTYP(K)-IY)/10
+          IY = MOD(IFCTYP(I),10)
+          IG = (IFCTYP(I)-IY)/10
+          IX = MOD(IG,10)
+          IG = (IG-IX)/10
           IC = MOD(IY,2)
-          IE = IY - IC
+          IE = IY-IC
 CTROND          IF (IX.EQ.2) IC = 0
 C         ... no Coulomb term for antisymmetric density matrix
           IF (HFXFAC.EQ.D0) IE = 0

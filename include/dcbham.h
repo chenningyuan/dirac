@@ -26,7 +26,8 @@ C     SSMTRC     - Scaling factor for SS overlap matrix
 C     SPINFR     - Neglect spin-orbit coupling
 C     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 C     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
-C     SMLV1C     - Neglect two-center blocks of VSS
+C     SMLV1C     - Neglect two-center blocks of VSS$
+C     GAUNT      - Dirac-Coulomb-Gaunt Hamiltonian
 C
       PARAMETER(MAX1OPER=10,MPRJREF=6)
       CHARACTER PRJFIL*6,VCPROJ*72
@@ -36,11 +37,11 @@ C
      &              NPRJREF
       LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,
-     &        PROJEC,PROOWN,DFTHAM
+     &        PROJEC,PROOWN,DFTHAM,GAUNT
       PARAMETER (NDCLHAM=17)
       COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
      &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,PROJEC,
-     &        PROOWN,DFTHAM
+     &        PROOWN,DFTHAM,GAUNT
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
