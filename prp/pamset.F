@@ -870,7 +870,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(2,NORBT),NIND(2,NTYP,2),WORK(*)
+      DIMENSION IORBCL(3,NORBT),NIND(2,NTYP,2),WORK(*)
 C
       CALL QENTER('DEFORB')
       KFRSAV = KFREE
@@ -878,7 +878,7 @@ C
 C     Allocate buffer areas
 C     =====================
 C
-      CALL MEMGET('INTE',KIND ,MXFBAS*NTYP*NFSYM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIND ,MXFBAS*NTYP,WORK,KFREE,LFREE)
       CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
@@ -904,10 +904,10 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(2,NORBT),IND(MXFBAS,NTYP,NFSYM),
+      DIMENSION IORBCL(3,NORBT),IND(MXFBAS,NTYP),
      &          NIND(2,NTYP,2),WORK(KFREE)
 C
-      NDIM = NORBT*2
+      NDIM = NORBT*3
       CALL IZERO(IORBCL,NDIM)
 C
 C     Unpack strings
@@ -917,31 +917,33 @@ C
         KOFF = 0
         DO IFRP = 1,NFSYM
           NVEC = 1
-          CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
+          CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP),
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
      &                IFRP,NVEC,WORK(KFREE),LFREE)
-          CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
+          CALL ORBCNT(IND(1,ITYP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
 C
-          IOFF = NPSH(IFRP) + 1 + IORB(IFRP)
+          IOFF = NPSH(IFRP)+IORB(IFRP)+1
           DO I = 1,NIND(1,ITYP,IFRP)
-            J           = IOFF + IND(I,ITYP,IFRP)
+            J           = IOFF+IND(I,ITYP)
             IORBCL(1,J) = ITYP
-            IORBCL(2,J) = KOFF + I
+            IORBCL(2,J) = NPSH(IFRP)+IND(I,ITYP)+1
+            IORBCL(3,J) = IFRP
           ENDDO
           KOFF = KOFF + NIND(1,ITYP,IFRP)
 C
 C         Absolute indices of electronic orbitals
 C
-          ICLS =  ITYP
-          IOFF = NPSH(IFRP) + IORB(IFRP)
+          IOFF = NPSH(IFRP)+IORB(IFRP)
           JOFF = NIND(1,ITYP,IFRP)
           DO I = 1,NIND(2,ITYP,IFRP)
-            J = IOFF + IND(I+JOFF,ITYP,IFRP) 
+            II = I + JOFF
+            J = IOFF + IND(II,ITYP) 
             IORBCL(1,J) = ITYP
-            IORBCL(2,J) = KOFF + I
+            IORBCL(2,J) = IND(II,ITYP)
+            IORBCL(3,J) = IFRP
           ENDDO
           KOFF = KOFF + NIND(2,ITYP,IFRP)
         ENDDO

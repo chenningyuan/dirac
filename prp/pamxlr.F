@@ -105,7 +105,7 @@ C
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
       IF(ORBXLR) THEN
-        CALL MEMGET('INTE',KLRO,2*NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KLRO,3*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
         NI = 0
@@ -228,7 +228,7 @@ C
 #include <blocks.h>
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
-     &          IORBCL(2,*),WORK(*)
+     &          IORBCL(3,*),WORK(*)
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
 C
@@ -1092,7 +1092,7 @@ C
 #include <dgroup.h>
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
-     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(2,*),
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(3,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETLRF')
@@ -1219,7 +1219,7 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
-     &          CMO(*),EIG(*),IORBCL(2,*),
+     &          CMO(*),EIG(*),IORBCL(3,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
       DATA BLANK16/'                  '/
@@ -1574,6 +1574,8 @@ C
 #include <dgroup.h>
 #include <dcbxrs.h>
 #include <dcbxlr.h>
+#include <dcborb.h>
+#include <dcbbas.h>
       DIMENSION WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
       LOGICAL TOBE   
@@ -1594,7 +1596,13 @@ C
       PBUF = ' '
       TOBE = .FALSE.
       JFRP = -1
+C     Set orbital strings and classify orbitals
       CALL OSTRING(WORK,KFREE,LFREE)
+      NTYP = 3
+      CALL MEMGET('INTE',KLRO,NTYP*NORBT,WORK,KFREE,LFREE)
+      CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
+     &              WORK,KFREE,LFREE,IPRXLR)
+      KLOOP=KFREE
 C
 C     WHILE DO - loop
 C
@@ -1606,12 +1614,14 @@ C
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 20
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),LUINP,LAB1,LAB2,
-     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),WORK(KLRO),
+     &                    LUINP,LAB1,LAB2,TYP1,TYP2,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 20
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),LUINP,LAB1,LAB2,
-     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),WORK(KLRO),
+     &                    LUINP,LAB1,LAB2,TYP1,TYP2,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
             GOTO 20
           ENDIF
@@ -1620,7 +1630,7 @@ C
         READ (LUINP,END=3,ERR=2) LAB1,LAB2,TYP1,TYP2,
      &            FREQ1,FREQ2,JSYMOP1,JSYMOP2,
      &            JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
-     &            ERGRSP,NBAS,NORB
+     &            ERGRSP,NBAS,NORBS
         IVEC = IVEC + 1
         IREC = IREC + 1
 C       New parameter class
@@ -1631,17 +1641,19 @@ C           Analyze solution vectors
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 30
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),LUINP,LAB1,LAB2,
-     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),WORK(KLRO),
+     &                    LUINP,LAB1,LAB2,TYP1,TYP2,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 30
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),LUINP,LAB1,LAB2,
-     &                    TYP1,TYP2,WORK,KFREE,LFREE,IPRXLR)
+              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),WORK(KLRO),
+     &                    LUINP,LAB1,LAB2,TYP1,TYP2,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
             READ (LUINP,END=3,ERR=2) LAB1,LAB2,TYP1,TYP2,
      &              FREQ1,FREQ2,JSYMOP1,JSYMOP2,
      &              JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
-     &              ERGRSP,NBAS,NORB
+     &              ERGRSP,NBAS,NORBS
           ENDIF
  30       CONTINUE
           PBUF = TYP1(1:1)
@@ -1656,7 +1668,7 @@ C       New property
 C         Generate orbital rotation operator
           IF(IFRP.NE.JFRP) THEN
             IF(TOBE) THEN
-              CALL MEMREL('ANAXLR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+              CALL MEMREL('ANAXLR',WORK,KLOOP,KLOOP,KFREE,LFREE)
             ENDIF
             CALL SETXOP(XLR_INDSTR,IFRP,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
      &                  WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRXLR)
@@ -1690,7 +1702,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck anaxl1 */
-      SUBROUTINE ANAXL1(NBDIM,NVEC,JXOP,LUINP,LAB1,LAB2,TYP1,TYP2,
+      SUBROUTINE ANAXL1(NBDIM,NVEC,JXOP,IORBCL,
+     &                  LUINP,LAB1,LAB2,TYP1,TYP2,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C***********************************************************************
@@ -1698,7 +1711,7 @@ C***********************************************************************
 #include <priunit.h>
 C
 #include <dgroup.h>
-      DIMENSION JXOP(*),WORK(*)
+      DIMENSION JXOP(*),IORBCL(3,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
 C
       KFRSAV = KFREE
@@ -1712,7 +1725,7 @@ C
       CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
       CALL ANAXL2(WORK(KVEC),WORK(KFREQ),WORK(KNORM),
      &            WORK(KBTYP),WORK(KFLAG),WORK(KBUF1),
-     &            WORK(KBUF2),WORK(KINDX),JXOP,
+     &            WORK(KBUF2),WORK(KINDX),JXOP,IORBCL,
      &            NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
       CALL MEMREL('ANAXL1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -1720,7 +1733,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anaxl2 */
       SUBROUTINE ANAXL2(BVEC,FREQ,RNORM,IBTYP,LFLAG,BUF1,BUF2,INDX,
-     &          JXOP,NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
+     &        JXOP,IORBCL,NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
 C***********************************************************************
 C
 C     Written by T.Saue July 6 2001
@@ -1735,7 +1748,11 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
-     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM)
+     &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM),
+     &          IORBCL(3,*)
+C     Local variables
+      CHARACTER TYP(3)*1
+      DATA TYP/'i','a','v'/
 C
       BACKSPACE LUINP
       DO I = 1,NVEC
@@ -1746,10 +1763,10 @@ C     Read vectors
       READ (LUINP) LAB1,LAB2,TYP1,TYP2,
      &        FREQ1,FREQ2,JSYMOP1,JSYMOP2,
      &        JTIMOP1,JTIMOP2,DUM,LEN,INTFLG,
-     &        ERGRSP,NBAS,NORB
+     &        ERGRSP,NBAS,NORBS
       IREP = JSYMOP1 - 1
       WRITE(LUPRI,'(A,A1,A,A16,A,A3,A,I3,A,I10)') 
-     &     '** ',TYP1(1:1),'-solution vectors : ',LAB1,
+     &     '** ',TYP1(1:1),' solution vectors : ',LAB1,
      &     ' Irrep: ',REP(IREP),' Trev: ',JTIMOP1,
      &     ' Length: ',NBDIM
       BACKSPACE LUINP
@@ -1757,7 +1774,7 @@ C     Read vectors
         READ (LUINP) LAB1,LAB2,TYP1,TYP2,
      &        FREQ(I),FREQ2,JSYMOP1,JSYMOP2,
      &        JTIMOP1,JTIMOP2,RNORM(I),LEN,INTFLG,
-     &        ERGRSP,NBAS,NORB
+     &        ERGRSP,NBAS,NORBS
         IF(TYP1(2:2).EQ.'+') THEN
           IBTYP(I) = 1
         ELSEIF(TYP1(2:2).EQ.'-') THEN
@@ -1824,8 +1841,14 @@ C       Establish order
         DO J = NBDIM,1,-1
           JJ = INDX(J)
           IF(BUF2(JJ).GE.THR) THEN
-            WRITE(LUPRI,'(3X,I6,A,I6,E16.8)') 
-     &       JXOP(1,JJ),' ---> ',JXOP(2,JJ),BUF2(JJ)
+            I1 = JXOP(1,JJ)
+            I2 = JXOP(2,JJ)
+            WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+     &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
+     &      FREP(IORBCL(3,I1)),')',
+     &      ' ---> ',
+     &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
+     &      FREP(IORBCL(3,I2)),')',BUF2(JJ)
           ENDIF
         ENDDO
         IF(IPRINT.GE.2) THEN
