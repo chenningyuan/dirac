@@ -66,6 +66,7 @@ C
 #include <dcbgen.h>
 #include <dcbprp.h>
 #include <dcbexp.h>
+#include <dcbesr.h>
 #include <dcbxlr.h>
 #include <dcborb.h>
 C
@@ -94,6 +95,13 @@ C*****************************************************************************
 C
       CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
       IF(DOEXP) CALL PRPEXP(WORK(KEXP),WORK(KFREE),LFREE)
+C
+C*****************************************************************************
+C*****  E S R   P R O P E R T I E S      *************************************
+C*****************************************************************************
+C
+      CALL MEMGET('REAL',KESR,4*NESRP,WORK,KFREE,LFREE)
+      IF(DOESR) CALL PRPESR(WORK(KESR),WORK(KFREE),LFREE)
 C
 C
 C*****************************************************************************
@@ -359,7 +367,7 @@ C
 C
 #include <memint.h>
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EFGINT: INTTYP = 30
+C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,30)
       CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
@@ -548,7 +556,7 @@ C
 C
 #include <memint.h>
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EFGINT: INTTYP = 29
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,29)
       CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
@@ -829,10 +837,10 @@ C
         CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
-C     Nuclear shielding 
+C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
-      IF(SHIELD) THEN
-        CALL DEF_SHIELD(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      IF (SHIELD .OR. ESRGTENS .OR. ESRANISO) THEN
+        CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
 C     Diamagnetic contribution to shieldings
@@ -2259,7 +2267,6 @@ C
           IATINF(1,NSPEC+1) = IDEP + 1
           IATINF(2,NSPEC+1) = IZ
           IATINF(3,NSPEC+1) = NISO
-C          WRITE(LUPRI,'
           WRITE(LUPRI,
      &      '(A1,1X,A4,5X,I3,6X,I3,3X,F10.6,3X,F9.3,3X,F10.6)') 
      &       '@',NAMN(INUC),IZ,1,(RATINF(K,1,NSPEC+1),K=1,3)
@@ -2396,7 +2403,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SHIELD */
-      SUBROUTINE DEF_SHIELD(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SHIELD(WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Define operator for NMR shieldings
@@ -2409,27 +2416,26 @@ C***********************************************************************
 C
 #include <mxcent.h>
 #include <nuclei.h>
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
+      DIMENSION WORK(LWORK)
 C
 #include <memint.h>
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EFGINT: INTTYP = 29
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
       CALL SETATM(WORK(KDATOM),NATOM,29)
-      CALL DEF_SHIELD1(PNAME,PLABEL,PFAC,WORK(KDATOM),
-     &                WORK(KFREE),LFREE,IPRINT)
+      CALL DEF_SHIELD1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_shield1 */
-      SUBROUTINE DEF_SHIELD1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Define operators for shieldings
 C     DEF_SPNSP1 by T. Saue used as skeleton
 C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
+C                    22. Mar. 2000 (added ESR options, Anette Noerager + HJAaJ)
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -2444,6 +2450,7 @@ C
 #include <symmet.h>
 #include <dcbgen.h>
 #include <dcbprp.h>
+#include <dcbesr.h>
 #include <dcbxlr.h>
 #include <chrxyz.h>
       LOGICAL DOATOM(NUCIND)
@@ -2503,8 +2510,15 @@ C
      &                     //CHRNOS(MOD(IS2,10))//'  '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-              CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,INDXPR,MAXLLR)
-              IPSHIELD(ISCOR1) = INDOP1
+              IF (SHIELD) THEN
+                CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
+     &                      INDXPR,MAXLLR)
+                IPSHIELD(ISCOR1) = INDOP1
+              END IF
+              IF (ESRANISO) THEN
+                CALL OP1IND('ESRANISO',INDOP1,LESRP,NESRP,INDXPR,MAXESR)
+                IPESR(ISCOR1) = INDOP1
+              END IF
             ENDIF
   300     CONTINUE
         END IF
@@ -2522,8 +2536,10 @@ C X componete of B-field
       PLABEL(2) = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
+      IF (SHIELD) CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+      IF (ESRGTENS) CALL OP1IND('X magfield',IPESR(1+MXCOOR),
+     &      LESRP,NESRP,INDXPR,MAXESR)
 #if !defined (XH4)
 C Y componete of B-field
       PNAME     = 'MAGFLDY2'
@@ -2532,8 +2548,10 @@ C Y componete of B-field
       PLABEL(2) = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XSHIELB',IPSHIELD(2+MXCOOR),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
+      IF (SHIELD) CALL OP1IND('YSHIELB',IPSHIELD(2+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+      IF (ESRGTENS) CALL OP1IND('Y magfield',IPESR(2+MXCOOR),
+     &      LESRP,NESRP,INDXPR,MAXESR)
 C Z componete of B-field
       PNAME     = 'MAGFLDZ3'
       IPTYP     = IOP(3)
@@ -2541,46 +2559,80 @@ C Z componete of B-field
       PLABEL(2) = 'XDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XSHIELB',IPSHIELD(3+MXCOOR),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
+      IF (SHIELD) CALL OP1IND('ZSHIELB',IPSHIELD(3+MXCOOR),
+     &      LLRBPU,NLRBPT,INDXPR,MAXLLR)
+      IF (ESRGTENS) CALL OP1IND('Z magfield',IPESR(3+MXCOOR),
+     &      LESRP,NESRP,INDXPR,MAXESR)
 #endif
 C
-C     Print section
+C     Print section for NMR shielding:
 C
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'NMR shieldings:'
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE (LUPRI,'(A,E9.2)')
+      IF (SHIELD) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(A)') ' NMR shieldings:'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE (LUPRI,'(A,E9.2)')
      &   ' Shieldings printed for atoms with '//
      &   'abundance greater than :', ABUND
 C
 C     A operators
 C     ===========
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** A operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,NSCOOR
-        INDOP1 = IPSHIELD(I)
-        IF(INDOP1.GT.0) THEN
-          INDXPR = LLRAPU(INDOP1)
-          CALL WRIXPR(INDOP1,INDXPR)
-        ENDIF
-      ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** A operators for shielding **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NSCOOR
+          INDOP1 = IPSHIELD(I)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LLRAPU(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
 C
 C     B operators
 C     ===========
 C
-      CALL PRSYMB(LUPRI,'-',75,0)
-      WRITE(LUPRI,'(1X,A)') '** B operators **'
-      CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,3
-        INDOP1 = IPSHIELD(I+MXCOOR)
-        IF(INDOP1.GT.0) THEN
-          INDXPR = LLRBPU(INDOP1)
-          CALL WRIXPR(INDOP1,INDXPR)
-        ENDIF
-      ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** B operators for shielding **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,3
+          INDOP1 = IPSHIELD(I+MXCOOR)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LLRBPU(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
+
+      ENDIF
+C
+C     Print section for ESR parameters
+C
+      IF (ESRGTENS) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(A)') ' ** ESR g tensor operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,3
+          INDOP1 = IPESR(I+MXCOOR)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LESRP(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
+      END IF
+C
+      IF (ESRANISO) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(A)') ' ** ESR anisotropy operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NSCOOR
+          INDOP1 = IPESR(I)
+          IF(INDOP1.GT.0) THEN
+            INDXPR = LESRP(INDOP1)
+            CALL WRIXPR(INDOP1,INDXPR)
+          ENDIF
+        ENDDO
+      END IF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
