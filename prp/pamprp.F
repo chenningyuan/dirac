@@ -376,6 +376,99 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EFN */
+      SUBROUTINE DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electric field 
+C
+C     Written by T.Saue Feb 26 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EFNINT: INTTYP = 29 (electric field at individual nuclei)
+      CALL SETATM(WORK(KDATOM),NATOM,29)
+      CALL DEF_EFN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
+     &                WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_EFN',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_efn1 */
+      SUBROUTINE DEF_EFN1(PNAME,PLABEL,PFAC,DOATOM,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Define electric field at individual nuclei
+C     Based on EFNTYP
+C     Written by T. Saue Feb 26 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxorb.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "nuclei.h"
+#include "dcbxpr.h"
+#include "dcbexp.h"
+      PARAMETER(D1 = 1.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+C
+      ITYP = 0
+      IPTYP     = 1
+      NPCOMP    = 1
+      PFAC(1)   = D1
+      DO 100 IATOM = 1, NUCIND
+      IF (DOATOM(IATOM)) THEN
+        DO 50 IREP = 0, MAXREP
+          DO 200 ICOOR = 1, 3
+            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+            IF(ISCOOR .GT. 0) THEN
+              ITYP = ITYP + 1
+              PLABEL(1) = 'NEF '//CHRNOS(ISCOOR/10)
+     &                          //CHRNOS(MOD(ISCOOR,10))//'  '
+              PNAME    = 'NEF   '//CHRNOS(ISCOOR/10)
+     &                           //CHRNOS(MOD(ISCOOR,10))
+     &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
+     &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+            END IF
+ 200      CONTINUE
+ 50     CONTINUE
+      END IF
+ 100  CONTINUE 
+C
+      IF(IPRINT.GE.1) THEN
+        DO I = 1,ITYP
+          INDXPR = LEXPP(IPEFN(I))
+          CALL PRSYMB(LUPRI,'.',75,0)
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &       'Component no.',I,':',PRPNAM(INDXPR)
+          CALL PRSYMB(LUPRI,'.',75,0)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EFG */
       SUBROUTINE DEF_EFG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -956,7 +1049,16 @@ C
         CALL DEF_QUADRU(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 C
-C     Electric field gradients
+C     Electric fields at nuclei
+C
+      IF(EFN) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(1X,A)') 'Electric field at nuclei'
+        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL DEF_EFN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
+      ENDIF
+C
+C     Electric field gradients at nuclei
 C
       IF(EFG) THEN
         CALL PRSYMB(LUPRI,'=',75,0)
@@ -1091,6 +1193,12 @@ C     Parity violation: Chirality
 C
       IF(PVC) THEN
         CALL PRP_PVC(EXPVAL,WORK,KFREE,LFREE)
+      ENDIF
+C
+C     Electric fields at individual nuclei
+C
+      IF(EFN) THEN
+        CALL PRP_EFN(EXPVAL,WORK,KFREE,LFREE)
       ENDIF
 C
 C     Electric field gradients
@@ -1396,18 +1504,18 @@ C
 C     Electronic contribution to electric field gradient
 C     ==================================================
 C
-         CALL EL_EFG(0,EXPVAL,DOATOM,AXIS,TEMP)
+         CALL EL_EFG(0,EXPVAL,DOATOM,TEMP)
 C
 C     Nuclear contribution to electric field gradient
 C     ===============================================
 C
-         CALL NUC_EFG(0,DOATOM,AXIS,TEMP)
+         CALL NUC_EFG(0,DOATOM)
 C
 C     correlation contribution to electric field gradient
 C     ===================================================
 C
          IF (CORR) THEN
-            CALL CORR_EFG(0,EXP_CORR,DOATOM,AXIS,TEMP)
+            CALL CORR_EFG(0,EXP_CORR,DOATOM,TEMP)
          ENDIF
 C     
       ENDIF
@@ -1517,7 +1625,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck el_efg */
-      SUBROUTINE EL_EFG(IPRINT,EXPVAL,DOATOM,AXIS,TEMP)
+      SUBROUTINE EL_EFG(IPRINT,EXPVAL,DOATOM,TEMP)
 C*****************************************************************************
 C     
 C     Calculates electronic contribution to electric field gradients
@@ -1533,8 +1641,7 @@ C
 #include "maxaqn.h"
 #include "mxorb.h"
 #include "dcbexp.h"
-      DIMENSION EXPVAL(*), TEMP(3,3,MXCENT), TMP(3), ITMP(3), PVAL(9),
-     *     AXIS(3,3,MXCENT)
+      DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
 #include "symmet.h"
@@ -1582,50 +1689,11 @@ C
             END IF
  310     CONTINUE
  110  CONTINUE
-C     
-C     This part of the code is incorrect: one cannot split the 
-C     electronic and nuclear contributions and diagonalize them
-C
-C     diagonalize efg tensor
-C     DO IATOM = 1, NUCIND
-C        IF (DOATOM(IATOM)) THEN
-C           CALL DUNIT(AXIS(1,1,IATOM),3)
-C           IJ = 1
-C           DO I = 1, 3
-C              DO J = 1, I
-C                 PVAL(IJ) = EFGEL(I,J,IATOM)
-C                 IJ = IJ + 1
-C              ENDDO
-C           ENDDO
-C           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-C           PVAL(2) = PVAL(3)
-C           PVAL(3) = PVAL(6)
-C           IZ = IDAMAX(3,PVAL(1),1)
-C           CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-C           IX = IDAMIN(3,PVAL(1),1)
-C           CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-C           EFGEL(1,1,IATOM) = PVAL(1)
-C           EFGEL(2,2,IATOM) = PVAL(2)
-C           EFGEL(3,3,IATOM) = PVAL(3)
-C        END IF
-C     ENDDO
-C     print section
-C     IF (IPRINT .GE. 4) THEN
-C        WRITE(LUPRI,'(A/)')
-C    &        '  Principal axis to electronic contribution'
-C        DO I = 1, NUCIND
-C           IF (DOATOM(I)) THEN
-C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-C              CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
-C           END IF
-C        ENDDO
-C     END IF
-C     
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck corr_efg */
-      SUBROUTINE CORR_EFG(IPRINT,EXPVAL_CORR,DOATOM,AXIS,TEMP)
+      SUBROUTINE CORR_EFG(IPRINT,EXPVAL_CORR,DOATOM,TEMP)
 C*****************************************************************************
 C     
 C     Calculates electronic contribution to electric field gradients
@@ -1641,8 +1709,7 @@ C
 #include "maxaqn.h"
 #include "mxorb.h"
 #include "dcbexp.h"
-      DIMENSION EXPVAL_CORR(*), TEMP(3,3,MXCENT), TMP(3), ITMP(3)
-      DIMENSION PVAL(9), AXIS(3,3,MXCENT)
+      DIMENSION EXPVAL_CORR(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
 #include "symmet.h"
@@ -1757,10 +1824,10 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field gradients :'
 C    
-      CALL EL_EFG(IPREXP,EXPVAL,DOATOM,AXIS,TEMP)
-      CALL NUC_EFG(IPREXP,DOATOM,AXIS,TEMP)
+      CALL EL_EFG(IPREXP,EXPVAL,DOATOM,TEMP)
+      CALL NUC_EFG(IPREXP,DOATOM)
       IF (CORR) THEN
-         CALL CORR_EFG(IPREXP,EXP_CORR,DOATOM,AXIS,TEMP)
+         CALL CORR_EFG(IPREXP,EXP_CORR,DOATOM,TEMP)
       END IF
 C     
 C     print section
@@ -4264,5 +4331,155 @@ C
      &      ABS(PVAL(I)),':', (AXES(J,I),J=1,3)
   700 CONTINUE
       END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRP_EFN */
+      SUBROUTINE PRP_EFN(EXPVAL,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Written by T. Saue Feb 26 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+#include "dcbprp.h"
+#include "dcbexp.h"
+#include "dcbxlr.h"
+#include "nuclei.h"
+      DIMENSION EXPVAL(*),WORK(*)
+C
+      KFRSAV = KFREE
+C
+C     Allocate memory
+C
+      CALL MEMGET('LOGI',KATOM,NUCIND  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEFN ,6*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
+C
+      CALL SETATM(WORK(KATOM),NATOM,29)
+      CALL PRP_EFN1(EXPVAL,WORK(KEFN),WORK(KTEMP),WORK(KATOM),IPRPRP)
+      CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRP_EFN1(EXPVAL,EFNVEC,TEMP,DOATOM,IPRINT)
+C*****************************************************************************
+C     
+C     Calculate electric field at individual nuclei
+C
+C     Written by T.Saue - Feb 26 2003
+C     
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
+      LOGICAL   DOATOM(*)
+      DIMENSION EXPVAL(*),EFNVEC(3,NUCDEP,2),TEMP(3,NUCIND)
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+C     
+      CALL PRSYMB(LUPRI,'-',76,0)
+      WRITE(LUPRI,'(A/)') '* Electric field at nuclei:'
+C    
+      CALL EL_EFN(IPREXP,EXPVAL,DOATOM,EFNVEC(1,1,1),TEMP)
+      CALL NUC_EFN(IPREXP,DOATOM,EFNVEC(1,1,2),TEMP)
+C     
+C     print section
+      IOFF = ICHAR('w')
+      CALL PRSYMB(LUPRI,'-',72,2)
+      WRITE(LUPRI,'(12X,A/)')
+     &     'Individual (non-zero) components'
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'Electronic  ','Nuclear     ','Total       '
+      WRITE(LUPRI,'(12X,3(A12,11X))')
+     &     'contribution','contribution','contribution'
+      CALL PRSYMB(LUPRI,'-',72,2)
+      DO IATOM = 1, NUCDEP
+         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
+         DO I = 1,3
+           EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
+CTROND               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+           WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+     &           EFNVEC(I,IATOM,1),' au ',EFNVEC(I,IATOM,2),' au ',
+     &           EFNTOT,' au '
+CTROND               ENDIF
+         END DO
+      END DO
+      CALL PRSYMB(LUPRI,'-',72,2)
+CTROND      WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
+CTROND     &      '  1 a.u. = ',9.71736E21,' V*m**-2' 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck el_efn */
+      SUBROUTINE EL_EFN(IPRINT,EXPVAL,DOATOM,EFNEL,TEMP)
+C*****************************************************************************
+C     
+C     Calculates electronic contribution to electric fields
+C     Based on EL_EFG
+C     
+C     Written by T.Saue Feb 26 3004
+C     
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+#include "dcbexp.h"
+      DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
+      LOGICAL DOATOM(*)
+#include "nuclei.h"
+#include "symmet.h"
+#include "nqcc.h"
+#include "ibtfun.h"
+      CALL DZERO(EFNEL,3*NUCDEP)
+      CALL DZERO(TEMP,3*NUCIND)
+      ITYP = 0
+      DO 100 IATOM = 1, NUCIND
+      IF (.NOT. DOATOM(IATOM)) GOTO 100
+        DO 50 IREPC = 0, MAXREP
+          DO 200 ICOOR = 1, 3
+          IF (IBTAND(ISTBNU(IATOM),
+     &        IBTXOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
+            ITYP = ITYP + 1
+            TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM) 
+     &                        + EXPVAL(IPEFN(ITYP))/NUCDEG(IATOM)
+          END IF
+ 200      CONTINUE
+  50    CONTINUE
+ 100  CONTINUE
+      NATOM = 1
+      DO 110 IATOM = 1, NUCIND
+        IF (.NOT. DOATOM(IATOM)) GOTO 110
+        DO 310 IREPC = 0, MAXREP
+          IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+            DO 220 I = 1, 3
+              EFNEL(I,NATOM) = TEMP(I,IATOM)*
+     &                         PT(IBTAND(ISYMAX(I,1),IREPC))
+ 220        CONTINUE
+            IF (IPRINT .GE. 2) THEN
+              WRITE (LUPRI ,'(/2X,A,A/)')
+     &         'Electronic electronic field at nucleus ',NAMDEP(NATOM)
+              IOFF = ICHAR('w')
+              DO I = 1,3
+                WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+I),
+     &              '-component: ',EFNEL(I,NATOM)
+              ENDDO
+            END IF
+            NATOM = NATOM + 1
+          END IF
+ 310    CONTINUE
+ 110  CONTINUE
       RETURN
       END

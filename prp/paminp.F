@@ -60,7 +60,7 @@ C
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
-     &             '.EFT   ','.EFTNTL','.PVCSHI','.XXXXXX'/
+     &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   '/
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -84,6 +84,7 @@ C
       PVCSHI   = .FALSE.
       SPNSPN   = .FALSE.
       EFG      = .FALSE.
+      EFN      = .FALSE.
       EFT      = .FALSE.
       EFTNTL   = .FALSE.
       NQCC     = .FALSE.
@@ -247,6 +248,9 @@ C&&&& SHIELD: NMR shielding constants with PVC contributions
             SHIELD = .TRUE.
             PVCSHI = .TRUE.
   120    CONTINUE
+C&&&& EFN: Electric field at nuclei
+            DOEXP = .TRUE.
+            EFN   = .TRUE.
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -494,7 +498,11 @@ C
       ENDIF
       IF(EFG) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)
-        WRITE(LUPRI,'(4X,A)')'- Electric field gradient'
+        WRITE(LUPRI,'(4X,A)')'- Electric field at nuclei'
+      ENDIF
+      IF(EFG) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Electric field gradient at nuclei'
       ENDIF
       IF(EFT) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)

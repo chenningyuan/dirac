@@ -302,7 +302,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck nuc_efg */
-      SUBROUTINE NUC_EFG(IPRINT,DOATOM,AXIS,TMP)
+      SUBROUTINE NUC_EFG(IPRINT,DOATOM)
 C*****************************************************************************
 C
 C     Calculates nuclear contribution to electric field gradients
@@ -317,8 +317,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "mxorb.h"
       PARAMETER (D3 = 3.0D0)
-      DIMENSION  TMP(3), ITMP(3), PVAL(9),
-     &     AXIS(3,3,MXCENT),GEOM(3*8*MXCENT)
+      DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
 #include "nuclei.h"
 #include "symmet.h"
@@ -390,45 +389,6 @@ C
             END IF
  20      CONTINUE
  10   CONTINUE
-C
-C     This part of the code is incorrect: one cannot split the
-C     electronic and nuclear contributions and diagonalize them
-C
-C     diagonalize efg tensor
-C     DO IATOM = 1, NUCIND
-C        IF (DOATOM(I)) THEN
-C           CALL DUNIT(AXIS(1,1,IATOM),3)
-C           IJ = 1
-C           DO I = 1, 3
-C              DO J = 1, I
-C                 PVAL(IJ) = EFGNUC(I,J,IATOM)
-C                 IJ = IJ + 1
-C              ENDDO
-C           ENDDO
-C           CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
-C           PVAL(2) = PVAL(3)
-C           PVAL(3) = PVAL(6)
-C           IZ = IDAMAX(3,PVAL(1),1)
-C           CALL DSWAP(1,PVAL(3),1,PVAL(IZ),1)
-C           IX = IDAMIN(3,PVAL(1),1)
-C           CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
-C           EFGNUC(1,1,IATOM) = PVAL(1)
-C           EFGNUC(2,2,IATOM) = PVAL(2)
-C           EFGNUC(3,3,IATOM) = PVAL(3)
-C         END IF
-C      ENDDO
-C     print section
-C     IF (IPRINT .GE. 4) THEN
-C        WRITE(LUPRI,'(A/)')
-C    &        '  Principal axis to nuclear contribution'
-C        DO I = 1, NUCIND
-C           IF (DOATOM(I)) THEN
-C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-C              CALL OUTPUT(AXIS(1,1,I),1,3,1,3,3,3,1,LUPRI)
-C           END IF
-C        ENDDO
-C     END IF
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -727,5 +687,88 @@ C
       ENDDO
 C
       CALL QEXIT('EXPTOT')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck nuc_nef */
+      SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
+C*****************************************************************************
+C
+C     Calculates nuclear contribution to the electric field at 
+C     individual nuclei
+C
+C     Based on NUC_EFG
+C     Written by T.Saue  - Feb 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "mxorb.h"
+      PARAMETER (D3 = 3.0D0)
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
+      LOGICAL    DOATOM(*)
+      DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
+C
+C     Initialization of GEOM
+C     (copied from abacus/hergp.F:CMMASS)
+C
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = NINT(CHARGE(IATOM))
+                  DO KCOOR = 1, 3
+                     GEOM(3*JATOM + KCOOR) =
+     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    *CORD(KCOOR,IATOM)
+                  END DO
+                  JATOM = JATOM + 1
+            END IF
+         END DO
+      END DO
+C
+      CALL DZERO(EFNNUC,3*NUCDEP)
+      KK = 1
+      NATOM = 1
+      DO 10 I = 1, NUCIND
+        DO 20 ISYMOP = 0, MAXOPR
+        IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+          LL = 1
+          DO 100 I2 = 1, NUCIND
+          IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
+            DO 110 ISYM = 0, MAXOPR
+            IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+              IF (LL .NE. KK) THEN
+                XCOOR = GEOM(LL) - GEOM(KK)
+                YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                R3 = R2*SQRT(R2)
+                EFNNUC(1,NATOM) = EFNNUC(1,NATOM)- CHARGE(I2)*XCOOR/R3
+                EFNNUC(2,NATOM) = EFNNUC(2,NATOM)- CHARGE(I2)*YCOOR/R3
+                EFNNUC(3,NATOM) = EFNNUC(3,NATOM)- CHARGE(I2)*ZCOOR/R3
+              END IF
+              LL = LL + 3
+            END IF
+ 110      CONTINUE
+ 100      CONTINUE
+          IF (IPRINT .GE. 2) THEN
+            WRITE (LUPRI ,'(/2X,2A,/)')
+     &        'Nuclear electric field at nucleus: ',NAMDEP(NATOM)
+            IOFF = ICHAR('w')
+            DO K = 1,3
+               WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+K),
+     &              '-component: ',EFNNUC(K,NATOM)
+            ENDDO
+          END IF
+          NATOM = NATOM + 1
+          KK = KK + 3
+        END IF
+ 20     CONTINUE
+ 10   CONTINUE
       RETURN
       END
