@@ -5,6 +5,9 @@
  * FILE    : gpjth_c.c
  * SOURCE  : $Source$
  *
+ * Take string with a fraction (e.g. either 1/2 or 0.5)
+ * Written by J. Thyssen - Jan 28 1998
+ *
  */
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +16,9 @@
 #if defined (SYS_CRAY)
 #include <fortran.h>
 #define frac2i FRAC2I
-#elif !defined(SYS_AIX)
+#elif defined (SYS_AIX) || defined (SYS_HPUX)
+#define frac2i frac2i
+#else
 #define frac2i frac2i_
 #endif /*CRAY*/
 
@@ -72,13 +77,9 @@ int l;
    l = _fcdlen(fcd);
    s = _fcdtocp(fcd);
 #endif
-
-
-   printf ("%i\n",l);
    temp = (char *) malloc(l+1);
    strncpy(temp, s, l);
    temp[l] = '\0';
-   printf ("string %s\n",temp);
    c_frac2i(temp,f);
    free(temp);
 }
