@@ -84,11 +84,10 @@ C            (not set in KRMCINP because we don't know if SCF there)
          IF (IKRMCCNO .EQ. -3) THEN
 C           ... no user input, default for SCF: transform to canonical orbitals
             NATONL = .FALSE.
-            FDONLY = .TRUE.
+            FOCKON = .TRUE.
             IKRMCCNO = -1
+C           ... code for no RTRACI (no RTRACI for SCF)
          END IF
-         RTRACI = .FALSE.
-C        ... no RTRACI for SCF
 C
 C        Delete DFFCK2 if existing, because we will change CMO here ...
 C

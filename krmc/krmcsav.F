@@ -148,7 +148,7 @@ C
             CNOLBL = 'FD+NO'
          END IF
 C
-         IF (IKRMCCNO .EQ. -1) THEN
+         IF (IKRMCCNO .EQ. -1 .OR. NZCONF .LE. 1) THEN
             RTRACI = .FALSE.
          ELSE
             RTRACI = .TRUE.
