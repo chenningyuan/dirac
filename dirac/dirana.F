@@ -1132,6 +1132,11 @@ C
      &             WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),NZ,
      &             D1,IPQTOQ(1,0),
      &             WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NVECS(IFRP,0),NZ)
+        IF(IPRPRJ.GE.5) THEN
+          CALL HEADER('Polarization vectors',0)
+          CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
+     &                NVECS(IFRP,2),NFBAS(IFRP,0),NVECS(IFRP,0))
+        ENDIF      
 C       Add polarization contribution to expansion coefficients
         CALL DUNIT2(WORK(KBV(IFRP)+NVECS(IFRP,1)),NVECS(IFRP,2),
      &              NVECS(IFRP,0),NVECS(IFRP,2),NZ)

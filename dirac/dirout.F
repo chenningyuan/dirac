@@ -1772,3 +1772,41 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Pripol */
+      SUBROUTINE PRIPOL(IFRP,CPOL,EIG,NPOL,NBAS,NTOT)
+C***********************************************************************
+C
+C     Print polarization contributions form projection analysis
+C
+C     Written by T. Saue Oct 25 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
+C
+#include "mxorb.h"
+#include "dgroup.h"
+#include "dcblab.h"
+      CHARACTER FMT*6,MXFORM*6
+      DIMENSION CPOL(NBAS,NTOT,NZ),EIG(NPOL)
+C
+      DO I = 1,NPOL
+        FMT = MXFORM(EIG(I),16)
+        WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+     +    '* Electronic eigenvalue nr.',I,': ',EIG(I)
+        CALL PRSYMB(LUPRI,'=',52,0)
+        DO J = 1,NBAS
+          DVEC = D0
+          DO IZ = 1,NZ
+            DVEC = DVEC + ABS(CPOL(J,I,IZ))
+          ENDDO
+          IF(DVEC.GT.DTOL) WRITE(LUPRI,100)
+     &          J,PLABEL(IPLAB(J,2),2),(CPOL(J,I,IZ),IZ = 1,NZ)
+        ENDDO
+      ENDDO
+      CALL PRSYMB(LUPRI,'=',52,0)
+      RETURN
+ 100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
+      END
