@@ -245,8 +245,11 @@ C
      +     '* SS Integrals Not included.'
       IF (IJTSK.GT.0) WRITE(LUPRI,'(1X,A,I4)') 
      +     '* Max number of Kramers pairs I (J) in task: ', IJTSK
-      IF (MP2_MSOUT) WRITE(LUPRI,'(1X,A)') 
-     +     '* 4-index transformed integrals written to file.'
+      IF (MP2_MSOUT) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     +        '* 4-index transformed integrals written to file.'
+         CALL QUIT('MSOUT not implemented in MP2 program')
+      ENDIF
 C     Active occupied and virtual space: only electrons allowed
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       IF(NOPAIR) THEN
@@ -281,10 +284,10 @@ C     Active occupied and virtual space: only electrons allowed
      &               IR(1,I),IR(2,I),NVEC,WORK,LWORK)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
-     &       '- Active   space : No electrons'
+     &       '- Virtual  space : No electrons'
         ELSE
           WRITE(LUPRI,'(4X,A,A72)') 
-     &       '- Active   space : ', MP2_INDSTR(2,I)
+     &       '- Virtual  space : ', MP2_INDSTR(2,I)
         ENDIF
       ENDDO
 C
@@ -646,7 +649,6 @@ C
 C     Print section
 C     =============
 C
-      WRITE (LUPRI,'(//)')
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &   'TRAINP: Set-up for index transformation'
@@ -936,3 +938,4 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+

@@ -310,7 +310,8 @@ C
 C     Print section
 C     =============
 C
-      IF (IPRMP2.GE.1) THEN
+      IF (IPRMP2.GE.0) THEN
+         WRITE(LUPRI,'(/1X,A/)') '* Active MP2 space:'
          DO I = 1, NFSYM
             CALL MP2PRI(I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),NSTR)
          ENDDO
@@ -364,10 +365,11 @@ C
          CALL QUIT('PSIMP2: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         IP = 1
-         IF(IPRMP2.GE.1) IP = 2
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,IP)
+         IP=2
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),DHFEMP,IP)
          CLOSE(LUCOEF,STATUS='KEEP')
+         WRITE(LUPRI,'(A,F18.10,/)') 
+     &        'Coefficients imported. Total DHF energy:', DHFEMP
       ENDIF
 C     
 C     Select the set that we need
@@ -429,7 +431,7 @@ C
 #include <dcborb.h>
       DIMENSION IOS1(*),IOS2(*),NSTR(0:2,2,4)
 C
-      WRITE(LUPRI,'(//1X,A,A3/)') '* Fermion ircop ',FREP(I)
+      WRITE(LUPRI,'(1X,A,A3)') '* Fermion ircop ',FREP(I)
 C
 C     Index 1: Active occupied
 C
@@ -446,14 +448,15 @@ C     Index 2: Active virtuals
 C
       IF(NSTR(0,I,2).GT.0) THEN
         WRITE(LUPRI,'(6X,A,I5)') 
-     &     '- Active virtual orbitals:', NSTR(0,I,2)
+     &     '- Active virtual orbitals: ', NSTR(0,I,2)
         WRITE(LUPRI,1002) (IOS2(K),K=1,NSTR(0,I,2))
       ELSE
         WRITE(LUPRI,'(6X,A)') 
      &     '- No active virtual orbitals'
       ENDIF
+      WRITE(LUPRI,'(A)') ''
 C
- 1002 FORMAT (6X,12I5)
+ 1002 FORMAT (6X,10I5)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -641,9 +644,10 @@ C
 C     Now say hi and give orbital information
 C
       CALL TITLER('MP2 Calculation ','*',128)
-      WRITE (LUPRI,'(/10X,A)') 'Written by Luuk Visscher'//
-     &     ', Jon Lardahl & Trond Saue'
-      WRITE (LUPRI,'(10X,A//)') 'Odense, january 1997'
+      WRITE (LUPRI,'(/10X,A)') 'Written by Jon Laerdahl'//
+     &     ', Luuk Visscher & Trond Saue'
+      WRITE (LUPRI,'(10X,A//)') 
+     &     'Odense (Jan. 1997), Oslo (June 1997), Auckland (Sept. 1998)'
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('SETDC2: Distribution of symmetry orbitals '//
@@ -677,7 +681,7 @@ C     Now say hi and give orbital information
 C
       CALL TITLER('Transformation to Molecular Spinor Basis','*',116)
       WRITE (LUPRI,'(/10X,A)') 'Written by Luuk Visscher'//
-     &     ', Jon Lardahl & Trond Saue'
+     &     ', Jon Laerdahl & Trond Saue'
       WRITE (LUPRI,'(10X,A//)') 'Odense, 1997'
       IF (IMODUL.EQ.1) THEN
          CALL TITLER('Transformation of property integrals','*',116)

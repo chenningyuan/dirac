@@ -201,6 +201,10 @@ C
          CALL DZERO(TIM1,7)
       ENDIF
       DO ITASK = 1, MAXTSK
+C
+         WRITE(LUPRI,'(A,I3,A,I3)') 'Doing IJ-batch ',ITASK,
+     &        ' of ',MAXTSK
+
 C     
 C     Give relative offset for the coefficients
 C     
@@ -223,9 +227,15 @@ C
 C
       ENDDO
       IF (LMP2) THEN
-         WRITE(LUPRI,'(/15X,A)') '#### Final MP2 energy. ####'
-         WRITE(LUPRI,'(15X,A,F15.10,4X,A)') '####', EMP2, '####'
-         WRITE(LUPRI,'(15X,A,/)') '###########################'
+         WRITE(LUPRI,'(A)') ''
+         CALL PRSYMB(LUPRI,'=',75,0)
+         WRITE(LUPRI,'(1X,A)') 
+     &        'Final Relativistic Direct MP2 results:'
+         CALL PRSYMB(LUPRI,'=',75,0)
+         WRITE(LUPRI,'(/15X,A,F20.10)') '@ MP2 energy       :', EMP2
+         WRITE(LUPRI,'(15X,A,F20.10)')  '  DHF energy       :', DHFEMP
+         WRITE(LUPRI,'(15X,A,F20.10,/)') '@ Total MP2 energy :', 
+     &        DHFEMP+EMP2
          CALL TIMTXT('Time used in MP2CAL is: ',TIM1(5),LUPRI)
       ENDIF
       CALL TIMTXT('Time used in CALDIS is: ',TIM1(1),LUPRI)
@@ -346,6 +356,14 @@ C
 C     Allocate memory for 3/4 Transformed integrals
 C
       IF (IPRINT .GE. 1) WRITE (LUPRI,1000) NTQMT*8./(1024.*1024.)
+C
+      IF (LFREE.LT.NTQMT) THEN
+            WRITE(LUPRI,'(/A,/A,/A)') 
+     &           '### Not enough memory for 3/4 transf. matrix.   ###',
+     &           '### Reduce memory requirements by setting       ###',
+     &           '### .IJTSK to a lower value!                    ###'
+C
+      ENDIF
       CALL MEMGET('REAL',KTQMAT,NTQMT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KTQMAT),NTQMT)
 C
@@ -601,7 +619,7 @@ C
          ENDDO
       ENDDO
       IF (IPRINT.GE.2) THEN
-         WRITE(LUPRI,'(A)') 'MP2 Eigenvalues:'
+         WRITE(LUPRI,'(A)') 'Eigenvalues used in MP2:'
          CALL PRIEIN(E1,E2,E3,E4,
      &        NSTRT(1),NSTRT(2),NSTRT(3),NSTRT(4),NSTR)
       ENDIF
@@ -619,7 +637,7 @@ C
 C     Allocate memory for naive antisymmetrize
 C     -> Fully transformed integrals are
 C     few compared to other arrays...
-C     Storing antisymmetrized integrals in
+C     Storing final integrals in
 C     TQMAT if there is enough space.
 C
       LSIZ=16
@@ -631,151 +649,173 @@ C
          KANT = KTQMAT
          IF(IPRINT.GE.1)
      &        WRITE(LUPRI,'(A)') 
-     &        '## Storing anti-sym. in 3/4-matrix. ##'
+     &        '## Storing final integs. in 3/4-matrix. ##'
       ELSE
          IF(IPRINT.GE.1)
      &        WRITE(LUPRI,'(A)') 
-     &        '## Anti-sym. .GT. 3/4-matrix! ##'
+     &        '## Final integs. .GT. 3/4-matrix. ##'
          CALL MEMGET('REAL',KANT,LSIZ,WORK,KFREE,LFREE)
       ENDIF
       IF (IPRINT .GE. 1) WRITE (LUPRI,1002) LSIZ*8./(1024.*1024.)
       CALL DZERO(WORK(KANT),LSIZ)
 C
-C     FQMAT stored as (ij,iz1,kl,iz2,Grs,Pkl) and the order
-C     of ij (and kl) is gg,uu,ug,gu or as (i,j,iz1,k,l,iz2,Grs,Pkl)
+C     FQMAT stored as (ij,iz1,kl,iz2,Pk,Grs,Pkl) and the order
+C     of ij (and kl) is gg,uu,ug,gu or as (i,j,iz1,k,l,iz2,Pk,Grs,Pkl)
+C
+C     F.ex. for Pkl=g, iz2 loops faster than loop over gg/uu for kl,
+C     but slower than kl within gg/uu
 C
       IOFF3 = 0
-      ICNT1 = 0
       DO IREPKL = 1,NFSYM
 c       print*,' Fermion symmetry :',irepkl
-        CALL MEMGET('REAL',KFTMAT,2*NFPCK12(IREPKL),WORK,KFREE,LFREE)
-        LKR = 0
-        DO IREPL = 1, NFSYM
-          IREPK = MOD(IREPL+IREPKL,2) + 1
-C     Offset for k and l symmetry
-          IOFF2 = IFPCK34(IREPK,IREPL)*NFPCK12(IREPKL)*NZ
-          DO L = 1, NSTR(IREPL,0,4)
-            LKR = LKR + 1
-            DO K = 1, NSTR(IREPK,0,3)
-              IF (IREPK.EQ.1) THEN
-                 KKR = K
-              ELSE
-                 KKR = NSTR(1,0,3) + K
-              ENDIF
-c             print*,' Batch labels (KKR,LKR):',kkr,lkr
+         CALL MEMGET('REAL',KFTMAT,2*NFPCK12(IREPKL),WORK,KFREE,LFREE)
+         LKR = 0
+         DO IREPL = 1, NFSYM
+            IREPK = MOD(IREPL+IREPKL,2) + 1
+C     Offset for k and l symmetry (i.e. for Pkl=g, offset for uu)
+            IOFF2 = IFPCK34(IREPK,IREPL)*NFPCK12(IREPKL)*NZ*NZ
+            DO L = 1, NSTR(IREPL,0,4)
+               LKR = LKR + 1
+               DO K = 1, NSTR(IREPK,0,3)
+                  IF (IREPK.EQ.1) THEN
+                     KKR = K
+                  ELSE
+                     KKR = NSTR(1,0,3) + K
+                  ENDIF
+c     print*,' Batch labels (KKR,LKR):',kkr,lkr
 C     
 C     Real and complex classes
 C     
 C     Offset for K and L
-              IOFF1 = NFPCK12(IREPKL)*NZ*
-     &             (NSTR(IREPK,0,3)*(L-1)+(K-1))
-              DO JCLASS = 1, 4
-                CALL DZERO(WORK(KFTMAT),2*NFPCK12(IREPKL))
-                ICNT1 = 0
-                IRPCN1 = 0
-                DO IREPRS = 0, NBSYM-1
-                  IF (IREPKL.EQ.JBTOF(IREPRS,1)) THEN
-C     Counter for size of IREPKL=1 contribution
-                    ICNT1=ICNT1
-     &                    +NFPCK12(IREPKL)*NFPCK34(IREPKL)*NZ*NZ
-                    DO IZ2 = 1, NZ
-C     Offset for iz2 and Grs
-                      IOFF4 = NFPCK12(IREPKL)*
-     &                      NFPCK34(IREPKL)*NZ*IRPCN1 
-                      IRPCN1 = IRPCN1 + 1
-                      IQ2 = IQMO(IZ2,IREPRS)
-                      IRPCN2 = 0
-                      DO IZ1 = 1, NZ
+                  IOFF1 = NFPCK12(IREPKL)*NZ*
+     &                 (NSTR(IREPK,0,3)*(L-1)+(K-1))
+                  DO JCLASS = 1, 4
+                     CALL DZERO(WORK(KFTMAT),2*NFPCK12(IREPKL))
+                     ICNT1 = 0
+                     DO IREPRS = 0, NBSYM-1
+                        IF (IREPKL.EQ.JBTOF(IREPRS,1)) THEN
+C     Counter for size of IREPKL=1 contribution and offset for
+C     IREPKL
+                           IOFF6 = ICNT1
+                           ICNT1=ICNT1
+     &                          +NFPCK12(IREPKL)*NFPCK34(IREPKL)*NZ*NZ
+C     Offset for Grs
+                           IRPCN1 = 0
+                           DO IZ2 = 1, NZ
+C     Offset for iz2 
+                              IOFF4 = NFPCK12(IREPKL)*NZ*IRPCN1*
+     &                             NSTR(IREPK,0,3)*NSTR(IREPL,0,4)
+C
+                              IRPCN1 = IRPCN1 + 1
+                              IQ2 = IQMO(IZ2,IREPRS)
+                              IRPCN2 = 0
+                              DO IZ1 = 1, NZ
 C     Offest for iz1
-                        IOFF5 = NFPCK12(IREPKL)*IRPCN2
-                        IRPCN2 = IRPCN2 + 1
-                        IQ1 = IQMO(IZ1,IREPRS)
-                        IFAC=INTCL(JCLASS,IQ1,IQ2)
-                        IOFF=IOFF1+IOFF2+IOFF3+IOFF4+IOFF5
-                        IF (IFAC.NE.0) THEN
-                          FACTR=IFAC
-                          CALL DAXPY(NFPCK12(IREPKL),FACTR,
-     &                          WORK(K4QMAT+IOFF),1,
-     &                          WORK(KFTMAT),1)
+                                 IOFF5 = NFPCK12(IREPKL)*IRPCN2
+                                 IRPCN2 = IRPCN2 + 1
+                                 IQ1 = IQMO(IZ1,IREPRS)
+                                 IFAC=INTCL(JCLASS,IQ1,IQ2)
+                                 IOFF=IOFF1+IOFF2+IOFF3
+                                 IOFF=IOFF+IOFF4+IOFF5+IOFF6
+C
+                                 IF (IFAC.NE.0) THEN
+                                    FACTR=IFAC
+                                    CALL DAXPY(NFPCK12(IREPKL),FACTR,
+     &                                   WORK(K4QMAT+IOFF),1,
+     &                                   WORK(KFTMAT),1)
+                                 ENDIF
+C 
+C     Non-real groups
+C
+                                 IF (NZ.GT.1) THEN
+                                    IFAC=INTCL(JCLASS+4,IQ1,IQ2)
+                                    IF (IFAC.NE.0) THEN
+                                       FACTR=IFAC
+                                       CALL DAXPY(NFPCK12(IREPKL),FACTR,
+     &                                      WORK(K4QMAT+IOFF),1,
+     &                                      WORK(KFTMAT+
+     &                                      NFPCK12(IREPKL)),1)
+                                    ENDIF
+                                 ENDIF
+                              ENDDO
+                           ENDDO
                         ENDIF
-                        IF (NZ.GT.1) THEN
-                           IFAC=INTCL(JCLASS+4,IQ1,IQ2)
-                           IF (IFAC.NE.0) THEN
-                              FACTR=IFAC
-                              CALL DAXPY(NFPCK12(IREPKL),FACTR,
-     &                             WORK(K4QMAT+IOFF),1,
-     &                             WORK(KFTMAT+NFPCK12(IREPKL)),1)
-                           ENDIF
-                        ENDIF
-                      ENDDO
-                    ENDDO
-                  ENDIF
-                ENDDO
-                CALL MP2FI1(JCLASS,IREPKL,NSTR,KKR,LKR,
-     &               WORK(KFTMAT),WORK(KANT),
-     &               NFPCK12(IREPKL),NSTRT(1),NSTRT(2),
-     &               NSTRT(3),NSTRT(4),LSIZ)
-              ENDDO
-              IF(NZ.EQ.4) THEN
-                DO JCLASS = 9, 12
-                  CALL DZERO(WORK(KFTMAT),2*NFPCK12(IREPKL))
-                  ICNT1 = 0
-                  IRPCN1 = 0
-                  DO IREPRS = 0, NBSYM-1
-                    IF (IREPKL.EQ.JBTOF(IREPRS,1)) THEN
-C     Counter for size of IREPKL=1 contribution
-                      ICNT1=ICNT1
-     &                      +NFPCK12(IREPKL)*NFPCK34(IREPKL)*NZ*NZ
-                      DO IZ2 = 1, NZ
-C     Offset for iz2 and Grs
-                        IOFF4 = NFPCK12(IREPKL)*
-     &                        NFPCK34(IREPKL)*NZ*IRPCN1 
-                        IRPCN1 = IRPCN1 + 1
-                        IQ2 = IQMO(IZ2,IREPRS)
-                        IRPCN2 = 0
-                        DO IZ1 = 1, NZ
-C     Offest for iz1
-                          IOFF5 = NFPCK12(IREPKL)*IRPCN2
-                          IRPCN2 = IRPCN2 + 1
-                          IQ1 = IQMO(IZ1,IREPRS)
-                          IFAC=INTCL(JCLASS,IQ1,IQ2)
-                          IOFF=IOFF1+IOFF2+IOFF3+IOFF4+IOFF5
-                          IF (IFAC.NE.0) THEN
-                             FACTR=IFAC
-                             CALL DAXPY(NFPCK12(IREPKL),FACTR,
-     &                            WORK(K4QMAT+IOFF),1,
-     &                            WORK(KFTMAT),1)
-                          ENDIF
-                          IFAC=INTCL(JCLASS+4,IQ1,IQ2)
-                          IF (IFAC.NE.0) THEN
-                             FACTR=IFAC
-                             CALL DAXPY(NFPCK12(IREPKL),FACTR,
-     &                            WORK(K4QMAT+IOFF),1,
-     &                            WORK(KFTMAT
-     &                            +NFPCK12(IREPKL)),1)
-                          ENDIF
-                        ENDDO
-                      ENDDO
-                    ENDIF
+                     ENDDO
+                     CALL MP2FI1(JCLASS,IREPKL,NSTR,KKR,LKR,
+     &                    WORK(KFTMAT),WORK(KANT),
+     &                    NFPCK12(IREPKL),NSTRT(1),NSTRT(2),
+     &                    NSTRT(3),NSTRT(4),LSIZ)
                   ENDDO
-                  CALL MP2FI1(JCLASS,IREPKL,NSTR,KKR,LKR,
-     &                 WORK(KFTMAT),WORK(KANT),
-     &                 NFPCK12(IREPKL),NSTRT(1),NSTRT(2),
-     &                 NSTRT(3),NSTRT(4),LSIZ)
-                ENDDO
-              ENDIF
+C     
+C     Quaternion groups
+C     
+                  IF(NZ.EQ.4) THEN
+                     DO JCLASS = 9, 12
+                        CALL DZERO(WORK(KFTMAT),2*NFPCK12(IREPKL))
+                        ICNT1 = 0
+                        DO IREPRS = 0, NBSYM-1
+                           IF (IREPKL.EQ.JBTOF(IREPRS,1)) THEN
+C     Counter for size of IREPKL=1 contribution and offset for
+C     IREPKL
+                              IOFF6 = ICNT1
+                              ICNT1=ICNT1
+     &                             +NFPCK12(IREPKL)
+     &                             *NFPCK34(IREPKL)*NZ*NZ
+C     Offset for Grs
+                              IRPCN1 = 0
+                              DO IZ2 = 1, NZ
+C     Offset for iz2 
+                                 IOFF4 = NFPCK12(IREPKL)*NZ*IRPCN1*
+     &                                NSTR(IREPK,0,3)*NSTR(IREPL,0,4)
+C     
+                                 IRPCN1 = IRPCN1 + 1
+                                 IQ2 = IQMO(IZ2,IREPRS)
+                                 IRPCN2 = 0
+                                 DO IZ1 = 1, NZ
+C     Offest for iz1
+                                    IOFF5 = NFPCK12(IREPKL)*IRPCN2
+                                    IRPCN2 = IRPCN2 + 1
+                                    IQ1 = IQMO(IZ1,IREPRS)
+                                    IFAC=INTCL(JCLASS,IQ1,IQ2)
+                                    IOFF=IOFF1+IOFF2+IOFF3
+                                    IOFF=IOFF+IOFF4+IOFF5+IOFF6
+C
+                                    IF (IFAC.NE.0) THEN
+                                       FACTR=IFAC
+                                       CALL DAXPY(NFPCK12(IREPKL),FACTR,
+     &                                      WORK(K4QMAT+IOFF),1,
+     &                                      WORK(KFTMAT),1)
+                                    ENDIF
+                                    IFAC=INTCL(JCLASS+4,IQ1,IQ2)
+                                    IF (IFAC.NE.0) THEN
+                                       FACTR=IFAC
+                                       CALL DAXPY(NFPCK12(IREPKL),FACTR,
+     &                                      WORK(K4QMAT+IOFF),1,
+     &                                      WORK(KFTMAT
+     &                                      +NFPCK12(IREPKL)),1)
+                                    ENDIF
+                                 ENDDO
+                              ENDDO
+                           ENDIF
+                        ENDDO
+                        CALL MP2FI1(JCLASS,IREPKL,NSTR,KKR,LKR,
+     &                       WORK(KFTMAT),WORK(KANT),
+     &                       NFPCK12(IREPKL),NSTRT(1),NSTRT(2),
+     &                       NSTRT(3),NSTRT(4),LSIZ)
+                     ENDDO
+                  ENDIF
+               ENDDO
             ENDDO
-          ENDDO
-        ENDDO
-        CALL MEMREL('TRDR23',WORK,1,KFTMAT,KFREE,LFREE)
-        IOFF3=ICNT1
+         ENDDO
+         CALL MEMREL('TRDR23',WORK,1,KFTMAT,KFREE,LFREE)
+         IOFF3=ICNT1
       ENDDO
 C
       CALL CONMP2(WORK(KANT),E1,E2,E3,E4,NSTRT(1),NSTRT(2),
      &     NSTRT(3),NSTRT(4),NSTR,IBEQJB,IPRINT)
       CALL TIMEC('CONMP2',TIMSTR,TIMEND) 
       TIM1(5) = TIM1(5) + TIMEND - TIMSTR
-C
+C     
 C     Release all memory and exit
 C
       CALL MEMREL('TRDR23',WORK,1,KFRSAV,KFREE,LFREE)
@@ -788,7 +828,7 @@ C
      & /' Memory requirements ',F10.3,' Megabytes')
  1001 FORMAT (/' Storing all fully-transformed integrals to memory',
      & /' Memory requirements ',F10.3,' Megabytes')
- 1002 FORMAT (/' Storing all anti-symmetrized integrals to memory',
+ 1002 FORMAT (/' Storing all final integrals to memory',
      & /' Memory requirements ',F10.3,' Megabytes')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1142,38 +1182,42 @@ C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
 C     on the basis of avaliable memory.
 C
+      WRITE(LUPRI,'(A,I10/)') 
+     &     'Memory available for Direct MP2 is (Words):',
+     &     LWORK
       IF (IJTSK.GT.0) THEN
          LENTSK = IJTSK
          IF(IJTSK.GT.NSTRT(1)) LENTSK = NSTRT(1)
-         IF (IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(/A,I10)') 
-     &           'Memory Available in Work                           :',
-     &           LWORK
+         IF (IPRINT.GE.0) THEN
             WRITE(LUPRI,'(A,/A,I10)') 
-     &           'Maximum Number of Occupied Spinors I and J in Batch',
-     &           'Set in Input:', IJTSK
+     &           'Maximum number of occupied spinors I and J in batch',
+     &           'set in input:', IJTSK
          ENDIF
       ELSE
          LENTSK = NSTRT(1)
+         WRITE(LUPRI,'(A,/A,I6,A)') 
+     &        'Maximum number of occupied spinors in batch not set'//
+     &        ' in input.', 
+     &        'Testing ALL spinors :',NSTRT(1),' in batch.'
          IF (IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(A,/A,I6,A)') 
-     &           'Maximum Number of Occupied Spinors in Batch not Set',
-     &           'In Input. Testing ALL Spinors :',NSTRT(1),' in Batch.'
+            WRITE(LUPRI,'(/A,/A,/A)') 
+     &           '### If not enough memory is avaliable:          ###',
+     &           '### Reduce memory requirements by setting       ###',
+     &           '### .IJTSK to a lower value                     ###'
          ENDIF
       ENDIF
       IOLD = LENTSK
 C
 C     Reduce LENTSK until we have enough space...
-C     Fix this when memory requirements are known!
+C     May be done automatically when memory requirements are known.
 C
-      IF (LENTSK.NE.IOLD) THEN
-         IF (IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(/A,I5)') 'Batch Size Shrinked To:', LENTSK
-CTROND: INEED is NOT set !
-            WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
-     &           INEED
-         ENDIF
-      ENDIF
+c      IF (LENTSK.NE.IOLD) THEN
+c         IF (IPRINT.GE.1) THEN
+c            WRITE(LUPRI,'(/A,I5)') 'Batch Size Shrinked To:', LENTSK
+c            WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
+c     &           INEED
+c         ENDIF
+c      ENDIF
       IF (IPRINT.EQ.1) THEN
          WRITE(LUPRI,'(/A,I5)') 
      &        'Total Number of Active Occupied Spinors:', NSTRT(1)
@@ -1542,6 +1586,7 @@ C
      &     WRITE(LUPRI,'(A,D25.16)')  'MP2-energy, 1/4 matrix    :',E
       RETURN
       END
+
 
 
 
