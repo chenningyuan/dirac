@@ -1003,6 +1003,7 @@ CCP_FLAGS   = $ccp
 F77         = $F77
 CC          = cc
 RM          = -rm
+AR          = ar
 OPTFLAGS    = $opt
 INCLUDE_DIR = $inc
 LIB_LIST    = $LIB
@@ -1096,7 +1097,7 @@ CPP         = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .f .c .o
+.SUFFIXES : .F .f .c .o .a
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F > \$*.f
@@ -1122,7 +1123,7 @@ CPP        = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o
+.SUFFIXES : .F .c .o .a
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F
@@ -1140,7 +1141,7 @@ EOF
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o
+.SUFFIXES : .F .c .o .a
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
@@ -1149,6 +1150,7 @@ $tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
     fi
 esac
+
 
 case $machine in
 #
@@ -1162,7 +1164,7 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o
+.SUFFIXES : .F .c .o .a
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
@@ -1170,6 +1172,15 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 $tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 esac
+#
+# Suffix rule for archive files
+#
+cat <<EOF>> Makefile.config
+.F.a:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
+$tab\$(AR) \$(ARFLAGS) \$@ \$*.o
+$tab@ rm -f \$*.o
+EOF
 #
 # Make makefile in all directories
 #
