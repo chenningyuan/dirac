@@ -233,7 +233,9 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER(D0 = 0.0D0)
 C
+#include <mxcent.h>
 #include <dcbxpr.h>
+#include <dcbexp.h>
 #include <dcbbas.h>
 #include <dgroup.h>
 #include <dcborb.h>
@@ -259,7 +261,7 @@ C
 C
 C     If not totally symmetric, return with zero value
 C
-      IF(LEXPST(1).OR.LEXPST(2)) RETURN
+      IF (LEXPST(1).OR.LEXPST(2)) RETURN
 C
 C     Totally symmetric operator ==> proceed
 C
@@ -311,64 +313,83 @@ C*****************************************************************************
 #include <mxorb.h>
       PARAMETER (D3 = 3.0D0)
       DIMENSION  TMP(3), ITMP(3), PVAL(9),
-     &     AXIS(3,3,MXCENT)
+     &     AXIS(3,3,MXCENT),GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
 #include <nuclei.h>
 #include <symmet.h>
 #include <nqcc.h>
 #include <ibtfun.h>
 
+C
+C     Initialization of GEOM
+C     (copied from abacus/hergp.F:CMMASS)
+C
+      JATOM = 0
+      DO IATOM = 1, NUCIND
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = NINT(CHARGE(IATOM))
+                  DO KCOOR = 1, 3
+                     GEOM(3*JATOM + KCOOR) =
+     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    *CORD(KCOOR,IATOM)
+                  END DO
+                  JATOM = JATOM + 1
+            END IF
+         END DO
+      END DO
+C
       CALL DZERO(EFGNUC,9*MXCENT)
+      KK = 1
+      NATOM = 1
       DO 10 I = 1, NUCIND
-         IF (.NOT. DOATOM(I)) GOTO 10
-         LL = 1
-         DO 100 I2 = 1, NUCIND
-            DO 110 ISYM = 0, MAXOPR
-               IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
-                  IF (LL .NE. I) THEN
-                     XCOOR = CORD(1,I2)*PT(IBTAND(ISYMAX(1,1),ISYM
-     &                    ))- CORD(1,I)
-                     YCOOR = CORD(2,I2)*PT(IBTAND(ISYMAX(2,1),ISYM
-     &                    ))- CORD(2,I)
-                     ZCOOR = CORD(3,I2)*PT(IBTAND(ISYMAX(3,1),ISYM
-     &                    ))- CORD(3,I)
-                     R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                     R5 = R2*R2*SQRT(R2)
-                     EFGNUC(1,1,I) = EFGNUC(1,1,I)
-     &                    + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
-                     EFGNUC(2,2,I) = EFGNUC(2,2,I)
-     &                    + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
-                     EFGNUC(3,3,I) = EFGNUC(3,3,I)
-     &                    + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
-                     EFGNUC(1,2,I) = EFGNUC(1,2,I)
-     &                    + CHARGE(I2)*D3*XCOOR*YCOOR/R5
-                     EFGNUC(1,3,I) = EFGNUC(1,3,I)
-     &                    + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
-                     EFGNUC(2,3,I) = EFGNUC(2,3,I)
-     &                    + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
-                  END IF
-                  LL = LL + 1
+         DO 20 ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+               LL = 1
+               DO 100 I2 = 1, NUCIND
+                  IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
+                  DO 110 ISYM = 0, MAXOPR
+                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                        IF (LL .NE. KK) THEN
+                           XCOOR = GEOM(LL) - GEOM(KK)
+                           YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
+                           ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
+                           R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
+                           R5 = R2*R2*SQRT(R2)
+                           EFGNUC(1,1,NATOM) = EFGNUC(1,1,NATOM)
+     &                             + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
+                           EFGNUC(2,2,NATOM) = EFGNUC(2,2,NATOM)
+     &                             + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
+                           EFGNUC(3,3,NATOM) = EFGNUC(3,3,NATOM)
+     &                             + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
+                           EFGNUC(1,2,NATOM) = EFGNUC(1,2,NATOM)
+     &                             + CHARGE(I2)*D3*XCOOR*YCOOR/R5
+                           EFGNUC(1,3,NATOM) = EFGNUC(1,3,NATOM)
+     &                             + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
+                           EFGNUC(2,3,NATOM) = EFGNUC(2,3,NATOM)
+     &                             + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
+                        END IF
+                        LL = LL + 3
+                     END IF
+ 110              CONTINUE
+ 100           CONTINUE
+               EFGNUC(2,1,NATOM) = EFGNUC(1,2,NATOM)
+               EFGNUC(3,1,NATOM) = EFGNUC(1,3,NATOM)
+               EFGNUC(3,2,NATOM) = EFGNUC(2,3,NATOM)
+               IF (IPRINT .GE. 2) THEN
+                  WRITE (LUPRI ,'(/2X,2A,/)')
+     &               'Nuclear EFG Tensor of nucleus: ',NAMDEP(NATOM)
+                  CALL OUTPUT(EFGNUC(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
                END IF
- 110        CONTINUE
- 100     CONTINUE
-         EFGNUC(2,1,I) = EFGNUC(1,2,I)
-         EFGNUC(3,1,I) = EFGNUC(1,3,I)
-         EFGNUC(3,2,I) = EFGNUC(2,3,I)
+               NATOM = NATOM + 1
+               KK = KK + 3
+            END IF
+ 20      CONTINUE
  10   CONTINUE
 C
 C     This part of the code is incorrect: one cannot split the 
 C     electronic and nuclear contributions and diagonalize them
 C
-C     IF (IPRINT .GE. 2) THEN
-C        WRITE(LUPRI,'(A/)')
-C    &        '  Nuclear contribution:'
-C        DO I = 1, NUCIND
-C           IF (DOATOM(I)) THEN
-C              WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(I)
-C              CALL OUTPUT(EFGNUC(1,1,I),1,3,1,3,3,3,1,LUPRI)
-C           END IF
-C        ENDDO
-C     END IF
 C     diagonalize efg tensor
 C     DO IATOM = 1, NUCIND
 C        IF (DOATOM(I)) THEN
