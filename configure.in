@@ -200,10 +200,13 @@ if [ "$answer" = "y" ]; then
 #
    for testdir in $incdir; do
       if test -f $testdir/$incfile; then
-         parinc=$testdir
+         parinc=-I$testdir
          break
       fi
    done
+   if [ "$parinc" = "-I" ]; then
+      parinc=
+   fi
 #
 #   PVM settings, we need two PVM library files
 #
@@ -744,7 +747,7 @@ if [ "$mesp" = "mpi" ]; then
 #
 # Parallel initialization
 #
-MPI_INCLUDE_DIR = -I$parinc
+MPI_INCLUDE_DIR = $parinc
 MPI_LIB_PATH    = -L$parlibp
 MPI_LIB         = $parlib
 INCLUDE_DIR     = $inc \$(MPI_INCLUDE_DIR)
@@ -756,7 +759,7 @@ elif [ "$mesp" = "pvm" ]; then
 #
 # Parallel initialization
 #
-PVM_LIB_PATH    = -L$parinc
+PVM_LIB_PATH    = $parinc
 PVM_LIB_LIST    = $parlib
 #
 EOF
