@@ -72,7 +72,7 @@ C
 C     Initialize /CBIESR/
 C     ===================
 C
-      IPRESR   = 0
+      IPRESR  = 0
       NESRP   = 0
 C
 C     Initialize orgcom.h
@@ -86,6 +86,7 @@ C     =========================
 C
       NEWDEF = (WORD .EQ. '*ESR')
       ICHANG = 0
+      INPERR = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -162,6 +163,7 @@ C
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       END IF
   999 CONTINUE
+      IF (INPERR.GT.0) CALL QUIT('Input error in *ESR')
       RETURN
 C
       END
@@ -509,7 +511,7 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)      
+      CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
