@@ -485,6 +485,17 @@ C
      &    (FREP(I),(NFBAS(I,J),J = 0,2),(NFORB(I,J),J = 0,2),
      &     I = 1,NFSYM)
       ENDIF
+C
+C     Sanety check if NOCC > NORB
+C
+      DO I = 1,NFSYM
+         IF (NOCC(I) .GT. NORB(I)) THEN
+            WRITE(LUPRI,*) 
+     &         'Number of occ. orbitals (',NOCC(I),
+     &         ') greater than orbitals (',NORB(I),') for symmetry ',I
+            CALL QUIT('NOCC>NORB')
+         END IF
+      END DO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
