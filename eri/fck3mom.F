@@ -661,7 +661,6 @@ C     &            RODP(1),RODP(2),RODP(3),-SPHINT, DEN12
       RETURN
       END 
 
-
       SUBROUTINE SETCSQE( ICSQADR, CSQE, LMAX,
      &                    WORK,LWORK,IPRINT1)
 #include"implicit.h"

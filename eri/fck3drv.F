@@ -18,7 +18,9 @@
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
+#ifdef (MOD_FMM)
 #include "clsfmm.h"
+#endif
 
       DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*)
 C
@@ -41,14 +43,15 @@ C
 
       IF ( NOSCRPRIM ) THRPOD = 0.0D0
 
+#ifdef (MOD_FMM)
       IF (DOFMM) THEN
         NCLFCK3 = .TRUE.
         THRCLS  = THRNCL
       END IF
 
-      FACCLS=ERFCIV(THRCLS)
-
       CALL SETBFCFMM( BRFREE ) 
+#endif
+      FACCLS=ERFCIV(THRCLS)
 
       IF ( NDMT .NE. 1 ) THEN 
         CALL QUIT('In FCK3 internally is not implemented NDMT > 1') 

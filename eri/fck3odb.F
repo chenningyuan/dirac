@@ -63,7 +63,9 @@ C
       NCSQ2 = 1  
 
       R2PI52 = SQRT(2.0D0*(SQRT(PI)**5))
+#ifdef (MOD_FMM)
       FACCLS = ERFCIV(THRCLS)
+#endif
 
 C
 C    Assign these variables also to ericom common block

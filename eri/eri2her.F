@@ -273,17 +273,21 @@ C
          N = 0
          DO 800 I = 1, NPPX
             IF (ABS(FACINT(I)) .GT. THRSH) THEN
+#ifdef (MOD_FMM)
                IF ( BFCFMM ) THEN
                   RPQ = COORPQ(I,1)**2+COORPQ(I,2)**2+COORPQ(I,3)**2
                   RPQ = SQRT(RPQ)
                END IF
+#endif
                N = N+1
                DO J = 0, JMAX
+#ifdef (MOD_FMM)
                   IF ( BFCFMM .AND. ( (RPQ-RPQMIN).GT.ZERODST) ) THEN
 CMAW                 Subtract off Asymptotic Long Range Boys Function
                      ARG = WVALU(N)
                      RJ000(I,J) = RJ000(I,J) - ABOYSF(ARG,J)
                   END IF
+#endif
                   RJ000(I,J) = FACINT(I)*RJ000(I,J)
                   FACINT(I)  = ALPHA(I)*FACINT(I)
                END DO

@@ -520,6 +520,7 @@ C******************************************************************************
 #include "maxaqn.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
+#include "clsfmm.h"
 #include "cbirea.h"
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
       DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
@@ -724,6 +725,11 @@ C
          WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
          WRITE (LUPRI,'(/)')
       END IF
+
+C     Default threshold for distinguishing classical and
+C     non-classical contributions to Coulomb integrals
+
+      THRCLS = THRS
 C
 C     ****************************************
 C     ***** Output on LUONEL *****************

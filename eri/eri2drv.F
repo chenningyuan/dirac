@@ -193,7 +193,9 @@ CMAW
                   GRDZER = .TRUE. 
                GO TO 100
    31          CONTINUE
+#ifdef(MOD_FMM) then
                   BFCFMM = .TRUE. 
+#endif
                GO TO 100
    32          CONTINUE
                   DOERIP = .TRUE. 
@@ -276,8 +278,10 @@ CMAW
      &         ' All contractions treated as general.' 
             IF (NCLERI) WRITE (LUPRI,'(A)')
      &         ' Only nonclassical integrals are calculated.' 
+#ifdef (MOD_FMM)
             IF (BFCFMM) WRITE (LUPRI,'(A)')
      &         ' Doing ER2INT to complement Branch-Free MM scheme.' 
+#endif
             IF (DODIST) THEN
                WRITE (LUPRI, '(A)')
      &         ' Distributions for electron 1.'
