@@ -66,6 +66,7 @@ usage ()
    echo '     -scr name              : Directory root for work area; default "'$SCR/$MOL'"'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -nice                  : execute Dirac with nice/npri'
+   echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
    echo '     -notify                : Notify when finished to user starting job'
    echo '     -user e-mail           : Notify when finished using specified e-mail address'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
@@ -147,16 +148,28 @@ setup_command()
       DIRAC=dirac.x
    fi
    #
+   # Execute Dirac with ssrun ?
+   #
+   if [ -n "$SSRUN" ]; then
+      SSRUN_CMD="ssrun -$SSRUN"
+      mkdir $LOC/speedshop.$$
+      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
+      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
+   else
+      SSRUN_CMD=""
+   fi
+   #
    # MPI?
    #
    if [ -n "$PARCAL" ]; then
 #SX   if [ -n "$MULTI_NODE" ]; then
 #SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
 #SX   else
-         DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile machines $DIRAC"
+#Linux   DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile machines $DIRAC"
+         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $SSRUN_CMD $DIRAC"
 #SX   fi
    else
-      DIRAC_CMD="./$DIRAC"
+      DIRAC_CMD="$SSRUN_CMD ./$DIRAC"
    fi
    #
    # Debug
@@ -231,7 +244,7 @@ execute_dirac()
 #SX   export PWD
 #SXfi
 
-   echo "   Executing: $NICE_CMD $DIRAC_CMD"
+   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR $BASDIR"
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
@@ -306,12 +319,16 @@ remove_work_dir()
    master=`hostname`
    for node in ` cat $WRK/machines `; do
        if [ $node != $master ]; then
+          echo "Contents of work directory $WRK on slave node $node"
+          rsh $node "ls -l $WRK"
           rsh $node "rm -fr $WRK"
        fi
    done
 #
 #  Now delete work directory on primary machine if requested
 #
+   echo "Contents of work directory $WRK on master node $master"
+   ls -l $WRK
    if [ -n "$RMWRK" ]; then
       if [ $EXIT -eq 0 ]; then
          cd ..
@@ -620,6 +637,7 @@ initialize()
    fi
 
    NICE=
+   SSRUN=
 
    NOTIFY=
    NOTIFY_USER=
@@ -713,12 +731,15 @@ while [ -n "$1" ]; do
 #        Old default : master + one slave on node
 #        let MPI_NPROC=$1+1
 #        New default : master by itself on a node
-         let MPI_NPROC=$1+1
          MPI_NPROC=$1
          PARCAL=1
          ;;
       -nice)
          NICE=1
+         ;;
+      -ssrun)
+         shift
+         SSRUN=$1
          ;;
       -notify)
          NOTIFY=1
