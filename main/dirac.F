@@ -243,6 +243,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <dcbdhf.h>
+#include <dcbgen.h>
 #include <priunit.h>
 C
 #if defined (VAR_MPI)
