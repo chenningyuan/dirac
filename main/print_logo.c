@@ -55,5 +55,6 @@
    printf("%s",strsubtitle);
 
    sysinf(parcal);
-   
+
+   fflush(stdout);
 }
