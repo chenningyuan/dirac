@@ -261,23 +261,38 @@ C       Insert the updated wave function
         CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
       ENDIF
 C-------------------------------------------
-C (1,1) Sector
+C-------------------------------------------
+C (1,1) Sector (the new definition)
 c
 c  2-electron diagram
 c
-C  S2=T2(AI,FN) (a=1,2; b=3,4 {exclude-24}; i=3; j=2)
-C  H2=T2(EM,FN) (a=2; b=4; i=3; j=2)
+C  S2=T2(AF,IN) (a=1,2; b=1 ; i=1,2; j=2  {exclude-1122})
+C  H2=T2(EF,MN) (a=1; b=1; i=2; j=2)
 C
 C-------------------------------------------
-C (1) S2(AI,FN)=S2(AI,FN)+S2TAU(AI,EM)*H2(EM,FN)
-C (2) S2(AI,FN)=S2(AI,FN)+P(34).S2(AI,FM)*H1(M,N)
-C (3) S2(AI,NF)=S2(AI,NF)-P(34).S2(AI,NE)*H1(E,F)
-C (4) S2(AM,FN)=S2(AM,FN)-P(12).S1(A,E)*H2(EM,FN)
-C (5) S2(EI,FN)=S2(EI,FN)+P(12).S1(I,M)*H2(EM,FN)
+C (1) S2(AF,IN)=S2(AF,IN)+S2TAU(AE,IM)*H2(EF,MN)
+C (2) S2(AF,IN)=S2(AF,IN)+P(34).S2(AF,IM)*H1(M,N) ! this diagram is contained in (1,0) sector
+C (3) S2(AF,IN)=S2(AF,IN)-P(12).S2(AE,IN)*H1(E,F) ! this diagram is contained in (0,1) sector
+C (4) S2(AF,MN)=S2(AF,MN)-P(12).S1(A,E)*H2(EF,MN) ! these terms are contained in
+C (5) S2(EF,IN)=S2(EF,IN)+P(34).S1(I,M)*H2(EF,MN) ! the t2tau wf by using gettau2
 C
-C S2TAU(AI,EM)=S2(AI,EM)+S1(A,E)*S1(I,M)-S1(A,M)*S1(I,E))
+C S2TAU(AF,IM)=S2(AF,IM)+S1(A,F)*S1(I,M)
 C-------------------------------------------
       IF (ICURFSS.EQ.11) THEN
+C       Make T2TAU including the spurious Hamiltonian parts
+        CALL GETTAU (T1,T2,BUF2)
+        CALL GETTAU2(T1,BUF1,BUF2)
+C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+C       but irrelevant here)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
+C       Extract the wave function
+        CALL EXTRT2S(BUF2,BUF3,1,2,3,3,1,2,3,3,LFA)
+C       Extract the 2-particle Hamiltonian
+        CALL EXTRT2S(S2,BUF1,1,1,3,3,3,3,2,2,LFA)
+c       CALL CNTRCT ('N','N',NSVSVT,NAVAVT,NAVAVT,-A1,BUF3,BUF1,A0,
+c    &               BUF2,NREP)
+C       Insert the updated wave function
+        CALL EXTRT2S(S2,BUF2,1,2,3,3,1,2,3,3,LTR)
       ENDIF
 C---------------------------------------------
 C
