@@ -3175,7 +3175,7 @@ C
              ENDIF
              AI = AI + RCW
          ENDDO
-         WRITE (IW,2001) IRP,I,EI
+         IF (ABS(EI).GT.1.D-6) WRITE (IW,2001) IRP,I,EI
       ENDDO
       ENDDO
 C
@@ -3209,7 +3209,7 @@ C
                ENDDO
             ENDDO
  20         CONTINUE
-            WRITE (IW,3001) IRP,I,JRP,J,EIJ
+            IF (ABS(EIJ).GT.1.D-6) WRITE (IW,3001) IRP,I,JRP,J,EIJ
          ENDDO
       ENDDO
  10   CONTINUE
