@@ -115,8 +115,6 @@ C
 C
       CALL QENTER('PARDRV')
 C
-C     Initialize dintskp
-      CALL DZERO(DINTSKP,8)
 C
 C     Ensure that NODES .LE. MAXNOD
 C
@@ -169,9 +167,11 @@ C
 C
 C     Test of work space allocation.
 C
+      LDINTSKP = 8
       IF (ITYPE .EQ. 2) THEN
          NUMGRA = MXCOOR
          NUMHES = NUMGRA*NUMGRA
+         LDINTSKP = 3*3*14
 #ifdef PRG_DIRAC
          NREQUI = NUMGRA
 #else
@@ -187,6 +187,11 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
+C
+C     Initialize DINTSKP
+C
+      CALL DZERO(DINTSKP,LDINTSKP)
+C
 C
       IF (LFREE .LT. NREQUI) THEN
          WRITE(LUPRI,'(/5X,A,/5X,A16,I8,/5X,A16,I8)')
@@ -221,7 +226,7 @@ C     Receive final results from nodes.
 C--------------------------------------
 C
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
-     &           NUMGRA,NUMHES,WORK(KTIMES),DINTSKP)
+     &           NUMGRA,NUMHES,WORK(KTIMES),DINTSKP,LDINTSKP)
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -398,7 +403,7 @@ C
 #include <siripc.h>
 C
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
-     &          DMRAO(NSYMBL,NSYMBL,NDMAT),GABRAO(NSYMBL,NSYMBL),
+     &          DMRAO(NSYMBL,NSYMBL,NDMAT),GABRAO(NSYMBL,NSYMBL,*),
      &          DMRSO(MAXSHL,MAXSHL,NDMAT)
       LOGICAL NODV,NOPV,NOCONT,TKTIME,RETUR
 C
@@ -501,21 +506,31 @@ C
      &               MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IREPDM,NFMAT,MPI_INTEGER,MPARID,
+      CALL MPI_BCAST(IREPDM,NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IFCTYP,NFMAT,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
+      IF (ITYPE.EQ.2) THEN
+         CALL MPI_BCAST(IFCTYP,NDMAT,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      ELSE
+         CALL MPI_BCAST(IFCTYP,NFMAT,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
 C
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
+      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
         N2RED = NSYMBL*NSYMBL
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(DMRAO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(GABRAO,N2RED,MPI_DOUBLE_PRECISION,MPARID,
-     &                 MPI_COMM_WORLD,IERR)
+        IF (ITYPE .EQ. 2) THEN
+           CALL MPI_BCAST(GABRAO,4*N2RED,MPI_DOUBLE_PRECISION,MPARID,
+     &                    MPI_COMM_WORLD,IERR)
+        ELSE
+           CALL MPI_BCAST(GABRAO,N2RED,MPI_DOUBLE_PRECISION,MPARID,
+     &                    MPI_COMM_WORLD,IERR)
+        END IF
       END IF
       IF(ITYPE.EQ.9) THEN
         N2RED = MAXSHL*MAXSHL
@@ -754,7 +769,7 @@ C
       END
 C  /* Deck rvres */
       SUBROUTINE RVRES(WORK,FMAT,ITYPE,MTOTTK,NREQUI,
-     &                 NUMGRA,NUMHES,TIMES,DINTSKP)
+     &                 NUMGRA,NUMHES,TIMES,DINTSKP,LDINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle July-1994
 C
@@ -783,8 +798,8 @@ C
 #include <inforb.h>
 #include <infpar.h>
 C
-      DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(*),
-     &          DNSKBF(8)
+      DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
+     &          DNSKBF(3*3*14)
 C
 C     Clean matrices.
 C
@@ -815,8 +830,8 @@ C
 C
          ICOUNT = ICOUNT + ITASK
 C
-         IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
-             CALL MPI_RECV(DNSKBF,8,MPI_DOUBLE_PRECISION,
+         IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
+             CALL MPI_RECV(DNSKBF,LDINTSKP,MPI_DOUBLE_PRECISION,
      &           MPI_ANY_SOURCE,40,MPI_COMM_WORLD,ISTAT,IERR)
          ENDIF
 C
@@ -851,6 +866,9 @@ C        Add results to final matrices.
 C
          IF (ITYPE .EQ. 2) THEN
             CALL DAXPY(NUMGRA,D1,WORK,1,GRADEE,1)
+            DO J = 1,LDINTSKP
+              DINTSKP(J) = DINTSKP(J) + DNSKBF(J)
+            ENDDO
 #ifndef PRG_DIRAC
             CALL DAXPY(NUMHES,D1,WORK(NUMGRA+1),1,HESSEE,1)
 #endif
@@ -1131,7 +1149,7 @@ C
 #include <energy.h>
 #endif
 C
-      DIMENSION WORK(MWORK),DINTSKP(2,4)
+      DIMENSION WORK(MWORK),DINTSKP(14*3*3)
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
 C
       CALL QENTER('HERNOD')
@@ -1141,6 +1159,8 @@ C
       PARHER = .TRUE.
 C
       FINISH = .FALSE.
+C
+      CALL DZERO(DINTSKP,3*3*14)
 C
 #if defined (VAR_MPI)
  100  CONTINUE
@@ -1178,14 +1198,17 @@ C
          NUMGRA = MXCOOR
          NUMHES = NUMGRA*NUMGRA
          NREQUI = NUMGRA + NUMHES
+         LFMAT  = 0
       ELSE IF (ITYPE .EQ.3.OR.ITYPE.EQ.9) THEN
          LFMAT  = NFMAT*N2BASX
          NREQUI = 0
       ELSE IF (ITYPE .EQ. -5) THEN
          NUMSUS = 9
          NREQUI = 3*NNBASX + NUMSUS
+         LFMAT  = 0
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
+         LFMAT  = 0
       END IF
 C
 C     ********************************
@@ -1446,21 +1469,33 @@ C
       CALL MPI_BCAST(NFMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       LFMAT = NFMAT*N2BASX
       CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRD,NFMAT,WORK,KFREE,LFREE)
-      CALL MPI_BCAST(WORK(KIRD),NFMAT,MPI_INTEGER,MPARID,
+      CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
+      CALL MPI_BCAST(WORK(KIRD),NDMAT,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-      CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
-      CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
+      IF (ITYPE.EQ.2) THEN
+         CALL MEMGET('INTE',KIFC,NDMAT,WORK,KFREE,LFREE)
+         CALL MPI_BCAST(WORK(KIFC),NDMAT,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      ELSE
+         CALL MEMGET('INTE',KIFC,NFMAT,WORK,KFREE,LFREE)
+         CALL MPI_BCAST(WORK(KIFC),NFMAT,MPI_INTEGER,MPARID,
+     &                  MPI_COMM_WORLD,IERR)
+      END IF
+      IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2) THEN
         CALL MPI_BCAST(N2RED,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
         LDMRAO = NDMAT*N2RED
         CALL MEMGET('REAL',KDMRAO,LDMRAO,WORK,KFREE,LFREE)
         CALL MPI_BCAST(WORK(KDMRAO),LDMRAO,MPI_DOUBLE_PRECISION,
      &               MPARID,MPI_COMM_WORLD,IERR)
-        CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
-        CALL MPI_BCAST(WORK(KGABAO),N2RED,MPI_DOUBLE_PRECISION,
-     &               MPARID,MPI_COMM_WORLD,IERR)
+        IF (ITYPE.EQ.2) THEN
+           CALL MEMGET('REAL',KGABAO,4*N2RED,WORK,KFREE,LFREE)
+           CALL MPI_BCAST(WORK(KGABAO),4*N2RED,MPI_DOUBLE_PRECISION,
+     &                  MPARID,MPI_COMM_WORLD,IERR)
+        ELSE
+           CALL MEMGET('REAL',KGABAO,N2RED,WORK,KFREE,LFREE)
+           CALL MPI_BCAST(WORK(KGABAO),N2RED,MPI_DOUBLE_PRECISION,
+     &                  MPARID,MPI_COMM_WORLD,IERR)
+        END IF
       ELSE
         KDMRAO = KFREE
         KGABAO = KFREE
@@ -1553,6 +1588,7 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 #include <implicit.h>
+#if defined (VAR_MPI) || defined (VAR_PVM)
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
@@ -1560,6 +1596,7 @@ C
 #else
 #include <fpvm3h.h>
 #endif
+#endif /* VAR_MPI || VAR_PVM */
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
@@ -1607,8 +1644,12 @@ C
       END IF
 C
       DOSCRN = .FALSE.
-      IF(DIRFCK.OR.SOFOCK)  THEN
-        CALL DZERO(DINTSKP,8)
+      IF(DIRFCK.OR.SOFOCK.OR.(EXPECT.AND.MAXDER.EQ.1))  THEN
+         IF (DIRFCK.OR.SOFOCK) THEN
+           CALL DZERO(DINTSKP,8)
+         ELSE
+           CALL DZERO(DINTSKP,3*14*3)
+         END IF
         IF(IFTHRS.GT.0) THEN
           DOSCRN = .TRUE.
           FCKTHR = -IFTHRS
@@ -1976,7 +2017,7 @@ C
 #include <infpar.h>
 #include <inforb.h>
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(8)
+      DIMENSION FMAT(LFMAT), DINTSKP(*)
 #if defined (VAR_MPI)
       DIMENSION RBUF(2)
 #endif
@@ -2005,6 +2046,8 @@ C
          CALL MPI_SEND(FMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ELSE IF (ITYPE.EQ.2) THEN
+         CALL MPI_SEND(DINTSKP,3*3*14,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                 MPI_COMM_WORLD,IERR)
          CALL MPI_SEND(GRADEE,NUMGRA,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
