@@ -264,7 +264,14 @@ execute_dirac()
 #SX   export PWD
 #SXfi
 
-   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR $BASDIR"
+   echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR(S) :"
+   BDIR=$BASDIR
+   while [ -n "`echo $BDIR | grep ':'`" ]; do
+      TDIR=`echo $BDIR | cut -d ":" -f 1`
+      echo "   $TDIR"
+      BDIR=`echo $BDIR | cut -d ":" -f 2-`
+   done
+   $echo "   $BDIR \n"
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
