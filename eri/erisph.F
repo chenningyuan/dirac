@@ -145,7 +145,7 @@ C
 #include "symmet.h"
 #include "nuclei.h"
       INTEGER A, B, C, E, F, G, EE, FF, GG, P, Q, R,
-     &        T, U, V, X, Y, Z, V0, ALPHA, TOT, POS, PX, PY, PZ,
+     &        T, U, V, X, Y, Z, V0, TOT, POS, PX, PY, PZ,
      &        BX, BY, BZ
       DIMENSION CSQ(NROWS,NCOLS)
       PWD(I,J)   = FACULT(I)/FACULT(I-J)
@@ -212,14 +212,13 @@ C
                      TOT = X + Y + Z
                      IADR = IOFF + NSPHAD(L,TOT-L,NDER) +
      &                      (2*L+1)*(NCRT(X,Y,Z)-1) + L + MADR
-C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                      IF (NCOLS.EQ.1) THEN
                         CSQ(IADR,1) = CSQ(IADR,1) + FACTOR 
                         IF (IPRINT.GT.20) THEN
                            WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
-     &                               F10.5,I4,2X,2(3I3,2X),4I3)') 
+     &                               F10.5,2X,2(3I3,2X),4I3)') 
      &                               L,M,I,J,K,E,F,G,
-     &                               IATOM,BFAC,ALPHA,
+     &                               IATOM,BFAC,
      &                               PX,PY,PZ,X,Y,Z,
      &                               TOT,NCRT(X,Y,Z),IADR
                         END IF
@@ -239,9 +238,9 @@ C                    ALPHA = II+JJ+KK-A-B-C-(P+Q+R)/2
                               CSQ(IADR,IA) = CSQ(IADR,IA) + BFAC
                               IF (IPRINT.GT.20) THEN
                                  WRITE (LUPRI,'(1X,2I3,2(2X,3I2),I3,
-     &                                     F10.5,I4,2X,2(3I3,2X),3I3)') 
+     &                                     F10.5,2X,2(3I3,2X),3I3)') 
      &                                     L,M,I,J,K,E,F,G,
-     &                                     IA,BFAC,ALPHA,
+     &                                     IA,BFAC,
      &                                     PX,PY,PZ,X,Y,Z,
      &                                     TOT,NCRT(X,Y,Z),IADR
                               END IF
