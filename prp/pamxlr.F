@@ -1260,7 +1260,8 @@ C     (for now we form only combinations between
 C      operators with same point group symmetry)
 C
       IF(ALLCMB) THEN
-        WRITE(LUPRI,'(A)') 'GETLR1 WARNING: Sorry, not yet written !'
+        WRITE(LUPRI,'(A)')
+     &  'GETLR1 WARNING: Sorry, ALLCMB not yet written !'
         ALLCMB = .FALSE.
       ENDIF
       IF(.NOT.ALLCMB) THEN
@@ -1864,7 +1865,7 @@ C       Frequency dependent case; search for partner
           ENDIF
           ENDDO
           WRITE(LUPRI,'(A,I5)')
-     &      ' WARNING ! No partner found for vector. ',I
+     &      'ANAXR2 WARNING ! No partner found for vector. ',I
         ENDIF
  10     CONTINUE
 C       Calculate norm
