@@ -597,7 +597,10 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      CHARACTER A*(*),B*72
+C
+      PARAMETER (MAXLB = 72)
+C
+      CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
       DIMENSION ITMPAR(IRNGE1:IRNGE2),ILIST(NLIST)
 C
@@ -607,7 +610,6 @@ C
       NUM2 = 0
       INO  = 0
       NA   = LEN(A)
-      IF(NA.GT.72) GOTO 940
       IF(NA.GE.3) THEN
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
@@ -646,6 +648,7 @@ C
          TEGN = A(I:I)
          IF (TEGN.EQ.' ') GOTO 20
          NB = NB + 1
+         IF(NB.GT.MAXLB) GOTO 940
          B(NB:NB) = TEGN
  20   CONTINUE
       I = 1
@@ -778,6 +781,9 @@ C
 C
       RETURN
  900  CONTINUE
+      WRITE(LUPRI,'(//A,I3/3A/9X,200A1)')
+     &     'NUMLST: Wrong syntax in input at character ',I,
+     &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
       CALL QUIT('NUMLST: Wrong Syntax in Input')
  910  CONTINUE
       CALL QUIT('NUMLST: Wrong Characters in Input')
