@@ -942,14 +942,14 @@ C     Positronic part
       ENDIF
       CALL DCOPY(NC,EIG2(IV2),1,EIG1(IV1),1)        
 C     Electronic part
-      IV1 = IV1 + NC
+      IV1 = NP1 + 1
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
       CALL DCOPY(NC,EIG2(IV2),1,EIG1(IV1),1)        
       IF(NR.GT.0) THEN
+        IV1 = IV1 + NC
         CALL DZERO(EIG1(IV1),NR)
-        IV1 = IV1 + NR
       ENDIF
 C
       RETURN
@@ -1004,14 +1004,14 @@ C     Positronic part
       ENDIF
       CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)        
 C     Electronic part
-      IV1 = IV1 + NC
+      IV1 = NP1 + 1
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
       CALL ICOPY(NC,IBO2(IV2),1,IBO1(IV1),1)        
       IF(NR.GT.0) THEN
+        IV1 = IV1 + NC
         CALL IZERO(IBO1(IV1),NR)
-        IV1 = IV1 + NR
       ENDIF
 C
       RETURN
