@@ -1815,14 +1815,6 @@ C     Analyze wavefunction
 C
       IF(DOANA) CALL PAMANA(WORK,LWORK)
 C
-C     Delete AOPROPER so we don't use in old integrals
-C     in next iteration
-C
-#if defined (SYS_IBM)
-      CALL DELFILE(LU1INT,'APROPER')
-#else
-      CALL DELFILE(LU1INT,'AOPROPER')
-#endif
       CALL FLSHFO(LUPRI)
       CALL QEXIT('EXEDIR')
       RETURN
