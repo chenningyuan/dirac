@@ -365,11 +365,7 @@ dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  lucita/doubledir.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
 lucita/program.o  lucita/property.o  lucita/sigma.o  lucita/strings.o  lucita/transform.o  lucita/utils.o  \\
-lucita/vecmat.o \\
-luciarel/ciinfo_r.o  luciarel/density_r.o  luciarel/diagonal_r.o  luciarel/diagonalize_r.o \\
-luciarel/fock_r.o  luciarel/interface_r.o  luciarel/io_r.o  luciarel/memory_r.o \\
-luciarel/program_r.o  luciarel/sigden_r.o  luciarel/sigma_r.o  luciarel/strings_r.o \\
-luciarel/transform_r.o  luciarel/utils_r.o  luciarel/vecmat_r.o
+lucita/vecmat.o
 
 #
 # All .o files for C routines in .c files are listed separately from OBJS
@@ -466,7 +462,12 @@ krmc/krmc_gradient.o krmc/krmcgosci.o krmc/krmcopt.o krmc/krmcout.o \\
 krmc/krmctra.o krmc/krmcvec.o krmc/krmcsav.o krmc/krmccan.o \\
 krmc/krmcinp.o krmc/krmcmlf.o krmc/krmcgp.o krmc/krmcluci.o
 
-LUCIARELOBJS = \$(SS)
+LUCIARELOBJS = \\
+luciarel/ciinfo_r.o  luciarel/density_r.o  luciarel/diagonal_r.o  \\
+luciarel/diagonalize_r.o luciarel/fock_r.o  luciarel/interface_r.o  \\
+luciarel/io_r.o  luciarel/memory_r.o luciarel/program_r.o  \\
+luciarel/sigden_r.o  luciarel/sigma_r.o  luciarel/strings_r.o \\
+luciarel/transform_r.o  luciarel/utils_r.o  luciarel/vecmat_r.o
 
 EOF
 fi
