@@ -104,7 +104,7 @@ C
 C     Mulliken population analysis
 C
 C     Written by T.Saue - Sep 11 1995
-C     Last revision: Aoril 27 1996 - tsaue
+C     Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1206,7 +1206,7 @@ C
       DOPOP = NREFS.GT.1
       PTOL = PROTHR*DC
 C
-C     Make projection vector
+C     Make projection vector  BVEC = <\psi^B_j1\psi^{MO}_i>
 C
       CALL QTRANS('AOMO','S',D0,
      &            NFBAS(IFRP,0),NFBAS(IFRP,0),NREF,NMOL,
@@ -1228,7 +1228,7 @@ C
      &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
         ENDIF
 C
-C       Make overlap matrix
+C       Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
 C
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &           NREF,NREF,
@@ -1376,6 +1376,7 @@ C
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IF(K.GT.NSTR(IFRP,2,0)) THEN
+C...    POSITIVE-ENERGY (electronic) ORBITAL
 c
 c         Find fractional occupation for each requested orbital string
 c
@@ -1397,6 +1398,7 @@ c       ... closed shell
      +       '* Electronic eigenvalue nr.',JMOL(K),': ',
      &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
         ELSE
+C...    NEGATIVE-ENERGY (positronic) ORBITAL
           KK  = NPSH(IFRP)+1+JMOL(K)
           WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Positronic eigenvalue nr.',KK,': ',
@@ -1764,12 +1766,14 @@ C
       GTOT = D0
       IVEC = 0
       DO I = 1,NREFS
+C...    Negative-energy (positronic) orbitals
         GROSS(IFRP,1,I) = D0
         DO J = 1,NSTR(IFRP,2,I)
           IVEC = IVEC + 1
           GROSS(IFRP,1,I)   = GROSS(IFRP,1,I) + GVEC(IVEC)
         ENDDO
         GTOT = GTOT + GROSS(IFRP,1,I)
+C...    Positive-energy (electronic) orbitals
         GROSS(IFRP,2,I) = D0
         DO J = NSTR(IFRP,2,I)+1,NSTR(IFRP,0,I)
           IVEC = IVEC + 1
