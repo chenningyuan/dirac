@@ -1034,7 +1034,12 @@ C
             WRITE(LUPRI,*)
          END IF
       END IF
-      IF (GRDTHR .NE. DEFTH2) THEN
+      IF (BAKER) THEN
+        WRITE(LUPRI,*)
+     & 'Baker''s convergence criteria [J. Comp. Chem. 14(1993) 1085]'//
+     & ' will be used.'
+      ELSE
+CTROND      IF (GRDTHR .NE. DEFTH2) THEN
          WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for gradient set to : ', GRDTHR
          IF ((GRDTHR .LT. D0) .OR. (GRDTHR .GT. 0.1D0)) THEN
@@ -1043,8 +1048,8 @@ C
      &           ' - Threshold reset to:', DEFTH2
             GRDTHR = DEFTH2
          END IF
-      END IF
-      IF (THRERG .NE. DEFTHE) THEN
+CTROND      END IF
+CTROND      IF (THRERG .NE. DEFTHE) THEN
          WRITE(LUPRI,'(A,1P,D13.2)')
      &        ' Convergence threshold for energy set to   : ', THRERG
          IF ((THRERG .LT. D0) .OR. (THRERG .GT. 0.1D0)) THEN
@@ -1053,9 +1058,9 @@ C
      &           ' - Threshold reset to:', DEFTHE
             THRERG = DEFTHE
          END IF
-      END IF
-      IF (THRSTP .NE. DEFTH2) THEN
-         WRITE(LUPRI,'(A,D13.2)')
+CTROND      END IF
+CTROND      IF (THRSTP .NE. DEFTH2) THEN
+         WRITE(LUPRI,'(A,D13.2/)')
      &        ' Convergence threshold for step set to     : ', THRSTP
          IF ((THRSTP .LT. D0) .OR. (THRSTP .GT. 0.1D0)) THEN
             WRITE(LUPRI,'(A/A,1P,D13.2)')
@@ -1063,12 +1068,14 @@ C
      &           ' - Threshold reset to:', DEFTH2
             THRSTP = DEFTH2
          END IF
-      END IF
-      IF (DISPLA .NE. DEFDSP) THEN
+CTROND      END IF
+      ENDIF
+CTROND      IF (DISPLA .NE. DEFDSP) THEN
+      IF(DONGRD) THEN
          WRITE (LUPRI,'(A,D13.2)')
-     &        ' In case of numerical gradients, displacements are : ',
-     &        DISPLA
-      END IF
+     &        ' Numerical Gradient: displacements are ', DISPLA
+      ENDIF
+CTROND      END IF
       IF (ICONDI .NE. 2) THEN
          WRITE(LUPRI,'(A,I3)')
      &        ' Number of convergence criteria set to     : ', ICONDI
@@ -1079,8 +1086,6 @@ C
      &           ' - Number reset to:', ICONDI
          END IF
       END IF
-      IF (BAKER) WRITE(LUPRI,'(/A/)')
-     &        ' Baker''s convergence criteria will be used.'
       IF (CONOPT) THEN
          WRITE(LUPRI,'(A)')
      &        ' Constrained optimization has been requested.'
