@@ -152,6 +152,7 @@ C     Since there is no fun in doing a geometry optimization
 C     without a wave function, PAMPSI is always called.
 C
       CALL PAMPSI(WORK,LWORK)
+      IF(DOACUT) CALL ACMOUT(WORK,LWORK)
       IF(DOPUT) CALL PCMOUT(WORK,LWORK)
 C
 C
