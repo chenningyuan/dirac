@@ -187,11 +187,13 @@ C
 C
  111  format (a,2f30.15)
       if (carith.and.debug) then
-      write (iw,111)"x1",zdotc(ndimx,x1,1,x1,1)
-      write (iw,111)"y1",zdotc(ndimx,y1,1,y1,1)
-      write (iw,111)"dg",ddot (ndimx,dg,1,dg,1)
-      write (iw,111)"x2",zdotc(ndimx,x2,1,x2,1)
-      write (iw,111)"y2",zdotc(ndimx,y2,1,y2,1)
+CLuuk Next lines commented due to crash under Linux. Probably
+CLuuk a bug in g77 !
+c     write (iw,111)"x1",zdotc(ndimx,x1,1,x1,1)
+c     write (iw,111)"y1",zdotc(ndimx,y1,1,y1,1)
+c     write (iw,111)"dg",ddot (ndimx,dg,1,dg,1)
+c     write (iw,111)"x2",zdotc(ndimx,x2,1,x2,1)
+c     write (iw,111)"y2",zdotc(ndimx,y2,1,y2,1)
       elseif (debug) then
       write (iw,111)"x1",ddot(ndimx,x1,1,x1,1)
       write (iw,111)"y1",ddot(ndimx,y1,1,y1,1)
@@ -1229,6 +1231,10 @@ C64B     CERPA2 = CDOTU (NDIMX,AVO,1,Y1,1)
 C64B     ERPA = ERPA + SDOT (NDIMX,AVO,1,Y1,1)
          CERPA = APHASE * BPHASE * ERPA
       ENDIF
+      print*,"real part aov",ddot(ndimx,aov,2,x1,2)
+      print*,"imag part aov",ddot(ndimx,aov(2),2,x1(2),2)
+      print*,"real part avo",ddot(ndimx,avo,2,y1,2)
+      print*,"imag part avo",ddot(ndimx,avo(2),2,y1(2),2)
 C
       RETURN
 1000  FORMAT (/' WARNING : Imaginary contribution to ',A2,
@@ -1422,24 +1428,39 @@ C
 C 
 #include "files.inc"
 #include "symm.inc"
+#include "complex.inc"
 C
-      WRITE (*,1000) TEXT,TRESH
+      WRITE (*,1000) TEXT,'real',TRESH
 C
       OFF = 1
       DO IREP = 1, NREP
          M = MVO(IREP)
-         DO I = OFF, OFF+M-1
+         DO I = OFF, OFF+(M-1)*RCW,RCW
             IF (ABS(X1(I)).GT.TRESH.OR.ABS(Y1(I)).GT.TRESH) THEN
                WRITE (IW,1001) IREP,REPNA(IREP+NREP),I-OFF+1,X1(I),Y1(I)
             ENDIF
          ENDDO
-         OFF = OFF + M
+         OFF = OFF + M*RCW
       ENDDO
 C
- 1000 FORMAT (/' Analysis of ',A17,' vector'/
+      IF (CARITH) THEN
+      WRITE (*,1000) TEXT,'imag',TRESH
+      OFF = 2
+      DO IREP = 1, NREP
+         M = MVO(IREP)
+         DO I = OFF, OFF+(M-1)*RCW,RCW
+            IF (ABS(X1(I)).GT.TRESH.OR.ABS(Y1(I)).GT.TRESH) THEN
+               WRITE (IW,1001) IREP,REPNA(IREP+NREP),I-OFF+2,X1(I),Y1(I)
+            ENDIF
+         ENDDO
+         OFF = OFF + M*RCW
+      ENDDO
+      ENDIF
+C
+ 1000 FORMAT (/' Analysis of ',A17,1X,A4,' part of vector'/
      &' Printing contributions above ',E6.1//
      &' Symmetry  Excitation           X Value              Y value')
- 1001 FORMAT (I4,A4,I10,4X,2F20.10)
+ 1001 FORMAT (I4,1X,A4,I10,4X,2F20.10)
 C
       RETURN
       END
