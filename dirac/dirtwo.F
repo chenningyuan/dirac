@@ -160,9 +160,9 @@ C        probably be allocated at a higher level and passed on to TWOFCK.
             IF (IREP.NE.0) 
      &      CALL QUIT ("Only totally symmetric densities can be fitted")
             CALL DTSOUAO(DMAT(1,1,I),WORK(KSDMAT),WORK,KFREE,LFREE)
-            CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
-     &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
-     &                     IPRINT,WORK(KCFIT))
+c           CALL DRIVE_FIT(WORK(KSDMAT),WORK(KADMAT),NTBAS(0),
+c    &                     WORK(KINDAO),WORK(KINDAOS),WORK(KINDNAO),
+c    &                     IPRINT,WORK(KCFIT))
          ENDDO
          CALL MEMREL('TWOFCK',WORK,KINDAO,KINDAO,KFREE,LFREE)
       ENDIF
