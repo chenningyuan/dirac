@@ -503,7 +503,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I10/,2(1X,A,I10/),2(1X,A,I10,F10.3/))')
+     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,

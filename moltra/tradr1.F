@@ -231,7 +231,7 @@ C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
      &         ' Calculation of integral distribution set:',ISHLA,ISHLB
-               WRITE (LUPRI,'(//,4(1X,A,I8,/))')
+               WRITE (LUPRI,'(//,4(1X,A,I16,/))')
      &         ' Number of distributions in this set:     ',NUMDIS,
      &         ' Size of scalar integral batch:           ',NSIZG,
      &         ' Size of half-transformed integral batch: ',NSIZH

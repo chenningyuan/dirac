@@ -709,7 +709,7 @@ C           Check that we fit in memory
 C           ---------------------------
 C
             IF (IPRINT .GE. 3) THEN
-               WRITE(LUPRI,'(A,I3,A/4(A,I9))')
+               WRITE(LUPRI,'(A,I3,A/4(A,I16))')
      &         '       - TRDRV4 memory estimate iteration no. ',IT,' :',
      &         '         Free: ',MFREE,', Hermit: ',MWHER,
      &         ', HMAT ',MWHMAT,', GMAT ',NSIZG
@@ -733,7 +733,7 @@ C
          IF (IPRINT .GE. 3) THEN
             WRITE (LUPRI,'(//,4(1X,A,2I4,/))')
      &      ' Calculation of integral distribution set:',ISHLA,ISHLB
-            WRITE (LUPRI,'(//,4(1X,A,I8,/))')
+            WRITE (LUPRI,'(//,4(1X,A,I16,/))')
      &      ' Number of distributions in this set:     ',NUMDIS,
      &      ' Maximum size of scalar integral batch:   ',NSIZG,
      &      ' Number of passes :                       ',NPASS
