@@ -11,7 +11,7 @@ F_OBJS = fck3aob.o fck3drv.o fck3ftuv.o fck3mom.o fck3odb.o \
 eri2aob.o erisph.o \
 eri2ave.o eri2car1.o eri2car2.o eri2cft.o eri2dis.o \
 eri2drv.o eri2fck.o eri2her.o eri2odb.o eri2out.o eri2pro.o \
-eri2sph.o eri2sym.o eri2vec.o eri2r12.o
+eri2sph.o eri2sym.o eri2vec.o eri2r12.o eri2csi.o
 #eri2par.o eriprg.o 
 
 F_CPPS = $(F_OBJS:.o=.i)
