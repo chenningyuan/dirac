@@ -1614,7 +1614,7 @@ C
      &   'SELOWN: Coefficients read from file ',CMOFIL,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
-        WRITE(LUPRI, '(2A, I8)'), '- number of symmetry independent',  
+        WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
      &   ' nuclei in this fragment : ', NNUC      
         WRITE(LUPRI,'(A,2I8)')
      &   '- Positrons : ',(IDIM(1,I),I=1,NFSYM)
