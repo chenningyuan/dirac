@@ -8,4 +8,4 @@ if [ -z "$PAM_PATH" ]; then
    fi
    PAM_PATH=${PAM_PATH%/*}
 fi
-time $PAM_PATH/pam -mw 3 -rmwrk -rmscr -copy DFPCMO $MPIARG F cisd
+time $PAM_PATH/pam -mw 3 -rmwrk -rmscr $MPIARG F cisd
