@@ -1093,6 +1093,7 @@ C              The following four possibilities exist:
 C
 C              SMALL INTGRL     2    1    1  (IBSFLAG = 1)
 C              SMALL    2    1    1 (IBSFLAG = 1)
+C              SMALL EXPLICIT     2    1    1  (IBSFLAG = 1)
 C              SMALL MOLFBAS H.bas (IBSFLAG = 2)
 C              SMALL KINBAL (IBSFLAG = 4)
 C
@@ -1108,6 +1109,10 @@ C
                IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE),'(12X,12I5)')
+     &                  IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+               ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE),'(14X,12I5)')
      &                  IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
                   IBSFLAG = 2
