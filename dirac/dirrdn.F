@@ -2262,9 +2262,9 @@ C
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*DENSIT','*XXXXXX','*XXXXXX'/
+     &             '*RHO1  ','*DENSIT','*WT1   ','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.DENSIT','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.DENSIT','.WT1   ','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2279,6 +2279,7 @@ C
       DOPRJ   = .FALSE.
       DO1RHO  = .FALSE.
       DO3RHO  = .FALSE.
+      DO1WT   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -2353,6 +2354,9 @@ C&&&& DENSITY: Write density to unformatted file (Gaussian cube format)
             DO3RHO = .TRUE.
             GO TO 100
   106    CONTINUE
+C&&&& RHO1: Punch Becke integration weights along the lines between atomic centers
+            DO1WT = .TRUE.
+            NJOBS = NJOBS +1
             GO TO 100
   107    CONTINUE
             GO TO 100
@@ -2383,6 +2387,8 @@ C
      &    '* Write out density for visualization (Gaussian cube format)'
       IF(DO1RHO) WRITE(LUPRI,'(1X,A)') 
      &     '* Punch density along lines between nuclear centers'
+      IF(DO1WT) WRITE(LUPRI,'(1X,A)')
+     &     '* Punch Becke weights along lines between nuclear centers'
 C
 C
 C     Process input for various program sections
@@ -2424,6 +2430,7 @@ C
         CALL DENSIN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
+        CALL WT1IN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     8 CONTINUE
         GO TO 200
@@ -2434,6 +2441,7 @@ C
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
       IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
       IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
+      IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -4405,6 +4413,125 @@ C
       WRITE(LUPRI,'(1X,A)') 'DENSITY: 3-dimensional density plot:'
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A,I4)') '* Print level: ',IPRRHO
+  999 CONTINUE
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wt1in */
+      SUBROUTINE WT1IN(WORD,RESET,WORK,LWORK)
+C***********************************************************************
+C
+C     Input section for 1-dimensional plot of Becke weights
+C
+C     Written by T.Saue - May 9 2000
+C
+C     Modified for WT1IN by O. Fossgaard - May 2003
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      PARAMETER (NTABLE = 8)
+C
+#include "dcbgen.h"
+#include "dcbana.h"
+#include "dcbwt1.h"
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.MESH  ','.PRINT ','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /DCBWT1/
+C     ===================
+C
+      DSTEP  = 0.01D0
+      IPWT1 = 0
+C
+C     Process input from DCBBWT1
+C     ==========================
+C
+      NEWDEF = (WORD .EQ. '*WT1   ')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in WT1IN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in DHFINP.')
+    1          CONTINUE
+C&&&& MESH; Step length for grid
+                  READ(LUCMD,*) DSTEP
+               GO TO 100
+    2          CONTINUE
+C&&&& PRINT: Print level
+                  READ(LUCMD,*) IPWT1
+               GO TO 100
+    3          CONTINUE
+               GO TO 100
+    4          CONTINUE
+               GO TO 100
+    5          CONTINUE
+               GO TO 100
+    6          CONTINUE
+               GO TO 100
+    7          CONTINUE
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in WT1IN.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in WT1IN.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      IF(.NOT.DO1WT) GOTO 999
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A)') ' WT1IN: 1-dimensional plot of Becke weights:'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A,I4)') ' * Print level: ',IPWT1
+      WRITE(LUPRI,'(A,F7.4)') ' * Grid mesh (in Angstroms): ',DSTEP
+      WRITE(LUPRI,'(A)') 
+     &    ' (Remember that lines can be defined by ghost centers)'
   999 CONTINUE
       RETURN
 C
