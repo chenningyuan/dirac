@@ -25,16 +25,16 @@ C *** 4-component operators : Matrix part ***
 C
 C     M = I_4,iA_x,iA_y,iA_z
 C
-C     JM4REP(0:3) - bosonirrep of matrix operator
-C     JM4POS(0:3) - quaternionic position of matrix operator (1,2(i),3(j),4(k))
-C     JM4FAS(0:3) - sign of matrix operator (+/- 1)
+C     JM4REP(0:4) - bosonirrep of matrix operator
+C     JM4POS(0:4) - quaternionic position of matrix operator (1,2(i),3(j),4(k))
+C     JM4FAS(0:4) - sign of matrix operator (+/- 1)
 C
-C     OPERATORS (8 types):
+C     OPERATORS (9 types):
 C
 C     MCMP  - number of components for a given operator
 C     JM4   - pointer to matrix operator for a given component
 C     JCOM  - coefficient of component
 C
-      COMMON/ONEOPS/MCMP(8),JM4(3,8),JCOM(3,8),
-     &              JM4REP(0:3),JM4POS(0:3),JM4FAS(0:3)
+      COMMON/ONEOPS/MCMP(9),JM4(3,9),JCOM(3,9),
+     &              JM4REP(0:4),JM4POS(0:4),JM4FAS(0:4)
 
