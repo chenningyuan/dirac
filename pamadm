@@ -222,6 +222,7 @@ make_export()
    echo
 # First add the files that are at the main level or are special.
    tar cvf \$szCurrDir.tar \\
+     \$szCurrDir/README \\
      \$szCurrDir/configure \\
      \$szCurrDir/config.sub \\
      \$szCurrDir/config.guess \\

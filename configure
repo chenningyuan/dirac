@@ -808,11 +808,11 @@ if [ -z "$memdef" ]; then
    if [ -z "$memdef" ]; then
       memdef=10000000
    fi
-   echo 'DIRAC uses approximately 6.4 MB of static allocations'
+   echo 'DIRAC uses approximately 6.4 MB for static allocations.'
    echo 'How many MB to use as default for scratch memory ?'
    echo ' -we do not recommend going below 64 MB'
    echo ' -note that scratch memory can be changed' \
-        'through the shell variable WRKMEM\n'
+        'through the shell variable DIRWRK'
    if [ $quick = 0 ]; then
       $echo "Memory size (in MB, default: `expr $memdef '*' 8 /  1048576` MB) \c"
       read memsiz
@@ -827,7 +827,7 @@ if [ -z "$memdef" ]; then
 else
    memsiz=$memdef
 fi
-$echo 'Default memory size (in words): '$memsiz
+$echo 'Default memory size :' `expr $memsiz / 1000000` 'million 8byte words'
 echo
 #
 #
