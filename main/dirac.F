@@ -653,6 +653,11 @@ C
 C        Start coupled cluster calculation.
 C
          CALL CCNOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 4) THEN
+C
+C        Start calculating integrals for Fock matrices.
+C
+         CALL DFTNOD(WORK,LWORK)
       ELSE
 C
 C        Unknown task. Abort execution.

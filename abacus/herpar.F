@@ -248,18 +248,9 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      IF(ITYPE.EQ.7) THEN
-C        Kohn-Sham
-#if defined (MOD_DFT)
-C        NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
-         CALL DFTEXC(DMAT,1,FMAT,1,1,1,.TRUE.,.FALSE.,
-     &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRPAR)
-#endif
-      ELSE
-        CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
-        CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+      CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
-      ENDIF
 C
 C--------------------------------------
 C     Receive final results from nodes.
@@ -546,32 +537,6 @@ C     Send common PARINT
       NUMELM = 40 + MAXNOD + MXCOOR
       CALL MPI_BCAST(JATOM,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
-#if defined (MOD_DFT)
-C
-      IF(ITYPE.EQ.7) THEN
-C       Kohn-Sham energy calculation
-C       Transfer various common blocks
-        CALL DFTPRD
-C       Transfer dftcom
-        LSEND(1) = DFTADD
-        LSEND(2) = GRDONE
-        LSEND(3) = DFTRUN
-        LSEND(4) = DFTPOT
-        LSEND(5) = DFTORD
-        LSEND(6) = DFTASC
-        CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
-C       Transfer functionals
-        CALL DFTSYNCFUNC(1)
-C       send density matrix
-        ISEND(1) = NDMAT
-        ISEND(2) = NFMAT
-        CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(DMAT,N2BASX*NDMAT*NZ,MPI_DOUBLE_PRECISION,MPARID,
-     &               MPI_COMM_WORLD,IERR)
-        RETURN
-      ENDIF
-C
-#endif
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
       CALL MPI_BCAST(ISEND,2,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)

@@ -26,9 +26,15 @@ C
 #include "dfterg.h"
 #include "dgroup.h"
       LOGICAL DOERG, DOGRD, DOLND, DOATR
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION EXCMAT(NBAST,NBAST,NZ,NXCMAT)
+#else
+      DIMENSION EXCMAT(NTBAS(0),NTBAS(0),NZ,NXCMAT)
+#endif
       DIMENSION DMAT(N2BBASX,NZ,*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),
-     &          DTRMAT(*),EXCMAT(*),WORK(LWORK)
+     &          DTRMAT(N2BBASX,NZ,*),WORK(LWORK)
 C
 #include "memint.h"
 C
@@ -62,6 +68,17 @@ C
       CALL DSCAL(N2BBASX,D2,DMAT,1)
       IF (DOATR) THEN
         CALL DSCAL(N2BBASXQ*NXCMAT,D2,DTRMAT,1)
+C       Insert half-phases
+        IF(NZ.LT.4) THEN
+           DO IM = 1,NXCMAT
+            IREPOP = ISYMOP(IM)-1
+            DO IZ = 1,NZ
+              IQ = IPQTOQ(IZ,IREPOP)
+              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,1,IZ,IM))
+            ENDDO
+          ENDDO
+        ENDIF
       END IF
 C
 C     Calculate grid
@@ -72,10 +89,11 @@ C
       END IF
 #if defined (VAR_MPI)
       IF(PARCAL) THEN
-C        Get hold of slaves
-        CALL DIRAC_PARCTL( 1 )
-        CALL DFT_PARDRV(WORK(KFREE),LFREE,EXCMAT,DMAT,NXCMAT,
-     &          ISYMOP,IHRMOP,LUQUAD,IPRDFT)
+C       Get hold of slaves
+        CALL DIRAC_PARCTL( 4 )
+        CALL DFT_PARDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
+     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
       ELSE
 #endif
 C
@@ -97,6 +115,30 @@ C
 #if defined (VAR_MPI)
       ENDIF
 #endif
+C       Insert half-phases
+        IF(NZ.LT.4) THEN
+           DO IM = 1,NXCMAT
+           IF(IHRMOP(IM).EQ.1) THEN
+            IREPOP = ISYMOP(IM)-1
+            DO IZ = 1,NZ
+              IQ = IPQTOQ(IZ,IREPOP)
+              CALL Q2BPHASE('D',IQ,1,DTRMAT(1,IZ,IM))
+              CALL Q2BPHASE('F',IQ,1,EXCMAT(1,1,IZ,IM))
+            ENDDO
+          ENDIF
+          ENDDO
+        ENDIF
+      DO IM = 1,NXCMAT
+      IF(IHRMOP(IM).EQ.1) THEN
+        DO I = 1, NTBAS(0)
+          DO J = 1, I - 1 
+            AVERAG = DP5*(EXCMAT(I,J,1,IM) + EXCMAT(J,I,1,IM))
+            EXCMAT(I,J,1,IM) = AVERAG 
+            EXCMAT(J,I,1,IM) = AVERAG 
+          ENDDO
+        ENDDO
+      ENDIF
+      ENDDO
 C
 C     Rescale density matrices
 C
@@ -267,32 +309,9 @@ C
       END IF
   200 CONTINUE
 #if defined (VAR_MPI)
-      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,WORK(KFREE),LFREE,IPRINT)
+      IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,DOATR,
+     &                       WORK,KFREE,LFREE,IPRINT)
 #endif
-CTROND      IF (DOERG) THEN
-      DO IM = 1,NXCMAT
-      IF(IHRMOP(IM).EQ.1) THEN
-        DO I = 1, NTBAS(0)
-          DO J = 1, I - 1 
-            AVERAG = DP5*(EXCMAT(I,J,1,IM) + EXCMAT(J,I,1,IM))
-            EXCMAT(I,J,1,IM) = AVERAG 
-            EXCMAT(J,I,1,IM) = AVERAG 
-          ENDDO
-        ENDDO
-      ENDIF
-      ENDDO
-CTROND      END IF 
-CTROND      IF (DOATR) THEN
-CTROND        DO K = 1,NXCMAT
-CTROND          DO I = 1, NTBAS(0)
-CTROND            DO J = 1, I - 1 
-CTROND              AVERAG = EXCMAT(I,J,1,K) + EXCMAT(J,I,1,K)
-CTROND              EXCMAT(I,J,1,K) = AVERAG 
-CTROND              EXCMAT(J,I,1,K) = AVERAG 
-CTROND            ENDDO
-CTROND          ENDDO
-CTROND        ENDDO
-CTROND      END IF 
       IF (DOLND) THEN
         DO I = 1, NTBAS(0)
           DO J = 1, I - 1 
@@ -327,7 +346,7 @@ C
          WRITE (LUPRI,'( 2X,A,F24.16)')
      &      ' Number of electrons:               ', ELCTRN
          IF (DOERG) THEN
-CPAWSA            CALL DFT_ENE_REPORT()
+CTROND            CALL DFT_ENE_REPORT()
             WRITE (LUPRI,'(2X,A,13X,F24.16)') 
      &          ' DFT exchange-correlation energy:', 
      &          EDFTY
@@ -895,10 +914,34 @@ C
       ENDDO
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Getavd */
+      SUBROUTINE GTDOAV(DMAT)
+C***********************************************************************
+C
+C     Get average density from open shells; only real part !
+C     Written by T.Saue March 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      DIMENSION DMAT(N2BBASX,NZ,NFMAT)
+      DO ISHELL = 1, NOPEN
+        CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
+      ENDDO
+C
+      RETURN
+      END
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck dftres */
-      SUBROUTINE DFTRES(EXCMAT,NFMAT,WORK,LWORK,IPRINT)
+      SUBROUTINE DFTRES(EXCMAT,NXCMAT,DOERG,DOGRD,DOLND,DOATR,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Send receive DFTresults
@@ -923,9 +966,10 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "dgroup.h"
+      LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION EXCMAT(*),WORK(*)
 C
-#include "memint.h"
+      KWORK = KFREE
       LFMAT = N2BBASX*NXCMAT*NZ
       IF (MYTID.EQ.0) THEN
         CALL MEMGET('REAL',KFBUF,LFMAT,WORK,KFREE,LFREE)
@@ -944,9 +988,11 @@ C
           CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
           ELCTRN = ELCTRN + TEMP
-          CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
+          IF(DOERG) THEN
+            CALL MPI_RECV(TEMP,1,MPI_DOUBLE_PRECISION,NWHO,40,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-          EDFTY = EDFTY + TEMP
+            EDFTY = EDFTY + TEMP
+          ENDIF
           CALL MPI_RECV(WORK(KFBUF),LFMAT,MPI_DOUBLE_PRECISION,NWHO,45,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
           CALL DAXPY(LFMAT,D1,WORK(KFBUF),1,EXCMAT,1)
@@ -960,17 +1006,20 @@ C     ***********************
 C
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
-     &                 MPI_COMM_WORLD,IERR)
+         IF(DOERG) THEN
+           CALL MPI_SEND(EDFTY,1,MPI_DOUBLE_PRECISION,MPARID,40,
+     &                   MPI_COMM_WORLD,IERR)
+         ENDIF
          CALL MPI_SEND(EXCMAT,LFMAT,MPI_DOUBLE_PRECISION,MPARID,45,
      &                 MPI_COMM_WORLD,IERR)
       ENDIF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck dftpar */
       SUBROUTINE DFTPAR(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &                  DOERG,DOGRD,DOLND,DOATR,
-     &                  WORK,LWORK,IPRINT)
+     &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C
 C     T.Saue and T. Helgaker 
 C
@@ -1001,18 +1050,14 @@ C
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*), DTRMAT(*),EXCMAT(*),ISYMOP(NXCMAT),
-     &          IHRMOP(NXCMAT),WORK(LWORK)
-
+     &          IHRMOP(NXCMAT),WORK(*)
 C
-CTROND
-      DIMENSION RHOB(0:2)
+      KWORK = KFREE
       TIMSTR = SECOND()
-#include "memint.h"
 C
       LEXCMAT = NBAST*NBAST*NZ*NXCMAT
       CALL DZERO(EXCMAT,LEXCMAT)
 C
-CTROND: This is temporary fix to have DFTenergy work in parallell...
       CALL MEMGET('REAL',KGAO,NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA1,3*NBAST,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KGA2,6*NBAST,WORK,KFREE,LFREE)
@@ -1080,11 +1125,11 @@ C
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
      &            WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DFPAR1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('DFTPAR.loop',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       GOTO 100
 C
  300  CONTINUE
-      CALL MEMREL('DFPAR1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DFTPAR.end',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1145,89 +1190,34 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pardrv */
-      SUBROUTINE DFT_PARDRV(WORK,LWORK,EXCMAT,DMAT,NXCMAT,ISYMOP,IHRMOP,
-     &                     LUQUAD,IPRINT)
+      SUBROUTINE DFT_PARDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
+     &                      ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &                      WORK,LWORK,LUQUAD,IPRINT)
 C
 C     A cut and paste job by T. Saue Sep 25 2003
 C     Based on HER_PARDRV which was
 C     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
-C     Extended with I2TYP Oct 1 1996 by T.Saue
-C     Extended with screening Oct 11 1996 by T.Saue
-C
-C
-C     **************************************************************
-C     *        Driver routine for the parallel calculation.        *
-C     **************************************************************
-C
-C
-C      A short survey of the different messagetags (MSGTAG) :
-C
-C      10 - Send initialization to nodes.
-C      20 - Receive request from node.
-C      30 - Send batch to node.
-C      40 - Receive final results from nodes.
-C      50 - Get timing results from nodes.
-C
-C
-C           ITYPE  - Calc. type: 2 = expectation values.
-C                                3 = fock matrices.
-C                               -5 = Integrals derivated with respect
-C                                    to magnetic field.
-C                                8 = Fock matrices derivated with respect
-C                                    to atomic coordinates.
-C           NTASK  - Number of tasks
-C           IPRPAR - Print level during parallelization.
-C           MAXDIF -
-C           MAXREP -
-C           IREPDM - Symmetries of density matrices
-C           IFCTYP - Fock matrix types (see twoint).
-C           IATOM  -
-C           NODV   - Density matrix neglected in TWOEXP
-C           NOPV   -           -   "   -
-C           NOCONT -           -   "   -
-C           RETUR  - Program will exit after spec. shells
-C           TKTIME - Take time in TWOINT
-C           TIMING - Take time for each integralbatch IJ
-C           DOREPS -
-C           DOSYM  -
-C           DOCOOR -
-C           MULD2H - Start address for common block INFORB.
-C           NMLINE - Number of lines in MOLECULE.INP
-C           MLINE  - MOLECULE.INP as internal file
-C           NXCMAT  - Number of density-matrices
-C           DMAT   - Density-matrices.
-C
-C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
+#include "priunit.h"
 C
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
 C
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "blocks.h"
-#if defined (PRG_DIRAC)
-#include "dcbgen.h"
-#else
-#include "gnrinf.h"
-#endif
-#include "inforb.h"
 #include "infpar.h"
+#include "dcbbas.h"
+#include "dftcom.h"
+#include "dgroup.h"
 C
-      DIMENSION EXCMAT(*), DMAT(N2BASX,NXCMAT), WORK(LWORK)
+      LOGICAL DOERG, DOGRD, DOLND, DOATR, LSEND(6)
+      DIMENSION EXCMAT(*),DMAT(N2BBASX),DTRMAT(N2BBASX,NZ,NXCMAT),
+     &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
 C
 #include "memint.h"
       CALL QENTER('DFT_PARDRV')
-C
-#if !defined (VAR_MPI)
-      CALL QUIT
-     &('program error: parallel code called but MPI not activated')
-#endif
-C
 C
 C     Ensure that NODES .LE. MAXNOD
 C
@@ -1242,57 +1232,168 @@ C
      &    'DFT_PARDRV: Number of nodes allocated:', NODES
       ENDIF
       TIMING = .FALSE.
-      ITYPE = 7
-      CALL SDINIT(DMAT,NXCMAT,IREPOP,IDUM,ITYPE,IDUM,IDUM,.TRUE.,
-     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,DUM,
-     &            DUM,DUM,DUM)
+C
+C-----------------------
+C     Send data
+C-----------------------
+C
+      WRITE(0,*) 'Sending NXCMAT..',NXCMAT
+      CALL MPI_BCAST(NXCMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C     Transfer various COMMON blocks
+      CALL DFTPRD
+C     Transfer dftcom
+      LSEND(1)  = DFTADD
+      LSEND(2)  = GRDONE
+      LSEND(3)  = DFTRUN
+      LSEND(4)  = DFTPOT
+      LSEND(5)  = DFTORD
+      LSEND(6)  = DFTASC
+      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+C     Transfer functionals
+      CALL DFTSYNCFUNC(1)
+C     Transfer control parameters
+      CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+C
+      CALL MPI_BCAST(ISYMOP,NXCMAT,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IHRMOP,NXCMAT,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C
+      CALL MPI_BCAST(DMAT,N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      IF(DOATR) THEN
+        LMAT = N2BBASXQ*NXCMAT
+        CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      ENDIF
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      CALL DFTDRV(DMAT,DTRMAT,EXCMAT,1,ISYMOP,IHRMOP,
-     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,
-     &            DUM,DUM,DUM,DUM,DUM,DUM,DUM,
+      CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
+     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &            DUM,DUM,DUM,DUM,IDUM,DUM,DUM,
      &            WORK(KFREE),LFREE,LUQUAD,IPRINT)
 C
-C--------------------------------------
-C     Receive final results from nodes.
-C     Release nodes from this task
-C      and let them return to main menu.
-C--------------------------------------
-C
-      ITASK = -1
-#if defined (VAR_MPI)
-      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
       CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFT_PARDRV')
       RETURN
       END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Getavd */
-      SUBROUTINE GTDOAV(DMAT)
+C  /* Deck dftnod */
+      SUBROUTINE DFTNOD(WORK,LWORK)
+C***********************************************************************
+C     Based on HERNOD 
+C     written by T. Saue March 4
+C
+C    This is the node program for DFT                           *
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+C
+#include "dcbbas.h"
+#include "dftcom.h"
+#include "infpar.h"
+C
+      DIMENSION WORK(LWORK)
+      LOGICAL DOERG,DOGRD,DOLND,DOATR,LSEND(6)
+C
+      CALL QENTER('DFTNOD')
+#include "memint.h"
+C
+      PARHER = .TRUE.
+C
+C     Start timing.
+C
+      CALL GETTIM(CPU1,WALL1)
+C
+C     This is a slave in a parallel run
+C
+      SLAVE = .TRUE.
+      DEBUG  = .FALSE.
+C
+C     ***************************************************
+C     ***** Receive initialization data from master *****
+C     ***************************************************
+C
+      CALL MPI_BCAST(NXCMAT,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+C     Various common blocks
+      CALL DFTPRD
+C     Receive some dftcom variables
+      CALL MPI_BCAST(LSEND,6,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      DFTADD = LSEND(1)
+      GRDONE = LSEND(2)
+      DFTRUN = LSEND(3)
+      DFTPOT = LSEND(4)
+      DFTORD = LSEND(5)
+      DFTASC = LSEND(6)
+C     Receive functionals
+      CALL DFTSYNCFUNC(0)
+C     Transfer control parameters
+      CALL MPI_BCAST(DOERG,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOGRD,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOLND,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(DOATR,1,MPI_LOGICAL,MPARID,MPI_COMM_WORLD,IERR)
+      CALL MEMGET('INTE',KSYM,NXCMAT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHRM,NXCMAT,WORK,KFREE,LFREE)
+      CALL DFTNO1(NXCMAT,WORK(KSYM),WORK(KHRM),
+     &            DOERG,DOGRD,DOLND,DOATR,WORK,KFREE,LFREE)
+C
+      CALL MEMREL('DFTNOD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('DFTNOD')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck dftno1 */
+      SUBROUTINE DFTNO1(NXCMAT,ISYMOP,IHRMOP,
+     &                  DOERG,DOGRD,DOLND,DOATR,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Get average density from open shells; only real part !
-C     Written by T.Saue March 2004
+C     Next part of DFT node program.
+C     T. Saue March 4 2004
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbdhf.h"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+#include "infpar.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION DMAT(N2BBASX,NZ,NFMAT)
-      DO ISHELL = 1, NOPEN
-        CALL DAXPY(N2BBASX,DF(ISHELL),DMAT(1,1,ISHELL+1),1,DMAT,1)
-      ENDDO
+      LOGICAL DOERG, DOGRD, DOLND, DOATR
+      DIMENSION ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(*)
 C
+      CALL MPI_BCAST(ISYMOP,NXCMAT,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IHRMOP,NXCMAT,MPI_INTEGER,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C
+      LMAT = N2BBASXQ*NXCMAT
+      CALL MEMGET('REAL',KDEN,N2BBASX,WORK,KFREE,LFREE)
+      CALL MPI_BCAST(WORK(KDEN),N2BBASX,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      IF(DOATR) THEN
+        CALL MEMGET('REAL',KDTR,LMAT,WORK,KFREE,LFREE)
+        CALL MPI_BCAST(WORK(KDTR),LMAT,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+      ELSE
+        KDTR = KFREE
+      ENDIF
+      CALL MEMGET('REAL',KEXC,LMAT,WORK,KFREE,LFREE)
+      IPRINT = 0
+      CALL DFTPAR(WORK(KDEN),WORK(KDTR),WORK(KEXC),NXCMAT,
+     &            ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
+     &            WORK,KFREE,LFREE,IPRINT)
+      CALL DFTRES(WORK(KEXC),NXCMAT,DOERG,DOGRD,DOLND,DOATR,
+     &            WORK,KFREE,LFREE,IPRINT)
       RETURN
       END
-
-
+#endif
