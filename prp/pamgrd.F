@@ -665,6 +665,9 @@ C
      &          DV(*)
 C
 C
+CTROND
+      IF (ITYPK .EQ. 3) CALL QUIT('PRPORB: Open shell needs testing !')
+CTROND
       IF (IH .EQ. 1) THEN
          DS = D1
       ELSE IF (IH. EQ. 2) THEN
@@ -683,9 +686,8 @@ C
 C
 C        ...inactive
 C
-            QVEC(IG,1) = QVEC(IG,1) + D2 * QMAT(L,K,1)
-            DO IZ = 2,NZ
-               QVEC(IG,IZ) = QVEC(IG,IZ) - D2 * QMAT(L,K,IZ)
+            DO IZ = 1,NZ
+               QVEC(IG,IZ) = QVEC(IG,IZ) + D2 * QMAT(L,K,IZ)
             END DO
 C
          ELSE IF (ITYPK .EQ. 3) THEN
@@ -694,12 +696,10 @@ C        ...active
 C
             KDV = K - (NPSH(ISYMK) + NISH(ISYMK)) - IORB(ISYMK)
             JDV = I2ASHT(ISYMK) + (KDV-1)*NASH(ISYMK) + 1
-            QVEC(IG,1) = QVEC(IG,1) 
-     &         + DDOT(NASH(ISYMK),DV(JDV),1,QMAT(L,K,1),1)
-            DO IZ = 2,NZ
-               JDV = JDV + N2ASH(ISYMK)
+            DO IZ = 1,NZ
                QVEC(IG,IZ) = QVEC(IG,IZ) 
-     &            - DDOT(NASH(ISYMK),DV(JDV),1,QMAT(L,K,IZ),1)
+     &            + DDOT(NASH(ISYMK),DV(JDV),1,QMAT(L,K,IZ),1)
+               JDV = JDV + N2ASH(ISYMK)
             END DO
 C
          END IF
@@ -712,12 +712,10 @@ C           ...active
 C
             KDV = L - (NPSH(ISYML) + NISH(ISYML)) - IORB(ISYML)
             JDV = I2ASHT(ISYML) + (KDV-1)*NASH(ISYML) + 1
-            QVEC(IG,1) = QVEC(IG,1) 
-     &         - DS * DDOT(NASH(ISYML),DV(JDV),1,QMAT(K,L,1),1)
-            DO IZ = 2,NZ
-               JDV = JDV + N2ASH(ISYML)
+            DO IZ = 1,NZ
                QVEC(IG,IZ) = QVEC(IG,IZ) 
-     &            - DS * DDOT(NASH(ISYML),DV(JDV),1,QMAT(K,L,IZ),1)
+     &            + DS * DDOT(NASH(ISYML),DV(JDV),1,QMAT(K,L,IZ),1)
+               JDV = JDV + N2ASH(ISYML)
             END DO
 C
          END IF
