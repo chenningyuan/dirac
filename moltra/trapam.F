@@ -799,7 +799,9 @@ C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
 C     LMP2  = .TRUE. - evaluate MP2 energy
 C     MSOUT = .TRUE. - write transformed integrals to file
+C     note TODO: choice of MSOUT is not implemented!
 C     ANTIS = .TRUE. - anti-symmetrize integrals
+C     note TODO: ANTIS is not implemented!
 C     INTFLG - flag of what integral types to transform
 C                      
 C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
@@ -863,16 +865,35 @@ C     In all cases we transform in mulliken notation
 C
       CALL QENTER('PAMTR1')
 C
+      IF (ANTIS) THEN
+         CALL QUIT('PAMTR1: .ANTIS is not implemented!')
+      ENDIF
       IF (ISTRAT.EQ.1) THEN
+          IF (.NOT.MSOUT)
+     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 1')
+          IF (LMP2)
+     &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 1')
           CALL TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.2) THEN
+          IF (MSOUT)
+     &    CALL QUIT('PAMTR1: .MSOUT not implemented for strategy 2')
+          IF (.NOT.LMP2)
+     &    CALL QUIT('PAMTR1: Only MP2 implemented for strategy 2')
           CALL TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,EMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.3) THEN
+          IF (.NOT.MSOUT)
+     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 3')
+          IF (LMP2)
+     &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 3')
           CALL TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,WORK(KINDX),KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.4) THEN
+          IF (.NOT.MSOUT)
+     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 4')
+          IF (LMP2)
+     &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE

@@ -66,6 +66,10 @@ C
       CALL QENTER('TRDR2T')
       KFRSAV = KFREE
 C
+C     TODO (/hjaaj aug 2001):
+      IF (.NOT.LMP2)
+     &   CALL QUIT('TRDR2T: Only MP2 is implemented for strategy 2')
+C
 C     Check that no negative energy solutions are active.
 C     Active negative energy solutions is not implemented
 C     and is NOT a good idea unless one knows exactly
@@ -76,6 +80,8 @@ C
         NSTRT(IND) = 0
         DO IFRP = 1,NFSYM
           IF (NSTR(IFRP,2,IND).NE.0) 
+C     TODO (/hjaaj aug 2001): remember to modify mp2.tex 
+C          (.ACTIVE, .POSITR) if this is implemented
      &      CALL QUIT
      &      ('TRDR2T: Negative energy solutions in active space!')
             NSTRT(IND) = NSTRT(IND) + NSTR(IFRP,0,IND)

@@ -62,8 +62,8 @@ C
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','.MSOUT ',
-     &            '.POSITR','.SCHEME','.THROUT','.SPECIA','.VIRTHR',
+      DATA TABLE /'.PRINT ','.OCCUP ','.VIRTUA','.INTFLG','xMSOUT ',
+     &            '.POSITR','.SCHEME','xTHROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 #include <ibtfun.h>
@@ -100,8 +100,11 @@ C     Default orbital strings is all occupied and all virtuals
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT
       IF (LEVYLE) MP2_INTFLG = ILLINT
-      MP2_ANTIS  = .TRUE.
+C     MP2_ANTIS  = .TRUE.
+      MP2_ANTIS  = .FALSE.
+C     note TODO: ANTIS is not implemented!
       MP2_MSOUT  = .FALSE.
+C     note TODO: MSOUT is not implemented!
       MP2NOP = .TRUE.
       TESTLS = .FALSE.
       TESTSL = .FALSE.
@@ -161,6 +164,7 @@ C&&&& Integral classes not included in 4-index transformation
                GO TO 100
     5          CONTINUE
 C&&&& Write 4-index transformed integrals to file
+C     aug 2001 hjaaj TODO: disabled this option because only false implemented
                   MP2_MSOUT = .TRUE.
                GO TO 100
     6          CONTINUE
@@ -173,6 +177,7 @@ C&&&& SCHEME - Choose transformation scheme
                GO TO 100
     8          CONTINUE
 C&&&& THROUT - Treshold for output integrals
+C     aug 2001 hjaaj TODO: disabled this option because not implemented
                   READ(LUCMD,*) THROUT
                GO TO 100
     9          CONTINUE
@@ -317,7 +322,8 @@ C
      &     'integrals:',MAXSCL,MAXSCL*8./(1024.*1024.),' Mb' 
 C
       IF (ISTRMP2.NE.2) 
-     &     CALL QUIT('Cannot do MP2 with .SCHEME NE 2')
+     &     CALL QUIT('Can currently only do MP2 with .SCHEME 2')
+
 C     
  999  CONTINUE
       RETURN
@@ -354,13 +360,13 @@ C
 #include <dcbham.h>
 C
       SAVE SET
-      DATA TABDIR /'*END OF','*PRPTRA','*XXXXXX','*XXXXXX'/
+      DATA TABDIR /'*END OF','*PRPTRA','xXXXXXX','xXXXXXX'/
 C
-      DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
-     &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+      DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
+     &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','.XXXXXX','.XXXXXX'/
+     &            '.PAR4BS','.SCATTE','.MDCINT','xXXXXXX','xXXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -393,7 +399,9 @@ C
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
-      TRA_MSOUT  = .FALSE.
+C     TRA_MSOUT  = .FALSE.
+      TRA_MSOUT  = .TRUE.
+C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       NO2IND = .FALSE.
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
@@ -479,6 +487,7 @@ C&&&& INTFLG - Integral classes not included in transformation
                GO TO 100
     4          CONTINUE
 C&&&& Anti-Symmetrize integrals 
+C     aug 2001 hjaaj TODO: disabled this option because not implemented
                   TRA_ANTIS = .TRUE.
                GO TO 100
     5          CONTINUE
@@ -512,6 +521,7 @@ C
                GO TO 100
     6          CONTINUE
 C&&&& Write 4-index transformed integrals to file
+C     aug 2001 hjaaj TODO : disabled this option because only true implemented
                   TRA_MSOUT = .TRUE.
                GO TO 100
     7          CONTINUE
@@ -529,7 +539,7 @@ C&&&& SCHEME - choose method in 4-index transformation
                   READ(LUCMD,*) ISTRAT
                GO TO 100
    10          CONTINUE
-C&&&& THROUT - Treshold for output integrals
+C&&&& THROUT - Treshold for output of integrals to MDCINT
                   READ(LUCMD,*) THROUT
                GO TO 100
    11          CONTINUE
@@ -1101,7 +1111,7 @@ C&&&& SCHEME - Choose transformation scheme
                GO TO 100
     5          CONTINUE
 C&&&& THROUT - Treshold for output integrals
-                  READ(LUCMD,*) SCROUT
+                  READ(LUCMD,*) RESOUT
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
