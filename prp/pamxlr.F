@@ -613,7 +613,7 @@ C              has a norm that is a fraction RESFAC of the max norm
                   READ(LUCMD,*) RESXLR
                GO TO 100
  26            CONTINUE
-C&&&& ANALYZe: Analyze individual contributions to repsonse functions
+C&&&& ANALYZe: Analyze individual contributions to response functions
                   XLRANA = .TRUE.
                GO TO 100
  27            CONTINUE
