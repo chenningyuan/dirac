@@ -1,0 +1,11 @@
+#!/bin/csh -f
+
+if ( $#argv != 1 ) then
+   echo "Usage $0 variable"
+   exit 1
+endif
+
+if ( ! -e Makefile.config ) then
+   exit 1
+endif
+echo `grep "$argv[1] .*= " Makefile.config | sed 's/.*= //'`
