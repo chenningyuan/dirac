@@ -930,8 +930,7 @@ C
 #include <nqcc.h>
 #include <ibtfun.h>
       CALL DZERO(EFGEL,9*MXCENT)
-C     Is ITYP used anywhere? /  Feb 25 1998 - jth
-C     ITYP = 0
+      ITYP = 0
       DO IATOM = 1, NUCIND
          DO ICOOR1 = 1, 3
             DO ICOOR2 = ICOOR1, 3
@@ -939,7 +938,7 @@ C     ITYP = 0
                DO IREPC = 0, MAXREP
                   IF (IBTAND(ISTBNU(IATOM),
      &                 IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-C                    ITYP = ITYP + 1
+                     ITYP = ITYP + 1
                      EFGEL(ICOOR1,ICOOR2,IATOM) =
      &                    EFGEL(ICOOR1,ICOOR2,IATOM) -
      *                    EXPVAL(IPEFG(ITYP))/NUCDEG(IATOM)*
