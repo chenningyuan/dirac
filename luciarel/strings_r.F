@@ -3430,10 +3430,12 @@ C     DIMENSION IOCTYP(MXPNGAS)
 ** 4 : Info about group of strings
 *
 *.First free address
-      write(6,*) 'Getting first free address in strinf_gas'
-      write(6,*) '----------------------------------------'
-      call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      write(6,*) 'first free address is   ',KFREEL
+      if (NTEST.ge.1) then
+        write(6,*) 'Getting first free address in strinf_gas'
+        write(6,*) '----------------------------------------'
+        call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
+        write(6,*) 'first free address is   ',KFREEL
+      end if
 *. For spin up spinors :
       if (NTEST.ge.5) then
         write(6,*) '======================================='

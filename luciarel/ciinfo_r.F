@@ -1520,9 +1520,9 @@ C?    WRITE(6,*) ICISPC,  LCMBSPC(ICISPC)
 C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 
       CALL IAIBCM_GAS(LCMBSPC(ICISPC),ICMBSPC(1,ICISPC),
-     &            IGSOCCX,NOCTPA,
-     &            NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &            NELFGP,MXPNGAS,NGAS,IAIB,IPRDIA)
+     &                IGSOCCX,NOCTPA,
+     &                NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
+     &                NELFGP,MXPNGAS,NGAS,IAIB,IPRDIA)
 *
       RETURN
       END
@@ -1893,8 +1893,8 @@ C    &           IDXSM,IS12,IS34,IS1234,IPNTR)
 *
 #include "cicisp.inc"
 *
-      NTEST = 0
-      NTEST = MAX(NTEST,IPRNT)
+      NTESTL = 0
+      NTEST = MAX(NTESTL,IPRNT)
 *
       CALL QENTER('LCISP')
 *. Number of spaces
@@ -1941,9 +1941,9 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
         DO ICI = 1, NICISP
 *. allowed combination of types
           CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
-     &         IGSOCCX,NOCTPA,
-     &         NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
-     &         NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
+     &                    IGSOCCX,NOCTPA,
+     &                    NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
+     &                    NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRNT)
 *
           KLCVST = 1
           DO  ISYM = 1, NSMCI
