@@ -90,11 +90,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       Real*8 Sec
 C
-#if defined (SYS_AIX) || defined (SYS_IRIX)
+#if defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_LINUX) \
+ || defined (SYS_HPUX)
       Sec = MCLOCK()/100.D0
-#endif
-#if defined (SYS_CRAY) 
+#elif defined (SYS_CRAY) 
       Sec = Second()
+#else
+      Does MCLOCK exist on your computer???
 #endif
 C
       Return
@@ -121,12 +123,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_CRAY)
       Call Date(Datum)
       Call Clock(Tijd)
-#endif
-#if defined (SYS_IRIX)
+#elif defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
       Call Date(Datum)
       Call Time(Tijd)
-#endif
-#if defined (SYS_AIX) 
+#elif defined (SYS_AIX) 
       Call fdate_ (String)
       Do i = 1, 10
          Datum(i:i) = String(i:i)
@@ -134,6 +134,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Do i = 1, 8
          Tijd(i:i) = String(i+11:i+11)
       EndDo
+#else
+      Date and time on your computer???
 #endif
       Return
       End
