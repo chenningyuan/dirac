@@ -120,7 +120,6 @@ c
 C
 C     Symmetry unpack integrals
 C
-      CALL MEMCHK('Before_symupk',WORK,KWORK,KFREE,LFREE)
       CALL SYMUPK(WORK(KVCMAT),OP1INT,1,NNBBASX)
 C
 C     Memory deallocation
@@ -253,7 +252,6 @@ c
 C
 C     Symmetry unpack integrals
 C
-      CALL MEMCHK('Before_symupk',WORK,KWORK,KFREE,LFREE)
       CALL SYMUPK(WORK(KVCMAT),OP1INT,1,NNBBASX)
 C
 C     Memory deallocation
@@ -768,7 +766,6 @@ c
 C
 C     Symmetry unpack integrals
 C
-      CALL MEMCHK('Before_symupk',WORK,KWORK,KFREE,LFREE)
       CALL SYMUPK(WORK(KVCMAT),OP1INT,1,NNBBASX)
 C
 C     Memory deallocation
@@ -876,7 +873,6 @@ c
 C
 C     Symmetry unpack integrals
 C
-      CALL MEMCHK('Before_symupk',WORK,KWORK,KFREE,LFREE)
       CALL SYMUPK(WORK(KVCMAT),OP1INT,1,NNBBASX)
 C
 C     Memory deallocation
