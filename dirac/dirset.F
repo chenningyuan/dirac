@@ -386,9 +386,6 @@ C
 C     NORB(ifrp) - total number of shells
 C     NISH(ifrp) - inactive (electron) shells
 C     NASH(ifrp) - active (electron) shells
-C     NAS1(ifrp) - RAS1 active (electron) shells
-C     NAS2(ifrp) - RAS2 active (electron) shells
-C     NAS3(ifrp) - RAS3 active (electron) shells
 C     NOCC(ifrp) - total number of partially/fully occupied shells
 C     NSSH(ifrp) - secondary (electron) shells
 C     NESH(ifrp) - electron shells
@@ -403,9 +400,6 @@ C
       NISHT  = 0
       N2ISHT = 0
       NASHT  = 0
-      NAS1T  = 0
-      NAS2T  = 0
-      NAS3T  = 0
       N2ASHT = 0
       NOCCT  = 0
       N2OCCT = 0
@@ -415,7 +409,6 @@ C
       N2PSHT = 0
       NCMOT  = 0
       NCAOT  = 0
-      NESHT  = 0
       DO 100 IFRP = 1,NFSYM
         IORB(IFRP)  = NORBT
         IASH(IFRP)  = NASHT
@@ -431,19 +424,6 @@ C
         NASHT       = NASHT  + NASH(IFRP)
         I2ASHT(IFRP)= N2ASHT*NZ
         N2ASHT      = N2ASHT + N2ASH(IFRP)
-C
-        N2AS1(IFRP) = NAS1(IFRP)*NAS1(IFRP)
-        NAS1T       = NAS1T  + NAS1(IFRP)
-        N2AS1T      = N2AS1T + N2AS1(IFRP)
-C
-        N2AS2(IFRP) = NAS2(IFRP)*NAS2(IFRP)
-        NAS2T       = NAS2T  + NAS2(IFRP)
-        N2AS2T      = N2AS2T + N2AS2(IFRP)
-C
-        N2AS3(IFRP) = NAS3(IFRP)*NAS3(IFRP)
-        NAS3T       = NAS3T  + NAS3(IFRP)
-        N2AS3T      = N2AS3T + N2AS3(IFRP)
-C
         N2OCC(IFRP) = NOCC(IFRP)*NOCC(IFRP)
         NOCCT       = NOCCT  + NOCC(IFRP)
         N2OCCT      = N2OCCT + N2OCC(IFRP)
@@ -464,7 +444,6 @@ C
         NCMOT       = NCMOT + NCMO(IFRP)
   100 CONTINUE
       N2ORBTQ = N2ORBT*NZ
-      N2ASHTQ = N2ASHT*NZ
       NCMOTQ  = NCMOT*NZ
       IOFF = 0
       DO 200 J = 1,NFSYM
@@ -484,7 +463,6 @@ C
       N2ORBXQ = NZ*N2ORBX
       N2ISHX  = NISHT*NISHT
       N2ASHX  = NASHT*NASHT
-      N2ASHXQ = N2ASHX * NZ
       N2OCCX  = NOCCT*NOCCT
       N2SSHX  = NSSHT*NSSHT
       N2ESHX  = NESHT*NESHT
