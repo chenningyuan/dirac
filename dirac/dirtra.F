@@ -2936,8 +2936,8 @@ C
             IF ( IPRINT .GE. 10 ) THEN
                CALL HEADER('PREDHF: Left index transf. overlap'//
      &            ' matrix Smoao',-1)
-               CALL PRQMAT(SMOAO(IOFF),NFBAS(I,0),NORB(I),
-     &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(SMOAO(IOFF),NORB(I),NFBAS(I,0),
+     &            NORB(I),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
                CALL FLSHFO(LUPRI)
             END IF
          END IF
