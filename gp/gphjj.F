@@ -90,33 +90,30 @@ C
       CALL DATE(CCDATE)
       CALL TIME(CTIME)
       CDATE = CCDATE(1:2)//CCDATE(4:6)//CCDATE(8:9)//' '
-#endif
-#if defined (SYS_CRAY)
+#elif defined (SYS_CRAY)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
       ITIME = CLOCK()
       WRITE (CDATE,'(A8)') IDATE
       WRITE (CTIME,'(A8)') ITIME
-#endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN)
+#elif defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
+   || defined (SYS_IRIX)    || defined (SYS_PARAGON) || defined (SYS_SUN) \
+   || defined (SYS_LINUX)
       CHARACTER*(24) FFDATE, FDATE
       FFDATE = FDATE()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
-#endif
-#if defined (SYS_AIX)
+#elif defined (SYS_AIX)
 C     AIX XL FORTRAN version 2.3+
       CHARACTER*(24) FFDATE, fdate_
       FFDATE = fdate_()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
-#endif
-#if defined (SYS_IBM)
+#elif defined (SYS_IBM)
       CHARACTER DAOFWK*9
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
-#endif
-#if !defined (SYS_IBM) && !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) && !defined (SYS_SUN) 
+#else
       CDATE = ' -date- '
       CTIME = ' -time- '
 #endif
@@ -170,8 +167,9 @@ C
 #endif
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
 #endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN)
-#if defined (SYS_IRIX) || defined (SYS_SUN)
+#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
+ || defined (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_LINUX)
 C...  SGI IRIX code
       external time
 C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
@@ -208,14 +206,14 @@ C
       itimwl = stime() - iwall0
       TIMWAL = itimwl
 #endif
-#if defined (SYS_LINUX)
-C...  Linux code
-      integer stime
-      real*4  etime, tarray(2)
-C
-      TIMCPU = etime(tarray)
-      TIMWAL = 0.
-#endif
+C#if defined (SYS_LINUX)
+CC...  Linux code
+C      integer stime
+C      real*4  etime, tarray(2)
+CC
+C      TIMCPU = etime(tarray)
+C      TIMWAL = 0.
+C#endif
 #if defined (SYS_ALLIANT)
 C...  Alliant FX/FORTRAN
       real*4 etime, tarray(2)
