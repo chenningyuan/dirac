@@ -2357,6 +2357,8 @@ C
          CALL EXEDIR(WORK(IWOFF+1),LWORK)
          IF (DOCCM) THEN
             ENERGY = RGETCCSD()
+         ELSE IF (DOCIM) THEN
+            ENERGY = RGETCI()
          ELSE IF (DOMP2) THEN
             ENERGY = EMP2+DHFERG
          ELSE IF (DODHF.OR.DODFT) THEN

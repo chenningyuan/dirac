@@ -631,7 +631,7 @@ C
      &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
       IF(OPTIMI)  WRITE(LUPRI,'(3X,A/3X,A)') '* Geometry optimi'//
-     &    'zation of DHF-wavefunction','  IMPORTANT'//
+     &    'zation','  IMPORTANT'//
      &    ': *WAVE F must be present for readin of wavefunction.'
 C
  666  CONTINUE

@@ -58,7 +58,7 @@ C
 #include "dcbpsi.h"
 #include "dcbgrd.h"
 C
-      LOGICAL HAMGRAD_IMPLEMENTED
+      LOGICAL NOGRAD
 C
       CALL QENTER('PAMGEO')
 C
@@ -66,11 +66,13 @@ C     Determine whether analytical or numerical gradient is to
 C     be used. Analytical gradient is at the moment only available
 C     for the HF module with the Levy-Leblond or DC Hamiltonian.
 C
-      HAMGRAD_IMPLEMENTED = .NOT. (ZORA.OR.(SPINFR .AND. .NOT.LEVYLE))
+      NOGRAD= BSS.OR.ZORA.OR.(SPINFR .AND. .NOT.LEVYLE)
 C
       IF(.NOT.DONGRD) THEN
 C       We want the analytical gradient, check whether it is implemented
-        DONGRD = .NOT. (DODHF .AND. HAMGRAD_IMPLEMENTED)
+        DONGRD = NOGRAD.OR.DODFT.OR.DOMP2.OR.DORES.OR.DOCCM.OR.DOCIM.OR.
+     &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
+CTROND        DONGRD = .NOT. (DODHF .AND. HAMGRD)
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use numerical molecular gradient',
@@ -203,5 +205,22 @@ C
       WRITE(LUPRI,'(2A,1P,E20.10)')
      &   CENERGY,' = ',ETOT
       RGETCCSD = ETOT
+      RETURN
+      END
+C  /* Deck rgetccsd */
+      FUNCTION RGETCI()
+C***********************************************************************
+C
+C     Get energy from DIRRCI
+C     Taking the lowest root....
+C     
+C     Written by T. Saue Dec 9 2004
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "../dirrci/param.inc" 
+#include "../dirrci/iterat.inc" 
+      RGETCI = EIGEN2(1)
       RETURN
       END
