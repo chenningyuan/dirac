@@ -65,7 +65,6 @@ C
 C     Memory allocation
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,       WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),       WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMAT,N2TMT          ,WORK,KFREE,LFREE)
@@ -151,7 +150,7 @@ C
       CHARACTER*3 STR
       LOGICAL   DOINT(2,2)
       LOGICAL   DOLS,DOSS,LBIT
-      LOGICAL   NODV,NOPV,FIRST,NOCONT,ICEDIF
+      LOGICAL   NODV,NOPV,FIRST,NOCONT
 C     Timing variables
       DOUBLE PRECISION DPRTIM(4,2)
       SAVE DPRTIM
@@ -381,13 +380,13 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 1
       INTCLASS  = 0
-      ICEDIF = .FALSE.
+      ICEDIF = 0
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
 C
-      NEWBAS = .TRUE. 
       RELGRD = .TRUE.
+      NEWBAS = .TRUE. 
       NDMAT   = NFMAT*4
       NDMRAO  = NSYMBL*NSYMBL*NDMAT
       CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
@@ -487,8 +486,8 @@ C
       END IF
       CALL GETTIM(CPU1,WALL1)
 C
-C
 C     LS-gradient
+C
 C     IREPDM = IDUMMY
       ITYPE  = 2
 C     GMAT   = DUMMY
@@ -504,7 +503,7 @@ C     NPOS   = IDUMMY
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       I2TYP  = 2
       INTCLASS  = 1
-      ICEDIF = .FALSE.
+      ICEDIF = 0
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
@@ -621,7 +620,7 @@ C     NPOS   = IDUMMY
       MTOTTK = NSMLBL*(NSMLBL+1)/2
       I2TYP  = 3
       INTCLASS  = 2
-      ICEDIF = .FALSE.
+      ICEDIF = 0
 C     GABRAO = DUMMY
 C     DMRSO  = DUMMY
 C
@@ -815,12 +814,13 @@ C     Allocate memory for temporary memory for use in GTCNV1
 C
       CALL MEMGET('REAL',KTMP1,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMP2,N2BBASXQ*(NFMAT+1),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
 C
 C     Read coefficient matrix and eigenvalues
 C     ===================================================
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','DHFGRD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,TOTERG,3)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),TOTERG,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Print section
@@ -1144,9 +1144,9 @@ C     Fold density matrix
 C
       DO IZ = 1,NZ
          IF ( IZ .EQ. 1 ) THEN
-            DSCALE = 1.0
+            DSCALE = D1
          ELSE
-            DSCALE = -1.0
+            DSCALE = -D1
          END IF
          DO IMU = 2,NTBAS(0)
             DO INU = 1,IMU-1
@@ -1480,13 +1480,14 @@ C
       IF ( IPRINT .GE. 5) CALL HEADER('Output from GTCNVD',-1)
 C 
       CALL MEMGET('REAL',KTMP,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
 C
 C
 C     Read coefficient matrix and eigenvalues
 C     ===================================================
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','DHFGRD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,TOTERG,3)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),TOTERG,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Contruct density matrix

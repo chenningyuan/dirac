@@ -1834,7 +1834,8 @@ C
         EREL  = EREL
         ENREL = ENREL
         WRITE(LUPRI,'(I3,4F20.10)') IZ,EFULL,EREL,ENREL,EINT
-        CALL PREIGV(EIG,NESH(1),0,WORK,LWORK)
+        IVAL = 0
+        CALL PREIGV(EIG,NESH(1),IVAL,WORK,LWORK)
         CALL FLSHFO(LUPRI)
       ENDDO
       RETURN
@@ -2318,11 +2319,12 @@ C
 C
       CALL QEXIT('TSCORR')
       RETURN
- 1000 CONTINUE
+  1000 CONTINUE
 C
 C     Not able to read DOINT information from COMB
 C
-      WRITE(LUPRI,'(A,A)') 'TSCORR: Not able to read COMB =',COMB
-      CALL QUIT('TSCORR: Not able to read COMB')
+c     There is no goto 1000 is this routine./Feb 9 1998 - jth
+c      WRITE(LUPRI,'(A,A)') 'TSCORR: Not able to read COMB =',COMB
+c      CALL QUIT('TSCORR: Not able to read COMB')
       END
 C

@@ -1462,7 +1462,7 @@ C       Memory allocation
         CALL MEMGET('INTE',KCSEL,NESH(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),WORK(KSBUF),
      &              WORK(KCBUF),WORK(KCSEL),ISELM,
-     &              NORB(IFRP),NOCC(IFRP),NESH(IFRP),
+     &              NORB(I),NOCC(I),NESH(I),
      &              WORK(KFREE),LFREE)
 C     Memory deallocation
       CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)

@@ -693,8 +693,8 @@ C
       DODIIS    = .TRUE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
-      DIISAO    = .TRUE.
-      DIISMO    = .FALSE.
+      DIISAO    = .FALSE.
+      DIISMO    = .TRUE.
 C
 C     Initialize /CBIDHF/
 C     ===================
@@ -911,8 +911,12 @@ C                               closed shell)
                GO TO 100
    30          CONTINUE
 C&&& DIISAO: Do jth Dalton like DIIS 
+#ifdef OPEN_MOD
                   DIISAO = .TRUE.
                   DIISMO = .FALSE.
+#else
+                  CALL QUIT('DIISAO NOT IN THIS DISTRIBUTION')
+#endif
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

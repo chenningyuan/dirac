@@ -608,7 +608,7 @@ C
       DO I = 1,N
         IQ   = NINT(Q(I))
         XPOL = IQ.GT.103
-        IPOL = (Q(I)-FLOAT(IQ)).GT.DTOL.AND.(.NOT.XPOL)
+        IPOL = (Q(I)-DOUBLE(IQ)).GT.DTOL.AND.(.NOT.XPOL)
         IF(XPOL.OR.IPOL) THEN
           SCQ(I) = - POLVAL(5,BFIT,Q(I))
         ELSEIF(IQ.GT.0) THEN
