@@ -26,7 +26,6 @@ C...      http://dirac.chem.ou.dk/Dirac
 C
 C
 C FILE    : gpsaue.F
-C SOURCE  : $Source$
 C
 C
 #if defined (PRG_DIRAC)

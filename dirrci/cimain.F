@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : cidirr.F
-C SOURCE  : $Source$
 C
       PROGRAM DIRRCI
 C

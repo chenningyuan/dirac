@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : ccdriv.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER

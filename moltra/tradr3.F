@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : tradr3.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR3T */

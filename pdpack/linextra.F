@@ -3,7 +3,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : linextra.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck dnorm2 */

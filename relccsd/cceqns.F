@@ -27,7 +27,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : cceqns.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2EQN(EPS,FVO,T1,S1,T2,S2)
@@ -1985,8 +1984,8 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-      IF (NMPROC.EQ.1) RETURN
 #if defined (VAR_MPI)
+      IF (NMPROC.EQ.1) RETURN
       IF (IMODE.EQ.1) THEN
           CALL MPI_REDUCE(T1,BUF1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,
      &                    MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)

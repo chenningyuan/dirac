@@ -3,7 +3,6 @@
  * VERSION : $Revision$
  * DATE    : $Date$
  * FILE    : ccunix.c
- * SOURCE  : $Source$
  *
         Access to C I/O routrines from FORTAN.
         The original idea comes from a MOLPRO routine that was incorporated in a skeleton (test)

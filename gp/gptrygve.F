@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : gptrygve.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck header */

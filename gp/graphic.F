@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : graphic.F
-C SOURCE  : $Source$
 C
 C
 #if !defined (PRG_DIRAC)

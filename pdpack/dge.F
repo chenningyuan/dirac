@@ -3,7 +3,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dge.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck dgeinv */

@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : cigosc.F
-C SOURCE  : $Source$
 C
       SUBROUTINE PAMGOS(CI,MAXCORE,NELECT)
 C     ===============================================================

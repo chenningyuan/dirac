@@ -31,8 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * FILE    : gpjth_c.c
- * SOURCE  : $Source$
+ * FILE    : gpc.c
  *
  * frac2i:
  *

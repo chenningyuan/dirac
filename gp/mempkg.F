@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : mempkg.F
-C SOURCE  : $Source$
 C
 C
 #ifdef UNDEF

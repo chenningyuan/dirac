@@ -27,7 +27,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : ccints.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDINTS(IPRNT,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
