@@ -58,10 +58,12 @@ C
         DONGRD = .NOT.DODHF .OR. (DODHF.AND.(SPINFR.OR.ZORA))
      &    .OR. DODFT .OR. DOMP2 .OR. DORES .OR. DOCCM
      &    .OR. DOCIM .OR. DOLUCT.OR. DOKRMC.OR. DOLUCIAR
-        WRITE(LUPRI,'(/A/A)')
+        IF(DONGRD) THEN
+          WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use numerical molecular gradient',
      &     '         (analytical gradient not implemented for this wave'
      *     //' function type).'
+        ENDIF
       ENDIF
       WRKDLM = 0.0D00
       IWOFF  = 0
