@@ -31,11 +31,11 @@ C FILE    : dirgrd.F
 C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck psigrd */
-      SUBROUTINE PSIGRD(WORK,LWORK)
+C  /* Deck molgrd */
+      SUBROUTINE RMOLGRD(WORK,LWORK)
 C*****************************************************************************
 C
-C     calculate gradient
+C     Calculate molecular gradient.
 C
 C     Written by J. Thyssen - 1997/05
 C
@@ -59,21 +59,46 @@ C
 #include <dcborb.h>
 #include <blocks.h>
 #include <dcbgrd.h>
+#include <dcbpsi.h>
 C
-      CALL QENTER('PSIGRD')
+      CALL QENTER('RMOLGRD')
 #include <memint.h>
 C
-C     Initialize
-C     ==========
 C
-C     If calculation of gradient requested without
-C     calculating the wavefunction SETDHF must be called -
-C     so we call it anyway.
+C     Start by writing information to file MOLGRD:
 C
+C     - Non-folded and Folded contravariant density matrices in AO basis
+C     - Folded contravariant real part of Fock matrix
 C
+C     80 is the the integer part of 50 * log(5)...
+C     (don't drink beer while programming)
 C
+      LUMGRD = 80
+      CALL OPNFIL(LUMGRD,'RMOLGRD','NEW','RMOLGRD')
 C
-      CALL SETDHF(IPRGRD)
+      IF (DODHF) THEN
+C
+C        Density and Fock matrices for (Dirac-)Hartree-Fock
+C
+         write(6,*) 'lfree before conmat dhf',lfree
+         CALL CONMAT_DHF(IPRGRD,WORK(KFREE),LFREE)
+         write(6,*) 'lfree after conmat dhf',lfree
+C
+C        Initialize some variables
+C
+C        If calculation of gradient requested without
+C        calculating the wavefunction SETDHF must be called -
+C        so we call it anyway.
+C
+         CALL SETDHF(IPRGRD)
+C
+      ELSE
+C
+         WRITE(LUPRI,'(/A,/,A)')
+     $        '*** ERROR in RMOLGRD ***',
+     $        'Molecular gradient only implemented for DHF'
+C
+      END IF
 C
 C     Save DO2GRD
 C
@@ -81,18 +106,6 @@ C
          LSAVE(I) = DO2GRD(I)
       END DO
 C
-C
-C     Memory allocation
-C
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,       WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),       WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFOCK,N2BBASX*4*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMAT,N2TMT          ,WORK,KFREE,LFREE)
-      N2GAB = NSYMBL*NSYMBL
-      CALL MEMGET('REAL',KDMRAO,4*NFMAT*N2GAB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGABRA,4*N2GAB,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KFCTYP,4*NFMAT,WORK,KFREE,LFREE)
 C
       CALL TITLER('Calculation of molecular gradient','*',110)
 C
@@ -103,9 +116,9 @@ C
 C
 C     Calculate gradient
 C
-      CALL DHFGRD(WORK(KCMO),WORK(KDMAT),WORK(KFOCK),
-     &            WORK(KTMAT),WORK(KGABRA),WORK(KDMRAO),
-     &            WORK(KFCTYP),WORK(KFREE),LFREE,IPRGRD)
+      CALL RMOLGRD1(WORK(KFREE),LFREE,IPRGRD)
+C
+      CLOSE (LUMGRD, STATUS = 'DELETE' )
 C
 C     Output of gradient
 C
@@ -120,25 +133,596 @@ C
 C
 C
 C     Memory deallocation
-      CALL MEMREL('PSIGRD.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('RMOLGRD.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('PSIGRD')
+      CALL QEXIT('RMOLGRD')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dhfgrd */
-      SUBROUTINE DHFGRD(CMO,DMAT,FOCK,TMAT,GABRAO,DMRAO,
-     &                  IFCTYP,WORK,LWORK,IPRINT)
+C  /* Deck conmat_dhf */
+      SUBROUTINE CONMAT_DHF(IPRINT,WORK,LWORK)
+C*****************************************************************************
+C
+C     Calculate various contravariant density and Fock matrices.
+C
+C     Memory usage is as follows:
+C
+C     Fock matrix contruction:
+C
+C     1. Covariant AO Fock matrices:
+C        3 * NZ * N2BBASX  (3 Fock matrices)
+C     2. Transformation to MO basis:
+C     3. Transformation to contravariant AO basis
+C     4. Fold matrix
+C     5. Insert half phaces
+C     6. Transform from QO to AO basis
+C        2 * NZ   N2BBASX  +  2 * NZ * N2ORBT (4 Fock matrices)
+C     
+C     Density matrix contructions:
+C
+C     7. Total folded covariant density matrix:
+C        3 * NZ * N2BBASX  (3 Fock matrices)
+C     8. Individual non-folded covariant density matrices:
+C        3 * NZ * N2BBASX  (3 Fock matrices)
+C
+C     Density matrix construction
+C
+C     J. Thyssen, 2000/8/27
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <mxcent.h>
+#include <maxaqn.h>
+#include <mxorb.h>
+C
+      PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
+     $     D2 = 2.00D00 )
+C
+#include <dcbbas.h>
+#include <dcborb.h>
+#include <dcbdhf.h>
+#include <dgroup.h>
+#include <dcbqal.h>
+#include <dcbgen.h>
+#include <dcbgrd.h>
+#include <symmet.h>
+C
+      DIMENSION WORK(*)
+      LOGICAL TOBE
+      CHARACTER CTMP*1, M(4)*2
+C
+      DATA M /'AR','AI','BR','BI'/
+C
+#include <ibtfun.h>
+#include <memint.h>
+C
+      CALL QENTER('CONMAT_DHF')
+      IF ( IPRINT .GT. 5 )
+     $     CALL HEADER('Output from CONMAT_DHF',-1)
+C
+      LUBUF = 81
+C
+C     1. Start by contructing AO Fock matrices in covariant basis.
+C     =========================================================
+C
+      CALL MEMGET('REAL',KFAO,N2BBASXQ * 2,WORK,KFREE,LFREE)
+      KFCAO = KFAO
+      KFVAO = KFAO + N2BBASXQ
+      CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
+C
+C     Two-electron Fock matrix/matrices
+C
+      INQUIRE(FILE='DFFCK2',EXIST=TOBE)
+      IF(TOBE) THEN
+         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
+         CALL REAFCK(LUBUF,WORK(KFCAO),.TRUE.,NFMAT)
+         CLOSE(LUBUF,STATUS='KEEP')
+      ELSE
+         WRITE(LUPRI,'(2(/A))')
+     &        '*** ERROR in CONMAT_DHF ***',
+     $        'Gradient calc. without DFFCK2 is not implemented yet'
+         CALL QUIT('*** ERROR in CONMAT_DHF ***')
+      END IF
+C
+C     One electron Fock Matrix
+C
+      INQUIRE(FILE='DFFCK1',EXIST=TOBE)
+      IF (TOBE) THEN
+         CALL OPNFIL(LUBUF,'DFFCK1','OLD','GTCNV1')
+         CALL REAFCK(LUBUF,WORK(KH1AO),.TRUE.,1)
+         CLOSE(LUBUF,STATUS='KEEP')
+      ELSE
+         WRITE(LUPRI,'(A)')
+     &    '*** WARNING *** CONMAT_DHF: No 1-Fock found. Regenerating.'
+         CALL ONEFCK(WORK(KH1AO),IPRINT,WORK(KFREE),LFREE)
+      END IF
+C
+C     FCao = H1ao + QCao
+C
+      CALL DAXPY(N2BBASXQ,D1,WORK(KH1AO),1,WORK(KFCAO),1)
+C
+      CALL MEMREL('GTCNV1',WORK,KWORK,KH1AO,KFREE,LFREE)
+C
+C     2. Transform to MO basis
+C     ========================
+C
+      CALL MEMGET('REAL',KFMO,MAX(N2ORBTQ,NCMOTQ),WORK,KFREE,LFREE)
+      KCMO = KFMO
+      CALL MEMGET('REAL',KFMOTMP,N2ORBTQ,WORK,KFREE,LFREE)
+C
+      IF (NASHT.GT.0) THEN
+C
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
+         CLOSE(LUCOEF,STATUS='KEEP')
+C
+C
+C        Transform QV to MO basis
+C
+         DO 10 I = 1,NFSYM
+            IF (NASH(I).EQ.0) GOTO 10
+            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &           NORB(I),NORB(I),
+     &           WORK(KFVAO + I2BASX(I,I)),NTBAS(0),NTBAS(0),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KFMOTMP +I2ORBT(I)),NORB(I),NORB(I),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+            IF (IPRINT.GE.10) THEN
+               WRITE(LUPRI,*) 'QV in MO-basis, irrep ',I
+               CALL PRQMAT(WORK(KFMOTMP+I2ORBT(I)),NORB(I),NORB(I),
+     &              NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+ 10      CONTINUE
+C
+         CALL DZERO(WORK(KFMO),N2ORBTQ)
+C
+         DO 11 I = 1,NFSYM
+            IF (NASH(I).EQ.0) GOTO 10
+            IADR = I2ORBT(I)+(NISH(I)+NPSH(I))*NORB(I)
+            CALL DCOPY(NASH(I)*NORB(I),WORK(KFMOTMP+IADR),1,
+     &                                 WORK(KFMO+IADR),1)
+            IF (IPRINT.GE.10) THEN
+               WRITE(LUPRI,*) 'Active part of F, irrep ',I
+               CALL PRQMAT(WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
+     &              NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+ 11      CONTINUE
+C
+C        FDao = H1ao + QCao + QVau
+C             = FCao + QVao
+C
+         CALL DAXPY(N2BBASXQ,DP5,WORK(KFVAO),1,WORK(KFCAO),1)
+C
+      ELSE
+         CALL DZERO(WORK(KFMO),N2ORBTQ)
+      END IF
+C
+C
+      IF (NISHT.GT.0) THEN
+         DO 20 I = 1,NFSYM
+C
+            KCMO = KFVAO
+            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
+            CLOSE(LUCOEF,STATUS='KEEP')
+C
+            IF (NISH(I).EQ.0) GOTO 20
+            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &           NORB(I),NORB(I),
+     &           WORK(KFCAO+I2BASX(I,I)),NTBAS(0),NTBAS(0),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KFMOTMP+I2ORBT(I)),NORB(I),NORB(I),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+            IF (IPRINT.GE.10) THEN
+               WRITE(LUPRI,*) 'FD in MO-basis, irrep ',I
+               CALL PRQMAT(WORK(KFMOTMP+I2ORBT(I)),NORB(I),NORB(I),
+     &              NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+            IADR = I2ORBT(I)+NPSH(I)*NORB(I)
+            CALL DSCAL(NISH(I)*NORB(I),D2,WORK(KFMOTMP+IADR),1)
+            CALL DCOPY(NISH(I)*NORB(I),WORK(KFMOTMP+IADR),1,
+     &           WORK(KFMO+IADR),1)
+            IF (IPRINT.GE.10) THEN
+               WRITE(LUPRI,*) 'Total Fock matrix, irrep ',I
+               CALL PRQMAT(WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
+     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+            END IF
+ 20      CONTINUE
+      END IF
+C
+C
+C     3. Construct contravariant Fock matrix in AO-basis
+C     ===============================================
+C
+C     FOCK = CCtFCCt = DFDt = CF(MO)Ct
+C
+      CALL DZERO(WORK(KFCAO),N2BBASXQ)
+      KCMO = KFVAO
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      IF ( IPRINT .GE. 10 ) THEN
+         DO I=1,NFSYM
+           IF (NORB(I) .NE. 0) THEN
+           WRITE(CTMP,'(I1)') I
+           CALL HEADER('Coefficient matrix, irrep '//CTMP,-1)
+           CALL PRQMAT(WORK(KCMO+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+           END IF
+         END DO
+      END IF
+C
+      DO I= 1,NFSYM
+         IF (NORB(I) .NE. 0) THEN
+            NZA = NZ
+            CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &           NORB(I),NORB(I),
+     &           WORK(KFAO+I2BASX(I,I)),NTBAS(0),NTBAS(0),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
+     &           NZ,IPQTOQ(1,0),
+     &           WORK(KCMO + ICMOQ(I)),
+     $           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KCMO + ICMOQ(I)),
+     $           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRINT)
+         END IF
+      END DO
+C
+      IF (IPRINT .GE. 5) THEN
+         CALL HEADER('CONMAT_DHF: FOCK After QTRANS to AO-basis',-1)
+         CALL FLSHFO(LUPRI)
+         CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &               NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     Transform to sorted basis
+C
+      CALL BSTOBU(WORK(KFAO),NZ,WORK(KFREE),LFREE)
+      IF(IPRINT.GE.5) THEN
+         CALL HEADER('CONMAT_DHF: FOCK After BSTOBU to unsorted basis',
+     &        -1)
+         CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),
+     &               NTBAS(0),NTBAS(0),NZ,
+     &               IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+C     4. Fold Fock matrix
+C     ================
+C
+      CALL RMOLGRD_FOLDMAT(WORK(KFCAO),NTBAS(0),NZ)
+C
+      IF ( IPRINT .GT. 5 ) THEN
+         CALL HEADER('CONMAT_DHF: FOCK After folding',-1)
+         CALL PRQMAT(WORK(KFCAO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &        NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     5. Insert half-phases
+C     ==================
+C
+      IF(NZ.LT.4) THEN
+         DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,0)
+            CALL Q2PHASE('F',IQ,1,WORK(KFCAO + N2BBASX * (IZ - 1) ) )
+         ENDDO
+         IF(IPRINT.GE.5) THEN
+            CALL HEADER('CONMAT_DHF: '//
+     $           'Unsorted FOCK with half-phases inserted',-1)
+            CALL PRQMAT(WORK(KFCAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+         ENDIF
+      ENDIF
+C
+C     6. Transform fock matrix from QO to AO
+C     ======================================
+C
+C     We are only interested in the real part, as it is used in the product:
+C
+C     F * dS/dX, 
+C
+C     where S is the overlap matrix, which is real.
+C
+      CALL DZERO(WORK(KFVAO),N2BBASX)
+      CALL DSYM1R(WORK(KFCAO),WORK(KFVAO),NTBAS(0),0,IPRINT)
+C
+      IF ( IPRINT .GE. 10 ) THEN
+         CALL HEADER('Final folded contravariant AO Fock matrix',-1)
+         CALL PRQMAT(WORK(KFVAO),NTBAS(0),NTBAS(0),
+     &        NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     Write to file
+C     =============
+C
+      REWIND (LUMGRD)
+      CALL NEWLAB('FKFLDCT1',LUMGRD,LUERR)
+      CALL WRITT(LUMGRD,N2BBASX,WORK(KFVAO))
+C
+      CALL MEMREL('CONMAT_DHF.after fock',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+C     7. Folded contravariant total AO density matrix
+C     ===============================================
+C
+      CALL MEMGET('REAL',KDAO,3 * N2BBASXQ,WORK,KFREE,LFREE)
+      KDCAO = KDAO
+      KDVAO = KDAO + N2BBASXQ
+      KCMO  = KDVAO + N2BBASXQ
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,4)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Get density matrix
+C
+      CALL GENDEN(WORK(KDCAO),WORK(KCMO),1,IPRINT)
+      IF (NASHT.GT.0) THEN
+         CALL GENDEN(WORK(KDVAO),WORK(KCMO),2,IPRINT)
+C
+C        DVao + DCao
+C
+         CALL DAXPY(N2BBASXQ,DP5,WORK(KDVAO),1,
+     &                          WORK(KDCAO),1)
+      END IF
+C
+C     Since Trond insists in DC_ij = \sum_a C_ia C_ja^*
+C     and .NOT. DC_ij = 2 \sum C_ia C_ja^*, we multiply with 2.0
+C
+      CALL DSCAL(N2BBASXQ,D2,WORK(KDCAO),1)
+C
+C     Transform to sorted basis
+C
+      CALL BSTOBU(WORK(KDCAO),NZ,WORK(KFREE),LFREE)
+      IF(IPRINT.GE.10) THEN
+         CALL HEADER('CONMAT_DHF: DMAT After BSTOBU to unsorted basis',
+     &               -1)
+         CALL PRQMAT(WORK(KDCAO),NTBAS(0),NTBAS(0),
+     &        NTBAS(0),NTBAS(0),NZ, IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     Fold the damn thing
+C
+      CALL RMOLGRD_FOLDMAT(WORK(KDCAO),NTBAS(0),NZ)
+C
+C     Insert half-phases
+C
+      IREP = ISYMOP(1)-1
+      IF(NZ.LT.4) THEN
+         DO IZ = 1,NZ
+            IQ = IPQTOQ(IZ,IREP)
+            CALL Q2PHASE('D',IQ,1,WORK(KDCAO))
+         ENDDO
+         IF(IPRINT.GE.5) THEN
+            CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
+            CALL PRQMAT(WORK(KDCAO),NTBAS(0),NTBAS(0),NTBAS(0),
+     &           NTBAS(0),NZ, IPQTOQ(1,IREP),LUPRI)
+         ENDIF
+      END IF
+C
+C
+C     Note ad Imaginary part of the density matrix:
+C
+C     In the AVEMOM routine X, Y-, and Z-derivates are multiplied 
+C     with the k-part, j-part, and the i-part, respectively.
+C     
+C
+C     The real part:
+C     --------------
+C
+      CALL DZERO(WORK(KDVAO),N2BBASX)
+      CALL DSYM1R(WORK(KDCAO),WORK(KDVAO),NTBAS(0),0,IPRINT)
+      CALL NEWLAB('DTFLDCT1',LUMGRD,LUERR)
+      CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
+C
+      IF ( IPRINT .GE. 10 ) THEN
+         CALL HEADER('CONMAT_DHF: Final DMAT:',-1)
+         WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
+         CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
+     $        NTBAS(0),NTBAS(0),1,LUPRI)
+      END IF
+C
+C     The imaginary parts:
+C     --------------------
+C
+      IC = 2
+C
+      DO I = 2,4
+C
+C        Direction:
+C        IDIR = 1(X), 2(Y), or 3(Z)
+C
+         IDIR = 5-I
+C
+C        Symmetry of axis:
+C
+         ISYM = ISYMAX(IDIR,1)
+C
+C        Output goes to...
+C
+         IZ = JM4POS(I-1)
+C
+C        from...
+C
+         IQ = IQMULT(1,JQBAS(ISYM,IC),IZ)
+         IQP = IQTOPQ(IQ,0)
+         IREPD = IRQMAT(IZ,0)
+C
+         CALL DZERO(WORK(KDVAO),N2BBASX)
+C
+         CALL DSYM1R(WORK(KDCAO + (IQP - 1) * N2BBASX),WORK(KDVAO),
+     &              NTBAS(0),IREPD,IPRINT - 20)
+C
+         CALL NEWLAB('DTFLDCT'//CHAR(I+48),LUMGRD,LUERR)
+         CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
+C
+         IF ( IPRINT .GE. 10) THEN
+            WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
+            CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
+     $           NTBAS(0),NTBAS(0),1,LUPRI)
+         END IF
+C     
+      END DO
+C
+C
+C
+C     8. Non-folded contravariant individual AO density matrices
+C     ==========================================================
+C
+C
+C     Contruct density matrix
+C
+      write(6,*) 'nfmat',nfmat
+      DO IMAT = 1,NFMAT
+         write(6,*) 'imat = ',imat
+         IBIT = IBTSHL(1,IMAT-1)
+         CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
+         IF (IPRINT .GE. 5) THEN
+            CALL HEADER('CONMAT_DHF: DMAT from GENDEN',-1)
+            CALL PRQMAT(WORK(KDCAO),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+         END IF
+C
+C        Scale inactive density matrix with D2 (= occupation)
+C
+         IF (IMAT.EQ.1)
+     &      CALL DSCAL(N2BBASXQ,D2,WORK(KDCAO),1)
+C
+C        Transform to unsorted basis
+C
+         IREP = ISYMOP(IMAT)-1
+         CALL BSTOBU(WORK(KDCAO),NZ,WORK(KFREE),LFREE)
+         IF(IPRINT.GE.5) THEN
+            CALL HEADER('CONMAT_DHF:'//
+     $           ' DMAT After BSTOBU to unsorted basis', -1)
+            WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',IMAT
+            CALL PRQMAT(WORK(KDCAO),NTBAS(0),NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,IREP),LUPRI)
+         END IF
+C
+C        Transform density matrix from QO to AO
+C        ======================================
+C
+C
+C        The real part:
+C        --------------
+C
+         CALL DZERO(WORK(KDVAO),N2BBASX)
+         CALL DTSOAO(WORK(KDCAO),WORK(KDVAO),NTBAS(0),0,IPRINT)
+         CALL NEWLAB('D'//CHAR(IMAT+48)//'   CT1',LUMGRD,LUERR)
+         CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
+C
+         IF ( IPRINT .GE. 10 ) THEN
+            CALL HEADER('CONMAT_DHF: Non-folded DMAT '//
+     $           CHAR(IMAT+48)//' :',-1)
+            WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
+            CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
+     $           NTBAS(0),NTBAS(0),1,LUPRI)
+         END IF
+C
+C        The imaginary parts:
+C        --------------------
+C
+         IC = 2
+C
+         DO I = 2,4
+C
+C           Direction:
+C           IDIR = 1(X), 2(Y), or 3(Z)
+C
+            IDIR = 5-I
+C
+C           Symmetry of axis:
+C
+            ISYM = ISYMAX(IDIR,1)
+C
+C           Output goes to...
+C
+            IZ = JM4POS(I-1)
+C
+C           from...
+C
+            IQ = IQMULT(1,JQBAS(ISYM,IC),IZ)
+            IQP = IQTOPQ(IQ,0)
+            IREPD = IRQMAT(IZ,0)
+C     
+            CALL DZERO(WORK(KDVAO),N2BBASX)
+C     
+            CALL DTSOAO(WORK(KDCAO + (IQP - 1) * N2BBASX),WORK(KDVAO),
+     &           NTBAS(0),IREPD,IPRINT - 20)
+C     
+            CALL NEWLAB('D'//CHAR(IMAT+48)//'   CT'//CHAR(I+48),
+     &           LUMGRD,LUERR)
+            CALL WRITT(LUMGRD,N2BBASX,WORK(KDVAO))
+C     
+            IF ( IPRINT .GE. 10) THEN
+               WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
+               CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
+     $              NTBAS(0),NTBAS(0),1,LUPRI)
+            END IF
+C     
+         END DO
+      ENDDO
+C
+      CALL MEMREL('CONMAT_DHF.after dmat',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('CONMAT_DHF')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rmolgrd_foldmat */
+      SUBROUTINE RMOLGRD_FOLDMAT(A,N,NZ)
+C*****************************************************************************
+C
+C
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER ( D0 = 0.0D00 )
+C
+      DIMENSION A(N,N,NZ)
+C
+      DO IZ = 1, NZ
+         IF ( IZ .EQ. 1 ) THEN
+            DO I = 2, N
+               DO J = 1, I - 1
+                  A(I,J,IZ) = A(I,J,IZ) + A(J,I,IZ)
+                  A(J,I,IZ) = D0
+               END DO
+            END DO
+         ELSE
+            DO I = 2, N
+               DO J = 1, I - 1
+                  A(I,J,IZ) = A(I,J,IZ) - A(J,I,IZ)
+                  A(J,I,IZ) = D0
+               END DO
+            END DO
+         END IF
+      END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rmolgrd1 */
+      SUBROUTINE RMOLGRD1(WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Calculate molecular gradient
 C
 C     J. Thyssen, 1997/18/04
 C    
-C     Revision: 1997/11/11 - Parallel calculations is now possible
-C     Remember: Thresholds
+C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -150,9 +734,7 @@ C*****************************************************************************
 #include <aovec.h>
       PARAMETER(D0 = 0.0D0)
 C
-      DIMENSION FOCK(*),CMO(*),TMAT(*),
-     &          DMAT(N2BBASX,NZ,NFMAT),WORK(LWORK),
-     &          GABRAO(*),DMRAO(*)
+      DIMENSION WORK(LWORK)
       DIMENSION DNTSKP(3,14,3)
       DIMENSION IQBF(4)
       DIMENSION IFCTYP(4*NFMAT)
@@ -162,6 +744,7 @@ C
       LOGICAL   DOINT(2,2)
       LOGICAL   DOLS,DOSS,LBIT
       LOGICAL   NODV,NOPV,FIRST,NOCONT, NOINFO
+      LOGICAL   FNDLAB
 C     Timing variables
       DOUBLE PRECISION DPRTIM(4,2)
       SAVE DPRTIM
@@ -313,10 +896,39 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
 C
-C     Get contravariant Fock matrix and density matrix
+C     Get contravariant Fock matrix in symmetry distinct AO-basis
+C
+      CALL MEMGET('REAL',KFAO,N2BBASX,WORK,KFREE,LFREE)
+C
+      REWIND (LUMGRD)
+      IF ( FNDLAB('FKFLDCT1',LUMGRD) ) THEN
+         CALL READT(LUMGRD,N2BBASX,WORK(KFAO))
+      ELSE
+         WRITE(LUPRI,'(/A/A)')
+     $        '*** ERROR in RMOLGRD1 ***',
+     $        'label "FKFLDCT1" not found on file MOLGRD'
+         CALL QUIT('*** ERROR in RMOLGRD1 ***')
+      END IF
+C
+C     Get folded total contravariant density matrix
 C     in symmetry distinct AO-basis
 C
-      CALL GTCNVF(FOCK,DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
+      CALL MEMGET('REAL',KDTAO,4 * N2BBASX,WORK,KFREE,LFREE)
+C
+      IOFF = 0
+      DO I = 1, 4
+         REWIND (LUMGRD)
+         IF ( FNDLAB('DTFLDCT'//CHAR(I+48),LUMGRD) ) THEN
+            CALL READT(LUMGRD,N2BBASX,WORK(KDTAO+IOFF))
+         ELSE
+            WRITE(LUPRI,'(/A/A)')
+     $           '*** ERROR in RMOLGRD1 ***',
+     $           'label "DTFLDCT'//CHAR(I+48)//'"'//
+     &           ' not found on file MOLGRD'
+            CALL QUIT('*** ERROR in RMOLGRD1 ***')
+         END IF
+         IOFF = IOFF + N2BBASX
+      END DO
 C
 C
 C     Call ONEDRV for construction of gradient
@@ -340,10 +952,10 @@ C
 C
 C     Make one-electron part of gradient
 C
-      CALL ONEDR1(WORK(KSTHMA),DMAT,FOCK,WORK(KFACIN),
+      CALL ONEDR1(WORK(KSTHMA),WORK(KDTAO),WORK(KFAO),WORK(KFACIN),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KNCENT),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),DUMMY,WORK(KFREE),LFREE,
-     &            IPRONE,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
+     &            IPRGRD,.TRUE.,1,.TRUE.,.TRUE.,.FALSE.,NTBAS(0),
      &            NNBBASX,NNBBAST,DOINT,.FALSE.)
 C
 C     Dispose temp. memory
@@ -375,7 +987,37 @@ C
 C
 C     Get contravariant density matrix, no folding
 C
-      CALL GTCNVD(DMAT,CMO,IPRINT,WORK(KFREE),LFREE)
+C
+C     Get non-folded total contravariant density matrix
+C     in symmetry distinct AO-basis
+C
+C     Matrices 1..4: DCao + DVao
+C     Matrces  5..8: DVao
+C
+      CALL MEMGET('REAL',KDAO,4 * NFMAT * N2BBASX,WORK,KFREE,LFREE)
+C
+      IOFF = 0
+      DO IMAT = 1, NFMAT
+         DO I = 1, 4
+            REWIND (LUMGRD)
+            IF ( FNDLAB('D'//CHAR(IMAT+48)//'   CT'//CHAR(I+48),
+     &           LUMGRD) ) THEN
+               CALL READT(LUMGRD,N2BBASX,WORK(KDAO+IOFF))
+            ELSE
+               WRITE(LUPRI,'(/A/A)')
+     $              '*** ERROR in RMOLGRD1 ***',
+     $              'label "D'//CHAR(IMAT+48)//'   CT'//
+     &              CHAR(I+48)//'"'//
+     &              ' not found on file MOLGRD'
+               CALL QUIT('*** ERROR in RMOLGRD1 ***')
+            END IF
+            IOFF = IOFF + N2BBASX
+         END DO
+         IF ( IMAT .GT. 4 ) THEN
+            CALL DAXPY(N2BBASX,D1,WORK(KDAO+IOFF),1,
+     &           WORK(KDAO + IOFF - 4 * N2BBASX),1)
+         END IF
+      END DO
 C
       CALL GETTIM(CPU1,WALL1)
       IF (SCRGRD .GT. D0) THEN
@@ -425,16 +1067,19 @@ C
 C        Read in GAB matrices
 C
          N2GAB   = NSYMBL*NSYMBL
-         IOFF = 1
+         CALL MEMGET ('REAL',KGABRAO, 4 * N2GAB, WORK, KFREE, LFREE )
+C
+         IOFF = 0
          GABLAB = 'GABAOXXX'
-         CALL GETGAB(GABRAO(IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
+         CALL GETGAB(WORK(KGABRAO+IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
          IOFF = IOFF + N2GAB
          DO I = 1,3
             GABLAB = 'GABAOX2'//CHRXYZ(-I)
-            CALL GETGAB(GABRAO(IOFF),GABLAB,N2GAB,WORK(KFREE),LFREE)
+            CALL GETGAB(WORK(KGABRAO+IOFF),GABLAB,N2GAB,
+     &           WORK(KFREE),LFREE)
             IF (IPRINT.GE.10) THEN
                CALL HEADER('DHFGRD: GABRAO-matrix ('//CHRXYZ(I)//')',-1)
-               CALL OUTPUT(GABRAO(IOFF),1,NSYMBL,1,NSYMBL,
+               CALL OUTPUT(WORK(KGABRAO+IOFF),1,NSYMBL,1,NSYMBL,
      &                     NSYMBL,NSYMBL,1,LUPRI)
             END IF
             IOFF = IOFF + N2GAB
@@ -442,7 +1087,11 @@ C
 C
 C        Make reduced density matrices
 C
-         CALL MKDRAO(DMAT,DMRAO,4*NFMAT,WORK(KFREE),LFREE,IPRINT)
+         CALL MEMGET ('REAL',KDMRAO,4 * NFMAT * N2GAB, WORK,
+     &        KFREE, LFREE )
+C
+         CALL MKDRAO(WORK(KDAO), WORK(KDMRAO), 4*NFMAT,
+     &        WORK(KFREE),LFREE,IPRINT)
 C
 C        Restore translation/rotation invariance for gradient calc.
 C
@@ -457,6 +1106,9 @@ C
          CALL TROINV(WORK(KFREE),LFREE)
          RELGRD = .FALSE.
 C
+      ELSE
+         CALL MEMGET ('REAL',KGABRAO, 0, WORK, KFREE, LFREE )
+         CALL MEMGET ('REAL',KDMRRAO, 0, WORK, KFREE, LFREE )
       END IF
       CALL GETTIM(CPU2,WALL2)
       CPUGAB = CPU2 - CPU1
@@ -516,25 +1168,22 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
-     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
+         CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
+     &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
+         CALL TWOINT(WORK(KFREE),LFREE,DUMY,WORK(KDAO),NDMAT,IDUMMY,
+     &        IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
+     &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
+     &        RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
       RELGRD = .FALSE.
-C
-C     Dispose memory
-C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Symmetrization of GRADEE
 C
@@ -543,7 +1192,7 @@ C
       CALL MEMGET('INTE',KINDEX,3*NUCIND*(MAXREP+1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPOINT,3*NUCDEP*(MAXREP+1),WORK,KFREE,LFREE)
       CALL SKLEXP(WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),WORK(KPOINT),
-     &               MAXDER,IPRINT)
+     &               MAXDER,0)
 C
 C     Copy LL-GRADEE gradient to GRADER(1,1)
 C
@@ -552,7 +1201,7 @@ C
 C
 C     Memory deallocation
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DHFGRD',WORK,KWORK,KSKLTN,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
 C
@@ -626,26 +1275,23 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
-     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
+         CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
+     &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
+         CALL TWOINT(WORK(KFREE),LFREE,DUMY,WORK(KDAO),NDMAT,IDUMMY,
+     &        IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
+     &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
+     &        RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
       CALL FLSHFO(LUPRI)
       RELGRD = .FALSE.
-C
-C     Dispose memory
-C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Symmetrization of GRADEE
 C
@@ -654,7 +1300,7 @@ C
       CALL MEMGET('INTE',KINDEX,3*NUCIND*(MAXREP+1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPOINT,3*NUCDEP*(MAXREP+1),WORK,KFREE,LFREE)
       CALL SKLEXP(WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),WORK(KPOINT),
-     &               MAXDER,IPRINT)
+     &               MAXDER,0)
 C
 C     Copy LS-GRADEE gradient to GRADER(1,2)
 C
@@ -663,7 +1309,7 @@ C
 C
 C     Dispose memory
 C
-      CALL MEMREL('DHFGRD',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DHFGRD',WORK,KWORK,KSKLTN,KFREE,LFREE)
 C
       CALL GETTIM(CPU2,WALL2)
 C
@@ -742,17 +1388,18 @@ C
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
-         CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,
-     &               IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
-     &               RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
-     &               SCRGRD,GABRAO,DMRAO,DUMMY,DNTSKP)
+         CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
+     &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
+     &        RTNTWO,FIRST,WORK(KNPOS),MTOTTK,I2TYP,ICEDIF,
+     &        SCRGRD,WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP)
       ELSE
 #endif
-         CALL TWOINT(WORK(KFREE),LFREE,FOCK,DMAT,NDMAT,IDUMMY,IFCTYP,
-     &               DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
-     &               NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &               IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
-     &               GABRAO,DMRAO,DUMMY,DNTSKP,RELCAL,DUMMY,DUMMY)
+         CALL TWOINT(WORK(KFREE),LFREE,DUMY,WORK(KDAO),NDMAT,IDUMMY,
+     &        IFCTYP,DUMMY,IDUMMY,IDUMMY,ITYPE,MAXDIF,JATOM,NODV,
+     &        NOPV,NOCONT,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
+     &        IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,SCRGRD,
+     &        WORK(KGABRAO),WORK(KDMRAO),DUMMY,DNTSKP,
+     &        RELCAL,DUMMY,DUMMY)
 #if defined (VAR_MPI)
       END IF
 #endif
@@ -770,7 +1417,7 @@ C
       CALL MEMGET('INTE',KINDEX,3*NUCIND*(MAXREP+1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPOINT,3*NUCDEP*(MAXREP+1),WORK,KFREE,LFREE)
       CALL SKLEXP(WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),WORK(KPOINT),
-     &               MAXDER,IPRINT)
+     &               MAXDER,0)
 C
 C     Copy SS-GRADEE gradient to GRADER(1,3)
 C
@@ -895,497 +1542,6 @@ C      END DO
       DO I=2,8
          DOSYM(I) = ALLSYM
       END DO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck gtcnvf */
-      SUBROUTINE GTCNVF(FOCK,DMAT,CMO,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver routine to GTCNV1
-C
-C     jth 1997/05/06
-C     Last revision: 1997/05/06
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-      DIMENSION FOCK(*),WORK(*),DMAT(*),CMO(*)
-      CHARACTER*1 CTMP
-C
-#include <dcbbas.h>
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dummy.h>
-C
-#include <memint.h>
-C
-C
-      CALL QENTER('GTCNVF')
-      IF ( IPRINT .GE. 5 ) CALL HEADER('Output from GTCNVF',-1)
-C
-C     Allocate memory for temporary memory for use in GTCNV1
-C
-      CALL MEMGET('REAL',KTMP1,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTMP2,N2BBASXQ*(NFMAT+1),WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG,NORBT,WORK,KFREE,LFREE)
-C
-C     Read coefficient matrix and eigenvalues
-C     ===================================================
-C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','DHFGRD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),WORK(KIBG),TOTERG,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
-C
-C     Print section
-C
-      IF ( IPRINT .GE. 10 ) THEN
-         DO I=1,NFSYM
-           IF (NORB(I) .NE. 0) THEN
-           WRITE(CTMP,'(I1)') I
-           CALL HEADER('Coefficient matrix, Ircop '//CTMP,-1)
-           CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-           END IF
-         END DO
-      END IF
-C
-C
-      CALL GTCNV1(FOCK,DMAT,WORK(KTMP1),WORK(KTMP2),CMO,
-     &            IPRINT,WORK(KFREE),LFREE)
-C
-C     Dispose memory
-C
-      CALL MEMREL('GTCNVF',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('GTCNVF')
-      CALL FLSHFO(LUPRI)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck gtcnv1 */
-      SUBROUTINE GTCNV1(FOCK,DMAT,DTMP1,DTMP2,CMO,
-     &                  IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Get contravariant Fock matrix in AO-basis and density matrix
-C
-C     jth 1997/05/02, ideas based on DSOFS1 by PRT and TUH
-C     Last revision: 1997/06/19 jth
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-#include <dummy.h>
-C
-#include <dcbbas.h>
-#include <dcbdhf.h>
-#include <dcborb.h>
-#include <dgroup.h>
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
-#include <symmet.h>
-#include <dcbqal.h>
-#include <dcbgen.h>
-      PARAMETER ( D0 = 0.0 D00, D1 = 1.0 D00, D2 = 2.0 D00 ,
-     &            LUBUF = 22, DP5 = 0.50D00)
-C
-      DIMENSION FOCK(*),CMO(*),WORK(*)
-      DIMENSION DTMP2(N2BBASX,NZ,*),DMAT(*),DTMP1(N2BBASXQ)
-      LOGICAL   TOBE
-C
-      IFULL(I,J)     = I + (J-1) * NTBAS(0)
-      IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
-C
-#include <memint.h>
-C
-      IP = IPRINT
-C      IPRINT = 20
-      CALL QENTER('GTCNV1')
-      IF ( IPRINT .GT. 5 ) CALL HEADER('OUTPUT FROM GTCNV1',-1)
-C
-C     FOCK MATRIX 
-C     ===========
-C
-C
-      CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KFMO),N2BBASXQ)
-C
-C     Get AO Fock matrices
-C
-C     Two-electron Fock matrix/matrices
-C
-      INQUIRE(FILE='DFFCK2',EXIST=TOBE)
-      IF(TOBE) THEN
-         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
-         CALL REAFCK(LUBUF,DTMP2,.TRUE.,NFMAT)
-         CLOSE(LUBUF,STATUS='KEEP')
-      ELSE
-         WRITE(LUPRI,'(A)')
-     &   '*** ERROR: Gradient calc. without DFFCK2 '//
-     *   'is not implemented yet'
-         CALL QUIT('***ERROR: no DFFCK2')
-      END IF
-C
-C     One electron Fock Matrix
-C
-      INQUIRE(FILE='DFFCK1',EXIST=TOBE)
-      IF (TOBE) THEN
-         CALL OPNFIL(LUBUF,'DFFCK1','OLD','GTCNV1')
-         CALL REAFCK(LUBUF,DTMP1,.TRUE.,1)
-         CLOSE(LUBUF,STATUS='KEEP')
-      ELSE
-         WRITE(LUPRI,'(A)')
-     &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
-         CALL ONEFCK(DTMP1,IPRINT,WORK(KFREE),LFREE)
-      END IF
-C
-C     FC = H1 + QC
-C
-      CALL DAXPY(N2BBASXQ,D1,DTMP1,1,DTMP2,1)
-      CALL DZERO(WORK(KFMO),N2ORBTQ)
-C
-      IF (NASHT.GT.0) THEN
-C
-C        Transform FC to MO basis
-C
-         DO 10 I = 1,NFSYM
-            IF (NASH(I).EQ.0) GOTO 10
-            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                NORB(I),NORB(I),
-     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),
-     &                DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KFREE),LFREE,IPRINT)
-            IF (IPRINT.GE.10) THEN
-               WRITE(LUPRI,*) 'FC in MO-basis, corep ',I
-               CALL PRQMAT(DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
-            IADR = 1 + I2ORBT(I)+(NISH(I)+NPSH(I))*NORB(I)
-            CALL DCOPY(NASH(I)*NORB(I),DTMP1(IADR),1,
-     &                                 WORK(KFMO+IADR-1),1)
-            IF (IPRINT.GE.10) THEN
-               WRITE(LUPRI,*) 'Active part of F, corep ',I
-               CALL PRQMAT(WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
-     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
- 10      CONTINUE
-C
-C        FD = H1 + QC + QV 
-C           = FC + QV
-C
-         CALL DAXPY(N2BBASXQ,DP5,DTMP2(1,1,2),1,DTMP2,1)
-      END IF
-C
-      IF (NISHT.GT.0) THEN
-         DO 20 I = 1,NFSYM
-            IF (NISH(I).EQ.0) GOTO 20
-            CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                NORB(I),NORB(I),
-     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),
-     &                DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KFREE),LFREE,IPRINT)
-            IF (IPRINT.GE.10) THEN
-               WRITE(LUPRI,*) 'FD in MO-basis, corep ',I
-               CALL PRQMAT(DTMP1(1+I2ORBT(I)),NORB(I),NORB(I),
-     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
-            IADR = 1 + I2ORBT(I)+NPSH(I)*NORB(I)
-            CALL DSCAL(NISH(I)*NORB(I),D2,DTMP1(IADR),1)
-            CALL DCOPY(NISH(I)*NORB(I),DTMP1(IADR),1,
-     &                                 WORK(KFMO+IADR-1),1)
-            IF (IPRINT.GE.10) THEN
-               WRITE(LUPRI,*) 'Total Fock matrix, corep ',I
-               CALL PRQMAT(WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
-     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
- 20      CONTINUE
-      END IF
-C
-C     Construct contravariant Fock matrix in AO-basis
-C     Use DTMP2 as temporarily Fock matrix
-C
-C     FOCK = CCtFCCt = DFDt = CF(MO)Ct
-C
-      CALL DZERO(DTMP2,N2BBASXQ)
-C
-      DO I= 1,NFSYM
-         IF (NORB(I) .NE. 0) THEN
-            NZA = NZ
-            CALL QTRANS('MOAO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                NORB(I),NORB(I),
-     &                DTMP2(I2BASX(I,I)+1,1,1),NTBAS(0),NTBAS(0),
-     &                NZ,IPQTOQ(1,0),
-     &                WORK(KFMO+I2ORBT(I)),NORB(I),NORB(I),
-     &                NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
-     &                WORK(KFREE),LFREE,IPRINT)
-         END IF
-      END DO
-C
-C     Print section
-C
-      IF (IPRINT .GE. 5) THEN
-         CALL HEADER('GTCNV1: FOCK After QTRANS to AO-basis',-1)
-         CALL FLSHFO(LUPRI)
-         CALL PRQMAT(DTMP2,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NZ,IPQTOQ(1,0),LUPRI)
-      END IF
-C
-C     Transform to sorted basis
-C
-      CALL BSTOBU(DTMP2,NZ,WORK(KFREE),LFREE)
-      IF(IPRINT.GE.5) THEN
-         CALL HEADER('GTCNV1: FOCK After BSTOBU to unsorted basis',-1)
-         CALL PRQMAT(DTMP2,NTBAS(0),NTBAS(0),
-     &               NTBAS(0),NTBAS(0),NZ,
-     &               IPQTOQ(1,0),LUPRI)
-      ENDIF
-C
-C     Fold Fock matrix
-C
-      DO IZ = 1,NZ
-         IF ( IZ .EQ. 1 ) THEN
-            DSCALE = D1
-         ELSE
-            DSCALE = -D1
-         END IF
-         DO IMU = 2,NTBAS(0)
-            DO INU = 1,IMU-1
-               IADR1  = IFULL(IMU,INU)
-               IADR2  = IFULL(INU,IMU)
-               DTMP2(IADR1,IZ,1) = DTMP2(IADR1,IZ,1) 
-     &                           + DSCALE * DTMP2(IADR2,IZ,1)
-               DTMP2(IADR2,IZ,1) = D0
-            END DO
-         END DO
-      END DO
-C
-C
-      IF ( IPRINT .GT. 5 ) THEN
-         CALL HEADER('GTCNV1: FOCK After folding',-1)
-         CALL PRQMAT(DTMP2,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &            NZ,IPQTOQ(1,0),LUPRI)
-      END IF
-C
-C     Insert half-phases
-C     ==================
-C
-      IF(NZ.LT.4) THEN
-         DO IZ = 1,NZ
-            IQ = IPQTOQ(IZ,0)
-            CALL Q2PHASE('F',IQ,1,DTMP2(1,IZ,1))
-         ENDDO
-         IF(IPRINT.GE.5) THEN
-            CALL HEADER('Unsorted FOCK with half-phases inserted',-1)
-            CALL PRQMAT(DTMP2,NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-         ENDIF
-      ENDIF
-C
-C
-C     Transform fock matrix from QO to AO
-C     ======================================
-C
-      CALL DZERO(FOCK,4*N2BBASX)
-      IOFF = 0
-      IPR = JBTOF(0,1)
-      DO IZ = 1,4
-         IREPD = IRQMAT(IZ,0)
-         IQ    = IQMULT(1,JQBAS(IREPD,IPR),IZ)
-         IPQ   = IQTOPQ(IQ,0)
-         IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.FOCK: IPQ.GT.NZ !')
-         IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.FOCK: IPQ.LE.0 !')
-         CALL DSYM1R(DTMP2(1,IPQ,1),FOCK(IOFF+1),
-     &               NTBAS(0),IREPD,IPRINT)
-         IOFF = IOFF + N2BBASX
-      ENDDO
-C
-C
-C     Construction of the density matrix
-C     ==================================
-C
-C     Use DTMP2 temporarily density matrix
-C
-C     Since Trond insists in D_ij = \sum_a C_ia C_ja^*
-C     and .NOT. D_ij = 2 \sum C_ia C_ja^*, we multiply DTMP2 with 2.0
-C
-C
-C     Get density matrix
-C
-      CALL GENDEN(DTMP2,CMO,1,IPRINT)
-      IF (NASHT.GT.0) THEN
-         CALL GENDEN(DTMP2(1,1,2),CMO,2,IPRINT)
-C
-C        DVao + DCao
-C
-         CALL DAXPY(N2BBASXQ,DP5,DTMP2(1,1,2),1,
-     &                          DTMP2,1)
-      END IF
-      CALL DSCAL(N2BBASXQ,D2,DTMP2,1)
-C
-C     Transform to sorted basis
-C
-      CALL BSTOBU(DTMP2(1,1,1),NZ,WORK(KFREE),LFREE)
-      IF(IPRINT.GE.5) THEN
-         CALL HEADER('GTCNV1: DMAT After BSTOBU to unsorted basis',
-     &               -1)
-         CALL PRQMAT(DTMP2(1,1,1),NTBAS(0),NTBAS(0),
-     &               NTBAS(0),NTBAS(0),NZ,
-     &               IPQTOQ(1,0),LUPRI)
-      END IF
-C
-C     Fold density matrix
-C
-      DO IZ = 1,NZ
-         IF ( IZ .EQ. 1 ) THEN
-            DSCALE = D1
-         ELSE
-            DSCALE = -D1
-         END IF
-         DO IMU = 2,NTBAS(0)
-            DO INU = 1,IMU-1
-               IADR1 = IFULL(IMU,INU)
-               IADR2 = IFULL(INU,IMU)
-               DTMP2(IADR1,IZ,1) = DTMP2(IADR1,IZ,1) +
-     &                            DSCALE * DTMP2(IADR2,IZ,1)
-               DTMP2(IADR2,IZ,1) = D0
-            END DO
-         END DO
-      END DO
-C
-C
-      IF ( IPRINT .GT. 5 ) THEN
-         CALL HEADER('GTCNV1: DMAT after folding',-1)
-         CALL PRQMAT(DTMP2(1,1,1),NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-      END IF
-C
-C     Transform density matrix to AO basis
-C
-C
-C     Insert half-phases
-C     ==================
-C
-      IREP = ISYMOP(1)-1
-      IF(NZ.LT.4) THEN
-         DO IZ = 1,NZ
-            IQ = IPQTOQ(IZ,IREP)
-            CALL Q2PHASE('D',IQ,1,DTMP2(1,IZ,1))
-         ENDDO
-         IF(IPRINT.GE.5) THEN
-            CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
-            CALL PRQMAT(DTMP2(1,1,1),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
-         ENDIF
-      ENDIF
-C
-C
-C       Transform density matrix from QO to AO
-C       ======================================
-C
-#ifdef OLD_QOAO
-990316-jth: this code is not working
-      CALL DZERO(DMAT,4*N2BBASX)
-      IOFF = 0
-      IPR = JBTOF(0,1)
-      DO IZ = 1,4
-         IREPD = IRQMAT(IZ,0)
-         IQ    = IQMULT(1,JQBAS(IREPD,IPR),IZ)
-         IPQ   = IQTOPQ(IQ,0)
-         IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.DENSTY: IPQ.GT.NZ !')
-         IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.DENSTY: IPQ.LE.0 !')
-         CALL DSYM1R(DTMP2(1,IPQ,1),DMAT(IOFF+1),
-     &              NTBAS(0),IREPD,IPRINT)
-         IOFF = IOFF + N2BBASX
-      ENDDO
-#endif
-C
-C     Note ad Imaginary part of the density matrix:
-C     ---------------------------------------------
-C
-C     In the AVEMOM routine X, Y-, and Z-derivates are multiplied 
-C     with the k-part, j-part, and the i-part, respectively.
-C     
-C
-C     The real part:
-C     --------------
-C
-      CALL DZERO(DMAT,4*N2BBASX)
-      CALL DSYM1R(DTMP2(1,1,1),DMAT,NTBAS(0),0,IPRINT)
-C
-C     The imaginary parts:
-C     --------------------
-C
-      IC = 2
-C
-      DO I = 2,4
-C
-C        Direction:
-C        IDIR = 1(X), 2(Y), or 3(Z)
-C
-         IDIR = 5-I
-C
-C        Symmetry of axis:
-C
-         ISYM = ISYMAX(IDIR,1)
-C
-C        Output goes to...
-C
-         IZ = JM4POS(I-1)
-C
-C        from...
-C
-         IQ = IQMULT(1,JQBAS(ISYM,IC),IZ)
-         IQP = IQTOPQ(IQ,0)
-         IREPD = IRQMAT(IZ,0)
-C
-         IOFF = (I-1)*N2BBASX
-c        IOFF = (IZ-1)*N2BBASX
-         CALL DSYM1R(DTMP2(1,IQP,1),DMAT(IOFF+1),
-     &              NTBAS(0),IREPD,IPRINT)
-C
-      END DO
-C
-C
-C
-C     Final print section
-C
-      IF ( IPRINT .GE. 5 ) THEN
-         CALL HEADER('GTCNV1: Final matrices.',-1)
-         CALL HEADER('Density matrix:',-1)
-         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NTBAS(0),4,IQMULT,LUPRI)
-         CALL HEADER('Contravariant fock matrix',-1)
-         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),
-     &               NTBAS(0),4,IQMULT,LUPRI)
-      END IF
-C
-C     Dispose used memory
-C
-      CALL MEMREL('GTCNV1',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('GTCNV1')
-      CALL FLSHFO(LUPRI)
-C
-      IPRINT = IP
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1600,149 +1756,6 @@ C
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('GRDOUT')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gtcnvd */
-      SUBROUTINE GTCNVD(DMAT,CMO,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     (c) 1997/06/09 by J. Thyssen
-C
-C     Get contravariant denstity matrix without folding
-C     Copied from GTCNV1
-C     
-C     Last revision: 1997/06/10 jth
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-      DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*)
-      LOGICAL FOLD
-      PARAMETER ( D1 = 1.0 D00, D2 = 2.0 D00 )
-#include <dcbbas.h>
-#include <dcbgen.h>
-#include <dgroup.h>
-#include <dcborb.h>
-#include <dcbdhf.h>
-#include <dcbqal.h>
-#include <dummy.h>
-C
-#include <ibtfun.h>
-      IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
-C
-#include <memint.h>
-C
-C
-      CALL QENTER('GTCNVD')
-      IF ( IPRINT .GE. 5) CALL HEADER('Output from GTCNVD',-1)
-C 
-      CALL MEMGET('REAL',KTMP,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBG,NORBT,WORK,KFREE,LFREE)
-C
-C
-C     Read coefficient matrix and eigenvalues
-C     ===================================================
-C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','DHFGRD')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),WORK(KIBG),TOTERG,3)
-      CLOSE(LUCOEF,STATUS='KEEP')
-C
-C     Contruct density matrix
-C
-      DO IMAT = 1,NFMAT
-         IBIT = IBTSHL(1,IMAT-1)
-         CALL GENDEN(WORK(KTMP),CMO,IBIT,IPRINT)
-         IF (IPRINT .GE. 5) THEN
-            CALL HEADER('GTCNVD: DMAT from GENDEN',-1)
-            CALL PRQMAT(WORK(KTMP),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,0),LUPRI)
-         END IF
-C
-C        Scale inactive density matrix with D2 (= occupation)
-C
-         IF (IMAT.EQ.1)
-     &      CALL DSCAL(N2BBASXQ,D2,WORK(KTMP),1)
-C
-C        Transform to unsorted basis
-C
-         IREP = ISYMOP(IMAT)-1
-         CALL BSTOBU(WORK(KTMP),NZ,WORK(KFREE),LFREE)
-         IF(IPRINT.GE.5) THEN
-            CALL HEADER('GTCNVD: DMAT After BSTOBU to unsorted basis',
-     &                  -1)
-            WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',IMAT
-            CALL PRQMAT(WORK(KTMP),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),NZ,
-     &                  IPQTOQ(1,IREP),LUPRI)
-         END IF
-c           CALL PYTHONMATRIX(WORK(KTMP),NTBAS(0),NTBAS(0),
-c    &                  NTBAS(0),NTBAS(0),'DEN.GRD.RE')
-c           CALL PYTHONMATRIX(WORK(KTMP+N2BBASX),NTBAS(0),NTBAS(0),
-c    &                  NTBAS(0),NTBAS(0),'DEN.GRD.IM')
-c        CALL QUIT('dooo')
-C
-C
-C        Insert half-phases
-C        ==================
-C
-         IREP = ISYMOP(IMAT)-1
-         IF(NZ.LT.4) THEN
-            IOFF = 0
-            DO IZ = 1,NZ
-               IQ = IPQTOQ(IZ,IREP)
-               CALL Q2PHASE('D',IQ,1,WORK(KTMP+IOFF))
-               IOFF = IOFF + N2BBASX
-            ENDDO
-            IF(IPRINT.GE.5) THEN
-               CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
-               CALL PRQMAT(WORK(KTMP),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                     NTBAS(0),NZ,
-     &                     IPQTOQ(1,IREP),LUPRI)
-            ENDIF
-         ENDIF
-C
-C
-C        Transform density matrix from QO to AO
-C        ======================================
-C
-         CALL DZERO(DMAT(1,1,IMAT),4*N2BBASX)
-         IREP = ISYMOP(IMAT)-1
-         IPAR = JBTOF(IREP,1)
-         DO IZ = 1,4
-            IREPD = IRQMAT(IZ,IREP)
-            IQ    = IQMULT(1,JQBAS(IREPD,IPAR),IZ)
-            IPQ   = IQTOPQ(IQ,IREP)
-            IF(IPQ.GT.NZ) CALL QUIT('GTCNV1.DENSITY: IPQ.GT.NZ !')
-            IF(IPQ.LE.0 ) CALL QUIT('GTCNV1.DENSITY: IPQ.LE.0 !')
-            IADR = (IPQ-1) * N2BBASX
-            CALL DTSOAO(WORK(KTMP+IADR),DMAT(1,IZ,IMAT),
-     &                 NTBAS(0),IREPD,IPRINT)
-         ENDDO
-      ENDDO
-      IF (NASHT.GT.0) THEN
-         CALL DAXPY(N2BBASX*4,D1,DMAT(1,1,2),1,DMAT(1,1,1),1)
-      END IF
-      IF ( IPRINT .GE. 10 ) THEN
-         DO IMAT = 1,NFMAT
-C
-C        Final print section
-C
-            CALL HEADER('GTCNVD: Final matrices.',-1)
-            CALL HEADER('Density matrix:',-1)
-            WRITE(LUPRI,*) 'Matrix number ',IMAT
-            CALL PRQMAT(DMAT(1,1,IMAT),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NTBAS(0),4,IPQTOQ(1,0),LUPRI)
-         END DO
-      END IF
-C     Dispose used memory
-C
-      CALL MEMREL('GTCNVD',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-      CALL QEXIT('GTCNVD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
