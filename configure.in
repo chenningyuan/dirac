@@ -489,6 +489,7 @@ echo
 # QUEUING SYSTEM
 #
 #
+if [ 0 -eq 1 ]; then
 echo
 echo 'QUEUING SYSTEM'
 echo
@@ -521,6 +522,7 @@ if [ -z "$queuesys" ]; then
    done
 fi
 echo 'Queuing system: '$queuesys
+fi
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
