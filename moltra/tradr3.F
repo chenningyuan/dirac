@@ -247,10 +247,15 @@ C
 C           First a dummy run to calculate the memory requirements
 C           for GMAT. We assume that HMAT is not more than twice GMAT,
 C           and reserve the same memory also for use in HERMIT.
+C           HJAAJ Aug 2001: modified to use max mem for Hermit
+C           to be sure that enough space for Hermit.
 C
-C           HJAAJ TODO: should be modified as in tradr4.F
-C
-            NSIZG = LFREE / 3
+            MWHER = MXMEMHER(IC,I2TYP)
+            NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
+C           subtract max mem needed in Hermit and 10%/1Mw for anything else
+            NSIZG = MIN(NSIZG, LFREE/3)
+C           assume HMAT is not more than twice GMAT
+C           TODO: could be improved with same scheme as in tradr4.F
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB  ,LDXAB  ,WORK,KFREE,LFREE)
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,

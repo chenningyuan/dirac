@@ -343,7 +343,7 @@ C     Get screening matrices
 C
       IF(SCRTRA.GT.0) THEN
 CTROND  Not using sameness relations...
-CTROND  ...this may be improved
+CTROND  ...this may be improved TODO
         DO I = 1,4
           ISAMEIJ(I) = I
         ENDDO
@@ -391,14 +391,17 @@ C           NOTE : The actual dimension of INDXAB is kept in the
 C           common block dcbtra.h. When we want to parallelize it may
 C           be better to allocate it always as MXINSH*MXINSH*4,
 C           or (even better) to send it also down to HERMIT.
-C           Luuk.
+C           Luuk. TODO
 C
 C           First a dummy run to calculate the memory requirements
 C           for GMAT. Max size of GMAT is set in MAXSCL from
-C           .SCLMEM in input or chosen as 1/3 of LFREE.
+C           .SCLMEM in input or chosen based on MWHER.
+C
 C     
             IF(MAXSCL.EQ.0) THEN
-               NSIZG = LFREE/3
+               MWHER = MXMEMHER(IC,I2TYP)
+               NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
+C              subtract max mem needed in Hermit and 10%/1Mw for anything else
             ELSE
                NSIZG = MAXSCL
                
@@ -1041,7 +1044,7 @@ C
 C     
                      IF (N1*N2.GT.0) THEN
 C
-CTROND  check this....
+CTROND  check this.... TODO
                         CALL QGEMM(N1,N3,N2,D1,
      &                       'N','N',IPQTOQ(1,IREPR2),TQMAT(JOFF),
      &                       N1,N2,NZ,

@@ -209,7 +209,7 @@ C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
 C           Get memory needed for Hermit
-            MWHER = MXHERMEM(IC,I2TYP)
+            MWHER = MXMEMHER(IC,I2TYP)
             NSIZG = LFREE - MWHER
             NUMDIS = NDISTRN(I2TYP,IPRINT,.TRUE.,.FALSE.,.TRUE.,
      &                       INDX,WORK(KDXAB),IJP12,NSIZG,IDUM)
