@@ -34,7 +34,6 @@ timestamp='2004-03-12'
 #
 # The plan is that this can be called by configure scripts if you
 # don't specify an explicit build system type.
-
 me=`echo "$0" | sed -e 's,.*/,,'`
 
 usage="\
@@ -82,7 +81,6 @@ while test $# -gt 0 ; do
        break ;;
   esac
 done
-
 if test $# != 0; then
   echo "$me: too many arguments$help" >&2
   exit 1
@@ -135,7 +133,6 @@ UNAME_MACHINE=`(uname -m) 2>/dev/null` || UNAME_MACHINE=unknown
 UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 UNAME_SYSTEM=`(uname -s) 2>/dev/null`  || UNAME_SYSTEM=unknown
 UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
-
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
@@ -659,6 +656,8 @@ EOF
 	then
 	    # avoid double evaluation of $set_cc_for_build
 	    test -n "$CC_FOR_BUILD" || eval $set_cc_for_build
+# tsaue: This line gives the message:
+# cpp: "", line 0: error 4021: Unable to stat .
 	    if echo __LP64__ | (CCOPTS= $CC_FOR_BUILD -E -) | grep __LP64__ >/dev/null
 	    then
 		HP_ARCH="hppa2.0w"
