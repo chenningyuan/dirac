@@ -6611,7 +6611,7 @@ C
          WRITE(LUPRI,'(/,A,/,A,I3)')
      $        '*** ERROR in GENFAMEXP ***:',
      &        'Unknown IFLAG: ',IFLAG
-         CALL QUIT('Unknown IFLAG in GENFAMEXP',-1)
+         CALL QUIT('Unknown IFLAG in GENFAMEXP')
       END IF
 C
       IF (INPTST) THEN
