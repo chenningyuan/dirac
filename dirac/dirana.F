@@ -1307,12 +1307,16 @@ C
      &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRPRJ)
 C
-C     Population analysis
+C     Mulliken-type population analysis
 C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,SMAT,GVEC,AMAT,BVEC,
      &            JMOL,WORK(KE(IFRP,2)),NSTR,
      &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
 C
+C     Löwdin type population analysis
+C
+      IF(DOPOP) CALL ANAPR3(AMAT,BVEC,NMOL,NREF,NTOT,WORK(KE(IFRP,1)),
+     &                      JREF,WORK,KFREE,LFREE)
       CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -3240,3 +3244,68 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Anapr3 */
+      SUBROUTINE ANAPR3(AMAT,BVEC,NMOL,NREF,NTOT,EREF,JREF,
+     &                  WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+C
+#include "dgroup.h"
+#include "dcbprj.h"
+      CHARACTER OTYP(2)*1
+      DIMENSION AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ),
+     &          JREF(3,*),EREF(*),WORK(*)
+      DATA OTYP/'E','P'/
+      SAVE OTYP
+C
+      KFRSAV = KFREE
+C
+C     Get transformation matrix
+C
+      CALL SQSTRA(1,AMAT,NTOT,NTOT,NTOT,NZ,WORK(KFREE),LFREE)
+C
+C     Transform coefficients
+C
+      NDIM = NTOT*NTOT*NZ
+      CALL MEMGET('REAL',KCVEC,NDIM,WORK,KFREE,LFREE)
+      CALL QGEMM(NTOT,NMOL,NTOT,D1,
+     &           'N','N',IPQTOQ(1,0),AMAT,NTOT,NTOT,NZ,
+     &           'N','N',IPQTOQ(1,0),BVEC,NTOT,NMOL,NZ,
+     &           D0,IPQTOQ(1,0),WORK(KCVEC),NTOT,NMOL,NZ)
+C
+C     Form density matrix in symmetry orthonormalized basis
+C
+      CALL QGEMM(NTOT,NTOT,NMOL,D1,
+     &           'N','N',IPQTOQ(1,0),WORK(KCVEC),NTOT,NMOL,NZ,
+     &           'H','N',IPQTOQ(1,0),WORK(KCVEC),NTOT,NMOL,NZ,
+     &           D0,IPQTOQ(1,0),AMAT,NTOT,NTOT,NZ)
+      IF(IPRPRJ.GE.2) THEN
+        WRITE(LUPRI,'(/A/)') 
+     &   'Coefficients in symmetry orthonormalized basis:'
+        CALL PRQMAT(WORK(KCVEC),NTOT,NMOL,NTOT,NMOL,NZ,
+     &              IPQTOQ(1,0),LUPRI)
+        WRITE(LUPRI,'(/A/)') 
+     &  'Density matrix in symmetry orthonormalized basis:'
+        CALL PRQMAT(AMAT,NTOT,NTOT,NTOT,NTOT,NZ,
+     &            IPQTOQ(1,0),LUPRI)
+      ENDIF
+      WRITE(LUPRI,'(/A)') 
+     &   '* Occupations in symmetry orthonormalized basis:'
+      DO I = 1,NREF
+        KORB = JREF(1,I)
+        KTYP = JREF(2,I)
+        KREF = JREF(3,I)
+        WRITE(LUPRI,110)
+     &   REFFIL(KREF),OTYP(KTYP),KORB,D2*AMAT(I,I,1),EREF(I)
+      ENDDO
+      CALL MEMREL('ANAPR3',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+ 110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
+     &       2(3X,A1,F5.2,A1,F5.2,A1,3X))
+      END
