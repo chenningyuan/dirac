@@ -978,7 +978,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELIBEIG(IBEIG,IOFF,IFRP,IBBUF,JOFF,JVEC,NPVEC,NEVEC)
+      SUBROUTINE SELIBEIG(IBEIG,IOFF,IFRP,IBBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of integers from IBEIG according to array JVEC
 C
@@ -1001,14 +1001,14 @@ C     Positronic eigenvalues
 C
       DO I = 1,NPVEC
         II = NPSH(IFRP)+1+JVEC(I)
-        IBBUF(I+JOFF) = IBEIG(IOFF+II)
+        IBBUF(I) = IBEIG(IOFF+II)
       ENDDO
 C
 C     Electronic eigenvalues
 C
       DO I = NPVEC+1,NVEC
         II = NPSH(IFRP)+JVEC(I)
-        IBBUF(I+JOFF) = IBEIG(IOFF+II)
+        IBBUF(I) = IBEIG(IOFF+II)
       ENDDO
 C
       RETURN

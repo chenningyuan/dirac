@@ -171,7 +171,7 @@ C
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
 C
-      INFO = IOPT.EQ.2.OR.IOPT.EQ.3.OR.IOPT.EQ.0.OR.IOPT.EQ.4
+      INFO = IOPT.EQ.3.OR.IOPT.EQ.0.OR.IOPT.EQ.4
       REWIND IUNIT
       IF(IOPT.EQ.5) THEN
         READ(IUNIT)
@@ -185,7 +185,7 @@ C
 C
       IF(INFO) THEN
         FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(A,I5,3X,A,'//FMT//')')
+        WRITE(LUPRI,'(/A,I5,3X,A,'//FMT//')')
      &   'REACMO: Coefficients read from unit',IUNIT,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
@@ -655,9 +655,9 @@ C              ... read end of range
                   TEGN = B(I:I)
                   IF (TEGN .NE. 'o') GOTO 950
                   IF (NEG2 .EQ. -1) THEN
-                     NUM2 = -IRNGE1
+                     NUM1 = -IRNGE1
                   ELSE
-                     NUM2 = IRNGE2
+                     NUM1 = IRNGE2
                   END IF
                   I = I + 1
                ELSE 
