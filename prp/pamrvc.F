@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : pamrvc.F
+C SOURCE  : $Source$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
       SUBROUTINE XRSSVC(BCVEC,BEVEC,BPVEC,
@@ -331,6 +337,7 @@ C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
+#include <dcbham.h>
       LOGICAL TOBE
       DIMENSION FMO(N2ORBXQ,*),FAO(N2BBASXQ,*),
      &          BEVEC(*),BPVEC(*),IBEVC(*),IBPVC(*),IBTYP(2,*),
@@ -366,6 +373,12 @@ C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,
      &            FAO,FMO,NOSIM,NPOS,INTFLG,
      &            IPRTWO,WORK(KFREE),LFREE)
+C
+C     If solvent; get contribution
+C     ============================
+C
+      IF(SOLVEN) CALL SOLFCK(FAO,FMO,NOSIM,ESOLVE,ESOLVN,
+     &                       WORK(KFREE),LFREE,IPRSOL)
 C
       IM = 0
 C
@@ -1566,8 +1579,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/*Deck xrsne1 */
       SUBROUTINE XRSNE1(BEVEC,BPVEC,BCVEC,MFREQ,EVALR,EVECR,
      &                  GPOE,GPOP,GPCI,IBTYP,IBCVC,IBEVC,IBPVC,
-     &                  BEBUF,BPBUF,BCBUF,RCNV,XECNV,XPCNV,XCCNV,
-     &                  IEVEC,IPVEC,ICVEC,RNORM,WORK,KFREE,LFREE)
+     &                  BEBUF,BPBUF,BCBUF,RCNV,RNORM,XNORM,IBVEC,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     This routine will form new trial vectors for the
@@ -1584,9 +1597,8 @@ C
       DIMENSION BEVEC(*),BPVEC(*),BCVEC(*),EVALR(*),
      &          EVECR(NREDM,*),GPOE(*),GPOP(*),GPCI(*),
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
-     &          BEBUF(*),BPBUF(*),BCBUF(*),
-     &          XECNV(*),XPCNV(*),XCCNV(*),RCNV(*),
-     &          IEVEC(*),IPVEC(*),ICVEC(*),RNORM(7,MFREQ),WORK(*)
+     &          BEBUF(*),BPBUF(*),BCBUF(*),IBVEC(MFREQ,NVPAR),
+     &          RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),WORK(*)
 C
       IF(IPRXRS.GE.3) CALL HEADER('Output from XRSNE1',-1)
 C
@@ -1622,12 +1634,12 @@ C
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC,EVECR,MFREQ,
      &                  IBTYP,IBEVC,BEBUF)
-            CALL XVCNRM(XECNV,BEVEC,NZXOPEQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEP),BEVEC,NZXOPEQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-e) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XECNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEP),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1635,11 +1647,8 @@ C           Print section
               CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
             ENDIF
           ELSE
-            CALL DZERO(XECNV,NESIM)
+            CALL DZERO(XNORM(1,IPEP),MFREQ)
           ENDIF
-        ELSE
-          NESIM = 0
-          CALL DZERO(XECNV,MFREQ)
         ENDIF
 C
 C       Orbital (e-p) part
@@ -1663,12 +1672,12 @@ C
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC,EVECR,MFREQ,
      &                  IBTYP,IBPVC,BPBUF)
-            CALL XVCNRM(XPCNV,BPVEC,NZXOPPQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPP),BPVEC,NZXOPPQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-p) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XPCNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPP),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1676,11 +1685,8 @@ C           Print section
               CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
             ENDIF
           ELSE
-            CALL DZERO(XPCNV,NPSIM)
+            CALL DZERO(XNORM(1,IPPP),MFREQ)
           ENDIF
-        ELSE
-          NPSIM = 0
-          CALL DZERO(XPCNV,MFREQ)
         ENDIF
 C
 C       Configurational part
@@ -1704,12 +1710,12 @@ C
           IF(NCRED.GT.0) THEN
             CALL XRSXV1(IPX,JBCNDX,BCVEC,EVECR,MFREQ,
      &                  IBTYP,IBCVC,BCBUF)
-            CALL XVCNRM(XCCNV,BCVEC,NZCONFQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPCP),BCVEC,NZCONFQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of configurational X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XCCNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPCP),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1717,11 +1723,8 @@ C           Print section
               CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
             ENDIF
           ELSE
-            CALL DZERO(XCCNV,NCSIM)
+            CALL DZERO(XNORM(1,IPCP),NCSIM)
           ENDIF
-        ELSE
-          NCSIM = 0
-          CALL DZERO(XCCNV,MFREQ)
         ENDIF
       ELSE
 C
@@ -1764,18 +1767,18 @@ C
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBEVC,BEBUF)
-            CALL XVCNRM(XECNV      ,BEVEC      ,NZXOPEQ,MFREQ)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
      &                  IBTYP,IBEVC,BEBUF)
-            CALL XVCNRM(XECNV(IXE2+1),BEVEC(KBE2),NZXOPEQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-e) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XECNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEP),I=1,MFREQ)
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-e) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XECNV(IXE2+I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEM),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1786,12 +1789,10 @@ C           Print section
               CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
             ENDIF
           ELSE
-            CALL DZERO(XECNV,NESIM)
+            CALL DZERO(XNORM(1,IPEP),MFREQ)
+            CALL DZERO(XNORM(1,IPEM),MFREQ)
           ENDIF
-        ELSE
-          NESIM = 0
-          CALL DZERO(XECNV,2*MFREQ)
-       ENDIF
+        ENDIF
 C
 C       Orbital (e-p) part
 C       ------------------
@@ -1822,18 +1823,18 @@ C
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBPVC,BPBUF)
-            CALL XVCNRM(XPCNV      ,BPVEC      ,NZXOPPQ,MFREQ)
             CALL XRSXV1(IMX,JBPNDX,BPVEC(KBP2),EVECR,MFREQ,
      &                  IBTYP,IBPVC,BPBUF)
-            CALL XVCNRM(XPCNV(IXP2+1),BPVEC(KBP2),NZXOPPQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-p) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XPCNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPP),I=1,MFREQ)
               WRITE(LUPRI,'(A)') 
      &          'Norms of orbital(e-p) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XPCNV(IXP2+I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPM),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1844,11 +1845,9 @@ C           Print section
               CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
             ENDIF
           ELSE
-            CALL DZERO(XPCNV,NPSIM)
+            CALL DZERO(XNORM(1,IPPP),MFREQ)
+            CALL DZERO(XNORM(1,IPPM),MFREQ)
           ENDIF
-        ELSE
-          NPSIM = 0
-          CALL DZERO(XPCNV,2*MFREQ)
         ENDIF
 C
 C       Configurational part
@@ -1880,18 +1879,17 @@ C
           IF(NCRED.GT.0) THEN
             CALL XRSXV1(IPX,JBCNDX,BCVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBCVC,BCBUF)
-            CALL XVCNRM(XCCNV      ,BCVEC      ,NZCONFQ,MFREQ)
             CALL XRSXV1(IMX,JBCNDX,BCVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBCVC,BCBUF)
-            CALL XVCNRM(XCCNV(IXC2+1),BCVEC(KBC2),NZCONFQ,MFREQ)
-C           Print section
+            CALL XVCNRM(XNORM(1,IPCP),BCVEC      ,NZCONFQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPCM),BCVEC(KBC2),NZCONFQ,MFREQ)
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)') 
      &          'Norms of configurational X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XCCNV(I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPCP),I=1,MFREQ)
               WRITE(LUPRI,'(A)') 
      &          'Norms of configurational X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XCCNV(IXC2+I),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPCP),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ, 
@@ -1902,14 +1900,26 @@ C           Print section
               CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
             ENDIF
           ELSE
-            CALL DZERO(XCCNV,NCSIM)
+            CALL DZERO(XNORM(1,IPCP),MFREQ)
+            CALL DZERO(XNORM(1,IPCM),MFREQ)
           ENDIF
-        ELSE
-          NCSIM = 0
-          CALL DZERO(XCCNV,2*MFREQ)
         ENDIF
       ENDIF
+C
       NTSIM = NESIM + NPSIM + NCSIM
+C
+C     Print section
+C
+      IF(IPRXRS.GT.0) THEN
+        WRITE(LUPRI,'(/A)') '* XRSNEX: Norms of resultant vectors:'
+        WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')  
+     &      '* Frequency    ','Total   ',(BVTYP(I),' part ',I=1,NVPAR)
+        DO IFREQ = 1,MFREQ
+          XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
+          WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
+     &        EVALR(IFREQ),XTNORM,(XNORM(IFREQ,I),I=1,NVPAR)
+        ENDDO
+      ENDIF
       CALL FLSHFO(LUPRI)
 C
 C     ****************************
@@ -1966,7 +1976,7 @@ C
         ENDIF
       ENDIF
 C
-C     Add E[2}X
+C     Add E[2]X
 C     =========
 C
       CALL ADDE2X(IPX,BEVEC,BPVEC,BCVEC,EVECR,MFREQ,
@@ -2066,9 +2076,10 @@ C     **********************************
 C     ***** Form new trial vectors *****
 C     **********************************
 C
-      CALL XRSBVC(BEVEC,BPVEC,BCVEC,XECNV,XPCNV,XCCNV,
-     &            MFREQ,IBTYP,IBCVC,IBEVC,IBPVC,IEVEC,IPVEC,ICVEC,
-     &            RCNV,EVALR,EVECR,RNORM,BEBUF,BPBUF,BCBUF,
+      CALL XRSBVC(BEVEC,BEBUF,IBEVC,
+     &            BPVEC,BPBUF,IBPVC,
+     &            BCVEC,BCBUF,IBCVC,
+     &            MFREQ,IBTYP,IBVEC,EVALR,EVECR,RCNV,RNORM,XNORM,
      &            WORK,KFREE,LFREE)
       RETURN
       END
@@ -2096,10 +2107,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSBVC */
-      SUBROUTINE XRSBVC(BEVEC,BPVEC,BCVEC,XECNV,XPCNV,XCCNV,
-     &            MFREQ,IBTYP,IBCVC,IBEVC,IBPVC,IEVEC,IPVEC,ICVEC,
-     &            RCNV,EVALR,EVECR,RNORM,BEBUF,BPBUF,BCBUF,
-     &            WORK,KFREE,LFREE)
+      SUBROUTINE XRSBVC(BEVEC,BEBUF,IBEVC,
+     &                  BPVEC,BPBUF,IBPVC,
+     &                  BCVEC,BCBUF,IBCVC,
+     &                  MFREQ,IBTYP,IBVEC,EVALR,EVECR,RCNV,RNORM,XNORM,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Construct new trial vectors for next microiteration
@@ -2133,14 +2145,9 @@ C       BPVEC - NPSIM trial vectors: orbital (e-p) type
 C       BCVEC - NCSIM trial vectors : configurational part
 C
 C       RNORM - residual norm
-C             1: norm of E(+)-part
-C             2: norm of P(+)-part
-C             3: norm of C(+)-part
-C             4: norm of E(-)-part
-C             5: norm of P(-)-part
-C             6: norm of C(-)-part
 C
 C     Written by T.Saue, Oct 18 1996
+C     Last modification Nov 26 1997
 C
 C*****************************************************************************
 #include <implicit.h>
@@ -2150,352 +2157,97 @@ C
 #include <dcbxrs.h>
 #include <dcbibn.h>
       LOGICAL   USEXVC
-      DIMENSION BEVEC(NZXOPEQ,*),BPVEC(NZXOPPQ,*),
-     &          BCVEC(NZCONFQ,*),EVALR(*),EVECR(*),
-     &          XECNV(*),XPCNV(*),XCCNV(*),RCNV(*),
-     &          IBTYP(2,NREDM),IBEVC(NREDM),IBPVC(NREDM),IBCVC(NREDM),
-     &          IEVEC(*),IPVEC(*),ICVEC(*),RNORM(7,MFREQ),
-     &          BEBUF(*),BPBUF(*),BCBUF(*),WORK(*)
+      DIMENSION BEVEC(NZXOPEQ,*),BEBUF(*),IBEVC(NREDM),
+     &          BPVEC(NZXOPPQ,*),BPBUF(*),IBPVC(NREDM),
+     &          BCVEC(NZCONFQ,*),BCBUF(*),IBCVC(NREDM),
+     &          IBTYP(2,NREDM),IBVEC(MFREQ,NVPAR),EVALR(*),EVECR(*),
+     &          RCNV(*),RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),
+     &          WORK(*)
 C
-      IF(IPRXRS.GE.3) CALL HEADER('Output from XRSBVC',-1)
-C
-C     ********************************
-C     ***** Select trial vectors *****
-C     ********************************
-C
-C
-      ISIM   = 0
-      ISIM2  = 0
       CNVMAX = D0
-C
-C     ===================
-C     *** Static code ***
-C     ===================
-C
-      IF(STATIC) THEN
-        DO IFREQ = 1,MFREQ
-          ISIM  = ISIM + 1
-C
-C         Check norm of each residual
-C         ===========================
-C
-C         Orbital (e-e) part
-C         ------------------
-C
-          IF(NZXOPE.GT.0) THEN
-            IEVEC(ISIM) = 1
-            RNORM(2,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,ISIM),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(A,F8.5,A)') 
-     &          'Norm of orbital(e-e) X(+)-residual vector (freq = ',
-     &          EVALR(IFREQ),')'
-              WRITE(LUPRI,'(1P,3X,E8.2)') RNORM(2,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)')
-     &          ' Orbital (e-e) X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BEVEC(1,ISIM),1,NZXOPE)
-            ENDIF
-          ELSE
-            IEVEC(ISIM) = 0
-          ENDIF
-C
-C         Orbital (e-p) part
-C         ------------------
-C
-          IF(NZXOPP.GT.0) THEN
-            IPVEC(ISIM) = 1
-            RNORM(3,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,ISIM),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(A,F8.5,A)') 
-     &          'Norm of orbital(e-p) X(+)-residual vector (freq = ',
-     &          EVALR(IFREQ),')'
-              WRITE(LUPRI,'(1P,3X,E8.2)') RNORM(3,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)') 
-     &          'Orbital (e-e) X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BPVEC(1,ISIM),1,NZXOPP)
-            ENDIF
-          ELSE
-            IPVEC(ISIM) = 0
-          ENDIF
-C
-C         Configurational part
-C         --------------------
-C
-          IF(NZCONF.GT.0) THEN
-            ICVEC(ISIM) = 1
-            RNORM(4,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,ISIM),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(A,F8.5,A)') 
-     &          'Norm of configurational X(+)-residual vector (freq = ',
-     &          EVALR(IFREQ),')'
-              WRITE(LUPRI,'(1P,3X,E8.2)') RNORM(4,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)') 
-     &          'Configurational X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BCVEC(1,ISIM),1,NZCONF)
-            ENDIF
-          ELSE
-            ICVEC(ISIM) = 0
-          ENDIF
-          RNORM(1,IFREQ) = SQRT(RNORM(2,IFREQ)**2 + RNORM(3,IFREQ)**2 
-     &                        + RNORM(4,IFREQ)**2)
-C
-          XTNORM      = SQRT(XECNV(ISIM)**2    + XPCNV(ISIM)**2 
-     &                        + XCCNV(ISIM)**2)
-          IF(XTNORM.EQ.D0) THEN
-            WRITE(LUPRI,'(A,A)') '*** WARNING! ***',
-     &        'Zero norm of soution vector !'
-          ELSE
-            RCNV(IFREQ) = RNORM(1,IFREQ)/XTNORM
-            CNVMAX = MAX(CNVMAX,RCNV(IFREQ))
-          ENDIF
-C
-C         Convergence check
-C
-          IF(RNORM(1,IFREQ).LE.(XTNORM*THCXRS)) THEN
-C         ... this root converged
-            IEVEC(ISIM)  = 0
-            IPVEC(ISIM)  = 0
-            ICVEC(ISIM)  = 0
-          ELSE
-C         ... check each type separately
-            RNRMAX = MAX(RNORM(2,IFREQ),RNORM(3,IFREQ),RNORM(4,IFREQ))
-            IF(RESFAC*RNORM(2,IFREQ).LT.RNRMAX) IEVEC(ISIM) = 0
-            IF(RESFAC*RNORM(3,IFREQ).LT.RNRMAX) IPVEC(ISIM) = 0
-            IF(RESFAC*RNORM(4,IFREQ).LT.RNRMAX) ICVEC(ISIM) = 0
-          ENDIF
-          IF(IPRXRS.GE.1) THEN
-            WRITE(LUPRI,'(A,A,F15.8/)') 'XRSBVC: Convergence check',
-     &        ' at frequency:',EVALR(ISIM)
-            WRITE(LUPRI,'(3X,A,1P,E8.2)') 
-     &         '* Norm of total resultant vector :',XTNORM
-            WRITE(LUPRI,'(3X,A,1P,E8.2)') 
-     &         '* Norm of total residual vector  :',RNORM(1,IFREQ)
-            IF(NZXOPE.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- (e-e) R(+) - part           :',RNORM(2,IFREQ)
-            IF(NZXOPP.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- (e-p) R(+) - part           :',RNORM(3,IFREQ)
-            IF(NZCONF.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- conf. R(+) - part           :',RNORM(4,IFREQ)
-          ENDIF
-        ENDDO
-        IF(IPRXRS.GE.3) THEN
-          CALL PRSYMB(LUPRI,'-',48,3)
-          WRITE(LUPRI,'(3X,A,3X,3(A3,I4,1X))')
-     &      'Static convergence:', 
-     &      'E+:',IEVEC(1),'P+:',IPVEC(1),'C+:',ICVEC(1)
-        ENDIF
-      ELSE
-C
-C     ================================
-C     *** Frequency-dependent code ***
-C     ================================
-C
-        DO IFREQ = 1,MFREQ
-          ISIM  = ISIM + 1
-          ISIM2 = ISIM + MFREQ
-C
-C         Check norm of each residual
-C         ===========================
-C
-C
-C         Orbital (e-e) part
-C         ------------------
-C
-          IF(NZXOPE.GT.0) THEN
-            IEVEC(ISIM)  = 1
-            IEVEC(ISIM2) = 1
-            RNORM(2,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,ISIM) ,1)
-            RNORM(5,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,ISIM2),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(/3X,A,3X,F15.8)') 
-     &          '*Frequency:',EVALR(IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of orbital(e-e) X(+)-residual vector :',
-     &          RNORM(2,IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of orbital(e-e) X(-)-residual vector :',
-     &          RNORM(5,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)')
-     &          ' Orbital (e-e) X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BEVEC(1,ISIM),1,NZXOPE)
-              WRITE(LUPRI,'(/A)')
-     &          ' Orbital (e-e) X(-) residual vector:'
-              CALL PRBVEC(LUPRI,BEVEC(1,ISIM2),1,NZXOPE)
-            ENDIF
-          ELSE
-            IEVEC(ISIM)  = 0
-            IEVEC(ISIM2) = 0
-            RNORM(2,IFREQ) = D0
-            RNORM(5,IFREQ) = D0
-          ENDIF
-C
-          IF(NZXOPP.GT.0) THEN
-            IPVEC(ISIM)  = 1
-            IPVEC(ISIM2) = 1
-            RNORM(3,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,ISIM) ,1)
-            RNORM(6,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,ISIM2),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(/3X,A,3X,F15.8)') 
-     &          '*Frequency:',EVALR(IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of orbital(e-p) X(+)-residual vector :',
-     &          RNORM(3,IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of orbital(e-p) X(-)-residual vector :',
-     &          RNORM(6,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)')
-     &          ' Orbital (e-p) X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BPVEC(1,ISIM),1,NZXOPP)
-              WRITE(LUPRI,'(/A)')
-     &          ' Orbital (e-p) X(-) residual vector:'
-              CALL PRBVEC(LUPRI,BPVEC(1,ISIM2),1,NZXOPP)
-            ENDIF
-          ELSE
-            IPVEC(ISIM)  = 0
-            IPVEC(ISIM2) = 0
-            RNORM(3,IFREQ) = D0
-            RNORM(6,IFREQ) = D0
-          ENDIF
-C
-          IF(NZCONF.GT.0) THEN
-            ICVEC(ISIM)  = 1
-            ICVEC(ISIM2) = 1
-            RNORM(4,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,ISIM) ,1)
-            RNORM(7,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,ISIM2),1)
-C           Print section
-            IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(/3X,A,3X,F15.8)') 
-     &          '*Frequency:',EVALR(IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of configurational X(+)-residual vector :',
-     &          RNORM(4,IFREQ)
-              WRITE(LUPRI,'(A,1P,E8.2)') 
-     &          'Norm of configurational X(-)-residual vector :',
-     &          RNORM(7,IFREQ)
-            ENDIF
-            IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/A)')
-     &          ' Configurational X(+) residual vector:'
-              CALL PRBVEC(LUPRI,BCVEC(1,ISIM),1,NZCONF)
-              WRITE(LUPRI,'(/A)')
-     &          ' Configurational X(-) residual vector:'
-              CALL PRBVEC(LUPRI,BCVEC(1,ISIM2),1,NZCONF)
-            ENDIF
-          ELSE
-            ICVEC(ISIM)  = 0
-            ICVEC(ISIM2) = 0
-            RNORM(4,IFREQ) = D0
-            RNORM(7,IFREQ) = D0
-          ENDIF
-C
-          RTPNRM = SQRT(RNORM(2,IFREQ)**2 + RNORM(3,IFREQ)**2 
-     &                + RNORM(4,IFREQ)**2)
-          RTMNRM = SQRT(RNORM(5,IFREQ)**2 + RNORM(6,IFREQ)**2 
-     &                + RNORM(7,IFREQ)**2)
-C
-          XTPNRM = SQRT(XECNV(ISIM)**2    + XPCNV(ISIM)**2  
-     &                + XCCNV(ISIM)**2)
-          XTMNRM = SQRT(XECNV(ISIM2)**2   + XPCNV(ISIM2)**2 
-     &                + XCCNV(ISIM2)**2)
-C
-C         Convergence check
-C         =================
-C
-          RNORM(1,IFREQ) = SQRT(RTPNRM**2+RTMNRM**2)
-          XTNORM = SQRT(XTPNRM**2+XTMNRM**2)
-          IF(XTNORM.EQ.D0) THEN
-            WRITE(LUPRI,'(A,A,F9.6)') '*** WARNING! ***',
-     &        'Zero norm of solution vector for frequency',EVALR(IFREQ)
-          ELSE
-            RCNV(IFREQ) = RNORM(1,IFREQ)/XTNORM
-            CNVMAX = MAX(CNVMAX,RCNV(IFREQ))
-          ENDIF
-          IF(RNORM(1,IFREQ).LE.(XTNORM*THCXRS)) THEN
-C          IF(RCNV(IFREQ).LE.THCXRS) THEN
-C         ... this root converged
-            IEVEC(ISIM)  = 0
-            IPVEC(ISIM)  = 0
-            ICVEC(ISIM)  = 0
-            IEVEC(ISIM2) = 0
-            IPVEC(ISIM2) = 0
-            ICVEC(ISIM2) = 0
-          ELSE
-C         ... check each type separately
-C           Check (+) convergence
-            IF(RTPNRM.LE.(XTPNRM*THCXRS)) THEN
-              IEVEC(ISIM) = 0
-              IPVEC(ISIM) = 0
-              ICVEC(ISIM) = 0
-            ELSE
-              RNPMAX=MAX(RNORM(2,IFREQ),RNORM(3,IFREQ),RNORM(4,IFREQ))
-              IF(RESFAC*RNORM(2,IFREQ).LT.RNPMAX) IEVEC(ISIM) = 0
-              IF(RESFAC*RNORM(3,IFREQ).LT.RNPMAX) IPVEC(ISIM) = 0
-              IF(RESFAC*RNORM(4,IFREQ).LT.RNPMAX) ICVEC(ISIM) = 0
-            ENDIF
-C           Check (-) convergence
-            IF(RTMNRM.LE.(XTMNRM*THCXRS)) THEN
-              IEVEC(ISIM2) = 0
-              IPVEC(ISIM2) = 0
-              ICVEC(ISIM2) = 0
-            ELSE
-              RNMMAX=MAX(RNORM(5,IFREQ),RNORM(6,IFREQ),RNORM(7,IFREQ))
-              IF(RESFAC*RNORM(5,IFREQ).LT.RNMMAX) IEVEC(ISIM2) = 0
-              IF(RESFAC*RNORM(6,IFREQ).LT.RNMMAX) IPVEC(ISIM2) = 0
-              IF(RESFAC*RNORM(7,IFREQ).LT.RNMMAX) ICVEC(ISIM2) = 0
-            ENDIF
-          ENDIF
-C
-C     Print section
-C
-          IF(IPRXRS.GE.1) THEN
-            WRITE(LUPRI,'(A,A,F15.8/)') 'XRSBVC: Convergence check',
-     &        ' at frequency:',EVALR(IFREQ)
-            WRITE(LUPRI,'(3X,A,1P,E8.2)') 
-     &         '* Norm of total resultant vector :',XTNORM
-            WRITE(LUPRI,'(3X,A,1P,E8.2)') 
-     &         '* Norm of total residual vector  :',RNORM(1,IFREQ)
-            IF(NZXOPE.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- (e-e) R(+) - part           :',RNORM(2,IFREQ)
-            IF(NZXOPP.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- (e-p) R(+) - part           :',RNORM(3,IFREQ)
-            IF(NZCONF.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &         '- conf. R(+) - part           :',RNORM(4,IFREQ)
-            IF(NZXOPE.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &        '- (e-e) R(-) - part           :',RNORM(5,IFREQ)
-            IF(NZXOPP.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &        '- (e-p) R(-) - part           :',RNORM(6,IFREQ)
-            IF(NZCONF.GT.0) WRITE(LUPRI,'(6X,A,1P,E8.2)') 
-     &        '- conf. R(-) - part           :',RNORM(7,IFREQ)
-          ENDIF
-        ENDDO
-        IF(IPRXRS.GE.3) THEN
-          IOFF = MFREQ
-          WRITE(LUPRI,'(/3X,A)')
-     &      'Convergence of individual frequencies:'
-          CALL PRSYMB(LUPRI,'-',48,3)
-          WRITE(LUPRI,'(30X,6(A2,2X))')
-     &      'E+','P+','C+','E-','P-','C-'
-          WRITE(LUPRI,'(3X,A,F15.8,3X,6I4)')
-     &      ('Freq.:',EVALR(I),
-     &      IEVEC(I),IPVEC(I),ICVEC(I),
-     &      IEVEC(IOFF+I),IPVEC(IOFF+I),ICVEC(IOFF+I),
-     &       I = 1,MFREQ)
-        ENDIF
+      IF(IPRXRS.GT.0) THEN
+        WRITE(LUPRI,'(/A)') '* XRSBVC: Norm of residual vectors:'
+        WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')  
+     &      '* Frequency    ','Total   ',(BVTYP(I),' part ',I=1,NVPAR)
       ENDIF
+      DO IFREQ = 1,MFREQ
+C
+C      ************************************
+C      ***** Get norms of residual vectors 
+C      ************************************
+C
+C       Orbital (e-e) part
+C       ------------------
+C
+        IF(NZXOPE.GT.0) THEN
+          IBVEC(IFREQ,IPEP) = 1
+          RNORM(IPEP,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,IFREQ),1)
+          IF(.NOT.STATIC) THEN
+            IBVEC(IFREQ,IPEM) = 1
+            IOFF = IFREQ + MFREQ
+            RNORM(IPEM,IFREQ) = DNRM2(NZXOPEQ,BEVEC(1,IOFF),1)
+          ENDIF           
+        ENDIF
+C
+C       Orbital (e-p) part
+C       ------------------
+C
+        IF(NZXOPP.GT.0) THEN
+          IBVEC(IFREQ,IPPP) = 1
+          RNORM(IPPP,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,IFREQ),1)
+          IF(.NOT.STATIC) THEN
+            IOFF = IFREQ + MFREQ
+            IBVEC(IFREQ,IPPM) = 1
+            RNORM(IPPM,IFREQ) = DNRM2(NZXOPPQ,BPVEC(1,IOFF),1)
+          ENDIF           
+        ENDIF
+C
+C       Configurational part
+C       --------------------
+C
+        IF(NZCONF.GT.0) THEN
+          IBVEC(IFREQ,IPCP) = 1
+          RNORM(IPCP,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,IFREQ),1)
+          IF(.NOT.STATIC) THEN
+            IOFF = IFREQ + MFREQ
+            IBVEC(IFREQ,IPCM) = 1
+            RNORM(IPCM,IFREQ) = DNRM2(NZCONFQ,BCVEC(1,IOFF),1)
+          ENDIF           
+        ENDIF
+C
+C       *****************************
+C       ***** Check convergence *****
+C       *****************************
+C       
+        RNRMAX = D0
+        DO I = 1,NVPAR
+          RNRMAX = MAX(RNRMAX,RNORM(I,IFREQ))
+        ENDDO
+        RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
+        XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
+        IF(XTNORM.EQ.D0) THEN
+          WRITE(LUPRI,'(A,A)') '*** WARNING! ***',
+     &        'Zero norm of solution vector !'
+        ELSE
+          RCNV(IFREQ) = RTNORM/XTNORM
+          CNVMAX = MAX(CNVMAX,RCNV(IFREQ))
+        ENDIF
+        IF(RTNORM.LE.(XTNORM*THCXRS)) THEN
+C         ... this root converged
+          DO I = 1,NVPAR
+            IBVEC(IFREQ,I) = 0
+          ENDDO
+        ELSE
+C         ... check each type separately
+          DO I = 1,NVPAR
+            IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX) IBVEC(IFREQ,I) = 0
+          ENDDO
+        ENDIF
+        IF(IPRXRS.GE.1) THEN
+            WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
+     &        EVALR(IFREQ),RTNORM,(RNORM(I,IFREQ),I=1,NVPAR)
+        ENDIF
+      ENDDO
 C
 C     Check what integral classes contribute
 C     ======================================
@@ -2510,13 +2262,7 @@ C     Check whether calculation has converged
 C     =======================================
 C
       IF(.NOT.USEXVC) THEN
-        NECNV = ISUM(NESIM,IEVEC,1)
-        IF(NECNV.EQ.0) NESIM = 0
-        NPCNV = ISUM(NPSIM,IPVEC,1)
-        IF(NPCNV.EQ.0) NPSIM = 0
-        NCCNV = ISUM(NCSIM,ICVEC,1)
-        IF(NCCNV.EQ.0) NCSIM = 0
-        KCONV = NECNV + NPCNV + NCCNV
+        KCONV = ISUM(NTSIM,IBVEC,1)
         IF(KCONV.EQ.0) RETURN
       ENDIF
 C
@@ -2561,9 +2307,9 @@ C
 C
 C     Orbital (e-e) type trial vectors
 C
-      IF(NESIM.GT.0) THEN
+      IF(NZXOPE.GT.0) THEN
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),EVALR,EVECR,
-     &              IBTYP,IBEVC,IEVEC,
+     &              IBTYP,IBEVC,IBVEC(1,IPEP),
      &              MFREQ,JBENDX,NESIM,IBOFF,NEPREV,NZXOPE,
      &              BEBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NESIM
@@ -2571,9 +2317,9 @@ C
 C
 C     Orbital (e-p) type trial vectors
 C
-      IF(NPSIM.GT.0) THEN
+      IF(NZXOPP.GT.0) THEN
         CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),EVALR,EVECR,
-     &              IBTYP,IBPVC,IPVEC,
+     &              IBTYP,IBPVC,IBVEC(1,IPPP),
      &              MFREQ,JBPNDX,NPSIM,IBOFF,NPPREV,NZXOPP,
      &              BPBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NPSIM
@@ -2581,9 +2327,9 @@ C
 C
 C     Configuration type trial vectors
 C
-      IF(NCSIM.GT.0) THEN
+      IF(NZXOPP.GT.0) THEN
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
-     &              IBTYP,IBCVC,ICVEC,
+     &              IBTYP,IBCVC,IBVEC(1,IPCP),
      &              MFREQ,JBCNDX,NCSIM,IBOFF,NCPREV,NZCONF,
      &              BCBUF,WORK,KFREE,LFREE)
         IBOFF = IBOFF + NCSIM
