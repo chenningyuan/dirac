@@ -1,0 +1,14 @@
+include ../Makefile.config
+
+F_OBJS = cidirr.o cigenp.o
+
+all:	$(F_OBJS)
+
+clean : 
+	$(RM) -f *.o *~ *.f *.lst *.i
+
+
+depend:
+	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) 
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
