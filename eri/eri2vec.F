@@ -670,8 +670,6 @@ C
 C
       NOINTS = .TRUE.
       ERFFAC = ERFCIV(THRCLS)
-      CALL QUIT ('ERICLS: You are not supposed to be here !')
-#endif
       IF (GCONAB .OR. GCONCD) THEN
          CLSZER = .FALSE.
          DO K = 1, NPQBCX
