@@ -1059,7 +1059,7 @@ C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
 #if defined (VAR_MPI)
-         ITEST = 1
+         ITEST = 0
 C        ... ask for new set of A,B shells
          CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
