@@ -218,10 +218,20 @@ C
          IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
          IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
 C
+C        Initialize S1 and S2 in case we want to do zero
+C        iterations (tests). In normal runs S1 and S2 will
+C        be initialized in T1EQNS and T2EQNS.
+C
+         CALL XCOPY(NDIMT1,FVO,1,S1,1)
+         CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
+         CALL GETVVOO (S2)
+C
 C        The incoming T arrays contain Hamiltonian and wave function
-C        parts for all sectors. Eliminate the ones that we don't need.
+C        parts for all sectors. Eliminate the ones that we don't need
+C        in the current sector.
 C
 C        Delete wave function parts that belong to higher sectors.
+C
          CALL DELFCK ('VO',DELS1,T1)
          CALL DELINT ('VVOO',DELS2,T2,0,0,0)
 C        Delete Hamiltonian parts
@@ -267,7 +277,6 @@ C
       NIT = 0
       RMS = 1.D0
       ECCSD = 0.D0
-C
 C
 C     Zero amplitudes if the NOCCX options are specified
 C
@@ -597,7 +606,7 @@ C
       GO TO 1000
 C
  2000 CONTINUE
-      CALL T1DIAG (DIAG,S1,BUF1)
+      CALL T1DIAG (DIAG,T1,BUF1)
       CPUE = CPUE + CPUDELTA()
       WRITE(IW,6071)
 C
@@ -631,7 +640,9 @@ C
       IF (FOCKSP) THEN
 C        Calculate the energies for this sector
          CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
-C        The updated amplitudes should be in T1 & T2
+C        The updated amplitudes should be in T1 & T2. Since
+C        the Hamiltonian part was deleted we copy again from
+C        S1 & S2.
          CALL XCOPY(NDIMT1,S1,1,T1,1)
          CALL XCOPY(NDIMT2,S2,1,T2,1)
       ENDIF

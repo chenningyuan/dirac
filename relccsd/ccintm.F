@@ -852,7 +852,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETTAU2 (S1,DL,TAU)
+      SUBROUTINE GETTAU2 (S1,DL,TAU,IS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -865,9 +865,9 @@ C     General formula (indices are active virtual or active occupied)
 C     We apply it to the whole array and extract the relevant part
 C     later. Note that TAU should already be initialized with S2.
 C
-C     H2(AB,IJ) = S1(A,I)*DELTA(B,J) + S1(B,J)*DELTA(A,I)
-C               - S1(A,J)*DELTA(B,I) - S1(B,I)*DELTA(A,J)
-C               + S2(AB,IJ)
+C     H2(AB,IJ) = S2(AB,IJ) + IS *
+C               { S1(A,I)*DELTA(B,J) + S1(B,J)*DELTA(A,I)
+C                - S1(A,J)*DELTA(B,I) - S1(B,I)*DELTA(A,J) }
 C
 C---------------Routines called----------------------------------------
 C
@@ -880,6 +880,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 S1(*),DL(*),TAU(*)
+      INTEGER IS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -903,8 +904,8 @@ C
          DO A = 1, NV(IRP)
              E = A
              M = A - NSV(IRP)
-             IF (E.EQ.F) DL(AI) = D1
-             IF (M.EQ.N.AND.M.GT.0) DL(AI) = D1
+             IF (E.EQ.F) DL(AI) = D1 * IS
+             IF (M.EQ.N.AND.M.GT.0) DL(AI) = D1 * IS
              AI = AI + RCW
          ENDDO
       ENDDO

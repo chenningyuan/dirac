@@ -39,6 +39,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL TEQ
+      real*8 ddot
 C
 C---------------Executable code--------------------------------------
 C
@@ -82,9 +83,9 @@ C-------------------------------------------
       ENDIF 
 C-------------------------------------------
 C (1,0) Sector
-c
-c  1-electron diagram
-c
+C
+C  1-electron diagram
+C
 C  S1=S1(M,Q) (a=3; i=1)
 C  H1=S1(M,N) (a=3; i=2)
 C  S1(M,Q)=S1(N,Q)+H1(M,N)*T1(N,Q)
@@ -118,9 +119,9 @@ C-------------------------------------------
       ENDIF
 C---------------------------------------------
 C (0,2) Sector
-c
-c  2-electron diagram
-c
+C
+C  2-electron diagram
+C
 C  S2=S2(AB,EF) (a=1,2; b=1,2 {-11}; i=3; j=3)
 C  H2=S2(GH,EF) (a=1, b=1, i=3, j=3)
 C
@@ -135,7 +136,7 @@ C-------------------------------------------
       IF (ICURFSS.EQ.02) THEN
 C       Make T2TAU including the spurious Hamiltonian parts
         CALL GETTAU (T1,T2,BUF2)
-        CALL GETTAU2(T1,BUF1,BUF2)
+        CALL GETTAU2(T1,BUF1,BUF2,1)
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
         CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
@@ -167,20 +168,56 @@ C       Insert the updated wave function
       ENDIF
 C---------------------------------------------
 C (2,0) Sector
-c
-c  2-electron diagram
-c
-C  S2=T2(IJ,MN) (a=3,4; b=3,4 {-44}; i=2; j=2)
-C  H2=T2(PQ,MN) (a=4; b=4 ; i=2; j=2)
+C
+C  2-electron diagram
+C
+C  S2=S2(MN,IJ) (a=3; b=3; i=1,2; j=1,2 {-22})
+C  H2=T2(MN,OP) (a=3; b=3 ; i=2; j=2)
 C
 C-------------------------------------------
-C (1) S2(IJ,MN)=S2(IJ,MN)-S2TAU(IJ,PQ)*H2(PQ,MN)
-C (2) S2(IJ,MN)=S2(IJ,MN)+P(12).S1(I,O)*H2(OP,MN) ! Note only part of T2
-C (3) S2(IJ,MN)=S2(IJ,MN)+P(34).S2(IJ,MO)*H1(O,N)
+C (1) S2(MN,IJ)=S2(MN,IJ)-H2(MN,OP)*T2TAU(OP,IJ)
+C (2) S2(MN,IJ)=S2(MN,IJ)+P(12).H1(M,O)*T2(ON,IJ)
 C
-C S2TAU(IJ,PQ)=S2(IJ,PQ)+S1(I,P)*S1(J,Q)-S1(I,Q)*S1(J,P))
+C T2TAU(OP,IJ)=T2(OP,IJ)+T1(O,I)*T1(P,J)-T1(O,J)*T1(P,I)
+C             +DELTA(O,I)*T1(P,J)-DELTA(O,J)*T1(P,I)
+C             +T1(O,I)*DELTA(P,J)-T1(O,J)*DELTA(P,I)
 C-------------------------------------------
       IF (ICURFSS.EQ.20) THEN
+C       Make T2TAU including the spurious Hamiltonian parts
+        CALL GETTAU (T1,T2,BUF2)
+        print*,"t1 before gettau2",ddot(ndimt1,t1,1,t1,1)
+        CALL GETTAU2(T1,BUF1,BUF2,1)
+C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+C       but irrelevant here)
+        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+C       Extract the wave function
+        CALL EXTRT2T(BUF2,BUF3,3,3,1,2,LFA)
+C       Extract the 2-particle Hamiltonian
+        CALL EXTRT2T(S2,BUF1,3,3,2,2,LFA)
+        CALL CNTRCT ('N','N',NAOAOT,NSOSOT,NAOAOT,-A1,BUF1,BUF3,A0,
+     &               BUF2,NREP)
+C       Insert the updated wave function
+        print*,"t2 before term 1",ddot(ndimt2,s2,1,s2,1)
+        CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
+        print*,"t2 after term 1",ddot(ndimt2,s2,1,s2,1)
+C       Get the wave function for term (2)
+        CALL XCOPY (NDIMT2,T2,1,BUF2,1)
+C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+C       but irrelevant here)
+        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+C       Extract the wave function
+        CALL EXTRT2T(BUF2,BUF3,3,3,1,2,LFA)
+C       Sort it to the correct order
+        CALL SRT1T2 (NREP,MULTB,LFA,NAOAOT,NAO,NAO,NSOSOT,
+     &               LAOAOSOSOT,LLAOSOSOT,BUF3,BUF2)
+C       Extract the 1-particle Hamiltonian
+        CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
+        CALL CNTRCT('N','N',NAO,NAOSOSOT,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
+        CALL SRT1T2 (NREP,MULTB,LTR,NAOAOT,NAO,NAO,NSOSOT,
+     &               LAOAOSOSOT,LLAOSOSOT,BUF3,BUF2)
+C       Insert the updated wave function
+        CALL EXTRT2T(S2,BUF2,3,3,1,2,LTR)
+        print*,"t2 after term 2",ddot(ndimt2,s2,1,s2,1)
       ENDIF
 C-------------------------------------------
 C (1,1) Sector
@@ -249,7 +286,7 @@ C (1,0) Sector
 C
 C  1-electron diagram
 C
-C  H10 = - FVO(M,N) - S1(M,N) (a=4; i=2)
+C  H10 = - FVO(M,N) - S1(M,N) (a=3; i=2)
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.10) then
         TIT = '(1h,0p) space, ionization energies    '
@@ -281,7 +318,7 @@ C       Add the one electron contributions
         CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
 C       Make the effective Hamiltonian in the full array.
         CALL XCOPY (NDIMT2,S2,1,BUF2,1)
-        CALL GETTAU2 (BUF1,BUF3,BUF2)
+        CALL GETTAU2 (BUF1,BUF3,BUF2,1)
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,H,1,1,3,3,LFA)
 C-------------------------------------------
@@ -289,16 +326,25 @@ C (2,0) Sector
 c
 c  Essentially Slater rules for 2-e determinants !
 c
-C  H20(MN,OP) = S2(MN,OP) (a=4, b=4; i=2, j=2)
+C  H20(MN,OP) = S2(MN,OP) (a=3, b=3; i=2, j=2)
 C  H20(MN,MP) = H10(N,P) + S2(MN,MP)
 C  H20(MN,MN) = H10(M,M) + H10(N,N) + S2(MN,MN)
 C
 C  General formula
-C  H20(MN,OP) = H10(M,O)*DELTA(N,P) + H10(N,P)*DELTA(M,O)
-C             - H10(M,P)*DELTA(N,O) - H10(N,O)*DELTA(M,P)
-C             + S2(MN,OP)
+C  H20(MN,OP) = - S1(M,O)*DELTA(N,P) - S1(N,P)*DELTA(M,O)
+C               + S1(M,P)*DELTA(N,O) + S1(N,O)*DELTA(M,P)
+C               + S2(MN,OP)
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.20) THEN
+        TIT = '(2h,0p) space                         '
+C       Add the one electron contributions
+        CALL XCOPY (NDIMT1,S1,1,BUF1,1)
+        CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
+C       Make the effective Hamiltonian in the full array.
+        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2,-1)
+C       Extract the Hamiltonian
+        CALL EXTRT2T(BUF2,H,3,3,2,2,LFA)
 C-------------------------------------------
 C (1,1) Sector
 c
@@ -325,6 +371,8 @@ c
           NDT = NAO(IRP)
          ELSEIF (ICURFSS.EQ.2) THEN
           NDT = NAVAVT(IRP)
+         ELSEIF (ICURFSS.EQ.20) THEN
+          NDT = NAOAOT(IRP)
          ELSE
           NDT = 0
          ENDIF
