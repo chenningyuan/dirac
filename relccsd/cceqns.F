@@ -263,6 +263,7 @@ C
 C
       CALL T1DIAG(DIAG,T1,BUF1)
       CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
+      IF (DEBUG.OR.IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
@@ -540,6 +541,7 @@ C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
       IF (TEQ) THEN
+         IF (DEBUG.OR.IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
          CALL CCENG  (S1,S2,FVO,BUF1,BUF2,ECCSD)
       ENDIF
 C
@@ -574,6 +576,7 @@ C
          WRITE(IW,6072) ESCF
          WRITE(IW,6074) ECCSD
          WRITE(IW,6076) ETOT
+         IF (IPRNT.GE.2) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
       ENDIF
 C
       WRITE(IW,6077) DIAG
@@ -3082,6 +3085,110 @@ C
  30      CONTINUE ! LREP
 C
  40   CONTINUE ! KLREP
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Attribute correlation energy to electron pairs
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      REAL*8 T1(*),T2(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "param.inc"
+#include "files.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 EI,EIJ
+C
+C---------------Executable code--------------------------------------
+C
+      WRITE (IW,1000)
+C
+      CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
+      CALL DELFCK ('VO','DD',BUF1)
+C
+      WRITE (IW,2000)
+      AI = 1
+      DO IRP = 1, NREP
+      DO I = 1, NO(IRP)
+         EI = AR0
+         DO A = 1, NV(IRP)
+             EI = EI + BUF1(AI) * T1(AI)
+             IF (CARITH) THEN
+                EI = EI + BUF1(AI+1) * T1(AI+1)
+             ENDIF
+             AI = AI + RCW
+         ENDDO
+         WRITE (IW,2001) IRP,I,EI
+      ENDDO
+      ENDDO
+C
+      CALL GETVVOO (BUF1)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
+      CALL GETTAU  (T1,T2,BUF2)
+C
+      WRITE (IW,3000)
+      ABIJ = 1
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      IF (IRP.LT.JRP) GOTO 10
+      DO J = 1, NO(JRP)
+         IMIN = 1
+         IF (IRP.EQ.JRP) IMIN = J + 1
+         DO I = IMIN, NO(IRP)
+            EIJ = AR0
+            DO 20 BRP = 1, NREP
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 20
+            DO B = 1, NV(BRP)
+               AMIN = 1
+               IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = AMIN, NV(ARP)
+                  EIJ = EIJ + BUF1(ABIJ) * BUF2(ABIJ)
+                  IF (CARITH) THEN
+                     EIJ = EIJ + BUF1(ABIJ+1) * BUF2(ABIJ+1)
+                  ENDIF
+                  ABIJ = ABIJ + RCW
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+            WRITE (IW,3001) IRP,I,JRP,J,EIJ
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C
+      WRITE (IW,4000)
+C
+ 1000 FORMAT (//' Individual terms in the correlation energy')
+ 2000 FORMAT (/'   Irrep Spinor',5X,'Relaxation energy (T1-amplitudes)')
+ 2001 FORMAT (I7,I8,F30.15)
+ 3000 FORMAT (/'   Irrep1 Spinor1 Irrep2 Spinor2',5X,
+     &'Correlation energy (T2-amplitudes)')
+ 3001 FORMAT (2(I7,I8),F30.15)
+ 4000 FORMAT (//)
 C
       RETURN
       END
