@@ -337,7 +337,7 @@ C*****************************************************************************
 #include <dummy.h>
 #include <mxorb.h>
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 4, NTABLE = 20)
+      PARAMETER (NDIR = 4, NTABLE = 25)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
@@ -359,7 +359,8 @@ C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
-     &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOMDCS'/
+     &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOMDCS',
+     &            '.PAR4BS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -380,6 +381,7 @@ C
       ITRA_INTFLG = INTGEN
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
+      IPAR4BS = 1
       DO I = 1,NFSYM
         WRITE(TRA_CORSTR(I),'(A)') 'not specified' 
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
@@ -439,7 +441,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20), I
+     &                      16,17,18,19,20,21,22,23,24,25), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -594,6 +596,18 @@ C              program to avoid the generation of the enourmous MDCINT file.
    20          CONTINUE
 C&&&& NOMDCS - Don't Scatter MDCINT to all nodes
                   MDCSCAT = .FALSE.
+               GO TO 100
+   21          CONTINUE
+C&&&& .PAR4BS  - size of batches for strategy 4 (parallel only)
+                  READ(LUCMD,*) IPAR4BS
+               GO TO 100
+   22          CONTINUE
+               GO TO 100
+   23          CONTINUE
+               GO TO 100
+   24          CONTINUE
+               GO TO 100
+   25          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -800,6 +814,11 @@ C
           NTVEC(J) = NTVEC(J) + NVEC
         ENDDO
       ENDDO
+C
+C     Batch size of strategy 4.
+C
+      WRITE(LUPRI,'(1X,A,I4)')
+     &   '* Size of batches for strategy 4 (parallel only): ', IPAR4BS
 C
   999 CONTINUE
       RETURN
