@@ -256,7 +256,7 @@ case $machine in
       complist='f77 f90';;
 
    i[3-6]86-*)
-      liblist='libatlas libblas'
+      liblist='libf77blas libatlas libblas'
 #TODO liblist='libMKL libatlas libblas'
       complist='g77 ifc pgf90 f77'
       cclist='cc gcc pgcc'
@@ -269,7 +269,7 @@ case $machine in
       debug='gdb';;
 
    *apple*)
-      liblist='libatlas libblas'
+      liblist='libf77blas libatlas libblas'
       complist='g77'
       cclist='gcc'
       debug='gdb';;
@@ -707,12 +707,15 @@ for testdir in $dirlist; do
             case $testlib in
                libesslp2) LIB="$LIB -L$testdir -lesslp2";;
                libessl) LIB="$LIB -L$testdir -lessl";;
-               libblas) LIB="$LIB -L$testdir -lblas";;
+#For later use we note that we found an optimized blas library
+               libblas) LIB="$LIB -L$testdir -lblas";  optblas=$testdir ;;
+#For Atlas you may need to link with lf77blas; check this blasversion also
+               libf77blas) LIB="$LIB -L$testdir -lf77blas";  optblas=$testdir ;;
+               libatlas) LIB="$LIB -L$testdir -latlas";;
                libdxml) LIB="$LIB -L$testdir -ldxml";;
                libcomplib.sgimath) LIB="$LIB -L$testdir -lcomplib.sgimath";;
                libveclib) LIB="$LIB -L$testdir -lveclib";;
                libmath) LIB="$LIB -L$testdir -lmath -lm -nx";;
-               libatlas) LIB="$LIB -L$testdir -latlas";;
 #TODO Intel Math Kernel Library         libMKL) LIB="$LIB -L$testdir -lMKL";;
             esac
             break
@@ -727,6 +730,30 @@ if [ -z "$LIB" -a -n "$liblist" ]; then
     echo 'Mathematical libraries: none'
 elif [ -n "$LIB" ]; then
     echo 'Mathematical libraries: '$LIB
+fi
+#      
+# Check whether we found an optimized BLAS, if not ask user what to do
+#
+if [ -z "$optblas" ] ; then
+   $echo 'No optimized BLAS library was found, do you want to use default - VERY SLOW - implementation ? y/[n] \c'
+   read defblas
+   case "$defblas" in   
+   "yes" | "y" | "Y" )
+       cpp="$cpp -D_NOBLAS"
+       ;;
+    *)
+       $echo 'BLAS will not be explictly included, you may need to adapt LIB_LIST in Makefile.config manually \c'
+       ;;
+   esac
+else
+   $echo 'Use of an optimized BLAS implementation is very important for the performance of MOLTRA and RELCCSD'
+   $echo 'We propose to use the implementation in $optblas. Is this OK ? [y]/n \c'
+   read defblas
+   case "$defblas" in
+   "no" | "n" | "N" )
+       $echo 'Please inspect and correct LIB_LIST in Makefile.config manually \c'
+       ;;
+   esac
 fi
 echo
 #
@@ -1237,8 +1264,6 @@ case $machine in
 #
    *apple*)
       echo 
-      echo "Get the BLAS routines. See 'Known issues and problems' at"
-      echo "http://dirac.chem.sdu.dk"
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}'"
@@ -1285,6 +1310,7 @@ if [ "$F77" = "mpif77" ]; then
    cpp="$cpp -DVAR_G77"
    ccp="$ccp -DVAR_G77"
 fi
+#
 # 
 #  Make Makefile.config
 #
