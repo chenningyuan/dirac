@@ -63,14 +63,10 @@ C
          JJ = JJ + NSTR(IFSYM)
       ENDDO
 C           
-      write (lupri,*) 'mdinti called, opening MDCINT LUMLF2=',LUMLF2
-      call flshfo(lupri)
       OPEN (LUMLF2,FILE='MDCINT',FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
       NTKL = 0
       N2EFIL = 0
-      write (lupri,*) 'rec 1 on MDCINT: ',datex, timex, 'ii =',II
-      call flshfo(lupri)
 C
       IF (IPRINT.GE.5) WRITE (LUPRI,'(//3X,A)') 'Integrals written :'
 C
@@ -88,8 +84,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dcbgen.h"
-      write (lupri,*) 'mdintf called, closing MDCINT LUMLF2=',LUMLF2
-      call flshfo(lupri)
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
 C
@@ -98,7 +92,6 @@ C
       ELSE
          WRITE (LUPRI,1000)
       END IF
-      call flshfo(lupri)
  1000 FORMAT (' - MOLFDIR file MDCINT was written.')
  1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
       RETURN
@@ -129,14 +122,10 @@ C     This solves the 2Gb problem on Linux.
          ELSE
             STOP "100 integral files is enough !"
          ENDIF
-      write (lupri,*) 'mdintn called, closing MDCINT LUMLF2=',LUMLF2
-      call flshfo(lupri)
          WRITE (LUMLF2) 0,N2EFIL,0
          WRITE (LUMLF2) NEXTFIL
          CLOSE (LUMLF2,STATUS='KEEP')
          OPEN (LUMLF2,FILE=NEXTFIL,FORM='UNFORMATTED')
-      write (lupri,*) 'mdintn called, reopened MDCINT LUMLF2=',LUMLF2
-      call flshfo(lupri)
          NTKL = 0
       ENDIF
 C
@@ -450,7 +439,6 @@ C
                     IJ = IJ + 1
                     INDXKR(1,IJ) = I
                     INDXKR(2,IJ) = J
-c                   write(6,*) '!trian, IJ = ',IJ,I,J
                     IF (IREPI.NE.1) INDXKR(1,IJ) = I + NSTR(IREPI-1,0,1)
                     IF (IREPJ.NE.1) INDXKR(2,IJ) = J + NSTR(IREPJ-1,0,1)
                  ENDDO
@@ -461,7 +449,6 @@ c                   write(6,*) '!trian, IJ = ',IJ,I,J
                     IJ = IJ + 1
                     INDXKR(1,IJ) = I
                     INDXKR(2,IJ) = J
-c                   write(6,*) 'trian, IJ = ',IJ,I,J
                     IF (IREPI.NE.1) INDXKR(1,IJ) = I + NSTR(IREPI-1,0,1)
                     IF (IREPJ.NE.1) INDXKR(2,IJ) = J + NSTR(IREPJ-1,0,1)
                  ENDDO
