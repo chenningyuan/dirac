@@ -2084,12 +2084,14 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 C
+#include <dcbfir.h>
 #include <dcbgen.h>
 #include <dcbmvo.h>
 #include <blocks.h>
 #if defined (VAR_MPI) || defined (VAR_PVM)
 #include <infpar.h>
 #endif
+      LOGICAL BF1,BF2,BF3
       DIMENSION WORK(*)      
 C
 #include <memint.h>
@@ -2113,6 +2115,12 @@ C
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)      
       NPOS = 0
       IF(PARCAL) THEN
+        BF1  = FIRST1
+        BF2  = FIRST2
+        BF3  = FIRST3
+        FIRST1 = .TRUE.
+        FIRST2 = .TRUE.
+        FIRST3 = .TRUE.
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NLRGBL*(NLRGBL+1)/2
         NPOS = NPOS + NSMLBL*(NSMLBL+1)/2
@@ -2127,6 +2135,9 @@ C
 C     Release the slaves if we run in parallel.
 C
       IF (PARCAL) THEN
+         FIRST1 = BF1
+         FIRST2 = BF2
+         FIRST3 = BF3
          ITASK = -1
 #if defined (VAR_MPI)
          CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
