@@ -711,7 +711,6 @@ C
       NKL = NFPCK34(IREPIJ)
       CALL MEMGET('REAL',KHMAT,NKL*NZ*NZ*NBSYMP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHTMP,NKL*NZ,WORK,KFREE,LFREE)
-      CALL DZERO (WORK(KHTMP),NKL*NZ)
 C
       IOFF = 1
 C
@@ -719,7 +718,6 @@ C     Loop over the number of right hand side (12) batches.
 C
       DO IJ = 1, NIJ
         JOFF = 0
-        CALL DZERO(WORK(KHMAT),NKL*NZ*NZ*NBSYMP)
 C
 C       Loop over all boson irreps. On the next line we pick out the
 C       ones with the right parity.
@@ -731,12 +729,13 @@ C           Loop over the quaternion units of the first transformed
 C           density (this is IZ1 in my notes).
 C
             DO IZ = 1, NZ
+               CALL DZERO (WORK(KHTMP),NKL*NZ)
 C
 C              Loop over the compound component (LL/SS) of the second
 C              untransformed density.
 C
+               IF (ICS.EQ.2) IOFF = IOFF + NSPCK34(IREPRS,1)
                DO IC = ICS, ICF
-                  IF (ICS.EQ.2) IOFF = IOFF + NSPCK34(IREPRS,1)
 C
 C                 Loop over the boson symmetries of the fourth
 C                 (untransformed) index. Get the fermion symmetry
@@ -768,42 +767,20 @@ C
                      ENDIF
 C
 C                    Do the actual transformation. 
-
+C                    Because QTRANS will generate them in a different order
+C                    for cases with inversion symmetry, we write to the
+C                    temporary array KHTMP and sort later on
+C
+                     KLOFF = KHTMP + IFPCK34(IREPK,IREPL)*NZ
+C
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
-                        CALL QTRANS('AOMO','S',D0,NR,NS,NK,NL,
+                        CALL QTRANS('AOMO','S',D1,NR,NS,NK,NL,
      &                       HMAT(IOFF),NR,NS,1,IPQTOQ(1,0),
-     &                       WORK(KHTMP),NK,NL,
+     &                       WORK(KLOFF),NK,NL,
      &                       NZ,IPQTOQ(1,IREPRS),
      &                       Q3S(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPRI),
      &                       Q4S(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPSI),
      &                       WORK(KFREE),LFREE,IPRINT)
-#if 0
-                        if ( ij .eq. 1 ) then
-                           call header('ij = 1',-1 )
-                           write(6,*) 'hmat'
-                           call prqmat(hmat(ioff),nr,ns,nr,ns,
-     $                          nz,ipqtoq(1,0),6)
-                           write(6,*) 'khtmp'
-                           call prqmat(work(khtmp),nk,nl,nk,nl,
-     $                          nz,ipqtoq(1,0),6)
-                           write(6,*) 'q4s'
-                           call prqmat(q3s(koff),nr,nl,nrq3,ncq3,
-     $                          nz,ipqtoq(1,0),6)
-                           write(6,*) 'q3s'
-                           call prqmat(q4s(loff),ns,nk,nrq4,ncq4,
-     $                          nz,ipqtoq(1,0),6)
-                        end if
-#endif
-C
-C                       Order the integrals with NKL as first and IZ2
-C                       as second index
-C
-                        DO IZ2 = 1, NZ
-                           JOFF1 = JOFF+(IZ2-1)*NKL+IFPCK34(IREPK,IREPL)
-                           JOFF2 = KHTMP + (IZ2-1)*NK*NL
-                           CALL DAXPY(NK*NL,D1,WORK(JOFF2),1,
-     &                                WORK(KHMAT+JOFF1),1)
-                        ENDDO
                      ENDIF
 C
 C                    Repeat this transformation with the transposed
@@ -824,54 +801,48 @@ C
                      NRQ4 = NDMOQT(1,IREPL,4)
                      NCQ4 = NDMOQT(2,IREPL,4)
 C
+                     KLOFF = KHTMP + IFPCK34(IREPK,IREPL)*NZ
+C
                      IF ((NR*NS.NE.0).AND.(NK*NL.NE.0)) THEN
                         CALL MEMGET('REAL',KTRMAT,NR*NS,
      &                              WORK,KFREE,LFREE)
                         CALL MTRSP (NR,NS,HMAT(IOFF),NR,WORK(KTRMAT),NS)
-                        CALL QTRANS('AOMO','S',D0,NS,NR,NK,NL,
+                        CALL QTRANS('AOMO','S',D1,NS,NR,NK,NL,
      &                       WORK(KTRMAT),NS,NR,1,IPQTOQ(1,0),
-     &                       WORK(KHTMP),NK,NL,NZ,IPQTOQ(1,IREPRS),
+     &                       WORK(KLOFF),NK,NL,NZ,IPQTOQ(1,IREPRS),
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
-#ifdef UNDEF
-                        if ( ij .eq. 1 ) then
-                           call header('ij = 1',-1 )
-                           write(6,*) 'ktrmat'
-                           call prqmat(work(ktrmat),ns,nr,ns,nr,
-     $                          1,ipqtoq(1,0),6)
-                           write(6,*) 'khtmp'
-                           call prqmat(work(khtmp),nk,nl,nk,nl,
-     $                          nz,ipqtoq(1,0),6)
-                           write(6,*) 'q3t'
-                           call prqmat(q3t(koff),ns,nk,nrq3,ncq3,
-     $                          nz,ipqtoq(1,0),6)
-                           write(6,*) 'q4t'
-                           call prqmat(q4t(loff),nr,nl,nrq4,ncq4,
-     $                          nz,ipqtoq(1,0),6)
-                        end if
-#endif
                         CALL MEMREL('MS4IN2P',WORK,1,KTRMAT,KFREE,LFREE)
-C
-C                       Order the integrals with NKL as first and IZ2
-C                       as second index
-C
-                        DO IZ2 = 1, NZ
-                           JOFF1 = JOFF+(IZ2-1)*NKL+IFPCK34(IREPK,IREPL)
-                           JOFF2 = KHTMP + (IZ2-1)*NK*NL
-                           CALL DAXPY(NK*NL,D1,WORK(JOFF2),1,
-     &                                WORK(KHMAT+JOFF1),1)
-                        ENDDO
                      ENDIF
 C
                      IOFF = IOFF + NR * NS
                   ENDDO
+C                 ... ENDDO IREPS loop
+               ENDDO
+C              ... ENDDO IC loop
+C
+C              Order the integrals with NKL as first and IZ2
+C              as second index
+C
+               DO IZ2 = 1, NZ
+                  DO IREPK = 1, NFSYM
+                     IREPL = MOD(IREPK+IREPIJ,2) + 1
+                     JOFF1 = JOFF+(IZ2-1)*NKL+IFPCK34(IREPK,IREPL)
+                     JOFF2 = KHTMP + IFPCK34(IREPK,IREPL)*NZ
+     &                             + (IZ2-1)*NK*NL
+                     CALL DCOPY(NK*NL,WORK(JOFF2),1,
+     &                                WORK(KHMAT+JOFF1),1)
+
+                  ENDDO
                ENDDO
                JOFF = JOFF + NKL*NZ
             ENDDO
+C           ... ENDDO IZ loop
 C
           ENDIF
         ENDDO
+C       ... ENDDO IREPRS loop
 C
 C       We can symmetrize the integral here or write it to a
 C       scratch file.
@@ -888,6 +859,7 @@ c          write(6,*) 'updating record ',IJS+IJ,WORK(KHMAT)
      &                 ,WORK,KFREE,LFREE)
         ENDIF
       ENDDO
+C     ... ENDDO IJ loop
 C
       CALL MEMREL('MS4IN2P',WORK,1,KFRSAV,KFREE,LFREE)
 C
