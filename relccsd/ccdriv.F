@@ -291,8 +291,6 @@ C
       MXITFS = MAXIT
       NTOLFS = NTOL
       DO I = 1, 16
-         IF (NACTH(I).GT.NELEC(I)) 
-     &   CALL QUIT ('NACTH > NELEC : Incorrect Fock space input')
          NINACT(I) = NELEC(I) - NACTH(I)
          NACT(I) = NACTH(I) + NACTP(I)
       ENDDO
