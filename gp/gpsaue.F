@@ -4064,7 +4064,7 @@ C     Memory allocation
 C
 #include "memint.h"
       IF((IOPT*IOPT).NE.1) CALL QUIT('SQSMAT: Invalid IOPT!')
-      N2DIM = N*N*NZA
+      N2DIM = LRA*N*NZA
       CALL MEMGET('REAL',KEVEC,N2DIM,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEVAL,N,WORK,KFREE,LFREE)
 C
@@ -4094,15 +4094,15 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0,D0=0.0D0)
-      DIMENSION A(LRA,LCA,NZA),EVEC(N,N,NZA),EVAL(N),WORK(*)
+      DIMENSION A(LRA,LCA,NZA),EVEC(LRA,N,NZA),EVAL(N),WORK(*)
 #include "dgroup.h"
       KFRSAV = KFREE
 C
 C     First diagonalize the matrix and save eigenvectors 
 C
-      CALL QDIAG(NZA,N,A,LRA,LCA,EVAL,1,EVEC,N,N,
+      CALL QDIAG(NZA,N,A,LRA,LCA,EVAL,1,EVEC,LRA,N,
      &           WORK(KFREE),LFREE,IERR)
-      N2DIM = N*N*NZA
+      N2DIM = LRA*N*NZA
       CALL MEMGET('REAL',KBUF,N2DIM,WORK,KFREE,LFREE)
       CALL DCOPY(N2DIM,EVEC,1,WORK(KBUF),1)
 C
@@ -4127,8 +4127,8 @@ C     dependency)
 C
 C     Finally get the full matrix
 C
-      CALL QGEMM(N,N,N,D1,'N','N',IQDEF,WORK(KBUF),N,N,NZA,
-     &                    'H','N',IQDEF,EVEC      ,N,N,NZA,
+      CALL QGEMM(N,N,N,D1,'N','N',IQDEF,WORK(KBUF),LRA,N,NZA,
+     &                    'H','N',IQDEF,EVEC      ,LRA,N,NZA,
      &                         D0,IQDEF,A,LRA,LCA,NZA)
 C
       CALL MEMREL('SQSTR2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)              
