@@ -1,4 +1,10 @@
 /* Utility routines for molpro88 unix version
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * FILE    : ccunix.c
+ * SOURCE  : $Source$
+ *
         Coded by U. Welz, Universitaet Bielefeld, January 1988
         Further information from Peter Knowles or Joachim Werner
 
@@ -35,6 +41,9 @@ Bit routines:   popcnt(pat)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#if defined (SYS_T3D) || defined (SYS_CRAY)
+#include <fortran.h>
+#endif
 
 #include <sys/times.h>
 #include <sys/param.h>
@@ -46,7 +55,7 @@ extern char  *getenv();
 #define MAXLENGTH       15
 #define MAXUNIT         99
 
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
 #define WORT            8       
 #else
 #define WORT            4       
@@ -66,9 +75,27 @@ typedef struct
 FILE_DEFINITION files[MAXUNIT];
 int nwords=0, nio=0;
 
+#if defined (SYS_IRIX) || defined (SYS_LINUX) 
+void openc_();
+void wrabsf_();
+void rdabsf_();
+void closec_();
+#elif defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_CRAY)
+void openc();
+void wrabsf();
+void rdabsf();
+void closec();
+#else
+????
+#endif
+
+
+
 #if defined (SYS_IRIX) || defined (SYS_LINUX)
 void openc_(unit,fname,size,status) long *unit, *size, *status; char *fname;
-#elif defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_HPUX)
+#elif defined (SYS_CRAY) || defined (SYS_T3D)
+void openc(unit,fcd,status) long *unit, *status; _fcd fcd;
+#elif defined (SYS_AIX) || defined (SYS_HPUX)
 void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
 #else
 ????
@@ -76,7 +103,13 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
 
 { char *cp, *env ;
   char  name[PATHMAX]; 
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+  long *size;
+  char *fname;
 
+  *size = _fcdlen(fcd);
+  fname = _fcdtocp(fcd);
+#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"openc: Unit number out of range (%d)\n",*unit);
@@ -120,15 +153,24 @@ void openc(unit,fname,size,status) long *unit, *size, *status; char *fname;
   files[*unit].addr= -1;
 }
 
-#if defined (SYS_IRIX) || (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX)
 void wrabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
-#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX) 
+#elif defined (SYS_CRAY) || defined (SYS_T3D)
+void wrabsf(unit,fcd,p) long *unit,*p; _fcd fcd;
+#elif defined (SYS_AIX) || defined (SYS_HPUX) 
 void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
 #else
 ???
 #endif
 
 { long addr, m, n;
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+  long *l;
+  char *a;
+
+  *l = _fcdlen(fcd);
+  a = _fcdtocp(fcd);
+#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"wrabs: Unit number out of range (%d)\n",*unit);
@@ -152,15 +194,24 @@ void wrabsf(unit,a,l,p) long *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX)
 void rdabsf_(unit,a,l,p) long *unit, *l, *p; char *a;
-#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
+#elif defined (SYS_CRAY) || defined (SYS_T3D)
+void rdabsf(unit,fcd,p) long *unit, *p; _fcd fcd;
+#elif defined (SYS_AIX) || defined (SYS_HPUX)
 void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
 #else
 ????
 #endif
 
 { long addr, m, n;
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+  long *l;
+  char *a;
+
+  *l = _fcdlen(fcd);
+  a = _fcdtocp(fcd);
+#endif
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"rdabs: Unit number out of range (%d)\n",*unit);
@@ -184,9 +235,9 @@ void rdabsf(unit,a,l,p) long *unit, *l, *p; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || (SYS_LINUX)
+#if defined (SYS_IRIX) || defined (SYS_LINUX)
 void closec_(unit) long *unit;
-#elif defined (SYS_CRAY) || (SYS_AIX) || (SYS_HPUX)
+#elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_AIX) || defined (SYS_HPUX)
 void closec(unit) long *unit;
 #else
 ????
