@@ -24,7 +24,7 @@ DEFAULT_TIME=15m
 #
 # Process relevant arguments
 all_arguments="$*"
-while [ $# != 2 ]; do
+while [ $# -gt 2 ]; do
    argv="$1"; shift
    case "${argv}" in
       -mw)
@@ -80,7 +80,7 @@ fi
 # Compute memory required for this job
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-let MEM_IN_MWORDS=$MW+$NW*($MPI_NPROC-1)
+let MEM_IN_MWORDS=$MW+$NW*\($MPI_NPROC-1\)
 let MEM_IN_KBYTES=$MEM_IN_MWORDS*8192
 let MEM_IN_MBYTES=$MEM_IN_MWORDS*8
 #
