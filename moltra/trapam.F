@@ -54,11 +54,9 @@ C
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
-     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4)
+     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
+     &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
-      IF (PRPTRA) CALL TRAPRP(WORK,LWORK)
-      IF (.NOT.NO2IND) CALL TRAONE(WORK,LWORK)
-      IF (NO4IND) RETURN
       CALL QENTER('PAMTRA')
 #include <memint.h>
       KFRSAV = KFREE
@@ -66,6 +64,86 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+C
+C     Set up index arrays for core orbitals
+C     =====================================
+C
+      IC   = 1
+      DO I = 1,NFSYM
+        NR(I)   = NESH(I)
+        IR(1,I) = 1
+        IR(2,I) = NESH(I)
+      ENDDO
+C
+      DO IFRP = 1,NFSYM
+        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+        NSPC(IFRP,0) = 1
+        CALL  NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,1)),
+     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &               NSPC(IFRP,0),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSPC(IFRP,0),IFRP,
+     &              NSPC(IFRP,2),NSPC(IFRP,1))
+        NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
+        CALL MEMREL('TRAPAM',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
+        CALL MEMGET('INTE',KVEC(IFRP,1),NSPC(IFRP,0),
+     &              WORK,KFREE,LFREE)
+        NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
+        NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
+        NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
+        NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
+      ENDDO
+C
+C     Print section
+C     =============
+C
+      DO I = 1, NFSYM
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),DUM,DUM,DUM,NSPC)
+      ENDDO
+C
+C     Calculate dimensions of the coefficient array
+C
+C     ICMOQC : Index to start of representation in the coefficient array
+C
+      NQT(1) = 0
+      ICMOQC(1,1) = 1
+      DO IFRP = 1, NFSYM
+         NQ(IFRP,1) = NFBAS(IFRP,0)*NSPC(IFRP,0)*NZ
+         NQT(1) = NQT(1) + NQ(IFRP,1)
+         IF (IFRP.LT.NFSYM) ICMOQC(IFRP+1,1) = ICMOQC(IFRP,1)+NQ(IFRP,1)
+      ENDDO
+C
+C     Allocate the memory for the coefficients
+C
+      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
+      KQC(2) = KQC(1) + NQ(1,1)
+C
+C     Get all coefficients
+C
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(A)') 'Coefficient file not present'
+         CALL QUIT('TRAPAM: No coefficients !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPAM')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,2)
+      ENDIF
+C
+C     Select the set that we need
+C
+      DO IFRP = 1, NFSYM
+         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
+     &                NSPC(IFRP,0),WORK(KVEC(IFRP,1)),
+     &                NSPC(IFRP,2),NSPC(IFRP,1),
+     &                NFBAS(IFRP,0),NORB(IFRP))
+      ENDDO
+C
+C     Throw away the complete set, keep only the selected sets
+C
+      CALL MEMREL('TRAPAM',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
 C     Set up index arrays for active orbitals
 C     =======================================      
@@ -85,6 +163,7 @@ C
       ENDIF
 C
       DO I = 1,4
+        NSTRT(I) = 0
         DO IFRP = 1,NFSYM
           CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = 1
@@ -94,6 +173,7 @@ C
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
+          NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
@@ -104,7 +184,7 @@ C     Print section
 C     =============
 C
       DO I = 1, NFSYM
-         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
+         CALL TRAPRI(1,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
 C
@@ -147,6 +227,7 @@ C
          IF (ISAME(I).NE.I) THEN
             KQ(1,I) = KQ(1,ISAME(I))
          ELSE
+            IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ENDIF
          KQ(2,I) = KQ(1,I) + NQ(1,I)
@@ -191,7 +272,7 @@ C
 C
 C     Select the set that we need
 C
-      DO I = 1, 4
+      DO I = 1, 4 
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
@@ -206,28 +287,35 @@ C
           ENDIF
         ENDDO
       ENDDO
-C  The next section is not working yet : needs debugging (Luuk)
-C  Be sure to have the same recanonization for the two-index transform.!
-C
-C     If necessary recanonize (virtual) orbitals
-C     ==========================================
-C
-ctest IF (RCORBS) THEN
-ctest    CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
-ctest&               KIBE(1,1),NDMOQR(1,1,1),ICMOQR(1,1),
-ctest&               WORK(KCMO),WORK(KEIG))
-ctest ENDIF
 C
 C     Throw away the complete set, keep only the selected sets
 C
       CALL MEMREL('TRADRV',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
+C     If necessary recanonize (virtual) orbitals
+C     Assuming that all sets are equal, we use the first index !!!
+C     ============================================================
+C
+      IF (RCORBS) THEN
+C        Overdimension KCMO because it is used as Focksize scratch space
+         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
+     &               KIBE(1,1),NDMOQR(1,1,1),ICMOQR(1,1),
+     &               WORK(KCMO))
+         CALL MEMREL('TRADRV',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      ENDIF
+C
+      IF (PRPTRA) CALL TRAPRP(WORK,LWORK)
+      IF (.NOT.NO2IND) 
+     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+C
 C     Call driver for 4-index transformation
 C     --------------------------------------
 C
-      CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
-     &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
-     &            TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+      IF (.NOT.NO4IND)
+     &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
+     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -465,7 +553,7 @@ C     ========================================
 C
       CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
      &            KIBE(1,2),NDMOQR(1,1,2),ICMOQR(1,2),
-     &            WORK(KCMO),WORK(KEIG))
+     &            WORK(KCMO))
 C
 C     Throw away the full coefficients and eigenvalues
 C     ================================================
@@ -2343,7 +2431,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck vircan */
       SUBROUTINE VIRCAN(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,NDMOQR,
-     &                  ICMOQR,CMO,EIG)
+     &                  ICMOQR,CMO)
 C***********************************************************************
 C
 C     Check for canonical virtuals; if not, recanonize
@@ -2376,7 +2464,7 @@ C
 #endif
       LOGICAL RECAN
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
-     &          CMO(*),EIG(*),WORK(*)
+     &          CMO(*),WORK(*)
       DIMENSION NFMO(2,2),IFMO(2)
 C
       CALL QENTER('VIRCAN')
@@ -2422,7 +2510,7 @@ C
         CALL MEMGET('REAL',KFMO,NELM    ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
         CALL VIRCA1(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,NDMOQR,ICMOQR,
-     &       INTDEF,CMO,EIG,WORK(KFMO),NFMO,IFMO,WORK(KFAO))
+     &       INTDEF,CMO,WORK(KFMO),NFMO,IFMO,WORK(KFAO))
         CALL MEMREL('VIRCAN',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
@@ -2444,7 +2532,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck virca1 */
       SUBROUTINE VIRCA1(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,NDMOQR,
-     &              ICMOQR,INTDHF,CMO,EIG,FMO,NFMO,IFMO,FAO)
+     &              ICMOQR,INTDHF,CMO,FMO,NFMO,IFMO,FAO)
 C***********************************************************************
 C
 C     Recanonize virtual orbitals...
@@ -2464,7 +2552,7 @@ C
 CTROND#include <dcbdhf.h>
 #include <dcbham.h>
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
-     &          CMO(*),EIG(*),FAO(*),FMO(*),WORK(*)
+     &          CMO(*),FAO(*),FMO(*),WORK(*)
       DIMENSION NFMO(2,2),IFMO(2)
 C
 C     Get Fock-matrix in active orbitals
@@ -2473,6 +2561,7 @@ C
       CALL GTVFCK(FMO,NFMO,IFMO,INTDHF,CMO,FAO,
      &            WORK(KQ(1)),NDMOQR,ICMOQR,WORK(KQ(1)),NDMOQR,ICMOQR,
      &            IPRINT,WORK,KFREE,LFREE)
+      call memchk ('na gtvfck',work,1)
 C
 C     Diagonalize Fock-matrix
 C     =======================
@@ -2497,6 +2586,7 @@ C
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
         ENDIF
    30 CONTINUE
+      call memchk ('na diago',work,1)
 C
 C     Backtransform coefficients
 C     ==========================
@@ -2707,6 +2797,7 @@ C       Hermitian operator
           FIRST3 = BF3
         ENDIF
       ENDIF
+      call memchk ('na cmo',work,1)
 C
 C     3a. Solvent: get solvent contribution
 C     =====================================
@@ -2730,6 +2821,7 @@ C
      &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
         CALL ONEFCK(FAO,IPRINT,WORK(KFREE),LFREE)
       ENDIF
+      call memchk ('na fao',work,1)
 C
 C     4. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
