@@ -20,10 +20,8 @@ Projection CH4 pour diff. bases
 .LOCALIZE
 *LOCALIZE
 .PRJLOC
-.MAXITR
-200
 .THRESH
-1.0D-06
+1.0D-04
 .OWNBAS
 .VECREF
 5
