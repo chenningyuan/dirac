@@ -1587,7 +1587,13 @@ C
 C hjaaj Oct 2004: must also implement open shells (NASHB*)
       JST = JOCC + 1
       DO J = JST,NO
-         JSYM = IBEIG(J) + 1
+         IF (LINEAR) THEN
+C           ... IBEIG = 2 * abs(MJ)
+            JSYM = (IBEIG(J) + 1) / 2
+         ELSE
+C           ... IBEIG = (approximate) boson irrep
+            JSYM = IBEIG(J) + 1
+         END IF
          IF (NB_CNT(JSYM) .GT. 0) THEN
             NB_CNT(JSYM) = NB_CNT(JSYM) - 1
             JOCC = JOCC + 1
