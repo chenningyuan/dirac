@@ -448,22 +448,23 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION WORK(*)
       CHARACTER*10 FNODE,LFNAM,FNAM*5
 C
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C
 C     Open direct access scratch file for 4-indexed transformed integrals
-      NCLASS = NZ * NZ * NBSYM / NFSYM
 C
       DO IREPIJ = 1, NFSYM
-         IRECL = IRECLEN(NCLASS*NFPCK34(IREPIJ),0,0)
+         IRECL = IRECLEN(NQQCLASS*NFPCK34(IREPIJ),0,0)
          IRECL = MAX0(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)
-         CALL MEMGET('REAL',KFTMAT,NKL*NCLASS,WORK,KFREE,LFREE)
-         CALL DZERO(WORK(KFTMAT),NKL*NCLASS)
+         CALL MEMGET('REAL',KFTMAT,NKL*NQQCLASS,WORK,KFREE,LFREE)
+         CALL DZERO(WORK(KFTMAT),NKL*NQQCLASS)
          DO IJ = 1, NIJ
             WRITE (LUMLF3+IREPIJ,REC=IJ) 
-     &            (WORK(IX),IX=KFTMAT,KFTMAT+NKL*NCLASS-1)
+     &            (WORK(IX),IX=KFTMAT,KFTMAT+NKL*NQQCLASS-1)
          ENDDO
          CALL MEMREL('MDSCRI',WORK,1,KFTMAT,KFREE,LFREE)
       ENDDO
@@ -486,11 +487,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION WORK(*)
       DIMENSION FMAT(*)
 C
-      NCLASS = NZ * NZ * NBSYM / NFSYM
-C
 C     Read integrals.
 C
-      READ (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NCLASS)
+      READ (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
 C
       RETURN
       END
@@ -510,16 +509,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION WORK(*)
       DIMENSION FMAT(*)
 C
-      NCLASS = NZ * NZ * NBSYM / NFSYM
-C
 C     Read integrals from previous batch and add up.
 C
-      CALL MEMGET('REAL',KFTMAT,NKL*NCLASS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFTMAT,NKL*NQQCLASS,WORK,KFREE,LFREE)
       READ (LUMLF3+IREPIJ,REC=IJ) (WORK(IX),IX=KFTMAT,
-     &                              KFTMAT+NKL*NCLASS-1)
+     &                              KFTMAT+NKL*NQQCLASS-1)
       FACTR = 1
-      CALL DAXPY (NCLASS*NKL,FACTR,WORK(KFTMAT),1,FMAT,1)
-      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NCLASS)
+      CALL DAXPY (NQQCLASS*NKL,FACTR,WORK(KFTMAT),1,FMAT,1)
+      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
       CALL MEMREL('MDSCRU',WORK,1,KFTMAT,KFREE,LFREE)
 C
       RETURN
@@ -540,9 +537,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION WORK(*)
       DIMENSION FMAT(*)
 C
-      NCLASS = NZ * NZ * NBSYM / NFSYM
-C
-      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NCLASS)
+      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NQQCLASS)
 C
       RETURN
       END

@@ -65,6 +65,10 @@ C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
 C
+C     Define number of double quaternionic classes
+C
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C
 C     Set up index arrays for active orbitals
 C     =======================================      
 C
@@ -137,21 +141,21 @@ C
 C
 C     Allocate the memory for the coefficients, check their relations
 C
+      K = 2
+      IF (NFSYM.EQ.1) K=1
       DO I = 1, 4
 C
          DO J = I, 1, -1
-            K = 2
-            IF (NFSYM.EQ.1) K=1
             IF (TRASAM(WORK(KVEC(1,I)),WORK(KVEC(K,I)),
      &                 WORK(KVEC(1,J)),WORK(KVEC(K,J)),
      &          NSTR(1,0,I),NSTR(1,0,J))) ISAME(I) = J
          ENDDO
 C
-         IF (ISAME(I).NE.I) THEN
-            KQ(1,I) = KQ(1,ISAME(I))
-         ELSE
+         IF (ISAME(I).EQ.I) THEN
             IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
+         ELSE
+            KQ(1,I) = KQ(1,ISAME(I))
          ENDIF
          KQ(2,I) = KQ(1,I) + NQ(1,I)
 C
@@ -454,6 +458,8 @@ C
       IPRTRA = IPRMP2
       ISTBUF = ISTRAT
       ISTRAT = ISTRMP2
+C     number of double quaternionic classes for strategy 3 and 4
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
 C
 C     Set up index arrays for active occupieds
 C     ========================================     
@@ -1848,9 +1854,9 @@ C
 #include <dcbtra.h>
 #include <dgroup.h>
 C
-      CALL IZERO (ICLARR,16*NCLASS)
-C
       IF (NCLASS.GT.16) CALL QUIT ('Only 16 integral classes defined')
+C
+      CALL IZERO (ICLARR,16*NCLASS)
 C
 C     Real classes
 C
@@ -2990,6 +2996,8 @@ C
       ISTRAT = ISTRES
       THRBUF = THROUT
       THROUT = RESOUT
+C     number of double quaternionic classes for strategy 3 and 4
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
 C
 C     Set up index arrays for active orbitals;
 C     =======================================      
