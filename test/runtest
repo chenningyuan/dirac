@@ -126,11 +126,10 @@ echo 'FINDING TESTS...'
 echo
 all_test=
 $echo 'Available tests: \c'
-for ff in *; do
+for ff in [0-9]*; do
    if test -d $ff; then
       all_test=$all_test' '$ff
       $echo $ff' \c'
-      sleep 1
    fi
 done
 echo
