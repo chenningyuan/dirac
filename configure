@@ -1018,10 +1018,10 @@ case $machine in
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
        arflag='rv'
-       c_opt='+O3 -Ae'
-       opt='+O3 +U77 +ppu'
+       c_opt='+DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
+       opt='+DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
        inc="-I$INCLUDE_DIR"
-       LIB="-lV7 -lm $LIB"
+       LIB="-llapack +U77 +DA2.0W -lm $LIB"
        if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp="$cpp -DVAR_LIBVECLIB"
        fi
