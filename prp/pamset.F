@@ -221,7 +221,7 @@ C
          DO IN = ISTI,IENDI
             INDI = IND(IN,1,ISYM)
             DO JS = JSTS,JENDS
-               INDS = IND(JS,3,ISYM)
+               INDS = IND(JS,3,JSYM)
                IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDS) .EQ. 0) THEN
                   NXOPE          = NXOPE + 1
                   JXOPE(1,NXOPE) = INDI
@@ -992,6 +992,10 @@ C     Three types are defined:
 C     ITYP = 1   inactive
 C     ITYP = 2   active
 C     ITYP = 3   secondary
+C
+C     NIND(1,ITYP,IFRP) - number of positronic orbitals 
+C     NIND(2,ITYP,IFRP) - number of electronic orbitals
+C       ...of type ITYP and fermion ircop IFRP  
 C
 C     IORB is the absolute index of the orbital
 C     IORBCL(1,IORB) - ITYP
