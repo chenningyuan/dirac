@@ -49,6 +49,14 @@ while [ $# -gt 2 ]; do
          ;;
    esac
 done
+if [ $# != 2 ]; then
+# can only happen if user has -mw, -nw, -mpi, -q, or -t as third
+# last elements, i.e. user has forgotten the argument or one
+# of the MOL and MENU arguments
+   echo "Error, check three last elements in your parameter list:"
+   echo "  $all_arguments"
+   exit 1
+fi
 argv="$1";shift; MOL=$argv
 argv="$1";shift; MENU=$argv
 #
@@ -180,7 +188,7 @@ case $QUEUE in
   ;;
 esac
 if [ $MPI_NPROC -le 32 ]; then
-   NNODE=1;
+   NNODE=1
 elif [ $MPI_NPROC -le 64 ]; then
    NNODE=2
 elif [ $MPI_NPROC -le 96 ]; then
@@ -189,7 +197,7 @@ elif [ $MPI_NPROC -le 128 ]; then
    NNODE=4
 else
   echo "Too many nodes requested!"
-  exit
+  exit 1
 fi
 #
 #  Create jobinp file
