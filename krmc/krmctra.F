@@ -221,6 +221,756 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rgeth2 */
+      SUBROUTINE RGETH2(FQ,WORK,LWORK)
+C*****************************************************************************
+C
+C     Calculate FQ and get H2AC (two-electron integrals
+C     with active indeces).
+C
+C     Input:
+C
+C     Output:
+C        FQ   -   aux. FQ fock matrix
+C        H2AC -   (written to disk)
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbopt.h>
+#include <dcborb.h>
+#include <dcbgen.h>
+#include <dgroup.h>
+C
+      DIMENSION FQ(*)
+      DIMENSION WORK(*)
+C
+C
+#include <memint.h>
+C
+      CALL QENTER('RGETH2')
+C
+      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
+C
+C        Get density matrix
+C        ------------------
+C
+C        Read density matrix.
+C         
+         KLEN = NASHT * NASHT * NNASHX * NZ * 3
+         CALL MEMGET('REAL',KPV,KLEN,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KPVM,(2*NASHT)**4 * MIN0(NZ,2),
+     &        WORK,KFREE,LFREE)
+         CALL REAKRMC(LUKRM3,'PVMO    ',
+     &        WORK(KPVM),(2*NASHT)**4 * MIN0(NZ,2))
+C
+C        Transform from Molfdir basis to Dirac (NZ,3) basis.
+C        
+         CALL M2DNZ3(WORK(KPVM),WORK(KPV),IPROPT)
+C
+         CALL MEMREL('RGETH2.PV',WORK,KWORK,KPVM,KFREE,LFREE)
+C
+C
+C        Two electron integrals
+C        ----------------------
+C
+C        Get FQ and active two-electron integrals.
+C
+         CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,
+     &        WORK,KFREE,LFREE)
+         CALL RGETH21(.TRUE.,.TRUE.,WORK(KPV),FQ,WORK(KH2AC),
+     &        WORK(KFREE),LFREE,IPROPT)
+C
+C        Write FQ and H2AC to disk.
+C
+         CALL WRTKRMC(LUKRM3,'FQMO    ',FQ,NASHT * NORBT * NZ)
+         CALL WRTKRMC(LUKRM3,'H2AC    ',WORK(KH2AC),
+     &        NASHT*NASHT*NNASHX*NZ*3)
+         CALL MEMREL('RGETH2.after FQ',WORK,KWORK,KWORK,KFREE,LFREE)
+      ELSE
+         WRITE(LUPRI,'(/,A,/,2A)')
+     $        '*** ERROR in RGETH2 ***',
+     $        'FQ and H2AC not implemented for CI program ',
+     $        OPT_CIPROGRAM
+         CALL QUIT('*** ERROR in RGETH2 ***')
+      END IF
+      CALL QEXIT('RGETH2')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck rgeth21 */
+      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C
+C
+C     Input:
+C        DOFQ  - calculate the auxiliary Fock matrix FQ
+C        DOH2AC - collect active two-electron integrals.
+C        PV - two-electron density matrix
+C
+C     Output:
+C        FQ - auxiliary Fock matrix
+C        (H2AC written to disk)
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbopt.h>
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION WORK(*)
+      LOGICAL DOFQ, DOH2AC
+C     index arrays
+      DIMENSION NFPCK12(2), NFPCK34(2)
+      DIMENSION NSTR(2,0:2,4)
+      DIMENSION IDXG2U(1000)
+      DIMENSION IDXU2G(100)
+C     strings
+      CHARACTER CDATE*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
+C
+#include <memint.h>
+C
+      CALL QENTER('RGETH21')
+C
+C     Make index arrays
+C     -----------------
+C
+      CALL MKIDXG2U(IDXG2U)
+      CALL MKIDXU2G(IDXU2G)
+C
+C     Read information from integral file
+C     -----------------------------------
+C
+      LUINT = 1 
+      OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
+     &     FORM = 'UNFORMATTED' )
+C
+C     Read time & date for creation
+C
+      READ (LUINT) DATEX, TIMEX
+C
+      IF ( IPRINT .GE. 3 ) WRITE(LUPRI,'(1X,4A)')
+     &     '- time and date read from MDINFO: ',
+     &     TIMEX, ' ',DATEX
+C
+      READ (LUINT) NFPCK12, NFPCK12T
+      READ (LUINT) NFPCK34, NFPCK34T
+      READ (LUINT) NSTR
+C     
+      CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB12,NFPCK12T,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB34,NFPCK34T,WORK,KFREE,LFREE)
+C
+C     I and J indeces
+      CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
+C     Boson irrep for IJ indeces
+      CALL READI(LUINT,NFPCK12T,WORK(KDXB12))
+C     Boson irrep for KL indeces
+      CALL READI(LUINT,NFPCK34T,WORK(KDXB34))
+C
+      CLOSE (LUINT, STATUS = 'KEEP')
+C
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+C
+C     Open integral files.
+C     --------------------
+C
+      LUINT = 0
+      DO IREPIJ = 1, NFSYM
+         IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
+         IRECL = MAX0(IRECL,IRECLEN(1,0,0))
+         WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
+         FNODE = LFNAM(FNAM)
+         OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
+     &        ACCESS='DIRECT',RECL=IRECL)
+      END DO
+C
+C     Allocate memory for integrals (H2XY)
+C     
+      NKL = MAX0( NFPCK34(1), NFPCK34(2) )
+      CALL MEMGET('REAL',KHMAT,NKL*NCLASS,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KH2XY,NKL*NCLASS,WORK,KFREE,LFREE)
+C     (allocate KH2XY with NCLASS so we can use it as scratch)
+C     Use KH2XY as two different matrices: H2XY and H2YX
+      KH2YX = KH2XY + 3 * NZ *
+     &     MAX0( NORB(1) * NASH(1),
+     &     NORB(2) * NASH(2) )
+C
+C     Read integrals (x>y)
+C     --------------------
+C
+C     zero arrays
+C
+      IF (DOFQ) CALL DZERO(FQ,NASHT*NORBT*NZ)
+      IF (DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+C
+C     Loop over distributions
+C
+      NXY = 0
+      DO IX = 1, NASHT
+         DO IY = 1, IX
+            NXY = NXY + 1
+C
+C           Find record number and irep
+C
+            CALL FNDRECNO(IX,IY,WORK(KDXKR12),NFPCK12,NFPCK12T,
+     &           IDXU2G,IREPIJ,IREC)
+            write(6,*) 'ix iy',IX,IY,IREPIJ,IREC
+C
+C           Read integrals
+C           
+            NKL = NFPCK34(IREPIJ)
+C
+            READ (LUINT + IREPIJ, REC=IREC)
+     &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS) 
+#ifdef UNDEF
+            ii = 0
+            do i = 1, 3 * nz
+               write(6,*) 'class ',i,' before transformation'
+               call output(work(kh2xy+ii),1,norbt,1,norbt,
+     &              norbt,norbt,1,lupri)
+               ii = ii + nkl
+            end do
+#endif
+C
+C
+C           Transform to Dirac (NZ,3) format.
+C
+            CALL DZERO(WORK(KHMAT),NKL * 3 * NZ )
+            CALL CL2NZ3(WORK(KH2XY),WORK(KHMAT),NKL,IREPIJ)
+            ii = 0
+            do i = 1, 3 * nz
+               write(6,*) 'class ',i,' after transformation'
+               call output(work(khmat+ii),1,norbt,1,norbt,
+     &              norbt,norbt,1,lupri)
+               ii = ii + nkl
+            end do
+C
+C           - take out NORBT * NASHT  XY- and YX-blocks.
+C           - make H2AC.
+C
+            CALL TKNONABL(WORK(KHMAT),NKL,
+     &           WORK(KH2XY),WORK(KH2YX),H2AC,NXY,
+     &           IREPIJ,IDXG2U,NSTR,IX .EQ. IY, DOFQ, DOH2AC)
+            do i = 1, 3 * nz
+               write(6,*) 'xy matrix no ',i
+               call output(work(kh2xy + (i-1)*norbt*nasht),
+     &              1,norbt,1,nasht,norbt,nasht,1,lupri)
+            end do
+            if ( ix .ne. iy) then
+               do i = 1, 3 * nz
+                  write(6,*) 'yx matrix no ',i
+                  call output(work(kh2yx + (i-1)*norbt*nasht),
+     &                 1,norbt,1,nasht,norbt,nasht,1,lupri)
+               end do
+            end if
+C
+C           Do the gazillion matrix multiplies to construct
+C           the auxililary Fock matrix FQ.
+C           
+            IF (DOFQ) THEN
+               CALL RADDFQ(FQ,WORK(KH2XY),WORK(KH2YX),PV,
+     &              IX,IY,NXY,IREPIJ,IPRINT)
+            END IF
+C
+         END DO
+      END DO
+C
+ 9000 FORMAT(1P,1X,4I3,4X,3(D14.7,1X),3(/,16X,3(D14.7,1X)))
+C
+      IF (IPRINT .GE. 0) THEN
+         CALL HEADER('H2AC matrix in Dirac (NZ,3) format',-1)
+         IJ = 0
+         DO I = 1,NASHT
+            DO J = 1,I
+               IJ = IJ + 1
+               DO K = 1,NASHT
+                  DO L = 1,NASHT
+                     WRITE(LUPRI,9000)
+     &                    K,L,I,J,
+     &                    ((H2AC(K,L,IJ,IZ,ICL),
+     &                    IZ = 1,NZ),ICL=1,3)
+                  END DO
+               END DO
+            END DO
+         END DO
+C
+         CALL HEADER('FQ matrix',-1)
+         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+      CALL QEXIT('RGETH21')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck raddfq */
+      SUBROUTINE RADDFQ(FQ,H2XY,H2YX,PV,NXY,IX,IY,IREPIJ,IPRINT)
+C*****************************************************************************
+C
+C     Add up the infinite number of terms that constitutes the FQ fock
+C     matrix.
+C
+C     For proper documentation see Ph.D. thesis of Joern Thyssen where
+C     all the formulae below should be documented :-)
+C
+C     Input:
+C        IREPIJ: symmetry of integrals (currently unused)
+C        H2XY, H2YX: (p,v) and (v,p)^T integrals for compound index XY
+C        NXY   : the XY compound index
+C        IX,IY : x and y
+C 
+C     Output:
+C        FQ    : the aux. Fock matrix
+C
+C     Written by J. Thyssen - Nov 16 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER ( D1 = 1.0D00 )
+C
+#include <dgroup.h>     
+#include <dcborb.h> 
+#include <dcbopt.h> 
+C
+      DIMENSION H2XY(NORBT,NASHT,NZ,3)
+      DIMENSION H2YX(NORBT,NASHT,NZ,3)
+      DIMENSION FQ(NORBT,NASHT,NZ)
+      DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
+C
+      IF (IPRINT .GE. 0) THEN
+         CALL HEADER('Output from RADDFQ',-1)
+         WRITE(LUPRI,'(A,I3)') 'NXY       = ',NXY
+         WRITE(LUPRI,'(A,I3)') 'IX        = ',IX
+         WRITE(LUPRI,'(A,I3)') 'IY        = ',IY
+         WRITE(LUPRI,'(A,I3)') 'IREPIJ    = ',IREPIJ
+         WRITE(LUPRI,'(A)') 'FQ on entry'
+         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+C
+C     FIXME! Only implemented for real groups...
+C
+      IF (NZ .NE. 1) THEN
+         CALL QUIT('*** AARRGGH, some lazy person did'
+     &        //' not implement NZ>1')
+      END IF
+C
+C     \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
+C      
+      CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
+     &     H2XY(1,1,1,1),NORBT,
+     &     PV(1,1,NXY,1,1),NASHT,
+     &     D1,FQ(1,1,1),NORBT)
+C
+      IF (IX .NE. IY) THEN
+C
+C        \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1} 
+C
+         CALL DGEMM('N','N',NORBT,NASHT,NASHT,D1,
+     &        H2YX(1,1,1,1),NORBT,
+     &        PV(1,1,NXY,1,1),NASHT,
+     &        D1,FQ(1,1,1),NORBT)
+C
+      END IF
+C
+      IF (IX .NE. IY) THEN
+C        
+C        \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
+C         
+         CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
+     &        H2XY(1,1,1,2),NORBT,
+     &        PV(1,1,NXY,1,2),NASHT,
+     &        D1,FQ(1,1,1),NORBT)
+C
+      END IF
+C
+      IF (IX .NE. IY) THEN
+C
+C        \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,3} P_{qv,xy;1,3}
+C
+         CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
+     &        H2XY(1,1,1,3),NORBT,
+     &        PV(1,1,NXY,1,3),NASHT,
+     &        D1,FQ(1,1,1),NORBT)
+C
+      END IF
+C
+C     Output section
+C
+      IF (IPRINT .GE. 0) THEN
+         WRITE(LUPRI,'(A)') 'FQ on exit'
+         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+      END IF
+      RETURN
+      END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck tknanobl */
+      SUBROUTINE TKNONABL(H2FULL,NKL,H2XY,H2YX,H2AC,NXY,
+     &     IREPIJ,IDXG2U,NSTR,ONLYXY,DOFQ,DOH2AC)
+C*****************************************************************************
+C
+C     Transform H2FULL from packed format to H2(NORBT,NASHT,*).
+C
+C     Input:
+C        IREPIJ: symmetry of H2FULL
+C        H2FULL: symmetry packed:
+C                   IREPIJ = gerade:
+C                       index3(gerade) * index4(gerade) + 
+C                       index3(ungerade) * index4(ungerade)
+C                   IREPIJ = ungerade:
+C                       index3(gerade) * index4(ungerade) + 
+C                       index3(ungerade) * index4(gerade)
+C        NKL   : leading dimension of H2FULL
+C        ONLYXY: calculate only H2XY (not H2YX)
+C 
+C     Output:
+C        H2XY   : integrals in (NORBT,NASHT,*) format.
+C        H2YX   : integrals in (NORBT,NASHT,*) format.
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>     
+#include <dcborb.h> 
+#include <dcbopt.h> 
+C
+      DIMENSION H2FULL(NKL,NZ,3)
+      DIMENSION H2XY(NORBT,NASHT,NZ,3)
+      DIMENSION H2YX(NORBT,NASHT,NZ,3)
+      DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
+      DIMENSION IDXG2U(*)
+      LOGICAL   ONLYXY, DOH2AC, DOFQ
+      DIMENSION NSTR(2,0:2,4)
+C
+      IF (DOFQ) THEN
+         CALL DZERO(H2XY, NORBT * NASHT * NZ * 3)
+         IF (.NOT. ONLYXY) CALL DZERO(H2YX, NORBT * NASHT * NZ * 3)
+      END IF
+C
+      IF (JTRLVL .EQ. 0) THEN
+         WRITE(LUPRI,'(A,/,A,I3)')
+     &        '*** ERROR in TKNANOBL ***',
+     &        'Illegal transformation level: ',JTRLVL
+         CALL QUIT('*** ERROR in TKNANOBL ***')
+      ELSE IF (JTRLVL .EQ. 2 ) THEN
+         WRITE(LUPRI,'(A,/,A,I3)')
+     &        '*** ERROR in TKNANOBL ***',
+     &        'Not implemented; transformation level: ',JTRLVL
+         CALL QUIT('*** ERROR in TKNANOBL ***')
+      ELSE 
+C
+C        (gg|gu) or (gg|gg) integrals transformation.
+C
+         IPV = 0
+         IVV = 0
+         DO IREPV = 1, NFSYM
+            IREPP = MOD (IREPV + IREPIJ, 2)  + 1
+            DO IV = 1, NSTR(IREPV,0,4)
+               IVV = IVV + 1
+               DO IP = 1, NSTR(IREPP,0,3)
+                  IF (IREPP .EQ. 1) THEN
+                     IPP = IP
+                  ELSE
+                     IPP = IP + NSTR(1,0,3)
+                  END IF
+                  IPV = IPV + 1
+C
+C                 Get active indeces from general/active indeces
+C
+                  IF (JTRLVL .EQ. 1) THEN
+                     IACP = IDXG2U(IPP)
+                     IACV = IVV
+                  ELSE 
+                     IACP = IDXG2U(IPP)
+                     IACV = IDXG2U(IVV)
+                  END IF
+C
+C                 Elements for H2AC
+C
+                  IF (DOH2AC) THEN
+                     IF (IACP .GT. 0 .AND. IACV .GT. 0) THEN
+                        write(6,*) 'iacp iacv nxy',iacp,iacv,nxy,
+     &                       h2full(ipv,1,1)
+                        DO I3 = 1, 3
+                           DO IZ = 1, NZ
+                              H2AC(IACP,IACV,NXY,IZ,I3) = 
+     &                             H2FULL(IPV,IZ,I3)
+                           END DO
+                        END DO
+                     END IF
+                  END IF
+C
+C                 Elements for FQ
+C
+                  IF (DOFQ) THEN
+C
+C                    (p,v) elements
+C                     
+                     IF (IACV .GT. 0) THEN
+                        DO I3 = 1, 3
+                           DO IZ = 1, NZ
+                              H2XY(IPP,IACV,IZ,I3) = 
+     &                             H2FULL(IPV,IZ,I3)
+                           END DO
+                        END DO
+                     END IF
+C
+C                    (v,p) elements
+C                    
+                     IF (IACP .GT. 0 .AND. .NOT. ONLYXY) THEN
+                        DO I3 = 1, 3
+                           DO IZ = 1, NZ
+                              H2YX(IVV,IACP,IZ,I3) = 
+     &                             H2FULL(IPV,IZ,I3)
+                           END DO
+                        END DO
+                     END IF
+                  END IF
+               END DO
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck cl2nz3 */
+      SUBROUTINE CL2NZ3(VCL,VNZ3,NELEM,IREPIJ)
+C*****************************************************************************
+C
+C     Transform from 4INDXXXX0-integral-file format to (NZ,3) format.
+C
+C     Input:
+C        VCL   : elements in (*,NCLASS) format
+C        NELEM : # of elements
+C        IREPIJ: irep of VCL
+C       
+C     Output:
+C        VNZ3  : elements in (*,NZ,3) format
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>     
+C
+      DIMENSION VCL(NELEM,NZ,NZ,*)
+      DIMENSION VNZ3(NELEM,NZ,3)
+      DIMENSION DINT(2,8)
+C
+      CALL DZERO(DINT,16)
+C
+      DO I = 1, NELEM
+         DO ICLASS = 1, 3
+            IREPABR = 0
+            DO IREPAB = 0, NBSYM - 1
+               IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                  IREPABR = IREPABR + 1
+                  DO IZ1 = 1, NZ
+                     IQ1 = IPQTOQ(IZ1,IREPAB)
+                     DO IZ2 = 1,NZ
+                        IQ2 = IPQTOQ(IZ2,IREPAB)
+                        IFAC = IFACNZ3(ICLASS,1,IQ1,IQ2)
+                        IF (IFAC .NE. 0) THEN
+                           VNZ3(I,1,ICLASS) = VNZ3(I,1,ICLASS) + 
+     &                          IFAC * VCL(I,IZ2,IZ1,IREPABR)
+                        END IF
+                        IF (NZ .GT. 1) THEN
+                           IFAC = IFACNZ3(ICLASS,2,IQ1,IQ2)
+                           IF (IFAC .NE. 0) THEN
+                              VNZ3(I,2,ICLASS) = VNZ3(I,2,ICLASS) + 
+     &                             IFAC * VCL(I,IZ2,IZ1,IREPABR)
+                           END IF
+                        END IF
+                     END DO
+                  END DO
+               END IF
+            END DO
+         END DO
+         IF (NZ .EQ. 4) THEN
+            DO ICLASS = 1, 3
+               IREPABR = 0
+               DO IREPAB = 0, NBSYM - 1
+                  IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
+                     IREPABR = IREPABR + 1
+                     DO IZ1 = 1, NZ
+                        IQ1 = IPQTOQ(IZ1,IREPAB)
+                        DO IZ2 = 1,NZ
+                           IQ2 = IPQTOQ(IZ2,IREPAB)
+                           IFAC = IFACNZ3(ICLASS,3,IQ1,IQ2)
+                           IF (IFAC .NE. 0) THEN
+                              VNZ3(I,3,ICLASS) = VNZ3(I,3,ICLASS) + 
+     &                             IFAC * VCL(I,IZ2,IZ1,IREPABR)
+                           END IF
+                           IFAC = IFACNZ3(ICLASS,4,IQ1,IQ2)
+                           IF (IFAC .NE. 0) THEN
+                              VNZ3(I,4,ICLASS) = VNZ3(I,4,ICLASS) + 
+     &                             IFAC * VCL(I,IZ2,IZ1,IREPABR)
+                           END IF
+                        END DO
+                     END DO
+                  END IF
+               END DO
+            END DO
+         END IF
+C
+      END DO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck ifacnz3 */
+      FUNCTION IFACNZ3(I3,IZ,IQ1,IQ2)
+C*****************************************************************************
+C
+C     Factors for integrals.
+C
+C     Written by Joern Thyssen - Nov 15 2000
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dgroup.h>
+C
+      COMMON /SMOELF/ IFAC(4,3,4,4)
+C
+      LOGICAL FIRST
+      DATA FIRST / .TRUE. /
+      SAVE FIRST
+C
+      IF (FIRST) THEN
+C        Initialize IFAC array
+         FIRST = .FALSE.
+         CALL IZERO(IFAC,3*4*4*4)
+C
+C        IZ = 1
+C
+         IFAC(1,1,1,1) = +1
+         IFAC(1,1,2,2) = -1
+C
+         IFAC(1,2,3,3) = +1
+         IFAC(1,2,4,4) = -1
+C
+         IFAC(1,3,3,3) = -1
+         IFAC(1,3,4,4) = -1
+C
+         IF (NZ .GE. 2) THEN
+            IFAC(2,1,1,2) = +1
+            IFAC(2,1,2,1) = +1
+C
+            IFAC(2,2,3,4) = +1
+            IFAC(2,2,4,3) = +1
+C
+            IFAC(2,3,3,4) = -1
+            IFAC(2,3,4,3) = +1
+         END IF
+         IF (NZ .EQ. 4) THEN
+            IFAC(3,1,1,3) = +1
+            IFAC(3,1,2,4) = -1
+C
+            IFAC(3,2,3,1) = +1
+            IFAC(3,2,4,2) = -1
+C
+            IFAC(3,3,3,1) = -1
+            IFAC(3,3,4,2) = -1
+C
+            IFAC(4,1,1,4) = +1
+            IFAC(4,1,2,3) = +1
+C
+            IFAC(4,2,3,2) = +1
+            IFAC(4,2,4,1) = +1
+C
+            IFAC(4,3,3,2) = -1
+            IFAC(4,3,4,1) = +1
+         END IF
+      END IF
+C
+      IFACNZ3 = IFAC(IZ,I3,IQ1,IQ2)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck fndrecno */
+      SUBROUTINE FNDRECNO(IX,IY,IDXKR12,NFPCK12,NFPCK12T,
+     &     IDXU2G,IREPIJ,IREC)
+C*****************************************************************************
+C
+C     Find record number for distribution (*,*,IX,IY) integrals.
+C
+C
+C     Input:
+C        IX, IY  : active orbital indeces
+C        IDXKR12 : gives orbitals for compound index NXY
+C        NFPCK12 : number of compund indeces for each symmetry
+C        NFPCK12T: sum over NFPCK12
+C        IDXU2G  : gives corresponding general index for active orbital 
+C       
+C     Output:
+C        IREPIJ  : irrep for compound (IX,IY)
+C        IREC    : record number
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcbopt.h>
+#include <dgroup.h>
+C
+      DIMENSION NFPCK12(2)
+      DIMENSION IDXKR12(2,*)
+      DIMENSION IDXU2G(*)
+C
+      write(6,*) 'active orbitals',IX,IY
+      IF (JTRLVL .GE. 0 .AND. JTRLVL .LE. 2) THEN
+C        (uu|uu), (gu|uu), or (gg|uu) integrals
+         IGX = IX
+         IGY = IY
+      ELSE IF (JTRLVL .EQ. 3) THEN
+C        (gg|gu) integrals
+         IGX = IDXU2G(IX)
+         IGY = IY
+      ELSE
+C        (gg|gg) integrals
+         IGX = IDXU2G(IX)
+         IGY = IDXU2G(IY)
+      END IF
+C
+      write(6,*) '"general" orbitals',IGX,IGY
+C
+      NIJ = 0
+      DO IFSYM = 1, NFSYM
+         DO IJ = 1, NFPCK12(IFSYM)
+            NIJ = NIJ + 1
+            I = IDXKR12(1,NIJ)
+            J = IDXKR12(2,NIJ)
+            IF ( I .EQ. IGX .AND. J .EQ. IGY) THEN
+               IREPIJ = IFSYM
+               IREC = NIJ
+               RETURN
+            END IF
+         END DO
+      END DO
+      WRITE(LUPRI,'(A,/,A)')
+     &     '*** ERROR in FNDRECNO ***',
+     &     'Internal error...'
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_rgeth2 */
       SUBROUTINE REAINTS(VUUUU,VGUUU,VGGUU,VGUGU,NDIMU,NDIMG,
      &     IFLAG,ITRLVL,IPRINT,WORK,LWORK)
@@ -458,9 +1208,9 @@ C
             call flshfo(6)
 #endif
             READ (LUINT+IREPIJ,REC=IJ) (WORK(KHMAT+I-1),I=1,NKL*NCLASS)
-#ifdef UNDEF      
+c#ifdef UNDEF      
             write(6,*) 'int ',(work(khmat+i-1),i=1,nkl*nclass)
-#endif
+c#endif
 C
             NZKL = 0
             IKR1 = IKR
@@ -717,6 +1467,67 @@ C
             DO I = 1,NSSH(IFSYM)
                II = II + 1
                IDXG2U(II) = -1
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mkidxu2h */
+      SUBROUTINE MKIDXU2G(IDXU2G)
+C*****************************************************************************
+C
+C     Make index vector pointing from a active orbital to
+C     corresponding orbital.
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+C
+      DIMENSION IDXU2G(*)
+C
+#include <dcborb.h>
+#include <dgroup.h>
+#include <dcbopt.h>
+C
+      IF ( OPT_NOPFQ ) THEN
+C
+C        No positronic indeces
+C
+         II = 0
+         JJ = 0
+         DO IFSYM = 1,NFSYM
+            DO I = 1,NISH(IFSYM)
+               II = II + 1
+            END DO
+            DO I = 1,NASH(IFSYM)
+               II = II + 1
+               JJ = JJ + 1
+               IDXU2G(JJ) = II
+            END DO
+            DO I = 1,NSSH(IFSYM)
+               II = II + 1
+            END DO
+         END DO
+      ELSE
+C
+C        With positronic indeces
+C
+         II = 0
+         JJ = 0
+         DO IFSYM = 1,NFSYM
+            DO I = 1,NISH(IFSYM)+NPSH(IFSYM)
+               II = II + 1
+            END DO
+            DO I = 1,NASH(IFSYM)
+               II = II + 1
+               JJ = JJ + 1
+               IDXU2G(JJ) = II
+            END DO
+            DO I = 1,NSSH(IFSYM)
+               II = II + 1
             END DO
          END DO
       END IF
@@ -1101,6 +1912,111 @@ C
          END DO
       END IF
       call quit('ralle ralle')
+C
+      RETURN
+      END 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck m2dnz3 */
+      SUBROUTINE M2DNZ3(VMUUUU,VDUUUU,IPRINT)
+C*****************************************************************************
+C
+C     Transform a UUUU matrix in Molfdir format to a UUUU matrix
+C     in Dirac (NZ,3) format.
+C
+C     Written by J. Thyssen - Jul 21 2000
+C     Last revision : 
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
+      DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
+C
+      DIMENSION NSTR(2,0:2,4)
+      DIMENSION KR(-300:300)
+      DIMENSION DINT(8,2)
+C
+#include <ibtfun.h>
+#include <memint.h>
+C
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+      CALL DZERO(VDUUUU,NASHT * NASHT * NNASHX * NZ * 3)
+C
+      II = 0
+      JJ = 0
+      DO IFSYM = 1, NFSYM
+         DO I = 1, NASH(IFSYM)
+            II = II + 1
+            JJ = JJ + 1
+            KR(II) = JJ
+            KR(-II) = JJ + NASH(IFSYM)
+         ENDDO
+         JJ = JJ + NASH(IFSYM)
+      ENDDO
+C
+      IJ = 0
+      DO II = 1, NASHT
+         DO JJ = 1, II
+            IJ = IJ + 1
+            DO KK = 1, NASHT
+               DO LL = 1, NASHT
+                  I = KR(II)
+                  J = KR(JJ)
+                  K = KR(KK)
+                  L = KR(LL)
+                  ITR = KR(-II)
+                  JTR = KR(-JJ)
+                  KTR = KR(-KK)
+                  LTR = KR(-LL)
+C
+C                 Calculate integral classes.
+C
+                  VDUUUU(K,L,IJ,1,1) = VMUUUU(K,L,I,J,1)
+                  VDUUUU(K,L,IJ,1,2) = VMUUUU(K,LTR,I,JTR,1)
+                  VDUUUU(K,L,IJ,1,3) = VMUUUU(KTR,L,I,JTR,1)
+C
+                  IF (NZ .GE. 2) THEN
+                     VDUUUU(K,L,IJ,2,1) = VMUUUU(K,L,I,J,2)
+                     VDUUUU(K,L,IJ,2,2) = VMUUUU(K,LTR,I,JTR,2)
+                     VDUUUU(K,L,IJ,2,3) = VMUUUU(KTR,L,I,JTR,2)
+                  END IF
+C
+                  IF (NZ .EQ. 4) THEN
+                     VDUUUU(K,L,IJ,3,1) = VMUUUU(I,J,I,JTR,1)
+                     VDUUUU(K,L,IJ,4,1) = VMUUUU(I,J,I,JTR,2)
+                     VDUUUU(K,L,IJ,3,2) = VMUUUU(K,LTR,I,J,1)
+                     VDUUUU(K,L,IJ,4,2) = VMUUUU(K,LTR,I,J,2)
+                     VDUUUU(K,L,IJ,3,3) = VMUUUU(KTR,L,I,J,1)
+                     VDUUUU(K,L,IJ,4,3) = VMUUUU(KTR,L,I,J,2)
+                  END IF
+               END DO
+            END DO
+         END DO
+      END DO
+C
+ 9000 FORMAT(1P,1X,4I3,4X,3(D14.7,1X),3(/,16X,3(D14.7,1X)))
+C
+      IF (IPRINT .GE. 0) THEN
+         CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
+         IJ = 0
+         DO I = 1,NASHT
+            DO J = 1,I
+               IJ = IJ + 1
+               DO K = 1,NASHT
+                  DO L = 1,NASHT
+                     WRITE(LUPRI,9000)
+     &                    K,L,I,J,
+     &                    ((VDUUUU(K,L,IJ,IZ,ICL),
+     &                    IZ = 1,NZ),ICL=1,3)
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
 C
       RETURN
       END 

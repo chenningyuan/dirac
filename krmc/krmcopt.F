@@ -583,7 +583,7 @@ C        Calculate FQ matrix and two-electron integrals
 C        with active orbital indeces (H2AC).     
 C        FQ and H2AC are written to KRMC FOCK.
 C
-         CALL RGETH2(DV,FQ,WORK(KFREE),LFREE)
+         CALL RGETH2(FQ,WORK(KFREE),LFREE)
 C
 C        Active energy.
 C
@@ -1519,7 +1519,8 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
 C
-      DIMENSION DV(*),FCAC(*),FQ(*)
+      DIMENSION DV(*),FCAC(*),FQ(NORBT,NASHT,NZ)
+      DIMENSION IDXU2G(100)
 C
       CALL QENTER('RENRACT')
 C
@@ -1540,27 +1541,41 @@ C
          CALL HEADER('rEnract: DV matrix',-1)
          CALL PRQMAT(DV,NASHT,NASHT,NASHT,NASHT,
      &               NZ,IPQTOQ(1,0),LUPRI)
+         CALL HEADER('rEnract: FQ matrix',-1)
+         CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,
+     &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-
-
+C
+C     \sum_{uv} DV_{uv} FC_{uv}
+C     -------------------------
+C
       EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
       IF (IPRINT .GE. 4) 
      &   WRITE(LUPRI,9000) EACT
 C
+C     1/2 \sum_{u} FQ_{uu}
+C     --------------------
 C
-      IOFF = 1
-      DO IFSYM = 1,NFSYM
-         EACT = EACT + DP5 * RENRAC1(FQ(IOFF),NORBT,NASH(IFSYM),
-     &                               NPSH(IFSYM)+NISH(IFSYM))
-         IOFF = IOFF + NZ*NORBT*NASH(IFSYM)
+      CALL MKIDXU2G(IDXU2G)
+C
+      EACTFQ = D0
+      DO IV = 1, NASHT
+         IGV = IDXU2G(IV)
+         EACTFQ = EACTFQ + FQ(IGV,IV,1)
       END DO
       IF (IPRINT .GE. 4) 
-     &   WRITE(LUPRI,9001) EACT
+     &   WRITE(LUPRI,9001) EACTFQ
+C
+      EACT = EACT + EACTFQ
+C
+      IF (IPRINT .GE. 4) 
+     &   WRITE(LUPRI,9002) EACT
       RENRACT = EACT
       CALL QEXIT('RENRACT')
       RETURN
  9000 FORMAT(/2X'rENRACT: sum_{uv} DV_{uv} FC_{uv} : ',F25.15)
- 9001 FORMAT(/2X'rENRACT: Total active energy      : ',F25.15)
+ 9001 FORMAT(/2X'rENRACT: sum_{u} FQ_{uu}          : ',F25.15)
+ 9002 FORMAT(/2X'rENRACT: Total active energy      : ',F25.15)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck renrac1 */
@@ -1781,7 +1796,7 @@ C     (2) CI Coefficients
 C     -------------------
 C
 C
-      IF ( NZCONF .GT. 1 ) THEN
+      IF ( NASHT .GT. 1 ) THEN
 C
 C        Do a 0th order 4-index transformation.
 C
@@ -2769,66 +2784,6 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C   
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,WORK,LWORK)
-C*****************************************************************************
-C
-C     Calculate FQ and get H2AC (two-electron integrals
-C     with active indeces).
-C
-C     Input:
-C
-C     Output:
-C        FQ   -   aux. FQ fock matrix
-C        H2AC -   (written to disk)
-C
-C     Written by J. Thyssen - Jul 21 2000
-C     Last revision : 
-C
-C*****************************************************************************
-#include <implicit.h>
-#include <priunit.h>
-C
-#include <dcbopt.h>
-#include <dcborb.h>
-#include <dcbgen.h>
-C
-      DIMENSION FQ(*)
-      DIMENSION WORK(*)
-C
-C
-#include <memint.h>
-C
-      CALL QENTER('RGETH2')
-C
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
-         write(6,*) 'rgeth2: lenpv',lenpv,(2*nasht)**4
-         CALL MEMGET('REAL',KH2AC,LENPV,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KPV,LENPV,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIDXAC,24*NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIKR,4*NASHT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFQ,2*NASHT*2*NORBT,WORK,KFREE,LFREE)
-         CALL REAKRMC(LUKRM3,'PVMO    ',WORK(KPV),LENPV)
-         CALL GOSCI_RGETH2(WORK(KFQ),2*NORBT,WORK(KH2AC),
-     $        WORK(KIDXAC),WORK(KIKR),WORK(KPV))
-         CALL MEMCHK('after gosci_rgeth2',WORK,KWORK)
-         CALL MFQ2QFQ(WORK(KFQ),FQ,IPROPT)
-         CALL MEMCHK('after mfq2qfq',WORK,KWORK)
-         CALL WRTKRMC(LUKRM3,'FQMO    ',FQ,N2ASHXQ)
-         CALL WRTKRMC(LUKRM3,'H2ACMO  ',WORK(H2AC),LENPV)
-         CALL MEMREL('RGETH2.GOSCI',WORK,KWORK,KWORK,KFREE,LFREE)
-         call quit('ralle ralle')
-      ELSE
-         WRITE(LUPRI,'(/,A,/,2A)')
-     $        '*** ERROR in RGETH2 ***',
-     $        'FQ and H2AC not implemented for CI program ',
-     $        OPT_CIPROGRAM
-         CALL QUIT('*** ERROR in RGETH2 ***')
-      END IF
-      CALL QEXIT('RGETH2')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
