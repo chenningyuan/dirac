@@ -69,7 +69,7 @@ C
      &            '.BFGS  ', '.NEWTON', '.QUADSD', '.SCHLEG',
      &            '.NOREIN', '.BAKER ', '.M-BFGS', '.CARTES',
      &            '.REDINT', '.INIRED', '.1STORD', '.2NDORD',
-     &            '.GRDINI', '.DISPLA', '.TRICK ', '.TWOGRD'/
+     &            '.GRDINI', '.DISPLA', '.DOTRCK', '.TWOGRD'/
 C
       DATA FIRST /.TRUE./
 C
