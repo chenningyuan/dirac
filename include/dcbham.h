@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : dcbham.h
+C SOURCE  : $Source$
+C
 C*****************************************************************************
 C  DCBHAM:  Hamiltonian used for generation of wavefunction
 C
@@ -18,7 +24,9 @@ C     SSMTRC     - Scaling factor for SS overlap matrix
 C
       PARAMETER(MAX1OPER=10)
       COMMON/DCIHAM/IPRHAM,IPOVRLAP,IPBETAMT,IPMOLFLD,IPKINERG,
-     &              N1OPER,IPR1OP(MAX1OPER)
-      LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE
-      COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE
-      COMMON/DCRHAM/SSMTRC
+     &              N1OPER,IPR1OP(MAX1OPER),LSOLMX,IPRSOL
+      LOGICAL ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
+     &        INERSI,INERSF
+      COMMON/DCLHAM/ONESYS,FREEPJ,VEXTPJ,NOSMLV,URKBAL,LEVYLE,SOLVEN,
+     &              INERSI,INERSF
+      COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV
