@@ -122,7 +122,7 @@ C
      &          RLMTRI(*),RLMBUF(NNBBASX,*),
      &          LVALUE(*),MVALUE(*),NVALUE(*),
      &          RLMMAT(*),RLMNUC(*),CSPH(MAXYZ,MAXLM),IFUN(*),WORK(*)
-      DIMENSION RLMORI(3)
+      DIMENSION RLMORI(3), IDOINT(2,2)
       CHARACTER SECTID*12,INTTID*12
 #include <ibtfun.h>
 C
@@ -142,6 +142,10 @@ C
       DOINT(2,2) = .TRUE.
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
+      IDOINT(1,1) = 1
+      IDOINT(2,2) = 1
+      IDOINT(1,2) = 0
+      IDOINT(2,1) = 0
       ESOLVE = D0
       ESOLVN = D0
       CALL DCOPY(3,DIPORG,1,RLMORI,1)
@@ -242,7 +246,7 @@ C
 C            Expand matrices
 C            ---------------
 C
-            CALL QNPHASE(1,0,RLMTRI,DOINT)
+            CALL QNPHASE(1,0,RLMTRI,IDOINT)
             CALL DSPTSI(NTBAS(0),RLMTRI,RLMMAT)
 C
 C            Scale with expectation value ++

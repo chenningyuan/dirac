@@ -170,7 +170,6 @@ C
 C
 #include <dcbgen.h>
 #include <dcbxpr.h>
-#include <dcbcls.h>
 #include <dcbprl.h>
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
@@ -2627,7 +2626,6 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
 #include <pgroup.h>
-#include <dcbcls.h>
 #include <dcbxpr.h>
 #include <dcbprl.h>
 #include <gencon.h>

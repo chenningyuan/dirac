@@ -48,6 +48,7 @@ C*****************************************************************************
 C
 #include <mxcent.h>
       DIMENSION WORK(LWORK)
+      CHARACTER COMB*4
 C
 #include <dcbgen.h>
 #include <dcbprl.h>
@@ -61,23 +62,35 @@ C     =========================================================================
 C
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
+Chj     CLSCMB and PDOINT is now '+', '-', or '0',
+Chj     corresponding to a factor of +1, -1, or 0 on that block.
+        DO J = 1,4
+          IF (CLSCMB(I)(J:J) .EQ. '0') THEN
+             COMB(J:J) = 'F'
+          ELSE
+             COMB(J:J) = 'T'
+          END IF
+        END DO  
 C
 C     Nuclear attraction integrals (molecular field)
 C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
-        IF (NOSMLV) CLSCMB(I) = 'TFFF'
-        IF (NOSMLV) PDOINT(I) = 'TFFF'
-        CALL NUCATT(WORK,LWORK,CLSCMB(I),IPRONE)
+        IF (NOSMLV) THEN
+           CLSCMB(I)(4:4) = '0'
+           PDOINT(I)(4:4) = '0'
+           COMB(4:4) = 'F'
+        END IF
+        CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
 C     Contribution from beta-matrix
 C
       ELSEIF(CLSINT(I).EQ.'BETAMAT') THEN
-        CALL BETAMT(CLSCMB(I),WORK,LWORK,IPRONE)
+        CALL BETAMT(COMB,WORK,LWORK,IPRONE)
 C
 C     All other integrals
 C
       ELSE
-        CALL OP1GEN(CLSINT(I),CLSCMB(I),IORDCL(I),WORK,LWORK,IPRONE)
+        CALL OP1GEN(CLSINT(I),COMB,IORDCL(I),WORK,LWORK,IPRONE)
       ENDIF
       CLSCAL(I) = .FALSE.
    10 CONTINUE
@@ -193,7 +206,7 @@ C
 C
       IF(IPRINT.GE.6) THEN
         CALL HEADER('Small component overlap integrals',-1)
-        CALL OUTPAK(WORK(KONEIN),NTBAS(0),NTBAS(0),LUPRI)
+        CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
       ENDIF
 C
 C     Generate integral labels
@@ -252,7 +265,7 @@ C
      &            DOINT,IPRINT)
       IF(IPRINT.GE.6) THEN
         CALL HEADER('Nuclear attraction integrals',-1)
-        CALL OUTPAK(WORK(KONEIN),NTBAS(0),NTBAS(0),LUPRI)
+        CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
       ENDIF
 C
 C     Generate integral labels
@@ -482,7 +495,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-      SUBROUTINE PRPMAO(LU1INT,IOP,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE PRPMAO(LU1INT,IOP,PMAT,OP1INT,FIRST,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C     Generates lower triangular matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
@@ -501,9 +514,10 @@ C
 #include <dcbxpr.h>
 #include <dcbprl.h>
 C
-      CHARACTER MXFORM*6,FMT*6
-      LOGICAL FIRST(*),DOINT(4)
-      DIMENSION PTRI(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK)
+      CHARACTER MXFORM*6,FMT*6,JCHR*1
+      LOGICAL FIRST(*)
+Chj   DIMENSION PMAT(N2BBASX,*),OP1INT(NNBBASX),WORK(LWORK)
+      DIMENSION PMAT(NNBBASX,*),OP1INT(NNBBASX),WORK(LWORK), IDOINT(4)
 C
       EXTERNAL BDQALGEBRA
 C
@@ -515,11 +529,6 @@ C
       ITIMOP = IPRPTIM(IOP)
       IBRPOP = IPRPSYM(IOP)-1
       NCMP   = MCMP(IOPTYP)
-      IF(IOPTYP.EQ.1) THEN
-        IC = 1
-      ELSE
-        IC = 2
-      ENDIF
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,'(A,A16)')
@@ -556,9 +565,18 @@ C
 C       Determine what matrix the operator enters
 C       =========================================
 C
-        IM4  = JM4(I,IOPTYP)
+C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
+        IF(PDOINT(KLBL)(2:3) .EQ. '00') THEN
+          IC = 1
+        ELSE IF((PDOINT(KLBL)(1:1) .EQ. '0') .AND.
+     &          (PDOINT(KLBL)(4:4) .EQ. '0')) THEN 
+          IC = 2
+        ELSE
+          CALL QUIT('PRPMAO: illegal PDOINT!')
+        ENDIF
         IBRP = IPRLREP(KLBL)
         IH   = IPRLTYP(KLBL)
+        IM4  = JM4(I,IOPTYP)
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
@@ -623,33 +641,62 @@ C
           ENDIF
         ENDIF        
 C
-C       Phase transformation if necessary
+C       Phase transformation/PDOINT factor if necessary
 C
-        IF(NZ.LT.4) THEN
-          READ(PDOINT(KLBL),'(4L1)',ERR=1000) (DOINT(J),J=1,4)
-          CALL QNPHASE(IZ,IBRP,OP1INT,DOINT)
+Chj     PDOINT is now '+', '-', or '0',
+Chj     corresponding to a factor of +1, -1, or 0 on that block.
+        NM1 = 0
+        DO J = 1,4
+           JCHR = PDOINT(KLBL)(J:J)
+           IF (JCHR .EQ. '0') THEN
+              IDOINT(J) = 0
+           ELSE IF (JCHR .EQ. '+') THEN
+              IDOINT(J) = 1
+           ELSE IF (JCHR .EQ. '-') THEN
+              NM1 = 1
+              IDOINT(J) = -1
+           ELSE
+              CALL QUIT('Illegal factor in PDOINT')
+           END IF
+        END DO
+C
+        IF (NZ.LT.4 .OR. NM1.GT.0) THEN
+          CALL QNPHASE(IZ,IBRP,OP1INT,IDOINT)
           IF(IPRINT.GE.8) THEN
-             WRITE(LUPRI,'(A)') '* Phase transformed integrals:'
+             WRITE(LUPRI,'(A/3A)')
+     &          '* Phase and/or PDOINT transformed integrals:',
+     &          '  ( PDOINT = ',PDOINT(KLBL),' )'
              CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
           ENDIF
         ENDIF
 C
 C       Determine where integrals go and add them on
 C
+Chj     IH = IHQMAT(IQ,1)
+Chj       IF(IH.EQ.1) THEN
+Chj         CALL DSPTSI(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
+Chj       ELSEIF(IH.EQ.2) THEN
+Chj         CALL DAPTGE(NTBAS(0),FTRI(1,IZ),FOCK(1,IZ))
+Chj       ENDIF
+Chj
         IF(FIRST(IQP)) THEN
-          CALL DCOPY(NNBBASX,OP1INT,1,PTRI(1,IQP),1)
+Chj       CALL DSPTSI(NTBAS(0),OP1INT,PMAT(1,IQP))
+          CALL DCOPY(NNBBASX,OP1INT,1,PMAT(1,IQP),1)
           FIRST(IQP) = .FALSE.
         ELSE
-          CALL DAXPY(NNBBASX,D1,OP1INT,1,PTRI(1,IQP),1)
+Chj       CALL DSPPSI(NTBAS(0),OP1INT,PMAT(1,IQP))
+          CALL DAXPY(NNBBASX,D1,OP1INT,1,PMAT(1,IQP),1)
         ENDIF
  10   CONTINUE
       IF(IPRINT.GE.8) THEN
         DO IZ = 1,NZ
-          WRITE(LUPRI,'(A,I2,A)') '* Triangular prop.matrix(IZ=',IZ,')'
+          WRITE(LUPRI,'(A,I2,A)') '* Property matrix (IZ=',IZ,')'
           IF (FIRST(IZ)) THEN
              WRITE(LUPRI,'(/A)') '  --- zero matrix ---'
           ELSE
-             CALL OUTPAK(PTRI(1,IZ),NTBAS(0),1,LUPRI)
+             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),1,LUPRI)
+Chj          CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
+Chj  &                   NTBAS(0),NTBAS(0),1,LUPRI)
           END IF
         ENDDO
       ENDIF
@@ -657,7 +704,7 @@ C
 C
  1000 CONTINUE
 C
-C     Not able to read DOINT information from PDOINT
+C     Not able to read IDOINT information from PDOINT
 C
       WRITE(LUPRI,'(A,A)') 'PRPMAO: Class label:',PRPLBL(KLBL)
       WRITE(LUPRI,'(A,A)') 'PRPMAO ERROR: Not able to read COMB =',
@@ -1730,7 +1777,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck prprea */
-      SUBROUTINE PRPREA(LU1INT,PRPLBL,COMB,PRPINT,NDIM,IPRINT)
+      SUBROUTINE PRPREA(LU1INT,PRPLBL,PCOMB,PRPINT,NDIM,IPRINT)
 C*****************************************************************************
 C
 C     Read property integrals from file
@@ -1742,8 +1789,18 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
       LOGICAL FNDLB3
-      CHARACTER PRPLBL*8, RTNLBL(2)*8, COMB*4
+      CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
+C
+Chj   PDOINT is now '+', '-', or '0',
+Chj   corresponding to a factor of +1, -1, or 0 on that block.
+      DO J = 1,4
+        IF (PCOMB(J:J) .EQ. '0' .OR. PCOMB(J:J) .EQ. 'F') THEN
+           COMB(J:J) = 'F'
+        ELSE
+           COMB(J:J) = 'T'
+        END IF
+      END DO
 C
       REWIND LU1INT
       IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT)) THEN

@@ -223,15 +223,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qnphase */
-      SUBROUTINE QNPHASE(IM,JSYMOP,ONEINT,DOINT)
+      SUBROUTINE QNPHASE(IM,JSYMOP,ONEINT,IDOINT)
 C*****************************************************************************
 C
 C     Quaternion phase insertion in lower triangular matrix
 C       Phase: (e_K1*)(e_IM)(e_K2)
+C     + overall factor from IDOINT (e.g. from beta factor)
 C
 C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
-C     Last revision: June 25 1996 - tsaue
+C     Last revision: Nov 7 2001 - hjaaj
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
@@ -240,14 +241,13 @@ C
 #include <dgroup.h>
 #include <dcbqal.h>
 #include <dcbbas.h>
-      LOGICAL DOINT(2,2),DIAG,SAME
-      DIMENSION ONEINT(NNBBASX)
+      LOGICAL DIAG,SAME
+      DIMENSION ONEINT(NNBBASX), IDOINT(2,2)
+      PARAMETER (IL = 2, IR = 1)
       EXTERNAL BDQALGEBRA
 C
 #include <ibtfun.h>
 C
-      IL = 2
-      IR = 1
       I1 = 0
       DO 10 IRP1 = 0,NBSYM-1
         DO 20 IC1 = 1,2
@@ -260,11 +260,13 @@ C
             IF(SAME) ICMX = IC1
             DO 40 IC2 = 1,ICMX
               NB2 = NBBAS(IRP2,IC2)
-              K2  = JQBAS(IRP2,IC2)
-              DIAG = SAME.AND.(IC1.EQ.IC2)
-              IF(DOINT(IC1,IC2).AND.(IBTXOR(IRP1,IRP2).EQ.JSYMOP)) THEN
+              IF((IDOINT(IC1,IC2) .NE. 0) .AND.
+     &           (IBTXOR(IRP1,IRP2).EQ.JSYMOP)) THEN
+                K2   = JQBAS(IRP2,IC2)
                 KFAC = IQPHASE(K1,K2,IM)*IQPH(K1,IL)*IQPH(K2,IR)
+     &                 *IDOINT(IC1,IC2)
                 IF(KFAC.EQ.-1) THEN
+                  DIAG = SAME.AND.(IC1.EQ.IC2)
                   DO 50 J1 = 1,NB1
                     JMX = NB2
                     IF(DIAG) JMX = J1
