@@ -192,7 +192,7 @@ void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
   temp = *l;
   m= temp * INTEGER_WORD;
  
-  pi = (long int)p; // Convert for displaying the address p is pointing to
+  pi = (long int)p; /* Convert for displaying the address p is pointing to */
 
   if (addr!=files[*unit].addr)
         if (lseek64(files[*unit].fd,addr,0)==-1)
