@@ -28,7 +28,7 @@ C
 #include "functionals.h"
 C
       SAVE SET
-      DATA TABLE /'.DFTFUN','.FROMVX','.DFTAC ','.RADINT',
+      DATA TABLE /'.XXXXXX','.FROMVX','.DFTAC ','.RADINT',
      &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN',
      &            '.ANGMIN','.ATSIZE','.ERRELS','.XXXXXX'/
       DATA SET/.FALSE./
