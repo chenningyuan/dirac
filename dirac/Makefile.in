@@ -17,7 +17,6 @@ OBJS =	dircnv.o \
 	dirtra.o \
 	dirtwo.o \
 	dirgp.o  \
-	dirgeo.o \
 	dirgrd.o \
 	dirden.o \
 	dirsol.o 
