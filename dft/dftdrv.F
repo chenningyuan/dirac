@@ -506,6 +506,7 @@ CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
 C
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck dftxcm */
       SUBROUTINE DFTXCM(FMAT,CMO,WORK,LWORK)
 C
@@ -529,8 +530,10 @@ C
       KLST = KFAO + N2BASX
       LWRK = LWORK - KLST + 1
 C
+C     CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,IPRINT,WORK,LWORK)
+C
       CALL FCKDEN(.TRUE.,.FALSE.,WORK(KDAO),DUMMY,CMO,DUMMY,
-     &            WORK(KLST),LWRK)
+     &            IPRINT,WORK(KLST),LWRK)
       CALL DZERO(WORK(KFAO),N2BASX)
       CALL DFTEXC(WORK(KDAO),1,WORK(KFAO),1,
      &            .TRUE.,.TRUE.,.FALSE.,.FALSE.,.FALSE.,
@@ -548,6 +551,7 @@ C
 C
       RETURN
       END
+#endif
 C  /* Deck reaqua */
       SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
 #include <implicit.h> 
@@ -623,8 +627,16 @@ C
       IF (NPOINT.GT.0) THEN
          CALL REAQUA(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
          DO 300 IPNT = 1, NPOINT
-            CALL GETAOS(GAO,GAO1,NCNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &                  WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+
+C HJAaJ TODO June 2001: wrong argument list to GETAOS
+            call quit('Correct argument list to GETAOS in DFTES1')
+chj         CALL GETAOS(GAO,GAO1,NCNT,CORX(IPNT),CORY(IPNT),CORZ(IPNT),
+chj  &                  WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+chj from diraos.F:
+chj   SUBROUTINE GETAOS(GAO,GAO1,GAO2,GAB1,NCNT,CORPX,CORPY,CORPZ,
+chj  &                  WORK,LWORK,NBAST,NDER,DOLND,IPRINT)
+C HJAaJ TODO end
+
             DO 400 I = 1, NBAST
             DO 400 J = 1, NBAST
                ELCTRN = ELCTRN + WEIGHT(IPNT)*DMAT(I,J)*GAO(I)*GAO(J)
