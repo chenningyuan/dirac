@@ -1109,7 +1109,7 @@ C
               IOFD4 = IOFD4 + 1
               IOFEGJ2 = IOFEGJ1 + J
               DIV = (EIG(IOFEGJ2) - EIG(IOFEGI2))
-              DMO(IOFD4) = -XMO(IOFX4)/DIV
+              DMO(IOFD4) = XMO(IOFX4)/DIV
               IOFX4 = IOFX4 + NORBT
             ENDDO ! j
             IOFD3 = IOFD3 + NORBT
@@ -1142,7 +1142,7 @@ C     --------------------------------------------
               IOFD4 = IOFD4 + 1
               IOFEGJ2 = IOFEGJ1 + J
               DIV = (EIG(IOFEGJ2) - EIG(IOFEGI2))
-              DMO(IOFD4) = +XMO(IOFX4)/DIV
+              DMO(IOFD4) = -XMO(IOFX4)/DIV
               IOFX4 = IOFX4 + NORBT
             ENDDO ! j
             IOFD3 = IOFD3 + NORBT
@@ -1185,7 +1185,7 @@ C      ----
               IOFD4 = IOFD4 + 1
               IOFEGB2 = IOFEGB1 + IB
               DIV = (EIG(IOFEGB2) - EIG(IOFEGA2))
-              DMO(IOFD4) = -XMO(IOFX4)/DIV
+              DMO(IOFD4) = XMO(IOFX4)/DIV
               IOFX4 = IOFX4 + NORBT
             ENDDO ! ib'
             IOFD3 = IOFD3 + NORBT
@@ -1221,7 +1221,7 @@ C     --------------------------------------------
               IOFD4 = IOFD4 + 1
               IOFEGB2 = IOFEGB1 + IB
               DIV = (EIG(IOFEGB2) - EIG(IOFEGA2))
-              DMO(IOFD4) = +XMO(IOFX4)/DIV
+              DMO(IOFD4) = -XMO(IOFX4)/DIV
               IOFX4 = IOFX4 + NORBT
             ENDDO ! ib'
             IOFD3 = IOFD3 + NORBT

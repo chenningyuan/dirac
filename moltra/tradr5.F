@@ -2182,26 +2182,6 @@ C
         IOFF = IOFF + NORBT*NAOCC(IFSYM)+NORB(IFSYM)
         IOFF1 = IOFF1 + NZ*NAOCC(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
-C     
-C
-C     +-----------------------------------------+
-C     | The L_i'j part has to be scaled by -1   |
-C     +-----------------------------------------+
-C     
-      IF(NIOCCT.GT.0) THEN
-C
-        DO IZ = 1, NZ
-          IOFFSYM = (IZ-1)*NORBT*NAOCCT + 1
-          DO IFSYM = 1, NFSYM
-            DO J = 1, NAOCC(IFSYM)
-              IOFF = IOFFSYM + (J-1)*NORBT + NPSH(IFSYM)
-              CALL DSCAL(NIOCC(IFSYM),-D1,XMO1(IOFF),1)
-            ENDDO   ! j
-            IOFFSYM = IOFFSYM + NORBT*NAOCC(IFSYM) + NORB(IFSYM)
-          ENDDO     ! ifsym
-        ENDDO       ! iz
-C
-       ENDIF
 C
 C     +----------------------------------+
 C     | The L_ij part has to be put to 0 |
@@ -2267,39 +2247,6 @@ C
         IOFF = IOFF + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
         IOFF1 = IOFF1 + NZ*NAVIR(IFSYM)*NFBAS(IFSYM,0)
       ENDDO ! IFSYM
-C
-C     +-----------------------------------------+
-C     | The L_ab' part has to be scaled by -1   |
-C     +-----------------------------------------+
-C
-C
-      IF(NIVIRT.GT.0) THEN
-C
-        DO IZ = 1, NZ
-          IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
-          DO IFSYM = 1, NFSYM
-            DO IB = 1, NIVIR(IFSYM)
-              IOFF = IOFFSYM + (IB-1)*NAVIRT 
-     &             + (NORB(IFSYM)-NIVIR(IFSYM))*NAVIRT
-              CALL DSCAL(NAVIR(IFSYM),-D1,XMO2(IOFF),1)
-            ENDDO   ! ib
-            IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
-          ENDDO     ! ifsym
-        ENDDO       ! iz
-C
-      ENDIF
-C
-C
-      DO IZ = 1, NZ
-        IOFFSYM = (IZ-1)*NAVIRT*NORBT + 1
-        DO IFSYM = 1, NFSYM
-          DO IB = 1, NPSH(IFSYM)
-            IOFF = IOFFSYM + (IB-1)*NAVIRT
-            CALL DSCAL(NAVIR(IFSYM),D1,XMO2(IOFF),1)
-          ENDDO   ! ib
-          IOFFSYM = IOFFSYM + NAVIRT*NORB(IFSYM) + NAVIR(IFSYM)
-        ENDDO     ! ifsym
-      ENDDO       ! iz
 C
 C     +----------------------------------+
 C     | The L_ab part has to be put to 0 |
