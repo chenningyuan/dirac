@@ -5,6 +5,7 @@ pam
 export
 dirac.x
 Makefile.config
+job_testlast.sh
 *.o
 *.i
 *.bak
