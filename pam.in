@@ -322,7 +322,12 @@ endif
 # SAVE OLD OUTPUT FILE
 #
 #
-set OUTPUT_FILE = {$LOC}/{$MENU:r}_{$MOL:r}.{$RUN}
+if ( "$MOL:r" == "$MENU:r" ) then
+   set OUTPUT_FILE = {$LOC}/{$MOL:r}.{$RUN}
+else
+   set OUTPUT_FILE = {$LOC}/{$MENU:r}_{$MOL:r}.{$RUN}
+endif
+#
 if ( -f $OUTPUT_FILE ) then
    $_echo "   Existing file $OUTPUT_FILE:t renamed to $OUTPUT_FILE:t.bak : \c"
    mv $OUTPUT_FILE $OUTPUT_FILE.bak
