@@ -359,7 +359,7 @@ C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
-     &            '.PRPTRA','.SCREEN','.RCORBS','.XXXXXX','.XXXXXX'/
+     &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOMDCS'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -397,6 +397,8 @@ C
       NOPAIR = .TRUE.
       PRPTRA = .FALSE.
       RCORBS = .FALSE.
+      NOMDCINT = .FALSE.
+      MDCSCAT = .TRUE.
       THROUT = 1.0D-16
       SCRTRA = -1.0D0
 C
@@ -583,8 +585,15 @@ C&&&& RCORBS - Recanonize orbitals before transforming
                   RCORBS = .TRUE.
                GO TO 100
    19          CONTINUE
+C&&&& NOMDCINT - Don't write MDCINT file, instead save scratch files
+C              and write an additional MDINFO file which contains various
+C              pointers'n'stuff. This options is used within the MCSCF 
+C              program to avoid the generation of the enourmous MDCINT file.
+                  NOMDCINT = .TRUE.
                GO TO 100
    20          CONTINUE
+C&&&& NOMDCS - Don't Scatter MDCINT to all nodes
+                  MDCSCAT = .FALSE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -686,6 +695,11 @@ C
       IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
       IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
       IF(RCORBS) WRITE(LUPRI,'(1X,A)') '* Recanonization of orbitals.'
+      IF(NOMDCINT) WRITE(LUPRI,'(1X,A)')
+     &     '* MDCINT is not going to be written.'
+      IF(MDCSCAT) WRITE(LUPRI,'(1X,2A)')
+     &     '* MDCINT (and in principle the 4IND*-files) ',
+     &     '  will be scattered to all nodes.'
       WRITE(LUPRI,'(1X,A)') '* Total active space.'
       NTVEC(1) = 0
       DO I = 1,NFSYM

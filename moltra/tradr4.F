@@ -130,6 +130,13 @@ C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
+C       Initialize scratch file.
+C
+        IF (.NOT. MDCSCAT) THEN
+           NODE = 0
+           CALL MDSCRI(WORK,KFREE,LFREE,NODE)
+        END IF
+C
 C     We send out all the tasks (shells in this case) to the slaves
 C
         DO IC = 1, 2
@@ -196,10 +203,14 @@ C
 C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
+      IF (.NOT. NOMDCINT) THEN
+         CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
+         CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
+         CALL MEMREL('TRDR4T',WORK,1,KIKRA,KFREE,LFREE)
+      ELSE
+         CALL INIMDINFO
+      END IF
 C
 C     Complete the integrals to the desired classes
 C
@@ -220,28 +231,63 @@ C
      &  WALLST,' seconds after start'
       CALL FLSHFO(LUPRI)
 C
+C     Collect integrals from slaves
+C     and write to MDCINT file if requested.
+C
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
          NIJ = NFPCK12(IREPIJ)
          NKL = NFPCK34(IREPIJ)
-         CALL DRV4SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
-     &                IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
-     &                WORK(KDXB12),WORK(KDXB34),NKLOFF)
+         CALL DRV4SYM(WORK,KFREE,LFREE,IPRINT,
+     &        NSTR(1,0,3),NSTR(1,0,4),
+     &        IREPIJ,NIJ,WORK(KDXKR12),NIJOFF,
+     &        WORK(KDXB12),WORK(KDXB34),NKLOFF)
          NIJOFF = NIJOFF + NIJ
          NKLOFF = NKLOFF + NKL
       ENDDO
-C
+C        
       CALL GETTIM(CPUST,WALLST)
       WRITE(LUPRI,'(1X,A,F14.2,A)') 
-     & '- Finished symmetrization at ',
-     &  WALLST,' seconds after start'
+     &     '- Finished symmetrization at ',
+     &     WALLST,' seconds after start'
       CALL FLSHFO(LUPRI)
 C
-C     Close MOLFDIR integral file and delete direct access file
+      IF (.NOT. NOMDCINT) THEN
+C        
+C        Close MOLFDIR integral file
+C        
+         CALL MDINTF
 C
+      ELSE
+C
+C        Write pointers etc. to MDINFO file.
+C
+C        Number of IJ indeces for each fermion symmetry
+         WRITE(LUMLF2) NFPCK12,NFPCK12T
+C        Number of KL indeces for each fermion symmetry
+         WRITE(LUMLF2) NFPCK34,NFPCK34T
+C        Offsets
+         WRITE(LUMLF2) NSTR
+C        I and J indeces
+         CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXKR12))
+C        Boson irrep for IJ indeces
+         CALL WRITI(LUMLF2,NFPCK12T*2,WORK(KDXB12))
+C        Boson irrep for KL indeces
+         CALL WRITI(LUMLF2,NFPCK34T*2,WORK(KDXB34))
+C        Boson irreps for each index
+         DO I = 1, 4
+            DO J = 1, NFSYM
+               CALL WRITI(LUMLF2,NSTR(J,0,I),WORK(KIBE(J,I)))
+            END DO
+         END DO
+C
+C        Close MDINFO file.
+C
+         CLOSE (LUMLF2, STATUS='KEEP')
+C
+      END IF
       IF (.NOT.PARCAL) CALL MDSCRF
-      CALL MDINTF
 C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
@@ -687,50 +733,65 @@ C
       CALL MEMGET('REAL',KHMATS,NKL*NZ*NZ*NBSYMP,WORK,KFREE,LFREE)
       CALL DZERO (WORK(KHMAT),NKL*NZ*NZ*NBSYMP)
 C
+#if defined (VAR_MPI)
       IF (PARCAL) THEN
         DO IJ = 1, NIJ
           IKR = INDXKR(1,IJ+NIJOFF)
           JKR = INDXKR(2,IJ+NIJOFF)
-#if defined (VAR_MPI)
+C
+C         Read integrals on all slaves.
+C
           IF (MYTID.NE.MPARID)
-     &    CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
-#else
-          CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
-#endif
-#if defined (VAR_MPI)
+     &       CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),
+     &                   WORK,KFREE,LFREE)
+C
+C         Sum up all contribution on the master node.
+C
           CALL MPI_REDUCE(WORK(KHMAT),WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
      &                    MPI_DOUBLE_PRECISION,MPI_SUM,MPARID,
      &                    MPI_COMM_WORLD,IERR)
-Clv This version gives MDCINT on all nodes or on one node depending on:
-Clv if (all nodes) include :
-          CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
-     &                   MPI_DOUBLE_PRECISION,MPARID,
-     &                   MPI_COMM_WORLD,IERR)
-Clv else include # one node
-Clv       IF (MYTID.EQ.MPARID) THEN
-Clv end if
-#endif
-             CALL SYMFINT(IPRINT,IREPIJ,
-     &                    INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                    IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
-     &                    WORK,KFREE,LFREE)
-#if defined (VAR_MPI)
-Clv if (one node) include
-Clv       ENDIF
-Clv endif
-#endif
+C
+C         Put integrals on all nodes
+C
+          IF (MDCSCAT) THEN
+C
+             CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+     &                      MPI_DOUBLE_PRECISION,MPARID,
+     &                      MPI_COMM_WORLD,IERR)
+C
+          END IF
+C
+          IF (.NOT. NOMDCINT) THEN
+             IF (MYTID.EQ.MPARID .OR. MDCSCAT) THEN
+                CALL SYMFINT(IPRINT,IREPIJ,
+     &                       INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
+     &                       IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
+     &                       WORK,KFREE,LFREE)
+             END IF
+          ELSE
+             IF (MYTID .EQ. MPARID .OR. MDCSCAT) THEN
+                CALL MDSCRW(IPRINT,IREPIJ,IJ,NKL,WORK(KHMATS),
+     &                      WORK,KFREE,LFREE)
+             END IF
+          END IF
         ENDDO
       ELSE
-        DO IJ = 1, NIJ
-          IKR = INDXKR(1,IJ+NIJOFF)
-          JKR = INDXKR(2,IJ+NIJOFF)
-          CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),WORK,KFREE,LFREE)
-          CALL SYMFINT(IPRINT,IREPIJ,
-     &                 INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                 IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
-     &                 WORK,KFREE,LFREE)
-        ENDDO
+#endif
+         IF (.NOT. NOMDCINT) THEN
+            DO IJ = 1, NIJ
+               IKR = INDXKR(1,IJ+NIJOFF)
+               JKR = INDXKR(2,IJ+NIJOFF)
+               CALL MDSCRR(IPRINT,IREPIJ,IJ,NKL,WORK(KHMAT),
+     &                     WORK,KFREE,LFREE)
+               CALL SYMFINT(IPRINT,IREPIJ,
+     &                      INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
+     &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
+     &                      WORK,KFREE,LFREE)
+            END DO
+         END IF
+#if defined (VAR_MPI)
       ENDIF
+#endif
       CALL MEMREL('DRV4SYM',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN

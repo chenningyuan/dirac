@@ -98,7 +98,7 @@ C
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
-          CALL MEMREL('TRAONE',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
+          CALL MEMREL('TRAPRP',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
@@ -121,7 +121,7 @@ C
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
          CALL QUIT('TRAPAM: No coefficients !')
       ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
       ENDIF

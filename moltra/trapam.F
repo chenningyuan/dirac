@@ -927,6 +927,7 @@ C
          ENDIF
       END IF
 C
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1828,10 +1829,12 @@ C
       ICLARR(4,2,11) = -1
       ICLARR(3,1,12) =  1
       ICLARR(4,2,12) = -1
+
       ICLARR(2,3,13) = -1
       ICLARR(1,4,13) =  1
       ICLARR(1,4,14) =  1
       ICLARR(2,3,14) =  1
+
       ICLARR(3,2,15) = -1
       ICLARR(4,1,15) =  1
       ICLARR(4,1,16) =  1

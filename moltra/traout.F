@@ -411,6 +411,7 @@ C
                     IJ = IJ + 1
                     INDXKR(1,IJ) = I
                     INDXKR(2,IJ) = J
+c                   write(6,*) '!trian, IJ = ',IJ,I,J
                     IF (IREPI.NE.1) INDXKR(1,IJ) = I + NSTR(IREPI-1,0,1)
                     IF (IREPJ.NE.1) INDXKR(2,IJ) = J + NSTR(IREPJ-1,0,1)
                  ENDDO
@@ -421,6 +422,7 @@ C
                     IJ = IJ + 1
                     INDXKR(1,IJ) = I
                     INDXKR(2,IJ) = J
+c                   write(6,*) 'trian, IJ = ',IJ,I,J
                     IF (IREPI.NE.1) INDXKR(1,IJ) = I + NSTR(IREPI-1,0,1)
                     IF (IREPJ.NE.1) INDXKR(2,IJ) = J + NSTR(IREPJ-1,0,1)
                  ENDDO
@@ -523,6 +525,28 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck MDSCRW */
+      SUBROUTINE MDSCRW(IPRINT,IREPIJ,IJ,NKL,FMAT,WORK,KFREE,LFREE)
+C
+C     Write the final integrals to scratch file.
+C
+C     Written by Luuk Visscher, July 1997
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbtra.h>
+#include <dgroup.h>
+      DIMENSION WORK(*)
+      DIMENSION FMAT(*)
+C
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+C
+      WRITE (LUMLF3+IREPIJ,REC=IJ) (FMAT(I),I=1,NKL*NCLASS)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRF */
       SUBROUTINE MDSCRF
 C
@@ -536,7 +560,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
 C
       DO IREPIJ = 1, NFSYM
-         CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         IF (.NOT. NOMDCINT) THEN
+C           delete the files
+            CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
+         ELSE
+C           close the files
+            CLOSE (LUMLF3+IREPIJ,STATUS='KEEP')
+         END IF
       ENDDO
 C
       RETURN
@@ -622,6 +652,40 @@ C
             ENDIF
          ENDDO
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck INIMDINFO */
+      SUBROUTINE INIMDINFO
+C
+C     Initialize MDINFO file
+C     Authored by Joern Thyssen, 1/11/2000.
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <dcbtra.h>
+#include <dgroup.h>
+C
+      CHARACTER*8 DATEX,TIMEX
+C
+C     Open file
+C
+      OPEN (LUMLF2,FILE='MDINFO',FORM='UNFORMATTED')
+C
+C     Write date and time
+C
+      CALL GETDAT (DATEX,TIMEX)
+      WRITE (LUMLF2) DATEX,TIMEX
+C
+C     The rest of the file is written in various places. The contents is:
+C
+C     Number of IJ indices for each fermion symmetry
+C     Number of KL indices for each fermion symmetry
+C     I and J indeces
+C     Boson irrep for IJ indeces
+C     Boson irrep for KL indeces
+C
 C
       RETURN
       END
