@@ -95,7 +95,7 @@ C     Wave function input
 C
 C     Call PSIINP always to get wave function information for
 C     other modules. This could be changed if wave function information
-C     is saved on file. 
+C     is saved on file.  TODO ?
 C
       IF ( DOPSI .OR. .NOT. INPTES ) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
@@ -298,6 +298,7 @@ C             repulsion of small component atomic charges
             GO TO 100
   111     CONTINUE
 C&&&& LVNEW: Get Small component charge via Mulliken analysis
+            DOLVC = .TRUE.
             LVNEW = .TRUE.
             GO TO 100
   112     CONTINUE
@@ -390,10 +391,17 @@ C        Calculate LV-correction
 C        (SS integrals modelled by Coulombic correction)
 C        ===============================================
 C
-         WRITE(LUPRI,'(1X,A)')
-     &   '* SS integrals neglected: ',
-     &   '  Interatomic Coulombic SS-contributions modelled ',
-     &   '  by  classical repulsion of small component atomic charges.'
+         WRITE(LUPRI,'(A)')
+     &   ' * SS integrals neglected:',
+     &   '   Interatomic Coulombic SS-contributions modelled by',
+     &   '   classical repulsion of small component atomic charges'
+         IF (LVNEW) THEN
+            WRITE(LUPRI,'(A)')
+     &   '   found from Mulliken population analysis.'
+         ELSE
+            WRITE(LUPRI,'(A)')
+     &   '   using tabulated charges.'
+         END IF
       END IF
 C
       IF(DOTSC) WRITE(LUPRI,'(1X,A)')
@@ -647,7 +655,7 @@ C
       IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
      &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
-      IF(OPTIMI)  WRITE(LUPRI,'(3X,A,/,3X,A)') '* Geometry optimi'//
+      IF(OPTIMI)  WRITE(LUPRI,'(3X,A/3X,A)') '* Geometry optimi'//
      &    'zation of DHF-wavefunction','  IMPORTANT'//
      &    ': *WAVE F must be present for readin of wavefunction.'
 C
@@ -666,11 +674,11 @@ C
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
-         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
+         WRITE (LUPRI,'(/3A/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal directory in JOBINP.')
       ELSE
-         WRITE (LUPRI,'(/,4A,/)') ' Prompter "',PROMPT,'" illegal or',
+         WRITE (LUPRI,'(/4A/)') ' Prompter "',PROMPT,'" illegal or',
      *                        ' out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in JOBINP, error in prompt.')
@@ -1530,23 +1538,25 @@ C
 #include <dcbpsi.h>
 #include <dcbham.h>
 C
-      DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*XXXXXX',
-     &             '*MVOCAL','*RESOLV','*XXXXXX','*XXXXXX'/
+      DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','xXXXXXX',
+     &             '*MVOCAL','*RESOLV','xXXXXXX','xXXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.XXXXXX','.LVCORR',
      &             '.TSCORR','.RELCCS','.DIRRCI','.MVO   ',
-     &             '.RESOLV','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.RESOLV','xXXXXXX','xXXXXXX','xXXXXXX'/
 C
       NJOBS = 0
 C
 C     Initialize /CBLPSI/
 C     ===================
 C
-      DOCCM   = .FALSE.
       DOSCF   = .FALSE.
       DODHF   = .FALSE.
       DODFT   = .FALSE.
       DOMP2   = .FALSE.
       DORES   = .FALSE.
+C     next two in dcbgen.h -- inconsistent ? hjaaj Apr 2002 TODO
+      DOCCM   = .FALSE.
+      DOCIM   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -1592,7 +1602,7 @@ C
      *         ' Keyword ',WORD,' not recognized in PSIINP.'
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
             CALL QUIT('Illegal keyword in PSIINP.')
-C&&&& DHF: Perform Dirac-Hartree-Fock calculation
+C&&&& DHF: Perform Dirac-Hartree-Fock or Dirac-Kohn-Sham calculation
   101    CONTINUE
             DOSCF = .TRUE.
             IF(DFTHAM) THEN
@@ -1665,19 +1675,19 @@ C
         WRITE(LUPRI,'(1X,A)') 'Jobs in this run:'
       ENDIF
       IF(DODHF) WRITE(LUPRI,'(1X,A)') '* Dirac-Hartree-Fock calculation'
-      IF(DOMVO) WRITE(LUPRI,'(1X,A)') 
-     &   '* Generate modified virtual orbitals'
 #if defined (MOD_DFT)
       IF(DODFT) WRITE(LUPRI,'(1X,A)') '* Density functional '//
      &    'calculation (Kohn-Sham method)'
 #else
       IF(DODFT) THEN
-        CALL QUIT('*** DFT is not in this version')        
+        CALL QUIT('*** DFT is not included in this version')        
       ENDIF
 #endif
       IF(DORES) WRITE(LUPRI,'(1X,A)') 
      &   '* Resolution of open-shell states'
       IF(DOMP2) WRITE(LUPRI,'(1X,A)') '* MP2 calculation'
+      IF(DOMVO) WRITE(LUPRI,'(1X,A)') 
+     &   '* Generate modified virtual orbitals'
       IF(DOCCM) WRITE(LUPRI,'(1X,A)') '* Run RELCCSD code'
       IF(DOCIM) WRITE(LUPRI,'(1X,A)') '* Run DIRCCI code'
 C
@@ -3359,12 +3369,13 @@ C
 C
       RETURN
       END
+#ifdef NOT_USED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck READREORDER*/
       SUBROUTINE READREORDER(STRING,IREORD,IMOORD,MXREORD)
 C*****************************************************************************
 C
-C     Readin new order of orbitals
+C     Read in new order of orbitals
 C
 C     Written by J. Thyssen, Sep 1 1998
 C
@@ -3378,6 +3389,7 @@ C*****************************************************************************
       call creadreorder(string,ireord,imoord,mxreord)
       RETURN
       END
+#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mvoinp */
       SUBROUTINE MVOINP(WORD,RESET,WORK,LWORK)
@@ -3583,8 +3595,16 @@ C
 C
       IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
-      IF (DORES.AND.DOTRA)
-     &   CALL QUIT ('Either RESOLV OR 4INDEX should be specified')
+      IF (DORES .AND. .NOT.DODHF)
+     &   CALL QUIT ('.RESOLVE requires .DHF w/o DFT')
+C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
+C     the input routines use different common blocks,
+C     so I think running both should be OK. I have modified the test:
+C     if DORES or DOMP2 integral transformation, then DOTRA necessary
+C     for DOCCM or DOCIM as integrals on disk now cannot be correct.
+Chj   IF (DORES.AND.DOTRA)
+      IF ( (DORES.OR.DOMP2) .AND. ((DOCCM.OR.DOCIM) .AND. .NOT.DOTRA) )
+     &CALL QUIT('4INDEX for CI/CC must be specified when RESOLV or MP2')
 C
       RETURN
  1000 FORMAT (/' **** WARNING **** ',A,' not tested.')
