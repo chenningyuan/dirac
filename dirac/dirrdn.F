@@ -97,6 +97,8 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
+CMI ... instead of calling OP1INI in HAMINP, call it after
+      CALL OP1INI(WORK,LWORK)
 C
 C     Give estimate of memory needed for two-electron integrals
 C
@@ -1412,7 +1414,9 @@ C
 C
       IF(DOLVC .AND.
      &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
-      IF (LEVYLE) THEN
+C   .... discard calculation of LS/SS/GT integrals
+C          for the LevyLe/BSS Hamiltonians
+      IF (LEVYLE.OR.BSS) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -3280,7 +3284,7 @@ C
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
      &            '.ONECAP','.SPINF2','.NOSPIN','.XXXXXX',
-     &            '.INTFLG','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.INTFLG','.BSS   ','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3319,6 +3323,8 @@ C
       ONECNV  = D0
       N1OPER  = 0
       SSMTRC  = D1
+      BSS     = .FALSE.
+      IBSS    = -1
 Ctsaue: Exchange factor must not be reset during geometry optimizations.
       IF (.NOT. SETFUN) HFXFAC  = D1
 C ... get integral flags in advance
@@ -3327,7 +3333,8 @@ C ... get integral flags in advance
       ISSINT    = IBTAND(INTGEN/4,1)
       IGTINT    = IBTAND(INTGEN/8,1)
 
-      CALL OP1INI(WORK,LWORK)
+CMI ... this routine is beeing called after HAMINP, in PAMINP
+CMI   CALL OP1INI(WORK,LWORK)
       NOINPUT = .FALSE.
 #if defined (MOD_DFT)
 C
@@ -3579,6 +3586,18 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
             END IF
             GO TO 100
   126     CONTINUE
+C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
+C       transformed relativistic Hamiltonian
+             BSS = .TRUE.
+C        ... read 3-digit number 
+             READ(LUCMD,*) IBSS
+             SSMTRC = D0 ! Is it necessary ?
+C    Check that we have not defined operators yet,
+C      as they need to be modified within BSS transformations
+             IF (I_FINFIELD.GT.0) THEN
+               CALL QUIT(
+     &        'HAMINP:give .BSS option before .OPERAT !')
+             ENDIF
             GO TO 100
   127     CONTINUE
             GO TO 100
@@ -3626,6 +3645,35 @@ C
         WRITE(LUPRI,'(A)') 'You cannot specify both VEXTPJ and FREEPJ !'
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
+
+
+CMI          Remove inconsistencies for the BSS option
+C     =====================================================
+      IF (BSS) THEN
+        IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
+          CALL QUIT(
+     &'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS !')
+        ENDIF
+        IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
+          CALL QUIT(
+     &'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP & BSS !')
+        ENDIF
+        IF (DFTHAM.OR.URKBAL.OR.SPINFR2.OR.OPTIMI) THEN
+          CALL QUIT(
+     &'HAMINP:Conflicting options DFTHAM/URKBAL/SPINFR2/OPTIMI & BSS!')
+        ENDIF
+CMI ... DIRCON(1) means contracted L component basis set
+CMI     IF (ZORA.OR.PROJEC) THEN
+        IF (ZORA.OR.PROJEC.OR.DIRCON(1)) THEN
+          CALL QUIT(
+     &'HAMINP: Conflicting options ZORA/PROJEC/DIRCON(1) & BSS !')
+CMI  &'HAMINP: Conflicting options ZORA/PROJEC & BSS !')
+        ENDIF
+        IF (DOPRP) THEN
+CMI       CALL QUIT(
+CMI  &'HAMINP: .BSS not yet implemented for properties!')
+        ENDIF
+      ENDIF
 C
 C     Print section
 C     =============
@@ -3635,6 +3683,9 @@ C
 C
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
+      ELSE IF (BSS) THEN
+        WRITE(LUPRI,'(1X,A,I3)')
+     &' * Barysz-Sadlej-Snijders Hamiltonian. Type code -',IBSS
       ELSE IF (IGTINT .NE. 0) THEN
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
@@ -3648,6 +3699,13 @@ C
          WRITE(LUPRI,'(3X,A)') '- 2-el. spin-orbit terms zeroed out '//
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
+CMI ... info on removing linear symmetry
+C     IF (LINEAR.AND.(LEVYLE.OR.SPINFR)) THEN
+C        WRITE(LUPRI,'(A)')
+C    & 'For Levy-Leblond or spin-free Hamiltonian remove linsym!'
+C       LINEAR = .FALSE.
+C     ENDIF
+
 #if defined (MOD_DFT)
       IF(DFTHAM) CALL DFTREPORT()
 #endif
@@ -3691,6 +3749,11 @@ C
       WRITE(LUPRI,'(A)') ' * Basis set:'
       IF ( DIRCON(1) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted large component basis set'
+CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
+CMI     but for precursive four-component matrix elements !!!
+         IF (BSS) WRITE(LUPRI,'(2X,A)') 
+     & 'WARNING: for BSS transformation the contracted'//
+     & ' L comp.basis is wrong!'
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted large component basis set'
       END IF
@@ -3708,7 +3771,7 @@ C
 C
 C     Remove integral classes not needed for this Hamiltonian
 C
-      IF (LEVYLE) THEN
+      IF (LEVYLE.OR.BSS) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -4556,6 +4619,9 @@ C
       CALL TITLER('Input consistency checks','*',127)
       IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
      &   CALL QUIT ('Spinfree MP2 not implemented')
+      IF (BSS.AND.DOMP2)
+     &   CALL QUIT ('BSS & MP2 not implemented')
+
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)
      &   CALL QUIT ('.RESOLVE does not work with DFT')
@@ -4572,7 +4638,7 @@ C     Correct input from the naive user who neglects the SS without applying a c
 C     The experienced user may subtract the LVCOR later on.
 C
 C     Check for Hamiltonians were SS do not appear anyway..
-      SS_COR_NEEDED = .NOT.(LEVYLE.OR.(ZORA.AND..NOT.ZORA4))
+      SS_COR_NEEDED = .NOT.(LEVYLE.OR.BSS.OR.(ZORA.AND..NOT.ZORA4))
 C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..

@@ -58,6 +58,7 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
+#include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -73,6 +74,9 @@ C
       WFCONV = .FALSE.
       IF(DODFT) THEN
         CALL TITLER('Kohn - Sham calculation','*',125)
+      ELSE IF (BSS) THEN
+        CALL TITLER(
+     &'Two-component relativistic HF calculations','*',125)
       ELSE
         CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
       ENDIF
@@ -599,7 +603,30 @@ C
         CALL DHFCNV(FMO,DUM,DUM,FAO,DMAT,DUM,BMAT,ICHKCNV,
      &              DUM,WORK(KFREE),LFREE)
       ENDIF
-      IF (DHFEXIT) GO TO 9999
+
+      IF (DHFEXIT) THEN
+C        ... extract diagonal FMO elements to EIG
+C        DO IFSYM = 1,NFSYM
+C        ... before extracting of EIG print the Fock matrix
+C           IF (IPRSCF.GE.3) THEN
+C             WRITE(LUPRI,'(1X,A)')
+C    &          'DFSOLV: The converged (diagonal) Fock FMO matrix   '
+C             WRITE(LUPRI,'(3X,A,I1,A,I2)')
+C    &          'fermion symmetry: ',IFSYM,'/',NFSYM
+C             CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
+C    &                NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
+C           ENDIF
+C           JFMO = I2TMOT(IFSYM)
+C           JEIG = IORB(IFSYM)
+C           CALL DZERO(EIG(JEIG+1), NORB(IFSYM))
+C           NTMOI = NTMO(IFSYM)
+C           DO J =1,NTMOI
+C              EIG(JEIG+J) = FMO(JFMO + NTMOI*(J-1)+J)
+C              write(lupri,*) 'EIG=',EIG(JEIG+J)
+C           END DO
+C        END DO
+         GO TO 9999
+      END IF
 C
 C     Diagonalize Fock matrix
 C     =======================

@@ -381,17 +381,43 @@ C
 C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996
 C
+C MI&HJAaJ (2003): If BSS=.TRUE., read the TWO-COMPONENT
+C                   relativistic bare nuclei(in AO basis) from the file
+C                   BSSMAT (label='H1AO_DK')
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "dgroup.h"
+#include "dcbgen.h"
 #include "cbihr1.h"
       DIMENSION FOCK(*),WORK(LWORK)
+      LOGICAL FNDLAB
 C
       CALL QENTER('ONEFCK')
 #include "memint.h"
+
+CMI...   If BSS is active read one-electron
+CMI     DKn(BSS) AO integrals from the file BSSMAT(lu=LUBSS)
+      IF (BSS) THEN
+
+         CALL OPNFIL(LUBSS,'BSSMAT','OLD','ONEFCK')
+         REWIND LUBSS
+         IF (FNDLAB('H1AO_DK ',LUBSS)) THEN
+          CALL READT(LUBSS,N2BBASXQ,FOCK)
+          IF (IPRHAM.GE.2)
+     &    WRITE(LUPRI,'(/2X,A,A)')
+     & 'ONEFCK: BSS transformed one-electron relativistic',
+     & ' integrals were read from the file BSSMAT.'
+         ELSE
+          CALL QUIT('ONEFCK: Error, H1AO_DK not found in BSSMAT !')
+         END IF
+         CLOSE(LUBSS,STATUS='KEEP')
+
+      ELSE
 C
 C     Memory allocation
 C
@@ -408,6 +434,8 @@ C
 C
 C     Memory deallocation
       CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      ENDIF
 C
       CALL QEXIT('ONEFCK')
       RETURN
@@ -1278,6 +1306,13 @@ C
 C     Written by T.Saue, October 1995
 C     Last revision May 21 1996 - tsaue
 C
+C MI/HJAaJ, 2002,2003
+C     For the two-component relativistic calculations
+C     apply the Barysz-Sadlej-Snijders transformation
+C     on the Dirac one-electron Hamiltonian.
+C     Save its elements and the picture change 
+C     transformation matrix as well.
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1335,6 +1370,10 @@ C
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
         KTMAT = KVMAT
+      ELSE IF (BSS) THEN
+         CALL MAKE_BSS(WORK(KVMAT),WORK(KFREE),LFREE)
+C     ... transformation matrix is the Le part of the Lowdin matrix
+         KTMAT = KVMAT
       ELSE
 C
 C     Charge conjugation symmetry
@@ -1419,7 +1458,8 @@ C
 C
 C
 C     Write transformation matrices
-C
+CMI/2004 Note: These matrixes may be later overwritten in the GLINSM
+C   routine when the linear symmetry in on (LINSYM=.true.)
       CALL OPNFIL(LUTMAT,'DFTMAT','UNKNOWN','GMOTRA')
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
@@ -3144,8 +3184,12 @@ C
 C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
-      IF (NOSMLV) THEN
+      IF (NOSMLV.OR.BSS) THEN
          DOINT(2,2) = .FALSE.
+         IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(2X,/,A)')
+     & 'BNCORR: SS contribution to the bare nuclei omitted !'
+         ENDIF
       ELSE
          DOINT(2,2) = .TRUE.
       END IF
