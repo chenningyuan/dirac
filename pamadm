@@ -219,12 +219,6 @@ make_configure()
    echo "*** Making ./configure"
    echo 
    echo "#!/bin/sh" > configure
-   echo "MODS=\" $ERIFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG\"" >> configure
-   echo DFTFLG=$DFTTAR >> configure
-   echo ERIFLG=$ERITAR >> configure
-   echo ESRFLG=$ESRTAR >> configure
-   echo XQRFLG=$XQRTAR >> configure
-   echo XPPFLG=$XPPTAR >> configure
    cat ./configure.in >> configure
    chmod +x configure
 }
@@ -280,27 +274,27 @@ EOF
    #
    if [ "$DFTTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$ESRTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$XPPTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
    if [ "$XQRTAR" ]; then
       cat <<EOF>> ./export
-      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xqr/{*.F,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xqr/{*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
 # A DIRAC administrator should have everything
@@ -331,7 +325,7 @@ EOF
 #
 make_makefile()
 {
-   echo "*** Making Makefile"
+   echo "*** Making general Makefile"
    echo
    AUXOBJ="$ESROBJ $XQROBJ $DFTOBJ $ERIOBJ $XPPOBJ"
    AUXMAK="$ESRMAK $XQRMAK $DFTMAK $ERIMAK $XPPMAK"
@@ -339,6 +333,7 @@ make_makefile()
    # Write current Makefile
    #
    cat <<EOF> Makefile
+MODS="$MODS"
 include ./Makefile.config
 
 #
@@ -742,7 +737,8 @@ for makefile in $dirs; do
    if [ -f $makefile/Makefile ]; then
       rm -f $makefile/Makefile
    fi
-   cp $makefile/Makefile.in $makefile/Makefile
+   echo MODS=$MODS > $makefile/Makefile
+   cat $makefile/Makefile.in >> $makefile/Makefile
 done
 #
 #  Make links to include
@@ -767,6 +763,7 @@ which_modules()
 {
 #  
 #
+MODS="$ERIFLG $DFTFLG $ESRFLG $XQRFLG $XPPFLG"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
@@ -859,7 +856,5 @@ make_makefile
 # Make distribution and restore old files
 #
 restore
-#
-#
 #
 exit 0

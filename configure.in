@@ -923,18 +923,12 @@ case $machine in
 #
     *-hp) 
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' "
+          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
           ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          for mod in $MODS; do
-             cpp=`echo $cpp $mod`
-          done
           def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          for mod in $MODS; do
-             cpp=`echo $cpp $mod`
-          done
           def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
@@ -952,18 +946,12 @@ case $machine in
 #
     860-intel-osf1) 
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' "
+          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}'"
           ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-          done
           def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          for mod in $MODS; do
-             cpp=`echo $cpp $mod`
-          done
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
@@ -974,18 +962,12 @@ case $machine in
 #
     alpha-dec|mips-dec|vax-dec|alphaev6-dec)
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' "
+          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
           ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}'"
-          for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-          done
           def='dirac.x'
        else
           cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-          for mod in $MODS; do
-             cpp=`echo $cpp $mod`
-          done
 	  def='dirmpi.x'
           parlib="$parlib -lfmpi -lrt -pthread"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
@@ -1010,9 +992,6 @@ case $machine in
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
-       for mod in $MODS; do
-          cpp=`echo $cpp $mod`
-       done
 #       opt="-Oaggress,scalar3"
        opt="-dp -F -O3,unroll2,msgs,negmsgs -R nb -Wl,-Dstreams=on"
        inc="-I$INCLUDE_DIR"
@@ -1023,7 +1002,7 @@ case $machine in
 #
     *-cray)
        if [ "$mesp" = "dummy" ]; then
-          cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}' "
+          cpp="-DPRG_DIRAC -DSYS_CRAY  -D'INSTALL_WRKMEM=\${WRKMEM}'"
           ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
@@ -1032,9 +1011,6 @@ case $machine in
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
-       for mod in $MODS; do
-          cpp=`echo $cpp $mod`
-       done
        opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
        c_opt="-i 64 -a stack -dp"
        inc="-I$INCLUDE_DIR"
@@ -1045,18 +1021,12 @@ case $machine in
 #
    c*-convex)
       if [ "$mesp" = "dummy" ]; then
-         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
          def='dirac.x'
       else
          cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
          def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
@@ -1069,18 +1039,12 @@ case $machine in
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
          def='dirac.x'
       else
          cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
-	  def='dirmpi.x'
-          mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+	 def='dirmpi.x'
+         mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
       opt='-Nc50 -fast -xO4 -w -xtarget=native'
       c_opt='-fast -xO4 -w -xtarget=native'
@@ -1094,34 +1058,22 @@ case $machine in
             if [ "$mesp" = "dummy" ]; then
                cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' "
                ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}'"
-               for mod in $MODS; do
-                  cpp=`echo $cpp $mod`
-               done
                def='dirac.x'
             else
                cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-               for mod in $MODS; do
-                  cpp=`echo $cpp $mod`
-               done
-		def='dirmpi.x'
-                mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+	       def='dirmpi.x'
+               mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
             fi
             inc="-I$INCLUDE_DIR";;
          *)
             if [ "$mesp" = "dummy" ]; then
                cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'"
                ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-               for mod in $MODS; do
-                  cpp=`echo $cpp,$mod`
-               done
                def='dirac.x'
             else
                cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
                ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-               for mod in $MODS; do
-                  cpp=`echo $cpp,$mod`
-               done
 	       def='dirmpi.x'
                mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
                c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
@@ -1142,16 +1094,10 @@ case $machine in
       if [ "$mesp" = "dummy" ]; then
          cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}'"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
          def='dirac.x'
       else
          cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
-         for mod in $MODS; do
-            cpp=`echo $cpp $mod`
-         done
 	 def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
@@ -1164,7 +1110,7 @@ case $machine in
       echo "Get the BLAS routines. See 'Known issues and problems' at"
       echo "http://dirac.chem.sdu.dk"
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          def='dirac.x'
       else
@@ -1185,9 +1131,6 @@ case $machine in
          ccp="$cpp -DSMALL_CFILES"
          ;;
       esac
-      for mod in $MODS; do
-         cpp=`echo $cpp $mod`
-      done
       case "$F77" in
       g77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
@@ -1205,7 +1148,7 @@ case $machine in
       echo "Get the BLAS routines. See 'Known issues and problems' at"
       echo "http://dirac.chem.sdu.dk"
       if [ "$mesp" = "dummy" ]; then
-         cpp="-DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' "
+         cpp="-DPRG_DIRAC -DSYS_DARWIN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
          ccp="-DSYS_DARWIN -D'INSTALL_WRKMEM=\${WRKMEM}'"
          def='dirac.x'
       else
@@ -1226,9 +1169,6 @@ case $machine in
          ccp="$cpp -DSMALL_CFILES"
          ;;
       esac
-      for mod in $MODS; do
-         cpp=`echo $cpp $mod`
-      done
       case "$F77" in
       g77)
          opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
@@ -1280,7 +1220,7 @@ ARCH        = $guess
 #
 WRKMEM      = $memsiz
 DEPEND_FLAGS= $depend_flags
-CPP_FLAGS   = $cpp
+CPP_FLAGS   = $cpp \${MODS}
 CCP_FLAGS   = $ccp
 F77         = $F77
 CC          = $CC
