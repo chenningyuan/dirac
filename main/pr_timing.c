@@ -50,7 +50,7 @@
 
 #if defined (VAR_MPI)
 #include <mpi.h>
-   int *ierr, itid;
+   int ierr, itid;
 #endif /* VAR_MPI */
 
 #include "pr_timing.head"
