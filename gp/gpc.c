@@ -199,8 +199,12 @@ void sysinf(int parcal)
    printf(" Last compilation  : %s %s (by %s@%s)\n", 
       __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
 
-   printf(" FORTRAN compiler  : %s \n", FCOMP);
+/* MI: The AIX does not recognize FCOMP,CCOMP variables.
+   This is the simplest fix, more sophisticated fix for various 
+    platforms is wished. */
+/*   printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
+*/
 
    free(un);
 }
