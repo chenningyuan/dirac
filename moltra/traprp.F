@@ -20,7 +20,7 @@ C
 #include <dcbxpr.h>
 #include <dcbprl.h>
 #include <mxcent.h>
-#include <dcbexp.h>
+#include <dcbtrp.h>
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
@@ -101,8 +101,8 @@ C
 C
       CALL MEMGET('REAL',KPROPMO,NSTRT(1)*NSTRT(2)*NZ,WORK,KFREE,LFREE)
 C
-      DO I = 1,NEXPP
-         INDXPR = LEXPP(I)
+      DO I = 1,NTRPP
+         INDXPR = LTRPP(I)
          ISYM  = IPRPSYM(INDXPR)
          IOPSY = JBTOF(ISYM-1,1)
          DO IX = 1, 32
