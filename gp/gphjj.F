@@ -66,7 +66,7 @@ C
       CALL FLUSH(IUNIT)
 #endif
 #if defined (SYS_HPUX)
-      CALL FFLUSH(IUNIT)
+CTROND      CALL FFLUSH(IUNIT)
 #endif
 #if defined (SYS_AIX)
 C     AIX XL FORTRAN version 2.3+
@@ -91,7 +91,7 @@ C
       CALL TIME(CTIME)
       CDATE = CCDATE(1:2)//CCDATE(4:6)//CCDATE(8:9)//' '
 #else
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
       ITIME = CLOCK()
@@ -360,6 +360,7 @@ C
       END
 #else
       SUBROUTINE SETTIM()
+#include <implicit.h>
       PARAMETER ( D0 = 0.0D0 )
       PRINT *,'DUMMY SETTIM called'
       RETURN
@@ -1794,8 +1795,3 @@ C
       CALL QEXIT('NOFDIA')
       RETURN
       END
-#if defined (SYS_HPUX)
-      character*24 function fdate()
-      fdate = '** no date available **'
-      return
-#endif

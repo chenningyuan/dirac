@@ -100,7 +100,7 @@ Define labels used: ESSL for CALL DGEMUL in MXMA
       END
 #endif
       SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+#include <implicit.h>
       DIMENSION A(*),B(*),C(*)
 #if !defined (VAR_ESSL) 
       DO 100 IROW=0,NROW-1

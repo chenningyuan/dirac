@@ -250,6 +250,7 @@ C  /* Deck quit */
       INCLUDE 'mpif.h'
 #endif
 #include <priunit.h>
+#include <dcbgen.h>
       CHARACTER TEXT*(*)
       WRITE (LUPRI,'(/A)')
      *   '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---'
@@ -262,7 +263,8 @@ C     Write to stderr
 #endif
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
-      CALL MPI_ABORT(MPI_COMM_WORLD,IERR,IERR)
+      JERR = 0
+      IF(PARCAL) CALL MPI_ABORT(MPI_COMM_WORLD,JERR,IERR)
 #endif
 #if defined (VAR_PVM)
       CALL PVMFEXIT(INFO)

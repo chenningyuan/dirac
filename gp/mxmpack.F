@@ -1,5 +1,5 @@
 C  /* Deck mxm */
-#if !defined (SYS_CRAY) && !defined (VAR_MOTECC) && !defined (SYS_T3D)
+#if !defined (SYS_CRAY) && !defined (VAR_MOTECC)
       SUBROUTINE MXM(A,NAR,B,NAC,C,NBC)
 #include <implicit.h>
       DIMENSION A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)

@@ -316,7 +316,8 @@ C
       CALL MEMGET('REAL',KFV1,N   ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFV2,N   ,WORK,KFREE,LFREE)
       IF(NZ.GT.1) THEN
-        CALL MEMGET('REAL',KTAU,N*NZ,WORK,KFREE,LFREE)
+        NTAU = N*NZ
+        CALL MEMGET('REAL',KTAU,NTAU,WORK,KFREE,LFREE)
       ENDIF
 C
 C       Householder transform to real symmetric tridiagonal matrix
@@ -2286,7 +2287,7 @@ C
       CALL DATE(DAOFWK,TEXT(1))
       CALL TIME(TEXT(12))
 #endif
-#if defined (SYS_CRAY)
+#if defined (SYS_CRAY) || defined (SYS_T3D)
       WRITE(TEXT(1:8),'(A8)') DATE()
       WRITE(TEXT(12:19),'(A8)') CLOCK()
 #endif
