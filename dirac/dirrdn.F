@@ -276,7 +276,7 @@ C&&&& PCMOUT: Write coefficients to formatted DFPCMO
             GO TO 100
   108    CONTINUE
 C&&& LINDEP: Thresholds for linear dependence (eigenvalues of overlap matrix)
-                  READ(LUCMD,*) STOL(1),STOL(2)
+            READ(LUCMD,*) STOL(1),STOL(2)
             GO TO 100
   109    CONTINUE
 C&&&& SPHTRA: Embed transformation to spherical harmonics in
@@ -1400,7 +1400,7 @@ C  /* Deck idnnuc */
       SUBROUTINE IDNNUC(IPRINT)
 C*****************************************************************************
 C
-C	Count number of nuclei with identical coordinates
+C       Count number of nuclei with identical coordinates
 C
 C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue

@@ -800,7 +800,7 @@ C
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
-     &                     STOL(IC),IPRINT,EIG,WORK,LWORK)
+     &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)') 
      &          COMP(IC),REP(IREP),'* Deleted: ',NDEL
@@ -2739,7 +2739,7 @@ C        Loop over primitives
 C      
          DO 15 JP = JP1, JP2
 C
-C           A function can contrinute to kinetic balance in two ways :
+C           A function can contribute to kinetic balance in two ways :
 C           a. It balances a (L-1) large component function
 C           b. It balances a (L+1) large component function
 C
@@ -2938,6 +2938,9 @@ C
 C
 C     Print section
 C
+      IF(IPRINT.GE.1) WRITE(LUPRI,'(/A,1P,D8.1)')
+     &   'LOWGEN: Smallest ".LINDEP" test value of a kept orbital:',
+     &   EIG(NV)
       IF(IPRINT.GE.6) THEN
         CALL HEADER('LOWGEN: Canonical Lowdin matrix:',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
@@ -3545,4 +3548,3 @@ C
       NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
       RETURN
       END
-
