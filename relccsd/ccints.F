@@ -526,7 +526,7 @@ C
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
-     &/' File time :',T20,A8,/' # of integrals',I8)
+     &/' File time :',T20,A8,/' # of integrals',I12)
  1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
      &/' Zero order electronic energy :',T40,F25.15 
      &/' First order electronic energy :',T40,F25.15 
