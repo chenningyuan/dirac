@@ -150,6 +150,12 @@ endif
 #
 echo "#\!/bin/sh" > configure
 echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG \" >> configure
+echo ERIFLG=$ERITAR >> configure
+echo CCFLG=$CCTAR   >> configure
+echo RSPFLG=$RSPTAR >> configure
+echo TRAFLG=$TRATAR >> configure
+#
+#
 cat configure.in >> configure
 set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ"
 set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK"
