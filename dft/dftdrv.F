@@ -19,7 +19,6 @@ C
 #include "dcbham.h"
 #endif
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
@@ -85,7 +84,6 @@ CTROND      PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10)
       PARAMETER (THRSH = 1.0D-10, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
@@ -877,11 +875,8 @@ C
 #include "mxorb.h"
 #include "mxcent.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#else
-#include "fpvm3h.h"
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -951,7 +946,6 @@ C
       PARAMETER (THRSH = 1.0D-8, THRSH2 = 1.0D-10) 
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
@@ -1077,10 +1071,7 @@ C
       PARAMETER(D0=0.0D0)
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
 #include "priunit.h"
 #include "mxorb.h"
