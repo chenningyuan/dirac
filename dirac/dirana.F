@@ -1118,10 +1118,12 @@ C
         KBUF   = KFREE
         NMOL   = NVECS(IFRP,2)
         NREF   = NVECS(IFRP,1)
-        N2REF  = NREF*NREF
+C.......ntot   = nmol + nref
+        NTOT   = NVECS(IFRP,0)
+        N2TOT  = NTOT*NTOT
         CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
         IF(NREFS.GT.1) THEN
-          CALL MEMGET('REAL',KAMAT,N2REF*NZ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KAMAT,N2TOT*NZ,WORK,KFREE,LFREE)
         ELSE
           KAMAT = KFREE
         ENDIF
@@ -1132,7 +1134,7 @@ C
           CALL PRJINF(WORK(KJREF),IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)))
           IVEC = IVEC + NSTR(IFRP,0,I)
         ENDDO
-        CALL PRJAN1(IFRP,NVECS(IFRP,2),NVECS(IFRP,1),NVECS(IFRP,0),
+        CALL PRJAN1(IFRP,NMOL,NREF,NTOT,
      &       KQ,KE,WORK(KAMAT),WORK(KBV(IFRP)),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
      &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
@@ -1203,7 +1205,7 @@ C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
-     &          KE(2,2),KQ(2,2),AMAT(NREF,NREF,NZ),
+     &          KE(2,2),KQ(2,2),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
 C
       KFRSAV = KFREE
@@ -1237,7 +1239,7 @@ C
         CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &           NREF,NREF,
      &           SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),
-     &           AMAT,NREF,NREF,NZ,IPQTOQ(1,0),
+     &           AMAT,NTOT,NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRPRJ)
@@ -1252,7 +1254,7 @@ C
               WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
      &             REFFIL(I),REFFIL(J)
               CALL PRQMAT(AMAT(IOFF,JOFF,1),
-     &             NSTR(IFRP,0,I),NSTR(IFRP,0,J),NREF,NREF,NZ,
+     &             NSTR(IFRP,0,I),NSTR(IFRP,0,J),NTOT,NTOT,NZ,
      &             IPQTOQ(1,0),LUPRI)
               IOFF = IOFF + NSTR(IFRP,0,I)
             ENDDO
@@ -1262,37 +1264,48 @@ C
 C
 C       Solve linear system by Cholesky decomposition
 C       with full pivoting
-C        --> notice that overlap matrix SMAT is destroyed !
 C
         JOB = 1
-        CALL QCHOLD(AMAT,NREF,NZ,NREF,NREF,SMAT,PTOL,NEFF,JOB,IPIVOT)
-        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NREF,NREF,SMAT,BVEC,
-     &       NTOT,NMOL,BVEC,NTOT,NMOL,JOB,IPIVOT,SMAT(1+NREF))
+        KFRSAV = KFREE
+        CALL MEMGET('REAL',KB1,NREF,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KB2,NREF,WORK,KFREE,LFREE)
+        CALL QCHOLD(AMAT,NREF,NZ,NTOT,NTOT,WORK(KB1),
+     &              PTOL,NEFF,JOB,IPIVOT)
+        CALL QCHOLS(AMAT,NREF,NEFF,NMOL,NZ,NTOT,NTOT,WORK(KB1),BVEC,
+     &       NTOT,NMOL,BVEC,NTOT,NMOL,JOB,IPIVOT,WORK(KB2))
+        CALL MEMREL('ANAPR1.chol',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
         IF(NEFF.LT.NREF) THEN
           WRITE(LUPRI,'(A,A)') '* WARNING: ',
      &     ' linear dependencies detected in Cholesky decomposition'
           WRITE(LUPRI,'(11X,A,I5,A,I5)') 
      &     ' Reduced dimensionality: ',NREF,' --> ',NEFF
         ENDIF
-C
-C       Restore overlap matrix
-C
-        CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
       ENDIF
 C
 C     Add polarization contribution to expansion coefficients
 C
       CALL DUNIT2(BVEC(NREF+1,1,1),NMOL,NTOT,NMOL,NZ)
       CALL QGEMM(NFBAS(IFRP,0),NMOL,NREF,DM1,'N','N',IPQTOQ(1,0),
-     &             WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,
-     &             'N','N',IPQTOQ(1,0),
-     &             BVEC,NTOT,NMOL,NZ,D1,IPQTOQ(1,0),
-     &             WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ)
-        IF(IPRPRJ.GE.5) THEN
-          CALL HEADER('Polarization vectors',0)
-          CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
+     &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,
+     &           'N','N',IPQTOQ(1,0),
+     &           BVEC,NTOT,NMOL,NZ,D1,IPQTOQ(1,0),
+     &           WORK(KQ(IFRP,2)),NFBAS(IFRP,0),NTOT,NZ)
+      IF(IPRPRJ.GE.5) THEN
+        CALL HEADER('Polarization vectors',0)
+        CALL PRIPOL(IFRP,WORK(KQ(IFRP,2)),WORK(KE(IFRP,2)),
      &                NMOL,NFBAS(IFRP,0),NTOT)
-        ENDIF      
+      ENDIF      
+C
+C     Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
+C     but now with polarization contributions included
+C
+      CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &           NTOT,NTOT,
+     &           SMAT,NFBAS(IFRP,0),NFBAS(IFRP,0),1,IPQTOQ(1,0),
+     &           AMAT,NTOT,NTOT,NZ,IPQTOQ(1,0),
+     &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
+     &           WORK(KQ(IFRP,1)),NFBAS(IFRP,0),NTOT,NZ,IPQTOQ(1,0),
+     &           WORK(KFREE),LFREE,IPRPRJ)
 C
 C     Population analysis
 C
@@ -1375,7 +1388,7 @@ C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1
       DIMENSION GROSS(2,0:2,MAXREF)
-      DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NREF,NREF,NZ),
+      DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
