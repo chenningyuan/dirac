@@ -1953,6 +1953,7 @@ C           ISGEN - bit packed information on generation of small
 C                   components using the kinetic balance relation
 C             1 - downwards: small L+1 from large L
 C             2 - upwards  : small L-1 from large L
+C             0 - if not specified same as 3 (both down and up)
 C           
             CALL RDLINE(LUINFO)
             READ (MLINE(NMLINE),'(BN,A,I4,2I5)')
@@ -5822,7 +5823,7 @@ C
 #include <ccom.h>
 #include <gencon.h>
 C
-      DATA SZ / 'large', 'small' /
+      DATA SZ / 'LARGE', 'SMALL' /
 C
 #include <ibtfun.h>
 C     
@@ -6047,9 +6048,12 @@ C
 C
          NUC(NBLOCK,ICP) = NUCIJ
          NRC(NBLOCK,ICP) = NRCIJ
-CTROND
-      WRITE(LUPRI,'(A,6I5)') 'Block:',NBLOCK,NUC(NBLOCK,ICP),
-     &       NRC(NBLOCK,ICP)
+C
+         ISGEN (NBLOCK) = 0
+C
+         IF (INPTST)
+     &      WRITE(LUPRI,'(2A,6I5)') SZ(ICP),' MOLFBAS Block:',
+     &      NBLOCK,NUC(NBLOCK,ICP),NRC(NBLOCK,ICP)
          NBLOCK = NBLOCK + 1
          ICONS = ICONE + 1
   501 CONTINUE
@@ -6125,7 +6129,7 @@ C
           DO K = 1,JCO(J-1,I,1)
             IBD = IBD + 1
             IF(IDOWN(ISGEN(IBD)).EQ.1
-     $           .OR. IDOWN(ISGEN(IBD)) .EQ. 0 )  THEN
+     $           .OR. ISGEN(IBD) .EQ. 0 )  THEN
               IF (CNTBAS) THEN
                 MXDUM = 50 - MOD(50, KHK(J))
                 MAXS = MAX((MXDUM/KHK(J)),1)
@@ -6159,7 +6163,7 @@ C
           DO K = 1,JCO(J+1,I,1)
             IBU = IBU + 1
             IF(IUP(ISGEN(IBU)).EQ.1
-     $           .OR. IDOWN(ISGEN(IBU)) .EQ. 0 ) THEN
+     $           .OR. ISGEN(IBU) .EQ. 0 ) THEN
               IF (CNTBAS) THEN
                 MXDUM = 50 - MOD(50, KHK(J))
                 MAXS = MAX((MXDUM/KHK(J)),1)
