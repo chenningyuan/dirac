@@ -1225,6 +1225,7 @@ C
      &      '   Charge of molecule    = ',KCHARG,
      &      '   i.e. no. of electrons = ',ICHRG-KCHARG
 C
+         NASHT_DHF = 0
          IF (NFSYM .EQ. 1) THEN
 C
 C           The easy case: 
@@ -1239,6 +1240,7 @@ C
                NELEC_DHF(1) = NELEC_DHF(1) - 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
+               NASHT_DHF = 1
             END IF
 C
          ELSE
@@ -1259,6 +1261,7 @@ C
 C
                NELECT_DHF = NELECT_DHF - 1
                NAELEC_DHF = 1
+               NASHT_DHF = 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
             END IF
