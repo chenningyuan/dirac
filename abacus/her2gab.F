@@ -1752,7 +1752,6 @@ C
             CALL QUIT('GABGEN: Invalid IJOB')
          ENDIF
       END DO
-      CLOSE(LUPROP,STATUS='KEEP')
       CALL GETDAT(RTNLBL(1),RTNLBL(2))     
 C
 C     Check if file AOPROPER is present
