@@ -187,8 +187,8 @@ C
 C
       LUBUF = 81
 C
-C     1. Start by contructing AO Fock matrices in covariant basis.
-C     =========================================================
+C     1. Start by constructing AO Fock matrices in covariant basis.
+C     =============================================================
 C
       CALL MEMGET('REAL',KFAO,N2BBASXQ * 2,WORK,KFREE,LFREE)
       KFCAO = KFAO
@@ -199,7 +199,9 @@ C     Two-electron Fock matrix/matrices
 C
       INQUIRE(FILE='DFFCK2',EXIST=TOBE)
       IF(TOBE) THEN
-         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
+         CALL OPNFIL(LUBUF,'DFFCK2','OLD','CONMAT_DHF')
+         WRITE(LUPRI,'(/A)')
+     &   '* Reading two-electron Fock matrix for DHF molecular gradient'
          CALL REAFCK(LUBUF,WORK(KFCAO),.TRUE.,NFMAT)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
@@ -213,11 +215,13 @@ C     One electron Fock Matrix
 C
       INQUIRE(FILE='DFFCK1',EXIST=TOBE)
       IF (TOBE) THEN
-         CALL OPNFIL(LUBUF,'DFFCK1','OLD','GTCNV1')
+         CALL OPNFIL(LUBUF,'DFFCK1','OLD','CONMAT_DHF')
+         WRITE(LUPRI,'(/A)')
+     &   '* Reading one-electron Fock matrix for DHF molecular gradient'
          CALL REAFCK(LUBUF,WORK(KH1AO),.TRUE.,1)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A)')
      &    '*** WARNING *** CONMAT_DHF: No 1-Fock found. Regenerating.'
          CALL ONEFCK(WORK(KH1AO),IPRINT,WORK(KFREE),LFREE)
       END IF
