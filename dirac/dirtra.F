@@ -129,7 +129,7 @@ C
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
         WRITE(LUPRI,'(6(3X,I3,2X,A12))')
      &      (I,PLABEL(I,1),I=1+IOFF,NPLAB(0))
-        IF(IPRINT.GE.3) THEN
+        IF(IPRINT.GE.5) THEN
           CALL PRIVEC('IPLAB ',IPLAB(1,1),NAORB)
         ENDIF
       ENDIF
