@@ -67,9 +67,9 @@ usage ()
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
    echo '                              dirac'
    echo '     -multi "config file"   : Run MPI on MULTI NODEs'
-   echo '                              and configuration file'
-   echo '     -mpiconf "mpi.conf"    : Change MPI configuration file name'
-   echo '     -thread                : Run thread parallel execution[SX only]'
+   echo '                              and configuration file [SX only]'
+   echo '     -mpiconf "mpi.conf"    : Change MPI config file name [SX only]'
+   echo '     -thread                : Run thread parallel execution [SX only]'
    echo '     -help                  : Help on pam'
 }
 #
@@ -141,9 +141,9 @@ setup_command()
    #
    if [ -n "$PARCAL" ]; then
       if [ -n "$MULTI_NODE" ]; then
-         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
-      else
          DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
+      else
+         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
       fi
    else
       DIRAC_CMD="$DIRAC"
