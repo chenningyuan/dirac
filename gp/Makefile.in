@@ -27,7 +27,6 @@ all:	setcomp $(F_OBJS) $(C_OBJS)
 setcomp:
 	( \
 	   rm -f gpc.o; \
-	   cd include ; \
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \
 	   echo "#define WHERE_COMPILED \"`hostname`\"" >> compinfo.h ; \

@@ -1,2 +1,2 @@
-#define WHO_COMPILED "tsaue"
-#define WHERE_COMPILED "actinix.u-strasbg.fr"
+#define WHO_COMPILED "unkown"
+#define WHERE_COMPILED "not specified"
