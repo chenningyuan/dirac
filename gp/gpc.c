@@ -262,6 +262,11 @@ void distribute_env(const char* name, int mytid)
 #endif
 }
 
+int icommsize_(const int *istart, const int *iend)
+{
+  return iend-istart+1;
+}
+
 
 #ifdef VAR_IFC
  /* extra routines needed by intel's ifc compiler which does not
