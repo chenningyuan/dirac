@@ -42,10 +42,6 @@ C     Last revision : Sep 11 1995 - tsaue
 C
 C*****************************************************************************
 #include <implicit.h>
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-#endif
 #include <priunit.h>
 #include <maxaqn.h>
 #include <aovec.h>
@@ -59,25 +55,12 @@ C
 #include <dcborb.h>
 #include <blocks.h>
 C
-#if defined (VAR_MPI)
-#include <infpar.h>
-#endif
-C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('PSIDHF')
 #include <memint.h>
 C
-      CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
-C
-C     Get hold of the slaves if we run in parallel.
-C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
+      CALL TITLER('Dirac-Hartree-Fock calculation','*',120)
       CALL FLSHFO(LUPRI)
 C
 C     Initialize
@@ -108,18 +91,16 @@ C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
 C
-C     Release the slaves if we run in parallel.
-C
-      IF (PARCAL) THEN
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
-C
 C     Memory deallocation
 C
       CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      IF (.NOT. SUCCES) THEN
+C        ... DHF not converged
+         WRITE (LUPRI,'(//A)')
+     &      ' ERROR, Dirac-Hartree-Fock not converged, Dirac stops!'
+         CALL QUIT('Dirac-Hartree-Fock not converged')
+      END IF
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PSIDHF')
@@ -905,7 +886,7 @@ C           read old density matrix in FOCK before saving new density matrix/hj
                   DCOVLP = DDOT(N2BBASXQ,FOCK,1,FOCK,1)
                   DCOVLP = DDOT(N2BBASXQ,DMAT,1,FOCK,1) / DCOVLP
                ENDIF
-               WRITE(LUPRI,'(I5,A,F6.4)') NITER,
+               WRITE(LUPRI,'(I5,A,F7.4)') NITER,
      &            ' *** Differential density matrix. DCOVLP     =',
      &            DCOVLP
                CALL DAXPY(N2BBASXQ,(-DCOVLP),FOCK,1,DMAT,1)
@@ -922,12 +903,15 @@ C           read old density matrix in FOCK before saving new density matrix/hj
      &                  DDOT(N2BBASXQ,DMAT(1+N2BBASXQ*IOPEN),1,
      &                  FOCK(1+N2BBASXQ*IOPEN),1) / DVOVLP(IOPEN)
                   END IF
-                  WRITE(LUPRI,'(I5,A,I2,A,F6.4)') NITER,
+                  WRITE(LUPRI,'(I5,A,I2,A,F7.4)') NITER,
      &               ' *** Differential density matrix. DVOVLP(',
      &               IOPEN,') =',DVOVLP(IOPEN)
                   CALL DAXPY(N2BBASXQ,(-DVOVLP(IOPEN)),
      &               FOCK(1+N2BBASXQ*IOPEN),1,DMAT(1+N2BBASXQ*IOPEN),1)
                END DO
+            END IF
+            IF (DCOVLP .LT. D0 .OR. DCOVLP .GT. D2) THEN
+               CALL QUIT('ERROR: unreasonable value for DCOVLP')
             END IF
 C
 C           Note that all Fock matrices are multiplied with 2
@@ -2049,10 +2033,6 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-#if defined (VAR_MPI)
-#include <infmpi.h>
-      INCLUDE 'mpif.h'
-#endif
 C
 #include <mxorb.h>
 #include <aovec.h>
@@ -2064,30 +2044,20 @@ C
 #include <dcbgen.h>
 #include <dcbmvo.h>
 #include <blocks.h>
-#if defined (VAR_MPI)
-#include <infpar.h>
-#endif
+C
       LOGICAL BF1,BF2,BF3
       DIMENSION WORK(*)      
 C
 #include <memint.h>
       CALL TITLER('Modified virtual orbitals','*',125)
 C
-C     Get hold of the slaves if we run in parallel.
-C
-      IF (PARCAL) THEN
-         ITASK = 1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-      ENDIF
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)      
       NPOS = 0
-      IF(PARCAL) THEN
+      IF (PARCAL) THEN
         BF1  = FIRST1
         BF2  = FIRST2
         BF3  = FIRST3
@@ -2105,16 +2075,10 @@ C
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
-C     Release the slaves if we run in parallel.
-C
       IF (PARCAL) THEN
          FIRST1 = BF1
          FIRST2 = BF2
          FIRST3 = BF3
-         ITASK = -1
-#if defined (VAR_MPI)
-         CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
       ENDIF
       RETURN
       END
