@@ -233,7 +233,7 @@ C     ----------------------------
 C
       kxlr=kfree
       nevecr=nredm*nexsim
-      call memget('INTE',kibtyp,2*nredm,work,kfree,lfree)
+      call memget('INTE',KIBTYP,2*nredm,work,kfree,lfree)
       call memget('INTE',kibcvc,  nredm,work,kfree,lfree)
       call memget('INTE',kibevc,  nredm,work,kfree,lfree)
       call memget('INTE',kibpvc,  nredm,work,kfree,lfree)
@@ -298,7 +298,7 @@ C
                nzred=ncred+nered+npred
                RSPLAB = PRPNAM(INDPRB)
                call xrsctl(work(kgpci),work(kgpoe),work(kgpop),
-     &                     work(kibtyp),work(kibcvc),work(kibevc),
+     &                     work(KIBTYP),work(kibcvc),work(kibevc),
      &                     work(kibpvc),rcnv(1,indbp),work(kevalr),
      &                     work(kevecr),work,kfree,lfree)
                call memrel('PRPGR1.XRSCTL',work,1,kgrad,kfree,lfree)
@@ -307,7 +307,7 @@ C     Evaluate result
 C     ===============
 C
       KEIG = KFREE
-               call getlrf_mpg(ablrf,work(kibtyp),work(kibcvc),
+               call getlrf_mpg(ablrf,work(KIBTYP),work(kibcvc),
      &                         work(kibevc),work(kibpvc),RCNV(1,INDBP),
      &                         work(kevalr),work(kevecr),iorbcl,
      &                         work(keig),DMO,work,kfree,lfree)
@@ -497,6 +497,14 @@ C
       dimension work(*)
 C
       call qenter('GRDORB_MPG')
+c     print*,'in GRDORB_MPG'
+c     do iz =1, nz
+c        do j=1,norbt
+c           do i=1,norbt
+c              print*,'XMO=',i,j,iz,XMO(i,j,iz)
+c           enddo
+c        enddo
+c     enddo
 C
 #if defined (SYS_IBM)
       open(lu1int,status='OLD',form='UNFORMATTED',file='APROPER')
@@ -531,7 +539,7 @@ C
 C     Printsection
 C     ============
 C     
-c      IF(IPRINT.GE.4) THEN
+       IF(IPRINT.GE.4) THEN
         CALL HEADER('Output from GRDORB_MPG',-1)
         IREP = IPRPSYM(INDXPR)-1
         IF(NXOPE.GT.0) THEN
@@ -546,7 +554,7 @@ c      IF(IPRINT.GE.4) THEN
           CALL PRQMAT(GPOP,NXOPP,1,NXOPP,1,NZ,IPQTOQ(1,IREP),
      &                LUPRI)
         ENDIF
-c      ENDIF
+       ENDIF
 C
       call qexit('GRDORB_MPG')
       return
@@ -634,7 +642,7 @@ C
       logical first
       integer a
       dimension ablrf(nfreq,nlrapt,nlrbpt,*)
-      dimension ibtyp(2,*)
+      dimension IBTYP(2,*)
       dimension ibcvc(*)
       dimension ibevc(*)
       dimension iorbcl(2,*)
@@ -680,7 +688,7 @@ c        PRINT*, 'in getlrf_mpg'
          call memget('REAL',kbbuf,      nzxopeq,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,        NESIM,WORK,KFREE,LFREE)
          call getlr1(ablrf(1,1,1,ioff+1),jbendx,evecr,evalr,RCNV,
-     &               ibtyp,ibevc,
+     &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
      &               work(kcmo),iorbcl,eig,work(kzxope),WORK(KIVEC),
      &               work,kfree,lfree)
@@ -720,7 +728,7 @@ C
                   II = I + IO1
                   DO A=1,NSSH(IFRP)
                      IA = A + IO2
-                     write(lupri,'(2i3,f18.10)') IA,II,DMO(IA,II,IZ)
+c                    write(lupri,'(2i3,f18.10)') IA,II,DMO(IA,II,IZ)
                   ENDDO
                ENDDO
             ENDDO
@@ -738,7 +746,7 @@ C
          call memget('REAL',kgvec,nzxoppq      ,work,kfree,lfree)
          call memget('REAL',kbbuf,nzxoppq      ,work,kfree,lfree)
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
-         call getlr1(ablrf(1,1,1,ioff+1),jbpndx,evecr,evalr,RCNV,ibtyp,
+         call getlr1(ablrf(1,1,1,ioff+1),jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
      &               work(kcmo),iorbcl,eig,work(kzxopp),WORK(KIVEC),
      &               work,kfree,lfree)
@@ -765,22 +773,22 @@ C
          ENDDO
       endif
 C
-c        IO1 = 0
-c        IO2 = 0
-c        DO IFRP = 1, NFSYM
-c           IO1 = IO1 + NPSH(IFRP)
-c           DO IZ=1,NZ
-c              DO I=1,NOCC(IFRP)
-c                 II = I + IO1
-c                 DO A=1,NPSH(IFRP)
-c                    IA = A + IO2
+         IO1 = 0
+         IO2 = 0
+         DO IFRP = 1, NFSYM
+            IO1 = IO1 + NPSH(IFRP)
+            DO IZ=1,NZ
+               DO I=1,NOCC(IFRP)
+                  II = I + IO1
+                  DO A=1,NPSH(IFRP)
+                     IA = A + IO2
 c                    write(lupri,'(2i3,f18.10)') IA,II,DMO(IA,II,IZ)
-c                 ENDDO
-c              ENDDO
-c           ENDDO
-c           IO1 = IO1 - NPSH(IFRP) + NORB(IFRP)
-c           IO2 = IO2 + NORB(IFRP)
-c        ENDDO
+                  ENDDO
+               ENDDO
+            ENDDO
+            IO1 = IO1 - NPSH(IFRP) + NORB(IFRP)
+            IO2 = IO2 + NORB(IFRP)
+         ENDDO
       CALL MEMREL('GETLRF.end',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL MEMCHK('einde rspmpg',WORK,1)
       CALL QEXIT('GETLRF_MPG')

@@ -604,6 +604,7 @@ C
 C        Inactive...
 C
          IF (NISHT .GT. 0) THEN
+c        print*,'nisht > 0'
          ITYP  = 0*1+0*2
          IM = IM + 1
 C        Scatter BVEC into BMAT
@@ -880,6 +881,7 @@ C
 C
 C           inactive density matrix...
 C
+ 
             NI  = NISH(I2) - NFRO(I2)
             II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
             JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1

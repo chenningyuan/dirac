@@ -265,7 +265,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
-     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO)
+     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO,
+     &                   XLAGRAN)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -293,7 +294,8 @@ C
       REAL*8 D2VO(*),D2OV(*),DG(*)
       REAL*8 DMO(*)
       REAL*8 XVO(*),XOV(*)
-      real*8 XMO(*)
+      REAL*8 XMO(*)
+      REAL*8 XLAGRAN(*)
       REAL*8 EVO(*),EOV(*)
       REAL*8 EPS(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*),CBUF(*)
@@ -340,6 +342,7 @@ C------------------------------------
       N = NFVO
       USEDZ = .FALSE.
       RIGHT = .FALSE.
+      print*,'jvs: D part RELCCSD off'
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
      &            JJVO,BUF2,NBUF2,XVO,DVV,USEDZ,RIGHT)
 C
@@ -375,6 +378,7 @@ C---------------------------------------------------------------------
      &              BUF1,BUF2)
       M = NFVO
       K = NFOO
+c     print*,'jvs: D part RELCCSD off'
       CALL XGEMV ('N',M,K,A1,BUF2,M,DOO,1,A1,XVO,1)
 C
       CALL XSCAL(NDIMX,-A1,XVO,1)
@@ -393,6 +397,15 @@ c     enddo
 c     endif
 C
       call convxm(buf1,buf2,xvo,xmo)
+c
+c     jvs: temporarily to test generation of Lagrangian
+c     deactivated because checking in to trunk
+c     
+c     KFREE=1
+c     LFREE=NBUF3*RCW 
+c     CALL MPGLVC(DMO,XLAGRAN,BUF3,KFREE,LFREE)
+c     print*,'jvs: D via joost'
+c     CALL DAXPY(NORBT*NORBT*NZ,A1,XLAGRAN,1,xmo,1)
 C
 C     Solve Z-vector equations by calling the RPA routine
 C
@@ -439,7 +452,7 @@ C
       LFREE=NBUF3*RCW
 c     print*,'laat VO deel DMO op o door prpxlr_mpg niet te callen'
 c     deactivated because checking in to trunk
-c     CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+      CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
 C
       RETURN
       END
@@ -450,7 +463,7 @@ C
 C
 C---------------Description--------------------------------------------
 C
-C     Convert x-matrix(Lagranian) to DIRAC format
+C     Convert x-matrix(Lagrangian) to DIRAC format
 C
 C
 C---------------Routines called----------------------------------------

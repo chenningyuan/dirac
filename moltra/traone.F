@@ -958,6 +958,8 @@ C*****************************************************************************
 C     
 C     Joost van Stralen, april 2002
 C
+C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1039,19 +1041,28 @@ C
 C
       ioff1 = 0
       ioff2 = 0
-      do ifsym = 1, nfsym
-         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFYSM,1)
-         do iz=1,nz
-            do j=1,naocc(ifsym)
-               do i=1,navir(ifsym)
+c     print*,'nfsym=',nfsym
+c     do ifsym = 1, nfsym
+c        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+c        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFYSM,1)
+c        do iz=1,nz
+c           do j=1,naocc(ifsym)
+c              do i=1,navir(ifsym)
 c                 print*,'XMO ',i,j,'iz ',iz,xmo(i+ioff1,j+ioff2,iz)
-               enddo
-            enddo
-         enddo
-         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-         IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFYSM,1) + NORB(IFSYM)
-      enddo
+c              enddo
+c           enddo
+c        enddo
+c        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+c        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFYSM,1) + NORB(IFSYM)
+c     enddo
+c     print*,'xmo op een andere manier geprint'
+c     do iz = 1, nz
+c        do j = 1, norbt
+c           do i= 1, norbt
+c              print*, 'lagr=', iz, i, j, xmo(i,j,iz)
+c           enddo
+c        enddo
+c     enddo
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
