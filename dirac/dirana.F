@@ -1819,6 +1819,7 @@ C       Get value of SOs at (PX,PY,PZ)
 C       Get density in this point
         RHO(0) = D0
         DO IC = 1,MC
+          RHO(IC) = D0
           CALL GETRH1(RHO(IC),IC,0,GAO,DMAT,BUF)
           RHO(0) = RHO(0) + RHO(IC)
         ENDDO
