@@ -5113,7 +5113,7 @@ C     ********************************************
 C     *****   Define 4-component operators   *****
 C     ********************************************
 C
-C     M = I_4,A_X,A_Y,A_Z
+C     M = I_4,A_Z,A_Y,A_X, G_5,S_Z,S_Y,S_X
 C
 C
 C     I_4       -->  I_2
@@ -5123,14 +5123,14 @@ C
       JM4POS(0) =  1
       JM4FAS(0) =  1
 C
-C     i(alpha_z)   --> i(sigma_z)
+C     i(alpha_z)   --> i(sigma_x)
 C     ===========================
 C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
       JM4FAS(1) =  1
 C
-C     i(alpha_y)   --> j(sigma_y)
+C     i(alpha_y)   --> j(sigma_x)
 C     ===========================
 C
       JM4REP(2) =  ISYMAX(2,1)
@@ -5152,6 +5152,27 @@ C
       JM4POS(4) =  1
       JM4FAS(4) =  1
 C
+C     i(sigma_z)   --> i(I_2)
+C     =======================
+C
+      JM4REP(5) =  ISYMAX(3,2)
+      JM4POS(5) =  IZQ
+      JM4FAS(5) =  1
+C
+C     i(sigma_y)   --> j(I_2)
+C     =======================
+C
+      JM4REP(6) =  ISYMAX(2,2)
+      JM4POS(6) =  IYQ
+      JM4FAS(6) =  1
+C
+C     i(sigma_x)   --> k(I_2)
+C     =======================
+C
+      JM4REP(7) =  ISYMAX(1,2)
+      JM4POS(7) =  IXQ
+      JM4FAS(7) =  1
+C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
@@ -5164,21 +5185,21 @@ C
       JM4 (1,1) = 0
       JCOM(1,1) = 1
 C
-C     2. i[alpha_x]p    * x-component of alpha times scalar operator
+C     2. i[alpha_x]P    * x-component of alpha times scalar operator
 C     =============================================================
 C
       MCMP(2)   =  1
       JM4 (1,2) =  3
       JCOM(1,2) =  1
 C
-C     3. i[alpha_y]p    * y-component of alpha times scalar operator
+C     3. i[alpha_y]P    * y-component of alpha times scalar operator
 C     =============================================================
 C
       MCMP(3)   =  1
       JM4 (1,3) =  2
       JCOM(1,3) =  1
 C
-C     4. i[alpha_z]p    * z-component of alpha times scalar operator
+C     4. i[alpha_z]P    * z-component of alpha times scalar operator
 C     =============================================================
 C
       MCMP(4)   =  1
@@ -5232,6 +5253,69 @@ C
       MCMP(9)   =  1
       JM4 (1,9) =  4
       JCOM(1,9) =  1
+C
+C     10. i[Sigma_x]P   * x-component of sigma times scalar operator
+C     ==============================================================
+C
+      MCMP(10)  =  1
+      JM4 (1,10)=  7
+      JCOM(1,10)=  1
+C
+C     11. i[Sigma_y]P   * y-component of sigma times scalar operator
+C     ==============================================================
+C
+      MCMP(11)  =  1
+      JM4 (1,11)=  6
+      JCOM(1,11)=  1
+C
+C     12. i[Sigma_z]P   * z-component of sigma times scalar operator
+C     ==============================================================
+C 
+      MCMP(12)  =  1
+      JM4 (1,12)=  5
+      JCOM(1,12)=  1
+C
+C     13. i[betaSig_x]P * x-component of beta sigma times scalar operator
+C     ==================================================================
+C
+      MCMP(13)  =  1
+      JM4 (1,13)=  7 
+      JCOM(1,13)=  1
+C
+C     14. i[betaSig_y]P * y-component of beta sigma times scalar operator
+C     ==================================================================
+C
+      MCMP(14)  =  1
+      JM4 (1,14)=  6
+      JCOM(1,14)=  1
+C
+C     15. i[betaSig_z]P * z-component of beta sigma times scalar operator
+C     ==================================================================
+C
+      MCMP(15)  =  1
+      JM4 (1,15)=  5
+      JCOM(1,15)=  1
+C
+C     16. i[betaalp_x]P * x-component of beta alpha times scalar operator
+C     ==================================================================
+C
+      MCMP(16)  =  1
+      JM4 (1,16)=  3
+      JCOM(1,16)=  1
+C
+C     17. i[betaalp_y]P * y-component of beta alpha times scalar operator
+C     ==================================================================
+C
+      MCMP(17)  =  1
+      JM4 (1,17)=  2
+      JCOM(1,17)=  1 
+C
+C     18. i[betaalp_z]P * z-component of beta alpha times scalar operator
+C     ===================================================================
+C
+      MCMP(18)  =  1
+      JM4 (1,18)=  1
+      JCOM(1,18)=  1  
 C
 C     Matrix symmetry
 C     ===============
