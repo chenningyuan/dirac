@@ -8,13 +8,14 @@
 Water molecule. Dynamic polarizabilities
 .WAVE F
 .PROPER
+**GENERAL
+.LVCORR
 **INTEGRALS
 *TWOINT
 .SCREEN
 1.0D-16
 **WAVE FUNCTIONS
 .DHF
-.LVCORR
 *DHFCAL
 .CLOSED SHELL
 10
