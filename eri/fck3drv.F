@@ -1435,7 +1435,9 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
       NOSKIPCL  = .FALSE.
       NOSKIPCS  = .FALSE.
       SCRFBTCH  = .FALSE.
-      FIXTHR    = .FALSE.
+Cdirac      FIXTHR    = .FALSE.
+Cdirac ..setting this true since IFTHRS is not set
+      FIXTHR    = .TRUE.
       BRFREE    = .FALSE.
       FULL_J    = .FALSE.
 
@@ -1468,6 +1470,7 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 C
       WORD1 = WORD
 C
+      IPRINT=IPRFCK3
  100    CONTINUE
             READ (LUCMD, '(A7)') WORD
             PROMPT = WORD(1:1)
@@ -1535,7 +1538,7 @@ C
 
       CALL HEADER('Settings for FCK3 calculation:',0)
 
-      IF (IPRINT .NE. IPRFDEF) THEN
+      IF (IPRINT .NE. IPRFCK3) THEN
           WRITE (LUPRI,'(A,I5)') ' Print level in FCK3:',IPRFCK3
       END IF
 

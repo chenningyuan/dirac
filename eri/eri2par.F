@@ -873,7 +873,7 @@ C
 C     Get my name
 C
       CALL GETNAME(MYNAME)
-      NODNAM(0) = MYNAME
+CTROND      NODNAM(0) = MYNAME
 C
 C     Return name to master
 C

@@ -477,28 +477,28 @@ C
          END IF
       END DO
 C
-      IF (LMULBS .AND. LOOPDP) THEN
-         DO I = 1, NAOBCH
-            IF (MBIDBT(I) .GT. 1) THEN
-               DO J = 2, 4
-                  ACTVBT(I,J) = .FALSE.
-               END DO
-            END IF
-            IF (MBIDBT(I) .EQ. 1) THEN
-               ACTVBT(I,1) = .FALSE.
-            END IF
-         END DO
-      ELSE IF (LMULBS .AND. .NOT. R12TRA) THEN
+CTOND      IF (LMULBS .AND. LOOPDP) THEN
+CTROND         DO I = 1, NAOBCH
+CTROND            IF (MBIDBT(I) .GT. 1) THEN
+CTROND               DO J = 2, 4
+CTROND                  ACTVBT(I,J) = .FALSE.
+CTROND               END DO
+CTROND            END IF
+CTROND            IF (MBIDBT(I) .EQ. 1) THEN
+CTROND               ACTVBT(I,1) = .FALSE.
+CTROND            END IF
+CTROND         END DO
+CTROND      ELSE IF (LMULBS .AND. .NOT. R12TRA) THEN
 C        Do not compute integrals that involve auxiliary
 C        basis functions (WK/UniKA/04-11-2002).
-         DO I = 1, NAOBCH
-            IF (MBIDBT(I) .GT. 1) THEN
-               DO J = 1, 4
-                  ACTVBT(I,J) = .FALSE.
-               END DO
-            END IF
-         END DO
-      END IF
+CTROND         DO I = 1, NAOBCH
+CTROND            IF (MBIDBT(I) .GT. 1) THEN
+CTROND               DO J = 1, 4
+CTROND                  ACTVBT(I,J) = .FALSE.
+CTROND               END DO
+CTROND            END IF
+CTROND         END DO
+CTROND      END IF
 C
       IF (IPRINT .GT. 3) THEN
          CALL HEADER('Output from PICKAO',-1)
