@@ -1,8 +1,9 @@
-#ifdef SYS_LINUX
+#ifdef VAR_G77
 /*
  *
- * VERSION : $Id$
- * FILE    : dirac_linux.c
+ * VERSION : $Version$
+ * DATE    : $Date$
+ * FILE    : dirac_linux.c ($RCSfile$)
  * PURPOSE : Allocate memory for Dirac
  *          and execute Dirac.
  * CPRGHT  : (c) Jan 8 1998 by Joern Thyssen
