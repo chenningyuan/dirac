@@ -25,3 +25,7 @@ dirmpi.x:
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F77_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
 
+embedding.o: emb_frozen_orbitals.o emb_settings.o
+ 
+# DO NOT DELETE
+
