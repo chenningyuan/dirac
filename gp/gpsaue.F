@@ -57,14 +57,15 @@ C  /* Deck prqmat */
       SUBROUTINE PRQMAT(QMAT,NROW,NCOL,LRQ,LCQ,NZ,IQP,IUNIT)
 #include "implicit.h"
       DIMENSION QMAT(LRQ,LCQ,NZ),IQP(*)
-      CHARACTER M(4)*2
-      M(1) = 'AR'
-      M(2) = 'AI'
-      M(3) = 'BR'
-      M(4) = 'BI'
+      CHARACTER M(4)*6
+      M(1) = 'A real'
+      M(2) = 'A imag'
+      M(3) = 'B real'
+      M(4) = 'B imag'
       DO 10 IZ = 1,NZ
         IQ = IQP(IZ)
-        WRITE(IUNIT,'(/A,A2,A/)') '*** ',M(IQ),' part ***'
+        WRITE(IUNIT,'(/A,A6,A,2I4/)')
+     &  '*** ',M(IQ),' part ***;    NROW,NCOL:',NROW,NCOL
         CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,1,IUNIT)
    10 CONTINUE
       END
