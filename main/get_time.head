@@ -1,0 +1,13 @@
+/*
+ *
+ * VERSION : $Revision$
+ * DATE    : $Date$
+ * SOURCE  : $Source$
+ * DESCR.  : Header file for get_time
+ * AUTHOR  : J. Thyssen - 980713
+ *
+ */
+
+#include "get_time.struct"
+
+void get_time(get_time_struct *gt)
