@@ -158,7 +158,9 @@ for tt in $tests; do
    echo
    echo 'Running test '$tt
    echo
-   cat $tt/README
+   if [ -r $tt/README ]; then
+      cat $tt/README
+   fi
    echo
    ( cd $tt; export PAM_PATH=$arg_pampath; export MPIARG=$arg_mpi; ./run.sh)  
 done
