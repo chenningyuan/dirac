@@ -440,12 +440,12 @@ if($GENTAR) then
 #  make tarfile
 #
   make export
-  mv DIRAC.new.tar.Z $TARFIL.tar.Z
+  mv -f DIRAC.new.tar.Z $TARFIL.tar.Z
 #
 #  Retrieve original files
 #
-  mv Makefile.buf Makefile
-  mv tarbuf.Z DIRAC.new.tar.Z 
+  mv -f Makefile.buf Makefile
+  mv -f tarbuf.Z DIRAC.new.tar.Z 
 endif
 exit 0 
 
