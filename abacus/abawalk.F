@@ -35,6 +35,9 @@ C
 C#include <single.h>
 #ifdef REVLOG
 $Log$
+Revision 1.8  2001/08/31 12:05:14  panor
+Changed from infpri.h to priunit.h
+
 Revision 1.7  2000/09/29 13:34:56  jth
 Initialize LUMOL before use.
 
@@ -5925,7 +5928,7 @@ C
 #include <infvar.h>
 #include <inforb.h>
 #include <infopt.h>
-#include <infpri.h>
+#include <priunit.h>
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
@@ -6204,7 +6207,7 @@ C
 #include <anrinf.h>
 #include <infvar.h>
 #include <infdim.h>
-#include <infpri.h>
+#include <priunit.h>
 C
       CHARACTER*1 CXYZ(3)
       DATA CXYZ/'X','Y','Z'/
