@@ -2575,6 +2575,8 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','XXXXXXX'/
 C
+#include <ibtfun.h>
+C
       SYMSTP = .FALSE.
       INPERR = 0
       CALL TITLER('Hamiltonian defined','*',127)      
