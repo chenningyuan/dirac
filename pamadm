@@ -107,7 +107,7 @@ setup()
    #
    if [ -n "$KRMCMOD" ]; then
       KRMCFLG='-DMOD_KRMC'
-      KRMCOBJ='$(KRMCOBJS)'
+      KRMCOBJ='$(KRMC_FOBJS) $(KRMC_COBJS)'
       KRMCMAK=KRMC_OBJ
       LUCIARELOBJ='$(LUCIARELOBJS)'
       LUCIARELMAK=LUCIAREL_OBJ
@@ -379,7 +379,6 @@ main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
 gp/gpc.o \\
-krmc/gendet.o \\
 relccsd/ccunix.o
 
 #
@@ -457,10 +456,12 @@ fi
 if [ -n "$KRMCMOD" ]; then
 cat <<EOF>> Makefile
 
-KRMCOBJS = \\
+KRMC_FOBJS = \\
 krmc/krmc_gradient.o krmc/krmcgosci.o krmc/krmcopt.o krmc/krmcout.o \\
 krmc/krmctra.o krmc/krmcvec.o krmc/krmcsav.o krmc/krmccan.o \\
 krmc/krmcinp.o krmc/krmcmlf.o krmc/krmcgp.o krmc/krmcluci.o
+
+KRMC_COBJS = krmc/gendet.o
 
 LUCIARELOBJS = \\
 luciarel/ciinfo_r.o  luciarel/density_r.o  luciarel/diagonal_r.o  \\
@@ -511,7 +512,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \\
-	\$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMCOBJS)
+	\$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
