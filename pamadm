@@ -173,7 +173,7 @@ setup()
    fi
    if [ "$TARFIL" = "export" ]; then
       if [ -e DIRAC.new.tar.gz ]; then
-	 rm DIRAC.new.tar.gz
+         rm DIRAC.new.tar.gz
       fi
       TARFIL=DIRAC.new
    fi
@@ -206,8 +206,8 @@ backup()
          temp="$temp Makefile"
       fi
       for file in $temp; do
-	 echo " - $file --> $file.buf"
-	 mv $file $file.buf 
+         echo " - $file --> $file.buf"
+         mv $file $file.buf 
       done
    fi
    echo
@@ -222,20 +222,20 @@ backup()
 #
 restore()
 {
+   make_export
    if [ -n "$GENTAR" ]; then
       #
       # Make tar-file
       #
-      make_export
       echo "*** Making tar-file ..."
       echo
       ./export
       if [ -e DIRAC.new.tar.gz ]; then
-	 if [ "$TARFIL" != "DIRAC.new" ]; then
-	    mv DIRAC.new.tar.gz $TARFIL.tar.gz
-	 fi
+         if [ "$TARFIL" != "DIRAC.new" ]; then
+            mv DIRAC.new.tar.gz $TARFIL.tar.gz
+         fi
       else
-	 echo "Fatal error: No DIRAC.new.tar.gz"
+         echo "Fatal error: No DIRAC.new.tar.gz"
       fi
       #
       #
@@ -256,8 +256,8 @@ restore()
          temp="$temp Makefile"
       fi
       for file in $temp; do
-	 echo " - $file.buf --> $file"
-	 mv $file.buf $file
+         echo " - $file.buf --> $file"
+         mv $file.buf $file
       done
    fi
 }
@@ -285,6 +285,7 @@ make_configure()
    echo SPFFLG=$SPFTAR >> configure
    echo PAMADM=$PAMADM >> configure
    echo CIFLG=$CITAR >> configure
+   echo GEOFLG=$GEOTAR >> configure
    cat ./configure.in >> configure
    chmod +x configure
 }
@@ -305,6 +306,8 @@ make_export()
    #
    cat <<EOF> ./export
 #!/bin/sh
+   echo " - adding files to tar-achive..."
+   echo
    tar cvf DIRAC.new.tar \\
       configure config.sub config.guess config.status doc/doc.html \\
       C90lib.cld crilib.cld \\
@@ -316,7 +319,7 @@ make_export()
       pdpack/Makefile.in pdpack/*.F \\
       dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \\
       dirac/main/*.h dirac/main/*.head dirac/main/*.struct \\
-      dhf.in 2> export.log
+      pam.in 2> export.log
 EOF
    #
    # Active modules
@@ -383,7 +386,9 @@ EOF
 EOF
    fi
    cat <<EOF>> ./export
-      gzip -9 DIRAC.new.tar
+      echo " - gzip'ing archive..."
+      echo
+      gzip -9v DIRAC.new.tar
 EOF
    chmod +x ./export
 }
@@ -522,7 +527,7 @@ if [ -n "$GEOMOD" ]; then
 cat <<EOF>> Makefile
 
 GEOOBJS = \\
-dirac/geom/dirgeo.F
+dirac/geom/dirgeo.o
 EOF
 fi
 #
