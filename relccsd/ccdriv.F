@@ -360,6 +360,7 @@ C
 #include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
+#include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
@@ -487,6 +488,7 @@ C     General setup
 C     -------------
 C
       CALL CCDINI
+      EQNS = '      '
 C
 C     Set up symmetry tables and parallel distribution arrays
 C     -------------------------------------------------------

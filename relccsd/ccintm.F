@@ -452,7 +452,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE HOINTM(FOO,T1,T2,BUF1,BUF2,BUF3,HO)
+      SUBROUTINE HOINTM(FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -468,7 +468,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 FOO(*)
+      REAL*8 FOO(*),EPS(*)
       REAL*8 T1(*),T2(*)
       REAL*8 HO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
@@ -484,15 +484,18 @@ C
       real*8 ddot
 C---------------Executable code--------------------------------------
 C
-C-----------------------------------
-C H(K,I) = F(K,I) * (1 - DELTA(K,I))
-C-----------------------------------
+C---------------------------------------
+C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
+C---------------------------------------
       CALL XCOPY (NFOO,FOO,1,HO,1)
       CALL DELFCK ('OO','DK',HO)
       II = 1
+      I = 1
       DO IRP = 1, NREP
          N = NO(IRP)
-         CALL XCOPY(N,A0,0,HO(II),N+1)
+         ND = (N+1) * RCW
+         CALL DAXPY(N,-A1,EPS(I),1,HO(II),ND)
+         I = I + N
          II = II + N * N * RCW
       ENDDO
 C----------------------------------------------------------------------
@@ -564,7 +567,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE HVINTM(FVV,T1,T2,BUF1,BUF2,BUF3,HV)
+      SUBROUTINE HVINTM(FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -580,7 +583,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 FVV(*)
+      REAL*8 FVV(*),EPS(*)
       REAL*8 T1(*),T2(*)
       REAL*8 HV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
@@ -596,15 +599,23 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-C-----------------------------------
-C H(A,C) = F(A,C) * (1 - DELTA(A,C))
-C-----------------------------------
+C---------------------------------------
+C H(A,C) = F(A,C)  - DELTA(A,C) * EPS(A)
+C---------------------------------------
       CALL XCOPY (NFVV,FVV,1,HV,1)
       CALL DELFCK ('VV','KD',HV)
       AA = 1
+C     Calculate start of virtual orbital energies in eps
+      A = 1
+      DO IRP = 1, NREP
+         A = A + NO(IRP)
+      ENDDO
+C
       DO IRP = 1, NREP
          N = NV(IRP)
-         CALL XCOPY(N,A0,0,HV(AA),N+1)
+         ND = (N+1) * RCW
+         CALL DAXPY(N,-A1,EPS(A),1,HV(AA),ND)
+         A = A + N
          AA = AA + N * N * RCW
       ENDDO
 C----------------------------------------------------------------------

@@ -1298,6 +1298,7 @@ C
       ELSE
          WRITE (IW,1004)
       ENDIF
+      WRITE (IW,1005)
 C
  1001 FORMAT (//' Checking the orbital energies, the program computes',
      & ' the diagonal elements of the'/' reconstructed Fock matrix.',
@@ -1309,6 +1310,11 @@ C
      &' perturbation expressions.')
  1004 FORMAT(/' The diagonal elements of the recomputed Fock matrix',
      &' (right column) are used in perturbation expressions.')
+ 1005 FORMAT(/' Use the perturbative values (MP2, CCSD[T]/(T)/-T)',
+     &' with care, especially',/' in  open shell calculations',
+     &' because the orbitals need not always be'/
+     &' semi-canonical as was assumed in the derivation',
+     &' of the expressions.'/' The missing terms may be important !')
 C
       RETURN
       END

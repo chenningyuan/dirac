@@ -262,6 +262,7 @@ C
       ECCSD = 0.D0
 C
       CALL T1DIAG(DIAG,T1,BUF1)
+      CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD)
 C
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
@@ -272,8 +273,8 @@ C     Calculate fixed intermediaries for Lambda equations
 C
       IF (.NOT.TEQ) THEN
          CALL GETAMPT (S1,S2)
-         CALL HOINTM (FOO,S1,S2,BUF1,BUF2,BUF3,HO)
-         CALL HVINTM (FVV,S1,S2,BUF1,BUF2,BUF3,HV)
+         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
+         CALL HVINTM (FVV,EPS,S1,S2,BUF1,BUF2,BUF3,HV)
          CALL HOVINTM (FVO,S1,BUF1,BUF2,HOV)
          CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
          CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
@@ -306,10 +307,10 @@ C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
 C
       IF (TEQ) THEN
-           CALL HOINTM (FOO,T1,T2,BUF1,BUF2,BUF3,HO)
+           CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
       ENDIF
       IF (TEQ) THEN
-           CALL HVINTM (FVV,T1,T2,BUF1,BUF2,BUF3,HV)
+           CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
       ENDIF
       IF (NDIMT1.GT.0) THEN
          IF (TEQ) THEN
@@ -2323,13 +2324,15 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "complex.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3
+      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,ABS,DHOLU
 C
 C---------------Executable code--------------------------------------
 C
+      DHOLU = 1.D-6
       II = 0
       AI = 0
       DO IRP = 1, NREP
@@ -2341,10 +2344,34 @@ C
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
              AI = AI + 1
-             IF (CARITH) THEN
-                CT1(AI) = CT1(AI)/FAC
+C
+C            Check for small denominators. All denominators should be 
+C            larger than the minimum HOMO-LUMO gap DHOLU to avoid 
+C            convergence problems. An exception is the case in which
+C            the numerator is zero (e.g. by symmetry), then we allow
+C            execution to be continued. 
+C
+             IF (-FAC.GT.DHOLU) THEN
+                IF (CARITH) THEN
+                   CT1(AI) = CT1(AI)/FAC
+                ELSE
+                   T1(AI) = T1(AI)/FAC
+                ENDIF
              ELSE
-                T1(AI) = T1(AI)/FAC
+                IF (CARITH) THEN
+                   ATVAL = ABS(CT1(AI))
+                ELSE
+                   ATVAL = ABS(T1(AI))
+                ENDIF
+                IF (ATVAL.GT.DHOLU) THEN
+                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                ELSE
+                  IF (CARITH) THEN
+                     CT1(AI) = A0
+                  ELSE
+                     T1(AI) = AR0
+                  ENDIF
+                ENDIF
              ENDIF
          ENDDO
       ENDDO
@@ -2379,10 +2406,28 @@ C
                   AA = AOFF + A
                   FAC = FAC3 - EPS(AA)
                   ABIJ = ABIJ + 1
-                  IF (CARITH) THEN
-                     CT2(ABIJ) = CT2(ABIJ)/FAC
+C                 Check for small denominators, see comment above.
+                  IF (-FAC.GT.DHOLU) THEN
+                     IF (CARITH) THEN
+                        CT2(ABIJ) = CT2(ABIJ)/FAC
+                     ELSE
+                        T2(ABIJ) = T2(ABIJ)/FAC
+                     ENDIF
                   ELSE
-                     T2(ABIJ) = T2(ABIJ)/FAC
+                     IF (CARITH) THEN
+                        ATVAL = ABS(CT2(ABIJ))
+                     ELSE
+                        ATVAL = ABS(T2(ABIJ))
+                     ENDIF
+                     IF (ATVAL.GT.DHOLU) THEN
+                        CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                     ELSE
+                       IF (CARITH) THEN
+                          CT2(ABIJ) = A0
+                       ELSE
+                          T2(ABIJ) = AR0
+                       ENDIF
+                     ENDIF
                   ENDIF
                ENDDO
             ENDDO
