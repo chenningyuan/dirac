@@ -123,8 +123,8 @@ C     15 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
 C
 C     =======================================================================
 C
-      INCLUDE 'files.inc'
-      INCLUDE 'param.inc'
+#include "files.inc"
+#include "param.inc"
       LOGICAL DONE
 C
       MAXCORE = MCORE
@@ -156,11 +156,11 @@ C     SETS UP CI SPACE: CALCULATES DIAGRAM, GENERATES DETERMINANTS
 C     MAKES G-MATRIX, REORDERS 2-ELECTRON INTEGRALS
 C     ============================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'memory.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "symm.inc"
+#include "general.inc"
+#include "memory.inc"
+#include "mempoint.inc"
 C
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
@@ -302,11 +302,11 @@ C     ======================================
 C     DRIVES DAVIDSON DIAGONALISATION PROCES
 C     ======================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'memory.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "memory.inc"
+#include "mempoint.inc"
 C
       LOGICAL ENDRUN
 c
@@ -391,8 +391,8 @@ C                         PLUS SIGN OF INTERACTION MULTIPLIED BY HEAD PART
 C     DIRECTION : WALK FROM BOTTOM TO TOP OF GRAPH    
 C     ======================================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'symm.inc'
+#include "param.inc"
+#include "symm.inc"
 C
       INTEGER JVECL(2,*)
       INTEGER ILIND(*),IRIND(*),JLIND(*),JRIND(*)
@@ -736,10 +736,10 @@ C     ========================
 C     GENERATE MEMORY POINTERS 
 C     ========================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "symm.inc"
+#include "general.inc"
+#include "mempoint.inc"
 C
       MAXB = NROOTS + 1
       MAXC = NROOTS
@@ -870,10 +870,10 @@ C     2) MAXITER REACHED
 C     3) MAXIMUM CPU TIME USED
 C     =================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "iterat.inc"
 C
       LOGICAL ENDRUN
       DIMENSION MSEL(N8)
@@ -1004,11 +1004,11 @@ C     =====================================
 C     CALCULATES FIRST ORDER DENSITY MATRIX
 C     =====================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "mempoint.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB),DD(NORB)
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*),IVWA(*)
@@ -1094,9 +1094,9 @@ C     =========================================
 C     CALCULATE ADRESSES OF THE STRINGS IN JDET
 C     =========================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
 C
       DIMENSION IDIND(*),JDET(*),JELEC(*),JSYM(*)
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
@@ -1143,9 +1143,9 @@ C     ----------------------
 C     DIAGONALIZES CI MATRIX
 C     ----------------------
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION WORKR(N2,N2),WORKI(N2,N2),WORK2(N2),WORK3(N2),WORK4(N2)
 C
@@ -1190,11 +1190,11 @@ C     =========================================
 C     CALCULATES DIAGONAL ELEMENTS OF CI MATRIX
 C     =========================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "general.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "mempoint.inc"
 C
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
@@ -1352,9 +1352,9 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "files.inc"
+#include "iterat.inc"
 C
       DATA EIGEN1/N8 * 0.D0/
       DATA MRCONEE,MDCINT,MDBINT,MRCTRIV,MRCFINV,MRCEXCS,MRCVECS,
@@ -1375,11 +1375,11 @@ C     =======================
 C     CALCULATES SIGMA VECTOR
 C     =======================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "mempoint.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*),IVWA(*),IJREC(NORB,NORB),IJEX(*)
@@ -1593,10 +1593,10 @@ C     GET 1-ELECTRON COEFFICIENTS :
 C     CALCULATE IF IGENEX = 1
 C     FROM FILE IF IGENEX = 2
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "mempoint.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*)
@@ -1632,9 +1632,9 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc' 
-      INCLUDE 'general.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
 C
       Real*8 VecR(*),VecI(*),SigR(*),SigI(*)
 C
@@ -1663,9 +1663,9 @@ C
 C
 C     Initialises temporary file for expansion vectors
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc' 
-      INCLUDE 'general.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
 C
       IF (REALAR) THEN
          IRECL = NDET * 8
@@ -1686,9 +1686,9 @@ C     =================================================================
 C     COMPUTES INNER PRODUCT OF NEW SIGMA VECTORS WITH PREVIOUS VECTORS
 C     =================================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION SIGMAR(NDET,*),SIGMAI(NDET,*)
@@ -1732,11 +1732,11 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "iterat.inc"
 C
       PARAMETER (NDREC=1023)
 C
@@ -1847,10 +1847,10 @@ C     ================================================
 C     READS 1- AND 2-ELECTRON INTEGRALS, MAKES GMATRIX
 C     ================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "symm.inc"
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
       LOGICAL ENDFIL
@@ -1925,10 +1925,10 @@ C
 C
 C     GENERATE FILE WITH ALL 1-ELECTRON COUPLING COEFFICIENTS
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'mempoint.inc' 
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "mempoint.inc" 
 C
       DIMENSION JVECL(2,*),JLIND(*),JRIND(*),ILIND(*),IRIND(*)
       DIMENSION IJREC(NORB,NORB),IVWA(*)
@@ -2033,9 +2033,9 @@ C     =====================================
 C     CALCULATES NATURAL ORBITALS (SPINORS)
 C     =====================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB)
       DIMENSION WORK1(*),WORK2(*),WORK3(*)
@@ -2205,9 +2205,9 @@ C    ===========================================
 C     Replaces Active Spinors by Natural Spinors
 C    ===========================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
+#include "param.inc"
+#include "symm.inc"
+#include "general.inc"
 C
       Dimension OccNr(NS),VecR(NS,NS),VecI(NS,NS),EigenV(NS)
       Dimension IRecSp(NS),WORK(*)
@@ -2334,11 +2334,11 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
     1 OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
       READ (MRCONEE) NORB,BREIT,ECORE,NFSYM,NZ,SPINFR
@@ -2390,11 +2390,11 @@ C     Reorder the orbitals based on the RAS division
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DO I = 1, NORB
          INDMO(I) = 0
@@ -2466,8 +2466,8 @@ C     SCHMIDT ORTHONORMALIZATION OF THE NEW EXPANSION VECTORS
 C     ON THE PREVIOUS ONES (2 TIMES TO AVOID NUMERICAL PROBLEMS)
 C     ==========================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
+#include "param.inc"
+#include "general.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
 C
@@ -2546,9 +2546,9 @@ C     ==================================
 C     PRECONDITIONING OF RESIDUAL VECTOR
 C     ==================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION DGEL(NDET)
@@ -2573,9 +2573,9 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'files.inc'
+#include "param.inc"
+#include "general.inc"
+#include "files.inc"
 C
       Real*8 VecR(*),VecI(*),SigR(*),SigI(*)
 C
@@ -2602,10 +2602,10 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*),DR(*),DI(*)
       DIMENSION ILIND(*)
@@ -2667,9 +2667,9 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*)
       DIMENSION SIGMAR(NDET,*),SIGMAI(NDET,*)
@@ -2758,9 +2758,9 @@ C     ====================
 C     SELECTS EIGENVECTORS
 C     ====================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DO 20 IROOT = 1, NROOTS
          IF (SELECT) THEN
@@ -2792,11 +2792,11 @@ C     LV : 28-6-2002
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "mempoint.inc"
 C
 C     ---------------------------------------------------------
 C     CANONICAL INTEGRALS ARE GENERATED FROM THE ORIGINAL LIST.
@@ -3208,11 +3208,11 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "general.inc"
+#include "files.inc"
+#include "symm.inc"
+#include "iterat.inc"
 C
       PARAMETER (NDREC=1023)
       PARAMETER (LREC=20*(NDREC+1))
@@ -3347,9 +3347,9 @@ C     READS BLOCK OF INTEGRALS (**|KL)
 C     ** : ALL IJ >= KL
 C     ================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'files.inc'
+#include "param.inc"
+#include "general.inc"
+#include "files.inc"
 C
       DIMENSION TINTR(*),TINTI(*),IJEX(*)
       LOGICAL ENDFIL
@@ -3369,10 +3369,10 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "symm.inc"
 C
       LOGICAL TOBE,DONE
       CHARACTER*4 IREPNA,VECFIL*11
@@ -3502,13 +3502,13 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'iterat.inc'
-      INCLUDE 'memory.inc'
-      INCLUDE 'mempoint.inc'
+#include "param.inc"
+#include "general.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "iterat.inc"
+#include "memory.inc"
+#include "mempoint.inc"
 C
       DIMENSION OV(N2)
 C
@@ -3573,9 +3573,9 @@ C     WALKS THROUGH DIAGRAM OF THIS RESTRICTED ACTIVE SPACE TO
 C     CALCULATE VERTEX WEIGHTS
 C     ========================================================
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'symm.inc'
-      INCLUDE 'general.inc'
+#include "param.inc"
+#include "symm.inc"
+#include "general.inc"
 C
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
 C
@@ -3668,10 +3668,10 @@ C
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'param.inc'
-      INCLUDE 'files.inc'
-      INCLUDE 'general.inc'
-      INCLUDE 'iterat.inc'
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "iterat.inc"
 C
       DIMENSION VECTR(NDET,*),VECTI(NDET,*),DR(*),DI(*)
       DIMENSION ILIND(*),IRIND(*)

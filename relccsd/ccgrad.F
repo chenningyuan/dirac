@@ -179,9 +179,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -516,9 +516,9 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "param.inc"
-      INCLUDE "complex.inc"
-      INCLUDE "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
 C
 C---------------Local variables--------------------------------------
 C

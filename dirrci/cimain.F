@@ -123,8 +123,8 @@ C     15 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
 C
 C     =======================================================================
 C
-      INCLUDE 'files.inc'
-      INCLUDE 'param.inc'
+#include "files.inc"
+#include "param.inc"
       LOGICAL DONE
       PARAMETER (MCORE = 60 000 000)
       REAL*8 CI(MCORE)

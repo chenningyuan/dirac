@@ -48,7 +48,7 @@ C     UNIVERSITY OF GRONINGEN (RUG), GRONINGEN,THE NETHERLANDS
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       DIMENSION CI(MAXCORE)
       CHARACTER*8 DATEX*10,TIMEX
@@ -184,7 +184,7 @@ C     ===========================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       REAL*8 E(N2),EE(N2*N2,2)
 C
@@ -197,7 +197,7 @@ C     ===========================
 C     ===========================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       INTEGER N(N2)
 C
@@ -233,7 +233,7 @@ C
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
 #include <ibtfun.h>
 C
@@ -457,7 +457,7 @@ C     was : BLOCK DATA INIT, but INIT is too general a word ...
 C     ===============
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       DATA REPNA / N5A * '    ' /
       DATA MULTB / N5B * 0 /
@@ -470,7 +470,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       JRRP = 0
       ID=JDET
@@ -494,7 +494,7 @@ C
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       DO I = 1, NDET
         DO J = 1, I
@@ -522,7 +522,7 @@ C     =============================
 C     =============================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       ID = JDET
       NB = 0
@@ -538,7 +538,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
 #include <ibtfun.h>
 C
@@ -557,7 +557,7 @@ C     =================================
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       CHARACTER*1 N(N1)
 C
@@ -644,7 +644,7 @@ C     ===========================================================
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       PARAMETER(D0 = 0.0D0)
       CHARACTER*10 DATEX,TIMEX*8
@@ -867,7 +867,7 @@ C     =================
 C     =================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       CHARACTER*14 REPN(16)
 C
@@ -950,7 +950,7 @@ C     ==============================================
 C     ==============================================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       REAL*8 DS(N2*N5)
       INTEGER NDETT,IND(N5),IRPS(N2*N5)
@@ -1001,7 +1001,7 @@ C     RECORD 3 : FIRST VECTOR
 C     RECORD 4 : SECOND VECTOR, ETC.
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
-      INCLUDE 'goscom.inc'
+#include "goscom.inc"
 C
       CHARACTER*11 VECFIL
       DIMENSION DV (N2)
