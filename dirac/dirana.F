@@ -221,7 +221,7 @@ C
 C     Get overlap matrix
 C     ==================
 C
-      CALL GTOVLP(SMAT,SSMTRC,WORK,LWORK)
+      CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK)
 C
 C     If necessary, backtransform overlap matrix to AO-basis
 C     ======================================================
@@ -879,7 +879,7 @@ C
 C     Get overlap matrix
 C     ===================
 C
-      CALL GTOVLP(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
 C
 C     Read reference coefficients
 C     ===========================

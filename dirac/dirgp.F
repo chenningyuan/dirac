@@ -116,10 +116,10 @@ C*****************************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
 C     IOPT:
+C       0 - read only title
 C       1 - read coefficients and eigenvalues
 C       2 - read coefficients and eigenvalues - give restart info
 C       3 - read coefficients only - give info
-C       >3 - read coefficients only, no info
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -142,25 +142,18 @@ C
       READ (IUNIT,END=10,ERR=20) 
      &      TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
 C
-      IF(IOPT.EQ.2) THEN
-        CALL HEADER('REACMO: Restart from coefficients',-1)
-        WRITE(LUPRI,'(A,A6,A,I5)')
-     &   'Coefficients read from file ',CMOFIL,', unit ',IUNIT
-        WRITE(LUPRI,'(2A)') '*Heading :',TEXT
+      IF(IOPT.EQ.0) THEN
         FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(A,'//FMT//')') '* Total energy: ',TOTERG
+        WRITE(LUPRI,'(A,I5,3X,A,'//FMT//')')
+     &   'REACMO: Coefficients read from unit',IUNIT,
+     &   '- Total energy: ',TOTERG
+        WRITE(LUPRI,'(2A)') '* Heading :',TEXT
+        RETURN
       ENDIF
-      IF(IOPT.EQ.3) THEN
-        CALL HEADER('REACMO: Reading coefficients',-1)
-        WRITE(LUPRI,'(A,I5)')
-     &   'Coefficients read from unit ',IUNIT
-        WRITE(LUPRI,'(2A)') '*Heading :',TEXT
-        FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(A,'//FMT//')') '* Total energy: ',TOTERG
-      ENDIF
+C
 C     Read coefficients
       READ (IUNIT,END=30,ERR=40) CMO
-      IF(IOPT.GE.3) RETURN
+      IF(IOPT.EQ.3) RETURN
 C     Read eigenvalues
       READ (IUNIT,END=50,ERR=60) EIG
 C
@@ -502,12 +495,14 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      CHARACTER A*(*),B*72,C*72
+      CHARACTER A*(*),B*72
       CHARACTER*1 TEGN
       DIMENSION ITMPAR(IRNGE1:IRNGE2),ILIST(NLIST)
 C
 C     Initialize
 C
+      NUM1 = 0
+      NUM2 = 0
       NA   = LEN(A)
       IF(NA.GT.72) GOTO 940
       IF(NA.GE.3) THEN
@@ -698,4 +693,31 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         XBUF = XBUF*XVAL
         POLVAL = POLVAL + XBUF*B(I)
    10 CONTINUE     
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck EIGEXT */
+      SUBROUTINE EIGEXT(EIG,IORBCL,ITYP,WORK,KFREE,LFREE)
+#include <implicit.h>
+#include <priunit.h>
+C
+#include <dcborb.h>
+C
+      DIMENSION EIG(*),IORBCL(2,NORBT),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
+      IOPT  = 2
+      LUBUF = 22
+      CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
+      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),TOTERG,IOPT)
+      CLOSE(LUBUF,STATUS='KEEP')
+      DO I = 1,NORBT
+      IF(IORBCL(1,I).EQ.ITYP) THEN
+        IND      = IORBCL(2,I) 
+        EIG(IND) = WORK(KEIG+I-1)
+      ENDIF
+      ENDDO
+      CALL MEMREL('EIGEXT',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+C
+      RETURN
       END
