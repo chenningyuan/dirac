@@ -369,7 +369,7 @@ C
 #endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(ASO,NTBAS(0)*NTBAS(0)*4)
+      CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
         DO J = 1,NTBAS(0)
@@ -418,7 +418,7 @@ C
 #endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(AQO,NTBAS(0)*NTBAS(0)*NZ)
+      CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
           IQJ  = JQBAS(IGET(IATTR(IPLAB(J,1),1)),
@@ -467,7 +467,7 @@ C
 #endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(ASO,NTBAS(0)*NTBAS(0)*4)
+      CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
         DO J = 1,NTBAS(0)
@@ -516,7 +516,7 @@ C
 #endif
       EXTERNAL BDQALGEBRA
 #include <dcbibt.h>
-      CALL DZERO(AQO,NTBAS(0)*NTBAS(0)*NZ)
+      CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
           IQJ  = JQBAS(IGET(IATTR(IPLAB(J,1),1)),
