@@ -1,7 +1,8 @@
 !
 ! This test calculates the energy and dipole moment
 ! of the water molecule at different levels of theory.
-! Note that we consistently leave out the SS integrals.
+! Note that we consistently leave out the SS integrals
+! by using the LVCORR option in the general section.
 !
 **DIRAC
 .TITLE
@@ -10,34 +11,18 @@ Water molecule. Restricted kinetic balance. Energies, dipole moment.
 .PROPER
 .4INDEX
 **GENERAL
-.DIRECT
-1 1 1
-**INTEGRALS
-*TWOINT
-.SOFOCK
-.SCREEN
-1.0D-12
+.LVCORR
 **WAVE FUNCTIONS
 .DHF
 .RELCCSD
 *DHFCAL
-.CLOSED SHELL
-10
-.INTFLG
-1 1 0
 .EVCCNV
 1.0E-8
-.CNVINT
-0.01 0.0001
 **PROPERTIES
 .DIPOLE
 **MOLTRA
-.INTFLG
-1 1 0
 .ACTIVE
 all
-.SCHEME
-4
 .PRPTRA
 *PRPTRA
 .OPERATOR
@@ -54,7 +39,7 @@ all
  ZDIPLEN
 *END OF
 
- &RELCCSD NELEC=5,5, TIMING=T,
+ &RELCCSD TIMING=T,
           DOSORT=T, DOENER=T, DOFOPR=T, DOEXC=F, DOSOPR=F &END
  &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T &END
  &CCFOPR NEOPER=3, DOMP2G=T, 
