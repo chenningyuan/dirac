@@ -387,16 +387,20 @@ C
       CALL MEMGET('INTE',KIRPMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIRPAMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORBMO,NSTRT(1)*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KIBSPI,NSTRT(1)*2,WORK,KFREE,LFREE)
 C
       CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
-     &            WORK(KIRPAMO),WORK(KORBMO),IPRINT,WORK,KFREE,LFREE)
+     &            WORK(KIRPAMO),WORK(KORBMO),WORK(KIBSPI),
+     &            IPRINT,WORK,KFREE,LFREE)
+C
+      CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
       SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
-     &                  ORBMO,IPRINT,WORK,KFREE,LFREE)
+     &                  ORBMO,IBSPI,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
@@ -418,7 +422,8 @@ C
       CHARACTER*4 REPA(8)
       DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT),IBORB(NSTRT)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
-      DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2),ORBMO(NSTRT*2)
+      DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2)
+      DIMENSION ORBMO(NSTRT*2),IBSPI(NSTRT*2)
       DIMENSION NSTR(2),IPHS(4)
       DIMENSION MULTB(8,8)
       DATA IPHS/ 1,-1,-1, 1/
@@ -521,6 +526,7 @@ C
             IRPMO(II)  = IREP
             IRPAMO(II) = IREPA
             ORBMO(II)  = ORBE(IK)
+            IBSPI(II)  = IBORB(IK)
          ENDDO
          IREP = IREP + 1
          IF (NZ.NE.4.OR.SPINFR.OR.LEVYLE) IREPA = IREPA + 1
@@ -531,6 +537,7 @@ C
             IRPMO(II)  = IREP
             IRPAMO(II) = IREPA
             ORBMO(II)  = ORBE(IK)
+            IBSPI(II)  = IBORB(IK)
          ENDDO
       ENDDO
 C
@@ -589,7 +596,10 @@ C
       WRITE (LUMLF1) NSYMRPA,(REPA(IRPA),IRPA=1,NSYMRPA*2)
       WRITE (LUMLF1) ((MULTB(I,J),I=1,2*NSYMRPA),J=1,2*NSYMRPA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),
-     &               (IBORB(I),I=1,NSTRT,1)
+     &               (IBSPI(I),I=1,2*NSTRT)
+      do ix = 1, 2*NSTRT
+      print*,"ibspi",ix,IBSPI(Ix)
+      enddo
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
      &                  J=1,NSTRT*2),I=1,NSTRT*2)
       CLOSE (LUMLF1)
