@@ -32,6 +32,11 @@
 #include "functionals.h"
 #include "inforb.h"
 
+#ifdef VAR_MPI
+#include <mpi.h>
+#include "infpar.h"
+#endif
+
 /* C-wide constants */
 const int  ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
 const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
@@ -163,108 +168,6 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     ds->fG  = 0.5*drvs.df00001;
 }
 
-#if defined(VAR_MPI)
-#include <mpi.h>
-#define MASTER_NO 0
-/* =================================================================== */
-/* General parallel routines.
- * dft_lifesupport_sync - one-time sync of basic common block data
- *                   that is crucial for initialization.
- * dft_wake_slaves - wakes slaves for a specified DFT evaluator (perhaps this
- *                   can be generalized?). It gets a registered property
- *                   evaluator address as an argument and broadcasts a
- *                   message that will call corresponding slave code
- *                   via dft_cslave().
- * FIXME: use rather a register approach that does not require modification
- * of this file every time new property evaluator is added.
- */
-
-struct {
-    DFTPropEvalMaster master_func;
-    DFTPropEvalSlave  slave_func;
-} PropEvaluatorList[] = {
-#if 0
-    { (DFTPropEvalMaster)dft_kohn_sham_,   dft_kohn_sham_slave   },
-    { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
-    { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
-#endif
-    { (DFTPropEvalMaster)FSYM2(dft_lin_respf),   dft_lin_respf_slave   },
-#if 0
-    { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
-    { (DFTPropEvalMaster)dft_mol_grad_,    dft_mol_grad_slave    },
-#endif
-    { (DFTPropEvalMaster)dftqrcf_,         dft_qr_resp_slave     }
-};
-
-/* mpi_sync_data:
-   sync given set of data with slaves.
-*/
-void
-mpi_sync_data(const SyncData* data, int count)
-{
-    int i;
-    for(i=0; i<count; i++) {
-        MPI_Bcast(data[i].data, data[i].count, data[i].type,
-                  0, MPI_COMM_WORLD);
-    }
-}
-
-
-void
-dft_wake_slaves(DFTPropEvalMaster evaluator)
-{
-    static int iprtyp = 5; /* magic DFT/C number */
-    static int iprint = 0;
-    int id, mynum;
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &mynum);
-    if(mynum != 0)
-        return; /* slaves do not wake up other slaves */
-
-    for(id=0; 
-        id<ELEMENTS(PropEvaluatorList) && 
-            PropEvaluatorList[id].master_func != evaluator;
-        id++)
-        ;
-        
-    if(id>=ELEMENTS(PropEvaluatorList)) {
-        /* this would really be an programming error.... */
-        fprintf(stderr, "Evaluator not registered. No slaves activated.\n");
-        return;
-    }
-    /* ignore MPI errors */
-    MPI_Bcast(&iprtyp,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&iprint,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&id,    1, MPI_INT, 0, MPI_COMM_WORLD);
-    FSYM(dftintbcast)();
-}
-
-/* dft_cslave:
-   a slave task handler. Receives the task ID and calls apropriate
-   property evaluator.
-   We broadcast also some basic properties and common block data
-   that slaves should absolutely know but for some reason do not.
-*/
-void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
-{
-    int rank, size;
-    if(MPI_Comm_rank(MPI_COMM_WORLD, &rank) ||
-       MPI_Comm_size(MPI_COMM_WORLD, &size)) printf("MPI error\n");
-    else {
-        int id;
-        MPI_Bcast(&id,1,MPI_INT, MASTER_NO, MPI_COMM_WORLD);
-        FSYM(dftintbcast)();
-        (PropEvaluatorList[id].slave_func)(work, lwork, iprint);
-    }
-}
-#else
-void
-FSYM2(dft_cslave)(real* work,int*lwork,int*iprint)
-{
-   fort_print("DFT slave called but does nothing now.");
-}
-#endif /* VAR_MPI */
 
 
 extern void quit_(const char* str, int len);
@@ -302,35 +205,39 @@ fort_print(const char* format, ...)
 #endif
 }
 
-/* ===================================================================
- * Parallel support.
- * =================================================================== */
-#ifdef VAR_MPI
-#include <mpi.h>
-
-/* dftfuncsync synchronises the selected functional between all
- * nodes. */
+/* ################################################################### */
+/* MPI related functions                                               */
+/* ################################################################### */
+/* dft_sync_func:
+   synchronizes functional data between nodes.
+   Needs to be called only once (after functional initialization/change).
+   NO-OP for serial code.
+   In any case, do it only once, otherwise the functional becomes
+   a sum of functionals.
+*/
 void
-FSYM(dftfuncsync)(int *mynum, int *nodes)
+dftsyncfunc_(int* amImaster)
 {
-    static int done = 0;
-    int len = DftConfString ? strlen(DftConfString) + 1: 0;
-    if(done) return;
-    MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    if(len>0) {
-        int res;
-        char *line = malloc(len);
-        if(*mynum == 0)
-            strcpy(line, DftConfString);
-        MPI_Bcast(line, len, MPI_CHAR, 0, MPI_COMM_WORLD);
-        if(*mynum != 0) {
-            int res;
-            FSYM(dftsetfunc)(line, &res, len);
-        }
-        free(line);
-    }
-    done = 1;
-}
+#ifdef VAR_MPI
+    static int Initialized = 0;
+    int success; /* jvs: this is not used !!! */
+    int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
+    
+    if(infpar_.nodes==0||Initialized) return;
 
-#endif
- 
+    MPI_Bcast(&do_alda,      1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
+    MPI_Bcast(&dft_conf_len, 1, MPI_INT, infpar_.mparid, MPI_COMM_WORLD);
+    if(dft_conf_len>0) {
+        char* line = malloc(dft_conf_len);
+        if(*amImaster)
+            strcpy(line, DftConfString);
+
+        MPI_Bcast(line, dft_conf_len, MPI_CHAR, infpar_.mparid, MPI_COMM_WORLD);
+        if(!*amImaster)
+            dftinput_(line, &success, dft_conf_len);
+
+        free(line);
+        Initialized = 1;
+    }
+#endif /* VAR_MPI */
+}
