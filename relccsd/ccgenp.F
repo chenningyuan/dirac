@@ -752,3 +752,8 @@ C
       DOTT=D
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUITC
+      CALL QUIT ("Error in one of the C I/O c-routines")
+      RETURN
+      END

@@ -69,12 +69,23 @@ extern char  *getenv();
 #define OLD             3
 
 typedef struct
-{ int  fd, addr, size;
+{ int  fd, size;
+  off_t addr;
   char fname[15];
 } FILE_DEFINITION;
 
 FILE_DEFINITION files[MAXUNIT];
 int nwords=0, nio=0;
+
+#if defined (SYS_CRAY) || defined (SYS_T3D)
+#define MACRO_QUIT QUITC
+#elif defined (SYS_AIX) || defined (SYS_HPUX)
+#define MACRO_QUIT quitc
+#else
+#define MACRO_QUIT quitc_
+#endif
+
+void MACRO_QUIT();
 
 #if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
     defined (SYS_SUN) || defined (SYS_DARWIN)
@@ -133,20 +144,25 @@ void openc(unit,fname,size,status) int *unit, *size, *status; char *fname;
                 break;
   case UNKNOWN: if ((files[*unit].fd=open(name,O_RDWR|O_CREAT,0666))==-1)
                 { fprintf(stderr,"openc: Error in opening file %s\n",fname);
-                                  exit(1);
+                          MACRO_QUIT();
+                          exit(1);
                                 }
                 break;
   case NEW:     if ((files[*unit].fd=open(name,O_RDWR|O_CREAT|O_TRUNC,0666))==-1)
                         { fprintf(stderr,"openc: Error in opening file %s\n",fname);
+                          MACRO_QUIT();
                           exit(1);
                         }
                 break;
   case OLD:     if ((files[*unit].fd=open(name,O_RDWR))==-1)
                         { fprintf(stderr,"openc: Error in opening file %s\n",fname);
+                          MACRO_QUIT();
                           exit(1);
                         }
                 break;
-  default:      fprintf(stderr,"openc: Unknown status\n"); exit(1);
+  default:      fprintf(stderr,"openc: Unknown status\n"); 
+                          MACRO_QUIT();
+                          exit(1);
 }
   files[*unit].size= *size;
   strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;
@@ -166,7 +182,7 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 ???
 #endif
 
-{ int addr, m, n;
+{ off_t addr; int  m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -175,10 +191,12 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"wrabs: Unit number out of range (%d)\n",*unit);
+          MACRO_QUIT();
           return;
         }
   if (!*files[*unit].fname)
         { fprintf(stderr,"wrabs: write without open file unit=%d\n",*unit);
+          MACRO_QUIT();
           return;
         }
   addr= *p * WORT;
@@ -188,11 +206,14 @@ void wrabsf(unit,a,l,p) int *unit, *l, *p; char *a;
         if (lseek(files[*unit].fd,addr,0)==-1)
         { fprintf(stderr,"wrabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
+          MACRO_QUIT();
           return;
         }
 
   if ((n=write (files[*unit].fd,a,m))!=m)
-        fprintf(stderr,"wrabs: Error in writing %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+      { fprintf(stderr,"wrabs: Error in writing %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+        MACRO_QUIT();
+      }
   nio++; nwords+= *l;
   files[*unit].addr=addr+n;
 }
@@ -208,7 +229,7 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 ????
 #endif
 
-{ int addr, m, n;
+{ off_t addr; int m, n;
 #if defined (SYS_CRAY) || defined (SYS_T3D)
   char *a;
 
@@ -217,10 +238,12 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
 
   if (*unit>MAXUNIT || *unit<0)
         { fprintf(stderr,"rdabs: Unit number out of range (%d)\n",*unit);
+          MACRO_QUIT();
           return;
         }
   if (!*files[*unit].fname)
         { fprintf(stderr,"rdabs: read without open file unit=%d\n",*unit);
+          MACRO_QUIT();
           return;
         }
   addr= *p * WORT;
@@ -230,11 +253,14 @@ void rdabsf(unit,a,l,p) int *unit, *l, *p; char *a;
         if (lseek(files[*unit].fd,addr,0)==-1)
         { fprintf(stderr,"rdabs: Error in lseek of (%d:%s) -> pointer=%d\n",*unit,files[*unit].fname,*p);
           files[*unit].addr= -1;
+          MACRO_QUIT();
           return;
         }
 
   if ((n=read (files[*unit].fd,a,m))!=m)
-        fprintf(stderr,"rdabs: Error in reading %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+      { fprintf(stderr,"rdabs: Error in reading %d words in file %s with unit %d\n",*p,files[*unit].fname,*unit);
+        MACRO_QUIT();
+      }
   nio++; nwords+= *l;
   files[*unit].addr=addr+n;
 }
@@ -249,7 +275,10 @@ void closec(unit) int *unit;
 #endif
 
 { if (*unit>MAXUNIT || *unit<0)
-        { fprintf(stderr,"closec: unit out of range\n"); return; }
+        { fprintf(stderr,"closec: unit out of range\n");
+           MACRO_QUIT();
+           return;
+        }
   if (files[*unit].fd)
         { close(files[*unit].fd);
           files[*unit].fd=files[*unit].addr=files[*unit].size=0;
