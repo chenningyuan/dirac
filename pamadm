@@ -322,7 +322,7 @@ echo '	tar rvf DIRAC.new.tar adm/*' >> Makefile
 echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
 endif
 cat <<EOF>> Makefile
-	compress DIRAC.new.tar
+	gzip -9 DIRAC.new.tar
 
 veryclean :
 	\$(RM) -r dirac include abacus prp gp pdpack doc
