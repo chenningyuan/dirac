@@ -917,6 +917,33 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 $tab\$(CC) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
 EOF
 esac
+#
+# Make makefile in all directories
+#
+echo
+echo "Making Makefiles..."
+dirs="dirac prp abacus gp pdpack"
+if [ $ERIFLG ]; then
+   dirs="$dirs eri"
+fi
+if [ $CCFLG ]; then
+   dirs="$dirs relccsd"
+fi
+if [ $RSPFLG ]; then
+   dirs="$dirs prp/rsp"
+fi
+if [ $TRAFLG ]; then
+   dirs="$dirs moltra"
+fi
+if [ $PARFLG ]; then
+   dirs="$dirs abacus/par"
+fi
+for makefile in $dirs; do
+   echo "Making $makefile/Makefile from $makefile/Makefile.in"
+   cp $makefile/Makefile.in $makefile/Makefile
+done
+echo
+
 
 echo "Before you run make, please check Makefile.config and edit"
 echo "it if you wish."

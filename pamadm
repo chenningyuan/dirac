@@ -154,6 +154,7 @@ echo ERIFLG=$ERITAR >> configure
 echo CCFLG=$CCTAR   >> configure
 echo RSPFLG=$RSPTAR >> configure
 echo TRAFLG=$TRATAR >> configure
+echo PARFLG=$PARTAR >> configure
 #
 #
 cat configure.in >> configure
