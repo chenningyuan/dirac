@@ -6,14 +6,13 @@
  * FILE    : dirac_linux.c 
  * SOURCE  : $Source$
  * PURPOSE : Allocate memory for Dirac
- *          and execute Dirac.
+ *           and execute Dirac.
  * CPRGHT  : (c) Jan 8 1998 by Joern Thyssen
  *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/utsname.h>
 #include <string.h>
 
 void main()
@@ -22,24 +21,12 @@ void main()
    double *work;
    int lwork;
    char *dirwrk,*temp;
-   struct utsname *un;
    int str_dirwrk[2];
 
-   un = malloc(sizeof(struct utsname));
-   if (uname(un) != 0)  {
-      printf("uname error...(not important)\n");
-      strcpy(un->nodename,"unknown");
-      strcpy(un->nodename,"unknown");
-      strcpy(un->release,"unknown");
-      strcpy(un->sysname,"unknown");
-      strcpy(un->machine,"unknown");
-   }
    temp = malloc(80);
    dirwrk = temp;
-   printf("LAUNCHING DIRAC on %s (Linux release %s)\n",
-      un->nodename,un->release);
-   printf("DIRAC(%s %s): \n\tDefault work memory:        %10i words\n",
-      un->sysname,un->machine,INSTALL_WRKMEM);
+   printf("DIRAC: \n\tDefault work memory:        %10i words\n",
+      INSTALL_WRKMEM);
    dirwrk = getenv("DIRWRK");
    if ( dirwrk == NULL ) 
    {
@@ -50,11 +37,11 @@ void main()
    else
    {
       lwork = atoi(dirwrk);
-      printf("DIRAC(%s %s): \n\tDIRWRK enviroment variable: %10i words\n",
-         un->sysname,un->machine,lwork);
+      printf("DIRAC: \n\tDIRWRK enviroment variable: %10i words\n",
+         lwork);
    }
-   printf("DIRAC(%s %s): \n\tAllocating:                 %10i words\n",
-      un->sysname,un->machine,lwork);
+   printf("DIRAC: \n\tAllocating:                 %10i words\n",
+      lwork);
    (int) work = malloc(8*lwork);
    printf("work %i %i \n",work,lwork);
    if ( work == NULL )
