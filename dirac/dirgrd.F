@@ -1907,10 +1907,10 @@ C
 #include <dorps.h>
 #include <symmet.h>
 C
+      DIMENSION SQC(NUCIND)
 #include <dcbgrd.h>
 #include <ibtfun.h>
 C
-      DIMENSION SQC(NUCIND)
 C
       CALL QENTER('LVCGR1')
 C
