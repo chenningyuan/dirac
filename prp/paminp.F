@@ -52,6 +52,7 @@ C
      &          WORD1*7, WRDSRC*7
       DIMENSION WORK(LWORK)
 C
+#include "orgcom.h"
 #include "dcbprp.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
@@ -288,6 +289,10 @@ C
       DO I = 1, NPRPWF
          WRITE(LUPRI,'(5X,I1,A,A)') I,': ',PRPWF(I)
       END DO
+      WRITE (LUPRI,'(1X,A,3F18.10)')
+     &     '* Operator center:', (ORIGIN(I),I=1,3),
+     &     '* Gauge origin   :', (GAGORG(I),I=1,3),
+     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
 C
 C     Process input for various program sections
 C     ==========================================
