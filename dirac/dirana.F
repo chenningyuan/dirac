@@ -1596,7 +1596,7 @@ C
         GTOT = GTOT + GROSS(IFRP,2,I)
         WRITE(LUPRI,'(3X,A6,8X,3X,F7.4,2(3X,A4,F7.4))')
      &      REFFIL(I),GROSS(IFRP,0,I),
-     &      'E - ',GROSS(IFRP,2,1),'P - ',GROSS(IFRP,1,I)
+     &      'E - ',GROSS(IFRP,2,I),'P - ',GROSS(IFRP,1,I)
       ENDDO
       GVEC(NREF+1) = TOTM - GTOT
       WRITE(LUPRI,'(3X,A,F10.4)')
