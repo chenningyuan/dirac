@@ -450,7 +450,6 @@ EOF
 #
 # Parallel targets
 #
-if [ -n "$PARMOD" ]; then
 cat <<EOF>> Makefile
 dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 	TRA_OBJ CCM_OBJ CI_OBJ $AUXMAK  SLAVE_OBJ
@@ -461,7 +460,6 @@ dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
  	\$(MPI_LIB_PATH) \$(MPI_LIB)
 
 EOF
-fi
 #
 # Clean targets
 #
