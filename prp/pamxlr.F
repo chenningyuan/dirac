@@ -422,6 +422,7 @@ C*****************************************************************************
 #include <mxcent.h>
       PARAMETER (NTABLE = 28,DMIL = 1.0D3)
 C
+#include <dcbgen.h>
 #include <dcbprp.h>
 #include <dcbxlr.h>
 #include <dcborb.h>
@@ -446,6 +447,8 @@ C
      &            '.RESFAC','.ORBANA','.STERNH','.SKIPEE'/
       DATA SET/.FALSE./
 C
+#include <ibtfun.h>
+C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -458,9 +461,9 @@ C
 C
 C     Local initialization
 C
-      ILLINT = 1
-      ISLINT = 1
-      ISSINT = 1
+      ILLINT = IBTAND(INTGEN,1)
+      ISLINT = IBTAND(INTGEN/2,1)
+      ISSINT = IBTAND(INTGEN/4,1)
       INPERR = 0
 C
 C

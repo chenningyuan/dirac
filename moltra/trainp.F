@@ -66,6 +66,7 @@ C
      &            '.POSITR','.SCHEME','.THROUT','.SPECIA','.VIRTHR',
      &            '.IJTSK ','.SCLMEM','.SCREEN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
+#include <ibtand.h>
 #include <memint.h>
 C
       IF (SET) THEN
@@ -84,9 +85,9 @@ C     ===================
 C
       ISTRMP2 = 2
       IPRMP2 = 0
-      ILLINT = 1
-      ILSINT = 1
-      ISSINT = 1
+      ILLINT = IBTAND(INTGEN,1)
+      ILSINT = IBTAND(INTGEN/2,1)
+      ISSINT = IBTAND(INTGEN/4,1)
       THROUT = 1.0D-16
 C     Default orbital strings is all occupied and all virtuals 
       DO I = 1,NFSYM
@@ -376,7 +377,7 @@ C     ===================
 C
       IPRTRA  = 0
       ISTRAT = 4
-      ITRA_INTFLG = 7
+      ITRA_INTFLG = INTGEN
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       DO I = 1,NFSYM
@@ -1005,6 +1006,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','.THROUT'/
       DATA SET/.FALSE./
+#include <ibtfun.h>
 #include <memint.h>
 C
       IF (SET) THEN
@@ -1023,9 +1025,9 @@ C     ===================
 C
       ISTRES = 4
       IPRRES = 0
-      ILLINT = 1
-      ILSINT = 1
-      ISSINT = 1
+      ILLINT = IBTAND(INTGEN,1)
+      ILSINT = IBTAND(INTGEN/2,1)
+      ISSINT = IBTAND(INTGEN/4,1)
       SCRRES = -1.0D0
       RESOUT = 1.D-16
 C
