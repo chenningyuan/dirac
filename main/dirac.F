@@ -385,6 +385,7 @@ c         NPSH(I) = NPSH_DHF(I)
          NFRO(I) = NFRO_DHF(I)
          NELEC(I) = NELEC_DHF(I)
       END DO
+      NELECT = NELECT_DHF
 C
 C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GOSCI) /July 2002 hjaaj
@@ -499,7 +500,6 @@ C
 c         NESH(I) = NKRMCESH(I)
 c         NPSH(I) = NKRMCPSH(I)
          NFRO(I) = NKRMCFRO(I)
-         NELEC(I) = NKRMCELEC(I)
       END DO
       NAELEC = NKRMCAELEC
 C     min and max electrons in each gas space:
