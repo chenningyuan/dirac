@@ -542,6 +542,8 @@ utils	: GP_OBJ PD_OBJ UTIL_OBJ
 	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/rspread.x \\
 	utils/rspread.o 
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/polfit.x \\
+	utils/polfit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 
 EOF
 #
