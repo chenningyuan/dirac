@@ -11,7 +11,7 @@ OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
 	gpjth.o
 
-C_OBJS = gpjth_c.o
+C_OBJS = gpc.o
 
 MXM_OBJS = mxmpack.o
 
@@ -19,7 +19,7 @@ all:	setcomp $(OBJS) $(C_OBJS)
 
 setcomp:
 	( \
-	   rm -f gpjth_c.o; \
+	   rm -f gpc.o; \
 	   cd include ; \
 	   rm -f compinfo.h ; \
 	   echo "#define WHO_COMPILED \"${LOGNAME}\"" > compinfo.h ; \

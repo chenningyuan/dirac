@@ -382,7 +382,7 @@ main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
 main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
-gp/gpjth_c.o \\
+gp/gpc.o \\
 relccsd/ccunix.o
 
 #

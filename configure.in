@@ -260,7 +260,7 @@ case $machine in
 
    i[3-6]86-*)
       liblist='libblas'
-      complist='g77'
+      complist='ifc g77'
       debug='gdb';;
 
    sparc-sun|m68k-sun)  
@@ -1179,7 +1179,14 @@ case $machine in
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
       done
-      opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+      case "$F77" in
+      g77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
+         ;;
+      ifc)
+         opt='-O3'; ccp="$ccp -DVAR_IFC"
+         ;;
+      esac
       inc="-I$INCLUDE_DIR";;
    
    *)
@@ -1341,10 +1348,15 @@ CPP         = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .f .c .o .a
+.SUFFIXES : .F .f .c .o .a .f90
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F > \$*.f
+$tab\$(F77) \$(OPTFLAGS) -c \$*.f
+$tab\$(RM) \$*.f
+
+.f90.o:
+$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.f90 > \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 
@@ -1367,10 +1379,15 @@ CPP        = $cppuse
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o .a
+.SUFFIXES : .F .c .o .a .f90
 
 .F.o:
 $tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.F
+$tab mv \$*.i \$*.f
+$tab\$(F77) \$(OPTFLAGS) -c \$*.f
+$tab\$(RM) \$*.f
+.f90.o:
+$tab\$(CPP) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$*.f90
 $tab mv \$*.i \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
@@ -1385,10 +1402,12 @@ EOF
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o .a
+.SUFFIXES : .F .c .o .a .f90
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
+.f90.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.f90
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 EOF
@@ -1408,7 +1427,7 @@ cat <<EOF>> Makefile.config
 #
 # Suffix rules
 #
-.SUFFIXES : .F .c .o .a .g .i
+.SUFFIXES : .F .c .o .a .g .i .f90
 
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
@@ -1416,6 +1435,12 @@ $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.F
 .F.i:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.F > \$*.i
+.f90.o:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.f90
+.f90.g:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTGFLAGS) -c \$*.f90
+.f90.i:
+$tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTIFLAGS) \$*.f90 > \$*.i
 .c.o:
 $tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 .c.i:
