@@ -602,24 +602,18 @@ C     reduction.
 C
       IF (NQRHYP.GT.0) THEN
          WRITE(LUPRI,'(//A)') 
-     &   ' The following quadratic response equations will be computed:'
-         WRITE(LUPRI,'(/2A)') 
-     &        '----------------------------------------',
-     &        '-------------------------'
-         WRITE(LUPRI,'(2A)')
-     &        ' A operator   B operator   C operator   ',
-     &        'B frequency   C frequency'
-         WRITE(LUPRI,'(2A)') 
-     &        '----------------------------------------',
-     &        '-------------------------'
+     &   ' The following quadratic response functions will be computed:'
+         CALL PRSYMB(LUPRI,'-',70,1)
+         WRITE(LUPRI,'(1X,A3,3A13,2A14)')
+     &        'No.','A operator','B operator','C operator',
+     &        'B frequency','C frequency'
+         CALL PRSYMB(LUPRI,'-',70,1)
          DO I=1,NQRHYP
-            WRITE(LUPRI,'(1X,3A13,F11.6,F14.6)') 
-     &           PRPNAM(LQRHYP(I,1)),PRPNAM(LQRHYP(I,2)), 
+            WRITE(LUPRI,'(I3,1X,3(3X,A10),2F14.6)') 
+     &           I,PRPNAM(LQRHYP(I,1)),PRPNAM(LQRHYP(I,2)), 
      &           PRPNAM(LQRHYP(I,3)),QRFRHYP(I,2),QRFRHYP(I,3)
          END DO
-         WRITE(LUPRI,'(2A,//)') 
-     &        '----------------------------------------',
-     &        '-------------------------'
+         CALL PRSYMB(LUPRI,'-',70,1)
       ELSE
          WRITE(LUPRI,'(4(/A),/)') ' *** WARNING ***',
      &        ' No nonzero Quadratic Response Functions exist for',
@@ -3286,7 +3280,7 @@ C
       SUBROUTINE DEF_VERDET(WORK,LWRK)
 C*****************************************************************************
 C
-C     Input hadeling for VERDET
+C     Input handeling for VERDET
 C
 C     Written by panor/ulfek 2004
 C
@@ -3398,7 +3392,7 @@ C
       CALL PRSYMB(LUPRI,'-',70,1)
 C
       DO I=1,NQRHYP
-         WRITE(LUPRI,'(A10,A10,A10,F10.6,F10.6,F20.8)') 
+         WRITE(LUPRI,'(3A10,2F10.6,F20.8)') 
      &        PRPNAM(LQRHYP(I,1))(1:8),PRPNAM(LQRHYP(I,2))(1:8),
      &        PRPNAM(LQRHYP(I,3))(1:8),QRFRHYP(I,2),QRFRHYP(I,3),
      &        RES_QR(1,I)
