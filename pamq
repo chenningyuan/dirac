@@ -14,7 +14,7 @@ LOC=`pwd`
 # Installation specfic variables : chose the right defaults for your system
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-QSYS=LoadLeveler
+QSYS=XGrid  
 PAMDIR=$HOME/bin
 DEFAULT_MW=100
 DEFAULT_NW=100
@@ -248,6 +248,34 @@ $PAMDIR/pam $all_arguments
 EOJ
 llsubmit $jobinp
 #################### End of Load Leveler specific code #####
+;;
+#### Apple's XGrid ########
+  XGrid)
+#
+# create temporary directory to gather everything that is needed to run Dirac
+#
+TMPDIR=tmp.$$
+mkdir $TMPDIR
+cd $TMPDIR
+cp $LOC/* .
+cp $PAMDIR/pam pam.$$
+cp $PAMDIR/dirac.x dirac.x
+#
+# run pam script via XGrid
+#
+xgrid -job run -in `pwd` -out $LOC ./pam.$$ -dirac ../dirac.x -wrkdir work -rmwrk $all_arguments
+#
+# copy back the output file and any other file that is new
+#
+rm dirac.x pam.$$
+mv *.out $LOC
+mv -n * $LOC
+#
+# clean up
+#
+cd $LOC
+rm -r $TMPDIR
+#################### End of XGrid code #####
 ;;
 esac
 #################### End of case statement for queues #####

@@ -300,7 +300,7 @@ print_header()
    echo "   Host        : `hostname`"
    echo "   Date        : `date`"
    echo "   PID         : $$"
-   echo "   Input dir   : `pwd`"
+   echo "   Input dir   : $LOC"
    echo "   Work dir    : $WRK"
    echo
    echo
@@ -355,10 +355,10 @@ remove_work_dir()
 #  Now delete work directory on primary machine if requested
 #
    echo "Contents of work directory $WRK on master node $master"
+   cd ..
    ls -l $WRK
    if [ -n "$RMWRK" ]; then
       if [ $EXIT -eq 0 ]; then
-         cd ..
          rm -fr $WRK
       else
          echo '*** DIRAC terminated with an error exit code'
