@@ -9,4 +9,4 @@
  */
 
 
-int *diracmalloc(int size)
+void *diracmalloc(size_t size)

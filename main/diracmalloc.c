@@ -64,14 +64,14 @@ void *pointer;
    pointer = malloc(size);
    if ( pointer == NULL )
    {
-      printf("DIRAC could not allocate memory (%i bytes).\n",size);
+      printf("DIRAC could not allocate memory (%li bytes).\n",size);
       CALL_QUIT("Dirac could not allocate memory",31); 
    }
 #elif defined (SYS_CONVEX)
    pointer = nalloc(size);
    if ( pointer == NULL )
    {
-      printf("DIRAC could not allocate memory (%i bytes).\n",size);
+      printf("DIRAC could not allocate memory (%li bytes).\n",size);
       CALL_QUIT("Dirac could not allocate memory",31); 
    }
 #else
