@@ -73,7 +73,7 @@ C
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
-     &             '.VERDET','.ROTG  ','.MSUSCP','.XXXXXX',
+     &             '.VERDET','.ROTG  ','.MSTDIA','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
