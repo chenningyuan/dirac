@@ -20,9 +20,10 @@
     >> 
 */
 
-// add "extern Functional pbexFunctional;" to 'functionals.h'
-// add "&pbexFunctional," to 'functionals.c'
-// add "fun-pbex.c" to 'Makefile.in'
+/* add "extern Functional pbexFunctional;" to 'functionals.h'
+   add "&pbexFunctional," to 'functionals.c'
+   add "fun-pbex.c" to 'Makefile.in'
+*/
 
 #include <math.h>
 #include <stddef.h>
