@@ -134,46 +134,10 @@ C
 C     ***************************************************
 C     *** Open files needed *****************************
 C     ***************************************************
+C     *** Set logical units ***
 C
-C     Units 50-59 are reserved for KRMC.
-C     Units 50-56 are opened here, 57-58 in krmctra.F.
-C     (hjaaj March 2002).
-C     59 is currently used for KRMCOLD, restarting option.
-C     (tf August 2003)
-C     LUKRMC = 50 is also used in ESR_RESOLVE
-C
-C     If old KRMCSCF exists rename it to KRMCOLD.
-C
-C
-      LUKRMC = 50
-C
-      CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
-      CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)
-C
-      LUKRM1 = 51
-      CALL OPNFIL(LUKRM1,'KRMC_KAPPA','UNKNOWN','PSIOPT')
-C
-      LUKRM2 = 52
-      CALL OPNFIL(LUKRM2,'KRMC_CMO','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRM2,LUPRI)
-      REWIND LUKRM2
-C
-      LUKRM3 = 53
-      CALL OPNFIL(LUKRM3,'KRMC_FOCK','UNKNOWN','PSIOPT')
-      CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
-      REWIND LUKRM3
-C
-      LUKRM4 = 54
-      CALL OPNFIL(LUKRM4,'KRMC_LRED','UNKNOWN','PSIOPT')
-      REWIND LUKRM4
-C
-      LUITFO = 56
-      CALL OPNFIL(LUITFO,'KRMC_ITINFO','UNKNOWN','PSIOPT')
-C
-      LUKRM5 = 59
-      CALL OPNFIL(LUKRM5,'KRMCOLD','UNKNOWN','PSIOPT')
-      REWIND LUKRM5
-C
+      CALL SETKRMC(LUPRI)
+
 C
 C     ***************************************************
 C     *** Initialize configurational and orbital      ***
@@ -297,7 +261,6 @@ C
 C     ***************************************************
 C     *** Initialize some parameters ********************
 C     ***************************************************
-C
 C
       DO I = 1,2
          IOPT_ISYMOP(I) = 1
@@ -1604,7 +1567,7 @@ C
       IF ( IPROPT .GE. 10 ) THEN
          WRITE(LUPRI,9006) 'FCao'
          CALL PRQMAT(WORK(KH1AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     $        NZ,IPQTOQ(1,0),LUPRI)
+     &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
  9000 FORMAT(/' (rGETFC)',I2,'-electron core energy: ',F25.15)
  9001 FORMAT(/' (rGETFC) Nuclear repulsion     : ',F25.15)
@@ -4220,6 +4183,66 @@ C
      &     7X,'               in preparation, (2004)',
      &     ///,
      &     1X,78('*'),//)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck krmchi */
+      SUBROUTINE SETKRMC(LUPRI)
+C***********************************************************************
+C
+C     Assign logical units and open files.
+C
+C     Written by T. Fleig - Aug 25 2004
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+C
+C     Needs to be done here as SETDHF is not called in KRMC run:
+C
+      LUFCK1 = 10
+C
+C     Units 50-59 are reserved for KRMC.
+C     Units 50-56 are opened here, 57-58 in krmctra.F.
+C     (hjaaj March 2002).
+C     59 is currently used for KRMCOLD, restarting option.
+C     (tf August 2003)
+C     LUKRMC = 50 is also used in ESR_RESOLVE
+C
+C     If old KRMCSCF exists rename it to KRMCOLD.
+C
+C
+      LUKRMC = 50
+C
+      CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSIOPT')
+      CALL NEWLAB('*KRMCSCF',LUKRMC,LUPRI)
+C
+      LUKRM1 = 51
+      CALL OPNFIL(LUKRM1,'KRMC_KAPPA','UNKNOWN','PSIOPT')
+C
+      LUKRM2 = 52
+      CALL OPNFIL(LUKRM2,'KRMC_CMO','UNKNOWN','PSIOPT')
+      CALL NEWLAB('SODLABEL',LUKRM2,LUPRI)
+      REWIND LUKRM2
+C
+      LUKRM3 = 53
+      CALL OPNFIL(LUKRM3,'KRMC_FOCK','UNKNOWN','PSIOPT')
+      CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
+      REWIND LUKRM3
+C
+      LUKRM4 = 54
+      CALL OPNFIL(LUKRM4,'KRMC_LRED','UNKNOWN','PSIOPT')
+      REWIND LUKRM4
+C
+      LUITFO = 56
+      CALL OPNFIL(LUITFO,'KRMC_ITINFO','UNKNOWN','PSIOPT')
+C
+      LUKRM5 = 59
+      CALL OPNFIL(LUKRM5,'KRMCOLD','UNKNOWN','PSIOPT')
+      REWIND LUKRM5
 C
       RETURN
       END
