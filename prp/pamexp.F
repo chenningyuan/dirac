@@ -97,7 +97,7 @@ C***********************************************************************
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(NNBBASX,NZ),
-     &          EIG(*),WORK(LWORK),NP(2,2),NR(MREFS,2)
+     &          EIG(*),WORK(LWORK),NP(2,0:2)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
       INTEGER   GETIOPEN
@@ -112,6 +112,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprp.h"
 #include "dcbdhf.h"
+#include "dcbprj.h"
 C
 C
 C     Initialize
@@ -213,32 +214,24 @@ C
           KPRMT = KFREE
         ELSE
           CALL OPNFIL(LUCOEF,'DFPRJC','OLD','PRPEXP')
-          NPFMT = 0
-          NRDIM = 0
-          NBDIM = 0
-          NBMAX = 0
-          READ(LUCOEF) NREFS
-          IF(NREFS.GT.MREFS) CALL QUIT('PRPEXP:Increase MAXREF !')
-          DO IFRP = 1,NFSYM
-C           Dimension....nmol.......nref......
-            READ(LUCOEF) NP(IFRP,1),NP(IFRP,2),(NR(I,IFRP),I=1,NREFS)
-            NBMAX = MAX(NBMAX,NP(IFRP,2))
-            NPFMT = NPFMT + NP(IFRP,2)*NP(IFRP,2)*NZ
-            NRDIM = NRDIM + NFBAS(IFRP,0)*NP(IFRP,2)*NZ
-            NBDIM = NBDIM + NP(IFRP,1)*NP(IFRP,2)*NZ
-          ENDDO
-          CALL MEMGET('REAL',KRVEC,NRDIM,WORK,KFREE,LFREE)       
-          CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)       
-          CALL READT(LUCOEF,NRDIM,WORK(KRVEC))
-          CALL READT(LUCOEF,NBDIM,WORK(KBVEC))
+          CALL MEMGET('INTE',KNR,NFSYM*NREFS,WORK,KFREE,LFREE)
+          CALL REAPRJ(LUCOEF,NP,WORK(KNR),KRVEC,KBVEC,
+     &                WORK,KFREE,LFREE)
           CLOSE(LUCOEF,STATUS='KEEP')
+          NBMAX = 0
+          NPFMT = 0
+          DO IFRP = 1,NFSYM
+            NBMAX = MAX(NBMAX,NP(IFRP,0))
+            NPFMT = NPFMT + NP(IFRP,0)*NP(IFRP,0)*NZ
+          ENDDO
+          NN = NBMAX*(NBMAX+1)/2
           CALL MEMGET('REAL',KPFMT,NPFMT,WORK,KFREE,LFREE)       
           CALL MEMGET('REAL',KDFMT,NPFMT,WORK,KFREE,LFREE)       
-          NN = NBMAX*(NBMAX+1)/2
           CALL MEMGET('INTE',KIBUF,NN,WORK,KFREE,LFREE)
-          N2REF = NREFS*NREFS
           CALL MEMGET('INTE',KINDX,NBMAX,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KFMAT,N2REF,WORK,KFREE,LFREE)
+          NTOT = NREFS + 1
+          NFDIM = NTOT*NTOT
+          CALL MEMGET('REAL',KFMAT,NFDIM,WORK,KFREE,LFREE)
         ENDIF
       ELSE
         KRVEC = KFREE
@@ -259,7 +252,6 @@ C
           CALL PRPEX2(LU1INT,INDXPR,EXPVAL(I),LEXPST(1,I),
      &                IREP,ITIM,PTRI,PMAT,FIRST,
      &                WORK(KFREE),LFREE,IPREXP)
-CMI  &                WORK(KFREE),LFREE,IPRONE)
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
           CALL PRPEX3(EXPVAL(I),IREP,ITIM,
      &        DMAT,PMAT,PTRI,FIRST,ORBANA,
@@ -267,11 +259,12 @@ CMI  &                WORK(KFREE),LFREE,IPRONE)
           IF(PRJANA) THEN
 C.........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
-     &                  INDXPR,IREP,ITIM,NP(1,2),FIRST,IPREXP,
+     &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
+C.........Make generalized population matrix
             CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
-     &                  WORK(KIBUF),INDXPR,NP(1,2),NP(1,1),
-     &                  NR,MREFS,WORK(KFMAT),WORK(KINDX),
+     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
      &                  IPREXP,PMAT,WORK,KFREE,LFREE)
           ENDIF
  30       CONTINUE
@@ -323,11 +316,11 @@ C
             IF(PRJANA) THEN
 C...........Transform property matrix to fragment orbital basis
             CALL PRJEX1(WORK(KPFMT),PTRI,PMAT,WORK(KRVEC),
-     &                  INDXPR,IREP,ITIM,NP(1,2),FIRST,IPREXP,
+     &                  INDXPR,IREP,ITIM,NP(1,0),FIRST,IPREXP,
      &                  WORK,KFREE,LFREE)
             CALL PRJEX2(PTRI,WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
-     &                  WORK(KIBUF),INDXPR,NP(1,2),NP(1,1),
-     &                  NR,MREFS,WORK(KFMAT),WORK(KINDX),
+     &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
+     &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KINDX),
      &                  IPREXP,PMAT,WORK,KFREE,LFREE)
             ENDIF
  10       CONTINUE
@@ -469,7 +462,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex1 */
-      SUBROUTINE PRJEX1(PFO,PTRI,PAO,RVEC,INDXPR,IREP,ITIM,NREF,
+      SUBROUTINE PRJEX1(PFO,PTRI,PAO,RVEC,INDXPR,IREP,ITIM,NCNT,
      &                  FIRST,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -490,16 +483,16 @@ C
 #include "dcborb.h"
 C
       LOGICAL FIRST(NZ)
-      DIMENSION PFO(*),PAO(N2BBASX),NREF(*),
+      DIMENSION PFO(*),PAO(N2BBASX),NCNT(*),
      &          RVEC(*),PTRI(NNBBASX,NZ),WORK(*)
 C
 C     Transform on the fly
 C
       IPF = 1
       DO IFRP = 1,NFSYM
-        NDIM = NREF(IFRP)*NREF(IFRP)*NZ
+        NDIM = NCNT(IFRP)*NCNT(IFRP)*NZ
         CALL DZERO(PFO(IPF),NDIM)
-        IPF = IPF + NREF(IFRP)*NREF(IFRP)*NZ
+        IPF = IPF + NCNT(IFRP)*NCNT(IFRP)*NZ
       ENDDO
       FADD = D0
       DO IZ = 1,NZ
@@ -517,15 +510,15 @@ C
         IPR = 1
         DO IFRP = 1,NFSYM
           CALL QTRANS('AOMO','S',FADD,
-     &         NFBAS(IFRP,0),NFBAS(IFRP,0),NREF(IFRP),NREF(IFRP),
+     &         NFBAS(IFRP,0),NFBAS(IFRP,0),NCNT(IFRP),NCNT(IFRP),
      &         PAO(IPA),NTBAS(0),NTBAS(0),1,IPQTOQ(IZ,IREP),
-     &         PFO(IPF),NREF(IFRP),NREF(IFRP),NZ,IPQTOQ(1,IREP),
-     &         RVEC(IPR),NFBAS(IFRP,0),NREF(IFRP),NZ,IPQTOQ(1,0),
-     &         RVEC(IPR),NFBAS(IFRP,0),NREF(IFRP),NZ,IPQTOQ(1,0),
+     &         PFO(IPF),NCNT(IFRP),NCNT(IFRP),NZ,IPQTOQ(1,IREP),
+     &         RVEC(IPR),NFBAS(IFRP,0),NCNT(IFRP),NZ,IPQTOQ(1,0),
+     &         RVEC(IPR),NFBAS(IFRP,0),NCNT(IFRP),NZ,IPQTOQ(1,0),
      &         WORK(KFREE),LFREE,IPRINT)
           IPA = IPA + NFBAS(IFRP,0)*(NTBAS(0)+1)
-          IPF = IPF + NREF(IFRP)*NREF(IFRP)*NZ
-          IPR = IPR + NFBAS(IFRP,0)*NREF(IFRP)*NZ
+          IPF = IPF + NCNT(IFRP)*NCNT(IFRP)*NZ
+          IPR = IPR + NFBAS(IFRP,0)*NCNT(IFRP)*NZ
         ENDDO
         FADD = D1
       ENDIF
@@ -537,18 +530,18 @@ C
           WRITE(LUPRI,'(A,A16,A,I3)')
      &    'Property matrix of ',PRPNAM(INDXPR),
      &    'in fragment basis..',IFRP
-          CALL PRQMAT(PFO(IPF),NREF(IFRP),NREF(IFRP),
-     &         NREF(IFRP),NREF(IFRP),NZ,
+          CALL PRQMAT(PFO(IPF),NCNT(IFRP),NCNT(IFRP),
+     &         NCNT(IFRP),NCNT(IFRP),NZ,
      &         IPQTOQ(1,IREP),LUPRI)
-          IPF = IPF + NREF(IFRP)*NREF(IFRP)*NZ
+          IPF = IPF + NCNT(IFRP)*NCNT(IFRP)*NZ
         ENDDO       
       ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prjex2 */
-      SUBROUTINE PRJEX2(PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NREF,NMO,
-     &                  NR,MREFS,FMAT,INDX,
+      SUBROUTINE PRJEX2(PTRI,PFO,DFO,BVEC,IBUF,INDXPR,NCNT,NMO,
+     &                  NR,NTOT,FMAT,INDX,
      &                  IPRINT,PBUF,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -569,18 +562,17 @@ C
 #include "dcborb.h"
 #include "dcbprj.h"
 C
-      DIMENSION PFO(*),DFO(*),PAO(N2BBASX),NREF(*),NMO(*),
+      DIMENSION PFO(*),DFO(*),PAO(N2BBASX),NCNT(*),NMO(*),
      &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
-     &          NR(MREFS,2),FMAT(NREFS,NREFS),INDX(*),WORK(*)
+     &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),INDX(*),WORK(*)
 C
-      N2REF = NREFS*NREFS
-      CALL DZERO(FMAT,N2REF)
+      N2TOT = NTOT*NTOT
+      CALL DZERO(FMAT,N2TOT)
 C
 C     Make density matrix in fragment orbitals
 C
       IPD = 1
-      IPR = 1
-      IPF = 1
+      IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
         II = 0
@@ -590,21 +582,32 @@ C
             INDX(II) = I
           ENDDO
         ENDDO
-        CALL DENST1(DFO(IPD),NREF(IFRP),NREF(IFRP),
-     &              BVEC(IPR),NREF(IFRP),NMO(IFRP),
-     &              1,NMO(IFRP),NREF(IFRP))  
+        I = NREFS + 1
+        DO J = 1,NMO(IFRP)
+          II = II + 1
+          INDX(II) = I
+        ENDDO
+CTROND
+        WRITE(6,*) 'Solution vector read...',NMO(IFRP),NCNT(IFRP)
+            CALL PRQMAT(BVEC(IPB),
+     &           NCNT(IFRP),NMO(IFRP),
+     &           NCNT(IFRP),NMO(IFRP),
+     &           NZ,IPQTOQ(1,0),LUPRI)
+
+        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
+     &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
+     &              1,NMO(IFRP),NCNT(IFRP))  
         IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(A,I3)')
      &    'Density matrix in fragment basis..',IFRP
-          CALL PRQMAT(DFO(IPD),NREF(IFRP),NREF(IFRP),
-     &         NREF(IFRP),NREF(IFRP),NZ,
+          CALL PRQMAT(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
+     &         NCNT(IFRP),NCNT(IFRP),NZ,
      &         IPQTOQ(1,0),LUPRI)
         ENDIF
-        CALL PRJEX3(EXPVAL,PTRI,PFO(IPF),DFO(IPD),NREF(IFRP),
-     &              IBUF,PBUF,FMAT,INDX,NREFS,INDXPR,IPRINT)
-        IPD = IPD + NREF(IFRP)*NREF(IFRP)*NZ
-        IPF = IPF + NREF(IFRP)*NREF(IFRP)*NZ
-        IPR = IPR + NREF(IFRP)*NMO(IFRP)*NZ
+        CALL PRJEX3(EXPVAL,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
+     &              IBUF,PBUF,FMAT,INDX,NTOT,INDXPR,IPRINT)
+        IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
+        IPB = IPB + NCNT(IFRP)*NMO(IFRP)*NZ
  10   CONTINUE
 C
 C     Give fragment contributions
@@ -615,13 +618,24 @@ C
           TMP = D2*(FMAT(I,J)+FMAT(J,I))
           FAC = TMP/EXPVAL
           WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
-     &      I,REFFIL(I),J,REFFIL(J),TMP,FAC
+     &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
         ENDDO
         TMP = D2*FMAT(J,J)
         FAC = TMP/EXPVAL
         WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
      &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
       ENDDO
+      j = NREFS+1
+      DO I = 1,NREFS
+        TMP = D2*(FMAT(I,J)+FMAT(J,I))
+        FAC = TMP/EXPVAL
+        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+     &      J,'Polari',I,REFFIL(I),TMP,FAC
+      ENDDO
+      TMP = D2*FMAT(J,J)
+      FAC = TMP/EXPVAL
+      WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,F10.4)') 
+     &    J,'Polari',J,'Polari',TMP,FAC
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1103,8 +1117,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck prjex3 */
-      SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NREF,IBUF,PBUF,
-     &                  FMAT,INDX,NREFS,INDXPR,IPRINT)
+      SUBROUTINE PRJEX3(EXPVAL,PTRI,PFO,DFO,NCNT,IBUF,PBUF,
+     &                  FMAT,INDX,NTOT,INDXPR,IPRINT)
 C***********************************************************************
 C
 C     Calculate generalized population matrix
@@ -1118,15 +1132,15 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
-      DIMENSION PTRI(*),PFO(NREF,NREF,NZ),DFO(NREF,NREF,NZ),
-     &          PBUF(*),IBUF(*),FMAT(NREFS,NREFS),INDX(*)
+      DIMENSION PTRI(*),PFO(NCNT,NCNT,NZ),DFO(NCNT,NCNT,NZ),
+     &          PBUF(*),IBUF(*),FMAT(NTOT,NTOT),INDX(*)
 #include "sdpre.h"
 C
-      NTRI = NREF*(NREF+1)/2
+      NTRI = NCNT*(NCNT+1)/2
       CALL DZERO(PTRI,NTRI)
       DO IZ = 1,NZ
         IJ = 0
-        DO J = 1,NREF
+        DO J = 1,NCNT
           JR = INDX(J)
           DO I = 1,(J-1)
             IR = INDX(I)
@@ -1146,7 +1160,7 @@ C
       IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,'(A,A16,E16.10)') 
      &    '* Expectation value of property ',PRPNAM(INDXPR),EXPVAL
-        CALL PRMUTC(PTRI,NREF,1,LUPRI)      
+        CALL PRMUTC(PTRI,NCNT,1,LUPRI)      
       ENDIF
 C
 C     Make ordered list of contributions

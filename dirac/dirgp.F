@@ -1517,3 +1517,36 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Reaprj */
+      SUBROUTINE REAPRJ(LUPRJ,NP,NR,KRVEC,KBVEC,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Read DFPRJC, file from projection analysis
+C     Written by T. Saue, Oct 21 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbprj.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      DIMENSION NR(NREFS,NFSYM),NP(2,0:2),WORK(*)
+      NCDIM = 0
+      NBDIM = 0
+      READ(LUPRJ) MREFS
+      IF(NREFS.GT.MREFS) CALL QUIT('REAPRJ:MREFS.NE.NREFS !')
+      DO IFRP = 1,NFSYM
+C       Dimension....nref.......nmol......
+        READ(LUPRJ) NP(IFRP,1),NP(IFRP,2),(NR(I,IFRP),I=1,NREFS)
+        NP(IFRP,0) = NP(IFRP,1)+NP(IFRP,2)
+        NCDIM = NCDIM + NFBAS(IFRP,0)*NP(IFRP,0)*NZ
+        NBDIM = NBDIM + NP(IFRP,0)*NP(IFRP,2)*NZ
+      ENDDO
+      CALL MEMGET('REAL',KRVEC,NCDIM,WORK,KFREE,LFREE)       
+      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)       
+      CALL READT(LUPRJ,NCDIM,WORK(KRVEC))
+      CALL READT(LUPRJ,NBDIM,WORK(KBVEC))
+      RETURN
+      END
