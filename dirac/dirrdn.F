@@ -3073,7 +3073,7 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.1CENTE','.SPINF2','XXXXXXX'/
+     &            '.ONECAP','.SPINF2','XXXXXXX','XXXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -3288,10 +3288,16 @@ C&&& ONECNV: Set threshold for turning off ONECAP model
             READ(LUCMD,*) ONECNV
             GO TO 100
   121     CONTINUE
-C&&& ONECAP : Neglect potential for off-diagonal SS-blocks
-             READ(LUCMD,*) JNTV1C
+C&&& ONECAP : Approximate potential for off-diagonal SS-blocks
+C             if no model specified, goto 199, choose onecap 2
+             READ(LUCMD,*,ERR=199) JNTV1C
              INTV1C = MOD(JNTV1C,10)
              ICTLV1C(2) = JNTV1C / 10
+             GOTO 198
+  199        INTV1C = 2
+             ICTLV1C(2) = 0
+             BACKSPACE LUCMD
+  198        CONTINUE
              ONECAP  = .TRUE.
 C
 C   ... Whether to evaluate integrals in a direct or concentional
@@ -3299,6 +3305,7 @@ C       matter has not been specified in **GENEREL
 C       We write LS and SS integrals to disk by default in the
 C       ONECAP type 2 & 3 model.            /jkp
 C
+C       (Is switched off in this version [DIRSET .EQ. TRUE])
              IF (.NOT.DIRSET .AND. INTV1C.NE.2) THEN
                 ILLDIR = 1
                 ISLDIR = 0
@@ -3308,16 +3315,11 @@ C
              ICHANG = ICHANG + 1
             GO TO 100
   122     CONTINUE
-C&&& 1CENTER : A quick keyword for the ONECAP (INV1C=2,ICTLV1C=0) model.
-             ONECAP = .TRUE.
-             INTV1C = 2
-             ICTLV1C(2) = 0
-             ICHANG = ICHANG + 1
-            GO TO 100
-  123     CONTINUE
 C&&& SPINFR2 : debug: Zero out 2-electron spin-orbit terms
             SPINFR2 = .TRUE.
             ICHANG = ICHANG + 1
+            GO TO 100
+  123     CONTINUE
             GO TO 100
   124     CONTINUE
             GO TO 100
@@ -4315,8 +4317,8 @@ C
       NCUBE(1) = 80
       NCUBE(2) = 80
       NCUBE(3) = 80
-      CUBADJ(1) = 5.0D0
-      CUBADJ(2) = 5.0D0
+      CUBADJ(1) = 4.0D0
+      CUBADJ(2) = 8.0D0
 C
 C     Process input from DCBRHO
 C     =========================
