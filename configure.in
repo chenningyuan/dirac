@@ -386,18 +386,31 @@ if [ "$par" = "yes" ]; then
 #
 #  The only computer I can think of with a separate compiler for parallel
 #  MPI code is IBMs xlf
+#  ...and HPUX (mpif77)
 #
-   if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
-      complist='mpxlf'
-      parlib='no'
-      parinc='yes'
-   elif [ "$mesp" = "mpi" -a "$machine" = "t3e-cray" ]; then
-      parlib='no'
-      parinc='no'
-   else
-      parlib='yes'
-      parinc='yes'
+   if [ "$mesp" = "mpi" ]; then
+      case $machine in
+         rs6000-ibm)
+            complist='mpxlf'
+            parlib='no'
+            parinc='yes'
+            ;;
+         t3e-cray)
+            parlib='no'
+            parinc='no'
+            ;;
+         *-hp)
+            parlib='no'
+            parinc='yes'
+            complist='mpif77 $complist'
+            ;;
+         *)
+            parlib='yes'
+            parinc='yes'
+            ;;
+      esac
    fi
+
 
    pardir=dirlist
    incdir='/usr/include /usr/local/include /local/include'
