@@ -412,15 +412,22 @@ C     ********************************************
 C     ***** Allocate memory **********************
 C     ********************************************
 C
+      IF (DIRAC) THEN
+C        Number of basis sets : large, small, fit LL dens, fit SS dens
+         KSETS = 4
+      ELSE
+C        Number of basis sets : regular, Huckel, fit
+         KSETS = 3
+      ENDIF
       KATOM  = MXCENT
-      KANG   = MXAQN
+      KANG   = 2*MXQN+1
       KPRIM  = MAXPRI
       KCMAT  = KPRIM*KPRIM
       KNONT  = 1
       KIQM   = KNONT  +  KATOM
-      KBLCK  = KIQM   +  KATOM*2
-      KJCO   = KBLCK  +  KATOM*2
-      KJCO2  = KJCO   +  KATOM*KANG*2
+      KBLCK  = KIQM   +  KATOM*KSETS
+      KJCO   = KBLCK  +  KATOM*KSETS
+      KJCO2  = KJCO   +  KATOM*KANG*KSETS
       KLAST  = KJCO2  +  KATOM*KANG
 C hjj: take as many blocks as fit in memory
 C      (to be able to run tests with memory < 1 mio DP words)
@@ -438,12 +445,12 @@ C              (otherwise the program will stop later;
 C              and no reason to allocate all of memory here).
 C
       KNUC   = KLAST
-      KNRC   = KNUC   +  KBLOCK*2
-      KSEG   = KNRC   +  KBLOCK*2
-      KA     = KSEG   +  KBLOCK*2
-      KC     = KA     +  KBLOCK*KPRIM*2
-      KCC    = KC     +  KBLOCK*KCMAT*2
-      KLAST  = KCC    +  KBLOCK*KCMAT*2
+      KNRC   = KNUC   +  KBLOCK*KSETS
+      KSEG   = KNRC   +  KBLOCK*KSETS
+      KA     = KSEG   +  KBLOCK*KSETS
+      KC     = KA     +  KBLOCK*KPRIM*KSETS
+      KCC    = KC     +  KBLOCK*KCMAT*KSETS
+      KLAST  = KCC    +  KBLOCK*KCMAT*KSETS
       IF(KLAST.GT.LWORK) GOTO 5020
       LWRK   = LWORK  -  KLAST + 1
 C
@@ -454,7 +461,8 @@ C
       CALL READI1(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
      &            WORK(KBLCK),WORK(KJCO),WORK(KJCO2),
      &            WORK(KNUC),WORK(KNRC),WORK(KSEG),WORK(KA),
-     &            WORK(KC),WORK(KCC),KATOM,KANG,KBLOCK,KPRIM, HERMIT)
+     &            WORK(KC),WORK(KCC),KATOM,KANG,KSETS,KBLOCK,KPRIM, 
+     &            HERMIT)
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
@@ -476,7 +484,7 @@ C5030 CONTINUE
 C  /* Deck readi1 */
       SUBROUTINE READI1(LUINFO,WORK,LWORK,NONT,IQM,NBLCK,JCO,JCO2,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                  KATOM,KANG,KBLOCK,KPRIM,HERMIT)
+     &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -523,17 +531,17 @@ C******************************************************************************
 #include "clsfmm.h"
 #include "cbirea.h"
       LOGICAL SEG,HERMIT,DOOWN,ZMAT
-      DIMENSION NONT(KATOM),IQM(KATOM,2),NBLCK(KATOM,2),
-     &          JCO(KANG,KATOM,2),JCO2(KANG,KATOM),
-     &          NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),
+      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),NBLCK(KATOM,KSETS),
+     &          JCO(KANG,KATOM,KSETS),JCO2(KANG,KATOM),
+     &          NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),SEG(KBLOCK,KSETS),
+     &          ALPHA(KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),
      &          WORK(LWORK)
 C
 C       Local variables
 C
-      CHARACTER*80 BASREF(10,MXCENT)
+      CHARACTER*80 BASREF(10,MXCENT,MXBSETS)
 C
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
@@ -668,7 +676,7 @@ C
       CALL BASINP(LUINFO,WORK(KLAST),LWRK,NONTYP,NSYMOP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,WORK(KISGEN),
-     &            KATOM,KANG,KBLOCK,KPRIM,ANG,ZMAT)
+     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMAT)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -814,7 +822,7 @@ C
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
-     &                  KATOM,KANG,KBLOCK,KPRIM,ANG,ZMTTST)
+     &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG,ZMTTST)
 C*****************************************************************************
 C
 C       Read orbital and geometry input data
@@ -832,15 +840,16 @@ C*****************************************************************************
 #include "codata.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,ANG,NOORBTS,ZMTTST,CNTBAS
-      DIMENSION NONT(KATOM),IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-      CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,BSKEYWORD*14
-      CHARACTER*80 BASREF(10,KATOM)
-      DIMENSION IBLOCK(2)
+      LOGICAL SEG,ANG,NOORBTS,NOFITFS,ZMTTST,CNTBAS
+      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
+     &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
+     &          SEG(KBLOCK,KSETS),
+     &          ALPHA(KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),ISGEN(KBLOCK)
+      CHARACTER SPDCAR*1,BSET*5,FBSET*6,ZMATL*1,BASFIL*20,BSKEYWORD*14
+      CHARACTER*80 BASREF(10,KATOM,KSETS)
+      DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -851,6 +860,8 @@ C*****************************************************************************
 #include "gencon.h"
 #include "dcbgen.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C     Additional scratch arrays needed for MULTIBASIS option
 C
       PARAMETER (MAXBSFIL=5,KNG=MXAQN,KBLK=500,KPRM=30)
 C
@@ -885,6 +896,7 @@ C     =======================
 C
       DO 100 I = 1, NONTYP
          NOORBTS = .TRUE.
+         NOFITFS = .TRUE.
          INUC = NUCIND
 C
 C*****************************************************************************
@@ -952,6 +964,20 @@ C
      &             'independent centres: ',NONT(I)
            ENDIF
            CALL CNTINP(LUINFO,NONT(I),Q,QEXP,NSYMOP,ANG)
+C
+C
+C          Initialize reference strings for this atom type.
+C
+           BASREF(1,I,1) = ' Reference not found in input'
+           DO ITYP = 1, 3
+               DO IREF = 2, 10
+                  BASREF(IREF,I,ITYP) = ' Not initialized'
+               ENDDO
+           ENDDO
+C
+C          Read the basis set. The input differs in DALTON/DIRAC due to
+C          the optional reading of small component basis sets. The code 
+C          switch starts here with first the processing of the DIRAC format.
 C
            IF(DIRAC) THEN
 C
@@ -1075,13 +1101,6 @@ C                 Assume it is 'LARGE   2    1....'
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                END IF
 C
-C              Initialize reference strings for this basis set.
-C
-               BASREF(1,I) = ' Reference not found in input'
-               DO IREF = 2, 10
-                  BASREF(IREF,I) = ' Not initialized'
-               ENDDO
-C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
 C                 Read explicitly given basis set.
@@ -1094,7 +1113,7 @@ C
      &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,1) = NBLOCK
-                  BASREF(1,I) = 
+                  BASREF(1,I,1) = 
      &            "Basis set typed explicitly in input file "
 C
                ELSE IF ( IBSFLAG .EQ. 2 ) THEN
@@ -1109,7 +1128,8 @@ C
                   DIRCON(1) = .TRUE.
                   CALL BFGINP(I,IBLOCK(1),1,WORK(KBFPR),WORK(KBFCO),
      &                IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,BASREF)
+     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
+     &                BASREF(1,1,1))
                ELSE IF ( IBSFLAG .EQ. 3 ) THEN
 C
                   BASNAM = BASFIL
@@ -1121,7 +1141,7 @@ C
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
      &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM,
-     &                 BASREF(1,I))
+     &                 BASREF(1,I,1))
                   NBLCK(I,1) = NBLOCK
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -1136,7 +1156,7 @@ C
      &                 CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,1) = NBLOCK
-                  BASREF(1,I) = 
+                  BASREF(1,I,1) = 
      &   "Well-tempered basis set typed explicitly in input file "
 C
                ELSE IF ( IBSFLAG .EQ. 5 ) THEN
@@ -1156,15 +1176,15 @@ C
                   CALL IZERO(NUCT,KBLK)
                   CALL IZERO(NRCT,KBLK)
 C
-                  BASREF(1,I) =
+                  BASREF(1,I,1) =
      &            "Basis set read from multiple files"
 C
                   DO 463 M=1,NFILES
                      BASNAM = BSFIL(M)
                      KAOVEC  = KBLOCK + 1 - IBLOCK1 
 C
-                     BASREF(3*(M-1)+2,I) = " " 
-                     BASREF(3*(M-1)+3,I) = " ref. in file "//BSFIL(M) 
+                     BASREF(3*(M-1)+2,I,1) = " " 
+                     BASREF(3*(M-1)+3,I,1) = " ref. in file "//BSFIL(M) 
 
                      CALL BASLIB(IQMT,JCOT(1,M),
      &                   NUCT(IBLOCK1),
@@ -1175,7 +1195,7 @@ C
      &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRIM,Q,1,DSM,
      &                   BASREFT(1,I,M))
 
-                     BASREF(3*(M-1)+4,I) = BASREFT(1,I,M)
+                     BASREF(3*(M-1)+4,I,1) = BASREFT(1,I,M)
 C
 C to help in the reordering, we create a table mapping the orbital
 C angular momentum of a block to the number of the block in the
@@ -1288,28 +1308,9 @@ C              Initialize basis set flag
 C
                IBSFLAG = 0
 C
-C              Check what kind of basis set we have
+C              Check whether the small component is specified in input
 C
-               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
-                  IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(12X,12I5)')
-     &                  IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
-               ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
-                  IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(14X,12I5)')
-     &                  IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
-               ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
-                  IBSFLAG = 2
-                  READ (MLINE(NMLINE),'(14X,A20)') BASFIL
-               ELSE IF ( BSKEYWORD(1:6) .EQ. 'KINBAL' ) THEN
-                  IBSFLAG = 4
-               ELSE
-                  IF ( BSET .EQ. 'SMALL' ) THEN
-C                    Assume it is 'SMALL   2    1....'
-                     IBSFLAG = 1
-                     READ (MLINE(NMLINE),'(BN,A5,12I5)')
-     &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
-                  ELSE
+               IF ( BSET .NE. 'SMALL' ) THEN
 C
 C                    No 'SMALL' keyword given.
 C                    Assume kinetic balance
@@ -1319,18 +1320,33 @@ C
                      NMLINE = NMLINE - 1
                      IBSFLAG = 4
 C
+               ELSE
+C
+C
+C                 Check what kind of basis set we have
+C
+                  IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                     IBSFLAG = 1
+                     READ (MLINE(NMLINE),'(12X,12I5)')
+     &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                  ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
+                     IBSFLAG = 1
+                     READ (MLINE(NMLINE),'(14X,12I5)')
+     &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
+                  ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
+                     IBSFLAG = 2
+                     READ (MLINE(NMLINE),'(14X,A20)') BASFIL
+                  ELSE IF ( BSKEYWORD(1:6) .EQ. 'KINBAL' ) THEN
+                     IBSFLAG = 4
+                  ELSE
+C                    Assume it is 'SMALL   2    1....'
+                     IBSFLAG = 1
+                     READ (MLINE(NMLINE),'(BN,A5,12I5)')
+     &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                   END IF
                END IF
 C
-C
-c              IF ( IBSFLAG .NE. 4 .AND. ISPHTR .EQ. 3 ) THEN
-c                 WRITE(LUPRI,'(1X,A)')
-c    &               'INFO: Explicitly given small basis set and '//
-c    &               '.SPHTRA 1 1 not implemented,',
-c    &               'INFO: .SPHTRA reset to 1 0.'
-c                 ISPHTR = 1
-c              END IF
-C
+C              We know the type, call the appropriate reader
 C
                IF ( IBSFLAG .EQ. 1 ) THEN
 C
@@ -1344,6 +1360,8 @@ C
      &                 CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),
      &                 NBLOCK,KAOVEC,KPRIM)
                   NBLCK(I,2) = NBLOCK
+                  BASREF(1,I,2) = 
+     &            "Basis set typed explicitly in input file "
 C
                ELSE IF ( IBSFLAG .EQ. 2 ) THEN
 C
@@ -1356,7 +1374,8 @@ C
      &                 CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
                   CALL BFGINP(I,IBLOCK(2),2,WORK(KBFPR),WORK(KBFCO),
      &                IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,BASREF)
+     &                NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,BASFIL,
+     &                BASREF(1,1,2))
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
@@ -1371,6 +1390,7 @@ C
      &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
      &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
      &                 CNTBAS)
+                  BASREF(1,I,2) = ' Derived from large component'
 C
                ENDIF
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
@@ -1390,7 +1410,7 @@ C
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
 C
-C              Check if large component basis is contracted
+C              Check if small component basis is contracted
 C              ============================================
 C
                DO JBLCK = 1, NBLCK(I,2)
@@ -1401,6 +1421,9 @@ C
 C
              ENDIF
            ELSE
+C
+C            Dalton (NOT DIRAC) case
+C
              DO 300 J = 1,NSETS
 C
 C              Construct basis set for dummy centers if requested
@@ -1426,7 +1449,7 @@ C
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,J,DSM,
-     &                  BASREF(1,I))
+     &                  BASREF(1,I,1))
 C
                ELSE
 C
@@ -1463,7 +1486,170 @@ C
            DO 400 K = 1,NONT(I)
               NOORBT(K+INUC) = NOORBTS
  400       CONTINUE
-        END IF
+C       End of switch DALTON/DIRAC
+        END IF 
+C
+C       Read basis sets for density fitting
+C       ===================================
+C
+C       The following possibilities exist:
+C
+C       FITSET INTGRL     2    1    1  (IBSFLAG = 1)
+C       FITSET     2    1    1 (IBSFLAG = 1)
+C       FITSET DEFAULT (IBSFLAG = 2)
+C       FITSET basisset (IBSFLAG = 3)
+C       FITSET GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
+C       FITSET EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
+c               (alias for FITSET GEOM)
+C       FITSET WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
+C       FITSET FAMILY    N    2    1    1 (IBSFLAG = 4)
+C       FITSET DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+C
+        CALL RDLINE(LUINFO)
+        READ (MLINE(NMLINE),'(A6,X,A14)') FBSET,BSKEYWORD
+C
+C       Initialize basis set flag
+C
+        IBSFLAG = 0
+C
+C       Check whether the fit function set is specified in input
+C                 
+        IF ( FBSET .NE. 'FITSET' ) THEN
+C
+C          No 'FITSET' keyword given.
+C          Take standard set
+C
+C          Discard the line we just read.
+C
+           NMLINE = NMLINE - 1   
+           IBSFLAG = 2     
+C
+        ELSE 
+C
+C          Check what kind of basis set we have
+C
+           IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+              IBSFLAG = 1
+              READ (MLINE(NMLINE),'(13X,12I5)')
+     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+           ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
+              IBSFLAG = 1
+              READ (MLINE(NMLINE),'(15X,12I5)')
+     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+           ELSE IF ( BSKEYWORD(1:7) .EQ. 'DEFAULT') THEN
+              IBSFLAG = 2
+           ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
+              IBSFLAG = 3
+              READ (MLINE(NMLINE),'(13X,A20)') BASFIL
+           ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
+              IBSFLAG = 4
+              READ (MLINE(NMLINE)(17:),*,ERR=9000)
+     $             (FAMPAR(K),K=1,4),NFAMEXP(1),
+     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              CALL GENFAMEXP(LUINFO,0)
+           ELSE IF ( BSKEYWORD(1:8) .EQ. 'EVENTEMP' ) THEN
+              IBSFLAG = 4
+              READ (MLINE(NMLINE)(17:),*,ERR=9000)
+     $             (FAMPAR(K),K=1,2),NFAMEXP(1),
+     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              CALL GENFAMEXP(LUINFO,0)
+           ELSE IF ( BSKEYWORD(1:4) .EQ. 'GEOM' ) THEN
+              IBSFLAG = 4
+              READ (MLINE(NMLINE)(12:),*,ERR=9000)
+     $             (FAMPAR(K),K=1,2),NFAMEXP(1),
+     $             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              FAMPAR(3) = D0
+              FAMPAR(4) = D0
+              CALL GENFAMEXP(LUINFO,0)
+           ELSE IF ( BSKEYWORD(1:6) .EQ. 'FAMILY') THEN
+              IBSFLAG = 4
+              READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)
+     $             NFAMEXP(1), IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              CALL GENFAMEXP(LUINFO,1)
+           ELSE IF ( BSKEYWORD(1:10) .EQ. 'DUALFAMILY') THEN
+              IBSFLAG = 4
+              READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)
+     $             NFAMEXP(1), NFAMEXP(2),
+     &             IQM(I,3), (JCO(K,I,3),K=1,IQM(I,3))
+              CALL GENFAMEXP(LUINFO,2)
+C
+           ELSE
+C             Assume it is 'FITSET   2    1....'
+              IBSFLAG = 1
+              READ (MLINE(NMLINE),'(5X,12I5)')
+     &             IQM(I,3),(JCO(K,I,3),K=1,IQM(I,3))
+           END IF
+C
+           IF ( IBSFLAG .EQ. 1 ) THEN
+C
+C             Read explicitly given basis set.
+C
+              KAOVEC = KBLOCK + 1 - IBLOCK(3)
+              CALL GTOINP(LUINFO,IQM(I,3),JCO(1,I,3),
+     &             NUC(IBLOCK(3),3),NRC(IBLOCK(3),3),
+     &             SEG(IBLOCK(3),3),
+     &             ALPHA(1,IBLOCK(3),3),CPRIM(1,1,IBLOCK(3),3),
+     &             CPRIMU(1,1,IBLOCK(3),3),ISGEN(IBLOCK(3)),
+     &             NBLOCK,KAOVEC,KPRIM)
+              NBLCK(I,3) = NBLOCK
+              BASREF(1,I,3) = 
+     &        "Fit set typed explicitly in input file   "
+C
+           ELSE IF ( IBSFLAG .EQ. 2 ) THEN
+              BASREF(1,I,3) = ' Default fit function set    '
+C
+           ELSE IF ( IBSFLAG .EQ. 3 ) THEN
+C
+              BASNAM = BASFIL
+C
+              KAOVEC = KBLOCK + 1 - IBLOCK(3)
+
+              CALL BASLIB(IQM(I,3),JCO(1,I,3),NUC(IBLOCK(3),3),
+     &             NRC(IBLOCK(1),3),SEG(IBLOCK(1),3),
+     &             ALPHA(1,IBLOCK(3),3),
+     &             CPRIM(1,1,IBLOCK(3),3),CPRIMU(1,1,IBLOCK(3),3),
+     &             NBLOCK,ISGEN(IBLOCK(3)),KAOVEC,KPRIM,Q,1,DSM,
+     &             BASREF(1,I,3))
+              NBLCK(I,3) = NBLOCK
+C
+           ELSE IF ( IBSFLAG .EQ. 4 ) THEN
+C
+C             Generate well-temperered/family basis set
+C
+              KAOVEC = KBLOCK + 1 - IBLOCK(1)
+              CALL FAMBAS(LUINFO,IQM(I,3),JCO(1,I,3),
+     &             NUC(IBLOCK(3),3),NRC(IBLOCK(3),3),
+     &             SEG(IBLOCK(3),3),
+     &             ALPHA(1,IBLOCK(3),3),CPRIM(1,1,IBLOCK(3),3),
+     &             CPRIMU(1,1,IBLOCK(3),3),ISGEN(IBLOCK(3)),
+     &             NBLOCK,KAOVEC,KPRIM)
+              NBLCK(I,3) = NBLOCK
+              BASREF(1,I,3) = 
+     &   "Well-tempered fit set typed explicitly in input file "
+C
+           ENDIF
+C
+C          Print out fit set
+C
+           NOFITFS  = NOFITFS.AND.IQM(I,3).EQ.0
+           IF (IQM(I,3).GT.0) THEN
+              IF(INPTST) THEN
+                 WRITE(LUPRI,'(3X,A)') 'Density fit set:'
+                 WRITE(LUPRI,'(6X,A,I5,A,12I5)')
+     &                'Max.ang.quantum no.:',(IQM(I,3)-1),
+     &                '  Blocks:',(JCO(K,I,3), K=1,IQM(I,3))
+              ENDIF
+              NHTYPF    = MAX(NHTYPF,IQM(I,3))
+C             Since it's the density the angular momentum may be twice
+C             the maximum value for the orbitals : 2 * MXQN - 2
+              IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
+           ENDIF
+C
+C       (no need to check whether the set is contracted, so code differsC        from analogous basis set read : this is not an error !)
+C
+        ENDIF
+C
+C     End of loop over unique atom types
   100 CONTINUE
 C
       RETURN
@@ -1476,7 +1662,15 @@ C
      &     I,' as "',SPDCAR(NHTYP-1),'".',
      &     ' Highest allowed orbital in this version: ',
      &     SPDCAR(MXQN-1),
-     &     ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
+     &     ' Increase MXQN from',MXQN,' to',NHTYP/2,' and recompile.'
+        CALL QUIT('Too high angular specified in input.')
+ 5001 CONTINUE
+        WRITE (LUPRI,'(6X,A,I3,3A/9X,2A/9X,2(A,I3),A)')
+     &     '*  Input specifies highest fit function of atomic type ',
+     &     I,' as "',SPDCAR(NHTYPF-1),'".',
+     &     ' Highest allowed fit function in this version: ',
+     &     SPDCAR(2*MXQN-2),
+     &     ' Increase MXQN from',MXQN,' to',NHTYPF,' and recompile.'
         CALL QUIT('Too high angular specified in input.')
  5100 CONTINUE
         CALL QUIT('Error reading keyword LARGE.')
