@@ -500,7 +500,7 @@ C&&&& : BFGSR1: Use 1st order method with BFGS/rank one combination update
  66         BFGSR1 = .TRUE.
             GOTO 100
  67         CONTINUE
-C&&&& :  NUMGRD: Use numerical gradient
+C&&&& :  NUMGRA: Use numerical gradient
             DONGRD = .TRUE.
             GOTO 100
  68         CONTINUE
