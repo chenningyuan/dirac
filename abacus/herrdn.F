@@ -1211,29 +1211,7 @@ C
       CALL SYMPRO(WORK(KKVAL),WORK(KMVAL),WORK(KNVAL),WORK(KIREP),
      &            DOOWN)
 C
-      IF(DIRAC) THEN
-C     
-C     
-C     Generate relations for RKB transformation
-C     
-         IF (ISPHTR.EQ.3) THEN
-            K1 = 1
-            KLAST = K1 + MXSHEL
-            IF (KLAST .GT. LWORK) 
-     &           CALL QUIT('BASPRO,RKBREL: Out of memory.')
-            CALL RKBREL(NRKB,IPREAD,MXSHEL,WORK(K1))
-            IF (IPREAD.GE.5) THEN
-               CALL HEADER('RKB, Transformation in Scalar Basis',1) 
-               WRITE(LUPRI,'(A,I8)') 
-     &     'Number of S Component RKB-transformed functions:', NRKB
-           WRITE(LUPRI,'(A)')'Without the bugs in ORBOUT...,'
-           WRITE(LUPRI,'(A)')'but relations NOT USED in this version:'
-           CALL RKBOU2(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
-     &          JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),NOINT(1,1),
-     &          KATOM,KANG,KBLOCK,KPRIM,0,0)
-         ENDIF
-      END IF
-      END IF
+      IF (DIRAC.AND.ISPHTR.EQ.3) CALL RKBREL(IPREAD)
 C
       RETURN
 C
@@ -1437,11 +1415,6 @@ C*****************************************************************************
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                     CPRIMU(1,1,1,2),NRMPRI)
             END IF
-            IF (ISPHTR.EQ.3) THEN
-               CALL RKBOUT(2,NONTYP,NONT,IQM(1,2),NBLCK(1,2),
-     &              JCO(1,1,2),NUC(1,2),NRC(1,2),SEG(1,2),NOINT(1,2),
-     &              KATOM,KANG,KBLOCK,KPRIM)
-            END IF
          END IF
       END IF
 C
@@ -1556,7 +1529,6 @@ C  /* Deck gtoinp */
 #include <mxcent.h>
 #include <mxorb.h>
 #include <maxaqn.h>
-#include <dcbrkb.h>
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 SPDCAR, FRMT
       CHARACTER*8 FMT1
@@ -1906,6 +1878,7 @@ C  /* Deck acporb */
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
+#include <dummy.h>
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -1923,13 +1896,6 @@ C     CPRIMU - unnormalized contraction coefficients
 C
       IF (FRMT .EQ. 'F' .OR. FRMT .EQ. 'f') THEN
          FREE = .TRUE.
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-         WRITE(LUPRI,'(A)') 'Free Format not allowed for CRAY '
-         CALL QUIT('Free format not allowed for CRAY.')
-C
-C        Cray does not allow free format with internal files
-C
-#endif
       ELSE IF (FRMT .EQ. 'H' .OR. FRMT .EQ. 'h') THEN
          FREE = .FALSE.
          NCOL = 4
@@ -1948,7 +1914,12 @@ C
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
-              CALL QUIT('Free format not allowed on this computer.')
+              ISTART = 1
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
+              DO M = 1, NRCIJ
+                 CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,
+     &                       CPRIMU(L,M),'REA')
+              END DO
 #else
               READ (MLINE(NMLINE),*) ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
 #endif
@@ -1971,7 +1942,8 @@ C
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
-              CALL QUIT('Free format not allowed on this computer.')
+              ISTART = 1
+              CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
 #else
               READ (MLINE(NMLINE),*) ALPHA(L)
 #endif
@@ -2078,8 +2050,6 @@ C
 #else
 #include <gnrinf.h>
 #endif
-#include <dcbrkb.h>
-C
 C
 #include <ibtfun.h>
       ICENT  = 0
@@ -2121,9 +2091,6 @@ C       CENT    - coordinates of center
 C*****************************************************************************
                      NUCO  (ISHELL) = NUC(KBCH)
                      NRCO  (ISHELL) = NCONT
-C Added Dec 1996 (JKL) Used in RKB projection
-                     ISTRT (ISHELL) = IORBD
-C
                      JSTRT (ISHELL) = IPRIM
                      NSTRT (ISHELL) = IORB
                      KSTRT (ISHELL) = IORBD
@@ -4929,6 +4896,10 @@ C
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_NOFREE)
+      DUMMY = 1.0D20
+      IDUMMY = - 9 999 999
+#endif
       NUCIND = NUCIND + 1
       IF (NUCIND .GT. MXCENT) GOTO 5000
       IZ(NUCIND,1) = 0
@@ -4941,8 +4912,9 @@ C
       READ (MLINE(NMLINE),'(A4)') NAMN(NUCIND)
       IF (FIRST) THEN
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
-         READ (MLINE(NMLINE),'(BN,4X,I3,F60.0)')
-     &      INUM,CHARGE(NUCIND)
+         ISTART = 5
+         CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
+         CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
 #else
          READ (MLINE(NMLINE)(5:80),*) INUM, CHARGE(NUCIND)
 #endif
@@ -4954,17 +4926,30 @@ C
          GO TO 203
       END IF
 #if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
- 201  READ (MLINE(NMLINE),'(BN,4X,I3,I3,F10.5,F45.0)')
-     &     INUM,IZ(NUCIND,1),BL(NUCIND), CHARGE(NUCIND)
+ 201  ISTART = 5
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
       GO TO 204
- 202  READ (MLINE(NMLINE),'(BN,4X,I3,2(I3,F10.5),F30.0)')
-     &     INUM, IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
-     &     ALP(NUCIND),CHARGE(NUCIND)
+ 202  ISTART = 5
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
       GO TO 204
- 203  READ (MLINE(NMLINE),'(BN,4X,I3,3(I3,F10.5),I3,F10.0)')
-     &     INUM, IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
-     &     ALP(NUCIND),IZ(NUCIND,3),BET(NUCIND),
-     &     IZ(NUCIND,4),CHARGE(NUCIND)
+ 203  ISTART = 5
+      CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BL(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,2),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALP(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,3),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,BET(NUCIND),'REA')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,4),DUMMY,'INT')
+      CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
 #else
   201 READ (MLINE(NMLINE)(5:80),*)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),CHARGE(NUCIND)
@@ -5442,35 +5427,17 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rkbrel */
-*DECK RKBREL
-      SUBROUTINE RKBREL(NRKB,IPRINT,IMXSL,ISTACK)
+      SUBROUTINE RKBREL(IPRINT)
 C******************************************************************************
 C
 C     Routine for Restricted Kinetic Balance (RKB) Relations.
-C     Checks that the required functions are available
-C     and generates pointer array IRKBPT which for each S comp 
-C     function points to S comp partner functions with L-2. 
-C     The pair is contracted to one function in the scalar RKB basis.
-C
-C     Order of basis functions in uncontracted Cartesian basis,
-C     inner loops:
-C
-C     Loop over function (exponent)
-C        Loop over degeneracies
-C           Loop over component (f.ex. p_x, p_y, p_z)
-C     End loops
-C
-C     The pointers are to first component for each
-C     function with defined exponent.
 C     
-C     Generates array IRKBLS (with length IRKBLE) which contains 
-C     the functions that never are L, but only L-2, partner in a pair.
-C     Are removed in scalar RKB basis and only contracted with
-C     L+2 partner.
+C     Generates array IRKB running over shells
+C       For large shells IRKB points to L-1 small partner
+C       For small shells IRKB opints to L-1 large partner
 C
-C     NRKBSF: Number of scalar RKB functions
-C
-C                      Jon K. Laerdahl 05.12.1996
+C     Written by Jon K. Laerdahl 05.12.1996
+C     Major surgery by T.Saue May 5 1998
 C
 C******************************************************************************
 #include <implicit.h>
@@ -5485,13 +5452,10 @@ C******************************************************************************
       PARAMETER (SML = 1.0D-10)
 #include <primit.h>
 #include <dcbrkb.h>
-      DIMENSION ISTACK(IMXSL)
-      LOGICAL FOUND,ADDMI2
 C
       IF (IPRINT.GE.3) WRITE(LUPRI,'(/1X,A)') 
      &   'RKBREL: Constructing relations for scalar RKB transformation'
-      CALL IZERO(IRKBPT,2*MXSHEL)
-      CALL IZERO(LRKBPT,2*MXSHEL)
+      CALL IZERO(IRKB,KMAX)
       NRKB  = 0
       NXYZ  = 0
       INUM1 = 0
@@ -5500,255 +5464,48 @@ C
 C     Search for S component functions that matches this
 C     L component function.
 C         
-         NCENTL = NCENT(ISHL)
-         NHKTL  = NHKT(ISHL)
-         PRIEXL = PRIEXP(ISHL)
-         ISH2M = 0
-         FOUND = .FALSE.
-         DO ISHS = NLRGSH+1, KMAX
-            IF (NCENT(ISHS).EQ.NCENTL) THEN
-               IF(DABS(PRIEXP(ISHS)-PRIEXL).LT.SML) THEN
-                  IF(NHKT(ISHS).EQ.NHKTL-1) THEN
-                     IF (ISH2M.NE.0) CALL QUIT
-     &                    ('RKBREL:Error, two identical functions')
-                     ISH2M = ISHS
-                  ENDIF
-                  IF(NHKT(ISHS).EQ.NHKTL+1) THEN
-                     FOUND = .TRUE.
-                     IF ((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
-                        WRITE(LUPRI,'(A)') 
-     &         'S Component Function with no Partner at L-2'
-                        CALL QUIT('S Component Function'// 
-     &                       ' with no Partner at L-2')
-                     ENDIF
-                     INUM1 = INUM1 + 1
-                     ISTRE2 = ISTRT(ISHS) + 1
-                     ISTACK(INUM1) = ISTRE2
+        NCENTL = NCENT(ISHL)
+        NHKTL  = NHKT(ISHL)
+        PRIEXL = PRIEXP(ISHL)
+        ISH2M = 0
+        DO ISHS = NLRGSH+1, KMAX
+        IF(NCENT(ISHS).EQ.NCENTL) THEN
+          IF(DABS(PRIEXP(ISHS)-PRIEXL).LT.SML) THEN
 C
-C     Set pointer to L-2
-C     Set pointer to -1 for p-functions.
-C     Reason is:
-C     If no pointer from L-2 function, it
-C     is not counted before. Add the Cartesian functions to sum.
+C           L-1 small function....
 C
-                     IF(NHKTL.EQ.1) THEN
-                        IRKBPT(ISHS,1) = -1
-                     ELSE
-                        ISTRE1 = ISTRT(ISH2M) + 1
-                        IRKBPT(ISHS,1) = ISTRE1
-                        IRKBPT(ISHS,2) = ISH2M
-                        LRKBPT(ISHL,1) = ISTRE1
-                        ADDMI2 = (IRKBPT(ISH2M,1).EQ.0)
-                     ENDIF
-                     LRKBPT(ISHL,2) = ISTRE2
-                     ND = NUCDEG(NCENT(ISHS))
-                     IF (NHKTL.EQ.1) THEN
-                        NRKB = NRKB + 3*ND
-                        NXYZ = NXYZ + 3*ND
-                     ELSE
-                        NRKB = NRKB + (4*NHKTL-2)*ND
-                        NXYZ = NXYZ + (NHKTL+2)*(NHKTL+1)*ND/2
-                        IF (ADDMI2) NXYZ = NXYZ + NHKTL*(NHKTL-1)*ND/2
-                        ADDMI2 = .FALSE.
-                     ENDIF
-                  ENDIF
-               ENDIF
+            IF(NHKT(ISHS).EQ.NHKTL-1) THEN
+              IF(ISH2M.NE.0) CALL QUIT
+     &          ('RKBREL:Error, two identical functions')
+              ISH2M = ISHS
             ENDIF
-         ENDDO
-         IF (.NOT.FOUND) THEN
-            WRITE(LUPRI,'(A)') 
-     &           'Error, No partner for this function.'
-            CALL QUIT('Error, No partner for this function.')
-         ENDIF
+C
+C           L+1 small function....
+C
+            IF(NHKT(ISHS).EQ.NHKTL+1) THEN
+              IRKB(ISHL) = ISH2M
+              IF((NHKTL.GT.1).AND.(ISH2M.EQ.0)) THEN
+                WRITE(LUPRI,'(A)') 
+     &      'S Component Function with no Partner at L-2'
+                CALL QUIT('S Component Function'// 
+     &                    ' with no Partner at L-2')
+              ELSE
+                IRKB(ISHS) = ISHL
+              ENDIF
+            ENDIF
+          ENDIF
+        ENDIF
+        ENDDO
+CTROND        IF (IRKB(ISHL).EQ.0) THEN
+CTROND          WRITE(LUPRI,'(A)') 
+CTROND     &        'Error, No partner for this function.'
+CTROND          CALL QUIT('Error, No partner for this function.')
+CTROND        ENDIF
       ENDDO
-      IF(NXYZ.NE.NSMALL) THEN
-         WRITE(LUPRI,'(A)') 
-     &        'Error, Did not find NSMALL functions.'
-         WRITE(LUPRI,'(A,I8,2X,A,I8)') 
-     &        'NSMALL:', NSMALL, 'NXYZ:', NXYZ
-         CALL QUIT('Error, Did not find NSMALL functions.')
-      ENDIF
-      NRKBSF = NRKB
-C
-      IRKBLE = 0
-      DO 220 I = 1,NLRGSH
-         IF (LRKBPT(I,1).EQ.0) GOTO 220
-         FOUND = .FALSE.
-         J = 1
- 230     IF (LRKBPT(I,1).EQ.ISTACK(J)) THEN
-            FOUND = .TRUE.
-            GOTO 240
-         ELSEIF (J.GE.INUM1) THEN
-            GOTO 240
-         ENDIF
-         J = J + 1
-         GOTO 230
- 240     IF (.NOT.FOUND) THEN
-            IRKBLE = IRKBLE + 1
-            IRKBLS(IRKBLE) = LRKBPT(I,1)
-         ENDIF
- 220  CONTINUE
-      IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/A,2I8)') 
-     &        'INUM1,IRKBLE           : ',INUM1,IRKBLE
-         WRITE(LUPRI,'(A,2I8)') 'NUMBER OF RKB AND CART : ',NRKBSF,NXYZ
-         WRITE(LUPRI,'(/A)') ' Functions with L-2 partner:'
-         WRITE(LUPRI,'(5I6)') (ISTACK(I),I=1,INUM1)
-         WRITE(LUPRI,'(/A)') ' Functions with no L-2 partner:'
-         WRITE(LUPRI,'(5I6)') (IRKBLS(I),I=1,IRKBLE)
-      ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rkbou2 */
-*DECK RKBOU2
-      SUBROUTINE RKBOU2(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           NOINT,KATOM,KANG,KBLOCK,KPRIM,NPRIM,NORBD)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <shells.h>
-#include <maxaqn.h>
-#include <aovec.h>
-      PARAMETER (SML = 1.0D-10)
-#include <primit.h>
-#include <ccom.h>
-#include <dcbrkb.h>
-      LOGICAL SEG
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
-     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          SEG(KBLOCK),NOINT(KBLOCK)
-C
-      CALL HEADER('Relations for RKB2',1)
-      IPRIM =  NPRIM
-      IORBD =  NORBD
-      ICENT  = 0
-      IBLOCK = 0
-      DO 100 I = 1, NONTYP
-         DO 110 N = 1, NONT(I)
-            ICENT = ICENT + 1
-            NDEG  = NUCDEG(ICENT)
-            KBCH  = IBLOCK
-            DO 200 J = 1, IQM(I)
-               NCOMP = KHK(J)
-               DO 250 K = 1, JCO(J,I)
-                  KBCH = KBCH + 1
-                  NNUC  = NUC(KBCH)
-                  NNRC  = NRC(KBCH)
-                  IF (NNUC .EQ. 0) GO TO 200
-                  IF (.NOT.SEG(KBCH)) STOP 'Not Implemented, RKBOU2'
-                  DO 300 KK = 1, NRC(KBCH)
-                     IPRIM = IPRIM + 1
-                     IF (NDEG .GT. 1) THEN
-                        DO 500 LL = 1,NDEG
-                           ITYP = NHKOFF(J)
-                           DO 400 ICOMP = 1,NCOMP
-                              ITYP = ITYP+1
-                              IORBD = IORBD + 1
-                              WRITE (LUPRI,
-     &                  '(2X,A4,A1,I1,2I5,2X,A4,2X,E15.10,2I6)') 
-     &                  NAMN(ICENT),'#',LL,IPRIM,IORBD,GTOTYP(ITYP),
-     &                  PRIEXP(IPRIM),LRKBPT(IPRIM,1),LRKBPT(IPRIM,2)
- 400                       CONTINUE
- 500                    CONTINUE
-                     ELSE
-                        ITYP = NHKOFF(J)
-                        DO 401 ICOMP = 1,NCOMP
-                           ITYP = ITYP+1
-                           IORBD = IORBD + 1
-                           WRITE(LUPRI,
-     &                '(2X,A4,2I5,2X,A4,2X,E15.10,2I6)')
-     &                NAMN(ICENT),IPRIM,IORBD,GTOTYP(ITYP),
-     &                PRIEXP(IPRIM),LRKBPT(IPRIM,1),LRKBPT(IPRIM,2)
- 401                    CONTINUE
-                     END IF
- 300              CONTINUE            
-                  WRITE(LUPRI,'(A)') ' '
- 250           CONTINUE
- 200        CONTINUE
- 110     CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I)
- 100  CONTINUE 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck rkbout */
-      SUBROUTINE RKBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
-     &           NOINT,KATOM,KANG,KBLOCK,KPRIM)
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <mxcent.h>
-#include <nuclei.h>
-#include <maxaqn.h>
-#include <aovec.h>
-#include <primit.h>
-#include <ccom.h>
-#include <dcbrkb.h>
-      LOGICAL SEG
-      DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
-     &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
-     &          SEG(KBLOCK),NOINT(KBLOCK)
-C
-      CALL HEADER('Relations for RKB',1)
-      IF(ICLS.EQ.1) THEN
-         CALL QUIT('Not meaningful for L type functions')
-      ELSE
-         IORBD = NPLRG
-         IPRIM  = NPLSH
-      ENDIF
-      ICENT  = 0
-      IBLOCK = 0
-      DO 100 I = 1, NONTYP
-         DO 110 N = 1, NONT(I)
-            ICENT = ICENT + 1
-            NDEG  = NUCDEG(ICENT)
-            KBCH  = IBLOCK
-            DO 200 J = 1, IQM(I)
-               NCOMP = KHK(J)
-               DO 250 K = 1, JCO(J,I)
-                  KBCH = KBCH + 1
-                  NNUC  = NUC(KBCH)
-                  NNRC  = NRC(KBCH)
-                  IF (NNUC .EQ. 0) GO TO 200
-                  IF (.NOT.SEG(KBCH)) 
-     &                 CALL QUIT('Not Implemented, RKBOUT')
-                  DO 300 KK = 1, NRC(KBCH)
-                     IPRIM = IPRIM + 1
-                     IF (NDEG .GT. 1) THEN
-                        DO 500 LL = 1,NDEG
-                           ITYP = NHKOFF(J)
-                           DO 400 ICOMP = 1,NCOMP
-                              ITYP = ITYP+1
-                              IORBD = IORBD + 1
-                              WRITE (LUPRI,
-     &                     '(2X,A4,A1,I1,2I5,2X,A4,2X,E15.10,2I5)') 
-     &                     NAMN(ICENT),'#',LL,IPRIM,IORBD,GTOTYP(ITYP),
-     &                     PRIEXP(IPRIM),IRKBPT(IPRIM,1),
-     &                             IRKBPT(IPRIM,2)
- 400                       CONTINUE
- 500                    CONTINUE
-                     ELSE
-                        ITYP = NHKOFF(J)
-                        DO 401 ICOMP = 1,NCOMP
-                           ITYP = ITYP+1
-                           IORBD = IORBD + 1
-                           WRITE(LUPRI,
-     &                          '(2X,A4,2I5,2X,A4,2X,E15.10,2I5)')
-     &                          NAMN(ICENT),IPRIM,IORBD,GTOTYP(ITYP),
-     &                          PRIEXP(IPRIM),
-     &                          IRKBPT(IPRIM,1),IRKBPT(IPRIM,2)
- 401                    CONTINUE
-                     END IF
- 300              CONTINUE            
-                  WRITE(LUPRI,'(A)') ' '
- 250           CONTINUE
- 200        CONTINUE
- 110     CONTINUE
-         IBLOCK = IBLOCK + NBLCK(I)
- 100  CONTINUE 
+CTROND      IF (IPRINT.GE.3) THEN
+CTROND         WRITE(LUPRI,'(A8,3A5)') 'RKBREL: ',' L sh',' S-sh',' S+sh'
+CTROND         WRITE(LUPRI,'(8X,3I5)') (I,IRKB(I),IRKB(IRKB(I)),I=1,NLRGSH)
+CTROND      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5806,4 +5563,48 @@ C
      &     'th transformation of nucleus no.',M,' DIST=',DIST
       CALL QUIT('Nuclei too close.')
       END
-
+C/*  Deck frefrm */
+      SUBROUTINE FREFRM(STRING,ISTART,IVAL,RVAL,TYPE)
+C
+C     Simulate free format input for Cray computers when reading from an
+C     internal file, K.Ruud-Feb.97
+C
+#include <implicit.h>
+#include <priunit.h>
+C      
+      CHARACTER*80 STRING
+      CHARACTER TYPE*3, FRMT*7
+C
+      IF (TYPE .EQ. 'INT') THEN
+         IVAL = 0
+      ELSE
+         RVAL = 0.0D0
+      END IF
+      DO 10 IPOS = ISTART, 80
+         IF (STRING(IPOS:IPOS) .NE. ' ') GO TO 20
+ 10   CONTINUE
+C
+ 20   CONTINUE
+      IEND = INDEX(STRING(IPOS:),' ')
+      ILEN = IEND - ISTART - 1 + IPOS
+      IF (TYPE .EQ. 'INT') THEN
+         IF (ILEN .GT. 9) THEN
+            WRITE (FRMT,'(2X,A2,I2,A1)') '(I',ILEN,')'
+         ELSE
+            WRITE (FRMT,'(3X,A2,I1,A1)') '(I',ILEN,')'
+         END IF
+         READ (STRING(ISTART:80),FRMT) IVAL
+      ELSE IF (TYPE .EQ. 'REA') THEN
+         IF (ILEN .GT. 9) THEN
+            WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
+         ELSE
+            WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
+         END IF
+         READ (STRING(ISTART:80),FRMT) RVAL
+      ELSE
+         WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
+         CALL QUIT('Illegal variable type in FREFRM')
+      END IF
+      ISTART = IEND + IPOS
+      RETURN
+      END
