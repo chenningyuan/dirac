@@ -212,7 +212,7 @@ C     *** Call output routines **************************
 C     ***************************************************
 C
 C
-      CALL KRMCOUT(WORK,KFREE,LFREE)
+      IF (MOPT_MXMACRO .GT. 0) CALL KRMCOUT(WORK,KFREE,LFREE)
 C
 C
 C
@@ -459,10 +459,9 @@ C           Read coefficients from KRMCSCF
 C
             INQUIRE(FILE='KRMCSCF',EXIST=TOBE)
             IF (.NOT.TOBE) THEN
-               WRITE(LUPRI,'(A,/,A)')
-     $              '*** ERROR in RTRACTL1 ***',
-     $              'File with coefficients not found'
-               CALL QUIT('*** ERROR in RTRACTL1 ***')
+               WRITE(LUPRI,'(/A)')
+     $        '*** ERROR in PSIOP1 *** File with coefficients not found'
+               CALL QUIT('*** ERROR in PSIOP1   ***')
             ELSE
                JRDMO = 1
                CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
@@ -507,7 +506,6 @@ C
      &           ' Total KR-MCSCF energy        : ',F25.15)
 C
          WRITE(LUPRI,9010) (ITMAC,GNORM(I),I=1,5)
-         CALL FLSHFO(LUPRI)
 C
  9010    FORMAT(/' CI gradient        (It. ',I3,') : ',F25.15,/,
      &           ' Orbital e-e grad.  (It. ',I3,') : ',F25.15,/,
@@ -515,6 +513,11 @@ C
      &           ' Total orbital grad.(It. ',I3,') : ',F25.15,/,
      &           ' Total gradient     (It. ',I3,') : ',F25.15,/)
 C
+C        IF (IPROPT .GE. 1) THEN
+Chj Jun 2004  TODO: print NO occ (use RGETNO ?)
+C        END IF
+C
+         CALL FLSHFO(LUPRI)
 C
 C        ***************************************************
 C        *** Converged ??? *********************************
@@ -636,8 +639,8 @@ C
 C
          WRITE(LUITFO) DINFO,IINFO
 C
- 9100    FORMAT(/'>>> CPU (WALL) TIME FOR MACRO IT. ',
-     &        I3,':',A,'(',A,')')
+ 9100    FORMAT(/'>>> CPU (WALL) TIME FOR MACRO IT.',
+     &        I3,' : ',A,' (',A,')')
          CALL FLSHFO(LUPRI)
          IF (WFCONV) GOTO 2000
          IF ( (ITBCK .EQ. 0 .AND. ITMAC .LT. MOPT_MXMACRO) .OR.
@@ -652,13 +655,9 @@ C        *** End of macro iteration loop *******************
 C        ***************************************************
 C
 C
-C
-C
-C
 C     ***************************************************
 C     *** Not converged *********************************
 C     ***************************************************
-C
 C
  1999 CONTINUE
       WRITE(LUPRI,9200)
@@ -2082,7 +2081,6 @@ C
 C        Dirac-Hartree-Fock: only 1 CI coefficient
 C
          NZCONF = 0
-         NZCONFQ = 0
 C
       END IF
 C
@@ -2098,6 +2096,10 @@ C
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
+      IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
+         WRITE(LUPRI,'(/A)') ' Error: no determinants !'
+         CALL QUIT('Error: no determinants !')
+      END IF
 C
 C
       CALL FLSHFO(LUPRI)
@@ -2487,14 +2489,11 @@ C     bit 2 of IROST: read OLDORB on KRMCSCF
 C     bit 3 of IROST: read DFCOEF from DHF program
 C     bit 4 of IROST: start on H1DIAG
 C
-      IF (IPROPT .GE. 5) THEN
-         WRITE(LUPRI,'(/A,I4)')
-     &        ' (ROPTST)  Control parameter (ISTART)  =',ISTART
-         WRITE(LUPRI,'(A,I4)')
-     &        '           Orbital start guess (IROST) =',IROST
-         WRITE(LUPRI,'(A,I4)')
-     &        '           Conf. start guess (IRCIST)  =',IRCIST
-         WRITE(LUPRI,'(A,I4)')
+      IF (IPROPT .GE. 2) THEN
+         WRITE(LUPRI,'(4(/A,I4))')
+     &        ' (ROPTST)  Control parameter (ISTART)  =',ISTART,
+     &        '           Orbital start guess (IROST) =',IROST,
+     &        '           Conf. start guess (IRCIST)  =',IRCIST,
      &        '           Write CMO & CREF (IWRT)     =',IWRT
       END IF
 C
@@ -2673,12 +2672,12 @@ C
 C
             IF (IPRINT .GE. 0) THEN
                IF (MAXCIT .GE. 0) THEN
-                  WRITE(LUPRI,'(/A,I3,A)')
+                  WRITE(LUPRI,'(/A,I5,A)')
      &                 ' (ROPTST)  CI start vector generated from',
      &                 MAXCIT,' CI iterations.'
                ELSE
-                  WRITE(LUPRI,'(/2A)')
-     &                 ' (ROPTST)  CI start vector generated from',
+                  WRITE(LUPRI,'(/A)')
+     &                 ' (ROPTST)  CI start vector generated from'//
      &                 ' diag. of full CI matrix.'
                END IF
             END IF
@@ -3047,7 +3046,7 @@ C     ***************************************************
 C     *** Perform micro iterations **********************
 C     ***************************************************
 C
-C     June 2001 hjaaj: CREF is read now from LUKRMC inside XRSCTL
+C     June 2001 hjaaj: CREF is now read from LUKRMC inside XRSCTL
 C     for more convenient use in lin.resp. etc.
 C     (no more memory required with this change)
 C
@@ -3300,7 +3299,7 @@ C
      &           OPT_CIPROGRAM,THRZER,LUPRI)
          END IF
 C
-         CALL RCINORM(CREF)
+         CALL RCINORM(CREF,10)
 C
          IF (IPROPT .GE. 20 ) THEN
             WRITE(LUPRI,'(A)') ' (GTNORB) New norm. CI vector'
@@ -3811,7 +3810,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rcinorm */
-      SUBROUTINE RCINORM(CREF)
+      SUBROUTINE RCINORM(CREF,IPRINT)
 C***********************************************************************
 C
 C     Normalize CI vector.
@@ -3836,6 +3835,7 @@ C
 C
       CALL QENTER('RCINORM')
 C
+      MZ = MIN(2,NZ)
       CNRM = .FALSE.
       DN = DNORM2(NZCONFQ,CREF,1)
       IF ( DN .NE. D1 ) THEN
@@ -3845,14 +3845,14 @@ C
             DN = DNORM2(NZCONFQ,CREF,1)
          END IF
          DN = D1 / DN
-         WRITE(LUPRI,'(/A,F20.12)')
+         IF (IPRINT .GE. 5) WRITE(LUPRI,'(/A,F20.12)')
      &        ' (RCINORM) CI vector renormalized with factor ',DN
-         CALL DSCAL(NZCONF, DN, CREF, 1)
+         CALL DSCAL(NZCONFQ, DN, CREF, 1)
          CNRM = .TRUE.
       END IF
       IF ( IPROPT .GE. 20 .AND. CNRM) THEN
          WRITE(LUPRI,'(/A)') ' (RCINORM) Renormalized CI vector'
-         CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRZER,LUPRI)
+         CALL RPRCI(CREF,NZCONF,MZ,OPT_CIPROGRAM, THRZER,LUPRI)
       END IF
 C
       CALL QEXIT('RCINORM')
