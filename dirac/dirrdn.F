@@ -691,7 +691,7 @@ C
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
-     &            '.AUTOCC','.NO AUT','.XXXXXX','.DIISTH','.DAMPFC',
+     &            '.AUTOCC','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D'/
       DATA SET/.FALSE./
@@ -708,7 +708,6 @@ C
       ELSE
          SET = .TRUE.
       END IF
-      NOAUTOCC = .FALSE.
 C
 C     Initialize /CBCDHF/
 C     ===================
@@ -994,11 +993,9 @@ c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                GO TO 100
    21          CONTINUE
 C&&& AUTOCC: Automatic DHF occupation
-                  NOAUTOCC = .FALSE.
+                  AUTOCC = .TRUE.
                GO TO 100
    22          CONTINUE
-C&&& NO AUTOCC: No Automatic DHF occupation
-                  NOAUTOCC = .TRUE.
                GO TO 100
    23          CONTINUE
                GO TO 100
@@ -1080,11 +1077,6 @@ C
 C
 C     Determine occupation
 C     ====================
-C
-C     INIOCC automatically sets AUTOCC
-C        unless user has explicitly has set NOAUTOCC
-C
-      IF (INIOCC) AUTOCC = .NOT. NOAUTOCC
 C
 C     If there only is one symmetry there is no need to change 
 C     occupation during SCF cycles.
