@@ -3362,30 +3362,84 @@ C     ********************************
 C     ****** Send COMMON blocks ******
 C     ********************************
 C
+C
+C     This is highly unauthorized!!!
+C     No F77 standard says that elements in a common block are 
+C     consequtive, and, in fact, with -Ofast on SGI the compiler
+C     may pad common blocks with junk. /jth Feb 12 2001
+C
+C     A better, but still not optimal, solution is to 
+C     calculate the address difference between the first
+C     element and the last element in the common block, and
+C     transfer all data inbetween.
+C
+C     dcborb.h
+C     --------
+C
       NUMELM = NDCBORB
       CALL MPI_BCAST(NORB,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     dcbbas.h
+C     --------
+C
       NUMELM = NDCBBAS
       CALL MPI_BCAST(NBBAS,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     dgroup.h
+C     --------
+C
       NUMELM = NDGROUP
       CALL MPI_BCAST(NZ,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     dcbtra.h
+C     --------
+C
+C     integers...
+C
       NUMELM = NDCBTRI
       CALL MPI_BCAST(IPRTRA,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     reals...
+C
       NUMELM = NDCBTRR
       CALL MPI_BCAST(THROUT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     logicals...
+C
+      NUMELM = NDCBTRL
+      CALL MPI_BCAST(TRA_ANTIS,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
+     &               MPI_COMM_WORLD,IERR)
+C
+C     comdis.h
+C     --------
+C
       NUMELM = NCOMDIS
       CALL MPI_BCAST(NSPCK,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     symmet.h
+C     --------
+C
+C     integers...
+C
       NUMELM = NSYMMTI
       CALL MPI_BCAST(MAXREP,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     reals...
+C
       NUMELM = NSYMMTR
       CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+C
+C     The rest
+C     --------
+C
       NUMELM = 1
       CALL MPI_BCAST(INTFLG,NUMELM,MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
