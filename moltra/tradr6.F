@@ -158,7 +158,7 @@ C
 #endif
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     WORK(KGAB),WORK(DRIJ),
+     &                     WORK(KGAB),WORK(KDRIJ),
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
