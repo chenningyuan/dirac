@@ -642,6 +642,7 @@ C
 C
       RETURN 
       END
+#ifndef PRG_DIRAC
 C  /* Deck dftsol */
       SUBROUTINE DFTSOL(WORK,LWORK)
 #include <implicit.h>
@@ -690,10 +691,11 @@ C
       IF (.FALSE.) THEN
          WRITE(LUPRI,'(//,A)')' Orbital part of solution'
          PRFAC = 0.1D0
-CTROND         CALL PRKAP(NWOPPT,VEC,PRFAC,LUPRI)
+         CALL PRKAP(NWOPPT,VEC,PRFAC,LUPRI)
       END IF
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
 #include <implicit.h>
