@@ -84,6 +84,7 @@ C
       END
 C  /* Deck dsplinpck */
 #if !defined (VAR_NOLINPACK)
+#if !defined (VAR_LIBVECLIB)
       SUBROUTINE DSPCO(AP,N,KPVT,RCOND,Z)
       INTEGER N,KPVT(*)
       DOUBLE PRECISION AP(*),Z(*)
@@ -813,6 +814,7 @@ C
   160 CONTINUE
       RETURN
       END
+#endif
       SUBROUTINE DSPDI(AP,N,KPVT,DET,INERT,WORK,JOB)
       INTEGER N,JOB
       DOUBLE PRECISION AP(*),WORK(*)
