@@ -239,6 +239,16 @@ C         to file.
 C
           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         END IF
+C
+C       Determine occupation if this was not given in input
+C
+        IF (INIOCC) THEN
+           CALL DETOCC (EIG)
+           INIOCC = .FALSE.
+        ENDIF
+C
+C       Prepare for overlap selection
+C
         IF(OVLSEL) THEN
           DOSEL = .TRUE.
           INQUIRE(FILE='DFSMOS',EXIST=TOBE)
@@ -2864,13 +2874,6 @@ C
         IF(TRIVEC) CALL INTCON(INTFLG,INTBUF,INTDEF,
      &                  DUMMY,CNVINT,NITER,ITRINT,DHF_INTTYP)
       ENDIF
-C
-      IF (AUTOCC .AND. .NOT. BARNUC) THEN
-         WRITE(LUPRI,'(//,1X,A,//)')
-     &      'Currently AUTOCC does not work with restart.'
-         CALL QUIT(
-     &      'Currently AUTOCC does not work with restart.')
-      END IF
 C
 C     If (oldfmo) we can check all convergence criteria
 C
