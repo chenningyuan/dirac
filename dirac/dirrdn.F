@@ -3235,27 +3235,32 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <maxaqn.h>
 C
 #include <dcbgen.h>
 #include <cbihr2.h>
 C
       DIMENSION WORK(LWORK)
-      LOGICAL LBIT,TEST
+      LOGICAL LBIT,DIRFCK
 C
       CALL PAOVEC(WORK,LWORK,0,IPRTWO)
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 
      &   'Maximum memory load for two-integral processing in HERMIT:'
       CALL PRSYMB(LUPRI,'=',75,0)
+C
+C     always DIRFCK false to calculate memory for SO-integrals
+C     which is what we nomally use in Dirac (both SOFOCK for
+C     Fock matrices and for MOLTRA). DIRFCK true will calculate
+C     the correct for AOFOCK only. /hjaaj May 2001
+C
+      DIRFCK = .FALSE.
       WRITE(LUPRI,'(1X,A)') '* LL-integrals:'
-      TEST = LBIT(IDFLAG,1)
-      CALL MEMLOP(1,TEST)  
+      CALL MEMLOP(1,DIRFCK)  
       WRITE(LUPRI,'(1X,A)') '* SL-integrals:'
-      TEST = LBIT(IDFLAG,2)
-      CALL MEMLOP(2,TEST)  
+      CALL MEMLOP(2,DIRFCK)  
       WRITE(LUPRI,'(1X,A)') '* SS-integrals:'
-      TEST = LBIT(IDFLAG,3)
-      CALL MEMLOP(3,TEST)  
+      CALL MEMLOP(3,DIRFCK)  
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
