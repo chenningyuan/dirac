@@ -70,6 +70,9 @@ C
       ILLINT = IBTAND(INTGEN,1)
       ISLINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
+      IGTINT = IBTAND(INTGEN/8,1)
+      IF (IGTINT .NE. 0) CALL QUIT('ABORT reading *QUADRA input: '//
+     &   ' Gaunt integrals not implemented in QR yet')
 C
 C ------------------------------------------------------------------------
 C     Initialize dcbxqr.h
@@ -2216,7 +2219,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
-      PARAMETER ( D1 = 1.0D0, D2 = 2.0D0 )
+      PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
 C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
@@ -2242,8 +2245,7 @@ C
 C     Unpack the response vectors into matrices 
 C
       IF (IPRXQR.GE.10) THEN
-         WRITE(LUPRI,'(/A)') 
-     &        'CMO in E3DRV'
+         WRITE(LUPRI,'(/A)') 'CMO in E3DRV'
          CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &        IPQTOQ(1,0),LUPRI)
       END IF
@@ -2257,14 +2259,14 @@ C     Construct the modified density matrices
 C
       CALL DZERO(WORK(KD1AO),3*N2BBASXQ)
       CALL QDENS1(ISYMB,ITIMB,IFERB,WORK(KB),WORK(KD1AO),
-     &     IFCKOP(1),CMO,WORK(KFREE),LFREE)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDENS1(ISYMC,ITIMC,IFERC,WORK(KC),WORK(KD2AO),
-     &     IFCKOP(2),CMO,WORK(KFREE),LFREE)
+     &     CMO,WORK(KFREE),LFREE)
       CALL QDENS2(ISYMB,ITIMB,IFERB,WORK(KB),ISYMC,ITIMC,IFERC,WORK(KC),
-     &     WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,IFCKOP(3),
+     &     WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,
      &     CMO,WORK(KFREE),LFREE)
       CALL QDENS2(ISYMC,ITIMC,IFERC,WORK(KC),ISYMB,ITIMB,IFERB,WORK(KB),
-     &     WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,IFCKOP(3),
+     &     WORK(KD3AO),ISYMA,ITIMB*ITIMC,IFERA,
      &     CMO,WORK(KFREE),LFREE)
 C
 C     Construct the Fock matrices in AO basis. 
@@ -2273,15 +2275,32 @@ C
      &     ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA)
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,
      &     IDUM,INTFLG,IPRXQR,WORK(KFREE),LFREE)
+c    &     IDUM,INTFLG,5,WORK(KFREE),LFREE)
+C
+C     Scale all Fock matrices with a factor 4 to get the right values
+C     /hjaaj July 2004
+C
+      CALL DSCAL(3*N2BBASXQ,D4,WORK(KF1AO),1)
 C
       IF (IPRXQR.GE.10) THEN
-         WRITE(LUPRI,'(A)') 
-     &        'F1AO in E3DRV'
-         CALL PRQMAT(WORK(KF1AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+         NPR = NTBAS(0)
+         WRITE(LUPRI,'(A)') 'D1AO in E3DRV'
+         CALL PRQMAT(WORK(KD1AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
      &        IPQTOQ(1,ISYMB-1),LUPRI)
-         WRITE(LUPRI,'(A)') 
-     &        'F12AO in E3DRV'
-         CALL PRQMAT(WORK(KF3AO),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+         WRITE(LUPRI,'(A)') 'F1AO in E3DRV'
+         CALL PRQMAT(WORK(KF1AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
+     &        IPQTOQ(1,ISYMB-1),LUPRI)
+         WRITE(LUPRI,'(A)') 'D2AO in E3DRV'
+         CALL PRQMAT(WORK(KD2AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
+     &        IPQTOQ(1,ISYMB-1),LUPRI)
+         WRITE(LUPRI,'(A)') 'F2AO in E3DRV'
+         CALL PRQMAT(WORK(KF2AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
+     &        IPQTOQ(1,ISYMB-1),LUPRI)
+         WRITE(LUPRI,'(A)') 'D12AO in E3DRV'
+         CALL PRQMAT(WORK(KD3AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
+     &        IPQTOQ(1,ISYMA-1),LUPRI)
+         WRITE(LUPRI,'(A)') 'F12AO in E3DRV'
+         CALL PRQMAT(WORK(KF3AO),NPR,NPR,NTBAS(0),NTBAS(0),NZ,
      &        IPQTOQ(1,ISYMA-1),LUPRI)
       ENDIF
 C
@@ -2299,12 +2318,12 @@ C     Read in the Fock matrix in MO basis from file, and transform the
 C     modified Fock matrices constructed above from AO to MO basis
 C
       CALL GETFCK(WORK(KFMO),IPRXQR,WORK,KFREE,LFREE)
-      CALL FAOMO(WORK(KF1MO),WORK(KF1AO),ISYMB,ITIMB,IFERB,IPRXQR,
-     &     CMO,WORK(KFREE),LFREE)
-      CALL FAOMO(WORK(KF2MO),WORK(KF2AO),ISYMC,ITIMC,IFERC,IPRXQR,
-     &     CMO,WORK(KFREE),LFREE)
-      CALL FAOMO(WORK(KF3MO),WORK(KF3AO),ISYMA,ITIMB*ITIMC,IFERA,IPRXQR,
-     &     CMO,WORK(KFREE),LFREE)
+      CALL QRFAOMO(WORK(KF1MO),WORK(KF1AO),ISYMB,ITIMB,IFERB,
+     &     IPRXQR,CMO,WORK(KFREE),LFREE)
+      CALL QRFAOMO(WORK(KF2MO),WORK(KF2AO),ISYMC,ITIMC,IFERC,
+     &     IPRXQR,CMO,WORK(KFREE),LFREE)
+      CALL QRFAOMO(WORK(KF3MO),WORK(KF3AO),ISYMA,ITIMB*ITIMC,IFERA,
+     &     IPRXQR,CMO,WORK(KFREE),LFREE)
 
 C
 C     Compute the final doubly one-index transformed Fock matrix.
@@ -2426,16 +2445,10 @@ C
 C     
       RETURN
       END
-      SUBROUTINE QDENS1(ISYM1,ITIM1,IFER1,W1,DEN,IFCK,
-     &     CMO,WORK,LWRK)
+      SUBROUTINE QDENS1(ISYM1,ITIM1,IFER1,W1,DEN,CMO,WORK,LWRK)
 C*****************************************************************************
 C
 C     Construct the modified density matrix
-C
-C     IFCK -- used in TWOFCK call, determines where to add the Coulomb 
-C             integrals. For time-symmetric operators the Coloumb
-C             contribution is real, and for time-antisymmetric operators
-C             the contribution is i-imaginary.
 C
 C     Written by panor 1999
 C
@@ -2548,7 +2561,7 @@ C
            ICMO1 = ICMOQ(I1) + 1
            ICMO2 = ICMOQ(I2) + NPSH(I2)*NFBAS(I2,0) + 1
         ELSE
-           CALL QUIT('Unknown JINDX in QDENS1')
+           CALL QUIT('Unknown JINDX in QDEN1')
         END IF
 C
         IF (NORB1.GT.0 .AND. NORB2.GT.0) THEN
@@ -2586,15 +2599,10 @@ C
       RETURN
       END
       SUBROUTINE QDENS2(ISYM1,ITIM1,IFER1,W1,ISYM2,ITIM2,IFER2,W2,
-     &     DEN,ISYM3,ITIM3,IFER3,IFCK,CMO,WORK,LWRK)
+     &     DEN,ISYM3,ITIM3,IFER3,CMO,WORK,LWRK)
 C*****************************************************************************
 C
 C     Construct the modified density matrix
-C
-C     IFCK -- used in TWOFCK call, determines where to add the Coulomb 
-C             integrals. For time-symmetric operators the Coloumb
-C             contribution is real, and for time-antisymmetric operators
-C             the contribution is i-imaginary.
 C
 C     Written by panor 1999
 C
@@ -2618,14 +2626,6 @@ C
 C
       KFREE = 1 
       LFREE = LWRK
-C
-      IF (ITIM3.EQ.1) THEN
-         IFCK = 1
-      ELSEIF (ITIM3.EQ.-1) THEN
-         IFCK = 2
-      ELSE
-         CALL QUIT('Unknown time-reversal symmetry of matrix in QDENS1')
-      END IF
 C
       CALL MEMGET('REAL',KTMPAO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMO,N2ORBXQ,WORK,KFREE,LFREE)
@@ -2735,7 +2735,7 @@ C
            IORB3 = IORB(I3)  + NPSH(I3) + 1
            ICMO3 = ICMOQ(I3) + NPSH(I3)*NFBAS(I3,0) + 1
         ELSE
-           CALL QUIT('Unknown JINDX in QDENS1')
+           CALL QUIT('Unknown JINDX in QDEN2')
         END IF
 C
         IF (NORB1.GT.0 .AND. NORB2.GT.0 .AND. NORB3.GT.0) THEN
@@ -2807,26 +2807,14 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
-      IF (ITIM1.EQ.1) THEN
-         IFCKOP(1) = 1
-      ELSE
-         IFCKOP(1) = 2
-      END IF
-      IF (ITIM2.EQ.1) THEN
-         IFCKOP(2) = 1
-      ELSE
-         IFCKOP(2) = 2
-      END IF
-      IF (ITIM3.EQ.1) THEN
-         IFCKOP(3) = 1
-      ELSE
-         IFCKOP(3) = 2
-      END IF
+C
+C     IFCKOP  used in TWOFCK call,
+C     1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1
       IFCKOP(3)=1
 C
-C     Detrmine which integrals to include. Default is to include
+C     Determine which integrals to include. Default is to include
 C     all types, but other alternatives can be specified in the 
 C     input file. 
 C
@@ -2845,14 +2833,14 @@ C
      &        'D1','D2','D12',
      &        'Boson symmetry:',(ISYMOP(I),I=1,3),
      &        '   Hermiticity:',(IHRMOP(I),I=1,3),
-     &        ' Time reversal:',(IFCKOP(I),I=1,3)
+     &        ' Time reversal:',ITIM1,ITIM2,ITIM3
       END IF
 C
       CALL QEXIT('E3FCK')
 C     
       RETURN
       END
-      SUBROUTINE FAOMO(FMO,FAO,ISYM,ITIM,IFER,IPRINT,CMO,WORK,LWRK)
+      SUBROUTINE QRFAOMO(FMO,FAO,ISYM,ITIM,IFER,IPRINT,CMO,WORK,LWRK)
 C*****************************************************************************
 C
 C     Transform Fock matrix from AO to MO basis using QTRANS
@@ -2876,7 +2864,7 @@ C
       DIMENSION FAO(N2BBASXQ),FMO(N2ORBXQ)
       DIMENSION IQBF(4),T(-1:1),CMO(*),WORK(LWRK)
 C
-      CALL QENTER('FAOMO')
+      CALL QENTER('QRFAOMO')
 C
       KFREE = 1 
       LFREE = LWRK
@@ -2904,12 +2892,12 @@ C
 C     Print
 C
       IF (IPRINT.GE.10) THEN
-         CALL HEADER('FAOMO: Fock matrix in MO-basis',-1)
+         CALL HEADER('QRFAOMO: Fock matrix in MO-basis',-1)
          CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &        IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
 C
-      CALL QEXIT('FAOMO')
+      CALL QEXIT('QRFAOMO')
 C     
       RETURN
       END
@@ -3234,7 +3222,7 @@ C
       SUBROUTINE DEF_1STHYP(WORK,LWRK)
 C*****************************************************************************
 C
-C     Input hadeling for .FIRST HYPERPOLARIZABILITY
+C     Input handling for .FIRST HYPERPOLARIZABILITY
 C
 C     Written by johhe 2002
 C
@@ -3280,7 +3268,7 @@ C
       SUBROUTINE DEF_VERDET(WORK,LWRK)
 C*****************************************************************************
 C
-C     Input handeling for VERDET
+C     Input handling for VERDET
 C
 C     Written by panor/ulfek 2004
 C
