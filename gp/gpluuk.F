@@ -362,7 +362,7 @@ C
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
-#if defined (SYS_HPUX)
+#if defined (SYS_HPUX) || (SYS_LINUX)
       CHARACTER FDATE*24
 #endif
       Character*10 Datum,Tijd*8,String*24
