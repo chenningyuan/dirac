@@ -242,7 +242,7 @@ C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
 #include "implicit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
 #endif
 #include "priunit.h"
