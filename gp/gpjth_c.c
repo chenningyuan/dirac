@@ -57,14 +57,17 @@
 #include <fortran.h>
 #define frac2i FRAC2I
 #define creadreorder CREADREORDER
+#define compoff COMPOFF
 #elif defined (SYS_HPUX)
 /* nothing */
 #elif defined (SYS_AIX)
 #define frac2i frac2i
 #define creadreorder creadreorder
+#define compoff compoff
 #else
 #define frac2i frac2i_
 #define creadreorder creadreorder_
+#define compoff compoff_
 #endif /*CRAY*/
 
 void c_frac2i();
@@ -198,3 +201,8 @@ void sysinf(int parcal)
    free(un);
 }
 
+void compoff(double *wrk,double *work, int *kbase) {
+ 
+   *kbase = (int) (wrk-work+1);
+ 
+}
