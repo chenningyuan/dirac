@@ -63,22 +63,36 @@ Functional* available_functionals[] = {
 Functional* selected_func = &LDAFunctional;
 
 /* =================================================================== */
+
 void
+drv1_clear(FirstDrv* gga)
+{
+    gga->df1000 = gga->df0100 = gga->df0010 = gga->df0001 = gga->df00001 = 0;
+}
+                                                                                void
 drv2_clear(SecondFuncDrv* gga)
 {
-    gga->df1000 = gga->df0010 = gga->df2000 = gga->df1100 = 0;
-    gga->df1010 = gga->df1001 = gga->df0020 = gga->df0011 = 0;
+    gga->df1000 = gga->df0100 = gga->df0010 = gga->df0001 = gga->df00001 = 0;
+    gga->df2000 = gga->df0200 = gga->df0020 = gga->df0002 = gga->df00002 = 0;
+    gga->df1010 = gga->df0101 = gga->df1001 = gga->df0110 = 0;
+    gga->df1100 = gga->df0011 = gga->df10001 = gga->df01001 = 0;
 }
-
+                                                                                
 void
 drv3_clear(ThirdFuncDrv* gga)
 {
-    gga->df1000 = gga->df0010 = gga->df2000 = gga->df1100 = 0;
-    gga->df1010 = gga->df1001 = gga->df0020 = gga->df0011 = 0;
-
-    gga->df3000 = gga->df2100 = gga->df2010 = gga->df1110 = 0;
-    gga->df2001 = gga->df1020 = gga->df0120 = gga->df0030 = 0;
-    gga->df1011 = gga->df0021 = 0;
+    gga->df1000 = gga->df0100 = gga->df0010 = gga->df0001 = gga->df00001 = 0;
+    gga->df2000 = gga->df0200 = gga->df0020 = gga->df0002 = 0;
+    gga->df1100 = gga->df0011 = 0;
+    gga->df1010 = gga->df1001 = gga->df0101 = gga->df0110 = 0;
+    gga->df10001 = gga->df01001 = 0;
+                                                                                
+    gga->df3000 = gga->df0300 = gga->df0030 = gga->df0003 = 0;
+    gga->df2100 = gga->df1200 = gga->df0012 = gga->df0021 = 0;
+    gga->df2010 = gga->df2001 = gga->df0201 = gga->df0210 = 0;
+    gga->df1020 = gga->df1002 = gga->df0102 = gga->df0120 = 0;
+    gga->df1110 = gga->df1101 = gga->df1011 = gga->df0111 = 0;
+    gga->df20001 = gga->df02001 = gga->df11001 = 0;
 }
 
 /* fortran (and not only) functional stub routines */
@@ -93,6 +107,16 @@ dft_set_hf_weight(real hfxfac)
 {
 #ifndef NO_BACKWARD_COMP
   dcrham_.hfxfac = hfxfac;
+#endif
+}
+
+real
+dft_get_hf_weight(void)
+{
+#ifndef NO_BACKWARD_COMP
+    return dcrham_.hfxfac;
+#else
+    return 0;
 #endif
 }
 
@@ -150,7 +174,9 @@ fort_print(const char* format, ...)
     vsnprintf(line, sizeof(line), format, a);
     va_end(a);
     len = strlen(line);
+#ifndef NO_BACKWARD_COMP
     fortwrt_(line, &len);
+#endif
 #endif
 }
 
@@ -332,7 +358,7 @@ xalpha_read(const char* conf_line)
     if(res) 
         gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 
                                       1.5*weight);
-    dcrham_.hfxfac = 0;
+    dft_set_hf_weight(0);
     return res;
 }
 
@@ -341,7 +367,7 @@ lda_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,   1.0);
-    dcrham_.hfxfac = 0;
+    dft_set_hf_weight(0);
     return 1;
 }
 
@@ -351,7 +377,7 @@ blyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
     gga_fun_list = add_functional(gga_fun_list, &B88CorrFunctional,  1.0);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    1.0);
-    dcrham_.hfxfac = 0;
+    dft_set_hf_weight(0);
     return 1;
 }
 
@@ -363,7 +389,7 @@ b3lyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &B88CorrFunctional,0.72);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    lypw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lypw);
-    dcrham_.hfxfac = 1-dirw;
+    dft_set_hf_weight(1-dirw);
     return 1;
 }
 
@@ -375,7 +401,7 @@ wah_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &B88CorrFunctional,0.72);
     gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,    lw);
     gga_fun_list = add_functional(gga_fun_list, &VWNFunctional,    1-lw);
-    dcrham_.hfxfac = 1 - sw;
+    dft_set_hf_weight(1 - sw);
     return 1;
 }
 
@@ -389,7 +415,7 @@ gga_key_read(const char* conf_line)
   float f;
   const char* str = conf_line;
 
-  dcrham_.hfxfac = 0;
+  dft_set_hf_weight(0);
 
   while(*str) {
     while(*str && isspace((int)*str)) str++; /* skip whitespace */
@@ -398,7 +424,7 @@ gga_key_read(const char* conf_line)
         if(sscanf(str+3,"%g", &f) != 1) {
             fort_print("GGAKey: HF not followed by the weight: ", conf_line);
             res = 0;
-        } else dcrham_.hfxfac = f;
+        } else     dft_set_hf_weight(f);
     } else {
         for(i=0; available_functionals[i]; i++) {
             int len = strlen(available_functionals[i]->name);
@@ -433,8 +459,8 @@ gga_report(void)
 {
     FuncList* lst;
     fort_print("Weighted mixed functional:");
-    if(dcrham_.hfxfac>0)
-        fort_print("%30s: %10.5f", "HF exchange", dcrham_.hfxfac);
+    if(dft_get_hf_weight()>0)
+        fort_print("%30s: %10.5f", "HF exchange", dft_get_hf_weight());
     for(lst=gga_fun_list; lst; lst=lst->next) 
         fort_print("%30s: %10.5f", lst->func->name, lst->weight);
 }

@@ -194,7 +194,6 @@ void dftpot1_(SecondDrv*ds, const real* w, const real* rho, const real* grad,
               const int* triplet);
 void dftpot2_(ThirdDrv *ds, real factor,  real rho, real grad, int isgga);
 
-#define drv1_clear(gga) { (gga)->df1000 = (gga)->df0010 = 0; }
 void drv2_clear(SecondFuncDrv* gga); /* set all components to 0 */
 void drv3_clear(ThirdFuncDrv* gga);  /* set all components to 0 */
 int fun_false(void); /* always returns 0 */
