@@ -450,6 +450,7 @@ C
          NEM = 0
          DO I = 1,NDMAT
             IY  = MOD(IFCTYP(I),10)
+            IX = (IFCTYP(I)-IY)/10
             IC  = MOD(IY,2)
             IE  = (IY - IC)/2
             IF (IX.EQ.2) IC = 0
@@ -1870,6 +1871,7 @@ C                         non-symmetric density matrices
                       DO I = 1,NDMAT 
 C Largest Coulomb contribution
                         IY  = MOD(IFCTYP(I),10)
+                        IX = (IFCTYP(I)-IY)/10
                         IC  = MOD(IY,2)
                         IE  = (IY - IC)/2
                         IF (IX.EQ.2) IC = 0
