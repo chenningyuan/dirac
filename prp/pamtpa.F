@@ -894,7 +894,7 @@ C
       RETURN
       END
 C
-      SUBROUTINE DEF_TPA(WORK,LWORK,DOTPA)
+      SUBROUTINE DEF_TPA(WORK,LWRK,DOTPA)
 C*****************************************************************************
 C
 C     Input handeling for .TWO-PHOTON
@@ -908,10 +908,13 @@ C*****************************************************************************
 #include "dgroup.h"
       PARAMETER ( D1 = 1.0D0 )
       CHARACTER PNAME*16
-      DIMENSION WORK(LWORK),PNAME(3)
+      DIMENSION WORK(LWRK),PNAME(3)
       LOGICAL DOTPA
 C
       CALL QENTER('DEF_TPA')
+C
+      LFREE = LWRK
+      KFREE = 1
 C
 C     Initialize /XCIBQR/
 C     ===================
@@ -947,7 +950,7 @@ C
       PNAME(3) = 'ZDIPLEN'
       DO I=1,3
          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK,LWORK,IPRXQR)
+     &               ITRXPR,WORK(KFREE),LFREE,IPRXQR)
          CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
          CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
       END DO

@@ -1,4 +1,4 @@
-      SUBROUTINE XQRINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE XQRINP(WORD,RESET,WORK,LWRK)
 C*****************************************************************************
 C
 C     Input section for quadratic response  <<A;B,C>>
@@ -27,7 +27,7 @@ C
 C
       LOGICAL SET,NEWDEF,RESET
       CHARACTER PROMPT*1,WORD*7,TABLE(NTABLE)*7,WORD1*7,PNAME*16
-      DIMENSION WORK(LWORK),PNAME(3)
+      DIMENSION WORK(LWRK),PNAME(3)
 C
       SAVE SET
       DATA TABLE /
@@ -35,12 +35,15 @@ C
      &     '.B FREQ','.C FREQ','.THRESH','.MAXITR',
      &     '.SKIPEP','.MAXRED','.ALLCMB','.XQRNRM',
      &     '.XXXXXX','.XXXXXX','.INTFLG','.NOPREC',
-     &     '.DIPLEN','.XXXXXX','.XXXXXX','.XXXXXX',
+     &     '.DIPLEN','.OCCUPI','.VIRTUA','.ACTIVE',
      &     '.ITRINT','.CNVINT','.XXXXXX','.XXXXXX',
      &     '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
+C
+      LFREE = LWRK
+      KFREE = 1
 C
       NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
@@ -89,7 +92,7 @@ C
       RESXQR = DMIL
       CNVXQR(1) = DUMMY
       CNVXQR(2) = DUMMY
-      MAXQRM = 100
+      MAXQRM = 400
       ITRXQR = 30
       INTXQR = ILLINT + 2*ISLINT + 4*ISSINT
       ITRIQR(1) = 1
@@ -102,7 +105,7 @@ C
          INTXQR = ILLINT
          XQR_SKIPEP = .TRUE.
       ELSE IF (FREEPJ .OR. VEXTPJ) THEN
-C        ... no positron orbitals ("no-pair")
+C     No positron orbitals ("no-pair")
          XQR_SKIPEP = .TRUE.
       ELSE
          XQR_SKIPEP = .FALSE.
@@ -112,8 +115,6 @@ C        ... no positron orbitals ("no-pair")
          XQR_INDSTR(2,I) = ' '
          XQR_INDSTR(3,I) = ' '
       END DO
-C     TODO hjaaj Feb 2004: make possibility to specify in
-C          input as for XLR_INDSTR in pamxlr.F
 C
       CALL IZERO(LQROP,3*MAXLQR*2)
 C
@@ -153,19 +154,19 @@ C     Print level
  2          CONTINUE
 C     A operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &           WORK,LWORK,IPRXQR)
+     &           WORK(KFREE),LFREE,IPRXQR)
             CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
             GO TO 100
  3          CONTINUE
 C     B operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &           WORK,LWORK,IPRXQR)
+     &           WORK(KFREE),LFREE,IPRXQR)
             CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
             GO TO 100
  4          CONTINUE
 C     C operator
             CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &           WORK,LWORK,IPRXQR)
+     &           WORK(KFREE),LFREE,IPRXQR)
             CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
             GO TO 100
  5          CONTINUE
@@ -215,7 +216,7 @@ C     Maximum number of iterations in LR solver
             READ (LUCMD, '(I5)') ITRXQR
             GO TO 100
  9          CONTINUE
-C     .SKIPEP Exclude all electron-positron rotations
+C     SKIPEP: Exclude all electron-positron rotations
             XQR_SKIPEP = .TRUE.
             GOTO 100
  10         CONTINUE
@@ -223,7 +224,7 @@ C     Max dimension of matrix in reduced system
             READ(LUCMD,*) MAXQRM
             GOTO 100
  11         CONTINUE
-C     .ALLCMB for calc of all possible response funcions
+C     ALLCMB: for calc of all possible response funcions
 C     disregarding permutational symmetries (debug option)
             XQR_ALLCMB = .TRUE.
             GOTO 100
@@ -253,20 +254,29 @@ C     Specification of a complete beta tensor of dipole operators
             PNAME(3) = 'ZDIPLEN'
             DO I=1,3
                CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &              ITRXPR,WORK,LWORK,IPRXQR)
+     &              ITRXPR,WORK(KFREE),LFREE,IPRXQR)
                CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
                CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
                CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
             END DO
             GO TO 100
  18         CONTINUE
-C
+C     OCCUPI: String of inactive orbitals in XQR module
+            DO I=1,NFSYM
+               READ(LUCMD,'(A)') XQR_INDSTR(1,I)
+            ENDDO
             GO TO 100
  19         CONTINUE
-C
+C     VIRTUA: String of secondary orbitals in XQR module
+            DO I=1,NFSYM
+               READ(LUCMD,'(A)') XQR_INDSTR(3,I)
+            ENDDO
             GO TO 100
  20         CONTINUE
-C
+C     ACTIVE: String of active orbitals in XQR module
+            DO I=1,NFSYM
+               READ(LUCMD,'(A)') XQR_INDSTR(2,I)
+            ENDDO
             GO TO 100
  21         CONTINUE
 C     Number of iterations before adding SL- and SS-integrals
@@ -312,17 +322,12 @@ C     Process section
 C
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1
       IF (CNVXQR(2).LT.DUMMY) ITRIQR(2) = 1
-      MXREDZ = MAXQRM/2
-      MAXQRM  = 2*MXREDZ
 C
 C     Do not set DOXQR if DOTPA is already set.
 C
-      print *,"panor:NAQROP,NBQROP,NCQROP,nbqrfr,ncqrfr=",
-     &     NAQROP,NBQROP,NCQROP,nbqrfr,ncqrfr
       DOXQR = (NAQROP.GT.0.AND.NBQROP.GT.0.AND.NCQROP.GT.0).AND.
      &        (.NOT.DOTPA)
-      print *,"panor: doxqr,dotpa,dover=",doxqr,dotpa,dover
-      IF (.NOT.((DOXQR).OR.DOTPA)) GOTO 999
+      IF ( .NOT.(DOXQR.OR.DOTPA) ) GOTO 999
 C
 C     Print section
 C
@@ -415,7 +420,7 @@ C***********************************************************************
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR),RES_QR(3,MAXQR)
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('PRPXQR')
 C
@@ -515,7 +520,7 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbxrs.h"
 C
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
       LOGICAL DOHYP
 C
       CALL QENTER('QR_SETUP')
@@ -799,7 +804,7 @@ C
       CHARACTER TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('QRVEC')
 C
@@ -996,7 +1001,7 @@ C*****************************************************************************
 C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*)
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('LRVEC')
 C
@@ -1079,7 +1084,7 @@ C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),
      &     XPOZ(NZPAR,NZ,NFREQ),XPOY(NZPAR,NZ,NFREQ),
-     &     RSPVEC(MZYPAR,NZ),BUF(MZYPAR*NZ),WORK(*)
+     &     RSPVEC(MZYPAR,NZ),BUF(MZYPAR*NZ),WORK(LWRK)
 C
       CALL QENTER('LRVEC1')
 C
@@ -1207,7 +1212,8 @@ C
 C
       CHARACTER ALAB*8,BLAB*8
       DIMENSION VECBEE(MZYEE,NZ),VECBEP(MZYEP,NZ)
-      DIMENSION RESULT(3,MAXLQR,MAXLQR,MAXFQR),CMO(*),IBEIG(*),WORK(*)
+      DIMENSION RESULT(3,MAXLQR,MAXLQR,MAXFQR)
+      DIMENSION CMO(*),IBEIG(*),WORK(LWRK)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -1440,7 +1446,7 @@ C
       CHARACTER ALAB*8,BLAB*8,CLAB*8
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION CMO(*),IBEIG(*),WORK(*)
+      DIMENSION CMO(*),IBEIG(*),WORK(LWRK)
       DIMENSION RESULT(3,MAXQR)
 C
       CALL QENTER('QRHYP')
@@ -1556,7 +1562,7 @@ C
       PARAMETER ( D0=0.0D0, D1=1.0D0, DM1=-1.0D0 )
       CHARACTER LAB*8
       DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ)
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('HYPINIT')
 C
@@ -1673,7 +1679,7 @@ C
 C
       DIMENSION VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(LWRK)
 C
       CALL QENTER('A2DRV')
 C
@@ -1754,7 +1760,7 @@ C
 C
       DIMENSION VECAEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(LWRK)
 C
       CALL QENTER('X2DRV')
 C
@@ -1837,7 +1843,7 @@ C*****************************************************************************
 #include "dcbxqr.h"
 C
       DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('GTZYMT')
 C
@@ -2064,7 +2070,8 @@ C*****************************************************************************
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 C
-      DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ),WORK(*)
+      DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('RSP1GR')
 C
@@ -2161,7 +2168,7 @@ C
 C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
       CALL QENTER('T3DRV')
 C
@@ -2221,7 +2228,7 @@ C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
-      DIMENSION RESULT(3),CMO(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
       CALL QENTER('E3DRV')
 C
@@ -2383,7 +2390,7 @@ C
 C
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 C
       CALL QENTER('S3DRV')
 C
@@ -2452,7 +2459,7 @@ C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
       DIMENSION DEN(N2BBASX,NZ),CMO(*),W1(NORBT,NORBT,NZ)
-      DIMENSION WORK(*)
+      DIMENSION WORK(LWRK)
 C
       CALL QENTER('QDENS1')
 C
@@ -2506,7 +2513,7 @@ C
 C
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),W1(NORBT,NORBT,NZ)
-      DIMENSION CMO(*),WORK(*)
+      DIMENSION CMO(*),WORK(LWRK)
 C
       CALL QENTER('QDEN1')
 C
@@ -2611,7 +2618,7 @@ C
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
 C
       DIMENSION DEN(N2BBASX,NZ),W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
-      DIMENSION CMO(*),WORK(*)
+      DIMENSION CMO(*),WORK(LWRK)
 C
 C
       CALL QENTER('QDENS2')
@@ -2694,7 +2701,7 @@ C
       CHARACTER T*1
       DIMENSION DEN(N2BBASX,NZ),DTMP(N2BBASX,NZ),WTMP(NORBT,NORBT,NZ)
       DIMENSION W1(NORBT,NORBT,NZ),W2(NORBT,NORBT,NZ)
-      DIMENSION T(-1:1),IQBF(4),CMO(*),WORK(*)
+      DIMENSION T(-1:1),IQBF(4),CMO(*),WORK(LWRK)
 C
       CALL QENTER('QDEN2')
 C
@@ -2874,7 +2881,7 @@ C
       CHARACTER T*1
 C
       DIMENSION FAO(N2BBASXQ),FMO(N2ORBXQ)
-      DIMENSION IQBF(4),T(-1:1),CMO(*),WORK(*)
+      DIMENSION IQBF(4),T(-1:1),CMO(*),WORK(LWRK)
 C
       CALL QENTER('FAOMO')
 C
@@ -2968,29 +2975,37 @@ C       P:Z+Y        P:Z       P:Y
 C
       CALL DZERO(TEMP,3*3)
       DO IZ=1,NZ
+C
          IF (IPQTOQ(IZ,ISYM-1).EQ.1 .OR. .NOT.DAGGER) THEN
             SIGN = D1
          ELSE 
             SIGN = DM1
          END IF
-         IF (SWAP) THEN
-            IOFF = NZEE
-         ELSE
-            IOFF = 0
+C
+         IF (NZEE.GT.0) THEN
+            IF (SWAP) THEN
+               IOFF = NZEE
+            ELSE
+               IOFF = 0
+            END IF
+            TEMP(2,2) = TEMP(2,2) +
+     &           SIGN*FAC*DDOT(NZEE,VECAEE(1,IZ),1,VECBEE(1+IOFF,IZ),1)
+            TEMP(2,3) = TEMP(2,3) + 
+     &           SIGN*FAC*DDOT(NZEE,VECAEE(1+IOFF,IZ),1,VECBEE(1,IZ),1)
          END IF
-         TEMP(2,2) = TEMP(2,2) +
-     &       SIGN*FAC*DDOT(NZEE,VECAEE(1,IZ),1,VECBEE(1+IOFF,IZ),1)
-         TEMP(2,3) = TEMP(2,3) + 
-     &       SIGN*FAC*DDOT(NZEE,VECAEE(1+IOFF,IZ),1,VECBEE(1,IZ),1)
-         IF (SWAP) THEN
-            IOFF = NZEP
-         ELSE
-            IOFF = 0
+C
+         IF (NZEP.GT.0) THEN
+            IF (SWAP) THEN
+               IOFF = NZEP
+            ELSE
+               IOFF = 0
+            END IF
+            TEMP(3,2) = TEMP(3,2) +
+     &           SIGN*FAC*DDOT(NZEP,VECAEP(1,IZ),1,VECBEP(1+IOFF,IZ),1)
+            TEMP(3,3) = TEMP(3,3) +
+     &           SIGN*FAC*DDOT(NZEP,VECAEP(1+IOFF,IZ),1,VECBEP(1,IZ),1)
          END IF
-         TEMP(3,2) = TEMP(3,2) +
-     &       SIGN*FAC*DDOT(NZEP,VECAEP(1,IZ),1,VECBEP(1+IOFF,IZ),1)
-         TEMP(3,3) = TEMP(3,3) +
-     &       SIGN*FAC*DDOT(NZEP,VECAEP(1+IOFF,IZ),1,VECBEP(1,IZ),1)
+C
       END DO
 C
       TEMP(1,2) = TEMP(2,2)+TEMP(3,2)
@@ -3047,7 +3062,7 @@ C
 C
       LOGICAL ZERO
       DIMENSION GPC(NZCQ),GPE(NZEQ),GPP(NZPQ)
-      DIMENSION FREQ(NFR),WORK(*)
+      DIMENSION FREQ(NFR),WORK(LWRK)
 C
       KFREE = 1
       LFREE = LWRK
@@ -3223,7 +3238,7 @@ C
       CALL QEXIT('WRTQR')
       RETURN
       END
-      SUBROUTINE DEF_1STHYP(WORK,LWORK)
+      SUBROUTINE DEF_1STHYP(WORK,LWRK)
 C*****************************************************************************
 C
 C     Input hadeling for .FIRST HYPERPOLARIZABILITY
@@ -3236,9 +3251,12 @@ C*****************************************************************************
 #include "dcbxqr.h"
       PARAMETER ( D1 = 1.0D0 )
       CHARACTER PNAME*16
-      DIMENSION WORK(LWORK),PNAME(3)
+      DIMENSION WORK(LWRK),PNAME(3)
 C
       CALL QENTER('DEF_1STHYP')
+C
+      LFREE = LWRK
+      KFREE = 1
 C
 C     Initialize /XCIBQR/
 C     ===================
@@ -3252,7 +3270,7 @@ C
 C
       DO I=1,3
          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &        ITRXPR,WORK,LWORK,IPRXQR)
+     &        ITRXPR,WORK(KFREE),LFREE,IPRXQR)
          CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
          CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
          CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
@@ -3261,7 +3279,7 @@ C
       CALL QEXIT('DEF_1STHYP')
       RETURN
       END
-      SUBROUTINE DEF_VERDET(WORK,LWORK)
+      SUBROUTINE DEF_VERDET(WORK,LWRK)
 C*****************************************************************************
 C
 C     Input hadeling for VERDET
@@ -3277,12 +3295,16 @@ C*****************************************************************************
 C
       PARAMETER ( D1 = 1.0D0 )
       CHARACTER PNAME*16,PLABEL*8
-      DIMENSION WORK(LWORK),PNAME(3),PFAC(2),PLABEL(2)
+      DIMENSION WORK(LWRK),PNAME(3),PFAC(2),PLABEL(2)
 C
       CALL QENTER('DEF_VERDET')
 C
+      LFREE = LWRK
+      KFREE = 1
+C
 C     Using a default B optical frequency since Verdet is zero
 C     for static fields
+C
       NBQRFR = 1
       NCQRFR = 1
       BQRFR(1) = 0.0656
@@ -3293,7 +3315,7 @@ C     Enter the A and B operators
       PNAME(3) = 'ZDIPLEN'
       DO I=1,3
          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &        ITRXPR,WORK,LWORK,IPRXQR)
+     &        ITRXPR,WORK(KFREE),LFREE,IPRXQR)
          CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
          CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
       END DO
@@ -3304,7 +3326,7 @@ C     Enter the C operator. In the Levy-Leblond case this is *ANGMOM
          PNAME(3) = 'ZANGMOM'
          DO I=1,3
             CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &           ITRXPR,WORK,LWORK,IPRXQR)
+     &           ITRXPR,WORK(KFREE),LFREE,IPRXQR)
             CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
          END DO
       ELSE
@@ -3316,21 +3338,21 @@ C     X component of B-field
          PLABEL(1) = 'ZDIPLEN'
          PLABEL(2) = 'YDIPLEN'
          CALL XPRIND(PNAME(1),5,2,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,WORK(KFREE),LFREE,IPRINT)
          CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
 C     Y component of B-field
          PNAME(1)  = 'YMAGCOUP'
          PLABEL(1) = 'XDIPLEN'
          PLABEL(2) = 'ZDIPLEN'
          CALL XPRIND(PNAME(1),6,2,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,WORK(KFREE),LFREE,IPRINT)
          CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
 C     Z component of B-field
          PNAME(1)  = 'ZMAGCOUP'
          PLABEL(1) = 'YDIPLEN'
          PLABEL(2) = 'XDIPLEN'
          CALL XPRIND(PNAME(1),7,2,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &        INDXPR,ISYXPR,ITRXPR,WORK(KFREE),LFREE,IPRINT)
          CALL OP1IND('NCQROP',IND1OP,LCQROP,NCQROP,INDXPR,MAXLQR)
       END IF
 C
@@ -3356,7 +3378,7 @@ C
       PARAMETER ( D0 = 0.0D0, VFACTOR = 4.20443685567D0 )
       DIMENSION RES_LR(3,MAXLQR,MAXLQR,MAXFQR),RES_QR(3,MAXQR)
 C
-      CALL QENTER('RES_QR')
+      CALL QENTER('QR_PRINT')
 C
       WRITE(LUPRI,'(/A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
@@ -3367,12 +3389,12 @@ C
 C
       CALL HEADER('Quadratic Response Functions',-1)
       CALL PRSYMB(LUPRI,'-',70,1)
-      WRITE(LUPRI,'(A)') '  A-oper    B-oper    C-oper   B-freq.  ' //
-     &     ' C-freq.     <<A;B,C>>_wB,wC'  
+      WRITE(LUPRI,'(A)') '  A-oper    B-oper    C-oper    B-freq   ' //
+     &     ' C-freq       <<A;B,C>>_wB,wC'  
       CALL PRSYMB(LUPRI,'-',70,1)
 C
       DO I=1,NQRHYP
-         WRITE(LUPRI,'(A10,A10,A10,F10.6,F10.6,F20.12)') 
+         WRITE(LUPRI,'(A10,A10,A10,F10.6,F10.6,F20.8)') 
      &        PRPNAM(LQRHYP(I,1))(1:8),PRPNAM(LQRHYP(I,2))(1:8),
      &        PRPNAM(LQRHYP(I,3))(1:8),QRFRHYP(I,2),QRFRHYP(I,3),
      &        RES_QR(1,I)
@@ -3380,7 +3402,6 @@ C
 C
       CALL PRSYMB(LUPRI,'-',70,1)
 C
-      print *,"panor: dover=",dover
       IF (DOVER) THEN
 C
          CALL HEADER('Verdet Constants',-1)
@@ -3430,7 +3451,7 @@ C     End of Verdet printout
 C
       END IF
 C
-      CALL QENTER('RES_QR')
+      CALL QEXIT('QR_PRINT')
 C
       RETURN
       END

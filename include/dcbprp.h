@@ -11,7 +11,7 @@
 !          (by the polarization propagator method)
 !  DOXQR - do quadratic response
 !  DOTPA - do two-photon absortion calculation
-C  DOVER - do verdet calculations (via DOXQR)
+!  DOVER - do verdet calculations (via DOXQR)
 !  MGRAD - calculate molecular gradient
       INTEGER LUCORP
       PARAMETER (LUCORP = 91)
@@ -29,7 +29,7 @@ C  DOVER - do verdet calculations (via DOXQR)
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,       &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
-     &                PVCSHI, EFN, RHONUC, DOTPA
+     &                PVCSHI, EFN, RHONUC, DOTPA, DOVER
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &

@@ -281,17 +281,17 @@ C&&&& RHONUC - electronic density at nuclei
  123     CONTINUE
 C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             DOXQR = .TRUE.
-            CALL DEF_1STHYP(WORK(KFREE),LFREE)
+            CALL DEF_1STHYP(WORK,LWORK)
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
-            CALL DEF_TPA(WORK(KFREE),LFREE,DOTPA)
+            CALL DEF_TPA(WORK,LWORK,DOTPA)
             GO TO 100
 C&&&& .VERDET - Calculates the Verdet constant with the QR module
  125     CONTINUE
             DOVER = .TRUE.
             DOXQR = .TRUE.
-            CALL DEF_VERDET(WORK(KFREE),LFREE)
+            CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
