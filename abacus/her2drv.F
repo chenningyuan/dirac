@@ -372,6 +372,7 @@ C
 #include <nuclei.h>
 #ifdef PRG_DIRAC
 #include <dcbgrd.h>
+#include <dcbham.h>
 #else
 #include <energy.h>
 #endif
