@@ -21,11 +21,7 @@
 #include "get_memsize.head"
  ;
 
-#if defined (VAR_CRAY) || defined (VAR_T3D)
-#define SIZE_REAL (sizeof(float))
-#else
 #define SIZE_REAL (sizeof(double))
-#endif
 
 #include "alloc_mem.head"
 

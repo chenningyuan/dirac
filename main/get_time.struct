@@ -12,11 +12,7 @@
 #define _GET_TIME_STRUCT
 typedef struct 
 {
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-   float cpu,wall;
-#else
    double cpu,wall;
-#endif
 }
 get_time_struct;
 #endif
