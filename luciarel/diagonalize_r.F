@@ -154,11 +154,8 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
 * Initial CI vectors are already on file LU1, do nothing
 * ======================================================
 *
-      IF( INICI .LT. 0 ) THEN
+      IF (INICI.LT.0) WRITE(6,*)' Initial CI vector assumed in place '
 *. Vectors assumed already in LU1
-        IF(IPRT.GT. 1 )
-     &  WRITE(6,*)' Initial CI vector assumed in place '
-      END IF
 *
 *                 ========================
 * 2 :                  Diagonalization
@@ -232,7 +229,7 @@ C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &              0,0,IDCOMH,IHAM12,SIGDEN_ROUTE)
 *
-C      SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
+C     SUBROUTINE CMICDV(MV7_REL,VEC1,VEC2,LU1,LU2,RNRM,EIG,FINEIG,MAXIT,
 C     &                  NVAR,LU3,LU4,LU5,LU6,LUDIA,NROOT,MAXVEC,NINVEC,
 C     &                  T_CC,
 C     &                  APROJI,APROJR,AVEC,WORK,IPRT,
@@ -710,6 +707,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
 #include "ipoist8.inc"
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       LOGICAL CONVER,RTCNV(100),EXSTOP
 *
 #include "krmcluci_inf.h"
@@ -876,6 +874,7 @@ C?       write(6,*) 'NINVEC FOR CEIGEN ',NINVEC
 * ======================
 *
  1000 CONTINUE
+       CALL GETTIM(CPUITR1,WALLITR1)
        write(6,*)
        WRITE(6,*) ' Info from iteration .... ', ITER
        WRITE(6,*) ' _________________________'
@@ -1245,13 +1244,12 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
         END DO
 *
       END IF
-cbs
-      EXSTOP =.FALSE. 
-      INQUIRE(FILE='STOPPER',EXIST=EXSTOP)
-      if (EXSTOP) then
-      write(6,*) 'I will stop now, like requested '
-      goto 1001
-      endif
+*
+      CALL GETTIM(CPUITR2,WALLITR2)
+      CPUTID = SECTID(CPUITR2-CPUITR1)
+      WALLTID = SECTID(WALLITR2-WALLITR1)
+      WRITE(6,9300) CPUTID,WALLTID
+*
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER.AND.IPREDZN.EQ.0) THEN
         GOTO 1000
       ELSE IF(IPREDZN.EQ.1) THEN
@@ -1341,6 +1339,7 @@ C!?      ITER = ITER - 1
       RETURN
  1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
  1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
+ 9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END
 ***********************************************************************
 *                                                                     *
