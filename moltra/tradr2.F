@@ -2617,20 +2617,17 @@ C
       LOGICAL ANTIS, LMP2, TRIAN(2), MP2FIN
 C
       CALL QENTER('TR2MST')
-      KFRSAV = KFREE
 C
 C     Initialize
 C        Get hold of the slaves and initialize them
 C        (ITASK = 2 for parallel integral transformation)
 C     
       CALL DIRAC_PARCTL(2)
-      NTIM = 7*(NODES+1)
-      CALL MEMGET('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KTIM),NTIM)
-      KDRIJ = KFREE
+      KFRSAV = KFREE
+      TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &     KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &     KINDX,KGAB,KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Task set-up
 C        Set up tasks with different batches of spinors if requested.
@@ -2836,14 +2833,14 @@ C
      &        NSTTIJ(1),NSTTIJ(2),NSTTIJ(3),NSTTIJ(4),
      &        NSTRIJ,ISPNR,JSPNR,IPRINT)
          CALL TIMEC('CONMP2',TIMSTR,TIMEND) 
-         WORK(KTIM+4) = WORK(KTIM+4) + TIMEND - TIMSTR
+         TMMP2 = TMMP2 + TIMEND - TIMSTR
 #if defined (MPE)
          CALL MPE_LOG_EVENT(10, 0, "end calc")
 #endif
 C
 C     Release memory after current batch
 C
-         CALL MEMREL('TR2MST',WORK,1,KDRIJ,KFREE,LFREE)
+         CALL MEMREL('TR2MST',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C     Slaves want to know if there are more batches
 C
@@ -2860,6 +2857,10 @@ C ======================================================================
 C
 C     Collect timing information from all slaves before releasing them
 C
+      KFRSAV = KFREE
+      NTIM = 7*(NODES+1)
+      CALL MEMGET('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KTIM),NTIM)
       DO INOD = 1,NODES
          CALL MPI_RECV(WORK(KTIM+INOD*7),7,MPI_DOUBLE_PRECISION,
      &        INOD,96,MPI_COMM_WORLD,ISTAT,IERR)
@@ -2871,7 +2872,7 @@ C
 C     Print timing info
 C
       WRITE(LUPRI,'(/A)') '** Master:'
-      CALL TIMTXT('Time used in MP2CAL is: ',WORK(KTIM+4),LUPRI)
+      CALL TIMTXT('Time used in MP2CAL is: ',TMMP2,LUPRI)
       DO INOD = 1,NODES
          WRITE(LUPRI,'(A,I4)') '** Node :',INOD
          CALL TIMTXT('Time used in CALDIS is: ',
@@ -2883,7 +2884,7 @@ C
          CALL TIMTXT('Time used in LQTRNS is: ',
      &                                      WORK(KTIM+INOD*7+3), LUPRI)
       END DO
-C     
+C
       CALL MEMREL('TR2MST',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TR2MST')
       RETURN
