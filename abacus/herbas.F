@@ -205,7 +205,9 @@ C
 C Finds the number of primitives and columns of contraction coeffecients
 C
          CALL FINPOS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS)
-Chj-aug99if (UNCONT) force uncontracted
+C     
+ 10      CONTINUE
+C
          IF (UNCONT) THEN
             INTORB = -INTORB
             IF (ANO .OR. SADLEJ) THEN
@@ -216,8 +218,7 @@ Chj-aug99if (UNCONT) force uncontracted
 Chj-aug99: MAERKE find out how to implement UNCONT for ano or sadlej !
             END IF
          END IF
-C     
- 10      CONTINUE
+C
          IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
