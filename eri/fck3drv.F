@@ -1,3 +1,7 @@
+C
+C   FCK3: Program for fast evaluation of coulomb contribution to the Fock matrix
+C
+
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, WORK, LWORK )
 #include "implicit.h"
 #include "priunit.h"
@@ -8,6 +12,7 @@
 #endif
 #include "cbihr2.h"
 #include "cbieri.h"
+Cdirac#include "cbione.h"
 #include "cbifck3.h"
 #include "mxcent.h"
 #include "aovec.h"
@@ -17,9 +22,7 @@
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "erithr.h"
-#ifdef (MOD_FMM)
 #include "clsfmm.h"
-#endif
 
       DIMENSION TIMFCK3(5),FMAT(*), DMAT(*), WORK(*)
 C
@@ -72,11 +75,12 @@ C
       CALL SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
      &               KFREE,LFREE,WORK,LWORK,IPRFCK3)
       MEMODB = LWORK - LFREE
-
-      IF ( ( .NOT. OLDMOM ) .AND. DOFMM ) THEN 
+#ifdef (MOD_FMM)
+      IF ( DOFMM ) THEN 
         CALL SETMM(DMAT,NDMAT,WORK(KIODBCLS),WORK(KIODBTCH),
      &             WORK(KRODBTCH),WORK(KFREE),LFREE,IPRFCK3)
       END IF
+#endif
 
 CMAW **** SKIP EXPENSIVE 2-e NCL integrals via FTUV *****
 C      WRITE(LUPRI,*) "*** maw: skipping all 2-e integrals in NCLFCK!"
@@ -89,15 +93,6 @@ C      RETURN
       NPARFTUV_NSTEPODCLS = NPARFTUV_NPAR
 
       DO NPARFTUV_KSTARTODCLS = 1, NPARFTUV_NPAR
-
-       IF ( CHCKNAI ) THEN
-        IELECTR = 1
-        CALL SETFTUV( KIFTUVCLS,KRFTUVCLS,KIFTUV,KRFTUV,KFTUV,
-     &            KRFBTCH,KIFBTCH,WORK(KIODBCLS),WORK(KIODBTCH),
-     &            DMAT,ISYMDM,NDMT,
-     &            KFREE,LFREE,IELECTR,WORK,LWORK,
-     &            NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,IPRFCK3)
-       END IF
 
        IELECTR = 2
 
@@ -253,7 +248,8 @@ C
 C     Arrays for Hermite integrals
 C     ============================
 C
-      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
+     &            IPRINT)
       CALL LMNPRP(WORK(KLMNVL),WORK(KLMNSM),IPRINT)
 
 C
@@ -284,6 +280,7 @@ C     ============================
 #include "fck3thr.h"
 #include "fck3mem.h"
 #include "cbifck3.h"
+#include "clsfmm.h"
       DIMENSION IODBCLS(5,*), IODBTCH(2,*), RODBTCH(5,*),
      &          IFTUVCLS(10,*),RFTUVCLS(4,*),IFTUV(*),RFTUV(*),
      &          RFBTCH(5,*),IFBTCH(2,*),FTUV(*),CSQ(NCSQ1,NCSQ2),
@@ -292,9 +289,8 @@ C     ============================
      &          LMNSYM(MAXODKCK,MAXODNHK,2,0:7),WORK(*), 
      &          KCCF(2,2)
 
-      NTOT = 0
-
       NOSKIPCL = ( ( .NOT. NCLFCK3 ) .OR. NOSKIPCL ) 
+      IF ( BRFREE ) NCLFCK3 = .FALSE. 
 
       MAXNHK  = 4 * ( MAXAONHK - 1 ) + 1
 
@@ -414,7 +410,9 @@ C
 
          STATISTICS(1) = STATISTICS(1) + NPRF0
 
-         IF ( ( NOSKIPCL .OR. ( RMIN .LE. ( EXTPMAX+EXTQMAX ) ) ) .AND.
+         IF ((( NOSKIPCL .OR. ( RMIN .LE. EXTPMAX + EXTQMAX ) ) .OR.
+     &        ( BRFREE .AND. ( ( RMIN .LE. RPQMIN ) .OR.  
+     &                       ( RMIN .LE. EXTPMAX + EXTQMAX ) ))) .AND.
      &        ( NOSKIPCS .OR. ( SCRAB * SCRCD .GT. THRCOD ) ) ) THEN
 
           NTFTUVBTCH  = IFTUVCLS(  1, IFCLS )
@@ -518,16 +516,15 @@ C         ================================
            END IF
           END IF
 
-          NTOT = NTOT + NPRF
           STATISTICS(4) = STATISTICS(4) + (NPRF0-NPRF)
 C
 C         End of the main time consuming part !!!
 C         =======================================
 
-         ELSE 
-          STATISTICS(5) = STATISTICS(5) + NPRF0
          END IF
 
+         ELSE 
+          STATISTICS(5) = STATISTICS(5) + NPRF0
          END IF
 
         END DO 
@@ -1434,13 +1431,10 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 #include "cbifck3.h"
 #include "fck3thr.h"
 
-      CHCKNAI   = .FALSE.
-      OLDFCK3   = .FALSE.
       NOSCRPRIM = .FALSE.
       NOSKIPCL  = .FALSE.
       NOSKIPCS  = .FALSE.
       SCRFBTCH  = .FALSE.
-      OLDMOM    = .FALSE.
       FIXTHR    = .FALSE.
       BRFREE    = .FALSE.
       FULL_J    = .FALSE.
@@ -1466,11 +1460,11 @@ C         IF ( (IAOA .EQ. IAOB ) .OR. ( IAOBA .EQ. IAOBB )) THEN
 #include "implicit.h"
 #include "priunit.h"
 #include "cbifck3.h"
-      PARAMETER ( NTABLE = 15 )
+      PARAMETER ( NTABLE = 12 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DATA TABLE /'.FIXTHR','.CHCKNA','.OLDFCK','.PRINT ','.NOSPEX',
-     &            '.NOSCRP','.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK',
-     &            '.NOSKAL','.OLDMOM','.FULL_J','.UNCONT','.BRFREE'/
+      DATA TABLE /'.FIXTHR','.PRINT ','.NOSPEX','.NOSCRP',
+     &            '.NOSKCL','.NOSKCS','.SCRFBT','.NOPACK',
+     &            '.NOSKAL','.FULL_J','.UNCONT','.BRFREE'/
 C
       WORD1 = WORD
 C
@@ -1483,7 +1477,7 @@ C
             ELSE IF (PROMPT .EQ. '.') THEN
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
  200          CONTINUE
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1494,48 +1488,40 @@ C
         FIXTHR     = .TRUE.
       GO TO 100
  2    CONTINUE
-        CHCKNAI    = .TRUE.
-      GO TO 100
- 3    CONTINUE
-        OLDFCK3    = .TRUE.
-      GO TO 100
- 4    CONTINUE
         READ (LUCMD, '(I5)') IPRFCK3
       GO TO 100
- 5    CONTINUE
+ 3    CONTINUE
         SPEXP      = .FALSE.
       GO TO 100
- 6    CONTINUE 
+ 4    CONTINUE 
          NOSCRPRIM = .TRUE.
       GO TO 100
- 7    CONTINUE
+ 5    CONTINUE
          NOSKIPCS  = .TRUE.
       GO TO 100
- 8    CONTINUE
+ 6    CONTINUE
          NOSKIPCL  = .TRUE.
       GO TO 100
- 9    CONTINUE
+ 7    CONTINUE
          SCRFBTCH  = .TRUE.
       GO TO 100
- 10   CONTINUE
+ 8    CONTINUE
          PACKFTUV  = .FALSE.
       GO TO 100  
- 11   CONTINUE
+ 9    CONTINUE
          SKALLCL   = .FALSE.
       GO TO 100  
- 12   CONTINUE
-         OLDMOM    = .TRUE.
-      GO TO 100  
- 13   CONTINUE
+ 10   CONTINUE
          FULL_J    = .TRUE.
          FIXTHR    = .TRUE.
          SPEXP     = .FALSE.
       GO TO 100  
- 14   CONTINUE
+ 11   CONTINUE
          CONTRACTED= .FALSE.
       GO TO 100  
- 15   CONTINUE
+ 12   CONTINUE
          BRFREE    = .TRUE.
+         CONTRACTED= .FALSE.
       GO TO 100  
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1580,3 +1566,105 @@ C
   
       RETURN
       END  
+
+      SUBROUTINE CHECKR2MIN( R2MIN, RODP, ICNTC,ICNTD, RCD )
+#include"implicit.h"
+#include"priunit.h"
+#include"maxaqn.h"
+#include"maxorb.h"
+#include"mxcent.h"
+#include"aobtch.h"
+#include"nuclei.h"
+
+C
+C     This routine gives the minimal (square of) distance 
+C    from point P to the the poing Q which we know is 
+C    restricted to be on the line between points C and D. 
+C
+
+      DIMENSION RODP(4)
+
+      IF ( ICNTC .EQ. ICNTD ) THEN
+        R2MIN = 0.0D0 
+        RETURN
+      END IF
+
+      PX = RODP(1)
+      PY = RODP(2)
+      PZ = RODP(3)
+
+      CX = CORD(1,ICNTC)
+      CY = CORD(2,ICNTC)
+      CZ = CORD(3,ICNTC)
+
+      DX = CORD(1,ICNTD)
+      DY = CORD(2,ICNTD)
+      DZ = CORD(3,ICNTD)
+
+      RCD2 = RCD*RCD
+      RPC2 = (PX-CX)*(PX-CX)+(PY-CY)*(PY-CY)+(PZ-CZ)*(PZ-CZ)
+      RPD2 = (PX-DX)*(PX-DX)+(PY-DY)*(PY-DY)+(PZ-DZ)*(PZ-DZ)
+
+C
+C      First case is when the angle either angle PCD or PDC is 
+C    bigger than 90 degrees ( in that case PQ > min(PC,PD) )
+C      If both these angles are less than 90 degrees, than
+C    we can actually calculate the minimal RPQ2 after
+C    a few line derivation ...
+C
+
+
+      IF ( ABS( RPD2 - RPC2 ) .GT. RCD2 ) THEN
+        R2MIN = MIN( RPC2, RPD2 )
+      ELSE
+        A     = RPC2 + RPD2 - RCD2
+        R2MIN = ( 4*RPC2*RPD2 - A*A ) / (4*RCD2)
+      END IF
+
+      RETURN
+      END 
+
+      SUBROUTINE CHECKRMIN( RMIN, RODP, ICNTC,ICNTD, RCD )
+#include"implicit.h"
+#include"priunit.h"
+#include"maxaqn.h"
+#include"maxorb.h"
+#include"mxcent.h"
+#include"aobtch.h"
+#include"nuclei.h"
+
+      DIMENSION RODP(4)
+
+C      AX = CORXBT(IA)
+C      AY = CORYBT(IA)
+C      AZ = CORZBT(IA)
+C
+C      BX = CORXBT(IB)
+C      BY = CORYBT(IB)
+C      BZ = CORZBT(IB)
+
+      PX = RODP(1)
+      PY = RODP(2)
+      PZ = RODP(3)
+
+      CX = CORD(1,ICNTC)
+      CY = CORD(2,ICNTC)
+      CZ = CORD(3,ICNTC)
+
+      DX = CORD(1,ICNTD)
+      DY = CORD(2,ICNTD)
+      DZ = CORD(3,ICNTD)
+
+      RPC = SQRT((PX-CX)**2 + (PY-CY)**2 + (PZ-CZ)**2)
+      RPD = SQRT((PX-DX)**2 + (PY-DY)**2 + (PZ-DZ)**2)
+
+      R = RPC + RPD - RCD
+     
+      IF ( R .GT. 0.0D0 ) THEN
+         RMIN = 0.5D0*R
+      ELSE
+         RMIN = 0.0D0
+      END IF
+      RETURN
+      END 
+

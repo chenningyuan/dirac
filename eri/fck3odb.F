@@ -62,9 +62,7 @@ C
       NCSQ1 = NSPHER(0,1,0,0) - 1
       NCSQ2 = 1  
 
-#ifdef (MOD_FMM)
       FACCLS = ERFCIV(THRCLS)
-#endif
 
 C
 C    Assign these variables also to ericom common block

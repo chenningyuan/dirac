@@ -186,7 +186,8 @@ C  ( for FTUV packing and to get carteesian indexes ijk
 C   corresponding to a certain spherical component )
 C
 
-      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR))
+      CALL HERPRP(WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
+     &            IPRINT)
       CALL LMNPRP(WORK(KLMNPWR),WORK(KLMNSYM),IPRINT)
 
       CALL SETFTUV1(WORK(KIFTUVCL),WORK(KRFTUVCL),WORK(KIFTUV),
@@ -195,12 +196,6 @@ C
      &              WORK(KINDHR),WORK(KLMNPWR),WORK(KLMNSYM),WORK(KCSQ),
      &              NPARFTUV_KSTARTODCLS,NPARFTUV_NSTEPODCLS,
      &              IELECTR,WORK(KWRK),LWRK,IPRINT)      
-
-      IF ( IELECTR .EQ. 1 ) THEN 
-        CALL CHECKNUCATR(WORK(KIFTUVCL),WORK(KRFTUV),WORK(KFTUV),
-     &               DMAT(1,1,1),WORK(KINDHR),JTOP,NDMAT,NFTUVCLS,
-     &               WORK(KWRK),LWRK,IPRINT)
-      END IF 
 
       LFREE = LFREE - ( KLAST1-KFREE )      
       KFREE = KLAST1
@@ -255,8 +250,8 @@ C
       IF ( LNEED .GT. LWORK ) THEN         
          WRITE (LUPRI,'(/,4(2X,A,I15,/))')
      &      'MAXODPRF                      : ',MAXODPRF,
-     &      'MAXCLSPRF                     : ',MAXCLSPRF,
-     &      'MAXFTUVTMPSIZE                : ',MAXCLSPRF*(MAXODNHK**3),
+     &      'MAXFCLSPRF                    : ',MAXFCLSPRF,
+     &      'MAXFTUVTMPSIZE                : ',MAXFCLSPRF*(MAXODNHK**3),
      &      'Memory requirements total     : ',LNEED,
      &      'Memory available              : ',LWORK
          CALL QUIT('Insufficient memory in SETFTUV1')
@@ -534,7 +529,7 @@ C
 
       CALL EXPCFT(ETIJ,NPRF12,JMAX1,JMAX2,COOR12,EXP12,I120,HPI,
      &            P1,P2,IRUTIN,IELECTR,JMAX1,JMAX2,NCNT12,IDL,
-     &            ISCAL1,ISCAL2,IPRINT)
+     &            ISCAL1,ISCAL2,IPRINT,DUM,DUM,DUM,DUM)
 
       IF ( IPRINT .GT. 10 ) THEN
        CALL HEADER('Exponents in SETETIJ',-1)
@@ -886,84 +881,42 @@ C
 C ---------------------------------------------------------------------
 C
 
-C
-C  Check nuclar attraction energy
-C
-      SUBROUTINE CHECKNUCATR(IFTUVCL,RFTUV,FTUV,DMAT,INDHER,JTOP,
-     &                       NDMT,NCLS,WORK,LWORK,IPRINT)
-C
+      SUBROUTINE PRIFTUV2(FTUV,ICL,NPRFAB,JMAX)
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "aovec.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "ericom.h"
-#include "cbieri.h"
-#include "aobtch.h"
-#include "symmet.h"
-#include "odbtch.h"
-#include "odclss.h"
-#include "eriao.h"
+#include "priunit.h"       
+      DIMENSION FTUV(NPRFAB,0:JMAX,0:JMAX,0:JMAX)
+      INTEGER T,U,V
 
-      DIMENSION IFTUVCL(10,*),RFTUV(*),FTUV(*),DMAT(*),WORK(*),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP)
+      CALL HEADER('FTUV',-1)
 
-      RNA = 0.0D0
+      WRITE(LUPRI,'(/,7X,3(A,I5,A,3X),/)')
+     &            'FTUV class number :',ICL,',',
+     &            'NTFTUV :', NPRFAB,',',
+     &            'JMAXF  :', JMAX,' '
 
-      DO ICL=1,NCLS
+      WRITE(LUPRI,'(7X,A)') 
+     &            'I    T    U    V     FTUV(I,T,U,V)'
 
-       NTFTUVPRIM = IFTUVCL(2,ICL)
-       KSRFTUV    = IFTUVCL(4,ICL)
-       KSFTUV     = IFTUVCL(5,ICL)
+      DO I = 1, NPRFAB
 
-       JMAXF     = IFTUVCL(6,ICL)
-       NTUV      = ( JMAXF + 1 ) * ( JMAXF + 2) * ( JMAXF + 3 ) / 6
-       NTUV3     = ( JMAXF + 1 )**3
+       DO T = 0, JMAX
+        DO U = 0, JMAX
+         DO V = 0, JMAX
 
-       KRNAI  = 1 
-       KAHGTF = KRNAI + NTFTUVPRIM*NTUV3
-
-       CALL DZERO(WORK(KRNAI),NTFTUVPRIM*NTUV3*NDMT)
-
-       CALL GETRNAI(WORK(KRNAI),WORK(KAHGTF),NTFTUVPRIM,JMAXF, 
-     &              RFTUV(KSRFTUV),IPRINT)
-
-       RNA = RNA + ADDRNAI2(WORK(KRNAI),
-     &               FTUV(KSFTUV),INDHER,JTOP,NTFTUVPRIM, JMAXF )
+          IF ( T+U+V .LE. JMAX ) THEN
+            WRITE(LUPRI,'(3X,4I5,F16.8)') I,T,U,V,FTUV(I,T,U,V)
+          ELSE
+            IF ( FTUV(I,T,U,V) .GT. 0D0 ) THEN 
+             WRITE(LUPRI,'(3X,4I5,F16.8,A)') I,T,U,V,FTUV(I,T,U,V),
+     &                   ' ERROR - T+U+V > JMAX ! '
+            END IF 
+          END IF 
+         END DO
+        END DO
+       END DO
 
       END DO
-
-      CALL HEADER('Nuclear attraction using FTUV',-1)
-      WRITE (LUPRI,'(F30.16)') RNA
-
-      CALL REFERENCE_NA(REFRNA,DMAT,NDMT,WORK,LWORK, IPRINT)
-
-      WRITE (LUPRI,'(A,5X,E20.14)') 'difference:',REFRNA-RNA
 
       RETURN
       END
 
-      FUNCTION ADDRNAI2(RNAI, FTUV, INDHER, JTOP, NPP12, JMAX12 )
-#include "implicit.h"
-C
-      INTEGER T,U,V,TUV
-      DIMENSION RNAI(NPP12,0:JMAX12,0:JMAX12,0:JMAX12),
-     &          INDHER(0:JTOP,0:JTOP,0:JTOP),FTUV(NPP12,*)
-
-      ADDRNAI2=0.0D0
-
-      DO T=0,JMAX12
-       DO U=0,JMAX12
-        DO V=0,JMAX12
-         TUV = INDHER(T,U,V)
-          DO I=1,NPP12
-           ADDRNAI2 = ADDRNAI2 + RNAI(I,T,U,V)*FTUV(I,TUV)
-         END DO
-        END DO
-       END DO
-      END DO
-
-      RETURN
-      END 
