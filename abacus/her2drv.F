@@ -451,9 +451,11 @@ C
          DO I = 1,NDMAT
             IY  = MOD(IFCTYP(I),10)
             IC  = MOD(IY,2)
-            NCM = NCM + IC
             IE  = (IY - IC)/2
+            IF (IX.EQ.2) IC = 0
+C           ... no Coulomb term for antisymmetric density matrix
             IF (HFXFAC.EQ.D0) IE = 0
+            NCM = NCM + IC
             NEM = NEM + IE
          ENDDO
       ENDIF
@@ -676,7 +678,7 @@ C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
 C
       IF (EXPECT) THEN
          IF (JPRINT .GT. 0) THEN
-Cjth - This must be rewritten to work in Dirac.
+Cjth - This must be rewritten to work in Dirac. TODO ?
 C      Eg. GRADNN is not defined in DIRAC
 #if !defined (PRG_DIRAC)
             CALL HEADER('Two-electron integral gradient',-1)
@@ -1870,6 +1872,8 @@ C Largest Coulomb contribution
                         IY  = MOD(IFCTYP(I),10)
                         IC  = MOD(IY,2)
                         IE  = (IY - IC)/2
+                        IF (IX.EQ.2) IC = 0
+C                       ... no Coulomb term for antisym. density matrix
                         IF (HFXFAC.EQ.D0) IE = 0
                         IF (IC .EQ. 1) THEN
                           DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
@@ -2015,6 +2019,8 @@ c                    END IF
                         IY  = MOD(IFCTYP(I),10)
                         IC  = MOD(IY,2)
                         IE  = (IY - IC)/2
+                        IF (IX.EQ.2) IC = 0
+C                       ... no Coulomb term for antisym. density matrix
                         IF (HFXFAC.EQ.D0) IE = 0
 C Largest Coulomb contribution to gradient/Hessian expectation value
                         IF (IC .EQ. 1) THEN
@@ -2050,7 +2056,7 @@ c    &                                       DMRAO(ISYBLB,ISYBLC,I))
                         DNSMAX = DNSMAX+DNSBUF(1,I)+DP25*DNSBUF(2,I)
 c                       DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
                      ENDDO
-Cjth - we may introduce a expectation value threshold later
+Cjth - we may introduce a expectation value threshold later - TODO ?
                      EXPTHR = SCRTHR
 C
                      DO 20 I = 1,3

@@ -1830,10 +1830,13 @@ C
           NCM = 0
           NEM = 0
           DO I = 1,NDMAT
+            IX  = IFCTYP(I) / 10
             IY  = MOD(IFCTYP(I),10)
             IC  = MOD(IY,2)
-            NCM = NCM + IC
             IE  = (IY - IC)/2
+            IF (IX.EQ.2) IC = 0
+C           ... no Coulomb term for antisymmetric density matrix
+            NCM = NCM + IC
             NEM = NEM + IE
           ENDDO
         ENDIF
