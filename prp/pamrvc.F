@@ -2904,9 +2904,11 @@ C
      &        'Zero norm of solution vector !'
         ELSE
           RCNV(IFREQ) = RTNORM/XTNORM
+CTROND          RCNV(IFREQ) = RTNORM/GPTNRM
           CNVMAX = MAX(CNVMAX,RCNV(IFREQ))
         ENDIF
         IF(RTNORM.LE.(XTNORM*THCXRS)) THEN
+CTROND        IF(RTNORM.LE.(GPTNRM*THCXRS)) THEN
 C         ... this root converged
           DO I = 1,NVPAR
             IVECS(IFREQ,I) = 0
@@ -2919,6 +2921,7 @@ C       a fraction (0.2) of convergence threshold.
           DO I = 1,NVPAR
             IF(RESFAC*RNORM(I,IFREQ).LT.RNRMAX.OR.
      &         D5*RNORM(I,IFREQ).LE.XTNORM*THCXRS) IVECS(IFREQ,I) = 0
+CTROND     &         D5*RNORM(I,IFREQ).LE.GPTNRM*THCXRS) IVECS(IFREQ,I) = 0
           ENDDO
         ENDIF
         WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')

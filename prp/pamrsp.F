@@ -355,6 +355,7 @@ C
 #include <pgroup.h>
 #include <dgroup.h>
 #include <dcborb.h>
+#include <cbihr2.h>
 C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -394,6 +395,21 @@ C
      &           GPCI,GPOE,GPOP,EVALR,
      &           WORK,KFREE,LFREE)
       IF(MAXSIM.EQ.0) MAXSIM = NVPAR*NFREQ
+C
+C     hjj+panor:
+C     Save screening parameter SCRFCK that is used in the construction
+C     of sigma-vectors. The parameter is before change equal to the value
+C     used in the wave function optimization and after the change to that
+C     which should be used for properties. Both these values can be user
+C     specified. Furthermore, if the trial vectors are NOT normalized then
+C     the screening threshold is modified by the norm of the gradient. 
+C
+      SCRSAV = SCRFCK
+      IF (.NOT.TKNORM) THEN
+        SCRFCK = SCRFCK*GPTNRM
+        WRITE (LUPRI,'(A,1P,D12.4)')
+     &     ' Screening threshold in LR solver SCRFCK=',SCRFCK
+      ENDIF
 C
 C     Handle case of no new start vectors
 C     ===================================
@@ -441,7 +457,6 @@ C     ***    reduced system                      ***
 C     ***                                        ***
 C     **********************************************
       IZRED = 0
-      JZRED = IZRED
  10   CONTINUE
         IF(ITMIC.EQ.MAXITR) GOTO 40
         TIMITR = SECOND()
@@ -462,6 +477,7 @@ C     **********************************************
         ENDIF
         MTSIM = NTSIM
         ILOAD = 0
+        JZRED = IZRED
         DO ITLOAD = 1,MTSIM,MAXSIM
           ILOAD = ILOAD + 1
           IF(BVLOAD) THEN
@@ -571,7 +587,6 @@ C       Info on current trial vectors
 C       -----------------------------
 C
         CALL BVINFO(ISIM,IBTYP,JZRED,MTSIM)
-        JZRED = JZRED + MTSIM
 C
 C       Write info to PAMCYC
 C       ====================
@@ -665,6 +680,10 @@ C
       ENDIF
       CLOSE(LUCYCL,STATUS='DELETE')
       CALL MEMREL('XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
+C
+C     Restore the screening parameter SCRFCK
+      SCRFCK = SCRSAV
+C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('XRSCT1')
       RETURN
@@ -1061,7 +1080,7 @@ C
         IB = IBN + NBPREV
         IH = IBTYP(2,IBVEC(IB))
         IF(IVECS(IBN).EQ.0) THEN
-          IF(IPRXRS.GT.2) THEN
+          IF(IPRXRS.GE.2) THEN
             WRITE(LUPRI,'(A1,A3,A,I3,A)')
      &      BTYP(NBTYP),XTYP(IH),'-vector no.',IBN,' not accepted'
           ENDIF
@@ -1109,7 +1128,7 @@ C
             END IF
             BNRM = D1 / BNRM
             CALL DSCAL(NBDIM,BNRM,BVECS(1,IBN),1)
-            IF(IPRXRS.GT.2) THEN
+            IF(IPRXRS.GE.2) THEN
               WRITE(LUPRI,'(A1,A3,A,I3,A,1P,D12.5)')
      &          BTYP(NBTYP),XTYP(IH),
      &          '-vector no.',IBN,'accepted. Norm : ',D1
@@ -1120,7 +1139,7 @@ C           In case of differential screening: keep the original norm
 C           (before Gram-Schmidt)
             BNRM = BVNRM(IBN)/BNRM
             CALL DSCAL(NBDIM,BNRM,BVECS(1,IBN),1)
-            IF(IPRXRS.GT.2) THEN
+            IF(IPRXRS.GE.2) THEN
               WRITE(LUPRI,'(A1,A3,A,I3,A,1P,D12.5)')
      &         BTYP(NBTYP),XTYP(IH),
      &         '-vector no.',IBN,' accepted. Norm : ',BVNRM(IBN)
@@ -1593,11 +1612,11 @@ C
 C     Calculate GP norm for elimination of trial vectors with small
 C     norm.
 C
-      GPNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
+      GPTNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
      &     DNRM2(NZXOPPQ,GPOP,1)**2
-      GPNRM = SQRT(GPNRM)
+      GPTNRM = SQRT(GPTNRM)
       IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
-     &     'Norm of gradient in XRSINI:',GPNRM
+     &     'Norm of gradient in XRSINI:',GPTNRM
 C
 C     Determine integral contribution
 C     ===============================
@@ -2866,7 +2885,7 @@ C
           GPTMP = DNRM2(NVARQ,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
-     &         'Norm of gradient ratio in XRSST2:',GPTMP/GPNRM
+     &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
           DO IP = 1,NFREQ
             IM = IP + NFREQ
             IBTYP(1,IBOFF+IP)     = NBTYP
@@ -2882,7 +2901,7 @@ C     total gradient we assume that it is unnecessary to provide a
 C     corresponding trial vector. If not then create a trial vector 
 C     from the gradient vector and the diagonal of the Hessian.
 C
-            IF (GPTMP.LT.0.01D0*GPNRM) THEN
+            IF (GPTMP.LT.0.01D0*GPTNRM) THEN
               IVEC(IP) = 0
               IVEC(IM) = 0
             ELSE
