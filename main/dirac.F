@@ -233,8 +233,9 @@ C
 #ifdef MOD_KRMC
             CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
 #else
-            CALL QUIT(
-     &   'Second order SCF optimization not included in this version')
+c           CALL QUIT(
+c    &   'Second order SCF optimization not included in this version')
+c        ... let it stop below ... /hjaaj Feb 2004
 #endif
          END IF
          IF(DOANA) CALL PAMANA(WORK,LWORK)
