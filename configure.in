@@ -400,7 +400,7 @@ if [ "$par" = "yes" ]; then
          *-hp)
             parlib='no'
             parinc='yes'
-            complist='mpif77 $complist'
+            complist='mpif77 mpif90 $complist'
             mpirun='mpirun'
             ;;
 	 *-dec)
@@ -1384,6 +1384,7 @@ QUEUESYS=$queuesys
 SCR_DEFAULT=$worksp
 BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
+BAS_DIR=`pwd`/basis/
 MPIRUN=$mpirun
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
