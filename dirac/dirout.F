@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dirout.F
-C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dhfout */
@@ -66,25 +65,23 @@ C
       IF(.NOT.ONESYS) THEN
         CALL HEADER('SCF - CYCLE',-1)
         IF(ERGCNV) THEN
-          WRITE(LUPRI,'(A,A,1P,E9.3)')
+          WRITE(LUPRI,'(A,A,1P,D9.3)')
      &      '* Convergence on total energy.',
      &      ' Convergence threshold:',SCFCNV
         ELSEIF(FCKCNV) THEN
-        WRITE(LUPRI,'(A,A,1P,E9.3)')
+          WRITE(LUPRI,'(A,A,1P,D9.3)')
      &      '* Convergence on total Fock matrix.',
      &      ' Convergence threshold:',SCFCNV
         ELSEIF(EVCCNV) THEN
-        WRITE(LUPRI,'(A,A,1P,E9.3)')
-     &  '* Convergence on norm of error vector(approximate gradient).',
+          WRITE(LUPRI,'(A,A,1P,D9.3)')
+     &  '* Convergence on norm of error vector (gradient).',
      &   ' Convergence threshold:',SCFCNV
         ENDIF
-        WRITE(LUPRI,'(A,A)')
-     &   '* ERGVAL - convergence',
-     &   ' on total energy',
-     &   '* FCKVAL - convergence',
-     &   ' on maximum change in total Fock matrix',
-     &   '* EVCVAL - convergence',
-     &   ' on error vector (approximate gradient)'
+        WRITE(LUPRI,'(A)')
+     &   '* ERGVAL - convergence in total energy',
+     &   '* FCKVAL - convergence in maximum change'//
+     &     ' in total Fock matrix',
+     &   '* EVCVAL - convergence in error vector (gradient)'
         CALL PRSYMB(LUPRI,'-',128,0)
         WRITE(LUPRI,1000)
         CALL PRSYMB(LUPRI,'-',128,0)
@@ -162,12 +159,11 @@ C
 C
       RETURN
 C
- 1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
-     &       'Conv.acc',4X,'CPU',10X,'Integrals',3X,'Time stamp')
- 1010 FORMAT('It. ',I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
- 1020 FORMAT(4X,I3,1P,E20.10,3X,3E10.2,3X,A8,3X,A12,3X,A9,
-     &       3X,A10)
+ 1000 FORMAT(11X,'Energy',15X,'ERGVAL    FCKVAL    EVCVAL',6X,
+     &       'Conv.acc    CPU',10X,'Integrals   Time stamp')
+ 1010 FORMAT('It. ',I3,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+ 1020 FORMAT(4X    ,I3,   D23.13,3D10.2,3X,A8,3X,A12,3X,A9,3X,A10)
+C     ... 1020 is used for reading from LUCYCL thus no '1P' !!!
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -175,7 +171,7 @@ C  /* Deck prcoef */
       SUBROUTINE PRCOEF(CMO,EIG,VECPRI,IPRCMP,ILABDF,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
-C     Print coefficients in 
+C     Print coefficients in
 C       AO-basis  (ILABDF = 1)
 C       SO-basis  (ILABDF = 2)
 C     VECPRI is an character array that contains information about what
@@ -356,9 +352,9 @@ C
           IF(LBIT(IPRCMP,IC)) THEN
             DO J = 1,NTBAS(IC)
               JJ  = IOFF + J
-              DVEC = ABS(CMO(JJ,I,1)) + ABS(CMO(JJ,I,2)) 
+              DVEC = ABS(CMO(JJ,I,1)) + ABS(CMO(JJ,I,2))
      &             + ABS(CMO(JJ,I,3)) + ABS(CMO(JJ,I,4))
-              IF(DVEC.GT.DM10) WRITE(LUPRI,100) 
+              IF(DVEC.GT.DM10) WRITE(LUPRI,100)
      &          JJ,PLABEL(IPLAB(JJ,1),1),(CMO(JJ,I,IZ),IZ = 1,4)
             ENDDO
           ENDIF
@@ -397,9 +393,9 @@ C           IP is gerade(1)/ungerade(2) !
               DO J = 1,NBBAS(IBREP,IC)
                 JU    = ICOS(IBSYM,IC)  + J
                 JS    = IBBAS(IBREP,IC) - IBAS(IFRP) + J
-                DVEC = ABS(CMO(JS,I,1)) + ABS(CMO(JS,I,2)) 
+                DVEC = ABS(CMO(JS,I,1)) + ABS(CMO(JS,I,2))
      &               + ABS(CMO(JS,I,3)) + ABS(CMO(JS,I,4))
-                IF(DVEC.GT.DM10) WRITE(LUPRI,100) 
+                IF(DVEC.GT.DM10) WRITE(LUPRI,100)
      &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
      &               (CMO(JS,I,IZ),IZ = 1,4)
               ENDDO
@@ -648,7 +644,7 @@ C
       CALL MEMGET('REAL',KCBUF,NTOTZ,WORK,KFREE,LFREE)
       CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,
      &            NFBAS(IFRP,0),NORB(IFRP),NTBAS(0),IPRINT)
-      CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)      
+      CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('CAOSRT')
       RETURN
       END
@@ -732,7 +728,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ORBCNT(JVEC,NVEC,IFRP,NPVEC,NEVEC)
 C*****************************************************************************
 C     Find number of electronic/positronic vectors
-C     
+C
 C     Written by T.Saue Jan 7 1996
 C
 C*****************************************************************************
@@ -753,7 +749,7 @@ C
           II       = II + 1
           JVEC(II) = J
           NPVEC    = NPVEC + 1
-C 
+C
 C       Electronic orbital in range [1,NESH(IFRP)]
 C
         ELSEIF (J.GT.0.AND.J.LE.NESH(IFRP)) THEN
@@ -868,7 +864,7 @@ C
           ENDDO
           DO I = 1,NDIM
             B(1)       = VEC(I,J,2)*A(1) - VEC(I,J,1)*A(2)
-            VEC(I,J,1) = VEC(I,J,1)*A(1) + VEC(I,J,2)*A(2)            
+            VEC(I,J,1) = VEC(I,J,1)*A(1) + VEC(I,J,2)*A(2)
             VEC(I,J,2) = B(1)
           ENDDO
         ENDDO
@@ -1130,7 +1126,7 @@ C           Open shell eigenvalues
 C
             DO IOPEN = 1,NOPEN
                IF (NACSH(IFSYM,IOPEN) .GT. 0) THEN
-                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)') 
+                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
      &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                   CALL PREIGN2(EIG(IOFF(IFSYM)),
      &                         IFIRST,NMULT,NACSH(IFSYM,IOPEN),FMTE)
@@ -1141,7 +1137,7 @@ C
 C           Virtual eigenvalues
 C
             IF (NSSH(IFSYM) .GT. 0)  THEN
-               WRITE(LUPRI,'(2X,A,F6.4)') 
+               WRITE(LUPRI,'(2X,A,F6.4)')
      &            '* Virtual eigenvalues, f = ',D0
                CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1),
      &                      IFIRST,NMULT,NSSH(IFSYM),FMTE)
@@ -1151,7 +1147,7 @@ C           Positronic eigenvalues
 C
             IF (PRPOS) THEN
                IF (NPSH(IFSYM) .GT. 0) THEN
-                  WRITE(LUPRI,'(2X,A,F6.4)') 
+                  WRITE(LUPRI,'(2X,A,F6.4)')
      &               '* Positronic eigenvalues, f = ',D0
                   CALL PREIGN2(EIG(IORB(IFSYM)+1),
      &                         IFIRST,NMULT,NPSH(IFSYM),FMTP)
@@ -1203,7 +1199,7 @@ C
 C
                IF (NEIG .GT. 0) THEN
                   NTOT = NTOT + NEIG
-                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)') 
+                  WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
      &               '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                   CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
                   IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
@@ -1221,7 +1217,7 @@ C
 C
             IF (NEIG .GT. 0) THEN
                NTOT = NTOT + NEIG
-               WRITE(LUPRI,'(2X,A,F6.4)') 
+               WRITE(LUPRI,'(2X,A,F6.4)')
      &            '* Virtual eigenvalues, f = ',D0
                CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF
@@ -1238,13 +1234,13 @@ C
 C
                IF (NEIG .GT. 0) THEN
                   NTOT = NTOT + NEIG
-                  WRITE(LUPRI,'(2X,A,F6.4)') 
+                  WRITE(LUPRI,'(2X,A,F6.4)')
      &               '* Positronic eigenvalues, f = ',DF(0)
                   CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTP)
                END IF
             END IF
             IF(NTOT.EQ.0) THEN
-               WRITE(LUPRI,'(2X,A)') 
+               WRITE(LUPRI,'(2X,A)')
      &               '* No eigenvalues.'
             ENDIF
          END DO
@@ -1494,11 +1490,11 @@ C       Generate pointer array for bases
         CALL MEMGET('INTE',KBAS,IDIM(3,IFRP),WORK,KFREE,LFREE)
         CALL SELOW4(INUC,IFRP,WORK(KBAS),NSBAS)
         IF(NSBAS.NE.IDIM(3,IFRP)) THEN
-          WRITE(LUPRI,'(A,I3/A,A4,A,I3)') 
+          WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',
      &      IFRP,
      &      'for symmetry independent center ',NAMN(INUC),' no. ',INUC
-          WRITE(LUPRI,'(A,I8)') 
+          WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
      &      'Number of basis functions in coeffcient file:',
      &       IDIM(3,IFRP)
