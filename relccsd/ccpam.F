@@ -97,8 +97,24 @@ C     Add the master node
       NMPROC = 1
 #endif
 C
+C     Summon the slaves, who are waiting in the general menu routine.
+C
       CALL CCMSTI
+C
+C     Tell them the correct arithmetic (NZ is not initialized on the slaves
+C     if you do not run HF !)
+C
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+#endif
+C
+C     Enter the generic CCMAIN routine (master becomes now primus inter parens)
+C
       CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
+C
+C     Return the slaves to the general menu routine.
+C
       CALL CCMSTE
 C
       CALL CPUUSED(SEC)
@@ -211,8 +227,13 @@ C     Add the master node
 #endif
 
       INTFCE = 'DIRAC     '
-      SPFR = SPINFR.OR.LEVYLE 
-      CA = NZ.GE.2.AND..NOT.SPFR
+C
+C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
+C
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(CA,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(SPFR,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+#endif
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one

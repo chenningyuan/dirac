@@ -198,7 +198,7 @@ C----------------------------------
   
       ELSE
 
-        CALL XCOPY(NFVV*RCW,A0,0,GV,1)
+        CALL XCOPY(NFVV,A0,0,GV,1)
 
       ENDIF
 C ***************************

@@ -399,7 +399,7 @@ C ... we collect the H array
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
         IF(IERR.GT.0) CALL QUIT('MPI_REDUCE ERROR !')
         CALL XTIME(31,2,'HINTM MPI_REDUCE (comm step)  ')
-        CALL XCOPY(RCW*IVOVO(NREP+1),BUF3,1,H,1)
+        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
 
 C ... and redistribute it
 

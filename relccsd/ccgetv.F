@@ -276,6 +276,12 @@ C
 C     JINT : Total number of integrals to be read
 C
       JINT = MTOT * NINT
+C
+C     The integrals may be complex, convert offset and length to real before reading
+C
+      JINT = JINT * RCW
+      JSTART = JSTART * RCW
+C
       CALL WAIO_REALIO (ITAPT+5,VVOVV,JINT,JSTART,.TRUE.)
 C
 C     Are we done with this IRREP ?
@@ -339,6 +345,12 @@ C
 C     JINT : Total number of integrals to be read
 C
       JINT = MTOT * NINT
+C
+C     The integrals may be complex, convert offset and length to real before reading
+C
+      JINT = JINT * RCW
+      JSTART = JSTART * RCW
+C
       CALL WAIO_REALIO (ITAPT+6,VVVVV,JINT,JSTART,.TRUE.)
 C
 C     Are we done with this IRREP ?
