@@ -45,104 +45,127 @@ C
 C
 C-------------------------------------------
 C (0,1) Sector
-c
-c  1-electron diagram
-c
-C  S1=T1(V,E) (a=2; i=3)
-C  H1=T1(E,F) (a=1; i=3)
+C
+C  1-electron diagram
+C
+C  S1=S1(V,E) (a=2; i=3)
+C  H1=S1(E,F) (a=1; i=3)
 C  S1(V,E)=S1(V,E)-T1(V,F)*H1(F,E)
 C-------------------------------------------
-      if (ICURFSS.EQ.1) then
-C     Extract the Hamiltonian
-      CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
-C     Extract the wave function
-      CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
-C     calculate the diagram
-      CALL CNTRCT ('N','N',NIV,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
-C     Insert the updated wave function
-      CALL EXTRT1 (S1,BUF3,2,2,3,3,LTR)
+      IF (ICURFSS.EQ.01.OR.
+     &    ICURFSS.EQ.02.OR.
+     &    ICURFSS.EQ.11) THEN
+C       Extract the Hamiltonian
+        CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
+C       Extract the wave function
+        CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
+C       Calculate the diagram
+        CALL CNTRCT ('N','N',NIV,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
+C       Insert the updated wave function
+        CALL EXTRT1 (S1,BUF3,2,2,3,3,LTR)
 C-------------------------------------------
 C  2-electron diagram
-c
+C
 C  S2=T2(AB,IE) (a=1,2; b=1,2; i=1,2; j=3)
 C  S2(AB,IE)=S2(AB,IE)-P(34).T2(ABI,F)*H1(F,E)
 C-------------------------------------------
-C     Extract the wave function, the Hamiltonian is still in BUF1
-C     Sort and contract, after contraction put updated wf back.
+C       Extract the wave function, the Hamiltonian is still in BUF1
+C       Sort and contract, after contraction put updated wf back.
 C-------------------------------------------
-      CALL EXTRT2R(T2,BUF3,1,2,1,2,3,3,LFA)
-      CALL SRT1S3 (NREP,MULTB,LFA,NSVSVT,NSO,NAV,NSVSVSOT,
-     &             KSVSVSOAVT,KKSVSVSOT,BUF3,BUF2)
-      CALL CNTRCT ('N','N',NSVSVSOT,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
-      CALL SRT1S3 (NREP,MULTB,LTR,NSVSVT,NSO,NAV,NSVSVSOT,
-     &             KSVSVSOAVT,KKSVSVSOT,BUF3,BUF2)
-      CALL EXTRT2R(S2,BUF2,1,2,1,2,3,3,LTR)
-C---------------------------------------------
+        CALL EXTRT2R(T2,BUF3,1,2,1,2,3,3,LFA)
+        CALL SRT1S3 (NREP,MULTB,LFA,NSVSVT,NSO,NAV,NSVSVSOT,
+     &               KSVSVSOAVT,KKSVSVSOT,BUF3,BUF2)
+        CALL CNTRCT('N','N',NSVSVSOT,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
+        CALL SRT1S3(NREP,MULTB,LTR,NSVSVT,NSO,NAV,NSVSVSOT,
+     &               KSVSVSOAVT,KKSVSVSOT,BUF3,BUF2)
+        CALL EXTRT2R(S2,BUF2,1,2,1,2,3,3,LTR)
+      ENDIF 
 C-------------------------------------------
 C (1,0) Sector
 c
 c  1-electron diagram
 c
-C  T1=T1(M,Q) (a=3; i=1)
+C  S1=S1(M,Q) (a=3; i=1)
 C  H1=S1(M,N) (a=3; i=2)
-C  T1(M,Q)=T1(N,Q)+H1(M,N)*T1(N,Q)
+C  S1(M,Q)=S1(N,Q)+H1(M,N)*T1(N,Q)
 C-------------------------------------------
-      ELSEIF (ICURFSS.EQ.10) THEN
-C     Extract the Hamiltonian
-      CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
-C     Extract the wave function
-      CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
-      CALL CNTRCT ('N','N',NAO,NIO,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
-C     Insert the updated wave function
-      CALL EXTRT1 (S1,BUF3,3,3,1,1,LTR)
+      IF (ICURFSS.EQ.10.OR.
+     &    ICURFSS.EQ.20.OR.
+     &    ICURFSS.EQ.11) THEN
+C       Extract the Hamiltonian
+        CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
+C       Extract the wave function
+        CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
+        CALL CNTRCT ('N','N',NAO,NIO,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
+C       Insert the updated wave function
+        CALL EXTRT1 (S1,BUF3,3,3,1,1,LTR)
 C-------------------------------------------
 C  2-electron diagram
 C
 C  S2=T2(MB,IJ) (a=3; b=1,2; i=1,2; j=1,2)
-C  S2(MB,IJ)=T2(MB,IJ)+P(12).H1(M,N)*T2(NB,IJ)
+C  S2(MB,IJ)=S2(MB,IJ)+P(12).H1(M,N)*T2(NB,IJ)
 C-------------------------------------------
-      CALL EXTRT2L(T2,BUF3,3,3,1,2,1,2,LFA)
-      CALL SRT1S2 (NREP,MULTB,LFA,NAOSV,NAO,NSV,NSOSOT,LAOSVSOSOT,
-     &             LLSVSOSOT,BUF3,BUF2)
-      CALL CNTRCT ('N','N',NAO,NSVSOSOT,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
-      CALL SRT1S2 (NREP,MULTB,LTR,NAOSV,NAO,NSV,NSOSOT,LAOSVSOSOT,
-     &             LLSVSOSOT,BUF3,BUF2)
-      CALL EXTRT2L(S2,BUF2,3,3,1,2,1,2,LTR)
+C       Extract the wave function, the Hamiltonian is still in BUF1
+C       Sort and contract, after contraction put updated wf back.
+C-------------------------------------------
+        CALL EXTRT2L(T2,BUF3,3,3,1,2,1,2,LFA)
+        CALL SRT1S2 (NREP,MULTB,LFA,NAOSV,NAO,NSV,NSOSOT,LAOSVSOSOT,
+     &               LLSVSOSOT,BUF3,BUF2)
+        CALL CNTRCT ('N','N',NAO,NSVSOSOT,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
+        CALL SRT1S2 (NREP,MULTB,LTR,NAOSV,NAO,NSV,NSOSOT,LAOSVSOSOT,
+     &               LLSVSOSOT,BUF3,BUF2)
+        CALL EXTRT2L(S2,BUF2,3,3,1,2,1,2,LTR)
+      ENDIF
 C---------------------------------------------
 C (0,2) Sector
 c
 c  2-electron diagram
 c
-C  S2=T2(AB,EF) (a=1,2; b=1,2 {-11}; i=3; j=3)
-C  H2=T2(GH,EF) (a=1, b=1, i=3, j=3)
+C  S2=S2(AB,EF) (a=1,2; b=1,2 {-11}; i=3; j=3)
+C  H2=S2(GH,EF) (a=1, b=1, i=3, j=3)
 C
 C-------------------------------------------
 C (1) S2(AB,EF)=S2(AB,EF)-T2TAU(AB,GH)*H2(GH,EF)
-C (2) S2(AB,EF)=S2(AB,EF)-P(12).S1(A,G)*H2(GH,EF) ! Note only part of T2
-C (3) S2(AB,EF)=S2(AB,EF)-P(34).S2(AB,EG)*H1(G,F)
+C (2) S2(AB,EF)=S2(AB,EF)-P(34).T2(AB,EG)*H1(G,F)
 C
 C T2TAU(AB,GH)=T2(AB,GH)+T1(A,G)*T1(B,H)-T1(A,H)*T1(B,G)
 C             +DELTA(A,G)*T1(B,H)-DELTA(A,H)*T1(B,G)
 C             +T1(A,G)*DELTA(B,H)-T1(A,H)*DELTA(B,G)
 C-------------------------------------------
-      ELSEIF (ICURFSS.EQ.2) THEN
-C     Make T2TAU for the wave function
-      CALL GETTAU (T1,T2,BUF2)
-      CALL GETTAU2(T1,BUF1,T2,BUF2)
-C     Delete Hamiltonian parts (DUM is not used)
-      CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
-C     Extract the wave function
-      CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
-C     Make T2TAU for the Hamiltonian
-      CALL GETTAU (S1,S2,BUF2)
-      CALL GETTAU2(S1,BUF1,S2,BUF2)
-C     Extract the Hamiltonian
-      CALL EXTRT2T(BUF2,BUF1,1,1,3,3,LFA)
-      CALL CNTRCT ('N','N',NSVSVT,NAVAVT,NAVAVT,-A1,BUF3,BUF1,A0,
-     &             BUF2,NREP)
-      CALL EXTRT2T(T2,BUF2,1,2,3,3,LTR)
+      IF (ICURFSS.EQ.02) THEN
+C       Make T2TAU including the spurious Hamiltonian parts
+        CALL GETTAU (T1,T2,BUF2)
+        CALL GETTAU2(T1,BUF1,BUF2)
+C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+C       but irrelevant here)
+        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+C       Extract the wave function
+        CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
+C       Extract the 2-particle Hamiltonian
+        CALL EXTRT2T(S2,BUF1,1,1,3,3,LFA)
+        CALL CNTRCT ('N','N',NSVSVT,NAVAVT,NAVAVT,-A1,BUF3,BUF1,A0,
+     &               BUF2,NREP)
+C       Insert the updated wave function
+        CALL EXTRT2T(S2,BUF2,1,2,3,3,LTR)
+C       Get the wave function for term (2)
+        CALL XCOPY (NDIMT2,T2,1,BUF2,1)
+C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
+C       but irrelevant here)
+        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+C       Extract the wave function
+        CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
+C       Sort it to the correct order
+        CALL SRT1T3 (NREP,MULTB,LFA,NSVSVT,NAV,NAV,NSVSVAVT,
+     &               KSVSVAVAVT,KKSVSVAVT,BUF3,BUF2)
+C       Extract the 1-particle Hamiltonian
+        CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
+        CALL CNTRCT('N','N',NSVSVAVT,NAV,NAV,-A1,BUF2,BUF1,A0,BUF3,NREP)
+        CALL SRT1T3 (NREP,MULTB,LTR,NSVSVT,NAV,NAV,NSVSVAVT,
+     &               KSVSVAVAVT,KKSVSVAVT,BUF3,BUF2)
+C       Insert the updated wave function
+        CALL EXTRT2T(S2,BUF2,1,2,3,3,LTR)
+      ENDIF
 C---------------------------------------------
-C-------------------------------------------
 C (2,0) Sector
 c
 c  2-electron diagram
@@ -157,13 +180,8 @@ C (3) S2(IJ,MN)=S2(IJ,MN)+P(34).S2(IJ,MO)*H1(O,N)
 C
 C S2TAU(IJ,PQ)=S2(IJ,PQ)+S1(I,P)*S1(J,Q)-S1(I,Q)*S1(J,P))
 C-------------------------------------------
-      ELSEIF (ICURFSS.EQ.20) THEN
-c     CALL EXTRT2 (T2,BUF1,1,20,LFA)
-c     CALL EXTRT2 (T2,BUF2,0,20,LFA)
-c     CALL CNTRCT ('N','N',NSOSOT44,NAOAOT,NAOAOT,A1,FT2,H2,A0,
-c    &                                                 BUF1,NREP)
-c     CALL EXTRT2 (S2,BUF1,1,20,LTR)
-C---------------------------------------------
+      IF (ICURFSS.EQ.20) THEN
+      ENDIF
 C-------------------------------------------
 C (1,1) Sector
 c
@@ -181,18 +199,9 @@ C (5) S2(EI,FN)=S2(EI,FN)+P(12).S1(I,M)*H2(EM,FN)
 C
 C S2TAU(AI,EM)=S2(AI,EM)+S1(A,E)*S1(I,M)-S1(A,M)*S1(I,E))
 C-------------------------------------------
-      ELSEIF (ICURFSS.EQ.11) THEN
-c     CALL EXTRT2 (T2,BUF1,1,11,LFA)
-c     CALL EXTRT2 (T2,BUF2,0,11,LFA)
-c     CALL SRT1L1 (NREP,MULTB,LFA,NSOSA,NSO,NSV,NAVAOT,KAVAOT,KSASO ,
-c    &                                                     BUF1,BUF3)
-c     CALL CNTRCT ('N','N',NSVSOT14,NAVAO,NAVAO,A1,BUF3,BUF2,A0,
-c    &                                                     BUF1,NREP)
-c     CALL SRT1L1 (NREP,MULTB,LTR,NSOSA,NSO,NSV,NAVAOT,KAVAOT,KSASO ,
-c    &                                                     BUF1,BUF3)
-c     CALL EXTRT2 (S2,BUF3,1,2,LTR)
-C---------------------------------------------
+      IF (ICURFSS.EQ.11) THEN
       ENDIF
+C---------------------------------------------
 C
       RETURN
       END
@@ -215,18 +224,15 @@ C
 C
 C---------------Local variables -----------------------------------
       PARAMETER (NDIMH=30,NDIMH2=NDIMH*NDIMH)
-      real*8 ev(NDIMH),evi(NDIMH),HR(NDIMH2),HI(NDIMH2)
-      real*8 scr(3*NDIMH),vec(NDIMH2),veci(NDIMH2)
-      real*8 fnor
+      REAL*8 EV(NDIMH),EVI(NDIMH),HR(NDIMH2),HI(NDIMH2)
+      REAL*8 SCR(3*NDIMH),VEC(NDIMH2),VECI(NDIMH2)
+      REAL*8 FNOR
 C---------------Executable code--------------------------------------
-c
-c
-c ... read appropriate folded terms
 C-------------------------------------------
 C (0,1)  Sector
-c
-c  1-electron diagram
-c
+C
+C  1-electron diagram
+C
 C  H01 = FVO(E,F) + S1(E,F) (a=1; i=3)
 C-------------------------------------------
       IF (ICURFSS.EQ.1) then
@@ -239,9 +245,9 @@ C       Extract and add the Fock matrix elements
         CALL XAXPY (IAVAV(NREP+1),A1,BUF1,1,H,1)
 C-------------------------------------------
 C (1,0) Sector
-c
-c  1-electron diagram
-c
+C
+C  1-electron diagram
+C
 C  H10 = - FVO(M,N) - S1(M,N) (a=4; i=2)
 C-------------------------------------------
       ELSEIF(ICURFSS.EQ.10) then
@@ -271,8 +277,11 @@ C-------------------------------------------
         TIT = '(0h,2p) space                         '
 C       Add the one electron contributions
         CALL XCOPY (NDIMT1,S1,1,BUF1,1)
-        CALL XCOPY (NDIMT2,S2,1,BUF2,1)
-        CALL GETTAU2 (S1,BUF1,S2,BUF2)
+        CALL XAXPY (NDIMT1,A1,FVO,1,BUF1,1)
+C       Add the two electron contributions
+        CALL GETVVOO (BUF2)
+        CALL XAXPY (NDIMT2,A1,S2,1,BUF2,1)
+        CALL GETTAU2 (BUF1,BUF3,BUF2)
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,H,1,1,3,3,LFA)
 C-------------------------------------------
@@ -289,7 +298,7 @@ C  H20(MN,OP) = H10(M,O)*DELTA(N,P) + H10(N,P)*DELTA(M,O)
 C             - H10(M,P)*DELTA(N,O) - H10(N,O)*DELTA(M,P)
 C             + S2(MN,OP)
 C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.20) then
+      ELSEIF(ICURFSS.EQ.20) THEN
 C-------------------------------------------
 C (1,1) Sector
 c
@@ -305,63 +314,70 @@ C  General formula
 C  H11(EM,FN) = H01(E,F)*DELTA(M,N) + H10(M,N)*DELTA(E,F)
 C             +/- S2(EM,FN)
 C-------------------------------------------
-      ELSEIF(ICURFSS.EQ.11) then
+      ELSEIF(ICURFSS.EQ.11) THEN
       ENDIF
 c
       IOFF = 1
       DO 100 IRP=1,NREP
-      if (ICURFSS.eq.1) then
-       NDT = NAV(IRP)
-      ELSEIF (ICURFSS.EQ.10) then
-       NDT = NAO(IRP)
-      ELSEIF (ICURFSS.EQ.2) then
-       NDT = NAVAVT(IRP)
-      ELSE
-       NDT = 0
-      ENDIF
-      IF (NDT.EQ.0) GOTO 100
-c Debugging: 
-c ... start energy calculations.
-c
-       IF (NDT.GT.NDIMH) CALL QUIT ('Increase NHDIM in HEFF1')
-       NDT2=NDT*NDT
-       if  (CARITH) then
-          CALL XCOPY (NDT2,H(IOFF),2,HR,1)
-          CALL XCOPY (NDT2,H(IOFF+1),2,HI,1)
-          call cg(ndt,ndt,HR,HI,ev,evi,1,vec,veci,
-     1                        scr,scr(ndt+1),scr(2*ndt+1),ierr)
-       else
-          call rg(ndt,ndt,H(IOFF),ev,evi,1,vec,scr,scr(ndt+1),ierr)
-       endif
-       IOFF=IOFF+NDT2*RCW
-      if (ierr.ne.0) then                
-	write (IW,'('' rg ierr='',i4)') ierr
-	call quit('eneru')
-      endif
-      if (ipr.gt.0) write (IW,8300) tit,IRP,(ev(i),i=1,ndt)
-8300  format (//1x,'Diagonalization of ',a40,' irrep =',i2/
-     &' Energies in atomic units:'
-     &,(/4F20.12))
-c     write  eigenvalues, vectors.
-      IVEC = 1
-      do 850 i = 1, ndt
-c   normalize
-      FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
-      IF (CARITH) FNOR = FNOR + DDOT (NDT,VECI(IVEC),1,VECI(IVEC),1)
-      FNOR = A1 / DSQRT(FNOR)
-      CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
-      IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
-      if (ipr.gt.0) write (IW,8400) i,ev(i),(vec(ivec+j-1),j=1,ndt)
-      if (CARITH.and.ipr.gt.0) 
-     1            write (IW,8401) i,evi(i),(veci(ivec+j-1),j=1,ndt)
-8400  format (/1x,'Renergy',i3,1h:,F20.12,' Real Vector:',/
-     1 (1x,6f12.7))
-8401  format ('Ienergy',i3,1h:,F20.12,' Imag Vector:',
-     1 (1x,6f12.7))
-c
-      IVEC = IVEC + NDT
-850   continue
+         IF (ICURFSS.EQ.1) THEN
+          NDT = NAV(IRP)
+         ELSEIF (ICURFSS.EQ.10) THEN
+          NDT = NAO(IRP)
+         ELSEIF (ICURFSS.EQ.2) THEN
+          NDT = NAVAVT(IRP)
+         ELSE
+          NDT = 0
+         ENDIF
+         IF (NDT.EQ.0) GOTO 100
+C
+C....... Diagonalize effective Hamiltonian.
+C
+         IF (NDT.GT.NDIMH) CALL QUIT ('Increase NHDIM in HEFF1')
+         NDT2=NDT*NDT
+         IF  (CARITH) THEN
+            CALL XCOPY (NDT2,H(IOFF),2,HR,1)
+            CALL XCOPY (NDT2,H(IOFF+1),2,HI,1)
+            CALL CG(NDT,NDT,HR,HI,EV,EVI,1,VEC,VECI,
+     &               SCR,SCR(NDT+1),SCR(2*NDT+1),IERR)
+         ELSE
+cluuk       call output (h(ioff),1,ndt,1,ndt,ndt,ndt,1,iw)
+            CALL RG(NDT,NDT,H(IOFF),EV,EVI,1,VEC,SCR,SCR(NDT+1),IERR)
+         ENDIF
+C
+C........Check for errors
+C
+         IF (IERR.NE.0) THEN                
+            WRITE (IW,'('' RG IERR='',I4)') IERR
+            CALL QUIT('Error in diagonalization of eff. Hamiltonian')
+         ENDIF
+         IF (IPR.GT.0) WRITE (IW,8300) TIT,IRP,(EV(I),I=1,NDT)
+C
+C........Write  eigenvalues & vectors if desired.
+C
+         IVEC = 1
+         DO I = 1, NDT
+C          Normalize
+           FNOR = DDOT (NDT,VEC(IVEC),1,VEC(IVEC),1)
+           IF (CARITH) FNOR = FNOR + DDOT(NDT,VECI(IVEC),1,VECI(IVEC),1)
+           FNOR = A1 / DSQRT(FNOR)
+           CALL DSCAL (NDT,FNOR,VEC(IVEC),1)
+           IF (CARITH) CALL DSCAL (NDT,FNOR,VECI(IVEC),1)
+           IF (IPR.GT.1) WRITE (IW,8400) I,EV(I),(VEC(IVEC+J-1),J=1,NDT)
+           IF (CARITH.AND.IPR.GT.1) 
+     &         WRITE (IW,8401) I,EVI(I),(VECI(IVEC+J-1),J=1,NDT)
+           IVEC = IVEC + NDT
+         ENDDO
+         IOFF=IOFF+NDT2*RCW
+C
  100  CONTINUE
+C
+8300  FORMAT (//1x,'Diagonalization of ',A40,' irrep =',I2/
+     &' Energies in atomic units:'
+     &/(5F16.12))
+8400  FORMAT (/1x,' Energy',i3,1h:,F20.12,' Real Vector:',/(1x,6f12.7))
+8401  FORMAT (' Imaginary energy',i3,1h:,F20.12,' Imag Vector:',
+     & (1x,6F12.7))
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

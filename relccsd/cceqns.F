@@ -326,8 +326,6 @@ C
       CPUT1 = CPUT1 + CPUDELTA()
 
       
-
- 111  format (a,I4,2f30.15)
       if (carith.and.debug) then
       write (*,111)"ho",MYPROC,zdotc(nfoo,ho,1,ho,1)
       write (*,111)"hv",MYPROC,zdotc(nfvv,hv,1,hv,1)
@@ -351,7 +349,6 @@ C
          CALL XTIME(10,2,'HINTM                         ')
 
 #if defined (VAR_MPI)
-
 C *******************
 C ** parallel case: the H-intermediate was partially calculated
 C ** on the separate slaves. In order to perform the H*T2
@@ -446,13 +443,15 @@ C     CALL XTIME(35,2,'PARTS (sync before adding)    ')
 C
 #ifdef MOD_FOCKSPCC
       IF (FOCKSP) THEN
+C.......when debugging print out energies in every iteration
+        IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
         CALL FOLDED (ICURFSS,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
         if (carith.and.debug) then
-        write (iw,111)"s1 after folded",zdotc(ndimt1,s1,1,s1,1)
-        write (iw,111)"s2 after folded",zdotc(ndimt2,s2,1,s2,1)
+        write (iw,111)"s1 after folded",MYPROC,zdotc(ndimt1,s1,1,s1,1)
+        write (iw,111)"s2 after folded",MYPROC,zdotc(ndimt2,s2,1,s2,1)
         elseif (debug) then
-        write (iw,111)"s1 after folded",ddot(ndimt1,s1,1,s1,1)
-        write (iw,111)"s2 after folded",ddot(ndimt2,s2,1,s2,1)
+        write (iw,111)"s1 after folded",MYPROC,ddot(ndimt1,s1,1,s1,1)
+        write (iw,111)"s2 after folded",MYPROC,ddot(ndimt2,s2,1,s2,1)
         endif
       ENDIF
 #endif
@@ -493,9 +492,6 @@ C     In the Fockspace algorithm we only need to extrapolate the
 C     amplitudes of the current sector. We delete the ones from
 C     the higher sectors, the ones from the previous sectors are
 C     constant and can be left inside.
-C     The easiest way to do is, is to copy the amplitudes to a scratch
-C     array, take out the higher sector amplitudes, extrapolate, and
-C     then copy the extrapolated amplitudes back in.
 C
 C        Delete the wave function amps that belong to higher sectors
          CALL DELFCK ('VO',DELS1,S1)
@@ -508,15 +504,15 @@ C        They should not be taken into account in the extrapolation because
 C        of the difference in magnitude with the wf (energy vs. dimensionless)
          CALL DENOMF (EPS,S1,S2,S1,S2,2)
          if (carith.and.debug) then
-         write(iw,111)"s1 without Hamiltonian",zdotc(ndimt1,s1,1,s1,1)
-         write(iw,111)"s1 with Hamiltonian",zdotc(ndimt1,buf1,1,buf1,1)
-         write(iw,111)"s2 without Hamiltonian",zdotc(ndimt2,s2,1,s2,1)
-         write(iw,111)"s2 with Hamiltonian",zdotc(ndimt2,buf2,1,buf2,1)
+         write(iw,111)"s1 without Ham.",MYPROC,zdotc(ndimt1,s1,1,s1,1)
+         write(iw,111)"s1 with Ham.",MYPROC,zdotc(ndimt1,buf1,1,buf1,1)
+         write(iw,111)"s2 without Ham.",MYPROC,zdotc(ndimt2,s2,1,s2,1)
+         write(iw,111)"s2 with Ham.",MYPROC,zdotc(ndimt2,buf2,1,buf2,1)
          elseif (debug) then
-         write(iw,111)"s1 without Hamiltonian",ddot(ndimt1,s1,1,s1,1)
-         write(iw,111)"s1 with Hamiltonian",ddot(ndimt1,buf1,1,buf1,1)
-         write(iw,111)"s2 without Hamiltonian",ddot(ndimt2,s2,1,s2,1)
-         write(iw,111)"s2 with Hamiltonian",ddot(ndimt2,buf2,1,buf2,1)
+         write(iw,111)"s1 without Ham.",MYPROC,ddot(ndimt1,s1,1,s1,1)
+         write(iw,111)"s1 with Ham.",MYPROC,ddot(ndimt1,buf1,1,buf1,1)
+         write(iw,111)"s2 without Ham.",MYPROC,ddot(ndimt2,s2,1,s2,1)
+         write(iw,111)"s2 with Ham.",MYPROC,ddot(ndimt2,buf2,1,buf2,1)
          endif
          CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
      &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
@@ -555,14 +551,11 @@ C
       CALL XCOPY(NDIMT1,S1,1,T1,1)
       CALL XCOPY(NDIMT2,S2,1,T2,1)
 C
-C     Take out the Hamiltonian elements
+C     Remove the Hamiltonian elements, T1 and T2 should only contain
+C     the wave function (amplitudes)
 C
 #ifdef MOD_FOCKSPCC
-      IF (FOCKSP) THEN
-        CALL DENOMF (EPS,T1,T2,T1,T2,2)
-C..when debugging print out every iteration
-        IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
-      ENDIF
+      IF (FOCKSP) CALL DENOMF (EPS,T1,T2,T1,T2,2)
 #endif
 C
       CPUE = CPUE + CPUDELTA()
@@ -615,6 +608,7 @@ C
       JCODE = 4
       CALL RCLOSE(ITAMPD,JCODE)
 C
+ 111  FORMAT(A20,I4,2f25.15)
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',10X,'ENERGY',20X,'RMS',7X,'T1-DIAGN')
@@ -713,7 +707,11 @@ C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
         CALL XCOPY (NDIMT1,FVO,1,S1,1)
-        CALL DELFCK ('VO','DD',S1)
+C
+C       Delete zeroth order Hamiltonian parts
+C       for Fockspace
+C
+        IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,S1,BUF2,S1,BUF2,2)
       ENDIF
 
 
@@ -994,8 +992,12 @@ C-------------------------------------------
 C S(AB,IJ) = W(AB,IJ)
 C-------------------------------------------
         CALL GETVVOO (S2)
+C
+C       Delete zeroth order Hamiltonian parts
+C       for Fockspace
+C
+        IF (EQNS.EQ.'FOCKSP') CALL DENOMF (BUF1,BUF1,S2,BUF1,S2,2)
       ENDIF
-
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------

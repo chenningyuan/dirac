@@ -1256,27 +1256,6 @@ C
         KT3VVVOT(IREP+1) = KT3VVVOT(IREP) + NT3VVVT(IREP)*NO(IREP)
       ENDDO
 C
-C ==> DEBUG <==
-C
-C     WRITE(IW,*) '== triples array comparison =='
-C     DO IREP=1,NREP
-C       write(iw,*) 'irep,nvvt,nt3vvt:',irep,nvvt(irep),nt3vvt(irep)
-C     ENDDO
-C     DO IREP=1,NREP
-C       write(iw,*) 'irep,nvvvt,nt3vvvt:',
-C    &               irep,nvvvt(irep),nt3vvvt(irep)
-C     ENDDO
-C     DO IREP=1,NREP+1
-C       write(iw,*) 'irep,kvvvot,kt3vvvot:',
-C    &               irep,kvvvot(irep),kt3vvvot(irep)
-C     ENDDO
-C     DO IREP=1,NREP
-C     DO JREP=1,NREP
-C       write(iw,*) 'irep,jrep,llvvvt(i,j),llt3vvvt(i,j):',
-C    &    irep,jrep,llvvvt(irep,jrep),llt3vvvt(irep,jrep)
-C     ENDDO
-C     ENDDO
-C     
 C----------------------------------------------
 C----- F O C K   S P A C E   A R R A Y S ------
 C----------------------------------------------
@@ -1302,6 +1281,7 @@ C
             NIVIVIOT(IREP) = 0
             NIOIOIVT(IREP) = 0
             NSVSVSOT(IREP) = 0
+            NSVSVAVT(IREP) = 0
             NSVSOSOT(IREP) = 0
          ENDDO
 C
@@ -1341,9 +1321,11 @@ C
            IJKREP = MULTB(KREP,IJREP+NREP,2)
            KKIVIVIOT(IJREP,KREP) = NIVIVIOT(IJKREP)
            KKIOIOIVT(IJREP,KREP) = NIOIOIVT(IJKREP)
+           KKSVSVAVT(IJREP,KREP) = NSVSVAVT(IJKREP)
            KKSVSVSOT(IJREP,KREP) = NSVSVSOT(IJKREP)
            NIVIVIOT(IJKREP) = NIVIVIOT(IJKREP) + NIVIVT(IJREP)*NIO(KREP)
            NIOIOIVT(IJKREP) = NIOIOIVT(IJKREP) + NIOIOT(IJREP)*NIV(KREP)
+           NSVSVAVT(IJKREP) = NSVSVAVT(IJKREP) + NSVSVT(IJREP)*NAV(KREP)
            NSVSVSOT(IJKREP) = NSVSVSOT(IJKREP) + NSVSVT(IJREP)*NSO(KREP)
           ENDDO
          ENDDO
@@ -1362,6 +1344,7 @@ C
          KIVIVIOAVT(1) = 0
          KIOIOIVAOT(1) = 0
          KSVSVSOAVT(1) = 0
+         KSVSVAVAVT(1) = 0
          DO IREP = 1, NREP
           IAVSO(IREP+1) = IAVSO(IREP) + NAV(IREP) * NSO(IREP)
           IAVAV(IREP+1) = IAVAV(IREP) + NAV(IREP) * NAV(IREP)
@@ -1369,6 +1352,7 @@ C
           KIVIVIOAVT(IREP+1) = KIVIVIOAVT(IREP)+NIVIVIOT(IREP)*NAV(IREP)
           KIOIOIVAOT(IREP+1) = KIOIOIVAOT(IREP)+NIOIOIVT(IREP)*NAO(IREP)
           KSVSVSOAVT(IREP+1) = KSVSVSOAVT(IREP)+NSVSVSOT(IREP)*NAV(IREP)
+          KSVSVAVAVT(IREP+1) = KSVSVAVAVT(IREP)+NSVSVAVT(IREP)*NAV(IREP)
          ENDDO
 C
          LAOSVSOSOT(1) = 0
@@ -3043,7 +3027,6 @@ C ********
 C *** VVVV
 C ********
 C
-
       KOFF = 0
       DO IREP = 1, NREP
          MTOT = NVVT(IREP)

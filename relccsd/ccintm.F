@@ -295,7 +295,7 @@ C----------------------------------------
 
       ELSE
     
-        CALL XCOPY(NV4*RCW,A0,0,BUF1,1)
+        CALL XCOPY(NV4,A0,0,BUF1,1)
 
       ENDIF
 
@@ -927,7 +927,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETTAU2 (S1,DL,S2,TAU)
+      SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -938,7 +938,7 @@ C     Essentially Slater rules for 2-e determinants !
 C
 C     General formula (indices are active virtual or active occupied)
 C     We apply it to the whole array and extract the relevant part
-C     later.
+C     later. Note that TAU should already be initialized with S2.
 C
 C     H2(AB,IJ) = S1(A,I)*DELTA(B,J) + S1(B,J)*DELTA(A,I)
 C               - S1(A,J)*DELTA(B,I) - S1(B,I)*DELTA(A,J)
@@ -954,7 +954,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 S1(*),DL(*),S2(*),TAU(*)
+      REAL*8 S1(*),DL(*),TAU(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -984,8 +984,6 @@ C
          ENDDO
       ENDDO
       ENDDO
-C
-      CALL XCOPY (NDIMT2,S2,1,TAU,1)
 C
       ABIJOFF = 0
       DO IJRP = 1, NREP
