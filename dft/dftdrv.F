@@ -982,6 +982,7 @@ C
 #include <dftcom.h>
 #include <orgcom.h>
 #include <dftbuf.h>
+#include <functionals.h>
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*), DTRMAT(*),
