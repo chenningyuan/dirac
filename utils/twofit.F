@@ -297,25 +297,7 @@ C     ==========================================
 C
       WRITE(LUPRI,'(/A/)') '** PROPERTIES **'
       WRITE(ILOGG,'(/A/)') '** PROPERTIES **'
-      MAXIT = 10
-      ACC=1.0D-6
-      XEFF = XOPT
-      UMS= SQRT(UM)
-      AA = D1/D4/UMS
-      DO IT = 1,MAXIT
-        V1 = POLNDER(NORDER,C,XEFF,1)
-        V2 = POLNDER(NORDER,C,XEFF,2)
-        V2S= SQRT(V2)
-        V3 = POLNDER(NORDER,C,XEFF,3)
-        V4 = POLNDER(NORDER,C,XEFF,4)
-        F0 = V1+ AA*V3/V2S
-        F1 = V2 + AA*V4/V2S - AA*V3*V3/V2/V2S/D2
-        DX = F0/F1
-        XEFF = XEFF - DX
-        IF(ABS(DX).LT.ACC) GOTO 70
-      ENDDO
-      STOP 'Newtons method failed for effective geometry !'
- 70   CONTINUE
+      XEFF = XOPT - (V3/(4.0D0*OMEGA*(OMEGA*UM)*(OMEGA*UM)))
       TEMP = XEFF*XTANG
       WRITE(LUPRI,'(A,F18.4,A)') 
      &    '* Effective geometry  :',TEMP,' Angstroms'
