@@ -143,7 +143,7 @@ endif
 #
 if($GENTAR) then
   mv Makefile Makefile.buf
-  mv DIRAC.new.tar.Z tarbuf.Z 
+  mv DIRAC.new.tar.gz tarbuf.gz 
 endif
 #
 #  Write active modules
@@ -301,7 +301,7 @@ cat <<EOF>> Makefile
 	\$(RM) -f *~
 
 export:
-	-rm -f DIRAC.new.tar.Z
+	-rm -f DIRAC.new.tar.gz
 	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess doc/doc.html \
 	adm/config.guess adm/config.sub \
@@ -448,12 +448,12 @@ if($GENTAR) then
 #  make tarfile
 #
   make export
-  mv -f DIRAC.new.tar.Z $TARFIL.tar.Z
+  mv -f DIRAC.new.tar.gz $TARFIL.tar.gz
 #
 #  Retrieve original files
 #
   mv -f Makefile.buf Makefile
-  mv -f tarbuf.Z DIRAC.new.tar.Z 
+  mv -f tarbuf.gz DIRAC.new.tar.gz 
 endif
 exit 0 
 
