@@ -90,32 +90,40 @@ C
       CALL DATE(CCDATE)
       CALL TIME(CTIME)
       CDATE = CCDATE(1:2)//CCDATE(4:6)//CCDATE(8:9)//' '
-#elif defined (SYS_CRAY)
+#else
+#if defined (SYS_CRAY)
       INTEGER IDATE, ITIME, DATE, CLOCK
       IDATE = DATE()
       ITIME = CLOCK()
       WRITE (CDATE,'(A8)') IDATE
       WRITE (CTIME,'(A8)') ITIME
-#elif defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
+#else
+#if defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
    || defined (SYS_IRIX)    || defined (SYS_PARAGON) || defined (SYS_SUN) \
    || defined (SYS_LINUX)
       CHARACTER*(24) FFDATE, FDATE
       FFDATE = FDATE()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
-#elif defined (SYS_AIX)
+#else
+#if defined (SYS_AIX)
 C     AIX XL FORTRAN version 2.3+
       CHARACTER*(24) FFDATE, fdate_
       FFDATE = fdate_()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
-#elif defined (SYS_IBM)
+#else
+#if defined (SYS_IBM)
       CHARACTER DAOFWK*9
       CALL DATE(DAOFWK,CDATE)
       CALL TIME(CTIME)
 #else
       CDATE = ' -date- '
       CTIME = ' -time- '
+#endif
+#endif
+#endif
+#endif
 #endif
       RETURN
       END
@@ -656,6 +664,13 @@ C
 #endif
 #if defined (SYS_IRIX)
       CALL QTRACE(6)
+C
+C     jth 980716:
+C     For some machines you can compile with -ltrace and use
+C     the function below.
+C
+C     call trace_back_stack_and_print()
+C
       WRITE(*,*) 'IRIX has no obvious system traceback facility.'
 #endif
 #if defined (SYS_SUN)
