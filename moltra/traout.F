@@ -85,7 +85,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #if defined (VAR_MPI)
 #include "dcbgen.h"
-#include "infmpi.h"
+#include "infpar.h"
 #endif
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')

@@ -45,7 +45,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "aovec.h"
 C
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -1687,7 +1686,6 @@ C***********************************************************************
 C
 #include "mxorb.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif

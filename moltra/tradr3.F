@@ -1279,21 +1279,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "implicit.h"
 #include "dcbgen.h"
-#if defined (VAR_MPI)
-#include "infmpi.h"
-      INCLUDE 'mpif.h'
-#endif
+#include "infpar.h"
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM
-#if defined (VAR_MPI)
-      IF (PARCAL) THEN
-         NODE = MYTID
-      ELSE
-         NODE = 0
-      ENDIF
-#else
-      NODE = 0
-#endif
+      NODE = MYTID
+C     ... MYTID will be zero if this is a sequential version of Dirac
 C
  1000 FORMAT (A5,I5)
 C

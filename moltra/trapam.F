@@ -2625,7 +2625,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
 #endif
 #include "dummy.h"
@@ -2639,9 +2639,6 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "blocks.h"
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
       LOGICAL RECAN
       DIMENSION NDMOQR(2,2),ICMOQR(2),KQ(2),KE(2),KIBE(2),
      &          CMO(*),WORK(*)
@@ -3044,7 +3041,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
 #endif
 C
@@ -3056,9 +3053,6 @@ C
 #include "dgroup.h"
 #include "dcbres.h"
 #include "dcbgen.h"
-#if defined (VAR_MPI)
-#include "infpar.h"
-#endif
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
       DIMENSION WORK(*),NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
@@ -3415,10 +3409,8 @@ C
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
-#if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
-#endif
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -3427,7 +3419,6 @@ C
 C
 #include "dorps.h"
 #include "dcborb.h"
-#include "infpar.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "cbihr2.h"
@@ -3525,10 +3516,9 @@ C
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
-#if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
-#endif
+C
 #include "priunit.h"
 #include "mxorb.h"
 #include "aovec.h"
@@ -3541,7 +3531,6 @@ C
 #include "dcbbas.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "infpar.h"
 #include "parint.h"
 #include "blocks.h"
 #include "twosta.h"
@@ -3550,7 +3539,6 @@ C
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION WORK(*)
 C
-#if defined (VAR_MPI)
 C
 C     ********************************
 C     ****** Send COMMON blocks ******
@@ -3790,7 +3778,6 @@ C         to not get e.g. WORK(nan) in calls in TRANOD
           CALL MEMGET('REAL',KDRIJ,0,WORK,KFREE,LFREE)
         ENDIF
       ENDIF
-#endif
 C
       RETURN
       END
@@ -3804,12 +3791,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "mxorb.h"
-#if defined (VAR_MPI)
-#include "infmpi.h"
-      INCLUDE 'mpif.h'
-#endif
+C
 #include "infpar.h"
+      INCLUDE 'mpif.h'
+C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -3878,11 +3863,9 @@ C***********************************************************************
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#if defined (VAR_MPI)
-#include "infmpi.h"
+#include "infpar.h"
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -3891,7 +3874,6 @@ C
 C
 #include "dorps.h"
 #include "dcborb.h"
-#include "infpar.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 C
@@ -3956,7 +3938,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C& End of parallel section : activitate compilation only when necessary
-#endif
+#endif  /* ifdef VAR_MPI */
 C/* Deck MXMEMHER */
       FUNCTION MXMEMHER(IC,I2TYP)
 C
