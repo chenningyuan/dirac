@@ -17,6 +17,7 @@
 short_test="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 14.basis.set.input 22.lucita_short"
 medium_test="$short_test 2.nmrspinspin 10.efg 12.zora 13.rpa 19.fockspace 28.luciarel_medium"
 long_test="$medium_test 24.lucita_large 26.krmc_gosci"
+benchmark_test="29.benchmark_cc"
 # all_test takes all directories (and will fail if filters or output are absent !)
 all_test=
 for ff in [1-9]\.* [1-9][0-9]\.*; do
@@ -174,6 +175,18 @@ if [ ! -z "$arg_tests" ]; then
       "long")
          tests=$long_test;
          RUNTYPE="long"; export RUNTYPE
+         ;;
+      "benchmark")
+         tests=$benchmark_test;
+         RUNTYPE="benchmark"; export RUNTYPE
+         ;;
+      "small_benchmark")
+         tests=$benchmark_test;
+         RUNTYPE="small_benchmark"; export RUNTYPE
+         ;;
+      "large_benchmark")
+         tests=$benchmark_test;
+         RUNTYPE="large_benchmark"; export RUNTYPE
          ;;
       "all")
          tests=$all_test
