@@ -261,11 +261,11 @@ C     iwall = elapsed time, itime(1:2) = system and user time
       TIMWAL = dfloat (iwall) * 0.01d0
       TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
 #endif
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT)
-&& !defined (SYS_CONVEX) && !defined (SYS_IBM) && !defined (SYS_AIX) &&
-!defined (SYS_HPUX) && !defined (SYS_IRIX) && !defined (SYS_PARAGON) &&
-!defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) &&
-!defined (SYS_DEC)
+#if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
+ && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
+ && !defined (SYS_HPUX)   && !defined (SYS_IRIX) && !defined (SYS_PARAGON) \
+ && !defined (SYS_T3D)    && !defined (SYS_SUN)  && !defined (SYS_LINUX) \
+ && !defined (SYS_DEC)
       PARAMETER (D0 = 0.0D0)
       TIMCPU = SECOND()
 C insert appropriate routine to get elapsed real time (wall time)
