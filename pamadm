@@ -284,6 +284,9 @@ endif
 if($CCMOD) then
 echo '	cd relccsd  ; $(MAKE) clean' >> Makefile
 endif
+if($PARMOD) then
+echo '	cd abacus/par  ; $(MAKE) clean' >> Makefile
+endif
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
