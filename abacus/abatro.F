@@ -139,7 +139,6 @@ C     Initialize /CBITRO/
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "abainf.h"
 #include "cbitro.h"
 #include "infinp.h"
@@ -177,7 +176,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -1685,7 +1683,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       PARAMETER (ZERO = 0.D00)
 C

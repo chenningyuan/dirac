@@ -694,7 +694,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )

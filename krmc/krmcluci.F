@@ -868,7 +868,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 C
 #include "dcbopt.h"
@@ -1219,7 +1218,6 @@ C***********************************************************************
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
-#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
 #include "dcbbos.h"

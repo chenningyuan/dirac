@@ -268,7 +268,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "consts.h"
@@ -601,7 +600,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "consts.h"

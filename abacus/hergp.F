@@ -360,7 +360,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "mxorb.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "abainf.h"
@@ -390,7 +389,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "mxorb.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "nuclei.h"

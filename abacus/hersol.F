@@ -1575,7 +1575,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxorb.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
@@ -1772,7 +1771,6 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "mxorb.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "iratdef.h"
 #include "priunit.h"

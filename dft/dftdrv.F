@@ -267,11 +267,13 @@ C
         ENDDO
       END IF 
 CTROND      IF (DOATR) THEN
-CTROND        DO I = 1, NBAST
-CTROND          DO J = 1, I - 1 
-CTROND            AVERAG = EXCMAT(I,J,1) + EXCMAT(J,I,1)
-CTROND            EXCMAT(I,J,1) = AVERAG 
-CTROND            EXCMAT(J,I,1) = AVERAG 
+CTROND        DO K = 1,NXCMAT
+CTROND          DO I = 1, NBAST
+CTROND            DO J = 1, I - 1 
+CTROND              AVERAG = EXCMAT(I,J,1,K) + EXCMAT(J,I,1,K)
+CTROND              EXCMAT(I,J,1,K) = AVERAG 
+CTROND              EXCMAT(J,I,1,K) = AVERAG 
+CTROND            ENDDO
 CTROND          ENDDO
 CTROND        ENDDO
 CTROND      END IF 
@@ -489,7 +491,6 @@ C
 C
       DIMENSION CMO(*), FMAT(NORBT,NORBT), WORK(LWORK)
 C
-#include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
@@ -628,7 +629,6 @@ C  /* Deck dftsol */
       SUBROUTINE DFTSOL(WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
       DIMENSION WORK(*)
 #include "infvar.h"
 #include "inflin.h"
@@ -645,7 +645,6 @@ C  /* Deck dftso1 */
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
       PARAMETER (FAC = -1.0D0/4.0D0)
       DIMENSION VEC(*), FCK(*)
 #include "nuctap.h"

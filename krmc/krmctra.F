@@ -985,7 +985,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -1794,7 +1793,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -1945,7 +1943,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -2108,7 +2105,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbxrs.h"
@@ -2604,7 +2600,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
@@ -3103,7 +3098,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -3208,7 +3202,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 C

@@ -32,7 +32,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
       PARAMETER (D2 = 2.0D0)

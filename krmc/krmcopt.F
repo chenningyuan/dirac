@@ -45,7 +45,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
@@ -224,7 +223,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -1851,7 +1849,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbgen.h"
@@ -2202,7 +2199,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "consts.h"
@@ -2412,7 +2408,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 C
@@ -2814,7 +2809,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
 C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
 C
@@ -4102,7 +4096,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
@@ -4496,7 +4489,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
@@ -4657,7 +4649,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 C
@@ -4821,7 +4812,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 #include "dummy.h"
@@ -4890,7 +4880,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
 #include "consts.h"

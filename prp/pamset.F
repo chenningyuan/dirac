@@ -145,7 +145,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
 #include "dcbidx.h"
 #include "dcbibn.h"
@@ -1067,7 +1066,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
 #include "dcbidx.h"
 #include "dcbibn.h"

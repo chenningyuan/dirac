@@ -35,6 +35,9 @@ C
 C#include "single.h"
 #ifdef REVLOG
 $Log$
+Revision 1.12  2003/12/09 16:00:12  tsaue
+tsaue: Removed all unnecessary inclusions to maxorb.h
+
 Revision 1.11  2003/06/12 12:07:09  fleig
 TF:
 
@@ -1841,7 +1844,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
@@ -2070,7 +2072,6 @@ C
 #include "maxaqn.h"
 #include "mxorb.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
       CHARACTER NAME*4
@@ -5943,7 +5944,6 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION COOR(3,*), WORK(LWORK)
@@ -6154,7 +6154,6 @@ C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
       PARAMETER (D1=1.0D0, XMXO=0.5D0, DP8=0.8D0)
 C
       LOGICAL MCOK, TEST
@@ -6217,7 +6216,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
       LOGICAL OLDGD, OLDRD, GDMOD, GDOK
 #include "iratdef.h"
