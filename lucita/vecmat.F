@@ -1642,42 +1642,42 @@ C?   &                         I,IGAT(I),XGAT(I)
 #include "csm.inc"
 #include "stinf.inc"
 *
-*. Local Scratch
-*. Should be uncommented if NEW_OR_OLD is set to 2
+      PARAMETER (IATP = 1, IBTP = 2)
 *
-C     PARAMETER (MXPNBLK = 33000)
-C     DIMENSION ISCR(3*MXPNBLK)
+#ifdef NEW_OR_OLDis2
+*. This is "old" version, activate with #define NEW_OR_OLDis2
+*
+*. Local Scratch
+*
+      PARAMETER (MXPNBLK = 33000)
+      DIMENSION ISCR(3*MXPNBLK)
+#endif
 *
 C?    WRITE(6,*) ' ENTERING GET_BLOCKS_FROM_DISC'
-*
-      IATP = 1
-      IBTP = 2
 *
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
 *
 CM    IREW = 1
       ISCAL = 0
-      NEW_OR_OLD=1
-      IF(NEW_OR_OLD.EQ.2) THEN
-        IF(NBLOCKT.GT.MXPNBLK) THEN
-          WRITE(6,*) ' Increase parameter MXPNBLK in'
-          WRITE(6,*) ' GET_BLOCKS_FROM_DISC '
-          WRITE(6,*) ' Current and required values ',
+#ifdef NEW_OR_OLDis2
+      IF(NBLOCKT.GT.MXPNBLK) THEN
+         WRITE(6,*) ' Increase parameter MXPNBLK in'
+         WRITE(6,*) ' GET_BLOCKS_FROM_DISC '
+         WRITE(6,*) ' Current and required values ',
      &     MXPNBLK,NBLOCKT
-          Call Abend2( 'GET_BLOCKS_FROM_DISC' )
-        END IF
-        CALL GET_TTS_BATCH(C,NBLOCK,IBLOCK(1,IOFF),NBLOCKT,IBLOCK,
-     &                     NOCTPA,NOCTPB,NSMST,
-     &                     WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
-     &                     IDC,LU,ISCR,IREW,ISCAL)
-      ELSE
-        CALL GET_TTS_BATCHN(C,NBLOCK,IBLOCK(1,IOFF),NBLOCKT,IBLOCK,
-     &                     NOCTPA,NOCTPB,NSMST,
-     &                     WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
-     &                     IDC,LU,IREW,ISCAL)
+         Call Abend2( 'GET_BLOCKS_FROM_DISC' )
       END IF
-
+      CALL GET_TTS_BATCH(C,NBLOCK,IBLOCK(1,IOFF),NBLOCKT,IBLOCK,
+     &                   NOCTPA,NOCTPB,NSMST,
+     &                   WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
+     &                   IDC,LU,ISCR,IREW,ISCAL)
+#else
+      CALL GET_TTS_BATCHN(C,NBLOCK,IBLOCK(1,IOFF),NBLOCKT,IBLOCK,
+     &                    NOCTPA,NOCTPB,NSMST,
+     &                    WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
+     &                    IDC,LU,IREW,ISCAL)
+#endif
 *
       RETURN
       END
@@ -1836,6 +1836,9 @@ C?            write(6,*) ' Vector skipped ', IVEC
 *
       RETURN
       END
+#ifdef NEW_OR_OLDis2
+*. This is "old" version, activate with #define NEW_OR_OLDis2
+*. New version is called GET_TTS_BATCHN  /Jan 2003 hjaaj
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1977,6 +1980,9 @@ C    &                  NSASO,NSBSO,ISC)
 
       RETURN
       END
+#else  /* NEW_OR_OLDis2 */
+*. This is "new" version, deactivate with #define NEW_OR_OLDis2
+*. Old version is called GET_TTS_BATCH  /Jan 2003 hjaaj
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -2095,6 +2101,7 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
 *
       RETURN
       END
+#endif  /* NEW_OR_OLDis2 */
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
