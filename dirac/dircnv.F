@@ -299,6 +299,7 @@ C
 C
 C
        IF (DIISAO.OR.(NASHMFT.GT.0)) THEN
+CTROND       IF (DIISAO) THEN
 C
 C        The gradient is
 C           g = DCao * FDao + f_o DVao * (FDao + (a_o-1) QVao) + H.C.
@@ -430,6 +431,7 @@ C        minus those that are frozen
             IF(NISHMF(I).EQ.0) GOTO 20
             IOFF = I2TMOT(I)+NTMO(I)*NPSH(I)+1
             CALL QGEMM(NTMO(I),NTMO(I),NISHMF(I),D1,
+CTROND            CALL QGEMM(NTMO(I),NTMO(I),NOCC(I),D1,
      &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
      &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
      &             D0,IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ)

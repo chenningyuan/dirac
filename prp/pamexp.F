@@ -102,7 +102,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,DTOL=1.0D-16)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16)
 C
       LOGICAL FIRST(NZ),LEXPST(2,*),FILEX
       DIMENSION EXPVAL(*),CMO(*),DMAT(*),PMAT(*),PTRI(NNBBASX,NZ),
@@ -155,7 +155,7 @@ C
          IF (.NOT. ORBANA) THEN
             CALL GENDEN(DMAT,CMO,1,IPREXP)
             DO IOPEN = 1, NOPEN
-               CALL ACTDEN(DMAT(1+N2BBASXQ),CMO,IOPEN,IPREXP)
+               CALL ACTDEN(DMAT(1+N2BBASXQ),D1,D0,CMO,IOPEN,IPREXP)
                CALL DAXPY(N2BBASXQ,D1,DMAT(1+N2BBASXQ),1,DMAT,1)
             END DO
          END IF
@@ -1261,7 +1261,7 @@ C
       IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
-        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
+        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),D1,D0,
      &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
      &              1,NMO(IFRP),NCNT(IFRP))  
         IF(IPRINT.GE.5) THEN

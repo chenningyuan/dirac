@@ -272,10 +272,7 @@ C        Generate density matrix/matrices
 C        Be aware: All density matrices are normalized to 1,
 C                  occupation is in the DF(*) factor
 C
-         CALL GENDEN(DMAT,CMO,1,IPRSCF)
-         DO IOPEN = 1,NOPEN
-            CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
-         END DO
+         CALL DENMAT(DMAT,CMO,IPRSCF)
 C
 C       Differential density matrix approach
 C
@@ -501,10 +498,7 @@ C
 C       Get density matrices (normed to one)
 C       and write them to DFDENS.
 C
-        CALL GENDEN(DMAT,CMO,1,IPRSCF)
-        DO IOPEN = 1,NOPEN
-          CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
-        END DO
+        CALL DENMAT(DMAT,CMO,IPRSCF)
         CALL WRIDNS(LUDENS,DMAT)
       END IF
 C
@@ -758,10 +752,11 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-      CALL DZERO(DMAT,N2BBASXQ)
+CTROND
+      CALL DZERO(DMAT,N2BBASXQ)                                                                                                                            
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
      &              CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &              NPSH(I)+1,NISH(I),NFBAS(I,0))
    10 CONTINUE
@@ -781,7 +776,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck denst1 */
-      SUBROUTINE DENST1(DMAT,LRD,LCD,CMO,LRC,LCC,JVEC,NVEC,NBAS)
+      SUBROUTINE DENST1(DMAT,LRD,LCD,ALPHA,BETA,
+     &                  CMO,LRC,LCC,JVEC,NVEC,NBAS)
 C*****************************************************************************
 C
 C     Construct density matrix for fermion corep IFRP
@@ -791,14 +787,13 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1=1.0D0,D0=0.0D0)
 #include "dgroup.h"
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ)
-      CALL QGEMM(NBAS,NBAS,NVEC,D1,
+      CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
      &     'N','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
      &     'H','N',IPQTOQ(1,0),CMO(1,JVEC,1),LRC,LCC,NZ,
-     &          D0,IPQTOQ(1,0),DMAT,LRD,LCD,NZ)
+     &          BETA,IPQTOQ(1,0),DMAT,LRD,LCD,NZ)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -917,10 +912,7 @@ C        ========================
 C
 C        Get density matrices (normed to one)
 C
-         CALL GENDEN(DMAT,CMO,1,IPRSCF)
-         DO IOPEN = 1,NOPEN
-            CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),CMO,IOPEN,IPRSCF)
-         END DO
+         CALL DENMAT(DMAT,CMO,IPRSCF)
 C
 C        CMO not needed any more, may be reused between here and DFSOLV/hj
 C
@@ -1890,9 +1882,10 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dcbbas.h"
 C
+CTROND
+      CALL DZERO(DMAT,N2BBASXQ)                                                                                                                            
       JOFF = NPSH(IFRP) + JVEC
-      CALL DZERO(DMAT,N2BBASXQ)
-      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
+      CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),D1,D0,
      &              CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              JOFF,NVEC,NFBAS(IFRP,0))
 C
@@ -2781,6 +2774,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -2834,10 +2828,11 @@ C
 C
 C     Get the density matrix
 C
-      CALL DZERO(DMAT,N2BBASXQ)
+CTROND
+      CALL DZERO(DMAT,N2BBASXQ)                                                                                                                            
       DO 10 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
      &              BUF(ICMV(I)+1),NFBAS(I,0),NVEC(I,0),
      &              1,NVEC(I,0),NFBAS(I,0))
    10 CONTINUE

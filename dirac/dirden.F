@@ -227,6 +227,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (D1=1.0D00,D0=0.0 D00)
 C
       LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
@@ -277,7 +278,7 @@ C
           END IF
           IF (ITEST.EQ.0) GOTO 20
           CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
-     &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
+     &              D1,D0,CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
           IF (IPRINT.GE.10) THEN
             WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
@@ -297,7 +298,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck actden */
-      SUBROUTINE ACTDEN(DMAT,CMO,IOPEN,IPRINT)
+      SUBROUTINE ACTDEN(DMAT,ALPHA,BETA,CMO,IOPEN,IPRINT)
 C*****************************************************************************
 C
 C     Get active density matrix number IOPEN
@@ -317,6 +318,7 @@ C
 C
       CALL QENTER('ACTDEN')
 C
+CTROND
       CALL DZERO(DMAT,N2BBASXQ)
       DO 20 ISYM = 1,NFSYM
          ITEST  = NACSH(ISYM,IOPEN)
@@ -327,6 +329,7 @@ C
          END DO
          IF (ITEST.EQ.0) GOTO 20
          CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+1),NTBAS(0),NTBAS(0),
+     &              ALPHA,BETA,
      &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
          IF (IPRINT.GE.10) THEN
@@ -343,3 +346,29 @@ C
       CALL QEXIT('ACTDEN')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Denmat */
+      SUBROUTINE DENMAT(DMAT,CMO,IPRINT)
+C***********************************************************************
+C
+C     Generate density matrix for SCF calculations
+C
+C     Written by T. Saue Nov 23 2004
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "dcbbas.h"
+#include "dcbdhf.h"
+      DIMENSION DMAT(*),CMO(*)
+C
+      CALL DZERO(DMAT,N2BBASXQ*NFMAT)
+      CALL GENDEN(DMAT,CMO,1,IPRINT)
+      DO IOPEN = 1,NOPEN
+        CALL ACTDEN(DMAT(1+N2BBASXQ*IOPEN),D1,D0,CMO,IOPEN,IPRINT)
+      END DO
+C
+      RETURN
+      END
+

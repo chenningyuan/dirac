@@ -355,7 +355,7 @@ C
       CALL DZERO(DMAT,N2BBASXQ)
       DO 10 I = 1,NFSYM
         IF(NSPC(I,0).EQ.0) GOTO 10
-        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
+        CALL DENST1(DMAT(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),D1,D0,
      &              QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
      &              1,NSPC(I,0),NFBAS(I,0))
    10 CONTINUE
