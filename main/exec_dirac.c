@@ -15,7 +15,7 @@
   *...   In particular, no part of the source code or compiled modules may 
   *...   be distributed outside the research group of the licence holder. 
   *...   This means also that persons (e.g. post-docs) leaving the research
-  *...   group of the licence holder may not take any part of Dalton,
+  *...   group of the licence holder may not take any part of Dirac,
   *...   including modified files, with him/her, unless that person has
   *...   obtained his/her own licence. 
   *...
