@@ -1240,7 +1240,7 @@ C
                   NTOT = NTOT + NEIG
                   WRITE(LUPRI,'(2X,A,F6.4)') 
      &               '* Positronic eigenvalues, f = ',DF(0)
-                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
+                  CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTP)
                END IF
             END IF
             IF(NTOT.EQ.0) THEN
