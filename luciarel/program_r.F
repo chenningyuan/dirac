@@ -3,7 +3,8 @@
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,IPRNT,EREF,CIRUN)
+      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,IPRNT,EREF,
+     &                     ECORE_KRMC,CIRUN)
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -86,6 +87,7 @@
 *
        END IF
 *
+      ECORE = ECORE_KRMC
       NDET = XISPSM(ISM,ISPC)
 *. real or complex eigenvectors
       IF(IRELACI.EQ.0) THEN

@@ -1157,7 +1157,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRMC_LUCI(F1,F2,WRK,LWRK,CIRUN)
+      SUBROUTINE KRMC_LUCI(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C***********************************************************************
 *
 *
@@ -1463,7 +1463,7 @@ C
 *
                 CALL GASCI_REL(F1,F2,
      &                         INTSPACE,IREFSM,JCMBSPC,IPRDIA,
-     &                         EREF,CIRUN)
+     &                         EREF,ECORE_KRMC,CIRUN)
 *
 *
 *
@@ -1604,7 +1604,7 @@ C     Setup routines for running LUCIAREL
       CALL LUCI_SETUP()
 C
 C     Compute the number of determinants for this setup and return.
-      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,CIRUN)
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
       NDET = INT(XISPSM(ISYM,1))
 C
@@ -1733,7 +1733,8 @@ C        Possibly also integrals reside on file in LUCIAREL
       END IF
 C
 C     Call LUCIAREL
-      CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,CIRUN)
+      CALL KRMC_LUCI(WORK(KFCACM),WORK(KMUUUU),WORK(KFREE),LFREE,ECORE,
+     &               CIRUN)
 C
       IF (MAXCIT.GT.4.OR.MAXCIT.LT.0) THEN
         CALL QUIT (' Normal STOP after LUCIAREL CI.')
@@ -1817,7 +1818,7 @@ C
       END IF
 C
 C     Call LUCIAREL
-      CALL KRMC_LUCI(FCACM,H2ACM,WORK(KFREE),LFREE,CIRUN)
+      CALL KRMC_LUCI(FCACM,H2ACM,WORK(KFREE),LFREE,DUMMY,CIRUN)
 C
 C     Later: Read sigma vector on file to SB array.
       CALL MEMGET('REAL',KRSCR,2*NZCONF,WORK,KFREE,LFREE)
@@ -1914,7 +1915,7 @@ C     Write current CI vector(s) to file
       END IF
 C
 C     Density run of LUCIAREL only
-      CALL KRMC_LUCI(RHO1,RHO2,WORK,LFREE,CIRUN)
+      CALL KRMC_LUCI(RHO1,RHO2,WORK,LFREE,DUMMY,CIRUN)
 C
 C     Write CI densities to file or keep the arrays
 C     Currently, densities are directly passed up to LUCI_DENS.
@@ -1975,7 +1976,7 @@ C     Write CI reference vector to LUCIAREL restart file
 C     FIXME: write me
 C
 C     Call LUCIAREL for analysis of CI vectors.
-      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,CIRUN)
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)
 C
       RETURN
       END
@@ -2027,7 +2028,7 @@ c    &                  LUDUM,IDUMMY,IDUMMY,IDUMMY,IPROPT)
       END IF
 C
 C     Call LUCIAREL for computation of CI diagonal.
-c     CALL KRMC_LUCI(WORK(Oelints),WORK(Telints),WORK,LWORK,CIRUN)
+c     CALL KRMC_LUCI(WORK(Oelints),WORK(Telints),WORK,LWORK,DUMMY,CIRUN)
 C
 C     Read diagonal vector from LUCIARELs file
       IO_DIAG_OUT = 1

@@ -120,14 +120,14 @@ X!!!/!!<<<!!??MMMMM*MR$$M****!*MMMMMMMMMMMMMMM!!<<<<<<<<<<<<!!?M9M
 *                                                                            *
 ******************************************************************************
  Version           : Dirac 3.2 (patchlevel 1) 
- Hostname          : nippy
+ Hostname          : sassy
  Operating system  : Linux 2.4.18-64GB-SMP
  Machine           : i686
  Run               : Sequential
- Last compilation  : 11:02:05 May  2 2003 (by timo@sassy)
- Basis set dir.    : .
+ Last compilation  : 12:46:48 Aug 12 2003 (by timo@sassy)
+ Basis set dir.    : /home/timo/prog/dirac/trunk/c2h_debug/Dirac/test/28.luciarel_medium/:/home/timo/prog/dirac/trunk/c2h_debug/Dirac/basis/
 
- Date and time (Linux) : Fri May  2 11:20:19 2003
+ Date and time (Linux) : Tue Aug 12 13:47:43 2003
 
 
  *************************************************************************
@@ -269,6 +269,13 @@ Point group: C2
 
   Cartesian basis used.
   Threshold for integrals:  1.00E-13
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+  Basis set typed explicitly in input file                                        
 
 
   Cartesian Coordinates
@@ -493,6 +500,12 @@ Point group: C2
  * Default integral transformation level  :  3
 
 
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
  *************************************************************************
  ************************ End of input processing ************************
  *************************************************************************
@@ -514,13 +527,13 @@ Point group: C2
 * Applied strict kinetic balance !
 
 
-                            Output from GMOTRA
-                            ------------------
+  **********************************************************************
+  ************************* Orbital dimensions *************************
+  **********************************************************************
 
 No. of electronic orbitals (NESH):    43
 No. of positronic orbitals (NPSH):    43
 Total no. of orbitals      (NORB):    86
- NAELEC =  5
 
 
  **********************************************************************************
@@ -534,205 +547,205 @@ Total no. of orbitals      (NORB):    86
 
 ########## START ITERATION NO.   1 ##########                           
 
-It.   1    -151.8846427258      1.00E+20  0.00E+00  0.00E+00               0.09000000s   Bare nuc.             
+It.   1    -151.8846427258      1.00E+20  0.00E+00  0.00E+00               0.30999997s   Bare nuc.             
 
 ########## START ITERATION NO.   2##########                           
 
 
 * GETGAB: label "GABAOXXX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12   19.86%   41.79%   10.79%   15.69%   0.05000001s
-SOfock:SL  1.00E-12   21.26%   40.90%   11.52%   16.06%   0.45999998s
-SOfock:SS  1.00E-12   24.61%   41.40%   11.47%   21.56%   1.38999981s
+SOfock:LL  1.00E-12   19.86%   41.79%   10.79%   15.69%   0.16999996s
+SOfock:SL  1.00E-12   21.26%   40.90%   11.52%   16.06%   1.39000010s
+SOfock:SS  1.00E-12   24.61%   41.40%   11.47%   21.56%   4.00000024s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy:  0.0000000000000E+00
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.41000013s
+>>> Total wall time: 8.00000000s
+>>> Total CPU-time : 7.75000006s
 
 ########## END ITERATION NO.   2 ##########                           
 
-It.   2    -87.35190706093     -6.45E+01  3.36E+01  1.37E+01               2.41000013s   LL SL SS              
+It.   2    -87.35190706093     -6.45E+01  3.36E+01  1.37E+01               7.75000006s   LL SL SS              
 
 ########## START ITERATION NO.   3##########                           
 
     3 *** Differential density matrix. DCOVLP     = 0.3001
     3 *** Differential density matrix. DVOVLP( 1) = 0.0013
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   49.51%    7.09%    9.55%   0.05999994s
-SOfock:SL  1.00E-12   12.59%   45.72%    7.21%   15.15%   0.45000005s
-SOfock:SS  1.00E-12   24.61%   42.41%   10.13%   19.89%   1.35999990s
+SOfock:LL  1.00E-12    4.57%   49.51%    7.09%    9.55%   0.16000080s
+SOfock:SL  1.00E-12   12.59%   45.72%    7.21%   15.15%   1.30999947s
+SOfock:SS  1.00E-12   24.61%   42.41%   10.13%   19.89%   3.91000080s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -87.3519070609288661
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.27999973s
+>>> Total wall time: 8.00000000s
+>>> Total CPU-time : 7.36999989s
 
 ########## END ITERATION NO.   3 ##########                           
 
-It.   3    -89.40107918437      2.05E+00 -1.34E+01  4.68E+00   DIIS   3    2.27999973s   LL SL SS              
+It.   3    -89.40107918437      2.05E+00 -1.34E+01  4.68E+00   DIIS   3    7.36999989s   LL SL SS              
 
 ########## START ITERATION NO.   4##########                           
 
     4 *** Differential density matrix. DCOVLP     = 0.5791
     4 *** Differential density matrix. DVOVLP( 1) = 0.0025
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   49.69%   18.07%   22.96%   0.05999994s
-SOfock:SL  1.00E-12   15.36%   44.13%   16.67%   29.26%   0.40999985s
-SOfock:SS  1.00E-12   24.61%   41.89%   15.91%   28.46%   1.31000042s
+SOfock:LL  1.00E-12    4.57%   49.69%   18.07%   22.96%   0.13999939s
+SOfock:SL  1.00E-12   15.36%   44.13%   16.67%   29.26%   1.23000145s
+SOfock:SS  1.00E-12   24.61%   41.89%   15.91%   28.46%   3.69999886s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -89.4010791843702890
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.19000006s
+>>> Total wall time: 8.00000000s
+>>> Total CPU-time : 6.94000053s
 
 ########## END ITERATION NO.   4 ##########                           
 
-It.   4    -97.87661064448      8.48E+00  8.60E+00  3.54E+00   DIIS   4    2.19000006s   LL SL SS              
+It.   4    -97.87661064448      8.48E+00  8.60E+00  3.54E+00   DIIS   4    6.94000053s   LL SL SS              
 
 ########## START ITERATION NO.   5##########                           
 
     5 *** Differential density matrix. DCOVLP     = 0.8119
     5 *** Differential density matrix. DVOVLP( 1) = 0.8379
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   49.83%   18.30%   24.28%   0.04999971s
-SOfock:SL  1.00E-12   15.36%   44.65%   16.28%   29.01%   0.41000032s
-SOfock:SS  1.00E-12   24.61%   42.77%   15.67%   28.11%   1.30999947s
+SOfock:LL  1.00E-12    4.57%   49.83%   18.30%   24.28%   0.15999985s
+SOfock:SL  1.00E-12   15.36%   44.65%   16.28%   29.01%   1.19999886s
+SOfock:SS  1.00E-12   24.61%   42.77%   15.67%   28.11%   3.67000008s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -97.8766106444839323
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.21999931s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 7.07999802s
 
 ########## END ITERATION NO.   5 ##########                           
 
-It.   5    -99.35336499014      1.48E+00 -1.72E+00  8.83E-01   DIIS   5    2.21999931s   LL SL SS              
+It.   5    -99.35336499014      1.48E+00 -1.72E+00  8.83E-01   DIIS   5    7.07999802s   LL SL SS              
 
 ########## START ITERATION NO.   6##########                           
 
     6 *** Differential density matrix. DCOVLP     = 0.9531
     6 *** Differential density matrix. DVOVLP( 1) = 0.9511
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   49.92%   17.67%   25.52%   0.05000019s
-SOfock:SL  1.00E-12   13.95%   45.83%   16.20%   28.86%   0.40999985s
-SOfock:SS  1.00E-12   24.61%   44.04%   15.34%   27.63%   1.31000042s
+SOfock:LL  1.00E-12    4.57%   49.92%   17.67%   25.52%   0.14000130s
+SOfock:SL  1.00E-12   13.95%   45.83%   16.20%   28.86%   1.25000000s
+SOfock:SS  1.00E-12   24.61%   44.04%   15.34%   27.63%   3.77000237s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.3533649901443994
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.20000076s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 7.18999863s
 
 ########## END ITERATION NO.   6 ##########                           
 
-It.   6    -99.48862254775      1.35E-01 -6.41E-01  4.15E-02   DIIS   6    2.20000076s   LL SL SS              
+It.   6    -99.48862254775      1.35E-01 -6.41E-01  4.15E-02   DIIS   6    7.18999863s   LL SL SS              
 
 ########## START ITERATION NO.   7##########                           
 
     7 *** Differential density matrix. DCOVLP     = 0.9971
     7 *** Differential density matrix. DVOVLP( 1) = 0.9959
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   50.16%   17.22%   23.83%   0.06000042s
-SOfock:SL  1.00E-12   13.95%   47.29%   14.56%   28.17%   0.40999985s
-SOfock:SS  1.00E-12   24.61%   46.91%   14.59%   26.43%   1.28999996s
+SOfock:LL  1.00E-12    4.57%   50.16%   17.22%   23.83%   0.13000107s
+SOfock:SL  1.00E-12   13.95%   47.29%   14.56%   28.17%   1.15999985s
+SOfock:SS  1.00E-12   24.61%   46.91%   14.59%   26.43%   3.72999954s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4886225477455071
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.18999958s
+>>> Total wall time: 8.00000000s
+>>> Total CPU-time : 7.01000595s
 
 ########## END ITERATION NO.   7 ##########                           
 
-It.   7    -99.48911524935      4.93E-04 -3.61E-02  1.42E-02   DIIS   7    2.18999958s   LL SL SS              
+It.   7    -99.48911524935      4.93E-04 -3.61E-02  1.42E-02   DIIS   7    7.01000595s   LL SL SS              
 
 ########## START ITERATION NO.   8##########                           
 
     8 *** Differential density matrix. DCOVLP     = 1.0004
     8 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   50.31%   14.73%   22.65%   0.05999947s
-SOfock:SL  1.00E-12   12.59%   49.55%   13.73%   27.39%   0.40999985s
-SOfock:SS  1.00E-12   24.61%   49.93%   13.79%   25.14%   1.28000069s
+SOfock:LL  1.00E-12    4.57%   50.31%   14.73%   22.65%   0.15000153s
+SOfock:SL  1.00E-12   12.59%   49.55%   13.73%   27.39%   1.18999863s
+SOfock:SS  1.00E-12   24.61%   49.93%   13.79%   25.14%   3.31999969s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4891152493517268
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.18000031s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.64999771s
 
 ########## END ITERATION NO.   8 ##########                           
 
-It.   8    -99.48914175965      2.65E-05  8.66E-03  2.00E-03   DIIS   8    2.18000031s   LL SL SS              
+It.   8    -99.48914175965      2.65E-05  8.66E-03  2.00E-03   DIIS   8    6.64999771s   LL SL SS              
 
 ########## START ITERATION NO.   9##########                           
 
     9 *** Differential density matrix. DCOVLP     = 1.0001
     9 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   50.96%   17.53%   26.12%   0.05000019s
-SOfock:SL  1.00E-12   13.95%   50.88%   14.39%   26.30%   0.41000080s
-SOfock:SS  1.00E-12   24.61%   54.26%   12.64%   23.20%   1.26999855s
+SOfock:LL  1.00E-12    4.57%   50.96%   17.53%   26.12%   0.14000320s
+SOfock:SL  1.00E-12   13.95%   50.88%   14.39%   26.30%   1.15999985s
+SOfock:SS  1.00E-12   24.61%   54.26%   12.64%   23.20%   3.34000015s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4891417596485610
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.18000126s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.61999893s
 
 ########## END ITERATION NO.   9 ##########                           
 
-It.   9    -99.48914237961      6.20E-07  1.45E-03  8.84E-05   DIIS   9    2.18000126s   LL SL SS              
+It.   9    -99.48914237961      6.20E-07  1.45E-03  8.84E-05   DIIS   9    6.61999893s   LL SL SS              
 
 ########## START ITERATION NO.  10##########                           
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   52.80%   16.74%   23.57%   0.05000114s
-SOfock:SL  1.00E-12   13.95%   55.73%   13.23%   23.80%   0.39999962s
-SOfock:SS  1.00E-12   24.61%   62.58%   10.55%   19.58%   1.23999977s
+SOfock:LL  1.00E-12    4.57%   52.80%   16.74%   23.57%   0.15000153s
+SOfock:SL  1.00E-12   13.95%   55.73%   13.23%   23.80%   1.11999893s
+SOfock:SS  1.00E-12   24.61%   62.58%   10.55%   19.58%   3.45000076s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4891423796134831
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.12999916s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.68000031s
 
 ########## END ITERATION NO.  10 ##########                           
 
-It.  10    -99.48914238135      1.74E-09  7.45E-05  1.28E-05   DIIS  10    2.12999916s   LL SL SS              
+It.  10    -99.48914238135      1.74E-09  7.45E-05  1.28E-05   DIIS  10    6.68000031s   LL SL SS              
 
 ########## START ITERATION NO.  11##########                           
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   54.70%   14.83%   23.03%   0.04999924s
-SOfock:SL  1.00E-12   12.59%   60.73%   11.60%   21.74%   0.40000153s
-SOfock:SS  1.00E-12   24.61%   68.09%    9.54%   17.16%   1.20999908s
+SOfock:LL  1.00E-12    4.57%   54.70%   14.83%   23.03%   0.13999939s
+SOfock:SL  1.00E-12   12.59%   60.73%   11.60%   21.74%   1.09999847s
+SOfock:SS  1.00E-12   24.61%   68.09%    9.54%   17.16%   3.45000458s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4891423813541991
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.11000061s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.62999725s
 
 ########## END ITERATION NO.  11 ##########                           
 
-It.  11    -99.48914238139      3.37E-11 -8.10E-06  2.15E-06   DIIS  10    2.11000061s   LL SL SS              
+It.  11    -99.48914238139      3.37E-11 -8.10E-06  2.15E-06   DIIS  10    6.62999725s   LL SL SS              
 
 ########## START ITERATION NO.  12##########                           
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12    4.57%   56.84%   15.15%   21.58%   0.05000114s
-SOfock:SL  1.00E-12   13.95%   64.82%    9.86%   19.58%   0.39999962s
-SOfock:SS  1.00E-12   24.61%   72.46%    9.06%   16.11%   1.19000053s
+SOfock:LL  1.00E-12    4.57%   56.84%   15.15%   21.58%   0.15000153s
+SOfock:SL  1.00E-12   13.95%   64.82%    9.86%   19.58%   1.08000183s
+SOfock:SS  1.00E-12   24.61%   72.46%    9.06%   16.11%   3.31999969s
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -99.4891423813878930
 * Heading :DIRAC: No title specified !!!                                             
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.04999924s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.52000427s
 
 ########## END ITERATION NO.  12 ##########                           
 
-It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    2.04999924s   LL SL SS              
+It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    6.52000427s   LL SL SS              
 
 
                                SCF - CYCLE
@@ -748,30 +761,34 @@ It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    2.049
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -151.8846427258      1.00E+20  0.00E+00  0.00E+00               0.09000000s   Bare nuc.             
-It.   2    -87.35190706093     -6.45E+01  3.36E+01  1.37E+01               2.41000013s   LL SL SS              
-It.   3    -89.40107918437      2.05E+00 -1.34E+01  4.68E+00   DIIS   3    2.27999973s   LL SL SS              
-It.   4    -97.87661064448      8.48E+00  8.60E+00  3.54E+00   DIIS   4    2.19000006s   LL SL SS              
-It.   5    -99.35336499014      1.48E+00 -1.72E+00  8.83E-01   DIIS   5    2.21999931s   LL SL SS              
-It.   6    -99.48862254775      1.35E-01 -6.41E-01  4.15E-02   DIIS   6    2.20000076s   LL SL SS              
-It.   7    -99.48911524935      4.93E-04 -3.61E-02  1.42E-02   DIIS   7    2.18999958s   LL SL SS              
-It.   8    -99.48914175965      2.65E-05  8.66E-03  2.00E-03   DIIS   8    2.18000031s   LL SL SS              
-It.   9    -99.48914237961      6.20E-07  1.45E-03  8.84E-05   DIIS   9    2.18000126s   LL SL SS              
-It.  10    -99.48914238135      1.74E-09  7.45E-05  1.28E-05   DIIS  10    2.12999916s   LL SL SS              
-It.  11    -99.48914238139      3.37E-11 -8.10E-06  2.15E-06   DIIS  10    2.11000061s   LL SL SS              
-It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    2.04999924s   LL SL SS              
+It.   1    -151.8846427258      1.00E+20  0.00E+00  0.00E+00               0.30999997s   Bare nuc.             
+It.   2    -87.35190706093     -6.45E+01  3.36E+01  1.37E+01               7.75000006s   LL SL SS              
+It.   3    -89.40107918437      2.05E+00 -1.34E+01  4.68E+00   DIIS   3    7.36999989s   LL SL SS              
+It.   4    -97.87661064448      8.48E+00  8.60E+00  3.54E+00   DIIS   4    6.94000053s   LL SL SS              
+It.   5    -99.35336499014      1.48E+00 -1.72E+00  8.83E-01   DIIS   5    7.07999802s   LL SL SS              
+It.   6    -99.48862254775      1.35E-01 -6.41E-01  4.15E-02   DIIS   6    7.18999863s   LL SL SS              
+It.   7    -99.48911524935      4.93E-04 -3.61E-02  1.42E-02   DIIS   7    7.01000595s   LL SL SS              
+It.   8    -99.48914175965      2.65E-05  8.66E-03  2.00E-03   DIIS   8    6.64999771s   LL SL SS              
+It.   9    -99.48914237961      6.20E-07  1.45E-03  8.84E-05   DIIS   9    6.61999893s   LL SL SS              
+It.  10    -99.48914238135      1.74E-09  7.45E-05  1.28E-05   DIIS  10    6.68000031s   LL SL SS              
+It.  11    -99.48914238139      3.37E-11 -8.10E-06  2.15E-06   DIIS  10    6.62999725s   LL SL SS              
+It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    6.52000427s   LL SL SS              
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   12 iterations.
 * Average elapsed time per iteration: 
       No 2-ints :    0.00000000s
-      LL SL SS  :    2.36363636s
+      LL SL SS  :    7.36363636s
 
 
                                TOTAL ENERGY
                                ------------
 
    Electronic energy            :    -99.489142381388348
+
+   Other contributions to the total energy
    Nuclear repulsion energy     :      0.000000000000000
+
+   Sum of all contributions to the energy
    Total energy                 :    -99.489142381388348
 
 
@@ -837,12 +854,15 @@ It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    2.049
  ******************************************************************************
 
 
-
  This module is published in:
+
+    KRMC THEORY: H J Aa Jensen, K G Dyall, T Saue,
+                 and K Faegri Jr.
+                    JCP 104,11 (1995) 4083
     KRMC-GOSCI: J Thyssen, H J Aa Jensen, and T Fleig
                 manuscript, (J Chem Phys, 2003)
     DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher
-                       manuscript, (subm. J Chem Phys, 2003)
+                       J Chem Phys, 119 (2003)
                     T Fleig, J Olsen, and C M Marian
                        JCP 114,11 (2001) 4775-4790 
     KRMC-LUCIAREL: T Fleig, L Visscher, J Olsen,
@@ -898,320 +918,9 @@ It.  12    -99.48914238139      4.55E-13 -1.68E-06  4.96E-08   DIIS  10    2.049
 
 
 The largest block of two-electron integrals is      4096
- Added 10000000 double words to 107200129
- WRK(1)=9991?  9991.
-  Memory map 
- Current task : PRINT 
-  NS, NL, NSNLI 295 0 295
- Current Identifier : IDUMMY
-   Memory map : 
-   Identifier   Offset    Pad1 okay Pad2 okay 
-   ========== ==========  ========= ========= 
-     OCSTR  107200130        OKAY     OKAY 
-     STREO  107200133        OKAY     OKAY 
-     OCSTR2 107200137        OKAY     OKAY 
-     STREO2 107200140        OKAY     OKAY 
-     OCSTR  107200144        OKAY     OKAY 
-     STREO  107200151        OKAY     OKAY 
-     OCSTR2 107200158        OKAY     OKAY 
-     STREO2 107200165        OKAY     OKAY 
-     OCSTR  107200172        OKAY     OKAY 
-     STREO  107200187        OKAY     OKAY 
-     OCSTR2 107200196        OKAY     OKAY 
-     STREO2 107200211        OKAY     OKAY 
-     OCSTR  107200220        OKAY     OKAY 
-     STREO  107200235        OKAY     OKAY 
-     OCSTR2 107200242        OKAY     OKAY 
-     STREO2 107200257        OKAY     OKAY 
-     OCSTR  107200264        OKAY     OKAY 
-     STREO  107200271        OKAY     OKAY 
-     OCSTR2 107200275        OKAY     OKAY 
-     STREO2 107200282        OKAY     OKAY 
-     OCSTR  107200286        OKAY     OKAY 
-     STREO  107200289        OKAY     OKAY 
-     OCSTR2 107200292        OKAY     OKAY 
-     STREO2 107200295        OKAY     OKAY 
-     OCSTR  107200298        OKAY     OKAY 
-     STREO  107200301        OKAY     OKAY 
-     OCSTR2 107200304        OKAY     OKAY 
-     STREO2 107200307        OKAY     OKAY 
-     OCSTR  107200310        OKAY     OKAY 
-     STREO  107200313        OKAY     OKAY 
-     OCSTR2 107200316        OKAY     OKAY 
-     STREO2 107200319        OKAY     OKAY 
-     OCSTR  107200322        OKAY     OKAY 
-     STREO  107200325        OKAY     OKAY 
-     OCSTR2 107200329        OKAY     OKAY 
-     STREO2 107200332        OKAY     OKAY 
-     OCSTR  107200336        OKAY     OKAY 
-     STREO  107200343        OKAY     OKAY 
-     OCSTR2 107200350        OKAY     OKAY 
-     STREO2 107200357        OKAY     OKAY 
-     OCSTR  107200364        OKAY     OKAY 
-     STREO  107200379        OKAY     OKAY 
-     OCSTR2 107200388        OKAY     OKAY 
-     STREO2 107200403        OKAY     OKAY 
-     NSTSGP 107200412        OKAY     OKAY 
-     ISTSGP 107200459        OKAY     OKAY 
-     NSTSGP 107200506        OKAY     OKAY 
-     ISTSGP 107200553        OKAY     OKAY 
-     NSTSO  107200600        OKAY     OKAY 
-     ISTSO  107200615        OKAY     OKAY 
-     NSTSO  107200630        OKAY     OKAY 
-     ISTSO  107200645        OKAY     OKAY 
-     NSTSO  107200660        OKAY     OKAY 
-     ISTSO  107200675        OKAY     OKAY 
-     NSTSO  107200690        OKAY     OKAY 
-     ISTSO  107200705        OKAY     OKAY 
-     NSTSO  107200720        OKAY     OKAY 
-     ISTSO  107200735        OKAY     OKAY 
-     NSTSO  107200750        OKAY     OKAY 
-     ISTSO  107200761        OKAY     OKAY 
-     NSTSO  107200772        OKAY     OKAY 
-     ISTSO  107200787        OKAY     OKAY 
-     NSTSO  107200802        OKAY     OKAY 
-     ISTSO  107200817        OKAY     OKAY 
-     NSTSO  107200832        OKAY     OKAY 
-     ISTSO  107200847        OKAY     OKAY 
-     NSTSO  107200862        OKAY     OKAY 
-     ISTSO  107200873        OKAY     OKAY 
-     NSTSO  107200884        OKAY     OKAY 
-     ISTSO  107200899        OKAY     OKAY 
-     NSTSO  107200914        OKAY     OKAY 
-     ISTSO  107200921        OKAY     OKAY 
-     NSTSO  107200928        OKAY     OKAY 
-     ISTSO  107200943        OKAY     OKAY 
-     NSTSO  107200958        OKAY     OKAY 
-     ISTSO  107200969        OKAY     OKAY 
-     NSTSO  107200980        OKAY     OKAY 
-     ISTSO  107200995        OKAY     OKAY 
-     NSTSO  107201010        OKAY     OKAY 
-     ISTSO  107201017        OKAY     OKAY 
-     NSTSO  107201024        OKAY     OKAY 
-     ISTSO  107201039        OKAY     OKAY 
-     NSTSO  107201054        OKAY     OKAY 
-     ISTSO  107201057        OKAY     OKAY 
-     NSTSO  107201060        OKAY     OKAY 
-     ISTSO  107201075        OKAY     OKAY 
-     NSTSO  107201090        OKAY     OKAY 
-     ISTSO  107201097        OKAY     OKAY 
-     NSTSO  107201104        OKAY     OKAY 
-     ISTSO  107201119        OKAY     OKAY 
-     NSTSO  107201134        OKAY     OKAY 
-     ISTSO  107201137        OKAY     OKAY 
-     NSTSO  107201140        OKAY     OKAY 
-     ISTSO  107201155        OKAY     OKAY 
-     NSTSO  107201170        OKAY     OKAY 
-     ISTSO  107201173        OKAY     OKAY 
-     NSTSO  107201176        OKAY     OKAY 
-     ISTSO  107201183        OKAY     OKAY 
-     NSTSO  107201190        OKAY     OKAY 
-     ISTSO  107201205        OKAY     OKAY 
-     NSTSO  107201220        OKAY     OKAY 
-     ISTSO  107201223        OKAY     OKAY 
-     NSTSO  107201226        OKAY     OKAY 
-     ISTSO  107201241        OKAY     OKAY 
-     NSTSO  107201256        OKAY     OKAY 
-     ISTSO  107201259        OKAY     OKAY 
-     NSTSO  107201262        OKAY     OKAY 
-     ISTSO  107201277        OKAY     OKAY 
-     NSTSO  107201292        OKAY     OKAY 
-     ISTSO  107201303        OKAY     OKAY 
-     NSTSO  107201314        OKAY     OKAY 
-     ISTSO  107201329        OKAY     OKAY 
-     NSTSO  107201344        OKAY     OKAY 
-     ISTSO  107201351        OKAY     OKAY 
-     NSTSO  107201358        OKAY     OKAY 
-     ISTSO  107201373        OKAY     OKAY 
-     NSTSO  107201388        OKAY     OKAY 
-     ISTSO  107201391        OKAY     OKAY 
-     NSTSO  107201394        OKAY     OKAY 
-     ISTSO  107201409        OKAY     OKAY 
-     NSTSO  107201424        OKAY     OKAY 
-     ISTSO  107201439        OKAY     OKAY 
-     NSTSO  107201454        OKAY     OKAY 
-     ISTSO  107201469        OKAY     OKAY 
-     NSTSO  107201484        OKAY     OKAY 
-     ISTSO  107201495        OKAY     OKAY 
-     NSTSO  107201506        OKAY     OKAY 
-     ISTSO  107201521        OKAY     OKAY 
-     NSTSO  107201536        OKAY     OKAY 
-     ISTSO  107201543        OKAY     OKAY 
-     NSTSO  107201550        OKAY     OKAY 
-     ISTSO  107201565        OKAY     OKAY 
-     NSTSO  107201580        OKAY     OKAY 
-     ISTSO  107201595        OKAY     OKAY 
-     NSTSO  107201610        OKAY     OKAY 
-     ISTSO  107201625        OKAY     OKAY 
-     NSTSO  107201640        OKAY     OKAY 
-     ISTSO  107201655        OKAY     OKAY 
-     NSTSO  107201670        OKAY     OKAY 
-     ISTSO  107201685        OKAY     OKAY 
-     NSTSO  107201700        OKAY     OKAY 
-     ISTSO  107201711        OKAY     OKAY 
-     NSTSO  107201722        OKAY     OKAY 
-     ISTSO  107201737        OKAY     OKAY 
-     NSTSO2 107201752        OKAY     OKAY 
-     ISTSO2 107201767        OKAY     OKAY 
-     NSTSO2 107201782        OKAY     OKAY 
-     ISTSO2 107201797        OKAY     OKAY 
-     NSTSO2 107201812        OKAY     OKAY 
-     ISTSO2 107201827        OKAY     OKAY 
-     NSTSO2 107201842        OKAY     OKAY 
-     ISTSO2 107201857        OKAY     OKAY 
-     NSTSO2 107201872        OKAY     OKAY 
-     ISTSO2 107201887        OKAY     OKAY 
-     NSTSO2 107201902        OKAY     OKAY 
-     ISTSO2 107201913        OKAY     OKAY 
-     NSTSO2 107201924        OKAY     OKAY 
-     ISTSO2 107201939        OKAY     OKAY 
-     NSTSO2 107201954        OKAY     OKAY 
-     ISTSO2 107201969        OKAY     OKAY 
-     NSTSO2 107201984        OKAY     OKAY 
-     ISTSO2 107201999        OKAY     OKAY 
-     NSTSO2 107202014        OKAY     OKAY 
-     ISTSO2 107202025        OKAY     OKAY 
-     NSTSO2 107202036        OKAY     OKAY 
-     ISTSO2 107202051        OKAY     OKAY 
-     NSTSO2 107202066        OKAY     OKAY 
-     ISTSO2 107202073        OKAY     OKAY 
-     NSTSO2 107202080        OKAY     OKAY 
-     ISTSO2 107202095        OKAY     OKAY 
-     NSTSO2 107202110        OKAY     OKAY 
-     ISTSO2 107202121        OKAY     OKAY 
-     NSTSO2 107202132        OKAY     OKAY 
-     ISTSO2 107202147        OKAY     OKAY 
-     NSTSO2 107202162        OKAY     OKAY 
-     ISTSO2 107202169        OKAY     OKAY 
-     NSTSO2 107202176        OKAY     OKAY 
-     ISTSO2 107202191        OKAY     OKAY 
-     NSTSO2 107202206        OKAY     OKAY 
-     ISTSO2 107202209        OKAY     OKAY 
-     NSTSO2 107202212        OKAY     OKAY 
-     ISTSO2 107202227        OKAY     OKAY 
-     NSTSO2 107202242        OKAY     OKAY 
-     ISTSO2 107202249        OKAY     OKAY 
-     NSTSO2 107202256        OKAY     OKAY 
-     ISTSO2 107202271        OKAY     OKAY 
-     NSTSO2 107202286        OKAY     OKAY 
-     ISTSO2 107202289        OKAY     OKAY 
-     NSTSO2 107202292        OKAY     OKAY 
-     ISTSO2 107202307        OKAY     OKAY 
-     NSTSO2 107202322        OKAY     OKAY 
-     ISTSO2 107202325        OKAY     OKAY 
-     NSTSO2 107202328        OKAY     OKAY 
-     ISTSO2 107202335        OKAY     OKAY 
-     NSTSO2 107202342        OKAY     OKAY 
-     ISTSO2 107202357        OKAY     OKAY 
-     NSTSO2 107202372        OKAY     OKAY 
-     ISTSO2 107202375        OKAY     OKAY 
-     NSTSO2 107202378        OKAY     OKAY 
-     ISTSO2 107202393        OKAY     OKAY 
-     NSTSO2 107202408        OKAY     OKAY 
-     ISTSO2 107202411        OKAY     OKAY 
-     NSTSO2 107202414        OKAY     OKAY 
-     ISTSO2 107202429        OKAY     OKAY 
-     NSTSO2 107202444        OKAY     OKAY 
-     ISTSO2 107202455        OKAY     OKAY 
-     NSTSO2 107202466        OKAY     OKAY 
-     ISTSO2 107202481        OKAY     OKAY 
-     NSTSO2 107202496        OKAY     OKAY 
-     ISTSO2 107202503        OKAY     OKAY 
-     NSTSO2 107202510        OKAY     OKAY 
-     ISTSO2 107202525        OKAY     OKAY 
-     NSTSO2 107202540        OKAY     OKAY 
-     ISTSO2 107202543        OKAY     OKAY 
-     NSTSO2 107202546        OKAY     OKAY 
-     ISTSO2 107202561        OKAY     OKAY 
-     NSTSO2 107202576        OKAY     OKAY 
-     ISTSO2 107202591        OKAY     OKAY 
-     NSTSO2 107202606        OKAY     OKAY 
-     ISTSO2 107202621        OKAY     OKAY 
-     NSTSO2 107202636        OKAY     OKAY 
-     ISTSO2 107202647        OKAY     OKAY 
-     NSTSO2 107202658        OKAY     OKAY 
-     ISTSO2 107202673        OKAY     OKAY 
-     NSTSO2 107202688        OKAY     OKAY 
-     ISTSO2 107202695        OKAY     OKAY 
-     NSTSO2 107202702        OKAY     OKAY 
-     ISTSO2 107202717        OKAY     OKAY 
-     NSTSO2 107202732        OKAY     OKAY 
-     ISTSO2 107202747        OKAY     OKAY 
-     NSTSO2 107202762        OKAY     OKAY 
-     ISTSO2 107202777        OKAY     OKAY 
-     NSTSO2 107202792        OKAY     OKAY 
-     ISTSO2 107202807        OKAY     OKAY 
-     NSTSO2 107202822        OKAY     OKAY 
-     ISTSO2 107202837        OKAY     OKAY 
-     NSTSO2 107202852        OKAY     OKAY 
-     ISTSO2 107202863        OKAY     OKAY 
-     NSTSO2 107202874        OKAY     OKAY 
-     ISTSO2 107202889        OKAY     OKAY 
-     Zmat   107202904        OKAY     OKAY 
-     Zmat   107202907        OKAY     OKAY 
-     Zmat   107202918        OKAY     OKAY 
-     Zmat   107202937        OKAY     OKAY 
-     Zmat   107202964        OKAY     OKAY 
-     Zmat   107202999        OKAY     OKAY 
-     Zmat   107203042        OKAY     OKAY 
-     Zmat   107203093        OKAY     OKAY 
-     Zmat   107203152        OKAY     OKAY 
-     Zmat   107203155        OKAY     OKAY 
-     Zmat   107203166        OKAY     OKAY 
-     ORBMAP 107203185        OKAY     OKAY 
-     STRMAP 107203192        OKAY     OKAY 
-     ORBMAP 107203199        OKAY     OKAY 
-     STRMAP 107203206        OKAY     OKAY 
-     ORBMAP 107203213        OKAY     OKAY 
-     STRMAP 107203232        OKAY     OKAY 
-     ORBMAP 107203251        OKAY     OKAY 
-     STRMAP 107203270        OKAY     OKAY 
-     ORBMAP 107203289        OKAY     OKAY 
-     STRMAP 107203316        OKAY     OKAY 
-     ORBMAP 107203343        OKAY     OKAY 
-     STRMAP 107203370        OKAY     OKAY 
-     ORBMAP 107203397        OKAY     OKAY 
-     STRMAP 107203416        OKAY     OKAY 
-     ORBMAP 107203435        OKAY     OKAY 
-     STRMAP 107203454        OKAY     OKAY 
-     ORBMAP 107203473        OKAY     OKAY 
-     STRMAP 107203480        OKAY     OKAY 
-     ORBMAP 107203487        OKAY     OKAY 
-     STRMAP 107203494        OKAY     OKAY 
-     ORBMAP 107203501        OKAY     OKAY 
-     STRMAP 107203504        OKAY     OKAY 
-     ORBMAP 107203507        OKAY     OKAY 
-     STRMAP 107203510        OKAY     OKAY 
-     ORBMAP 107203513        OKAY     OKAY 
-     STRMAP 107203516        OKAY     OKAY 
-     ORBMAP 107203519        OKAY     OKAY 
-     STRMAP 107203522        OKAY     OKAY 
-     ORBMAP 107203525        OKAY     OKAY 
-     STRMAP 107203532        OKAY     OKAY 
-     ORBMAP 107203539        OKAY     OKAY 
-     STRMAP 107203546        OKAY     OKAY 
-     ORBMAP 107203553        OKAY     OKAY 
-     STRMAP 107203572        OKAY     OKAY 
-     ORBMAP 107203591        OKAY     OKAY 
-     STRMAP 107203610        OKAY     OKAY 
-     Cobsm  107203629        OKAY     OKAY 
-     Nifsj  107203640        OKAY     OKAY 
-     Ifsj   107203675        OKAY     OKAY 
-     Ifsjo  107203742        OKAY     OKAY 
-     Ststx  107203777        OKAY     OKAY 
-     IOCLS  107203796        OKAY     OKAY 
-     SPGPAN 107203805        OKAY     OKAY 
-     SPGPCR 107204024        OKAY     OKAY 
-
- =======
-  Marks 
- =======
-
-  Identifier  Start of free memory 
-  =================================
  Getting first free address in strinf_gas
  ----------------------------------------
- first free address is    107204242
+ first free address is    107194026
   Memory Check at end of STRINF_GAS  
   Number of internal combinations per symmetry 
   =========================================== 
@@ -1234,8 +943,6 @@ The largest block of two-electron integrals is      4096
      Inactive orbitals   :    1..   1                                        
      Active orbitals     :    2..   9                                        
      Secondary orbitals  :  -43..  -1,  10..  43                             
- LFREE in SETXOP  9999997
- after first memget call.
 
 
                            Output from RGASWOP
@@ -1276,26 +983,26 @@ The largest block of two-electron integrals is      4096
    - Beginning with task   1 of   3 after      0.00 seconds
                                 and after      0.00 CPU-seconds
    - Beginning with task   2 of   3 after      0.00 seconds
-                                and after      0.10 CPU-seconds
-   - Beginning with task   3 of   3 after      1.00 seconds
-                                and after      0.63 CPU-seconds
+                                and after      0.32 CPU-seconds
+   - Beginning with task   3 of   3 after      2.00 seconds
+                                and after      2.05 CPU-seconds
  - Integral class 2
-   - Beginning with task   4 of   8 after      3.00 seconds
-                                and after      1.53 CPU-seconds
-   - Beginning with task   5 of   8 after      3.00 seconds
-                                and after      1.56 CPU-seconds
-   - Beginning with task   6 of   8 after      4.00 seconds
-                                and after      2.65 CPU-seconds
-   - Beginning with task   7 of   8 after      4.00 seconds
-                                and after      3.16 CPU-seconds
-   - Beginning with task   8 of   8 after     16.00 seconds
-                                and after      8.97 CPU-seconds
- inimdinfo called, writing to  MDINFO LUMLF2= -1073749420
- - Starting symmetrization after          27.00 seconds
- - Finished symmetrization after          27.00 seconds
+   - Beginning with task   4 of   8 after      5.00 seconds
+                                and after      4.89 CPU-seconds
+   - Beginning with task   5 of   8 after      5.00 seconds
+                                and after      4.99 CPU-seconds
+   - Beginning with task   6 of   8 after      8.00 seconds
+                                and after      8.16 CPU-seconds
+   - Beginning with task   7 of   8 after     10.00 seconds
+                                and after      9.72 CPU-seconds
+   - Beginning with task   8 of   8 after     28.00 seconds
+                                and after     26.81 CPU-seconds
+ - Integral class 3
+ - Starting symmetrization after          48.00 seconds
+ - Finished symmetrization after          48.00 seconds
 
- (RTRACTL1) Total wall time used :   00:00:27
- (RTRACTL1) Total CPU  time used :   00:00:15
+ (RTRACTL1) Total wall time used :   00:00:48
+ (RTRACTL1) Total CPU  time used :   00:00:46
 
  (RTRACTL1) Transformation ended at :                         
 
@@ -1312,9 +1019,9 @@ The largest block of two-electron integrals is      4096
     Determining configurational start guess.
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00E-12   79.52%    9.38%    4.84%   11.34%   0.02000046s
-SOfock:SL  1.00E-12   74.58%   13.29%    5.33%    6.83%   0.14999771s
-SOfock:SS  1.00E-12   66.23%   20.12%    5.95%    8.39%   0.59000015s
+SOfock:LL  1.00E-12   79.52%    9.38%    4.84%   11.34%   0.05000305s
+SOfock:SL  1.00E-12   74.58%   13.29%    5.33%    6.83%   0.40000153s
+SOfock:SS  1.00E-12   66.23%   20.12%    5.95%    8.39%   1.58000183s
 
  (LUCI_TRAVA) Dirac GAS shells: 
  GAS shell   1       4
@@ -1347,320 +1054,9 @@ SOfock:SS  1.00E-12   66.23%   20.12%    5.95%    8.39%   0.59000015s
 
 
 The largest block of two-electron integrals is      4096
- Added 9776741 double words to 107423388
- WRK(1)=9991?  9991.
-  Memory map 
- Current task : PRINT 
-  NS, NL, NSNLI 295 0 295
- Current Identifier : IDUMMY
-   Memory map : 
-   Identifier   Offset    Pad1 okay Pad2 okay 
-   ========== ==========  ========= ========= 
-     OCSTR  107423389        OKAY     OKAY 
-     STREO  107423392        OKAY     OKAY 
-     OCSTR2 107423396        OKAY     OKAY 
-     STREO2 107423399        OKAY     OKAY 
-     OCSTR  107423403        OKAY     OKAY 
-     STREO  107423410        OKAY     OKAY 
-     OCSTR2 107423417        OKAY     OKAY 
-     STREO2 107423424        OKAY     OKAY 
-     OCSTR  107423431        OKAY     OKAY 
-     STREO  107423446        OKAY     OKAY 
-     OCSTR2 107423455        OKAY     OKAY 
-     STREO2 107423470        OKAY     OKAY 
-     OCSTR  107423479        OKAY     OKAY 
-     STREO  107423494        OKAY     OKAY 
-     OCSTR2 107423501        OKAY     OKAY 
-     STREO2 107423516        OKAY     OKAY 
-     OCSTR  107423523        OKAY     OKAY 
-     STREO  107423530        OKAY     OKAY 
-     OCSTR2 107423534        OKAY     OKAY 
-     STREO2 107423541        OKAY     OKAY 
-     OCSTR  107423545        OKAY     OKAY 
-     STREO  107423548        OKAY     OKAY 
-     OCSTR2 107423551        OKAY     OKAY 
-     STREO2 107423554        OKAY     OKAY 
-     OCSTR  107423557        OKAY     OKAY 
-     STREO  107423560        OKAY     OKAY 
-     OCSTR2 107423563        OKAY     OKAY 
-     STREO2 107423566        OKAY     OKAY 
-     OCSTR  107423569        OKAY     OKAY 
-     STREO  107423572        OKAY     OKAY 
-     OCSTR2 107423575        OKAY     OKAY 
-     STREO2 107423578        OKAY     OKAY 
-     OCSTR  107423581        OKAY     OKAY 
-     STREO  107423584        OKAY     OKAY 
-     OCSTR2 107423588        OKAY     OKAY 
-     STREO2 107423591        OKAY     OKAY 
-     OCSTR  107423595        OKAY     OKAY 
-     STREO  107423602        OKAY     OKAY 
-     OCSTR2 107423609        OKAY     OKAY 
-     STREO2 107423616        OKAY     OKAY 
-     OCSTR  107423623        OKAY     OKAY 
-     STREO  107423638        OKAY     OKAY 
-     OCSTR2 107423647        OKAY     OKAY 
-     STREO2 107423662        OKAY     OKAY 
-     NSTSGP 107423671        OKAY     OKAY 
-     ISTSGP 107423718        OKAY     OKAY 
-     NSTSGP 107423765        OKAY     OKAY 
-     ISTSGP 107423812        OKAY     OKAY 
-     NSTSO  107423859        OKAY     OKAY 
-     ISTSO  107423874        OKAY     OKAY 
-     NSTSO  107423889        OKAY     OKAY 
-     ISTSO  107423904        OKAY     OKAY 
-     NSTSO  107423919        OKAY     OKAY 
-     ISTSO  107423934        OKAY     OKAY 
-     NSTSO  107423949        OKAY     OKAY 
-     ISTSO  107423964        OKAY     OKAY 
-     NSTSO  107423979        OKAY     OKAY 
-     ISTSO  107423994        OKAY     OKAY 
-     NSTSO  107424009        OKAY     OKAY 
-     ISTSO  107424020        OKAY     OKAY 
-     NSTSO  107424031        OKAY     OKAY 
-     ISTSO  107424046        OKAY     OKAY 
-     NSTSO  107424061        OKAY     OKAY 
-     ISTSO  107424076        OKAY     OKAY 
-     NSTSO  107424091        OKAY     OKAY 
-     ISTSO  107424106        OKAY     OKAY 
-     NSTSO  107424121        OKAY     OKAY 
-     ISTSO  107424132        OKAY     OKAY 
-     NSTSO  107424143        OKAY     OKAY 
-     ISTSO  107424158        OKAY     OKAY 
-     NSTSO  107424173        OKAY     OKAY 
-     ISTSO  107424180        OKAY     OKAY 
-     NSTSO  107424187        OKAY     OKAY 
-     ISTSO  107424202        OKAY     OKAY 
-     NSTSO  107424217        OKAY     OKAY 
-     ISTSO  107424228        OKAY     OKAY 
-     NSTSO  107424239        OKAY     OKAY 
-     ISTSO  107424254        OKAY     OKAY 
-     NSTSO  107424269        OKAY     OKAY 
-     ISTSO  107424276        OKAY     OKAY 
-     NSTSO  107424283        OKAY     OKAY 
-     ISTSO  107424298        OKAY     OKAY 
-     NSTSO  107424313        OKAY     OKAY 
-     ISTSO  107424316        OKAY     OKAY 
-     NSTSO  107424319        OKAY     OKAY 
-     ISTSO  107424334        OKAY     OKAY 
-     NSTSO  107424349        OKAY     OKAY 
-     ISTSO  107424356        OKAY     OKAY 
-     NSTSO  107424363        OKAY     OKAY 
-     ISTSO  107424378        OKAY     OKAY 
-     NSTSO  107424393        OKAY     OKAY 
-     ISTSO  107424396        OKAY     OKAY 
-     NSTSO  107424399        OKAY     OKAY 
-     ISTSO  107424414        OKAY     OKAY 
-     NSTSO  107424429        OKAY     OKAY 
-     ISTSO  107424432        OKAY     OKAY 
-     NSTSO  107424435        OKAY     OKAY 
-     ISTSO  107424442        OKAY     OKAY 
-     NSTSO  107424449        OKAY     OKAY 
-     ISTSO  107424464        OKAY     OKAY 
-     NSTSO  107424479        OKAY     OKAY 
-     ISTSO  107424482        OKAY     OKAY 
-     NSTSO  107424485        OKAY     OKAY 
-     ISTSO  107424500        OKAY     OKAY 
-     NSTSO  107424515        OKAY     OKAY 
-     ISTSO  107424518        OKAY     OKAY 
-     NSTSO  107424521        OKAY     OKAY 
-     ISTSO  107424536        OKAY     OKAY 
-     NSTSO  107424551        OKAY     OKAY 
-     ISTSO  107424562        OKAY     OKAY 
-     NSTSO  107424573        OKAY     OKAY 
-     ISTSO  107424588        OKAY     OKAY 
-     NSTSO  107424603        OKAY     OKAY 
-     ISTSO  107424610        OKAY     OKAY 
-     NSTSO  107424617        OKAY     OKAY 
-     ISTSO  107424632        OKAY     OKAY 
-     NSTSO  107424647        OKAY     OKAY 
-     ISTSO  107424650        OKAY     OKAY 
-     NSTSO  107424653        OKAY     OKAY 
-     ISTSO  107424668        OKAY     OKAY 
-     NSTSO  107424683        OKAY     OKAY 
-     ISTSO  107424698        OKAY     OKAY 
-     NSTSO  107424713        OKAY     OKAY 
-     ISTSO  107424728        OKAY     OKAY 
-     NSTSO  107424743        OKAY     OKAY 
-     ISTSO  107424754        OKAY     OKAY 
-     NSTSO  107424765        OKAY     OKAY 
-     ISTSO  107424780        OKAY     OKAY 
-     NSTSO  107424795        OKAY     OKAY 
-     ISTSO  107424802        OKAY     OKAY 
-     NSTSO  107424809        OKAY     OKAY 
-     ISTSO  107424824        OKAY     OKAY 
-     NSTSO  107424839        OKAY     OKAY 
-     ISTSO  107424854        OKAY     OKAY 
-     NSTSO  107424869        OKAY     OKAY 
-     ISTSO  107424884        OKAY     OKAY 
-     NSTSO  107424899        OKAY     OKAY 
-     ISTSO  107424914        OKAY     OKAY 
-     NSTSO  107424929        OKAY     OKAY 
-     ISTSO  107424944        OKAY     OKAY 
-     NSTSO  107424959        OKAY     OKAY 
-     ISTSO  107424970        OKAY     OKAY 
-     NSTSO  107424981        OKAY     OKAY 
-     ISTSO  107424996        OKAY     OKAY 
-     NSTSO2 107425011        OKAY     OKAY 
-     ISTSO2 107425026        OKAY     OKAY 
-     NSTSO2 107425041        OKAY     OKAY 
-     ISTSO2 107425056        OKAY     OKAY 
-     NSTSO2 107425071        OKAY     OKAY 
-     ISTSO2 107425086        OKAY     OKAY 
-     NSTSO2 107425101        OKAY     OKAY 
-     ISTSO2 107425116        OKAY     OKAY 
-     NSTSO2 107425131        OKAY     OKAY 
-     ISTSO2 107425146        OKAY     OKAY 
-     NSTSO2 107425161        OKAY     OKAY 
-     ISTSO2 107425172        OKAY     OKAY 
-     NSTSO2 107425183        OKAY     OKAY 
-     ISTSO2 107425198        OKAY     OKAY 
-     NSTSO2 107425213        OKAY     OKAY 
-     ISTSO2 107425228        OKAY     OKAY 
-     NSTSO2 107425243        OKAY     OKAY 
-     ISTSO2 107425258        OKAY     OKAY 
-     NSTSO2 107425273        OKAY     OKAY 
-     ISTSO2 107425284        OKAY     OKAY 
-     NSTSO2 107425295        OKAY     OKAY 
-     ISTSO2 107425310        OKAY     OKAY 
-     NSTSO2 107425325        OKAY     OKAY 
-     ISTSO2 107425332        OKAY     OKAY 
-     NSTSO2 107425339        OKAY     OKAY 
-     ISTSO2 107425354        OKAY     OKAY 
-     NSTSO2 107425369        OKAY     OKAY 
-     ISTSO2 107425380        OKAY     OKAY 
-     NSTSO2 107425391        OKAY     OKAY 
-     ISTSO2 107425406        OKAY     OKAY 
-     NSTSO2 107425421        OKAY     OKAY 
-     ISTSO2 107425428        OKAY     OKAY 
-     NSTSO2 107425435        OKAY     OKAY 
-     ISTSO2 107425450        OKAY     OKAY 
-     NSTSO2 107425465        OKAY     OKAY 
-     ISTSO2 107425468        OKAY     OKAY 
-     NSTSO2 107425471        OKAY     OKAY 
-     ISTSO2 107425486        OKAY     OKAY 
-     NSTSO2 107425501        OKAY     OKAY 
-     ISTSO2 107425508        OKAY     OKAY 
-     NSTSO2 107425515        OKAY     OKAY 
-     ISTSO2 107425530        OKAY     OKAY 
-     NSTSO2 107425545        OKAY     OKAY 
-     ISTSO2 107425548        OKAY     OKAY 
-     NSTSO2 107425551        OKAY     OKAY 
-     ISTSO2 107425566        OKAY     OKAY 
-     NSTSO2 107425581        OKAY     OKAY 
-     ISTSO2 107425584        OKAY     OKAY 
-     NSTSO2 107425587        OKAY     OKAY 
-     ISTSO2 107425594        OKAY     OKAY 
-     NSTSO2 107425601        OKAY     OKAY 
-     ISTSO2 107425616        OKAY     OKAY 
-     NSTSO2 107425631        OKAY     OKAY 
-     ISTSO2 107425634        OKAY     OKAY 
-     NSTSO2 107425637        OKAY     OKAY 
-     ISTSO2 107425652        OKAY     OKAY 
-     NSTSO2 107425667        OKAY     OKAY 
-     ISTSO2 107425670        OKAY     OKAY 
-     NSTSO2 107425673        OKAY     OKAY 
-     ISTSO2 107425688        OKAY     OKAY 
-     NSTSO2 107425703        OKAY     OKAY 
-     ISTSO2 107425714        OKAY     OKAY 
-     NSTSO2 107425725        OKAY     OKAY 
-     ISTSO2 107425740        OKAY     OKAY 
-     NSTSO2 107425755        OKAY     OKAY 
-     ISTSO2 107425762        OKAY     OKAY 
-     NSTSO2 107425769        OKAY     OKAY 
-     ISTSO2 107425784        OKAY     OKAY 
-     NSTSO2 107425799        OKAY     OKAY 
-     ISTSO2 107425802        OKAY     OKAY 
-     NSTSO2 107425805        OKAY     OKAY 
-     ISTSO2 107425820        OKAY     OKAY 
-     NSTSO2 107425835        OKAY     OKAY 
-     ISTSO2 107425850        OKAY     OKAY 
-     NSTSO2 107425865        OKAY     OKAY 
-     ISTSO2 107425880        OKAY     OKAY 
-     NSTSO2 107425895        OKAY     OKAY 
-     ISTSO2 107425906        OKAY     OKAY 
-     NSTSO2 107425917        OKAY     OKAY 
-     ISTSO2 107425932        OKAY     OKAY 
-     NSTSO2 107425947        OKAY     OKAY 
-     ISTSO2 107425954        OKAY     OKAY 
-     NSTSO2 107425961        OKAY     OKAY 
-     ISTSO2 107425976        OKAY     OKAY 
-     NSTSO2 107425991        OKAY     OKAY 
-     ISTSO2 107426006        OKAY     OKAY 
-     NSTSO2 107426021        OKAY     OKAY 
-     ISTSO2 107426036        OKAY     OKAY 
-     NSTSO2 107426051        OKAY     OKAY 
-     ISTSO2 107426066        OKAY     OKAY 
-     NSTSO2 107426081        OKAY     OKAY 
-     ISTSO2 107426096        OKAY     OKAY 
-     NSTSO2 107426111        OKAY     OKAY 
-     ISTSO2 107426122        OKAY     OKAY 
-     NSTSO2 107426133        OKAY     OKAY 
-     ISTSO2 107426148        OKAY     OKAY 
-     Zmat   107426163        OKAY     OKAY 
-     Zmat   107426166        OKAY     OKAY 
-     Zmat   107426177        OKAY     OKAY 
-     Zmat   107426196        OKAY     OKAY 
-     Zmat   107426223        OKAY     OKAY 
-     Zmat   107426258        OKAY     OKAY 
-     Zmat   107426301        OKAY     OKAY 
-     Zmat   107426352        OKAY     OKAY 
-     Zmat   107426411        OKAY     OKAY 
-     Zmat   107426414        OKAY     OKAY 
-     Zmat   107426425        OKAY     OKAY 
-     ORBMAP 107426444        OKAY     OKAY 
-     STRMAP 107426451        OKAY     OKAY 
-     ORBMAP 107426458        OKAY     OKAY 
-     STRMAP 107426465        OKAY     OKAY 
-     ORBMAP 107426472        OKAY     OKAY 
-     STRMAP 107426491        OKAY     OKAY 
-     ORBMAP 107426510        OKAY     OKAY 
-     STRMAP 107426529        OKAY     OKAY 
-     ORBMAP 107426548        OKAY     OKAY 
-     STRMAP 107426575        OKAY     OKAY 
-     ORBMAP 107426602        OKAY     OKAY 
-     STRMAP 107426629        OKAY     OKAY 
-     ORBMAP 107426656        OKAY     OKAY 
-     STRMAP 107426675        OKAY     OKAY 
-     ORBMAP 107426694        OKAY     OKAY 
-     STRMAP 107426713        OKAY     OKAY 
-     ORBMAP 107426732        OKAY     OKAY 
-     STRMAP 107426739        OKAY     OKAY 
-     ORBMAP 107426746        OKAY     OKAY 
-     STRMAP 107426753        OKAY     OKAY 
-     ORBMAP 107426760        OKAY     OKAY 
-     STRMAP 107426763        OKAY     OKAY 
-     ORBMAP 107426766        OKAY     OKAY 
-     STRMAP 107426769        OKAY     OKAY 
-     ORBMAP 107426772        OKAY     OKAY 
-     STRMAP 107426775        OKAY     OKAY 
-     ORBMAP 107426778        OKAY     OKAY 
-     STRMAP 107426781        OKAY     OKAY 
-     ORBMAP 107426784        OKAY     OKAY 
-     STRMAP 107426791        OKAY     OKAY 
-     ORBMAP 107426798        OKAY     OKAY 
-     STRMAP 107426805        OKAY     OKAY 
-     ORBMAP 107426812        OKAY     OKAY 
-     STRMAP 107426831        OKAY     OKAY 
-     ORBMAP 107426850        OKAY     OKAY 
-     STRMAP 107426869        OKAY     OKAY 
-     Cobsm  107426888        OKAY     OKAY 
-     Nifsj  107426899        OKAY     OKAY 
-     Ifsj   107426934        OKAY     OKAY 
-     Ifsjo  107427001        OKAY     OKAY 
-     Ststx  107427036        OKAY     OKAY 
-     IOCLS  107427055        OKAY     OKAY 
-     SPGPAN 107427064        OKAY     OKAY 
-     SPGPCR 107427283        OKAY     OKAY 
-
- =======
-  Marks 
- =======
-
-  Identifier  Start of free memory 
-  =================================
  Getting first free address in strinf_gas
  ----------------------------------------
- first free address is    107427501
+ first free address is    107417285
   Memory Check at end of STRINF_GAS  
   Number of internal combinations per symmetry 
   =========================================== 
@@ -1701,7 +1097,11 @@ The largest block of two-electron integrals is      4096
  * using input integral reordering          *
  ********************************************
  Number of types: 84
+
+ REAL LOOP
  ICOUNT= 11457
+
+ IMAG LOOP
  ICOUNT= 22913
 
  ==============================================
@@ -1731,377 +1131,6 @@ The largest block of two-electron integrals is      4096
     2               7                  7
   Number of determinants/combinations   900
   Diagonal will be written to unit  60
- Current task : PRINT 
-  NS, NL, NSNLI 332 13 345
- Current Identifier :       
-   Memory map : 
-   Identifier   Offset    Pad1 okay Pad2 okay 
-   ========== ==========  ========= ========= 
-     OCSTR  107423389        OKAY     OKAY 
-     STREO  107423392        OKAY     OKAY 
-     OCSTR2 107423396        OKAY     OKAY 
-     STREO2 107423399        OKAY     OKAY 
-     OCSTR  107423403        OKAY     OKAY 
-     STREO  107423410        OKAY     OKAY 
-     OCSTR2 107423417        OKAY     OKAY 
-     STREO2 107423424        OKAY     OKAY 
-     OCSTR  107423431        OKAY     OKAY 
-     STREO  107423446        OKAY     OKAY 
-     OCSTR2 107423455        OKAY     OKAY 
-     STREO2 107423470        OKAY     OKAY 
-     OCSTR  107423479        OKAY     OKAY 
-     STREO  107423494        OKAY     OKAY 
-     OCSTR2 107423501        OKAY     OKAY 
-     STREO2 107423516        OKAY     OKAY 
-     OCSTR  107423523        OKAY     OKAY 
-     STREO  107423530        OKAY     OKAY 
-     OCSTR2 107423534        OKAY     OKAY 
-     STREO2 107423541        OKAY     OKAY 
-     OCSTR  107423545        OKAY     OKAY 
-     STREO  107423548        OKAY     OKAY 
-     OCSTR2 107423551        OKAY     OKAY 
-     STREO2 107423554        OKAY     OKAY 
-     OCSTR  107423557        OKAY     OKAY 
-     STREO  107423560        OKAY     OKAY 
-     OCSTR2 107423563        OKAY     OKAY 
-     STREO2 107423566        OKAY     OKAY 
-     OCSTR  107423569        OKAY     OKAY 
-     STREO  107423572        OKAY     OKAY 
-     OCSTR2 107423575        OKAY     OKAY 
-     STREO2 107423578        OKAY     OKAY 
-     OCSTR  107423581        OKAY     OKAY 
-     STREO  107423584        OKAY     OKAY 
-     OCSTR2 107423588        OKAY     OKAY 
-     STREO2 107423591        OKAY     OKAY 
-     OCSTR  107423595        OKAY     OKAY 
-     STREO  107423602        OKAY     OKAY 
-     OCSTR2 107423609        OKAY     OKAY 
-     STREO2 107423616        OKAY     OKAY 
-     OCSTR  107423623        OKAY     OKAY 
-     STREO  107423638        OKAY     OKAY 
-     OCSTR2 107423647        OKAY     OKAY 
-     STREO2 107423662        OKAY     OKAY 
-     NSTSGP 107423671        OKAY     OKAY 
-     ISTSGP 107423718        OKAY     OKAY 
-     NSTSGP 107423765        OKAY     OKAY 
-     ISTSGP 107423812        OKAY     OKAY 
-     NSTSO  107423859        OKAY     OKAY 
-     ISTSO  107423874        OKAY     OKAY 
-     NSTSO  107423889        OKAY     OKAY 
-     ISTSO  107423904        OKAY     OKAY 
-     NSTSO  107423919        OKAY     OKAY 
-     ISTSO  107423934        OKAY     OKAY 
-     NSTSO  107423949        OKAY     OKAY 
-     ISTSO  107423964        OKAY     OKAY 
-     NSTSO  107423979        OKAY     OKAY 
-     ISTSO  107423994        OKAY     OKAY 
-     NSTSO  107424009        OKAY     OKAY 
-     ISTSO  107424020        OKAY     OKAY 
-     NSTSO  107424031        OKAY     OKAY 
-     ISTSO  107424046        OKAY     OKAY 
-     NSTSO  107424061        OKAY     OKAY 
-     ISTSO  107424076        OKAY     OKAY 
-     NSTSO  107424091        OKAY     OKAY 
-     ISTSO  107424106        OKAY     OKAY 
-     NSTSO  107424121        OKAY     OKAY 
-     ISTSO  107424132        OKAY     OKAY 
-     NSTSO  107424143        OKAY     OKAY 
-     ISTSO  107424158        OKAY     OKAY 
-     NSTSO  107424173        OKAY     OKAY 
-     ISTSO  107424180        OKAY     OKAY 
-     NSTSO  107424187        OKAY     OKAY 
-     ISTSO  107424202        OKAY     OKAY 
-     NSTSO  107424217        OKAY     OKAY 
-     ISTSO  107424228        OKAY     OKAY 
-     NSTSO  107424239        OKAY     OKAY 
-     ISTSO  107424254        OKAY     OKAY 
-     NSTSO  107424269        OKAY     OKAY 
-     ISTSO  107424276        OKAY     OKAY 
-     NSTSO  107424283        OKAY     OKAY 
-     ISTSO  107424298        OKAY     OKAY 
-     NSTSO  107424313        OKAY     OKAY 
-     ISTSO  107424316        OKAY     OKAY 
-     NSTSO  107424319        OKAY     OKAY 
-     ISTSO  107424334        OKAY     OKAY 
-     NSTSO  107424349        OKAY     OKAY 
-     ISTSO  107424356        OKAY     OKAY 
-     NSTSO  107424363        OKAY     OKAY 
-     ISTSO  107424378        OKAY     OKAY 
-     NSTSO  107424393        OKAY     OKAY 
-     ISTSO  107424396        OKAY     OKAY 
-     NSTSO  107424399        OKAY     OKAY 
-     ISTSO  107424414        OKAY     OKAY 
-     NSTSO  107424429        OKAY     OKAY 
-     ISTSO  107424432        OKAY     OKAY 
-     NSTSO  107424435        OKAY     OKAY 
-     ISTSO  107424442        OKAY     OKAY 
-     NSTSO  107424449        OKAY     OKAY 
-     ISTSO  107424464        OKAY     OKAY 
-     NSTSO  107424479        OKAY     OKAY 
-     ISTSO  107424482        OKAY     OKAY 
-     NSTSO  107424485        OKAY     OKAY 
-     ISTSO  107424500        OKAY     OKAY 
-     NSTSO  107424515        OKAY     OKAY 
-     ISTSO  107424518        OKAY     OKAY 
-     NSTSO  107424521        OKAY     OKAY 
-     ISTSO  107424536        OKAY     OKAY 
-     NSTSO  107424551        OKAY     OKAY 
-     ISTSO  107424562        OKAY     OKAY 
-     NSTSO  107424573        OKAY     OKAY 
-     ISTSO  107424588        OKAY     OKAY 
-     NSTSO  107424603        OKAY     OKAY 
-     ISTSO  107424610        OKAY     OKAY 
-     NSTSO  107424617        OKAY     OKAY 
-     ISTSO  107424632        OKAY     OKAY 
-     NSTSO  107424647        OKAY     OKAY 
-     ISTSO  107424650        OKAY     OKAY 
-     NSTSO  107424653        OKAY     OKAY 
-     ISTSO  107424668        OKAY     OKAY 
-     NSTSO  107424683        OKAY     OKAY 
-     ISTSO  107424698        OKAY     OKAY 
-     NSTSO  107424713        OKAY     OKAY 
-     ISTSO  107424728        OKAY     OKAY 
-     NSTSO  107424743        OKAY     OKAY 
-     ISTSO  107424754        OKAY     OKAY 
-     NSTSO  107424765        OKAY     OKAY 
-     ISTSO  107424780        OKAY     OKAY 
-     NSTSO  107424795        OKAY     OKAY 
-     ISTSO  107424802        OKAY     OKAY 
-     NSTSO  107424809        OKAY     OKAY 
-     ISTSO  107424824        OKAY     OKAY 
-     NSTSO  107424839        OKAY     OKAY 
-     ISTSO  107424854        OKAY     OKAY 
-     NSTSO  107424869        OKAY     OKAY 
-     ISTSO  107424884        OKAY     OKAY 
-     NSTSO  107424899        OKAY     OKAY 
-     ISTSO  107424914        OKAY     OKAY 
-     NSTSO  107424929        OKAY     OKAY 
-     ISTSO  107424944        OKAY     OKAY 
-     NSTSO  107424959        OKAY     OKAY 
-     ISTSO  107424970        OKAY     OKAY 
-     NSTSO  107424981        OKAY     OKAY 
-     ISTSO  107424996        OKAY     OKAY 
-     NSTSO2 107425011        OKAY     OKAY 
-     ISTSO2 107425026        OKAY     OKAY 
-     NSTSO2 107425041        OKAY     OKAY 
-     ISTSO2 107425056        OKAY     OKAY 
-     NSTSO2 107425071        OKAY     OKAY 
-     ISTSO2 107425086        OKAY     OKAY 
-     NSTSO2 107425101        OKAY     OKAY 
-     ISTSO2 107425116        OKAY     OKAY 
-     NSTSO2 107425131        OKAY     OKAY 
-     ISTSO2 107425146        OKAY     OKAY 
-     NSTSO2 107425161        OKAY     OKAY 
-     ISTSO2 107425172        OKAY     OKAY 
-     NSTSO2 107425183        OKAY     OKAY 
-     ISTSO2 107425198        OKAY     OKAY 
-     NSTSO2 107425213        OKAY     OKAY 
-     ISTSO2 107425228        OKAY     OKAY 
-     NSTSO2 107425243        OKAY     OKAY 
-     ISTSO2 107425258        OKAY     OKAY 
-     NSTSO2 107425273        OKAY     OKAY 
-     ISTSO2 107425284        OKAY     OKAY 
-     NSTSO2 107425295        OKAY     OKAY 
-     ISTSO2 107425310        OKAY     OKAY 
-     NSTSO2 107425325        OKAY     OKAY 
-     ISTSO2 107425332        OKAY     OKAY 
-     NSTSO2 107425339        OKAY     OKAY 
-     ISTSO2 107425354        OKAY     OKAY 
-     NSTSO2 107425369        OKAY     OKAY 
-     ISTSO2 107425380        OKAY     OKAY 
-     NSTSO2 107425391        OKAY     OKAY 
-     ISTSO2 107425406        OKAY     OKAY 
-     NSTSO2 107425421        OKAY     OKAY 
-     ISTSO2 107425428        OKAY     OKAY 
-     NSTSO2 107425435        OKAY     OKAY 
-     ISTSO2 107425450        OKAY     OKAY 
-     NSTSO2 107425465        OKAY     OKAY 
-     ISTSO2 107425468        OKAY     OKAY 
-     NSTSO2 107425471        OKAY     OKAY 
-     ISTSO2 107425486        OKAY     OKAY 
-     NSTSO2 107425501        OKAY     OKAY 
-     ISTSO2 107425508        OKAY     OKAY 
-     NSTSO2 107425515        OKAY     OKAY 
-     ISTSO2 107425530        OKAY     OKAY 
-     NSTSO2 107425545        OKAY     OKAY 
-     ISTSO2 107425548        OKAY     OKAY 
-     NSTSO2 107425551        OKAY     OKAY 
-     ISTSO2 107425566        OKAY     OKAY 
-     NSTSO2 107425581        OKAY     OKAY 
-     ISTSO2 107425584        OKAY     OKAY 
-     NSTSO2 107425587        OKAY     OKAY 
-     ISTSO2 107425594        OKAY     OKAY 
-     NSTSO2 107425601        OKAY     OKAY 
-     ISTSO2 107425616        OKAY     OKAY 
-     NSTSO2 107425631        OKAY     OKAY 
-     ISTSO2 107425634        OKAY     OKAY 
-     NSTSO2 107425637        OKAY     OKAY 
-     ISTSO2 107425652        OKAY     OKAY 
-     NSTSO2 107425667        OKAY     OKAY 
-     ISTSO2 107425670        OKAY     OKAY 
-     NSTSO2 107425673        OKAY     OKAY 
-     ISTSO2 107425688        OKAY     OKAY 
-     NSTSO2 107425703        OKAY     OKAY 
-     ISTSO2 107425714        OKAY     OKAY 
-     NSTSO2 107425725        OKAY     OKAY 
-     ISTSO2 107425740        OKAY     OKAY 
-     NSTSO2 107425755        OKAY     OKAY 
-     ISTSO2 107425762        OKAY     OKAY 
-     NSTSO2 107425769        OKAY     OKAY 
-     ISTSO2 107425784        OKAY     OKAY 
-     NSTSO2 107425799        OKAY     OKAY 
-     ISTSO2 107425802        OKAY     OKAY 
-     NSTSO2 107425805        OKAY     OKAY 
-     ISTSO2 107425820        OKAY     OKAY 
-     NSTSO2 107425835        OKAY     OKAY 
-     ISTSO2 107425850        OKAY     OKAY 
-     NSTSO2 107425865        OKAY     OKAY 
-     ISTSO2 107425880        OKAY     OKAY 
-     NSTSO2 107425895        OKAY     OKAY 
-     ISTSO2 107425906        OKAY     OKAY 
-     NSTSO2 107425917        OKAY     OKAY 
-     ISTSO2 107425932        OKAY     OKAY 
-     NSTSO2 107425947        OKAY     OKAY 
-     ISTSO2 107425954        OKAY     OKAY 
-     NSTSO2 107425961        OKAY     OKAY 
-     ISTSO2 107425976        OKAY     OKAY 
-     NSTSO2 107425991        OKAY     OKAY 
-     ISTSO2 107426006        OKAY     OKAY 
-     NSTSO2 107426021        OKAY     OKAY 
-     ISTSO2 107426036        OKAY     OKAY 
-     NSTSO2 107426051        OKAY     OKAY 
-     ISTSO2 107426066        OKAY     OKAY 
-     NSTSO2 107426081        OKAY     OKAY 
-     ISTSO2 107426096        OKAY     OKAY 
-     NSTSO2 107426111        OKAY     OKAY 
-     ISTSO2 107426122        OKAY     OKAY 
-     NSTSO2 107426133        OKAY     OKAY 
-     ISTSO2 107426148        OKAY     OKAY 
-     Zmat   107426163        OKAY     OKAY 
-     Zmat   107426166        OKAY     OKAY 
-     Zmat   107426177        OKAY     OKAY 
-     Zmat   107426196        OKAY     OKAY 
-     Zmat   107426223        OKAY     OKAY 
-     Zmat   107426258        OKAY     OKAY 
-     Zmat   107426301        OKAY     OKAY 
-     Zmat   107426352        OKAY     OKAY 
-     Zmat   107426411        OKAY     OKAY 
-     Zmat   107426414        OKAY     OKAY 
-     Zmat   107426425        OKAY     OKAY 
-     ORBMAP 107426444        OKAY     OKAY 
-     STRMAP 107426451        OKAY     OKAY 
-     ORBMAP 107426458        OKAY     OKAY 
-     STRMAP 107426465        OKAY     OKAY 
-     ORBMAP 107426472        OKAY     OKAY 
-     STRMAP 107426491        OKAY     OKAY 
-     ORBMAP 107426510        OKAY     OKAY 
-     STRMAP 107426529        OKAY     OKAY 
-     ORBMAP 107426548        OKAY     OKAY 
-     STRMAP 107426575        OKAY     OKAY 
-     ORBMAP 107426602        OKAY     OKAY 
-     STRMAP 107426629        OKAY     OKAY 
-     ORBMAP 107426656        OKAY     OKAY 
-     STRMAP 107426675        OKAY     OKAY 
-     ORBMAP 107426694        OKAY     OKAY 
-     STRMAP 107426713        OKAY     OKAY 
-     ORBMAP 107426732        OKAY     OKAY 
-     STRMAP 107426739        OKAY     OKAY 
-     ORBMAP 107426746        OKAY     OKAY 
-     STRMAP 107426753        OKAY     OKAY 
-     ORBMAP 107426760        OKAY     OKAY 
-     STRMAP 107426763        OKAY     OKAY 
-     ORBMAP 107426766        OKAY     OKAY 
-     STRMAP 107426769        OKAY     OKAY 
-     ORBMAP 107426772        OKAY     OKAY 
-     STRMAP 107426775        OKAY     OKAY 
-     ORBMAP 107426778        OKAY     OKAY 
-     STRMAP 107426781        OKAY     OKAY 
-     ORBMAP 107426784        OKAY     OKAY 
-     STRMAP 107426791        OKAY     OKAY 
-     ORBMAP 107426798        OKAY     OKAY 
-     STRMAP 107426805        OKAY     OKAY 
-     ORBMAP 107426812        OKAY     OKAY 
-     STRMAP 107426831        OKAY     OKAY 
-     ORBMAP 107426850        OKAY     OKAY 
-     STRMAP 107426869        OKAY     OKAY 
-     Cobsm  107426888        OKAY     OKAY 
-     Nifsj  107426899        OKAY     OKAY 
-     Ifsj   107426934        OKAY     OKAY 
-     Ifsjo  107427001        OKAY     OKAY 
-     Ststx  107427036        OKAY     OKAY 
-     IOCLS  107427055        OKAY     OKAY 
-     SPGPAN 107427064        OKAY     OKAY 
-     SPGPCR 107427283        OKAY     OKAY 
-     KLIOIO 107427502        OKAY     OKAY 
-     KLBLTP 107427513        OKAY     OKAY 
-     INT1   107427519        OKAY     OKAY 
-     FI     107427585        OKAY     OKAY 
-     INT2   107427651        OKAY     OKAY 
-     PINT1  107428319        OKAY     OKAY 
-     PINT2  107428325        OKAY     OKAY 
-     LSM1   107428391        OKAY     OKAY 
-     LSM2   107428397        OKAY     OKAY 
-     KT_CC  107428463        OKAY     OKAY 
-     KPNIJ  107453553        OKAY     OKAY 
-     KIJKK  107453620        OKAY     OKAY 
-     KINH1  107453910        OKAY     OKAY 
-     SPOBET 107453976        OKAY     OKAY 
-     SPOBEX 107453987        OKAY     OKAY 
-     IHINDX 107454662        OKAY     OKAY 
-     SIGNDX 107455001        OKAY     OKAY 
-     LABXTP 107455087        OKAY     OKAY 
-     OP_REO 107455426        OKAY     OKAY 
-     SIOPRE 107455765        OKAY     OKAY 
-     LSPOBX 107455851        OKAY     OKAY 
-     LSPOBY 107455938        OKAY     OKAY 
-     SPOBAC 107456025        OKAY     OKAY 
-     IBOSUM 107456112        OKAY     OKAY 
-     IISREO 107456131        OKAY     OKAY 
-     IINDEX 107456150        OKAY     OKAY 
-     VEC1   107556505        OKAY     OKAY 
-     VEC2   107656507        OKAY     OKAY 
-     CLBT   107756509        OKAY     OKAY 
-     CLEBT  107756672        OKAY     OKAY 
-     CI1BT  107756835        OKAY     OKAY 
-     CIBT   107756998        OKAY     OKAY 
-     CBLTP  107758281        OKAY     OKAY 
-     CBLTP  107758287        OKAY     OKAY 
-     VEC1   107758293        OKAY     OKAY 
-     VEC2   107858295        OKAY     OKAY 
-     C2     107958297        OKAY     OKAY 
-     KLJ    108058299        OKAY     OKAY 
-     KLK    108058365        OKAY     OKAY 
-     KLK    108058431        OKAY     OKAY 
-     KLSC2  108058497        OKAY     OKAY 
-     KLXA   108059011        OKAY     OKAY 
-     KLXB   108059029        OKAY     OKAY 
-     KLSCR  108059047        OKAY     OKAY 
-     KLH1DA 108059081        OKAY     OKAY 
-     KLH1DB 108059091        OKAY     OKAY 
-     KLASTR 108059101        OKAY     OKAY 
-     KLBSTR 108059356        OKAY     OKAY 
-     KLRJKA 108059611        OKAY     OKAY 
-     H1BL   108059649        OKAY     OKAY 
-
- =======
-  Marks 
- =======
-
-  Identifier  Start of free memory 
-  =================================
-   GASCI            107556504
-   GASDIA           108058298
-   GT1DIA           108059648
-
-  Diagonal integrals, unbarred 
-
-0  1   -.64520218E+01 -.56357821E+01 -.56289525E+01 -.56289525E+01
-       -.17220446E+01 -.17222496E+01 -.17222496E+01 -.23217539E+01
-
-  Diagonal integrals, barred 
-
-0  1   -.64520218E+01 -.56357821E+01 -.56289525E+01 -.56289525E+01
-       -.17220446E+01 -.17222496E+01 -.17222496E+01 -.23217539E+01
 
   IROOT NDEG  1 2
   WARNING WARNING WARNING WARNING ! 
@@ -2122,56 +1151,91 @@ The largest block of two-electron integrals is      4096
  ----------------------------------------------
 
   Print flag, Nuclear repulsion energy
-  IPRT, EIGSHF  0  0.
+  IPRT, EIGSHF  0 -75.5559321
  NINVEC FOR CEIGEN  3
 
   Info from iteration ....  1
   _________________________
- Iter RNORM EIGAPR          1   .1017522596781E+00      -23.933851838466
- Iter RNORM EIGAPR          1   .1017522596782E+00      -23.933851838466
- Iter RNORM EIGAPR          1   .1017543984656E+00      -23.931927274049
+ Iter RNORM EIGAPR          1   .1017522596781E+00      -99.489783902861
+ Iter RNORM EIGAPR          1   .1017522596782E+00      -99.489783902861
+ Iter RNORM EIGAPR          1   .1017543984656E+00      -99.487859338444
  Dimension of projected matrix: 6
 
   Info from iteration ....  2
   _________________________
- Iter RNORM EIGAPR          2   .1752320615704E-01      -23.938690513442
- Iter RNORM EIGAPR          2   .1773899384327E-01      -23.938685673268
- Iter RNORM EIGAPR          2   .1772606822304E-01      -23.936750333907
+ Iter RNORM EIGAPR          2   .3127021648709E-01      -99.494097604999
+ Iter RNORM EIGAPR          2   .3127004478293E-01      -99.494097585046
+ Iter RNORM EIGAPR          2   .3119338728392E-01      -99.492169139871
  Dimension of projected matrix: 9
 
   Info from iteration ....  3
   _________________________
- Iter RNORM EIGAPR          3   .2637872944712E-02      -23.938990536851
- Iter RNORM EIGAPR          3   .2731984289496E-02      -23.938990214883
- Iter RNORM EIGAPR          3   .2727894369531E-02      -23.937057253984
+ Iter RNORM EIGAPR          3   .1862110134770E-01      -99.494641440066
+ Iter RNORM EIGAPR          3   .1862253025834E-01      -99.494641411057
+ Iter RNORM EIGAPR          3   .1855580181163E-01      -99.492708845060
  Dimension of projected matrix: 12
 
   Info from iteration ....  4
   _________________________
- Iter RNORM EIGAPR          4   .3731151181799E-03      -23.938993783139
- Iter RNORM EIGAPR          4   .3875712860899E-03      -23.938993775861
- Iter RNORM EIGAPR          4   .4027839152288E-03      -23.937060801876
+ Iter RNORM EIGAPR          4   .1058510925662E-01      -99.494863197290
+ Iter RNORM EIGAPR          4   .1058642368982E-01      -99.494863183721
+ Iter RNORM EIGAPR          4   .1060828739167E-01      -99.492929837000
  Dimension of projected matrix: 15
 
   Info from iteration ....  5
   _________________________
- Iter RNORM EIGAPR          5   .5882668700336E-04      -23.938993867532
- Iter RNORM EIGAPR          5   .6057166743259E-04      -23.938993867390
- Iter RNORM EIGAPR          5   .6366871406474E-04      -23.937060902169
+ Iter RNORM EIGAPR          5   .3236175838855E-02      -99.494920202604
+ Iter RNORM EIGAPR          5   .3236353821020E-02      -99.494920201751
+ Iter RNORM EIGAPR          5   .3249726535438E-02      -99.492987196225
  Dimension of projected matrix: 18
 
   Info from iteration ....  6
   _________________________
- Iter RNORM EIGAPR          6   .8074405624657E-05      -23.938993869520
- Iter RNORM EIGAPR          6   .8610547725306E-05      -23.938993869513
- Iter RNORM EIGAPR          6   .9290564475083E-05      -23.937060904589
-0 Convergence was obtained in   6 iterations
+ Iter RNORM EIGAPR          6   .1203597339394E-02      -99.494925193835
+ Iter RNORM EIGAPR          6   .1204275331994E-02      -99.494925193147
+ Iter RNORM EIGAPR          6   .1206813790864E-02      -99.492992227723
+ Dimension of projected matrix: 21
+
+  Info from iteration ....  7
+  _________________________
+ Iter RNORM EIGAPR          7   .3983431667778E-03      -99.494925821663
+ Iter RNORM EIGAPR          7   .3984639845779E-03      -99.494925821527
+ Iter RNORM EIGAPR          7   .3978904558412E-03      -99.492992857342
+ Dimension of projected matrix: 24
+
+  Info from iteration ....  8
+  _________________________
+ Iter RNORM EIGAPR          8   .1928722754236E-03      -99.494925903618
+ Iter RNORM EIGAPR          8   .1930187832020E-03      -99.494925903584
+ Iter RNORM EIGAPR          8   .1917157207360E-03      -99.492992938757
+ Dimension of projected matrix: 27
+
+  Info from iteration ....  9
+  _________________________
+ Iter RNORM EIGAPR          9   .6632322938748E-04      -99.494925931667
+ Iter RNORM EIGAPR          9   .6641292728362E-04      -99.494925931662
+ Iter RNORM EIGAPR          9   .6714541650615E-04      -99.492992966688
+ Dimension of projected matrix: 30
+
+  Info from iteration ....  10
+  _________________________
+ Iter RNORM EIGAPR         10   .2093613365532E-04      -99.494925933765
+ Iter RNORM EIGAPR         10   .2095606977512E-04      -99.494925933765
+ Iter RNORM EIGAPR         10   .2165002713573E-04      -99.492992968837
+ Dimension of projected matrix: 33
+
+  Info from iteration ....  11
+  _________________________
+ Iter RNORM EIGAPR         11   .6631979414666E-05      -99.494925933931
+ Iter RNORM EIGAPR         11   .6637336799033E-05      -99.494925933931
+ Iter RNORM EIGAPR         11   .6723738600084E-05      -99.492992969013
+0 Convergence was obtained in  11 iterations
 
  *++++++++++++++++++++++++++++++++++++++++++++*
 
- Final Eigenvalue   1 :    -23.9389938695197
- Final Eigenvalue   2 :    -23.9389938695135
- Final Eigenvalue   3 :    -23.9370609045890
+ Final Eigenvalue   1 :    -99.4949259339310
+ Final Eigenvalue   2 :    -99.4949259339309
+ Final Eigenvalue   3 :    -99.4929929690130
 
  *++++++++++++++++++++++++++++++++++++++++++++*
 
@@ -2179,8 +1243,8 @@ The largest block of two-electron integrals is      4096
 
   --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---                       
 
- Date and time (Linux) : Fri May  2 11:26:03 2003
-  I am not allowed to do multi-root MCSCF, yet.
+ Date and time (Linux) : Tue Aug 12 14:01:00 2003
+  Normal STOP after LUCIAREL CI.
 
 
  QTRACE dump of internal trace stack
