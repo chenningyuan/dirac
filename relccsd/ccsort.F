@@ -767,11 +767,9 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-      IF (FIRST) THEN
-         CALL XCOPY(OFF(2),A0,0,BUF2,1)
-      ELSE
-         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
-      ENDIF
+C 15-8-2003 LV : Removed initialization of buf2, should not be necessary
+C because we go from a square array to a square
+C
       IJKL = 1
       DO KLREP = 1, NREP
        DO 10 LREP = 1, NREP
@@ -786,8 +784,13 @@ C
      &          + (OFF2(KREP,JREP)+K-1)*NPAIR(ILREP)
            ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
             DO J = 1, JFIE(JREP)
-            IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) 
-     &      CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
+            IF (DOINV) THEN
+               IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) 
+     &         CALL XCOPY(IFIE(IREP),BUF2(ILKJ0*RCW+1),1,BUF1(IJKL),1)
+            ELSE
+               IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) 
+     &         CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
+            ENDIF
             IJKL = IJKL + RCW * IFIE(IREP)
             ILKJ0 = ILKJ0 + NPAIR(ILREP) * KFIE(KREP)
            ENDDO
