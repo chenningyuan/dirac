@@ -1339,7 +1339,7 @@ C
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(Q,GEXP)
         ELSE
-          GEXP = QEXP
+           GEXP = QEXP
         ENDIF
 C
 C       Print out warning if GEXP < 1.0D8
@@ -1354,9 +1354,9 @@ C
            WRITE(LUPRI,*) 'WARNING!!!'            
            WRITE(LUPRI,*) 'Nuclear gaussian exponent small: ',GEXP
         END IF
-        WRITE(LUPRI,'(3X,A,F7.3,A,1P,D20.10)') 
-     &       'Nuclear Gaussian exponent for atom of charge ',
-     &       Q,': ',GEXP
+        WRITE(LUPRI,'(/A,F8.3,A,1P,D20.10)') 
+     &       '  Nuclear Gaussian exponent for atom of charge',
+     &       Q,' :',GEXP
       ELSE
          GEXP = D0
       END IF
