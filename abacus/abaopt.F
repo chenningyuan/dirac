@@ -74,7 +74,7 @@ C
      &            '.VR-COR', '.VR-VIB', '.VR-SYM', '.M-PSB ',
      &            '.LINE S', '.SADDLE', '.MODE  ', '.BOFILL',
      &            '.LINDH ', '.NO SKI', '.GRD IN', '.GRD SC',
-     &            '.NOAUX ', '.BFGSR1', '.XXXXXX', '.XXXXXX'/
+     &            '.NOAUX ', '.BFGSR1', '.NUMGRA', '.XXXXXX'/
 C
       DATA FIRST /.TRUE./
 C
@@ -432,6 +432,8 @@ C           .GRD SCREEN: screening threshold in gradient calc.
  66         BFGSR1 = .TRUE.
             GOTO 100
  67         CONTINUE
+C NUMGRD: Use numerical gradient
+            DONGRD = .TRUE.
             GOTO 100
  68         CONTINUE
             GOTO 100
