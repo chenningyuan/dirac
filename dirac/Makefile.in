@@ -1,3 +1,10 @@
+#
+# VERSION : $Revision$
+# DATE    : $Date$
+# FILE    : dcborb.h
+# SOURCE  : $Source$
+#
+
 include ../Makefile.config
 
 OBJS =	dirac.o  \
@@ -24,6 +31,6 @@ clean :
 
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) ($LINUX_OBJS:.o=.c)
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(LINUX_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
