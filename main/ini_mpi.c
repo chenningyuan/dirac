@@ -102,7 +102,10 @@
        * Set up MPI error handler
        */
 
-      if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
+/* MI: use correct type casting for the error function
+     'int MPI_Errhandler_create(MPI_Handler_function *function,MPI_Errhandler *errhandler)'   */
+     /* if ( (ierr = MPI_Errhandler_create(&mpi_errtrap, errhandler)) )  */
+      if ( (ierr = MPI_Errhandler_create((MPI_Handler_function *) &mpi_errtrap, errhandler)) )  
          printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
       if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
