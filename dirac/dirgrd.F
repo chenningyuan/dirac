@@ -1686,6 +1686,7 @@ C
 C
       LOGICAL LBIT
       CHARACTER*(20) LABEL(3)
+      DIMENSION WORK(*)
 C
       CALL QENTER('GRDOUT')
 C
@@ -1744,7 +1745,7 @@ C       "SS-integral contribution by classical repulsion of
 C        small component atomic charges"-gradient
 C       ===================================================
 C
-        IF ( LBIT( IGRD_INTBUF, 2 ) ) THEN
+        IF ( LBIT( IGRD_INTBUF, 2 ) .AND. LBIT ( IGRD_INTFLG, 3) ) THEN
            CALL HEADE3('"SS-integral contribution by classical ',
      &                 'repulsion of small component atomic ',
      &                 'charges"-gradient',-1)
@@ -1773,8 +1774,10 @@ C
       CALL ADDGRD(GRADRO(1,0))
       CALL ADDGRD(GRADER(1,0))
       CALL ADDGRD(GRADNN)
-      IF ( LBIT( IGRD_INTBUF, 2 ) .AND.
-     &     .NOT. LBIT ( IGRD_INTBUF, 3 ) ) THEN
+      IF ( (LBIT( IGRD_INTBUF, 2 ) .AND.
+     &     .NOT. LBIT ( IGRD_INTBUF, 3 ) .AND.
+     &           LBIT ( IGRD_INTFLG, 3)) .OR. DOLVC ) THEN
+         write(6,*) 'adding lv grad'
          CALL ADDGRD(GRADLV)
       END IF
       CALL HEADE2('Total molecular gradient','@',-1)

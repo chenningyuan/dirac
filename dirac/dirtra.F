@@ -336,6 +336,71 @@ C
                 KFAC = JFAC*IQPHASE(K1,K2,IQ)*IQPH(K1,2)*IQPH(K2,1)
               ENDIF
               IF(KFAC.EQ.-1) THEN
+                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
+                DO 50 ICOL = 1,NB2
+                  CALL DSCAL(NB1,DM1,AMAT(IOFF+1),1)
+                  IOFF = IOFF + NTBAS(0)
+   50           CONTINUE
+              ENDIF
+   40       CONTINUE
+   30     CONTINUE
+   20   CONTINUE
+   10 CONTINUE
+C
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck q2bphase */
+      SUBROUTINE Q2BPHASE(TYP,IM,JFAC,AMAT)
+C*****************************************************************************
+C
+C     Quaternion phase insertion in square matrix
+C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
+C       TYP = D:  (e_K1*)(e_IM)(e_K2)   as density matrix
+C
+C     Written by T.Saue, January 1995
+C     Last revision: June 25 1996 - tsaue
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(DM1 = -1.0D0)
+C
+#include <mxorb.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+C
+#include <symmet.h>
+#include <dcbbas.h>
+#include <dcbqal.h>
+#include <dgroup.h>
+      CHARACTER TYP*1
+      DIMENSION AMAT(*)
+      EXTERNAL BDQALGEBRA
+C
+      IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
+        CALL QUIT('Q2BPHASE: Unknown TYP !')
+      ENDIF
+      DO 10 IRP1 = 0,NBSYM-1
+        ISY1 = IRP1 + 1
+        DO 20 IC1 = 1,2
+          NB1 = NBBAS(IRP1,IC1)
+          IF(NB1.EQ.0) GOTO 20
+          K1  = JQBAS(IRP1,IC1)
+          DO 30 IRP2 = 0,NBSYM-1
+            ISY2 = IRP2 + 1
+            DO 40 IC2 = 1,2
+              NB2 = NBBAS(IRP2,IC2)
+              IF(NB2.EQ.0) GOTO 40
+              K2   = JQBAS(IRP2,IC2)
+              IF    (TYP.EQ.'F') THEN
+                KFAC = JFAC*IQPHASE(K1,K2,IM)*IQPH(K1,1)*IQPH(K2,2)
+              ELSEIF(TYP.EQ.'D') THEN
+                IQ   = IQMULT(K1,K2,IM)
+                KFAC = JFAC*IQPHASE(K1,K2,IQ)*IQPH(K1,2)*IQPH(K2,1)
+              ENDIF
+              IF(KFAC.EQ.-1) THEN
 CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
                 IOFF = I2BBASX(IRP1,IRP2,IC1,IC2)
                 DO 50 ICOL = 1,NB2

@@ -104,7 +104,7 @@ C
         IF(NZ.LT.4) THEN
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IREP)
-            CALL Q2PHASE('D',IQ,1,DMAT(1,IZ,I))
+            CALL Q2BPHASE('D',IQ,1,DMAT(1,IZ,I))
           ENDDO
           IF(IPRINT.GE.5) THEN
             CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
@@ -164,8 +164,8 @@ C
         IF(NZ.LT.4) THEN
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IREP)
-            CALL Q2PHASE('F',IQ,1,FMAT(1,IZ,I))
-            CALL Q2PHASE('D',IQ,1,DMAT(1,IZ,I))
+            CALL Q2BPHASE('F',IQ,1,FMAT(1,IZ,I))
+            CALL Q2BPHASE('D',IQ,1,DMAT(1,IZ,I))
           ENDDO
           IF(IPRINT.GE.5) THEN
             CALL HEADER('Unsorted FMAT with half-phases inserted',-1)
