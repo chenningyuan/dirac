@@ -86,6 +86,7 @@ Functional* available_functionals[] = {
     &PW86xFunctional,
     &P86cFunctional,
     &pbexFunctional,
+    &PbecFunctional,
     &pw91cFunctional,
     &PW92Functional,
     /* mixed functionals */
@@ -327,11 +328,15 @@ dftpot1_(SecondDrv *ds, const real* w, const real* rho, const real* grad,
     else
         selected_func->second(&drvs, *w, &dp);
          
-    ds->fR  = 0; /* NOT USED */
-    ds->fZ  = drvs.df0010 + 0.5*drvs.df00001* *grad;
+    ds->fR  = 0.5*(drvs.df1000 + drvs.df0100);
+    ds->fZ  = drvs.df0010;
     ds->fRR = 0.5*(drvs.df2000 + drvs.df1100);
-    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001 + drvs.df10001* *grad);
-    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011 + drvs.df00001);
+    ds->fRZ = 0.5*(drvs.df1010 + drvs.df1001);
+    ds->fZZ = 0.5*(drvs.df0020 + drvs.df0011);
+    ds->fRG = 0.5*drvs.df10001;
+    ds->fZG = 0.5*drvs.df00101;
+    ds->fGG = 0.25*drvs.df00002;
+    ds->fG  = 0.5*drvs.df00001;
 }
 
 /* dftpot2_:
@@ -449,7 +454,7 @@ static int
 pbe_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &pw91cFunctional,1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbecFunctional,1.0);
     dft_set_hf_weight(0);
     return 1;
 }
@@ -492,7 +497,7 @@ static int
 pbe0_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 0.75);
-    gga_fun_list = add_functional(gga_fun_list, &pw91cFunctional,1.0);
+    gga_fun_list = add_functional(gga_fun_list, &PbecFunctional,1.0);
     dft_set_hf_weight(0.25);
     return 1;
 }
