@@ -3234,7 +3234,7 @@ C       --------------------------------------
 C
         CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
      &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
-     &              .FALSE.,.FALSE.,INTRES)
+     &              .TRUE.,.FALSE.,INTRES)
 C
 C        Print timing information
 C
