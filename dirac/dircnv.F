@@ -84,7 +84,7 @@ C
         ELSE
           IREC = MOD(NITER-2,MXDIIS-1) + 1
         ENDIF
-        CALL READAC(LUFOCK,N2ORBTQ,FBUF,IREC)
+        CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
 C
         CALL FCKCMP(FMO,FBUF,WORK,LWORK)
       ENDIF
@@ -94,10 +94,10 @@ C     ==============================================
 C
       IF(MXDIIS.EQ.0) THEN
         IREC = 1
-        CALL WRTDAC(LUFOCK,N2ORBTQ,FMO,IREC)
+        CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
       ELSE
         IREC = MOD(NITER-1,MXDIIS-1) + 1
-        CALL WRTDAC(LUFOCK,N2ORBTQ,FMO,IREC)
+        CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
       ENDIF
 C
       IF (ICHKCNV .EQ. 0) RETURN
@@ -189,7 +189,7 @@ C         previous cycle after being overwritten in DIISDR
 C
           IF(DODAMP) THEN
             IREC = MOD(NITER-2,MXDIIS-1) + 1
-            CALL READAC(LUFOCK,N2ORBTQ,FBUF,IREC)
+            CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
           ENDIF
         ELSE
           CACC(1:4) = 'DIIS'
@@ -198,8 +198,8 @@ C
              DO I = 1,NFSYM
                 WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
                 CALL HEADER('DHFCNV: MO Fock matrix after DIIS:',-1)
-                CALL PRQMAT(FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                CALL PRQMAT(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
              END DO
           END IF
         ENDIF
@@ -213,14 +213,14 @@ C
         CACC(1:4) = 'DAMP'
         WRITE(CACC(5:8),'(F4.2)') DAMPFC
         DNEW = D1 - DAMPFC
-        CALL DSCAL(N2ORBTQ,DNEW  ,FMO,1)
-        CALL DAXPY(N2ORBTQ,DAMPFC,FBUF,1,FMO,1)
+        CALL DSCAL(N2TMOTQ,DNEW  ,FMO,1)
+        CALL DAXPY(N2TMOTQ,DAMPFC,FBUF,1,FMO,1)
         IF(IPRSCF.GE.5) THEN
           DO I = 1,NFSYM
              WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
              CALL HEADER('DHFCNV: MO Fock matrix after DAMP:',-1)
-             CALL PRQMAT(FMO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+             CALL PRQMAT(FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
           END DO
         ENDIF
       ENDIF
@@ -263,7 +263,7 @@ C
       CALL QENTER('DIISER')
 C
 C
-      IF (DIISAO.OR.(NASHT.GT.0)) THEN
+       IF (DIISAO.OR.(NASHMFT.GT.0)) THEN
 C
          CALL DZERO(EBUF,NFMAT*N2BBASXQ)
          CALL DZERO(EVEC,N2EVECTQ)
@@ -343,13 +343,13 @@ C
      &                      WORK(KFREE),LFREE,IPRSCF)
             ELSE
               CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &                NORB(I),NORB(I),
+     &                NTMO(I),NTMO(I),
      &                EBUF(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
      &                                    NZ,IPQTOQ(1,0),
-     &                EVEC(I2ORBT(I)+1),NORB(I),NORB(I),NZ,IPQTOQ(1,0),
-     &                SAOMO(I2TMT(I)+1),NFBAS(I,0),NORB(I),
+     &                EVEC(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),
+     &                SAOMO(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                NZT,IPQTOQ(1,0),
-     &                TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),
+     &                TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
      &                                 NZT,IPQTOQ(1,0),
      &                FAO,N2BBASXQ,IPRSCF)
             ENDIF
@@ -360,24 +360,24 @@ C
                WRITE(CTMP,'(I1)') I
                CALL HEADER('DIISER: Error vector in MO-basis, corep '
      &                     //CTMP,-1)
-               CALL PRQMAT(EVEC(1+IOFF),NORB(I),NORB(I),
-     &                     NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(EVEC(1+IOFF),NTMO(I),NTMO(I),
+     &                     NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
 C
 C           Calculate ErrVec - ErrVec(Hermitian conj.)
 C
-            CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
+            CALL DIFMMH(EVEC(IOFF+1),NTMO(I),NZ,NTMO(I),NTMO(I))
 C
             IF ( IPRSCF .GE. 10 ) THEN
                WRITE(CTMP,'(I1)') I
                CALL HEADER('DIISER: ErrVec - ErrVec(Hermitian conj.)'//
      &                     ', corep '//CTMP,-1)
-               CALL PRQMAT(EVEC(1+IOFF),NORB(I),NORB(I),
-     &                  NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(EVEC(1+IOFF),NTMO(I),NTMO(I),
+     &                  NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             END IF
 C
-            IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NORB(I)
-            IOFF = IOFF + NORB(I)*NORB(I)*NZ
+            IOFF2 = IOFF2 + NZ*NFBAS(I,0)*NTMO(I)
+            IOFF = IOFF + NTMO(I)*NTMO(I)*NZ
  10      CONTINUE
 C
 C        The factor:
@@ -397,23 +397,26 @@ C        Old DIIS.
 C           Only for closed shell molecules.
 C
 C
+
 C        Construct density matrix in MO-basis
 C        ====================================
 C
          REWIND LUCMOS
-         CALL READT(LUCMOS,N2ORBTQ,EVEC)
+         CALL READT(LUCMOS,N2TMOTQ,EVEC)
+C        Observe that we use NISHMF which is the number or inactive orbitals
+C        minus those that are frozen
          DO 20 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 20
-            IOFF = I2ORBT(I)+NORB(I)*NPSH(I)+1
-            CALL QGEMM(NORB(I),NORB(I),NISH(I),D1,
-     &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
-     &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NORB(I),NORB(I),NZ,
-     &             D0,IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ)
+            IOFF = I2TMOT(I)+NTMO(I)*NPSH(I)+1
+            CALL QGEMM(NTMO(I),NTMO(I),NISHMF(I),D1,
+     &           'N','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
+     &           'H','N',IPQTOQ(1,0),EVEC(IOFF),NTMO(I),NTMO(I),NZ,
+     &             D0,IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ)
             IF(IPRSCF.GE.5) THEN
                WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
                CALL HEADER('DIISER:Density matrix in MO-basis',-1)
-               CALL PRQMAT(EBUF(I2ORBT(I)+1),NORB(I),NORB(I),
-     &                   NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+               CALL PRQMAT(EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),
+     &                   NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
  20      CONTINUE
 C
@@ -425,27 +428,27 @@ C
          CALL DZERO(EVEC,N2EVECTQ)
          DO 30 I = 1,NFSYM
             IF(NOCC(I).EQ.0) GOTO 30
-            CALL QGEMM(NORB(I),NORB(I),NORB(I),D1,
-     &         'N','N',IPQTOQ(1,0),FMO(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
-     &         'N','N',IPQTOQ(1,0),EBUF(I2ORBT(I)+1),NORB(I),NORB(I),NZ,
-     &           D0,IPQTOQ(1,0),EVEC(IOFF+1),NORB(I),NORB(I),NZ)
+            CALL QGEMM(NTMO(I),NTMO(I),NTMO(I),D1,
+     &         'N','N',IPQTOQ(1,0),FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
+     &         'N','N',IPQTOQ(1,0),EBUF(I2TMOT(I)+1),NTMO(I),NTMO(I),NZ,
+     &           D0,IPQTOQ(1,0),EVEC(IOFF+1),NTMO(I),NTMO(I),NZ)
             IF(IPRSCF.GE.5) THEN
                CALL HEADER('DIISER:FD matrix',-1)
                WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-               CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
+               CALL PRQMAT(EVEC(IOFF+1),NTMO(I),NTMO(I),NTMO(I),NTMO(I),
      &                     NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
 C
             IF (ZORA) CALL ZRDIIS (I,EVEC(1+IOFF),WORK,KFREE,LFREE)
 C
-            CALL DIFMMH(EVEC(IOFF+1),NORB(I),NZ,NORB(I),NORB(I))
+            CALL DIFMMH(EVEC(IOFF+1),NTMO(I),NZ,NTMO(I),NTMO(I))
             IF(IPRSCF.GE.5) THEN
                CALL HEADER('DIISER:Error matrix',-1)
                WRITE(LUPRI,'(3X,A,I2)') '*** Fermion ircop ',I
-               CALL PRQMAT(EVEC(IOFF+1),NORB(I),NORB(I),NORB(I),NORB(I),
+               CALL PRQMAT(EVEC(IOFF+1),NTMO(I),NTMO(I),NTMO(I),NTMO(I),
      &                     NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
-            IOFF = IOFF + NORB(I)*NORB(I)*NZ
+            IOFF = IOFF + NTMO(I)*NTMO(I)*NZ
    30    CONTINUE
 C
 C        Find total max element in EVEC
@@ -490,9 +493,9 @@ C
 #include "memint.h"
 C
 C     Memory allocation
-      CALL MEMGET('REAL',KDIFF,N2ORBTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDIFF,N2TMOTQ,WORK,KFREE,LFREE)
 C
-      FCKVAL =  DIFFMX(FNEW,FOLD,WORK(KDIFF),N2ORBTQ)
+      FCKVAL =  DIFFMX(FNEW,FOLD,WORK(KDIFF),N2TMOTQ)
 C
 C     Memory deallocation
       CALL MEMREL('FCKCMP.DIFFMX',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -903,14 +906,14 @@ C
 #include "dcbbas.h"
       DIMENSION FOCK(*),FBUF(*),CVEC(*)
 C
-      CALL DSCAL(N2ORBTQ,CVEC(NELMBM),FOCK,1)
+      CALL DSCAL(N2TMOTQ,CVEC(NELMBM),FOCK,1)
       IOFF  = 1
       NPREV = NELMBM - 2
       JREC  = NITER - NPREV - 2
       DO I = 1,NPREV
         IREC = MOD(JREC+I,MXDIIS-1) + 1
-        CALL READAC(LUFOCK,N2ORBTQ,FBUF,IREC)
-        CALL DAXPY(N2ORBTQ,CVEC(IOFF+I),FBUF,1,FOCK,1)
+        CALL READAC(LUFOCK,N2TMOTQ,FBUF,IREC)
+        CALL DAXPY(N2TMOTQ,CVEC(IOFF+I),FBUF,1,FOCK,1)
       ENDDO
 C
       RETURN
