@@ -1836,9 +1836,6 @@ C?            write(6,*) ' Vector skipped ', IVEC
 *
       RETURN
       END
-#ifdef NEW_OR_OLDis2
-*. This is "old" version, activate with #define NEW_OR_OLDis2
-*. New version is called GET_TTS_BATCHN  /Jan 2003 hjaaj
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1980,9 +1977,6 @@ C    &                  NSASO,NSBSO,ISC)
 
       RETURN
       END
-#else  /* NEW_OR_OLDis2 */
-*. This is "new" version, deactivate with #define NEW_OR_OLDis2
-*. Old version is called GET_TTS_BATCH  /Jan 2003 hjaaj
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -2101,7 +2095,6 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
 *
       RETURN
       END
-#endif  /* NEW_OR_OLDis2 */
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
