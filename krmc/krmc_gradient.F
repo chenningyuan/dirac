@@ -69,10 +69,16 @@ C
       ELSE
          GCINRM = D0
       END IF
-      GOBEENRM = DNORM2(NZXOPE,GOEE(1,1),1)
-      DO IZ = 2, NZ
-         GOBEENRM = GOBEENRM + DNORM2(NZXOPE,GOEE(1,IZ),1)
-      END DO
+      IF (NZHOPE .EQ. NZXOPE) THEN
+         GOBEENRM = DNORM2(NZXOPEQ,GOEE(1,1),1)
+      ELSE
+         GOBEENRM = D0
+         DO IZ = 1, NZ
+            GOBEENRM = GOBEENRM + DDOT(NZXOPE,GOEE(1,IZ),1,GOEE(1,IZ),1)
+         END DO
+         GOBEENRM = SQRT(GOBEENRM)
+      END IF
+C
       GOBEPNRM = DNORM2(NZXOPPQ,GOEP,1)
 C
       GNORM(1) = GCINRM
@@ -426,8 +432,8 @@ C
       DIMENSION G(NZHOPE,*)
       DIMENSION GR(*)
 C
-      write(6,*) 'gradient on entry'
-      call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
+D     write(6,*) 'gradient on entry'
+D     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
 C
       II = 1
       DO IZ = 1, NZ
@@ -439,11 +445,11 @@ C
          II = II + NZHOPE - NZXOPE
       END DO
 C
-      write(6,*) 'gradient on exit, non-red'
-      call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
-      write(6,*) 'gradient on exit, non-red'
-      call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
-     &     nz,1,6)
+D     write(6,*) 'gradient on exit, non-red'
+D     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+D     write(6,*) 'gradient on exit, non-red'
+D     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+D    &     nz,1,6)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -471,11 +477,11 @@ C
       DIMENSION G(NZHOPE,*)
       DIMENSION GR(*)
 C
-      write(6,*) 'gradient on entry, non-red'
-      call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
-      write(6,*) 'gradient on entry, non-red'
-      call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
-     &     nz,1,6)
+D     write(6,*) 'gradient on entry, non-red'
+D     call output(gr,1,nzxope,1,nz,nzxope,nz,1,6)
+D     write(6,*) 'gradient on entry, non-red'
+D     call output(gr(1+nz*nzxope),1,nzhope-nzxope,1,nz,nzhope-nzxope,
+D    &     nz,1,6)
 C
       II = 1
       DO IZ = 1, NZ
@@ -487,7 +493,7 @@ C
          II = II + NZHOPE - NZXOPE
       END DO
 C
-      write(6,*) 'gradient on exit'
-      call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
+D     write(6,*) 'gradient on exit'
+D     call output(g,1,nzhope,1,nz,nzhope,nz,1,6)
       RETURN
       END

@@ -133,7 +133,11 @@ C
 C
 C     Rotate to Fock type and/or natural orbitals.
 C
-      IF (IKRMCCNO .GE. -1) THEN
+      CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KEIG),NORBT)
+      IF (.FALSE.) THEN
+C      IF (IKRMCCNO .GE. -1) THEN
+C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
 C
 C
          IF (NATONL) THEN
@@ -150,12 +154,25 @@ C
             RTRACI = .TRUE.
          END IF
 C
-         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,WORK,KFREE,LFREE)
+         WRITE (LUPRI,'(/2A)') ' - calling KRCCNO with keyword ',CNOLBL
+         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,WORK(KEIG),
+     &                WORK,KFREE,LFREE)
 C
       END IF
 C
       CALL WRTKRMC(LUKRMC,'CREF    ',CREF,NZCONFQ)
       CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+C
+      IF (NASHT .EQ. 0) THEN
+C     ... also save on DFCOEF when SCF
+C         (needed for e.g. RPA or restarts without changing
+C          input from .HF to .MCSCF /hjaaj Feb 2004)
+         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','KRMCSAV')
+         CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+         CALL IZERO(WORK(KIBEIG),NORBT)
+         CALL WRICMO(LUCOEF,CMO,WORK(KEIG),WORK(KIBEIG),EMCSCF)
+         CLOSE(LUCOEF,STATUS='KEEP')
+      END IF
 C
       REWIND(LUKRMC)
 C

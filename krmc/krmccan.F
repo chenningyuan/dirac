@@ -250,7 +250,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmccno */
-      SUBROUTINE KRMCCNO(KEYCNO,RTRACI,CREF,CMO,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE KRMCCNO(KEYCNO,RTRACI,CREF,CMO,IPRINT,EIG,
+     &                   WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Transform orbitals to natural and/or Fock type orbitals.
@@ -261,6 +262,8 @@ C        CMO  - MO orbitals
 C
 C     Output:
 C        CREF, CMO - transformed quantities.
+C        EIG,  eigenvalues of blocked FD matrix (if TRTOFD true)
+C              primarily for use in QCDHF
 C
 C     Written by J. Thyssen - Mar 4 2000
 C     Last revision :
@@ -280,9 +283,7 @@ C
 #include "mx2orb.h"
 #include "dcbidx.h"
 C
-      DIMENSION CREF(*)
-      DIMENSION CMO(*)
-      DIMENSION WORK(*)
+      DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
       CHARACTER KEYCNO*6
       LOGICAL RTRACI
 C
@@ -359,34 +360,48 @@ C
          CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
       END IF
 C
-      IF (.NOT. TRTOCO) GOTO 1000
+      IF ( .NOT. (TRTOFD .OR. TRTOCO) ) GOTO 1000
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFV,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
+      IF (NASHT .GT. 0) THEN
+         LFV = N2ORBXQ
+      ELSE
+         LFV = 0
+      END IF
+      CALL MEMGET('REAL',KFV,LFV,WORK,KFREE,LFREE)
 C
 C
 C     Calculate Fock matrices
 C     -----------------------
 C
+      KFC = KFD
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
      &     WORK(KFREE),LFREE)
 C     CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK,LWORK)
-      write(6,*) 'eix ',eix
 C
 C     Calculate FD
 C
-      CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFC),1)
+      IF (NASHT .GT. 0) CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFD),1)
 C
       IF (TRTOCO) THEN
 C
 C        Extract active-active part of FD for RTRACI.
 C
-         CALL RGETAC(WORK(KFC),WORK(KDV),IPROPT)
+         CALL RGETAC(WORK(KFD),WORK(KDV),IPROPT)
 C        CALL RGETAC(FD,FDAC,IPRINT)
 C
+         IF (.NOT. TRTOFD) THEN
+            CALL MEMREL('RKRMCCNO.after RGETAC for FCAC',
+     &                  WORK,1,KEIGVC,KFREE,LFREE)
+            GO TO 1000
+         END IF
       END IF
+      CALL QUIT('KRMCCNO: TRTOFD not implemented correctly yet')
+C     hjaaj Feb 2004 TODO: because QDIAG sorts eigenvalues code
+C     must be modified to only call QDIAG with a block at a time
+C     (p-p block, i-i block, s-s block) instead of zeroing inter-shell
+C     couplings and active-active block.
 C
 C     Zero inter-shell coupling-blocks.
 C     ---------------------------------
@@ -400,9 +415,9 @@ C
          N2MO(I) = NPSH(I)
       END DO
 C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
 C
 C     i-{u,a}, {u,a}-i:
@@ -414,9 +429,9 @@ C
          N2MO(I) = NISH(I)
       END DO
 C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
 C
 C     u-a, a-u:
@@ -428,10 +443,20 @@ C
          N2MO(I) = NASH(I)
       END DO
 C
-      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
-      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
+      CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFD),NORBT,NORBT,
      &     NZ,NFSYM,1)
+C
+      IF (NASHT .GT. 0) THEN
+C        Zero active-active block, this one is treated below in
+C        RTRACI section /fix feb 2004 hjaaj
+C        hjaaj: QUESTION / TODO? can we be sure
+C               RSJACO/QDIAG returns a unit matrix as eigenvectors
+C               for a zero matrix ???
+         CALL BLKZERO(J2MO,N2MO,J2MO,N2MO,WORK(KFD),NORBT,NORBT,
+     &        NZ,NFSYM,1)
+      END IF
 C
 C
 C     Diagonalize FD
@@ -442,12 +467,12 @@ C
          IJOB = 1
          IORDER = 0
          IPACK = 0
-         CALL RSJACO(NORBT,NORBT,NORBT,WORK(KFC),WORK(KEIG),
+         CALL RSJACO(NORBT,NORBT,NORBT,WORK(KFD),EIG,
      &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
       ELSE
          MATZ = 1
-         CALL QDIAG(NZ,NORBT,WORK(KFC),NORBT,NORBT,
-     &        WORK(KEIG),MATZ,WORK(KEIGVC),NORBT,NORBT,
+         CALL QDIAG(NZ,NORBT,WORK(KFD),NORBT,NORBT,
+     &        EIG,MATZ,WORK(KEIGVC),NORBT,NORBT,
      &        WORK(KFREE),LFREE,IERR)
          IF (IERR .NE. 0) THEN
             WRITE(LUPRI,'(/,1X,2A,I4)')
@@ -457,7 +482,7 @@ C
          END IF
       END IF
 C
-      CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFC,KFREE,LFREE)
+      CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
 C     Transform orbitals
 C     ------------------
@@ -492,20 +517,20 @@ C
 C
 C     Deallocate everything but the density matrix.
 C
-      CALL MEMREL('RKRMCCNO.after FD rot',WORK,1,KEIG,KFREE,LFREE)
+      CALL MEMREL('RKRMCCNO.after FD rot',WORK,1,KEIGVC,KFREE,LFREE)
 C
  1000 CONTINUE
 C
 C
-C     *************************************
-C     *** Transform to natural orbitals ***
-C     *************************************
+C     **********************************************************
+C     *** Transform to natural or canonical active  orbitals ***
+C     **********************************************************
 C
-      IF (.NOT. TRTOCO) GOTO 2000
+      IF (.NOT. (TRTONO .OR. TRTOCO) .OR. NZCONF.EQ.0) GOTO 2000
 C
 C
       call quit('*** ERROR in KRMCCNO ***' //
-     &     'TRTOCO not implemeted yet!')
+     &     'TRTOCO/TRTONO not implemeted yet!')
 C
 C
       CALL MEMGET('REAL',KEIG,NASHT,WORK,KFREE,LFREE)
@@ -531,6 +556,10 @@ C
 C        Find transformation matrix.
 C        (WORK(KDV) is either active part of FD or DV).
 C
+         call quit('*** ERROR in KRMCCNO *** ' //
+     &        'NO not implemented for CAS yet')
+C        hjaaj TODO: at least NORBT must be NASHT in RSJACO/QDIAG calls
+C        check for other errors ... /feb 2004
          IF (NZ .EQ. 1) THEN
             IJOB = 1
             IORDER = 0
@@ -677,8 +706,8 @@ C
          END IF
       END IF
 C
-      write(6,*) 'eigenvalues'
-      CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,6)
+D     write(6,*) 'eigenvalues'
+D     CALL OUTPUT(WORK(KEIG),1,NDIM,1,1,NDIM,1,1,6)
 C
 c     write(6,*) 'eigenvectors'
 c     CALL PRQMAT(U,NDIM,NDIM,NDIM,NDIM,NZ,IPQTOQ(1,0),LUPRI)

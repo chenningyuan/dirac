@@ -265,21 +265,24 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C
       CALL REAKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-      IF (NZCONF .GT. 0)
-     &   CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
 C
-C     Calculate natural orbital occ.
-C     ------------------------------
+      IF (NZCONF .GT. 0) THEN
+C     ... CI vector and natural orbitals only if MCSCF
+         CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
 C
-C     Also, transform orbitals to NO.
+C        Calculate natural orbital occ.
+C        ------------------------------
 C
-      IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
-        WRITE(LUPRI,*) ' LUCIAREL not prepared for '
-        WRITE(LUPRI,*) ' 1-particle densities only '
-        WRITE(LUPRI,*) ' Skipping RGETNO in KRMCOU1. '
-      ELSE
-        CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
-     &              .TRUE.,MOISNO,IPROPT,WORK,KFREE,LFREE)
+C        Also, transform orbitals to NO.
+C
+         IF (OPT_CIPROGRAM.EQ.'LUCIAREL') THEN
+           WRITE(LUPRI,*) ' LUCIAREL not prepared for '
+           WRITE(LUPRI,*) ' 1-particle densities only '
+           WRITE(LUPRI,*) ' Skipping RGETNO in KRMCOU1. '
+         ELSE
+           CALL RGETNO(WORK(KCREF),WORK(KOCCNO),WORK(KUNO),WORK(KCMO),
+     &                 .TRUE.,MOISNO,IPROPT,WORK,KFREE,LFREE)
+         END IF
       END IF
 C
 C     Write orbital back to KRMCSCF

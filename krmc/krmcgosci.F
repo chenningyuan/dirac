@@ -630,9 +630,9 @@ C
 C     Anyone who can find with a faster routine?
 C
       ID4 = JDET
-      write(6,*) 'jdet',jdet
-      write(6,*) 'id4',id4
-      write(6,*) 'id1',id1
+D     write(6,*) 'jdet',jdet
+D     write(6,*) 'id4',id4
+D     write(6,*) 'id1',id1
       NGOSCI_NBITS
      &     = IBTAB(ID1(1))
      &     + IBTAB(ID1(2))
@@ -2431,14 +2431,14 @@ C
 C HJAaJ TODO aug 2002: we may divide by zero in next line!
             IF ( ABS(BVEC(I,1) - BVEC(IK,1))/ABS(BVEC(I,1))
      &           .GT. 1.0D-13) THEN
-               write(6,'(A,2I4,3D25.10)') ' GOSCI_CHKKR1: real diff',
+              write(LUPRI,'(A,2I4,3D25.10)') ' GOSCI_CHKKR1: real diff',
      &              I,IK,BVEC(I,1),BVEC(IK,1),
      &              ABS(BVEC(I,1) - BVEC(IK,1))
             END IF
 C HJAaJ TODO aug 2002: we may divide by zero in next line!
             IF ( ABS(BVEC(I,2) + BVEC(IK,2))/ABS(BVEC(I,2))
      &           .GT. 1.0D-13) THEN
-               write(6,'(A,2I4,3D25.10)') ' GOSCI_CHKKR1: imag diff',
+              write(LUPRI,'(A,2I4,3D25.10)') ' GOSCI_CHKKR1: imag diff',
      &              I,IK,BVEC(I,2),BVEC(IK,2),
      &              ABS(BVEC(I,2) + BVEC(IK,2))
             END IF
@@ -2625,8 +2625,8 @@ C        ...only off-diagonal blocks for dens.mat or sigma-vec.
 C
          DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
             IF (NMK2(MK2J) .EQ. 0) GOTO 20
-            write(6,*) '              MK2J = ',MK2J
-            call flshfo(6)
+D           write(6,*) '              MK2J = ',MK2J
+D           call flshfo(6)
 C
             JSTRT = IMK2(MK2J) + 1
             JEND  = IMK2(MK2J) + NMK2(MK2J)

@@ -1242,22 +1242,22 @@ C
       CALL DNZ32M(VDUUUU,WORK(KVMUUUU),0)
       CALL M2DNZ3(.FALSE.,.FALSE.,.FALSE.,WORK(KVMUUUU),WORK(KVDUUUU),0)
 C
-      write(6,*) 'pass one...'
+      write(LUPRI,*) 'chknz3 pass one...'
       DO I = 1, NASHT*NASHT*NNASHX*NZ*3
          IF (ABS(VDUUUU(I) - WORK(KVDUUUU-1+I)) .GT. THRZER) THEN
             WRITE(LUPRI,'(1X,A,I8,1P,2D20.10)')
-     &           'chkmlf: deviation in element ',I,
+     &           'chknz3: deviation in element ',I,
      &           vDuuuu(i),WORK(KVDUUUU-1+I)
          END IF
       END DO
 C
-      write(6,*) 'pass two...'
+      write(LUPRI,*) 'chknz3 pass two...'
       CALL DNZ32M(VDUUUU,WORK(KVMUUUU),0)
       CALL M2DNZ3(.TRUE.,.FALSE.,.FALSE.,WORK(KVMUUUU),WORK(KVDUUUU),0)
       DO I = 1, NASHT*NASHT*NNASHX*NZ*3
          IF (ABS(VDUUUU(I) - DP5 * WORK(KVDUUUU-1+I)) .GT. THRZER) THEN
             WRITE(LUPRI,'(1X,A,I8,1P,2D20.10)')
-     &           'chkmlf: deviation in element ',I,
+     &           'chknz3: deviation in element ',I,
      &           vDuuuu(i),WORK(KVDUUUU-1+I)
          END IF
       END DO

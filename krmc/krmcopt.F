@@ -77,11 +77,42 @@ C
             CALL QUIT('2. order optimization of this open shell DHF'//
      &        ' is not implemented')
          END IF
+C
+         IF (THQKVA .LE. D0) THQKVA = 0.1D0
+C        ... default quadratic conv. factor for SCF
+C            (not set in KRMCINP because we don't know if SCF there)
+         IF (IKRMCCNO .EQ. -3) THEN
+C           ... no user input, default for SCF: transform to canonical orbitals
+            NATONL = .FALSE.
+            FDONLY = .TRUE.
+            IKRMCCNO = -1
+         END IF
+         RTRACI = .FALSE.
+C        ... no RTRACI for SCF
+C
+C        Delete DFFCK2 if existing, because we will change CMO here ...
+C
+         INQUIRE(FILE='DFFCK2',EXIST=EX)   
+         IF(EX) THEN
+            CALL OPNFIL(LUBUF,'DFFCK2','OLD','PSIOPT')
+            WRITE(LUPRI,'(/A)') '* PSIOPT-QCDHF: '//
+     &      'deleting DFFCK2 file with old two-electron Fock matrix'
+            CLOSE(LUBUF,STATUS='DELETE')
+         END IF
+         INQUIRE(FILE='DFDENS',EXIST=EX)
+         IF(EX) THEN
+            CALL OPNFIL(LUBUF,'DFDENS','OLD','PSIOPT')
+            WRITE(LUPRI,'(/A)')
+     & '* PSIOPT-QCDHF: deleting DFDENS file with old density matrix'
+            CLOSE(LUBUF,STATUS='DELETE')
+         END IF
       ELSE IF (NGAS .EQ. 1) THEN
          MCTYPE = JCAS
       ELSE
          MCTYPE = JGAS
       END IF
+      IF (THQKVA .LE. D0) THQKVA = 8.0D00
+C     ... default quadratic conv. factor for MCSCF
 cdebug
 c     opt_ucibos = .false.
 cdebug
@@ -1983,6 +2014,7 @@ C     *** Configurational parameters ********************
 C     ***************************************************
 C
 C
+      IF ( NASHT .GT. 0 ) THEN
 Chj   IF ( NASHT .GT. 1 ) THEN
 C
 C        A non-trivial number of CI rotations.
@@ -2050,14 +2082,14 @@ C
 C
          END IF
          CALL FLSHFO(LUPRI)
-Chj   ELSE
+      ELSE
 C
 C        Dirac-Hartree-Fock: only 1 CI coefficient
 C
-Chj      NZCONF = 0
-Chj      NZCONFQ = 0
+         NZCONF = 0
+         NZCONFQ = 0
 C
-Chj   END IF
+      END IF
 C
       NZCONFQ = NZCONF
       IF ( NZ .GE. 2 ) NZCONFQ = 2 * NZCONF
@@ -2823,7 +2855,7 @@ C
 #include "dcborb.h"
 #include "dcbkrmc_itinfo.h"
 C
-      LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN
+      LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN, GOEER
       DIMENSION CREF(*),GCI(*),DV(*),FC(*),FV(*),
      &          H2AC(*),WORK(*),GOEE(*),GOEP(*)
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
@@ -2835,7 +2867,13 @@ C
       CALL QENTER('DIRNR')
       KFRSAV = KFREE
 C
-      WRITE(LUPRI,'(/1X,A/)') '(DIRNR) Starting micro iterations.'
+C     Calculate initial micro it. convergence threshold
+C
+      RBETA = D0
+      THR = RCNVTHR()
+C
+      WRITE(LUPRI,'(/A,1P,D10.2/)')
+     &'(DIRNR) Starting micro iterations. Convergence threshold:',THR
 C
 C
 C     ***************************************************
@@ -2907,11 +2945,6 @@ C
       CNVINT_MIC(1) = DUMMY
       CNVINT_MIC(2) = DUMMY
 C
-C     Calculate initial micro it. convergence threshold
-C
-      RBETA = D0
-      THR = RCNVTHR()
-C
       IF ( FROZCI ) THEN
 C
 C        We freeze the CI coefficients this macro iteration.
@@ -2982,11 +3015,16 @@ C     redundant     for IZ = 1,..,NZ
 C
 C     The only routine where the full GPOE is used is RSIGOOGB where
 C     we have to take care.
+C     (Note: no reordering if no redundant rotations, e.g. SCF)
 C
 C
-      IF (NZ .GT. 1) THEN
+      IF (NZ .GT. 1 .AND. NZHOPE.GT.NZXOPE) THEN
+         GOEER = .TRUE.
          CALL MEMGET('REAL',KGOEER,NZHOPEQ,WORK,KFREE,LFREE)
-         CALL REOGP(NZXOPE,NZHOPE,NZ,GOEE,WORK(KGOEER))
+         CALL DCOPY(NZHOPEQ,GOEE,1,WORK(KGOEER),1)
+         CALL REOGP(NZXOPE,NZHOPE,NZ,WORK(KGOEER),GOEE)
+      ELSE
+         GOEER = .FALSE.
       END IF
 C
 C
@@ -3019,19 +3057,17 @@ C     for more convenient use in lin.resp. etc.
 C     (no more memory required with this change)
 C
       WORK(KEVALR) = D0
-      IF (NZ .GT. 1) THEN
-         CALL XRSCTL(GCI,WORK(KGOEER),GOEP,
+      CALL XRSCTL(GCI,GOEE,GOEP,
      &        WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
      &        RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
-      ELSE
-         CALL XRSCTL(GCI,GOEE,GOEP,
-     &        WORK(KIBTYP),WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
-     &        RCNV,WORK(KEVALR),WORK(KEVECR),WORK,KFREE,LFREE)
-      END IF
 C
 C     Save new orbitals etc.
 C
       CALL KRMCSAV(0,CMO,CREF,WORK,KFREE,LFREE)
+C
+C     Restore GOEE in normal order, if REOGP has been called
+C
+      IF (GOEER) CALL DCOPY(NZHOPEQ,WORK(KGOEER),1,GOEE,1)
 C
 C     Save information for final summary output
 C
@@ -4323,7 +4359,7 @@ C
       IF(IPRINT.GE.3) WRITE(LUPRI,'(/1X,A,1P,D15.6)')
      &     'RSMPAR: compression threshold = ',THRCOM
 C
-      write(6,*) 'before'
+      write(LUPRI,*) 'RSMPAR before'
       CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
      &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
       IF(NXOPE.GT.0) THEN
@@ -4371,7 +4407,7 @@ C
          ENDIF
          CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
-      write(6,*) 'after'
+      write(LUPRI,*) 'RSMPAR after'
       CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
      &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
  9000 FORMAT(3X,'Type',T10,'Before',T30,'After',T50,'Reduction')
@@ -4463,8 +4499,8 @@ C
       DO IZ = 2, NZ
          CALL FULMAT('S',NORBT,NORBT,WORK(KGRAD))
       END DO
-      write(6,*) 'fsmrot full matrix'
-      call prqmat(work(kgrad),norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),6)
+D     write(6,*) 'fsmrot full matrix'
+D     call prqmat(work(kgrad),norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),6)
 C
       NBEFORE = NORBT - ISUM(NORBT,NOROT,1)
 C
@@ -4504,7 +4540,7 @@ C
 C
       DIMENSION NOROT(*),GRAD(NORBT,NORBT,*)
 C
-      write(6,*) 'threshold',thr
+D     write(6,*) 'FSMRO1 threshold',thr
       DO 10 I = 1, NORBT
 C        ...don't remove occupied orbitals.
          IF (IOBTYP(I) .EQ. JTINAC .OR. IOBTYP(I) .EQ. JTACT) GOTO 10
@@ -4513,7 +4549,7 @@ C        ...don't remove occupied orbitals.
             DN = DN + DDOT(NORBT,GRAD(1,I,IZ),1,GRAD(1,I,IZ),1)
          END DO
          DN = SQRT(DN)
-         write(6,*) 'orbital ',I,' norm = ',dn
+D        write(6,*) 'orbital ',I,' norm = ',dn
          IF (DN .LE. THR) NOROT(I) = 1
  10   CONTINUE
       RETURN
@@ -4679,9 +4715,9 @@ C
 C
 C     Make canonical orbitals for inactive and virtual orbitals
 C     ---------------------------------------------------------
-      write(6,*) 'fq before trans'
-      call prqmat(fq,norbt,nasht,norbt,nasht,nz,
-     &     ipqtoq(1,0),lupri)
+D     write(lupri,*) 'SVLDEG: fq before trans'
+D     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+D    &     ipqtoq(1,0),lupri)
 C
       CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KU,N2ORBXQ,WORK,KFREE,LFREE)
@@ -4703,9 +4739,9 @@ C
       CALL ROTFQ('V',WORK(KU),FQ,WORK(KFREE),LFREE)
       CALL ROTORB('V',WORK(KU),CMO,WORK(KFREE),LFREE)
 C
-      write(6,*) 'fq after trans'
-      call prqmat(fq,norbt,nasht,norbt,nasht,nz,
-     &     ipqtoq(1,0),lupri)
+D     write(lupri,*) 'SVLDEG fq after trans'
+D     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
+D    &     ipqtoq(1,0),lupri)
 C
 C
 C     Calculate trial vector
@@ -4798,9 +4834,9 @@ C
      &        IPQTOQ(1,0),IPRINT)
       END IF
 C
-      write(6,*) 'new gradient'
-      CALL RPRKAP(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
-     &     NZ,IPQTOQ(1,0),LUPRI)
+D     write(lupri,*) 'SVLDEG: new gradient'
+D     CALL RPRKAP(GOEE,GOEP,JXOPE,NXOPE,JXOPP,NXOPP,
+D    &     NZ,IPQTOQ(1,0),LUPRI)
 C
       CALL MEMREL('SVLDEG',WORK,KWORK,KWORK,KFREE,LFREE)
 C

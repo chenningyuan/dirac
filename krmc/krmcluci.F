@@ -378,9 +378,9 @@ C
         end if
         if (ISO1.EQ.0.AND.ISO2.EQ.1) then
           if (ENVIRO(1:6).eq.'DIRAC ') then
-            write(6,*) 'Setting of relativistic operators not'
-            write(6,*) 'allowed in DIRAC environment.'
-            write(6,*) 'This is relativistic theory!'
+            write(LUPRI,*) 'Setting of relativistic operators not'
+            write(LUPRI,*) 'allowed in DIRAC environment.'
+            write(LUPRI,*) 'This is relativistic theory!'
             call Abend2 ('Input error.')
           end if
           WRITE(LUPRI,'(A)')

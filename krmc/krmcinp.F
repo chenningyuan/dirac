@@ -317,9 +317,7 @@ C&&& FREEZE ORBITALS:
                GO TO 100
  26            CONTINUE
 C&&&  CI PROGRAM: which CI program to use
-               write(6,*) '"',KRMC_CIPROGRAM,'"'
                READ(LUCMD,'(A)') KRMC_CIPROGRAM
-               write(6,*) '"',KRMC_CIPROGRAM,'"'
                GO TO 100
  27            CONTINUE
 C&&&  INACTIVE ORBITALS
@@ -710,9 +708,6 @@ C *** Option 16 >THQKVA<
   300 CONTINUE
 C
 C
-      IF (THQKVA .LE. D0) THQKVA = 8.0D00
-
-C
 C     Print section
 C     =============
 C
@@ -775,7 +770,7 @@ C
       KTRLVL = 3
       OPT_NOPFQ = .FALSE.
       OPT_NOFQX = .FALSE.
-      IKRMCCNO = -2
+      IKRMCCNO = -3
       NATONL = .FALSE.
       FOCKON = .FALSE.
       COMPROT = .FALSE.
@@ -842,7 +837,7 @@ C&&& .FOCKON: only Fock-type orbitals (no natural orbitals)
                   NATONL = .FALSE.
                GO TO 100
     7          CONTINUE
-C&&& .NO TRSNS: no transformation of orbitals
+C&&& .NO TRANS: no transformation of orbitals
                   IKRMCCNO = -2
                GO TO 100
     8          CONTINUE
