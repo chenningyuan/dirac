@@ -49,15 +49,19 @@ C
 #include "dcbpsi.h"
 #include "dcbgrd.h"
 C
+      LOGICAL HAMGRAD_IMPLEMENTED
+C
       CALL QENTER('PAMGEO')
 C
 C     Determine whether analytical or numerical gradient is to 
-C     be used...
+C     be used. Analytical gradient is at the moment only available
+C     for the HF module with the Levy-Leblond or DC Hamiltonian.
+C
+      HAMGRAD_IMPLEMENTED = .NOT. (ZORA.OR.(SPINFR .AND. .NOT.LEVYLE))
 C
       IF(.NOT.DONGRD) THEN
-        DONGRD = .NOT.DODHF .OR. (DODHF.AND.(SPINFR.OR.ZORA))
-     &    .OR. DODFT .OR. DOMP2 .OR. DORES .OR. DOCCM
-     &    .OR. DOCIM .OR. DOLUCT.OR. DOKRMC.OR. DOLUCIAR
+C       We want the analytical gradient, check whether it is implemented
+        DONGRD = .NOT. (DODHF .AND. HAMGRAD_IMPLEMENTED)
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
      &     ' * PAMGEO INFO: will use numerical molecular gradient',
