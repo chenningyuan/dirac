@@ -4937,7 +4937,6 @@ C
       print *, ' nuco ',(nuco(i),i=1,kmax)
       print *, ' jstrt ',(jstrt(i),i=1,kmax)
       print *, ' nstrt ',(nstrt(i),i=1,kmax)
-      print *, ' mst ',(mst(i),i=1,kmax)
       print *, ' ncent ',(ncent(i),i=1,kmax)
       print *, ' share ',(share(i),i=1,kmax)
       print *, ' nrco ',(nrco(i),i=1,kmax)
