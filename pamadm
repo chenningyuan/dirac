@@ -495,18 +495,25 @@ EOF
 # Stand-alone DIRRCI
 #
 cat <<EOF>> Makefile
+
 dirrci.x: GP_OBJ PD_OBJ \\
 	CI_OBJ
 	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/dirrci.x \\
 	\$(DIRRCI_MAIN) \$(DIRRCI_OBJS) \$(GP_OBJS) \$(OBJSMXM) \\
 	\$(LIB_LIST) \$(PDLIB)
 
+EOF
 #
-# Utility program for diatomics
+# Utility programs
 #
-twofit.x: TWOFIT GP_OBJ PD_OBJ 
-	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \
+cat <<EOF>> Makefile
+
+utils	: GP_OBJ PD_OBJ UTIL_OBJ 
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/twofit.x \\
 	utils/twofit.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+	\$(F77) \$(LDFLAGS) -o \$(INSTALLDIR)/labread.x \\
+	utils/labread.o abacus/hergp.o \$(GP_OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
+
 EOF
 #
 # Clean targets
@@ -626,8 +633,8 @@ cat <<EOF>> Makefile
 PD_OBJ:
 	cd pdpack ; \$(MAKE) all
 
-TWOFIT:
-	cd utils : make twofit
+UTIL_OBJ:
+	cd utils ; \$(MAKE) all
 
 EOF
 #
@@ -651,6 +658,7 @@ if [ -n "$ERIMOD" ]; then
 fi
 
 cat <<EOF>> Makefile
+
 depend:
 EOF
 for ff in $TEMP; do
