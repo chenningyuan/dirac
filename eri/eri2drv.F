@@ -1907,7 +1907,7 @@ C           Screen out unwanted (classical) integrals
             CALL ERICLS(FACINT,CLSINT,COORAO,ROD1,ROD2,
      &                  EXPAB,EXPCD,CCFBT(IMATA),CCFBT(IMATB),
      &                  CCFBT(IMATC),CCFBT(IMATD),IPRINT)
-            IF (NOINTS) RETURN 
+Ctrond            IF (NOINTS) RETURN 
          END IF
 C
 C        Incomplete gamma function (Boys function)
