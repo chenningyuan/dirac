@@ -487,14 +487,38 @@ if [ "$par" = "yes" ]; then
 #  Ask for machine file
 #
    if [ $quick = 0 ]; then
-      $echo 'Specify default machinefile for MPI runs: filename/[nothing] \c'\
+      $echo 'Specify default machinefile for MPI runs (e.g. $PBS_NODEFILE): filename/[nothing] \c'
       read mach_file
    else
       mach_file=
    fi
+#
+#  With local disks set remote copy/shell:
+#
+   rsh=rsh
+   rcp=rcp
+   if [ "$localdisks" = "yes" ]; then
+     if [ $quick = 0 ]; then
+       $echo 'Remote shell/copy for passing files to local disks [rsh]/ssh: \c'
+       read rsh
+       case "$rsh" in
+	 "ssh")
+            rsh=ssh
+            rcp=scp
+            echo 'Note that ssh/scp requires use of ssh-keygen without password !'
+	    ;;
+	 *)
+            rsh=rsh
+            rcp=rcp
+	    ;;
+       esac
+     fi
+   fi
 else
    mesp='dummy'
    mach_file=
+   rsh=rsh
+   rcp=rcp
 fi
 echo
 #
@@ -1561,12 +1585,8 @@ MPIRUN=$mpirun
 MACH_FILE=$mach_file
 LOCALDISKS=$localdisks
 # Passing files to local disks:
-# For rcp/rsh choose this; 
-RCP=rcp
-RSH=rsh
-# For scp/ssh choose this (requires use of ssh-keygen without password)
-#RCP=scp
-#RSH=ssh
+RCP=$rcp
+RSH=$rsh
 #
 DEBUGGER=$debug
 EOF
