@@ -2644,7 +2644,7 @@ C
      &            '.PROJEC','.OWNBAS','.SOLVEN','.FREEPJ',
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
-     &            '.DFT   ','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.DFT   ','.HFXFAC','.XXXXXX','.XXXXXX'/
 C
 #include <ibtfun.h>
 C
@@ -2835,6 +2835,8 @@ C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
              DFTHAM = .TRUE.
             GO TO 100
   118     CONTINUE
+C&&& HFXFAC: weight of pure exchange
+             READ(LUCMD,*) HFXFAC
             GO TO 100
   119     CONTINUE
             GO TO 100
