@@ -90,11 +90,11 @@ C     Call PSIINP always to get wave function information for
 C     other modules. This could be change if wave function information
 C     is saved on file. 
 C
-C     IF(DOPSI.OR.MINIMI) THEN
+CCCC     IF(DOPSI.OR.MINIMI) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PSIINP(WORK,LWORK)
          CLOSE(LUCMD)
-C     ENDIF
+CCCC     ENDIF
 C
 C     Input of wave function analysis module
 C
@@ -979,21 +979,16 @@ C            (new overlap selection matrix formed in each iteration)
    28          CONTINUE
 C&&& LMOORD: Reorder MO orbitals (only on restart on coefficients)
 C                 First read the number of orbital reorderings
-C                    in each fermion corep.
+C                    in each fermion irrep.
 C
-c                 CALL QUIT('not implemented yet...')
                   LMOORD = .TRUE.
+                  IREORD(1) = 0
+                  IREORD(2) = 0
                   DO I = 1,NFSYM
                      READ(LUCMD,'(A72)') CTEMP
-                     CALL READREORDER(CTEMP,IREORD(I),IMOORD(1,I),
-     &                                MXREORD)
-                     IF (IREORD(I) .LT. 0) THEN
-                        WRITE(LUPRI,'(A,I3,A)')
-     &                     'ERROR! You cannot reorder more than',
-     &                     MXREORD,' orbitals!!!'
-                        CALL QUIT('You cannot reorder that'//
-     &                            ' many orbitals')
-                      END IF
+                     IREORD(I) = -1
+                     CALL NUMLST(CTEMP,IMOORD,MXREORD,1,MXREORD,
+     &                           IREORD(I),WORK,LWORK)
                   END DO
                GO TO 100
    29          CONTINUE
@@ -1185,17 +1180,17 @@ C
       WRITE(LUPRI,'(1X,A,I4)')
      +   '* Maximum number of iterations: ',MAXITR
       IF(ERGCNV) THEN
-        WRITE(LUPRI,'(1X,A,A,E9.3)')
+        WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
      &    '* Convergence on total energy.',
-     &    ' Convergence threshold:',SCFCNV
+     &    '  Convergence threshold:',SCFCNV
       ELSEIF(FCKCNV) THEN
-        WRITE(LUPRI,'(1X,A,A,E9.3)')
+        WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
      &    '* Convergence on total Fock matrix.',
-     &    ' Convergence threshold:',SCFCNV
+     &    '  Convergence threshold:',SCFCNV
       ELSEIF(EVCCNV) THEN
-      WRITE(LUPRI,'(1X,A,A,E9.3)')
+      WRITE(LUPRI,'(1X,A,/,1X,A,E9.3)')
      &    '* Convergence on error vector(approximate gradient).',
-     &    ' Convergence threshold:',SCFCNV
+     &    '  Convergence threshold:',SCFCNV
       ENDIF
       WRITE(LUPRI,'(1X,A)') '***** CONVERGENCE CONTROL *****'
       IF(DODSCF) THEN
@@ -1222,9 +1217,9 @@ C
         WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
         IF(DODAMP) THEN
-          WRITE(LUPRI,'(1X,A,F5.3)')
-     &     '* Damping of Fock matrix when DIIS is not activated. '//
-     &     'Weight of old matrix    : ',DAMPFC
+          WRITE(LUPRI,'(1X,A,/,1X,A,F5.3)')
+     &     '* Damping of Fock matrix when DIIS is not activated. ',
+     &     '  Weight of old matrix    : ',DAMPFC
         ENDIF
       ELSEIF(DODAMP) THEN
           WRITE(LUPRI,'(1X,A,F5.3)')
@@ -1235,7 +1230,7 @@ C
          WRITE(LUPRI,'(1X,A)') '* Reorder orbitals...'
          WRITE(LUPRI,'(3X,A)') '- new ordering of orbitals...'
          DO I = 1,NFSYM
-            WRITE(LUPRI,'(4X,A,I1)') 'Fermion corep. ',I
+            WRITE(LUPRI,'(4X,A,I1)') 'Fermion irrep. ',I
             IF (IREORD(I) .GT. 0) THEN
                WRITE(LUPRI,'(5X,50(I3,A))') 
      &            (IMOORD(J,I),',',J=1,IREORD(I))
