@@ -152,12 +152,23 @@ setup_command()
    # Debug
    #
    if [ -n "$DEBUG" ]; then
-      DIRAC_CMD="dbx -I $SRC_DIR/abacus -I $SRC_DIR/dirac -I $SRC_DIR/prp "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/rsp -I $SRC_DIR/dirac/open "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/gp -I $SRC_DIR/pdpack "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/eri -I $SRC_DIR/dirac/main "
-      DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
+      if [ "$DEBUGGER" = "gdb" ]; then
+        DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/moltra -directory=$SRC_DIR/relccsd "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr -directory=$SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include $DIRAC"
+      else
+        DIRAC_CMD="dbx -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/moltra -I $SRC_DIR/relccsd "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr -I $SRC_DIR/relccsd/ccfocksp "
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/pdpack -I $SRC_DIR/gp"
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
+      fi
    fi
 }
 #

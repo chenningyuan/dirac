@@ -246,7 +246,7 @@ $echo "Operating system\t: $os"
 #  set default C compiler as well...
 #
 cclist='cc'
- 
+debug='dbx'
 case $machine in
 
    rs6000-ibm)
@@ -264,7 +264,8 @@ case $machine in
 
    i[3-6]86-*)
       liblist='libblas'
-      complist='g77';;
+      complist='g77'
+      debug='gdb';;
 
    sparc-sun|m68k-sun)  
       liblist='libblas'
@@ -1419,6 +1420,7 @@ BIN_DIR=$INSTALL_DIR
 SRC_DIR=`pwd`
 BAS_DIR=`pwd`/basis/
 MPIRUN=$mpirun
+DEBUGGER=$debug
 EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam
