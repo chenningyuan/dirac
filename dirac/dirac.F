@@ -95,7 +95,7 @@ C
       PARAMETER (IWOFF = 0)
 #endif
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
-      CHARACTER*20 DIRWRK
+      CHARACTER*20 DIRWRK, NODWRK
 #endif
 #ifndef VAR_G77
 #if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
@@ -117,9 +117,17 @@ C
       CHARACTER CPUTID*12, SECTID*12
       DATA WRKDLM/8H*WRKDLM*/
       LMWORK = 0
+      LSWORK = 0
 C
       CALL QENTER('DIRAC')
 C
+#if defined (SYS_IBM)
+C     
+C     IBM VM/CMS: 212 : disable end of record error for formatted I/O
+C     (such that variable length input records may be read)
+C     
+      CALL ERRSET(212,256,-1,1)
+#endif
 C
 #ifndef VAR_G77
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
@@ -135,14 +143,47 @@ C
      &   'DIRWRK conversion error; DIRWRK = "',DIRWRK,'"'
          LMWORK = 0
    20 CONTINUE
+C
+      NODWRK = '                    '
+      CALL GETENV('DIRAC_NODEWRK',NODWRK)
+      READ (NODWRK,'(I20)',ERR=10) LSWORK
+      GO TO 20
+   10    WRITE (LUERR,*)
+     &   'DIRAC_NODEWRK conversion error; DIRAC_NODEWRK ="',NODWRK,'"'
+         LSWORK = 0
+   20 CONTINUE
 #endif
 C
-C     Either use default memory size
-C     
-      IF (LMWORK .LE. 0) LMWORK = LWORK
-      NBYTES = (LMWORK+2) * 8
-      XMBYTES = NBYTES
+C     If not user specified, use default memory size
+C
+C     master node:
+      IF (LMWORK .LE. 0) LMWORK = MAX(LWORK,LSWORK)
+      NMBYTES = (LMWORK+2) * 8
+      XMBYTES = NMBYTES
       XMBYTES = XMBYTES / (1024*1024)
+C     slave nodes:
+      IF (LSWORK .LE. 0) LSWORK = LMWORK
+      NSBYTES = (LSWORK+2) * 8
+      XSBYTES = NSBYTES
+      XSBYTES = XSBYTES / (1024*1024)
+#endif
+#ifdef VAR_G77
+C
+C     Check memory allocation
+C
+      LMWORK = LWORK
+      NMBYTES = LMWORK * 8
+      XMBYTES = NMBYTES
+      XMBYTES = XMBYTES / (1024*1024)
+      DIRWRK = STR_DIRWRK
+      IF (WORK(1).NE.10101.0) 
+     &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
+#endif
+#ifndef VAR_MPI
+C
+C     Memory allocation for serial calculations.
+C
+#ifndef VAR_G77
 C     
  1000 FORMAT(/' >>> DIRAC: requested memory could not be allocated.',
      &     /'     Probable causes:',
@@ -151,10 +192,10 @@ C
 C     
 #if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
 #if defined (SYS_AIX)
-      WADDR = MALLOC(%VAL(NBYTES))
+      WADDR = MALLOC(%VAL(NMBYTES))
 #endif
 #if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-      WADDR = MALLOC(NBYTES)
+      WADDR = MALLOC(NMBYTES)
 #endif
       IF (WADDR .EQ. 0) THEN
          WRITE(LUPRI,1000)
@@ -166,7 +207,7 @@ C
 C     Convex dynamic memory allocation
 C     ================================
 C
-      CALL NALLOC(NBYTES,IPTR,IERR)
+      CALL NALLOC(NMBYTES,IPTR,IERR)
       IF (IERR .LT. 0) THEN
          WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
          IF (LUPRI .NE. 0)
@@ -211,26 +252,8 @@ C     HPALLOC IABORT .ne. 0: abort on error
          CALL QUIT('DIRAC core HPALLOC failure.')
       ENDIF
 #endif
-#if defined (SYS_IBM)
-C     
-C     IBM VM/CMS: 212 : disable end of record error for formatted I/O
-C     (such that variable length input records may be read)
-C     
-      CALL ERRSET(212,256,-1,1)
 #endif
 #endif
-#endif
-#ifdef VAR_G77
-C
-C     Check memory allocation
-C
-      LMWORK = LWORK
-      NBYTES = LMWORK * 8
-      XMBYTES = NBYTES
-      XMBYTES = XMBYTES / (1024*1024)
-      DIRWRK = STR_DIRWRK
-      IF (WORK(1).NE.10101.0) 
-     &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
 #endif
 C
 C     Run DIRAC
@@ -264,6 +287,82 @@ Ctec for parallel debugging purpose
 #endif
 C
       IF (MYTID .EQ. 0) THEN
+C     MASTER node
+C
+C     Allocate MASTER work memory
+C
+#ifndef VAR_G77
+C     
+ 1000 FORMAT(/
+     &' >>> DIRAC: requested memory for MASTER could not be allocated.',
+     &/'     Probable causes:',
+     &/'       (1) Insufficient free memory+page+swap space',
+     &/'       (2) "datasize" resource limit too small.')
+C     
+#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
+#if defined (SYS_AIX)
+      WADDR = MALLOC(%VAL(NMBYTES))
+#endif
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
+      WADDR = MALLOC(NMBYTES)
+#endif
+      IF (WADDR .EQ. 0) THEN
+         WRITE(LUPRI,1000)
+         WRITE(LUERR,1000)
+         CALL QUIT(' DIRAC: memory allocation failure')
+      END IF
+#if defined (SYS_CONVEX)
+C
+C     Convex dynamic memory allocation
+C     ================================
+C
+      CALL NALLOC(NMBYTES,IPTR,IERR)
+      IF (IERR .LT. 0) THEN
+         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
+         IF (LUPRI .NE. 0)
+     &        WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
+         IF (IERR .EQ. -3) THEN
+            WRITE(LUPRI,1000)
+            IF (LUPRI .NE. 0) WRITE(0,1000)
+         END IF
+         STOP ' DIRAC: memory allocation failure'
+      ENDIF
+      IWOFFB = IPTR - LOC(WORK(1))
+      IWOFF  = IWOFFB / 8
+      IF (IWOFF*8 .NE. IWOFFB) THEN
+         WRITE (0,'(A,3(/A,I12))')
+     &        'Convex alignment problem, see DIRAC main program',
+     &        '   pointer from NALLOC    :',IPTR,
+     &        '   off-set to WORK, IWOFFB=',IWOFFB,
+     &        '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
+         stop 'DIRAC: Convex alignment failure, see main program'
+      end if
+#endif
+#if defined (SYS_CRAY)
+C     
+C     Cray dynamic memory allocation
+C     
+C     HPALLOC IERR codes:
+C     -1 : length allocated smaller than zero
+C     -2 : no memory left for the system
+C     -7 : memory corrupted.
+C     HPALLOC IABORT .ne. 0: abort on error
+      IABORT = 0
+      CALL HPALLOC(WADDR,LMWORK+2,IERR,IABORT)
+      IF (IERR .LT. 0) THEN
+         WRITE (LUERR,'(/A,I3)')
+     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
+         IF (LUPRI .NE. 0) WRITE (0,'(/A,I3)')
+     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
+         IF (IERR .EQ. -2) THEN
+            WRITE(LUPRI,1000)
+            IF (LUPRI .NE. 0) WRITE(0,1000)
+         END IF
+         CALL QUIT('DIRAC core HPALLOC failure.')
+      ENDIF
+#endif
+#endif
+#endif
 C     
 C     Print DIRAC heading
 C     ===================
@@ -273,7 +372,7 @@ C
          CALL LOGO(DOLOGO)
          CALL SYSINF()
          CALL TIMDAT
-         IF (LMWORK .LE. 0) THEN
+         IF (LMWORK .EQ. LWORK) THEN
             WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
 C     
 C     ... or user specified memory size.
@@ -305,7 +404,84 @@ C
          WRITE(LUPRI,'(/A/)')
      +     '********** E N D   of   D I R A C  output  **********'
       ELSE
-         CALL DIRNOD(WORK,LMWORK)
+C     a SLAVE node
+C
+C     Allocate SLAVE work memory
+C
+#ifndef VAR_G77
+C     
+ 1100 FORMAT(/
+     & ' >>> DIRAC: requested SLAVE memory could not be allocated',
+     & ' for slave no.',I4,
+     &     /'     Probable causes:',
+     &     /'       (1) Insufficient free memory+page+swap space',
+     &     /'       (2) "datasize" resource limit too small.')
+C     
+#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
+#if defined (SYS_AIX)
+      WADDR = MALLOC(%VAL(NSBYTES))
+#endif
+#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
+      WADDR = MALLOC(NSBYTES)
+#endif
+      IF (WADDR .EQ. 0) THEN
+         WRITE(LUPRI,1100) MYTID
+         WRITE(LUERR,1100) MYTID
+         CALL QUIT(' DIRAC: memory allocation failure')
+      END IF
+#if defined (SYS_CONVEX)
+C
+C     Convex dynamic memory allocation
+C     ================================
+C
+      CALL NALLOC(NSBYTES,IPTR,IERR)
+      IF (IERR .LT. 0) THEN
+         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
+         IF (LUPRI .NE. 0)
+     &        WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
+         IF (IERR .EQ. -3) THEN
+            WRITE(LUPRI,1100) MYTID
+            IF (LUPRI .NE. 0) WRITE(0,1100) MYTID
+         END IF
+         STOP ' DIRAC: memory allocation failure'
+      ENDIF
+      IWOFFB = IPTR - LOC(WORK(1))
+      IWOFF  = IWOFFB / 8
+      IF (IWOFF*8 .NE. IWOFFB) THEN
+         WRITE (0,'(A,3(/A,I12))')
+     &        'Convex alignment problem, see DIRAC main program',
+     &        '   pointer from NALLOC    :',IPTR,
+     &        '   off-set to WORK, IWOFFB=',IWOFFB,
+     &        '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
+         stop 'DIRAC: Convex alignment failure, see main program'
+      end if
+#endif
+#if defined (SYS_CRAY)
+C     
+C     Cray dynamic memory allocation
+C     
+C     HPALLOC IERR codes:
+C     -1 : length allocated smaller than zero
+C     -2 : no memory left for the system
+C     -7 : memory corrupted.
+C     HPALLOC IABORT .ne. 0: abort on error
+      IABORT = 0
+      CALL HPALLOC(WADDR,LSWORK+2,IERR,IABORT)
+      IF (IERR .LT. 0) THEN
+         WRITE (LUERR,'(/A,I3)')
+     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
+         IF (LUPRI .NE. 0) WRITE (0,'(/A,I3)')
+     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
+         IF (IERR .EQ. -2) THEN
+            WRITE(LUPRI,1100) MYTID
+            IF (LUPRI .NE. 0) WRITE(0,1100) MYTID
+         END IF
+         CALL QUIT('DIRAC core HPALLOC failure.')
+      ENDIF
+#endif
+#endif
+#endif
+         CALL DIRNOD(WORK,LSWORK)
       END IF
 #if defined (SYS_IRIX)
       CALL SLEEP(1)
