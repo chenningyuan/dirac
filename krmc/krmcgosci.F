@@ -58,41 +58,42 @@ C
 #include "dcbgosci.h"
 #include "pgroup.h"
 C
-      DIMENSION MULTB_TMP(N5,N5)
 C
       CALL QENTER('GOSCI_SETUP')
 C
 C     Setup symmetry mult. table
 C     --------------------------
 C
-C     GMULTA returns:
+C     GMULTSF/GMULTA returns:
 C       NREP     : #(boson irreps) = #(fermion irreps);
 C       REPNA    : strings identifying the irreps
-C       MULTB_TMP: mult. table
+C       MULTB    : mult. table
 C
-      IF (SPINFR.OR.LEVYLE) THEN
-C        hjaaj mar 2002 TODO: what about OPT_UCIBOS ???
-
-         CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+      IF (OPT_UCIBOS) THEN
+C        Use boson symmetry (for spin free and Levy-Leblond)
+C        or use approximate boson symmetry
+         CALL GMULTSF(NREP,REPNA,MULTB(1,1))
+C        hjaaj aug 2003: NOTE that this info is NOT used in this
+C        version of GOSCI !!!!!!!!!!!!!
+C        (MULTB is not used as it includes spin-symmetry -- see GMULTSF --
+C        and we treat the spin Ms separately as in non-rel codes)
       ELSE
-         CALL GMULTA (NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+         CALL GMULTA (NZ,NFSYM,NREP,REPNA,MULTB(1,1))
       ENDIF
+C     We extend MULTB(1:2*NREP,1:2*NREP) with MULTB(1:2*NREP,0) for use in
+C     GOSCI_SYMOK when we add the first spinor to a new
+C     string (i.e. symmetry zero in second index means vacuum)
       DO I = 1, 2 * NREP
          MULTB(I,0) = I
-      END DO
-      DO J = 1, 2 * NREP
-         DO I = 1, 2 * NREP
-            MULTB(I,J) = MULTB_TMP(I,J)
-         END DO
       END DO
 C
 C     Setup symmetry
 C     --------------
 C
-C     IRP  : fermion irrep
-C     IRRP : symmetry of wave function
-C            1 .. NREP           : fermion irrep
-C            NREP + 1 .. 2 * NREP: boson irrep
+C     IRP  : IOPT_SYMMETRY is user input for CI symmetry
+C     IRRP : symmetry of wave function according to:
+C            1 .. NREP           : fermion irreps
+C            NREP + 1 .. 2 * NREP: boson irreps
 C
 C             fermion               boson
 C     C1   :  A                     a
@@ -107,22 +108,25 @@ C     D2h  :  1Eg, 2Eg, 1Eu, 2Eu    ag, bg, au, bu
 C
 C
       IRP = IOPT_SYMMETRY
-      IF ( MOD ( NAELEC, 2 ) .EQ. 0 ) THEN
+      IF (IRP.LE.0) THEN
+C        ... code for include all symmetries
+         IRRP = IRP
+      ELSE IF ( MOD ( NAELEC, 2 ) .EQ. 0 ) THEN
 C        ...boson symmetry
          IRRP = NREP + IRP
       ELSE
 C        ...fermion symmetry
          IRRP = IRP
       END IF
-      IF (IRP.LT.0) IRRP = IRP
-C     ... code for include all symmetries
 C
 C     Setup orbital symmetries
 C     ------------------------
 C
 C     IRPAMO is the symmetry of each spinor.
-C     (FIXME: use boson irreps for SPINFR .OR. LEVYLE)
-C      hjaaj mar 2002: is that not OK through OPT_UCIBOS ????
+C     IREPA counts fermion irrep of double group (see GMULTA)
+C     (use boson irreps without spin for SPINFR .OR. LEVYLE,
+C      which implies OPT_UCIBOS true, or use approx. boson symmetry
+C      if OPT_UCIBOS true for relativistic calculation)
 C
       II    = 0
       IREPA = 0
@@ -138,11 +142,17 @@ C
             END IF
          ENDDO
          IF (NZ.NE.4.OR.SPINFR.OR.LEVYLE) IREPA = IREPA + 1
+C        for NZ.eq.4: unbarred and barred in same fermion irrep !
+C        (see GMULTA for def. of fermion irreps)
          DO ISTR = 1, NASH(I)
             II = II + 1
             IF (OPT_UCIBOS) THEN
                IG = IDXU2G(IASH(I)+ISTR)
                IRPAMO(II) = IBOSYM(IG)
+C              to use spin symmetry here with MULTB from GMULTSF
+C              we should have had NBSYM + IBOSYM(IG) here,
+C              but we take care of the spin separately in GOSCI,
+C              as in non-relativistic CI programs. /hjaaj aug 03
             ELSE
                IRPAMO(II) = IREPA
             END IF
@@ -174,20 +184,23 @@ C
       IF ( IPROPT .GE. 0 ) THEN
 c     IF ( IPROPT .GE. 20 ) THEN
          WRITE(LUPRI,'(A,3I3/A)')
-     &        ' (GOSCI_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
-     &        ' -> IRP.lt.0 means include all symmetries'
+     &      ' (GOSCI_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
+     &      ' -> IRRP.lt.0 means include all symmetries'
          IF (IRRP.GT.0) WRITE(LUPRI,'(2A)')
-     &        ' (GOSCI_SETUP) REPNA(IRRP)     = ', REPNA(IRRP)
-         WRITE(LUPRI,'(/A)') ' Symmetry of active orbitals:'
-         IF (.NOT. OPT_UCIBOS) THEN
-            DO I = 1, 2*NASHT
-               WRITE(LUPRI,'(10X,I5,5X,A)') I, REPNA(IRPAMO(I))
-            END DO
-         ELSE
-            DO I = 1, 2*NASHT
-               WRITE(LUPRI,'(10X,I5,5X,A)') I, REP(IRPAMO(I))
-            END DO
-         END IF
+     &      ' (GOSCI_SETUP) REPNA(IRRP)     = ', REPNA(IRRP)
+         WRITE(LUPRI,'(/A)')
+     &      ' Symmetry of active orbitals (unbarred, barred):'
+         DO I = 1,NASHT
+            IA = IPTA2O(I)
+            IB = IPTB2O(I)
+            IF (.NOT. OPT_UCIBOS) THEN
+               WRITE(LUPRI,'(I15,2(5X,A))')
+     &         I, REPNA(IRPAMO(IA)), REPNA(IRPAMO(IB))
+            ELSE
+               WRITE(LUPRI,'(I15,2(5X,A))')
+     &         I, REP(IRPAMO(IA)), REP(IRPAMO(IB))
+            END IF
+         END DO
       END IF
 C
       CALL QEXIT('GOSCI_SETUP')
@@ -206,7 +219,7 @@ C     Output:
 C        NDET : number of determinants
 C        IDET : determinants
 C
-C     Written by J. Thyssen - Jan 2 2001
+C     Written by J. Thyssen and H.J.Aa. Jenen - Jan 2001
 C     Last revision :
 C
 C***********************************************************************
@@ -216,32 +229,35 @@ C
 #include "dcbgosci.h"
 #include "dcbopt.h"
 #include "dcborb.h"
+#include "pgroup.h"
 #include "dgroup.h"
 C
-      DIMENSION NA(MAXASH_GOSCI)
-      DIMENSION NB(MAXASH_GOSCI)
-      DIMENSION IDET(2,*)
-      DIMENSION IASTR(*), IBSTR(*)
-      LOGICAL GOSCI_GASOK, GOSCI_SYMOK
+      DIMENSION NA(MAXASH_GOSCI), NB(MAXASH_GOSCI)
+      DIMENSION IDET(2,*), IASTR(*), IBSTR(*)
+      LOGICAL   GOSCI_GASOK, GOSCI_SYMOK
 C
-      INTEGER MSKGAS(MXMCGAS)
-      INTEGER IBTAB(0:255)
+      INTEGER MSKGAS(MXMCGAS), IBTAB(0:255)
 C
 #include "ibtfun.h"
 C
-      IF ( IPROPT .GE. 10 ) THEN
-         WRITE(LUPRI,'(A)')
-     &        ' (GOSCI_GENDET) Output from GENDET:'
-         IF (IRRP .LT. 0) THEN
-            WRITE(LUPRI,'(A)')
-     &        '               Generating dets. of all symmetries'
+      IF ( IPROPT .GE. 3 ) THEN
+         WRITE(LUPRI,'(/A)')
+     &       ' (GOSCI_GENDET) Output from generation of determinants:'
+         IF (OPT_UCIBOS) WRITE(LUPRI,'(15X,A)')
+     &    'Using boson spinor symmetry (exact or approximate) in the CI'
+         IF (IRRP .LE. 0) THEN
+            WRITE(LUPRI,'(15X,A)')
+     &        'Generating determinants of all symmetries'
+         ELSE IF (OPT_UCIBOS) THEN
+            WRITE(LUPRI,'(15X,3A,I4,A,I3)')
+     &        'Generating dets. with symmetry ', REP(IRRP-1),
+     &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
          ELSE
-            WRITE(LUPRI,'(2A)')
-     &        '               Generating dets. with symmetry ',
-     &        REPNA(IRRP)
+            WRITE(LUPRI,'(15X,2A)')
+     &        'Generating dets. with symmetry ', REPNA(IRRP)
          END IF
-         WRITE(LUPRI,'(2A)')
-     &        '                Max no. of dets. ',MAXDET
+         WRITE(LUPRI,'(15X,A,I10)')
+     &        'Max no. of determinants',MAXDET
       END IF
 C
       IF (NASHT .GT. MAXASH_GOSCI) THEN
@@ -256,7 +272,6 @@ C     Setup bit table
 C     ---------------
 C
       CALL IBTABINI(IBTAB)
-C
 C
 C     Setup GAS stuff
 C     ---------------
@@ -275,9 +290,9 @@ C
             END DO
          END DO
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
          DO I = 1, NGAS
-            write(6,*) 'gas bit mask: ',mskgas(i)
+            write(lupri,*) 'gas bit mask before: ',i,mskgas(i)
          END DO
 #endif
 C
@@ -285,9 +300,9 @@ C
             MSKGAS(I) = MSKGAS(I-1) + MSKGAS(I)
          END DO
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
          DO I = 1, NGAS
-            write(6,*) 'gas bit mask: ',mskgas(i)
+            write(lupri,*) 'gas bit mask after: ',i,mskgas(i)
          END DO
 #endif
 C
@@ -296,7 +311,7 @@ C
 C     Find min and max number of a & b electrons
 C     ------------------------------------------
 C
-c     write(6,*) 'maxmk2, minmk2',maxmk2,minmk2
+D     write(lupri,*) 'maxmk2, minmk2',maxmk2,minmk2
       MAXAEL = (MAXMK2 + NAELEC) / 2
       MAXAEL = MIN(MAXAEL,NASHT)
 C
@@ -313,14 +328,14 @@ C
 C     Generate determintants:
 C     -----------------------
 C
-c     write(6,*) 'IAEL   IBEL'
+D     write(lupri,*) 'IAEL   IBEL'
       NDET = 0
       DO 10 IAEL = MINAEL, MAXAEL
          IBEL = NAELEC - IAEL
          MK2 = IAEL - IBEL
          IMK2(MK2) = NDET
-c        write(6,'(4I,3X,4I)') IAEL,IBEL
-c        call flshfo(6)
+D        write(lupri,'(I4,I7)') IAEL,IBEL
+D        call flshfo(lupri)
 C
          IF (IAEL .LE. IBEL) THEN
             CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
@@ -333,8 +348,11 @@ C
             CALL GOSCI_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
             IF (NASTR .EQ. 0) GOTO 10
          END IF
-c        write(6,'(12X,8I,3X,8I,3X,8I)') NASTR,NBSTR,NDET
-c        call flshfo(6)
+D        write(lupri,'(12X,I8,I11,I11)') NASTR,NBSTR,NDET
+D        call flshfo(lupri)
+C
+C HJ TODO : the next can easily be optimized by not redoing the IA
+C           for each IB in GOSCI_GASOK and GOSCI_SYMOK /aug 03
 C
          DO IA = 1, NASTR
             DO IB = 1, NBSTR
@@ -355,8 +373,8 @@ C
                END IF
             END DO
          END DO
-c        write(6,'(12X,8X,3X,8X,3X,8I)') NDET
-c        call flshfo(6)
+D        write(LUPRI,'(T32,I11)') NDET
+D        call flshfo(LUPRI)
          NMK2(MK2) = NDET - IMK2(MK2)
  10   CONTINUE
 C
@@ -378,7 +396,7 @@ C
      &        /5X,'MK',T28,'#dets'/1X,38('-'))
  9101 FORMAT(I8,T23,I10)
  9102 FORMAT(I6,'/2',T23,I10)
- 9103 FORMAT(1X,38('-')/5X,'all',T23,I10)
+ 9103 FORMAT(1X,38('-') / 5X,'all',T23,I10)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -387,9 +405,9 @@ C
          DO MK2 = MINMK2, MAXMK2
             IF (NMK2(MK2) .GT. 0) THEN
                IF (MOD(MK2,2) .EQ. 0) THEN
-                  WRITE(LUPRI,9004) MK2/2,NMK2(MK2)
+                  WRITE(LUPRI,9004) NMK2(MK2),MK2/2
                ELSE
-                  WRITE(LUPRI,9005) MK2,NMK2(MK2)
+                  WRITE(LUPRI,9005) NMK2(MK2),MK2
                END IF
             END IF
 C
@@ -406,19 +424,19 @@ C
                   IF (IBTAND (IDB, IBTSHL (1, J - 1)) .NE. 0)
      &                 NB(J)=1
                END DO
-               WRITE(LUPRI,9002) I+IMK2(MK2),IDA,(NA(J),J=1,NASHT)
-               WRITE(LUPRI,9003) IDB,(NB(J),J=1,NASHT)
+               WRITE(LUPRI,9002) I+IMK2(MK2),(NA(J),J=1,NASHT)
+               WRITE(LUPRI,9003)             (NB(J),J=1,NASHT)
             END DO
          END DO
+         CALL FLSHFO(LUPRI)
       END IF
- 9001 FORMAT(//' Det.',T10,'ID',T30,'String',T70/1X,77('-'))
- 9002 FORMAT(I7,T10,I12,T30,100I1)
- 9003 FORMAT(T10,I12,T30,100I1)
- 9004 FORMAT(' with MK = ',I3,'   : ',I10, ' determinants.')
- 9005 FORMAT(' with MK = ',I3,'/2 : ',I10, ' determinants.')
+ 9001 FORMAT(//' Det.',T20,'String',/1X,77('-'))
+ 9002 FORMAT(I7,T20,100I1)
+ 9003 FORMAT(   T20,100I1)
+ 9004 FORMAT(I10,' determinants with MK =',I3,' :')
+ 9005 FORMAT(I10,' determinants with MK =',I3,'/2 :')
 C
 C
-      CALL FLSHFO(LUPRI)
       RETURN
  1010 FORMAT(I6,I10,32I2)
       END
@@ -470,13 +488,12 @@ C  /* Deck ibtabini */
       SUBROUTINE IBTABINI(IBTAB)
 C***********************************************************************
 C
-C     Initialize table with
+C     Initialize table with IBTAB(I) = NBITS(I)
 C
-C     IBTAB(I) = NBITS(I)
-C
-C     Input :
+C     Input : none
 C
 C     Output:
+C       IBTAB
 C
 C     Written by J. Thyssen - Feb 27 2001
 C     Last revision :
@@ -502,50 +519,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gosci_gasok */
-      LOGICAL FUNCTION GOSCI_MKOK(I,MSKMK,IBTAB)
-C***********************************************************************
-C
-C     Check that determinant is allowed with MK/MKDEL constraints.
-C
-C     Input :
-C       I : determinant
-C
-C     Output:
-C
-C     Written by J. Thyssen - Feb 11 2001
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgosci.h"
-#include "dcbopt.h"
-#include "dcborb.h"
-C
-      DIMENSION MSKMK(2), IBTAB(*)
-C
-#include "ibtfun.h"
-C
-C
-      NP    = NGOSCI_NBITS(IBTAND(MSKMK(1),I),IBTAB)
-      NPBAR = NGOSCI_NBITS(IBTAND(MSKMK(2),I),IBTAB)
-C
-C
-      MK2I  = 2 * (NP - NPBAR)
-C
-      IF ( ABS(MK2I)-ABS(MK2REF) .LE. MK2REF ) THEN
-         GOSCI_MKOK = .TRUE.
-      ELSE
-         GOSCI_MKOK = .FALSE.
-      END IF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_krlist */
-      SUBROUTINE GOSCI_KRLIST(NDET,IDET,KRLIST)
+      SUBROUTINE GOSCI_KRLIST(NDET,IDET,KRLIST,IPRINT)
 C***********************************************************************
 C
 C     For each determinant find Kramers partner.
@@ -558,47 +533,37 @@ C     Output:
 C        KRLIST:
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Last revision :
+C     Revised Sep 2003 hjaaj (was with old, obsolete IDET format)
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbgosci.h"
-#include "dcbopt.h"
-#include "dcborb.h"
-C
-      DIMENSION IDET(*), KRLIST(*)
-C
-#include "ibtfun.h"
-C
-      I1 = 2 ** (2*NASHT) - 1
+      DIMENSION IDET(2,*), KRLIST(*)
 C
       CALL IZERO(KRLIST,NDET)
 C
       DO 10 I = 1, NDET
          IF (KRLIST(I) .NE. 0) GOTO 10
-         ID = IDET(I)
-         IDP = IBTSHR(ID,NASHT)
-         IDPBAR = IBTSHL(ID,NASHT)
-         IDK = IBTAND(I1,IBTOR(IDP,IDPBAR))
-         DO 20 J = 1, NDET
+         IDA = IDET(1,I)
+         IDB = IDET(2,I)
+         DO 20 J = NDET, I, -1
             IF (KRLIST(J) .NE. 0) GOTO 20
-            JD = IDET(J)
-            IF (IDK .EQ. JD) THEN
+            IF (IDA .EQ. IDET(2,J) .AND. IDB .EQ. IDET(1,J)) THEN
                KRLIST(I) = J
                KRLIST(J) = I
                GOTO 30
             END IF
  20      CONTINUE
+         WRITE(LUPRI,*) 'WARNING: No Kramers partner found for det.',I
  30      CONTINUE
  10   CONTINUE
 C
-      IF (IPROPT .GE. 10) THEN
+      IF (IPRINT .GE. 10) THEN
          CALL HEADER('Output from GOSCI_KRLIST',-1)
          WRITE(LUPRI,'(T10,A,T30,A)') 'Determinant','Kramers partner'
          DO I = 1, NDET
-            WRITE(LUPRI,'(T13,I6,T33,I6)') I,KRLIST(I)
+            WRITE(LUPRI,'(T10,I9,T30,I9)') I,KRLIST(I)
          END DO
       END IF
 C
@@ -630,9 +595,8 @@ C
 C     Anyone who can find with a faster routine?
 C
       ID4 = JDET
-D     write(6,*) 'jdet',jdet
-D     write(6,*) 'id4',id4
-D     write(6,*) 'id1',id1
+D     write(lupri,*) 'jdet',jdet,' and id4',id4
+D     write(lupri,*) 'id1',id1
       NGOSCI_NBITS
      &     = IBTAB(ID1(1))
      &     + IBTAB(ID1(2))
@@ -660,7 +624,7 @@ C
 C
 #include "ibtfun.h"
 C
-      IF (IOPT_SYMMETRY .LT. 0) THEN
+      IF (IOPT_SYMMETRY .LE. 0) THEN
 C        ... include all symmetries
          GOSCI_SYMOK = .TRUE.
       ELSE IF (.NOT. OPT_UCIBOS) THEN
@@ -685,7 +649,9 @@ C
          GOSCI_SYMOK = (JRRP .EQ. IRRP)
       ELSE
 C
-C        Boson symmetry.
+C        Boson symmetry (spin free or Levy-Leblond).
+C        (do not use MULTB which includes spin-symmetry -- see GMULTSF --
+C         as we treat the spin Ms separately as in non-rel codes /hjaaj aug 03)
 C
          JRRP = 0
          ID = IA
@@ -935,7 +901,7 @@ C
             WRITE(LUPRI,'(/2A,I4)')
      &           ' *** ERROR in GOSCI_FULLCI ***: ',
      &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in GOSCI_FULLCI *** QDAIG failed')
+            CALL QUIT('*** ERROR in GOSCI_FULLCI *** QDIAG failed')
          END IF
       END IF
 C
@@ -970,7 +936,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck gmulta */
+C/* Deck gosci_ireps */
       SUBROUTINE GOSCI_IREPS (NZ,NFSYM,NSYMRPA,REPA)
 C***********************************************************************
 C
@@ -1153,9 +1119,8 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION CL(*),CR(*)
-      DIMENSION DV(*), PV(*)
       LOGICAL   DOPV
+      DIMENSION CL(*), CR(*), DV(*), PV(*)
       DIMENSION IDET(*)
 C
       CALL QENTER('GOSCI_MAKETDM')
@@ -1175,7 +1140,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gosci_hmat */
+C  /* Deck gosci_pmat */
       SUBROUTINE GOSCI_PMAT(DOPV,DOIMAG,IT,IOCCI,JOCCI,K,L,M,N,
      &     DMRIJ,DMIIJ,DMRJI,DMIJI,DV,PV)
 C***********************************************************************
@@ -1256,14 +1221,15 @@ C
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
          END DO
+         IPHASE = (-1)**IPHASE
 C
-         DMRIJ1 = (-1)**IPHASE * DMRIJ
-         DMRJI1 = (-1)**IPHASE * DMRJI
+         DMRIJ1 = IPHASE * DMRIJ
+         DMRJI1 = IPHASE * DMRJI
          DV(K,M,1) = DV(K,M,1) + DMRIJ1
          DV(M,K,1) = DV(M,K,1) + DMRJI1
          IF (DOIMAG) THEN
-            DMIIJ1 = (-1)**IPHASE * DMIIJ
-            DMIJI1 = (-1)**IPHASE * DMIJI
+            DMIIJ1 = IPHASE * DMIIJ
+            DMIJI1 = IPHASE * DMIJI
             DV(K,M,2) = DV(K,M,2) + DMIIJ1
             DV(M,K,2) = DV(M,K,2) + DMIJI1
          END IF
@@ -1306,12 +1272,13 @@ C
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
          END DO
+         IPHASE = (-1)**IPHASE
 C
-         DMRIJ1 = (-1)**IPHASE * DMRIJ
-         DMRJI1 = (-1)**IPHASE * DMRJI
+         DMRIJ1 = IPHASE * DMRIJ
+         DMRJI1 = IPHASE * DMRJI
          IF (DOIMAG) THEN
-            DMIIJ1 = (-1)**IPHASE * DMIIJ
-            DMIJI1 = (-1)**IPHASE * DMIJI
+            DMIIJ1 = IPHASE * DMIIJ
+            DMIJI1 = IPHASE * DMIJI
          END IF
 C
 C---------------------
@@ -1452,10 +1419,23 @@ C
 C              Can we get a contribution from <I| H |J> ?
                IF (NDAV .LE. ITMAX) THEN
                   JELECA = 0
-                  DO K = 1, NASHT
-                     IF (IBTAND (JDA, IBTSHL (1, K - 1)) .NE. 0) THEN
+                  IAI = IBTAND (IDAV, IDA)
+                  KA = 0
+                  IAJ = IBTAND (IDAV, JDA)
+                  MA = 0
+                  DO II = 1, NASHT
+                     IIBIT = IBTSHL (1, II - 1)
+                     IF (IBTAND (JDA, IIBIT) .NE. 0) THEN
                         JELECA = JELECA + 1
-                        JOCCI(JELECA) = IPTA2O(K)
+                        JOCCI(JELECA) = IPTA2O(II)
+                     END IF
+                     IF (IBTAND (IAI, IBTSHL (1, II - 1)) .NE. 0) THEN
+                        L  = KA
+                        KA = IPTA2O(II)
+                     END IF
+                     IF (IBTAND (IAJ, IBTSHL (1, II - 1)) .NE. 0) THEN
+                        N  = MA
+                        MA = IPTA2O(II)
                      END IF
                   END DO
                END IF
@@ -1487,22 +1467,10 @@ C
                   END IF
                END DO
 C
-               IAI = IBTAND (IDAV, IDA)
                IBI = IBTAND (IDBV, IDB)
-               IAJ = IBTAND (IDAV, JDA)
                IBJ = IBTAND (IDBV, JDB)
-               K = 0
-               M = 0
-               DO II = 1, NASHT
-                  IF (IBTAND (IAI, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     L = K
-                     K = IPTA2O(II)
-                  END IF
-                  IF (IBTAND (IAJ, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     N = M
-                     M = IPTA2O(II)
-                  END IF
-               END DO
+               K = KA
+               M = MA
                DO II = 1, NASHT
                   IF (IBTAND (IBI, IBTSHL (1, II - 1)) .NE. 0) THEN
                      L = K
@@ -1537,7 +1505,7 @@ c     call output(hr,1,nzconf,1,nzconf,nzconf,nzconf,1,lupri)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gosci_hmatx */
+C  /* Deck gosci_hmat */
       SUBROUTINE GOSCI_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,K,L,M,N,
      &     HR,HI,HCORE,VMUUUU)
 C***********************************************************************
@@ -1602,6 +1570,7 @@ C
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
          END DO
+         IPHASE = (-1)**IPHASE
 C
          HR = HCORE(K,M,1)
          IF (DOIMAG) HI = HCORE(K,M,2)
@@ -1621,8 +1590,8 @@ C---------------------
             END IF
          END DO
         END IF
-         HR = (-1)**IPHASE * HR
-         IF (DOIMAG) HI = (-1)**IPHASE * HI
+         HR = IPHASE * HR
+         IF (DOIMAG) HI = IPHASE * HI
          RETURN
       END IF
 C
@@ -1639,13 +1608,14 @@ C
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
          END DO
+         IPHASE = (-1)**IPHASE
 C
 C---------------------
 C        H = H + (K, M, L, N) - (K, N, L, M)
 C---------------------
-         HR = (-1)**IPHASE * (VMUUUU(K,M,L,N,1) - VMUUUU(K,N,L,M,1))
+         HR = IPHASE * (VMUUUU(K,M,L,N,1) - VMUUUU(K,N,L,M,1))
          IF (DOIMAG)
-     &   HI = (-1)**IPHASE * (VMUUUU(K,M,L,N,2) - VMUUUU(K,N,L,M,2))
+     &   HI = IPHASE * (VMUUUU(K,M,L,N,2) - VMUUUU(K,N,L,M,2))
          RETURN
       END IF
 C
@@ -1682,11 +1652,9 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-      DIMENSION SVEC(*), BVEC(*)
-      DIMENSION VMUUUU(*), HCORE(*)
-      DIMENSION IDET(*)
-      DIMENSION DIAG(*)
       LOGICAL   SAVDIA
+      DIMENSION DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
+      DIMENSION IDET(*)
 C
       CALL QENTER('GOSCI_SVC')
 C
@@ -1726,7 +1694,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION DIAG(*), IDET(*), VMUUUU(*), HCORE(*)
+      DIMENSION DIAG(*), IDET(*), HCORE(*), VMUUUU(*)
 C
       CALL QENTER('GOSCI_HDIAG')
 C
@@ -1883,16 +1851,17 @@ C
       NCSIM = 1
       JCSIM = 0
       NCRED = 1
-      RTHRCI = 1.0D-14
+      RTHRCI = 1.0D-12
 c     RTHRCI = 1.0D-6
       ECI = D0
 C
       MAXR = 50
-      CALL MEMGET('REAL',KHRED,MAXR*MAXR,WORK,KFREE,LFREE)
+      LHRED = MAXR*MAXR*MZ
+      CALL MEMGET('REAL',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIGVL,MAXR,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVC,MAXR*MAXR,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGVC,MAXR*MAXR,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KHRED),MAXR*MAXR)
+      CALL MEMGET('REAL',KEIGVC,LHRED,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KHRED),LHRED)
+      KHREDI = KHRED + MAXR*MAXR
 C
       ITMIC = 0
       ICONV = 0
@@ -1907,7 +1876,7 @@ C
          CALL GETTIM(CPU3,WLL3)
 C
          WRITE(LUPRI,'(//A,I4)')
-     &        ' (GOSCI_RCISTD) CI microiteration no. ',ITMIC
+     &        ' (GOSCI_RCISTD) CI microiteration no.',ITMIC
          CALL FLSHFO(LUPRI)
 C
 C        Calculate sigma vector(s)
@@ -1951,7 +1920,11 @@ C
 C        Extend reduced Hamiltonian:
 C        ---------------------------
 C
-C        HRED(I,J) = BCVEC(I) * SCVEC(J)
+C HJ 2-sep-03 FIXME: imag. part of HRED is missing !!!
+C                    (see GOSCI_FULLCI)
+         IF (MZ .GT. 1) CALL QUIT('MZ.gt.1 not implemented yet')
+C
+C        HRED(I,J) = BCVEC(I)^+ * SCVEC(J)
 C
 C        New trial vectors * Old sigma vectors
 C
@@ -1984,7 +1957,7 @@ C
          END DO
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(A)')
-     &           ' (GOSCI_RCISTD) Reduced Hamiltonian'
+     &           ' (GOSCI_RCISTD) Reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
          END IF
 C
@@ -1998,13 +1971,13 @@ C
      &              WORK(KHRED + (I-1) + (J-1)*MAXR) )
             END DO
          END DO
-         IF (IPROPT .GE. 10) THEN
+         IF (IPROPT .GE. 10 .OR. DAS .GT. 1.0D-10) THEN
             WRITE(LUPRI,'(A,1P,D10.3)')
-     &           ' (GOSCI_RCISTD) Anti-symmetry of red. Hamiltonian = ',
-     &           DAS
-         END IF
-         IF (DAS .GT. 1.0D-10) THEN
-            call quit('argh')
+     &      ' (GOSCI_RCISTD) Anti-hermiticity of red. Hamiltonian = ',
+     &      DAS
+            IF (DAS .GT. 1.0D-10) THEN
+               call quit('red. Hamiltonian not hermitian')
+            END IF
          END IF
 C
 C        Diagonalize reduced Hamiltonian
@@ -2018,21 +1991,21 @@ C
 C
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(/A)')
-     &           ' (GOSCI_RCISTD) Eigenvalues of reduced Hamiltonian'
+     &      ' (GOSCI_RCISTD) Eigenvalues of reduced Hamiltonian'
             CALL OUTPUT(WORK(KEIGVL),1,NCRED,1,1,MAXR,1,1,LUPRI)
             WRITE(LUPRI,'(/A)')
-     &           ' (GOSCI_RCISTD) Eigenvectors of reduced Hamiltonian'
+     &' (GOSCI_RCISTD) Eigenvectors of reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KEIGVC),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
             CALL FLSHFO(LUPRI)
          END IF
          ECIOLD = ECI
          ECIA = WORK(KEIGVL + IOPT_ISTATE - 1)
          ECI = ECORE + ECIA
-         IF (IPROPT .GE. 10) THEN
+         IF (IPROPT .GE. 8) THEN
             WRITE(LUPRI,'(/A,F20.8)')
-     &           ' (GOSCI_RCISTD) Core energy        = ',ECORE
+     &        ' (GOSCI_RCISTD) Core energy        = ',ECORE
             WRITE(LUPRI,'(A,F20.8)')
-     &           '                Active energy      = ',ECIA
+     &        '                Active energy      = ',ECIA
          END IF
          WRITE(LUPRI,'(A,F20.8)')
      &        ' (GOSCI_RCISTD) Total energy       = ',ECI
@@ -2061,8 +2034,8 @@ C
          END IF
 C
          DNRES = DNORM2(NZCONFQ,CREF,1)
-         WRITE(LUPRI,'(/A,1P,D20.10,A,D8.2,A)')
-     &        ' (GOSCI_RCISTD) Norm of residual = ',DNRES,
+         WRITE(LUPRI,'(/A,1P,D10.3,A,D8.2,A)')
+     &        ' (GOSCI_RCISTD) Norm of residual =',DNRES,
      &        ' (thr = ',RTHRCI,')'
          CALL FLSHFO(LUPRI)
 C
@@ -2171,8 +2144,8 @@ C
          CALL GETTIM(CPU4,WLL4)
          CPUTID = SECTID(CPU4-CPU3)
          WALLTID = SECTID(WLL4-WLL3)
-         WRITE(LUPRI,'(/A,I3,5A)')
-     &        ' (GOSCI_RCISTD) CPU (Wall) time for iteration ',
+         WRITE(LUPRI,'(/A,I4,5A)')
+     &        ' (GOSCI_RCISTD) CPU (Wall) time for iteration',
      &        ITMIC,': ',CPUTID,'(',WALLTID,')'
          CPUTID = SECTID(CPU4-CPU2)
          WALLTID = SECTID(WLL4-WLL2)
@@ -2277,7 +2250,6 @@ C
       IAELEC = 0
       IBELEC = 0
 C
-      K = 0
       DO J = 1, NASHT
          IF (LBIT(IA,J)) THEN
             IAELEC = IAELEC + 1
@@ -2367,7 +2339,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_chkkr */
-      SUBROUTINE GOSCI_CHKKR(BVEC,WORK,LWORK)
+      SUBROUTINE GOSCI_CHKKR(DOIMAG,BVEC,WORK,LWORK)
 C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
@@ -2388,6 +2360,7 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 C
+      LOGICAL   DOIMAG
       DIMENSION BVEC(*), WORK(*)
 C
 #include "memint.h"
@@ -2396,13 +2369,13 @@ C
 C
       CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
       CALL IREAKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
-      CALL GOSCI_CHKKR1(BVEC,WORK(KRLIST))
+      CALL GOSCI_CHKKR1(DOIMAG,BVEC,WORK(KRLIST))
       CALL MEMREL('GOSCI_CHKKR',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gosci_chkkr1 */
-      SUBROUTINE GOSCI_CHKKR1(BVEC,KRLIST)
+      SUBROUTINE GOSCI_CHKKR1(DOIMAG,BVEC,KRLIST)
 C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
@@ -2423,6 +2396,7 @@ C
 #include "dcbopt.h"
 #include "dgroup.h"
 C
+      LOGICAL   DOIMAG
       DIMENSION BVEC(NZCONF,*), KRLIST(*)
 C
       DO I = 1, NZCONF
@@ -2436,11 +2410,13 @@ C HJAaJ TODO aug 2002: we may divide by zero in next line!
      &              ABS(BVEC(I,1) - BVEC(IK,1))
             END IF
 C HJAaJ TODO aug 2002: we may divide by zero in next line!
+            IF (DOIMAG) THEN
             IF ( ABS(BVEC(I,2) + BVEC(IK,2))/ABS(BVEC(I,2))
      &           .GT. 1.0D-13) THEN
               write(LUPRI,'(A,2I4,3D25.10)') ' GOSCI_CHKKR1: imag diff',
      &              I,IK,BVEC(I,2),BVEC(IK,2),
      &              ABS(BVEC(I,2) + BVEC(IK,2))
+            END IF
             END IF
          END IF
       END DO
@@ -2488,7 +2464,7 @@ C
          NGTOT = NGTOT + NGSHT(I)
          NGSPC(J) = MAX(0,NGSP(1,I) - NGTOT)
          NGSPC(J+1) = MIN(NGSP(2,I),NGTOT)
-C        write(6,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
+C        write(lupri,*) 'gosci_genstr: ngspc: ',ngspc(J),ngspc(j+1)
          J = J + 2
       END DO
 C
@@ -2532,8 +2508,8 @@ C        SVEC   - sigma vector
 C
 C        DV, PV - density matrices
 C
-C     Written by J. Thyssen - Jan 3 2001
-C     Last revision : July 2002 hjaaj
+C     Written by J. Thyssen and H.J.Aa. Jensen - Jan-Mar 2001
+C     Last revision : July 2002/Sep 2003 hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2563,10 +2539,11 @@ C
       DIMENSION IOCCI(2*MAXASH_GOSCI), JOCCI(2*MAXASH_GOSCI)
       DIMENSION IBTAB(0:255)
       INTEGER*8 FNCALLS, CNCALLS
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
 #include "ibtfun.h"
 C
-      CALL FLSHFO(LUPRI)
+      CALL GETTIM(CPU1,WLL1)
 C
 C     Initialization
 C     --------------
@@ -2605,18 +2582,18 @@ C
       MK2STP = 2
 C
       DO 10 MK2I = MINMK2, MAXMK2, MK2STP
+C        ... MK2 is NAEL - NBEL
          IF (NMK2(MK2I) .EQ. 0) GOTO 10
-C?       write(6,*) '(GOSCI_CI) MK2I = ',MK2I
-         call flshfo(6)
+D        write(lupri,*) '(GOSCI_CI) MK2I = ',MK2I
          ISTRT = IMK2(MK2I) + 1
          IEND  = IMK2(MK2I) + NMK2(MK2I)
 C
-         MK2JSTRT = MAX(MINMK2,-MAXMK2,MK2I-4)
+         MK2JSTRT = MAX(MINMK2,-MAXMK2,MK2I-ITMAX)
          MK2JEND  = MK2I - MK2STP
 C
 C
 C        *************************
-C        *** Off-diagonal loop ***
+C        *** Off-diagonal loop *** (MK2J .lt. MK2I)
 C        *************************
 C
 C
@@ -2625,26 +2602,37 @@ C        ...only off-diagonal blocks for dens.mat or sigma-vec.
 C
          DO 20 MK2J = MK2JSTRT, MK2JEND, MK2STP
             IF (NMK2(MK2J) .EQ. 0) GOTO 20
-D           write(6,*) '              MK2J = ',MK2J
-D           call flshfo(6)
+D           write(lupri,*) '(GOSCI_CI) MK2I MK2J = ',MK2I,MK2J
+D           call flshfo(lupri)
 C
             JSTRT = IMK2(MK2J) + 1
             JEND  = IMK2(MK2J) + NMK2(MK2J)
+            MXNDAV = ITMAX + (MK2J - MK2I)/2
+C           ... we know that NDBV .ge. (MK2I-MK2J)/2
 C
 C           Loop over determinants
+C           (use that outer loop in gosci_gendet is over A-strings,
+C           inner loop is over B-strings)
 C
+            IDAOLD = -1
             DO 100 I = ISTRT, IEND
 C
-               IELEC = 0
 C
                IDA = IDET(1,I)
+               IF (IDA .NE. IDAOLD) THEN
+C                 ... outer loop in gosci_gendet is over A-strings
+                  IAELEC = 0
+                  DO K = 1, NASHT
+                     IF (IBTAND (IDA, IBTSHL (1, K - 1)) .NE. 0) THEN
+                        IAELEC = IAELEC + 1
+                        IOCCI(IAELEC) = IPTA2O(K)
+                     END IF
+                  END DO
+                  IDAOLD = IDA
+               END IF
+C
+               IELEC = IAELEC
                IDB = IDET(2,I)
-               DO K = 1, NASHT
-                  IF (IBTAND (IDA, IBTSHL (1, K - 1)) .NE. 0) THEN
-                     IELEC = IELEC + 1
-                     IOCCI(IELEC) = IPTA2O(K)
-                  END IF
-               END DO
                DO K = 1, NASHT
                   IF (IBTAND (IDB, IBTSHL (1, K - 1)) .NE. 0) THEN
                      IELEC = IELEC + 1
@@ -2654,58 +2642,67 @@ C
                IF (IELEC .NE. NAELEC)
      &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
 C
+               JDAOLD = -1
                DO 200 J = JSTRT, JEND
 C
                   JDA = IDET(1,J)
-                  JDB = IDET(2,J)
+                  IF (JDA .NE. JDAOLD) THEN
+C                    ... outer loop in gosci_gendet is over A-strings
+                     IDAV = IBTXOR (IDA, JDA)
+                     CALL FNBITS(NDAV,IDAV,IBTAB)
+                     IF (NDAV .GT. MXNDAV) GOTO 200
 C
-                  IDAV = IBTXOR (IDA, JDA)
+                     JAELEC = 0
+                     IAI = IBTAND (IDAV, IDA)
+                     KA  = 0
+                     IAJ = IBTAND (IDAV, JDA)
+                     MA  = 0
+                     DO II = 1, NASHT
+                        IIBIT = IBTSHL (1, II - 1)
+                        IF (IBTAND (JDA, IIBIT) .NE. 0) THEN
+                           JAELEC = JAELEC + 1
+                           JOCCI(JAELEC) = IPTA2O(II)
+                        END IF
+                        IF (IBTAND (IAI, IIBIT) .NE. 0) THEN
+                           L  = KA
+                           KA = IPTA2O(II)
+                        END IF
+                        IF (IBTAND (IAJ, IIBIT) .NE. 0) THEN
+                           N  = MA
+                           MA = IPTA2O(II)
+                        END IF
+                     END DO
+                     JDAOLD = JDA
+                  END IF
+                  IF (NDAV .GT. MXNDAV) GOTO 200
+C                 ... see note above about MXNDAV
+C
+                  JDB  = IDET(2,J)
                   IDBV = IBTXOR (IDB, JDB)
-C
-                  CALL FNBITS(NDAV,IDAV,IBTAB)
                   CALL FNBITS(NDBV,IDBV,IBTAB)
-                  IT = NDAV + NDBV
 C
+                  IT = NDAV + NDBV
                   IF (IT .GT. ITMAX) GOTO 200
 C                 ... IT = number of different spinors
 C                          in det(I) and det(J)
 C
-                  IELEC = 0
-                  DO K = 1, NASHT
-                     IF (IBTAND (JDA, IBTSHL (1, K - 1)) .NE. 0) THEN
-                        IELEC = IELEC + 1
-                        JOCCI(IELEC) = IPTA2O(K)
-                     END IF
-                  END DO
-                  DO K = 1, NASHT
-                     IF (IBTAND (JDB, IBTSHL (1, K - 1)) .NE. 0) THEN
+                  IELEC = JAELEC
+                  IBI = IBTAND (IDBV, IDB)
+                  K = KA
+                  IBJ = IBTAND (IDBV, JDB)
+                  M = MA
+                  DO II = 1, NASHT
+                     IIBIT = IBTSHL (1, II - 1)
+                     IF (IBTAND (JDB, IIBIT) .NE. 0) THEN
                         IELEC = IELEC + 1
                         JOCCI(IELEC) = IPTB2O(K)
                      END IF
-                  END DO
 C
-                  IAI = IBTAND (IDAV, IDA)
-                  IBI = IBTAND (IDBV, IDB)
-                  IAJ = IBTAND (IDAV, JDA)
-                  IBJ = IBTAND (IDBV, JDB)
-                  K = 0
-                  M = 0
-                  DO II = 1, NASHT
-                     IF (IBTAND (IAI, IBTSHL (1, II - 1)) .NE. 0) THEN
-                        L = K
-                        K = IPTA2O(II)
-                     END IF
-                     IF (IBTAND (IAJ, IBTSHL (1, II - 1)) .NE. 0) THEN
-                        N = M
-                        M = IPTA2O(II)
-                     END IF
-                  END DO
-                  DO II = 1, NASHT
-                     IF (IBTAND (IBI, IBTSHL (1, II - 1)) .NE. 0) THEN
+                     IF (IBTAND (IBI, IIBIT) .NE. 0) THEN
                         L = K
                         K = IPTB2O(II)
                      END IF
-                     IF (IBTAND (IBJ, IBTSHL (1, II - 1)) .NE. 0) THEN
+                     IF (IBTAND (IBJ, IIBIT) .NE. 0) THEN
                         N = M
                         M = IPTB2O(II)
                      END IF
@@ -2728,7 +2725,7 @@ C
      &                       + HR * BVEC(J,2) + HI * BVEC(J,1)
                      END IF
 C
-C                    S_J += H_{IJ}^* B_{J}
+C                    S_J += H_{IJ}^* B_{I}
 C
                      SVEC(J,1) = SVEC(J,1) + HR * BVEC(I,1)
                      IF (DOIMAG) THEN
@@ -2765,10 +2762,8 @@ C
 C
 C
 C        ***********************
-C        *** Diagonal blocks ***
+C        *** Diagonal blocks *** (MK2J .eq. MK2I)
 C        ***********************
-C
-C        Diagonal element
 C
          IDAOLD = -1
          DO 300 I = ISTRT, IEND
@@ -2776,6 +2771,7 @@ C
 C
             IDA = IDET(1,I)
             IF (IDA .NE. IDAOLD) THEN
+C              ... outer loop in gosci_gendet is over A-strings
                IAELEC = 0
                DO K = 1, NASHT
                   IF (IBTAND (IDA, IBTSHL (1, K - 1)) .NE. 0) THEN
@@ -2795,6 +2791,8 @@ C
             END DO
             IF (IELEC .NE. NAELEC)
      &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
+C
+C           Diagonal element (Det_I .eq. DET_J)
 C
 C           Calculate Hamiltonian matrix element
 C           ------------------------------------
@@ -2845,18 +2843,31 @@ C
 C
                JDA = IDET(1,J)
                IF (JDA .NE. JDAOLD) THEN
+C                 ... outer loop in gosci_gendet is over A-strings
                   IDAV = IBTXOR (IDA, JDA)
                   CALL FNBITS(NDAV,IDAV,IBTAB)
                   IF (NDAV .GT. ITMAX) GOTO 400
+C
                   JAELEC = 0
-                  DO K = 1, NASHT
-                     IF (IBTAND (JDA, IBTSHL (1, K - 1)) .NE. 0) THEN
+                  IAI = IBTAND (IDAV, IDA)
+                  KA  = 0
+                  IAJ = IBTAND (IDAV, JDA)
+                  MA  = 0
+                  DO II = 1, NASHT
+                     IIBIT = IBTSHL(1, II - 1)
+                     IF (IBTAND (JDA, IIBIT) .NE. 0) THEN
                         JAELEC = JAELEC + 1
-                        JOCCI(JAELEC) = IPTA2O(K)
+                        JOCCI(JAELEC) = IPTA2O(II)
+                     END IF
+                     IF (IBTAND (IAI, IIBIT) .NE. 0) THEN
+                        L  = KA
+                        KA = IPTA2O(II)
+                     END IF
+                     IF (IBTAND (IAJ, IIBIT) .NE. 0) THEN
+                        N  = MA
+                        MA = IPTA2O(II)
                      END IF
                   END DO
-                  IAI = IBTAND (IDAV, IDA)
-                  IAJ = IBTAND (IDAV, JDA)
                   JDAOLD = JDA
                END IF
                IF (NDAV .GT. ITMAX) GOTO 400
@@ -2864,47 +2875,42 @@ C
                JDB = IDET(2,J)
                IF (NDAV .EQ. ITMAX) THEN
                   IF (JDB .NE. IDB) GO TO 400
-                  IDBV = 0
                   IT = NDAV
+                  IBI = 0
+                  IBJ = 0
+                  K = KA
+                  M = MA
+                  DO IELEC = JAELEC + 1, NAELEC
+                     JOCCI(IELEC) = IOCCI(IELEC)
+                  END DO
                ELSE
                   IDBV = IBTXOR (IDB, JDB)
                   CALL FNBITS(NDBV,IDBV,IBTAB)
                   IT = NDAV + NDBV
                   IF (IT .GT. ITMAX) GOTO 400
+C
+                  IELEC = JAELEC
+                  IBI = IBTAND (IDBV, IDB)
+                  IBJ = IBTAND (IDBV, JDB)
+                  K = KA
+                  M = MA
+                  DO II = 1, NASHT
+                     IIBIT = IBTSHL(1, II - 1)
+                     IF (IBTAND (JDB, IIBIT) .NE. 0) THEN
+                        IELEC = IELEC + 1
+                        JOCCI(IELEC) = IPTB2O(II)
+                     END IF
+C
+                     IF (IBTAND (IBI, IIBIT) .NE. 0) THEN
+                        L = K
+                        K = IPTB2O(II)
+                     END IF
+                     IF (IBTAND (IBJ, IIBIT) .NE. 0) THEN
+                        N = M
+                        M = IPTB2O(II)
+                     END IF
+                  END DO
                END IF
-C
-               IELEC = JAELEC
-               DO K = 1, NASHT
-                  IF (IBTAND (JDB, IBTSHL (1, K - 1)) .NE. 0) THEN
-                     IELEC = IELEC + 1
-                     JOCCI(IELEC) = IPTB2O(K)
-                  END IF
-               END DO
-C
-               IBI = IBTAND (IDBV, IDB)
-               IBJ = IBTAND (IDBV, JDB)
-               K = 0
-               M = 0
-               DO II = 1, NASHT
-                  IF (IBTAND (IAI, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     L = K
-                     K = IPTA2O(II)
-                  END IF
-                  IF (IBTAND (IAJ, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     N = M
-                     M = IPTA2O(II)
-                  END IF
-               END DO
-               DO II = 1, NASHT
-                  IF (IBTAND (IBI, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     L = K
-                     K = IPTB2O(II)
-                  END IF
-                  IF (IBTAND (IBJ, IBTSHL (1, II - 1)) .NE. 0) THEN
-                     N = M
-                     M = IPTB2O(II)
-                  END IF
-               END DO
 C
 C              Hamiltonian matrix element
 C              --------------------------
@@ -2956,8 +2962,14 @@ C
 C
  10   CONTINUE
 C
+      CALL GETTIM(CPU2,WLL2)
+      CPUTID  = SECTID(CPU2-CPU1)
+      WALLTID = SECTID(WLL2-WLL1)
       CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
-C?    write(6,*) '#calls to nbits: ',cncalls,fncalls
+D     write(lupri,*) '#calls to nbits: ',cncalls,fncalls
+      WRITE(LUPRI,'(/5A)')
+     &   ' CPU (Wall) time in GOSCI_CI kernel: ',CPUTID,'(',WALLTID,')'
+C
       CALL FLSHFO(LUPRI)
       RETURN
       END
