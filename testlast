@@ -150,29 +150,40 @@ if [ "${cvs}" = "yes" ]; then
      echo ' Starting CVS Update ... ' ;
      cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
   { echo " CVS update failed" ; \
-    echo " now we are here" ; \
+    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
+    cat ${testdir}/logs/$cvslog ; \
     exit 1 ;\
   }
   else
      echo " Switching working copy to branch $branch and updating ..."
      cvs update -P -d -r $branch > ${testdir}/logs/$cvslog 2>&1 || \
   { echo " CVS update failed" ; \
-    echo " Please check the logfile ${testdir}/logs/$cvslog" ; \
+    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
+    cat ${testdir}/logs/$cvslog ; \
     exit 1 ;\
   }
   fi
 #
 #
+  echo ' Making the Makefiles (running pamadm) ...'
+  pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Pamadm failed" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
+    exit 1 ;\
+  }
   echo ' Checking dependencies ... '
-  make depend > ${testdir}/logs/$makelog 2>&1 || \
+  make depend >> ${testdir}/logs/$makelog 2>&1 || \
   { echo " Make depend failed" ; \
-    echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
     exit 1 ;\
   }
   echo ' Recompiling ... '
   make >> ${testdir}/logs/$makelog 2>&1 || \
   { echo " Make failed" ; \
-    echo " Please check the logfile ${testdir}/logs/$makelog" ; \
+    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
+    cat ${testdir}/logs/$makelog ; \
     exit 1 ;\
   }
 fi
@@ -182,7 +193,8 @@ echo ' Starting test calculations interactively ... '
 cd ${testdir};
 ./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
-  echo " Please check the logfile ${testdir}/logs/$runlog" ; \
+  echo " Here is the logfile ${testdir}/logs/$runlog" ; \
+  cat ${testdir}/logs/$runlog ; \
   exit 1 ;\
 }
 else
@@ -194,12 +206,12 @@ else
 #
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
-errfile=das500:${testdir}/logs/$runlog
+errfile=fs0.das2.cs.vu.nl:${testdir}/logs/$runlog
 cat <<EOF >job
 cd ${testdir};
 ./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run ;
 EOF
-qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue}q -V job
+qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
 rm job
 fi
 #
