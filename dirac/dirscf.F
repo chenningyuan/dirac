@@ -1813,7 +1813,7 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
+      DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*), IQBF(4)
       CHARACTER CTMP*3
 C
 #include <memint.h>

@@ -21,7 +21,7 @@ C*****************************************************************************
 #include <dgroup.h>
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
-     &          DMAT(N2BBASXQ,NFMAT),SMOAO(*),WORK(*)
+     &          DMAT(N2BBASXQ,NFMAT),SMOAO(*),WORK(*),IQBF(4)
       CHARACTER CTMP*3
 C
 #include <memint.h>
@@ -207,7 +207,7 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER ( D1 = 1.00D00 )
+      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
 #include <dcbgen.h>
 #include <dcbdhf.h>
 #include <dcbbas.h>
