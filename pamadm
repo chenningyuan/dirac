@@ -579,7 +579,9 @@ dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
 #
 # Run ftnchek on Dirac
 #
-dirac.ftnchek: \$(NOCPPFS)
+dirac.pre: \$(NOCPPFS)
+
+dirac.ftnchek: dirac.pre
 	ftnchek \$(CHEKFLAGS) \$(NOCPPFS) > dirac.ftnchek
 EOF
 #
