@@ -470,7 +470,7 @@ C
       IF (FOCKSP) THEN
 C.......when debugging print out energies in every iteration
         IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
-        CALL FOLDED (ICURFSS,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
+        CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
         if (carith.and.debug) then
         write (iw,111)"s1 after folded",MYPROC,zdotc(ndimt1,s1,1,s1,1)
         write (iw,111)"s2 after folded",MYPROC,zdotc(ndimt2,s2,1,s2,1)

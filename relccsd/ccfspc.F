@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FOLDED (ICURFSS,T1,T2,BUF1,BUF2,BUF3,S1,S2)
+      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)
 C
       IMPLICIT INTEGER (A-Z)
 C
