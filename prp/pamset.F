@@ -870,7 +870,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(3,NORBT),NIND(2,NTYP,2),WORK(*)
+      DIMENSION IORBCL(4,NORBT),NIND(2,NTYP,2),WORK(*)
 C
       CALL QENTER('DEFORB')
       KFRSAV = KFREE
@@ -904,7 +904,7 @@ C
 #include <dcbbas.h>
 #include <dgroup.h>
       CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(3,NORBT),IND(MXFBAS,NTYP),
+      DIMENSION IORBCL(4,NORBT),IND(MXFBAS,NTYP),
      &          NIND(2,NTYP,2),WORK(KFREE)
 C
       NDIM = NORBT*3
@@ -914,7 +914,8 @@ C     Unpack strings
 C     ==============
 C
       DO ITYP = 1,NTYP
-        KOFF = 0
+        KOFE = 0
+        KOFP = 0
         DO IFRP = 1,NFSYM
           NVEC = 1
           CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP),
@@ -931,8 +932,10 @@ C
             IORBCL(1,J) = ITYP
             IORBCL(2,J) = NPSH(IFRP)+IND(I,ITYP)+1
             IORBCL(3,J) = IFRP
+            KOFP = KOFP + 1
+            IORBCL(4,J) = KOFP
+            
           ENDDO
-          KOFF = KOFF + NIND(1,ITYP,IFRP)
 C
 C         Absolute indices of electronic orbitals
 C
@@ -944,8 +947,9 @@ C
             IORBCL(1,J) = ITYP
             IORBCL(2,J) = IND(II,ITYP)
             IORBCL(3,J) = IFRP
+            KOFE = KOFE + 1
+            IORBCL(4,J) = KOFE
           ENDDO
-          KOFF = KOFF + NIND(2,ITYP,IFRP)
         ENDDO
       ENDDO
 C

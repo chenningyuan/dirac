@@ -105,7 +105,7 @@ C
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
       IF(ORBXLR) THEN
-        CALL MEMGET('INTE',KLRO,3*NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
         NI = 0
@@ -228,7 +228,7 @@ C
 #include <blocks.h>
       CHARACTER TTYP(-1:1)*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
-     &          IORBCL(3,*),WORK(*)
+     &          IORBCL(4,*),WORK(*)
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
 C
@@ -1092,7 +1092,7 @@ C
 #include <dgroup.h>
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
-     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(3,*),
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETLRF')
@@ -1219,7 +1219,7 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
-     &          CMO(*),EIG(*),IORBCL(3,*),
+     &          CMO(*),EIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
       DATA BLANK16/'                  '/
@@ -1598,8 +1598,7 @@ C
       JFRP = -1
 C     Set orbital strings and classify orbitals
       CALL OSTRING(WORK,KFREE,LFREE)
-      NTYP = 3
-      CALL MEMGET('INTE',KLRO,NTYP*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
       CALL DEFORB(WORK(KLRO),NCLS,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       KLOOP=KFREE
@@ -1614,12 +1613,14 @@ C
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 20
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),WORK(KLRO),
+              IC = 1
+              CALL ANAXL1(NBDIM,NVEC,IC,WORK(KZXOPE),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    WORK,KFREE,LFREE,IPRXLR)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 20
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),WORK(KLRO),
+              IC = 2
+              CALL ANAXL1(NBDIM,NVEC,IC,WORK(KZXOPP),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
@@ -1641,12 +1642,14 @@ C           Analyze solution vectors
             NBDIM = NDIM/NZ
             IF(PBUF.EQ.'E') THEN
               IF(SKIPEE) GOTO 30
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPE),WORK(KLRO),
+              IC = 1
+              CALL ANAXL1(NBDIM,NVEC,IC,WORK(KZXOPE),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    WORK,KFREE,LFREE,IPRXLR)
             ELSEIF(PBUF.EQ.'P') THEN
               IF(SKIPEP) GOTO 30
-              CALL ANAXL1(NBDIM,NVEC,WORK(KZXOPP),WORK(KLRO),
+              IC = 2
+              CALL ANAXL1(NBDIM,NVEC,IC,WORK(KZXOPP),WORK(KLRO),
      &                    LUINP,LAB1,LAB2,TYP1,TYP2,
      &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
@@ -1702,7 +1705,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck anaxl1 */
-      SUBROUTINE ANAXL1(NBDIM,NVEC,JXOP,IORBCL,
+      SUBROUTINE ANAXL1(NBDIM,NVEC,IC,JXOP,IORBCL,
      &                  LUINP,LAB1,LAB2,TYP1,TYP2,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
@@ -1711,7 +1714,8 @@ C***********************************************************************
 #include <priunit.h>
 C
 #include <dgroup.h>
-      DIMENSION JXOP(*),IORBCL(3,*),WORK(*)
+#include <dcbxlr.h>
+      DIMENSION JXOP(*),IORBCL(4,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
 C
       KFRSAV = KFREE
@@ -1723,9 +1727,30 @@ C
       CALL MEMGET('INTE',KBTYP,NVEC         ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFLAG,NVEC         ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINDX,NBDIM        ,WORK,KFREE,LFREE)
+      NI = 0
+      NV = 0
+      IF(IC.EQ.1) THEN
+        DO IFRP = 1,NFSYM
+          NI = NI + NCLS(2,1,IFRP)
+          NV = NV + NCLS(2,3,IFRP)
+        ENDDO
+      ELSEIF(IC.EQ.2) THEN
+        DO IFRP = 1,NFSYM
+          NI = NI + NCLS(2,1,IFRP)
+          NV = NV + NCLS(1,3,IFRP)
+        ENDDO
+      ELSE
+        CALL QUIT('ANAXL1: Unknown IC !')
+      ENDIF
+      CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
       CALL ANAXL2(WORK(KVEC),WORK(KFREQ),WORK(KNORM),
      &            WORK(KBTYP),WORK(KFLAG),WORK(KBUF1),
      &            WORK(KBUF2),WORK(KINDX),JXOP,IORBCL,
+     &            NI,NV,WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
      &            NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
       CALL MEMREL('ANAXL1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
@@ -1733,7 +1758,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anaxl2 */
       SUBROUTINE ANAXL2(BVEC,FREQ,RNORM,IBTYP,LFLAG,BUF1,BUF2,INDX,
-     &        JXOP,IORBCL,NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
+     &        JXOP,IORBCL,NI,NV,IIBF,IVBF,RIBF,RVBF,
+     &        NBDIM,NVEC,LUINP,LAB1,LAB2,TYP1,TYP2,IPRINT)
 C***********************************************************************
 C
 C     Written by T.Saue July 6 2001
@@ -1741,7 +1767,7 @@ C
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(DTOL=1.0D-12,D0=0.0D0,D1=1.0D0)
+      PARAMETER(DTOL=1.0D-12,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
 #include <dgroup.h>
 #include <pgroup.h>
@@ -1749,10 +1775,22 @@ C
       LOGICAL LFLAG(NVEC)
       DIMENSION BVEC(NBDIM,NZ,NVEC),FREQ(NVEC),RNORM(NVEC),IBTYP(NVEC),
      &          BUF1(NBDIM,NZ),BUF2(NBDIM),INDX(NBDIM),JXOP(2,NBDIM),
-     &          IORBCL(3,*)
+     &          IORBCL(4,*),IIBF(NI),IVBF(NV),RIBF(NI),RVBF(NV)
 C     Local variables
       CHARACTER TYP(3)*1
       DATA TYP/'i','a','v'/
+C
+      CALL IZERO(IIBF,NI)
+      CALL IZERO(IVBF,NV)
+C     Assign orbitals
+      DO J = 1,NBDIM
+        I1 = JXOP(1,J)
+        J1 = IORBCL(4,I1)
+        I2 = JXOP(2,J)
+        J2 = IORBCL(4,I2)
+        IIBF(J1) = I1
+        IVBF(J2) = I2
+      ENDDO
 C
       BACKSPACE LUINP
       DO I = 1,NVEC
@@ -1816,7 +1854,7 @@ C       Frequency dependent case; search for partner
         ENDIF
  10     CONTINUE
 C       Calculate norm
-        DNTOT = D0
+        D2TOT = D0
         DO J = 1,NBDIM
           BUF2(J) = BUF1(J,1)*BUF1(J,1)
         ENDDO
@@ -1826,31 +1864,69 @@ C       Calculate norm
           ENDDO
         ENDDO
         DO J = 1,NBDIM
-          DNTOT = DNTOT + BUF2(J)
-          BUF2(J) = SQRT(BUF2(J))
+          D2TOT = D2TOT + BUF2(J)
         ENDDO
-        THR   = SQRT(DNTOT/NBDIM)
-        DNTOT = SQRT(DNTOT)
+        DNTOT = SQRT(D2TOT)
         WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
-C       Establish order
+C       Distribute squared norm on orbitals
+        THR = 5.0D0
+        CALL DZERO(RIBF,NI)
+        CALL DZERO(RVBF,NV)
+        DO J = 1,NBDIM
+          I1 = JXOP(1,J)
+          J1 = IORBCL(4,I1)
+          I2 = JXOP(2,J)
+          J2 = IORBCL(4,I2)
+          RIBF(J1) = RIBF(J1) + BUF2(J)
+          RVBF(J2) = RVBF(J2) + BUF2(J)
+        ENDDO
+        FAC = DM/D2TOT
+        CALL DSCAL(NI,FAC,RIBF,1)
+        CALL DSCAL(NV,FAC,RVBF,1)
+C       Give major inactive orbitals
+        WRITE(LUPRI,'(3X,A)') 'Dominant inactive orbitals:'
+        CALL INDEXX (NI,RIBF,INDX)
+        DO J = NI,1,-1
+          JJ = INDX(J)
+          IF(RIBF(JJ).LT.THR) GOTO 3
+          I1  = IIBF(JJ)
+          J1 = IORBCL(2,I1)
+          WRITE(LUPRI,'(I6,A1,A3,A1,F6.2,A1)')
+     &        J1,'(',FREP(IORBCL(3,I1)),')',RIBF(JJ),'%'
+        ENDDO
+ 3      CONTINUE
+C       Give major virtual orbitals
+        WRITE(LUPRI,'(3X,A)') 'Dominant virtual orbitals:'
+        CALL INDEXX (NV,RVBF,INDX)
+        DO J = NV,1,-1
+          JJ = INDX(J)
+          IF(RVBF(JJ).LT.THR) GOTO 4
+          I2  = IVBF(JJ)
+          J2 = IORBCL(2,I2)
+          WRITE(LUPRI,'(I6,A1,A3,A1,F6.2,A1)')
+     &        J2,'(',FREP(IORBCL(3,I2)),')',RVBF(JJ),'%'
+        ENDDO
+ 4      CONTINUE
+C       Give major orbital rotations in excitations
+        THR   = SQRT(D2TOT/NBDIM)
         CALL INDEXX (NBDIM,BUF2,INDX)
         WRITE(LUPRI,'(3X,A,E10.2/)') 
      &   'Excitation amplitudes larger than threshold ',THR
         DO J = NBDIM,1,-1
           JJ = INDX(J)
-          IF(BUF2(JJ).GE.THR) THEN
-            I1 = JXOP(1,JJ)
-            I2 = JXOP(2,JJ)
-            WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+          IF(BUF2(JJ).LT.THR) GOTO 5
+          I1 = JXOP(1,JJ)
+          I2 = JXOP(2,JJ)
+          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
      &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
      &      FREP(IORBCL(3,I1)),')',
      &      ' ---> ',
      &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
-     &      FREP(IORBCL(3,I2)),')',BUF2(JJ)
-          ENDIF
+     &      FREP(IORBCL(3,I2)),')',SQRT(BUF2(JJ))
         ENDDO
+ 5      CONTINUE
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(3X,A/)') 'All excitation amplitudes :'
           DO J = 1,NBDIM
