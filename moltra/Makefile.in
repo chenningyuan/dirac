@@ -8,7 +8,7 @@
 include ../Makefile.config
 
 F_OBJS =  trainp.o trapam.o tradr1.o tradr2.o tradr3.o traone.o \
-          traout.o traprp.o tradr4.o
+          traout.o traprp.o tradr4.o tradr5.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 

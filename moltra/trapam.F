@@ -695,6 +695,296 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck LAGTAU */
+      SUBROUTINE LAGTAU(WORK,LWORK)
+C***********************************************************************
+C
+C     Driver routine for tau dependent part of the Lagrangian
+C
+C     Written by Joost van Stralen -  may 2003
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+C
+#include "mxorb.h"
+#include "dcbtra.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+      CHARACTER*24 DAYTID
+      LOGICAL TOBE,TRASAM,ACTIVE
+      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
+     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
+     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+C     
+      CALL QENTER('LAGTAU')
+#include "memint.h"
+      KFRSAV = KFREE
+      DUM = DUMMY
+C     
+      CALL GETTIM(CPU1,WALL1)
+      CALL TRAHI(IPRTRA,3)
+C     
+C     Define number of double quaternionic classes
+C     
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM
+C     
+C     +-----------------------------------------+
+C     | Set up index arrays for active orbitals |
+C     +-----------------------------------------+
+C     
+C     index 1: occupied
+C     =================
+C
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN
+          NR(IFRP)   =  NOCC(IFRP)
+          IR(1,IFRP) =  1
+          IR(2,IFRP) =  NOCC(IFRP)
+        ELSE
+          NR(IFRP)   =  NOCC(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NOCC(IFRP)
+        ENDIF
+C
+        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,1) = - 1
+        CALL NUMLST(TRA4_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
+     &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
+     &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
+        NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
+      ENDDO
+C
+C
+C     index 2: virtual
+C     =================
+C
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN
+          NR(IFRP)   = NSSH(IFRP)
+          IR(1,IFRP) = NOCC(IFRP) + 1
+          IR(2,IFRP) = NESH(IFRP)
+        ELSE
+          NR(IFRP)   =  NSSH(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NESH(IFRP)
+        ENDIF
+C
+        CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,2) = - 1
+        CALL NUMLST(TRA4_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
+     &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &              IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
+     &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
+        NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
+      ENDDO
+C
+C
+C     index 3: virtual
+C     =================
+C
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN
+          NR(IFRP)   = NSSH(IFRP)
+          IR(1,IFRP) = NOCC(IFRP) + 1
+          IR(2,IFRP) = NESH(IFRP)
+        ELSE
+          NR(IFRP)   =  NSSH(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NESH(IFRP)
+        ENDIF
+C
+        CALL MEMGET('INTE',KVEC(IFRP,3),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,3) = - 1
+        CALL NUMLST(TRA4_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
+     &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &              IFRP,NSTR(IFRP,0,3),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),IFRP,
+     &              NSTR(IFRP,2,3),NSTR(IFRP,1,3))
+        NSTR(IFRP,0,3)   = NSTR(IFRP,1,3) + NSTR(IFRP,2,3)
+      ENDDO
+C     
+C       
+C     index 4: virtual (this should be general, change later)  
+C     ================= 
+C         
+      DO IFRP = 1,NFSYM
+        IF(NOPAIR) THEN 
+          NR(IFRP)   = NSSH(IFRP)
+          IR(1,IFRP) = NOCC(IFRP) + 1
+          IR(2,IFRP) = NESH(IFRP)
+        ELSE
+          NR(IFRP)   =  NSSH(IFRP) + NPSH(IFRP)
+          IR(1,IFRP) = -NPSH(IFRP)
+          IR(2,IFRP) =  NESH(IFRP)
+        ENDIF       
+C    
+        CALL MEMGET('INTE',KVEC(IFRP,4),NR(IFRP),WORK,KFREE,LFREE)
+        NSTR(IFRP,0,4) = - 1
+        CALL NUMLST(TRA4_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
+     &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &              IFRP,NSTR(IFRP,0,4),WORK(KFREE),LFREE)
+        CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),IFRP,
+     &              NSTR(IFRP,2,4),NSTR(IFRP,1,4))
+        NSTR(IFRP,0,4)   = NSTR(IFRP,1,4) + NSTR(IFRP,2,4)
+      ENDDO
+C     
+C     
+C     Print section
+C     =============
+C     
+      WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
+     &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
+      ENDDO
+C     
+C     Calculate dimensions of coefficient arrays 
+C     The coefficients are stored as 4 arrays of two matrices each
+C     They may share the same memory if the transformation ranges
+C     are identical
+C
+C     NDMOQR : 1st dimension row/column dimension of coefficient array
+C              2nd dimension fermion irrep
+C              3rd dimension transformation index
+C
+C     ICMOQR : Index to start of representation in the coefficient array
+C
+      DO I = 1, 4
+        NDIM = 0
+         ICMOQR(1,I) = 1
+         DO IFRP = 1, NFSYM
+            NDMOQR(1,IFRP,I) = NFBAS(IFRP,0)
+            NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
+            NQ(IFRP,I) = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
+            NDIM = NQT(I) + NQ(IFRP,I)
+            IF (IFRP.LT.NFSYM)
+     &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
+         ENDDO
+        CALL MEMGET('REAL',KQ(1,I),NDIM,WORK,KFREE,LFREE)
+        KQ(2,I)   = KQ(1,I) + NQ(1,I)
+      ENDDO
+C
+C     Selected eigenvalues
+C     
+      DO I = 1,4
+        NDIM = 0
+        DO IFRP = 1, NFSYM
+          NDIM = NDIM + NSTR(IFRP,0,I)
+        ENDDO  
+        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        KE(2,I) = KE(1,I) + NSTR(1,0,I)
+      ENDDO
+C     
+C     Allocate memory for the integer array with information about the
+C     spinors.
+C        
+      DO I = 1, 4
+       DO IFRP = 1, NFSYM
+        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+       ENDDO
+      ENDDO 
+C    
+C     Get all coefficients
+C     
+      KBUF = KFREE
+      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE) 
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)')
+     &     'LAGTAU ERROR: MO coefficient file not present'
+         CALL QUIT('LAGTAU: No MO coefficient file !')
+      ELSE  
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14,WORK,KFREE,LFREE)
+         CLOSE(LUCOEF,STATUS='KEEP')
+      ENDIF 
+C           
+C     Select the set that we need
+C        
+      DO I = 1, 4
+        DO IFRP = 1, NFSYM
+          IF(NSTR(IFRP,0,I).GT.0) THEN
+             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+     &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
+     &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+     &                   NFBAS(IFRP,0),NORB(IFRP))
+             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+     &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+     &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
+     &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          ENDIF
+        ENDDO
+      ENDDO
+C     
+C     Throw away the complete set, keep only the selected sets
+C     
+      CALL MEMREL('LAGTAU.2',WORK,KBUF,KCMO,KFREE,LFREE)
+C     
+C     If necessary recanonize (virtual) orbitals
+C     Assuming that all sets are equal, we use the first index !!!
+C     ============================================================
+C     
+      IF (RCORBS) THEN 
+C        Overdimension KCMO because it is used as Focksize scratch space
+         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL VIRCAN(WORK,KFREE,LFREE,IPRMP2,KQ(1,2),KE(1,2),
+     &            KIBE(1,2),NDMOQR(1,1,2),ICMOQR(1,2),
+     &            WORK(KCMO))
+         CALL MEMREL('LAGTAU.3',WORK,KBUF,KCMO,KFREE,LFREE)
+      ENDIF
+C
+C     Call driver for 4-index transformation
+C     --------------------------------------
+C
+      IF (.NOT.NO4IND)
+     &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
+     &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
+     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+C
+C      Print timing information
+C
+      CALL GETTIM(CPU2,WALL2)
+      WALL   = WALL2 - WALL1
+C
+      IMINS  = INT(WALL)/60
+      IHOURS = IMINS/60
+      IMINS  = IMINS - 60*IHOURS
+      ISECS  = NINT(WALL) - 3600*IHOURS - 60*IMINS
+      WRITE(LUPRI,'(//A,I5.2,A,I2.2,A,I2.2)')
+     &      ' Total wall time used in LAGTAU :',
+     &      IHOURS,':',IMINS,':',ISECS
+C
+      CPU    = CPU2 - CPU1
+      IMINS  = INT(CPU)/60
+      IHOURS = IMINS/60
+      IMINS  = IMINS - 60*IHOURS
+      ISECS  = NINT(CPU) - 3600*IHOURS - 60*IMINS
+      WRITE(LUPRI,'(A,I5.2,A,I2.2,A,I2.2)')
+     &      ' Total CPU  time used in LAGTAU :',
+     &      IHOURS,':',IMINS,':',ISECS
+C
+      WRITE(LUPRI,'(/A,F20.6)')
+      CALL GTINFO(DAYTID)
+      WRITE(LUPRI,'(/A,A24)') ' Transformation ended at : ',DAYTID
+C
+      CALL QEXIT('LAGTAU')
+      CALL FLSHFO(LUPRI)
+C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MP2PRI */
       SUBROUTINE MP2PRI(I,IOS1,IOS2,NSTR)
 C***********************************************************************
@@ -879,6 +1169,10 @@ C     3) Loop over distributions, transform 2 indices and write to disk
 C        Loop over transformed indices and transform last 2 indices
 C     4) Like 3, but 2-index transformed integrals written to disk in
 C        batches; parallel scheme.
+C     5) -)Perform 3/4 transformation and contract with T amplitudes to
+C          construct Lagrangian. First 1/2 halftransformation Like 4,
+C          but not written to disk.
+C        -)Transform 2nd index of Lagrangian
 C
 C     In all cases we transform in mulliken notation
 C
@@ -915,11 +1209,20 @@ C
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
+      ELSEIF (ISTRAT.EQ.5) THEN
+          IF (.NOT.MSOUT)
+     &    CALL QUIT('PAMTR1: .not.MSOUT not implemented for strategy 5')
+          IF (LMP2)
+     &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 5')
+          CALL TRDR5T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
+     &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
      &        'PAMTR1: Strategy ',ISTRAT,' not implemented'
         CALL QUIT('PAMTR1: Unknown strategy !')
       ENDIF
+C
+      CALL MEMREL('PAMTR1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PAMTR1')
 C
       RETURN
@@ -2594,7 +2897,7 @@ C/* Deck pck3in */
       SUBROUTINE PCK3IN(ITQMT,NTQMT,NSTR,IPRINT)
 C***********************************************************************
 C
-C     Define the packing of the 2-index transformed integrals
+C     Define the packing of the 3-index transformed integrals
 C
 C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
