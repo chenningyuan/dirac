@@ -12,6 +12,6 @@
 #define VER_STR "Dirac"
 #define MAJOR_REV 3
 #define MINOR_REV 2
-#define PATCHLEVEL 0
+#define PATCHLEVEL 1
 
 #endif /*  __PATCHLEVEL_H_ */
