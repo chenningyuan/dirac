@@ -1404,7 +1404,6 @@ C
       DERDZY = D0
       DERDZZ = D0
       DO 200 ICOMP = 1, KHKTAB
-         DENS1   = DSHELL(ICOMP,1)
          DENSI   = DSHELL(ICOMP,2)
          DENSJ   = DSHELL(ICOMP,3)
          DENSK   = DSHELL(ICOMP,4)
