@@ -1269,7 +1269,7 @@ case $machine in
 
       case "$CC" in
       mpicc)
-         if mpicc -show; then
+         if mpicc -show >&/dev/null; then
             # MPICH
             mpishowopt="-show"
          else
@@ -1351,8 +1351,6 @@ s         ;;
 # If we are using mpif77/mpif90/mpicc check which compiler it uses to make
 # sure we use the correct flags
 #
-#CTROND
-      echo 'compiler...' $F77
       case "$F77" in
       mpif*)
          if "$F77" -show >&/dev/null; then
@@ -1381,7 +1379,6 @@ s         ;;
          F77real=$F77
          ;;
       esac
-      echo 'real compiler...' $F77real
       case "$F77real" in
       g77)
          opt="-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore"
@@ -1424,7 +1421,7 @@ s         ;;
 
       case "$CC" in
       mpicc)
-         if mpicc -show; then
+         if mpicc -show >&/dev/null; then
             # MPICH
             mpishowopt="-show"
          else
