@@ -3408,9 +3408,9 @@ C&&&& CVALUE: Set a different value of light
   125     CONTINUE
 C&&& INTFLG: Specify what two-integrals should be included in this run
             IF (IGTINT .EQ. 1) THEN
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
             ELSE
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT
             END IF
             GO TO 100
   126     CONTINUE
@@ -3499,7 +3499,7 @@ C
 C
 C     Set integral flags
 C
-      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
+      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
 C     Write info about the modelling of SS interactions
 C
@@ -3526,7 +3526,7 @@ C     Write information about default integrals flags
 C
       WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
       WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
-      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
+      WRITE(LUPRI,9002) '- LS-integrals: ',ISLINT
       WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
       WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
  9001 FORMAT(1X,A)
