@@ -58,9 +58,11 @@ usage () {
    $echo '--dirac="executable"'
    $echo '\tSpecify which dirac.x should be used'
    $echo '--run="tag"'
-   $echo '\tLabel the output (default: out)'
+   $echo '\tLabel the output (default: runtest)'
    $echo '--mpi="number of slaves"'
    $echo '\tRun test in parallell under MPI'
+   $echo '--nice'
+   $echo '\texecute Dirac with nice/npri'
    $echo
 }
 
@@ -70,6 +72,7 @@ arg_pampath=
 arg_dirac=
 arg_tag=runtest
 arg_mpi=
+arg_nice=
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -133,6 +136,9 @@ while [ $# != 0 ]; do
             exit 1
          fi
          arg_tag="$val"
+         ;;
+      "nice")
+         arg_nice="-nice"
          ;;
       "pampath")
          if [ "${valomitted}" = "yes" ]; then
@@ -276,6 +282,7 @@ for tt in $tests; do
      MPIARG=$arg_mpi; export MPIARG; \
      DIRAC=$arg_dirac; export DIRAC; \
      TAG=$arg_tag; export TAG; \
+     NICE=$arg_nice; export NICE; \
      ./run.sh; \
      cd .. )  
 done
