@@ -843,7 +843,7 @@ C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),CMO(*),DMAT(*),DTMP(*),
      &          SMOAO(*),BMAT(*),TMAT(*),NPOS(*),WORK(LWORK) 
-      DIMENSION DVOVLP(NOPEN)
+      DIMENSION DVOVLP(MXOPEN)
       CALL QENTER('SCFCY1')
 #include <memint.h>
 C
@@ -859,7 +859,7 @@ C
 C
 C     Start cycle
 C
-      CALL FLSHFO(6)
+      CALL FLSHFO(LUPRI)
       DO 10 ITER = 2,MAXITR
          NITER  = NITER + 1
          KITER  = KITER + 1        
