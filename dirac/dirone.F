@@ -3240,7 +3240,7 @@ C
       CALL DSPTSI(NTBAS(0),WORK(KONEIN),WORK(KONEMT))
       CALL BUTOBS(WORK(KONEMT),1,WORK(KFREE),LFREE)
 C
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.11) THEN
          CALL HEADER('BNCORR correction FMAT',-1)
          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
      &        NTBAS(0),NTBAS(0),1,LUPRI)
@@ -3249,7 +3249,7 @@ C
 C     Add correction to Fock-matrix
 C
       CALL DAXPY(N2BBASX,D1,WORK(KONEMT),1,FMAT,1)
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.11) THEN
          CALL HEADER('BNCORR: screening corrected bare nucleus FMAT',-1)
          CALL PRQMAT(FMAT,NTBAS(0),NTBAS(0),
      &               NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
