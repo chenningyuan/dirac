@@ -1781,7 +1781,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DTOL=1.0D-12,D0=0.0D0,D1=1.0D0,DM=1.0D2)
+      PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1884,6 +1884,10 @@ C       Calculate norm
         WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
+        IF(DNTOT.LT.DTOL2) THEN
+          WRITE(LUPRI,'(A)') '--> Norm too small. Skipping.'
+          GOTO 20
+        ENDIF
 C       Distribute squared norm on orbitals
         THR = 1.0D0
         CALL DZERO(RIBF,NI)
@@ -1949,6 +1953,7 @@ C       Give major orbital rotations in excitations
           ENDDO
         ENDIF
       ENDIF
+ 20   CONTINUE
       ENDDO
       RETURN
       END
