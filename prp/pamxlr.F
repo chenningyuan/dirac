@@ -981,7 +981,7 @@ C
 #include <dcborb.h>
 #include <dcbxrs.h>
 C
-      LOGICAL TOBE
+      LOGICAL TOBE,ORBDEF(3)
       DIMENSION WORK(*),IR(2,2),NR(2)
       CALL QENTER('SETXLR')
       KFRSAV = KFREE
@@ -990,64 +990,76 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
+      DO I = 1,3
+         ORBDEF(I) = .FALSE.
+         DO J = 1, NFSYM
+            ORBDEF(I) = ORBDEF(I) .OR. (XLR_INDSTR(I,J) .NE. '')
+         END DO
+      END DO
 C
 C     Inactive orbitals...
 C
-      DO I = 1,NFSYM
-         XLR_INDSTR(1,I) = ' '
-         IF (NISH(I).GT.0) THEN
-            WRITE(XLR_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
-         ENDIF
-      ENDDO
+      IF (.NOT. ORBDEF(1)) THEN
+         DO I = 1,NFSYM
+            XLR_INDSTR(1,I) = ' '
+            IF (NISH(I).GT.0) THEN
+               WRITE(XLR_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+            ENDIF
+         ENDDO
+      END IF
 C
-C     Inactive orbitals...
+C     Active orbitals...
 C
-      DO I = 1,NFSYM
-         XLR_INDSTR(2,I) = ' '
-         IF (NASH(I).GT.0) THEN
-            WRITE(XLR_INDSTR(2,I),'(I4,A2,I4)')
-     &            NISH(I)+1,'..',NISH(I)+NASH(I)
-         ENDIF
-      ENDDO
+      IF (.NOT. ORBDEF(2)) THEN
+         DO I = 1,NFSYM
+            XLR_INDSTR(2,I) = ' '
+            IF (NASH(I).GT.0) THEN
+               WRITE(XLR_INDSTR(2,I),'(I4,A2,I4)')
+     &               NISH(I)+1,'..',NISH(I)+NASH(I)
+            ENDIF
+         ENDDO
+      END IF
 C
 C     Secondary orbitals...
 C
-      IF (SKIPEP.AND.SKIPEE) THEN
-         DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-         ENDDO
-      ELSEIF (SKIPEP) THEN
-         DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            IF (NSSH(I).GT.0) THEN
-               WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
-     &               NOCC(I)+1,'..',NESH(I)
-            ENDIF
-         ENDDO
-      ELSEIF (SKIPEE) THEN
-         DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
-     &          -NPSH(I),'..',-1
-         ENDDO
-      ELSE
-         DO I = 1,NFSYM
-            XLR_INDSTR(3,I) = ' '
-            IF (NSSH(I).GT.0) THEN
-               IF (NPSH(I) .GT. 0) THEN
-                  WRITE(XLR_INDSTR(3,I),'(I4,A5,I4,A2,I4)')
-     &                  -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
-               ELSE
+      IF (.NOT. ORBDEF(3)) THEN
+         IF (SKIPEP.AND.SKIPEE) THEN
+            DO I = 1,NFSYM
+               XLR_INDSTR(3,I) = ' '
+            ENDDO
+         ELSEIF (SKIPEP) THEN
+            DO I = 1,NFSYM
+               XLR_INDSTR(3,I) = ' '
+               IF (NSSH(I).GT.0) THEN
                   WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
      &                  NOCC(I)+1,'..',NESH(I)
+               ENDIF
+            ENDDO
+         ELSEIF (SKIPEE) THEN
+            DO I = 1,NFSYM
+               XLR_INDSTR(3,I) = ' '
+               WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
+     &             -NPSH(I),'..',-1
+            ENDDO
+         ELSE
+            DO I = 1,NFSYM
+               XLR_INDSTR(3,I) = ' '
+               IF (NSSH(I).GT.0) THEN
+                  IF (NPSH(I) .GT. 0) THEN
+                     WRITE(XLR_INDSTR(3,I),'(I4,A5,I4,A2,I4)')
+     &                     -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
+                  ELSE
+                     WRITE(XLR_INDSTR(3,I),'(I4,A2,I4)')
+     &                     NOCC(I)+1,'..',NESH(I)
+                  END IF
+               ELSE
+                  IF (NPSH(I) .GT. 0) THEN
+                     WRITE(XLR_INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
+                  END IF
                END IF
-            ELSE
-               IF (NPSH(I) .GT. 0) THEN
-                  WRITE(XLR_INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
-               END IF
-            END IF
-         ENDDO
-      ENDIF
+            ENDDO
+         ENDIF
+      END IF
 C
 C
 C      Definition of orbital classes
