@@ -5265,9 +5265,9 @@ C***********************************************************************
 #include "symmet.h"
 #include "dcbsusc.h"
 #include "codata.h"
-      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, THRESHM = 1.0D-5,
+      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
      &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
-     &           CGS = SI*XFMOL*1.0D6)
+     &           CGS = SI*XFMOL*1.0D6, THRESHM = 1.0D-5)
 
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
