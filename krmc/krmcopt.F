@@ -3139,6 +3139,8 @@ C
       LINEQ  = .TRUE.
       TKNORM = OPTNRM
       DIAGHE = OPTDIH
+      LSVCFG(1) = .TRUE.
+      LSVCFG(2) = .TRUE.
       STERNH = OPTSTERN
       FKRMC  = .TRUE.
       XRS_NOPFQ = OPT_NOPFQ
