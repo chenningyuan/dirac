@@ -9,7 +9,7 @@ struct common_infpar {
 C     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
 C        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 C        MYTID  = mpi ID of this process (from MPI_Comm_rank)
-      PARAMETER (MAXNOD=100)
+     PARAMETER (MAXNOD=100, MAXCL2=10000, MAXTSK=MXSHEL*(MXSHEL+1)/2)
       REAL*8 TOTWAL
       LOGICAL PARHER, TIMING, SLAVE, DEBUG
       COMMON /INFPAR/ TOTWAL,
