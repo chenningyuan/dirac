@@ -263,50 +263,44 @@ C
         CALL EXPINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     3 CONTINUE
-#if defined (MOD_RSP)
         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-        CALL QUIT('RSP not in this distribution')
-#endif
         GO TO 200
     4 CONTINUE
-#if defined (MOD_RSP)
+#if defined (MOD_XPP)
          CALL XPPINP(WORD,WORK,LWORK)
-#else
-        CALL QUIT('RSP not in this distribution')
 #endif
         GO TO 200
     5 CONTINUE
          CALL GRDINP(WORD,.FALSE.)
         GO TO 200
     6 CONTINUE
-#if defined (MOD_RSP)
         CALL NMRINP(WORD,.FALSE.)
-#else
-        CALL QUIT('RSP not in this distribution')
-#endif
         GO TO 200
     7 CONTINUE
+#if defined (MOD_ESR)
         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
+#endif
         GO TO 200
     8 CONTINUE
-#if defined (MOD_RSP)
+#if defined (MOD_XQR)
         CALL XQRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-        CALL QUIT('RSP not in this distribution')
 #endif
         GO TO 200
 C
     1 CONTINUE
       CALL EXPINP(WORD,.TRUE.,WORK,LWORK)
-#if defined (MOD_RSP)
-      CALL XPPINP(WORD,WORK,LWORK)
       CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
-      CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
       CALL NMRINP(WORD,.TRUE.)
-#endif
-      CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
       CALL GRDINP(WORD,.TRUE.)
+#if defined (MOD_XPP)
+      CALL XPPINP(WORD,WORK,LWORK)
+#endif
+#if defined (MOD_XQR)
+      CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
+#endif
+#if defined (MOD_ESR)
+      CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
+#endif
 C
 C     Define special operators
 C
