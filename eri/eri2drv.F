@@ -498,7 +498,8 @@ C
 C
 C     Cauchy-Schwarz factors
 C
-      IF (.TRUE.) THEN
+CTROND      IF (.TRUE.) THEN
+      IF (.FALSE.) THEN
          DGABAB = .TRUE.
          WRTINT_SAVE = WRTINT
          WRTINT = .FALSE.
