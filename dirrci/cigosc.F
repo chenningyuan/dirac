@@ -1,3 +1,9 @@
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C FILE    : cigosc.F
+C SOURCE  : $Source$
+C
       SUBROUTINE PAMGOS
 C     ===============================================================
 C     SMALL CI PROGRAM TO PERFORM COMPLETE OPEN SHELL CI CALCULATIONS
