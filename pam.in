@@ -254,6 +254,19 @@ echo
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
+# SET SPECIAL CRAY T3E OPTIONS
+#
+#
+if ( "`uname -m | grep 'T3E' `" != "" ) then
+   echo "   Setting special Cray T3E options:" 
+   echo "   assign -Yon u:5" 
+   assign -Yon u:5
+endif
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
 # COPY MOLECULE AND MENU FILE
 #
 #
