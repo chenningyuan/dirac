@@ -188,8 +188,7 @@ if [ "${cvs}" = "yes" ]; then
   }
 fi
 #
-if [ "${queue}" = "none" ]; then
-echo ' Starting test calculations interactively ... '
+cat <<EOF >job
 cd ${testdir};
 ./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
@@ -197,6 +196,21 @@ cd ${testdir};
   cat ${testdir}/logs/$runlog ; \
   exit 1 ;\
 }
+if [ -e logs/$txtlog ]; then
+   if [ -s logs/$txtlog ]; then
+      echo ' Calculations completed : an error has been detected'
+    else
+      echo ' Calculations completed : no errors were detected'
+    fi
+else
+    echo ' Calculations were not completed : the run_log follows'
+    cat $runlog
+fi
+EOF
+if [ "${queue}" = "none" ]; then
+echo ' Starting test calculations interactively ... '
+chmod u+x job
+job
 else
 #
 # The tests are default run interactively on the same machine as the cvs and make command is run.
@@ -206,12 +220,8 @@ else
 #
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
-errfile=fs0.das2.cs.vu.nl:${testdir}/logs/$runlog
-cat <<EOF >job
-cd ${testdir};
-./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run ;
-EOF
+errfile=fs0.das2.cs.vu.nl:${testdir}/logs/lastrun
 qsub -j oe -o $errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
-rm job
 fi
+rm job
 #
