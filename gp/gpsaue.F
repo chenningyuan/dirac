@@ -1372,8 +1372,8 @@ C
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck unfold */
-      SUBROUTINE UNFOLD(NDIM,AR,AI)
+C  /* Deck unfld */
+      SUBROUTINE UNFLD(NDIM,AR,AI)
 C****************************************************************************
 C	A Kramer symmetric matrix has the following structure:
 C	
@@ -1394,9 +1394,9 @@ C*****************************************************************************
 #include <priunit.h>
       DIMENSION AR(NDIM,NDIM/2),AI(NDIM,NDIM/2)
       IF(MOD(NDIM,2).EQ.1) THEN
-        WRITE(LUPRI,'(A,I10,A)') 'Error in UNFOLD: NDIM = ',NDIM,
+        WRITE(LUPRI,'(A,I10,A)') 'Error in UNFLD: NDIM = ',NDIM,
      +  ' is not an even number.'
-        CALL QUIT('Uneven dimension in UNFOLD')
+        CALL QUIT('Uneven dimension in UNFLD')
       ENDIF
       NHALF = NDIM/2
       IOFF = NHALF + 1
@@ -2336,7 +2336,7 @@ C  /* Deck readac */
       READ (IT, REC=IREC, IOSTAT=IOS, ERR=10) X
       RETURN
  10   CONTINUE
-      CALL QUIT('READT: Error reading file')
+      CALL QUIT('READAC: Error reading file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prmutc */
