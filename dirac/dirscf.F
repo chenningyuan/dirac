@@ -71,7 +71,7 @@ C
       CALL QENTER('PSIDHF')
 #include <memint.h>
 C
-      CALL TITLER('Dirac-Fock calculation','*',125)
+      CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
 C
 C     Get hold of the slaves if we run in parallel.
 C

@@ -145,7 +145,7 @@ C
       ENDIF
       DO 100 IFRP = 1,NFSYM
         IF(NORB(IFRP).EQ.0) GOTO 100
-        CALL HEADER('Fermion corep '//FREP(IFRP),-1)
+        CALL HEADER('Fermion irrep '//FREP(IFRP),-1)
 C
 C      Electron states - eigenvalues
 C      =============================

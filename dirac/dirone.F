@@ -468,7 +468,7 @@ C
         CALL HEADER('One-electron Fock matrix',-1)
         DO 10 I = 1,NFSYM
           IF(NFBAS(I,0).EQ.0) GOTO 10
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion irrep ',I
           CALL PRQMAT(FOCK(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
@@ -1249,7 +1249,7 @@ C
         CALL HEADER('One-electron free particle matrix',-1)
         DO 10 I = 1,NFSYM
           IF(NFBAS(I,0).EQ.0) GOTO 10
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion irrep ',I
           CALL PRQMAT(FOCK(I2BASX(I,I)+1,1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    10   CONTINUE
@@ -1585,7 +1585,7 @@ C
           IOFF = IEIG + NFORB(I,1)
           NDIM = MIN(NFORB(I,1),NFORB(I,2))
           NDEL = NFORB(I,2) - NDIM
-          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion corep ',I,
+          WRITE(LUPRI,'(3X,A,I2,A,I5)') '*** Fermion irrep ',I,
      &         ', Number of spinors deleted: ',NDEL
           IF(IPRGEN.GE.0) THEN
              IF(((DABS(EIG(IOFF+1)-FAC)).GT.1D-07).
