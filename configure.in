@@ -1040,7 +1040,7 @@ case $machine in
          fi
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
       fi
-      opt='-O2 -Nc50'
+      opt='-fast -xO4 -w -xtarget=native'
       inc="-I$INCLUDE_DIR" ;;
 #
 #   RS6000
