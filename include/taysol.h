@@ -1,3 +1,3 @@
       COMMON /TAYSOL/ ESOLTT, GSOLTT(MXCOOR), GSOLNN(MXCOOR),
-     &                HSOLT2(MXCOOR,MXCOOR), ESOLNN,
-     &                HSOLNN(MXCOOR,MXCOOR), HSOLTT(MXCOOR,MXCOOR)
+     &                ESOLNN
+
