@@ -258,8 +258,7 @@ case $machine in
       complist='xlf f77 f90';;
 
    mips*-sgi) 
-# libcomplib.sgimath.so removed since it is slow /tec
-      liblist='libblas'
+      liblist='libblas libcomplib.sgimath'
       complist='f77 f90';;
 
    i[3-6]86-*)
@@ -331,6 +330,16 @@ if [ -z "${par}" ]; then
       case "$par" in
       "yes" | "y" )
          par="yes"
+         $echo 'Will your nodes use local disks? y/[n] \c'
+         read localdisks
+         case "$localdisks" in
+         "yes" | "y" | "Y" )
+            localdisks="yes"
+            ;;
+         *)
+            localdisks="no"
+            ;;
+         esac
          ;;
       "no" | "n" | "" )
          par="no"
@@ -344,11 +353,12 @@ fi
 echo 'Parallel version: '${par}''
 
 if [ "$par" = "yes" ]; then
+   echo ' - with local disks for each node: '${localdisks}''
 #
 #  Parallel architectures are difficult, better warn the user
 #
    echo 
-   echo  "Makefiles for parallel architecture are defficult to guess"
+   echo  "Makefiles for parallel architecture are difficult to guess"
    $echo "Please always compare the generated Makefile.config with" \
          "local documentation.\n"
 
@@ -876,9 +886,17 @@ fi
 #
 
 if [ "$mesp" = "mpi" ]; then
-    parop='VAR_MPI'
+    parop='-DVAR_MPI'
+    if [ "$localdisks" = "yes" ]; then
+       parop='-DVAR_MPI -DSYS_LOCALDISKS'
+       paropibm=',-DVAR_MPI,-DSYS_LOCALDISKS'
+    else
+       parop='-DVAR_MPI'
+       paropibm=',-DVAR_MPI'
+    fi
 else
     parop=
+    paropibm=
 fi
 
 opsys=
@@ -906,8 +924,8 @@ case $machine in
           done
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          ccp="-DSYS_HPUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -935,8 +953,8 @@ case $machine in
           done
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          ccp="-DSYS_PARAGON -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -957,8 +975,8 @@ case $machine in
           done
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          ccp="-DSYS_DEC -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           for mod in $MODS; do
              cpp=`echo $cpp $mod`
           done
@@ -981,8 +999,8 @@ case $machine in
           ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST -D$parop"
-          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_T3D -DVAR_NONAMELIST $parop"
+          ccp="-DSYS_T3D -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
@@ -1003,8 +1021,8 @@ case $machine in
           ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}'"
           def='dirac.x'
        else
-          cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+          cpp="-DPRG_DIRAC -DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+          ccp="-DSYS_CRAY -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
           def='dirmpi.x'
        fi
@@ -1028,8 +1046,8 @@ case $machine in
          done
          def='dirac.x'
       else
-         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         cpp="-P -DPRG_DIRAC -DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_CONVEX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
@@ -1050,8 +1068,8 @@ case $machine in
          done
          def='dirac.x'
       else
-         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         cpp="-DPRG_DIRAC -DSYS_SUN -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_SUN -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
@@ -1075,8 +1093,8 @@ case $machine in
                done
                def='dirac.x'
             else
-               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-               ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+               cpp="-w -P -DPRG_DIRAC -DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+               ccp="-DSYS_AIX -DSYS_AIX23 -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                for mod in $MODS; do
                   cpp=`echo $cpp $mod`
                done
@@ -1093,8 +1111,8 @@ case $machine in
                done
                def='dirac.x'
             else
-               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}',-D$parop"
-               ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+               cpp="-WF,-DPRG_DIRAC,-DSYS_AIX,-DVAR_MFDS,-D'INSTALL_WRKMEM=\${WRKMEM}'${paropibm}"
+               ccp="-DSYS_AIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
                for mod in $MODS; do
                   cpp=`echo $cpp,$mod`
                done
@@ -1122,8 +1140,8 @@ case $machine in
          done
          def='dirac.x'
       else
-         cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         cpp="-DPRG_DIRAC -DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_IRIX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
          for mod in $MODS; do
             cpp=`echo $cpp $mod`
          done
@@ -1143,8 +1161,8 @@ case $machine in
          ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
          def='dirac.x'
       else
-         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
-         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' -D$parop"
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
 	  def='dirmpi.x'
           mpi_inc="-I$INCLUDE_DIR -I\$(MPI_INCLUDE_DIR)"
       fi
