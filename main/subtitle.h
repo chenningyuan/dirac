@@ -45,7 +45,8 @@ char *strsubtitle = "\
 *    J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher:                      *\n\
 *    \"Dirac, a relativistic ab initio electronic structure program,          *\n\
 *    Release 3.2 (2000)\"                                                     *\n\
-*    (for a suitable BibTEX entry, see <URL:\"insert URL here\">)               *\n\
+*    (for a suitable BibTEX entry, see                                       *\n\
+*    <URL:\"http://dirac.chem.sdu.dk/doc/reference.shtml\">)                   *\n\
 *                                                                            *\n\
 ******************************************************************************\n";
 
