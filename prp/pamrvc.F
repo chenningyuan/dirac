@@ -19,10 +19,10 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
 C
 C VERSION : $Revision$
@@ -206,11 +206,12 @@ C
 C
       CALL QENTER('XRSSCIM')
       KFRSAV = KFREE
+      MZ = MIN(NZ,2)
 C
 C     Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
 C     ---------------------------------------------------------------
 C
-      CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MIN(NZ,2),
+      CALL MEMGET('REAL',KMOLFFC,(2*NASHT)*(2*NASHT)*MZ,
      &             WORK,KFREE,LFREE)
       CALL QFC2MFC(FCAC,WORK(KMOLFFC),1,1,IPRXRS)
 C
@@ -243,25 +244,14 @@ C
 C        Print ?
 C
          IF ( IPRXRS .GE. 30 ) THEN
-            IF (NZ .EQ. 1) THEN
-               WRITE(LUPRI,'(A,I1,A)')
-     &           '( XRSSCIM) real part of real   B(',I,')>'
-               CALL OUTPUT(BCVEC(1,I),1,NZCONF,1,1,
-     &                     NZCONF,1,1,LUPRI)
-               WRITE(LUPRI,'(A,I1,A)')
-     &           '( XRSSCIM) real part of real H|B(',I,')>'
-               CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,1,
-     &                     NZCONF,1,1,LUPRI)
-            ELSE
-               WRITE(LUPRI,'(A,I1,A)')
-     &           ' (XRSSCIM) real and imag part of   B(',I,')>'
-               CALL OUTPUT(BCVEC(1,I),1,NZCONF,1,2,
-     &                     NZCONF,2,1,LUPRI)
-               WRITE(LUPRI,'(A,I1,A)')
-     &           ' (XRSSCIM) real and imag part of H|B(',I,')>'
-               CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,2,
-     &                     NZCONF,2,1,LUPRI)
-            END IF
+            WRITE(LUPRI,'(A,I2,A)') '( XRSSCIM)   B(',I,')>'
+            IF (MZ.EQ.2) WRITE(LUPRI,'(T12,A)') '(real and imag parts)'
+            CALL OUTPUT(BCVEC(1,I),1,NZCONF,1,MZ,
+     &                  NZCONF,MZ,1,LUPRI)
+            WRITE(LUPRI,'(A,I2,A)') '( XRSSCIM) H|B(',I,')>'
+            IF (MZ.EQ.2) WRITE(LUPRI,'(T12,A)') '(real and imag parts)'
+            CALL OUTPUT(SCVEC(1,I+NOSIM),1,NZCONF,1,MZ,
+     &                  NZCONF,MZ,1,LUPRI)
          END IF
 C
 C        Finish sigma vector: - E[0] b_{\mu}
@@ -3275,7 +3265,6 @@ C
      &           WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
-            print*,'LUCI_DENS from pamrvc.'
             CALL LUCI_DENS(.TRUE.,.TRUE.,WORK(KDVMOLF),WORK(KPVMOLF),
      &                     CLREF,CRREF,WORK,KFREE,LFREE)
          END IF
