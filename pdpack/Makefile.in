@@ -38,9 +38,6 @@ dirac.x:
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
 
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
-
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(SRC:.o=.F) 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

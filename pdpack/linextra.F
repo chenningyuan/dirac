@@ -462,6 +462,7 @@ C
 #endif
 C  /* Deck idamin */
 #if !defined (VAR_DXML)
+#if !defined (VAR_MKL)
       INTEGER FUNCTION IDAMIN(N,DX,INCX)
 C
 C     FINDS THE INDEX OF ELEMENT HAVING MIN. ABSOLUTE VALUE.
@@ -506,6 +507,7 @@ C
    30 CONTINUE
       RETURN
       END
+#endif
 #endif
 C  /* Deck idmax */
 #if !defined (VAR_DXML)
