@@ -1,10 +1,10 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck blkcls $Revision$ 
+*fordeck blkcls $Revision$
 C     BLKCLS(WORK(KLCIBT),NBLOCKS,WORK(KLBLKCLS),WORK(KLSPSPCL),
 C    &            NOCTPA,NOCTPB)
       SUBROUTINE BLKCLS(IBLKS,NBLKS,IBLKCLS,ISPSPCL,
@@ -122,7 +122,7 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dxtyp2_gas $Revision$ 
+*fordeck dxtyp2_gas $Revision$
       SUBROUTINE DXTYP2_GAS(NDXTP,ITP,JTP,KTP,LTP,
      &                     NOBTP,IL,IR,IPHGAS)
 *
@@ -201,12 +201,12 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
         NDXTP = 0
       ELSE
       IF(NCREA.EQ.0.AND.NANNI.EQ.0) THEN
-*. strings identical, include diagonal excitions  itp = jtp, ktp=ltp 
+*. strings identical, include diagonal excitions  itp = jtp, ktp=ltp
         DO IJTP = 1, NOBTP
           IF(IR(IJTP).GE.1.OR.IPHGAS(IJTP).EQ.2) THEN
-            DO KLTP = 1, IJTP 
+            DO KLTP = 1, IJTP
              IF((IJTP.NE.KLTP.AND.(IR(KLTP).GE.1.OR.IPHGAS(KLTP).EQ.2))
-     &      .OR.(IJTP.EQ.KLTP.AND.(IR(KLTP).GE.2.OR.IPHGAS(KLTP).EQ.2)) 
+     &      .OR.(IJTP.EQ.KLTP.AND.(IR(KLTP).GE.2.OR.IPHGAS(KLTP).EQ.2))
      &      ) THEN
                  NDXTP = NDXTP + 1
                  ITP(NDXTP) = IJTP
@@ -260,7 +260,7 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dxtyp_gas $Revision$ 
+*fordeck dxtyp_gas $Revision$
       SUBROUTINE DXTYP_GAS(NDXTP,ITP,JTP,KTP,LTP,
      &                     NOBTP,IL,IR)
 *
@@ -335,10 +335,10 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
         NDXTP = 0
       ELSE
       IF(NCREA.EQ.0.AND.NANNI.EQ.0) THEN
-*. strings identical, include diagonal excitions  itp = jtp, ktp=ltp 
+*. strings identical, include diagonal excitions  itp = jtp, ktp=ltp
         DO IJTP = 1, NOBTP
           IF(IR(IJTP).GE.1) THEN
-            DO KLTP = 1, IJTP 
+            DO KLTP = 1, IJTP
               IF((IJTP.NE.KLTP.AND.IR(KLTP).GE.1).OR.
      &           (IJTP.EQ.KLTP.AND.IR(KLTP).GE.2)) THEN
                  NDXTP = NDXTP + 1
@@ -392,7 +392,7 @@ C?    CALL IWRTMA(ISPSPCL,NOCTPA,NOCTPB,NOCTPA,NOCTPB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck en_from_dens $Revision$ 
+*fordeck en_from_dens $Revision$
       SUBROUTINE EN_FROM_DENS(E,I12)
 *
 * Obtain energy from densities and integrals
@@ -432,7 +432,7 @@ CTF
         MXTSOB_L = MAX(MXTSOB_L,NOBPTS(IGAS,ISM))
       END DO
       END DO
-*. Allocate scratch space for 2-electron integrals and 
+*. Allocate scratch space for 2-electron integrals and
 *. two-electron densities
       MX4IBLK = MXTSOB_L ** 4
       CALL MEMMAN(KLINT,MX4IBLK,'ADDL  ',2,'KLINT')
@@ -449,11 +449,11 @@ CTF
            IJ = IOBPTS(JGAS,JSM)
            IF(ISM.EQ.JSM) THEN
 *
-* One-electron part 
+* One-electron part
 * =================
 *
 *. blocks of one-electron integrals and one-electron density
-         
+
              CALL GETD1(WORK(KLDEN),ISM,IGAS,ISM,JGAS)
              CALL GETH1(WORK(KLINT),ISM,IGAS,ISM,JGAS)
 C?           WRITE(6,*) ' Block of 1e integrals ISM,IGAS,JGAS',
@@ -465,7 +465,7 @@ C?           CALL WRTMAT(WORK(KLDEN),NI,NJ,NI,NJ)
              E1 = E1 + INPROD(WORK(KLDEN),WORK(KLINT),NI*NJ)
            END IF
 *
-* Two-electron part 
+* Two-electron part
 * =================
 *
            IF(I12.EQ.2) THEN
@@ -480,7 +480,7 @@ C?           WRITE(6,*) ' IJSM IJKSM LSM ',IJSM,IJKSM,IJKLSM
              DO LGAS = 1, NGAS
                 NK = NOBPTS(KGAS,KSM)
                 NL = NOBPTS(LGAS,LSM)
-*. Blocks of density matrix and integrals 
+*. Blocks of density matrix and integrals
                 IXCHNG = 0
                 ICOUL  = 1
                 CALL LGETINT(WORK(KLINT),
@@ -512,7 +512,7 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
-        WRITE(6,*) ' Output from EN_FROM_DEN' 
+        WRITE(6,*) ' Output from EN_FROM_DEN'
         WRITE(6,*)
         WRITE(6,*) ' One-electron energy ', E1
         IF(I12.EQ.2) THEN
@@ -531,7 +531,7 @@ C?              write(6,*) ' Updated 2e-energy ', E2
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck exccls2 $Revision$ 
+*fordeck exccls2 $Revision$
       SUBROUTINE EXCCLS2(NCLS,IACTIN,IACTOUT,IEXC,
      &                   IBASSPC_MX,IBASSPC)
 * A set of classes ICLS are given with the active
@@ -539,7 +539,7 @@ C?              write(6,*) ' Updated 2e-energy ', E2
 *
 * Obtain classes that can be obtained by atmost IEXC excitations
 *
-* If IBASSPC_MX .ne. 0, atmost basespaces belonging to this 
+* If IBASSPC_MX .ne. 0, atmost basespaces belonging to this
 *                       space is included
 *
 * Master routine
@@ -562,24 +562,24 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       CALL EXCCLS2_S(NGAS,WORK(KLOCCLS),NCLS,IACTIN,IACTOUT,IEXC,
      &               IBASSPC_MX,IBASSPC)
 *
-      RETURN 
+      RETURN
       END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck exccls2_s $Revision$ 
+*fordeck exccls2_s $Revision$
 *
       SUBROUTINE EXCCLS2_S(NGAS,ICLS,NCLS,IACTIN,IACTOUT,IEXC,
-     &               IBASSPC_MX,IBASSPC)      
+     &               IBASSPC_MX,IBASSPC)
 *
 * A set of classes ICLS are given with the active
 * classes indicated by nonvanishing elements in IACTIN.
 *
 * Obtain classes that can be obtained by atmost IEXC excitations
 *
-* If IBASSPC_MX .ne. 0, atmost basespaces belonging to this 
+* If IBASSPC_MX .ne. 0, atmost basespaces belonging to this
 *                       space is included
 * Slave routine
 *
@@ -595,7 +595,7 @@ C?              write(6,*) ' Updated 2e-energy ', E2
 *
 C     write(6,*) ' ICLS in EXCCLS '
 C     call iwrtma(icls,ngas,ncls,ngas,ncls)
- 
+
       IZERO = 0
       CALL ISETVC(IACTOUT,IZERO,NCLS)
       DO ICLSIN = 1, NCLS
@@ -605,15 +605,15 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
           NANNI = 0
           NCREA = 0
           DO IGAS = 1, NGAS
-*           
+*
             IDIF = ICLS(IGAS,ICLSOUT)-ICLS(IGAS,ICLSIN)
-            IF(IDIF .GT. 0 ) THEN                               
-              NCREA = NCREA + IDIF  
+            IF(IDIF .GT. 0 ) THEN
+              NCREA = NCREA + IDIF
             ELSE IF (IDIF .LT. 0 ) THEN
               NANNI = NANNI - IDIF
             END IF
           END DO
-* 
+*
           IF(NCREA.LE.IEXC) THEN
             IF(IBASSPC_MX.EQ.0.OR.IBASSPC(ICLSOUT).LE.IBASSPC_MX) THEN
               IACTOUT(ICLSOUT) = 1
@@ -633,7 +633,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       IF(NTEST.GE.1) THEN
          WRITE(6,*) ' Output from EXCCLS '
          WRITE(6,*) ' ==================='
-         WRITE(6,*) 
+         WRITE(6,*)
          WRITE(6,*) ' Number of active output classes ',NACTOUT
          WRITE(6,*)
       END IF
@@ -649,11 +649,11 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck finmo $Revision$ 
+*fordeck finmo $Revision$
       SUBROUTINE FINMO
 *
 * Obtain final set of orbitals
-*. Density matrix is assumed in place 
+*. Density matrix is assumed in place
 *
 * Type of final orbitals is provided by the keyword IFINMO
 *
@@ -663,7 +663,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 * IFINMO = 4 => Pseudo-canonical orbitals
 * IFINMO = 5 => Psedo-natural-cannonical orbitals
 *
-* Jeppe Olsen, Last modification Jan. 1999  
+* Jeppe Olsen, Last modification Jan. 1999
 *
 * Final MO-AO expansion stored in KMOAOUT
 *       MO-MO expansion stored in KMOMO
@@ -736,7 +736,7 @@ C?    DIMENSION SCRTEST(10000)
 C              TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
           CALL TRIPAK(WORK(KMAT2-1+IOFFIN),WORK(KMAT1-1+IOFFUT),
      &                1,LORB,LORB,SIGN)
-*. multiply by minus one to get natural orbitals 
+*. multiply by minus one to get natural orbitals
 *. with largest occupations first
           ONEM = -1.0D0
           LDIM = LORB*(LORB+1)/2
@@ -749,7 +749,7 @@ C         CALL APRBLM2(CMOAO,NBAS,NBAS,NSYM,0)
         END IF
       END IF
       IF(IFINMO.EQ.3.OR.IFINMO.EQ.4.OR.IFINMO.EQ.5) THEN
-*. Diagonalize symmetry-type blocks          
+*. Diagonalize symmetry-type blocks
 C            DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,SCR1,SCR2)
 C            DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,SCR1,SCR2)
         CALL DIAG_BLKS(WORK(KMAT1),WORK(KMAT2),NGSOB,NACOBS,MXPOBS,
@@ -777,8 +777,8 @@ C?      write(6,*) ' test of diagonal properties '
 C       TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
 C?      CALL TRAN_SYM_BLOC_MAT(scrtest,WORK(KMAT5),NSMOB,NACOBS,
 C?   &                         scrtest(1+nint1),scrtest(1+2*nint1))
-   
-   
+
+
 *
 *. Second transformation matrix is now in WORK(KMAT5)
 *. Obtain total transformation matrix
@@ -788,7 +788,7 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
         CALL COPVEC(WORK(KMAT4),WORK(KMAT2),NTOOB**2)
       END IF
       CALL COPVEC(WORK(KMAT2),WORK(KMOMO),LMOMO)
-*     ^ MOMO transformation saved in WORK(KMOMO) 
+*     ^ MOMO transformation saved in WORK(KMOMO)
 *
       IF(NOMOFL.EQ.0) THEN
 *
@@ -803,13 +803,13 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
         CALL MEMMAN(KMOAO2,LMOAO   ,'ADDL  ',2,'MOAO2 ')
 *. Obtain input MO-AO transformation matrix
         CALL GETMOAO(WORK(KMOAO1))
-*. Transform the MO-AO coefficient matrix to describe 
+*. Transform the MO-AO coefficient matrix to describe
 *. MO expansion of new mo's
         DO ISYM = 1, NSMOB
          IF(ISYM.EQ.1) THEN
            IOFFMOS = 1
            IOFFMO = IOFFMOS + NFRO(1)*NBAS(1)
-           IOFFEIG = 1 
+           IOFFEIG = 1
          ELSE
            IOFFMOS = IOFFMOS + NBAS(ISYM-1)**2
            IOFFMO = IOFFMOS  + NFRO(ISYM)*NBAS(ISYM)
@@ -833,7 +833,7 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
 *. Save on file LUMOUT
         CALL PUTMOAO(WORK(KMOAO2))
       END IF
-*     ^ End if MOAO file is present 
+*     ^ End if MOAO file is present
 *
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'FINMO')
       RETURN
@@ -843,11 +843,11 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasspc $Revision$ 
+*fordeck gasspc $Revision$
       SUBROUTINE GASSPC
 *
 *
-* Divide orbital spaces ( I_IAD ) into 
+* Divide orbital spaces ( I_IAD ) into
 *
 *  Inactive spaces : Orbitals that are doubly occupied in all CI spaces
 *  Active orbitals : Orbitals that have variable occ in atleast some spaces.
@@ -873,17 +873,17 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
        IF(IGAS.EQ.1) THEN
          NEL_MAX = 2*NGSOBT(IGAS)
        ELSE
-         NEL_MAX = NEL_MAX + 2*NGSOBT(IGAS) 
+         NEL_MAX = NEL_MAX + 2*NGSOBT(IGAS)
        END IF
 *
        IF(IGSOCC(IGAS,1) .EQ. NEL_MAX  .AND.
-     &    IGSOCC(IGAS,2) .EQ. NEL_MAX       ) THEN 
+     &    IGSOCC(IGAS,2) .EQ. NEL_MAX       ) THEN
 *. Inactive  space
           I_IAD(IGAS) = 1
        ELSE IF(IGAS.GT.1.AND.IGSOCC(IGAS-1,1) .EQ. NEL_REF ) THEN
 *. Delete space
           I_IAD(IGAS) = 3
-       ELSE 
+       ELSE
 *. Active space
           I_IAD(IGAS) = 2
        END IF
@@ -891,9 +891,9 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
       END DO
 *
       NTEST = 00
-      IF(NTEST.GE.100) THEN 
+      IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Division of orbitals '
-        WRITE(6,*) ' ======================= ' 
+        WRITE(6,*) ' ======================= '
         WRITE(6,*)
         WRITE(6,*) ' Inactive = 1, Active = 2, Delete = 3 '
         WRITE(6,*)
@@ -952,7 +952,7 @@ C       MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,LAROW,LACOL,LBROW,LBCOL,ITRNSP)
       end if
 *
       return
-      end 
+      end
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1093,7 +1093,7 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_spgp_inf $Revision$ 
+*fordeck get_spgp_inf $Revision$
       SUBROUTINE GET_SPGP_INF(ISPGP,ITP,IGRP)
 *
 * Obtain groups defining supergroup ISPGP,ITP
@@ -1106,7 +1106,7 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 *include <mxpdim.fh>
 #include "cgas.inc"
 #include "gasstr.inc"
-*. Output 
+*. Output
       DIMENSION IGRP(*)
 *
       NTEST = 000
@@ -1116,7 +1116,7 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' GET_SPGP_INF : ISPGP ITP ISPGPABS',
-     &              ISPGP, ITP, ISPGPABS 
+     &              ISPGP, ITP, ISPGPABS
         WRITE(6,*) ' Groups of supergroups'
         CALL IWRTMA(IGRP,1,NGAS,1,NGAS)
       END IF
@@ -1128,19 +1128,19 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gtspgp $Revision$ 
+*fordeck gtspgp $Revision$
 C      CALL GTSTTP(KCLS,KEL1,KEL3,KTYPE)
       SUBROUTINE GTSPGP(IEL,ISPGP,IWAY)
 *
 *
-* Relation between number of electrons in AS1, AS2 ... and 
-* supergoup number   
+* Relation between number of electrons in AS1, AS2 ... and
+* supergoup number
 *
-* IWAY = 1 : 
-* Get ISPGP : Supergroup of strings 
+* IWAY = 1 :
+* Get ISPGP : Supergroup of strings
 *             with IEL(*)  electrons in each AS
 * IWAY = 2 :
-* GET IEL(*)  : Number of electrons in each AS for supergroup ISPGP 
+* GET IEL(*)  : Number of electrons in each AS for supergroup ISPGP
 *
 *
 * Jeppe Olsen, Another lonely night in Lund
@@ -1170,13 +1170,13 @@ C    &            IGSOCCX(MXPNGAS,2,MXPICI),NCISPC
       INTEGER IEL(*)
 *
       IF(IWAY.EQ.1) THEN
-*. Occupation => Number 
+*. Occupation => Number
         ISPGP = -1
         DO JSPGP = 1, NTSPGP
           IF(ISPGP.EQ.-1) THEN
             IEQUAL = 1
-            DO IGAS = 1, NGAS  
-              IF(NELFSPGP(IGAS,JSPGP).NE.IEL(IGAS))  IEQUAL= 0 
+            DO IGAS = 1, NGAS
+              IF(NELFSPGP(IGAS,JSPGP).NE.IEL(IGAS))  IEQUAL= 0
             END DO
             IF(IEQUAL.EQ.1) ISPGP = JSPGP
           END IF
@@ -1191,7 +1191,7 @@ C    &            IGSOCCX(MXPNGAS,2,MXPICI),NCISPC
       NTEST  = 000
       IF(NTEST .GE. 100 ) THEN
         WRITE(6,*) ' Output from GTSPGP '
-        WRITE(6,*) 
+        WRITE(6,*)
      &   ' IWAY ISPGP IEL ', IWAY,ISPGP,(IEL(IGAS),IGAS = 1, NGAS)
       END IF
 *
@@ -1202,10 +1202,10 @@ C    &            IGSOCCX(MXPNGAS,2,MXPICI),NCISPC
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck iaibcm $Revision$ 
+*fordeck iaibcm $Revision$
       SUBROUTINE IAIBCM(ICISPC,IAIB)
 *
-* obtain allowed combinbation of alpha- and beta- supergroups 
+* obtain allowed combinbation of alpha- and beta- supergroups
 * for CI space ICISPC
 *
 * Master for IAIBCM_GAS
@@ -1246,13 +1246,13 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
      &            NELFGP,MXPNGAS,NGAS,IAIB,IPRDIA)
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck iaibcm_gas $Revision$ 
+*fordeck iaibcm_gas $Revision$
       SUBROUTINE IAIBCM_GAS(LCMBSPC,ICMBSPC,
      &                      MNMXOC,NOCTPA,NOCTPB,IOCA,IOCB,NELFTP,
      &                      MXPNGAS,NGAS,IOCOC,IPRNT)
@@ -1265,18 +1265,18 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 * =====
 *
 * LCMBSPC : Number of GAS spaces included in this expnasion
-* ICMBSPC : Gas spaces included in this expansion 
+* ICMBSPC : Gas spaces included in this expansion
 *
 * MXMNOC(IGAS,1,IGASSPC) : Min accumulated occ for AS 1-IGAS for space IGASSPC
 * MXMNOC(IGAS,2,IGASSPC) : Max accumulated occ for AS 1-IGAS for space IGASSPC
 *
-* NOCTPA : Number of alpha types 
+* NOCTPA : Number of alpha types
 * NOCTPB : Number of beta types
 *
 * IOCA(IGAS,ISTR) occupation of AS IGAS for alpha string type ISTR
 * IOCB(IGAS,ISTR) occupation of AS IGAS for beta  string type ISTR
 *
-* MXPNGAS : Largest allowed number of gas spaces 
+* MXPNGAS : Largest allowed number of gas spaces
 * NGAS    : Actual number of gas spaces
 
 *
@@ -1290,7 +1290,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *.Input
       INTEGER ICMBSPC(LCMBSPC)
       INTEGER MNMXOC(MXPNGAS,2,*)
-C     INTEGER MNOCC(NGAS),MXOCC(NGAS)            
+C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
       INTEGER IOCA(MXPNGAS,NOCTPA),IOCB(MXPNGAS,NOCTPB)
       INTEGER NELFTP(*)
 *.Output
@@ -1301,7 +1301,7 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
       IF(NTEST.GE.10) THEN
         WRITE(6,*) ' IAICBM_GAS entered '
         WRITE(6,*) ' ==================='
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' Number of GAS spaces included ', LCMBSPC
         WRITE(6,*) ' GAS spaces included ',(ICMBSPC(II),II=1,LCMBSPC)
         WRITE(6,*)
@@ -1327,10 +1327,10 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
                IF(IEL.LT.MNMXOC(IGAS,1,JCMBSPC).OR.
      &            IEL.GT.MNMXOC(IGAS,2,JCMBSPC))
      &         IAMOKAY = 0
-             END DO 
+             END DO
              IF(IAMOKAY.EQ.1) INCLUDE = 1
            END DO
-           IF(INCLUDE .EQ.1) THEN 
+           IF(INCLUDE .EQ.1) THEN
 *. Congratulations , you are allowed
               IOCOC(IATP,IBTP) = 1
           END IF
@@ -1346,9 +1346,9 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 *
       RETURN
       END
-*fordeck ibasspc_for_cls $Revision$ 
+*fordeck ibasspc_for_cls $Revision$
       FUNCTION IBASSPC_FOR_CLS(ICLS)
-* 
+*
 *. Obtain base space for occupation class ICLS
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1394,24 +1394,24 @@ C    &            NMXOCCLS,IPHGAS(MXPNGAS),IHPVGAS(MXPNGAS)
       END DO
 *     ^ End of loop over combinations apaces
 *
-      IBASSPC_FOR_CLS = IBASE    
+      IBASSPC_FOR_CLS = IBASE
 *
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Occupation class and its basespace '
         CALL IWRTMA(ICLS,1,NGAS,1,NGAS)
         WRITE(6,*) IBASE
-      END IF 
+      END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck intdim $Revision$ 
-* 
+*fordeck intdim $Revision$
+*
       SUBROUTINE INTDIM(IPRNT)
 *
 * Number of integrals and storage mode
@@ -1468,7 +1468,7 @@ C     END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck intpnt $Revision$ 
+*fordeck intpnt $Revision$
       SUBROUTINE INTPNT(IPNT1,ISL1,IPNT2,ISL2)
 *
 * Pointers to symmetry blocks of integrals
@@ -1477,7 +1477,7 @@ C     END IF
 * IPNT2 : Pointer to given two-electron block
 * ISL1  : Symmetry of last index for given first index, 1 e-
 *
-* In addition pointers to one-electron integrals with general 
+* In addition pointers to one-electron integrals with general
 * symmetry is generated in WORK(KPGINT1(ISM))
       IMPLICIT REAL*8(A-H,O-Z)
 *
@@ -1492,7 +1492,7 @@ C     END IF
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "csm.inc"
-C     INCLUDE 
+C     INCLUDE
 *.CSMPRD
       INTEGER ADASX,ASXAD,ADSXA,SXSXDX,SXDXSX
       COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
@@ -1528,18 +1528,18 @@ C?    write(6,*) ' Memory check INTPNT 2 '
 C?    CALL MEMCHK
       RETURN
       END
-*fordeck ioff_sym_dist $Revision$ 
+*fordeck ioff_sym_dist $Revision$
       FUNCTION IOFF_SYM_DIST(ISYM,NGASL,IOFF,MAXVAL,MINVAL)
 *
-* A ts block of string is given and the individual 
-* symmetrydisrtributions has been obtained ( for example 
+* A ts block of string is given and the individual
+* symmetrydisrtributions has been obtained ( for example
 * by TS_SYM_PNT)
 *
 * Obtain offset for symmetrycombination defined by ISYM
 *
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER ISYM(*),IOFF(*),MAXVAL(*),MINVAL(*)
-* Address in IOFF is 
+* Address in IOFF is
 *     1
 *     +  (ISM1-MINVAL(1))
 *     +  (ISM2-MINVAL(2))*(MAXVAL(1)-MINVAL(1)+1)
@@ -1547,8 +1547,8 @@ C?    CALL MEMCHK
 *     +
 *     +
 *     +
-*     +  (ISM L-1-MINVAL(L-1))*Prod(i=1,L-2)(MAXVAL(i)-MINVAL(i)+1)           
-* 
+*     +  (ISM L-1-MINVAL(L-1))*Prod(i=1,L-2)(MAXVAL(i)-MINVAL(i)+1)
+*
 C     write(6,*) ' Isym and minval '
 C     call iwrtma(isym,1,ngasl,1,ngasl)
 C     call iwrtma(minval,1,ngasl,1,ngasl)
@@ -1577,7 +1577,7 @@ C       write(6,*) ' igas i imult ',igas,i,imult
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lcispc $Revision$ 
+*fordeck lcispc $Revision$
       SUBROUTINE LCISPC(IPRNT)
 *
 * Number of dets and combinations
@@ -1604,7 +1604,7 @@ C       write(6,*) ' igas i imult ',igas,i,imult
 #include "csm.inc"
 #include "stinf.inc"
 *./CSTATE/ : IDC is used
-C     COMMON/BIGGY/WORK(MXPWRD)     
+C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1638,11 +1638,11 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *. symmetry.
       IF(IDC.EQ.3.OR.IDC.EQ.4)
      &CALL SIGVST(WORK(KLCVST),NSMST)
- 
+
 *. Array defining symmetry combinations of internal strings
 *. Number of internal dets for each symmetry
       CALL SMOST(NSMST,NSMCI,MXPCSM,ISMOST)
-* 
+*
       MXSB = 0
       MXSOOB = 0
       DO 100 ICI = 1, NICISP
@@ -1666,7 +1666,7 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
      &                ISPGPFTP(1,IBSPGPFTP(IBTP)),MXPNGAS,NELFGP,
      &                NCOMB,XNCOMB,MXS,MXSOO,WORK(KLBLTP),NTTSBL,
      &                LCOL,WORK(KLIOIO))
-      
+
           XISPSM(ISYM,ICI) = XNCOMB
           MXSOOB = MAX(MXSOOB,MXSOO)
           MXSB = MAX(MXSB,MXS)
@@ -1677,9 +1677,9 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
-      WRITE(6,*) 
-      WRITE(6,*) 
-      WRITE(6,*) 
+      WRITE(6,*)
+      WRITE(6,*)
+      WRITE(6,*)
      &' Number of internal combinations per symmetry '
       WRITE(6,*)
      & ' =========================================== '
@@ -1697,7 +1697,7 @@ C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
       end if
 *
       IF(NTEST.GE.5) THEN
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' Number of TTS subblocks per CI expansion '
         WRITE(6,*)
      &   ' ======================================== '
@@ -1721,7 +1721,7 @@ C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
       end if
 *
       IF(NTEST.GE.5) THEN
-      WRITE(6,*) 
+      WRITE(6,*)
      &' Number of columns per CI expansion '
       WRITE(6,*)
      & ' =================================== '
@@ -1741,11 +1741,11 @@ C         CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lcnhcn $Revision$ 
+*fordeck lcnhcn $Revision$
 *CADDB
       SUBROUTINE LCNHCN(LSCR)
 *
-* Amount of scratch Needed in the CNHCNM routine 
+* Amount of scratch Needed in the CNHCNM routine
 *
 * Jeppe Olsen, September 1993
 *
@@ -1787,16 +1787,16 @@ C    &              NCNASM(MXPCSM)
      &        MAX(MXDTFC*NACTEL+2*NACTEL,4*NACOB+2*NACTEL)
 *
 C?    WRITE(6,*) ' LCNHCN : MXCSFC MXDTFC ',MXCSFC,MXDTFC
-C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR                    
+C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck minmax_for_sym_dist $Revision$ 
+*fordeck minmax_for_sym_dist $Revision$
       SUBROUTINE MINMAX_FOR_SYM_DIST(NIGRP,IGRP,MNVAL,MXVAL,NDIST)
 *
 * A combination of NIGRP groups are given (IGRP)
@@ -1807,7 +1807,7 @@ C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
-*. Include blocks     
+*. Include blocks
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 #include "strbas.inc"
@@ -1829,7 +1829,7 @@ C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
         MNVAL(JGRP) = MINMAX_SM_GP(1,IGRP(JGRP))
         MXVAL(JGRP) = MINMAX_SM_GP(2,IGRP(JGRP))
       END DO
-        
+
 *. Number of strings per sym and group
 C     DO JGRP = 1, NIGRP
 C       CALL ICOPVE2(WORK(KNSTSGP(1)),(IGRP(JGRP)-1)*NSMST+1,
@@ -1965,7 +1965,7 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mxmnoc_spgp $Revision$ 
+*fordeck mxmnoc_spgp $Revision$
       SUBROUTINE MXMNOC_SPGP(MINEL,MAXEL,NORBTP,NORBFTP,NELFTP,
      &                  NTESTG)
 *
@@ -1982,11 +1982,11 @@ C        ISM = (IPARI-1)*NML + MNML - 1
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
-        WRITE(6,*) ' ===========' 
+        WRITE(6,*) ' ==========='
         WRITE(6,*) ' MXMNOC_SPGP'
-        WRITE(6,*) ' ===========' 
+        WRITE(6,*) ' ==========='
         WRITE(6,*)
-C?      WRITE(6,*) ' NORBFTP : '    
+C?      WRITE(6,*) ' NORBFTP : '
 C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
       END IF
 *
@@ -2000,19 +2000,19 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
         ELSE
           IORB_START =  IORB_START + NORBFTP(IORBTP-1)
           IORB_END   =  IORB_START + NORBFTP(IORBTP)-1
-          NEL_START = NEL_END 
+          NEL_START = NEL_END
           NEL_END   = NEL_START + NELFTP(IORBTP)
         END IF
         IF(NTEST.GE.1000) THEN
           WRITE(6,*) ' IORBTP,IORB_START-IORB_END,NEL_START,NEL_END '
-          WRITE(6,*)   IORBTP,IORB_START-IORB_END,NEL_START,NEL_END 
+          WRITE(6,*)   IORBTP,IORB_START-IORB_END,NEL_START,NEL_END
         END IF
 *
         DO IORB = IORB_START, IORB_END
           MAXEL(IORB) = MIN(IORB,NEL_END)
           MINEL(IORB) = NEL_START
-          IF(NEL_END-MINEL(IORB).GT. IORB_END-IORB) 
-     &    MINEL(IORB) = NEL_END - ( IORB_END - IORB ) 
+          IF(NEL_END-MINEL(IORB).GT. IORB_END-IORB)
+     &    MINEL(IORB) = NEL_END - ( IORB_END - IORB )
         END DO
       END DO
 *
@@ -2031,7 +2031,7 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck natorb $Revision$ 
+*fordeck natorb $Revision$
       SUBROUTINE LNATORB(RHO1,NSMOB,NTOPSM,NACPSM,NINPSM,
      &                  ISTOB,XNAT,RHO1SM,OCCNUM,
      &                  NACOB,SCR,IPRDEN)
@@ -2083,18 +2083,18 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
           WRITE(6,*) ' Density matrix for symmetry  = ', ISMOB
           WRITE(6,*) ' ======================================='
           WRITE(6,*)
-          CALL WRTMAT(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB)            
+          CALL WRTMAT(RHO1SM(IMTOFF),LOB,LOB,LOB,LOB)
         END IF
 *. Pack and diagonalize
         CALL TRIPAK(RHO1SM(IMTOFF),SCR,1,LOB,LOB)
         ONEM = -1.0D0
 *. scale with -1 to get highest occupation numbers as first eigenvectors
-        CALL SCALVE(SCR,ONEM,LOB*(LOB+1)/2)       
+        CALL SCALVE(SCR,ONEM,LOB*(LOB+1)/2)
         CALL EIGEN(SCR,XNAT(IMTOFF),LOB,0,1)
 *
-        DO  I = 1, LOB   
-          OCCNUM(IOBOFF-1+I) = - SCR(I*(I+1)/2) 
-        END DO 
+        DO  I = 1, LOB
+          OCCNUM(IOBOFF-1+I) = - SCR(I*(I+1)/2)
+        END DO
 *. Order the degenerate eigenvalues so diagonal terms are maximized
         TESTY = 1.0D-11
         DO IOB = 2, LOB
@@ -2111,7 +2111,7 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
      &                    XNAT(IMTOFF+(IOB-1-1)*LOB),LOB)
               SS = OCCNUM(IOBOFF-1+IOB-1)
               OCCNUM(IOBOFF-1+IOB-1) = OCCNUM(IOBOFF-1+IOB)
-              OCCNUM(IOBOFF-1+IOB)   = SS             
+              OCCNUM(IOBOFF-1+IOB)   = SS
               write(6,*) ' Orbitals interchanged ',
      &        IOBOFF-1+IOB,IOBOFF-2+IOB
             END IF
@@ -2120,7 +2120,7 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
 *
         IF(NTEST.GE.1) THEN
           WRITE(6,*)
-          WRITE(6,*) 
+          WRITE(6,*)
      &    ' Natural occupation numbers for symmetry = ', ISMOB
           WRITE(6,*)
      &    ' ==================================================='
@@ -2137,8 +2137,8 @@ C?      CALL IWRTMA(NORBFTP,1,NORBTP,1,NORBTP)
 *. ( End of loop over orbital symmetries )
 *
       RETURN
-      END 
-*fordeck ndxfsm $Revision$ 
+      END
+*fordeck ndxfsm $Revision$
       FUNCTION NDXFSM(NSMOB,NSMSX,MXPOBS,NO1PS,NO2PS,NO3PS,NO4PS,
      &         IDXSM,ADSXA,SXDXSX,IS12,IS34,IS1234,IPRNT)
 *
@@ -2216,21 +2216,21 @@ C 100     CONTINUE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck newtyp $Revision$ 
+*fordeck newtyp $Revision$
       SUBROUTINE NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 *
-* an input  supergroup is given.                    
+* an input  supergroup is given.
 * apply an string of elementary operators to this supergroup and
 * obtain supergroup mumber of new string
 *
 * Jeppe Olsen, October 1993
-* GAS-version : July 95 
-*     
+* GAS-version : July 95
+*
 * ------
 * Input
 * ------
-*     
-* INSPGP  : input super group ( given occupation in each AS )             
+*
+* INSPGP  : input super group ( given occupation in each AS )
 * IACOP(I) = 1 : operator I is an annihilation operator
 *          = 2 : operator I is a  creation   operator
 * ITPOP(I) : orbitals space of operator I
@@ -2241,7 +2241,7 @@ C 100     CONTINUE
 * OUTSPGP  : supergroup of resulting string
 *
 *
-      IMPLICIT REAL*8(A-H,O-Z) 
+      IMPLICIT REAL*8(A-H,O-Z)
 *. Input
       INTEGER ITPOP(*),IACOP(*)
 *. Number of active spaces  (NGAS )
@@ -2270,18 +2270,18 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
           IF(IACOP(IOP).EQ.1) THEN
             IDELTA = IDELTA - 1
             IDELTAI = -1
-          ELSE 
+          ELSE
             IDELTA = IDELTA + 1
             IDELTAI = +1
           END IF
           IEL(ITPOP(IOP)) = IEL(ITPOP(IOP)) + IDELTAI
         END DO
-*. output supergroup 
+*. output supergroup
         CALL  GTSPGP(IEL,OUTSPGP,1)
       END IF
 *     /\ End  of NEW_OR_OLD switch
 *
-      NTEST = 0 
+      NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' NEWTYP ,  OUTSPGP ', OUTSPGP
       END IF
@@ -2293,7 +2293,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck newtyps $Revision$ 
+*fordeck newtyps $Revision$
       SUBROUTINE NEWTYPS(INSPGP,IACOP,ITPOP,NOP,
      &           NGAS,ISPGPAN,ISPGPCR,OUTSPGP)
 *
@@ -2307,7 +2307,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 *. Specific input
       DIMENSION IACOP(NOP),ITPOP(NOP)
 *. Output
-      INTEGER OUTSPGP 
+      INTEGER OUTSPGP
 *
       OUTSPGP = INSPGP
       DO IOP = 1, NOP
@@ -2344,19 +2344,19 @@ C         CALL IWRTMA(ITPOP,1,NOP,1,NOP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck next_sym_distr $Revision$ 
+*fordeck next_sym_distr $Revision$
       SUBROUTINE NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,
      &           ISYM,ISYM_TOT,IFIRST,NONEW)
 *
 * Obtain next distribution of symmetries with given total
-* Symmetry. 
+* Symmetry.
 *
 * Loop over first NGAS-1 spaces are performed, and the symmetry
 * of the last space is then fixed by the required total sym
 *
 * Jeppe Olsen, Sept 97
 * Obtain next distribution of symmetries with given total
-* Symmetry. 
+* Symmetry.
 *
 * Loop over first NGAS-1 spaces are performed, and the symmetry
 * of the last space is then fixed by the required total sym
@@ -2413,7 +2413,7 @@ C       END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ngasdt $Revision$ 
+*fordeck ngasdt $Revision$
       SUBROUTINE NGASDT(IOCCMN,IOCCMX,NGAS,ITOTSM,
      &                  NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,
      &                  IAOCC,IBOCC,MXPNGAS,NELFGP,
@@ -2432,7 +2432,7 @@ C       END DO
 * LCOL is the sum of the number of columns in each block
 *
 *
-* Winter 94/95        
+* Winter 94/95
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -2482,14 +2482,14 @@ C?      write(6,*) ' Iasm ibsm ', iasm,ibsm
             ISYM = 0
           END IF
           DO 200 IATP = 1, NOCTPA
-           IF(ISYM.EQ.1) THEN      
+           IF(ISYM.EQ.1) THEN
              MXBTP = IATP
            ELSE
              MXBTP = NOCTPB
            END IF
            LTSSA = NSSOA(IASM,IATP)
            XLTSSA = FLOAT(LTSSA)
-           DO 100 IBTP = 1, MXBTP 
+           DO 100 IBTP = 1, MXBTP
 *
              IF(NTEST.GE.10) THEN
                WRITE(6,*) ' Alpha super group and beta super group'
@@ -2521,7 +2521,7 @@ C?      write(6,*) ' Iasm ibsm ', iasm,ibsm
   300 CONTINUE
 *
       IF(NTEST.GE.1) THEN
-        WRITE(6,*) ' NGASDT : NCOMB XNCOMB ,NTTSBL', 
+        WRITE(6,*) ' NGASDT : NCOMB XNCOMB ,NTTSBL',
      &               NCOMB,XNCOMB,NTTSBL
       END IF
 *
@@ -2529,7 +2529,7 @@ C?      write(6,*) ' Iasm ibsm ', iasm,ibsm
 *
       RETURN
       END
-*fordeck nsxfsm $Revision$ 
+*fordeck nsxfsm $Revision$
       FUNCTION NSXFSM(NSMOB,MXPOBS,NO1PS,NO2PS,ISXSM,ADSXA,
      &                ISYM,IPRNT)
 *
@@ -2559,7 +2559,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
- 
+
       IF(NTEST.NE.0) THEN
         WRITE(6,*)
      &  ' Number of single excitations of symmetry ',ISXSM,',',NSXFSM
@@ -2572,21 +2572,21 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck occls $Revision$ 
+*fordeck occls $Revision$
       SUBROUTINE OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS,IGSMIN,IGSMAX,
      &                  I_DO_BASSPC,IBASSPC)
 *
 * IWAY = 1 :
 * obtain NOCCLS =
-* Number of allowed ways of distributing the orbitals in the 
+* Number of allowed ways of distributing the orbitals in the
 * active spaces
 *
 * IWAY = 2 :
-* OBTAIN NOCCLS and 
+* OBTAIN NOCCLS and
 * IOCCLS = allowed distributions of electrons
 *
 * Added Oct 98 : IBASSPC
-* The basespace of 
+* The basespace of
 * a given class is the first space where this class occurs
 *
 *
@@ -2601,7 +2601,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *. Output
       DIMENSION IOCCLS(NGAS,*)
       DIMENSION IBASSPC(*)
-*. Local scratch 
+*. Local scratch
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
 *
@@ -2614,7 +2614,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *
       ISKIP = 1
       NOCCLS = 0
-*. start with smallest allowed number 
+*. start with smallest allowed number
       DO IGAS = 1, NGAS
         IOCA(IGAS) = IGSMIN(IGAS)
       END DO
@@ -2623,7 +2623,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *. Loop over possible occupations
  1000 CONTINUE
         IF(IFIRST.EQ.0) THEN
-*. Next accumulated occupation 
+*. Next accumulated occupation
           CALL NXTNUM3(IOCA,NGAS,IGSMIN,IGSMAX,NONEW)
         END IF
         IF(NONEW.EQ.0) THEN
@@ -2641,9 +2641,9 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
             IOCA(KGAS) = IOCA(KGAS)+1
           END IF
         END IF
-C?      WRITE(6,*) ' Another accumulated occupation: ' 
+C?      WRITE(6,*) ' Another accumulated occupation: '
 C?      CALL IWRTMA(IOCA,1,NGAS,1,NGAS)
-*. corresponding occupation of each active space 
+*. corresponding occupation of each active space
         NEGA=0
         DO IGAS = 1, NGAS
           IF(IGAS.EQ.1) THEN
@@ -2653,7 +2653,7 @@ C?      CALL IWRTMA(IOCA,1,NGAS,1,NGAS)
             IF(IOC(IGAS).LT.0) NEGA = 1
           END IF
         END DO
-C?      WRITE(6,*) ' Another occupation: ' 
+C?      WRITE(6,*) ' Another occupation: '
 C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
         IFIRST = 0
 *. Correct number of electrons
@@ -2662,7 +2662,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
           NOCCLS = NOCCLS + 1
           IF(IWAY.EQ.2) THEN
             IF(NTEST.GE.100) THEN
-              WRITE(6,*) ' Another allowed class : ' 
+              WRITE(6,*) ' Another allowed class : '
               CALL IWRTMA(IOC,1,NGAS,1,NGAS)
             END IF
             CALL ICOPVE(IOC,IOCCLS(1,NOCCLS),NGAS)
@@ -2690,18 +2690,18 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck occls_in_ci $Revision$ 
+*fordeck occls_in_ci $Revision$
       SUBROUTINE OCCLS_IN_CI(NOCCLS,IOCCLS,ICISPC,NINCCLS,INCCLS)
 *
 * A set of occupation classes are given.
-* Find out the classes that are allowed for CI space ICISPC 
-* 
+* Find out the classes that are allowed for CI space ICISPC
+*
 *     Jeppe Olsen, August 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -2734,7 +2734,7 @@ C     INTEGER IACOC(MXPNGAS)
           DO IGAS = 1, NGAS
             IF(IGAS.EQ.1) THEN
               IEL = IOCCLS(1,JOCCLS)
-            ELSE 
+            ELSE
               IEL = IEL + IOCCLS(IGAS,JOCCLS)
             END IF
             IF(IEL.LT.IGSOCCX(IGAS,1,JCMBSPC).OR.
@@ -2745,7 +2745,7 @@ C     INTEGER IACOC(MXPNGAS)
 *
         IF(INCLUDE.EQ.1) THEN
           NINCCLS = NINCCLS + 1
-          INCCLS(JOCCLS) = 1      
+          INCCLS(JOCCLS) = 1
         ELSE
           INCCLS(JOCCLS) = 0
         END IF
@@ -2757,17 +2757,17 @@ C     INTEGER IACOC(MXPNGAS)
         WRITE(6,*) ' CI space under study ', ICISPC
         WRITE(6,*) ' Number of occupation classes included ',NINCCLS
         WRITE(6,*) ' Active classes : 1 => active 0=> inactive '
-        CALL IWRTMA(INCCLS,1,NOCCLS,1,NOCCLS)  
+        CALL IWRTMA(INCCLS,1,NOCCLS,1,NOCCLS)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck orbinf $Revision$ 
+*fordeck orbinf $Revision$
       SUBROUTINE ORBINF(LUOUT,IPRNT)
 *
 * Obtain information about orbitals from shell information
@@ -2817,7 +2817,7 @@ C     INTEGER IACOC(MXPNGAS)
 *  ========================================================
 *. Number of inactive, active, occupied , deleted orbitals
 *  ========================================================
-* 
+*
 *
 * current inactive and deleted orbitals are not identified so
        IGSINA = 0
@@ -2864,7 +2864,7 @@ C     INTEGER IACOC(MXPNGAS)
           WRITE(LUOUT,*) ' ================================='
           WRITE(LUOUT,*)
           WRITE(LUOUT,'(1H ,A,10I4,A)')
-     &    '            Symmetry  ',(I,I = 1,NSMOB) 
+     &    '            Symmetry  ',(I,I = 1,NSMOB)
           WRITE(LUOUT,'(1H ,A,2X,10A)')
      &    '           ========== ',('====',I = 1,NSMOB)
           DO IGAS = 1, NGAS
@@ -2905,7 +2905,7 @@ C     INTEGER IACOC(MXPNGAS)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck orbinh1 $Revision$ 
+*fordeck orbinh1 $Revision$
 
        SUBROUTINE ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 *
@@ -2980,7 +2980,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck orbord_gas $Revision$ 
+*fordeck orbord_gas $Revision$
       SUBROUTINE ORBORD_GAS(NSMOB,MXPOBS,MXPNGAS,NGAS,NGSOB,NGSOBT,
      &                  NOCOBS,NTOOBS,NTOOB,
      &                  IREOST,IREOTS,ISFTO,ITFSO,IBSO,
@@ -2991,7 +2991,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 * ( See note below for assumed ordering )
 *
 *
-* GAS version 
+* GAS version
 *
 * =====
 * Input
@@ -3031,7 +3031,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
       DIMENSION ISFSO(*),ITFTO(*)
       DIMENSION NOBPTS(MXPNGAS ,*),IOBPTS(MXPNGAS ,*)
       DIMENSION NOBPT(MXPNGAS )
- 
+
 * ==========================
 * Note on order of orbitals
 * ==========================
@@ -3040,7 +3040,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 * ordered as
 *
 * Loop over symmetries of orbitals
-*  Loop over GAS spaces  
+*  Loop over GAS spaces
 *   Loop over orbitals of this sym and GAS
 *   End of Loop over orbitals
 *  End of Loop over Gas spaces
@@ -3050,7 +3050,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 * where the outer loop is over types and the inner loop is
 * over symmetries, i.e.
 *
-* Loop over GAS spaces  
+* Loop over GAS spaces
 *  Loop over symmetries of orbitals
 *   Loop over orbitals of this sym and GAS
 *   End of Loop over orbitals
@@ -3146,7 +3146,7 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
         CALL IWRTMA(ITFTO,1,NTOOB,1,NTOOB)
       END IF
 *
-       
+
       RETURN
       END
 ***********************************************************************
@@ -3477,13 +3477,13 @@ C?      WRITE(6,*) '====================='
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pert_subspace $Revision$ 
+*fordeck pert_subspace $Revision$
       SUBROUTINE PERT_SUBSPACE(NPERT,H0,V,S,ECORE)
 *
 * Perturbation calculation has been performed
 * giving a subspace of correction vectors.
 *
-* Analyze this subspace 
+* Analyze this subspace
 *
 * H0, V and S are matrices in subspace
 *
@@ -3507,9 +3507,9 @@ C?      WRITE(6,*) '====================='
       END IF
 *. Dimension of subspace : number of correction vectors + 1
       NDIM = NPERT + 1
-* 
+*
 *. A bit of local memory
-      LENNY = NDIM ** 2   
+      LENNY = NDIM ** 2
       IDUM = 0
       CALL MEMMAN(KLMAT1,LENNY,'ADDL  ',2,'MAT1  ')
       CALL MEMMAN(KLMAT2,LENNY,'ADDL  ',2,'MAT2  ')
@@ -3528,7 +3528,7 @@ C?      WRITE(6,*) '====================='
        CALL TRIPAK(WORK(KLMAT5),S,2,NDIM,NDIM)
        WRITE(6,*) ' Input S matrix '
        CALL WRTMAT(WORK(KLMAT5),NDIM,NDIM,NDIM,NDIM)
-C          SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)      
+C          SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
       CALL SQRTMT(WORK(KLMAT5),NDIM,2,WORK(KLMAT2),
      &            WORK(KLMAT1),WORK(KLMAT3))
       IF(NTEST.GE.5) THEN
@@ -3577,7 +3577,7 @@ C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
       CALL EIGEN(WORK(KLMAT3),WORK(KLMAT4),NDIM,1,1)
       CALL COPDIA(WORK(KLMAT3),WORK(KLVEC1),NDIM,1)
       DO I = 1, NDIM
-        WORK(KLVEC1-1+I) = WORK(KLVEC1-1+I) + ECORE 
+        WORK(KLVEC1-1+I) = WORK(KLVEC1-1+I) + ECORE
       END DO
 *.
       WRITE(6,*)
@@ -3586,7 +3586,7 @@ C          TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
       WRITE(6,*)
       CALL WRTMAT(WORK(KLVEC1),NDIM,1,NDIM,1)
 *
-*. Perturbation expansion in subspace 
+*. Perturbation expansion in subspace
 *
 *. Expand H0 and V  to complete matrices
 C       TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
@@ -3615,7 +3615,7 @@ C          MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pnt2dm $Revision$ 
+*fordeck pnt2dm $Revision$
       SUBROUTINE PNT2DM(I12SM,NSMOB,NSMSX,OSXO,IPSM,JPSM,
      &                  IJSM,ISM2,IPNTR,MXPOBS)
 *
@@ -3682,7 +3682,7 @@ C          MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pnt4dm $Revision$ 
+*fordeck pnt4dm $Revision$
       SUBROUTINE PNT4DM(NSMOB,NSMSX,MXPOBS,NO1PS,NO2PS,NO3PS,NO4PS,
      &           IDXSM,ADSXA,SXDXSX,IS12,IS34,IS1234,IPNTR,ISM4A,
      &           ADASX)
@@ -3782,13 +3782,13 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prmblk $Revision$ 
+*fordeck prmblk $Revision$
       SUBROUTINE PRMBLK(IDC,ISGV,IASM,IBSM,IATP,IBTP,PS,PL,
      &                  JATP,JBTP,JASM,JBSM,ISGN,ITRP,NPERM)
 *
 * A block of CI coefficients defined by by IATP,IASM,IBTP,IBSM is given
 *
-* Obtain the number of other blocks that can be obtained by spin 
+* Obtain the number of other blocks that can be obtained by spin
 * and relection symmetry.
 *
 * Jeppe Olsen, July 1993
@@ -3883,8 +3883,8 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
         IF(ISET.EQ.1) THEN
 *. A new permutation was found, check and see if it was obtained previously
           INEW = 1
-          DO 50 LPERM = 1, NPERM 
-            IF(JATP(LPERM).EQ.KATP  .AND. JASM(LPERM).EQ.KASM .AND. 
+          DO 50 LPERM = 1, NPERM
+            IF(JATP(LPERM).EQ.KATP  .AND. JASM(LPERM).EQ.KASM .AND.
      &         JBTP(LPERM).EQ.KBTP  .AND. JBSM(LPERM).EQ.KBSM) INEW = 0
    50     CONTINUE
           IF(INEW.EQ.1) THEN
@@ -3896,13 +3896,13 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
             JBTP(NPERM) = KBTP
             IF(NPERM.EQ.1. OR. (NPERM.GE.1.AND.KSIGN.EQ.LSIGN))THEN
               ISGN(NPERM) = 1
-            ELSE 
+            ELSE
               ISGN(NPERM) = -1
             END IF
             LSIGN = KSIGN
             IF(NPERM.EQ.1. OR. (NPERM.GE.1.AND.KTRP.EQ.LTRP))THEN
               ITRP(NPERM) = 0
-            ELSE 
+            ELSE
               ITRP(NPERM) = 1
             END IF
             LTRP = KTRP
@@ -3928,7 +3928,7 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -3980,7 +3980,7 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck repart_civ $Revision$ 
+*fordeck repart_civ $Revision$
       SUBROUTINE REPART_CIV(IBATCH,NBATCH,LBATCH,LEBATCH,
      &                  MXLNG,ICLS_A,IBLK_TO_CLS,NCLS,NBLKS,
      &                  LBLOCK_VEC)
@@ -3989,7 +3989,7 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
 *. Divide into batches, length atmost MXLNG, so only blocks
 *  that are flagged active by ICLS_A are included
 *
-*. Output 
+*. Output
 * NBATCH : Number of batches
 * LBATCH : Number of blocks in a given batch
 * LEBATCH : Number of elements in a given batch ( packed ) !
@@ -3999,21 +3999,21 @@ C?    call IWRTMA(IPNTR,1,64,1,64)
 *
 * Input
 *
-* IBATCH : 
+* IBATCH :
 *   IBATCH(1,*) : Alpha type
 *   IBATCH(2,*) : Beta sym
 *   IBATCH(3,*) : Sym of alpha
-*   IBATCH(4,*) : Sym of beta 
+*   IBATCH(4,*) : Sym of beta
 *   IBATCH(5,*) : Offset of block with respect to start of block in
 *                 expanded form
 *   IBATCH(6,*) : Offset of block with respect to start of block in
 *                 packed form
-*   IBATCH(7,*) : Length of block, expandend form                   
-*   IBATCH(8,*) : Length of block, packed form 
+*   IBATCH(7,*) : Length of block, expandend form
+*   IBATCH(8,*) : Length of block, packed form
 *
 *
 *
-* Jeppe Olsen, June 1997     
+* Jeppe Olsen, June 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *.Input
@@ -4033,7 +4033,7 @@ C     INTEGER I1BATCH(*)
         WRITE(6,*) ' =================='
         WRITE(6,*) '     REPART_CIV      '
         WRITE(6,*) ' =================='
-        WRITE(6,*)  
+        WRITE(6,*)
         WRITE(6,*)
 C       WRITE(6,*) ' Active classes '
 C       CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
@@ -4041,41 +4041,41 @@ C       write(6,*) ' MXLNG = ',MXLNG
       END IF
 *
       NBATCH = 0
-      LENGTH = 0 
-      LENGTHP= 0 
+      LENGTH = 0
+      LENGTHP= 0
       IIBLOCK = 0
 C     I1BATCH(1) = 1
 *. Loop over blocks in batch
-      DO 1000 IBLOCK = 1, NBLKS  
+      DO 1000 IBLOCK = 1, NBLKS
         IBATCH(5,IBLOCK) = LENGTH+1
         IBATCH(6,IBLOCK) = LENGTHP+1
         IF(ICLS_A(IBLK_TO_CLS(IBLOCK)).EQ.0) THEN
-*. Block is inactive 
+*. Block is inactive
           IBATCH(1,IBLOCK) = - ABS(IBATCH(1,IBLOCK))
-          IIBLOCK = IIBLOCK + 1                           
+          IIBLOCK = IIBLOCK + 1
           LBLOCK_VEC(IBLOCK) = -IBATCH(8,IBLOCK)
         ELSE
 *. Block belongs to the active !
           IBATCH(1,IBLOCK) =   ABS(IBATCH(1,IBLOCK))
-          LBLOCK =  IBATCH(7,IBLOCK) 
-          LBLOCKP =  IBATCH(8,IBLOCK) 
+          LBLOCK =  IBATCH(7,IBLOCK)
+          LBLOCKP =  IBATCH(8,IBLOCK)
           LBLOCK_VEC(IBLOCK) = LBLOCKP
           IF(LENGTH+LBLOCK.LE.MXLNG) THEN
             LENGTH = LENGTH + LBLOCK
             LENGTHP= LENGTHP+ LBLOCKP
-            IIBLOCK = IIBLOCK + 1                           
+            IIBLOCK = IIBLOCK + 1
           ELSE IF(LENGTH+LBLOCK.GT.MXLNG) THEN
 *. This batch was finished by previous block, goto next batch
             NBATCH = NBATCH + 1
             LEBATCH(NBATCH) = LENGTHP
             LBATCH (NBATCH)  = IIBLOCK
-C           I1BATCH(NBATCH+1) = IBLOCK 
+C           I1BATCH(NBATCH+1) = IBLOCK
 *. Current block is first block in new batch
             IIBLOCK = 1
             IBATCH(5,IBLOCK) = 1
             IBATCH(6,IBLOCK) = 1
             LENGTHP = LBLOCKP
-            LENGTH  = LBLOCK 
+            LENGTH  = LBLOCK
           END IF
         END IF
  1000 CONTINUE
@@ -4087,7 +4087,7 @@ C           I1BATCH(NBATCH+1) = IBLOCK
       END IF
 *
       IF(NTEST.NE.0) THEN
-        WRITE(6,*) ' REPART.. : Number of batches ', NBATCH                           
+        WRITE(6,*) ' REPART.. : Number of batches ', NBATCH
       END IF
       IF(NTEST.GE.100) THEN
         IOFF = 1
@@ -4112,7 +4112,7 @@ C           I1BATCH(NBATCH+1) = IBLOCK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsmxmn $Revision$ 
+*fordeck rsmxmn $Revision$
       SUBROUTINE RSMXMN(MAXEL,MINEL,NORB1,NORB2,NORB3,NEL,
      &                  MIN1,MAX1,MIN3,MAX3,NTEST)
 *
@@ -4167,7 +4167,7 @@ COLD  MIN1A = MIN1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck shtoob $Revision$ 
+*fordeck shtoob $Revision$
       SUBROUTINE SHTOOB(NSHPIR,NIRREP,MXPOBS,NSMOB,NOSPIR,IOSPIR,
      &           NOBPS,NOB)
 *
@@ -4223,7 +4223,7 @@ COLD  MIN1A = MIN1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sigvst $Revision$ 
+*fordeck sigvst $Revision$
       SUBROUTINE SIGVST(ISGVST,NSMST)
 *
 * Obtain ISGVST(ISM) : Symmetry of sigma v on string of symmetry ism
@@ -4253,7 +4253,7 @@ C            MLSM(IML,IPARI,ISM,TYPE,IWAY)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck smost $Revision$ 
+*fordeck smost $Revision$
       SUBROUTINE SMOST(NSMST,NSMCI,MXPCSM,ISMOST)
 *
 * ISMOST(ISYM,ITOTSM) : Symmetry of an internal state if ITOTSM
@@ -4292,7 +4292,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sorlow $Revision$ 
+*fordeck sorlow $Revision$
       SUBROUTINE SORLOW(WRK,STVAL,ISTART,KZVAR,KEXST2,JEXSTV,IPRT)
 C
 C PURPOSE: FIND THE KEXSTV LOWEST VALUES IN WRK(KZVAR)
@@ -4385,13 +4385,13 @@ C     Check for degeneracy among diagonal elements
 C
       JEXSTV = KEXSTV
       IF(.NOT.FULL) THEN
- 
+
   160   JEXSTV = JEXSTV - 1
         IF (
      *  (ABS(STVAL(JEXSTV+1)-STVAL(JEXSTV))).LE.TOLEQL) GO TO 160
       END IF
       IF((IPRT.GT.8).AND.(KEXST2.NE.JEXSTV)) WRITE(6,1600)KEXST2,JEXSTV
- 
+
 1600  FORMAT(/' NUMBER OF START VECTORS IS DIMINISHED TO',I5,' FROM',I5)
       IF (IPRT.GE.100) THEN
          WRITE(6,*) '(I,(ISTART(I),STVAL(I)),I=1,JEXSTV)'
@@ -4410,7 +4410,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ststsm $Revision$ 
+*fordeck ststsm $Revision$
       SUBROUTINE STSTSM(STSTSX,STSTDX,NSMST)
 *
 * construct  STSTSX and STSTDX giving
@@ -4442,15 +4442,15 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sxtyp2_gas $Revision$ 
+*fordeck sxtyp2_gas $Revision$
       SUBROUTINE SXTYP2_GAS(NSXTYP,ITP,JTP,NGAS,ILTP,IRTP,IPHGAS)
 *
-* Two supergroups are given. Find single excitations that connects 
-* these supergroups 
+* Two supergroups are given. Find single excitations that connects
+* these supergroups
 *
 * Jeppe Olsen, July 1995
 *
-* Dec 97 : IPHGAS added :  
+* Dec 97 : IPHGAS added :
 *          Occupations of particle spaces (IPHGAS=2) are allowed to
 *          have occupations less than zero in intermidiate steps
 *
@@ -4468,7 +4468,7 @@ C
          ICREA = IAS
         ELSE IF(IRTP(IAS).GT.ILTP(IAS)) THEN
          NANNI = NANNI + IRTP(IAS) - ILTP(IAS)
-         IANNI = IAS 
+         IANNI = IAS
         END IF
       END DO
 *
@@ -4487,7 +4487,7 @@ C
         DO IAS = 1, NGAS
           IF(IRTP(IAS).NE.0.OR.IPHGAS(IAS).EQ.2) THEN
             NSXTYP = NSXTYP + 1
-            ITP(NSXTYP) = IAS 
+            ITP(NSXTYP) = IAS
             JTP(NSXTYP) = IAS
           END IF
         END DO
@@ -4512,20 +4512,20 @@ C
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sxtyp_gas $Revision$ 
+*fordeck sxtyp_gas $Revision$
 
 
 *
       SUBROUTINE SXTYP_GAS(NSXTYP,ITP,JTP,NGAS,ILTP,IRTP)
 *
-* Two supergroups are given. Find single excitations that connects 
-* these supergroups 
+* Two supergroups are given. Find single excitations that connects
+* these supergroups
 *
 * Jeppe Olsen, July 1995
 *
@@ -4543,7 +4543,7 @@ C
          ICREA = IAS
         ELSE IF(IRTP(IAS).GT.ILTP(IAS)) THEN
          NANNI = NANNI + IRTP(IAS) - ILTP(IAS)
-         IANNI = IAS 
+         IANNI = IAS
         END IF
       END DO
 *
@@ -4562,7 +4562,7 @@ C
         DO IAS = 1, NGAS
           IF(IRTP(IAS).NE.0) THEN
             NSXTYP = NSXTYP + 1
-            ITP(NSXTYP) = IAS 
+            ITP(NSXTYP) = IAS
             JTP(NSXTYP) = IAS
           END IF
         END DO
@@ -4587,7 +4587,7 @@ C
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -4716,7 +4716,7 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sym_for_op $Revision$ 
+*fordeck sym_for_op $Revision$
 *
 * lucia6.f
 *
@@ -4750,7 +4750,7 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
      &     OPER(ICHAR:ICHAR).EQ.'Z'      ) THEN
              NCART = NCART + 1
         ELSE
-*. End of cartesian part 
+*. End of cartesian part
           GOTO 1001
         END IF
       END DO
@@ -4775,7 +4775,7 @@ C       NEXT_SYM_DISTR(NGAS,MINVAL,MAXVAL,ISYM,ISYM_TOT,IFIRST,NONEW)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck symcm1 $Revision$ 
+*fordeck symcm1 $Revision$
       SUBROUTINE SYMCM1(ITASK,IOBJ,I1,I2,I12)
 *
 * Symmetries I1,I2,I12 are related as
@@ -4962,7 +4962,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck z_blkfo $Revision$ 
+*fordeck z_blkfo $Revision$
       SUBROUTINE Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
      &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
 *
@@ -4970,11 +4970,11 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * defined by ISPC,ISM,IATP,IBTP.
 *
 * Output is given in the form of pointers to vectors in WORK
-* where the info is stored : 
+* where the info is stored :
 *
 * KPCLBT : Length of each Batch ( in blocks)
 * KPCLEBT : Length of each Batch ( in elements)
-* KPCI1BT : Length of each block                   
+* KPCI1BT : Length of each block
 * KPCIBT  : Info on each block
 * KPCBLTP : BLock type for each symmetry
 *
@@ -4994,7 +4994,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 #include "strbas.inc"
 #include "crun.inc"
 *
-      NTEST = 00  
+      NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================== '
@@ -5066,7 +5066,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zbltp $Revision$ 
+*fordeck zbltp $Revision$
 *
 * Codes for general symmetry handling
 *
@@ -5131,7 +5131,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zbltp $Revision$ 
+*fordeck zbltp $Revision$
 *
 * Codes for general symmetry handling
 *
@@ -5199,7 +5199,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zirat $Revision$ 
+*fordeck zirat $Revision$
       SUBROUTINE ZIRAT
 *
 * Ratio between real and integer
@@ -5220,7 +5220,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *     END IF
       IRAT=RtoI
 *
-C?    WRITE(6,'(A,I2)') 
+C?    WRITE(6,'(A,I2)')
 C?   &'   Ratio between Integer and Real word length ', IRAT
 C?    WRITE(6,*)
 *
@@ -5231,16 +5231,16 @@ C?    WRITE(6,*)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck znelfspgp $Revision$ 
+*fordeck znelfspgp $Revision$
       SUBROUTINE ZNELFSPGP(NTESTG)
 *
-* Generate for each supergroup the number of electrons in each active 
+* Generate for each supergroup the number of electrons in each active
 * orbital space and store in NELFSPGP
 *
 * Jeppe Olsen, July 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
-*. input  
+*. input
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 #include "wrkspc.inc"
@@ -5254,7 +5254,7 @@ C?    WRITE(6,*)
 *
       DO ITP = 1, NSTTP
         NSPGP = NSPGPFTP(ITP)
-        IBSPGP = IBSPGPFTP(ITP) 
+        IBSPGP = IBSPGPFTP(ITP)
         DO ISPGP = IBSPGP,IBSPGP + NSPGP - 1
           DO IGAS = 1, NGAS
             NELFSPGP(IGAS,ISPGP) = NELFGP(ISPGPFTP(IGAS,ISPGP))
@@ -5274,13 +5274,13 @@ C?    WRITE(6,*)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck znonab $Revision$ 
+*fordeck znonab $Revision$
       SUBROUTINE ZNONAB(INVCEN,MAXMLO,NSMOB,IPRNT)
 *
 *
@@ -5443,7 +5443,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
       MXMLSX = MXMLOB - MNMLOB
       NMLSX  = MXMLSX - MNMLSX +1
       NSMSX  = NIG * NMLSX
- 
+
       IF( NTEST .GE.2 ) THEN
         WRITE(6,*) ' NMLSX,NSMSX,MNMLSX ',NMLSX,NSMSX,MNMLSX
       END IF
@@ -5469,7 +5469,7 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
 *
       ITSSX = 0 - MNMLSX + 1
       ITSDX = 0 - MNMLDX + 1
- 
+
       IF ( NTEST .GE. 1 ) THEN
         WRITE(6,*)
         WRITE(6,'(A,I4)')
@@ -5495,8 +5495,8 @@ C    &              NZSTTP,NRSTTP,ISTTP(MXPSTT)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zoos $Revision$ 
- 
+*fordeck zoos $Revision$
+
       SUBROUTINE ZOOS(ISMOST,IBLTP,MAXSYM,IOCOC,NSSOA,NSSOB,
      &                NOCTPA,NOCTPB,IDC,IOOS,NOOS,NCOMB,IXPND)
 *
@@ -5582,17 +5582,17 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
    95   CONTINUE
   100 CONTINUE
 *
-      NTEST = 0 
+      NTEST = 0
       IF ( NTEST .NE. 0 ) THEN
-         WRITE(6,*) 
+         WRITE(6,*)
          WRITE(6,*) ' ==============='
          WRITE(6,*) ' ZOOS reporting '
          WRITE(6,*) ' ==============='
-         WRITE(6,*) 
+         WRITE(6,*)
          WRITE(6,*) ' NSSOA, NSSOB ( input ) '
          CALL IWRTMA(NSSOA,MAXSYM,NOCTPA,MAXSYM,NOCTPA)
          CALL IWRTMA(NSSOB,MAXSYM,NOCTPB,MAXSYM,NOCTPB)
-         WRITE(6,*) 
+         WRITE(6,*)
          WRITE(6,*) ' Number of combinations obtained ',NCOMB
          WRITE(6,*) ' Offsets for combination OOS blocks '
          DO 111 IASYM = 1,MAXSYM
@@ -5613,7 +5613,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zsym1 $Revision$ 
+*fordeck zsym1 $Revision$
       SUBROUTINE ZSYM1(NIRREP,IPRNT)
 *
 * Number of symmetries for d2h
@@ -5639,7 +5639,7 @@ C     PARAMETER ( MXPOBS = 20 )
       COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
      &              ADSXA(MXPOBS,2*MXPOBS),
      &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-* 
+*
       NSMSX = NIRREP
       NSMDX = NIRREP
       NSMST = NIRREP
@@ -5663,7 +5663,7 @@ C     COPMT2(AIN,AOUT,NINR,NINC,NOUTR,NOUTC,IZERO)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zsym2 $Revision$ 
+*fordeck zsym2 $Revision$
       SUBROUTINE ZSYM2(IPRNT)
 *
 * Symmetry connecting arrays

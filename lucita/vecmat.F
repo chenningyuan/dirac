@@ -1,18 +1,18 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck add_tts_blk_to_vector $Revision$ 
+*fordeck add_tts_blk_to_vector $Revision$
       SUBROUTINE ADD_TTS_BLK_TO_VECTOR
      &           (NBLOCKI,IBLOCKI,IOFFI,VECI,
      &            NBLOCKO,IBLOCKO,IOFFO,VECO,FACTOR)
 * A vector VECI containing NBLOCKI blocks defined by IBLOCKI
 * are given. Add those blocks to a vector VECO,
-* defined by NBLOCKO,IBLOCKO,IOFFO,VECO as 
+* defined by NBLOCKO,IBLOCKO,IOFFO,VECO as
 *
-*  VECO = VECO + FACTOR*VECI 
+*  VECO = VECO + FACTOR*VECI
 *
 * Jeppe Olsen,  November 1995
 *
@@ -27,9 +27,9 @@
       DO JBLOCKI = IOFFI,IOFFI+NBLOCKI-1
         DO JBLOCKO = IOFFO, IOFFO + NBLOCKO-1
           IF(IBLOCKI(1,JBLOCKI).EQ. IBLOCKO(1,JBLOCKO).AND.
-     &    IBLOCKI(2,JBLOCKI).EQ. IBLOCKO(2,JBLOCKO)   .AND. 
-     &    IBLOCKI(3,JBLOCKI).EQ. IBLOCKO(3,JBLOCKO)   .AND. 
-     &    IBLOCKI(4,JBLOCKI).EQ. IBLOCKO(4,JBLOCKO)          ) THEN 
+     &    IBLOCKI(2,JBLOCKI).EQ. IBLOCKO(2,JBLOCKO)   .AND.
+     &    IBLOCKI(3,JBLOCKI).EQ. IBLOCKO(3,JBLOCKO)   .AND.
+     &    IBLOCKI(4,JBLOCKI).EQ. IBLOCKO(4,JBLOCKO)          ) THEN
             IFROM = IBLOCKI(6,JBLOCKI)-IBLOCKI(6,IOFFI)+1
             ITO   = IBLOCKO(6,JBLOCKO)-IBLOCKO(6,IOFFO)+1
             NELMNT = IBLOCKI(8,JBLOCKI)
@@ -41,16 +41,16 @@
       END DO
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck addblkv $Revision$ 
+*fordeck addblkv $Revision$
       SUBROUTINE ADDBLKV(VEC,VECA,FACTOR,NBLKA,IBLKA,IBLOCK,IOFF)
 *
-* A blocked vector VEC is given 
+* A blocked vector VEC is given
 * add factor * VECADD to this
 * mapping of VECADD blocks to VEC is given by IBLKA
 *
@@ -59,8 +59,8 @@
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC(*),VECA(*)
 *. Base and length of blocks in complete vector
-      INTEGER IBLOCK(8,*)           
-*. Blocks to be added 
+      INTEGER IBLOCK(8,*)
+*. Blocks to be added
       INTEGER IBLKA(NBLKA)
 *
       NTEST = 000
@@ -91,13 +91,13 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adddia $Revision$ 
+*fordeck adddia $Revision$
       SUBROUTINE ADDDIA(A,FACTOR,NDIM,IPACK)
 *
 * add factor to diagonal of square matrix A
@@ -125,7 +125,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck aprblm2 $Revision$ 
+*fordeck aprblm2 $Revision$
       SUBROUTINE APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 C
 C PRINT BLOCKED MATRIX
@@ -145,9 +145,9 @@ C
         CALL WRTMAT(A(IBASE),LROW(IBLK),LCOL(IBLK),
      &              LROW(IBLK),LCOL(IBLK) )
        ELSE
-        IF(IBLK .NE. 1 ) 
+        IF(IBLK .NE. 1 )
      &  IBASE = IBASE + LROW(IBLK-1)*(LCOL(IBLK-1)+1)/2
-        CALL PRSYM(A(IBASE),LROW(IBLK))              
+        CALL PRSYM(A(IBASE),LROW(IBLK))
        END IF
 
   100 CONTINUE
@@ -208,7 +208,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck class_prod $Revision$ 
+*fordeck class_prod $Revision$
       SUBROUTINE CLASS_PROD(VEC1,VEC2,NOCTPA,NOCTPB,
      &                      IBLOCK_OFF,NBLOCK,IBLOCK,NOCCLS,IOCCLS,
      &                      CLSVEC)
@@ -224,7 +224,7 @@ C
       INTEGER IBLOCK(8,*)
 *. Input/output
       DIMENSION CLSVEC(*)
-      
+
 *
       IOFF = 1
       DO JBLOCK = IBLOCK_OFF,IBLOCK_OFF-1+NBLOCK
@@ -232,15 +232,15 @@ C
         JATP = IBLOCK(1,JBLOCK)
         JBTP = IBLOCK(2,JBLOCK)
         JASM = IBLOCK(3,JBLOCK)
-        NELMNT = IBLOCK(8,JBLOCK)      
+        NELMNT = IBLOCK(8,JBLOCK)
 C       NELMNT = NOOS(JATP,JBTP,JASM)
 *. Corresponding occupation class
         CALL SPGSPG_TO_CLASS(JATP,JBTP,JOCCLS,NOCCLS,IOCCLS)
-C?      WRITE(6,*) 
-C?   &  ' CLASS_PROD : JBLOCK, IOFF NELMNT ' ,JBLOCK,  IOFF, NELMNT 
+C?      WRITE(6,*)
+C?   &  ' CLASS_PROD : JBLOCK, IOFF NELMNT ' ,JBLOCK,  IOFF, NELMNT
         IF(JOCCLS.EQ.0) THEN
           WRITE(6,*) ' JOCCLS = 0 returned from  SPGSPG_TO_CLASS'
-        ELSE 
+        ELSE
           XTERM = INPROD(VEC1(IOFF),VEC2(IOFF),NELMNT)
 C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
           CLSVEC(JOCCLS) = CLSVEC(JOCCLS) + XTERM
@@ -255,13 +255,13 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       END IF
 *
       RETURN
-      END  
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck class_prod3 $Revision$ 
+*fordeck class_prod3 $Revision$
       SUBROUTINE CLASS_PROD3(VEC1,VEC2,IBLOCK_OFF,NBLOCK,IBLOCK,
      &                       IBLTOCLS,NCLS,CLSVEC)
 *
@@ -275,10 +275,10 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       REAL*8 INPROD
 *. Input
       DIMENSION VEC1(*),VEC2(*)
-      INTEGER IBLOCK(8,*), IBLTOCLS(*)            
+      INTEGER IBLOCK(8,*), IBLTOCLS(*)
 *. Input/output
       DIMENSION CLSVEC(*)
-      
+
 *
       IOFF = 1
       DO JBLOCK = IBLOCK_OFF,IBLOCK_OFF-1+NBLOCK
@@ -286,7 +286,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
 *
         JATP = IBLOCK(1,JBLOCK)
         JBTP = IBLOCK(2,JBLOCK)
-        NELMNT = IBLOCK(8,JBLOCK)      
+        NELMNT = IBLOCK(8,JBLOCK)
         JCLS = IBLTOCLS(JBLOCK)
         XTERM = INPROD(VEC1(IOFF),VEC2(IOFF),NELMNT)
 C?      WRITE(6,*)
@@ -304,13 +304,13 @@ COLD    END IF
       END IF
 *
       RETURN
-      END  
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck copdia $Revision$ 
+*fordeck copdia $Revision$
       SUBROUTINE COPDIA(A,VEC,NDIM,IPACK)
 *
 * Copy diagonal of matrix A into vector VEC
@@ -338,13 +338,13 @@ COLD    END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diavc3 $Revision$ 
+*fordeck diavc3 $Revision$
       SUBROUTINE DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 *
 * VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
 *
 * VDSV = SUM(I) VECIN(I) ** 2 /( DIAG(I) + SHIFT )
- 
+
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION VECOUT(1),VECIN(1),DIAG(1)
 *
@@ -558,7 +558,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck expciv $Revision$ 
+*fordeck expciv $Revision$
       SUBROUTINE EXPCIV(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
@@ -568,7 +568,7 @@ C
 * Output vector will be placed on unit LUUT
 *. If ICOPY .ne. 0 the output vectors will be copied to LUIN
 *
-* Storage form is defined by ICISTR 
+* Storage form is defined by ICISTR
 *
 * Jeppe Olsen, February 1994
 * GAS version August 1995
@@ -642,7 +642,7 @@ C
      &            NOCTPA,NOCTPB,IDC,WORK(KLTTSIU),WORK(KLTTSNU),
      &            NCOMBU,0)
 *
-*. Allocate memory for blocks of input and output space in 
+*. Allocate memory for blocks of input and output space in
 *  accordance with ICISTR
 *
       IF(ICISTR.EQ.1) THEN
@@ -670,7 +670,7 @@ C
         WRITE(6,*) ' Initial vectors in EXPCIV '
 *
         DO IROOT = 1, NROOT
-        WRITE(6,*) ' Root number ', IROOT 
+        WRITE(6,*) ' Root number ', IROOT
 *
           IF(ICISTR.EQ.1) THEN
             CALL WRTMAT(WORK(KLBLI),1,NCOMBUT,1,NCOMBUT)
@@ -744,7 +744,7 @@ C
 *
         CALL REWINO(LUUT)
         DO IROOT = 1, NROOT
-        WRITE(6,*) ' Root number ', IROOT 
+        WRITE(6,*) ' Root number ', IROOT
 *
           IF(ICISTR.EQ.1) THEN
             CALL WRTMAT(WORK(KLBLU),1,NCOMBUT,1,NCOMBUT)
@@ -757,20 +757,20 @@ C
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'EXPCV2')
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck expcivs $Revision$ 
+*fordeck expcivs $Revision$
       SUBROUTINE EXPCIVS(LUIN,VECIN,NCOMBIN,NTTSIN,ITTSIN,IABIN,
      &                   NOCTPA,NOCTPB,IBLTPIN,
      &                   LUUT,VECUT,NCOMBUT,NTTSUT,ITTSUT,IABUT,
      &                   IBLTPUT,
      &                   ICISTR,IDC,NSMST,LBLK,IAMPACKED_IN)
 *
-* Obtain those part of vector in cispace UT , 
+* Obtain those part of vector in cispace UT ,
 * that can be obtained from terms in cispace IN
 *
 * Input vector on LUIN, Output vector in LUUT
@@ -806,7 +806,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 *
 *. Loop over TTS blocks of output vector
 *
-*. Changed for new ordering of blocks 
+*. Changed for new ordering of blocks
       IATPIN = 1
       IBTPIN = 1
       IASMIN = 0
@@ -814,9 +814,9 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       IATPUT = 1
       IBTPUT = 1
       IASMUT = 0
-* 
+*
  1000 CONTINUE
-*. Next output block 
+*. Next output block
         CALL NXTBLK(IATPUT,IBTPUT,IASMUT,NOCTPA,NOCTPB,NSMST,
      &              IBLTPUT,IDC,NONEWUT,IABUT)
 *. Corresponding input TTS block
@@ -824,7 +824,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
         JBTPIN = IBTPUT
         IF(IABIN(JATPIN,JBTPIN).EQ.0) THEN
           IZERO = 1
-        ELSE 
+        ELSE
           IZERO = 0
         END IF
 *
@@ -877,13 +877,13 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
                GOTO 999
              END IF
            END IF
-          END IF 
+          END IF
         END IF
       IF(NONEWUT.EQ.0) GOTO 1000
 *. End of loop over output blocks
       IF(ICISTR.EQ.1) THEN
         CALL TODSC(VECUT,NCOMBUT,-1,LUUT)
-      ELSE 
+      ELSE
         CALL ITODS(-1,1,-1,LUUT)
       END IF
 *
@@ -914,13 +914,13 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck extrrow $Revision$ 
+*fordeck extrrow $Revision$
       SUBROUTINE EXTRROW(INMAT,IROW,NROW,NCOL,IOUTVEC)
 *
 * Extract row IROW from integer matrix INMAT
@@ -937,20 +937,20 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       END DO
 *
       NTEST = 00
-      IF(NTEST.GE.100) THEN 
-        WRITE(6,*) ' Output vector from EXTRROW '  
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Output vector from EXTRROW '
         WRITE(6,*) ' Extracted ROW ', IROW
         CALL IWRTMA(IOUTVEC,1,NCOL,1,NCOL)
       END IF
 *
-      RETURN 
-      END 
+      RETURN
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck extrrow2 $Revision$ 
+*fordeck extrrow2 $Revision$
       SUBROUTINE EXTRROW2(INMAT,IROW,ICOLOFF,NROW,NCOL,IOUTVEC)
 *
 * Extract row IROW from integer matrix INMAT, starting from column
@@ -968,21 +968,21 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       END DO
 *
       NTEST = 00
-      IF(NTEST.GE.100) THEN 
-        WRITE(6,*) ' Output vector from EXTRROW '  
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Output vector from EXTRROW '
         WRITE(6,*) ' Extracted ROW ', IROW
         CALL IWRTMA(IOUTVEC,1,NCOL,1,NCOL)
       END IF
 *
-      RETURN 
-      END 
+      RETURN
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck find_active_blocks $Revision$ 
-      SUBROUTINE FIND_ACTIVE_BLOCKS 
+*fordeck find_active_blocks $Revision$
+      SUBROUTINE FIND_ACTIVE_BLOCKS
      &           (LUIN,LBLK,BLK_A,SEGMNT)
 *
 *. Find the active (nonvanishing blocks) on LUIN
@@ -1019,7 +1019,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
 C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN  
+          IF(IMZERO.EQ.0) THEN
            NBLK_A = NBLK_A + 1
            BLK_A(IBLK) = 1.0D0
           ELSE
@@ -1027,11 +1027,11 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
           END IF
         END IF
       IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
-      NBLK =  IBLK-1 
+      NBLK =  IBLK-1
 *
       NTEST = 0
       IF(NTEST.GE.1) THEN
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' FIND_A.... Number of total and active Blocks',NBLK,NBLK_A
       END IF
       IF(NTEST.GE.100) THEN
@@ -1046,7 +1046,7 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck find_active_classes $Revision$ 
+*fordeck find_active_classes $Revision$
       SUBROUTINE FIND_ACTIVE_CLASSES
      &           (LUIN,LBLK,I_BLK_TO_CLS,ICLS_A,NCLS,SEGMNT)
 *
@@ -1087,7 +1087,7 @@ C?      write(6,*) ' ZAP_BLOCK_VEC :  LBLK = ', LBLK
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &                 NO_ZEROING)
 C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
-          IF(IMZERO.EQ.0) THEN  
+          IF(IMZERO.EQ.0) THEN
            IF(ICLS_A(I_BLK_TO_CLS(IBLK)).EQ.0) THEN
              NCLS_A = NCLS_A + 1
            END IF
@@ -1232,7 +1232,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasanas $Revision$ 
+*fordeck gasanas $Revision$
       SUBROUTINE GASANAS(C,LUC,NSSOA,NSSOB,NOCTPA,NOCTPB,
      &                 MXPNGAS,IOCTPA,IOCTPB,NBLOCK,IBLOCK,
      &                 THRES,MAXTRM,NAEL,NBEL,
@@ -1248,20 +1248,20 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *
 *      2) Number of coefficients in given range
 *
-*      3) Number of coefficients in given range for given 
-*         occupation class         
+*      3) Number of coefficients in given range for given
+*         occupation class
 *
-* Jeppe Olsen , Jan. 1989 ,   
+* Jeppe Olsen , Jan. 1989 ,
 *               Aug 1995 : GAS version
 *               May 1997 : BLOCK driven
-*                                                  
+*
 
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION C(*)
 *. General input
-      DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)  
+      DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
       DIMENSION IBLTP(*)
       CHARACTER*6 IOBLAB(*)
@@ -1270,19 +1270,19 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
 *. Specific input
       DIMENSION IBLOCK(8,NBLOCK)
 *. Output
-      DIMENSION NCPMT(10,NOCCLS)                           
-      DIMENSION WCPMT(10,NOCCLS)                          
+      DIMENSION NCPMT(10,NOCCLS)
+      DIMENSION WCPMT(10,NOCCLS)
 *
 *
-      IF(IUSLAB.NE.0) THEN 
+      IF(IUSLAB.NE.0) THEN
        WRITE(6,*)
-       WRITE(6,*) 
-     & ' Labels for orbitals are of the type n l ml starting with n = 1' 
-       WRITE(6,*) 
-     & ' so the user should not be  alarmed by labels like 1 f+3 '  
+       WRITE(6,*)
+     & ' Labels for orbitals are of the type n l ml starting with n = 1'
+       WRITE(6,*)
+     & ' so the user should not be  alarmed by labels like 1 f+3 '
        WRITE(6,*)
       END IF
-     
+
 C     WRITE(6,*) 'C(1) = ',C(1)
       MINPRT = 0
       ITRM = 0
@@ -1344,7 +1344,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
         NIB = NSSOB(IBSM,IBTP)
 *
         IMZERO = 0
-        IF( ICISTR.GE.2 ) THEN 
+        IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
           CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
@@ -1388,7 +1388,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
      &            (IASTR(IEL,IA),IEL = 1, NAEL )
                   WRITE(6,'(4X,10I4)')
      &            (IBSTR(IEL,IB),IEL = 1, NBEL )
-                ELSE 
+                ELSE
                   WRITE(6,'(4X,10(1X,A6))')
      &            (IOBLAB(IASTR(IEL,IA)),IEL = 1, NAEL )
                   WRITE(6,'(4X,10(1X,A6))')
@@ -1444,7 +1444,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
         NIB = NSSOB(IBSM,IBTP)
 *
         IMZERO = 0
-        IF( ICISTR.GE.2 ) THEN 
+        IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
           CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
@@ -1463,7 +1463,7 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
             DO IPOT = 1, 10
               IF(10.0D0 ** (-IPOT+1).GE.ABS(C(IDET)).AND.
      &           ABS(C(IDET)).GT. 10.0D0 ** ( - IPOT )) THEN
-                 NCPMT(IPOT,JOCCLS)= NCPMT(IPOT,JOCCLS)+ 1  
+                 NCPMT(IPOT,JOCCLS)= NCPMT(IPOT,JOCCLS)+ 1
                  WCPMT(IPOT,JOCCLS)= WCPMT(IPOT,JOCCLS)+ C(IDET) ** 2
               END IF
             END DO
@@ -1486,55 +1486,55 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
       DO 300 IPOT = 1, 10
         W = 0.0D0
         N = 0
-        DO 290 JOCCLS = 1, NOCCLS 
-            N = N + NCPMT(IPOT,JOCCLS)                    
-            W = W + WCPMT(IPOT,JOCCLS)                    
+        DO 290 JOCCLS = 1, NOCCLS
+            N = N + NCPMT(IPOT,JOCCLS)
+            W = W + WCPMT(IPOT,JOCCLS)
   290   CONTINUE
         WACC = WACC + W
         NACC = NACC + N
         WRITE(6,'(A,I2,A,I2,3X,I9,X,E15.8,3X,E15.8)')
-     &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC           
+     &  '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   300 CONTINUE
 *
       WRITE(6,*) ' Number of coefficients less than  10-11',
      &           ' IS  ',NCIVAR - NACC
 *
-      IF(NOCCLS.NE.1) THEN                      
+      IF(NOCCLS.NE.1) THEN
       WRITE(6,'(A)')
-      WRITE(6,'(A)') 
+      WRITE(6,'(A)')
      & '   Magnitude of CI coefficients for each excitation level '
-      WRITE(6,'(A)') 
+      WRITE(6,'(A)')
      & '  ========================================================='
       WRITE(6,'(A)')
-      DO 400 JOCCLS = 1, NOCCLS  
+      DO 400 JOCCLS = 1, NOCCLS
           N = 0
           DO 380 IPOT = 1, 10
-            N = N + NCPMT(IPOT,JOCCLS)                     
+            N = N + NCPMT(IPOT,JOCCLS)
   380     CONTINUE
           IF(N .NE. 0 ) THEN
             WRITE(6,*)
             WRITE(6,'(A,15I3)')'       Occupation of active sets :',
      &      (IOCCLS(IGAS,JOCCLS),IGAS=1, NGAS)
-            WRITE(6,'(A,I9)')  
+            WRITE(6,'(A,I9)')
      &      '         Number of coefficients larger than 10-11 ', N
             WRITE(6,*)
             WACC = 0.0D0
             DO 370 IPOT = 1, 10
-              N =  NCPMT(IPOT,JOCCLS)                    
-              W =  WCPMT(IPOT,JOCCLS)                    
+              N =  NCPMT(IPOT,JOCCLS)
+              W =  WCPMT(IPOT,JOCCLS)
               WACC = WACC + W
               WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC           
+     &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
   370       CONTINUE
-          END IF 
+          END IF
   400 CONTINUE
 *
 *. Total weight and number of dets per excitation level
 *
       WRITE(6,'(A)')
-      WRITE(6,'(A)') 
-     & '   Total weight and number of SD''s (> 10 ** -11 )  : '          
-      WRITE(6,'(A)') 
+      WRITE(6,'(A)')
+     & '   Total weight and number of SD''s (> 10 ** -11 )  : '
+      WRITE(6,'(A)')
      & '  ================================================='
       WRITE(6,'(A)')
       WRITE(6,*) '        N      Weight      Acc. Weight   Occupation '
@@ -1544,12 +1544,12 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
           N = 0
           W = 0.0D0
           DO 480 IPOT = 1, 10
-            N = N + NCPMT(IPOT,JOCCLS)                   
-            W = W + WCPMT(IPOT,JOCCLS)                   
+            N = N + NCPMT(IPOT,JOCCLS)
+            W = W + WCPMT(IPOT,JOCCLS)
   480     CONTINUE
           WACC = WACC + W
           IF(N .NE. 0 ) THEN
-            WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))') 
+            WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
      &      N,W,WACC,(IOCCLS(IGAS,JOCCLS),IGAS=1,NGAS)
           END IF
   500 CONTINUE
@@ -1562,9 +1562,9 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gatvcd $Revision$ 
+*fordeck gatvcd $Revision$
 CADDE
-    
+
 
       SUBROUTINE GATVCD(LU,LBLK,NGAT,IGAT,XGAT,SEGMNT,IPRT)
 *
@@ -1598,9 +1598,9 @@ CADDE
           IFIRST = IBASE
           ILAST = IBASE + LENGTH - 1
           DO 100 I = 1, NGAT
-            IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST ) 
-     &      XGAT(I) = SEGMNT(IGAT(I)-IFIRST+1) 
-C?          IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST ) 
+            IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
+     &      XGAT(I) = SEGMNT(IGAT(I)-IFIRST+1)
+C?          IF(IFIRST .LE. IGAT(I) .AND. IGAT(I) .LE. ILAST )
 C?   &      write(6,*) ' Catch I IGAT(I) XGAT(I) ',
 C?   &                         I,IGAT(I),XGAT(I)
   100     CONTINUE
@@ -1611,7 +1611,7 @@ C?   &                         I,IGAT(I),XGAT(I)
       NTEST = 0
       NTEST = MAX(IPRT,NTEST)
       IF(NTEST.GE.5) THEN
-       WRITE(6,*) ' Gathered vector from GATVCD '      
+       WRITE(6,*) ' Gathered vector from GATVCD '
        CALL WRTMAT(XGAT,1,NGAT,1,NGAT)
       END IF
 *
@@ -1686,7 +1686,7 @@ CM    IREW = 1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_diag_dom $Revision$ 
+*fordeck get_diag_dom $Revision$
       SUBROUTINE GET_DIAG_DOM(AIN,AOUT,NDIM,IREO)
 *
 * A square matrix AIN is given. Permute columns to obtain
@@ -1697,7 +1697,7 @@ CM    IREW = 1
       IMPLICIT REAL*8(A-H,O-Z)
 *.Input
       DIMENSION AIN(NDIM,NDIM)
-*.Output 
+*.Output
       DIMENSION AOUT(NDIM,NDIM)
       INTEGER IREO(*)
 *
@@ -1706,7 +1706,7 @@ CM    IREW = 1
       CALL ISETVC(IREO,IZERO,NDIM)
       DO ICOL = 1, NDIM
 *. Column with largest values at row ICOL
-        XVAL = 0.0D0               
+        XVAL = 0.0D0
         IICOL = 0
         DO JCOL = 1, NDIM
           IF(ABS(AIN(ICOL,JCOL)).GT.XVAL.AND.IREO(JCOL).EQ.0) THEN
@@ -1717,7 +1717,7 @@ CM    IREW = 1
         IF(IICOL.GT.0) THEN
           CALL COPVEC(AIN(1,IICOL),AOUT(1,ICOL),NDIM)
           IREO(IICOL) = ICOL
-        ELSE 
+        ELSE
           CALL COPVEC(AIN(1,ICOL),AOUT(1,ICOL),NDIM)
           IREO(ICOL) = ICOL
         END IF
@@ -1744,20 +1744,20 @@ CM    IREW = 1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_nmlw $Revision$ 
+*fordeck get_nmlw $Revision$
       SUBROUTINE GET_NMLW(VEC,N,M,LW,N_MAX,M_MAX,
      &           LUCORR,LUREF,IREAD,LUOUT,IREW,LBLK,LUOUTEFF)
 *
 * Obtain correction vector ! N,M,LW> obtained in GNDBTFREQ
 * and save on file LUOUT
-* If IREAD = 0, the file is positioned 
+* If IREAD = 0, the file is positioned
 * for reading the file, but no transfer is realized
 * If IREW ne 0, LUOUT is rewinded
 *
 *. Jeppe in Pisa, July 17, 97
 *                 Sept. 97, Changed to disc, ICISTR = 2,3
 *
-*                 
+*
 *
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC(*)
@@ -1781,7 +1781,7 @@ CM    IREW = 1
       ELSE
 *. A real correction vector
 *. Position to start of requested vector
-        CALL REWINO(LUCORR)  
+        CALL REWINO(LUCORR)
         IVEC = 0
         DO NP = 0, N
           IF(NP.EQ.N) THEN
@@ -1821,7 +1821,7 @@ C?            write(6,*) ' Vector skipped ', IVEC
       END IF
 *
       IF(NTEST.GE.100) THEN
-       IF(IREAD.NE.0) THEN 
+       IF(IREAD.NE.0) THEN
          IF(IREW.NE.0) THEN
            WRITE(6,*) ' Vector read in '
            CALL WRTVCD(VEC,LUOUT,1,LBLK)
@@ -1841,7 +1841,7 @@ C?            write(6,*) ' Vector skipped ', IVEC
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_tts_batch $Revision$ 
+*fordeck get_tts_batch $Revision$
       SUBROUTINE GET_TTS_BATCH(CTTS,NBLOCK,IBLOCK,NBLOCKC,IBLOCKC,
      &                  NOCTPA,NOCTPB,NSMST,NSASO,NSBSO,
      &                  IDC,LUC,ISCR,IREW,ISCALE)
@@ -1892,10 +1892,10 @@ C?            write(6,*) ' Vector skipped ', IVEC
 *
       DO JBLOCK = 1, NBLOCK
         DO JBLOCKC = 1, NBLOCKC
-          IF(IBLOCK(1,JBLOCK).EQ.IBLOCKC(1,JBLOCKC) .AND. 
-     &       IBLOCK(2,JBLOCK).EQ.IBLOCKC(2,JBLOCKC) .AND. 
-     &       IBLOCK(3,JBLOCK).EQ.IBLOCKC(3,JBLOCKC) .AND. 
-     &       IBLOCK(4,JBLOCK).EQ.IBLOCKC(4,JBLOCKC)       ) THEN  
+          IF(IBLOCK(1,JBLOCK).EQ.IBLOCKC(1,JBLOCKC) .AND.
+     &       IBLOCK(2,JBLOCK).EQ.IBLOCKC(2,JBLOCKC) .AND.
+     &       IBLOCK(3,JBLOCK).EQ.IBLOCKC(3,JBLOCKC) .AND.
+     &       IBLOCK(4,JBLOCK).EQ.IBLOCKC(4,JBLOCKC)       ) THEN
            ISCR(JBLOCK) = JBLOCKC
           END IF
         END DO
@@ -1912,8 +1912,8 @@ C     ORDINT(IINST,IOUTST,NELMNT,INO,IPRNT)
 *
 * IINST : INPUT STRING
 * IOUTST : OUTPUT STRING
-* NELMNT : NUMBER OF INTEGERS 
-* INO : Mapping array from new to old order             
+* NELMNT : NUMBER OF INTEGERS
+* INO : Mapping array from new to old order
       KLORIG = 1
       KLORDER = KLORIG + NBLOCK
       KLNTOO = KLORDER + NBLOCK
@@ -1927,7 +1927,7 @@ C     ORDINT(IINST,IOUTST,NELMNT,INO,IPRNT)
 *
 *. Ready to loop over blocks
 *
-C     IOFFO = 1 
+C     IOFFO = 1
       DO JJBLK = 1, NBLOCK
         JBLK = ISCR(KLORDER-1+JJBLK)
         IOFFO   = IBLOCK(6,ISCR(KLNTOO-1+JJBLK))
@@ -1942,15 +1942,15 @@ C         CALL IFRMDS(LBL,1,-1,LUC)
 C         IF(IPACK.EQ.1) CALL IFRMDS(IMZERO,1,-1,LUC)
 C         IF(IPACK.EQ.0.OR.IMZERO.EQ.0) THEN
 C           READ(LUC)
-C         END IF 
+C         END IF
         END DO
 *. and : READIN !!!
         CALL IFRMDS(LBL,1,-1,LUC)
         CALL FRMDSC(CTTS(IOFFO),LBL,-1,LUC,IMZERO,IAMPACK)
 C?      WRITE(6,*) ' GET_TTS, JJBLK,IOFFO LBL ', JJBLK,IOFFO,LBL
-C       IOFFO = IOFFO + LBL 
+C       IOFFO = IOFFO + LBL
         IBLK = JBLK+1
-      END DO 
+      END DO
 *
 *. Rescale from combination form to determinant
 *
@@ -1982,7 +1982,7 @@ C    &                  NSASO,NSBSO,ISC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_tts_batchn $Revision$ 
+*fordeck get_tts_batchn $Revision$
       SUBROUTINE GET_TTS_BATCHN(CTTS,NBLOCK,IBLOCK,NBLOCKC,IBLOCKC,
      &                  NOCTPA,NOCTPB,NSMST,NSASO,NSBSO,
      &                  IDC,LUC,IREW,ISCALE)
@@ -2033,7 +2033,7 @@ C    &                  NSASO,NSBSO,ISC)
       DO JBLOCK = 1, NBLOCK
           IF(IBLOCK(1,JBLOCK).GT.0) THEN
             ISKIP = 0
-          ELSE 
+          ELSE
             ISKIP = 1
           END IF
 *
@@ -2046,9 +2046,9 @@ C    &                  NSASO,NSBSO,ISC)
 *. Loop over blocks on file
   999   CONTINUE
 *. is this block identical to next block on disc
-          IF(ABS(IBLOCK(1,JBLOCK)).EQ.ABS(IBLOCKC(1,IBLK)) .AND. 
-     &       IBLOCK(2,JBLOCK).EQ.IBLOCKC(2,IBLK) .AND. 
-     &       IBLOCK(3,JBLOCK).EQ.IBLOCKC(3,IBLK) .AND. 
+          IF(ABS(IBLOCK(1,JBLOCK)).EQ.ABS(IBLOCKC(1,IBLK)) .AND.
+     &       IBLOCK(2,JBLOCK).EQ.IBLOCKC(2,IBLK) .AND.
+     &       IBLOCK(3,JBLOCK).EQ.IBLOCKC(3,IBLK) .AND.
      &       IBLOCK(4,JBLOCK).EQ.IBLOCKC(4,IBLK) ) THEN
              IF(ISKIP.EQ.0) THEN
 *. Read me !
@@ -2062,7 +2062,7 @@ C    &                  NSASO,NSBSO,ISC)
               CALL SKPRCD2(LBL,-1,LUC)
               IBLK = IBLK + 1
             END IF
-          ELSE 
+          ELSE
 *. Skip me
             CALL IFRMDS(LBL,1,-1,LUC)
             CALL SKPRCD2(LBL,-1,LUC)
@@ -2100,7 +2100,7 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_tts_blk_in_vector $Revision$ 
+*fordeck get_tts_blk_in_vector $Revision$
       SUBROUTINE GET_TTS_BLK_IN_VECTOR
      &           (NBLOCKI,IBLOCKI,IOFFI,VECI,
      &            NBLOCKO,IBLOCKO,IOFFO,
@@ -2113,7 +2113,7 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
 *. The number of elements in these blocks is LBLOCKIO
 *. Save the common blocks in VECIO and the corresponding block info in
 *  IBLOCKIO
-*  
+*
 *
 * Jeppe Olsen,  November 1995
 *
@@ -2134,9 +2134,9 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
       DO JBLOCKI = IOFFI,IOFFI+NBLOCKI-1
         DO JBLOCKO = IOFFO, IOFFO + NBLOCKO-1
           IF(IBLOCKI(1,JBLOCKI).EQ. IBLOCKO(1,JBLOCKO).AND.
-     &    IBLOCKI(2,JBLOCKI).EQ. IBLOCKO(2,JBLOCKO)   .AND. 
-     &    IBLOCKI(3,JBLOCKI).EQ. IBLOCKO(3,JBLOCKO)   .AND. 
-     &    IBLOCKI(4,JBLOCKI).EQ. IBLOCKO(4,JBLOCKO)          ) THEN 
+     &    IBLOCKI(2,JBLOCKI).EQ. IBLOCKO(2,JBLOCKO)   .AND.
+     &    IBLOCKI(3,JBLOCKI).EQ. IBLOCKO(3,JBLOCKO)   .AND.
+     &    IBLOCKI(4,JBLOCKI).EQ. IBLOCKO(4,JBLOCKO)          ) THEN
             NBLOCKIO = NBLOCKIO + 1
             CALL ICOPVE(IBLOCKI(1,JBLOCKI),IBLOCKIO(1,NBLOCKIO),8)
             IBLOCKIO(5,NBLOCKIO) = IOFF
@@ -2164,13 +2164,13 @@ C    &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsttbl $Revision$ 
+*fordeck gsttbl $Revision$
       SUBROUTINE GSTTBL(C,CTT,IATP,IASM,IBTP,IBSM,IOCOC,
      &                  NOCTPA,NOCTPB,NSASO,NSBSO,PSSIGN,ICOOSC,IDC,
      &                  PLSIGN,LUC,SCR,NSMST,ISCALE,SCLFAC)
@@ -2342,10 +2342,10 @@ C?   &   NSASO(IASM,IATP),NSBSO(IBSM,IBTP))
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0tv2 $Revision$ 
+*fordeck h0tv2 $Revision$
       SUBROUTINE H0TV2(VEC1,VEC2,LUC,LUHC,LU0,LUSCR1,E0,LBLK)
 *
-* Multiply vector in LUC with H0 where H0 is defined as 
+* Multiply vector in LUC with H0 where H0 is defined as
 *
 * H0 = (1-|0><0|) H apr  (1-|0><0>) + E0 |0><0>
 *
@@ -2401,10 +2401,10 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
-        WRITE(6,*) ' Input vector ' 
+        WRITE(6,*) ' Input vector '
         CALL WRTVCD(VEC1,LUC,1,LBLK)
         WRITE(6,*)
-        WRITE(6,*) ' Output vector ' 
+        WRITE(6,*) ' Output vector '
         CALL WRTVCD(VEC1,LUHC,1,LBLK)
       END IF
 *
@@ -2485,8 +2485,8 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hpqtv $Revision$ 
- 
+*fordeck hpqtv $Revision$
+
       SUBROUTINE HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
 *
 * Multiply P1P2Q preconditioner with a vector
@@ -2537,10 +2537,10 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hpqtvm $Revision$ 
+*fordeck hpqtvm $Revision$
       SUBROUTINE HPQTVM(VECIN,VECUT,IDUM,JDUM)
-* 
-* Outer routine for Preconditioner times vector 
+*
+* Outer routine for Preconditioner times vector
 *
 *. LUCIA version
       IMPLICIT REAL*8(A-H,O-Z)
@@ -2557,16 +2557,16 @@ C    &            ICISTR,NOCSF,IDIAG
 *
       COMMON/SHFT/SHIFT
 *
-      NPDM = MXP1+MXP2    
-      NQDM = MXQ   
+      NPDM = MXP1+MXP2
+      NQDM = MXQ
       KLPHP = KH0
       KLPHQ = KH0 + NPDM*(NPDM+1)/2
-      KLQHQ = KLPHQ + MXP1*MXQ   
+      KLQHQ = KLPHQ + MXP1*MXQ
 *
 C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
-      CALL HPQTV(MXP1,MXP2,MXQ,      
+      CALL HPQTV(MXP1,MXP2,MXQ,
      &           WORK(KLPHP),WORK(KLPHQ),WORK(KLQHQ),
-     &           VECIN,VECUT)         
+     &           VECIN,VECUT)
 *
       IF(SHIFT.NE.0.0D0) THEN
        CALL VECSUM(VECUT,VECUT,VECIN,1.0D0,SHIFT,NPDM+NQDM)
@@ -2580,14 +2580,14 @@ C          HPQTV(NP1,NP2,NQ,PHP,PHQ,QHQ,VECIN,VECUT)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck inprdd $Revision$ 
- 
+*fordeck inprdd $Revision$
+
       REAL*8 FUNCTION INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
 C
 C DISC VERSION OF INPROD
@@ -2661,7 +2661,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lulu $Revision$ 
+*fordeck lulu $Revision$
       SUBROUTINE LULU(A,L,U,NDIM)
 C
 C LU DECOMPOSITION OF MATRIX A
@@ -2733,7 +2733,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matcas $Revision$ 
+*fordeck matcas $Revision$
       SUBROUTINE MATCAS(CIN,COUT,NROWI,NROWO,IROWO1,NGCOL,ISCA,SCASGN)
 *
 * COUT(IR+IROWO1-1,ISCA(IC)) =
@@ -2771,7 +2771,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matcg $Revision$ 
+*fordeck matcg $Revision$
 C                 CALL MATCG(C,CB(ICGOFF),NROW,NIBTC,IBOT,
 C                            NKBTC,I1,XI1S)
       SUBROUTINE MATCG(CIN,COUT,NROWI,NROWO,IROWI1,NGCOL,IGAT,GATSGN)
@@ -2816,11 +2816,11 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mult_bloc_mat $Revision$ 
+*fordeck mult_bloc_mat $Revision$
       SUBROUTINE MULT_BLOC_MAT(C,A,B,NBLOCK,LCROW,LCCOL,
      &                         LAROW,LACOL,LBROW,LBCOL,ITRNSP)
 *
-* Multiply two blocked matrices 
+* Multiply two blocked matrices
 *
 * ITRNSP = 0 => C = A * B
 * ITRNSP = 1 => C = A(T) * B
@@ -2867,7 +2867,7 @@ C?      write(6,*) ' igat,sign ',IGAT(IG),GATSGN(IG)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -2915,13 +2915,13 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mvcsmd2 $Revision$ 
+*fordeck mvcsmd2 $Revision$
       SUBROUTINE MVCSMD2(LUIN,FAC,FACLUOUT,LUOUT,LUSCR,
      &           VEC1,VEC2,NVEC,IREW,LBLK)
 *
 * LUOUT = Factor * LUOUT + sum(I=1,nvec)fac(I) LUIN(I)
 *
-* LUOUT and LUSCR are rewinded and input data 
+* LUOUT and LUSCR are rewinded and input data
 * on these files are lost.
 *
 * MVCSMD2 is identical MVCSMD, except that
@@ -2968,7 +2968,7 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtblk $Revision$ 
+*fordeck nxtblk $Revision$
       SUBROUTINE NXTBLK(IATP,IBTP,IASM,NOCTPA,NOCTPB,NSMST,IBLTP,IDC,
      &                  NONEW,IOCOC)
 *
@@ -3048,7 +3048,7 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pamtmt $Revision$ 
+*fordeck pamtmt $Revision$
       SUBROUTINE PAMTMT(X,T,WORK,NORB)
 *
 * GENERATE PER AKE'S T MATRIX FROM AN
@@ -3124,7 +3124,7 @@ C     KLL = KFLREE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pr_matml_stat $Revision$ 
+*fordeck pr_matml_stat $Revision$
       SUBROUTINE PR_MATML_STAT
 *
 * Print statistics from matrix multiplier
@@ -3155,7 +3155,7 @@ C     KLL = KFLREE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prhone $Revision$ 
+*fordeck prhone $Revision$
       SUBROUTINE PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *
 *. Print one-electron integrals with symmetry IHSM
@@ -3171,7 +3171,7 @@ C     KLL = KFLREE
         ICSM = MULTD2H(IHSM,IRSM)
         NR = NFUNC(IRSM)
         NC = NFUNC(ICSM)
-        WRITE(6,'(A,2I3)') 
+        WRITE(6,'(A,2I3)')
      &  ' Blocks with row- and column-symmetry',IRSM,ICSM
         WRITE(6,'(A)')
      &  ' =========================================== '
@@ -3184,7 +3184,7 @@ C     KLL = KFLREE
           CALL WRTMAT(H(IOFF),NR,NC,NR,NC)
           IOFF = IOFF + NR*NC
         END IF
-      END DO 
+      END DO
 *
       RETURN
       END
@@ -3249,15 +3249,15 @@ C     KLL = KFLREE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck redblk $Revision$ 
+*fordeck redblk $Revision$
       SUBROUTINE REDBLK(NBLOCKI,IBLOCKI,IBBLOCKI,IOCOC,
      &                  NOCTPA,NOCTPB,
      &                  NBLOCKO,IBLOCKO,IMAP)
 *
-* a set of TTS blocks are given in IBLOCKI starting from 
+* a set of TTS blocks are given in IBLOCKI starting from
 * block IBBLOCKI,
 *
-* Obtain those blocks that are allowed in space defined by IOCOC 
+* Obtain those blocks that are allowed in space defined by IOCOC
 *
 * Jeppe Olsen , August 1995
 *
@@ -3296,18 +3296,18 @@ C     KLL = KFLREE
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rftts $Revision$ 
+*fordeck rftts $Revision$
       SUBROUTINE RFTTS(BLOCKSI,BLOCKSO,IBLOCK,NBLOCK,
      &                 ICOPY,NSMST,NOCTPA,NOCTPB,
      &                 NSASO,NSBSO,IDC,PS,IWAY,IPRNT)
 *
-* Reformat between determinant and combination form of 
+* Reformat between determinant and combination form of
 * matrices. No scaling is performed .
 *
 * IWAY = 1 : dets to combs
@@ -3315,10 +3315,10 @@ C     KLL = KFLREE
 *
 * Combination storage mode is defined BY IDC
 *
-*. Jeppe Olsen, August 1995           
+*. Jeppe Olsen, August 1995
 *
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-*. General input 
+*. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
       DIMENSION BLOCKSI(*),BLOCKSO(*)
@@ -3330,7 +3330,7 @@ C     KLL = KFLREE
 *
       LENGTH = 0
       IF(IWAY.EQ.1) THEN
-        ISCI = 1 
+        ISCI = 1
         ISCO = 2
       ELSE
         ISCI = 2
@@ -3360,25 +3360,25 @@ C     KLL = KFLREE
         IF(IWAY.EQ.1) THEN
           IOFFI = IBLOCK(5,JBLOCK)
           IOFFO = IBLOCK(6,JBLOCK)
-        ELSE 
+        ELSE
           IOFFO = IBLOCK(5,JBLOCK)
           IOFFI = IBLOCK(6,JBLOCK)
         END IF
 *. Is this block diagonal in packed form
         IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) THEN
           IPACK = 1
-        ELSE 
+        ELSE
           IPACK = 0
         END IF
         NIA = NSASO(IASM,IATP)
         NIB = NSBSO(IBSM,IBTP)
 *. Number of elements in output block
-        IF(IPACK .EQ. 1 .AND. ISCO.EQ.2 ) THEN                       
+        IF(IPACK .EQ. 1 .AND. ISCO.EQ.2 ) THEN
           NELMNT =  NIA*(NIA+1)/2
         ELSE
           NELMNT =  NIA*NIB
         END IF
-C?     write(6,*) 
+C?     write(6,*)
 C?   & ' RFTTS : IATP IBTP IASM IBSM ',IATP,IBTP,IASM,IBSM
 C?     WRITE(6,*)
 C?   & ' RFTTS : NIA NIB IOFFI,IOFFO',NIA,NIB,IOFFI,IOFFO
@@ -3419,24 +3419,24 @@ C TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck scdtts $Revision$ 
+*fordeck scdtts $Revision$
       SUBROUTINE SCDTTS(BLOCKS,IBLOCK,NBLOCK,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,IDC,IWAY,IPRNT)
 *
 * Scale batch of
-* blocks between determinant and combination form 
+* blocks between determinant and combination form
 *
 *
 * IWAY = 1 : dets to combs
 * IWAY = 2 : combs to dets
 *
-* The blocks are assumed to be in packed form !! 
+* The blocks are assumed to be in packed form !!
 *
-*. Jeppe Olsen, August 1995           
+*. Jeppe Olsen, August 1995
 *
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-*. General input 
+*. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
       DIMENSION BLOCKS(*)
@@ -3447,7 +3447,7 @@ C?    LOGICAL DIAGBL
       NTEST = 00
       NTEST = MAX(NTEST,IPRNT)
       IF( NTEST .GT. 10 ) THEN
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' ======================= '
         WRITE(6,*) ' Information from SCDTTS '
         WRITE(6,*) ' ======================= '
@@ -3474,12 +3474,12 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
 *. Is this block diagonal in packed form
         IF(IASM.EQ.IBSM.AND.IATP.EQ.IBTP) THEN
           IPACK = 1
-        ELSE 
+        ELSE
           IPACK = 0
         END IF
         NIA   = NSASO(IASM,IATP)
         NIB = NSBSO(IBSM,IBTP)
-        IF(IPACK .EQ. 1 ) THEN                       
+        IF(IPACK .EQ. 1 ) THEN
           NELMNT =  NIA*(NIA+1)/2
         ELSE
           NELMNT =  NIA*NIB
@@ -3492,9 +3492,9 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
             FACTOR = SQ2I
           END IF
           CALL SCALVE(BLOCKS(IOFFP),FACTOR,NELMNT)
-          IF(IPACK.EQ.1 ) THEN                   
+          IF(IPACK.EQ.1 ) THEN
             FACTOR = 1.0D0/FACTOR
-            CALL SCLDIA(BLOCKS(IOFFP),FACTOR,NIA,1)     
+            CALL SCLDIA(BLOCKS(IOFFP),FACTOR,NIA,1)
           END IF
         END IF
 *
@@ -3502,7 +3502,7 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
       END DO
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) ' Output vector '  
+        WRITE(6,*) ' Output vector '
         CALL WRTTTS(BLOCKS,IBLOCK,NBLOCK,
      &              NSMST,NOCTPA,NOCTPB,NSASO,NSBSO,2)
       END IF
@@ -3514,7 +3514,7 @@ C    &                  NSASO,NSBSO,ISC,IPRNT)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sclvcd $Revision$ 
+*fordeck sclvcd $Revision$
       SUBROUTINE SCLVCD(LUIN,LUOUT,SCALE,SEGMNT,IREW,LBLK)
 C
 C SCALE VECTOR ON FILE LUIN WITH FACTOR SCALE AND STORE ON LUOUT
@@ -3570,17 +3570,17 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sdcmrf $Revision$ 
+*fordeck sdcmrf $Revision$
       SUBROUTINE SDCMRF(CSD,CCM,IWAY,IATP,IBTP,IASM,IBSM,NA,NB,
      &                  IDC,PS,PL,ISGVST,LDET,LCOMB,ISCALE,SCLFAC)
 *
-* Change a block of coefficients between combination format and 
+* Change a block of coefficients between combination format and
 * Slater determinant format
 *
 *     IWAY = 1 : SD => Combinations
 *     IWAY = 2 : Combinations => SD
 *
-* Input 
+* Input
 * =====
 * CSD : Block in determinant form
 * CCM : Block in combination  form
@@ -3610,7 +3610,7 @@ C
 *
       IF(IDC.EQ.2.OR.IDC.EQ.4) THEN
          SIGN = PS
-         FACTOR = SQRT2 
+         FACTOR = SQRT2
          IF(IASM.EQ.IBSM.AND.IATP.EQ.IBTP) IPACK = 1
       ELSE IF( IDC.EQ.4.AND.IASM.EQ.ISGVST(IBSM)) THEN
         IF(IATP.EQ.IBTP) IPACK = 1
@@ -3630,7 +3630,7 @@ C
 *. SD => combination transformation
 *
       IF(IWAY .EQ. 1 ) THEN
-        IF(IPACK.EQ.1) THEN                    
+        IF(IPACK.EQ.1) THEN
 *. Pack to triangular form
           CALL TRIPK3(CSD,CCM,1,NA,NA,SIGN)
 C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
@@ -3646,7 +3646,7 @@ C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
             SCLFAC = FACTOR
           END IF
           IF(IPACK.EQ.1 ) THEN
-            CALL SCLDIA(CCM,SQRT2I,NA,1) 
+            CALL SCLDIA(CCM,SQRT2I,NA,1)
           END IF
         END IF
       END IF
@@ -3678,7 +3678,7 @@ C              TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
       IF(NTEST.NE.0) THEN
 C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
         WRITE(6,*) ' Information from SDCMRF '
-   
+
         WRITE(6,'(A,6I4)') ' IWAY IATP IBTP IASM IBSM IDC ',
      &                   IWAY,IATP,IBTP,IASM,IBSM,IDC
         WRITE(6,'(A,I4,3X,2E13.8)') ' IPACK FACTOR SIGN',
@@ -3703,10 +3703,10 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck setvcd $Revision$ 
+*fordeck setvcd $Revision$
       SUBROUTINE SETVCD(LUIN,LUOUT,SEGMNT,VALUE,IREW,LBLK)
 *
-* Construct a vector with the same structure as LUIN 
+* Construct a vector with the same structure as LUIN
 * with values VALUE
 *
 * LBLK DEFINES STRUCTURE OF FILE
@@ -3717,7 +3717,7 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
         CALL REWINE( LUIN ,LBLK)
         CALL REWINE( LUOUT ,LBLK)
       END IF
- 
+
 *
 * Loop over blocks
 *
@@ -3751,13 +3751,13 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck type_to_sym_reo_mat $Revision$ 
+*fordeck type_to_sym_reo_mat $Revision$
       SUBROUTINE TYPE_TO_SYM_REO_MAT(XIN,XOUT)
 *
 *. a matrix XIN is given as NTOOB X NTOOB matrix in type form
 *
 * If ISYM.eq.1 matrix is assuemed to be packed - lower half as usual
-*. 
+*.
 *. Reorder to symmetry-ordered and -blocked matrix to give XOUT
 *
 *. Matrix is assumed to exclude inactive orbitals !!
@@ -3789,7 +3789,7 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 *. Extract symmetry block of matrix
 *
         DO IOB = IOBOFF,IOBOFF + LOB-1
-           DO JOB = IOBOFF, IOBOFF + LOB-1         
+           DO JOB = IOBOFF, IOBOFF + LOB-1
 *. Corresponding type indeces
              IOBP = IREOST(IOB)
              JOBP = IREOST(JOB)
@@ -3802,10 +3802,10 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 *. (End of loop over orbital symmetries )
       IF(NTEST.GE.10 ) THEN
         WRITE(6,*)
-        WRITE(6,*) ' Symmetry ordered matrix '                 
+        WRITE(6,*) ' Symmetry ordered matrix '
         WRITE(6,*) ' ======================='
         WRITE(6,*)
-        CALL APRBLM2(XOUT,NACOBS,NACOBS,NSMOB,0)      
+        CALL APRBLM2(XOUT,NACOBS,NACOBS,NSMOB,0)
       END IF
 *
       RETURN
@@ -4023,7 +4023,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrsvcd $Revision$ 
+*fordeck wrsvcd $Revision$
 C                WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
 C    &           LUDIA)
       SUBROUTINE WRSVCD(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM,JPACK)
@@ -4054,12 +4054,12 @@ C    &           LUDIA)
         CALL IFRMDS(LBL,1,-1,LUFORM)
         CALL ITODS (LBL,1,-1,LU)
         IF(LBL.GE.0) THEN
-C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL  
+C?        write(6,*) ' IBOT, LBL  ',IBOT, LBL
           CALL SETVEC(VEC1,0.0D0,LBL)
           DO 200 IEFF = 1, NSCAT
-            IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1) 
+            IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
      &      VEC1(IPLAC(IEFF)-IBOT+1) = VAL(IEFF)
-C?          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1) 
+C?          IF( IPLAC(IEFF).GE.IBOT.AND.IPLAC(IEFF).LE.IBOT+LBL-1)
 C?   &      write(6,*) ' Catch : IPLAC(IEFF) VAL(IEFF) ',
 C?   &      IPLAC(IEFF),VAL(IEFF)
   200     CONTINUE
@@ -4067,7 +4067,7 @@ C         write(6,*)  'record to be disced '
 C         CALL WRTMAT(VEC1,1,LBL,1,LBL)
           IF(JPACK.EQ.1) THEN
             CALL TODSCP(VEC1,LBL,-1,LU)
-          ELSE 
+          ELSE
             CALL TODSC(VEC1,LBL,-1,LU)
           END IF
 *.Skip record on LUFORM
@@ -4087,7 +4087,7 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrtblkn $Revision$ 
+*fordeck wrtblkn $Revision$
       SUBROUTINE WRTBLKN(VEC,NBLOCK,LBLOCK)
 *
 * Write the NBLOCK blocks of VEC
@@ -4117,7 +4117,7 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrtrs2 $Revision$ 
+*fordeck wrtrs2 $Revision$
       SUBROUTINE WRTRS2(VECTOR,ISMOST,ICBLTP,IOCOC,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,NSMST)
 *
@@ -4182,7 +4182,7 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrttts $Revision$ 
+*fordeck wrttts $Revision$
       SUBROUTINE WRTTTS(BLOCKS,IBLOCK,NBLOCK,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,ISC)
@@ -4190,13 +4190,13 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
 * Print a batch of TTS blocks as given by IBLOCK
 *
 *
-* ISC = 1 : In slater determinant form 
-* ISC = 2 : In Combination        form 
+* ISC = 1 : In slater determinant form
+* ISC = 2 : In Combination        form
 *
-*. Jeppe Olsen, August 1995           
+*. Jeppe Olsen, August 1995
 *
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-*. General input 
+*. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
       DIMENSION BLOCKS(*)
@@ -4222,10 +4222,10 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
           IOFF = IBLOCK(6,JBLOCK)
         END IF
 *
-*. Is this block diagonal 
+*. Is this block diagonal
         IF(ISC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) THEN
           IPACK = 1
-        ELSE 
+        ELSE
           IPACK = 0
         END IF
         NIA = NSASO(IASM,IATP)
@@ -4233,7 +4233,7 @@ C       CALL WRTVCD(VEC1,LU,1,LBLK)
 C?      write(6,*) ' iatp ibtp iasm ibsm nia nib ',
 C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 *
-        IF(IPACK.EQ.1) THEN 
+        IF(IPACK.EQ.1) THEN
           NELMNT = NIA*(NIA+1)/2
           IF(NELMNT.NE.0) THEN
             WRITE(6,'(A,3I3)')
@@ -4257,13 +4257,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       END DO
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrttts2 $Revision$ 
+*fordeck wrttts2 $Revision$
       SUBROUTINE WRTTTS2(BLOCKS,IBLOCK,NBLOCK,IOFF,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,ISC)
@@ -4272,13 +4272,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 * The blocks starts from block IOFF
 *
 *
-* ISC = 1 : In slater determinant form 
-* ISC = 2 : In Combination        form 
+* ISC = 1 : In slater determinant form
+* ISC = 2 : In Combination        form
 *
-*. Jeppe Olsen, August 1995           
+*. Jeppe Olsen, August 1995
 *
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-*. General input 
+*. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
       DIMENSION BLOCKS(*)
@@ -4303,10 +4303,10 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
           JOFF = IBLOCK(6,JBLOCK)
         END IF
 *
-*. Is this block diagonal 
+*. Is this block diagonal
         IF(ISC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) THEN
           IPACK = 1
-        ELSE 
+        ELSE
           IPACK = 0
         END IF
         NIA = NSASO(IASM,IATP)
@@ -4314,7 +4314,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 C?      write(6,*) ' iatp ibtp iasm ibsm nia nib ',
 C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 *
-        IF(IPACK.EQ.1) THEN 
+        IF(IPACK.EQ.1) THEN
           NELMNT = NIA*(NIA+1)/2
           IF(NELMNT.NE.0) THEN
             WRITE(6,'(A,3I3)')
@@ -4336,13 +4336,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       END DO
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrtttsc $Revision$ 
+*fordeck wrtttsc $Revision$
       SUBROUTINE WRTTTSC(BLOCKS,IBLOCK,NBLOCK,
      &                  NSMST,NOCTPA,NOCTPB,
      &                  NSASO,NSBSO,ISC,I0CHK,I0BLK)
@@ -4350,13 +4350,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
 * Print a batch of TTS blocks as given by IBLOCK
 *
 *
-* ISC = 1 : In slater determinant form 
-* ISC = 2 : In Combination        form 
+* ISC = 1 : In slater determinant form
+* ISC = 2 : In Combination        form
 *
-*. Jeppe Olsen, from WRTTTS, July 97 
+*. Jeppe Olsen, from WRTTTS, July 97
 *
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-*. General input 
+*. General input
       DIMENSION NSASO(NSMST,*),NSBSO(NSMST,*)
 *.
       DIMENSION BLOCKS(*)
@@ -4383,10 +4383,10 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
           IOFF = IBLOCK(6,JBLOCK)
         END IF
 *
-*. Is this block diagonal 
+*. Is this block diagonal
         IF(ISC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) THEN
           IPACK = 1
-        ELSE 
+        ELSE
           IPACK = 0
         END IF
         NIA = NSASO(IASM,IATP)
@@ -4397,13 +4397,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
         IF(I0CHK.NE.0) THEN
           IF(I0BLK(JBLOCK).NE.0) THEN
             I_AM_ZERO = 1
-          ELSE  
+          ELSE
             I_AM_ZERO = 0
           END IF
         ELSE
           I_AM_ZERO = 0
         END IF
-        IF(IPACK.EQ.1) THEN 
+        IF(IPACK.EQ.1) THEN
           NELMNT = NIA*(NIA+1)/2
           IF(NELMNT.NE.0) THEN
             WRITE(6,'(A,3I3)')
@@ -4435,13 +4435,13 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       END DO
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrtvcd $Revision$ 
+*fordeck wrtvcd $Revision$
       SUBROUTINE WRTVCD(SEGMNT,LU,IREW,LBLK)
 C
 C PRINT VECTOR ON FILE LU
@@ -4493,7 +4493,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck xdiaxt $Revision$ 
+*fordeck xdiaxt $Revision$
 
       SUBROUTINE XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
@@ -4520,7 +4520,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck xdixt2 $Revision$ 
+*fordeck xdixt2 $Revision$
       SUBROUTINE XDIXT2(XDX,X,DIA,NXRDM,NXCDM,SHIFT,SCR)
 *
 * Obtain XDX = X * (DIA+Shift)-1 * X(Transposed)
@@ -4563,15 +4563,15 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zap_block_vec $Revision$ 
+*fordeck zap_block_vec $Revision$
       SUBROUTINE ZAP_BLOCK_VEC(LUIN,LBLK,IBLKS_A,SEGMNT,LUSCR)
 *
 * Zap blocks in vector in file LUIN for which IBLKS_A is zero
 *
-* Vector is initially constructed on LUSCR, and is copied back to 
+* Vector is initially constructed on LUSCR, and is copied back to
 * LUIN after use
 *
-* Note : Files are always rewinded 
+* Note : Files are always rewinded
 * Packed version
 *
 * LBLK defines file type
@@ -4621,7 +4621,7 @@ C?      write(6,*) ' ZAP_BLOCK_VEC :  LBLK = ', LBLK
 *
 * Packed
 *
-          IF(IAMPACK.EQ.1) THEN 
+          IF(IAMPACK.EQ.1) THEN
             IF(IMZERO.EQ.1.OR.IBLKS_A(IBLK).EQ.0) THEN
               CALL ZERORC(LBL,LUSCR,IAMPACK)
             ELSE
@@ -4647,7 +4647,7 @@ C          COPVCDP(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zerorc $Revision$ 
+*fordeck zerorc $Revision$
       SUBROUTINE ZERORC(MBLOCK,IFIL,IAMPACKED)
 *
 * A record was known to be identical  zero

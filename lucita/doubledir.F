@@ -1,15 +1,15 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dirdir $Revision$ 
+*fordeck dirdir $Revision$
       SUBROUTINE DIRDIR(INSPC,IUTSPC,ISM,LUIN,LEVEL,E0,LUSCR,LUSCR2,
-     &                  LU1) 
+     &                  LU1)
 
 
-* A vector is given in space INSPC . Calculate approximations 
+* A vector is given in space INSPC . Calculate approximations
 * to energies in larger space UTSPC
 *
 * Input vector is on file LUIN, but is assumed expanded to
@@ -22,10 +22,10 @@
 * The second order energy is only meaningful for spaces not included in !0>
 
 *
-* LEVEL = 2 : Calculate also <1!H!1>, 
-*      
+* LEVEL = 2 : Calculate also <1!H!1>,
+*
 * Jeppe Olsen, August 1995 : Trying to get my miltibillion debt paid
-*                            before going to Cambridge 
+*                            before going to Cambridge
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
@@ -55,12 +55,12 @@ C     COMMON/CECORE/ECORE,ECORE_ORIG,ECORE_H
       WRITE(6,'(20X,A)') '* Jeppe Olsen Version of oct.1995 *'
       WRITE(6,'(20X,A)') '*                                 *'
       WRITE(6,'(20X,A)') '***********************************'
-      WRITE(6,'(20X,A)') 
+      WRITE(6,'(20X,A)')
 *
       WRITE(6,*) ' Input space ', INSPC
       WRITE(6,*) ' Output space ', IUTSPC
       WRITE(6,*) ' Level of calculation ', LEVEL
-      WRITE(6,*) 
+      WRITE(6,*)
 *
       IATP = 1
       IBTP = 2
@@ -89,7 +89,7 @@ C          OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS,IGSMIN,IGSMAX)
 *. Space for saving results : S11 : <1!1> in different classes
 *.                            S01 : <0!1> in different classes
 *.                            RES0 : norm of (H-E)!0> in different classes
-*                             E2    : Second order energy contributions 
+*                             E2    : Second order energy contributions
 *                                     from different classes
 *
       CALL  MEMMAN(KLS11,NOCCLS,'ADDL  ',2,'KLS11 ')
@@ -100,16 +100,16 @@ C          OCCLS(IWAY,NOCCLS,IOCCLS,NEL,NGAS,IGSMIN,IGSMAX)
       IF(IPART.EQ.1) THEN
         WRITE(6,*) ' M-P Hamiltonian will be constructed '
         CALL COPVEC(WORK(KINT1O),WORK(KFI),NINT1)
-        CALL FIFAM(WORK(KFI)) 
+        CALL FIFAM(WORK(KFI))
         CALL COPVEC(WORK(KFI),WORK(KFIO),NINT1)
         ECORE_H = 0.0D0
         IF(IUSE_PH.EQ.1) THEN
           CALL FI(WORK(KFI),ECORE_H,0)
-C         ECORE = ECORE_ORIG + ECCP 
+C         ECORE = ECORE_ORIG + ECCP
         END IF
       END IF
 
-      
+
         CALL DIRDIR1N(E0,ECORE,INSPC,IUTSPC,ISM,LUIN,
      &       WORK(KLS11),WORK(KLS01),WORK(KLRES0),WORK(KLE2),
      &       NOCCLS,WORK(KLOCCLS),NACTI,WORK(KLACCLI),
@@ -1836,24 +1836,24 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sbatch2_from_cbatch $Revision$ 
+*fordeck sbatch2_from_cbatch $Revision$
       SUBROUTINE SBATCH2_FROM_CBATCH(NLBLOCK,ILOFF,NRBLOCK,IROFF,
      &                               ILBLOCK,IRBLOCK,
      &                               CB,HCB,IRESTRICT)
 *
-* Generate the parts of H times right batch that is in a given 
-* left batch 
+* Generate the parts of H times right batch that is in a given
+* left batch
 *
 * The complete set of blocks of the vector is specified by IBLOCK
 *
 * The right batch is specified by IROFF,NRBLOCK
 * The left  batch is specified by ILOFF,NLBLOCK
 *
-* the input right batch is assumed to reside in CB 
+* the input right batch is assumed to reside in CB
 *
 * The output blocks are delivered in HCB
 *
-* The blocks are scaled and reformed to combination order 
+* The blocks are scaled and reformed to combination order
 *
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1902,19 +1902,19 @@ C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
 *
 * Info for this internal space
 *. type of alpha and beta strings
-      IATP = 1              
-      IBTP = 2             
+      IATP = 1
+      IBTP = 2
 *. alpha and beta strings with an electron removed
-      IATPM1 = 3 
+      IATPM1 = 3
       IBTPM1 = 4
 *. alpha and beta strings with two electrons removed
-      IATPM2 = 5 
+      IATPM2 = 5
       IBTPM2 = 6
 *
-*. Number of supergroups 
+*. Number of supergroups
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
-*. Offset for supergroups 
+*. Offset for supergroups
       IOCTPA = IBSPGPFTP(IATP)
       IOCTPB = IBSPGPFTP(IBTP)
 *
@@ -1926,7 +1926,7 @@ C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
       CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
       CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
 *. Largest block of strings in zero order space
-      MXSTBL0 = MXNSTR           
+      MXSTBL0 = MXNSTR
 *. Largest number of strings of given symmetry and type
       MAXA = 0
       IF(NAEL.GE.1) THEN
@@ -2035,7 +2035,7 @@ C          IAIBCM(ICISPC,IAIB)
 *
       IF(IPRCIX.GE.2)  WRITE(6,*) ' LSCR2 = ', LSCR2
 *
-      LSCR12 = MAX(LSCR1,2*LSCR2)  
+      LSCR12 = MAX(LSCR1,2*LSCR2)
       CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
       KCJRES = KC2
       KSIRES = KC2 + LSCR2
@@ -2060,8 +2060,8 @@ C          IAIBCM(ICISPC,IAIB)
       CALL MEMMAN(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
 *
       CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
-*.Some TTS arrays 
-      NOOS = NSMCI*NOCTPA*NOCTPB   
+*.Some TTS arrays
+      NOOS = NSMCI*NOCTPA*NOCTPB
       NTTS = MXNTTS
 *
       CALL MEMMAN(KOOS1,NOOS,'ADDL  ',2,'OOS1  ')
@@ -2069,12 +2069,12 @@ C          IAIBCM(ICISPC,IAIB)
       CALL MEMMAN(KOOS3,NOOS,'ADDL  ',2,'OOS3  ')
       CALL MEMMAN(KOOS4,NOOS,'ADDL  ',2,'OOS4  ')
       CALL MEMMAN(KOOS5,NOOS,'ADDL  ',2,'OOS5  ')
-*. Space for four blocks of string occupations and arrays of 
+*. Space for four blocks of string occupations and arrays of
 *. reordering arrays
       LZSCR = (MAX(NAEL,NBEL)+1)*(NOCOB+1) + 2 * NOCOB
       LZ    = (MAX(NAEL,NBEL)) * NOCOB
       DO I1234 = 1, 4
-        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')         
+        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
         CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
         CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
       END DO
@@ -2126,8 +2126,8 @@ C          IAIBCM(ICISPC,IAIB)
      &            WORK(KI4),WORK(KXI4S),MXSXST,MXSXBL,
      &            MOCAA,MOCAB,IAPR,IRESTRICT)
 *
-      IF(IDC.EQ.2) THEN    
-*. reform 
+      IF(IDC.EQ.2) THEN
+*. reform
         CALL RFTTS(HCB,CB,ILBLOCK(1,ILOFF),NLBLOCK,
      &             1,NSMST,NOCTPA,NOCTPB,
      &             WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),

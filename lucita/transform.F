@@ -1,18 +1,18 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_row_to_h $Revision$ 
+*fordeck t_row_to_h $Revision$
       SUBROUTINE T_ROW_TO_H(T,H,K,TKK)
 *
-* Set H integrals 
+* Set H integrals
 *
 *    Column K : H(P,K) = T(P,K)/T(K,K), P.NE.K
 *    Other Columns     = 0
 * - and return T_{kk} in TKK
-* 
+*
 *
 * Jeppe Olsen, Jan 98
 * For rotation of CI vectors
@@ -43,10 +43,10 @@
       CALL COPVEC(T(IOFF+(KREL-1)*NK),H(IOFF+(KREL-1)*NK),NK)
       TKK = H(IOFF-1+(KREL-1)*NK+KREL)
       IF(TKK .NE. 0.0D0) THEN
-        FAC = 1.0D0/TKK                   
+        FAC = 1.0D0/TKK
         CALL SCALVE(H(IOFF+(KREL-1)*NK),FAC,NK)
 C       H(IOFF-1+(K-1)*NK+K) = H(IOFF-1+(K-1)*NK+K) -1.0D0
-        H(IOFF-1+(KREL-1)*NK+KREL) = 0.0D0                       
+        H(IOFF-1+(KREL-1)*NK+KREL) = 0.0D0
       ELSE
 C       TKK = 1.0D0
         TKK = 0.0D0
@@ -68,15 +68,15 @@ C       TKK = 1.0D0
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_to_nk_vec $Revision$ 
+*fordeck t_to_nk_vec $Revision$
       SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
 *
 * Evaluate T**(NK_operator) times vector on file LUIN
 * to yield vector on file LUOUT
-* (NK_operator is number operator for orbital K )             
+* (NK_operator is number operator for orbital K )
 *
 * Note LUCIN and LUCOUT are both rewinded before read/write
-* Input 
+* Input
 * =====
 *  T : Input constant
 *  KORB : Orbital in symmetry order
@@ -134,7 +134,7 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
      &      NAEL,NBEL,WORK(KLASTR),WORK(KLBSTR),
      &      WORK(KLCBLTP),NSMST,
      &      ICISTR,NTOOB,WORK(KLKAOC),WORK(KLKBOC))
-   
+
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'T_TO_N')
 *
       RETURN
@@ -144,7 +144,7 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck t_to_nk_vecs $Revision$ 
+*fordeck t_to_nk_vecs $Revision$
       SUBROUTINE T_TO_NK_VECS(T,KORB,C,LUCIN,LUCOUT,NSSOA,NSSOB,
      &                 NBLOCK,IBLOCK,
      &                 NAEL,NBEL,IASTR,IBSTR,IBLTP,NSMST,
@@ -155,12 +155,12 @@ C           Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
 * Both files are initially rewinded
 *
 *
-* Jeppe Olsen, Feb. 1998    
-*                                                  
+* Jeppe Olsen, Feb. 1998
+*
 
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
-      DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)  
+      DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
 *. Scratch
       DIMENSION C(*)
       DIMENSION IASTR(NAEL,*),IBSTR(NBEL,*)
@@ -193,8 +193,8 @@ C?      WRITE(6,*) ' IATP IBTP IASM IBSM ', IATP,IBTP,IASM,IBSM
         END DO
 C?      WRITE(6,*) ' IKAOCC array '
 C?      CALL IWRTMA(IKAOCC,1,NASTR1,1,NASTR1)
-     
-    
+
+
 *. Obtain Beta  strings of sym IBSM and type IBTP
         IDUM = 0
         CALL GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
@@ -225,7 +225,7 @@ C?      WRITE(6,*) ' IBLTP ', IBLTP(IASM)
 C?      WRITE(6,*) ' NIA NIB ', NIA,NIB
 *
         IMZERO = 0
-        IF( ICISTR.GE.2 ) THEN 
+        IF( ICISTR.GE.2 ) THEN
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(LDET,1,-1,LUCIN)
           CALL FRMDSC(C,LDET,-1,LUCIN,IMZERO,IAMPACK)
@@ -235,9 +235,9 @@ C?      WRITE(6,*) ' NIA NIB ', NIA,NIB
           IDET = 0
           DO  IB = 1,NIB
             IF(IRESTR.EQ.1.AND.IATP.EQ.IBTP) THEN
-              MINIA = IB 
+              MINIA = IB
             ELSE
-              MINIA = 1     
+              MINIA = 1
             END IF
             DO  IA = MINIA,NIA
 *
@@ -271,7 +271,7 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra1_simple $Revision$ 
+*fordeck tra1_simple $Revision$
       SUBROUTINE TRA1_SIMPLE(C)
 *
 * Transform one-electron integrals
@@ -296,9 +296,9 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
       NTEST = 100
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'TRA1_S')
-*. Largest symmetry block of orbitals 
+*. Largest symmetry block of orbitals
       MXSOB = IMNMX(NTOOBS,NSMOB,2)
-      IF(NTEST.GE.100) THEN 
+      IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Largest number of orbitals in sym block ', MXSOB
       END IF
 *. Space for 1e- integrals and two sym blocks
@@ -312,7 +312,7 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
       WRITE(6,*) ' Before TRAN_SYM '
       CALL COPVEC(WORK(KINT1O),WORK(KINT1),NINT1)
       CALL TRAN_SYM_BLOC_MAT3(WORK(KINT1),C,NSMOB,NTOOBS,NTOOBS,
-     &                        WORK(KLH1),WORK(KLSCR),1) 
+     &                        WORK(KLH1),WORK(KLSCR),1)
       WRITE(6,*) ' After TRAN_SYM '
 *. Copy to original array
       CALL COPVEC(WORK(KLH1),WORK(KINT1),NINT1)
@@ -327,7 +327,7 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra2_simple $Revision$ 
+*fordeck tra2_simple $Revision$
       SUBROUTINE TRA2_SIMPLE(C)
 *
 * Trivial 2-electron integral transformation
@@ -354,7 +354,7 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
       MXSOB = IMNMX(NTOOBS,NSMOB,2)
 *. Two symmetry blocks
       LENBL = MXSOB ** 4
-      IF(NTEST.GE.100) 
+      IF(NTEST.GE.100)
      &WRITE(6,*) ' Size of symmetry block ', LENBL
       CALL  MEMMAN(KLBL1,LENBL,'ADDL ',2,'KLBL1 ')
       CALL  MEMMAN(KLBL2,LENBL,'ADDL ',2,'KLBL2 ')
@@ -362,9 +362,9 @@ C     WRITE(6,*) ' Two integral blocks allocated '
 *. Loop over symmetry blocks
       DO ISM = 1, NSMOB
         DO JSM = 1, ISM
-          DO KSM = 1, ISM   
+          DO KSM = 1, ISM
             IF(KSM.EQ.ISM) THEN
-              LSM_MX = JSM 
+              LSM_MX = JSM
             ELSE
               LSM_MX = KSM
             END IF
@@ -381,7 +381,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
               CALL LGETINT(WORK(KLBL1),0,ISM,0,JSM,0,KSM,0,LSM,
      &                     0,0,0,1)
 *. (Type = 0  => Complete symmetryblock)
-*. Offsets and dimensions for symmetryblocks in C 
+*. Offsets and dimensions for symmetryblocks in C
               IOFF = 1
               DO IISM = 1, ISM-1
                 IOFF = IOFF + NTOOBS(IISM)**2
@@ -417,7 +417,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
         END DO
       END DO
 *     ^ End of loop over symmetries
-*. Dump integrals to file LU90 
+*. Dump integrals to file LU90
       LU90 = 90
       CALL DMPINT(LU90)
 *
@@ -430,7 +430,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tra_2el_blk_simple $Revision$ 
+*fordeck tra_2el_blk_simple $Revision$
       SUBROUTINE TRA_2EL_BLK_SIMPLE(XINT,CI,NI,CJ,NJ,CK,NK,CL,NL,SCR)
 *
 * Transform 2-electron integral block
@@ -439,7 +439,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *. Input
       DIMENSION CI(NI,NI),CJ(NJ,NJ),CK(NK,NK),CL(NL,NL)
 *. Input and output
-      DIMENSION XINT(*) 
+      DIMENSION XINT(*)
 * Matrix given in complete form XI(NI,NJ,NK,NL)
 *. Scratch
       DIMENSION SCR(*)
@@ -490,18 +490,18 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traci $Revision$ 
+*fordeck traci $Revision$
       SUBROUTINE TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 *
 * A rotation matrix X is defining expansion from
 * old to new orbitals
 *        PHI(NEW) = PHI(OLD) * X
 *
-* change CI coefficients(sym IXSM, space IXSPC ) 
+* change CI coefficients(sym IXSM, space IXSPC )
 * so they corresponds to PHI(NEW) basis
 *
 * The input CI vector is on LUCIN and the transformed CI vector
-* will be delivered on LUCOUT. 
+* will be delivered on LUCOUT.
 *
 * Transformation as conceived by Per-Aake Malmquist
 * (I.J.Q.C. vol XXX, p479 ,1986 (OCTOBER ISSUE ))
@@ -534,7 +534,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
         WRITE(6,*) ' ================'
         WRITE(6,*) ' Welcome to TRACI '
         WRITE(6,*) ' ================'
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' IXSPC,IXSM = ', IXSPC,IXSM
       END IF
 *. Memory allocation
@@ -546,12 +546,12 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       CALL MEMMAN(KLSCR,LSCR,'ADDL  ',2,'KLSCR ')
 *. Obtain T matrix used for transformation, for each symmetry separately
       DO ISM = 1, NSMOB
-        IF(ISM.EQ.1) THEN 
+        IF(ISM.EQ.1) THEN
           IOFF = 1
         ELSE
           IOFF = IOFF + NTOOBS(ISM-1)**2
         END IF
-        IF(NTOOBS(ISM).GT.0) 
+        IF(NTOOBS(ISM).GT.0)
      &  CALL PAMTMT(X(IOFF),WORK(KLT-1+IOFF),WORK(KLSCR),NTOOBS(ISM))
       END DO
 *. Transform CI-vector
@@ -573,7 +573,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traci_ctl $Revision$ 
+*fordeck traci_ctl $Revision$
       SUBROUTINE TRACI_CTL
 *
 * Master routine for transforming CI vectors to new orbital basis
@@ -608,7 +608,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 C          GET_3BLKS(KVEC1,KVEC2,KC2)
       CALL GET_3BLKS(KVEC1,KVEC2,KVEC3)
 
-*. MO-MO transformation matrix : 
+*. MO-MO transformation matrix :
       CALL MEMMAN(KLCMOMO,NTOOB**2,'ADDL  ',2,'CMOMO ')
 *. Copy of one-electron integrals
       CALL MEMMAN(KLH1SAVE,NTOOB**2,'ADDL  ',2,'H1SAVE')
@@ -634,7 +634,7 @@ C    &              KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
         CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
         CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
      &        WORK(KVEC1),WORK(KVEC2),LUSC1,LUSC2,EXPS2)
-*. Obtain MO-MO transformation matrix 
+*. Obtain MO-MO transformation matrix
 C             GET_CMOMO(CMOMO)
         CALL GET_CMOMO(WORK(KLCMOMO))
         WRITE(6,*) ' Memcheck after GET_CMOMO'
@@ -661,33 +661,33 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
         END DO
       END IF
 *
-*. clean up time : copy 1-e integrals back in place                  
+*. clean up time : copy 1-e integrals back in place
       CALL COPVEC(WORK(KLH1SAVE),WORK(KINT1),NTOOB*NTOOB)
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRACIC')
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tracid $Revision$ 
+*fordeck tracid $Revision$
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
      &           VEC1,VEC2)
 *
 * Transform CI vector on LUCIN with T matrix after
-* Docent Malmquist's recipe. Place result as next vector on LUOUT 
+* Docent Malmquist's recipe. Place result as next vector on LUOUT
 *
-* The transformation is done as a sequence of one-electron transformations 
+* The transformation is done as a sequence of one-electron transformations
 *
 * with each orbital transformation being
 *
 * Sum(k=0,2) ( 1/k! sum(n'.ne.n) S(n'n) E_{n'n} ) Tnn^N_n
-* 
+*
 * with Sn'n = T(n'n)/Tnn
 *
-* each transformation is 
+* each transformation is
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 *include <mxpdim.fh>
@@ -723,7 +723,7 @@ C           COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 *. Place (T(P,K)/S(K,K)   in one-electron integral list
 C                       T_ROW_TO_H(T,H,K)
         CALL T_ROW_TO_H(T,WORK(KINT1),K,TKK)
-*. T_{kk}^Nk  
+*. T_{kk}^Nk
 C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
         CALL T_TO_NK_VEC(TKK,K,ISSM,ISSPC,LUSC1,LUSC2,VEC1)
         CALL COPVCD(LUSC2,LUSC1,VEC1,1,LBLK)
@@ -732,32 +732,32 @@ C            T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
           CALL WRTVCD(VEC1,LUSC1,1,LBLK)
         END IF
 *. For each orbital calculate (1+T+1/2 T^2)|0>
-* + T                                      
+* + T
         CALL MV7(VEC1,VEC2,LUSC1,LUSC2)
         IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Correction vector'    
+          WRITE(6,*) ' Correction vector'
           CALL WRTVCD(VEC1,LUSC2,1,LBLK)
         END IF
         ONE = 1.0D0
         CALL VECSMDP(VEC1,VEC2,ONE,ONE,LUSC1,LUSC2,LUSC3,1,LBLK)
         CALL COPVCD(LUSC3,LUSC1,VEC1,1,LBLK)
         IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Updated vector'    
+          WRITE(6,*) ' Updated vector'
           CALL WRTVCD(VEC1,LUSC1,1,LBLK)
-        END IF                    
+        END IF
 *. + 1/2 T^2
         CALL MV7(VEC1,VEC2,LUSC2,LUSC3)
         IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Correction vector'    
+          WRITE(6,*) ' Correction vector'
           CALL WRTVCD(VEC1,LUSC3,1,LBLK)
-        END IF                  
+        END IF
         ONE = 1.0D0
         HALF  = 0.5D0
         CALL VECSMDP(VEC1,VEC2,ONE,HALF,LUSC1,LUSC3,LUSC2,1,LBLK)
 *. and transfer back to LUSC1
         CALL COPVCD(LUSC2,LUSC1,VEC1,1,LBLK)
         IF(NTEST.GE.1000) THEN
-          WRITE(6,*) ' Updated vector'    
+          WRITE(6,*) ' Updated vector'
           CALL WRTVCD(VEC1,LUSC1,1,LBLK)
         END IF
       END DO
@@ -778,13 +778,13 @@ C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck trah1 $Revision$ 
+*fordeck trah1 $Revision$
       SUBROUTINE TRAH1(NBAS,NORB,NSM,HAO,C,HMO,IHSM,SCR)
 *
 *. Transform one-electron integrals from ao's to mo's.
 *
 *. Symmetry of integrals is IHSM, all integrals blocks assumed complete,
-* i.e not packed to lower half 
+* i.e not packed to lower half
 *
 * Jeppe Olsen
       IMPLICIT REAL*8(A-H,O-Z)
@@ -811,7 +811,7 @@ C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
         DO ISM = 1, ICSM-1
           IBC = IBC + NORB(ISM)*NBAS(ISM)
         END DO
-*. 
+*.
         LRMO = NORB(IRSM)
         LRAO = NBAS(IRSM)
 *
@@ -819,7 +819,7 @@ C?    WRITE(6,*) ' LUCOUT LUSC1 = ', LUCOUT,LUSC1
         LCAO = NBAS(ICSM)
 C       write(6,*) ' TRAH1 : IRSM ICSM ',IRSM,ICSM
 C       WRITE(6,*) ' LRAO LRMO LCAO LCMO ',LRAO,LRMO,LCAO,LCMO
- 
+
 *
 C            MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
 C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
@@ -844,7 +844,7 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traint $Revision$ 
+*fordeck traint $Revision$
       SUBROUTINE TRAINT
 *
 * Very simple integral transformation for LUCIA
@@ -876,7 +876,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
       END IF
 
 *
-*. Transform 1-electron integrals : 
+*. Transform 1-electron integrals :
 *
       CALL TRA1_SIMPLE(WORK(KMOMO))
 *
@@ -893,7 +893,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat $Revision$ 
+*fordeck tran_sym_bloc_mat $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT(AIN,X,NBLOCK,LBLOCK,AOUT,SCR)
 *
 * Transform a blocked symmetric matrix AIN with blocked matrix
@@ -906,9 +906,9 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
       IMPLICIT REAL*8(A,H,O-Z)
 *. Input
       DIMENSION AIN(*),X(*),LBLOCK(NBLOCK)
-*. Output 
+*. Output
       DIMENSION AOUT(*)
-*. Scratch : At least twice the length of largest block 
+*. Scratch : At least twice the length of largest block
       DIMENSION SCR(*)
 *
       DO IBLOCK = 1, NBLOCK
@@ -917,7 +917,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
          IOFFC = 1
        ELSE
          IOFFP = IOFFP + LBLOCK(IBLOCK-1)*(LBLOCK(IBLOCK-1)+1)/2
-         IOFFC = IOFFC + LBLOCK(IBLOCK-1)** 2                     
+         IOFFC = IOFFC + LBLOCK(IBLOCK-1)** 2
        END IF
        L = LBLOCK(IBLOCK)
        K1 = 1
@@ -952,7 +952,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat2 $Revision$ 
+*fordeck tran_sym_bloc_mat2 $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT2(AIN,X,NBLOCK,LBLOCK,AOUT,SCR,ISYM)
 *
 * Transform a blocked matrix AIN with blocked matrix
@@ -968,9 +968,9 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
       IMPLICIT REAL*8(A,H,O-Z)
 *. Input
       DIMENSION AIN(*),X(*),LBLOCK(NBLOCK)
-*. Output 
+*. Output
       DIMENSION AOUT(*)
-*. Scratch : At least twice the length of largest block 
+*. Scratch : At least twice the length of largest block
       DIMENSION SCR(*)
 *
       DO IBLOCK = 1, NBLOCK
@@ -979,7 +979,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
          IOFFC = 1
        ELSE
          IOFFP = IOFFP + LBLOCK(IBLOCK-1)*(LBLOCK(IBLOCK-1)+1)/2
-         IOFFC = IOFFC + LBLOCK(IBLOCK-1)** 2                     
+         IOFFC = IOFFC + LBLOCK(IBLOCK-1)** 2
        END IF
        L = LBLOCK(IBLOCK)
        K1 = 1
@@ -1023,7 +1023,7 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tran_sym_bloc_mat3 $Revision$ 
+*fordeck tran_sym_bloc_mat3 $Revision$
       SUBROUTINE TRAN_SYM_BLOC_MAT3
      &(AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 *
@@ -1040,9 +1040,9 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
       DIMENSION AIN(*),X(*),LX_ROW(NBLOCK),LX_COL(NBLOCK)
-*. Output 
+*. Output
       DIMENSION AOUT(*)
-*. Scratch : At least twice the length of largest block 
+*. Scratch : At least twice the length of largest block
       DIMENSION SCR(*)
 *
       DO IBLOCK = 1, NBLOCK
@@ -1054,9 +1054,9 @@ C      TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
          IOFFX = 1
        ELSE
          IOFFP_IN = IOFFP_IN + LX_ROW(IBLOCK-1)*(LX_ROW(IBLOCK-1)+1)/2
-         IOFFC_IN = IOFFC_IN + LX_ROW(IBLOCK-1) ** 2                     
+         IOFFC_IN = IOFFC_IN + LX_ROW(IBLOCK-1) ** 2
          IOFFP_OUT= IOFFP_OUT+ LX_COL(IBLOCK-1)*(LX_COL(IBLOCK-1)+1)/2
-         IOFFC_OUT= IOFFC_OUT+ LX_COL(IBLOCK-1) ** 2                     
+         IOFFC_OUT= IOFFC_OUT+ LX_COL(IBLOCK-1) ** 2
          IOFFX = IOFFX + LX_ROW(IBLOCK-1)*LX_COL(IBLOCK-1)
        END IF
        LXR = LX_ROW(IBLOCK)
@@ -1101,7 +1101,7 @@ C?     CALL WRTMAT(SCR(K1),LXC,LXC,LXC,LXC)
         WRITE(6,*) ' output matrix TRAN_SYM_BLOC_MAT '
         WRITE(6,*) ' ==============================='
         WRITE(6,*)
-        CALL APRBLM2(AOUT,LX_COL,LX_COL,NBLOCK,ISYM)      
+        CALL APRBLM2(AOUT,LX_COL,LX_COL,NBLOCK,ISYM)
       END IF
 *
       RETURN
@@ -1111,15 +1111,15 @@ C?     CALL WRTMAT(SCR(K1),LXC,LXC,LXC,LXC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck travcd $Revision$ 
+*fordeck travcd $Revision$
       SUBROUTINE TRAVCD(VEC1,VEC2,X,NVECIN,NVECOUT,LUIN,LUOUT,
      &                  ICOPY,LBLK,LUSCR1,LUSCR2)
 *
 * NVECIN vectors reside on LU1, Transform these vectors,
-*  using LUSCR1 and  LUSCR2  as 
+*  using LUSCR1 and  LUSCR2  as
 * scratch files,  with matrix X to produce output file LUOUT.
-* 
-* Since LUIN is accessed several times it is always 
+*
+* Since LUIN is accessed several times it is always
 * REWINDED. LUOUT is written to from current start.
 *
 * I ICOPY .ne. 0 the transformed vectors are written back to LUIN
@@ -1127,7 +1127,7 @@ C?     CALL WRTMAT(SCR(K1),LXC,LXC,LXC,LXC)
 * Jeppe Olsen, April 1997
 *
       IMPLICIT REAL*8(A-H,O-Z)
-*. Input 
+*. Input
       DIMENSION X(NVECIN,NVECOUT)
 *. Scratch
       DIMENSION VEC1(*),VEC2(*)
@@ -1149,4 +1149,4 @@ C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
       END IF
 *
       RETURN
-      END 
+      END

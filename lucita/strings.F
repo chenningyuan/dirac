@@ -1,4 +1,4 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -513,7 +513,7 @@ C?            END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adaadast_gas $Revision$ 
+*fordeck adaadast_gas $Revision$
       SUBROUTINE ADAADAST_GAS(IOB,IOBSM,IOBTP,NIOB,IAC,
      &                       JOB,JOBSM,JOBTP,NJOB,JAC,
      &                       ISPGP,ISM,ITP,KMIN,KMAX,
@@ -523,15 +523,15 @@ C?            END IF
 * Obtain two-operator mappings
 * a+/a IORB a+/a JORB !KSTR> = +/-!ISTR>
 *
-* Whether creation- or annihilation operators are in use depends 
-* upon IAC, JAC : 1=> Annihilation, 
+* Whether creation- or annihilation operators are in use depends
+* upon IAC, JAC : 1=> Annihilation,
 *                 2=> Creation
 *
 * In the form
 * I1(KSTR) =  ISTR if a+/a IORB a+/a JORB !KSTR> = +/-!ISTR> , ISTR is in
 * ISPGP,ISM,IGRP.
 * (numbering relative to TS start)
-*. Only excitations IOB. GE. JOB are included 
+*. Only excitations IOB. GE. JOB are included
 * The orbitals are in GROUP-SYM IOBTP,IOBSM, JOBTP,JOBSM respectively,
 * and IOB (JOB) is the first orbital to be used, and the number of orbitals
 * to be checked is NIOB ( NJOB).
@@ -558,7 +558,7 @@ C?            END IF
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 *./BIGGY
-C     COMMON/BIGGY/WORK(MXPWRD)     
+C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *./ORBINP/
 #include "orbinp.inc"
@@ -646,7 +646,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       ITRIVIAL = 0
       IF(IEL.LT.0.OR.JEL.LT.0.OR.
      &   IEL.GT.NOBPT(IOBTP).OR.JEL.GT.NOBPT(JOBTP)) THEN
-*. No strings with this number of elecs - be happy : No work 
+*. No strings with this number of elecs - be happy : No work
         NK = 0
         KACT = 0
         KACGRP = 0
@@ -669,7 +669,7 @@ C?      WRITE(6,*) ' ADAADA : IIGRP, JJGRP', IIGRP,JJGRP
           WRITE(6,*)' ADAADAST : cul de sac, active K groups not found'
           WRITE(6,*)' Active GAS spaces  ' ,IOBTP, JOBTP
           WRITE(6,*)' Number of electrons', IEL, JEL
-          Call 
+          Call
      &       Abend2(' ADAADAST : cul de sac, active K groups not found')
         END IF
 *
@@ -761,7 +761,7 @@ COLD  CALL SETVEC(XI1S,ZERO ,LI1*NIOB*NJOB)
      &          NOCOB,KMAX,KMIN,IEND,SCLFAC,NSTRIA(I12))
 *
        IF(NTEST.GE.1000) THEN
-         WRITE(6,*) ' Reorder array after ADAADAS1'                  
+         WRITE(6,*) ' Reorder array after ADAADAS1'
          CALL IWRTMA(WORK(KLLREO),1,NSTRI,1,NSTRI)
        END IF
  9999 CONTINUE
@@ -775,23 +775,23 @@ C     CALL MEMCHK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adads1_gas $Revision$ 
+*fordeck adads1_gas $Revision$
       SUBROUTINE ADADS1_GAS(NK,I1,XI1S,LI1,IORB,NIORB,JORB,NJORB,
      &                KSTR,NKEL,NKSTR,IREO,IZ,
      &                NOCOB,KMAX,KMIN,IEND,SCLFAC)
 *
 * Obtain I1(KSTR) = +/- A+ IORB A+ JORB !KSTR>
-* Only orbital pairs IOB .gt. JOB are included 
+* Only orbital pairs IOB .gt. JOB are included
 *
 * KSTR is restricted to strings with relative numbers in the
 * range KMAX to KMIN
 * =====
 * Input
 * =====
-* IORB : First I orbital to be added 
+* IORB : First I orbital to be added
 * NIORB : Number of orbitals to be added : IORB to IORB-1+NIORB
 *        are used. They must all be in the same TS group
-* JORB : First J orbital to be added 
+* JORB : First J orbital to be added
 * LORB : Number of orbitals to be added : JORB to JORB-1+NJORB
 *        are used. They must all be in the same TS group
 * KMAX : Largest allowed relative number for K strings
@@ -820,8 +820,8 @@ C     CALL MEMCHK
        WRITE(6,*) ' ==================== '
        WRITE(6,*) ' ADADS1_GAS speaking '
        WRITE(6,*) ' ==================== '
-       WRITE(6,*) ' IORB,NIORB ', IORB,NIORB       
-       WRITE(6,*) ' JORB,NJORB ', JORB,NJORB       
+       WRITE(6,*) ' IORB,NIORB ', IORB,NIORB
+       WRITE(6,*) ' JORB,NJORB ', JORB,NJORB
       END IF
 *
       IORBMIN = IORB
@@ -840,15 +840,15 @@ C     CALL MEMCHK
       END IF
       NK = KEND-KMIN+1
 *
-      DO KKSTR = KMIN,KEND 
+      DO KKSTR = KMIN,KEND
        IF(NTEST.GE.1000) THEN
          WRITE(6,*) ' Occupation of string ', KKSTR
          CALL IWRTMA(KSTR(1,KKSTR),1,NKEL,1,NKEL)
        END IF
-*. Loop over electrons after which JORB can be added 
+*. Loop over electrons after which JORB can be added
        DO JEL = 0, NKEL
 *
-         IF(JEL.EQ.0 ) THEN     
+         IF(JEL.EQ.0 ) THEN
            JORB1 = JORBMIN - 1
          ELSE
            JORB1 = MAX(JORBMIN-1,KSTR(JEL,KKSTR))
@@ -864,16 +864,16 @@ C     CALL MEMCHK
          IF(JEL.GT.0.AND.JORB1.GE.JORBMIN.AND.
      &                   JORB1.LE.JORBMAX) THEN
 *. vanishing for any IORB
-           IJOFF = (JORB1-JORBMIN)*NIORB 
+           IJOFF = (JORB1-JORBMIN)*NIORB
            DO IIORB = 1, NIORB
              IJ = IJOFF + IIORB
              if(ij.gt.nij) then
                write(6,*) ' ij .gt. nij '
-               write(6,*) ' JORB1 IIORB' , JORB1,IIORB 
-               write(6,*) ' ijoff ', ijoff 
-               Call Abend() 
+               write(6,*) ' JORB1 IIORB' , JORB1,IIORB
+               write(6,*) ' ijoff ', ijoff
+               Call Abend()
              end if
-             I1(KKSTR-KMIN+1,IJ) = 0   
+             I1(KKSTR-KMIN+1,IJ) = 0
              XI1S(KKSTR-KMIN+1,IJ) = 0.0D0
            END DO
          END IF
@@ -883,7 +883,7 @@ C     CALL MEMCHK
            SIGNJ = (-1) ** JEL * SCLFAC
 *. reverse lexical number of the first JEL ELECTRONS
            ILEX0 = 1
-           DO JJEL = 1, JEL  
+           DO JJEL = 1, JEL
              ILEX0 = ILEX0 + IZ(KSTR(JJEL,KKSTR),JJEL)
            END DO
            DO JJORB = JORB1+1, JORB2-1
@@ -898,7 +898,7 @@ C     CALL MEMCHK
                END IF
                IF(IEL.EQ.NKEL) THEN
                  IORB2 = IORBMAX+1
-               ELSE 
+               ELSE
                  IORB2 = MIN(IORBMAX+1,KSTR(IEL+1,KKSTR))
                END IF
                IF(NTEST.GE.1000)
@@ -908,9 +908,9 @@ C     CALL MEMCHK
                  IJ = (JJORB-JORBMIN)*NIORB+IORB1-IORBMIN+1
              if(ij.gt.nij) then
                write(6,*) ' ij .gt. nij '
-               write(6,*) ' JJORB IORB1' , JJORB,IORB1 
-               write(6,*) ' ijoff ', ijoff 
-               Call Abend() 
+               write(6,*) ' JJORB IORB1' , JJORB,IORB1
+               write(6,*) ' ijoff ', ijoff
+               Call Abend()
              end if
                  I1(KKSTR-KMIN+1,IJ) = 0
                  XI1S(KKSTR-KMIN+1,IJ) = 0.0D0
@@ -926,7 +926,7 @@ C     CALL MEMCHK
                  DO IIEL = IEL+1,NKEL
                    ILEX2 = ILEX2 + IZ(KSTR(IIEL,KKSTR),IIEL+2)
                  END DO
-                 IJOFF = (JJORB-JORBMIN)*NIORB 
+                 IJOFF = (JJORB-JORBMIN)*NIORB
                  SIGNIJ =  SIGNJ*(-1.0D0) ** (IEL+1)
                  DO IIORB = IORB1+1, IORB2-1
                    IJ = IJOFF + IIORB - IORBMIN + 1
@@ -939,12 +939,12 @@ C     CALL MEMCHK
                    END IF
                    ILEX = ILEX2 + IZ(IIORB,IEL+2)
                    IACT = IREO(ILEX)
-                   IF(NTEST.GE.1000) 
+                   IF(NTEST.GE.1000)
      &             WRITE(6,*) ' IIORB JJORB ', IIORB,JJORB
-                   IF(NTEST.GE.1000) 
+                   IF(NTEST.GE.1000)
      &             WRITE(6,*) ' IJ ILEX,IACT',IJ, ILEX,IACT
-                   IF(NTEST.GE.1000) 
-     &             WRITE(6,*) ' ILEX0 ILEX1 ILEX2 ILEX ',   
+                   IF(NTEST.GE.1000)
+     &             WRITE(6,*) ' ILEX0 ILEX1 ILEX2 ILEX ',
      &                          ILEX0,ILEX1,ILEX2,ILEX
                    I1(KKSTR-KMIN+1,IJ) = IACT
                    XI1S(KKSTR-KMIN+1,IJ) = SIGNIJ
@@ -1129,9 +1129,9 @@ C?    END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adast_gas $Revision$ 
+*fordeck adast_gas $Revision$
 
-   
+
       SUBROUTINE ADAST_GAS(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                    I1,XI1S,NKSTR,IEND,IFRST,KFRST,KACT,SCLFAC,
      &                    IAC)
@@ -1140,16 +1140,16 @@ C?    END IF
 * Obtain creation or annihilation mapping
 *
 * IAC = 2 : Creation map
-* a+IORB !KSTR> = +/-!ISTR> 
+* a+IORB !KSTR> = +/-!ISTR>
 *
 * IAC = 1 : Annihilation map
-* a IORB !KSTR> = +/-!ISTR> 
+* a IORB !KSTR> = +/-!ISTR>
 *
 * for orbitals of symmetry IOBSM and type IOBTP
 * and Istrings defined by the NIGRP groups IGRP and symmetry ISPGPSM
-* 
+*
 * The results are given in the form
-* I1(KSTR,IORB) =  ISTR if A+IORB !KSTR> = +/-!ISTR> 
+* I1(KSTR,IORB) =  ISTR if A+IORB !KSTR> = +/-!ISTR>
 * (numbering relative to TS start)
 * Above +/- is stored in XI1S
 *
@@ -1159,7 +1159,7 @@ C?    END IF
 *
 * Jeppe Olsen , Winter of 1991
 *               January 1994 : modified to allow for several orbitals
-*               August 95    : GAS version 
+*               August 95    : GAS version
 *               October 96   : Improved version
 *               September 97 : annihilation mappings added
 *                              I groups defined by IGRP
@@ -1204,8 +1204,8 @@ C?    END IF
 *
       INTEGER I1(*)
       DIMENSION XI1S(*)
-*. Will be stored as an matrix of dimension 
-* (NKSTR,*), Where NKSTR is the number of K-strings of 
+*. Will be stored as an matrix of dimension
+* (NKSTR,*), Where NKSTR is the number of K-strings of
 *  correct symmetry . Nk is provided by this routine.
 *
       CALL QENTER('ADAST ')
@@ -1230,7 +1230,7 @@ C?    END IF
           WRITE(6,*) ' Annihilation mapping '
         ELSE IF(IAC.EQ.2) THEN
           WRITE(6,*) ' Creation mapping '
-        ELSE 
+        ELSE
           WRITE(6,*) ' Unknown IAC parameter in ADAST ',IAC
           Call Abend2(' Unknown IAC parameter in ADAST ')
         END IF
@@ -1243,7 +1243,7 @@ C?    END IF
 *. First orbital of given GASpace
        IBORBSP = IELSUM(NOBPT,IOBTP-1)+1
 *. First orbital of given GASpace and Symmetry
-       IBORBSPS = IOBPTS(IOBTP,IOBSM) 
+       IBORBSPS = IOBPTS(IOBTP,IOBSM)
 *
 *====================================================
 *. K strings : Supergroup, symmetry and distributions
@@ -1255,7 +1255,7 @@ C?    END IF
        IDELTA = -1
       END IF
 *. Is required mapping contained within current set of maps?
-*. a:) Is active GASpace included in IGRP - must be 
+*. a:) Is active GASpace included in IGRP - must be
       IACGRP = 0
       DO JGRP = 1, NIGRP
        IF(IGSFGP(IGRP(JGRP)).EQ. IACGAS) IACGRP = JGRP
@@ -1273,7 +1273,7 @@ C?    END IF
       NKEL = NIEL + IDELTA
       IF(NTEST.GE.1000) WRITE(6,*) ' NIEL and NKEL ',NIEL,NKEL
       IF(NKEL.EQ.-1.OR.NKEL.EQ.NOBPT(IACGAS)+1) THEN
-*. No strings with this number of elecs - be happy : No work 
+*. No strings with this number of elecs - be happy : No work
         NKSTR = 0
         KACT = 0
         KACGRP = 0
@@ -1285,7 +1285,7 @@ C?    END IF
           IF(NELFGP(JGRP).EQ.NKEL) KACGRP = JGRP
         END DO
         IF(NTEST.GE.1000) WRITE(6,*) ' KACGRP = ',KACGRP
-*. KACGRP is the Active group itself     
+*. KACGRP is the Active group itself
         IF(KACGRP.EQ.0) THEN
           WRITE(6,*)' ADAST : cul de sac, active K group not found'
           WRITE(6,*)' GAS space and number of electrons ',
@@ -1302,7 +1302,7 @@ C?    END IF
       CALL NST_SPGRP(NIGRP,KGRP,KSM,WORK(KNSTSGP(1)),
      &               NSMST,NKSTR,NKDIST)
 C          NST_SPGRP(NGRP,IGRP,ISM_TOT,NSTSGP,NSMST,NSTRIN,NDIST)
-      IF(NTEST.GE.1000) WRITE(6,*) 
+      IF(NTEST.GE.1000) WRITE(6,*)
      & ' KSM, NKSTR : ', KSM, NKSTR
       IF(NKSTR.EQ.0) GOTO 9999
 *. Last active space in K strings and number of strings per group and sym
@@ -1324,7 +1324,7 @@ C     NGASL = NIGRP
       END IF
 *. (NKDIST_TOT is number of distributions, all symmetries )
 * ==============
-*. I Strings 
+*. I Strings
 * ==============
 *. Generate symmetry distributions of I strings with given symmetry
       CALL TS_SYM_PNT2(IGRP,NIGRP,MXVLI,MNVLI,ISPGPSM,
@@ -1349,7 +1349,7 @@ COLD  END DO
       END DO
 C?    WRITE(6,*) ' NIGASL = ', NIGASL
 C     NIGASL = NIGRP
-       
+
 *. Number of electrons before active space
       NELB = 0
       DO JGRP = 1, IACGRP-1
@@ -1358,7 +1358,7 @@ C     NIGASL = NIGRP
       IF(NTEST.GE.1000) WRITE(6,*) ' NELB = ', NELB
 *
       ZERO =0.0D0
-      IZERO = 0    
+      IZERO = 0
 COLD  CALL SETVEC(XI1S,ZERO,NORBTS*NKSTR)
       CALL ISETVC(I1,IZERO,NORBTS*NKSTR)
 *
@@ -1370,7 +1370,7 @@ COLD  CALL SETVEC(XI1S,ZERO,NORBTS*NKSTR)
 *. Next distribution
         CALL NEXT_SYM_DISTR(NIGRP,MNVLK,MXVLK,ISMFGS,KSM,KFIRST,NONEW)
         IF(NTEST.GE.1000) THEN
-          write(6,*) ' Symmetry distribution ' 
+          write(6,*) ' Symmetry distribution '
           call iwrtma(ISMFGS,1,NIGRP,1,NIGRP)
         END IF
         IF(NONEW.EQ.1) GOTO 9999
@@ -1400,7 +1400,7 @@ C       DO IGAS =  IOBTP +1, NIGRP
         DO IGAS =  IACGRP+1, NIGRP
           NSTA = NSTA*NNSTSGP(ISMFGS(IGAS),IGAS)
         END DO
-*. Number and offset for active group 
+*. Number and offset for active group
         NIAC  = NACIST(IACSM)
         IIAC =  IACIST(IACSM)
 C?      WRITE(6,*) ' IIAC, IACSM = ',IIAC, IACSM
@@ -1415,11 +1415,11 @@ C?      WRITE(6,*) ' IIAC, IACSM = ',IIAC, IACSM
      &               nstb,nsta,niac,nkac
         END IF
 *. Obtain annihilation/creation mapping for all strings of this type
-*. Are group mappings in expanded or compact form 
+*. Are group mappings in expanded or compact form
         IF(IAC.EQ.1.AND.ISTAC(KACGRP,2).EQ.0) THEN
           IEC = 2
           LROW_IN = NKEL
-        ELSE 
+        ELSE
           IEC = 1
 C         LROW_IN = NORBTS
           LROW_IN = NORBT
@@ -1429,12 +1429,12 @@ C         LROW_IN = NORBTS
         MXAADST = MAX(MXAADST,NKSTR*NORBTS)
 C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         IF(NSTA*NSTB*NIAC*NKAC.NE.0)
-     &  CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,   
+     &  CALL ADAST_GASSM(NSTB,NSTA,IKAC,IIAC,IBSTRINI,KSTRBS,
      &                 WORK(KSTSTM(KACGRP,1)),WORK(KSTSTM(KACGRP,2)),
      &                 IBORBSPS,IBORBSP,NORBTS,NKAC,NKACT,NIAC,
      &                 NKSTR,KBSTRIN,NELB,NACGSOB,I1,XI1S,SCLFAC,IAC,
      &                 LROW_IN,IEC)
-        KSTRBS = KSTRBS + NKSD     
+        KSTRBS = KSTRBS + NKSD
 C       IF(NGASL-1.GT.0) GOTO 1000
         GOTO 1000
  1001 CONTINUE
@@ -1464,7 +1464,7 @@ C       IF(NGASL-1.GT.0) GOTO 1000
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adast_gassm $Revision$ 
+*fordeck adast_gassm $Revision$
       SUBROUTINE ADAST_GASSM(NSTB,NSTA,IOFFK,IOFFI,IOFFISP,
      &              IOFFKSP,ICREORB,ICRESTR,
      &              IORBTSF,IORBTF,NORBTS,NSTAK,NSTAKT,NSTAI,
@@ -1473,7 +1473,7 @@ C       IF(NGASL-1.GT.0) GOTO 1000
 *
 * Annihilation/Creation mappings from K-strings of given sym in each gasspace
 *
-* Input 
+* Input
 * NSTB : Number of strings before active gasspace
 * NSTA : Number of strings after accive gasspace
 * IOFFK : Offset for K group of strings in active gasspace, i.e. start of
@@ -1487,8 +1487,8 @@ C       IF(NGASL-1.GT.0) GOTO 1000
 * IORBTSF   : First active orbital ( first orbital in in active GASspace
 *           with required sym)
 * IORBTF   : First orbital in active gas space, (can have any sym)
-* NORBTS  : Number of orbitals of given symmetry and type            
-* NSTAK : Number of K groupstrings with given correct symmetry      
+* NORBTS  : Number of orbitals of given symmetry and type
+* NSTAK : Number of K groupstrings with given correct symmetry
 * NSTAKT: Total Number of K groupstrings in active group (all symmetries)
 * NSTAKTS: Total Number of K supergroup strings with correct symmetry
 * ISTAKTS: Offset for K supergroup strings with hiven symmetrydistribution
@@ -1499,14 +1499,14 @@ C       IF(NGASL-1.GT.0) GOTO 1000
       DIMENSION ICREORB(LROW_IN,*), ICRESTR(LROW_IN,*)
 *. Output
       DIMENSION ISTMAP(NSTAKTS,*),SGNMAP(NSTAKTS,*)
-* 
+*
       IMULTK = NSTAK*NSTB
       IMULTI = NSTAI*NSTB
 *
-C?    WRITE(6,*) ' ICRESTR '    
+C?    WRITE(6,*) ' ICRESTR '
 C?    CALL IWRTMA(ICRESTR,LROW_IN,NSTAK,LROW_IN,NSTAK)
 C?    WRITE(6,*) ' IOFFI = ', IOFFI
-      SIGN0 = (-1)**NELB*SCLFAC 
+      SIGN0 = (-1)**NELB*SCLFAC
       DO KSTR = IOFFK, NSTAK+IOFFK-1
         DO IORB = IORBTSF, IORBTSF-1+NORBTS
 *. Relative to Type-symmetry start
@@ -1545,7 +1545,7 @@ C?          WRITE(6,*) ' ICRESTR = ', ICRESTR(IORBRT,KSTR)
                  END IF
                END IF
              ELSE
-*. Compressed map 
+*. Compressed map
                DO IROW = 1, LROW_IN
 C?              write(6,*) ' IROW, ICREORB(IROW,KSTR)' ,
 C?   &                       IROW, ICREORB(IROW,KSTR)
@@ -1566,7 +1566,7 @@ COLD             IF(ICREORB(IROW,KSTR) .EQ. -IORBRT ) THEN
 *            ^ End of expanded/compact switch
            END IF
 *          ^ End of Creation/annihilation switch
-           
+
           IF(I_AM_ACTIVE .EQ. 1  ) THEN
 *. Excitation is open, corresponding active I string
 * Relative to start of given symmetry for this group
@@ -1607,7 +1607,7 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
         NK = NSTB*NSTAK*NSTA
         WRITE(6,*) ' Number of K strings accessed ', NK
         IF(NK.NE.0) THEN
-          DO IORB = IORBTSF,IORBTSF + NORBTS  - 1 
+          DO IORB = IORBTSF,IORBTSF + NORBTS  - 1
             IORBR = IORB-IORBTSF+1
             WRITE(6,*) ' Update Info for orbital ', IORB
             WRITE(6,*) ' Mapped strings and sign '
@@ -1624,7 +1624,7 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck add_str_group $Revision$ 
+*fordeck add_str_group $Revision$
       SUBROUTINE ADD_STR_GROUP(NSTADD,IOFADD,ISTADD,NSTB,NSTA,
      &                         ISTRING,IELOF,NELADD,NELTOT)
 *
@@ -1648,13 +1648,13 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
 * NELTOT : Total number of electrons
 *
       IMPLICIT REAL*8(A-H,O-Z)
-*. Input 
+*. Input
 C     DIMENSION ISTADD(NELADD,*)
       DIMENSION ISTADD(*)
 *. Input and output
 C     DIMENSION ISTRING(NELTOT,*)
       DIMENSION ISTRING(*)
-* 
+*
       IF(NSTA.GT.1) THEN
         DO IISTR = 1,NSTADD
 *. Address of A(1,IISTR,1)
@@ -1671,14 +1671,14 @@ C           IOFF2 = IOFF1 + (ISTB-1)*NSTADD*NSTA
             DO ISTA = 1, NSTA
               IOFFX = IOFFX + NELTOT
               DO JEL = 1, NELADD
-                ISTRING(JEL+IOFFX) 
-     &        = ISTADD(JEL+IOFFY)                          
-C               ISTRING(IELOF-1+JEL,IOFF2-1+ISTA) 
+                ISTRING(JEL+IOFFX)
+     &        = ISTADD(JEL+IOFFY)
+C               ISTRING(IELOF-1+JEL,IOFF2-1+ISTA)
 C    &        = ISTADD(JEL,IOFADD-1+IISTR)
               END DO
             END DO
           END DO
-        END DO 
+        END DO
       ELSE IF (NSTA .EQ. 1 ) THEN
 *. Address of A(1,IISTR,1)
 *. A(I(after),Igas,I(before))
@@ -1688,20 +1688,20 @@ C    &        = ISTADD(JEL,IOFADD-1+IISTR)
           IOFFX = IELOF-1+(IOFF0-1)*NELTOT
           DO IISTR = 1,NSTADD
 *. Address of A(1,IISTR,ISTB)
-C           IOFF2 = IISTR  + IOFF0             
+C           IOFF2 = IISTR  + IOFF0
 C           IOFFX  = IELOF-1+(IOFF2-1)*NELTOT
             IOFFX  = IOFFX + NELTOT
-            IOFFY  = IOFFY + NELADD            
+            IOFFY  = IOFFY + NELADD
             DO JEL = 1, NELADD
-              ISTRING(JEL+IOFFX) 
+              ISTRING(JEL+IOFFX)
      &      = ISTADD( JEL+IOFFY)
-C             ISTRING(IELOF-1+JEL+(IOFF2-1)*NELTOT) 
+C             ISTRING(IELOF-1+JEL+(IOFF2-1)*NELTOT)
 C    &      = ISTADD(JEL+(IOFADD-1+IISTR-1)*NELADD)
-C             ISTRING(IELOF-1+JEL,IOFF2) 
+C             ISTRING(IELOF-1+JEL,IOFF2)
 C    &      = ISTADD(JEL,IOFADD-1+IISTR)
             END DO
           END DO
-        END DO 
+        END DO
       END IF
 *
       RETURN
@@ -1913,7 +1913,7 @@ CTF     IOFFI(IOFF) = NSTRINT + 1
 CTF2    WORK(KLOFFI+IOFF-1) = NSTRINT + 1
         NSTRINT = NSTRINT + NSTRII
         IF(NTEST.GE.200) THEN
-          WRITE(6,'(A22,I8,I8,I8)') 
+          WRITE(6,'(A22,I8,I8,I8)')
      &    'IOFF,NSTRINT+1 NSTRII ',
      &     IOFF,IFRMR(WORK(KLOFFI),1,IOFF),NSTRII
         END IF
@@ -2076,7 +2076,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adstn_gassm $Revision$ 
+*fordeck adstn_gassm $Revision$
       SUBROUTINE ADSTN_GASSM(NSTB,NSTA,IOFFK,IOFFI,IOFFISP,
      &              IOFFKSP,ICREORB,ICRESTR,
      &              IORBTSF,IORBTF,NORBTS,NSTAK,NSTAKT,NSTAI,
@@ -2085,7 +2085,7 @@ C?      write(6,*) ' KACGRP ', KACGRP
 *
 * Creation mappings from K-strings of given sym in each gasspace
 *
-* Input 
+* Input
 * NSTB : Number of strings before active gasspace
 * NSTA : Number of strings after accive gasspace
 * IOFFK : Offset for K group of strings in active gasspace, i.e. start of
@@ -2099,8 +2099,8 @@ C?      write(6,*) ' KACGRP ', KACGRP
 * IORBTSF   : First active orbital ( first orbital in in active GASspace
 *           with required sym)
 * IORBTF   : First orbital in active gas space, (can have any sym)
-* NORBTS  : Number of orbitals of given symmetry and type            
-* NSTAK : Number of K groupstrings with given correct symmetry      
+* NORBTS  : Number of orbitals of given symmetry and type
+* NSTAK : Number of K groupstrings with given correct symmetry
 * NSTAKT: Total Number of K groupstrings in active group (all symmetries)
 * NSTAKTS: Total Number of K supergroup strings with correct symmetry
 * ISTAKTS: Offset for K supergroup strings with hiven symmetrydistribution
@@ -2111,13 +2111,13 @@ C?      write(6,*) ' KACGRP ', KACGRP
       DIMENSION ICREORB(NACGSOB,*), ICRESTR(NACGSOB,*)
 *. Output
       DIMENSION ISTMAP(NSTAKTS,*),SGNMAP(NSTAKTS,*)
-* 
+*
 C?    WRITE(6,*) ' ADSTN_GASSM : NSTA, NSTB, NSTAK',NSTA,NSTB,NSTAK
 C?    WRITE(6,*) ' IOFFISP,IOFFKSP', IOFFISP, IOFFKSP
 C?    WRITE(6,*) ' IORBTSF IORBTF ', IORBTSF,IORBTF
       IMULTK = NSTAK*NSTB
       IMULTI = NSTAI*NSTB
-C?    WRITE(6,*) ' NSTAKT ', NSTAKT 
+C?    WRITE(6,*) ' NSTAKT ', NSTAKT
 *
       SIGN0 = (-1)**NELB*SCLFAC
 C?    WRITE(6,*) ' NELB sign0 = ', NELB, SIGN0
@@ -2145,7 +2145,7 @@ C?   &                 ICRESTR(IORBRT,KSTR),ICREORB(IORBRT,KSTR)
 *. before and after the active type. Store the corrsponding mappings
             IADRK0 = (KSTR-IOFFK)*NSTA +IOFFKSP-1
             IADRI0 = (ISTR-1)*NSTA     +IOFFISP-1
-C?          write(6,*) ' ISTR IADRK0 IADRI0 = ', ISTR, IADRK0,IADRI0 
+C?          write(6,*) ' ISTR IADRK0 IADRI0 = ', ISTR, IADRK0,IADRI0
 *
             NSTAINSTA = NSTAI*NSTA
             NSTAKNSTA = NSTAK*NSTA
@@ -2164,7 +2164,7 @@ C         ELSE
 C            SIGN = 0.0D0
 C            ISTR = 0
 *. This Creation is inactive for all choices of strings in supergroup
-*. before and after the active type. 
+*. before and after the active type.
 C           IADRK0 = (KSTR-IOFFK)*NSTA +IOFFKSP-1
 C?          write(6,*) ' ISTR IADRK0 = ', ISTR, IADRK0
 *
@@ -2174,12 +2174,12 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
 C?              write(6,*) ' IBKA, KBKA ',IBKA,KBKA
 C               IF(ISTMAP(KBKA,IORBRTS).NE.999) THEN
 C                 WRITE(6,*) ' overwriting ??? '
-C                 WRITE(6,*) ' Element ', (IORBRTS-1)*NSTAKTS+KBKA     
+C                 WRITE(6,*) ' Element ', (IORBRTS-1)*NSTAKTS+KBKA
 C                 Call Abend()
 C               END IF
-C               ISTMAP(KBKA,IORBRTS) = ISTR 
+C               ISTMAP(KBKA,IORBRTS) = ISTR
 C               SGNMAP(KBKA,IORBRTS) = SIGN
-C             
+C
 C             END DO
 C           END DO
           END IF
@@ -2187,7 +2187,7 @@ C           END DO
 *. before and after the active type. Store the corrsponding mappings
 COLD        IADRK0 = (KSTR-IOFFK)*NSTA +IOFFKSP-1
 COLD        IADRI0 = (ISTR-1)*NSTA     +IOFFISP-1
-C?          write(6,*) ' ISTR IADRK0 IADRI0 = ', ISTR, IADRK0,IADRI0 
+C?          write(6,*) ' ISTR IADRK0 IADRI0 = ', ISTR, IADRK0,IADRI0
 *
 COLD        DO IB = 1, NSTB
 COLD          DO IA = 1, NSTA
@@ -2210,7 +2210,7 @@ C         END IF
         NK = NSTB*NSTAK*NSTA
         WRITE(6,*) ' Number of K strings accessed ', NK
         IF(NK.NE.0) THEN
-          DO IORB = IORBTSF,IORBTSF + NORBTS  - 1 
+          DO IORB = IORBTSF,IORBTSF + NORBTS  - 1
             IORBR = IORB-IORBTSF+1
             WRITE(6,*) ' Update Info for orbital ', IORB
             WRITE(6,*) ' Excited strings and sign '
@@ -2227,13 +2227,13 @@ C         END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck annstr_gas $Revision$ 
+*fordeck annstr_gas $Revision$
       SUBROUTINE ANNSTR_GAS(STRING,NSTINI,NSTINO,NEL,NORB,IORBOF,
      &                  Z,NEWORD,LSGSTR,ISGSTI,ISGSTO,TI,TTO,NACOB,
      &                  IEC,LDIM,IPRNT)
 *
 * A group of strings containing NEL electrons is given
-* Set up all possible ways of removing an electron 
+* Set up all possible ways of removing an electron
 *
 *========
 * Input :
@@ -2285,7 +2285,7 @@ C         END IF
       LUOUT = 6
 *
       DO 1000 ISTRIN = 1,NSTINI
-        DO 100 IEL = 1, NEL                  
+        DO 100 IEL = 1, NEL
 *. String with electron removed
           DO JEL = 1, IEL-1
            STRIN2(JEL) = STRING(JEL,ISTRIN)
@@ -2345,7 +2345,7 @@ C         TI(IROW,ISTRIN ) = -IORB
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck crestr_gas $Revision$ 
+*fordeck crestr_gas $Revision$
 *
       SUBROUTINE CRESTR_GAS(STRING,NSTINI,NSTINO,NEL,NORB,IORBOF,
      &                  Z,NEWORD,LSGSTR,ISGSTI,ISGSTO,TI,TTO,NACOB,
@@ -2428,7 +2428,7 @@ C?      write(6,*) ' orbital ',iorb
            END IF
    11     CONTINUE
 *
-C?        write(6,*) ' iplace = ', iplace   
+C?        write(6,*) ' iplace = ', iplace
           IF(IPLACE.NE.0) THEN
 *. Generate next string
             DO 30 I = 1, IPLACE-1
@@ -2480,7 +2480,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck genstr_gas $Revision$ 
+*fordeck genstr_gas $Revision$
       SUBROUTINE GENSTR_GAS(NEL,NELMN1,NELMX1,NELMN3,NELMX3,
      &                  ISTASO,IGRP,NOCTYP,NSMST,Z,LSTASO,
      &                  IREORD,STRING,IOC,IOTYP,IPRNT)
@@ -2653,7 +2653,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
         WRITE(6,*) ' ============================================'
         CALL IWRTMA(IREORD,1,NPR,1,NPR)
       END IF
- 
+
       RETURN
       END
 ***********************************************************************
@@ -2661,40 +2661,40 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getstr2_totsm_spgp $Revision$ 
+*fordeck getstr2_totsm_spgp $Revision$
       SUBROUTINE GETSTR2_TOTSM_SPGP(IGRP,NIGRP,ISPGRPSM,NEL,NSTR,ISTR,
      &                              NORBT,IDOREO,IZ,IREO)
 *
 * Obtain all super-strings of given total symmetry and given
-* occupation in each GAS space 
+* occupation in each GAS space
 *
 *.If  IDOREO .NE. 0 THEN reordering array : lexical => actual order is obtained
 *
-* Nomenclature of the day : superstring : string in complete 
+* Nomenclature of the day : superstring : string in complete
 *                           orbital space, product of strings in
-*                           each GAS space 
+*                           each GAS space
 *
 * Compared to GETSTR2_TOTSM_SPGP : Based upon IGRP(NIGRP)
 *                                  (Just a few changes in the beginning)
 *
 * =====
-* Input 
+* Input
 * =====
 *
-* IGRP :  supergroup, here as an array of GAS space 
-* NIGRP : Number of active groups 
-* ISPGRPSM : Total symmetry of superstrings 
-* NEL : Number of electrons 
+* IGRP :  supergroup, here as an array of GAS space
+* NIGRP : Number of active groups
+* ISPGRPSM : Total symmetry of superstrings
+* NEL : Number of electrons
 * IZ  : Reverse lexical ordering array for this supergroup (IF IDOREO.NE.0)
-* 
+*
 *
 * ======
-* Output 
+* Output
 * ======
 *
 * NSTR : Number of superstrings generated
 * ISTR : Occupation of superstring
-* IREO : Reorder array ( if IDOREO.NE.0) 
+* IREO : Reorder array ( if IDOREO.NE.0)
 *
 *
 * Jeppe Olsen, Written  July 1995
@@ -2726,7 +2726,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
         WRITE(6,*) ' Welcome to GETSTR_TOTSM_SPGP '
         WRITE(6,*) ' ============================== '
         WRITE(6,*)
-        WRITE(6,'(A)')  ' Strings to be obtained : ' 
+        WRITE(6,'(A)')  ' Strings to be obtained : '
         WRITE(6,'(A)') ' **************************'
         WRITE(6,'(A)')
         WRITE(6,'(A,I2)') '   Symmetry : ', ISPGRPSM
@@ -2735,12 +2735,12 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
       END IF
 *. Absolut number of this supergroup
 *. Occupation per gasspace
-*. Largest occupied space 
+*. Largest occupied space
       NGASL = 0
 *. Largest and lowest symmetries active in each GAS space
       DO IGAS = 1, NGAS
         ITPFGS(IGAS) = IGRP(IGAS)
-        NELFGS(IGAS) = NELFGP(IGRP(IGAS))          
+        NELFGS(IGAS) = NELFGP(IGRP(IGAS))
         IF(NELFGS(IGAS).GT.0) NGASL = IGAS
       END DO
       IF(NGASL.EQ.0) NGASL = 1
@@ -2766,7 +2766,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
          CALL IWRTMA(ITPFGS,1,NGAS,1,NGAS)
          WRITE(6,*) ' Number of elecs per GAS space '
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
-      END IF 
+      END IF
 *
 *. Loop over symmetries of each GAS
 *
@@ -2779,7 +2779,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
             ISMFGS(IGAS) = MINVAL(IGAS)
           END DO
         ELSE
-*. Next distribution of symmetries in NGAS -1 
+*. Next distribution of symmetries in NGAS -1
          CALL NXTNUM3(ISMFGS,NGASL-1,MINVAL,MAXVAL,NONEW)
          IF(NONEW.NE.0) GOTO 1001
         END IF
@@ -2794,7 +2794,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
           CALL  SYMCOM(3,1,ISTSMM1,ISMFGS(IGAS),JSTSMM1)
           ISTSMM1 = JSTSMM1
         END DO
-*. required sym of SPACE NGASL 
+*. required sym of SPACE NGASL
         CALL SYMCOM(2,1,ISTSMM1,ISMGSN,ISPGRPSM)
         ISMFGS(NGASL) = ISMGSN
 *
@@ -2805,21 +2805,21 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
-*. Obtain all strings of this symmetry 
+*. Obtain all strings of this symmetry
 CT      CALL QENTER('GASSM')
         CALL GETSTRN_GASSM_SPGP(ISMFGS,ITPFGS,ISTR(1,ISTRBS),NSTR,NEL,
      &                          NNSTSGP,IISTSGP)
 CT      CALL QEXIT('GASSM')
-*. Reorder Info : Lexical => actual number 
+*. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
-*. Can be made smart by using common factor for first NGAS-1 spaces 
+*. Can be made smart by using common factor for first NGAS-1 spaces
           DO JSTR = ISTRBS, ISTRBS+NSTR-1
             LEX = 1
-            DO IEL = 1, NEL 
+            DO IEL = 1, NEL
               LEX = LEX + IZ(ISTR(IEL,JSTR),IEL)
             END DO
-C           WRITE(6,*) ' string '  
+C           WRITE(6,*) ' string '
 C           CALL IWRTMA(ISTR(1,JSTR),1,NEL,1,NEL)
 C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
@@ -2828,8 +2828,8 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           END DO
         END IF
 *
-        ISTRBS = ISTRBS + NSTR 
-*. ready for next symmetry distribution 
+        ISTRBS = ISTRBS + NSTR
+*. ready for next symmetry distribution
         IF(NGAS-1.NE.0) GOTO 1000
  1001 CONTINUE
 *. End of loop over symmetry distributions
@@ -2851,42 +2851,42 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
       CALL QEXIT('GETST')
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getstr_totsm_spgp $Revision$ 
+*fordeck getstr_totsm_spgp $Revision$
       SUBROUTINE GETSTR_TOTSM_SPGP(ISTRTP,ISPGRP,ISPGRPSM,NEL,NSTR,ISTR,
      &                             NORBT,IDOREO,IZ,IREO)
 *
 * Obtain all super-strings of given total symmetry and given
-* occupation in each GAS space 
+* occupation in each GAS space
 *
 *.If  IDOREO .NE. 0 THEN reordering array : lexical => actual order is obtained
 *
-* Nomenclature of the day : superstring : string in complete 
+* Nomenclature of the day : superstring : string in complete
 *                           orbital space, product of strings in
-*                           each GAS space 
+*                           each GAS space
 * =====
-* Input 
+* Input
 * =====
 *
 * ISTRTP  : Type of of superstrings ( alpha => 1, beta => 2 )
 * ISPGRP :  supergroup number, (relative to start of this type )
-* ISPGRPSM : Total symmetry of superstrings 
-* NEL : Number of electrons 
+* ISPGRPSM : Total symmetry of superstrings
+* NEL : Number of electrons
 * IZ  : Reverse lexical ordering array for this supergroup
-* 
+*
 *
 * ======
-* Output 
+* Output
 * ======
 *
 * NSTR : Number of superstrings generated
 * ISTR : Occupation of superstring
-* IREO : Reorder array ( if IDOREO.NE.0) 
+* IREO : Reorder array ( if IDOREO.NE.0)
 *
 *
 * Jeppe Olsen, July 1995
@@ -2924,12 +2924,12 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *. Absolut number of this supergroup
       ISPGRPA = IBSPGPFTP(ISTRTP) - 1 + ISPGRP
 *. Occupation per gasspace
-*. Largest occupied space 
+*. Largest occupied space
       NGASL = 0
 *. Largest and lowest symmetries active in each GAS space
       DO IGAS = 1, NGAS
         ITPFGS(IGAS) = ISPGPFTP(IGAS,ISPGRPA)
-        NELFGS(IGAS) = NELFGP(ITPFGS(IGAS))          
+        NELFGS(IGAS) = NELFGP(ITPFGS(IGAS))
         IF(NELFGS(IGAS).GT.0) NGASL = IGAS
       END DO
       IF(NGASL.EQ.0) NGASL = 1
@@ -2955,7 +2955,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
          CALL IWRTMA(ITPFGS,1,NGAS,1,NGAS)
          WRITE(6,*) ' Number of elecs per GAS space '
          CALL IWRTMA(NELFGS,1,NGAS,1,NGAS)
-      END IF 
+      END IF
 *
 *. Loop over symmetries of each GAS
 *
@@ -2968,7 +2968,7 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
             ISMFGS(IGAS) = MINVAL(IGAS)
           END DO
         ELSE
-*. Next distribution of symmetries in NGAS -1 
+*. Next distribution of symmetries in NGAS -1
 C        NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 C        CALL NXTNUM2(ISMFGS,NGASL-1,1,MAXVAL,NONEW)
 C        CALL NXTNUM3(IOCA,NGAS,IGSMIN,IGSMAX,NONEW)
@@ -2988,7 +2988,7 @@ C         SYMCOM(ITASK,IOBJ,I1,I2,I12)
           ISTSMM1 = JSTSMM1
 C?        write(6,*) ' ISTSMM1 : ', ISTSMM1
         END DO
-*. required sym of SPACE NGASL 
+*. required sym of SPACE NGASL
         CALL SYMCOM(2,1,ISTSMM1,ISMGSN,ISPGRPSM)
         ISMFGS(NGASL) = ISMGSN
 *
@@ -2999,21 +2999,21 @@ C?        write(6,*) ' ISTSMM1 : ', ISTSMM1
           WRITE(6,*) ' Next symmetry distribution '
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
-*. Obtain all strings of this symmetry 
+*. Obtain all strings of this symmetry
 CT      CALL QENTER('GASSM')
         CALL GETSTRN_GASSM_SPGP(ISMFGS,ITPFGS,ISTR(1,ISTRBS),NSTR,NEL,
      &                          NNSTSGP,IISTSGP)
 CT      CALL QEXIT('GASSM')
-*. Reorder Info : Lexical => actual number 
+*. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
-*. Can be made smart by using common factor for first NGAS-1 spaces 
+*. Can be made smart by using common factor for first NGAS-1 spaces
           DO JSTR = ISTRBS, ISTRBS+NSTR-1
             LEX = 1
-            DO IEL = 1, NEL 
+            DO IEL = 1, NEL
               LEX = LEX + IZ(ISTR(IEL,JSTR),IEL)
             END DO
-C           WRITE(6,*) ' string '  
+C           WRITE(6,*) ' string '
 C           CALL IWRTMA(ISTR(1,JSTR),1,NEL,1,NEL)
 C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
@@ -3022,8 +3022,8 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           END DO
         END IF
 *
-        ISTRBS = ISTRBS + NSTR 
-*. ready for next symmetry distribution 
+        ISTRBS = ISTRBS + NSTR
+*. ready for next symmetry distribution
         IF(NGAS-1.NE.0) GOTO 1000
  1001 CONTINUE
 *. End of loop over symmetry distributions
@@ -3045,33 +3045,33 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 *
       CALL QEXIT('GETST')
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getstrn_gassm_spgp $Revision$ 
+*fordeck getstrn_gassm_spgp $Revision$
       SUBROUTINE GETSTRN_GASSM_SPGP(ISMFGS,ITPFGS,ISTROC,NSTR,NEL,
      &                          NNSTSGP,IISTSGP)
 *
-* Obtain all superstrings containing  strings of given sym and type 
+* Obtain all superstrings containing  strings of given sym and type
 *
-* ( Superstring :contains electrons belonging to all gasspaces  
+* ( Superstring :contains electrons belonging to all gasspaces
 *        string :contains electrons belonging to a given GAS space
 * A super string is thus a product of NGAS strings )
 *
 * Jeppe Olsen, Summer of 95
 *              Optimized version, october 1995
 *
-*. In this subroutine the ordering of strings belonging to a given type 
+*. In this subroutine the ordering of strings belonging to a given type
 *  is defined !!
-* Currently we are using the order 
-* Loop over GAS 1 strings 
-*  Loop over GAS 2 strings 
+* Currently we are using the order
+* Loop over GAS 1 strings
+*  Loop over GAS 2 strings
 *   Loop over GAS 3 strings --
 *
-*     Loop over gas N strings 
+*     Loop over gas N strings
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
@@ -3082,13 +3082,13 @@ C           WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"
-*. Specific input 
+*. Specific input
       INTEGER ITPFGS(*), ISMFGS(*)
       INTEGER NNSTSGP(MXPNSMST,*), IISTSGP(MXPNSMST,*)
-*. Local scratch 
+*. Local scratch
 C     INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS), ISTRNM(MXPNGAS)
       INTEGER NSTFGS(MXPNGAS), IBSTFGS(MXPNGAS)
-*. Output 
+*. Output
       INTEGER ISTROC(NEL,*)
 *. Number of strings per GAS space
 C?    write(6,*) ' entering problem child '
@@ -3137,11 +3137,11 @@ C     WRITE(6,*) ' NSTRTOT = ', NSTRTOT
         ELSE
           NELB = NELB +  NELFGP(ITPFGS(IGAS-1))
         END IF
-*. Number of electron in IGAS 
+*. Number of electron in IGAS
         NELI = NELFGP(ITPFGS(IGAS))
 C?      WRITE(6,*) ' NELI and NELB ', NELI,NELB
         IF(NELI.GT.0) THEN
-         
+
 *. The order of strings corresponds to a matrix A(I(after),Igas,I(before))
 *. where I(after) loops over strings in IGAS+1 - IGASL and
 *  I(before) loop over strings in 1 - IGAS -1
@@ -3156,21 +3156,21 @@ C?      WRITE(6,*) ' NELI and NELB ', NELI,NELB
           END DO
 *
           NSTI = NSTFGS(IGAS)
-         
+
 C?        write(6,*) ' before call to add_str_group '
           CALL ADD_STR_GROUP(NSTI,
      &          IBSTFGS(IGAS),
      &          WORK(KOCSTR(ITPFGS(IGAS))),
      &          NSTB,NSTA,ISTROC,NELB+1,NELI,NEL)
-*. Loop over strings in IGAS 
+*. Loop over strings in IGAS
         END IF
       END DO
  1001 CONTINUE
  2810 CONTINUE
-      NSTR = NSTRTOT  
+      NSTR = NSTRTOT
 *
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Info from  GETSTR_GASSM_SPGP ' 
+        WRITE(6,*) ' Info from  GETSTR_GASSM_SPGP '
         WRITE(6,*) ' ============================='
         WRITE(6,*)
         WRITE(6,*) ' Symmetry and type strings : '
@@ -3187,13 +3187,13 @@ C?        write(6,*) ' before call to add_str_group '
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck grapw $Revision$ 
+*fordeck grapw $Revision$
       SUBROUTINE GRAPW(W,Y,MINEL,MAXEL,NORB,NEL,NTEST)
 *
 * A graph of strings has been defined from
@@ -3271,7 +3271,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck istrnm $Revision$ 
+*fordeck istrnm $Revision$
       FUNCTION ISTRNM(IOCC,NORB,NEL,Z,NEWORD,IREORD)
 *
 * Adress of string IOCC
@@ -3309,7 +3309,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck isyms1 $Revision$ 
+*fordeck isyms1 $Revision$
       FUNCTION ISYMS1(STRING,NEL)
 *
 * Symmmetry of string, D2H version
@@ -3353,7 +3353,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck isyms2 $Revision$ 
+*fordeck isyms2 $Revision$
       FUNCTION ISYMS2(STRING,NEL)
 *
 * Symmetry of string STRING, D inf h, C inf v, O3 version
@@ -3434,7 +3434,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck isymstr $Revision$ 
+*fordeck isymstr $Revision$
       FUNCTION ISYMSTR(ISYM,NSTR)
 *
 * Symmetry of product of NSTR string symmetries
@@ -3467,14 +3467,14 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck memstr_gas $Revision$ 
+*fordeck memstr_gas $Revision$
       SUBROUTINE MEMSTR_GAS
 *
 *
 * Construct pointers for saving information about strings and
 * their mappings
 *
-* GAS version 
+* GAS version
 *
 *========
 * Input :
@@ -3524,9 +3524,9 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
       CALL MEMMAN(KISTSGP(1),NSMST*NGRP,'ADDS  ',1,'ISTSGP')
 *
 *. Number of strings per symmetry and offset for strings of given sym
-*. for types 
+*. for types
 *
-      DO  ITP  = 1, NSTTP  
+      DO  ITP  = 1, NSTTP
         CALL MEMMAN(KNSTSO(ITP),NSPGPFTP(ITP)*NSMST,'ADDS  ',1,'NSTSO ')
         CALL MEMMAN(KISTSO(ITP),NSPGPFTP(ITP)*NSMST,'ADDS  ',1,'ISTSO ')
       END DO
@@ -3534,13 +3534,13 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 **. Lexical adressing of arrays : use array indeces for complete active space
 *
 *. Not in use so
-      DO  IGRP = 1, NGRP  
+      DO  IGRP = 1, NGRP
         CALL MEMMAN(KZ(IGRP),NACOB*NELFGP(IGRP),'ADDS  ',1,'Zmat  ')
       END DO
 *
 *. Mappings between different groups
 *
-      DO  IGRP = 1, NGRP   
+      DO  IGRP = 1, NGRP
         IEL = NELFGP(IGRP)
         IGAS = IGSFGP(IGRP)
         IORB = NOBPT(IGAS)
@@ -3548,7 +3548,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 *. IF creation is involve : Use full orbital notation
 *  If only annihilation is involved, compact form will be used
         IF(ISTAC(IGRP,2).NE.0) THEN
-          LENGTH = IORB*ISTRIN 
+          LENGTH = IORB*ISTRIN
           CALL MEMMAN(KSTSTM(IGRP,1),LENGTH,'ADDS  ',1,'ORBMAP')
           CALL MEMMAN(KSTSTM(IGRP,2),LENGTH,'ADDS  ',1,'STRMAP')
         ELSE IF(ISTAC(IGRP,1).NE.0) THEN
@@ -3599,17 +3599,17 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nst_spgrp $Revision$ 
+*fordeck nst_spgrp $Revision$
       SUBROUTINE NST_SPGRP(NGRP,IGRP,ISM_TOT,NSTSGP,NSMST,
      &                     NSTRIN,NDIST)
 *
-* Number of strings for given combination of groups and 
+* Number of strings for given combination of groups and
 * symmetry.
 *
 *. Input
-*        
 *
-*   NGRP : Number of active groups 
+*
+*   NGRP : Number of active groups
 *   IGRP : The active groups
 *   ISM_TOT : Total symmetry of supergroup
 *   NSTSGP  : Number of strings per symmetry and supergroup
@@ -3627,7 +3627,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
       DIMENSION IGRP(NGRP)
 *. General input
       DIMENSION NSTSGP(NSMST,*)
-*. Scratch 
+*. Scratch
 #include "mxpdim.inc"
 *include <mxpdim.fh>
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
@@ -3647,7 +3647,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
       CALL MINMAX_FOR_SYM_DIST(NGRP,IGRP,MNSM,MXSM,NDISTX)
 *. Loop over symmetry distributions
       IFIRST = 1
-      LENGTH = 0 
+      LENGTH = 0
       NDIST = 0
  1000 CONTINUE
 *. Next symmetry distribution
@@ -3676,7 +3676,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nstptp_gas $Revision$ 
+*fordeck nstptp_gas $Revision$
 *
 *
       SUBROUTINE NSTPTP_GAS(NGAS,ISPGRP,NSTSGP,NSMST,
@@ -3687,17 +3687,17 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 * per supergroup and sym for given super group.
 *
 * Jeppe Olsen , Fall of 94
-* 
+*
 * Last Revision : Aug 97, NSMCLS,NSMCLSE added
 *
 * NSMCLS : MAX Number of symmetry classes for given supergroup,
 *          i.e. number of combinations of symmetries of groups
 *          containing strings
-* NSMCLSE : Number of symmetry classes for given supergroup 
-*          obtained by restricting allowed symmetries in 
+* NSMCLSE : Number of symmetry classes for given supergroup
+*          obtained by restricting allowed symmetries in
 *          a given group by a max and min.
-* NSMCLSE1 : As NSMCLSE, but the symmetry of the last active 
-*            orbital space where there is more than one symmetry 
+* NSMCLSE1 : As NSMCLSE, but the symmetry of the last active
+*            orbital space where there is more than one symmetry
 *            is left out
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -3705,7 +3705,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Output
       DIMENSION NSTSSPGP(NSMST,IGRP)
-*. Scratch 
+*. Scratch
 #include "mxpdim.inc"
 *include <mxpdim.fh>
       INTEGER ISM(MXPNGAS),MNSM(MXPNGAS),MXSM(MXPNGAS)
@@ -3724,7 +3724,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
       IZERO = 0
       CALL ISETVC(NSTSSPGP(1,IGRP),IZERO,NSMST)
       CALL ISETVC(MSMCLS,IZERO,NSMST)
-      
+
 *. Max and Min for allowed symmetries
       DO IGAS = 1, NGAS
         MXSM(IGAS) = 1
@@ -3782,9 +3782,9 @@ C?      WRITE(6,*) ISMSPGP , NST
         NSTSSPGP(ISMSPGP,IGRP) =   NSTSSPGP(ISMSPGP,IGRP) + NST
         IF(NST.NE.0) MSMCLS(ISMSPGP) = MSMCLS(ISMSPGP) + 1
         GOTO 1000
-      END IF         
+      END IF
 *
-      MXNSTR = -1 
+      MXNSTR = -1
       NSMCLS = 0
       DO ISTRSM = 1, NSMST
         MXNSTR = MAX(MXNSTR,NSTSSPGP(ISTRSM,IGRP))
@@ -3792,7 +3792,7 @@ C?      WRITE(6,*) ISMSPGP , NST
       END DO
 *
       IF(NTEST.GE.10) THEN
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' Number of strings per symmetry for supergroup',IGRP
         CALL IWRTMA10(NSTSSPGP(1,IGRP),1,NSMST,1,NSMST)
         WRITE(6,*) ' Largest number of strings of given sym ',MXNSTR
@@ -3808,7 +3808,7 @@ C?      WRITE(6,*) ISMSPGP , NST
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nstrso_gas $Revision$ 
+*fordeck nstrso_gas $Revision$
       SUBROUTINE NSTRSO_GAS(NEL,NORB1,NORB2,NORB3,
      &                  NELMN1,NELMX1,NELMN3,NELMX3,
      &                  IOC,NORB,NSTASO,ISTASO,
@@ -3925,15 +3925,15 @@ C                   IOCTP2(STRING,NEL)
           ISTASO(ISM,IOTYP) = ISTASO(ISM-1,IOTYP)+NSTASO(ISM-1,IOTYP)
         END IF
       END DO
- 
+
       IF(NTEST.GE.5)
      &WRITE(6,*) ' Number of strings generated   ', NSTRIN
       IF(NTEST .GE. 10 ) THEN
         WRITE(6,*)
-        WRITE(6,*) ' Number of strings per sym for group = ', IOTYP 
+        WRITE(6,*) ' Number of strings per sym for group = ', IOTYP
         WRITE(6,*) '================================================'
         CALL IWRTMA(NSTASO(1,IOTYP),1,NSMST,1,NSMST)
-        WRITE(6,*) ' Offset for given symmetry for group = ', IOTYP 
+        WRITE(6,*) ' Offset for given symmetry for group = ', IOTYP
         WRITE(6,*) '================================================'
         CALL IWRTMA(ISTASO(1,IOTYP),1,NSMST,1,NSMST)
       END IF
@@ -3945,7 +3945,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prtstr $Revision$ 
+*fordeck prtstr $Revision$
       SUBROUTINE PRTSTR(ISTR,NEL,NSTR)
 *
 * Print NSTR strings each containing NEL electrons
@@ -3959,13 +3959,13 @@ C
       END DO
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck reo_str_spgrp3 $Revision$ 
+*fordeck reo_str_spgrp3 $Revision$
 *
 * Testing new routines with active/passive divisions
 *                          Jeppe, sept. 20 97
@@ -3976,12 +3976,12 @@ C
 * Sigma(I_pa_a,I_pa_b,I_ac_a,I_ac_b) =
 * sum(ijkl) <I_ac_a!Ea(ij)!J_ac_b><I_ac_b!Eb(kl)!I_ac_b>(ij!kl)
 *           C(J_pa_a,J_pa_b,I_ac_a,I_pa_b)
-*. One possibility is to use the above directly, and vectorize 
+*. One possibility is to use the above directly, and vectorize
 *  over the passive strings.
 *
 * Another possibility is to use N-1 resolution in the alpha space
-* as 
-*   1) Construct C(Ka_a,I_pa_a,I_pa_b,j,J_ac_b) 
+* as
+*   1) Construct C(Ka_a,I_pa_a,I_pa_b,j,J_ac_b)
 *   2) Obtain    S(Ka_a,I_pa_a,I_pa_b,I,I_ac_b) =
 *      Sum(kl)   <I_ac_b!Eb(kl)!J_ac_b> Sum(ij)(ij!kl)
 *      C(Ka_a,I_Pa_a,I_Pa_b,j,J_ac_b)
@@ -3999,7 +3999,7 @@ C
 *   Obtain offset for reordered strings
 *          Number of active and passive strings of appropriate sym
 *          Reorder array.
-* 
+*
       SUBROUTINE REO_STR_SPGRP3(ISPGP,NIGRP,ISPGPSM,NSTR,NACTE,IACTE,
      &                          NACT,IACTGP,NAST_S,NPST_S,IBREO,IREO,
      &                          SIGNPA)
@@ -4007,7 +4007,7 @@ C
 * Reorder strings of supergroup with given symmetry
 * so passive groups are placed before active groups
 *
-* The division of into active and passive parts is based upon 
+* The division of into active and passive parts is based upon
 * IACTE that give gasspaces of an operator.
 *
 * Output order
@@ -4018,16 +4018,16 @@ C
 *      Loop over symmetry distributions of passive groups
 *      (generated by NEXTNUM2)
 *        Loop over passive strings os this distribution
-*        End of loop over passive strings 
+*        End of loop over passive strings
 *      End of loop over symmetry distributions of passive groups
 *     End of loop over active strings
 *   End of loop over symmetrydistributions of active groups
-* End of loop over symmetry of active group 
+* End of loop over symmetry of active group
 *
 * The reordered supergroup is thus organized as  a sequence of
 * matrices C(p,a):
 *
-* Jeppe Olsen, September 1997  
+* Jeppe Olsen, September 1997
 *
 * ======
 *. Input
@@ -4057,7 +4057,7 @@ C
 *. General Input
 #include "mxpdim.inc"
 *include <mxpdim.fh>
-C     COMMON/BIGGY/WORK(MXPWRD)     
+C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 #include "orbinp.inc"
 #include "strinp.inc"
@@ -4069,7 +4069,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *. Output
 *. Number of active strings per symmetry
       DIMENSION NAST_S(NSMST)
-*. Number of passive strings per symmetry 
+*. Number of passive strings per symmetry
       DIMENSION NPST_S(NSMST)
 *. The active groups
       DIMENSION IACTGP(*)
@@ -4083,10 +4083,10 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *  ==============
 *
       INTEGER ITPFGS(MXPNGAS)
-* 
+*
       INTEGER IPAS(MXPNGAS)
       INTEGER IACT(MXPNGAS),IPASGP(MXPNGAS)
-      
+
 *
       INTEGER MXVL(MXPNGAS),MNVL(MXPNGAS)
 *
@@ -4117,9 +4117,9 @@ CT    CALL QENTER('REO_PA')
         WRITE(6,*)
         WRITE(6,*) '   Symmetry    Groups '
         WRITE(6,*) ' =============================================='
-        WRITE(6,*) 
+        WRITE(6,*)
 C       WRITE(6,*)
-        WRITE(6,'(A,3X,I4,3X,16(1X,I2))') 
+        WRITE(6,'(A,3X,I4,3X,16(1X,I2))')
      & '     ',ISPGPSM,(ISPGP(II),II=1,NIGRP)
         WRITE(6,*) ' Number of operators ', NACTE
         WRITE(6,*) ' Gaspaces of operators ', (IACTE(I),I=1,NACTE)
@@ -4132,7 +4132,7 @@ C       WRITE(6,*)
         IACTGP(IACTE(JACT)) = 1
       END DO
       NACT = 0
-*. indeces of active groups 
+*. indeces of active groups
       DO JGRP = 1, NIGRP
         IF(IACTGP(IGSFGP(ISPGP(JGRP))).EQ.1) THEN
           NACT = NACT + 1
@@ -4141,7 +4141,7 @@ C       WRITE(6,*)
       END DO
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Number of active groups ', NACT
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' Active gasspaces(index in IGRP) : ', (IACT(JACT),JACT=1,NACT)
       END IF
 *
@@ -4163,7 +4163,7 @@ C     NGASL = NIGRP
        CALL IWRTMA(N2STSMGP,NSMST,NGAS,MXPOBS,NGAS)
       END IF
 *
-* A supergroup contains a number of 
+* A supergroup contains a number of
 * symmetry blocks, with each block defined by  given symmetries
 * in the GAS SPACE. Obtain offsets to given symmetry combinations
 *
@@ -4185,16 +4185,16 @@ C     NGASL = NIGRP
         WRITE(6,*) ' Passive indeces in IGRP'
         CALL IWRTMA(IPAS,1,NPAS,1,NPAS)
       END IF
-CCC*. Reorder array, old order of spaces to new order of 
-*. Reorder array, new order of indeces to old order  
+CCC*. Reorder array, old order of spaces to new order of
+*. Reorder array, new order of indeces to old order
       JPAS = 1
       JACT = 1
       DO INDEX = 1, NIGRP
           IF(IACT(JACT).EQ.INDEX) THEN
-            IREOGS(JACT+NPAS)  = INDEX     
+            IREOGS(JACT+NPAS)  = INDEX
             IF(JACT.LT.NACT) JACT = JACT + 1
           ELSE IF(IPAS(JPAS).EQ.INDEX) THEN
-            IREOGS(JPAS) = INDEX     
+            IREOGS(JPAS) = INDEX
             IF(JPAS.LT.NPAS) JPAS = JPAS + 1
           END IF
       END DO
@@ -4210,7 +4210,7 @@ CCC*. Reorder array, old order of spaces to new order of
           IF(JPAS.LT.NPAS) JPAS = JPAS + 1
         END IF
       END DO
-*. Sign for separating Active and passive groups, taken 
+*. Sign for separating Active and passive groups, taken
 *  as sign to bring passive strings in front.
       SIGNPA = 1.0D0
       DO JACTGP = 1, NACT
@@ -4220,7 +4220,7 @@ CCC*. Reorder array, old order of spaces to new order of
 *
           JJPASGP = IPASGP(JPASGP)
           JJPASEL = NELFGP(JJPASGP)
-          IF(JJPASGP.GT.JJACTGP) THEN 
+          IF(JJPASGP.GT.JJACTGP) THEN
             SIGNPA = SIGNPA*(-1) **(JJPASEL*JJACTEL)
           END IF
         END DO
@@ -4236,7 +4236,7 @@ CCC*. Reorder array, old order of spaces to new order of
         WRITE(6,*) ' Groups constituting passive parts '
         CALL IWRTMA(IPASGP,1,NPAS,1,NPAS)
       END IF
-*. Last active and passive group with nonvanishing number of elecs  
+*. Last active and passive group with nonvanishing number of elecs
       NPASL = 1
       DO JPAS = 1, NPAS
         IF(NELFGP(IPASGP(JPAS)).NE.0) NPASL = JPAS
@@ -4249,8 +4249,8 @@ CCC*. Reorder array, old order of spaces to new order of
 *. Symmetry of passive strings
         CALL SYMCOM(2,0,ISMAC_T,ISMPA_T,ISPGPSM)
         IF(NTEST.GE.1000) THEN
-          WRITE(6,*) 
-     &    ' ISPGPSM ISMAC_T ISMPA_T',ISPGPSM,ISMAC_T,ISMPA_T 
+          WRITE(6,*)
+     &    ' ISPGPSM ISMAC_T ISMPA_T',ISPGPSM,ISMAC_T,ISMPA_T
         END IF
         IBREO(ISMAC_T) = I_REO
 *. Obtain symmetry distributions of active strings
@@ -4272,12 +4272,12 @@ CCC*. Reorder array, old order of spaces to new order of
 C?        WRITE(6,*) ' Active distribution ', JDIST_ACT
 *. Number of strings in each active GAS space
          DO JACT = 1, NACT
-           NST_ACT(JACT) = 
+           NST_ACT(JACT) =
      &     N2STSMGP(IDIST_ACT(JACT+(JDIST_ACT-1)*NACT),IACT(JACT))
          END DO
 *. Loop over active strings of given distribution
          DO ISTR_ACT = 1, LDIST_ACT(JDIST_ACT)
-*. Obtain next active string 
+*. Obtain next active string
            IF(ISTR_ACT.EQ.1) THEN
             DO JACT = 1, NACT
              ISTRAC(JACT) = 1
@@ -4292,7 +4292,7 @@ C?        WRITE(6,*) ' Active distribution ', JDIST_ACT
           DO JDIST_PAS = 1, NDIST_PAS
 *. Number of strings in each passive GAS space
            DO JPAS = 1, NPASL
-             NST_PAS(JPAS) = 
+             NST_PAS(JPAS) =
      &       N2STSMGP(IDIST_PAS(JPAS+(JDIST_PAS-1)*NPASL),IPAS(JPAS))
            END DO
            DO JPAS = NPASL+1,NPAS
@@ -4300,11 +4300,11 @@ C?        WRITE(6,*) ' Active distribution ', JDIST_ACT
            END DO
 *. Offset to this distribution in original order
            DO JACT = 1, NACT
-             ISMTO(IREOGS(NPAS+JACT)) 
+             ISMTO(IREOGS(NPAS+JACT))
      &     = IDIST_ACT(JACT+(JDIST_ACT-1)*NACT)
            END DO
            DO JPAS = 1, NPASL
-             ISMTO(IREOGS(JPAS)) 
+             ISMTO(IREOGS(JPAS))
      &       = IDIST_PAS(JPAS+(JDIST_PAS-1)*NPASL)
            END DO
            DO JPAS = NPASL+1,NPAS
@@ -4327,7 +4327,7 @@ C?         write(6,*) ' Passive string ', ISTR_PAS
             ELSE
              CALL NXTNUM2_REV(ISTPA,NPASL,1,NST_PAS,NONEW_PAS)
             END IF
-*. Obtain original address of this string 
+*. Obtain original address of this string
 *.. a : Original order of indeces
             DO JACT = 1, NACT
              ISTTO(IREOGS(JACT+NPAS)) = ISTRAC(JACT)
@@ -4352,8 +4352,8 @@ C?         write(6,*) ' Passive string ', ISTR_PAS
 * loop over GAS1
 *   Loop over GAS2
 *     ...
-*       Loop over GASN       
-*       End of Loop over GASN       
+*       Loop over GASN
+*       End of Loop over GASN
 *     ...
 *   End of Loop over GAS2
 * End of loop over GAS1
@@ -4396,7 +4396,7 @@ C?          WRITE(6,*) ' I_REO and I_ORIG' ,I_REO,I_ORIG
         WRITE(6,*) ' Number of passive per symmetry '
         CALL IWRTMA(NPST_S,1,NSMST,1,NSMST)
         WRITE(6,*) ' Sign change ', SIGNPA
-*    
+*
       END IF
 *
 CT    CALL QEXIT('REO_PA')
@@ -4502,7 +4502,7 @@ CT    CALL QEXIT('REO_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck spgrpcon $Revision$ 
+*fordeck spgrpcon $Revision$
       SUBROUTINE SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,
      &                    ISPGRPCON,IPRNT)
 *
@@ -4531,7 +4531,7 @@ CT    CALL QEXIT('REO_PA')
           JSPGRPA = IOFSPGRP-1+JSPGRP
           IDIF = 0
           DO IGAS = 1, NGAS
-            IDIF = IDIF 
+            IDIF = IDIF
      &    + ABS(IELFSPGRP(IGAS,ISPGRPA)-IELFSPGRP(IGAS,JSPGRPA))
           END DO
           NEXC = IDIF/2
@@ -4558,10 +4558,10 @@ CT    CALL QEXIT('REO_PA')
           END DO
         END DO
 *
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' single excitation interactions',NEXC1,
      &   '( ',float(NEXC1)*100.0/NSPGRP**2,' % ) '
-        WRITE(6,*) 
+        WRITE(6,*)
      &  ' double excitation interactions',NEXC2,
      &   '( ',float(NEXC2)*100.0/NSPGRP**2,' % ) '
 *
@@ -4573,13 +4573,13 @@ CT    CALL QEXIT('REO_PA')
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck spgspg_to_class $Revision$ 
+*fordeck spgspg_to_class $Revision$
       SUBROUTINE SPGSPG_TO_CLASS(JOCTPA,JOCTPB,JOCCLS,NOCCLS,IOCCLS)
 *
 * Two supergroups of strings are given.
@@ -4591,7 +4591,7 @@ CT    CALL QEXIT('REO_PA')
 #include "cgas.inc"
 #include "gasstr.inc"
       DIMENSION IOCCLS(NGAS,NOCCLS)
-*. Absolute numbers 
+*. Absolute numbers
       IATP = 1
       IBTP = 2
       JJOCTPA = IBSPGPFTP(IATP) - 1 + JOCTPA
@@ -4601,7 +4601,7 @@ CT    CALL QEXIT('REO_PA')
       DO KOCCLS= 1, NOCCLS
         I_AM_OKAY = 1
         DO IGAS = 1, NGAS
-          IF(NELFSPGP(IGAS,JJOCTPA)+NELFSPGP(IGAS,JJOCTPB) 
+          IF(NELFSPGP(IGAS,JJOCTPA)+NELFSPGP(IGAS,JJOCTPB)
      &       .NE. IOCCLS(IGAS,KOCCLS)                     )I_AM_OKAY=0
         END DO
         IF(I_AM_OKAY.EQ.1) JOCCLS = KOCCLS
@@ -4619,20 +4619,20 @@ CT    CALL QEXIT('REO_PA')
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck spspcls $Revision$ 
+*fordeck spspcls $Revision$
       SUBROUTINE SPSPCLS(ISPSPCLS,ICLS,NCLS)
 *
 * Obtain mapping a-supergroup X b-supergroup => class
 *
 * Classes are specified by ICLS
 *
-* Jeppe Olsen, Jan 97 
+* Jeppe Olsen, Jan 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
@@ -4667,7 +4667,7 @@ CT    CALL QEXIT('REO_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck spspcls_gas $Revision$ 
+*fordeck spspcls_gas $Revision$
 *
       SUBROUTINE SPSPCLS_GAS(NOCTPA,NOCTPB,IOCA,IOCB,NELFGP,
      &           MXPNGAS,NGAS,ISPSPCLS,ICLS,NCLS,IPRNT)
@@ -4712,7 +4712,7 @@ CT    CALL QEXIT('REO_PA')
         WRITE(6,*) ' IOCA and IOCB '
         CALL IWRTMA(IOCA,NGAS,NOCTPA,MXPNGAS,NGAS)
         CALL IWRTMA(IOCB,NGAS,NOCTPB,MXPNGAS,NGAS)
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' ICLS '
         CALL IWRTMA(ICLS,NGAS,NCLS,NGAS,NCLS)
       END IF
@@ -4746,7 +4746,7 @@ CT    CALL QEXIT('REO_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck stfdt3 $Revision$ 
+*fordeck stfdt3 $Revision$
       SUBROUTINE STFDT3(NDET,IDET,IASTR2,IBSTR2,NSMST,NOCTPA,NOCTPB,
      &                  NSSOA,NSSOB,ISSOA,ISSOB,IOCOC,
      &                  ISMOST,ICOMBI)
@@ -4754,7 +4754,7 @@ CT    CALL QEXIT('REO_PA')
 * Obtain actual numbers for alpha- and beta strings corresponding to
 * Given determinant numbers
 *
-* Jeppe Olsen, January 1989 
+* Jeppe Olsen, January 1989
 *
 *. Modified March 1993 so only string numbers are returned
 *
@@ -4773,14 +4773,14 @@ CT    CALL QEXIT('REO_PA')
       DIMENSION IASTR2(NDET),IBSTR2(NDET)
 *
 COLD  IF( ICOMBI.NE.0) THEN
-COLD    WRITE(6,*) ' STFDT3 does not work for COMBINATIONS'  
+COLD    WRITE(6,*) ' STFDT3 does not work for COMBINATIONS'
 COLD    WRITE(6,*) ' Enforced STOP'
 COLD    Call Abend2('STFDT3')
 COLD  END IF
 *
       IDETF = 1
       DO 1000 IASM = 1, NSMST
-        IBSM = ISMOST(IASM)                      
+        IBSM = ISMOST(IASM)
         IF(IBSM.LE.0) GOTO 1000
         IF(ICOMBI.NE.0. AND. IASM.LT.IBSM) GOTO 1000
         DO 999 IATP = 1,NOCTPA
@@ -4793,7 +4793,7 @@ COLD  END IF
             ISYM1 = 0
             MXBTP = NOCTPB
           END IF
-          DO 901 IBTP = 1, MXBTP 
+          DO 901 IBTP = 1, MXBTP
             IF(IATP.EQ.IBTP.AND.ISYM1.EQ.1) THEN
               ISYM = 1
             ELSE
@@ -4853,14 +4853,14 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck strfdt $Revision$ 
+*fordeck strfdt $Revision$
       SUBROUTINE STRFDT(INTSPC,JSMOST,IOCOC,NSBDET,IDET,IASTR2,IBSTR2,
      &            ICOMBI)
 *
 * A CI expansion from internal subspace INTSPC and symmetry defined
-* by JSMOST is considered. In this CI expansion, a set of NSBDET 
+* by JSMOST is considered. In this CI expansion, a set of NSBDET
 *  combinations
-* are given in terms of combination numbers IDET. Obtain the number of 
+* are given in terms of combination numbers IDET. Obtain the number of
 * the corresponding alpha and betastrings
 *
 *
@@ -4879,7 +4879,7 @@ C
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-*. 
+*.
 C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
 *. Output
@@ -4902,7 +4902,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck strinf_gas $Revision$ 
+*fordeck strinf_gas $Revision$
       SUBROUTINE STRINF_GAS(STIN,IPRNT)
 *
 * Obtain string information for GAS expansion
@@ -4960,7 +4960,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
 *.First free address
       CALL MEMMAN(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      DO IGRP = 1, NGRP  
+      DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
         IGAS = IGSFGP(IGRP)
@@ -5029,9 +5029,9 @@ C     DIMENSION IOCTYP(MXPNGAS)
         CALL IWRTMA(MINMAX_SM_GP,1,NSMST,1,NSMST)
       END IF
 *
-*       
+*
 * 4.5 : Creation/Annihilation mappings between different
-*       types of strings 
+*       types of strings
 *
       DO IGRP = 1, NGRP
 *
@@ -5057,11 +5057,11 @@ C     DIMENSION IOCTYP(MXPNGAS)
           LROW = IEL
         ELSE IF(ISTAC(IGRP,1).EQ.0.AND.ISTAC(IGRP,2).NE.0) THEN
           LAC = 2
-          IEC = 0 
+          IEC = 0
           LROW = NGSOBP
         ELSE IF(ISTAC(IGRP,1).EQ.0.AND.ISTAC(IGRP,2).EQ.0) THEN
           LAC = 0
-          IEC = 0 
+          IEC = 0
           LROW = 0
         END IF
 *. Zero
@@ -5086,14 +5086,14 @@ C     DIMENSION IOCTYP(MXPNGAS)
      &         STIN(KSTSTM(IGRP,1)),STIN(KSTSTM(IGRP,2)),NACOB,IEC,
      /         LROW,IPRNT)
         END IF
-      END DO   
+      END DO
 *
 *
-*. Now to supergroups , i.e. strings of with given number of elecs in 
+*. Now to supergroups , i.e. strings of with given number of elecs in
 *  each GAspace
 *
       CALL ISETVC(NSTFSMSPGP,0,MXPNSMST*NTSPGP)
-      MXNSTR = -1 
+      MXNSTR = -1
       DO ITP = 1, NSTTYP
 *. Loop over supergroups of given type . i.e. strings
 *  with given occupation in each GAS space
@@ -5110,7 +5110,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *
           MXNSTR = MAX(MXNSTR,MXNSTRFSG)
         END DO
-*        
+*
         CALL ICOPMT(WORK(KNSTSO(ITP)),NSMST,NSPGPFTP(ITP),
      &              NSTFSMSPGP(1,IBSPGPFTP(ITP)),MXPNSMST,NSPGPFTP(ITP))
 *. Corresponding offset array : Each supergroup is generated individually
@@ -5119,7 +5119,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
      &                NSPGPFTP(ITP),NSMST)
 *
         IF(NTEST.GE.5) THEN
-          WRITE(6,*) 
+          WRITE(6,*)
      &    ' Number of strings per sym (row) and supergroup(column)',
      &    ' for type = ', ITP
           CALL IWRTMA(WORK(KNSTSO(ITP)),NSMST,NSPGPFTP(ITP),
@@ -5148,21 +5148,21 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *. Largest number of strings belonging to given supergroup
 *. Largest Occupation block for given supergroup and sym
       MAX_STR_OC_BLK = -1
-      MAX_STR_SPGP = 0  
+      MAX_STR_SPGP = 0
       DO ISPGP = 1, NTSPGP
         NSTR = IELSUM(NSTFSMSPGP(1,ISPGP),NSMST)
         MAX_STR_SPGP = MAX(MAX_STR_SPGP,NSTR)
         NEL = IELSUM(NELFSPGP(1,ISPGP),NGAS)
         DO ISTSM = 1, NSMST
-          MAX_STR_OC_BLK 
+          MAX_STR_OC_BLK
      &  = MAX(MAX_STR_OC_BLK,(NEL+4)*NSTFSMSPGP(ISTSM,ISPGP))
 CMOD &  = MAX(MAX_STR_OC_BLK,NEL*NSTFSMSPGP(ISTSM,ISPGP))
         END DO
-      END DO 
-*     
+      END DO
+*
       IF(NTEST.GE.2) THEN
       WRITE(6,*)
-     & ' Largest number of strings of given supergroup        ', 
+     & ' Largest number of strings of given supergroup        ',
      & MAX_STR_SPGP
       WRITE(6,*) ' Largest block of string occupations ',
      &              MAX_STR_OC_BLK
@@ -5181,7 +5181,7 @@ C?   &                     MXSMCLS,MXSMCLSE,MXSMCLSE1
      &           0,0)
 *
 * Maps creation/annihilation of given gas orb from given supergroup
-* gives new supergroup. 
+* gives new supergroup.
 *
       IZERO = 0
       CALL ISETVC(WORK(KSPGPCR),IZERO,NGAS*NTSPGP)
@@ -5207,7 +5207,7 @@ C?      WRITE(6,*) ' ISTTYP and ISTTYPC ',ISTTYP,ISTTYPC
         ELSE
         END IF
 *. Annihilation maps
-        ISTTYPA = 0       
+        ISTTYPA = 0
         DO JSTTYP = 1, NSTTYP
           IF(MOD(ISTTYP,2).EQ.MOD(JSTTYP,2).AND.
      &       NELFTP(JSTTYP).EQ.IIEL-1           ) ISTTYPA = JSTTYP
@@ -5233,7 +5233,7 @@ C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck strtyp_gas $Revision$ 
+*fordeck strtyp_gas $Revision$
       SUBROUTINE STRTYP_GAS(IPRNT)
 *
 * Find groups of strings in each GA space
@@ -5264,7 +5264,7 @@ C     WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *. As input NCISPC GAS spaces IGSOCCX are given.
 * Obtain space that cantains all these as special cases
 *
-C?    WRITE(6,*) ' NCISPC ', NCISPC 
+C?    WRITE(6,*) ' NCISPC ', NCISPC
       DO IGAS = 1, NGAS
        MINI = IGSOCCX(IGAS,1,1)
        MAXI = IGSOCCX(IGAS,2,1)
@@ -5303,7 +5303,7 @@ C?     WRITE(6,*) ' MINI and MAXI for ISPC =  ',ICISPC,MINI,MAXI
         END IF
       END DO
 *
-*. Particle and hole spaces  : 
+*. Particle and hole spaces  :
 *  Hole spaces are always more than half occupied
 *
       DO IGAS = 1, NGAS
@@ -5317,7 +5317,7 @@ C       write(6,*) ' Halffilled spaces  defined hole spaces'
 C       write(6,*) ' Halffilled spaces  defined hole spaces'
 C       write(6,*) ' Halffilled spaces  defined hole spaces'
 C       write(6,*) ' Halffilled spaces  defined hole spaces'
-        IF(IUSE_PH.EQ.1) THEN 
+        IF(IUSE_PH.EQ.1) THEN
 C         IF(2*MNGSOC(IGAS).GE.NOBPT(IGAS)) THEN
           IF(2*MNGSOC(IGAS).GT.NOBPT(IGAS)) THEN
             IPHGAS(IGAS) = 2
@@ -5331,13 +5331,13 @@ C         IF(2*MNGSOC(IGAS).GE.NOBPT(IGAS)) THEN
       END DO
 *. Min number of electrons in hole spaces
       MNHL  = 0
-      DO IGAS = 1, NGAS 
+      DO IGAS = 1, NGAS
         IF(IPHGAS(IGAS).EQ.2) THEN
           MNHL = MNHL + MNGSOC(IGAS)
         END IF
       END DO
 *
-C     WRITE(6,*) ' MNHL' , MNHL                      
+C     WRITE(6,*) ' MNHL' , MNHL
 *
       IF(NTEST.GE.5) THEN
         WRITE(6,*)
@@ -5345,7 +5345,7 @@ C     WRITE(6,*) ' MNHL' , MNHL
         WRITE(6,'(A)') ' ========================================= '
         WRITE(6,*)
         DO IGAS = 1,  NGAS
-          WRITE(6,'(A,I2,4X,2I3)') 
+          WRITE(6,'(A,I2,4X,2I3)')
      &    '  GAS',IGAS,MNGSOC(IGAS),MXGSOC(IGAS)
         END DO
 *
@@ -5373,7 +5373,7 @@ C     CALL QENTER('OCCLS')
         WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
         WRITE(6,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
-        Call 
+        Call
      &    Abend2(' NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY ')
       END IF
 *
@@ -5387,7 +5387,7 @@ C     CALL QENTER('OCCLS')
         WRITE(6,'(5I4)')   MS2,NACTEL,NAEL,NBEL
         WRITE(6,*)
      &  ' STOP : NUMBER OF ELECTRONS AND MULTIPLICITY INCONSISTENT '
-        Call 
+        Call
      &    Abend2(' NUMBER OF ELECTRONS INCONSISTENT WITH MULTIPLICITY ')
       END IF
 
@@ -5395,7 +5395,7 @@ C     CALL QENTER('OCCLS')
 *
       MAXSUB = 2
       MAXADD = 2
-*. electrons are only added for systems that atleast have halffilled 
+*. electrons are only added for systems that atleast have halffilled
 *. shells
       IGRP = 0
       MXAL = NAEL
@@ -5404,11 +5404,11 @@ C     CALL QENTER('OCCLS')
       MNBL = NBEL
       NORBL = NTOOB
       DO IGAS = 1, NGAS
-*. occupation constraints 1 
+*. occupation constraints 1
        MXA1 = MIN(MXGSOC(IGAS),NOBPT(IGAS),MXAL)
        MXB1 = MIN(MXGSOC(IGAS),NOBPT(IGAS),MXBL)
-       MNA1 = MAX(0,MNGSOC(IGAS)-MXA1)    
-       MNB1 = MAX(0,MNGSOC(IGAS)-MXB1)    
+       MNA1 = MAX(0,MNGSOC(IGAS)-MXA1)
+       MNB1 = MAX(0,MNGSOC(IGAS)-MXB1)
 *. Additional checks can be made here
        MXA = MXA1
        MXB = MXB1
@@ -5429,7 +5429,7 @@ C     CALL QENTER('OCCLS')
        MNAB = MIN(MNA,MNB)
        MXAB = MAX(MXA,MXB)
 *. Additional holes only allowed in particle spaces
-       IF(IPHGAS(IGAS).EQ.1) THEN 
+       IF(IPHGAS(IGAS).EQ.1) THEN
          MNAB = MAX(0,MNAB-MAXSUB)
        ELSE IF(IPHGAS(IGAS).EQ.2) THEN
          MNAB = MNAB
@@ -5447,14 +5447,14 @@ C     CALL QENTER('OCCLS')
        DO JGRP = IGRP+1,IGRP+NGPSTR(IGAS)
          IF(JGRP.GT.MXPSTT) THEN
            WRITE(6,*) ' Too many string groups '
-           WRITE(6,*) ' Current limit ', MXPSTT 
+           WRITE(6,*) ' Current limit ', MXPSTT
            WRITE(6,*) ' STOP : GASSTR, Too many string groups'
            Call Abend2(' GASSTR, Too many string groups')
           END IF
 *
          IADD = IADD + 1
          IEL = MNAB-1+IADD
-         NELFGP(JGRP) = IEL           
+         NELFGP(JGRP) = IEL
          IGSFGP(JGRP) = IGAS
          NSTFGP(JGRP) = IBION(NOBPT(IGAS),IEL)
        END DO
@@ -5521,7 +5521,7 @@ C     CALL QENTER('OCCLS')
 *      4 : NBEL -1 ELECTRONS
 *      5 : NAEL -2 ELECTRONS
 *      6 : NBEL -2 ELECTRONS
-*      
+*
       NSTTYP = 6
       NSTTP = 6
 *
@@ -5530,22 +5530,22 @@ C     CALL QENTER('OCCLS')
         NSTTYP = 10
         NSTTP  = 10
       END IF
-*. alpha 
+*. alpha
       NELEC(1) = NAEL
       NELFTP(1) = NAEL
 *. beta
       NELEC(2) = NBEL
       NELFTP(2) = NBEL
-*. alpha -1 
+*. alpha -1
       NELEC(3) = NAEL-1
       NELFTP(3) = NAEL-1
-*. beta  -1 
+*. beta  -1
       NELEC(4) = NBEL-1
       NELFTP(4) = NBEL-1
-*. alpha -2 
+*. alpha -2
       NELEC(5) = NAEL-2
       NELFTP(5) = NAEL-2
-*. beta  -2 
+*. beta  -2
       NELEC(6) = NBEL-2
       NELFTP(6) = NBEL-2
 *
@@ -5567,23 +5567,23 @@ C     CALL QENTER('OCCLS')
       DO ITP = 1, NSTTYP
         NOCTYP(ITP) = 0
         NSPGPFTP(ITP) = 0
-      END DO 
+      END DO
 *
 * Loop over types, i.e.  given number of electrons
 *
       IOFF = 1
-      NABEL = NAEL + NBEL 
+      NABEL = NAEL + NBEL
       NSPGP_TOT = 0
       DO 2000 ITYP = 1, NSTTYP
 *. Number of electrons in reference space ( alpha or beta )
         IF(MOD(ITYP,2).EQ.1) THEN
 *. alpha type
-          NELEC_REF = NELEC(1)     
-        ELSE 
-*. Beta type 
+          NELEC_REF = NELEC(1)
+        ELSE
+*. Beta type
           NELEC_REF = NELEC(2)
         END IF
-*. If we are studying beta type, and number of alpha and beta 
+*. If we are studying beta type, and number of alpha and beta
 * electrons are identical, just refer to alpha
         IF(NAEL.EQ.NBEL.AND.MOD(ITYP,2).EQ.0) THEN
           IBSPGPFTP(ITYP) =  IBSPGPFTP(ITYP-1)
@@ -5591,23 +5591,23 @@ C     CALL QENTER('OCCLS')
           NSPGPFTP(ITYP) =  NSPGPFTP(ITYP-1)
         ELSE
 *
-*. Number of electrons removed compared to reference 
+*. Number of electrons removed compared to reference
         IDEL = NELEC(ITYP) - NELEC_REF
-C?      WRITE(6,*) '  GASSPC : ITYP IDEL ', ITYP,IDEL 
+C?      WRITE(6,*) '  GASSPC : ITYP IDEL ', ITYP,IDEL
 *. Initial type of strings, relative to offset for given group
         DO IGAS = 1, NGAS
           IOCTYP(IGAS) = 1
         END DO
         NSPGP = 0
-        IBSPGPFTP(ITYP) = IOFF 
+        IBSPGPFTP(ITYP) = IOFF
         IF(NELEC(ITYP).LT.0) THEN
-          NOCTYP(ITYP) = 0     
-          NSPGPFTP(ITYP) =  0                
+          NOCTYP(ITYP) = 0
+          NSPGPFTP(ITYP) =  0
           GOTO 2000
         END IF
 *. Number of electrons in present type
-*. Loop over  SUPER GROUPS with current nomenclature! 
-*. Temp max for loop 
+*. Loop over  SUPER GROUPS with current nomenclature!
+*. Temp max for loop
         MXLOOP = 10000
         IONE = 1
         NLOOP = 0
@@ -5619,9 +5619,9 @@ C?      WRITE(6,*) '  GASSPC : ITYP IDEL ', ITYP,IDEL
           END DO
 *
           IF(NEL.GT.NELEC(ITYP)) THEN
-*. If the number of electrons is to large find next number that 
+*. If the number of electrons is to large find next number that
 * can be correct.
-* The following uses that within a given GAS space 
+* The following uses that within a given GAS space
 * the number of elecs increases as the type number increases
 *
 *. First integer  that can be reduced
@@ -5641,13 +5641,13 @@ C?      WRITE(6,*) '  GASSPC : ITYP IDEL ', ITYP,IDEL
               CALL NXTNUM2(
      &        IOCTYP(IRED+1),NGAS-IRED,IONE,NGPSTR(IRED+1),NONEW)
             END IF
-            GOTO 2803 
+            GOTO 2803
           END IF
 
           IF(NEL.EQ.NELEC(ITYP)) THEN
 *. test 1 has been passed, check additional occupation constraints
 *
-           I_AM_OKAY = 1 
+           I_AM_OKAY = 1
 *. Number of extra holes in hole spaces
 CE         IF(IUSE_PH.EQ.1) THEN
 CE           IDELP = 0
@@ -5655,9 +5655,9 @@ CE           IDELM = 0
 CE           DO IGAS = 1, NGAS
 CE             IF(IPHGAS(IGAS).EQ.2) THEN
 CE               NELH =  NELFGP(IOCTYP(IGAS)+IBGPSTR(IGAS)-1)
-CE               IF(NELH.LT.MNGSOC(IGAS)) 
+CE               IF(NELH.LT.MNGSOC(IGAS))
 CE    &          IDELM = IDELM +MNGSOC(IGAS)-NELH
-CE               IF(NELH.GT.MXGSOC(IGAS)) 
+CE               IF(NELH.GT.MXGSOC(IGAS))
 CE    &          IDELP = IDELP + NELH-MXGSOC(IGAS)
 CE             END IF
 CE           END DO
@@ -5665,13 +5665,13 @@ CE           IF(IDELM.GT.0.OR.IDELP.GT.MAX(0,IDEL)) THEN
 CE             I_AM_OKAY = 0
 CE             WRITE(6,*) ' P/H rejected supergroup '
 CE             CALL IWRTMA(IOCTYP,1,NGAS,1,NGAS)
-CE             WRITE(6,*) ' IDELM, IDELP ', IDELM, IDELP         
+CE             WRITE(6,*) ' IDELM, IDELP ', IDELM, IDELP
 CE           END IF
 CE         END IF
 *
-*. Check from above 
+*. Check from above
 *
-           DO IGAS = NGAS, 1, -1 
+           DO IGAS = NGAS, 1, -1
 *. Number of electrons when all electrons of AS IGAS have been added
              IF(IGAS.EQ.NGAS ) THEN
                IEL = MAX(NABEL,NABEL+IDEL)
@@ -5698,7 +5698,7 @@ CE         END IF
              NSPGP = NSPGP + 1
 *. Copy supergroup to ISPGPFTP with absolute group numbers
              DO IGAS = 1, NGAS
-               ISPGPFTP(IGAS,IOFF-1+NSPGP) 
+               ISPGPFTP(IGAS,IOFF-1+NSPGP)
      &       = IOCTYP(IGAS)+IBGPSTR(IGAS)-1
              END DO
            END IF
@@ -5712,16 +5712,16 @@ CE         END IF
 *. End of loop over possible supergroups, save information about current type
         IOFF = IOFF + NSPGP
         NOCTYP(ITYP) = NSPGP
-        NSPGPFTP(ITYP) =  NSPGP            
+        NSPGPFTP(ITYP) =  NSPGP
         NSPGP_TOT =  NSPGP_TOT +  NSPGP
       END IF
  2000 CONTINUE
       NTSPGP = NSPGP_TOT
 *
       IF(NSPGP_TOT .GT. MXPSTT ) THEN
-        WRITE(6,*) ' Too many super groups = ', NSPGP_TOT               
+        WRITE(6,*) ' Too many super groups = ', NSPGP_TOT
         WRITE(6,*) ' Increase MXPSTT to this value'
-        WRITE(6,*) ' See you later '              
+        WRITE(6,*) ' See you later '
         WRITE(6,*)
         WRITE(6,*) ' STOP Increase MXPSTT '
         Call Abend2(' Increase MXPSTT')
@@ -5730,7 +5730,7 @@ CE         END IF
 *. Reorder supergroups according to dimension
 *
       DO ITYP= 1, NSTTP
-        IBTYP = IBSPGPFTP(ITYP)            
+        IBTYP = IBSPGPFTP(ITYP)
         NSPGP = NSPGPFTP(ITYP)
 *.Dimension of supergroups
         DO ISPGP = 1, NSPGP
@@ -5752,7 +5752,7 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
         DO ISPGP_N = 1, NSPGP
           ISPGP_O = IREOSPGP(ISPGP_N)
           CALL ICOPVE(NELFSPGP(1,ISPGP_O),ISPGPFTP(1,ISPGP_N+IBTYP-1),
-     &                NGAS) 
+     &                NGAS)
         END DO
 *
       END DO
@@ -5763,7 +5763,7 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
        WRITE(6,*) ' Number of alpha supergroups  ', NSPGPFTP(1)
        WRITE(6,*) ' Number of beta  supergroups  ', NSPGPFTP(2)
       END IF
-      
+
        WRITE(6,*)
 *
       IF (NTEST.GE.5) THEN
@@ -5787,7 +5787,7 @@ C?      CALL IWRTMA(IREOSPGP,1,NSPGP,1,NSPGP)
       CALL QEXIT('STRTY')
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -5953,7 +5953,7 @@ C       END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck weight $Revision$ 
+*fordeck weight $Revision$
       SUBROUTINE WEIGHT(Z,NEL,NORB1,NORB2,NORB3,
      &                  MNRS1,MXRS1,MNRS3,MXRS3,ISCR,NTEST)
 *
@@ -5995,13 +5995,13 @@ C       END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck weight_spgp $Revision$ 
+*fordeck weight_spgp $Revision$
       SUBROUTINE WEIGHT_SPGP(Z,NORBTP,NELFTP,NORBFTP,
-     &           ISCR,NTEST)        
+     &           ISCR,NTEST)
 *
-* construct vertex weights for given supergroup 
+* construct vertex weights for given supergroup
 *
-* Reverse lexical ordering is used 
+* Reverse lexical ordering is used
 *
       IMPLICIT REAL*8           ( A-H,O-Z)
 *. Input
@@ -6043,7 +6043,7 @@ C       END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zspgpib $Revision$ 
+*fordeck zspgpib $Revision$
       SUBROUTINE ZSPGPIB(NSTSO,ISTSO,NSPGP,NSMST)
 *
 * Offset for supergroups of strings with given sym.
@@ -6060,7 +6060,7 @@ C       END DO
       DO ISPGP = 1, NSPGP
         ISTSO(1,ISPGP) = 1
         DO ISMST = 2, NSMST
-          ISTSO(ISMST,ISPGP) = ISTSO(ISMST-1,ISPGP) + NSTSO(ISMST,ISPGP) 
+          ISTSO(ISMST,ISPGP) = ISTSO(ISMST-1,ISPGP) + NSTSO(ISMST,ISPGP)
         END DO
       END DO
 *
@@ -6073,13 +6073,13 @@ C       END DO
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zstinf_gas $Revision$ 
+*fordeck zstinf_gas $Revision$
       SUBROUTINE ZSTINF_GAS(IPRNT)
 *
 * Set up common block /STINF/ from information in /STINP/
@@ -6087,7 +6087,7 @@ C       END DO
 *=========
 * Input
 *=========
-* Information in /CGAS/ and /GASSTR/  
+* Information in /CGAS/ and /GASSTR/
 *
 *======================
 * Output ( in /STINF/ )
@@ -6096,7 +6096,7 @@ C       END DO
 *                    or annihilating (ISTAC(ITYP,1)) an electron
 *                    from a string of type  ITYP . A zero indicates
 *                    that this mapping is not included
-*                    Only strings belonging to the same 
+*                    Only strings belonging to the same
 *                    Orbital group are mapped
 *                    mapped
 *. Input
@@ -6112,7 +6112,7 @@ C    &              IBGPSTR(MXPNGAS),NELFGP(MXPSTT),IGSFGP(MXPSTT),
 C    &              NSTFGP(MXPSTT),MNELFGP(MXPNGAS),MXELFGP(MXPNGAS)
 *. Output
 #include "stinf.inc"
-*./STINF/ 
+*./STINF/
 C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT),NSTFTP(MXPSTT),
 C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 *. Only the first element, i.e. ISTAC  is defined
@@ -6124,14 +6124,14 @@ C    &             INUMAP(MXPSTT),INDMAP(MXPSTT)
 * Mappings between strings with the same type ISTTP index , +/- 1 el
 * ******************************************************************
       CALL ISETVC(ISTAC,0,2*MXPSTT)
-      DO  IGAS = 1, NGAS     
+      DO  IGAS = 1, NGAS
 *. groups for a given gas spaces goes with increasing number of orbitals,
 *  so the first space does not have any creation mapping
 *  and the last space does not have any annihilation mapping
 *
         MGRP = NGPSTR(IGAS)
         DO IGRP = 1, MGRP
-          IIGRP = IGRP + IBGPSTR(IGAS) -1 
+          IIGRP = IGRP + IBGPSTR(IGAS) -1
           IF(IGRP.NE.1) THEN
 *. Annihilation map is present : IIGRP => IIGRP - 1
             ISTAC(IIGRP,1) = IIGRP -1

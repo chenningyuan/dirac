@@ -1,4 +1,4 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -65,7 +65,7 @@
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck bndinv $Revision$ 
+*fordeck bndinv $Revision$
         SUBROUTINE BNDINV(A,EL,N,DETERM,EPSIL,ITEST,NSIZE)
 C
 C       DOUBLE PRECISION MATRIX INVERSION SUBROUTINE
@@ -158,7 +158,7 @@ C       CALL SLITET(2,K000FX)
  100    J=J-1
 C       CALL OVERFL(K000FX)
 C       GO TO (140,103,103),K000FX
- 
+
 C103    CALL DVCHK(K000FX)
 C       GO TO (140,105),K000FX
 C
@@ -247,7 +247,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck char_to_integer_moluc $Revision$ 
+*fordeck char_to_integer_moluc $Revision$
       SUBROUTINE CHAR_TO_INTEGER_MOLUC(CHAR_X,INT_X)
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -448,7 +448,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck evenodd $Revision$ 
+*fordeck evenodd $Revision$
 *  This (stupid) little subroutine merely checks whether an
 *  integer is odd or even and passes this info to the calling
 *  routine.
@@ -511,7 +511,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck fndmnd $Revision$ 
+*fordeck fndmnd $Revision$
       SUBROUTINE FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
      &SCR,ISCAT,SUBVAL,NTESTG)
 *
@@ -533,7 +533,7 @@ C
 *ISCAT: SCATTERING ARRAY , ISCAT(I) GIVED FULL ADRESS OF SORTED
 *       ELEMENT I
 *       SUBVAL : VALUE OF SORTED ELEMENTS
- 
+
       IMPLICIT REAL*8           ( A-H,O-Z)
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
 *
@@ -584,7 +584,7 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
              END IF
              DO 10 I = 1, MSUB
    10        ISCR(LSUB+I) = ISCR(LSUB+I) + IBASE - 1
-C            Write(6,*) 
+C            Write(6,*)
 C    &       ' After 10 , Scatter array for combined list '
 C            call iwrtma(ISCR,1,LSUB+MSUB,1,LSUP+MSUP)
 * SORT COMBINED LIST
@@ -676,7 +676,7 @@ C            call iwrtma(ISCR(1),1,LSUB+MSUB,1,LSUP+MSUP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gflush $Revision$ 
+*fordeck gflush $Revision$
       SUBROUTINE GFLUSH(LU)
 c     CALL xFLUSH(LU)
       RETURN
@@ -702,10 +702,10 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck icopmt $Revision$ 
+*fordeck icopmt $Revision$
       SUBROUTINE ICOPMT(MATI,NRI,NCI,MATO,NRO,NCO)
 *
-* Copy integer matrix MATI to MATO 
+* Copy integer matrix MATI to MATO
 *
 *. Input
       INTEGER  MATI(NRI,NCI)
@@ -728,13 +728,13 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck icopve2 $Revision$ 
+*fordeck icopve2 $Revision$
       SUBROUTINE ICOPVE2(IIN,IOFF,NDIM,IOUT)
 *
 * IOUT(I) = IIN(IOFF-1+I),I = 1, NDIM
 *
       IMPLICIT REAL*8(A,H,O-Z)
-*. Input 
+*. Input
       DIMENSION IIN(*)
 *. Output
       DIMENSION IOUT(*)
@@ -750,7 +750,7 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck icpmt2 $Revision$ 
+*fordeck icpmt2 $Revision$
       SUBROUTINE ICPMT2(AIN,AOUT,NINR,NINC,NOUTR,NOUTC,IZERO)
 *
 * Copy INTEGER matrix AIN to AOUT . Dimensions can differ
@@ -774,7 +774,7 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ielsum $Revision$ 
+*fordeck ielsum $Revision$
       FUNCTION IELSUM(IVEC,NELMNT)
 *
 * Sum elements of integer vector IVEC
@@ -795,7 +795,7 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ifreq $Revision$ 
+*fordeck ifreq $Revision$
       FUNCTION IFREQ(IVEC,IVAL,NDIM)
 *
 * Number of times IVAL occurs in IVEC
@@ -816,7 +816,7 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ifrmr $Revision$ 
+*fordeck ifrmr $Revision$
       FUNCTION IFRMR(WORK,IROFF,IELMNT)
 *
 * An integer array is stored in real array WORK,
@@ -837,7 +837,7 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck imnmx $Revision$ 
+*fordeck imnmx $Revision$
       FUNCTION IMNMX(IVEC,NDIM,MINMAX)
 *
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
@@ -876,12 +876,12 @@ c     CALL xFLUSH(LU)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck inprodb $Revision$ 
+*fordeck inprodb $Revision$
       REAL*8 FUNCTION INPRODB(VEC1,VEC2,NBLK,LBLK,I0BLK)
 *
-* Inner products between blocked vectors with check of 
-* zero blocks. Zero blocks are flagged by a unit entry 
-* in I0BLK or a negative block length 
+* Inner products between blocked vectors with check of
+* zero blocks. Zero blocks are flagged by a unit entry
+* in I0BLK or a negative block length
 *
 *Jeppe Olsen, May 97
 *
@@ -915,7 +915,7 @@ C?        write(6,*) ' Updated x', X
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck invmat $Revision$ 
+*fordeck invmat $Revision$
       SUBROUTINE INVMAT(A,B,MATDIM,NDIM)
 C FIND INVERSE OF MATRIX A
 C INPUT :
@@ -959,7 +959,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ivcsum $Revision$ 
+*fordeck ivcsum $Revision$
       SUBROUTINE IVCSUM(IA,IB,IC,IFACB,IFACC,NDIM)
 *
 * Add two (scaled) integer vectors
@@ -979,7 +979,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck iwrtma10 $Revision$ 
+*fordeck iwrtma10 $Revision$
       SUBROUTINE IWRTMA10(IMAT,NROW,NCOL,MAXROW,MAXCOL)
 * I10 format
       DIMENSION IMAT(MAXROW,MAXCOL)
@@ -1006,8 +1006,8 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lftpos $Revision$ 
- 
+*fordeck lftpos $Revision$
+
       SUBROUTINE LFTPOS(CARD,LENGTH)
 *
 * Eliminate blanks and left position character string CARD
@@ -1017,7 +1017,7 @@ C
       IEFF = 0
 C     WRITE(6,*) ' INPUT string to LFTPOS '
 C     WRITE(6,'(1H ,A)') CARD
- 
+
       DO 100 IPOS = 1, LENGTH
        IF(CARD(IPOS:IPOS).NE.' ') THEN
          IEFF = IEFF + 1
@@ -1042,7 +1042,7 @@ C     WRITE(6,'(1H ,A)') CARD
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matml7 $Revision$ 
+*fordeck matml7 $Revision$
 
 
       SUBROUTINE MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
@@ -1070,12 +1070,12 @@ c     CALL QENTER('MATML')
       NTEST = 00
       IF ( NTEST .NE. 0 ) THEN
       WRITE(6,*)
-      WRITE(6,*) ' A, B and C MATRIX FROM MATML7 ' 
+      WRITE(6,*) ' A, B and C MATRIX FROM MATML7 '
       WRITE(6,*)
       CALL WRTMAT(A,NAROW,NACOL,NAROW,NACOL)
       CALL WRTMAT(B,NBROW,NBCOL,NBROW,NBCOL)
       CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
-      WRITE(6,*)      ' NCROW NCCOL NAROW NACOL NBROW NBCOL ' 
+      WRITE(6,*)      ' NCROW NCCOL NAROW NACOL NBROW NBCOL '
       WRITE(6,'(6I6)')  NCROW,NCCOL,NAROW,NACOL,NBROW,NBCOL
       WRITE(6,*) ' ITRNSP : ', ITRNSP
       END IF
@@ -1104,7 +1104,7 @@ c     CALL QENTER('MATML')
 *. DGEMM from CONVEX/ESSL  lib
         LDA = MAX(1,NAROW)
         LDB = MAX(1,NBROW)
-* 
+*
         LDC = MAX(1,NCROW)
         IF(ITRNSP.EQ.0) THEN
         CALL DGEMM('N','N',NAROW,NBCOL,NACOL,FACTORAB,A,LDA,
@@ -1118,7 +1118,7 @@ c     CALL QENTER('MATML')
         END IF
       ELSE
 * Use Jeppes version ( it should be working )
-        IF( ITRNSP .EQ. 0 ) THEN     
+        IF( ITRNSP .EQ. 0 ) THEN
 * ======
 * C=A*B
 * ======
@@ -1142,7 +1142,7 @@ C         CALL SCALVE(C,FACTORC,NCROW*NCCOL)
           END DO
 *
         END IF
-        IF ( ITRNSP .EQ. 1 ) THEN      
+        IF ( ITRNSP .EQ. 1 ) THEN
 *
 * =========
 * C=A(T)*B
@@ -1150,16 +1150,16 @@ C         CALL SCALVE(C,FACTORC,NCROW*NCCOL)
 *
           DO J = 1, NCCOL
             DO I = 1, NCROW
-              T = 0.0D0         
+              T = 0.0D0
               DO K = 1, NBROW
                 T = T  + A(K,I)*B(K,J)
-              END DO   
+              END DO
               C(I,J) = FACTORC*C(I,J) + FACTORAB*T
-            END DO   
-          END DO   
-        END IF   
+            END DO
+          END DO
+        END IF
 C
-        IF ( ITRNSP .EQ. 2 ) THEN     
+        IF ( ITRNSP .EQ. 2 ) THEN
 C ===========
 C. C = A*B(T)
 C ===========
@@ -1169,28 +1169,28 @@ C ===========
               BJ1 = FACTORAB*B(J,1)
               DO I = 1, NCROW
                 C(I,J) = FACTORC*C(I,J) + BJ1*A(I,1)
-              END DO   
+              END DO
             END IF
 *. And the rest
             DO K = 2,NBCOL
               BJK = FACTORAB*B(J,K)
               DO I = 1, NCROW
                 C(I,J) = C(I,J) + BJK*A(I,K)
-              END DO   
-            END DO   
-          END DO   
-        END IF   
+              END DO
+            END DO
+          END DO
+        END IF
       END IF
 C
       IF ( NTEST .NE. 0 ) THEN
       WRITE(6,*)
-      WRITE(6,*) ' C MATRIX FROM MATML7 ' 
+      WRITE(6,*) ' C MATRIX FROM MATML7 '
       WRITE(6,*)
       CALL WRTMAT(C,NCROW,NCCOL,NCROW,NCCOL)
       END IF
 C
       T_END = Second()
-      TMULT = TMULT + T_END - T_INI 
+      TMULT = TMULT + T_END - T_INI
 C
 C     CALL QEXIT('MATML')
       RETURN
@@ -1200,7 +1200,7 @@ C     CALL QEXIT('MATML')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matvcb $Revision$ 
+*fordeck matvcb $Revision$
       SUBROUTINE MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DOUBLE PRECISION   MATRIX(MATDIM,MATDIM),VECIN(2),VECOUT(2)
@@ -1236,7 +1236,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matvcc $Revision$ 
+*fordeck matvcc $Revision$
       SUBROUTINE MATVCC(A,VIN,VOUT,NROW,NCOL,ITRNS)
 *
 * ITRNS = 0 : VOUT(I) = A(I,J)*VIN(J)
@@ -1272,7 +1272,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtij $Revision$ 
+*fordeck nxtij $Revision$
 * Output
       SUBROUTINE NXTIJ(I,J,NI,NJ,IJSM,NONEW)
 *
@@ -1308,12 +1308,12 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtnum2 $Revision$ 
+*fordeck nxtnum2 $Revision$
       SUBROUTINE NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *
 * An set of numbers INUM(I),I=1,NELMNT is
 * given. Find next compund number.
-* Digit I must be in the range MINVAL,MAXVAL(I). 
+* Digit I must be in the range MINVAL,MAXVAL(I).
 *
 *
 * NONEW = 1 on return indicates that no additional numbers
@@ -1346,7 +1346,7 @@ C
           GOTO 1001
         ELSE IF ( IPLACE.LT.NELMNT) THEN
           DO JPLACE = 1, IPLACE
-            INUM(JPLACE) = 1               
+            INUM(JPLACE) = 1
           END DO
         ELSE IF ( IPLACE. EQ. NELMNT ) THEN
           NONEW = 1
@@ -1367,12 +1367,12 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtnum2_rev $Revision$ 
+*fordeck nxtnum2_rev $Revision$
       SUBROUTINE NXTNUM2_REV(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *
 * An set of numbers INUM(I),I=1,NELMNT is
 * given. Find next compund number.
-* Digit I must be in the range MINVAL,MAXVAL(I). 
+* Digit I must be in the range MINVAL,MAXVAL(I).
 *
 * In this version rightmost digits are increased first
 *
@@ -1404,8 +1404,8 @@ C
           INUM(IPLACE) = INUM(IPLACE) + 1
           NONEW = 0
           GOTO 1001
-        ELSE IF ( IPLACE.GT.1 ) THEN     
-          INUM(IPLACE) = 1               
+        ELSE IF ( IPLACE.GT.1 ) THEN
+          INUM(IPLACE) = 1
         ELSE IF ( IPLACE. EQ. 1 ) THEN
           NONEW = 1
           GOTO 1001
@@ -1425,7 +1425,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtnum3 $Revision$ 
+*fordeck nxtnum3 $Revision$
       SUBROUTINE NXTNUM3(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *
 * An set of numbers INUM(I),I=1,NELMNT is
@@ -1484,7 +1484,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nxtord $Revision$ 
+*fordeck nxtord $Revision$
       SUBROUTINE NXTORD(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
 *
 * An ordered set of numbers INUM(I),I=1,NELMNT is
@@ -1551,15 +1551,15 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ordint $Revision$ 
+*fordeck ordint $Revision$
       SUBROUTINE ORDINT(IINST,IOUTST,NELMNT,INO,IPRNT)
 *
 * ORDER A STRING OF INTEGERS TO ASCENDING ORDER
 *
 * IINST : INPUT STRING
 * IOUTST : OUTPUT STRING
-* NELMNT : NUMBER OF INTEGERS 
-* INO : Mapping array from new to old order             
+* NELMNT : NUMBER OF INTEGERS
+* INO : Mapping array from new to old order
 *
 * THIS CODE CONTAINS THE OLD ORDER CODE OF JOE GOLAB
 * ( HE IS HEREBY AKNOWLEDGED , AND I AM EXCUSED )
@@ -1603,7 +1603,7 @@ C
       NTEST = MAX(NTEST,IPRNT)
       IF( NTEST .GE.200) THEN
         WRITE(6,*) ' Result from ORDINT '
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*)  ' Input string '
         CALL IWRTMA(IINST,1,NELMNT,1,NELMNT)
         WRITE(6,*)  ' Ordered string '
@@ -1648,24 +1648,24 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck scalar_product_of_b $Revision$ 
+*fordeck scalar_product_of_b $Revision$
       FUNCTION SCALAR_PRODUCT_OF_B
      &(VEC1,VEC2,NBLOCK1,IBLOCK1,I2EQ1,NBLOCK2,I2TO1,IOFF)
 *
 * Two blocked vectors VEC1 and VEC2 are given.
 * VEC1 contains NBLOCK1 blocks defined by IBLOCK1.
 * If I2EQ1.ne.0  VEC2 has the same block structure as VEC1
-* IF I2EQ1 .eq.0 VEC2 contains NBLOCK2 blocks, and I2TO1 gives 
+* IF I2EQ1 .eq.0 VEC2 contains NBLOCK2 blocks, and I2TO1 gives
 * the mapping from blocks of VEC2 to blocks of vec1
 *
-* Find the scalar product between these two vectors 
+* Find the scalar product between these two vectors
 *
 * Jeppe Olsen, October 1995
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
       DIMENSION VEC1(*),VEC2(*),IBLOCK1(8,*)
-      REAL*8 INPROD  
+      REAL*8 INPROD
 *. In use of I2EQ1 = 0
       DIMENSION I2TO1(*)
 *
@@ -1701,7 +1701,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck scldia $Revision$ 
+*fordeck scldia $Revision$
       SUBROUTINE SCLDIA(A,FACTOR,NDIM,IPACK)
 *
 * scale diagonal of square matrix A
@@ -1727,7 +1727,7 @@ C
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1861,8 +1861,8 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck swapve $Revision$ 
- 
+*fordeck swapve $Revision$
+
       SUBROUTINE SWAPVE(VEC1,VEC2,NDIM)
 C
 C      SWAP ELEMENTS OF VECTORS VEC1 AND VEC2
@@ -1882,7 +1882,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tripak $Revision$ 
+*fordeck tripak $Revision$
       SUBROUTINE TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
 C
 C ( NOT A SIMPLIFIED VERSION OF TETRAPAK )
@@ -1931,14 +1931,14 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tripak_blkm $Revision$ 
+*fordeck tripak_blkm $Revision$
 *
       SUBROUTINE TRIPAK_BLKM(AUTPAK,APAK,IWAY,LBLOCK,NBLOCK)
 *
 * Switch between packed and unpacked form of a blocked matrix
 *
 * IWAY = 1 => Unpacked to packed
-* IWAY = 2 => Packed to unpacked 
+* IWAY = 2 => Packed to unpacked
 *
 * Jeppe Olsen, February 1, 1998 (Moensted Kalkgrubber )
 *
@@ -1957,14 +1957,14 @@ C
           IOFFP = IOFFP + LBLOCK(IBLOCK-1)*(LBLOCK(IBLOCK-1)+1)/2
         END IF
         L = LBLOCK(IBLOCK)
-        CALL TRIPAK(AUTPAK(IOFFU),APAK(IOFFP),IWAY,L,L)                  
+        CALL TRIPAK(AUTPAK(IOFFU),APAK(IOFFP),IWAY,L,L)
 C            TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM
       END DO
 *
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Output from TRIPAK_BLKM'
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' Unpacked matrix'
         WRITE(6,*) ' ==============='
         CALL APRBLM2(AUTPAK,LBLOCK,LBLOCK,NBLOCK,0)
@@ -1981,7 +1981,7 @@ C            APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tripk2 $Revision$ 
+*fordeck tripk2 $Revision$
       SUBROUTINE TRIPK2(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 C
 C
@@ -2032,7 +2032,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck tripk3 $Revision$ 
+*fordeck tripk3 $Revision$
 *
       SUBROUTINE TRIPK3(AUTPAK,APAK,IWAY,MATDIM,NDIM,SIGN)
 C
@@ -2052,7 +2052,7 @@ C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
 *
-*. Packing : No problem with cache misses    
+*. Packing : No problem with cache misses
 *
       IF( IWAY .EQ. 1 ) THEN
         IJ = 0
@@ -2061,7 +2061,7 @@ C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
             APAK(IJ+I) = AUTPAK(I,J)
           END DO
           IJ = IJ +NDIM-J
-        END DO   
+        END DO
       END IF
 *
 * Unpacking : cache misses can occur so two routes
@@ -2089,7 +2089,7 @@ C       LBLK = 40
         DO JBLK = 1, NBLK
           IF(JBLK.EQ.1) THEN
             JOFF = 1
-          ELSE 
+          ELSE
             JOFF = JOFF + LBLK
           END IF
           JEND = MIN(JOFF+LBLK-1,MATDIM)
@@ -2103,7 +2103,7 @@ C       LBLK = 40
               DO J = JOFF,JEND
                 IF(IBLK.EQ.JBLK) THEN
                   IOFF2 = J
-                ELSE 
+                ELSE
                   IOFF2 = IOFF
                 END IF
                 IJOFF = (J-1)*MATDIM-J*(J-1)/2
@@ -2133,7 +2133,7 @@ C       LBLK = 40
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck trnmat $Revision$ 
+*fordeck trnmat $Revision$
       SUBROUTINE TRNMAT(A,X,SCRA,NDIM,MATDIM)
 C
 C TRANSFORM MATRIX A : X(TRANS)*A*X
@@ -2196,12 +2196,12 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck trpad3 $Revision$ 
+*fordeck trpad3 $Revision$
       SUBROUTINE TRPAD3(MAT,FACTOR,NDIM)
 *
 *  MAT(I,J) = MAT(I,J) + FACTOR*MAT(J,I)
 *
-*. With some considerations of effective cache use for large 
+*. With some considerations of effective cache use for large
 *  matrices
 *
       IMPLICIT REAL*8           (A-H,O-Z)
@@ -2258,7 +2258,7 @@ C?      write(6,*) 'NBLK ',nblk
             JEND = MIN(JOFF+LBLK-1,NDIM)
 *. Lower half
             DO  I = IOFF,IEND
-              IF(IBLK.EQ.JBLK) JEND = I   
+              IF(IBLK.EQ.JBLK) JEND = I
               DO J = JOFF,JEND
                 MAT(I,J) = MAT(I,J) + FACTOR*MAT(J,I)
               END DO
@@ -2268,21 +2268,21 @@ C?      write(6,*) 'NBLK ',nblk
               FAC2 = 1.0D0 - FACTOR**2
               DO I = IOFF, IEND
                 IF(IBLK.EQ.JBLK) JEND = I
-                DO J = JOFF, JEND 
+                DO J = JOFF, JEND
                   MAT(J,I) = FACTOR*MAT(I,J ) + FAC2 * MAT(J,I)
                  END DO
                END DO
             ELSE IF(FACTOR .EQ. 1.0D0) THEN
               DO I = IOFF, IEND
                 IF(IBLK.EQ.JBLK) JEND = I -1
-                DO J = JOFF, JEND 
+                DO J = JOFF, JEND
                   MAT(J,I) = MAT(I,J )
                 END DO
               END DO
             ELSE IF(FACTOR .EQ. -1.0D0) THEN
               DO I = IOFF, IEND
                 IF(IBLK.EQ.JBLK) JEND = I
-                DO J = JOFF, JEND 
+                DO J = JOFF, JEND
                   MAT(J,I) = - MAT(I,J )
                 END DO
               END DO
@@ -2299,7 +2299,7 @@ C?      write(6,*) 'NBLK ',nblk
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck trpmt3 $Revision$ 
+*fordeck trpmt3 $Revision$
       SUBROUTINE TRPMT3(XIN,NROW,NCOL,XOUT)
 *
 * XOUT(I,J) = XIN(J,I)
@@ -2315,12 +2315,12 @@ C?      write(6,*) 'NBLK ',nblk
         DO IROW =1, NROW
           DO ICOL = 1, NCOL
             XOUT(ICOL,IROW) = XIN(IROW,ICOL)
-          END DO   
+          END DO
         END DO
       ELSE IF(IWAY.EQ.2) THEN
 *. Simple blocking of matrix
-        LRBLK = 40 
-        LCBLK = 40 
+        LRBLK = 40
+        LCBLK = 40
         NRBLK = NROW/LRBLK
         NCBLK = NCOL/LCBLK
         IF(LRBLK*NRBLK.NE.NROW) NRBLK = NRBLK + 1
@@ -2415,7 +2415,7 @@ C?      write(6,*) 'NBLK ',nblk
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck uppcas $Revision$ 
+*fordeck uppcas $Revision$
       SUBROUTINE UPPCAS(LINE,LENGTH)
 *
 * Convert letters in character string LINE to upper case
@@ -2495,7 +2495,7 @@ C?      write(6,*) 'NBLK ',nblk
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck writve $Revision$ 
+*fordeck writve $Revision$
       SUBROUTINE WRITVE(VEC,NDIM)
       DOUBLE PRECISION  VEC
       DIMENSION VEC(1   )
@@ -2509,7 +2509,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrtmat $Revision$ 
+*fordeck wrtmat $Revision$
       SUBROUTINE WRTMAT(A,NROW,NCOL,NMROW,NMCOL)
 C
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
@@ -2526,7 +2526,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck xquit $Revision$ 
+*fordeck xquit $Revision$
       Subroutine xquit(rc)
       Integer rc
 
@@ -2540,7 +2540,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck xuflow $Revision$ 
+*fordeck xuflow $Revision$
       SUBROUTINE XUFLOW
       RETURN
       END
@@ -2549,7 +2549,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zero_offdiag $Revision$ 
+*fordeck zero_offdiag $Revision$
       SUBROUTINE ZERO_OFFDIAG(A,NDIM,IPACK)
 *
 * Zero off-diagonal elements in matrix A
@@ -2586,7 +2586,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck zero_offdiag_blm $Revision$ 
+*fordeck zero_offdiag_blm $Revision$
 * Version of Oct 21
       SUBROUTINE ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
 *
@@ -2621,4 +2621,4 @@ C       CALL APRBLM2(WORK(KFOCK),NTOOBS,NTOOBS,NSMOB,ISM)
       END IF
 *
       RETURN
-      END 
+      END

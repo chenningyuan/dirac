@@ -1,10 +1,10 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck alloc $Revision$ 
+*fordeck alloc $Revision$
       SUBROUTINE ALLOC
 *
 * Dimensions and
@@ -29,7 +29,7 @@
 * Version
 * =======
 *
-* Modified Jan 1997                              
+* Modified Jan 1997
 *           Fall 97 (KPGINT1 added )
 
 *. Input
@@ -48,17 +48,17 @@
       COMMON/CSMPRD/ADASX(MXPOBS,MXPOBS),ASXAD(MXPOBS,2*MXPOBS),
      &              ADSXA(MXPOBS,2*MXPOBS),
      &              SXSXDX(2*MXPOBS,2*MXPOBS),SXDXSX(2*MXPOBS,4*MXPOBS)
-      
+
 *./CINTFO/
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *.Output
 #include "glbbas.inc"
-      
+
 *.1 : One electron integrals( Complete matrix allocated )
       CALL MEMMAN(KINT1,NTOOB ** 2,'ADDS  ',2,'INT1  ')
 *. A copy of the original UNMODIFIED 1-elecs ints
       CALL MEMMAN(KINT1O,NTOOB ** 2,'ADDS  ',2,'INT1O ')
-*. Zero to avoid problems with elements that will not 
+*. Zero to avoid problems with elements that will not
 *. be initialized
       ZERO = 0.0D0
       CALL SETVEC(WORK(KINT1),ZERO,NTOOB**2)
@@ -83,11 +83,11 @@
 *. Symmetry of last index as a function of initial index
       CALL MEMMAN(KLSM1,NBINT1,'ADDS  ',2,'LSM1   ')
       CALL MEMMAN(KLSM2,NBINT2,'ADDS  ',2,'LSM2   ')
-*.3 One-body density   
+*.3 One-body density
       CALL MEMMAN(KRHO1,NTOOB ** 2,'ADDS  ',2,'RHO1  ')
 *.4  Two-body density matrix
       LRHO2 = NTOOB**2*(NTOOB**2+1)/2
-      IF(IDENSI.EQ.2) 
+      IF(IDENSI.EQ.2)
      &CALL MEMMAN(KRHO2,LRHO2     ,'ADDS  ',2,'RHO2  ')
 *.4. Integrals (ij!kk) -(ik!kj), pointer and space
 CJO   CALL MEMMAN(KPNIJ,NTOOB ** 2,'ADDS  ',1,'KPNIJ ')
@@ -105,7 +105,7 @@ CJO  &            ,2,'KIJKK ')
 *. KSBIDT must be able to hold list of subspace dets / print dets
         LSCR = NSBDETP+1
         CALL MEMMAN(KSBIDT,LSCR,'ADDS  ',1,'KSBIDT')
-*. ( NSBDET + 1 elements allocated since NSBDET+1 values are 
+*. ( NSBDET + 1 elements allocated since NSBDET+1 values are
 * obtained in order to check for degenerencies )
 CADDB
         CALL MEMMAN(KSBCNF,LSCR        ,'ADDS  ',1,'KSBCNF')
@@ -116,12 +116,12 @@ CADDE
         LH0 = MXP*(MXP+1)/2 + MXP1*MXQ + MXQ
         CALL MEMMAN(KH0,LH0,'ADDS  ',2,'KH0   ')
 *. Scratch space for manipulating with H0
-        LH0SCR = 
+        LH0SCR =
      &  MAX(6*NSBDETP,4*NSBDETP+4*NOCOB,
      &      MXP1*(MXP1+1)/2+MXP1**2)
         CALL MEMMAN(KH0SCR,LH0SCR      ,'ADDS  ',2,'KH0SCR')
       ELSE
-        KSBEVC = 0 
+        KSBEVC = 0
         KSBEVL = 0
         KSBIDT = 0
         KSBCNF = 0
@@ -168,7 +168,7 @@ CADDE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck memchk $Revision$ 
+*fordeck memchk $Revision$
       SUBROUTINE LMEMCHK
 *
 * Check memory allocated  with the memory manager
@@ -182,7 +182,7 @@ CADDE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck memman $Revision$ 
+*fordeck memman $Revision$
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
 *
 * Memory manager routine
@@ -223,14 +223,14 @@ CADDE
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 #include "irat.inc"
-C     COMMON/BIGGY/WORK(MXPWRD)     
+C     COMMON/BIGGY/WORK(MXPWRD)
 #include "wrkspc.inc"
-*. Info from matml7  
+*. Info from matml7
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
 *
-      ISTOP = 0                                                         
-      ITSOK  = 1                
-      IPRNTMP = 0       
+      ISTOP = 0
+      ITSOK  = 1
+      IPRNTMP = 0
 *
       IF(TASK(1:3).EQ.'INI') THEN
 *
@@ -283,7 +283,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           WRITE(6,*) ' MEMMAN : work array too short '
           WRITE(6,*) ' current and required length ',NWORD,KFREES-1
 *
-          WRITE(6,*) ' Trying to allocate : identifer,length' 
+          WRITE(6,*) ' Trying to allocate : identifer,length'
           WRITE(6,'(20X,A,I9)')IDENT,KADD
           ISTOP = 1
           IPRNTMP = 1
@@ -322,10 +322,10 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           WRITE(6,*) ' But if you try sometime, you may find '
           WRITE(6,*) ' you get what you need '
           WRITE(6,*) '                       Jagger/Richard '
-          
+
           WRITE(6,*) ' MEMMAN : work array too short '
-          WRITE(6,*) ' current and required length ',NWORD,KFREEL-1 
-          WRITE(6,*) ' Trying to allocate : identifer,offset,  length' 
+          WRITE(6,*) ' current and required length ',NWORD,KFREEL-1
+          WRITE(6,*) ' Trying to allocate : identifer,offset,  length'
           WRITE(6,'(24X,A,2I9)')IDENT,KBASE,KADD
           ISTOP = 1
           IPRNTMP = 1
@@ -363,8 +363,8 @@ C     COMMON/BIGGY/WORK(MXPWRD)
           WRITE(6,*) ' Increase MAXMRK from ', MAXMRK
           Call Abend1(11)
         END IF
-        MARKC(NM) = IDENT 
-        IMARK(NM) = KFREEL 
+        MARKC(NM) = IDENT
+        IMARK(NM) = KFREEL
         MARKL(NM) = NL
         MARKS(NM) = NS
         NSNLI = NS + NL
@@ -380,7 +380,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         CALL GFLUSH(LU6)
       ELSE IF( TASK(1:5).EQ.'CHECK') THEN
         NSNLI = NS+ NL
-      ELSE 
+      ELSE
           WRITE(6,*) ' MEMMAN : Unknown task parameter ',TASK
           WRITE(6,*) ' Too confused to continue  '
           Call Abend1(11)
@@ -405,7 +405,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
      &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
                ITSOK = 0
                WRITE(6,*) ' Memory problem for : '
-               WRITE(6,*) '   Level (IL) ',IL 
+               WRITE(6,*) '   Level (IL) ',IL
                IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
                IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
                IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
@@ -475,7 +475,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
 *
           WRITE(6,*)
           WRITE(6,*) '======='
-          WRITE(6,*) ' Marks '   
+          WRITE(6,*) ' Marks '
           WRITE(6,*) '======='
           WRITE(6,*)
 *
@@ -485,11 +485,11 @@ C     COMMON/BIGGY/WORK(MXPWRD)
             WRITE(6,'(3X,A6,10X,I10)') MARKC(JMARK),IMARK(JMARK)
           END DO
 *
-        IF (ITSOK.EQ.0) 
+        IF (ITSOK.EQ.0)
      &     Call Abend2(' Error observed by  memory manager ')
         END IF
 *
-      IF (ISTOP.NE.0) 
+      IF (ISTOP.NE.0)
      &   Call Abend2(' Error observed by  memory manager ')
       RETURN
       END

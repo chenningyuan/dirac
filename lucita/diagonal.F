@@ -1,10 +1,10 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dia0trm_gas $Revision$ 
+*fordeck dia0trm_gas $Revision$
       SUBROUTINE DIA0TRM_GAS(ITASK,LUIN,LUOUT,VEC,VEC2,
      &                       FACTOR)
 *
@@ -89,7 +89,7 @@
 *
       IF(NTEST.GE.10)WRITE(6,*) ' I12, IPERTOP',I12,IPERTOP
 
-*. A bit of scracth 
+*. A bit of scracth
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -109,19 +109,19 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFIO),WORK(KINT1O),NINT1)
       WRITE(6,*) ' DIA0TRM_GAS : IPERTOP ', IPERTOP
 *
-      IF(I12.EQ.2) 
+      IF(I12.EQ.2)
      &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-*. Interchange 
+*. Interchange
       IF(ITASK.EQ.1) THEN
         JTASK = 2
-      ELSE 
+      ELSE
         JTASK = 1
       END IF
 *
 *
 *. Iblock driven, so just set up ....
 *
-      NTTS = MXNTTS                
+      NTTS = MXNTTS
       NOOS = NOCTPA*NOCTPB*NSMCI
       CALL MEMMAN(KLVIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'VIOIO ')
       CALL MEMMAN(KLVBLTP,NSMST,'ADDL  ',2,'VBLTP ')
@@ -145,7 +145,7 @@ C    &          WORK(KNSTSO(IATP)),WORK(KNSTSO(IBTP)),
 C    &          NOCTPA,NOCTPB,IDC,WORK(KVIOOSE),WORK(KVNOOSE),NSCMBE,1)
 
 *. Space for partitioning of vectors
-      NTTS = MXNTTS              
+      NTTS = MXNTTS
       CALL MEMMAN(KLVLBT ,NTTS  ,'ADDL  ',1,'VLBT  ')
       CALL MEMMAN(KLVLEBT ,NTTS  ,'ADDL  ',1,'VLEBT ')
       CALL MEMMAN(KLVI1BT,NTTS  ,'ADDL  ',1,'VI1BT ')
@@ -161,7 +161,7 @@ C    &              WORK(KLVI1BT), WORK(KLVIBT),1)
      &               NSMST,LSCR1,WORK(KLVIOIO),ISMOST(1,ISM),
      &               NSBATCH,WORK(KLVLBT),WORK(KLVLEBT),
      &               WORK(KLVI1BT),WORK(KLVIBT),1)
-     &               
+     &
 C    PART_CIV2(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
 C    &                  NSMST,MXLNG,IOCOC,ISMOST,
 C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP)
@@ -193,16 +193,16 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diablk $Revision$ 
+*fordeck diablk $Revision$
       SUBROUTINE DIABLK(IASM,IATP,IBSM,IBTP,IFULL,DIAG)
 *
-* Obtain diagonal block of determinant block 
+* Obtain diagonal block of determinant block
 * IASM,IATP,IBSM,IBTP
 *
 *
@@ -263,7 +263,7 @@ C     COMMON/OPER/I12,IPERTOP
         WRITE(6,*)   IAGP,IBGP,NAEL,NBEL
         WRITE(6,*) ' I12,IPERTOP',I12,IPERTOP
       END IF
- 
+
       NOCTPA = NOCTYP(IAGP)
       NOCTPB = NOCTYP(IBGP)
       MNRS1C = MNR1IC(ISPC)
@@ -305,9 +305,9 @@ C     COMMON/OPER/I12,IPERTOP
 *
 **. Diagonal of one-body integrals and coulomb and exchange integrals
 *
-      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1) 
+      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
       CALL GT1DIA(WORK(KLH1D))
-      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1) 
+      IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
       ECORES = 0.0D0
       IF(I12.EQ.2)
      &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
@@ -333,7 +333,7 @@ C     COMMON/OPER/I12,IPERTOP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diablks $Revision$ 
+*fordeck diablks $Revision$
       SUBROUTINE DIABLKS(NAEL,IASTR,NBEL,IBSTR,
      &                  NORB,NSMST,H,
      &                  ISMOST,IBLTP,XA,XB,SCR,RJ,RK,
@@ -376,7 +376,7 @@ C     COMMON/OPER/I12,IPERTOP
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' DIABLKS in action '
         WRITE(6,*) ' ================= '
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' IATP IBTP IASM IBSM '
         WRITE(6,*)   IATP,IBTP,IASM,IBSM
       END IF
@@ -403,7 +403,7 @@ C     COMMON/OPER/I12,IPERTOP
 *. K goes to J - K
       ONE = 1.0D0
       ONEM = -1.0D0
-      IF(I12.EQ.2) 
+      IF(I12.EQ.2)
      &CALL VECSUM(RK,RK,RJ,ONEM,ONE,NTOOB **2)
 *
         IF(IFULL.EQ.0.AND.IBLTP(IASM).EQ.2) THEN
@@ -430,10 +430,10 @@ C     COMMON/OPER/I12,IPERTOP
               IF(I12.EQ.2) THEN
                 DO JEL = 1, NAEL
                   EAA =   EAA + 0.5D0*RK(IASTR(JEL,IA),IAEL )
-                END DO   
+                END DO
               END IF
             END DO
-            RJKAA(IA-IOFF+1) = EAA 
+            RJKAA(IA-IOFF+1) = EAA
           END DO
 *
           IBSTRT = ISSOB(IBTP,IBSM)
@@ -464,7 +464,7 @@ C     COMMON/OPER/I12,IPERTOP
               END IF
             END DO
             EB = HB + 0.5D0*RJBB + ECORE
-* 
+*
             IF(IREST1.EQ.1.AND.IATP.EQ.IBTP) THEN
               IASTRT = ISSOA(IATP,IASM) - 1 + IBREL
             ELSE
@@ -475,7 +475,7 @@ C     COMMON/OPER/I12,IPERTOP
               IDET = IDET + 1
               X = EB + RJKAA(IA-IOFF+1)
               DO 890 IEL = 1, NAEL
-                X = X +XB(IASTR(IEL,IA)) 
+                X = X +XB(IASTR(IEL,IA))
   890         CONTINUE
               DIAG(IDET) = X
   800       CONTINUE
@@ -483,7 +483,7 @@ C     COMMON/OPER/I12,IPERTOP
 *
           IF(Ntest.ge.1000) THEN
              WRITE(6,*) ' Next batch of diagonal elements '
-             CALL WRTMAT(DIAG,1,IDET,1,IDET)                
+             CALL WRTMAT(DIAG,1,IDET,1,IDET)
           END IF
 *
       RETURN
@@ -493,7 +493,7 @@ C     COMMON/OPER/I12,IPERTOP
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterm2_gas $Revision$ 
+*fordeck diaterm2_gas $Revision$
       SUBROUTINE DIATERM2_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,J12,JDC)
 * = DIATERM_GAS, just J12 added !
@@ -553,7 +553,7 @@ C     IF(JPERT.EQ.0) THEN
 C       I12 = 2
 C       IPERTOP = 0
 C     ELSE
-*. Use perturbation operator 
+*. Use perturbation operator
 C       IF(IPART.EQ.1) THEN
 *. Moller-Plesset partitioning
 C         I12 = 1
@@ -574,7 +574,7 @@ C     END IF
         write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
         WRITE(6,*) ' JPERT,IPART,J12,IPERTOP',JPERT,IPART,J12,IPERTOP
       END IF
-*. A bit of scracth 
+*. A bit of scracth
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -595,7 +595,7 @@ C!    IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
 C!    IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
       IF(J12.EQ.2)
      &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-*. Core energy not included 
+*. Core energy not included
       ECOREP = 0.0D0
       CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
 *
@@ -607,7 +607,7 @@ C!    IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1),NINT1)
      &             IPRDIA,NTOOB,
      &             WORK(KLRJKA),
      &             J12,IBLOCK(1,IOFF),NBLOCK,ITASK,FACTOR,0,0)
-C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)    
+C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 *.Flush local memory
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'DIATRM')
       CALL QEXIT('DIATR')
@@ -620,15 +620,15 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterm_gas $Revision$ 
+*fordeck diaterm_gas $Revision$
       SUBROUTINE DIATERM_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
-     &                       JPERT,I0CHK,I0BLK)     
+     &                       JPERT,I0CHK,I0BLK)
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 1)
 * Obtain VEC = (DIAGONAL + FACTOR)       VEC (ITASK = 2)
@@ -690,7 +690,7 @@ C     COMMON/CECORE/ECORE,ECORE_ORIG
         I12 = 2
         IPERTOP = 0
       ELSE
-*. Use perturbation operator 
+*. Use perturbation operator
         IF(IPART.EQ.1) THEN
 *. Moller-Plesset partitioning
           I12 = 1
@@ -711,7 +711,7 @@ C     COMMON/CECORE/ECORE,ECORE_ORIG
         write(6,*) ' IOCTPA IOCTPB  : ', IOCTPA,IOCTPB
         WRITE(6,*) ' JPERT,IPART,I12,IPERTOP',JPERT,IPART,I12,IPERTOP
       END IF
-*. A bit of scracth 
+*. A bit of scracth
       CALL MEMMAN(KLJ   ,NTOOB**2,'ADDL  ',2,'KLJ   ')
       CALL MEMMAN(KLK   ,NTOOB**2,'ADDL  ',2,'KLK   ')
       CALL MEMMAN(KLSCR2,2*NTOOB**2,'ADDL  ',2,'KLSC2 ')
@@ -735,7 +735,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       IF(IPERTOP.NE.0) CALL SWAPVE(WORK(KFI),WORK(KINT1O),NINT1)
       IF(I12.EQ.2)
      &CALL GTJK(WORK(KLJ),WORK(KLK),NTOOB,WORK(KLSCR2),IREOTS)
-*. Core energy not included 
+*. Core energy not included
       ECOREP = 0.0D0
 *
       SHIFT = ECORE_ORIG-ECORE
@@ -753,7 +753,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
      &             ECOREP,0,0,
      &             IPRDIA,NTOOB,
      &             WORK(KLRJKA),
-     &             I12,IBLOCK(1,IOFF),NBLOCK,ITASK,FACTORX,I0CHK,I0BLK)    
+     &             I12,IBLOCK(1,IOFF),NBLOCK,ITASK,FACTORX,I0CHK,I0BLK)
 *.Flush local memory
       CALL MEMMAN(IDUMMY,IDUMMY,'FLUSM ',IDUMMY,'DIATRM')
       CALL QEXIT('DIATR')
@@ -767,20 +767,20 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diaterms_gas $Revision$ 
+*fordeck diaterms_gas $Revision$
       SUBROUTINE DIATERMS_GAS(NAEL,IASTR,NBEL,IBSTR,
      &                  NORB,VEC,NSMST,H,
      &                  IDC,XA,XB,SCR,RJ,RK,
      &                  NSSOA,NSSOB,
      &                  ECORE,LUIN,LUOUT,
      &                  IPRNT,NTOOB,RJKAA,I12,
-     &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)    
+     &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 *
 * Terms from diagonal to specific blocks
 *
@@ -793,7 +793,7 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
 * General symmetry version
 * ========================
 *
-* Jeppe Olsen, July 1995, GAS version                
+* Jeppe Olsen, July 1995, GAS version
 *
 * I12 = 1 => only one-body part
 *     = 2 =>      one+two-body part
@@ -803,8 +803,8 @@ C     WRITE(6,*) ' MXNSTR in DIATERM', MXNSTR
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
       DIMENSION H(NORB)
       DIMENSION IBLOCK(8,*)
-*. 
-      INTEGER I0BLK(*) 
+*.
+      INTEGER I0BLK(*)
 *. Scratch
       DIMENSION RJ(NTOOB,NTOOB),RK(NTOOB,NTOOB)
       DIMENSION XA(NORB),XB(NORB),SCR(2*NORB)
@@ -819,15 +819,15 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
 *
       IF(LUIN.GT.0) REWIND LUIN
       IF(LUOUT.GT.0) REWIND LUOUT
- 
+
       IF( NTEST .GE. 20 ) THEN
         WRITE(6,*) ' ======================= '
         WRITE(6,*) ' DIATERMS_GAS in action '
         WRITE(6,*) ' ======================= '
         WRITE(6,*)
         WRITE(6,*) ' LUIN,LUOUT = ', LUIN,LUOUT
-        WRITE(6,*) ' NBLOCK =', NBLOCK 
-        WRITE(6,*) ' I0CHK = ', I0CHK   
+        WRITE(6,*) ' NBLOCK =', NBLOCK
+        WRITE(6,*) ' I0CHK = ', I0CHK
       END IF
 *
       IF(NTEST.GE.1000) THEN
@@ -852,7 +852,7 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
 *              +         J(I,J) * NIA*NJB
 *
 *. K goes to J - K
-      IF(I12.EQ.2) 
+      IF(I12.EQ.2)
      &CALL VECSUM(RK,RK,RJ,-1.0D0,+1.0D0,NTOOB **2)
 *
       ITDET = 0
@@ -887,10 +887,10 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
           write(6,*) ' After GETSTR for A strings '
           WRITE(6,*) ' alpha strings obtained '
           NAST = NSSOA(IASM,IATP)
-          CALL IWRTMA(IASTR,NAEL,NAST,NAEL,NAST) 
+          CALL IWRTMA(IASTR,NAEL,NAST,NAEL,NAST)
         END IF
 *
-        IOFF =  1                 
+        IOFF =  1
         NIA = NSSOA(IASM,IATP)
         DO IA = 1 ,NSSOA(IASM,IATP)
           EAA = 0.0D0
@@ -900,10 +900,10 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
             IF(I12.EQ.2) THEN
               DO JEL = 1, NAEL
                 EAA =   EAA + 0.5D0*RK(IASTR(JEL,IA),IAEL )
-              END DO   
+              END DO
             END IF
           END DO
-          RJKAA(IA-IOFF+1) = EAA 
+          RJKAA(IA-IOFF+1) = EAA
         END DO
 *. Obtain alpha strings of sym IBSM and type IBTP
         CALL GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
@@ -924,7 +924,7 @@ C?    WRITE(6,*) ' NTEST = ',NTEST
             IF(IPACK.EQ.1.AND.IATP.EQ.IBTP) THEN
               IDET = IDET + NIA*(NIA+1)/2
             ELSE
-              IDET = IDET + NIA*NIB      
+              IDET = IDET + NIA*NIB
             END IF
           END IF
         END IF
@@ -934,7 +934,7 @@ C?   &  I0CHK,JBLOCK,IMZERO
         IF(IMZERO.NE.1) THEN
 *. Calculate ...
 *
-        DO IB = 1 ,NIB    
+        DO IB = 1 ,NIB
 *
 *. Terms depending only on IB
 *
@@ -961,20 +961,20 @@ C?   &  I0CHK,JBLOCK,IMZERO
           IF(IPACK.EQ.1.AND.IATP.EQ.IBTP) THEN
             IASTRT =  IB
           ELSE
-            IASTRT = 1                 
+            IASTRT = 1
           END IF
 *
-          IASTOP = NSSOA(IASM,IATP) 
+          IASTOP = NSSOA(IASM,IATP)
           DO IA = IASTRT,IASTOP
             IDET = IDET + 1
             ITDET = ITDET + 1
             X = EB + RJKAA(IA-IOFF+1)
             DO IEL = 1, NAEL
-              X = X +XB(IASTR(IEL,IA)) 
+              X = X +XB(IASTR(IEL,IA))
             END DO
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 1)
 * Obtain VEC = (DIAGONAL + FACTOR)       VEC (ITASK = 2)
-            IF(ITASK.EQ.1) THEN 
+            IF(ITASK.EQ.1) THEN
               IF(ABS(X+FACTOR) .GT. 1.0D-10) THEN
                 VEC(IDET) = VEC(IDET)/(X+FACTOR)
               ELSE
@@ -1013,7 +1013,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasdias $Revision$ 
+*fordeck gasdias $Revision$
       SUBROUTINE GASDIAS(NAEL,IASTR,NBEL,IBSTR,
      &           NORB,DIAG,NSMST,H,XA,XB,SCR,RJ,RK,
      &           NSSOA,NSSOB,LUDIA,ECORE,
@@ -1029,7 +1029,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
 * General symmetry version
 * ========================
 *
-* Jeppe Olsen, July 1995, GAS version                
+* Jeppe Olsen, July 1995, GAS version
 *
 * I12 = 1 => only one-body part
 *     = 2 =>      one+two-body part
@@ -1057,7 +1057,7 @@ C     REAL * 8  INPROD
          XADD = 0.0D0
       END IF
 *
- 
+
       IF( NTEST .GE. 20 ) THEN
         WRITE(6,*) ' Diagonal one electron integrals'
         CALL WRTMAT(H,1,NORB,1,NORB)
@@ -1070,7 +1070,7 @@ C     REAL * 8  INPROD
         END IF
 *
         WRITE(6,*) ' TTSS for Blocks '
-        DO IBLOCK = 1, NBLOCK               
+        DO IBLOCK = 1, NBLOCK
           WRITE(6,'(10X,4I3,2I8)') (IBLKFO(II,IBLOCK),II=1,4)
         END DO
 *
@@ -1086,7 +1086,7 @@ C     REAL * 8  INPROD
 *              +         J(I,J) * NIA*NJB
 *
 *. K goes to J - K
-      IF(I12.EQ.2) 
+      IF(I12.EQ.2)
      &CALL VECSUM(RK,RK,RJ,-1.0D0,+1.0D0,NTOOB **2)
       IDET = 0
       ITDET = 0
@@ -1112,7 +1112,7 @@ C     REAL * 8  INPROD
         IDUM = 0
         CALL GETSTR_TOTSM_SPGP(1,IATP,IASM,NAEL,NASTR1,IASTR,
      &                           NORB,0,IDUM,IDUM)
-        IOFF =  1                 
+        IOFF =  1
         DO IA = 1, NSSOA(IASM,IATP)
           EAA = 0.0D0
           DO IEL = 1, NAEL
@@ -1121,15 +1121,15 @@ C     REAL * 8  INPROD
             IF(I12.EQ.2) THEN
               DO JEL = 1, NAEL
                 EAA =   EAA + 0.5D0*RK(IASTR(JEL,IA),IAEL )
-              END DO   
+              END DO
             END IF
           END DO
-          RJKAA(IA-IOFF+1) = EAA 
+          RJKAA(IA-IOFF+1) = EAA
         END DO
 *. Obtain beta strings of sym IBSM and type IBTP
         CALL GETSTR_TOTSM_SPGP(2,IBTP,IBSM,NBEL,NBSTR1,IBSTR,
      &                         NORB,0,IDUM,IDUM)
-        IBSTRT = 1                
+        IBSTRT = 1
         IBSTOP =  NSSOB(IBSM,IBTP)
         DO IB = IBSTRT,IBSTOP
           IBREL = IB - IBSTRT + 1
@@ -1151,7 +1151,7 @@ C     REAL * 8  INPROD
 *
               DO IORB = 1, NORB
                 XB(IORB) = XB(IORB) + RJ(IORB,IBEL)
-              END DO 
+              END DO
             END IF
           END DO
           EB = HB + 0.5D0*RJBB + ECORE
@@ -1159,16 +1159,16 @@ C     REAL * 8  INPROD
           IF(IREST1.EQ.1.AND.IATP.EQ.IBTP) THEN
             IASTRT =  IB
           ELSE
-            IASTRT = 1                 
+            IASTRT = 1
           END IF
-          IASTOP = NSSOA(IASM,IATP) 
+          IASTOP = NSSOA(IASM,IATP)
 *
           DO IA = IASTRT,IASTOP
             IDET = IDET + 1
             ITDET = ITDET + 1
             X = EB + RJKAA(IA-IOFF+1)
             DO IEL = 1, NAEL
-              X = X +XB(IASTR(IEL,IA)) 
+              X = X +XB(IASTR(IEL,IA))
             END DO
             DIAG(IDET) = X
             IF(IB.EQ.IA) DIAG(IDET) = DIAG(IDET) + XADD
@@ -1188,7 +1188,7 @@ C     REAL * 8  INPROD
         END IF
       END DO
 *        ^ End of loop over blocks
- 
+
       IF(NTEST.GE.5) WRITE(6,*)
      &' Number of diagonal elements generated ',ITDET
 *
@@ -1332,7 +1332,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_diag_bloc_mat $Revision$ 
+*fordeck get_diag_bloc_mat $Revision$
       SUBROUTINE GET_DIAG_BLOC_MAT(A,ADIAG,NBLOCK,LBLOCK,ISYM)
 *
 * Obtain diagonal elements from symmetry blocked matrix
@@ -1347,7 +1347,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
 *. Input
       DIMENSION A(*)
       INTEGER LBLOCK(*)
-*. Output 
+*. Output
       DIMENSION ADIAG(*)
 *
       DO IBLOCK = 1, NBLOCK
@@ -1358,7 +1358,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after GASDIA ' )
           IF(ISYM.EQ.1) THEN
             IOFF = IOFF + LBLOCK(IBLOCK-1)*(LBLOCK(IBLOCK-1)+1)/2
           ELSE
-            IOFF = IOFF + LBLOCK(IBLOCK-1)** 2                     
+            IOFF = IOFF + LBLOCK(IBLOCK-1)** 2
           END IF
           LOFF = LOFF + LBLOCK(IBLOCK-1)
         END IF
@@ -1373,7 +1373,7 @@ C            COPDIA(A,VEC,NDIM,IPACK)
         NDIM = IELSUM(LBLOCK,NBLOCK)
         WRITE(6,*) ' output matrix GET_DIAG_BLOC_MAT '
         WRITE(6,*) ' ==============================='
-        CALL WRTMAT(ADIAG,1,NDIM,1,NDIM) 
+        CALL WRTMAT(ADIAG,1,NDIM,1,NDIM)
       END IF
 *
       RETURN
@@ -1383,7 +1383,7 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gt1dia $Revision$ 
+*fordeck gt1dia $Revision$
       SUBROUTINE GT1DIA(H1DIA)
 *
 * Obtain diagonal of one electron matrix over active
@@ -1394,11 +1394,11 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 #include "wrkspc.inc"
- 
+
 *.GLobal pointers
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1
 #include "glbbas.inc"
- 
+
 #include "lucinp.inc"
 #include "orbinp.inc"
 *
@@ -1414,7 +1414,7 @@ CINA &            ISMFTO,IBSO,NACOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gt1dis $Revision$ 
+*fordeck gt1dis $Revision$
       SUBROUTINE GT1DIS(H1DIA,IREOTS,IPNT,H,ISMFTO,IBSO,NACOB)
 *
 * diagonal of one electron integrals over active orbitals

@@ -1,10 +1,10 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck copvcd $Revision$ 
+*fordeck copvcd $Revision$
       SUBROUTINE COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 C
 C COPY VECTOR ON FILE LUIN TO FILE LUOUT
@@ -24,7 +24,7 @@ C
         CALL REWINE( LUIN ,LBLK)
         CALL REWINE( LUOUT ,LBLK)
       END IF
- 
+
 C
 C LOOP OVER BLOCKS
 C
@@ -56,7 +56,7 @@ C?          WRITE(6,*) ' COPVCD, IAMPACK,FILE = ', IAMPACK,LUIN
           IF(IMZERO.EQ.0) THEN
             IF(IAMPACK.EQ.0) THEN
               CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
-            ELSE  
+            ELSE
               CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
             END IF
           ELSE
@@ -72,12 +72,12 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck copvcdp $Revision$ 
+*fordeck copvcdp $Revision$
       SUBROUTINE COPVCDP(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 C
 C COPY VECTOR ON FILE LUIN TO FILE LUOUT
 *
-* Packed version 
+* Packed version
 C
 C
 C LBLK DEFINES STRUCTURE OF FILE
@@ -89,7 +89,7 @@ C
         CALL REWINE( LUIN ,LBLK)
         CALL REWINE( LUOUT ,LBLK)
       END IF
- 
+
 C
 C LOOP OVER BLOCKS
 C
@@ -124,7 +124,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diskun $Revision$ 
+*fordeck diskun $Revision$
       SUBROUTINE DISKUN
       IMPLICIT REAL*8           (A-H,O-Z)
 *
@@ -210,7 +210,7 @@ C
       Open(Unit=LUSC1,File='LUSC1',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC2,File='LUSC2',Status='UNKNOWN',Form='UNFORMATTED')
       Open(Unit=LUSC3,File='LUSC3',Status='UNKNOWN',Form='UNFORMATTED')
-*. Scratch space for subspace handling 
+*. Scratch space for subspace handling
       LUSC34 = 73
       LUSC35 = 74
       LUSC36 = 75
@@ -256,12 +256,12 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck frmdsc $Revision$ 
+*fordeck frmdsc $Revision$
       SUBROUTINE FRMDSC(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED)
 C
 C     TRANSFER ARRAY FROM DISC FILE IFILE
 C
-*. Version allowing zero and packed blocks 
+*. Version allowing zero and packed blocks
 *
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION ARRAY(*)
@@ -270,7 +270,7 @@ C
       PARAMETER(LPBLK=50000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
- 
+
 C
       IPACK = 1
       IF(IPACK.NE.0) THEN
@@ -299,7 +299,7 @@ C?        write(6,*) ' frmdsc, length of zero block',NDIM
 *. Loop over packed records of dimension LPBLK
       NBATCH = 0
 C1000 CONTINUE
-*. The next LPBLK elements 
+*. The next LPBLK elements
   999   CONTINUE
           NBATCH = NBATCH + 1
           IF(NBATCH.NE.1) THEN
@@ -314,9 +314,9 @@ C1000 CONTINUE
           READ(IFILE) ISTOP
           DO IELMNT = 1, LBATCH
             IF(IPAK(IELMNT).LE.0.OR.IPAK(IELMNT).GT.NDIM) THEN
-              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT 
+              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT
               WRITE(6,*) ' IPAK(IELMNT) = ',IPAK(IELMNT )
-              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE    
+              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE
               IF(NBATCH.EQ.1) THEN
                WRITE(6,*) ' NBATCH = 1 '
               ELSE
@@ -361,16 +361,16 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck frmdsc2 $Revision$ 
+*fordeck frmdsc2 $Revision$
       SUBROUTINE FRMDSC2(ARRAY,NDIM,MBLOCK,IFILE,IMZERO,I_AM_PACKED,
      &                   NO_ZEROING)
 C
 C     TRANSFER ARRAY FROM DISC FILE IFILE
 C
-*. Version allowing zero and packed blocks 
+*. Version allowing zero and packed blocks
 *
 * If NO_ZEROING = 1, the elements of zero blocks
-*    are not set to zero, the routine just returns with 
+*    are not set to zero, the routine just returns with
 *    IMZERO = 1
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -380,7 +380,7 @@ C
       PARAMETER(LPBLK=50000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
- 
+
       IMZERO = 0
 C
       IPACK = 1
@@ -408,7 +408,7 @@ C       CALL IFRMDS(ISCR,2,MMBLOCK,IFILE)
 *. Loop over packed records of dimension LPBLK
       NBATCH = 0
 C1000 CONTINUE
-*. The next LPBLK elements 
+*. The next LPBLK elements
   999   CONTINUE
           NBATCH = NBATCH + 1
           IF(NBATCH.NE.1) THEN
@@ -423,9 +423,9 @@ C1000 CONTINUE
           READ(IFILE) ISTOP
           DO IELMNT = 1, LBATCH
             IF(IPAK(IELMNT).LE.0.OR.IPAK(IELMNT).GT.NDIM) THEN
-              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT 
+              WRITE(6,*) ' FRMDSC : Problemo IELMNT = ',IELMNT
               WRITE(6,*) ' IPAK(IELMNT) = ',IPAK(IELMNT )
-              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE    
+              WRITE(6,*) ' LBATCH IFILE  = ',LBATCH,IFILE
               IF(NBATCH.EQ.1) THEN
                WRITE(6,*) ' NBATCH = 1 '
               ELSE
@@ -470,7 +470,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck frmdscn3 $Revision$ 
+*fordeck frmdscn3 $Revision$
       SUBROUTINE FRMDSCN3(VEC,NREC,LBLK,LU,NO_ZEROING,I_AM_ZERO,
      &                    LBLOCK)
 *
@@ -511,7 +511,7 @@ C?    write(6,*) ' FRMDSCN3: Number of records to be read', NREC
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ifrmds $Revision$ 
+*fordeck ifrmds $Revision$
       SUBROUTINE IFRMDS(IARRAY,NDIM,MBLOCK,IFILE)
 C
 C     TRANSFER INTEGER ARRAY FROM DISC FILE IFILE
@@ -524,7 +524,7 @@ C If nblock .eq. 0 NBLOCK = NDIM
 C
       ICRAY = 1
       NBLOCK = MBLOCK
- 
+
       IF( ICRAY.EQ.1.OR.NBLOCK .GE. 0 ) THEN
 C       DO NOT USE FASTIO
         IF(NBLOCK .LE. 0 ) NBLOCK = NDIM
@@ -551,7 +551,7 @@ C       USE FAST IO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck itods $Revision$ 
+*fordeck itods $Revision$
       SUBROUTINE ITODS(IA,NDIM,MBLOCK,IFIL)
 C TRANSFER ARRAY INTEGER IA(LENGTH NDIM) TO DISCFIL IFIL IN
 C RECORDS WITH LENGTH NBLOCK.
@@ -593,7 +593,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck nexrec $Revision$ 
+*fordeck nexrec $Revision$
       SUBROUTINE NEXREC(LU,LBLK,REC,IEND,LENGTH)
 *
 * OBTAIN NEXT RECORD ON FILE LU, IF
@@ -628,7 +628,7 @@ C?     CALL WRTMAT(REC,1,LENGTH,1,LENGTH)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rewine $Revision$ 
+*fordeck rewine $Revision$
       SUBROUTINE REWINE( LU ,LBLK )
 *
 * LBLK .LT. 0 :  REWIND SEQ FILE LU WITH FASTIO ROUTINES
@@ -648,7 +648,7 @@ C?     CALL WRTMAT(REC,1,LENGTH,1,LENGTH)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rewino $Revision$ 
+*fordeck rewino $Revision$
       SUBROUTINE REWINO( LU )
 C
 C REWIND SEQ FILE LU WITH FASTIO ROUTINES
@@ -666,7 +666,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck setunits $Revision$ 
+*fordeck setunits $Revision$
 *
       subroutine setunits
 *
@@ -693,20 +693,20 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck skprcd2 $Revision$ 
+*fordeck skprcd2 $Revision$
       SUBROUTINE SKPRCD2(NDIM,MBLOCK,IFILE)
 C
-C     Skip record in file IFILE           
+C     Skip record in file IFILE
 C
-*. Version allowing zero and packed blocks 
+*. Version allowing zero and packed blocks
 *
-* Dos not work with FASTIO - I expect 
+* Dos not work with FASTIO - I expect
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *
       DIMENSION ISCR(2)
       PARAMETER(LPBLK=50000)
- 
+
 C
       IPACK = 1
       IF(IPACK.NE.0) THEN
@@ -722,13 +722,13 @@ C
       ICRAY = 1
       IF(I_AM_PACKED.EQ.1) THEN
 *. Loop over packed records of dimension LPBLK
-*. The next LPBLK elements 
+*. The next LPBLK elements
   999   CONTINUE
 *. Read next batch
           READ(IFILE) LBATCH
           IF(LBATCH.GT.0) THEN
-            READ(IFILE) 
-            READ(IFILE) 
+            READ(IFILE)
+            READ(IFILE)
           END IF
           READ(IFILE) ISTOP
         IF(ISTOP.EQ.0) GOTO 999
@@ -740,11 +740,11 @@ C
         IBASE=0
   100   CONTINUE
          IF(IREST.GT.NBLOCK) THEN
-          READ(IFILE) 
+          READ(IFILE)
           IBASE=IBASE+NBLOCK
           IREST=IREST-NBLOCK
          ELSE
-          READ(IFILE) 
+          READ(IFILE)
           IREST=0
          END IF
         IF( IREST .GT. 0 ) GOTO 100
@@ -764,7 +764,7 @@ C       END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck skpvcd $Revision$ 
+*fordeck skpvcd $Revision$
       SUBROUTINE SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
 C
 C SKIP OVER NVEC VECTORS ON FILE LUIN
@@ -809,7 +809,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck todsc $Revision$ 
+*fordeck todsc $Revision$
       SUBROUTINE TODSC(A,NDIM,MBLOCK,IFIL)
 C TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO DISCFIL IFIL IN
 C RECORDS WITH LENGTH NBLOCK.
@@ -832,7 +832,7 @@ C RECORDS WITH LENGTH NBLOCK.
         IF(MMBLOCK.GT.2) MMBLOCK = 2
 *
         ISCR(1) = IMZERO
-*. No packing 
+*. No packing
          ISCR(2) = 0
         CALL ITODS(ISCR,2,2,IFIL)
         IF(IMZERO.EQ.1) GOTO 1001
@@ -875,7 +875,7 @@ C?    write(6,*) ' leaving TODSC '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck todscn $Revision$ 
+*fordeck todscn $Revision$
       SUBROUTINE TODSCN(VEC,NREC,LREC,LBLK,LU)
 *
 * Write VEC as multiple record file accordin to NREC and LREC
@@ -907,11 +907,11 @@ C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck todscnp $Revision$ 
+*fordeck todscnp $Revision$
       SUBROUTINE TODSCNP(VEC,NREC,LREC,LBLK,LU)
 *
 * Write VEC as multiple record file accordin to NREC and LREC
-* Only nonzero elements are written to DISC  
+* Only nonzero elements are written to DISC
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
@@ -933,7 +933,7 @@ C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
           CALL ITODS(-LREC(IREC),1,LBLK,LU)
           CALL ZERORC(IDUMMY,LU,1)
         END IF
-         
+
 *
       END DO
 *
@@ -944,7 +944,7 @@ C?      CALL WRTMAT(VEC(IOFF),1,LREC(IREC),1,LREC(IREC))
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck todscp $Revision$ 
+*fordeck todscp $Revision$
       SUBROUTINE TODSCP(A,NDIM,MBLOCK,IFIL)
 *
 C TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO DISCFIL IFIL IN
@@ -957,7 +957,7 @@ C RECORDS WITH LENGTH NBLOCK.
       INTEGER START,STOP
       REAL*8 INPROD
       INTEGER ISCR(2)
-* 
+*
       PARAMETER(LPBLK=50000)
       INTEGER IPAK(LPBLK)
       DIMENSION XPAK(LPBLK)
@@ -978,7 +978,7 @@ C?    CALL XFLUSH(6)
         IF(MMBLOCK.GT.2) MMBLOCK = 2
 *
         ISCR(1) = IMZERO
-*. Packing 
+*. Packing
         ISCR(2) = 1
 C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
         CALL ITODS(ISCR,2,2,IFIL)
@@ -993,7 +993,7 @@ C
 *. Loop over packed records of dimension LPBLK
       IELMNT = 0
  1000 CONTINUE
-*. The next LPBLK elements 
+*. The next LPBLK elements
       LBATCH = 0
 *. Obtain next batch of elemnts
   999 CONTINUE
@@ -1008,9 +1008,9 @@ C
        IF(LBATCH.EQ.LPBLK.OR.IELMNT.EQ.NDIM) goto 998
        GOTO 999
 *. Send to DISC
- 998   CONTINUE   
+ 998   CONTINUE
        WRITE(IFIL) LBATCH
-       IF(LBATCH.GT.0) THEN 
+       IF(LBATCH.GT.0) THEN
          WRITE(IFIL) (IPAK(I),I=1, LBATCH)
          WRITE(IFIL) (XPAK(I),I=1, LBATCH)
        END IF

@@ -1,4 +1,4 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -492,7 +492,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
       E_TRUNC = - E_TRUNC
       E_TRUNCT = -  E_TRUNCT
 *
-      if (NTEST.ge.5) then    
+      if (NTEST.ge.5) then
       WRITE(6,*)
       WRITE(6,*) '             Number     Dimension  '
       WRITE(6,*) ' ================================= '
@@ -529,7 +529,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck cls_to_base $Revision$ 
+*fordeck cls_to_base $Revision$
 C        newden.f propint.f newrou.f  reo.f annstr.f\
 C        adast.f decode_line.f rsbb2bn.f adaada.f rsbb2an.f\
 C        advice_sigma.f traci.f  rsbb2bvn.f
@@ -537,13 +537,13 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
      &                       IBASSPC,IPRNT)
 *
 * Class info => Base space info
-* for energy abd wf correction 
+* for energy abd wf correction
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
       INTEGER IBASSPC(NCLS)
       DIMENSION CLS_C(NCLS),CLS_E(NCLS)
-*. Output 
+*. Output
       DIMENSION EBASC(*),CBASC(*)
 *
       ZERO = 0.0D0
@@ -568,7 +568,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
         WRITE(6,'(A)') '  Class         Energy          wf '
         WRITE(6,'(A)') ' ==========================================='
         DO ISPC = 1, NSPC
-          WRITE(6,'(2X,I3,3X,E12.6,2X,E12.6)') 
+          WRITE(6,'(2X,I3,3X,E12.6,2X,E12.6)')
      &          ISPC,EBASC(ISPC),CBASC(ISPC)
         END DO
       END IF
@@ -580,12 +580,12 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck cls_to_blk $Revision$ 
+*fordeck cls_to_blk $Revision$
       SUBROUTINE CLS_TO_BLK(NBLOCK,IBLK_TO_CLS,ICLS_A,IBLK_A)
 *
-* an array ICLS_A is given for each class as well as 
+* an array ICLS_A is given for each class as well as
 * a block to class array IBLK_TO_CLS.
-* Obtain ICLS_A in block form (Well, I am bit tired and my 
+* Obtain ICLS_A in block form (Well, I am bit tired and my
 * pedagogical explanations can be pretty lousy even when I
 * am awake !A)
 *
@@ -608,13 +608,13 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck diag_blks $Revision$ 
+*fordeck diag_blks $Revision$
       SUBROUTINE DIAG_BLKS(A,X,LGAS,NOBPSM,MXPOBS,NSMOB,NGAS,
      &                     SCR1,SCR2)
 *
@@ -622,16 +622,16 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
 * Diagonalize diagonal blocks of A
 *
 *. A is assumed to contain only active orbitals and is assumed to be in
-* packed form and symmetry ordered 
-* 
+* packed form and symmetry ordered
 *
-* Input 
+*
+* Input
 * =====
 * A : Input matrix
 * LGAS : Orbital partitioning
 * NOBPSM : Number of orbitals per symmetry
 * MXPOBS : Max number of orbital symmetries
-* NSMOB  : Number of orbital symmetries  
+* NSMOB  : Number of orbital symmetries
 * NGAS   : Number of orbital partitionings
 *
 * Output
@@ -645,7 +645,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
       DIMENSION A(*),X(*)
       DIMENSION LGAS(MXPOBS,*)
       DIMENSION NOBPSM(*)
-*. Scratch : Number of orbitals **2 ( atmost ) 
+*. Scratch : Number of orbitals **2 ( atmost )
       DIMENSION SCR1(*), SCR2(*)
 *
       NTEST = 000
@@ -662,14 +662,14 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
           IOFFMTC = 1
         ELSE
           IOFFMTP = IOFFMTP + NOBPSM(ISMOB-1)*(NOBPSM(ISMOB-1)+1)/2
-          IOFFMTC = IOFFMTC + NOBPSM(ISMOB-1) ** 2                    
+          IOFFMTC = IOFFMTC + NOBPSM(ISMOB-1) ** 2
         END IF
 *. Zero symmetry block of eigenvector matrix to avoid interactions
 *. between different blocks
         LOBPS = NOBPSM(ISMOB)
         ZERO = 0.0D0
         CALL SETVEC(X(IOFFMTC),ZERO,LOBPS**2)
-*. Loop over subbloks, extract,  diagonalize, and expand 
+*. Loop over subbloks, extract,  diagonalize, and expand
         DO ITPOB = 1, NGAS
           IF(ITPOB.EQ.1) THEN
             IOFFOB=1
@@ -688,7 +688,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
             END DO
           END DO
           IF(NTEST.GE.100) THEN
-            WRITE(6,*) ' Extracted block of matrix for  ISMOB,ITPOB = ', 
+            WRITE(6,*) ' Extracted block of matrix for  ISMOB,ITPOB = ',
      &      ISMOB,ITPOB
             CALL PRSYM(SCR1,LOB)
           END IF
@@ -719,13 +719,13 @@ C         CALL EIGEN(WORK(KMAT1-1+IOFFP),WORK(KMAT2-1+IOFFC),LORB,0,1)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck eigen $Revision$ 
+*fordeck eigen $Revision$
       SUBROUTINE EIGEN(A,R,N,MV,MFKR)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION A(1),R(1)
@@ -957,18 +957,18 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ektpert $Revision$ 
+*fordeck ektpert $Revision$
       SUBROUTINE EKTPERT(F,S,NDIM,NORD,EN,C,
      &                   VEC1,VEC2,VEC3,AMAT1,AMAT2,AMAT3)
 *
-* Perturbation expansion of generalized eigenvalue problem 
-* Special version for EKT problem where there are singularities in 
+* Perturbation expansion of generalized eigenvalue problem
+* Special version for EKT problem where there are singularities in
 * the zero order matrices.
 *
 * Ordering the matrices so the occupied orbitals come first, and
 * then the virtual orbitals, the  zero order matrices have the form
 *
-*     (x *                     ) 
+*     (x *                     )
 *     ( x*               0     )
 *     (**x                     )
 *     (                        )
@@ -989,13 +989,13 @@ C
 * F = Sum(k=0,NORD) F(K)
 * S = Sum(K=0,NORD) S(K)
 *
-*. Obtain corrections to energy and wave functions 
+*. Obtain corrections to energy and wave functions
 *
 *. The normalization condition used is C(K)T S(0) C(0) = 0
 *
 * The energy corrections become
 *
-* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I) 
+* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I)
 *      _ SUM(I=0,N-1)SUM(J=1,N-I)E(N-I-J)C(0)T S(J) C(I)
 *
 * and the wave function corrections in the occupied orbital space are
@@ -1008,7 +1008,7 @@ C
 * C(N-2) = (F(2)-E(0)S(2))-1 (-Sum(K=0,N-3)F(N-K)C(K)
 *                             +Sum(K=0,N-3)Sum(I=0,N-K)E(N-K-L)S(L)C(K)
 *                             + -(F(2)-E0*S(2)) C(N-2)OCC )
-* Where only the 
+* Where only the
 *
 * The zero order matrices F(0),S(0) are assumed diagonal
 *
@@ -1023,25 +1023,25 @@ C
       DIMENSION C(NDIM,*)
 *. Output
       DIMENSION EN(0:NORD)
-*. Scratch 
+*. Scratch
       DIMENSION VEC1(NDIM),VEC2(NDIM),VEC3(NDIM)
       DIMENSION AMAT1(NDIM,NDIM),AMAT2(NDIM,NDIM)
       DIMENSION AMAT3(NDIM,NDIM)
 *
       NTEST = 1
- 
+
 *. Zero order wavefunction in virtual space
 * obtained by solving - in the virtual space, the
 * equations
 *
 * (F(2)-E(0)S(2))(virt,virt) C0(virt) = -(F(2)-E(0)S(2))C0(occ))(virt)
-* 
+*
 *
 *. Obtain the number of occupied orbitals by examining S(0)
       NOCC = 0
       DO I = 1, NDIM
        IF(S((I-1)*NDIM+I,1) .NE. 0) NOCC = NOCC + 1
-      END DO 
+      END DO
       NVIRT = NDIM - NOCC
       WRITE(6,*) ' Number of occupied orbitals ', NOCC
       WRITE(6,*) ' Number of virtual  orbitals ', NVIRT
@@ -1060,7 +1060,7 @@ C          MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
         WRITE(6,*) 'C(0)T S(0) C(0) = ', C0SC0
       END IF
       E0 = C0FC0/C0SC0
-      EN(0) = E0    
+      EN(0) = E0
 *. Save diagonal of F(0) - E(0)C(0) in VEC3
       DO I = 1, NDIM
         VEC3(I) = F((I-1)*NDIM+I,1)-E0*S((I-1)*NDIM+I,1)
@@ -1100,7 +1100,7 @@ C          INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
           AMAT1(J,IOCC) = 0.0D0
         END DO
       END DO
-*. -(F(2)-E(0)S(2)) Will be used in the future, reconstruct in AMAT2   
+*. -(F(2)-E(0)S(2)) Will be used in the future, reconstruct in AMAT2
       CALL VECSUM(AMAT2,F(1,3),S(1,3),ONE,-E0,NDIM**2)
       ONEM = -1.0D0
       CALL SCALVE(AMAT2,ONEM,NDIM**2)
@@ -1155,13 +1155,13 @@ C?    CALL WRTMAT(C(1,1),1,NDIM,1,NDIM)
           END IF
 *
         END IF
-*       ^ End of construction of virtual part of C(VIRT,IORD-2) 
+*       ^ End of construction of virtual part of C(VIRT,IORD-2)
 *
 *  =================
 *. Energy correction
 *  =================
 *
-* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I) 
+* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I)
 *      - Sum(I=0,N-1)Sum(J=1,N-I)E(N-I-J)C(0)T S(J) C(I)
         EN(IORD) = 0.0D0
         DO I = 1, IORD
@@ -1242,7 +1242,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
           CALL WRTMAT(C(1,IORD+1),1,NDIM,1,NDIM)
         END IF
       END DO
-* 
+*
       WRITE(6,*) ' Energy corrections : '
       WRITE(6,*) ' ==================== '
       WRITE(6,*)
@@ -1257,7 +1257,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
         ETOT = ETOT + EN(IORD)
       END DO
       WRITE(6,'(A,E25.13)') ' Zero-order energy ', E0
-      WRITE(6,'(A,E25.13)') ' Sum(K=0,NORD) E(K) ', ETOT 
+      WRITE(6,'(A,E25.13)') ' Sum(K=0,NORD) E(K) ', ETOT
 *
       RETURN
       END
@@ -1266,7 +1266,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0diag $Revision$ 
+*fordeck h0diag $Revision$
       SUBROUTINE H0DIAG(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,NROOT,
      &           EIGVAL,EIGVEC,SCR,NTESTG,ECORE)
 *
@@ -1348,7 +1348,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 *
 * Note : Only NROOT = 1 tested
 *
-      NTESTL = 1  
+      NTESTL = 1
       NTEST = MAX(NTESTG,NTESTL)
       CALL QENTER('H0DIA')
       IF(NTEST .GE. 5 ) THEN
@@ -1372,7 +1372,7 @@ C?    call PRSYM(PHP,NP1DM)
       KLPP1 = KLFREE
       KLFREE = KLFREE + NPDM ** 2
 *
- 
+
       KLPP2 = KLFREE
       KLFREE = KLFREE + NPDM ** 2
 *. A PQ matrix
@@ -1421,7 +1421,7 @@ C           DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 *.
 C?      write(6,*) ' PHQ (QHQ-E)-1 QHP matrix '
 C?      CALL WRTMAT(SCR(KLPP1),NP1DM,NP1DM,NP1DM,NP1DM)
- 
+
 C                TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
           CALL SETVEC(SCR(KLPP2),0.0D0,NPDM*(NPDM+1)/2)
           CALL TRIPAK(SCR(KLPP1),SCR(KLPP2),1,NP1DM,NP1DM)
@@ -1455,7 +1455,7 @@ C                TRIPAK(AUTPAK,APAK,IWAY,MATDIM,NDIM)
      &               NPDM)
 *. Obtain Q part of eigenvector
 *.    -(QHQ-E)**-1 HQP XP
- 
+
          CALL MATML4(SCR(KLV1),PHQ,EIGVEC(1,IROOT),
      &        NQDM,1,NP1DM,NQDM,NP1DM,1,1)
 *
@@ -1479,7 +1479,7 @@ C?         CALL WRTMAT(EIGVEC(1,IROOT),1,NPQDM,1,NPQDM)
          END IF
 *
  1000 CONTINUE
-       END IF    
+       END IF
        IF( I12. EQ.2 .OR. I12 .EQ.3 ) THEN
 *
 *. Iterative scheme
@@ -1531,7 +1531,7 @@ C?         CALL WRTMAT(EIGVEC(1,IROOT),1,NPQDM,1,NPQDM)
         MAXCIT = 15
         IPRTCI = MAX(NTEST-2,0)
         MXVCCI = 3 * NROOT
-        SHIFT = 0.0D0  
+        SHIFT = 0.0D0
         IDIAG = 1
         ICISTR = 1
         IDIAG = 1
@@ -1562,20 +1562,20 @@ C    &            0,0,0,DUMMY,0.0D0,1,NPQDM,1,DUMMY)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0intspc $Revision$ 
+*fordeck h0intspc $Revision$
       SUBROUTINE H0INTSPC(IH0SPC,NPTSPC,IOCPTSPC,NOCTPA,NOCTPB,
      &                    IOCA,IOCB,NGAS,MXPNGAS,INTH0SPC,NELFTP)
 *
 * Set up INTH0SPC : Division of CI space, so only determinants
-*                   belonging to the same space  have nonvanishing 
+*                   belonging to the same space  have nonvanishing
 *                   matrix elements of H0
 *
 * =====
 * Input
 * =====
 *
-* IH0SPC : ne. 0 : Interacting subspaces have been defined 
-*          .eq.0 : Interacting subspaces not defined, let 
+* IH0SPC : ne. 0 : Interacting subspaces have been defined
+*          .eq.0 : Interacting subspaces not defined, let
 *                  evrything interact
 * NPTSPC : Number of subspaces defined
 * IOCPTSPC : Allowed occumulated occupation of each subspace
@@ -1591,22 +1591,22 @@ C    &            0,0,0,DUMMY,0.0D0,1,NPQDM,1,DUMMY)
       DIMENSION IOCPTSPC(2,MXPNGAS,*)
       DIMENSION IOCA(MXPNGAS,*),IOCB(MXPNGAS,*)
       DIMENSION NELFTP(*)
-*. Output 
+*. Output
       DIMENSION INTH0SPC(NOCTPA,NOCTPB)
 *
       IF(IH0SPC.EQ.0) THEN
-*. All interactions allowed 
+*. All interactions allowed
         IONE = 1
         CALL ISETVC(INTH0SPC,IONE,NOCTPA*NOCTPB)
       ELSE
-*. Explicit construction of matrix giving partitioning of 
+*. Explicit construction of matrix giving partitioning of
 *  subspaces
         IZERO = 0
         CALL ISETVC(INTH0SPC,IZERO,NOCTPA*NOCTPB)
 *
         DO ISPC = 1, NPTSPC
           DO IATP = 1, NOCTPA
-            DO IBTP = 1, NOCTPB  
+            DO IBTP = 1, NOCTPB
               IAMOKAY = 1
               IEL = 0
 C?            WRITE(6,*) ' ISPC IATP IBTP ', ISPC,IATP,IBTP
@@ -1620,7 +1620,7 @@ C?   &          ' Limits :',IOCPTSPC(1,IGAS,ISPC),IOCPTSPC(2,IGAS,ISPC)
      &            IEL.GT.IOCPTSPC(2,IGAS,ISPC)    ) IAMOKAY = 0
               END DO
 C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
-*. Allowed 
+*. Allowed
               IF(IAMOKAY.EQ.1.AND.INTH0SPC(IATP,IBTP).EQ.0) THEN
                 INTH0SPC(IATP,IBTP) = ISPC
               END IF
@@ -1642,13 +1642,13 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
       END IF
 *
       RETURN
-      END  
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0lnsl $Revision$ 
+*fordeck h0lnsl $Revision$
       SUBROUTINE H0LNSL(PHP,PHQ,QHQ,NP1DM,NP2DM,NQDM,
      &           X,RHS,S,SCR,NTESTG)
 *
@@ -1675,7 +1675,7 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
 * Solve the set of equations
 *
 *     ( H0+S ) X = RHS
- 
+
 *
 * =========================
 * Jeppe Olsen , May 1 1990
@@ -1742,7 +1742,7 @@ C?            WRITE(6,*) ' IAMOKAY = ', IAMOKAY
       KLPP1 = KLFREE
       KLFREE = KLFREE + NPDM ** 2
 *
- 
+
       KLPP2 = KLFREE
       KLFREE = KLFREE + NPDM ** 2
 *. Two vectors in space
@@ -1785,7 +1785,7 @@ C            MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 * ==================================
 * XQ = (QHQ+SHIFT)**-1 (RHS Q - QHP XP)
 * ==================================
- 
+
          CALL MATML4(SCR(KLV1),PHQ,X,
      &        NQDM,1,NP1DM,NQDM,NP1DM,1,1)
          CALL VECSUM(SCR(KLV2),RHS(NPDM+1),SCR(KLV1),1.0D0,
@@ -1851,7 +1851,7 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0m1td $Revision$ 
+*fordeck h0m1td $Revision$
       SUBROUTINE H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG)
@@ -1908,8 +1908,8 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 * =====
 *
 * LUOUT : File to contain output vector
-* LUDIA : File Containing diagonal of H0 
-* LUIN  : File Containing input vector   
+* LUDIA : File Containing diagonal of H0
+* LUIN  : File Containing input vector
 * LBLK : Defines format of files
 * NPQDM,H0,NP1,NP2,NQ,IPNTR : Defines PQ subspace, see above
 * SHIFT : constant ADDED to diagonal
@@ -1926,7 +1926,7 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
 * Scratch
 * =======
 *
-* VEC1,VEC2 : Must each be able to hold largest segment of vector 
+* VEC1,VEC2 : Must each be able to hold largest segment of vector
 *
 * ==========
 * Externals: GATVEC,DIAVC2,SCAVEC,SBINTV,WRTMAT
@@ -1935,14 +1935,14 @@ C             DIAVC3(VECOUT,VECIN,DIAG,SHIFT,NDIM,VDSV)
       IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
 COLD  REAL * 8  INPROD
 *
-      DIMENSION VEC1(*),VEC2(*)          
+      DIMENSION VEC1(*),VEC2(*)
       DIMENSION IPNTR(*),H0(*)
       DIMENSION WORK(*)
 *
       NTESTL = 1
       NTEST = MAX(NTESTG,NTESTL)
 *
-      IF(NTEST.GE.10) 
+      IF(NTEST.GE.10)
      & write(6,*) ' H0M1TV , NPQDM = ', NPQDM
 *
       KLFREE = 1
@@ -1980,9 +1980,9 @@ C    &                  ISCAT,XSCAT,NSCAT,LBLK,XINOUT)
       IF(NTEST.GT. 100 ) THEN
         WRITE(6,*) ' Output vector from H0M1TV '
         WRITE(6,*) ' ========================= '
-*. Note : works only if result vector is first file on LUOUT 
+*. Note : works only if result vector is first file on LUOUT
 C            WRTVCD(SEGMNT,LU,IREW,LBLK)
-        CALL WRTVCD(VEC1,LUOUT,1,LBLK)   
+        CALL WRTVCD(VEC1,LUOUT,1,LBLK)
         WRITE(6,*) ' Overlap between input and output vector',
      &               XH0PSX
       END IF
@@ -1994,7 +1994,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0m1tv $Revision$ 
+*fordeck h0m1tv $Revision$
       SUBROUTINE H0M1TV(DIAG,VECIN,VECUT,NVAR,NPQDM,IPNTR,
      &                  H0,SHIFT,WORK,XH0PSX,
      &                  NP1,NP2,NQ,NTESTG)
@@ -2039,7 +2039,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 *  H0       : contains PHP,PHQ and QHQ in this order
 *
 * Jeppe Olsen , May 1990
- 
+
 *
 *
 * =====
@@ -2113,8 +2113,8 @@ C?     write(6,*) ' KLPHP KLPHQ KLQHQ ',KLPHP,KLPHQ,KLQHQ
       END IF
       XH0PSX  = X2 - X1 + X3
 C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
- 
- 
+
+
 *
       IF(NTEST.GT. 100 ) THEN
         WRITE(6,*) ' Output vector from H0M1TV '
@@ -2129,7 +2129,7 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0mat $Revision$ 
+*fordeck h0mat $Revision$
       SUBROUTINE H0MAT(INTSPC,NROOT,ONEBOD,H0,SBEVC,SBEVL,ISBDET,
      &                 ISBIA,ISBIB,ISBCNF,
      &                 LUHDIA,LBLK,
@@ -2260,13 +2260,13 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
        END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck h0sd $Revision$ 
+*fordeck h0sd $Revision$
       SUBROUTINE H0SD(LUDIA,LBLK,CIDIA,IWAY,MXPRDT,NAEL,NBEL,
      &                ISMOST,IOCOC,
      &                IHSYM,HAMIL,ONEBOD,NORB,
@@ -2281,7 +2281,7 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 *
 *.. Subspace :
 * ============
-*     
+*
 *     IWAY = 1 : choose the lowest values of
 *                the CI diagonal. The number of combinations is
 *                choosen so no degenerate levels are splitted .
@@ -2296,7 +2296,7 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 *                 EIGVL CONTAINS EIGENVALUES ON RETURN
 *                 EIGVC CONTAINS EIGENVECTORS(COLUMNS) ON RETURN
 *
-* Obtained from EXPHAM, January 1993 
+* Obtained from EXPHAM, January 1993
 *
 * Put into LUCIA form June 1993
 * Combinations enabled September 1993
@@ -2322,9 +2322,9 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       NTEST = MAX(NTEST,IPRT)
       MXDM1 = MXP1DM + MXP2DM + MXQDM
       MXDM = MAX(MXDM1,IPROCC)
-      IF (NTEST .GE. 5 ) THEN 
+      IF (NTEST .GE. 5 ) THEN
         WRITE(6,*) ' MXDM ', MXDM
-        write(6,*) ' MXP1DM MXP2DM MXQDM ', MXP1DM, MXP2DM,MXQDM 
+        write(6,*) ' MXP1DM MXP2DM MXQDM ', MXP1DM, MXP2DM,MXQDM
         write(6,*) ' LUDIA and LBLK ', LUDIA,LBLK
         write(6,*) ' INTSPC and IPRT ', INTSPC,IPRT
         write(6,*) ' NROOT ', NROOT
@@ -2347,7 +2347,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       ELSE IF ( IWAY .EQ. 2 ) THEN
         CALL ISETVC(IDET,0,1,NPRDET)
       END IF
-*. Check for degeneracies on the boundaries between P1, P2 and Q space 
+*. Check for degeneracies on the boundaries between P1, P2 and Q space
 *. P1 - P2
       IF( MXP1DM .GT. 0 ) THEN
         IF(MXP1DM.GE.NPRDET ) THEN
@@ -2365,13 +2365,13 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       ELSE
         NP1DM = 0
       END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 ) 
+      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
      & WRITE(6,*) ' Actual dimension of P1 Space ', NP1DM
 *. P2 - Q space
       IF(MXP2DM.GT.0) THEN
         IF(MXP1DM+MXP2DM.GE.NPRDET) THEN
           NP2DM = NPRDET - NP1DM
-        ELSE 
+        ELSE
           IIDET = MXP1DM + MXP2DM
  102      CONTINUE
           IF( ABS(WORK(KL3-1+IIDET+1)-WORK(KL3-1+IIDET))
@@ -2384,15 +2384,15 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       ELSE
         NP2DM = 0
       END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 ) 
+      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
      & WRITE(6,*) ' Actual dimension of P2 Space ', NP2DM
-*. Q space 
+*. Q space
       IF(MXQDM.NE.0) THEN
         NQDM = NPRDET - NP1DM - NP2DM
       ELSE
         NQDM = 0
       END IF
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 ) 
+      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
      & WRITE(6,*) ' Actual dimension of Q Space ', NQDM
 *
       NPDM = NP1DM + NP2DM
@@ -2402,26 +2402,26 @@ C     COMMON/BIGGY/WORK(MXPWRD)
       MXP2DM = NP2DM
       MXQDM = NQDM
 *
-      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 ) 
-     & WRITE(6,*) 
+      IF( NTEST .GE. 2 .AND. MXDM1 .NE. 0 )
+     & WRITE(6,*)
      & ' Total number of combinations in subspace : ', NPRDET
       IF(NTEST .GE. 10 ) THEN
         WRITE(6,*) ' IDET IN EXPHAM '
         CALL IWRTMA(IDET,1,NPRDET,1,NPRDET)
-       
+
       END IF
 *
-* ============================================================= 
+* =============================================================
 * Alpha and beta strings corresponding to selected combinations
-* ============================================================= 
+* =============================================================
 *
 *
-*. Convert determinant numbers to string numbers 
+*. Convert determinant numbers to string numbers
 *
 *. P dets
       CALL STRFDT(INTSPC,ISMOST,IOCOC,NPDM,IDET,IA,IB,ICOMBI)
 *. Q dets
-      IF(NQDM.NE.0) 
+      IF(NQDM.NE.0)
      &CALL STRFDT(INTSPC,ISMOST,IOCOC,NQDM,
      &            IDET(1+NPDM),IA(1+NPDM),IB(1+NPDM),ICOMBI)
 *. and remaining to be printed
@@ -2437,7 +2437,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         WRITE(6,*)
         WRITE(6,'(A)')
      &  ' ========================================================='
-        WRITE(6,'(A,I4,A)') 
+        WRITE(6,'(A,I4,A)')
      &  ' Occupation and energy of lowest ', IPROCC, ' combinations'
         WRITE(6,'(A)')
      &  ' ========================================================='
@@ -2445,7 +2445,7 @@ C     COMMON/BIGGY/WORK(MXPWRD)
         DO I = 1, IPROCC
 *
           WRITE(6,'(A,I8,A,F18.10)')
-     &    '  Energy  of combination ',IDET(I),' is ', 
+     &    '  Energy  of combination ',IDET(I),' is ',
      &       WORK(KL3-1+I)+ECORE
           WRITE(6,'(A)')
      &    '  Corresponding alpha - and beta string '
@@ -2465,7 +2465,7 @@ C         END IF
       IF(MXDM.EQ.0) GOTO 9999
 *
 * ==================================
-* Obtain Hamiltonian matrix elements 
+* Obtain Hamiltonian matrix elements
 * ==================================
 *
 *. Pointers
@@ -2491,7 +2491,7 @@ C         END IF
      &           WORK(KLIBST),NDIF0,NDIF1,NDIF2,NTEST)
 *. PHQ Hamiltonian
       IF(NQDM.NE.0)
-     &CALL DIHDJ(IA,IB,NP1DM,IA(1+NPDM),IB(1+NPDM),NQDM,      
+     &CALL DIHDJ(IA,IB,NP1DM,IA(1+NPDM),IB(1+NPDM),NQDM,
      &           NAEL,NBEL,WORK(KSCR),LSCR,
      &           NORB,ONEBOD,HAMIL(KLPHQ),
      &           0,NINOB,ECOREP,ICOMBI,PSIGN,IASTR,IBSTR,IASTR,
@@ -2518,14 +2518,14 @@ C            GATVCD(LU   ,LBLK,NGAT,IGAT,XGAT,SEGMNT,IPRT)
         END IF
         WRITE(6,*) ' PHP '
         WRITE(6,*) ' === '
-        CALL PRSYM(HAMIL(KLPHP),NPDM)     
+        CALL PRSYM(HAMIL(KLPHP),NPDM)
         IF(NQDM.NE.0) THEN
           WRITE(6,*) ' PHQ '
           WRITE(6,*) ' === '
-          CALL WRTMAT(HAMIL(KLPHQ),NP1DM,NQDM,NP1DM,NQDM)     
+          CALL WRTMAT(HAMIL(KLPHQ),NP1DM,NQDM,NP1DM,NQDM)
           WRITE(6,*) ' QHQ '
           WRITE(6,*) ' === '
-          CALL WRTMAT(HAMIL(KLQHQ),1,NQDM,1,NQDM)     
+          CALL WRTMAT(HAMIL(KLQHQ),1,NQDM,1,NQDM)
         END IF
       END IF
 *
@@ -2553,7 +2553,7 @@ C         CALL WRTMAT(EIGVAL,1,NROOT,1,NROOT)
       END IF
 *
 * ===============================
-* Analyze the Root approximations                   
+* Analyze the Root approximations
 * ===============================
 *
 C     IF( IPRT .GT. 0 ) THEN
@@ -2581,7 +2581,7 @@ C     END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hintv $Revision$ 
+*fordeck hintv $Revision$
       SUBROUTINE HINTV(LURHS,LUX,SHIFT,SHIFT_DIA,VECIN,VECOUT,
      &                LBLK,LUPROJ,LUPROJ2)
 *
@@ -2594,7 +2594,7 @@ C     END IF
 * Output : solution is on LUX
 *
 * Jeppe Olsen, Winter of 1996
-* 
+*
 * Jan. 98 : SHIFT_DIA added
 *
       IMPLICIT REAL*8(A-H,O-Z)
@@ -2607,8 +2607,8 @@ C     END IF
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 #include "wrkspc.inc"
 #include "clunit.inc"
-* SCRATCH files used : LUSC3,LUSC34,LUSC35,LUSC37 
-*. These are not used in SIMPRT ! 
+* SCRATCH files used : LUSC3,LUSC34,LUSC35,LUSC37
+*. These are not used in SIMPRT !
 #include "oper.inc"
 #include "crun.inc"
 #include "cicisp.inc"
@@ -2707,7 +2707,7 @@ C      CALL GASDIAT(VECIN,ISSM,ISSPC,LUSC3,ECOREX,ICISTR,I12)
         WRITE(6,*) ' PRESENT SCHEME DOES NOT WORK FOR ICISTR = 1'
         Call Abend2(' PRESENT SCHEME DOES NOT WORK FOR ICISTR = 1')
 *. Two vectors can be in core
-*. Initial Guess on LUX   
+*. Initial Guess on LUX
         NDIM = LBLK
         CALL SETVEC(VECOUT,ZERO,NDIM)
         CALL REWINO(LUX)
@@ -2722,11 +2722,11 @@ C      CALL GASDIAT(VECIN,ISSM,ISSPC,LUSC3,ECOREX,ICISTR,I12)
         ILNPRT = MAX(NTEST-10,0)
         MXIT_LOC = MXITLE
 C?      WRITE(6,*) ' HINTV : MXITLE = ',MXITLE
-        CALL MINGCG(MV8,LUX,LUSC34,LUSC35,LUSC3,VECIN,VECOUT,        
+        CALL MINGCG(MV8,LUX,LUSC34,LUSC35,LUSC3,VECIN,VECOUT,
      &              MXIT_LOC,CONVER,TEST,SHIFT,ERROR,NDIM,
      &              LUPROJ,LUPROJ2,ILNPRT)
         CALL REWINE(LUX,-1)
-        CALL FRMDSC(VECOUT,NDIM,-1,LUX,IMZERO,IAMPACK)     
+        CALL FRMDSC(VECOUT,NDIM,-1,LUX,IMZERO,IAMPACK)
 *
          IF(NTEST.GE.5) THEN
            WRITE(6,*) ' Solution to linear equations '
@@ -2742,7 +2742,7 @@ C?      WRITE(6,*) ' HINTV : MXITLE = ',MXITLE
 *. (Right hand side vector is assumed in place)
 *. convergence threshold is picked up from
 * corresponding eigenvalue info
-        TEST = 
+        TEST =
      &  SQRT(THRES_E) * SQRT(INPRDD(VECIN,VECOUT,LURHS,LURHS,1,-1))
         ILNPRT = NTEST
         SHIFT2 = 0.0D0
@@ -2763,13 +2763,13 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
 *
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'HINTV ')
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck hmatapr $Revision$ 
+*fordeck hmatapr $Revision$
       SUBROUTINE HMATAPR(IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                   IABSPC,JABSPC,IABOP,JABOP,IIF,JDOH2,
      &                   IDOH2,IMZERO,IDIAG)
@@ -2819,7 +2819,7 @@ C     END IF
 C       IDOH2 = JDOH2
         IDOH2 = 1
       END IF
-*. Put MP integrals in place ( Or put good old one-electron integrals 
+*. Put MP integrals in place ( Or put good old one-electron integrals
 *. back where they belong
       IF(IMP.EQ.1) THEN
         CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
@@ -2838,7 +2838,7 @@ C       IDOH2 = JDOH2
          WRITE(6,*) ' IABSPC,JABSPC :', IABSPC,JABSPC
          WRITE(6,*) ' IABOP ', IABOP
          WRITE(6,*) ' Results : IMP IDIAG IDOH2 IMZERO : ',
-     &                IMP,IDIAG,IDOH2, IMZERO 
+     &                IMP,IDIAG,IDOH2, IMZERO
       END IF
 *
       RETURN
@@ -2848,7 +2848,7 @@ C       IDOH2 = JDOH2
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck htv $Revision$ 
+*fordeck htv $Revision$
       SUBROUTINE HTV(VECIN,VECOUT,LUIN,LUOUT)
 *
 * Full operator times vector
@@ -2870,17 +2870,17 @@ C       IDOH2 = JDOH2
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck invert_by_diag $Revision$ 
+*fordeck invert_by_diag $Revision$
       SUBROUTINE INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
 *
-* Invert symmetric  - hopefully nonsingular - matrix A 
+* Invert symmetric  - hopefully nonsingular - matrix A
 * by diagonalization
 *
 * Jeppe Olsen, Oct 97 to check INVMAT
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input and output matrix
-      DIMENSION A(*)       
+      DIMENSION A(*)
 *. Scratch matrices and vector
       DIMENSION B(*),SCR(*),VEC(*)
 *
@@ -2914,32 +2914,32 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck matpert $Revision$ 
+*fordeck matpert $Revision$
       SUBROUTINE MATPERT(H0,V,NDIM,NORD,EN,C,VEC1,VEC2,VEC3,ECORE)
 *
-* Perturbation expansion of simple  eigenvalue problem 
+* Perturbation expansion of simple  eigenvalue problem
 *
-* Explicit matrix version  
+* Explicit matrix version
 *
 *
-*. Obtain corrections to energy and wawe functions 
+*. Obtain corrections to energy and wawe functions
 *
 *. The normalization condition used is C(K)T  C(0) = 0
 *
-* The energy corrections are   
+* The energy corrections are
 *
-* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I) 
+* E(n) = Sum(I=1,N) C(0)TF(I)C(N-I)
 *      _ SUM(I=0,N-1)SUM(J=1,N-I)E(N-I-J)C(0)T S(J) C(I)
 *
 *
 *
-* Jeppe Summer of 98           
+* Jeppe Summer of 98
 *
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
@@ -2949,7 +2949,7 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
       DIMENSION C(NDIM,*)
 *. Output
       DIMENSION EN(0:NORD)
-*. Scratch 
+*. Scratch
       DIMENSION VEC1(NDIM),VEC2(NDIM),VEC3(NDIM)
 *
 *. Zero order energy
@@ -2957,8 +2957,8 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       CALL MATVCB(H0,C,VEC1,NDIM,NDIM,0)
       E0   = INPROD(VEC1,C,NDIM)
 *
-      WRITE(6,*) 'E0  = ', E0   
-      EN(0) = E0    
+      WRITE(6,*) 'E0  = ', E0
+      EN(0) = E0
 *. Save diagonal of H0 - E(0) in VEC3
       DO I = 1, NDIM
         VEC3(I) = H0((I-1)*NDIM+I)-E0
@@ -2972,7 +2972,7 @@ C?    CALL WRTMAT(VEC3,1,NDIM,1,NDIM)
 *. Energy correction
 *  =================
 *
-* E(n) =  C(0)T V C(N-1) 
+* E(n) =  C(0)T V C(N-1)
         CALL MATVCB(V,C(1,IORD+1-1),VEC1,NDIM,NDIM,0)
         EN(IORD) = INPROD(C,VEC1,NDIM)
 C?      WRITE(6,*) ' Energy correction I,E(I) ',IORD,EN(IORD)
@@ -2990,7 +2990,7 @@ C?      write(6,*) ' first term to rhs '
 C?      CALL WRTMAT(VEC2,1,NDIM,1,NDIM)
 *
         ONE = 1.0D0
-        DO K = 1, IORD 
+        DO K = 1, IORD
           CALL VECSUM(VEC2,VEC2,C(1,IORD+1-K),ONE,EN(K),NDIM)
         END DO
 *. Check overlap with zero order state ( should be zero )
@@ -3008,7 +3008,7 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 C?      WRITE(6,*) ' Eigenfunction correction ', IORD
 C?      CALL WRTMAT(C(1,IORD+1),1,NDIM,1,NDIM)
       END DO
-* 
+*
       WRITE(6,*) ' Energy corrections : '
       WRITE(6,*) ' ==================== '
       WRITE(6,*)
@@ -3023,7 +3023,7 @@ C?      CALL WRTMAT(C(1,IORD+1),1,NDIM,1,NDIM)
         ETOT = ETOT + EN(IORD)
       END DO
       WRITE(6,*) ' Zero-order energy ', E0 + ECORE
-      WRITE(6,*) ' Sum(K=0,NORD) E(K) ', ETOT 
+      WRITE(6,*) ' Sum(K=0,NORD) E(K) ', ETOT
 *
       RETURN
       END
@@ -4332,7 +4332,7 @@ C      END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck micgcg $Revision$ 
+*fordeck micgcg $Revision$
       SUBROUTINE MICGCG(MV8,LU1,LU2,LU3,LU4,LU5,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,LUPROJ2,IPRT)
@@ -4387,7 +4387,7 @@ C?    WRITE(6,*) ' NTEST ,LU1,LU2,LU3 = ', NTEST,LU1,LU2,LU3
       ONEM = -1.0D0
       ZERO = 0.0D0
 *. Overlap between LUPROJ and LUPROJ2
-      IF(LUPROJ.GT.0) THEN 
+      IF(LUPROJ.GT.0) THEN
         X12 = INPRDD(VEC1,VEC2,LUPROJ,LUPROJ2,1,LBLK)
       ELSE
         X12 = 0.0D0
@@ -4465,7 +4465,7 @@ C          VECSMD(VEC1,VEC2,FAC1,FAC2, LU1,LU2,LU3,IREW,LBLK)
 *     P on LU3
 *  S=AP on LU4
 *     H on LUDIA
- 
+
         NITER = NITER + 1
        IF ( NTEST .GE. 10 )
      & WRITE(6,*) ' INFORMATION FROM ITERATION... ',ITER
@@ -4573,7 +4573,7 @@ C
 *
       CALL QEXIT('MICGC')
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -5135,7 +5135,7 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mingcg $Revision$ 
+*fordeck mingcg $Revision$
       SUBROUTINE MINGCG(MV8,LU1,LU2,LU3,LUDIA,VEC1,VEC2,
      &                  MAXIT,CONVER,TEST,W,ERROR,NVAR,
      &                  LUPROJ,IPRT)
@@ -5217,7 +5217,7 @@ C
       NITER = 0
       DO 1000 ITER = 1, MAXIT
 *.    P is assumed in VEC1 and S = A*P in VEC2
- 
+
         NITER = NITER + 1
        IF ( NTEST .GE. 10 )
      & WRITE(6,*) ' INFORMATION FROM ITERATION... ',ITER
@@ -5322,16 +5322,16 @@ C
       END IF
 C
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mixhone $Revision$ 
+*fordeck mixhone $Revision$
       SUBROUTINE MIXHONE(H1,H2,NREPTP,IREPTP,NOBTP,NSMOB)
 *
-* Replace selected type blocks of H1 with the corresponding blocks 
+* Replace selected type blocks of H1 with the corresponding blocks
 * in H2
 *
 *. H1 and H2 are assumed to be in symmetry order !
@@ -5347,9 +5347,9 @@ C
 *. Specific input
       DIMENSION IREPTP(*)
       DIMENSION H2(*)
-*. Input and output 
+*. Input and output
       DIMENSION H1(*)
-* 
+*
       DO ISMOB = 1, NSMOB
         IF (ISMOB.EQ.1) THEN
           IOFF = 1
@@ -5360,13 +5360,13 @@ C
         DO ITP = 1, NOBTP
           IF(ITP.EQ.1) THEN
            IOBOFF = 1
-          ELSE 
+          ELSE
             IOBOFF = IOBOFF + NOBPTS(ITP-1,ISMOB)
           END IF
           DO JTP = 1, ITP
             IF(JTP.EQ.1) THEN
              JOBOFF = 1
-            ELSE 
+            ELSE
               JOBOFF = JOBOFF + NOBPTS(JTP-1,ISMOB)
             END IF
 *. Number of elements in this type-type block
@@ -5385,7 +5385,7 @@ C?              WRITE(6,*) ' Block transfer ISMOB ITP JTP ',
 C?   &          ISMOB,ITP,JTP
                 DO IOB = IOBOFF,IOBOFF+LIOB-1
                   DO JOB = JOBOFF, IOB
-                    H1(IOFF-1+IOB*(IOB-1)/2+JOB) 
+                    H1(IOFF-1+IOB*(IOB-1)/2+JOB)
      &            = H2(IOFF-1+IOB*(IOB-1)/2+JOB)
                   END DO
                 END DO
@@ -5413,17 +5413,17 @@ C       APRBLM2(A,LROW,LCOL,NBLK,ISYM)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck oneel_mat_disc $Revision$ 
+*fordeck oneel_mat_disc $Revision$
       SUBROUTINE ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
 *
 * Transfer one-electron matrix H between memory and disc file in
-* LUCIA format 
+* LUCIA format
 *
 * IFT = 1 => From disc ( read)
 * IFT = 2 => To   disc (write)
@@ -5446,7 +5446,7 @@ C       APRBLM2(A,LROW,LCOL,NBLK,ISYM)
 *     End of loop over symmetry of row index
 *
 * Each symmetry block is thus given in complete form
-* Note all integrals are in a single record 
+* Note all integrals are in a single record
 *
 *. Length of list
 C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
@@ -5848,7 +5848,7 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pico3 $Revision$ 
+*fordeck pico3 $Revision$
       SUBROUTINE PICO3(VEC1,VEC2,LU1,LU2,LU3,LU4,RNRM,EIG,FINEIG,MAXIT,
      &                 NBATCH,LLBATCHB,LLBATCHE,LBLOCK,IBLOCK,IPRTXX,
      &                 NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
@@ -5863,7 +5863,7 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 *
 * Only three vectors in on DISC
 *
-* Lu4 should only hold a batch of coefficients 
+* Lu4 should only hold a batch of coefficients
 *
 *
 *
@@ -5874,7 +5874,7 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 * Revision of june 97, PICO2 => PICO3
 *      modifications : Dynamic construction of batches
 *                      Only relevant sigma blocks constructed
-*              Oct, 98 : Info on base spaces added 
+*              Oct, 98 : Info on base spaces added
 *
 * Initial version - Only Diagonal preconditioner,
 *
@@ -5890,7 +5890,7 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 *        NBATCH    : Number of batches of vector
 *        LBATCHB   : Number of blocks in each batch
 *        LBATCHE   : Number of elements  in each batch
-*        IBLOCK    : Some additional informaition about the blocking 
+*        IBLOCK    : Some additional informaition about the blocking
 *                    that this routine does not care about !!!!
 *        NPRDIM    : Dimension of subspace with
 *                    nondiagonal preconditioning
@@ -5907,7 +5907,7 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 *
 *   THRES_EC   : Threshold for second order energies for individual terms
 *   THRES_CC   : Threshold for first  order wavefunction  for individual terms
-*                
+*
 *
 *
 * H0SCR : Scratch space for handling H0, at least 2*(NP1+NP2) ** 2 +
@@ -5923,20 +5923,20 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
       DIMENSION LLBATCHB(NBATCH),LLBATCHE(NBATCH),IBLOCK(*)
       DIMENSION LBLOCK(*)
 *. I2BLK should atleast have length of number of
-*. blocks 
+*. blocks
       DIMENSION I2BLK(*)
 *
       DIMENSION RNRM(MAXIT,1),EIG(MAXIT,1),FINEIG(1)
       DIMENSION H0(*),IPNTR(1)
       DIMENSION H0SCR(*)
-*. Class and block information 
-      DIMENSION IBLK_TO_CLS(*) 
+*. Class and block information
+      DIMENSION IBLK_TO_CLS(*)
       DIMENSION CLS_C(NCLS),CLS_E(NCLS),CLS_CT(NCLS),CLS_ET(NCLS)
       DIMENSION CLS_DEL(*), CLS_DELT(*)
-*. Base CI spaces : CI space where a given class is introduced 
+*. Base CI spaces : CI space where a given class is introduced
       DIMENSION IBASSPC(*),EBASC(*),CBASC(*)
       DIMENSION IPAT(*)
-*.Initial VEC3      
+*.Initial VEC3
       DIMENSION VEC3(*)
       INTEGER ICLS_A(NCLS), ICLS_L(NCLS),IBLKS_A(*),ICLS_A2(NCLS)
 *
@@ -5970,7 +5970,7 @@ C?    END IF
         WRITE(6,*) ' Length of pattern ', LPAT
         WRITE(6,*) ' Pattern : '
         CALL IWRTMA(IPAT,1,LPAT,1,LPAT)
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' Reference space ', IREFSPC
       END IF
 *
@@ -5988,10 +5988,10 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
         WRITE(6,*) ' Elements of trial vectors discarded if '
         WRITE(6,*) ' ======================================='
         WRITE(6,*)
-        WRITE(6,*) 
+        WRITE(6,*)
      &  '    Estimate of contribution to wavefunction is less than ',
      &  THRES_CC
-        WRITE(6,*) 
+        WRITE(6,*)
      &  '    Estimate of contribution to Energy is less than ',
      &  THRES_EC
       END IF
@@ -6027,9 +6027,9 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
 *
       ITER = 1
       WRITE(6,*)
-      WRITE(6,*) ' ==============================='      
+      WRITE(6,*) ' ==============================='
       WRITE(6,*) ' Info from pico3 ........ '
-      WRITE(6,*) ' ==============================='      
+      WRITE(6,*) ' ==============================='
       WRITE(6,*)
 *. Obtain energy of initial vector
       IF(ISKIPEI.EQ.0) THEN
@@ -6051,7 +6051,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
         DO IBATCH = 1, NBATCHL
           LBATCHB = LLBATCHB(IBATCH)
           LBATCHE = LLBATCHE(IBATCH)
-          IF(IPRT.GE.10) 
+          IF(IPRT.GE.10)
      &    WRITE(6,*) '  <Delta ! H ! Delta >, Batch : ',IBATCH
           CALL SETVEC(VEC1,ZERO,LBATCHE)
           CALL SBLOCK(LBATCHB,IBLOCK,IOFF,VEC2,VEC1,LU1,IRESTRICT,0,
@@ -6071,15 +6071,15 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
           IOFF = IOFF + LBATCHB
         END DO
         IF(IRESTRICT.EQ.1) E = 2*E
-        EIG(1,IROOT) = E                                 
+        EIG(1,IROOT) = E
       ELSE IF(ISKIPEI.EQ.1) THEN
-        E = FINEIG(IROOT) 
+        E = FINEIG(IROOT)
         WRITE(6,*) ' Initial energy obtained from previous calc as ',
      &             E+EIGSHF
         EAPR = E
-        EIG(1,IROOT) = E                                 
+        EIG(1,IROOT) = E
       END IF
-        
+
 *
       IF(IPRT .GE. 3 ) THEN
         WRITE(6,'(A,I4)') ' Eigenvalues of initial iteration '
@@ -6097,9 +6097,9 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
 *
        IF(IPRT  .GE. 10 ) THEN
         WRITE(6,*)
-        WRITE(6,*) ' ==============================='      
+        WRITE(6,*) ' ==============================='
         WRITE(6,*) ' Info from iteration .... ', ITER
-        WRITE(6,*) ' ==============================='      
+        WRITE(6,*) ' ==============================='
         WRITE(6,*)
        END IF
 *
@@ -6107,7 +6107,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
          IBASSPC_MX = 1-IPAT(MOD(ITER-2,LPAT)+1)+IREFSPC
          WRITE(6,*) ' Max allowed base space ', IBASSPC_MX
        ELSE
-         IBASSPC_MX = 0         
+         IBASSPC_MX = 0
        END IF
 *
        ZERO = 0.0D0
@@ -6150,7 +6150,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
          CALL FRMDSCN3(VEC1,LBATCHB,LBLK,LU1,NO_ZEROING1,I2BLK(IOFF),
      &                 LBLOCK(IOFF))
          CALL COPVEC(VEC1,VEC2,LBATCHE)
-*. Multiply with (H0-E)** -1 
+*. Multiply with (H0-E)** -1
          FACTOR = -EIGAPR
          ITASK = 1
          CALL  DIATERM_GAS(FACTOR,ITASK,VEC2,LBATCHB,IBLOCK,IOFF,0,
@@ -6193,10 +6193,10 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
 *. BLocks obttained by double excitations from classes in C
        NEXC  = 2
        CALL EXCCLS2(NCLS,ICLS_A,ICLS_A2,NEXC,IBASSPC_MX,IBASSPC)
-*. Partitioning of sigma vector      
+*. Partitioning of sigma vector
         CALL REPART_CIV(IBLOCK,NBATCHL,LLBATCHB,LLBATCHE,MXLNG,
      &         ICLS_A2,IBLK_TO_CLS,NCLS,NBLOCKT,LBLOCK)
-    
+
        IF(IPRT.GE.10) THEN
          WRITE(6,*) ' Number of batches for S ', NBATCHL
          WRITE(6,*)
@@ -6205,7 +6205,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
          LBATCHB = LLBATCHB(IBATCH)
          LBATCHE = LLBATCHE(IBATCH)
          NELMNT = NELMNT + LBATCHE
-         IF(IPRT.GE.10) 
+         IF(IPRT.GE.10)
      &   WRITE(6,*) '  Delta, Batch : ',IBATCH
 * Batch of HC in VEC1
          ZERO = 0.0D0
@@ -6214,7 +6214,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
      &                0,0,0)
          IF(IPRT.GE.500) THEN
            WRITE(6,*) ' Batch of H C '
-           CALL WRTBLKN(VEC1,LBATCHB,LBLOCK(IOFF)) 
+           CALL WRTBLKN(VEC1,LBATCHB,LBLOCK(IOFF))
          END IF
 *. Retrieve Batch of C
          CALL GET_BLOCKS_FROM_DISC
@@ -6253,7 +6253,7 @@ C?    WRITE(6,*) ' LU1 LU2 LU3 LU4 = ', LU1,LU2,LU3,LU4
            CALL CLASS_PROD3(VEC1,VEC2,IOFF,LBATCHB,IBLOCK,
      &                      IBLK_TO_CLS,NCLS,CLS_ET)
          END IF
-*.[(H0-E0)-1(H-E)C]_{truncated} and 
+*.[(H0-E0)-1(H-E)C]_{truncated} and
 *.C(H-E) [(H0-E0)-1(H-E)C]_{truncated}
 C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
            ZERO = 0.0D0
@@ -6320,7 +6320,7 @@ C      WRITE(6,*) ' ECC = ',ECC
        CALL ITODS(-1,1,LBLK,LU2)
        RNRM(ITER-1,1) = SQRT(RNORM)
 *. (End of loop over batches of (H0-E)-1(H-E)C)
-*. Predicted energy  
+*. Predicted energy
        IF(ICLSSEL.EQ.1) THEN
 C        IF(THRES_EC.EQ.0.0D0.AND.THRES_CC.EQ.0.0D0) THEN
 *. No truncation of small terms were performed, so the energy of
@@ -6342,13 +6342,13 @@ C?       WRITE(6,*) 'N_CLS_TRN,E_CLS_TRN',N_CLS_TRN,E_CLS_TRN
          CHEDEL = CHEDEL - (-1.0D0) * E_CLS_TRN
          DO JCLS = 1, NCLS
            IF(ICLS_A(JCLS).EQ.0) THEN
-             DELTA = DELTA-CLS_DEL(JCLS) 
+             DELTA = DELTA-CLS_DEL(JCLS)
            ELSE
              N_ACT_CLS = N_ACT_CLS + 1
            END IF
          END DO
-           
-*. And do the truncation 
+
+*. And do the truncation
 *. Truncation of classes => truncation of blocks
          IF(N_CLS_TRN.NE.0) THEN
            CALL CLS_TO_BLK(NBLOCKT,IBLK_TO_CLS,ICLS_A,IBLKS_A)
@@ -6360,13 +6360,13 @@ C?       WRITE(6,*) 'N_CLS_TRN,E_CLS_TRN',N_CLS_TRN,E_CLS_TRN
          E_CLS_TRN = 0.0D0
          W_CLS_TRN = 0.0D0
        END IF
-*. Predicted energy  
+*. Predicted energy
        IF(GAMMA.NE.0.0D0) THEN
          E2PREDIT = - CHEDELT + DELTAT**2/GAMMA
          E2PREDI  = - CHEDEL  + DELTA * DELTAT /GAMMA
        ELSE
          E2PREDIT = - CHEDELT
-         E2PREDI  = - CHEDEL 
+         E2PREDI  = - CHEDEL
          IF(ICLSSEL.EQ.1) THEN
            CALL ICOPVE(CLS_CT,CLS_C,NCLS)
            CALL ICOPVE(CLS_ET,CLS_E,NCLS)
@@ -6374,31 +6374,31 @@ C?       WRITE(6,*) 'N_CLS_TRN,E_CLS_TRN',N_CLS_TRN,E_CLS_TRN
        END IF
 *
        WRITE(6,*)
-*. 
+*.
 C?     WRITE(6,*) ' Information for untruncated expansion:'
 C?     WRITE(6,*) ' ======================================'
-C?     WRITE(6,*) 
+C?     WRITE(6,*)
 C?   & ' CHEDELT DELTAT GAMMA ', CHEDELT,DELTAT,GAMMA
        IF(GAMMA.NE.0.0D0) THEN
-         WRITE(6,*) 
+         WRITE(6,*)
      & ' Orthogonalization term to E2 (no trunc.)', DELTAT**2/GAMMA
        END IF
-       WRITE(6,*) 
-     & ' Predicted energy(no truncation), change and total ', 
+       WRITE(6,*)
+     & ' Predicted energy(no truncation), change and total ',
      &              E2PREDIT,EIGAPR+E2PREDIT+EIGSHF
        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
-C?       WRITE(6,*) 
+C?       WRITE(6,*)
 C?       WRITE(6,*) ' Information for truncated expansion:'
 C?       WRITE(6,*) ' ======================================'
-C?       WRITE(6,*) 
+C?       WRITE(6,*)
 C?   &   ' CHEDEL DELTA GAMMA ', CHEDEL,DELTA,GAMMA
          WRITE(6,*)
          IF(GAMMA.NE.0.0D0) THEN
-           WRITE(6,*) 
+           WRITE(6,*)
      &   ' Orthogonalization term to E2 (trunc.)', DELTA**2/GAMMA
          END IF
-         WRITE(6,*) 
-     &   ' Predicted energy (truncated), change and total ', 
+         WRITE(6,*)
+     &   ' Predicted energy (truncated), change and total ',
      &                E2PREDI,EIGAPR+E2PREDI+EIGSHF
          WRITE(6,*)
          WRITE(6,*) ' Estimated square-norm of eliminated terms ',
@@ -6406,10 +6406,10 @@ C?   &   ' CHEDEL DELTA GAMMA ', CHEDEL,DELTA,GAMMA
          WRITE(6,*)
      &   ' Estimated energy contributions of eliminated terms',
      &   E2PREDIT-E2PREDI
-         WRITE(6,*) 
+         WRITE(6,*)
      &   ' Number of zero elements in delta (before class sel) ',
      &    NZERO
-         WRITE(6,*) 
+         WRITE(6,*)
      &   ' Number of nonzero terms in delta (before class sel) ',
      &    NELMNT-NZERO
        ELSE
@@ -6421,27 +6421,27 @@ C                     NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
          IF(N_ACT_CLS .EQ. 0   ) THEN
            IF(IMULTGR.EQ.0.OR.IBASSPC_MX.EQ.IREFSPC) THEN
 *. All classes were eliminated so we are home -and hopefully dry
-           WRITE(6,*) ' No active classes  '    
+           WRITE(6,*) ' No active classes  '
            WRITE(6,*) ' I will therefore end the diagonalization'
            CONVER = .TRUE.
            GOTO 1001
            ELSE
-*. No active classes with this IBASSPC_MX, try next 
+*. No active classes with this IBASSPC_MX, try next
              GOTO 1000
            END IF
          END IF
        END IF
 *
 * ============================================
-* 1.5 : Inverse Iteration Correction to Delta 
+* 1.5 : Inverse Iteration Correction to Delta
 * ============================================
 *
 *
-* Update delta to 
+* Update delta to
 * -(H0-E0)-1(H-E)|0> + delta/gamma * (H0-E0)-1 |0>
 *
 * ( was +(H0-E0)-1(H-E)|0>)
-* 
+*
        CALL REWINO(LU3)
        CALL REWINO(LU1)
        CALL REWINO(LU2)
@@ -6455,7 +6455,7 @@ C                     NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
            NO_ZEROING = 0
            CALL FRMDSCN3(VEC1,LBATCHB,LBLK,LU1,NO_ZEROING,I2BLK(IOFF),
      &                   LBLOCK(IOFF))
-*. Multiply with (H0-E)** -1 
+*. Multiply with (H0-E)** -1
            FACTOR = -EIGAPR
            ITASK = 1
            CALL  DIATERM_GAS(FACTOR,ITASK,VEC1,LBATCHB,IBLOCK,IOFF,0,
@@ -6480,7 +6480,7 @@ C          END IF
          END DO
 *        ^ End of loop over batches
          CALL ITODS(-1,1,LBLK,LU3)
-*. Well, it is nice to have the correction vector on LU2 so 
+*. Well, it is nice to have the correction vector on LU2 so
          IREW = 1
 C        IF(THRES_EC.NE.0.0D0.OR.THRES_CC.NE.0.0D0) THEN
             CALL COPVCD(LU3,LU2,VEC1,IREW,LBLK)
@@ -6508,7 +6508,7 @@ C        END IF
        IRESTRICT = 1
        WRITE(6,*)
        DO IBATCH = 1, NBATCHL
-         IF(IPRT.GE.10) 
+         IF(IPRT.GE.10)
      &   WRITE(6,*) '  <Delta ! H ! Delta >, Batch : ',IBATCH
          LBATCHB = LLBATCHB(IBATCH)
          LBATCHE = LLBATCHE(IBATCH)
@@ -6529,7 +6529,7 @@ C        END IF
 *
 * ===========================================
 * 3 : Solve 2 by 2 problem : Nonorthogonal !!
-* ===========================================) 
+* ===========================================)
 *
 *      Norm of delta and overlap between 0 and delta
        S12 = INPRDD(VEC1,VEC2,LU1,LU2,1,LBLK)
@@ -6538,7 +6538,7 @@ C        END IF
 C      H11 = ECC
        IF(IOLSTM.EQ.1.AND.ABS(GAMMA).GT.1.0D-6) THEN
         H12 = -CHEDEL + DELTA*DELTAT/GAMMA
-       ELSE 
+       ELSE
         H12 = CHEDEL + EIGAPR*DELTA
        END IF
        H22 = DELHDEL
@@ -6557,7 +6557,7 @@ C      H11 = ECC
 *
         EA = -B/(2*A) - SQRT(B**2 - 4*A*C)/(2*A)
         EB = -B/(2*A) + SQRT(B**2 - 4*A*C)/(2*A)
-*. And the lowest eigenvalue is 
+*. And the lowest eigenvalue is
         E = MIN(EA,EB)
 *. The corresponding eigenvector
 *. Intermediate normalization
@@ -6570,12 +6570,12 @@ C      H11 = ECC
         X2 = X2/XNORM
 *
         IF(IPRT.GE.10) THEN
-          WRITE(6,*) 
+          WRITE(6,*)
           WRITE(6,*) ' 2 X 2 Generalized eigenvalue problem, H and S '
-          WRITE(6,*) 
+          WRITE(6,*)
           WRITE(6,'(4X,E20.10)') H11
           WRITE(6,'(4X,2E20.10)') H12,H22
-          WRITE(6,*) 
+          WRITE(6,*)
           WRITE(6,'(4X,E20.10)') S11
           WRITE(6,'(4X,2E20.10)') S12,S22
           WRITE(6,*)
@@ -6594,7 +6594,7 @@ C       ELSE
 C         CALL VECSMD(VEC1,VEC2,X1,X2,LU1,LU2,LU3,IREW,LBLK)
 C         CALL COPVCD(LU3,LU1,VEC1,IREW,LBLK)
 C       END IF
-        EIG(ITER,1) = E 
+        EIG(ITER,1) = E
         ITERX = ITER
 *
 *  Print eigenvalue info:
@@ -6690,7 +6690,7 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck simprt $Revision$ 
+*fordeck simprt $Revision$
       SUBROUTINE SIMPRT(LURF,LUN,LUVN,
      &           EN,SCR,MAXORD,VEC1,VEC2,LU1,LU2,
      &           LBLK,IH0DIA,LUH0,S,V,H0,ECORE,ECORE_H,ECORE_HEX,
@@ -6706,25 +6706,25 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
 * Simplified version for total symmetric perturbation
 *
 * Alternative expressions for the energy corrections
-* are invoked using the 2n+1 rule 
+* are invoked using the 2n+1 rule
 *
-* E(n+1) =  <0!v!n>  
+* E(n+1) =  <0!v!n>
 *
 *        = <k!v!n-k> - sum(j=0,k-1)sum(m=k-j,n-j)<j+1!n-m-j>E(m)
 *
 * A note on the perturbation :
 *
-* The perturbation is in general of the form 
+* The perturbation is in general of the form
 *
 * H0 = QH(apr)Q + E0P, P = |0><0>, Q = 1-P
 *
 * Where Q is some approcimation to the hamiltonian.
 *
-* In order to calculate ((H0-alpha)** -1 |x>, where <x|0>=0 , one must 
-* distinguish between two cases 
+* In order to calculate ((H0-alpha)** -1 |x>, where <x|0>=0 , one must
+* distinguish between two cases
 *
 * =====================================
-* 1 |0> is an eigenfunction for H(apr) 
+* 1 |0> is an eigenfunction for H(apr)
 * =====================================
 *
 * In this case (H0-alpha)** -1 |x> = (H(apr)-alpha)** -1 |x>
@@ -6737,7 +6737,7 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
 *             - (H(apr)-alpha)** -1 |0> <x|(H(apr)-alpha)** -1|0>
 *                                       -------------------------
 *                                       <X|(H(apr)-alpha)** -1|0>
-*         
+*
 *
 * Input
 * =====
@@ -6763,14 +6763,14 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
 * Internal links
 * ===============
 *
-* Solutions of linear eqs : HINTV                   
+* Solutions of linear eqs : HINTV
 * Hamiltonian times vector: MV7
 * H0 times vector         : H0TVM
 *
 *. Please do not go beyond perturbation level 100
 * Jeppe Olsen ,  Summer of 94
 *                Winter 96 : Nondiagonal H(apr), general H(apr),
-*                option for diagonal on disc eliminated 
+*                option for diagonal on disc eliminated
 *                (only direct calculation allowed now)
 *
 *                Winter of 99 : (H0-1)** -1 |0> on LUHI0 added
@@ -6811,7 +6811,7 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
       END IF
 *
 * ===============================================================
-* 1 :                   Initialization 
+* 1 :                   Initialization
 * ===============================================================
 *
 *
@@ -6832,7 +6832,7 @@ C    &                 NSPC,IMULTGR,IPAT,LPAT,IREFSPC)
               CALL WRTVCD(VEC1,LU1,1,LBLK)
             END IF
           ELSE
-*. multiply with H(apr)            
+*. multiply with H(apr)
             E0 = 0.0D0
             IPROJ = 0
             SHIFT = ECORE_H
@@ -6844,12 +6844,12 @@ CJAN25      CALL MV7(VEC1,VEC2,LURF,LU1)
               CALL WRTVCD(VEC1,LU1,1,LBLK)
             END IF
           END IF
-          E0RF = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK) 
+          E0RF = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
         END IF
 *
-        WRITE(6,*) ' E0RF = ', E0RF 
+        WRITE(6,*) ' E0RF = ', E0RF
         ENERGY = E0RF
-*. Check of |0> is an eigenfunction for H(apr) ( not H0 ! ) 
+*. Check of |0> is an eigenfunction for H(apr) ( not H0 ! )
 * Calculate H(apr)|0> - <0!H(apr)!0> |0>
         IPERTOP = 1
         CALL MV7(VEC1,VEC2,LURF,LU1)
@@ -6857,7 +6857,7 @@ CJAN25      CALL MV7(VEC1,VEC2,LURF,LU1)
           WRITE(6,*) ' H(apr) times vector, part II '
           CALL WRTVCD(VEC1,LU1,1,LBLK)
         END IF
-        HAPR00 = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK) 
+        HAPR00 = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
         CALL VECSMD(VEC1,VEC2,ONE,-HAPR00,LU1,LURF,LUVN,1,LBLK)
         XNORM = INPRDD(VEC1,VEC2,LUVN,LUVN,1,LBLK)
 *
@@ -6888,7 +6888,7 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
 
       WRITE(6,*) '  HAPR00,  XNORM, IHAPREIG, HAPRM100 : ',
      &              HAPR00,  XNORM, IHAPREIG, HAPRM100
-      
+
 *
 *
 *. V times initial vector  on  LUVN
@@ -6921,7 +6921,7 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
 *
 *
 * =======================================================================
-*.2               Loop over orders of correction vectors 
+*.2               Loop over orders of correction vectors
 * =======================================================================
 *
       DO 1000 IORD = 1, MAXORD
@@ -6939,7 +6939,7 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
         IF(IORD.GT.1) THEN
           DO II = 1, IORD -1
             SCR(II) = EN(IORD-II)
-          END DO 
+          END DO
           CALL MVCSMD(LUN,SCR,LU2,LUVN,VEC1,VEC2,IORD-1,1,LBLK)
 *. add on LUVN
           CALL VECSMD(VEC1,VEC2,ONE,ONE,LU2,LU1,LUVN,1,LBLK)
@@ -6957,12 +6957,12 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
         END IF
 *. Multiply with (H0-E0)-1, save result on LUN
         IF(IH0DIA.NE.0) THEN
-*. Multiply with inverted Diagonal 
+*. Multiply with inverted Diagonal
           CALL REWINO(LU2)
           CALL REWINO(LU1)
           CALL DIA0TRM_GAS(2,LU2,LU1,VEC1,VEC2,-E0RF)
           IF(NTEST.GE.1000) THEN
-            WRITE(6,*) ' new correction vector of order ', IORD      
+            WRITE(6,*) ' new correction vector of order ', IORD
             CALL WRTVCD(VEC1,LU1,1,LBLK)
           END IF
           IF(IHAPREIG.EQ.0) THEN
@@ -6978,8 +6978,8 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
 *. Save on LU1
             CALL COPVCD(LU2,LU1,VEC1,1,LBLK)
           END IF
-        ELSE 
-*. Solve set of linear equations 
+        ELSE
+*. Solve set of linear equations
           SHIFT = -(E0RF-ECORE_H)
           SHIFT_DIA = -E0RF
           E0 = E0RF
@@ -6989,13 +6989,13 @@ C         CALL HINTV(LU2,LUHI0,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,0,0 )
           WRITE(6,*) ' SHIFT before call to HINTV ', SHIFT
           CALL HINTV(LU2,LU1,SHIFT,SHIFT_DIA,VEC1,VEC2,LBLK,LURF,LUHI0)
           IF(NTEST.GE.1000) THEN
-            WRITE(6,*) ' new correction vector '            
+            WRITE(6,*) ' new correction vector '
             CALL WRTVCD(VEC1,LU1,1,LBLK)
           END IF
         END If
         X0N = INPRDD(VEC1,VEC2,LURF,LU1,1,LBLK)
         WRITE(6,*) ' Overlap <0!N> ', X0N
-*Save on LUN 
+*Save on LUN
         CALL REWINO(LU1)
         CALL COPVCD(LU1,LUN,VEC1,0,LBLK)
 *. V!0(n)> on LUVN = (H - H0 )!0(n)> = (H'(holeform) - (H0 -ECORE_HEX))!0(n)>
@@ -7110,7 +7110,7 @@ C!    END IF
 *
 *. Obtain additional energy expressions by 2n+1 rule.
 * ===================================================
-* 
+*
         DO N = IORD+1,2*IORD+1
 *. E(N) = <K!V!N-K-1> - Sum(j=0,k-1)sum(m=k-j,n-1-j)<j+1!n-1-m-j>E(m)
 *. Use K = IORD
@@ -7139,12 +7139,12 @@ C!    END IF
      &   ' ========================================================='
           ENERGY = E0RF+ECORE-ECORE_HEX
           DO JORD = 1, 2*IORD+1
-            ENERGY = ENERGY + EN(JORD) 
+            ENERGY = ENERGY + EN(JORD)
             WRITE(6,'(4X,I2,8X,1E18.10,6X,1E18.10)')
      &      JORD,EN(JORD),ENERGY
           END DO
         END IF
-*. I can't wait to see the output, so XFLUSH 
+*. I can't wait to see the output, so XFLUSH
         LUOUT = 6
 C       CALL  XFLUSH(LUOUT)
 *
@@ -7163,7 +7163,7 @@ C       CALL  XFLUSH(LUOUT)
      &' ========================================================='
       ENERGY = E0RF+ECORE-ECORE_HEX
       DO IORD = 1, MAXORD
-        ENERGY = ENERGY + EN(IORD) 
+        ENERGY = ENERGY + EN(IORD)
         WRITE(6,'(4X,I2,8X,1E20.12,6X,1E22.14)')
      &  IORD,EN(IORD),ENERGY
       END DO

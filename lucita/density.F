@@ -1,4 +1,4 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -114,7 +114,7 @@ C     CALL QEXIT('ABTOR')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck adtor2 $Revision$ 
+*fordeck adtor2 $Revision$
       SUBROUTINE ADTOR2(RHO2,RHO2T,ITYPE,
      &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 *
@@ -129,7 +129,7 @@ C     CALL QEXIT('ABTOR')
 *              input is in form Rho2t(ik,jl)
 * Itype = 2 => alpha-beta loop
 *              input is in form Rho2t(ij,kl)
-*               
+*
       IMPLICIT REAL*8(A-H,O-Z)
 *.Input
       DIMENSION RHO2T(*)
@@ -199,7 +199,7 @@ C?    RETURN
             NLL = NL
             LLOFF = LOFF
             IACTIVE = 1
-          ELSE 
+          ELSE
             IACTIVE = 0
           END IF
           SIGN = -1.0D0
@@ -303,9 +303,9 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
                          WRITE(6,*) ' II IIOFF ', II,IIOFF
                          WRITE(6,*) ' IPERM = ', IPERM
                       END IF
-                      RHO2(IJKL) = RHO2(IJKL) 
+                      RHO2(IJKL) = RHO2(IJKL)
      &                           - SIGN*SIGNJL*SIGNIK*RHO2T(IKJLT)
-*. The minus : Rho2t comes as <a+i a+k aj al>, but we want 
+*. The minus : Rho2t comes as <a+i a+k aj al>, but we want
 * <a+ia+k al aj>
                     END IF
                   END DO
@@ -330,7 +330,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
              KL = (L+LOFF-2)*NORB + K+KOFF - 1
              IF(IJ.EQ.KL) THEN
                FACTOR = 2.0D0
-             ELSE 
+             ELSE
                FACTOR= 1.0D0
              END IF
              IJKL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2+MIN(IJ,KL)
@@ -732,7 +732,7 @@ C     WRITE(6,*) ' Leaving DENSI '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gasdn2 $Revision$ 
+*fordeck gasdn2 $Revision$
       SUBROUTINE GASDN2(I12,RHO1,RHO2,
      &           L,R,CB,SB,C2,ICOCOC,ISOCOC,ICSMOS,ISSMOS,
      &           ICBLTP,ISBLTP,NACOB,NSSOA,ISSOA,NSSOB,ISSOB,
@@ -868,8 +868,8 @@ C     WRITE(6,*) ' Leaving DENSI '
         NBLKL = LBATL(IBATCHL)
         IF(NTEST.GE.200)
      &    WRITE(6,*) ' Left batch, number of blocks',IBATCHL,NBLKL
-        DO IIL  = 1,NBLKL                
-          IL  = I1BATL(IBATCHL)-1+IIL       
+        DO IIL  = 1,NBLKL
+          IL  = I1BATL(IBATCHL)-1+IIL
           IATP = IBLOCKL(1,IL)
           IBTP = IBLOCKL(2,IL)
           IASM = IBLOCKL(3,IL)
@@ -891,8 +891,8 @@ C     WRITE(6,*) ' Leaving DENSI '
         NBLKR = LBATR(IBATCHR)
         IF(NTEST.GE.200)
      &    WRITE(6,*) ' Right batch, number of blocks',IBATCHR,NBLKR
-        DO IIR  = 1,NBLKR                
-          IR  = I1BATR(IBATCHR)-1+IIR       
+        DO IIR  = 1,NBLKR
+          IR  = I1BATR(IBATCHR)-1+IIR
           JATP = IBLOCKR(1,IR)
           JBTP = IBLOCKR(2,IR)
           JASM = IBLOCKR(3,IR)
@@ -905,7 +905,7 @@ C     WRITE(6,*) ' Leaving DENSI '
 *. Only blocks interacting with current batch of L are read in
 *. Loop over L  blocks in batch
           DO IIL = 1, NBLKL
-            IL  = I1BATL(IBATCHL)-1+IIL       
+            IL  = I1BATL(IBATCHL)-1+IIL
             IATP = IBLOCKL(1,IL)
             IBTP = IBLOCKL(2,IL)
             IASM = IBLOCKL(3,IL)
@@ -958,7 +958,7 @@ C             CALL IWRTMA(IBLOCKR(1,IR),4,1,4,1)
 *. Loop over L and R blocks in batches and obtain  contribution from
 * given L and R blocks
           DO 10000 IIL = 1, NBLKL
-            IL  = I1BATL(IBATCHL)-1+IIL       
+            IL  = I1BATL(IBATCHL)-1+IIL
           IF(SCLFAC_L(IL).NE.0.0D0) THEN
             IATP = IBLOCKL(1,IL)
             IBTP = IBLOCKL(2,IL)
@@ -990,7 +990,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &        CALL SCALVE(SB(IOFF),-1.0D0,NIA*NIB)
 
               DO 9000 IIR = 1, NBLKR
-                IR  = I1BATR(IBATCHR)-1+IIR       
+                IR  = I1BATR(IBATCHR)-1+IIR
               IF(SCLFAC_R(IR).NE.0.0D0) THEN
                 JATP = IBLOCKR(1,IR)
                 JBTP = IBLOCKR(2,IR)
@@ -1032,11 +1032,11 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
                      IF(NTEST.GE.20) THEN
                        WRITE(6,*) ' RSDNBB will be called for '
                        WRITE(6,*) ' L block : '
-                       WRITE(6,'(A,5I5)') 
+                       WRITE(6,'(A,5I5)')
      &                 ' IIASM IIBSM IIATP IIBTP',
      &                   IIASM,IIBSM,IIATP,IIBTP
                        WRITE(6,*) ' R  block : '
-                       WRITE(6,'(A,5I5)') 
+                       WRITE(6,'(A,5I5)')
      &                 ' JASM JBSM JATP JBTP',
      &                   JASM,JBSM,JATP,JBTP
                        WRITE(6,*) ' IOFF,JOFF ', IOFF,JOFF
@@ -1094,7 +1094,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getd1 $Revision$ 
+*fordeck getd1 $Revision$
       SUBROUTINE GETD1(RHO1B,ISM,IGAS,JSM,JGAS)
 *
 * Extract TS block of one-electron density matrix
@@ -1114,7 +1114,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
       II = IOBPTS(IGAS,ISM)
       IJ = IOBPTS(JGAS,JSM)
-    
+
 *
       DO I = 1, NI
         DO J = 1, NJ
@@ -1135,13 +1135,13 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck getd2 $Revision$ 
+*fordeck getd2 $Revision$
       SUBROUTINE GETD2(RHO2B,ISM,IGAS,JSM,JGAS,KSM,KGAS,LSM,LGAS,
      &                 ICOUL)
 *. Extract given TS block from the 2e-density matrix
@@ -1179,7 +1179,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' BLock of two-electron density' 
+        WRITE(6,*) ' BLock of two-electron density'
         WRITE(6,*) ' ============================='
         WRITE(6,*)
         WRITE(6,*) ' Type and symmetry of the 4 orbitals (i j k l )'
@@ -1189,18 +1189,18 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
         NIJ = NI*NJ
         NKL = NK*NL
         CALL WRTMAT(RHO2B,NIJ,NKL,NIJ,NKL)
-      END IF 
+      END IF
 *
       RETURN
       END
-*fordeck getd2e $Revision$ 
+*fordeck getd2e $Revision$
       FUNCTION GETD2E(I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM)
 *
 * Obtain element of two-electron density matrix
 * Currently stored without symmetry
 *
 *. 2-electron density is assumed stored in wotk(krho2)
-*      
+*
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 *include <mxpdim.fh>
@@ -1237,7 +1237,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       GETD2E = X
 *
       RETURN
-      END  
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1523,7 +1523,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsbbd2a $Revision$ 
+*fordeck gsbbd2a $Revision$
       SUBROUTINE GSBBD2A(RHO2,NACOB,ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,
      &                  NGAS,ISEL,ICEL,SB,CB,
      &                  ADSXA,SXSTST,STSTSX,SXDXSX,MXPNGAS,
@@ -1533,7 +1533,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 *
 * Contributions to two-electron density matrix from column excitations
 *
-* GAS version, '96 , Jeppe Olsen 
+* GAS version, '96 , Jeppe Olsen
 *
 * =====
 * Input
@@ -1544,7 +1544,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * ICCSM,ICCTP : Symmetry and type of C     columns
 * IGRP : String group of columns
 * NROW : Number of rows in S and C block
-* NGAS : Number of active spaces 
+* NGAS : Number of active spaces
 * ISEL : Number of electrons per AS for S block
 * ICEL : Number of electrons per AS for C block
 * CB   : Input C block
@@ -1576,7 +1576,7 @@ C!    Call Abend2( ' enforrced stop in RSBBD1 ' )
 * I1, XI1S, I2,XI2S : For holding creations/annihilations
 *              type and symmetry
 *
-* Jeppe Olsen, Fall of 96     
+* Jeppe Olsen, Fall of 96
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
@@ -1617,7 +1617,7 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
 *. For general use : STSTSX => STSTDX
       IDXSM = STSTSX(ISCSM,ICCSM)
       IF(IDXSM.EQ.0) GOTO 2001
-      IF(NTEST.GE.1000)    
+      IF(NTEST.GE.1000)
      &WRITE(6,*) ' ISCSM,ICCSM IJSM ', ISCSM,ICCSM,IJSM
       DO 2000 IDXTP =  1, NDXTP
         ITYP = ITP(IDXTP)
@@ -1632,13 +1632,13 @@ C     INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
 *. types + symmetries defined => K strings are defined
           KFRST = 1
 *. Loop over of symmetry of i orbitals
-          DO 1940 ISM = 1, NSMOB   
+          DO 1940 ISM = 1, NSMOB
           KSM = ADSXA(ISM,IKOBSM)
           NI = NOBPTS(ITYP,ISM)
           NK = NOBPTS(KTYP,KSM)
           IF(NI.EQ.0.OR.NK.EQ.0) GOTO 1940
-*. Loop over batches of j orbitals 
-          DO 1930 JSM = 1, NSMOB   
+*. Loop over batches of j orbitals
+          DO 1930 JSM = 1, NSMOB
           LSM = ADSXA(JSM,JLOBSM)
           NJ = NOBPTS(JTYP,JSM)
           NL = NOBPTS(LTYP,LSM)
@@ -1804,7 +1804,7 @@ CT                CALL QEXIT ('MATCG')
 *
 * The minus ??
 *
-* Well, the density matrices are constructed as 
+* Well, the density matrices are constructed as
 
 * <I!a+i a+k aj al!> = -sum(K) <I!a+ia+k!K><J!aj al!K>, and
 * the latter matrices are the ones we are constructing
@@ -1823,10 +1823,10 @@ C?   &            NTEST = 5000
                     WRITE(6,*) ' SSCR matrix '
                     CALL WRTMAT(SSCR,LDUMMY,NIK,LDUMMY,NIK)
                   END IF
-           
+
                   IF(IFIRST.EQ.1) THEN
                     FACTOR = 0.0D0
-                  ELSE 
+                  ELSE
                     FACTOR = 1.0D0
                   END IF
 C                 MATML7(C,A,B,NCROW,NCCOL,NAROW,NACOL,
@@ -1870,7 +1870,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsbbd2b $Revision$ 
+*fordeck gsbbd2b $Revision$
       SUBROUTINE GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                  IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -1881,7 +1881,7 @@ C    &                  NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
      &                  CJRES,SIRES,NORB,NTESTG,SCLFAC,S2_TERM1,
      &                  MXTSOB)
 *
-* alpha-beta contribution to two-particle density matrix 
+* alpha-beta contribution to two-particle density matrix
 * from given c-block and s-block.
 *
 * S2_TERM1 = - <L!a+i alpha a+jbeta a i beta a j alpha !R>
@@ -1971,7 +1971,7 @@ C?    WRITE(6,*) ' NSMOB = ', NSMOB
       END IF
 *.Types of SX that connects the two strings
       CALL SXTYP_GAS(NKLTYP,KTP,LTP,NGAS,IBOC,JBOC)
-      CALL SXTYP_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC)           
+      CALL SXTYP_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC)
       IF(NIJTYP.EQ.0.OR.NKLTYP.EQ.0) GOTO 9999
       DO 2001 IJTYP = 1, NIJTYP
         ITYP = ITP(IJTYP)
@@ -2001,12 +2001,12 @@ C?    WRITE(6,*) ' NSMOB = ', NSMOB
           IF(IDOCOMP.EQ.1) THEN
 C             COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
               CALL COMPRS2LST(I1,XI1S,NJ,I3,XI3S,NI,NKASTR,NKAEFF)
-          ELSE 
+          ELSE
               NKAEFF = NKASTR
           END IF
-            
+
 *. Loop over batches of KA strings
-          NKABTC = NKAEFF/MAXK   
+          NKABTC = NKAEFF/MAXK
           IF(NKABTC*MAXK.LT.NKAEFF) NKABTC = NKABTC + 1
           DO 1801 IKABTC = 1, NKABTC
 C?          write(6,*) ' Batch over kstrings ', IKABTC
@@ -2039,7 +2039,7 @@ C?              WRITE(6,*) ' Loop 1930, KSM LSM ',KSM,LSM
                 NK = NOBPTS(KTYP,KSM)
                 NL = NOBPTS(LTYP,LSM)
 *. If IUSEAB is used, only terms with i.ge.k will be generated so
-                IKORD = 0  
+                IKORD = 0
                 IF(IUSEAB.EQ.1.AND.ISM.GT.KSM) GOTO 1930
                 IF(IUSEAB.EQ.1.AND.ISM.EQ.KSM.AND.ITYP.LT.KTYP)
      &          GOTO 1930
@@ -2082,8 +2082,8 @@ C?              call wrtmat(x,ni*nj,nk*nl,ni*nj,nk*nl)
                     END DO
                   END DO
                 END IF
-         
-     &             
+
+     &
                 CALL ADTOR2(RHO2,X,2,
      &                NI,IOFF,NJ,JOFF,NK,KOFF,NL,LOFF,NORB)
 C?              write(6,*) ' updated density matrix '
@@ -2107,7 +2107,7 @@ C?              call prsym(rho2,NORB*NORB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gsdnbb2 $Revision$ 
+*fordeck gsdnbb2 $Revision$
       SUBROUTINE GSDNBB2(I12,RHO1,RHO2,
      &                  IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                  NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -2160,7 +2160,7 @@ C?              call prsym(rho2,NORB*NORB)
 * ======
 * Output
 * ======
-* Rho1, RHo2 : Updated density blocks 
+* Rho1, RHo2 : Updated density blocks
 * =======
 * Scratch
 * =======
@@ -2179,7 +2179,7 @@ C?              call prsym(rho2,NORB*NORB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER  ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX
-*. Input  
+*. Input
       DIMENSION CB(*),SB(*)
 *. Output
       DIMENSION RHO1(*),RHO2(*)
@@ -2216,7 +2216,7 @@ C?              call prsym(rho2,NORB*NORB)
         CALL IWRTMA(JBOC,1,NGAS,1,NGAS)
 *
         WRITE(6,*) ' MAXI,MAXK,NSMOB',MAXI,MAXK,NSMOB
-* 
+*
         WRITE(6,*) 'SCLFAC =',SCLFAC
       END IF
       IACTIVE = 0
@@ -2325,7 +2325,7 @@ C?      WRITE(6,*) ' GSBBD2B will be called '
      &                    SSCR,CSCR,NACOB,NTEST,SCLFAC,S2_TERM1,
      &                    MXTSOB)
 C?      WRITE(6,*) ' GSBBD2B was called '
-     &                    
+     &
 C     GSBBD2B(RHO2,IASM,IATP,IBSM,IBTP,NIA,NIB,
 C    &                        JASM,JATP,JBSM,JBTP,NJA,NJB,
 C    &                  IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -2349,7 +2349,7 @@ C    &                  MXTSOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck pertdn $Revision$ 
+*fordeck pertdn $Revision$
       SUBROUTINE PERTDN
      &(N,LU0,LUN,ISM,ISPC,VEC1,VEC2,RHO1N,RHO2N,LUSC1,LUSC2)
 *
@@ -2380,7 +2380,7 @@ C     INCLUDE 'clunit.inc'
 #include "cprnt.inc"
 #include "oper.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-*. Output 
+*. Output
       DIMENSION RHO1N(*),RHO2N(*)
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ', IDUM,'PERTDN')
@@ -2406,15 +2406,15 @@ CTOBE   IF(L.LE.NMINL) THEN
 *. put correction vector L and NMINL on LUSC1 and LUSC2, respectively
           IF(L.EQ.0) THEN
              CALL COPVCD(LU0,LUSC1,VEC1,1,LBLK)
-          ELSE 
+          ELSE
              CALL SKPVCD(LUN,L-1,VEC1,1,LBLK)
              CALL REWINO(LUSC1)
              CALL COPVCD(LUN,LUSC1,VEC1,0,LBLK)
           END IF
 *
-          IF(NMINL.EQ.0) THEN 
+          IF(NMINL.EQ.0) THEN
              CALL COPVCD(LU0,LUSC2,VEC1,1,LBLK)
-          ELSE 
+          ELSE
              CALL SKPVCD(LUN,NMINL-1,VEC1,1,LBLK)
              CALL REWINO(LUSC2)
              CALL COPVCD(LUN,LUSC2,VEC1,0,LBLK)
@@ -2433,7 +2433,7 @@ C         CALL PRSYM(WORK(KLDEN2),NTOOB**2)
 C         END IF
 *
 CTOBE     IF(L.NE.NMINL) THEN
-*. The matrix <L! E !NMINL> was calculated, add <NMINL! E ! L> 
+*. The matrix <L! E !NMINL> was calculated, add <NMINL! E ! L>
 *. as simple transposition
 CTOBE        CALL TRPAD(WORK(KLDEN),ONE,NTOOB)
 CTOBE     END IF
@@ -2469,7 +2469,7 @@ CTOBE   END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck reorho1 $Revision$ 
+*fordeck reorho1 $Revision$
 *
       SUBROUTINE REORHO1(RHO1I,RHO1O,IRHO1SM)
 *
@@ -2529,12 +2529,12 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rho1_hh $Revision$ 
-      SUBROUTINE RHO1_HH(RHO1,XLR)  
+*fordeck rho1_hh $Revision$
+      SUBROUTINE RHO1_HH(RHO1,XLR)
 *
 * Add terms from hole-hole commutator to one-particle density matrix :
 *
-*  2*<L!R> to diagonal for Hole orbitals 
+*  2*<L!R> to diagonal for Hole orbitals
 *
 * Jeppe Olsen, Jan. 1998 (<= Just to show we are geared for the millenium
 *                            change)
@@ -2548,8 +2548,8 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *Input and output
       DIMENSION RHO1(NACOB,NACOB)
 *
-      DO IORB = 1, NACOB 
-       IF(IPHGAS(ITPFTO(IORB)).EQ.2) 
+      DO IORB = 1, NACOB
+       IF(IPHGAS(ITPFTO(IORB)).EQ.2)
      & RHO1(IORB,IORB) = RHO1(IORB,IORB) + 2.0D0*XLR
       END DO
 *

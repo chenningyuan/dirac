@@ -1,10 +1,10 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ci_respons $Revision$ 
+*fordeck ci_respons $Revision$
       SUBROUTINE CI_RESPONS(LU1,LU2,LU3,LU4,LU5,LU6,LU7,LUC,LUDIA,
      &                      VEC1,VEC2,ENOT,CCALC)
 *
@@ -23,7 +23,7 @@
       COMMON/CANDS/ICSM,ISSM,ICSPC,ISSPC
       REAL*8 INPROD
       DIMENSION VEC1(*),VEC2(*)
-*. Local scratch 
+*. Local scratch
        INTEGER IAVE_SYM(20)
 *
       NTEST = 1000
@@ -50,14 +50,14 @@ C?    write(6,*) ' ENOT IN CIRESP ', ENOT
 **  General procedure for for double perturbation theory
 *                 through arbitrary order
 *
-         
+
           WRITE(6,*)
           WRITE(6,*) ' ================================================'
           WRITE(6,*) ' General expansion in two external perturbations'
           WRITE(6,*) ' ================================================'
           WRITE(6,*)
           WRITE(6,*)
-          WRITE(6,*) 
+          WRITE(6,*)
      &    ' Operators used for expectation values ( A-operators) '
           WRITE(6,*)
      &    ' ====================================================='
@@ -71,14 +71,14 @@ C?    write(6,*) ' ENOT IN CIRESP ', ENOT
           WRITE(6,*)
           WRITE(6,*) '     Operator 1 : ', RESP_OP(1,ICALC)
           WRITE(6,*) '     Operator 2 : ', RESP_OP(2,ICALC)
-          WRITE(6,*) 
+          WRITE(6,*)
      &    '     Max order in operator 1 : ', MAXORD_OP(1,ICALC)
-          WRITE(6,*) 
+          WRITE(6,*)
      &    '     Max order in operator 2 : ', MAXORD_OP(2,ICALC)
           IF(RESP_W(ICALC).EQ.0.0D0) THEN
             WRITE(6,*) '     Static perturbations'
           ELSE
-            WRITE(6,*) 
+            WRITE(6,*)
      &      '    frequency of second operator  ',RESP_W(ICALC)
           END IF
           WRITE(6,*)
@@ -155,7 +155,7 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck dump_1el_info $Revision$ 
+*fordeck dump_1el_info $Revision$
       SUBROUTINE DUMP_1EL_INFO(LUH)
 *
 *. Dump one-electron information  on file LUH, LUCIA format
@@ -170,19 +170,19 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
       DATA XYZ/'X','Y','Z'/
       CHARACTER*8 LABEL
 *
-* Structure of file 
+* Structure of file
 * 1 : Number of syms
 * 2 : NMO's per sym
 * 3 : NAO's per SYM
 * 4 : Number of elements in CMOAO
 * 4 : CMOAO-expansion matrix (in symmetry packed form)
-* 5 : Number of property AO lists 
+* 5 : Number of property AO lists
 *     Loop over number of properties
 *     Label, offset and length of each proprty list
 *
 *     Property integrals for prop1,prop2 ...
 *
-* Note : CMOAO and property integrals written in form 
+* Note : CMOAO and property integrals written in form
 *     given by ONEEL_MAT_DISC
 *
 * Jeppe Olsen, Feb. 98
@@ -212,7 +212,7 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
         LENGTH = 0
         WRITE(LUH,*) LENGTH
       END IF
-     
+
 *. Total number of properties ( 3 for each rank1, 6 for each rank 2)
       NPROP_COM = 0
       DO IPROP = 1, NPROP
@@ -242,7 +242,7 @@ C             GET_PROP_RANK(PROPER,IRANK)
            DO ICOMP = 1, 3
              LABEL = PROPER(IPROP)//'  '
              IF(LABEL(1:6).EQ.'DIPOLE') THEN
-               LABEL =XYZ(ICOMP)//'DIPLEN '            
+               LABEL =XYZ(ICOMP)//'DIPLEN '
              ELSE
                LABEL =XYZ(ICOMP)//PROPER(IPROP)//' '
              END IF
@@ -264,7 +264,7 @@ C             GET_PROP_RANK(PROPER,IRANK)
            END DO
          END IF
        END DO
-*. Fetch integrals and then : Dump them           
+*. Fetch integrals and then : Dump them
        DO IPROP = 1, NPROP
          CALL GET_PROP_RANK(PROPER(IPROP),IRANK)
          LABEL = PROPER(IPROP)//'  '
@@ -277,7 +277,7 @@ C               ONEEL_MAT_DISC(H,IHSM,NSM,NRPSM,NCPSM,LUH,IFT)
            DO ICOMP = 1, 3
              LABEL = PROPER(IPROP)//'  '
              IF(LABEL(1:6).EQ.'DIPOLE') THEN
-               LABEL =XYZ(ICOMP)//'DIPLEN '            
+               LABEL =XYZ(ICOMP)//'DIPLEN '
              ELSE
                LABEL =XYZ(ICOMP)//PROPER(IPROP)//' '
              END IF
@@ -307,11 +307,11 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck extkop $Revision$ 
+*fordeck extkop $Revision$
 
       SUBROUTINE EXTKOP
 *
-* Use Extended Koopmaans' theorem to obtain ionization energies 
+* Use Extended Koopmaans' theorem to obtain ionization energies
 *
 *
 * Jeppe Olsen , LUCIA version adapeted from LUCAS, Nov 1995
@@ -349,7 +349,7 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
       WRITE(6,*) '        *****************************************'
 C     KFREEO = KFREE
       IDUM = 0
-      WRITE(6,*) ' NTOOB = ', NTOOB 
+      WRITE(6,*) ' NTOOB = ', NTOOB
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'EXTKOP')
       CALL MEMMAN(KDEN1SM,2*NINT1,'ADDL ',2,'DEN1SM')
       LENGTH = NTOOB ** 2
@@ -359,11 +359,11 @@ C     KFREEO = KFREE
       CALL MEMMAN(KLFEXP,LENGTH,'ADDL  ',2,'KLFEXP')
       CALL MEMMAN(KLSCR ,4*LENGTH,'ADDL  ',2,'KLSCR ')
       CALL MEMMAN(KFOCK ,LENGTH ,'ADDL  ',2,'KFOCK ')
-      
-*. Density matrices and integrals assumed in place 
+
+*. Density matrices and integrals assumed in place
 *
 *. Construct Fock matrix over all orbitals
-      CALL FOCK_MAT(WORK(KFOCK),2)  
+      CALL FOCK_MAT(WORK(KFOCK),2)
 *. Multiply Fock matrix with a factor of 2 to improve results
 *. - a deeper argument does exist
 COLD  TWO = 2.0D0
@@ -394,20 +394,20 @@ COLD  CALL SCALVE(WORK(KFOCK),TWO,NTOOB**2)
            END DO
         END DO
         WRITE(6,*) ' Symmetry packed one body density matrix '
-        IMATSM = 0 
+        IMATSM = 0
         CALL APRBLM2(WORK(KDEN1SM),NTOOBS,NTOOBS,NSMOB,IMATSM)
       END DO
 *. Loop over Symmetries and  and solve F C = E S C for each symmetry
-      DO 200 ISM = 1, NSMOB 
+      DO 200 ISM = 1, NSMOB
         N = NTOOBS(ISM)
         IF(ISM.EQ.1) THEN
            IBASE = 1
            IBASE2 = 1
            IBASE2P = 1
-        ELSE 
+        ELSE
            IBASE = IBASE + NTOOBS(ISM-1)
            IBASE2P = IBASE2P + NTOOBS(ISM-1)*(NTOOBS(ISM-1)+1)/2
-           IBASE2 = IBASE2 + NTOOBS(ISM-1)**2                   
+           IBASE2 = IBASE2 + NTOOBS(ISM-1)**2
         END IF
 *. Pack block of Fock matrix to complete form
 C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
@@ -429,11 +429,11 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
         call wrtmat(work(KLFEXP),n,n,n,n)
 *. Diagonalize
         CALL TRIPAK(WORK(KLFEXP),WORK(KLSCR),1,N,N)
-        CALL EIGEN(WORK(KLSCR),WORK(KLFP),N,0,1) 
-        WRITE(6,*) 
+        CALL EIGEN(WORK(KLSCR),WORK(KLFP),N,0,1)
+        WRITE(6,*)
      &  ' Eigenvalues of Extended Koopmans Equation for ISM = ',ISM
         DO 80 I = 1, N
-          WRITE(6,'(F25.15)') WORK(KLSCR-1+I*(I+1)/2) 
+          WRITE(6,'(F25.15)') WORK(KLSCR-1+I*(I+1)/2)
    80   CONTINUE
   200 CONTINUE
 *
@@ -445,7 +445,7 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck genh1 $Revision$ 
+*fordeck genh1 $Revision$
       SUBROUTINE GENH1(XLAMBDA_X)
 *
 * Construct the general one-electron operator
@@ -454,7 +454,7 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 *
 *
 * Where H(Normal) is the normal one-electron operator
-* and FIFA is the sum of the inactive and active Fock matrices 
+* and FIFA is the sum of the inactive and active Fock matrices
 * used in CASPTN theory
 *
 * The correct one-electron density is assumed in place
@@ -487,7 +487,7 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
         ECORE_H = 0.0D0
         IF(IUSE_PH.EQ.1) THEN
           CALL FI(WORK(KFI),ECORE_H,0)
-          ECORE = ECORE_ORIG + ECORE_H 
+          ECORE = ECORE_ORIG + ECORE_H
         END IF
 *. And write to disc
         LU18 = 18
@@ -519,13 +519,13 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
       END IF
 *
       RETURN
-      END 
+      END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_prop_rank $Revision$ 
+*fordeck get_prop_rank $Revision$
       SUBROUTINE GET_PROP_RANK(PROPER,IRANK)
 *
 * Obtain rank for property PROPERTY (gives as CHAR*6 as usual)
@@ -559,20 +559,20 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck gndbptfreq $Revision$ 
+*fordeck gndbptfreq $Revision$
       SUBROUTINE GNDBPTFREQ(V,W,IRFSM,ERF,LURF,
      &           IVRFSM,MAXV,IWRFSM,MAXW,IDRFSM,IVSM,IWSM,
      &           LUN,VEC1,VEC2,LU1,LU2,LU3,LU4,LU5,LU6,LU7,
      &           LUDIA,FREQ,ENM,
      &           N_AVE_OP,AVE_OP,AVINT,LAVINT,IAVE_SYM,IPRNT)
 *
-* Solve the double perturbation expansion arising from a 
+* Solve the double perturbation expansion arising from a
 * static perturbation(V) and a frequency dependent perturbation(W).
 *
-* Susceptibilities corresponding to expectation values of 
+* Susceptibilities corresponding to expectation values of
 * the N_AVE_OP operators defined by AVINT are also constructed
-* 
-* The perturbations or the squared perturbations are assumed 
+*
+* The perturbations or the squared perturbations are assumed
 * to be symmetric
 *
 * Jeppe Olsen, adapted from LUCAS codes
@@ -586,12 +586,12 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 *       -sum(ld=1,n-1;ls=1,m;ll)Vw[1]t  d(ld,ls,lw)d(n-ld-1,m-ls,(l-ll-1)w)
 *       -sum(ld=1,n.1;ls=1,m;ll)V-w[1]t d(ld,ls,lw)d(n-ld-1,m-ls,(l-ll+1)w)
 *
-* Where 
+* Where
 * n : is the order in the frequency dependent expansion
 * m : is the order in the static expansion
 * w : is the frequency (FREQ)
 *
-* 
+*
 *
 * Input
 * =====
@@ -648,28 +648,28 @@ C       CALL TRIPAK(WORK(KLFEXP),WORK(KFOCK-1+IBASE2P),2,N,N)
 *. And susceptibilities
       DIMENSION CHI(0:MAXORD,0:MAXORD,-MAXORD:MAXORD)
 *. A-operators
-      CHARACTER*8 AVE_OP(N_AVE_OP) 
+      CHARACTER*8 AVE_OP(N_AVE_OP)
       DIMENSION  AVINT(LAVINT,N_AVE_OP),IAVE_SYM(N_AVE_OP)
 C    &           N_AVE_OP,AVE_OP,AVINT,LAVINT,IAVE_SYM)
 *  V ** n W ** m !ref> : Symmetry is  ISMVW(MOD(n,2)+1,MOD(m,2)+1)
       COMMON/CANDS/ICSM,ISSM,ICPSC,ISSPC
-*. Local scratch 
+*. Local scratch
       DIMENSION SCR(10*MAXORD)
 #include "oper.inc"
 #include "multd2h.inc"
-*. Transfer of shift 
+*. Transfer of shift
       COMMON/CSHIFT/SHIFT,IPROJ
 *. Transfer of zero order energy
       COMMON/CENOT/E0
 *. Still testing after all these years
-      NTESTL =   1  
+      NTESTL =   1
       WRITE(6,*) ' Input Print flag ', IPRNT
       NTEST = MAX(NTESTL,IPRNT)
 *. redefine LUN
       LUN = 41
       IF(NTEST.GE.5) THEN
         WRITE(6,*) ' LU1, LU2, LU3, LU4, LU5, LU6, LU7 '
-        WRITE(6,*)   LU1, LU2, LU3, LU4, LU5, LU6, LU7  
+        WRITE(6,*)   LU1, LU2, LU3, LU4, LU5, LU6, LU7
         WRITE(6,*) ' LUN LURF ', LUN,LURF
       END IF
 C     WRITE(6,*) ' FREQ = ', FREQ
@@ -683,7 +683,7 @@ C     WRITE(6,*) ' FREQ = ', FREQ
       ISMVW(1,2) = IWRFSM
       ISMVW(2,2) = IDRFSM
 *
-      IF(NTEST.GE.5) THEN 
+      IF(NTEST.GE.5) THEN
       WRITE(6,*)
       WRITE(6,*)
       WRITE(6,*) '*************************************************'
@@ -697,16 +697,16 @@ C     WRITE(6,*) ' FREQ = ', FREQ
       WRITE(6,*) '*                                               *'
       WRITE(6,*) '*************************************************'
       WRITE(6,*)
-      WRITE(6,*) 
+      WRITE(6,*)
       END IF
 C     WRITE(6,*)  ' LUN and LURF ',LUN,LURF
- 
+
 *.  Real perturbation
       IRC = 1
 *. For a imaginary pert set IRC to 2
 *
 *
-*. The vectors P V0!0> and P Vw!0> ( P = 1 - !0><0!) 
+*. The vectors P V0!0> and P Vw!0> ( P = 1 - !0><0!)
 *  will be used a number of times in the
 *. following. Construct these guys and store on LU5
 *
@@ -759,15 +759,15 @@ C?     WRITE(6,*) ' W00 = ', W00
         CALL REWINO(LU5)
         DO IVEC = 1, 2
            WRITE(6,*) ' Vector ', IVEC
-           CALL WRTVCD(VEC1,LU5,0,LBLK) 
+           CALL WRTVCD(VEC1,LU5,0,LBLK)
         END DO
       END IF
- 
+
 *
 *. A note on the organization of the correction vectors on disc :
 *  The vectors are stored as Loop over freq dep op, Loop over static op,
 *  Loop over freq. components
- 
+
       DO N = 0, MAXV
 *
        IF(N.EQ.0) THEN
@@ -785,11 +785,11 @@ C?     WRITE(6,*) ' W00 = ', W00
           WRITE(6,*)
           WRITE(6,*) ' Correction vector will be solved for '
           WRITE(6,*)
-          WRITE(6,*) '    Order in dynamic perturbation ', N 
-          WRITE(6,*) '    Order in static  perturbation ', M 
+          WRITE(6,*) '    Order in dynamic perturbation ', N
+          WRITE(6,*) '    Order in static  perturbation ', M
           WRITE(6,*) '    Frequency component           ', LW
           WRITE(6,*) '    Symmetry of correction vector ', MNSM
-          WRITE(6,*)  
+          WRITE(6,*)
 *
           ISSM = ISMVW(MOD(N,2)+1,MOD(M,2)+1)
 
@@ -816,14 +816,14 @@ C?        WRITE(6,*) ' N LW IPLUS',N,LW,IPLUS
 *
           IF(IMIN.EQ.1) THEN
             IF(NTEST.GE.100) WRITE(6,*) ' IMIN active '
-* : Place !0(N-1,M,LW-1)> on LU6 
+* : Place !0(N-1,M,LW-1)> on LU6
             CALL GET_NMLW(VEC1,N-1,M,LW-1,MAXV,MAXW,LUN,LURF,1,
      &                    LU6,1,LBLK,LUOUTEFF)
             IF(NTEST.GE.100) THEN
               WRITE(6,*) ' Correction vector !0(N-1,M,LW-1)> read '
             END IF
             IF(NTEST.GE.100) THEN
-              CALL WRTVCD(VEC1,LU6,1,LBLK) 
+              CALL WRTVCD(VEC1,LU6,1,LBLK)
             END IF
             I12 = 1
             CALL BVEC(V,IVSM,LU6,LU7,VEC1,VEC2)
@@ -839,7 +839,7 @@ C           IF(V00.NE.0.0D0 .AND. N+M.NE.1) THEN
 *
             IF(NTEST.GE.100) THEN
               WRITE(6,*) ' V times Correction vector on LU4 '
-              CALL WRTVCD(VEC1,LU4,1,LBLK) 
+              CALL WRTVCD(VEC1,LU4,1,LBLK)
             END IF
           END IF
 *
@@ -854,7 +854,7 @@ C           IF(V00.NE.0.0D0 .AND. N+M.NE.1) THEN
               WRITE(6,*) ' Correction vector !0(N-1,M,LW+1)> read '
             END IF
             IF(NTEST.GE.100) THEN
-              CALL WRTVCD(VEC1,LU6,1,LBLK)    
+              CALL WRTVCD(VEC1,LU6,1,LBLK)
             END IF
             I12 = 1
             CALL BVEC(V,IVSM,LU6,LU7,VEC1,VEC2)
@@ -893,19 +893,19 @@ C           IF(V00.NE.0.0D0 .AND. N+M .NE. 1) THEN
              WRITE(6,*) ' !n,m-1> read in'
             END IF
             IF(NTEST.GE.100) THEN
-              CALL WRTVCD(VEC1,LU6,1,LBLK)    
+              CALL WRTVCD(VEC1,LU6,1,LBLK)
             END IF
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU6,LU6,1,LBLK)
 C?          write(6,*) ' norm of input vector to BVEC ',RHSNORM
-            I12 = 1    
+            I12 = 1
             CALL REWINO(LU7)
             CALL BVEC(W,IWSM,LU6,LU7,VEC1,VEC2)
 C?          RHSNORM = INPRDD(VEC1,VEC2,LU7,LU7,1,LBLK)
 C?          WRITE(6,*) ' Norm of RHS after BVEC ', RHSNORM
-           
+
             IF(NTEST.GE.10000) THEN
               WRITE(6,*) ' W times Correction vector on LU7 '
-              CALL WRTVCD(VEC2,LU7,1,LBLK)  
+              CALL WRTVCD(VEC2,LU7,1,LBLK)
             END IF
 *. - <0!W!0> !N,M-1,LW>
 C           IF(W00.NE.0.0D0 .AND. N+M .NE. 1) THEN
@@ -939,11 +939,11 @@ C?          WRITE(6,*) ' Norm of first vector on lu4  ', RHSNORM
      &                 NVEC,1,LBLK)
           IF(NTEST.GE.100) THEN
            WRITE(6,*) ' rhs before sum V01D* D '
-           CALL WRTVCD(VEC1,LU6,1,LBLK)       
+           CALL WRTVCD(VEC1,LU6,1,LBLK)
           END IF
 C?        RHSNORM = INPRDD(VEC1,VEC2,LU6,LU6,1,LBLK)
 C?        WRITE(6,*) ' Norm of RHS before sum V01D*D ', RHSNORM
-* 
+*
 *       -sum(ld=1,n;ls=1,m-1;llw)Vo[1]t d(ld,ls,llw)d(n-ld,m-ls-1,lw-llw)
 *
 *. d(ld,ls,lw) must be of the same symmety as Vo=W
@@ -978,7 +978,7 @@ C?        write(6,*) ' TERM 1'
                 ID2PSM  = ISMVW(MOD(N-LD,2)+1,MOD(M-LS-1,2)+1)
                 IF(ID1PSM.EQ.ID1SM.AND.ID2PSM.EQ.ID2SM) THEN
                   IF(NTEST.GE.5) THEN
-                    WRITE(6,*) 
+                    WRITE(6,*)
      &              ' term (Vo[1]t d(ld,ls,llw))d(n-ld,m-ls-1,lw-llw)',
      &              ' with right symmetry'
                     WRITE(6,*)
@@ -1033,7 +1033,7 @@ C?        write(6,*) ' TERM 2 '
                 ID2PSM  = ISMVW(MOD(N-LD-1,2)+1,MOD(M-LS,2)+1)
                 IF(ID1PSM.EQ.ID1SM.AND.ID2PSM.EQ.ID2SM) THEN
                   IF(NTEST.GE.5) THEN
-                    WRITE(6,*) 
+                    WRITE(6,*)
      &              ' term (Vw[1]t d(ld,ls,lw))d(n-ld-1,m-ls,lw-llw-1)',
      &              ' with right symmetry'
                     WRITE(6,*)
@@ -1076,7 +1076,7 @@ C?        write(6,*) ' TERM 3 '
               LSMAX = M
             END IF
             DO LS = LSMIN, LSMAX
-              DO LLW = -LD,LD,2 
+              DO LLW = -LD,LD,2
 *. within frequency bounds ?
               IF(ABS(LW-LLW+1).LE.N-LD-1) THEN
                 IF(NTEST.GE.5) THEN
@@ -1087,7 +1087,7 @@ C?        write(6,*) ' TERM 3 '
                 ID2PSM  = ISMVW(MOD(N-LD-1,2)+1,MOD(M-LS,2)+1)
                 IF(ID1PSM.EQ.ID1SM.AND.ID2PSM.EQ.ID2SM) THEN
                   IF(NTEST.GE.5) THEN
-                    WRITE(6,*) 
+                    WRITE(6,*)
      &              'term (V-w[1]t d(ld,ls,lw))d(n-ld-1,m-ls,lw-llw+1)'
      &              ,' with right symmetry'
                     WRITE(6,*)
@@ -1096,7 +1096,7 @@ C?        write(6,*) ' TERM 3 '
 *. Position LUN for reading D(n-ld-1,m-ls,(k-l)w)
                   CALL GET_NMLW(VEC2,N-LD-1,M-LS,LW-LLW+1,
      &                 MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
-*. We assume that the perturbation is real, 
+*. We assume that the perturbation is real,
                   IF(IRC.EQ.1) THEN
                     COEF = -VW1D(LD,LS,LLW)
                   ELSE
@@ -1104,7 +1104,7 @@ C?        write(6,*) ' TERM 3 '
                   END IF
 CW                IF(LD.EQ.N-LD-1.AND.LS.EQ.M-LS.AND.LLW.EQ.LW-LLW+1)
 CW   &            THEN
-CW                  COEF = 2.0D0*COEF             
+CW                  COEF = 2.0D0*COEF
 CW                END IF
 C?                write(6,*) ' COEF = ',coef
                   ONE = 1.0D0
@@ -1123,7 +1123,7 @@ C?                write(6,*) ' COEF = ',coef
             CALL WRTVCD(VEC1,LU6,1,LBLK)
           END IF
 *. We have now assambled the right hand side vector
-*. Well there was a minus in front of (e[2]-wI)**-1 
+*. Well there was a minus in front of (e[2]-wI)**-1
           ONEM = -1.0D0
           CALL SCLVCD(LU6,LU7,ONEM,VEC1,1,LBLK)
 CSEPT29   CALL COPVCDP(LU7,LU6,VEC ,1,LBLK)
@@ -1199,7 +1199,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
             VW1D(N,M,LW) = 0.0D0
           END IF
-          IF(NTEST.GE.5) 
+          IF(NTEST.GE.5)
      &    write(6,*) '  VW1D(N,M,LW) =  ', VW1D(N,M,LW)
 *
           IF(MNSM.EQ.IWRFSM) THEN
@@ -1209,7 +1209,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
             CALL SKPVCD(LU5,1,VEC1,0,LBLK)
             V01D(N,M,LW) = 0.0D0
           END IF
-          IF(NTEST.GE.5) 
+          IF(NTEST.GE.5)
      &    write(6,*) ' V01D(N,M,LW) =  ', V01D(N,M,LW)
 *
          END DO
@@ -1234,7 +1234,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
          END IF
          DO LS = LSMIN, MAXW
            DO LW = -LD,LD,2
-             WRITE(6,'(A,3I3,A,E18.10)') 
+             WRITE(6,'(A,3I3,A,E18.10)')
      &       ' ld, ls, lw = ',LD,LS,LW,'   ,   ',V01D(LD,LS,LW)
            END DO
          END DO
@@ -1253,7 +1253,7 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
          END IF
          DO LS = LSMIN, MAXW
            DO LW = -LD,LD,2
-             WRITE(6,'(A,3I3,A,E18.10)') 
+             WRITE(6,'(A,3I3,A,E18.10)')
      &       ' ld, ls, lw = ',LD,LS,LW,'   ,   ',Vw1D(LD,LS,LW)
            END DO
          END DO
@@ -1265,29 +1265,29 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
 *. And then the susceptibilities
 *
 * The n'th ,m'th order susceptibility with w the operator to be studied
-*  is <<w;v,v...,w,w..>>f1,f2,f3,...fn,0,0,0, 
-* where f1,f2,f3 ... fn equals +/- freq. It depends only upon the total 
+*  is <<w;v,v...,w,w..>>f1,f2,f3,...fn,0,0,0,
+* where f1,f2,f3 ... fn equals +/- freq. It depends only upon the total
 * frequency  ftot= sum(i=1,n)fi and can be written as
 *
 * Khi(ftot,f,f,f,f,f...,0,0,0,...)w,v,v,v,....,w,w,...
 *
-*. The susceptibility is the term on the Taylor expansion of 
+*. The susceptibility is the term on the Taylor expansion of
 * <0!w!0> with the right frequencies and perturbations
-* and by insisting on symmetry on all indeces after the 
+* and by insisting on symmetry on all indeces after the
 *
 *. Inner products <d!d>
 *
 *. Currently we only asemble up to MAXV,MAXW
       DO LD = 0,MAXV
         DO LS = 0,MAXW
-          DO LW = -LD,LD,2     
+          DO LW = -LD,LD,2
             IF(NTEST.GE.3) THEN
               WRITE(6,*)
               write(6,*) ' Terms to DD for LD LS LW =',LD,LS,LW
               WRITE(6,*)
             END IF
             DD(LD,LS,LW) = 0.0D0
-*. Obtain <d|d>(ld,ls,lw) = 
+*. Obtain <d|d>(ld,ls,lw) =
 *  sum(ldl,lsl,lwl)dt(ldl,lsl,-lwl)d(ld-ldl,ls-lsl,lw-lwl)
             DO LDL = 0, LD
               DO LSL = 0, LS
@@ -1302,10 +1302,10 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
 *. Other frequency component allowed ?
                   IF(ABS(LWR).LE.LDR) THEN
 *. Fetch D(LDL,LSL,-LWL) and save on LU7
-                    CALL GET_NMLW(VEC2,LDL,LSL,-LWL,         
+                    CALL GET_NMLW(VEC2,LDL,LSL,-LWL,
      &                   MAXV,MAXW,LUN,LURF,1,LU7,1,LBLK,LUOUTEFF)
 *. Position at start of D(LDR,LSR,LWR)
-                    CALL GET_NMLW(VEC1,LDR,LSR, LWR,         
+                    CALL GET_NMLW(VEC1,LDR,LSR, LWR,
      &                   MAXV,MAXW,LUN,LURF,0,LU7,0,LBLK,LUOUTEFF)
                     CALL REWINO(LU7)
                     CONT = INPRDD(VEC1,VEC2,LUOUTEFF,LU7,0,LBLK)
@@ -1345,21 +1345,21 @@ C?        write(6,*) ' MNSM IVRFSM IWRFSM ', MNSM,IVRFSM,IWRFSM
         END IF
         DO LS = LSMIN, MAXW
           DO LW = -LD,LD,2
-            WRITE(6,'(A,3I3,A,E18.10)') 
+            WRITE(6,'(A,3I3,A,E18.10)')
      &      ' ld, ls, lw = ',LD,LS,LW,'   ,   ',DD(LD,LS,LW)
           END DO
         END DO
       END DO
-*. We will now calculate elements <d!A!d> and the 
+*. We will now calculate elements <d!A!d> and the
 *  corresponding response functions.
 * This involves a loop over A- operators so :
       DO I_AVE_OP = 1, N_AVE_OP
         WRITE(6,*)
-        WRITE(6,'(A)') 
+        WRITE(6,'(A)')
      &  ' *****************************************'
-        WRITE(6,'(A,A)') 
+        WRITE(6,'(A,A)')
      &  ' Info for A - operator ', AVE_OP(I_AVE_OP)
-        WRITE(6,'(A)') 
+        WRITE(6,'(A)')
      &  ' *****************************************'
         WRITE(6,*)
 *
@@ -1371,13 +1371,13 @@ C?      WRITE(6,*) ' IASM = ', IASM
 * Notation A => W
       DO LD = 0,MAXV
         DO LS = 0,MAXW
-             
-          DO LW = -LD,LD,2     
+
+          DO LW = -LD,LD,2
             DWD(LD,LS,LW) = 0.0D0
-*. Obtain <d|w!d>(ld,ls,lw) = 
+*. Obtain <d|w!d>(ld,ls,lw) =
 *  sum(ldl,lsl,lwl)dt(ldl,lsl,-lwl)d(ld-ldl,ls-lsl,lw-lwl)
             IF(NTEST.GE.5) THEN
-              WRITE(6,*) 
+              WRITE(6,*)
      &        ' DAD under construction for LD,LS,LW=',LD,LS,LW
             END IF
 *
@@ -1398,7 +1398,7 @@ C?              WRITE(6,*) 'IWRSM = ', IWRSM
 *. Other frequency component allowed ?
                   IF(ABS(LWR).LE.LDR) THEN
 *. Fetch D(LDR,LSR,LWR) on LU7
-                    CALL GET_NMLW(VEC1,LDR,LSR, LWR,         
+                    CALL GET_NMLW(VEC1,LDR,LSR, LWR,
      &                   MAXV,MAXW,LUN,LURF,1,LU7,1,LBLK,LUOUTEFF)
 *. A time D(LDR,LSR,LWR) on LU6
                     ICSM = ISMVW(MOD(LDR,2)+1,MOD(LSR,2)+1)
@@ -1411,7 +1411,7 @@ C?                  WRITE(6,*) ' ISSM = ', ISSM
      &                        VEC1,VEC2)
 C                        BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
 *. Fetch D(LDL,LSL,-LWL) on LU7
-                    CALL GET_NMLW(VEC1,LDL,LSL,-LWL,         
+                    CALL GET_NMLW(VEC1,LDL,LSL,-LWL,
      &                   MAXV,MAXW,LUN,LURF,1,LU7,1,LBLK,LUOUTEFF)
                     CONT = INPRDD(VEC1,VEC2,LU7,LU6,1,LBLK)
                     IF(NTEST.GE.3) THEN
@@ -1448,7 +1448,7 @@ C                        BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
         END IF
         DO LS = LSMIN, MAXW
           DO LW = -LD,LD,2
-            WRITE(6,'(A,3I3,A,E18.10)') 
+            WRITE(6,'(A,3I3,A,E18.10)')
      &      ' ld, ls, lw = ',LD,LS,LW,'   ,   ',DWD(LD,LS,LW)
           END DO
         END DO
@@ -1458,7 +1458,7 @@ C                        BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
 * . And then : The susceptibilities
 * **********************************
 *
-* The khi's are to obtained as expansion of (<0!A!0>/<0!0>) 
+* The khi's are to obtained as expansion of (<0!A!0>/<0!0>)
 *
 * It is slightly inconvenient to expand 1/(<0!0>) to arbitary order.
 *. Instead we multiply both sides by <0!0>
@@ -1472,14 +1472,14 @@ C                        BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
            WRITE(6,*) ' ========================================='
            WRITE(6,*)
          END IF
-*. Obtain chi(ld,ls,-lw) = 
+*. Obtain chi(ld,ls,-lw) =
 *<0!A!0>(ld,ls,lw) -
 *sum(ldp,lsp,lwp,ldp+lsp.ge.0)chi(ldp,lsp,-lwp)<0!0>(ld-ldp,ls-lsp,lw-lwp)
          CHI(LD,LS,-LW) = DWD(LD,LS,LW)
          IF(NTEST.GE.3)THEN
-            WRITE(6,*) 
+            WRITE(6,*)
      &      ' Initial term <0!A!0>(ld,ls,lw) ',CHI(LD,LS,-LW)
-            WRITE(6,'(A)')  
+            WRITE(6,'(A)')
      &      '  Terms -chi(ldp,lsp,-lwp) <0!0>(ld-ldp,ls-lsp,lw-lwp) : '
          END IF
          DO LDP = 0, LD
@@ -1554,14 +1554,14 @@ C                        BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
 C?           WRITE(6,*) ' FAC1, FAC2, NCOMB ',FAC1,FAC2, NCOMB
              CHI(LD,LS,LW) = FAC * CHI(LD,LS,LW)
 *
-             WRITE(6,'(A,3I3,A,E18.10)') 
+             WRITE(6,'(A,3I3,A,E18.10)')
      &       ' ld, ls, lw = ',LD,LS,LW,'   ,   ',CHI(LD,LS,LW)
            END DO
          END DO
        END DO
 *
        END DO
-*      ^ End of loop over A-operators 
+*      ^ End of loop over A-operators
 *
       WRITE(6,*) ' Returning from GNDBPTFREQ '
 *
@@ -1572,7 +1572,7 @@ C?           WRITE(6,*) ' FAC1, FAC2, NCOMB ',FAC1,FAC2, NCOMB
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ndim_1el_mat $Revision$ 
+*fordeck ndim_1el_mat $Revision$
       FUNCTION NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,NSM,IPACK)
 *
 * Length of one-electron matrix with symmetry IHSM
@@ -1607,7 +1607,7 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck one_el_prop $Revision$ 
+*fordeck one_el_prop $Revision$
       SUBROUTINE ONE_EL_PROP
 *
 * Calculate one-electron properties
@@ -1626,7 +1626,7 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 #include "lucinp.inc"
 #include "orbinp.inc"
 *
-      REAL*8 INPROD 
+      REAL*8 INPROD
       CHARACTER*1 XYZ(3)
       CHARACTER*8 LABEL
       CHARACTER*6 LABEL2
@@ -1636,7 +1636,7 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'ONE_EL')
 *
       NTEST = 100
-      IF(NTEST.GE.100) THEN 
+      IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ======================'
         WRITE(6,*) ' Welcome to ONE_EL_PROP'
@@ -1646,10 +1646,10 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 *. A bit of local memory
       LHONE = NTOOB * NTOOB
       WRITE(6,*) ' Max size of one-electron operator',LHONE
-      CALL MEMMAN(KLHONE,LHONE,'ADDL  ',2,'KLHONE') 
-      CALL MEMMAN(KLCMO,LHONE,'ADDL  ',2,'KLCMO ') 
-      CALL MEMMAN(KLRHO1S,LHONE,'ADDL  ',2,'LRHO1S') 
-      CALL MEMMAN(KLSCR,4*LHONE,'ADDL  ',2,'KLCMO ') 
+      CALL MEMMAN(KLHONE,LHONE,'ADDL  ',2,'KLHONE')
+      CALL MEMMAN(KLCMO,LHONE,'ADDL  ',2,'KLCMO ')
+      CALL MEMMAN(KLRHO1S,LHONE,'ADDL  ',2,'LRHO1S')
+      CALL MEMMAN(KLSCR,4*LHONE,'ADDL  ',2,'KLCMO ')
 *. Natural orbital expansion
       CALL MEMMAN(KLXNAT,LHONE,'ADDL  ',2,'XNAT  ')
 *. Integrals in natural orbital basis
@@ -1660,11 +1660,11 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
       CALL MEMMAN(KLOCC,NTOOB,'ADDL  ',2,'OCCNUM')
 *
 *
-*. Assumed symmetry for one-electron density- 
+*. Assumed symmetry for one-electron density-
 *. for making  change to general transitions densities later
 *
       IRHO1SM = 1
-*. Extract symmetry blocks from complete one-electron density 
+*. Extract symmetry blocks from complete one-electron density
 C     REORHO1(RHO1I,RHO1O,IRHO1SM)
       CALL REORHO1(WORK(KRHO1),WORK(KLRHO1S),IRHO1SM)
 *. Number of elements in symmetry blocks of integrals and density
@@ -1703,7 +1703,7 @@ C       ELSE
          NRANK = 0
         END IF
         WRITE(6,*) ' Rank of operator ', NRANK
-*.  
+*.
         IF(NRANK.EQ.1) THEN
           DO ICOMP = 1, 3
             IF(IXYZSYM(ICOMP).EQ.IRHO1SM) THEN
@@ -1745,9 +1745,9 @@ C               ELSE IF(LABEL2.EQ.'QUADRU') THEN
 C                 LABEL=XYZ(JCOMP)//XYZ(ICOMP)//'QUADRU'
 C               ELSE IF (LABEL2(1:3).EQ.'EFG' ) THEN
 *. Again DALTON format, we assume a efg component for a specific
-* nuclei so the label has the form EFGabc 
+* nuclei so the label has the form EFGabc
                 LABEL=XYZ(JCOMP)//XYZ(ICOMP)//LABEL2
-C               END IF 
+C               END IF
 *. Obtain one-electron integrals
                 WRITE(6,*) ' memchk 2'
                 CALL LMEMCHK
@@ -1785,7 +1785,7 @@ C               END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prop_natorb $Revision$ 
+*fordeck prop_natorb $Revision$
 *
       SUBROUTINE PROP_NATORB(HDIAG,OCCNUM,NTOOBS,NSMOB)
 *
@@ -1817,32 +1817,32 @@ C               END IF
         ELSE
           IOFF = IOFF + NTOOBS(ISYM-1)
         END IF
-        DO IORB = 1, NTOOBS(ISYM) 
+        DO IORB = 1, NTOOBS(ISYM)
           IORBEF = IORB+IOFF-1
           CONT = OCCNUM(IORBEF)*HDIAG(IORBEF)
           SUM = SUM + CONT
-          WRITE(6,'(1H ,I4, I4,4E13.5)') 
+          WRITE(6,'(1H ,I4, I4,4E13.5)')
      &    IORB,ISYM,HDIAG(IORBEF),OCCNUM(IORBEF),CONT,SUM
         END DO
       END DO
 *
-      RETURN 
+      RETURN
       END
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prop_pert $Revision$ 
+*fordeck prop_pert $Revision$
       SUBROUTINE PROP_PERT(LU0,LUN,N,ISM,ISPC)
 *
-* Perturbation expansion of one-electron properties       
+* Perturbation expansion of one-electron properties
 *
-* It is assumed that this calculation is preceded  by 
-* a call to the perturbation routine to obtain the 
+* It is assumed that this calculation is preceded  by
+* a call to the perturbation routine to obtain the
 * wave function corrections to the neutral state.
 *
-* Input       
+* Input
 *       LUN : File containing wave function corrections
 *       LU0 : File containing reference wave funcrtion
 *         N : Max order of expansion
@@ -1852,7 +1852,7 @@ C               END IF
 *
 * Jeppe Olsen, April 98 ( on the train for once )
       IMPLICIT REAL*8 (A-H,O-Z)
-      REAL *8 INPRDD   
+      REAL *8 INPRDD
 *
 #include "mxpdim.inc"
 *include <mxpdim.fh>
@@ -1878,7 +1878,7 @@ C               END IF
 *
       NTEST = 5
 *
-      WRITE(6,*) 
+      WRITE(6,*)
       WRITE(6,*) ' ============================ '
       WRITE(6,*) ' PROP_PERT is now in CONTROL '
       WRITE(6,*) ' ============================ '
@@ -1890,16 +1890,16 @@ C               END IF
       END IF
 
 * a bit on files :
-* LUSC36 is LUN.   
+* LUSC36 is LUN.
 * Two additional scratch files to be used are  LUSC1 and LUSC2
-* 
+*
       LBLK = -1
       IDUM = 0
       CALL MEMMAN(IDUM,IDUM,'MARK  ',IDUM,'PROPPT')
 *
 *
 *     ========================
-* 1 : Local memory allocation 
+* 1 : Local memory allocation
 *     ========================
 *
 *. Allocate space for two vector chunks
@@ -1914,7 +1914,7 @@ C               END IF
       CALL MEMMAN(KLVEC1,LSCR1,'ADDL  ',2,'VEC1  ')
       CALL MEMMAN(KLVEC2,LSCR1,'ADDL  ',2,'VEC2  ')
 * space for one-body Density matrices through order n
-      NMAT = N+1     
+      NMAT = N+1
       LENGTH = NMAT * NTOOB ** 2
       CALL MEMMAN(KLDEN1,LENGTH,'ADDL  ',2,'DENN1 ')
 *. And an extra set of density matrices
@@ -1929,7 +1929,7 @@ C               END IF
         CALL MEMMAN(KLDEN2P,LENGTH,'ADDL  ',2,'DENN2P')
       END IF
 *. A scratch matrix ( not a nice thing to say about a matrix )
-      LENGTH =  2*NINT1    
+      LENGTH =  2*NINT1
       CALL MEMMAN(KLFSCR,LENGTH,'ADDL  ',2,'FSCR  ')
       CALL MEMMAN(KLSCR4,LENGTH,'ADDL  ',2,'SCR4  ')
 *. S(i,j) matrix for overlap of corrections
@@ -1953,7 +1953,7 @@ C               END IF
         DO J = 1, I
           IJ = I*(I-1)/2 + j
           CALL REWINO(LUSC1)
-          WORK(KLSIJ-1+IJ) = 
+          WORK(KLSIJ-1+IJ) =
      &    INPRDD (WORK(KLVEC1),WORK(KLVEC2),LUSC1,LUN,0,LBLK)
         END DO
         WRITE(6,*) ' Memcheck II '
@@ -1991,7 +1991,7 @@ C               END IF
        LRHO2 = 0
       ELSE
        ILRHO2 = 1
-       LRHO2 = NTOOB**2*(NTOOB**2 + 1)/ 2 
+       LRHO2 = NTOOB**2*(NTOOB**2 + 1)/ 2
       END IF
 *
       LRHO1 = NTOOB**2
@@ -2071,17 +2071,17 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ptekt $Revision$ 
+*fordeck ptekt $Revision$
       SUBROUTINE PTEKT(LU0,LUN,N,ISM,ISPC)
 *
-* Perturbation analysis of the Extended Koopmans' theorem 
+* Perturbation analysis of the Extended Koopmans' theorem
 * through general order.
 *
-* It is assumed that this calculation is preceded  by 
-* a call to the perturbation routine to obtain the 
+* It is assumed that this calculation is preceded  by
+* a call to the perturbation routine to obtain the
 * wave function corrections to the neutral state.
 *
-* Input       
+* Input
 *       LUN : File containing wave function corrections
 *       LU0 : File containing reference wave funcrtion
 *         N : Max order of expansion
@@ -2100,7 +2100,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 *. Should not be called with ICISTR = 1
-*. Nor with inactive orbitals 
+*. Nor with inactive orbitals
 #include "mxpdim.inc"
 *include <mxpdim.fh>
 #include "cicisp.inc"
@@ -2121,14 +2121,14 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *
       NTEST = 5
 *
-      WRITE(6,*) 
+      WRITE(6,*)
       WRITE(6,*) ' ======================== '
       WRITE(6,*) ' PTEKT is now in CONTROL '
       WRITE(6,*) ' ======================== '
       WRITE(6,*)
 
 * a bit on files :
-* LUSC36 is LUN.   
+* LUSC36 is LUN.
 * Two additional scratch files to be used are  LUSC1 and LUSC2
 *
       IDUM = 0
@@ -2136,7 +2136,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *
 *
 *     ========================
-* 1 : Local memory allocation 
+* 1 : Local memory allocation
 *     ========================
 *
 *. Allocate space for two vector chunks
@@ -2151,7 +2151,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
       CALL MEMMAN(KLVEC1,LSCR1,'ADDL  ',2,'VEC1  ')
       CALL MEMMAN(KLVEC2,LSCR1,'ADDL  ',2,'VEC2  ')
 * one-body Density matrices through order n
-      NMAT = N+1     
+      NMAT = N+1
       LENGTH = NMAT * NTOOB ** 2
       CALL MEMMAN(KLDEN1,LENGTH,'ADDL  ',2,'DENN1 ')
 *. in symmetry packed form
@@ -2160,16 +2160,16 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
        LENGTH = NMAT * NTOOB ** 2*(NTOOB**2+1)/2
       CALL MEMMAN(KLDEN2,LENGTH,'ADDL  ',2,'DENN2 ')
 *. Fock matrices through order n
-      LENGTH = NMAT * 2*NINT1    
+      LENGTH = NMAT * 2*NINT1
       CALL MEMMAN(KLFN,LENGTH,'ADDL  ',2,'F(N)  ')
 *. A scratch matrix ( not a nice thing to say about a matrix )
-      LENGTH =  2*NINT1    
+      LENGTH =  2*NINT1
       CALL MEMMAN(KLFSCR,LENGTH,'ADDL  ',2,'FSCR  ')
-*. Space for Fock matrices, density matrix belonging to a 
+*. Space for Fock matrices, density matrix belonging to a
 *  given symmetry
-      LENGTH = NMAT * 2*NINT1    
+      LENGTH = NMAT * 2*NINT1
       CALL MEMMAN(KLFNS,LENGTH,'ADDL  ',2,'F(N)S ')
-      LENGTH = NMAT * 2*NINT1    
+      LENGTH = NMAT * 2*NINT1
       CALL MEMMAN(KLDNS,LENGTH,'ADDL  ',2,'D(N)S ')
 *. Wave function corrections and energy corrections
       LENGTH = NMAT * NTOOB
@@ -2179,7 +2179,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
       CALL MEMMAN(KLSCR1,NTOOB,'ADDL  ',2,'SCR1  ')
       CALL MEMMAN(KLSCR2,NTOOB,'ADDL  ',2,'SCR2  ')
       CALL MEMMAN(KLSCR3,NTOOB,'ADDL  ',2,'SCR3  ')
-*. 
+*.
       CALL MEMMAN(KLSCR4,NTOOB**2,'ADDL  ',2,'SCR4  ')
       CALL MEMMAN(KLSCR5,NTOOB**2,'ADDL  ',2,'SCR5  ')
       CALL MEMMAN(KLSCR6,NTOOB**2,'ADDL  ',2,'SCR6  ')
@@ -2188,7 +2188,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 C          PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSC1,LUSC2,PTNORM)
       CALL PTWFNRM(LU0,LUN,N,WORK(KLVEC1),WORK(KLVEC2),
      &             LUSC1,LUSC2,PTNORM)
-     &            
+     &
 
 *
 * ===============================================
@@ -2232,7 +2232,7 @@ C          PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSC1,LUSC2,PTNORM)
       CALL LMEMCHK
 *
 * =====================================================
-* 3 : Construct n'th order contribution to Fock matrix                  
+* 3 : Construct n'th order contribution to Fock matrix
 * =====================================================
 *
 *. Contains two terms : Zero order Hamiltonian with N'th order densities
@@ -2242,7 +2242,7 @@ C          PTWFNRM(LU0,LUN,N,VEC1,VEC2,LUSC1,LUSC2,PTNORM)
 *. The Zero'th order operator is assumed in place in KFI
       WRITE(6,*) ' Operator in KFI '
       CALL APRBLM2(WORK(KFI),NTOOBS,NTOOBS,NSMOB,1)
-*. Eliminate off diagonal elements   
+*. Eliminate off diagonal elements
 C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
       CALL ZERO_OFFDIAG_BLM(WORK(KFI),NSMOB,NTOOBS,1)
 *
@@ -2262,9 +2262,9 @@ C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
           CALL FOCK_MAT(WORK(KLFSCR),2)
           CALL COPVEC(WORK(KLFSCR),WORK(KLFN+(K-0)*LFOCK),LFOCK)
 *. Subtract Zero order operator with K-1 order densities
-          CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)  
+          CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
           CALL FOCK_MAT(WORK(KLFSCR),1)
-          CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)  
+          CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
           CALL VECSUM(WORK(KLFN+(K-0)*LFOCK),
      &                WORK(KLFN+(K-0)*LFOCK),
      &                WORK(KLFSCR),ONE,ONEM,LFOCK)
@@ -2275,9 +2275,9 @@ C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
           WRITE(6,*) ' Density in RHO1 '
           CALL WRTMAT(WORK(KRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
         END IF
-        CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)  
+        CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
         CALL FOCK_MAT(WORK(KLFSCR),1)
-        CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)  
+        CALL SWAPVE(WORK(KINT1),WORK(KFI),NINT1)
         CALL VECSUM(WORK(KLFN+(K-0)*LFOCK),
      &              WORK(KLFN+(K-0)*LFOCK),
      &              WORK(KLFSCR),ONE,ONE,LFOCK)
@@ -2307,7 +2307,7 @@ C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
         WRITE(6,*) ' ============================ '
         CALL APRBLM2(WORK(KLSCR4),NOCOBS,NOCOBS,NSMOB,0)
       END IF
-      
+
 *
 * =================================
 * 4 Perturbation expansions of EKT
@@ -2318,7 +2318,7 @@ C          ZERO_OFFDIAG_BLM(A,NBLOCK,LBLOCK,IPACK)
         WRITE(6,*) ' ==============================='
         IORB = LPTEKT(1,IEKT)
         IOSYM = LPTEKT(2,IEKT)
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' Symmetry = ', IOSYM
         WRITE(6,*) ' Orbital  = ', IORB
         WRITE(6,*)
@@ -2374,7 +2374,7 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck traprp $Revision$ 
+*fordeck traprp $Revision$
       SUBROUTINE LTRAPRP
 *
 * Calculate one-electron transition properties
@@ -2394,7 +2394,7 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 #include "cstate.inc"
 #include "clunit.inc"
 *
-      REAL*8 INPROD 
+      REAL*8 INPROD
       CHARACTER*1 XYZ(3)
       CHARACTER*8 LABEL
       CHARACTER*6 LABEL2
@@ -2407,19 +2407,19 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 *
       NCALC = NROOT*NEXCSTATE
       NTEST = 100
-      IF(NTEST.GE.100) THEN 
+      IF(NTEST.GE.100) THEN
         WRITE(6,*)
-        WRITE(6,*) ' Welcome to TRAPRP'         
-        WRITE(6,*) 
+        WRITE(6,*) ' Welcome to TRAPRP'
+        WRITE(6,*)
         WRITE(6,*) ' Number of transition densities ',NCALC
       END IF
 *. A bit of local memory
       LHONE = NTOOB * NTOOB
       WRITE(6,*) ' Max size of one-electron operator',LHONE
-      CALL MEMMAN(KLHONE,LHONE,'ADDL  ',2,'KLHONE') 
-      CALL MEMMAN(KLCMO,LHONE,'ADDL  ',2,'KLCMO ') 
-      CALL MEMMAN(KLRHO1S,LHONE,'ADDL  ',2,'LRHO1S') 
-      CALL MEMMAN(KLSCR,4*LHONE,'ADDL  ',2,'KLCMO ') 
+      CALL MEMMAN(KLHONE,LHONE,'ADDL  ',2,'KLHONE')
+      CALL MEMMAN(KLCMO,LHONE,'ADDL  ',2,'KLCMO ')
+      CALL MEMMAN(KLRHO1S,LHONE,'ADDL  ',2,'LRHO1S')
+      CALL MEMMAN(KLSCR,4*LHONE,'ADDL  ',2,'KLCMO ')
       CALL MEMMAN(KLRHOT,NCALC*LHONE,'ADDL  ',2,'RHOT  ')
 *
 * 1 : Obtain transition densities
@@ -2450,7 +2450,7 @@ C     END DO
       WRITE(6,*) ' First Transition density '
       CALL WRTMAT(WORK(KLRHOT),NTOOB,NTOOB,NTOOB,NTOOB)
 *. Symmetry of transition densities - and therefore of operators
-      CALL SYMCOM(3,1,IREFSM,IEXCSYM,ITRASYM) 
+      CALL SYMCOM(3,1,IREFSM,IEXCSYM,ITRASYM)
       WRITE(6,*) ' Symmetry of transition densities',ITRASYM
 *
       IRHO1SM = ITRASYM
@@ -2458,7 +2458,7 @@ C     END DO
       DO IL = 1, NEXCSTATE
         DO IR = 1, NROOT
           WRITE(6,*) ' info for IL, IR =', IL,IR
-*. Extract symmetry blocks from complete one-electron density 
+*. Extract symmetry blocks from complete one-electron density
           ILR = ILR + 1
           KLRHOTP = KLRHOT + (ILR-1)*LHONE
 C              REORHO1(RHO1I,RHO1O,IRHO1SM)
@@ -2492,7 +2492,7 @@ C           ELSE
              NRANK = -1
             END IF
             WRITE(6,*) ' Rank of operator ', NRANK
-*.  
+*.
             IF(NRANK.EQ.1) THEN
               DO ICOMP = 1, 3
                 IF(IXYZSYM(ICOMP).EQ.IRHO1SM) THEN
@@ -2527,12 +2527,12 @@ C                     LABEL=XYZ(JCOMP)//XYZ(ICOMP)//'QUADRU'
 C                   ELSE IF (LABEL2(1:3).EQ.'EFG' ) THEN
 C
                     LABEL=XYZ(JCOMP)//XYZ(ICOMP)//LABEL2
-C                   END IF 
+C                   END IF
 *. Obtain one-electron integrals
                    CALL GET_PROPINT(WORK(KLHONE),IRHO1SM,LABEL,
      &                  WORK(KLSCR),NTOOBS,NTOOBS,NSMOB,0)
 *. and then : Expectation value
-                   EXPVAL = 
+                   EXPVAL =
      &             INPROD(WORK(KLRHO1S),WORK(KLHONE),LRHO1S)
                    WRITE(6,'(A,A,E22.14)')
      &             ' Expectation value of ',LABEL,  EXPVAL
@@ -2542,11 +2542,10 @@ C                   END IF
             END IF
 *
           END DO
-* 
+*
         END DO
       END DO
 *
- 
       CALL MEMMAN(IDUM,IDUM,'FLUSM ',IDUM,'TRAPRP')
       RETURN
       END

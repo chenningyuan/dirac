@@ -1,16 +1,16 @@
-  
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck add_skaiib $Revision$ 
+*fordeck add_skaiib $Revision$
 C                ADD_SKAIIB(SB,NI,NIA,SIRES,NKABTC,NIB,
 C    &                          II,I3(1,II),XI3S(1,II) )
       SUBROUTINE ADD_SKAIIB(SB,NI,NIA,SKAIIB,NKA,NIB,
      &                          I,ISCA,SSCA)
 *
-* Update Transposed sigma block with contributions for given orbital index j 
+* Update Transposed sigma block with contributions for given orbital index j
 * from the matrix S(Ka,i,Ib)
 *
 * S(Ib,Isca(Ka)) =  S(Ib,Isca(Ka)) + Ssca(Ka)*S(Ka,I,Ib)
@@ -77,19 +77,19 @@ C             END DO
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck advice_sigma $Revision$ 
+*fordeck advice_sigma $Revision$
 *
       SUBROUTINE ADVICE_SIGMA(IAOCC,IBOCC,JAOCC,JBOCC,ITERM,LADVICE)
 *
 * Advice Sigma routine about best route to take
 *
-* ITERM : Term  to be studied :  
-*         =1 alpha-beta term 
+* ITERM : Term  to be studied :
+*         =1 alpha-beta term
 *         ....... ( to be continued )
 *
 * LADVICE : ADVICE given ( short, an integer !!)
 *
-* For ITERM = 1 : 
+* For ITERM = 1 :
 *           LADVICE = 1 : Business as usual, no transpose of matrix
 *                         (resolution on alpha strings, direct exc on beta)
 *           LADVICE = 2 = Transpose matrices
@@ -137,7 +137,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
         ELSE
            IPHMODI = 0
         END IF
-          
+
 *
         IF(IPHMODI.EQ.1.OR.NIJTYP.NE.1.OR.NKLTYP.NE.1
      &     .OR.IADVICE.EQ.0) THEN
@@ -154,7 +154,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
           XNJOB = FLOAT(NOBPT(JTP(1)))
           XNJEL = FLOAT(JAOCC(JTP(1)))
           XCJKAJB = XNJOB*XNJEL/(XNJOB-XNJEL+1)
-*. Number of kl excitations per beta string : 
+*. Number of kl excitations per beta string :
           XNKLSX = FLOAT((NOBPT(KTP(1))-JBOCC(KTP(1)))*JBOCC(LTP(1)))
 *. Number of ops (relative to dim of C)
           XNIOB = FLOAT(NOBPT(ITP(1)))
@@ -166,7 +166,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
           XNLOB = FLOAT(NOBPT(LTP(1)))
           XNLEL = FLOAT(JBOCC(LTP(1)))
           XCLJAKB = XNLOB*XNLEL/(XNLOB-XNLEL+1)
-*. Number of ij excitations per alpha string : 
+*. Number of ij excitations per alpha string :
           XNIJSX = FLOAT((NOBPT(ITP(1))-JAOCC(ITP(1)))*JAOCC(JTP(1)))
 *. Number of ops (relative to dim of C)
           XNKOB = FLOAT(NOBPT(KTP(1)))
@@ -180,7 +180,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
 *. Well, an additional consideration :
 * If the C block involes the smallest allowed number of elecs in hole space,
 * and the annihilation is in hole space
-* then we do the annihilation in the space with the smallest number of 
+* then we do the annihilation in the space with the smallest number of
 * hole electrons.
           LHOLEA =0
           LHOLEB =0
@@ -213,7 +213,7 @@ C?      WRITE(6,*) 'NIJTYP, NKLTYP', NIJTYP,NKLTYP
                WRITE(6,*) ' Advice changed by hole considetions'
                WRITE(6,*) ' LADVICE, LLADVICE', LADVICE,LLADVICE
              END IF
-             LADVICE = LLADVICE  
+             LADVICE = LLADVICE
           END IF
 *
 *
@@ -465,7 +465,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck ckajjb_pa $Revision$ 
+*fordeck ckajjb_pa $Revision$
       SUBROUTINE CKAJJB_PA(CKAJJB,CKAJJBPA,IWAY,NKA,NJ,NJB,
      &                     IREO,NJB_PAS,NJB_ACT,NSMST,SIGN,
      &                     I_ADD_COPY)
@@ -481,7 +481,7 @@ C     WRITE(6,*) ' MEMCHECK passed '
 *
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
-      DIMENSION CKAJJB(*) 
+      DIMENSION CKAJJB(*)
       DIMENSION NJB_PAS(*),NJB_ACT(*),IREO(*)
 *. Output
       DIMENSION CKAJJBPA(*)
@@ -494,10 +494,10 @@ CT    CALL QENTER('CKA_PA')
 *
         IF(JB_ACT_SM.EQ.1) THEN
          IOFF = 1
-         IOFF_PA = 1   
+         IOFF_PA = 1
         ELSE
          IOFF = IOFF + NJB_PAS(JB_ACT_SM-1)*NJB_ACT(JB_ACT_SM-1)
-         IOFF_PA = IOFF_PA 
+         IOFF_PA = IOFF_PA
      &           + NJB_ACT(JB_ACT_SM-1)*NJ*NJB_PAS(JB_ACT_SM-1)*NKA
         END IF
 *
@@ -505,7 +505,7 @@ CT    CALL QENTER('CKA_PA')
         LJB_PAS = NJB_PAS(JB_ACT_SM)
         IB_OUT_ADD = LJB_PAS*NKA
 * C(Ka,j,Jb) <=> C(Ka,Jb_pa,j,Jb_ac)
-        DO JB_ACT = 1, LJB_ACT                
+        DO JB_ACT = 1, LJB_ACT
           DO JB_PAS = 1, LJB_PAS
             IJB =  IJB + 1
             IJB_IN = IREO(IJB)
@@ -523,7 +523,7 @@ C             IB_OUT = (JB_ACT-1)*NJ*LJB_PAS*NKA
 C    &               + (J     -1)   *LJB_PAS*NKA
 C    &               + (JB_PAS-1)           *NKA + IOFF_PA - 1
 C             WRITE(6,*) 'IB_IN, IB_OUT', IB_IN, IB_OUT
-C             WRITE(6,*) ' IJB_IN, NJA,NKA ',  IJB_IN, NJA,NKA 
+C             WRITE(6,*) ' IJB_IN, NJA,NKA ',  IJB_IN, NJA,NKA
               IF(IWAY.EQ.1) THEN
 *. Normal => passive/active form
                 DO KA = 1, NKA
@@ -538,12 +538,12 @@ C               IF(I_ADD_COPY.EQ.1) THEN
                   END DO
 C               ELSE IF (I_ADD_COPY.EQ.2) THEN
 C                 DO KA = 1, NKA
-C                   CKAJJB(IB_IN+KA) =  
+C                   CKAJJB(IB_IN+KA) =
 C    &              SIGN*CKAJJBPA(IB_OUT+KA)
 C                 END DO
 C               END IF
 *               ^ End of ADD_COPY switch
-              END IF 
+              END IF
 *             ^ End of switch passive/active <=  => normal
             END DO
 *           ^ End of loop over J-orbitals
@@ -574,9 +574,9 @@ C               END IF
        DO JB_ACT_SM = 1, NSMST
          WRITE(6,*) ' Symmetry of Jb_act ', JB_ACT_SM
          IF(JB_ACT_SM.EQ.1) THEN
-          IOFF_PA = 1   
+          IOFF_PA = 1
          ELSE
-          IOFF_PA = IOFF_PA 
+          IOFF_PA = IOFF_PA
      &            + NJB_ACT(JB_ACT_SM-1)*NJ*NJB_PAS(JB_ACT_SM-1)*NKA
          END IF
          NROW = NKA*NJB_PAS(JB_ACT_SM)*NJ
@@ -598,7 +598,7 @@ CT    CALL QEXIT('CKA_PA')
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck comprs2lst $Revision$ 
+*fordeck comprs2lst $Revision$
       SUBROUTINE COMPRS2LST(I1,XI1,N1,I2,XI2,N2,NKIN,NKOUT)
 *
 * Two lists of excitations/annihilations/creations are given.
@@ -1149,7 +1149,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck get_ckajjb $Revision$ 
+*fordeck get_ckajjb $Revision$
 C               GET_CKAJJB(CB,NJ,NJA,CJRES,NKABTC,NJB,
 C    &                          JJ,I1(1,JJ),XI1S(1,JJ)
       SUBROUTINE GET_CKAJJB(CB,NJ,NJA,CKAJJB,NKA,NJB,
@@ -1179,7 +1179,7 @@ C     LBLK = 100
           ICOFF = ICOFF + LBLK
         END IF
         ICEND = MIN(ICOFF+LBLK-1,NJB)
-        ICONST = NKA*NJ 
+        ICONST = NKA*NJ
         IADR0 =  (J-1)*NKA+(ICOFF-1-1)*NKA*NJ
         IF(ICEND.GT.ICOFF) THEN
 *. Inner loop over JB
@@ -1194,12 +1194,12 @@ C             IADR = KA + (J-1)*NKA+(ICOFF-1-1)*NKA*NJ
                 IADR = IADR + ICONST
                 CKAJJB(IADR) = S*CB(JB,IROW)
               END DO
-            ELSE  
+            ELSE
               IADR = IADR0 + KA
               DO JB = ICOFF,ICEND
 C               IADR = KA + (J-1)*NKA+(JB-1)*NKA*NJ
                 IADR = IADR + ICONST
-                CKAJJB(IADR) = 0.0D0          
+                CKAJJB(IADR) = 0.0D0
               END DO
             END IF
           END DO
@@ -1216,12 +1216,12 @@ C             DO JB = ICOFF,ICEND
                 IADR = IADR + ICONST
                 CKAJJB(IADR) = S*CB(ICOFF,IROW)
 C             END DO
-            ELSE  
+            ELSE
               IADR = IADR0 + KA
 C             DO JB = ICOFF,ICEND
 C               IADR = KA + (J-1)*NKA+(JB-1)*NKA*NJ
                 IADR = IADR + ICONST
-                CKAJJB(IADR) = 0.0D0          
+                CKAJJB(IADR) = 0.0D0
 C             END DO
             END IF
           END DO
@@ -1375,7 +1375,7 @@ C    &       LUC,LUHC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mxresc $Revision$ 
+*fordeck mxresc $Revision$
       SUBROUTINE MXRESC(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,
      &                  MXPNSMST,
@@ -1391,8 +1391,8 @@ C    &       LUC,LUHC)
 *
 * Largest block of single excitations MXSXBL
 
-*. Input 
-* IAB :allowed combination of alpha and beta supergroups 
+*. Input
+* IAB :allowed combination of alpha and beta supergroups
 * IOCPTA : Number of first active alpha supergroup
 * IOCPTB : Number of first active beta  supergroup
 * NOCTPA : Number of active alpha supergroups
@@ -1403,7 +1403,7 @@ C    &       LUC,LUHC)
       DIMENSION NSTFSMSPGP(MXPNSMST,*)
       DIMENSION NTSOB(MXPTOB,NSMOB)
       DIMENSION NEL1234(MXPTOB,*)
-* 
+*
       NTESTL = 00
       NTEST = MAX(NTESTG,NTESTL)
       IF(NTEST.GE.100) WRITE(6,*) ' MXRESC : MXPKA ', MXPKA
@@ -1418,9 +1418,9 @@ C    &       LUC,LUHC)
         IATPABS = IATP + IOCTPA-1
         DO 200 IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
-            IF(NTEST.GE.100) 
+            IF(NTEST.GE.100)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXB = 0
             DO 210 ISM = 1, NSMST
@@ -1433,13 +1433,13 @@ C    &       LUC,LUHC)
               IF(NTEST.GE.100)
      &        WRITE(6,*) ' IOBTP KATP ',IOBTP,KATP
               IF(KATP.GT.0) THEN
-                MXKA = 0         
-                DO 310 KSM = 1, NSMST   
+                MXKA = 0
+                DO 310 KSM = 1, NSMST
                   MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
-  310           CONTINUE 
+  310           CONTINUE
                 IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
                 MXKAO = MXKA
-                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) 
+                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &          MXKA= MXPKA
                 MXSOB = 0
                 DO 320 ISMOB = 1, NSMOB
@@ -1463,9 +1463,9 @@ C    &       LUC,LUHC)
         IATPABS = IATP + IOCTPA-1
         DO IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
-            IF(NTEST.GE.100) 
+            IF(NTEST.GE.100)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXA = 0
             DO ISM = 1, NSMST
@@ -1478,13 +1478,13 @@ C    &       LUC,LUHC)
               IF(NTEST.GE.100)
      &        WRITE(6,*) ' IOBTP KBTP ',IOBTP,KBTP
               IF(KBTP.GT.0) THEN
-                MXKB = 0         
-                DO KSM = 1, NSMST   
+                MXKB = 0
+                DO KSM = 1, NSMST
                   MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
-                END DO   
+                END DO
                 IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
                 MXKBO = MXKB
-                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) 
+                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &          MXKB= MXPKA
                 MXSOB = 0
                 DO ISMOB = 1, NSMOB
@@ -1497,10 +1497,10 @@ C    &       LUC,LUHC)
                 MXCJ = MAX(MXCJ,LCJBLK)
 *
               END IF
-            END DO   
+            END DO
           END IF
-        END DO   
-      END DO   
+        END DO
+      END DO
       IF(NTEST.GT.00) THEN
         WRITE(6,*) 'MXRESC : MXADKBLK,MXCJ ', MXADKBLK,MXCJ
       END IF
@@ -1510,10 +1510,10 @@ C    &       LUC,LUHC)
 *
       MXCIJA = 0
       DO  IATP = 1, NOCTPA
-        IATPABS = IATP + IOCTPA -1 
+        IATPABS = IATP + IOCTPA -1
         DO  IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
             MXIB = 0
             DO  ISM = 1, NSMST
@@ -1536,12 +1536,12 @@ C    &       LUC,LUHC)
 *  type of K string obtained by removing one elec of type JOPBTP from K1ATP
                   CALL NEWTYP(K1ATP,1,JOBTP,1,KATP)
                   IF(KATP.GT.0) THEN
-                    MXKA = 0         
-                    DO KSM = 1, NSMST   
+                    MXKA = 0
+                    DO KSM = 1, NSMST
                       MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
-                    IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &              MXKA= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -1569,7 +1569,7 @@ C    &       LUC,LUHC)
 *
       MXCIJB = 0
       DO  IATP = 1, NOCTPA
-        IATPABS = IATP + IOCTPA - 1 
+        IATPABS = IATP + IOCTPA - 1
         DO  IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
           IF(IAB(IATP,IBTP).NE.0) THEN
@@ -1594,12 +1594,12 @@ C    &       LUC,LUHC)
 *  type of K string obtained by removing one elec of type JOPBTP from K1ATP
                   CALL NEWTYP(K1BTP,1,JOBTP,1,KBTP)
                   IF(KBTP.GT.0) THEN
-                    MXKB = 0         
-                    DO KSM = 1, NSMST   
+                    MXKB = 0
+                    DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
-                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -1629,7 +1629,7 @@ C    &       LUC,LUHC)
       DO  IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA - 1
         DO  IBTP = 1, NOCTPB
-          IBTPABS = IBTP + IOCTPB - 1 
+          IBTPABS = IBTP + IOCTPB - 1
           IF(IAB(IATP,IBTP).NE.0) THEN
             DO  IOBTP = 1, NTPOB
 *. type of Ka string obtained by removing one elec of type IOPBTP from IATP
@@ -1652,12 +1652,12 @@ C    &       LUC,LUHC)
 *  type of K string obtained by removing one elec of type JOPBTP from IBTP
                   CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
                   IF(KBTP.GT.0) THEN
-                    MXKB = 0         
-                    DO KSM = 1, NSMST   
+                    MXKB = 0
+                    DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
-                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -1679,7 +1679,7 @@ C    &       LUC,LUHC)
 * Largest block of single excitations :
 * Strings of given type and sym, orbitals of given type and sym
 *
-* Largest block of creations : a+i !kstring> where K string is 
+* Largest block of creations : a+i !kstring> where K string is
 * obtained as single annihilations
       MXSXBL = 0
 *. For alpha strings :
@@ -1692,7 +1692,7 @@ C    &       LUC,LUHC)
         IF(NTEST.GE.100) WRITE(6,*) ' MXIA = ', MXIA
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
-*. Is this removal allowed ??                                             
+*. Is this removal allowed ??
           CALL NEWTYP(IATPABS,1,JOBTP,1,KATP)
           IF(NTEST.GE.100)
      &    WRITE(6,*) ' JOBTP KATP ',JOBTP,KATP
@@ -1704,9 +1704,9 @@ C    &       LUC,LUHC)
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IATPABS))
             IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
-*. Then  : add an electron 
+*. Then  : add an electron
             DO IOBTP = 1, NTPOB
-*  Allowed ? 
+*  Allowed ?
               CALL NEWTYP(KATP,2,IOBTP,1,JATP)
               IF(JATP.GT.0) THEN
                 MXIOB = 0
@@ -1731,7 +1731,7 @@ C    &       LUC,LUHC)
         IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
-*. Is this removal allowed ??                                             
+*. Is this removal allowed ??
           CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
           IF(NTEST.GE.100)
      &    WRITE(6,*) ' JOBTP KBTP ',JOBTP,KBTP
@@ -1743,9 +1743,9 @@ C    &       LUC,LUHC)
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IBTP))
             IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
-*. Then  : add an electron 
+*. Then  : add an electron
             DO IOBTP = 1, NTPOB
-*  Allowed ? 
+*  Allowed ?
               CALL NEWTYP(KBTP,2,IOBTP,1,JBTP)
               IF(JATP.GT.0) THEN
                 MXIOB = 0
@@ -1760,7 +1760,7 @@ C    &       LUC,LUHC)
         END DO
       END DO
       IF(NTEST.GT.00) THEN
-        WRITE(6,*) 'MXRESC: MXSXBL : ', MXSXBL 
+        WRITE(6,*) 'MXRESC: MXSXBL : ', MXSXBL
       END IF
 *
       RETURN
@@ -1770,7 +1770,7 @@ C    &       LUC,LUHC)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck mxrescph $Revision$ 
+*fordeck mxrescph $Revision$
       SUBROUTINE MXRESCPH(IAB,IOCTPA,IOCTPB,NOCTPA,NOCTPB,
      &                  NSMST,NSTFSMSPGP,
      &                  MXPNSMST,
@@ -1789,8 +1789,8 @@ C    &       LUC,LUHC)
 *
 * Largest block of single excitations MXSXBL
 
-*. Input 
-* IAB :allowed combination of alpha and beta supergroups 
+*. Input
+* IAB :allowed combination of alpha and beta supergroups
 * IOCPTA : Number of first active alpha supergroup
 * IOCPTB : Number of first active beta  supergroup
 * NOCTPA : Number of active alpha supergroups
@@ -1805,7 +1805,7 @@ C    &       LUC,LUHC)
       DIMENSION NEL1234(MXPTOB,*)
       DIMENSION IPHGAS(*)
       INTEGER NHLFSPGP(*)
-* 
+*
       NTESTL = 000
       NTEST = MAX(NTESTG,NTESTL)
       IF(NTEST.GE.100) WRITE(6,*) ' MXRESC : MXPKA ', MXPKA
@@ -1821,9 +1821,9 @@ C    &       LUC,LUHC)
         IATPABS = IATP + IOCTPA-1
         DO 200 IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
-            IF(NTEST.GE.100) 
+            IF(NTEST.GE.100)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXB = 0
             DO 210 ISM = 1, NSMST
@@ -1831,9 +1831,9 @@ C    &       LUC,LUHC)
   210       CONTINUE
             IF(NTEST.GE.100) WRITE(6,*) ' MXB = ', MXB
             DO 300 IOBTP = 1, NTPOB
-*. No K strings obtained from creation in particle space 
+*. No K strings obtained from creation in particle space
               IF(IAORC.EQ.2.AND.IPHGAS(IOBTP).EQ.1) GOTO 300
-*. type of K string obtained 
+*. type of K string obtained
               CALL NEWTYP(IATPABS,IAORC,IOBTP,1,KATP)
               IF(NTEST.GE.100)
      &        WRITE(6,*) ' IOBTP KATP ',IOBTP,KATP
@@ -1850,13 +1850,13 @@ C    &            IOBTP,IBTPABS,KATP
                 END IF
               END IF
               IF(KATP.GT.0) THEN
-                MXKA = 0         
-                DO 310 KSM = 1, NSMST   
+                MXKA = 0
+                DO 310 KSM = 1, NSMST
                   MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
-  310           CONTINUE 
+  310           CONTINUE
                 IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
                 MXKAO = MXKA
-                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) 
+                IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &          MXKA= MXPKA
                 MXSOB = 0
                 DO 320 ISMOB = 1, NSMOB
@@ -1883,9 +1883,9 @@ C    &            IOBTP,IBTPABS,KATP
         IATPABS = IATP + IOCTPA-1
         DO IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
-            IF(NTEST.GE.100) 
+            IF(NTEST.GE.100)
      &      WRITE(6,*) ' allowed IATP,IBTP', IATP,IBTP
             MXA = 0
             DO ISM = 1, NSMST
@@ -1898,7 +1898,7 @@ C    &            IOBTP,IBTPABS,KATP
               CALL NEWTYP(IBTPABS,IAORC,IOBTP,1,KBTP)
               IF(NTEST.GE.100)
      &        WRITE(6,*) ' IOBTP KBTP ',IOBTP,KBTP
-              IF(KBTP.GT.0) THEN 
+              IF(KBTP.GT.0) THEN
                 IF(IAORC.EQ.1.AND.IADVICE.EQ.1.AND.
      &          NHLFSPGP(IATPABS)+NHLFSPGP(KBTP).LT.MNHL.AND.
      &          NHLFSPGP(IBTPABS).GT.NHLFSPGP(IATPABS)+1) THEN
@@ -1909,13 +1909,13 @@ C    &            IOBTP,IATPABS,KBTP
                 END IF
               END IF
               IF(KBTP.GT.0) THEN
-                MXKB = 0         
-                DO KSM = 1, NSMST   
+                MXKB = 0
+                DO KSM = 1, NSMST
                   MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
-                END DO   
+                END DO
                 IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
                 MXKBO = MXKB
-                IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA) 
+                IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &          MXKB= MXPKA
                 MXSOB = 0
                 DO ISMOB = 1, NSMOB
@@ -1930,10 +1930,10 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *
               END IF
  2812       CONTINUE
-            END DO   
+            END DO
           END IF
-        END DO   
-      END DO   
+        END DO
+      END DO
       END DO
 *     ^ End of loop over creation/annihilation
       IF(NTEST.GT.100) THEN
@@ -1945,10 +1945,10 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *
       MXCIJA = 0
       DO  IATP = 1, NOCTPA
-        IATPABS = IATP + IOCTPA -1 
+        IATPABS = IATP + IOCTPA -1
         DO  IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
-          
+
           IF(IAB(IATP,IBTP).NE.0) THEN
             MXIB = 0
             DO  ISM = 1, NSMST
@@ -1976,12 +1976,12 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                   CALL NEWTYP(K1ATP,JAORC,JOBTP,1,KATP)
                   IF(JAORC.EQ.2.AND.IPHGAS(JOBTP).EQ.1) KATP = 0
                   IF(KATP.GT.0) THEN
-                    MXKA = 0         
-                    DO KSM = 1, NSMST   
+                    MXKA = 0
+                    DO KSM = 1, NSMST
                       MXKA = MAX(MXKA,NSTFSMSPGP(KSM,KATP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKA = ',MXKA
-                    IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKA .GT. MXPKA)
      &              MXKA= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -2013,7 +2013,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *
       MXCIJB = 0
       DO  IATP = 1, NOCTPA
-        IATPABS = IATP + IOCTPA - 1 
+        IATPABS = IATP + IOCTPA - 1
         DO  IBTP = 1, NOCTPB
           IBTPABS = IBTP + IOCTPB - 1
           IF(IAB(IATP,IBTP).NE.0) THEN
@@ -2042,12 +2042,12 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
                   CALL NEWTYP(K1BTP,JAORC,JOBTP,1,KBTP)
                   IF(JAORC.EQ.2.AND.IPHGAS(JOBTP).EQ.1) KBTP = 0
                   IF(KBTP.GT.0) THEN
-                    MXKB = 0         
-                    DO KSM = 1, NSMST   
+                    MXKB = 0
+                    DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
-                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -2081,7 +2081,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
       DO  IATP = 1, NOCTPA
         IATPABS = IATP + IOCTPA - 1
         DO  IBTP = 1, NOCTPB
-          IBTPABS = IBTP + IOCTPB - 1 
+          IBTPABS = IBTP + IOCTPB - 1
           IF(IAB(IATP,IBTP).NE.0) THEN
             DO  IOBTP = 1, NTPOB
 *. type of Ka string obtained by removing one elec of type IOPBTP from IATP
@@ -2104,12 +2104,12 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 *  type of K string obtained by removing one elec of type JOPBTP from IBTP
                   CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
                   IF(KBTP.GT.0) THEN
-                    MXKB = 0         
-                    DO KSM = 1, NSMST   
+                    MXKB = 0
+                    DO KSM = 1, NSMST
                       MXKB = MAX(MXKB,NSTFSMSPGP(KSM,KBTP))
                     END DO
                     IF(NTEST.GE.100) WRITE(6,*) ' MXKB = ',MXKB
-                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA) 
+                    IF(MXPKA .GT. 0 .AND. MXKB .GT. MXPKA)
      &              MXKB= MXPKA
                     MXJSOB = 0
                     DO JSMOB = 1, NSMOB
@@ -2131,7 +2131,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * Largest block of single excitations :
 * Strings of given type and sym, orbitals of given type and sym
 *
-* Largest block of creations : a+i !kstring> where K string is 
+* Largest block of creations : a+i !kstring> where K string is
 * obtained as single annihilations
       MXSXBL = 0
 *. For alpha strings :
@@ -2144,7 +2144,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         IF(NTEST.GE.100) WRITE(6,*) ' MXIA = ', MXIA
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
-*. Is this removal allowed ??                                             
+*. Is this removal allowed ??
           CALL NEWTYP(IATPABS,1,JOBTP,1,KATP)
           IF(NTEST.GE.100)
      &    WRITE(6,*) ' JOBTP KATP ',JOBTP,KATP
@@ -2156,9 +2156,9 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IATPABS))
             IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
-*. Then  : add an electron 
+*. Then  : add an electron
             DO IOBTP = 1, NTPOB
-*  Allowed ? 
+*  Allowed ?
               CALL NEWTYP(KATP,2,IOBTP,1,JATP)
               IF(JATP.GT.0) THEN
                 MXIOB = 0
@@ -2183,7 +2183,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         IF(NTEST.GE.100) WRITE(6,*) ' MXIB = ', MXIB
 *. Orbitals to be removed
         DO  JOBTP = 1, NTPOB
-*. Is this removal allowed ??                                             
+*. Is this removal allowed ??
           CALL NEWTYP(IBTPABS,1,JOBTP,1,KBTP)
           IF(NTEST.GE.100)
      &    WRITE(6,*) ' JOBTP KBTP ',JOBTP,KBTP
@@ -2195,9 +2195,9 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
             END DO
             MXJOB = MIN(MXJOB,NEL1234(JOBTP,IBTP))
             IF(NTEST.GE.100) WRITE(6,*) ' MXJOB = ', MXJOB
-*. Then  : add an electron 
+*. Then  : add an electron
             DO IOBTP = 1, NTPOB
-*  Allowed ? 
+*  Allowed ?
               CALL NEWTYP(KBTP,2,IOBTP,1,JBTP)
               IF(JATP.GT.0) THEN
                 MXIOB = 0
@@ -2212,7 +2212,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
         END DO
       END DO
       IF(NTEST.GT.10) THEN
-        WRITE(6,*) 'MXRESC: MXSXBL : ', MXSXBL 
+        WRITE(6,*) 'MXRESC: MXSXBL : ', MXSXBL
       END IF
 *
       RETURN
@@ -2222,7 +2222,7 @@ CE JULY-30-99   LCJBLK = MXSOB*MXKB*MXB
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rassg3 $Revision$ 
+*fordeck rassg3 $Revision$
       SUBROUTINE RASSG3(CB,SB,NBATS,LBATS,LEBATS,I1BATS,IBATS,
      &           LUC,LUHC)
 *
@@ -2256,7 +2256,7 @@ C     NTEST = MAX(NTEST,IPRNT)
 * Loop over batches over sigma blocks
       DO JBATS = 1, NBATS
 *. Obtain sigma for batch of blocks
-C            SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,LUCBLK) 
+C            SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,LUCBLK)
         CALL SBLOCK(LBATS(JBATS),IBATS(1,I1BATS(JBATS)),1,
      &       CB,SB,LUC,0,0,0,0,0)
 *. Transfer S block to permanent storage
@@ -2535,7 +2535,7 @@ C               CALL TRPMAT(HSCR,IJ_DIM(1),IJ_DIM(2),H)
 C               CALL GETH1(H,IJ_SM(2),IJ_TP(2),IJ_SM(1),IJ_TP(1))
                 IF(NTEST.GE.1000) THEN
                   WRITE(6,*) ' RSBB1E H BLOCK '
-                  CALL WRTMAT(H,IJ_DIM(2),IJ_DIM(1),IJ_DIM(2),IJ_DIM(1)))
+                  CALL WRTMAT(H,IJ_DIM(2),IJ_DIM(1),IJ_DIM(2),IJ_DIM(1))
                 END IF
 *.Sscr(I,K,i) = CSCR(I,K,j)*h(j,i)
                 NIK = NIBTC*LKABTC
@@ -2581,7 +2581,7 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2a $Revision$ 
+*fordeck rsbb2a $Revision$
       SUBROUTINE RSBB2A(ISCSM,ISCTP,ICCSM,ICCTP,IGRP,NROW,NSCOL,
      &                  NGAS,ISOC,ICOC,
      &                  SB,CB,
@@ -2666,12 +2666,12 @@ C!    Call Abend2( ' Enforced stop in RSBB1E ' )
 *
       INTEGER IKBT(3,8),IKSMBT(2,8),JLBT(3,8),JLSMBT(2,8)
 CTF   PARAMETER(MXTSOB=40)
-CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB) 
+CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
 *
 #include "comjep.inc"
 *
       DIMENSION IACAR(2),ITPAR(2)
-      CALL QENTER('RS2A') 
+      CALL QENTER('RS2A')
       NTESTL = 000
       NTEST = MAX(NTESTG,NTESTL)
       IF(NTEST.GE.1000) THEN
@@ -2684,7 +2684,7 @@ CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
         CALL IWRTMA(ISOC,1,NGAS,1,NGAS)
         CALL IWRTMA(ICOC,1,NGAS,1,NGAS)
       END IF
-      IFRST = 1 
+      IFRST = 1
       JFRST = 1
 *
 *.Types of DX that connects the two strings
@@ -2701,7 +2701,7 @@ CTF   COMMON/SOMESCR/SCR(MXTSOB*MXTSOB*MXTSOB*MXTSOB)
 *. Is this combination of types allowed
          IJKL_ACT = I_DX_ACT(ITYP,KTYP,LTYP,JTYP)
          IF(IJKL_ACT.EQ.0) GOTO 2000
-*      
+*
 C?      write(6,*) ' test inserted in RSBB2AN'
 C?      NPTOT = 0
 C?      IF(ITYP.EQ.3) NPTOT = NPTOT + 1
@@ -2725,7 +2725,7 @@ C?      IF(NPTOT.EQ.3) GOTO 2000
         IF(NIJKL1.EQ.2) CALL QENTER('BB2A2')
         IF(NIJKL1.EQ.3) CALL QENTER('BB2A3')
         IF(NIJKL1.EQ.4) CALL QENTER('BB2A4')
-*. Optimal ordering of operators 
+*. Optimal ordering of operators
         I4_AC(1) = 2
         I4_AC(2) = 2
         I4_AC(3) = 1
@@ -2761,7 +2761,7 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
         DO IJKL = 1, 4
           I4_AC(IJKL) = ISCR(IJKL)
         END DO
-        IF(NTEST.GE.100) THEN 
+        IF(NTEST.GE.100) THEN
           WRITE(6,*) ' I4_AC, IT_TP  defined '
           WRITE(6,*) ' I4_AC, I4_TP '
           CALL IWRTMA(I4_AC,1,4,1,4)
@@ -2795,21 +2795,21 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
             ML = MAX(ML,NOBPTS(LTYP,IOBSM))
           END DO
           MXPAIR = MAX(MI*MK,MJ*ML)
-*. Largest posssible 
+*. Largest posssible
 *. Symmetry of allowed Double excitation,loop over excitations
           DO 1950 IKOBSM = 1, NSMOB
             JLOBSM = SXDXSX(IKOBSM,IDXSM)
             IF(NTEST.GE.100) WRITE(6,*) ' IKOBSM,JLOBSM', IKOBSM,JLOBSM
             IF(JLOBSM.EQ.0) GOTO 1950
-*. types + symmetries defined => K strings are defined 
+*. types + symmetries defined => K strings are defined
             KFRST = 1
 *
 *. Number of batchs of symmetry pairs IK
 *
             LENGTH = 0
             NIKBT = 0
-            NBLK = 0 
-            NBLKT = 0 
+            NBLK = 0
+            NBLKT = 0
             DO ISM = 1, NSMOB
               KSM = ADSXA(ISM,IKOBSM)
               NI = NOBPTS(ITYP,ISM)
@@ -2827,8 +2827,8 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                 NBLKT = NBLKT + 1
                 IF(LENGTH+NIK .GT. MXPAIR) THEN
 *. The present batch is complete
-                  NIKBT = NIKBT+1      
-                  IKBT(1,NIKBT) = NBLKT - NBLK 
+                  NIKBT = NIKBT+1
+                  IKBT(1,NIKBT) = NBLKT - NBLK
                   IKBT(2,NIKBT) = NBLK
                   IKBT(3,NIKBT) = LENGTH
                   LENGTH = 0
@@ -2840,20 +2840,20 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                 IKSMBT(2,NBLKT) = KSM
               END IF
             END DO
-*. The last batch 
+*. The last batch
             IF(NBLK.NE.0) THEN
-              NIKBT = NIKBT+1     
+              NIKBT = NIKBT+1
               IKBT(1,NIKBT) = NBLKT - NBLK + 1
               IKBT(2,NIKBT) = NBLK
               IKBT(3,NIKBT) = LENGTH
             END IF
 
-*. 
-            IF(NTEST.GE.2000) THEN 
+*.
+            IF(NTEST.GE.2000) THEN
               WRITE(6,*) ' ITYP, KTYP, IKOBSM,  NIKBT = ',
-     &                     ITYP, KTYP, IKOBSM,  NIKBT 
+     &                     ITYP, KTYP, IKOBSM,  NIKBT
               WRITE(6,*) ' IKBT : Offset, number, length '
-              DO JIKBT = 1, NIKBT 
+              DO JIKBT = 1, NIKBT
                 WRITE(6,'(3i3)') (IKBT(II,JIKBT), II = 1, 3)
               END DO
               WRITE(6,*) ' IKSMBT '
@@ -2864,8 +2864,8 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
 *
             LENGTH = 0
             NJLBT = 0
-            NBLK = 0 
-            NBLKT = 0 
+            NBLK = 0
+            NBLKT = 0
             DO JSM = 1, NSMOB
               LSM = ADSXA(JSM,JLOBSM)
               NJ = NOBPTS(JTYP,JSM)
@@ -2882,8 +2882,8 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                 NBLKT = NBLKT + 1
                 IF(LENGTH+NJL .GT. MXPAIR) THEN
 *. The present batch is complete
-                  NJLBT = NJLBT+1      
-                  JLBT(1,NJLBT) = NBLKT - NBLK 
+                  NJLBT = NJLBT+1
+                  JLBT(1,NJLBT) = NBLKT - NBLK
                   JLBT(2,NJLBT) = NBLK
                   JLBT(3,NJLBT) = LENGTH
                   LENGTH = 0
@@ -2895,19 +2895,19 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                 JLSMBT(2,NBLKT) = LSM
               END IF
             END DO
-*. The last batch 
+*. The last batch
             IF(NBLK.NE.0) THEN
-              NJLBT = NJLBT+1     
+              NJLBT = NJLBT+1
               JLBT(1,NJLBT) = NBLKT - NBLK + 1
               JLBT(2,NJLBT) = NBLK
               JLBT(3,NJLBT) = LENGTH
             END IF
-*. 
-            IF(NTEST.GE.2000) THEN 
+*.
+            IF(NTEST.GE.2000) THEN
               WRITE(6,*) ' JTYP, LTYP, JLOBSM,  NJLBT = ',
-     &                     JTYP, LTYP, JLOBSM,  NJLBT 
+     &                     JTYP, LTYP, JLOBSM,  NJLBT
               WRITE(6,*) ' JLBT : Offset, number, length '
-              DO JJLBT = 1, NJLBT 
+              DO JJLBT = 1, NJLBT
                 WRITE(6,'(3i3)') (JLBT(II,JJLBT), II = 1, 3)
               END DO
               WRITE(6,*) ' JLSMBT '
@@ -2917,7 +2917,7 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
 *. Loop over batches of IK strings
             DO 1940 IKBTC = 1, NIKBT
               IF(NTEST.GE.1000) WRITE(6,*) ' IKBTC = ', IKBTC
-*. Loop over batches of JL strings 
+*. Loop over batches of JL strings
               DO 1930 JLBTC = 1, NJLBT
                 IFIRST = 1
 *. Loop over batches of I strings
@@ -2951,7 +2951,7 @@ C         ISCR( I4_REO(IJKL) ) = I4_TP(IJKL)
                         NJL = NJ * NL
                         JLSM = 0
                       END IF
-     
+
 *
 *. obtain cb(KB,IA,jl) = sum(JB)<KB!a lb a jb !IB>C(IA,JB)
 *
@@ -2964,14 +2964,14 @@ C?       write(6,*) ' Before ADAADAST '
 *. Creation / annihilation maps , conjugated of above
                       IF(I4_AC(4).EQ.1) THEN
                         JAC = 2
-                      ELSE 
+                      ELSE
                         JAC = 1
-                      END IF 
+                      END IF
                       IF(I4_AC(3).EQ.1) THEN
                         LAC = 2
-                      ELSE 
+                      ELSE
                         LAC = 1
-                      END IF 
+                      END IF
                       CALL ADAADAST_GAS(IONE,JSM,JTYP,NJ,JAC,
      &                                  IONE,LSM,LTYP,NL,LAC,
      &                            ICCTP,ICCSM,IGRP,
@@ -2996,7 +2996,7 @@ CT                    CALL QENTER('MATCG')
 *. a+j a+j gives trivially zero
                           ZERO = 0.0D0
                           CALL SETVEC(CSCR(JLOFF),ZERO,NKBTC*NIBTC)
-                        ELSE 
+                        ELSE
                           CALL MATCG(CB,CSCR(JLOFF),NROW,NIBTC,IBOT,
      &                              NKBTC,I1(1,I1JL),XI1S(1,I1JL))
                         END IF
@@ -3004,7 +3004,7 @@ CT                    CALL QENTER('MATCG')
 CT                    CALL QEXIT ('MATCG')
 *
                       JLBOFF = JLBOFF + NJL
-                    END DO 
+                    END DO
 *
 *. ( End of loop over jlpair in batch )
 *==============================================
@@ -3028,37 +3028,37 @@ CT                    CALL QEXIT ('MATCG')
 *
                         IF(ISM.EQ.KSM.AND.ITYP.EQ.KTYP) THEN
                           IKSM = 1
-                          NIK = 
+                          NIK =
      &                    NOBPTS(ITYP,ISM)*(NOBPTS(ITYP,ISM)+1)/2
                         ELSE
                           IKSM = 0
-                          NIK = 
+                          NIK =
      &                    NOBPTS(ITYP,ISM)*NOBPTS(KTYP,KSM)
                         END IF
 *
                         IF(JSM.EQ.LSM.AND.JTYP.EQ.LTYP) THEN
                           JLSM = 1
-                          NJL = 
+                          NJL =
      &                    NOBPTS(JTYP,JSM)*(NOBPTS(JTYP,JSM)+1)/2
                         ELSE
                           JLSM = 0
-                          NJL = 
+                          NJL =
      &                    NOBPTS(JTYP,JSM)*NOBPTS(LTYP,LSM)
                         END IF
 * ================================================================
 *. Required form of integrals : Coulomb - Exchange of just Coulomb
 * ================================================================
                         ICOUL = 0
-*. Use coulomb - exchange 
+*. Use coulomb - exchange
                         IXCHNG = 1
 *. fetch integrals
                         CALL LGETINT(SCR,ITYP,ISM,JTYP,JSM,KTYP,KSM,
      &                              LTYP,LSM,IXCHNG,IKSM,JLSM,ICOUL)
-                        DO JL = 1, NJL 
+                        DO JL = 1, NJL
                           CALL COPVEC(SCR((JL-1)*NIK+1),
      &                         XINT((JLOFF-1+JL-1)*NIKT+IKOFF),NIK)
                         END DO
-                        IKOFF = IKOFF + NIK 
+                        IKOFF = IKOFF + NIK
                       END DO
                       JLOFF = JLOFF + NJL
                       END DO
@@ -3082,13 +3082,13 @@ C?                  IF(MXACIJ.GT.MXACIJO) THEN
 C?                    write(6,*) ' New max MXACIJ = ', MXACIJ
 C?                    write(6,*) ' ISCTP,ICCTP', ISCTP,ICCTP
 C?                    WRITE(6,*) ' ITYP,JTYP,KTYP,LTYP',
-C?   &                             ITYP,JTYP,KTYP,LTYP 
+C?   &                             ITYP,JTYP,KTYP,LTYP
 C?                    WRITE(6,*)'NIJT, NJLT, NIBTC NKBTC',
 C?   &                           NIJT, NJLT,NIBTC,NKBTC
 C?                  END IF
 *
                     FACTORC = 0.0D0
-                    FACTORAB = 1.0D0 
+                    FACTORAB = 1.0D0
                     CALL MATML7(SSCR,CSCR,XINT,
      &                          LIKB,NIKT,LIKB,NJLT,NIKT,NJLT,
      &                          FACTORC,FACTORAB,2)
@@ -3118,7 +3118,7 @@ C?                  END IF
                         IKSM = 0
                       END IF
 CT                    CALL QENTER('ADADS')
-                      IF(IFRST.EQ.1) KFRST = 1 
+                      IF(IFRST.EQ.1) KFRST = 1
                       ONE = 1.0D0
 *
                       IAC = I4_AC(1)
@@ -3172,11 +3172,11 @@ CT                    CALL QEXIT ('MATCS')
 *
 *
 * Three types of operators :
-* a+ a  a+ a  
+* a+ a  a+ a
 * a+ a  a  a+
-* a  a+ a+ a 
+* a  a+ a+ a
 *
-* There first end up with 
+* There first end up with
 * -a+ i ak a+l aj X2(ik,jl)
 *
 * Number two and three end up with
@@ -3198,7 +3198,7 @@ CT                    CALL QEXIT ('MATCS')
           DO 2950 IKOBSM = 1, NSMOB
             JLOBSM = SXDXSX(IKOBSM,IDXSM)
             IF(JLOBSM.EQ.0) GOTO 2950
-*. types + symmetries defined => K strings are defined 
+*. types + symmetries defined => K strings are defined
             KFRST = 1
             K2FRST = 1
             DO ISM = 1, NSMOB
@@ -3212,10 +3212,10 @@ CT                    CALL QEXIT ('MATCS')
                 ISCR(I4_REO(3)) = LSM
                 ISCR(I4_REO(4)) = JSM
 *
-                ISM_ORIG = ISCR(1)             
-                KSM_ORIG = ISCR(2)             
-                LSM_ORIG = ISCR(3)             
-                JSM_ORIG = ISCR(4)             
+                ISM_ORIG = ISCR(1)
+                KSM_ORIG = ISCR(2)
+                LSM_ORIG = ISCR(3)
+                JSM_ORIG = ISCR(4)
 *
 C           DO ISM_ORIG = 1, NSMOB
 C             KSM_ORIG = ADSXA(ISM_ORIG,IKOBSM)
@@ -3227,10 +3227,10 @@ C               ISCR(2) = KSM_ORIG
 C               ISCR(3) = LSM_ORIG
 C               ISCR(4) = JSM_ORIG
 *
-C               ISM = ISCR(I4_REO(1))             
-C               KSM = ISCR(I4_REO(2))             
-C               LSM = ISCR(I4_REO(3))             
-C               JSM = ISCR(I4_REO(4))             
+C               ISM = ISCR(I4_REO(1))
+C               KSM = ISCR(I4_REO(2))
+C               LSM = ISCR(I4_REO(3))
+C               JSM = ISCR(I4_REO(4))
 *
                 NI = NOBPTS(ITYP,ISM)
                 NJ = NOBPTS(JTYP,JSM)
@@ -3275,14 +3275,14 @@ CT                  CALL QENTER('ADADS')
 *. Creation / annihilation maps , conjugated of above
                     IF(I4_AC(4).EQ.1) THEN
                       JAC = 2
-                    ELSE 
+                    ELSE
                       JAC = 1
-                    END IF 
+                    END IF
                     IF(I4_AC(3).EQ.1) THEN
                       LAC = 2
-                    ELSE 
+                    ELSE
                       LAC = 1
-                    END IF 
+                    END IF
 C                   KFRST = 1
                     CALL ADAADAST_GAS(IONE,JSM,JTYP,NJ,JAC,
      &                                IONE,LSM,LTYP,NL,LAC,
@@ -3320,7 +3320,7 @@ CT                  CALL QEXIT ('MATCG')
                         ICOUL = 2
                       ELSE
 * a+ a a a+ or a+ a a a+
-                        ICOUL = 1 
+                        ICOUL = 1
                       END IF
 *. Use coulomb - exchange or just coulomb integrals ?
                       IF(ITPSM_ORIG.EQ.KTPSM_ORIG
@@ -3340,7 +3340,7 @@ CT                  CALL QEXIT ('MATCG')
                         IXCHNG = 1
                         FACX = -1.0D0
                       END IF
-           IF( NTEST.GE.1000) WRITE(6,*) 
+           IF( NTEST.GE.1000) WRITE(6,*)
      &   ' ITPSM_ORIG,KTPSM_ORIG,JTPSM_ORIG,LTPSM_ORIG,FACX',
      &     ITPSM_ORIG,KTPSM_ORIG,JTPSM_ORIG,LTPSM_ORIG,FACX
 *. fetch integrals
@@ -3348,7 +3348,7 @@ CT                  CALL QEXIT ('MATCG')
                       IF(ICOUL.EQ.2) THEN
                       CALL LGETINT(XINT,ITYP,ISM,JTYP,JSM,LTYP,LSM,
      &                            KTYP,KSM,IXCHNG,IKSM,JLSM,ICOUL)
-                      ELSE IF (ICOUL.EQ.1) THEN 
+                      ELSE IF (ICOUL.EQ.1) THEN
                         CALL LGETINT(XINT,ITYP,ISM,KTYP,KSM,JTYP,JSM,
      &                              LTYP,LSM,IXCHNG,IKSM,JLSM,ICOUL)
                       END IF
@@ -3367,19 +3367,19 @@ CT                  CALL QEXIT ('MATCG')
                       CALL WRTMAT(CSCR,LIKB,NJL,LIKB,NJL)
                     END IF
 *
-C?                  MXACIJO = MXACIJ 
+C?                  MXACIJO = MXACIJ
                     MXACIJ = MAX(MXACIJ,LIKB*NJL,LIKB*NIK)
 C?                  IF(MXACIJ.GT.MXACIJO) THEN
 C?                    write(6,*) ' New max MXACIJ = ', MXACIJ
 C?                    write(6,*) ' ISCTP,ICCTP', ISCTP,ICCTP
 C?                    WRITE(6,*) ' ITYP,JTYP,KTYP,LTYP',
-C?   &                             ITYP,JTYP,KTYP,LTYP 
+C?   &                             ITYP,JTYP,KTYP,LTYP
 C?                    WRITE(6,*)'NIJ NJL NIBTC NKBTC',
 C?   &                           NIJ,NJL,NIBTC,NKBTC
 C?                  END IF
 *
                     FACTORC = 0.0D0
-                    FACTORAB = FACX  
+                    FACTORAB = FACX
                     CALL MATML7(SSCR,CSCR,XINT,
      &                          LIKB,NIK,LIKB,NJL,NIK,NJL,
      &                          FACTORC,FACTORAB,2)
@@ -3396,7 +3396,7 @@ C?                  END IF
 *
                     IONE = 1
 CT                  CALL QENTER('ADADS')
-                    IF(IFRST.EQ.1) KFRST = 1 
+                    IF(IFRST.EQ.1) KFRST = 1
                     ONE = 1.0D0
 *
                     IAC = I4_AC(1)
@@ -3716,7 +3716,7 @@ C         END IF
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2bn $Revision$ 
+*fordeck rsbb2bn $Revision$
       SUBROUTINE RSBB2BN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                   JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                   IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -3781,7 +3781,7 @@ C         END IF
 * Feb 92 : Loops restructured ; Generation of I2,XI2S moved outside
 * October 1993 : IUSEAB added
 * January 1994 : Loop restructured + CJKAIB introduced
-* February 1994 : Fetching and adding to transposed blocks 
+* February 1994 : Fetching and adding to transposed blocks
 * October 96 : New routines for accessing annihilation information
 *             Cleaned and shaved, only IROUTE = 3 option active
 * October   97 : allowing for N-1/N+1 switch
@@ -3814,7 +3814,7 @@ CTF   DIMENSION H(MXTSOB*MXTSOB)
       DIMENSION KL_TYP(2),KL_DIM(2),KL_REO(2),KL_AC(2),KL_SYM(2)
 *
       DIMENSION IASPGP(20),IBSPGP(20),JASPGP(20),JBSPGP(20)
-*. Arrays for reorganization 
+*. Arrays for reorganization
       DIMENSION NADDEL(6),IADDEL(4,6),IADOP(4,6),ADSIGN(6)
 C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
 *
@@ -3849,7 +3849,7 @@ C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
       END IF
 *.Types of SX that connects the two strings
       CALL SXTYP2_GAS(NKLTYP,KTP,LTP,NGAS,IBOC,JBOC,IPHGAS)
-      CALL SXTYP2_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC,IPHGAS)           
+      CALL SXTYP2_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC,IPHGAS)
       IF(NIJTYP.EQ.0.OR.NKLTYP.EQ.0) GOTO 9999
       DO 2001 IJTYP = 1, NIJTYP
 *
@@ -3879,7 +3879,7 @@ C    &          SIGNREO,NADOP,NADDEL,IADDEL,ADSIGN)
           END IF
 *. Two choices here :
 *  1 : <Ia!a+ ia!Ka><Ja!a+ ja!Ka> ( good old creation mapping)
-*  2 :-<Ia!a  ja!Ka><Ja!a  ia!Ka>  + delta(i,j)                   
+*  2 :-<Ia!a  ja!Ka><Ja!a  ia!Ka>  + delta(i,j)
 C?        WRITE(6,*) ' RSBB2BN : IOP_REO : ', (IOP_REO(II),II=1,2)
           IF(IJ_REO(1).EQ.1.AND.IJ_REO(2).EQ.2) THEN
 *. Business as usual i.e. creation map
@@ -3900,7 +3900,7 @@ C?        WRITE(6,*) ' RSBB2BN : IOP_REO : ', (IOP_REO(II),II=1,2)
             IOP2SM = JSM
             IOP2TP = JTYP
           ELSE
-*. Terra Nova, annihilation map 
+*. Terra Nova, annihilation map
             IJAC = 1
             SIGNIJ2 = -SCLFAC
 *
@@ -3936,12 +3936,12 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
           IF(IDOCOMP.EQ.1) THEN
               CALL COMPRS2LST(I1,XI1S,IJ_DIM(2),I3,XI3S,IJ_DIM(1),
      &                        NKASTR,NKAEFF)
-          ELSE 
+          ELSE
               NKAEFF = NKASTR
           END IF
-            
+
 *. Loop over batches of KA strings
-          NKABTC = NKAEFF/MAXK   
+          NKABTC = NKAEFF/MAXK
           IF(NKABTC*MAXK.LT.NKAEFF) NKABTC = NKABTC + 1
 *
           DO 1801 IKABTC = 1, NKABTC
@@ -3970,9 +3970,9 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
               IJKL_ACT = I_DX_ACT(ITYP,KTYP,LTYP,JTYP)
               IF(IJKL_ACT.EQ.0) GOTO 2000
               IF(NTEST.GE.100) THEN
-                WRITE(6,*) ' KTYP, LTYP', KTYP, LTYP 
+                WRITE(6,*) ' KTYP, LTYP', KTYP, LTYP
               END IF
-*. Should this group of excitations be included 
+*. Should this group of excitations be included
               IF(NSEL2E.NE.0) THEN
                IAMOKAY=0
                IF(ITYP.EQ.JTYP.AND.ITYP.EQ.KTYP.AND.ITYP.EQ.LTYP)THEN
@@ -4018,7 +4018,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
                   KL_TYP(1) = KTYP
                   KL_TYP(2) = LTYP
                 ELSE
-*. Terra Nova, annihilation map 
+*. Terra Nova, annihilation map
                   KLAC = 1
                   KL_DIM(1) = NL
                   KL_DIM(2) = NK
@@ -4028,7 +4028,7 @@ C    &         I3,XI3S,NKASTR,IEND,IFRST,KFRST,KACT,ONE,IJ_AC)
                   KL_TYP(2) = KTYP
                 END IF
 *. If IUSEAB is used, only terms with i.ge.k will be generated so
-                IKORD = 0  
+                IKORD = 0
                 IF(IUSEAB.EQ.1.AND.ISM.GT.KSM) GOTO 1930
                 IF(IUSEAB.EQ.1.AND.ISM.EQ.KSM.AND.ITYP.LT.KTYP)
      &          GOTO 1930
@@ -4114,7 +4114,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rsbb2bvn $Revision$ 
+*fordeck rsbb2bvn $Revision$
       SUBROUTINE RSBB2BVN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &                   JASM,JATP,JBSM,JBTP,NJA,NJB,
      &                   IAGRP,IBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -4179,7 +4179,7 @@ C    &                     LTYP,LSM,IXCHNG,0,0,ICOUL)
 * Feb 92 : Loops restructured ; Generation of I2,XI2S moved outside
 * October 1993 : IUSEAB added
 * January 1994 : Loop restructured + CJKAIB introduced
-* February 1994 : Fetching and adding to transposed blocks 
+* February 1994 : Fetching and adding to transposed blocks
 * October 96 : New routines for accessing annihilation information
 *             Cleaned and shaved, only IROUTE = 3 option active
 * October   97 : allowing for N-1/N+1 switch
@@ -4213,7 +4213,7 @@ CTF   DIMENSION H(MXTSOB*MXTSOB)
       DIMENSION KL_TYP(2),KL_DIM(2),KL_REO(2),KL_AC(2),KL_SYM(2)
 *
       DIMENSION IASPGP(20),IBSPGP(20),JASPGP(20),JBSPGP(20)
-*. Arrays for reorganization 
+*. Arrays for reorganization
       DIMENSION NADDEL(6),IADDEL(4,6),IADOP(4,6),ADSIGN(6)
 *. Arrays for active/passive division
       INTEGER IACIA(20),IPAIA(20),IACIB(20),IPAIB(20)
@@ -4229,7 +4229,7 @@ C     IBSPGP,NGAS,IBSM,NIB,2,KL_TYP,NIBAC_S,NIBPA_S,IREO_IB,IBREO_IB)
 C     DIMENSION SIRESPA(10000),CJRESPA(10000)
       DIMENSION SIRESPA(*),CJRESPA(*)
 *     ^ Dimension : Same as SIRES and CJRES
-     
+
 #include "comjep.inc"
       CALL QENTER('RS2B ')
       NTESTL = 0
@@ -4280,7 +4280,7 @@ C     DIMENSION SIRESPA(10000),CJRESPA(10000)
       END IF
 *.Types of SX that connects the two strings
       CALL SXTYP2_GAS(NKLTYP,KTP,LTP,NGAS,IBOC,JBOC,IPHGAS)
-      CALL SXTYP2_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC,IPHGAS)           
+      CALL SXTYP2_GAS(NIJTYP,ITP,JTP,NGAS,IAOC,JAOC,IPHGAS)
       IF(NIJTYP.EQ.0.OR.NKLTYP.EQ.0) GOTO 9999
       DO 2001 IJTYP = 1, NIJTYP
 *
@@ -4310,7 +4310,7 @@ C     DIMENSION SIRESPA(10000),CJRESPA(10000)
           END IF
 *. Two choices here :
 *  1 : <Ia!a+ ia!Ka><Ja!a+ ja!Ka> ( good old creation mapping)
-*  2 :-<Ia!a  ja!Ka><Ja!a  ia!Ka>  + delta(i,j)                   
+*  2 :-<Ia!a  ja!Ka><Ja!a  ia!Ka>  + delta(i,j)
           IF(IJ_REO(1).EQ.1.AND.IJ_REO(2).EQ.2) THEN
 *. Business as usual i.e. creation map
             IJAC = 2
@@ -4330,7 +4330,7 @@ C     DIMENSION SIRESPA(10000),CJRESPA(10000)
             IOP2SM = JSM
             IOP2TP = JTYP
           ELSE
-*. Terra Nova, annihilation map 
+*. Terra Nova, annihilation map
             IJAC = 1
             SIGNIJ2 = -SCLFAC
 *
@@ -4362,12 +4362,12 @@ C     DIMENSION SIRESPA(10000),CJRESPA(10000)
           IF(IDOCOMP.EQ.1) THEN
               CALL COMPRS2LST(I1,XI1S,IJ_DIM(2),I3,XI3S,IJ_DIM(1),
      &                        NKASTR,NKAEFF)
-          ELSE 
+          ELSE
               NKAEFF = NKASTR
           END IF
-            
+
 *. Loop over batches of KA strings
-          NKABTC = NKAEFF/MAXK   
+          NKABTC = NKAEFF/MAXK
           IF(NKABTC*MAXK.LT.NKAEFF) NKABTC = NKABTC + 1
 *
           DO 1801 IKABTC = 1, NKABTC
@@ -4394,9 +4394,9 @@ C           END IF
               KTYP = KTP(KLTYP)
               LTYP = LTP(KLTYP)
               IF(NTEST.GE.100) THEN
-                WRITE(6,*) ' KTYP, LTYP', KTYP, LTYP 
+                WRITE(6,*) ' KTYP, LTYP', KTYP, LTYP
               END IF
-*. Should this group of excitations be included 
+*. Should this group of excitations be included
               IF(NSEL2E.NE.0) THEN
                IAMOKAY=0
                IF(ITYP.EQ.JTYP.AND.ITYP.EQ.KTYP.AND.ITYP.EQ.LTYP)THEN
@@ -4437,7 +4437,7 @@ C           END IF
      &                           IREO_JB,NJBPA_S,NJBAC_S,NSMST,XDUM,
      &                           IDUM)
                   CALL SETVEC(SIRESPA,ZERO,NIB*LKABTC*IJ_DIM(1))
-                  I_ADD_COPY = 2 
+                  I_ADD_COPY = 2
                 END IF
 *
               DO 1930 KSM = 1, NSMOB
@@ -4445,7 +4445,7 @@ C           END IF
                 IFIRST = 1
                 LSM = ADSXA(KSM,KLSM)
                 IF(NTEST.GE.100) THEN
-                  WRITE(6,*) ' KSM, LSM', KSM, LSM 
+                  WRITE(6,*) ' KSM, LSM', KSM, LSM
                 END IF
                 IF(LSM.EQ.0) GOTO 1930
                 NK = NOBPTS(KTYP,KSM)
@@ -4461,7 +4461,7 @@ C           END IF
                   KL_TYP(1) = KTYP
                   KL_TYP(2) = LTYP
                 ELSE
-*. Terra Nova, annihilation map 
+*. Terra Nova, annihilation map
                   KLAC = 1
                   KL_DIM(1) = NL
                   KL_DIM(2) = NK
@@ -4473,7 +4473,7 @@ C           END IF
 *
 *
 *. If IUSEAB is used, only terms with i.ge.k will be generated so
-                IKORD = 0  
+                IKORD = 0
                 IF(IUSEAB.EQ.1.AND.ISM.GT.KSM) GOTO 1930
                 IF(IUSEAB.EQ.1.AND.ISM.EQ.KSM.AND.ITYP.LT.KTYP)
      &          GOTO 1930
@@ -4496,19 +4496,19 @@ C           END IF
                     DO IIBSM_AC = 1, NSMST
                       IF(STSTSX(IIBSM_AC,JBSM_AC).EQ.KLSM)
      &                IBSM_AC = IIBSM_AC
-                    END DO 
+                    END DO
 *. Block in C(Ka,Jb_pa,j,Jb_ac)
                     IF(JBSM_AC.EQ.1) THEN
                       ICK_OFF = 1
                     ELSE
-                      ICK_OFF = ICK_OFF 
+                      ICK_OFF = ICK_OFF
      &              + LKABTC*IJ_DIM(2)*
      &                NJBPA_S(JBSM_AC-1)*NJBAC_S(JBSM_AC-1)
                     END IF
 *. Offset in S(Ka,Ib_pa,i,Ib_ac)
                     ISK_OFF = 1
                     DO IIBSM_AC = 1, IBSM_AC-1
-                      ISK_OFF = ISK_OFF  
+                      ISK_OFF = ISK_OFF
      &              + LKABTC*IJ_DIM(1)
      &              *NIBPA_S(IIBSM_AC)*NIBAC_S(IIBSM_AC)
                     END DO
@@ -4534,7 +4534,7 @@ C           END IF
                 IF(IUSE_PA.EQ.0) THEN
                 CALL ADAST_GAS(KL_SYM(1),KL_TYP(1),NGAS,IBSPGP,IBSM,
      &               I4,XI4S,NKBSTR,IEND,IFRST,KFRST,KACT,ONE,KLAC)
-                ELSE 
+                ELSE
                 CALL ADAST_GAS(KL_SYM(1),KL_TYP(1),NACIB,IACIB,IBSM_AC,
      &               I4,XI4S,NKBSTR,IEND,IFRST,KFRST,KACT,ONE,KLAC)
                 END IF
@@ -4992,7 +4992,7 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck rssbcb2 $Revision$ 
+*fordeck rssbcb2 $Revision$
       SUBROUTINE RSSBCB2(IASM,IATP,IOCPTA,IBSM,IBTP,IOCTPB,
      &                  JASM,JATP,JBSM,JBTP,NGAS,
      &                  IAOC,IBOC,JAOC,JBOC,NAEL,NBEL,
@@ -5090,7 +5090,7 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
 *
       NTEST = 0
       NTEST = MAX(NTEST,IPRNT)
-      
+
 *
       IF(NTEST.GE.200) THEN
         WRITE(6,*) ' ==============================='
@@ -5117,24 +5117,24 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
         WRITE(6,*) ' IBSM IBTP JBSM JBTP ', IBSM,IBTP,JBSM,JBTP
         WRITE(6,*) ' NAEL NBEL ', NAEL, NBEL
       END IF
-* Should the corresponding Hamiltonian matrix block be 
+* Should the corresponding Hamiltonian matrix block be
 * calculated exactly or approximately
       IF(IHAPR.NE.0) THEN
         CALL HMATAPR(IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &               IPTSPC,JPTSPC,IJOP,IJOP,IIF,JDOH2,IDOH2,
      &               IMZERO,IDIAG)
-        IF(NTEST.GE. 20) 
+        IF(NTEST.GE. 20)
      &  WRITE(6,*) ' RSSBCBN : ', NNSEL2E, ISEL2E(1)
         NSEL2E = NNSEL2E
         IF(IMZERO.NE.0) GOTO 9999
       ELSE
-*. Operator specified by input 
-        IAPRLEV =-1    
+*. Operator specified by input
+        IAPRLEV =-1
         IDOH2 = JDOH2
         IDIAG = 0
         NSEL2E = 0
       END IF
-      IF(NTEST.GE. 20) 
+      IF(NTEST.GE. 20)
      &WRITE(6,*) ' IHAPR, IDIAG IDOH2 ' , IHAPR,IDIAG, IDOH2
 *
 *
@@ -5148,7 +5148,7 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
 *
       IF(IDIAG.EQ.0) THEN
 *
-* Calculate block exactly 
+* Calculate block exactly
 *
       IF(I_RES_AB.NE.1.AND.IUSEAB.EQ.0.
      &   AND.IATP.EQ.JATP.AND.JASM.EQ.IASM) THEN
@@ -5165,7 +5165,7 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
           CALL COPVEC(C2,SB,NIA*NIB)
           CALL TRPMT3(CB,NJB,NJA,C2)
           CALL COPVEC(C2,CB,NJA*NJB)
-   
+
         IF(NBEL.GE.0) THEN
            IF(NTEST.GE.500) THEN
              WRITE(6,*) ' SB before RSBB1E'
@@ -5222,7 +5222,7 @@ C?    Call Abend2( ' Jeppe forced me to stop in RSSBCB ' )
 C     ADVICE_SIGMA(IAOCC,IBOCC,JAOCC,JBOCC,ITERM,LADVICE)
            CALL ADVICE_SIGMA(IAOC,IBOC,JAOC,JBOC,1,LADVICE)
 *. LADVICE = 2 => implies transpose
-           IF(LADVICE.EQ.2) THEN  
+           IF(LADVICE.EQ.2) THEN
              JJJTRNS = 1
            ELSE
              JJJTRNS = 0
@@ -5234,7 +5234,7 @@ C     ADVICE_SIGMA(IAOCC,IBOCC,JAOCC,JBOCC,ITERM,LADVICE)
 C       WRITE(6,*) ' IUSE_PA = ', IUSE_PA
 *
         IF (JJJTRNS.EQ.0) THEN
-          IF( IUSE_PA.EQ.0 ) THEN 
+          IF( IUSE_PA.EQ.0 ) THEN
           CALL RSBB2BN(IASM,IATP,IBSM,IBTP,NIA,NIB,
      &         JASM,JATP,JBSM,JBTP,NJA,NJB,
      &         IJAGRP,IJBGRP,NGAS,IAOC,IBOC,JAOC,JBOC,
@@ -5343,7 +5343,7 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
           IF(NTEST.GE.101)
      &    WRITE(6,*) ' I am going to call RSBB2A (last time )'
           CALL RSBB2A(IASM,IATP,JASM,JATP,IJAGRP,NIB,NIA,
-     &         NGAS,IAOC,JAOC,  
+     &         NGAS,IAOC,JAOC,
      &         SB,CB,
      &         ADSXA,DXSTST,STSTDX,SXDXSX,MXPNGAS,
      &         NOBPTS,IOBPTS,ITSOB,MAXI,MAXK,
@@ -5365,7 +5365,7 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
 *
       ELSE IF (IDIAG.EQ.1) THEN
 *
-*. Diagonal approxiation           
+*. Diagonal approxiation
 *
        IBLOCK(1) = IATP
        IBLOCK(2) = IBTP
@@ -5381,7 +5381,7 @@ C         WRITE(6,*) ' RSSBCB2 : Transpose path choosen'
 C?     WRITE(6,*) ' IDOH2, I12 ', IDOH2,I12
        ITASK = 2
        FACTOR = 0.0D0
-*. Input is in det basis 
+*. Input is in det basis
        IIDC = 1
 *. Well, we are working with transposed matrices so
        CALL TRPMT3(CB,NIB,NIA,C2)
@@ -5421,15 +5421,15 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 ***********************************************************************
 *fordeck sblock $Revision$
       SUBROUTINE SBLOCK(NBLOCK,IBLOCK,IBOFF,CB,HCB,LUC,IRESTRICT,
-     &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END) 
+     &                  LUCBLK,ICBAT_RES,ICBAT_INI,ICBAT_END)
 *
-* Generate a set of sigma blocks, 
+* Generate a set of sigma blocks,
 * The NBLOCK specified in IBLOCK starting from IBOFF,
 * be more specific.
 *
 * The blocks are delivered in HCB
 *
-* The blocks are scaled and reformed to combination order 
+* The blocks are scaled and reformed to combination order
 * If LUCBLK.GT.0, the blocks of C corresponding to IBLOCK
 * are stored on LUCBLK
 *
@@ -5502,19 +5502,19 @@ C?    WRITE(6,*) ' LUC in SBLOCK ', LUC
 *
 * Info for this internal space
 *. type of alpha and beta strings
-      IATP = 1              
-      IBTP = 2             
+      IATP = 1
+      IBTP = 2
 *. alpha and beta strings with an electron removed
-      IATPM1 = 3 
+      IATPM1 = 3
       IBTPM1 = 4
 *. alpha and beta strings with two electrons removed
-      IATPM2 = 5 
+      IATPM2 = 5
       IBTPM2 = 6
 *
-*. Number of supergroups 
+*. Number of supergroups
       NOCTPA = NOCTYP(IATP)
       NOCTPB = NOCTYP(IBTP)
-*. Offset for supergroups 
+*. Offset for supergroups
       IOCTPA = IBSPGPFTP(IATP)
       IOCTPB = IBSPGPFTP(IBTP)
 *
@@ -5537,7 +5537,7 @@ C     SPGRPCON(IOFSPGRP,NSPGRP,NGAS,MXPNGAS,IELFSPGRP,ISPGRPCON,IPRNT)
       CALL MEMMAN(KSTSTD,NSMST ** 2,'ADDL  ',2,'KSTSTD')
       CALL STSTSM(WORK(KSTSTS),WORK(KSTSTD),NSMST)
 *. Largest block of strings in zero order space
-      MXSTBL0 = MXNSTR           
+      MXSTBL0 = MXNSTR
 *. Largest number of strings of given symmetry and type
       MAXA = 0
       MAXA0 = IMNMX(WORK(KNSTSO(IATP)),NSMST*NOCTYP(IATP),2)
@@ -5634,7 +5634,7 @@ C          IAIBCM(ICISPC,IAIB)
 *
       IF(IPRCIX.GE.3)  WRITE(6,*) ' LSCR2 = ', LSCR2
 *
-      LSCR12 = MAX(LSCR1,2*LSCR2)  
+      LSCR12 = MAX(LSCR1,2*LSCR2)
 C     CALL MEMMAN(KC2,LSCR12,'ADDL  ',2,'KC2   ')
 C  I assume memory was allocated for blocks, so
       KC2 = KVEC3
@@ -5664,11 +5664,11 @@ C  I assume memory was allocated for blocks, so
       CALL MEMMAN(KI4  ,LSCR3,'ADDL  ',1,'I4    ')
       CALL MEMMAN(KXI4S,LSCR3,'ADDL  ',2,'XI4S  ')
       CALL ZBLTP(ISMOST(1,ICSM),NSMST,IDC,WORK(KCBLTP),WORK(KSVST))
-*.Some TTS arrays 
-      NOOS = NOCTPA*NOCTPB*NSMCI 
+*.Some TTS arrays
+      NOOS = NOCTPA*NOCTPB*NSMCI
       NTTS = MXNTTS
 *
-*. for partitioning of vector 
+*. for partitioning of vector
       CALL MEMMAN(KLLBT ,NTTS  ,'ADDL  ',1,'LBTC  ')
       CALL MEMMAN(KLLEBT,NTTS  ,'ADDL  ',1,'LECTC ')
       CALL MEMMAN(KLI1BT,NTTS  ,'ADDL  ',1,'I1BTC ')
@@ -5676,14 +5676,14 @@ C  I assume memory was allocated for blocks, so
 *. For scaling for each TTS block
       CALL MEMMAN(KLSCLFAC ,NTTS,'ADDL  ',2,'SCLFAC')
 
-*. Space for four blocks of string occupations and arrays of 
+*. Space for four blocks of string occupations and arrays of
 *. reordering arrays
       LZSCR = (MAX(NAEL,NBEL)+3)*(NOCOB+1) + 2 * NOCOB
       LZ    = (MAX(NAEL,NBEL)+2) * NOCOB
       DO I1234 = 1, 1
-        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')         
+        CALL MEMMAN(KLOCSTR(I1234),MAX_STR_OC_BLK,'ADDL  ',1,'KLOCS ')
       END DO
-   
+
       DO I1234 = 1, 2
         CALL MEMMAN(KLREO(I1234),MAX_STR_SPGP,'ADDL  ',1,'KLREO ')
         CALL MEMMAN(KLZ(I1234),LZ,'ADDL  ',1,'KLZ   ')
@@ -5703,7 +5703,7 @@ CINSERT_START
         IDOH2 = 0
       END IF
 *
-*. Prepare for perturbation calculation  
+*. Prepare for perturbation calculation
 *
       IF(IPERTOP.NE.0) THEN
 *. Matrix specifying partiotioned spaces
@@ -5741,8 +5741,8 @@ CINSERT_START
      &     ICBAT_RES,ICBAT_INI,ICBAT_END,IUSE_PH,IPHGAS,I_RES_AB,
      &     IUSE_PA,WORK(KCJPA),WORK(KSIPA))
 *
-      IF(IDC.EQ.2) THEN    
-*. reform 
+      IF(IDC.EQ.2) THEN
+*. reform
         CALL RFTTS(HCB,CB,IBLOCK(1,IBOFF),NBLOCK,
      &             1,NSMST,NOCTPA,NOCTPB,
      &             WORK(KNSTSO(IATP)), WORK(KNSTSO(IBTP)),
@@ -5775,7 +5775,7 @@ CINSERT_START
      &           ITSOB,MAXIJ,MAXK,MAXI,LI,LC,LS,
      &           XINT,CSCR,SSCR,SXSTSM,STSTSX,STSTDX,
      &           SXDXSX,ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
-     &           MXTSOB,SOMESCR,SOMEH,XIJILS, 
+     &           MXTSOB,SOMESCR,SOMEH,XIJILS,
      &           I1,XI1S,I2,XI2S,IDOH2,MXPOBS,ISTRFL,
      &           PS,IPRNT,LUC,ICJKAIB,CJRES,SIRES,I3,XI3S,
      &           I4,XI4S,MXSXST,MXSXBL,MOCAA,MOCAB,IAPR,
@@ -5794,11 +5794,11 @@ CINSERT_START
 * =====
 *
 * NSBLOCK : Number of BLOCKS included
-* ISBLOCK : Blocks included 
+* ISBLOCK : Blocks included
 *   ISBLOCK(1,*) : alpha type of block
 *   ISBLOCK(2,*) : beta type of block
 *   ISBLOCK(3,*) : sym of alpha in block
-*   ISBLOCK(4,*) : Offset of block      
+*   ISBLOCK(4,*) : Offset of block
 *
 * ICOCOC : Allowed type combinations for C
 * ICSMOS : Symmetry array for C
@@ -5810,7 +5810,7 @@ CINSERT_START
 * NBEL  : Number of active beta electrons
 * NTSOB : Number of orbitals per type and symmetry
 * NOBPTS: Orbitals of given type and symmetry
-* IOBPTS: Offset for orbitals of given sym and type 
+* IOBPTS: Offset for orbitals of given sym and type
 *
 * MAXIJ : Largest allowed number of orbital pairs treated simultaneously
 * MAXK  : Largest number of N-2,N-1 strings treated simultaneously
@@ -5879,12 +5879,12 @@ CME   CALL MEMCHK
         WRITE(6,*) ' ================='
         WRITE(6,*) ' SBLOCKS speaking :'
         WRITE(6,*) ' ================='
-        WRITE(6,*)  
+        WRITE(6,*)
         WRITE(6,*) ' Number of sigma blocks to be calculated ',
      &  NSBLOCK
         WRITE(6,*) ' TTSS for each ACTIVE sigma block'
           DO IBLOCK = 1, NSBLOCK
-            IF(ISBLOCK(1,IBLOCK).GT.0) 
+            IF(ISBLOCK(1,IBLOCK).GT.0)
      &      WRITE(6,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
           END DO
           WRITE(6,*) ' IDC PS IPERTOP', IDC,PS,IPERTOP
@@ -5897,7 +5897,7 @@ CME   CALL MEMCHK
         CALL WRTVCD(CB,LUC,1,-1)
       END IF
 * ===========================
-* 1 : Arrays for accessing C 
+* 1 : Arrays for accessing C
 * ============================
 *. Find batches of C - strings
 *. Should be changed to REPART or ??
@@ -5923,10 +5923,10 @@ CME   CALL MEMCHK
 CNOV25  NBSTR = NSSOA(IBSM,IBTP)
         NBSTR = NSSOB(IBSM,IBTP)
         ZERO = 0.0D0
-        IF(ISBLOCK(1,JSBLOCK).GT.0) 
+        IF(ISBLOCK(1,JSBLOCK).GT.0)
      &  CALL SETVEC(SB(IOFF),ZERO,NASTR*NBSTR)
       END DO
-* Loop over batches over C blocks      
+* Loop over batches over C blocks
       IF(IDOH2.EQ.1) THEN
         MXEXC  = 2
       ELSE
@@ -5950,7 +5950,7 @@ C?    WRITE(6,*) ' IDOH2, MXEXC',IDOH2,MXEXC
 *
         ICOFF = 1
         NJBLOCK = LCBLOCK(JCBATCH)
-        DO JJCBLOCK = 1, NJBLOCK            
+        DO JJCBLOCK = 1, NJBLOCK
           JBLOCK = I1CBLOCK(JCBATCH)-1+JJCBLOCK
 *. Will this block be needed ??
           INTERACT = 0
@@ -6011,7 +6011,7 @@ C         WRITE(6,*) ' Nonvanishing block ', JBLOCK
             CALL GSTTBL(C,CB(JOFF),JATP,JASM,JBTP,JBSM,ICOCOC,
      &                   NOCTPA,NOCTPB,NSSOA,NSSOB,PS,ICOOSC,IDC,
      &                   PL,LUC,C2,NSMST,ISCALE,SCLFAC(JBLOCK))
-*. Note in GSTTBL : ICOOSC only used for CI vectors in core, 
+*. Note in GSTTBL : ICOOSC only used for CI vectors in core,
           ELSE
 *. not relevant
 C             WRITE(6,*) ' TTSS for C block skipped  '
@@ -6024,7 +6024,7 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
           IF(IDENT.EQ.1 .AND. LUCBLK.GT.0)THEN
             write(6,*) ' block will be copied to LUCLBLK'
             NJA = NSSOA(JASM,JATP)
-            NJB = NSSOB(JBSM,JBTP) 
+            NJB = NSSOB(JBSM,JBTP)
             IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM)THEN
 *. BLocked is unpacked, pack first
               IF(SCLFAC(JBLOCK).EQ.0.0D0) THEN
@@ -6039,7 +6039,7 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
               END IF
               CALL TODSCP(CB(ICOFF),NJA*NJB,-1,LUCBLK)
             END IF
-          END IF 
+          END IF
 *
           IF(NTEST.GE.100) THEN
             IF(INTERACT.EQ.1) THEN
@@ -6056,7 +6056,7 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
 *. Loop over blocks of sigma and C in core and obtain  contribution from
 *  given C block to given S block
 *. Loop over C blocks
-          DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK 
+          DO 9000 ICBLK = I1CBLOCK(JCBATCH), I1CBLOCK(JCBATCH)-1+NJBLOCK
             JATP = ICBLOCK(1,ICBLK)
             JBTP = ICBLOCK(2,ICBLK)
             JASM = ICBLOCK(3,ICBLK)
@@ -6079,7 +6079,7 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
                 NLLB = NSSOB(LLBSM,LLBTP)
 *. The routines assumes on input that the blocks are transposed, so,
 *. Initial tour, IPERM = 1 corresponds always to no transpose, so transpose!
-                IF(IPERM.EQ.1) THEN       
+                IF(IPERM.EQ.1) THEN
                   IF(IDC.EQ.2.AND.JATP.EQ.JBTP.AND.JASM.EQ.JBSM) THEN
 *. Diagonal blocks, Transposing corresponds to scaling
                     IF(PS.EQ.-1.0D0) THEN
@@ -6087,8 +6087,8 @@ C             CALL IWRTMA(ICBLOCK(1,JBLOCK),4,1,4,1)
                     END IF
                   ELSE
 *. offdiagonal blocks, explicit transposing
-                    CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)   
-                    CALL COPVEC(C2,CB(ICOFF),NJA*NJB)   
+                    CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
+                    CALL COPVEC(C2,CB(ICOFF),NJA*NJB)
                     if (LSGN(IPERM).eq.-1) then
                       write(6,*) 'LROW,LCOL undef. in sblocks'
                       write(6,*) 'and LSGN(IPERM).eq.-1'
@@ -6172,7 +6172,7 @@ C
                 END IF
 *. Form of operator in action
                 IF(IPERTOP.NE.0) THEN
-*. Not exact Hamiltonian in use 
+*. Not exact Hamiltonian in use
                    IPTSPC = IH0SPC(IATP,IBTP)
                    JPTSPC = IH0SPC(JATP,JBTP)
                    IJOP   = IH0INSPC(IPTSPC)
@@ -6215,7 +6215,7 @@ C?            END IF
  8764         CONTINUE
               END IF
 10000         CONTINUE
-*./\  End of loop over sigma blocks 
+*./\  End of loop over sigma blocks
  8765         CONTINUE
             END IF
  9000       CONTINUE
@@ -6226,7 +6226,7 @@ CME     write(6,*) ' MEMCHK after loop 20000'
 CME     CALL MEMCHK
 *. End of loop over batches of C blocks
 *
-* Order 
+* Order
       DO  ISBLK = 1 , NSBLOCK
       IF(ISBLOCK(1,ISBLK).GT.0) THEN
         IATP = ISBLOCK(1,ISBLK)
@@ -6244,7 +6244,7 @@ CME     CALL MEMCHK
            CALL COPVEC(C2,SB(ISOFF),
      &                 NSSOA(IASM,IATP)* NSSOB(IBSM,IBTP))
         END IF
-        IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) 
+        IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
      &  CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))
 *
       END IF
@@ -6268,7 +6268,7 @@ C?    CALL MEMCHK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck sblocks2 $Revision$ 
+*fordeck sblocks2 $Revision$
       SUBROUTINE SBLOCKS2(NSBLOCK,ISBLOCK,NCBLOCK,ICBLOCK,CB,SB,C2,
      &                  ICOCOC,ICSMOS,ICBLTP,NACOB,NSSOA,NSSOB,
      &                  NAEL,IAGRP,NBEL,IBGRP,
@@ -6276,7 +6276,7 @@ C?    CALL MEMCHK
      &                  NSMST,NSMOB,NSMSX,NSMDX,NOBPTS,IOBPTS,MXPNGAS,
      &                  ITSOB,MAXIJ,MAXK,MAXI,LI,LC,LS,
      &                  XINT,CSCR,SSCR,SXSTSM,STSTSX,STSTDX,
-     &                  SXDXSX,ADSXA,ASXAD,NGAS,NELFSPGP,IDC, 
+     &                  SXDXSX,ADSXA,ASXAD,NGAS,NELFSPGP,IDC,
      &                  ICOOSC,NCOOSC,ICOOSE,NCOOSE,IACOOS,
      &                  I1,XI1S,I2,XI2S,IDOH2,MXPOBS,ISTRFL,
      &                  PS,IPRNT,LUC,ICJKAIB,CJRES,SIRES,I3,XI3S,
@@ -6284,7 +6284,7 @@ C?    CALL MEMCHK
 *
 * Direct RAS routine employing combined MOC/n-1 resolution method
 *
-* Jeppe Olsen , October 1995    
+* Jeppe Olsen , October 1995
 *
 * Note : Sigma blocks are not zeroed !!
 *
@@ -6293,11 +6293,11 @@ C?    CALL MEMCHK
 * =====
 *
 * NSBLOCK : Number of BLOCKS included
-* ISBLOCK : Blocks included 
+* ISBLOCK : Blocks included
 *   ISBLOCK(1,*) : alpha type of block
 *   ISBLOCK(2,*) : beta type of block
 *   ISBLOCK(3,*) : sym of alpha in block
-*   ISBLOCK(4,*) : Offset of block      
+*   ISBLOCK(4,*) : Offset of block
 *
 * ICOCOC : Allowed type combinations for C
 * ICSMOS : Symmetry array for C
@@ -6309,7 +6309,7 @@ C?    CALL MEMCHK
 * NBEL  : Number of active beta electrons
 * NTSOB : Number of orbitals per type and symmetry
 * NOBPTS: Orbitals of given type and symmetry
-* IOBPTS: Offset for orbitals of given sym and type 
+* IOBPTS: Offset for orbitals of given sym and type
 *
 * MAXIJ : Largest allowed number of orbital pairs treated simultaneously
 * MAXK  : Largest number of N-2,N-1 strings treated simultaneously
@@ -6331,13 +6331,13 @@ C?    CALL MEMCHK
 * Symmetry-occupation-occupation blocks
 *
 *
-* If Irestr.ne. 0 then the sigma blocks to be 
+* If Irestr.ne. 0 then the sigma blocks to be
 * calculated are sigma(iblk) = summa(jblk.le.iblk) (2-delta(iblk,jblk))/2
 *                                                 * <Iblk!H!Jblk>C(Jblk)
-*. The C and sigma blocks are on input assume to be in determinant form 
+*. The C and sigma blocks are on input assume to be in determinant form
 
       IMPLICIT REAL*8(A-H,O-Z)
-*. Specific input : Blocks of sigma and C 
+*. Specific input : Blocks of sigma and C
       INTEGER ISBLOCK(8,NSBLOCK)
       INTEGER ICBLOCK(8,NCBLOCK)
 *.General input
@@ -6371,11 +6371,11 @@ C?    CALL MEMCHK
         WRITE(6,*) ' ================='
         WRITE(6,*) ' SBLOCKS2 speaking :'
         WRITE(6,*) ' ================='
-        WRITE(6,*)  
+        WRITE(6,*)
         WRITE(6,*) ' Number of sigma blocks to be calculated ',
      &  NSBLOCK
         WRITE(6,*) ' TTSS for each sigma block'
-          DO IBLOCK = 1, NSBLOCK                                        
+          DO IBLOCK = 1, NSBLOCK
             WRITE(6,'(10X,4I3,2I8)') (ISBLOCK(II,IBLOCK),II=1,4)
           END DO
         WRITE(6,*) ' Number of C blocks included ', NCBLOCK
@@ -6383,7 +6383,7 @@ C?    CALL MEMCHK
           DO IBLOCK = 1, NCBLOCK
             WRITE(6,'(10X,4I3,2I8)') (ICBLOCK(II,IBLOCK),II=1,4)
           END DO
-          WRITE(6,*) ' IDC = ', IDC 
+          WRITE(6,*) ' IDC = ', IDC
       END IF
 *
 C?    WRITE(6,*) ' LUC = ', LUC
@@ -6392,7 +6392,7 @@ C?    WRITE(6,*) ' LUC = ', LUC
         CALL WRTTTS(CB,ICBLOCK,NCBLOCK,
      &              NSMST,NOCTPA,NOCTPB,NSSOA,NSSOB,1)
       END IF
-* We are working with transposed sigma blocks , so 
+* We are working with transposed sigma blocks , so
       DO JSBLOCK = 1, NSBLOCK
         IATP = ISBLOCK(1,JSBLOCK)
         IBTP = ISBLOCK(2,JSBLOCK)
@@ -6401,7 +6401,7 @@ C?    WRITE(6,*) ' LUC = ', LUC
         ISOFF = ISBLOCK(5,JSBLOCK)
         NASTR = NSSOA(IASM,IATP)
         NBSTR = NSSOA(IBSM,IBTP)
-        CALL TRPMT3(SB(ISOFF),NASTR,NBSTR,C2)   
+        CALL TRPMT3(SB(ISOFF),NASTR,NBSTR,C2)
         CALL COPVEC(C2,SB(ISOFF),NASTR*NBSTR)
         IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)THEN
           HALF = 0.5D0
@@ -6409,9 +6409,9 @@ C?    WRITE(6,*) ' LUC = ', LUC
         END IF
       END DO
       IF(NTEST.GE.50) WRITE(6,*) ' S blocks zeroed '
-*. Transpose C blocks ( for easier accesss in ab loop 
+*. Transpose C blocks ( for easier accesss in ab loop
       IF(ICJKAIB.NE.0) THEN
-        DO JCBLOCK = 1, NCBLOCK            
+        DO JCBLOCK = 1, NCBLOCK
           JATP = ICBLOCK(1,JCBLOCK)
           JBTP = ICBLOCK(2,JCBLOCK)
           JASM = ICBLOCK(3,JCBLOCK)
@@ -6419,10 +6419,10 @@ C?    WRITE(6,*) ' LUC = ', LUC
           JCOFF =ICBLOCK(5,JCBLOCK)
 C?        write(6,*) ' JCBLOCK JCOFF ',JCBLOCK,JCOFF
 *. Transposed C block is used so :
-          CALL TRPMT3(CB(JCOFF),NSSOA(JASM,JATP),  
-     &         NSSOB(JBSM,JBTP),C2)   
+          CALL TRPMT3(CB(JCOFF),NSSOA(JASM,JATP),
+     &         NSSOB(JBSM,JBTP),C2)
           CALL COPVEC(C2,CB(JCOFF),
-     &         NSSOA(JASM,JATP)*NSSOB(JBSM,JBTP))    
+     &         NSSOA(JASM,JATP)*NSSOB(JBSM,JBTP))
         END DO
       END IF
       IF(NTEST.GE.50) WRITE(6,*) ' C blocks transposed '
@@ -6443,7 +6443,7 @@ C?        write(6,*) ' JCBLOCK JCOFF ',JCBLOCK,JCOFF
         END IF
         IF(NIA.NE.0.AND.NIB.NE.0) THEN
 *. Loop over C blocks
-          DO 9000 ICBLK = 1, NCBLOCK                                     
+          DO 9000 ICBLK = 1, NCBLOCK
             JATP = ICBLOCK(1,ICBLK)
             JBTP = ICBLOCK(2,ICBLK)
             JASM = ICBLOCK(3,ICBLK)
@@ -6455,7 +6455,7 @@ C?        write(6,*) ' JCBLOCK JCOFF ',JCBLOCK,JCOFF
      &         (JASM.GT.IASM.OR.
      &         JASM.EQ.IASM.AND.JATP.GT.IATP.OR.
      &         JASM.EQ.IASM.AND.JATP.EQ.IATP.AND.JBTP.GT.IBTP))
-     &           GOTO 9000   
+     &           GOTO 9000
             XNORM2 = INPROD(CB(ICOFF),CB(ICOFF),NJA*NJB,NJA*NJB)
 C!          XNORM2 = 1.0D0
             IF(XNORM2.NE.0.0D0) THEN
@@ -6490,8 +6490,8 @@ C               IF(IRESTR.EQ.1.AND.
 C    &             (LLASM.GT.IASM.OR.
 C    &              LLASM.EQ.IASM.AND.LLATP.GT.IATP.OR.
 C    &              LLASM.EQ.IASM.AND.LLATP.EQ.IATP.AND.LLBTP.GT.IBTP))
-C    &           GOTO 8764   
-              
+C    &           GOTO 8764
+
 *
                 IF(NTEST.GE.10) THEN
                   WRITE(6,*) ' RSSBCB will be called for '
@@ -6557,20 +6557,20 @@ C    &                             IBTP.EQ.LLBTP) THEN
 C?              write(6,*) ' Memory check after RSSBCB'
 C?              call memchk
 C?              write(6,*) ' checked passed '
-                
+
  8764         CONTINUE
  8765         CONTINUE
-*. Transpose or scale to restore order in c 
+*. Transpose or scale to restore order in c
               IF(LTRP(NPERM+1).EQ.1) THEN
                 IF(ICJKAIB.EQ.0) THEN
-                  CALL TRPMT3(CB(ICOFF),NJB,NJA,C2)  
+                  CALL TRPMT3(CB(ICOFF),NJB,NJA,C2)
                 ELSE
-                  CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)  
+                  CALL TRPMT3(CB(ICOFF),NJA,NJB,C2)
                 END IF
-                CALL COPVEC(C2,CB(ICOFF),NJA*NJB)  
+                CALL COPVEC(C2,CB(ICOFF),NJA*NJB)
               END IF
               IF(LSGN(NPERM+1).EQ.-1)
-     &        CALL SCALVE(CB(ICOFF),-1.0D0,NJA*NJB)  
+     &        CALL SCALVE(CB(ICOFF),-1.0D0,NJA*NJB)
 *
             END IF
  9000       CONTINUE
@@ -6579,7 +6579,7 @@ C?              write(6,*) ' checked passed '
 10000     CONTINUE
 *. End of loop over S blocks in batch
 *
-* Order 
+* Order
       DO  ISBLK = 1 , NSBLOCK
         IATP = ISBLOCK(1,ISBLK)
         IBTP = ISBLOCK(2,ISBLK)
@@ -6596,7 +6596,7 @@ C?              write(6,*) ' checked passed '
            CALL COPVEC(C2,SB(ISOFF),
      &                 NSSOA(IASM,IATP)* NSSOB(IBSM,IBTP))
         END IF
-        IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP) 
+        IF(IDC.EQ.2.AND.IASM.EQ.IBSM.AND.IATP.EQ.IBTP)
      &  CALL TRPAD3(SB(ISOFF),PS,NSSOA(IASM,IATP))
       END DO
 *

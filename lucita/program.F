@@ -1,4 +1,4 @@
- 
+
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -8,7 +8,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF)
 *
-* CI optimization in GAS space number ISPC for symmetry ISM              
+* CI optimization in GAS space number ISPC for symmetry ISM
 *
 *
 * Jeppe Olsen, Winter of 1995
@@ -68,11 +68,11 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       ICC_EXC = 0
 *
       IF(NTEST.GE.1) THEN
-        WRITE(6,*) 
+        WRITE(6,*)
         WRITE(6,*) ' ====================================='
         WRITE(6,*) ' Control has been transferred to GASCI'
         WRITE(6,*) ' ====================================='
-        WRITE(6,*) 
+        WRITE(6,*)
       END IF
       IF(NTEST.GE.5) THEN
         WRITE(6,'(A)') '  A few pertinent data : '
@@ -83,9 +83,9 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         WRITE(6,'(A,10I3)') '  GAS spaces included           ',
      &               (ICMBSPC(II,ISPC),II=1,LCMBSPC(ISPC))
         WRITE(6,*)
-        WRITE(6,*) ' Occupation constraints : '  
+        WRITE(6,*) ' Occupation constraints : '
         WRITE(6,*) '========================= '
-        WRITE(6,*)  
+        WRITE(6,*)
         WRITE(6,*)
         DO JJGASSPC = 1, LCMBSPC(ISPC)
          JGASSPC = ICMBSPC(JJGASSPC,ISPC)
@@ -95,12 +95,12 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
      &  ' ================================================== '
         DO IGAS = 1, NGAS
           WRITE(6,'(3X,I2,13X,I3,16X,I3)') IGAS,
-     &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC) 
+     &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
         END DO
         END DO
 *
        END IF
-* 
+*
       WRITE(6,*)
       NDET = XISPSM(ISM,ISPC)
       NEL = NELCI(ISPC)
@@ -119,7 +119,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       ISSM = ISM
       ICSPC = ISPC
       ISSPC = ISPC
-*. Complete operator 
+*. Complete operator
       I12 = 2
 *
       IF(NOCSF.EQ.1) THEN
@@ -138,7 +138,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
         LBLOCK = MXSOOB
       END IF
       LBLOCK = MAX(LBLOCK,LCSBLK)
-* 
+*
 *. Information about block structure- needed by new PICO2 routine.
 *. Memory for partitioning of C vector
       IATP = 1
@@ -151,7 +151,7 @@ C     COMMON/COMJEP/MXACJ,MXACIJ,MXAADST
       CALL MEMMAN(KLCI1BT,NTTS  ,'ADDL  ',1,'CI1BT ')
       CALL MEMMAN(KLCIBT ,8*NTTS,'ADDL  ',1,'CIBT  ')
       CALL MEMMAN(KLC2B  ,  NTTS,'ADDL  ',1,'C2BT  ')
-*. Additional info required to construct partitioning 
+*. Additional info required to construct partitioning
 *
 *
       CALL MEMMAN(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
@@ -181,11 +181,11 @@ CTF
 *. Length of each block
       CALL EXTRROW(WORK(KLCIBT),8,8,NBLOCK,WORK(KLCI1BT))
 *. Class divisions of  dets
-*. ( Well, in principle I am against class division, but I 
+*. ( Well, in principle I am against class division, but I
 *    realize that it is a fact so ...)
 *
-*. By a class of dets I mean (today jan17,1996) a given number of electrons 
-*  in each orbital space.  
+*. By a class of dets I mean (today jan17,1996) a given number of electrons
+*  in each orbital space.
 *. Number of classes in largest possible space
       IF(ICLSSEL.EQ.1) THEN
 C       WRITE(6,*) ' Info for class selection constructed'
@@ -212,7 +212,7 @@ C       WRITE(6,*) ' Number of electrons ', NEL
         CALL MEMMAN(KLCLSL,NOCCLS,'ADDL  ',1,'CLSL  ')
         CALL BLKCLS(WORK(KLCIBT),NBLOCK,WORK(KLBLKCLS),WORK(KLSPSPCL),
      &              NOCCLS,WORK(KLCLSL),NOCTPA,NOCTPB)
-*. Allocate space for additinal arrays used for class selection 
+*. Allocate space for additinal arrays used for class selection
         CALL MEMMAN(KLCLSC,NOCCLS,'ADDL  ',2,'CLSC  ')
         CALL MEMMAN(KLCLSE,NOCCLS,'ADDL  ',2,'CLSE  ')
         CALL MEMMAN(KLCLSCT,NOCCLS,'ADDL  ',2,'CLSCT ')
@@ -229,15 +229,15 @@ C       WRITE(6,*) ' Number of electrons ', NEL
       I_USE_SBLOCK=1
       IF(IDIAG.EQ.2.OR.I_USE_SBLOCK.EQ.1) THEN
 *. Largest block of strings in zero order space
-      MXSTBL0 = MXNSTR           
+      MXSTBL0 = MXNSTR
 *. type of alpha and beta strings
-      IATP = 1              
-      IBTP = 2             
+      IATP = 1
+      IBTP = 2
 *. alpha and beta strings with an electron removed
-      IATPM1 = 3 
+      IATPM1 = 3
       IBTPM1 = 4
 *. alpha and beta strings with two electrons removed
-      IATPM2 = 5 
+      IATPM2 = 5
       IBTPM2 = 6
 *
       NAEL = NELEC(IATP)
@@ -296,16 +296,16 @@ C?      WRITE(6,*) ' MAXB1 2', MAXB1
         IF(IPRCIX.GE.2)
      &  WRITE(6,*) ' Space for resolution matrices ',LSCR2
 *. for Passive/active division
-        LSCR12 = MAX(LBLOCK,2*LSCR2)  
-C       LSCR12 = MAX(LBLOCK,4*LSCR2)  
+        LSCR12 = MAX(LBLOCK,2*LSCR2)
+C       LSCR12 = MAX(LBLOCK,4*LSCR2)
         CALL MEMMAN(KVEC3,LSCR12,'ADDL  ',2,'KC2   ')
       END IF
       CALL MEMMAN(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')
       CALL MEMMAN(KVEC2,LBLOCK,'ADDS  ',2,'VEC2  ')
 *
 *. CI diagonal - if required
-* 
-      IF(IDIAG.EQ.2) THEN 
+*
+      IF(IDIAG.EQ.2) THEN
         LUDIA = LUSC1
       END IF
       IF(.NOT.(IDIAG.EQ.2.AND.IRESTR.EQ.1)) THEN
@@ -364,7 +364,7 @@ C       LSCR12 = MAX(LBLOCK,4*LSCR2)
            IPROCC = NVAR
         END IF
 *. Obtain and diagonalize subsspace Hamiltonian
-* 
+*
         IF(ICISTR.EQ.1) THEN
           LBLK = NVAR
         ELSE
@@ -399,11 +399,11 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
         LBLK = - 1
       END IF
       NPRDET = MXP1 + MXP2 + MXQ
-*. This is a CI and not a perturbation calculation 
-*. ( what about B-W perturbation theory ???? ) 
+*. This is a CI and not a perturbation calculation
+*. ( what about B-W perturbation theory ???? )
       IPERTOP = 0
 *. Allocate space for energy contributions and wavefunction contributions of i
-* each class 
+* each class
 
       IF(MULSPC.EQ.1.AND.ISPC.GE.IFMULSPC) THEN
         MULSPCA = 1
@@ -471,7 +471,7 @@ CTF
           END IF
           CALL DENSI2(IDENSI,WORK(KRHO1),WORK(KRHO2),
      &          WORK(KVEC1),WORK(KVEC2),LUSC1,LUHC,EXPS2)
-          IF(IDENSI.EQ.2) 
+          IF(IDENSI.EQ.2)
      &    WRITE(6,*) ' Expectation value of S2', EXPS2
           IF(NROOT.GT.1) THEN
             if (IPRNCIV.ge.1) then
@@ -479,7 +479,7 @@ CTF
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                    LUSC1,ICISTR)
             end if
-          ELSE 
+          ELSE
             if (IPRNCIV.ge.1) then
               CALL REWINO(LUC)
               CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
@@ -487,16 +487,16 @@ CTF
             end if
           END IF
 *
-          IF(IPRNCIV.EQ.1) THEN 
+          IF(IPRNCIV.EQ.1) THEN
              WRITE(6,*)
              WRITE(6,*) ' ======================'
              WRITE(6,*) ' Complete CI expansion '
              WRITE(6,*) ' ======================'
              WRITE(6,*)
              IF(NROOT.EQ.1) THEN
-               CALL WRTVCD(WORK(KVEC1),LUC  ,1,LBLK) 
+               CALL WRTVCD(WORK(KVEC1),LUC  ,1,LBLK)
              ELSE
-               CALL WRTVCD(WORK(KVEC1),LUSC1,1,LBLK) 
+               CALL WRTVCD(WORK(KVEC1),LUSC1,1,LBLK)
              END IF
           END IF
 *         ^ End if print of CI vector
@@ -515,8 +515,8 @@ CTF
        IF(ITEST.EQ.1.AND.IDENSI.EQ.2) THEN
          WRITE(6,*) 'calling EN_FROM_DEN'
          CALL EN_FROM_DENS(ENERGY,2)
-         WRITE(6,'(A,F24.12)') 
-     &   ' Energy from EN_FROM_DEN',ENERGY 
+         WRITE(6,'(A,F24.12)')
+     &   ' Energy from EN_FROM_DEN',ENERGY
          WRITE(6,*) ' Construct fock matrix '
          CALL MEMMAN(KLFOO,NTOOB**2,'ADDL  ',2,'FOO   ')
          CALL FOCK_MAT(WORK(KLFOO),2)
@@ -526,7 +526,7 @@ CTF
 *
 C?     write(6,*) ' IRFROOT and NROOT ',IRFROOT, NROOT
        IF(IH0ROOT.NE.NROOT) THEN
-*. Position vectors 
+*. Position vectors
          CALL REWINO(LUC)
          DO JROOT = 1, IH0ROOT
            IF(ICISTR.EQ.1) THEN
@@ -540,7 +540,7 @@ C?     write(6,*) ' IRFROOT and NROOT ',IRFROOT, NROOT
            CALL COPVEC(WORK(KVEC1),WORK(KVEC2),NVAR)
 COLD       CALL DENSI1(WORK(KRHO1),WORK(KVEC1),WORK(KVEC2),0  ,0  ,1)
            CALL DENSI2(1,WORK(KRHO1),WORK(KRHO2),
-     &          WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)           
+     &          WORK(KVEC1),WORK(KVEC2),0,0,EXPS2)
          ELSE
            CALL REWINO(LUSC1)
            CALL COPVCD(LUSC1,LUSC2,WORK(KVEC1),1,LBLK)
@@ -562,7 +562,7 @@ COLD &                 LUSC1,LUSC2,1)
 * make a copy of state of interest in general
       IF(IRESPONS.NE.0) THEN
 *. Active part of energy
-C?      WRITE(6,*) 
+C?      WRITE(6,*)
 C?   &  ' Control will be transferred to the response module'
         CALL CI_RESPONS(LUHC,LUSC1,LUSC2,LUSC36,
      &                  LUSC38,LUSC39,LUSC40,LUC,LUDIA,
@@ -590,7 +590,7 @@ C?      WRITE(6,*) ' Home from CI_RESPONS'
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck inpctl $Revision$ 
+*fordeck inpctl $Revision$
       SUBROUTINE INPCTL(LUIN,LUCMOL,LUOUT)
 *
 * Read and check input for LUCIA
@@ -606,11 +606,11 @@ C      CALL SLASK
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck lucia $Revision$ 
+*fordeck lucia $Revision$
 *
       SUBROUTINE PAMLUCITA(WRK,LWRK)
 *
-* L U C I A 
+* L U C I A
 *
 *
 * CI for program for :FCI
@@ -638,7 +638,7 @@ C      CALL SLASK
 *.Memory
 #include "wrkspc.inc"
       DIMENSION WRK(LWRK)
-*.Scratch : A character line 
+*.Scratch : A character line
       CHARACTER*72 CARD
 *.
       CALL QENTER('REST ')
@@ -655,7 +655,7 @@ C
 C
       MXPWRD = LWRK
       KADD = MXPWRD
-      CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY') 
+      CALL MEMMAN(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
 *
 *
 *  Call input conversion program MOLUC (subroutine now)
@@ -664,7 +664,7 @@ C
 *
 *. Header
 c     call hello
-      WRITE(LUOUT,'(10X,A,I12)') 
+      WRITE(LUOUT,'(10X,A,I12)')
      &'Dimension of R*8 workspace : ', MXPWRD
 * ======================================================
 * 1 : .Read input,insert defaults and cross check input
@@ -720,10 +720,10 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
 *. Restarted Lambda calculations need special attention
 * =======================================================
 *
-*  Restart is realized in in SECOND calculation 
+*  Restart is realized in in SECOND calculation
 *  First calculation is used to establish H0
 *  we do therefore first copy vectors on LUC to LUSC39
-*  so we can restart from this file later 
+*  so we can restart from this file later
 *
       IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0) THEN
         CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
@@ -764,25 +764,25 @@ CTF     CALL GET_CMOAO(WORK(KMOAOIN))
       DO JCMBSPC = 1, NCMBSPC
         ISKIPEI = 0
 *
-        WRITE(6,*) 
-        WRITE(6,*) 
-        WRITE(6,*) 
-        WRITE(6,'(15X,A)') 
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,'(15X,A)')
      &  '********************************'
-        WRITE(6,'(15X,A)') 
+        WRITE(6,'(15X,A)')
      &  ' ******************************'
-        WRITE(6,*) 
-        WRITE(6,'(15X,A,I3)') 
+        WRITE(6,*)
+        WRITE(6,'(15X,A,I3)')
      &  '   Calculations in space ', JCMBSPC
-        WRITE(6,*) 
-        WRITE(6,'(15X,A)') 
+        WRITE(6,*)
+        WRITE(6,'(15X,A)')
      &  ' ******************************'
-        WRITE(6,'(15X,A)') 
+        WRITE(6,'(15X,A)')
      &  '********************************'
-        WRITE(6,*) 
-        WRITE(6,*) 
-        WRITE(6,*) 
-        WRITE(6,*) 
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,*)
+        WRITE(6,*)
 C       WRITE(6,'(A,I3)')
 C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
 *. Special treatment of lambda calc in first calc
@@ -790,9 +790,9 @@ C    &  ' Number of calculation in this CI space ', NSEQCI(JCMBSPC)
           WRITE(6,*) ' Remember No restart in calc 1 (Lambda calc)'
           IRESTR = 0
         END IF
-*     
+*
         I_EXPAND = 1
-        IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN      
+        IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.GT.1) THEN
           WRITE(6,*) ' =================================='
           WRITE(6,*) '   Modified operator will be used'
           WRITE(6,*) '   Modified operator will be used'
@@ -851,7 +851,7 @@ CMO       END IF
 *
           IF((CARD(1:2).EQ.'CI'.OR.CARD(1:4).EQ.'PERT'
      &        .OR.CARD(1:2).EQ.'CC'.OR.CARD(1:2).EQ.'IC')
-     &   .AND. JCMBSPC.NE.1.AND.ISTOSPC.NE.JCMBSPC.AND.I_EXPAND.EQ.1 
+     &   .AND. JCMBSPC.NE.1.AND.ISTOSPC.NE.JCMBSPC.AND.I_EXPAND.EQ.1
      &                                                           )THEN
 *
 *. Restart from previous spaces ( Assuming a progressing sequence :
@@ -877,9 +877,9 @@ C           WRITE(6,*) ' LBLK = ', LBLK
 *. CI vectors
             IRESTR = 1
           END IF
-*         ^ End of Expansion section 
+*         ^ End of Expansion section
 * ==
-* CI        
+* CI
 * ==
           IF(CARD(1:2).EQ.'CI') THEN
             IF(JSEQ.EQ.1.AND.JCMBSPC.EQ.2.AND.IRST2.EQ.0) THEN
@@ -900,7 +900,7 @@ C
 C
 C
 *. Modified one-electron operator in first it
-            IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN      
+            IF(XLAMBDA.NE.1.0D0 .AND.JCMBSPC.EQ.1) THEN
 *. Obtain modified operator for lambda calculations
               WRITE(6,*) ' Operator will be modified '
               CALL GENH1(XLAMBDA)
@@ -919,7 +919,7 @@ C
 * =======================
 *
           ELSE IF (CARD(1:7).EQ. 'VECFREE'     ) THEN
-         
+
             WRITE(6,'(A,I3)') ' Vector free calculation at level ',
      &                          -ISEQCI(JSEQ,JCMBSPC)
             LEVEL =  -ISEQCI(JSEQ,JCMBSPC)
@@ -938,11 +938,11 @@ C
 * General perturbation calculation
 * ================================
 *
-          ELSE IF (CARD(1:5).EQ.'PERTU'      ) THEN 
+          ELSE IF (CARD(1:5).EQ.'PERTU'      ) THEN
             WRITE(6,'(A)') ' Perturbation calculation '
             CALL PERTCTL(IREFSM,JCMBSPC,EREF)
             IF( NPROP.GT.0) THEN
-*. Perturbation expansion of properties 
+*. Perturbation expansion of properties
               CALL PROP_PERT(LUC,LUSC36,NPERT,IREFSM,JCMBSPC)
 C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
             END IF
@@ -958,7 +958,7 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
           ELSE IF(CARD(1:2).EQ.'CC') THEN
 *
 * ============================
-* Coupled Cluster calculation 
+* Coupled Cluster calculation
 * ============================
 *
 *. PH division and Passive active division is not working
@@ -986,7 +986,7 @@ C     I_RESTRT_CC.EQ.1
             I_HAVE_DONE_CC = 1
 *
 * ==========================================
-* Internal contracted CI or PT calculation 
+* Internal contracted CI or PT calculation
 * ==========================================
 *
           ELSE IF(CARD(1:2).EQ.'IC') THEN
@@ -1005,7 +1005,7 @@ C     I_RESTRT_CC.EQ.1
 *
       IF(ITRAPRP.NE.0) THEN
         WRITE(6,*) ' Transition properties of final states '
-        WRITE(6,*) ' and states on file LUEXC ( unit 17 ) ' 
+        WRITE(6,*) ' and states on file LUEXC ( unit 17 ) '
         WRITE(6,*) ' Will be called now '
         WRITE(6,*)
         CALL LTRAPRP
@@ -1018,7 +1018,7 @@ C     I_RESTRT_CC.EQ.1
       IF(NOMOFL.EQ.0) THEN
 *. Create final set of mo's
         WRITE(6,*) ' I am going to call FINMO '
-        CALL FINMO 
+        CALL FINMO
       END IF
 *
 * ===========================
@@ -1049,7 +1049,7 @@ c     Call GetMem('LUCIA','Free','REAL',KBASE,MxpWrd)
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck prtitl $Revision$ 
+*fordeck prtitl $Revision$
       SUBROUTINE PRTITL(LINES)
 *
 * Print title cards
@@ -5038,7 +5038,7 @@ C    &  '      Core energy : ', ECORE
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*fordeck wrthd $Revision$ 
+*fordeck wrthd $Revision$
       SUBROUTINE WRTHD(LUOUT)
 CJO-Start
 *
@@ -5064,10 +5064,10 @@ CJO-Start
      &' In case of trouble please contact : '
       WRITE(6,'(1H ,12X,2A)')
      &' Jeppe Olsen, Chemical Centre, University of Lund, P.O.Box 124',
-     &' Lund, S-22100 Sweden ' 
+     &' Lund, S-22100 Sweden '
       WRITE(6,'(1H ,12X,2A)')
      &' Telephone : 46 46 2224915, FAX : 46 46 2224543,',
-     &' E-mail : TEOJEO@garm.teokem.lu.se'              
+     &' E-mail : TEOJEO@garm.teokem.lu.se'
       WRITE(6,*)
       RETURN
       END
