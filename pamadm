@@ -1,4 +1,4 @@
-#! /bin/csh -f
+#! /bin/ksh
 #
 # VERSION : $Revision$
 # DATE    : $Date$
@@ -12,375 +12,572 @@
 #   Written by Trond Saue Oct 1 1997
 #   Polish by Thomas Enevoldsen Oct 2 1997
 #   Additional polish and new features by J .Thyssen 1998
+#   Changed to ksh. jth Aug 24 1998 
 #
-if ($#argv == 0) then
-      echo 'Usage: pamadm [flags] tarfile'
-      echo '   Flags:'
-      echo '     -adm          : Include ALL modules (administrator)'
-      echo '     -eri          : Include ERI integral routines'
-      echo '     -par          : include parallell version'
-      echo '     -rsp          : Include response module'
-      echo '     -cc           : Include CCSD module'
-      echo '     -tra          : Include 4-index transformation module'
-      echo '     -open         : Include open shell module'
-      echo '     -spinfree     : Include spinfree modifications'
-      echo '     -ci          : Include DIRRCI module'
-      echo '     tarfile=make  : only generate new Makefile'
-      exit 0
-endif
-unset noclobber
-unalias rm
-set GENTAR = 1
-set PAMADM = 0
 #
-# Initialization of active modules
 #
-# Parallell version
-set PARMOD  = 0
-set PARTAR  = 0
-set PARFLG  =
-set PAROBJ  =
-set PARMAK  =
-# RELCCSD-module (MOLFDIR)
-set CCMOD  = 0
-set CCTAR  = 0
-set CCFLG  =
-set CCOBJ  =
-set CCMAK  =
-# Response module
-set RSPMOD = 0
-set RSPTAR = 0
-set RSPFLG = 
-set RSPOBJ =
-set RSPMAK =
-# 4-index transformation module
-set TRAMOD = 0
-set TRATAR = 0
-set TRAFLG =
-set TRAOBJ =
-set TRAMAK =
-# ERI integral module
-set ERIMOD = 0
-set ERITAR = 0
-set ERIFLG =
-set ERIOBJ =
-set ERIMAK =
-# Open shell module
-set OPENMOD = 0
-set OPENTAR = 0
-set OPENFLG =
-set OPENOBJ =
-set OPENMAK =
-# spinfree modification
-set SPFMOD = 0
-set SPFTAR = 0
-set SPFFLG =
-set SPFOBJ =
-set SPFMAK =
-# DIRRCI module
-set CIMOD = 0
-set CITAR = 0
-set CIFLG =
-set CIOBJ =
-set CIMAK =
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-while($#argv)
-   switch($argv[1])
-     case -adm:
-        set PAMADM = 1
-     case -cc:
-        set CCMOD = 1
-        breaksw
-     case -par:
-        set PARMOD = 1
-        set PARTAR = 1
-        breaksw
-     case -rsp:
-        set RSPMOD = 1
-        breaksw
-     case -tra:
-        set TRAMOD = 1
-        breaksw
-     case -eri:
-#        set ERIMOD = 1
-        set ERIMOD = 0
-        breaksw
-     case -open
-        set OPENMOD = 1
-        breaksw
-     case -spinfree
-        set SPFMOD = 1
-        breaksw
-      case -ci
-         set CIMOD
-         breaksw
-     case -*:
-        echo $argv[1] 'not recognized'
-        exit 1
-        breaksw
-     case  *:
-        set TARFIL = $argv[1]
-        breaksw
-   endsw
-   shift
-end
 #
-if ($TARFIL == 'make') then
-  set GENTAR = 0
-endif
+# USAGE
+#
+#
+usage()
+{
+   echo 'Usage: pamadm [flags] tarfile'
+   echo '   Flags:'
+   echo '     -adm          : Include ALL modules (administrator)'
+   echo '     -eri          : Include ERI integral routines'
+   echo '     -par          : include parallell version'
+   echo '     -rsp          : Include response module'
+   echo '     -cc           : Include CCSD module'
+   echo '     -tra          : Include 4-index transformation module'
+   echo '     -open         : Include open shell module'
+   echo '     -spinfree     : Include spinfree modifications'
+   echo '     -ci           : Include DIRRCI module'
+   echo '     -geo          : Include geometry optimization module'
+   echo '     -3.1          : Include DIRAC 3.1 modules'
+   echo '     tarfile=make  : only generate new Makefile'
+   echo '     tarfile=export: Make DIRAC.new.tar.gz'
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# SETUP ALL VARIABLES
+#
+#
+setup()
+{
 #
 #  Administrator needs everything.....
 #
-if($PAMADM) then
-  set CCMOD  = 1
-  set RSPMOD = 1
-  set TRAMOD = 1
-  set ERITAR = 1
-  set PARMOD = 1
-  set PARTAR = 1
-  set OPENMOD = 1
-  set SPFMOD = 1
-  set CIMOD = 1
-endif
+   echo
+   echo "*** Active modules:"
+   echo
+   echo_style=sysv
+   noclobber=
+   EXPORTTAR=1
+   if [ -n "$PAMADM" ]; then
+      CCMOD=1
+      RSPMOD=1
+      TRAMOD=1
+      ERITAR=1
+      PARMOD=1
+      PARTAR=1
+      OPENMOD=1
+      SPFMOD=1
+      CIMOD=1
+      GEOMOD=1
+      echo " - DIRAC administrator ..."
+   fi
+   #
+   #  Release 3.1
+   #
+   if [ -n "$REL3_1" ]; then
+      CCMOD=1
+      TRAMOD=1
+      CIMOD=1
+      PARMOD=1
+      PARTAR=1
+      OPENMOD=1
+      EXPORTTAR=0
+      echo " - Release 3.1 ..."
+   fi
+   #
+   #  RELCCSD-module
+   #
+   if [ -n "$CCMOD" ]; then
+      CCFLG='-DMOD_CC'
+      CCOBJ='$(CCOBJS)'
+      CCMAK=CCM_OBJ
+      CCTAR=1
+      echo " - Relativistic coupled cluster (RELCCSD)"
+   fi
+   #
+   #  Responsemodule
+   #
+   if [ -n "$RSPMOD" ]; then
+      RSPFLG='-DMOD_RSP'
+      RSPOBJ='$(RSPOBJS)'
+      RSPMAK=RSP_OBJ
+      RSPTAR=1
+      echo " - Linear response module (RSP)"
+   fi
+   #
+   #  4index transformation module
+   #
+   if [ -n "$TRAMOD" ]; then
+      TRAFLG='-DMOD_TRA'
+      TRAOBJ='$(TRAOBJS)'
+      TRAMAK=TRA_OBJ
+      TRATAR=1
+      echo " - 4-index transformation module (MOLTRA)"
+   fi
+   #
+   #  ERI two-electron integral module
+   #
+   if [ -n "$ERIMOD" ]; then
+      ERIFLG='-DMOD_ERI'
+      ERIOBJ='$(ERIOBJS)'
+      ERIMAK=ERI_OBJ
+      ERITAR=1
+      echo " - ERI two-electron integral module"
+   fi
+   #
+   # Open shell module
+   #
+   if [ -n "$OPENMOD" ]; then
+      OPENFLG='-DMOD_OPEN'
+      OPENOBJ='$(OPENOBJS)'
+      OPENMAK=OPEN_OBJ
+      OPENTAR=1
+      echo " - Open-shell Dirac-Hartree-Fock module"
+   fi
+   #
+   # Spinfree modifications
+   #
+   if [ -n "$SPFMOD" ]; then
+      SPFFLG='-DMOD_SPF'
+      SPFOBJ='$(SPFOBJS)'
+      SPFMAK=SPF_OBJ
+      SPFTAR=1
+      echo " - Spin-free modifications"
+   fi
+   #
+   # DIRRCI Module
+   #
+   if [ -n "$CIMOD" ]; then
+      CIFLG='-DMOD_CI'
+      CIOBJ='$(CIOBJS)'
+      CIMAK=CI_OBJ
+      CITAR=1
+      echo " - Relativistic CISD and COSCI (DIRRCI)"
+   fi
+   #
+   # Geometry optimization
+   #
+   if [ -n "$GEOMOD" ]; then
+      GEOFLG='-DMOD_GEO'
+      GEOOBJ='$(GEOOBJS)'
+      GEOMAK=GEO_OBJ
+      GEOTAR=1
+      echo " - Geometry optimization module"
+   fi
+   #
+   #
+   #
+   if [ "$TARFIL" = "make" ]; then
+      GENTAR=
+   fi
+   if [ "$TARFIL" = "export" ]; then
+      if [ -e DIRAC.new.tar.gz ]; then
+	 rm DIRAC.new.tar.gz
+      fi
+      TARFIL=DIRAC.new
+   fi
+   echo
+}
 #
-#  RELCCSD-module
 #
-if($CCMOD) then
-        set CCFLG = '-DMOD_CC'
-        set CCOBJ = '$(CCOBJS)'
-        set CCMAK = CCM_OBJ
-        set CCTAR = 1
-endif
-#
-#  Responsemodule
-#
-if($RSPMOD) then
-        set RSPFLG = '-DMOD_RSP'
-        set RSPOBJ = '$(RSPOBJS)'
-        set RSPMAK = RSP_OBJ
-        set RSPTAR = 1
-endif
-#
-#  4index transformation module
-#
-if($TRAMOD) then
-        set TRAFLG = '-DMOD_TRA'
-        set TRAOBJ = '$(TRAOBJS)'
-        set TRAMAK = TRA_OBJ
-        set TRATAR = 1
-endif
-#
-#  ERI two-electron integral module
-#
-if($ERIMOD) then
-        set ERIFLG = '-DMOD_ERI'
-        set ERIOBJ = '$(ERIOBJS)'
-        set ERIMAK = ERI_OBJ
-        set ERITAR = 1
-endif
-#
-# Open shell module
-#
-if($OPENMOD) then
-        set OPENFLG = '-DMOD_OPEN'
-        set OPENOBJ = '$(OPENOBJS)'
-        set OPENMAK = OPEN_OBJ
-        set OPENTAR = 1
-endif
-#
-# Spinfree modifications
-#
-if($SPFMOD) then
-        set SPFFLG = '-DMOD_SPF'
-        set SPFOBJ = '$(SPFOBJS)'
-        set SPFMAK = SPF_OBJ
-        set SPFTAR = 1
-endif
-#
-# DIRRCI Module
-#
-if($CIMOD) then
-        set CIFLG = '-DMOD_CI'
-        set CIOBJ = '$(CIOBJS)'
-        set CIMAK = CI_OBJ
-        set CITAR = 1
-endif
-#
-#  Safeguard files
-#
-if($GENTAR) then
-  mv Makefile Makefile.buf
-  mv DIRAC.new.tar.gz tarbuf.gz 
-  mv configure configure.buf
-endif
-#
-#  Write active modules
-#
-echo "#\!/bin/sh" > configure
-echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG $SPFFLG $CIFLG\" >> configure
-echo ERIFLG=$ERITAR >> configure
-echo CCFLG=$CCTAR   >> configure
-echo RSPFLG=$RSPTAR >> configure
-echo TRAFLG=$TRATAR >> configure
-echo PARFLG=$PARTAR >> configure
-echo OPENFLG=$OPENTAR >> configure
-echo SPFFLG=$SPFTAR >> configure
-echo PAMADM=$PAMADM >> configure
-echo CIFLG=$CITAR >> configure
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
-cat configure.in >> configure
-chmod +x configure
-set AUXOBJ = "$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $SPFOBJ $CIOBJ"
-set AUXMAK = "$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $SPFMAK $CIMAK"
+# BACKUP OLD FILES
 #
-#  Write current Makefile
 #
-cat <<EOF > Makefile
+backup()
+{
+   if [ -n "$GENTAR" ]; then
+      echo "*** Backing up old files ..." 
+      echo
+      temp=
+      if [ -e DIRAC.new.tar.gz ]; then
+         temp="$temp DIRAC.new.tar.gz"
+      fi
+      if [ -e configure ]; then
+         temp="$temp configure"
+      fi
+      if [ -e export ]; then
+         temp="$temp export"
+      fi
+      if [ -e Makefile ]; then
+         temp="$temp Makefile"
+      fi
+      for file in $temp; do
+	 echo " - $file --> $file.buf"
+	 mv $file $file.buf 
+      done
+   fi
+   echo
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# RESTORE AND MAKE TAR
+#
+#
+restore()
+{
+   if [ -n "$GENTAR" ]; then
+      #
+      # Make tar-file
+      #
+      make_export
+      echo "*** Making tar-file ..."
+      echo
+      ./export
+      if [ -e DIRAC.new.tar.gz ]; then
+	 if [ "$TARFIL" != "DIRAC.new" ]; then
+	    mv DIRAC.new.tar.gz $TARFIL.tar.gz
+	 fi
+      else
+	 echo "Fatal error: No DIRAC.new.tar.gz"
+      fi
+      #
+      #
+      #
+      echo "*** Restoring old files ..." 
+      echo
+      temp=
+      if [ -e DIRAC.new.tar.gz.buf ]; then
+         temp="$temp DIRAC.new.tar.gz"
+      fi
+      if [ -e configure.buf ]; then
+         temp="$temp configure"
+      fi
+      if [ -e export.buf ]; then
+         temp="$temp export"
+      fi
+      if [ -e Makefile.buf ]; then
+         temp="$temp Makefile"
+      fi
+      for file in $temp; do
+	 echo " - $file.buf --> $file"
+	 mv $file.buf $file
+      done
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAKE CONFIGURE
+#
+#
+make_configure()
+{
+   echo "*** Making ./configure"
+   echo 
+   echo "#!/bin/sh" > configure
+   echo "MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG" \
+        "$SPFFLG $CIFLG $GEOFLG\"" >> configure
+   echo ERIFLG=$ERITAR >> configure
+   echo CCFLG=$CCTAR   >> configure
+   echo RSPFLG=$RSPTAR >> configure
+   echo TRAFLG=$TRATAR >> configure
+   echo PARFLG=$PARTAR >> configure
+   echo OPENFLG=$OPENTAR >> configure
+   echo SPFFLG=$SPFTAR >> configure
+   echo PAMADM=$PAMADM >> configure
+   echo CIFLG=$CITAR >> configure
+   cat ./configure.in >> configure
+   chmod +x configure
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAKE EXPORT SHELL SCRIPT
+#
+#
+make_export()
+{
+   echo "*** Making ./export"
+   echo
+   #
+   # Basis files
+   #
+   cat <<EOF> ./export
+#!/bin/sh
+   tar cvf DIRAC.new.tar \\
+      configure config.sub config.guess config.status doc/doc.html \\
+      C90lib.cld crilib.cld \\
+      include/*.h Makefile \\
+      dirac/*.F   dirac/Makefile.in \\
+      prp/*.F     prp/Makefile.in \\
+      abacus/*.F  abacus/Makefile.in \\
+      gp/*.F gp/*.c gp/Makefile.in \\
+      pdpack/Makefile.in pdpack/*.F \\
+      dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \\
+      dirac/main/*.h dirac/main/*.head dirac/main/*.struct \\
+      dhf.in 2> export.log
+EOF
+   #
+   # Active modules
+   #
+   if [ "$ERITAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in 2>> export.log
+EOF
+   fi
+   if [ "$CCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar relccsd/*.F relccsd/*.inc \\
+              relccsd/*.c relccsd/Makefile.in 2>> export.log
+EOF
+   fi
+   if [ "$RSPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in 2>> export.log
+EOF
+   fi
+   if [ "$OPENTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar  dirac/open/*.F dirac/open/Makefile.in \\
+              2>> export.log
+EOF
+   fi
+   if [ "$SPFTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar dirac/spinfree/*.F dirac/spinfree/Makefile.in \\
+              2>> export.log
+EOF
+   fi
+   if [ "$TRATAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in 2>> export.log
+EOF
+   fi
+   if [ "$GEOTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar dirac/geom/*.F dirac/geom/Makefile.in \\
+              2>> export.log
+EOF
+   fi
+   if [ "$PARTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in \\
+              2>> export.log
+EOF
+   fi
+   if [ "$CITAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar dirrci/*.F dirrci/*.inc dirrci/Makefile.in \\
+              2>> export.log
+EOF
+   fi
+   if [ "$PAMADM" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar configure.in pamadm 2>> export.log
+EOF
+   fi
+   if [ "$EXPORTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf DIRAC.new.tar export 2>> export.log
+EOF
+   fi
+   cat <<EOF>> ./export
+      gzip -9 DIRAC.new.tar
+EOF
+   chmod +x ./export
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAKE MAKEFILE
+#
+#
+make_makefile()
+{
+   echo "*** Making makefile"
+   echo
+   AUXOBJ="$CCOBJ $RSPOBJ $TRAOBJ $ERIOBJ $OPENOBJ $SPFOBJ $CIOBJ $GEOOBJ"
+   AUXMAK="$CCMAK $RSPMAK $TRAMAK $ERIMAK $OPENMAK $SPFMAK $CIMAK $GEOMAK"
+   #
+   # Write current Makefile
+   #
+   cat <<EOF> Makefile
 include ./Makefile.config
 
-OBJS = \
-dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \
-dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \
-dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \
-dirac/dirgeo.o dirac/dirgrd.o dirac/dirsol.o \
-dirac/main/alloc_mem.o    dirac/main/csectid.o    dirac/main/dirac.o \
-dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \
-dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \
-dirac/main/mpi_errtrap.o  dirac/main/pr_timing.o  dirac/main/print_logo.o \
-dirac/main/get_time.o \
-abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\
-abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\
-abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\
-abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\
-abacus/her2out.o    abacus/her2sup.o    abacus/her2sym.o    abacus/herbas.o\
-abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\
-abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\
-abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\
-abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\
-abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\
-gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\
-gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \
-gp/gpjth.o          gp/gpjth_c.o \
-prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \
-prp/pamgrd.o 
+OBJS = \\
+dirac/dircnv.o dirac/dirgp.o  dirac/dirone.o \\
+dirac/dirout.o dirac/dirana.o dirac/dirrdn.o dirac/dirscf.o \\
+dirac/dirset.o dirac/dirtra.o dirac/dirtwo.o dirac/dirden.o \\
+dirac/dirgeo.o dirac/dirgrd.o dirac/dirsol.o \\
+dirac/main/alloc_mem.o    dirac/main/csectid.o    dirac/main/dirac.o \\
+dirac/main/diracmalloc.o  dirac/main/end_mpi.o    dirac/main/exec_dirac.o \\
+dirac/main/get_memsize.o  dirac/main/ini_mpi.o    dirac/main/main.o \\
+dirac/main/mpi_errtrap.o  dirac/main/pr_timing.o  dirac/main/print_logo.o \\
+dirac/main/get_time.o \\
+abacus/her1ave.o    abacus/her1car.o    abacus/her1drv.o    abacus/her1int.o\\
+abacus/her1odc.o    abacus/her1out.o    abacus/her1pro.o    abacus/her1sym.o\\
+abacus/her2ave.o    abacus/her2dir.o    abacus/her2drv.o    abacus/her2el1.o\\
+abacus/her2el2.o    abacus/her2fck.o    abacus/her2her.o    abacus/her2odc.o\\
+abacus/her2out.o    abacus/her2sup.o    abacus/her2sym.o    abacus/herbas.o\\
+abacus/herdirect.o  abacus/herdrv.o     abacus/hergam.o     abacus/hergeo.o\\
+abacus/hergp.o      abacus/herrdn.o     abacus/hersol.o\\
+abacus/hersym.o     abacus/hertst.o     abacus/her2gab.o    abacus/hermem.o\\
+abacus/abanuc.o abacus/abaopt.o abacus/abaortvec.o abacus/abarint.o\\
+abacus/abatro.o abacus/abavrml.o abacus/abawalk.o\\
+gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
+gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
+gp/gpjth.o          gp/gpjth_c.o \\
+prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
+prp/pamgrd.o
 
 PDLIB = pdpack/pdlib.a
 EOF
 #
 #  Object-files for RSP-module
 #
-if($RSPMOD) then
+if [ -n "$RSPMOD" ]; then
 cat <<EOF>> Makefile
 
-RSPOBJS = \
-prp/rsp/pamxlr.o   prp/rsp/pamrsp.o   prp/rsp/pamrvc.o 
+RSPOBJS = \\
+prp/rsp/pamxlr.o   prp/rsp/pamrsp.o   prp/rsp/pamrvc.o
 EOF
-endif
+fi
 #
 #  Object-files for 4index-trasnformation module
 #
-if($TRAMOD) then
+if [ -n "$TRAMOD" ]; then
 cat <<EOF>> Makefile
 
-TRAOBJS = \
-moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o  \
-moltra/trainp.o moltra/traone.o moltra/trapam.o moltra/traout.o  \
+TRAOBJS = \\
+moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o  \\
+moltra/trainp.o moltra/traone.o moltra/trapam.o moltra/traout.o  \\
 moltra/traprp.o
 EOF
-endif
+fi
 #
 # Object files for CCSD - module
 #
-if($CCMOD) then
+if [ -n "$CCMOD" ]; then
 cat <<EOF>> Makefile
 
-CCOBJS = \
-relccsd/ccpam.o  relccsd/ccdriv.o \
-relccsd/cceqns.o relccsd/ccints.o \
-relccsd/ccsort.o relccsd/ccgenp.o \
-relccsd/ccgetv.o relccsd/ccintm.o \
-relccsd/ccrpa.o  relccsd/ccxblas.o \
+CCOBJS = \\
+relccsd/ccpam.o  relccsd/ccdriv.o \\
+relccsd/cceqns.o relccsd/ccints.o \\
+relccsd/ccsort.o relccsd/ccgenp.o \\
+relccsd/ccgetv.o relccsd/ccintm.o \\
+relccsd/ccrpa.o  relccsd/ccxblas.o \\
 relccsd/ccunix.o relccsd/ccgrad.o
 EOF
-endif
+fi
 #
 #  Object-files for ERI module
 #
-if($ERIMOD) then
+if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
-ERIOBJS = \
-eri/eri2cft.o       eri/eri2her.o       eri/eri2sym.o \
-eri/eri2aob.o       eri/eri2dis.o       eri/eri2odb.o     eri/eri2vec.o \
-eri/eri2car1.o      eri/eri2drv.o       eri/eri2out.o \
-eri/eri2car2.o      eri/eri2fck.o       eri/eri2sph.o    
+ERIOBJS = \\
+eri/eri2cft.o       eri/eri2her.o       eri/eri2sym.o \\
+eri/eri2aob.o       eri/eri2dis.o       eri/eri2odb.o     eri/eri2vec.o \\
+eri/eri2car1.o      eri/eri2drv.o       eri/eri2out.o \\
+eri/eri2car2.o      eri/eri2fck.o       eri/eri2sph.o
 EOF
-endif
+fi
 #
-#  Object files for Open shells module
+#  Object files for Open shell module
 #
-if ($OPENMOD) then
+if [ -n "$OPENMOD" ]; then
 cat <<EOF>> Makefile
 
-OPENOBJS = \
+OPENOBJS = \\
 dirac/open/diropen.o
 EOF
-endif
+fi
 #
 #  Object files for spinfree equation
 #
-if ($SPFMOD) then
+if [ -n "$SPFMOD" ]; then
 cat <<EOF>> Makefile
 
-SPFOBJS = \
+SPFOBJS = \\
 dirac/spinfree/dirspf.o
 EOF
-endif
+fi
 #
 #  Object files for DIRRCI module
 #
-if ($CIMOD) then
+if [ -n "$CIMOD" ]; then
 cat <<EOF>> Makefile
 
-CIOBJS = \
+CIOBJS = \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o
 EOF
-endif
+fi
 #
+#  Object files for geometry optimization
 #
-#
-if($PARMOD) then
+if [ -n "$GEOMOD" ]; then
 cat <<EOF>> Makefile
 
-OBJSLAVE = abacus/par/herpar.o 
+GEOOBJS = \\
+dirac/geom/dirgeo.F
+EOF
+fi
+#
+#  Object files for parallel code
+#
+if [ -n "$PARMOD" ]; then
+cat <<EOF>> Makefile
+
+OBJSLAVE = abacus/par/herpar.o
 
 OBJSPVM = abacus/par/dumpvm.o
 EOF
-endif
+fi
+#
+#  The targets
+#
 cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  $AUXMAK
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \$(OBJS)  $AUXOBJ\
-        \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
-
+dirac.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ \\
+	$AUXMAK
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(OBJS) \\
+	$AUXOBJ \\
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB)
 EOF
-if($PARMOD) then
+#
+# Parallel targets
+#
+if [ -n "$PARMOD" ]; then
 cat <<EOF>> Makefile
-dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ PD_OBJ  SLAVE_OBJ $AUXMAK
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
-	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(MPI_LIB_PATH) \$(MPI_LIB)
+dirmpi.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ GP_OBJ MXM_OBJ \\
+	PD_OBJ  SLAVE_OBJ \\
+	$AUXMAK
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirac.x \\
+	\$(OBJS)  \$(OBJSLAVE) $AUXOBJ \\
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
+ 	\$(MPI_LIB_PATH) \$(MPI_LIB)
 
-dirpvm.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ PVM_OBJ  $AUXMAK\
-	GP_OBJ MXM_OBJ PD_OBJ    
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirpvm.x \$(OBJS)  \$(OBJSLAVE) $AUXOBJ\
-	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
-	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/node.x \$(OBJSLAVE) \$(OBJS) \
-	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
+dirpvm.x: MAIN_OBJ DIR_OBJ PRP_OBJ HER_OBJ PVM_OBJ \\
+	$AUXMAK \\
+	GP_OBJ MXM_OBJ PD_OBJ
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/dirpvm.x \\
+	\$(OBJS)  \$(OBJSLAVE) $ AUXOBJ \\
+	\$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \$(PVM_LIB_PATH) \\
+	\$(PVM_LIB_LIST) 
+	\$(F77) \$(OPTFLAGS) -o \$(INSTALLDIR)/node.x \\
+	\$(OBJSLAVE) \$(OBJS) \$(OBJSMXM) \$(LIB_LIST) \$(PDLIB) \\
+	\$(PVM_LIB_PATH) \$(PVM_LIB_LIST)
 EOF
-endif
+fi
+#
+# Clean targets
+#
 cat <<EOF>> Makefile
 
 clean   :
@@ -389,96 +586,46 @@ clean   :
 	cd prp      ; \$(MAKE) clean
 	cd dirac/main ; \$(MAKE) clean
 EOF
-if($ERIMOD) then
-echo '	cd eri      ; $(MAKE) clean' >> Makefile
-endif
-if($RSPMOD) then
-echo '	cd prp/rsp  ; $(MAKE) clean' >> Makefile
-endif
-if($TRAMOD) then
-echo '	cd moltra   ; $(MAKE) clean' >> Makefile
-endif
-if($CCMOD) then
-echo '	cd relccsd  ; $(MAKE) clean' >> Makefile
-endif
-if($PARMOD) then
-echo '	cd abacus/par  ; $(MAKE) clean' >> Makefile
-endif
-if($OPENMOD) then
-echo '	cd dirac/open ; $(MAKE) clean' >> Makefile
-endif
-if($SPFMOD) then
-echo '	cd dirac/spinfree ; $(MAKE) clean' >> Makefile
-endif
-if($CIMOD) then
-echo '	cd dirrci ; $(MAKE) clean' >> Makefile
-endif
+if [ -n "$TRAMOD" ]; then
+   echo '	cd eri      ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$RSPMOD" ]; then
+   echo '	cd prp/rsp  ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$TRAMOD" ]; then
+   echo '	cd moltra   ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$RAMOD" ]; then
+   echo '	cd relccsd  ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$PARMOD" ]; then
+   echo '	cd abacus/par  ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$OPENMOD" ]; then
+   echo '	cd dirac/open ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$SPFMOD" ]; then
+   echo '	cd dirac/spinfree ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$CIMOD" ]; then
+   echo '	cd dirrci ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$GEOMOD" ]; then
+   echo '	cd dirac/geom ; $(MAKE) clean' >> Makefile
+fi
 cat <<EOF>> Makefile
 	cd gp       ; \$(MAKE) clean
 	cd pdpack   ; \$(MAKE) clean
 	\$(RM) -f *~
-
+#
+#  Export target
+#
 export:
 	-rm -f DIRAC.new.tar.gz
-	tar cvf DIRAC.new.tar \
-	configure config.sub config.guess config.status doc/doc.html \
-	C90lib.cld crilib.cld \
-	include/*.h Makefile Makefile.config \
-	dirac/*.F dirac/Makefile.in \
-	prp/*.F prp/Makefile.in \
-	abacus/*.F abacus/Makefile.in \
-	gp/Makefile.in gp/*.F gp/*.c \
-	pdpack/Makefile.in pdpack/*.F \
-	dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \
-	dirac/main/*.h dirac/main/*.head dirac/main/*.struct \
-	dhf.in 
-EOF
-if($ERITAR) then
-echo '	tar rvf DIRAC.new.tar eri/*.F eri/Makefile.in ' >> Makefile
-endif
-if($CCTAR) then
-echo '	tar rvf DIRAC.new.tar relccsd/*.F relccsd/Makefile.in relccsd/*.inc relccsd/*.c ' >> Makefile
-endif
-if($RSPTAR) then
-echo '	tar rvf DIRAC.new.tar prp/rsp/*.F prp/rsp/Makefile.in ' >> Makefile
-endif
-if($OPENTAR) then
-echo '	tar rvf DIRAC.new.tar dirac/open/*.F dirac/open/Makefile.in ' >> Makefile
-endif
-if($SPFTAR) then
-echo '	tar rvf DIRAC.new.tar dirac/spinfree/*.F dirac/spinfree/Makefile.in ' >> Makefile
-endif
-if($TRATAR) then
-echo '	tar rvf DIRAC.new.tar moltra/*.F moltra/Makefile.in ' >> Makefile
-endif
-if($PARTAR) then
-echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in ' >> Makefile
-endif
-if($CITAR) then
-echo '	tar rvf DIRAC.new.tar dirrci/*.F dirrci/*.inc dirrci/Makefile.in ' >> Makefile
-endif
-if($PAMADM) then
-echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
-endif
-cat <<EOF>> Makefile
-	gzip -9 DIRAC.new.tar
-
-veryclean :
-	\$(RM) -r dirac include abacus prp gp pdpack doc
-EOF
-if($TRAMOD) then
-echo '	$(RM) -r moltra' >> Makefile
-endif
-if($CCMOD) then
-echo '	$(RM) -r relccsd' >> Makefile
-endif
-if($CCMOD) then
-echo '	$(RM) -r relccsd' >> Makefile
-endif
-if($CIMOD) then
-echo '	$(RM) -r dirrci' >> Makefile
-endif
-cat <<EOF>> Makefile
+	./export
+#
+#  Objects
+#
 
 MAIN_OBJ:
 	cd dirac/main ; \$(MAKE) all
@@ -489,34 +636,34 @@ DIR_OBJ :
 PRP_OBJ :
 	cd prp; \$(MAKE) all
 EOF
-if($RSPMOD) then
+if [ -n "$RSPMOD" ]; then
 cat <<EOF>> Makefile
 
 RSP_OBJ :
 	cd prp/rsp; \$(MAKE) all
 EOF
-endif
-if($TRAMOD) then
+fi
+if [ -n "$TRAMOD" ]; then
 cat <<EOF>> Makefile
 
 TRA_OBJ :
 	cd moltra ; \$(MAKE) all
 EOF
-endif
-if($CCMOD) then
+fi
+if [ -n "$CCMOD" ]; then
 cat <<EOF>> Makefile
 
 CCM_OBJ :
 	cd relccsd ; \$(MAKE) all
 EOF
-endif
-if($ERIMOD) then
+fi
+if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
 ERI_OBJ :
 	cd eri; \$(MAKE) all
 EOF
-endif
+fi
 cat <<EOF>> Makefile
 
 HER_OBJ :
@@ -529,101 +676,173 @@ MXM_OBJ :
 	cd gp ; \$(MAKE) mxm
 
 EOF
-if($PARMOD) then
+if [ -n "$PARMOD" ]; then
 cat <<EOF>> Makefile
 PVM_OBJ :
-	cd abacus/par ; \$(MAKE) pvm 
+	cd abacus/par ; \$(MAKE) pvm
 
 SLAVE_OBJ :
 	cd abacus/par  ; \$(MAKE) slave
 EOF
-endif
+fi
 #
-if ($CIMOD) then
+if [ -n "$CIMOD" ]; then
 cat <<EOF>> Makefile
 CI_OBJ:
 	cd dirrci ; \$(MAKE) all
 EOF
-endif
+fi
 #
-if ($OPENMOD) then
+if [ -n "$OPENMOD" ]; then
 cat <<EOF>> Makefile
 OPEN_OBJ:
 	cd dirac/open ; \$(MAKE) all
 EOF
-endif
+fi
 #
-if ($SPFMOD) then
+if [ -n "$SPFMOD" ]; then
 cat <<EOF>> Makefile
 SPF_OBJ:
 	cd dirac/spinfree ; \$(MAKE) all
 EOF
-endif
-#if($ERIMOD) then
-#cat <<EOF>> Makefile
-#       cd eri/par ; \$(MAKE) slave
-#EOF
-#endif
+fi
+#
+if [ -n "$GEOMOD" ]; then
+cat <<EOF>> Makefile
+GEO_OBJ:
+	cd dirac/geom ; \$(MAKE) all
+EOF
+fi
 cat <<EOF>> Makefile
 
 PD_OBJ:
 	cd pdpack ; \$(MAKE) all
 EOF
 #
-#  Add makedepend target
+#  Add makedepend targets
 #
-set TEMP = ('dirac' 'prp' 'abacus' 'gp' 'pdpack' 'dirac/main')
-if ($PARMOD) then
-   set TEMP = ($TEMP 'abacus/par')
-endif
-if ($CCMOD) then
-   set TEMP = ($TEMP 'relccsd')
-endif
-if ($RSPMOD) then
-   set TEMP = ($TEMP 'prp/rsp')
-endif
-if ($TRAMOD) then
-   set TEMP = ($TEMP 'moltra')
-endif
-if ($ERIMOD) then
-   set TEMP = ($TEMP 'eri')
-endif
-if ($OPENMOD) then
-   set TEMP = ($TEMP 'dirac/open')
-endif
-if ($SPFMOD) then
-   set TEMP = ($TEMP 'dirac/spinfree')
-endif
-if ($CIMOD) then
-   set TEMP = ($TEMP 'dirrci')
-endif
+TEMP="dirac prp abacus gp pdpack dirac/main"
+if [ -n "$PARMOD" ]; then
+   TEMP="$TEMP abacus/par"
+fi
+if [ -n "$CCMOD" ]; then
+   TEMP="$TEMP relccsd"
+fi
+if [ -n "$RSPMOD" ]; then
+   TEMP="$TEMP prp/rsp"
+fi
+if [ -n "$TRAMOD" ]; then
+   TEMP="$TEMP moltra"
+fi
+if [ -n "$ERIMOD" ]; then
+   TEMP="$TEMP eri"
+fi
+if [ -n "$OPENMOD" ]; then
+   TEMP="$TEMP dirac/open"
+fi
+if [ -n "$SPFMOD" ]; then
+   TEMP="$TEMP dirac/spinfree"
+fi
+if [ -n "$CIMOD" ]; then
+   TEMP="$TEMP dirrci"
+fi
+if [ -n "$GEOMOD" ]; then
+   TEMP="$TEMP dirac/geom"
+fi
 
 cat <<EOF>> Makefile
 depend:
 EOF
-foreach ff ( $TEMP )
+for ff in $TEMP; do
    cat <<EOF>> Makefile
 	cd $ff; \$(MAKE) depend
 EOF
-end
+done
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# MAIN SCRIPT
 #
 #
 #
-if($GENTAR) then
+# Parse arguments
 #
-#  make tarfile
+if [ -z "$1" ]; then
+   usage
+   exit 1
+fi
+GENTAR=1
+while [ -n "$1" ]; do
+   case "$1" in
+      -adm|-ad)
+         PAMADM=1
+         ;;
+      -cc)
+         CCMOD=1
+         ;;
+      -par|-pa|-p)
+         PARMOD=1
+         PARTAR=1
+         ;;
+      -rsp|-rs|-r)
+         RSPMOD=1
+         ;;
+      -tra|-tr)
+         TRAMOD=1
+         ;;
+      -eri|-er|-e)
+         ERIMOD=0
+         ;;
+      -open|-ope|-op)
+         OPENMOD=1
+         ;;
+      -spinfree|-spinfre|-spinfr|-spinf|-spin|-spi|-sp|-s)
+         SPFMOD=1
+         ;;
+      -ci)
+         CIMOD=1
+         ;;
+      -geo|-ge)
+         GEOMOD=1
+         ;;
+      -3.1)
+         REL3_1=1
+         ;;
+      -*)
+         echo "Option \"$1\" not recognized."
+         usage
+         exit 1
+         ;;
+      *)
+         TARFIL=$1
+         ;;
+   esac
+   shift
+done
 #
-  make export
-  mv -f DIRAC.new.tar.gz $TARFIL.tar.gz
+# Setup variables
 #
-#  Retrieve original files
+setup
 #
-  mv -f Makefile.buf Makefile
-  mv -f tarbuf.gz DIRAC.new.tar.gz 
-  mv -f configure.buf configure
-endif
-exit 0 
-
-
-
-
+# Backup old files
+#
+backup
+#
+#
+#
+make_configure
+#
+# Make makefile
+#
+make_makefile
+#
+# Make distribution and restore old files
+#
+restore
+#
+#
+#
+exit 0
