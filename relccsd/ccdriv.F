@@ -1931,13 +1931,6 @@ C
          doccsdg = .false.
          domp2g = .true.
       endif
-#if defined (VAR_MPI)
-      IF (NMPROC.GT.1.AND.DOMP2G) THEN
-         WRITE (IW,*) ' parallel MP2 gradient not yet implemented,'
-     &         ,' calculate HF gradient'
-         domp2g = .false.
-      ENDIF
-#endif
       ALLOC = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
 C

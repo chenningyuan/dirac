@@ -143,7 +143,7 @@ setup_command()
 #SX   if [ -n "$MULTI_NODE" ]; then
 #SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
 #SX   else
-         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $DIRAC"
+         DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile machines $DIRAC"
 #SX   fi
    else
       DIRAC_CMD="./$DIRAC"
@@ -170,17 +170,7 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
       fi
    fi
-}
-#
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
-# EXECUTE DIRAC
-#
-#
-execute_dirac()
-{
+
    echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
 
    #
@@ -214,13 +204,24 @@ execute_dirac()
    else
       echo "was already there"
    fi
-   echo "   Executing: $NICE_CMD $DIRAC_CMD"
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# EXECUTE DIRAC
+#
+#
+execute_dirac()
+{
 
 #SXif [ -n "$MULTI_NODE" ]; then
 #SX   PWD=`pwd`
 #SX   export PWD
 #SXfi
 
+   echo "   Executing: $NICE_CMD $DIRAC_CMD"
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
@@ -288,6 +289,19 @@ exitfunc()
 #
 remove_work_dir()
 {
+#
+#  We alays delete the work directories on remote machines.
+#  These directories are not suited for restart.
+#
+   master=`hostname`
+   for node in ` cat $WRK/machines `; do
+       if [ $node != $master ]; then
+          rsh $node "rm -fr $WRK"
+       fi
+   done
+#
+#  Now delete work directory on primary machine if requested
+#
    if [ -n "$RMWRK" ]; then
       if [ $EXIT -eq 0 ]; then
          cd ..
@@ -332,6 +346,47 @@ set_work_dir()
    if [ -n "$RMSCR" ]; then
       rm -f $WRK/* 2> /dev/null || echo "RM error\!"
    fi
+}
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
+# COPY CONTENTS OF WORKING DIRECTORY TO REMOTE NODES 
+#
+#
+distribute_work_dir()
+{
+   cd $WRK
+#
+#  The list of machines depends on the queuing system that is used.
+#
+   if [ ! -z $PBS_NODEFILE ]; then
+#     PBS queueing system
+      cp $PBS_NODEFILE machines
+   else
+#    Serial run or shared disk systems
+     cat `hostname` > machines 
+   fi
+#
+#  Initialize value of master
+#
+   master=`hostname` 
+#
+#  Loop over the remote machines and copy the contents of the work directory.
+#
+   for node in ` cat machines `; do
+       if [ $node != $master ]; then
+          echo "copying contents of $master:$WRK to $node:$WRK"
+          rsh $node "mkdir -p $WRK"
+          if [ -n "$RMSCR" ]; then
+             rsh $node rm -f $WRK/*
+          fi
+          for file in ` ls `; do
+              rcp $file $node:$WRK/$file
+          done
+       fi
+   done
+   #
 }
 #
 #
@@ -477,6 +532,38 @@ set_work_memory()
 }
 #
 #
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+# MAKE MPI CONFIGURATION FILE
+# for NEC SX systems
+#
+#
+make_mpi_config()
+{
+    echo
+#SX if [ -n "$MULTI_NODE" ]; then
+#SXecho " Create configuration file for MPI on MULTI NODEs"
+#SXif [ ! -f $MULTI_CONF ]; then
+#SX   if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
+#SX      if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
+#SX         echo "$MULTI_CONF not found"
+#SX      else
+#SX         MULTI_CONF=$BIN_DIR/$MULTI_CONF
+#SX      fi
+#SX   else
+#SX      MULTI_CONF=$SRC_DIR/$MULTI_CONF
+#SX   fi
+#SXfi
+#SX
+#SX. $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
+#SX fi
+}
+#
+#  Set working directory, set work memory, print header
+#  copy files to working directory, save existing output file,
+#  setup command to run, execute dirac, save files, and delete
+#  working directory
+#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
@@ -608,7 +695,16 @@ while [ -n "$1" ]; do
          ;;
       -mpi)
          shift
+# LV : Be ware that the old default was to run also a slave on the master machine
+# This is fine for a master-slave HF/RPA algorithm but not for
+# parallel I/O intensive procedures (MOLTRA) and the symmetrically 
+# parallelized RELCCSD. I therefore changed the default to a lonely master.
+#
+#        Old default : master + one slave on node
+#        let MPI_NPROC=$1+1
+#        New default : master by itself on a node
          let MPI_NPROC=$1+1
+         MPI_NPROC=$1
          PARCAL=1
          ;;
       -nice)
@@ -669,37 +765,6 @@ while [ -n "$1" ]; do
    shift
 done
 #
-#
-# MAKE MPI CONFIGURATION FILE
-# for NEC SX systems
-#
-#
-make_mpi_config()
-{
-    echo
-#SX if [ -n "$MULTI_NODE" ]; then
-#SXecho " Create configuration file for MPI on MULTI NODEs"
-#SXif [ ! -f $MULTI_CONF ]; then
-#SX   if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
-#SX      if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
-#SX         echo "$MULTI_CONF not found"
-#SX      else
-#SX         MULTI_CONF=$BIN_DIR/$MULTI_CONF
-#SX      fi
-#SX   else
-#SX      MULTI_CONF=$SRC_DIR/$MULTI_CONF
-#SX   fi
-#SXfi
-#SX
-#SX. $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
-#SX fi
-}
-#
-#  Set working directory, set work memory, print header
-#  copy files to working directory, save existing output file,
-#  setup command to run, execute dirac, save files, and delete
-#  working directory
-#
 EXIT=0
 set_work_dir
 set_work_memory
@@ -707,6 +772,7 @@ print_header
 copy_files
 save_old_output
 setup_command
+distribute_work_dir
 make_mpi_config
 execute_dirac
 save_files

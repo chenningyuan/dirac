@@ -100,13 +100,29 @@ extern int main( int argc, char** argv )
             argc, argv );
 
    /*
+    * Distribute environment variables
+    */
+
+   distribute_env( "BASDIR", mytid );
+   distribute_env( "DIRWRK", mytid );
+   distribute_env( "DIRNOD", mytid );
+
+
+   /*
     * Allocate memory
     */
 
    mempointer = alloc_mem(mytid,&size);
+
    /*
     * Print logo, sysinfo etc.
     */
+
+   /* if master then sleep 1 second
+    * so that the slaves can finish their output
+    * before the master starts writing
+    */
+   if ( mytid == 0 ) sleep(1);
 
    if ( mytid == 0 ) print_logo(parcal);
 

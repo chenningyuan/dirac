@@ -179,6 +179,11 @@ C
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
+#include "ccpar.inc"
+#if defined (VAR_MPI)
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -198,24 +203,10 @@ C     Calculate X-intermediate
 C
       CALL XCOPY (NDIMX,A0,0,XVO,1)
 C--------------------------------------------
-C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
-C--------------------------------------------
-      CALL XCOPY (NDIMT2,S2,1,BUF3,1)
-      CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
-C--------------------------------------------
 C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
       CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
-C---------------------------------------------------------------------
-C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
-C---------------------------------------------------------------------
-      CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &              BUF1,BUF2)
-      M = NFVO
-      K = NFOO
-      CALL XGEMV ('N',M,K,A1,BUF2,M,DOO,1,A1,XVO,1)
 C------------------------------------
 C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
 C------------------------------------
@@ -226,8 +217,34 @@ C------------------------------------
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
      &            JJVO,BUF2,NBUF2,XVO,DVV,USEDZ,RIGHT)
 C
-C In parallel runs we probably need to synchronize here to account for the missing
-C contributions coming from the last term, to be checked and implemented !!!
+C In parallel runs we add all distributed contribution together here and
+C continue on the master.
+C
+#if defined (VAR_MPI)
+      IF(NMPROC.GT.1) THEN
+        CALL MPI_REDUCE(XVO,BUF1,RCW*NDIMX,
+     &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
+     &    MPI_COMM_WORLD,IERR)
+        CALL XCOPY(NDIMX,BUF1,1,XVO,1)
+      ENDIF
+#endif
+      IF (MYPROC.NE.MASTER) THEN
+      RETURN
+      ELSE
+C--------------------------------------------
+C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
+C--------------------------------------------
+      CALL XCOPY (NDIMT2,S2,1,BUF3,1)
+      CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
+C---------------------------------------------------------------------
+C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
+C---------------------------------------------------------------------
+      CALL GETVOOO (BUF1)
+      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+     &              BUF1,BUF2)
+      M = NFVO
+      K = NFOO
+      CALL XGEMV ('N',M,K,A1,BUF2,M,DOO,1,A1,XVO,1)
 C
       CALL XSCAL(NDIMX,-A1,XVO,1)
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
@@ -254,6 +271,10 @@ C
       CALL RPAA (NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
      &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
      &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
+C
+C     End of part executed only on the master
+C
+      ENDIF
 C
       RETURN
       END

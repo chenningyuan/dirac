@@ -10,6 +10,8 @@ pampath=`pwd`
 dirac=`pwd`/dirac.x
 testdir=`pwd`/test
 cvs="no"
+mpi=" "
+nodes=1
 queue="none"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -43,6 +45,8 @@ usage='Usage: '$0'\n'\
 '\tDirectory in which the tests should be run (default: -testdir=test)\n'\
 '--cvs=yes/no\n'\
 '\tRun cvs prior to compilation (default: -cvs=no)\n'\
+'--mpi=MPI\n'\
+'\tNumber of nodes to be used (default: run serial job)\n'\
 '--queue=QUEUE\n'\
 '\tQueue to be used in qsub (default: -queue=none meaning run interactively)\n'
 
@@ -88,6 +92,12 @@ while [ $# != 0 ]; do
       "cvs")
          if [ "${valomitted}" = "no" ]; then
             cvs="$val"
+         fi
+         ;;
+      "mpi")
+         if [ "${valomitted}" = "no" ]; then
+            nodes=$val
+            mpi="--mpi=$nodes"
          fi
          ;;
       "queue")
@@ -208,7 +218,7 @@ fi
 cat <<EOF >job
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --pampath=$pampath --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --pampath=$pampath $mpi --dirac=$dirac --run=$run > ${testdir}/logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -238,7 +248,7 @@ else
 #
 echo " Submitting test calculations to queue $queue ... "
 echo " When they are done please check the results in the directory ${testdir}/logs. "
-/usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=1:$queue -q ${queue} -V job
+/usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job
 #bsub <job
 fi
 rm job

@@ -72,6 +72,7 @@ void c_frac2i();
 void frac2i();
 void sysinf();
 void creadreorder();
+void distribute_env();
 
 /*
  * Take string of tokens and return new ordering
@@ -203,9 +204,53 @@ void compoff_(double *wrk,double *work, int *kbase) {
    *kbase = (int) (wrk-work+1);
 }
 
+void distribute_env(const char* name, int mytid)
+{
+
+ /* Routine to set the value of environment variables on the slaves
+    equal to that of the master if it was not defined on the slave
+    Written by Luuk Visscher, october 2002                          */
+
+ #if !defined (VAR_MPI)
+  return
+#else
+#include <mpi.h>
+  char *env_local, *env_master, *newname;
+  int len_local, len_master, len_name;
+
+  len_local = 0;
+  if( (env_local=getenv(name)) != NULL) len_local=strlen(env_local)+1;
+
+  if ( mytid == 0 ) len_master = len_local; 
+  MPI_Bcast(&len_master, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if ( mytid == 0 ) 
+     env_master = env_local; 
+  else
+     env_master = (char *) malloc(len_master);
+
+  MPI_Bcast(env_master, len_master, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+  if ( mytid != 0 && len_local == 0 && len_master != 0) 
+  { 
+    len_name = strlen(name) + len_master + 1;
+    newname = (char *) malloc(len_name);
+
+    /*
+    printf("Environment variable %s not set on node %i taking value %s from master\n",
+            name,mytid,env_master);
+    */
+    sprintf(newname,"%s=%s",name,env_master);
+    putenv(newname);
+    free(env_master);
+  }
+
+#endif
+}
+
 
 #ifdef VAR_IFC
-/* extra routines needed by intel's ifc compiler which does not
+ /* extra routines needed by intel's ifc compiler which does not
  * provide them itself.
  * Pawel Salek, pawsa@theochem.kth.se, 2002.01.31
  */

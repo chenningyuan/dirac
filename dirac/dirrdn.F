@@ -136,7 +136,9 @@ C
 C     If input test , exit here
 C     =========================
 C
-      IF(INPTES) STOP '***End of DIRAC input test ***'
+CLV   Replaced stop by (not so elegant) QUIT because we otherwise 
+CLV   fail miserably in MPI...
+      IF(INPTES) CALL QUIT('Normal exit, only input check was asked.')
 C
       RETURN
       END

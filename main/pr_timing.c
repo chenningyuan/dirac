@@ -48,30 +48,42 @@
  ;
 
 
-#include "pr_timing.head"
+#if defined (VAR_MPI)
+#include <mpi.h>
+   int *ierr, itid;
+#endif /* VAR_MPI */
 
+#include "pr_timing.head"
 {
    char *sectid;
 
+   sectid = (char *) malloc(30);
+
    if ( ! mytid )
       printf("*****************************************************\n");
-   sectid = (char *) malloc(30);
+  
    csectid(gt_last->cpu - gt_first->cpu,sectid);
+
+#if defined (VAR_MPI)
    if ( numnod > 0 )
-      printf(">>>> Total CPU  time used in DIRAC (Node %i): %s\n", \
-         mytid,sectid);
+      {
+       for (itid=0; itid<numnod; itid++) 
+         {
+          ierr = MPI_Barrier(MPI_COMM_WORLD);
+          if (mytid == itid) printf(">>>> Total CPU  time used in DIRAC (Node %i): %s\n",mytid,sectid);
+         }
+      }
    else
+#endif /* VAR_MPI */
       printf(">>>> Total CPU  time used in DIRAC: %s\n",sectid);
 
    csectid(gt_last->wall - gt_first->wall,sectid);
-   if ( numnod > 0 )
-      printf(">>>> Total WALL time used in DIRAC (Node %i): %s\n", \
-         mytid,sectid);
-   else
-      printf(">>>> Total WALL time used in DIRAC: %s\n",sectid);
-   free(sectid);
-
    if ( ! mytid )
+     {
+      printf(">>>> Total WALL time used in DIRAC: %s\n",sectid);
       printf("********** E N D   of   D I R A C  output  **********\n");
+     }
+
+   free(sectid);
 
 }

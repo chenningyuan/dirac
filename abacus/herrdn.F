@@ -4381,7 +4381,7 @@ C
      $        '*** ERROR ***: NMLINE < NMLN_LASTREAD in RDLINE',
      $        'NMLINE = ',NMLINE,
      $        'NMLN_LASTREAD = ',NMLN_LASTREAD
-         CALL QUIT('*** ERROR argh')
+         CALL QUIT('*** ERROR reading basis')
       ENDIF 
       IF (.NOT. PARHER .AND. NMLINE .GT. NMLN_LASTREAD) 
      $     READ (LUINFO,'(A)',END=11) MLINE(NMLINE)
@@ -5992,10 +5992,11 @@ C
          END IF
          STRING = STRING(1:IEND)//FILNAM
          IEND = INDEX(STRING(1:),' ') - 1
-         WRITE(LUPRI,'(3A/,A1,A,A1)')
-     &        'BFGINP: Trying basis set file for ',
-     &        SZ(ICP),' component: ',
-     &        '"',STRING(1:IEND),'"'
+CLV : Reactivate when debugging, otherwise see below.
+CLV      WRITE(LUPRI,'(3A/,A1,A,A1)')
+CLV  &        'BFGINP: Trying basis set file for ',
+CLV  &        SZ(ICP),' component: ',
+CLV  &        '"',STRING(1:IEND),'"'
 C        
 C        Inquire if "/path/basis-set" exists.
 C        
@@ -6003,14 +6004,21 @@ C
          IF (.NOT.TOBE) GOTO 10
          OPEN (LUBFIL,FILE=STRING,FORM='FORMATTED',STATUS='OLD')
          REWIND (LUBFIL)
+C
+C        Tell the user where his basis set comes from
+C
+         WRITE(LUPRI,'(3A/2A)')
+     &   ' The ', SZ(ICP),' component basis for this atom is read from',
+     &   ' the MOLFDIR-type file : ',STRING(1:IEND)
       ENDIF
 C
 C     Read two line header of basis set file
 C     ======================================
 C
-      READ (LUBFIL,'(A80)',END=5020) TEXT
-      READ (LUBFIL,'(A80)',END=5021) TEXT
-      READ (TEXT,'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
+      CALL RDLINE(LUBFIL)
+      READ (MLINE(NMLINE),'(A80)',END=5020) TEXT
+      CALL RDLINE(LUBFIL)
+      READ (MLINE(NMLINE),'(A10,A8,2(A10,I4),F6.1,F20.5)',END=5020) 
      &      DATE1,TIME1,FORMATE,NE,FORMATC,NC,DCHRG,DEXPO
 C
 C     Read component, l-type and number of functions:
@@ -6022,9 +6030,10 @@ C     NUNC   = # number of uncontracted functions
 C     ===============================================
 C
   301 CONTINUE
-      READ (LUBFIL,'(A80)',END=390) TEXT
-      READ (TEXT,'(6I4)',END=5021)
+      CALL RDLINE(LUBFIL)
+      READ (MLINE(NMLINE),'(6I4)',END=390,ERR=390)
      &      ICOMP,ITYP,NPRIM,NCONTR,IDUM,NUNC
+      IF (ICOMP.EQ.0) GOTO 390 
 C
 C     Skip large component lines which we don't need in the small
 C     component case
@@ -6036,6 +6045,8 @@ C
             IF (MOD(NPRIM,NE).NE.0) NSTEP = NSTEP + 1
             IF (MOD(NCONTR*NPRIM,NC).NE.0) NSTEP = NSTEP + 1
             DO 310 INIT = 1, NSTEP
+C              These lines should NOT be read in with RDLINE
+C              because they need not be communicated to the slaves.
                IF (.NOT.PARHER) READ (LUBFIL,*,END=5021)
   310       CONTINUE
             GOTO 301
@@ -6057,13 +6068,13 @@ C     Number of exponents and contraction coefficients on a line is 4
 C     ===============================================================
 C
       DO I = 1, NPRIM, 4
-         READ (LUBFIL,'(A80)',END=5021) TEXT
-         READ (TEXT,FORMATE,ERR=5020,END=391)
+         CALL RDLINE(LUBFIL)
+         READ (MLINE(NMLINE),FORMATE,ERR=5020,END=5020)
      &         (ALPIN(IND),IND=I,MIN(I+3,NPRIM))
       ENDDO
       DO I = 1, NPRIM*NCONTR, 4
-         READ (LUBFIL,'(A80)',END=5021) TEXT
-         READ (TEXT,FORMATC,ERR=5020,END=391)
+         CALL RDLINE(LUBFIL)
+         READ (MLINE(NMLINE),FORMATC,ERR=5020,END=5020)
      &         (CPRIN(IND),IND=I,MIN(I+3,NPRIM*NCONTR))
       ENDDO
 C
@@ -6165,7 +6176,8 @@ C
       GOTO 301
   390 CONTINUE
       NBLCK(IAT,ICP) = NBLOCK - IBLCK
-  391 CLOSE (LUBFIL)
+  391 CONTINUE
+      CLOSE (LUBFIL)
       RETURN
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
@@ -6175,12 +6187,12 @@ C
         CALL QUIT('Too many AO-blocks')
  5020 CONTINUE
         WRITE (LUPRI,'(/A/A/2A)')
-     &     'Error reading the following line :',TEXT,
+     &     'Error reading the following line :',MLINE(NMLINE),
      &     'in MOLFDIR type basis set file : ',FILNAM
         CALL QUIT('Error reading contents of MOLFDIR basis set file.')
  5021 CONTINUE
         WRITE (LUPRI,'(/A/A/2A)')
-     &     'Error reading the line following this line :',TEXT,
+     &     'Error reading the line following this line :',MLINE(NMLINE),
      &     'in MOLFDIR type basis set file : ',FILNAM
         CALL QUIT('Error reading contents of MOLFDIR basis set file.')
  5025 CONTINUE

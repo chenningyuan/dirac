@@ -741,7 +741,7 @@ C
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1
       WRITE(LUPRI,'(A/,A1,A,A1)')
-     &     'Trying basis set file: ','"',STRING(1:IEND),'"'
+     &     ' Searching basis : trying file: ','"',STRING(1:IEND),'"'
 C
 C     Inquire if "/path/basis-set" exists.
 C

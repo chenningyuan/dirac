@@ -67,74 +67,39 @@
 
 #if defined (VAR_MPI)
 
-   int par,ierr;
-   char *dirpar;
+   int ierr;
 
    /*
-    * Check if this is a parallel calculation or not;
-    * check for DIRPAR in environment
+    * MPI start
     */
 
-   par = 0;
-   dirpar = getenv("DIRPAR");
+   if ( (ierr = MPI_Init( &argc, &argv )) )
+      printf("MPI_Init error %i in ini_mpi()\n",ierr);
 
-   if (dirpar != NULL)
-   {
-      par = atoi(dirpar);
-   }
-   else
-   {
-      par = 0;
-   }
+   /*
+    * Set up MPI error handler
+    */
 
-   if ( ! par )
-   {
-      *mytid =  0;
-      *parcal = 0;
-      *mparid = 0;
-      *numnod = 1;
-   }
-   else
-   {
+   if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
+      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
-      /*
-       * MPI start
-       */
+   if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
+      printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
 
-      if ( (ierr = MPI_Init( &argc, &argv )) )
-         printf("MPI_Init error %i in ini_mpi()\n",ierr);
+   /*
+    * Get number of nodes and the number of this node
+    */
 
-      /*
-       * Set up MPI error handler
-       */
+   if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
+      printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
 
-      if ( (ierr = MPI_Errhandler_create(&mpi_errtrap,errhandler)) )
-         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+   if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
+      printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
-      if ( (ierr = MPI_Errhandler_set(MPI_COMM_WORLD,*errhandler)) )
-         printf("MPI_Errhandler_create error %i in ini_mpi()\n",ierr);
+   /* printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
 
-      /*
-       * Get number of nodes and the number of this node
-       */
-
-      if ( (ierr = MPI_Comm_rank(MPI_COMM_WORLD,mytid)) )
-         printf("MPI_Comm_rank error %i in ini_mpi()\n",ierr);
-
-      if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
-         printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
-
-      /* printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
-
-      if ( *mytid == 0 ) sleep(1);
-      /* if master then sleep 1 second
-       * so the nodes can print to output before the master
-       * (a synchronize would have been better) /hjaaj
-       */
-
-      *mparid = 0;
-      *parcal = 1;
-   }
+   *mparid = 0;
+   *parcal = 1;
     
 #else  /* VAR_MPI */
    *mytid =  0;

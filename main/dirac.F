@@ -40,6 +40,7 @@ C
 #include "mxorb.h"
 #include "infpar.h"
 #include "infmpi.h"
+#include "priunit.h"
 #endif
 C
       DIMENSION WORK(LWORK)
@@ -75,6 +76,7 @@ C
 C     Send finish signal to slaves
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -2 )
+      CALL FLSHFO(LUPRI)
 C
       RETURN
       END
@@ -251,12 +253,7 @@ C
 #if defined (VAR_MPI)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnod */
-#if defined (VAR_MPI) || defined (VAR_MPI)
       SUBROUTINE DIRNOD(IPARCAL,IMYTID,IMPARID,INUMNOD,WORK,MWORK)
-#endif
-#if defined (VAR_PVM)
-      PROGRAM DIRNOD
-#endif
 C*****************************************************************************
 C
 C     Menu file for slave nodes. Check whether the program needs a slave
@@ -276,13 +273,8 @@ C
       INCLUDE 'mpif.h'
       INTEGER ISTATUS(MPI_STATUS_SIZE)
       LOGICAL NEWTASK
-#else
-#include "fpvm3h.h"
 #endif
 C
-#if defined (VAR_PVM)
-      PARAMETER (MWORK = 6 000 000)
-#endif
 #include  "mxorb.h"
 #include "infpar.h"
 C
@@ -302,34 +294,26 @@ C We count the number of slave nodes, subtract the master
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
 #endif
-#if defined (VAR_PVM)
-      CALL PVMFMYTID(MYTID)
-      IF (MYTID .LT. 0) CALL PFAIL(MYTID)
-C
-      CALL PVMFPARENT(MPARID)
-      IF (MPARID .LT. 0) CALL PFAIL(MPARID)
-#endif
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
 C
       CALL GETBASDIR()
 C
-chj   write (0,*) 'Calling mpi_iprobe for node',mytid
-chj   call flush(0)
  100  CONTINUE
 #if defined (VAR_MPI)
+C
+C     Check whether there is a new task waiting : if not
+C     the slave may sleep for one second. This is useful on
+C     shared memory architectures where MPI_RECV is implemented
+C     using an idle loop that consumes unnecessary CPU when
+C     waiting in a serial part of the code.
+C
       CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
      &                NEWTASK,STATUS_MPI,IERR)
       IF (NEWTASK) THEN
-chj      write (0,*) 'mpi_iprobe true for node',mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
          CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
-chj      write (0,*) ' itask, node',itask,mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
       ELSE
          CALL SLEEP(1)
          GO TO 100
@@ -344,13 +328,6 @@ C     ***************************************************
 C     ***** Receive initialization data from master *****
 C     ***************************************************
 C
-#if defined (VAR_MPI)
-chj   CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-#endif
-#if defined (VAR_PVM)
-      CALL PVMFUNPACK(INTEGER4,ITASK,1,1,INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-#endif
       IF (ITASK .LT. 0) THEN
 C
 C        Global end of program : go up for MPI_FINALIZE
@@ -387,15 +364,8 @@ C
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
-C     But they may rest for a while to start refreshed for their new job.
-C     L. Visscher. Jul-1997
 C
       GOTO 100
-C
-#if defined (VAR_PVM)
-      CALL PVMFEXIT(INFO)
-      IF (INFO .LT. 0) CALL PFAIL(INFO)
-#endif
 C
  999  CALL QEXIT('DIRNOD')
       END
@@ -482,7 +452,6 @@ C        go back from submenu to main menu via MPI_BCAST
       ELSE
 C        slave should be in main menu, ready to receive task
          DO NODE = 1,NUMNOD
-chj         write (0,*) 'sending itask',itask,' to node',node
             CALL MPI_SEND(ITASK,1,MPI_INTEGER,NODE,27,
      &                 MPI_COMM_WORLD,IERR)
          END DO
