@@ -158,11 +158,11 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL REWINP,DOEA,DOIE
+      LOGICAL REWINP,DOEA,DOIE,DOEA2,DOIE2,DOEXC
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
-     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
+     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE
       NAMELIST/CCSORT/ USEOE,NORECMP
       NAMELIST/CCENER/ DOMP2,NOCCS,NOCCD,DOCCSD,DOCCSDT,
@@ -194,7 +194,6 @@ C
       DOENER  = .TRUE.
       DOFOPR  = .FALSE.
       DOSOPR  = .FALSE.
-      DOEXC   = .FALSE.
       DOFSPC  = .FALSE.
       DOIH  = .FALSE.
       DEBUG  = .FALSE.
@@ -298,6 +297,9 @@ C
       ENDDO
       DOEA = .FALSE.
       DOIE = .FALSE.
+      DOEXC = .FALSE.
+      DOEA2 = .FALSE.
+      DOIE2 = .FALSE.
       FSSECT(1) = 1
       DO ISECT = 2, 6
          FSSECT(ISECT) = 0
@@ -325,6 +327,25 @@ C
       IF (DOIE) THEN
          FSSECT(1) = 1
          FSSECT(3) = 1
+      ENDIF
+C
+      IF (DOEXC) THEN
+         FSSECT(1) = 1
+         FSSECT(2) = 1
+         FSSECT(3) = 1
+         FSSECT(4) = 1
+      ENDIF
+C
+      IF (DOEA2) THEN
+         FSSECT(1) = 1
+         FSSECT(2) = 1
+         FSSECT(5) = 1
+      ENDIF
+C
+      IF (DOIE2) THEN
+         FSSECT(1) = 1
+         FSSECT(3) = 1
+         FSSECT(6) = 1
       ENDIF
 C
 C     Input for IH procedure
@@ -367,6 +388,10 @@ C
    99 CALL QUIT('Error exit while reading namelist CCEND')
   100 CONTINUE
       IF (REWINP) REWIND (IN)
+C
+C     Some consistency and other checks
+C
+      IF (DOFSPC.AND..NOT.(DOENER.OR.DOFOPR.OR.DOSOPR)) DOSORT=.FALSE.
 C
       RETURN
       END
@@ -534,7 +559,7 @@ C
       ENDDO
 C
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
-     &                DOSOPR,DOEXC,DEBUG,TIMING,IPRNT,MWORD,INTERFACE
+     &                DOSOPR,DEBUG,TIMING,IPRNT,MWORD,INTERFACE
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -563,9 +588,17 @@ C
       CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOSOPR) MXCORR = MAX(MXCORR,MXCORR1)
 C
-      MXCORR1 = 0
-      CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
-      IF (DOEXC) MXCORR = MAX(MXCORR,MXCORR1)
+C     ------------------------------------------------------------------
+C     MXCORR1 = 0
+C     CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+C     IF (DOEXC) MXCORR = MAX(MXCORR,MXCORR1)
+C     CCEXC is obsolete since we can now get RPA excitation energies
+C     via the RPA module and CC excitation energies via the FS module
+C     Keep the call for a while, I may change my mind and use this
+C     to debug something. (LV, 15-9-2003)
+C     Btw : Note that I now use the variable DOEXC for use in the
+C     Fock space module !!!
+C     ------------------------------------------------------------------
 C
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
@@ -656,9 +689,10 @@ C
       CPU1 = CPU2
       CALL FLSHFO (IW)
 C
-      IF (DOEXC ) CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                        NSP,IREPSPI)
-      CALL FLSHFO (IW)
+CLuuk : See comment regarding CCEXC above
+C     IF (DOEXC ) CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
+C    &                        NSP,IREPSPI)
+C     CALL FLSHFO (IW)
 C
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI)
@@ -714,7 +748,6 @@ C
      &        /" Do energy calculation   :",T44,L1
      &        /" Do gradient calculation :",T44,L1
      &        /" Do response calculation :",T44,L1
-     &        /" Calculate exc. energies :",T44,L1
      &        /" Debug information       :",T44,L1
      &        /" Timing information      :",T44,L1
      &        /" Print level          :",T40,I5
@@ -2427,8 +2460,9 @@ C
       TOL = 10.0D0**(-NTOLRP)
 C
 C     This is very old code and not well tested : better warn
-C     WRITE (IW,*) " WARNING : This module is obsolete and is not tested anymore"
-C     WRITE (IW,*) " Use it at your own risk....."
+      WRITE (IW,*) 
+     & " WARNING : This module is obsolete and is not tested anymore"
+      WRITE (IW,*) " Use it at your own risk....."
 C
 C
       DO IREP = 1, NREP
