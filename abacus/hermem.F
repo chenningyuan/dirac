@@ -255,7 +255,7 @@ C
       END IF
       IF (GENCD) THEN
          LCONTC = 2*NORBC*NUCC*NODCCD
-         LCONTB = 2*NORBD*NUCD*NODCCD
+         LCONTD = 2*NORBD*NUCD*NODCCD
          LPNTCD = 2*LUUCD
          LREDCD = NORBC*NORBD
          LNCSCD = 0
