@@ -11,7 +11,8 @@ Water molecule. LDA energy
 **HAMILTONIAN
 .DFT
 *DFT
-.LDA
+.DFTFUN
+LDA
 .RADINT
 1.0D-12
 **WAVE FUNCTIONS

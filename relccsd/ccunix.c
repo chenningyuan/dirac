@@ -73,40 +73,27 @@ int nwords=0, nio=0;
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #define MACRO_QUIT QUITC
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
-#define MACRO_QUIT quitc
 #else
 #define MACRO_QUIT quitc_
 #endif
 
 void MACRO_QUIT();
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN) || defined (SYS_DARWIN)
-void openc_();
-void wrabsf_();
-void rdabsf_();
-void closec_();
-#elif defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_CRAY)
-void openc();
-void wrabsf();
-void rdabsf();
-void closec();
+#if defined (SYS_AIX) || defined (SYS_DARWIN) || defined (SYS_DEC)  || \
+    defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_LINUX) || \
+    defined (SYS_SUN) 
+#define PAM_GLOBAL_SYMBOLS_UNDERSCORED
+#elif defined (SYS_CRAY) || defined (SYS_T3D)
+     /* #define PAM_GLOBAL_SYMBOLS_PLAIN */
 #else
 ????
 #endif
 
 
-
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN) || defined (SYS_DARWIN)
-void openc_(unit,fname,size,status) off64_t *size; int *unit, *status; char *fname;
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
-void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
-void openc(unit,fname,size,status) off64_t *size; int *unit, *status; char *fname;
+#ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
+void openc_(int*unit, char*fname, off64_t* size, int *status)
 #else
-????
+void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 #endif
 
 { char *cp, *env ;
@@ -165,15 +152,10 @@ void openc(unit,fname,size,status) off64_t *size; int *unit, *status; char *fnam
 
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN) || defined (SYS_DARWIN)
-void wrabsf_(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
-void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
-#elif defined (SYS_AIX) || defined (SYS_HPUX) 
-void wrabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
+#ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
+void wrabsf_(int* unit, char* a, int* l, off64_t* p)
 #else
-???
+void wrabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
 { off64_t addr; int  m, n;
@@ -212,15 +194,10 @@ void wrabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN) || defined (SYS_DARWIN)
-void rdabsf_(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
-#elif defined (SYS_CRAY) || defined (SYS_T3D)
-void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
-void rdabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
+#ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
+void rdabsf_(int* unit, char* a, int* l, off64_t* p)
 #else
-????
+void rdabsf(unit,fcd,l,p) off64_t *p; int *unit, *l; _fcd fcd;
 #endif
 
 { off64_t addr; int m, n;
@@ -259,13 +236,10 @@ void rdabsf(unit,a,l,p) off64_t *p; int *unit, *l; char *a;
   files[*unit].addr=addr+n;
 }
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || \
-    defined (SYS_SUN) || defined (SYS_DARWIN)
-void closec_(unit) int *unit;
-#elif defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_AIX) || defined (SYS_HPUX)
-void closec(unit) int *unit;
+#ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
+void closec_(int* unit)
 #else
-????
+void closec(unit) int *unit;
 #endif
 
 { if (*unit>MAXUNIT || *unit<0)
@@ -282,3 +256,13 @@ void closec(unit) int *unit;
 }
 
 
+
+
+#if defined (SYS_AIX)
+void
+unlink_(char* fname)
+{
+  unlink(fname); /* ... and pray it does not crash.                  */
+                 /* alternatively, check out ts_fmm version of gpc.c */
+}
+#endif /* SYS_AIX */

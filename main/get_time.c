@@ -33,7 +33,8 @@
  * DATE    : $Date$
  * SOURCE  : $Source$
  * DESCR.  : Get timing
- * AUTHOR  : J. Thyssen - 980716
+ * AUTHOR  : J. Thyssen - 980716, 
+ *           portability to AIX and HPUX simplified by P. Salek, 020608
  *
  */
 
@@ -48,8 +49,6 @@
 {
 #if defined (SYS_CRAY) || defined (SYS_T3D)
    GETTIM(&(gt->cpu),&(gt->wall));
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
-   gettim(&(gt->cpu),&(gt->wall));
 #else
    gettim_(&(gt->cpu),&(gt->wall));
 #endif

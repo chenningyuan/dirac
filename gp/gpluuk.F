@@ -330,13 +330,14 @@ C
       TIMCPU = TSECND() - TCPU0
 #endif
 #endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT) || (SYS_DARWIN)
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
+ || defined (SYS_SUN) || defined (SYS_DEC)  || defined (SYS_LINUX) \
+ || (SYS_ALLIANT) || (SYS_DARWIN)
       real*4  etime, tarray(2)
 C
       TIMCPU = etime(tarray)
 #endif
-#if defined (SYS_AIX) || defined (SYS_PARAGON)
+#if defined (SYS_PARAGON)
 C 900521-hjaaj timer for IBM AIX operating system
 C 941013-hjaaj: and for Intel PARAGON
       integer*4 itime(4),times,iwall
@@ -379,7 +380,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       TIJD  = STRING(12:19)
 #endif
 #if defined (SYS_AIX) 
-      Call fdate_ (String)
+      Call fdate (String)
       Datum = String(1:10)
       Tijd  = String(12:19)
 #endif

@@ -5,15 +5,13 @@
  * SOURCE  : $Source$
  * DESCR.  : Header file for Dirac subroutine
  * AUTHOR  : J. Thyssen - 980709
+ *           portability to AIX and HPUX simplified by P. Salek, 020608
  *
  */
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #define MACRO_DIRAC DIRAC
 #define MACRO_DIRNOD DIRNOD
-#elif defined (SYS_AIX) || defined (SYS_HPUX)
-#define MACRO_DIRAC dirac
-#define MACRO_DIRNOD dirnod
 #else
 #define MACRO_DIRAC dirac_
 #define MACRO_DIRNOD dirnod_

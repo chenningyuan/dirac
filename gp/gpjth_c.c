@@ -29,8 +29,6 @@
   */
 /*
  *
- * VERSION : $Revision$
- * DATE    : $Date$
  * FILE    : gpjth_c.c
  * SOURCE  : $Source$
  *
@@ -57,13 +55,6 @@
 #include <fortran.h>
 #define frac2i FRAC2I
 #define creadreorder CREADREORDER
-#define compoff COMPOFF
-#elif defined (SYS_HPUX)
-/* nothing */
-#elif defined (SYS_AIX)
-#define frac2i frac2i
-#define creadreorder creadreorder
-#define compoff compoff
 #else
 #define frac2i frac2i_
 #define creadreorder creadreorder_

@@ -37,7 +37,6 @@ C
       IF (.NOT.GRDONE) THEN
          CALL DFTGRD(WORK,LWORK,1,.FALSE.)
          GRDONE = .TRUE.
-         CALL CONDFT 
       END IF
 #if defined (VAR_MPI)
       IF(PARCAL) THEN
@@ -101,6 +100,7 @@ C
 #include <dftcom.h>
 #include <orgcom.h>
 #include <dftbuf.h>
+#include <functionals.h>
 C
       LOGICAL DOERG, DOGRD, DOLND, DOATR
       DIMENSION DMAT(*),DTRMAT(*),
@@ -136,16 +136,7 @@ C
          NDER = 0
       END IF
 C
-      FACDRC = WDFTX
-      FACVWN = WDFTC
-      FACBCK = WDFTB
-      FACLYP = WDFTL
-C
-      DODRC = ABS(FACDRC) .GT. THRSH
-      DOVWN = ABS(FACVWN) .GT. THRSH 
-      DOBCK = ABS(FACBCK) .GT. THRSH 
-      DOLYP = ABS(FACLYP) .GT. THRSH 
-      DOGGA = DOBCK .OR. DOLYP
+      DOGGA = DFT_IS_GGA()
 CTROND
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
@@ -165,40 +156,7 @@ C
 C     integrate
 C
       ELCTRN = D0
-C
-      ERGDRC = D0
-      ERGVWN = D0
-      ERGBCK = D0
-      ERGLYP = D0
-C
-      ED = D0
-      EV = D0
-      EB = D0
-      EL = D0
-C
-      VD  = D0
-      VV  = D0
-      VB1 = D0 
-      VB2 = D0 
-      VL1 = D0 
-      VL2 = D0 
-C
-      IF (DOATR) THEN
-         VDRC1  = D0
-         VVWN1  = D0
-         FR0BCK = D0
-         FR0LYP = D0
-         FZ0BCK = D0
-         FZ0LYP = D0
-         FRRDRC = D0
-         FRRVWN = D0
-         FRRBCK = D0
-         FRRLYP = D0
-         FRZDRC = D0
-         FRZVWN = D0
-         FRZBCK = D0
-         FRZLYP = D0
-      END IF
+      EDFTY  = D0
 C
       REWIND LUQUAD
       R2TOT = D0
@@ -248,7 +206,7 @@ C
      &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
      &               DOERG,DOGRD,DOLND,DOATR,DFTASC,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,DST,BUF,GRADFT,WORK(KFREE),LFREE,IPRINT)
+     &               NCNT,DST,BUF,WORK(KFREE),LFREE,IPRINT)
 #if defined (VAR_MPI) 
          ENDIF
 #endif
@@ -264,8 +222,8 @@ C
       IF(PARCAL) CALL DFTRES(EXCMAT,NXCMAT,WORK(KFREE),LFREE,IPRINT)
 #endif
       IF (DOERG) THEN
-        EDFTY = ERGDRC + ERGVWN + EXCTRO + ERGBCK + ERGLYP
-     &         - DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
+        DENERGY = EDFTY
+        EDFTY = EDFTY +EXCTRO-DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
         DO I = 1, NBAST
           DO J = 1, I - 1 
             AVERAG = DP5*(EXCMAT(I,J,1) + EXCMAT(J,I,1))
@@ -301,15 +259,10 @@ C
          WRITE (LUPRI,'( 2X,A,F20.12)')
      &      ' Number of electrons:               ', ELCTRN
          IF (DOERG) THEN
-            WRITE (LUPRI,'(/2X,A,3F14.6)') 
-     &         ' Dirac and Becke exchange energy:',       
-     &           ERGDRC, ERGBCK, ERGDRC+ERGBCK
-             WRITE (LUPRI,'(2X,A,3F14.6)') 
-     &          ' VWN and LYP correlation energy :', 
-     &          ERGVWN, ERGLYP, ERGVWN + ERGLYP
+CPAWSA            CALL DFT_ENE_REPORT()
             WRITE (LUPRI,'(2X,A,28X,F14.6)') 
      &          ' DFT exchange-correlation energy:', 
-     &          ERGDRC + ERGBCK + ERGVWN + ERGLYP
+     &          DENERGY
          END IF
       END IF
       IF (IPRINT .GE. 100) THEN
@@ -350,8 +303,7 @@ C/* Deck dftdr1 */
      &               DMAT,DTRMAT,EXCMAT,NXCMAT,IREPOP,
      &               DOERG,DOGRD,DOLND,DOATR,DFTASC,
      &               GAO,GAO1,GAO2,GAB1,
-     &               NCNT,DST,BUF,GRADFT,
-     &               WORK,LWORK,IPRINT)
+     &               NCNT,DST,BUF,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Written by Trond Saue and T.Helgaker
@@ -369,13 +321,16 @@ C
 #include <inforb.h>
 #include <orgcom.h>
 #include <dftbuf.h>
+#include <dfterg.h>
+#include <functionals.h>
       LOGICAL DOERG,DOGRD,DOLND,DOATR, DFTASC
       DIMENSION CORX(NPOINT),CORY(NPOINT),CORZ(NPOINT),
-     &            WEIGHT(NPOINT),GRADFT(*),
+     &            WEIGHT(NPOINT),
      &            DMAT(NBAST,NBAST),DTRMAT(*),
      &            GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &            GAB1(NBAST,3),EXCMAT(NBAST,NBAST,NXCMAT), 
      &            NCNT(NBAST), DST(NATOMS),BUF(NBAST,4),
+     &            VX(DERVS1),
      &            WORK(LWORK)
       DIMENSION RHG(3)
       DO 300 IPNT = 1, NPOINT
@@ -386,10 +341,6 @@ C
         END IF
 C
         WGHT = WEIGHT(IPNT)
-        WDRC = FACDRC*WGHT
-        WVWN = FACVWN*WGHT
-        WBCK = FACBCK*WGHT
-        WLYP = FACLYP*WGHT
 C
 C       AOs
 C       ===
@@ -416,9 +367,9 @@ C
 C       Numerical test
 C       ==============
 C
-        IF (.FALSE.) THEN
-          CALL DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
-        END IF
+CPAWSA  IF (.FALSE.) THEN
+CPAWSA     CALL DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
+CPAWSA  END IF
 C
 C       Hessian of density
 C       ===================
@@ -441,31 +392,15 @@ C       Energy
 C       ======
 C
         IF(DOERG) THEN
-          IF (DODRC) CALL EDRC(ED,RHO,RHO13)
-          IF (DOVWN) CALL EVWN(EV,RHO,RHO13)
-          IF (DOLYP) CALL ELYP(EL,RHO,RHO13,RHOGRD)
-          IF (DOBCK) CALL EBCK(EB,RHO,RHO13,RHOGRD)
-          ERGDRC = ERGDRC + WDRC*ED
-          ERGVWN = ERGVWN + WVWN*EV
-          ERGBCK = ERGBCK + WBCK*EB 
-          ERGLYP = ERGLYP + WLYP*EL
+           EDFTY = EDFTY + DFTENERGY(RHO,RHOGRD)*WGHT
         ENDIF
 C
 C       Exchange-correlation potential 
 C       ==============================
 C
         IF (DOERG.OR.DOGRD.OR.DOLND) THEN
-          IF (DODRC) CALL VDRC(VD,RHO13)
-          IF (DOVWN) CALL VVWN(VV,RHO,RHO13)
-          IF (FROMVX) THEN
-            IF (DOBCK) CALL VBCK(VB1,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG)
-            IF (DOLYP) CALL VLYP(VL1,RHO,RHO13,RHOGRD,RHOLAP)
-          ELSE
-            IF (DOBCK) CALL GBCK(VB1,VB2,RHO,RHO13,RHOGRD)
-            IF (DOLYP) CALL GLYP(VL1,VL2,RHO,RHO13,RHOGRD)
-          END IF
-          VXC = WDRC*VD + WVWN*VV + WBCK*VB1 + WLYP*VL1
-          VXB = WBCK*VB2 + WLYP*VL2
+           CALL DFTPOT0(VX, WGHT, RHO, RHOGRD)
+           IF(DOGGA) VX(FZ0) = 2D0*VX(FZ0)/RHOGRD
         ENDIF
 C
 C       Exchange-correlation contribution to Kohn-Sham matrix
@@ -473,9 +408,9 @@ C       =====================================================
 C
         IF (DOERG) THEN
           IF (DOGGA .AND. .NOT.FROMVX) THEN
-            CALL DOEXC2(VXC,VXB,RHG,EXCMAT,GAO,GAO1)      
+            CALL DOEXC2(VX(FR0),VX(FZ0),RHG,EXCMAT,GAO,GAO1)      
           ELSE
-            CALL DOEXC1(VXC,0,EXCMAT,GAO)
+            CALL DOEXC1(VX(FR0),0,EXCMAT,GAO)
           END IF
         END IF
 C
@@ -498,8 +433,7 @@ C       ======================
 C
         IF (DOATR) THEN
           CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,RHO13,
-     &                  RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,DOVWN,
-     &                  DOBCK,DOLYP,DOGGA,.FALSE.,BUF)
+     &                RHOGRD,RHG,WGHT,DOGGA,BUF)
 CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
         END IF
   300 CONTINUE
@@ -708,6 +642,7 @@ C
       RETURN
       END
 #endif /* ifndef PRG_DIRAC */
+#ifdef ENABLE_DFT_NUMERICAL_TEST
 C  /* Deck dftnum */
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
 #include <implicit.h>
@@ -825,6 +760,7 @@ C
       END IF
       RETURN
       END
+#endif /* ENABLE_DFT_NUMERICAL_TEST */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck doexc1 */
       SUBROUTINE DOEXC1(VXC,IREPOP,EXCMAT,GAO)      
@@ -1084,16 +1020,7 @@ CTROND
          NDER = 0
       END IF
 C
-      FACDRC = WDFTX
-      FACVWN = WDFTC
-      FACBCK = WDFTB
-      FACLYP = WDFTL
-C
-      DODRC = ABS(FACDRC) .GT. THRSH
-      DOVWN = ABS(FACVWN) .GT. THRSH 
-      DOBCK = ABS(FACBCK) .GT. THRSH 
-      DOLYP = ABS(FACLYP) .GT. THRSH 
-      DOGGA = DOBCK .OR. DOLYP
+      DOGGA = DFT_IS_GGA()
 CTROND
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
@@ -1113,40 +1040,6 @@ C
 C     integrate
 C
       ELCTRN = D0
-C
-      ERGDRC = D0
-      ERGVWN = D0
-      ERGBCK = D0
-      ERGLYP = D0
-C
-      ED = D0
-      EV = D0
-      EB = D0
-      EL = D0
-C
-      VD  = D0
-      VV  = D0
-      VB1 = D0 
-      VB2 = D0 
-      VL1 = D0 
-      VL2 = D0 
-C
-      IF (DOATR) THEN
-         VDRC1  = D0
-         VVWN1  = D0
-         FR0BCK = D0
-         FR0LYP = D0
-         FZ0BCK = D0
-         FZ0LYP = D0
-         FRRDRC = D0
-         FRRVWN = D0
-         FRRBCK = D0
-         FRRLYP = D0
-         FRZDRC = D0
-         FRZVWN = D0
-         FRZBCK = D0
-         FRZLYP = D0
-      END IF
 C
       KFRSAV = KFREE
   100 CONTINUE
@@ -1172,7 +1065,7 @@ C
      &            DOERG,DOGRD,DOLND,DOATR,DFTASC,
      &            WORK(KGAO),WORK(KGA1),WORK(KGA2),WORK(KGB1),
      &            WORK(KCNT),WORK(KDST),WORK(KBUF),
-     &            GRADFT,WORK(KFREE),LFREE,IPRINT)
+     &            WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DFPAR1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       GOTO 100
 C

@@ -95,7 +95,7 @@ C  /* Deck timdat */
 #if defined (SYS_AIX)
 C     AIX XL FORTRAN version 2.3+
       CHARACTER*(24) fdate_
-      WRITE (LUPRI,100) fdate_()
+      WRITE (LUPRI,100) fdate()
   100 FORMAT(/,' Date and time (IBM-AIX): ',A)
 #endif
 #if defined (SYS_HPUX)

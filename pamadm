@@ -1,12 +1,8 @@
 #! /bin/sh
 #
-# VERSION : $Revision$
-# DATE    : $Date$
 # FILE    : pamadm
 # SOURCE  : $Source$
 #
-#
-#   $Id$
 #
 #   Master script for administrator of DIRAC
 #   Written by Trond Saue Oct 1 1997
@@ -447,7 +443,9 @@ if [ -n "$DFTMOD" ]; then
 cat <<EOF>> Makefile
 
 DFTOBJS = \\
-dft/pamdft.o    dft/dftden.o    dft/dftdrv.o    dft/dftfun.o    dft/dftgrd.o dft/dftaux.o
+dft/pamdft.o dft/dftden.o      dft/dftdrv.o     dft/dftgrd.o \
+dft/dftaux.o dft/functionals.o dft/fun-slater.o dft/fun-vwn.o dft/fun-becke.o \
+dft/fun-lyp.o dft/fun-pw86x.o dft/fun-p86c.o
 EOF
 fi
 #

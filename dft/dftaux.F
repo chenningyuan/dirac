@@ -68,8 +68,7 @@ C       Insert half-phases
       END       
 C /* Deck dftltr */
       SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,RHO13,
-     &                  RHOGRD,RHG,WDRC,WVWN,WBCK,WLYP,DODRC,DOVWN,
-     &                  DOBCK,DOLYP,DOGGA,TRPLET,BUF)
+     &                  RHOGRD,RHG,WGHT,DOGGA,BUF)
 C
 C     T. Helgaker sep 99/oct 00
 C     adapted to DIRAC by T.Saue May 3 2001
@@ -89,13 +88,14 @@ C
 #include <dftinf.h>
 #endif
 #include <dftcom.h>
+#include <functionals.h>
 C
       INTEGER A, B
-      LOGICAL DODRC, DOVWN, DOBCK, DOLYP, DOGGA, TRPLET
+      LOGICAL DOGGA, TRPLET
       DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
      &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
      &          GAO(NBAST), GAO1(NBAST,3), 
-     &          RHG(3),BUF(*)
+     &          RHG(3),VXC(DERVS2), BUF(*)
       DIMENSION B3(3)
 C
       DO IM = 1,NXCMAT      
@@ -115,24 +115,8 @@ CTROND           IF (DABS(B0).GT.DFTHRL) THEN
 C
 C             Calculated VT
 C
-              IF (DODRC) THEN
-                 CALL V1DRC(VDRC0,VDRC1,RHO,RHO13)
-              ELSE
-                 VDRC0 = D0
-                 VDRC1 = D0
-              ENDIF
-              IF (DOVWN) THEN 
-                 IF (.NOT.TRPLET) THEN
-                    CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
-                 ELSE
-CTROND                    CALL VTVWN(FRRVWN,RHO,RHO13)
-                    FRRVWN = DP5*FRRVWN 
-                 END IF
-              ELSE
-                 VVWN0  = D0
-                 FRRVWN = D0
-              END IF
-              VT = (WDRC*VDRC1 + WVWN*FRRVWN)*B0
+              CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
+              VT = VXC(FRR)*B0
 C
 C             Linear transformation
 C  
@@ -261,4 +245,11 @@ CTROND         END IF
       END IF
       ENDDO
       RETURN
+      END
+
+      SUBROUTINE FORT_WRT(str, slength)
+#include <priunit.h>
+      INTEGER unit, slength
+      CHARACTER str(slength)
+      WRITE(LUPRI, *) str
       END

@@ -58,16 +58,12 @@ C function of the close is that it empties the output buffer.
      X      INITIALSIZE=24,EXTENDSIZE=24,
      X      ACCESS='APPEND',SHARED,CARRIAGECONTROL='FORTRAN')
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_HPUX)
 C
 C     Force transfer of all buffered output to the file or device
 C     associated with logical unit IUNIT.
 C
       CALL FLUSH(IUNIT)
-#endif
-#if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CALL flush_(IUNIT)
 #endif
 #if defined (SYS_PARAGON)
       CALL FORFLUSH(IUNIT)
@@ -95,18 +91,12 @@ C
       WRITE (CDATE,'(A8)') IDATE
       WRITE (CTIME,'(A8)') ITIME
 #else
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX)  || defined (SYS_DEC) \
-   || defined (SYS_IRIX)    || defined (SYS_PARAGON) || defined (SYS_SUN) \
-   || defined (SYS_LINUX) || defined(SYS_HPUX) || defined (SYS_SX) || defined (SYS_DARWIN)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
+   || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_PARAGON) \
+   || defined (SYS_SUN) || defined (SYS_LINUX) || defined(SYS_HPUX) \
+   || defined (SYS_SX) || defined (SYS_DARWIN)
       CHARACTER*(24) FFDATE, FDATE
       FFDATE = FDATE()
-      CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
-      CTIME  = FFDATE(12:19)
-#else
-#if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CHARACTER*(24) FFDATE, fdate_
-      FFDATE = fdate_()
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
 #else
@@ -117,7 +107,6 @@ C     AIX XL FORTRAN version 2.3+
 #else
       CDATE = ' -date- '
       CTIME = ' -time- '
-#endif
 #endif
 #endif
 #endif
@@ -173,9 +162,10 @@ C
       TIMWAL = DP001 * ( TIMEF() - TWALL0 )
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX)
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX) \
+ || defined (SYS_AIX)
 #if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
- || defined (SYS_DEC) || defined (SYS_SX)
+ || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_AIX)
 C...  SGI IRIX code
 C      external time
       DOUBLE PRECISION TIMCPU, TIMWAL
@@ -277,7 +267,7 @@ C
          TIMWAL = TIOA
       END IF
 #endif
-#if defined (SYS_AIX) || defined (SYS_PARAGON)
+#if defined (SYS_PARAGON)
 C 900521-hjaaj timer for IBM AIX operating system
 C 941013-hjaaj: and for Intel PARAGON
 C 010309-lv : modified because AIX times gives uptime of the machine
@@ -460,13 +450,9 @@ C
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
-#endif
-#if defined (SYS_AIX)
-      CHARACTER*(24) fdate_
-      CHARACTER*(32) HSTNAM
 #endif
 C
       LTEXT = LEN(TEXT)
@@ -526,7 +512,7 @@ C 930414-hjaaj: apparent error IBM's xlf library routines:
 C    when 'T6' then column 1-5 not blanked but contains text
 C    from a previous print statement!
 C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate_()
+      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
 C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
       CALL hostnm_(HSTNAM)
       WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
@@ -1668,7 +1654,7 @@ D 503 FORMAT(' ',Z10/' ',4Z10/' ',I12/(6I12))
       IF( ISTAT.NE.1 .OR. ILEN.NE.4 ) CALL QUIT('SECOND: CPUTIM ERROR')
       SECOND=IBUF(1)/100.0
 #endif
-#if defined (SYS_AIX) || defined (SYS_PARAGON)
+#if defined (SYS_PARAGON)
 #include <implicit.h>
 C 900521-hjaaj timer for IBM AIX operating system
 C 941013-hjaaj and for Intel Paragon
@@ -1691,7 +1677,7 @@ C     idum = elapsed time, itime(1:2) = system and user time
          SECOND = CPUA
       END IF
 #endif
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
+#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_SX)
 #include <implicit.h>
       real*4 etime,tarray(2)
 #if !defined (SYS_T3D)

@@ -1,4 +1,2 @@
 C
-      COMMON /DFTERG/ EDFTX, EDFTC, EDFTY, 
-     &                WDFTX, WDFTC, WDFTL, WDFTB,
-     &                GRADFT(MXCOOR)
+      COMMON /DFTERG/ GRADFT(MXCOOR), EDFTY

@@ -1,3 +1,4 @@
+#if !defined(__CVERSION__)
 C
 C VERSION : $Revision$
 C DATE    : $Date$
@@ -41,3 +42,11 @@ C
      &        INERSI,INERSF,SPINFR,ZORA,ZORA4,ZORASC,SMLV1C,PROJEC,
      &        PROOWN,DFTHAM
       COMMON/DCRHAM/SSMTRC,EPSOL,EPSTAT,RSOLAV,PRJTHR,HFXFAC
+#else  /* __CVERSION__ */
+#define MAX1OPER 10
+#define MPRJREF 6
+  extern struct common_dcrham {
+    real ssmtrc,epsol,epstat,rsolav,prjthr,hfxfac;
+  } dcrham_;
+
+#endif /* __CVERSION__ */

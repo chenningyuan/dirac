@@ -1,6 +1,4 @@
 #
-# VERSION : $Revision$
-# DATE    : $Date$
 # FILE    : configure.in
 # SOURCE  : $Source$
 #
@@ -251,7 +249,8 @@ case $machine in
 
    rs6000-ibm)
       liblist='libesslp2 libessl libblas'
-      complist='xlf f77 f90';;
+      complist='xlf f77 f90'
+      cclist='xlc xlC cc';;
 
    powerpc-ibm)
       liblist='libesslp2 libessl libblas'
@@ -934,9 +933,9 @@ case $machine in
        fi
        arflag='rv'
        c_opt='+O3 -Ae'
-       opt='+O3 +U77 +E4 +E5'
+       opt='+O3 +U77 +ppu'
        inc="-I$INCLUDE_DIR"
-       LIB="-lV7 $LIB"
+       LIB="-lV7 -lm $LIB"
        if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp="$cpp -DVAR_LIBVECLIB"
        fi
@@ -1120,10 +1119,11 @@ case $machine in
                mpi_inc="-WF,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
                c_mpi_inc="-Wc,-I$INCLUDE_DIR,\$(MPI_INCLUDE_DIR)"
             fi
-            c_inc="-Wc,-I$INCLUDE_DIR"
+            c_inc="-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
          esac
-         opt='-O3 -qstrict'
+         opt='-O3 -qstrict -qextname'
+	 c_opt='-O3 -qstrict'
          ldflag='-bmaxdata:0x80000000'
          ;;
 #
@@ -1181,7 +1181,7 @@ case $machine in
       for mod in $MODS; do
          cpp=`echo $cpp $mod`
       done
-      opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
+      opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
       inc="-I$INCLUDE_DIR";;
    
    *)

@@ -35,6 +35,7 @@
  * DESCR.  : Allocate memory and return pointer
  *           This subroutine contains all the system-dependent stuff
  * AUTHOR  : J. Thyssen - 980709
+ *           portability to AIX and HPUX simplified by P. Salek, 020608
  *
  */
 
@@ -46,8 +47,6 @@
 
 #if defined (SYS_CRAY) || defined (SYS_T3D)
 #define CALL_QUIT QUIT
-#elif defined (SYS_AIX)|| defined (SYS_HPUX)
-#define CALL_QUIT quit
 #else 
 #define CALL_QUIT quit_
 #endif /* SYS_CRAY */

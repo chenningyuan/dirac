@@ -1,7 +1,9 @@
 
 include ../Makefile.config
 
-OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o
+OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o \
+	functionals.o fun-slater.o fun-becke.o fun-vwn.o fun-lyp.o \
+	fun-pw86x.o fun-p86c.o
 
 all:	$(OBJS) 
 
