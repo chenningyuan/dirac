@@ -199,10 +199,8 @@ void sysinf(int parcal)
    free(un);
 }
 
-void compoff(double *wrk,double *work, int *kbase) {
- 
+void compoff_(double *wrk,double *work, int *kbase) {
    *kbase = (int) (wrk-work+1);
- 
 }
 
 

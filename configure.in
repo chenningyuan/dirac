@@ -1181,7 +1181,7 @@ case $machine in
       done
       case "$F77" in
       g77)
-         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals'
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
          ;;
       ifc)
          opt='-O3'; ccp="$ccp -DVAR_IFC"
