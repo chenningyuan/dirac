@@ -1,0 +1,10 @@
+ $Revision$
+ $Date$
+ $Source$
+
+Misc. utilities for Dirac
+-------------------------
+
+1. labread
+
+Check for MOLECULE records on files.
