@@ -149,7 +149,6 @@ C
 C     Generate density matrix
 C     =======================
 C
-      print*,'Wave Function ',WF
       IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
          INQUIRE(FILE='DFCOEF',EXIST=FILEX)
          IF(.NOT.FILEX) GOTO 1000
@@ -166,7 +165,6 @@ C
          END IF
 #ifdef MOD_KRMC
       ELSE IF (WF .EQ. 'KRMC') THEN
-        print*,'Entering KRMC part.'
 C
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
