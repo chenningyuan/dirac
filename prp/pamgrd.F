@@ -511,7 +511,7 @@ C
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
            IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
-           CALL QBTRANS(IREP,'AOMO','S',D0,
+             CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -620,6 +620,7 @@ C
      &                IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
+            CALL HEADER('Output from GPGET',-1)
             IREP = ISYM-1
             WRITE(LUPRI,'(A,A16)') 
      &      '* Gradient (e-p) of property ',PRPNAM(INDXPR)
