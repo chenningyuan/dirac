@@ -113,11 +113,11 @@ C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRI,100) FDATE()
   100 FORMAT(/,' Date and time (IRIX)   : ',A)
 #endif
-C#if defined (SYS_LINUX)
-C      CHARACTER*(24) FTIME
-C      WRITE (LUPRI,100) FTIME()
-C  100 FORMAT(/,' Date and time (Linux) : ',A)
-C#endif
+#if defined (SYS_LINUX)
+      CHARACTER*(24) FDATE
+      WRITE (LUPRI,100) FDATE()
+  100 FORMAT(/,' Date and time (Linux) : ',A)
+#endif
 #if defined (SYS_SX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
