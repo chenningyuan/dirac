@@ -125,7 +125,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck setxoe */
+C/* Deck setxee */
       SUBROUTINE SETXEE(JXOPE,IOPSY,NXOPE,IND,NIND,IPRINT)
 C***********************************************************************
 C   
@@ -432,6 +432,7 @@ CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
 C
+C
       CALL QENTER('GETFC1')
       LUBUF = 22
 C
@@ -441,7 +442,12 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,4)
+      IF (IPRINT .GE. 10) THEN
+         IOPT = 4
+      ELSE
+         IOPT = 6
+      END IF
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,IOPT)
       CLOSE(LUBUF,STATUS='KEEP')
       NFMAT = 1
       IF (NASHT .GT. 0) NFMAT = 2
@@ -452,6 +458,8 @@ C
       INQUIRE(FILE='DFFCK2',EXIST=TOBE)   
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
+        WRITE(LUPRI,'(/A)')
+     &    '* GETFCK: reading old two-electron Fock matrix'
         IF (NASHT .EQ. 0) THEN
            CALL REAFCK(LUBUF,FMO,.TRUE.,1)
          ELSE
@@ -459,8 +467,19 @@ C
          END IF
         CLOSE(LUBUF,STATUS='KEEP')
       ELSE
-        WRITE(LUPRI,'(A)')
-     &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
+        INTFLG = INTDEF
+Chjaaj MAERKE 01-Feb-2001: this is the best we can do now; 
+C      this assumes the user uses the same input for restart
+C      with *DHFCAL specified as in the .DHF calculation such that
+C      any user-specified change of INTFLG (e.g. no SSSS) is used.
+C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
+C
+        ILLINT = IBTAND(INTFLG,1)
+        ISLINT = IBTAND(INTFLG/2,1)
+        ISSINT = IBTAND(INTFLG/4,1)
+        WRITE(LUPRI,'(/A,3I2)')
+     &    '*** WARNING *** GETFCK: No 2-Fock found.'//
+     &    ' Regenerating with .INTFLG =',ILLINT,ILSINT,ISSINT
         NPOS = 0
         IF(PARCAL) THEN
           BF1  = FIRST1
@@ -498,8 +517,6 @@ c         CALL DENSTY(FAO,CMO,IPRINT)
           IF (NASHT .GT. 0) 
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
-CJTH    should INTFLG always be 7???
-        INTFLG = 7
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
      &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
         IF(PARCAL) THEN
@@ -525,10 +542,12 @@ C
       INQUIRE(FILE='DFFCK1',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'DFFCK1','OLD','GETFC1')
+        WRITE(LUPRI,'(/A)')
+     &    '* GETFCK: reading old one-electron Fock matrix'
         CALL REAFCK(LUBUF,FAO,.TRUE.,1)
         CLOSE(LUBUF,STATUS='KEEP')
       ELSE
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI,'(/A)')
      &    '*** WARNING *** GETFCK: No 1-Fock found. Regenerating.'
         CALL ONEFCK(FAO,IPRINT,WORK(KFREE),LFREE)
       ENDIF
@@ -861,9 +880,9 @@ C
         KOFF = 0
         DO IFRP = 1,NFSYM
           NVEC = 1
-          CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
-     &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                 NVEC,WORK(KFREE),LFREE)
+          CALL NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
+     &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
+     &                NVEC,WORK(KFREE),LFREE)
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
