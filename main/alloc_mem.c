@@ -34,7 +34,8 @@
    {
       *size = INSTALL_WRKMEM;
    }
-   printf("DIRAC allocating %i words of memory\n",*size);
+   if ( ! mytid )
+      printf("DIRAC allocating %i words of memory\n",*size);
    return diracmalloc(SIZE_REAL*(*size));
 }
 
