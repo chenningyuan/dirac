@@ -1,0 +1,86 @@
+- abacus/her2ave.F: INTEX1:
+  "Total Fock matrix" DVAD, DV... etc. are not defined
+
+- abacus/herbas.F: CONLIN (line 384)
+  DSM not defined
+
+- herrdn.F: BUILDZ
+  KCHARG defined in gnrinf.h which is not included in DIRAC
+
+- hermem.F: MEMHER
+  NUCR1-4, NORR2-3, KHKT2 are not defined
+
+- fort.7 on Linux
+
+- test of conventional integrals. 
+
+- dynamisk opdatering af screening threshold, a la den fra dalton
+- screening: 2sum i gab-matricer og reducerede densitets matricer
+             Dynamisk opdatering af Step 1 screening threshold, kombineret
+             med fast Step 2 screening threshold. 
+             Evt. Step 2 threshold med 2sum
+
+- gradient and spin-free
+
+- parallel calculation: if READIN.MAXPRI is set in input it is NOT
+  tranferred to slvaes.
+
+- MPI initialisering/frigivning af slaver flyttes til TWOFCK
+
+- Allokering af NPOS (bruges i PARDRV) flyttes til TWOFCK
+
+- ESTGLS/ESTGSS: 0.1 --> 0.01 and remove components in gradient
+  less than precision to avoid introducing noise in the 
+  Hessian update method.
+
+- Introduc'er keyword .QUIT THRESHOLD for den 'soft limit' i DHF.
+  (se e-mail af 28. April af hjj)
+
+- Exit DHF hvis gradienten ikke gaar ned i 5-10 iterationer.
+
+- Ombyt ep foer diagonalisering for at undgaa numeriske instabiliteter
+  i Householder (er programmeret, se branch af dirscf.F)
+
+- memory reductions for open shell DHF (eg. call TWOINT several times for each fock matrix)
+
+- configure: Naar scratch ikke findes saa udskriv advarsel og be om bekraeftigelse.
+
+- pamxlr.F: SUBR XLRINP: Naar der sattes strenge op med inaktive, aktive og 
+  sekundaere orbitaler,
+  saa betyttes der NFBAS, der boer vaere NESH. Endvidere er der en fejl for 
+  de aktive orbitaler (et 1 istedet for 2)
+  Problem: NORB,NESH,NPSH er ikke sat i XLRINP!
+
+- For HP-maskiner letes det ogsaa eter libveclib, men denne finnes ikke
+  her. Dermed skal heller ikke
+  cpp-flagget  -DVAR_LIBVECLIB aktiveres, men det gjoer det likevel. Kan
+  du fikse det ?
+
+- powerpc = ibm (in configure)
+
+- integrate codata.h & units.h (done in dalton, get it from dalton)
+
+- pamexp.F: PRPEXP. Instead of calculating individual density matrices
+  calculate the total. DT = DC + sum_O f_O DV_O
+
+- dzero i pamgrd.F, PRPMAT linje 400 af PTRI
+
+- <<B;B>> udskrives i hver microiteration, men med forkert fortegn
+  (se mail til Trond 20. maj 1999)
+
+- Symbolske COMFACTOR's og eventuelt komplekse COMFACTORS in
+  specifikation af .OPERATOR
+
+- introducer THRZER i QHTRID istedet for test paa D0
+
+- poe i pam (se mail fra Trond 26. maj 1999)
+
+- PAMPRP memory leak: alloc foer PAMEXP, men ingen dealloc?
+
+- AUTOCC a la dalton
+
+- aktivering af SYMADD i herrdn.F
+
+- redundant kald til MVODEN i MVOGEN (dirscf.F)
+
+- gradient beregning uden DFFCK2
