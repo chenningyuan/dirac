@@ -536,7 +536,9 @@ C
       NA   = LEN(A)
       IF(NA.GT.72) GOTO 940
       IF(NA.GE.3) THEN
-        IF(A(1:3).EQ.'all') THEN
+C       IF(A(1:3).EQ.'all') THEN
+Chj: modified 981103
+        IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
           IF(IP.EQ.0) THEN
             DO 10 I=IRNGE1,IRNGE2
