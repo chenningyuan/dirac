@@ -894,6 +894,8 @@ C     Transfer information from XCBXQR to other common blocks
 C     to be used in solving the linear response equations.
 C
       LINEQ = .TRUE.
+      FKRMC     = .FALSE.
+C     ... not KRMC wave function optimization
 C     LSVCFG debug option not implemented in QR /hjaaj
 C     LSVCFG(1) = XQR_LSFG(1)
 C     LSVCFG(2) = XQR_LSFG(2)
