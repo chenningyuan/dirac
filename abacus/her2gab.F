@@ -1909,76 +1909,122 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Getgab */
-      SUBROUTINE GETGAB(GABM,GABLAB,N2GAB,WORK,LWORK)
+C     /* Deck Getgab */
+      SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
+     &     GABM,WORK,LWORK)
 C***********************************************************************
-C
+C     
 C     Fetch compressed matrix of Cauchy-Scwartz-integrals from file
-C
+C     
 C     Written by T.Saue Mar 20 1997
-C
+C     
 C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
+#include <aovec.h>
+#include <mxorb.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <blocks.h>
+#include <chrxyz.h>
       LOGICAL EXTST,OPTST,FNDLAB
-      CHARACTER GABLAB*8
-      DIMENSION GABM(N2GAB), WORK(*)
-C
+      CHARACTER GABLAB(3)*8
+      DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
+#include <memint.h>
+C     
+C     Construct label
+C     ---------------
+C     
+      IF(ITYPE.EQ.0) THEN
+         NGAB = 1
+         GABLAB(1) = 'GABXXXXX'
+      ELSE IF (ITYPE .EQ.10) THEN
+         NGAB = 3
+         DO I = 1,NGAB
+            GABLAB(I) = 'GABXXX'//CHAR(MAXDIF+48)//CHRXYZ(-I)
+         END DO
+      ELSE
+         WRITE(LUPRI,'(A,I2)') 'GETGAB: Invalid ITYPE = ',ITYPE
+         CALL QUIT('GETGAB: Invalid ITYPE')
+      ENDIF
+      DO I = 1,NGAB
+         IF    (IJOB.EQ.0) THEN
+            GABLAB(I)(4:5) = 'AO'
+         ELSEIF(IJOB.EQ.1) THEN
+            GABLAB(I)(4:5) = 'SO'
+         ELSE
+            WRITE(LUPRI,'(A,I2)') 'GETGAB: Invalid IJOB = ',IJOB
+            CALL QUIT('GETGAB: Invalid IJOB')
+         ENDIF
+      END DO
+C     
 C     Check if file AOPROPER is present
-C
+C     ---------------------------------
+C     
       OPTST = .FALSE.
       INQUIRE(FILE='AOPROPER',EXIST=EXTST)
       IF(EXTST) THEN
-C     File AOPROPER present; see if it is opened
-        INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
-        IF(OPTST) THEN
-C       File AOPROPER is opened; get unit number
-          INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
-        ELSE
-C       File AOPROPER is not opened; open it
-          LUPROP = 19
-#if defined (SYS_IBM)
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
-        ENDIF
-      ELSE
-        WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
-        CALL QUIT('GETGAB: AOPROPER not found !')
-      ENDIF
-C
-C     Get GAB-matrix
-C
-      REWIND LUPROP
-      IF(FNDLAB(GABLAB,LUPROP)) THEN
-         READ(LUPROP,ERR=10,END=20) GABM
-      ELSE IF (GABLAB(6:8) .EQ. 'XXX') THEN
-         WRITE(LUPRI,'(/A,A8,A)') '*** WARNING  GETGAB: ',
-     &        GABLAB,' not found on AOPROPER. Regenerating.'
-         CALL GABGEN(0,0,0,0,0,.FALSE.,0,WORK,LWORK)
-         REWIND LUPROP
-         IF(FNDLAB(GABLAB,LUPROP)) THEN
-            READ(LUPROP,ERR=10,END=20) GABM
+C        File AOPROPER present; see if it is opened
+         INQUIRE(FILE = 'AOPROPER',OPENED=OPTST)
+         IF(OPTST) THEN
+C           File AOPROPER is opened; get unit number
+            INQUIRE(FILE = 'AOPROPER',NUMBER=LUPROP)
          ELSE
-            WRITE(LUPRI,'(A,A8,A)')
-     &           'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-            CALL QUIT('GETGAB: No GAB on AOPROPER !')
-         END IF
+C           File AOPROPER is not opened; open it
+            LUPROP = 19
+#if defined (SYS_IBM)
+            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &           FILE='APROPER')
+#else       
+            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &           FILE='AOPROPER')
+#endif      
+         ENDIF
       ELSE
-         WRITE(LUPRI,'(A,A8,A)')
-     &   'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-         CALL QUIT('GETGAB: No derivative GAB on AOPROPER !')
+         WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'
+         CALL QUIT('GETGAB: AOPROPER not found !')
       ENDIF
+C     
+C     Get GAB-matrix
+C     --------------
+C     
+      DO IGAB = 1, NGAB
+         REWIND LUPROP
+         IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
+            CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+         ELSE 
+            WRITE(LUPRI,'(/4A)')
+     &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
+     &           'calling GABGEN.'
+            CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
+     &           IPRINT,WORK,LWORK)
+            REWIND LUPROP
+            IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
+               CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+            ELSE
+               WRITE(LUPRI,'(A,A8,A)')
+     &              'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
+               CALL QUIT('GETGAB: No GAB on AOPROPER !')
+            END IF
+         ENDIF
 C
+         IF(IPRINT.GE.4) THEN
+            CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
+            WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+            CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,NSYMBL,NSYMBL,
+     &                  -4,LUPRI)
+         ENDIF
+C
+      END DO
+C     
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       RETURN
  10   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: ERROR reading ',GABLAB
-        CALL QUIT('GETGAB: Error reading GAB from AOPROPER !')
+      CALL QUIT('GETGAB: Error reading GAB from AOPROPER !')
  20   CONTINUE
       WRITE(LUPRI,'(A,A8)') '* GETGAB: EOF   reading ',GABLAB
-        CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
+      CALL QUIT('GETGAB: EOF reading GAB from AOPROPER !')
       END
+
+
