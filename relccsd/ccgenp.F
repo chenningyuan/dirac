@@ -126,8 +126,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
-#endif
-#if defined (SYS_HPUX)
+#elif defined (SYS_HPUX)
       STRING(1:24) = FDATE()
       DATUM = STRING(1:10)
       TIJD  = STRING(12:19)
@@ -138,19 +137,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Call fdate_ (String)
       Datum = Strinf(1:10)
       Tijd  = String(12:19)
+#else
+      Date and time on your computer???
 #endif
       Return
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#else
-      Date and time on your computer???
       INTEGER FUNCTION INTOWP(N)
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       INTOWP = N
 #else
       INTOWP=2*N
 #endif
-C64B  INTOWP=N
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
