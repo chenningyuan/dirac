@@ -579,7 +579,7 @@ C
 #include "dcborb.h"
 #include "dcbprj.h"
 C
-      DIMENSION PFO(*),DFO(*)NCNT(*),NMO(*),
+      DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),
      &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
      &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*),
      &          WORK(*)
