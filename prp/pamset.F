@@ -31,8 +31,9 @@ C FILE    : pamset.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck setxop */
-      SUBROUTINE SETXOP(INDSTR,IOPSY,NXOPE,KXOPE,NXOPP,KXOPP,
-     &                  WORK,KFREE,LFREE,SKIPEP,SKIPEE,QED,IPRINT)
+      SUBROUTINE SETXOP(INDSTR,SKIPEE,SKIPEP,IOPSY,
+     &                  NXOPE,KXOPE,NXOPP,KXOPP,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
 C
 C     Set orbital rotation index vectors
@@ -65,14 +66,16 @@ C*****************************************************************************
 C
 C Used from common blocks:
 C  DGROUP: NFSYM
+C  DCBHAM: QED
 C  DCBORB: IORB,NPSH,NFRO,NISH,NASH
 C
 #include "dgroup.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 C
-      LOGICAL SKIPEP,SKIPEE,QED
       CHARACTER INDSTR(3,2)*72
+      LOGICAL SKIPEP,SKIPEE
       DIMENSION WORK(*),NSTR(0:2,3,2)
 C
       CALL QENTER('SETXOP')
@@ -200,20 +203,15 @@ C       Active-active elements
 C       ===========================
 C
  250    CONTINUE
-        GOTO 300
-        CALL QUIT('Act-act rot. not implemented, fix me!')
         IF (ISYM .EQ. JSYM) THEN
            IF (NIND(2,2,ISYM).LE.1) GO TO 300
-C          ... write code ! triangular loop! omit redundant rot.s!
+C          hjaaj: at most one active - i.e. no act-act rotations!
+           CALL QUIT('Act-act rot. not implemented, fix me!')
+C          TODO hjaaj: we need to know which are redundant
         ELSE
            IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 300
-           DO IA = ISTA,IENDA
-             DO JA = JSTA,JENDA
-               NXOPE          = NXOPE + 1
-               JXOPE(1,NXOPE) = IND(IA,2,ISYM)
-               JXOPE(2,NXOPE) = IND(JA,2,JSYM)
-             ENDDO
-           ENDDO
+           CALL QUIT('Act-act rot. not implemented, fix me!')
+C          TODO hjaaj: we need to know which are redundant
         END IF
 C
 C       Active-secondary elements
@@ -963,5 +961,157 @@ C
      &     I = 1,NORB(IFRP))
         ENDDO
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Ostring */
+      SUBROUTINE OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Set orbital strings         
+C     Stolen by T.Saue Aug 24 2000, revised Aug 2002 hjaaj
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      CHARACTER*72 INDSTR(3,2)
+      LOGICAL SKIPEE,SKIPEP,ORBDEF(3)
+      DIMENSION WORK(*),IR(2,2),NR(2)
+C
+      DO I = 1,3
+         ORBDEF(I) = .FALSE.
+         DO J = 1, NFSYM
+            ORBDEF(I) = ORBDEF(I) .OR. (INDSTR(I,J) .NE. ' ')
+         END DO
+      END DO
+C
+C     Inactive orbitals...
+C
+      IF (.NOT. ORBDEF(1)) THEN
+         DO I = 1,NFSYM
+            INDSTR(1,I) = ' '
+            IF (NISH(I).GT.0) THEN
+               WRITE(INDSTR(1,I),'(I4,A2,I4)') 1,'..',NISH(I)
+            ENDIF
+         ENDDO
+      END IF
+C
+C     Active orbitals...
+C
+      IF (.NOT. ORBDEF(2)) THEN
+         DO I = 1,NFSYM
+            INDSTR(2,I) = ' '
+            IF (NASH(I).GT.0) THEN
+               WRITE(INDSTR(2,I),'(I4,A2,I4)')
+     &               NISH(I)+1,'..',NISH(I)+NASH(I)
+            ENDIF
+         ENDDO
+      END IF
+C
+C     Secondary orbitals...
+C
+      IF (.NOT. ORBDEF(3)) THEN
+         IF (SKIPEP.AND.SKIPEE) THEN
+            DO I = 1,NFSYM
+               INDSTR(3,I) = ' '
+            ENDDO
+         ELSEIF (SKIPEP) THEN
+            DO I = 1,NFSYM
+               INDSTR(3,I) = ' '
+               IF (NSSH(I).GT.0) THEN
+                  WRITE(INDSTR(3,I),'(I4,A2,I4)')
+     &                  NOCC(I)+1,'..',NESH(I)
+               ENDIF
+            ENDDO
+         ELSEIF (SKIPEE) THEN
+            DO I = 1,NFSYM
+               INDSTR(3,I) = ' '
+               WRITE(INDSTR(3,I),'(I4,A2,I4)')
+     &             -NPSH(I),'..',-1
+            ENDDO
+         ELSE
+            DO I = 1,NFSYM
+               INDSTR(3,I) = ' '
+               IF (NSSH(I).GT.0) THEN
+                  IF (NPSH(I) .GT. 0) THEN
+                     WRITE(INDSTR(3,I),'(I4,A5,I4,A2,I4)')
+     &                     -NPSH(I),'..-1,',NOCC(I)+1,'..',NESH(I)
+                  ELSE
+                     WRITE(INDSTR(3,I),'(I4,A2,I4)')
+     &                     NOCC(I)+1,'..',NESH(I)
+                  END IF
+               ELSE
+                  IF (NPSH(I) .GT. 0) THEN
+                     WRITE(INDSTR(3,I),'(I4,A2)') -NPSH(I),'..-1'
+                  END IF
+               END IF
+            ENDDO
+         ENDIF
+      END IF
+C
+C
+C      Definition of orbital classes
+C      -----------------------------
+C
+      WRITE(LUPRI,'(/4X,A)') '* Orbital classes:'
+      DO I = 1,NFSYM
+        IF(SKIPEP) THEN
+          NR(I)   = NESH(I)
+          IR(1,I) = 1
+          IR(2,I) = NESH(I)
+        ELSE
+          NR(I)   =  NORB(I)
+          IR(1,I) = -NPSH(I)
+          IR(2,I) =  NESH(I)
+        ENDIF
+        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+C
+C       Inactive orbitals
+C       -----------------
+C
+        NVEC = 0
+        CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
+     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Inactive orbitals  : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Inactive orbitals  : ', INDSTR(1,I)
+        ENDIF
+C
+C       Active orbitals
+C       ---------------
+C
+        NVEC = 0
+        CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
+     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Active orbitals    : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Active orbitals    : ', INDSTR(2,I)
+        ENDIF
+C
+C       Secondary orbitals
+C       ------------------
+C
+        NVEC = 0
+        CALL  NUMLST(INDSTR(3,I),IDUMMY,NR(I),
+     &            IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+        IF(NVEC.EQ.0) THEN
+          WRITE(LUPRI,'(4X,A)') 
+     &       '- Secondary orbitals : No electrons'
+        ELSE
+          WRITE(LUPRI,'(4X,A,A56)') 
+     &       '- Secondary orbitals : ', INDSTR(3,I)
+        ENDIF
+      ENDDO
+C
       RETURN
       END

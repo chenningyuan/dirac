@@ -190,7 +190,7 @@ C     Maximum number of iterations in LR solver
             READ (LUCMD, '(I5)') ITRXQR
             GO TO 100
  9          CONTINUE
-C     Exclude all electron-positron rotations
+C     .SKIPEP Exclude all electron-positron rotations
             QREP = .FALSE.
             GOTO 100
  10         CONTINUE
@@ -266,7 +266,7 @@ C
 C
             GO TO 100
  28         CONTINUE
-C     Skip all e-e rotations
+C     .SKIPEE Skip all e-e rotations
             QREE = .FALSE.
             GO TO 100
          ELSE IF (PROMPT .EQ. '*') THEN
@@ -474,7 +474,10 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      CALL OSTRING(WORK,KFREE,LFREE)
+C
+      XLR_SKIPEE = .NOT.QREE
+      XLR_SKIPEP = .NOT.QREP
+      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,WORK,KFREE,LFREE)
 C
       NQROP  = 0
       NQRHYP = 0
@@ -526,15 +529,14 @@ C     Get the maximum length of the response vectors
 C
       MZYEE  = 0
       MZYEP  = 0
-      SKIPEP = .NOT.QREP
-      SKIPEE = .NOT.QREE
 C
       DO IOP=1,NQROP
          IPT=LQROP(IOP,1)
          JSYMOP = IPRPSYM(IPT)
          JTIMOP = IPRPTIM(IPT)
          JOPSY  = JBTOF(JSYMOP-1,1)
-         CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &               WORK,KFREE,LFREE,IPRXQR)
          MZYEE = MAX(MZYEE,2*NZXOPE)
          MZYEP = MAX(MZYEP,2*NZXOPP)
       END DO
@@ -667,6 +669,9 @@ C
          GOTO 100
       END IF
 C
+#ifdef TODO_PANOR
+C     hjaaj aug 2002: this is not used yet because DOHYP = true below
+C     - Please fix, Patrick 
       DOHYP = .TRUE.
       DO I = 1,N
       DO J = 1,3
@@ -693,6 +698,7 @@ C
       END DO
       END DO
       END DO
+#endif
 C
       DOHYP = .TRUE.
 C
@@ -783,7 +789,8 @@ C
          NZRED  = NCRED+NERED+NPRED
          STATIC = (NFREQ.EQ.1 .AND. QRFREQ(1,IOP).EQ.D0)
 C
-         CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &               WORK,KFREE,LFREE,IPRXQR)
 C
 C     Check if response vectors exist on restart file
 C
@@ -884,8 +891,8 @@ C     Transfer information from XCBXQR to other common blocks
 C     to be used in solving the linear response equations.
 C
       LINEQ = .TRUE.
-      LSVCFG(1) = LSFG(1)
-      LSVCFG(2) = LSFG(2)
+      LSVCFG(1) = XLR_LSFG(1)
+      LSVCFG(2) = XLR_LSFG(2)
       TKNORM = XQRNRM
       DIAGHE = XQRDIH
       IPRXRS = IPRXQR
@@ -1190,7 +1197,8 @@ C
          JSYMOP = ISYMA
          JOPSY  = IFERA
          JTIMOP = ITIMA
-         CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+         CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &               WORK,KFREE,LFREE,IPRXQR)
 C
          NZYAEE = 2*NZXOPE
          NZYAEP = 2*NZXOPP
@@ -1477,7 +1485,8 @@ C
       JSYMOP = ISYM
       JOPSY  = IFER
       JTIMOP = ITIM
-      CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &            WORK,KFREE,LFREE,IPRXQR)
       NZYEE = 2*NZXOPE
       NZYEP = 2*NZXOPP
       CALL INDQR(IPT,ABS(FREQ),IREC)
@@ -1722,6 +1731,7 @@ C*****************************************************************************
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcbxqr.h"
+#include "dcbxlr.h"
 C
       DIMENSION VECEE(MZYEE,NZ),VECEP(MZYEP,NZ),ZYMAT(NORBT,NORBT,NZ)
       DIMENSION WORK(*)
@@ -1737,7 +1747,8 @@ C     Get the index of the excitations for RPA.
 C
       JSYMOP = ISYM
       JOPSY  = JBTOF(JSYMOP-1,1)
-      CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &            WORK,KFREE,LFREE,IPRXQR)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('GTZYMT: Inconsistent orbital rotations')
 C
@@ -1938,6 +1949,7 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
+#include "dcbxlr.h"
 C
       DIMENSION GEE(NZYEE,NZ),GEP(NZYEP,NZ),OP(NORBT,NORBT,NZ),WORK(*)
 C
@@ -1952,7 +1964,8 @@ C     Get the index to the excitations.
 C
       JSYMOP = ISYMGR
       JOPSY  = JBTOF(JSYMOP-1,1)
-      CALL XLRPAR(WORK,KFREE,LFREE,IPRXQR)
+      CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &            WORK,KFREE,LFREE,IPRXQR)
       IF (NZXOPE.NE.NZEE .OR. NZXOPP.NE.NZEP) 
      &     CALL QUIT('RSP1GR: Inconsistent orbital rotations')
 C

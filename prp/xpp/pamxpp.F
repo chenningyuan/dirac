@@ -2,21 +2,21 @@ C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.ou.dk
@@ -46,8 +46,8 @@ C        E[1]_A   is gradient of perturbation operator A  (h|A)
 C        E[1}_B   is gradient of perturbation operator B  (h|B)
 C        E[2]     is the molecular Hessian                (h|H|h)
 C        S[2]     is a metric                             (h|h)
-C     
-C     where h is the operator manifold. In RPA h is limited to single 
+C
+C     where h is the operator manifold. In RPA h is limited to single
 C     excitations.
 C
 C     The pole no. j of the principal linear response functions is found
@@ -61,7 +61,7 @@ C        E[2] X_j =  w_j S[2] X_j
 C
 C     Here X_j is the j'th excitation operator
 C     and  w_j is the j'th excitation energy.
-C       
+C
 C     The eigenvalue equation is solved by projecting the equation onto
 C     a reduced space of trial vectors:
 C
@@ -76,7 +76,7 @@ C
 C       RE[2] = B^{+}E[2]B
 C       RS[2] = B^{+}S[2]B
 C       Rw_j  = approximate w_j
-C    
+C
 C
 C     The evaluation of excitations thus proceeds in three steps:
 C
@@ -102,7 +102,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       DIMENSION WORK(*)
 C
@@ -115,24 +115,24 @@ C
       NEXCF  = MAXEXC*NBSYM
       IF(ORBXPP) THEN
         CALL MEMGET('INTE',KPPO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KPPO),NCLS,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KPPO),NCLS_XPP,3,XPP_INDSTR,
      &              WORK,KFREE,LFREE,IPRXPP)
         NI = 0
 C       Number of inactive orbitals
 CTROND  Check out active ones...
         DO I = 1,NFSYM
-          NI = NI + NCLS(1,1,I) + NCLS(2,1,I)
-        ENDDO        
+          NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
+        ENDDO
       ELSE
         NI = 0
         CALL MEMGET('INTE',KPPO,0,WORK,KFREE,LFREE)
       ENDIF
-      IF(SKIPEE) THEN
+      IF(XPP_SKIPEE) THEN
         NEE = 0
       ELSE
         NEE = NI + 1
       ENDIF
-      IF(SKIPEP) THEN
+      IF(XPP_SKIPEP) THEN
         NEP = 0
       ELSE
         NEP = NI + 1
@@ -154,7 +154,8 @@ C
      &            WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF(XPPANA) CALL ANAXLR(WORK,KFREE,LFREE)
+      IF (XPPANA) CALL ANAXRS(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
+     &                        WORK,KFREE,LFREE,IPRXPP)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
       CALL QEXIT('PRPXPP')
@@ -183,7 +184,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -218,8 +219,8 @@ C
 C       Number of inactive orbitals
 CTROND  Check out active ones...
         DO I = 1,NFSYM
-          NI = NI + NCLS(1,1,I) + NCLS(2,1,I)
-        ENDDO        
+          NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
+        ENDDO
         CALL MEMGET('REAL',KEIG,NI,WORK,KFREE,LFREE)
         CALL EIGEXT(WORK(KEIG),IORBCL,1,WORK,KFREE,LFREE)
       ELSE
@@ -245,7 +246,7 @@ C
       CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBPVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEVECR,NEVECR ,WORK,KFREE,LFREE)
-C      
+C
 C     ... no B property gradient in XPP
 C
       CALL MEMGET('REAL',KGPCI,0,WORK,KFREE,LFREE)
@@ -275,8 +276,8 @@ C
 C         Initialize configurational and orbital parameters
 C         =================================================
 C
-          CALL XLRPAR(WORK,KFREE,LFREE,IPRXPP)
-cHJMAERKE: vi behoever ikke en XPPPAR, vel ???
+          CALL XRSPAR(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
+     &                WORK,KFREE,LFREE,IPRXPP)
 C
 C         Transfer number of excitations for this symmetry to dcbxrs.h
 C         (NFREQ is used for allocations and loops)
@@ -367,7 +368,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -382,7 +383,7 @@ C
       DATA SET/.FALSE./
       DATA TABLE /'.PRINT ','.A OPER','.ANALYZ','.OPERAT',
      &            '.EXCITA','-------','.THRESH','.MAXITR',
-     &            '.SKIPEP','.MAXRED','.QED   ','.NONORM',
+     &            '.SKIPEP','.MAXRED','-------','.NONORM',
      &            '-------','-------','.INTFLG','-------',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
@@ -436,18 +437,17 @@ C
 Chj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
       MAXRM      = -1
       MXLOAD     = 0
-      SKIPEP     = .FALSE.
-      SKIPEE     = .FALSE.
-      QEDRUN     = .FALSE.
-      LSFG(1)    = .TRUE.
-      LSFG(2)    = .TRUE.
+      XPP_SKIPEP = .FALSE.
+      XPP_SKIPEE = .FALSE.
+      XPP_LSFG(1)= .TRUE.
+      XPP_LSFG(2)= .TRUE.
       DO I = 1,NFSYM
-         XLR_INDSTR(2,I) = ' '
-         XLR_INDSTR(1,I) = ' '
-         XLR_INDSTR(3,I) = ' '
+         XPP_INDSTR(2,I) = ' '
+         XPP_INDSTR(1,I) = ' '
+         XPP_INDSTR(3,I) = ' '
       ENDDO
 C
 C     Initialize user-defined transition properties
@@ -455,7 +455,7 @@ C     =============================================
 C
 C     Electric dipole oscillator strengths
 C
-chjMAERKE: implement oscillator strengths here ? nothing defined in XLRINP here!
+chjMAERKE: implement oscillator strengths here ? TODO
 C
 C     Process input
 C     =============
@@ -524,15 +524,14 @@ C&&&& MAXITR - Maximum number of iterations
                GO TO 100
     9          CONTINUE
 C&&&& SKIPEP -exclude all electron-positron rotations
-                  SKIPEP = .TRUE.
+                  XPP_SKIPEP = .TRUE.
                GOTO 100
  10            CONTINUE
 C&&&& MAXRED: max dimension of matrix in reduced system
                   READ(LUCMD,*) MAXRM
                GOTO 100
  11            CONTINUE
-C&&&& QED  : allow rotations between positrons and secondary orbitals
-                  QEDRUN = .TRUE.
+C&&&&
                GOTO 100
  12            CONTINUE
 C&&&& XPPNRM: normalize trial vectors
@@ -554,19 +553,19 @@ C&&&& INTFLG: specify what two-electron integrals to include
  17            CONTINUE
 C&&&& OCCUP: String of inactive orbitals in XPP module
                   DO I=1,NFSYM
-                     READ(LUCMD,'(A)') XLR_INDSTR(1,I)
+                     READ(LUCMD,'(A)') XPP_INDSTR(1,I)
                   ENDDO
                GO TO 100
  18            CONTINUE
 C&&&& VIRTUA: String of secondary orbitals in XPP module
                   DO I=1,NFSYM
-                     READ(LUCMD,'(A)') XLR_INDSTR(3,I)
+                     READ(LUCMD,'(A)') XPP_INDSTR(3,I)
                   ENDDO
                GO TO 100
  19            CONTINUE
 C&&&& ACTIVE: String of active orbitals in XPP module
                   DO I=1,NFSYM
-                     READ(LUCMD,'(A)') XLR_INDSTR(2,I)
+                     READ(LUCMD,'(A)') XPP_INDSTR(2,I)
                   ENDDO
                GO TO 100
  20            CONTINUE
@@ -598,7 +597,7 @@ C&&&& ORBANA: Analyze individual contributions to repsonse functions
                GO TO 100
  28            CONTINUE
 C&&&& SKIPEE: Skip all e-e rotations
-                  SKIPEE = .TRUE.
+                  XPP_SKIPEE = .TRUE.
                GO TO 100
  29            CONTINUE
 C&&&& MXLOAD: Maximum number of trial vectors to be loaded
@@ -634,43 +633,43 @@ C
 C        calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(QEDRUN .AND. SKIPEP) THEN
+      IF(QED .AND. XPP_SKIPEP) THEN
          WRITE(LUPRI,'(/A)')
-     &  ' Input WARNING for *EXCITA: .SKIPEP ignored because of .QEDRUN'
-         SKIPEP = .FALSE.      
+     &  ' Input WARNING for *EXCITA: .SKIPEP ignored because of .QED'
+         XPP_SKIPEP = .FALSE.
       END IF
-      IF(LEVYLE) SKIPEP = .TRUE.
+      IF(LEVYLE) XPP_SKIPEP = .TRUE.
 C
 C     Print section
 C     =============
-C      
+C
       DOXPP = DOXPP.OR.MAXEXC.GT.0
       IF(.NOT.(DOXPP.OR.XPPANA)) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' XPPINP: Electronic PP excitation energies'//
      &    ' and transition moments'
       CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A,I5)') 
+      WRITE(LUPRI,'(1X,A,I5)')
      &   '* Print level                 :',IPRXPP
       IF(XPPANA) THEN
         WRITE(LUPRI,'(1X,A)') '* Analysis of solution vectors.'
       ENDIF
-      IF(ORBXPP) WRITE(LUPRI,'(A)') 
+      IF(ORBXPP) WRITE(LUPRI,'(A)')
      &   ' * Analysis of individual orbital contributions.'
       IF(XPPFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A,A6)')
      &    ' * The program will attemp restart on solution vectors ',
      &    'on file ',XPPFIL
-      WRITE(LUPRI,'(A,I5)') 
+      WRITE(LUPRI,'(A,I5)')
      &   ' * Maximum number of iterations:',ITRXPP
-      WRITE(LUPRI,'(A,1P,D12.5)') 
+      WRITE(LUPRI,'(A,1P,D12.5)')
      &   ' * Threshold for convergence   :',THCPP
-      WRITE(LUPRI,'(A,I5)') 
+      WRITE(LUPRI,'(A,I5)')
      &   ' * Max. size of reduced matrix :',MAXRM
-      IF(SKIPEE) WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
-      IF(SKIPEP .AND. .NOT.LEVYLE) WRITE(LUPRI,'(A)') 
+      IF(XPP_SKIPEE) WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'
+      IF(XPP_SKIPEP .AND. .NOT.LEVYLE) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
-      IF(QEDRUN) WRITE(LUPRI,'(A)') 
-     & ' * .QED: Rotations between positrons and all electron orbitals.'
+      IF(QED) WRITE(LUPRI,'(A)')
+     & ' * QED: Rotations between positrons and all electron orbitals.'
       IF(.NOT.DOXPP) THEN
         DOXPP = DOXPP.OR.XPPANA
         GOTO 999
@@ -699,7 +698,7 @@ C
       ENDIF
       IF(XPPNRM) WRITE(LUPRI,'(A)')
      &     ' * Trial vectors will be normalized.'
-      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)') 
+      IF(MXLOAD.NE.0) WRITE(LUPRI,'(A,I5)')
      &  ' * Maximum number of trial vectors to be loaded'//
      &  ' in each microiteration:', MXLOAD
 C
@@ -736,7 +735,7 @@ C  /* Deck setxpp */
       SUBROUTINE SETXPP(WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C     PP excitation module: 
+C     PP excitation module:
 C       Initialize variables/Open necessary files etc.
 C
 C     Written by H.J.Aa.Jensen 2000
@@ -752,7 +751,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
@@ -766,7 +765,7 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(WORK,KFREE,LFREE)
+      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -781,8 +780,8 @@ C     **************************************************
 C
       LINEQ     = .FALSE.
 C     ... solve eigenvalue equation!
-      LSVCFG(1) = LSFG(1)
-      LSVCFG(2) = LSFG(2)
+      LSVCFG(1) = XPP_LSFG(1)
+      LSVCFG(2) = XPP_LSFG(2)
       TKNORM    = XPPNRM
       DIAGHE    = .TRUE.
       IPRXRS    = IPRXPP
@@ -816,7 +815,7 @@ C
 C     Initialize file for solution vectors
 C
       LUXVC = 29
-      CALL OPNFIL(LUXVC,'PAMXVC','UNKNOWN','PRPXPP')      
+      CALL OPNFIL(LUXVC,'PAMXVC','UNKNOWN','PRPXPP')
       WRITE(LUXVC) 'END_OF_THIS_FILE'
 C
 C     Look for restart file for solution vectors
@@ -828,7 +827,7 @@ C
       ENDIF
       IF(RSREST) THEN
         LURST = 28
-        CALL OPNFIL(LURST,XPPFIL,'OLD','PRPXPP')      
+        CALL OPNFIL(LURST,XPPFIL,'OLD','PRPXPP')
       ENDIF
       CALL QEXIT('SETXPP')
       RETURN
@@ -854,7 +853,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -869,8 +868,8 @@ C
       IF(ORBXPP) THEN
         NI = 0
         DO I = 1,NFSYM
-          NI = NI + NCLS(1,1,I) + NCLS(2,1,I)
-        ENDDO        
+          NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
+        ENDDO
       ELSE
         NI = 0
       ENDIF
@@ -902,8 +901,8 @@ C
       IOFF  = 1
 C
 C     Solution vector - orbital (e-e) part
-C     ====================================   
-C        
+C     ====================================
+C
       IF(NZXOPE.GT.0) THEN
         NESIM = NEXCNV * IFAC
         KEE   = KFREE
@@ -929,8 +928,8 @@ C
       ENDIF
 C
 C     Solution vector - orbital (e-p) part
-C     ====================================   
-C        
+C     ====================================
+C
       IF(NZXOPP.GT.0) THEN
         NPSIM = NEXCNV * IFAC
         KEP   = KFREE
@@ -957,7 +956,7 @@ C
 C
 C     Solution vector - configurational part
 C     ======================================
-C        
+C
       IF(NZCONF.GT.0) THEN
 C     ..not yet written.....tsaue
       ENDIF
@@ -1025,7 +1024,7 @@ C
 C
 C     First get solution vector
 C     =========================
-C      
+C
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
       ITIM = IPX
@@ -1089,15 +1088,15 @@ C
               IF(IPRXPP.GE.3) THEN
                 FREQ = EVALR(IEXC)
 Chj: MAERKE change to trans.mom. output
-                WRITE(LUPRI,1000) 
+                WRITE(LUPRI,1000)
      &          '< 0 |',INDAP,' | ',IEXC,' > =',
      &          ATMPPF(IEXC,INDAP,JSYMOP,1),
      &          ' a.u.,',BVTYP(ITYP),
      &          ' contribution, excitation energy',FREQ,' a.u.'
-              ENDIF            
+              ENDIF
             ENDIF
           ENDDO
-        ENDDO        
+        ENDDO
 C
 C
 C     Write solution vectors to unformatted file for restart
@@ -1120,7 +1119,7 @@ C
       END IF
       CLOSE(LUBVEC,STATUS = 'KEEP')
 C
-      CALL QEXIT('GETPP1')      
+      CALL QEXIT('GETPP1')
       RETURN
  1000 FORMAT(/A,I2,A,I2,A,F16.10,A,/3X,A2,A,F16.10,A)
       END
@@ -1145,7 +1144,7 @@ C
 #include "dcbxlr.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
+Chj: MAXRM, MXLOAD
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
@@ -1159,16 +1158,16 @@ C
 C       Number of inactive orbitals
 CTROND  Check out active ones...
         DO I = 1,NFSYM
-          NI = NI + NCLS(1,1,I) + NCLS(2,1,I)
-        ENDDO        
+          NI = NI + NCLS_XPP(1,1,I) + NCLS_XPP(2,1,I)
+        ENDDO
         IOFF = 1
         NVAR = 0
-        IF(.NOT.SKIPEE) THEN
+        IF(.NOT.XPP_SKIPEE) THEN
           NVAR = NVAR + 1
           IBUF(NVAR)  = IOFF+1
           IOFF = IOFF + NI + 1
         ENDIF
-        IF(.NOT.SKIPEP) THEN
+        IF(.NOT.XPP_SKIPEP) THEN
           NVAR = NVAR + 1
           IBUF(NVAR)  = IOFF+1
           IOFF = IOFF + NI + 1
@@ -1177,7 +1176,7 @@ CTROND  Check out active ones...
 C
 C     Loop over transition operators
 C     ==============================
-C      
+C
       CALL HEADER('Linear response excitations; final output ',-1)
       DO IOPSY = 1,NFSYM
         NBF = NBSYM/NFSYM
@@ -1236,7 +1235,7 @@ C
                   IND = 0
                   DO IFRP = 1,NFSYM
 C - positronic orbitals
-                    DO J = 1,NCLS(1,1,IFRP)
+                    DO J = 1,NCLS_XPP(1,1,IFRP)
                       IND = IND + 1
                       A = D0
                       DO K = 1,NVAR
@@ -1247,7 +1246,7 @@ C - positronic orbitals
      &          (ATMPPF(I,INDAP,ISYM,IBUF(K)+IND),K=1,NVAR)
                     ENDDO
 C - electronic orbitals
-                    DO J = 1,NCLS(2,1,IFRP)
+                    DO J = 1,NCLS_XPP(2,1,IFRP)
                       IND = IND + 1
                       A = D0
                       DO K = 1,NVAR
@@ -1278,7 +1277,7 @@ C
      &             '-> dipole oscillator strength (velocity) :',OSCILV
 c
 c hj TODO : mixed require code with XMOML(3), XMOMV(3) to be sure the
-c     right components are combined !!!! 
+c     right components are combined !!!!
 c              IF (IDIPL .EQ. 1 .AND. IDIPV .EQ. 1) THEN
 c                  OSCILM = OSCILM + D2R3*ABS(XMOML*XMOMV)
 c              END IF
@@ -1338,62 +1337,6 @@ C         end do I = 1,KEXCNV(ISYM)
 C
       RETURN
       END
-#ifdef include_xpppar
-Chj: we do not need xpppar, do we ? (can use xlrpar also in xpp ?)
-Chj: xlrpar should be renamed to xrspar and moved to pamrsp.F ?
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck xpppar */
-      SUBROUTINE XPPPAR(WORK,KFREE,LFREE,IPRINT)
-C***********************************************************************
-C
-C     Initialize configurational and orbital parameters for
-C     RPA calculation
-C
-C     Written by T.Saue July 18 1997
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcbxpp.h"
-#include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: SKIPEE, SKIPEP, QEDRUN, LSFG(2), MAXRM, MXLOAD, XLR_INDSTR, NCLS
-#include "dcbxrs.h"
-C
-      DIMENSION WORK(*)
-C
-      CALL QENTER('XPPPAR')
-C
-C     Configurational parameters
-C     ==========================
-C
-      KZCONF   = KFREE
-      NZCONF   = 0
-      NZCONFQ  = NZCONF *NZ
-C
-C     Orbital parameters
-C     ==================
-C
-      CALL SETXOP(XLR_INDSTR,JOPSY,NZXOPE,KZXOPE,NZXOPP,KZXOPP,
-     &            WORK,KFREE,LFREE,SKIPEP,SKIPEE,QEDRUN,IPRINT)      
-      NZXOPEQ  = NZXOPE *NZ
-      NZXOPPQ  = NZXOPP *NZ
-      NZXOPT   = NZXOPE + NZXOPP
-      NZXOPTQ  = NZXOPT *NZ
-C
-C     Total number of parameters
-C     ==========================
-C
-      NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZVAR*NZ
-C
-      CALL QEXIT('XPPPAR')      
-      RETURN
-      END
-#endif /* include_xpppar */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Eigred */
       SUBROUTINE EIGRED(NEX,N,LDA,AE,AS,W,X,IERR,IPRINT,

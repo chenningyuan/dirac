@@ -2913,7 +2913,7 @@ C
         RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
         XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
         IF(XTNORM.EQ.D0) THEN
-          WRITE(LUPRI,'(A,A)') '*** WARNING! ***',
+          WRITE(LUPRI,'(A)') '*** WARNING! ***'//
      &        ' Zero norm of solution vector !'
         ELSE
           RCNV(IFREQ) = RTNORM/GPTNRM
@@ -3015,8 +3015,10 @@ C
       IF(NZXOPE.GT.0) THEN
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),EVALR,EVECR,
      &              IBTYP,IBEVC,IVECS(1,IPEP),
-     &              MFREQ,JBENDX,NESIM,IBOFF,NEPREV,NZXOPE,
+     &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
      &              BEBUF,WORK,KFREE,LFREE)
+        CALL XRSORT(BEVEC,JBENDX,NESIM,NEPREV,
+     &              IBEVC,IBTYP,IVECS(1,IPEP),WORK,KFREE,LFREE)
         IBOFF = IBOFF + NESIM
       ENDIF
 C
@@ -3025,8 +3027,10 @@ C
       IF(NZXOPP.GT.0) THEN
         CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),EVALR,EVECR,
      &              IBTYP,IBPVC,IVECS(1,IPPP),
-     &              MFREQ,JBPNDX,NPSIM,IBOFF,NPPREV,NZXOPP,
+     &              MFREQ,JBPNDX,IBOFF,NPPREV,NZXOPP,
      &              BPBUF,WORK,KFREE,LFREE)
+        CALL XRSORT(BPVEC,JBPNDX,NPSIM,NPPREV,
+     &              IBPVC,IBTYP,IVECS(1,IPPP),WORK,KFREE,LFREE)
         IBOFF = IBOFF + NPSIM
       ENDIF
 C
@@ -3035,8 +3039,10 @@ C
       IF(NZCONF.GT.0) THEN
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
-     &              MFREQ,JBCNDX,NCSIM,IBOFF,NCPREV,NZCONF,
+     &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
      &              BCBUF,WORK,KFREE,LFREE)
+        CALL XRSORT(BCVEC,JBCNDX,NCSIM,NCPREV,
+     &              IBCVC,IBTYP,IVECS(1,IPCP),WORK,KFREE,LFREE)
         IBOFF = IBOFF + NCSIM
       ENDIF
 C
@@ -3065,7 +3071,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XBVGEN */
       SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,EVALR,EVECR,IBTYP,IBVEC,IVECS,
-     &            MFREQ,JBTYP,NBNEW,IBOFF,NBPREV,NVAR,BBUF,
+     &            MFREQ,JBTYP,IBOFF,NBPREV,NVAR,BBUF,
      &            WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -3223,8 +3229,6 @@ C               retain norm for numerical stability !
         ENDDO          
 C
  10     CONTINUE
-        CALL XRSORT(BVEC,JBTYP,NBNEW,NBPREV,
-     &            IBVEC,IBTYP,IVECS,WORK,KFREE,LFREE)
 chj   ELSE
 C
 C     E X C I T A T I O N  E N E R G I E S etc.
