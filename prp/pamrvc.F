@@ -583,21 +583,20 @@ C
      &        IBEVC,IBPVC,IBTYP,IPRXRS,
      &        WORK(KFREE),LFREE)
 C
-C        Approximate positronic part of FQ:
+C        Approximate positronic part of FQX or all of FQX:
 C
-         IF (XRS_NOPFQ .OR. XRS_NOFQX) THEN
-            CALL XRSAPPFQ(
-     &           WORK(KFQX),WORK(KF + NCSIM * N2ORBXQ),WORK(KDV),
-     &           WORK(KFQT),WORK(KF),WORK(KDVT),WORK(KFREE),LFREE)
+         IF (NOSIM.GT.0 .AND. (XRS_NOPFQ .OR. XRS_NOFQX) ) THEN
+            CALL XRSAPPFQ(WORK(KFQX),WORK(KF+NCSIM*N2ORBXQ),WORK(KDV),
+     &           WORK(KFREE),LFREE)
          END IF
 C
 C        Dispose PV
 C
          CALL MEMREL('after RGETH2TX',WORK,1,KPV,KFREE,LFREE)
       ELSE
-        KFQT   = KFREE
-        KFQX   = KFREE
-        KH2ACX = KFREE
+         KFQT   = KFREE
+         KFQX   = KFREE
+         KH2ACX = KFREE
       END IF
 C
 C
@@ -645,13 +644,11 @@ C
          CALL RSIGCO(SCVEC,IBCVC,WORK(KF),WORK(KH2ACX),
      &        WORK,KFREE,LFREE)
       END IF
+C
+      CALL RTKTIME(.FALSE.,13)
 #endif /* MOD_KRMC */
 C
       CALL MEMREL('XRSSEP',WORK,1,KFRSAV,KFREE,LFREE)
-C
-#ifdef MOD_KRMC
-      CALL RTKTIME(.FALSE.,13)
-#endif /* MOD_KRMC */
       CALL QEXIT ('XRSSEP')
       RETURN
       END
@@ -2987,6 +2984,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "thrzer.h"
 #include "dcbibn.h"
 C
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
@@ -3002,7 +3000,13 @@ C
 C
       CALL QENTER('XBVGEN')
       TEST = DIAGHE.AND.(.NOT.USEXVC)
-      NVARQ = NVAR*NZ
+      IF (JBTYP .EQ. JBCNDX) THEN
+CHJ-jun2004      prepare for NZ.eq.4 (with MZ)
+         MZ = MIN(2,NZ)
+      ELSE
+         MZ = NZ
+      END IF
+      NVARQ = NVAR*MZ
 chj   IF(LINEQ) THEN
 chj   .. this ought to work for PP also ... (13.dec.2000)
 C
@@ -3055,23 +3059,30 @@ C              X(+) - vector
                IBVEC(NBPREV +IP) = IBOFF + IP
                IF(TEST.AND.IVECS(IP).EQ.1) THEN
                   BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-                  DO IZ = 1,NZ
+                  IF (JBTYP .EQ. JBCNDX) THEN
+                     IVAR = IDAMAX(NVARQ,BVEC(1,1,IP),1)
+                     THRBVEC = ABS(BVEC(IVAR,1,IP))/1.0D1
+CHJ                  THRBVEC = BNRMP/SQRT(1.0D2*NVAR)
+CHJ                  THRBVEC = THCXRS/SQRT(1.0D6*NVAR)
+CHJ 16-jun-2004: try use BNRMP instead of THCXRS to zero BCVEC elements
+CHJ could this give problems for MZ.eq.2 (e.g. real part included, imag. not)?
+                  ELSE
+                     THRBVEC = THRZER
+                  END IF
+                  DO IZ = 1,MZ
                      DO IVAR = 1,NVAR
 C
 C                       For MCSCF optimizations FREQ (EVALR) is the
 C                       level shift. For LR it's zero.
 C
 c#ifdef NODALTONCMP
-                        IF ( JBTYP .NE. JBCNDX .OR.
-     &                       ABS(BVEC(IVAR,IZ,IP)) .GT.
-     &                       THCXRS/(1.0D3 * SQRT(D1*NVAR)) ) THEN
+                        IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
                            IF ( ABS(HDIAG(IVAR)-FREQ) .GT. DLIM) THEN
                               BVEC(IVAR,IZ,IP) =
-     &                             -BVEC(IVAR,IZ,IP)
-     &                             /(HDIAG(IVAR)-FREQ)
+     &                            -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ)
                            ELSE
                               BVEC(IVAR,IZ,IP) =
-     &                             -BVEC(IVAR,IZ,IP)
+     &                            -BVEC(IVAR,IZ,IP)
                            END IF
                         ELSE
                            BVEC(IVAR,IZ,IP) = D0
@@ -3122,7 +3133,7 @@ C
                   IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
                      BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
                      BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-                     DO IZ = 1,NZ
+                     DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
                            FAC = D1/(FREQ2-HDIAG(IVAR)**2)
                            BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
@@ -3140,7 +3151,7 @@ C                    retain norm for numerical stability !
                      CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
                   ELSEIF(IVECS(IP).EQ.1) THEN
                      BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-                     DO IZ = 1,NZ
+                     DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
                            FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
                            BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
@@ -3152,7 +3163,7 @@ C                    retain norm for numerical stability !
                      CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
                   ELSEIF(IVECS(IM).EQ.1) THEN
                      BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-                     DO IZ = 1,NZ
+                     DO IZ = 1,MZ
                         DO IVAR = 1,NVAR
                            FAC = HDIAG(IVAR)/(FREQ2-HDIAG(IVAR)**2)
                            BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
@@ -4694,8 +4705,23 @@ C     *** Calculate sigma vectors ***
 C     *******************************
 C
       IF (JSYMOP .NE. 1) THEN
-         CALL QUIT('*** ERROR in RSIGOOGB1 ***')
+         CALL QUIT('*** ERROR in RSIGOOGB1 : JSYMOP .ne. 1 ***')
       END IF
+C
+C     Scatter GPOE & GPOP into UGO
+C     ----------------------------
+C
+      CALL DZERO(UGO,N2ORBXQ)
+      CALL XOPSCT(GPOE,JXOPE,NZHOPE,UGO,NORBT,NZ)
+      CALL XOPSCT(GPOP,JXOPP,NZXOPP,UGO,NORBT,NZ)
+C
+C     Construct full UGO
+C     ------------------
+C
+      CALL FULMAT('A',NORBT,NORBT,UGO(1,1))
+      DO IZ = 2, NZ
+         CALL FULMAT('S',NORBT,NORBT,UGO(1,IZ))
+      END DO
 C
 C     ***************************
 C     *** e-e sigma vector(s) ***
@@ -4716,22 +4742,6 @@ C
          CALL FULMAT('A',NORBT,NORBT,UBO(1,1))
          DO IZ = 2, NZ
             CALL FULMAT('S',NORBT,NORBT,UBO(1,IZ))
-         END DO
-C
-C        Scatter GPOE & GPOP into UGO
-C        ----------------------------
-C
-         CALL DZERO(UGO,N2ORBXQ)
-         CALL XOPSCT(GPOE,JXOPE,NZHOPE,UGO,NORBT,NZ)
-         CALL XOPSCT(GPOP,JXOPP,NZXOPP,UGO,NORBT,NZ)
-C
-C
-C        Construct full UGO
-C        ------------------
-C
-         CALL FULMAT('A',NORBT,NORBT,UGO(1,1))
-         DO IZ = 2, NZ
-            CALL FULMAT('S',NORBT,NORBT,UGO(1,IZ))
          END DO
 C
 C        Calculate G * b^t
@@ -4781,7 +4791,7 @@ C
 C
       DO I = 1, NPSIM
 C
-C        Scatter BEVEC into UBO
+C        Scatter BPVEC into UBO
 C        ----------------------
 C
          CALL DZERO(UBO,N2ORBXQ)
@@ -4793,22 +4803,6 @@ C
          CALL FULMAT('A',NORBT,NORBT,UBO(1,1))
          DO IZ = 2, NZ
             CALL FULMAT('S',NORBT,NORBT,UBO(1,IZ))
-         END DO
-C
-C        Scatter GPOE & GPOP into UGO
-C        ----------------------------
-C
-         CALL DZERO(UGO,N2ORBXQ)
-         CALL XOPSCT(GPOE,JXOPE,NZHOPE,UGO,NORBT,NZ)
-         CALL XOPSCT(GPOP,JXOPP,NZXOPP,UGO,NORBT,NZ)
-C
-C
-C        Construct full UGO
-C        ------------------
-C
-         CALL FULMAT('A',NORBT,NORBT,UGO(1,1))
-         DO IZ = 2, NZ
-            CALL FULMAT('S',NORBT,NORBT,UGO(1,IZ))
          END DO
 C
 C        Calculate G * b^t
@@ -5190,7 +5184,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrsappfq */
 #ifdef MOD_KRMC
-      SUBROUTINE XRSAPPFQ(FQX,FX,DV,FQT,FVT,DVT,WORK,LWORK)
+      SUBROUTINE XRSAPPFQ(FQX,FX,DV,WORK,LWORK)
 C***********************************************************************
 C
 C     Approximate positronic part of FQ.
@@ -5207,11 +5201,7 @@ C
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
-      DIMENSION FQX(NORBT*NASHT*NZ,*)
-      DIMENSION FX(N2ORBXQ,*)
-      DIMENSION DV(*)
-      DIMENSION FQT(NORBT*NASHT*NZ,*)
-      DIMENSION DVT(N2ASHXQ,*)
+      DIMENSION FQX(NORBT*NASHT*NZ,*), FX(N2ORBXQ,*), DV(*)
       DIMENSION WORK(*)
 C
       CALL QENTER('XRSAPPFQ')
@@ -5229,7 +5219,8 @@ C
 C
 C        Approximate positronic part of FQX matrices.
 C
-         write(lupri,*) 'approximating...'
+         IF (IPRXRS .GT. 1) WRITE(LUPRI,'(/A)')
+     &      ' approximating positronic part of FQX ...'
          DO I = 1, NOSIM
             CALL APPFQ('P',FQX(1,I),DV,FX(1,2*I),WORK,LWORK)
          END DO
