@@ -168,12 +168,6 @@ C
       NISH(2) = 0
       NASH(1) = 0
       NASH(2) = 0
-      NAS1(1) = 0
-      NAS1(2) = 0
-      NAS2(1) = 0
-      NAS2(2) = 0
-      NAS3(1) = 0
-      NAS3(2) = 0
       NOCC(1) = 0
       NOCC(2) = 0
       NSSH(1) = 0
@@ -186,15 +180,25 @@ c      NPSH(2) = 0
       NFRO(2) = 0
       NELEC(1) = 0
       NELEC(2) = 0
+      MK2REF = 0
+      MK2DEL = 0
       DO I = 1,NFSYM
          NISH(I) = NISH_DHF(I)
          NASH(I) = NASH_DHF(I)
          NOCC(I) = NOCC_DHF(I)
          NSSH(I) = NSSH_DHF(I)
+         DO J = 1, NGAS
+            NGSH(I,J) = 0
+         END DO
 c         NESH(I) = NESH_DHF(I)
 c         NPSH(I) = NPSH_DHF(I)
          NFRO(I) = NFRO_DHF(I)
          NELEC(I) = NELEC_DHF(I)
+      END DO
+      DO I = 1, 2
+         DO J = 1, NGAS
+            NGSP(J,I) = 0
+         END DO
       END DO
       NAELEC = NAELEC_DHF
 C
@@ -250,8 +254,8 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <dgroup.h>
-#include <dcbkrmc.h>
 #include <dcborb.h>
+#include <dcbkrmc.h>
 #include <dcbopt.h>
 C
       CALL QENTER('TKRMCORB')
@@ -261,12 +265,6 @@ C
       NISH(2) = 0
       NASH(1) = 0
       NASH(2) = 0
-      NAS1(1) = 0
-      NAS1(2) = 0
-      NAS2(1) = 0
-      NAS2(2) = 0
-      NAS3(1) = 0
-      NAS3(2) = 0
       NOCC(1) = 0
       NOCC(2) = 0
       NSSH(1) = 0
@@ -279,12 +277,15 @@ c      NPSH(2) = 0
       NFRO(2) = 0
       NELEC(1) = 0
       NELEC(2) = 0
+      NGAS = NKRMCGAS
+      MK2REF = NKRMC_MK2REF
+      MK2DEL = NKRMC_MK2DEL
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
-         NAS1(I) = NKRMCAS1(I)
-         NAS2(I) = NKRMCAS2(I)
-         NAS3(I) = NKRMCAS3(I)
+         DO J = 1, NGAS
+            NGSH(I,J) = NKRMCGSH(I,J)
+         END DO
          NOCC(I) = NKRMCOCC(I)
          NSSH(I) = NKRMCSSH(I)
 c         NESH(I) = NKRMCESH(I)
@@ -293,6 +294,11 @@ c         NPSH(I) = NKRMCPSH(I)
          NELEC(I) = NKRMCELEC(I)
       END DO
       NAELEC = NKRMCAELEC
+      DO I = 1, 2
+         DO J = 1, NGAS
+            NGSP(J,I) = NKRMCGSP(J,I)
+         END DO
+      END DO
 C
 C
 C     Set common block DCIOPT
