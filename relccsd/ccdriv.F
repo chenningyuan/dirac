@@ -488,6 +488,14 @@ C
 C
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
      &                DOSOPR,DOEXC,DEBUG,TIMING,IPRNT,MWORD,INTERFACE
+C     
+C     Check whether the Fock space CC module is included in this version
+C
+#ifndef MOD_FOCKSPCC
+      IF (DOFSPC) THEN
+         CALL QUIT('FOCK SPACE CC NOT AVAILABLE IN THIS VERSION')
+      ENDIF
+#endif
 C
 C     Check the memory requirements of the active modules
 C
@@ -517,10 +525,12 @@ C
       CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOEXC) MXCORR = MAX0(MXCORR,MXCORR1)
 C
+#ifdef MOD_FOCKSPCC
       MXCORR1 = 0
       CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
      &            IREPSP,IREPSPI,MREMAIN)
       IF (DOFSPC) MXCORR = MAX0(MXCORR,MXCORR1)
+#endif
 C
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
@@ -621,9 +631,11 @@ C
      &                        NSP,IREPSPI)
       CALL FLSHFO (IW)
 C
+#ifdef MOD_FOCKSPCC
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI,MREMAIN)
       CALL FLSHFO (IW)
+#endif
 C
 C  FINISHED; RETURN AFTER CLOSING FILES
 C

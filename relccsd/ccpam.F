@@ -53,6 +53,7 @@ C
 #include <mxorb.h>
 #include <priunit.h>
 #include <dgroup.h>
+#include <dcbham.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
 #include <infpar.h>
@@ -83,7 +84,7 @@ C
       IN = LUCMD
       IW = LUPRI
       INTFCE = 'DIRAC     '
-      CA = NZ.GE.2
+      CA = NZ.GE.2.AND..NOT.(SPINFR.OR.LEVYLE)
 #if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID

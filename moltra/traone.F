@@ -75,8 +75,8 @@ C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
 C
-      CALL MRCONE(WORK(KFMO),WORK(KE(1,1)),NSTR,NSTRT,IPRTRA,
-     &            WORK,KFREE,LFREE)
+      CALL MRCONE(WORK(KFMO),WORK(KE(1,1)),WORK(KIBE(1,1)),
+     &  NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
@@ -352,7 +352,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcone */
-      SUBROUTINE MRCONE(FMO,ORBE,NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE MRCONE(FMO,ORBE,IBORB,NSTR,NSTRT,IPRINT,
+     &           WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Write core Fock-matrix and other information in MRCONEE format 
@@ -372,7 +373,7 @@ C
 #include <dcbdhf.h>
 #include <dgroup.h>
 C
-      DIMENSION FMO(NORBT,NORBT,NZ),ORBE(*),WORK(*)
+      DIMENSION FMO(NORBT,NORBT,NZ),ORBE(*),IBORB(*),WORK(*)
       DIMENSION NSTR(2,0:2,2),NSTRT(2)
 C
       CALL QENTER('MRCONE')
@@ -389,15 +390,15 @@ C
       CALL MEMGET('INTE',KIRPAMO,NSTRT(1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KORBMO,NSTRT(1)*2,WORK,KFREE,LFREE)
 C
-      CALL MRCON1(FMO,ORBE,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
+      CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
      &            WORK(KIRPAMO),WORK(KORBMO),IPRINT,WORK,KFREE,LFREE)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
-      SUBROUTINE MRCON1(FMO,ORBE,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,ORBMO,
-     &                  IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
+     &                  ORBMO,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
@@ -410,13 +411,14 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dcbdhf.h>
+#include <dcbham.h>
 #include <dcbtra.h>
 #include <dgroup.h>
 C
       LOGICAL BREIT
       CHARACTER*14 REPN(8)
       CHARACTER*4 REPA(8)
-      DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT)
+      DIMENSION FMO(NORBT,NORBT,NZ),ORBE(NSTRT),IBORB(NSTRT)
       DIMENSION FMOM(NSTRT*2,NSTRT*2,2),WORK(*)
       DIMENSION IRPMO(NSTRT*2),IRPAMO(NSTRT*2),ORBMO(NSTRT*2)
       DIMENSION NSTR(2),IPHS(4)
@@ -431,43 +433,79 @@ C     We treat the quaternion case as pseudocomplex to avoid ordering
 C     problems in the CCSD case.
 C
       BREIT = .FALSE.
-      IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
-         NSYMRP = 2
-         REPN(1) = '  1A          '
-         REPN(2) = '  2A          '
-      ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN
-         NSYMRP = 2
-         REPN(1) = '  1E          '
-         REPN(2) = '  2E          '
-      ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
-         NSYMRP = 2
-         REPN(1) = '   E  1E      '
-         REPN(2) = '   E  2E      '
-      ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
-         NSYMRP = 4
-         REPN(1) = ' 1AG          '
-         REPN(2) = ' 2AG          '
-         REPN(3) = ' 1AU          '
-         REPN(4) = ' 2AU          '
-      ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
-         NSYMRP = 4
-         REPN(1) = ' 1Eg          '
-         REPN(2) = ' 2Eg          '
-         REPN(3) = ' 1Eu          '
-         REPN(4) = ' 2Eu          '
-      ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
-         NSYMRP = 4
-         REPN(1) = '  Eg 1Eg      '
-         REPN(2) = '  Eg 2Eg      '
-         REPN(3) = '  Eu 1Eu      '
-         REPN(4) = '  Eu 2Eu      '
+      IF (.NOT.(SPINFR.OR.LEVYLE)) THEN
+         IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+            NSYMRP = 2
+            REPN(1) = '  1A          '
+            REPN(2) = '  2A          '
+         ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN
+            NSYMRP = 2
+            REPN(1) = '  1E          '
+            REPN(2) = '  2E          '
+         ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
+            NSYMRP = 2
+            REPN(1) = '   E  1E      '
+            REPN(2) = '   E  2E      '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+            NSYMRP = 4
+            REPN(1) = ' 1AG          '
+            REPN(2) = ' 2AG          '
+            REPN(3) = ' 1AU          '
+            REPN(4) = ' 2AU          '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
+            NSYMRP = 4
+            REPN(1) = ' 1Eg          '
+            REPN(2) = ' 2Eg          '
+            REPN(3) = ' 1Eu          '
+            REPN(4) = ' 2Eu          '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
+            NSYMRP = 4
+            REPN(1) = '  Eg 1Eg      '
+            REPN(2) = '  Eg 2Eg      '
+            REPN(3) = '  Eu 1Eu      '
+            REPN(4) = '  Eu 2Eu      '
+         ELSE
+            PRINT*, 'Warning representation name is not defined'
+         ENDIF
       ELSE
-         PRINT*, 'Warning representation name is not defined'
+         IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+            NSYMRP = 2
+            REPN(1) = ' a.alpha      '
+            REPN(2) = ' a.beta       '
+         ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.2) THEN
+            NSYMRP = 2
+            REPN(1) = '  1E          '
+            REPN(2) = '  2E          '
+         ELSEIF (NFSYM.EQ.1.AND.NZ.EQ.1) THEN
+            NSYMRP = 2
+            REPN(1) = '   E  1E      '
+            REPN(2) = '   E  2E      '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+            NSYMRP = 4
+            REPN(1) = ' 1AG          '
+            REPN(2) = ' 2AG          '
+            REPN(3) = ' 1AU          '
+            REPN(4) = ' 2AU          '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
+            NSYMRP = 4
+            REPN(1) = ' 1Eg          '
+            REPN(2) = ' 2Eg          '
+            REPN(3) = ' 1Eu          '
+            REPN(4) = ' 2Eu          '
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.1) THEN
+            NSYMRP = 4
+            REPN(1) = '  Eg 1Eg      '
+            REPN(2) = '  Eg 2Eg      '
+            REPN(3) = '  Eu 1Eu      '
+            REPN(4) = '  Eu 2Eu      '
+         ELSE
+            PRINT*, 'Warning representation name is not defined'
+         ENDIF
       ENDIF
 C
 C     Get multiplication table for the abelian subgroup
 C
-      CALL GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB)
+      CALL GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB,SPINFR.OR.LEVYLE)
 C
 C     The correlation codes do not use TR symmetry, write Kramers
 C     pairs as spinors
@@ -487,7 +525,7 @@ C
             ORBMO(II)  = ORBE(IK)
          ENDDO
          IREP = IREP + 1
-         IF (NZ.NE.4) IREPA = IREPA + 1
+         IF (NZ.NE.4.OR.SPINFR.OR.LEVYLE) IREPA = IREPA + 1
          IK = IK - NSTR(I)
          DO ISTR = 1, NSTR(I)
             II = II + 1
@@ -512,7 +550,7 @@ C
           CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,1),1,
      &                           FMOM(1+IOFF3,J+IOFF3,1),1)
         ENDDO
-        IF (NZ.GE.2) THEN
+        IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
           DO J = 1, NSTR(IFSYM)
             CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,2),1,
      &                             FMOM(1+IOFF2,J+IOFF2,2),1)
@@ -520,7 +558,7 @@ C
      &                             FMOM(1+IOFF3,J+IOFF3,2),1)
             CALL DSCAL(NSTR(IFSYM),DM1,FMOM(1+IOFF3,J+IOFF3,2),1)
           ENDDO
-          IF (NZ.GE.4) THEN
+          IF (NZ.GE.4.AND.(.NOT.SPINFR)) THEN
             DO J = 1, NSTR(IFSYM)
               CALL DCOPY(NSTR(IFSYM),FMO (1+IOFF1,J+IOFF1,3),1,
      &                               FMOM(1+IOFF2,J+IOFF3,1),1)
@@ -566,7 +604,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmulta */
-      SUBROUTINE GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB)
+      SUBROUTINE GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB,SPINFR)
 C*****************************************************************************
 C     
 C     Hard-wired multiplication table for the abelian subgroups of D2h
@@ -578,100 +616,247 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 C
+      LOGICAL SPINFR
       CHARACTER*4 REPA(8)
       DIMENSION MULTB(8,8)
 C
-      IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
-         NSYMRPA = 1
-         REPA(1) = '   A'
-         REPA(2) = '   a'
-         MULTB(1,1) = 2
-         MULTB(2,1) = 1
-         MULTB(2,2) = 2
-      ELSEIF (NFSYM.EQ.1.AND.NZ.LE.2) THEN
-         NSYMRPA = 2
-         REPA(1) = '  1E'
-         REPA(2) = '  2E'
-         REPA(3) = '   a'
-         REPA(4) = '   b'
-         MULTB(1,1) = 4
-         MULTB(2,1) = 3
-         MULTB(3,1) = 1
-         MULTB(4,1) = 2
-         MULTB(2,2) = 4
-         MULTB(3,2) = 2
-         MULTB(4,2) = 1
-         MULTB(3,3) = 3
-         MULTB(4,3) = 4
-         MULTB(4,4) = 3
-      ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
-         NSYMRPA = 2
-         REPA(1) = '  AG'
-         REPA(2) = '  AU'
-         REPA(3) = '  ag'
-         REPA(4) = '  au'
-         MULTB(1,1) = 3
-         MULTB(2,1) = 4
-         MULTB(3,1) = 1
-         MULTB(4,1) = 2
-         MULTB(2,2) = 3
-         MULTB(3,2) = 2
-         MULTB(4,2) = 1
-         MULTB(3,3) = 3
-         MULTB(4,3) = 4
-         MULTB(4,4) = 3
-      ELSEIF (NFSYM.EQ.2.AND.NZ.LE.2) THEN
-         NSYMRPA = 4
-         REPA(1) = ' 1Eg'
-         REPA(2) = ' 2Eg'
-         REPA(3) = ' 1Eu'
-         REPA(4) = ' 2Eu'
-         REPA(5) = '  ag'
-         REPA(6) = '  bg'
-         REPA(7) = '  au'
-         REPA(8) = '  bu'
-C        The gg-block
-         MULTB(1,1) = 6
-         MULTB(2,1) = 5
-         MULTB(5,1) = 1
-         MULTB(6,1) = 2
-         MULTB(2,2) = 6
-         MULTB(5,2) = 2
-         MULTB(6,2) = 1
-         MULTB(5,5) = 5
-         MULTB(6,5) = 6
-         MULTB(6,6) = 5
-C        The uu-block
-         MULTB(3,3) = 6
-         MULTB(4,3) = 5
-         MULTB(7,3) = 1
-         MULTB(8,3) = 2
-         MULTB(4,4) = 6
-         MULTB(7,4) = 2
-         MULTB(8,4) = 1
-         MULTB(7,7) = 5
-         MULTB(8,7) = 6
-         MULTB(8,8) = 5
-C        The ug-block
-         MULTB(3,1) = 8
-         MULTB(4,1) = 7
-         MULTB(7,1) = 3
-         MULTB(8,1) = 4
-         MULTB(3,2) = 7
-         MULTB(4,2) = 8
-         MULTB(7,2) = 4
-         MULTB(8,2) = 3
-         MULTB(7,5) = 7
-         MULTB(8,5) = 8
-         MULTB(7,6) = 8
-         MULTB(8,6) = 7
-C        The gu-block
-         MULTB(5,3) = 3
-         MULTB(6,3) = 4
-         MULTB(5,4) = 4
-         MULTB(6,4) = 3
+      IF (.NOT.SPINFR) THEN
+         IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+            NSYMRPA = 1
+            REPA(1) = '   A'
+            REPA(2) = '   a'
+            MULTB(1,1) = 2
+            MULTB(2,1) = 1
+            MULTB(2,2) = 2
+         ELSEIF (NFSYM.EQ.1.AND.NZ.LE.2) THEN
+            NSYMRPA = 2
+            REPA(1) = '  1E'
+            REPA(2) = '  2E'
+            REPA(3) = '   a'
+            REPA(4) = '   b'
+            MULTB(1,1) = 4
+            MULTB(2,1) = 3
+            MULTB(3,1) = 1
+            MULTB(4,1) = 2
+            MULTB(2,2) = 4
+            MULTB(3,2) = 2
+            MULTB(4,2) = 1
+            MULTB(3,3) = 3
+            MULTB(4,3) = 4
+            MULTB(4,4) = 3
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+            NSYMRPA = 2
+            REPA(1) = '  AG'
+            REPA(2) = '  AU'
+            REPA(3) = '  ag'
+            REPA(4) = '  au'
+            MULTB(1,1) = 3
+            MULTB(2,1) = 4
+            MULTB(3,1) = 1
+            MULTB(4,1) = 2
+            MULTB(2,2) = 3
+            MULTB(3,2) = 2
+            MULTB(4,2) = 1
+            MULTB(3,3) = 3
+            MULTB(4,3) = 4
+            MULTB(4,4) = 3
+         ELSEIF (NFSYM.EQ.2.AND.NZ.LE.2) THEN
+            NSYMRPA = 4
+            REPA(1) = ' 1Eg'
+            REPA(2) = ' 2Eg'
+            REPA(3) = ' 1Eu'
+            REPA(4) = ' 2Eu'
+            REPA(5) = '  ag'
+            REPA(6) = '  bg'
+            REPA(7) = '  au'
+            REPA(8) = '  bu'
+C           The gg-block
+            MULTB(1,1) = 6
+            MULTB(2,1) = 5
+            MULTB(5,1) = 1
+            MULTB(6,1) = 2
+            MULTB(2,2) = 6
+            MULTB(5,2) = 2
+            MULTB(6,2) = 1
+            MULTB(5,5) = 5
+            MULTB(6,5) = 6
+            MULTB(6,6) = 5
+C           The uu-block
+            MULTB(3,3) = 6
+            MULTB(4,3) = 5
+            MULTB(7,3) = 1
+            MULTB(8,3) = 2
+            MULTB(4,4) = 6
+            MULTB(7,4) = 2
+            MULTB(8,4) = 1
+            MULTB(7,7) = 5
+            MULTB(8,7) = 6
+            MULTB(8,8) = 5
+C           The ug-block
+            MULTB(3,1) = 8
+            MULTB(4,1) = 7
+            MULTB(7,1) = 3
+            MULTB(8,1) = 4
+            MULTB(3,2) = 7
+            MULTB(4,2) = 8
+            MULTB(7,2) = 4
+            MULTB(8,2) = 3
+            MULTB(7,5) = 7
+            MULTB(8,5) = 8
+            MULTB(7,6) = 8
+            MULTB(8,6) = 7
+C           The gu-block
+            MULTB(5,3) = 3
+            MULTB(6,3) = 4
+            MULTB(5,4) = 4
+            MULTB(6,4) = 3
+         ELSE
+            CALL QUIT('Multiplication table is not defined')
+         ENDIF
       ELSE
-         CALL QUIT('Multiplication table is not defined')
+C  Need to insert the correct spin-orbit direct product multiplication
+C  tables here. We keep the old ones as long as this is not done.
+         IF (NFSYM.EQ.1.AND.NZ.EQ.4) THEN
+C           We make the multiplication table as the direct product of the
+C           spatial and spin multiplication tables. For the latter we have
+C           two irreps a(lpha) and b(eta) that can couple to give mS=0 or
+C           mS = +/- 1. The last class is treated as giving one-dimensional
+C           irreps, i.e. we do not employ the full spin symmetry group SU(2)
+C           but take the subgroup C4 for this to get an Abelian group that
+C           can distinguish the different spin-projection up to |mS|=3/2.
+C           An easy extension is to take the subgroup C8 so that one can go
+C           up to |mS|=7/2, but this increases the amount of irreps by 2 and
+C           has to be taken into account in the multiplication tables.
+            NSYMRPA = 4
+            REPA(1) = 'a+1 '
+            REPA(2) = 'a-1 '
+            REPA(3) = 'a+3 '
+            REPA(4) = 'a-3 '
+            REPA(5) = 'a+0 '
+            REPA(6) = 'a.4 '
+            REPA(7) = 'a+2 '
+            REPA(8) = 'a-2 '
+            MULTB(1,1) = 7
+            MULTB(2,1) = 5
+            MULTB(3,1) = 8
+            MULTB(4,1) = 6
+            MULTB(5,1) = 1
+            MULTB(6,1) = 3
+            MULTB(7,1) = 4
+            MULTB(8,1) = 2
+            MULTB(2,2) = 8
+            MULTB(3,2) = 6
+            MULTB(4,2) = 7
+            MULTB(5,2) = 2
+            MULTB(6,2) = 4
+            MULTB(7,2) = 1
+            MULTB(8,2) = 3
+            MULTB(3,3) = 7
+            MULTB(4,3) = 5
+            MULTB(5,3) = 3
+            MULTB(6,3) = 1
+            MULTB(7,3) = 2
+            MULTB(8,3) = 4
+            MULTB(4,4) = 8
+            MULTB(5,4) = 4
+            MULTB(6,4) = 2
+            MULTB(7,4) = 3
+            MULTB(8,4) = 1
+            MULTB(5,5) = 5
+            MULTB(6,5) = 6
+            MULTB(7,5) = 7
+            MULTB(8,5) = 8
+            MULTB(6,6) = 5
+            MULTB(7,6) = 8
+            MULTB(8,6) = 7
+            MULTB(7,7) = 6
+            MULTB(8,7) = 5
+            MULTB(8,8) = 6
+         ELSEIF (NFSYM.EQ.1.AND.NZ.LE.2) THEN
+            NSYMRPA = 2
+            REPA(1) = '  1E'
+            REPA(2) = '  2E'
+            REPA(3) = '   a'
+            REPA(4) = '   b'
+            MULTB(1,1) = 4
+            MULTB(2,1) = 3
+            MULTB(3,1) = 1
+            MULTB(4,1) = 2
+            MULTB(2,2) = 4
+            MULTB(3,2) = 2
+            MULTB(4,2) = 1
+            MULTB(3,3) = 3
+            MULTB(4,3) = 4
+            MULTB(4,4) = 3
+         ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
+            NSYMRPA = 2
+            REPA(1) = '  AG'
+            REPA(2) = '  AU'
+            REPA(3) = '  ag'
+            REPA(4) = '  au'
+            MULTB(1,1) = 3
+            MULTB(2,1) = 4
+            MULTB(3,1) = 1
+            MULTB(4,1) = 2
+            MULTB(2,2) = 3
+            MULTB(3,2) = 2
+            MULTB(4,2) = 1
+            MULTB(3,3) = 3
+            MULTB(4,3) = 4
+            MULTB(4,4) = 3
+         ELSEIF (NFSYM.EQ.2.AND.NZ.LE.2) THEN
+            NSYMRPA = 4
+            REPA(1) = ' 1Eg'
+            REPA(2) = ' 2Eg'
+            REPA(3) = ' 1Eu'
+            REPA(4) = ' 2Eu'
+            REPA(5) = '  ag'
+            REPA(6) = '  bg'
+            REPA(7) = '  au'
+            REPA(8) = '  bu'
+C           The gg-block
+            MULTB(1,1) = 6
+            MULTB(2,1) = 5
+            MULTB(5,1) = 1
+            MULTB(6,1) = 2
+            MULTB(2,2) = 6
+            MULTB(5,2) = 2
+            MULTB(6,2) = 1
+            MULTB(5,5) = 5
+            MULTB(6,5) = 6
+            MULTB(6,6) = 5
+C           The uu-block
+            MULTB(3,3) = 6
+            MULTB(4,3) = 5
+            MULTB(7,3) = 1
+            MULTB(8,3) = 2
+            MULTB(4,4) = 6
+            MULTB(7,4) = 2
+            MULTB(8,4) = 1
+            MULTB(7,7) = 5
+            MULTB(8,7) = 6
+            MULTB(8,8) = 5
+C           The ug-block
+            MULTB(3,1) = 8
+            MULTB(4,1) = 7
+            MULTB(7,1) = 3
+            MULTB(8,1) = 4
+            MULTB(3,2) = 7
+            MULTB(4,2) = 8
+            MULTB(7,2) = 4
+            MULTB(8,2) = 3
+            MULTB(7,5) = 7
+            MULTB(8,5) = 8
+            MULTB(7,6) = 8
+            MULTB(8,6) = 7
+C           The gu-block
+            MULTB(5,3) = 3
+            MULTB(6,3) = 4
+            MULTB(5,4) = 4
+            MULTB(6,4) = 3
+         ELSE
+            CALL QUIT('Multiplication table is not defined')
+         ENDIF
       ENDIF
 C
       DO I = 1, 2*NSYMRPA
