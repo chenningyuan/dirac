@@ -2,7 +2,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : dirac.h
  * DESCR.  : Header file for Dirac subroutine
  * AUTHOR  : J. Thyssen - 980709
  *           portability to AIX and HPUX simplified by P. Salek, 020608

@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : main.c
  * DESCR.  : Main program for dirac
  * AUTHOR  : J. Thyssen - 980709
  *

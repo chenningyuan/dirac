@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : mpi_errtrap.c
  * DESCR.  : Trap MPI errors
  * AUTHOR  : J. Thyssen - 980713
  *

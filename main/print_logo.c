@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : pr_logo.c
  * DESCR.  : Print logo if master node
  * AUTHOR  : J. Thyssen - 980713
  *

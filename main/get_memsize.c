@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : get_memsize.c
  * DESCR.  : Get memory size from enviroment variables if existing
  * AUTHOR  : J. Thyssen - 980713
  *

@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : end_mpi.c
  * DESCR.  : Kill MPI-slaves if parallel run
  * AUTHOR  : J. Thyssen - 980713
  *

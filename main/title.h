@@ -2,7 +2,7 @@
   *
   * VERSION : $Revision$
   * DATE    : $Date$
-  * SOURCE  : $Source$
+  * FILE    : title.h
   * DESCR.  : Header 
   *
   */

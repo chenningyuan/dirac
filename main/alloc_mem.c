@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : alloc_mem.c
  * DESCR.  : Allocate memory for dirac
  *           Get memory size either from enviroment variables or
  *           default values.

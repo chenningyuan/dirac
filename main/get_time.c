@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : get_time.c
  * DESCR.  : Get timing
  * AUTHOR  : J. Thyssen - 980716, 
  *           portability to AIX and HPUX simplified by P. Salek, 020608

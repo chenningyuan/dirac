@@ -2,7 +2,7 @@
   *
   * VERSION : $Revision$
   * DATE    : $Date$
-  * SOURCE  : $Source$
+  * FILE    : subtitle.h
   * DESCR.  : Version and title of DIRAC
   *
   */

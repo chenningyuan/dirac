@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : pr_timing.c
  * DESCR.  : Print timing statistic to stdout
  * AUTHOR  : J. Thyssen - 980713 
  *

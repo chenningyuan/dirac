@@ -2,7 +2,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : mpi_errtrap.h
  * DESCR.  : Declare errhandler-type
  * AUTHOR  : J. Thyssen - 980709
  *

@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : diracmalloc.c
  * DESCR.  : Allocate memory and return pointer
  *           This subroutine contains all the system-dependent stuff
  * AUTHOR  : J. Thyssen - 980709

@@ -2,7 +2,7 @@
   *
   * VERSION : $Revision$
   * DATE    : $Date$
-  * SOURCE  : $Source$
+  * FILE    : logo.h
   * DESCR.  : DIRAC - logo , generated from gif-picture by
   *           J. Thyssen
   *

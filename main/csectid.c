@@ -31,7 +31,7 @@
  *
  * VERSION : $Revision$
  * DATE    : $Date$
- * SOURCE  : $Source$
+ * FILE    : csectid.c
  * DESCR.  : Return nicely formatted character string
  *           C-version of gp/gpsaue.F:SECTID
  * AUTHOR  : J. Thyssen - 980713 (T. Saue)
