@@ -441,6 +441,7 @@ C     ***    reduced system                      ***
 C     ***                                        ***
 C     **********************************************
       IZRED = 0
+      JZRED = IZRED
  10   CONTINUE
         IF(ITMIC.EQ.MAXITR) GOTO 40
         TIMITR = SECOND()
@@ -460,21 +461,21 @@ C     **********************************************
           BVLOAD = .FALSE.
         ENDIF
         MTSIM = NTSIM
-        DO ITLOAD = 1,NTSIM,MAXSIM
+        ILOAD = 0
+        DO ITLOAD = 1,MTSIM,MAXSIM
+          ILOAD = ILOAD + 1
           IF(BVLOAD) THEN
 C           Trial vectors not in memory; read from file
-            IF (IPRXRS.GE.2) WRITE(LUPRI,'(/A,I3)') '* Load no.',ITLOAD
-            CALL REABLD(NBCSIM,NBESIM,NBPSIM,WORK,KFREE,LFREE)
+             CALL REABLD(NBCSIM,NBESIM,NBPSIM,WORK,KFREE,LFREE)
           ENDIF
           NOSIM = NESIM + NPSIM
           NTSIM = NCSIM + NOSIM
 C         Print section
-          IF(IPRXRS.GE.10) THEN
-            WRITE(LUPRI,'(A,I5)')
-     &        'Load no.      :',ITLOAD,
-     &        'C-type vectors:',NCSIM,
-     &        'E-type vectors:',NESIM,
-     &        'P-type vectors:',NPSIM
+          IF(BVLOAD.AND.IPRXRS.GE.1) THEN
+            CALL BVINFO(ISIM,IBTYP,IZRED,NTSIM)
+            WRITE(LUPRI,'(A,I3,A,6(2X,A2,A1,I3))') 
+     &     '* Trial vectors in load ',ILOAD,':',
+     &     (BVTYP(I),':',ISIM(I),I=1,NVPAR)
           ENDIF
 C
           IF(IPRXRS.GE.5) THEN
@@ -569,7 +570,8 @@ C
 C       Info on current trial vectors
 C       -----------------------------
 C
-        CALL BVINFO(ISIM,IBTYP,IZRED,NTSIM)
+        CALL BVINFO(ISIM,IBTYP,JZRED,MTSIM)
+        JZRED = JZRED + MTSIM
 C
 C       Write info to PAMCYC
 C       ====================
