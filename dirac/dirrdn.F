@@ -2566,12 +2566,13 @@ C
 #include "dgroup.h"
 #include "nuclei.h"
 C
-      LOGICAL SET, NEWDEF,ORBDEF,RESET
+#include "dcbxpr.h"
+      LOGICAL SET, NEWDEF,ORBDEF,RESET,SYMSTP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.OWNBAS','.XXXXXX','.XXXXXX'/
+     &            '.WGPOP','.OWNBAS','.OPERATO','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2595,6 +2596,7 @@ C     Default is to project all occupied vectors onto all reference vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      NPRANA = 0
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -2659,6 +2661,17 @@ C&&& OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis 
                  OWNBAS = .TRUE.
                GO TO 100
     7          CONTINUE
+C&&& OPERATOR: Analyze expectation value in terms of fragment orbitals
+               CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
+     &                     WORK,LWORK,IPRGEN)
+               NPRANA = NPRANA + 1
+               IF(NPRANA.GT.MPRANA) THEN
+                 WRITE(LUPRI,'(A)') 
+     &             '***** PRJINP ERROR *****',
+     &             'Redimension MPRANA of /CBIPRJ/ !'
+                 CALL QUIT('PRJINP: beyond MAXANA !')
+               ENDIF
+               IPRANA(NPRANA) = INDXPR
                GO TO 100
     8          CONTINUE
                GO TO 100
@@ -2753,6 +2766,18 @@ C
       IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
      &  'between contributions according to their weight.'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRPRJ
+      IF(NPRANA.GT.0) THEN
+        WRITE(LUPRI,'(3X,A)') '- The expectation value of the '//
+     &    'following one-electron operators',' will be analyzed:'
+        DO I = 1,NPRANA
+          INDXPR = IPRANA(I)
+          CALL PRSYMB(LUPRI,'-',75,0)
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+     &     'Operator no.',I,':',PRPNAM(INDXPR)
+          CALL PRSYMB(LUPRI,'-',75,0)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF
   999 CONTINUE
       RETURN
 C
