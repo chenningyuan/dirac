@@ -1777,7 +1777,7 @@ C
       IF ( (LBIT( IGRD_INTBUF, 2 ) .AND.
      &     .NOT. LBIT ( IGRD_INTBUF, 3 ) .AND.
      &           LBIT ( IGRD_INTFLG, 3)) .OR. DOLVC ) THEN
-         write(6,*) 'adding lv grad'
+         write(LUPRI,*) 'adding lv grad'
          CALL ADDGRD(GRADLV)
       END IF
       CALL HEADE2('Total molecular gradient','@',-1)
