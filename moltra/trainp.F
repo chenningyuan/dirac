@@ -749,6 +749,7 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
 #include <dcbxpr.h>
+#include <dcbtra.h>
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
