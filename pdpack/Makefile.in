@@ -7,16 +7,16 @@
 
 include ../Makefile.config
 
-OBJS=pdlib.a(arhpack.o) pdlib.a(dge.o) pdlib.a(dsp.o)\
-     pdlib.a(fastio_g07.o) pdlib.a(linextra.o) pdlib.a(printpkg.o)\
-     pdlib.a(gpblas.o) pdlib.a(gp_dblas3.o) pdlib.a(eispack.o)
+OBJS=libpdlib.a(arhpack.o) libpdlib.a(dge.o) libpdlib.a(dsp.o)\
+     libpdlib.a(fastio_g07.o) libpdlib.a(linextra.o) libpdlib.a(printpkg.o)\
+     libpdlib.a(gpblas.o) libpdlib.a(gp_dblas3.o) libpdlib.a(eispack.o)
 
 SRC=arhpack.F dge.F dsp.F fastio_g07.F linextra.F printpkg.F \
     gpblas.F gp_dblas3.F eispack.F
 
-all :	pdlib.a
+all :	libpdlib.a
 
-pdlib.a: $(OBJS)
+libpdlib.a: $(OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.a

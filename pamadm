@@ -378,7 +378,7 @@ gp/gpjth.o
 
 OBJSLAVE = abacus/herpar.o
 
-PDLIB = pdpack/pdlib.a
+PDLIB = -Lpdpack -lpdlib
 EOF
 #
 #  Object-files for ESR-module
