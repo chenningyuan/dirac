@@ -304,6 +304,7 @@ export:
 	-rm -f DIRAC.new.tar.Z
 	tar cvf DIRAC.new.tar \
 	configure config.sub config.guess doc/doc.html \
+	adm/config.guess adm/config.sub \
 	include/*.h Makefile Makefile.config dirac/*.F dirac/*.c dirac/Makefile.in dirac/include \
 	prp/*.F prp/Makefile.in  prp/include \
 	abacus/*.F abacus/Makefile.in abacus/include \
@@ -326,8 +327,7 @@ if($PARTAR) then
 echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile.in abacus/par/include' >> Makefile
 endif
 if($PAMADM) then
-echo '	tar rvf DIRAC.new.tar adm/configure.in adm/config.guess' >> Makefile
-echo '	tar rvf DIRAC.new.tar adm/config.sub   adm/pamadm      ' >> Makefile
+echo '	tar rvf DIRAC.new.tar adm/configure.in adm/pamadm' >> Makefile
 echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
 endif
 cat <<EOF>> Makefile
