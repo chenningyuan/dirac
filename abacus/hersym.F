@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : hersym.F
-C SOURCE  : $Source$
 C
 C
 #ifdef UNDEF

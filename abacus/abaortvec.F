@@ -29,7 +29,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : abaortvec.F
-C SOURCE  : $Source$
 C
 C
 Cjth - copied from dalton/sirius/sirnexkap.F

@@ -29,7 +29,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : abatro.F
-C SOURCE  : $Source$
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)

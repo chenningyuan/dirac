@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbkrmc.h
-C SOURCE  : $Source$
 C
 C*** KR-MCSCF calculations ***
       PARAMETER (NMCFLAG = 20)

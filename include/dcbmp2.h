@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : ./include/dcbmp2.F
-C SOURCE  : $Source$
 C
 C  DCBMP2:  Parameters for MP2 calculation
 C

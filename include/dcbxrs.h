@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbxrs.h
-C SOURCE  : $Source$
 C
 C*** Reduced response equations
 C

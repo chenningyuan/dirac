@@ -1,7 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C SOURCE  : $Source$
+C FILE    : dcbnrt.h
 C
 C     dependencies: maxorh.h
 C

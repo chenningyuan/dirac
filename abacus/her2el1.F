@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : her2el1.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck c1driv */

@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : herpar.F
-C SOURCE  : $Source$
 C
 C
 #ifdef UNDEF

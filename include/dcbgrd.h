@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbgrd.h
-C SOURCE  : $Source$
 C
 C Depencies: mxcent.h
 C

@@ -1,7 +1,6 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C SOURCE  : $Source$
 C
 C*****************************************************************************
 C *** Property module ***

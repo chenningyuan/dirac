@@ -1,7 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C SOURCE  : $Source$
+C FILE    : dcbexp.h
 C
 C*****************************************************************************
 C  DCBEXP:  Expectation values

@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : her1pro.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck pr1int */

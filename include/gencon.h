@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : gencon.h
-C SOURCE  : $Source$
 C
 C   - Parameter for maximum number of functions in a block:
 C     MXCON_PARAM = NPRIM * l(l+1)/2 * NCONTR

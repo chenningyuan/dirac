@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : her1ave.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck avena1 */

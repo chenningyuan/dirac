@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbrkb.h
-C SOURCE  : $Source$
 C
 C ** COMMON block RKB pre-projection
 C    IRKB - for large shells, pointer to L+1 small partner

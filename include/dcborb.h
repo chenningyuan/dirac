@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcborb.h
-C SOURCE  : $Source$
 C
 C*** Dimensions for MO-basis ***
       PARAMETER( MXOPEN = 10 )

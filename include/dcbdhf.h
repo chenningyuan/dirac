@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbdhf.h
-C SOURCE  : $Source$
 C
 C*** Dirac-Fock calculations ***
       CHARACTER INTTYP*9,CACC*8

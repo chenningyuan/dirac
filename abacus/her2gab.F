@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : her2gab.F
-C SOURCE  : $Source$
 C
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,

@@ -1,7 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C SOURCE  : $Source$
+C FILE    : dcbgosci.h
 C
 C     DEFINITION PARAMETERS GOSCIP :
 C

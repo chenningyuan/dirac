@@ -3,7 +3,6 @@
  * VERSION : $Revision$
  * DATE    : $Date$
  * FILE    : patchlevel.h
- * SOURCE  : $Source$
  *
  */
 #ifndef __PATCHLEVEL_H_

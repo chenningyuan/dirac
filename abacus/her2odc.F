@@ -28,7 +28,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : her2odc.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck odcvec */

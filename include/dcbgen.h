@@ -2,7 +2,6 @@ C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : dcbgen.h
-C SOURCE  : $Source$
 C
 C*** General information in DIRAC ***
 C  DOPIN - read MO-coefficients from formatted file and write them to
