@@ -74,7 +74,7 @@ while($#argv)
         set TRAMOD = 1
         breaksw
      case -eri:
-%        set ERIMOD = 1
+#        set ERIMOD = 1
         set ERIMOD = 0
         breaksw
      case -*:
@@ -400,6 +400,37 @@ cat <<EOF>> Makefile
 PD_OBJ  :
 	cd pdpack ; make all
 EOF
+#
+#  Add makedepend target
+#
+set TEMP = ('dirac' 'prp' 'abacus' 'gp' 'pdpack')
+if ($PARMOD) then
+   set TEMP = ($TEMP 'abacus/par')
+endif
+if ($CCMOD) then
+   set TEMP = ($TEMP 'relccsd')
+endif
+if ($RSPMOD) then
+   set TEMP = ($TEMP 'prp/rsp')
+endif
+if ($TRAMOD) then
+   set TEMP = ($TEMP 'moltra')
+endif
+if ($ERIMOD) then
+   set TEMP = ($TEMP 'eri')
+endif
+
+cat <<EOF>> Makefile
+depend:
+EOF
+foreach ff ( $TEMP )
+   cat <<EOF>> Makefile
+	cd $ff; make depend
+EOF
+end
+#
+#
+#
 if($GENTAR) then
 #
 #  Make tarfile
