@@ -1897,6 +1897,13 @@ C
 #endif
          CALL TITLER(' End of Minimization ','<',120)
          CALL PRIINF(GEINFO)
+#ifdef PRG_DIRAC
+C        Print angles, bondlengths etc out in human readable form
+C        (In Dalton GEOANA is called from somewhere else)
+         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
+     &               WORK(IWOFF+2),LWORK)
+C
+#endif
          WRITE(LUPRI,*)
          IF (CONOPT) THEN
             WRITE(LUPRI,*) 'Constrained optimization converged in ',
