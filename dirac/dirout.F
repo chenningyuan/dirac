@@ -144,11 +144,11 @@ C       In case we invoked a solvent model we need to add the
 C       solvation energy as well
 C       (LV: I have not changed the name into solvation energy but 
 C            think this would be more appropriate than solvent energy, 
-C            leave this to authors of this part)
+C            leave this to authors of this part) Done, hjaaj.
         IF(SOLVEN) THEN
           ERGSOL = ESOLVN + ESOLVE
           WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Solvent energy                           :   ',ERGSOL
+     +      'Solvation energy                         :   ',ERGSOL
         ENDIF
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
