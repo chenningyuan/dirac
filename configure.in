@@ -1208,6 +1208,9 @@ fi
 if [ -z "$PARFLG" ] ; then
    PARFLG=0
 fi
+if [ -z "$OPENFLG" ] ; then
+   OPENFLG=0
+fi
 if [ $ERIFLG != 0 ]; then
    dirs="$dirs eri"
 fi
@@ -1222,6 +1225,9 @@ if [ $TRAFLG != 0 ]; then
 fi
 if [ $PARFLG != 0 ]; then
    dirs="$dirs abacus/par"
+fi
+if [ $OPENFLG != 0 ]; then
+   dirs="$dirs dirac/open"
 fi
 for makefile in $dirs; do
    echo "Making $makefile/Makefile from $makefile/Makefile.in"
