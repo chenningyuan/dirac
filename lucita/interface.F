@@ -6078,7 +6078,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *
       dimension NBASD(MXPIRR),NSTR(2)
 *
-      NTESTL = 0
+      NTESTL = 3
       NTEST = max(NTESTL,IPRINT)
 *
       write(6,*)
