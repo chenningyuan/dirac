@@ -4022,7 +4022,7 @@ C
       END
 
 C  /* Deck prfsti */
-      FUNCTION PRFSTI(MXRCRD,MX2CRD,NCRDHS,HESINT,EVEC,
+      SUBROUTINE PRFSTI(MXRCRD,MX2CRD,NCRDHS,HESINT,EVEC,
      &     TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,VECMOD)
 C
 C     Controls saddle point optimization in redundant internal
