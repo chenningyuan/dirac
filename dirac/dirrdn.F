@@ -2834,7 +2834,7 @@ C
       IF (ZORA.AND..NOT.ZORA4) THEN
         ISSINT = 0
       ENDIF
-      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT
+      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT
 C
       IF(URKBAL) THEN
         WRITE(LUPRI,'(1X,A)') '* Unrestricted kinetic balance'
