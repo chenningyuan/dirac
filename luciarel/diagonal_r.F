@@ -811,7 +811,7 @@ c     stop 'AFTER CONSTRUCTION OF DIAGONAL.'
       dimension IOBPTS_PIC(6+MXPR4T,MXPOBS)
       dimension IOBPTS2_PIC(6+MXPR4T,MXPOBS)
 *
-      NTESTL = 0010
+      NTESTL = 0000
       NTEST = MAX(NTESTL,IPRDIA)
 *
       ZERO = 0.D0
@@ -935,7 +935,6 @@ C                COPDIA(A,VEC,NDIM,IPACK)
           end do
         end do
       end if
-      call memmar(IDUM,IDUM,'PRINT ',IDUM,'      ')
 *
 *
       IF(NTEST.GE.10) THEN

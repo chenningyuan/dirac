@@ -3580,10 +3580,10 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PART_CIV3(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
-     &                  IOFFBLK,IOFFBTC,
-     &                  NSMST,MXLNG,IOCOC,ISMOST,
-     &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP,
-     &                  ITTSS_ORD)
+     &                     IOFFBLK,IOFFBTC,
+     &                     NSMST,MXLNG,IOCOC,ISMOST,
+     &                     NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,ICOMP,
+     &                     ITTSS_ORD)
 *
 * Partition a CI vector with given MS2 into batches of blocks.
 * The length of a batch must be atmost MXLNG
@@ -3635,7 +3635,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' =================='
-        WRITE(6,*) '     PART_CIV      '
+        WRITE(6,*) '     PART_CIV3     '
         WRITE(6,*) ' =================='
         WRITE(6,*) ' IDC = ', IDC
         WRITE(6,*)
@@ -3675,7 +3675,7 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
       IF(IBLTP(ISM).EQ.0) GOTO 1000
       IF(IBLTP(ISM).EQ.2.AND.IA.LT.IB) GOTO 1000
       IF(IOCOC(IA,IB).EQ.0) GOTO 1000
-C?    write(6,*) ' PART_CIV2 IDC IBLTP ', IDC,IBLTP(ISM)
+C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
 *. can this block be included
       IBSM = ISMOST(ISM)
       NSTA = NSSOA(ISM,IA)
@@ -3707,7 +3707,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
      &  LENGTH+LBLOCK.GT. MXLNG .AND. NBLOCK.EQ.0) THEN
         WRITE(6,*) ' Not enough scratch space to include a single Block'
         WRITE(6,*) ' Since I cannot procede I will stop '
-        WRITE(6,*) ' Insufficient buffer detected in PART_CIV'
+        WRITE(6,*) ' Insufficient buffer detected in PART_CIV3'
         WRITE(6,*) ' Alter GAS space of raise Buffer from ', MXLNG
         CALL LMEMCHK
         Call Abend1( 11 )
@@ -3718,8 +3718,8 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
  2002 CONTINUE
 *
       IF(NTEST.NE.0) THEN
-C?      WRITE(6,*) 'Output from PART_CIV'
-C?      WRITE(6,*) '====================='
+        WRITE(6,*) 'Output from PART_CIV3'
+        WRITE(6,*) '====================='
         WRITE(6,*)
         WRITE(6,*) ' Number of added batches ', NBATCH-IOFFBTC+1
         DO JBATCH = IOFFBTC, NBATCH
@@ -3812,7 +3812,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PNT4DM2(NSMOB,NO1PS,NO2PS,NO3PS,NO4PS,
-     &           IDXSM,IS12,IS34,IS1234,IPNTR)
+     &                   IDXSM,IS12,IS34,IS1234,IPNTR)
 *
 * Pointer for 4 dimensional array with total symmetry IDXSM
 * Pointer is given as 3 dimensional array corresponding
@@ -4498,17 +4498,17 @@ C            ZNONAB_REL(INVCEN,MAXMLO,NSMOB)
 *. Batches of C vector
         ITTSS_ORD = 2
         CALL PART_CIV3(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
-     &                WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
-     &                IOFFBLK,IOFFBTC,
-     &                NSMST,LBLOCK,WORK(KLCIOIO),
-     &                ISMOST(1,ISM),
-     &                NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &                WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
+     &                 WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
+     &                 IOFFBLK,IOFFBTC,
+     &                 NSMST,LBLOCK,WORK(KLCIOIO),
+     &                 ISMOST(1,ISM),
+     &                 NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
+     &                 WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
 C            PART_CIV3(IDC,IBLTP,NSSOA,NSSOB,NOCTPA,NOCTPB,
-C    &                  IOFFBLK,IOFFBTC,
-C    &                  NSMST,MXLNG,IOCOC,ISMOST,
-C    &                  NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-C    &                  ICOMP,ITTSS_ORD)
+C    &                 IOFFBLK,IOFFBTC,
+C    &                 NSMST,MXLNG,IOCOC,ISMOST,
+C    &                 NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
+C    &                 ICOMP,ITTSS_ORD)
 *
 *. Number of BLOCKS hitherto
         NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)

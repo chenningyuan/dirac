@@ -1227,18 +1227,23 @@ C
       MXPWRD = LWRK
       KADD = MXPWRD
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
-      print*,'Added',KADD,' double words to',KBASE
       WORK(KBASE) = 9991
-      print*,'WRK(1)=9991?',WRK(1)
       IF (WRK(1).NE.9991) THEN
          CALL QUIT('Memory addressing error')
       END IF
 *
+      IMEMCK = 0
       MCSCF = .true.
 *
 ******************************************
 *. Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
+      if (IMEMCK.gt.0) then
+        write(6,*) ' Memory map after STRINF_GAS_REL'
+        IDUM = 0
+        call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
+      end if
+*
 *. Internal subspaces
       CALL LCISPC_REL(IPRCIX)
 *

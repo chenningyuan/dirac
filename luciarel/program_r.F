@@ -132,6 +132,11 @@
 C          Z_BLKFO_REL(ISPC,ISM,KPCLBT,KPCLEBT,
 C    &                 KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
 C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
+      if (IMEMCK.gt.0) then
+        write(6,*) ' Memory map after Z_BLKFO_REL in GASCI_REL'
+        IDUM = 0
+        call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
+      end if
 *
 *. Class divisions of dets
       IF(ICLSSEL.EQ.1) THEN
@@ -182,6 +187,11 @@ C    &                 NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2)
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(6,*) ' Diagonal constructed  '
+        if (IMEMCK.gt.0) then
+          write(6,*) ' Memory map after GASDIAT_REL in GASCI_REL'
+          IDUM = 0
+          call memmar(IDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
+        end if
       ELSE
          WRITE(6,*) ' Diagonal not calculated '
       END IF
@@ -570,7 +580,6 @@ C FIXME !!!
       KBASE = 1
       KADD = MXPWRD
       call memmar(KBASE,KADD,'INI   ',IDUMMY,'DUMMY')
-C?    CALL MEMMAR(IDUM,IDUM,'PRINT ',IDUM,'IDUM')
 #endif
 *. Allocate work space, general
       CALL ALLOC_REL

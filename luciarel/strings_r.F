@@ -2906,11 +2906,9 @@ C
      &               KSTINE - KSTINF
       END IF
 *
-      WRITE(6,*) ' Memory map '
-      IDUM = 0
-      call memmar(IDUM,IDUM,'PRINT',IDUM,'IDUMMY')
       RETURN
       END
+*
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

@@ -2801,7 +2801,14 @@ C    &           N1ELINT,N2ELINT,IPRCC)
       call memmar(IDUM,IDUM,'MARK  ',IDUM,'SIGDEN')
 *
       NTESTL = 0000
-      NTEST = max(NTESTL,max(IPRSIG,IPRDEN))
+      if (ISIGDEN.eq.1) then
+        NTEST = max(NTESTL,IPRSIG)
+      else if (ISIGDEN.eq.2) then
+        NTEST = max(NTESTL,IPRDEN)
+      else
+        write(6,*) ' Illegal value for ISIGDEN: ',ISIGDEN
+        call quit('*** ERROR in SIGDEN_REL ***')
+      end if
 *
       IF(NTEST.GE.100) THEN 
         write(6,*)
@@ -2952,14 +2959,16 @@ C    &           N1ELINT,N2ELINT,IPRCC)
 * Analyze T coefficients before doing the job
                   call flush(6)
                   if (NTEST.ge.100) then
+C FIXME: Debug me !!
 c                   call ana_gencc(T,ISYM_T)
 c                   stop
+C FIXME: Debug me !!
                   end if
 *
                   call sigden_rel2(C,HC,JBATABS,NBATCH_MK2,
      &                             LBATS,LEBATS,I1BATS,IBATS,
      &                             LUSC37,LLUHC,T,
-     &                             ISIGDEN,WORK(KVEC3),IACTP,IBCTP,
+     &                             ISIGDEN,WORK(KVEC3),IASTP,IBSTP,
      &                             IRIS,IRIC,IMK2_C,LUSC41,IPRDEN)
                 end if
 *               ^ End if Kramers restriction
@@ -3019,7 +3028,7 @@ c                   stop
 ***********************************************************************
       SUBROUTINE SIGDEN_REL2(CB,SB,JBATABS,NBATS,LBATS,LEBATS,
      &                       I1BATS,IBATS,
-     &                       LUC,LUHC,T,ISIGDEN,C2,IACTP,IBCTP,
+     &                       LUC,LUHC,T,ISIGDEN,C2,IASTP,IBSTP,
      &                       IRIS,IRIC,IMK2_C,LUSCR_L,IPRNT)
 *
 * First inner routine for general CC sigma/densi
@@ -3065,7 +3074,7 @@ c                   stop
 *
       if (ISIGDEN.eq.2) then
         if (IRIC.eq.1.and.IMK2_C.eq.1) then
-          do ISBLK = 1,LBATS(JBATABS),1
+          do ISBLK = I1BATS(JBATABS),I1BATS(JBATABS) + LBATS(JBATABS)-1
             ISATP = IBATS(1,ISBLK)
             ISBTP = IBATS(2,ISBLK)
             ISASM = IBATS(3,ISBLK)
@@ -3073,13 +3082,22 @@ c                   stop
             ISOFF = IBATS(5,ISBLK)
             LEN2  = IBATS(7,ISBLK)
 *
+            if (NTEST.ge.200) then
+              write(6,*)
+              write(6,*) ' L vector information:'
+              do INFO = 1,8,1
+                write(6,*) '  IBATS(',INFO,',',ISBLK,') = ',
+     &                        IBATS(INFO,ISBLK)
+              end do
+            end if
+*
             XDUM = 0.0D0
             ISCALE = 1
 *. Signs taken from CSTATE
             CALL GSTTBLD(SB(ISOFF),ISATP,ISASM,ISBTP,ISBSM,
-     &            WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)), 
-     &            PSSIGN,IDC,PLSIGN,LUHC,C2,
-     &            NSMST,ISCALE,XSCALE)
+     &                   WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)), 
+     &                   PSSIGN,IDC,PLSIGN,LUHC,C2,
+     &                   NSMST,ISCALE,XSCALE)
 *
             if (LEN2.gt.0.and.NTEST.ge.100) then
               write(6,*) 'WRITING L VECTOR FRACTION:'
@@ -3737,27 +3755,27 @@ C     CALL LMEMCHK
 *
 * Jeppe Olsen, summer of 99
 *
+*  Adapted to double group symmetry
+*    Timo Fleig, Apr. 07, 2003
+*
 #include "implicit.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
-CTF  FIXME !!!
-C  Needs symmetry modification to work properly!
+*
 *. Input
        DIMENSION TCC(*)
        INTEGER NCA(*), NCB(*), NAA(*), NAB(*)
 *
-       call quit('wrt_tcc_blk: I have not been adapted, yet.')
-*
-       WRITE(6,*) ' Block of Coupled cluster vector '
-       WRITE(6,*) ' ================================'
+       WRITE(6,*) ' Block of Computed Density Matrices '
+       WRITE(6,*) '===================================='
        IOFF = 1
        DO ISM_C = 1, NSMST
-         ISM_A = IDBGMULT(ITCC_SM,ISM_C) 
+         ISM_A = IDBGMULT(ISM_C,IADJSYM(ITCC_SM)) 
          DO ISM_CA = 1, NSMST
-           ISM_CB = IDBGMULT(ISM_C,ISM_CA)
+           ISM_CB = IDBGMULT(ISM_C,IADJSYM(ISM_CA))
            DO ISM_AA = 1, NSMST
-             ISM_AB =  IDBGMULT(ISM_A,ISM_AA)
-             WRITE(6,*) ' ISM_AB = ', ISM_AB
+             ISM_AB =  IDBGMULT(ISM_A,IADJSYM(ISM_AA))
+C?           WRITE(6,*) ' ISM_AB = ', ISM_AB
              LCA = NCA(ISM_CA)
              LCB = NCB(ISM_CB)
              LAA = NAA(ISM_AA)

@@ -1385,7 +1385,7 @@ C       call reo_info_molcas()
 *
 * Symmetry loops
           do ISM_C=ISMCSTA,ISMCEND,1
-            ISM_A = IDBGMULT(ISYM_T,ISM_C)
+            ISM_A = IDBGMULT(ISM_C,IADJSYM(ISYM_T))
             do ISM_CA=ISMCASTA,ISMCAEND,1
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
@@ -8518,11 +8518,25 @@ Cjan      end do
       dimension LABEL(4,NSPOBEX_TP),IHINDX(4,NSPOBEX_TP),
      &          IOP_REO(4,NSPOBEX_TP)
 *
-      NTESTL = 40
+      NTESTL = 100
       NTEST = max(IPRNT,NTESTL)
-      NTEST = 10  ! forced
 *
       NINT_TOT = N1ELINT + N2ELINT
+*
+      if (NTEST.ge.100) then
+        write(6,*) 'INPUT DENSITIES:'
+        write(6,*) ' One-particle'
+        do I1P = 1,N1ELINT
+          write(6,*) I1P,F1(I1P)
+        end do
+        write(6,*) ' Two-particle'
+        do I2P = 1,N2ELINT
+          write(6,*) I2P,F2(I2P)
+        end do
+      end if
+*
+      NTEST = 10  ! forced
+*
       if (ISF.eq.1.or.NZ.eq.1) then
         IRILP = 1
       else
