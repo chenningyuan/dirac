@@ -49,7 +49,9 @@ C
 C
 C
 Cjth     remove WFCONV = .false.
-         wfconv = .false.
+c         wfconv = .false.
+         wfconv = .true.
+         write(6,*) ' (DIRPSI) wfconv : ',wfconv
          IF ( .NOT. NOQCDHF .AND. 
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
             CALL PSIOPT(WORK,LWORK)
@@ -208,7 +210,7 @@ C
       IOPT_INTBUF    = INTBUF
       MOPT_MXMICRO   = MXMICRO
       MOPT_MXMACRO   = MXMACRO
-      IOPT_ISTATE    = 0
+      IOPT_ISTATE    = 1
 C
 C     Set common block DCROPT
 C
