@@ -3,7 +3,7 @@ C /* Deck dftrpa */
      &                  IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Prepare for DFT respons....
+C     Prepare for DFT response....
 C
 C     Written byu T.Saue May 11 2001
 C
@@ -67,7 +67,7 @@ C       Insert half-phases
       RETURN
       END       
 C /* Deck dftltr */
-      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,RHO13,
+      SUBROUTINE DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,
      &                  RHOGRD,RHG,WGHT,DOGGA,BUF)
 C
 C     T. Helgaker sep 99/oct 00
@@ -95,7 +95,7 @@ C
       DIMENSION DTRMAT(NBAST,NBAST,NZ,NXCMAT),
      &          EXCMAT(NBAST,NBAST,NZ,NXCMAT),
      &          GAO(NBAST), GAO1(NBAST,3), 
-     &          RHG(3),VXC(DERVS2), BUF(*)
+     &          RHG(3),VT(0:3), VXC(DERVS2), BUF(*)
       DIMENSION B3(3)
 C
       DO IM = 1,NXCMAT      
@@ -116,137 +116,97 @@ C
 C             Calculated VT
 C
               CALL DFTPOT1(VXC, WGHT,RHO, 0D0)
-              VT = VXC(FRR)*B0
+              VT(0) = VXC(FRR)*B0
 C
 C             Linear transformation
 C  
-              CALL DOEXC1(VT,IREPOP,EXCMAT(1,1,1,IM),GAO)
+              CALL DOEXC1(VT(0),IREPOP,EXCMAT(1,1,1,IM),GAO)
            END IF
         ELSE  
 C
 C          ***************
 C          ***** GGA *****
 C          ***************
-CTRONDC
-CTRONDC          B0, BX=B3(1), BY=B3(2), BZ=B3(3), BMAX
-CTRONDC
-CTRONDC             B3 = GAO1'*DTGAO
-CTROND              CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D0,B3,1)
-CTRONDC             DTGAO= DMAT'*GAO
-CTROND            CALL DGEMV('T',NBAST,NBAST,D1,DTRMAT,NBAST,GAO,1,D0,DTGAO,1)
-CTRONDC             B3 = B3 + GAO1'*DTGAO
-CTROND              CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,DTGAO,1,D1,B3,1)
-CTROND              BMAX = MAX(DABS(B0),DABS(B3(1)),DABS(B3(2)),DABS(B3(3)))
-CTRONDC
-CTROND           IF (BMAX.GT.DFTHRL) THEN
-CTRONDC
-CTRONDC             ZNV, FZ0, FRR, FRZ, FZZ
-CTRONDC
-CTROND              IF (DODRC) CALL V1DRC(VDRC0,FRRDRC,RHO,RHO13)
-CTROND              IF (DOBCK) CALL V1BCK(FR0BCK,FZ0BCK,FRRBCK,FRZBCK,
-CTROND     &                              FZZBCK,RHO,RHOGRD)
-CTROND              IF (DOVWN) THEN
-CTROND                 IF (.NOT.TRPLET) THEN
-CTROND                    CALL V1VWN(VVWN0,FRRVWN,RHO,RHO13)
-CTROND                 ELSE
-CTROND                    CALL VTVWN(FRRVWN,RHO,RHO13)
-CTROND                    FRRVWN = DP5*FRRVWN 
-CTROND                 END IF
-CTROND              END IF 
-CTROND              IF (DOLYP) THEN
-CTROND                 RHOA = DP5*RHO
-CTROND                 RHGA = (DP5*RHOGRD)**2
-CTRONDC                CALL V1LYP(FR0LYP,FZ0LYP,FRRLYP,FRZLYP,
-CTRONDC    &                      FZZLYP,RHO,RHOGRD)
-CTROND                 CALL GLYPCO(DF1000,DF0100,DF0010,DF0001,
-CTROND     &                       DF00001,RHO,RHO13,RHOGRD,.TRUE.)
-CTROND                 CALL VTLYP (DF2000,DF0200,DF1100,DF1010,
-CTROND     &                       DF0101,DF1001,DF0110,DF10001,
-CTROND     &                       DF01001,RHOA,RHOA,RHGA,RHGA,RHGA)
-CTROND                 IF (.NOT.TRPLET) THEN
-CTROND                    FZ0LYP = DP5*(DF0010 + DF00001)*RHOGRD
-CTROND                    FRRLYP = DP5*(DF2000 + DF1100)
-CTROND                    FRZLYP = DP5*(DF1010 + DF1001+DF10001)*RHOGRD
-CTROND                    FZZLYP = FZ0LYP/RHOGRD 
-CTROND                 ELSE
-CTROND                    FZ0LYP = DP5*(DF0010 - DF00001)*RHOGRD
-CTROND                    FRRLYP = DP5*(DF2000 - DF1100)
-CTROND                    FRZLYP = DP5*(DF1010 - DF1001)*RHOGRD
-CTROND                    FZZLYP = FZ0LYP/RHOGRD 
-CTROND                 END IF
-CTROND              ELSE 
-CTROND                 FZ0LYP = 0D0
-CTROND                 FRRLYP = 0D0
-CTROND                 FRZLYP = 0D0
-CTROND                 FZZLYP = 0D0
-CTROND              END IF  
-CTRONDC
-CTROND              ZNV = D1/RHOGRD
-CTROND              FZ0 = ZNV*(WBCK*FZ0BCK + WLYP*FZ0LYP)
-CTROND              FRR = WDRC*FRRDRC + WVWN*FRRVWN 
-CTROND     &            + WBCK*FRRBCK + WLYP*FRRLYP 
-CTROND              FRZ = WBCK*FRZBCK + WLYP*FRZLYP 
-CTROND              FZZ = WBCK*FZZBCK + WLYP*FZZLYP 
-CTRONDC 
-CTROND              RX = ZNV*RHG(1) 
-CTROND              RY = ZNV*RHG(2)
-CTROND              RZ = ZNV*RHG(3)
-CTRONDC
-CTRONDC             Linear transformation
-CTRONDC
-CTROND                 BR = B3(1)*RX + B3(2)*RY + B3(3)*RZ
-CTROND                 FAC0 = FRR*B0 + FRZ*BR
-CTROND                 FACR = FRZ*B0 + FZZ*BR
-CTROND                 IF (NOSYM) THEN
-CTROND                    DO I = 1, NBAST
-CTROND                       G0 = GAO(I)
-CTROND                       GX = GAO1(I,1)
-CTROND                       GY = GAO1(I,2)
-CTROND                       GZ = GAO1(I,3)
-CTROND                       DO J = 1, I 
-CTROND                          A0 = G0*GAO(J)
-CTROND                          AX = GX*GAO(J) + G0*GAO1(J,1)
-CTROND                          AY = GY*GAO(J) + G0*GAO1(J,2)
-CTROND                          AZ = GZ*GAO(J) + G0*GAO1(J,3)
-CTROND                          AR = AX*RX + AY*RY + AZ*RZ
-CTROND                          AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) - AR*BR
-CTROND                          EXCMAT(J,I) = EXCMAT(J,I)
-CTROND     &                                +FAC0*A0+FACR*AR+FZ0*AB
-CTROND                         END DO
-CTROND                      END DO
-CTROND                 ELSE
-CTROND                    DO ISYM = 1, NSYM
-CTROND                       ISTR = IBAS(ISYM) + 1
-CTROND                       IEND = IBAS(ISYM) + NBAS(ISYM)
-CTROND                       JSYM = MULD2H(ISYM,KSYMOP)
-CTROND                       IF (ISYM.GE.JSYM) THEN
-CTROND                          JSTR = IBAS(JSYM) + 1
-CTROND                          JEND = IBAS(JSYM) + NBAS(JSYM)
-CTROND                          DO I = ISTR, IEND
-CTROND                           G0 = GAO(I)
-CTROND                           GX = GAO1(I,1)
-CTROND                           GY = GAO1(I,2)
-CTROND                           GZ = GAO1(I,3)
-CTROND                           DO J = JSTR, MIN(I,JEND) 
-CTROND                              A0 = G0*GAO(J)
-CTROND                              AX = GX*GAO(J) + G0*GAO1(J,1)
-CTROND                              AY = GY*GAO(J) + G0*GAO1(J,2)
-CTROND                              AZ = GZ*GAO(J) + G0*GAO1(J,3)
-CTROND                              AR = AX*RX + AY*RY + AZ*RZ
-CTROND                              AB = AX*B3(1) + AY*B3(2) + AZ*B3(3) -AR*BR
-CTROND                              EXCMAT(J,I) = EXCMAT(J,I) + FAC0*A0 
-CTROND     &                                    + FACR*AR + FZ0*AB
-CTROND                           END DO
-CTROND                        END DO
-CTROND                     END IF
-CTROND                  END DO
-CTROND               END IF
-CTROND         END IF
+C
+           CALL GETGRHO(B3,IREPOP,GAO,GAO1,DTRMAT(1,1,1,IM),BUF)
+           BMAX = MAX(ABS(B0),ABS(B3(1)),ABS(B3(2)),ABS(B3(3)))
+C          
+           
+           IF (.TRUE..OR.BMAX.GT.DFTHRL) THEN
+              CALL DFTPOT1(VXC, WGHT,RHO, RHOGRD)
+              BR = (B3(1)*RHG(1)+ B3(2)*RHG(2)+ B3(3)*RHG(3))/RHOGRD
+              FACR = VXC(FRZ)*B0 + (VXC(FZZ)-VXC(FZ0)/RHOGRD)*BR
+              VT(0) = VXC(FRR)*B0 + VXC(FRZ)*BR
+              VT(1) = (RHG(1)*FACR + VXC(FZ0)*B3(1))/RHOGRD
+              VT(2) = (RHG(2)*FACR + VXC(FZ0)*B3(2))/RHOGRD
+              VT(3) = (RHG(3)*FACR + VXC(FZ0)*B3(3))/RHOGRD
+
+C             Linear transformation
+C
+              CALL DOLRG(VT,IREPOP,EXCMAT(1,1,1,IM),GAO,GAO1)
+         END IF
       END IF
       ENDDO
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dolrg */
+      SUBROUTINE DOLRG(VT,IREPOP,EXCMAT,GAO,GAO1)
+C***********************************************************************
+C
+C     Construct Kohn-Sham matrix
+C
+C     Written by T.Saue and T.Helgaker and P.Salek
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D2=2.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#if defined (VAR_G77) || defined (SYS_SX)
+      EQUIVALENCE (NBAST,NTBAS(0))
+      DIMENSION GAO(NBAST),GAO1(NBAST,3),EXCMAT(NBAST,NBAST)
+#else
+      DIMENSION GAO(NTBAS(0)),GAO1(NTBAS(0),3),EXCMAT(NTBAS(0),NTBAS(0))
+#endif
+      DIMENSION VT(0:3)
+C      
+#include "ibtfun.h"
+C
+      MC = 2
+      IF(LEVYLE) MC = 1      
+      DO 10 IRP1 = 0,NBSYM-1
+        DO 20 IRP2 = 0,NBSYM-1
+          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
+          DO 30 IC = 1,MC
+            NB1 = NBBAS(IRP1,IC)
+            NB2 = NBBAS(IRP2,IC)
+            JB1 = IBBAS(IRP1,IC)
+            JB2 = IBBAS(IRP2,IC)
+            DO J = 1, NB2
+               G0 = GAO(JB2+J)
+               GX = GAO1(JB2+J,1)
+               GY = GAO1(JB2+J,2)
+               GZ = GAO1(JB2+J,3)
+               DO I = 1, NB1
+                  A0 = G0*GAO(JB1+I)
+                  AX = GX*GAO(JB1+I) + G0*GAO1(JB1+I,1)
+                  AY = GY*GAO(JB1+I) + G0*GAO1(JB1+I,2)
+                  AZ = GZ*GAO(JB1+I) + G0*GAO1(JB1+I,3)
+                  EXCMAT(JB1+I,JB2+J) = EXCMAT(JB1+I,JB2+J)
+     &                 + VT(0)*A0 + VT(1)*AX
+     &                 + VT(2)*AY + VT(3)*AZ
+              END DO
+            ENDDO
+   30     CONTINUE
+   20   CONTINUE
+   10 CONTINUE
+C
+      END
+c
       SUBROUTINE FORTWRT(str, slength)
 #include "priunit.h"
       INTEGER unit, slength

@@ -708,7 +708,7 @@ for makefile in $dirs; do
       rm -f $makefile/Makefile
    fi
    echo MODS=$MODS > $makefile/Makefile
-   echo MODS_IBM=$MODS_IBM > $makefile/Makefile
+   echo MODS_IBM=$MODS_IBM >> $makefile/Makefile
    cat $makefile/Makefile.in >> $makefile/Makefile
 done
 #

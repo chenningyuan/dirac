@@ -1,3 +1,10 @@
+2003-06-02  Pawel Salek  <pawel.salek@kjemi.uio.no>
+
+	* pamadm: fix MODS generation.
+	* dft/dftaux.F: GGA-enabled linear response.
+	* dft/dftdrv.F: remove unneeded #ifdef.
+	* dirac/diraos.F: Trond's generalized \grad\rho evaluation
+
 2003-05-09  Pawel Salek  <pawel.salek@kjemi.uio.no>
 
 	* dft/fun-*.c: make first derivative naming consistent with higher

@@ -61,21 +61,33 @@ C
         NB1 = NBBAS(IRP1,IC)
         IF(NB1.EQ.0) GOTO 10
         JB1 = IBBAS(IRP1,IC)+1
-        DO 20 IRP2 = 0,NBSYM-1
-          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
-          NB2 = NBBAS(IRP2,IC)
-          IF(NB2.EQ.0) GOTO 20
-          JB2 = IBBAS(IRP2,IC)+1
-          CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
-     &                 DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
-          RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
-   20   CONTINUE
+        IRP2 = IBTXOR(IRP1,IREPOP)
+        NB2 = NBBAS(IRP2,IC)
+        IF(NB2.EQ.0) GOTO 10
+        JB2 = IBBAS(IRP2,IC)+1
+        CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &             DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
+        RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
    10 CONTINUE
+CTROND      DO 10 IRP1 = 0,NBSYM-1
+CTROND        NB1 = NBBAS(IRP1,IC)
+CTROND        IF(NB1.EQ.0) GOTO 10
+CTROND        JB1 = IBBAS(IRP1,IC)+1
+CTROND        DO 20 IRP2 = 0,NBSYM-1
+CTROND          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
+CTROND          NB2 = NBBAS(IRP2,IC)
+CTROND          IF(NB2.EQ.0) GOTO 20
+CTROND          JB2 = IBBAS(IRP2,IC)+1
+CTROND          CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+CTROND     &                 DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
+CTROND          RHO = RHO + DDOT(NBBAS(IRP1,IC),GAO(JB1),1,BUF,1)
+CTROND   20   CONTINUE
+CTROND   10 CONTINUE
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getgrho */
-      SUBROUTINE GETGRHO(RHG,GAO,GAO1,DMAT,BUF)      
+      SUBROUTINE GETGRHO(RHG,IREPOP,GAO,GAO1,DMAT,BUF)      
 C***********************************************************************
 C
 C     Get gradient of density in point (PX,PY,PZ).
@@ -86,7 +98,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
 #include "dgroup.h"
@@ -101,33 +113,32 @@ C
 #endif
       DIMENSION RHG(3)
 C      
-      DO I = 1,3
-        RHG(I) = D0
-      ENDDO
-C
+#include "ibtfun.h"
+C      
       MC = 2
       IF(LEVYLE) MC = 1      
-      NBRP = 4/NZ
-      DO IFRP = 1,NFSYM
-        DO IC = 1,MC
-          IP = MOD(IFRP+IC,NFSYM) + 1
-          DO JSYM = 1,NBRP
-            IREP = JFSYM(JSYM,IP) - 1
-            IF(NBBAS(IREP,IC).GT.0) THEN
-              JJ = IBBAS(IREP,IC)
-              DO J = 1, NBBAS(IREP,IC)
-                    BUF(J) = DDOT(NBBAS(IREP,IC),
-     &                        DMAT(JJ+1,JJ+J),1,GAO(JJ+1),1)
-              ENDDO
-              DO I = 1,3
-                RHG(I)=RHG(I)+DDOT(NBBAS(IREP,IC),BUF,1,GAO1(JJ+1,I),1)
-              ENDDO
-            ENDIF
-          ENDDO
-        ENDDO
+      DO IAX = 1,3
+        RHG(IAX) = D0
       ENDDO
-      DO I = 1,3
-        RHG(I) = RHG(I)+RHG(I)
+      DO IC = 1,MC
+        DO 10 IRP1 = 0,NBSYM-1
+          NB1  = NBBAS(IRP1,IC)
+          IF(NB1.EQ.0) GOTO 10
+          JB1  = IBBAS(IRP1,IC)+1
+          IRP2 = IBTXOR(IRP1,IREPOP)
+          NB2  = NBBAS(IRP2,IC)
+          IF(NB2.EQ.0) GOTO 10
+          JB2 = IBBAS(IRP2,IC)+1
+          CALL DGEMV('N',NBBAS(IRP1,IC),NBBAS(IRP2,IC),D1,
+     &                 DMAT(JB1,JB2),NTBAS(0),GAO(JB2),1,D0,BUF,1)
+          DO IAX = 1,3
+            RHG(IAX) = RHG(IAX) 
+     &             + DDOT(NBBAS(IRP1,IC),GAO1(JB1,IAX),1,BUF,1)
+          ENDDO
+   10   CONTINUE
+      ENDDO
+      DO IAX = 1,3
+        RHG(IAX) = RHG(IAX)+RHG(IAX)
       ENDDO
 C
       END

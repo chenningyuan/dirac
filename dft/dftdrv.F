@@ -118,11 +118,7 @@ C
 C
       IF (DOERG) THEN
          NDER = 0
-#if defined (PRG_DIRAC)
          EXCTRO = DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
-#else
-         EXCTRO = DP5*DDOT(NBAST*NBAST,DMAT,1,EXCMAT,1)
-#endif
       END IF 
       IF (DOGRD) THEN
          NDER = 1
@@ -136,7 +132,6 @@ C
       END IF
 C
       DOGGA = DFTISGGA()
-CTROND
       DOGRHO = .FALSE.
       DOLRHO = .FALSE.
 C
@@ -360,7 +355,7 @@ C       Gradient of density
 C       ===================
 C
         IF (DOGRHO) THEN
-          CALL GETGRHO(RHG,GAO,GAO1,DMAT,BUF)      
+          CALL GETGRHO(RHG,0,GAO,GAO1,DMAT,BUF)      
           RHOGRD = DSQRT(RHG(1)**2 + RHG(2)**2 + RHG(3)**2)
         END IF
 C
@@ -432,7 +427,7 @@ C       Hessian transformation
 C       ======================
 C
         IF (DOATR) THEN
-          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,RHO13,
+          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,IREPOP,GAO,GAO1,RHO,
      &                RHOGRD,RHG,WGHT,DOGGA,BUF)
 CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
         END IF
