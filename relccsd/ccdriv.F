@@ -1961,9 +1961,9 @@ C
       IRECST = 2 ! Status of the current run
       IRECEN = 3 ! Energies and other results
       IRECT1 = 4 ! T1 amplitudes
-      NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
-      IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
-      NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
+C
+C     The starting record of the T2 amplitudes is set when the
+C     length of the amplitude vectors is known.
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C

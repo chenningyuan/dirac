@@ -544,6 +544,12 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+C     Find starting point of T2 amplitudes.
+C
+      NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
+      IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
+      NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
+C
       IRECL = IRECLEN (0,RSRCLEN,0)
       OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
@@ -605,6 +611,12 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+C
+C     Find starting point of T2 amplitudes.
+C
+      NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
+      IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
+      NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
       IRECL = IRECLEN (0,RSRCLEN,0)
       OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
      &      RECL=IRECL)
