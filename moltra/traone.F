@@ -461,7 +461,7 @@ C
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.4) THEN
          NSYMRP = 4
          REPN(1) = ' 1AG          '
-         REPN(2) = ' 1AG          '
+         REPN(2) = ' 2AG          '
          REPN(3) = ' 1AU          '
          REPN(4) = ' 2AU          '
       ELSEIF (NFSYM.EQ.2.AND.NZ.EQ.2) THEN
