@@ -2320,6 +2320,42 @@ C
 C
       RETURN
       END
+      SUBROUTINE QGETHE(AMAT,NDIM,NZ,LRA,LCA)
+C*****************************************************************************
+C
+C     Quaternian GEneral matrix To HErmitian matrix:
+C     generate the Hermitian component of the general matrix AMAT;
+C     return in AMAT.
+C
+C     Written by H.J.Aa. Jensen, June 2002
+C     (based on DIFMMH)
+C
+C*****************************************************************************
+#include <implicit.h>
+      PARAMETER(D0=0.0D0, DP5=0.5D0)
+      DIMENSION AMAT(LRA,LCA,NZ)
+C
+C     Generate A + A(dagger)
+C
+      DO J = 1,NDIM
+        DO I = 1,(J-1)
+          AMAT(I,J,1) = DP5*(AMAT(I,J,1)+AMAT(J,I,1))
+          AMAT(J,I,1) = AMAT(I,J,1)
+        ENDDO
+      ENDDO
+      DO IZ = 2,NZ
+        DO J = 1,NDIM
+          DO I = 1,(J-1)
+            AMAT(I,J,IZ) = DP5*(AMAT(I,J,IZ)-AMAT(J,I,IZ))
+            AMAT(J,I,IZ) = -AMAT(I,J,IZ)
+          ENDDO
+          AMAT(J,J,IZ) = D0
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrtdac */
       SUBROUTINE WRTDAC (IT,N,X,IREC)
