@@ -1186,7 +1186,7 @@ C
       ENDIF
 C
  1001 FORMAT (//' Checking the orbital energies, the program computes',
-     & 'the diagonal elements of the'/' reconstructed Fock matrix.',
+     & ' the diagonal elements of the'/' reconstructed Fock matrix.',
      & ' Differences with the reference orbital energies'/
      & ' are given if above a treshold or if iprnt > 1'
      &//' Spinor   Abelian Rep.',9X,'Energy   Recalc. Energy')
