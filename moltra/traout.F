@@ -240,7 +240,7 @@ C
       IF (IPRINT.GE.5) THEN
          DO INZ = 1, NZKL
             WRITE (LUPRI,'(4I4,2f30.16)') IKR1,JKR1,INDK(INZ),INDL(INZ),
-     &                                   (RKL(RCW*INZ-2+I),I=1,RCW)
+     &                                   (RKL(RCW*(INZ-1)+I),I=1,RCW)
          ENDDO
       ENDIF
 C
