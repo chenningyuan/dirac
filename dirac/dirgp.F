@@ -829,17 +829,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      FUNCTION POLVAL(NORDER,B,XVAL)
-#include <implicit.h>
-      DIMENSION B(NORDER+1)
-      POLVAL = B(1)
-      XBUF = 1
-      DO 10 I = 2,(NORDER+1)
-        XBUF = XBUF*XVAL
-        POLVAL = POLVAL + XBUF*B(I)
-   10 CONTINUE     
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck EIGEXT */
       SUBROUTINE EIGEXT(EIG,IORBCL,ITYP,WORK,KFREE,LFREE)
 #include <implicit.h>
