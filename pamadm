@@ -290,6 +290,7 @@ cat <<EOF>> Makefile
 	\$(RM) -f *~
 
 export:
+	-rm -f DIRAC.new.tar.Z
 	tar cvf DIRAC.new.tar \
 	configure doc/dirdoc.ps \
 	include/*.h Makefile Makefile.config dirac/*.F dirac/Makefile dirac/include \
