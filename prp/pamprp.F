@@ -2168,7 +2168,7 @@ C           don't look for e-p in case of XLR_SKIPEP
 C
 C             e-p
               TMPMAT(A,B) = TMPMAT(A,B)
-     &                    + -D1*ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
+     &                    - ABLRF(IFREQ,KA,KB,3+N_ORBXLR)
             ENDIF
           ENDDO
         ENDDO
