@@ -2998,8 +2998,8 @@ C
      &         NFBAS(I,0),NORB(I),NZ)
 C
             IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Right index transf. overlap'//
-     &            ' matrix Smomo',-1)
+               CALL HEADER('MKSAOMO: Right index transf. overlap'//
+     &            ' matrix Saomo',-1)
                CALL PRQMAT(SAOMO(IOFF),NFBAS(I,0),NORB(I),
      &            NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
                CALL FLSHFO(LUPRI)
