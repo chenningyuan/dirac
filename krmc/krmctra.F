@@ -3409,8 +3409,8 @@ C
 C
       SUBROUTINE RADDFQX1(szPV,szQV,FAC,IZPV,I3PV,IZQV,I3QV,
      &     H2VPX,PV,NVQ,IQU,IVU,FQX)
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -3481,8 +3481,8 @@ C
       END
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -3516,8 +3516,8 @@ C
 C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -3575,8 +3575,8 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "consts.h"
 C

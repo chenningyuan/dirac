@@ -1839,8 +1839,8 @@ C
 C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -2049,8 +2049,8 @@ C
 C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"

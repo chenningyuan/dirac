@@ -2732,8 +2732,8 @@ C         1 - electronic
 C         2 - positronic
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
 #include "maxorb.h"

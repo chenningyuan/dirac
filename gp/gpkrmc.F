@@ -1100,8 +1100,8 @@ C
 C     Written by J. Thyssen - Jan 23 2001
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "thrzer.h"
 #include "consts.h"

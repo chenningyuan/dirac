@@ -1648,8 +1648,8 @@ C     Written by J. Thyssen - Oct 26 1998
 C     Last revision :
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -3871,8 +3871,8 @@ C     Written by J. Thyssen - Dec 22 2000
 C     Last revision :
 C
 C***********************************************************************
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
 C

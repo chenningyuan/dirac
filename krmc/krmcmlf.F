@@ -1188,8 +1188,8 @@ C
       END
 C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
-#include "priunit.h"
 #include "implicit.h"
+#include "priunit.h"
 #include "thrzer.h"
 #include "consts.h"
 C
