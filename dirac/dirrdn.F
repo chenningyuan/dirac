@@ -2096,6 +2096,7 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 #include <mxorb.h>
+#include <mxcent.h>
       PARAMETER (NTABLE = 8)
 C
 #include <dcbgen.h>
@@ -2104,13 +2105,14 @@ C
 #include <dcborb.h>
 #include <dcbbas.h>
 #include <dgroup.h>
+#include <nuclei.h>
 C
       LOGICAL SET, NEWDEF,ORBDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
-     &            '.WGPOP','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.WGPOP','.OWNBAS','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2133,6 +2135,7 @@ C     Default is to project all occupied vectors onto all reference vectors
       NREFS    = 0
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
+      OWNBAS = .FALSE.
 C
 C     Process input from CBIPRJ
 C     =========================
@@ -2193,6 +2196,8 @@ C&&& WGPOP: Split overlap densities according to weight of contributions
                  LWGPOP = .TRUE.
                GO TO 100
     6          CONTINUE
+C&&& OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis sets
+                 OWNBAS = .TRUE.
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -2246,22 +2251,46 @@ C
      &      '- Orbitals in fermion ircop ',FREP(I),' :',VECPRJ(I)
         ENDIF
       ENDDO
-      DO J = 1,NREFS
-        WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
-        WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-        DO I = 1,NFSYM
-          NVEC = 0
-          CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
-          IF(NVEC.EQ.0) THEN
-            WRITE(LUPRI,'(4X,A,A3)') 
-     &         '- No orbitals in fermion ircop ',FREP(I)
-          ELSE
-            WRITE(LUPRI,'(4X,A,A3,A,A72)') 
-     &      '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-          ENDIF
+      IF(OWNBAS) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &   '* Fragments are calculated in their individual bases !',
+     &   '    The indexing of reference spinor sets is assumed ',
+     &   '    to follow list of symmetry independent nuclei.'
+        DO J = 1,NREFS
+          WRITE(LUPRI,'(1X,A,I3,A,A4)') '* Reference spinor set ',J,
+     &           ' --> ',NAMN(J)
+          WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+          DO I = 1,NFSYM
+            NVEC = 0
+            CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &                -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+            IF(NVEC.EQ.0) THEN
+              WRITE(LUPRI,'(4X,A,A3)') 
+     &           '- No orbitals in fermion ircop ',FREP(I)
+            ELSE
+              WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+            ENDIF
+          ENDDO
         ENDDO
-      ENDDO
+      ELSE
+        DO J = 1,NREFS
+          WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
+          WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
+          DO I = 1,NFSYM
+            NVEC = 0
+            CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
+     &                -NFBAS(I,2),NFBAS(I,1),NVEC,WORK,LWORK)
+            IF(NVEC.EQ.0) THEN
+              WRITE(LUPRI,'(4X,A,A3)') 
+     &           '- No orbitals in fermion ircop ',FREP(I)
+            ELSE
+              WRITE(LUPRI,'(4X,A,A3,A,A72)') 
+     &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
+            ENDIF
+          ENDDO
+        ENDDO
+      ENDIF
       IF(LWGPOP) WRITE(LUPRI,'(A,A)') '* Overlap densities split ',
      &  'between contributions according to their weight.'
       WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRPRJ
