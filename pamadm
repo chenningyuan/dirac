@@ -336,6 +336,7 @@ moltra/traprp.o \\
 relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o relccsd/ccfspc.o \\
+relccsd/waio.o  \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
 lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  lucita/diagonalize.o  lucita/doubledir.o  \\
 lucita/fock.o  lucita/interface.o  lucita/io.o  lucita/lucia_cc.o  lucita/lucia_icci.o  lucita/memory.o \\
@@ -370,7 +371,7 @@ RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
-relccsd/ccunix.o relccsd/ccfspc.o
+relccsd/ccunix.o relccsd/ccfspc.o  relccsd/waio.o 
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
