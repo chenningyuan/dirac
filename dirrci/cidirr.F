@@ -2035,7 +2035,12 @@ C
 C
 CLV   NATORB does not work with DIRAC, for use with MOLFDIR : remove
 CLV   the RETURN statement of the next line.
+#ifdef PRG_DIRAC
+      WRITE(6,'(/A/A)')
+     &  ' DIRRCI INFO: Generation of natural spinors requested, but',
+     &  ' generation of natural spinors is not implemented in DIRAC.'
       RETURN
+#else
       Write (6,1000)
       FilVCA = 'MFDVECA'
       FilNSc = 'SCRATCH'
@@ -2166,6 +2171,7 @@ C    &                  Work1,NS,Work2,NS,IFail)
  1030 Format (/' Natural Spinors for Root',I3,' written to ',A8)
 10000 Format (/' Cannot make the natural spinors due to ',
      &         'lack of memory')
+#endif
       END
 C
       INTEGER FUNCTION NOVERI (N,I)
@@ -3465,7 +3471,13 @@ C     IF (IREPNA(1:1).EQ.'2') IREPNA(1:1) = '"'
       COMIN=0.1D0
       REWIND (5)
       READ (5,LEADDET,END=500,ERR=500)
-  500 MAKENAT=.TRUE.
+  500 CONTINUE
+#ifdef PRG_DIRAC
+C     Make natural spinors does not work for DIRAC (only for MOLFDIR)
+      MAKENAT=.FALSE.
+#else
+      MAKENAT=.TRUE.
+#endif
       REWIND (5)
       READ (5,NATURAL,END=600,ERR=600)
   600 CONTINUE
