@@ -185,8 +185,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
-      SUBROUTINE SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT,
-     &                   IQMO,WORK,KFREE,LFREE)
+      SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
+     &                   NSTR3,NSTR4,NKL,FMAT,IQMO,WORK,KFREE,LFREE)
 C
 C     Symmetrize the final integrals and write them to file
 C
@@ -196,16 +196,24 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbtra.h>
+#include <dcbham.h>
 #include <dgroup.h>
       DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION IQMO(4,0:7)
       DIMENSION FMAT(NKL,NZ,NZ,*)
+      DIMENSION IREPKLB(NKL)
 C
       CALL MEMGET('REAL',KFTMAT,NKL*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRKL,2*NKL,WORK,KFREE,LFREE)
+C
+      IF (SPINFR)THEN
+         NZS = 1
+      ELSE
+         NZS = NZ
+      ENDIF
 C
 C     Real and complex classes
 C     They are always written as complex for MOLFDIR
@@ -216,9 +224,22 @@ C
          DO IREPAB = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
                IREPABR = IREPABR + 1
-               DO IZ1 = 1, NZ
+C
+C    If spinfree : zero out the spin-orbit coupling for electron 1
+C
+               IF (IREPAB.NE.IREPIJB.AND.SPINFR) GOTO 100
+               DO IZ1 = 1, NZS
                   IQ1 = IQMO(IZ1,IREPAB)
-                  DO IZ2 = 1, NZ
+                  DO IZ2 = 1, NZS
+C
+C    If spinfree : zero out the spin-orbit coupling for electron 2
+C
+                     IF (SPINFR) THEN
+                        DO I = 1, NKL
+                           IF (IREPAB.NE.IREPKLB(I))
+     &                        FMAT(I,IZ2,IZ1,IREPABR) = 0.D0
+                        ENDDO
+                     ENDIF
                      IQ2 = IQMO(IZ2,IREPAB)
                      IFAC = INTCL(ICLASS,IQ1,IQ2)
                      IF (IFAC.NE.0) THEN
@@ -227,7 +248,7 @@ C
      &                              FMAT(1,IZ2,IZ1,IREPABR),1,
      &                              WORK(KFTMAT),1)
                      ENDIF
-                     IF (NZ.GT.1) THEN
+                     IF (NZS.GT.1) THEN
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
                            FACTR = IFAC
@@ -238,6 +259,7 @@ C
                      ENDIF
                   ENDDO
                ENDDO
+ 100           CONTINUE
             ENDIF
          ENDDO
          CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
@@ -248,14 +270,14 @@ C
 C
 C     Quaternion classes
 C
-      IF (NZ.EQ.4) THEN
+      IF (NZS.EQ.4) THEN
          DO ICLASS = 9, 12
             CALL DZERO(WORK(KFTMAT),2*NKL)
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
-                  DO IZ1 = 1, NZ
+                  DO IZ1 = 1, NZS
                      IQ1 = IQMO(IZ1,IREPAB)
-                     DO IZ2 = 1, NZ
+                     DO IZ2 = 1, NZS
                         IQ2 = IQMO(IZ2,IREPAB)
                         IFAC = INTCL(ICLASS,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
@@ -481,6 +503,58 @@ C     SGI IRIX counts recl in *4 words
 #endif
 C
       IRECLEN = IRECL
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck MKINDXB*/
+      SUBROUTINE MKINDXB (NSTR,IBE11,IBE21,IBE12,IBE22,TRIAN,INDXB)
+C
+C    Make an array that gives the compound boson irrep from the ij-value
+C    Written by Luuk Visscher, April 1997
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbtra.h>
+#include <dgroup.h>
+      LOGICAL TRIAN
+      INTEGER NSTR(2,0:2,2)
+      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
+      DIMENSION INDXB(*)
+#include <ibtfun.h>
+C
+      IJ = 0
+      DO IREPIJ =1, NFSYM
+         DO IREPJ = 1, NFSYM
+            IREPI = MOD(IREPJ+IREPIJ,2) + 1
+            IF (.NOT.TRIAN.OR.(TRIAN.AND.IREPI.GT.IREPJ)) THEN
+              DO J = 1, NSTR(IREPJ,0,2)
+                 DO I = 1, NSTR(IREPI,0,1)
+                    IJ = IJ + 1
+                    IF (IREPI.EQ.1) IREPIB = IBE11(I)
+                    IF (IREPI.EQ.2) IREPIB = IBE21(I)
+                    IF (IREPJ.EQ.1) IREPJB = IBE12(J)
+                    IF (IREPJ.EQ.2) IREPJB = IBE22(J)
+                    IREPIJB = IBTXOR(IREPIB,IREPJB)
+                    INDXB(IJ) = IREPIJB
+                 ENDDO
+              ENDDO
+            ELSEIF (IREPI.EQ.IREPJ) THEN
+              DO J = 1, NSTR(IREPJ,0,2)
+                 DO I = J, NSTR(IREPI,0,1)
+                    IJ = IJ + 1
+                    IF (IREPI.EQ.1) IREPIB = IBE11(I)
+                    IF (IREPI.EQ.2) IREPIB = IBE21(I)
+                    IF (IREPJ.EQ.1) IREPJB = IBE12(J)
+                    IF (IREPJ.EQ.2) IREPJB = IBE22(J)
+                    IREPIJB = IBTXOR(IREPIB,IREPJB)
+                    INDXB(IJ) = IREPIJB
+                 ENDDO
+              ENDDO
+            ENDIF
+         ENDDO
+      ENDDO
 C
       RETURN
       END

@@ -33,7 +33,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR3T */
       SUBROUTINE TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP)
+     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,KIBE,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C     Screening introduced by T.Saue Sep 1998
@@ -52,7 +52,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
-      DIMENSION IQMO(4,0:7),NZMO(0:7),KQ(2,4),KE(2,2)
+      DIMENSION IQMO(4,0:7),NZMO(0:7),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IJP12(0:7)
       DIMENSION IJP34(2)
       DIMENSION IHTM(0:7),IHM(0:7),IFM(0:7),MHTM(2),NHTM(2)
@@ -91,6 +91,14 @@ C
 C
       CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
       CALL MKINDXKR (NSTR,TRIAN(1),WORK(KDXKR12))
+      CALL MEMGET('INTE',KDXB12,NFPCK12T,WORK,KFREE,LFREE)
+      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
+     &              TRIAN(1),WORK(KDXB12))
+      CALL MEMGET('INTE',KDXB34,NFPCK34T,WORK,KFREE,LFREE)
+      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
+     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
+     &              TRIAN(2),WORK(KDXB34))
 C
 C     Make index array for half-transformed integrals
 C
@@ -366,7 +374,7 @@ C
      &             WORK(KQ(1,3)),WORK(KQ(1,4)),
      &             WORK(KQ(1,3)),WORK(KQ(1,4)),
      &             NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,
-     &             WORK(KDXKR12))
+     &             WORK(KDXKR12),WORK(KDXB12),WORK(KDXB34))
 C
 C     Delete half-transformed integral files
 C
@@ -553,7 +561,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2D*/
       SUBROUTINE MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
-     & Q3S,Q4S,Q3T,Q4T,NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,INDXKR)
+     & Q3S,Q4S,Q3T,Q4T,NZMO,IQMO,IRECC,NBFSZ,NBUF,NIJBUF,MHTM,INDXKR,
+     & INDXB12,INDXB34)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -581,7 +590,7 @@ C
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
-      DIMENSION INDXKR(2,*)
+      DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
       DIMENSION IQMO(4,0:7),NZMO(0:7)
 #include <mxorb.h>
@@ -605,10 +614,12 @@ C     IJS is the offset for the start of the batch within an irrep
 C
       IOFF = 0
       NIJOFF = 1
+      NKLOFF = 1
       DO IREPIJ = 1, NFSYM
          IJS = 0
          NIJ  = NIJBUF(IREPIJ)
          NIJL = NFPCK12(IREPIJ) - NIJ*(NBUF(IREPIJ)-1)
+         NKL  = NFPCK34(IREPIJ)
          CALL MEMGET('REAL',KHMAT,NIJ*MHTM(IREPIJ),WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KRBUF,NBFSZ(IREPIJ)*NZ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KLBUF1,NBFSZ(IREPIJ)*NZ,WORK,KFREE,LFREE)
@@ -618,18 +629,15 @@ C
             CALL READBUF(IREPIJ,IBUF,IOFF,IRECC(IREPIJ),NBFSZ(IREPIJ),
      &                   NBUF(IREPIJ),WORK(KRBUF),WORK(KLBUF1),
      &                   WORK(KHMAT))
-C
-c           print*,'irepij',irepij
-c           do ix = 1, NIJ*MHTM(IREPIJ)
-c              print*,ix,work(khmat+ix-1)
-c           enddo
             CALL MS4IN2P(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
      &                   IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,
-     &                   WORK(KHMAT),NZMO,IQMO,INDXKR(1,NIJOFF))
+     &                   WORK(KHMAT),NZMO,IQMO,INDXKR(1,NIJOFF),
+     &                   INDXB12(NIJOFF),INDXB34(NKLOFF))
             IOFF = IOFF + NIJ * MHTM(IREPIJ)
             IJS = IJS + NIJ
             NIJOFF = NIJOFF + NIJ
          ENDDO
+         NKLOFF = NKLOFF + NIJ
          CALL MEMREL('MS4IN2D',WORK,1,KHMAT,KFREE,LFREE)
       ENDDO
 C
@@ -640,7 +648,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MS4IN2P*/
       SUBROUTINE MS4IN2P(WORK,KFREE,LFREE,IPRINT,ICS,ICF,NSTR3,NSTR4,
-     & IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,HMAT,NZMO,IQMO,INDXKR)
+     & IREPIJ,IJS,NIJ,Q3S,Q4S,Q3T,Q4T,HMAT,NZMO,IQMO,INDXKR,INDXB12,
+     & INDXB34)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher January 1997.
@@ -674,7 +683,7 @@ C
       DIMENSION WORK(*)
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION HMAT(*)
-      DIMENSION INDXKR(2,*)
+      DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
       DIMENSION IQAO(4),IQMO(4,0:7),NZMO(0:7)
 #include <mxorb.h>
 #include <mxcent.h>
@@ -781,12 +790,6 @@ C
      &                       Q3S(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPRI),
      &                       Q4S(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPSI),
      &                       WORK(KFREE),LFREE,IPRINT)
-c         print*,' ao-matrix '
-c         CALL PRQMAT(HMAT(IOFF),NR,NS,NR,NS,
-c    &                1,IPQTOQ(1,0),LUPRI)
-c         print*,' q3s '
-c         CALL PRQMAT(Q3S(KOFF),NR,NK,NRQ3,NCQ3,
-c    &                NZ,IPQTOQ(1,irepri),LUPRI)
 C
 C                       Order the integrals with NKL as first and IZ2
 C                       as second index
@@ -828,9 +831,6 @@ C
      &                       Q3T(KOFF),NRQ3,NCQ3,NZ,IPQTOQ(1,IREPSI),
      &                       Q4T(LOFF),NRQ4,NCQ4,NZ,IPQTOQ(1,IREPRI),
      &                       WORK(KFREE),LFREE,IPRINT)
-c         print*,' q4t '
-c         CALL PRQMAT(Q4T(LOFF),NR,NL,NRQ4,NCQ4,
-c    &                NZ,IPQTOQ(1,irepri),LUPRI)
                         CALL MEMREL('MS4IN2P',WORK,1,KTRMAT,KFREE,LFREE)
 C
 C                       Order the integrals with NKL as first and IZ2
@@ -859,8 +859,10 @@ C
         IF (ISTRAT.EQ.3) THEN
            IKR = INDXKR(1,IJ)
            JKR = INDXKR(2,IJ)
-           CALL SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,NSTR3,NSTR4,NKL,
-     &                  WORK(KHMAT),IQMO,WORK,KFREE,LFREE)
+           IREPIJB = INDXB12(IJ)
+           CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34,IJ,IKR,JKR,
+     &                  NSTR3,NSTR4,NKL,WORK(KHMAT),IQMO,
+     &                  WORK,KFREE,LFREE)
         ELSEIF (ISTRAT.EQ.4) THEN
            CALL MDSCRU(IPRINT,IREPIJ,IJS+IJ,NKL,WORK(KHMAT)
      &                 ,WORK,KFREE,LFREE)

@@ -350,7 +350,7 @@ C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
-     &            '.PRPTRA','.SCREEN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.PRPTRA','.SCREEN','.RCORBS','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -387,6 +387,7 @@ C
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
       PRPTRA = .FALSE.
+      RCORBS = .FALSE.
       THROUT = 1.0D-16
       SCRTRA = -1.0D0
 C
@@ -567,6 +568,9 @@ C&&&& SCREEN - Screening threshold
                   READ(LUCMD,*) SCRTRA
                GO TO 100
    18          CONTINUE
+C&&&& RCORBS - Recanonize orbitals before transforming
+                  RCORBS = .TRUE.
+                  CALL QUIT ('Option still needs debugging')
                GO TO 100
    19          CONTINUE
                GO TO 100
@@ -671,6 +675,7 @@ C
       IF(NOPAIR) WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
       IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
       IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
+      IF(RCORBS) WRITE(LUPRI,'(1X,A)') '* Recanonization of orbitals.'
       WRITE(LUPRI,'(1X,A)') '* Total active space.'
       NTVEC(1) = 0
       DO I = 1,NFSYM

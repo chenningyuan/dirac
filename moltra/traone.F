@@ -133,13 +133,16 @@ C
 C     Get all coefficients
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
          CALL QUIT('TRAPAM: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,TOTERG,3)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,2)
       ENDIF
 C
 C     Select the set that we need
@@ -250,13 +253,14 @@ C     Get all coefficients and eigenvalues
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(A)') 'Coefficient file not present'
          CALL QUIT('TRAPAM: No coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAONE')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,2)
       ENDIF
 C
@@ -394,6 +398,7 @@ C
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
+#include <dcbham.h>
 #include <cbihr2.h>
       LOGICAL TOBE,BF1,BF2,BF3
       DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
@@ -481,8 +486,25 @@ C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
       IF(NTOT.GT.0) CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+C
+C     Make the matrix spinfree if desired.
+C
+C     Note that we did not make the matrices spinfree prior to the energy
+C     calculation since this would require one extra large (fock-matrix size)
+C     array. For closed shell cores we thus use that the first order spin-orbit
+C     effect is zero. This assumption should be checked when implementing
+C     non-closed shell cores or unrestricted DHF algorithms !!
+C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GTCFC1:Total Fock matrix in AO-basis',-1)
+        CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &              IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      IF (SPINFR) CALL SPFAO (FMO,FAO,WORK(KFREE),LFREE)
+C
+      IF(IPRINT.GE.5.AND.SPINFR) THEN
+        CALL HEADER('GTCFC1:Total spinfree Fock matrix in AO-basis',-1)
         CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &              IPQTOQ(1,0),LUPRI)
       ENDIF

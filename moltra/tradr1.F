@@ -33,7 +33,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR1T */
       SUBROUTINE TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,DINTSKP)
+     &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C
 C     Written by Luuk Visscher, Februari 1997
 C
@@ -48,7 +48,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PARAMETER (MAXTSK=1)
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NSTR1(2,0:2,4,MAXTSK)
-      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),KQ(2,4),KE(2,2)
+      DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NSTRS(2,4,MAXTSK),ICMOQR1(2,4)
       DIMENSION WORK(*),DINTSKP(*)
 C
@@ -89,7 +89,7 @@ C
 C
          CALL TRDRV1(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR1,
      &               NSTR1(1,0,1,ITASK),ANTIS,LMP2,WORK(KINDX),KQ,KE,
-     &               DINTSKP)
+     &               KIBE,DINTSKP)
 C
       ENDDO
 C
@@ -102,7 +102,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDRV1 */
       SUBROUTINE TRDRV1(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,
-     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP)
+     &                  NSTR,ANTIS,LMP2,INDX,KQ,KE,KIBE,DINTSKP)
 C
 C     Written by Luuk Visscher, december 1996
 C
@@ -118,7 +118,7 @@ C
 #include <dcborb.h>
 #include <dgroup.h>
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
-      DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,2)
+      DIMENSION NSTR(2,0:2,4),INDX(3,*),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION IQMO(4,0:7),NZMO(0:7)
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4)
       DIMENSION IJP12(0:7)
@@ -323,32 +323,34 @@ C     Number of boson symmetry for each fermion irrep (parity)
 C
       NBSYMP = NBSYM/NFSYM
 C
-C
 C     Complete the integrals to the desired classes
 C
+      CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
+      CALL MKINDXKR (NSTR,.FALSE.,WORK(KDXKR12))
+C
+      CALL MEMGET('INTE',KDXB12,NFPCK12T,WORK,KFREE,LFREE)
+      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
+     &              .FALSE.,WORK(KDXB12))
+      CALL MEMGET('INTE',KDXB34,NFPCK34T,WORK,KFREE,LFREE)
+      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
+     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
+     &              .FALSE.,WORK(KDXB34))
+C
+      NIJOFF = 0
+      NKLOFF = 0
       IOFF = 0
       DO IREPIJ = 1, NFSYM
-         JKR = 0
-         IJ = 0
-         DO IREPJ = 1, NFSYM
-            IREPI = MOD(IREPJ+IREPIJ,2) + 1
-            DO J = 1, NSTR(IREPJ,0,2)
-               JKR = JKR + 1
-               DO I = 1, NSTR(IREPI,0,1)
-                  IF (IREPI.EQ.1) THEN
-                     IKR = I
-                  ELSE
-                     IKR = NSTR(1,0,1) + I
-                  ENDIF
-                  IJ = IJ + 1
-                  CALL SYMFINT(IPRINT,IREPIJ,IJ,IKR,JKR,
-     &                 NSTR(1,0,3),NSTR(1,0,4),
-     &                 NFPCK34(IREPIJ),WORK(KFMAT+IOFF),IQMO,
-     &                 WORK,KFREE,LFREE)
-                  IOFF = IOFF + NFPCK34(IREPIJ)*NZ*NZ*NBSYMP
-               ENDDO
-            ENDDO
-         ENDDO
+         NIJ = NFPCK12(IREPIJ)
+         NKL = NFPCK34(IREPIJ)
+         NF = NFPCK34(IREPIJ)*NZ*NZ*NBSYMP
+         CALL DRV1SYM(WORK,KFREE,LFREE,IPRINT,NSTR(1,0,3),NSTR(1,0,4),
+     &                IREPIJ,NIJ,IQMO,WORK(KDXKR12),NIJOFF,
+     &                WORK(KDXB12),WORK(KDXB34),NKLOFF,
+     &                WORK(KFMAT+IOFF),NF)
+         NIJOFF = NIJOFF + NIJ
+         NKLOFF = NKLOFF + NKL
+         IOFF = IOFF + NF*NIJ
       ENDDO
 C
 C     Close integral file
@@ -580,6 +582,52 @@ C
       ENDDO
 C
       CALL QEXIT('MS4IN2')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck DRV1SYM*/
+      SUBROUTINE DRV1SYM(WORK,KFREE,LFREE,IPRINT,NSTR3,NSTR4,
+     & IREPIJ,NIJ,IQMO,INDXKR,NIJOFF,INDXB12,INDXB34,NKLOFF,FMAT,NF)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C
+C     Written by Luuk Visscher May 1999.
+C
+C     PURPOSE : Do 4-index transformation to molecular spinor basis
+C               Symmetrization of integrals (which are in core).
+C
+C     Input :
+C
+C     - IPRINT       Print flag
+C     - NSTR3        Number of active spinors for index 3
+C     - NSTR4        Number of active spinors for index 4
+C     - IREPIJ       Fermion symmetry (parity)
+C     - NIJ          Number of blocks for this fermion symmetry
+C     - Q3           Coefficients for index 3
+C     - Q4           Coefficients for index 4
+C
+C     Output is written directly in the MOLFDIR-type file MDCINT
+C
+#include <implicit.h>
+#include <priunit.h>
+      INTEGER   NSTR3(2),NSTR4(2)
+      DIMENSION WORK(*)
+      DIMENSION INDXKR(2,*),INDXB12(*),INDXB34(*)
+      DIMENSION IQMO(4,0:7)
+      DIMENSION FMAT(NF,*)
+#include <dgroup.h>
+#include <dcbtra.h>
+#include <dcbtr3.h>
+C
+      NKL = NFPCK34(IREPIJ)
+      DO IJ = 1, NIJ
+         IKR = INDXKR(1,IJ+NIJOFF)
+         JKR = INDXKR(2,IJ+NIJOFF)
+         IREPIJB = INDXB12(IJ+NIJOFF)
+         CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),
+     &                IJ,IKR,JKR,NSTR3,NSTR4,NKL,FMAT(1,IJ),IPQTOQ,
+     &                WORK,KFREE,LFREE)
+      ENDDO
 C
       RETURN
       END

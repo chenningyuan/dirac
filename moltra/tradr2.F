@@ -33,7 +33,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR2T */
       SUBROUTINE TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOBF,ICMOIJ,
-     &                  NSTR,ANTIS,LMP2,EMP2,KINDX,KQ,KE,DINTSKP)
+     &                  NSTR,ANTIS,LMP2,EMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C
 C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
@@ -60,7 +60,7 @@ C
 #include <dcbtra.h>
 #include <dcbtr3.h>
       LOGICAL ANTIS,LMP2
-      DIMENSION NSTRT(4),KQ(2,4),KE(2,2)
+      DIMENSION NSTRT(4),KQ(2,4),KE(2,4),KIBE(2,4)
       DIMENSION NSTR(2,0:2,4),NDMOBF(2,2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
       DIMENSION WORK(*),DINTSKP(*)
@@ -129,7 +129,7 @@ C
         CALL MEMGET ('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
         CALL DZERO(WORK(KTIM),NTIM)
         KDRIJ = KFREE
-        CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,
+        CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C       Divide index transformation in tasks with different batches
