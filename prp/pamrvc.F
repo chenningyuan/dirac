@@ -1263,14 +1263,27 @@ C
 #include <dgroup.h>
 #include <dcbxrs.h>
 C
+      IF (IPRXRS .GE. 10) THEN
+         CALL HEADER('Output from XRSTEP',-1)
+      END IF
       IF(NASHT.EQ.0) THEN
         DO I = 1,NBEVC
           J  = IBEVC(I+IEOFF) - ITOFF
           CALL DAXPY(NZXOPEQ,D1,BEVEC(1,I),1,TEVEC(1,J),1)
+          IF (IPRXRS .GE. 10) THEN
+             WRITE(LUPRI,'(2X,A,I3)') 
+     &           'Orbital electronic tau vector no. ',J
+             CALL PRBVEC(LUPRI,TEVEC(1,J),1,NZXOPE)
+          END IF
         ENDDO
         DO I = 1,NBPVC
           J  = IBPVC(I+IPOFF) - ITOFF
           CALL DAXPY(NZXOPPQ,D1,BPVEC(1,I),1,TPVEC(1,J),1)
+          IF (IPRXRS .GE. 10) THEN
+             WRITE(LUPRI,'(2X,A,I3)') 
+     &           'Orbital positronic tau vector no. ',J
+             CALL PRBVEC(LUPRI,TPVEC(1,J),1,NZXOPP)
+          END IF
         ENDDO
       ELSE
         WRITE(LUPRI,'(A)') 'XRSTOV: Open shell code not written !'
