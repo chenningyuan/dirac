@@ -1533,8 +1533,8 @@ C
       FAC = DM2*CVAL*CVAL
       NSYM = 4/NZ
 C
-C     Generate free particle (or bare nucleus) matrix in MO-basis
-C     ===========================================================
+C     Generate free particle (or bare nucleus) matrix in Lowdin-basis
+C     ===============================================================
 C
       IF(VEXTPJ) THEN
         CALL ONEFCK(TBUF,IPRONE,WORK,LWORK)
@@ -1554,9 +1554,9 @@ C
      &            WORK,LWORK,IPRGEN)
         IF (IPRHAM.GE.6) THEN
            IF(VEXTPJ) THEN
-             CALL HEADER('Bare nucleus matrix in orthon. basis',-1)
+             CALL HEADER('Bare nucleus matrix in orthon. L basis',-1)
            ELSE
-             CALL HEADER('Free particle matrix in orthon. basis',-1)
+             CALL HEADER('Free particle matrix in orthon. L basis',-1)
            ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
            CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
@@ -5509,7 +5509,7 @@ C       VEXTPJ - bare nucleus matrix
 C
 C     On input:
 C       TMAT(NFORB,NFORB,IFRP) 
-C            - free particle/bare nucleus in MO1 basis
+C            - free particle/bare nucleus matrix in orthon. Lowdin basis
 C       TMOD(NFORB,NORB,IFRP) 
 C            - transformation matrix with modified Dirac equation
 C              embedded, in orthonormal basis
@@ -5585,7 +5585,7 @@ C
           CALL BCKTR1(FMAT(IBUF),NFBAS(I,0),NESH(I),
      &                TMOD(1+I2TMOT(I)),NTMO(I),NTMO(I),NTMO(I),NZ,
      &                NESH(I),(NPSH(I)+1),NFBAS(I,0),
-     &                TMAT(1+I2ORBT(I)+1),NFBAS(I,0),NTMO(I),NZT,IPRHAM)
+     &                TMAT(1+I2ORBT(I)),NFBAS(I,0),NTMO(I),NZT,IPRHAM)
           NPSH(I) = 0
           NORB(I) = NESH(I)
           NBUF = NFBAS(I,0)*NESH(I)*NZ
