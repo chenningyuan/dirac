@@ -1,3 +1,33 @@
+C
+C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
+C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
+C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rtractl */
       SUBROUTINE RTRACTL(CMO,SZTRA,WORK,LWORK)
@@ -7,7 +37,7 @@ C     Input : ITRLVL - level of integrals transformation (see below)
 C
 C     Output: 4-index transformed integrals on disk.
 C
-C      
+C
 C     ITRLVL = -1: Transform all integrals (pq|rs)
 C                     (which is more than we need, but for a quick start
 C                      this is good)
@@ -15,11 +45,11 @@ C     ITRLVL =  0: Transform all integrals (uv|xy) for CI & MC energy
 C     ITRLVL =  1: (pv|xy) for CI & MC gradients
 C     ITRLVL =  2: (pq|xy) and (px|qy) for Newton-Raphson and NEO CI & MC
 C                  (not implemented yet!)
-C     ITRLVL =  3: (pq|ry) 
+C     ITRLVL =  3: (pq|ry)
 C     ITRLVL =  4: (pq|rs)
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -84,7 +114,7 @@ C
 C     USENOROT controls whether to use NOROT or not.
 C
 C     Written by J. Thyssen - Wed Mar 14 15:03:26 "MET 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -149,7 +179,7 @@ C     'P' for positronic index,
 C     'G' for general index.
 C
 C     Written by J. Thyssen - Feb 19 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -199,7 +229,7 @@ C
 C
 C
       IF (C(1:2) .EQ. 'AA') THEN
-C        
+C
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,1),NIDXT(1),
      &        NASH,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
@@ -211,30 +241,30 @@ C
      &        NESH,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
      &        NASH,IOFFE,USENOROT,NOROT,IIDX2,NIDX2)
-C        
+C
       ELSE IF (C(1:2) .EQ. 'GA') THEN
 C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
      &        NASH,IOFFG,USENOROT,NOROT,IIDX2,NIDX2)
-C        
+C
       ELSE IF (C(1:2) .EQ. 'EE') THEN
-C        
+C
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,1),NIDXT(1),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX2,NIDX2)
-C        
+C
       ELSE IF (C(1:2) .EQ. 'GE') THEN
-C        
+C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,2),NIDXT(2),
      &        NESH,IOFFG,USENOROT,NOROT,IIDX2,NIDX2)
-C        
+C
       ELSE IF (C(1:2) .EQ. 'GG') THEN
-C        
+C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,1),NIDXT(1),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX1,NIDX1)
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,2),NIDXT(2),
@@ -243,7 +273,7 @@ C
          CALL QUIT('*** ERROR in INISZ1 *** ' //
      &        'C(3:4) not implemented ' // C(3:4) )
       END IF
-C     
+C
 chj#ifdef UNDEF
       do j = 1, 2
          write(6,*) 'index ',j, ' t --> g pointer'
@@ -252,7 +282,7 @@ CTF         write(6,*) i,idxt2g(i,j)
 CTF      end do
       end do
 chj#endif
-C     
+C
       CALL INISZ3(IDXT2G(1,1),NIDXT(1),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,1))
 C
@@ -262,7 +292,7 @@ CTF      write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
 CTF      write(6,*) 'sztra = ',sztra(j,1)
       end do
 chj#endif
-C     
+C
       CALL INISZ3(IDXT2G(1,2),NIDXT(2),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,2))
 C
@@ -283,7 +313,7 @@ C     (same as above except that all offsets are replaced with 0)
 C
 C
       IF (C(3:4) .EQ. 'AA') THEN
-C        
+C
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,3),NIDXT(3),
      &        NASH,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
@@ -295,30 +325,30 @@ C
      &        NESH,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NASH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
-C        
+C
       ELSE IF (C(3:4) .EQ. 'GA') THEN
 C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXU2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NASH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
-C        
+C
       ELSE IF (C(3:4) .EQ. 'EE') THEN
-C        
+C
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,3),NIDXT(3),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
-C        
+C
       ELSE IF (C(3:4) .EQ. 'GE') THEN
-C        
+C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDXE2G,.TRUE.,IDXT2G(1,4),NIDXT(4),
      &        NESH,IOFF0,USENOROT,NOROT,IIDX4,NIDX4)
-C        
+C
       ELSE IF (C(3:4) .EQ. 'GG') THEN
-C        
+C
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,3),NIDXT(3),
      &        NORB,IOFF0,USENOROT,NOROT,IIDX3,NIDX3)
          CALL INISZ2(IDUMMY,.FALSE.,IDXT2G(1,4),NIDXT(4),
@@ -327,7 +357,7 @@ C
          CALL QUIT('*** ERROR in INISZ1 *** ' //
      &        'C(3:4) not implemented ' // C(3:4) )
       END IF
-C     
+C
 #ifdef UNDEF
       do j = 3, 4
          write(6,*) 'index ',j, ' t --> g pointer'
@@ -336,7 +366,7 @@ CTF         write(6,*) i,idxt2g(i,j)
 CTF      end do
       end do
 #endif
-C     
+C
       CALL INISZ3(IDXT2G(1,3),NIDXT(3),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,3))
 C
@@ -346,7 +376,7 @@ C
          write(6,*) 'sztra = ',sztra(j,3)
       end do
 #endif
-C     
+C
       CALL INISZ3(IDXT2G(1,4),NIDXT(4),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,4))
 C
@@ -355,7 +385,7 @@ C
          write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
          write(6,*) 'sztra = ',sztra(j,4)
       end do
-C     
+C
       write(6,*) 'iidx',iidx1,iidx2,iidx3,iidx4
       write(6,*) 'nidx',nidx1,nidx2,nidx3,nidx4
 #endif
@@ -371,7 +401,7 @@ C
 C     Set orbital string for 4-index transformation.
 C
 C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -417,7 +447,7 @@ C
 C     Transform IDX to ``normalized list''
 C
 C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -431,8 +461,8 @@ C
       DIMENSION IDX(*)
       DIMENSION ILIST(MAXORB,2), NLIST(2)
 C
-      NLIST(1) = 0 
-      NLIST(2) = 0 
+      NLIST(1) = 0
+      NLIST(2) = 0
       DO I = 1, NIDX
          ID = IDX(I)
          IF (ID .GT. 0) THEN
@@ -456,7 +486,7 @@ C
 C     Transform ILIST to orbital string.
 C
 C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -582,7 +612,7 @@ C
 C     Sets the common blocks used in the 4-index transformation.
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -594,7 +624,7 @@ C
       LOGICAL LNOPAIR
 C
 #include "../moltra/dcbtra.h"
-C     
+C
 C     /DCBTC/
 C
       DO I = 1, 4
@@ -616,7 +646,7 @@ C
       ITRA_INTFL2 = INTFLG
       ITRA_INTFL4 = INTFLG
       IPRTRA = IPRINT - 2
-C TODO debug : extra print because no integrals for Levy-Leblond 
+C TODO debug : extra print because no integrals for Levy-Leblond
 C              /hjaaj aug 2002
       print*,'+++++++++++++++++++++++++++++++++++++'
       print*,'+++++++++++++++++++++++++++++++++++++'
@@ -645,7 +675,7 @@ C
 C     Don't scatter 4INDX.. to all nodes, we only need on the master.
 C
       MDCSCAT = .FALSE.
-C      
+C
 C     /DCBTRR/
 C
       THROUT = 1.0D-16
@@ -729,7 +759,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
-      ENDDO      
+      ENDDO
 C
 C     Print section
 C     =============
@@ -762,7 +792,7 @@ C
             NDMOQR(2,IFRP,I) = NSTR(IFRP,0,I)
             NQ(IFRP,I) = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
             NQT(I) = NQT(I) + NQ(IFRP,I)
-            IF (IFRP.LT.NFSYM) 
+            IF (IFRP.LT.NFSYM)
      &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
          ENDDO
       ENDDO
@@ -815,7 +845,7 @@ C
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KIBEIG),NORBT)
 C
-      DO I = 1, 4 
+      DO I = 1, 4
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
              CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
@@ -829,7 +859,7 @@ C
         ENDDO
       ENDDO
 C
-C     Throw away IBEIG again 
+C     Throw away IBEIG again
 C
       CALL MEMREL('RTRACTL1.CMO',WORK,KFRSAV,KIBEIG,KFREE,LFREE)
 C
@@ -841,7 +871,7 @@ C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &     NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
      &     TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
-C     
+C
 C     Print timing information
 C
       CALL GETTIM(CPU2,WALL2)
@@ -872,7 +902,7 @@ C
       CALL QEXIT('RTRACTL1')
 C
       RETURN
-      END      
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
       SUBROUTINE RGETH2(FQ,H2AC,PV,WORK,LWORK)
@@ -889,7 +919,7 @@ C        FQ   -   aux. FQ fock matrix
 C        H2AC -   two-electron integrals with active indices.
 C
 C     Written by J. Thyssen - Jul 21 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -985,7 +1015,7 @@ C
 C     Read information from integral file
 C     -----------------------------------
 C
-      LUINT = 1 
+      LUINT = 1
       OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
@@ -1000,7 +1030,7 @@ C
       READ (LUINT) NFPCK12, NFPCK12T
       READ (LUINT) NFPCK34, NFPCK34T
       READ (LUINT) NSTR
-C     
+C
       CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
@@ -1034,7 +1064,7 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
       END DO
 C
 C     Allocate memory for integrals (H2XY)
-C     
+C
       CALL MEMGET('REAL',KHMAT,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
@@ -1084,12 +1114,12 @@ C
      &           + MIN(IXU,IYU)
 C
 C           Read integrals
-C           
+C
             NKL = NFPCK34(IREPIJ)
 C
             READ (LUINT + IREPIJ, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
-     &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS) 
+     &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS)
 #ifdef UNDEF
             ii = 0
             do i = 1, 4 * nz
@@ -1111,7 +1141,7 @@ C
                   IREPABR = IREPABR + 1
                   DO IZ2 = 1, NZ
                      IQ2 = IPQTOQ(IZ2,IREPAB)
-C            
+C
 C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
@@ -1124,7 +1154,7 @@ C                    Transform boson-symmetry array to
 C                    full
 C
 C                    (FIXME: write me)
-C                    
+C
                      IF (SPINFR) THEN
                         write(6,*) 'SPINFR not implemented in RGETH2'
                         CALL QUIT('SPINFR not implemented in RGETH2')
@@ -1165,7 +1195,7 @@ C
 C
 C           Do the gazillion matrix multiplies to construct
 C           the auxililary Fock matrix FQ.
-C           
+C
             IF (DOFQ) THEN
                CALL RADDFQ(FQ,WORK(KH2XY),WORK(KH2YX),PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT)
@@ -1228,7 +1258,7 @@ C        IREPIJ: symmetry of integrals (currently unused)
 C        H2XY, H2YX: (p,v) and (v,p)^T integrals for compound index XY
 C        NXY   : the XY compound index
 C        IX,IY : x and y
-C 
+C
 C     Output:
 C        FQ    : the aux. Fock matrix
 C
@@ -1240,9 +1270,9 @@ C***********************************************************************
 C
       PARAMETER ( D1 = 1.0D00 )
 C
-#include "dgroup.h"     
-#include "dcborb.h" 
-#include "dcbopt.h" 
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
@@ -1290,7 +1320,7 @@ C     ------------------
 C
 C
 C     \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;1,1}
-C      
+C
       CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &     H2XY(1,1,1,1),NORBT,
      &     PV(1,1,NXY,1,1),NASHT,
@@ -1298,7 +1328,7 @@ C
 C
       IF (IX .NE. IY) THEN
 C
-C        \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1} 
+C        \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;1,1}
 C
          CALL DGEMM('N','N',NORBT,NASHT,NASHT,D1,
      &        H2YX(1,1,1,1),NORBT,
@@ -1324,7 +1354,7 @@ C
          IF (IX .NE. IY) THEN
 C
 C           - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;2,1}
-C           
+C
             CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &           H2YX(1,1,2,1),NORBT,
      &           PV(1,1,NXY,2,1),NASHT,
@@ -1342,20 +1372,20 @@ C
       IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
-C        
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,3,1),NORBT,
      &        PV(1,1,NXY,3,1),NASHT,
      &        D1,FQ(1,1,1),NORBT)
-C        
+C
 C
 C        - \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;4,1}
-C        
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,DM1,
      &        H2XY(1,1,4,1),NORBT,
      &        PV(1,1,NXY,4,1),NASHT,
      &        D1,FQ(1,1,1),NORBT)
-C        
+C
       END IF
 C
 C
@@ -1364,9 +1394,9 @@ C     ------------------
 C
 C
       IF (IX .NE. IY) THEN
-C        
+C
 C        \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;1,2}
-C         
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,1,2),NORBT,
      &        PV(1,1,NXY,1,2),NASHT,
@@ -1380,9 +1410,9 @@ C     ------------------
 C
 C
       IF (NZ .GE. 2 .AND. IX .NE. IY) THEN
-C        
+C
 C        - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
-C         
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,DM1,
      &        H2XY(1,1,2,2),NORBT,
      &        PV(1,1,NXY,2,2),NASHT,
@@ -1396,46 +1426,46 @@ C
 C        Term 7 (real part)
 C        ------------------
 C
-C        
+C
 C        \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;3,2}
 C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,3,2),NORBT,
      &        PV(1,1,NXY,3,2),NASHT,
      &        D1,FQ(1,1,1),NORBT)
-C        
+C
          IF (IX .NE. IY) THEN
-C           
-C           \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;3,3} 
-C           
+C
+C           \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;3,3}
+C
             CALL DGEMM('N','N',NORBT,NASHT,NASHT,D1,
      &           H2YX(1,1,3,3),NORBT,
      &           PV(1,1,NXY,3,3),NASHT,
      &           D1,FQ(1,1,1),NORBT)
-C           
+C
          END IF
 C
 C
 C        Term 8 (real part)
 C        ------------------
 C
-C        
+C
 C        - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;4,2}
 C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,DM1,
      &        H2XY(1,1,4,2),NORBT,
      &        PV(1,1,NXY,4,2),NASHT,
      &        D1,FQ(1,1,1),NORBT)
-C        
+C
          IF (IX .NE. IY) THEN
-C           
-C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;4,3} 
-C           
+C
+C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;4,3}
+C
             CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &           H2YX(1,1,4,3),NORBT,
      &           PV(1,1,NXY,4,3),NASHT,
      &           D1,FQ(1,1,1),NORBT)
-C           
+C
          END IF
 C
       END IF
@@ -1517,7 +1547,7 @@ C     --------------------
 C
 C
 C     \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{1,1} P_{qv,xy;2,1}
-C      
+C
       CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &     H2XY(1,1,1,1),NORBT,
      &     PV(1,1,NXY,2,1),NASHT,
@@ -1525,7 +1555,7 @@ C
 C
       IF (IX .NE. IY) THEN
 C
-C        - \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;2,1} 
+C        - \sum_{x>y} \sum_v \Twoint{vp|xy}_{1,1} P_{vq,xy;2,1}
 C
          CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &        H2YX(1,1,1,1),NORBT,
@@ -1545,16 +1575,16 @@ C
      &     H2XY(1,1,2,1),NORBT,
      &     PV(1,1,NXY,1,1),NASHT,
      &     D1,FQ(1,1,2),NORBT)
-C     
+C
       IF (IX .NE. IY) THEN
-C        
+C
 C        - \sum_{x > y} \sum_v \Twoint{vp|xy}_{2,1} P_{vq,xy;1,1}
-C        
+C
          CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &        H2YX(1,1,2,1),NORBT,
      &        PV(1,1,NXY,1,1),NASHT,
      &        D1,FQ(1,1,2),NORBT)
-C        
+C
       END IF
 C
 C
@@ -1565,32 +1595,32 @@ C
       IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
-C        
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,3,1),NORBT,
      &        PV(1,1,NXY,4,1),NASHT,
      &        D1,FQ(1,1,2),NORBT)
-C        
+C
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{4,1} P_{qv,xy;3,1}
-C        
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,4,1),NORBT,
      &        PV(1,1,NXY,3,1),NASHT,
      &        D1,FQ(1,1,2),NORBT)
-C        
+C
       END IF
 C
 C
       IF (IX .NE. IY) THEN
-C        
+C
 C
 C        Term 5 (i-imag part)
 C        ------------------
 C
 C
 C        \sum_{x>y} \sum_v \Twoint{pv|xy}_{1,2} P_{qv,xy;2,2}
-C         
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,1,2),NORBT,
      &        PV(1,1,NXY,2,2),NASHT,
@@ -1602,7 +1632,7 @@ C        --------------------
 C
 C
 C        \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;1,2}
-C         
+C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,2,2),NORBT,
      &        PV(1,1,NXY,1,2),NASHT,
@@ -1616,46 +1646,46 @@ C
 C        Term 7 (i-imag part)
 C        --------------------
 C
-C        
+C
 C        \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{3,2} P_{qv,xy;4,2}
 C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,3,2),NORBT,
      &        PV(1,1,NXY,4,2),NASHT,
      &        D1,FQ(1,1,2),NORBT)
-C        
+C
          IF (IX .NE. IY) THEN
-C           
-C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;4,3} 
-C           
+C
+C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{3,3} P_{vq,xy;4,3}
+C
             CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &           H2YX(1,1,3,3),NORBT,
      &           PV(1,1,NXY,4,3),NASHT,
      &           D1,FQ(1,1,2),NORBT)
-C           
+C
          END IF
 C
 C
 C        Term 8 (i-imag part)
 C        --------------------
 C
-C        
+C
 C        \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{4,2} P_{qv,xy;3,2}
 C
          CALL DGEMM('N','T',NORBT,NASHT,NASHT,D1,
      &        H2XY(1,1,4,2),NORBT,
      &        PV(1,1,NXY,3,2),NASHT,
      &        D1,FQ(1,1,2),NORBT)
-C        
+C
          IF (IX .NE. IY) THEN
-C           
-C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;3,3} 
-C           
+C
+C           - \sum_{x>y} \sum_v \Twoint{vp|xy}_{4,3} P_{vq,xy;3,3}
+C
             CALL DGEMM('N','N',NORBT,NASHT,NASHT,DM1,
      &           H2YX(1,1,4,3),NORBT,
      &           PV(1,1,NXY,3,3),NASHT,
      &           D1,FQ(1,1,2),NORBT)
-C           
+C
          END IF
 C
       END IF
@@ -1675,7 +1705,7 @@ C
      &        PV(1,1,NXY,2,3),NASHT,
      &        D1,FQ(1,1,2),NORBT)
 C
-C        
+C
 C        Term 10 (i-imag part)
 C        ---------------------
 C
@@ -1736,7 +1766,7 @@ C
          CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
       RETURN
-      END 
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tknanobl */
       SUBROUTINE TKNONABL(H2FULL,NKL,H2XY,H2YX,H2AC,NXY,
@@ -1749,14 +1779,14 @@ C     Input:
 C        IREPIJ: symmetry of H2FULL
 C        H2FULL: symmetry packed:
 C                   IREPIJ = gerade:
-C                       index3(gerade) * index4(gerade) + 
+C                       index3(gerade) * index4(gerade) +
 C                       index3(ungerade) * index4(ungerade)
 C                   IREPIJ = ungerade:
-C                       index3(gerade) * index4(ungerade) + 
+C                       index3(gerade) * index4(ungerade) +
 C                       index3(ungerade) * index4(gerade)
 C        NKL   : leading dimension of H2FULL
 C        ONLYXY: calculate only H2XY (not H2YX)
-C 
+C
 C     Output:
 C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
@@ -1767,9 +1797,9 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxash.h"
 C
-#include "dgroup.h"     
-#include "dcborb.h" 
-#include "dcbopt.h" 
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 #include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
@@ -1794,7 +1824,7 @@ C
      &        '*** ERROR in TKNANOBL ***',
      &        'Not implemented; transformation level: ',JTRLVL
          CALL QUIT('*** ERROR in TKNANOBL ***')
-      ELSE 
+      ELSE
 C
 C        (uu|uu), (gg|gu) or (gg|gg) integrals transformation.
 C
@@ -1830,7 +1860,7 @@ C
                   ELSE IF (JTRLVL .EQ. 1) THEN
                      IACP = IDXG2U(IPPG)
                      IACV = IVV
-                  ELSE 
+                  ELSE
                      IACP = IDXG2U(IPPG)
                      IACV = IDXG2U(IVVG)
                   END IF
@@ -1841,7 +1871,7 @@ C
                      IF (IACP .GT. 0 .AND. IACV .GT. 0) THEN
                         DO I3 = 1, 3
                            DO IZ = 1, NZ
-                              H2AC(IACP,IACV,NXY,IZ,I3) = 
+                              H2AC(IACP,IACV,NXY,IZ,I3) =
      &                             H2FULL(IPV,IZ,I3)
                            END DO
                         END DO
@@ -1853,22 +1883,22 @@ C
                   IF (DOFQ) THEN
 C
 C                    (p,v) elements
-C                     
+C
                      IF (IACV .GT. 0) THEN
                         DO I3 = 1, 3
                            DO IZ = 1, NZ
-                              H2XY(IPPG,IACV,IZ,I3) = 
+                              H2XY(IPPG,IACV,IZ,I3) =
      &                             H2FULL(IPV,IZ,I3)
                            END DO
                         END DO
                      END IF
 C
 C                    (v,p) elements
-C                    
+C
                      IF (IACP .GT. 0 .AND. .NOT. ONLYXY) THEN
                         DO I3 = 1, 3
                            DO IZ = 1, NZ
-                              H2YX(IVVG,IACP,IZ,I3) = 
+                              H2YX(IVVG,IACP,IZ,I3) =
      &                             H2FULL(IPV,IZ,I3)
                            END DO
                         END DO
@@ -1907,7 +1937,7 @@ C        IX, IY  : active orbital indices
 C        IDXKR12 : gives orbitals for compound index NXY
 C        NFPCK12 : number of compund indices for each symmetry
 C        NFPCK12T: sum over NFPCK12
-C       
+C
 C     Output:
 C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
@@ -1972,7 +2002,7 @@ C
 C     Return element I of array IX
 C
 C     Written by J. Thyssen - Jul 21 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1991,7 +2021,7 @@ C***********************************************************************
 C
 C     Calculate FQX and get H2ACX, i.e. one-index transformed
 C     FQ and H2AC. Also calculate FQT.
-C     
+C
 C
 C     Input:
 C        PV   - two-electron density matrix
@@ -2003,7 +2033,7 @@ C        FQT  -   transition density FQ fock matrix
 C        H2ACX-   two-electron integrals with active indices.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2066,14 +2096,14 @@ C        PV - two-electron density matrix
 C        PVT - symm. transition two-electron density matrix
 C
 C     Output:
-C        FQX - auxiliary Fock matrix from one-index 
+C        FQX - auxiliary Fock matrix from one-index
 C              transformed integrals.
-C        FQT - auxiliary Fock matrix from symm. transition 
+C        FQT - auxiliary Fock matrix from symm. transition
 C              density matrix.
 C        H2ACX - one-index transformed integrals.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2134,7 +2164,7 @@ C     *******************************************
 C     *** Read information from integral file ***
 C     *******************************************
 C
-      LUINT = 1 
+      LUINT = 1
       OPEN (LUINT, FILE = 'MDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
@@ -2149,7 +2179,7 @@ C
       READ (LUINT) NFPCK12, NFPCK12T
       READ (LUINT) NFPCK34, NFPCK34T
       READ (LUINT) NSTR
-C     
+C
       CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
@@ -2183,7 +2213,7 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
       END DO
 C
 C     Allocate memory for integrals (H2XY)
-C     
+C
       CALL MEMGET('REAL',KHMAT,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHMA2,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
@@ -2225,7 +2255,7 @@ C           transformation.
 C
 C           case (xy) distribution:
 C
-C           active-active: 
+C           active-active:
 C              (1) calculate FQT
 C              (2) one-index transform (pv)
 C              (3) calculate (xy|p~v~) P_{qv,xy} contribution
@@ -2246,7 +2276,7 @@ C
             IF (IXU .LT. 0 .AND. IYU .LT. 0) GO TO 20
 C
 C           If there are no orbital trial vectors we only need FQT.
-C           
+C
             IF (NOSIM .EQ. 0 .AND. (IYU .LT. 0 .OR. IXU .LT. 0))
      &           GO TO 20
 C
@@ -2258,7 +2288,7 @@ C
 C
             READ (LUINT + IREPXY, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
-     &           (WORK(KHMA2+I-1),I=1,NKL*NCLASS) 
+     &           (WORK(KHMA2+I-1),I=1,NKL*NCLASS)
 #ifdef UNDEF
             write(6,*) 'integrals...'
             call output(work(khma2),1,nkl,1,nclass,nkl,nclass,1,lupri)
@@ -2275,7 +2305,7 @@ C
                   IREPABR = IREPABR + 1
                   DO IZ2 = 1, NZ
                      IQ2 = IPQTOQ(IZ2,IREPAB)
-C            
+C
 C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
@@ -2288,7 +2318,7 @@ C                    Transform boson-symmetry array to
 C                    full
 C
 C                    (FIXME: write me)
-C                    
+C
                      IF (SPINFR) THEN
                         write(6,*) 'SPINFR not implemented in RGETH2TX1'
                         CALL QUIT('SPINFR not implemented in RGETH2TX1')
@@ -2300,13 +2330,13 @@ C
 C
             IF (IXU .GT. 0 .AND. IYU .GT. 0) THEN
 C
-C              Somehow the 4-index program doesn't have index 1 & 2 
+C              Somehow the 4-index program doesn't have index 1 & 2
 C              triangular for (gu|gg) transformations, so to avoid
 C              doing both (21) and (12) distributions:
                IF (IXU .LT. IYU) GOTO 20
 C
 C
-C              
+C
 C              **********************************
 C              *** Active-active distribution ***
 C              **********************************
@@ -2319,12 +2349,12 @@ C
 C              nope, calculate IUU:
                IUU = MAX(IXU,IYU) * ( MAX(IXU,IYU) - 1 ) / 2
      &              + MIN(IXU,IYU)
-C              
+C
 C              (1) Make FQT
 C              ------------
 C
                IF ( DOFQT ) THEN
-C                 
+C
 C
 C                 Transform to Dirac (NZ,3) format
 C                 --------------------------------
@@ -2342,12 +2372,12 @@ C                 CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
 C                 Calculate FQT:
 C                 --------------
-C                 
+C
 C                 Loop over all conf. trial vectors and for each
 C                 symm. two-electron transition density matrix do
 C                 the gazillion matrix multiplies to construct
 C                 the auxiliary Fock matrix FQT.
-C                 
+C
                   DO ICSIM = 1, NCSIM
                      CALL RADDFQ(FQT(1,1,1,ICSIM),
      &                    WORK(KH2XY),WORK(KH2YX),PVT(1,1,1,1,1,ICSIM),
@@ -2356,24 +2386,24 @@ C
                END IF
 C
                IF ( DOFQX .OR. DOH2ACX ) THEN
-C                 
+C
 C                 (2) One-index transform (pv)
 C                 ----------------------------
-C                 
+C
 C                 The integrals are stored in the double-quaternion form.
 C                 We loop over quaternion 2, and one-index transform
 c                 quaternion 1.
-C                 
+C
 C                 Note, that index 2 is always (gg).
-C                 
+C
                   call flshfo(6)
                   IREP = JSYMOP - 1
-C                 
+C
 C                 e-e and e-p trial vectors
 C                 -------------------------
-C                 
+C
                   DO I = 1, NOSIM
-C                    
+C
 C                    One-index transform integrals
 C                    -----------------------------
 C
@@ -2382,27 +2412,27 @@ C
      &                    IREPXY,NKL,.TRUE.,IXU .EQ. IYU,
      &                    WORK(KFREE),LFREE)
 C
-C                    
+C
 C                    Transform to Dirac (NZ,3) format
 C                    --------------------------------
 C
                      CALL CL2NZ3(WORK(KH2XY),WORK(KHMA2),N2ORBX,IREPXY,
      &                    IREPIJB,WORK(KDXB34),IKLB)
 C                    CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
-C                    
+C
 C
 C                    Get (gu) and (ug) blocks + H2ACX
 C                    --------------------------------
-C                    
+C
                      CALL X2GU(WORK(KHMA2),WORK(KH2XY),WORK(KH2YX),
      &                    H2ACX(1,1,1,1,1,I),
      &                    IUU,IXU .EQ. IYU, DOFQX, DOH2ACX)
 C                    CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
-C                    
+C
 C                    Calculate ``matrix-multiply'' part of FQX:
 C                    ------------------------------------------
-C                    
+C
                      IF ( DOFQX ) THEN
                         CALL RADDFQ(FQX(1,1,1,I),
      &                       WORK(KH2XY),WORK(KH2YX),PV,
@@ -2424,7 +2454,7 @@ C
 C
                   IF (MCTYPE .NE. JGAS) GOTO 20
 C
-C                 Somehow the 4-index program doesn't have index 1 & 2 
+C                 Somehow the 4-index program doesn't have index 1 & 2
 C                 triangular for (gu|gg) transformations, so to avoid
 C                 doing both (21) and (12) distributions:
 C
@@ -2434,22 +2464,22 @@ C
 C
 C              (3) calculate (pv|x~y~) P_{qv,xy} contribution
 C              ----------------------------------------------
-C              
-C              If MC type is GAS/RAS then we also need the 
+C
+C              If MC type is GAS/RAS then we also need the
 C              pv = active-active. This code must be copied
 C              up to the RADDFQ call just above.
 C
 C              (3.1) One-index transform integrals.
 C
 C              Note, that index 2 is always (gg).
-C                 
+C
                IREP = JSYMOP - 1
-C                 
+C
 C              Loop over e-e and e-p trial vectors
 C              -----------------------------------
-C                 
+C
                DO I = 1, NOSIM
-C                 
+C
 C                 One index transform integrals
 C                 -----------------------------
 C
@@ -2458,20 +2488,20 @@ C
      &                 IREPXY,NKL,.FALSE.,.FALSE.,
      &                 WORK(KFREE),LFREE)
 C
-C                    
+C
 C                 Transform to Dirac (NZ,3) format
 C                 --------------------------------
 C
                   CALL CL2NZ3(WORK(KH2XY),WORK(KHMA2),N2ORBX,IREPXY,
      &                 IREPIJB,WORK(KDXB34),IKLB)
 C                 CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
-C                    
+C
 C
 C                 Get (uu) block
 C                 --------------
 C
 C                 (use the H2AC-branch in X2GU)
-C                    
+C
                   KH2VP = KH2XY
                   CALL X2UU(WORK(KHMA2),WORK(KH2VP))
 C                 CALL X2UU(HX,H2XY)
@@ -2497,12 +2527,12 @@ C
       DO IREPIJ = 1, NFSYM
          CLOSE (LUINT+IREPIJ, STATUS='KEEP')
       END DO
-C     
+C
       CALL MEMREL('RGETH2TX1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 C     Symmetrize H2ACX matrices
 C     -------------------------
-C     
+C
 C     Add (u~v~|xy) to (uv|x~y~)
 C
       IF (IPRINT .GE. 20) THEN
@@ -2569,7 +2599,7 @@ C     Return orbital no. from compound index IXY.
 C     Also, return active orbital no.s
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2580,11 +2610,11 @@ C
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-C     
+C
       DIMENSION IDXKR12(2,*)
 C
 C     Get X and Y indices:
-C     
+C
       IX = IDXKR12(1,IXY)
       IY = IDXKR12(2,IXY)
 C
@@ -2610,7 +2640,7 @@ C     H2AC(I,J,NKL) = H2AC(I,J,NKL) + H2AC(K,L,NIJ)
 C     H2AC(K,L,NIJ) = H2AC(I,J,NKL)
 C
 C     Written by J. Thyssen - Dec 5 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2643,7 +2673,7 @@ C     H2AC(I,J,NKL) = H2AC(I,J,NKL) + H2AC(K,L,NIJ)
 C     H2AC(K,L,NIJ) = H2AC(I,J,NKL)
 C
 C     Written by J. Thyssen - Dec 5 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2669,100 +2699,100 @@ C
             DO J = 1, I
                NIJ = NIJ + 1
                DO L = 1, NASHT
-C                 
+C
 C                 The K<L part:
 C                 -------------
-C                 
+C
                   DO K = 1, L
                      NKL = L * ( L - 1 ) / 2 + K
-C                    
+C
 C                    NZ = 1:
 C                    -------
-C                    
+C
 C                    (kl|ij) + (ij|kl) = (kl|ij) + (ji|lk)^*
-C                    
+C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN)
      &                    + H2ACO(J,I,NKL,1,1)
-C                    
+C
 C                    (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
-C                    
+C
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN)
      &                    - H2ACO(I,J,NKL,1,2)
-C                    
+C
 C                    (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
-C                    
+C
                      H2AC(K,L,NIJ,1,3,IN) =
      &                    H2AC(K,L,NIJ,1,3,IN)
      &                    + H2ACO(J,I,NKL,1,3)
-C                    
+C
 C                    NZ = 2:
 C                    -------
-C                    
+C
                      IF (NZ .GE. 2) THEN
-C                       
+C
 C                       (kl|ij) + (ij|kl) = (kl|ij) + (ji|lk)^*
-C                       
+C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN)
      &                       - H2ACO(J,I,NKL,2,1)
-C                       
+C
 C                       (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
-C                       
+C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN)
      &                       - H2ACO(I,J,NKL,2,2)
-C                       
+C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ji|lK)^*
-C                       
+C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN)
      &                       - H2ACO(J,I,NKL,2,3)
-C                       
+C
                      END IF
-C                    
+C
 C                    NZ = 4:
 C                    -------
-C                    
+C
                      IF (NZ .GE. 4) THEN
-C                       
+C
 C                       (kl|iJ) + (iJ|kl) = (kl|iJ) + (Ji|lk)^*
-C                       
+C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN)
      &                       + H2ACO(J,I,NKL,3,3)
-C                       
+C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN)
      &                       - H2ACO(J,I,NKL,4,3)
-C                       
+C
 C                       (kL|ij) + (ij|kL) = (kL|ij) - (ij|lK)
-C                       
+C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN)
      &                       - H2ACO(I,J,NKL,3,1)
-C                       
+C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN)
      &                       - H2ACO(I,J,NKL,4,1)
-C                       
+C
 C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ij|Lk)
-C                       
+C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN)
      &                       - H2ACO(I,J,NKL,3,2)
-C                       
+C
                         H2AC(K,L,NIJ,4,3,IN) =
      &                       H2AC(K,L,NIJ,4,3,IN)
      &                       - H2ACO(I,J,NKL,4,2)
-C                       
+C
                      END IF
                   END DO
-C                 
+C
 C                 The K>L part:
 C                 -------------
-C                 
+C
                   DO K = L + 1, NASHT
                      NKL = K * ( K - 1 ) / 2 + L
 C
@@ -2791,21 +2821,21 @@ C
 C
 C                       NZ = 2:
 C                       -------
-C                       
+C
 C                       (kl|ij) + (ij|kl)
-C                       
+C
                         H2AC(K,L,NIJ,2,1,IN) =
      &                       H2AC(K,L,NIJ,2,1,IN) +
      &                       H2ACO(I,J,NKL,2,1)
-C                       
+C
 C                       (kL|iJ) + (iJ|kL)
-C                       
+C
                         H2AC(K,L,NIJ,2,2,IN) =
      &                       H2AC(K,L,NIJ,2,2,IN) +
      &                       H2ACO(I,J,NKL,2,2)
-C                       
+C
 C                       (Kl|iJ) + (iJ|Kl) = (Kl|iJ) + (Ij|kL)^*
-C                       
+C
                         H2AC(K,L,NIJ,2,3,IN) =
      &                       H2AC(K,L,NIJ,2,3,IN) -
      &                       H2ACO(I,J,NKL,2,3)
@@ -2816,9 +2846,9 @@ C
 C
 C                       NZ = 4:
 C                       -------
-C                       
+C
 C                       (kl|iJ) + (iJ|kl)
-C                       
+C
                         H2AC(K,L,NIJ,3,1,IN) =
      &                       H2AC(K,L,NIJ,3,1,IN) +
      &                       H2ACO(I,J,NKL,3,2)
@@ -2826,19 +2856,19 @@ C
                         H2AC(K,L,NIJ,4,1,IN) =
      &                       H2AC(K,L,NIJ,4,1,IN) +
      &                       H2ACO(I,J,NKL,4,2)
-C                       
+C
 C                       (kL|ij) + (ij|kL)
-C                       
+C
                         H2AC(K,L,NIJ,3,2,IN) =
      &                       H2AC(K,L,NIJ,3,2,IN) +
      &                       H2ACO(I,J,NKL,3,1)
-C                       
+C
                         H2AC(K,L,NIJ,4,2,IN) =
      &                       H2AC(K,L,NIJ,4,2,IN) +
      &                       H2ACO(I,J,NKL,4,1)
-C                       
+C
 C                       (Kl|ij) + (ij|Kl) = (Kl|ij) - (ji|kL)^*
-C                       
+C
                         H2AC(K,L,NIJ,3,3,IN) =
      &                       H2AC(K,L,NIJ,3,3,IN) -
      &                       H2ACO(J,I,NKL,3,1)
@@ -2875,12 +2905,12 @@ C        TFLAG: controls which part of HMATX to generate
 C               - general-active and active-general (true)
 C               - active-active (false)
 C
-C     Output: 
-C        HMATX: one-index transformed integrals in double quaternion 
+C     Output:
+C        HMATX: one-index transformed integrals in double quaternion
 C               format.
 C
 C     Written by J. Thyssen - Dec 6 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2948,10 +2978,10 @@ C
       IH = IBTYP(2,IH)
       IREP = JSYMOP - 1
       NCLASS = NZ * NZ * NBSYM / NFSYM
-C                    
+C
 C     Scatter BVEC into BMAT
 C     ----------------------
-C     
+C
       CALL DZERO(WORK(KBMAT),N2ORBXQ)
       IF (ITRVEC .LE. NESIM) THEN
          CALL XOPSCT(BEVEC(IBOFF),JXOPE,NZXOPE,
@@ -2961,16 +2991,16 @@ C
      &        WORK(KBMAT),NORBT,NZ)
       END IF
       IF(IPRXRS.GE.6) THEN
-         WRITE(LUPRI,'(A,I5)') 
+         WRITE(LUPRI,'(A,I5)')
      &        ' (RGETH2TX2): Scattered'//
      &        ' orbital trial vector no.:',ITRVEC
          CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
      &        NZ,IPQTOQ(1,IREP),LUPRI)
       ENDIF
-C                    
+C
 C     Construct full BMAT
 C     -------------------
-C     
+C
       IOFF = 0
       DO IZ = 1,NZ
          IQ = IPQTOQ(IZ,IREP)
@@ -2982,9 +3012,9 @@ C
          ENDIF
          IOFF = IOFF + N2ORBX
       ENDDO
-C                    
+C
       IF(IPRXRS.GE.6) THEN
-         WRITE(LUPRI,'(A,I5)') 
+         WRITE(LUPRI,'(A,I5)')
      &        ' (RGETH2TX2): Symm. scattered orbital'//
      &        ' trial vector no.:',ITRVEC
          CALL PRQMAT(WORK(KBMAT),NORBT,NORBT,NORBT,NORBT,
@@ -2993,7 +3023,7 @@ C
 C
 C     Loop over quaternion 2
 C     ----------------------
-C                    
+C
       CALL DZERO(HMATX,N2ORBX * NCLASS)
       IREPABR = 0
       DO IREPAB = 0, NBSYM - 1
@@ -3001,29 +3031,29 @@ C
             IREPABR = IREPABR + 1
             DO IZ2 = 1, NZ
                IQ2 = IPQTOQ(IZ2,IREPAB)
-C              
+C
 C              Calculate one-index transform:
-C              
+C
 C              \sum_r b_{pr} F_{rv} -  F_{pr} b_{rv}
-C              
+C
 C              IREPM is the product of IREPAB and the symmetry of the
 C              B operator:
 C
                IREPM = IBTXOR(IREPAB,JSYMOP-1)
 C
                IF (TFLAG) THEN
-C                 
+C
 C                 We need both general-active block:
-C                 
+C
                   CALL RTR1H1(JGENMO,NGENMO,JACTMO,NACTMO,
      &                 HMATX(1,1,IZ2,IREPABR),IPQTOQ(1,IREPM),
      &                 WORK(KBMAT),IPQTOQ(1,JSYMOP-1),
      &                 HMAT(1,1,IZ2,IREPABR),IPQTOQ(1,IREPAB),IREPXY,
      &                 WORK,KFREE,LFREE)
-C                 
+C
 C                 ...and active-general block for X .ne. Y:
 C                 (zero out active-active block to avoid double-counting)
-C                 
+C
                   IF (.NOT. ONLYXY) THEN
                      CALL BLKZERO(JACTMO,NACTMO,JACTMO,NACTMO,
      &                    HMATX(1,1,IZ2,IREPABR),NORBT,NORBT,
@@ -3060,13 +3090,13 @@ C     Input:
 C        IREPVP: symmetry of H2FULL
 C        H2GG: symmetry packed:
 C                   IREPVP = gerade:
-C                       index3(gerade) * index4(gerade) + 
+C                       index3(gerade) * index4(gerade) +
 C                       index3(ungerade) * index4(ungerade)
 C                   IREPVP = ungerade:
-C                       index3(gerade) * index4(ungerade) + 
+C                       index3(gerade) * index4(ungerade) +
 C                       index3(ungerade) * index4(gerade)
 C        NKL   : leading dimension of H2GG
-C 
+C
 C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
@@ -3076,9 +3106,9 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxash.h"
 C
-#include "dgroup.h"     
-#include "dcborb.h" 
-#include "dcbopt.h" 
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 #include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
@@ -3097,7 +3127,7 @@ C
      &        '*** ERROR in GTUUBL ***',
      &        'Not implemented; transformation level: ',JTRLVL
          CALL QUIT('*** ERROR in GTUUBL ***')
-      ELSE 
+      ELSE
 C
 C        (gg|gu) or (gg|gg) integrals transformation.
 C
@@ -3135,11 +3165,11 @@ C
                   END IF
 C
 C                 (v,p) elements
-C                     
+C
                   IF (IXU .GT. 0 .AND. IYU .GT. 0) THEN
                      DO I3 = 1, 3
                         DO IZ = 1, NZ
-                           H2VP(IXU,IYU,IZ,I3) = 
+                           H2VP(IXU,IYU,IZ,I3) =
      &                          H2GG(IXY,IZ,I3)
                         END DO
                      END DO
@@ -3167,7 +3197,7 @@ C        H2VP: the (vp|x~y~) integrals
 C        PV  : the two-electron density matrix
 C        IV, IP: (v,p) index
 C        IREPVP: the symmetry of the integrals (currently unused)
-C 
+C
 C     Output:
 C        FQX    : the \sum_{vxy} (pv|x~y~) P_{qv,xy} term added to
 C                 existing FQX.
@@ -3182,10 +3212,10 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dgroup.h"     
-#include "dcborb.h" 
-#include "dcbopt.h" 
-#include "dcbidx.h" 
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbopt.h"
+#include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
@@ -3305,7 +3335,7 @@ c        write(6,*) '(vp active general)'
             DO IZFQ = 1, NZ
                DO I3 = 1, 3
                   DO IZ = 1, NZ
-C                    
+C
 #ifdef UNDEF
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
@@ -3345,7 +3375,7 @@ c        write(6,*) '(pv active general)'
             DO IZFQ = 1, NZ
                DO I3 = 1, 3
                   DO IZ = 1, NZ
-C                    
+C
 #ifdef UNDEF
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
@@ -3548,7 +3578,7 @@ C
       END IF
 C
       RETURN
-      END 
+      END
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
@@ -3713,7 +3743,7 @@ C     add to FQX_{pq}:
 C
       IVU = IDXG2U(IV)
       IF ( IVU .GT. 0) THEN
-C        
+C
 C        Loop over Q <= V:
 C
          DO IQU = 1, IVU
@@ -3732,19 +3762,19 @@ C              +     (pv|xy)_{1,1} P_{qv,xy;1,1}
 C              + 1/2 (pv|xy)_{1,2} P_{qv,xy;1,2}
 C              + 1/2 (pv|xy)_{1,3} P_{qv,xy;1,3}
 C
-C           
+C
 C           FQX_{pq} +=
 C             \sum_{xy} \Twoint{vp|yx}_{1,1} P_{vq,yx;1,1}
 C           + 1/2 \sum_{xy}
 C                \Twoint{v\bar{p}|\bar{x}y}_{1,2} P_{v\bar{q},\bar{x}y;1,2}
 C           + 1/2 \sum_{xy}
 C                \Twoint{v\bar{p}|x\bar{y}}_{1,3} P_{v\bar{q},x\bar{y};1,3}
-C           
-            FQX(IP,IQU,1) = FQX(IP,IQU,1) 
+C
+            FQX(IP,IQU,1) = FQX(IP,IQU,1)
      &           +       DDOT(N2ASHX,H2VPX(1,1,1,1),1,
      &                               PV(1,1,NVQ,1,1),1)
      &           + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &                               PV(1,1,NVQ,1,2),1) 
+     &                               PV(1,1,NVQ,1,2),1)
      &           + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,
      &                               PV(1,1,NVQ,1,3),1)
 C
@@ -3798,17 +3828,17 @@ C       - 1/2 \sum{xy} [ - \Twoint{yx|vp}_{2,3} ] [ + P_{yx,vq;1,3} ]
 C
                FQX(IP,IQU,2) = FQX(IP,IQU,2)
      &              -       DDOT(N2ASHX,H2VPX(1,1,1,1),1,
-     &                                  PV(1,1,NVQ,2,1),1) 
+     &                                  PV(1,1,NVQ,2,1),1)
      &              -       DDOT(N2ASHX,H2VPX(1,1,2,1),1,
-     &                                  PV(1,1,NVQ,1,1),1) 
+     &                                  PV(1,1,NVQ,1,1),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &                                  PV(1,1,NVQ,2,2),1) 
+     &                                  PV(1,1,NVQ,2,2),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,2,2),1,
-     &                                  PV(1,1,NVQ,1,3),1) 
+     &                                  PV(1,1,NVQ,1,3),1)
      &              + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &                                  PV(1,1,NVQ,2,3),1) 
+     &                                  PV(1,1,NVQ,2,3),1)
      &              + DP5 * DDOT(N2ASHX,H2VPX(1,1,2,3),1,
-     &                                  PV(1,1,NVQ,1,3),1) 
+     &                                  PV(1,1,NVQ,1,3),1)
 C
 C
             END IF
@@ -3828,7 +3858,7 @@ C                 +     (pv|xy)_{3,2} P_{qv,xy;3,2}
 C                 -     (pv|xy)_{4,2} P_{qv,xy;4,2}
 C                 + 1/2 (vp|xy)_{3,1} P_{vq,xy;3,1}
 C                 - 1/2 (vp|xy)_{4,1} P_{vq,xy;4,1}
-C              
+C
 C
 C       + 1/2 \sum_{xy} [ + \Twoint{yx|vp}_{3,3} ] [ + P_{yx,vq;3,3} ]
 C       - 1/2 \sum_{xy} [ - \Twoint{yx|vp}_{3,4} ] [ - P_{yx,vq;3,4} ]
@@ -3874,17 +3904,17 @@ C       - 1/2 \sum{xy} [ + \Twoint{xy|vp}_{4,2} ] [ + P_{xy,vq;3,2} ]
 C
                FQX(IP,IQU,2) = FQX(IP,IQU,2)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,3,3),1,
-     &                                  PV(1,1,NVQ,4,3),1) 
+     &                                  PV(1,1,NVQ,4,3),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,4,3),1,
-     &                                  PV(1,1,NVQ,3,3),1) 
+     &                                  PV(1,1,NVQ,3,3),1)
      &              +       DDOT(N2ASHX,H2VPX(1,1,3,1),1,
-     &                                  PV(1,1,NVQ,4,1),1) 
+     &                                  PV(1,1,NVQ,4,1),1)
      &              +       DDOT(N2ASHX,H2VPX(1,1,4,1),1,
-     &                                  PV(1,1,NVQ,3,1),1) 
+     &                                  PV(1,1,NVQ,3,1),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,3,2),1,
-     &                                  PV(1,1,NVQ,4,2),1) 
+     &                                  PV(1,1,NVQ,4,2),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,4,2),1,
-     &                                  PV(1,1,NVQ,3,2),1) 
+     &                                  PV(1,1,NVQ,3,2),1)
 C
 C
 C              **************************
@@ -3925,29 +3955,29 @@ C        - 1/2 \sum{xy} [ - \Twoint{xy|vp}_{4,3} ] [ + P_{xy,vq;2,3} ]
 C
                FQX(IP,IQU,3) = FQX(IP,IQU,3)
      &            -       DDOT(N2ASHX,H2VPX(1,1,1,1),1,
-     &                                PV(1,1,NVQ,3,1),1) 
+     &                                PV(1,1,NVQ,3,1),1)
      &            -       DDOT(N2ASHX,H2VPX(1,1,2,1),1,
-     &                                PV(1,1,NVQ,4,1),1) 
+     &                                PV(1,1,NVQ,4,1),1)
      &            -       DDOT(N2ASHX,H2VPX(1,1,3,1),1,
-     &                                PV(1,1,NVQ,1,1),1) 
+     &                                PV(1,1,NVQ,1,1),1)
      &            +       DDOT(N2ASHX,H2VPX(1,1,4,1),1,
-     &                                PV(1,1,NVQ,2,1),1) 
+     &                                PV(1,1,NVQ,2,1),1)
      &            - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,
-     &                                PV(1,1,NVQ,3,3),1) 
+     &                                PV(1,1,NVQ,3,3),1)
      &            + DP5 * DDOT(N2ASHX,H2VPX(1,1,2,3),1,
-     &                                PV(1,1,NVQ,4,3),1) 
+     &                                PV(1,1,NVQ,4,3),1)
      &            - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &                                PV(1,1,NVQ,3,2),1) 
+     &                                PV(1,1,NVQ,3,2),1)
      &            - DP5 * DDOT(N2ASHX,H2VPX(1,1,2,2),1, !FIXME: sign???
-     &                                PV(1,1,NVQ,4,2),1) 
+     &                                PV(1,1,NVQ,4,2),1)
      &            + DP5 * DDOT(N2ASHX,H2VPX(1,1,3,2),1,
-     &                                PV(1,1,NVQ,1,2),1) 
+     &                                PV(1,1,NVQ,1,2),1)
      &            + DP5 * DDOT(N2ASHX,H2VPX(1,1,4,2),1,
-     &                                PV(1,1,NVQ,2,2),1) 
+     &                                PV(1,1,NVQ,2,2),1)
      &            - DP5 * DDOT(N2ASHX,H2VPX(1,1,3,3),1,
-     &                                PV(1,1,NVQ,1,3),1) 
-     &            + DP5 * DDOT(N2ASHX,H2VPX(1,1,4,3),1, 
-     &                                PV(1,1,NVQ,2,3),1) 
+     &                                PV(1,1,NVQ,1,3),1)
+     &            + DP5 * DDOT(N2ASHX,H2VPX(1,1,4,3),1,
+     &                                PV(1,1,NVQ,2,3),1)
 C
 C
 C              **************************
@@ -3988,29 +4018,29 @@ C        - 1/2 \sum{xy} [ - \Twoint{xy|vp}_{4,3} ] [ - P_{xy,vq;1,3} ]
 C
                FQX(IP,IQU,4) = FQX(IP,IQU,4)
      &              -       DDOT(N2ASHX,H2VPX(1,1,1,1),1,
-     &                                  PV(1,1,NVQ,4,1),1) 
+     &                                  PV(1,1,NVQ,4,1),1)
      &              -       DDOT(N2ASHX,H2VPX(1,1,2,1),1,
-     &                                  PV(1,1,NVQ,3,1),1) 
+     &                                  PV(1,1,NVQ,3,1),1)
      &              +       DDOT(N2ASHX,H2VPX(1,1,3,1),1,
-     &                                  PV(1,1,NVQ,2,1),1) 
+     &                                  PV(1,1,NVQ,2,1),1)
      &              +       DDOT(N2ASHX,H2VPX(1,1,4,1),1,
-     &                                  PV(1,1,NVQ,1,1),1) 
+     &                                  PV(1,1,NVQ,1,1),1)
      &              + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,
-     &                                  PV(1,1,NVQ,4,3),1) 
+     &                                  PV(1,1,NVQ,4,3),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,2,3),1,
-     &                                  PV(1,1,NVQ,3,3),1) 
+     &                                  PV(1,1,NVQ,3,3),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &                                  PV(1,1,NVQ,4,2),1) 
-     &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,2,2),1,   
-     &                                  PV(1,1,NVQ,3,2),1) 
+     &                                  PV(1,1,NVQ,4,2),1)
+     &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,2,2),1,
+     &                                  PV(1,1,NVQ,3,2),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,3,2),1,
-     &                                  PV(1,1,NVQ,2,2),1) 
+     &                                  PV(1,1,NVQ,2,2),1)
      &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,4,2),1,
-     &                                  PV(1,1,NVQ,1,2),1) 
+     &                                  PV(1,1,NVQ,1,2),1)
      &              + DP5 * DDOT(N2ASHX,H2VPX(1,1,3,3),1,
-     &                                  PV(1,1,NVQ,2,3),1) 
-     &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,4,3),1, 
-     &                                  PV(1,1,NVQ,1,3),1) 
+     &                                  PV(1,1,NVQ,2,3),1)
+     &              - DP5 * DDOT(N2ASHX,H2VPX(1,1,4,3),1,
+     &                                  PV(1,1,NVQ,1,3),1)
 C
 C
 C
@@ -4019,14 +4049,14 @@ C
          DO IQU = IVU+1, NASHT
 C
 C           Loop over Q > V:
-C           
+C
 C           FQX_{pq} +=
 C             \sum_{xy} \Twoint{vp|yx}_{1,1} P_{qv,xy;1,1}
 C       + 1/2 \sum_{xy}
 C         \Twoint{v\bar{p}|\bar{x}y}_{1,2} [-P_{v\bar{q},\bar{x}y;1,2}]
 C       + 1/2 \sum_{xy}
 C         \Twoint{v\bar{p}|x\bar{y}}_{1,3} [-P_{v\bar{q},x\bar{y};1,3}]
-C           
+C
             NVQ = IQU * ( IQU - 1 ) / 2 + IVU
             DTERM = D0
             DO IX = 1, NASHT
@@ -4035,10 +4065,10 @@ C
      &                 H2VPX(IX,IY,1,1) * PV(IY,IX,NVQ,1,1)
                END DO
             END DO
-            FQX(IP,IQU,1) = FQX(IP,IQU,1) 
+            FQX(IP,IQU,1) = FQX(IP,IQU,1)
      &           + DTERM
      &           - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,
-     &           PV(1,1,NVQ,1,2),1) 
+     &           PV(1,1,NVQ,1,2),1)
      &           - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,
      &           PV(1,1,NVQ,1,3),1)
          END DO
@@ -4046,14 +4076,14 @@ C
 C
 C     If (vp) is general-active we need to consider the
 C     (pv) distribution instead.
-C      
+C
       IPU = IDXG2U(IP)
       IF ( IPU .GT. 0 .AND. IPU .NE. IVU ) THEN
          DO IQU = 1, IPU-1
-C           
+C
 C           FQX_{vq} += \sum_{xy} \Twoint{vp|xy}_{1,1} P_{xy,qp;1,1}
 C           = \sum_{xy} \Twoint{vp|xy}_{1,1} P_{yx,pq;1,1}
-C           
+C
             NQP = IPU * ( IPU - 1 ) / 2 + IQU
             DTERM = D0
             DO IX = 1, NASHT
@@ -4062,23 +4092,22 @@ C
      &                 H2VPX(IX,IY,1,1) * PV(IY,IX,NQP,1,1)
                END DO
             END DO
-            FQX(IV,IQU,1) = FQX(IV,IQU,1) 
+            FQX(IV,IQU,1) = FQX(IV,IQU,1)
      &           + DTERM
      &           - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,PV(1,1,NQP,1,2),1)
      &           - DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,PV(1,1,NQP,1,3),1)
          END DO
          DO IQU = IPU, NASHT
-C           
+C
 C           FQX_{vq} += \sum_{xy} \Twoint{vp|xy}_{1,1} P_{xy,qp;1,1}
-C           
+C
             NQP = IQU * ( IQU - 1 ) / 2 + IPU
-            FQX(IV,IQU,1) = FQX(IV,IQU,1) 
+            FQX(IV,IQU,1) = FQX(IV,IQU,1)
      &           + DDOT(N2ASHX,H2VPX(1,1,1,1),1,PV(1,1,NQP,1,1),1)
      &           + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,2),1,PV(1,1,NQP,1,2),1)
      &           + DP5 * DDOT(N2ASHX,H2VPX(1,1,1,3),1,PV(1,1,NQP,1,3),1)
          END DO
       END IF
       RETURN
-      END 
-
+      END
 #endif

@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -39,7 +39,7 @@ C     Get second order optimized wave function.
 C     Either DHF or KR-MCSCF...
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -223,7 +223,7 @@ C     Get second order optimized wave function.
 C     Either DHF or KR-MCSCF...
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -415,7 +415,7 @@ C
 C
             ELSE
 C
-C              Orbital compression: we need (ga|aa) integrals to 
+C              Orbital compression: we need (ga|aa) integrals to
 C              get gradient correct. Later, we'll calculate the
 C              rest of the integrals.
 C
@@ -430,7 +430,7 @@ C
             CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
 C           Read coefficients from KRMCSCF
-C     
+C
             INQUIRE(FILE='KRMCSCF',EXIST=TOBE)
             IF (.NOT.TOBE) THEN
                WRITE(LUPRI,'(A,/,A)')
@@ -443,7 +443,7 @@ C
             END IF
 C
 C           TODO: Boson symmetry not implemented in KRMCSCF yet.
-C     
+C
             CALL IZERO(WORK(KIBEIG),NORBT)
 C
 C           *** Now do the transformation
@@ -615,7 +615,7 @@ C
  9100    FORMAT(/'>>> CPU (WALL) TIME FOR MACRO IT. ',
      &        I3,':',A,'(',A,')')
          CALL FLSHFO(LUPRI)
-         IF (WFCONV) GOTO 2000 
+         IF (WFCONV) GOTO 2000
          IF ( (ITBCK .EQ. 0 .AND. ITMAC .LT. MOPT_MXMACRO) .OR.
      &        (ITBCK .GT. 0 .AND. ITBCK .LE. MOPT_MAXBCK ) ) THEN
             IOPT_INTBUF = IOPT_INTFLG
@@ -637,7 +637,7 @@ C     ***************************************************
 C
 C
  1999 CONTINUE
-      WRITE(LUPRI,9200) 
+      WRITE(LUPRI,9200)
  9200 FORMAT(/'WARNING: Wave function did not converge...')
       GOTO 3000
  2000 CONTINUE
@@ -681,7 +681,7 @@ C        EMCACT  - active energy
 C        GCI     - the CI gradient of the CEP
 C        GOEE    - the e-e orbital gradient of the CEP
 C        GOEP    - the e-p gradient of the CEP
-C        EMCMY   - inactive energy 
+C        EMCMY   - inactive energy
 C        DV      - one-electron active density matrix
 C        PV      - two-electron active density matrix
 C        H2AC    - two-electron integrals with active indices
@@ -689,10 +689,10 @@ C        FC      - the inactive Fock matrix
 C        FCAC    - the inactive Fock matrix with active indices
 C        FV      - the active Fock matrix
 C        FQ      - the Q Fock matrix
-C     
+C
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -729,7 +729,7 @@ C     ***************************************************
 C     *** Clean file KRMC FOCK **************************
 C     ***************************************************
 C
-      REWIND LUKRM3 
+      REWIND LUKRM3
       FND =  FNDLAB('SODLABEL',LUKRM3)
       BACKSPACE LUKRM3
       CALL NEWLAB('SODLABEL',LUKRM3,LUPRI)
@@ -769,7 +769,7 @@ C
       IF (NASHT .GT. 1 .OR. MCTYPE .GE. JMCMIN) THEN
 C
 C        Calculate FQ matrix and two-electron integrals
-C        with active orbital indices (H2AC).     
+C        with active orbital indices (H2AC).
 C        FQ and H2AC are written to KRMC FOCK.
 C
          CALL RGETH2(FQ,H2AC,PV,WORK(KFREE),LFREE)
@@ -833,7 +833,7 @@ C
 C
 C        Save generalized Fock matrix (F_{pv})
 C
-         IF (.NOT. SAVEDFGEN) 
+         IF (.NOT. SAVEDFGEN)
      &        CALL WRTKRMC(LUKRM3,'FGENPV  ',WORK(KFPV),
      &        NORBT * NASHT * NZ)
          CALL MEMREL('RORBGRD.KFPV',WORK,KFRSAV,KFPV,KFREE,LFREE)
@@ -886,7 +886,7 @@ C     DV & PV
 C     -------
 C
 C     Save active density matrices on file KRMC FOCK
-C     
+C
       CALL WRTKRMC(LUKRM3,'DVMO    ',DV,N2ASHXQ)
       IF ( NASHT .GT. 1 .OR. MCTYPE .GE. JMCMIN ) THEN
          CALL WRTKRMC(LUKRM3,'PVMO    ',PV,NASHT*NASHT*NNASHX*NZ*3)
@@ -1116,7 +1116,7 @@ C     Output:
 C        DV      - one electron active density matrix
 C
 C     Written by J. Thyssen - Dec 21 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1149,7 +1149,7 @@ C     Output:
 C       None
 C
 C     Written by J. Thyssen - Nov 24 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1213,12 +1213,12 @@ C        EMCACT  - the energy of CEP
 C
 C     Output:
 C
-C        EMCMY   - inactive energy 
+C        EMCMY   - inactive energy
 C        FC      - the inactive Fock matrix
 C        FV      - the active Fock matrix
 C
 C     Written by J. Thyssen - Oct 22 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1344,17 +1344,17 @@ C        1-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          EMCMY = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
-         IF (IPROPT .GE. 4) 
+         IF (IPROPT .GE. 4)
      &      WRITE(LUPRI,9000) 1,EMCMY
 C
 C        Add 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
-         IF (IPROPT .GE. 4) 
+         IF (IPROPT .GE. 4)
      &      WRITE(LUPRI,9000) 2,EMCMY2E
          EMCMY = EMCMY + EMCMY2E
-         IF (IPROPT .GE. 4) 
+         IF (IPROPT .GE. 4)
      &      WRITE(LUPRI,9001) EMCMY
       ELSE
          EMCMY = D0
@@ -1459,7 +1459,7 @@ C
 C        FC      - the inactive Fock matrix
 C
 C     Written by J. Thyssen - June 30 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1513,7 +1513,7 @@ C
             FIRST3 = .TRUE.
          END IF
          CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-C     
+C
 C        ***************************************************
 C        *** Get one-electron density matrices *************
 C        ***************************************************
@@ -1521,7 +1521,7 @@ C
 C        Construct DCAO
 C
          CALL DENSTY(WORK(KDCAO),CMO,IPROPT)
-C     
+C
 C        ***************************************************
 C        *** Get 2-electron Fock matrices ******************
 C        ***************************************************
@@ -1535,21 +1535,21 @@ C        1-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
          ECORE = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
-         IF (IPROPT .GE. 4) 
+         IF (IPROPT .GE. 4)
      &        WRITE(LUPRI,9000) 1,ECORE
 C
 C        Calculate 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
-C     
+C
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
-         IF (IPROPT .GE. 4) 
+         IF (IPROPT .GE. 4)
      &        WRITE(LUPRI,9000) 2,EMCMY2E
          ECORE = ECORE + EMCMY2E
 C
 C        ***************************************************
 C        *** Add two-electron contribution to H1AO *********
 C        ***************************************************
-C     
+C
          CALL DAXPY(N2BBASXQ,D1,WORK(KFCAO),1,WORK(KH1AO),1)
 C
       ELSE
@@ -1619,7 +1619,7 @@ C     Output:
 C        H1AO    - one-electron Fock matrix
 C
 C     Written by J. Thyssen - Oct 26 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "priunit.h"
@@ -1668,7 +1668,7 @@ C  /* Deck rsetwop */
       SUBROUTINE RSETWOP(WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Initialize configurational and orbital parameters for 
+C     Initialize configurational and orbital parameters for
 C     (KR-MC)SCF calculation.
 C
 C     Input:
@@ -1685,7 +1685,7 @@ C        NZHOPE   - number of -"-  incl. redundant active-active rotations
 C        LZXOPE   - integer length of WORK(KZXOPE)
 C
 C        KZXOPP   - work address of NZXOPP electron-positron rotations
-C        NZXOPP   - number of -"- 
+C        NZXOPP   - number of -"-
 C        LZXOPP   - integer length of WORK(KZXOPP)
 C
 C     Written by J. Thyssen - Oct 22 1998
@@ -1722,14 +1722,14 @@ C     (Only if LUCIAREL is run in spinfree formalism. Otherwise
 C     boson symmetry array is reset.)
 C
       IF (OPT_UCIBOS) THEN
-C        
+C
 C        For the current version of LUCIAREL we need the
 C        approximate boson symmetries for labelling of
 C        orbitals. Call ROPTST to retrieve the orbitals.
-C        
+C
 C        FIXME: the control parameter should be consistent
 C        with IOPTST.
-C        
+C
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
          ISTART = MOD(IOPTST,100)
          CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,-1,WORK,KFREE,LFREE)
@@ -1755,24 +1755,24 @@ C
       DO I = 1,NFSYM
          WRITE(LUPRI,'(3X,A,I1)') 'Fermion irrep ',I
          IF (NISH(I).GT.0) THEN
-            WRITE(OPT_INDSTR(1,I),'(I4,A2,I4)') 
+            WRITE(OPT_INDSTR(1,I),'(I4,A2,I4)')
      &         1,'..',NISH(I)
          ELSE
             OPT_INDSTR(1,I) = ' '
          END IF
          IF (NASH(I).GT.0) THEN
-            WRITE(OPT_INDSTR(2,I),'(I4,A2,I4)') 
+            WRITE(OPT_INDSTR(2,I),'(I4,A2,I4)')
      &         NISH(I)+1,'..',NISH(I)+NASH(I)
          ELSE
             OPT_INDSTR(2,I) = ' '
          END IF
          IF (NPSH(I) .GT. 0 .AND. NSSH(I) .GT. 0) THEN
-            WRITE(OPT_INDSTR(3,I),'(I4,A2,I4,A1,I4,A2,I4)') 
+            WRITE(OPT_INDSTR(3,I),'(I4,A2,I4,A1,I4,A2,I4)')
      &         -NPSH(I),'..',-1,',',NISH(I)+NASH(I)+1,'..',NESH(I)
          ELSE IF (NPSH(I) .GT. 0) THEN
             WRITE(OPT_INDSTR(3,I),'(I4,A2,I4)') -NPSH(I),'..',-1
          ELSE IF (NSSH(I) .GT. 0) THEN
-            WRITE(OPT_INDSTR(3,I),'(I4,A2,I4)') 
+            WRITE(OPT_INDSTR(3,I),'(I4,A2,I4)')
      &         NISH(I)+NASH(I)+1,'..',NESH(I)
          ELSE
             OPT_INDSTR(3,I) = ' '
@@ -1874,7 +1874,7 @@ C
       NZHOPEQ  = NZHOPE *NZ
       NZHOPT   = NZHOPE + NZXOPP
       NZHOPTQ  = NZHOPT *NZ
-C     
+C
 C     ***************************************************
 C     *** Total number of parameters ********************
 C     ***************************************************
@@ -1900,8 +1900,8 @@ C
      &   CALL IWRTKRMC(LUKRMC,'E-E ROT ',WORK(KZXOPE),LZXOPE)
       IF (LZXOPP.GT.0)
      &   CALL IWRTKRMC(LUKRMC,'E-P ROT ',WORK(KZXOPP),LZXOPP)
-C     
-C     
+C
+C
 C     Write DCBORB parameters to KRMCSCF
 C     ----------------------------------
 C
@@ -1926,8 +1926,8 @@ C
 C     Check that content on KRMCOLD = KRMCSCF.
 C
 C     FIXME: write me!
-C     FIXME: also write INTFLG 
-C     
+C     FIXME: also write INTFLG
+C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RSET_KRMC')
       RETURN
@@ -1937,7 +1937,7 @@ C  /* Deck rsetci */
       SUBROUTINE RSETCI(USE_CIPROGRAM,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Initialize configurational parameters for 
+C     Initialize configurational parameters for
 C     (KR-MC)SCF calculation and ESR-CI and ???.
 C
 C     Input:
@@ -1987,7 +1987,7 @@ C
 C        A non-trivial number of CI rotations.
 C        hjaaj July 2002: also include NASHT .eq. 1 (giving 1-2 determinants)
 C         for debug
-C         
+C
          IF ( USE_CIPROGRAM .EQ. 'GOSCI' ) THEN
 C
 C           Use GOSCI:
@@ -2013,7 +2013,7 @@ C           note: the above release should make sure that KZCONF .eq. KIDET,
 C           where determinant information is already saved inside GOSCI_GENDET,
 C           KZCONF is saved in dcbopt.h and is used in other GOSCI routines
 C           to obtain determinant information.
-C           
+C
             LZCONF = 2*NZCONF
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
             IF (KZCONF .NE. KIDET) CALL QUIT(
@@ -2032,7 +2032,7 @@ C
             END IF
 #endif
          ELSE IF ( USE_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
-C           
+C
 C           Call driver routine for getting NZCONF
             CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
 C
@@ -2051,7 +2051,7 @@ C
 Chj   ELSE
 C
 C        Dirac-Hartree-Fock: only 1 CI coefficient
-C     
+C
 Chj      NZCONF = 0
 Chj      NZCONFQ = 0
 C
@@ -2083,7 +2083,7 @@ C     Output:
 C        FCAC    - Inactive Fock matrix with active-active indices
 C
 C     Written by J. Thyssen - Oct 29 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2101,7 +2101,7 @@ C
 C
       IF (NASHT .EQ. 0) GOTO 9999
 C
-C     Print FC 
+C     Print FC
 C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('rGETAC: FC matrix',-1)
@@ -2146,7 +2146,7 @@ C        FCAC    - Inactive Fock matrix with active-active indices
 C                  for a given symmetry
 C
 C     Written by J. Thyssen - Oct 29 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2188,7 +2188,7 @@ C     Returns:
 C        RENRACT - active electronic energy
 C
 C     Written by J. Thyssen - Oct 29 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2206,9 +2206,9 @@ C
 C
       CALL QENTER('RENRACT')
 C
-C     Eactive = \sum_{uv} DV_{uv} FC_{uv} + 
+C     Eactive = \sum_{uv} DV_{uv} FC_{uv} +
 C               \sum_{uvxy} P_{uv,xy} (uv|xy)
-C             = \sum_{uv} DV_{uv} FC_{uv} + 
+C             = \sum_{uv} DV_{uv} FC_{uv} +
 C               1/2 \sum_{u} FQ_{uu}
 C
 C
@@ -2232,7 +2232,7 @@ C     \sum_{uv} DV_{uv} FC_{uv}
 C     -------------------------
 C
       EACT = DDOT(N2ASHXQ,DV,1,FCAC,1)
-      IF (IPRINT .GE. 4) 
+      IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9000) EACT
 C
 C     1/2 \sum_{u} FQ_{uu}
@@ -2244,12 +2244,12 @@ C
          EACTFQ = EACTFQ + FQ(IGV,IV,1)
       END DO
       EACTFQ = EACTFQ * DP5
-      IF (IPRINT .GE. 4) 
+      IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9001) EACTFQ
 C
       EACT = EACT + EACTFQ
 C
-      IF (IPRINT .GE. 4) 
+      IF (IPRINT .GE. 4)
      &   WRITE(LUPRI,9002) EACT
       RENRACT = EACT
       CALL QEXIT('RENRACT')
@@ -2272,7 +2272,7 @@ C     Returns:
 C        RENRAC1 - \sum_{u} FQ_{u,u}
 C
 C     Written by J. Thyssen - Oct 29 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2306,7 +2306,7 @@ C     Output:
 C        CMO     - MO coefficients
 C
 C     Written by J. Thyssen - Nov 3 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2330,7 +2330,7 @@ C
          NOSTOP = .FALSE.
       END IF
       IF (IOPT .LT. 1 .OR. IOPT .GT. 2) THEN
-          WRITE(LUPRI,'(/1X,A,I10)') 
+          WRITE(LUPRI,'(/1X,A,I10)')
      &       'rREADMO: ERROR: Unknown option ',IOPT
           CALL QUIT('rREADMO: ERROR: Unknown option.')
       END IF
@@ -2354,7 +2354,7 @@ C
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
          ELSE
-            CALL QUIT('rREADMO: ERROR: Label ' // LABEL // 
+            CALL QUIT('rREADMO: ERROR: Label ' // LABEL //
      &                'not found on file KRMCSCF')
          END IF
       ELSE
@@ -2392,13 +2392,13 @@ C***********************************************************************
 C
 C     Generate start vectors
 C
-C     Input: 
+C     Input:
 C
 C     Output: None
 C
 C
 C     Written by J. Thyssen - Nov 17 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2489,7 +2489,7 @@ C
       END IF
 C
 C     (1.2) Read from label OLDORB on KRMCSCF
-C     
+C
       IF (LBIT(IROST,2)) THEN
          INQUIRE ( FILE = 'KRMCOLD', EXIST = EX )
          IF ( EX ) THEN
@@ -2527,7 +2527,7 @@ C
 C
 C     (1.4) From a usual DHF start guess, i.e. bare nucleus guess.
 C           FIXME: to be implemented
-C 
+C
       IF (LBIT(IROST,4)) THEN
          CALL RH1DIAG(CMO,WORK(KFREE),LFREE)
          IF (IPRINT .GE. 0) THEN
@@ -2548,7 +2548,7 @@ C
 CC
  1000 CONTINUE
 C
-C     
+C
 C     Write coefficients back to file as label NEWORB
 C
       IF (IPROPT .GE. 10) THEN
@@ -2671,7 +2671,7 @@ C
       END IF
 C
  2100 CONTINUE
-C      
+C
       CALL MEMREL('ROPTST',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
@@ -2692,7 +2692,7 @@ C     Output: CREF - CI vector
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2713,14 +2713,14 @@ C
 C     MAXCIT >= 0:
 C
 C     (2.1) Contruct diagonal of CI matrix
-C     (2.2) Pick start vector with zeros everywhere except for the 
-C           lowest value of the diagonal of the CI matrix. If 2 or 
+C     (2.2) Pick start vector with zeros everywhere except for the
+C           lowest value of the diagonal of the CI matrix. If 2 or
 C           more diagonal values are close, pick more start vectors.
 C     (2.3) Do a couple of Davidson CI iterations.
 C
-C     MAXCIT < 0: 
+C     MAXCIT < 0:
 C
-C     Diagonalize the full CI matrix now. 
+C     Diagonalize the full CI matrix now.
 C     This is of course only possible for sufficiently small CI's.
 C
       IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 1000) THEN
@@ -2732,22 +2732,22 @@ C
 C
 C
       IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
-C        
+C
          IF (MAXCIT .GE. 0) THEN
 C
 C           MAXCIT Davidson CI iterations.
 C
             CALL GOSCI_RCISTD(WORK(KZCONF),CMO,CREF,ECI,
      &           WORK(KFREE),LFREE)
-C           
+C
          ELSE
 C
 C           Full CI.
-C           
+C
             CALL GOSCI_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &           WORK,KFREE,LFREE)
 C           CALL GOSCI_STARTVEC(IDET,CMO,CREF,ECI,WORK,KFREE,LFREE)
-C           
+C
          END IF
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
@@ -2763,7 +2763,7 @@ C
      &         OPT_CIPROGRAM,'"'
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
-C        
+C
       WRITE(LUPRI,'(/A,F20.8)')
      &     ' (RCIST) CI energy:',ECI
 C
@@ -2907,7 +2907,7 @@ C
 C
 c        FIXME: this requires many changes:
 C        - in GTNORB
-C        - in KRMCSAV 
+C        - in KRMCSAV
 C        - possibly other places...
 c        NZXOPE1 = NZHOPE
 c        NZXOPEQ1 = NZHOPEQ
@@ -2922,7 +2922,7 @@ C
 C        ``Normal'' microiterations.
 C
          NZCONF1 = NZCONF
-         NZCONFQ1 = NZCONFQ 
+         NZCONFQ1 = NZCONFQ
 C
          NZXOPE1 = NZXOPE
          NZXOPEQ1 = NZXOPEQ
@@ -2936,7 +2936,7 @@ C
 C     *****************************
 C     *** Reorder GPOE gradient ***
 C     *****************************
-C     
+C
 C
 C     The GPOE gradient is stored like this:
 C
@@ -2946,7 +2946,7 @@ C     non-redundant for IZ = 2
 C     etc...
 C
 C     This makes it very difficult to do things like:
-C     
+C
 C     X = DNRM2(NZXOPEQ,GPOE,1)
 C
 C     which should be
@@ -2981,7 +2981,7 @@ C
      &     NZHOPE,
      &     KZCONF,KZXOPE,KZXOPP,THR,OPT_CIPROGRAM,EACTIV,IOPTTB,
      &     MCTYPE,OPT_NOPFQ,OPT_NOFQX,JTRLVL)
-C     
+C
 C
 C
       NREDM = 3 * (MOPT_MXMICRO+2)
@@ -3449,7 +3449,7 @@ C  /* Deck labkrmc */
 C***********************************************************************
 C
 C     Write label LABEL to LUNIT;
-C       If label LABEL exists: 
+C       If label LABEL exists:
 C         Seek to label SODLABEL and write from there.
 C       Else:
 C         Seek to label EOFLABEL, backspace and write from there
@@ -3708,13 +3708,13 @@ C***********************************************************************
 C
 C     Rotate coefficients
 C
-C     CMO_{new} = CMO_{old} exp( -\kappa ) 
+C     CMO_{new} = CMO_{old} exp( -\kappa )
 C     We use a trick a la Sostrup notes, chapter 3.1.5
 C
 C     Input:
 C        CMO     - old coefficients
 C        XKAPPA  - Kappa matrix (Kappa is overwritten with junk)
-C        IPRINT  - print level 
+C        IPRINT  - print level
 C
 C     Output:
 C        CMO     - new coefficients
@@ -3731,7 +3731,7 @@ C
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
       PARAMETER (D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12)
 C
-      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ), 
+      DIMENSION CMO(NBASI,NORBI,NZ), XKAPPA(NORBT,NORBT,NZ),
      &          IP(4), WORK(*)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 C
@@ -3917,7 +3917,7 @@ C
          WRITE(LUPRI,9020) CPUTID,WALLTID
          CPUTID = SECTID(CPU3-CPU2)
          WALLTID = SECTID(WALL3-WALL2)
-         WRITE(LUPRI,9021) CPUTID,WALLTID 
+         WRITE(LUPRI,9021) CPUTID,WALLTID
       END IF
  9020 FORMAT(/'ROTCMO: total CPU (WALL) time       : ',A12,' (',A12,')')
  9021 FORMAT( 'ROTCMO: sin/sqrt/cos CPU (WALL) time: ',A12,' (',A12,')')
@@ -3956,7 +3956,7 @@ C
 C     Symmetric Orthogonalization with N-R iterative algorithm:
 C
 C     C(p+1) = 1/2( 3C(p) - C(p) S C^{\dagger}(p) C(p))
-C     
+C
 C            = 3/2 C(p) + ( -1/2 C(p) C^{\dagger}(p) ) C(p)
 C
 C     (here S = unit matrix)
@@ -3983,7 +3983,7 @@ C
          END IF
          IF (DMX .GT. THREQL) GOTO 100
 C
-C                  
+C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: symm. ortho. rot. mat.',-1)
          CALL PRQMAT(WORK(KXKNEW),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -4159,7 +4159,7 @@ C
       ELSE
 C
 C        Backstep for NEO restricted step algorithm
-C        
+C
          CALL QUIT('*** NOT IMPLEMENTED ***')
       END IF
 C
@@ -4210,7 +4210,7 @@ C
          CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
-C   
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4221,20 +4221,20 @@ C
 C     Calculate second order change in energy
 C
 C     Written by J. Thyssen - Nov 27 1998
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C         
+C
       PARAMETER (DP5 = 0.50D00, D0 = 0.00D00, DP25 = 0.25D00)
-C         
+C
 #include "dcbopt.h"
 #include "dcbibn.h"
-C           
+C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),EVECR(NREDM)
       DIMENSION IBTYP(2,*)
-C         
+C
       IF ( IPROPT .GE. 20 ) THEN
          WRITE(LUPRI,'(1X,A)')
      &        '(RSNRPRD) Reduced solution vector '
@@ -4276,7 +4276,7 @@ C     ---------------------------------
 C
 C     DEPRED = E - E0 = x^t g + 1/2 x^t H x
 C
-C     where x is the step vector, g is the gradient (note that REDGP is 
+C     where x is the step vector, g is the gradient (note that REDGP is
 C     equal to minus the gradient), and H is the Hessian.
 C
       SUM = D0
@@ -4295,7 +4295,7 @@ C
       IF (IPROPT .GE. 2)
      &     WRITE(LUPRI,'(1X,A,F15.8)')
      &     '(RSNRPRD) Predicted energy change = ',DEPRED
-C       
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4306,14 +4306,14 @@ C
 C     Set common block DCBIDX (index vectors, orbital symmetries etc.)
 C
 C     Written by J. Thyssen - Nov 22 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxash.h"
-C         
+C
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -4429,15 +4429,15 @@ C***********************************************************************
 C
 C
 C     Written by J. Thyssen - Nov 22 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
 C
       PARAMETER (DLVLSTEP = 0.2D0)
-C         
+C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -4518,11 +4518,11 @@ C
       END IF
       IF(IPRINT.GE.4.OR.IPAR.GT.0) THEN
          IF(IPRINT.GE.3) THEN
-            WRITE(LUPRI,'(A,F12.5,A)') 
+            WRITE(LUPRI,'(A,F12.5,A)')
      &           ' (KRMCSOL) Solution vector'
             CALL PRIRVC(EVECR,NZRED,IBTYP)
          ENDIF
-         WRITE(LUPRI,'(/3X,A,F12.5)') 
+         WRITE(LUPRI,'(/3X,A,F12.5)')
      &      '* Reduced matrix. Level shift:',DLVLSH
          WRITE(LUPRI,'(5X,A,I5)')
      &        '* Number of positive eigenvalues:',INERTIA(1),
@@ -4541,8 +4541,8 @@ C
 C     Calculate threshold for micro iterations.
 C
 C     Written by J. Thyssen - Dec 12 2000
-C     Last revision : 
-C      
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4559,14 +4559,14 @@ C     have been replaced with 2 * norm.
 C
 C
 C     If new step (RBETA) is greater than previous step (STPLEN)
-C     or the level shift is .NE. 0 we are not in the local region, 
+C     or the level shift is .NE. 0 we are not in the local region,
 C     i.e. use global threshold:
 C
       IF ( (STPLEN .GT. D0 .AND. RBETA .GT. STPLEN) .OR.
      &     ( DLVLSH .NE. D0 ) )THEN
          IF (JHESSIAN .NE. 0) THEN
 C
-C           Hessian has incorrect structure, and it's not worth 
+C           Hessian has incorrect structure, and it's not worth
 C           the effort to converge better than 50% (we think!)
 C
 C           (FIXME: put DP5 = 50% in common block/input)
@@ -4603,8 +4603,8 @@ C
 C     Normalize CI vector.
 C
 C     Written by J. Thyssen - Dec 14 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4654,8 +4654,8 @@ C
 C     Used for detailed timing statistics.
 C
 C     Written by J. Thyssen - Dec 22 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "priunit.h"
 #include "implicit.h"
@@ -4718,8 +4718,8 @@ C
 C     Perform backstep (NR restricted step algorihtm)
 C
 C     Written by J. Thyssen - Dec 28 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4838,8 +4838,8 @@ C
 C     Dump info needed for backsteps on KRMC_LRED/KRMCSCF
 C
 C     Written by J. Thyssen - Dec 28 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4877,8 +4877,8 @@ C
 C     Read info needed for backsteps
 C
 C     Written by J. Thyssen - Dec 28 2000
-C     Last revision : 
-C       
+C     Last revision :
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -4915,7 +4915,7 @@ C
 C     Write welcome message.
 C
 C     Written by J. Thyssen - Jan 18 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4996,13 +4996,13 @@ C     For any number of electrons:
 C
 C     TYPE = '+': D_{pq} = <0|X^+_{pq}|0>
 C     TYPE = '-': D_{pq} = <0|X^-_{pq}|0>
-C     
+C
 C     For an odd number of electrons:
 C
 C     TYPE = 's': D_{pq} = <0|p^{\dagger}q|0>
 C
 C     Written by J. Thyssen - Feb 2 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -5029,7 +5029,7 @@ C
 C     Obtain orbitals from diagonalization of H1.
 C
 C     Written by J. Thyssen - Mar 3 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -5095,13 +5095,13 @@ C     Backtransform to current MO basis
 C
       DO I = 1, NFSYM
          IF(NORB(I).GT.0) THEN
-C           
+C
             CALL BCKTRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &           WORK(KH1AO+I2ORBT(I)),NORB(I),NORB(I),
      &           NORB(I),NZ,NORB(I),1,NFBAS(I,0),
      &           WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NORB(I),NZT,
      &           IPROPT)
-C           
+C
          END IF
       END DO
 C
@@ -5116,7 +5116,7 @@ C/* Deck RSMPAR */
      &                  THRCOM,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
-C     This routine is a direct rip from REDPAR (../prp/pamset.F), 
+C     This routine is a direct rip from REDPAR (../prp/pamset.F),
 C     except that the new vectors are returned along with
 C     their new sizes. Also, we don't try to compress conf.
 C     variables.
@@ -5155,7 +5155,7 @@ C
             DTST = D0
             IZOFF = 0
             DO IZ = 1,NZ
-               DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
+               DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)
                IZOFF = IZOFF + NXOPE
             ENDDO
             IF(SQRT(DTST).GE.THRCOM) THEN
@@ -5191,7 +5191,7 @@ C
             WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
          ENDIF
          CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
-      ENDIF      
+      ENDIF
       write(6,*) 'after'
       CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
      &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
@@ -5209,7 +5209,7 @@ C
           DTST = D0
           IZOFF = 0
           DO IZ = 1,NZ
-            DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
+            DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)
             IZOFF = IZOFF + NXOPP
           ENDDO
           IF(SQRT(DTST).GE.THRCOM) THEN
@@ -5241,7 +5241,7 @@ C
           NXOPP  = II
         ENDIF
         CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
-      ENDIF      
+      ENDIF
 C
       RETURN
       END
@@ -5382,7 +5382,7 @@ C
             IF (NOROT(J1) .EQ. 0 .AND. NOROT(J2) .EQ. 0 ) THEN
                II = II + 1
                IF (I .LE. NXOPE) III = III + 1
-C              
+C
                JXOPE(1,II) = JXOPE(1,I)
                JXOPE(2,II) = JXOPE(2,I)
                IOFF = KBUF-1
@@ -5412,7 +5412,7 @@ C
             WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
          ENDIF
          CALL MEMREL('RMROT.ee',WORK,KWORK,KWORK,KFREE,LFREE)
-      ENDIF      
+      ENDIF
 C
       IF (NXOPP .GT. 0) THEN
         CALL MEMGET('REAL',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
@@ -5423,7 +5423,7 @@ C
             J2 = JXOPP(2,I)
             IF (NOROT(J1) .EQ. 0 .AND. NOROT(J2) .EQ. 0 ) THEN
                II = II + 1
-C              
+C
                JXOPE(1,II) = JXOPE(1,I)
                JXOPE(2,II) = JXOPE(2,I)
                IOFF = KBUF-1
@@ -5567,7 +5567,7 @@ C
          END DO
       END DO
 C
-C     
+C
 C     Calculate transformation to SV orbitals
 C     ---------------------------------------
 C

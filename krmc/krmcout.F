@@ -19,10 +19,10 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -37,7 +37,7 @@ C
 C     Driver to KRMCOU1
 C
 C     Written by J. Thyssen - Nov 30 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -68,7 +68,7 @@ C
 C     Output from wave function optimization
 C
 C     Written by J. Thyssen - Nov 30 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -123,7 +123,7 @@ C
      &                    DINFO(13,I),DINFO(14,I),
      &                    DINFO(15,I),I=1,ITM)
 C
-      WRITE(LUPRI,9120) 
+      WRITE(LUPRI,9120)
       DO I = 1,ITM
          WRITE(LUPRI,9130) IINFO(1,I),IINFO(2,I),
      &        IINFO(3,I),IINFO(4,I),IINFO(5,I),IINFO(6,I),
@@ -265,7 +265,7 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C
       CALL REAKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
-      IF (NZCONF .GT. 0) 
+      IF (NZCONF .GT. 0)
      &   CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
 C
 C     Calculate natural orbital occ.
@@ -347,7 +347,7 @@ C
 C
       DIMENSION CMO(*)
       LOGICAL PROCC, PRSML
-C 
+C
       DIMENSION CMOB(7)
 C
 C

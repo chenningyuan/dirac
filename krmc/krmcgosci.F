@@ -1,4 +1,4 @@
-
+C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -35,13 +35,13 @@ C***********************************************************************
 C
 C     Setup and initialize variables in dcbgosci.h
 C
-C     Input : 
+C     Input :
 C
-C     Output: 
+C     Output:
 C
 C
 C     Written by J. Thyssen - Jan 2 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -90,12 +90,12 @@ C     Setup symmetry
 C     --------------
 C
 C     IRP  : fermion irrep
-C     IRRP : symmetry of wave function 
+C     IRRP : symmetry of wave function
 C            1 .. NREP           : fermion irrep
 C            NREP + 1 .. 2 * NREP: boson irrep
 C
 C             fermion               boson
-C     C1   :  A                     a 
+C     C1   :  A                     a
 C     Ci   :  AG, AU                ag, au
 C
 C     C2   :  1E, 2E                a, b
@@ -200,14 +200,14 @@ C***********************************************************************
 C
 C     Find determinants.
 C
-C     Input : 
+C     Input :
 C
-C     Output: 
+C     Output:
 C        NDET : number of determinants
 C        IDET : determinants
 C
 C     Written by J. Thyssen - Jan 2 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -360,7 +360,7 @@ c        call flshfo(6)
          NMK2(MK2) = NDET - IMK2(MK2)
  10   CONTINUE
 C
-C     
+C
 C     Write statistics about determinants
 C
       WRITE(LUPRI,9100)
@@ -429,13 +429,13 @@ C***********************************************************************
 C
 C     Check that determinant is allowed for GASSCF calculations.
 C
-C     Input : 
+C     Input :
 C       I : determinant
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Feb 11 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -474,12 +474,12 @@ C     Initialize table with
 C
 C     IBTAB(I) = NBITS(I)
 C
-C     Input : 
+C     Input :
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Feb 27 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -508,13 +508,13 @@ C***********************************************************************
 C
 C     Check that determinant is allowed with MK/MKDEL constraints.
 C
-C     Input : 
+C     Input :
 C       I : determinant
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Feb 11 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -550,15 +550,15 @@ C***********************************************************************
 C
 C     For each determinant find Kramers partner.
 C
-C     Input : 
+C     Input :
 C        NDET : number of determinants
 C        IDET : determinants
 C
-C     Output: 
-C        KRLIST: 
+C     Output:
+C        KRLIST:
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -573,7 +573,7 @@ C
 #include "ibtfun.h"
 C
       I1 = 2 ** (2*NASHT) - 1
-C     
+C
       CALL IZERO(KRLIST,NDET)
 C
       DO 10 I = 1, NDET
@@ -612,7 +612,7 @@ C
 C     Find number if bits in integer JDET.
 C
 C     Written by J. Thyssen - Jan 2 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -648,7 +648,7 @@ C
 C     Find symmetry of determinant (IA,IB).
 C
 C     Written by J. Thyssen - Jan 2 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -721,7 +721,7 @@ C     Output: CREF - CI vector
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -754,7 +754,7 @@ C     --------------
 C
 C     The CI vector is stored in colunms; the lowest eigenstate is in
 c     the first column.
-C     
+C
       IOFF = KEIGVC - 1 + ( IOPT_ISTATE - 1 ) * NZCONF
       IF ( NZ .EQ. 1 ) THEN
          DO I = 1,NZCONF
@@ -801,8 +801,8 @@ C
 C
 C     Check norm of CI vector
 C
-      CALL RCINORM(CREF) 
-C        
+      CALL RCINORM(CREF)
+C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(A)') ' (GOSCI_STARTVEC) CI start vector'
          CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRPCI,LUPRI)
@@ -973,7 +973,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmulta */
       SUBROUTINE GOSCI_IREPS (NZ,NFSYM,NSYMRPA,REPA)
 C***********************************************************************
-C     
+C
 C     Rip-off from GMULTA from MOLTRA./jth-03072000
 C
 C     Hard-wired multiplication table for the abelian subgroups of D2h
@@ -1038,11 +1038,11 @@ C        PV      - two electron active density matrix
 C
 C     DV has dimension (2*NASHT)**2 * MIN(NZ,2).
 C     PV has dimensions (2*NASHT)**4 * MIN(NZ,2). Triangular packing
-C     would be better, but whatever... 
+C     would be better, but whatever...
 C     The code is now very straightforward.
 C
 C     Written by J. Thyssen - Oct 22 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1059,7 +1059,7 @@ C
       DIMENSION CL(NZCONF,NZ),CR(NZCONF,NZ),DV(2*NASHT,2*NASHT,2)
       DIMENSION PV(2*NASHT,2*NASHT,2*NASHT,2*NASHT,2)
       DIMENSION IDET(*)
-C     
+C
       LOGICAL CALCDV, CALCPV
 C
 C
@@ -1128,7 +1128,7 @@ C
             END DO
          END IF
       END IF
-C     
+C
       CALL QEXIT('GOSCI_RMAKDM')
       RETURN
       END
@@ -1147,7 +1147,7 @@ C     Output:
 C        DV, PV - density matrices
 C
 C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1197,7 +1197,7 @@ C     Output:
 C        DV, PV: density matrices
 C
 C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1250,13 +1250,13 @@ C
 C        ===================================
 C        DETERMINANTS DIFFER BY ONE FUNCTION K -> M
 C        ===================================
-C        
+C
          IPHASE = 0
          DO IELEC = 1,NAELEC
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
          END DO
-C        
+C
          DMRIJ1 = (-1)**IPHASE * DMRIJ
          DMRJI1 = (-1)**IPHASE * DMRJI
          DV(K,M,1) = DV(K,M,1) + DMRIJ1
@@ -1298,7 +1298,7 @@ C
 C        ====================================
 C        DETERMINANTS DIFFER BY TWO FUNCTIONS  K,L -> M,N
 C        ====================================
-C        
+C
          IPHASE = 0
          DO IELEC = 1,NAELEC
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
@@ -1306,7 +1306,7 @@ C
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
          END DO
-C        
+C
          DMRIJ1 = (-1)**IPHASE * DMRIJ
          DMRJI1 = (-1)**IPHASE * DMRJI
          IF (DOIMAG) THEN
@@ -1336,7 +1336,7 @@ C
 C     =============================================
 C     DETERMINANTS DIFFER BY MORE THEN TWO FUNCTIONS
 C     ==============================================
-C     
+C
       CALL QUIT('GOSCI_PMAT called with IT .gt. 4 !')
       RETURN
       END
@@ -1362,7 +1362,7 @@ C        HR - real part of CI Hamiltonian
 C        HI - imag part of CI Hamiltonian
 C
 C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1425,7 +1425,7 @@ C
                IOCCI(IELEC) = IPTB2O(K)
             END IF
          END DO
-         IF (IELEC .NE. NAELEC) 
+         IF (IELEC .NE. NAELEC)
      &       CALL QUIT('GOSCI_MAKEH: IELEC.ne.NAELEC')
 C
          IF (HFULL) THEN
@@ -1440,7 +1440,7 @@ chj  &           HR(I,I),DUMMY,HCORE,VMUUUU)
          END IF
          JDAOLD = -1
          DO J = 1, JEND
-C           
+C
 C           Use that outer loop in gosci_gendet is over A-strings,
 C           inner loop is over B-strings
 C
@@ -1470,7 +1470,7 @@ C
                JDB = IDET(2,J)
                IDBV = IBTXOR (IDB, JDB)
                CALL FNBITS(NDBV,IDBV,IBTAB)
-C           
+C
                IT = NDAV + NDBV
 C
 C           Can this give a non-zero contribution ?
@@ -1486,7 +1486,7 @@ C
                      JOCCI(IELEC) = IPTB2O(K)
                   END IF
                END DO
-C              
+C
                IAI = IBTAND (IDAV, IDA)
                IBI = IBTAND (IDBV, IDB)
                IAJ = IBTAND (IDAV, JDA)
@@ -1545,7 +1545,7 @@ C
 C     Calculate Hamiltonian matrix element
 C
 C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1596,13 +1596,13 @@ C
 C        ===================================
 C        DETERMINANTS DIFFER BY ONE FUNCTION K -> M
 C        ===================================
-C        
+C
          IPHASE = 0
          DO IELEC = 1,NAELEC
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
          END DO
-C        
+C
          HR = HCORE(K,M,1)
          IF (DOIMAG) HI = HCORE(K,M,2)
 C
@@ -1631,7 +1631,7 @@ C
 C        ====================================
 C        DETERMINANTS DIFFER BY TWO FUNCTIONS  K,L -> M,N
 C        ====================================
-C        
+C
          IPHASE = 0
          DO IELEC = 1,NAELEC
             IF (IOCCI(IELEC) .EQ. K) IPHASE = IPHASE + IELEC
@@ -1639,7 +1639,7 @@ C
             IF (JOCCI(IELEC) .EQ. M) IPHASE = IPHASE + IELEC
             IF (JOCCI(IELEC) .EQ. N) IPHASE = IPHASE + IELEC
          END DO
-C        
+C
 C---------------------
 C        H = H + (K, M, L, N) - (K, N, L, M)
 C---------------------
@@ -1652,7 +1652,7 @@ C
 C     =============================================
 C     DETERMINANTS DIFFER BY MORE THEN TWO FUNCTIONS
 C     ==============================================
-C     
+C
       CALL QUIT('GOSCI_HMAT called with IT .gt. 4 !')
       RETURN
       END
@@ -1675,7 +1675,7 @@ C        SVEC   - sigma vector
 C        DIAG   - diagonal of Hamiltonian (if SAVDIA)
 C
 C     Written by J. Thyssen - Jan 3 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1720,7 +1720,7 @@ C     Output:
 C        DIAG   - diagonal of Hamiltonian (if SAVDIA)
 C
 C     Written by J. Thyssen - Jan 3 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1751,17 +1751,17 @@ C***********************************************************************
 C
 C     Do MAXCIT CI iterations.
 C
-C     Input : 
+C     Input :
 C        IDET - determinant strings
 C        CMO  - MO coeff.
 C
-C     Output: 
+C     Output:
 C        CREF - CI ref.
 C        ECI  - CI energy.
 C
 C
 C     Written by J. Thyssen - Jan 3 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1987,13 +1987,13 @@ C
      &           ' (GOSCI_RCISTD) Reduced Hamiltonian'
             CALL OUTPUT(WORK(KHRED),1,NCRED,1,NCRED,MAXR,MAXR,1,LUPRI)
          END IF
-C        
+C
 C        Check for inconsistencies:
-C        
+C
          DAS = D0
          DO I = 1, NCRED
             DO J = 1, I - 1
-               DAS = DAS + 
+               DAS = DAS +
      &              ABS( WORK(KHRED + (J-1) + (I-1)*MAXR) -
      &              WORK(KHRED + (I-1) + (J-1)*MAXR) )
             END DO
@@ -2041,10 +2041,10 @@ C
 C
 C        Construct residual
 C        ------------------
-C        
+C
 C        r = (H-E)x  (store in CREF)
 C          = Hx - Ex
-C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J) 
+C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
          CALL DZERO(CREF,NZCONFQ)
          DO I = 1, NCRED
@@ -2116,15 +2116,15 @@ C
             DO I = 1, JCSIM
 C
 C              FIXME: loop over new trial vectors
-C              
+C
 C              Calculate <B(new)|B(old)> / <B(old)|B(old)>
 C              = <B(new)|B(old)>  (as trial vectors are normed to 1)
-C              
+C
                OVLP = DDOT(NZCONFQ,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &              WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
-C              
+C
 C              Calculate B(new) = B(new) - OVLP * B(old)
-C              
+C
                IF (ABS(OVLP) .GT. THRZER) THEN
                   CALL DAXPY(NZCONFQ,-OVLP,WORK(KBCVEC+(I-1)*NZCONFQ),1,
      &                 WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
@@ -2140,7 +2140,7 @@ C
             END IF
             IF (DNAFT .LE. 1.0D-4 * DNBEF .AND. ITURN .EQ. 1)
      &           IROUND = IROUND + 1
-C           
+C
             CALL DSCAL(NZCONFQ,1/DNAFT,WORK(KBCVEC+(NCRED-1)*NZCONFQ),1)
 C
             IF (IROUND .GT. 0) THEN
@@ -2166,7 +2166,7 @@ C
  200  CONTINUE
 C
 C     Print timings
-C     
+C
       IF (IPROPT .GE. 2) THEN
          CALL GETTIM(CPU4,WLL4)
          CPUTID = SECTID(CPU4-CPU3)
@@ -2181,7 +2181,7 @@ C
      &        'time for microiterations: ',
      &        CPUTID,'(',WALLTID,')'
       END IF
-C     
+C
       IF (ICONV .GT. 0) THEN
          WRITE(LUPRI,'(//A)')
      &        ' (GOSCI_RCISTD) Micro iterations converged.'
@@ -2220,8 +2220,8 @@ c     cref(2,1) = d1
 C
 C     Check norm of CI vector
 C
-      CALL RCINORM(CREF) 
-C        
+      CALL RCINORM(CREF)
+C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,'(/A)') ' (GOSCI_RCISTD) CI start vector'
          CALL RPRCI(CREF,NZCONF,NZ,OPT_CIPROGRAM, THRPCI,LUPRI)
@@ -2250,15 +2250,15 @@ C***********************************************************************
 C
 C     Transform bit packed IA and IB into alpha- and beta string.
 C
-C     Input : 
+C     Input :
 C        JDET - determinant
 C
-C     Output: 
+C     Output:
 C        IASTR, IBSTR - strings
 C        IAELEC, IBELEC - alpha and beta electrons.
 C
 C     Written by J. Thyssen - Jan 5 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2298,14 +2298,14 @@ C***********************************************************************
 C
 C     Print nice analysis of CI vector.
 C
-C     Input : 
+C     Input :
 C        CREF - CI ref. vector
 C        IDET - determintants
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Jan 5 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2372,13 +2372,13 @@ C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
 C
-C     Input : 
+C     Input :
 C       BVEC: CI vector
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2407,14 +2407,14 @@ C***********************************************************************
 C
 C     Check that BVEC is Kramers restricted.
 C
-C     Input : 
+C     Input :
 C       BVEC: CI vector
 C       KRLIST: list of determinants and their Kramers partner.
 C
-C     Output: 
+C     Output:
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2454,16 +2454,16 @@ C
 C     Generate all strings with IEL electrons and GAS constraints
 C     fullfilled.
 C
-C     Input : 
+C     Input :
 C       IEL: number of electrons
 C       MSKGAS: bit mask for GAS spaces
 C
-C     Output: 
+C     Output:
 C       ISTR: strings
 C       NSTR: #strings
 C
 C     Written by J. Thyssen - Jan 23 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2614,7 +2614,7 @@ C
          MK2JSTRT = MAX(MINMK2,-MAXMK2,MK2I-4)
          MK2JEND  = MK2I - MK2STP
 C
-C     
+C
 C        *************************
 C        *** Off-diagonal loop ***
 C        *************************
@@ -2627,16 +2627,16 @@ C
             IF (NMK2(MK2J) .EQ. 0) GOTO 20
             write(6,*) '              MK2J = ',MK2J
             call flshfo(6)
-C           
+C
             JSTRT = IMK2(MK2J) + 1
             JEND  = IMK2(MK2J) + NMK2(MK2J)
-C           
+C
 C           Loop over determinants
-C           
+C
             DO 100 I = ISTRT, IEND
-C              
+C
                IELEC = 0
-C              
+C
                IDA = IDET(1,I)
                IDB = IDET(2,I)
                DO K = 1, NASHT
@@ -2651,25 +2651,25 @@ C
                      IOCCI(IELEC) = IPTB2O(K)
                   END IF
                END DO
-               IF (IELEC .NE. NAELEC) 
+               IF (IELEC .NE. NAELEC)
      &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
 C
                DO 200 J = JSTRT, JEND
-C                 
+C
                   JDA = IDET(1,J)
                   JDB = IDET(2,J)
-C                 
+C
                   IDAV = IBTXOR (IDA, JDA)
                   IDBV = IBTXOR (IDB, JDB)
-C                 
+C
                   CALL FNBITS(NDAV,IDAV,IBTAB)
                   CALL FNBITS(NDBV,IDBV,IBTAB)
                   IT = NDAV + NDBV
-C                 
+C
                   IF (IT .GT. ITMAX) GOTO 200
-C                 ... IT = number of different spinors 
+C                 ... IT = number of different spinors
 C                          in det(I) and det(J)
-C                 
+C
                   IELEC = 0
                   DO K = 1, NASHT
                      IF (IBTAND (JDA, IBTSHL (1, K - 1)) .NE. 0) THEN
@@ -2683,7 +2683,7 @@ C
                         JOCCI(IELEC) = IPTB2O(K)
                      END IF
                   END DO
-C                 
+C
                   IAI = IBTAND (IDAV, IDA)
                   IBI = IBTAND (IDBV, IDB)
                   IAJ = IBTAND (IDAV, JDA)
@@ -2710,26 +2710,26 @@ C
                         M = IPTB2O(II)
                      END IF
                   END DO
-C                 
+C
 C                 Hamiltonian matrix element
 C                 --------------------------
-C                 
+C
                   IF (DOSIG) THEN
-C                    
+C
                      CALL GOSCI_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,
      &                    K,L,M,N,HR,HI,HCORE,VMUUUU)
-C                    
+C
 C                    S_I += H_{IJ} B_{J}
-C                    
+C
                      SVEC(I,1) = SVEC(I,1) + HR * BVEC(J,1)
                      IF (DOIMAG) THEN
                         SVEC(I,1) = SVEC(I,1) - HI * BVEC(J,2)
                         SVEC(I,2) = SVEC(I,2)
      &                       + HR * BVEC(J,2) + HI * BVEC(J,1)
                      END IF
-C                    
+C
 C                    S_J += H_{IJ}^* B_{J}
-C                    
+C
                      SVEC(J,1) = SVEC(J,1) + HR * BVEC(I,1)
                      IF (DOIMAG) THEN
                         SVEC(J,1) = SVEC(J,1) + HI * BVEC(I,2)
@@ -2737,12 +2737,12 @@ C
      &                       + HR * BVEC(I,2) - HI * BVEC(I,1)
                      END IF
                   END IF
-C                 
+C
 C                 Density matrix elements
 C                 -----------------------
-C                 
+C
                   IF (DODEN) THEN
-C                    
+C
                      DMRIJ = CL(I,1)*CR(J,1)
                      DMRJI = CL(J,1)*CR(I,1)
                      IF (DOIMAG) THEN
@@ -2755,7 +2755,7 @@ C
                      CALL GOSCI_PMAT(DO2EL,DOIMAG1,IT,IOCCI,JOCCI,
      &                    K,L,M,N,
      &                    DMRIJ,DMIIJ,DMRJI,DMIJI,DV,PV)
-C                    
+C
                   END IF
  200           CONTINUE
  100        CONTINUE
@@ -2763,7 +2763,7 @@ C
  21      CONTINUE
 C
 C
-C        
+C
 C        ***********************
 C        *** Diagonal blocks ***
 C        ***********************
@@ -2772,8 +2772,8 @@ C        Diagonal element
 C
          IDAOLD = -1
          DO 300 I = ISTRT, IEND
-C           
-C           
+C
+C
             IDA = IDET(1,I)
             IF (IDA .NE. IDAOLD) THEN
                IAELEC = 0
@@ -2793,37 +2793,37 @@ C
                   IOCCI(IELEC) = IPTB2O(K)
                END IF
             END DO
-            IF (IELEC .NE. NAELEC) 
+            IF (IELEC .NE. NAELEC)
      &           CALL QUIT('GOSCI_CI: IELEC.ne.NAELEC')
-C           
+C
 C           Calculate Hamiltonian matrix element
 C           ------------------------------------
-C           
+C
             IF (DODIA .OR. DOSIG) THEN
-C              
+C
                CALL GOSCI_HMAT(DO2EL,.FALSE.,0,IOCCI,IOCCI,0,0,0,0,
      &              HR,DUMMY,HCORE,VMUUUU)
-C              
+C
 C              Sigma-vector elements
-C              
+C
 C              SVEC_I += H_{II} B_{I}
-C              
+C
                IF (DOSIG) THEN
-C                 
+C
                   SVEC(I,1) = SVEC(I,1) + HR * BVEC(I,1)
                   IF (DOIMAG) SVEC(I,2) = SVEC(I,2) + HR * BVEC(I,2)
-C                 
+C
                END IF
-C              
+C
                IF (DODIA) DIAG(I) = HR
-C              
+C
             END IF
-C           
+C
 C           Calculate density matrix elements
 C           ---------------------------------
-C           
+C
             IF (DODEN) THEN
-C              
+C
                IF (.NOT. DOIMAG) THEN
                   DMR = CL(I,1)*CR(I,1)
                ELSE
@@ -2833,16 +2833,16 @@ C
                END IF
                CALL GOSCI_PMAT(DO2EL,DOIMAG1,0,IOCCI,IOCCI,0,0,0,0,
      &              DMR,DMI,DMR,DMI,DV,PV)
-C              
+C
             END IF
-C           
+C
 C           Off-diagonal elements
 C           ---------------------
-C           
+C
             IF (.NOT. (DOSIG .OR. DODEN)) GOTO 300
             JDAOLD = -1
             DO 400 J = ISTRT, I - 1
-C              
+C
                JDA = IDET(1,J)
                IF (JDA .NE. JDAOLD) THEN
                   IDAV = IBTXOR (IDA, JDA)
@@ -2860,7 +2860,7 @@ C
                   JDAOLD = JDA
                END IF
                IF (NDAV .GT. ITMAX) GOTO 400
-C              
+C
                JDB = IDET(2,J)
                IF (NDAV .EQ. ITMAX) THEN
                   IF (JDB .NE. IDB) GO TO 400
@@ -2872,7 +2872,7 @@ C
                   IT = NDAV + NDBV
                   IF (IT .GT. ITMAX) GOTO 400
                END IF
-C              
+C
                IELEC = JAELEC
                DO K = 1, NASHT
                   IF (IBTAND (JDB, IBTSHL (1, K - 1)) .NE. 0) THEN
@@ -2880,7 +2880,7 @@ C
                      JOCCI(IELEC) = IPTB2O(K)
                   END IF
                END DO
-C              
+C
                IBI = IBTAND (IDBV, IDB)
                IBJ = IBTAND (IDBV, JDB)
                K = 0
@@ -2905,26 +2905,26 @@ C
                      M = IPTB2O(II)
                   END IF
                END DO
-C              
+C
 C              Hamiltonian matrix element
 C              --------------------------
-C              
+C
                IF (DOSIG) THEN
-C                 
+C
                   CALL GOSCI_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,K,L,M,N,
      &                 HR,HI,HCORE,VMUUUU)
-C                 
+C
 C                 S_I += H_{IJ} B_{J}
-C                 
+C
                   SVEC(I,1) = SVEC(I,1) + HR * BVEC(J,1)
                   IF (DOIMAG) THEN
                      SVEC(I,1) = SVEC(I,1) - HI * BVEC(J,2)
                      SVEC(I,2) = SVEC(I,2)
      &                    + HR * BVEC(J,2) + HI * BVEC(J,1)
                   END IF
-C                 
+C
 C                 S_J += H_{IJ}^* B_{I}
-C                 
+C
                   SVEC(J,1) = SVEC(J,1) + HR * BVEC(I,1)
                   IF (DOIMAG) THEN
                      SVEC(J,1) = SVEC(J,1) + HI * BVEC(I,2)
@@ -2932,12 +2932,12 @@ C
      &                    + HR * BVEC(I,2) - HI * BVEC(I,1)
                   END IF
                END IF
-C              
+C
 C              Density matrix elements
 C              -----------------------
-C              
+C
                IF (DODEN) THEN
-C                 
+C
                   DMRIJ = CL(I,1)*CR(J,1)
                   DMRJI = CL(J,1)*CR(I,1)
                   IF (DOIMAG) THEN

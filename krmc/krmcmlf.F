@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -30,7 +30,7 @@ C DATE    : $Date$
 C
 C     Subroutines related to the Molfdir format:
 C
-C     QFC2MFC, MFC2QFC: quaternion active-active matrix to 
+C     QFC2MFC, MFC2QFC: quaternion active-active matrix to
 C                       Molfdir active-active matrix and vice versa.
 C     M2DNZ3, DNZ32M  : active Molfdir matrix to Dirac (NZ,3) format and
 C                       vice versa.
@@ -51,7 +51,7 @@ C     Output: DMFC  - FCAC matrix in molfdir basis
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -82,12 +82,12 @@ C
       END IF
 C
       IF ( NZ .EQ. 1 ) THEN
-C        DMFC matrix is pure real or pure imaginary, in this 
+C        DMFC matrix is pure real or pure imaginary, in this
 C        special case we store in DMFC(*,*,1) whether real or imaginary.
          MZ = 1
          CALL DZERO(DMFC,4 * NASHT**2)
       ELSE
-C        In this case real part of DMFC matrix is stored in DMFC(*,*,1) 
+C        In this case real part of DMFC matrix is stored in DMFC(*,*,1)
 C        and imaginary part of DMFC matrix is stored in DMFC(*,*,2).
          MZ = 2
          CALL DZERO(DMFC,8 * NASHT**2)
@@ -105,10 +105,10 @@ C        and imaginary part of DMFC matrix is stored in DMFC(*,*,2).
       IF (ITIM .EQ. 1) THEN
 C     ... ITIM .eq.  1, time invariant property
 C        DQFC = + AR + AI qi + BR qj + BI qk
-C        DMFC(a,a) =  AR + AI i = (+DQFC(1)) + (+DQFC(2)) i 
+C        DMFC(a,a) =  AR + AI i = (+DQFC(1)) + (+DQFC(2)) i
 C        DMFC(a,b) =  BR + BI i = (+DQFC(3)) + (+DQFC(4)) i
 C        DMFC(b,a) = -BR + BI i = (-DQFC(3)) + (+DQFC(4)) i
-C        DMFC(b,b) =  AR - AI i = (+DQFC(1)) + (-DQFC(2)) i 
+C        DMFC(b,b) =  AR - AI i = (+DQFC(1)) + (-DQFC(2)) i
          IF (IQZ .EQ. 1) THEN
 C           copy  AR
             DO J = 1, NASH(JFSY)
@@ -154,10 +154,10 @@ C        where P is the current property operator;
 C        symbolically: DMFC = QFC2MFC(i * DQFC)
 C        DQFC = i * ( + AR + AI qi + BR qj + BI qk )
 C             = - AI + AR qi - BI qj + BR qk
-C        DMFC(a,a) =  AR + AI i = (+DQFC(2)) + (-DQFC(1)) i 
+C        DMFC(a,a) =  AR + AI i = (+DQFC(2)) + (-DQFC(1)) i
 C        DMFC(a,b) =  BR + BI i = (+DQFC(4)) + (-DQFC(3)) i
 C        DMFC(b,a) =  BR - BI i = (+DQFC(4)) + (+DQFC(3)) i
-C        DMFC(b,b) = -AR + AI i = (-DQFC(2)) + (-DQFC(1)) i 
+C        DMFC(b,b) = -AR + AI i = (-DQFC(2)) + (-DQFC(1)) i
          IF (IQZ .EQ. 1) THEN
 C           copy -AI
             DO J = 1, NASH(JFSY)
@@ -227,7 +227,7 @@ C     Output: DQFC  - FCAC matrix in quaternion basis
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -326,7 +326,7 @@ C        KSYMM: do Kramers symmetrization (i.e., calculate P++)
 C        PSYMM: particle symmetrization: pqrs + rspq
 C
 C     Written by J. Thyssen - Jul 21 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -375,7 +375,7 @@ C
                DO K = 1,2*NASHT
                   DO L = 1,2*NASHT
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. D0 .OR.
-     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. D0) 
+     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. D0)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MIN(2,NZ))
                   END DO
@@ -469,9 +469,9 @@ C
      &                          + VMUUUU(I,J,K,L,1) + VMUUUU(J,I,L,K,1)
                            VDUUUU(KK,LL,IJ,1,2) =
      &                          VMUUUU(K,LTR,I,JTR,1)
-     &                          + VMUUUU(LTR,K,JTR,I,1) 
+     &                          + VMUUUU(LTR,K,JTR,I,1)
      &                          + VMUUUU(I,JTR,K,LTR,1)
-     &                          + VMUUUU(JTR,I,LTR,K,1) 
+     &                          + VMUUUU(JTR,I,LTR,K,1)
                            VDUUUU(KK,LL,IJ,1,3) =
      &                          VMUUUU(KTR,L,I,JTR,1)
      &                          + VMUUUU(L,KTR,JTR,I,1)
@@ -519,7 +519,7 @@ C
      &                          VMUUUU(K,L,I,J,1) + VMUUUU(L,K,J,I,1)
                            VDUUUU(KK,LL,IJ,1,2) =
      &                          VMUUUU(K,LTR,I,JTR,1)
-     &                          + VMUUUU(LTR,K,JTR,I,1) 
+     &                          + VMUUUU(LTR,K,JTR,I,1)
                            VDUUUU(KK,LL,IJ,1,3) =
      &                          VMUUUU(KTR,L,I,JTR,1)
      &                          + VMUUUU(L,KTR,JTR,I,1)
@@ -668,10 +668,10 @@ C
      $                             - VMUUUU(K,LTR,ITR,J,2)
      $                             - VMUUUU(ITR,J,K,LTR,2)
                            ELSE
-C     
+C
 C                            (1) Symm. transition density matrix
 C                            (2) Do particle symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      &                             VMUUUU(K,L,I,J,2)
      $                             - VMUUUU(L,K,J,I,2)
@@ -679,9 +679,9 @@ C
      $                             - VMUUUU(J,I,L,K,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      &                             VMUUUU(K,LTR,I,JTR,2)
-     &                             - VMUUUU(LTR,K,JTR,I,1) 
+     &                             - VMUUUU(LTR,K,JTR,I,1)
      &                             + VMUUUU(I,JTR,K,LTR,2)
-     &                             - VMUUUU(JTR,I,LTR,K,1) 
+     &                             - VMUUUU(JTR,I,LTR,K,1)
                               VDUUUU(KK,LL,IJ,2,3) =
      &                             VMUUUU(KTR,L,I,JTR,2)
      &                             - VMUUUU(L,KTR,JTR,I,2)
@@ -690,10 +690,10 @@ C
                            END IF
                         ELSE
                            IF (KSYMM) THEN
-C     
+C
 C                            (1) Symm. transition density matrix
 C                            (2) Kramers symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      &                             VMUUUU(K,L,I,J,2)
      $                             - VMUUUU(L,K,J,I,2)
@@ -722,15 +722,15 @@ C
      $                             + VMUUUU(LTR,K,J,ITR,2)
      $                             - VMUUUU(J,ITR,LTR,K,2)
                            ELSE
-C     
+C
 C                            (1) Symm. transition density matrix
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      &                             VMUUUU(K,L,I,J,2)
      $                             - VMUUUU(L,K,J,I,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      &                             VMUUUU(K,LTR,I,JTR,2)
-     &                             - VMUUUU(LTR,K,JTR,I,1) 
+     &                             - VMUUUU(LTR,K,JTR,I,1)
                               VDUUUU(KK,LL,IJ,2,3) =
      &                             VMUUUU(KTR,L,I,JTR,2)
      &                             - VMUUUU(L,KTR,JTR,I,2)
@@ -739,10 +739,10 @@ C
                      ELSE
                         IF (PSYMM) THEN
                            IF (KSYMM) THEN
-C     
+C
 C                            (1) Particle symmetrization
 C                            (2) Kramers symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
      $                             + VMUUUU(I,J,K,L,2)
@@ -771,9 +771,9 @@ C
      $                             + VMUUUU(LTR,K,J,ITR,2)
      $                             + VMUUUU(J,ITR,LTR,K,2)
                            ELSE
-C     
+C
 C                            (1) Particle symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
      $                             + VMUUUU(I,J,K,L,2)
@@ -786,9 +786,9 @@ C
                            END IF
                         ELSE
                            IF (KSYMM) THEN
-C     
+C
 C                            (1) Kramers symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
      $                             + VMUUUU(LTR,KTR,I,J,2)
@@ -805,9 +805,9 @@ C
      $                             - VMUUUU(KTR,L,J,ITR,2)
      $                             + VMUUUU(LTR,K,J,ITR,2)
                            ELSE
-C     
+C
 C                             No symmetrization
-C     
+C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
                               VDUUUU(KK,LL,IJ,2,2) =
@@ -856,7 +856,7 @@ C
       END IF
 C
       RETURN
-      END 
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dnz32m */
       SUBROUTINE DNZ32M(VDUUUU,VMUUUU,IPRINT)
@@ -866,7 +866,7 @@ C     Transform a UUUU matrix in Dirac (NZ,3) format to a UUUU matrix
 C     in Molfdir format.
 C
 C     Written by J. Thyssen - Nov 20 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1066,7 +1066,7 @@ C                       (lK|JI) = (lK|ij)
                         VMUUUU(L,KTR,J,I,2) = VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
-C                    (KL|iJ) = (lk|iJ) 
+C                    (KL|iJ) = (lk|iJ)
 C
                      VMUUUU(K,L,ITR,J,1) = VDUUUU(KK,LL,IJ,3,1)
                      VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
@@ -1104,7 +1104,7 @@ C
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
-     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT) 
+     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MIN(2,NZ))
                   END DO
@@ -1114,7 +1114,7 @@ C
       END IF
 C
       RETURN
-      END 
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck chkmlf */
       SUBROUTINE CHKNZ3R(VDUUUU)
@@ -1129,7 +1129,7 @@ C     Output:
 C       None
 C
 C     Written by J. Thyssen - Jan 21 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1186,7 +1186,7 @@ C
       END DO
       RETURN
       END
-C     
+C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
 #include "priunit.h"
 #include "implicit.h"
@@ -1203,7 +1203,7 @@ C
       END IF
       RETURN
       END
-                  
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck chkmlf */
       SUBROUTINE CHKNZ3(VDUUUU,WORK,LWORK)
@@ -1218,7 +1218,7 @@ C     Output:
 C       None
 C
 C     Written by J. Thyssen - Jan 21 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1288,7 +1288,7 @@ C        KR: KR(I)  gives unparred orbital number
 C            KR(-I) gives parrred orbital number
 C
 C     Written by J. Thyssen - Jan 18 2001
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1381,7 +1381,7 @@ C
 
                   KTR = KR(-KK)
                   LTR = KR(-LL)
-            
+
 C
 C                 Canonical integrals (I>=J)
 C                 (kl|ij), (kL|iJ), (Kl|iJ)
@@ -1527,7 +1527,7 @@ C                       (lK|JI) = (lK|ij)
                         VMUUUU(L,KTR,J,I,2) = VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
-C                    (KL|iJ) = (lk|iJ) 
+C                    (KL|iJ) = (lk|iJ)
 C
                      VMUUUU(K,L,ITR,J,1) = VDUUUU(KK,LL,IJ,3,1)
                      VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
@@ -1565,7 +1565,7 @@ C
                DO J = 1,2*NASHT
                   DO I = 1,2*NASHT
                      IF ( ABS(VMUUUU(I,J,K,L,1)) .GT. THROUT .OR.
-     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT) 
+     &                    ABS(VMUUUU(I,J,K,L,2)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,MIN(2,NZ))
                   END DO
@@ -1575,5 +1575,5 @@ C
       END IF
 C
       RETURN
-      END 
+      END
 #endif

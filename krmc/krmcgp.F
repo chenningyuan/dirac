@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -39,7 +39,7 @@ C     Input:
 C        VCL   : elements in (*,NCLASS) format
 C        NELEM : # of elements
 C        IREPIJ: irep of VCL
-C       
+C
 C     Output:
 C        VNZ3  : elements in (*,NZ,3) format
 C
@@ -47,8 +47,8 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dgroup.h"     
-#include "dcbham.h"     
+#include "dgroup.h"
+#include "dcbham.h"
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
       DIMENSION VNZ3(NELEM,NZ,3)
@@ -158,7 +158,7 @@ C
       END IF
 C
       ENDIF ! spinfree
-C     
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -173,10 +173,10 @@ C*****************************************************************************
 #include "maxash.h"
 #include "maxorb.h"
 C
-#include "dgroup.h"     
-#include "dcbopt.h"     
-#include "dcborb.h"     
-#include "pgroup.h"     
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "pgroup.h"
 #include "dcbidx.h"
 C
 C
@@ -207,7 +207,7 @@ C
 C     Input:
 C        GUINT: (gu) integrals
 C        NORBI,NASHI: dimensions
-C       
+C
 C     Output:
 C        UGINT: (ug) integrals.
 C
@@ -217,10 +217,10 @@ C*****************************************************************************
 #include "maxash.h"
 #include "maxorb.h"
 C
-#include "dgroup.h"     
-#include "dcbopt.h"     
-#include "dcborb.h"     
-#include "pgroup.h"     
+#include "dgroup.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "pgroup.h"
 #include "dcbidx.h"
 C
 C
@@ -291,7 +291,7 @@ C
 C     Input:
 C        GUINT: (gu) integrals
 C        NORBI,NASHI: dimensions
-C       
+C
 C     Output:
 C        UGINT: (ug) integrals.
 C
@@ -301,8 +301,8 @@ C*****************************************************************************
 C
 #include "consts.h"
 C
-#include "dgroup.h"     
-#include "pgroup.h"     
+#include "dgroup.h"
+#include "pgroup.h"
 C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
@@ -320,7 +320,7 @@ C
 C     (pq) = p^{\dagger}q = (a^* b^*) (c d)^T = a^* c  + b^* d
 C     (qp) = q^{\dagger}p = (c^* d^*) (a b)^T = c^* a  + d^* d = (pq)^*
 C
-C     (pQ) = p^{\dagger}Q = (a^* b^*) (-d^* c^*)^T 
+C     (pQ) = p^{\dagger}Q = (a^* b^*) (-d^* c^*)^T
 C                         = - a^* d^* + b^* c^*
 C     (qP) = q^{\dagger}P = (c^* d^*) (-b^* a^*)^T
 C                         = - c^* b^* + d^* a^* = - (pQ)
@@ -334,11 +334,11 @@ C
       DO IREPAB = 0, NBSYM - 1
          IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
             IREPABR = IREPABR + 1
-C           
+C
             DO IZ2 = 1,NZ
-C              
+C
                IQ2 = IPQTOQ(IZ2,IREPAB)
-C              
+C
                IF (IQ2 .EQ. 1) THEN
 C                 ...symmetric (scale block with 1)
 C                 no-op
@@ -350,7 +350,7 @@ C                 ...anti symmetric (scale block with -1)
             END DO
          END IF
       END DO
-C     
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -401,7 +401,7 @@ C
 C
          IF (NZ .GE. 2) THEN
 C
-C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq)) + 
+C           Im(pq|rs) = Im(rs|pq) = (Re(rs)|Im(pq)) + (Im(rs)|Re(pq)) +
 C                                       +(1,2)            +(2,1)
 C
             IFAC(2,1,1,2) = +1
@@ -471,7 +471,7 @@ C
 C     Unpack packed integrals from HB to HF.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -483,14 +483,14 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
 C
       CALL DZERO(HX,N2ORBXQ)
 C
       IF (.NOT. OPT_NOPFQ) THEN
-C        
+C
          DO IZ1 = 1, NZ
             IKL = 1
             DO IREPL = 1, NFSYM
@@ -504,7 +504,7 @@ C
          END DO
 C
       ELSE
-C        
+C
          DO IZ1 = 1, NZ
             IKL = 1
             DO IREPL = 1, NFSYM
@@ -529,7 +529,7 @@ C
 C     Unpack packed integrals from HT to HX.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -541,7 +541,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ,NZ,*)
 C
@@ -565,7 +565,7 @@ C        Do symmetrization:
 C
          DOFULL = .TRUE.
 C
-      ELSE 
+      ELSE
 C
 C        HT is symmetry-packed (gg), (ge), or (ee) integrals.
 C
@@ -574,7 +574,7 @@ C
 C           (ee) integrals.
 C
 C           (ee) is a ``symmetric'' index so don't symmetrize matrix.
-C           
+C
             DOFULL = .FALSE.
 C
          ELSE IF (.NOT. OPT_NOPFQ) THEN
@@ -582,7 +582,7 @@ C
 C           (gg) integrals.
 C
 C           (gg) is a ``symmetric'' index so don't symmetrize matrix.
-C           
+C
             DOFULL = .FALSE.
 C
 C
@@ -648,7 +648,7 @@ C
 C     Unpack packed integrals from HB to HF.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -660,7 +660,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION GUINT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
 C
@@ -713,7 +713,7 @@ C     Pack integrals from HT into HX.
 C     I.e. go from dimensioning N2ORBTQ to N2ORBXQ.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -725,13 +725,13 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
 C
 C
       IF (.NOT. OPT_NOPFQ) THEN
-C        
+C
          DO IZ1 = 1, NZ
             CALL DZERO(HT(1,IZ1,IZ2,IREPABR),NKL)
             IKL = 1
@@ -747,7 +747,7 @@ C
          END DO
 C
       ELSE
-C        
+C
          DO IZ1 = 1, NZ
             CALL DZERO(HT(1,IZ1,IZ2,IREPABR),NKL)
             IKL = 1
@@ -775,7 +775,7 @@ C
 C     Pack full (gg) matrix into symmetry packed (gu) matrix.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -787,7 +787,7 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION HT(NKL,NZ,NZ,*)
       DIMENSION HX(NORBT,NORBT,NZ)
 C
@@ -991,9 +991,9 @@ C
       C2SUM = D0
 C
       IF (VSCALE) THEN
-         WRITE(LUOUT,9000) 
+         WRITE(LUOUT,9000)
       ELSE
-         WRITE(LUOUT,9001) 
+         WRITE(LUOUT,9001)
       END IF
  9000 FORMAT(5X,'Element',3X,'Coefficient (scaled to unit norm)',
      &     /,1X,78('-'))
@@ -1223,7 +1223,7 @@ C
       CALL GTOVLX(WORK(KSAO),D1,WORK(KFREE),LFREE)
 C
 C     Gram-Schmidt orthogonalize coefficients
-C     
+C
       DO I = 1, NFSYM
          CALL MEMGET('REAL',KSCR1,NFBAS(I,0)*NZ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KSCR2,NORB(I),WORK,KFREE,LFREE)
@@ -1369,7 +1369,7 @@ C
 C     Approximate positronic part of FQ with (DV*FV).
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1380,7 +1380,7 @@ C
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-C     
+C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION DV(NASHT,NASHT,NZ)
       DIMENSION FV(NORBT,NORBT,NZ)
@@ -1404,7 +1404,7 @@ C
       END IF
 C
       IF (CTL .EQ. 'P') THEN
-C        
+C
 C        We are called to generate the positronic part of FQ.
 C
          DO I = 1, NFSYM
@@ -1421,7 +1421,7 @@ C
       ELSE IF (CTL .EQ. 'G') THEN
 C
 C        We are called to generate the whole FQ.
-C     
+C
          DO I = 1, NFSYM
             CALL QGEMM(NORB(I),NASH(I),NASH(I),D1,
      &           'N','N',IPQTOQ(1,0),

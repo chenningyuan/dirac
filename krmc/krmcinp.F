@@ -1,3 +1,33 @@
+C
+C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
+C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
+C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmcinp */
       SUBROUTINE KRMCINP(WORD,RESET,WORK,LWORK)
@@ -6,7 +36,7 @@ C
 C     Input section for KRMSCF-module
 C
 C     Written by J. Thyssen - Oct 26 1998
-C     Last revision: 
+C     Last revision:
 C         Max. no. of active orbitals only for GOSCI
 C                T. Fleig   - May 24, 2002
 C
@@ -168,7 +198,7 @@ C&&& PRINT : General print level in KRMC-module
                   READ(LUCMD,*) IPRKRMC
                GO TO 100
     3          CONTINUE
-C&&& MAX MACRO ITERATIONS: Maximum number of macro iterations 
+C&&& MAX MACRO ITERATIONS: Maximum number of macro iterations
                     READ(LUCMD,*) MKRMC_MXMACRO
                GO TO 100
     4          CONTINUE
@@ -194,7 +224,7 @@ C&&& .MAX BACKSTEPS : max. number of backsteps
                READ(LUCMD,*) MKRMC_MAXBCK
                GO TO 100
    10          CONTINUE
-C&&& .MAKE COFFEE: 
+C&&& .MAKE COFFEE:
                WRITE(LUPRI,'(1X,A)')
      &              '*** ERROR in KRMCINP *** ',
      &              'Don''t know how to make coffee yet!'
@@ -226,7 +256,7 @@ C&&& NO CI : debug flag: no CI rotations.
                KRMC_NOCI = .TRUE.
                GO TO 100
    17          CONTINUE
-C&&& THRPCI: 
+C&&& THRPCI:
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
@@ -252,8 +282,8 @@ C&&& GASSH: GAS setup
                   END IF
                   READ(LUCMD,*) NKRMCGAS
                   IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
-                     CALL QUIT('*** ERROR in KRMCINP *** ' // 
-     &                         'illegal value of NGAS')  
+                     CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &                         'illegal value of NGAS')
                   END IF
                   DO I = 1, NKRMCGAS
                      READ(LUCMD,*) (NKRMCGSH(J,I),J=1,NFSYM)
@@ -400,7 +430,7 @@ C
      &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
          DO I = 1, NKRMCGAS
             WRITE(LUPRI,'(A,I3,A,2I4)')
-     &           ' * GAS space ',I,'       : ',
+     &           '   - GAS space ',I,'       : ',
      &           (NKRMCGSH(J,I),J=1,NFSYM)
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
@@ -418,10 +448,10 @@ C
      &     ' * State number          : ',IKRMC_ISTATE
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRMC_CIPROGRAM
-C     
+C
 C     Symmetry of the wave function:
 C     ------------------------------
-C     
+C
       IF ( MOD ( NKRMCAELEC, 2 ) .EQ. 0 ) THEN
          WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (boson) of wave function: ',
@@ -430,7 +460,7 @@ C
          WRITE(LUPRI,'(2A)')
      &        ' * Symmetry (fermion) of wave function: ',
      &        FREP ( IKRMC_SYMMETRY - NBSYM )
-      END IF 
+      END IF
 C
 C     MK constraints in the CI expansion.
 C
@@ -479,9 +509,9 @@ C
       WRITE(LUPRI,'(A,1P,D15.6)')
      +   ' * Convergence threshold               : ',DKRMC_THRGRD
       IF (MCFLAG(1) .AND. MCFLAG(2)) MCFLAG(1) = .FALSE.
-      IF (MCFLAG(1)) WRITE(LUPRI,'(A)') 
+      IF (MCFLAG(1)) WRITE(LUPRI,'(A)')
      &   ' * Only Newton-Raphson iterations.'
-      IF (MCFLAG(2)) WRITE(LUPRI,'(A)') 
+      IF (MCFLAG(2)) WRITE(LUPRI,'(A)')
      &   ' * Only NEO iterations.'
       WRITE(LUPRI,'(A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
@@ -543,7 +573,7 @@ C
 C     Input section for STEP CONTROL-module
 C
 C     Written by J. Thyssen - Nov 11 1998
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
@@ -843,7 +873,7 @@ C&&& .NO FQXT: no FQX and FQT (approximate with DV * FV)
    13          CONTINUE
                GO TO 100
    14          CONTINUE
-C&&& .CIROOT: Number of CI roots to be optimized 
+C&&& .CIROOT: Number of CI roots to be optimized
 C             Program stops after start guess if > 1
                   READ(LUCMD,*) NCIROOT
                GO TO 100
@@ -940,7 +970,7 @@ C
      &        '(if necesary)'
          IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI, '(1X,A)' )
      &        '* Do not call RTRACI for transformation of CI vectors.'
-C        
+C
          IF ( FOCKON ) THEN
             WRITE(LUPRI, '(1X,A)' )
      &           '  - transform to Fock-type orbitals.'
@@ -969,10 +999,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck optini */
       SUBROUTINE OPTINI()
 C***********************************************************************
-C     
+C
 C     Initialize data in dcbopt.h
 C     Written by J. Thyssen - Nov 11 1998
-C     Last revision: 
+C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"

@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -38,9 +38,9 @@ C     Save info on LUKRMC
 C
 C     Input:
 C        IOPT    - option (current only 0 supported)
-C     
+C
 C     Written by J. Thyssen - Nov 26 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -56,7 +56,7 @@ C
       DIMENSION CMO(*), CREF(*)
       DIMENSION WORK(*)
       LOGICAL   FNDLAB, FND, RTRACI
-C     
+C
       CHARACTER CNOLBL*6
 C
       CALL QENTER('KRMCSAV')
@@ -69,10 +69,10 @@ C     (2) RESTART : info needed for restart
 C     (3) LREDUCED: info needed for backsteps
 C     (4) CREF    : new CI vector
 C     (5) NEWORB  : new MO orbitals
-C 
+C
 C     Clean LUKRMC
 C     ------------
-C     
+C
       REWIND(LUKRMC)
       FND = FNDLAB('SODLABEL',LUKRMC)
       BACKSPACE LUKRMC
@@ -125,7 +125,7 @@ C     (4) - (5) CREF and NEWORB
 C     -------------------------
 C
 C     Rotate to get new CREF and CMO
-C     
+C
       EVALR = D0
       CALL GTNORB(CMO,CREF,WORK(KIBTYP),
      &     WORK(KIBCVC),WORK(KIBEVC),WORK(KIBPVC),
@@ -134,7 +134,7 @@ C
 C     Rotate to Fock type and/or natural orbitals.
 C
       IF (IKRMCCNO .GE. -1) THEN
-C        
+C
 C
          IF (NATONL) THEN
             CNOLBL = 'ONLYNO'
@@ -143,13 +143,13 @@ C
          ELSE
             CNOLBL = 'FD+NO'
          END IF
-C        
+C
          IF (IKRMCCNO .EQ. -1) THEN
             RTRACI = .FALSE.
          ELSE
             RTRACI = .TRUE.
          END IF
-C        
+C
          CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,WORK,KFREE,LFREE)
 C
       END IF

@@ -1,37 +1,67 @@
+C
+C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
+C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
+C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C
       SUBROUTINE KRMCVEC(IBTYP,IBCVC,IBEVC,IBPVC,EVALR,EVECR,
      &     DKAPPA,CREF,WORK,LWORK)
 C*****************************************************************************
-C     
-C     Form the response vectors and write them to file given the 
-C     solutions from the reduced system of trial vectors. 
-C     
+C
+C     Form the response vectors and write them to file given the
+C     solutions from the reduced system of trial vectors.
+C
 C     Originally written by panor 1998
 C     Modified by jth Nov 24 1998: write to LUKRMC instead.
-C     
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C     
+C
 #include "consts.h"
-C     
+C
 #include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-C     
+C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
      &     IBPVC(*),EVALR(*),EVECR(NREDM,*),DKAPPA(*)
       DIMENSION CREF(*)
       DIMENSION WORK(*)
-C     
+C
 #include "memint.h"
-C     
+C
       CALL QENTER('KRMCVEC')
-C     
+C
 C     Solution vector - orbital (e-e) part
-C     
+C
       IF(NZXOPE.GT.0) THEN
          CALL MEMGET('REAL',KBBUF,NZXOPEQ,WORK,KFREE,LFREE)
          OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
@@ -41,9 +71,9 @@ C
          CLOSE(LUBOE,STATUS='KEEP')
          CALL MEMREL('KRMCVEC.e-e',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
-C     
+C
 C     Solution vector - orbital (e-p) part
-C     
+C
       IF(NZXOPP.GT.0) THEN
          CALL MEMGET('REAL',KBBUF,NZXOPPQ,WORK,KFREE,LFREE)
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
@@ -53,9 +83,9 @@ C
          CLOSE(LUBOP,STATUS='KEEP')
          CALL MEMREL('KRMCVEC.e-p',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
-C     
+C
 C     Solution vector - conf. part
-C     
+C
       IF ( NZCONF .GT. 0 ) THEN
          CALL MEMGET('REAL',KBBUF,NZCONFQ,WORK,KFREE,LFREE)
          OPEN(LUBCI,FILE='PAMBCI',FORM='UNFORMATTED',
@@ -65,18 +95,18 @@ C
          CLOSE(LUBCI,STATUS='KEEP')
          CALL MEMREL('KRMCVEC.conf',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
-C     
+C
 C     Write to KAPPA to LUKRM1:
-C     
+C
       REWIND(LUKRM1)
-C     
+C
 C     Scale with .5 (Y+Z=2Y is saved from xrs)
 C     ...and scale with 4 from new RSP code.
-C     
+C
 c     CALL DSCAL(NZXOPTQ,D4,DKAPPA,1)
       CALL WRITT(LUKRM1,NZXOPTQ,DKAPPA)
-C     
-C     
+C
+C
       CALL QEXIT('KRMCVEC')
       RETURN
       END
@@ -84,8 +114,8 @@ C
      &     EVALR,EVECR,XPO,BBUF,NZXPAR)
 C*****************************************************************************
 C
-C     Form the response vectors and write them to file given the 
-C     solutions from the reduced system of trial vectors. 
+C     Form the response vectors and write them to file given the
+C     solutions from the reduced system of trial vectors.
 C
 C     LRF    = linear response funtion values
 C     NZXPAR = length of response vector
@@ -97,11 +127,11 @@ C     NFREQ  = number of frequencies (input)
 C     IBTYP  = type of B trial vectors, dim=2*NREDM (input)
 C     IBVEC  = pointers to electron/positron like trial vectors (input)
 C     BBUF   = extra space of response vector length
-C     LUBVEC = unit number of direct access file for the trial vectors 
+C     LUBVEC = unit number of direct access file for the trial vectors
 C     INDPRP = pointer to the property for which response is evaluated
-C     RSPTYP = string indicating what order response function the 
+C     RSPTYP = string indicating what order response function the
 C              linear response vectors are used for, either equal to
-C              'QRVEC' or 'CRVEC' for quadratic or cubic response (to be 
+C              'QRVEC' or 'CRVEC' for quadratic or cubic response (to be
 C              implemnted).
 C
 C     Written by panor 1998

@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -48,7 +48,7 @@ C        UNO   - transformation matrix
 C        MOISNO - MO orbitals was already NO orbitals.
 C
 C     Written by J. Thyssen - Dec 21 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -238,12 +238,12 @@ C
                END IF
 C
  10         CONTINUE
-C            
+C
             MOISNO = .TRUE.
             CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
          ENDIF
       ENDIF
-C      
+C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETNO')
       RETURN
@@ -263,7 +263,7 @@ C     Output:
 C        CREF, CMO - transformed quantities.
 C
 C     Written by J. Thyssen - Mar 4 2000
-C     Last revision : 
+C     Last revision :
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -365,79 +365,79 @@ C
       CALL MEMGET('REAL',KEIGVC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFV,N2ORBXQ,WORK,KFREE,LFREE)
-C     
-C     
+C
+C
 C     Calculate Fock matrices
 C     -----------------------
-C     
+C
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
      &     WORK(KFREE),LFREE)
 C     CALL RFCKMAT(DV,CMO,EMCMY,EMCACT,FC,FV,WORK,LWORK)
       write(6,*) 'eix ',eix
-C     
+C
 C     Calculate FD
-C     
+C
       CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFC),1)
-C     
+C
       IF (TRTOCO) THEN
-C        
+C
 C        Extract active-active part of FD for RTRACI.
-C        
+C
          CALL RGETAC(WORK(KFC),WORK(KDV),IPROPT)
 C        CALL RGETAC(FD,FDAC,IPRINT)
-C        
+C
       END IF
-C     
+C
 C     Zero inter-shell coupling-blocks.
 C     ---------------------------------
-C     
+C
 C     e-p and p-e:
-C     
+C
       DO I = 1, NFSYM
          J1MO(I) = IORB(I) + NPSH(I) + 1
          N1MO(I) = NESH(I)
          J2MO(I) = IORB(I) + 1
          N2MO(I) = NPSH(I)
       END DO
-C     
+C
       CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
       CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
-C     
+C
 C     i-{u,a}, {u,a}-i:
-C     
+C
       DO I = 1, NFSYM
          J1MO(I) = IORB(I) + NPSH(I) + NISH(I) + 1
          N1MO(I) = NASH(I) + NSSH(I)
          J2MO(I) = IORB(I) + NPSH(I) + 1
          N2MO(I) = NISH(I)
       END DO
-C     
+C
       CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
       CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
-C     
+C
 C     u-a, a-u:
-C     
+C
       DO I = 1, NFSYM
          J1MO(I) = IORB(I) + NPSH(I) + NOCC(I) + 1
          N1MO(I) = NSSH(I)
          J2MO(I) = IORB(I) + NPSH(I) + NISH(I) + 1
          N2MO(I) = NASH(I)
       END DO
-C     
+C
       CALL BLKZERO(J1MO,N1MO,J2MO,N2MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
       CALL BLKZERO(J2MO,N2MO,J1MO,N1MO,WORK(KFC),NORBT,NORBT,
      &     NZ,NFSYM,1)
-C     
-C     
+C
+C
 C     Diagonalize FD
 C     --------------
-C     
-C     
+C
+C
       IF (NZ .EQ. 1) THEN
          IJOB = 1
          IORDER = 0
@@ -456,24 +456,24 @@ C
             CALL QUIT('*** ERROR in RGETNO ***')
          END IF
       END IF
-C     
+C
       CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFC,KFREE,LFREE)
-C     
+C
 C     Transform orbitals
 C     ------------------
-C     
+C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
-C     
+C
       DO I = 1, NFSYM
-C        
+C
 C        CMO(new) = CMO(old) * EIGVC
-C        
+C
          NBASI = NFBAS(I,0)
          NORBI = NORB(I)
-C        
+C
 C        Transform all orbitals
-C        
+C
          CALL QGEMM(NBASI,NORBI,NORBI,D1,
      &        'N','N',IPQTOQ(1,0),
      &        WORK(KCMO+ICMOQ(I)),NBASI,NORBI,NZ,
@@ -481,19 +481,19 @@ C
      &        WORK(KEIGVC+I2ORBX(I,I)),NORBT,NORBT,NZ,
      &        D0,IPQTOQ(1,0),
      &        CMO(1+ICMOQ(I)),NBASI,NORBI,NZ)
-C        
+C
 C        Copy back active orbitals
-C        
+C
          ICMOA = ICMOQ(I) + (NPSH(I)+NISH(I)) * NBASI
          CALL DCOPY(NBASI*NASH(I),WORK(KCMO+ICMOA),1,
      &        CMO(1+ICMOA),1)
 C
       END DO
-C     
+C
 C     Deallocate everything but the density matrix.
 C
       CALL MEMREL('RKRMCCNO.after FD rot',WORK,1,KEIG,KFREE,LFREE)
-C     
+C
  1000 CONTINUE
 C
 C
@@ -502,7 +502,7 @@ C     *** Transform to natural orbitals ***
 C     *************************************
 C
       IF (.NOT. TRTOCO) GOTO 2000
-C     
+C
 C
       call quit('*** ERROR in KRMCCNO ***' //
      &     'TRTOCO not implemeted yet!')
@@ -557,12 +557,12 @@ C     ------------------
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
-C     
+C
       DO I = 1, NFSYM
          IF (NASH(I) .NE. 0) THEN
-C           
+C
 C           CMO(NO) = CMO * UNO
-C           
+C
             NBASI = NFBAS(I,0)
             NASHI = NASH(I)
             NORBI = NORB(I)
@@ -574,7 +574,7 @@ C
      &           WORK(KEIGVC+I2ASHX(I,I)),NASHT,NASHT,NZ,
      &           D0,IPQTOQ(1,0),
      &           CMO(ICMOA),NBASI,NORBI,NZ)
-C           
+C
          END IF
       END DO
 C

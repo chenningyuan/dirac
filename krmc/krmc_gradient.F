@@ -1,3 +1,33 @@
+C
+C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   "Dirac, a relativistic ab initio electronic structure program,
+C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
+C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C
+C
+C VERSION : $Revision$
+C DATE    : $Date$
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgrdinf */
       SUBROUTINE RGRDINF(GCI,GOEE,GOEP)
@@ -18,7 +48,7 @@ C                  (4) total orbital gradient norm
 C                  (5) total norm
 C
 C     Written by J. Thyssen - Nov 3 1998
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -76,7 +106,7 @@ C     Output:
 C        GCI     - CI gradient
 C
 C     Written by J. Thyssen - Nov 20 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -107,7 +137,7 @@ C
 C
 C     Consistency check of active energy
 C     ----------------------------------
-C         
+C
       DNZCONF = NZCONF
       DIFFOK = SQRT(DNZCONF) * THRZER
       IF ( ABS (EMCACT) .GT. THRZER)
@@ -150,7 +180,7 @@ C     Output:
 C        GCI     - CI gradient
 C
 C     Written by J. Thyssen - Nov 20 2000
-C     Last revision : 
+C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
@@ -348,7 +378,7 @@ C
 C     E^{[2]c^*c}_{\mu,\mu} = <\mu|H|\mu> - E[0]
 C        - ( g_{\mu}^* C_{\mu}^* + C_{\mu} g_{\mu} ) =
 C
-C     E^{[2]c^*c}_{\mu,\mu} = <\mu|H|\mu> - E[0] 
+C     E^{[2]c^*c}_{\mu,\mu} = <\mu|H|\mu> - E[0]
 C        - 2 Re ( g_{\mu} C_{\mu} )
 C
       DO I = 1, NZCONF
@@ -386,7 +416,7 @@ C     Output:
 C       GR - reordered gradient
 C
 C     Written by J. Thyssen - Jan 19 2001
-C     Last revision : 
+C     Last revision :
 C
 C
 C***********************************************************************
@@ -431,7 +461,7 @@ C     Output:
 C       G - gradient
 C
 C     Written by J. Thyssen - Jan 19 2001
-C     Last revision : 
+C     Last revision :
 C
 C
 C***********************************************************************

@@ -14,15 +14,15 @@ C...
 C...   In particular, no part of the source code or compiled modules may
 C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
-C...   group of the licence holder may not take any part of Dalton,
+C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
 C
 C
 C VERSION : $Revision$
@@ -76,7 +76,7 @@ C
       CHARACTER*72 TITLEC(3)
 C
 C***********************
-C  Mandatory settings 
+C  Mandatory settings
 C***********************
 C
 C 1:  TITLE
@@ -125,7 +125,7 @@ C 2:  Double group
       NIRR_DG_LOC = NIRREP
 C
 C 18: Reference symmetry
-      CALL LUCI_TRAVA(CIRUN,'IREFSM',IREFSM,DUMMY) 
+      CALL LUCI_TRAVA(CIRUN,'IREFSM',IREFSM,DUMMY)
 C
 C 19: Roots to be obtained
       CALL LUCI_TRAVA(CIRUN,'ROOTCI',NROOT,DUMMY)
@@ -139,13 +139,13 @@ C 23: Restart option
 C
 C 24: Integral environment
       INTIMP = 7
-      ENVIRO(1:6) = 'DIRAC '      
+      ENVIRO(1:6) = 'DIRAC '
 C
 C 25: Integrals all held in memory
       INCORE = 1
 C
 C 29-32,36,43,65,89,90,98: All kinds of internal print flags
-C     FIXME: The following rescaling should be adapted to the 
+C     FIXME: The following rescaling should be adapted to the
 C            new (when implemented) print flag system in the
 C            KRMC! The current is for interface debugging only.
 C            Timo
@@ -250,7 +250,7 @@ C 95: Wave function analysis
       CALL LUCI_TRAVA(CIRUN,'IPRWFC',IPRWFC,DUMMY)
 C
 C***********************
-C  Default settings 
+C  Default settings
 C***********************
 C
 C  6: Number of active electrons and 2-el. routine calls (sigma)
@@ -291,12 +291,12 @@ C
 C 68: Final orbitals are computed externally (KRMC).
 C     No iterative natural spinors.
       IFINMO = 0
-      NATITER = 1 
+      NATITER = 1
 C
 C 73: No class selection performed.
       ICLSSEL = 0
 C
-C 77: Restart option 
+C 77: Restart option
 C     Restarting is determined from the outside (sigma, density),
 C     so set to default value
       IRST2 = 1         ! sic
@@ -310,7 +310,7 @@ C
 C 86: No initial integral transformation (done with moltra).
       ITRANS = 0
 C
-C 93: External Fock matrix always assumed. Specification not allowed 
+C 93: External Fock matrix always assumed. Specification not allowed
 C     in DIRAC environment.
       IFOCKEX = 0
 C
@@ -368,7 +368,7 @@ C
           else
             WRITE(LUPRI,'(A)')
      &  '         Dirac-Coulomb Hamiltonian        '
-          end if 
+          end if
         end if
         if (ISO1.eq.0.and.ISO2.eq.0.and.ENVIRO(1:6).eq.'DIRAC ') then
           write(LUPRI,'(A)')
@@ -853,7 +853,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_TRAVA(CIRUN,CTLSTR,IVAR,DVAR)     
+      SUBROUTINE LUCI_TRAVA(CIRUN,CTLSTR,IVAR,DVAR)
 C***********************************************************************
 C
 C     Translate a variable given as CTLSTR
@@ -914,8 +914,8 @@ C
 C        LUCIAREL  start on CI vectors?
 C
 C        For the initial CI iterations LUCIAREL shouldn't
-C        start from vectors on file (except if IRESTRK = 1); 
-C        for sigma-vectors or density matrices LUCIAREL should 
+C        start from vectors on file (except if IRESTRK = 1);
+C        for sigma-vectors or density matrices LUCIAREL should
 C        (re)start from vectors on file. In the density matrix case,
 C        IRESTR = 0 and the CI vectors are placed on the files
 C        required by LUCIAREL.
@@ -956,10 +956,10 @@ C
 C        Also check max dimension same in krmc and luciarel
 C
          IF (MXPNGAS .NE. MXMCGAS) THEN
-            WRITE(LUPRI,*) '*** ERROR *** ' // 
+            WRITE(LUPRI,*) '*** ERROR *** ' //
      &                'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC):',
      &                 MXPNGAS,MXMCGAS
-            CALL QUIT('*** ERROR *** ' // 
+            CALL QUIT('*** ERROR *** ' //
      &                'MXPNGAS (LUCIAREL) .ne. MXMCGAS (DIRAC)')
          END IF
 C
@@ -1001,7 +1001,7 @@ C
 C              To get correct Fermion symmetry labeling in
 C              LUCIAREL we need to specify same(!) gerade boson
 C              irrep for all gerade orbitals and same ungerade
-C              boson irrep for all ungerade orbitals (note: which 
+C              boson irrep for all ungerade orbitals (note: which
 C              gerade or ungerade boson irrep we choose doesn't
 C              matter).
                IF (IFSYM.EQ.1) THEN
@@ -1107,14 +1107,14 @@ C
          GOTO 100
       END IF
 C
-C     Reference value for 2*M_K    
+C     Reference value for 2*M_K
 C
       IF (CTLSTR .EQ. 'MK2REF') THEN
          IVAR(1) = MK2REF
          GOTO 100
       END IF
 C
-C     Reference value for 2*DeltaM_K    
+C     Reference value for 2*DeltaM_K
 C
       IF (CTLSTR .EQ. 'MK2DEL') THEN
          IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL.eq.0) THEN
@@ -1155,7 +1155,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_SETUP()      
+      SUBROUTINE LUCI_SETUP()
 C***********************************************************************
 C
 C     Set up starting information for LUCIAREL
@@ -1381,7 +1381,7 @@ C
             Call Abend2( 'Quitting.' )
 *
           END IF
-*         ^ End of special handling of restarted calc with 
+*         ^ End of special handling of restarted calc with
 *           lambda modified op.
 *
           ISKIPEI_INI = ISKIPEI
@@ -1399,11 +1399,11 @@ C
      &      ' =============================================='
             WRITE(6,*)
             WRITE(6,'(A,I3)')
-     &      ' Number of calculation in this CI space ', 
+     &      ' Number of calculation in this CI space ',
      &        NSEQCI(JCMBSPC)
 *
             IF(IRESTR.EQ.1.AND.XLAMBDA.NE.1.0D0.AND.JCMBSPC.EQ.1) THEN
-              WRITE(6,*) 
+              WRITE(6,*)
      &              ' Remember No restart in calc 1 (Lambda calc)'
               IRESTR = 0
               Call Abend2( 'Quitting.' )
@@ -1424,7 +1424,7 @@ C
             IF(JCMBSPC.EQ.2.AND.IRESTR_ORIG.EQ.1
      &                     .AND.XLAMBDA.NE.1.0D0)  THEN
               WRITE(6,*) ' Restart vectors will be copied to LUC'
-              WRITE(6,*) 
+              WRITE(6,*)
      &              ' CI will restart with vectors from prev. calc'
               IF(ICISTR.EQ.1) THEN
                 LBLK = XISPSM(IREFSM,2)
@@ -1527,10 +1527,10 @@ c           CALL FINMO_REL
 #endif
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_TASK(CIRUN)      
+      SUBROUTINE LUCI_TASK(CIRUN)
 C***********************************************************************
 C
-C     Introduce LUCIAREL action.         
+C     Introduce LUCIAREL action.
 C
 C     Written by  T. Fleig         - Nov 09 2001
 C
@@ -1606,7 +1606,7 @@ C
       return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_NDET(NDET,ISYM,WORK,LWORK)      
+      SUBROUTINE LUCI_NDET(NDET,ISYM,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate number of determinants.
@@ -1646,7 +1646,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LUCI_RCIST(CREF,CMO,WORK,LWORK)      
+      SUBROUTINE LUCI_RCIST(CREF,CMO,WORK,LWORK)
 C***********************************************************************
 C
 C     CI start guess.
@@ -1775,7 +1775,7 @@ C
       IF (MAXCIT.LT.0) THEN
         CALL QUIT (' Normal STOP after LUCIAREL CI.')
       ELSE
-        IF (NCIROOT.GE.2) 
+        IF (NCIROOT.GE.2)
      &  CALL QUIT (' I am not allowed to do multi-root MCSCF, yet.')
       END IF
 C
@@ -1891,7 +1891,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_DENS(CALCR1,CALCR2,RHO1,RHO2,CREFL,CREFR,
-     &                     WORK,KFREE,LFREE)      
+     &                     WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Read a bra vector CL and a ket vector CR and compute requested
