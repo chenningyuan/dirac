@@ -354,10 +354,10 @@ C        Construct left index transformed density matrix: Smoao = Ct Sao
 C        This matrix is used in DIIS and in the construction of the MO
 C        Fock matrix in case of some open shells.
 C
-#ifdef OPEN_MOD
+#ifdef MOD_OPEN
          CALL MKSMOAO(SMOAO,TMAT,IPRSCF,WORK(KFREE),LFREE)
 #else
-         CALL QUIT('ROUTINE NOT IN THIS DISTRIBUTION!')
+         CALL QUIT('SUBROUTINE MKSMOAO NOT IN THIS DISTRIBUTION!')
 #endif
 C
       END IF
@@ -588,11 +588,12 @@ C
          CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
          CALL DCOPY(NCMOTQ,FMO,1,WORK(KCMOSAV),1)
       END IF
-#ifdef OPEN_MOD
+#ifdef MOD_OPEN
       CALL MKMOFK(FMO,FAO,DMAT,TMAT,WORK(KCMOSAV),SMOAO,
      &            WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
 #else
-      IF (NASHT .GT. 0) CALL QUIT('ROUTINE NOT IN THIS DISTRIBUTION')
+      IF (NASHT .GT. 0) 
+     &   CALL QUIT('SUBROUTINE MKMOFK NOT IN THIS DISTRIBUTION')
       CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
 #endif
 C
