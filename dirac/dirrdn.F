@@ -2481,6 +2481,9 @@ C*****************************************************************************
       PARAMETER (NTABLE = 16,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
+#include <maxaqn.h>
+#include <mxcent.h>
+C
 #include <dcbgen.h>
 #include <dcbham.h>
 #include <dcborb.h>
@@ -2489,6 +2492,7 @@ C
 #include <dcbcls.h>
 #include <dcbxpr.h>
 #include <dcbprl.h>
+#include <gencon.h>
 C
       LOGICAL SYMSTP,NOINPUT
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
@@ -2689,6 +2693,29 @@ C     =============
 C
  400  CONTINUE
       WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRHAM
+C
+C
+      IF (DIRCON) THEN
+         WRITE(LUPRI,'(1X,A)') '* Contracted basis set'
+         IF (MOLFCON) THEN
+            WRITE(LUPRI,'(1X,A)') '     ...molfdir type'
+            IF (.NOT. URKBAL) THEN
+               CALL QUIT('Molfdir type basis sets require'
+     &                   //'URKBAL = .TRUE.')
+            END IF
+            IF (.NOT. (ISPHTR .EQ. 1)) THEN
+               CALL QUIT('Molfdir type basis sets require'
+     &                   //'SPHTRA = 1 0')
+            END IF
+         ELSE
+            WRITE(LUPRI,'(1X,A)') '     ...dirac type'
+         END IF
+C
+      ELSE
+         WRITE(LUPRI,'(1X,A)') '* Uncontracted basis set'
+      END IF
+C
+C
 C
       IF(URKBAL) THEN
         WRITE(LUPRI,'(1X,A)') '* Unrestricted kinetic balance'
