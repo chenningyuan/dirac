@@ -113,7 +113,20 @@ if [  -z "$tests" ]; then
    run=default_test;
    tests=short;
 else
-   run=user_test;
+   case "${tests}" in
+      "short")
+      run=short_test;
+      ;;
+      "medium")
+      run=medium_test;
+      ;;
+      "long")
+      run=long_test;
+      ;;
+      *)
+      run=user_test;
+      ;;
+   esac
 fi
 #
 cvslog=cvs_log;
