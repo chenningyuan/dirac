@@ -153,6 +153,7 @@ C
 #ifdef PRG_DIRAC
 #include <dgroup.h>
 #include <dcbbas.h>
+#include <dcbham.h>
 #include <dcbqal.h>
 #include <dcbgrd.h>
 #else
@@ -188,6 +189,12 @@ C
             WRITE (LUPRI,'(A,1F12.6)') ' CORBY    ', CORBY
             WRITE (LUPRI,'(A,1F12.6)') ' CORBZ    ', CORBZ
          END IF
+C        Check the neglect of multi-center SS integrals
+         IF (.NOT.ONECEN.AND.INTCLASS.EQ.2.AND.SMLV1C) THEN
+            NATOMC1 = 0
+         ELSE
+            NATOMC1 = NATOMC
+         ENDIF
 C
 C        **********************************************
 C        ***** Calculation of Cartesian integrals *****
@@ -195,7 +202,7 @@ C        **********************************************
 C
          CALL ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,DINT1,
      &               RLMINT,RLMTAB,FCM,WORK,LWORK,IPRINT,PROPTY,MAXDIF,
-     &               NATOMC,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
+     &               NATOMC1,TOLOG,TOLS,SECDER,DIFDIP,FACINT,COORC,
      &               GEXP,JCENTC,NCENTC)
 C
 C        *************************************************

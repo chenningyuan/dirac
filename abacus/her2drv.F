@@ -2080,7 +2080,7 @@ C                 or all directions screened away
 C
                IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 300
 C
-Cluuk : testing negelct of off-diagonal Coulomb elements
+Cluuk : testing neglect of off-diagonal Coulomb elements
 C
 C              f) Skip two-center SS contributions if requested
 C

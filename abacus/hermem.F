@@ -465,7 +465,9 @@ C       Print section
 C
       IF(IPRINT.GE.1) THEN
          CALL HEADER('Maximum work space allocations in MEMHER',1)
-         WRITE (LUPRI,'(15(1X,A,I7/))')
+         WRITE (LUPRI,'(1X,A,4I4,15(/1X,A,I12))')
+     &      ' Shell combination :                 ', ISHELA,ISHELB,
+     &                                               ISHELC,ISHELD,
      &      ' Total allocation:                   ', MWTOT,
      &      ' Expansion coefficients (electron 1):', MWFCAB,
      &      ' Expansion coefficients (electron 2):', MWFCCD,
