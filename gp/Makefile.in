@@ -11,9 +11,11 @@ OBJS =  gphjj.o    gpjeppe.o     gptrygve.o     mempkg.o \
 	qpack.o    vcraypack.o   gpsaue.o       gpluuk.o \
 	gpjth.o
 
+C_OBJS = gpjth_c.o
+
 MXM_OBJS = mxmpack.o
 
-all:	$(OBJS)
+all:	$(OBJS) $(C_OBJS)
 
 mxm:	$(MXM_OBJS)
 
@@ -31,6 +33,6 @@ dirpvm.x:
 	cd .. ; $(MAKE) dirpvm.x
 
 depend:
-	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F)
+	makedepend -- $(DEPEND_FLAGS) -- $(OBJS:.o=.F) $(C_OBJS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
