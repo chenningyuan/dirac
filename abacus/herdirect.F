@@ -7,39 +7,34 @@ C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : herdirect.F
-C SOURCE  : $Source$
 C
 C
 #ifdef UNDEF
 /* Comdeck herdirect_log */
 941206-hjaaj
 HERPAR: new routine for defining parallel hermit calc. of Fock matr.
-HERFCK: call PARDRV if PARALL true
+HERFCK: call PARDRV if PARCAL true
         changed STATIS to KPRINT.gt.0 (STATIS missing in newest
         aba.cdk from oslo)
 941205-from oslo:
-HERFCK: also IPRINT = IPRFCK for PARALL true (was = 0)
+HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
 941103-hjaaj:
 implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
 HERDI1,HERDI2: excluded; not used, are also incomplete
@@ -55,6 +50,7 @@ outside (SIRIUS and RESPONS).
    new Sirius input routine for Hermit parameters ? an extended sether?
    also direct calculation of solvent integrals ?
 #endif
+#ifndef PRG_DIRAC
 C  /* Deck tstdir */
       SUBROUTINE TSTDIR(FMAT,DMAT,NDMAT,WORK,LWORK,IPRINT)
 C
@@ -124,6 +120,7 @@ C     PURPOSE : Calculate fock matrices using distributions.
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <dummy.h>
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT)
@@ -173,7 +170,6 @@ C               The distributions are stored as full squares and without
 C               symmetry reduction.
 C
 C                      *CALL CBITWO   from TWOINP
-C                      *CALL HRUNIT   from HERMIT
 C                      *CALL INFORB   from sirius
 C                      *CALL GAMCOM   from READIN
 C                      *CALL CCOM     from READIN
@@ -189,8 +185,9 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <iratdef.h>
-#include <maxaqn.h>
 #include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
 #include <dummy.h>
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
@@ -198,7 +195,6 @@ C
 #include <inforb.h>
 #include <cbitwo.h>
 #include <dorps.h>
-#include <ccom.h>
 C
       CALL ABARUN(ABA)
 C
@@ -233,18 +229,32 @@ C
 C
       MAXDIF = 0
       ITYPE  = 4
-      CALL PAOVEC(WORK,LWORK,0,IPRALL)
+      KJSTRS = 1
+      KNPRIM = KJSTRS + (MXSHEL*MXAOVC*2 + 1)/IRAT
+      KNCONT = KNPRIM + (MXSHEL*MXAOVC*2 + 1)/IRAT
+      KIORBS = KNCONT + (MXSHEL*MXAOVC*2 + 1)/IRAT
+      KJORBS = KIORBS + (MXSHEL*MXAOVC + 1)/IRAT
+      KKORBS = KJORBS + (MXSHEL*MXAOVC + 1)/IRAT
+      KLAST  = KKORBS + (MXSHEL*MXAOVC + 1)/IRAT
+      IF (KLAST .GT. LWORK) CALL STOPIT('GETDIS','PAOVEC',KLAST,LWORK)
+      LWRK   = LWORK - KLAST + 1
+      CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRALL)
+      KLAST = KJORBS
+      LWRK  = LWORK - KLAST + 1
 C
 C----------------------------
 C     Calculate distributions
 C----------------------------
 C
       CALL TIMER('START ',TIMSTR,TIMEND)
-      CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,NDMAT,IDUMMY,IDUMMY,GMAT,
+      CALL TWOINT(WORK(KLAST),LWRK,DUMMY,DUMMY,DUMMY,NDMAT,
+     &            IDUMMY,IDUMMY,GMAT,
      &            INDXAB,NUMDIS,MAXDIS,ITYPE,MAXDIF,0,NODV,NOPV,NOCONT,
      &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
-     &            IDUMMY,I2TYP,IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,
-     &            .FALSE.)
+     &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &            WORK(KIORBS),
+     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
       CALL TIMER('TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
@@ -263,123 +273,6 @@ C
 C
       RETURN
       END
-C  /* Deck getfck */
-#if defined (VAR_GETFCK)
-C
-C     Obsolete
-C
-      SUBROUTINE GETFCK(FMAT,DMAT,NDMAT,WORK,LWORK,DIRECT,TRIPLE)
-C
-C     Written by Henrik Koch and Trygve Helgaker 22-November-1991.
-C
-C     PURPOSE : Driver routine for the calculation of the two-electron
-C               part of the fock matrices.
-C               We assume the densities and fock matrices are full
-C               squares and without symmtry reduction .
-C               The subroutine offers the possibility of calculating
-C               the fock matrices directly or by reading the integrals
-C               from disk.
-C
-C               DIRECT = .TRUE.   Direct calculation using abacus.
-C               DIRECT = .FALSE.  Read integrals from AOTWOINT.
-C
-C               TRIPLE = .TRUE.   Triplet fock-matrix.
-C               TRIPLE = .FALSE.  Singlet fock-matrix.
-C
-C               Common blocks needed to be initialized before this
-C               subroutine is called:
-C
-C                      *CALL CBITWO   from TWOINP
-C                      *CALL HRUNIT   from HERMIT
-C                      *CALL INFORB   from sirius
-C                      *CALL GAMCOM   from READIN
-C                      *CALL CCOM     from READIN
-C                      *CALL PINCOM   from READIN
-C                      *CALL PRIMIT   from READIN
-C                      *CALL XYZPOW   from READIN
-C                      *CALL SHELLS   from READIN
-C                      *CALL NUCLEI   from READIN
-C                      *CALL SYMMET   from READIN
-C                      *CALL DORPS    from abatro.u
-C                       ( only DOREPS and DOCOOR used)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <dummy.h>
-      LOGICAL   DIRECT, TRIPLE
-      DIMENSION FMAT(*), DMAT(*)
-      DIMENSION WORK(LWORK)
-C
-C Used from common blocks:
-C  INFORB: NBAST,?
-C  CBITWO: IPRINT,?
-C
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <hrunit.h>
-#include <symmet.h>
-C
-      IF (DIRECT) THEN
-         JPRINT = 2
-         CALL HERFCK(FMAT,DMAT,NDMAT,WORK,LWORK,TRIPLE,JPRINT)
-      ELSE
-         IF (TRIPLE) THEN
-            CALL QUIT('GETFCK error: triplet not implemented yet!')
-         END IF
-C
-         LUINTA = 11
-         OPEN (LUINTA,STATUS='OLD',FORM='UNFORMATTED',
-     *         FILE='AOTWOINT')
-C
-         KINT  = 1
-         KIINT = KINT  + 600
-         KIND4 = KIINT + (601+1)/IRAT
-         KEND  = KIND4 + (4*600+1)/IRAT
-C
-         LENINT = IRAT*600 + 600 + 1
-C
-         REWIND LUINTA
-         CALL MOLLAB('BASTWOEL',LUINTA,6)
-C
-    1    CONTINUE
-C
-         CALL READI(LUINTA,LENINT,WORK(KINT))
-         CALL AOLAB4(WORK(KIINT),600,WORK(KIND4),NUMINT)
-         IF (NUMINT .EQ. 0)  GOTO 1
-         IF (NUMINT .EQ. -1) GOTO 2
-C
-         CALL FCKDIR(FMAT,DMAT,NDMAT,WORK(KINT),WORK(KIND4),
-     &               NUMINT,IPRINT)
-C
-         GOTO 1
-C
-    2    CONTINUE
-C
-      ENDIF
-C
-C------------------------------------------------------
-C     Write out densities and associated fock matrices.
-C------------------------------------------------------
-C
-C     IF (IPRINT.GT.2) THEN
-         CALL HEADER('Density and Fock matrices in GETFCK',-1)
-         DO 300 I = 1, NDMAT
-            ISTR = NBAST*NBAST*(I - 1) + 1
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
-            CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
-            CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-  300    CONTINUE
-C     END IF
-C
-      RETURN
-      END
-#endif
 C  /* Deck fcktes */
 #if !defined (VAR_GETFCK)
       SUBROUTINE FCKTES(WORK,LWORK,MAXDIF,NODV,NOPV,NOCONT,TKTIME,
@@ -398,7 +291,6 @@ C     routines instead of GETFCK.
       DIMENSION WORK(LWORK)
 #include <inforb.h>
 C
-#if !defined (PRG_DIRAC)
       IF (NODV) THEN
          NDMAT = 1
       ELSE
@@ -448,7 +340,6 @@ C
       KLAST = KCMO
       LWRK  = LWORK - KLAST + 1
       CALL TSTDIR(WORK(KFMAT),WORK(KDMAT),NDMAT,WORK(KLAST),LWRK,IPRINT)
-#endif
       RETURN
       END
 #endif
@@ -484,6 +375,7 @@ C
       END IF
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
 #include <implicit.h>
@@ -548,11 +440,119 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck herfck */
-      SUBROUTINE HRFCK1(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,PARFCK,IPRFCK,
+      SUBROUTINE HERFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                  WORK,LWORK)
 C
+C     PURPOSE : Driver routine for direct calculation of the
+C               two-electron part of the fock matrices.
+C               We assume the densities and fock matrices are full
+C               squares and without symmetry reduction .
+C
+C     10-Apr-1996-hjaaj: select if we want to use HRFCK1 or HRFCK2
+C     (old integral routines or new ERI integral routines)
+C
+#include <implicit.h>
+#include <iratdef.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <aovec.h>
+      LOGICAL USEERI, LDUMMY
+C
+      DIMENSION FMAT(*), DMAT(*), ISYMDM(*), IFCTYP(*), 
+     &          WORK(*)
+C
+C Used from common blocks:
+C   gnrinf: SEGBAS, PARCAL
+C   infpar: NODTOT
+C
+#include <infpar.h>
+#include <inforb.h>
+#include <gnrinf.h>
+#include <abainf.h>
+#include <blocks.h>
+#include <cbihr2.h>
+#include <cbieri.h>
+#include <veclen.h>
+C
+#include <memint.h>
+C
+      CALL QENTER('HERFCK')
+C
+C     The new ERI routines haven't been parallelized yet.
+C     RUNERI is the flag from input processing, to tell that we should use eri,
+C     USEERI is a temporary flag to check if we actually can in the present 
+C     passage.
+CNECgh980808: The construction of the Fock Matrix using the Temporary
+C matrices leads to huge bank conflicts in case of an even NBASIS. 
+C We therefore assure that the first dimension of FCKTMP is always odd.
+C Changes for eri: HERFCK (allocation), HRFCK2 (zero out and summing)
+C and FCKCON (dimensioning). Analog hermit. NODD added to nuclei.h & aobtch.h
+C We need to include nuclei.h here, to have NBASIS and NODD.
+C Initalization of NODD in herrdn.F and eriaob.F
+C
+      USEERI = RUNERI
+      DO I = 1, NDMT
+         USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
+      END DO
+#if defined (VAR_VECTOR)
+      ICHUNK = MAX(IVECLN/NDMT,1)
+#endif
+C
+      IF (.NOT. USEERI) THEN
+         CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+     &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
+      ELSE
+#if defined (VAR_MPI) || defined (VAR_PVM)
+         IF (PARCAL) THEN
+            CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
+            IPRTYP = 2
+            CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
+     &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
+     &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
+     &                  IPRFCK,IPRTYP,
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,
+     &                  DUMMY)
+
+         ELSE
+           CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
+#if defined (VAR_VECTOR)
+           CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS+NODD)*NBASIS,
+     &                 WORK,KFREE,LFREE)
+#else
+           KFCKTP = KFREE
+#endif
+           CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+     &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &                 WORK(KFREE),LFREE)
+         END IF
+#else
+         CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)           
+         CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)           
+#if defined (VAR_VECTOR)
+         CALL MEMGET('REAL',KFCKTP,ICHUNK*NDMT*(NBASIS + NODD)*NBASIS,
+     &               WORK,KFREE,LFREE)
+#else
+         KFCKTP = KFREE
+#endif
+         CALL HRFCK2(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+     &               WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
+     &               WORK(KFREE),LFREE)
+#endif
+         CALL MEMREL('HERFCK',WORK,KWORK,KWORK,KFREE,LFREE)
+      END IF
+      CALL QEXIT('HERFCK')
+      RETURN
+      END
+C  /* Deck hrfck1 */
+      SUBROUTINE HRFCK1(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,IPRFCK,
+     &                  ICEDIF,IFTHRS,WORK,LWORK)
+C
 C     Written by Henrik Koch and Trygve Helgaker 22-November-1991.
+C     March 1997 - tsaue Screening
 C
 C     PURPOSE : Driver routine for direct calculation of the
 C               two-electron part of the fock matrices.
@@ -563,7 +563,6 @@ C               Common blocks needed to be initialized before this
 C               subroutine is called:
 C
 C                      *CALL CBITWO   from TWOINP
-C                      *CALL HRUNIT   from HERMIT
 C                      *CALL INFORB   from sirius
 C                      *CALL GAMCOM   from READIN
 C                      *CALL CCOM     from READIN
@@ -582,8 +581,9 @@ C
 #include <mxcent.h>
 #include <maxaqn.h>
 #include <mxorb.h>
+#include <aovec.h>
 #include <dummy.h>
-      LOGICAL   PARFCK, ABA
+      LOGICAL   ABA
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
      &          ISYMDM(NDMAT), IFCTYP(NDMAT)
       DIMENSION WORK(LWORK)
@@ -591,17 +591,20 @@ C
 C Used from common blocks:
 C  INFORB: N2BASX,NBAST,?
 C  CBITWO: IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,?
-C  INFPAR: KPRINT,MAXNOD,MAXTSK,?
+C  GNRINF: PARCAL
+C  INFPAR: NODTOT
 C
 #include <abainf.h>
 #include <inforb.h>
 #include <cbitwo.h>
 #include <dorps.h>
-#include <hrunit.h>
 #include <symmet.h>
+#include <gnrinf.h>
 #include <infpar.h>
-#include <ccom.h>
+#include <blocks.h>
 C
+#include <memint.h>
+      CALL QENTER('HERFCK1')
       I2TYP = 0
 C
 C     Inquire if this is an ABACUS run or not:
@@ -614,12 +617,6 @@ C     Setup information for the two-electron integral routines.
 C----------------------------------------------------------------
 C
       IF (.NOT.ABA) THEN
-         LUONEL = 16
-         LUINTA = 11
-         LUSUPM = 17
-         LUDASP = 24
-         LUSOL  = 31
-C
          NODV = (NASHT .EQ. 0)
          NOPV = (NASHT .LT. 2)
 C
@@ -646,93 +643,96 @@ C
          TKTIME = .FALSE.
       END IF
 C
+      I2TYP  = 0
       ITYPE  = 3
       MAXDER = 0
-      CALL PAOVEC(WORK,LWORK,0,IPRALL)
+      NPAO = MXSHEL*MXAOVC
+      CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNCONT,NPAO*2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KJORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KKORBS,NPAO  ,WORK,KFREE,LFREE)
+      CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),WORK(KIORBS),
+     &            WORK(KJORBS),WORK(KKORBS),0,.FALSE.,IPRINT)
+      CALL MEMREL('HERFCK1.PAOVEC',WORK,KWORK,KJORBS,KFREE,LFREE)
 C
 C     Transform density to AO basis
+C     Modified july-97, kr
+C     FMAT still empty, and we use this array to store DMAT in AO-basis 
+C     temporarily
 C
-      KDAO  = 1
-      KLAST = KDAO + N2BASX*NDMAT
-      IF(KLAST.GT.LWORK) CALL STOPIT('HERFCK','DSOTAO',KLAST,LWORK)
-      LWRK  = LWORK - KLAST + 1
       DO 200 IMAT = 1,NDMAT
-         JDAO = KDAO + (IMAT-1)*N2BASX
-         CALL DSOTAO(DMAT(1,IMAT),WORK(JDAO),NBAST,ISYMDM(IMAT),IPRINT)
+         CALL DSOTAO(DMAT(1,IMAT),FMAT(1,1),NBAST,ISYMDM(IMAT),IPRINT)
+         CALL DCOPY(N2BASX,FMAT(1,1),1,DMAT(1,IMAT),1)
   200 CONTINUE
+      CALL DZERO(FMAT(1,1),N2BASX)
+C
+C     Prepare for screening
+C     =====================
+C
+      N2DRAO = NSYMBL*NSYMBL*NDMAT
+      N2GAB = NSYMBL*NSYMBL      
+      CALL MEMGET('REAL',KGAB ,N2GAB, WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDRAO,N2DRAO,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDSKP,8     ,WORK,KFREE,LFREE)
+C     
+C     Get GAB-matrix (Cauchy-Schwartz)
+C
+      CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
+     &            WORK(KFREE),LFREE)
+C
+C     Make reduced density matrix for screening
+C
+      CALL MKDRAO(DMAT,WORK(KDRAO),NDMAT,
+     &            WORK(KFREE),LFREE,IPRINT)
 C
 C--------------------------------
 C     Calculate fock matrices.
 C--------------------------------
 C
-#if defined (VAR_MPI) 
-      IF (PARFCK .OR. PARALL) THEN
+#if defined (VAR_MPI) || defined (VAR_PVM)
+      IF (PARCAL) THEN
          IATOM = 0
-         KNSTAT = KLAST
-         KINDEX = KNSTAT + MAXNOD
-         KSORT  = KINDEX + MAXTSK
-         KTIMES = KSORT  + MAXTSK + 2
-         KLAST  = KTIMES + MAXTSK
-         LWRK   = LWORK - KLAST
+         CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
 C
-         IF (KLAST .GT. LWORK) THEN
-            CALL STOPIT('HERFCK','PARDRV',KLAST,LWORK)
-         END IF
-C
-         IF (KPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
-         CALL HER_PARDRV(WORK(KLAST),LWRK,FMAT,WORK(KDAO),NDMAT,ISYMDM,
-     &               IFCTYP,ITYPE,MAXDER,IATOM,NODV,NOPV,NOCONT,
-     &               TKTIME,RETUR,WORK(KNSTAT),WORK(KINDEX),
-     &               WORK(KSORT),WORK(KTIMES))
-C
-C        Symmetrize skeleton Fock matrices
-C
-         CALL SKLFCK(FMAT,WORK(KLAST),LWRK,IPRINT,.TRUE.,.FALSE.,
-     &               .FALSE.,.FALSE.,NODV,MAXDER,.FALSE.,NDMAT,
-     &               ISYMDM,IFCTYP,IATOM)
-C
-         IF (KPRINT .GT. 0) THEN
-            CALL GETTIM(CPU2,WALL2)
-            CPU    = CPU2 - CPU1
-            WALL   = WALL2 - WALL1
-            TOTWAL = TOTWAL + WALL
-C
-            IMINS  = INT(TOTWAL)/60
-            IHOURS = IMINS/60
-            IMINS  = IMINS - 60*IHOURS
-            ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
-C
-            WRITE(6,'(A,I5.2,A,I2.2,A,I2.2)')
-     &           '>>>> Total wall time used in HER_PARDRV so far   :',
-     &              IHOURS,':',IMINS,':',ISECS
-            IF (KPRINT .GT. 5) THEN
-               WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &           '>>>> CPU  time used in HER_PARDRV last iteration :',
-     &             CPU,
-     &           '>>>> Wall time used in HER_PARDRV last iteration :',
-     &             WALL
-            END IF
-         END IF
+         IPRTYP = 1
+         CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
+     &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
+     &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
+     &               ICEDIF,IFTHRS,
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+
+         CALL MEMREL('HERFCK1.PARDRV',WORK,KWORK,KNSTAT,KFREE,LFREE)
+         IF (IPRINT .GT. 0)
+     &      CALL SCRSTA('PARDRV',WORK(KDSKP))
       ELSE
 #endif
          CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL TWOINT(WORK(KLAST),LWRK,FMAT,WORK(KDAO),NDMAT,ISYMDM,
+         CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
+     &               ISYMDM,
      &               IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDER,0,
      &               NODV,NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
-     &               IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,IDUMMY,.FALSE.)
+     &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
+     &               WORK(KIORBS),ICEDIF,IFTHRS,
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
          CALL TIMER('TWOINT',TIMSTR,TIMEND)
-#if defined (VAR_MPI)
+         IF (IPRINT .GT. 0)
+     &      CALL SCRSTA('TWOINT',WORK(KDSKP))
+#if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
 #endif
+      CALL SKLFCK(FMAT,DUMMY,WORK(KFREE),LFREE,IPRINT,.TRUE.,
+     &            .FALSE.,.FALSE.,.FALSE.,NODV,MAXDER,.FALSE.,
+     &            NDMAT,ISYMDM,IFCTYP,0)
 C
 C------------------------------------------------------
 C     Write out densities and associated fock matrices.
 C------------------------------------------------------
 C
-      IF (IPRINT.GT.4) THEN
-         CALL HEADER('Density and Fock matrices in HERFCK',-1)
+      IF (IPRINT.GT.5) THEN
+         CALL HEADER('Density and Fock matrices in HERFCK1',-1)
          DO 300 I = 1, NDMAT
             WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
             CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
@@ -741,10 +741,17 @@ C
   300    CONTINUE
       END IF
 C
+      CALL MEMREL('HERFCK1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('HERFCK1')
       RETURN
       END
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck aindex */
+#ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
+#else /* PRG_DIRAC */
+      SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
+#endif /* PRG_DIRAC */
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -752,7 +759,11 @@ C  /* Deck aindex */
 #include <mxorb.h>
 #include <mxcent.h>
       LOGICAL DOINDX
+#ifdef PRG_DIRAC
       DIMENSION INDEXA(*)
+#else /* PRG_DIRAC */
+      DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
+#endif /* PRG_DIRAC */
 #include <blocks.h>
 #include <symmet.h>
 #include <ibtfun.h>
@@ -785,6 +796,7 @@ C
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck abarun */
       SUBROUTINE ABARUN(RUNABA)
 #include <implicit.h>
@@ -797,132 +809,7 @@ C  /* Deck abarun */
       ABA = .TRUE.
       RETURN
       END
-C  /* Deck herdi1 */
-#if defined (VAR_HERDI1)
-----> 941103-hjaaj: HERDI1 is incomplete(?) and is never called
-----> therefore I have excluded HERDI1
-      SUBROUTINE HERDI1(WORK,LWORK,IPRFCK)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <dummy.h>
-      LOGICAL   ABA
-      DIMENSION WORK(LWORK)
-C
-C Used from common blocks:
-C  INFORB: N2BASX,NBAST,?
-C  CBITWO: IPRINT,?
-C
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <hrunit.h>
-#include <symmet.h>
-#include <blocks.h>
-C
-C     Inquire if this is an ABACUS run or not:
-C
-      CALL ABARUN(ABA)
-C
-C----------------------------------------------------------------
-C     Setup information for the two-electron integralroutines.
-C----------------------------------------------------------------
-C
-      LUINTA = 42
-      IF (.NOT.ABA) THEN
-         LUONEL = 16
-         LUSUPM = 17
-         LUDASP = 24
-         LUSOL  = 31
-C
-         NODV = (NASHT .EQ. 0)
-         NOPV = (NASHT .LT. 2)
-C
-C        Remember to change this!!!!!!!
-C
-         IPRALL =  0
-C
-         DO 100 I = 0,7
-            DOREPS(I) = .TRUE.
-  100    CONTINUE
-         DO 110 I = 1,MXCENT
-            DOCOOR(1,I) = .TRUE.
-            DOCOOR(2,I) = .TRUE.
-            DOCOOR(3,I) = .TRUE.
-  110    CONTINUE
-C
-         IPRINT = IPRFCK
-         IPRNTA = 0
-         IPRNTB = 0
-         IPRNTC = 0
-         IPRNTD = 0
-         RETUR  = .FALSE.
-         NOCONT = .FALSE.
-         TKTIME = .FALSE.
-      END IF
-C
-      OPEN (LUINTA,STATUS='UNKNOWN',FORM='UNFORMATTED',FILE='AOTWODIS')
-      REWIND LUINTA
-C
-      CALL PAOVEC(WORK,LWORK,0,IPRALL)
-C
-      RETURN
-      END
-#endif
-C  /* Deck herdi2 */
-#if defined (VAR_HERDI2)
-----> 941103-hjaaj: HERDI2 is incomplete and is never called
-----> therefore I have excluded HERDI2
-      SUBROUTINE HERDI2(WORK,LWORK,INDEXA,ISHELA,NAINTS,IPRFCK)
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <iratdef.h>
-#include <mxcent.h>
-#include <maxaqn.h>
-#include <mxorb.h>
-#include <aovec.h>
-#include <dummy.h>
-      LOGICAL DOINDX
-      DIMENSION INDEXA(MXCORB)
-      DIMENSION WORK(LWORK)
-C
-C Used from common blocks:
-C  INFORB: N2BASX,NBAST,?
-C  CBITWO: IPRINT,?
-C
-#include <inforb.h>
-#include <cbitwo.h>
-#include <dorps.h>
-#include <hrunit.h>
-#include <symmet.h>
-#include <blocks.h>
-#include <ccom.h>
-C
-      I2TYP = 0
-C
-      ITYPE  = 7
-      MAXDIF = 0
-      JPRINT = 6
-      DOINDX = .TRUE.
-      CALL PAOVEC(0,IPRALL)
-      CALL AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,JPRINT)
-      CALL TIMER('START ',TIMSTR,TIMEND)
-      CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,NDMAT,ISYMDM,
-     &            IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDIF,0,NODV,
-     &            NOPV,NOCONT,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,
-     &            IPRNTD,RETUR,ISHELA,I2TYP,IDUMMY,IDUMMY,
-     &            DUMMY,DUMMY,DUMMY,IDUMMY,.FALSE.)
-      CALL TIMER('TWOINT',TIMSTR,TIMEND)
-C
-      RETURN
-      END
-#endif
+#endif /* ifndef PRG_DIRAC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck RELINF */
       SUBROUTINE RELINF
@@ -951,3 +838,4 @@ C
 C
       RETURN
       END
+

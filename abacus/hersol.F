@@ -7,28 +7,23 @@ C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : hersol.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck ireplm */
@@ -151,8 +146,10 @@ C     Memory allocation
       LFREE  = LWORK
       CALL MEMGET('REAL',KTLMN,LMNTOT,WORK,KFREE,LFREE)
 C     Calculate TLMN = RNUC in Cartesian basis
-      CALL SOLNUC(.FALSE.,0,WORK(KTLMN),DUMMY,WORK,KFREE,LFREE,IPRINT)
-C     Transform TLMN to RNUC(l,m) in spherical basis 
+      CALL SOLNUC(.FALSE.,0,.FALSE.,WORK(KTLMN),DUMMY,DUMMY,WORK,KFREE,
+     &            LFREE,IPRINT)
+C     Transform TLMN to RNUC(l,m) in spherical basis and
+C     write nuclear contribution, RNUC(l,m) on LUSOL
       LMTOT4 = MAX(4,LMTOT)
       CALL MEMGET('REAL',KRNUC,LMTOT4,WORK,KFREE,LFREE)
       CALL TLMTRA(1,WORK(KTLMN),WORK(KRNUC),WORK(KFREE),LFREE,IPRINT)
@@ -178,21 +175,24 @@ C
       RETURN
       END
 C  /* Deck solnuc */
-      SUBROUTINE SOLNUC(PROPTY,MAXDIF,TLMND,FCM,
+      SUBROUTINE SOLNUC(PROPTY,MAXDIF,DIFDIP,TLMND,HSOLNN,FCM,
      &                  WORK,KFRSAV,LFRSAV,IPRINT)
 C
 C 12-Jan-1993 hjaaj+kvm
 C
 #include <implicit.h>
-      DIMENSION TLMND(*),FCM(*), WORK(*)
-      LOGICAL   PROPTY
+      DIMENSION TLMND(*),FCM(*), WORK(*), HSOLNN(*)
+      LOGICAL   PROPTY, DIFDIP
 C
 #include <priunit.h>
+#include <mxcent.h>
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
+C  NUCLEI : NUCDEP
 C
+#include <nuclei.h>
 #include <cbisol.h>
 C
       IF (IPRINT .GT. 4) THEN
@@ -220,28 +220,35 @@ C
       CALL MEMGET('INTE',KLO,LMNTOT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KMO,LMNTOT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNO,LMNTOT,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
       LWRK  = LFRSAV - KFREE + 1
       CALL SOLNC0(TLMND,FCM,WORK(KLO),WORK(KMO),WORK(KNO),
      &            WORK(KDX0),WORK(KDY0),WORK(KDZ0),
-     &            WORK(KFREE),LWRK,PROPTY,MAXDIF,IPRINT)
+     &            HSOLNN,WORK(KCSTRA),WORK(KSCTRA),WORK(KFREE),LWRK,
+     &            PROPTY,MAXDIF,DIFDIP,IPRINT)
 C
       CALL MEMREL('SOLNUC',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C  /* Deck solnc0 */
-      SUBROUTINE SOLNC0(TLMND,FCM,LO,MO,NO,DX0,DY0,DZ0,
-     &                  WORK,LWORK,PROPTY,MAXDIF,IPRINT)
+      SUBROUTINE SOLNC0(TLMND,FCM,LO,MO,NO,DX0,DY0,DZ0,HSOLNN,
+     &                  CSTRA,SCTRA,WORK,LWORK,PROPTY,MAXDIF,DIFDIP,
+     &                  IPRINT)
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
 #include <implicit.h>
-C
 #include <priunit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxaqn.h>
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
-      DIMENSION LO(*), MO(*), NO(*)
-      DIMENSION DX0(*), DY0(*), DZ0(*)
-      LOGICAL   PROPTY
+      DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
+      DIMENSION DX0(*), DY0(*), DZ0(*), CSTRA(*), SCTRA(*)
+      LOGICAL   PROPTY, DIFDIP
 C
       PARAMETER (D0 = 0.0 D00, D1 = 1.0 D00, D2 = 2.0 D00 )
       PARAMETER (DP5 = 0.5 D00, DP25 = 0.25 D00 )
@@ -251,9 +258,6 @@ C  CBISOL : LCAVMX,NCNTCV
 C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
-#include <mxcent.h>
-#include <mxorb.h>
-#include <maxaqn.h>
 #include <cbisol.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -305,7 +309,8 @@ C        ... Hermit
          NXCAV = 3*NUCDEP - 2
          NYCAV = 3*NUCDEP - 1
          NZCAV = 3*NUCDEP
-         IF (MAXDIF .GE. 2) CALL DZERO(TLMND,3*NUCDEP*LMNTOT)
+         IF (MAXDIF .GE. 2 .OR. DIFDIP) 
+     &        CALL DZERO(TLMND,3*NUCDEP*LMNTOT)
       END IF
 C
 C     loop over atoms
@@ -335,13 +340,14 @@ C
      *         ' >>> SOLNUC test print for atom',IATOM,
      *         '     with coordinates :',PX,PY,PZ
          END IF
-         CALL SOLNC1(PROPTY,MAXDIF,IATOM,CHARGE(ICENT),
+         CALL SOLNC1(PROPTY,MAXDIF,DIFDIP,IATOM,CHARGE(ICENT),
      &               PXDIF,PYDIF,PZDIF,TLMND,
-     &               DX0,DY0,DZ0, LO,MO,NO, FCM, IPRINT)
+     &               DX0,DY0,DZ0, LO,MO,NO, FCM, HSOLNN,IPRINT)
   700 CONTINUE
   720 CONTINUE
 C
       IF (PROPTY) THEN
+         CALL TRACOR(CSTRA,SCTRA,1,MXCOOR,0)
          IF (IATOM .NE. NUCDEP-1) THEN
             WRITE (LUPRI,*) 'SOLNUC error; IATOM .ne. NUCDEP-1'
             WRITE (LUPRI,*) 'IATOM, NUCDEP',IATOM,NUCDEP
@@ -351,8 +357,8 @@ C
             GSOLNN(NXCAV) = - DSUM(IATOM,GSOLNN(1),3)
             GSOLNN(NYCAV) = - DSUM(IATOM,GSOLNN(2),3)
             GSOLNN(NZCAV) = - DSUM(IATOM,GSOLNN(3),3)
-            CALL TRACTS(GSOLNN,3*NUCDEP)
-C           CALL TRACTS(VEC,NCOOR)
+            CALL TRACTS(GSOLNN,3*NUCDEP,CSTRA)
+C           CALL TRACTS(VEC,NCOOR,CSTRA)
          END IF
          IF (MAXDIF .GE. 2) THEN
             DO 800 I = 1, 3*IATOM
@@ -372,21 +378,29 @@ C           CALL TRACTS(VEC,NCOOR)
             HSOLNN(NYCAV,NXCAV) = HSOLNN(NXCAV,NYCAV)
             HSOLNN(NZCAV,NXCAV) = HSOLNN(NXCAV,NZCAV)
             HSOLNN(NZCAV,NYCAV) = HSOLNN(NYCAV,NZCAV)
+         END IF
+         IF (MAXDIF .GE. 2 .OR. DIFDIP) THEN
             DO 810 I = 1,LMNTOT
                TLMND(I,NXCAV) = - DSUM(IATOM,TLMND(I,1),LMNTOT*3)
                TLMND(I,NYCAV) = - DSUM(IATOM,TLMND(I,2),LMNTOT*3)
                TLMND(I,NZCAV) = - DSUM(IATOM,TLMND(I,3),LMNTOT*3)
   810       CONTINUE
-            CALL TRHCTS(HSOLNN,3*NUCDEP,TLMND,LMNTOT,WORK,LWORK)
+            IF (MAXDIF .GE. 2) THEN
+               CALL TRHCTS(HSOLNN,3*NUCDEP,MAXDIF,TLMND,LMNTOT,
+     &                     CSTRA,WORK,LWORK)
+            ELSE
+               CALL TRHCTS(DUMMY,3*NUCDEP,MAXDIF,TLMND,LMNTOT,
+     &                     CSTRA,WORK,LWORK)
+            END IF
          END IF
 C
          IF (IPRINT .GE. 2 .AND. MAXDIF .GE.1) THEN
             CALL HEADER('Nuclear contributions to solvent gradient',-1)
-            CALL PRIGRD(GSOLNN)
+            CALL PRIGRD(GSOLNN,CSTRA,SCTRA)
          END IF
          IF (IPRINT .GE. 2 .AND. MAXDIF .GE. 2) THEN
             CALL HEADER('Nuclear contributions to solvent Hessian',-1)
-            CALL PRIHES(HSOLNN,'CENTERS')
+            CALL PRIHES(HSOLNN,'CENTERS',CSTRA,SCTRA)
          END IF
       END IF
 C
@@ -395,7 +409,7 @@ C
       RETURN
       END
 C  /* Deck tracts */
-      SUBROUTINE TRACTS(VEC,NCOOR)
+      SUBROUTINE TRACTS(VEC,NCOOR,CSTRA)
 C
 C 12. Jan. 1993 hjaaj+kvm (based on TRAGRD)
 C
@@ -404,18 +418,18 @@ C           symmetry  vector
 C
 #include <implicit.h>
 #include <mxcent.h>
-      DIMENSION VEC(MXCOOR)
-#include <tranuc.h>
+      DIMENSION VEC(MXCOOR), CSTRA(MXCOOR,MXCOOR)
       DIMENSION SVEC(MXCOOR)
 C
-      CALL MPAB(TRCTOS(1,1,1),NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &          VEC,          NCOOR,1,    MXCOOR,1,
-     &          SVEC,                     MXCOOR,1)
+      CALL DGEMM('N','N',NCOOR,1,NCOOR,1.D0,
+     &           CSTRA(1,1),MXCOOR,
+     &           VEC,MXCOOR,0.D0,
+     &           SVEC,MXCOOR)
       CALL DCOPY(NCOOR,SVEC,1,VEC,1)
       RETURN
       END
 C  /* Deck trhcts */
-      SUBROUTINE TRHCTS(HMAT,NCOOR,TLMND,LMNTOT,WORK,LWORK)
+      SUBROUTINE TRHCTS(HMAT,NCOOR,MAXDIF,TLMND,LMNTOT,CSTRA,WORK,LWORK)
 C
 C tuh - based on TRACTS
 C
@@ -424,32 +438,37 @@ C           symmetry  vector
 C
 #include <implicit.h>
 #include <mxcent.h>
-      DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), WORK(LWORK)
-#include <tranuc.h>
+      DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), 
+     &          CSTRA(MXCOOR,MXCOOR), WORK(LWORK)
       NDIM = MAX(MXCOOR*MXCOOR,LMNTOT*NCOOR)
       IF (LWORK .LT. NDIM) CALL STOPIT('TRHCTS',' ',LWORK,NDIM)
 C
 C     Transform Hessian
 C
-      CALL MPAB (TRCTOS(1,1,1),NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &           HMAT,         NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &           WORK,                     MXCOOR,MXCOOR)
-      CALL MPABT(WORK,         NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &           TRCTOS(1,1,1),NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &           HMAT,         MXCOOR,MXCOOR)
+      IF (MAXDIF .GE. 2) THEN
+         CALL DGEMM('N','N',NCOOR,NCOOR,NCOOR,1.D0,
+     &              CSTRA(1,1),MXCOOR,
+     &              HMAT,MXCOOR,0.D0,
+     &              WORK,MXCOOR)
+         CALL DGEMM('N','T',NCOOR,NCOOR,NCOOR,1.D0,
+     &              WORK,MXCOOR,
+     &              CSTRA(1,1),MXCOOR,0.D0,
+     &              HMAT,MXCOOR)
+      END IF
 C
 C     Transform TLMND
 C
-      CALL MPABT(TLMND,        LMNTOT,NCOOR,LMNTOT,NCOOR,
-     &           TRCTOS(1,1,1),NCOOR,NCOOR,MXCOOR,MXCOOR,
-     &           WORK,         LMNTOT,NCOOR)
+      CALL DGEMM('N','T',LMNTOT,NCOOR,NCOOR,1.D0,
+     &           TLMND,LMNTOT,
+     &           CSTRA(1,1),MXCOOR,0.D0,
+     &           WORK,LMNTOT)
       CALL DCOPY(LMNTOT*NCOOR,WORK,1,TLMND,1)
       RETURN
       END
 C  /* Deck solnc1 */
-      SUBROUTINE SOLNC1(PROPTY,MAXDIF,IATOM,CHRG,PXDIF,PYDIF,PZDIF,
-     &                  TLMND,DX0,DY0,DZ0,LO,MO,NO,
-     &                  FCM,IPRINT)
+      SUBROUTINE SOLNC1(PROPTY,MAXDIF,DIFDIP,IATOM,CHRG,PXDIF,PYDIF,
+     &                  PZDIF,TLMND,DX0,DY0,DZ0,LO,MO,NO,
+     &                  FCM,HSOLNN,IPRINT)
 C
 C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
@@ -460,20 +479,20 @@ C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
 #include <implicit.h>
 #include <priunit.h>
+#include <mxcent.h>
 #include <maxaqn.h>
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
-      DIMENSION LO(*), MO(*), NO(*)
+      DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), HSOL(6)
-      LOGICAL   PROPTY
+      LOGICAL   PROPTY, DIFDIP
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT,?
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
-#include <mxcent.h>
 #include <cbisol.h>
 #include <lmns.h>
 #include <taysol.h>
@@ -505,6 +524,7 @@ C
          DX0(0) = D1
          DY0(0) = D1
          DZ0(0) = D1
+CDIR$    NORECURRENCE
          DO 400 L = 1, LCAVMX
             DX0(L) = PXDIF ** L
             DY0(L) = PYDIF ** L
@@ -545,7 +565,7 @@ C           *  0X00,0Y00,0Z00 terms
                GSOLNN(NXA) = GSOLNN(NXA) - FCM(I)*D0X00
                GSOLNN(NYA) = GSOLNN(NYA) - FCM(I)*D0Y00
                GSOLNN(NZA) = GSOLNN(NZA) - FCM(I)*D0Z00
-               IF (MAXDIF .GE. 2) THEN
+               IF (MAXDIF .GE. 2 .OR. DIFDIP) THEN
                   TLMND(I,NXA) = TLMND(I,NXA) + D0X00
                   TLMND(I,NYA) = TLMND(I,NYA) + D0Y00
                   TLMND(I,NZA) = TLMND(I,NZA) + D0Z00
@@ -957,18 +977,17 @@ C
 C
       END
 #ifdef UNDEF
-/* Comdeck to_do */
-#endif
-#ifdef UNDEF
 /* Comdeck log */
+960417- kr
+ TLMD is also needed for dipole gradient, thus TLMD for MAXDIF .ge. 2 or DIFDIP
 921209- get cavity center from CBISOL; only calc. TLMD for MAXDIF .ge. 2;
         only calc. GSOLT for MAXDIF .ge. 1
 921013-kvm+hjaaj
  removed FAC, center C always different from center A
 #endif
 C  /* Deck avesol */
-      SUBROUTINE AVESOL(RLMINT,RLMTAB,FCM,MAXDIF,ISYMOP,MAXCMP,
-     &                  DSHELL,TLMD,LMNO,IPRINT)
+      SUBROUTINE AVESOL(RLMINT,RLMTAB,FCM,MAXDIF,DIFDIP,ISYMOP,MAXCMP,
+     &                  DSHELL,TLMD,LMNO,IPRINT,HSOLT2)
 C
 C
 C     RLMINT(pq,LMN,a) = R(a)(LMN)pq
@@ -1001,10 +1020,10 @@ C
 #include <taysol.h>
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
-     *        DOCX, DOCY, DOCZ
+     *        DOCX, DOCY, DOCZ, DIFDIP
       DIMENSION DSHELL(MAXCMP), FCM(LMNTOT), TLMD(LMNTOT,*)
       DIMENSION RLMINT(KCKTAB,LMNTOT,7), RLMTAB(KCKTAB,21),
-     &          LMNO(LMNTOT,3)
+     &          LMNO(LMNTOT,3), HSOLT2(MXCOOR,MXCOOR)
 #include <ibtfun.h>
 C
       NAX = 3*NCENTA - 2
@@ -1202,171 +1221,173 @@ C
          IF (DOCZ) GSOLTT(ICZ) = GSOLTT(ICZ) + DA000Z
       END IF
 C
-      IF (MAXDIF .GE. 2) THEN
+      IF (MAXDIF .GE. 2 .OR. DIFDIP) THEN
 C
-         DO 600 IREP = 0, MAXREP
-            CHIB = PT(IBTAND(ISYMOP,IREP))
-            CSBX = CHIB*SIGNBX
-            CSBY = CHIB*SIGNBY
-            CSBZ = CHIB*SIGNBZ
-            IAX  = IPTCNT(NAX,IREP,1)
-            IAY  = IPTCNT(NAY,IREP,1)
-            IAZ  = IPTCNT(NAZ,IREP,1)
-            IBX  = IPTCNT(NBX,IREP,1)
-            IBY  = IPTCNT(NBY,IREP,1)
-            IBZ  = IPTCNT(NBZ,IREP,1)
-            ICX  = IPTCNT(NCX,IREP,1)
-            ICY  = IPTCNT(NCY,IREP,1)
-            ICZ  = IPTCNT(NCZ,IREP,1)
-            DOAX = IAX .NE. 0
-            DOAY = IAY .NE. 0
-            DOAZ = IAZ .NE. 0
-            DOBX = IBX .NE. 0
-            DOBY = IBY .NE. 0
-            DOBZ = IBZ .NE. 0
-            DOCX = ICX .NE. 0
-            DOCY = ICY .NE. 0
-            DOCZ = ICZ .NE. 0
+         IF (MAXDIF .GE. 2) THEN
+            DO 600 IREP = 0, MAXREP
+               CHIB = PT(IBTAND(ISYMOP,IREP))
+               CSBX = CHIB*SIGNBX
+               CSBY = CHIB*SIGNBY
+               CSBZ = CHIB*SIGNBZ
+               IAX  = IPTCNT(NAX,IREP,1)
+               IAY  = IPTCNT(NAY,IREP,1)
+               IAZ  = IPTCNT(NAZ,IREP,1)
+               IBX  = IPTCNT(NBX,IREP,1)
+               IBY  = IPTCNT(NBY,IREP,1)
+               IBZ  = IPTCNT(NBZ,IREP,1)
+               ICX  = IPTCNT(NCX,IREP,1)
+               ICY  = IPTCNT(NCY,IREP,1)
+               ICZ  = IPTCNT(NCZ,IREP,1)
+               DOAX = IAX .NE. 0
+               DOAY = IAY .NE. 0
+               DOAZ = IAZ .NE. 0
+               DOBX = IBX .NE. 0
+               DOBY = IBY .NE. 0
+               DOBZ = IBZ .NE. 0
+               DOCX = ICX .NE. 0
+               DOCY = ICY .NE. 0
+               DOCZ = ICZ .NE. 0
 C
 C           <u(A)/Rlm(C)/u(B)>
 C           Consider u(A), u(A) second derivatives;
 C           SUM(pq) Dpq(tpq)aa =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)aa):
 C
-            IF (DOAX)
-     *         HSOLT2(IAX,IAX) = HSOLT2(IAX,IAX) + DAXX00
-            IF (DOAX.AND.DOAY)
-     *         HSOLT2(IAX,IAY) = HSOLT2(IAX,IAY) + DAXY00
-            IF (DOAX.AND.DOAZ)
-     *         HSOLT2(IAX,IAZ) = HSOLT2(IAX,IAZ) + DAXZ00
-            IF (DOAY)
-     *         HSOLT2(IAY,IAY) = HSOLT2(IAY,IAY) + DAYY00
-            IF (DOAY.AND.DOAZ)
-     *         HSOLT2(IAY,IAZ) = HSOLT2(IAY,IAZ) + DAYZ00
-            IF (DOAZ)
-     *         HSOLT2(IAZ,IAZ) = HSOLT2(IAZ,IAZ) + DAZZ00
-C
+               IF (DOAX)
+     *              HSOLT2(IAX,IAX) = HSOLT2(IAX,IAX) + DAXX00
+               IF (DOAX.AND.DOAY)
+     *              HSOLT2(IAX,IAY) = HSOLT2(IAX,IAY) + DAXY00
+               IF (DOAX.AND.DOAZ)
+     *              HSOLT2(IAX,IAZ) = HSOLT2(IAX,IAZ) + DAXZ00
+               IF (DOAY)
+     *              HSOLT2(IAY,IAY) = HSOLT2(IAY,IAY) + DAYY00
+               IF (DOAY.AND.DOAZ)
+     *              HSOLT2(IAY,IAZ) = HSOLT2(IAY,IAZ) + DAYZ00
+               IF (DOAZ)
+     *              HSOLT2(IAZ,IAZ) = HSOLT2(IAZ,IAZ) + DAZZ00
+C     
 C           Consider u(A), u(B) second derivatives;
 C           SUM(pq) Dpq(tpq)ab =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)ab):
 C
-            IF (DOAX.AND.DOBX)
-     *         HSOLT2(IAX,IBX) = HSOLT2(IAX,IBX)
-     *                         - FAB*CSBX*(DAXX00 + DA0X0X)
-            IF (DOAX.AND.DOBY)
-     *         HSOLT2(IAX,IBY) = HSOLT2(IAX,IBY)
-     *                         - CSBY*(DAXY00 + DA0X0Y)
-            IF (DOAX.AND.DOBZ)
-     *         HSOLT2(IAX,IBZ) = HSOLT2(IAX,IBZ)
-     *                   - CSBZ*(DAXZ00 + DA0X0Z)
-            IF (DOAY.AND.DOBX)
-     *         HSOLT2(IAY,IBX) = HSOLT2(IAY,IBX)
-     *                         - CSBX*(DAXY00 + DA0Y0X)
-            IF (DOAY.AND.DOBY)
-     *         HSOLT2(IAY,IBY) = HSOLT2(IAY,IBY)
-     *                         - FAB*CSBY*(DAYY00 + DA0Y0Y)
-            IF (DOAY.AND.DOBZ)
-     *         HSOLT2(IAY,IBZ) = HSOLT2(IAY,IBZ)
-     *                         - CSBZ*(DAYZ00 + DA0Y0Z)
-            IF (DOAZ.AND.DOBX)
-     *         HSOLT2(IAZ,IBX) = HSOLT2(IAZ,IBX)
-     *                         - CSBX*(DAXZ00 + DA0Z0X)
-            IF (DOAZ.AND.DOBY)
-     *         HSOLT2(IAZ,IBY) = HSOLT2(IAZ,IBY)
-     *                         - CSBY*(DAYZ00 + DA0Z0Y)
-            IF (DOAZ.AND.DOBZ)
-     *         HSOLT2(IAZ,IBZ) = HSOLT2(IAZ,IBZ)
-     *                         - FAB*CSBZ*(DAZZ00 + DA0Z0Z)
+               IF (DOAX.AND.DOBX)
+     *              HSOLT2(IAX,IBX) = HSOLT2(IAX,IBX)
+     *                              - FAB*CSBX*(DAXX00 + DA0X0X)
+               IF (DOAX.AND.DOBY)
+     *              HSOLT2(IAX,IBY) = HSOLT2(IAX,IBY)
+     *                              - CSBY*(DAXY00 + DA0X0Y)
+               IF (DOAX.AND.DOBZ)
+     *              HSOLT2(IAX,IBZ) = HSOLT2(IAX,IBZ)
+     *                              - CSBZ*(DAXZ00 + DA0X0Z)
+               IF (DOAY.AND.DOBX)
+     *              HSOLT2(IAY,IBX) = HSOLT2(IAY,IBX)
+     *                              - CSBX*(DAXY00 + DA0Y0X)
+               IF (DOAY.AND.DOBY)
+     *              HSOLT2(IAY,IBY) = HSOLT2(IAY,IBY)
+     *                              - FAB*CSBY*(DAYY00 + DA0Y0Y)
+               IF (DOAY.AND.DOBZ)
+     *              HSOLT2(IAY,IBZ) = HSOLT2(IAY,IBZ)
+     *                              - CSBZ*(DAYZ00 + DA0Y0Z)
+               IF (DOAZ.AND.DOBX)
+     *              HSOLT2(IAZ,IBX) = HSOLT2(IAZ,IBX)
+     *                              - CSBX*(DAXZ00 + DA0Z0X)
+               IF (DOAZ.AND.DOBY)
+     *              HSOLT2(IAZ,IBY) = HSOLT2(IAZ,IBY)
+     *                             - CSBY*(DAYZ00 + DA0Z0Y)
+               IF (DOAZ.AND.DOBZ)
+     *              HSOLT2(IAZ,IBZ) = HSOLT2(IAZ,IBZ)
+     *                              - FAB*CSBZ*(DAZZ00 + DA0Z0Z)
 C
 C           <u(A)/Rlm(C)/u(B)>
 C           Consider u(A), Rlm(C) second derivatives;
 C           SUM(pq) Dpq(tpq)ac =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)ac):
 C
-            IF (DOAX.AND.DOCX)
-     *         HSOLT2(IAX,ICX) = HSOLT2(IAX,ICX) + DA0X0X
-            IF (DOAX.AND.DOCY)
-     *         HSOLT2(IAX,ICY) = HSOLT2(IAX,ICY) + DA0X0Y
-            IF (DOAX.AND.DOCZ)
-     *         HSOLT2(IAX,ICZ) = HSOLT2(IAX,ICZ) + DA0X0Z
-            IF (DOAY.AND.DOCX)
-     *         HSOLT2(IAY,ICX) = HSOLT2(IAY,ICX) + DA0Y0X
-            IF (DOAY.AND.DOCY)
-     *         HSOLT2(IAY,ICY) = HSOLT2(IAY,ICY) + DA0Y0Y
-            IF (DOAY.AND.DOCZ)
-     *         HSOLT2(IAY,ICZ) = HSOLT2(IAY,ICZ) + DA0Y0Z
-            IF (DOAZ.AND.DOCX)
-     *         HSOLT2(IAZ,ICX) = HSOLT2(IAZ,ICX) + DA0Z0X
-            IF (DOAZ.AND.DOCY)
-     *         HSOLT2(IAZ,ICY) = HSOLT2(IAZ,ICY) + DA0Z0Y
-            IF (DOAZ.AND.DOCZ)
-     *         HSOLT2(IAZ,ICZ) = HSOLT2(IAZ,ICZ) + DA0Z0Z
+               IF (DOAX.AND.DOCX)
+     *              HSOLT2(IAX,ICX) = HSOLT2(IAX,ICX) + DA0X0X
+               IF (DOAX.AND.DOCY)
+     *              HSOLT2(IAX,ICY) = HSOLT2(IAX,ICY) + DA0X0Y
+               IF (DOAX.AND.DOCZ)
+     *              HSOLT2(IAX,ICZ) = HSOLT2(IAX,ICZ) + DA0X0Z
+               IF (DOAY.AND.DOCX)
+     *              HSOLT2(IAY,ICX) = HSOLT2(IAY,ICX) + DA0Y0X
+               IF (DOAY.AND.DOCY)
+     *              HSOLT2(IAY,ICY) = HSOLT2(IAY,ICY) + DA0Y0Y
+               IF (DOAY.AND.DOCZ)
+     *              HSOLT2(IAY,ICZ) = HSOLT2(IAY,ICZ) + DA0Y0Z
+               IF (DOAZ.AND.DOCX)
+     *              HSOLT2(IAZ,ICX) = HSOLT2(IAZ,ICX) + DA0Z0X
+               IF (DOAZ.AND.DOCY)
+     *              HSOLT2(IAZ,ICY) = HSOLT2(IAZ,ICY) + DA0Z0Y
+               IF (DOAZ.AND.DOCZ)
+     *              HSOLT2(IAZ,ICZ) = HSOLT2(IAZ,ICZ) + DA0Z0Z
 C
 C           <u(A)/Rlm(C)/u(B)>
 C           Consider u(B), u(B) second derivatives;
 C           SUM(pq) Dpq(tpq)bb =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)bb)
 C
-            IF (DOBX)
-     *         HSOLT2(IBX,IBX) = HSOLT2(IBX,IBX) +
-     *         (DAXX00 + DA00XX + DA0X0X + DA0X0X)
-            IF (DOBX.AND.DOBY)
-     *         HSOLT2(IBX,IBY) = HSOLT2(IBX,IBY) + SIGNBX*SIGNBY*
-     *         (DAXY00 + DA00XY + DA0X0Y + DA0Y0X)
-            IF (DOBX.AND.DOBZ)
-     *         HSOLT2(IBX,IBZ) = HSOLT2(IBX,IBZ) + SIGNBX*SIGNBZ*
-     *         (DAXZ00 + DA00XZ + DA0X0Z + DA0Z0X)
-            IF (DOBY)
-     *         HSOLT2(IBY,IBY) = HSOLT2(IBY,IBY) +
-     *         (DAYY00 + DA00YY + DA0Y0Y + DA0Y0Y)
-            IF (DOBY.AND.DOBZ)
-     *         HSOLT2(IBY,IBZ) = HSOLT2(IBY,IBZ) + SIGNBY*SIGNBZ*
-     *         (DAYZ00 + DA00YZ + DA0Y0Z + DA0Z0Y)
-            IF (DOBZ)
-     *         HSOLT2(IBZ,IBZ) = HSOLT2(IBZ,IBZ) +
-     *         (DAZZ00 + DA00ZZ + DA0Z0Z + DA0Z0Z)
+               IF (DOBX)
+     *              HSOLT2(IBX,IBX) = HSOLT2(IBX,IBX) +
+     *              (DAXX00 + DA00XX + DA0X0X + DA0X0X)
+               IF (DOBX.AND.DOBY)
+     *              HSOLT2(IBX,IBY) = HSOLT2(IBX,IBY) + SIGNBX*SIGNBY*
+     *              (DAXY00 + DA00XY + DA0X0Y + DA0Y0X)
+               IF (DOBX.AND.DOBZ)
+     *              HSOLT2(IBX,IBZ) = HSOLT2(IBX,IBZ) + SIGNBX*SIGNBZ*
+     *              (DAXZ00 + DA00XZ + DA0X0Z + DA0Z0X)
+               IF (DOBY)
+     *              HSOLT2(IBY,IBY) = HSOLT2(IBY,IBY) +
+     *              (DAYY00 + DA00YY + DA0Y0Y + DA0Y0Y)
+               IF (DOBY.AND.DOBZ)
+     *              HSOLT2(IBY,IBZ) = HSOLT2(IBY,IBZ) + SIGNBY*SIGNBZ*
+     *              (DAYZ00 + DA00YZ + DA0Y0Z + DA0Z0Y)
+               IF (DOBZ)
+     *              HSOLT2(IBZ,IBZ) = HSOLT2(IBZ,IBZ) +
+     *              (DAZZ00 + DA00ZZ + DA0Z0Z + DA0Z0Z)
 C
 C           <u(A)/Rlm(C)/u(B)>
 C           Consider Rlm(C), u(B) second derivatives;
 C           SUM(pq) Dpq(tpq)bc =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)bc):
 C
-            IF (DOBX.AND.DOCX) HSOLT2(IBX,ICX) = HSOLT2(IBX,ICX)
-     *            - CSBX*(DA0X0X + DA00XX)
-            IF (DOBX.AND.DOCY) HSOLT2(IBX,ICY) = HSOLT2(IBX,ICY)
-     *            - CSBX*(DA0X0Y + DA00XY)
-            IF (DOBX.AND.DOCZ) HSOLT2(IBX,ICZ) = HSOLT2(IBX,ICZ)
-     *            - CSBX*(DA0X0Z + DA00XZ)
-            IF (DOBY.AND.DOCX) HSOLT2(IBY,ICX) = HSOLT2(IBY,ICX)
-     *            - CSBY*(DA0Y0X + DA00XY)
-            IF (DOBY.AND.DOCY) HSOLT2(IBY,ICY) = HSOLT2(IBY,ICY)
-     *            - CSBY*(DA0Y0Y + DA00YY)
-            IF (DOBY.AND.DOCZ) HSOLT2(IBY,ICZ) = HSOLT2(IBY,ICZ)
-     *            - CSBY*(DA0Y0Z + DA00YZ)
-            IF (DOBZ.AND.DOCX) HSOLT2(IBZ,ICX) = HSOLT2(IBZ,ICX)
-     *            - CSBZ*(DA0Z0X + DA00XZ)
-            IF (DOBZ.AND.DOCY) HSOLT2(IBZ,ICY) = HSOLT2(IBZ,ICY)
-     *            - CSBZ*(DA0Z0Y + DA00YZ)
-            IF (DOBZ.AND.DOCZ) HSOLT2(IBZ,ICZ) = HSOLT2(IBZ,ICZ)
-     *            - CSBZ*(DA0Z0Z + DA00ZZ)
+               IF (DOBX.AND.DOCX) HSOLT2(IBX,ICX) = HSOLT2(IBX,ICX)
+     *              - CSBX*(DA0X0X + DA00XX)
+               IF (DOBX.AND.DOCY) HSOLT2(IBX,ICY) = HSOLT2(IBX,ICY)
+     *              - CSBX*(DA0X0Y + DA00XY)
+               IF (DOBX.AND.DOCZ) HSOLT2(IBX,ICZ) = HSOLT2(IBX,ICZ)
+     *              - CSBX*(DA0X0Z + DA00XZ)
+               IF (DOBY.AND.DOCX) HSOLT2(IBY,ICX) = HSOLT2(IBY,ICX)
+     *              - CSBY*(DA0Y0X + DA00XY)
+               IF (DOBY.AND.DOCY) HSOLT2(IBY,ICY) = HSOLT2(IBY,ICY)
+     *              - CSBY*(DA0Y0Y + DA00YY)
+               IF (DOBY.AND.DOCZ) HSOLT2(IBY,ICZ) = HSOLT2(IBY,ICZ)
+     *              - CSBY*(DA0Y0Z + DA00YZ)
+               IF (DOBZ.AND.DOCX) HSOLT2(IBZ,ICX) = HSOLT2(IBZ,ICX)
+     *              - CSBZ*(DA0Z0X + DA00XZ)
+               IF (DOBZ.AND.DOCY) HSOLT2(IBZ,ICY) = HSOLT2(IBZ,ICY)
+     *              - CSBZ*(DA0Z0Y + DA00YZ)
+               IF (DOBZ.AND.DOCZ) HSOLT2(IBZ,ICZ) = HSOLT2(IBZ,ICZ)
+     *              - CSBZ*(DA0Z0Z + DA00ZZ)
 C
 C           Consider RLM(C), RLM(C) second derivatives;
 C           SUM(pq) Dpq(tpq)cc =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)cc):
 C
-            IF (DOCX)
-     *         HSOLT2(ICX,ICX) = HSOLT2(ICX,ICX) + DA00XX
-            IF (DOCX.AND.DOCY)
-     *         HSOLT2(ICX,ICY) = HSOLT2(ICX,ICY) + DA00XY
-            IF (DOCX.AND.DOCZ)
-     *         HSOLT2(ICX,ICZ) = HSOLT2(ICX,ICZ) + DA00XZ
-            IF (DOCY)
-     *         HSOLT2(ICY,ICY) = HSOLT2(ICY,ICY) + DA00YY
-            IF (DOCY.AND.DOCZ)
-     *         HSOLT2(ICY,ICZ) = HSOLT2(ICY,ICZ) + DA00YZ
-            IF (DOCZ)
-     *         HSOLT2(ICZ,ICZ) = HSOLT2(ICZ,ICZ) + DA00ZZ
-  600    CONTINUE
+               IF (DOCX)
+     *              HSOLT2(ICX,ICX) = HSOLT2(ICX,ICX) + DA00XX
+               IF (DOCX.AND.DOCY)
+     *              HSOLT2(ICX,ICY) = HSOLT2(ICX,ICY) + DA00XY
+               IF (DOCX.AND.DOCZ)
+     *              HSOLT2(ICX,ICZ) = HSOLT2(ICX,ICZ) + DA00XZ
+               IF (DOCY)
+     *              HSOLT2(ICY,ICY) = HSOLT2(ICY,ICY) + DA00YY
+               IF (DOCY.AND.DOCZ)
+     *              HSOLT2(ICY,ICZ) = HSOLT2(ICY,ICZ) + DA00YZ
+               IF (DOCZ)
+     *              HSOLT2(ICZ,ICZ) = HSOLT2(ICZ,ICZ) + DA00ZZ
+ 600        CONTINUE
+         END IF
 C
 C
          CALL RLMSET(LCAVMX,LMNO(1,1),LMNO(1,2),LMNO(1,3))
@@ -1498,17 +1519,20 @@ C
 C
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck magsol */
-      SUBROUTINE MAGSOL(SQMAT,DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+      SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
 #include <implicit.h>
 #include <iratdef.h>
+#include <priunit.h>
+#include <mxcent.h>
 C
-      DIMENSION SQMAT(N2BASX,NCOMP), DERMAT(NNBASX,NCOMP),
-     &          WORK(LWORK)
+      DIMENSION DERMAT(*), WORK(LWORK)
 #include <cbisol.h>
 #include <inforb.h>
 C
 C
+      CALL QENTER('MAGSOL')
       KGLM   = 1
       KTLM   = KGLM + LMTOT
       KAOMAT = KTLM + LMTOT
@@ -1516,19 +1540,38 @@ C
       KTRAMA = KTEMPM + NCOMP*NNBASX*(2*LCAVMX + 1)
       KLAST  = KTRAMA + (LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2
       LWRK   = LWORK - KLAST + 1
-      IF (KLAST .GT. LWORK) CALL STOPIT('MAGSOL',' ',KLAST,LWORK)
-      CALL MAGSO1(SQMAT,DERMAT,WORK(KGLM),WORK(KTLM),
-     &            WORK(KAOMAT),WORK(KTRAMA),
-     &            WORK(KTEMPM),NCOMP,IPRINT,INTPRI,WORK(KLAST),LWRK)
+      IF (2*KLAST .GT. LWORK) THEN
+         KTRAMA = KTLM + LMTOT
+         KIX    = KTRAMA + (LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2
+         KIY    = KIX + (9*MXCENT + 1)/IRAT
+         KIZ    = KIY + (9*MXCENT + 1)/IRAT
+         KINTRP = KIZ + (9*MXCENT + 1)/IRAT
+         KINTAD = KINTRP + (9*MXCENT + 1)/IRAT
+         KLAST  = KINTAD + (9*MXCENT + 1)/IRAT
+         LWRK   = LWORK - KLAST + 1
+         WRITE (LUPRI,'(A)') ' Because of memory restrictions, diff.'//
+     &        'solvent integrals written to disk'
+         IF ((KLAST + (2*LCAVMX + 1)*NNBASX) .GT. LWORK)
+     &        CALL STOPIT('MAGSOL','TOFILE',KLAST,LWORK)
+         CALL MAGSO2(DERMAT,WORK(KGLM),WORK(KTLM),WORK(KIX),
+     &               WORK(KIY),WORK(KIZ),WORK(KINTRP),WORK(KINTAD),
+     &               WORK(KTRAMA),NCOMP,IPRINT,INTPRI,WORK(KLAST),LWRK)
+      ELSE
+         CALL MAGSO1(DERMAT,WORK(KGLM),WORK(KTLM),
+     &               WORK(KAOMAT),WORK(KTRAMA),
+     &               WORK(KTEMPM),NCOMP,IPRINT,INTPRI,WORK(KLAST),LWRK)
+      END IF
+      CALL QEXIT('MAGSOL')
       RETURN
       END
 C  /* Deck magso1 */
-      SUBROUTINE MAGSO1(SQMAT,DERMAT,GLM,TLM,AOMAT1,
+      SUBROUTINE MAGSO1(DERMAT,GLM,TLM,AOMAT1,
      &                  TRAMAT,TEMPMA,NCOMP,IPRINT,INTPRI,WORK,LWORK)
 C
 C     kr and kvm, Dec.-94
 C
 #include <implicit.h>
+#include <dummy.h>
 #include <priunit.h>
 #include <mxcent.h>
 #include <mxorb.h>
@@ -1538,28 +1581,28 @@ C
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
      &          AOMAT1(NNBASX,NCOMP,(LCAVMX + 1)*(LCAVMX + 2)/2),
-     &          SQMAT(NBAST*NBAST,NCOMP),
-     &          DERMAT(NNBASX,NCOMP),
-     &          TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
+     &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
 #include <symmet.h>
 #include <cbisol.h>
-#include <nuctap.h>
 #include <orgcom.h>
+#include <mgsolt.h>
 #include <inforb.h>
 #include <infinp.h>
 #include <inftap.h>
 C
       DIMENSION CAVCNT(3)
+      LOGICAL   FOUND
 C
 C     Construct GLM, TLM, and density matrix
 C
-#if !defined (PRG_DIRAC)
       CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
-      CALL RDSIFC('SOLTLM',TLM,WORK,LWORK)
+      CALL RDSIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      IF (.NOT. FOUND)
+     &    CALL QUIT('MAGSO1 ERROR: "SOLTLM" not found on SIRIFC.')
 C
-      OPEN(LUSOL,STATUS='OLD',FORM='UNFORMATTED',FILE=FNSOL)
+      CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUSOL
       CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
       READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
@@ -1585,9 +1628,6 @@ C
      *   ' NBAST - SIRIUS      :',NBAST
          CALL QUIT('MAGSO1: LUSOL info inconsistent with SIRIUS input.')
       END IF
-      print *, 'dif1',cavcnt(1),cavorg(1)
-      print *, 'dif2',cavcnt(2),cavorg(2)
-      print *, 'dif3',cavcnt(3),cavorg(3)
 c      IF (CAVCNT(1) .NE. CAVORG(1) .OR.
 c     &    CAVCNT(2) .NE. CAVORG(2) .OR.
 c     &    CAVCNT(3) .NE. CAVORG(3) ) THEN
@@ -1601,8 +1641,12 @@ C
       READ (LUSOL)
       LM = 0
       ICOUNT = 0
-      CALL DZERO(DERMAT,NCOMP*NNBASX)
-      CALL DZERO(SQMAT,NCOMP*N2BASX)
+      DOALL  = .TRUE.
+      IF (NCOMP .EQ. 3) THEN
+         CALL DZERO(DERMAT,NCOMP*N2BASX)
+      ELSE
+         CALL DZERO(DERMAT,NCOMP*NNBASX)
+      END IF
 C
       DO 100 L = 0, LSOLMX
          MCOMP = (L + 1)*(L + 2)*NCOMP/2
@@ -1660,8 +1704,9 @@ C
             ICOUNT = ICOUNT + 1
             DO 190 ICOOR = 1, NCOMP
                FAC2 = -D2*GLM(ICOUNT)*TLM(ICOUNT)
+               IOFF = 1 + (ICOOR - 1)*NNBASX
                CALL DAXPY(NNBASX,FAC2,TEMPMA(1,ICOOR,M),1,
-     &                    DERMAT(1,ICOOR),1)
+     &                    DERMAT(IOFF),1)
  190        CONTINUE
  200     CONTINUE
  100  CONTINUE
@@ -1669,39 +1714,309 @@ C
 C
 C        We need to square things away, in particular certain matrices
 C
-         DO 300 IX = 1, 3
-            CALL DAPTGE(NBAST,DERMAT(1,IX),SQMAT(1,IX))
+         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,TEMPMA(1,1,-LCAVMX),1)
+         DO 300 ICOMP = 1, NCOMP
+            IOFFS = 1 + (ICOMP - 1)*N2BASX
+            CALL DAPTGE(NBAST,TEMPMA(1,ICOMP,-LCAVMX),DERMAT(IOFFS))
  300     CONTINUE
          IF (IPRINT .GT. 5) THEN
-            CALL AROUND('Solvent contributions to gradient in MAGSO1')
-            WRITE (LUPRI,'(2X,A)') 'X coordinate'
-            CALL OUTPUT(SQMAT(1,1),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(2X,A)') 'Y coordinate'
-            CALL OUTPUT(SQMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-            WRITE (LUPRI,'(2X,A)') 'Z coordinate'
-            CALL OUTPUT(SQMAT(1,3),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           CALL AROUND('Solvent contributions to gradient in MAGSO1')
+           IOFF = 1
+           WRITE (LUPRI,'(2X,A)') 'X coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           IOFF = IOFF + N2BASX
+           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           IOFF = IOFF + N2BASX
+           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          END IF
       ELSE
          IF (IPRINT .GT. 5) THEN
             CALL AROUND('Solvent contributions to hessian in MAGSO1')
+            IOFF = 1
             WRITE (LUPRI,'(2X,A)') 'XX coordinate'
-            CALL OUTPAK(DERMAT(1,1),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
             WRITE (LUPRI,'(2X,A)') 'XY coordinate'
-            CALL OUTPAK(DERMAT(1,2),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
             WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
-            CALL OUTPAK(DERMAT(1,3),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
             WRITE (LUPRI,'(2X,A)') 'YY coordinate'
-            CALL OUTPAK(DERMAT(1,4),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
             WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
-            CALL OUTPAK(DERMAT(1,5),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
             WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
-            CALL OUTPAK(DERMAT(1,6),NBAST,1,LUPRI)
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
          END IF
       END IF
 C
 C     We ought to be more or less finished now
 C
-      CLOSE (LUSOL,STATUS='KEEP')
-#endif
+      CALL GPCLOSE(LUSOL,'KEEP')
       RETURN
       END
+C  /* Deck magso2 */
+      SUBROUTINE MAGSO2(DERMAT,GLM,TLM,IX,IY,IZ,INTREP,INTADR,
+     &                  TRAMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+C
+C     kr , Nov.-96
+C     Writes integrals to file in order to save memory
+C     Rewritten to save even more memory, May 4-97
+C
+#include <implicit.h>
+#include <dummy.h>
+#include <mxcent.h>
+#include <mxorb.h>
+#include <maxorb.h>
+#include <maxaqn.h>
+#include <iratdef.h>
+#include <priunit.h>
+      PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
+      CHARACTER*2 LBL3(3), LBL6(6), LABXY
+      CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)
+      DIMENSION GLM(LMTOT), TLM(LMTOT), INTREP(*), INTADR(*),
+     &          DERMAT(*), 
+     &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
+     &          IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT),
+     &          WORK(LWORK)
+      DIMENSION CAVCNT(3)
+      LOGICAL   FOUND
+C
+#include <symmet.h>
+#include <cbisol.h>
+#include <mgsolt.h>
+#include <orgcom.h>
+#include <inforb.h>
+#include <infinp.h>
+#include <inftap.h>
+#include <chrnos.h>
+C
+      DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
+      DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/
+C
+C     Construct GLM, TLM, and density matrix
+C
+      CALL SOLFL(GLM,EPDIEL,RCAV,LCAVMX)
+      CALL RDSIFC('SOLTLM',FOUND,TLM,WORK,LWORK)
+      IF (.NOT. FOUND)
+     &    CALL QUIT('MAGSO2 ERROR: "SOLTLM" not found on SIRIFC.')
+C
+      CALL GPOPEN(LUSOL,FNSOL,'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+      REWIND LUSOL
+      CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
+      READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
+      IF (LMAXSS .LT. LSOLMX) THEN
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' insufficient number of intgrals on LUSOL',
+     *   ' l max from SIRIUS input :',LSOLMX,
+     *   ' l max from LUSOL  file  :',LMAXSS
+         CALL QUIT('MAGSO1: lmax on LUSOL is too small')
+      END IF
+      IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' LUSOL file info inconsistent',
+     *   ' l_max               :',LMAXSS,
+     *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
+     *   ' LMTOTX              :',LMTOTX
+         CALL QUIT('MAGSO1: LUSOL info not internally consistent')
+      END IF
+      IF (NNNBAS .NE. NBAST) THEN
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+     *   ' LUSOL file info inconsistent with SIRIUS input',
+     *   ' NBAST - LUSOL       :',NNNBAS,
+     *   ' NBAST - SIRIUS      :',NBAST
+         CALL QUIT('MAGSO1: LUSOL info inconsistent with SIRIUS input.')
+      END IF
+c      IF (CAVCNT(1) .NE. CAVORG(1) .OR.
+c     &    CAVCNT(2) .NE. CAVORG(2) .OR.
+c     &    CAVCNT(3) .NE. CAVORG(3) ) THEN
+c         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' >>> SOLRH1 ERROR,',
+c     &   ' LUSOL center of cavity not consistent with ABACUS value',
+c     &   ' CAVORG(1:3) from LUSOL        :',CAVCNT,
+c     &   ' CAVORG(1:3) from common block :',CAVORG
+c         CALL QUIT('MAGSO1: LUSOL cavity center .ne. ABACUS value.')
+c      END IF
+C
+      READ (LUSOL)
+      LM = 0
+      DOALL = .FALSE.
+      IF (NCOMP .EQ. 3) THEN
+         CALL DZERO(DERMAT,NCOMP*N2BASX)
+      ELSE
+         CALL DZERO(DERMAT,NCOMP*NNBASX)
+      END IF
+C
+C     Calculate all integrals, order by order, component by component
+C
+      DO 100 L = 0, LSOLMX
+         DO 110 ICOOR = 1, NCOMP
+            ICOMP = ICOOR
+            MCOMP = (L + 1)*(L + 2)/2
+C
+C     Construct differentiated integrals in spherical harmonic basis
+C
+            KPATOM = 0
+            IF (NCOMP .EQ. 3) THEN
+               CALL GET1IN(DUMMY,'LONSOL1',0,WORK,LWORK,LABINT,INTREP,
+     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
+            ELSE
+               CALL GET1IN(DUMMY,'LONSOL2',0,WORK,LWORK,LABINT,INTREP,
+     &                     INTADR,L,.TRUE.,KPATOM,.TRUE.,INTPRI)
+            END IF
+ 110     CONTINUE 
+ 100  CONTINUE 
+C
+C     All integrals have been calculated. Now we read them from disk,
+C     transforms to spherical basis, and adds them to the appropriate
+C     differentiated matrices
+C
+      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
+      KTMP   = 1
+      KSTART = KTMP + (2*LCAVMX + 1)*NNBASX
+      KEND   = KSTART + (LCAVMX + 1)*(LCAVMX + 2)*NNBASX/2
+      IF (KEND .GT. LWORK) CALL STOPIT('MAGSO2',' ',KEND,LWORK)
+      DO 140 ICOOR = 1, NCOMP
+         IF (NCOMP .EQ. 3) THEN
+            LABXY = LBL3(ICOOR)
+         ELSE
+            LABXY = LBL6(ICOOR)
+         END IF
+         ICOUNT = 0
+         DO 120 L = 0, LSOLMX
+            CALL DZERO(WORK(KTMP),(2*LCAVMX + 1)*NNBASX)
+            CALL SPHCOM(L,TRAMAT,2*L + 1,(L + 1)*(L + 2)/2,MORDER,
+     &                  MINTEG,WORK(KEND),LWORK,IPRINT)
+            CALL LMNVAL(L + 1,(L + 1)*(L + 2)/2,IX,IY,IZ)
+            DO 130 LCAR = 1, (L + 1)*(L + 2)/2
+               NX = IX(LCAR)
+               NY = IY(LCAR)
+               NZ = IZ(LCAR)
+               LABEL = LABXY//CHRNOS(NX/10)//CHRNOS(MOD(NX,10))
+     &                      //CHRNOS(NY/10)//CHRNOS(MOD(NY,10))
+     &                      //CHRNOS(NZ/10)//CHRNOS(MOD(NZ,10))
+               IADR = (LCAR - 1)*NNBASX + KSTART
+               REWIND (LUPROP)
+               CALL MOLLAB(LABEL,LUPROP,LUPRI)
+               CALL READT(LUPROP,NNBASX,WORK(IADR))
+               IF (IPRINT .GE. 10) THEN
+                  CALL AROUND('SOLINT  integrals in cartesian basis')
+                  WRITE (LUPRI,'(2X,A,I3,5X,A,I3)') 'Component: ',
+     &                 ICOMP, 'Coordinate direction: ',ICOOR
+                  CALL OUTPAK(WORK(IADR),NBAST,1,LUPRI)
+               END IF
+ 130        CONTINUE 
+C
+C     We now have all Cartesian components of a given direction of the
+C     property solvent integrals. Need to transform them to spherical basis
+C
+            DO 150 ICAR = 1, (L + 1)*(L + 2)/2
+               IADR = (ICAR - 1)*NNBASX + KSTART
+               IL = 0
+               DO 410 ISPH = -L, L
+                  IL = IL + 1
+                  IELMNT = (L + 1)*(L + 2)*(IL - 1)/2 + ICAR
+                  COEF = TRAMAT(IELMNT)
+                  IPOINT = KTMP + (IL - 1)*NNBASX
+                  DO 420 IBAS1 = 0, NNBASX - 1
+                     WORK(IPOINT + IBAS1) = WORK(IPOINT + IBAS1)
+     &                                    + WORK(IBAS1 + IADR)*COEF
+ 420              CONTINUE
+ 410           CONTINUE
+ 150        CONTINUE
+            IF (IPRINT .GE. 10) THEN
+               CALL AROUND('SOLINT1 integrals in spherical '//
+     &              'harmonic basis')
+               IL = 0
+               DO 101 ICOMP = -L, L
+                  IL = IL + 1
+                  IPOINT = KTMP + (IL - 1)*NNBASX
+                  WRITE (LUPRI,'(2X,A,I3,5X,A,I3)') 'Component: ',
+     &                 ICOMP, 'Coordinate direction: ',ICOOR
+                  CALL OUTPAK(WORK(IPOINT),NBAST,1,LUPRI)
+ 101           CONTINUE
+            END IF
+C
+C     Construct and -2g(l)sum(m) T(lm) t(lm)a_mn
+C
+            IL = 0
+            DO 200 M = -L, L
+               ICOUNT = ICOUNT + 1
+               IL = IL + 1
+               IPOINT = KTMP + (IL - 1)*NNBASX
+               FAC2 = -D2*GLM(ICOUNT)*TLM(ICOUNT)
+               IOFFD = 1 + (ICOOR - 1)*NNBASX
+               CALL DAXPY(NNBASX,FAC2,WORK(IPOINT),1,
+     &                    DERMAT(IOFFD),1)
+ 200        CONTINUE
+ 120     CONTINUE 
+ 140  CONTINUE 
+      IF (NCOMP .EQ. 3) THEN
+C
+C        We need to square things away, in particular certain matrices
+C
+         CALL DCOPY(NCOMP*NNBASX,DERMAT,1,WORK(1),1)
+         DO 300 ICOMP = 1, NCOMP
+            IOFFD = 1 + (ICOMP - 1)*NNBASX
+            IOFFS = 1 + (ICOMP - 1)*N2BASX
+            CALL DAPTGE(NBAST,WORK(IOFFD),DERMAT(IOFFS))
+ 300     CONTINUE
+         IF (IPRINT .GT. 5) THEN
+           CALL AROUND('Solvent contributions to gradient in MAGSO2')
+           IOFF = 1
+           WRITE (LUPRI,'(2X,A)') 'X coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           IOFF = IOFF + N2BASX
+           WRITE (LUPRI,'(2X,A)') 'Y coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+           IOFF = IOFF + N2BASX
+           WRITE (LUPRI,'(2X,A)') 'Z coordinate'
+           CALL OUTPUT(DERMAT(IOFF),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         END IF
+      ELSE
+         IF (IPRINT .GT. 5) THEN
+            CALL AROUND('Solvent contributions to hessian in MAGSO2')
+            IOFF = 1
+            WRITE (LUPRI,'(2X,A)') 'XX coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
+            WRITE (LUPRI,'(2X,A)') 'XY coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
+            WRITE (LUPRI,'(2X,A)') 'XZ coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
+            WRITE (LUPRI,'(2X,A)') 'YY coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
+            WRITE (LUPRI,'(2X,A)') 'YZ coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+            IOFF = IOFF + NNBASX
+            WRITE (LUPRI,'(2X,A)') 'ZZ coordinate'
+            CALL OUTPAK(DERMAT(IOFF),NBAST,1,LUPRI)
+         END IF
+      END IF
+C
+C     We ought to be more or less finished now. Change EOF label in order
+C     to overwrite the integrals
+C
+      CALL GPCLOSE(LUSOL,'KEEP')
+      IF (NCOMP .EQ. 3) THEN
+         LABEL = 'X 000000'
+      ELSE
+         LABEL = 'XX000000'
+      END IF
+      REWIND (LUPROP)
+      CALL FNDLAB(LABEL,LUPROP)
+      BACKSPACE LUPROP
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
+      CALL GPCLOSE(LUPROP,'KEEP')
+      RETURN
+      END
+#endif /* ifndef PRG_DIRAC */

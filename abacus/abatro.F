@@ -7,22 +7,22 @@ C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
 C
 C
@@ -74,13 +74,13 @@ C
                   SKIP = .TRUE.
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(I5)') IPRINT
+                  READ (LUCMD,*) IPRINT
                   IF (IPRINT .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
     3             CONTINUE
                   CUT    = .TRUE.
                GO TO 100
-    4             READ (LUCMD, '(D12.6)') THRESH
+    4             READ (LUCMD,*) THRESH
                   IF (THRESH .EQ. THRSHD) ICHANG = ICHANG - 1
                GO TO 100
     5             COMPAR = .TRUE.
@@ -91,9 +91,9 @@ C
                GO TO 100
     8             RDTRO = .TRUE.
 C                 -- currently RDTRO only possible if NOROT
-                  NOROT = .TRUE.
+                  NOROT1 = .TRUE.
                GO TO 100
-    9             NOROT = .TRUE.
+    9             NOROT1 = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -117,7 +117,7 @@ C                 -- currently RDTRO only possible if NOROT
                WRITE(LUPRI,'(A,D12.6)')
      *            ' Threshold for linear dependence: ',THRESH
             END IF
-            IF (NOROT) WRITE (LUPRI,'(/,A,/)')
+            IF (NOROT1) WRITE (LUPRI,'(/,A,/)')
      *         ' Rotational symmetry not used.'
             IF (COMPAR) WRITE (LUPRI,'(/,2A)') ' Translational and',
      *         ' rotational symmetry will be used for comparison.'
@@ -132,6 +132,7 @@ C                 -- currently RDTRO only possible if NOROT
       END IF
       RETURN
       END
+#ifndef PRG_DIRAC
 C  /* Deck troini */
       SUBROUTINE TROINI
 C
@@ -139,27 +140,27 @@ C     Initialize /CBITRO/
 C
 #include <implicit.h>
 #include <mxcent.h>
+#include <maxorb.h>
 #include <abainf.h>
 #include <cbitro.h>
-Cjth
-#include <dcbgrd.h>
+#include <infinp.h>
 C
       IPRINT = IPRDEF
       THRESH = 0.1D00
       COMPAR = VCD
-      SKIP   = .NOT. ((RELGRD .OR. MOLGRD .OR. MOLHES .OR. DIPDER) 
-     &                .AND. DOSYM(1))
+      SKIP   = .NOT. ((MOLGRD .OR. MOLHES .OR. DIPDER) .AND. DOSYM(1))
       CUT    = .FALSE.
-      NOROT  = .FALSE.
+      NOROT1  = .FALSE.
       HESTRO = .TRUE.
       GDALL  = .FALSE.
       GDTRO  = .FALSE.
       RDTRO  = .FALSE.
-      TROGRD = MOLGRD .OR. RELGRD
+      TROGRD = MOLGRD .AND. .NOT. (NFIELD .GT. 0)
       TROHES = MOLHES
       TRODIP = DIPDER
       RETURN
       END
+#endif /* PRG_DIRAC */
 C  /* Deck troinv */
       SUBROUTINE TROINV(WORK,LWORK)
 C
@@ -202,17 +203,18 @@ C     TROINV must be executed twice in each iterations, the first time
 C     being an initialization.
 C
       IF (.NOT.FTRONV .AND. SKIP) RETURN
+      CALL QENTER('TROINV')
 C
 C     Several variables are stored in /EXEINF/.
 C
       IF (FTRONV) THEN
          GTRONV = GDTRO
          HTRONV = HESTRO
-         RTRONV = NOROT
+         RTRONV = NOROT1
       ELSE
          GDTRO  = GTRONV
          HESTRO = HTRONV
-         NOROT  = RTRONV
+         NOROT1  = RTRONV
       END IF
 C
       IF (IPRINT .GT. 0) THEN
@@ -234,7 +236,7 @@ C
             HESTRO = .FALSE.
             GDTRO  = .TRUE.
             RDTRO  = .FALSE.
-            NOROT  = .TRUE.
+            NOROT1  = .TRUE.
          END IF
       END IF
       IF (SKIP) THEN
@@ -273,7 +275,7 @@ C           GDTRO = GDALL
             GDTRO = .FALSE.
 C
             IF (RDTRO .OR. GDTRO) THEN
-               IF (NOROT .OR. (GDALL .AND. .NOT.RDTRO)) THEN
+               IF (NOROT1 .OR. (GDALL .AND. .NOT.RDTRO)) THEN
                   IVCIND = 1
                   IVCDEP = IVCIND + NVAR
                   WRITE (LUPRI,'(//2A//)')
@@ -292,13 +294,13 @@ C                 CALL VECTRA(WORK(IVCIND),WORK(IVCDEP))
       CALL SETDCR('ABACUS')
       CALL SETGD
       FTRONV = .FALSE.
-      IF (IPRINT .GT. 1) CALL TIMER('TROINV',TIMSTR,TIMEND)
+      IF (IPRINT .GT. 2) CALL TIMER('TROINV',TIMSTR,TIMEND)
       IF (CUT) THEN
-         WRITE (LUPRI,'(/,A)')
-     &          ' Program stopped after TROINV as required.'
-         WRITE (LUPRI,'(A)') ' No restart file has been written.'
+         WRITE (LUPRI,'(/A)')
+     &      ' Program stopped after TROINV as required.'
          CALL QUIT(' ***** End of ABACUS (in TROINV) *****')
       END IF
+      CALL QEXIT('TROINV')
       RETURN
       END
 C  /* Deck setper */
@@ -392,35 +394,47 @@ C
       IF (.NOT. RESTAR) THEN
          CALL IZERO(IDORCT,80*MXCENT)
          CALL IZERO(IDORCI,48*(MXCENT + 1))
+#ifndef PRG_DIRAC
+         CALL IZERO(IGDCOR,16*(MXCOOR + 3))
+         CALL IZERO(IGDREC,16*(MXCOOR + 3))
+         CALL IZERO(ITRCOR,80*MXCENT)
+         CALL IZERO(ITRREC,80*MXCENT)
+         CALL IZERO(NGDVEC,16)
+#endif /* not PRG_DIRAC */
       END IF
       DO 300 I = 1, 2
-         DO 310 IREP = 0, MAXREP
-            NSYMCR = 0
-            DO 320 JATOM = 1, NUCIND
-               DO 330 ICOOR = 1, 3
-                  JCOOR = 3*(JATOM - 1) + ICOOR
-                  ISCOOR = IPTCNT(JCOOR,IREP,I)
-                  IF (ISCOOR .NE. 0) THEN
-                     IF (I .EQ. 1) THEN
-                        IF (DOPERT(ISCOOR,I)) THEN
-                           NSYMCR = NSYMCR + 1
-                           IGDCOR(NSYMCR,IREP + 1,I) = ISCOOR
-                           IGDREC(NSYMCR,IREP + 1,I) = ISCOOR
-                        END IF
-                     ELSE
-                        IF (DOPERT(JATOM,I) .OR. SHIELD 
-     &                      .OR. SPINRO) THEN
-                           NSYMCR = NSYMCR + 1
-                           IGDCOR(NSYMCR,IREP + 1,I) = ISCOOR
-                           IGDREC(NSYMCR,IREP + 1,I) = ISCOOR
+         NGDTOT(I) = 0
+         IF (((I .EQ. 1) .AND. (MOLHES .OR. DIPDER)) .OR. 
+     &       ((I .EQ. 2) .AND. ((SPNSPN .AND. DOPSO) .OR. SHIELD
+     &                                       .OR. SPINRO))) THEN
+            DO 310 IREP = 0, MAXREP
+               NSYMCR = 0
+               DO 320 JATOM = 1, NUCIND
+                  DO 330 ICOOR = 1, 3
+                     JCOOR = 3*(JATOM - 1) + ICOOR
+                     ISCOOR = IPTCNT(JCOOR,IREP,I)
+                     IF (ISCOOR .NE. 0) THEN
+                        IF (I .EQ. 1) THEN
+                           IF (DOPERT(ISCOOR,I)) THEN
+                              NSYMCR = NSYMCR + 1
+                              IGDCOR(NSYMCR,IREP + 1,I) = ISCOOR
+                              IGDREC(NSYMCR,IREP + 1,I) = ISCOOR
+                           END IF
+                        ELSE
+                           IF (DOPERT(JATOM,I) .OR. SHIELD 
+     &                          .OR. SPINRO) THEN
+                              NSYMCR = NSYMCR + 1
+                              IGDCOR(NSYMCR,IREP + 1,I) = ISCOOR
+                              IGDREC(NSYMCR,IREP + 1,I) = ISCOOR
+                           END IF
                         END IF
                      END IF
-                  END IF
- 330           CONTINUE
- 320        CONTINUE
-            NGDVEC(IREP + 1,I) = NSYMCR
- 310     CONTINUE
-         NGDTOT(I) = ISUM(MAXREP+1,NGDVEC(1,I),1)
+ 330              CONTINUE
+ 320           CONTINUE
+               NGDVEC(IREP + 1,I) = NSYMCR
+ 310        CONTINUE
+            NGDTOT(I) = ISUM(MAXREP+1,NGDVEC(1,I),1)
+         END IF
  300  CONTINUE
 C     
 C     Dipole derivatives
@@ -428,7 +442,12 @@ C
       DO 400 I = 1, 2
          IF ((I.EQ.1 .AND. (DIPDER .OR. POLAR  .OR. VCD)) .OR.
      &       (I.EQ.2 .AND. (SHIELD .OR. MAGSUS .OR. VCD .OR.
+#ifndef PRG_DIRAC
+     &                      MOLGFA .OR. SPINRO .OR. VROA .OR.
+     &                      OPTROT))) THEN
+#else /* PRG_DIRAC */
      &                      MOLGFA .OR. SPINRO))) THEN
+#endif /* PRG_DIRAC */
             IAXSYM = 0
             IAXREC = 3*NUCDEP
             DO 410 IREP = 0, MAXREP
@@ -832,6 +851,22 @@ C
          END IF
   430 CONTINUE
  1000 CONTINUE
+      IF (NSET .NE. NCDEP) THEN
+         WRITE (LUPRI,'(/,2A,/,A,/)')
+     &         ' ERROR in SETDEP - less than 6 (5)',
+     &         ' independent Cartesian directions',' found.'
+         WRITE (LUPRI,'(A,E12.6)')
+     &         ' Current threshold for dependency: ',THRESH
+         WRITE (LUPRI,'(2A)')
+     &         ' Attempt calculation with decreased',
+     &         ' threshold .THRESH under *TROINV' 
+         WRITE (LUPRI,'(A)')
+     &         ' Alternatively use .SKIP under *TROINV'
+         WRITE (LUPRI,'(2A)')
+     &         ' Note: These directives must be used',
+     &         ' under **START, **PROPERTIES and **FINAL.'
+         CALL QUIT('ERROR in SETDEP.')
+      END IF
 C
 C     Set up DEPEND(NCOOR)
 C
@@ -849,12 +884,6 @@ C
      *                                              (ITBDEP(I),I=1,NSET)
          CALL HEADER('DEPEND in SETDEP',1)
          WRITE (LUPRI,'(2X,35L2)') (DEPEND(I),I=1,NCOOR)
-      END IF
-      IF (NSET .NE. NCDEP) THEN
-         WRITE (LUPRI,'(/,2A,/,A,/)')
-     *         ' ERROR in SETDEP - less than 6 (5)',
-     *         ' independent Cartesian directions',' found.'
-         CALL QUIT('ERROR in SETDEP.')
       END IF
       RETURN
       END
@@ -994,20 +1023,24 @@ C
 C              FD vector
 C
                CALL DZERO(WORK(KFD),NDEP)
-               CALL  MPAB(WORK(KTDI),  NDEP,NIND,NDEP,NIND,
-     *                    WORK(KFI),   NIND,   1,NIND,   1,
-     *                    WORK(KTDIFI),NDEP,   1)
-               CALL SMPAB(WORK(KTDINV),NDEP,NDEP,NDEP,NDEP,
-     *                    WORK(KTDIFI),NDEP,   1,NDEP,   1,
-     *                    WORK(KFD),   NDEP,   1)
-               IF (IPRINT .GE. 10) THEN
-                  CALL AROUND('FD - TRAROT')
-                  CALL OUTPUT(WORK(KFD),1,NDEP,1,1,NDEP,1,1,LUPRI)
-               END IF
+               IF (NIND .GT. 0) THEN
+                  CALL DGEMM('N','N',NDEP,1,NIND,1.D0,
+     &                       WORK(KTDI),NDEP,
+     &                       WORK(KFI),NIND,0.D0,
+     &                       WORK(KTDIFI),NDEP)
+                  CALL DGEMM('N','N',NDEP,1,NDEP,-1.D0,
+     &                       WORK(KTDINV),NDEP,
+     &                       WORK(KTDIFI),NDEP,1.D0,
+     &                       WORK(KFD),NDEP)
+                  IF (IPRINT .GE. 10) THEN
+                     CALL AROUND('FD - TRAROT')
+                     CALL OUTPUT(WORK(KFD),1,NDEP,1,1,NDEP,1,1,LUPRI)
+                  END IF
 C
 C              Compare FD with explicitly calculated gradient
-C
-               CALL CMPGRD(WORK(KFD),NDEP,IPRINT)
+C     
+                  CALL CMPGRD(WORK(KFD),NDEP,IPRINT)
+               END IF
             END IF
 
 C           *****************************
@@ -1038,9 +1071,10 @@ C
 C
 C              HDD = TDD-1*BDD
 C
-               CALL MPAB(WORK(KTDINV),NDEP,NDEP,NDEP,NDEP,
-     *                   WORK(KBDD),  NDEP,NDEP,NDEP,NDEP,
-     *                   WORK(KHDD),  NDEP,NDEP)
+               CALL DGEMM('N','N',NDEP,NDEP,NDEP,1.D0,
+     &                    WORK(KTDINV),NDEP,
+     &                    WORK(KBDD),NDEP,0.D0,
+     &                    WORK(KHDD),NDEP)
                IF (IPRINT .GE. 10) THEN
                   CALL AROUND('HDD (DD contributions only) - TRAROT')
                   CALL OUTPUT(WORK(KHDD),1,NDEP,1,NDEP,
@@ -1085,12 +1119,14 @@ C
 C
 C                 HDI
 C
-                  CALL SMPAB(WORK(KTDI),  NDEP,NIND,NDEP,NIND,
-     *                       WORK(KHII),  NIND,NIND,NIND,NIND,
-     *                       WORK(KBDI),  NDEP,NIND)
-                  CALL  MPAB(WORK(KTDINV),NDEP,NDEP,NDEP,NDEP,
-     *                       WORK(KBDI),  NDEP,NIND,NDEP,NIND,
-     *                       WORK(KHDI),  NDEP,NIND)
+                  CALL DGEMM('N','N',NDEP,NIND,NIND,-1.D0,
+     &                       WORK(KTDI),NDEP,
+     &                       WORK(KHII),NIND,1.D0,
+     &                       WORK(KBDI),NDEP)
+                  CALL DGEMM('N','N',NDEP,NIND,NDEP,1.D0,
+     &                       WORK(KTDINV),NDEP,
+     &                       WORK(KBDI),NDEP,0.D0,
+     &                       WORK(KHDI),NDEP)
                   IF (IPRINT .GE. 10) THEN
                      CALL AROUND('HDI - TRAROT')
                      CALL OUTPUT(WORK(KHDI),1,NDEP,1,NIND,
@@ -1099,12 +1135,14 @@ C
 C
 C                 HDD
 C
-                  CALL MPABT(WORK(KTDI),NDEP,NIND,NDEP,NIND,
-     *                       WORK(KHDI),NDEP,NIND,NDEP,NIND,
-     *                       WORK(KSCR),NDEP,NDEP)
-                  CALL SMPAB(WORK(KTDINV),NDEP,NDEP,NDEP,NDEP,
-     *                       WORK(KSCR),  NDEP,NDEP,NDEP,NDEP,
-     *                       WORK(KHDD),  NDEP,NDEP)
+                  CALL DGEMM('N','T',NDEP,NDEP,NIND,1.D0,
+     &                       WORK(KTDI),NDEP,
+     &                       WORK(KHDI),NDEP,0.D0,
+     &                       WORK(KSCR),NDEP)
+                  CALL DGEMM('N','N',NDEP,NDEP,NDEP,-1.D0,
+     &                       WORK(KTDINV),NDEP,
+     &                       WORK(KSCR),NDEP,1.D0,
+     &                       WORK(KHDD),NDEP)
                END IF
                IF (IPRINT .GE. 10) THEN
                   CALL AROUND('HDD - TRAROT')
@@ -1184,15 +1222,18 @@ C
 C
 C              DGD vector
 C
-               CALL SMPAB(WORK(KTDI), NDEP,NIND, NDEP,NIND,
-     *                    WORK(KDGI), NIND,NAX,NIND,NAX,
-     *                    WORK(KBMAT),NDEP,NAX)
-               CALL  MPAB(WORK(KTDINV),NDEP,NDEP, NDEP,NDEP,
-     *                    WORK(KBMAT), NDEP,NAX,NDEP,NAX,
-     *                    WORK(KDGD),  NDEP,NAX)
+               IF (NIND .GT. 0) CALL DGEMM('N','N',NDEP,NAX,NIND,-1.D0,
+     &                       WORK(KTDI),NDEP,
+     &                       WORK(KDGI),NIND,1.D0,
+     &                       WORK(KBMAT),NDEP)
+               CALL DGEMM('N','N',NDEP,NAX,NDEP,1.D0,
+     &                    WORK(KTDINV),NDEP,
+     &                    WORK(KBMAT),NDEP,0.D0,
+     &                    WORK(KDGD),NDEP)
                IF (IPRINT .GE. 10) THEN
                   CALL AROUND('DGD - TRAROT')
-                  CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,LUPRI)
+                  CALL OUTPUT(WORK(KDGD),1,NDEP,1,NAX,NDEP,NAX,1,
+     *                 LUPRI)
                END IF
 C
 C              Construct DIPTR
@@ -1214,13 +1255,17 @@ C
       IOFFCR = IOFFCR + NCR
       IOFFAX = IOFFAX + NAX
   100 CONTINUE
+      KCSTRA = 1
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
+      IF (KLAST .GT. LWORK) CALL STOPIT('TRAROT','TRACOR',KLAST,LWORK)
       IF (TROHES) THEN
          IF (IPRINT .GE. 5) THEN
             CALL HEADER('Total molecular Hessian - TRAROT',-1)
-            CALL PRIHES(HESTR,'CENTERS')
+            CALL PRIHES(HESTR,'CENTERS',WORK(KCSTRA),WORK(KSCTRA))
          END IF
          IF (COMPAR) THEN
-            CALL CMPHES(HESTR,IPRINT)
+            CALL CMPHES(HESTR,IPRINT,WORK(KCSTRA),WORK(KSCTRA))
             DO 700 I = 1, NCOOR
             DO 700 J = 1, I - 1
                HESMOL(J,I) = HESMOL(I,J)
@@ -1232,10 +1277,10 @@ C
       IF (TRODIP) THEN
          IF (IPRINT .GE. 5) THEN
             CALL HEADER('Total dipole gradient - TRAROT',-1)
-            CALL FCPRI(DIPTR,'APT')
+            CALL FCPRI(DIPTR,'APT',WORK(KCSTRA),WORK(KSCTRA))
          END IF
          IF (COMPAR) THEN
-            CALL CMPDIP(DIPTR,IPRINT)
+            CALL CMPDIP(DIPTR,IPRINT,WORK(KCSTRA),WORK(KSCTRA))
          ELSE
             CALL DCOPY(3*NCOOR,DIPTR,1,DIP1,1)
          END IF
@@ -1294,7 +1339,11 @@ C
             END IF
          END IF
   100 CONTINUE
+#ifndef PRG_DIRAC
+      IF (DIFMAX.GT.1.D-06) THEN
+#else /* PRG_DIRAC */
       IF (DIFMAX.GT.1.D-08) THEN
+#endif /* PRG_DIRAC */
          IF (.NOT.LPRINT) THEN
             LPRINT = .TRUE.
             GO TO 10
@@ -1309,7 +1358,7 @@ C
       RETURN
       END
 C  /* Deck cmphes */
-      SUBROUTINE CMPHES(HESTR,IPRINT)
+      SUBROUTINE CMPHES(HESTR,IPRINT,CSTRA,SCTRA)
 C
 C     Compares the elements of the molecular Hessian calculated by
 C     translational and rotational symmetry with those calculated
@@ -1320,7 +1369,7 @@ C
 #include <implicit.h>
 #include <priunit.h>
 #include <mxcent.h>
-      DIMENSION HESTR(MXCOOR,MXCOOR)
+      DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include <abainf.h>
 #include <taymol.h>
 #include <trkoor.h>
@@ -1347,7 +1396,7 @@ C
          END IF
          CALL AROUND('Diff. between Hessian calculated directly'//
      *      ' and using tra.-rot. symmetry')
-         CALL PRIHES(HESTR,'CENTERS')
+         CALL PRIHES(HESTR,'CENTERS',CSTRA,SCTRA)
       END IF
       WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
      *  ' Largest difference in',
@@ -1356,7 +1405,7 @@ C
       RETURN
       END
 C  /* Deck cmpdip */
-      SUBROUTINE CMPDIP(DIPTR,IPRINT)
+      SUBROUTINE CMPDIP(DIPTR,IPRINT,CSTRA,SCTRA)
 C
 C     Compares the elements of the dipole gradient calculated by
 C     translational and rotational symmetry with those calculated
@@ -1368,7 +1417,7 @@ C
 #include <priunit.h>
 #include <mxcent.h>
       PARAMETER (D0 = 0.0D0)
-      DIMENSION DIPTR(3,MXCOOR)
+      DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include <abainf.h>
 #include <moldip.h>
 #include <trkoor.h>
@@ -1394,7 +1443,7 @@ C
          END IF
          CALL AROUND('Diff. between APTs calculated'//
      *      ' directly and using tra.-rot. symmetry')
-         CALL FCPRI(DIPTR,'APT')
+         CALL FCPRI(DIPTR,'APT',CSTRA,SCTRA)
       END IF
       WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
      *  ' Largest difference in',
@@ -1652,7 +1701,11 @@ C
 #include <nuclei.h>
 #include <dorps.h>
 #include <infvar.h>
+#ifndef PRG_DIRAC
+#include <inftap.h>
+#else /* PRG_DIRAC */
 #include <nuctap.h>
+#endif /* PRG_DIRAC */
 C
 #include <chrxyz.h>
 C
@@ -1662,16 +1715,14 @@ C
          IF (ITYPE .EQ. 1) THEN
             IF (.NOT. GDTRO) GO TO 100
             LUX = LUGDR
-            LRX = LRGDR
-            CALL OPENDX(LUX,ABAGDR,IRAT*NVAR,0,'OLD',LRX,NBX,OLDDX)
+            CALL GPOPEN(LUX,ABAGDR,'OLD',' ','DIRECT',IRAT*NVAR,OLDDX)
             IF (COMPAR .OR. IPRINT .GE. 5) THEN
                CALL HEADER('Translational symmetry for GD vectors',1)
             END IF
          ELSE
             IF (.NOT. RDTRO) GO TO 100
             LUX = LURDR
-            LRX = LRRDR
-            CALL OPENDX(LUX,ABARDR,IRAT*NVAR,0,'OLD',LRX,NBX,OLDDX)
+            CALL GPOPEN(LUX,ABARDR,'OLD',' ','DIRECT',IRAT*NVAR,OLDDX)
             IF (COMPAR .OR. IPRINT .GE. 5) THEN
                CALL HEADER('Translational symmetry for RD vectors',1)
             END IF
@@ -1704,7 +1755,7 @@ C
                END IF
                IF (INDCOR) THEN
                   ICRIND = 3*(IATOM - 1) + ICOOR
-                  CALL READDX (LUX,LRX,ICRIND,IRAT*NVAR,VECIND)
+                  CALL READDX (LUX,ICRIND,IRAT*NVAR,VECIND)
                   IF (IPRINT.GE.20) THEN
                      CALL HEADER('VECIND',-1)
                      CALL OUTPUT(VECIND,1,1,1,NVAR,1,NVAR,1,LUPRI)
@@ -1747,12 +1798,12 @@ C
                   CALL HEADER('VECDEP',-1)
                   CALL OUTPUT(VECDEP(1),1,1,1,NVAR,1,NVAR,1,LUPRI)
                END IF
-               CALL WRITDX (LUX,LRX,ICRDEP,IRAT*NVAR,VECDEP)
+               CALL WRITDX (LUX,ICRDEP,IRAT*NVAR,VECDEP)
             END IF
   200    CONTINUE
   100 CONTINUE
-      IF (GDTRO) CLOSE(LUGDR,STATUS='KEEP')
-      IF (RDTRO) CLOSE(LURDR,STATUS='KEEP')
+      IF (GDTRO) CALL GPCLOSE(LUGDR,'KEEP')
+      IF (RDTRO) CALL GPCLOSE(LURDR,'KEEP')
       RETURN
 C     END OF VECTRA
       END
@@ -1770,7 +1821,6 @@ C
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <mxorb.h>
-#include <chrxyz.h>
       PARAMETER (D1 = 1.D00)
 C
       LOGICAL OK, DONE
@@ -1780,6 +1830,7 @@ C
 #include <nuclei.h>
 #include <trkoor.h>
 #include <symmet.h>
+#include <chrxyz.h>
 #include <ibtfun.h>
 C
 C     (I) Set up TMAT for 6 trarot coordinates
@@ -1986,9 +2037,6 @@ C
 #include <dorps.h>
 #include <trkoor.h>
 C
-Cjth
-#include <dcbgrd.h>
-C
       IF (KEY .EQ. 'HERMIT') THEN
          DO 100 IREP = 0, MAXREP
             DOREPS(IREP) = .TRUE.
@@ -1999,7 +2047,7 @@ C
                DOREPS(IREP) = DOSYM(IREP+1)
             ELSE
                DOREPS(IREP) = DOSYM(IREP+1) .AND.
-     &          (((RELGRD .OR. MOLGRD.OR.MOLHES).AND.
+     &          (((MOLGRD.OR.MOLHES).AND.
      &           (NCRREP(IREP,1).GT.NTRREP(IREP)))
      &            .OR. ((DIPDER.OR.POLAR) .AND.(NTRREP(IREP).GT.0)))
             END IF

@@ -7,28 +7,23 @@ C...   "Dirac, a relativistic ab initio electronic structure program,
 C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
 C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
 C...
-C...   This source code is provided under a written licence and may be 
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
-C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : abanuc.F
-C SOURCE  : $Source$
 C
 C
 C  /* Deck nucinp */
@@ -71,7 +66,7 @@ C
                   SKIP = .TRUE.
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(I5)') IPRINT
+                  READ (LUCMD,*) IPRINT
                   IF (IPRINT .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
     3          CONTINUE
@@ -111,15 +106,13 @@ C
 #include <mxcent.h>
 #include <abainf.h>
 #include <cbinuc.h>
-Cjth - relativistic gradient
-#include <dcbgrd.h>
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
       CUT    = .FALSE.
       IF (MOLHES) THEN
          MAXDIF = 2
-      ELSE IF ( MOLGRD .OR. RELGRD ) THEN
+      ELSE IF (MOLGRD) THEN
          MAXDIF = 1
       ELSE
          SKIP = .TRUE.
@@ -127,7 +120,7 @@ C
       RETURN
       END
 C  /* Deck nucrep */
-      SUBROUTINE NUCREP
+      SUBROUTINE NUCREP(HESSNN,CSTRA,SCTRA)
 C
 C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
@@ -141,6 +134,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
+      DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include <cbinuc.h>
 #include <nuclei.h>
 #include <symmet.h>
@@ -157,11 +151,12 @@ C     This subroutine calculates the nuclear repulsion contributions
 C     to the molecular gradient and Hessian.
 C
       IF (SKIP) RETURN
+      CALL QENTER('NUCREP')
       IF (PASONE .AND. IPRINT .LT. 5) IPRINT = 0
       IF (IPRINT .GT. 1) THEN
          CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE (LUPRI,'(A)')
-     *      '1 <<<<<<<<<< Output from NUCREP >>>>>>>>>> '
+     *      '  <<<<<<<<<< Output from NUCREP >>>>>>>>>> '
       END IF
 C
 C     **********************
@@ -375,18 +370,19 @@ C     *************************
 C
       IF (IPRINT .GT. 1) THEN
          CALL HEADER('Nuclear repulsion gradient',-1)
-         CALL PRIGRD(GRADNN)
+         CALL PRIGRD(GRADNN,CSTRA,SCTRA)
          IF (SECOND) THEN
             CALL HEADER('Nuclear repulsion Hessian',-1)
-            CALL PRIHES(HESSNN,'CENTERS')
+            CALL PRIHES(HESSNN,'CENTERS',CSTRA,SCTRA)
          END IF
       END IF
+      IF (SECOND) CALL ADDHES(HESSNN)
       IF (IPRINT .GT. 1) CALL TIMER('NUCREP',TIMSTR,TIMEND)
       IF (CUT) THEN
          WRITE (LUPRI,'(/,A)')
      &          ' Program stopped after NUCREP as required.'
-         WRITE (LUPRI,'(A)') ' No restart file has been written.'
          CALL QUIT(' ***** End of ABACUS (in NUCREP) *****')
       END IF
+      CALL QEXIT('NUCREP')
       RETURN
       END
