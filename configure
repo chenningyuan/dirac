@@ -979,7 +979,7 @@ case $machine in
           parlib="$parlib -lfmpi -lrt -pthread"
           mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
        fi
-       opt='-fast -nofor_main'
+       opt='-fast'
        inc="-I$INCLUDE_DIR"
        if [ ! -z "echo $LIB | grep 'dxml'" ]; then
           cpp="$cpp -DVAR_DXML"
