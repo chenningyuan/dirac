@@ -95,7 +95,6 @@ Functional* available_functionals[] = {
     &BLYPFunctional,
     &B3LYPFunctional,
     &WAHFunctional,
-    &PBEFunctional,
     &PBE0Functional,
 
     /* generic embedding functional */
@@ -480,15 +479,6 @@ wah_read(const char* conf_line)
 }
 
 static int
-pbe_read(const char* conf_line)
-{
-    gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &pw91cFunctional,1.0);
-    dft_set_hf_weight(0);
-    return 1;
-}
-
-static int
 pbe0_read(const char* conf_line)
 {
     gga_fun_list = add_functional(gga_fun_list, &pbexFunctional, 0.75);
@@ -679,17 +669,6 @@ Functional WAHFunctional = {
   "WAH",      /* name */
   gga_isgga,     /* gga-corrected */
   wah_read,
-  gga_report,
-  gga_energy, 
-  gga_first,
-  gga_second,
-  gga_third
-};
-
-Functional PBEFunctional = {
-  "PBE",      /* name */
-  gga_isgga,     /* gga-corrected */
-  pbe_read,
   gga_report,
   gga_energy, 
   gga_first,
