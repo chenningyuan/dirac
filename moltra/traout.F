@@ -639,10 +639,10 @@ C
                     IQJ = IPQTOQ(1,IREPJB)
 C
 C                   The sign of the quaternion multiplication is given by iqphase,
-C                   but since IQI is conjugated we also have to 
+C                   but since IQJ is conjugated (backtransform !) we also have to 
 C                   multiply by IQSIGN (-1 for q-imaginary, 1 for real)
 C
-                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQI,2,1)
+                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
                  ENDDO
               ENDDO
             ELSEIF (IREPI.EQ.IREPJ) THEN
@@ -660,7 +660,7 @@ C
                     INDXB(1,IJ) = IREPIJB
                     IQI = IPQTOQ(1,IREPIB)
                     IQJ = IPQTOQ(1,IREPJB)
-                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQI,2,1)
+                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
                  ENDDO
               ENDDO
             ENDIF

@@ -902,7 +902,7 @@ C
 C     Initialize /CBIEXP/
 C     ===================
 C
-      IPRTRP   = 0
+      IPRTRP   = IPRTRA
       NTRPP   = 0
 C
 C     Process input from CBITRP

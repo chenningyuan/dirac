@@ -45,6 +45,7 @@ C***********************************************************************
 #include <priunit.h>
 C
 #include <mxorb.h>
+#include <dcbham.h>
 #include <dcbtra.h>
 #include <dcbbas.h>
 #include <dcborb.h>
@@ -57,9 +58,8 @@ C
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),
      &          IR(2,2),NR(2),NQ(2,2),NQT(2),
-     &          NSPC(2,0:2),KQC(2),KE(2,2)
+     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),ICMOQC(2)
-      DIMENSION IFRP2(2)
       CHARACTER*32 ACHAR
 C
       CALL QENTER('TRAPRP')
@@ -126,6 +126,18 @@ C
      &               WORK(KIBEIG),TOTERG,2,WORK,KFREE,LFREE)
       ENDIF
 C
+C     Get the boson symmetries of the transformed spinors
+C
+      DO I = 1,2
+       DO IFRP = 1, NFSYM
+        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP1),IFRP1,
+     &                WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
+     &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+       ENDDO
+      ENDDO
+C
+C
 C     Transform property matrices to MO basis
 C     ---------------------------------------
 C
@@ -152,25 +164,33 @@ C
          CALL DZERO(WORK(KPROPMO),NSTRT(1)*NSTRT(2)*NZ)
 C
          DO IFRP = 1, NFSYM
-           IFRP2(2) = IFRP
-           IFRP2(1) = MOD(IFRP+IOPSY,2) + 1
+C
+C          Determine fermion symmetry of indices for the bar and the ket.
+C          We fix the ket index, so that the bra index follows from the 
+C          combination of the symmetry of the ket and that of the operator.
+C
+           IFRP2 = IFRP
+           IFRP1 = MOD(IFRP+IOPSY,2) + 1
 C
 C          Calculate offset in gathering matrix
 C          Necessary when we have two fermion irreps
 C
-           IOFF = I2ORBX(IFRP2(1),IFRP2(2))
-           JOFF = (IFRP2(2)-1)*NSTRT(1)*NSTR(1,0,2)
-     &          + (IFRP2(1)-1)*NSTR(1,0,1)
-           CALL SELMES(WORK(KPRPMO+IOFF),IFRP2,WORK(KPROPMO+JOFF),
+           IOFF = I2ORBX(IFRP1,IFRP2)
+           JOFF = (IFRP2-1)*NSTRT(1)*NSTR(1,0,2)
+     &          + (IFRP1-1)*NSTR(1,0,1)
+           CALL SELMES(WORK(KPRPMO+IOFF),IFRP1,IFRP2,WORK(KPROPMO+JOFF),
      &                 NSTRT(1),NSTRT(2),
-     &                 WORK(KVEC(IFRP2(1),1)),WORK(KVEC(IFRP2(2),2)),
-     &                 NSTR(IFRP2(1),2,1),NSTR(IFRP2(2),2,2),
-     &                 NSTR(IFRP2(1),1,1),NSTR(IFRP2(2),1,2))
+     &                 WORK(KVEC(IFRP1,1)),WORK(KVEC(IFRP2,2)),
+     &                 NSTR(IFRP1,2,1),NSTR(IFRP2,2,2),
+     &                 NSTR(IFRP1,1,1),NSTR(IFRP2,1,2))
          ENDDO
          CALL MEMREL('TRAPRP',WORK,KPRPMO,KPRPMO,KFREE,LFREE)
+C
          CALL MEMGET('REAL',KPRCMO,NSTRT(1)*NSTRT(2)*8,WORK,KFREE,LFREE)
          CALL PRPMLF (WORK(KPRCMO),WORK(KPROPMO),IPRTRP,NSTR,
      &                NSTRT(1),NSTRT(2),
+     &                WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+     &                WORK(KIBE(1,2)),WORK(KIBE(2,2)),
      &                ISYM,ACHAR,LUMLF1)
          CALL MEMREL('TRAPRP',WORK,KPRCMO,KPRCMO,KFREE,LFREE)
       ENDDO
@@ -189,7 +209,7 @@ C
       RETURN
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELMES(PRPMO,IFRP,PBUF,NDIM1,NDIM2,JVEC1,JVEC2,
+      SUBROUTINE SELMES(PRPMO,IFRP1,IFRP2,PBUF,NDIM1,NDIM2,JVEC1,JVEC2,
      &                  NPVEC1,NPVEC2,NEVEC1,NEVEC2)
 
 C***********************************************************************
@@ -207,7 +227,7 @@ C
 #include <dcbbas.h>
 #include <dcborb.h>
       DIMENSION PRPMO(NORBT,NORBT,NZ),
-     &          PBUF(NDIM1,NDIM2,NZ),IFRP(2),
+     &          PBUF(NDIM1,NDIM2,NZ),
      &          JVEC1(*),JVEC2(*)
 C
       DO IZ = 1,NZ
@@ -215,9 +235,9 @@ C
 C       P-P matrix elements
 C
         DO J = 1,NPVEC2
-          JJ = NPSH(IFRP(2))+1+JVEC2(J)
+          JJ = NPSH(IFRP2)+1+JVEC2(J)
           DO I = 1,NPVEC1
-             II = NPSH(IFRP(1))+1+JVEC1(I)
+             II = NPSH(IFRP1)+1+JVEC1(I)
              PBUF(I,J,IZ) = PRPMO(II,JJ,IZ)
           ENDDO
         ENDDO
@@ -225,9 +245,9 @@ C
 C       E-P matrix elements
 C
         DO J = 1,NPVEC2
-          JJ = NPSH(IFRP(2))+1+JVEC2(J)
+          JJ = NPSH(IFRP2)+1+JVEC2(J)
           DO I = NPVEC1+1,NPVEC1+NEVEC1
-             II = NPSH(IFRP(1))+JVEC1(I)
+             II = NPSH(IFRP1)+JVEC1(I)
              PBUF(I,J,IZ) = PRPMO(II,JJ,IZ)
           ENDDO
         ENDDO
@@ -235,9 +255,9 @@ C
 C       P-E matrix elements
 C
         DO J = NPVEC2+1,NPVEC2+NEVEC2
-          JJ = NPSH(IFRP(2))+JVEC2(J)
+          JJ = NPSH(IFRP2)+JVEC2(J)
           DO I = 1,NPVEC1
-             II = NPSH(IFRP(1))+1+JVEC1(I)
+             II = NPSH(IFRP1)+1+JVEC1(I)
              PBUF(I,J,IZ) = PRPMO(II,JJ,IZ)
           ENDDO
         ENDDO
@@ -245,9 +265,9 @@ C
 C       E-E matrix elements
 C
         DO J = NPVEC2+1,NPVEC2+NEVEC2
-          JJ = NPSH(IFRP(2))+JVEC2(J)
+          JJ = NPSH(IFRP2)+JVEC2(J)
           DO I = NPVEC1+1,NPVEC1+NEVEC1
-             II = NPSH(IFRP(1))+JVEC1(I)
+             II = NPSH(IFRP1)+JVEC1(I)
              PBUF(I,J,IZ) = PRPMO(II,JJ,IZ)
           ENDDO
         ENDDO
@@ -257,7 +277,8 @@ C
       END
 C
 C     ==============================================================
-      SUBROUTINE PRPMLF (PRCMO,PROPMO,IPRINT,NSTR,NSTRT1,NSTRT2,ISYM,
+      SUBROUTINE PRPMLF (PRCMO,PROPMO,IPRINT,NSTR,NSTRT1,NSTRT2,
+     &                   IBE11,IBE21,IBE12,IBE22,ISYM,
      &                   ACHAR,LUMLF1)
 C     Express property integrals in complex form and write them to
 C     file
@@ -270,11 +291,14 @@ C
 #include <dgroup.h>
 #include <dcbbas.h>
 #include <dcborb.h>
+#include <dcbqal.h>
+#include <dcbham.h>
       PARAMETER (DM1=-1.D0)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
+      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
 C
       IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
@@ -344,6 +368,95 @@ C
           ENDDO
         ENDDO
       ENDDO
+C
+C     The symmetry adapted functions were scaled by quaternion phases
+C     to obtain as few active quaternion units as possible in double
+C     group calculations (make NZ less than 4).
+C     This scaling is, however, not convenient in spinfree calculations
+C     because it makes real spinor products quaternion and thereby
+C     hampers interfacing to nonrelativistic codes. We therefore
+C     eliminate this scaling by multiplying the transformed property
+C     matrix with the conjugate phase factors. The precise phase factor
+C     depends on the boson identification of the spinor because it
+C     should correspond to the factor on the non-zero coefficents.
+C
+C     A drawback is now that transformed property integrals are
+C     real or imaginary depending on the BOSON symmetry identification
+C     instead of the FERMION as was the case in the double group
+C     adapted choice. This means that spinfree calculations with
+C     RELCCSD that use non totally symmetric property matrices, i.e.
+C     second order properties, should now be carried out in
+C     complex arithmetic. Since these calculations will usually be
+C     done by the dedicated response code instead of the RPA module
+C     in RELCCSD this should be a minor problem.
+C
+C     A similar procedure is found in the 2-electron transformation,
+C     but for the transformation of the core Fock matrix (and other
+C     totally symmetric matrices) it not necessary to do this because
+C     the combination with totally symmetric spinor products 
+C     makes that the phase factors cancel. 
+C
+      IF (LEVYLE.OR.SPINFR) THEN
+      CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
+      DO IZ = 1, NZ
+C       Determine the boson character of the operator and the
+C       active quaternion unit.
+        IQPRP = IPQTOQ(IZ,ISYM-1)
+        DO JFRP = 1, NFSYM
+          IFRP  = MOD(JFRP+IOPSY,2) + 1
+          JJ1 = IOFF1(JFRP,2)
+          JJ2 = IOFF2(JFRP,2)
+          JJ3 = IOFF3(JFRP,2)
+          DO J = 1, NSTR(JFRP,0,2)
+             JJ1 = JJ1 + 1
+             JJ2 = JJ2 + 1
+             JJ3 = JJ3 + 1
+             IF (JFRP.EQ.1) IREPJB = IBE12(J)
+             IF (JFRP.EQ.2) IREPJB = IBE22(J)
+             IQJ = IPQTOQ(1,IREPJB)
+             II1 = IOFF1(IFRP,1)
+             II2 = IOFF2(IFRP,1)
+             II3 = IOFF3(IFRP,1)
+             DO I = 1, NSTR(IFRP,0,1)
+                II1 = II1 + 1
+                II2 = II2 + 1
+                II3 = II3 + 1
+                IF (JFRP.EQ.1) IREPIB = IBE11(I)
+                IF (JFRP.EQ.2) IREPIB = IBE21(I)
+                IQI = IPQTOQ(1,IREPIB)
+                IQ  = IQMULT (IQI,IQJ,IQPRP)
+                IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+C
+C The code is to be debugged. The MOLTRA part is probably OK but the
+C phase transformed integrals do not give the correct answer when fed
+C into RELCCSD. If you use this transformation with another code, you 
+C can proceed at your own risk by uncommenting the stop.
+C Stop now when we find non-symmetric operators.
+C  
+                IF (IQ.NE.IQS)
+     &          CALL QUIT ("This does not work with spinfree !")
+C
+C               Scale the matrix element
+                PRPME = PROPMO(II1,JJ1,IZ) * IQS
+C               Translate to the complex (bar/unbar) notation.
+                IF (IQ.EQ.1) THEN
+                   PRCMO(II2,JJ2,1) = PRPME
+                   PRCMO(II3,JJ3,1) = PRPME
+                ELSEIF (IQ.EQ.2) THEN
+                   PRCMO(II2,JJ2,2) = PRPME
+                   PRCMO(II3,JJ3,2) = - PRPME
+                ELSEIF (IQ.EQ.3) THEN
+                   PRCMO(II2,JJ3,1) = PRPME
+                   PRCMO(II3,JJ2,1) = - PRPME
+                ELSEIF (IQ.EQ.4) THEN
+                   PRCMO(II2,JJ3,2) = PRPME
+                   PRCMO(II3,JJ2,2) = PRPME
+                ENDIF
+             ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+      ENDIF
 C
       IF (IPRINT.GE.1) THEN
          IF (NSTRT1.EQ.NSTRT2) THEN
