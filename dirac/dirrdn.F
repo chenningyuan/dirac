@@ -755,7 +755,7 @@ C
       NELEC(2) = 0
       NASH(1)  = 0
       NASH(2)  = 0
-      CALL IZERO(NACSH,2*(1+MXOPEN))
+      CALL IZERO(NACSH,2*MXOPEN)
       NOPEN    = 0
       NFRO(1)  = 0
       NFRO(2)  = 0
