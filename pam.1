@@ -10,7 +10,7 @@
 pam [-copy "file1 file2 ..."] [-get "file1 file2"] [-debug] 
 [-incmo] [-utcmo] [-infck] [-utfck] [-mw "mem"] [-nw "mem"] 
 [-rmscr] [-rmwrk] [-run "name"] [-scr "name"] [-mpi "n"] 
-[-nonice] [-notify] [-user "user"] [-dirac "cmd"]
+[-nice] [-notify] [-user "user"] [-dirac "cmd"]
 mol[.mol] menu[.inp]
 
 .SH DESCRIPTION
@@ -101,8 +101,8 @@ Execute parallel version of
 .B Dirac
 with n nodes. 
 .TP 5
-.B -nonice
-Do not execute the job with 'nice' or 'npri'.
+.B -nice
+Execute the job with 'nice' or 'npri' (on SGI).
 .TP 5
 .B -notify
 Send user a mail upon completion of the job.

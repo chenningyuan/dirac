@@ -60,7 +60,7 @@ usage ()
    echo '     -run name              : File suffix for output    '
    echo '     -scr name              : Directory name for scratch  '
    echo '     -mpi n                 : Run MPI with n nodes'
-   echo '     -nonice                : Do not execute with nice'
+   echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -notify                : Notify user'
    echo '     -user                  : Which user to notify'
    echo '     -dirac dirac_cmd       : Use dirac_cmd instead for default'
@@ -463,7 +463,7 @@ initialize()
       PARCAL=
    fi
 
-   NICE=1
+   NICE=
 
    NOTIFY=
    NOTIFY_USER=
@@ -542,8 +542,8 @@ while [ -n "$1" ]; do
          let MPI_NPROC=$1+1
          PARCAL=1
          ;;
-      -nonice)
-         NICE=
+      -nice)
+         NICE=1
          ;;
       -notify)
          NOTIFY=1
