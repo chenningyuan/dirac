@@ -40,11 +40,11 @@ C
 C
 C     ***************************************************
 C     *** Calculate F_{pv}                          *****
-C     ***    = \sum_{u} D_{vu} F_^C_{pu} + F^Q_{pv} *****
+C     ***   = \sum_{u} D^V_{vu} F^C_{pu} + F^Q_{pv} *****
 C     ***************************************************
 C
 C
-      CALL FGEN_PV(FC,FQ,DV,FPV,IPQ,IPRINT)
+      IF (NASHT.GT.0) CALL FGEN_PV(FC,FQ,DV,FPV,IPQ,IPRINT)
 C
 C
 C     ***************************************************
