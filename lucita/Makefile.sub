@@ -30,7 +30,7 @@ lucita/scavec.o  lucita/vecsum.o  lucita/vvtov.o  lucita/trpmat.o  lucita/xtrcdi
 #luciarel/scavec.o luciarel/quit.o luciarel/ifac.o luciarel/icopve.o \
 #
 
-LL = \
+LUCITA_OBJS = \
    lucita/ciinfo.o  lucita/density.o  lucita/diagonal.o  \
    lucita/diagonalize.o  lucita/doubledir.o  \
    lucita/fock.o  lucita/interface.o  lucita/io.o  \

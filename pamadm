@@ -366,7 +366,7 @@ relccsd/ccpam.o  relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o \\
-\$(LL)
+\$(LUCITA_OBJS)
 
 C_OBJS = \\
 main/alloc_mem.o    main/csectid.o \\
@@ -387,8 +387,6 @@ RELCCSD_MAIN = relccsd/ccmain.o
 
 DIRRCI_OBJS = \\
 dirrci/cidirr.o dirrci/cigenp.o dirrci/cigosc.o 
-
-LUCITA_OBJS = \$(LL)
 
 DIRRCI_MAIN = dirrci/cimain.o
 
@@ -471,7 +469,7 @@ cat <<EOF>> Makefile
 
 OBJSMXM = gp/mxmpack.o
 
-TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(LUCITA_OBJS)
+TOTOBJS = \$(OBJS) \$(DIRRCI_MAIN) \$(RELCCSD_MAIN) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS)
 
 NOCPPFS = \$(TOTOBJS:.o=.i)
 
