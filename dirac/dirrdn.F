@@ -654,7 +654,7 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.XXXXXX','.EIGPRI','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.XXXXXX','.REORDE','.DIISMO','.DIISAO'/
+     &            '.OVLSEL','.DYNSEL','.REORDE','.DIISMO','.DIISAO'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -693,6 +693,7 @@ C
       DODIIS    = .TRUE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
+      DYNSEL    = .FALSE.
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
 C
@@ -873,10 +874,21 @@ C&&& DAMPFC: Change default damping factor
                     READ(LUCMD,*) DAMPFC
                GO TO 100
    26          CONTINUE
-C&&& OVLSEL: Activate overlap selection
+C&&& OVLSEL: Activate overlap selection 
+C            (default is dynamic overlap selection, see below)
                     OVLSEL = .TRUE.
+                    DYNSEL = .TRUE.
                GO TO 100
    27          CONTINUE
+C&&& DYNSEL: Dynamic overlap selection 
+C            (new overlap selection matrix formed in each iteration)
+                  OVLSEL = .TRUE.
+                  READ(LUCMD,*) ITMP
+                  IF (ITMP .EQ. 0) THEN
+                     DYNSEL = .FALSE.
+                  ELSE
+                     DYNSEL = .TRUE.
+                  END IF
                GO TO 100
    28          CONTINUE
 C&&& LMOORD: Reorder MO orbitals (only on restart on coefficients)
@@ -1024,8 +1036,16 @@ C
              IF (IREORD(I).EQ.0) WRITE(LUPRI,'(5X,A)') 'No reordering'
           END DO
       END IF
-      IF(OVLSEL) WRITE(LUPRI,'(1X,A)')
-     &    '* Vector selection based on overlap'
+      IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
+      IF (OVLSEL) THEN
+         IF(.NOT. DYNSEL) THEN
+            WRITE(LUPRI,'(1X,A)') '* Vector selection based on overlap'
+         ELSE
+            WRITE(LUPRI,'(1X,A,/,3X,A)') 
+     &         '* Vector selection based on overlap ',
+     &           '(dynamic update of overlap-selection matrix)'
+         END IF
+      END IF
       WRITE(LUPRI,'(1X,A)')
      +    '* Contributions from 2-electron integrals to Fock matrix:'
       IF(LBIT(INTDEF,1)) THEN
