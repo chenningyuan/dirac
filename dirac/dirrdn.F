@@ -1084,7 +1084,7 @@ C&&&& OWNBASis: Use local basis for projection
                PROOWN = .TRUE.
                GO TO 100
    23          CONTINUE
-C&&&& BNCRON : Improved screening for use with bare nucleus start guess
+C&&&& BNCRON : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
                GO TO 100
    24          CONTINUE
@@ -1455,6 +1455,23 @@ C
 C
 C
       IF(.NOT.DOSCF) GOTO 999
+C
+      IF (BNCRON) THEN
+         WRITE (LUPRI,'(A)')
+     &      ' * Bare nucleus screening correction used for start guess'
+C     hjaaj nov 2004: bare nucleus correction is
+C     designed for approx. neutral molecules,
+C     and it will give very poor start guess for e.g.
+C     a U(+90) calculation.
+         CALL RMOLCHR(ICHRG)
+         KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+         IF (ABS(KCHARG) .GT. 2) THEN
+            BNCRON = .FALSE.
+            WRITE (LUPRI,'(A)')
+     &      ' - INFO: bare nucleus correction disabled because'//
+     &      'abs(molecular charge) .gt. 2'
+         END IF
+      END IF
 C
       IF (DOBOSSEL) THEN
 C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004

@@ -2921,10 +2921,10 @@ C
         ELSE
           WRITE(LUPRI,'(/A)')
      &    '*** INFO *** No trial vectors found.'//
-     &    ' Using bare nucleus approximation instead.'
+     &    ' Using bare nucleus approximation for initial trial vectors.'
           IF (BNCRON) WRITE(LUPRI,'(A/)')
-     &    '             Improved by a crude '//
-     &    'estimate of the two-electron screening.'
+     &    "             Improved by an "//
+     &    "estimate of the electronic screening (Slater's rules)."
           TRIVEC = .FALSE.
 C     Do not use density-based atomic size adjustments in this case:
           ATSIZE = .FALSE.
