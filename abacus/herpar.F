@@ -1070,7 +1070,6 @@ C
 #if defined (MOD_DFT)
       IF (ITYPE.EQ.7) THEN
         JPRINT = 0
-CTROND        LFMAT  = NFMAT*N2BASX
         CALL DFTPAR(WORK(KDMAT),DUM,WORK(KFMAT),NFMAT,
      &              .TRUE.,.FALSE.,.FALSE.,.FALSE.,
      &              WORK(KFREE),LFREE,JPRINT)

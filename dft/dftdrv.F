@@ -66,10 +66,10 @@ C
       END IF
 #if defined (VAR_MPI)
       IF(PARCAL) THEN
-        CALL DFTDRV(DMAT,DTRMAT,EXCMAT,NXCMAT,
-     &              IREPOP,DOERG,DOGRD,DOLND,DOATR,
-     &              DUM,DUM,DUM,DUM,DUM,DUM,DUM,
-     &              WORK(KFREE),LFREE,LUQUAD,IPRDFT)
+C        Get hold of slaves
+        CALL DIRAC_PARCTL( 1 )
+        CALL DFT_PARDRV(WORK(KFREE),LFREE,EXCMAT,DMAT,1,
+     &          IREPOP,LUQUAD,IPRDFT)
       ELSE
 #endif
 C
@@ -1145,6 +1145,131 @@ C
      &               MPI_COMM_WORLD,IERR)
 #endif
 C
+      RETURN
+      END
+C  /* Deck pardrv */
+      SUBROUTINE DFT_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPOP,LUQUAD,
+     &                      IPRINT)
+C
+C     A cut and paste job by T. Saue Sep 25 2003
+C     Based on HER_PARDRV which was
+C     written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
+C     Extended with I2TYP Oct 1 1996 by T.Saue
+C     Extended with screening Oct 11 1996 by T.Saue
+C
+C
+C     **************************************************************
+C     *        Driver routine for the parallel calculation.        *
+C     **************************************************************
+C
+C
+C      A short survey of the different messagetags (MSGTAG) :
+C
+C      10 - Send initialization to nodes.
+C      20 - Receive request from node.
+C      30 - Send batch to node.
+C      40 - Receive final results from nodes.
+C      50 - Get timing results from nodes.
+C
+C
+C           ITYPE  - Calc. type: 2 = expectation values.
+C                                3 = fock matrices.
+C                               -5 = Integrals derivated with respect
+C                                    to magnetic field.
+C                                8 = Fock matrices derivated with respect
+C                                    to atomic coordinates.
+C           NTASK  - Number of tasks
+C           KPRINT - Print level during parallelization.
+C           MAXDIF -
+C           MAXREP -
+C           IREPDM - Symmetries of density matrices
+C           IFCTYP - Fock matrix types (see twoint).
+C           IATOM  -
+C           NODV   - Density matrix neglected in TWOEXP
+C           NOPV   -           -   "   -
+C           NOCONT -           -   "   -
+C           RETUR  - Program will exit after spec. shells
+C           TKTIME - Take time in TWOINT
+C           TIMING - Take time for each integralbatch IJ
+C           DOREPS -
+C           DOSYM  -
+C           DOCOOR -
+C           MULD2H - Start address for common block INFORB.
+C           NMLINE - Number of lines in MOLECULE.INP
+C           MLINE  - MOLECULE.INP as internal file
+C           NDMAT  - Number of density-matrices
+C           DMAT   - Density-matrices.
+C
+C
+#include "implicit.h"
+C
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+#endif
+C
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+#include "aovec.h"
+#include "blocks.h"
+#if defined (PRG_DIRAC)
+#include "dcbgen.h"
+#else
+#include "gnrinf.h"
+#endif
+#include "inforb.h"
+#include "infpar.h"
+C
+      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK)
+C
+#include "memint.h"
+      CALL QENTER('DFT_PARDRV')
+C
+#if !defined (VAR_MPI)
+      CALL QUIT
+     &('program error: parallel code called but MPI not activated')
+#endif
+C
+C
+C     Ensure that NODES .LE. MAXNOD
+C
+      IF (NODES .GT. MAXNOD) THEN
+         WRITE(LUPRI,'(/5X,A,/12X,A,/5X,A16,I8,/5X,A16,I8)')
+     &    'ERROR: Number of nodes allocated has exceeded hardcoded',
+     &    'limit. Reduce number of nodes or recompile program. ',
+     &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
+         CALL QUIT('Number of nodes requested/allocated is too large.')
+      ELSE IF (IPRINT .GT. 0) THEN
+         WRITE(LUPRI,'(/5X,A,I5/)')
+     &    'DFT_PARDRV: Number of nodes allocated:', NODES
+      ENDIF
+      TIMING = .FALSE.
+      ITYPE = 7
+      CALL SDINIT(DMAT,NDMAT,IREPOP,IDUM,ITYPE,IDUM,IDUM,.TRUE.,
+     &            .TRUE.,.FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,DUM,
+     &            DUM,DUM,DUM)
+C
+C-----------------------
+C     Start calculation.
+C-----------------------
+C
+      CALL DFTDRV(DMAT,DTRMAT,FMAT,1,
+     &            IREPOP,.TRUE.,.FALSE.,.FALSE.,.FALSE.,
+     &            DUM,DUM,DUM,DUM,DUM,DUM,DUM,
+     &            WORK(KFREE),LFREE,LUQUAD,IPRDFT)
+C
+C--------------------------------------
+C     Receive final results from nodes.
+C     Release nodes from this task
+C      and let them return to main menu.
+C--------------------------------------
+C
+      ITASK = -1
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+      CALL MEMREL('DFT_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('DFT_PARDRV')
       RETURN
       END
 #endif

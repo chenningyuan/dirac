@@ -329,22 +329,8 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-#if defined (VAR_MPI)
-           IF(PARCAL) THEN
-C            Get hold of slaves
-             CALL DIRAC_PARCTL( 1 )
-             IRNTYP = 7
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
-     &          IDUM,IDUM, IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
-     &          IDUM,DUM,DUM,DUM,DUM,DUM)
-           ELSE
-#endif
              CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
-#if defined (VAR_MPI)
-           ENDIF
-#endif
          ENDIF
 #endif
 C
@@ -943,23 +929,8 @@ C
 C        Construct Kohn-Sham contribution
 C        ================================
          IF(DFTADD) THEN
-#if defined (VAR_MPI)
-           IF(PARCAL) THEN
-             IRNTYP = 7
-C            Get hold of slaves
-             CALL DIRAC_PARCTL( 1 )
-             CALL HER_PARDRV(WORK(KFREE),LFREE,FOCK,DMAT,NFMAT,
-     &          IDUM,IDUM,
-     &          IRNTYP,IDUM,IDUM,.TRUE.,.TRUE.,.FALSE.,
-     &          .FALSE.,.FALSE.,.FALSE.,IDUM,IDUM,IDUM,
-     &          IDUM,DUM,DUM,DUM,DUM,DUM)
-           ELSE
-#endif
              CALL DFTEXC(DMAT,DUM,FOCK,1,0,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
-#if defined (VAR_MPI)
-           ENDIF
-#endif
          ENDIF
 #endif
 C
