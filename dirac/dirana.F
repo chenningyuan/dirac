@@ -458,7 +458,7 @@ C
 C       Calculate SO population matrix
 C       ==============================
 C
-        CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVECS,
+        CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVEC,
      &              IPGRS,NPOPLAB,NCBAS,WORK(KFREE),LFREE,IPRPOP)
 C
 C       Calculate gross populations
