@@ -1832,7 +1832,6 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      LOGICAL SPECIAL
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
@@ -1840,13 +1839,11 @@ C
 C
       CALL QENTER('MKMOFK')
 C
-      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
-C
 C     Transform FD to MO-basis
 C
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
-        IF(SPECIAL) THEN
+        IF(SPINFR.OR.LEVYLE) THEN
           CALL TBOSON(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE           
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),

@@ -52,7 +52,6 @@ C*****************************************************************************
 #include <dcbbas.h>
 #include <dcborb.h>
 #include <dgroup.h>
-      LOGICAL SPECIAL
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),
      &          DMAT(N2BBASXQ,NFMAT),SAOMO(*),WORK(*)
@@ -61,7 +60,6 @@ C
 #include <memint.h>
 C
       CALL QENTER('MKMOFK')
-      SPECIAL = (ZORA.OR.SPINFR.OR.LEVYLE)
 C
 C     One or more open shells that do NOT couple:
 C     -------------------------------------------
@@ -88,7 +86,7 @@ C        Transform FD to MO-basis
 C
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
-        IF(SPECIAL) THEN
+        IF(SPINFR.OR.LEVYLE) THEN
           CALL TBOSON(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE           
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
