@@ -306,51 +306,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine CpuUsed (TIMCPU)
-C     Rewritten by T.Saue based on GETTIM
-      Real*8 TIMCPU
-#if defined (SYS_VAX)
-      REAL*4 S0,SECNDS
-      PARAMETER (S0 = 0.0E0)
-C
-      TIMCPU = SECOND()
-#endif
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C...  Cray unicos timing code
-      REAL    TCPU0
-      LOGICAL FIRST
-      SAVE TCPU0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY)
-         TCPU0  = SECOND()
-#else
-         TCPU0 = TSECND()
-#endif
-      ENDIF
-#if defined (SYS_CRAY)
-      TIMCPU = SECOND() - TCPU0
-#else
-      TIMCPU = TSECND() - TCPU0
-#endif
-#endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_IRIX) \
- || defined (SYS_SUN) || defined (SYS_DEC)  || defined (SYS_LINUX) \
- || (SYS_ALLIANT) || (SYS_DARWIN)
-      real*4  etime, tarray(2)
-C
-      TIMCPU = etime(tarray)
-#endif
-#if defined (SYS_PARAGON)
-C 900521-hjaaj timer for IBM AIX operating system
-C 941013-hjaaj: and for Intel PARAGON
-      integer*4 itime(4),times,iwall
-      iwall = times(itime)
-C     iwall = elapsed time, itime(1:2) = system and user time
-      TIMCPU = dfloat (itime(1) + itime(2)) * 0.01d0
-#endif
-C
+C     Little wrapper for GETTIM
+      Real*8 TIMCPU,TIMWAL
+      CALL GETTIM (TIMCPU,TIMWAL)
       Return
       End
 C
@@ -361,6 +319,26 @@ C
       Data Sec0 /0.d0/
 C
       Call CPUused(Sec1)
+      CPUdelta = Sec1 - Sec0
+      Sec0 = Sec1
+C
+      Return
+      End
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      Subroutine WallUsed (TIMWAL)
+C     Another little wrapper for GETTIM
+      Real*8 TIMCPU,TIMWAL
+      CALL GETTIM (TIMCPU,TIMWAL)
+      Return
+      End
+C
+      Real*8 Function WallDelta()
+C
+      Real*8 Sec1,Sec0
+      Save Sec0
+      Data Sec0 /0.d0/
+C
+      Call WallUsed(Sec1)
       CPUdelta = Sec1 - Sec0
       Sec0 = Sec1
 C

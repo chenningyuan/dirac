@@ -61,7 +61,6 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CPUDELTA,CPU0,CPUE,CPUVAR,CPUTOT
       REAL*8 DIAG
       LOGICAL TEQ
 C
@@ -78,12 +77,6 @@ C
          CALL QUIT('Wrong keyword in call to MP2EQNS')
       ENDIF
 C
-C     Initialize the timing.
-C
-      CPU0 = CPUDELTA()
-      CALL CPUUSED(CPU0)
-      CPUE = D0
-C
 C  INITIALIZE T2 AND T1 AMPLITUDES
 C
       CALL XCOPY (NDIMT1,FVO,1,T1,1)
@@ -97,7 +90,6 @@ C  EVALUATE CORRELATION ENERGY
 C
          CALL MP2ENG (T1,T2,FVO,S2,EMP2)
          CALL T1DIAG (DIAG,T1,S1)
-         CPUE = CPUE + CPUDELTA()
 C
          WRITE(IW,6071)
          WRITE(IW,6072) ESCF
@@ -114,11 +106,6 @@ C
          CALL XCOPY (NDIMT2,T2,1,S2,1)
 C
       ENDIF
-C
-      CALL CPUUSED(CPUTOT)
-      CPUTOT = CPUTOT-CPU0
-      CPUVAR = CPUTOT-CPUE
-      IF (TIMING) WRITE(IW,7000) CPU0,CPUE,CPUVAR,CPUTOT
 C
       RETURN
  6071 FORMAT(//,'  MP2 results',/)
@@ -185,7 +172,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CPUDELTA,CPU0,CPUT1,CPUT2,CPUINT,CPU4V,CPUE,CPUVAR,CPUTOT
+      REAL*8 CPU,CPU4V,CPUH1,CPUH2
       LOGICAL TEQ,FOCKSP,PRENE
       real*8 ddot,sdot
       complex*16 zdotc,cdotc
@@ -193,6 +180,16 @@ C
       CHARACTER*4 DELS2
 C
 C---------------Executable code--------------------------------------
+C
+C
+C     Get initial values of timers for the most important contractions
+C     This is important in Fock space calculations where we enter this
+C     routine more than once. We do it in this manner rather than resetting
+C     the timer because we want the overall timing at the end.
+C
+      CALL XTIMRD (24,CPU4V)
+      CALL XTIMRD (27,CPUH1)
+      CALL XTIMRD (34,CPUH2)
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -227,16 +224,6 @@ C
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
-C
-C     Initialize the timing.
-C
-      CPU0 = CPUDELTA()
-      CALL CPUUSED(CPU0)
-      CPUE = D0
-      CPUINT = D0
-      CPUT1 = D0
-      CPUT2 = D0
-      CPU4V = D0
 C
 C     Zero amplitudes if the NOCCX options are specified
 C
@@ -280,7 +267,6 @@ C
          CALL CINTM (T1,T2,FVO,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
          CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
          CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
-         CPUINT = CPUINT + CPUDELTA()
       ENDIF
 C
 C  START ITERATIVE PROCEDURE
@@ -322,7 +308,6 @@ C
          ENDIF
       ENDIF
       CALL XTIME(3,2,'- T1 equations                  ')
-      CPUT1 = CPUT1 + CPUDELTA()
 
 C
 C     In case of NOCCD we can skip the calculation of T2 amplitudes 
@@ -397,7 +382,6 @@ C ... and redistribute it
 
 #endif
 
-      CPUINT = CPUINT + CPUDELTA()
       ENDIF
 
 C
@@ -419,7 +403,6 @@ C
       CALL T2EQNS (EPS,T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(31,2,'-- T2 EQNS                     ')
-      CPUT2 = CPUT2 + CPUDELTA()
 C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
@@ -439,7 +422,6 @@ C
       elseif (debug) then
       write (*,111)"s2 after bintm",MYPROC,ddot(ndimt2,s2,1,s2,1)
       endif
-      CPU4V = CPU4V + CPUDELTA()
       CALL XTIME(20,2,'- T2 equations                  ')
 C
  100  CONTINUE
@@ -538,14 +520,12 @@ C
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       CALL FLSHFO(IW)
 C
-      CPUE = CPUE + CPUDELTA()
 C
       IF(RMS.LT.CONV) GO TO 2000
       GO TO 1000
 C
  2000 CONTINUE
       CALL T1DIAG (DIAG,T1,BUF1)
-      CPUE = CPUE + CPUDELTA()
       WRITE(IW,6071)
 C
 C     Only print energy when doing amplitudes for the reference
@@ -579,12 +559,18 @@ C        Calculate the energies for this sector
          CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,H,BUF1,BUF2,BUF3)
       ENDIF
 C
-      CALL CPUUSED(CPUTOT)
-      CPUTOT = CPUTOT-CPU0
-      CPUVAR = CPUTOT-CPUT1-CPUT2-CPUINT-CPU4V-CPUE
-      IF (TIMING)
-     &WRITE(IW,7000) CPU0,CPUINT,CPUT1,CPUT2,CPU4V,CPUE,CPUVAR,CPUTOT
-      IF (TIMING) CALL BFLOPS (CPU4V,NIT)
+C     Read out timers for the most important contractions
+C
+      CALL XTIMRD (24,CPU)
+      CPU4V = CPU - CPU4V
+      CALL XTIMRD (27,CPU)
+      CPUH1 = CPU - CPUH1
+      CALL XTIMRD (34,CPU)
+      CPUH2 = CPU - CPUH2
+C
+C     Compute & print the performance in Mega/Giga/TeraFlops
+C
+      IF (TIMING) CALL BFLOPS (CPU4V,CPUH1,CPUH2,NIT)
 C
 C     Close and delete DIIS scratch files
 C
@@ -609,15 +595,6 @@ C
  6077 FORMAT(' T1 diagnostic :',T40,F25.15)
  6078 FORMAT(' Convergence :',T40,F25.15)
  6079 FORMAT(' Number or iterations used :',T60,I5)
- 7000 FORMAT(//' Timing of routine CCEQN :'
-     &/' Before CCEQN :',T30,F12.3,' seconds'
-     &/' Intermediates :',T30,F12.3,' seconds'
-     &/' T1 equations :',T30,F12.3,' seconds'
-     &/' T2 equations :',T30,F12.3,' seconds'
-     &/' 4 virtual contr. :',T30,F12.3,' seconds'
-     &/' Energy, DIIS, T1-Diag, etc.:',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in CCEQN :',T30,F12.3,' seconds')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1293,18 +1270,12 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 EPSIJK,EIJKABC,VMIN(2)
-      REAL*8 CPUDELTA,CPU0,CPU1,CPU2,CPU3,CPUTOT
       INTEGER*8 I8,IT3OFF1,JT3OFF1,KT3OFF1,EBCI,EBCJ,EBCK
 C---------------Executable code--------------------------------------
 C
 C     Initialize the timing.
 C
       CALL XTIME(41,1,'-- T3CORR: Integral resorting      ')
-      CPU0 = CPUDELTA()
-      CALL CPUUSED(CPU0)
-      CPU1 = D0
-      CPU2 = D0
-      CPU3 = D0
 C
       ET1 = D0
       ET2 = D0
@@ -1338,7 +1309,6 @@ C
       CALL GETTAU3 (T1,T2,TAU3)
 C
       CALL XTIME(41,2,'-- T3CORR: Integral resorting      ')
-      CPU1 = CPUDELTA()
 C
       DO 300 IJKREP = 1, NREP
       DO 200 KREP = 1, NREP
@@ -1385,6 +1355,7 @@ C
       KOFF2  = LOVVOT(KREP) + (K-1) * NOVVT(KREP)
 C
       CALL XTIME(42,1,'-- T3CORR: VOVV contraction        ')
+C
       CALL XCOPY (IVVVT(NREP+1,IJKREP),A0,0,BUF1,1)
       OFF1 = 1
       DO BCREP = 1, NREP
@@ -1420,7 +1391,6 @@ C-------------------------------------------
       EBCJ = (JT3OFF1 + LLT3VVVT(EREP,BCREP)) * RCW + 1
       CALL XGEMM ('N','N',M,NN,O,-A1,T2S(AEIK),M,
      &     VVVO(EBCJ),O,A1,BUF1(OFF1+OFF2),M)
-      CALL XTIME(42,1,'-- T3CORR: VOVV contraction        ')
 
 C ** here the distributed VOVV integrals are used. we 
 C ** communicate the partial U(ABC) and proceed on one 
@@ -1429,12 +1399,17 @@ C ** can uns them as send/receive buffers here
 
 #if defined (VAR_MPI)
       IF(NMPROC.GT.1) THEN
+C       Switch off the overall timer for this part and focus on
+C       the communication.
+        CALL XTIME(42,2,'-- T3CORR: VOVV contraction        ')
         CALL XTIME(43,1,'-- T3CORR: addition of partial U   ')
         CALL MPI_REDUCE(BUF1(OFF1),BUF2(1),RCW*M*N,
      &    MPI_DOUBLE_PRECISION,MPI_SUM,MASTER,
      &    MPI_COMM_WORLD,IERR)
         CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
+C       Communication completed, switch back to operations timer
         CALL XTIME(43,2,'-- T3CORR: addition of partial U   ')
+        CALL XTIME(42,1,'-- T3CORR: VOVV contraction        ')
       ENDIF
 #endif
 
@@ -1481,7 +1456,7 @@ C ************************************
       OFF1 = OFF1 + M * N * RCW
       ENDDO
 C
-      CPU2 = CPU2 + CPUDELTA()
+      CALL XTIME(42,2,'-- T3CORR: VOVV contraction        ')
       CALL XTIME(45,1,'-- T3CORR: energy calculation      ')
 C
 C ** the U array is complete on the master node. 
@@ -1727,8 +1702,6 @@ C-----------------------------
  50   CONTINUE
       ENDDO
 C
-      CPU3 = CPU3 + CPUDELTA()
-C
 
 C ******** end of task splitting *******
       ENDIF
@@ -1753,12 +1726,7 @@ C
       WRITE (IW,1079) ESCF+ECCSD+ET1+ET3
       ETOT = ESCF+ECCSD+ET1+ET2
 C
-      CALL CPUUSED (CPUTOT)
-      CPUTOT = CPUTOT - CPU0
-      IF (TIMING)
-     &WRITE (IW,7000) CPU0,CPU1,CPU2,CPU3,CPUTOT-CPU1-CPU2-CPU3,CPUTOT
-C
- 1071 FORMAT(//,'  Triple excitation estimates',/)
+ 1071 FORMAT(//,'  Perturbative treatment of triple excitations',/)
  1072 FORMAT(' SCF energy :',T40,F25.15)
  1073 FORMAT(' CCSD correlation energy :',T40,F25.15)
  1074 FORMAT(' 4th order triples correction :',T40,F25.15)
@@ -1767,14 +1735,6 @@ C
  1077 FORMAT(' Total CCSD+T  energy :',T40,F25.15)
  1078 FORMAT(' Total CCSD(T) energy :',T40,F25.15)
  1079 FORMAT(' Total CCSD-T  energy :',T40,F25.15)
-C
- 7000 FORMAT(//' Timing of routine T3CORR :'
-     &/' Before T3CORR :',T30,F12.3,' seconds'
-     &/' Sorting :',T30,F12.3,' seconds'
-     &/' N^7 steps :',T30,F12.3,' seconds'
-     &/' Additions :',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in T3CORR :',T30,F12.3,' seconds')
 C
       RETURN
       END
@@ -2609,7 +2569,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BFLOPS(CPU4V,NIT)
+      SUBROUTINE BFLOPS(CPU4V,CPUH1,CPUH2,NIT)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2625,7 +2585,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 CPU4V
+      REAL*8 CPU4V,CPUH1,CPUH2
       INTEGER NIT
 C
 C---------------Common Blocks--------------------------------------
@@ -2637,12 +2597,18 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 MFLOP,MFLOPS,DRCW2,DRCW,DNVVT,DNOOT,DNVO,DNVOOT,DNV,DNO
+      REAL*8 MFLOPS,DRCW2,DRCW,DNVVT,DNOOT,DNVO,DNVOOT,DNV,DNO
+      REAL*8 MFLOPB,MFLOPH,DMVO
+      CHARACTER*30 CONTR
 C
 C---------------Executable code--------------------------------------
 C
-      IF (CPU4V.EQ.0.0) RETURN
-      MFLOP = 0.D0
+C     Prevent division by zero in case somebody could not figure out
+C     how the cpu timer works on the system.
+C
+      IF (CPU4V.EQ.0.0.OR.CPUH1.EQ.0.0.OR.CPUH2.EQ.0.0) RETURN
+      MFLOPB = 0.0
+      MFLOPH = 0.0
 C
       DRCW2 = DBLE(2*RCW**2)
       DRCW  = DBLE(RCW)
@@ -2654,26 +2620,61 @@ C
          DNVOOT= DBLE(NVOOT(IRP))
          DNV   = DBLE(NV(IRP))
          DNO   = DBLE(NO(IRP))
+         DMVO  = DBLE(MVO(IRP))
 
-         MFLOP = MFLOP + DNVVT  * DNVVT * DNOOT * DRCW2
-         MFLOP = MFLOP + DNVVT  * DNVO  * DNOOT * DRCW2
-         MFLOP = MFLOP + DNVOOT * DNV   * DNO   * DRCW2
-         MFLOP = MFLOP + DNVVT  * DNOOT * DRCW
+C        Compute number of operations for BINTM
+         MFLOPB = MFLOPB + DNVVT  * DNVVT * DNOOT * DRCW2
+         MFLOPB = MFLOPB + DNVVT  * DNVO  * DNOOT * DRCW2
+         MFLOPB = MFLOPB + DNVOOT * DNV   * DNO   * DRCW2
+         MFLOPB = MFLOPB + DNVVT  * DNOOT * DRCW
 
-C        MFLOP = MFLOP + NVVT(IRP) * NVVT(IRP) * NOOT(IRP) * 2 * RCW**2
-C        MFLOP = MFLOP + NVVT(IRP) * NVO (IRP) * NOOT(IRP) * 2 * RCW**2
-C        MFLOP = MFLOP + NVOOT(IRP) * NV (IRP) * NO  (IRP) * 2 * RCW**2
-C        MFLOP = MFLOP + NVVT(IRP) * NOOT(IRP) * RCW
+C        Compute number of operations for HINTM
+         MFLOPH = MFLOPH + DMVO  * DMVO * DMVO * DRCW2
 
       ENDDO 
 C
-      MFLOP = MFLOP * 0.000001
-      MFLOPS = MFLOP * DBLE(NIT) / CPU4V
-      WRITE (IW,1000) MFLOP,MFLOPS
+C     Convert to MFlops
 C
- 1000 FORMAT (/' Performance of routine BINTM (largest contraction)'
-     &        /' MFlop in each iteration : ',T30,F10.2 
-     &        /' MFlops (average) : ',T30,F10.2)
+      MFLOPB = MFLOPB * 0.000001
+      MFLOPH = MFLOPH * 0.000001
+C
+      WRITE (IW,1000)
+C
+      DO I = 1, 3
+         IF (I.EQ.1) THEN
+            MFLOPS = MFLOPB * DBLE(NIT) / CPU4V
+            CONTR = 'VVVV+VOVV (via B intermediate)'
+         ELSEIF (I.EQ.2) THEN
+            MFLOPS = MFLOPH * DBLE(NIT) / CPUH1
+            CONTR = 'VOVO (in H intermediate)      '
+         ELSE
+            MFLOPS = MFLOPH * DBLE(NIT) / CPUH2
+            CONTR = 'VOVO (contracting H)          '
+         ENDIF
+C
+         IF (MFLOPS.GE.1.0E6) THEN
+            WRITE (IW,1001) CONTR,MFLOPS/1.0E6,'T'
+         ELSEIF (MFLOPS.GE.1.0E5) THEN
+            WRITE (IW,1003) CONTR,MFLOPS/1.0E3,'G'
+         ELSEIF (MFLOPS.GE.1.0E4) THEN
+            WRITE (IW,1002) CONTR,MFLOPS/1.0E3,'G'
+         ELSEIF (MFLOPS.GE.1.0E3) THEN
+            WRITE (IW,1001) CONTR,MFLOPS/1.0E3,'G'
+         ELSEIF (MFLOPS.GE.1.0E2) THEN
+            WRITE (IW,1003) CONTR,MFLOPS,'M'
+         ELSEIF (MFLOPS.GE.1.0E1) THEN
+            WRITE (IW,1002) CONTR,MFLOPS,'M'
+         ELSE
+            WRITE (IW,1001) CONTR,MFLOPS,'M'
+         ENDIF
+C
+      ENDDO
+C
+ 1000 FORMAT (//' Performance of BLAS GEMM in the largest contractions',
+     &//' Contraction type',T45,'Performance')
+ 1001 FORMAT (1X,A,T40,F10.3,3X,A1,'flop/s') 
+ 1002 FORMAT (1X,A,T40,F10.2,3X,A1,'flop/s') 
+ 1003 FORMAT (1X,A,T40,F10.1,3X,A1,'flop/s') 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

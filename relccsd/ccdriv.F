@@ -451,7 +451,10 @@ C
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*16*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC,CA
-      REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUE,CPUS,CPUFO,CPUSO,CPUVAR
+      REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
+      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
+      REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
+      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
 C
 C---------------Executable code--------------------------------------
@@ -471,7 +474,7 @@ C
 C     Initialize the timing.
 C
       CALL XTIME(1,0,' ')
-      CALL CPUUSED(CPU0)
+      CALL GETTIM(CPU0,WALL0)
       CPU1 = CPU0
       CPUI = 0
       CPUS = 0
@@ -479,6 +482,13 @@ C
       CPUFO = 0
       CPUSO = 0
       CPUTOT = 0
+      WALL1 = WALL0
+      WALLI = 0
+      WALLS = 0
+      WALLE = 0
+      WALLFO = 0
+      WALLSO = 0
+      WALLTOT = 0
 C
 C     Memory and I/O setup section
 C     ----------------------------
@@ -647,9 +657,11 @@ C
 C
       WRITE (IW,1001) MXCORR
 C
-      CALL CPUUSED(CPU2)
+      CALL GETTIM(CPU2,WALL2)
       CPUI = CPUI + CPU2 - CPU1
       CPU1 = CPU2
+      WALLI = WALLI + WALL2 - WALL1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
 C     Start the calculations
@@ -664,29 +676,37 @@ C
       IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
       CALL XTIME(1,2,'Sorting of integrals          ')
-      CALL CPUUSED(CPU2)
+      CALL GETTIM(CPU2,WALL2)
       CPUS = CPUS + CPU2 - CPU1
       CPU1 = CPU2
+      WALLS = WALLS + WALL2 - WALL1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
       IF (DOENER) CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
-      CALL CPUUSED(CPU2)
+      CALL GETTIM(CPU2,WALL2)
       CPUE = CPUE + CPU2 - CPU1
       CPU1 = CPU2
+      WALLE = WALLE + WALL2 - WALL1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
       IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,
      &            LFREE,MXCORR,EPS)
-      CALL CPUUSED(CPU2)
+      CALL GETTIM(CPU2,WALL2)
       CPUFO = CPUFO + CPU2 - CPU1
       CPU1 = CPU2
+      WALLFO = WALLFO + WALL2 - WALL1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
       IF (DOSOPR) CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &                         NSP,IREPSPI)
-      CALL CPUUSED(CPU2)
+      CALL GETTIM(CPU2,WALL2)
       CPUSO = CPUSO + CPU2 - CPU1
       CPU1 = CPU2
+      WALLSO = WALLSO + CPU2 - CPU1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
 CLuuk : See comment regarding CCEXC above
@@ -696,6 +716,11 @@ C     CALL FLSHFO (IW)
 C
       IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
      &                         NSP,IREPSP,IREPSPI)
+      CALL GETTIM(CPU2,WALL2)
+      CPUFS = CPUFS + CPU2 - CPU1
+      CPU1 = CPU2
+      WALLFS = WALLFS + CPU2 - CPU1
+      WALL1 = WALL2
       CALL FLSHFO (IW)
 C
 C  FINISHED; RETURN AFTER CLOSING FILES
@@ -722,10 +747,14 @@ C     Print timings (second XTIME parameter has to be 4)
 C
       CALL XTIME(1,4,' ')
       CALL FLSHFO (IW)
-      CALL CPUUSED(CPUTOT)
-      CPUTOT = CPUTOT-CPU0
-      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
-      WRITE(IW,1010) CPU0,CPUI,CPUS,CPUE,CPUFO,CPUSO,CPUVAR,CPUTOT
+      CALL GETTIM(CPUTOT,WALLTOT)
+      CPUTOT = CPUTOT - CPU0
+      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS
+      WALLTOT = WALLTOT-WALL0
+      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS
+      WRITE(IW,1010) WALL0,CPU0,WALLI,CPUI,WALLS,CPUS,WALLE,CPUE,
+     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,
+     & WALLVAR,CPUVAR,WALLTOT,CPUTOT
 C
 C     Print I/O statistics
 C
@@ -757,15 +786,17 @@ C
 1006  FORMAT (" Too much memory specified, maximum is",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
 1008  FORMAT (" Amount of memory used :",T50,F10.1," megawords")
-1010  FORMAT(//' Timing of main modules :'
-     &/' Before CC driver :',T30,F12.3,' seconds'
-     &/' Initialization :',T30,F12.3,' seconds'
-     &/' Integral sorting :',T30,F12.3,' seconds'
-     &/' Energy calculation :',T30,F12.3,' seconds'
-     &/' First order properties :',T30,F12.3,' seconds'
-     &/' Second order properties :',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in CC driver :',T30,F12.3,' seconds')
+1010  FORMAT(//' Timing of main modules :',T35,
+     &           'Wallclock (s)',T55,'CPU on master (s)',
+     &/' Before CC driver :',T30,F12.2,T55,F12.2
+     &/' Initialization :',T30,F12.2,T55,F12.2
+     &/' Integral sorting :',T30,F12.2,T55,F12.2
+     &/' Energy calculation :',T30,F12.2,T55,F12.2
+     &/' First order properties :',T30,F12.2,T55,F12.2
+     &/' Second order properties :',T30,F12.2,T55,F12.2
+     &/' Fock space energies :',T30,F12.2,T55,F12.2
+     &/' Untimed parts :',T30,F12.2,T55,F12.2 
+     &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
  1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
 C
@@ -1891,10 +1922,8 @@ C
 C
 C     This is a restart point : update status.
 C
-         write (iw,*) "returned from T3CORR"
          IMSTAT(6) = 3
          CALL CCDUMP
-         write (iw,*) "returned from CCDUMP"
    30    CONTINUE
       ENDIF
 C

@@ -46,7 +46,7 @@ C
         WRITE(IW,10)
         ELTIM=D0
       ELSE
-        ELTIM=CPUTF(TIMERN)
+        ELTIM=CPUTFT(TIMERN)
       ENDIF
 
  10   FORMAT(/' **WARNING** Timer # out of range'/,
@@ -57,6 +57,18 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XTIME (TIMERN,FUNCT,NAME)
 
+C
+C     Routine written by M. Pernpointner
+C
+C     Input parameters 
+C         - TIMERN : ID of the timer (used with FUNCT 1 or 2)
+C         - FUNCT  : TCLEAR=0 : Set ALL timers to zero
+C                    TPRNTI=3 : Write contents of ALL timers to output (serial version, not used)
+C                    TPRNTA=4 : Write contents of ALL timers to output (parallel version, always used)
+C                    TSTART=1 : Add time until stop to the timer
+C                    TSTOP=2 :  Stop the timer
+C         - NAME   : Name of the timer (max 30 characters)
+C
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME
 
@@ -110,7 +122,6 @@ C ** check requested function
           DO I=1,MXTIMF
             IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
           ENDDO
-C         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
         ELSE
           IF(MYPROC.EQ.MASTER) THEN
             DO I=1,MXTIMF
@@ -129,6 +140,8 @@ C
      &           ND,TITAG,MPI_COMM_WORLD,ISTAT,IERR)
               IF(IERR.NE.MPI_SUCCESS) CALL 
      &          QUIT('MPI ERROR IN XTIME')
+Cluuk         Uncomment for detailed output, but you do not want to have this
+Cluuk         on a machine with many active nodes....
 cluuk         WRITE(IW,310) ND
               DO I=1,MXTIMF
                 IF(CPUTFT(I).LT.CPUTMI(I)) CPUTMI(I)=CPUTFT(I)
@@ -136,7 +149,6 @@ cluuk         WRITE(IW,310) ND
                 CPUTAV(I)=CPUTAV(I)+CPUTFT(I)
 Cluuk           IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
               ENDDO
-Cluuk         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
             ENDDO
 
             WRITE(IW,330)
@@ -160,11 +172,11 @@ Cluuk         WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
         DO I=1,MXTIMF
           IF(CPUTFT(I).NE.D0) WRITE(IW,222) CPUTT(I),CPUTFT(I)
         ENDDO
-C       WRITE(IW,223) SUMT(CPUTFT,MXTIMF)
 #endif
       ELSE
         WRITE(IW,135)
       ENDIF
+C
  130  FORMAT(/' **WARNING** Timer # out of range'/,
      &        ' ** no action taken')
  135  FORMAT(/' **WARNING** Unknown timer function'/,
