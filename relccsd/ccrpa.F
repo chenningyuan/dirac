@@ -270,11 +270,11 @@ C
      & 'Real part',8X,'Imaginary part')
  6072 FORMAT('@ <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)
  7000 FORMAT(//' Timing of routine RPAA :'
-     &/' Before RPAA :',T30,F12.3,' seconds'
-     &/' A & B multiplications :',T30,F12.3,' seconds'
-     &/' Expectation value, DIIS, etc.:',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in RPA :',T30,F12.3,' seconds')
+     &/' Before RPAA :',T35,F12.3,' seconds'
+     &/' A & B multiplications :',T35,F12.3,' seconds'
+     &/' Expectation value, DIIS, etc.:',T35,F12.3,' seconds'
+     &/' Untimed parts :',T35,F12.3,' seconds'
+     &/' Total time in RPA :',T35,F12.3,' seconds')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAB(EPS,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,BB3,BB4,
@@ -446,11 +446,11 @@ C
      & 'Real part',8X,'Imaginary part')
  6072 FORMAT(' <<',A8,';',A8,'>> ','(',F10.5,')',T40,2F20.13)
  7000 FORMAT(//' Timing of routine RPAB :'
-     &/' Before RPAB :',T30,F12.3,' seconds'
-     &/' A & B multiplications :',T30,F12.3,' seconds'
-     &/' Expectation value, DIIS, etc.:',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in RPA :',T30,F12.3,' seconds')
+     &/' Before RPAB :',T35,F12.3,' seconds'
+     &/' A & B multiplications :',T35,F12.3,' seconds'
+     &/' Expectation value, DIIS, etc.:',T35,F12.3,' seconds'
+     &/' Untimed parts :',T35,F12.3,' seconds'
+     &/' Total time in RPA :',T35,F12.3,' seconds')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOAX(AA,DG,X1,BUF1,X2,LINRES)
