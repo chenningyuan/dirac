@@ -190,7 +190,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.INTFLG','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.LVCORR','.LVNEW ','.TSCORR',
-     &             '.XXXXXX','.VACUUM','.NUCVAC','.FAMILY',
+     &             '.ACMOUT','.VACUUM','.NUCVAC','.FAMILY',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -326,8 +326,8 @@ C             using small component atomic charges
             DOTSC = .TRUE.
             GO TO 100
   113    CONTINUE
-C&&&& BNCRON : Improved screening for use with bare nucleus start guess
-            BNCRON = .TRUE.
+C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
+            DOACUT = .TRUE.    
             GO TO 100
   114    CONTINUE
 C&&&& VACUUM:QED-Fock (vacuum polarization included)
@@ -3053,6 +3053,7 @@ C
       DOJACO   = .FALSE.
       DOPIN    = .FALSE.
       DOPUT    = .FALSE.
+      DOACUT   = .FALSE.
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       DOCCM    = .FALSE.

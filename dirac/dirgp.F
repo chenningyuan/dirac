@@ -1302,3 +1302,218 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmout */
+      SUBROUTINE ACMOUT(WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients from unformatted DFCOEF, 
+C     take out symmetry and write to unformatted DFACMO 
+C
+C     Written by T.Saue May 26 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+C
+      DIMENSION WORK(LWORK)
+      CALL QENTER('ACMOUT')
+#include "memint.h"
+C
+C     Memory allocation
+      CALL MEMGET('REAL',KCMO1,N2BBASX*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO2,N2BBASX*4,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG1,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG2,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG1,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBG2,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINUC,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBUF,NTBAS(0),WORK,KFREE,LFREE)
+C
+      CALL ACMOU1(WORK(KCMO1),WORK(KEIG1),WORK(KIBG1),
+     &            WORK(KCMO2),WORK(KEIG2),WORK(KIBG2),
+     &            WORK(KINUC),WORK(KIBUF),WORK(KFREE),LFREE)
+C
+C     Memory deallocation
+      CALL MEMREL('ACMOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+      CALL QEXIT('ACMOUT')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck acmou1 */
+      SUBROUTINE ACMOU1(CMO1,EIG1,IBEIG1,CMO2,EIG2,IBEIG2,INUC,
+     &                  IBUF,WORK,LWORK)
+C*****************************************************************************
+C
+C     Read coefficients from unformatted DFCOEF, 
+C     take out symmetry and write to unformatted DFACMO 
+C
+C     Written by T.Saue May 26 2003
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "mxorb.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcblab.h"
+#include "dgroup.h"
+#include "nuclei.h"
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
+     &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
+     &          INUC(*),IBUF(*),WORK(LWORK)
+      DIMENSION IDIM(3)
+#include "memint.h"
+C
+C     Find correct ordering of nuclei
+C
+      CALL LSQMA1(INUC)
+      I1 = 0
+      I2 = 0
+      DO IC = 1,2
+        DO ICENT = 1,NUCDEP
+          DO IB = 1,NTBAS(IC)
+          IF(INUC(I1+IB).EQ.ICENT) THEN
+            I2 = I2 + 1
+            IBUF(I2) = I1+IB
+          ENDIF
+          ENDDO
+        ENDDO
+        I1 = I1 + NTBAS(IC)
+      ENDDO
+C
+C     Get coefficients from DFCOEF --> stored in CMO1
+C     ===============================================
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'ACMOUT: Unformatted file DFCOEF not found !'
+          CALL QUIT('ACMOUT: Unformatted file DFCOEF not found !')
+      ENDIF
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
+      CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
+     &            WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Transform to AO-basis --> stored in CMO2
+C     ========================================
+C
+      KC = 1
+      DO IFRP = 1,NFSYM
+      IF(NORB(IFRP).GT.0) THEN
+        IF(NBSYM.EQ.1) THEN
+          CALL CFSORT(CMO2(KC),CMO1(ICMOQ(IFRP)+1),NORB(IFRP),
+     &                IFRP,NFBAS(IFRP,0))
+        ELSE
+          NCBF2 = NFBAS(IFRP,0)*NORB(IFRP)*4
+          CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
+          CALL CFSORT(WORK(KCBF2),CMO1(ICMOQ(IFRP)+1),NORB(IFRP),
+     &                IFRP,NFBAS(IFRP,0))
+          CALL WTSOAO(WORK(KCBF2),CMO2(KC),IFRP,
+     &                    NFBAS(IFRP,0),NTBAS(0),NORB(IFRP)*4,0)
+          CALL MEMREL('ACMOU1.AO',WORK,KCBF2,KCBF2,KFREE,LFREE)
+        ENDIF
+        KC = KC + NTBAS(0)*NORB(IFRP)*4
+      ENDIF
+      ENDDO
+C
+C     Get correct row ordering (NBAS) --> stored in CMO1     
+C     ==================================================
+C
+      I1 = 1
+      I2 = 1
+      DO IFRP = 1,NFSYM
+        CALL ACMOU2(CMO1(I1),NORBT,CMO2(I2),NORB(IFRP),
+     &              NTBAS(0),IBUF)
+        I1 = I1 + NTBAS(0)*NORB(IFRP)
+        I2 = I2 + NTBAS(0)*NORB(IFRP)*4
+      ENDDO
+C
+C     In CFSORT the BR matrix is scaled by -1. Scale back
+C     ===================================================
+C
+      I1 = 1 + NTBAS(0)*NORBT*2
+      CALL DSCAL(NTBAS(0)*NORBT,DM1,CMO1(I1),1)
+C
+C     Get correct column ordering
+C     ===========================
+C 
+      CALL INDEXX(NORBT,EIG1,IBUF)
+C     Sort eigenvalues and boson irrep info
+      DO J = 1,NORBT
+        EIG2(J) = EIG1(IBUF(J))
+        IBEIG2(J) = IBEIG1(IBUF(J))
+        CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
+      ENDDO
+C
+C     Write coefficients etc. to file
+C     ===============================
+C
+      CALL OPNFIL(LUCOEF,'DFACMO','NEW','ACMOUT')
+      DO I = 1,2
+        IDIM(I) = 0
+      ENDDO
+      DO IFRP = 1,NFSYM
+        IDIM(1) = IDIM(1) + NPSH(IFRP)  
+        IDIM(1) = IDIM(1) + NESH(IFRP)  
+      ENDDO
+      IDIM(3) = NTBAS(0)
+      TEXT(1:50) = TITLE
+      CALL GTINFO(TEXT(51:74))
+      WRITE(LUCOEF) TEXT,1,(IDIM(I),I = 1,3),TOTERG
+      NDIM = NTBAS(0)*NORBT*4
+      CALL WRITT(LUCOEF,NDIM,CMO2)
+      CALL WRITT(LUCOEF,NORBT,EIG2)
+      CALL WRITI(LUCOEF,NORBT,IBEIG2)
+      CLOSE(LUCOEF,STATUS='KEEP')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck acmou2 */
+      SUBROUTINE ACMOU2(CMO1,NMO1,CMO2,NMO2,NBAS,IBUF)
+C***********************************************************************
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION CMO1(NBAS,NMO1,4),CMO2(NBAS,NMO2,4),IBUF(*)
+C
+      DO IZ = 1,4
+        DO J = 1,NMO2
+          DO I = 1,NBAS
+            CMO1(I,J,IZ) = CMO2(IBUF(I),J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck acmou3 */
+      SUBROUTINE ACMOU3(CMO1,CMO2,J1,J2,NBAS,NORB)
+C***********************************************************************
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION CMO1(NBAS,NORB,4),CMO2(NBAS,NORB,4)
+C
+      DO IZ = 1,4
+        CALL DCOPY(NBAS,CMO1(1,J1,IZ),1,CMO2(1,J2,IZ),1)        
+      ENDDO
+C
+      RETURN
+      END

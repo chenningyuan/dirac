@@ -143,6 +143,7 @@ C******************************************************************************
 C
       IF(DOPIN) CALL PCMOIN(WORK,LWORK)
       IF(DOPSI .OR. DOTRA) CALL PAMPSI(WORK,LWORK)
+      IF(DOACUT) CALL ACMOUT(WORK,LWORK)
       IF(DOPUT) CALL PCMOUT(WORK,LWORK)
 C
 C*****************************************************************************
