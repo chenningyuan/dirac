@@ -90,9 +90,11 @@ C     Call PSIINP always to get wave function information for
 C     other modules. This could be change if wave function information
 C     is saved on file. 
 C
-      OPEN(LUCMD,FILE = 'DIRAC.INP')
-      CALL PSIINP(WORK,LWORK)
-      CLOSE(LUCMD)
+      IF ( DOPSI .OR. .NOT. INPTES ) THEN
+         OPEN(LUCMD,FILE = 'DIRAC.INP')
+         CALL PSIINP(WORK,LWORK)
+         CLOSE(LUCMD)
+      END IF
 C
 C     Input of wave function analysis module
 C
