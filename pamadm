@@ -28,7 +28,6 @@ usage()
    echo '     -eri          : Include ERI integral routines'
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
-   echo '     -ccfocksp     : Include Fock space CC module'
    echo '     -xqr          : Include quadratic response module'
    echo '     tarfile=make  : only generate new Makefile'
    echo '     tarfile=export: Make DIRAC.new.tar.gz'
@@ -178,7 +177,7 @@ restore()
               cd backup
               if [ -f "${i}.0" ]; then mv -f "${i}.0" ../"${i}" ; fi
               if [ -f "${i}.1" ]; then mv -f "${i}.1" "${i}.0"; fi
-              if [ -f "${i}.2" ]; then mv -f "${i}.1" "${i}.1"; fi
+              if [ -f "${i}.2" ]; then mv -f "${i}.2" "${i}.1"; fi
               cd ..
           fi
       done
@@ -750,9 +749,6 @@ if [ -n "$ERIFLG" ]; then
 fi
 if [ -n "$DFTFLG" ]; then
    dirs="$dirs dft"
-fi
-if [ -n "$CCFOCKSPFLG" ]; then
-   dirs="$dirs relccsd/ccfocksp"
 fi
 if [ -n "$ESRFLG" ]; then
    dirs="$dirs prp/esr"
