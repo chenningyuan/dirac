@@ -899,7 +899,7 @@ C     Positronic part
         CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
       ENDDO
 C     Electronic part
-      IV1 = IV1 + NC
+      IV1 = NP1 + 1
       IV2 = NP2 + 1
       NC = MIN(NE1,NE2)
       NR = NE1-NE2
@@ -908,11 +908,11 @@ C     Electronic part
         CALL DCOPY(NN,CF2(1,IV2,IZ),1,CF1(1,IV1,IZ),1)        
       ENDDO
       IF(NR.GT.0) THEN
-        NN = NB*NR
+        IV1 = IV1 + NC
+        NN  = NB*NR
         DO IZ = 1,NZ
           CALL DZERO(CF1(1,IV1,IZ),NN)
         ENDDO
-        IV1 = IV1 + NR
       ENDIF
 C
       RETURN
