@@ -660,7 +660,6 @@ Functional PBEFunctional = {
     gga_first,
     gga_second,
     gga_third
-#endif
 };
 
 Functional BLYPFunctional = {
