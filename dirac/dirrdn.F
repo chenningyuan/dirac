@@ -1342,8 +1342,8 @@ C
      &     '  The indexing of reference spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
-     &             ' --> ',NAMN(J)
+            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
+     &             ' --> ',NAMDEP(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -2866,8 +2866,8 @@ C
      &   '    The indexing of reference spinor sets is assumed ',
      &   '    to follow list of symmetry independent nuclei.'
         DO J = 1,NREFS
-          WRITE(LUPRI,'(1X,A,I3,A,A4)') '* Reference spinor set ',J,
-     &           ' --> ',NAMN(J)
+          WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Reference spinor set ',J,
+     &           ' --> ',NAMDEP(J)
           WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
           DO I = 1,NFSYM
             NVEC = 0
@@ -3683,8 +3683,8 @@ C
      &     '  The indexing of reference spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
-     &             ' --> ',NAMN(J)
+            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
+     &             ' --> ',NAMDEP(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
@@ -3729,8 +3729,8 @@ C
      &     '  The indexing of reference spinor sets is assumed ',
      &     '  to follow list of symmetry independent nuclei.'
           DO J = 1,NPRJREF
-            WRITE(LUPRI,'(3X,A,I3,A,A4)') '- Reference spinor set ',J,
-     &             ' --> ',NAMN(J)
+            WRITE(LUPRI,'(3X,A,I3,A,A6)') '- Reference spinor set ',J,
+     &             ' --> ',NAMDEP(J)
             WRITE(LUPRI,'(5X,A,A6)') ' - read from file ',PRJFIL(J)
             DO I = 1,NFSYM
               NVEC = 0
