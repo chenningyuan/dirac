@@ -15,7 +15,6 @@ C*** Dirac-Fock calculations ***
      &              NFMAT,ISYMOP(MFMAT),IFCKOP(MFMAT),IHRMOP(MFMAT)
       COMMON/DCRDHF/SCFCNV,ERGVAL,EVCVAL,FCKVAL,
      &              DHFERG,ELERGY,E1PART,E2PART,ERGBUF,
-     &              EA1PART,EA2PART,
      &              CONVRG,TDF2,TDDG,DNSDHF,
      &              DAMPFC,DIISTH,BMCOND,CNVINT(2),
      &              SCFTID(0:7)
