@@ -218,13 +218,15 @@ C  /* Deck genden */
 C*****************************************************************************
 C
 C     Get (projection) projection density matrices (normed to unity)
-C     IFLAG is a 5 bit pattern:
-C       00000: No density matrices
-C       00001: Inactive density matrix
-C       00010: Active density matrix (see bit 6-?)
-C       00100: Secondary electron density matrix
-C       01000: Secondary positron density matrix
-C       10000: C Ct (that is 1 in AO-basis)
+C     IFLAG is a 6 bit pattern:
+C       000000: No density matrices
+C       000001: Inactive density matrix
+C       000010: Active density matrix (see bit 6-?)
+C       000100: Secondary electron density matrix
+C       001000: Secondary positron density matrix
+C       010000: C Ct (that is 1 in AO-basis)
+C       100000: QED inactive density matrix: 
+C               inactive density matrix + Secondary positron density matrix
 C
 C     Important: Act. density matrix works only for one open shell.
 C
@@ -235,9 +237,8 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+      LOGICAL LBIT
       DIMENSION DMAT(*), CMO(*)
-      DIMENSION IFLG(5)
-      DATA IFLG /01,02,04,08,16/
       CHARACTER CHR*80
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -248,48 +249,54 @@ C
       CALL QENTER('GENDEN')
 C
       IOFF = 1
-      DO 10 I = 1,5
-         IF (IBTAND(IFLG(I),IFLAG) .NE. IFLG(I) ) GOTO 10
-         CALL DZERO(DMAT(IOFF),N2BBASXQ)
-         DO 20 ISYM = 1,NFSYM
-            IF (I.EQ.1) THEN
-               ITEST  = NISH(ISYM)
-               ISTART = NPSH(ISYM)+1
-               ILOOP  = NISH(ISYM)
-               CHR    = 'GENDEN: Inactive density matrix, corep '
-            ELSEIF (I.EQ.2) THEN
-               ITEST  = NASH(ISYM)
-               ISTART = NPSH(ISYM)+NISH(ISYM)+1
-               ILOOP  = NASH(ISYM)
-               CHR    = 'GENDEN: Active density matrix, corep '
-            ELSEIF (I.EQ.3) THEN
-               ITEST  = NSSH(ISYM)
-               ISTART = NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1
-               ILOOP  = NSSH(ISYM)
-               CHR    = 'GENDEN: Sec. (electron) density matrix, corep '
-            ELSEIF (I.EQ.4) THEN
-               ITEST  = NPSH(ISYM)
-               ISTART = 1
-               ILOOP  = NPSH(ISYM)
-               CHR    = 'GENDEN: Sec. (positron) density matrix, corep '
-            ELSEIF (I.EQ.5) THEN
-               ITEST  = NORB(ISYM)
-               ISTART = 1
-               ILOOP  = NORB(ISYM)
-               CHR    = 'GENDEN: C Ct (1 in AO-basis), corep '
-            END IF
-            IF (ITEST.EQ.0) GOTO 20
-            CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
+      DO 10 I = 1,6
+      IF (LBIT(IFLAG,I)) THEN
+        CALL DZERO(DMAT(IOFF),N2BBASXQ)
+        DO 20 ISYM = 1,NFSYM
+          IF (I.EQ.1) THEN
+            ITEST  = NISH(ISYM)
+            ISTART = NPSH(ISYM)+1
+            ILOOP  = NISH(ISYM)
+            CHR    = 'GENDEN: Inactive density matrix, corep '
+          ELSEIF (I.EQ.2) THEN
+            ITEST  = NASH(ISYM)
+            ISTART = NPSH(ISYM)+NISH(ISYM)+1
+            ILOOP  = NASH(ISYM)
+            CHR    = 'GENDEN: Active density matrix, corep '
+          ELSEIF (I.EQ.3) THEN
+            ITEST  = NSSH(ISYM)
+            ISTART = NPSH(ISYM)+NISH(ISYM)+NASH(ISYM)+1
+            ILOOP  = NSSH(ISYM)
+            CHR    = 'GENDEN: Sec. (electron) density matrix, corep '
+          ELSEIF (I.EQ.4) THEN
+            ITEST  = NPSH(ISYM)
+            ISTART = 1
+            ILOOP  = NPSH(ISYM)
+            CHR    = 'GENDEN: Sec. (positron) density matrix, corep '
+          ELSEIF (I.EQ.5) THEN
+            ITEST  = NORB(ISYM)
+            ISTART = 1
+            ILOOP  = NORB(ISYM)
+            CHR    = 'GENDEN: C Ct (1 in AO-basis), corep '
+          ELSEIF (I.EQ.6) THEN
+            ITEST  = NPSH(ISYM)+NISH(ISYM)
+            ISTART = 1
+            ILOOP  = NPSH(ISYM)+NISH(ISYM)
+            CHR    = 'GENDEN: QED inactive density matrix, corep '
+          END IF
+          IF (ITEST.EQ.0) GOTO 20
+          CALL DENST1(DMAT(I2BASX(ISYM,ISYM)+IOFF),NTBAS(0),NTBAS(0),
      &              CMO(ICMOQ(ISYM)+1),NFBAS(ISYM,0),NORB(ISYM),
      &              ISTART,ILOOP,NFBAS(ISYM,0))
-            IF (IPRINT.GE.10) THEN
-               WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
-               CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+IOFF),
-     &                NFBAS(ISYM,0),NFBAS(ISYM,0),
-     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-            END IF
- 20      CONTINUE           
-         IOFF = IOFF + N2BBASXQ
+          IF (IPRINT.GE.10) THEN
+            WRITE(LUPRI,'(/3X,A,I2/)') CHR,ISYM
+            CALL PRQMAT(DMAT(I2BASX(ISYM,ISYM)+IOFF),
+     &                  NFBAS(ISYM,0),NFBAS(ISYM,0),
+     &                  NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          END IF
+ 20     CONTINUE           
+        IOFF = IOFF + N2BBASXQ
+      ENDIF
  10   CONTINUE
 C
 C   
