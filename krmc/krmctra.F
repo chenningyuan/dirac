@@ -69,22 +69,17 @@ C
       CALL RTKTIME(.TRUE.,7)
 C
       IF ( IPROPT .GT. 3 ) THEN
-         WRITE(LUPRI,'(3A,I1,A)')
+         WRITE(LUPRI,'(/3A,I1,A/A,L1)')
      &        ' (RTRACTL) Integrals in transformation = ',OPT_INTTYP,
-     &        ' (INTFLG=',IOPT_INTFLG,')'
-         WRITE(LUPRI,'(A,L1)')
-     &        '           No positronic integrals       = ',OPT_NOPFQ
-      END IF
+     &        ' (INTFLG=',IOPT_INTFLG,')',
+     &        '           No positronic integrals     = ',OPT_NOPFQ
 C
+C        Print orbital strings
 C
-C     Print orbital strings
-C
-      IF ( IPROPT .GE. 3 ) THEN
          DO I = 1, 4
             DO J = 1,NFSYM
-               WRITE(LUPRI,'(A,I1,A,I1,2A)')
-     &              '* Orbital string ',I,
-     &              ' for corep ',J,' = ',SZTRA(J,I)
+               WRITE(LUPRI,'(A,I2,A,I2,2A)')
+     &            '* Orbital string',I,' for corep',J,' = ',SZTRA(J,I)
             END DO
          END DO
       END IF
@@ -271,37 +266,37 @@ C
      &        NORB,IOFF0,USENOROT,NOROT,IIDX2,NIDX2)
       ELSE
          CALL QUIT('*** ERROR in INISZ1 *** ' //
-     &        'C(3:4) not implemented ' // C(3:4) )
+     &        'C(1:2) not implemented ' // C(1:2) )
       END IF
 C
-chj#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 1, 2
          write(6,*) 'index ',j, ' t --> g pointer'
-CTF      do i = 1, nidxt(j)
-CTF         write(6,*) i,idxt2g(i,j)
-CTF      end do
+         do i = 1, nidxt(j)
+            write(6,*) i,idxt2g(i,j)
+         end do
       end do
-chj#endif
+#endif
 C
       CALL INISZ3(IDXT2G(1,1),NIDXT(1),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,1))
 C
-chj#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 1, nfsym
-CTF      write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-CTF      write(6,*) 'sztra = ',sztra(j,1)
+         write(6,*) 'ilist index 1',(ilist(i,j),i=1,nlist(j))
       end do
-chj#endif
+      write(6,*) 'sztra index 1 = ',(sztra(j,1),j=1,nfsym)
+#endif
 C
       CALL INISZ3(IDXT2G(1,2),NIDXT(2),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,2))
 C
-chj#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 1, nfsym
-CTF      write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-CTF      write(6,*) 'sztra = ',sztra(j,2)
+         write(6,*) 'ilist index 2',(ilist(i,j),i=1,nlist(j))
       end do
-chj#endif
+      write(6,*) 'sztra index 2 = ',(sztra(j,2),j=1,nfsym)
+#endif
 C
 C
 C     *******************
@@ -358,32 +353,32 @@ C
      &        'C(3:4) not implemented ' // C(3:4) )
       END IF
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 3, 4
          write(6,*) 'index ',j, ' t --> g pointer'
-CTF      do i = 1, nidxt(j)
-CTF         write(6,*) i,idxt2g(i,j)
-CTF      end do
+         do i = 1, nidxt(j)
+            write(6,*) i,idxt2g(i,j)
+         end do
       end do
 #endif
 C
       CALL INISZ3(IDXT2G(1,3),NIDXT(3),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,3))
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 1, nfsym
          write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-         write(6,*) 'sztra = ',sztra(j,3)
+         write(6,*) 'sztra index 3 = ',sztra(j,3)
       end do
 #endif
 C
       CALL INISZ3(IDXT2G(1,4),NIDXT(4),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,4))
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
       do j = 1, nfsym
          write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
-         write(6,*) 'sztra = ',sztra(j,4)
+         write(6,*) 'sztra index 4 = ',sztra(j,4)
       end do
 C
       write(6,*) 'iidx',iidx1,iidx2,iidx3,iidx4
@@ -418,13 +413,13 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (IDXFLG) THEN
-               IG = IDX(IA)
-            ELSE
-               IG = IA
-            END IF
             IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
                IT = IT + 1
+               IF (IDXFLG) THEN
+                  IG = IDX(IA)
+               ELSE
+                  IG = IA
+               END IF
                IDXT2G(IT) = IG
             END IF
          END DO
@@ -721,9 +716,7 @@ C
       CALL GETTIM(CPU1,WALL1)
       WRITE(LUPRI,'(/A)')
      &     ' (RTRACTL1) Starting 4-index integral transformation.'
-      IF (IPRTRA .GE. 3) THEN
-         CALL TRAHI(IPRTRA,4)
-      END IF
+      IF (IPRTRA .GE. 3) CALL TRAHI(IPRTRA,4)
 C
 C     Set up index arrays for integral transformation
 C     -----------------------------------------------
@@ -1069,7 +1062,7 @@ C
       CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
 c
-#ifdef UNDEF
+#ifdef MOD_DEBUG
       write(6,*) '(RGETH2) IDXKR12'
       do i = 1, nfpck12t
          write(6,*) I,
@@ -1097,7 +1090,7 @@ C
             IREC = IREC + 1
             CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
             IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
-#ifdef UNDEF
+#ifdef MOD_DEBUG
             write(6,*) 'x & y: ',ix,iy
             write(6,*) 'ative : ',ixu,iyu
             write(6,*) ' '
@@ -1120,7 +1113,7 @@ C
             READ (LUINT + IREPIJ, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
      &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS)
-#ifdef UNDEF
+#ifdef MOD_DEBUG
             ii = 0
             do i = 1, 4 * nz
                write(6,*) 'class ',i,' before transformation'
@@ -1178,7 +1171,7 @@ C
      &           H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
             do i = 1, 3 * nz
                write(6,*) 'xy matrix no ',i
                call output(work(kh2xy + (i-1)*norbt*nasht),
@@ -2235,7 +2228,7 @@ C
 C     Loop over records on file
 C     -------------------------
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
       write(6,*) 'nfpck12',nfpck12,nfpck12t
       write(6,*) 'nfpck34',nfpck34,nfpck34t
       call flshfo(6)
@@ -2269,7 +2262,7 @@ C
 C           else:
 C              nothing (jump to 20)
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
             write(6,*) 'ix,..',ix,iy,ixu,iyu
             call flshfo(6)
 #endif
@@ -2289,7 +2282,7 @@ C
             READ (LUINT + IREPXY, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
      &           (WORK(KHMA2+I-1),I=1,NKL*NCLASS)
-#ifdef UNDEF
+#ifdef MOD_DEBUG
             write(6,*) 'integrals...'
             call output(work(khma2),1,nkl,1,nclass,nkl,nclass,1,lupri)
 #endif
@@ -3336,7 +3329,7 @@ c        write(6,*) '(vp active general)'
                DO I3 = 1, 3
                   DO IZ = 1, NZ
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
      &                    dFAC(IZ,I3,IZFQ),
@@ -3376,7 +3369,7 @@ c        write(6,*) '(pv active general)'
                DO I3 = 1, 3
                   DO IZ = 1, NZ
 C
-#ifdef UNDEF
+#ifdef MOD_DEBUG
                      WRITE(LUPRI,*)
      &                    szPV(IZ,I3,IZFQ),szQV(IZ,I3,IZFQ),
      &                    dFAC(IZ,I3,IZFQ),
