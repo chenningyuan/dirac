@@ -4015,7 +4015,7 @@ C ORBINH1(IORBINH1,NTOOBS,NTOOB,NSMOB)
 * ===============
 *
       ELSE IF (INTIMP .EQ. 5.AND.NOINT.EQ.0  ) THEN
-        WRITE(6,*) ' Integrals imported from SIRIUS files'
+        WRITE(6,*) ' Integrals imported from DALTON/SIRIUS files'
 *. Load one-electron integrals
         CALL GETH0S(WORK(KINT1),NOCOB)
 *. And two-electron integrals if desired
@@ -7461,7 +7461,7 @@ C----- bit manipulation definitions
 C-----
 C
       REWIND LUINT
-      CALL MOLLAB('MOLTWOEL',LUINT,LUERR)
+      CALL MOLLAB('MOLTWOEL',LUINT,LUPRI)
 C
       INDCD = 0
       NINTR = 0    
