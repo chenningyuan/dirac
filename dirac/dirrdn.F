@@ -648,9 +648,9 @@ C*****************************************************************************
 #include <dummy.h>
       PARAMETER (NTABLE = 31)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
-     &           DTHRS=1.0D-13)
+     &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER CTEMP*72, LINE*80, TEXT*20
       DIMENSION WORK(LWORK)
@@ -669,7 +669,7 @@ C
      &            '.FCKCNV','.NODSCF','.PHCOEF','.FIXDIF','.NODAMP',
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.TRIVEC','.TRIFCK','.CLOSED','.EIGPRI','.OPEN S',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.DIISTH','.DAMPFC',
+     &            '.AUTOCC','.NO AUT','.XXXXXX','.DIISTH','.DAMPFC',
      &            '.OVLSEL','.NODYNS','.REORDE','.DIISMO','.DIISAO',
      &            '.POST D'/
       DATA SET/.FALSE./
@@ -685,6 +685,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
+      NOAUTOCC = .FALSE.
 C
 C     Initialize /CBCDHF/
 C     ===================
@@ -714,6 +715,8 @@ C
       DYNSEL    = .FALSE.
       DIISAO    = .FALSE.
       DIISMO    = .TRUE.
+      AUTOCC    = .FALSE.
+      INIOCC    = .TRUE.
 C
 C     Initialize /CBIDHF/
 C     ===================
@@ -732,6 +735,7 @@ C
       ITRINT(2) = 1
       IPREIG    = 1
       INTTYP  = 'Bare nuc.'
+      NEWOCC  = 0
 C
 C     Initialize /CBRDHF/
 C     ===================
@@ -888,6 +892,7 @@ C&&& TRIFCK: Start on two-electron Fock matrix read from file
    18          CONTINUE
 C&&&& number of closed shell electrons
                   READ (LUCMD,*) (NELEC(I),I=1,NFSYM)
+                  INIOCC = .FALSE.
                GO TO 100
    19          CONTINUE
 C&&&& EIGPRI: Print control for electron and positron solutions
@@ -960,11 +965,16 @@ C
                   NACSH(2,IOPEN) = IAC2/2
                   DF(IOPEN) = SDPRE(IELEC)/SDPRE(IAC1+IAC2)
                END DO
+               INIOCC = .FALSE.
 #endif
                GO TO 100
    21          CONTINUE
+C&&& AUTOCC: Automatic DHF occupation
+                  NOAUTOCC = .FALSE.
                GO TO 100
    22          CONTINUE
+C&&& NO AUTOCC: No Automatic DHF occupation
+                  NOAUTOCC = .TRUE.
                GO TO 100
    23          CONTINUE
                GO TO 100
@@ -1047,52 +1057,112 @@ C
 C     Determine occupation
 C     ====================
 C
-      DF(0) = D1
-      DA(0) = D1
-      DALPHA(0) = D0
-      DTEMP = D0
-      DO IFRP = 1,NFSYM
-         DO IOPEN = 1,NOPEN
-            NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
-            DTEMP        = DTEMP +
-     &                     NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
-         END DO
-         IF (NELEC(IFRP).LT.0) 
-     &      CALL QUIT('DHFINP: negative number of '//
-     &                'closed shell electrons!')
-         IF (MOD(NELEC(IFRP),2).NE.0) 
-     &      CALL QUIT('DHFINP: odd number of '//
-     &                'closed shell electrons!')
-         NISH(IFRP)  = NELEC(IFRP)/2
-         NOCC(IFRP)  = NISH(IFRP) + NASH(IFRP)
-      END DO
-      NAELEC = NINT(DTEMP)
-      DO IOPEN = 1,NOPEN
+C     INIOCC automatically sets AUTOCC
+C        unless user has explicitly has set NOAUTOCC
 C
-C        We do     allow fractional occupation of 1
-C           This corresponds to a inactive electron
-C           and gives DALPHA = 0
+      IF (INIOCC) AUTOCC = .NOT. NOAUTOCC
 C
-         IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
-            WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
-     &         'WARNING: Open shell no. ',IOPEN,
-     &         ' has frac. occ. of ',DF(IOPEN)
-            WRITE(LUPRI,'(X,A)')
-     &         'This corresponds to an inactive shell. So ALPHA and '//
-     &         'A is reset.'
-            DA(IOPEN)     = D1
-            DF(IOPEN)     = D1
-            DALPHA(IOPEN) = D0
+C     If there only is one symmetry there is no need to change 
+C     occupation during SCF cycles.
+C
+      IF (NFSYM .EQ. 1) AUTOCC = .FALSE.
+C
+      IF (INIOCC) THEN
+C
+         CALL RMOLCHR(ICHRG)
+         WRITE(LUPRI,'(/,1X,A,3(/A,I3))')
+     &      '* Initial Automatic occupation based on:',
+     &      '  Total charge of atoms = ',ICHRG,
+     &      '  Charge of molecule    = ',KCHARG,
+     &      '  ie. no. of electrons  = ',ICHRG-KCHARG
+C
+         IF (NFSYM .EQ. 1) THEN
+C
+C           The easy case: 
+C              all electrons goes into the only symmetry!
+C
+            INIOCC = .FALSE.
+            NELEC(1) = ICHRG - KCHARG
+            IF (MOD(NELEC(1),2).EQ.1) THEN
+               NOPEN = 1
+               NACSH(1,1) = 1
+               DF(1) = DP5
+               NELEC(1) = NELEC(1) - 1
+               WRITE(LUPRI,'(/,6X,A)')
+     &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
+            END IF
+C
          ELSE
-            DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
-            DN        = DM*DF(IOPEN)
-            DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1)) 
-            DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
+C
+C           The difficult case:
+C              The occupation is determined in the DHF routines.
+C
+            DF(0) = D1
+            DA(0) = D1
+            DALPHA(0) = D0
+            NELECT = ICHRG - KCHARG
+            IF (MOD(NELECT,2).EQ.1)  THEN
+               NOPEN = 1
+C
+               DF(1) = DP5
+               DA(1) = D0
+               DALPHA(1) = D2
+C
+               NELECT = NELECT - 1
+               NAELEC = 1
+               WRITE(LUPRI,'(/,6X,A)')
+     &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
+            END IF
          END IF
-      ENDDO
-      NASHT = NASH(1) + NASH(2)
-      NFROT = NFRO(1) + NFRO(2)
-      NELECT  = NELEC(1) + NELEC(2)
+      END IF
+      IF (.NOT. INIOCC) THEN
+         DF(0) = D1
+         DA(0) = D1
+         DALPHA(0) = D0
+         DTEMP = D0
+         DO IFRP = 1,NFSYM
+            DO IOPEN = 1,NOPEN
+               NASH(IFRP)   = NASH(IFRP) + NACSH(IFRP,IOPEN)
+               DTEMP        = DTEMP +
+     &                        NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
+            END DO
+            IF (NELEC(IFRP).LT.0) 
+     &         CALL QUIT('DHFINP: negative number of '//
+     &                   'closed shell electrons!')
+            IF (MOD(NELEC(IFRP),2).NE.0) 
+     &         CALL QUIT('DHFINP: odd number of '//
+     &                   'closed shell electrons!')
+            NISH(IFRP)  = NELEC(IFRP)/2
+            NOCC(IFRP)  = NISH(IFRP) + NASH(IFRP)
+         END DO
+         NAELEC = NINT(DTEMP)
+         DO IOPEN = 1,NOPEN
+C   
+C           We do     allow fractional occupation of 1
+C              This corresponds to a inactive electron
+C              and gives DALPHA = 0
+C   
+            IF (ABS(DF(IOPEN)-D1).LE.DTHRS) THEN
+               WRITE(LUPRI,'(X,A,I2,A,F6.4)')  
+     &            'WARNING: Open shell no. ',IOPEN,
+     &            ' has frac. occ. of ',DF(IOPEN)
+               WRITE(LUPRI,'(X,2A)')
+     &            'This corresponds to an inactive shell. So ALPHA and',
+     &            ' A is reset.'
+               DA(IOPEN)     = D1
+               DF(IOPEN)     = D1
+               DALPHA(IOPEN) = D0
+            ELSE
+               DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
+               DN        = DM*DF(IOPEN)
+               DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1)) 
+               DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
+            END IF
+         ENDDO
+         NASHT = NASH(1) + NASH(2)
+         NFROT = NFRO(1) + NFRO(2)
+         NELECT  = NELEC(1) + NELEC(2)
+      END IF
 C
 C     If no DIIS set MXDIIS to zero
 C     =============================
@@ -1122,70 +1192,13 @@ C     Print info about #electrons etc.
 C
       WRITE(LUPRI,'(1X,A,I1)') '* Number of fermion irreps: ',NFSYM
 C
-      IF (NASHT .EQ. 0) THEN
-         WRITE(LUPRI,'(1X,A,I4,A)') 
-     &      '* Closed shell DHF calculation with ',NELECT,
-     &      ' electrons in'
-         DO I = 1,NFSYM
-            WRITE(LUPRI,'(3X,I5,A,I1)')
-     &          NISH(I),' orbitals in Fermion irrep ',I
-         END DO
-      ELSE
-         WRITE(LUPRI,'(1X,A)') 
-     &      '* Open shell DHF calculation.'
-         WRITE(LUPRI,'(1X,A/)') 
-     &      '* Shell specifications:'
-         WRITE(LUPRI,'(40X,A)') 
-     &      'Orbitals'
-         WRITE(LUPRI,'(24X,A,/,24X,A)') 
-     &      '#electrons  irrep 1  irrep 2     f        a      alpha',
-     &      '----------  -------  -------  -------  -------  -------'
-         IF (NFSYM .EQ. 1) THEN
-            WRITE(LUPRI,1001) 
-     &         NELECT,NISH(1),DF(0),DA(0),DALPHA(0)
-         ELSE
-            WRITE(LUPRI,1002) 
-     &         NELECT,NISH(1),NISH(2),DF(0),DA(0),DALPHA(0)
-         END IF
-         DO IOPEN = 1,NOPEN
-            IF (NFSYM .EQ. 1) THEN
-               WRITE(LUPRI,1011) 
-     &            IOPEN,
-     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
-     &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
-            ELSE
-               WRITE(LUPRI,1012) 
-     &            IOPEN,
-     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
-     &            NACSH(1,IOPEN),NACSH(2,IOPEN),
-     &            DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
-            END IF
-         END DO
-         WRITE(LUPRI,1020)
-         IF (NFSYM .EQ. 1) THEN
-            WRITE(LUPRI,1031)
-     &         NELECT+NAELEC,NISH(1)+NASH(1)
-         ELSE
-            WRITE(LUPRI,1032)
-     &         NELECT+NAELEC,NISH(1)+NASH(1),NISH(2)+NASH(2)
-         END IF
-         WRITE(LUPRI,'(/,3X,A,/)')
-     &      'f is the fraction occupation; a and alpha open shell '//
-     &      'coupling coefficients.'
-      END IF
- 1001 FORMAT(3X,'Closed shell',12X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1002 FORMAT(3X,'Closed shell',12X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
- 1011 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
- 1012 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
- 1020 FORMAT(3X,76('-'))
- 1031 FORMAT(3X,'Total',19X,I4,7X,I4)
- 1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
+      IF (.NOT. INIOCC) CALL PROCC()
       IF(NFROT.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Number of frozen shells:'
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO(I),I=1,NFSYM)
       ENDIF
-      IF (NELEC(1)+NELEC(2)+NAELEC .EQ. 0) THEN
+      IF (NELECT+NAELEC .EQ. 0) THEN
          CALL QUIT('DHFINP: Zero electrons not allowed!')
       END IF
 C
@@ -1284,6 +1297,9 @@ C
       END IF
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
+         IF (AUTOCC) 
+     &      CALL QUIT('WARNING! .AUTOCC combined with overlap ',
+     &           'selection does not work')
          IF(.NOT. DYNSEL) THEN
             WRITE(LUPRI,'(1X,A)') '* Vector selection based on overlap'
          ELSE
@@ -1291,6 +1307,16 @@ C
      &         '* Vector selection based on overlap ',
      &           '(dynamic update of overlap-selection matrix)'
          END IF
+      END IF
+      IF (AUTOCC .AND. NASHT .GT. 1) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &      'WARNING! .AUTOCC and NASHT > 1 does not work',
+     &      ' ==> turning .AUTOCC off'
+         AUTOCC = .FALSE.
+      END IF
+      IF (AUTOCC .AND. NFSYM .GT. 1) THEN
+         WRITE(LUPRI,'(1X,A)') 
+     &      '* DHF occupation is allow to change during SCF cycles.'
       END IF
       WRITE(LUPRI,'(1X,A)')
      +    '* Contributions from 2-electron integrals to Fock matrix:'
@@ -3350,4 +3376,82 @@ C
 C
       RETURN
  1000 FORMAT (/' **** WARNING ****'/2X,'not tested')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck procc */
+      SUBROUTINE PROCC
+C*****************************************************************************
+C
+C     Print DHF occupation information
+C
+C     Written by J. Thyssen Aug 12 1999
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+C
+      PARAMETER (D2=2.0D00)
+C
+#include <dcborb.h>
+#include <dgroup.h>
+C
+      IF (NAELEC .EQ. 0) THEN
+         WRITE(LUPRI,'(1X,A,I4,A)') 
+     &      '* Closed shell DHF with ',NELECT,
+     &      ' electrons in'
+         DO I = 1,NFSYM
+            WRITE(LUPRI,'(3X,I5,A,I1)')
+     &          NISH(I),' orbitals in Fermion irrep ',I
+         END DO
+      ELSE
+         WRITE(LUPRI,'(1X,A)') 
+     &      '* Open shell DHF calculation.'
+         WRITE(LUPRI,'(1X,A/)') 
+     &      '* Shell specifications:'
+         WRITE(LUPRI,'(40X,A)') 
+     &      'Orbitals'
+         WRITE(LUPRI,'(24X,A,/,24X,A)') 
+     &      '#electrons  irrep 1  irrep 2     f        a      alpha',
+     &      '----------  -------  -------  -------  -------  -------'
+         IF (NFSYM .EQ. 1) THEN
+            WRITE(LUPRI,1001) 
+     &         NELECT,NISH(1),DF(0),DA(0),DALPHA(0)
+         ELSE
+            WRITE(LUPRI,1002) 
+     &         NELECT,NISH(1),NISH(2),DF(0),DA(0),DALPHA(0)
+         END IF
+         DO IOPEN = 1,NOPEN
+            IF (NFSYM .EQ. 1) THEN
+               WRITE(LUPRI,1011) 
+     &            IOPEN,
+     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            NACSH(1,IOPEN),DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
+            ELSE
+               WRITE(LUPRI,1012) 
+     &            IOPEN,
+     &            NINT(DF(IOPEN)*D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))),
+     &            NACSH(1,IOPEN),NACSH(2,IOPEN),
+     &            DF(IOPEN),DA(IOPEN),DALPHA(IOPEN)
+            END IF
+         END DO
+         WRITE(LUPRI,1020)
+         IF (NFSYM .EQ. 1) THEN
+            WRITE(LUPRI,1031)
+     &         NELECT+NAELEC,NISH(1)+NASH(1)
+         ELSE
+            WRITE(LUPRI,1032)
+     &         NELECT+NAELEC,NISH(1)+NASH(1),NISH(2)+NASH(2)
+         END IF
+         WRITE(LUPRI,'(/,3X,A,/)')
+     &      'f is the fraction occupation; a and alpha open shell '//
+     &      'coupling coefficients.'
+      END IF
+      RETURN
+ 1001 FORMAT(3X,'Closed shell',12X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
+ 1002 FORMAT(3X,'Closed shell',12X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1011 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,6X,'N/A ',3(3X,F6.4))
+ 1012 FORMAT(3X,'Open shell no.',I2,8X,I4,7X,I4,5X,I4,1X,3(3X,F6.4))
+ 1020 FORMAT(3X,76('-'))
+ 1031 FORMAT(3X,'Total',19X,I4,7X,I4)
+ 1032 FORMAT(3X,'Total',19X,I4,7X,I4,5X,I4)
       END
