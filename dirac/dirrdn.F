@@ -3059,7 +3059,7 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.PRJTHR',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','XXXXXXX','XXXXXXX','XXXXXXX'/
+     &            '.ONECAP','.1CENTE','XXXXXXX','XXXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -3293,6 +3293,11 @@ C
              ICHANG = ICHANG + 1
             GO TO 100
   122     CONTINUE
+C&&& 1CENTER : A quick keyword for the ONECAP (INV1C=2,ICTLV1C=0) model.
+             ONECAP = .TRUE.
+             INTV1C = 2
+             ICTLV1C(2) = 0
+             ICHANG = ICHANG + 1
             GO TO 100
   123     CONTINUE
             GO TO 100
