@@ -170,7 +170,7 @@ endif
 #  Write active modules
 #
 echo "#\!/bin/sh" > configure
-echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG \" >> configure
+echo MODS=\" $ERIFLG $CCFLG $RSPFLG $TRAFLG $OPENFLG\" >> configure
 echo ERIFLG=$ERITAR >> configure
 echo CCFLG=$CCTAR   >> configure
 echo RSPFLG=$RSPTAR >> configure
