@@ -105,7 +105,7 @@ C
       Real*8 Function CpuDelta()
 C
       Real*8 Sec1,Sec0
-      Common/CPU/Sec0,Sec1
+      Save Sec0
       Data Sec0 /0.d0/
 C
       Call CPUused(Sec1)
@@ -135,7 +135,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Call Time(Tijd)
 #elif defined (SYS_AIX) 
       Call fdate_ (String)
-      Datum = Strinf(1:10)
+      Datum = String(1:10)
       Tijd  = String(12:19)
 #else
       Date and time on your computer???
