@@ -1908,8 +1908,8 @@ C
          DO IZ = 1,NZ
             IORB_S = I+NPOSITRON
             IORB_D = IORDER(I)+NPOSITRON
-            IF (IORB_D .LE. NELECTRON)
-               CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
+            IF (IORB_D .LE. NELECTRON+NPOSITRON)
+     &         CALL DCOPY(NBASI,CMOBCK(1,IORB_S,IZ),1,
      &                          CMO(1,IORB_D,IZ),1)
          END DO
       END DO
