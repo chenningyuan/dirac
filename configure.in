@@ -864,8 +864,9 @@ case $machine in
           else
              def='dirpvm.x'
           fi
+          parlib="$parlib -lfmpi -lrt -pthread"
        fi
-       opt='-O4 -fpe2'
+       opt='-O5 -fast'
        inc="-I$INCLUDE_DIR";;
 #
 #   CRAY T3E
