@@ -34,11 +34,11 @@ usage='Usage: '$0'\n'\
 '--help\n'\
 '\tPrint this\n'\
 '--branch=BRANCH\n'\
-'\tBranch that is to be tested\n'\
+'\tBranch that is to be tested (default: current branch)\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run\n'\
 '--testdir=TESTDIR\n'\
-'\tDirectory in which the tests should be run\n'
+'\tDirectory in which the tests should be run (default: -testdir=test)\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -111,6 +111,9 @@ fi
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
+if [ ! -e "${testdir}/logs" ]; then
+   mkdir ${testdir}/logs;
+fi
 cd ${testdir}/logs;
 for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
     if [ -f "${i}" ]; then
