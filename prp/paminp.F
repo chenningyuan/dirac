@@ -644,6 +644,7 @@ C&&&&    One component: DIAGONAL, XALPHA, YALPHA, ZALPHA
 C&&&&    Two components: XAVECTOR,YAVECTOR,ZAVECTOR
     2    CONTINUE
            NPCOMP = 2
+           PFAC(2) = -D1
          GO TO 300
 C&&&&    Three components: ALPHADOT
     3    CONTINUE
@@ -654,7 +655,7 @@ C&&&&    Class keyword
            CLABEL = .TRUE.
            IKW = 3
          GO TO 300
-C&&&&    Read a multiplicative factor for eahc component
+C&&&&    Read a multiplicative factor for each component
     5    CONTINUE
            IKW  = 4
          GO TO 300
@@ -698,9 +699,10 @@ C     =======================================
          I    = 16 - LTKN + 1
          TOKEN16 = BLANK16
          TOKEN16(I:16) = LINE(ITKN:JTKN)
-         READ(TOKEN16,'(F16.0)') PFAC(1)
-         PFAC(2) = PFAC(1)
-         PFAC(3) = PFAC(1)
+         READ(TOKEN16,'(F16.0)') COMFAC
+         PFAC(1) = COMFAC*PFAC(1)
+         PFAC(2) = COMFAC*PFAC(2)
+         PFAC(3) = COMFAC*PFAC(3)
          IKW = 1
 C
 C     Unknown IKW
