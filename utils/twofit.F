@@ -229,7 +229,7 @@ C
       WRITE(ILOGG,'(A,1P,E10.3,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
      &   '                   ',OMEGA*XTCM,' cm-1'
-      TEMP = D1/SQRT(D2*UM*OMEGA)
+      TEMP = XTANG/SQRT(D2*UM*OMEGA)
       WRITE(LUPRI,'(A,F10.4,A)') 
      &   '* Mean displacement in harmonic ground state:',TEMP,
      &   ' Angstroms'
