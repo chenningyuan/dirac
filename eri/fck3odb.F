@@ -16,7 +16,7 @@ C
 C    IODBTCH(2,*) :
 C
 C      1 - IAO1 - First AO batch
-C      2 - IAO2 - First AO batch
+C      2 - IAO2 - Second AO batch
 C
 C    ( Note that AO batch is not the number of atomic 
 C      orbital ( that is accessed via INDXBTCH array 

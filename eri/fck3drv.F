@@ -67,11 +67,15 @@ C
       CALL TIMER('START ',TIMSTR,TIMEND)
 
       CALL GETTIM(TIMFCK3(1),DUMTIM)
-
+C
+C     Set AO-batches
+C
       CALL SETAOBTCH(SPEXP,CONTRACTED,WORK,LWORK,IPRFCK3)
 
       CALL GETTIM(TIMFCK3(2),DUMTIM)
-
+C
+C     Set overlap distribution batches
+C
       CALL SETODBTCH(KIODBCLS,KIODBTCH,KRODBTCH,
      &               KFREE,LFREE,WORK,LWORK,IPRFCK3)
       MEMODB = LWORK - LFREE
@@ -1470,6 +1474,8 @@ Cdirac ..setting this true since IFTHRS is not set
 C
       WORD1 = WORD
 C
+CTROND
+      WRITE(6,*) '..inside FCK3INP'      
       IPRINT=IPRFCK3
  100    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -1488,41 +1494,57 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in FCK3INP.')
  1    CONTINUE
+C&&& FIXTHR: No dynamical threshold for screening
         FIXTHR     = .TRUE.
       GO TO 100
  2    CONTINUE
+C &&& PRINT: Print level
         READ (LUCMD, '(I5)') IPRFCK3
       GO TO 100
  3    CONTINUE
+C &&& NOSPEX: Do not exploit common s/p-exponents
         SPEXP      = .FALSE.
       GO TO 100
  4    CONTINUE 
+C &&& NOSCRP: No screening of primitives in the overlap distribution
          NOSCRPRIM = .TRUE.
       GO TO 100
  5    CONTINUE
-         NOSKIPCS  = .TRUE.
-      GO TO 100
- 6    CONTINUE
+C &&& NOSKCL: Do not skip classes (ODB|FTUV) based on 
+C             classical/non-classical contributions (for FMM)
          NOSKIPCL  = .TRUE.
       GO TO 100
+ 6    CONTINUE
+C &&& NOSKCS: Do not skip classes (ODB|FTUV) based on 
+C             Cauchy-Schwartz
+         NOSKIPCS  = .TRUE.
+      GO TO 100
  7    CONTINUE
+C &&& SCRFBT: 
          SCRFBTCH  = .TRUE.
       GO TO 100
  8    CONTINUE
+C &&& NOPACK: Do not pack Ftuv array
          PACKFTUV  = .FALSE.
       GO TO 100  
  9    CONTINUE
+C &&& NOSKAL: Do not skip all classes (ODB|FTUV) based on 
+C             Cauchy-Schwartz 
          SKALLCL   = .FALSE.
       GO TO 100  
  10   CONTINUE
+C &&& FULL_J: combine 1-electron and 2-electron multipoles
+C             (under construction)
          FULL_J    = .TRUE.
          FIXTHR    = .TRUE.
          SPEXP     = .FALSE.
       GO TO 100  
  11   CONTINUE
+C &&& UNCONT: use internally decontracted basis sets
          CONTRACTED= .FALSE.
       GO TO 100  
  12   CONTINUE
+C &&& BRFREE: Branch-free FMM
          BRFREE    = .TRUE.
          CONTRACTED= .FALSE.
       GO TO 100  
