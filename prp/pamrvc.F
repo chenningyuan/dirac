@@ -541,16 +541,20 @@ C     ------------------------------------------------
 C
       NDIM = NCSIM + NOSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
-      CALL MEMGET('REAL',KF,NDIM * N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
 C
-      CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
+      IF (LSVCFG(1)) THEN
+         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
      &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,NPOS,WORK,KFREE,LFREE)
+      ELSE
+        CALL DZERO(WORK(KF),N2BBASXQ*NDIM)
+      ENDIF
 C
 C
 C     Add one-electron part to FCX and FVX
 C     ------------------------------------
 C
-      IF ( NOSIM .GT. 0 ) THEN
+      IF ( NOSIM .GT. 0 .AND. LSVCFG(2)) THEN
          CALL FMOLI(WORK(KF + NCSIM * N2ORBXQ),BEVEC,BPVEC,
      &        IBEVC,IBPVC,IBTYP,WORK,KFREE,LFREE)
       END IF
