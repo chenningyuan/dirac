@@ -19,10 +19,10 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence. 
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk/Dirac
 C
 C
 C VERSION : $Revision$
@@ -449,7 +449,7 @@ C
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -502,7 +502,10 @@ C
 #if defined (SYS_SX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX)
+#if defined (SYS_LINUX)
+      WRITE (LUPRIN,'(T6,2A)') 'Data and time (Linux)  : ',FDATE()
+#endif
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
       CALL HOSTNM(HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
