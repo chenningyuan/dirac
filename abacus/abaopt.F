@@ -1778,6 +1778,10 @@ C
 #endif
          CALL TITLER(' End of Minimization ','<',120)
          CALL PRIINF(GEINFO)
+C        Print angles, bondlengths etc
+         CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
+     &               WORK(IWOFF+2),LWORK)
+C
          WRITE(LUPRI,*)
          IF (CONOPT) THEN
             WRITE(LUPRI,*) 'Constrained optimization converged in ',
