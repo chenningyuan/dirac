@@ -1047,7 +1047,9 @@ C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
 #include "dcbibn.h"
+#include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
 #include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
@@ -1083,8 +1085,15 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,2,
-     &            WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
+     &              TOTERG,10,WORK,KFREE,LFREE)
+      ELSE
+        KBEIG = KFREE
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -1102,8 +1111,8 @@ C
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPE),WORK(KIVEC),
-     &              WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,EIG,WORK(KZXOPE),
+     &              WORK(KIVEC),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1127,8 +1136,8 @@ C
         CALL GETLR1(ABLRF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPP),WORK(KIVEC),
-     &              WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KBEIG),IORBCL,EIG,WORK(KZXOPP),
+     &              WORK(KIVEC),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1154,8 +1163,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
       SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
-     &                  GPO,XPO,BBUF,NXPAR,
-     &                  CMO,IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
+     &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,IORBCL,EIG,JXOP,
+     &                  IVECS,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Get linear response function for orbital rotation parameter
@@ -1177,7 +1186,7 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
-     &          CMO(*),EIG(*),IORBCL(4,*),
+     &          CMO(*),IBEIG(*),EIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
       DATA BLANK16/'                '/
@@ -1273,7 +1282,7 @@ C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
              CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
-     &                  CMO,NBTYP,WORK,KFREE,LFREE,IPRXLR)
+     &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXLR)
           END IF
 C
 C         Form linear reponse function
@@ -1534,7 +1543,7 @@ C     Total number of parameters
 C     ==========================
 C
       NZVAR    = NZCONF + NZXOPT
-      NZVARQ   = NZVAR*NZ
+      NZVARQ   = NZCONFQ + NZXOPTQ
 C
       IF (IPRINT .GE. 3) THEN
          WRITE (LUPRI,'(/A,3I10)')

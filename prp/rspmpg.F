@@ -642,6 +642,8 @@ C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
 #include "dcbibn.h"
+#include "dcbham.h"
+#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "../moltra/dcbtr3.h"
@@ -678,8 +680,15 @@ C
       call memget('REAL',kcmo,ncmotq,work,kfree,lfree)
       lubuf=22
       call opnfil(lubuf,'DFCOEF','OLD','GETLRF')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,3,
-     &            WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
+     &              TOTERG,11,WORK,KFREE,LFREE)
+      ELSE
+        KIBRP = KFREE
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       close(lubuf,status='KEEP')
 C
 C     Solution vector (e-e) part
@@ -697,8 +706,8 @@ c        PRINT*, 'in getlrf_mpg'
          call getlr1(ablrf(1,1,1,1),jbendx,evecr,evalr,RCNV,
      &               IBTYP,ibevc,
      &               work(kgvec),work(kxvec),work(kbbuf),nzxope,
-     &               work(kcmo),iorbcl,eig,work(kzxope),WORK(KIVEC),
-     &               work,kfree,lfree)
+     &               work(kcmo),work(kibrp),iorbcl,eig,work(kzxope),
+     &               WORK(KIVEC),work,kfree,lfree)
 C
 C     +-----------------------------+
 C     | Result can be isolated here |
@@ -755,8 +764,8 @@ C
          CALL MEMGET('INTE',KIVEC,NPSIM        ,WORK,KFREE,LFREE)
          call getlr1(ablrf(1,1,1,1),jbpndx,evecr,evalr,RCNV,IBTYP,
      &               ibpvc,work(kgvec),work(kxvec),work(kbbuf),nzxopp,
-     &               work(kcmo),iorbcl,eig,work(kzxopp),WORK(KIVEC),
-     &               work,kfree,lfree)
+     &               work(kcmo),work(kibrp),iorbcl,eig,work(kzxopp),
+     &               WORK(KIVEC),work,kfree,lfree)
 C
 C    +---------------------------+
 C    |Result can be isolated here|

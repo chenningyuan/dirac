@@ -3363,6 +3363,7 @@ C***********************************************************************
 #include "maxorb.h"
 C
 #include "dcbxrs.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3389,6 +3390,11 @@ C
       NDIM = NTSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+      ELSE
+        KBEIG = KFREE
+      ENDIF
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFAO,NDIM * N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KSYM,NTSIM * NDIM,WORK,KFREE,LFREE)
@@ -3410,13 +3416,14 @@ C
          END IF
          LUBUF = 1
          CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
-         IF (IPRXRS .GE. 10) THEN
-            IOPT = 3
+         IF(SPINFR.OR.LEVYLE) THEN
+           IOPT = 10
          ELSE
-            IOPT = 2
-         END IF
-         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUM,TOTERG,
-     &               IOPT,WORK,KFREE,LFREE)
+           IOPT = 2
+         ENDIF
+         IF (IPRXRS .GE. 10) IOPT = IOPT + 1
+         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
+     &               TOTERG,IOPT,WORK,KFREE,LFREE)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
 #ifdef MOD_KRMC
@@ -3425,6 +3432,8 @@ C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
 C
          JRDMO = 1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+         IF(SPINFR.OR.LEVYLE) 
+     &     CALL QUIT('GMOLITX: IBEIG must be passed...')
 #endif /* MOD_KRMC */
       ENDIF
 C
@@ -3444,7 +3453,7 @@ C     Calculate modified GX Fock matrix
 C     ---------------------------------
 C
       CALL GMOLITX1(FMO,DVT,DV,
-     &     WORK(KCMO),BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
+     &     WORK(KCMO),WORK(KBEIG),BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
      &     NPOS,WORK(KFAO),WORK(KSYM),WORK(KHRM),WORK(KFCK),
      &     WORK,KFREE,LFREE)
 C
@@ -3458,7 +3467,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx1 */
       SUBROUTINE GMOLITX1(FMO,DVT,DV,
-     &     CMO,BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
+     &     CMO,IBEIG,BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,
      &     NPOS,FAO,ISYMOP,IHRMOP,IFCKOP,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3495,7 +3504,7 @@ C
 #include "dftcom.h"
 #endif
 C
-      DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*)
+      DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
@@ -3589,7 +3598,7 @@ C
          IAOMAT = IAOMAT + 1
          IMOMAT = IMOMAT + 1
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-         CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,
+         CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &        WORK(KFREE),LFREE)
          IF ( IPRXRS .GE. 8) THEN
             WRITE(LUPRI,9010) I
@@ -3612,7 +3621,7 @@ C
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,
+            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-e inactive QCX', I
@@ -3627,7 +3636,7 @@ C
             IMOMAT = IMOMAT + 1
             IAOMAT = IAOMAT + 1
             CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,
+            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-e active FVX', I
@@ -3648,7 +3657,7 @@ C
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,
+            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-p inactive QCX', I
@@ -3663,7 +3672,7 @@ C
             IMOMAT = IMOMAT + 1
             IAOMAT = IAOMAT + 1
             CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,
+            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-p active FVX', I
@@ -4197,7 +4206,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx2 */
-      SUBROUTINE GMOLITX2(FMO,FAO,CMO,WORK,LWORK)
+      SUBROUTINE GMOLITX2(FMO,FAO,CMO,IBEIG,WORK,LWORK)
 C***********************************************************************
 C
 C     Transform the G-matrix to MO-basis.
@@ -4217,12 +4226,13 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
 C
-      DIMENSION FMO(NORBT,NORBT,NZ), CMO(*), FAO(*), WORK(*)
+      DIMENSION FMO(NORBT,NORBT,NZ), CMO(*), IBEIG(*), FAO(*), WORK(*)
 C
 #include "memint.h"
 C
@@ -4258,7 +4268,19 @@ C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
-            CALL QTRANS('AOMO','S',D0,
+           IF(SPINFR.AND.JTIMOP.EQ.1) THEN
+             CALL QBTRANS(IREP,'AOMO','S',D0,
+     &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
+     &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
+     &           IPQTOQ(1,IREP),
+     &           FMO(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &           CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           IBEIG(IS),
+     &           CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &           IBEIG(II),
+     &           WORK(KFREE),LFREE,IPRXRS)
+           ELSE
+             CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -4266,6 +4288,7 @@ C
      &           CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRXRS)
+           ENDIF
          ENDIF
  10   CONTINUE
 C

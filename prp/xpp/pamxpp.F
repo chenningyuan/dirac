@@ -860,6 +860,8 @@ Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
+#include "dcbham.h"
+#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FIRST
@@ -898,8 +900,15 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,DUM,TOTERG,2,
-     &            WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
+     &              TOTERG,10,WORK,KFREE,LFREE)
+      ELSE
+        KIBRP = KFREE
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -917,8 +926,8 @@ C
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPE),WORK(KIVEC),
-     &              WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPE),
+     &              WORK(KIVEC),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
      &               ATMPPF(1,1,JSYMOP,1),1)
@@ -944,8 +953,8 @@ C
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBPVC,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
-     &              WORK(KCMO),IORBCL,EIG,WORK(KZXOPP),WORK(KIVEC),
-     &              WORK,KFREE,LFREE)
+     &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,WORK(KZXOPP),
+     &              WORK(KIVEC),WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NTRMOM,ATMPPF(1,1,JSYMOP,IOFF+1),1,
      &               ATMPPF(1,1,JSYMOP,1),1)
@@ -973,8 +982,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPP1 */
       SUBROUTINE GETPP1(ATMPPF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
-     &                  GPO,XPO,BBUF,NXPAR,
-     &                  CMO,IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
+     &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,
+     &                  IORBCL,EIG,JXOP,IVECS,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Get linear response excitation function for orbital rotation parameter
@@ -996,7 +1005,7 @@ C
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
-     &          CMO(*),EIG(*),IORBCL(2,*),
+     &          CMO(*),EIG(*),IBEIG(*),IORBCL(2,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),WORK(*)
       DATA BLANK16/'                  '/
@@ -1068,7 +1077,7 @@ C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
              CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
-     &                  CMO,NBTYP,WORK,KFREE,LFREE,IPRXPP)
+     &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXPP)
           END IF
 C
 C         Form transition moment array

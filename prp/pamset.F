@@ -441,6 +441,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -472,8 +473,13 @@ C
             CALL MEMGET('REAL',KFAO,2*N2BBASXQ,WORK,KFREE,LFREE)      
          END IF
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         IF(SPINFR.OR.LEVYLE) THEN
+           CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+         ELSE
+           KBEIG = KFREE
+         ENDIF
 C
-         CALL GETFC1(FMO,WORK(KFAO),WORK(KCMO),
+         CALL GETFC1(FMO,WORK(KFAO),WORK(KCMO),WORK(KBEIG),
      &             IPRINT,WORK,KFREE,LFREE)
 C
          CALL OPNFIL(LUBUF,'PAMFCK','NEW','GETFC1')
@@ -502,7 +508,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETFC1 */
-      SUBROUTINE GETFC1(FMO,FAO,CMO,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE GETFC1(FMO,FAO,CMO,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get Fock-matrix in MO-basis
@@ -530,7 +536,7 @@ C
 #endif
 CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE,BF1,BF2,BF3
-      DIMENSION FMO(*),FAO(*),CMO(*),WORK(*)
+      DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
 C
 #include "ibtfun.h"
 C
@@ -543,9 +549,13 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
-      IOPT = 2
+      IF(SPINFR.OR.LEVYLE) THEN
+        IOPT = 10
+      ELSE
+        IOPT = 2
+      ENDIF
       IF (IPRINT.GE.10) IOPT = IOPT + 1
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,IOPT,
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT,
      &            WORK,KFREE,LFREE)
       CLOSE(LUBUF,STATUS='KEEP')
       NFMAT = 1
@@ -675,19 +685,31 @@ C
       IOFF_MO = 0
       IOFF_AO = 0
       DO IMAT = 1,NFMAT
-         CALL DZERO(FMO(1+IOFF_MO),N2ORBXQ)
-      DO 10 I = 1,NFSYM
+        CALL DZERO(FMO(1+IOFF_MO),N2ORBXQ)
+        DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
-        CALL QTRANS('AOMO','S',D0,
+        IF(SPINFR) THEN
+          CALL QBTRANS(0,'AOMO','S',D0,
+     &      NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
+     &      FAO(I2BASX(I,I)+1+IOFF_AO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &      FMO(I2ORBX(I,I)+1+IOFF_MO),NORBT,NORBT,NZ,IPQTOQ(1,0),
+     &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      IBEIG(IORB(I)+1),
+     &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
+     &      IBEIG(IORB(I)+1),
+     &      WORK(KFREE),LFREE,IPRINT)
+        ELSE
+          CALL QTRANS('AOMO','S',D0,
      &      NFBAS(I,0),NFBAS(I,0),NORB(I),NORB(I),
      &      FAO(I2BASX(I,I)+1+IOFF_AO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &      FMO(I2ORBX(I,I)+1+IOFF_MO),NORBT,NORBT,NZ,IPQTOQ(1,0),
      &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &      CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),
      &      WORK(KFREE),LFREE,IPRINT)
- 10   CONTINUE
-         IOFF_MO = IOFF_MO + N2ORBXQ
-         IOFF_AO = IOFF_AO + N2BBASXQ
+        ENDIF
+ 10     CONTINUE
+        IOFF_MO = IOFF_MO + N2ORBXQ
+        IOFF_AO = IOFF_AO + N2BBASXQ
       END DO
       IF(IPRINT.GE.5) THEN
         CALL HEADER('GETFC1:Fock (FCmo) matrix in MO-basis',-1)

@@ -205,6 +205,7 @@ C
 #include "dcbesr.h"
 #include "gfac.h"
 #include "dcbprp.h"
+#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -228,14 +229,21 @@ C
 C     Retrieve molecular orbitals
 C
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &            WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
+     &              TOTERG,10,WORK,KFREE,LFREE)
+      ELSE
+        KIBRP = KFREE
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
+     &              WORK,KFREE,LFREE)
+      ENDIF
+CTROND      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
+CTROND     &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
-      CALL MEMREL('PRPESR.REACMO',WORK,1,KEIG,KFREE,LFREE)
 C
 C     Solve ESR CI problem
 C     on exit: WORK(KEIGVL) - NZCONF CI eigenvalues
@@ -262,8 +270,9 @@ C
         ENDDO
       END IF
 C
-      CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
-     &             WORK(KEIGVL),WORK(KEIGVC),WORK,KFREE,LFREE)
+      CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KIBRP),
+     &             WORK(KPMAT),WORK(KEIGVL),WORK(KEIGVC),
+     &             WORK,KFREE,LFREE)
       call memchk('prpesr 3',work,1)
 C
       IF (IPRESR .GT. 2) THEN
@@ -480,7 +489,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesr1 */
-      SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,PMAT,
+      SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,IBEIG,PMAT,
      &                   CIENER,CIEVEC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -497,7 +506,7 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 C
       LOGICAL LESRST(2,*),REAL_PMLF
-      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),CMO(*),PMAT(*),
+      DIMENSION ESRVAL(NCIESR,NCIESR,2,*),CMO(*),IBEIG(*),PMAT(*),
      &          CIENER(NCIESR), CIEVEC(NCIESR,NCIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
       INTEGER   GETIOPEN, IPCMO(2), IPCMPL(2)
@@ -599,7 +608,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 c     call memchk('prpesr1 2',work,1)
-          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IPCMO,NASH,
+          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IBEIG,IPCMO,NASH,
      &                WORK,KFREE,LFREE,IPRESR)
 c    &                WORK,KFREE,LFREE,10)
       call memchk('prpesr1 3',work,1)

@@ -384,6 +384,8 @@ C***********************************************************************
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbham.h"
 C
       PARAMETER ( LUCMO = 22 )
       DIMENSION RES_LR(3,MAXQR),RES_QR(3,MAXQR)
@@ -398,8 +400,15 @@ C     Get the MO coefficients
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','LRCALC')
-      CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &            WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
+     &              TOTERG,11,WORK,KFREE,LFREE)
+      ELSE
+        KIBRP = KFREE
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 C
 C     Set up the linear response equations to be solved.
@@ -419,7 +428,7 @@ C
       CALL MEMGET('REAL',KVECAEE,MZYEE*NZ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KVECAEP,MZYEP*NZ,WORK,KFREE,LFREE)
       CALL LRCALC(RES_LR,WORK(KVECAEE),WORK(KVECAEP),WORK(KCMO),
-     &     WORK(KFREE),LFREE)
+     &     WORK(KIBRP),WORK(KFREE),LFREE)
 C
 C     Perform the matrix contraction to obtain the quadratic
 C     response function values.
@@ -430,7 +439,7 @@ C
       CALL MEMGET('REAL',KVECCEP,MZYEP*NZ,WORK,KFREE,LFREE)
       CALL QRHYP(RES_QR,WORK(KVECAEE),WORK(KVECBEE),WORK(KVECCEE),
      &     WORK(KVECAEP),WORK(KVECBEP),WORK(KVECCEP),
-     &     WORK(KCMO),WORK(KFREE),LFREE)
+     &     WORK(KCMO),WORK(KIBRP),WORK(KFREE),LFREE)
 C
 C     Formatted print out of result
 C
@@ -1122,7 +1131,7 @@ C
       CALL QEXIT('LRVEC1')
       RETURN
       END
-      SUBROUTINE LRCALC(RESULT,VECBEE,VECBEP,CMO,WORK,LWRK)
+      SUBROUTINE LRCALC(RESULT,VECBEE,VECBEP,CMO,IBEIG,WORK,LWRK)
 C*****************************************************************************
 C
 C     ------------------------------------------------------------
@@ -1155,7 +1164,7 @@ C
 C
       CHARACTER ALAB*8,BLAB*8
       DIMENSION VECBEE(MZYEE,NZ),VECBEP(MZYEP,NZ)
-      DIMENSION RESULT(3,MAXQR),CMO(*),WORK(*)
+      DIMENSION RESULT(3,MAXQR),CMO(*),IBEIG(*),WORK(*)
 C
 #include "ibtfun.h"
       MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
@@ -1222,7 +1231,7 @@ C
 C     Get the A operator matrix in MO basis
 C
          CALL MEMGET('REAL',KA,N2ORBXQ,WORK,KFREE,LFREE)
-         CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,ICMOQ,NORB,
+         CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,
      &               WORK,KFREE,LFREE,IPRXQR)
 C
 C     Get the A operator gradient:  / g*\
@@ -1328,7 +1337,7 @@ C
       RETURN
       END
       SUBROUTINE QRHYP(RESULT,VECAEE,VECBEE,VECCEE,VECAEP,VECBEP,VECCEP,
-     &     CMO,WORK,LWRK)
+     &     CMO,IBEIG,WORK,LWRK)
 C*****************************************************************************
 C
 C     ------------------------------------------------------------
@@ -1362,7 +1371,7 @@ C
       CHARACTER ALAB*8,BLAB*8,CLAB*8
       DIMENSION VECAEE(MZYEE,NZ),VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION CMO(*),WORK(*)
+      DIMENSION CMO(*),IBEIG(*),WORK(*)
       DIMENSION RESULT(3,MAXQR)
 C
       CALL QENTER('QRHYP')
@@ -1419,22 +1428,22 @@ C
          CALL A2DRV(IAPT,VECBEE,VECBEP,VECCEE,VECCEP,
      &        ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
      &        NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,RESULT(1,IQRF),
-     &        CMO,WORK(KFREE),LFREE)
+     &        CMO,IBEIG,WORK(KFREE),LFREE)
 C
          CALL A2DRV(IAPT,VECCEE,VECCEP,VECBEE,VECBEP,
      &        ISYMA,ISYMC,ISYMB,ITIMA,ITIMC,ITIMB,IFERA,IFERC,IFERB,
      &        NZYAEE,NZYAEP,NZYCEE,NZYCEP,NZYBEE,NZYBEP,RESULT(1,IQRF),
-     &        CMO,WORK(KFREE),LFREE)
+     &        CMO,IBEIG,WORK(KFREE),LFREE)
 C
          CALL X2DRV(VECAEE,VECAEP,IBPT,VECCEE,VECCEP,
      &        ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
      &        NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,RESULT(1,IQRF),
-     &        CMO,WORK(KFREE),LFREE)
+     &        CMO,IBEIG,WORK(KFREE),LFREE)
 C
          CALL X2DRV(VECAEE,VECAEP,ICPT,VECBEE,VECBEP,
      &        ISYMA,ISYMC,ISYMB,ITIMA,ITIMC,ITIMB,IFERA,IFERC,IFERB,
      &        NZYAEE,NZYAEP,NZYCEE,NZYCEP,NZYBEE,NZYBEP,RESULT(1,IQRF),
-     &        CMO,WORK(KFREE),LFREE)
+     &        CMO,IBEIG,WORK(KFREE),LFREE)
 C
          CALL T3DRV(VECAEE,VECAEP,VECBEE,VECBEP,VECCEE,VECCEP,
      &        ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
@@ -1570,7 +1579,7 @@ C
       SUBROUTINE A2DRV(IAPT,VECBEE,VECBEP,VECCEE,VECCEP,
      &     ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
      &     NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,
-     &     RESULT,CMO,WORK,LWRK)
+     &     RESULT,CMO,IBEIG,WORK,LWRK)
 C*****************************************************************************
 C
 C     Driver routine for computing the contribution:
@@ -1595,7 +1604,7 @@ C
 C
       DIMENSION VECBEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECBEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(*)
 C
       CALL QENTER('A2DRV')
 C
@@ -1616,7 +1625,7 @@ C
 C
 C     Get the A operator matrix in MO basis
 C
-      CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,ICMOQ,NORB,
+      CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRXQR)
 C
 C     Unpack the C vector into a matrix 
@@ -1650,7 +1659,7 @@ C
       SUBROUTINE X2DRV(VECAEE,VECAEP,IBPT,VECCEE,VECCEP,
      &     ISYMA,ISYMB,ISYMC,ITIMA,ITIMB,ITIMC,IFERA,IFERB,IFERC,
      &     NZYAEE,NZYAEP,NZYBEE,NZYBEP,NZYCEE,NZYCEP,
-     &     RESULT,CMO,WORK,LWRK)
+     &     RESULT,CMO,IBEIG,WORK,LWRK)
 C*****************************************************************************
 C
 C     Driver routine for computing the contribution:
@@ -1675,7 +1684,7 @@ C
 C
       DIMENSION VECAEE(MZYEE,NZ),VECCEE(MZYEE,NZ),
      &          VECAEP(MZYEP,NZ),VECCEP(MZYEP,NZ)
-      DIMENSION RESULT(3),CMO(*),WORK(*)
+      DIMENSION RESULT(3),CMO(*),IBEIG(*),WORK(*)
 C
       CALL QENTER('X2DRV')
 C
@@ -1696,7 +1705,7 @@ C
 C
 C     Get the B operator matrix in MO basis
 C
-      CALL PRPMAT(IBPT,IFERB,WORK(KB),CMO,ICMOQ,NORB,
+      CALL PRPMAT(IBPT,IFERB,WORK(KB),CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRXQR)
 C
       IF(IPRXQR.GE.10) THEN

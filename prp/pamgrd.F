@@ -96,18 +96,33 @@ C     listed in /XCBXPR/
 C
 C     The property gradient is defined by
 C
+C              | g  | 
+C     E[1]_X = | g* | ; 
 C
-C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
-C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C     where
 C
-C     In RPA q = a(+)m, where a is occupied and m secondary.
-C     This routine will construct e[1]_Q*
+C     g_{pq} = <0|[-q(+)p,H_X]|0> = -h_{X;ps}D_{qs} + h_{X;rq}D_{rp}
 C
-C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
-C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
-C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C     Active-inactive block:
 C
-C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     g_{ai} = -h_{X;ai}
+C
+C     Orbital classes:
+C
+C       Inactive orbitals  :  i,j,k,l
+C       Active orbitals    :  v,w,x,y,z
+C       Secondary orbitals :  a,b,c,d,e
+C       General orbitals   :  m,n,o,p,q,r,s,t,u,v
+C
+C     GRDORB constructs g_{pq}.
+C     It employs the orbital rotation index JXOP(p,q)
+C     with the following ordering:
+C
+C          IA : inactive-active   
+C          IS : inactive-secondary
+C          AS : active-secondary
+C          AB : active-active
+C
 C     Indices are therefore permuted...
 C
 C     Written by T.Saue - July 1996
@@ -119,7 +134,9 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
+#include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),WORK(*)
 C
@@ -128,9 +145,15 @@ C
 C
       CALL MEMGET('REAL',KPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO  ,NCMOTQ ,WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+      ELSE
+        KIBRP = KFREE
+      ENDIF
 C
       CALL GRDOR1(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
-     &            WORK(KPRPMO),WORK(KCMO),WORK,KFREE,LFREE,IPRINT) 
+     &            WORK(KPRPMO),WORK(KCMO),WORK(KIBRP),
+     &            WORK,KFREE,LFREE,IPRINT) 
 C
       CALL MEMREL('GRDORB',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -141,29 +164,41 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck grdor1 */
       SUBROUTINE GRDOR1(INDXPR,GPOE,GPOP,JXOPE,JXOPP,NXOPE,NXOPP,IOPSY,
-     &                  PRPMO,CMO,WORK,KFREE,LFREE,IPRINT)
+     &                  PRPMO,CMO,IBEIG,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
-C
-C     Construct orbital part of gradient for property INDXPR 
-C     listed in /XCBXPR/
 C
 C     Construct orbital part of gradient for property INDXPR 
 C     listed in /XCBXPR/
 C
 C     The property gradient is defined by
 C
+C              | g  | 
+C     E[1]_X = | g* | ; 
 C
-C              | (q+|Q) |   | -<0|[q ,Q]|Q> |   | e[1]_Q* |
-C     E[1]_Q = | (q |Q) | = |  <0|[q+,Q]|Q> | = | e[1]_Q  |
+C     where
 C
-C     In RPA q = a(+)m, where a is occupied and m secondary.
-C     This routine will construct e[1]_Q*
+C     g_{pq} = <0|[-q(+)p,H_X]|0> = -h_{X;ps}D_{qs} + h_{X;rq}D_{rp}
 C
-C     e[1]_Q*(ma) = -<0|[a(+)m,Q]|Q> 
-C                 = -<0|a(+)[m,Q]|0> - <0|[a(+),Q]m|0>
-C                 = -<0|a(+)[m,Q]|0> - <0|,m(+)[a,Q]m|0>(*) = -Q_(ma)
+C     Active-inactive block:
 C
-C     GRDORB employes the orbital rotation index JXOP(a,m).
+C     g_{ai} = -h_{X;ai}
+C
+C     Orbital classes:
+C
+C       Inactive orbitals  :  i,j,k,l
+C       Active orbitals    :  v,w,x,y,z
+C       Secondary orbitals :  a,b,c,d,e
+C       General orbitals   :  m,n,o,p,q,r,s,t,u,v
+C
+C     GRDORB constructs g_{pq}.
+C     It employs the orbital rotation index JXOP(p,q)
+C     with the following ordering:
+C
+C          IA : inactive-active   
+C          IS : inactive-secondary
+C          AS : active-secondary
+C          AB : active-active
+C
 C     Indices are therefore permuted...
 C
 C     Written by T.Saue July 1996
@@ -178,9 +213,10 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
+#include "dcbham.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
-     &          PRPMO(NORBT,NORBT,NZ),CMO(*),WORK(*)
+     &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
 C
       CALL QENTER('GRDOR1')
 C
@@ -188,11 +224,17 @@ C     Read coefficients
 C     =================
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,WORK,KFREE,LFREE)
+      IF(SPINFR.OR.LEVYLE) THEN
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
+     &              WORK,KFREE,LFREE)
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
+     &              WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C
-C     Get property matrix and scale by factor -1
-C     ==========================================
+C     Get property matrix in MO-basis and scale by factor -1
+C     ======================================================
 C
 #if defined (SYS_IBM)
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
@@ -201,7 +243,7 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,ICMOQ,NORB,
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -322,7 +364,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmat */
-      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IPCMO,NPMO,
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,IPCMO,NPMO,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -346,7 +388,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      DIMENSION PRPMO(*),CMO(*),IPCMO(*),NPMO(*),WORK(*)
+      DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
@@ -367,7 +409,7 @@ C
      &      (IPCMO(I),NPMO(I),I = 1,NFSYM)
 D        WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
       END IF
-      CALL PRPMA1(INDXPR,PRPMO,CMO,IPCMO,NPMO,N2PMOX,
+      CALL PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
      &            WORK(KPRPAO),WORK(KPTRI),WORK(KONEIN),WORK(KFIRST),
      &            WORK,KFREE,LFREE,IPRINT)
 
@@ -378,8 +420,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IPCMO,NPMO,N2PMOX,PRPAO,PTRI,
-     &                  OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
+     &                  PTRI,OP1INT,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
@@ -395,11 +437,12 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
 C
       LOGICAL FIRST(*)
-      DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IPCMO(2),NPMO(2),
+      DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
      &          PRPAO(N2BBASX,NZ),PTRI(NNBBASX,NZ),
      &          OP1INT(NNBBASX),WORK(*)
       DIMENSION IPMO(2), I2PMOX(2,2)
@@ -467,7 +510,19 @@ C
       IOPSY = JBTOF(IREP,1)
       DO I1 = 1,NFSYM
          I2  = MOD(I1+IOPSY,2) + 1
-         CALL QTRANS('AOMO','S',D0,
+         IF(SPINFR.AND.ITIM.EQ.1) THEN
+           CALL QBTRANS(IREP,'AOMO','S',D0,
+     &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
+     &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
+     &           IPQTOQ(1,IREP),
+     &           PRPMO(I2PMOX(I1,I2)+1,1),NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),
+     &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &           IBEIG(IORB(I1)+1),
+     &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &           IBEIG(IORB(I2)+1),
+     &           WORK(KFREE),LFREE,IPRINT)
+         ELSE
+           CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NPMO(I1),NPMO(I2),
      &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
@@ -475,6 +530,7 @@ C
      &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           WORK(KFREE),LFREE,IPRINT)
+         ENDIF
       ENDDO
 C
 C     Print section
@@ -500,7 +556,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gpget */
-      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,ITYP,
+      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,IBEIG,ITYP,
      &                 WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -535,7 +591,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbibn.h"
-      DIMENSION GP(*),CMO(*),JXPAR(*),WORK(*)
+      DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),WORK(*)
 C
       CALL QENTER('GPGET')
       KFRSAV = KFREE
@@ -546,7 +602,7 @@ C
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
           CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                WORK,KFREE,LFREE,IPRINT)
+     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
             CALL HEADER('Output from GPGET',-1)
@@ -561,7 +617,7 @@ C
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
           CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                WORK,KFREE,LFREE,IPRINT)
+     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
             IREP = ISYM-1
@@ -589,7 +645,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GPOGET */
       SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
-     &                  WORK,KFREE,LFREE,IPRINT)
+     &                  IBEIG,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -624,7 +680,7 @@ C
 #include "dcbxpr.h"
 C
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
-     &          JXOP(NXOP),WORK(*)
+     &          IBEIG(*),JXOP(NXOP),WORK(*)
 C
       CALL QENTER('GPOGET')
 C
@@ -640,7 +696,7 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
 #endif
-      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,ICMOQ,NORB,
+      CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
