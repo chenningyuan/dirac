@@ -1282,8 +1282,6 @@ C
 #if defined (VAR_MPI)
 #include "infmpi.h"
       INCLUDE 'mpif.h'
-#else
-#include "fpvm3h.h"
 #endif
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM

@@ -3911,6 +3911,11 @@ C
         DO I = 1,NODES
   100     CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
+          IF (ITEST .NE. 0) THEN
+C         ... this node not finished yet, is asking to get or release file lock
+             CALL QUIT('TRARES: file lock not implemented yet')
+             GO TO 100
+          END IF
           NWHO = ISTAT(MPI_SOURCE)
           CALL GETTIM(CPUST,WALLST)
           WRITE(LUPRI,'(3X,(A,I4),A,F14.2,A)')

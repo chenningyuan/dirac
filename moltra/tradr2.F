@@ -148,14 +148,16 @@ C
 C       Start loop over tasks
 C
         DO IJTSK = 1, MAXTSK
-          CALL MPI_RECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+          CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
-          IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(A,I5)') 
-     &        '* Sending to node: ',NODE,
-     &        '  IJTSK  = ',IJTSK,
-     &        '  LENTSK = ',LENTSK
-          ENDIF
+          IF (ITEST.NE.0) THEN
+C            .. ITEST .eq. 0: code for "send me new task"
+             CALL QUIT(' Illegal ITEST in MPI_RECV')
+          END IF
+          NODE = ISTAT(MPI_SOURCE)
+          IF (IPRINT.GE.1) WRITE(LUPRI,'(3(A,I6))') 
+     &        '* Sending to node:',NODE,
+     &        '; IJTSK  =',IJTSK,', LENTSK =',LENTSK
           CALL MPI_SEND(IJTSK,1,MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
           CALL MPI_SEND(LENTSK,1,MPI_INTEGER,NODE,30,
@@ -1718,8 +1720,10 @@ C     Wait for tasks until we receive the end message
 C
   100 CONTINUE
 #if defined (VAR_MPI)
-         CALL MPI_SEND(MYTID,1,MPI_INTEGER,MPARID,20,
+         ITEST = 0
+         CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
+C        ITEST .eq. 0: code for "send me new task"
          CALL MPI_RECV(IJTSK,1,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
          IF (IJTSK.EQ.-1) GOTO 200

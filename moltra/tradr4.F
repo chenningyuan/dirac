@@ -199,6 +199,7 @@ C             ... slave wants new set of A,B shells
      &                      MPI_COMM_WORLD,IERR)
               ELSE IF (ABS(ITEST) .LE. 2) THEN
 C             ... slave wants to lock or free file
+                 CALL QUIT('lock/free file not implemented yet')
               ELSE
                  CALL QUIT('Illegal ITEST')
               END IF
