@@ -135,7 +135,8 @@ C     Write integrals to file
       IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE IF (WORD.EQ.'DSO    ') THEN
-         NINTAD = 9*NUCDEP*(NUCDEP-1)
+CMI ... to be fixed for the future LAO implementation...
+         NINTAD = 9*NUCDEP*NUCDEP
       ELSE
          NINTAD = MAXTYP
       END IF
