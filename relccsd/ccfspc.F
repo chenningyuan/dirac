@@ -187,6 +187,9 @@ C
 C     Note that T2TAU has fewer non-zero contributions than in terms 1 and 2 (due to the delta-funs)
 C     Note also that the Hamiltonian parts of T1 (e.g. T1(O,P)) should not be included when making T2TAU
 C     In this case we eliminate the Hamiltonian parts before making T2TAU
+C     We also delete the term -T1(O,H)*T1(B,I) because it will not contribute (TODO : check whether it is indeed deleted)
+C     Note : Better to eliminate Hamiltonian parts first also for (0,2) and (2,0) sectors and store wave function
+C            for use in all three diagrams !
 C
 C For the record : Ephraim's original formula's
 C (1,1) Sector (the new definition)
