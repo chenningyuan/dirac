@@ -17,14 +17,14 @@ OBJS =	dirac.o  \
 	dirset.o \
 	dirtra.o \
 	dirtwo.o \
-	dirgp.o\
-	dirgeo.o\
-	dirgrd.o\
-	dirden.o
+	dirgp.o  \
+	dirgeo.o \
+	dirgrd.o \
+	dirden.o 
 
 LINUX_OBJS = dirac_linux.o
 
-all:	$(OBJS) 
+all:	$(OBJS) $(LINUX_OBJS)
 
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i
