@@ -2151,9 +2151,10 @@ C****************************************************************************
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
       CHARACTER TREV*1,TRA*1,TYP*4
-      DIMENSION FAO(LRAO,LCAO,*),FMO(LRMO,LCMO,*),
-     &          TM1(LR1,LC1,*),TM2(LR2,LC2,*),
-     &          IQAO(*),IQMO(*),IQTM1(*),IQTM2(*),
+      DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
+     &          FMO(LRMO,LCMO,*),IQMO(*),
+     &          TM1(LR1,LC1,*),IQTM1(*),
+     &          TM2(LR2,LC2,*),IQTM2(*),
      &          WORK(LWORK)
       DIMENSION IQW(4)
 C
@@ -2170,7 +2171,6 @@ C
       print*, 'QTRANS: The transformation matrix TM2'
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
 #endif
-C
 C
 C     Time reversal symmetry of F-matrix
 C
@@ -2212,8 +2212,6 @@ C
 C         Second part of transformation: H = (C+)W
 C         ----------------------------------------
 C
-          CALL IQPACK(IQW,NZW,IQTM1,NZTM1,IQMO,NZMO)
-C          IF(NZBF.NE.NZMO) CALL QUIT('QTRANS: NZBF.NE.NZMO!')
           CALL QGEMM(NRMO,NCMO,NRAO,D1,
      &       'H',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQW ,WORK(KWRK),NRAO,NCMO,NZW,
@@ -2240,8 +2238,6 @@ C
 C         Second part of transformation: H = WC
 C         -------------------------------------
 C
-          CALL IQPACK(IQW,NZW,IQTM2,NZTM2,IQMO,NZMO)
-C          IF(NZBF.NE.NZMO) CALL QUIT('QTRANS: NZBF.NE.NZMO!')
           CALL QGEMM(NRMO,NCMO,NCAO,D1,
      &       'N','N',IQW ,WORK(KWRK),NRMO,NCAO,NZW,
      &       'N','N',IQTM2,TM2,LR2,LC2,NZTM2,
@@ -2277,8 +2273,6 @@ C
 C
 C         Second part of transformation: H = CW
 C
-          CALL IQPACK(IQW,NZW,IQTM1,NZTM1,IQAO,NZAO)
-C          IF(NZBF.NE.NZAO) CALL QUIT('QTRANS: NZBF.NE.NZAO!')
           CALL QGEMM(NRAO,NCAO,NRMO,D1,
      &       'N',TRA,IQTM1,TM1 ,LR1,LC1,NZTM1,
      &       'N','N',IQW ,WORK(KWRK),NRMO,NCAO,NZW,
@@ -2298,8 +2292,6 @@ C
 C
 C         Second part of transformation: H = CW
 C
-          CALL IQPACK(IQW,NZW,IQTM2,NZTM2,IQAO,NZAO)
-C          IF(NZBF.NE.NZAO) CALL QUIT('QTRANS: NZBF.NE.NZAO!')
           CALL QGEMM(NRAO,NCAO,NCMO,D1,
      &       'N','N',IQW ,WORK(KWRK),NRAO,NCMO,NZW,
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
@@ -2320,8 +2312,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bcktra */
-      SUBROUTINE BCKTRA(COFT,LRT,LCT,COFU,LRU,LCU,NORB,NZ,IQC,
-     &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IQT,IPRINT)
+      SUBROUTINE BCKTRA(COFT,LRT,LCT,COFU,LRU,LCU,NORB,NZC,
+     &                  NVEC,JVEC,NBAS,TMAT,LR1,LC1,NZT,IPRINT)
 C*****************************************************************************
 C
 C     PURPOSE:
@@ -2330,8 +2322,8 @@ C     METHOD:
 C
 C     INPUT:
 C	NORB - number of vectors to be tranformed
-C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZ)
-C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZ)
+C	COFU - array of untransformed vectors of dimension (NORB,NORB,NZC)
+C	COFT - array of backtransformed vectors of dimension (NBAS,NVEC,NZC)
 C       TMAT - transformation matrix of dimension (NBAS,NORB,NZT)
 C
 C	Written by T.Saue January 1995
@@ -2342,27 +2334,28 @@ C*****************************************************************************
 #include <priunit.h>
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
 C
-      DIMENSION COFU(LRU,LCU,NZ),COFT(LRT,LCT,NZ),
-     &          TMAT(LR1,LC1,NZT),IQC(NZ),IQT(NZT)
+#include <dgroup.h>
+      DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
+     &          TMAT(LR1,LC1,NZT)
 C
       IF(NVEC.EQ.0) RETURN
       IF(IPRINT.GE.5) THEN
         CALL HEADER('BCKTRA:Nontransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
-        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZ,IQC,LUPRI)
+        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
         CALL HEADER('BCKTRA:Transformation matrix:',-1)
-        CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IQC,LUPRI)
+        CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
       CALL QGEMM(NBAS,NVEC,NORB,D1,
-     &           'N','N',IQT,TMAT,LR1,LC1,NZT,
-     &           'N','N',IQC,COFU(1,JVEC,1),LRU,LCU,NZ,
-     &                  D0,IQC,COFT,LRT,LCT,NZ)
+     &           'N','N',IPQTOQ(1,0),TMAT,LR1,LC1,NZT,
+     &           'N','N',IPQTOQ(1,0),COFU(1,JVEC,1),LRU,LCU,NZC,
+     &                D0,IPQTOQ(1,0),COFT,LRT,LCT,NZC)
       IF(IPRINT.GE.5) THEN
         CALL HEADER('BCKTRA:Backtransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
-        CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZ,IQC,LUPRI)
+        CALL PRQMAT(COFT,NBAS,NVEC,LRT,LCT,NZC,IPQTOQ(1,0),LUPRI)
       ENDIF
 C
       RETURN
