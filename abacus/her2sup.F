@@ -165,7 +165,7 @@ C
 C
 C*** I/O UNITS
 C
-#if !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IRIX) && !defined (SYS_IBM) && !defined (SYS_VAX) && !defined (SYS_DEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX)
+#if !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IRIX) && !defined (SYS_IBM) && !defined (SYS_VAX) && !defined (SYS_DEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined (SYS_SX)
      ===== insert OPEN for LUINTA,LUSUPM
 #endif
 C
@@ -173,7 +173,7 @@ C     The status of LUSUPM is checked. It is opened only if it was closed.
 C     This way, no error message is produced.
 C
       INQUIRE(LUSUPM, OPENED=OPTST)
-#if defined (SYS_CRAY) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_DEC) || defined (SYS_HPUX)
+#if defined (SYS_CRAY) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_SX)
       OPEN(LUINTA,STATUS='OLD',    FORM='UNFORMATTED',FILE='AOTWOINT')
       IF (.NOT. OPTST) OPEN(LUSUPM,STATUS='UNKNOWN',
      &                             FORM='UNFORMATTED',FILE='AOSUPINT')
@@ -692,14 +692,14 @@ C
 C
 C***  OPEN UNIT LUDASP FOR SORTED INTEGRALS
 C
-#if defined (SYS_VAX) || defined (SYS_IRIX)
+#if defined (SYS_VAX) || defined (SYS_IRIX) || defined (SYS_SX)
 C     VAX and IRIX allocates direct access if 4-byte words
       LRECL=LDA22
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       LRECL=8*LDA22
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_IRIX) && !defined (SYS_T3D)
+#if !defined (SYS_CRAY) && !defined (SYS_VAX) && !defined (SYS_IRIX) && !defined (SYS_T3D) && !defined (SYS_SX)
       LRECL=4*LDA22
 #endif
       OPEN(UNIT=LUDASP,STATUS='SCRATCH',ACCESS='DIRECT',RECL=LRECL)

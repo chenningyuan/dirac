@@ -59,7 +59,7 @@ C
 #include <blocks.h>
 #include <twocom.h>
 C
-C     
+C
       LOGICAL DIRFCK,SOFOCK,DPATH1,DPATH2
 C     For contracted integrals define NUCR1, NORR1 etc. !!!!
 C for now we assume ITYPE = 0

@@ -369,7 +369,7 @@ C
 C
       CALL TITLER('Output from HERMIT input processing','*',118)
 C
-#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IRIX) && !defined (SYS_T3D) && !defined (SYS_HPUX)
+#if !defined (SYS_VAX) && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_IRIX) && !defined (SYS_T3D) && !defined (SYS_HPUX) && !defined (SYS_SX)
       IF(RELCAL) THEN
         OPEN (UNIT=LUCMD,NAME='DIRAC.INP',STATUS='OLD',ERR=9000)
       ELSE

@@ -195,7 +195,7 @@ C
       OPEN (UNIT=LUDA1,STATUS='NEW',ACCESS='DIRECT',
      *      RECL=LABUFI)
 #endif
-#if defined (SYS_IRIX)
+#if defined (SYS_IRIX) || defined (SYS_SX)
       OPEN (UNIT=LUDA1,STATUS='UNKNOWN',ACCESS='DIRECT',
      *      RECL=LABUFI)
 #endif
@@ -214,7 +214,7 @@ C
       OPEN (UNIT=LUDA1,STATUS='UNKNOWN',ACCESS='DIRECT',
      *  FILE='ABACUS.DA1',RECL=IRECL)
 #endif
-#if !defined (SYS_VAX) && !defined (SYS_IRIX) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_ALLIANT) && !defined (SYS_IBM) && !defined (SYS_CRAY) && !defined (SYS_DEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX)
+#if !defined (SYS_VAX) && !defined (SYS_IRIX) && !defined (SYS_CONVEX) && !defined (SYS_AIX) && !defined (SYS_PARAGON) && !defined (SYS_ALLIANT) && !defined (SYS_IBM) && !defined (SYS_CRAY) && !defined (SYS_DEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HPUX) && !defined(SYS_SX)
     ==== insert DA open for ABACUS.DA1
 #endif
       NMAT = LSOINT/INDMAX
