@@ -2225,7 +2225,8 @@ ctec         NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
 c                  LABINT(ITYP) = NAME//'EFG '//CHRXYZ(ICOOR1)//
 c     &                           CHRXYZ(ICOOR2)
                   LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
-     &                  CHRNOS(IATOM/10)//CHRNOS(IATOM)//CHRNOS(IOFF)
+     &                  CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
+     &                  CHRNOS(IOFF)
                   INTREP(ITYP) = IREPC
                END IF
  300        CONTINUE
