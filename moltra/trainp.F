@@ -777,6 +777,7 @@ C
       ENDDO
 C
   999 CONTINUE
+      CALL FLSHFO(LUPRI)
       RETURN
  1010 CONTINUE
       WRITE(LUPRI,'(A)') 'TRAINP: Error in reading .INDEX'
