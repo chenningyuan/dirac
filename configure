@@ -262,6 +262,12 @@ case $machine in
       cclist='cc gcc pgcc'
       debug='gdb';;
 
+   ia64-unknown-linux)
+      liblist='libblas'
+      complist='g77 f77'
+      cclist='gcc cc'
+      debug='gdb';;
+
    Power-Macintosh)
       liblist='libatlas libblas'
       complist='g77'
@@ -1155,6 +1161,57 @@ case $machine in
       ifc)
          opt='-O3'; ccp="$ccp -DVAR_IFC"
          ;;
+      esac
+      inc="-I$INCLUDE_DIR";;
+#
+#   Linux on 64 bit Itanium
+#
+   ia64-unknown-linux)
+      echo
+      if [ "$mesp" = "dummy" ]; then
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}'"
+         def='dirac.x'
+      else
+         cpp="-DPRG_DIRAC -DSYS_LINUX -DVAR_MFDS -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         ccp="-DSYS_LINUX -D'INSTALL_WRKMEM=\${WRKMEM}' $parop"
+         def='dirmpi.x'
+#LV : if mpif77 is available there one should not specify the include dir
+         if [ "$F77" = "mpif77" ]; then
+            mpi_inc="-I$INCLUDE_DIR"
+         else
+            mpi_inc="-I$INCLUDE_DIR \$(MPI_INCLUDE_DIR)"
+         fi
+      fi
+#
+# Ask user whether the large file option can be set
+#
+      $echo 'Can your Linux/BSD system handle files longer than 2 GB ? y/[n] \c'
+      read largefiles
+      case "$largefiles" in
+      "yes" | "y" | "Y" )
+          ccp="$ccp -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE"
+          ;;
+       *)
+         ccp="$cpp -DSMALL_CFILES"
+         ;;
+      esac
+      case "$F77" in
+      g77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         ;;
+      f77)
+         opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+         ;;
+#     mpif77)
+#        opt='-O3 -ffast-math -fautomatic -fno-f2c -fno-globals -Wno-globals -fno-second-underscore'
+#        ;;
+#     pgf90)
+#        opt='-fastsse'; ccp="$ccp -DVAR_PGCC"
+#        ;;
+#     ifc)
+#        opt='-O3'; ccp="$ccp -DVAR_IFC"
+#        ;;
       esac
       inc="-I$INCLUDE_DIR";;
 #
