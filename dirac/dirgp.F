@@ -293,7 +293,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrifck */
-      SUBROUTINE WRIFCK(IUNIT,FOCK)
+      SUBROUTINE WRIFCK(IUNIT,FOCK,N)
 C*****************************************************************************
 C
 C     Write AO - Fock matrix to unformatted file
@@ -309,7 +309,7 @@ C
 #include <dcbgen.h>
 #include <dcbdhf.h>
       CHARACTER TEXT*74
-      DIMENSION FOCK(N2BBASXQ)
+      DIMENSION FOCK(N2BBASXQ*N)
 C
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
@@ -321,7 +321,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reafck */
-      SUBROUTINE REAFCK(IUNIT,FOCK,RESTART)
+      SUBROUTINE REAFCK(IUNIT,FOCK,RESTART,N)
 C*****************************************************************************
 C
 C     Read AO Fock matrix from unformatted file
@@ -335,7 +335,7 @@ C
 #include <dcbdhf.h>
       LOGICAL RESTART
       CHARACTER TEXT*74
-      DIMENSION FOCK(N2BBASXQ)
+      DIMENSION FOCK(N2BBASXQ*N)
 C
       REWIND IUNIT
       READ(IUNIT,END=10,ERR=20) TEXT
@@ -374,8 +374,9 @@ C*****************************************************************************
 C
 #include <dcbbas.h>
 #include <dcbgen.h>
+#include <dcbdhf.h>
       CHARACTER TEXT*74
-      DIMENSION DMAT(N2BBASXQ)
+      DIMENSION DMAT(N2BBASXQ*NFMAT)
 C
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
@@ -397,8 +398,9 @@ C*****************************************************************************
 #include <priunit.h>
 C
 #include <dcbbas.h>
+#include <dcbdhf.h>
       CHARACTER TEXT*74
-      DIMENSION DMAT(N2BBASXQ)
+      DIMENSION DMAT(N2BBASXQ*NFMAT)
 C
       REWIND IUNIT
       READ(IUNIT,END=10,ERR=20) TEXT
