@@ -173,26 +173,6 @@ C        the way the initialization routine works for this.
       CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
       CALL XTIME(5,2,' First halftransformation      ')
 C
-#if defined (VAR_MPI)
-
-      IF (PARCAL) THEN
-         CALL GETTIM(CPUST,WALLST)
-         IF (MYTID.EQ.0)
-     &   WRITE(LUPRI,'(1X,A,F14.2,A)')
-     & '- Starting integral redistribution after ',
-     &  WALLST-WALLBEF,' seconds'
-         CALL FLSHFO(LUPRI)
-         CALL XTIME(4,1,' Integral redistribution       ')
-         CALL BUFFER_FILE_END ()
-         CALL XTIME(4,2,' Integral redistribution       ')
-         CALL GETTIM(CPUST,WALLST)
-         IF (MYTID.EQ.0)
-     &   WRITE(LUPRI,'(1X,A,F14.2,A)')
-     & '- Ending integral redistribution after ',
-     &  WALLST-WALLBEF,' seconds'
-      ENDIF
-#endif
-C
 C     Initialize MOLFDIR integral file
 C
       CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
@@ -233,9 +213,7 @@ C
 C
 C     Screening statistics
 C
-      IF(SCRTRA.GT.D0) THEN
-        CALL ST4SCR(DINTSKP)
-      ENDIF
+      IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
 C     Print timing report
 C
@@ -373,7 +351,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -455,9 +433,16 @@ C
               IBUFMPI(5) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
-              CALL BUFFER_FILE_RECV ()
-              CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
-     &                      MPI_COMM_WORLD,ISTAT,IERR)
+   10         CONTINUE
+              CALL MPI_PROBE (MPI_ANY_SOURCE,MPI_ANY_TAG,
+     &                        MPI_COMM_WORLD,ISTAT,IERR)
+              IF (ISTAT(MPI_TAG).EQ.20) THEN
+                 CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
+     &                         MPI_COMM_WORLD,ISTAT,IERR)
+              ELSE
+                 CALL BUFFER_FILE_RECV ()
+                 GOTO 10
+              ENDIF
               CALL XTIME(2,2,' Slave requesting task from master')
               NWHO = ISTAT(MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
@@ -510,15 +495,16 @@ C
      &               LSORT,RGBUF,IGBUF)
          GOTO 100
   200    CONTINUE
-C
-C        Empty the buffers
-C
-         CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
       ENDIF
 C
-C     Send/Receive statistics
+C     Flush the buffers and end the communication
 C
-      CALL TRARES(WORK,KFREE,LFREE,DINTSKP,LMP2,DUM,DUM,WALLBEF)
+      IF (MYTID.EQ.0) THEN
+         CALL BUFFER_FILE_END ()
+      ELSE
+         CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
+         CALL BUFFER_FILE_END ()
+      ENDIF
 C
       RETURN
       END

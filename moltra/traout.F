@@ -108,14 +108,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
 C
-      IF (PARCAL) THEN
-         WRITE (LUPRI,1001) MYTID
-      ELSE
+      IF (MYTID.EQ.0) THEN
          WRITE (LUPRI,1000)
       END IF
       CALL FLSHFO(LUPRI)
  1000 FORMAT (' - MOLFDIR file MDCINT was written.')
- 1001 FORMAT (' - MOLFDIR file MDCINT was written by node',I5)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

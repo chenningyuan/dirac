@@ -8,11 +8,9 @@ C     The maximum number of files that can be opened.
       PARAMETER (MAX_BUFF_FILES=5)
 C
 C     The length of records, measured in integer words.
-CTest PARAMETER (NGBFSZ=100)
-      PARAMETER (NGBFSZ=1024)
+      PARAMETER (NGBFSZ=2048)
 C
 C     The maximum number of buckets per file.
-CTest PARAMETER (N_BUFFER=50000)
       PARAMETER (N_BUFFER=1024)
 C
 C     The memory needed to store all buckets for one sort (need MAX_MEM
@@ -44,6 +42,6 @@ C
 C     The maximum number of send buffers that is used.
       PARAMETER (MAX_SEND_BUFFERS=5)
 C     Buffers for sending integrals
-      COMMON /BF_SENDI/ IREQ(MAX_SEND_BUFFERS),
-     &                  ISGBUF(4+4*NGBFSZ,MAX_SEND_BUFFERS)
+      COMMON /BF_SENDI/ ISGBUF(4+4*NGBFSZ,MAX_SEND_BUFFERS),
+     &                  IREQ(MAX_SEND_BUFFERS)
 C

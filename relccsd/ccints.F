@@ -96,7 +96,7 @@ C
       REAL*8 E0,E1
       CHARACTER*10 DATEX,TIMEX*8
       LOGICAL FOCKSP
-      INTEGER*8 N5F,N5L,N6F,N6L,IND
+      INTEGER*8 N5F,N5L,N6F,N6L,IND,ICOUNT
       CHARACTER*10 FNODE,LFNAM
 C
 C---------------Executable code--------------------------------------
@@ -125,7 +125,7 @@ C
 C
 C  INITIALIZE READING OF COULOMB INTEGRALS
 C
-      IF (MYTID.EQ.0) THEN
+      IF (MYPROC.EQ.0) THEN
          FNODE = 'MDCINT    '
       ELSE
          FNODE = LFNAM('MDCINT')
@@ -202,8 +202,16 @@ C
       call memchk ('after initialization',cc,1)
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
-      IF (NONZR.LT.0) GOTO 110
-      ICOUNT = ICOUNT + NONZR
+      IF (NONZR.LT.0) THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+             MREADER = MREADER + 1
+             GOTO 100
+         ELSE
+             GOTO 110
+         ENDIF
+      ELSE
+         ICOUNT = ICOUNT + NONZR
+      ENDIF
       DO 102 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -331,7 +339,14 @@ C
 C
   200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
-      IF (NONZR.LT.0) GOTO 210
+      IF (NONZR.LT.0) THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+             MREADER = MREADER + 1
+             GOTO 200
+         ELSE
+             GOTO 210
+         ENDIF
+      ENDIF
       DO 202 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -436,7 +451,14 @@ C
 C
   300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
      &               NONZR,NZE,CBUF,IBUF,MREADER)
-      IF (NONZR.LT.0) GOTO 310
+      IF (NONZR.LT.0) THEN
+         IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
+             MREADER = MREADER + 1
+             GOTO 300
+         ELSE
+             GOTO 310
+         ENDIF
+      ENDIF
       DO 302 INZE = 1, NZE
             ITYP = IBUF(1,INZE)
             IREP = IBUF(2,INZE) 
@@ -552,7 +574,7 @@ C
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
-     &/' File time :',T20,A8,/' # of integrals',I12)
+     &/' File time :',T20,A8,/' # of integrals',I16)
  1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
      &/' Zero order electronic energy :',T40,F25.15 
      &/' First order electronic energy :',T40,F25.15 
@@ -869,12 +891,6 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       CALL MPI_BCAST(INDL,NONZR,MPI_INTEGER,MREADER,MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(CBUF,NONZR*RCW,MPI_DOUBLE_PRECISION,
      &                MREADER,MPI_COMM_WORLD,IERR)
-      ELSEIF (NONZR.LT.0) THEN
-C      We are done with this node, go to the next
-       IF (MREADER.LT.NMPROC-1.AND.INTERFACE(6:6).EQ.'6') THEN
-           MREADER = MREADER + 1
-           GOTO 1
-       ENDIF
       ENDIF
       ENDIF
 #endif

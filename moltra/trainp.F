@@ -897,6 +897,7 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* No screening.'
       ENDIF
+      WRITE(LUPRI,'(1X,A,1P,E8.2)') '* MO integral threshold :',THROUT
       IF (MOD(ITRA_INTFL4,2).NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* LL Integrals not transformed'
       IF (MOD(ITRA_INTFL4/2,2).NE.1) WRITE(LUPRI,'(1X,A)')

@@ -1123,12 +1123,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
       LOGICAL READY
 C
       IFREE = 0
+      READY = .FALSE.
       DO I = 1, MAX_SEND_BUFFERS
-         CALL MPI_TEST(IREQ(I), READY, MPI_STATUS_IGNORE, IERR)
+         CALL MPI_TEST(IREQ(I), READY, ISTAT, IERR)
          IF (READY) THEN
             IFREE = I
             RETURN
@@ -1160,7 +1162,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INCLUDE 'mpif.h'
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
-      DIMENSION IGBUF(2,NGBFSZ)
+      INTEGER*4 IGBUF(2,NGBFSZ)
 C
 C     Loop until we find a free send buffer IFREE
     1 CONTINUE
@@ -1175,7 +1177,7 @@ C     Pack all data in the integer array ISGBUF
       ISGBUF(4,IFREE) = IFREE
       CALL ICOPY (2*N,IGBUF,1,ISGBUF(5,IFREE),1)
       CALL DCOPY (N,RGBUF,1,ISGBUF(5+2*N,IFREE),1)
-      CALL MPI_ISEND(ISGBUF(1,IFREE),4*NGBFSZ+4,MPI_INTEGER,INODE,95,
+      CALL MPI_ISSEND(ISGBUF(1,IFREE),4*NGBFSZ+4,MPI_INTEGER,INODE,95,
      &               MPI_COMM_WORLD,IREQ(IFREE),IERR)
 C
       RETURN
@@ -1194,10 +1196,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "infpar.h"
       LOGICAL NEWMAIL
-      DIMENSION IHBUF(4*NGBFSZ+4)
+      INTEGER IHBUF(4*NGBFSZ+4)
 C
 C     Check whether there are any messages waiting
 C
@@ -1238,15 +1240,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTATS(MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
 #include "infpar.h"
       LOGICAL NEWMAIL
       INTEGER IEND
+      INTEGER IBUFMPI(5)
       LOGICAL READY, ALLRECV
 C
 C     The actual value of IEND does not matter, we need to send 
-C     something.
+C     something. Likewise for IBUFMPI, only the third element is used
 C
+      CALL IZERO (IBUFMPI,5)
+      IBUFMPI(3) = -1
       IEND = 1
 C
 C     The code for the slaves
@@ -1256,11 +1262,12 @@ C
 C     Start loop that will only end when master sends the termination
 C     signal.
 C
+      ALLRECV = .FALSE.
    1  CONTINUE
 C     Verify status of our own messages
       IF (.NOT.ALLRECV) THEN
          CALL MPI_TESTALL(MAX_SEND_BUFFERS,IREQ, ALLRECV,
-     &                    MPI_STATUSES_IGNORE, IERR)
+     &                    ISTATS, IERR)
 C        Tell master in case all our messages were received
          IF (ALLRECV) CALL MPI_ISEND(IEND,1,MPI_INTEGER,MPARID,98,
      &               MPI_COMM_WORLD,IREQ(1),IERR)
@@ -1284,6 +1291,21 @@ C
 C
       NREADY = 0
     2 CONTINUE
+C
+C     Initially the slaves are still waiting for a new integral task,
+C     tell them that they should do something else
+C
+      CALL MPI_IPROBE (MPI_ANY_SOURCE,20,MPI_COMM_WORLD,NEWMAIL,
+     &                 ISTAT,IERR)
+      IF (NEWMAIL) THEN
+C        Find out who was sending this
+         INODE = ISTAT(MPI_SOURCE)
+C        Receive this signal
+         CALL MPI_RECV(IEND,1,MPI_INTEGER,INODE,20,
+     &                 MPI_COMM_WORLD,ISTAT,IERR)
+         CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,INODE,30,
+     &                 MPI_COMM_WORLD,IERR)
+      ENDIF
 C
 C     Check for ready signals from the slaves
 C
