@@ -75,7 +75,7 @@ C***********************************************************************
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -89,6 +89,8 @@ C***********************************************************************
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
+      CHARACTER*7 CIC(3)
+      DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
 C
       CALL QENTER('TRDR4T')
       KFRSAV = KFREE
@@ -162,9 +164,12 @@ C
 C
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 3, 1, -1
-           WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
+           WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
+           IBUFMPI(1) = IC
+           IBUFMPI(2) = I2TYP
            DO ISHLA = IASMAX, IASTRT, -1
+              IBUFMPI(3) = ISHLA
               CALL GETTIM(CPUST,WALLST)
               WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
      &           '- Starting shell A no. ',ISHLA,' after ',
@@ -181,6 +186,8 @@ C             Distribute number of B's evenly
            DO IBEND = IBLAST, IBSTRT, IBSTEP
 C
               ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
+              IBUFMPI(4) = ISHLB
+              IBUFMPI(4) = IBEND
 C
               CALL XTIME(2,1,' Slave requesting task from master')
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
@@ -198,15 +205,7 @@ C             ... slave wants new set of A,B shells
                  CALL FLSHFO(LUPRI)
               END IF
               CALL XTIME(3,1,' Master and slave negotiating task')
-              CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(IBEND,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
+              CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL XTIME(3,2,' Master and slave negotiating task')
               ELSE IF (ABS(ITEST) .LE. 2) THEN
@@ -240,7 +239,7 @@ C
         CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)
         DO IC = 1, 3
-           WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
+           WRITE(LUPRI,'(A,I2,2A)') ' - Integral class',IC,' : ',CIC(IC)
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
               CALL GETTIM(CPUST,WALLST)
@@ -1110,7 +1109,7 @@ C
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
-      DIMENSION DINTSKP(*),WORK(*)
+      DIMENSION DINTSKP(*),WORK(*), IBUFMPI(5)
 C
 C     Define the packing of the 2-index transformed integrals
 C
@@ -1133,24 +1132,18 @@ C        ... ask for new set of A,B shells
          CALL XTIME(2,1,' Slave requesting task from master')
          CALL MPI_SEND(ITEST,1,MPI_INTEGER,MPARID,20,
      &                 MPI_COMM_WORLD,IERR)
-         CALL MPI_RECV(ISHLA,1,MPI_INTEGER,MPARID,30,
+         CALL MPI_RECV(IBUFMPI,5,MPI_INTEGER,MPARID,30,
      &                 MPI_COMM_WORLD,ISTAT,IERR)
+         IC     = IBUFMPI(1)
+         I2TYP  = IBUFMPI(2)
+         ISHLA  = IBUFMPI(3)
+         ISHLBS = IBUFMPI(4)
+         ISHLBE = IBUFMPI(5)
          CALL XTIME(2,2,' Slave requesting task from master')
          IF (ISHLA.EQ.-1) GOTO 200
 C
-C        ISHLB range:
+C        ISHLB range: ISHLBS to ISHLBE
 C
-         CALL XTIME(3,1,' Master and slave negotiating task')
-         CALL MPI_RECV(ISHLBS,1,MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_RECV(ISHLBE,1,MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-C
-         CALL MPI_RECV(IC,1,MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL MPI_RECV(I2TYP,1,MPI_INTEGER,MPARID,30,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-         CALL XTIME(3,2,' Master and slave negotiating task')
 #endif
          CALL XTIME(5,1,' Computing+transform. integrals')
          CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,

@@ -752,7 +752,7 @@ C        The gu-block
          MULTB(5,4) = 4
          MULTB(6,4) = 3
       ELSE
-         CALL QUIT('Multiplication table is not defined')
+         CALL QUIT('GMULTA: Multiplication table is not defined')
       ENDIF
 C
       DO I = 1, 2*NSYMRPA
@@ -986,9 +986,9 @@ C
       REPAS(3) = '3' ! mS = + 3/2
       REPAS(4) = '3' ! mS = - 3/2
       REPAS(5) = '0' ! mS = 0
-      REPAS(6) = '4' ! mS = +/- 4
-      REPAS(7) = '2' ! mS = + 2
-      REPAS(8) = '2' ! mS = - 2
+      REPAS(6) = '4' ! mS = +/- 4/2 = +/- 2
+      REPAS(7) = '2' ! mS = + 2/2 = + 1
+      REPAS(8) = '2' ! mS = - 2/2 = - 1
       MULTBS(1,1) = 7
       MULTBS(2,1) = 5
       MULTBS(3,1) = 8

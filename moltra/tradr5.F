@@ -70,7 +70,7 @@ C***********************************************************************
 #include "aovec.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -159,7 +159,10 @@ C
         DO IC = 2, 1, -1
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
+           IBUFMPI(1) = IC
+           IBUFMPI(2) = I2TYP
            DO ISHLA = IASMAX, IASTRT, -1
+              IBUFMPI(3) = ISHLA
               CALL GETTIM(CPUST,WALLST)
               WRITE(LUPRI,'(3X,A,I4,A,F14.2,A)')
      &           '- Starting shell A no. ',ISHLA,' after ',
@@ -171,30 +174,24 @@ C             Distribute number of B's evenly
            DO IBEND = ISHLA, IBSTRT, IBSTEP
 C
               ISHLB = MAX(IBEND+IBSTEP+1,IBSTRT)
+              IBUFMPI(4) = ISHLB
+              IBUFMPI(5) = IBEND
 C
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C             ... slave wants new set of A,B shells
-              CALL GETTIM(CPUST,WALLST)
-              IF (IPRINT .GE. 3) THEN
-                 WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)')
+                 IF (IPRINT .GE. 3) THEN
+                    CALL GETTIM(CPUST,WALLST)
+                    WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)')
      &              '- Sending shells (',ISHLA,',',ISHLB,
      &              '-',IBEND,') to node',NWHO,
      &              ' after',WALLST-WALLBEF,' seconds'
-                 CALL FLSHFO(LUPRI)
-              END IF
-              CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(ISHLB,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(IBEND,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
-              CALL MPI_SEND(I2TYP,1,MPI_INTEGER,NWHO,30,
-     &                      MPI_COMM_WORLD,IERR)
+                    CALL FLSHFO(LUPRI)
+                 END IF
+                 CALL MPI_SEND(IBUFMPI,5,MPI_INTEGER,NWHO,30,
+     &                         MPI_COMM_WORLD,IERR)
               ELSE IF (ABS(ITEST) .LE. 2) THEN
 C             ... slave wants to lock or free file
                  CALL QUIT('lock/free file not implemented yet')

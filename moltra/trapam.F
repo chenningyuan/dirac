@@ -2102,7 +2102,7 @@ C
          DO IREPA1 = IREPS, IREPF
             IIIREP(IREPA1) = IIIREP(IREPA1) + IIREP(IREPA1)
          ENDDO
-         MXINSH = MAX0(MXINSH,I)
+         MXINSH = MAX(MXINSH,I)
       ENDDO
 C
       IF (IREPA.NE.-1) THEN
@@ -2169,7 +2169,9 @@ C
 C
 #include "ibtfun.h"
 C
-      IF (IPRINT .GT. 3) CALL HEADER('Subroutine NDISTRN',-1)
+C     hjaaj: increased level for print of header
+C     as no other print in this routine!
+      IF (IPRINT .GT. 5) CALL HEADER('Subroutine NDISTRN',-1)
       IF (MKINAB.AND.(.NOT.ABSPOI).AND.(.NOT.MKIJPA))
      &    CALL QUIT ('Conflicting options in NDISTRN')
 C
@@ -2256,20 +2258,20 @@ C
                               IF (IOFF+NSPCK(IREPAB,IC).GT.NWDS) THEN
 C
                                  IF (IOFF.EQ.0) THEN
-                                    write(6,*) 'maximum size of gmat',
-     &                                  NWDS
-                                    write(6,*) 'size of block',
-     &                                  NSPCK(IREPAB,IC)
-                                    write(6,*) 'ic, irepab=',ic,irepab
-                                    CALL QUIT (
-     &                       ' Maximum size of GMAT too small ')
+                                    write(LUPRI,'(/A,2(/A,I10)/A,2I5)')
+     &                                 'FATAL ERROR in NDISTRN',
+     &                                 'maximum size of gmat',NWDS,
+     &                                 'size of block',NSPCK(IREPAB,IC),
+     &                                 'ic, irepab=',ic,irepab
+                                    CALL QUIT(
+     &                                 'Maximum size of GMAT too small')
                                  END IF
 C
 C                                If this happens one should either
 C                                decrease the shell size or increase the
 C                                total memory
 C
-                                 MWDS = MAX0(IOFF,MWDS)
+                                 MWDS = MAX(IOFF,MWDS)
                                  NPASS = NPASS + 1
                                  IOFF = 0
                               ENDIF
@@ -2304,7 +2306,7 @@ C
          ENDDO
       ENDDO
 C
-      NWDS = MAX0(IOFF,MWDS)
+      NWDS = MAX(IOFF,MWDS)
       NDISTRN = IJ
 C
       RETURN
