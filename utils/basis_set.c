@@ -11,14 +11,14 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_DOCUMENTATION 100   /* Maximum number of documentation lines                    */
+#define MAX_DOCUMENTATION 200   /* Maximum number of documentation lines                    */
 #define MAX_REFERENCE 10        /* Maximum number of lines with literature references       */
 #define MAX_COMMENTS 10         /* Maximum number of lines with atom-specific comments      */
 #define MAX_LVALUE  8           /* Maximum value for angular momentum quantum number        */
 #define MAX_BLOCK   50          /* Maximum number of function blocks of a particular type   */
 #define MAX_EXPONENTS 200       /* Maximum number of different exponents                    */
 #define MAX_COEFFICIENTS 1500   /* Maximum number of different coefficients                 */
-#define MAX_ATOMS 120           /* Maximum number of atoms for a certain basis set type     */
+#define MAX_ATOMS  40           /* Maximum number of atoms for a certain basis set type     */
 
 #define DALTON_NUMBER_FORMAT "%5i%5i%5i\n"
 #define DALTON_EXPONENT_FORMAT "%16.9le"
@@ -26,7 +26,6 @@
 #define DYALL_NUMBER_FORMAT "%i %i %i %i %i"
 #define DYALL_EXPONENT_FORMAT "%i %le"
 #define DYALL_COEFFICIENT_FORMAT "%le"
-#define FAEGRI_EXPONENT_FORMAT "%le"
 
 
 /* Global variables */
@@ -71,7 +70,7 @@ typedef struct
     int number_of_atoms;                                        /* Number of elements for which this basis set is defined */
 }   BASIS;
 
-/* The information for each atom is stored in the struct ATOM
+/* The information for each atom is stored in the struct ATOOM
    Here we use arrays of dimension [MAX_BLOCK][3][MAX_LVALUE+1][2] 
    where the second dimension distinguishes between l-, l+, and l(spinfree) respectively. 
    The last dimension distinguishes between large and small (or pseudo-large in case of spinfree) components */
@@ -99,15 +98,13 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[]);
 int read_dyall_atom (FILE *file, ATOOM *atom);
 int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[]);
 void read_block (FILE *file, int n_exp, int n_orbs, double *exponent, double *coefficient);
-int move_to_section (FILE *file, const char text[]);
+int move_to_section (FILE *file, const char text[], int skip_rewind);
 int end_of_section (LINE line, const char text[]);
 int write_dalton_style (BASIS basis_set, ATOOM atoms[]);
 int write_element (FILE *file, ATOOM atom);
 void write_block (FILE *file, int n_exp, int n_orbs, double *exp_start, double *coef_start);
 void write_comment_lines (FILE *file, LINE comment[], int number_of_lines);
 void combine_blocks (ATOOM *atom);
-int read_faegri_VDZ (BASIS *basis_set, ATOOM atoms[]);
-int read_faegri_atom (FILE *file, ATOOM *atom);
 
 
 /* ============================================================================================================== */
@@ -118,8 +115,9 @@ int main(void)
     BASIS basis_set;
     ATOOM atoms[MAX_ATOMS];
     
-    /*  ierr = read_dyall_pVDZ (&basis_set, atoms); */
-    ierr = read_faegri_VDZ (&basis_set, atoms); 
+    /*set_element_name (element_name);*/
+    
+    ierr = read_dyall_pVDZ (&basis_set, atoms);
     
     write_dalton_style (basis_set, &atoms[0]);
     printf("Error code %i \n",ierr);
@@ -143,17 +141,17 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     int l_max, n_extra[MAX_LVALUE+1];
     
     /* Open the file */ 
-    dyall_file = fopen("Dyall.dz", "r");        
+    dyall_file = fopen("Dyall.tz", "r");        
     if (dyall_file == NULL) return 1;
     
     /* Initialize the fixed elements for this basis */
-    strcpy(basis_set->name,"Dyall.VDZ");
+    strcpy(basis_set->name,"Dyall.VTZ");
     basis_set->type = non_family;
     basis_set->contraction = general;
     basis_set->number_of_atoms = 0; 
        
     /* Read the reference lines */  
-    move_to_section (dyall_file,"REFERENCE");
+    move_to_section (dyall_file,"REFERENCE",0);
     i = 0;
     do 
     {
@@ -165,7 +163,7 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     strcpy(basis_set->reference[i],"\0");
 
     /* Read the documentation lines */  
-    move_to_section (dyall_file,"DOCUMENTATION");
+    move_to_section (dyall_file,"DOCUMENTATION",0);
     i = 0;
     do 
     {
@@ -181,7 +179,7 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
     element = 0;
 
     /* Read the Hartree-Fock exponents and contraction coefficients */
-    move_to_section (dyall_file,"RELATIVISTIC");
+    move_to_section (dyall_file,"RELATIVISTIC",0);
     do 
     {
         fgets(line, 132, dyall_file);
@@ -206,8 +204,11 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
         };
     } while ( end_of_section (line,"RELATIVISTIC") == 0 && feof(dyall_file) == 0);
 
+    /* Read two blocks of correlating exponents */
+    for (i=0; i<2; i++)
+    {
     /* Read the valence correlating exponents */
-    move_to_section (dyall_file,"VALCORR_RELATIVISTIC");
+    move_to_section (dyall_file,"VALCORR_RELATIVISTIC",i);
     fscanf (dyall_file,"%i",&l_max);
 
     /* Read the number of extra functions for each l value */
@@ -228,7 +229,7 @@ int read_dyall_pVDZ (BASIS *basis_set, ATOOM atoms[])
         /* Prepare for the next element */
         fscanf (dyall_file,"%s",&line);
     }
-
+    }
     return 0;
 }
 /* ============================================================================================================== */
@@ -345,8 +346,8 @@ int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[])
             fscanf(file,"%le",&additional[i]);
 
         /* Fix for uncontracted sets as combine_blocks will not detect identical exponents
-           Do not take the f-polarization functions into account if they are already in the original set */
-          if (l == 3 && atom->n_block[0][l][0] > 0) continue;
+           Do not take the polarization functions into account if they are already in the original set */
+          if ( atom->n_block[0][l][0] > 0 && ! (l == 3 && atom->number >= 81) ) continue;
 
         for (lj=0; lj<2; lj++)
         {
@@ -387,7 +388,7 @@ int read_dyall_additional (FILE *file, ATOOM *atom, int l_max, int n_extra[])
 
 /* ============================================================================================================== */
 
-int move_to_section (FILE *file, const char text[])
+int move_to_section (FILE *file, const char text[], int skip_rewind)
 
 /* Function to find begin of section on file
    Return values :  0 - Section was found
@@ -404,7 +405,7 @@ int move_to_section (FILE *file, const char text[])
     strcpy (target_line, "$BEGIN_");
     strcat (target_line, text);
     
-    rewind (file);
+    if (skip_rewind == 0) rewind (file);
 
     while ( feof(file) == 0)
     {
@@ -719,171 +720,3 @@ void combine_blocks (ATOOM *atom)
 }
 /* ============================================================================================================== */
 
-int read_faegri_VDZ (BASIS *basis_set, ATOOM atoms[])
-
-/* Function to read the DZ basis from the archive file provided by K. Faegri Jr.
-   Return values :  0 - Normal completion
-                    1 - Error while reading file
- */
-   
-
-{
-    FILE *faegri_file;
-    LINE line;
-    int i, j, l, element;
-    int l_max, n_extra[MAX_LVALUE+1];
-    
-    /* Open the file */ 
-    faegri_file = fopen("Faegri.dz", "r");        
-    if (faegri_file == NULL) return 1;
-    
-    /* Initialize the fixed elements for this basis */
-    strcpy(basis_set->name,"Faegri.VDZ");
-    basis_set->type = non_family;
-    basis_set->contraction = general;
-    basis_set->number_of_atoms = 0; 
-       
-    /* Read the reference lines */  
-    move_to_section (faegri_file,"REFERENCE");
-    i = 0;
-    do 
-    {
-        fgets(line, 132, faegri_file);
-        if (end_of_section (line,"REFERENCE") != 0) break;
-        strcpy(basis_set->reference[i],line);
-        i++;
-    } while (i < MAX_REFERENCE);
-    strcpy(basis_set->reference[i],"\0");
-
-    /* Read the documentation lines */  
-    move_to_section (faegri_file,"DOCUMENTATION");
-    i = 0;
-    do 
-    {
-        fgets(line, 132, faegri_file);
-        if (end_of_section (line,"DOCUMENTATION") != 0) break;
-        strcpy(basis_set->documentation[i],line);
-        i++;
-    } while ( i < MAX_DOCUMENTATION);
-    strcpy(basis_set->documentation[i],"\0");
-    
-    /* Initialize the atoms */
-    basis_set->number_of_atoms = 0;
-    element = 0;
-
-    /* Read the Hartree-Fock exponents and contraction coefficients */
-    move_to_section (faegri_file,"RELATIVISTIC");
-    do 
-    {
-        fgets(line, 132, faegri_file);
-        if (memcmp(line," **",3) == 0)
-        {
-            /* Copy identifier to comment section */
-            strcpy (atoms[element].comments[0], line);
-
-            /* Extract the element symbol for later use */
-            sscanf (&line[3],"%s",&atoms[element].symbol);
-                
-            /* The next line should be the atomic number */
-            fscanf(faegri_file,"%i",&atoms[element].number);         
-
-            /* Read rest of this line (not used) */
-            fgets(line, 132, faegri_file);
-
-            /* The following four lines are treated as the comment line for this element */
-            for (i=1; i<=3; i++)
-            {
-               fgets(line, 132, faegri_file);
-               strcpy (atoms[element].comments[i], line);
-            }
-            strcpy (atoms[element].comments[5],"\0");
-
-            read_faegri_atom (faegri_file, &atoms[element]);
-
-            /* Write some output */
-            printf ("Read (%is %ip %id %if) Hartree-Fock basis for %s",
-                     atoms[element].n_exponents[0][1][0][0],
-                     atoms[element].n_exponents[0][0][1][0],
-                     atoms[element].n_exponents[0][0][2][0],
-                     atoms[element].n_exponents[0][0][3][0],
-                     atoms[element].comments[0]);
-
-            element++;
-            basis_set->number_of_atoms++;
-        };
-    } while ( end_of_section (line,"RELATIVISTIC") == 0 && feof(faegri_file) == 0);
-
-    return 0;
-}
-
-/* ============================================================================================================== */
-
-int read_faegri_atom (FILE *file, ATOOM *atom)
-
-/* Function to read one element on a basis set of Faegri archive (GRASP) type
-   Return values :  0 - No errors
-                    1 - Error reading basis set
- */
-
-{
-    int component, i, l, lj, n_exp, n_orbs, l_max;
-    double *exp, *coef;
-    int block;
-    LINE line;
-    
-    /* Initialize the maximum l-value */    
-    l_max = -1;
-    
-    /* Pointer to start of exponents array */
-    exp = &(atom->exponents[0]);
-    /* Pointer to start of contraction coefficients array */
-    coef = &(atom->coefficients[0]);
-    
-    /* Initialize block counter */
-    for (component=0; component<2; component++)
-        for (l=0; l<=MAX_LVALUE; l++)
-            for (lj=0; lj<2; lj++)
-                atom->n_block[lj][l][component] = 0;
-                
-    /* Loop over the blocks with exponents and coefficients */  
-    do
-    {   
-        fgets(line,132,file);
-        if (memcmp(line,"$BLOCK",6) == 0)
-        {
-            /* We found a block of exponents and coefficients,
-               find out which one it is */
-            fscanf(file,DYALL_NUMBER_FORMAT,
-                   &component,&l,&lj,&n_exp,&n_orbs);
-	    if (l > l_max) l_max = l; 
-
-            /* Store this information */
-            block = atom->n_block[lj][l][component];
-            atom->n_block[lj][l][component]++;  
-            atom->n_exponents[block][lj][l][component] = n_exp;
-            atom->n_orbitals[block][lj][l][component] = n_orbs;
-            atom->exponent_start[block][lj][l][component] = exp;
-            atom->coefficient_start[block][lj][l][component] = coef;
-            
-            if (n_orbs !=0 ) return 1; /* Only uncontracted sets ! */
-            /* Read the exponents (we do not read coefficients !) */
-
-            for (i=0; i<n_exp; i++)
-            {
-                fscanf(file, FAEGRI_EXPONENT_FORMAT, exp);   /* Read the exponent */
-                exp++;                                       /* Point to the next exponent */
-            }
-            
-            /* Update the pointer */
-            exp += n_exp;
-            coef += n_orbs * n_exp;
-        }
-    }  while (memcmp(line,"$END_ELEMENT",11) != 0  && feof(file) == 0 );
-            
-    /* Keep information about maxima updated */
-    atom->l_max = l_max;
-    atom->exponent_end = exp;
-    atom->coefficient_end = coef;
-
-    return 0;
-}
