@@ -35,7 +35,7 @@ C  /* Deck getlab */
       SUBROUTINE GETLAB(WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
-C      Generate primitive labels for basis functions
+C      Generate primitive labels for basis functions in dcblab.h
 C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
@@ -3060,7 +3060,7 @@ C
      &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
      &         NFBAS(I,0),NORB(I),NZT,
      &         D0,IPQTOQ(1,0),SAOMO(IOFF),
-     &         NFBAS(I,0),NORB(I),NZ)
+     &         NFBAS(I,0),NORB(I),NZT)
 C
             IF ( IPRINT .GE. 10 ) THEN
                CALL HEADER('MKSAOMO: Right index transf. overlap'//
