@@ -220,8 +220,13 @@ C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+        IF(IPRSCF.GE.1) THEN
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
      &              WORK,KFREE,LFREE)
+        ELSE
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &              WORK,KFREE,LFREE)
+        ENDIF
 C
 C       Reorder orbitals if requested
 C
@@ -331,9 +336,15 @@ C
 C       Construct Kohn-Sham contribution
 C       ================================
         IF(DFTADD) THEN
+C          tsaue: turn off test on numerical integration,
+C                 When starting from coefficients from a different
+C                 geometry the spiky small components give problems
+           TMP = DFTELS
+           DFTELS = D1
 C          NFMAT=1,ISYMOP=1,IHRMOP=1,DOERG=T,DOGRD=F,DOLND=F,DOATR=F
            CALL DFTEXC(DMAT,DUM,FOCK,1,1,1,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,IPRSCF)
+           DFTELS = TMP
            TDXC = SECOND() - TDXC
         ENDIF
 #endif
