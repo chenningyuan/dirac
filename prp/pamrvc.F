@@ -3385,9 +3385,9 @@ C
          LUBUF = 1
          CALL OPNFIL(LUBUF,'DFCOEF','OLD','GMOLI1')
          IF (IPRXRS .GE. 10) THEN
-            IOPT = 4
+            IOPT = 3
          ELSE
-            IOPT = 6
+            IOPT = 2
          END IF
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),DUM,TOTERG,
      &               IOPT,WORK,KFREE,LFREE)
