@@ -3170,7 +3170,7 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.SPINF2','XXXXXXX','XXXXXXX'/
+     &            '.ONECAP','.SPINF2','.NOSPIN','XXXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -3192,6 +3192,7 @@ C
       NOSMLV  = .FALSE.
       LEVYLE  = .FALSE.
       SPINFR  = .FALSE.
+      NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
       DFTHAM  = .FALSE.
       SOLVEN  = .FALSE.
@@ -3435,6 +3436,10 @@ C&&& SPINFR2 : debug: Zero out 2-electron spin-orbit terms
             ICHANG = ICHANG + 1
             GO TO 100
   123     CONTINUE
+C&&& NOSPIN: Take out all spin-interactions
+             SPINFR = .TRUE.
+             NOSPIN = .TRUE.
+             ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
             GO TO 100
