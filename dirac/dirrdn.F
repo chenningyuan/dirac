@@ -2731,6 +2731,8 @@ C***********************************************************************
 #include <priunit.h>
 C
 #include <dcbgen.h>
+#include <cbihr2.h>
+C
       DIMENSION WORK(LWORK)
       LOGICAL LBIT,TEST
 C
