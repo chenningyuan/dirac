@@ -191,6 +191,7 @@ done
 echo
 echo '   Configuring the DIRAC Makefile.config and dhf run script'
 echo
+echo '   configure $Revision$'
 #
 #
 #
@@ -1096,7 +1097,7 @@ EOF
 #jth: parlib=-mpi 
 #if [ "$mesp" = "mpi" -a "$parlib" = "yes" ]; then
 if [ "$mesp" = "mpi" ]; then
-   if [ ! -z "$parlibp" ] then
+   if [ ! -z "$parlibp" ]; then
       parlibp=-L$parlibp
    fi
     cat <<EOF >> Makefile.config
