@@ -531,6 +531,7 @@ dftsyncfunc_(int* amImaster)
 {
 #ifdef VAR_MPI
     static int Initialized = 0;
+    int success; /* jvs: this is not used !!! */
     int dft_conf_len =  DftConfString ? strlen(DftConfString)+1 : 0;
     
     if(infpar_.nodes==1||Initialized) return;
@@ -543,7 +544,7 @@ dftsyncfunc_(int* amImaster)
 
         MPI_Bcast(line, dft_conf_len, MPI_CHAR, infpar_.mparid, MPI_COMM_WORLD);
         if(!*amImaster)
-            dft_input_(line, dft_conf_len);
+            dftinput_(line, &success, dft_conf_len);
 
         free(line);
         Initialized = 1;
