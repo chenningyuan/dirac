@@ -26,6 +26,7 @@ usage()
    echo '     -adm          : Include ALL modules (administrator)'
    echo '     -dft          : Include DFT module'
    echo '     -eri          : Include ERI integral routines'
+   echo '     -densfit      : Include density fitting module'
    echo '     -esr          : Include ESR property module'
    echo '     -xpp          : Include PP excitation energy module'
    echo '     -xqr          : Include quadratic response module'
@@ -115,8 +116,6 @@ setup()
       echo " - KR-MCSCF and LUJCAREL modules (KRMC)"
    fi
    #
-   #
-   #
    #  ERI two-electron integral module
    #
    if [ -n "$ERIMOD" ]; then
@@ -125,6 +124,16 @@ setup()
       ERIMAK=ERI_OBJ
       ERITAR=1
       echo " - ERI two-electron integral module"
+   fi
+   #
+   #  DNF density fitting module
+   #
+   if [ -n "$DNFMOD" ]; then
+      DNFFLG='-DMOD_DNF'
+      DNFOBJ='$(DNFOBJS)'
+      DNFMAK=DNF_OBJ
+      DNFTAR=1
+      echo " - DNF density fitting module"
    fi
    #
    # Defining the tarfile that is used for export
@@ -258,6 +267,11 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.h,Makefile,include} 2>> export.log
 EOF
    fi
+   if [ "$DNFTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
    if [ "$ERITAR" ]; then
       cat <<EOF>> ./export
       tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.h,Makefile,include} 2>> export.log
@@ -315,8 +329,8 @@ make_makefile()
 {
    echo "*** Making general Makefile"
    echo
-   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $DFTOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
-   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $DFTMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
+   AUXOBJ="$CCFOCKSPOBJ $ESROBJ $XQROBJ $DFTOBJ $DNFOBJ $ERIOBJ $XPPOBJ $KRMCOBJ $LUCIARELOBJ"
+   AUXMAK="$CCFOCKSPMAK $ESRMAK $XQRMAK $DFTMAK $DNFMAK $ERIMAK $XPPMAK $KRMCMAK $LUCIARELMAK"
    #
    # Write current Makefile
    #
@@ -506,6 +520,16 @@ eri/fck3aob.o eri/fck3drv.o eri/fck3ftuv.o eri/fck3mom.o eri/fck3odb.o
 EOF
 fi
 #
+#  Object-files for densfit module
+#
+if [ -n "$DNFMOD" ]; then
+cat <<EOF>> Makefile
+
+DNFOBJS = \\
+densfit/df_dirac.o   densfit/df_dofit.o 
+EOF
+fi
+#
 #  The targets
 #
 cat <<EOF>> Makefile
@@ -513,7 +537,7 @@ cat <<EOF>> Makefile
 OBJSMXM = gp/mxmpack.o
 
 TOT_FORTRANOBJS = \$(OBJS) \$(ESROBJS) \$(XQROBJS) \$(CCFOCKSPOBJS) \\
-	\$(DFTOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
+	\$(DFTOBJS) \$(DNFOBJS) \$(ERIOBJS) \$(XPPOBJS) \$(KRMC_FOBJS)
 
 F_CPPS = \$(TOT_FORTRANOBJS:.o=.i)
 
@@ -609,6 +633,9 @@ clean   :
 EOF
 if [ -n "$DFTMOD" ]; then
    echo '	cd dft      ; $(MAKE) clean' >> Makefile
+fi
+if [ -n "$DNFMOD" ]; then
+   echo '	cd densfit  ; $(MAKE) clean' >> Makefile
 fi
 if [ -n "$ERIMOD" ]; then
    echo '	cd eri      ; $(MAKE) clean' >> Makefile
@@ -713,6 +740,13 @@ DFT_OBJ :
 	cd dft; \$(MAKE) all
 EOF
 fi
+if [ -n "$DNFMOD" ]; then
+cat <<EOF>> Makefile
+
+DNF_OBJ :
+	cd densfit; \$(MAKE) all
+EOF
+fi
 if [ -n "$ERIMOD" ]; then
 cat <<EOF>> Makefile
 
@@ -757,6 +791,9 @@ if [ -n "$XPPMOD" ]; then
 fi
 if [ -n "$XQRMOD" ]; then
    TEMP="$TEMP prp/xqr"
+fi
+if [ -n "$DNFMOD" ]; then
+   TEMP="$TEMP densfit"
 fi
 if [ -n "$ERIMOD" ]; then
    TEMP="$TEMP eri"
@@ -809,11 +846,14 @@ which_modules()
 {
 #  
 #
-MODS="$ERIFLG $DFTFLG $KRMCFLG $ESRFLG $XQRFLG $XPPFLG"
-MODS_IBM="$ERIFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XQRFLG,$XPPFLG"
+MODS="$ERIFLG $DNFFLG $DFTFLG $KRMCFLG $ESRFLG $XQRFLG $XPPFLG"
+MODS_IBM="$ERIFLG,$DNFFLG,$DFTFLG,$KRMCFLG,$ESRFLG,$XQRFLG,$XPPFLG"
 dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
    dirs="$dirs eri"
+fi
+if [ -n "$DNFFLG" ]; then
+   dirs="$dirs densfit"
 fi
 if [ -n "$DFTFLG" ]; then
    dirs="$dirs dft"
@@ -863,6 +903,9 @@ while [ -n "$1" ]; do
          ;;
       -xqr|-xq|-x)
          XQRMOD=1
+         ;;
+      -densfit|-dnf)
+         DNFMOD=1
          ;;
       -eri|-er|-e)
          ERIMOD=1
