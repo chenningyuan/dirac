@@ -339,7 +339,7 @@ C
       Data Sec0 /0.d0/
 C
       Call WallUsed(Sec1)
-      CPUdelta = Sec1 - Sec0
+      WallDelta = Sec1 - Sec0
       Sec0 = Sec1
 C
       Return
