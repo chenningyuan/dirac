@@ -453,7 +453,7 @@ CM   & '========='
 CM     DO JCLS = 1, NCLS
 CM       IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
 CM   &   THEN
-CM         WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E12.6,1X))')
+CM         WRITE(6,'(3X,I4,1X,I10,3X,4(E12.6,1X))')
 CM   &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
 CM   &     CLS_CT(JCLS),CLS_C(JCLS)
 CM       END IF
@@ -596,9 +596,9 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       WRITE(6,*)
       WRITE(6,*) '  Class      Number     Dimension  '
       WRITE(6,*) ' ================================= '
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') ' Passive  ', N_PAS_CLS,L_PAS_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') ' Truncated', N_TRN_CLS,L_TRN_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') ' Active   ', N_ACT_CLS,L_ACT_CLS
 *
       WRITE(6,*)
       WRITE(6,*) ' Information about classes '
@@ -613,7 +613,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
        DO JCLS = 1, NCLS
          IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
      &   THEN
-           WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
+           WRITE(6,'(3X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
      &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
      &     CLS_CT(JCLS),CLS_C(JCLS),ICLS_A(JCLS)
          END IF
@@ -1233,13 +1233,13 @@ cbs
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 0 )
      &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+ 1170    FORMAT(/'   Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
 C!?      ITER = ITER - 1
          IF (IPRT .GE. 0 )
      &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+ 1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
       END IF
       END IF
 *
@@ -1247,31 +1247,28 @@ C!?      ITER = ITER - 1
         CALL REWINE(LU1,LBLK)
         CALL REWINE(LU2,LBLK)
         DO 1600 IROOT = 1, NROOT
-          WRITE(6,*)
-          WRITE(6,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(6,*)
-     &    '============================================'
-          WRITE(6,*)
+          WRITE(6,'(/A,I3/A/)')
+     &    ' Information about convergence for root... ' ,IROOT,
+     &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
           WRITE(6,1190) FINEIG(IROOT)+EIGSHF
  1190     FORMAT(' The final approximation to eigenvalue ',F22.10)
           IF(IPRT.GE.10) THEN
             WRITE(6,1201)
- 1201       FORMAT(1H0,'The final approximation to eigenvector')
+ 1201       FORMAT(/' The final approximation to eigenvector')
             CALL WRTVCDC(VEC1,LU1,0,LBLK)
- 1200       FORMAT(1H0,'The final sigma vector                ')
+ 1200       FORMAT(/' The final sigma vector')
             CALL WRTVCDC(VEC1,LU2,0,LBLK)
           END IF
           WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/'  Summary of iterations '
+     +           /'  ----------------------')
           WRITE(6,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(6,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(IROOT,I)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       else
         write(6,*)
@@ -1308,8 +1305,8 @@ C!?      ITER = ITER - 1
       close(unit=LU6,status='DELETE')
 *
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
       END
 ***********************************************************************
 *                                                                     *
