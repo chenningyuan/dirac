@@ -549,6 +549,14 @@ C Process Cartesian to spherical or your own transformation
 C     note: SPHINP will read additional input lines if DOOWN true
 C*****************************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
+      IF (DIRAC .AND. .NOT. DOCART) THEN
+         WRITE(LUPRI,'(/3(A/))')
+     &      'WARNING!!! Cartesian functions must be specified',
+     &      '           in molecule input file.',
+     &      '           DIRAC proceeds with readin assuming '//
+     &      '           cartesian functions.'
+         DOCART = .TRUE.
+      END IF
       DOOWN  = CRT. EQ. 'X'
       CALL SPHINP(LUINFO,WORK,LWORK,DOOWN)
 C
