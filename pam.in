@@ -192,7 +192,7 @@ execute_dirac()
 
    if [ -f $WRK/$DIRAC ]; then
       if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
-         rm $WKR/$DIRAC
+         rm $WRK/$DIRAC
       fi
    fi
 
