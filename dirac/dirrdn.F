@@ -522,7 +522,7 @@ C
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
      &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
-     &             '.XXXXXX','.XXXXXX','.OPTIMI','.MINIMI'/
+     &             '.NO4IND','.XXXXXX','.OPTIMI','.MINIMI'/
 C
       NJOBS = 0
 C
@@ -582,7 +582,7 @@ C&&&& INPTES: Input test
             NJOBS = NJOBS + 1
             GO TO 100
   103    CONTINUE
-C&&&& 4-INDEX transformation
+C&&&& activate 4-INDEX transformation (on by default for CC and CI)
             DOTRA = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
@@ -611,6 +611,8 @@ C           projection operators
             DOHEINZ = .TRUE.
             GO TO 100
   109    CONTINUE
+C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
+            NOTRA = .TRUE.
             GO TO 100
   110    CONTINUE
             GO TO 100
@@ -1636,11 +1638,13 @@ C             using small component atomic charges
             GO TO 100
   106    CONTINUE
 C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOCCM = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
   107    CONTINUE
 C&&&& DIRRCI: Perform CISD or COSCI
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOCIM = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
@@ -1656,6 +1660,7 @@ C&&&& RESOLVE: Resolve open-shell states
             GO TO 100
   110    CONTINUE
 C&&&& LUCITA: Perform spinfree CI calculation
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOLUCT = .TRUE.
             NJOBS = NJOBS + 1
             GO TO 100
@@ -2786,6 +2791,7 @@ C
       DOPIN    = .FALSE.
       DOPUT    = .FALSE.
       DOTRA    = .FALSE.
+      NOTRA    = .FALSE.
       DOCCM    = .FALSE.
       DOCIM    = .FALSE.
       OPTIMI   = .FALSE.
