@@ -394,7 +394,7 @@ C
 C
 C     Initialize the timing.
 C
-      CALL XTIME(1,0,'')
+      CALL XTIME(1,0,' ')
       CALL CPUUSED(CPU0)
       CPU1 = CPU0
       CPUI = 0
@@ -669,7 +669,7 @@ C
 C   
 C     Print timings (second XTIME parameter has to be 4)
 C
-      CALL XTIME(1,4,'')
+      CALL XTIME(1,4,' ')
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
       CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
