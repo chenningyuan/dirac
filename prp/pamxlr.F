@@ -115,7 +115,7 @@ CTROND  Check out active ones...
         ENDDO        
       ELSE
         NI = 0
-        KLRORB = KFREE
+        KLRO = KFREE
       ENDIF
       IF(SKIPEE) THEN
         NEE = 0
