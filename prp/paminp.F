@@ -60,7 +60,7 @@ C
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
-     &             '.EFT   ','.EFTNTL','.XXXXXX','.XXXXXX'/
+     &             '.EFT   ','.EFTNTL','.PVCSHI','.XXXXXX'/
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -81,6 +81,7 @@ C
       EPOLAR   = .FALSE.
       MSUSCP   = .FALSE.
       SHIELD   = .FALSE.
+      PVCSHI   = .FALSE.
       SPNSPN   = .FALSE.
       EFG      = .FALSE.
       EFT      = .FALSE.
@@ -241,7 +242,10 @@ C&&&& EFTNTL - non-traceless electric field third derivatives
             DOEXP    = .TRUE.
             GO TO 100
   119    CONTINUE
-            GO TO 100
+C&&&& SHIELD: NMR shielding constants with PVC contributions
+            DOXLR = .TRUE.
+            SHIELD = .TRUE.
+            PVCSHI = .TRUE.
   120    CONTINUE
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN

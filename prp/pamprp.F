@@ -3541,6 +3541,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D1=1.0D0)
 C
 #include "mxorb.h"
 #include "maxaqn.h"
@@ -3719,6 +3720,50 @@ C
             CALL WRIXPR(INDOP1,INDXPR)
           ENDIF
         ENDDO
+C
+C     Parity violating contributions to shielding
+C
+      IF(PVCSHI) THEN
+        WRITE(LUPRI,'(A)') 'Parity violating contributions..'
+        ITYP = 0
+C.......Xalpha
+        IOP(1)  = 2
+        PFAC(1) = CVAL
+C.......Yalpha
+        IOP(2)  = 3
+        PFAC(2) = CVAL
+C.......Zalpha
+        IOP(3) = 4
+        PFAC(2) = CVAL
+C
+        NPCOMP    = 1
+        DO 110 IATOM = 1, NUCIND
+        IF (DOATOM(IATOM)) THEN
+          DO 120 IREP = 0, MAXREP
+          IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            ITYP = ITYP + 1
+            PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+            PNAME = 'PVCa '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+            DO I = 1,3
+              IPTYP=IOP(I)
+              PNAME(5:5) = CHRNOS(I)
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &             INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+              CALL OP1IND(PNAME(1:6),INDOP1,LLRAPU,NLRAPT,
+     &                      INDXPR,MAXLLR)
+              CALL WRIXPR(INDOP1,INDXPR)
+C              CALL OP1IND('PVC   '
+C     &                 ,IPPVC(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+            ENDDO
+          END IF
+  120     CONTINUE
+        END IF
+  110   CONTINUE
+      ENDIF
 C
 C     B operators
 C     ===========
