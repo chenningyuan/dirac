@@ -86,8 +86,6 @@
    if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
       printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
-   printf("ini_mpi %i %i\n",*mytid,*numnod);
-
 #if defined (SYS_IRIX)
    /*
     * Impose gang scheduling to avoid problems with idle nodes
