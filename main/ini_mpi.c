@@ -55,7 +55,6 @@
    }
    else
    {
-      printf("DIRPAR error; DIRPAR = %s\n",dirpar);
       par = 0;
    }
 
