@@ -34,6 +34,13 @@ C
 C#include "single.h"
 C#ifdef REVLOG
 C$Log$
+CRevision 1.17  2004/02/12 07:57:19  luuk
+CLV: The continuing story of abawalk. Tronds fix introduced a parser bug on
+Cmy Linux system (Redhat). Apparently the problem is in the log text that is
+Cautomaticially included in this file. I have deleted only the line that caused
+Cthe problem,  maybe its better to avoid these problem and not include the log
+Cin the file, since these logs are available via cvs as well.
+C
 CRevision 1.16  2004/02/11 16:56:35  tsaue
 Ctsaue: Introduced modification to allow smooth compilation with the Intel efc
 Ccompiler (shorten some cpp statements etc.)
@@ -50,8 +57,6 @@ CRevision 1.13  2003/12/09 16:07:58  tsaue
 Ctsaue: NB ! NB!
 CThe COMMON mxorb.h has been renamed maxorb.h consistent with DALTON.
 CThe previous global maxorb.h has been moved to krmc and renamed mx2orb.h.
-CTo globally replace all mxorb.h with maxorb.h I used
-C  perl -pi -e 's/mxorb.h/maxorb.h/g' */*/*.F
 C
 CRevision 1.12  2003/12/09 16:00:12  tsaue
 Ctsaue: Removed all unnecessary inclusions to maxorb.h
