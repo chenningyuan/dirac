@@ -318,7 +318,8 @@ if($PARTAR) then
 echo '	tar rvf DIRAC.new.tar abacus/par/*.F abacus/par/Makefile abacus/par/include' >> Makefile
 endif
 if($PAMADM) then
-echo '	tar rvf DIRAC.new.tar adm/*' >> Makefile
+echo '	tar rvf DIRAC.new.tar adm/configure.in adm/config.guess' >> Makefile
+echo '	tar rvf DIRAC.new.tar adm/config.sub   adm/pamadm      ' >> Makefile
 echo '	tar rvf DIRAC.new.tar configure.in pamadm' >> Makefile
 endif
 cat <<EOF>> Makefile
