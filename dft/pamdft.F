@@ -11,7 +11,7 @@ C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
 #include <dummy.h>
-      PARAMETER (NTABLE = 8)
+      PARAMETER (NTABLE = 9)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
      &           DTHRS=1.0D-13, DP5 = 0.50D00)
 C
@@ -32,7 +32,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.DFTFUN','.FROMVX','.QUADRA','.DFTAC ','.RADINT',
-     &            '.PRINT ','.INTCHK','.NOPRUN'/
+     &            '.ANGINT','.PRINT ','.INTCHK','.NOPRUN'/
       DATA SET/.FALSE./
 C
 #include <memint.h>
@@ -46,8 +46,8 @@ C
          SET = .TRUE.
       END IF
 C
-C     Initialize /DFTCOM/
-C     ===================
+C     Initialize /DFTCOM/ and other integration parameters
+C     ====================================================
 C
       IQDTYP = 1
       IPRDFT = 2
@@ -57,9 +57,11 @@ C
       DFTPOT = .FALSE.
       DFTORD = .FALSE.
       DFTASC = .FALSE.
-      NOPRUN = .FALSE.
       RADINT = 1.0D-8
+
+      ANGINT = 41
       INTCHK = 0
+      NOPRUN = .FALSE.
 C
 C     Process input for DFTCAL
 C     ========================
@@ -77,7 +79,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -122,14 +124,20 @@ C&&& RADINT: Give relative precision of the radial integration
                  READ(LUCMD,*) RADINT
                  GO TO 100
  6               CONTINUE
+C&&& RADINT: Give precision of the angular integration.
+C            The integration is exact for spherical harmonics up to
+C            order ANGINT
+            READ(LUCMD,*) ANGINT
+            GO TO 100
+ 7          CONTINUE
 C&&& PRINT: Print level for DFT-module
                  READ(LUCMD,*) IPRDFT
                  GO TO 100
- 7            CONTINUE
+ 8            CONTINUE
 C&&& INTCHK: Test grid by analyzing numerical SMAT
               READ(LUCMD,*) INTCHK
                  GO TO 100
- 8            CONTINUE
+ 9            CONTINUE
 C&&& NOPRUN: Turn off pruning of angular grid.
               NOPRUN = .TRUE.
                  GO TO 100
@@ -161,10 +169,14 @@ C
       WRITE(LUPRI,'(1X,A,E12.5)') 
      &  '  Precision of radial quadrature set to: ', RADINT
       WRITE(LUPRI,'(A)')
-     &  '* Angular quadrature accroding to Lebedev scheme.'
+     &  '* Angular quadrature according to Lebedev scheme.'
       IF (INTCHK.GT.0) THEN
          WRITE(LUPRI,'(A)')
      &        '* Numerical integration will be tested.'
+      END IF
+      IF(NOPRUN) THEN
+         WRITE(LUPRI,'(A)')
+     &        '* Pruning of angular grid turned off.'
       END IF
 C
   999 CONTINUE
