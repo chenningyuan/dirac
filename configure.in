@@ -398,7 +398,7 @@ if [ "$par" = "yes" ]; then
             ;;
          *-hp)
             parlib='no'
-            parinc=
+            parinc='yes'
             complist='mpif77 mpif90 $complist'
             cclist='mpicc $cclist' 
             mpirun='mpirun'
@@ -458,6 +458,7 @@ if [ "$par" = "yes" ]; then
 #
 #     Now we try to find an include directory
 #
+      parinc=
       incfile='mpif.h'
       for testdir in $incdir; do
          if test -f $testdir/$incfile; then
@@ -465,9 +466,6 @@ if [ "$par" = "yes" ]; then
             break
          fi
       done
-      if [ "$parinc" = "-I" ]; then
-         parinc=
-      fi
       if [ -z "$parinc" ]; then
          echo 'Parallel include: none'
       else
