@@ -591,12 +591,20 @@ C NECgh980505  FAC = DP5
          END IF
          IF (IFIT_DMAT.EQ.0) THEN
 C...........Ordinary Fock matrix with exact density
+#ifdef PRG_DIRAC
+            CALL QUIT('Insert call to Fock matrix construction !')
+#else
             CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
      &                  IY,FAC)
+#endif
          ELSE
+#ifdef PRG_DIRAC
+            CALL QUIT('Insert call to Fock matrix construction !')
+#else
 C...........Construction of special Fock matrix for density fitting
             CALL DF_FCKCON (FMAT,DMAT,FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,
      &                      LBIN,LENGTH,IX,IY,FAC,IFIT_DMAT)
+#endif
          ENDIF
       END DO
       RETURN
