@@ -297,7 +297,7 @@ C        first initialize common /dcbexp/
 C        because it may be modified both by EXPINP
 C        and elsewhere for diamag. terms for magnetic properties
 C
-      CALL EXPINP('INITIALIZE',.FALSE.,WORK,LWORK)
+      CALL EXPINP('INITIALIZE',.TRUE.,WORK,LWORK)
 C
 C     Now read input
 C
