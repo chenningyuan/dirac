@@ -235,35 +235,36 @@ $echo "Operating system\t: $os"
 case $machine in
 
    rs6000-ibm)
-      liblist='libesslp2.a libessl.a libblas.a'
+      liblist='libesslp2 libessl libblas'
       complist='xlf f77 f90';;
 
    mips*-sgi) 
-      liblist='libcomplib.sgimath.a libblas.a'
+# libcomplib.sgimath.so removed since it is slow /tec
+      liblist='libblas'
       complist='f77 f90';;
 
    i[3-6]86-*)
-      liblist='libblas.a'
+      liblist='libblas'
       complist='g77';;
 
    sparc-sun|m68k-sun)  
-      liblist='libblas.a'
+      liblist='libblas'
       complist='f77 f90';;
 
    c*-convex)
-      liblist='libveclib.a libblas.a'
+      liblist='libveclib libblas'
       complist='fc f77 f90';;
 
    *-hp)
-      liblist='libblas.a'
+      liblist='libblas'
       complist='f77 fort77 f90';;
 
    i860-intel-osf1)
-      liblist='libmath.a libblas.a'
+      liblist='libmath libblas'
       complist='if77 if90 f77 f90';;
 
    alpha-dec|mips-dec|vax-dec)
-      liblist='libblas.a'
+      liblist='libblas'
       complist='f77 f90';;
 
    *-cray)
@@ -541,36 +542,53 @@ echo
 echo 'MATHEMATICAL LIBRARIES'
 echo
 
-if [ -z "$LIB" ]; then
-   LIB=''
-   for testdir in $dirlist; do
-     if [ -n "$liblist" ]; then
-       for testlib in $liblist; do
-         if test -f $testdir/$testlib; then
-            case $testlib in
-               libesslp2.a) LIB='-lesslp2';;
-               libessl.a) LIB='-lessl';;
-               libblas.a) LIB='-lblas';;
-               libcomplib.sgimath.a) LIB='-lcomplib.sgimath';;
-               libveclib.a) LIB='-lveclib';;
-               libmath.a) LIB='-lmath -lm -nx';;
-            esac
-            break
-         fi
-       done
-       test -n "$LIB" && break
-     fi
-   done
-else
+#
+#  Modify for SGI that may have both 32 and 64 bit architectures
+#
+if [ "$machine" = "mips64-sgi" ]; then
+   dirlist="/usr/lib64 $dirlist"
+elif [ "$machine" = "mips-sgi" ]; then
+   dirlist="/usr/lib32 $dirlist"
+fi
+
+nolib () 
+{
+   echo  $LIB' is not a legal library.'
+   rm -f gnyf.F gnyf.x gnyf.o 
+   exit 1;
+}
+if [ ! -z "$LIB" ]; then
    rm -f gnyf.F
    echo '      PROGRAM GNYF' >  gnyf.F
    echo '      END         ' >> gnyf.F
-   $F77 gnyf.F -o gnyf.x -l$LIB 2> /dev/null || \
-      ( echo  $LIB' is not a legal library.'; \
-        rm -f gnyf.F gnyf.x gnyf.o ; \
-        exit 1 )
+   $F77 gnyf.F -o gnyf.x -l$LIB 2> /dev/null || nolib
    rm -f gnyf.F gnyf.x gnyf.o
+   if [ ! -z "$LIB" ]; then
+      LIB="-l$LIB"
+   fi
 fi
+extlist='.so .a'
+for testdir in $dirlist; do
+  if [ -n "$liblist" ]; then
+    for testlib in $liblist; do
+       for ext in $extlist; do
+         if test -f $testdir/$testlib$ext; then
+            echo "Library found  $testdir/$testlib$ext"
+            case $testlib in
+               libesslp2) LIB="$LIB -lesslp2";;
+               libessl) LIB="$LIB -lessl";;
+               libblas) LIB="$LIB -lblas";;
+               libcomplib.sgimath) LIB="$LIB -lcomplib.sgimath";;
+               libveclib) LIB="$LIB -lveclib";;
+               libmath) LIB="$LIB -lmath -lm -nx";;
+            esac
+            break
+         fi
+      done
+    done
+    test -n "$LIB" && break
+  fi
+done
 
 if [ -z "$LIB" -a -n "$liblist" ]; then
     echo 'Mathematical libraries: none'
