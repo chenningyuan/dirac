@@ -137,16 +137,17 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reacmo */
-      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,TOTERG,IOPT)
+      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 C*****************************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
 C     IOPT:
 C       0 - read only title
 C       1 - read coefficients and eigenvalues
-C       2 - read coefficients and eigenvalues - give restart info
-C       3 - read coefficients only - give info
-C       4 - read only eigenvalues
+C       2 - read coefficients, and eigenvalues and irrep identification
+C       3 - read coefficients and eigenvalues - give restart info
+C       4 - read coefficients only - give info
+C       5 - read only eigenvalues
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -163,12 +164,12 @@ C
 #include <dgroup.h>
       LOGICAL INFO,LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ),EIG(NORBT)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
       DIMENSION IDIM(3,2)
 C
-      INFO = IOPT.EQ.2.OR.IOPT.EQ.3.OR.IOPT.EQ.0
+      INFO = IOPT.EQ.2.OR.IOPT.EQ.3.OR.IOPT.EQ.0.OR.IOPT.EQ.4
       REWIND IUNIT
-      IF(IOPT.EQ.4) THEN
+      IF(IOPT.EQ.5) THEN
         READ(IUNIT)
         READ(IUNIT)
         READ (IUNIT,END=50,ERR=60) EIG
@@ -189,9 +190,12 @@ C
 C
 C     Read coefficients
       READ (IUNIT,END=30,ERR=40) CMO
-      IF(IOPT.EQ.3) RETURN
+      IF(IOPT.EQ.4) RETURN
 C     Read eigenvalues
       READ (IUNIT,END=50,ERR=60) EIG
+      IF(IOPT.NE.2) RETURN
+C     Read single group irrep (spinfree and levy-leblond calcs)
+      READ (IUNIT,END=70,ERR=80) IBEIG
 C
       RETURN
 C
@@ -206,15 +210,20 @@ C
  40   CONTINUE
       CALL QUIT('REACMO: ERROR reading coefficients')
  50   CONTINUE
-C      CALL QUIT('REACMO: END reading eigenvalues')
+      CALL QUIT('REACMO: END reading eigenvalues')
+ 60   CONTINUE
+c     CALL QUIT('REACMO: ERROR reading eigenvalues')
       WRITE(LUPRI,'(A)') 'WARNING !!! No eigenvalues read'
       RETURN
- 60   CONTINUE
-      CALL QUIT('REACMO: ERROR reading eigenvalues')
+ 70   CONTINUE
+      CALL QUIT('REACMO: END reading irrep identification')
+ 80   CONTINUE
+      CALL QUIT('REACMO: ERROR reading irrep identification')
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoi1 */
-      SUBROUTINE PCMOI1(CMO,EIG,WORK,LWORK)
+      SUBROUTINE PCMOI1(CMO,EIG,IBEIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     Read DHF-coefficients and eigenvalues from FORMATTED file
