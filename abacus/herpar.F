@@ -264,9 +264,10 @@ C        Kohn-Sham
          CALL DFTEXC(DMAT,1,FMAT,1,.TRUE.,.TRUE.,.FALSE.,
      &                 .FALSE.,.FALSE.,WORK(KFREE),LFREE,KPRINT)
 #endif
-         GOTO 90
       ELSE
         CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+        CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
       ENDIF
 C
 C--------------------------------------
@@ -275,8 +276,6 @@ C     Release nodes from this task
 C      and let them return to main menu.
 C--------------------------------------
 C
-      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
-     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
       ITASK = -1
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
