@@ -777,10 +777,10 @@ C
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(6X,A)') '- LL-integrals'
       IF(ISLINT.EQ.1) THEN
         IF(CNVXLR(1).LT.DUMMY) THEN
-          WRITE(LUPRI,'(3X,A,E8.1)')
+          WRITE(LUPRI,'(6X,A,E8.1)')
      +    '- SL-integrals  below convergence ',CNVXLR(1)
         ELSE
-          WRITE(LUPRI,'(3X,A,I4)')
+          WRITE(LUPRI,'(6X,A,I4)')
      +    '- SL-integrals from iteration ',ITRILR(1)
         ENDIF
       ENDIF
