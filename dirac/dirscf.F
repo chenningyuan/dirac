@@ -73,12 +73,20 @@ C
 C
       WFCONV = .FALSE.
       IF(DODFT) THEN
-        CALL TITLER('Kohn - Sham calculation','*',125)
-      ELSE IF (BSS) THEN
-        CALL TITLER(
-     &'Two-component relativistic HF calculations','*',125)
+        IF (BSS) THEN
+          CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
+     &       '*',125)
+        ELSE
+           CALL TITLER('Kohn-Sham calculation','*',125)
+        ENDIF
       ELSE
-        CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
+        IF (BSS) THEN
+           CALL TITLER(
+     &     'Two-component BSS/DKH relativistic HF calculation',
+     &     '*',125)
+        ELSE
+           CALL TITLER('Dirac-Hartree-Fock calculation','*',125)
+        ENDIF
       ENDIF
       CALL FLSHFO(LUPRI)
 C
