@@ -730,6 +730,9 @@ while [ -n "$1" ]; do
          shift
          ALT_DIRAC=$1
          ;;
+      -q)
+         shift
+         ;;
       -help)
          if [ -z "$PAGER" ]; then
             PAGER=more

@@ -246,14 +246,10 @@ cclist='cc'
 debug='dbx'
 case $machine in
 
-   rs6000-ibm)
+   *-ibm)
       liblist='libesslp2 libessl libblas'
       complist='xlf f77 f90'
       cclist='xlc xlC cc';;
-
-   powerpc-ibm)
-      liblist='libesslp2 libessl libblas'
-      complist='xlf f77 f90';;
 
    mips*-sgi) 
       liblist='libblas libcomplib.sgimath'
@@ -399,11 +395,12 @@ if [ "$par" = "yes" ]; then
 #
    if [ "$mesp" = "mpi" ]; then
       case $machine in
-         rs6000-ibm)
-            complist='mpxlf'
+         *-ibm)
+            complist="mpxlf $complist"
+            cclist="mpcc $cclist" 
             parlib='no'
             parinc='yes'
-            mpirun='mpirun'
+            mpirun='poe'
             ;;
          t3e-cray)
             parlib='no'
@@ -417,7 +414,7 @@ if [ "$par" = "yes" ]; then
             cclist='mpicc $cclist' 
             mpirun='mpirun'
             ;;
-	 *-dec)
+         *-dec)
             parlib='yes'
             parinc='yes'
             mpirun='dmpirun'
@@ -448,7 +445,7 @@ if [ "$par" = "yes" ]; then
       pardir="$dirlist /usr/lib64"
    elif [ "$machine" = "mips-sgi" ]; then
       pardir="$dirlist /usr/lib32"
-   elif [ "$machine" = "rs6000-ibm" ]; then
+   elif [ "$machine" = "*-ibm" ]; then
       incdir="$incdir /usr/lpp/ppe.poe/include"
    fi
 #
@@ -559,7 +556,7 @@ if [ ! -z "$F77" ]; then
    F77=
 fi
 
-#if [ "$mesp" = "mpi" -a "$machine" = "rs6000-ibm" ]; then
+#if [ "$mesp" = "mpi" -a "$machine" = "*-ibm" ]; then
 #    set dummy $comp; ac_word=$2
 #    $echo " $comp\c"
 #    IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="${IFS}:"
@@ -645,7 +642,7 @@ echo
 #
 # Check out mathematical libraries. May have to expand library list?
 #
-# For rs6000 we first try ESSL, then BLAS
+# For IBM we first try ESSL, then BLAS
 #
 echo
 echo 'MATHEMATICAL LIBRARIES'
@@ -913,7 +910,7 @@ else
 fi
 
 opsys=
-if [ "$machine" = "rs6000-ibm" ]; then
+if [ "$machine" = "*-ibm" ]; then
    opsys=`uname -v`
    echo 'The version of the AIX operating system found is '$opsys'\n'
    echo '\n NOTE: There appears to be a bug in the newest compiler of IBM'
@@ -1057,9 +1054,9 @@ case $machine in
       c_opt='-fast -xO4 -w -xtarget=native'
       inc="-I$INCLUDE_DIR" ;;
 #
-#   RS6000
+#   IBM
 #
-   rs6000-ibm) 
+   *-ibm) 
       case $os in
          aix2*) 
             if [ "$mesp" = "dummy" ]; then
@@ -1195,7 +1192,7 @@ case $machine in
       inc="-I$INCLUDE_DIR";;
    
    *)
-      echo "$machine is not recognized : check configure.in file"
+      echo "$machine is not recognized : check configure file"
       exit 1
 esac
 #
@@ -1235,6 +1232,20 @@ if [ "$ldflag" = "" ]; then
    ldflag="\$(OPTFLAGS)"
 fi
 #
+# Add the modifications that concern the module preprocessor statements
+#
+#
+case $machine in
+#
+#   IBM
+#
+   *-ibm) 
+# IBM should be comma delimited, the others take spaces
+     cpp="$cpp,\${MODS_IBM}";;
+   *)
+     cpp="$cpp \${MODS}"
+esac
+#
 #  Make Makefile.config
 #
 cat <<EOF > Makefile.config
@@ -1243,7 +1254,7 @@ ARCH        = $guess
 #
 WRKMEM      = $memsiz
 DEPEND_FLAGS= $depend_flags
-CPP_FLAGS   = $cpp \${MODS}
+CPP_FLAGS   = $cpp
 CCP_FLAGS   = $ccp
 F77         = $F77
 CC          = $CC
@@ -1342,7 +1353,7 @@ case $machine in
        echo "Preprocessor $cpptry not found"
     fi
 esac
-if [ "$machine" = "rs6000-ibm" -a "$os" = "aix2" ]; then
+if [ "$machine" = "*-ibm" -a "$os" = "aix2" ]; then
     cppuse='cc'
 fi
 
@@ -1380,7 +1391,7 @@ case $machine in
 #
 #  RS6000
 #
-   rs6000-ibm)
+   *-ibm)
 #
 #     RS6000 and aix2
 #
@@ -1430,7 +1441,7 @@ case $machine in
 #
 #  OTHER SYSTEMS
 #
-   rs6000-ibm|c*-convex)
+   *-ibm|c*-convex)
 # allready taken care of
      ;;
    *) 
