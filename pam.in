@@ -144,18 +144,7 @@ setup_command()
          BIN_DIR=$LOC
       fi
    else
-      DIRAC=dirac.x
-   fi
-   #
-   # Execute Dirac with ssrun ?
-   #
-   if [ -n "$SSRUN" ]; then
-      SSRUN_CMD="ssrun -$SSRUN"
-      mkdir $LOC/speedshop.$$
-      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
-      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
-   else
-      SSRUN_CMD=""
+      DIRAC=./dirac.x
    fi
    #
    # MPI?
@@ -181,11 +170,22 @@ setup_command()
 #  Sequential run:
       DIRAC_CMD=
    fi
-   DIRAC_CMD="$DIRAC_CMD $SSRUN_CMD $DIRAC"
    #
-   # Debug
+   # Execute Dirac with ssrun ?
+   #
+   if [ -n "$SSRUN" ]; then
+      DIRAC_CMD="$DIRAC_CMD ssrun -$SSRUN"
+      mkdir $LOC/speedshop.$$
+      ln -s $BIN_DIR/$DIRAC $LOC/speedshop.$$/$DIRAC
+      export _SPEEDSHOP_OUTPUT_DIRECTORY=$LOC/speedshop.$$
+   fi
+   #
+   # Debug (will ignore any MPIRUN and SSRUN)
    #
    if [ -n "$DEBUG" ]; then
+      if [ -n "$DIRAC_CMD" ]; then
+         echo "WARNING. DEBUG requested, thus these options ignored: $DIRAC_CMD"
+      fi
       if [ "$DEBUGGER" = "gdb" ]; then
         DIRAC_CMD="gdb -directory=$SRC_DIR/dirac -directory=$SRC_DIR/abacus  -directory=$SRC_DIR/prp "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/main "
@@ -193,7 +193,7 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/esr -directory=$SRC_DIR/prp/xpp "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/prp/xqr -directory=$SRC_DIR/relccsd/ccfocksp "
         DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/pdpack -directory=$SRC_DIR/gp"
-        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include $DIRAC"
+        DIRAC_CMD="$DIRAC_CMD -directory=$SRC_DIR/include"
       else
         DIRAC_CMD="$DEBUGGER -I $SRC_DIR/dirac -I $SRC_DIR/abacus  -I $SRC_DIR/prp "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/main "
@@ -201,12 +201,13 @@ setup_command()
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/esr -I $SRC_DIR/prp/xpp "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/prp/xqr -I $SRC_DIR/relccsd/ccfocksp "
         DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/pdpack -I $SRC_DIR/gp"
-        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include $DIRAC"
+        DIRAC_CMD="$DIRAC_CMD -I $SRC_DIR/include"
       fi
    fi
-
-   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
-
+   #
+   # Finally append executable
+   #
+   DIRAC_CMD="$DIRAC_CMD $DIRAC"
    #
    # Delete $WRK/$DIRAC if the executable is older than the
    # executable in $BIN_DIR. This is useful when you've compiled
@@ -216,10 +217,12 @@ setup_command()
 
    if [ -f $WRK/$DIRAC ]; then
       if [ $WRK/$DIRAC -ot $BIN_DIR/$DIRAC ]; then
-         echo "Old $WKR/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
+         echo "Old $WRK/$DIRAC deleted because it is older than $BIN_DIR/$DIRAC"
          rm $WRK/$DIRAC
       fi
    fi
+
+   $echo "   Copying $BIN_DIR/$DIRAC to working directory : \c"
 
    if [ ! -f $WRK/$DIRAC ]; then
       if [ -x $BIN_DIR/$DIRAC ]; then
@@ -254,10 +257,10 @@ execute_dirac()
    BDIR=$BASDIR
    while [ -n "`echo $BDIR | grep ':'`" ]; do
       TDIR=`echo $BDIR | cut -d ":" -f 1`
-      echo "   $TDIR"
+      echo "      $TDIR"
       BDIR=`echo $BDIR | cut -d ":" -f 2-`
    done
-   $echo "   $BDIR \n"
+   $echo "      $BDIR \n"
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
@@ -329,15 +332,15 @@ remove_work_dir()
 #  We alays delete the work directories on remote machines.
 #  These directories are not suited for restart.
 #
-   master=`hostname`
-   if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
-     for node in ` uniq $WRK/dirac_machines `; do
-         if [ $node != $master ]; then
-            echo "Contents of work directory $WRK on slave node $node"
-            $RSH $node "ls -l $WRK"
-            $RSH $node "rm -fr $WRK"
-         fi
-     done
+   master=`hostname -s`
+   if test -f $WRK/dirac_machines; then
+       for node in ` uniq $WRK/dirac_machines `; do
+          if [ $node != $master ]; then
+             echo "Contents of work directory $WRK on slave node $node"
+             $RSH $node "ls -l $WRK"
+             $RSH $node "rm -fr $WRK"
+          fi
+       done
    fi
 #
 #  Now delete work directory on primary machine if requested
@@ -409,24 +412,25 @@ distribute_work_dir()
       cp $MACH_FILE dirac_machines
    fi
 #
-#  Initialize value of master
+#  Initialize value of master (without domain name,
+#  since on some installations it is absent in the machine list).
 #
-   master=`hostname` 
+   master=`hostname -s` 
 #
 #  Loop over the remote machines and copy the contents of the work directory.
 #
-   for node in `uniq dirac_machines `; do
-       if [ $node != $master ]; then
-          echo "copying contents of $master:$WRK to $node:$WRK"
-          $RSH $node "mkdir -p $WRK"
-          if [ -n "$RMSCR" ]; then
-             $RSH $node rm -f $WRK/*
-          fi
-          for file in ` ls `; do
-              $RCP $file $node:$WRK/$file
-          done
-       fi
-   done
+   if test -f dirac_machines; then
+      for node in `grep -v -E "\<$master\>" dirac_machines | sort | uniq`; do
+         echo "copying contents of $master:$WRK to $node:$WRK"
+         $RSH $node "mkdir -p $WRK"
+         if [ -n "$RMSCR" ]; then
+            $RSH $node rm -f $WRK/*
+         fi
+         for file in ` ls `; do
+           $RCP $file $node:$WRK/$file
+         done
+      done
+   fi
    #
 }
 #
