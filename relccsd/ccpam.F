@@ -154,16 +154,15 @@ C
 C     Find the slaves and release them
 C
       NTEST = -1
-      DO I = 1,NUMNOD
 #if defined (VAR_MPI)
+      DO I = 1,NUMNOD
          CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
          CALL MPI_WAIT(IREQ,ISTAT,IERR)
          CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,30,
      &                  MPI_COMM_WORLD,IERR)
-#else
-#endif
       ENDDO
+#endif
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
@@ -200,9 +199,16 @@ C
 C     arrange for the MPI stuff and correct node number
 C     to the total number of running invocations.
 C
+#if defined (VAR_MPI)
       MASTER = MPARID
       MYPROC = MYTID
+C     Add the master node
       NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
 
       INTFCE = 'DIRAC     '
       SPFR = SPINFR.OR.LEVYLE 
