@@ -156,11 +156,9 @@ C
         NSTRA  = IORBSB(IORBSH(ISHELA,1))
         NUCA   = NUCOSH(ISHELA)
         NORBA  = NORBSH(ISHELA)
-        IF (.NOT.BIGVEC) THEN
-           CORAX0 = CENTSH(ISHELA,1)
-           CORAY0 = CENTSH(ISHELA,2)
-           CORAZ0 = CENTSH(ISHELA,3)
-        END IF
+        CORAX0 = CENTSH(ISHELA,1)
+        CORAY0 = CENTSH(ISHELA,2)
+        CORAZ0 = CENTSH(ISHELA,3)
 C
 C        Copy everything into third index
 C
@@ -175,11 +173,9 @@ C
         NSTRC  = NSTRA
         NUCC   = NUCA
         NORBC  = NORBA
-        IF (.NOT.BIGVEC) THEN
-           CORCX0 = CORAX0
-           CORCY0 = CORAY0
-           CORCZ0 = CORAZ0
-        END IF
+        CORCX0 = CORAX0
+        CORCY0 = CORAY0
+        CORCZ0 = CORAZ0
 C
 C       ******************************
 C       ***** Second Shell Index *****
@@ -199,11 +195,9 @@ C
           NSTRB  = IORBSB(IORBSH(ISHELB,1))
           NUCB   = NUCOSH(ISHELB)
           NORBB  = NORBSH(ISHELB)
-          IF (.NOT.BIGVEC) THEN
-            CORBX0 = CENTSH(ISHELB,1)
-            CORBY0 = CENTSH(ISHELB,2)
-            CORBZ0 = CENTSH(ISHELB,3)
-          END IF
+          CORBX0 = CENTSH(ISHELB,1)
+          CORBY0 = CENTSH(ISHELB,2)
+          CORBZ0 = CENTSH(ISHELB,3)
           GENAB  = .NOT.(SEGMSH(ISHELA) .AND. SEGMSH(ISHELB))
           IGENAB = 1
           IF (.NOT.GENAB) IGENAB = 2
@@ -223,11 +217,9 @@ C
           NSTRD  = NSTRB
           NUCD   = NUCB
           NORBD  = NORBB
-          IF (.NOT.BIGVEC) THEN
-            CORDX0 = CORBX0
-            CORDY0 = CORBY0
-            CORDZ0 = CORBZ0
-          END IF
+          CORDX0 = CORBX0
+          CORDY0 = CORBY0
+          CORDZ0 = CORBZ0
           GENCD  = GENAB
           IGENCD = IGENAB
           NSETC  = NSETA
@@ -246,7 +238,9 @@ C
           MAXCD  = MAXAB
           TCONAB = SHAEQB .AND. MAXAB .EQ. 0
           TCONCD = TCONAB
-          DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+C         DIAGAB = SHAEQB .AND. .NOT.BIGVEC
+C         aug 2000: BIGVEC removed because obsolete/th+hjaaj
+          DIAGAB = SHAEQB
           DIAGCD = DIAGAB
           SPHRAB = SPHRA .OR. SPHRB
           SPHRCD = SPHRAB
@@ -360,12 +354,18 @@ C               Electron 2:
 C
 C     Print section
 C
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.4) THEN
         IF(IJOB.EQ.0) THEN
-          NMAT = 1
-          IF (MAXDER.GE.1) NMAT = 3
-          DO IMAT = 1,NMAT
+          IF (MAXDER.GE.1) THEN
+             NMAT = 3
+      CALL HEADER('Full (x,y,z)-derivative GAB-matrices in AO basis',-1)
+          ELSE
+             NMAT = 1
              CALL HEADER('Full GAB-matrix in AO basis',-1)
+          END IF
+          DO IMAT = 1,NMAT
+             IF (NMAT.GT.1) WRITE (LUPRI,'(/A,I2,A)')
+     &          ' GAB derivative matrix no.',IMAT,' out of {x,y,z}'
              CALL OUTPUT(GABM(1,1,IMAT),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
      &                 -4,LUPRI)
           END DO
@@ -724,9 +724,8 @@ c need one-center integrals to be calculated by
 c two-center code because no one-center derivative code
 c is programmed (normally one-center is skipped because
 c the total contribution is zero).  /jan.98-hjaaj,jth
-         CAEQCB = .NOT.BIGVEC .AND. ICENTA .EQ. ICENTB
-     &                        .AND. IATOM  .NE. NCENTA
-     &                        .AND. MAXDER .EQ. 0
+         CAEQCB = ICENTA .EQ. ICENTB .AND. IATOM  .NE. NCENTA
+     &            .AND. MAXDER .EQ. 0
          CALL ODCOEF(COEFAB,COORAB(1,1,1,NSYMR),EXPAB(1,1,NSYMR),
      &             WORK(KFREE),LFREE,
      &             JMAXA,JMAXB,NHKTA,NHKTB,NSETA,NSETB,NUCA,
@@ -795,8 +794,7 @@ C
               SIGNDX = XAND(ISYMTS)
               SIGNDY = YAND(ISYMTS)
               SIGNDZ = ZAND(ISYMTS)
-              CCEQCD = .NOT.BIGVEC .AND. (ICENTC .EQ. ICENTD)
-     &                             .AND. (NCENTC .NE. IATOM)
+              CCEQCD = (ICENTC .EQ. ICENTD) .AND. (NCENTC .NE. IATOM)
 C
 C             If necessary change sign of expansion coefficients
 C             ==================================================
@@ -847,15 +845,9 @@ C
 C            Local symmetries
 C            ================
 C
-             IF (BIGVEC) THEN
-               CALL CORDIF(NSETA,NSETC,THRESH,ABADX,ABADY,ABADZ,
-     &                 IPRINT,NPCOA(1,1,NSYMR),NPCOC(1,1,NSYMS),
-     &                 JSTRA,JSTRC)
-             ELSE
-               ABADX  = ABS(CORAX0 - XAND(ISYMT)*CORCX0) .LT. THRESH
-               ABADY  = ABS(CORAY0 - YAND(ISYMT)*CORCY0) .LT. THRESH
-               ABADZ  = ABS(CORAZ0 - ZAND(ISYMT)*CORCZ0) .LT. THRESH
-             END IF
+             ABADX  = ABS(CORAX0 - XAND(ISYMT)*CORCX0) .LT. THRESH
+             ABADY  = ABS(CORAY0 - YAND(ISYMT)*CORCY0) .LT. THRESH
+             ABADZ  = ABS(CORAZ0 - ZAND(ISYMT)*CORCZ0) .LT. THRESH
              ISAMEX = 0
              ISAMEY = 0
              ISAMEZ = 0
@@ -1245,7 +1237,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.4) CALL PRDRAO(DRAO,NDMAT,WORK(KINRAO))
+      IF (IPRINT.GE.4) CALL PRDRAO(DRAO,NDMAT,WORK(KINRAO))
 C
       CALL QEXIT('MKDRAO')
       RETURN
@@ -1504,11 +1496,16 @@ C*****************************************************************************
       PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
       DIMENSION DINTSKP(2,4),DSTEP(4)
       CHARACTER SECTID*12, INTTID*12,TEXT*9
+#include <twocom.h>
+C
+C Current format of output (Jan 2001/hjaaj):
+C
+C>SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+C>SOfock:LL  0.00D+00    0.00%    0.00%   10.00%   10.00%    0.04773301s
 C
       IF(TEXT(1:6).EQ.'Header') THEN
-        WRITE(LUPRI,'(A3,6X,4(5X,A8),3X,A9)') 
-     &    'SCR','Step1   ','Step2   ',
-     &    'Coulomb ','Exchange','CPU-time'
+        WRITE(LUPRI,'(A),A9)') 'SCR        scr.thr.    '//
+     &     'Step1    Step2  Coulomb  Exchange    CPU-time'
         RETURN
       ENDIF
       CALL DZERO(DSTEP,4)
@@ -1525,8 +1522,8 @@ C
      &           DSTEP(4) = (DINTSKP(2,4)/DINTSKP(1,4))*DA
 C
       INTTID = SECTID(CPUSEC)
-      WRITE(LUPRI,'(A9,4(6X,F6.2,A1),3X,A12)') 
-     &     TEXT,(DSTEP(I),'%',I=1,4),INTTID
+      WRITE(LUPRI,'(A9,1P,D10.2,0P,4(F8.2,A1),2X,A12)') 
+     &     TEXT,SCRTHR,(DSTEP(I),'%',I=1,4),INTTID
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1705,26 +1702,16 @@ C
 #include <memint.h>
 C
 C
-CTROND      CALL PAOVEC(WORK,LWORK,0,IPRINT)
+Chj sep2000: segmented shell structure for GAB
+C            (code: IATOM = -10000 )
+      CALL PAOVEC(WORK,LWORK,-10000,IPRINT)
       CALL GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,
      &            MAXDIF,JATOM,NOCONT,IPRINT)
+Chj sep2000: restore twoint shell structure
+      CALL PAOVEC(WORK,LWORK,0,IPRINT)
 C
       RETURN
 C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Gabdim */
-      SUBROUTINE GABDIM(NGAB)
-C
-C     Return MAXSHL ...make mini-version of PAOVEC
-C     T.Saue March 1997
-C
-#include <implicit.h>
-#include <priunit.h>
-#include <mxorb.h>
-#include <shells.h>
-      NGAB = KMAX
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
@@ -1751,6 +1738,7 @@ C
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       CALL QENTER('GABGEN')
+      IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
 #include <memint.h>
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
@@ -1853,7 +1841,7 @@ C
             DO I = 0,N2GAB-1
                WORK(KGAB+I+IOFF2) = SQRT(ABS(WORK(KGAB+I+IOFF2)))
             ENDDO
-            IF(IPRINT.GE.4) THEN
+            IF(IPRINT.GE.3) THEN
                CALL HEADER('GABGEN:Reduced GAB-matrix in AO basis',-1)
                WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
                CALL OUTPUT(WORK(KGAB+IOFF2),1,NSYMBL,1,NSYMBL,
@@ -1871,7 +1859,7 @@ C
          DO I = 0,N2GAB-1
             WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
          ENDDO
-         IF(IPRINT.GE.4) THEN
+         IF(IPRINT.GE.3) THEN
             CALL HEADER('GABGEN:Reduced GAB-matrix in SO basis',-1)
             WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(1)
             CALL OUTPUT(WORK(KGAB),1,MAXSHL,1,MAXSHL,MAXSHL,MAXSHL,
@@ -1897,6 +1885,7 @@ C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       CALL MEMREL('GABGEN',WORK,KWORK,KWORK,KFREE,LFREE)
 C
+      IF (IPRINT .GT. 1) CALL TIMER('GABGEN',TIMSTR,TIMEND)
  999  CONTINUE
       CALL QEXIT('GABGEN')
       RETURN
