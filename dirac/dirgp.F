@@ -152,6 +152,7 @@ C       2 - read coefficients, and eigenvalues and irrep identification
 C       3 - read coefficients and eigenvalues - give restart info
 C       4 - read coefficients only - give info
 C       5 - read only eigenvalues
+C       6 - read coefficients only
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -194,11 +195,11 @@ C
 C
 C     Read coefficients
       READ (IUNIT,END=30,ERR=40) CMO
-      IF(IOPT.EQ.4) RETURN
+      IF(IOPT.EQ.4 .OR. IOPT.EQ.6) RETURN
 C     Read eigenvalues
       READ (IUNIT,END=50,ERR=60) EIG
       IF(IOPT.NE.2) RETURN
-C     Read single group irrep (spinfree and levy-leblond calcs)
+C     Read single group irrep (spinfree and Levy-Leblond calcs)
       READ (IUNIT,END=70,ERR=80) IBEIG
 C
       RETURN
