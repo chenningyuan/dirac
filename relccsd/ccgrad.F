@@ -1,28 +1,37 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -264,7 +273,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
-     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV,XMO,DMO)
+     &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -290,9 +299,7 @@ C
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
-      REAL*8 DMO(*)
       REAL*8 XVO(*),XOV(*)
-      REAL*8 XMO(*)
       REAL*8 EVO(*),EOV(*)
       REAL*8 EPS(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*),CBUF(*)
@@ -324,10 +331,7 @@ C     No relaxation if there are no virtuals within the right irrep
 C
       IF (NFVO.EQ.0) RETURN
 C
-      IF (DOMP2GOLD) THEN ! old code generation Lagrangian
-C
 C     Calculate X-intermediate
-C     (Old code!!!)
 C
       CALL XCOPY (NDIMX,A0,0,XVO,1)
 C--------------------------------------------
@@ -384,9 +388,65 @@ C
       CALL XCOPY (NDIMX,XVO,1,XOV,1)
       IF (CARITH) CALL CONJUGA (NDIMX,XOV,1)
 C
-      ENDIF !old code generation Lagrangian
+C     Solve Z-vector equations by calling the RPA routine
 C
-      GOTO 101
+      NAME = 'MP2-GRAD'
+      DO EOPER = 1, NEOPER
+         EOFF = (EOPER-1)*NDIMX*RCW+1
+         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
+     &               EPHASE(EOPER),EVO(EOFF),EOV(EOFF),DUM,DUM)
+      ENDDO
+C
+C     Silence RPA routine when the print level is smaller than one
+C
+      IF (IPRNT.GE.1) THEN
+         JPRNT = IPRNT
+      ELSE
+         JPRNT = -1
+      ENDIF
+C
+      BDONE = .FALSE.
+      MAXIT = MXITGR
+      CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
+     &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
+     &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Solve Z-vector equations at the MP2 level, using the AO based 
+C     implementation.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T2(*)
+      REAL*8 DMO(*)
+      REAL*8 XMO(*)
+      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
 C
 C     +------------------------------------------------+
 C     | Generate the T's in the right order for the    |
@@ -421,39 +481,9 @@ C
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
 C
- 101  IF (DOMP2GOLD) THEN
-C
-C     Solve Z-vector equations by calling the RPA routine
-C     (Old code!!!)
-C
-      NAME = 'MP2-GRAD'
-      DO EOPER = 1, NEOPER
-         EOFF = (EOPER-1)*NDIMX*RCW+1
-         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
-     &               EPHASE(EOPER),EVO(EOFF),EOV(EOFF),DUM,DUM)
-      ENDDO
-C
-C     Silence RPA routine when the print level is smaller than one
-C
-      IF (IPRNT.GE.1) THEN
-         JPRNT = IPRNT
-      ELSE
-         JPRNT = -1
-      ENDIF
-C
-      BDONE = .FALSE.
-      MAXIT = MXITGR
-      CALL RPAA (MAXIT,NEOPER,NAMEE,NAME,EPHASE,A1,BDONE,EPS,A0,
-     &           EVO,EOV,XVO,XOV,DVO,D2VO,DOV,D2OV,DG,BUF1,BUF2,
-     &           CC1,BB1,BB2,CONV,JPRNT,DEBUG,TIMING)
-      ENDIF
-      RETURN
-C
-C###########################################
-C
-C     Solve Z-vector equations by using XRPA
-C
-C###########################################
+C     +----------------------------------------+
+C     | Solve Z-vector equations by using XRPA |
+C     +----------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW

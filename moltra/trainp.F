@@ -1,11 +1,19 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -19,10 +27,11 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -89,7 +98,7 @@ C
       ILSINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
-      THROUT = 1.0D-15
+      THROUT = 1.0D-14
 C     Default orbital strings is all occupied and all virtuals
       DO I = 1,NFSYM
         MP2_INDSTR(1,I) = ' '
@@ -112,7 +121,7 @@ C     note TODO: MSOUT is not implemented!
       DMP2_VIRTHR = DUMMY
       IJTSK = 0
       MAXSCL = 0
-      SCRMP2 = -1.0D0
+      SCRMP2 = 1.D-14
       SRTSHL = .TRUE.
       CMMNFO = .FALSE.
       TPRI34 = -1.D0
@@ -472,8 +481,8 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.
-      THROUT = 1.0D-15
-      SCRTRA = -1.0D0
+      THROUT = 1.0D-14
+      SCRTRA = 1.0D-14
 C
 C     Process input for MOLTRA
 C     ========================
@@ -1122,7 +1131,7 @@ C
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','.THROUT'/
+      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -1147,8 +1156,8 @@ C
       ILSINT = IBTAND(INTGEN/2,1)
       ISSINT = IBTAND(INTGEN/4,1)
       IGTINT = IBTAND(INTGEN/8,1)
-      SCRRES = -1.0D0
-      RESOUT = 1.D-16
+      SCRRES = 1.D-14
+      RESOUT = 1.D-14
 C
 C     Process input for RESOLV
 C     ========================
@@ -1199,6 +1208,7 @@ C&&&& SCHEME - Choose transformation scheme
                GO TO 100
     5          CONTINUE
 C&&&& THROUT - Treshold for output integrals
+CTROND: disabled, because THROUT is not implemented 
                   READ(LUCMD,*) RESOUT
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN

@@ -1,28 +1,37 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -49,7 +58,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "maxaqn.h"
 #include "dummy.h"
-      PARAMETER(D1=1.0D0)
+      PARAMETER(D0=0.0D0, D1=1.0D0)
 C
 #include "dcbind.h"
 #include "dcbgen.h"
@@ -67,14 +76,9 @@ C
       CALL QENTER('TWOFCK')
 #include "memint.h"
 C
-      IF(IPRTWO.GE.5) THEN
+      IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
       ENDIF
-C
-C     Initialize Fock matrix
-C     ======================
-C
-      CALL DZERO(FMAT,N2BBASXQ*NFMAT)
 C 
 C     In approximate density ZORA only the LL part of the density matrix
 C     is to be used
@@ -93,7 +97,7 @@ C
         IREP = ISYMOP(I)-1
         IF(IPRINT.GE.5) THEN
           CALL HEADER('Unsorted DMAT',-1)
-          WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',I
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(DMAT(1,1,I),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NTBAS(0),NZ,
      &                IPQTOQ(1,IREP),LUPRI)
@@ -109,6 +113,7 @@ C
           ENDDO
           IF(IPRINT.GE.5) THEN
             CALL HEADER('Unsorted DMAT with half-phases inserted',-1)
+            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
             CALL PRQMAT(DMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  NTBAS(0),NZ,
      &                  IPQTOQ(1,IREP),LUPRI)
@@ -198,8 +203,9 @@ C     *****  C o n v e n t i o n a l    S C F  *****
 C     **********************************************
 C
       IF(IDFLAG.NE.7) THEN
-        IF(HFXFAC.NE.D1) 
+        IF(HFXFAC.NE.D1 .AND. HFXFAC.NE.D0) 
      &       CALL QUIT('HFXFAC not implemented in CONSCF !')
+C       hjaaj July 2004: HFXFAC .eq. D0 is defined through SETFCK
         CALL CONSCF(FMAT,DMAT,NFMAT,IFCKOP,ISYMOP,IHRMOP,INTFLG,
      &              IPRINT,WORK,LWORK)
       ENDIF
@@ -244,8 +250,6 @@ C
         CALL BUTOBS(FMAT(1,1,I),NZ,WORK,LWORK)
         CALL BUTOBS(DMAT(1,1,I),NZ,WORK,LWORK)
         IREP = ISYMOP(I)-1
-        IF(IPRINT.GE.5) 
-     &    WRITE(LUPRI,'(A,I5)') '*** Matrix no. ',I
         IF(NZ.LT.4) THEN
           DO IZ = 1,NZ
             IQ = IPQTOQ(IZ,IREP)
@@ -254,6 +258,7 @@ C
           ENDDO
           IF(IPRINT.GE.5) THEN
             CALL HEADER('Unsorted FMAT with half-phases inserted',-1)
+            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
             CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,IREP),LUPRI)
           ENDIF
@@ -261,9 +266,9 @@ C
 C
 C       Symmetrize FMAT matrix
 C       ======================
-C       IM = 0   Non-symmetric
-C       IM = 1   Symmetric
-C       IM = 2   Anti-symmetric
+C       IH = 0   Non-symmetric
+C       IH = 1   Symmetric
+C       IH = 2   Anti-symmetric
 C
         DO IZ = 1,NZ
           IQ = IPQTOQ(IZ,IREP)
@@ -276,6 +281,7 @@ C
         ENDDO
         IF(IPRINT.GE.5) THEN
           CALL HEADER('Sorted FMAT matrix',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         ENDIF
@@ -1918,7 +1924,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -2156,7 +2162,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -2384,7 +2390,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -2586,7 +2592,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -2774,7 +2780,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -2956,7 +2962,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C       Symmetric singlet Fock matrix
 C       =============================
@@ -3136,7 +3142,7 @@ C
         IF(IREPAB.NE.IREPDM(I)) IC = 0
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF    (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
 C
 C         Symmetric singlet Fock matrix
 C         =============================
@@ -3462,7 +3468,7 @@ C
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
-              IF (IPRINT .GT. 5) THEN
+              IF (IPRINT .GT. 2) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
@@ -3486,6 +3492,7 @@ C
         IF(IPRINT.GE.5) THEN
            DO I = 1,NFMAT
               CALL HEADER('Skeleton LL-FOCK',-1)
+              WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
               CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0
      &             ),4,IQMULT,LUPRI)
            ENDDO
@@ -3523,7 +3530,7 @@ C
               WRITE(LUPRI,'(A,A12)')
      &         '>>>> Total wall time used in HER_PARDRV so far   :',
      &         TOTTID
-              IF (IPRINT .GT. 5) THEN
+              IF (IPRINT .GT. 2) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
@@ -3547,6 +3554,7 @@ C
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton LL+SL-FOCK',-1)
+            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
             CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  4,IQMULT,LUPRI)
           ENDDO
@@ -3586,7 +3594,7 @@ C
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
-              IF (IPRINT .GT. 5) THEN
+              IF (IPRINT .GT. 2) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
@@ -3610,6 +3618,7 @@ C
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton LL+SL+SS-FOCK',-1)
+            WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
             CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  4,IQMULT,LUPRI)
           ENDDO
@@ -3623,8 +3632,15 @@ C     Symmetrize Fock matrix
 C     ======================
 C
       CALL SKLFCK(FAO,WORK,LWORK,IPRINT,.TRUE.,.FALSE.,.FALSE.,
-     &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,
-     &            IFCTYP,IDUM)
+     &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,IFCTYP,IDUM)
+      IF(IPRINT.GE.5) THEN
+        DO I = 1,NFMAT
+          CALL HEADER('Symmetrized skeleton LL+SL+SS-FOCK',-1)
+          WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
+          CALL PRQMAT(FAO(1,I),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                4,IQMULT,LUPRI)
+        ENDDO
+      ENDIF
 C
       CALL QEXIT('DIRSC1')
       RETURN
@@ -3782,7 +3798,7 @@ C       hermiticiy of matrices     IHRMOP 0 - no symmetry
 C                                         1 - Hermitian
 C                                        -1 - anti-Hermitian
 C       point group symmetry       ISYMOP 
-C       Fock matrix type           IFCKOP
+C       Fock matrix type           IFCKOP 1, 2, or 3 - see IPFCK below
 C
 C     IFCTYP = XY
 C       X - symmetry about the diagonal  - based on IPHRM
@@ -3817,10 +3833,10 @@ C     Local variables
       DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:3)*1
       DATA HTYP /'G','S','A','M'/
-      DATA IPFCK/3,2,2,2,1,0,0,0,2,2,2,2/
+      DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
 #include "ibtfun.h"
 C
-      IF(IPRINT.GE.2) THEN
+      IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
       ENDIF
@@ -3844,11 +3860,11 @@ C
           IE        = IY - IC
           IH        = IHQMAT(IZ,IHRM)
 C         An anti-symmetric matrix gives no Coulomb contributions
-          IF(IH.EQ.2) IC = 0
+          IF (IH.EQ.2) IC = 0
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
           IY   = IC + IE
-          IF(MZ.LT.4) THEN
+          IF (MZ.LT.4) THEN
 C           ... we are using .SOFOCK or non-direct (CONSCF)
             IQFCK(IZ)     = IQMULT(1,JQBAS(IRFCK(IZ),IPAR),IZ)
             IPQ           = IQTOPQ(IQFCK(IZ),IREP)
@@ -3882,7 +3898,7 @@ C
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(A,I5,3X,A,3X,A,A3)') 
      &      '* Fock matrix no.',I,' - ',
-     &      'Operator irrep:',REP(IREP)
+     &      'Operator irrep: ',REP(IREP)
           WRITE(LUPRI,'(A,4(2X,A3))')
      &      'Matrix symmetry:',(REP(IRFCK(IZ)),IZ=1,4)
           IF(MZ.LT.4) THEN
@@ -4126,7 +4142,7 @@ C
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
-              IF (IPRINT .GT. 5) THEN
+              IF (IPRINT .GT. 2) THEN
                  CPUTID = SECTID(CPU)
                  WALLTID = SECTID(WALL)
                  WRITE(LUPRI,'(A,A12,A1,A12)')
@@ -4185,7 +4201,7 @@ C
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
      &             TOTTID
 C     
-              IF (IPRINT .GT. 5) THEN
+              IF (IPRINT .GT. 2) THEN
                  INTTID = SECTID(CPU)
                  WRITE(LUPRI,'(A,A12)')
      &            '>>>> CPU  time used in HER_PARDRV last iteration :',
@@ -4220,7 +4236,7 @@ C
         IY = MOD(IFCTYP(I),10)
         IX = (IFCTYP(I)-IY)/10
         IF(IX.EQ.0) THEN
-          CALL DSCAL(N2BBASX,D8,FSO(1,I),1)
+          CALL DSCAL(N2BBASX,D2,FSO(1,I),1)
         ELSE
           CALL DSCAL(N2BBASX,D4,FSO(1,I),1)
         ENDIF

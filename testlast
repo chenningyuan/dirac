@@ -9,7 +9,6 @@
 pampath=`pwd`
 dirac=`pwd`/dirac.x
 testdir=`pwd`/test
-cvs="no"
 mpi=" "
 nodes=1
 queue="none"
@@ -37,16 +36,16 @@ fi
 usage='Usage: '$0'\n'\
 '--help\n'\
 '\tPrint this\n'\
+'\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
 '--tests=TESTS\n'\
-'\tThe tests that should be run\n'\
+'\tThe tests that should be run (default: short) \n'\
+'\tKnown tests: "short", "medium", "long", "all", or the numbers of some specific tests\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: -testdir=test)\n'\
-'--cvs=yes/no\n'\
-'\tRun cvs prior to compilation (default: -cvs=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
-'--queue=QUEUE\n'\
-'\tQueue to be used in qsub (default: -queue=none meaning run interactively)\n'
+'--q=QUEUE\n'\
+'\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
 while [ $# != 0 ]; do
    arg="$1"; shift
@@ -82,15 +81,15 @@ while [ $# != 0 ]; do
             tests="$val"
          fi
          ;;
-      "cvs")
-         if [ "${valomitted}" = "no" ]; then
-            cvs="$val"
-         fi
-         ;;
       "mpi")
          if [ "${valomitted}" = "no" ]; then
             nodes=$val
             mpi="--mpi=$nodes"
+         fi
+         ;;
+      "q")
+         if [ "${valomitted}" = "no" ]; then
+            queue="$val"
          fi
          ;;
       "queue")
@@ -109,7 +108,7 @@ done
 # Define the output and log files
 #
 errfile=${testdir}/logs/lastrun
-if [ -e $errfile ]; then
+if [ -f $errfile ]; then
    rm $errfile
 fi
 if [  -z "$tests" ]; then
@@ -126,13 +125,15 @@ else
       "long")
       run=long_test;
       ;;
+      "all")
+      run=all_test;
+      ;;
       *)
       run=user_test;
       ;;
    esac
 fi
 #
-cvslog=cvs_log;
 makelog=make_log;
 runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
@@ -141,11 +142,11 @@ htmlog=${run}_dif.htm;
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
-if [ ! -e "${testdir}/logs" ]; then
+if [ ! -d "${testdir}/logs" ]; then
    mkdir ${testdir}/logs;
 fi
 cd ${testdir}/logs;
-for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
+for i in $makelog $runlog $txtlog $htmlog ; do
     if [ -f "${i}" ]; then
         if [ -f "${i}.6" ]; then mv -f "${i}.6" "${i}.7"; fi
         if [ -f "${i}.5" ]; then mv -f "${i}.5" "${i}.6"; fi
@@ -158,39 +159,6 @@ for i in $makelog $cvslog $runlog $txtlog $htmlog ; do
     fi
 done
 cd ${pampath};
-#
-if [ "${cvs}" = "yes" ]; then
-  echo ' Starting CVS Update ... ' ;
-  cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
-  { echo " CVS update failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$cvslog" ; \
-    cat ${testdir}/logs/$cvslog ; \
-    exit 1 ;\
-  }
-#
-#
-  echo ' Making the Makefiles (running pamadm) ...'
-  pamadm -adm  > ${testdir}/logs/$makelog 2>&1 || \
-  { echo " Pamadm failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
-    exit 1 ;\
-  }
-  echo ' Checking dependencies ... '
-  make depend >> ${testdir}/logs/$makelog 2>&1 || \
-  { echo " Make depend failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
-    exit 1 ;\
-  }
-  echo ' Recompiling ... '
-  make >> ${testdir}/logs/$makelog 2>&1 || \
-  { echo " Make failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
-    exit 1 ;\
-  }
-fi
 #
 cat <<EOF >job_testlast.sh
 #!/bin/sh
@@ -205,7 +173,7 @@ cd ${testdir};
   cat ${testdir}/logs/$runlog ; \
   exit 1 ;\
 }
-if [ -e logs/$txtlog ]; then
+if [ -f logs/$txtlog ]; then
    if [ -s logs/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
       echo " Below follows the list of tests that failed :"
@@ -219,7 +187,7 @@ else
 fi
 EOF
 if [ "${queue}" = "none" ]; then
-# The tests are default run interactively on the same machine as the cvs and make command is run.
+# The tests are default run interactively.
 echo ' Starting test calculations interactively ... '
 chmod u+x job_testlast.sh
 ./job_testlast.sh
@@ -233,9 +201,8 @@ qsub -j oe -o $errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V j
 #
 # Other queue systems used in Amsterdam. Add you own as new comment line if you like
 #
-#das:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
-#solo:  qstc -n $nodes -m -q power4 job_testlast.sh 1h
-#teras: bsub <job_testlast.sh
+#pbs:   /usr/local/bin/qsub -j oe -o fs0.das2.cs.vu.nl:$errfile -l walltime=24:00:00,nodes=$nodes:$queue -q ${queue} -V job_testlast.sh
+#bsub: bsub <job_testlast.sh
 fi
-#rm job_testlast.sh
+rm job_testlast.sh
 #

@@ -1,5 +1,5 @@
 #
-#...   Copyright (c) 2002 by the authors of Dirac (see below).
+#...   Copyright (c) 2004 by the authors of Dirac (see below).
 #...   All Rights Reserved.
 #...
 #...   This code is provided under a written licence and may be 
@@ -26,8 +26,6 @@
 # DATE    : $Date$
 # FILE    : pam.in
 #
-# -- To activate special code for NEC SX systems (in vi): %s/#SX/   /
-#
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # Does 'echo' understand backslash commands
@@ -45,27 +43,32 @@ fi
 #    - prints usage to stdout
 #
 #
+shortusage ()
+{
+   echo
+   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
+   echo '   For information about flags enter "'$0'" without any options.'
+}
 usage ()
 {
-   echo 'Usage: '$0' [flags] mol[.mol] menu[.inp]'
+   echo 'Usage: '$0' [Flags] mol[.mol] menu[.inp]'
    echo '   Flags:'
    echo '     -mpi n                 : Run MPI with n nodes; default sequential'
    echo '     -machinefile filename  : Specify file with list of machines to be used in MPI run'
    echo '     -mpiarg string         : Any other arguments to be passed on to MPI run'
-   echo '     -mw mem                : Set memory (in megawords) for master (and nodes if "-nw mem" not specified)'
-   echo '     -nw mem                : Set memory (in megawords) for the nodes'
+   echo '     -mw mem                : Set memory (in megawords) for master'
+   echo '                              (and slave nodes if "-nw mem" not specified)'
+   echo '     -nw mem                : Set memory (in megawords) for the slave nodes'
    echo '     -basdir directory      : Prepend basis set directory to search list (may be repeated)'
-   echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.$$'"'
+   echo '     -wrkdir directory      : Directory for work area; default "'$SCR/$MOL.'$$"'
    echo '     -clean                 : Clean work area before calculation'
-   echo '     -rmwrk                 : Remove work area after calculation'
-   echo '     -copy "file1 file2 .." : Copy files to work area'
-   echo '     -get "file1 file2 .."  : Get files from work area'
-   echo '     -incmo                 : Copy DFCOEF to   work area'
-   echo '     -utcmo                 : Save DFCOEF from work area'
-   echo '     -infck                 : Copy DFFCK2 to   work area'
-   echo '     -utfck                 : Save DFFCK2 from work area'
-   echo '     -inxvc                 : Copy PAMXV1 to   work area'
-   echo '     -utxvc                 : Save PAMXV1 from work area'
+   echo '     -keepwrk               : Keep work area after calculation (default: remove)'
+   echo '     -copy "file1 file2 .." : Copy specified files from job directory to   work area'
+   echo '     -get "file1 file2 .."  : Get  specified files to   job directory from work area'
+   echo '     -incmo                 : Copy DFCOEF from job directory to   work area (when restarting)'
+   echo '     -outcmo                : Save DFCOEF to   job directory from work area (for restart)'
+   echo '     -infck                 : Copy DFFCK2 from job directory to   work area'
+   echo '     -outfck                : Save DFFCK2 to   job directory from work area'
    echo '     -dirac dirac_cmd       : Use dirac_cmd as executable instead of the default dirac.x'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
    echo '     -nice                  : execute Dirac with nice/npri'
@@ -75,12 +78,6 @@ usage ()
    echo '     -ssrun exp_type        : use ssrun exp_type (SGI profiler) to execute Dirac'
    echo '                              (path must be included if executable is not in input directory)'
    echo '     -help                  : More help on pam than this'
-# only for SYS_SX (NEC SX systems)
-#SXecho '     -multi "config file"   : [SX only] Run MPI on MULTI NODEs'
-#SXecho '                              and configuration file'
-#SXecho '     -mpiconf "mpi.conf"    : [SX only] Change MPI config file name'
-#SXecho '     -thread                : [SX only] Run thread parallel execution'
-# end only for SYS_SX
 }
 #
 #
@@ -180,12 +177,6 @@ setup_command()
         fi
 
       fi
-#SX   if [ -n "$MULTI_NODE" ]; then
-#SX      DIRAC_CMD="mpisx -p $MPI_NPROC -e $DIRAC"
-#SX   else
-#Linux   DIRAC_CMD="$MPIRUN -np $MPI_NPROC -machinefile dirac_machines $DIRAC"
-#         DIRAC_CMD="$MPIRUN -np $MPI_NPROC $SSRUN_CMD $DIRAC"
-#SX   fi
    else
 #  Sequential run:
       DIRAC_CMD=
@@ -258,11 +249,6 @@ setup_command()
 #
 execute_dirac()
 {
-
-#SXif [ -n "$MULTI_NODE" ]; then
-#SX   PWD=`pwd`
-#SX   export PWD
-#SXfi
 
    echo "   Executing: $NICE_CMD $DIRAC_CMD with BASDIR(S) :"
    BDIR=$BASDIR
@@ -357,12 +343,12 @@ remove_work_dir()
    echo "Contents of work directory $WRK on master node $master"
    cd ..
    ls -l $WRK
-   if [ -n "$RMWRK" ]; then
+   if [ " $RMWRK" -eq 1 ]; then
       if [ $EXIT -eq 0 ]; then
          rm -fr $WRK
       else
          echo '*** DIRAC terminated with an error exit code'
-         echo "- THEREFORE scratch directory $WRK is not deleted as requested with -rmwrk"
+         echo "- THEREFORE scratch work directory $WRK is not deleted as normal"
          echo "  so you may restart the calculation, or debug, if possible"
          echo "  ( $WRK may be deleted by your queueing system )"
          echo "- REMEMBER to delete $WRK yourself !!!"; echo
@@ -414,11 +400,11 @@ distribute_work_dir()
 #  This routine is only called when local disks
 #  The list of machines available to dirac.x
 #
-   if [ ! -z "$MACH_FILE" ]; then
-      cp $MACH_FILE dirac_machines
+   if [ -n "$MACH_FILE" ]; then
+#     Serial run of parallel program
+      echo `hostname` > dirac_machines 
    else
-#    Serial run of parallel program
-     echo `hostname` > dirac_machines 
+      cp $MACH_FILE dirac_machines
    fi
 #
 #  Initialize value of master
@@ -586,31 +572,6 @@ set_dirac_environment()
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-# MAKE MPI CONFIGURATION FILE
-# for NEC SX systems
-#
-#
-make_mpi_config()
-{
-    echo
-#SX if [ -n "$MULTI_NODE" ]; then
-#SXecho " Create configuration file for MPI on MULTI NODEs"
-#SXif [ ! -f $MULTI_CONF ]; then
-#SX   if [ ! -f $SRC_DIR/$MULTI_CONF ]; then
-#SX      if [ ! -f $BIN_DIR/$MULTI_CONF ]; then
-#SX         echo "$MULTI_CONF not found"
-#SX      else
-#SX         MULTI_CONF=$BIN_DIR/$MULTI_CONF
-#SX      fi
-#SX   else
-#SX      MULTI_CONF=$SRC_DIR/$MULTI_CONF
-#SX   fi
-#SXfi
-#SX
-#SX. $LOC/makempiconf $MPI_CONF_NAME < $MULTI_CONF
-#SX fi
-}
-#
 #  Set working directory, set work memory, print header
 #  copy files to working directory, save existing output file,
 #  setup command to run, execute dirac, save files, and delete
@@ -628,7 +589,7 @@ initialize()
 
    EXIT=0
 
-   RMWRK=
+   RMWRK=0
    RMSCR=
 
    COPY_FILES=
@@ -641,10 +602,6 @@ initialize()
    NODE_MEMORY=
 
    RUN='out'
-
-#SXMULTI_CONF=
-#SXMULTI_NODE=
-#SXMPI_CONF_NAME=
 
    if [ "$LOGNAME" = "" ]; then
       SCR=$SCR_DEFAULT/$USER
@@ -712,13 +669,13 @@ while [ -n "$1" ]; do
       -infck)
          COPY_FILES="$COPY_FILES DFFCK2"
          ;;
-      -utfck)
+      -outfck|-utfck)
          GET_FILES="$GET_FILES DFFCK2"
          ;;
       -incmo)
          COPY_FILES="$COPY_FILES DFCOEF"
          ;;
-      -utcmo)
+      -outcmo|-utcmo)
          GET_FILES="$GET_FILES DFCOEF"
          ;;
       -mw|-memory)
@@ -732,14 +689,17 @@ while [ -n "$1" ]; do
       -clean|-rmscr)
          RMSCR=1
          ;;
-      -rmwrk)
+      -keepwrk|-keepwork)
+         RMWRK=0
+         ;;
+      -rmwrk)  # for backwards compatibility
          RMWRK=1
          ;;
       -run)
          shift
          RUN=$1
          ;;
-      -wrkdir|-scr|-scratch)
+      -wrkdir|-workdir|-scr|-scratch)
          shift
          SCR_DIR=$1
          ;;
@@ -781,6 +741,9 @@ while [ -n "$1" ]; do
       -q)
          shift
          ;;
+      -qsys)
+         shift
+         ;;
       -help)
          if [ -z "$PAGER" ]; then
             PAGER=more
@@ -789,23 +752,8 @@ while [ -n "$1" ]; do
          EXIT=0
          exitfunc
          ;;
-# only for SYS_SX (NEC SX systems)
-#SX   -multi)
-#SX      MULTI_NODE=1
-#SX      shift
-#SX      MULTI_CONF=$1
-#SX      DIRPAR=1
-#SX      ;;
-#SX   -mpiconf)
-#SX      shift
-#SX      MPI_CONF_NAME=$1
-#SX      ;;
-#SX   -thread)
-#SX      export MULTITASKMIX=ON
-#SX      ;;
-# end only for SYS_SX
       -*)
-         echo "$1 not recognized"
+         echo "ERROR: Flag $1 not recognized"
          usage
          EXIT=2
          exitfunc
@@ -814,7 +762,8 @@ while [ -n "$1" ]; do
          MOL=${1%\.mol}
          shift 
          if [ -z "$1" ]; then
-            echo "No menu file given"
+            echo "ERROR: No Dirac menu file given"
+            shortusage
             EXIT=1
             exitfunc
          fi
@@ -823,6 +772,13 @@ while [ -n "$1" ]; do
    esac
    shift
 done
+#
+if [ -z "$MOL" ]; then
+   echo "ERROR: molecule and Dirac menu files not specified"
+   shortusage
+   EXIT=1
+   exitfunc
+fi
 #
 EXIT=0
 set_work_dir  # set and go to work directory
@@ -834,7 +790,6 @@ setup_command
 if [ "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
-make_mpi_config
 execute_dirac
 save_files
 remove_work_dir

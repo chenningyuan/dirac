@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : param.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/param.inc
 C
 C
 C     DEFINITION OF PARAMETERS DIRRCI

@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : symm.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/symm.inc
 C
       PARAMETER (MXREP=32)
       COMMON/RAS/NORB,NORBR(3),NELEC,MAXH1,MAXE3,IORBR(0:N3)

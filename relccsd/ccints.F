@@ -1,27 +1,37 @@
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -95,8 +105,7 @@ C
       WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
      &                'VOVV',NV5,'VVVV',NV6
       ELSE
-      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                'VOVV',NV5
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
       ENDIF
 C
       CALL FLSHFO (IW)
@@ -286,6 +295,8 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
       CALL FLSHFO (IW)
 C
+      IF (.NOT.SRTALL) GOTO 600
+C
 C   start of IPASS loop for the VOVV
 C ----------------------------
       DO IPASS = 1, NPASS
@@ -379,8 +390,6 @@ C ----------------------
 C ----------------------
       WRITE(IW,*) 'VOVV sorting done.'
       CALL FLSHFO (IW)
-C
-      IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
@@ -540,7 +549,7 @@ C
      &/' First order electronic energy :',T40,F25.15 
      &/' Electronic energy :',T40,F25.15 
      &/' SCF energy :',T40,F25.15) 
- 1004 FORMAT (/' Expanding and sorting integrals to 6 types :'/
+ 1004 FORMAT (/' Expanding and sorting integrals to unique types :'/
      & (' Type ',A4,' :',I10,' integrals'))
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
  1006 FORMAT (/' Finished sorting of integrals')

@@ -1,16 +1,13 @@
 #
 # VERSION : $Revision$
 # DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
+# FILE    : relccsd/Makefile.in
 #
 
 include ../Makefile.config
 
 F_OBJS =ccdriv.o ccints.o cceqns.o  ccintm.o ccgetv.o ccsort.o \
       ccgenp.o ccrpa.o  ccxblas.o ccpam.o ccgrad.o ccmain.o ccfspc.o waio.o
-
-C_OBJS = ccunix.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -29,9 +26,6 @@ dirac.x:
 
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
-
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F) $(C_OBJS:.o=.c)

@@ -1,29 +1,37 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
-C
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C VERSION : $Revision$
 C DATE    : $Date$
@@ -160,12 +168,6 @@ C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
       IF(DOPRP) CALL PAMPRP(WORK,LWORK)
-C
-C***********************************************************************
-C***** H E I N Z *******************************************************
-C***********************************************************************
-C
-      IF(DOHEINZ) CALL HEINZ(WORK,LWORK)
 C
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -604,21 +606,30 @@ C
 C
  100  CONTINUE
 C
+      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+     &              MPI_COMM_WORLD,ISTAT,IERR)
+C
+C     The code below may be useful for some architectures but 
+C     fixes a MPI implementation problem and has as side effect
+C     a slowdown om massively parallel calculations on small
+C     systems with many tasks.  I therefore disabled it.
+C     LV 6-8-2004
+C
 C     Check whether there is a new task waiting : if not
 C     the slave may sleep for one second. This is useful on
 C     shared memory architectures where MPI_RECV is implemented
 C     using an idle loop that consumes unnecessary CPU when
 C     waiting in a serial part of the code.
 C
-      CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
-     &                NEWTASK,ISTAT,IERR)
-      IF (NEWTASK) THEN
-         CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
-     &                 MPI_COMM_WORLD,ISTAT,IERR)
-      ELSE
-         CALL SLEEP(1)
-         GO TO 100
-      END IF
+C     CALL MPI_IPROBE(MPARID,27,MPI_COMM_WORLD,
+C    &                NEWTASK,ISTAT,IERR)
+C     IF (NEWTASK) THEN
+C        CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+C    &                 MPI_COMM_WORLD,ISTAT,IERR)
+C     ELSE
+C        CALL SLEEP(1)
+C        GO TO 100
+C     END IF
 C
 C     Start timing.
 C
@@ -674,7 +685,90 @@ C
 C
  999  CALL QEXIT('DIRNOD')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dirnod2 */
+      SUBROUTINE DIRNOD2(WORK,MWORK)
+C***********************************************************************
+C
+C     Another menu file for slave nodes. This can be used to change the type
+C     of work during a calculation (i.e. : if one parallel module calls the
+C     other like in RELCCSD when doing the AO Lagrangian).
+C
+C***********************************************************************
+#include "implicit.h"
+#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "priunit.h"
+C
+      INCLUDE 'mpif.h'
+      INTEGER ISTAT(MPI_STATUS_SIZE)
+      LOGICAL NEWTASK
+C
+#include "infpar.h"
+C
+      DIMENSION WORK(MWORK)
+C
+      CALL QENTER('DIRNOD2')
+      LWORK = MWORK
+#include "memint.h"
+C
+ 100  CONTINUE
+C
+      CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPARID,27,
+     &              MPI_COMM_WORLD,ISTAT,IERR)
+C
+C     ***************************************************
+C     ***** Receive initialization data from master *****
+C     ***************************************************
+C
+      IF (ITASK .LT. 0) THEN
+C
+C        Global end of program : go up for MPI_FINALIZE
+C
+         GOTO 999
+      ELSE IF (ITASK .EQ. 0) THEN
+C
+C        Nothing to be done at the moment. Go to sleep.
+C
+         CONTINUE
+      ELSE IF (ITASK .EQ. 1) THEN
+C
+C        Start calculating integrals for Fock matrices.
+C
+         CALL HERNOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 2) THEN
+C
+C        Start calculating integrals for MOLTRA.
+C
+          CALL TRANOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 3) THEN
+C
+C        Start coupled cluster calculation.
+C
+         CALL CCNOD(WORK,LWORK)
+      ELSE IF (ITASK .EQ. 4) THEN
+C
+C        Enter the DFT module
+C
+         CALL DFTNOD(WORK,LWORK)
+      ELSE
+C
+C        Unknown task. Abort execution.
+C
+         WRITE(LUPRI,'(A,I5)')
+     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
+         CALL QUIT(' Unknown task in DIRNOD')
+      END IF
+C
+C     We want the slave program to go until there is nothing
+C     more to calculate, K.Ruud, May-95
+C
+      GOTO 100
+C
+ 999  CALL QEXIT('DIRNOD2')
+      END
 #endif /* VAR_MPI */
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #ifdef SYS_SX
 C

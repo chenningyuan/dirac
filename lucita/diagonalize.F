@@ -1,3 +1,37 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -3233,6 +3267,10 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
        DIMENSION XJEP(10000)
        INTEGER   IXJEP(10000)
 *
+       WRITE(6,*) '                  :::::::::::::::::::'
+       WRITE(6,*) '                    Entering MICDV6  '
+       WRITE(6,*) '                  :::::::::::::::::::'
+*
        IPICO = 0
        IF(IPICO.NE.0) THEN
 C?       WRITE(6,*) ' Perturbative solver '
@@ -4006,10 +4044,6 @@ C      END IF
  1200       FORMAT(1H0,'The final approximation to eigenvector')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
-          WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
-          WRITE(6,1310)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
@@ -4025,11 +4059,11 @@ C      END IF
           end do
         end do
         write(6,*)
-        write(6,*) '*************************************************'//
+        write(6,*) '**********************************'//
      &             '**************************'
-        write(6,*) '                  Iter  Root    Energy           '//
+        write(6,*) '   Iter  Root       Energy        '//
      &             'RESIDUAL     RESRATIO '
-        write(6,*) '*************************************************'//
+        write(6,*) '**********************************'//
      &             '**************************'
         write(6,*)
         DO 1601 IROOT = 1, NROOT
@@ -4368,6 +4402,9 @@ C
 *
        EXTERNAL MV7
 *
+       WRITE(6,*) ':::::::::::::::::::'
+       WRITE(6,*) '  Entering MINDV4  '
+       WRITE(6,*) ':::::::::::::::::::'
        IOLSTM = IOLSEN
        IF(IPRT.GT.1.AND.(IOLSEN.NE.0.AND.IPICO.EQ.0))
      & WRITE(6,*) ' Inverse iteration modified Davidson, Variational'
@@ -5661,12 +5698,17 @@ C         CALL COPVEC(WORK(KVEC2),WORK(KVEC1),NVAR)
 *
       LOGICAL CONVER
 *
+      WRITE(6,*) ':::::::::::::::::::'
+      WRITE(6,*) '  Entering PICO3   '
+      WRITE(6,*) ':::::::::::::::::::'
+*
 C?    WRITE(6,*) ' Memchk at start of PICO3'
 C?    CALL MEMCHK
       IPICO = 0
       IF(IPICO.NE.0) THEN
 C?      WRITE(6,*) ' Perturbative solver '
-        MAXVEC = MIN(MAXVEC,2)
+C       MAXVEC = MIN(MAXVEC,2)
+C       ... MAXVEC not used in this routine /hjaaj
       ELSE IF(IPICO.EQ.0) THEN
 C?      WRITE(6,*) ' Variational  solver '
       END IF

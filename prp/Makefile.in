@@ -1,14 +1,13 @@
 #
 # VERSION : $Revision$
 # DATE    : $Date$
-# FILE    : Makefile.in
-# SOURCE  : $Source$
+# FILE    : prp/Makefile.in
 #
 
 include ../Makefile.config
 
 F_OBJS =paminp.o pamprp.o pamexp.o pamgrd.o pamogrd.o pamfck.o pamset.o \
-	pamxlr.o pamrvc.o pamrsp.o rspmpg.o mp2lag.o pamxqr.o pamtpa.o
+	pamxlr.o pamrvc.o pamrsp.o rspmpg.o mp2lag.o pamxqr.o
 
 F_CPPS = $(F_OBJS:.o=.i)
 
@@ -27,9 +26,6 @@ dirac.x:
 
 dirmpi.x:
 	cd .. ; $(MAKE) dirmpi.x
-
-dirpvm.x:
-	cd .. ; $(MAKE) dirpvm.x
 
 depend:
 	makedepend -- $(DEPEND_FLAGS) -- $(F_OBJS:.o=.F)

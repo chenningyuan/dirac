@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : goscom.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/goscom.inc
 C
 C     DEFINITION PARAMETERS GOSCIP
 C

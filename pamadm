@@ -222,6 +222,7 @@ make_export()
    echo
 # First add the files that are at the main level or are special.
    tar cvf \$szCurrDir.tar \\
+     \$szCurrDir/README \\
      \$szCurrDir/configure \\
      \$szCurrDir/config.sub \\
      \$szCurrDir/config.guess \\
@@ -230,6 +231,7 @@ make_export()
      \$szCurrDir/crilib.cld \\
      \$szCurrDir/pam.in \\
      \$szCurrDir/pam.1 \\
+     \$szCurrDir/pamq \\
      \$szCurrDir/Makefile \\
      \$szCurrDir/doc/doc.html \\
      \$szCurrDir/include/*.h \\
@@ -239,12 +241,12 @@ make_export()
      \$szCurrDir/test \\
      \$szCurrDir/testlast \\
      \$szCurrDir/basis \\
+     \$szCurrDir/basis_dalton \\
      \$szCurrDir/utils 2> export.log
 # Now add the standard files from each active directory (module).
    for module in $dirs; do
       MDir=\$szCurrDir/\$module
       tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
-      rm export.log
    done
 EOF
    #
@@ -350,7 +352,7 @@ gp/gpjth.o          gp/gplucia.o        gp/gpkrmc.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
 prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        \\
 prp/pamxlr.o        prp/pamrsp.o        prp/pamrvc.o        prp/rspmpg.o \\
-prp/mp2lag.o        prp/pamxqr.o        prp/pamtpa.o \\
+prp/mp2lag.o        prp/pamxqr.o        \\
 moltra/tradr1.o moltra/tradr2.o moltra/tradr3.o moltra/tradr4.o moltra/tradr5.o \\
 moltra/trainp.o moltra/traone.o moltra/traout.o moltra/trapam.o \\
 moltra/traprp.o \\
@@ -375,8 +377,7 @@ main/diracmalloc.o  main/end_mpi.o    main/exec_dirac.o \\
 main/get_memsize.o  main/ini_mpi.o    main/main.o \\
 main/mpi_errtrap.o  main/pr_timing.o  main/print_logo.o \\
 main/get_time.o \\
-gp/gpc.o \\
-relccsd/ccunix.o
+gp/gpc.o
 
 #
 
@@ -392,7 +393,7 @@ RELCCSD_OBJS = \\
 relccsd/ccdriv.o relccsd/cceqns.o relccsd/ccints.o \\
 relccsd/ccsort.o relccsd/ccgenp.o relccsd/ccgetv.o relccsd/ccintm.o \\
 relccsd/ccrpa.o  relccsd/ccxblas.o relccsd/ccgrad.o  \\
-relccsd/ccunix.o relccsd/ccfspc.o  relccsd/waio.o 
+relccsd/ccfspc.o  relccsd/waio.o 
 
 RELCCSD_MAIN = relccsd/ccmain.o
 
@@ -469,7 +470,7 @@ cat <<EOF>> Makefile
 
 DFTOBJS = \\
 dft/pamdft.o dft/dftden.o      dft/dftdrv.o     dft/dftgrd.o \
-dft/dftaux.o dft/grtest.o dft/Lebedev-Laikov.o
+dft/grtest.o dft/Lebedev-Laikov.o
 
 # dft files written in C:
 

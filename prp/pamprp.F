@@ -1,11 +1,19 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -19,10 +27,11 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -227,7 +236,9 @@ C
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
+#if defined (MOD_XPP)
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
+#endif
       ENDIF
 C
 C***********************************************************************
@@ -482,7 +493,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     EFNINT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_EFN1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -575,8 +586,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EFGINT: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,30)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_EFG1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_EFG',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -672,8 +682,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     PVC: INTTYP = 62
-      CALL SETATM(WORK(KDATOM),NATOM,62)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_PVC1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_PVC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -767,11 +776,10 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EFTINT: INTTYP = 52 or INTTYP = 53
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KDATOM),NATOM,52)
+         CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       ELSE
-         CALL SETATM(WORK(KDATOM),NATOM,53)
+         CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       END IF
       CALL DEF_EFT1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                TRLESS,WORK(KFREE),LFREE,IPRINT)
@@ -903,8 +911,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_SPNSP1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_SPNSPN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1377,11 +1384,10 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       DIMENSION EXPVAL(*),WORK(*)
+      LOGICAL TOBE
 #include "dcbprp.h"
 #include "dcbexp.h"
 C
-C     disabled until all problems are solved
-      return
       CALL PRSYMB(LUPRI,'-',76,0)
 C
       CALL TITLER('MP2 expectation values','*',124)
@@ -1402,7 +1408,11 @@ C
 C     Read correlation contribution to expectation value
 C     ==================================================
 C
-      CALL READEXPV(WORK(KEXP_CORR))
+      CALL READEXPV(WORK(KEXP_CORR),TOBE)
+      IF (.NOT.TOBE) THEN
+         CALL MEMREL('PRPOUT_CORR',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+         RETURN
+      ENDIF
 C
 C     Calculate total expectation value
 C     (HF + correlation)
@@ -1578,7 +1588,7 @@ C
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,30)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_NQCC1(EXPVAL,EXP_CORR,CORR,WORK(KATOM),WORK(KAXIS),
      &               WORK(KTEMP))
       CALL MEMREL('PRP_NQCC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1902,7 +1912,7 @@ C
       CALL MEMGET('REAL',KAXIS,9*MXCENT,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,9*MXCENT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,30)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_EFG1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KAXIS),WORK(KTEMP),
      &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFG',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1962,29 +1972,37 @@ C     print section
      &     'contribution','contribution','contribution'
       END IF
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
-         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-         DO I = 1,3
+      KATOM = 0
+      DO JATOM = 1, NUCIND
+      NDEG = NUCDEG(JATOM)
+      IF (DOATOM(JATOM)) THEN
+        DO IDEG = 1,NDEG
+          IATOM = KATOM + IDEG
+          WRITE (LUPRI ,'(/2X,A9,A6,/)')'Nucleus: ',NAMDEP(IATOM)
+          DO I = 1,3
             DO J = 1,3
-               IF (CORR) THEN
-               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+              IF (CORR) THEN
+              EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
               EFG_METHOD(I,J,IATOM)=EFGTOT(I,J,IATOM)+EFGCORR(I,J,IATOM)
-               IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
+              IF (ABS(EFG_METHOD(I,J,IATOM)).GT.1.0D-12)
      &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGTOT(I,J
      &              ,IATOM),' au ',EFGCORR(I,J,IATOM),' au '
      &              ,EFG_METHOD(I,J,IATOM),' au '
-               ELSE
-               EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
-               IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
+              ELSE
+                EFGTOT(I,J,IATOM)=EFGNUC(I,J,IATOM)+EFGEL(I,J,IATOM)
+                IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
      &            WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &              'q'//CHAR(IOFF+I)//CHAR(IOFF+J),EFGEL(I,J
      &              ,IATOM),' au ',EFGNUC(I,J,IATOM),' au '
      &              ,EFGTOT(I,J,IATOM),' au '
-               ENDIF
-            END DO
-         END DO
-      END DO
+              ENDIF
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDIF
+      KATOM = KATOM + NDEG
+      ENDDO
 C
 C           diagonalize total efg tensor
 C
@@ -1993,50 +2011,58 @@ C
       WRITE(LUPRI,'(12X,A)')
      &     'Total contribution to principal components '
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
-            CALL DUNIT(AXIS(1,1,IATOM),3)
-            IJ = 1
-            DO I = 1, 3
-               DO J = 1, I
-                  IF (CORR) THEN
-                     PVAL(IJ) = EFG_METHOD(I,J,IATOM)
-                  ELSE
-                     PVAL(IJ) = EFGTOT(I,J,IATOM)
-                  END IF
-                  IJ = IJ + 1
-               ENDDO
-            ENDDO
-            CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+      KATOM = 0
+      DO JATOM = 1, NUCIND
+      NDEG = NUCDEG(JATOM)
+      IF (DOATOM(JATOM)) THEN
+        DO IDEG = 1,NDEG
+          IATOM = KATOM + IDEG
+          CALL DUNIT(AXIS(1,1,IATOM),3)
+          IJ = 1
+          DO I = 1, 3
+            DO J = 1, I
             IF (CORR) THEN
-               EFG_METHOD(1,1,IATOM) = PVAL(1)
-               EFG_METHOD(2,2,IATOM) = PVAL(3)
-               EFG_METHOD(3,3,IATOM) = PVAL(6)
+              PVAL(IJ) = EFG_METHOD(I,J,IATOM)
             ELSE
-               EFGTOT(1,1,IATOM) = PVAL(1)
-               EFGTOT(2,2,IATOM) = PVAL(3)
-               EFGTOT(3,3,IATOM) = PVAL(6)
-            ENDIF
-            WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-            DO I=1,3
-               IF (CORR) THEN
-                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+              PVAL(IJ) = EFGTOT(I,J,IATOM)
+            END IF
+              IJ = IJ + 1
+            ENDDO
+          ENDDO
+          CALL JACO(PVAL,AXIS(1,1,IATOM),3,3,3,TMP,ITMP)
+          IF (CORR) THEN
+            EFG_METHOD(1,1,IATOM) = PVAL(1)
+            EFG_METHOD(2,2,IATOM) = PVAL(3)
+            EFG_METHOD(3,3,IATOM) = PVAL(6)
+          ELSE
+            EFGTOT(1,1,IATOM) = PVAL(1)
+            EFGTOT(2,2,IATOM) = PVAL(3)
+            EFGTOT(3,3,IATOM) = PVAL(6)
+          ENDIF
+          WRITE (LUPRI ,'(/2X,A9,A6,/)')'Nucleus: ',NAMDEP(IATOM)
+          DO I=1,3
+            IF (CORR) THEN
+              WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &                 ,EFG_METHOD(I,I,IATOM),' au '
-               ELSE
-                  WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
+            ELSE
+              WRITE(LUPRI,'(2X,A3,3(3X,F16.10,A))')
      &                 'q'//CHAR(IOFF+I)//CHAR(IOFF+I)
      &                 ,EFGTOT(I,I,IATOM),' au '
-               END IF
-            ENDDO
+            END IF
+          ENDDO
 C
 C           print section principle axis
 C
-            IF (IPRINT .GE. 4) THEN
-               WRITE(LUPRI,'(A/)')
-     &           '  Principal axis to total contribution'
-               WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-               CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-            END IF
+          IF (IPRINT .GE. 4) THEN
+            WRITE(LUPRI,'(A/)')
+     &         '  Principal axis to total contribution'
+            WRITE (LUPRI ,'(/2X,A9,A6,/)')'Nucleus: ',NAMDEP(IATOM)
+            CALL OUTPUT(AXIS(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+          END IF
+        ENDDO
+      ENDIF
+      KATOM = KATOM + NDEG
       ENDDO
       CALL PRSYMB(LUPRI,'-',72,2)
       WRITE(LUPRI,'(/A,1PE12.5,A,/)')
@@ -2077,9 +2103,9 @@ C
       CALL MEMGET('REAL',KCORR    ,15*NUCDEP,WORK,KFREE,LFREE)
 C
       IF (TRLESS) THEN
-         CALL SETATM(WORK(KATOM),NATOM,52)
+         CALL SETATM(WORK(KATOM),NATOM,IDUM)
       ELSE
-         CALL SETATM(WORK(KATOM),NATOM,53)
+         CALL SETATM(WORK(KATOM),NATOM,IDUM)
       END IF
       CALL PRP_EFT1(EXPVAL,EXP_CORR,WORK(KATOM),WORK(KTEMP),
      &              WORK(KTMP_CORR),WORK(KEL),WORK(KNUC),WORK(KCORR),
@@ -2695,7 +2721,7 @@ C
       CALL MEMGET('REAL',KQV,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIS,NUCDEP,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,62)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_PVC1(EXPVAL,WORK(KATOM),WORK(KMPV),WORK(KQV),
      &              WORK(KIS),WORK(KTEMP),IPRPRP)
       CALL MEMREL('PRP_PVC',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2850,7 +2876,7 @@ C
       CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_SPNSP1(EXPVAL,ABLRF,ABCNV,
      &                WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &                WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
@@ -3328,7 +3354,7 @@ C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
 C     DSOINT: INTTYP = 12
-      CALL SETATM(WORK(KDATOM),NATOM,12)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_DSO1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_DSO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3458,7 +3484,7 @@ C
       CALL MEMGET('REAL',KSPAR,5*NNDEP  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBUF,NSCOOR*2 ,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,12)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_DSO1(EXPVAL,
      &              WORK(KATOM),WORK(KIATM),WORK(KRATM),
      &              WORK(KSMAT),WORK(KCHES),WORK(KSPAR),
@@ -3704,8 +3730,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-      CALL SETATM(WORK(KDATOM),NATOM,29)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_SHIELD1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_SHIELD',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -3769,8 +3794,6 @@ C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
-          MXATM2 = NUCIND
-C          IF (TRIAB) MXATM2 = IATOM1
 C
 C         Cartesian directions
 C
@@ -4091,8 +4114,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     NSTDIACGO: INTTYP = 38
-      CALL SETATM(WORK(KDATOM),NATOM,38)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_NSTDIA1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_NSTDIA',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -4213,7 +4235,7 @@ C
       CALL MEMGET('REAL',KSCTRA,NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
       CALL PRP_SHIELD1(EXPVAL,ABLRF,WORK(KTMPMAT),WORK(KTMAT),
      &     WORK(KDMAT),WORK(KPMAT),WORK(KTISO),WORK(KDISO),WORK(KPISO),
      &     WORK(KANIS),WORK(KASYM),WORK(KSKEW),WORK(KSPAN),WORK(KIBUF),
@@ -4554,9 +4576,9 @@ C
       CALL MEMGET('REAL',KEFN ,9*NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTEMP,3*NUCDEP,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
-      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),CORR,
-     &              IPRPRP)
+      CALL SETATM(WORK(KATOM),NATOM,IDUM)
+      CALL PRP_EFN1(EXPVAL,EXP_CORR,WORK(KEFN),WORK(KTEMP),WORK(KATOM),
+     &              CORR,IPRPRP)
       CALL MEMREL('PRP_EFN',WORK,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
@@ -4610,24 +4632,32 @@ C     print section
      &     'contribution','contribution','contribution'
       END IF
       CALL PRSYMB(LUPRI,'-',72,2)
-      DO IATOM = 1, NUCDEP
-         WRITE (LUPRI ,'(/2X,A9,A4,/)')'Nucleus: ',NAMDEP(IATOM)
-         DO I = 1,3
-           IF (CORR) THEN
-             EFNTOT1=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
-             EFNTOT2 = EFNTOT1 + EFNVEC(I,IATOM,3)
-             WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+      KATOM = 0
+      DO JATOM = 1, NUCIND
+      NDEG = NUCDEG(JATOM)
+      IF (DOATOM(JATOM)) THEN
+        DO IDEG = 1,NDEG
+          IATOM = KATOM + IDEG
+          WRITE (LUPRI ,'(/2X,A9,A6,/)')'Nucleus: ',NAMDEP(IATOM)
+          DO I = 1,3
+            IF (CORR) THEN
+              EFNTOT1=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
+              EFNTOT2 = EFNTOT1 + EFNVEC(I,IATOM,3)
+              WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
      &             EFNTOT1,' au ',EFNVEC(I,IATOM,3),' au ',
      &             EFNTOT2,' au '
-           ELSE
-             EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
+            ELSE
+              EFNTOT=EFNVEC(I,IATOM,1)+EFNVEC(I,IATOM,2)
 CTROND                 IF (ABS(EFGTOT(I,J,IATOM)).GT.1.0D-12)
-             WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
+              WRITE(LUPRI,'(2X,A1,3(3X,F16.10,A))') CHAR(IOFF+I),
      &             EFNVEC(I,IATOM,1),' au ',EFNVEC(I,IATOM,2),' au ',
      &             EFNTOT,' au '
 CTROND                 ENDIF
-           ENDIF
-         END DO
+            ENDIF
+          ENDDO
+        END DO
+      ENDIF
+      KATOM = KATOM + NDEG
       END DO
       CALL PRSYMB(LUPRI,'-',72,2)
 CTROND      WRITE(LUPRI,'(/A,1PE12.5,A,/)') 
@@ -4782,8 +4812,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     INTTYP = 9: One-electron Fermi contact integrals
-      CALL SETATM(WORK(KDATOM),NATOM,9)
+      CALL SETATM(WORK(KDATOM),NATOM,IDUM)
       CALL DEF_RHONU1(PNAME,PLABEL,PFAC,WORK(KDATOM),
      &                WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_RHONUC',WORK,KWORK,KWORK,KFREE,LFREE)

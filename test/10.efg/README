@@ -3,7 +3,7 @@
 !
 | The run zerofield serves to generate the MO-vectors and gives the EFG
 ! expectation value at the DHF & MP2 level. The finite field approach 
-! serves to compute a correlation contribution that
+! serves to compute a CCSD(T) correlation contribution that
 ! can be added to the analytical HF value. We use relaxed orbitals for this
 ! purpose as this gives the most rigorous result.
 !
@@ -13,13 +13,12 @@
 ! DHF fin. diff. (via finite field)                          2.727 au
 !
 ! Correlation contributions
-! MP2 analytic   (via CCFOPR module in RELCCSD)             -0.086 au
+! MP2 analytic   (via new CCFOPR module in RELCCSD)         -0.118 au
 ! MP2 fin. diff.                                            -0.118 au
 ! CCSD fin. diff.                                           -0.056 au
 ! CCSD(T) fin. diff.                                        -0.057 au
 !
 ! Total CCSD(T) value (adding nuclear + anal. HF + fin. diff corr. contr.)  3.056 au
 !
-! Notes: - the MP2 analytic approach misses relaxation from the negative energy states
-!        - the MP2 method overshoots the correlation correction by a factor of 2
+! Notes: - the MP2 method overshoots the correlation correction by a factor of 2
 !        - the basis is too small to give reliable results (this is only a test !)

@@ -1,27 +1,37 @@
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -174,17 +184,18 @@ C***********************************************************************
 C
       LOGICAL LBIT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7
+     &          WORD1*7, MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
       LOGICAL   NOGENINP
 C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
-      DATA TABLE  /'.DIRECT','.XXXXXX','.XXXXXX','.DOJACO',
+      DATA TABLE  /'.DIRECT','.CVALUE','.XXXXXX','.DOJACO',
      &             '.PRINT ','.PCMOIN','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.ACMOUT','.XXXXXX','.XXXXXX','.FAMILY',
@@ -256,6 +267,8 @@ C&&&& DIRECT: Direct calculation
                  ENDIF
             GO TO 100
   102    CONTINUE
+C&&&& CVALUE: Set a different value of light
+            READ(LUCMD,*) CVAL
             GO TO 100
   103    CONTINUE
             GO TO 100
@@ -353,6 +366,16 @@ C     Print section
 C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
+C
+      WRITE(LUPRI,'(1X,A,F18.7)')
+     +   '* The speed of light : ',CVEL
+      IF(CVAL.NE.CVEL) THEN
+        FMT = MXFORM(CVAL,14)
+        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
+     +   '* The speed of light scaled by ',(CVAL/CVEL),
+     +   ' to : ',CVAL
+      ENDIF
+
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
@@ -468,7 +491,7 @@ C
       DATA TABDIR /'*END OF','*OPTIMI','*MINIMI','xXXXXXX'/
 C
       DATA TABLE  /'.TITLE ','.INPTES','.4INDEX','.ONLY I',
-     &             '.WAVE F','.ANALYZ','.PROPER','.HEINZ ',
+     &             '.WAVE F','.ANALYZ','.PROPER','.XXXXXX',
      &             '.NO4IND','xXXXXXX','.OPTIMI','.MINIMI'/
 C
       NJOBS = 0
@@ -553,9 +576,6 @@ C&&&& PROPERTIES:  Call property module
             NJOBS = NJOBS + 1
             GO TO 100
   108    CONTINUE
-C&&& HEINZ: Solve one-electronsystems using free-particle 
-C           projection operators
-            DOHEINZ = .TRUE.
             GO TO 100
   109    CONTINUE
 C&&&& deactivate 4-INDEX transformation (on by default for CC and CI)
@@ -602,8 +622,6 @@ C
       IF(DOPRP)   WRITE(LUPRI,'(3X,A)') '* Properties'
       IF(DOTRA) WRITE(LUPRI,'(3X,A)') '* Transformation to Molecu'//
      &    'lar Spinor basis'
-      IF(DOHEINZ) WRITE(LUPRI,'(3X,A)') '* One-electron systems with'//
-     &    ' free particle projection and point nucleus'
       IF(INPTES)  WRITE(LUPRI,'(3X,A)') '* Input test run only '
       IF(OPTIMI)  WRITE(LUPRI,'(3X,A/3X,A)') '* Geometry optimi'//
      &    'zation of DHF-wavefunction','  IMPORTANT'//
@@ -2186,9 +2204,9 @@ C
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
-     &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALY'/
+     &             '*RHO1  ','*DENSIT','*WT1   ','*XXXXXX'/
       DATA TABLE  /'.MULPOP','.PROJEC','.PRIVEC','.RHO1  ',
-     &             '.DENSIT','.WT1   ','.LOCALY','.XXXXXX'/
+     &             '.DENSIT','.WT1   ','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
 #include "memint.h"
@@ -2204,7 +2222,6 @@ C
       DO1RHO  = .FALSE.
       DO3RHO  = .FALSE.
       DO1WT   = .FALSE.
-      DOLOC   = .FALSE.
 C
 C     Read menu file
 C     ==============
@@ -2284,8 +2301,6 @@ C&&&& RHO1: Punch Becke integration weights along the lines between atomic cente
             NJOBS = NJOBS +1
             GO TO 100
   107    CONTINUE
-C&&&& LOCALYSE : Molecular orbital localization
-            DOLOC = .TRUE.
             GO TO 100
   108    CONTINUE
             GO TO 100
@@ -2316,8 +2331,6 @@ C
      &     '* Punch density along lines between nuclear centers'
       IF(DO1WT) WRITE(LUPRI,'(1X,A)')
      &     '* Punch Becke weights along lines between nuclear centers'
-      IF(DOLOC) WRITE(LUPRI,'(1X,A)')
-     S     '* Molecular orbital localization'
 C
 C
 C     Process input for various program sections
@@ -2364,7 +2377,6 @@ C
 #endif
         GO TO 200
     8 CONTINUE
-        CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
 C
     1 CONTINUE
@@ -2376,7 +2388,6 @@ C
 #if defined (MOD_DFT)
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
-      IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
       RETURN
@@ -2413,7 +2424,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.AOLAB ','.LABDEF','.VECPOP','.XXXXXX',
-     &            '.PRINT ','.ADDSML','.NETPOP','.XXXXXX'/
+     &            '.PRINT ','.INDSML','.NETPOP','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2433,7 +2444,7 @@ C     ===================
 C
       IPRPOP    = 0
       DONETP  = .FALSE.
-      ADDSML  = .FALSE.
+      ADDSML  = .TRUE.
       ORBDEF  = .TRUE.
       ILABDF  = 2
 C
@@ -2489,8 +2500,8 @@ C&&&& IPRPOP: Print level
                   READ(LUCMD,*) IPRPOP
                GO TO 100
     6          CONTINUE
-C&&&& ADDSML: Add default group label for small components
-                  ADDSML = .TRUE.
+C&&&& INDSML: Do not collect labels of small components of given center/symmetry
+                  ADDSML = .FALSE.
                GO TO 100
     7          CONTINUE
 C&&&& NETPOP: Mulliken Net populations
@@ -2539,8 +2550,8 @@ C
       ELSE
         WRITE(LUPRI,'(1X,A)') '* Label definitions based on SO-labels'
       ENDIF
-      IF(ADDSML) WRITE(LUPRI,'(3X,A)')
-     &      '(default small component groups labels will be added)'
+      IF(.NOT.ADDSML) WRITE(LUPRI,'(3X,A)')
+     &      '(individual small component labels will be used)'
       WRITE(LUPRI,'(1X,A)') '* Number of spinors analyzed:'
       DO I = 1,NFSYM
         NVEC = 0
@@ -2805,7 +2816,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRICMP','.AOLAB ','.VECPRI','.IPRINT',
+      DATA TABLE /'.PRICMP','.AOLAB ','.VECPRI','.PRINT ',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -2989,7 +3000,6 @@ C
       DOPSI    = .FALSE.
       DOANA    = .FALSE.
       DOPRP    = .FALSE.
-      DOHEINZ  = .FALSE.
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
       DOPIN    = .FALSE.
@@ -3084,7 +3094,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "codata.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -3103,7 +3112,7 @@ Cdirac#include "functionals.h"
 C
       LOGICAL SYMSTP,NOINPUT,SETFUN,SUCCESS
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, 
-     &          WORD1*7, LINE*80, MXFORM*6, FMT*6
+     &          WORD1*7, LINE*80
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
       SAVE SETFUN
@@ -3114,7 +3123,7 @@ C
      &            '.VEXTPJ','.URKBAL','.NOSMLV','.LEVY-L',
      &            '.SPINFR','.ZORA  ','.SMLV1C','.ALDA  ',
      &            '.DFT   ','.HFXFAC','.SCQSET','.ONECNV',
-     &            '.ONECAP','.SPINF2','.NOSPIN','.CVALUE',
+     &            '.ONECAP','.SPINF2','.NOSPIN','.XXXXXX',
      &            '.INTFLG','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
@@ -3391,7 +3400,7 @@ C       - even one-center integrals become quite numerous in some cases!!!
             ICHANG = ICHANG + 1
             GO TO 100
   122     CONTINUE
-C&&& SPINFR2 : debug: Zero out 2-electron spin-orbit terms
+C&&& SPINF2 : debug: Zero out 2-electron spin-orbit terms
             SPINFR2 = .TRUE.
             ICHANG = ICHANG + 1
             GO TO 100
@@ -3402,15 +3411,13 @@ C&&& NOSPIN: Take out all spin-interactions
              ICHANG = ICHANG + 1
             GO TO 100
   124     CONTINUE
-C&&&& CVALUE: Set a different value of light
-            READ(LUCMD,*) CVAL
             GO TO 100
   125     CONTINUE
 C&&& INTFLG: Specify what two-integrals should be included in this run
             IF (IGTINT .EQ. 1) THEN
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT,IGTINT
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT,IGTINT
             ELSE
-               READ(LUCMD,*) ILLINT,ILSINT,ISSINT
+               READ(LUCMD,*) ILLINT,ISLINT,ISSINT
             END IF
             GO TO 100
   126     CONTINUE
@@ -3468,15 +3475,6 @@ C
  400  CONTINUE
       WRITE(LUPRI,'(A,I5)') ' * Print level :',IPRHAM
 C
-      WRITE(LUPRI,'(1X,A,F18.7)')
-     +   '* The speed of light : ',CVEL
-      IF(CVAL.NE.CVEL) THEN
-        FMT = MXFORM(CVAL,14)
-        WRITE(LUPRI,'(3X,A,1P,D9.2,0P,A,'//FMT//')')
-     +   '* The speed of light scaled by ',(CVAL/CVEL),
-     +   ' to : ',CVAL
-      ENDIF
-
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
       ELSE IF (IGTINT .NE. 0) THEN
@@ -3499,7 +3497,7 @@ C
 C
 C     Set integral flags
 C
-      INTGEN = 1*ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
+      INTGEN = 1*ILLINT + 2*ISLINT + 4*ISSINT + 8*IGTINT
 C
 C     Write info about the modelling of SS interactions
 C
@@ -3526,7 +3524,7 @@ C     Write information about default integrals flags
 C
       WRITE(LUPRI,9001) '* Default integral flags passed to all modules'
       WRITE(LUPRI,9002) '- LL-integrals: ',ILLINT
-      WRITE(LUPRI,9002) '- LS-integrals: ',ILSINT
+      WRITE(LUPRI,9002) '- LS-integrals: ',ISLINT
       WRITE(LUPRI,9002) '- SS-integrals: ',ISSINT
       WRITE(LUPRI,9002) '- GT-integrals: ',IGTINT
  9001 FORMAT(1X,A)
@@ -4384,6 +4382,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "mxmcgas.h"
@@ -4392,6 +4391,7 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbana.h"
+#include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
 #include "ibtfun.h"
@@ -4402,6 +4402,9 @@ C
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)
      &   CALL QUIT ('.RESOLVE does not work with DFT')
+      IF (DOXLR .AND.DODFT)
+     &   CALL QUIT ('Linear response does not work with DFT')
+
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
 C     so I think running both should be OK. I have modified the test:
@@ -4434,16 +4437,6 @@ C
       IF (PARCAL .AND. DOKRMC) THEN
          IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
      &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
-      ENDIF
-C
-C     Check for C1 symmetry if localization requested
-C
-      IF(DOLOC .AND. (NBSYM .GT. 1)) THEN
-         WRITE (*,'(A,A)') ' * WARNING : Orbital localization not yet',
-     S   ' implemented'
-         WRITE (*,'(A)') '             for other groups than C1 !!!'
-         WRITE (*,'(A)') '   -> LOCALYSE ignored'
-         DOLOC = .FALSE.
       ENDIF
 C
       RETURN
@@ -4892,209 +4885,3 @@ C
 C
       END
 #endif
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck locinp */
-      SUBROUTINE LOCINP(WORD,RESET,WORK,LWORK)
-C***********************************************************************
-C
-C     Input section for Molecular orbital localization
-C
-C     Written by S. Dubillard - January 2004
-C     Last revision:
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-      PARAMETER (NTABLE = 8)
-C
-#include "dcbgen.h"
-#include "dcbana.h"
-#include "dcbprj.h"
-#include "dcbloc.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "nuclei.h"
-C
-      LOGICAL SET, NEWDEF,ORBDEF, RESET
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
-      DIMENSION WORK(LWORK)
-C
-      SAVE SET
-      DATA TABLE /'.PRINT ','.PRJLOC','.THRESH','.MAXITR',
-     &            '.VECPRJ','.VECREF','.OWNBAS','.XXXXXX'/
-      DATA SET/.FALSE./
-C
-      IF (SET) THEN
-         IF (RESET) SET = .FALSE.
-         RETURN
-      END IF
-      IF (RESET) THEN
-         SET = .FALSE.
-      ELSE
-         SET = .TRUE.
-      END IF
-#include "memint.h"
-C
-C
-C     Initialize /CBILOC/
-C     ===================
-C
-      PRJLOC = .FALSE. 
-      THRLOC = 1.0D-6      
-      ITRLOC = 100
-      IPRLOC = IPRGEN
-C
-C     Process input from CBILOC
-C     =========================
-C
-      NEWDEF = (WORD .EQ. '*LOCALY')
-      ICHANG = 0
-      IF (NEWDEF) THEN
-         WORD1 = WORD
- 100         CONTINUE
-            READ (LUCMD, '(A7)') WORD
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO 200 I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8), I
-                  END IF
- 200                        CONTINUE
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GO TO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ANWINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in POPINP.')
- 1                       CONTINUE
-C   Print level
-                  READ(LUCMD,*) IPRLOC
-               GO TO 100
- 2                       CONTINUE
-C   Do localisation from projection analysis
-                  PRJLOC = .TRUE.
-               GO TO 100
- 3                       CONTINUE
-C   Threshold
-                  READ(LUCMD,*) THRLOC
-               GO TO 100
- 4                       CONTINUE
-C   Maximum number of iterations
-                  READ(LUCMD,*) ITRLOC
-               GO TO 100
- 5                       CONTINUE
-C   VECPRJ: Spinors to project onto reference vectors
-                  READ(LUCMD,'(A72)') (VECPRJ(I),I=1,NFSYM)
-                  ORBDEF = .FALSE.
-               GO TO 100
- 6                       CONTINUE
-C   VECREF: Reference vectors
-                  READ(LUCMD,*) NREFS
-                  IF(NREFS.GT.MAXREF) THEN
-                    WRITE(LUPRI,'(A,I5)')
-     &         '* Number of reference fragments specified:',NREFS,
-     &         '* Current maximum                        :',MAXREF
-                    CALL QUIT('PRJINP:Too many fragments !')
-                  ENDIF
-                  DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
-                  ENDDO
-               GO TO 100
- 7                       CONTINUE
-C   OWNBAS: Fragments (defined from NUCIND)  are calculated in their own basis sets
-               OWNBAS = .TRUE.
-               GO TO 100
- 8                       CONTINUE
-               GO TO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GO TO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in ANWINP.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in ANWINP.')
-            END IF
-      END IF
- 300   CONTINUE
-C
-C     Print section
-C     =============
-C
-      IF(.NOT. DOLOC) GOTO 999
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 
-     S 'LOCINP: Molecular orbital localization (Pipek-Mezey criterion)'
-      CALL PRSYMB(LUPRI,'=',75,0)
-      IF(PRJLOC) THEN
-         WRITE(LUPRI,'(1X,A)') 
-     S      '* Molecular orbital localization from projection analysis'
-      ELSE
-         WRITE(LUPRI,'(1X,A)')
-     S      '* Molecular orbital localization from Mulliken analysis'
-      ENDIF
-      WRITE(LUPRI,'(1X,A,D9.2)')
-     S     '* Threshold for convergence of the localization process :',
-     S     THRLOC
-      WRITE(LUPRI,'(1X,A)')
-     S     '  (based on the inverse mean delocalization)'
-      WRITE(LUPRI,'(1X,A,I6)')
-     S     '* Maximum number of iterations :',ITRLOC
-      IF(PRJLOC) THEN
-         IF(OWNBAS) THEN
-            WRITE(LUPRI,'(1X,A)') 
-     S   '* Fragments are calculated in their individual bases !',
-     S   '    The indexing of reference spinor sets is assumed ',
-     S   '    to follow list of symmetry independent nuclei.'
-            DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3,A,A6)') '* Reference spinor set ',J,
-     S              ' --> ',NAMDEP(J)
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)') 
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
-     S           '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
-        ELSE
-           DO J = 1,NREFS
-              WRITE(LUPRI,'(1X,A,I3)') '* Reference spinor set ',J
-              WRITE(LUPRI,'(1X,A,A6)') ' - read from file ',REFFIL(J)
-              DO I = 1,NFSYM
-                 NVEC = 0
-                 CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
-                 IF(NVEC.EQ.0) THEN
-                    WRITE(LUPRI,'(4X,A,A3)') 
-     S                   '- No orbitals in fermion ircop ',FREP(I)
-                 ELSE
-                    WRITE(LUPRI,'(4X,A,A3,A,A72)') 
-     S          '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
-                 ENDIF
-              ENDDO
-           ENDDO
-        ENDIF
-      ENDIF
-      WRITE(LUPRI,'(1X,A)') 
-     S     '* Localised MO are written in file DFCOEF !!!'
-      WRITE(LUPRI,'(1X,A,I5)') '* Print level :',IPRLOC
- 999   CONTINUE
-      RETURN
-C
-      END

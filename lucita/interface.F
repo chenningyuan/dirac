@@ -1,3 +1,37 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -1755,7 +1789,7 @@ C?    WRITE(6,*) ' GET_PROP : NELMNT= ', NELMNT
 *
       Implicit Real*8 (A-H,O-Z)
 *
-      Include 'SysDef.inc'
+#include "SysDef.inc"
 *
       Parameter( LuOne = 14)
 *
@@ -2916,7 +2950,7 @@ C?          WRITE(6,*) ' I II J JJ ',I,II,J, JJ
 *
       IMPLICIT REAL*8(A-H,O-Z)
 
-      Include 'SysDef.inc'
+#include "SysDef.inc"
 
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -3153,6 +3187,7 @@ c       Write(*,Fmt) '*'//Line//'*'
 *     M.P. Fuelscher                                                   *
 *     University of Lund, Sweden, 1993                                 *
 *     Modified, Timo Fleig, Dec 2001                                   *
+*                           Aug 2004                                   *
 *                                                                      *
 *----------------------------------------------------------------------*
 *                                                                      *
@@ -3194,10 +3229,9 @@ c       Write(*,Fmt) '*'//Line//'*'
         If ( i.eq.9 )
      &  Line='T. Fleig'
         If ( i.eq.10 )
-     &  Line='Divisie Scheikunde, '//
-     &       'Faculteit der Exacte Wetenschappen, '
+     &  Line='Theoretische Chemie und Computerchemie, '
         If ( i.eq.11)
-     &  Line='Vrije Universiteit Amsterdam'
+     &  Line='Heinrich-Heine-Universitaet Duesseldorf '
         If ( i.eq.12)
      &  Line='                            '
         If ( i.eq.13)
@@ -3923,7 +3957,7 @@ C!    Call Abend2( ' Jeppe forced my to stop in INTIM ' )
 *
       IMPLICIT REAL*8(A-H,O-Z)
 
-      Include 'SysDef.inc'
+#include "SysDef.inc"
 
 *.ORBINP
 #include "mxpdim.inc"
@@ -5635,7 +5669,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 0
          IPRXT  = 0
          IPRRSP = 0
-         IPRDEN = 0
+         if (IDEMOL.ge.1) IPRDEN = 1
          IPROCC = 0
          IPRNCIV = 0
       else if (PRILUC.eq.'LOW') then
@@ -5645,7 +5679,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 1
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 1
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'MED') then
@@ -5655,7 +5689,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 2
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 1
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'HIG') then
@@ -5665,7 +5699,7 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRDIA = 10
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 2
+         if (IDEMOL.ge.1) IPRDEN = 5
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'VHI') then
@@ -6208,7 +6242,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
       implicit real*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-      include 'SysDef.inc'
+#include "SysDef.inc"
 #include "luci.inc"
 #include "units.inc"
 *
@@ -7087,9 +7121,6 @@ c     logical BREIT
       REALAR = .TRUE.
       TRESINT = 1.D-12
       NINT = 0
-      KLS = 0
-      KLF = M2
-      MM = M1 * M2
       N2EFIL = 0
       ISYMOFF = 0
 *

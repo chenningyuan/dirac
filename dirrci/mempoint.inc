@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : mempoint.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/mempoint.inc
 C
       COMMON/IPOINT/ITR ,ITI ,IIK ,IIL ,ITIR,ITII, M1 ,M2,
      &              IPDG,IPDR,IPDI,IPVR,IPVI,IPSR,IPSI,IPIL,IPIR,

@@ -1,3 +1,37 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mpglvc */
       SUBROUTINE MPGLVC(DMO,XMO,WORK,KFREE,LFREE,KFLG)
@@ -148,7 +182,7 @@ C     ====================================================
       CALL MEMGET('REAL',KXLAGRAN,NORBT*NORBT*NZ,WORK,KFREE,LFREE)
 C
       CALL LVCDEN1(DMO,XMO,WORK(KXLAGRAN),WORK(KCMO),WORK(KDMAT),
-     &             WORK(KXLAGAO),WORK,KFREE,LFREE,KFLG)
+     &             WORK(KXLAGAO),WORK(KPOS),WORK,KFREE,LFREE,KFLG)
 C
 C     Release memory
 C     ==============
@@ -159,8 +193,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lvcden1 */
-      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,WORK,KFREE,
-     &                   LFREE,KFLG)
+      SUBROUTINE LVCDEN1(DMO,XMO,XLAGRAN,CMO,DMAT,XLAGAO,NPOS,
+     &                   WORK,KFREE,LFREE,KFLG)
 C***********************************************************************
 C
 C     Written by J. van Stralen - Feb 2003
@@ -179,6 +213,7 @@ C              CMO  - spinor (mo) coefficients
 C              DMAT - AO density matrix (or better to say density 
 C                     matrix transformed to 'orthonormal SO' basis 
 C              XLAGAO - Lagrangian transformed to AO basis
+C              NPOS - something needed in parallel twofck
 C
 C     REMARKS:
 C
@@ -196,6 +231,7 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL TOBE
+      DIMENSION NPOS(*)
       DIMENSION DMO(*)
       DIMENSION XMO(*), XLAGRAN(*)
       DIMENSION CMO(*), DMAT(*), XLAGAO(N2BBASXQ)
@@ -210,14 +246,12 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','LVCDEN1')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,WORK,KFREE,LFREE)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2,WORK,KFREE,LFREE)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     b) Generate AO density matrix
 C     -----------------------------
 C
-c     CALL PRQMAT(DMO,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
       CALL DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
 C
 C     c) Generate AO Lagrangian
@@ -355,16 +389,6 @@ C
      &                WORK(KFREE),LFREE,1) ! last one is printlevel
        ENDIF
       ENDDO
-c     do iz = 1, nz
-c        do j = 1, norbt
-c           do i= 1, norbt
-c              print*, 'lagr=', iz, i, j, XLAGRAN(i,j,iz) 
-c           enddo
-c        enddo
-c     enddo
-c     print*,'lagrangian'
-c     CALL PRQMAT(XLAGRAN,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
 C
       CALL QEXIT('LTAOMO')
       RETURN
@@ -430,16 +454,6 @@ C
      &                WORK(KFREE),LFREE,1) ! last one is printlevel
        ENDIF
       ENDDO
-c     do iz = 1, nz
-c        do j = 1, norbt
-c           do i= 1, norbt
-c              print*, 'lagr=', iz, i, j, DMOAX(i,j,iz)
-c           enddo
-c        enddo 
-c     enddo
-c     print*,'lagrangian'
-c     CALL PRQMAT(DMOAX,NORBT,NORBT,NORBT,NORBT,NZ,
-c    &            IPQTOQ(1,0),LUPRI)
 C
       CALL QEXIT('DTAOMO')
       RETURN

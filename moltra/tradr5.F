@@ -1,3 +1,37 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tr5ini */
       SUBROUTINE TR5INI(XMO,TMATRX1,TMATRX2,WORK,LWORK)
@@ -110,13 +144,6 @@ C
         KGAB  = KFREE
       ENDIF
 C
-C     in the case of complex groups T^q,3 of the 2nd T has to be
-C     scaled with -1
-C
-      IF (NZ.EQ.2) THEN
-        CALL SCALT2(TMATRX2,NSTR(1,0,4))
-      ENDIF
-C
 C     *************************************
 C     ****** S E R I A L    C O D E  ******
 C     *************************************
@@ -181,7 +208,6 @@ C     -------------------------------------------------------------
       CALL DZERO(XMO,NORBT*NORBT*NZ)
       CALL ADDTAUL(WORK(KXMO1),WORK(KXMO2),XMO)
 C
-C             
 C     Screening statistics
 C
       IF(SCRTRA.GT.D0) THEN
@@ -635,19 +661,12 @@ C
       DIMENSION NBBASA(0:7,0:2), NBBASB(0:7,0:2)
       DIMENSION INDXL(*)
       DIMENSION NTQINT(2,0:7,0:7,2)
-      DIMENSION IQMULPH(4,4)
-      DATA IQMULPH / 1, 1, 1, 1,
-     &               1,-1,-1, 1,
-     &               1, 1,-1,-1,
-     &               1,-1, 1,-1/
 C
 #include "ibtfun.h"
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
-C
       CALL QENTER('MS3IN2')
-      NIJMAX = 0
       KFRSAV1 = KFREE
+      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Allocate memory for a temporary Lagrangian in AO-MO basis
 C     =========================================================
@@ -700,6 +719,7 @@ C     (ij,iz1,k,iz2,s,Gs,Grs,Gij) which is generated
 C     directly in QAXPY. For non-real groups we first
 C     generate (ij,iz1,k,iz2* which is accumulated in TQMAT.
 C     
+      NIJMAX = 0
       IF(NZ.GT.1) THEN
         DO IFRP=1,NFSYM
            IF(NFPCK12(IFRP)*NZ**2.GT.NIJMAX)
@@ -736,16 +756,16 @@ C           to check if indar changes
 C     This is actual index R and S in this irrep and IC.
             INDA1 = INDA - ICOS(IREPA+1,IC)
             INDB1 = INDB - ICOS(IREPB+1,IC)
-C     From the lower triangle we don't want the diagonal part to avoid
-C     double counting
-            IF(ITRIANG.EQ.2) THEN
-              IF (INDA.EQ.INDB) GOTO 10
-            ENDIF
 C     Indexing from relative to absolute AO nr, needed for Laomo     
             IF(ITRIANG.EQ.1) THEN
               INDXL(ILOFF(IREPB) + INDXBS(IREPB)) = INDB1
             ELSE
               INDXL(ILOFF(IREPA) + INDXAS(IREPA)) = INDA1
+            ENDIF
+C     From the lower triangle we don't want the diagonal part to avoid
+C     double counting
+            IF(ITRIANG.EQ.2) THEN
+              IF (INDA.EQ.INDB) GOTO 10
             ENDIF
 C
             IF(ITRIANG.EQ.1) THEN
@@ -857,8 +877,6 @@ C
         CALL LTMPOFF(NBBASA,ILTMOFF,IC,IFLGTAU)
       ENDIF
 C
-      DPHASE = D1
-C   
 C     The 1st tau dependent part of the Lagrangian
 C     --------------------------------------------
       IF(IFLGTAU.EQ.1) THEN
@@ -869,7 +887,23 @@ C     --------------------------------------------
               DO IREPS = 0, NBSYM -1
               IF(IREPI.EQ.JBTOF(IREPS,IC)) THEN
                 IF(NTQINT(IREPCI,IREPRS,IREPS,IC).NE.0) THEN
-                  K = NFPCK12(IREPCI)*NZ*NSTR3(IREPI)
+C
+C  Determine the irreps, for the small component we need to
+C  account for the difference in parity relative to the L.C.
+C
+                  IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPC = JBTOF(IREPR,IC)
+                  IF (IC.EQ.1) THEN
+                     IREPR2 = IREPR
+                     IREPS2 = IREPS
+                  ELSE
+                     IREPR2 = IBTXOR(IXYZ,IREPR)
+                     IREPS2 = IBTXOR(IXYZ,IREPS)
+                  ENDIF
+C
+C Determine the size of the matrices that need be transformed
+C
+                  K = NFPCK12(IREPCI)*NZ*NSTR3(IREPC)
                   IF(ITRIANG.EQ.1) THEN
                     M = NBBASB(IREPS,IC)
                   ELSE
@@ -880,66 +914,11 @@ C     --------------------------------------------
                   IOFFB = IOFFTM1(IREPI,IREPRS,IREPCI) + 1
                   IOFFC = ILTMOFF(IREPS,IREPI)
 C
-C  ####################################################################
-C  #  REAL groups:
-C  #  Because we don't get the phase factors appearing in equation ...
-C  #  from QGEMM because we use packed quaternions we have to scale
-C  #  'by hand' by determining what the phase would be in case of the
-C  #  unpacked quatnerion multiplication 
-C  ####################################################################
-C
-                  IF(NZ.EQ.1) THEN
-                    IREPR = IBTXOR(IREPRS,IREPS)
-                    IF (IC.EQ.1) THEN
-                      IREPR2 = IREPR
-                    ELSE
-                      IREPR2 = IBTXOR(IXYZ,IREPR)
-                    ENDIF
-                    IQ1 = IPQTOQ(1,IREPR2)
-                    IQ2 = IPQTOQ(1,IREPRS)
-                    DPHASE = IQMULPH(IQ1,IQ2)*D1
-                    IF(IQ2.GT.1) DPHASE = -DPHASE
-                  ENDIF
-C
-C  ####################################################################
-C  #  COMPLEX groups:           
-C  #  Because we don't get all the phase factors appearing in equation
-C  #  ... from QGEMM because we use packed quaternions we have to scale
-C  #  'by hand'.
-C  #  This case is more complicated than the real groups because some 
-C  #  of the terms where the unpacked quaternion unit > 2 is scaled 
-C  #  correct because we have complex terms, that's why we scale
-C  #  particular 3/4 transf. integrals instead of applying a scaling
-C  #  factor to QGEMM
-C  ####################################################################
-C
-                  IF(NZ.EQ.2) THEN
-                    IREPR = IBTXOR(IREPRS,IREPS)
-                    IF (IC.EQ.1) THEN
-                      IREPR2 = IREPR
-                    ELSE
-                      IREPR2 = IBTXOR(IXYZ,IREPR)
-                    ENDIF
-                    IQ2 = IPQTOQ(1,IREPRS)
-                    IF(IQ2.GT.2) THEN
-                      IQ1 = IPQTOQ(2,IREPR2)
-                      IF(IQ1.EQ.2) THEN
-                        IOFSC = IOFFA + K*M
-                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
-                      ENDIF
-                      IQ1 = IPQTOQ(1,IREPR2)
-                      IF(IQ1.EQ.4) THEN
-                        IOFSC = IOFFA
-                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
-                      ENDIF
-                    ENDIF
-                  ENDIF
-c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,DPHASE,'T','N',IPQTOQ(1,0),
-     &                       WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                       'N','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
-     &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
+                  CALL QGEMM(M,N,K,D1,'T','N',IPQTOQ(1,IREPR2),
+     &                 WORK(KTQMAT+IOFFA),K,M,NZ,
+     &                 'N','N',IPQTOQ(1,IREPRS),TMATRX(IOFFB),K,N,NZ,
+     &                  D1,IPQTOQ(1,IREPS2),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF
                 ENDIF
               ENDIF
@@ -961,7 +940,23 @@ C     --------------------------------------------
               DO IREPS = 0, NBSYM -1
               IF(IREPA.EQ.JBTOF(IREPS,IC)) THEN
                 IF(NTQINT(IREPLA,IREPRS,IREPS,IC).NE.0) THEN
-                  K = NFPCK12(IREPLA)*NZ*NSTR3(IREPA)
+C
+C  Determine the irreps, for the small component we need to
+C  account for the difference in parity relative to the L.C.
+C
+                  IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPL = JBTOF(IREPR,IC)
+                  IF (IC.EQ.1) THEN
+                     IREPR2 = IREPR
+                     IREPS2 = IREPS
+                  ELSE
+                     IREPR2 = IBTXOR(IXYZ,IREPR)
+                     IREPS2 = IBTXOR(IXYZ,IREPS)
+                  ENDIF
+C
+C Determine the size of the matrices that need be transformed
+C
+                  K = NFPCK12(IREPLA)*NZ*NSTR3(IREPL)
                   IF(ITRIANG.EQ.1) THEN
                     M = NBBASB(IREPS,IC)
                   ELSE
@@ -969,59 +964,14 @@ C     --------------------------------------------
                   ENDIF
                   N = NAVIR(IREPA)
                   IOFFA = IPTQLAG(IREPLA,IREPRS,IREPS,IC)
-                  IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
+                  IOFFB = IOFFTM2(IREPA,IREPRS,IREPLA) + 1
                   IOFFC = ILTMOFF(IREPS,IREPA)
-C                     
-C  ####################################################################
-C  #  REAL groups:
-C  #  See comment for 1st T dependent part
-C  ####################################################################
-C
-                  IF(NZ.EQ.1) THEN 
-                    IREPR = IBTXOR(IREPRS,IREPS)
-                    IF (IC.EQ.1) THEN
-                      IREPR2 = IREPR
-                    ELSE
-                      IREPR2 = IBTXOR(IXYZ,IREPR)
-                    ENDIF
-                    IQ1 = IPQTOQ(1,IREPR2)
-                    IQ2 = IPQTOQ(1,IREPRS)
-                    DPHASE = IQMULPH(IQ1,IQ2)*D1
-                    IF(IQ2.GT.1) DPHASE = -DPHASE
-                  ENDIF      
-C                 
-C  ####################################################################
-C  #  COMPLEX groups:
-C  #  See comment for 1st T dependent part
-C  ####################################################################
-C
-                  IF(NZ.EQ.2) THEN
-                    IREPR = IBTXOR(IREPRS,IREPS)
-                    IF (IC.EQ.1) THEN
-                      IREPR2 = IREPR
-                    ELSE
-                      IREPR2 = IBTXOR(IXYZ,IREPR)
-                    ENDIF
-                    IQ2 = IPQTOQ(1,IREPRS)
-                    IF(IQ2.GT.2) THEN
-                      IQ1 = IPQTOQ(2,IREPR2)
-                      IF(IQ1.EQ.2) THEN
-                        IOFSC = IOFFA + K*M
-                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
-                      ENDIF
-                      IQ1 = IPQTOQ(1,IREPR2)
-                      IF(IQ1.EQ.4) THEN
-                        IOFSC = IOFFA
-                        CALL DSCAL(K*M,-D1,WORK(KTQMAT+IOFSC),1)
-                      ENDIF
-                    ENDIF
-                  ENDIF
 c
                   IF((M.NE.0).AND.(N.NE.0).AND.(K.NE.0)) THEN
-                  CALL QGEMM(M,N,K,-DPHASE,'T','N',IPQTOQ(1,0),
-     &                       WORK(KTQMAT+IOFFA),K,M,NZ,
-     &                       'C','N',IPQTOQ(1,0),TMATRX(IOFFB),K,N,NZ,
-     &                       D1,IPQTOQ(1,0),WORK(KTMPLAM+IOFFC),M,N,NZ)
+                  CALL QGEMM(M,N,K,-D1,'T','N',IPQTOQ(1,IREPR2),
+     &                 WORK(KTQMAT+IOFFA),K,M,NZ,
+     &                 'C','N',IPQTOQ(1,IREPRS),TMATRX(IOFFB),K,N,NZ,
+     &                 D1,IPQTOQ(1,IREPS2),WORK(KTMPLAM+IOFFC),M,N,NZ)
                   ENDIF      
                 ENDIF
               ENDIF
@@ -1691,51 +1641,6 @@ C
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck scalt2*/
-      SUBROUTINE SCALT2(TMATRX2,NSTR3)
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     
-C     Written by Joost van Stralen december 2003.
-C     
-C     PURPOSE : scale the T^q,3 part of the T matrix (only for nz=2)
-C     
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h" 
-#include "dcbtra.h"  
-C               
-#include "mp1stpr.h"
-#include "dcborb.h"
-#include "dgroup.h"
-C
-      PARAMETER (D1 = 1.0D00)
-      DIMENSION NSTR3(2)
-      DIMENSION TMATRX2(*)
-C
-      CALL QENTER('SCALT2')
-C     
-      DO IREPLA = 1, NFSYM
-        DO IREPRS = 0, NBSYM - 1
-          IF (IREPLA.EQ.JBTOF(IREPRS,1)) THEN
-            DO IREPA = 1, NFSYM
-              K = NFPCK12(IREPLA)*NZ*NSTR3(IREPA)
-              N = NAVIR(IREPA)
-              IOFFB = IOFFTM1(IREPA,IREPRS,IREPLA) + 1
-              DO IZ = 1, NZ
-                IQ2 = IPQTOQ(IZ,IREPRS)
-                IF (IQ2.EQ.4) THEN
-                  CALL DSCAL(K*N,-D1,TMATRX2(IOFFB),1)
-                ENDIF
-              ENDDO ! iz
-            ENDDO ! irepa
-          ENDIF
-        ENDDO ! ireprs
-      ENDDO ! irepla
-C       
-      CALL QEXIT('SCALT2')
-C           
-      RETURN  
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pk3inla*/ 
       SUBROUTINE PK3INLA(NBBASR,NBBASS,IPTQLAG,NPTQLAG,NTQINT,NSTR3,IC)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1783,7 +1688,7 @@ C
               NS = NBBASS(IREPS,IC)
               NR = NBBASR(IREPR,IC)
               IF (NR.EQ.0) GOTO 11
-                NPTQLAG = NPTQLAG + NIJ*NSTR3(IREPK)*NS*NZ*NZ
+              NPTQLAG = NPTQLAG + NIJ*NSTR3(IREPK)*NS*NZ*NZ
               NTQINT(IREPIJ,IREPRS,IREPS,IC) = NIJ*NSTR3(IREPK)*NS*NZ*NZ
 11          CONTINUE !ireps
           ENDIF
@@ -1932,8 +1837,8 @@ C
      &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
                   XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
                 ENDDO !inds
+                IOFF5 = IOFF5 + NBBAS(IREPS,IC)
               ENDIF
-              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
             ENDDO !ireps
           ENDDO !i
         ENDDO !iz
@@ -1959,8 +1864,8 @@ C
      &                   + IOFT1(IZ,IREPS,IFSYM) + IOFT2 + INDS
                   XAOMO(IOFFLF) = XAOMO(IOFFLF) + TMPLAM(IOFFLT)
                 ENDDO !inds
+                IOFF5 = IOFF5 + NBBAS(IREPS,IC)
               ENDIF
-              IOFF5 = IOFF5 + NBBAS(IREPS,IC)
             ENDDO !ireps
           ENDDO !i
         ENDDO !iz
@@ -2014,7 +1919,7 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTRA')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),IDUM,IDUM,IDUM,2,
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,DUM,2,
      &            WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -2227,8 +2132,6 @@ C
         ENDDO     ! ifsym
       ENDDO       ! iz
 C
-c
-c
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -1,11 +1,19 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -22,7 +30,8 @@ C...   For questions concerning this copyright write to:
 C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.sdu.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -1396,9 +1405,6 @@ C
 #include "dcbxrs.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#if defined (MOD_DFT)
-#include "dftcom.h"
-#endif
 C
       DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
@@ -1419,10 +1425,6 @@ C
          IS = IBCVC(NCRED+I)
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
-#if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
-#endif
          ISYMOP(IM) = JSYMOP
       END DO
 C
@@ -1435,10 +1437,6 @@ C
            IS = IBEVC(NERED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
-#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
@@ -1454,10 +1452,6 @@ C
            IS = IBPVC(NPRED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#if defined (MOD_DFT)
-C        For anti-Hermitian trial vectors turn off exchange !
-         IF(DFTADD.AND.IHRMOP(IM).EQ.-1) IFCKOP(IM)=2
-#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
@@ -3516,9 +3510,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#if defined (MOD_DFT)
-#include "dftcom.h"
-#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -3564,23 +3555,6 @@ C     --------------------------
 C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
-#if defined (MOD_DFT)
-C
-C     Construct Kohn-Sham contribution
-C     ================================
-C
-      IF(DFTADD) THEN
-        IF (NCSIM.GT.0) CALL QUIT('GMOLITX1: MCSCF-DFT not implemented')
-C       Generate standard density matrix
-        IREPOP = JSYMOP-1
-        CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL GENDEN(WORK(KBUF),CMO,1,IPRXRS)
-        CALL DFTEXC(WORK(KBUF),FMO,FAO,NOSIM,ISYMOP,IHRMOP,
-     &              .FALSE.,.FALSE.,.FALSE.,.TRUE.,
-     &              WORK(KFREE),LFREE,IPRXRS)
-        CALL MEMREL('GMOLI1.dft',WORK,1,KBUF,KFREE,LFREE)
-      ENDIF
-#endif
 C
 C     Add solvent contributions
 C     -------------------------

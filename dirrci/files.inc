@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : files.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/files.inc
 C
       COMMON/FNUMBS/MRCONEE,MDCINT,MDBINT,MRCTRIV,MRCFINV,MRCEXCS,
      &              MRCVECS,MRCTWOE

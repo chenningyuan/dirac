@@ -1,0 +1,6 @@
+!
+! DFT energy calculation.
+!
+! Note that this functionality is not test automatically. One may check the
+! output by hand to make sure that DIRAC04 was installed correctly
+!

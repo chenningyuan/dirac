@@ -1,7 +1,0 @@
-!
-!  This test calculates the ground state energy of the Be atom
-!  with a 2 GAS FCI in C2v symmetry: 
-!   GAS 0   1s inactive
-!   GAS 1   2s
-!   GAS 2   2p shell
-!

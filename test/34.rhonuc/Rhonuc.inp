@@ -30,6 +30,4 @@ B3LYP
 #               3) Large component density
 #               4) Small component density
 .MULPOP
-*MULPOP
-.ADDSML
 *END OF

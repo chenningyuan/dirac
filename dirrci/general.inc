@@ -1,8 +1,7 @@
 C
 C VERSION : $Revision$
 C DATE    : $Date$
-C FILE    : general.inc
-C SOURCE  : $Source$
+C FILE    : dirrci/general.inc
 C
       COMMON/CONTROL/MDET,NDET,MVEC,NVEC,NROOTS,MAXITER,ITER,NSEL(N8),
      &               NREFDET,ISTART,INDMIN(N8)

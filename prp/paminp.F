@@ -1,28 +1,37 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -285,7 +294,11 @@ C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
+#if defined (MOD_XPP)
             CALL DEF_TPA(WORK,LWORK,DOTPA)
+#else
+            CALL QUIT('TPA not included in this version')
+#endif
             GO TO 100
 C&&&& .VERDET - Calculates the Verdet constant with the QR module
  125     CONTINUE
@@ -1047,6 +1060,7 @@ C***********************************************************************
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP),WORK(LWORK)
+      LOGICAL DELSS
 C
 C Used from common blocks:
 C  XCBPRP: everything
@@ -1062,16 +1076,6 @@ C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C
-      IF (IPRINT .GT. 100) THEN
-         WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
-     &   'XPRADD called;',
-     &   '  PNAME   =',PNAME,
-     &   '  IPTYP   =',IPTYP,
-     &   '  NPCOMP  =',NPCOMP,
-     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
-         WRITE (LUPRI,'(A,3(A8,2X))')
-     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
-      END IF
       IF (PLABEL(1)(1:7).EQ.'BETAMAT') THEN
 Chj      PCOMB = 'FFFT'
          PCOMB = '000+'
@@ -1113,8 +1117,28 @@ C
     4    PCOMB = '0+-0'
          GO TO 100
 C
-  100    IF (LEVYLE) PCOMB(4:4) = '0'
+  100    CONTINUE
+         IF (LEVYLE) THEN
+           DELSS=.FALSE.
+           IF (PCOMB(4:4).NE.'0') DELSS=.TRUE.
+           PCOMB(4:4) = '0'
+         ENDIF
       END IF
+
+      IF (IPRINT .GE. 7) THEN
+         WRITE (LUPRI,'(/A/2A,/A,A4,/A,I5/A,I5/A,1P,3(D20.10))')
+     &   'XPRADD called, property operator parameters:',
+     &   '  PNAME   =',PNAME,
+     &   '  PCOMB   =',PCOMB,
+     &   '  IPTYP   =',IPTYP,
+     &   '  NPCOMP  =',NPCOMP,
+     &   '  PFAC    =',(PFAC(I),I=1,NPCOMP)
+         WRITE (LUPRI,'(A,3(A8,2X))')
+     &   '  PLABEL  =',(PLABEL(I),I=1,NPCOMP)
+         IF (DELSS) WRITE(LUPRI,'(2X,A)')
+     &    'Levy-Leblond nonrelativistic mode, SS block zeroed!'
+      END IF
+
 C
 C     Define property
 C
@@ -1140,6 +1164,7 @@ C     Pointers to property labels
          END IF
          IPRPLBL(J,NPRPS) = INDX
   600 CONTINUE
+      IF (INDXPR .EQ. -1) CALL QUIT('XPRADD: PLABEL, PCOMB not found')
 C     Symmetry under time reversal and point group symmetry
       CALL PRPSYM(INDXPR,IPRINT)
 C

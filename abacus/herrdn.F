@@ -1,11 +1,19 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -23,6 +31,7 @@ C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -276,7 +285,6 @@ C
 C
       IPREAD = IPRDEF
       LUMLCL = 9
-      MAXPRI = MAXPRD
       BIGVC  = .FALSE.
       DIRAC  = RELCAL
       GENCON = .TRUE.
@@ -301,9 +309,11 @@ C
 C        This is the master, initialize as usual
 C        Slaves are already initialized before coming here.
          UNCONT = .FALSE.
+         MAXPRI = MAXPRD
       ENDIF
 #else
       UNCONT = .FALSE.
+      MAXPRI = MAXPRD
 #endif
       RETURN
       END

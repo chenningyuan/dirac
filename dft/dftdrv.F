@@ -1,3 +1,37 @@
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
+C...   All Rights Reserved.
+C...
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
+C...   used, copied, transmitted, or stored only in accord with that
+C...   written licence.
+C...
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
+C...   This means also that persons (e.g. post-docs) leaving the research
+C...   group of the licence holder may not take any part of Dirac,
+C...   including modified files, with him/her, unless that person has
+C...   obtained his/her own licence.
+C...
+C...   For questions concerning this copyright write to:
+C...      dirac-admin@dirac.chem.sdu.dk
+C...
+C...   For information on how to get a licence see:
+C...      http://dirac.chem.sdu.dk
+C 
 C /* Deck dftexc */
       SUBROUTINE DFTEXC(DMAT,DTRMAT,EXCMAT,NXCMAT,
      &                  ISYMOP,IHRMOP,DOERG,DOGRD,DOLND,DOATR,
@@ -204,8 +238,6 @@ C
      &          GAO(*), GAO1(*), GAO2(*),GAB1(*),
      &          ISYMOP(NXCMAT),IHRMOP(NXCMAT),WORK(LWORK)
 C
-CTROND
-      TIMSTR = SECOND()
 #include "memint.h"
 C
       IF (IPRINT .GE. 100) THEN
@@ -344,7 +376,6 @@ C
          WRITE (LUPRI,'( 2X,A,F24.16)')
      &      ' Number of electrons:               ', ELCTRN
          IF (DOERG) THEN
-CTROND            CALL DFT_ENE_REPORT()
             WRITE (LUPRI,'(2X,A,13X,F24.16)') 
      &          ' DFT exchange-correlation energy:', 
      &          EDFTY
@@ -504,29 +535,6 @@ C
           ELSE
             CALL DOEXC1(VX(FR0),IREPOP,EXCMAT,GAO)
           END IF
-        END IF
-C
-C       Exchange-correlation contribution to molecular gradient
-C       =======================================================
-C
-        IF(DOGRD) THEN
-CTROND           CALL DFTFRC
-        ENDIF
-C
-C       London contributions to Kohn-Sham matrix 
-C       ========================================
-C
-        IF (DOLND) THEN
-CTROND          CALL DFTMAG         
-        ENDIF
-C
-C       Hessian transformation
-C       ======================
-C
-        IF (DOATR) THEN
-          CALL DFTLTR(DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,GAO,GAO1,RHO,
-     &                RHOGRD,RHG,WGHT,DOGGA,BUF)
-CTROND     &                  DOBCK,DOLYP,DOGGA,TRPLET,DTGAO)
         END IF
   300 CONTINUE
 C

@@ -1,28 +1,37 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
-C...   The source code in this file is part of 
-C...   "Dirac, a relativistic ab initio electronic structure program, 
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   The source code in this file is part of
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
 C...
-C...   This source code is provided under a written licence and may be 
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
+C...
+C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
 C...   written licence.
 C...
-C...   In particular, no part of the source code or compiled modules may 
-C...   be distributed outside the research group of the licence holder. 
+C...   In particular, no part of the source code or compiled modules may
+C...   be distributed outside the research group of the licence holder.
 C...   This means also that persons (e.g. post-docs) leaving the research
 C...   group of the licence holder may not take any part of Dirac,
 C...   including modified files, with him/her, unless that person has
-C...   obtained his/her own licence. 
+C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -230,7 +239,7 @@ C
 C     Input for the gradient calculation.
 C
       DOMP2G    = .FALSE.
-      DOMP2GOLD = .TRUE.
+      DOMP2GOLD = .FALSE.
       DOCCSDG   = .FALSE.
       DOCCSDTG  = .FALSE.
       NEOPER = 1
@@ -1743,7 +1752,10 @@ C
 C  Read integrals & make fock matrices
 C
       SRTALL = .TRUE.
-      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD
+C
+C  MP2 calculations need less integrals
+C
+      IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
 C
       CALL RDINTS(IPRNT,NSP,CC(INDEX),CC(KR),CC(INDK),CC(INDL),
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
@@ -2102,9 +2114,11 @@ C
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC
-      LOGICAL DOMP2GNEW
 C
 C---------------Executable code--------------------------------------
+C
+      KFRSAV = KFREE
+      LFRSAV = LFREE
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'
@@ -2112,22 +2126,14 @@ C
          doccsdg = .false.
          domp2g = .true.
       endif
-      domp2gnew = .false.
       ALLOC = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
 C
-C The DIIS algorithm is used for the Z-vector and Lamda-equations
-C Allocate the workarrays only once with the maximum dimensions
+C     Allocate space for the calculation of the gradient
+C     We allocate everything, regardless whether the old
+C     module is active or not, because it takes only little
+C     memory.
 C
-      MAXIT  = MXITGR
-      MAXDIM = MXDIMGR
-      IF (DOCCSDG) MAXIT = MAX(MAXIT,MXITCC)
-      IF (DOCCSDG) MAXDIM = MAX(MAXDIM,MXDIMCC)
-C
-C Allocate space for the calculation of the gradient
-C
-      KFRSAV = KFREE
-      LFRSAV = LFREE
       CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
@@ -2155,6 +2161,12 @@ C
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
       NBUF2 = NBUF1
+C
+C The DIIS algorithm is used for the Z-vector and Lamda-equations
+C Allocate the workarrays only once with the maximum dimensions
+C
+      MAXIT  = MXITGR
+      MAXDIM = MXDIMGR
       CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
@@ -2162,51 +2174,16 @@ C
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
 C
-C     Calculate size of the 3rd work array
-C     The last array is used to buffer in the <VV||VV> and <VO||VV>
-C     integrals, start by making it as large as possible.
+C     Calculate size of the 3rd work array that is passed on to the
+C     response module as work, we make it as large as possible.
 C
       NBUF3 = (LFREE - 4) / RCW
 C
-C     Calculate maximum size necessary for the VOVV and VVVV buffers
-C
-      NV5IRP = 1
-      NV6IRP = 1
-      DO IRP = 1, NREP
-         NV5IRP = MAX(NV5IRP,NVO (IRP)*NVVT(IRP))
-         NV6IRP = MAX(NV6IRP,NVVT(IRP)*NVVT(IRP))
-      ENDDO
-C
-      NVIRP = MAX(NV5IRP,NV6IRP)
-      NBUF3 = MIN(NVIRP,NBUF3)
-C
-C     Check the minimum size for the general use of this array
-C
-      NBUF3 = MAX(NBUF1,NBUF3)
-C###############################################
-C     joost: the rest of the memory will be used
-C###############################################
-      NBUF3 = (LFREE - 4) / RCW
-C
-C     Allocate the work array
+C     Allocate now also this remaining work array
 C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
-C################################
+C
       IF (DOMP2G.OR.DOMP2GOLD) MXCORR = KFREE
-C################################
-      IF (DOCCSDG) THEN
-         CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',HO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',HV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
-         CALL MEMOPT('REAL',CZ,NV2*RCW,CC,KFREE,LFREE,ALLOC)
-      ENDIF
-C
-      IF (DOCCSDG) MXCORR = KFREE
-C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "Gradient calculation",KFREE
          KFREE = KFRSAV
@@ -2214,40 +2191,42 @@ C
          RETURN
       ENDIF
 C
-      WRITE (IW,1007) DOMP2G,DOMP2GOLD,DOCCSDG,DOCCSDTG,
-     &                MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
-      EQNS = 'LAMBDA'
-C
 C     Read the Fock matrix from file
 C
       CALL FMTOFILE (.FALSE.,CC(FVO),CC(FOO),CC(FVV))
 C
+C     Set equation type for use in MP2EQN
+C
+      EQNS = 'LAMBDA'
+C
+C     Get MP2 relaxed density matrix and compute first order properties.
+C
+C     First comes the old code for the MO implementation that gives
+C     an approximate value. This module is mainly intended for tests
+C     and backwards compatibility. The deafult is now to use the new
+C     AO based module that gives full relaxation and the exact result.
+C
       IF (DOMP2GOLD) THEN
 C
-C     Start with SCF (reference determinant) expectation values
-C     (Old code!!!)
+         WRITE (IW,1007) MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
 C
-      WRITE (IW,1002) '    SCF'
-      CALL XCOPY (NFOO,A0,0,CC(DOO),1)
-      CALL XCOPY (NFVV,A0,0,CC(DVV),1)
-      CALL XCOPY (NDIMX,A0,0,CC(DVO),1)
-      CALL XCOPY (NDIMX,A0,0,CC(DOV),1)
+C        Start with SCF (reference determinant) expectation values
 C
-      DO EOPER = 1, NEOPER
-         EOFF = (EOPER-1)*NDIMX*RCW+1
-         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
-     &               EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
-         CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
-     &               CC(EOO),CC(EVV),CC(EVO),CC(EOV),
-     &               EPHASE,CEXPA)
-         WRITE (IW,1004) NAMEE(EOPER),CEXPA
-      ENDDO
+         WRITE (IW,1002) '    SCF'
+         CALL XCOPY (NFOO,A0,0,CC(DOO),1)
+         CALL XCOPY (NFVV,A0,0,CC(DVV),1)
+         CALL XCOPY (NDIMX,A0,0,CC(DVO),1)
+         CALL XCOPY (NDIMX,A0,0,CC(DOV),1)
 C
-      ENDIF
-C
-C     Get MP2 relaxed density matrix
-C
-      IF (DOMP2G.OR.DOMP2GOLD) THEN
+         DO EOPER = 1, NEOPER
+            EOFF = (EOPER-1)*NDIMX*RCW+1
+            CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
+     &                  EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
+            CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
+     &                  CC(EOO),CC(EVV),CC(EVO),CC(EOV),
+     &                  EPHASE,CEXPA)
+            WRITE (IW,1004) NAMEE(EOPER),CEXPA
+         ENDDO
 C
 C        Solve relativistic MP2 lambda equations
 C
@@ -2267,17 +2246,9 @@ C
      &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
      &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
      &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-     &                 CC(CCC),CC(BB1),CC(BB2),TOL,CC(XMO),CC(DMO))
+     &                 CC(CCC),CC(BB1),CC(BB2),TOL)
 C
-         IF (DOMP2GOLD) THEN
-C
-C#################################################################
-C
-C     Old code!
-C
-C#################################################################
-C
-C      Calculate expecation value
+C        Calculate expecation value
 C
          WRITE (IW,1002) '    MP2'
          DO EOPER = 1, NEOPER
@@ -2289,117 +2260,73 @@ C
      &                  EPHASE,CEXPA)
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
-         ENDIF
 C
-         IF (DOMP2GNEW) THEN
+      ENDIF ! End of MO code
 C
-C#################################################################
+C     New AO implementation
 C
-C     create upper triangle of density matrix
+      IF (DOMP2G) THEN
 C
-C#################################################################
-         CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
+          WRITE (IW,1008) 
 C
+C         Slaves will only help in the integral calculation.
 C
-C#################################################################
+#if defined (VAR_MPI)
+          IF (MYPROC.NE.MASTER) THEN
+             IF (ICALC.EQ.2) CALL DIRNOD2(CC(KFRSAV),LFRSAV)
+             RETURN
+          ENDIF
+#endif
 C
-C     Multiply denstity matrix with property matrices
-C             (i.e. calculate expectation value)
+C        Solve relativistic MP2 lambda equations
 C
-C#################################################################
-C
-         KFREE1=1
-         LFREE1=NBUF3*RCW
-         CALL MEMCHK('voor prpexp_mp2',CC,1)
-         CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
-         ENDIF
-C
-      ENDIF
-C
-C     Get CCSD relaxed density matrix
-C
-      IF (DOCCSDG) THEN
-C
-C        Solve relativistic CCSD lambda equations
-C
-C        The CCSD energy calculation should be completed
-C
-         IF (IMSTAT(5).NE.3) THEN
-            WRITE (IW,1009) 
-            RETURN
-         ENDIF
-C
-C        No restart: start by copying T1 and T2 amplitdues to L1 and L2
-C
-         CALL GETAMPT (CC(T1),CC(T2))
-C
-         WRITE (IW,1008) MXITCC,MXDIMCC,10.0D0**(-NTOLCC)
-         MAXDIM = MXDIMCC
-         MAXIT  = MXITCC
-         TOL = 10.0D0**(-NTOLCC)
-         CALL WAIO_OPEN(ITAPL)
-C
-         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
-     &           CC(T2),CC(S2),CC(AZ),CC(CZ),CC(H),CC(HO),CC(HV),
-     &           CC(HOV),CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
-     &           CC(CCC),CC(BB1),CC(BB2),
-     &           TOL,NBUF2,NBUF3)
-C
-C        Put T1 and T2 amplitudes back in place
-C        L1 and L2 amplitudes are in S1, S2
-C
-         CALL GETAMPT(CC(T1),CC(T2))
+         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
 C        Get amplitude part of density matrix
 C
          CALL CCDENSC (1,CC(T1),CC(S1),CC(T2),CC(S2),
      &                 CC(BUF1),CC(BUF2),CC(BUF3),CC(DOO),CC(DVV),
      &                 CC(DVO),CC(DOV),CC(DMO))
+C        Solve Z-vector equations 
 C
-C        Solve Z-vector equations
+         CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
+     &                NBUF3,CC(XMO),CC(DMO))
 C
-         TOL = 10.0D0**(-NTOLGR)
-         MAXIT  = MXITGR
-         MAXDIM = MXDIMGR
-c        CALL CCDENSZ (1,NSP,IREPSPI,EPS,CC(T1),CC(S1),CC(T2),CC(S2),
-c    &                 CC(BUF1),CC(BUF2),CC(BUF3),NBUF2,NBUF3,CC(CBUF),
-c    &                 CC(XVO),CC(XOV),CC(DOO),CC(DVV),CC(DVO),CC(DOV),
-c    &                 CC(EVO),CC(EOV),CC(D2VO),CC(D2OV),CC(DG),
-c    &                 CC(CCC),CC(BB1),CC(BB2),TOL)
+C        Create upper triangle of density matrix
 C
-         WRITE (IW,1002) '   CCSD'
-         DO EOPER = 1, NEOPER
-            EOFF = (EOPER-1)*NDIMX*RCW+1
-            CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LTR,CC(CBUF),IREPSPI,
-     &                  EPHASE,CC(EVO),CC(EOV),CC(EOO),CC(EVV))
-            CALL EXPVAL(CC(DOO),CC(DVV),CC(DVO),CC(DOV),
-     &                  CC(EOO),CC(EVV),CC(EVO),CC(EOV),
-     &                  EPHASE,CEXPA)
-            WRITE (IW,1004) NAMEE(EOPER),CEXPA
+         CALL QHMRST(CC(DMO),NORBT,NZ,NORBT,NORBT)
+C
+C        Multiply denstity matrix with property matrices
+C        (i.e. calculate expectation value)
+C
+         KFREE1=1
+         LFREE1=NBUF3*RCW
+         CALL PRPEXP_MP2(CC(DMO),CC(BUF3),KFREE1,LFREE1)
+C
+C        Release the slaves (in case of parallel runs)
+C
+#if defined (VAR_MPI)
+         NTEST = -1
+         DO NODE = 1,NMPROC-1
+            CALL MPI_SEND(NTEST,1,MPI_INTEGER,NODE,27,
+     &                     MPI_COMM_WORLD,IERR)
          ENDDO
-C
+#endif
       ENDIF
 C
       CALL MEMREL('CCFOPR',CC,1,KFRSAV,KFREE,LFREE)
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
-1007  FORMAT (//" Gradient calculations"
-     &        /" MP2 module active :",T44,L1
-     &        /" MP2 old module active :",T44,L1
-     &        /" CCSD module active :",T44,L1
-     &        /" CCSD(T) module active :",T44,L1
-     &        //" Z-vector equations :"
+1007  FORMAT (//" Gradient calculations with the old MP2 module"
+     &        //" Z-vector equations are done in MO basis:"
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
+1008  FORMAT (//" Relaxed density matrix for MP2 properties")
 1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
      & 'Real part',8X,'Imaginary part')
 1004  FORMAT('  <',A8,'> ',T30,2F20.13)
-1008  FORMAT (//" CCSD lambda-equations :"
-     &        /" Maximum number of iterations :",T40,I5
-     &        /" Maximum size of DIIS space :",T40,I5
-     &        /" Convergence criterium :",T38,E7.1)
 1009  FORMAT (/" WARNING : Cannot solve CCSD lambda equations :",
      &         " T1 and T2 amplitudes are not available "/
      &         " Check that you specified DOENER and DOCCSD !")
@@ -2818,7 +2745,7 @@ C
       DO ISECT = 1, 6
       IF (FSSECT(ISECT).NE.0) THEN
       ICURFSS = IFSS(ISECT)
-      IF (ICURFSS.LE.20) THEN
+      IF (ICURFSS.LE.20.AND.ICURFSS.NE.11) THEN
         WRITE (IW,1009) ICURFSS
         CALL CCEQN(MAXIT,EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),

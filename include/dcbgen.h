@@ -26,12 +26,12 @@
       COMMON /CBCPAM/ TITLE
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP, DOHEINZ, DOHRM, DOJACO, DOPIN, DOPUT,       &
+     &        DOANA, DOPRP, DOHRM, DOJACO, DOPIN, DOPUT,                &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
-     &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
+     &                NOTRA, DOPRP, DOANA, DOHRM, DOJACO,               &
      &                DOFCK3, DOPIN, DOPUT, OPTIMI, HRINPC, RDINPC,     &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &

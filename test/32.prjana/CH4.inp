@@ -13,8 +13,6 @@ Projection analysis for CH4
 **ANALYZE
 .MULPOP
 .PROJEC
-*MULPOP
-.ADDSML
 *PROJEC
 .OWNBAS
 .VECREF

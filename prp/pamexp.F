@@ -1,11 +1,19 @@
-C
-C...   Copyright (c) 1998 by the authors of Dirac (see below).
+C 
+C...   Copyright (c) 2004 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
-C...   "Dirac, a relativistic ab initio electronic structure program,
-C...   Release 3.1 (1998), written by T. Saue, T. Enevoldsen, T. Helgaker,
-C...   H. J. Aa. Jensen, J. Laerdahl, K. Ruud, J. Thyssen, and L. Visscher"
+C...   Dirac, a relativistic ab initio electronic structure program,
+C...   release DIRAC04.0 (2004),
+C...   written by H. J. Aa. Jensen, T. Saue, and L. Visscher
+C...   with contributions from V. Bakken, E. Eliav, T. Enevoldsen, T. Fleig,
+C...   O. Fossgaard, T. Helgaker, J. Henriksson, J. K. Laerdahl, C. V. Larsen,
+C...   P. Norman, J. Olsen, M. Pernpointner, J. K. Pedersen, K. Ruud,
+C...   P. Salek, J. N. P. van Stralen, J. Thyssen, O. Visser, and T. Winther
+C...   (http://dirac.chem.sdu.dk).
+C...
+C...   For a suitable BibTEX entry, see:
+C...      http://dirac.chem.sdu.dk/doc/reference.shtml
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -19,10 +27,11 @@ C...   including modified files, with him/her, unless that person has
 C...   obtained his/her own licence.
 C...
 C...   For questions concerning this copyright write to:
-C...      dirac-admin@dirac.chem.ou.dk
+C...      dirac-admin@dirac.chem.sdu.dk
 C...
 C...   For information on how to get a licence see:
-C...      http://dirac.chem.ou.dk/Dirac
+C...      http://dirac.chem.sdu.dk
+C 
 C
 C
 C VERSION : $Revision$
@@ -951,7 +960,6 @@ C     Write expectation values to file
 C     ================================
 C
       CALL WEXPVTOF(EXPVAL)
-c     CALL READEXPV(EXPVAL)
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(4X,A)')
@@ -989,7 +997,7 @@ C
 C
       CALL QENTER('WEXPVTOF')
 C
-      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='NEW')
+      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='UNKNOWN')
       WRITE (LUCORP) (EXPVAL(I),I=1,NEXPP)
       CLOSE (LUCORP,STATUS='KEEP')
 C
@@ -998,36 +1006,45 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readexpv */
-      SUBROUTINE READEXPV(EXPVAL)
+      SUBROUTINE READEXPV(EXPVAL,TOBE)
 C*****************************************************************************
 C
 C     read expectation values from file
 C
 C     Written by Joost van Stralen, June 2002
-C
+C     
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION EXPVAL(*)
+      LOGICAL TOBE
 #include "dcbexp.h"
 #include "dcbprp.h"
 C
       CALL QENTER('READEXPV')
-C
+C     
       CALL DZERO(EXPVAL,NEXPP)
 C
-      OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='OLD')
-      REWIND (LUCORP)
-      READ (LUCORP) (EXPVAL(I),I=1,NEXPP)
-      CLOSE (LUCORP)
+      INQUIRE(FILE='CORPROP',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE (LUPRI,1000)
+      ELSE
+         OPEN (LUCORP,FILE='CORPROP',FORM='UNFORMATTED',STATUS='OLD')
+         REWIND (LUCORP)
+         READ (LUCORP) (EXPVAL(I),I=1,NEXPP)
+         CLOSE (LUCORP)
+      ENDIF
 C
       CALL QEXIT('READEXPV')
+C
+ 1000 FORMAT (//" WARNING : correlation contribution was not calculated"
+     &/" did you remember to specify DOFOPR=T in RELCCSD ?"//)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck  */
+C  /* Deck exptot */
       SUBROUTINE EXPTOT(EXPVAL,EXP_CORR,EXP_TOT)
 C*****************************************************************************
 C
