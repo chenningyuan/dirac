@@ -142,8 +142,6 @@ C&&& ERRELS: Threshold for accepted error in integrated number of electrons
                  READ(LUCMD,*) DFTELS
                  GO TO 100
  12              CONTINUE
-C&&& ANGMIN: Set minimum order of Lebedev scheme after pruning
-                 READ(LUCMD,*) ANGMIN
                  GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
