@@ -366,11 +366,12 @@ C     SMAT - overlap matrix
 C     COEF - coefficients
 C
 C     Written by T.Saue July 24 1994
-C     Last revision: Jan 7 1998 - jth LINUX
+C     Revised       : Jan 7 1998 - jth LINUX
+C     Last revision : Aug 20 2002 - jkp (take fractional occ. into account)
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D2 = 2.0D0)
+      PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
 #include "dummy.h"
 #include "mxorb.h"
 C Used from COMMON blocks:
@@ -402,27 +403,52 @@ C
 C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVEC + NEVEC
+      CALL MEMGET('REAL',KFRAC,NVEC,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KFRAC),NVEC)
+      LWRK   = LWORK - KFREE + 1
       DO I = 1,NVEC
+c
+c       Find fractional occupation for each requested orbital string
+c
+        NVORB =  NISH(IFRP)
+c     ... open shell
+        DO 100 IOPEN=1,NOPEN
+           NVORB =  NVORB + NACSH(IFRP,IOPEN)
+           IF (JVEC(I).GT.NISH(IFRP).AND.JVEC(I).LE.NVORB) THEN
+              WORK(KFRAC-1+I) = DF(IOPEN)
+              GO TO 100
+           ENDIF
+100     CONTINUE
+c     ... closed shell
+        IF (JVEC(I) .GT. 0 .AND. JVEC(I) .LE. NISH(IFRP)) THEN
+           WORK(KFRAC-1+I) = DF(0)
+        ENDIF
+c     ... virtual
+        IF (NSSH(IFRP) .GT. 0 .AND. JVEC(I).GT.NVORB)  THEN
+           WORK(KFRAC-1+I) = D0
+        ENDIF
+c
+c
         IF(I.GT.NPVEC) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Electronic eigenvalue nr.',JVEC(I),': ',
-     &       EIG(II)
+     &       EIG(II),'       (Occupation : f = ',WORK(KFRAC-1+I),')'
         ELSE
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
+          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
      +       '* Positronic eigenvalue nr.',II,': ',
-     &       EIG(II)
+     &       EIG(II),'       (Occupation : f = ',WORK(KFRAC-1+I),')'
         ENDIF
-        CALL PRSYMB(LUPRI,'=',48,0)
+        CALL PRSYMB(LUPRI,'=',80,0)
 C
 C       Calculate SO population matrix
 C       ==============================
 C
         CALL POPMAT(IFRP,I,PMAT,SMAT,CMO,NVEC,
-     &              IPGRS,NPOPLAB,NCBAS,WORK,LWORK,IPRPOP)
+     &              IPGRS,NPOPLAB,NCBAS,WORK(KFREE),LWRK,IPRPOP)
 C
 C       Calculate gross populations
 C       ===========================
@@ -430,10 +456,12 @@ C
         CALL GRSPOP(POPG,PMAT,NPOPLAB)
         CALL WRPOPG(POPG,POPLAB,NPOPLAB,IEFF,IPRPOP)
 C
-CJTH    D2 should be replaced by ??? for average of conf.
+C       Multiply fractional occupation on population.
+C       =============================================
 C
-        CALL DAXPY(NPOPLAB,D2,POPG(1,1),1,PGTOT(1,IFRP),1)
-        CALL DAXPY(NPOPLAB,D2,POPG(1,2),1,PGTOT(1,IFRP),1)
+        FACTOR  = D2*WORK(KFRAC-1+I)
+        CALL DAXPY(NPOPLAB,FACTOR,POPG(1,1),1,PGTOT(1,IFRP),1)
+        CALL DAXPY(NPOPLAB,FACTOR,POPG(1,2),1,PGTOT(1,IFRP),1)
 C
 C       Calculate net populations
 C       ===========================
@@ -470,7 +498,7 @@ C
         CALL WRPOPN(PNTOT(1,1,IFRP),PGTOT(1,IFRP),
      &              POPLAB,NPOPLAB,IEFF,'total')
       ENDIF
-      CALL MEMREL('MULPO1.POPMAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('MULPO2.POPMAT',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('MULPO2')
       RETURN
