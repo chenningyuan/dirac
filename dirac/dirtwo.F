@@ -178,7 +178,6 @@ C
 #include <dcbbas.h>
 #include <hrunit.h>
       DIMENSION WORK(LWORK)
-      LOGICAL NOCONT
 C
 C     Initialize COMMON BLOCKS
 C     ========================
@@ -528,14 +527,14 @@ C
 #include <symmet.h>
 #include <pgroup.h>
 #include <dcbind.h>
-      DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINT(0:7,0:1)
+      DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
 #include <ibtfun.h>
 C
-      CALL IZERO(NINT  ,16)
+      CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
       REWIND LUTWXX
       CALL MOLLAB('BASTWOEL',LUTWXX,LUERR)
@@ -566,8 +565,8 @@ C
         DO INT = 1,NUT
           IREP  = IND(1,INT)
           IT    = IND(2,INT)
-          NINT(IREP,IT) = NINT(IREP,IT) + 1
-          INDEX         = NINT(IREP,IT)
+          NINTS(IREP,IT) = NINTS(IREP,IT) + 1
+          INDEX         = NINTS(IREP,IT)
           TWOMAT(INDEX,IREP,IT)   = BUF(INT)
           INDMAT(INDEX,1,IREP,IT) = IBUF(INT,1)
 C*** Test to see whether matrix is full:
@@ -576,7 +575,7 @@ C*** Test to see whether matrix is full:
             CALL WRINT(LTFIL(IUNIT),INDEX,IREP,MAXBUF,NIBUF,
      &                 INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
-            NINT  (IREP,IT) = 0
+            NINTS  (IREP,IT) = 0
           ENDIF
         ENDDO
       ELSE
@@ -600,8 +599,8 @@ C
         DO INT = 1,NUT
           IREP  = IND(1,INT)
           IT    = IND(2,INT)
-          NINT(IREP,IT) = NINT(IREP,IT) + 1
-          INDEX         = NINT(IREP,IT)
+          NINTS(IREP,IT) = NINTS(IREP,IT) + 1
+          INDEX         = NINTS(IREP,IT)
           TWOMAT(INDEX,IREP,IT)   = BUF(INT)
           INDMAT(INDEX,1,IREP,IT) = IBUF(INT,1)
           INDMAT(INDEX,2,IREP,IT) = IBUF(INT,2)
@@ -611,7 +610,7 @@ C*** Test to see whether matrix is full:
             CALL WRINT(LTFIL(IUNIT),INDEX,IREP,MAXBUF,NIBUF,
      &                 INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
-            NINT  (IREP,IT) = 0
+            NINTS  (IREP,IT) = 0
           ENDIF
         ENDDO
       END IF
@@ -623,14 +622,14 @@ C
 C*** Empty matrices:
       DO IT = 0,1
         DO IREP = 0,MAXREP
-          IF(NINT(IREP,IT).GT.0) THEN
+          IF(NINTS(IREP,IT).GT.0) THEN
             IUNIT = (1-IT)*(1+IREP)
-            CALL WRINT(LTFIL(IUNIT),NINT(IREP,IT),IREP,MAXBUF,NIBUF,
+            CALL WRINT(LTFIL(IUNIT),NINTS(IREP,IT),IREP,MAXBUF,NIBUF,
      &               INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
-            NINT(IREP,IT) = NINT(IREP,IT) + ICOUNT(IREP,IT)*MAXBUF
+            NINTS(IREP,IT) = NINTS(IREP,IT) + ICOUNT(IREP,IT)*MAXBUF
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
           ELSE
-            NINT(IREP,IT) = ICOUNT(1,1)*MAXBUF
+            NINTS(IREP,IT) = ICOUNT(1,1)*MAXBUF
           ENDIF
         ENDDO
       ENDDO       
@@ -644,10 +643,10 @@ C
         WRITE(LUPRI,'(1X,A)') '* Integral statistics - coarse sort:'
         WRITE(LUPRI,'(1X,A)') '  - Class D integrals:'
         WRITE(LUPRI,'(8X,A,A3,I16)') 
-     &       ('Irrep ',REP(IREP),NINT(IREP,1),IREP=0,MAXREP)
+     &       ('Irrep ',REP(IREP),NINTS(IREP,1),IREP=0,MAXREP)
         WRITE(LUPRI,'(1X,A)') '  - Other classes    :'
         WRITE(LUPRI,'(8X,A,A3,I16)') 
-     &       ('Irrep ',REP(IREP),NINT(IREP,0),IREP=0,MAXREP)
+     &       ('Irrep ',REP(IREP),NINTS(IREP,0),IREP=0,MAXREP)
       ENDIF
 C
       RETURN
@@ -687,14 +686,14 @@ C
 #include <symmet.h>
 #include <pgroup.h>
 #include <dcbind.h>
-      DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINT(0:7,0:1)
+      DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
       DIMENSION IBUF(NCHUNK,NIBUF),BUF(NCHUNK),IND(2,NCHUNK)
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
 #include <ibtfun.h>
 C
-      CALL IZERO(NINT  ,16)
+      CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
       REWIND LUTWXX
       CALL MOLLAB('BASTWOEL',LUTWXX,LUERR)
@@ -725,8 +724,8 @@ C
         DO INT = 1,NUT
           IREP  = IND(1,INT)
           IT    = IND(2,INT)
-          NINT(IREP,IT) = NINT(IREP,IT) + 1
-          INDEX         = NINT(IREP,IT)
+          NINTS(IREP,IT) = NINTS(IREP,IT) + 1
+          INDEX         = NINTS(IREP,IT)
           TWOMAT(INDEX,IREP,IT)   = BUF(INT)
           INDMAT(INDEX,1,IREP,IT) = IBUF(INT,1)
 C*** Test to see whether matrix is full:
@@ -735,7 +734,7 @@ C*** Test to see whether matrix is full:
             CALL WRINT(LTFIL(IUNIT),INDEX,IREP,MAXBUF,NIBUF,
      &                 INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
-            NINT  (IREP,IT) = 0
+            NINTS  (IREP,IT) = 0
           ENDIF
         ENDDO
       ELSE
@@ -759,8 +758,8 @@ C
         DO INT = 1,NUT
           IREP  = IND(1,INT)
           IT    = IND(2,INT)
-          NINT(IREP,IT) = NINT(IREP,IT) + 1
-          INDEX         = NINT(IREP,IT)
+          NINTS(IREP,IT) = NINTS(IREP,IT) + 1
+          INDEX         = NINTS(IREP,IT)
           TWOMAT(INDEX,IREP,IT)   = BUF(INT)
           INDMAT(INDEX,1,IREP,IT) = IBUF(INT,1)
           INDMAT(INDEX,2,IREP,IT) = IBUF(INT,2)
@@ -770,7 +769,7 @@ C*** Test to see whether matrix is full:
             CALL WRINT(LTFIL(IUNIT),INDEX,IREP,MAXBUF,NIBUF,
      &                 INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
-            NINT  (IREP,IT) = 0
+            NINTS  (IREP,IT) = 0
           ENDIF
         ENDDO
       END IF
@@ -782,14 +781,14 @@ C
 C*** Empty matrices:
       DO IT = 0,1
         DO IREP = 0,MAXREP
-          IF(NINT(IREP,IT).GT.0) THEN
+          IF(NINTS(IREP,IT).GT.0) THEN
             IUNIT = (1-IT)*(1+IREP)
-            CALL WRINT(LTFIL(IUNIT),NINT(IREP,IT),IREP,MAXBUF,NIBUF,
+            CALL WRINT(LTFIL(IUNIT),NINTS(IREP,IT),IREP,MAXBUF,NIBUF,
      &               INDMAT(1,1,IREP,IT),TWOMAT(1,IREP,IT))
-            NINT(IREP,IT) = NINT(IREP,IT) + ICOUNT(IREP,IT)*MAXBUF
+            NINTS(IREP,IT) = NINTS(IREP,IT) + ICOUNT(IREP,IT)*MAXBUF
             ICOUNT(IREP,IT) = ICOUNT(IREP,IT) + 1
           ELSE
-            NINT(IREP,IT) = ICOUNT(1,1)*MAXBUF
+            NINTS(IREP,IT) = ICOUNT(1,1)*MAXBUF
           ENDIF
         ENDDO
       ENDDO       
@@ -803,10 +802,10 @@ C
         WRITE(LUPRI,'(1X,A)') '* Integral statistics - coarse sort:'
         WRITE(LUPRI,'(1X,A)') '  - Class D integrals:'
         WRITE(LUPRI,'(8X,A,A3,I16)') 
-     &       ('Irrep ',REP(IREP),NINT(IREP,1),IREP=0,MAXREP)
+     &       ('Irrep ',REP(IREP),NINTS(IREP,1),IREP=0,MAXREP)
         WRITE(LUPRI,'(1X,A)') '  - Other classes    :'
         WRITE(LUPRI,'(8X,A,A3,I16)') 
-     &       ('Irrep ',REP(IREP),NINT(IREP,0),IREP=0,MAXREP)
+     &       ('Irrep ',REP(IREP),NINTS(IREP,0),IREP=0,MAXREP)
       ENDIF
 C
       RETURN
@@ -899,20 +898,20 @@ C
 C       Loop over batches in buffer
 C
    10   CONTINUE
-        CALL REAINT(LUINTC,NINT,IRP,MAXBUF,NIBUF,IBUF,BUF)
-        IF(NINT.EQ.-1) GOTO 30
+        CALL REAINT(LUINTC,NINTS,IRP,MAXBUF,NIBUF,IBUF,BUF)
+        IF(NINTS.EQ.-1) GOTO 30
 C
 C       Unpack indices
 C
         IF (NIBUF .EQ. 1) THEN
-          DO INT = 1,NINT
+          DO INT = 1,NINTS
             IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
             IND(2,INT) = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
             IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
             IND(4,INT) = IBTAND(       IBUF(INT,1),         IBIT1)
           ENDDO
         ELSE
-          DO INT = 1,NINT
+          DO INT = 1,NINTS
             IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
             IND(2,INT) = IBTAND(       IBUF(INT,1),       IBIT1)
             IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
@@ -922,7 +921,7 @@ C
 C
 C       Begin sorting
 C
-        DO 50 INT = 1,NINT
+        DO 50 INT = 1,NINTS
           I = IND(1,INT)
           J = IND(2,INT)
           K = IND(3,INT)
@@ -1138,7 +1137,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wrint */
-      SUBROUTINE WRINT(IUNIT,NINT,IREP,NDIM,NIBUF,IBUF,BUF)
+      SUBROUTINE WRINT(IUNIT,NINTS,IREP,NDIM,NIBUF,IBUF,BUF)
 C*****************************************************************************
 C
 C     Write integral and indices to unformatted file
@@ -1151,16 +1150,16 @@ C*****************************************************************************
 #include <priunit.h>
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
-      WRITE(IUNIT) NINT,IREP
-      IF(NINT.LE.0) RETURN
-      CALL WRITI(IUNIT,NINT,IBUF(1,1))
-      IF(NIBUF.EQ.2) CALL WRITI(IUNIT,NINT,IBUF(1,2))
-      CALL WRITT(IUNIT,NINT,BUF)
+      WRITE(IUNIT) NINTS,IREP
+      IF(NINTS.LE.0) RETURN
+      CALL WRITI(IUNIT,NINTS,IBUF(1,1))
+      IF(NIBUF.EQ.2) CALL WRITI(IUNIT,NINTS,IBUF(1,2))
+      CALL WRITT(IUNIT,NINTS,BUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reaint */
-      SUBROUTINE REAINT(IUNIT,NINT,IREP,NDIM,NIBUF,IBUF,BUF)
+      SUBROUTINE REAINT(IUNIT,NINTS,IREP,NDIM,NIBUF,IBUF,BUF)
 C*****************************************************************************
 C
 C     Write integral and indices to unformatted file
@@ -1173,11 +1172,11 @@ C*****************************************************************************
 #include <priunit.h>
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
-      READ(IUNIT) NINT,IREP
-      IF(NINT.LE.0) RETURN
-      CALL READI(IUNIT,NINT,IBUF(1,1))
-      IF(NIBUF.EQ.2) CALL READI(IUNIT,NINT,IBUF(1,2))
-      CALL READT(IUNIT,NINT,BUF)
+      READ(IUNIT) NINTS,IREP
+      IF(NINTS.LE.0) RETURN
+      CALL READI(IUNIT,NINTS,IBUF(1,1))
+      IF(NIBUF.EQ.2) CALL READI(IUNIT,NINTS,IBUF(1,2))
+      CALL READT(IUNIT,NINTS,BUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1249,20 +1248,20 @@ C
 C       Loop over batches in buffer
 C
    10   CONTINUE
-        CALL REAINT(LUINTC,NINT,IRP,MAXBUF,NIBUF,IBUF,BUF)
-        IF(NINT.EQ.-1) GOTO 30
+        CALL REAINT(LUINTC,NINTS,IRP,MAXBUF,NIBUF,IBUF,BUF)
+        IF(NINTS.EQ.-1) GOTO 30
 C
 C       Unpack indices
 C
         IF (NIBUF .EQ. 1) THEN
-          DO INT = 1,NINT
+          DO INT = 1,NINTS
             IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
             IND(2,INT) = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
             IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
             IND(4,INT) = IBTAND(       IBUF(INT,1),         IBIT1)
           ENDDO
         ELSE
-          DO INT = 1,NINT
+          DO INT = 1,NINTS
             IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
             IND(2,INT) = IBTAND(       IBUF(INT,1),       IBIT1)
             IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
@@ -1272,7 +1271,7 @@ C
 C
 C       Begin sorting
 C
-        DO INT = 1,NINT
+        DO INT = 1,NINTS
           I = IND(1,INT)
           J = IND(2,INT)
           K = IND(3,INT)
@@ -3248,7 +3247,7 @@ C
 #include <dcbqal.h>
       LOGICAL PERTUR, EXPECT, UNDIFF, SPNORB, DIRFCK, DISTRI, SQ12EL,
      &        LONDON, SUSCEP, DDFOCK, ADISTR, LBIT, FIRST
-      CHARACTER SECTID*12, INTTID*12
+      CHARACTER SECTID*12
       DIMENSION FAO(N2BBASX*4,NFMAT),DAO(*),
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -3295,53 +3294,43 @@ C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
-        WRITE(LUPRI,'(A)') 'DIRSCF: LL-integrals:'
 #if defined (VAR_MPI) || defined (VAR_PVM)
         IF (PARCAL) THEN
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           CALL GETTIM(CPU1,WALL1)
            CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
      &          DNTSKP)
 C
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
-              IMINS  = INT(TOTWAL)/60
-              IHOURS = IMINS/60
-              IMINS  = IMINS - 60*IHOURS
-              ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
-C
-              WRITE(6,'(A,I5.2,A,I2.2,A,I2.2)')
+              WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             IHOURS,':',IMINS,':',ISECS
+     &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
-                 WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                CPU,
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                WALL
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
 #endif
-           CALL TIMER('START ',TIMSTR,TIMEND)
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
-           CALL TIMER('DIRSCF(LL)',TIMSTR,TIMEND)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL SCRSTA('SCR:LL',DNTSKP)
+        CALL SCRSTA('AOfock:LL',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
            DO I = 1,NFMAT
               CALL HEADER('Skeleton LL-FOCK',-1)
@@ -3356,56 +3345,47 @@ C     SL - integrals
 C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        WRITE(LUPRI,'(A)') 'DIRSCF: SL-integrals:'
         I2TYP  = 2
         THRBUF = THRS
         THRS   = THRS*THRFAC(1)
 #if defined (VAR_MPI) || defined (VAR_PVM)
         IF (PARCAL) THEN
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           CALL GETTIM(CPU1,WALL1)
            CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
      &          DNTSKP)
 C
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
-              IMINS  = INT(TOTWAL)/60
-              IHOURS = IMINS/60
-              IMINS  = IMINS - 60*IHOURS
-              ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
 C
-              WRITE(6,'(A,I5.2,A,I2.2,A,I2.2)')
+              WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             IHOURS,':',IMINS,':',ISECS
+     &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
-                 WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                CPU,
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                WALL
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
 #endif
-           CALL TIMER('START ',TIMSTR,TIMEND)
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
-           CALL TIMER('DIRSCF(SL)',TIMSTR,TIMEND)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL SCRSTA('SCR:SL',DNTSKP)
+        CALL SCRSTA('AOfock:SL',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SL-FOCK',-1)
@@ -3425,59 +3405,42 @@ C
         I2TYP  = 3
         THRBUF = THRS
         THRS   = THRS*THRFAC(2)
-        WRITE(LUPRI,'(A)') 'DIRSCF: SS-integrals:'
 #if defined (VAR_MPI) || defined (VAR_PVM)
         IF (PARCAL) THEN
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           CALL GETTIM(CPU1,WALL1)
            CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,IFTHRS,GABRAO,DMRAO,DUMMY,
      &          DNTSKP)
-c
-c           CALL PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
-c     &          IDUMMY,NUMDIS,MAXDIS,IRNTYP,MAXDIF,JATOM,.TRUE.,
-c     &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-c     &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-c     &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
-C
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
-              IMINS  = INT(TOTWAL)/60
-              IHOURS = IMINS/60
-              IMINS  = IMINS - 60*IHOURS
-              ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
-C
-              WRITE(6,'(A,I5.2,A,I2.2,A,I2.2)')
+              WRITE(6,'(A,A12)')
      &             '>>>> Total wall time used in PARDRV so far   :',
-     &             IHOURS,':',IMINS,':',ISECS
+     &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
-                 WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                CPU,
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                WALL
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
 #endif
-           CALL TIMER('START ',TIMSTR,TIMEND)
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FAO,DAO,NDMAT,IDUMMY,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DUMMY,DNTSKP,.TRUE.)
-           CALL TIMER('DIRSCF(SS)',TIMSTR,TIMEND)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL SCRSTA('SCR:SS',DNTSKP)
+        CALL SCRSTA('AOfock:SS',DNTSKP,CPU)
         IF(IPRINT.GE.5) THEN
           DO I = 1,NFMAT
             CALL HEADER('Skeleton SS-FOCK',-1)
@@ -3837,7 +3800,7 @@ C
 #include <ccom.h>
 #include <blocks.h>
       LOGICAl LBIT
-      CHARACTER SECTID*12, INTTID*12
+      CHARACTER SECTID*12
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
@@ -3871,52 +3834,48 @@ C
       JATOM  = 0
       KPOS   = 1
 C
-C     LL - integrals
+
 C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,1).AND.LBIT(IDFLAG,1)) THEN
         I2TYP = 1
-        WRITE(LUPRI,'(A)') 'DIRSOF: LL-integrals:'
-        CALL TIMER('START ',TIMSTR,TIMEND)
 #if defined (VAR_MPI) || defined (VAR_PVM)
         IF (PARCAL) THEN
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           CALL GETTIM(CPU1,WALL1)
            CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &          DNTSKP)
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
+              WRITE(6,'(A,A12)')
+     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
-                 WRITE(LUPRI,'(A,A12)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                INTTID
-                 INTTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12)')
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                INTTID
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
 #endif
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL TIMER('DIRSOF(LL)',TIMSTR,TIMEND)
-        CALL SCRSTA('SCR:LL',DNTSKP)
+        CALL SCRSTA('SOfock:LL',DNTSKP,CPU)
       ENDIF
       KPOS = KPOS + MTOTTK
 C
@@ -3924,52 +3883,46 @@ C     SL - integrals
 C
       MTOTTK = NLRGBL*(NLRGBL+1)/2
       IF(LBIT(INTFLG,2).AND.LBIT(IDFLAG,2)) THEN
-        WRITE(LUPRI,'(A)') 'DIRSOF: SL-integrals:'
-        CALL TIMER('START ',TIMSTR,TIMEND)
         I2TYP  = 2
         THRBUF = THRS
         THRS   = THRS*THRFAC(1)
 #if defined (VAR_MPI) || defined (VAR_PVM)
         IF (PARCAL) THEN
 C
-           IF (IPRINT .GT. 0) CALL GETTIM(CPU1,WALL1)
-C
+           CALL GETTIM(CPU1,WALL1)
            CALL PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
      &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
      &          ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
      &          DNTSKP)
-C
+           CALL GETTIM(CPU2,WALL2)
+           CPU    = CPU2 - CPU1
            IF (IPRINT .GT. 0) THEN
-              CALL GETTIM(CPU2,WALL2)
-              CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-C     
-C     
+              WRITE(6,'(A,A12)')
+     &             '>>>> Total wall time used in PARDRV so far   :',
+     &             SECTID(TOTWAL)
               IF (IPRINT .GT. 5) THEN
                  INTTID = SECTID(CPU)
-                 WRITE(LUPRI,'(A,A12)')
-     &                '>>>> CPU  time used in PARDRV last iteration :',
-     &                INTTID
-                 INTTID = SECTID(WALL)
-                 WRITE(LUPRI,'(A,A12)')
-     &                '>>>> Wall time used in PARDRV last iteration :',
-     &                INTTID
+                 WRITE(LUPRI,'(A,A12,A1,A12)')
+     &             '>>>> CPU/wall  time used in PARDRV last iteration :',
+     &             SECTID(CPU),'/',SECTID(WALL)
               END IF
            END IF
         ELSE
 #endif
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL TIMER('DIRSOF(SL)',TIMSTR,TIMEND)
-        CALL SCRSTA('SCR:SL',DNTSKP)
+        CALL SCRSTA('SOfock:SL',DNTSKP,CPU)
         THRS = THRBUF
         CALL FLSHFO(LUPRI)
       ENDIF
@@ -4014,16 +3967,17 @@ C
            END IF
         ELSE
 #endif
+           CPU = SECOND()
            CALL TWOINT(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,DUMMY,
      &          IDUMMY,IDUMMY,IRNTYP,MAXDIF,JATOM,.TRUE.,
      &          .TRUE.,.FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
      &          IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.)
+           CPU = SECOND() - CPU
 #if defined (VAR_MPI) || defined (VAR_PVM)
         ENDIF
 #endif
-        CALL TIMER('DIRSOF(SS)',TIMSTR,TIMEND)
-        CALL SCRSTA('SCR:SS',DNTSKP)
+        CALL SCRSTA('SCR:SS',DNTSKP,CPU)
         CALL FLSHFO(LUPRI)
         THRS = THRBUF
       ENDIF

@@ -57,6 +57,8 @@ C
 C*****************************************************************************
 #include <implicit.h>
 #include <priunit.h>
+C
+#include <dcbgen.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
       INCLUDE 'mpif.h'
@@ -90,18 +92,20 @@ CTROND      INCLUDE 'sys/schedctl.h'
 #else
       PARAMETER (LUERR = 0)
 #endif
-C
 #if !defined (SYS_CONVEX)
       PARAMETER (IWOFF = 0)
 #endif
+C
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX)
-      CHARACTER*20 DIRWRK, NODWRK
+      CHARACTER DIRWRK*20
+#if defined (VAR_MPI)
+      CHARACTER NODWRK*20, DIRPAR*2
+#endif
 #endif
 #ifndef VAR_G77
 #if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
       POINTER (WADDR,WORK(1))
-#else
-#if defined (SYS_CONVEX)
+#elif defined (SYS_CONVEX)
       DIMENSION WORK(2)
 #else
 C
@@ -109,13 +113,7 @@ C     Static memory allocation
 C
       DIMENSION WORK(LWORK+2)
 #endif
-#if defined (SYS_IBM)
-      COMMON /DIRWRK/ WORK
-#endif
-#endif
-#endif
       CHARACTER CPUTID*12, SECTID*12
-      DATA WRKDLM/8H*WRKDLM*/
       LMWORK = 0
       LSWORK = 0
 C
@@ -129,43 +127,86 @@ C
       CALL ERRSET(212,256,-1,1)
 #endif
 C
+      PARCAL = .FALSE.
 #ifndef VAR_G77
 #if defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_CONVEX) || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_HPUX)
+#if defined (VAR_MPI)
 C
-C     Dynamic allocation of memory;check for DIRWRK in environment
-C     ============================================================
+C     Check if this is a parallell calculation or not;
+C     check for DIRPAR in environment
+C     ================================================
+C
+      IPAR   = 0
+      DIRPAR = '  '
+#if defined (SYS_T3D)
+      CALL PXFGETENV('DIRPAR',6,DIRPAR,LWRKMM,IERR)
+      IF(IERR.EQ.0) READ (DIRPAR,'(I2)',ERR=10) IPAR
+#else
+      CALL GETENV('DIRPAR',DIRPAR)
+      READ (DIRPAR,'(I2)',ERR=5) IPAR
+#endif
+      IF(IPAR.NE.0) PARCAL = .TRUE.
+      GO TO 6
+    5    WRITE (LUERR,*)
+     &   'DIRPAR conversion error; DIRPAR = "',DIRPAR,'"'
+         IPAR = 0
+    6 CONTINUE
+#endif
+C
+C     Dynamic allocation of master memory;
+C     check for DIRWRK in environment
+C     =====================================
 C
       DIRWRK = '                    '
+#if defined (SYS_T3D)
+      CALL PXFGETENV('DIRWRK',6,DIRWRK,LWRKMM,IERR)
+      IF(IERR.EQ.0) READ (DIRWRK,'(I20)',ERR=10) LMWORK
+#else
       CALL GETENV('DIRWRK',DIRWRK)
       READ (DIRWRK,'(I20)',ERR=10) LMWORK
+#endif
       GO TO 20
    10    WRITE (LUERR,*)
      &   'DIRWRK conversion error; DIRWRK = "',DIRWRK,'"'
          LMWORK = 0
    20 CONTINUE
 C
-      NODWRK = '                    '
-      CALL GETENV('DIRAC_NODEWRK',NODWRK)
-      READ (NODWRK,'(I20)',ERR=11) LSWORK
-      GO TO 21
-   11    WRITE (LUERR,*)
-     &   'DIRAC_NODEWRK conversion error; DIRAC_NODEWRK ="',NODWRK,'"'
-         LSWORK = 0
-   21 CONTINUE
+#if defined (VAR_MPI) 
+      IF(PARCAL) THEN
+C
+C       Dynamic allocation of slave memory;
+C       check for DIRWRK in environment
+C       =====================================
+C
+        NODWRK = '                    '
+#if defined (SYS_T3D)
+        CALL PXFGETENV('DIRNOD',6,NODWRK,LWRKMM,IERR)
+        IF(IERR.EQ.0) READ (NODWRK,'(I20)',ERR=10) LSWORK
+#else
+        CALL GETENV('DIRNOD',NODWRK)
+        READ (NODWRK,'(I20)',ERR=11) LSWORK
+#endif
+        GO TO 21
+   11      WRITE (LUERR,*)
+     &     'DIRNOD conversion error; DIRNOD ="',
+     &     NODWRK,'"'
+           LSWORK = 0
+   21   CONTINUE
+      ENDIF
+#endif
+#endif
 #endif
 C
 C     If not user specified, use default memory size
 C
 C     master node:
       IF (LMWORK .LE. 0) LMWORK = MAX(LWORK,LSWORK)
-      NMBYTES = (LMWORK+2) * 8
-      XMBYTES = NMBYTES
-      XMBYTES = XMBYTES / (1024*1024)
-C     slave nodes:
-      IF (LSWORK .LE. 0) LSWORK = LMWORK
-      NSBYTES = (LSWORK+2) * 8
-      XSBYTES = NSBYTES
-      XSBYTES = XSBYTES / (1024*1024)
+#if defined (VAR_MPI) 
+      IF(PARCAL) THEN
+C       slave nodes:
+        IF (LSWORK .LE. 0) LSWORK = LMWORK
+      ENDIF
+#endif
 #endif
 #ifdef VAR_G77
 C
@@ -179,325 +220,44 @@ C
       IF (WORK(1).NE.10101.0) 
      &   CALL QUIT('MEMORY ALLOCATION ERROR (WORK)')
 #endif
-#ifndef VAR_MPI
-C
-C     Memory allocation for serial calculations.
-C
-#ifndef VAR_G77
-C     
- 1000 FORMAT(/' >>> DIRAC: requested memory could not be allocated.',
-     &     /'     Probable causes:',
-     &     /'       (1) Insufficient free memory+page+swap space',
-     &     /'       (2) "datasize" resource limit too small.')
-C     
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-#if defined (SYS_AIX)
-      WADDR = MALLOC(%VAL(NMBYTES))
-#endif
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-      WADDR = MALLOC(NMBYTES)
-#endif
-      IF (WADDR .EQ. 0) THEN
-         WRITE(LUPRI,1000)
-         WRITE(LUERR,1000)
-         CALL QUIT(' DIRAC: memory allocation failure')
-      END IF
-#if defined (SYS_CONVEX)
-C
-C     Convex dynamic memory allocation
-C     ================================
-C
-      CALL NALLOC(NMBYTES,IPTR,IERR)
-      IF (IERR .LT. 0) THEN
-         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (LUPRI .NE. 0)
-     &        WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (IERR .EQ. -3) THEN
-            WRITE(LUPRI,1000)
-            IF (LUPRI .NE. 0) WRITE(0,1000)
-         END IF
-         STOP ' DIRAC: memory allocation failure'
-      ENDIF
-      IWOFFB = IPTR - LOC(WORK(1))
-      IWOFF  = IWOFFB / 8
-      IF (IWOFF*8 .NE. IWOFFB) THEN
-         WRITE (0,'(A,3(/A,I12))')
-     &        'Convex alignment problem, see DIRAC main program',
-     &        '   pointer from NALLOC    :',IPTR,
-     &        '   off-set to WORK, IWOFFB=',IWOFFB,
-     &        '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
-         stop 'DIRAC: Convex alignment failure, see main program'
-      end if
-#endif
-#if defined (SYS_CRAY)
-C     
-C     Cray dynamic memory allocation
-C     
-C     HPALLOC IERR codes:
-C     -1 : length allocated smaller than zero
-C     -2 : no memory left for the system
-C     -7 : memory corrupted.
-C     HPALLOC IABORT .ne. 0: abort on error
-      IABORT = 0
-      CALL HPALLOC(WADDR,LMWORK+2,IERR,IABORT)
-      IF (IERR .LT. 0) THEN
-         WRITE (LUERR,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (LUPRI .NE. 0) WRITE (0,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (IERR .EQ. -2) THEN
-            WRITE(LUPRI,1000)
-            IF (LUPRI .NE. 0) WRITE(0,1000)
-         END IF
-         CALL QUIT('DIRAC core HPALLOC failure.')
-      ENDIF
-#endif
-#endif
-#endif
-#endif
 C
 C     Run DIRAC
 C     =========
-C     MPI start
 #if defined (VAR_MPI)
+C     MPI start
+C
+      IF(PARCAL) THEN
 C     
-C     MPI initialization
+C       MPI initialization
 C     
-      CALL MPI_INIT(IERR)
+        CALL MPI_INIT(IERR)
 C     
-      CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYTID,IERR)
-      CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NUMNOD,IERR)
+        CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYTID,IERR)
+        CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NUMNOD,IERR)
 #if defined (SYS_IRIX)
 C
-C     Impose gang scheduling to avoid problems with idle nodes
-C     when high system load
+C       Impose gang scheduling to avoid problems with idle nodes
+C       when high system load
 C
-      IF(MYTID.EQ.0.AND.SCHEDCTL(SCHEDMODE,SGS_GANG,0).LT.0) THEN
-        WRITE(LUPRI,'(A)') '*** ERROR(DIRAC) gang scheduling '
-        CALL QUIT('Error in gang scheduling !')   
-      ENDIF
+        IF(MYTID.EQ.0.AND.SCHEDCTL(SCHEDMODE,SGS_GANG,0).LT.0) THEN
+          WRITE(LUPRI,'(A)') '*** ERROR(DIRAC) gang scheduling '
+          CALL QUIT('Error in gang scheduling !')   
+        ENDIF
 #endif
 C     
-      NUMNOD = NUMNOD - 1
-      MPARID = 0
+        NUMNOD = NUMNOD - 1
+        MPARID = 0
 C
 Ctec for parallel debugging purpose     
 #if defined (VAR_DEBUG)
-      call sleep(5)
+        call sleep(5)
 #endif
-C
-      IF (MYTID .EQ. 0) THEN
-C     MASTER node
-C
-C     Allocate MASTER work memory
-C
-#ifndef VAR_G77
-C     
- 1000 FORMAT(/
-     &' >>> DIRAC: requested memory for MASTER could not be allocated.',
-     &/'     Probable causes:',
-     &/'       (1) Insufficient free memory+page+swap space',
-     &/'       (2) "datasize" resource limit too small.')
-C     
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-#if defined (SYS_AIX)
-      WADDR = MALLOC(%VAL(NMBYTES))
-#endif
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-      WADDR = MALLOC(NMBYTES)
-#endif
-      IF (WADDR .EQ. 0) THEN
-         WRITE(LUPRI,1000)
-         WRITE(LUERR,1000)
-         CALL QUIT(' DIRAC: memory allocation failure')
-      END IF
-#if defined (SYS_CONVEX)
-C
-C     Convex dynamic memory allocation
-C     ================================
-C
-      CALL NALLOC(NMBYTES,IPTR,IERR)
-      IF (IERR .LT. 0) THEN
-         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (LUPRI .NE. 0)
-     &        WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (IERR .EQ. -3) THEN
-            WRITE(LUPRI,1000)
-            IF (LUPRI .NE. 0) WRITE(0,1000)
-         END IF
-         STOP ' DIRAC: memory allocation failure'
+      ELSE 
+        MYTID = 0
       ENDIF
-      IWOFFB = IPTR - LOC(WORK(1))
-      IWOFF  = IWOFFB / 8
-      IF (IWOFF*8 .NE. IWOFFB) THEN
-         WRITE (0,'(A,3(/A,I12))')
-     &        'Convex alignment problem, see DIRAC main program',
-     &        '   pointer from NALLOC    :',IPTR,
-     &        '   off-set to WORK, IWOFFB=',IWOFFB,
-     &        '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
-         stop 'DIRAC: Convex alignment failure, see main program'
-      end if
-#endif
-#if defined (SYS_CRAY)
-C     
-C     Cray dynamic memory allocation
-C     
-C     HPALLOC IERR codes:
-C     -1 : length allocated smaller than zero
-C     -2 : no memory left for the system
-C     -7 : memory corrupted.
-C     HPALLOC IABORT .ne. 0: abort on error
-      IABORT = 0
-      CALL HPALLOC(WADDR,LMWORK+2,IERR,IABORT)
-      IF (IERR .LT. 0) THEN
-         WRITE (LUERR,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (LUPRI .NE. 0) WRITE (0,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (IERR .EQ. -2) THEN
-            WRITE(LUPRI,1000)
-            IF (LUPRI .NE. 0) WRITE(0,1000)
-         END IF
-         CALL QUIT('DIRAC core HPALLOC failure.')
-      ENDIF
-#endif
-#endif
-#endif
-C     
-C     Print DIRAC heading
-C     ===================
-C     
-         CALL GETTIM(CSTR,WSTR)
-         DOLOGO = .TRUE.
-         CALL LOGO(DOLOGO)
-         CALL SYSINF()
-         CALL TIMDAT
-         IF (LMWORK .EQ. LWORK) THEN
-            WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
-C     
-C     ... or user specified memory size.
-C     
-         ELSE
-            WRITE (LUPRI,'(/A/3A)')
-     &           ' DIRAC: user specified work memory size used,',
-     &           '        environment variable DIRWRK = ',DIRWRK
-         END IF
-         WRITE (LUPRI,'(A,I12,A,F8.2,A/)')
-     &        ' Work memory size (LMWORK) :',LMWORK,' =',XMBYTES
-     &        ,' megabytes.'
-
-         CALL DIRCTL(WORK,LMWORK)
-C     
-C     Send ending signal to slaves
-C     
-         NFINIS = -1
-         CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
-         CALL GETTIM(CEND,WEND)
-         CTOT = CEND - CSTR
-         WTOT = WEND - WSTR
-         CPUTID = SECTID(CTOT)
-         WRITE(LUPRI,'(/A,A12)') '>>>> Total CPU  time used in DIRAC:', 
-     &                            CPUTID
-         CPUTID = SECTID(WTOT)
-         WRITE(LUPRI,'(/A,A12)') '>>>> Total wall time used in DIRAC:',
-     &                            CPUTID
-         WRITE(LUPRI,'(/A/)')
-     +     '********** E N D   of   D I R A C  output  **********'
-      ELSE
-C     a SLAVE node
 C
-C     Allocate SLAVE work memory
-C
-#ifndef VAR_G77
-C     
- 1100 FORMAT(/
-     & ' >>> DIRAC: requested SLAVE memory could not be allocated',
-     & ' for slave no.',I4,
-     &     /'     Probable causes:',
-     &     /'       (1) Insufficient free memory+page+swap space',
-     &     /'       (2) "datasize" resource limit too small.')
-C     
-#if defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-#if defined (SYS_AIX)
-      WADDR = MALLOC(%VAL(NSBYTES))
-#endif
-#if defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_HPUX)
-      WADDR = MALLOC(NSBYTES)
-#endif
-      IF (WADDR .EQ. 0) THEN
-         WRITE(LUPRI,1100) MYTID
-         WRITE(LUERR,1100) MYTID
-         CALL QUIT(' DIRAC: memory allocation failure')
-      END IF
-#if defined (SYS_CONVEX)
-C
-C     Convex dynamic memory allocation
-C     ================================
-C
-      CALL NALLOC(NSBYTES,IPTR,IERR)
-      IF (IERR .LT. 0) THEN
-         WRITE(LUERR,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (LUPRI .NE. 0)
-     &        WRITE(0,*) ' >>> Convex NALLOC failure; IERR = ', IERR
-         IF (IERR .EQ. -3) THEN
-            WRITE(LUPRI,1100) MYTID
-            IF (LUPRI .NE. 0) WRITE(0,1100) MYTID
-         END IF
-         STOP ' DIRAC: memory allocation failure'
-      ENDIF
-      IWOFFB = IPTR - LOC(WORK(1))
-      IWOFF  = IWOFFB / 8
-      IF (IWOFF*8 .NE. IWOFFB) THEN
-         WRITE (0,'(A,3(/A,I12))')
-     &        'Convex alignment problem, see DIRAC main program',
-     &        '   pointer from NALLOC    :',IPTR,
-     &        '   off-set to WORK, IWOFFB=',IWOFFB,
-     &        '   mod(IWOFFB,8) =         ',IWOFFB - IWOFF*8
-         stop 'DIRAC: Convex alignment failure, see main program'
-      end if
-#endif
-#if defined (SYS_CRAY)
-C     
-C     Cray dynamic memory allocation
-C     
-C     HPALLOC IERR codes:
-C     -1 : length allocated smaller than zero
-C     -2 : no memory left for the system
-C     -7 : memory corrupted.
-C     HPALLOC IABORT .ne. 0: abort on error
-      IABORT = 0
-      CALL HPALLOC(WADDR,LSWORK+2,IERR,IABORT)
-      IF (IERR .LT. 0) THEN
-         WRITE (LUERR,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (LUPRI .NE. 0) WRITE (0,'(/A,I3)')
-     &        ' >>> Cray HPALLOC failure; IERR   =', IERR
-         IF (IERR .EQ. -2) THEN
-            WRITE(LUPRI,1100) MYTID
-            IF (LUPRI .NE. 0) WRITE(0,1100) MYTID
-         END IF
-         CALL QUIT('DIRAC core HPALLOC failure.')
-      ENDIF
-#endif
-#endif
-#endif
-         CALL DIRNOD(WORK,LSWORK)
-      END IF
-#if defined (SYS_IRIX)
-      CALL SLEEP(1)
-#endif
-      CALL MPI_FINALIZE(IERR)
-C     MPI end
-#else
-C     Single and PVM start
-c     OPEN(LUCMD, FILE = 'DALTON.INP')
-c     CALL GNRLIN(WORK,LMWORK)
-c     IF (TESTIN) THEN
-c     CALL QUIT('*** End of input test for GENERAL ***')
-c     END IF
-c     CLOSE(LUCMD)
-C     PVM start
-#if defined (VAR_PVM)
+      IF(MYTID.EQ.0) THEN
+#elif defined (VAR_PVM)
 C     
 C     Spawn all PVM processes, as we now know how many there are
 C     
@@ -507,76 +267,118 @@ C
 C     
          CALL PVMFSPAWN("hernod.x",PVMDEFAULT,'*',NODES,MTIDS,NUMT)
          IF (NUMT .NE. NODES) CALL PFAIL(-40)
-      END IF
+C
+      IF(MYTID.EQ.0) THEN
 C     PVM end
 #endif
+C       MASTER node or serial
 C     
-C     Print DIRAC heading
-C     ===================
+C       Print DIRAC heading
+C       ===================
 C     
-      CALL GETTIM(CSTR,WSTR)
-      DOLOGO = .TRUE.
-      CALL LOGO(DOLOGO)
-      CALL SYSINF()
-      CALL TIMDAT
-      IF (LMWORK .LE. 0) THEN
-         WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
+        CALL GETTIM(CSTR,WSTR)
+        DOLOGO = .TRUE.
+        CALL LOGO(DOLOGO)
+        CALL SYSINF()
+        CALL TIMDAT
+#ifndef VAR_G77
+C
+C       Allocate MASTER work memory
+C
+C        WADDR = MEMALL(LMWORK,XMBYTES,IERR)
+        LWRK = LMWORK
+#include <memall.h>
+        XMBYTES = XBYTES
+        IF(IERR.NE.0) 
+     &    CALL QUIT('DIRAC: Problems allocating main memory !')
+#endif
+        IF (LMWORK .EQ. LWORK) THEN
+          WRITE (LUPRI,*) 'DIRAC: default work memory size used.'
 C     
 C     ... or user specified memory size.
 C     
-      ELSE
-         WRITE (LUPRI,'(/A/3A)')
-     &        ' DIRAC: user specified work memory size used,',
-     &        '        environment variable DIRWRK = ',DIRWRK
-      END IF
-      WRITE (LUPRI,'(A,I12,A,F8.2,A/)')
-     &     ' Work memory size (LMWORK) :',LMWORK,' =',XMBYTES
-     &     ,' megabytes.'
-      CALL DIRCTL(WORK,LMWORK)
-C     PVM start
+        ELSE
+          WRITE (LUPRI,'(/A/3A)')
+     &         ' DIRAC: user specified work memory size used,',
+     &         '        environment variable DIRWRK = ',DIRWRK
+        END IF
+        WRITE (LUPRI,'(A,I12,A,F8.2,A/)')
+     &       ' Work memory size (LMWORK) :',LMWORK,' =',XMBYTES
+     &       ,' megabytes.'
 #if defined (VAR_PVM)
-      IF (PARCAL) THEN
+        IF (PARCAL) THEN
 C     
-C     Tell the slaves that the calculation is finished at last
-C     --------------------------------------------------------
+C       Tell the slaves that the calculation is finished at last
+C       --------------------------------------------------------
 C     
-         NFINIS = -1
-         CALL PVMFPACK(INTEGER4,NFINIS,1,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
+          NFINIS = -1
+          CALL PVMFPACK(INTEGER4,NFINIS,1,1,INFO)
+          IF (INFO .LT. 0) CALL PFAIL(INFO)
 C     
-         CALL PVMFPACK(STRING,MLINE,80*NMLINE,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
+          CALL PVMFPACK(STRING,MLINE,80*NMLINE,1,INFO)
+          IF (INFO .LT. 0) CALL PFAIL(INFO)
 C     
 C------------------------------
-C     Pack common-block INFORB.
+C         Pack common-block INFORB.
 C------------------------------
 C     
-         CALL PVMFPACK(INTEGER4,MULD2H,338,1,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
+          CALL PVMFPACK(INTEGER4,MULD2H,338,1,INFO)
+          IF (INFO .LT. 0) CALL PFAIL(INFO)
 C     
 C-----------------------------
-C     Broadcast message buffer
+C         Broadcast message buffer
 C-----------------------------
 C     
-         CALL PVMFMCAST(NODES,MTIDS,10,INFO)
-         IF (INFO .LT. 0) CALL PFAIL(INFO)
-      END IF
+          CALL PVMFMCAST(NODES,MTIDS,10,INFO)
+          IF (INFO .LT. 0) CALL PFAIL(INFO)
+       END IF
 C     PVM end
 #endif
-C     Single and PVM end
-      CALL GETTIM(CEND,WEND)
-      CTOT = CEND - CSTR
-      WTOT = WEND - WSTR
-      CPUTID = SECTID(CTOT)
-      WRITE(LUPRI,'(/A,A12)') '>>>> Total CPU  time used in DIRAC:', 
-     &                         CPUTID
-      CPUTID = SECTID(WTOT)
-      WRITE(LUPRI,'(/A,A12)') '>>>> Total wall time used in DIRAC:', 
-     &                         CPUTID
-      WRITE(LUPRI,'(/A/)')
-     +  '********** E N D   of   D I R A C  output  **********'
+        CALL DIRCTL(WORK,LMWORK)
+#if defined (VAR_MPI)
+C     
+C       Send ending signal to slaves
+C     
+        NFINIS = -1
+        CALL MPI_BCAST(NFINIS,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+        CALL GETTIM(CEND,WEND)
+        CTOT = CEND - CSTR
+        WTOT = WEND - WSTR
+        CPUTID = SECTID(CTOT)
+        WRITE(LUPRI,'(/A,A12)') '>>>> Total CPU  time used in DIRAC:', 
+     &                            CPUTID
+        CPUTID = SECTID(WTOT)
+        WRITE(LUPRI,'(/A,A12)') '>>>> Total wall time used in DIRAC:',
+     &                            CPUTID
+        WRITE(LUPRI,'(/A/)')
+     +     '********** E N D   of   D I R A C  output  **********'
+#if defined (VAR_MPI)
+      ELSE
+#ifndef VAR_G77
+C
+C       Allocate SLAVE work memory
+C
+        LWRK = LSWORK
+C        CALL MEMALL(WADDR,LSWORK,XSBYTES,IERR)
+#include <memall.h>
+        XSBYTES = XBYTES
+        IF(IERR.NE.0) 
+     &    CALL QUIT('DIRAC: Problems allocating slave memory !')
+#endif
+        CALL DIRNOD(WORK,LSWORK)
+      END IF
+#if defined (SYS_IRIX)
+      CALL SLEEP(1)
+#endif
+      CALL MPI_FINALIZE(IERR)
+C     MPI end
 #endif
       CALL QEXIT('DIRAC')
+ 1000 FORMAT(/' >>> DIRAC: requested memory could not be allocated.',
+     &     /'     Probable causes:',
+     &     /'       (1) Insufficient free memory+page+swap space',
+     &     /'       (2) "datasize" resource limit too small.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
@@ -1023,3 +825,4 @@ C
  999  CALL QEXIT('DIRNOD')
       END
 #endif
+

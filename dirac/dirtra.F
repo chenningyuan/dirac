@@ -2639,166 +2639,44 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
-C  /* Deck rkbgen */
-      SUBROUTINE RKBGEN(WORK,LWORK,IPRINT)
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck Getsph */
+      SUBROUTINE GETSPH(CSPH,ICSP,LMAX,WORK,LWORK,IPRINT)
+C***********************************************************************
 C
-C     Generate coefficients for transforming from Cartesian to
-C     scalar RKB basis
+C     Get spherical transformation matrices up to LMAX
+C     Written by T.Saue May 1 1998
 C
-C     Uses the CSP matrices from SPHCOM in the HERMIT package 
-C     and SPHGEN of DIRAC.
-C
-C                                    J.K.Laerdahl May 8 1996
-C
-C*****************************************************************************
+C***********************************************************************
 #include <implicit.h>
 #include <priunit.h>
-      PARAMETER(SML = 1.0D-15)
 #include <maxaqn.h>
 #include <mxorb.h>
-#include <dcbrkb.h>
-      DIMENSION WORK(LWORK)
-      DIMENSION LV(MXAQN),MV(MXAQN),NV(MXAQN),
-     &     LVM2(MXAQN),MVM2(MXAQN),NVM2(MXAQN)
+#include <mxcent.h>
+      PARAMETER(D1 = 1.0D0)
+#include <ccom.h>
+#include <sphtrm.h>
+#include <symmet.h>
+#include <pgroup.h>
+      DIMENSION CSPH(*),ICSP(*),WORK(*)
 C
-      CALL QENTER('RKBGEN')
+C     MORDER eq 0 : M_l order 0, +1, -1, +2, -2, ..., +LVAL, -LVAL
+C     MORDER ne 0 : M_l order -LVAL, ..., -1, 0, 1, ..., +LVAL
 C
-C     MORDER and MINTEG as built into CSP
-C
-      CALL DZERO(CRKB,NCSP)
-      CALL ICOPY(MXQN,ISPADR,1,ISRKB,1)
-      DO L = 1,MXQN
-         IOFF = ISRKB(L)
-         NLM  = 2*L-1
-         NRKB = NLM
-         IF (L.GE.3) NRKB = NRKB + 2*(L-2)-1
-         NXYZ = (L*(L+1))/2
-         CALL MCOPY(NLM,NXYZ,CSP(IOFF),NLM,CRKB(IOFF),NRKB)
-C         WRITE (LUPRI,'(5D15.8)') (CSP(III), III= 1,25)
-C         WRITE (LUPRI,'(5D15.8)') (CRKB(III), III= 1,25)
-         IF (L.GE.3) THEN
-C
-C     First NLM rows = Spherical transformation matrix
-C     -> generated above.
-C     Generate NLMM2 more rows from Spherical transformation matrix
-C     for L-2. This is Y_(L-2)*R^2
-C
-C    XXX   : Transformation matrix for L
-C    XXXM2 : Transformation matrix for L-2
-C    LCRKB : Points to row in RKB transformation matrix
-C
-C     The matrix is NOT normalized in this subroutine since 
-C     this is a Covariant/Contravariant transformation
-C     on density and integrals -> No normalization necessary
-C
-            NLMM2  = 2*(L-2)-1
-            NXYZM2 = (L-2)*(L-1)/2
-            IOFFM2 = ISRKB(L-2)
-            CALL LMNVAL(L-2,NXYZM2,LVM2,MVM2,NVM2)
-C
-C            WRITE(LUPRI,'(A)') 'LMNVAL (L-2):'
-C            DO ICNT = 1,NXYZM2
-C               WRITE(LUPRI,'(3I5)') LVM2(ICNT),MVM2(ICNT),NVM2(ICNT)
-C            ENDDO
-C
-            CALL LMNVAL(L,NXYZ,LV,MV,NV)
-C
-C            WRITE(LUPRI,'(A)') 'LMNVAL (L):'
-C            DO ICNT = 1,NXYZ
-C               WRITE(LUPRI,'(3I5)') LV(ICNT),MV(ICNT),NV(ICNT)
-C            ENDDO
-C
-            LCRKB = NLM+1
-            DO I = 1, NLMM2
-               DO J = 1, NXYZM2
-                  IF (DABS(CSP(IOFFM2 + (J-1)*NLMM2 + (I-1))).GT.SML) 
-     &                 THEN
-                     ELEMNT = CSP(IOFFM2 + (J-1)*NLMM2 + (I-1))
-                     NXM2 = LVM2(J)
-                     NYM2 = MVM2(J)
-                     NZM2 = NVM2(J)
-                     DO IK = 1,3
-                        IF (IK.EQ.1) THEN
-                           NX = NXM2+2
-                           NY = NYM2
-                           NZ = NZM2
-                        ELSEIF (IK.EQ.2) THEN
-                           NX = NXM2
-                           NY = NYM2+2
-                           NZ = NZM2
-                        ELSE 
-                           NX = NXM2
-                           NY = NYM2
-                           NZ = NZM2+2
-                        ENDIF
-C
-C                        WRITE(LUPRI,'(/,5I5)') I,J,NXM2,NYM2,NZM2
-C                        WRITE(LUPRI,'(5I5)') I,J,NX,NY,NZ
-C
-                        IC = 1
- 100                    IF (.NOT.((NX.EQ.LV(IC)).AND.(NY.EQ.MV(IC))
-     &                       .AND.(NZ.EQ.NV(IC)))) THEN
-                           IC = IC + 1
-                           IF (IC.GT.NXYZ) 
-     &                          CALL QUIT('End of loop in RKBGEN')
-                           GO TO 100
-                        ENDIF
-C     
-C  Function IPLC accumulated in CRKB matrix
-C     
-                        IPLC = IC
-                        CRKB(IOFF+(IPLC-1)*NRKB+LCRKB-1) = ELEMNT
-     &                       + CRKB(IOFF+(IPLC-1)*NRKB+LCRKB-1)
-                     ENDDO
-                  ENDIF
-               ENDDO
-               LCRKB = LCRKB+1
-            ENDDO
-         ENDIF
+C     MINTEG eq 1 : the spherical components are normalized such
+C                   that all coefficients are integers.
+      MORDER = 1
+      MINTEG = 1
+      IOFF   = 0
+      DO LL = 1, LMAX
+        L    = LL - 1
+        NLM  = 2*L + 1
+        NXYZ = (LL*(LL+1))/2
+        CALL SPHCOM(L,CSPH(IOFF+1),NLM,NXYZ,MORDER,MINTEG,
+     &                WORK,LWORK,IPRINT)
+        ICSP(LL) = IOFF
+        IOFF     = IOFF + NLM*NXYZ
       ENDDO
-C
-C     Generate backtransformation as well
-C
-      DO L = 1,MXQN
-         IOFF = ISRKB(L)
-         NLM  = 2*L-1
-         NRKB = NLM
-         IF (L.GE.3) NRKB = NRKB + 2*(L-2)-1
-         NXYZ = (L*(L+1))/2
-         CALL MTRSP(NRKB,NXYZ,CRKB(IOFF),NRKB,CRKBBK(IOFF),NXYZ)
-      ENDDO
-C     
-C     Print section
-C
-      IF(IPRINT.GE.4) THEN
-         CALL HEADER
-     &   ('RKBGEN: Transformation matrix (Not Normalized):',-1)
-         DO L = 1,MXQN
-            LVAL = L-1
-            NRKB = 2*LVAL + 1
-            IF (L.GE.3) NRKB = NRKB + 2*(LVAL-2)+1
-            NXYZ = (LVAL+1)*(LVAL+2)/2
-            WRITE (LUPRI,'(1X,A,I5)') 
-     &           ' Coefficients for angular quantum number ',LVAL
-         CALL OUTPUT(CRKB(ISRKB(L)),1,NRKB,1,NXYZ,NRKB,NXYZ,1,LUPRI)
-         ENDDO
-         CALL HEADER
-     &   ('RKBGEN: Backtransformation matrix (Not Normalized) :',-1)
-         DO L = 1,MXQN
-            LVAL = L-1
-            NRKB = 2*LVAL + 1
-            IF (L.GE.3) NRKB = NRKB + 2*(LVAL-2)+1
-            NXYZ = (LVAL+1)*(LVAL+2)/2
-            WRITE (LUPRI,'(1X,A,I5)') 
-     &           ' Coefficients for angular quantum number ',LVAL
-         CALL OUTPUT(CRKBBK(ISRKB(L)),1,NXYZ,1,NRKB,NXYZ,NRKB,1,LUPRI)
-         ENDDO         
-      ENDIF
-C     
-      CALL QEXIT('RKBGEN')
       RETURN
 C     
       END
-
