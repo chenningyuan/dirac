@@ -918,7 +918,7 @@ case $machine in
        opt="-Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
        c_opt="-i 64 -a stack -dp"
        inc="-I$INCLUDE_DIR"
-       LIB="crilib.cld $LIB"
+       LIB="C90lib.cld $LIB"
        def='dirac.x';;
 #
 #  CONVEX
