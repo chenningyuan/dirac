@@ -35,7 +35,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck dftgrd */
-      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT,TEST)
+      SUBROUTINE DFTGRD(DMAT,WORK,LWORK,IPRINT)
 C                                                                      C
 C     Interface routine for grid points                                C
 C     T. Helgaker                                                      C
@@ -53,7 +53,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ccom.h"
       PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
-      LOGICAL TEST
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dftwrk.h"
@@ -151,8 +150,6 @@ C
      &              WORK(KRBC),WORK(KRVEC),
      &              WORK(KNUCO),WORK(KAA),DMAT,WORK(KCHIMT),LUQUAD,
      &              IPRINT,WORK(KFREE),LFREE)
-
-      IF (TEST) CALL DFTEST(WORK,LWORK,IBIG,LUQUAD,IPRINT)
 C
 C     Close unit LUQUAD
 C     =================

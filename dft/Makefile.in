@@ -1,7 +1,7 @@
 
 include ../Makefile.config
 
-F77_OBJS = pamdft.o dftden.o dftdrv.o dftfun.o dftgrd.o dftaux.o grtest.o \
+F77_OBJS = pamdft.o dftdrv.o dftfun.o dftgrd.o dftaux.o grtest.o \
 	Lebedev-Laikov.o dftac.o
 
 F90_OBJS =
