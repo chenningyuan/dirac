@@ -110,7 +110,7 @@ C*****  P P   E X C I T A T I O N   E N E R G I E S  *************************
 C*****************************************************************************
 C
 #if defined (MOD_XPP)
-      IF(DOXPP) CALL PRPXPP(WORK,KFREE,LFREE)
+      IF(DOXPP) CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KFREE,LFREE)
 #endif
 C
 C*****************************************************************************
@@ -118,11 +118,11 @@ C*****  L I N E A R   R E S P O N S E  ***************************************
 C*****************************************************************************
 C
       IF(DOXLR) THEN
-        CALL PRPXLR(WORK,KLRF,KCNV,KLRO,KFREE,LFREE)
+        CALL PRPXLR(WORK,KLRF,KLRCNV,KLRO,KFREE,LFREE)
       ELSE
-        KLRO = KFREE
-        KLRF = KFREE
-        KCNV = KFREE
+        KLRO   = KFREE
+        KLRF   = KFREE
+        KLRCNV = KFREE
       ENDIF
 C
 C*****************************************************************************
@@ -145,7 +145,7 @@ C     maybe a good idea to assemble final output from various
 C     sections in a file which is then copied to output here ?
 C
       IF (DOEXP .OR. DOXLR) THEN
-         CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KCNV),
+         CALL PRPOUT(WORK(KEXP),WORK(KLRF),WORK(KLRCNV),
      &            WORK,KFREE,LFREE)
       END IF
 C
@@ -190,7 +190,7 @@ C
       PLABEL(1)  = 'YDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDXPR,MAXEXP)
+      CALL OP1IND('YDIPOL',IPDIPOLE(2),LEXPP,NEXPP,INDXPR,MAXEXP)
       CALL WRIXPR(1,INDXPR)
 C
       PNAME      = 'Dipole length: Z'
@@ -200,7 +200,7 @@ C
       PLABEL(1)  = 'ZDIPLEN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-      CALL OP1IND('XDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDXPR,MAXEXP)
+      CALL OP1IND('ZDIPOL',IPDIPOLE(3),LEXPP,NEXPP,INDXPR,MAXEXP)
       CALL WRIXPR(3,INDXPR)
 C
       IF(IPRINT.GE.1) THEN
@@ -3926,10 +3926,10 @@ C
      &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
-     &       '- Inactive orbitals : No electrons'
+     &       '- Inactive orbitals  : No electrons'
         ELSE
           WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Inactive orbitals : ', XLR_INDSTR(1,I)
+     &       '- Inactive orbitals  : ', XLR_INDSTR(1,I)
         ENDIF
 C
 C       Active orbitals
@@ -3940,10 +3940,10 @@ C
      &             IR(1,I),IR(2,I),NVEC,WORK(KFREE),LFREE)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
-     &       '- Active orbitals : No electrons'
+     &       '- Active orbitals    : No electrons'
         ELSE
           WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Active orbitals : ', XLR_INDSTR(2,I)
+     &       '- Active orbitals    : ', XLR_INDSTR(2,I)
         ENDIF
 C
 C       Secondary orbitals
