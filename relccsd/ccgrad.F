@@ -342,7 +342,7 @@ C------------------------------------
       N = NFVO
       USEDZ = .FALSE.
       RIGHT = .FALSE.
-      print*,'jvs: D part RELCCSD off'
+c     print*,'jvs: D part RELCCSD off'
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
      &            JJVO,BUF2,NBUF2,XVO,DVV,USEDZ,RIGHT)
 C
@@ -448,11 +448,11 @@ C     Solve Z-vector equations by using XRPA
 C
 C###########################################
 C
-      KFREE=1
-      LFREE=NBUF3*RCW
+c     KFREE=1
+c     LFREE=NBUF3*RCW
 c     print*,'laat VO deel DMO op o door prpxlr_mpg niet te callen'
 c     deactivated because checking in to trunk
-      CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+c     CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
 C
       RETURN
       END
