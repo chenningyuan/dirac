@@ -211,6 +211,11 @@ C
       IF (.NOT.SHCEQD) SFAC = D2*SFAC
 C
       THRSH = MAX(THRESH,ZERADD)
+      IF(DOSCRN) THEN
+         EXPTOL = MAX((FCKTHR/DNSMAX),1.00D-15)
+      ELSE
+         EXPTOL = 1.00D-15
+      ENDIF
       NODER = .TRUE.
       CALL DZERO(DERIV,NINTYP)
 C     initialize PAOVAL to zero for output in NOPMAT case
@@ -239,7 +244,7 @@ C
                         IAOMAX = IDAMAX(NOABCD,AOINT(IAOFF,I),1)-1
                         AOMAX = MAX(AOMAX,ABS(AOINT(IAOFF+IAOMAX,I)))
                      END DO
-                     IF (DNSMAX*AOMAX .LT. THRESH) THEN
+                     IF (AOMAX .LT. EXPTOL) THEN
                         DO IXYZ = 1,3
                            IF (DOXYZ(IXYZ))
      &                        CALL ADDDINT(DINTSKP,NOABCD,ICEN,3,IXYZ)
