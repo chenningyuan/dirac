@@ -319,7 +319,7 @@ make_export()
       pdpack/Makefile.in pdpack/*.F \\
       dirac/main/Makefile.in dirac/main/*.c dirac/main/*.F \\
       dirac/main/*.h dirac/main/*.head dirac/main/*.struct \\
-      pam.in 2> export.log
+      pam.in pam.1 2> export.log
 EOF
    #
    # Active modules
