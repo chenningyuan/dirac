@@ -1151,6 +1151,7 @@ C     Pointers to property labels
          END IF
          IPRPLBL(J,NPRPS) = INDX
   600 CONTINUE
+      IF (INDXPR .EQ. -1) CALL QUIT('XPRADD: PLABEL, PCOMB not found')
 C     Symmetry under time reversal and point group symmetry
       CALL PRPSYM(INDXPR,IPRINT)
 C
