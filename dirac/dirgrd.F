@@ -1790,6 +1790,14 @@ C     Delete DFCYCL so we don't restart DIIS
 C     
       CALL DELFILE(LUCYCL,'DFCYCL')
 C
+C     Delete AOPROPER so we don't use in old integrals
+C
+#if defined (SYS_IBM)
+      CALL DELFILE(LU1INT,'APROPER')
+#else
+      CALL DELFILE(LU1INT,'AOPROPER')
+#endif
+C
 C     To avoid readin twice in the 0. iteration skip
 C     the first time
 C
