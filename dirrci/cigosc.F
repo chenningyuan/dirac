@@ -161,7 +161,9 @@ C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       INCLUDE 'goscom.inc'
 C
-      REAL*8 E(N2),EE(N2,2)
+c jth N2 is not the correct dimension
+c     REAL*8 E(N2),EE(N2,2)
+      REAL*8 E(N2),EE(N2*N2,2)
 C
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
       RETURN
@@ -973,7 +975,7 @@ C
 C
       IF (NDET.EQ.0) RETURN
       DEGEN = 1.D-10
-      NVEC = 5
+      NVEC = N2
       REWIND(5)
       READ (5,CIVEC,END=1,ERR=1)
     1 CONTINUE
