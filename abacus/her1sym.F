@@ -40,6 +40,14 @@ C  /* Deck onesop */
 #include "priunit.h"
 #include "iratdef.h"
 C
+#ifdef PRG_DIRAC
+C     jth - length of STDER1 is now KCKTAB*6*2
+      PARAMETER(NDER1=6,NDER2=6)
+C     ... note that STDER2 is not implemented yet, and will require more than 6
+#else
+      PARAMETER(NDER1=3,NDER2=6)
+#endif
+C
       LOGICAL SECDER, DIFDIP, PROPTY, LOMITVNUC(2,5)
       DIMENSION WORK(LWORK)
       DIMENSION STHMAT(NNBASX,3), DENMAT(*), FOCMAT(*),
@@ -56,13 +64,6 @@ C
       END IF
       KSDER0 = 1
       KSDER1 = KSDER0 +  2*KCKTAB
-#ifdef PRG_DIRAC
-C     jth - length of STDER1 is now KCKTAB*6*2
-      PARAMETER(NDER1=6,NDER2=6)
-C     ... note that STDER2 is not implemented yet, and will require more than 6
-#else
-      PARAMETER(NDER1=3,NDER2=6)
-#endif
       KSDER2 = KSDER1 +  2*KCKTAB*NDER1
       KADER  = KSDER2 +  2*KCKTAB*NDER2
       KSINT0 = KADER  +    NADER
