@@ -230,15 +230,15 @@ C
               NCBF1 = NTBAS(0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
             ELSE
               NCBF1 = NTBAS(0)*NVEC*4
               NCBF2 = NFBAS(IFRP,0)*NVEC*4
               CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
               CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
      &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
               CALL MEMREL('PRCOEF.AO',WORK,1,KCBF2,KFREE,LFREE)
@@ -253,14 +253,14 @@ C
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
      &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
             ELSE
               CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
      &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,IFRP,
-     &                    NFBAS(IFRP,0))
+              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,
+     &                    IFRP,NFBAS(IFRP,0))
               CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
      &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
             ENDIF
@@ -275,8 +275,8 @@ C
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
             CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,IFRP,
-     &                  NFBAS(IFRP,0))
+            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
+     &                  IFRP,NFBAS(IFRP,0))
           ELSE
             NCBF  = NFBAS(IFRP,0)*NVEC
             NCBF1 = NCBF*4
@@ -287,8 +287,8 @@ C
             CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
      &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
      &                  NFBAS(IFRP,0),NORB(IFRP))
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,IFRP,
-     &                  NFBAS(IFRP,0))
+            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
+     &                  IFRP,NFBAS(IFRP,0))
             CALL MEMREL('PRCOEF.SO',WORK,1,KCBF2,KFREE,LFREE)
           ENDIF
         ENDIF
@@ -446,11 +446,15 @@ C
 C     KNFBAS = NFBAS(IFRP,0)
 C
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
+      DIMENSION III(2)
       EXTERNAL BDQALGEBRA
 #include "dcbibt.h"
 C
       IF(NVEC.EQ.0) RETURN
-      IXYZ  = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C.....III is the totally symmetric irrep for the large components
+      III(1) = 0
+C.....III is the symmety of XYZ for the small components
+      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
       NDIM  = NFBAS(IFRP,0)
       NTOT  = NVEC*NDIM
       NTOTZ = NTOT*NZ
@@ -461,8 +465,11 @@ C
           IP    = MOD(IFRP+IC,2) + 1
           IBRP = JFSYM(ISYM,IP) - 1
           IOFF = IBBAS(IBRP,IC) - IBAS(IFRP)
+          IBRQ  = IBTXOR(IBRP,III(IC))
           DO IZ = 1,NZ
-            IQ = IPQTOQ(IZ,IBRP)
+Ctsaue: Used to be IQ = IPQTOQ(IZ,IBRP), but this is
+Ctsaue: true only for the large components
+            IQ = IPQTOQ(IZ,IBRQ)
             DO I = 1,NBBAS(IBRP,IC)
               CALL DCOPY(NVEC,CMO (I+IOFF,1,IZ),NFBAS(IFRP,0),
      &                        CBUF(I+IOFF,1,IQ),NFBAS(IFRP,0))
