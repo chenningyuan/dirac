@@ -300,8 +300,6 @@ save_files()
             echo "ok"
          else
             echo "not found"
-            EXIT=1
-            exitfunc
          fi
       done
    fi
@@ -364,8 +362,6 @@ copy_files()
             echo "ok"
          else
             echo "not found"
-            EXIT=1
-            exitfunc
          fi
       done
    fi
