@@ -596,7 +596,7 @@ C
       WRITE (LUMLF1) NSYMRPA,(REPA(IRPA),IRPA=1,NSYMRPA*2)
       WRITE (LUMLF1) ((MULTB(I,J),I=1,2*NSYMRPA),J=1,2*NSYMRPA)
       WRITE (LUMLF1) (IRPMO(I),IRPAMO(I),ORBMO(I),I=1,NSTRT*2),
-     &               (IBSPI(I),I=1,2*NSTRT)
+     &               (IBSPI(I),I=1,2*NSTRT),(NORB(I),I=1,NFSYM)
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
      &                  J=1,NSTRT*2),I=1,NSTRT*2)
       CLOSE (LUMLF1)
