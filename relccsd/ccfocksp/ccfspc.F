@@ -139,7 +139,7 @@ C       Make T2TAU including the spurious Hamiltonian parts
         CALL GETTAU2(T1,BUF1,BUF2,1)
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
-        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
         CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
 C       Extract the 2-particle Hamiltonian
@@ -152,7 +152,7 @@ C       Get the wave function for term (2)
         CALL XCOPY (NDIMT2,T2,1,BUF2,1)
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
-        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
         CALL EXTRT2T(BUF2,BUF3,1,2,3,3,LFA)
 C       Sort it to the correct order
@@ -189,7 +189,7 @@ C       Make T2TAU including the spurious Hamiltonian parts
         CALL GETTAU2(T1,BUF1,BUF2,1)
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
-        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
         CALL EXTRT2T(BUF2,BUF3,3,3,1,2,LFA)
 C       Extract the 2-particle Hamiltonian
@@ -204,7 +204,7 @@ C       Get the wave function for term (2)
         CALL XCOPY (NDIMT2,T2,1,BUF2,1)
 C       Delete Hamiltonian parts (DUM is not used, BUF1 is changed
 C       but irrelevant here)
-        CALL DENOMF (DUM,BUF1,BUF2,BUF1,BUF2,2)
+        CALL DENOMF (BUF1,BUF1,BUF2,BUF1,BUF2,2)
 C       Extract the wave function
         CALL EXTRT2T(BUF2,BUF3,3,3,1,2,LFA)
 C       Sort it to the correct order
