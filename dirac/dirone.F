@@ -2479,6 +2479,9 @@ C
 C
 C     Loop over shells
 C     ================
+C     (Shell number will be different from primitive number
+C      if large component is contracted, thus the double
+C      loop structure)
 C
 C     Offset in SO-basis:
       ISOFF = ICOS(IREP+1,IC)
@@ -2491,7 +2494,7 @@ C
       DO 10 JA = JA1,JA2
          JP1  = JSTRT(JA) + 1
 C
-C        Skip allready processed primitives.
+C        Skip primitives allready processed in another shell.
 C
          IF ( JP1_TEST .EQ. JP1 ) GO TO 10
          JP1_TEST = JP1
