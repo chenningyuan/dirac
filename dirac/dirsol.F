@@ -286,7 +286,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-/* Deck solvin */
+C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
 #include <implicit.h>
 #include <priunit.h>
