@@ -1072,10 +1072,14 @@ C*****************************************************************************
 C
 #include <ibtfun.h>
 C
+Chj/980617: changed ISYMA test from MULA to MULAB, we must
+C           include all different operations where at least one of
+C           A and B move (because we need the GAB integrals
+C           for sqrt( T(C S(D)) | T(C S(D)) ) ).
       IF(SYMFAC.NE.D1) CALL DSCAL(NCCINT,SYMFAC,AOINT,1)
       IOFF = 0
+      MULAB = IBTAND(MULA,MULB)
       IF(SUSCEP) THEN
-#ifdef UNDEF
         DO ICOMPA = 1,KHKTA
                       KHKTBB = KHKTB
           IF (DIAGAB) KHKTBB = ICOMPA
@@ -1097,7 +1101,7 @@ C
                     IF(A.EQ.C.AND.B.EQ.D) THEN
                       AOBUF     = AOINT(IOFF+IORBCD)
                       DO ISYMA = 0, MAXOPR
-                      IF(IBTAND(ISYMA,MULA).EQ.0) THEN
+                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
                          ISYMB = IBTXOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA) 
      &                       + IEFFA(ISYMA) + ICOMPA
@@ -1115,11 +1119,7 @@ C
             ENDDO
           ENDDO
         ENDDO
-#else
-        call quit('gaogat not implemented')
-#endif
       ELSE
-        IOFF   = 0
         DO ICOMPA = 1,KHKTA
                       KHKTBB = KHKTB
           IF (DIAGAB) KHKTBB = ICOMPA
@@ -1134,7 +1134,6 @@ C
                   A = ICORBA(IORBA) + ICOMPA
                   B = ICORBB(IORBB) + ICOMPB
                   DO IORBCD = 1, NORBCD
-                    AINT  = AOINT(IOFF+IORBCD)
                     IORBC = NINDCD(IORBCD,1)
                     IORBD = NINDCD(IORBCD,2)
                     C = ICORBC(IORBC) + ICOMPC
@@ -1146,21 +1145,13 @@ C
                       ELSE
                          AOBUF2    = AOBUF
                       END IF
-                      DO ISYMX = 0, MAXOPR
-                      IF(IBTAND(ISYMX,MULA).EQ.0) THEN
-                         ISYMB = IBTXOR(ISYMR,ISYMX)
-                         IA = IORBSH(ISHELA,IORBA) 
-     &                     + IEFFA(ISYMX) + ICOMPA
-                         IB = IORBSH(ISHELB,IORBB) 
-     &                     + IEFFB(ISYMB) + ICOMPB
-                         GABM(IA,IB) = AOBUF
-                         GABM(IB,IA) = AOBUF2
-                      ELSE IF(IBTAND(ISYMX,MULB).EQ.0) THEN
-                         ISYMA = IBTXOR(ISYMR,ISYMX)
+                      DO ISYMA = 0, MAXOPR
+                      IF(IBTAND(ISYMA,MULAB).EQ.0) THEN
+                         ISYMB = IBTXOR(ISYMR,ISYMA)
                          IA = IORBSH(ISHELA,IORBA) 
      &                     + IEFFA(ISYMA) + ICOMPA
                          IB = IORBSH(ISHELB,IORBB) 
-     &                     + IEFFB(ISYMX) + ICOMPB
+     &                     + IEFFB(ISYMB) + ICOMPB
                          GABM(IA,IB) = AOBUF
                          GABM(IB,IA) = AOBUF2
                       END IF
