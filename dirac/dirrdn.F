@@ -157,6 +157,7 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,FMT*6,MXFORM*6
       DIMENSION WORK(LWORK)
+      LOGICAL   NOGENINP
 C
 #include <dcbgen.h>
 #include <dcbxpr.h>
@@ -174,6 +175,12 @@ C
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
+C     Initialise NOGENINP
+C     NOGENINP is set, if there is no **GENERAL
+C
+      NOGENINP = .FALSE.
+C
+C
 C     Read menu file
 C     ==============
 C     **** Find General input *****
@@ -182,13 +189,15 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 CONTINUE
-      READ (LUCMD,'(A7)',END=180,ERR=920) WORD
+      READ (LUCMD,'(A7)',END=910,ERR=920) WORD
       IF (WORD .EQ. '**GENER') THEN
          GO TO 930
       ELSE
          GO TO 900
       END IF
-C  910 CONTINUE
+  910 CONTINUE
+         NOGENINP = .TRUE.
+         GOTO 180
 C         CALL QUIT('End of file on LUCMD, no DIRAC input found')
   920 CONTINUE
          CALL QUIT('Error reading LUCMD, no Dirac input found')
@@ -376,6 +385,7 @@ C
 C     Process input for various program sections
 C     ==========================================
 C
+      IF (NOGENINP) GOTO 300
   200 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 200
@@ -414,6 +424,7 @@ C
         GO TO 200
 C
     1 CONTINUE
+  300 CONTINUE
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif
