@@ -242,18 +242,64 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
-      DIMENSION IREPKLB(NKL)
+      DIMENSION IREPIJB(2),IREPKLB(2,NKL)
 C
       CALL MEMGET('REAL',KFTMAT,NKL*2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KRKL,2*NKL,WORK,KFREE,LFREE)
 C
-      IF (SPINFR)THEN
-         NZS = 1
-      ELSE
-         NZS = NZ
-      ENDIF
+      IF (SPINFR.OR.LEVYLE) THEN
+C
+C     Special code that takes out the quaternion phase factors
+C     The resulting integrals have full 8-fold permutational
+C     symmetry and can be fed into non-relativistic codes.
+C     Only one class of integrals (all-unbarred) suffices for
+C     this purpose.
+C
+      CALL DZERO(WORK(KFTMAT),2*NKL)
+      IREPABR = 0
+      DO IREPAB = 0, NBSYM-1
+         IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
+            IREPABR = IREPABR + 1
+C
+C           Zero out the spin-orbit coupling for electron 1
+C
+            IF (IREPAB.NE.IREPIJB(1)) GOTO 100
+            DO I = 1, NKL
+               IF (IREPAB.NE.IREPKLB(1,I)) THEN
+C
+C                  Zero out the spin-orbit coupling for electron 2
+C
+                   FMAT(I,1,1,IREPABR) = 0.D0
+               ELSE
+C
+C                  Take out quaternion phase factor by multiplying
+C                  with the compound phase factor that was introduced
+C                  in the consecutive multiplications
+C 
+                   FMAT(I,1,1,IREPABR) = 
+     &             FMAT(I,1,1,IREPABR) *
+     &             IREPIJB(2)*IREPKLB(2,I)
+               ENDIF
+            ENDDO
+            FACTR = 1.D0
+            CALL DAXPY (NKL,FACTR,
+     &                  FMAT(1,1,1,IREPABR),1,
+     &                  WORK(KFTMAT),1)
+ 100        CONTINUE
+         ENDIF
+      ENDDO
+C
+C     Only one class remains in the spinfree case
+C
+      ICLASS = 1
+      CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
+     &            WORK(KFTMAT),NKL,
+     &            WORK(KINDK),WORK(KINDL),
+     &            WORK(KRKL))
+C
+      ELSE ! spinfree
 C
 C     Real and complex classes
 C     They are always written as complex for MOLFDIR
@@ -264,22 +310,9 @@ C
          DO IREPAB = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
                IREPABR = IREPABR + 1
-C
-C    If spinfree : zero out the spin-orbit coupling for electron 1
-C
-               IF (IREPAB.NE.IREPIJB.AND.SPINFR) GOTO 100
-               DO IZ1 = 1, NZS
+               DO IZ1 = 1, NZ
                   IQ1 = IPQTOQ(IZ1,IREPAB)
-                  DO IZ2 = 1, NZS
-C
-C    If spinfree : zero out the spin-orbit coupling for electron 2
-C
-                     IF (SPINFR) THEN
-                        DO I = 1, NKL
-                           IF (IREPAB.NE.IREPKLB(I))
-     &                        FMAT(I,IZ2,IZ1,IREPABR) = 0.D0
-                        ENDDO
-                     ENDIF
+                  DO IZ2 = 1, NZ
                      IQ2 = IPQTOQ(IZ2,IREPAB)
                      IFAC = INTCL(ICLASS,IQ1,IQ2)
                      IF (IFAC.NE.0) THEN
@@ -288,7 +321,7 @@ C
      &                              FMAT(1,IZ2,IZ1,IREPABR),1,
      &                              WORK(KFTMAT),1)
                      ENDIF
-                     IF (NZS.GT.1) THEN
+                     IF (NZ.GT.1) THEN
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
                            FACTR = IFAC
@@ -299,7 +332,6 @@ C
                      ENDIF
                   ENDDO
                ENDDO
- 100           CONTINUE
             ENDIF
          ENDDO
          CALL MDINTB(IPRINT,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
@@ -310,16 +342,16 @@ C
 C
 C     Quaternion classes
 C
-      IF (NZS.EQ.4) THEN
+      IF (NZ.EQ.4) THEN
          DO ICLASS = 9, 12
             CALL DZERO(WORK(KFTMAT),2*NKL)
             IREPABR = 0
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
                   IREPABR = IREPABR + 1
-                  DO IZ1 = 1, NZS
+                  DO IZ1 = 1, NZ
                      IQ1 = IPQTOQ(IZ1,IREPAB)
-                     DO IZ2 = 1, NZS
+                     DO IZ2 = 1, NZ
                         IQ2 = IPQTOQ(IZ2,IREPAB)
                         IFAC = INTCL(ICLASS,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
@@ -345,6 +377,8 @@ C
      &                  WORK(KRKL))
          ENDDO
       ENDIF
+C
+      ENDIF ! spinfree
 C
       CALL MEMREL('SYMFINT',WORK,1,KFTMAT,KFREE,LFREE)
 C
@@ -512,17 +546,25 @@ C/* Deck MKINDXB*/
       SUBROUTINE MKINDXB (NSTR,IBE11,IBE21,IBE12,IBE22,TRIAN,INDXB)
 C
 C    Make an array that gives the compound boson irrep from the ij-value
+C    It also gives the sign of the quaternion phase factor that this
+C    density obtains in the multiplication of the MO coefficients. This
+C    sign is required when we want to backtransform (in spinfree calcs)
+C    the integrals such that only class 1 integrals with full 8-fold
+C    permutation symmetry remain.
+C
 C    Written by Luuk Visscher, April 1997
+C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <priunit.h>
 #include <dcbtra.h>
 #include <dgroup.h>
+#include <dcbqal.h>
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
-      DIMENSION INDXB(*)
+      DIMENSION INDXB(2,*)
 #include <ibtfun.h>
 C
       IJ = 0
@@ -537,11 +579,32 @@ C
                     IF (IREPI.EQ.2) IREPIB = IBE21(I)
                     IF (IREPJ.EQ.1) IREPJB = IBE12(J)
                     IF (IREPJ.EQ.2) IREPJB = IBE22(J)
+C
+C                   The compound boson irrep can be obtained
+C                   by an xor operation.
+C
                     IREPIJB = IBTXOR(IREPIB,IREPJB)
-                    INDXB(IJ) = IREPIJB
+                    INDXB(1,IJ) = IREPIJB
+C
+C                   We first determine which quaternion phase
+C                   factors the individual functions receive and
+C                   than obtain the compound phase factor by
+C                   quaternion multiplication.
+C
+                    IQI = IPQTOQ(1,IREPIB)
+                    IQJ = IPQTOQ(1,IREPJB)
+C
+C                   The sign of the quaternion multiplication is given by iqphase,
+C                   but since IQI is conjugated we also have to 
+C                   multiply by IQSIGN (-1 for q-imaginary, 1 for real)
+C
+                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQI,2,1)
                  ENDDO
               ENDDO
             ELSEIF (IREPI.EQ.IREPJ) THEN
+C
+C             Same procedure for lower trangular case..
+C
               DO J = 1, NSTR(IREPJ,0,2)
                  DO I = J, NSTR(IREPI,0,1)
                     IJ = IJ + 1
@@ -550,7 +613,10 @@ C
                     IF (IREPJ.EQ.1) IREPJB = IBE12(J)
                     IF (IREPJ.EQ.2) IREPJB = IBE22(J)
                     IREPIJB = IBTXOR(IREPIB,IREPJB)
-                    INDXB(IJ) = IREPIJB
+                    INDXB(1,IJ) = IREPIJB
+                    IQI = IPQTOQ(1,IREPIB)
+                    IQJ = IPQTOQ(1,IREPJB)
+                    INDXB(2,IJ) = IQPHASE(IQI,IQJ,1)*IQSIGN(IQI,2,1)
                  ENDDO
               ENDDO
             ENDIF
