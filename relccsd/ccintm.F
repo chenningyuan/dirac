@@ -1,4 +1,4 @@
-C
+
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -69,10 +69,12 @@ C--------------------
 C A(KL,IJ) = W(KL,IJ)
 C--------------------
       CALL GETOOOO (AZ)
+      CALL DELINT ('OOOO','DDKK',AZ,0,0,0)
 C------------------------------------------------
 C A(KL,IJ) = A(KL,IJ) + PIJ ( W(KL,IC) * T(C,J) )
 C------------------------------------------------
       CALL GETVOOO (BUF1)
+      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT9 (NREP,MULTB,NVO,NV,NO,NOOT,NOOOT,KOOOVT,KKOOOT,
      &           BUF1,BUF2)
       CALL CNTRCT ('N','N',NOOOT,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
@@ -83,6 +85,7 @@ C---------------------------------------------
 C A(KL,IJ) = A(KL,IJ) +  W(KL,CD) * TAU(CD,IJ)
 C---------------------------------------------
       CALL GETVVOO (BUF1)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
       CALL GETTAU (T1,T2,BUF2)
       CALL CNTRCT ('C','N',NOOT,NOOT,NVVT,A1,BUF1,BUF2,A1,AZ,NREP)
 C
@@ -123,7 +126,9 @@ C
 C----------------------------------
 C G(K,I) = H(K,I) + F(K,C) * T(C,I)
 C----------------------------------
-      CALL CNTRCT ('C','N',NO,NO,NV,A1,FVO,T1,A1,GO,NREP)
+      CALL XCOPY (NFVO,FVO,1,BUF1,1)
+      CALL DELFCK ('VO','DD',BUF1)
+      CALL CNTRCT ('C','N',NO,NO,NV,A1,BUF1,T1,A1,GO,NREP)
 C-----------------------------------------------------
 C G(KI) = G(KI) + W(KL,IC) * T(CL) = G(KI) - W*(CI,KL)
 C Order W from CI,KL to CL,KI
@@ -132,6 +137,7 @@ C-----------------------------------------------------
       N = MVO(1)
       IF (N.EQ.0) RETURN
       CALL GETVOOO (BUF1)
+      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &            BUF1,BUF2)
       CALL XGEMV ('C',N,M,-A1,BUF2,N,T1,1,A1,GO,1)
@@ -176,20 +182,29 @@ C
 C----------------------------------
 C G(A,C) = H(A,C) - T(A,K) * F(K,C)
 C----------------------------------
-      CALL CNTRCT ('N','C',NV,NV,NO,-A1,T1,FVO,A1,GV,NREP)
+      CALL XCOPY (NFVO,FVO,1,BUF2,1)
+      CALL DELFCK ('VO','DD',BUF2)
+      CALL CNTRCT ('N','C',NV,NV,NO,-A1,T1,BUF2,A1,GV,NREP)
 C------------------------------------
 C G(A,C) = G(A,C) + W(AK,CD) * T(D,K)
 C------------------------------------
       M = MVV(1)
       N = MVO(1)
       IF (N.EQ.0) RETURN
-      IF (NBUF3.LT.JVVVO(2)) THEN
-         CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
-      ENDIF
       USEDZ = .FALSE.
-      CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
-     &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
-      CALL XGEMV ('N',M,N,A1,BUF3,M,T1,1,A1,GV,1)
+C... This is the old code that uses a large scratch array...
+cluuk IF (NBUF3.LT.JVVVO(2)) THEN
+cluuk    CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
+cluuk ENDIF
+cluuk CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+cluuk&            JJVO,BUF2,NBUF2,BUF3,USEDZ)
+cluuk CALL XGEMV ('N',M,N,A1,BUF3,M,T1,1,A1,GV,1)
+C... This is the new code, reasonably well tested, but not yet for
+C... memory intense runs. Delete the old code when the new works
+C... satisfactory.
+      CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
+     &            JJVO,BUF2,NBUF2,T1,GV,USEDZ)
+C... End of new code (11-02-00)
 C
       RETURN
       END
@@ -233,6 +248,8 @@ C
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
       ELSE
          CALL QUIT('Wrong keyword in call to HINTM')
       ENDIF
@@ -242,10 +259,12 @@ C We store h initially as H(AK,CI), ordening and minus sign after next
 C step !
 C---------------------------------------------------------------------
       CALL GETVOVO (H)
+      CALL DELINT ('VOVO','KDDK',H,0,0,0)
 C----------------------------------------
 C H(AK,CI) = H(AK,CI) + T(A,L) * W(LK,CI)
 C----------------------------------------
       CALL GETVOOO (BUF1)
+      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT1C1 (NREP,NVO,NOOT,BUF1,BUF2)
       CALL SRT1T2 (NREP,MULTB,LFA,NOOT,NO,NO,NVO,LOOVO,LLOVO,BUF2,BUF1)
       CALL CNTRCT ('N','N',NV,NOVO,NO,A1,T1,BUF1,A0,BUF3,NREP)
@@ -261,6 +280,7 @@ C------------------------------------------------------------------
          ISTART = 0
          NINT = NBUF3/NVO(IRP)
   10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
          CD = 0
          DO 20 DREP = 1, NREP
            CREP = MULTB(DREP,IRP+NREP,2)
@@ -276,6 +296,7 @@ C                   We need the next buffer
 C                   -----------------------
                     ISTART = ISTART + NINT
                     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+                    CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
                     CD = 1
                  ENDIF
                  AKCD = (CD-1)*NVO(IRP)*RCW+1
@@ -323,6 +344,7 @@ C---------------------------------------------------------------
      &               A1,BUF1,NDIMT1)
 C
       CALL GETVVOO (BUF3)
+      CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
       IF (CARITH) CALL CONJUGA (NV3,BUF3,1)
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF3,BUF2)
@@ -372,12 +394,14 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      real*8 ddot
 C---------------Executable code--------------------------------------
 C
-C-----------------------------
-C H(K,I) = F(K,I) * DELTA(K,I)
-C-----------------------------
+C-----------------------------------
+C H(K,I) = F(K,I) * (1 - DELTA(K,I))
+C-----------------------------------
       CALL XCOPY (NFOO,FOO,1,HO,1)
+      CALL DELFCK ('OO','DK',HO)
       II = 1
       DO IRP = 1, NREP
          N = NO(IRP)
@@ -388,6 +412,7 @@ C----------------------------------------------------------------------
 C H(K,I) = H(K,I) + W(KL,CD) * T(CD,IL) = H(K,I) + W*(CDL,K) * T(CDL,I)
 C----------------------------------------------------------------------
       CALL GETVVOO (BUF3)
+      CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF3,BUF1)
       CALL GETTAU  (T1,T2,BUF3)
@@ -433,6 +458,7 @@ C--------------------------------
 C HOV(C,K) = FOV(K,C) = FVO*(C,K)
 C--------------------------------
       CALL XCOPY (NFVO,FVO,1,HOV,1)
+      CALL DELFCK ('VO','DD',HOV)
       IF (CARITH) CALL CONJUGA (NFVO,HOV,1)
 C-------------------------------------------------------------------
 C HOV(CK) = HOV(CK) + W(KL,CD) * T(DL) = HOV(CK) + W*(CD,KL) * T(DL)
@@ -440,6 +466,7 @@ C-------------------------------------------------------------------
       M = MVO(1)
       K = MVO(1)
       CALL GETVVOO (BUF1)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
       CALL XCOPY (JVOVO(2),A0,0,BUF2,1)
       CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,JVOVO,JJVO,JJVO,
      &              BUF1,BUF2)
@@ -480,10 +507,11 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-C-----------------------------
-C H(A,C) = F(A,C) * DELTA(A,C)
-C-----------------------------
+C-----------------------------------
+C H(A,C) = F(A,C) * (1 - DELTA(A,C))
+C-----------------------------------
       CALL XCOPY (NFVV,FVV,1,HV,1)
+      CALL DELFCK ('VV','KD',HV)
       AA = 1
       DO IRP = 1, NREP
          N = NV(IRP)
@@ -497,6 +525,7 @@ C----------------------------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF3,BUF1)
       CALL GETVVOO (BUF3)
+      CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF3,BUF2)
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A1,HV,NREP)
@@ -531,11 +560,13 @@ C
       INCLUDE "symm.inc"
       INCLUDE "eqns.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ
       REAL*8 T1MIN(2)
+      real*8 sint,st2s,ss2s
 C
 C---------------Executable code--------------------------------------
 C
@@ -543,6 +574,8 @@ C
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
       ELSE
          CALL QUIT('Wrong keyword in call to BINTM')
       ENDIF
@@ -552,15 +585,17 @@ C---------------------------------------------
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
       ELSE
-         CALL XCOPY   (NDIMT2,T2,1,BUF1,1)
+         CALL XCOPY  (NDIMT2,T2,1,BUF1,1)
       ENDIF
       OFF1 = 1
       OFF2 = 1
       DO 30 IRP = 1, NREP
          ISTART = 0
          IF (NVVT(IRP).EQ.0) GOTO 30
-         NINT = NBUF3/NVVT(IRP)
-  10     CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3)
+         MINT = NBUF3/NVVT(IRP)
+         mint = 153
+  10     CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+         CALL DELINT ('VVVV','KKDD',BUF3,IRP,ISTART,NINT)
          M = NVVT(IRP)
          N = NOOT(IRP)
          K = NINT
@@ -574,26 +609,38 @@ C---------------------------------------------
          OFF2 = OFF2 + M * N * RCW
  30   CONTINUE
 C--------------------------------------------------------------
-C S(AB,CD) =  S(AB,CD) - PAB [ T(B,K) * W(AK,CD) * TAU(CD,IJ) ]
+C S(AB,IJ) =  S(AB,IJ) - PAB [ T(B,K) * W(AK,CD) * TAU(CD,IJ) ]
 C--------------------------------------------------------------
+      CALL XCOPY (NV2,A0,0,BUF2,1)
+C
+C     Explicit parallelization with ITASK.
+C     After integral distribution parallelization should be handled
+C     by GETVOVV !
+C
+      ITASK = 1
       OFF1 = 1
       OFF2 = 1
-      CALL XCOPY (NV2,A0,0,BUF2,1)
       DO 130 IRP = 1, NREP
          ISTART = 0
          IF (NVVT(IRP).EQ.0.OR.NVO(IRP).EQ.0) GOTO 130
-         NINT = NBUF3/NVO(IRP)
- 110     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
          M = NVO (IRP)
          N = NOOT(IRP)
-         K = NINT
          KD = NVVT(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),KD,
-     &               A1,BUF2(OFF2),M)
-         IF (.NOT.DONE) THEN
+         NINT = NBUF3/NVO(IRP)
+  110    IF (ITASK.EQ.MYPROC+1) THEN
+            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+            CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+            K = NINT
+            CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),
+     &                  KD,A1,BUF2(OFF2),M)
             ISTART = ISTART + NINT
-            GOTO 110
+         ELSE
+            ISTART = ISTART + NINT
+            DONE = ISTART.GE.NVVT(IRP)
          ENDIF
+         ITASK = ITASK + 1
+         IF (ITASK.GT.NMPROC) ITASK = 1
+         IF (.NOT.DONE) GOTO 110
          OFF1 = OFF1 + KD * N * RCW
          OFF2 = OFF2 + M * N * RCW
  130  CONTINUE
@@ -691,6 +738,132 @@ C--------------------------------------------------------
                   T1MIN(1) = -T1(BI)
                   IF (CARITH) T1MIN(2) = -T1(BI+1)
                   CALL XAXPY (NA,T1MIN,T1(AJ),1,TAU(ABIJOFF+AB),1)
+                  AB = AB + NA * RCW
+                  BI = BI + RCW
+               ENDDO
+            ENDIF
+C--------------------------------------------------------
+C UPDATE OFFSET AND GO TO NEXT IRREP PAIR
+C--------------------------------------------------------
+            IF (ARP.NE.BRP) THEN
+               ABIJOFF = ABIJOFF + NV(ARP) * NV(BRP) * RCW
+            ELSE
+               ABIJOFF = ABIJOFF + NV(ARP) * (NV(ARP)-1) * RCW / 2
+            ENDIF
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETTAU2 (S1,DL,S2,TAU)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Calculates Hamiltonian matrix from S1 and S2 elements
+C     Essentially Slater rules for 2-e determinants !
+C
+C     General formula (indices are active virtual or active occupied)
+C     We apply it to the whole array and extract the relevant part
+C     later.
+C
+C     H2(AB,IJ) = S1(A,I)*DELTA(B,J) + S1(B,J)*DELTA(A,I)
+C               - S1(A,J)*DELTA(B,I) - S1(B,I)*DELTA(A,J)
+C               + S2(AB,IJ)
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY, XAXPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 S1(*),DL(*),S2(*),TAU(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 S1MIN(2)
+C
+C---------------Executable code--------------------------------------
+C
+      CALL XCOPY (NDIMT1,A0,0,DL,1)
+      AI = 1
+      DO IRP = 1, NREP
+      DO I = 1, NO(IRP)
+         F = I - NSO(IRP)
+         N = I - NIO(IRP)
+         DO A = 1, NV(IRP)
+             E = A
+             M = A - NSV(IRP)
+             IF (E.EQ.F) DL(AI) = D1
+             IF (M.EQ.N.AND.M.GT.0) DL(AI) = D1
+             AI = AI + RCW
+         ENDDO
+      ENDDO
+      ENDDO
+C
+      CALL XCOPY (NDIMT2,S2,1,TAU,1)
+C
+      ABIJOFF = 0
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      IF (IRP.LT.JRP) GOTO 10
+      DO J = 1, NO(JRP)
+         IMIN = 1
+         IF (IRP.EQ.JRP) IMIN = J + 1
+         DO I = IMIN, NO(IRP)
+            DO 20 BRP = 1, NREP
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 20
+C-----------------------------------------------------------------------
+C TAU(AB,IJ) = S2(AB,IJ) + S1(A,I) * DELTA (B,J) + DELTA(A,I) * S1 (B,J)
+C-----------------------------------------------------------------------
+            IF (BRP.EQ.JRP) THEN
+               AB = 1
+               BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1
+               DO B = 1, NV(BRP)
+                  AMIN = 1
+                  IF (ARP.EQ.BRP) AMIN = B + 1
+                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1
+                  NA = NV(ARP) - AMIN + 1
+                  CALL XAXPY (NA,DL(BJ),S1(AI),1,TAU(ABIJOFF+AB),1)
+                  CALL XAXPY (NA,S1(BJ),DL(AI),1,TAU(ABIJOFF+AB),1)
+                  AB = AB + NA * RCW
+                  BJ = BJ + RCW
+               ENDDO
+            ENDIF
+C-----------------------------------------------------------------------
+C TAU(AB,IJ) = S2(AB,IJ) - S1(A,J) * DELTA (B,I) - DELTA(B,I) * S1 (A,J)
+C-----------------------------------------------------------------------
+            IF (ARP.EQ.JRP) THEN
+               AB = 1
+               BI = (IVO(IRP) + (I-1) * NV(IRP)) * RCW + 1
+               DO B = 1, NV(BRP)
+                  AMIN = 1
+                  IF (ARP.EQ.BRP) AMIN = B + 1
+                  AJ = (IVO(JRP) + (J-1) * NV(JRP) + AMIN - 1) * RCW + 1
+                  NA = NV(ARP) - AMIN + 1
+                  S1MIN(1) = -S1(BI)
+                  IF (CARITH) S1MIN(2) = -S1(BI+1)
+                  CALL XAXPY (NA,S1MIN,DL(AJ),1,TAU(ABIJOFF+AB),1)
+                  S1MIN(1) = -DL(BI)
+                  IF (CARITH) S1MIN(2) = -DL(BI+1)
+                  CALL XAXPY (NA,S1MIN,S1(AJ),1,TAU(ABIJOFF+AB),1)
                   AB = AB + NA * RCW
                   BI = BI + RCW
                ENDDO
@@ -1593,3 +1766,16 @@ C------------------------------------------------------------------
 C
       RETURN
       END
+C
+      subroutine xgemm1 (ta,tb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+      real*8 alpha,beta,a(lda,k),b(ldb,n),c(ldc,n)
+      character*1 ta,tb
+      do i = 1, m
+      do j = 1, n
+      do k1 = 1, k
+      c(i,j) = alpha*a(i,k1)*b(k1,j) + beta*c(i,j)
+      enddo
+      enddo
+      enddo
+      return
+      end

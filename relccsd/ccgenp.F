@@ -143,7 +143,7 @@ C
 #endif
 #endif
 #if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT) || defined (SYS_SX)
+ || defined (SYS_DEC)  || defined (SYS_LINUX) || (SYS_ALLIANT)
       real*4  etime, tarray(2)
 C
       TIMCPU = etime(tarray)
@@ -177,57 +177,27 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (SYS_HPUX)
       CHARACTER FDATE*24
 #endif
-#if defined (SYS_DEC)
-      character*12 real_clock(3)
-#endif
-      Character*10 Datum,Tijd*8,String*26
+      Character*10 Datum,Tijd*8,String*24
       external time
-#if defined (SYS_DEC)
-      integer*4 stime, tarray(9), time
-      external ltime
-#endif
       Datum = '          '
       Tijd  = '        '
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       Call Date(Datum)
       Call Clock(Tijd)
-#else 
-#if defined (SYS_HPUX)
-      STRING(1:24) = FDATE()
+#endif
+#if defined (SYS_HPUX) || defined (SYS_LINUX)
+      STRING = FDATE()
       DATUM = STRING(1:10)
       TIJD  = STRING(12:19)
-#else
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_HPUX)
-      Call Date(Datum)
-      Call Time(Tijd)
-#else
-#if defined (SYS_SX)
-      call datim(Datum,Tijd,1)
-#else
-#if defined (SYS_DEC)
-      stime = time()
-      call ltime( stime, tarray )
-      write(Tijd, '(i2,a1,i2,a1,i2)') 
-     &tarray(3),':', tarray(2),':', tarray(1)
-      Call Date(Datum)
-#else
+#endif
 #if defined (SYS_AIX) 
       Call fdate_ (String)
       Datum = String(1:10)
       Tijd  = String(12:19)
-#else
-#if defined (SYS_DEC)
-      Call Date_and_Time(real_clock(1),real_clock(2),real_clock(3))
-      Datum = real_clock(1)(1:10)
-      Tijd = real_clock(2)(1:10)
-#else
-      Date and time on your computer???
 #endif
-#endif
-#endif
-#endif
-#endif
-#endif
+#if defined (SYS_IRIX)
+      Call Date(Datum)
+      Call Time(Tijd)
 #endif
       Return
       End

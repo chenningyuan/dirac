@@ -50,16 +50,26 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      INCLUDE "files.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "complex.inc"
+#include <mxorb.h>
 #include <priunit.h>
 #include <dgroup.h>
+#if defined (VAR_MPI)
+#include <infmpi.h>
+#include <infpar.h>
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+      INCLUDE "ccpar.inc"
+      INCLUDE "files.inc"
+      INCLUDE "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CC(MAXCOR)
       REAL*8 SEC,SEC0
+      LOGICAL CA
+      CHARACTER*10 INTFCE
+
 C
 C---------------Executable code--------------------------------------
 C
@@ -72,14 +82,21 @@ C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       IN = LUCMD
       IW = LUPRI
-      INTERFACE = 'DIRAC     '
-      CARITH = NZ.GE.2
-      WRITE (IW,'(//80A1)') ('#',I=1,80)
-C
-      CALL CCHEADER
+      INTFCE = 'DIRAC     '
+      CA = NZ.GE.2
+#if defined (VAR_MPI)
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node
+      NMPROC = NUMNOD + 1
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
 C
       CALL CCMSTI
-      CALL CCMAIN(CC,MAXCOR)
+      CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
       CALL CCMSTE
 C
       CALL CPUUSED(SEC)
@@ -109,7 +126,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <gnrinf.h>
+#include <dcbgen.h>
 #include <infpar.h>
 C
       IF (.NOT.PARCAL) RETURN
@@ -117,6 +134,9 @@ C
       ITASK = 3
 #if defined (VAR_MPI)
       CALL MPI_BCAST(ITASK,1,MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
+#endif
+#if defined (VAR_PVM)
+      CALL PVMFPACK(INTEGER4,ITASK,1,1,INFO)
 #endif
       RETURN
       END
@@ -135,7 +155,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <gnrinf.h>
+#include <dcbgen.h>
 #include <infpar.h>
 C
       IF (.NOT.PARCAL) RETURN
@@ -143,7 +163,7 @@ C
 C     Find the slaves and release them
 C
       NTEST = -1
-      DO I = 1,NODES
+      DO I = 1,NUMNOD
 #if defined (VAR_MPI)
          CALL MPI_IRECV(NODE,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,IREQ,IERR)
@@ -158,31 +178,42 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck CCNOD */
-      SUBROUTINE CCNOD(WORK,LWORK)
+      SUBROUTINE CCNOD(CC,MAXCOR)
 C
 C     Written by Luuk Visscher, August 1997
-C     The slave RELCCSD routine
+C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include <implicit.h>
 #include <mxorb.h>
 #if defined (VAR_MPI)
 #include <infmpi.h>
+#include <infpar.h>
       INCLUDE 'mpif.h'
       DIMENSION ISTAT(MPI_STATUS_SIZE)
 #endif
-#include <gnrinf.h>
-#include <infpar.h>
+#include <priunit.h>
+#include <dgroup.h>
+      INCLUDE "ccpar.inc"
+      INCLUDE "files.inc"
+      CHARACTER*10 INTFCE
+      LOGICAL CA,CCEND
 C
-      DIMENSION WORK(LWORK)
-      LOGICAL CCEND
+      DIMENSION CC(MAXCOR)
 C
-      CALL QENTER('CCNOD')
-#include <memint.h>
-      KFRSAV = KFREE
+      MASTER = MPARID
+      MYPROC = MYTID
+C     Add the master node
+      NMPROC = NUMNOD + 1
+      INTFCE = 'DIRAC     '
+      CA = NZ.GE.2
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      OPEN(MSLVOUT,FILE = 'RELCCSD.OUT')
+      CALL CCMAIN(CC,MAXCOR,LUCMD,MSLVOUT,CA,INTFCE)
+      CLOSE (MSLVOUT,STATUS='KEEP')
+      CLOSE (LUCMD,STATUS='KEEP')
 C
-C     At the moment this is a dummy routine, letting the slaves
-C     sleep so that they do not consume CPU-time idling for tasks.
+C     The slave is finished, wait for the master
 C
       CCEND = .FALSE.
 #if defined (VAR_MPI)
@@ -196,12 +227,7 @@ C
 C
       CALL MPI_RECV(NTEST,1,MPI_INTEGER,MPARID,30,
      &               MPI_COMM_WORLD,ISTAT,IERR)
-#else
 #endif
 C
-      CALL MEMREL('CCNOD',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('CCNOD')
-C
       RETURN
-C
       END

@@ -4,6 +4,6 @@
 #if defined (VAR_ABASMALL)
       PARAMETER (MXCENT = 8, MXCOOR = 3*MXCENT)
 #else
-      PARAMETER (MXCENT = 14, MXCOOR = 3*MXCENT)
+      PARAMETER (MXCENT = 60, MXCOOR = 3*MXCENT)
 #endif
 #endif

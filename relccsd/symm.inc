@@ -11,7 +11,7 @@ C     The essential double group symmetry information.
       COMMON /DIMS/ NDIMT1,NDIMT2,NFOO,NFVO,NFVV,NV1,NV2,NV3,NV4,NV5,NV6
      &              ,NDIMX,NDIMY
 C     Sub dimensions of symmetry packed arrays.
-      COMMON /SYMD/ NO(8),NV(8),NC(8),MOO(8),MVO(8),MVV(8),
+      COMMON /SYMD/ NE(8),NO(8),NV(8),NC(8),MOO(8),MVO(8),MVV(8),
      & NOO(8),NOV(8),NVO(8),NVV(8),NOOT(8),NVVT(8),
      & NOOOT(8),NVOOT(8),NVVOT(8),NVVVT(8),NOVO(8),NVOO(8),NOVVT(8),
      & NOOVT(8)
@@ -28,3 +28,13 @@ C     Pointers for symmetry packed arrays.
      & KKVOO(8,8),KKOOVT(8,8),
      & LLOOOT(8,8),LLVOOT(8,8),LLOVO(8,8),LLOVVT(8,8),LLVVVT(8,8),
      & IVVVT(9,8),JVVVT(9,8),IVVVTMX,NVVVOTMX
+C     For Fock space : we now have 4 classes of spinors
+      COMMON /SYMFSD/ NIO(8),NIV(8),NAO(8),NAV(8),NSO(8),NSV(8),
+     & NIVIO(8),NAVAO(8),NAVSO(8),NSOAV(8),NAOSV(8),
+     & NIOIOT(8),NAOAOT(8),NAVAVT(8),NIVIVT(8),NIVIVIOT(8),NIOIOIVT(8)
+     & ,NSVSVT(8),NSOSOT(8),NSVSVSOT(8),NSVSOSOT(8)
+      COMMON /SYMFSP/ IAVAV(9),IAOAO(9),IAVSO(9),
+     & KIVIVIOAVT(9),KIOIOIVAOT(9),KSVSVSOAVT(9),
+     & LAOSVSOSOT(9),
+     & IISOAV(8,8),KKIVIVIOT(8,8),KKIOIOIVT(8,8),KKSVSVSOT(8,8),
+     & LLSVSOSOT(8,8)

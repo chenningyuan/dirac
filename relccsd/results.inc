@@ -28,5 +28,5 @@ C
 C     Gather results of the energy calculations
 C     ETOT is the energy at the current highest level of theory
 C
-      COMMON/ENERG/ETOT,ESCF,EMP2,ECCSD,ET1,ET2,ET3
-      REAL*8 ETOT,ESCF,EMP2,ECCSD,ET1,ET2,ET3
+      COMMON/ENERG/ECORE,ETOT,ESCF,EMP2,ECCSD,ET1,ET2,ET3
+      REAL*8 ECORE,ETOT,ESCF,EMP2,ECCSD,ET1,ET2,ET3

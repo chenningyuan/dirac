@@ -58,21 +58,25 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      WRITE (IW,1000) "2.0 ","October 1997"
+      WRITE (IW,1000) "2.1 beta","July 1999"
       CALL DAYTIME (DATEX,TIMEX)
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
      &/" Version number ",A
      &/" Version date ",A
-     &//" Written by :",/" Luuk Visscher"/
-     &/" NASA Ames Research Center     "
-     &/" Rijks Universiteit Groningen  "
-     &/" Odense Universitet            ")
+     &//" Written by :",/" Lucas (Luuk) Visscher"/
+     &/" NASA Ames Research Center    (1994)"
+     &/" Rijks Universiteit Groningen (1995)"
+     &/" Odense Universitet           (1996-1997)" 
+     &/" Vrije Universiteit Amsterdam (1998-1999)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
 C
       RETURN
 C---------------Record of modifications made in the code-------------
+C     July 1999: Implemented Fock space Coupled Cluster
+C                Parallelized (part of) the program using MPI
+C--------------------------------------------------------------------
 C     11-12-97 : MP2 gradients works, CCSD Lambda equations written
 C--------------------------------------------------------------------
 C     October 1997 : major restructuring
@@ -145,19 +149,21 @@ C
       LOGICAL REWINP
 C
       NAMELIST/RELCCSD/ NELEC,NFROZ,CARITH,
-     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,
+     &                  DOSORT,DOENER,DOFOPR,DOSOPR,DOEXC,DOFSPC,
      &                  MWORD,DEBUG,TIMING,IPRNT,INTERFACE,
      &                  MIOBUF
-      NAMELIST/CCSORT/ SRTALL
+      NAMELIST/CCSORT/ SRTALL,USEOE,NORECMP
       NAMELIST/CCENER/ DOMP2,DOCCSD,DOCCSDT,MAXIT,MAXDIM,NTOL
       NAMELIST/CCFOPR/ DOMP2G,DOCCSDG,DOCCSDTG,NEOPER,NAMEE,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
+      NAMELIST/CCFSPC/ FSSECT,NACTH,NACTP,NHOLE,NPART,MAXIT,MAXDIM,NTOL
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
+      DIMENSION NACTH(16),NACTP(16)
 C
 C---------------Executable code--------------------------------------
 C
@@ -175,6 +181,7 @@ C
       DOFOPR  = .FALSE.
       DOSOPR  = .FALSE.
       DOEXC   = .FALSE.
+      DOFSPC  = .FALSE.
       DEBUG  = .FALSE.
       TIMING = .FALSE.
       MWORD = 0
@@ -262,6 +269,46 @@ C
       MXITEX = MAXIT
       NTOLEX = NTOL
 C
+C     Input for the Fock-Space CCSD energy calculation.
+C
+      MAXDIM = 8
+      MAXIT = 30
+      NTOL = 12
+      DO I = 1, 16
+         NACTH(I) = 0
+         NACTP(I) = 0
+         NHOLE(I) = 0
+         NPART(I) = 0
+      ENDDO
+      DO ISECT = 1, 6
+         FSSECT(ISECT) = 0
+      ENDDO
+      REWIND (IN)
+      READ (IN,CCFSPC,END=12,ERR=11)
+      GOTO 12
+   11 CALL QUIT('Error exit while reading namelist CCFSPC')
+   12 CONTINUE
+      MXDIMFS = MAXDIM
+      MXITFS = MAXIT
+      NTOLFS = NTOL
+      DO I = 1, 16
+         IF (NACTH(I).GT.NELEC(I)) 
+     &   CALL QUIT ('NACTH > NELEC : Incorrect Fock space input')
+         NINACT(I) = NELEC(I) - NACTH(I)
+         NACT(I) = NACTH(I) + NACTP(I)
+      ENDDO
+C
+C     Input for the sorting routine.
+C
+      SRTALL = .TRUE.
+      USEOE = .TRUE.
+      NORECMP = .FALSE.
+      REWIND (IN)
+      READ (IN,CCSORT,END=14,ERR=13)
+      GOTO 14
+   13 CALL QUIT('Error exit while reading namelist CCSORT')
+   14 CONTINUE
+C
 C     Position the file at the right spot when this routine is
 C     called as a part of DIRAC
 C
@@ -277,9 +324,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (CC_ALONE)
-      SUBROUTINE CCMAIN (MAXCORE)
+      SUBROUTINE CCMAIN (MAXCORE,IUNIN,IUNUT,CA,INTFCE)
 #else
-      SUBROUTINE CCMAIN (CC,MAXCORE)
+      SUBROUTINE CCMAIN (CC,MAXCORE,IUNIN,IUNUT,CA,INTFCE)
 #endif
 C
       IMPLICIT INTEGER (A-Z)
@@ -304,6 +351,11 @@ C
       INCLUDE "inpt.inc"
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -312,7 +364,7 @@ C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
 #if defined (CC_ALONE)
-#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_SX)
+#if defined (SYS_CRAY) || defined (SYS_AIX) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D)
       POINTER (ICC,CC(1))
       REAL*8 CC
 #else
@@ -322,11 +374,34 @@ C
       REAL*8 CC(MAXCORE)
 #endif
       PARAMETER (MAXSP=1000)
-      INTEGER IREPSP(MAXSP*3),IREPSPI(MAXSP*16)
+      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*16)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
-      LOGICAL ALLOC
+      LOGICAL ALLOC,CA
+      REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUE,CPUS,CPUFO,CPUSO,CPUVAR
+      CHARACTER*10 INTFCE
 C
 C---------------Executable code--------------------------------------
+C
+C     Set the input and output units
+C
+      INTERFACE = INTFCE
+      CARITH = CA
+      IN = IUNIN
+      IW = IUNUT
+      WRITE (IW,1011) MYPROC+1,NMPROC
+C
+      CALL CCHEADER
+C
+C     Initialize the timing.
+C
+      CALL CPUUSED(CPU0)
+      CPU1 = CPU0
+      CPUI = 0
+      CPUS = 0
+      CPUE = 0
+      CPUFO = 0
+      CPUSO = 0
+      CPUTOT = 0
 C
 C     Memory and I/O setup section
 C     ----------------------------
@@ -334,11 +409,9 @@ C
       MAXCOR = MAXCORE
       MXCORR = 0
 C
-C     Read information from MOLFDIR
+C     Read symmetry information
 C
-      OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-      READ (MRCONEE) NSP,BREIT,ECORE
-      CLOSE (MRCONEE)
+      CALL RDSYMI (NSP,BREIT,EPS1,IREPSP)
 C
       IF (NSP.GT.MAXSP) THEN
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
@@ -348,8 +421,6 @@ C
 C     Read input
 C
       CALL CCINPT (IN,IW,MIOBUF)
-C
-      CALL FLSHFO(IW)
 C
 C     Number of integer words for REAL*8 and 
 C     number of REAL*8 words per variable (2 for complex groups, 
@@ -407,7 +478,8 @@ C
 C
 C  Set up symmetry tables
 C
-      CALL SYMTAB (NELEC,NFROZ,NSP,EPS1,EPS,IREPSP,IREPSPI)
+      CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
+     &             .FALSE.,.TRUE.)
 C
       NELECT = 0
       DO I = 1, 16
@@ -423,34 +495,32 @@ C
       ALLOC = .FALSE.
       KFREE = 1
       LFREE = MAXCOR
-      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
 C 
       MXCORR1 = 0
       CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
-     &             NSP,IREPSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+     &             NSP,IREPSP,IREPSPI)
       IF (DOSORT) MXCORR = MAX0(MXCORR,MXCORR1)
 
       MXCORR1 = 0
-      CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             CC(FOO),CC(FVO),CC(FVV))
+      CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
       IF (DOENER) MXCORR = MAX0(MXCORR,MXCORR1)
 C
       MXCORR1 = 0
-      CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             CC(FOO),CC(FVO),CC(FVV))
+      CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
       IF (DOFOPR) MXCORR = MAX0(MXCORR,MXCORR1)
 C
       MXCORR1 = 0
-      CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+      CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOSOPR) MXCORR = MAX0(MXCORR,MXCORR1)
 C
       MXCORR1 = 0
-      CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
-     &             NSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+      CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
       IF (DOEXC) MXCORR = MAX0(MXCORR,MXCORR1)
+C
+      MXCORR1 = 0
+      CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
+     &            IREPSP,IREPSPI,MREMAIN)
+      IF (DOFSPC) MXCORR = MAX0(MXCORR,MXCORR1)
 C
       IF (MXCORR.GT.MAXCOR) THEN
 #if defined (CC_ALONE)
@@ -462,6 +532,7 @@ C
          MWORD = MXCORR / (1024 * 1024)
          IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
          WRITE (IW,1002) MXCORR,MWORD
+         CALL FLSHFO (IW)
          CALL QUIT("INCREASE MWORD")
       ENDIF
 C
@@ -477,7 +548,7 @@ C
       ICC =  MALLOC (%VAL(MXCORR*8))
       IF (ICC.EQ.0) IERR = 1
 #endif
-#if defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_SX)
+#if defined (SYS_IRIX) || defined (SYS_HPUX)
       ICC =  MALLOC (MXCORR*8)
       IF (ICC.EQ.0) IERR = 1
 #endif
@@ -507,8 +578,9 @@ C
       ENDIF
 #endif
 #endif
-C
-      CALL FLSHFO(IW)
+      CALL CPUUSED(CPU2)
+      CPUI = CPUI + CPU2 - CPU1
+      CPU1 = CPU2
 C
 C     Start the calculations
 C     ----------------------
@@ -517,28 +589,40 @@ C
       ALLOC = .TRUE.
       KFREE = 1
       LFREE = MXCORR
-      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
 C
       IF (DOSORT) CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,MREMAIN,EPS,
-     &            NSP,IREPSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+     &            NSP,IREPSP,IREPSPI)
+      CALL CPUUSED(CPU2)
+      CPUS = CPUS + CPU2 - CPU1
+      CPU1 = CPU2
       CALL FLSHFO (IW)
 C
-      IF (DOENER) CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &            CC(FOO),CC(FVO),CC(FVV))
+      IF (DOENER) CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
+      CALL CPUUSED(CPU2)
+      CPUE = CPUE + CPU2 - CPU1
+      CPU1 = CPU2
       CALL FLSHFO (IW)
 C
       IF (DOFOPR) CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,
-     &            MXCORR,EPS,CC(FOO),CC(FVO),CC(FVV))
+     &            MXCORR,EPS)
+      CALL CPUUSED(CPU2)
+      CPUFO = CPUFO + CPU2 - CPU1
+      CPU1 = CPU2
       CALL FLSHFO (IW)
 C
       IF (DOSOPR) CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                         NSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+     &                         NSP,IREPSPI)
+      CALL CPUUSED(CPU2)
+      CPUSO = CPUSO + CPU2 - CPU1
+      CPU1 = CPU2
       CALL FLSHFO (IW)
 C
       IF (DOEXC ) CALL CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                        NSP,IREPSPI,CC(FOO),CC(FVO),CC(FVV))
+     &                        NSP,IREPSPI)
+      CALL FLSHFO (IW)
+C
+      IF (DOFSPC) CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
+     &                         NSP,IREPSP,IREPSPI,MREMAIN)
       CALL FLSHFO (IW)
 C
 C  FINISHED; RETURN AFTER CLOSING FILES
@@ -559,6 +643,13 @@ C
       IF (DOCCSD) CALL RCLOSE(ITAPT+6,JCODE)
 C
       CALL CCSUMM
+C   
+C     Print timings
+C
+      CALL CPUUSED(CPUTOT)
+      CPUTOT = CPUTOT-CPU0
+      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO
+      WRITE(IW,1010) CPU0,CPUI,CPUS,CPUE,CPUFO,CPUSO,CPUVAR,CPUTOT
 C
       RETURN
 C
@@ -586,15 +677,26 @@ C
 1006  FORMAT (" Too much core specified, maximum is",
      &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
 1008  FORMAT (" Amount of memory used :",T50,F10.1," megawords")
+1010  FORMAT(//' Timing of main modules :'
+     &/' Before CC driver :',T30,F12.3,' seconds'
+     &/' Initialization :',T30,F12.3,' seconds'
+     &/' Integral sorting :',T30,F12.3,' seconds'
+     &/' Energy calculation :',T30,F12.3,' seconds'
+     &/' First order properties :',T30,F12.3,' seconds'
+     &/' Second order properties :',T30,F12.3,' seconds'
+     &/' Untimed parts :',T30,F12.3,' seconds'
+     &/' Total time in CC driver :',T30,F12.3,' seconds')
+ 1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SYMTAB (NELEC,NFROZ,NSP,EPS1,EPS,IREPSP,IREPSPI)
+      SUBROUTINE SYMTAB (NELEC,NFROZ,NINACT,NACT,
+     &                   NSP,EPS1,EPS,IREPSP,IREPSPI,FOCKSP,REPORT)
 C
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
-C     Read symmetry information from MOLFDIR
 C     Generate symmetry pointer arrays
 C
 C---------------Routines called----------------------------------------
@@ -606,8 +708,10 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,3),IREPSPI(NSP,8,2),NELEC(16),NFROZ(16)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2)
+      INTEGER NELEC(16),NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
+      LOGICAL FOCKSP,REPORT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -625,56 +729,19 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C     Read symmetry information
-C
-      OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-      READ (MRCONEE) 
-      READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)
-      READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
-      READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
-      READ (MRCONEE) (IREPSP(ISP,1),IREPSP(ISP,2),EPS1(ISP),ISP=1,NSP)
-      CLOSE (MRCONEE,STATUS='KEEP')
-C
-C     Right adjust representation names
-C
-      DO IRP = 1, NSYMRP
-         REPN(IRP) = REPNT(IRP)(1:4)
-         CALL BLANKR (4,REPN(IRP))
-      ENDDO
-      DO IRP = 1, NREP
-         CALL BLANKR (4,REPNA(IRP))
-      ENDDO
-C
-C     Make inverse of multiplication table
-C
-      DO JREP = 1, 2*NREP
-         DO IREP = 1, 2*NREP
-            KREP = MULTB(IREP,JREP,1)
-            MULTB(IREP,KREP,2) = JREP
-         ENDDO
-      ENDDO
-C
-C     Get rid of offset for boson reps
-C
-      DO JREP = 1, NREP
-         DO IREP = 1, NREP
-            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
-            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
-         ENDDO
-      ENDDO
-      DO JREP = NREP + 1, 2*NREP
-         DO IREP = NREP + 1, 2*NREP
-            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
-            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
-         ENDDO
-      ENDDO
-C
 C     Initialize dimension arrays
 C
       DO IREP = 1, NREP
+         NE(IREP) = 0
          NO(IREP) = 0
          NV(IREP) = 0
          NC(IREP) = 0
+         NIO(IREP) = 0
+         NIV(IREP) = 0
+         NAO(IREP) = 0
+         NAV(IREP) = 0
+         NSO(IREP) = 0
+         NSV(IREP) = 0
          MOO(IREP) = 0
          MVO(IREP) = 0
          MVV(IREP) = 0
@@ -698,50 +765,206 @@ C
 C
 C     Convert input information to abelian subgroup
 C
-      NFROZEN = 0
-      DO IRP = 1, NSYMRP
-         NVIRT(IRP) = 0
-         IN  = 0
-         DO I = 1, NSP
-            IF (IREPSP(I,1).EQ.IRP) THEN
-               IN = IN + 1
-               IREP = IREPSP(I,2)
-               IF (IN.LE.NELEC(IRP)) THEN
-                  NO(IREP) = NO(IREP) + 1
-                  IREPSP(I,3) = NO(IREP)
-                  IREPSPI(NO(IREP),IREP,1) = I
-                  IF (NO(IREP).GT.MAXFROZ) CALL QUIT("INCREASE MAXFROZ")
-                  IF (IN.LE.NFROZ(IRP)) THEN
-                     NC(IREP) = NC(IREP) + 1
-                     IFROZ(NO(IREP),IREP) =  NC(IREP)
-                     NFROZEN = NFROZEN + 1
+      IF (.NOT.FOCKSP) THEN
+C
+C     Single reference calculation : we need only to distinguish
+C     between occupied and virtual, no active orbitals.
+C
+         NFROZEN = 0
+         DO IRP = 1, NSYMRP
+            NVIRT(IRP) = 0
+            IN  = 0
+            DO I = 1, NSP
+               IF (IREPSP(I,1).EQ.IRP) THEN
+                  IN = IN + 1
+                  IREP = IREPSP(I,2)
+                  IF (IN.LE.NELEC(IRP)) THEN
+                     NO(IREP) = NO(IREP) + 1
+                     IREPSP(I,3) = NO(IREP)
+                     IREPSPI(NO(IREP),IREP,1) = I
+                     IF (NO(IREP).GT.MAXFROZ) 
+     &                  CALL QUIT("INCREASE MAXFROZ")
+                     IF (IN.LE.NFROZ(IRP)) THEN
+                        NC(IREP) = NC(IREP) + 1
+                        IFROZ(NO(IREP),IREP) =  NC(IREP)
+                        NFROZEN = NFROZEN + 1
+                     ELSE
+                        IFROZ(NO(IREP),IREP) =  0
+                     ENDIF
                   ELSE
-                     IFROZ(NO(IREP),IREP) =  0
+                     NVIRT(IRP) = NVIRT(IRP) + 1
+                     NV(IREP) = NV(IREP) + 1
+                     IREPSP(I,3) = - NV(IREP)
+                     IREPSPI(NV(IREP),IREP,2) = I
                   ENDIF
-               ELSE
-                  NVIRT(IRP) = NVIRT(IRP) + 1
-                  NV(IREP) = NV(IREP) + 1
-                  IREPSP(I,3) = - NV(IREP)
-                  IREPSPI(NV(IREP),IREP,2) = I
                ENDIF
-            ENDIF
+            ENDDO
          ENDDO
-      ENDDO
 C
-      WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
-      WRITE (IW,1002) (NELEC(I),I=1,NSYMRP)
-      WRITE (IW,1002) (NVIRT(I),I=1,NSYMRP)
-      WRITE (IW,1001) (REPNA(I),I=1,NREP)
-      WRITE (IW,1002) (NO(I),I=1,NREP)
-      WRITE (IW,1002) (NV(I),I=1,NREP)
+         DO IREP = 1, NREP
+C           The number of electrons is now identical to NO, but we need
+C           two separate arrays because NO is extended in case of
+C           Fock space calculations (see below).
+            NE(IREP) = NO(IREP)
+C           Fill in the Fock space arrays in case we call a routine that
+C           needs them.
+            NIO(IREP) = NO(IREP)
+            NAO(IREP) = 0
+            NIV(IREP) = NV(IREP)
+            NAV(IREP) = 0
+            NSO(IREP) = NO(IREP)
+            NSV(IREP) = NV(IREP)
+         ENDDO
 C
-      IF (NFROZEN.GT.0) THEN
+      ELSE ! Fockspace
+C
+C     Active spinors belong to both the occupied and virtual
+C     space in Fock space calculations. We need a different sorting
+C     that puts all the active occupied at the end of the occupied set
+C     and all the active virtuals in the beginning. This may break the
+C     original (higher pointgroup) symmetry ordering but keeps the
+C     Abelian order.
+C
+C        Step 1 - Add the inactive occupied to the O space
+C               - Add the active virtual to the V space
+C
+         NFROZEN = 0
+         DO IRP = 1, NSYMRP
+            NVIRT(IRP) = 0
+            IN  = 0
+            DO I = 1, NSP
+               IF (IREPSP(I,1).EQ.IRP) THEN
+                  IN = IN + 1
+                  IREP = IREPSP(I,2)
+                  IF (IN.LE.NELEC(IRP).AND.
+     &                IN.LE.NINACT(IRP)) THEN
+                     NIO(IREP) = NIO(IREP) + 1
+                     NO(IREP) = NO(IREP) + 1
+                     IREPSP(I,3) = NO(IREP)
+                     IREPSP(I,4) = IREPSP(I,3)
+                     IREPSPI(NO(IREP),IREP,1) = I
+C                    Check for frozen core orbitals
+                     IF (NO(IREP).GT.MAXFROZ) 
+     &                  CALL QUIT("INCREASE MAXFROZ")
+                     IF (IN.LE.NFROZ(IRP)) THEN
+                        NC(IREP) = NC(IREP) + 1
+                        IFROZ(NO(IREP),IREP) =  NC(IREP)
+                        NFROZEN = NFROZEN + 1
+                     ELSE
+                        IFROZ(NO(IREP),IREP) =  0
+                     ENDIF
+                  ENDIF
+                  IF (IN.GT.NELEC(IRP).AND.
+     &                IN.LE.NACT(IRP)+NINACT(IRP)) THEN
+                     NVIRT(IRP) = NVIRT(IRP) + 1
+                     NAV(IREP) = NAV(IREP) + 1
+                     NV(IREP) = NV(IREP) + 1
+                     IREPSP(I,3) = - NV(IREP)
+                     IREPSPI(NV(IREP),IREP,2) = I
+                  ENDIF
+               ENDIF
+            ENDDO
+         ENDDO
+C
+C        Step 2 - Add the active occupied to the O space
+C               - Add the inactive virtual to the V space
+C
+         DO IRP = 1, NSYMRP
+            IN  = 0
+            DO I = 1, NSP
+               IF (IREPSP(I,1).EQ.IRP) THEN
+                  IN = IN + 1
+                  IREP = IREPSP(I,2)
+                  IF (IN.LE.NELEC(IRP).AND.
+     &                IN.GT.NINACT(IRP)) THEN
+                     NAO(IREP) = NAO(IREP) + 1
+                     NO(IREP) = NO(IREP) + 1
+                     IREPSP(I,3) = NO(IREP)
+                     IREPSPI(NO(IREP),IREP,1) = I
+                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                  ENDIF
+                  IF (IN.GT.NELEC(IRP).AND.
+     &                IN.GT.NACT(IRP)+NINACT(IRP)) THEN
+                     NVIRT(IRP) = NVIRT(IRP) + 1
+                     NIV(IREP) = NIV(IREP) + 1
+                     NV(IREP) = NV(IREP) + 1
+                     IREPSP(I,3) = - NV(IREP)
+                     IREPSP(I,4) = IREPSP(I,3)
+                     IREPSPI(NV(IREP),IREP,2) = I
+                  ENDIF
+               ENDIF
+            ENDDO
+         ENDDO
+C
+C        Step 3 - Add the active occupied also to the V space
+C               - Add the active virtual also to the O space
+C
+         DO IRP = 1, NSYMRP
+            IN  = 0
+            DO I = 1, NSP
+               IF (IREPSP(I,1).EQ.IRP) THEN
+                  IN = IN + 1
+                  IREP = IREPSP(I,2)
+                  IF (IN.LE.NELEC(IRP).AND.
+     &                IN.GT.NINACT(IRP)) THEN
+                     NV(IREP) = NV(IREP) + 1
+                     IREPSP(I,4) = - NV(IREP)
+                     IREPSPI(NV(IREP),IREP,2) = I
+                  ENDIF
+                  IF (IN.GT.NELEC(IRP).AND.
+     &                IN.LE.NACT(IRP)+NINACT(IRP)) THEN
+                     NO(IREP) = NO(IREP) + 1
+                     IREPSP(I,4) = NO(IREP)
+                     IREPSPI(NO(IREP),IREP,1) = I
+                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                  ENDIF
+               ENDIF
+            ENDDO
+         ENDDO
+C
+C        The total numbers of occupied/virtual, regardless of act/inact
+C
+         DO IREP = 1, NREP
+            NSO(IREP) = NIO(IREP) + NAO(IREP)
+            NSV(IREP) = NIV(IREP) + NAV(IREP)
+            NE(IREP)  = NSO(IREP)
+         ENDDO
+      ENDIF
+C
+      IF (REPORT.AND.(.NOT.FOCKSP)) THEN
+         WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'occupied',(NELEC(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'virtual ',(NVIRT(I),I=1,NSYMRP)
+         WRITE (IW,1001) (REPNA(I),I=1,NREP)
+         WRITE (IW,1002) 'occupied',(NO(I),I=1,NREP)
+         WRITE (IW,1002) 'virtual ',(NV(I),I=1,NREP)
+      ENDIF
+C
+      IF (NFROZEN.GT.0.AND.REPORT) THEN
          WRITE (IW,1003)
          WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
-         WRITE (IW,1002) (NFROZ(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'frozen',(NFROZ(I),I=1,NSYMRP)
          WRITE (IW,1001) (REPNA(I),I=1,NREP)
-         WRITE (IW,1002) (NC(I),I=1,NREP)
+         WRITE (IW,1002) 'frozen',(NC(I),I=1,NREP)
       ENDIF
+C
+      IF (FOCKSP.AND.REPORT) THEN
+         WRITE (IW,1004)
+         WRITE (IW,1000) (REPN(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'inactive occupied',(NINACT(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'active occupied  ',
+     &                   (NELEC(I)-NINACT(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'active virtual   ',
+     &                   (NINACT(I)+NACT(I)-NELEC(I),I=1,NSYMRP)
+         WRITE (IW,1002) 'inactive virtual ',(NELEC(I)+NVIRT(I)-
+     &                    NINACT(I)-NACT(I),I=1,NSYMRP)
+         WRITE (IW,1001) (REPNA(I),I=1,NREP)
+         WRITE (IW,1002) 'inactive occupied',(NIO(I),I=1,NREP)
+         WRITE (IW,1002) 'active occupied  ',(NAO(I),I=1,NREP)
+         WRITE (IW,1002) 'active virtual   ',(NAV(I),I=1,NREP)
+         WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
+      ENDIF
+C
 C
 C     Set up dimension arrays
 C
@@ -794,7 +1017,7 @@ C
             NVOO (IJKREP) = NVOO (IJKREP) + NVO (IJREP)*NO(KREP)
          ENDDO
       ENDDO
-C   
+C
       DO IJREP = 1, NREP
          DO KREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
@@ -944,6 +1167,102 @@ C
       IF (IVVVT(NREP+1,IJKREP).GT.IVVVTMX) IVVVTMX=IVVVT(NREP+1,IJKREP)
       ENDDO
 C
+C     Make the dimension and pointer arrays need in Fock space calcns.
+C     Like in the CCSD(T) calculations we calculate only the arrays
+C     needed in the actual sorting steps.
+C
+      IF (FOCKSP) THEN
+C
+         DO IREP = 1, NREP
+            NIVIO(IREP) = 0
+            NAVAO(IREP) = 0
+            NAVSO (IREP) = 0
+            NSOAV (IREP) = 0
+            NAOSV (IREP) = 0
+            NIOIOT(IREP) = 0
+            NAOAOT(IREP) = 0
+            NAVAVT(IREP) = 0
+            NIVIVT(IREP) = 0
+            NSVSVT(IREP) = 0
+            NSOSOT(IREP) = 0
+            NIVIVIOT(IREP) = 0
+            NIOIOIVT(IREP) = 0
+            NSVSVSOT(IREP) = 0
+            NSVSOSOT(IREP) = 0
+         ENDDO
+C
+         DO JREP = 1, NREP
+            DO IREP = 1, NREP
+               IJREP = MULTB(IREP,JREP,1)
+               IISOAV(IREP,JREP)=NSOAV(IJREP)
+               NIVIO(IJREP) = NIVIO(IJREP) + NIV(IREP)*NIO(JREP)
+               NAVAO(IJREP) = NAVAO(IJREP) + NAV(IREP)*NAO(JREP)
+               NAVSO(IJREP) = NAVSO(IJREP) + NAV(IREP)*NSO(JREP)
+               NSOAV(IJREP) = NSOAV(IJREP) + NSO(IREP)*NAV(JREP)
+               NAOSV(IJREP) = NAOSV(IJREP) + NAO(IREP)*NSV(JREP)
+            ENDDO
+         ENDDO
+C
+         DO JREP = 1, NREP
+            IJREP = MULTB(JREP,JREP,1)
+            NIOIOT(IJREP) = NIOIOT(IJREP) + NIO(JREP)*(NIO(JREP)-1)/2
+            NAOAOT(IJREP) = NAOAOT(IJREP) + NAO(JREP)*(NAO(JREP)-1)/2
+            NAVAVT(IJREP) = NAVAVT(IJREP) + NAV(JREP)*(NAV(JREP)-1)/2
+            NIVIVT(IJREP) = NIVIVT(IJREP) + NIV(JREP)*(NIV(JREP)-1)/2
+            NSVSVT(IJREP) = NSVSVT(IJREP) + NSV(JREP)*(NSV(JREP)-1)/2
+            NSOSOT(IJREP) = NSOSOT(IJREP) + NSO(JREP)*(NSO(JREP)-1)/2
+            DO IREP = JREP + 1, NREP
+               IJREP = MULTB(IREP,JREP,1)
+               NIOIOT(IJREP) = NIOIOT(IJREP) + NIO(IREP)*NIO(JREP)
+               NAOAOT(IJREP) = NAOAOT(IJREP) + NAO(IREP)*NAO(JREP)
+               NAVAVT(IJREP) = NAVAVT(IJREP) + NAV(IREP)*NAV(JREP)
+               NIVIVT(IJREP) = NIVIVT(IJREP) + NIV(IREP)*NIV(JREP)
+               NSVSVT(IJREP) = NSVSVT(IJREP) + NSV(IREP)*NSV(JREP)
+               NSOSOT(IJREP) = NSOSOT(IJREP) + NSO(IREP)*NSO(JREP)
+            ENDDO
+         ENDDO
+C
+         DO KREP = 1, NREP
+          DO IJREP = 1, NREP
+           IJKREP = MULTB(KREP,IJREP+NREP,2)
+           KKIVIVIOT(IJREP,KREP) = NIVIVIOT(IJKREP)
+           KKIOIOIVT(IJREP,KREP) = NIOIOIVT(IJKREP)
+           KKSVSVSOT(IJREP,KREP) = NSVSVSOT(IJKREP)
+           NIVIVIOT(IJKREP) = NIVIVIOT(IJKREP) + NIVIVT(IJREP)*NIO(KREP)
+           NIOIOIVT(IJKREP) = NIOIOIVT(IJKREP) + NIOIOT(IJREP)*NIV(KREP)
+           NSVSVSOT(IJKREP) = NSVSVSOT(IJKREP) + NSVSVT(IJREP)*NSO(KREP)
+          ENDDO
+         ENDDO
+C
+         DO IJREP = 1, NREP
+          DO KREP = 1, NREP
+           IJKREP = MULTB(KREP,IJREP+NREP,2)
+           LLSVSOSOT(KREP,IJREP) = NSVSOSOT(IJKREP)
+           NSVSOSOT(IJKREP) = NSVSOSOT(IJKREP)+NSOSOT(IJREP)*NSV(KREP)
+          ENDDO
+         ENDDO
+C
+         IAVSO(1) = 0
+         IAVAV(1) = 0
+         IAOAO(1) = 0
+         KIVIVIOAVT(1) = 0
+         KIOIOIVAOT(1) = 0
+         KSVSVSOAVT(1) = 0
+         DO IREP = 1, NREP
+          IAVSO(IREP+1) = IAVSO(IREP) + NAV(IREP) * NSO(IREP)
+          IAVAV(IREP+1) = IAVAV(IREP) + NAV(IREP) * NAV(IREP)
+          IAOAO(IREP+1) = IAOAO(IREP) + NAO(IREP) * NAO(IREP)
+          KIVIVIOAVT(IREP+1) = KIVIVIOAVT(IREP)+NIVIVIOT(IREP)*NAV(IREP)
+          KIOIOIVAOT(IREP+1) = KIOIOIVAOT(IREP)+NIOIOIVT(IREP)*NAO(IREP)
+          KSVSVSOAVT(IREP+1) = KSVSVSOAVT(IREP)+NSVSVSOT(IREP)*NAV(IREP)
+         ENDDO
+C
+         LAOSVSOSOT(1) = 0
+         DO IREP = 1, NREP
+          LAOSVSOSOT(IREP+1) = LAOSVSOSOT(IREP)+NAO(IREP)*NSVSOSOT(IREP)
+         ENDDO
+C
+      ENDIF
 C
 C     Reorder the spinor eigenvalues
 C
@@ -958,15 +1277,29 @@ C
          EPS(I) = EPS1(ISP)
       ENDDO
 C
- 1000 FORMAT (/' Configuration in highest pointgroup'//16(1X,A4))
- 1001 FORMAT (//' Configuration in abelian subgroup'//8(1X,A4))
- 1002 FORMAT (16(1X,I4))
+      IF (FOCKSP) THEN
+         DO ISP = 1, NSP
+            IREP = IREPSP(ISP,2)
+            II = IREPSP(ISP,4)
+            IF (II.GT.0) THEN
+               I = IO(IREP) + II
+            ELSE
+               I = IO(NREP+1) + IV(IREP) - II
+            ENDIF
+            EPS(I) = EPS1(ISP)
+         ENDDO
+      ENDIF
+C
+ 1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
+ 1001 FORMAT (//' Configuration in abelian subgroup'//T40,8(1X,A4))
+ 1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
+ 1004 FORMAT (//' List of inactive and active spinors (Fock space)')
       RETURN 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,MREMAIN,EPS,
-     &                   NSP,IREPSP,IREPSPI,FOO,FVO,FVV)
+     &                   NSP,IREPSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -992,8 +1325,8 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*)
-      INTEGER IREPSP(NSP,3),IREPSPI(NSP,8,2)
+      REAL*8 EPS(*)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1002,6 +1335,7 @@ C
       INCLUDE "diis.inc"
       INCLUDE "inpt.inc"
       INCLUDE "symm.inc"
+      INCLUDE "eqns.inc"
       INCLUDE "complex.inc"
 C
 C---------------Local variables--------------------------------------
@@ -1017,13 +1351,24 @@ C
       KFRSAV = KFREE
       LFRSAV = LFREE
       CALL MEMOPT('INTE',KR,2*NSP+2,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',INDEX,NSP*NSP*4,CC,KFREE,LFREE,ALLOC)
+      IF (EQNS.EQ.'FOCKSP') THEN
+         CALL MEMOPT('INTE',INDEX,NSP*NSP*16,CC,KFREE,LFREE,ALLOC)
+      ELSE
+         CALL MEMOPT('INTE',INDEX,NSP*NSP*4,CC,KFREE,LFREE,ALLOC)
+      ENDIF
       CALL MEMOPT('INTE',INDK,NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('INTE',INDL,NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',CBUF,NSP*NSP*RCW,CC,KFREE,LFREE,ALLOC)
-      CALL MEMOPT('INTE',IBUF,NSP*NSP*7*16,CC,KFREE,LFREE,ALLOC)
+      IF (EQNS.EQ.'FOCKSP') THEN
+         CALL MEMOPT('INTE',IBUF,NSP*NSP*7*256,CC,KFREE,LFREE,ALLOC)
+      ELSE
+         CALL MEMOPT('INTE',IBUF,NSP*NSP*7*16,CC,KFREE,LFREE,ALLOC)
+      ENDIF
       CALL MEMOPT('REAL',BUF1,NSP*NSP,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF2,NSP*NSP,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',V1 ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',V1A,NV1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',V2 ,NV2*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1031,7 +1376,6 @@ C
       CALL MEMOPT('REAL',V3 ,NV3*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',V3A,NV3*RCW,CC,KFREE,LFREE,ALLOC)
       MXCORR = MAX0(MXCORR,KFREE)
-C
 C
 C     We cannot reuse the memory when the bound checking is active
 C     Here is room for improvement if the memory requirements become
@@ -1069,6 +1413,7 @@ C
       V4  = VT
       V4A = VTA
       MXCORR = MAX0(MXCORR,KFREE)
+C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
          KFREE = KFRSAV
@@ -1082,8 +1427,8 @@ C
      &            CC(CBUF),CC(IBUF),NVT,CC(BUF1),CC(BUF2),IREPSP,
      &            IREPSPI,CC(V1),CC(V1A),
      &            CC(V2),CC(V2A),CC(V3),CC(V3A),CC(V4),CC(V4A),
-     &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,FOO,FVO,
-     &            FVV,BREIT,DOMP2G,DOCCSD,INTERFACE,MREMAIN)
+     &            CC(VT),CC(VTA),CC(VT),CC(VTA),EPS,CC(FOO),CC(FVO),
+     &            CC(FVV),BREIT,DOCCSD,INTERFACE,MREMAIN,cc)
 C
       CALL MEMREL('CCSETI',CC,1,KFRSAV,KFREE,LFREE)
 C
@@ -1091,7 +1436,7 @@ C
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS,FOO,FVO,FVV)
+      SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1130,7 +1475,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CC(*)
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*)
+      REAL*8 EPS(*)
       REAL*8 TOL
       LOGICAL ALLOC
 C
@@ -1143,10 +1488,13 @@ C Allocate space for the calculation of the amplitudes
 C
       KFRSAV = KFREE
       LFRSAV = LFREE
+      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',T1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',T2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
-      KFRSAV1 = KFREE
       CALL MEMOPT('REAL',S1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
+      KFRSAV1 = KFREE
       CALL MEMOPT('REAL',S2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
 C
 C This is all we need to calculate the MP2 energy
@@ -1166,34 +1514,39 @@ C
       CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX0(JOOOO(NREP+1),JVOOO(NREP+1),
      &             JVVOO(NREP+1),JVOVO(NREP+1))
+      NBUF2 = NBUF1
       CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
-C
-C     Calculate size of 2nd and 3rd work arrays
-C
-      NV4IRP = 1
-      DO IRP = 1, NREP
-         NV4IRP = MAX0(NV4IRP,NVV(IRP)*NVVT(IRP))
-      ENDDO
-      NBUF2 = (LFREE - 4) / (2 * RCW)
-      IF (NBUF2.GT.NV4IRP) NBUF2 = NV4IRP
-      NBUF2 = MAX0(NBUF1,NBUF2)
-      NBUF3 = NBUF2
-C
-      IF (NBUF3.LT.JVVVO(2)) THEN
-C
-C        We need to increase the size of BUF3 for the in-core sort
-C        in GVINTM. Move some memory from BUF2 to BUF3.
-C
-         NBUF3D = JVVVO(2) - NBUF3
-         NBUF3  = NBUF3 + NBUF3D
-         NBUF2  = NBUF2 - NBUF3D
-C        Check minimum size of BUF2
-         NBUF2 = MAX0(NBUF1,NBUF2)
-      ENDIF
-C
-C     Allocate the work arrays
-C
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+C
+C     Calculate size of the 3rd work array
+C     The last array is used to buffer in the <VV||VV> and <VO||VV>
+C     integrals, start by making it as large as possible.
+C
+      NBUF3 = (LFREE - 4) / RCW
+C
+C     Calculate maximum size necessary for the VOVV and VVVV buffers
+C
+      NV5IRP = 1
+      NV6IRP = 1
+      DO IRP = 1, NREP
+         NV5IRP = MAX0(NV5IRP,NVO (IRP)*NVVT(IRP))
+         NV6IRP = MAX0(NV6IRP,NVVT(IRP)*NVVT(IRP))
+      ENDDO
+C
+      NVIRP = MAX0(NV5IRP,NV6IRP)
+      NBUF3 = MIN0(NVIRP,NBUF3)
+C
+C     Check the minimum size for the general use of this array
+C
+      NBUF3 = MAX0(NBUF1,NBUF3)
+C
+C     Check the minimum size for the incore sort in GVINTM
+C
+Cluuk.. BUF3 is not used anymore with the new routine SRT20D
+Cluuk NBUF3 = MAX0(JVVVO(2),NBUF3)
+C
+C     Allocate the work array
+C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
 C        
       IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",KFREE
@@ -1228,6 +1581,10 @@ C
       WRITE (IW,1007) DOMP2,DOCCSD,DOCCSDT
       EQNS = 'AMPLTD'
 C
+C     Read the Fock matrix from file
+C
+      CALL FMTOFILE (.FALSE.,CC(FVO),CC(FOO),CC(FVV))
+C
 C  Solve relativistic MP2 equations
 C
       IF (DOMP2) THEN
@@ -1236,7 +1593,7 @@ C
             GOTO 10
          ENDIF
 C
-         CALL MP2EQN(EPS,FVO,CC(T1),CC(S1),CC(T2),CC(S2))
+         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -1276,7 +1633,7 @@ C
 C
 C           Use standard initialization
 C
-            CALL XCOPY (NDIMT1,FVO,1,CC(T1),1)
+            CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
             CALL GETVVOO (CC(T2))
             CALL DENOM (EPS,CC(T1),CC(T2),CC(T1),CC(T2))
             CALL ZCORE (CC(T1),CC(T2))
@@ -1287,13 +1644,11 @@ C
          IMSTAT(5) = 2
          CALL CCDUMP
 C
-         CALL FLSHFO(IW)
-         CALL CCEQN(EPS,FOO,FVO,FVV,CC(T1),CC(S1),
+         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
      &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
      &           TOL,NBUF2,NBUF3)
-         CALL FLSHFO(IW)
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -1336,11 +1691,9 @@ C
             GOTO 11
          ENDIF
 C
-         CALL FLSHFO(IW)
-         CALL T3CORR (FVO,EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
+         CALL T3CORR (CC(FVO),EPS,CC(T1),CC(T2),CC(T2S),CC(T2T),
      &                CC(BUF1),CC(BUF2),CC(BUF3),CC(BUF4),
      &                CC(VVVO),CC(VVOO),CC(VOOO))
-         CALL FLSHFO(IW)
 C
 C     This is a restart point : update status.
 C
@@ -1369,7 +1722,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR,
-     &                   EPS,FOO,FVO,FVV)
+     &                   EPS)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1409,7 +1762,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CC(*)
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*)
+      REAL*8 EPS(*)
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC
@@ -1439,6 +1792,9 @@ C Allocate space for the calculation of the gradient
 C
       KFRSAV = KFREE
       LFRSAV = LFREE
+      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',T1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',T2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',S1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
@@ -1460,38 +1816,42 @@ C
       CALL MEMOPT('REAL',DG ,NDIMX*RCW,CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX0(JOOOO(NREP+1),JVOOO(NREP+1),
      &             JVVOO(NREP+1),JVOVO(NREP+1))
+      NBUF2 = NBUF1
       CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
       CALL MEMOPT('REAL',CBUF,2*NSP*NSP,CC,KFREE,LFREE,ALLOC)
-C
-C     Calculate size of 2nd and 3rd work arrays
-C
-      NV4IRP = 1
-      DO IRP = 1, NREP
-         NV4IRP = MAX0(NV4IRP,NVV(IRP)*NVVT(IRP))
-      ENDDO
-      NBUF2 = (LFREE - 4) / (2 * RCW)
-      IF (NBUF2.GT.NV4IRP) NBUF2 = NV4IRP
-      NBUF2 = MAX0(NBUF1,NBUF2)
-      NBUF3 = NBUF2
-C
-      IF (NBUF3.LT.JVVVO(2)) THEN
-C
-C        We need to increase the size of BUF3 for the in-core sort
-C        in GVINTM. Move some memory from BUF2 to BUF3.
-C
-         NBUF3D = JVVVO(2) - NBUF3
-         NBUF3  = NBUF3 + NBUF3D
-         NBUF2  = NBUF2 - NBUF3D
-C        Check minimum size of BUF2
-         NBUF2 = MAX0(NBUF1,NBUF2)
-      ENDIF
-C
-C     Allocate the work arrays
-C
       CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+C
+C     Calculate size of the 3rd work array
+C     The last array is used to buffer in the <VV||VV> and <VO||VV>
+C     integrals, start by making it as large as possible.
+C
+      NBUF3 = (LFREE - 4) / RCW
+C
+C     Calculate maximum size necessary for the VOVV and VVVV buffers
+C
+      NV5IRP = 1
+      NV6IRP = 1
+      DO IRP = 1, NREP
+         NV5IRP = MAX0(NV5IRP,NVO (IRP)*NVVT(IRP))
+         NV6IRP = MAX0(NV6IRP,NVVT(IRP)*NVVT(IRP))
+      ENDDO
+C
+      NVIRP = MAX0(NV5IRP,NV6IRP)
+      NBUF3 = MIN0(NVIRP,NBUF3)
+C
+C     Check the minimum size for the general use of this array
+C
+      NBUF3 = MAX0(NBUF1,NBUF3)
+C
+C     Check the minimum size for the incore sort in GVINTM
+C
+      NBUF3 = MAX0(JVVVO(2),NBUF3)
+C
+C     Allocate the work array
+C
       CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
 C
       IF (DOCCSDG) THEN
@@ -1518,6 +1878,10 @@ C
      &                MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
       EQNS = 'LAMBDA'
 C
+C     Read the Fock matrix from file
+C
+      CALL FMTOFILE (.FALSE.,CC(FVO),CC(FOO),CC(FVV))
+C
 C     Start with SCF (reference determinant) expectation values
 C
       WRITE (IW,1002) '    SCF'
@@ -1542,7 +1906,7 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL MP2EQN(EPS,FVO,CC(T1),CC(S1),CC(T2),CC(S2))
+         CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 C
 C        Get amplitude part of density matrix
 C
@@ -1598,7 +1962,7 @@ C
          NINTSB = 20
          CALL RFILE(ITAPL,NINTSB)
 C
-         CALL CCEQN(EPS,FOO,FVO,FVV,CC(T1),CC(S1),
+         CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
      &           CC(T2),CC(S2),CC(AZ),CC(CZ),CC(H),CC(HO),CC(HV),
      &           CC(HOV),CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
      &           CC(CCC),CC(BB1),CC(BB2),
@@ -1664,7 +2028,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHESS (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                   NSP,IREPSPI,FOO,FVO,FVV)
+     &                   NSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1690,7 +2054,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*)
+      REAL*8 EPS(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1784,7 +2148,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCEXC (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
-     &                  NSP,IREPSPI,FOO,FVO,FVV)
+     &                  NSP,IREPSPI)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1810,7 +2174,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 CC(*)
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*)
+      REAL*8 EPS(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1857,9 +2221,9 @@ C
       MXCORR = KFREE
 C
       IF (ICALC.LE.1) THEN
+         WRITE (IW,1001) "excitation energies",KFREE
          KFREE = KFRSAV
          LFREE = LFRSAV
-         WRITE (IW,1001) "excitation energies",KFREE
          RETURN
       ENDIF
 C
@@ -1889,6 +2253,206 @@ C
      &        /" Convergence criterium :",T38,E7.1)
 1011  FORMAT (//" Random Phase Approximation : ",
      &        /" Calculate",I3," excitation energies for irrep ",A4)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CCFSPC (ICALC,CC,KFREE,LFREE,MXCORR,EPS1,EPS,
+     &                  NSP,IREPSP,IREPSPI,MREMAIN)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Driver for Fock space coupled cluster calculations
+C
+C     Menu driven routine. Depending on value of ICALC
+C
+C       1) Calculate memory requirements for the different modules
+C       2) Calculate Fock space coupled cluster energies at the
+C          - CCSD level
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 CC(*)
+      REAL*8 EPS1(*),EPS(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "files.inc"
+      INCLUDE "iobuf.inc"
+      INCLUDE "diis.inc"
+      INCLUDE "eqns.inc"
+      INCLUDE "results.inc"
+      INCLUDE "inpt.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      LOGICAL ALLOC,FOCKSP,REPORT
+      INTEGER IFSS(6)
+      REAL*8 TOL
+C
+C---------------Executable code--------------------------------------
+C
+      ALLOC = ICALC.GE.2
+      IF (ICALC.LE.0) RETURN
+      EQNS = 'FOCKSP'
+      FOCKSP = .TRUE.
+      REPORT = ICALC.GT.1
+      IF (REPORT) WRITE (IW,1007)
+C
+C Allocate space for the Fock space CCSD energy calculation
+C
+      KFRSAV = KFREE
+      LFRSAV = LFREE
+      MXCORR = 0
+C
+C  Set up symmetry tables for use in Fock space calculations
+C
+      CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,IREPSPI,
+     &             FOCKSP,REPORT)
+C
+C     Ask for the memory requirements of the modules
+C
+      MXCORR1 = 0
+      CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,MREMAIN,EPS,
+     &             NSP,IREPSP,IREPSPI)
+      MXCORR = MAX0(MXCORR,MXCORR1)
+C
+C     Set restart on sorted integrals to false
+C
+      IMSTAT(1) = 0
+      IMSTAT(2) = 0
+      IMSTAT(3) = 0
+C
+C Allocate space for the calculation of the amplitudes
+C
+      CALL MEMOPT('REAL',FVO,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',FVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',T1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',T2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',S1,NDIMT1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',S2,NDIMT2*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',AZ,NV1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',H ,NV4*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',HO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',HV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',HOV,NFVO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',GOO,NFOO*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',GVV,NFVV*RCW,CC,KFREE,LFREE,ALLOC)
+      MAXDIM = MXDIMCC
+      CALL MEMOPT('REAL',CCC,MAXDIM,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BB1,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BB2,(MAXDIM+1)*(MAXDIM+2),CC,KFREE,LFREE,ALLOC)
+      NBUF1 = MAX0(JOOOO(NREP+1),JVOOO(NREP+1),
+     &             JVVOO(NREP+1),JVOVO(NREP+1))
+      NBUF2 = NBUF1
+      CALL MEMOPT('REAL',BUF1,NBUF1*RCW,CC,KFREE,LFREE,ALLOC)
+      CALL MEMOPT('REAL',BUF2,NBUF2*RCW,CC,KFREE,LFREE,ALLOC)
+C
+C     Calculate size of the 3rd work array
+C     The last array is used to buffer in the <VV||VV> and <VO||VV>
+C     integrals, start by making it as large as possible.
+C
+      NBUF3 = (LFREE - 4) / RCW
+C
+C     Calculate maximum size necessary for the VOVV and VVVV buffers
+C
+      NV5IRP = 1
+      NV6IRP = 1
+      DO IRP = 1, NREP
+         NV5IRP = MAX0(NV5IRP,NVO (IRP)*NVVT(IRP))
+         NV6IRP = MAX0(NV6IRP,NVVT(IRP)*NVVT(IRP))
+      ENDDO
+C
+      NVIRP = MAX0(NV5IRP,NV6IRP)
+      NBUF3 = MIN0(NVIRP,NBUF3)
+C
+C     Check the minimum size for the general use of this array
+C
+      NBUF3 = MAX0(NBUF1,NBUF3)
+C
+C     Check the minimum size for the incore sort in GVINTM
+C
+      NBUF3 = MAX0(JVVVO(2),NBUF3)
+C
+C     Allocate the work array
+C
+      CALL MEMOPT('REAL',BUF3,NBUF3*RCW,CC,KFREE,LFREE,ALLOC)
+C
+      MXCORR = MAX0(MXCORR,KFREE)
+C
+      IF (ICALC.LE.1) THEN
+         WRITE (IW,1001) "Fock space CCSD energies",MXCORR
+         KFREE = KFRSAV
+         LFREE = LFRSAV
+C
+C        Reset symmetry tables to normal (single reference CC use)
+C
+         EQNS = '      '
+         FOCKSP = .FALSE.
+         CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,
+     &                IREPSP,IREPSPI,FOCKSP,REPORT)
+         RETURN
+      ENDIF
+C
+C     Read the Fock matrix from file
+C
+      CALL FMTOFILE (.FALSE.,CC(FVO),CC(FOO),CC(FVV))
+C
+C     Solve relativistic Fock space CCSD equations
+C
+      WRITE (IW,1008) MXITFS,MXDIMFS,10.0D0**(-NTOLFS)
+      MAXDIM = MXDIMFS
+      MAXIT  = MXITFS
+      TOL = 10.0D0**(-NTOLFS)
+C
+C     Initialize T1 and T2 amplitudes
+C
+      CALL XCOPY (NDIMT1,CC(FVO),1,CC(T1),1)
+      CALL GETVVOO (CC(T2))
+      CALL DENOMF(EPS,CC(T1),CC(T2),CC(T1),CC(T2),1)
+C
+      IFSS(1) = 00
+      IFSS(2) = 01
+      IFSS(3) = 10
+      IFSS(4) = 11
+      IFSS(5) = 02
+      IFSS(6) = 20
+C
+C     Solve Fock space equation sector by sector
+C
+      DO ISECT = 1, 6
+      IF (FSSECT(ISECT).NE.0) THEN
+      ICURFSS = IFSS(ISECT)
+      WRITE (IW,1009) ICURFSS
+      CALL CCEQN(EPS,CC(FOO),CC(FVO),CC(FVV),CC(T1),CC(S1),
+     &           CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
+     &           CC(GOO),CC(GVV),CC(BUF1),CC(BUF2),CC(BUF3),
+     &           CC(CCC),CC(BB1),CC(BB2),
+     &           TOL,NBUF2,NBUF3)
+      ENDIF
+      ENDDO
+C
+      CALL MEMREL('CCENER',CC,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
+1007  FORMAT (//" Fock space CCSD Energy calculations",
+     &        /" Module written by Ephraim Eliav & Luuk Visscher, ",
+     &         "July 1999")
+1008  FORMAT (//" Fock space CCSD options :"
+     &        /" Maximum number of iterations :",T40,I5
+     &        /" Maximum size of DIIS space :",T40,I5
+     &        /" Convergence criterium :",T38,E7.1)
+1009  FORMAT (//" Solving equations for sector ",I2/)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI
@@ -1927,6 +2491,16 @@ C     Check the status of the restart file
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
       INQUIRE (FILE='MCCRES',EXIST=TOBE)
+c
+c     Restart is not full-proof yet : disabled 
+c
+      if (tobe) then
+         OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+     &         RECL=IRECL)
+         close (MCCRES,STATUS='DELETE')
+         tobe = .false.
+      endif
+c
       IF (TOBE) THEN
          OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
      &         RECL=IRECL)
@@ -2140,5 +2714,115 @@ C
  1083 FORMAT('@ Total CCSD(T) energy :',T40,F25.15)
  1084 FORMAT('@ Total CCSD-T  energy :',T40,F25.15)
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RDSYMI (NSP,BREIT,EPS1,IREPSP)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Read symmetry information from MOLFDIR
+C
+C---------------Routines called----------------------------------------
+C
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IREPSP(*)
+      REAL*8 EPS1(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "files.inc"
+      INCLUDE "results.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*14 REPNT(16)
+      LOGICAL BREIT
+C
+C---------------Executable code--------------------------------------
+C
+C     Read symmetry information (master node only)
+C
+      IF (MYPROC.EQ.MASTER) THEN
+       OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
+       READ (MRCONEE) NSP,BREIT,ECORE
+       READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)
+       READ (MRCONEE) NREP,(REPNA(IRP),IRP=1,2*NREP)
+       READ (MRCONEE) ((MULTB(I,J,1),I=1,2*NREP),J=1,2*NREP)
+C      IREPSP is to be used as 2-dimensional array, read it like that
+       READ (MRCONEE) (IREPSP(ISP),IREPSP(NSP+ISP),
+     &                 EPS1(ISP),ISP=1,NSP)
+       CLOSE (MRCONEE,STATUS='KEEP')
+C
+C      Right adjust representation names
+C
+       DO IRP = 1, NSYMRP
+          REPN(IRP) = REPNT(IRP)(1:4)
+          CALL BLANKR (4,REPN(IRP))
+       ENDDO
+       DO IRP = 1, NREP
+          CALL BLANKR (4,REPNA(IRP))
+       ENDDO
+      ENDIF
+C
+C     Make inverse of multiplication table
+C
+      DO JREP = 1, 2*NREP
+         DO IREP = 1, 2*NREP
+            KREP = MULTB(IREP,JREP,1)
+            MULTB(IREP,KREP,2) = JREP
+         ENDDO
+      ENDDO
+C
+C     Get rid of offset for boson reps
+C
+      DO JREP = 1, NREP
+         DO IREP = 1, NREP
+            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
+            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
+         ENDDO
+      ENDDO
+      DO JREP = NREP + 1, 2*NREP
+         DO IREP = NREP + 1, 2*NREP
+            MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
+            MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
+         ENDDO
+      ENDDO
+C
+C     Distribute the information read from MRCONEE
+C
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(NSP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(BREIT,1,MPI_LOGICAL,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(ECORE,1,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NSYMRP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(REPN,64,MPI_CHARACTER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NREP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(REPNA,64,MPI_CHARACTER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(MULTB,512,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(IREPSP,2*NSP,MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(EPS1,NSP,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+#endif
       RETURN
       END

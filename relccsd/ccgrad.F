@@ -114,7 +114,6 @@ C DOV(A,I) = DOV(A,I) + T(AC,IK) * L(C,K)
 C----------------------------------------------------------------------
       CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
-CTROND      CALL XGEMV('N',NDIMT1,NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
       CALL XGEMV ('N',NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(C,K) * T(C,I)
@@ -219,10 +218,10 @@ C------------------------------------
       M = NFVV
       N = NFVO
       IF (N.EQ.0) RETURN
+      USEDZ = .FALSE.
       IF (NBUF3.LT.JVVVO(2)) THEN
          CALL QUIT(" OUT OF CORE STEP IN GV NOT IMPLEMENTED")
       ENDIF
-      USEDZ = .FALSE.
       CALL SRT20 (NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV,
      &            JJVO,BUF2,NBUF2,BUF3,USEDZ)
       CALL XGEMV ('C',M,N,A1,BUF3,M,DVV,1,A1,XVO,1)
@@ -293,26 +292,36 @@ C---------------Executable code--------------------------------------
 C
       IF (CARITH) THEN
          CEXPA = ZDOTU (NFVO,EOV,1,DVO,1)
+c        print*,' Relaxation contribution 1',cexpa
       ELSE
          EXPA = DDOT (NFVO,EOV,1,DVO,1)
+c        print*,' Relaxation contribution 1',expa
       ENDIF
 C
       IF (CARITH) THEN
          CEXPA = CEXPA + ZDOTU (NFVO,EVO,1,DOV,1)
+c        print*,' Relaxation contribution ',cexpa
       ELSE
          EXPA = EXPA + DDOT (NFVO,EVO,1,DOV,1)
+c        print*,' Relaxation contribution ',expa
       ENDIF
 C
       IF (CARITH) THEN
          CEXPA = CEXPA + ZDOTU (NFOO,EOO,1,DOO,1)
+c        print*,' OO contribution ',ZDOTU (NFOO,EOO,1,DOO,1)
       ELSE
          EXPA = EXPA + DDOT (NFOO,EOO,1,DOO,1)
+c        print*,' OO contribution ',DDOT (NFOO,EOO,1,DOO,1)
       ENDIF
 C
       IF (CARITH) THEN
          CEXPA = CEXPA + ZDOTU (NFVV,EVV,1,DVV,1)
+c        print*,' VV contribution ',ZDOTU (NFVV,EVV,1,DVV,1)
+c        print*,' Total MP2 contribution ',cexpa
       ELSE
          EXPA = EXPA + DDOT (NFVV,EVV,1,DVV,1)
+c        print*,' VV contribution ',DDOT (NFVV,EVV,1,DVV,1)
+c        print*,' Total MP2 contribution ',expa
       ENDIF
 C
 C     This is the correlation contribution, add the reference value

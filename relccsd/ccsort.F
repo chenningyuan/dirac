@@ -898,6 +898,7 @@ C
        KLINCR = KLMAX
        IF (.NOT.USEDZ) THEN
           CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+          CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
        ELSE
           CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
        ENDIF
@@ -917,10 +918,10 @@ C -----------------------
              KLINCR = KLMAX
              IF (.NOT.USEDZ) THEN
                 CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+                CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
              ELSE
                 CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
              ENDIF
-             CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
              KL = 1
              IJKL = 1
           ENDIF
@@ -1124,6 +1125,7 @@ C
        ISTART = 0
        NINT = N
        CALL GETVOVV (IJREP,ISTART,NINT,DONE,BUF1)
+       CALL DELINT ('VOVV','DKKK',BUF1,IJREP,ISTART,NINT)
        IJ = 1
        DO 10 JREP = 1, NREP
         IREP = MULTB(JREP,IJREP+NREP,2)
@@ -1183,7 +1185,6 @@ C
         KREP = MULTB(LREP,KLREP+NREP,2)
         LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
         DO L = 1, LFIE(LREP)
-         IJL  = (L-1) * N * RCW + 1
          DO K = 1, KFIE(KREP)
             IJK  = (K-1) * N * RCW + 1
             IJKL1 = LOFF + (L-1) * NTRIPL(LREP) * RCW + IJK 
@@ -1289,3 +1290,174 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1R1 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NPAIR2,
+     &                   OFF,OFF1,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Sort array BUF1(IJ,KL:KLREP) to array -BUF2(IJ,LK:KLREP)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(16,16,2)
+      INTEGER NPAIR1(NREP),KFIE(NREP),LFIE(NREP),NPAIR2(NREP)
+      INTEGER OFF(NREP+1),OFF1(8,8)
+      LOGICAL DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "complex.inc"
+      INCLUDE "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IJLKOFF = 0
+      DO KLREP = 1, NREP
+       IJREP = KLREP
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+       IJKL = OFF(KLREP) * RCW + 1
+       IJLKOFF = OFF(KLREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        NKS = KFIE(KREP)
+        NLS = LFIE(LREP)
+        DO L = 1, NLS
+         DO K = 1, NKS
+           IJLK = (IJLKOFF+(OFF1(LREP,KREP)+(K-1)*NLS+L-1)*M)*RCW + 1
+           IF (DOINV) THEN
+              CALL XCOPY (N,BUF1(IJLK),1,BUF2(IJKL),1)
+           ELSE
+              CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK),1)
+           ENDIF
+           IJKL = IJKL + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      CALL XSCAL (OFF(NREP+1),-A1,BUF2,1)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT20D(NREP,MULTB,IJPAIR,IFIE,JFIE,KFIE,LFIE,
+     &                  NPAIR,OFF,OFF1,OFF2,BUF1,NBUF1,T1,GV,USEDZ)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Sort array BUF1(IJ,K>L:KLREP) to array BUF2(IK,LJ:LJREP=1)
+C     Do contraction GV(LJ) = BUF2(IK,LJ) * T(LJ)
+C     Integrals are fetched from disk and BUF2 is never formed.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      LOGICAL USEDZ
+      INTEGER NBUF1
+      REAL*8 BUF1(*),T1(*),GV(*)
+      INTEGER NREP,MULTB(16,16,2),IJPAIR(NREP)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(8,8),OFF2(8,8)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "complex.inc"
+      INCLUDE "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      LOGICAL DONE
+      REAL*8 TVAL(2)
+C
+C---------------Executable code--------------------------------------
+C
+      DO 10 KLREP = 1, NREP
+       IF (IJPAIR(KLREP).EQ.0) GOTO 10
+       IJKL = 1
+       KL = 0
+       KLMAX = NBUF1 / IJPAIR(KLREP)
+       KLSTAR = 0
+       KLINCR = KLMAX
+       IF (.NOT.USEDZ) THEN
+          CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+          CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
+       ELSE
+          CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+       ENDIF
+       DO 20 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 20
+        DO 30 L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO 40 K = KMIN, KFIE(KREP)
+          KL = KL + 1
+          IF (KL.EQ.KLINCR+1) THEN
+C -----------------------
+C We need the next buffer
+C -----------------------
+             KLSTAR = KLSTAR + KLINCR
+             KLINCR = KLMAX
+             IF (.NOT.USEDZ) THEN
+                CALL GETVOVV (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+                CALL DELINT ('VOVV','KDDD',BUF1,KLREP,KLSTAR,KLINCR)
+             ELSE
+                CALL GETDZ   (KLREP,KLSTAR,KLINCR,DONE,BUF1)
+             ENDIF
+             KL = 1
+             IJKL = 1
+          ENDIF
+          DO 50 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           KJREP = MULTB(KREP,JREP,2)
+           LJ    = OFF2(LREP,JREP) + L - 1
+           LJ    = LJ * RCW + 1
+           KJ    = OFF2(KREP,JREP) + K - 1
+           KJ    = KJ * RCW + 1
+           IK0   = OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+           IK0   = IK0 * RCW + 1
+           IL0   = OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+           IL0   = IL0 * RCW + 1
+           DO 60 J = 1, JFIE(JREP)
+            IF (LJREP.EQ.1) THEN
+               CALL XAXPY (IFIE(IREP),T1(LJ),BUF1(IJKL),1,GV(IK0),1)
+            ENDIF
+            IF (KJREP.EQ.1) THEN 
+               CALL XCOPY (1,T1(KJ),1,TVAL,1)
+               CALL XSCAL (1,-A1,TVAL,1)
+               CALL XAXPY (IFIE(IREP),TVAL,BUF1(IJKL),1,GV(IL0),1)
+            ENDIF
+            IJKL = IJKL + IFIE(IREP) * RCW
+            LJ   = LJ   + LFIE(LREP) * RCW
+            KJ   = KJ   + KFIE(KREP) * RCW
+ 60        CONTINUE
+ 50       CONTINUE
+ 40      CONTINUE
+ 30     CONTINUE
+ 20    CONTINUE
+ 10   CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

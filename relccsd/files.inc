@@ -7,6 +7,7 @@ C
 C     Files to be used in RELCCSD
       PARAMETER (NCCFIL=11) ! Number of word addressable files
 C     Define the unit numbers
+      PARAMETER (MSLVOUT = 12) ! Output from slaves
       PARAMETER (MRCONEE = 13) ! Effective one-electron integrals
       PARAMETER (MDINT   = 14) ! Two-electron integrals
       PARAMETER (MDPROP  = 15) ! Property integrals

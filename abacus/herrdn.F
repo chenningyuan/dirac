@@ -944,7 +944,7 @@ C
                   IBSFLAG = 1
                   READ (MLINE(NMLINE),'(12X,12I5)')
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
-               ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
+               ELSE IF ( BSKEYWORD(1:7) .EQ. 'MOLFBAS') THEN
                   IBSFLAG = 2
                   READ (MLINE(NMLINE),'(14X,A20)') BASFIL
                ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
@@ -952,13 +952,13 @@ C
                   READ (MLINE(NMLINE),'(12X,A20)') BASFIL
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
                   IBSFLAG = 4
-                  READ (MLINE(NMLINE)(16:),ERR=9000,*)
+                  READ (MLINE(NMLINE)(16:),*,ERR=9000)
      $                 (FAMPAR(K),K=1,4),NFAMEXP,
      $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   CALL GENFAMEXP(LUINFO,0)
                ELSE IF ( BSKEYWORD(1:4) .EQ. 'GEOM' ) THEN
                   IBSFLAG = 4
-                  READ (MLINE(NMLINE)(11:),ERR=9000,*)
+                  READ (MLINE(NMLINE)(11:),*,ERR=9000)
      $                 (FAMPAR(K),K=1,2),NFAMEXP,
      $                 IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   FAMPAR(3) = D0
@@ -966,7 +966,7 @@ C
                   CALL GENFAMEXP(LUINFO,0)
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'FAMILY') THEN
                   IBSFLAG = 4
-                  READ (MLINE(NMLINE),ERR=9000,'(12X,12I5)')
+                  READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)
      $                 NFAMEXP, IQM(I,1), (JCO(K,I,1),K=1,IQM(I,1))
                   CALL GENFAMEXP(LUINFO,1)
                ELSE

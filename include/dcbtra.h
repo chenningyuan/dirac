@@ -9,7 +9,7 @@ C     Length of common block : keep up to date !!
       COMMON/DCBTRI/IPRTRA,ISTRAT,ITRA_INTFLG,ITRA_INTFL2,ITRA_INTFL4,
      &              ISAME(4),ICLARR(4,4,16),
      &              NFPCK12(2),NFPCK34(2),NFPCK12T,NFPCK34T,
-     &              IFPCK12(2,2),IFPCK34(2,2)
+     &              IFPCK12(2,2),IFPCK34(2,2),N2EFIL,NTKL
       COMMON/DCBTRL/TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,
      &              RCORBS
       COMMON/DCBTRR/THROUT,SCRTRA

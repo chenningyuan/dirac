@@ -66,6 +66,8 @@ C
 C           
       OPEN (LUMLF2,FILE='MDCINT',FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,II,(IKRA(I),IKRB(I),I=1,II)
+      NTKL = 0
+      N2EFIL = 0
 C
       IF (IPRINT.GE.5) WRITE (LUPRI,'(//3X,A)') 'Integrals written :'
 C
@@ -87,6 +89,41 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       WRITE (LUPRI,1000)
 C
  1000 FORMAT (//' MOLFDIR file MDCINT is written')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck MDINTN */
+      SUBROUTINE MDINTN (NZKL)
+C
+C     Split MDINT file if necessary
+C     Written by Luuk Visscher, Spring 2000
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbtra.h>
+      CHARACTER*8 NEXTFIL
+C
+      NTKL = NTKL + NZKL
+C     Every integral takes at most 32 bytes on 4 byte integer machines
+C     Make a new file if we have written more than 60 million integrals.
+C     This solves the 2Gb problem on Linux.
+      IF (NTKL.GT.60 000 000) THEN
+         N2EFIL = N2EFIL + 1
+         IF (N2EFIL.LT.10) THEN
+            WRITE (NEXTFIL,'(A7,I1)') 'MDCINT0',N2EFIL
+         ELSEIF (N2EFIL.LT.100) THEN
+            WRITE (NEXTFIL,'(A6,I2)') 'MDCINT',N2EFIL
+         ELSE
+            STOP "100 integral files is enough !"
+         ENDIF
+         WRITE (LUMLF2) 0,N2EFIL,0
+         WRITE (LUMLF2) NEXTFIL
+         CLOSE (LUMLF2,STATUS='KEEP')
+         OPEN (LUMLF2,FILE=NEXTFIL,FORM='UNFORMATTED')
+         NTKL = 0
+      ENDIF
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -167,6 +204,10 @@ C
       ELSE
          CALL QUIT ('Class not defined in MDINTB')
       ENDIF
+C
+C     We may  exceed the maximum file length. Check !
+C
+      CALL MDINTN (NZKL)
 C
       WRITE (LUMLF2) IKR1,JKR1,NZKL,
      &               (INDK(INZ),INDL(INZ),INZ=1,NZKL),

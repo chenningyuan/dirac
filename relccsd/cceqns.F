@@ -1,4 +1,3 @@
-C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -74,6 +73,8 @@ C
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
       ELSE
          CALL QUIT('Wrong keyword in call to MP2EQNS')
       ENDIF
@@ -96,7 +97,7 @@ C
 C  EVALUATE CORRELATION ENERGY 
 C
          CALL MP2ENG (T1,T2,FVO,S2,EMP2)
-         CALL T1DIAG (DIAG,T1)
+         CALL T1DIAG (DIAG,T1,S1)
          CPUE = CPUE + CPUDELTA()
 C
          WRITE(IW,6071)
@@ -181,16 +182,39 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CPUDELTA,CPU0,CPUT1,CPUT2,CPUINT,CPU4V,CPUE,CPUVAR,CPUTOT
-      LOGICAL TEQ
+      LOGICAL TEQ,FOCKSP
       real*8 ddot,sdot
       complex*16 zdotc,cdotc
+      CHARACTER*2 DELS1
+      CHARACTER*4 DELS2
 C
 C---------------Executable code--------------------------------------
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
+         FOCKSP = .FALSE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+         FOCKSP = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
+         FOCKSP = .TRUE.
+         CALL PUTAMPT (T1,T2)
+         DELS1 = 'DD'
+         IF (ICURFSS.EQ. 1) DELS1 = 'DK'
+         IF (ICURFSS.EQ.10) DELS1 = 'KD'
+         IF (ICURFSS.EQ.11) DELS1 = 'KK'
+         IF (ICURFSS.EQ. 2) DELS1 = 'DK'
+         IF (ICURFSS.EQ.20) DELS1 = 'KD'
+         DELS2 = 'DDDD'
+         IF (ICURFSS.EQ. 1) DELS2 = 'DDDK'
+         IF (ICURFSS.EQ.10) DELS2 = 'KDDD'
+         IF (ICURFSS.EQ.11) DELS2 = 'KDDK'
+         IF (ICURFSS.EQ. 2) DELS2 = 'DDKK'
+         IF (ICURFSS.EQ.20) DELS2 = 'KKDD'
+         CALL DELFCK ('VO',DELS1,T1)
+         CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+         CALL DENOMF (EPS,T1,T2,T1,T2,2)
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
@@ -204,6 +228,12 @@ C
       CPUT1 = D0
       CPUT2 = D0
       CPU4V = D0
+C
+C     Initialize the work arrays to zero.
+C
+      CALL XCOPY (NDIMT2,A0,0,BUF1,1)
+      CALL XCOPY (NBUF2,A0,0,BUF2,1)
+      CALL XCOPY (NBUF3,A0,0,BUF3,1)
 C
 C     Calculate record size for DIIS files.
 C
@@ -222,7 +252,9 @@ C
 C
       NIT = 0
       RMS = 1.D0
-      CALL T1DIAG(DIAG,T1)
+      ECCSD = 0.D0
+C
+      CALL T1DIAG(DIAG,T1,BUF1)
 C
       IF (IPRNT.GE.1) THEN
          WRITE(IW,6003)
@@ -250,6 +282,7 @@ C
  1000 CONTINUE
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
+         NIT = NIT - 1
          WRITE(IW,6004) RMS
          GO TO 2000
       ENDIF
@@ -338,21 +371,93 @@ C
 C      
       CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
       if (carith.and.debug) then
-      write (iw,111)"s2",zdotc(ndimt2,s2,1,s2,1)
+      write (iw,111)"s2 after bintm",zdotc(ndimt2,s2,1,s2,1)
       elseif (debug) then
-      write (iw,111)"s2",ddot(ndimt2,s2,1,s2,1)
+      write (iw,111)"s2 after bintm",ddot(ndimt2,s2,1,s2,1)
       endif
       CPU4V = CPU4V + CPUDELTA()
 C
+      IF (FOCKSP) THEN
+        CALL FOLDED (ICURFSS,T1,T2,BUF1,BUF2,BUF3,S1,S2)     
+        if (carith.and.debug) then
+        write (iw,111)"s1 after folded",zdotc(ndimt1,s1,1,s1,1)
+        write (iw,111)"s2 after folded",zdotc(ndimt2,s2,1,s2,1)
+        elseif (debug) then
+        write (iw,111)"s1 after folded",ddot(ndimt1,s1,1,s1,1)
+        write (iw,111)"s2 after folded",ddot(ndimt2,s2,1,s2,1)
+        endif
+      ENDIF
+C
+C  ADD PARTIAL T1 AND T2 (PARALLEL RUNS)
+C
+      CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
+      if (carith.and.debug) then
+      write (iw,111)"s2 after parts",zdotc(ndimt2,s2,1,s2,1)
+      elseif (debug) then
+      write (iw,111)"s2 after parts",ddot(ndimt2,s2,1,s2,1)
+      endif
+C
 C  DIVIDE NEW T1s AND T2s BY EIGENVALUES
 C
-      CALL DENOM (EPS,S1,S2,S1,S2)
+      IF (FOCKSP) THEN
+        CALL DENOMF (EPS,S1,S2,S1,S2,1)
+      ELSE
+        CALL DENOM (EPS,S1,S2,S1,S2)
+      ENDIF
+C
       CALL ZCORE (S1,S2)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C
-      CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
-     &           CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+      IF (.NOT.FOCKSP) THEN
+         CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
+     &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+      ELSE
+C
+C     In the Fockspace algorithm we only need to extrapolate the
+C     amplitudes of the current sector. We delete the ones from
+C     the higher sectors, the ones from the previous sectors are
+C     constant and can be left inside.
+C     The easiest way to do is, is to copy the amplitudes to a scratch
+C     array, take out the higher sector amplitudes, extrapolate, and
+C     then copy the extrapolated amplitudes back in.
+C
+C        Delete the wave function amps that belong to higher sectors
+         CALL DELFCK ('VO',DELS1,S1)
+         CALL DELINT ('VVOO',DELS2,S2,0,0,0)
+C        Save the remaining S1 and S2 arrays (wf and matrix elements)
+         CALL XCOPY(NDIMT1,S1,1,BUF1,1)
+         CALL XCOPY(NDIMT2,S2,1,BUF2,1)
+C        Delete the Hamiltonian matrix elements
+C        They should not be taken into account in the extrapolation because
+C        of the difference in magnitude with the wf (energy vs. dimensionless)
+         CALL DENOMF (EPS,S1,S2,S1,S2,2)
+         if (carith.and.debug) then
+         write(iw,111)"s1 without Hamiltonian",zdotc(ndimt1,s1,1,s1,1)
+         write(iw,111)"s1 with Hamiltonian",zdotc(ndimt1,buf1,1,buf1,1)
+         write(iw,111)"s2 without Hamiltonian",zdotc(ndimt2,s2,1,s2,1)
+         write(iw,111)"s2 with Hamiltonian",zdotc(ndimt2,buf2,1,buf2,1)
+         elseif (debug) then
+         write(iw,111)"s1 without Hamiltonian",ddot(ndimt1,s1,1,s1,1)
+         write(iw,111)"s1 with Hamiltonian",ddot(ndimt1,buf1,1,buf1,1)
+         write(iw,111)"s2 without Hamiltonian",ddot(ndimt2,s2,1,s2,1)
+         write(iw,111)"s2 with Hamiltonian",ddot(ndimt2,buf2,1,buf2,1)
+         endif
+         CALL DIISX(ITAMPL,ITAMPD,NDIMT1,NDIMT2,T1,S1,T2,S2,IT,
+     &              CC1,BB1,ITC,BB2,RMS,NST1,NST2)
+C
+C        Put the Hamiltonian elements back.
+C
+         CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
+         CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
+         CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
+         CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
+         CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
+      ENDIF
+C
+C  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
+C
+      CALL PARTS (2,RMS,S1,S2,BUF1,BUF2)
 C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
@@ -360,7 +465,7 @@ C
          CALL CCENG  (S1,S2,FVO,BUF1,BUF2,ECCSD)
       ENDIF
 C
-      CALL T1DIAG (DIAG,S1)
+      CALL T1DIAG (DIAG,S1,BUF1)
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       CALL FLSHFO(IW)
 C
@@ -369,13 +474,21 @@ C
       CALL XCOPY(NDIMT1,S1,1,T1,1)
       CALL XCOPY(NDIMT2,S2,1,T2,1)
 C
+C     Take out the Hamiltonian elements
+C
+      IF (FOCKSP) THEN
+        CALL DENOMF (EPS,T1,T2,T1,T2,2)
+C..when debugging print out every iteration
+        IF (DEBUG) CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+      ENDIF
+C
       CPUE = CPUE + CPUDELTA()
 C
       IF(RMS.LT.CONV) GO TO 2000
       GO TO 1000
 C
  2000 CONTINUE
-      CALL T1DIAG(DIAG,T1)
+      CALL T1DIAG (DIAG,S1,BUF1)
       CPUE = CPUE + CPUDELTA()
       WRITE(IW,6071)
 C
@@ -389,11 +502,26 @@ C
       WRITE(IW,6077) DIAG
       WRITE(IW,6078) RMS
       WRITE(IW,6079) NIT
+C
+      IF (FOCKSP) THEN
+         CALL HEFF1(ICURFSS,1,S1,S2,FVO,H,BUF1,BUF2,BUF3)
+C        Now restore the parts that were not calculated in this sector
+         CALL GETAMPT (BUF1,BUF2)
+         CALL XAXPY(NDIMT1,A1,BUF1,1,S1,1)
+         CALL XAXPY(NDIMT2,A1,BUF2,1,S2,1)
+         CALL DELFCK ('VO',DELS1,BUF1)
+         CALL DELINT ('VVOO',DELS2,BUF2,0,0,0)
+         CALL DENOMF (EPS,BUF1,BUF2,BUF1,BUF2,2)
+         CALL XAXPY(NDIMT1,-A1,BUF1,1,S1,1)
+         CALL XAXPY(NDIMT2,-A1,BUF2,1,S2,1)
+      ENDIF
+C
       CALL CPUUSED(CPUTOT)
       CPUTOT = CPUTOT-CPU0
       CPUVAR = CPUTOT-CPUT1-CPUT2-CPUINT-CPU4V-CPUE
       IF (TIMING)
      &WRITE(IW,7000) CPU0,CPUINT,CPUT1,CPUT2,CPU4V,CPUE,CPUVAR,CPUTOT
+      IF (TIMING) CALL BFLOPS (CPU4V,NIT)
 C
 C     Close and delete DIIS scratch files
 C
@@ -459,6 +587,7 @@ C
       INCLUDE "symm.inc"
       INCLUDE "eqns.inc"
       INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -468,10 +597,17 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      IF (MYPROC.NE.MASTER) THEN
+         CALL XCOPY (NDIMT1,A0,0,S1,1)
+         RETURN
+      ENDIF
+C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
       ELSE
          CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
@@ -479,6 +615,7 @@ C-------------------------------
 C S(A,I) = F(A,I)
 C-------------------------------
       CALL XCOPY (NDIMT1,FVO,1,S1,1)
+      CALL DELFCK ('VO','DD',S1)
 C--------------------------------
 C Terms specific for T1 equations
 C--------------------------------
@@ -489,6 +626,7 @@ C------------------------------------------------------------
          CALL XCOPY (NFVO,HOV,1,BUF1,1)
          IF (CARITH) CALL CONJUGA (NFVO,BUF1,1)
          CALL XAXPY (NFVO,-A2,FVO,1,BUF1,1)
+         CALL DELFCK ('VO','DD',BUF1)
          OFF1 = 1
          DO IRP = 1, NREP
             M = NV(IRP)
@@ -550,6 +688,7 @@ C S(A,I) = S(A,I) - W(A,K,C,I) * T(C,K)
 C--------------------------------------
       IF (TEQ) THEN
          CALL GETVOVO (BUF1)
+         CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
          CALL SRT16 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &              BUF1,BUF2)
       ELSE
@@ -669,6 +808,7 @@ C
       INCLUDE "complex.inc"
       INCLUDE "eqns.inc"
       INCLUDE "symm.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -679,10 +819,17 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      IF (MYPROC.NE.MASTER) THEN
+         CALL XCOPY (NDIMT2,A0,0,S2,1)
+         RETURN
+      ENDIF
+C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
          TEQ = .FALSE.
+      ELSEIF (EQNS.EQ.'FOCKSP') THEN
+         TEQ = .TRUE.
       ELSE
          CALL QUIT('Wrong keyword in call to L1EQNS')
       ENDIF
@@ -718,6 +865,7 @@ C-----------------------------------------------------------------------
          NINT = NBUF3/NVO(IRP)
   10     IF (TEQ) THEN
             CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+            CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
          ELSE
             CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
          ENDIF
@@ -777,6 +925,7 @@ C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
 C-----------------------------------------------------------------------
          CALL GETVOVO (BUF1)
+         CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
          CALL SRT19 (NREP,MULTB,NVO,NV,NO,NVOO,KVOOV,KKVOO,
      &               BUF1,BUF2)
          CALL CNTRCT ('N','N',NVOO,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
@@ -793,6 +942,7 @@ C----------------------------------------------------------------------
       CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
       IF (TEQ) THEN
          CALL GETVOOO (BUF2)
+         CALL DELINT ('VOOO','KDKK',BUF2,0,0,0)
          CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
       ELSE
          CALL XCOPY (NV2,CZ,1,BUF2,1)
@@ -1418,6 +1568,67 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PARTS(IMODE,RMS,T1,T2,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     IMODE : 
+C     1) Sums partial contributions to T1 and T2
+C     2) Synchronizes T1 and T2
+C
+C     BUF1 and BUF2 have the length of T1 and T2 respectively and are
+C     not used with imode 2. RMS is also updated because it controls
+C     the iterative process
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
+      INTEGER IMODE
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IF (NMPROC.EQ.1) RETURN
+#if defined (VAR_MPI)
+      IF (IMODE.EQ.1) THEN
+          CALL MPI_REDUCE(T1,BUF1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,
+     &                    MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
+          CALL MPI_REDUCE(T2,BUF2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,
+     &                    MPI_SUM,MASTER,MPI_COMM_WORLD,IERR)
+          IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT1,BUF1,1,T1,1)
+          IF (MYPROC.EQ.MASTER) CALL XCOPY (NDIMT2,BUF2,1,T2,1)
+      ENDIF
+C
+      CALL MPI_BCAST(T1,NDIMT1*RCW,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(T2,NDIMT2*RCW,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(RMS,1,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+#endif
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DIISX(ITAPL,ITAPD,NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
      &                 CC,BB,ITC,BB2,RMS,NST1,NST2)
 C
@@ -1444,6 +1655,7 @@ C
       INCLUDE "param.inc" 
       INCLUDE "complex.inc" 
       INCLUDE "diis.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C 
@@ -1452,6 +1664,8 @@ C
       COMPLEX*16 CSUM1,ZSUM,CSUM,ZDOTC,CDOTC,CFAC
 C
 C---------------Executable code--------------------------------------
+C
+      IF (MYPROC.NE.MASTER) RETURN
 C
       IT = IT + 1
       IF(IT.GT.MAXDIM) IT = MAXDIM
@@ -1629,19 +1843,25 @@ C64B  COMPLEX*16 CDOTC
 C
 C---------------Executable code--------------------------------------
 C
+      CALL XCOPY (NDIMT1,FVO,1,BUF1,1)
+      CALL DELFCK ('VO','DD',BUF1)
+C
       IF (CARITH) THEN
-         CECC1 = ZDOTC (NFVO,FVO,1,T1,1)
-C64B     CECC1 = CDOTC (NFVO,FVO,1,T1,1)
+         CECC1 = ZDOTC (NFVO,BUF1,1,T1,1)
+C64B     CECC1 = CDOTC (NFVO,BUF1,1,T1,1)
          IF (ABS(DIMAG(CECC1)).GT.ACCUR) 
      &      WRITE (6,1000) 'T1',DIMAG(CECC1)
 C64B     IF (ABS(AIMAG(CECC1)).GT.ACCUR) 
 C64B &      WRITE (6,1000) 'T1',AIMAG(CECC1)
       ELSE
-         ECC = DDOT (NFVO,FVO,1,T1,1)
-C64B     ECC = SDOT (NFVO,FVO,1,T1,1)
+         ECC = DDOT (NFVO,BUF1,1,T1,1)
+C64B     ECC = SDOT (NFVO,BUF1,1,T1,1)
       ENDIF
 C
+c     print*,'T1 contribution to CC energy',ecc
+C
       CALL GETVVOO (BUF1)
+      CALL DELINT ('VVOO','DDDD',BUF1,0,0,0)
       CALL GETTAU  (T1,T2,BUF2)
       IF (CARITH) THEN
          CECC2 = ZDOTC (NDIMT2,BUF1,1,BUF2,1)
@@ -1710,6 +1930,8 @@ C64B &      WRITE (6,1000) 'T1',AIMAG(CEMP21)
          EMP2 = DDOT (NFVO,FVO,1,T1,1)
 C64B     EMP2 = SDOT (NFVO,FVO,1,T1,1)
       ENDIF
+C
+c     print*,'T1 contribution to MP2 energy',emp2
 C
       CALL GETVVOO(BUF1)
       IF (CARITH) THEN
@@ -1829,7 +2051,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE T1DIAG(DIAG,T1)
+      SUBROUTINE T1DIAG(DIAG,T1,BUF1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -1845,7 +2067,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),DIAG
+      REAL*8 T1(*),BUF1(*),DIAG
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1861,19 +2083,22 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+      CALL XCOPY (NDIMT1,T1,1,BUF1,1)
+      CALL DELFCK ('VO','DD',BUF1)
+C
       SUM = 0
       DO I = 1, NREP
-         SUM = SUM + NO(I)
+         SUM = SUM + NE(I)
       ENDDO
       RSUM = DBLE(SUM)
 C64B  RSUM = REAL(SUM)
 C
       IF (CARITH) THEN
-         DIAG = DBLE(ZDOTC (NDIMT1,T1,1,T1,1))
-C64B     DIAG = REAL(CDOTC (NDIMT1,T1,1,T1,1))
+         DIAG = DBLE(ZDOTC (NDIMT1,BUF1,1,BUF1,1))
+C64B     DIAG = REAL(CDOTC (NDIMT1,BUF1,1,BUF1,1))
       ELSE
-         DIAG = DDOT (NDIMT1,T1,1,T1,1)
-C64B     DIAG = SDOT (NDIMT1,T1,1,T1,1)
+         DIAG = DDOT (NDIMT1,BUF1,1,BUF1,1)
+C64B     DIAG = SDOT (NDIMT1,BUF1,1,BUF1,1)
       ENDIF
 C
       DIAG =  SQRT(DIAG/RSUM)
@@ -1920,6 +2145,7 @@ C--------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF3,BUF1)
       CALL GETVOOO (BUF3)
+      CALL DELINT ('VOOO','DKDD',BUF3,0,0,0)
 C     --------------------------------
 C     Sort from 12,34 to 134,2 (VOO,O)
 C     --------------------------------
@@ -1979,6 +2205,7 @@ C--------------------------------------------
          ISTART = 0
          NINT = NBUF3/NVO(IRP)
   10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3)
+         CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
          IK = 0
          DO 20 KREP = 1, NREP
            IREP = MULTB(KREP,IRP+NREP,2)
@@ -2030,5 +2257,57 @@ C64B &                     - SDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
          ENDIF
  30   CONTINUE
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE BFLOPS(CPU4V,NIT)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Calculate performance of largest contraction
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 CPU4V
+      INTEGER NIT
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "files.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 MFLOP,MFLOPS
+C
+C---------------Executable code--------------------------------------
+C
+      IF (CPU4V.EQ.0.0) RETURN
+      MFLOP = 0.0
+C
+      DO IRP = 1, NREP
+         MFLOP = MFLOP + NVVT(IRP) * NVVT(IRP) * NOOT(IRP) * 2 * RCW**2
+         MFLOP = MFLOP + NVVT(IRP) * NVO (IRP) * NOOT(IRP) * 2 * RCW**2
+         MFLOP = MFLOP + NVOOT(IRP) * NV (IRP) * NO  (IRP) * 2 * RCW**2
+         MFLOP = MFLOP + NVVT(IRP) * NOOT(IRP) * RCW
+      ENDDO 
+C
+      MFLOP = MFLOP * 0.000001
+      MFLOPS = MFLOP * NIT / CPU4V
+      WRITE (IW,1000) MFLOP,MFLOPS
+C
+ 1000 FORMAT (/' Performance of routine BINTM (largest contraction)'
+     &        /' MFlop in each iteration : ',T30,F10.2 
+     &        /' MFlops (average) : ',T30,F10.2)
       RETURN
       END

@@ -50,32 +50,59 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-      PARAMETER (MAXCOR = 13 000 000)
-#if !defined (SYS_AIX) || defined (SYS_CRAY) || defined (SYS_IRIX) || defined (SYS_HPUX) || defined (SYS_T3D) || defined (SYS_SX)
-      COMMON // CC(MAXCOR)
-#endif
+      PARAMETER (MAXCOR = 60 000 000)
       INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+#include <infmpi.h>
+#include <infpar.h>
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 CC
-      REAL*8 SEC
+      REAL*8 CC(MAXCOR)
+      REAL*8 SEC,SEC0
+      LOGICAL CA
+      CHARACTER*10 INTFCE
 C
 C---------------Executable code--------------------------------------
 C
-C     Define primary in and output units.
-C     Other files units are defined in files include block.
-C
+      CALL CPUUSED(SEC0)
       IN = 5
       IW = 6
+      INTFCE = 'MOLFDIR   '
+      CA = .FALSE.
+#if defined (VAR_MPI)
 C
-      CALL CCHEADER
-      MXCOR = MAXCOR
-      CALL CCMAIN(CC,MXCOR)
+C     MPI initialization
+C
+      CALL MPI_INIT(IERR)
+      CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYPROC,IERR)
+      CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NMPROC,IERR)
+      MASTER = 0
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
+C
+      CALL CCMAIN(CC,MAXCOR,IN,IW,CA,INTFCE)
 C
       CALL CPUUSED(SEC)
-      WRITE (IW,1000) SEC
-      CALL QUIT("NORMAL END OF PROGRAM")
- 1000 FORMAT (//' Total amount of CPU time (seconds) used :',F14.4,
-     &//'  --- Normal end of Run ---')
+      WRITE (IW,1000) SEC-SEC0,SEC0,SEC
+      WRITE (IW,'(//80A1)') ('#',I=1,80)
+#if defined (VAR_MPI)
+C
+C     MPI finalization
+C
+      CALL MPI_FINALIZE(IERR)
+#endif
+C
+ 1000 FORMAT (//' CPU time (seconds) used in RELCCSD:',T50,F14.4/
+     & ' CPU time (seconds) used before RELCCSD:',T50,F14.4/
+     & ' CPU time (seconds) used in total sofar:',T50,F14.4//
+     & '  --- Normal end of RELCCSD Run ---')
+C
       END

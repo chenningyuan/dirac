@@ -1714,7 +1714,7 @@ C
          IF (NFSYM.GE.2) THEN
             IF (NSTR1(2,0).EQ.NSTR2(2,0)) THEN
                DO IS = 1, NSTR1(2,0)
-                  IF (IOS12(IS).NE.IOS11(IS)) ISAME = 2
+                  IF (IOS22(IS).NE.IOS21(IS)) ISAME = 2
                ENDDO
             ELSE
                ISAME = 2
@@ -3678,6 +3678,11 @@ C
           CALL MPI_RECV(ITASK,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                  MPI_COMM_WORLD,ISTAT,IERR)
           NWHO = ISTAT(MPI_SOURCE)
+          CALL GETTIM(CPUST,WALLST)
+          WRITE(LUPRI,'(3X,(A,I4),A,F14.2,A)')
+     &           '- Process ',NWHO,
+     &           ' finished at ',WALLST,' seconds after start'
+          CALL FLSHFO(LUPRI)
           CALL MPI_SEND(NTEST,1,MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,

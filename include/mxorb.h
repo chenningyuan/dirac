@@ -6,7 +6,7 @@
       PARAMETER (MXSHEL = 400, MXPRIM = 2000, MXCORB = 1200,
      &           MXORBT = MXCORB*(MXCORB + 1)/2)
 #else
-      PARAMETER (MXSHEL = 500, MXPRIM = 2300, MXCORB = 2300,
+      PARAMETER (MXSHEL = 500, MXPRIM = 5000, MXCORB = 5000,
      &           MXORBT = MXCORB*(MXCORB + 1)/2)
 #endif
 #endif

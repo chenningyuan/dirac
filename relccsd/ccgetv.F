@@ -31,6 +31,61 @@ C FILE    : ccgetv.F
 C SOURCE  : $Source$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Read/write of the Fock matrix: FOO, FVO and FVV parts
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 FVO(*),FOO(*),FVV(*)
+      LOGICAL PUT
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "files.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+C     Calculate start of sectors
+C
+      NSEC0 = 1
+      NSEC = NFVO*IRW*RCW / SEC2I(1)
+      IF (MOD(NFVO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC1 = NSEC0 + NSEC
+      NSEC = NFOO*IRW*RCW / SEC2I(1)
+      IF (MOD(NFOO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
+      NSEC2 = NSEC1 + NSEC
+C
+C     Read/write blocks
+C
+      IF (PUT) THEN
+         CALL RWRIT(ITAPT+0,FVO,NFVO*RCW*IRW,NSEC0)
+         CALL RWRIT(ITAPT+0,FOO,NFOO*RCW*IRW,NSEC1)
+         CALL RWRIT(ITAPT+0,FVV,NFVV*RCW*IRW,NSEC2)
+      ELSE
+         CALL RREAD(ITAPT+0,FVO,NFVO*RCW*IRW,NSEC0)
+         CALL RREAD(ITAPT+0,FOO,NFOO*RCW*IRW,NSEC1)
+         CALL RREAD(ITAPT+0,FVV,NFVV*RCW*IRW,NSEC2)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETOOOO (VOOOO)
 C
       IMPLICIT INTEGER (A-Z)
@@ -197,6 +252,7 @@ C
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
       INCLUDE "iobuf.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -253,7 +309,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV)
+      SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -262,7 +318,8 @@ C
 C     Get VVVV part of two-electron integrals
 C     Representation 			IREP
 C     Start address of integrals 	ISTART
-C     Number of integrals in batch 	NINT (updated on output)
+C     Maximum number of integrals 	MINT
+C     Actual number of integrals  	NINT (updated on output)
 C     Done with this representation ?	DONE
 C     
 C
@@ -284,6 +341,7 @@ C
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
       INCLUDE "iobuf.inc"
+      INCLUDE "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -298,16 +356,17 @@ C
          PRINT*,"CHANGE NIOBUF IN GETVVVV TO MINIMALLY",MINBUF*RCW*IRW
          CALL QUIT("UPDATE GETVVVV")
       ENDIF
+C
+C     Calculate start address. The batches are distributed over the
+C     nodes for parallel runs. Take only the part that is on our node
+C
       DONE = .FALSE.
       MTOT = NVVT(IREP)
-      NTOT = NVVT(IREP)
-      NINT = MIN0(NINT,NTOT-ISTART)
-C
-C     Calculate absolute starting address
-C
-      JSTART = IVVVVTT(IREP) + ISTART * MTOT
-      JINT = MTOT * NINT
-      JSEC = (JSTART / MINBUF) * MINSEC + 1
+      ISTART = MAX0(ISTART,IDIST(1,2,IREP))
+      NTOT = IDIST(2,2,IREP)
+      NINT = MIN0(MINT,NTOT-ISTART)
+      JSTART = IDIST(5,2,IREP)
+      JSTART = JSTART + (ISTART-IDIST(1,2,IREP)) * MTOT
 C
 C     Read partial batch from first record
 C     JINT : Total number of integrals to be read
@@ -315,6 +374,8 @@ C     JINT1: Number of integrals of previous batch on first record
 C     JINT2: Number of integrals of current batch on first record
 C     JINT3: Total number of integrals on first record
 C
+      JINT = MTOT * NINT
+      JSEC = (JSTART / MINBUF) * MINSEC + 1
       JINT1 = MOD (JSTART,MINBUF)
       JINT2 = 0
       IF (JINT1.NE.0) THEN
@@ -544,15 +605,13 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C     Find starting point of T2 amplitudes.
+      IRECL = IRECLEN (0,RSRCLEN,0)
+      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+     &      RECL=IRECL)
 C
       NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
       IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
       NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
-C
-      IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
-     &      RECL=IRECL)
 C
       IREC = IRECT1
       N = NDIMT1
@@ -611,15 +670,13 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C
-C     Find starting point of T2 amplitudes.
+      IRECL = IRECLEN (0,RSRCLEN,0)
+      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
+     &      RECL=IRECL)
 C
       NRECT1 = INTOWP(NDIMT1*RCW) / RSRCLEN + 1
       IRECT2 = IRECT1 + NRECT1 ! T2 amplitudes
       NRECT2 = INTOWP(NDIMT2*RCW) / RSRCLEN + 1
-      IRECL = IRECLEN (0,RSRCLEN,0)
-      OPEN (MCCRES,FILE='MCCRES',ACCESS='DIRECT',STATUS='OLD',
-     &      RECL=IRECL)
 C
       IREC = IRECT1
       N = NDIMT1
@@ -644,6 +701,79 @@ C
       IF (N.GT.0) GOTO 2
 C
       CLOSE (MCCRES,STATUS='KEEP')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DISVVVV
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Set up parallel distribution of VVVV part of 2-electron integrals
+C     Stored in IDIST (ccpar.inc)
+C
+C     IOFF counts number of NVVT-sized batches on this node and irrep
+C     JOFF points to the starting address in the full integral list
+C     KOFF points to the relative starting address in the node integral list
+C
+C     JOFF and KOFF can be used to go from the absolute indexing to
+C     the relative indexing. In both cases the begin is set at zero (last
+C     integral of the previous block) and the end to the last integral in
+C     the block
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "symm.inc"
+      INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      KOFF = 0
+      DO IREP = 1, NREP
+         MTOT = NVVT(IREP)
+         NTOT = NVVT(IREP)
+         NBTCH = NTOT / NMPROC
+         NREST = MOD(NTOT,NMPROC)
+         IOFF = 0
+         DO I = 1, NMPROC
+C
+C           Calculate absolute start address of this batch
+C
+            JOFF = IVVVVTT(IREP) + IOFF * MTOT
+C
+C           Create even distribution, the higher nodes get the remains
+C
+            IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
+C
+C           We need this information for our own process
+C
+            IF (I.EQ.MYPROC+1) THEN
+               IDIST(1,2,IREP) = IOFF
+               IDIST(2,2,IREP) = IOFF + NBTCH
+               IDIST(3,2,IREP) = JOFF
+               IDIST(4,2,IREP) = JOFF + NBTCH * MTOT
+               IDIST(5,2,IREP) = KOFF
+               IDIST(6,2,IREP) = KOFF + NBTCH * MTOT
+               KOFF = KOFF + NBTCH * MTOT
+            ENDIF
+            IOFF = IOFF + NBTCH
+         ENDDO
+      ENDDO
+C
+      NV6PAR =  KOFF
 C
       RETURN
       END

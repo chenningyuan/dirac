@@ -136,12 +136,14 @@ C
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
-              WRITE(LUPRI,'(3X,A,I4,A,I4)') 
-     &           '- Task ',ISHLA,' of ',IASMAX
-              CALL FLSHFO(LUPRI)
               CALL MPI_RECV(ITEST,1,MPI_INTEGER,MPI_ANY_SOURCE,20,
      &                      MPI_COMM_WORLD,ISTAT,IERR)
               NWHO = ISTAT(MPI_SOURCE)
+              CALL GETTIM(CPUST,WALLST)
+              WRITE(LUPRI,'(3X,3(A,I4),A,F14.2,A)') 
+     &           '- Sending task ',ISHLA,' of ',IASMAX,' to ',NWHO,
+     &           ' at ',WALLST,' seconds after start'
+              CALL FLSHFO(LUPRI)
               CALL MPI_SEND(ISHLA,1,MPI_INTEGER,NWHO,30,
      &                      MPI_COMM_WORLD,IERR)
               CALL MPI_SEND(IC,1,MPI_INTEGER,NWHO,35,
@@ -170,8 +172,10 @@ C
            WRITE(LUPRI,'(1X,A,I1)') '- Integral class ',IC
            CALL SHRNGE (IC,INTFLG,I2TYP,IASTRT,IBSTRT,IASMAX,IBSMAX)
            DO ISHLA = IASTRT, IASMAX
-              WRITE(LUPRI,'(3X,A,I4,A,I4)') 
-     &           '- Task ',ISHLA,' of ',IASMAX
+              CALL GETTIM(CPUST,WALLST)
+              WRITE(LUPRI,'(3X,2(A,I4),A,F14.2,A)') 
+     &           '- Beginning with task ',ISHLA,' of ',IASMAX,
+     &           ' at ',WALLST,' seconds after start'
               CALL FLSHFO(LUPRI)
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
@@ -210,6 +214,12 @@ C
      &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
      &              TRIAN(2),WORK(KDXB34))
 C
+      CALL GETTIM(CPUST,WALLST)
+      WRITE(LUPRI,'(1X,A,F14.2,A)') 
+     & '- Starting symmetrization at ',
+     &  WALLST,' seconds after start'
+      CALL FLSHFO(LUPRI)
+C
       NIJOFF = 0
       NKLOFF = 0
       DO IREPIJ = 1, NFSYM
@@ -221,6 +231,12 @@ C
          NIJOFF = NIJOFF + NIJ
          NKLOFF = NKLOFF + NKL
       ENDDO
+C
+      CALL GETTIM(CPUST,WALLST)
+      WRITE(LUPRI,'(1X,A,F14.2,A)') 
+     & '- Finished symmetrization at ',
+     &  WALLST,' seconds after start'
+      CALL FLSHFO(LUPRI)
 C
 C     Close MOLFDIR integral file and delete direct access file
 C
@@ -693,11 +709,11 @@ C
      &                    MPI_COMM_WORLD,IERR)
 Clv This version gives MDCINT on all nodes or on one node depending on:
 Clv if (all nodes) include :
-Clv       CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
-Clv  &                   MPI_DOUBLE_PRECISION,MPARID,
-Clv  &                   MPI_COMM_WORLD,IERR)
+          CALL MPI_BCAST(WORK(KHMATS),NKL*NZ*NZ*NBSYMP,
+     &                   MPI_DOUBLE_PRECISION,MPARID,
+     &                   MPI_COMM_WORLD,IERR)
 Clv else include # one node
-          IF (MYTID.EQ.MPARID) THEN
+Clv       IF (MYTID.EQ.MPARID) THEN
 Clv end if
 #endif
              CALL SYMFINT(IPRINT,IREPIJ,IREPIJB,INDXB34(1+NKLOFF),
@@ -705,7 +721,7 @@ Clv end if
      &                    IPQTOQ,WORK,KFREE,LFREE)
 #if defined (VAR_MPI)
 Clv if (one node) include
-          ENDIF
+Clv       ENDIF
 Clv endif
 #endif
         ENDDO

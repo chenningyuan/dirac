@@ -1,4 +1,3 @@
-C
 C...   Copyright (c) 1998 by the authors of Dirac (see below).
 C...   All Rights Reserved.
 C...
@@ -35,8 +34,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
-     &                  EPS,FOO,FVO,FVV,BREIT,SORTVOVV,SRTALL,
-     &                  INTERFACE,MREMAIN)
+     &                  EPS,FOO,FVO,FVV,BREIT,SRTALL,INTERFACE,
+     &                  MREMAIN,cc)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -56,99 +55,68 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER NVT,NSP
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
-      INTEGER INDEX(NSP,NSP,4),IBUF(16,6,*)
-      INTEGER IREPSP,IREPSPI
+      INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
+      INTEGER IREPSP(NSP,4),IREPSPI
       REAL*8 FOO(*),FVO(*),FVV(*)
       REAL*8 VOOOO(RCW,*),VOOOOA(RCW,*),VVOOO(RCW,*),VVOOOA(RCW,*)
       REAL*8 VVVOO(RCW,*),VVVOOA(RCW,*),VVOVO(RCW,*),VVOVOA(RCW,*)
       REAL*8 VVOVV(RCW,*),VVOVVA(RCW,*),VVVVV(RCW,*),VVVVVA(RCW,*)
       REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
       REAL*8 EPS(*)
-      LOGICAL BREIT,SRTALL,SORTVOVV
+      LOGICAL BREIT,SRTALL
       CHARACTER*10 INTERFACE
 C
 C---------------Common Blocks--------------------------------------
 C
       INCLUDE "param.inc"
       INCLUDE "symm.inc"
+      INCLUDE "eqns.inc"
       INCLUDE "complex.inc"
       INCLUDE "results.inc"
       INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 REPNUC,E0,E1,EPSDIF
+      REAL*8 E0,E1
       CHARACTER*10 DATEX,TIMEX*8
-      INTEGER IDUM
-      LOGICAL LDUM
+      LOGICAL FOCKSP
 C
 C---------------Executable code--------------------------------------
 C
-      CALL MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
-      NSPQ = NSP*NSP
+      FOCKSP = EQNS.EQ.'FOCKSP'
+      call memchk ('entering',cc,1)
+C
+      IF (FOCKSP) THEN
+         CALL FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
+      ELSE
+         CALL MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
+      ENDIF
 C
 C  Check buffer size for passing of VOVV and VVVV integrals
 C
       IF (MOD(NVT*IRW*RCW,SEC2I(1)).NE.0)
      &    CALL QUIT("INVALID BUFFER SIZE IN RDINTS")
 C
-C  GET THE NUCLEAR REPULSION ENERGY
-C
-      OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-      READ (MRCONEE) IDUM,LDUM,REPNUC
-C
-C  READ ONE ELECTRON INTEGRALS
-C
-      READ (MRCONEE) 
-      READ (MRCONEE) 
-      READ (MRCONEE) 
-      READ (MRCONEE) 
-      READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
-      CLOSE (MRCONEE)
-C  
-C  ORDER AND PUT IN FOCK MATRIX
-C
-      IJ = 0
-      DO J = 1, NSP
-         DO I = 1, NSP
-            IJ = IJ + 1
-            ITYP = INDEX(I,J,1)
-            IND = INDEX(I,J,2)
-            IF (IND.NE.0) THEN
-            IF (ITYP.EQ.1) THEN
-               IF (CARITH) THEN
-                  FOO(RCW*IND-1) = BUF1(IJ)
-                  FOO(RCW*IND)   = - BUF2(IJ)
-               ELSE
-                  FOO(IND) = BUF1(IJ)
-               ENDIF
-            ELSEIF (ITYP.EQ.2) THEN
-               IF (CARITH) THEN
-                  FVO(RCW*IND-1) = BUF1(IJ)
-                  FVO(RCW*IND)   = - BUF2(IJ)
-               ELSE
-                  FVO(IND) = BUF1(IJ)
-               ENDIF
-            ELSEIF (ITYP.EQ.4) THEN
-               IF (CARITH) THEN
-                  FVV(RCW*IND-1) = BUF1(IJ)
-                  FVV(RCW*IND)   = - BUF2(IJ)
-               ELSE
-                  FVV(IND) = BUF1(IJ)
-               ENDIF
-            ENDIF
-            ENDIF
-         ENDDO
-      ENDDO
-C
 C  INITIALIZE READING OF COULOMB INTEGRALS
 C
       OPEN(MDINT,FILE='MDCINT',FORM='UNFORMATTED')
       REWIND(MDINT)
       IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
-         READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
-     &    (IDUM,I=1,4*NKR),(KR(I),KR(-I),I=1,NKR)
+         IF (MYPROC.EQ.MASTER) THEN
+            READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
+     &       (IDUM,I=1,4*NKR),(KR(I),KR(-I),I=1,NKR)
+         ENDIF
+#if defined (VAR_MPI)
+         CALL MPI_BCAST(NKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(KR,2*NSP+1,MPI_INTEGER,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+#endif
       ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
@@ -188,10 +156,12 @@ C
       CALL RFILE(ITAPT+4,NINTSB4)
       MREMAIN = MREMAIN - (NINTSB4-20)*512
 C
-      IF (IMSTAT(1).GT.1) THEN
+      IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1010)
          GOTO 150
       ENDIF
+C
+      CALL DISVVVV
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
@@ -208,28 +178,19 @@ C
       CALL XCOPY (NV3,A0,0,VVVOOA,1)
       CALL XCOPY (NV4,A0,0,VVOVOA,1)
 C
-      ICNTOLD = 0
-      WRITE(IW,'(1X,A)') 'Reading integrals from MDCINT'
-      CALL FLSHFO(IW)
-C
-  100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,INDK,INDL,
-     &               NZ,CBUF,IBUF)
-      ICNT = ICOUNT / 10000000
-      IF (ICNT .NE. ICNTOLD) THEN
-         WRITE(IW,'(1X,A,I10)') '- integrals read so far: ',icount
-         CALL FLSHFO(IW)
-         ICNTOLD = ICNT
-      END IF
+      call memchk ('after initialization',cc,1)
+  100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
+     &               NZ,NZE,CBUF,IBUF)
       IF (NZ.LT.0) GOTO 110
       ICOUNT = ICOUNT + NZ
-      DO 102 I = 1, NZ
-         DO 101 IP = 1, 16
-            ITYP = IBUF(IP,1,I)
-            IREP = IBUF(IP,2,I) 
-            IND1 = IBUF(IP,3,I)
-            IND2 = IBUF(IP,4,I)
-            ITRS = IBUF(IP,5,I)
-            JTRS = IBUF(IP,6,I)
+      DO 102 INZE = 1, NZE
+            ITYP = IBUF(1,INZE)
+            IREP = IBUF(2,INZE) 
+            IND1 = IBUF(3,INZE)
+            IND2 = IBUF(4,INZE)
+            ITRS = IBUF(5,INZE)
+            JTRS = IBUF(6,INZE)
+            I    = IBUF(7,INZE)
             IF (ITYP.EQ.1) THEN         
                IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
                VOOOO(1,IND) = CBUF(1,I) * ITRS
@@ -263,7 +224,6 @@ C
                VVOVOA(1,IND) = CBUF(1,I) * ITRS
                IF (CARITH) VVOVOA(2,IND) = CBUF(2,I) * JTRS
             ENDIF
-  101    CONTINUE
   102 CONTINUE
       GOTO 100
 C
@@ -300,8 +260,9 @@ C
       CALL RSAVE(ITAPT+4,NINTSB4)
       IMSTAT(1) = 3
       CALL CCDUMP
+      call memchk ('after first sort',cc,1)
 C
-      IF (.NOT. (SORTVOVV .OR. SRTALL) ) GOTO 590
+      IF (.NOT.SRTALL) GOTO 600
 C
       NINTSB5 = MAX0(MREMAIN/512,20)
       NINTSB5 = MIN0(NV5*RCW/512+1,NINTSB5)
@@ -311,7 +272,7 @@ C
       NINTSB6 = 20
       CALL RFILE(ITAPT+6,NINTSB6)
 C
-      IF (IMSTAT(2).GT.1) THEN
+      IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
          WRITE (IW,1011)
          GOTO 550
       ENDIF
@@ -324,31 +285,31 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
 C
       DO IPASS = 1, NPASS
-      WRITE (IW,9000) IPASS,NPASS,'VOVV'
-      CALL FLSHFO(IW)
       N5F = N5L + 1
       N5L = MIN0(N5L+NVT,NV5)
       N5 = N5L - N5F + 1
       NSEC = N5*IRW*RCW / SEC2I(1)
       IF (MOD(N5*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
 C
-      REWIND (MDINT)
-      READ (MDINT)
+      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+         REWIND (MDINT)
+         READ (MDINT)
+      ENDIF
 C
       CALL XCOPY (N5,A0,0,VVOVV,1)
       CALL XCOPY (N5,A0,0,VVOVVA,1)
 C
-  200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,INDK,INDL,
-     &               NZ,CBUF,IBUF)
+  200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
+     &               NZ,NZE,CBUF,IBUF)
       IF (NZ.LT.0) GOTO 210
-      DO 202 I = 1, NZ
-         DO 201 IP = 1, 16
-            ITYP = IBUF(IP,1,I)
-            IREP = IBUF(IP,2,I) 
-            IND1 = IBUF(IP,3,I)
-            IND2 = IBUF(IP,4,I)
-            ITRS = IBUF(IP,5,I)
-            JTRS = IBUF(IP,6,I)
+      DO 202 INZE = 1, NZE
+            ITYP = IBUF(1,INZE)
+            IREP = IBUF(2,INZE) 
+            IND1 = IBUF(3,INZE)
+            IND2 = IBUF(4,INZE)
+            ITRS = IBUF(5,INZE)
+            JTRS = IBUF(6,INZE)
+            I    = IBUF(7,INZE)
             IF (ITYP.EQ.14) THEN       
                IND = IVOVVT(IREP) + (IND1-1)*NVO(IREP) + IND2
                IF (IND.GE.N5F.AND.IND.LE.N5L) THEN
@@ -364,7 +325,6 @@ C
                   IF (CARITH) VVOVVA(2,IND) = CBUF(2,I) * JTRS
                ENDIF
             ENDIF
-  201    CONTINUE
   202 CONTINUE
       GOTO 200
 C
@@ -380,61 +340,76 @@ C
       ENDIF
       CALL RWRIT(ITAPT+5,VVOVV,N5*RCW*IRW,NSEC5)
       NSEC5 = NSEC5 + NSEC
-      WRITE (IW,9001) IPASS
-      CALL FLSHFO(IW)
       ENDDO
- 590  CONTINUE
-      IF (.NOT.SRTALL) GOTO 600
 C
 C     GET THE VVVV INTEGRALS
 C
-      NPASS = (NV6-1) / NVT + 1
+      NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
       N6L = 0
       WRITE (IW,1005) NPASS,'VVVV'
 C
       DO IPASS = 1, NPASS
-      WRITE (IW,9000) IPASS,NPASS,'VVVV'
-      CALL FLSHFO(IW)
       N6F = N6L + 1
-      N6L = MIN0(N6L+NVT,NV6)
+      N6L = MIN0(N6L+NVT,NV6PAR)
       N6 = N6L - N6F + 1
       NSEC = N6*IRW*RCW / SEC2I(1)
       IF (MOD(N6*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
 C
-      REWIND (MDINT)
-      READ (MDINT)
+      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+         REWIND (MDINT)
+         READ (MDINT)
+      ENDIF
 C
       CALL XCOPY (N6,A0,0,VVVVV,1)
       CALL XCOPY (N6,A0,0,VVVVVA,1)
 C
-  300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,INDK,INDL,
-     &               NZ,CBUF,IBUF)
+  300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
+     &               NZ,NZE,CBUF,IBUF)
       IF (NZ.LT.0) GOTO 310
-      DO 302 I = 1, NZ
-         DO 301 IP = 1, 16
-            ITYP = IBUF(IP,1,I)
-            IREP = IBUF(IP,2,I) 
-            IND1 = IBUF(IP,3,I)
-            IND2 = IBUF(IP,4,I)
-            ITRS = IBUF(IP,5,I)
-            JTRS = IBUF(IP,6,I)
+      DO 302 INZE = 1, NZE
+            ITYP = IBUF(1,INZE)
+            IREP = IBUF(2,INZE) 
+            IND1 = IBUF(3,INZE)
+            IND2 = IBUF(4,INZE)
+            ITRS = IBUF(5,INZE)
+            JTRS = IBUF(6,INZE)
+            I    = IBUF(7,INZE)
             IF (ITYP.EQ.16) THEN       
+C
+C              The integral should go to this node : check the absolute
+C              address to see if it belongs here. 
+C
                IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-               IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
-                  IND = IND - N6F + 1
-                  VVVVV(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) VVVVV(2,IND) = CBUF(2,I) * JTRS
+               IF (IND.GT.IDIST(3,2,IREP).AND.
+     &             IND.LE.IDIST(4,2,IREP)) THEN
+C
+C                 Now check the relative offset, whether we need it in
+C                 the current pass.
+C
+                  IND = IND - IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                  IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
+                     IND = IND - N6F + 1
+                     VVVVV(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVVVV(2,IND) = CBUF(2,I) * JTRS
+                  ENDIF
                ENDIF
             ELSEIF (ITYP.EQ.-16) THEN
-               IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
-               IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
-                  IND = IND - N6F + 1
-                  VVVVVA(1,IND) = CBUF(1,I) * ITRS
-                  IF (CARITH) VVVVVA(2,IND) = CBUF(2,I) * JTRS
+              IND = IVVVVTT(IREP) + (IND1-1)*NVVT(IREP) + IND2
+              IF (IND.GT.IDIST(3,2,IREP).AND.
+     &             IND.LE.IDIST(4,2,IREP)) THEN
+C
+C                 Now check the relative offset, whether we need it in
+C                 the current pass.
+C
+                  IND = IND - IDIST(3,2,IREP) + IDIST(5,2,IREP)
+                  IF (IND.GE.N6F.AND.IND.LE.N6L) THEN
+                     IND = IND - N6F + 1
+                     VVVVVA(1,IND) = CBUF(1,I) * ITRS
+                     IF (CARITH) VVVVVA(2,IND) = CBUF(2,I) * JTRS
+                  ENDIF
                ENDIF
             ENDIF
-  301    CONTINUE
   302 CONTINUE
       GOTO 300
 C
@@ -450,20 +425,21 @@ C
       ENDIF
       CALL RWRIT(ITAPT+6,VVVVV,N6*RCW*IRW,NSEC6)
       NSEC6 = NSEC6 + NSEC
-      WRITE (IW,9001) IPASS
-      CALL FLSHFO(IW)
       ENDDO
 C
   500 CLOSE(MDINT)
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
+C  Breit is only used with MOLFDIR in this version
 C
       IF (BREIT.AND.ITRSGN.EQ.1) THEN
          WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
          OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          REWIND(MDINT)
-         READ (MDINT,ERR=10001,END=10001) DATEX,TIMEX,NKR2
-         IF (NKR2.NE.NKR) GOTO 10003
+         IF (MYPROC.EQ.MASTER) THEN
+            READ (MDINT,ERR=10001,END=10001) DATEX,TIMEX,NKR2
+            IF (NKR2.NE.NKR) GOTO 10003
+         ENDIF
          ITRSGN = -1
          GOTO 1
       ELSEIF (BREIT) THEN
@@ -479,34 +455,18 @@ C
       CALL RSAVE(ITAPT+6,NINTSB6)
       IMSTAT(2) = 3
       CALL CCDUMP
+      call memchk ('after second sort',cc,1)
 C
   600 IF (SRTALL) THEN
-      WRITE (IW,1004) 6,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                  'VOVV',NV5,'VVVV',NV6
-      ELSE IF (SORTVOVV) THEN
-      WRITE (IW,1004) 5,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
-     &                  'VOVV',NV5
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4,
+     &                'VOVV',NV5,'VVVV',NV6
       ELSE
-      WRITE (IW,1004) 4,'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
+      WRITE (IW,1004) 'OOOO',NV1,'VOOO',NV2,'VVOO',NV3,'VOVO',NV4
       ENDIF
 C
-C  FORM FOCK MATRIX; ADD TWO-ELECTRON PART
-C  CALCULATE THE SCF (OR REFERENCE) ENERGY
-C
-      CALL MAKEFM (VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
-C
-C     Write the Fock matrix to file
-C
-      NSEC0 = 1
-      CALL RWRIT(ITAPT+0,FVO,NFVO*RCW*IRW,NSEC0)
-      NSEC = NFVO*IRW*RCW / SEC2I(1)
-      IF (MOD(NFVO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
-      NSEC0 = NSEC0 + NSEC
-      CALL RWRIT(ITAPT+0,FOO,NFOO*RCW*IRW,NSEC0)
-      NSEC = NFOO*IRW*RCW / SEC2I(1)
-      IF (MOD(NFOO*IRW*RCW,SEC2I(1)).NE.0) NSEC = NSEC + 1
-      NSEC0 = NSEC0 + NSEC
-      CALL RWRIT(ITAPT+0,FVV,NFVV*RCW*IRW,NSEC0)
+      CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
+     &            VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
+      call memchk ('after fock build',cc,1)
 C
 C     This is a restart point : save the files and update status.
 C
@@ -514,55 +474,16 @@ C
       IMSTAT(3) = 3
       CALL CCDUMP
 C
-      WRITE (IW,1001)
-      II = 1
-      I  = 1
-      DO IREP = 1, NREP
-         DO J = 1, NO(IREP)
-            EPSDIF = ABS(EPS(I)-FOO(II))
-C64B        EPSDIF =  ABS(EPS(I)-FOO(II))
-            IF (ABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FOO(II))
-C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
-            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1)
-     &         WRITE (IW,1002) I,REPNA(IREP),EPS(I),FOO(II)
-            EPS(I) = FOO(II)
-            I  = I  + 1
-            II = II + (NO(IREP) + 1) * RCW
-         ENDDO
-         II = II - NO(IREP) * RCW
-      ENDDO
-      II = 1
-      DO IREP = 1, NREP
-         DO J = 1, NV(IREP)
-            EPSDIF = ABS(EPS(I)-FVV(II))
-C64B        EPSDIF =  ABS(EPS(I)-FVV(II))
-            IF (ABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FVV(II))
-C64B        IF ( ABS(FVV(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FVV(II))
-            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2)
-     &         WRITE (IW,1002) I,REPNA(IREP),EPS(I),FVV(II)
-            EPS(I) = FVV(II)
-            I  = I  + 1
-            II = II + (NV(IREP) + 1) * RCW
-         ENDDO
-         II = II - NV(IREP) * RCW
-      ENDDO
-C
       ESCF = E0 + E1 
-      WRITE(IW,1003) REPNUC,E0,E1,ESCF,ESCF+REPNUC
-      ESCF = ESCF + REPNUC
+      WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
+      ESCF = ESCF + ECORE
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
-     &/' File time :',T20,A8,/' # of integrals',I12)
+     &/' File time :',T20,A8,/' # of integrals',I8)
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
- 1004 FORMAT (/' Expanded and sorted integrals to ',I1,' types :'/
+ 1004 FORMAT (/' Expanded and sorted integrals to 6 types :'/
      & (' Type ',A4,' :',I10,' integrals'))
- 1001 FORMAT (//' Checking the orbital energies, the program uses ',
-     & 'the diagonal elements of the'/' reconstructed Fock matrix.',
-     & ' Differences with the reference orbital energies'/
-     & ' are given if above a treshold or if iprnt > 1'
-     &//' Spinor  Abelian Rep.',9X,'Energy   Recalc. Energy')
- 1002 FORMAT (2x,I5,6X,A4,4X,2F16.10)
  1003 FORMAT (//' Nuclear repulsion + core energy :',T40,F25.15
      &/' Zero order electronic energy :',T40,F25.15 
      &/' First order electronic energy :',T40,F25.15 
@@ -571,10 +492,6 @@ C
  1010 FORMAT (/' Skipping integral sorting step 1')
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
- 9000 FORMAT 
-     &   (' - Pass ',I6,' of ',I6,' passes to sort ',A4,' integrals')
- 9001 FORMAT (' - Pass ',I6,' finished.')
-
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')
@@ -615,6 +532,11 @@ C
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
       INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
@@ -623,12 +545,38 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+C
+C     Read symmetry information (master node only)
+C
+      IF (MYPROC.EQ.MASTER) THEN
+C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
-    1 READ (MDPROP,END=100,ERR=100) ACHAR
+      INOP = 0
+    1 READ (MDPROP,ERR=10,END=11) ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP
       CLOSE (MDPROP,STATUS='KEEP')
+      GOTO 12
+   10 INOP = 1
+      GOTO 12
+   11 INOP = 2
+   12 CONTINUE
+C
+      ENDIF
+C
+C     Distribute the information read from MDPROP
+C
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(INOP,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(PROP,2*NSP*NSP,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+#endif
+C
+C     Error exit if the integrals could not be read
+C
+      IF (INOP.EQ.1) GOTO 101
+      IF (INOP.EQ.2) GOTO 102
 C
       APHASE(1) = D1
       APHASE(2) = D0
@@ -737,7 +685,9 @@ C
       ENDDO
 C
       RETURN
-  100 WRITE (6,*) ' Property ',NAMEA,' not found on file MDPROP'
+  101 WRITE (6,*) ' Error reading property ',NAMEA,' on file MDPROP'
+      CALL QUIT(' Error reading property integrals')
+  102 WRITE (6,*) ' Property ',NAMEA,' not found on file MDPROP'
       CALL QUIT(' Property integrals missing')
  1000 FORMAT (/' Read integral type ',A8,' created ',
      & A8,' storage info : ',A8)
@@ -745,8 +695,8 @@ C
  1020 FORMAT (/' Property ',A8,' scaled with phase factor ',2F10.4)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GET2INTS (MDINT,KR,NSPO,INDEX,ITRSGN,INDK,INDL,
-     &                     NZ,CBUF,IBUF)
+      SUBROUTINE GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,IATYP,INDK,INDL,
+     &                     NZ,NZE,CBUF,IBUF)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -756,13 +706,13 @@ C     Reads block of 2-electron integrals from MOLFDIR file MDINT
 C     Expands Kramers' reduced list into full list.
 C     Reorder from (ij|kl) to <ik||jl>
 C     Expanded (16 permutations) indices are written in array IBUF :
-C     IBUF(IPERM,1,INZ) : Type (OOOO, VOOO, VVOO, VOVO, VVVO, VVVV)
-C     IBUF(IPERM,2,INZ) : Number of combined irrep
-C     IBUF(IPERM,3,INZ) : Index of ket pair
-C     IBUF(IPERM,4,INZ) : Index of bra pair
-C     IBUF(IPERM,5,INZ) : Index of exchange ket pair
-C     IBUF(IPERM,6,INZ) : Sign under time-reversion (real part)
-C     IBUF(IPERM,7,INZ) : Sign under time-reversion and conjugations 
+C     IBUF(1,INZE) : Type (OOOO, VOOO, VVOO, VOVO, VVVO, VVVV)
+C     IBUF(2,INZE) : Number of combined irrep
+C     IBUF(3,INZE) : Index of ket pair
+C     IBUF(4,INZE) : Index of bra pair
+C     IBUF(5,INZE) : Sign under time-reversion (real part)
+C     IBUF(6,INZE) : Sign under time-reversion and conjugations 
+C     IBUF(7,INZE) : Pointer to integral values array 
 C
 C---------------Routines called----------------------------------------
 C
@@ -772,24 +722,36 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER KR(-NSPO:NSPO),INDK(*),INDL(*)
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       REAL*8 CBUF(RCW,*)
-      INTEGER IBUF(16,6,*)
-      INTEGER INDEX(NSPO,NSPO,4)
+      INTEGER IBUF(7,*)
+      INTEGER INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
 C
       INCLUDE "param.inc"
       INCLUDE "complex.inc"
+      INCLUDE "eqns.inc"
+      INCLUDE "inpt.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
       REAL*8 RDUM
+      LOGICAL FOCKSP
+      CHARACTER*8 NEXTFIL
 C
 C---------------Executable code--------------------------------------
 C
-      IF (CARITH) THEN 
+      FOCKSP = EQNS.EQ.'FOCKSP'
+C
+      IF (INTERFACE(1:7).NE.'MOLFDIR'.OR.MYPROC.EQ.MASTER) THEN
+   1  IF (CARITH) THEN 
          READ (MDINT,END=10010,ERR=10010) IKR,JKR,NZ,
      &        (INDK(INZ),INDL(INZ),INZ=1,NZ),
      &        (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NZ) 
@@ -799,22 +761,45 @@ C
      &        (CBUF(1,INZ),RDUM,INZ=1,NZ) 
       ENDIF
       IF (IKR.EQ.0) THEN
-         NZ = -1
-         RETURN
+         IF (JKR.EQ.0) THEN
+            NZ = -1
+         ELSE
+            READ (MDINT) NEXTFIL
+            CLOSE (MDINT,STATUS='KEEP')
+            OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
+            GOTO 1
+         ENDIF
       ENDIF
+      ENDIF
+#if defined (VAR_MPI)
+      IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
+      CALL MPI_BCAST(IKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(JKR,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(NZ,1,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+      IF (NZ.GT.0) THEN
+         CALL MPI_BCAST(INDK,NZ,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(INDL,NZ,MPI_INTEGER,MASTER,MPI_COMM_WORLD,IERR)
+         CALL MPI_BCAST(CBUF,NZ*RCW,MPI_DOUBLE_PRECISION,
+     &                  MASTER,MPI_COMM_WORLD,IERR)
+      ENDIF
+      ENDIF
+#endif
+      IF (NZ.EQ.-1) RETURN
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
 C     Expand to the full list
 C
+      NZE = 0 
       DO 50 INZ = 1, NZ
          KKR = INDK(INZ)
          LKR = INDL(INZ)
          I0 = KR(IKR)
          J0 = KR(JKR)
-         IPERM = 0 
+         IJSG = 1
          DO 40 ITR1 = 1, 2
             K0 = KR(KKR)
             L0 = KR(LKR)
+            KLSG = 1
             DO 30 ITR2 = 1, 2
                I1 = I0
                J1 = J0
@@ -825,25 +810,87 @@ C
                   J = J1
                   K = K1
                   L = L1
-                  DO 10 ICC = 1, 2
-                     IPERM = IPERM + 1
-                     JLIND = INDEX(J,L,4)
-                     IKIND = INDEX(I,K,4)
-                     IF (JLIND.EQ.0.OR.I.EQ.K) THEN ! Non-canonical integral
-                        IBUF(IPERM,1,INZ) = 0
-                     ELSEIF (IKIND.NE.0) THEN  ! Contribution to direct part
-                        ITYP = (INDEX(J,L,1)-1)*4 + INDEX(I,K,1)
-                        IBUF(IPERM,1,INZ) = ITYP
-                        IBUF(IPERM,2,INZ) = INDEX(J,L,3)
-                        IBUF(IPERM,3,INZ) = INDEX(J,L,4)
-                        IBUF(IPERM,4,INZ) = INDEX(I,K,4)
-                     ELSE       ! Contribution to exchange part
-                        ITYP = (INDEX(J,L,1)-1)*4 + INDEX(K,I,1)
-                        ITYP = - ITYP
-                        IBUF(IPERM,1,INZ) = ITYP
-                        IBUF(IPERM,2,INZ) = INDEX(J,L,3)
-                        IBUF(IPERM,3,INZ) = INDEX(J,L,4)
-                        IBUF(IPERM,4,INZ) = INDEX(K,I,4)
+                  DO 10 ICC = 1, -1, -2
+                     IF (.NOT.FOCKSP) THEN
+                       JLIND = INDEX(J,L,4,1)
+                       IKIND = INDEX(I,K,4,1)
+                       IF (JLIND.NE.0.AND.I.NE.K) THEN 
+C                         Canonical integral : Direct or exchange
+                          NZE = NZE + 1
+                          IF (IKIND.NE.0) THEN  
+C                            Contribution to direct part
+                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(I,K,1,1)
+                             IBUF(1,NZE) = ITYP
+                             IBUF(2,NZE) = INDEX(J,L,3,1)
+                             IBUF(3,NZE) = INDEX(J,L,4,1)
+                             IBUF(4,NZE) = INDEX(I,K,4,1)
+                             IBUF(5,NZE) = IJSG * KLSG
+                             IBUF(6,NZE) = ICC * IJSG * KLSG
+                             IBUF(7,NZE) = INZ
+C                            Skip unnecessary integrals
+                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                           ELSE
+C                            Contribution to exchange part
+                             ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
+                             ITYP = - ITYP
+                             IBUF(1,NZE) = ITYP
+                             IBUF(2,NZE) = INDEX(J,L,3,1)
+                             IBUF(3,NZE) = INDEX(J,L,4,1)
+                             IBUF(4,NZE) = INDEX(K,I,4,1)
+                             IBUF(5,NZE) = IJSG * KLSG
+                             IBUF(6,NZE) = ICC * IJSG * KLSG
+                             IBUF(7,NZE) = INZ
+C                            Skip unnecessary integrals
+                             ITYP = - ITYP
+                             IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                           ENDIF
+                       ENDIF
+                     ELSE
+C
+C                     One integral can contribute to a maximum of
+C                     16 classes in Fock space CC calculations
+C
+                      DO ICASE = 1, 4
+                      DO JCASE = 1, 4
+                        JLTYP = INDEX(J,L,1,ICASE)
+                        IKTYP = INDEX(I,K,1,JCASE)
+                        KITYP = INDEX(K,I,1,JCASE)
+                        JLIND = INDEX(J,L,4,JLTYP)
+                        IKIND = INDEX(I,K,4,IKTYP)
+                        KIIND = INDEX(K,I,4,KITYP)
+                        IF (JLIND.NE.0.AND.IKIND.NE.0) THEN 
+C                         Canonical integral : direct
+                          NZE = NZE + 1
+                          ITYP = (JLTYP-1)*4 + IKTYP
+                          IBUF(1,NZE) = ITYP
+                          IBUF(2,NZE) = INDEX(J,L,3,JLTYP)
+                          IBUF(3,NZE) = JLIND
+                          IBUF(4,NZE) = IKIND
+                          IBUF(5,NZE) = IJSG * KLSG
+                          IBUF(6,NZE) = ICC * IJSG * KLSG
+                          IBUF(7,NZE) = INZ
+C                         Skip unnecessary integrals
+                          IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                        ENDIF
+C
+                        IF (JLIND.NE.0.AND.KIIND.NE.0) THEN
+C                         Canonical integral : exchange
+                          NZE = NZE + 1
+                          ITYP = (JLTYP-1)*4 + KITYP
+                          ITYP = - ITYP
+                          IBUF(1,NZE) = ITYP
+                          IBUF(2,NZE) = INDEX(J,L,3,JLTYP)
+                          IBUF(3,NZE) = JLIND
+                          IBUF(4,NZE) = KIIND
+                          IBUF(5,NZE) = IJSG * KLSG
+                          IBUF(6,NZE) = ICC * IJSG * KLSG
+                          IBUF(7,NZE) = INZ
+C                         Skip unnecessary integrals
+                          ITYP = - ITYP
+                          IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                        ENDIF
+                      ENDDO
+                      ENDDO
                      ENDIF
                      J = I1
                      I = J1
@@ -857,42 +904,293 @@ C
    20          CONTINUE
                K0 = KR(-LKR)
                L0 = KR(-KKR)
+               KLSG = SIGN(1,KKR*LKR) * ITRSGN
    30       CONTINUE
             I0 = KR(-JKR)
             J0 = KR(-IKR)
+            IJSG = IJSIGN
    40    CONTINUE
    50 CONTINUE
 C
-      DO INZ = 1, NZ
-         DO IPERM = 1, 8
-            IBUF(IPERM,5,INZ) = 1
-         ENDDO
-         DO IPERM = 9, 16
-            IBUF(IPERM,5,INZ) = IJSIGN
-         ENDDO
-      ENDDO
-C
-      DO INZ = 1, NZ
-         KKR = INDK(INZ)
-         LKR = INDL(INZ)
-         KLSIGN = SIGN(1,KKR*LKR) * ITRSGN
-         DO IPERM = 5, 8
-            IBUF(IPERM,5,INZ) = IBUF(IPERM,5,INZ) * KLSIGN
-         ENDDO
-         DO IPERM = 13, 16
-            IBUF(IPERM,5,INZ) = IBUF(IPERM,5,INZ) * KLSIGN
-         ENDDO
-      ENDDO
-C
-      DO INZ = 1, NZ
-         DO IPERM = 1, 15, 2
-            IBUF(IPERM,6,INZ) = IBUF(IPERM,5,INZ)
-            IBUF(IPERM+1,6,INZ) = - IBUF(IPERM+1,5,INZ)
-         ENDDO
-      ENDDO
-C
       RETURN
 10010 CALL QUIT('ERROR READING 2-E INTEGRALS')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETFM (INDEX,NSP,EPS,BUF1,BUF2,VBUF1,VBUF2,
+     &                  FOO,FVO,FVV,E0,E1)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Generates or converts Fock matrix. Calculates E0 and E1
+C
+C---------------Routines called----------------------------------------
+C
+C     MAKEFM, MPI_BCAST
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 E0,E1,EPS(*)
+      REAL*8 FOO(*),FVO(*),FVV(*)
+      REAL*8 BUF1(*),BUF2(*),VBUF1(*),VBUF2(*)
+      INTEGER INDEX(NSP,NSP,4,*)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "symm.inc"
+      INCLUDE "eqns.inc"
+      INCLUDE "inpt.inc"
+      INCLUDE "complex.inc"
+      INCLUDE "results.inc"
+      INCLUDE "files.inc"
+      INCLUDE "ccpar.inc"
+#if defined (VAR_MPI)
+      INCLUDE 'mpif.h'
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+#endif
+C---------------Local variables--------------------------------------
+C
+      REAL*8 EPSDIF
+      LOGICAL FOCKSP
+      CHARACTER*2 ORBTYP
+C
+C---------------Executable code--------------------------------------
+C
+      NSPQ = NSP*NSP
+      FOCKSP = EQNS.EQ.'FOCKSP'
+C
+      IF (NORECMP) GOTO 100
+C
+C  READ ONE ELECTRON INTEGRALS
+C
+      IF (MYPROC.EQ.MASTER) THEN
+        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
+        READ (MRCONEE)
+        READ (MRCONEE) 
+        READ (MRCONEE) 
+        READ (MRCONEE) 
+        READ (MRCONEE) 
+        READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
+        CLOSE (MRCONEE)
+      ENDIF
+C
+#if defined (VAR_MPI)
+      CALL MPI_BCAST(BUF1,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(BUF2,NSPQ,MPI_DOUBLE_PRECISION,MASTER,
+     &               MPI_COMM_WORLD,IERR)
+#endif
+C  
+C  ORDER AND PUT IN FOCK MATRIX
+C
+      IF (FOCKSP) THEN
+         NCASE = 4
+      ELSE
+         NCASE = 1
+      ENDIF
+C
+      DO ICASE = 1, NCASE
+         IJ = 0
+         DO J = 1, NSP
+            DO I = 1, NSP
+               IJ = IJ + 1
+               ITYP = INDEX(I,J,1,ICASE)
+               IND = INDEX(I,J,2,ICASE)
+               IF (FOCKSP) IND = INDEX(I,J,2,ITYP)
+               IF (IND.NE.0) THEN
+               IF (ITYP.EQ.1) THEN
+                  IF (CARITH) THEN
+                     FOO(RCW*IND-1) = BUF1(IJ)
+                     FOO(RCW*IND)   = - BUF2(IJ)
+                  ELSE
+                     FOO(IND) = BUF1(IJ)
+                  ENDIF
+               ELSEIF (ITYP.EQ.2) THEN
+                  IF (CARITH) THEN
+                     FVO(RCW*IND-1) = BUF1(IJ)
+                     FVO(RCW*IND)   = - BUF2(IJ)
+                  ELSE
+                     FVO(IND) = BUF1(IJ)
+                  ENDIF
+               ELSEIF (ITYP.EQ.4) THEN
+                  IF (CARITH) THEN
+                     FVV(RCW*IND-1) = BUF1(IJ)
+                     FVV(RCW*IND)   = - BUF2(IJ)
+                  ELSE
+                     FVV(IND) = BUF1(IJ)
+                  ENDIF
+               ENDIF
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+C
+  100 CONTINUE
+C
+      IF (.NOT.NORECMP) THEN
+C
+C        Form the Fock matrix by adding the two-electron contributions
+C        to the (effective) one-electron matrix elements
+C
+C        We calculate the 1-determinant energy, which can be compared
+C        to the value given by the DHF code as a check on the correctness
+C        of the index transformations.
+C
+         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+C
+      ELSE
+C
+C        If the user specified norecmp = no recompute
+C        We use the diagonal matrix of orbital energies and do not recalculate
+C        the Fock matrix. This will only work if the orbitals are
+C        generated with the same fock operator as used here (in general
+C        only for closed shell systems) !
+C
+C        We use makefm to calculate E1. F and E0 are incorrect.
+C
+         CALL XCOPY (NFOO,A0,0,FOO,1)
+         CALL XCOPY (NFVO,A0,0,FVO,1)
+         CALL XCOPY (NFVV,A0,0,FVV,1)
+         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+         CALL XCOPY (NFOO,A0,0,FOO,1)
+         CALL XCOPY (NFVO,A0,0,FVO,1)
+         CALL XCOPY (NFVV,A0,0,FVV,1)
+C
+C        Now fill in the matrix and calculate E0.
+C
+         E0 = A0
+         I = 1
+         II = 1
+         DO IREP = 1, NREP
+            DO J = 1, NO(IREP)
+               IF (J.LE.NE(IREP)) E0 = E0 + EPS(I)
+               FOO(II) = EPS(I)
+               I = I + 1
+               II = II + (NO(IREP) + 1) * RCW
+            ENDDO
+            II = II - NO(IREP) * RCW
+         ENDDO
+C
+         II = 1
+         DO IREP = 1, NREP
+            DO J = 1, NV(IREP)
+               FVV(II) = EPS(I)
+               I = I + 1
+               II = II + (NV(IREP) + 1) * RCW
+            ENDDO
+            II = II - NV(IREP) * RCW
+         ENDDO
+C
+         IF (FOCKSP) THEN
+C        
+C        We also need to take the oa,oa and va,va elements in FVO into account
+C        Copy them from FOO
+C
+            DO IREP = 1, NREP
+C              The (oa,oa) elements
+               IJOO = IOO(IREP)
+               IJVO = IVO(IREP)
+               IJOO = (IJOO + NO(IREP) * NIO(IREP) + NIO(IREP))*RCW + 1
+               IJVO = (IJVO + NV(IREP) * NIO(IREP) + NSV(IREP))*RCW + 1
+               DO J = NIO(IREP)+1, NSO(IREP)
+                  CALL XCOPY (NAO(IREP),FOO(IJOO),1,FVO(IJVO),1)
+                  IJOO = IJOO + NO(IREP) * RCW
+                  IJVO = IJVO + NV(IREP) * RCW
+               ENDDO
+C              The (va,va) elements
+               IJOO = IOO(IREP)
+               IJVO = IVO(IREP)
+               IJOO = (IJOO + NO(IREP) * NSO(IREP) + NSO(IREP))*RCW + 1
+               IJVO = (IJVO + NV(IREP) * NSO(IREP)            )*RCW + 1
+               DO J = NSO(IREP)+1, NO(IREP)
+                  CALL XCOPY (NAV(IREP),FOO(IJOO),1,FVO(IJVO),1)
+                  IJOO = IJOO + NO(IREP) * RCW
+                  IJVO = IJVO + NV(IREP) * RCW
+               ENDDO
+            ENDDO
+         ENDIF
+C
+      ENDIF
+C
+      CALL FMTOFILE (LTR,FVO,FOO,FVV)
+C
+      WRITE (IW,1001)
+      II = 1
+      I  = 1
+      DO IREP = 1, NREP
+         DO J = 1, NO(IREP)
+            ORBTYP = 'O '
+            IF (FOCKSP) THEN
+               IF (J.LE.NIO(IREP)) THEN
+                  ORBTYP = 'Oi'
+               ELSEIF (J.LE.NIO(IREP)+NAO(IREP)) THEN
+                  ORBTYP = 'Oa'
+               ELSE 
+                  ORBTYP = 'Va'
+               ENDIF
+            ENDIF
+            EPSDIF = ABS(EPS(I)-FOO(II))
+C64B        EPSDIF =  ABS(EPS(I)-FOO(II))
+            IF (ABS(FOO(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FOO(II))
+C64B        IF ( ABS(FOO(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FOO(II))
+            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.1)
+     &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FOO(II)
+            IF (.NOT.USEOE) EPS(I) = FOO(II)
+            I  = I  + 1
+            II = II + (NO(IREP) + 1) * RCW
+         ENDDO
+         II = II - NO(IREP) * RCW
+      ENDDO
+      II = 1
+      DO IREP = 1, NREP
+         DO J = 1, NV(IREP)
+            ORBTYP = 'V '
+            IF (FOCKSP) THEN
+               IF (J.LE.NAV(IREP)) THEN
+                  ORBTYP = 'Va'
+               ELSEIF (J.LE.NAV(IREP)+NIV(IREP)) THEN
+                  ORBTYP = 'Vi'
+               ELSE 
+                  ORBTYP = 'Oa'
+               ENDIF
+            ENDIF
+            EPSDIF = ABS(EPS(I)-FVV(II))
+C64B        EPSDIF =  ABS(EPS(I)-FVV(II))
+            IF (ABS(FVV(II)).GT.1.D0) EPSDIF = EPSDIF / ABS(FVV(II))
+C64B        IF ( ABS(FVV(II)).GT.1.0 ) EPSDIF = EPSDIF /  ABS(FVV(II))
+            IF (EPSDIF.GT.1.D-7.OR.IPRNT.GE.2)
+     &         WRITE (IW,1002) ORBTYP,J,I,REPNA(IREP),EPS(I),FVV(II)
+            IF (.NOT.USEOE) EPS(I) = FVV(II)
+            I  = I  + 1
+            II = II + (NV(IREP) + 1) * RCW
+         ENDDO
+         II = II - NV(IREP) * RCW
+      ENDDO
+C
+      IF (USEOE) THEN
+         WRITE (IW,1003)
+      ELSE
+         WRITE (IW,1004)
+      ENDIF
+C
+ 1001 FORMAT (//' Checking the orbital energies, the program computes',
+     & 'the diagonal elements of the'/' reconstructed Fock matrix.',
+     & ' Differences with the reference orbital energies'/
+     & ' are given if above a treshold or if iprnt > 1'
+     &//' Spinor   Abelian Rep.',9X,'Energy   Recalc. Energy')
+ 1002 FORMAT (2x,A2,I4,I5,2X,A4,4X,2F16.10)
+ 1003 FORMAT(/' The original energies (left column) are used in',
+     &' perturbation expressions.')
+ 1004 FORMAT(/' The diagonal elements of the recomputed Fock matrix',
+     &' (right column) are used in perturbation expressions.')
+C
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKEFM (BUF1,BUF2,FOO,FVO,FVV,E0,E1)
@@ -922,6 +1220,7 @@ C
       INCLUDE "param.inc"
       INCLUDE "complex.inc"
       INCLUDE "symm.inc"
+      INCLUDE "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -941,13 +1240,15 @@ C
 C---------------------------------------------------------------------
 C  F(IJ) = F(IJ) + V(IJ,KK)
 C---------------------------------------------------------------------
-            CALL XAXPY(NFOO,A1,BUF2(KK),1,FOO,1)
+            IF (K.LE.NE(KREP)) CALL XAXPY(NFOO,A1,BUF2(KK),1,FOO,1)
 C---------------------------------------------------------------------
 C  E1 = E1 - V(II,KK)
 C---------------------------------------------------------------------
             II = 0
             DO IREP = 1, NREP
-               E1 = E1 - XSUM(NO(IREP),BUF2(II+KK),NO(IREP)+1)
+               IF (K.LE.NE(KREP)) THEN
+                  E1 = E1 - XSUM(NE(IREP),BUF2(II+KK),NO(IREP)+1)
+               ENDIF
                II = II + NO(IREP) * NO(IREP) * RCW
             ENDDO
             KK = KK + (NO(KREP)+1) * NFOO * RCW
@@ -960,7 +1261,7 @@ C  E0 = E0 + FOO(I,I)
 C---------------------------------------------------------------------
       II = 1
       DO IREP = 1, NREP
-         E0 = E0 + XSUM(NO(IREP),FOO(II),NO(IREP)+1)
+         E0 = E0 + XSUM(NE(IREP),FOO(II),NO(IREP)+1)
          II = II + NO(IREP) * NO(IREP) * RCW
       ENDDO
 C
@@ -973,7 +1274,7 @@ C
 C---------------------------------------------------------------------
 C  F(AI) = F(AI) + V(AI,KK)
 C---------------------------------------------------------------------
-            CALL XAXPY(NFVO,A1,BUF2(KK),1,FVO,1)
+            IF (K.LE.NE(KREP)) CALL XAXPY(NFVO,A1,BUF2(KK),1,FVO,1)
             KK = KK + (NO(KREP)+1) * NFVO * RCW
          ENDDO
          KK = KK - NO(KREP) * NFVO * RCW
@@ -988,7 +1289,7 @@ C
 C---------------------------------------------------------------------
 C  F(AB) = F(AB) + V(AB,KK)
 C---------------------------------------------------------------------
-            CALL XAXPY(NFVV,A1,BUF2(KK),1,FVV,1)
+            IF (K.LE.NE(KREP)) CALL XAXPY(NFVV,A1,BUF2(KK),1,FVV,1)
             KK = KK + (NO(KREP)+1) * NFVV * RCW
          ENDDO
          KK = KK - NO(KREP) * NFVV * RCW
@@ -1018,7 +1319,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,3),IREPSPI(NSP,8,2),INDEX(NSP,NSP,4)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2),INDEX(NSP,NSP,4)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1149,6 +1450,171 @@ C
                      IJ = IJ + 1
                      INDEX(I,J,3) = IJREP
                      INDEX(I,J,4) = IJ
+                  ENDDO
+               ENDDO
+ 40         CONTINUE
+         ENDDO
+      ENDDO
+C
+      RETURN 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Set up index array for initial integral sort
+C     Index(i,j,1) : type (oo,vo,ov,vv)
+C     Index(i,j,2) : position of fm(i,j) in appropriate part of fock matrix
+C     Index(i,j,3) : symmetry of ij pair
+C     Index(i,j,4) : position of ij pair in batch of this symmetry
+C
+C---------------Routines called----------------------------------------
+C
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,8,2),INDEX(NSP,NSP,4,4)
+C
+C---------------Common Blocks--------------------------------------
+C
+      INCLUDE "param.inc"
+      INCLUDE "symm.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C
+C---------------Executable code--------------------------------------
+C
+      DO IJCASE = 1, 4
+         JCASE = (IJCASE-1)/2
+         ICASE = MOD(IJCASE-1,2)
+         DO J = 1, NSP
+            IF (IREPSP(J,3+JCASE).GT.0) THEN
+               JJ = 0 
+            ELSE 
+               JJ = 2
+            ENDIF
+            DO I = 1, NSP
+               IF (IREPSP(I,3+ICASE).GT.0) THEN
+                  II = 1 
+               ELSE 
+                  II = 2
+               ENDIF
+               INDEX(I,J,1,IJCASE) = II + JJ
+               INDEX(I,J,2,IJCASE) = 0
+               INDEX(I,J,3,IJCASE) = 0
+               INDEX(I,J,4,IJCASE) = 0
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      IJ = 0
+      DO IREP = 1, NREP
+         DO JJ = 1, NO(IREP)
+            J = IREPSPI(JJ,IREP,1)
+            DO II = 1, NO(IREP)
+               I = IREPSPI(II,IREP,1)
+               IJ = IJ + 1
+               INDEX(I,J,2,1) = IJ
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      IJ = 0
+      DO IREP = 1, NREP
+         DO JJ = 1, NO(IREP)
+            J = IREPSPI(JJ,IREP,1)
+            DO II = 1, NV(IREP)
+               I = IREPSPI(II,IREP,2)
+               IJ = IJ + 1
+               INDEX(I,J,2,2) = IJ
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      IJ = 0
+      DO IREP = 1, NREP
+         DO JJ = 1, NV(IREP)
+            J = IREPSPI(JJ,IREP,2)
+            DO II = 1, NO(IREP)
+               I = IREPSPI(II,IREP,1)
+               IJ = IJ + 1
+               INDEX(I,J,2,3) = IJ
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      IJ = 0
+      DO IREP = 1, NREP
+         DO JJ = 1, NV(IREP)
+            J = IREPSPI(JJ,IREP,2)
+            DO II = 1, NV(IREP)
+               I = IREPSPI(II,IREP,2)
+               IJ = IJ + 1
+               INDEX(I,J,2,4) = IJ
+            ENDDO
+         ENDDO
+      ENDDO
+C
+      DO IJREP = 1, NREP
+         IJ = 0
+         DO JREP = 1, NREP
+            DO 10 IREP = JREP, NREP
+               IF (MULTB(IREP,JREP,1).NE.IJREP) GOTO 10
+               DO JJ = 1, NO(JREP)
+                  J = IREPSPI(JJ,JREP,1)
+                  IMIN = 1
+                  IF (IREP.EQ.JREP) IMIN = JJ + 1
+                  DO II = IMIN, NO(IREP)
+                     I = IREPSPI(II,IREP,1)
+                     IJ = IJ + 1
+                     INDEX(I,J,3,1) = IJREP
+                     INDEX(I,J,4,1) = IJ
+                  ENDDO
+               ENDDO
+ 10         CONTINUE
+         ENDDO
+      ENDDO
+C
+      DO IJREP = 1, NREP
+         IJ = 0
+         DO JREP = 1, NREP
+            DO 20 IREP = 1, NREP
+               IF (MULTB(IREP,JREP,1).NE.IJREP) GOTO 20
+               DO JJ = 1, NO(JREP)
+                  J = IREPSPI(JJ,JREP,1)
+                  DO II = 1, NV(IREP)
+                     I = IREPSPI(II,IREP,2)
+                     IJ = IJ + 1
+                     INDEX(I,J,3,2) = IJREP
+                     INDEX(I,J,4,2) = IJ
+                  ENDDO
+               ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+C
+      DO IJREP = 1, NREP
+         IJ = 0
+         DO JREP = 1, NREP
+            DO 40 IREP = JREP, NREP
+               IF (MULTB(IREP,JREP,1).NE.IJREP) GOTO 40
+               DO JJ = 1, NV(JREP)
+                  J = IREPSPI(JJ,JREP,2)
+                  IMIN = 1
+                  IF (IREP.EQ.JREP) IMIN = JJ + 1
+                  DO II = IMIN, NV(IREP)
+                     I = IREPSPI(II,IREP,2)
+                     IJ = IJ + 1
+                     INDEX(I,J,3,4) = IJREP
+                     INDEX(I,J,4,4) = IJ
                   ENDDO
                ENDDO
  40         CONTINUE
