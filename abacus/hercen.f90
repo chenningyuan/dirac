@@ -31,9 +31,9 @@
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
-      SUBROUTINE CENINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,
-     &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
-     &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
+      SUBROUTINE CENINP(LUINFO,WORK,LWORK,NONTYP,NONT,IQM,NBLCK,           &
+                        JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,   &
+                        KATOM,KANG,KSETS,KBLOCK,KPRIM,ANG)
 !*****************************************************************************
 !
 !       Loop over expansion centers and read coordinates and basis set information.
@@ -67,32 +67,32 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
+include "implicit.h"
+include "priunit.h"
+include "dummy.h"
+include "mxcent.h"
+include "maxorb.h"
+include "aovec.h"
+include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
-#include "cbirea.h"
+include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
-      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
-     &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
-     &          SEG(KBLOCK,KSETS),
-     &          ALPHA(KPRIM,KBLOCK,KSETS),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),ISGEN(KBLOCK)
+      DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),     &
+     &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS), &
+     &          SEG(KBLOCK,KSETS),                                      &
+     &          ALPHA(KPRIM,KBLOCK,KSETS),                              &
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),                        &
+     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS),ISGEN(KBLOCK,KSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
-#include "molinp.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "gencon.h"
-#include "dcbgen.h"
-#include "ibtfun.h"
+include "molinp.h"
+include "nuclei.h"
+include "huckel.h"
+include "gencon.h"
+include "dcbgen.h"
+include "ibtfun.h"
       CNTBAS = .FALSE.
       NUCIND = 0
       NHTYP  = 0
@@ -102,8 +102,6 @@
 !     =======================
 !
       DO I = 1, NONTYP
-!       Define some offsets
-        INUC = NUCIND   ! start of information for nuclei
         DO ISET = 1, NSETS
            IBLCK(ISET) = NBLCK(I,ISET) + 1 ! start of orbital blocks
         END DO
@@ -131,7 +129,7 @@
         IF (INPTST) THEN
            WRITE(LUPRI,'(/A,I5)') 'Atomic type: ',I
            WRITE(LUPRI,'(3X,A,F4.1)') 'Nuclear charge:  ',Q
-           WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//
+           WRITE(LUPRI,'(3X,A,I5)') 'Number of symmetry '//             &
      &          'independent centres: ',NONT(I)
         END IF
 !
@@ -145,12 +143,13 @@
            LWRK = LWORK
 !          Tell the routine we're calling how many blocks remain.
            KAOVEC = KBLOCK - NBLCK(I,ISET)
-           CALL READ_BASIS (LUINFO,WORK,LWRK,
-     &          IQM(I,ISET),NBLCK(I,ISET),JCO(1,I,ISET),
-     &          BASREF(1,I,ISET),
-     &          NUC(IBLOCK,ISET),NRC(IBLOCK,ISET),SEG(IBLOCK,ISET),
-     &          ALPHA(1,IBLOCK,ISET),CPRIM(1,1,IBLOCK,ISET),
-     &          CPRIMU(1,1,IBLOCK,ISET),ISGEN(IBLOCK,ISET),
+           IBLOCK = IBLCK(ISET)
+           CALL READ_BASIS (LUINFO,WORK,LWRK,                           &
+     &          IQM(I,ISET),NBLCK(I,ISET),JCO(1,I,ISET),                &
+     &          BASREF(1,I,ISET),                                       &
+     &          NUC(IBLOCK,ISET),NRC(IBLOCK,ISET),SEG(IBLOCK,ISET),     &
+     &          ALPHA(1,IBLOCK,ISET),CPRIM(1,1,IBLOCK,ISET),            &
+     &          CPRIMU(1,1,IBLOCK,ISET),ISGEN(IBLOCK,ISET),             &
      &          KANG,ISET,KAOVEC,KPRIM,GENERATE)
 !
 !          A set might be generated from a previous set for this atom type.
@@ -164,8 +163,8 @@
 !                 IBLCK serves to find the starting points for this atom type
 !                 in the block list
 !
-                  CALL KINBAL(I,IBLCK(1),IBLCK(2),IQM,JCO,NUC,NRC,SEG,
-     &                 ALPHA,CPRIM,CPRIMU,NBLCK,ISGEN,KATOM,KANG,KBLOCK,
+                  CALL KINBAL(I,IBLCK(1),IBLCK(2),IQM,JCO,NUC,NRC,SEG,  &
+     &                 ALPHA,CPRIM,CPRIMU,NBLCK,ISGEN,KATOM,KANG,KBLOCK,&
      &                 KPRIM,INPTST,CNTBAS)
                   BASREF(1,I,ISET) = ' Derived from large component'
                ELSE
@@ -181,8 +180,8 @@
       END
 !------------------------------------------------------------------------------------
 !  /* Deck READ_BASIS */
-      SUBROUTINE READ_BASIS (LUINFO,WORK,LWORK,IQM,NBLCK,
-     &           JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
+      SUBROUTINE READ_BASIS (LUINFO,WORK,LWORK,IQM,NBLCK,               &
+     &           JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,       &
      &           KANG,ISET,KAOVEC,KPRIM,GENERATE)
 !*****************************************************************************
 !
@@ -195,35 +194,35 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
+include "implicit.h"
+include "priunit.h"
+include "dummy.h"
+include "mxcent.h"
+include "maxorb.h"
+include "aovec.h"
+include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include "cbirea.h"
+include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,NOORBTS,CNTBAS
-      DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),
-     &          SEG(KAOVEC),
-     &          ALPHA(KPRIM,KAOVEC),
-     &          CPRIM(KPRIM,KPRIM,KAOVEC),
+      DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
+     &          SEG(KAOVEC),                                            &
+     &          ALPHA(KPRIM,KAOVEC),                                    &
+     &          CPRIM(KPRIM,KPRIM,KAOVEC),                              &
      &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)
       CHARACTER SPDCAR*1,BSET*5,BASFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10)
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL GENERATE
-#include "molinp.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "gencon.h"
-#include "dcbgen.h"
+include "molinp.h"
+include "nuclei.h"
+include "huckel.h"
+include "gencon.h"
+include "dcbgen.h"
 !
-#include "ibtfun.h"
+include "ibtfun.h"
       GENERATE = .FALSE.
       CNTBAS = .FALSE.
       NHTYP  = 0
@@ -295,13 +294,13 @@
          IF (.NOT.BASIS) THEN
 !           With no general default one should always specify 
 !           the large component basis
-            WRITE(LUPRI,'(A,I5,A,/,A)')'Expected LARGE keyword, read',
-     $      ' line no. :',NMLINE,':',MLINE(NMLINE)
+            WRITE(LUPRI,'(A,I5,A,/,A)')'Expected LARGE keyword, read',  &
+     &      ' line no. :',NMLINE,':',MLINE(NMLINE)
            CALL QUIT('Error reading keyword in BASINP')
          END IF
       ELSE IF (JSET.LT.ISET) THEN
-          WRITE(LUPRI,'(A,A)')'Wrong order of keywords, specify',
-     $    ' them in the order LARGE SMALL FTSET/FTLRG FTSML'
+          WRITE(LUPRI,'(A,A)')'Wrong order of keywords, specify',       &
+     &    ' them in the order LARGE SMALL FTSET/FTLRG FTSML'
           CALL QUIT ('BASINP : Keywords in wrong order')
       END IF
 !
@@ -322,35 +321,35 @@
            READ (MLINE(NMLINE),'(12X,A20)') BASFIL
       CASE ("WELLTEMP")
            IBSFLAG = 4
-           READ (MLINE(NMLINE)(16:),*,ERR=9000)
-     $          (FAMPAR(K),K=1,4),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
+           READ (MLINE(NMLINE)(16:),*,ERR=9000)                         &
+     &          (FAMPAR(K),K=1,4),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
            CALL GENFAMEXP(LUINFO,0)
       CASE ("EVENTEMP")
            IBSFLAG = 4
-           READ (MLINE(NMLINE)(16:),*,ERR=9000)
-     $          (FAMPAR(K),K=1,2),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
+           READ (MLINE(NMLINE)(16:),*,ERR=9000)                         &
+     &          (FAMPAR(K),K=1,2),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
            CALL GENFAMEXP(LUINFO,0)
       CASE ("GEOM")
            IBSFLAG = 4
-           READ (MLINE(NMLINE)(11:),*,ERR=9000)
-     $          (FAMPAR(K),K=1,2),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
+           READ (MLINE(NMLINE)(11:),*,ERR=9000)                         &
+     &          (FAMPAR(K),K=1,2),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
            FAMPAR(3) = D0
            FAMPAR(4) = D0
            CALL GENFAMEXP(LUINFO,0)
       CASE ("FAMILY")
            IBSFLAG = 4
-           READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)
-     $          NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
+           READ (MLINE(NMLINE),'(12X,12I5)',ERR=9000)                   &
+     &          NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
            CALL GENFAMEXP(LUINFO,1)
       CASE ("DUALFAMILY")
            IBSFLAG = 4
-           READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)
-     $          NFAMEXP(1),NFAMEXP(2),IQM,(JCO(K),K=1,IQM)
+           READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)                   &
+     &          NFAMEXP(1),NFAMEXP(2),IQM,(JCO(K),K=1,IQM)              
            CALL GENFAMEXP(LUINFO,2)
       CASE ("MULTIBASIS")
            IBSFLAG = 5
-           READ (MLINE(NMLINE)(18:),*,ERR=9000)
-     &          NFILES,(BSFIL(K),K=1,NFILES)
+           READ (MLINE(NMLINE)(18:),*,ERR=9000)                         &
+     &          NFILES,(BSFIL(K),K=1,NFILES)                             
            IF ( NFILES .EQ. 0 ) THEN
               WRITE (LUPRI,*)'SPECIFY THE NUMBER OF BASIS SET FILES'
               GOTO 9000
@@ -372,7 +371,7 @@
              ELSE
 !               Assume it is like 'LARGE   2    1....'
                 IBSFLAG = 1
-                READ (MLINE(NMLINE),'(5X,12I5)',ERR=9000)
+                READ (MLINE(NMLINE),'(5X,12I5)',ERR=9000)               &
      &               IQM,(JCO(K),K=1,IQM)
              END IF
           CASE (2)
@@ -391,7 +390,7 @@
       SELECT CASE (IBSFLAG)
       CASE (0)
 !
-         No basis set given, no need to read.
+!        No basis set given, no need to read.
 !        We have not set IQM yet in this case, do this here.
          IQM = 0
 !
@@ -399,7 +398,7 @@
 !
 !         Read explicitly given basis set.
 !
-          CALL GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,
+          CALL GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,                       &
      &         ALPHA,CPRIM,CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
           NBLCK = NBLCK + NBLOCK
           BASREF(1) = "Basis set typed explicitly in input file "
@@ -412,38 +411,38 @@
           KLAST = KBFCO + KPRIM*KPRIM
           IF (KLAST.GT.LWORK) CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
           DIRCON(1) = .TRUE.
-          CALL BFGINP(I,ISET,WORK(KBFPR),WORK(KBFCO),
-     &        IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &        NBLCK,ISGEN,KATOM,KANG,KAOVEC,KPRIM,BASFIL,
+          CALL BFGINP(I,ISET,WORK(KBFPR),WORK(KBFCO),                   &
+     &        IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                   &
+     &        NBLCK,ISGEN,KATOM,KANG,KAOVEC,KPRIM,BASFIL,               &
      &        BASREF)
       CASE (3)
 !
 !         Dalton basis set
 !
           BASNAM = BASFIL
-          CALL BASLIB(IQM,JCO,NUC,NRC,SEG,
-     &         ALPHA,CPRIM,CPRIMU,
-     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,1,DSM,
+          CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
+     &         ALPHA,CPRIM,CPRIMU,                                       &
+     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,1,DSM,                        &
      &         BASREF)
           NBLCK = NBLCK + NBLOCK
       CASE (4)
 !
 !         Generate well-temperered/family basis set
 !
-          CALL FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,
-     &         ALPHA,CPRIM,CPRIMU,ISGEN,
+          CALL FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,                       &
+     &         ALPHA,CPRIM,CPRIMU,ISGEN,                                &
      &         NBLOCK,KAOVEC,KPRIM)
           NBLCK = NBLCK + NBLOCK
-          BASREF(1) = 
+          BASREF(1) =                                                   &
      &     "Well-tempered basis set typed explicitly in input file "
 !
       CASE (5)
 !
 !         Read more than one Dalton type basis set
 !
-          CALL MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,
-     &         NFILES,BSFILES,ALPHA,CPRIM,CPRIMU,
-     &         NBLOCK,KAOVEC,KPRIM,Q,BASREF)
+          CALL MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,                         &
+     &         NFILES,BSFILES,ALPHA,CPRIM,CPRIMU,                       &
+     &         NBLOCK,KAOVEC,KANG,KPRIM,Q,BASREF)
           
       CASE (6)
 !
@@ -466,11 +465,10 @@
 !     ============================================
 !
       DO JBLCK = 1, NBLOCK
-         IF ((NUC(JBLCK).NE.NRC(JBLCK)).AND.
+         IF ((NUC(JBLCK).NE.NRC(JBLCK)).AND.                            &
      &       (NRC(JBLCK).GT.0)) CNTBAS = .TRUE.
       END DO
-      IF ( CNTBAS .AND.
-     $     (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
+      IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
          DIRCON = .TRUE.
       END IF
 !
@@ -479,57 +477,56 @@
 !     Error messages:
 !
  5000 CONTINUE
-        WRITE (LUPRI,'(6X,A,I3,3A/9X,2A/9X,2(A,I3),A)')
-     &     '*  Input specifies highest orbital of atomic type ',
-     &     I,' as "',SPDCAR(NHTYP-1),'".',
-     &     ' Highest allowed orbital in this version: ',
-     &     SPDCAR(MXQN-1),
-     &     ' Increase MXQN from',MXQN,' to',NHTYP/2,' and recompile.'
+        WRITE (LUPRI,'(6X,A,I3,3A/9X,2A/9X,2(A,I3),A)')                 &
+     &     '*  Input specifies highest orbital of atomic type ',        &
+     &     I,' as "',SPDCAR(NHTYP-1),'".',                              &
+     &     ' Highest allowed orbital in this version: ',                &
+     &     SPDCAR(MXQN-1),                                              &
+     &     ' Increase MXQN from',MXQN,' to',NHTYP/2,' and recompile.'    
         CALL QUIT('Too high angular specified in input.')
  9000 CONTINUE
-      WRITE(LUPRI,'(A,/,A,I3,/,A)')
-     $     '*** ERROR in READIN ***',
-     &     'Error reading line ',NMLINE,
+      WRITE(LUPRI,'(A,/,A,I3,/,A)')                                     &
+     &     '*** ERROR in READIN ***',                                   &
+     &     'Error reading line ',NMLINE,                                &
      &     MLINE(NMLINE)
          CALL QUIT('*** ERROR in READIN ***')
       END
 !------------------------------------------------------------------------------------
 !  /* Deck MULTI_BASIS */
-      SUBROUTINE MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,
-     &  NFILES,BSFIL,ALPHA,CPRIM,CPRIMU,
-     &  NBLOCK,ISGEN,KAOVEC,KPRIM,Q,BASREF)
+      SUBROUTINE MULTI_BASIS(IQM,JCO,NUC,NRC,SEG,                       &
+     &  NFILES,BSFIL,ALPHA,CPRIM,CPRIMU,                                &
+     &  NBLOCK,ISGEN,KAOVEC,KANG,KPRIM,Q,BASREF)
 !*****************************************************************************
 !
 !       Driver to read a number of expansion sets. 
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
+include "implicit.h"
+include "priunit.h"
+include "dummy.h"
+include "mxcent.h"
+include "maxorb.h"
+include "aovec.h"
+include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include "cbirea.h"
-      DIMENSION WORK(LWORK)
+include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS
-      DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),
-     &          SEG(KAOVEC),
-     &          ALPHA(KPRIM,KAOVEC),
-     &          CPRIM(KPRIM,KPRIM,KAOVEC),
-     &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)
+      DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
+     &          SEG(KAOVEC),                                            &
+     &          ALPHA(KPRIM,KAOVEC),                                    &
+     &          CPRIM(KPRIM,KPRIM,KAOVEC),                              &
+     &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)                                            
       CHARACTER SPDCAR*1,BSET*5,BASFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10)
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
-#include "molinp.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "gencon.h"
-#include "dcbgen.h"
+include "molinp.h"
+include "nuclei.h"
+include "huckel.h"
+include "gencon.h"
+include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option
 !     Should changed into allocatable arrays (either using fortran 90 allocate or
 !     from work).
@@ -546,9 +543,8 @@
       DIMENSION CPRIMT(KPRM,KPRM,KBLK)
       DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
       DIMENSION ISGENT(KBLK)
-      CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
+      CHARACTER*80 BASREFT(10,MAXBSFIL)
       LOGICAL SEGT
-C
 !
 ! reading of basis sets from a number of files, including when the files
 ! do not necessarily have the same maximum and/or minimum orbital 
@@ -574,15 +570,15 @@ C
           BASREF(3*(M-1)+2) = " " 
           BASREF(3*(M-1)+3) = " ref. in file "//BSFIL(M) 
 ! 
-          CALL BASLIB(IQMT,JCOT(1,M),
-     &                 NUCT(IBLOCK1),
-     &                 NRCT(IBLOCK1),SEGT(IBLOCK1),
-     &                 ALPHAT(1,IBLOCK1),
-     &                 CPRIMT(1,1,IBLOCK1),
-     &                 CPRIMUT(1,1,IBLOCK1),
-     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,1,DSM,
-     &                 BASREFT(1,I,M))
-          BASREF(3*(M-1)+4) = BASREFT(1,I,M)
+          CALL BASLIB(IQMT,JCOT(1,M),                                   &
+     &                 NUCT(IBLOCK1),                                   &
+     &                 NRCT(IBLOCK1),SEGT(IBLOCK1),                     &
+     &                 ALPHAT(1,IBLOCK1),                               &
+     &                 CPRIMT(1,1,IBLOCK1),                             &
+     &                 CPRIMUT(1,1,IBLOCK1),                            &
+     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,1,DSM,    &
+     &                 BASREFT(1,M))
+          BASREF(3*(M-1)+4) = BASREFT(1,M)
 !
 ! to help in the reordering, we create a table mapping the orbital
 ! angular momentum of a block to the number of the block in the
@@ -597,26 +593,26 @@ C
   465        CONTINUE 
              IDANG = IDANG + 1
   464     CONTINUE 
-C
+!
           IF ( IQMT .GT. MAXIQM ) THEN
              MAXIQM = IQMT
           END IF
           IBLOCK1 = IBLOCK1 + NBLOCK
   463  CONTINUE
-C
-C after reading all files, we reorder the data wrt orbital angular 
-C momentum. in this reordering variable kt is the "final" index of a given block
-C
+!
+! after reading all files, we reorder the data wrt orbital angular 
+! momentum. in this reordering variable kt is the "final" index of a given block
+!
        IQM = MAXIQM
        KT = IBLOCK
        DO 466 IQ=1,MAXIQM
        DO 467 IR=1,IBLOCK1 - 1
-C
-C in filling up the permanent storage with data, care should be taken to skip 
-C zero-sized blocks that arise when we have only parts of a basis
-C set in one file, as when the polarization functions are in one file and
-C the scf set is in another...
-C
+!
+! in filling up the permanent storage with data, care should be taken to skip 
+! zero-sized blocks that arise when we have only parts of a basis
+! set in one file, as when the polarization functions are in one file and
+! the scf set is in another...
+!
             IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
               IF ( NUCT(IR) .GT. 0 ) THEN
 
@@ -637,14 +633,14 @@ C
              END IF
   467     CONTINUE
   466  CONTINUE
-C
-C finally, we update nblck with the total number of non-zero sized
-C blocks read, subtracting one only because on the loops above kt was 
-C incremented after the last block was put in place ...
-C
+!
+! finally, we update nblck with the total number of non-zero sized
+! blocks read, subtracting one only because on the loops above kt was 
+! incremented after the last block was put in place ...
+!
       NBLCK = KT - 1 
-C
-C ... and we are done
-C
+!
+! ... and we are done
+!
       RETURN
       END
