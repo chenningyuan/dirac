@@ -1705,7 +1705,7 @@ C
 #include "mxcent.h"
 #include "mxorb.h"
 #include "chrxyz.h"
-#include "alphac.h"
+#include "codata.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)

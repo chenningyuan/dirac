@@ -2084,7 +2084,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "alphac.h"
+#include "codata.h"
       PARAMETER(DP5 = 0.5D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"

@@ -169,7 +169,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "alphac.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "mxorb.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -2927,7 +2927,7 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 C
 #include "maxaqn.h"
-#include "alphac.h"
+#include "codata.h"
 #include "mxorb.h"
 C
 #include "siripc.h"

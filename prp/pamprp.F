@@ -4104,7 +4104,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "alphac.h"
+#include "codata.h"
 #include "dcbxlr.h"
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)

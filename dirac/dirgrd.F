@@ -1968,7 +1968,7 @@ C
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "alphac.h"
+#include "codata.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -2038,7 +2038,7 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "mxorb.h"
 #include "aovec.h"
-#include "alphac.h"
+#include "codata.h"
 C
       PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
