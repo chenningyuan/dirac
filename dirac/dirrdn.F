@@ -4400,7 +4400,8 @@ C
 #include "ibtfun.h"
 C
       CALL TITLER('Input consistency checks','*',127)
-      IF (SPINFR.AND.DOMP2)CALL QUIT ('Spinfree MP2 not implemented')
+      IF (SPINFR.AND..NOT.LEVYLE.AND.DOMP2)
+     &   CALL QUIT ('Spinfree MP2 not implemented')
       IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
       IF (DORES .AND.DODFT)
      &   CALL QUIT ('.RESOLVE does not work with DFT')
