@@ -360,7 +360,7 @@ distribute_work_dir()
 #
 #  The list of machines depends on the queuing system that is used.
 #
-   if [ ! -z $PBS_NODEFILE ]; then
+   if [ ! -z "$PBS_NODEFILE" ]; then
 #     PBS queueing system
       cp $PBS_NODEFILE machines
    else
