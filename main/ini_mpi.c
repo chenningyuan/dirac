@@ -124,18 +124,14 @@
       if ( (ierr = MPI_Comm_size(MPI_COMM_WORLD,numnod)) )
          printf("MPI_Comm_size error %i in ini_mpi()\n",ierr);
 
-#if defined (SYS_IRIX)
-      /*
-       * Impose gang scheduling to avoid problems with idle nodes
-       * when high system load
-       *
+      /* printf(" mytid and numnod %i %i\n",*mytid,*numnod); */
+
+      if ( *mytid == 0 ) sleep(1);
+      /* if master then sleep 1 second
+       * so the nodes can print to output before the master
+       * (a synchronize would have been better) /hjaaj
        */
-      if ( (mytid == 0) && (schedctl(schedmode,sgs_gang,0) < 0) )
-      {
-         printf("*** ERROR gang scheduling\n");
-         exit(1);
-      }
-#endif /* SYS_IRIX */
+
       *mparid = 0;
       *parcal = 1;
    }
