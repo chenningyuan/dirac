@@ -3246,6 +3246,49 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qdotm */
+      SUBROUTINE QDOTM(P,NZ,NX,NY,FX,X,LX,FY,Y,LY,S,LDS)
+C***********************************************************************
+C
+C     Performs generally real,complex or quaternion dot product
+C     (determined by NZ)
+C     FX/FY = 'N' : Normal vectors
+C     FX/FY = 'H' : Hermitian conjugate
+C     with REAL metric S
+C
+C     Written by T.Saue Nov 3 2000
+C
+C***********************************************************************
+#include <implicit.h>
+#include <priunit.h>
+#include <dcbqal.h>
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      DIMENSION X(LX,NZ),Y(LY,NZ),S(LDS,NY),P(NZ)
+      CHARACTER  FX*1,FY*1
+C
+      EXTERNAL BDQALGEBRA
+C
+C     Initialization
+C
+      IFX = 1
+      IF(FX.EQ.'H') IFX = 2
+      IFY = 1
+      IF(FY.EQ.'H') IFY = 2
+      DO I = 1,NZ
+        P(I) = D0
+      ENDDO
+C
+      DO IZX = 1,NZ
+        DO IZY = 1,NZ
+          IZP = IQMULT(IZX,IZY,1)
+          FAC = IQSIGN(IZX,IFX,1)*IQSIGN(IZY,IFY,1)*IQPHASE(IZX,IZY,1)
+          P(IZP) = P(IZP) + FAC*DDOTM(NX,NY,LDS,X(1,IZX),S,Y(1,IZY))
+        ENDDO
+      ENDDO
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qnrm2 */
       FUNCTION QNRM2(N,NZ,X,NX,INCX)
 C***********************************************************************
