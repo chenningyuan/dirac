@@ -103,7 +103,7 @@ extern int main( int argc, char** argv )
     * Print logo, sysinfo etc.
     */
 
-   print_logo(mytid,parcal);
+   if ( mytid == 0 ) print_logo(parcal);
   
    /*
     * Execute dirac
