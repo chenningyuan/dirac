@@ -239,10 +239,10 @@ C
          IF (TEQ) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
           CALL T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
-     &                 BUF1,BUF2,BUF3,NBUF3,S1)
+     &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
          ELSE
           CALL T1EQNS (HOV,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
-     &                 BUF1,BUF2,BUF3,NBUF3,S1)
+     &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
          ENDIF
       ENDIF
       CPUT1 = CPUT1 + CPUDELTA()
@@ -399,7 +399,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE T1EQNS (FVO,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
-     &                   BUF1,BUF2,BUF3,NBUF3,S1)
+     &                   BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -415,7 +415,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF3
+      INTEGER NBUF2,NBUF3
       REAL*8 FVO(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
@@ -521,7 +521,7 @@ C--------------------------------------
       IF (TEQ) THEN
          CALL GETVOVO (BUF1)
          CALL SRT16 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &              BUF1,BUF2,BUF1,BUF2)
+     &              BUF1,BUF2)
       ELSE
          CALL XCOPY (JVOVO(2),H,1,BUF2,1)
       ENDIF
@@ -1856,67 +1856,6 @@ C
       DIAG = DSQRT(DIAG/RSUM)
 C64B  DIAG =  SQRT(DIAG/RSUM)
 C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LINTM(EPS,FOO,FVO,FVV,T1,S1,T2,S2,AZ,H,
-     &                 HO,HV,HOV,BUF1,BUF2,BUF3,NBUF2,NBUF3)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Makes intermediates for Lambda equations and writes them to file.
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-C     Intermediaries etc.
-C
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
-      REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
-C
-C
-C---------------Common Blocks--------------------------------------
-C
-      INCLUDE "files.inc"
-      INCLUDE "param.inc"
-      INCLUDE "symm.inc"
-      INCLUDE "inpt.inc"
-      INCLUDE "complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 CPUDELTA,CPU0,CPUINT,CPU4V,CPUTOT
-      real*8 ddot,sdot
-      complex*16 zdotc,cdotc
-C
-C---------------Executable code--------------------------------------
-C
-C     Initialize the timing.
-C
-      CPU0 = CPUDELTA()
-      CALL CPUUSED(CPU0)
-      CPUINT = D0
-      CPU4V = D0
-      CPU4INT = CPU4INT + CPUDELTA()
-C
-      CALL CPUUSED (CPUTOT)
-      CPUTOT = CPUTOT - CPU0
-      IF (TIMING)  WRITE(IW,7000) CPU0,CPUINT,CPU4V,CPUTOT-CPUINT-CPU4V,
-     &                            CPUTOT
-C
- 7000 FORMAT(//' Timing of routine LINTM :'
-     &/' Before LINTM :',T30,F12.3,' seconds'
-     &/' Intermediates :',T30,F12.3,' seconds'
-     &/' 4 virtual contr. :',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in LINTM :',T30,F12.3,' seconds')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

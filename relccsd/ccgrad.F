@@ -72,11 +72,11 @@ C
 C----------------------------------------------------------------------
 C DVO(A,I) = L(A,I)
 C----------------------------------------------------------------------
-      CALL XCOPY (NDIMT1,S1,1,DVO)         
+      CALL XCOPY (NDIMT1,S1,1,DVO,1)         
 C----------------------------------------------------------------------
 C DOV(A,I) = T(A,I)
 C----------------------------------------------------------------------
-      CALL XCOPY (NDIMT1,T1,1,DOV)         
+      CALL XCOPY (NDIMT1,T1,1,DOV,1)         
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) + T(AC,IK) * L(C,K)
 C----------------------------------------------------------------------
@@ -203,7 +203,7 @@ C
       NAME = 'MP2-GRAD'
       DO EOPER = 1, NEOPER
          EOFF = (EOPER-1)*NDIMX*RCW+1
-         CALL RDPROP(NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
+         CALL RDPROP(IPRNT,NAMEE(EOPER),NSP,LFA,CBUF,IREPSPI,
      &               EPHASE(EOPER),EVO(EOFF),EOV(EOFF),DUM,DUM)
       ENDDO
 C

@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDINTS(NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
+      SUBROUTINE RDINTS(IPRNT,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
      &                  BUF1,BUF2,IREPSP,IREPSPI,
      &                  VOOOO,VOOOOA,VVOOO,VVOOOA,VVVOO,VVVOOA,
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
@@ -41,6 +41,7 @@ C
       INCLUDE "symm.inc"
       INCLUDE "complex.inc"
       INCLUDE "results.inc"
+      INCLUDE "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -523,7 +524,7 @@ C
 10011 STOP 'ERROR READING INTEGRALS FROM MDBINT'
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDPROP(NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
+      SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
      &                  AVO,AOV,AOO,AVV)
 C
       IMPLICIT INTEGER (A-Z)

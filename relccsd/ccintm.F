@@ -989,7 +989,7 @@ C     -----------------------------------------------------------------
 C     Sort from order (AI,JL) back to (AL,JI) and add with a minus sign
 C     -----------------------------------------------------------------
       CALL SRT26 (NREP,MULTB,LFA,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &            BUF3,BUF1,BUF3,BUF1)
+     &            BUF3,BUF1)
       CALL XAXPY (NV2,-A1,BUF1,1,CZ,1)
 C------------------------------------------------------------------
 C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ V(AL,ID) * T(D,J) ]
