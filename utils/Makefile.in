@@ -7,7 +7,7 @@
 
 include ../Makefile.config
 
-OBJS = twofit.o labread.o
+OBJS = twofit.o labread.o rspread.o
 
 all: $(OBJS)
 
