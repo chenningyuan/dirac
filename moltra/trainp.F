@@ -283,10 +283,10 @@ C*****************************************************************************
 #include <priunit.h>
 #include <dummy.h>
 #include <mxorb.h>
-      PARAMETER (NTABLE = 20)
+      PARAMETER (NDIR = 4, NTABLE = 20)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*7 LINE
       DIMENSION WORK(LWORK),IR(2,2),NTVEC(4)
 C
@@ -298,6 +298,8 @@ C
 #include <dcbtra.h>
 C
       SAVE SET
+      DATA TABDIR /'*END OF','*PRPTRA','*XXXXXX','*XXXXXX'/
+C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','.ANTIS ','.4INDEX',
      &            '.MSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
@@ -529,7 +531,39 @@ C&&&& PRPTRA - Transform property integrals to MO basis
                CALL QUIT('Illegal prompt in TRAINP.')
             END IF
       END IF
+C
+C     Process input for various program sections
+C     ==========================================
+C
   300 CONTINUE
+      PROMPT = WORD(1:1)
+      IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+         GO TO 300
+      ELSE IF (PROMPT .EQ. '*') THEN
+         DO 310 I = 1, NDIR
+            IF (WORD .EQ. TABDIR(I)) THEN
+               GO TO (400,312,313,314), I
+            END IF
+  310    CONTINUE
+         IF (WORD(1:2) .EQ. '**') GO TO 400
+         WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Illegal directory in PRPINP.')
+      ELSE
+         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal or',
+     *                        ' out of order.'
+         CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
+         CALL QUIT('Program stopped in PRPINP, error in prompt.')
+      END IF
+  312 CONTINUE
+        CALL TRPINP(WORD,.FALSE.,WORK,LWORK)
+        GO TO 300
+  313 CONTINUE
+        GO TO 300
+  314 CONTINUE
+        GO TO 300
+C
+  400 CONTINUE
 C
 C     Process defaults for 2- and 4-index transformations
 C
@@ -692,3 +726,156 @@ C
       CALL QUIT('TRAINP: Error in reading .INDEX')
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck trpinp */
+      SUBROUTINE TRPINP(WORD,RESET,WORK,LWORK)
+C*****************************************************************************
+C
+C     Input section for operators that will be transformed to MO-basis
+C
+C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
+C
+C*****************************************************************************
+#include <implicit.h>
+#include <priunit.h>
+      PARAMETER(D1 = 1.0D0)
+#include <dummy.h>
+#include <mxorb.h>
+#include <mxcent.h>
+      PARAMETER (NTABLE = 8)
+C
+#include <dcbprp.h>
+#include <dcbtrp.h>
+#include <dcborb.h>
+#include <dgroup.h>
+#include <dcbxpr.h>
+C
+      LOGICAL SET, NEWDEF, RESET
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      DIMENSION WORK(LWORK)
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.OPERAT','.XXXXXX','.XXXXXX',
+     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA SET/.FALSE./
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /CBIEXP/
+C     ===================
+C
+      IPRTRP   = 0
+      NTRPP   = 0
+C
+C     Process input from CBITRP
+C     =========================
+C
+      NEWDEF = (WORD .EQ. '*PRPTRA')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+  110       CONTINUE
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 I = 1, NTABLE
+                  IF (TABLE(I) .EQ. WORD) THEN
+                     GO TO (1,2,3,4,5,6,7,8), I
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in TRPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in TRPINP.')
+    1          CONTINUE
+C&&&& PRINT:  Print level
+                  READ(LUCMD,*) IPRTRP
+               GO TO 100
+    2          CONTINUE
+C&&&& OPERATOR: Define operator
+                  CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
+     &                        WORK,LWORK,IPRTRP)
+                  CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,
+     &                        MAXTRP)
+                  PRPTRA = .TRUE.
+                  ICHANG = ICHANG + 1
+               GO TO 100
+    3          CONTINUE
+               GO TO 100
+    4          CONTINUE
+               GO TO 100
+    5          CONTINUE
+               GO TO 100
+    6          CONTINUE
+               GO TO 100
+    7          CONTINUE
+               GO TO 100
+    8          CONTINUE
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     *            '" not recognized in TRPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in TRPINP.')
+            END IF
+      END IF
+  300 CONTINUE
+C
+C     Print section
+C     =============
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(1X,A)') 'TRPINP: Property integral transformation'
+      CALL PRSYMB(LUPRI,'=',75,0)
+      IF(ICHANG.GT.0) THEN
+        WRITE(LUPRI,'(1X,A)') 
+     &  '*The following operators will be transformed:'
+      ENDIF
+      IF(NTRPP.GT.0) THEN
+        DO I = 1,NTRPP
+          INDXPR = LTRPP(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
+      ENDIF  
+      IF(DIPOLE) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Dipole moment'
+      ENDIF
+      IF(QUADRU) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Quadrupole moment'
+      ENDIF
+      IF(EFG) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Electric field gradient'
+      ENDIF
+      IF(NQCC) THEN    
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Nuclear Quadrupole Coupling Constant'
+      ENDIF
+C
+      CALL PRSYMB(LUPRI,'-',75,0)
+  999 CONTINUE
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
