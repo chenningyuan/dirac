@@ -441,7 +441,7 @@ gp/gphjj.o          gp/gpjeppe.o        gp/gptrygve.o       gp/mempkg.o\\
 gp/qpack.o          gp/vcraypack.o      gp/gpsaue.o         gp/gpluuk.o \\
 gp/gpjth.o \\
 prp/paminp.o        prp/pamexp.o        prp/pamprp.o        prp/pamset.o \\
-prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o
+prp/pamgrd.o        prp/pamogrd.o       prp/pamfck.o        prp/pamesr.o
 
 C_OBJS = \\
 dirac/main/alloc_mem.o    dirac/main/csectid.o \\
