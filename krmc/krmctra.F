@@ -222,13 +222,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,WORK,LWORK)
 C*****************************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
 C     with active indeces).
 C
 C     Input:
+C        PV   - two-electron density matrix
 C
 C     Output:
 C        FQ   -   aux. FQ fock matrix
@@ -248,6 +249,7 @@ C
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
+      DIMENSION PV(*)
       DIMENSION WORK(*)
 C
 C
@@ -257,38 +259,18 @@ C
 C
       IF ( OPT_CIPROGRAM .EQ. 'GOSCI' ) THEN
 C
-C        Get density matrix
-C        ------------------
-C
-C        Read density matrix.
-C         
-         KLEN = NASHT * NASHT * NNASHX * NZ * 3
-         CALL MEMGET('REAL',KPV,KLEN,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KPVM,(2*NASHT)**4 * MIN0(NZ,2),
-     &        WORK,KFREE,LFREE)
-         CALL REAKRMC(LUKRM3,'PVMO    ',
-     &        WORK(KPVM),(2*NASHT)**4 * MIN0(NZ,2))
-C
-C        Transform from Molfdir basis to Dirac (NZ,3) basis.
-C        
-         CALL M2DNZ3(WORK(KPVM),WORK(KPV),IPROPT)
-C
-         CALL MEMREL('RGETH2.PV',WORK,KWORK,KPVM,KFREE,LFREE)
-C
-C
 C        Two electron integrals
 C        ----------------------
 C
 C        Get FQ and active two-electron integrals.
 C
-         CALL RGETH21(.TRUE.,.TRUE.,WORK(KPV),FQ,H2AC,
+         CALL RGETH21(.TRUE.,.TRUE.,PV,FQ,H2AC,
      &        WORK(KFREE),LFREE,IPROPT)
 C
 C        Write FQ and H2AC to disk.
 C
          CALL WRTKRMC(LUKRM3,'FQMO    ',FQ,NASHT * NORBT * NZ)
          CALL WRTKRMC(LUKRM3,'H2AC    ',H2AC,NASHT*NASHT*NNASHX*NZ*3)
-         CALL MEMREL('RGETH2.after FQ',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE
          WRITE(LUPRI,'(/,A,/,2A)')
      $        '*** ERROR in RGETH2 ***',
