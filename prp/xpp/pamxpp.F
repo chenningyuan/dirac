@@ -1466,7 +1466,7 @@ Chj jan 2001> accept all with non-zero norm;
 C             we may get a very small norm
 C             when XPPNRM false
 C     PARAMETER (ZEROT=1.0D-8)
-      PARAMETER (ZEROT=0.0D0, PAIRT = 1.0D-8)
+      PARAMETER (ZEROT=1.0D-14, PAIRT = 1.0D-8)
 C
 CHJMAERKE: comparison of transition moments with Dalton
 C          shows that eigenvectors should be multiplied
