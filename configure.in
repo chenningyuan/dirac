@@ -308,11 +308,11 @@ if [ -z "${par}" ]; then
    while [ -z "$ok" ]; do
       ok=1
       if [ $quick = 0 ]; then
-	 $echo 'Do you want to install the program'\
-	       'in a parallel version? y/[n] \c'
-	 read par
+         $echo 'Do you want to install the program'\
+         'in a parallel version? y/[n] \c'
+         read par
       else
-	 par=no
+         par=no
       fi
       case "$par" in
       "yes" | "y" )
@@ -345,12 +345,12 @@ if [ "$par" = "yes" ]; then
       ok=
       while [ -z "$ok" ]; do
          ok=1
-	 if [ $quick = 0 ]; then
-	    $echo 'Message passing [mpi]/pvm: \c'
-	    read mesp
-	 else
-	    mesp=mpi
-	 fi
+         if [ $quick = 0 ]; then
+            $echo 'Message passing [mpi]/pvm: \c'
+            read mesp
+         else
+            mesp=mpi
+         fi
          case "$mesp" in
          "mpi" | "pvm" )
             ;;
@@ -651,11 +651,11 @@ if [ -z "$INSTALL_DIR" ]; then
          curr=`pwd`
       fi
       if [ $quick = 0 ]; then
-	 $echo 'Directory for installation of' \
-	       'binaries and scripts ['$curr'] \c'
-	 read INSTALL_DIR
+         $echo 'Directory for installation of' \
+         'binaries and scripts ['$curr'] \c'
+         read INSTALL_DIR
       else
-	 INSTALL_DIR=
+         INSTALL_DIR=
       fi
       if [ -z "$INSTALL_DIR" ]; then
          INSTALL_DIR=$curr
@@ -742,13 +742,13 @@ if [ -f Makefile.config ]; then
       answer=
       while [ "$answer" != "y" -a "$answer" != "n" ]
       do
-	 if [ $quick = 0 ]; then
-	    $echo 'Do you want me to overwrite' \
-		  'Makefile.config.orig anyway? [y]/n \c'
-	    read answer
-	 else
-	    answer=
-	 fi
+         if [ $quick = 0 ]; then
+            $echo 'Do you want me to overwrite' \
+            'Makefile.config.orig anyway? [y]/n \c'
+            read answer
+         else
+            answer=
+         fi
          if [ -z "$answer" ]; then
             answer="y"
          fi
@@ -997,6 +997,7 @@ case $machine in
                   def='dirpvm.x'
                fi
             fi
+            c_inc="-Wc,-I$INCLUDE_DIR"
             inc="-WF,-I$INCLUDE_DIR";;
          esac
          opt='-O3 -qstrict';;
@@ -1011,18 +1012,23 @@ case $machine in
             if [ "$prc" = "non-10000" ]; then
                echo "Non R10000 IRIX64"
                opt='-O2 -n32 -mips3 -G 0 -woff 2290'
+               c_opt='-O2 -n32 -mips3 -G 0'
             else
                echo "R10000 IRIX64"
                opt='-O2 -64 -mips4 -G 0 -woff 2290'
+               c_opt='-O2 -64 -mips4 -G 0'
             fi;;
          *)          
             case $os in
                irix6.4)
-                  opt='-O2 -64 -mips4 -G 0 -woff 2290';;
+                  opt='-O2 -64 -mips4 -G 0 -woff 2290'
+                  c_opt='-O2 -64 -mips4 -G 0';;
                irix6.[2-3])
-                  opt='-O2 -n32 -mips3 -G 0 -woff 2290';;
+                  opt='-O2 -n32 -mips3 -G 0 -woff 2290'
+                  c_opt='-O2 -n32 -mips3 -G 0';;
                *)
-                  opt='-O2 -32 -mips2 -G 0 -woff 2290';;
+                  opt='-O2 -32 -mips2 -G 0 -woff 2290'
+                  c_opt='-O2 -32 -mips2 -G 0';;
             esac
          esac
          if [ "$mesp" = "dummy" ]; then
@@ -1093,6 +1099,18 @@ if [ "$mesp" != "dummy" ]; then
 else
    depend_flags=`echo $cpp $inc $parinc | sed -e 's/,/\ /g'`
 fi
+#
+#  Check for special C-directives
+#
+if [ "$c_inc" = "" ]; then
+   c_inc="\$(INCLUDE_DIR)"
+fi
+if [ "$c_opt" = "" ]; then
+   c_opt="\$(OPTFLAGS)"
+fi
+#
+#  Make Makefile.config
+#
 cat <<EOF > Makefile.config
 ARCH        = $guess
 #
@@ -1106,7 +1124,9 @@ CC          = cc
 RM          = -rm
 AR          = ar
 OPTFLAGS    = $opt
+C_OPTFLAGS  = $c_opt
 INCLUDE_DIR = $inc
+C_INCLUDE_DIR = $c_inc
 LIB_LIST    = $LIB
 INSTALLDIR  = $INSTALL_DIR
 #
@@ -1209,7 +1229,7 @@ $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 EOF
 esac
 
@@ -1235,7 +1255,7 @@ $tab mv \$*.i \$*.f
 $tab\$(F77) \$(OPTFLAGS) -c \$*.f
 $tab\$(RM) \$*.f
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 
 EOF
 #
@@ -1250,7 +1270,7 @@ EOF
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 EOF
     fi
 esac
@@ -1273,7 +1293,7 @@ cat <<EOF>> Makefile.config
 .F.o:
 $tab\$(F77) \$(INCLUDE_DIR) \$(CPP_FLAGS) \$(OPTFLAGS) -c \$*.F
 .c.o:
-$tab\$(CC) \$(INCLUDE_DIR) \$(CCP_FLAGS) \$(OPTFLAGS) -c \$*.c
+$tab\$(CC) \$(C_INCLUDE_DIR) \$(CCP_FLAGS) \$(C_OPTFLAGS) -c \$*.c
 EOF
 esac
 #
