@@ -665,9 +665,6 @@ C
      &          DV(*)
 C
 C
-CTROND
-      IF (ITYPK .EQ. 3) CALL QUIT('PRPORB: Open shell needs testing !')
-CTROND
       IF (IH .EQ. 1) THEN
          DS = D1
       ELSE IF (IH. EQ. 2) THEN
@@ -691,6 +688,8 @@ C
             END DO
 C
          ELSE IF (ITYPK .EQ. 3) THEN
+CTROND
+            CALL QUIT('PRPORB: Open shell needs testing !')
 C
 C        ...active
 C
@@ -707,6 +706,8 @@ C
 C        Second index:
 C
          IF (ITYPL .EQ. 3) THEN
+CTROND
+            CALL QUIT('PRPORB: Open shell needs testing !')
 C
 C           ...active
 C
