@@ -39,7 +39,7 @@
    len = 100;
    errorstring = (char *) diracmalloc(len);
    MPI_Error_string(*err,errorstring,&len);
-   fprintf(stdout,"Error string         %d\n",errorstring);
+   fprintf(stdout,"Error string         %s\n",errorstring);
    fprintf(stdout,"******************************************\n");
    quit(errorstring,len);
    free(errorstring);
@@ -59,7 +59,7 @@
    len = 100;
    errorstring = (char *) diracmalloc(len);
    MPI_Error_string(*err,errorstring,&len);
-   fprintf(stdout,"Error string         %d\n",errorstring);
+   fprintf(stdout,"Error string         %s\n",errorstring);
    fprintf(stdout,"******************************************\n");
 
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_HPUX)
