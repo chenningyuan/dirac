@@ -11,6 +11,8 @@ OBJS =paminp.o \
         pamprp.o \
 	pamexp.o \
         pamgrd.o \
+        pamogrd.o \
+        pamfck.o \
         pamset.o 
 
 all:	$(OBJS)
