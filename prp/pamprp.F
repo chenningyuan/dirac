@@ -1160,6 +1160,7 @@ C
 #include <nqcc.h>
 #include <ibtfun.h>
       CALL DZERO(EFGEL,9*MXCENT)
+      CALL DZERO(TEMP,9*MXCENT)
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
          IF (.NOT. DOATOM(IATOM)) GOTO 100
