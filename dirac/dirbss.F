@@ -3032,7 +3032,7 @@ C ...save the picture change transformation matrixes
        ELSE IF (SPFR.AND..NOT.SPFR_BEG) THEN
 
         ISIZE = NFBAS(1,0)*NESH(1)*NZ
-        IF (NSFYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NESH(2)*NZ
 
 C         .... X4c-AO -> X2c-"k"
         CALL NEWLAB('PCTM_AOK',LUBSS,LUPRI)
