@@ -122,7 +122,7 @@ C     *****  o f   F o c k   m a t r i c e s      *****
 C     *************************************************
 C
 C     This module has to come before the conventional SCF-module;
-C     otherwise FOCK must be copied into buffer;this stems from
+C     otherwise FOCK must be copied into buffer; this stems from
 C     the symmetrization procedure
 C
       IF(IDFLAG.NE.0) THEN
@@ -1187,7 +1187,7 @@ C  /* Deck reaint */
       SUBROUTINE REAINT(IUNIT,NINTS,IREP,NDIM,NIBUF,IBUF,BUF)
 C*****************************************************************************
 C
-C     Write integral and indices to unformatted file
+C     Read integral and indices from unformatted file
 C
 C     Written by T.Saue, Feb 27 1995
 C     Last revision: Feb 27 1995
@@ -3302,13 +3302,13 @@ C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
       NDMAT = NFMAT*4
-      N2GAB   = NSYMBL*NSYMBL
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
-      IF(SCRFCK.GT.D0) THEN
+      IF (SCRFCK.GT.D0) THEN
 C
 C       Make reduced density matrix for screening
-C       =========================================
+C       ==========================================
+C       (Reduced GAB is already present in GABRAO)
 C
         CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
       ENDIF
@@ -3701,6 +3701,7 @@ C     External variables
       DIMENSION IFCTYP(MZ,NFMAT),IREPDM(MZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 C     Local variables
+      PARAMETER (D0 = 0.0D0)
       SAVE IPFCK,HTYP
       DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       CHARACTER HTYP(0:2)*1
@@ -3715,6 +3716,7 @@ C
       CALL IZERO(IFCTYP,MZ*NFMAT)
       DO I = 1,NFMAT
         IREP = ISYMOP(I)-1
+C       always 0 (totally symmetric) in this version /May 2001 hjaaj
         IHRM = IHRMOP(I)
         IPAR = JBTOF(IREP,1)
         IFCK = IFCKOP(I)
@@ -3729,6 +3731,8 @@ C
           IH        = IHQMAT(IZ,IHRM)
 C         An anti-symmetric matrix takes no Coulomb contributions
           IF(IH.EQ.2) IC = 0
+C         No exchange contributions if HFXFAC = 0
+          IF (HFXFAC.EQ.D0) IE = 0
           IY   = IC + IE
           IF(MZ.LT.4) THEN
             IQFCK(IZ)     = IQMULT(1,JQBAS(IRFCK(IZ),IPAR),IZ)
@@ -3736,6 +3740,9 @@ C         An anti-symmetric matrix takes no Coulomb contributions
             IPQ           = IQTOPQ(IQFCK(IZ),IREP)
             IFCTYP(IPQ,I) = MAX(IFCTYP(IPQ,I),10*IHQ+IY)
             IREPDM(IPQ,I) = IREP
+C           We know the non-totally symmetric reps are anti-symmetric
+C           thus we only need totally symmetric Coulomb contributions
+C           (IREPDM is used to check for Coulomb contribution) /May 2001 hjaaj
           ELSE
             IQFCK(IZ)     = IZ
             IFCTYP(IZ,I)  = 10*IH+IY

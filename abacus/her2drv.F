@@ -452,6 +452,7 @@ C
             IC  = MOD(IY,2)
             NCM = NCM + IC
             IE  = (IY - IC)/2
+            IF (HFXFAC.EQ.D0) IE = 0
             NEM = NEM + IE
          ENDDO
       ENDIF
@@ -1839,6 +1840,7 @@ C Largest Coulomb contribution
                         IY  = MOD(IFCTYP(I),10)
                         IC  = MOD(IY,2)
                         IE  = (IY - IC)/2
+                        IF (HFXFAC.EQ.D0) IE = 0
                         IF (IC .EQ. 1) THEN
                           DNSBUF(1,I) = MAX(DMRAO(ISYBLA,ISYBLB,I),
      &                                      DMRAO(ISYBLB,ISYBLA,I),
@@ -1983,6 +1985,7 @@ c                    END IF
                         IY  = MOD(IFCTYP(I),10)
                         IC  = MOD(IY,2)
                         IE  = (IY - IC)/2
+                        IF (HFXFAC.EQ.D0) IE = 0
 C Largest Coulomb contribution to gradient/Hessian expectation value
                         IF (IC .EQ. 1) THEN
                            DNSBUF(1,I) = DMRAO(ISYBLA,ISYBLB,I)

@@ -403,6 +403,7 @@ C
         IX = (IFCTYP(I)-IY)/10
         IC = MOD(IY,2)
         IE = IY - IC
+        IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on Coulomb contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
@@ -415,7 +416,7 @@ C       Screening on exchange contributions
         ENDIF
         IY = IE + IC
         IF(IY.EQ.0) GOTO 400
-        IF    (IX.EQ.1.OR.IX.EQ.2) THEN
+        IF(IX.EQ.1.OR.IX.EQ.2) THEN
           EXCFAC = DMP25*HFXFAC
 C
 C         Symmetric singlet Fock matrix

@@ -665,19 +665,24 @@ C
           IX = (IFCTYP(K)-IY)/10
           IC = MOD(IY,2)
           IE = IY - IC
+          IF (HFXFAC.EQ.D0) IE = 0
+C         check if Coulomb contribution zero by symmetry
+          IF(IREPDM(K).GE.0 .AND. IREPAB.NE.IREPDM(K)) IC = 0
 C         Screening on Coulomb contributions
-          FCM = DNSBUF(1,K)*SOMAX
-          IF(IREPAB.NE.IREPDM(K).AND.DIRAC) IC = 0
-c          IF(IREPA.NE.IREPB) IC = 0
-          IF(DOC.AND.FCM.LT.SCRTHR) THEN
-            IF(IC.NE.0) DINTSKP(2,3) = DINTSKP(2,3) + NBUF
-            IC = 0
+          IF(DOC.AND.IC.NE.0) THEN
+            FCM = DNSBUF(1,K)*SOMAX
+            IF(FCM.LT.SCRTHR) THEN
+              DINTSKP(2,3) = DINTSKP(2,3) + NBUF
+              IC = 0
+            ENDIF
           ENDIF
 C         Screening on exchange contributions
-          FEM = DNSBUF(2,K)*SOMAX
-          IF(DOE.AND.FEM.LT.SCRTHR) THEN
-            IF(IE.NE.0) DINTSKP(2,4) = DINTSKP(2,4) + NBUF
-            IE = 0
+          IF(DOE.AND.IE.NE.0) THEN
+            FEM = DNSBUF(2,K)*SOMAX
+            IF(FEM.LT.SCRTHR) THEN
+              DINTSKP(2,4) = DINTSKP(2,4) + NBUF
+              IE = 0
+            END IF
           ENDIF
           IY = IE + IC
           IF(IY.EQ.0) GOTO 400
